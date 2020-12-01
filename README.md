@@ -1,1 +1,1 @@
-# WRS Robot Planning & Control System
+# The WRS Robot Planning & Control System
