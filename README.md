@@ -1,1 +1,1 @@
-# wrs
+# WRS Robot Planning & Control System
