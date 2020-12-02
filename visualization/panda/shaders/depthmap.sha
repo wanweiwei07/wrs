@@ -1,0 +1,19 @@
+//Cg
+
+void vshader(float4 vtx_position : POSITION,
+             uniform float4x4 mat_modelproj,
+             out float4 l_position : POSITION,
+             out float4 l_pos : TEXCOORD0)
+{
+    float4 position = vtx_position;
+    l_pos = mul(mat_modelproj, position);
+    l_position = l_pos;
+}
+
+void fshader(in float4 l_pos : TEXCOORD0,
+             out float4 o_color : COLOR)
+{
+    float z = max(l_pos.z-500.0, 0.0);
+    float v0 = 1.0-min(z/50.0, 1.0);
+    o_color = float4(v0, v0, v0, 1);
+}
