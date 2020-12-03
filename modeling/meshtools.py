@@ -1,4 +1,4 @@
-import modeling.trimesh as trimesh
+import basis.trimesh as trimesh
 
 def scale(obj, ratio):
     """
@@ -33,11 +33,12 @@ def scale_and_save(obj, ratio, savename):
 
 
 if __name__ == '__main__':
-    import os
+    # The following commented contents are
+    pass
     # root = "./objects/"
     # for subdir, dirs, files in os.walk(root):
     #     for file in files:
     #         print(root+file)
     #         scale_and_save(root+file, .001, file)
-    scale_and_save("./objects/block.stl", .001, "block.stl")
-    scale_and_save("./objects/bowlblock.stl", .001, "bowlblock.stl")
+    # scale_and_save("./objects/block.stl", .001, "block.stl")
+    # scale_and_save("./objects/bowlblock.stl", .001, "bowlblock.stl")

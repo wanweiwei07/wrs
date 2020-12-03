@@ -7,9 +7,9 @@ from panda3d.bullet import BulletWorld
 from panda3d.bullet import BulletDebugNode
 import os
 import math
-from modeling import datahelper as p3dh
-from vision.pointcloud import o3dhelper as o3dh
-import basics.robotmath as rm
+from basis import dataadapter as p3dh
+# from vision.pointcloud import o3dhelper as o3dh
+import basis.robotmath as rm
 import numpy as np
 
 
@@ -26,7 +26,6 @@ class World(ShowBase, object):
         author: weiwei
         date: 2015?, 20201115
         """
-
         # the taskMgr, loader, render2d, etc. are added to builtin after initializing the showbase parental class
         super().__init__()
         self.disableAllAudio()
@@ -35,7 +34,7 @@ class World(ShowBase, object):
         lens = PerspectiveLens()
         lens.setFov(fov)
         lens.setNearFar(0.001, 50.0)
-        if lenstype is "orthographic":
+        if lenstype == "orthographic":
             lens = OrthographicLens()
             lens.setFilmSize(1024, 768)
         # disable the default mouse control
@@ -69,7 +68,7 @@ class World(ShowBase, object):
         self.render.setLight(self._ptlightnode2)
         # helpers
         self.p3dh = p3dh
-        self.o3dh = o3dh
+        # self.o3dh = o3dh
         self.rbtmath = rm
         # set up inputmanager
         self.lookatpos = lookatpos

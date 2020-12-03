@@ -1,4 +1,4 @@
-import trimesh
+import basis.trimesh as trm
 import math
 import numpy as np
 import numpy
@@ -458,7 +458,7 @@ def gen_icorotmats(icolevel=1, rotagls=np.linspace(0, 2*math.pi, 8, endpoint=Fal
     date: 20191015osaka
     """
     returnlist = []
-    icos = trimesh.creation.icosphere(icolevel)
+    icos = trm.creation.icosphere(icolevel)
     for vert in icos.vertices:
         z = -vert
         x = orthogonal_vector(z)
@@ -484,7 +484,7 @@ def gen_icohomomats(icolevel=1, position=np.array([0, 0, 0]), rotagls=np.linspac
     date: 20200701osaka
     """
     returnlist = []
-    icos = trimesh.creation.icosphere(icolevel)
+    icos = trm.creation.icosphere(icolevel)
     for vert in icos.vertices:
         z = -vert
         x = orthogonal_vector(z)
@@ -532,7 +532,7 @@ def computepca(nparray):
     pcv, pcaxmat = np.linalg.eig(ca)
     return pcv, pcaxmat
 
-def getobb(pointsarray, toggledebug=False):
+def points_obb(pointsarray, toggledebug=False):
     """
     applicable to both 2d and 3d pointsarray
     :param pointsarray: nx3 or nx3 array
@@ -575,7 +575,7 @@ def getobb(pointsarray, toggledebug=False):
         plt.show()
     return [center, corners, pcaxmat]
 
-def getgaussianellipsoid(pointsarray):
+def gaussian_ellipsoid(pointsarray):
     """
     compute a 95% percent ellipsoid axmat for the given points array
     :param pointsarray:

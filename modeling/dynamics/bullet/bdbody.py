@@ -5,8 +5,8 @@ from panda3d.bullet import BulletConvexHullShape
 from panda3d.core import TransformState, Vec3, GeomVertexRewriter
 import copy
 import modeling.geometricmodel as gm
-import modeling.datahelper as dh
-import basics.robotmath as rm
+import basis.dataadapter as dh
+import basis.robotmath as rm
 
 
 class BDBody(BulletRigidBodyNode):

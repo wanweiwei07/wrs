@@ -3,11 +3,11 @@
 
 from panda3d.bullet import BulletDebugNode, BulletWorld, BulletRigidBodyNode, BulletPlaneShape, BulletBoxShape
 from panda3d.bullet import BulletTriangleMeshShape, BulletTriangleMesh
-from panda3d.core import TransformState, Vec3, GeomVertexRewriter
+from panda3d.core import TransformState, Vec3
 import copy
 import numpy as np
-import basics.robotmath as rm
-import modeling.datahelper as dh
+import basis.robotmath as rm
+import basis.dataadapter as dh
 
 
 class BMChecker(object):

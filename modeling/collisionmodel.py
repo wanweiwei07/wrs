@@ -1,11 +1,10 @@
-import modeling.trimesh.sample as sample
 import copy
+import numpy as np
 from panda3d.core import CollisionNode, CollisionBox, CollisionSphere, NodePath
-import modeling.datahelper as dh
+import basis.dataadapter as da
 import modeling.geometricmodel as gm
 import modeling._pcdhelper as pcd
 import modeling._bcdhelper as bcd
-
 
 class CollisionModel(gm.GeometricModel):
     """
@@ -38,18 +37,18 @@ class CollisionModel(gm.GeometricModel):
             self._cdprimitive_type = cdprimitive_type
             if cdprimitive_type is not None:
                 self._cdnp = NodePath(name + "_collision")
-                if cdprimitive_type is "ball":
+                if cdprimitive_type == "ball":
                     if expand_radius is None:
                         expand_radius = 0.015
                     cdnd = self._gen_surfaceballs_cdnp(radius=expand_radius)
                 else:
                     if expand_radius is None:
                         expand_radius = 0.002
-                    if cdprimitive_type is "box":
+                    if cdprimitive_type == "box":
                         cdnd = self._gen_box_cdnp(radius=expand_radius)
-                    if cdprimitive_type is "cylinder":
+                    if cdprimitive_type == "cylinder":
                         cdnd = self._gen_cylindrical_cdnp(radius=expand_radius)
-                    if cdprimitive_type is "pointcloud":
+                    if cdprimitive_type == "pointcloud":
                         cdnd = self._gen_pointcloud_cdnp(radius=expand_radius)
                 self._cdnp = self._pdnp.attachNewNode(cdnd)
             self._localframe = None
@@ -119,16 +118,16 @@ class CollisionModel(gm.GeometricModel):
         topright_adjustvec[2] = 0
         topright_adjustvec.normalize()
         top_right += topright_adjustvec * radius
-        bottomleft_pos = dh.pdv3_to_npv3(bottom_left)
-        topright_pos = dh.pdv3_to_npv3(top_right)
+        bottomleft_pos = da.pdv3_to_npv3(bottom_left)
+        topright_pos = da.pdv3_to_npv3(top_right)
         collision_node = CollisionNode(name)
         for angle in np.nditer(np.linspace(math.pi / 10, math.pi * 4 / 10, 4)):
             ca = math.cos(angle)
             sa = math.sin(angle)
             new_bottomleft_pos = np.array([bottomleft_pos[0] * ca, bottomleft_pos[1] * sa, bottomleft_pos[2]])
             new_topright_pos = np.array([topright_pos[0] * ca, topright_pos[1] * sa, topright_pos[2]])
-            new_bottomleft = dh.npv3_to_pdv3(new_bottomleft_pos)
-            new_topright = dh.npv3_to_pdv3(new_topright_pos)
+            new_bottomleft = da.npv3_to_pdv3(new_bottomleft_pos)
+            new_topright = da.npv3_to_pdv3(new_topright_pos)
             collision_primitive = CollisionBox(new_bottomleft, new_topright)
             collision_node.addSolid(collision_primitive)
         return collision_node
@@ -144,7 +143,7 @@ class CollisionModel(gm.GeometricModel):
             raise ValueError("The defined object must has a trimesh!")
         nsample = int(math.ceil(self._trimesh.area / (radius * 0.3) ** 2))
         nsample = 120 if nsample > 120 else nsample  # threshhold
-        samples = sample.sample_surface_even(self._trimesh, nsample)
+        samples = self._trimesh.sample_surface_even(self._trimesh, nsample)
         collision_node = CollisionNode(name)
         for sglsample in samples:
             collision_node.addSolid(CollisionSphere(sglsample[0], sglsample[1], sglsample[2], radius=radius))
@@ -178,26 +177,20 @@ class CollisionModel(gm.GeometricModel):
         if homomat is None:
             returnnp.setMat(self._pdnp.getMat())
         else:
-            returnnp.setMat(dh.npmat4_to_pdmat4(homomat))
+            returnnp.setMat(da.npmat4_to_pdmat4(homomat))
         return returnnp
 
-    def is_pcdwith_cm(self, objcm):
+    def is_pcdwith(self, objcm):
         """
         Is the primitives of this cm collide with the primitives of the given cm
-        :param objcm: a Collision Model object
+        :param objcm: one or a list of Collision Model object
         author: weiwei
         date: 20201116
         """
-        return pcd.is_cmcm_collided(self, objcm)
-
-    def is_pcdwith_cmlist(self, objcmlist):
-        """
-        Is the primitives of this cm collide with the primitives of the given cmlist
-        :param objcmlist: [CollisionModel, Collision Model, ...]
-        author: weiwei
-        date: 20201116
-        """
-        return self._pcd.is_cmcmlist_collided(self, objcmlist)
+        if isinstance(objcm, CollisionModel):
+            return pcd.is_cmcm_collided(self, objcm)
+        elif isinstance(objcm, list):
+            return pcd.is_cmcmlist_collided(self, objcm)
 
     def show_cdnp(self):
         """
@@ -211,20 +204,14 @@ class CollisionModel(gm.GeometricModel):
     def is_mcdwith(self, objcm):
         """
         Is the mesh of the cm collide with the mesh of the given cm
-        :param objcm: a Collision Model object
+        :param objcm: one or a list of Collision Model object
         author: weiwei
         date: 20201116
         """
-        return self._bcd.is_mesh_cmcm_collided(self, objcm)
-
-    def is_mcdwith_cmlist(self, objcmlist):
-        """
-        Is the mesh of the cm collide with the mesh of the given cm list
-        :param objcmlist: [CollisionModel, Collision Model, ...]
-        author: weiwei
-        date: 20201116
-        """
-        return self._bcd.is_mesh_cmcmlist_collided(self, objcmlist)
+        if isinstance(objcm, CollisionModel):
+            return self._bcd.is_mesh_cmcm_collided(self, objcm)
+        elif isinstance(objcm, list):
+            return self._bcd.is_mesh_cmcmlist_collided(self, objcm)
 
     def show_cdmesh(self):
         """
@@ -239,47 +226,55 @@ class CollisionModel(gm.GeometricModel):
         if hasattr(self, '_bullnode'):
             self._bcd.unshow(self._bullnode)
 
-    def is_bmcdwith_cm(self, objcm):
-        raise NotImplementedError
-
-    def is_bmcdwith_cmlist(self, objcmlist):
+    def is_mboxcdwith(self, objcm):
         raise NotImplementedError
 
     def copy(self):
         return CollisionModel(self)
 
+def gen_box(extent=np.array([1,1,1]), homomat=np.eye(4), rgba=np.array([1, 0, 0, 1])):
+    """
+    :param extent:
+    :param homomat:
+    :return:
+    author: weiwei
+    date: 20201202
+    """
+    box_sgm = gm.gen_box(extent=extent, homomat=homomat, rgba=rgba)
+    box_cm = CollisionModel(box_sgm)
+    return box_cm
 
 if __name__ == "__main__":
     import os
     import math
     import time
     import numpy as np
-    import basics.robotmath as rm
+    import basis.robotmath as rm
     import visualization.panda.world as wd
 
     base = wd.World(camp=[.3, .3, .3], lookatpos=[0, 0, 0], toggledebug=True)
     this_dir, this_filename = os.path.split(__file__)
     objpath = os.path.join(this_dir, "objects", "bunnysim.stl")
     bunnycm = CollisionModel(objpath)
-    bunnycm.setcolor([0.7, 0.7, 0.0, 1.0])
-    bunnycm.reparent_to(base)
-    bunnycm.showlocalframe()
+    bunnycm.set_color([0.7, 0.7, 0.0, 1.0])
+    bunnycm.attach_to(base)
+    bunnycm.show_localframe()
     rotmat = rm.rotmat_from_axangle([1, 0, 0], math.pi / 2.0)
-    bunnycm.setrotmat(rotmat)
+    bunnycm.set_rotmat(rotmat)
 
     bunnycm1 = CollisionModel(objpath, cdprimitive_type="cylinder")
-    bunnycm1.setcolor([0.7, 0, 0.7, 1.0])
-    bunnycm1.reparent_to(base)
+    bunnycm1.set_color([0.7, 0, 0.7, 1.0])
+    bunnycm1.attach_to(base)
     rotmat = rm.rotmat_from_euler(0, 0, math.radians(15))
-    bunnycm1.setpos(np.array([0, .01, 0]))
-    bunnycm1.setrotmat(rotmat)
+    bunnycm1.set_pos(np.array([0, .01, 0]))
+    bunnycm1.set_rotmat(rotmat)
 
     bunnycm2 = CollisionModel(objpath, cdprimitive_type="cylinder")
-    bunnycm2.setcolor([0, 0.7, 0.7, 1.0])
-    bunnycm2.reparent_to(base)
+    bunnycm2.set_color([0, 0.7, 0.7, 1.0])
+    bunnycm2.attach_to(base)
     rotmat = rm.rotmat_from_axangle([1, 0, 0], -math.pi / 4.0)
-    bunnycm1.setpos(np.array([0, .2, 0]))
-    bunnycm1.setrotmat(rotmat)
+    bunnycm1.set_pos(np.array([0, .2, 0]))
+    bunnycm1.set_rotmat(rotmat)
 
     bunnycmpoints, _ = bunnycm.sample_surface()
     bunnycm1points, _ = bunnycm1.sample_surface()
@@ -287,15 +282,15 @@ if __name__ == "__main__":
     bpcm = CollisionModel(bunnycmpoints, expand_radius=.01)
     bpcm1 = CollisionModel(bunnycm1points, expand_radius=.01)
     bpcm2 = CollisionModel(bunnycm2points, expand_radius=.01)
-    bpcm.reparent_to(base)
-    bpcm1.reparent_to(base)
-    bpcm2.reparent_to(base)
+    bpcm.attach_to(base)
+    bpcm1.attach_to(base)
+    bpcm2.attach_to(base)
     tic = time.time()
-    bunnycm2.is_mcdwith_cmlist([bunnycm, bunnycm1])
+    bunnycm2.is_mcdwith([bunnycm, bunnycm1])
     toc = time.time()
     print("mesh cd cost: ", toc - tic)
     tic = time.time()
-    bunnycm2.is_pcdwith_cmlist([bunnycm, bunnycm1])
+    bunnycm2.is_pcdwith([bunnycm, bunnycm1])
     toc = time.time()
     print("primitive cd cost: ", toc - tic)
     bunnycm2.show_cdmesh()
@@ -304,4 +299,6 @@ if __name__ == "__main__":
     bunnycm2.show_cdnp()
     bunnycm.show_cdnp()
     bunnycm1.show_cdnp()
+
+    gen_box().attach_to(base)
     base.run()

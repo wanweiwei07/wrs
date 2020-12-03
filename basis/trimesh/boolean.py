@@ -1,4 +1,5 @@
-from . import interfaces
+import basis.trimesh.interfaces.scad as scad
+import basis.trimesh.interfaces.blender as blender
 
 def difference(meshes, engine=None):
     '''
@@ -17,6 +18,7 @@ def difference(meshes, engine=None):
     result = _engines[engine](meshes, operation='difference')
     return result
 
+
 def union(meshes, engine=None):
     '''
     Compute the boolean union between a mesh an n other meshes.
@@ -33,6 +35,7 @@ def union(meshes, engine=None):
     '''
     result = _engines[engine](meshes, operation='union')
     return result
+
 
 def intersection(meshes, engine=None):
     '''
@@ -51,17 +54,19 @@ def intersection(meshes, engine=None):
     '''
     result = _engines[engine](meshes, operation='intersection')
     return result
-    
+
+
 def boolean_automatic(meshes, operation):
-    if interfaces.blender.exists:
-        result = interfaces.blender.boolean(meshes, operation)
-    elif interfaces.scad.exists:
-        result = interfaces.scad.boolean(meshes, operation)
+    if blender.exists:
+        result = blender.boolean(meshes, operation)
+    elif scad.exists:
+        result = scad.boolean(meshes, operation)
     else:
         raise ValueError('No backends available for boolean operations!')
     return result
 
-_engines = { None     : boolean_automatic,
-            'auto'    : boolean_automatic,
-            'scad'    : interfaces.scad.boolean,
-            'blender' : interfaces.blender.boolean}
+
+_engines = {None: boolean_automatic,
+            'auto': boolean_automatic,
+            'scad': scad.boolean,
+            'blender': blender.boolean}

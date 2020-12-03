@@ -117,9 +117,8 @@ class BDModel(object):
 if __name__ == "__main__":
     import os
     import numpy as np
-    import basics.robotmath as rm
+    import basis.robotmath as rm
     import visualization.panda.world as wd
-    import modeling.datahelper as dh
     import random
 
     base = wd.World(camp=[1, .3, 1], lookatpos=[0, 0, 0], toggledebug=False)

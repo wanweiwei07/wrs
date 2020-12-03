@@ -4,7 +4,7 @@ import copy
 from panda3d.core import NodePath
 import modeling.geometricmodel as gm
 import modeling.collisionmodel as cm
-import basics.robotmath as rm
+import basis.robotmath as rm
 
 
 class JntLnksMesh(object):

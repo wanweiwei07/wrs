@@ -1,5 +1,4 @@
 from ..io.stl   import load_stl
-
 from string     import Template
 from tempfile   import NamedTemporaryFile
 from subprocess import check_call

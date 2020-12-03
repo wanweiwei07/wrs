@@ -1,5 +1,5 @@
-# A helper file that converts data between panda3d and trimesh
-import trimesh
+# An adapter file that converts data between panda3d and trimesh
+import basis.trimesh as trm
 import numpy as np
 from panda3d.core import Geom, GeomNode,GeomPoints, GeomTriangles, GeomVertexData, GeomVertexFormat, GeomVertexWriter
 from panda3d.core import NodePath, Vec3, Mat3, Mat4
@@ -14,7 +14,7 @@ def randdom_colorarray(ncolors=1, alpha=1, nonrandcolor=None):
     author: weiwei
     date: 20161130osaka
     """
-    if ncolors is 1:
+    if ncolors == 1:
         if nonrandcolor:
             return [nonrandcolor[0], nonrandcolor[1], nonrandcolor[2]]
         else:
@@ -397,7 +397,7 @@ def loadfile_vf(objpath):
     author: weiwei
     date: 20170221
     """
-    objtrimesh = trimesh.load_mesh(objpath)
+    objtrimesh = trm.load_mesh(objpath)
     objnp = nodepath_from_vf(objtrimesh.vertices, objtrimesh.face_normals, objtrimesh.faces)
     return objnp
 
@@ -411,6 +411,6 @@ def loadfile_vvnf(objpath):
     author: weiwei
     date: 20170221
     """
-    objtrimesh = trimesh.load_mesh(objpath)
+    objtrimesh = trm.load_mesh(objpath)
     objnp = nodepath_from_vvnf(objtrimesh.vertices, objtrimesh.vertex_normals, objtrimesh.faces)
     return objnp

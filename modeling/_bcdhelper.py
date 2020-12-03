@@ -1,13 +1,13 @@
 # mesh collision detection
 # this file has two classes: BMChecker, MChecker; MChecker inherits BMChecker
 
-from panda3d.bullet import BulletDebugNode, BulletWorld, BulletRigidBodyNode, BulletPlaneShape, BulletBoxShape
+from panda3d.bullet import BulletWorld, BulletRigidBodyNode, BulletPlaneShape, BulletBoxShape
 from panda3d.bullet import BulletTriangleMeshShape, BulletTriangleMesh
-from panda3d.core import TransformState, Vec3, GeomVertexRewriter
+from panda3d.core import TransformState, Vec3
 import copy
 import numpy as np
-import basics.robotmath as rm
-import modeling.datahelper as dh
+import basis.robotmath as rm
+import basis.dataadapter as dh
 
 
 # box collision model
@@ -263,7 +263,7 @@ def _gen_boxcdmesh(obstaclecm, name='autogen'):
     author: weiwei
     date: 20190313, toyonaka
     """
-    if obstaclecm.type is not "box":
+    if obstaclecm.type != "box":
         raise Exception("Wrong obstaclecm type! Box is required to genBulletCDBox.")
     bulletboxnode = BulletRigidBodyNode(name)
     cdsolid = obstaclecm.cdcn.getSolid(0)
@@ -285,7 +285,7 @@ def _gen_boxcdmesh_list(obstaclecmlist, name='autogen'):
     """
     bulletboxlistnode = BulletRigidBodyNode(name)
     for obstaclecm in obstaclecmlist:
-        if obstaclecm.type is not "box":
+        if obstaclecm.type != "box":
             raise Exception("Wrong obstaclecm type! Box is required to genBulletCDBox.")
         cdsolid = obstaclecm.cdcn.getSolid(0)
         bulletboxshape = BulletBoxShape.makeFromSolid(cdsolid)

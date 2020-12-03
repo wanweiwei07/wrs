@@ -21,7 +21,7 @@ class Primitive(Trimesh):
     @property
     def faces(self):
         stored = self._cache['faces']
-        if util.is_shape(stored, (-1,3)):
+        if util.is_shape(stored, (-1, 3)):
             return stored
         self._create_mesh()
         #self._validate_face_normals()
@@ -34,7 +34,7 @@ class Primitive(Trimesh):
     @property
     def vertices(self):
         stored = self._cache['vertices']
-        if util.is_shape(stored, (-1,3)):
+        if util.is_shape(stored, (-1, 3)):
             return stored
 
         self._create_mesh()
@@ -48,7 +48,7 @@ class Primitive(Trimesh):
     @property
     def face_normals(self):
         stored = self._cache['face_normals']
-        if util.is_shape(stored, (-1,3)):
+        if util.is_shape(stored, (-1, 3)):
             return stored
         self._create_mesh()
         return self._cache['face_normals']
@@ -157,7 +157,7 @@ class Box(Primitive):
     @property
     def box_transform(self):
         stored = self._data['box_transform']
-        if util.is_shape(stored, (4,4)):
+        if util.is_shape(stored, (4, 4)):
             return stored
         return np.eye(4)
 
@@ -170,7 +170,7 @@ class Box(Primitive):
 
     @property
     def is_oriented(self):
-        if util.is_shape(self.box_transform, (4,4)):
+        if util.is_shape(self.box_transform, (4, 4)):
             return not np.allclose(self.box_transform[0:3,0:3], np.eye(3))
         else:
             return False
@@ -179,7 +179,7 @@ class Box(Primitive):
         log.debug('Creating mesh for box primitive')
         box = self._unit_box
         vertices, faces, normals = box.vertices, box.faces, box.face_normals
-        vertices = points.transform_points(vertices * self.box_extents, 
+        vertices = points.transform_points(vertices * self.box_extents,
                                            self.box_transform)
         normals = np.dot(self.box_transform[0:3,0:3], 
                          normals.T).T

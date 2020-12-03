@@ -779,23 +779,16 @@ def type_named(obj, name):
 
 
 def concatenate(a, b):
-    '''
+    """
     Concatenate two meshes.
-
-    Arguments
-    ----------
-    a: Trimesh object
-    b: Trimesh object
-
-    Returns
-    ----------
-    result: Trimesh object containing all faces of a and b
-    '''
+    :param a: Trimesh object
+    :param b: Trimesh object
+    :return: Trimesh object containing all faces of a and b
+    """
     # Extract the trimesh type to avoid a circular import,
     # and assert that both inputs are Trimesh objects
     trimesh_type = type_named(a, 'Trimesh')
     trimesh_type = type_named(b, 'Trimesh')
-
     new_normals = np.vstack((a.face_normals, b.face_normals))
     new_faces = np.vstack((a.faces, (b.faces + len(a.vertices))))
     new_vertices = np.vstack((a.vertices, b.vertices))

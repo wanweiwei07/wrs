@@ -1,15 +1,14 @@
 import os
-import math
 import copy
-import modeling.datahelper as dh
-import modeling.trimesh as trimesh
-import modeling.trimesh.sample as sample
-import modeling.trimesh.helper as trihelper
+import basis.dataadapter as da
+import basis.trimesh as trimesh
+import basis.trimeshgenerator as trihelper
 import modeling.collisionmodelcollection as cmc
 import numpy as np
-import open3d as o3d
+# import open3d as o3d
 from panda3d.core import NodePath, LineSegs, GeomNode, TransparencyAttrib, RenderModeAttrib
 from visualization.panda.world import ShowBase
+
 
 class StaticGeometricModel(object):
     """
@@ -35,28 +34,28 @@ class StaticGeometricModel(object):
             if isinstance(objinit, str):
                 self._objpath = objinit
                 self._trimesh = trimesh.load_mesh(self._objpath)
-                self._pdnp = dh.trimesh_to_nodepath(self._trimesh)
+                self._pdnp = da.trimesh_to_nodepath(self._trimesh)
                 self._name = os.path.splitext(os.path.basename(self._objpath))[0]
             elif isinstance(objinit, trimesh.Trimesh):
                 self._objpath = None
                 self._trimesh = objinit
-                self._pdnp = dh.trimesh_to_nodepath(objinit)
+                self._pdnp = da.trimesh_to_nodepath(objinit)
                 self._name = name
-            elif isinstance(objinit, o3d.geometry.TriangleMesh):
-                self._objpath = None
-                self._trimesh = trimesh.Trimesh(vertices=objinit.vertices, faces=objinit.triangles,
-                                                 face_normals=objinit.triangle_normals)
-                self._pdnp = dh.trimesh_to_nodepath(self._trimesh)
-                self._name = name
-            elif isinstance(objinit, o3d.geometry.PointCloud):
-                self._objpath = None
-                self._trimesh = trimesh.Trimesh(np.asarray(objinit.points))
-                self._pdnp = dh.nodepath_from_points(self._trimesh.vertices)
-                self._name = name
+            # elif isinstance(objinit, o3d.geometry.TriangleMesh):
+            #     self._objpath = None
+            #     self._trimesh = trimesh.Trimesh(vertices=objinit.vertices, faces=objinit.triangles,
+            #                                      face_normals=objinit.triangle_normals)
+            #     self._pdnp = da.trimesh_to_nodepath(self._trimesh)
+            #     self._name = name
+            # elif isinstance(objinit, o3d.geometry.PointCloud):
+            #     self._objpath = None
+            #     self._trimesh = trimesh.Trimesh(np.asarray(objinit.points))
+            #     self._pdnp = da.nodepath_from_points(self._trimesh.vertices)
+            #     self._name = name
             elif isinstance(objinit, np.ndarray):
                 self._objpath = None
                 self._trimesh = trimesh.Trimesh(objinit)
-                self._pdnp = dh.nodepath_from_points(self._trimesh.vertices)
+                self._pdnp = da.nodepath_from_points(self._trimesh.vertices)
                 self._name = name
             elif isinstance(objinit, NodePath):
                 self._objpath = None
@@ -117,13 +116,22 @@ class StaticGeometricModel(object):
             raise ValueError("Only applicable to models with a trimesh!")
         # do transformation first
         tmptrimesh = self.trimesh.copy()
-        tmptrimesh.apply_transform(self.gethomomat())
+        tmptrimesh.apply_transform(self.get_homomat())
         if nsample is None:
-            nsample = int(math.ceil(tmptrimesh.area / ((radius * 0.3) ** 2)))
-        samples, faceids = sample.sample_surface_even_withfaceid(tmptrimesh, nsample)
+            nsample = int(round(tmptrimesh.area / ((radius * 0.3) ** 2)))
+        samples, faceids = tmptrimesh.sample(nsample, toggle_faceid=True)
         return samples, faceids
 
-    def reparent_to(self, obj):
+    def set_color(self, rgba):
+        self._pdnp.setColor(rgba[0], rgba[1], rgba[2], rgba[3])
+
+    def get_color(self):
+        return da.pdv4_to_npv4(self._pdnp.getColor())  # panda3d.core.LColor -> LBase4F
+
+    def clear_color(self):
+        self._pdnp.clearColor()
+
+    def attach_to(self, obj):
         if isinstance(obj, ShowBase):
             # for rendering to base.render
             self._pdnp.reparentTo(obj.render)
@@ -132,7 +140,7 @@ class StaticGeometricModel(object):
         elif isinstance(obj, cmc.CollisionModelCollection):
             obj.addcm(self)
         else:
-            print("Argument 1 must be modeling.StaticGeometricModel, GeometricModel, CollisionModel, or CollisionModelCollection")
+            print("Must be modeling.StaticGeometricModel, GeometricModel, CollisionModel, or CollisionModelCollection!")
 
     def remove(self):
         self._pdnp.removeNode()
@@ -143,17 +151,18 @@ class StaticGeometricModel(object):
         """
         self._pdnp.detachNode()
 
-    def showlocalframe(self):
-        self._localframe = genframe()
-        self._localframe.reparent_to(self.pdnp)
+    def show_localframe(self):
+        self._localframe = gen_frame()
+        self._localframe.attach_to(self)
 
-    def unshowlocalframe(self):
+    def unshow_localframe(self):
         if self._localframe is not None:
             self._localframe.removeNode()
             self._localframe = None
 
     def copy(self):
         return StaticGeometricModel(self)
+
 
 class GeometricModel(StaticGeometricModel):
     """
@@ -176,30 +185,30 @@ class GeometricModel(StaticGeometricModel):
         else:
             super().__init__(objinit=objinit, btransparency=btransparency, name=name)
 
-    def setpos(self, npvec3):
+    def set_pos(self, npvec3):
         self._pdnp.setPos(npvec3[0], npvec3[1], npvec3[2])
 
-    def getpos(self):
-        return dh.pdv3_to_npv3(self._pdnp.getPos())
+    def get_pos(self):
+        return da.pdv3_to_npv3(self._pdnp.getPos())
 
-    def setrotmat(self, npmat3):
+    def set_rotmat(self, npmat3):
         pdv3 = self._pdnp.getPos()
-        pdmat3 = dh.npmat3_to_pdmat3(npmat3)
-        pdmat4 = dh.Mat4(pdmat3, pdv3)
+        pdmat3 = da.npmat3_to_pdmat3(npmat3)
+        pdmat4 = da.Mat4(pdmat3, pdv3)
         self._pdnp.setMat(pdmat4)
 
-    def getrotmat(self):
+    def get_rotmat(self):
         pdmat4 = self._pdnp.getMat()
-        return dh.pdmat4_to_npv3mat3(pdmat4)[1]
+        return da.pdmat4_to_npv3mat3(pdmat4)[1]
 
-    def sethomomat(self, npmat4):
-        self._pdnp.setMat(dh.npmat4_to_pdmat4(npmat4))
+    def set_homomat(self, npmat4):
+        self._pdnp.setMat(da.npmat4_to_pdmat4(npmat4))
 
-    def gethomomat(self):
+    def get_homomat(self):
         pdmat4 = self._pdnp.getMat()
-        return dh.pdmat4_to_npmat4(pdmat4)
+        return da.pdmat4_to_npmat4(pdmat4)
 
-    def setrpy(self, roll, pitch, yaw):
+    def set_rpy(self, roll, pitch, yaw):
         """
         set the pose of the object using rpy
         :param roll: radian
@@ -210,11 +219,11 @@ class GeometricModel(StaticGeometricModel):
         date: 20190513
         """
         currentmat = self._pdnp.getMat()
-        currentmatnp = dh.pdmat4_to_npmat4(currentmat)
+        currentmatnp = da.pdmat4_to_npmat4(currentmat)
         newmatnp = rm.rotmat_from_euler(roll, pitch, yaw, axes="sxyz")
-        self._pdnp.setMat(dh.npv3mat3_to_pdmat4(newmatnp, currentmatnp[:, 3]))
+        self._pdnp.setMat(da.npv3mat3_to_pdmat4(newmatnp, currentmatnp[:, 3]))
 
-    def getrpy(self):
+    def get_rpy(self):
         """
         get the pose of the object using rpy
         :return: [r, p, y] in radian
@@ -222,21 +231,12 @@ class GeometricModel(StaticGeometricModel):
         date: 20190513
         """
         currentmat = self._pdnp.getMat()
-        currentmatnp = dh.pdmat4_to_npmat4(currentmat)
+        currentmatnp = da.pdmat4_to_npmat4(currentmat)
         rpy = rm.rotmat_to_euler(currentmatnp[:3, :3], axes="sxyz")
         return np.array([rpy[0], rpy[1], rpy[2]])
 
-    def settransparency(self, attribute):
+    def set_transparency(self, attribute):
         return self._pdnp.setTransparency(attribute)
-
-    def setcolor(self, rgba):
-        self._pdnp.setColor(rgba[0], rgba[1], rgba[2], rgba[3])
-
-    def getcolor(self):
-        return dh.pdv4_to_npv4(self._pdnp.getColor()) # panda3d.core.LColor -> LBase4F
-
-    def clearcolor(self):
-        self._pdnp.clearColor()
 
     def copy(self):
         return GeometricModel(self)
@@ -244,7 +244,7 @@ class GeometricModel(StaticGeometricModel):
 
 ## primitives are stationarygeometric model, once defined, they cannot be changed
 # TODO: further decouple from Panda trimesh->staticgeometricmodel
-def genlinesegs(linesegs, rgba=np.array([0, 0, 0, 1]), thickness=0.001):
+def gen_linesegs(linesegs, thickness=0.001, rgba=np.array([0, 0, 0, 1])):
     """
     gen linsegs -- non-continuous segs are allowed
     :param linesegs: [[pnt0, pn1], [pnt0, pnt1], ...], pnti 1x3 nparray, defined in local 0 frame
@@ -257,7 +257,7 @@ def genlinesegs(linesegs, rgba=np.array([0, 0, 0, 1]), thickness=0.001):
     """
     # Create a set of line segments
     ls = LineSegs()
-    ls.setThickness(thickness*1000.0)
+    ls.setThickness(thickness * 1000.0)
     for p0p1tuple in linesegs:
         ls.setColor(rgba[0], rgba[1], rgba[2], rgba[3])
         ls.moveTo(p0p1tuple[0][0], p0p1tuple[0][1], p0p1tuple[0][2])
@@ -269,10 +269,10 @@ def genlinesegs(linesegs, rgba=np.array([0, 0, 0, 1]), thickness=0.001):
     return ls_sgm
 
 
-def genlinesegs(verts, rgba=np.array([0, 0, 0, 1]), thickness=0.005):
+def gen_linesegs(verts, thickness=0.005, rgba=np.array([0, 0, 0, 1])):
     """
     gen continuous linsegs
-    :param verts: [pnt0, pnt1, pnt2, ...] each nearby pair will be used to draw one segment, defined in a local 0 frame
+    :param verts: nx3 list, each nearby pair will be used to draw one segment, defined in a local 0 frame
     :param rgba:
     :param thickness:
     :param refpos, refrot: the local coordinate frame where the pnti in the linsegs are defined
@@ -281,11 +281,11 @@ def genlinesegs(verts, rgba=np.array([0, 0, 0, 1]), thickness=0.005):
     date: 20161216
     """
     segs = LineSegs()
-    segs.setThickness(thickness*1000.0)
+    segs.setThickness(thickness * 1000.0)
     segs.setColor(rgba[0], rgba[1], rgba[2], rgba[3])
     for i in range(len(verts) - 1):
         tmpstartvert = verts[i]
-        tmpendvert = verts[i+1]
+        tmpendvert = verts[i + 1]
         segs.moveTo(tmpstartvert[0], tmpstartvert[1], tmpstartvert[2])
         segs.drawTo(tmpendvert[0], tmpendvert[1], tmpendvert[2])
     lsnp = NodePath('linesegs')
@@ -295,7 +295,7 @@ def genlinesegs(verts, rgba=np.array([0, 0, 0, 1]), thickness=0.005):
     return ls_sgm
 
 
-def gensphere(pos=np.array([0, 0, 0]), radius=0.01, rgba=np.array([1, 0, 0, 1])):
+def gen_sphere(pos=np.array([0, 0, 0]), radius=0.01, rgba=[1, 0, 0, 1]):
     """
     :param pos:
     :param radius:
@@ -304,15 +304,15 @@ def gensphere(pos=np.array([0, 0, 0]), radius=0.01, rgba=np.array([1, 0, 0, 1]))
     author: weiwei
     date: 20161212tsukuba, 20191228osaka
     """
-    sphere_trm = trihelper.gensphere(pos, radius)
-    sphere_nodepath = dh.trimesh_to_nodepath(sphere_trm)
+    sphere_trm = trihelper.gen_sphere(pos, radius)
+    sphere_nodepath = da.trimesh_to_nodepath(sphere_trm)
     sphere_nodepath.setTransparency(TransparencyAttrib.MDual)
     sphere_nodepath.setColor(rgba[0], rgba[1], rgba[2], rgba[3])
     sphere_sgm = StaticGeometricModel(sphere_nodepath)
     return sphere_sgm
 
 
-def genellipsoid(pos=np.array([0, 0, 0]), axmat=np.eye(3), rgba=np.array([1, 1, 0, .3])):
+def gen_ellipsoid(pos=np.array([0, 0, 0]), axmat=np.eye(3), rgba=[1, 1, 0, .3]):
     """
     :param pos:
     :param axmat: 3x3 mat, each column is an axis of the ellipse
@@ -321,16 +321,16 @@ def genellipsoid(pos=np.array([0, 0, 0]), axmat=np.eye(3), rgba=np.array([1, 1, 
     author: weiwei
     date: 20200701osaka
     """
-    ellipsoid_trm = trihelper.genellipsoid(pos=pos, axmat=axmat)
-    ellipsoid_nodepath = dh.trimesh_to_nodepath(ellipsoid_trm)
+    ellipsoid_trm = trihelper.gen_ellipsoid(pos=pos, axmat=axmat)
+    ellipsoid_nodepath = da.trimesh_to_nodepath(ellipsoid_trm)
     ellipsoid_nodepath.setTransparency(TransparencyAttrib.MDual)
     ellipsoid_nodepath.setColor(rgba[0], rgba[1], rgba[2], rgba[3])
     ellipsoid_sgm = StaticGeometricModel(ellipsoid_nodepath)
     return ellipsoid_sgm
 
 
-def genstick(spos=np.array([0, 0, 0]), epos=np.array([.1, 0, 0]), thickness=.005, type="rect",
-             rgba=np.array([1, 0, 0, 1])):
+def gen_stick(spos=np.array([0, 0, 0]), epos=np.array([.1, 0, 0]), thickness=.005, type="rect",
+              rgba=[1, 0, 0, 1]):
     """
     :param spos:
     :param epos:
@@ -341,15 +341,15 @@ def genstick(spos=np.array([0, 0, 0]), epos=np.array([.1, 0, 0]), thickness=.005
     author: weiwei
     date: 20191229osaka
     """
-    stick_trm = trihelper.genstick(spos=spos, epos=epos, thickness=thickness, type=type)
-    stick_nodepath= dh.trimesh_to_nodepath(stick_trm)
+    stick_trm = trihelper.gen_stick(spos=spos, epos=epos, thickness=thickness, type=type)
+    stick_nodepath = da.trimesh_to_nodepath(stick_trm)
     stick_nodepath.setTransparency(TransparencyAttrib.MDual)
     stick_nodepath.setColor(rgba[0], rgba[1], rgba[2], rgba[3])
     stick_sgm = StaticGeometricModel(stick_nodepath)
     return stick_sgm
 
 
-def genbox(extent=np.array([1, 1, 1]), homomat=np.eye(4), rgba=np.array([1, 0, 0, 1])):
+def gen_box(extent=np.array([1, 1, 1]), homomat=np.eye(4), rgba=[1, 0, 0, 1]):
     """
     :param extent:
     :param homomat:
@@ -357,15 +357,13 @@ def genbox(extent=np.array([1, 1, 1]), homomat=np.eye(4), rgba=np.array([1, 0, 0
     author: weiwei
     date: 20191229osaka
     """
-    box_trm = trihelper.genbox(extent=extent, homomat=homomat)
-    box_nodepath = dh.trimesh_to_nodepath(box_trm)
-    box_nodepath.setTransparency(TransparencyAttrib.MDual)
-    box_nodepath.setColor(rgba[0], rgba[1], rgba[2], rgba[3])
-    box_sgm = StaticGeometricModel(box_nodepath)
+    box_trm = trihelper.gen_box(extent=extent, homomat=homomat)
+    box_sgm = StaticGeometricModel(box_trm)
+    box_sgm.set_color(rgba=rgba)
     return box_sgm
 
 
-def gendumbbell(spos=np.array([0, 0, 0]), epos=np.array([.1, 0, 0]), thickness=.005, rgba=np.array([1, 0, 0, 1])):
+def gen_dumbbell(spos=np.array([0, 0, 0]), epos=np.array([.1, 0, 0]), thickness=.005, rgba=[1, 0, 0, 1]):
     """
     :param spos:
     :param epos:
@@ -375,16 +373,14 @@ def gendumbbell(spos=np.array([0, 0, 0]), epos=np.array([.1, 0, 0]), thickness=.
     author: weiwei
     date: 20161212tsukuba, 20191228osaka
     """
-    dumbbell_trm = trihelper.gendumbbell(spos=spos, epos=epos, thickness=thickness)
-    dumbbell_nodepath = dh.trimesh_to_nodepath(dumbbell_trm)
-    dumbbell_nodepath.setTransparency(TransparencyAttrib.MDual)
-    dumbbell_nodepath.setColor(rgba[0], rgba[1], rgba[2], rgba[3])
-    dumbbell_sgm = StaticGeometricModel(dumbbell_nodepath)
+    dumbbell_trm = trihelper.gen_dumbbell(spos=spos, epos=epos, thickness=thickness)
+    dumbbell_sgm = StaticGeometricModel(dumbbell_trm)
+    dumbbell_sgm.set_color(rgba=rgba)
     return dumbbell_sgm
 
 
-def genarrow(spos=np.array([0, 0, 0]), epos=np.array([.1, 0, 0]), thickness=.005, rgba=np.array([1, 0, 0, 1]),
-             type="rect"):
+def gen_arrow(spos=np.array([0, 0, 0]), epos=np.array([.1, 0, 0]), thickness=.005, rgba=[1, 0, 0, 1],
+              type="rect"):
     """
     :param spos:
     :param epos:
@@ -394,16 +390,14 @@ def genarrow(spos=np.array([0, 0, 0]), epos=np.array([.1, 0, 0]), thickness=.005
     author: weiwei
     date: 20200115osaka
     """
-    arrow_trm = trihelper.genarrow(spos=spos, epos=epos, thickness=thickness, sticktype=type)
-    arrow_nodepath = dh.trimesh_to_nodepath(arrow_trm)
-    arrow_nodepath.setTransparency(TransparencyAttrib.MDual)
-    arrow_nodepath.setColor(rgba[0], rgba[1], rgba[2], rgba[3])
-    arrow_sgm = StaticGeometricModel(arrow_nodepath)
+    arrow_trm = trihelper.gen_arrow(spos=spos, epos=epos, thickness=thickness, sticktype=type)
+    arrow_sgm = StaticGeometricModel(arrow_trm)
+    arrow_trm.set_color(rgba=rgba)
     return arrow_sgm
 
 
-def gendasharrow(spos=np.array([0, 0, 0]), epos=np.array([.1, 0, 0]), thickness=.005, lsolid=None, lspace=None,
-                 rgba=np.array([1, 0, 0, 1]), type="rect"):
+def gen_dasharrow(spos=np.array([0, 0, 0]), epos=np.array([.1, 0, 0]), thickness=.005, lsolid=None, lspace=None,
+                  rgba=[1, 0, 0, 1], type="rect"):
     """
     :param spos:
     :param epos:
@@ -415,17 +409,15 @@ def gendasharrow(spos=np.array([0, 0, 0]), epos=np.array([.1, 0, 0]), thickness=
     author: weiwei
     date: 20200625osaka
     """
-    dasharrow_trm = trihelper.gendasharrow(spos=spos, epos=epos, lsolid=lsolid, lspace=lspace, thickness=thickness,
-                                           sticktype=type)
-    dasharrow_nodepath = dh.trimesh_to_nodepath(dasharrow_trm)
-    dasharrow_nodepath.setTransparency(TransparencyAttrib.MDual)
-    dasharrow_nodepath.setColor(rgba[0], rgba[1], rgba[2], rgba[3])
-    dasharrow_sgm = StaticGeometricModel(dasharrow_nodepath)
+    dasharrow_trm = trihelper.gen_dasharrow(spos=spos, epos=epos, lsolid=lsolid, lspace=lspace, thickness=thickness,
+                                            sticktype=type)
+    dasharrow_sgm = StaticGeometricModel(dasharrow_trm)
+    dasharrow_sgm.set_color(rgba=rgba)
     return dasharrow_sgm
 
 
-def genframe(pos=np.array([0, 0, 0]), rotmat=np.eye(3), length=.1, thickness=.005, rgbmatrix=None, alpha=None,
-             plotname="frame"):
+def gen_frame(pos=np.array([0, 0, 0]), rotmat=np.eye(3), length=.1, thickness=.005, rgbmatrix=None, alpha=None,
+              plotname="frame"):
     """
     gen an axis for attaching
     :param pos:
@@ -457,17 +449,18 @@ def genframe(pos=np.array([0, 0, 0]), rotmat=np.eye(3), length=.1, thickness=.00
         alphaz = alpha[2]
     else:
         alphax = alphay = alphaz = alpha
+    # TODO 20201202 change it to StaticGeometricModelCollection
     frame_nodepath = NodePath(plotname)
-    arrowx_trm = trihelper.genarrow(spos=pos, epos=endx, thickness=thickness)
-    arrowx_nodepath = dh.trimesh_to_nodepath(arrowx_trm)
+    arrowx_trm = trihelper.gen_arrow(spos=pos, epos=endx, thickness=thickness)
+    arrowx_nodepath = da.trimesh_to_nodepath(arrowx_trm)
     arrowx_nodepath.setTransparency(TransparencyAttrib.MDual)
     arrowx_nodepath.setColor(rgbx[0], rgbx[1], rgbx[2], alphax)
-    arrowy_trm = trihelper.genarrow(spos=pos, epos=endy, thickness=thickness)
-    arrowy_nodepath = dh.trimesh_to_nodepath(arrowy_trm)
+    arrowy_trm = trihelper.gen_arrow(spos=pos, epos=endy, thickness=thickness)
+    arrowy_nodepath = da.trimesh_to_nodepath(arrowy_trm)
     arrowy_nodepath.setTransparency(TransparencyAttrib.MDual)
     arrowy_nodepath.setColor(rgby[0], rgby[1], rgby[2], alphay)
-    arrowz_trm = trihelper.genarrow(spos=pos, epos=endz, thickness=thickness)
-    arrowz_nodepath = dh.trimesh_to_nodepath(arrowz_trm)
+    arrowz_trm = trihelper.gen_arrow(spos=pos, epos=endz, thickness=thickness)
+    arrowz_nodepath = da.trimesh_to_nodepath(arrowz_trm)
     arrowz_nodepath.setTransparency(TransparencyAttrib.MDual)
     arrowz_nodepath.setColor(rgbz[0], rgbz[1], rgbz[2], alphaz)
     arrowx_nodepath.reparentTo(frame_nodepath)
@@ -477,7 +470,7 @@ def genframe(pos=np.array([0, 0, 0]), rotmat=np.eye(3), length=.1, thickness=.00
     return frame_sgm
 
 
-def genmycframe(pos=np.array([0, 0, 0]), rotmat=np.eye(3), length=.1, thickness=.005, alpha=None, plotname="frame"):
+def gen_mycframe(pos=np.array([0, 0, 0]), rotmat=np.eye(3), length=.1, thickness=.005, alpha=None, plotname="mycframe"):
     """
     gen an axis for attaching, use magne for x, yellow for y, cyan for z
     :param pos:
@@ -491,12 +484,12 @@ def genmycframe(pos=np.array([0, 0, 0]), rotmat=np.eye(3), length=.1, thickness=
     date: 20161212tsukuba, 20191228osaka
     """
     rgbmatrix = np.array([[1, 0, 1], [1, 1, 0], [0, 1, 1]]).T
-    return genframe(pos=pos, rotmat=rotmat, length=length, thickness=thickness, rgbmatrix=rgbmatrix, alpha=alpha,
-                    plotname=plotname)
+    return gen_frame(pos=pos, rotmat=rotmat, length=length, thickness=thickness, rgbmatrix=rgbmatrix, alpha=alpha,
+                     plotname=plotname)
 
 
-def gendashframe(pos=np.array([0, 0, 0]), rotmat=np.eye(3), length=.1, thickness=.005, lsolid=None, lspace=None,
-                 rgbmatrix=None, alpha=None, plotname="frame"):
+def gen_dashframe(pos=np.array([0, 0, 0]), rotmat=np.eye(3), length=.1, thickness=.005, lsolid=None, lspace=None,
+                  rgbmatrix=None, alpha=None, plotname="dashframe"):
     """
     gen an axis for attaching
     :param pos:
@@ -530,17 +523,18 @@ def gendashframe(pos=np.array([0, 0, 0]), rotmat=np.eye(3), length=.1, thickness
         alphaz = alpha[2]
     else:
         alphax = alphay = alphaz = alpha
+    # TODO 20201202 change it to StaticGeometricModelCollection
     frame_nodepath = NodePath(plotname)
-    arrowx_trm = trihelper.gendasharrow(spos=pos, epos=endx, thickness=thickness, lsolid=lsolid, lspace=lspace)
-    arrowx_nodepath = dh.trimesh_to_nodepath(arrowx_trm)
+    arrowx_trm = trihelper.gen_dasharrow(spos=pos, epos=endx, thickness=thickness, lsolid=lsolid, lspace=lspace)
+    arrowx_nodepath = da.trimesh_to_nodepath(arrowx_trm)
     arrowx_nodepath.setTransparency(TransparencyAttrib.MDual)
     arrowx_nodepath.setColor(rgbx[0], rgbx[1], rgbx[2], alphax)
-    arrowy_trm = trihelper.gendasharrow(spos=pos, epos=endy, thickness=thickness, lsolid=lsolid, lspace=lspace)
-    arrowy_nodepath = dh.trimesh_to_nodepath(arrowy_trm)
+    arrowy_trm = trihelper.gen_dasharrow(spos=pos, epos=endy, thickness=thickness, lsolid=lsolid, lspace=lspace)
+    arrowy_nodepath = da.trimesh_to_nodepath(arrowy_trm)
     arrowy_nodepath.setTransparency(TransparencyAttrib.MDual)
     arrowy_nodepath.setColor(rgby[0], rgby[1], rgby[2], alphay)
-    arrowz_trm = trihelper.gendasharrow(spos=pos, epos=endz, thickness=thickness, lsolid=lsolid, lspace=lspace)
-    arrowz_nodepath = dh.trimesh_to_nodepath(arrowz_trm)
+    arrowz_trm = trihelper.gen_dasharrow(spos=pos, epos=endz, thickness=thickness, lsolid=lsolid, lspace=lspace)
+    arrowz_nodepath = da.trimesh_to_nodepath(arrowz_trm)
     arrowz_nodepath.setTransparency(TransparencyAttrib.MDual)
     arrowz_nodepath.setColor(rgbz[0], rgbz[1], rgbz[2], alphaz)
     arrowx_nodepath.reparentTo(frame_nodepath)
@@ -550,8 +544,8 @@ def gendashframe(pos=np.array([0, 0, 0]), rotmat=np.eye(3), length=.1, thickness
     return frame_sgm
 
 
-def gentorus(axis=np.array([1, 0, 0]), portion=.5, center=np.array([0, 0, 0]), radius=.005, thickness=.0015,
-             rgba=np.array([1, 0, 0, 1])):
+def gen_torus(axis=np.array([1, 0, 0]), portion=.5, center=np.array([0, 0, 0]), radius=.005, thickness=.0015,
+              rgba=[1, 0, 0, 1]):
     """
     :param axis: the circ arrow will rotate around this axis 1x3 nparray
     :param portion: 0.0~1.0
@@ -560,16 +554,14 @@ def gentorus(axis=np.array([1, 0, 0]), portion=.5, center=np.array([0, 0, 0]), r
     author: weiwei
     date: 20200602
     """
-    torus_trm = trihelper.gentorus(axis=axis, portion=portion, center=center, radius=radius, thickness=thickness)
-    torus_nodepath = dh.trimesh_to_nodepath(torus_trm)
-    torus_nodepath.setTransparency(TransparencyAttrib.MDual)
-    torus_nodepath.setColor(rgba[0], rgba[1], rgba[2], rgba[3])
-    torus_sgm = StaticGeometricModel(torus_nodepath)
+    torus_trm = trihelper.gen_torus(axis=axis, portion=portion, center=center, radius=radius, thickness=thickness)
+    torus_sgm = StaticGeometricModel(torus_trm)
+    torus_sgm.set_color(rgba=rgba)
     return torus_sgm
 
 
-def gencircarrow(axis=np.array([1, 0, 0]), portion=.5, center=np.array([0, 0, 0]), radius=.05, thickness=.005,
-                 rgba=np.array([1, 0, 0, 1])):
+def gen_circarrow(axis=np.array([1, 0, 0]), portion=.5, center=np.array([0, 0, 0]), radius=.05, thickness=.005,
+                  rgba=[1, 0, 0, 1]):
     """
     :param axis: the circ arrow will rotate around this axis 1x3 nparray
     :param portion: 0.0~1.0
@@ -578,33 +570,31 @@ def gencircarrow(axis=np.array([1, 0, 0]), portion=.5, center=np.array([0, 0, 0]
     author: weiwei
     date: 20200602
     """
-    circarrow_trm = trihelper.gencircarrow(axis=axis, portion=portion, center=center, radius=radius,
-                                           thickness=thickness)
-    circarrow_nodepath = dh.trimesh_to_nodepath(circarrow_trm)
-    circarrow_nodepath.setTransparency(TransparencyAttrib.MDual)
-    circarrow_nodepath.setColor(rgba[0], rgba[1], rgba[2], rgba[3])
-    circarrow_sgm = StaticGeometricModel(circarrow_nodepath)
+    circarrow_trm = trihelper.gen_circarrow(axis=axis, portion=portion, center=center, radius=radius,
+                                            thickness=thickness)
+    circarrow_sgm = StaticGeometricModel(circarrow_trm)
+    circarrow_sgm.set_color(rgba=rgba)
     return circarrow_sgm
 
 
-def genpointcloud(verts, colors=np.array([0, 0, 0, .7]), pntsize=5):
+def gen_pointcloud(points, rgbas=[0, 0, 0, .7], pntsize=5):
     """
     do not use this raw function directly
     use environment.collisionmodel to call it
     gen objmnp
-    :param verts:
-    :param colors: could be none; specify each point; specify a unified color
+    :param points: nx3 list
+    :param rgbas: None; Specify for each point; Specify a unified color
     :return:
     """
-    colors = np.array(colors)
-    pointcloud_nodepath = dh.nodepath_from_points(verts, colors)
+    pointcloud_nodepath = da.nodepath_from_points(points, rgbas)
     pointcloud_nodepath.setRenderMode(RenderModeAttrib.MPoint, pntsize)
     pointcloud_sgm = StaticGeometricModel(pointcloud_nodepath)
     return pointcloud_sgm
 
 
-def gensurface(verts, faces, rgba=np.array([1, 0, 0, 1])):
+def gen_surface(verts, faces, rgba=[1, 0, 0, 1]):
     """
+    TODO 20201202: replace pandanode with trimesh
     :param verts: np.array([[v00, v01, v02], [v10, v11, v12], ...]
     :param faces: np.array([[ti00, ti01, ti02], [ti10, ti11, ti12], ...]
     :param color: rgba
@@ -624,7 +614,7 @@ def gensurface(verts, faces, rgba=np.array([1, 0, 0, 1])):
         vertnormals[fc[2], :] = vertnormals[fc[2]] + facenormal
     for i in range(0, len(vertnormals)):
         vertnormals[i, :] = vertnormals[i, :] / np.linalg.norm(vertnormals[i, :])
-    geom = dh.pandageom_from_vvnf(verts, vertnormals, faces)
+    geom = da.pandageom_from_vvnf(verts, vertnormals, faces)
     node = GeomNode('surface')
     node.addGeom(geom)
     surface_nodepath = NodePath('surface')
@@ -636,7 +626,7 @@ def gensurface(verts, faces, rgba=np.array([1, 0, 0, 1])):
     return surface_sgm
 
 
-def genpolygon(verts, thickness=0.002, rgba=np.array([0, 0, 0, .7])):
+def gen_polygon(verts, thickness=0.002, rgba=[0, 0, 0, .7]):
     """
     gen objmnp
     :param objpath:
@@ -658,36 +648,35 @@ def genpolygon(verts, thickness=0.002, rgba=np.array([0, 0, 0, .7])):
 
 
 if __name__ == "__main__":
-    import modeling._pcdhelper as pcdh
     import os
     import math
     import numpy as np
-    import basics.robotmath as rm
+    import basis.robotmath as rm
     import visualization.panda.world as wd
 
     base = wd.World(camp=[.1, .1, .1], lookatpos=[0, 0, 0])
     this_dir, this_filename = os.path.split(__file__)
     objpath = os.path.join(this_dir, "objects", "bunnysim.stl")
     bunnygm = GeometricModel(objpath)
-    bunnygm.setcolor([0.7, 0.7, 0.0, 1.0])
-    bunnygm.reparent_to(base)
-    bunnygm.showlocalframe()
+    bunnygm.set_color([0.7, 0.7, 0.0, 1.0])
+    bunnygm.attach_to(base)
+    bunnygm.show_localframe()
     rotmat = rm.rotmat_from_axangle([1, 0, 0], math.pi / 2.0)
-    bunnygm.setrotmat(rotmat)
+    bunnygm.set_rotmat(rotmat)
 
     bunnygm1 = GeometricModel(objpath)
-    bunnygm1.setcolor([0.7, 0, 0.7, 1.0])
-    bunnygm1.reparent_to(base)
+    bunnygm1.set_color([0.7, 0, 0.7, 1.0])
+    bunnygm1.attach_to(base)
     rotmat = rm.rotmat_from_euler(0, 0, math.radians(15))
-    bunnygm1.setpos(np.array([0, .01, 0]))
-    bunnygm1.setrotmat(rotmat)
+    bunnygm1.set_pos(np.array([0, .01, 0]))
+    bunnygm1.set_rotmat(rotmat)
 
     bunnygm2 = GeometricModel(objpath)
-    bunnygm2.setcolor([0, 0.7, 0.7, 1.0])
-    bunnygm2.reparent_to(base)
+    bunnygm2.set_color([0, 0.7, 0.7, 1.0])
+    bunnygm2.attach_to(base)
     rotmat = rm.rotmat_from_axangle([1, 0, 0], -math.pi / 4.0)
-    bunnygm1.setpos(np.array([0, .2, 0]))
-    bunnygm1.setrotmat(rotmat)
+    bunnygm1.set_pos(np.array([0, .2, 0]))
+    bunnygm1.set_rotmat(rotmat)
 
     bunnygmpoints, _ = bunnygm.sample_surface()
     bunnygm1points, _ = bunnygm1.sample_surface()
@@ -695,22 +684,23 @@ if __name__ == "__main__":
     bpgm = GeometricModel(bunnygmpoints)
     bpgm1 = GeometricModel(bunnygm1points)
     bpgm2 = GeometricModel(bunnygm2points)
-    bpgm.reparent_to(base)
-    bpgm1.reparent_to(base)
-    bpgm2.reparent_to(base)
+    bpgm.attach_to(base)
+    bpgm1.attach_to(base)
+    bpgm2.attach_to(base)
 
-    lsgm = genlinesegs([np.array([.1,0,.01]), np.array([.01,0,.01]), np.array([.1,0,.1]), np.array([.1,0,.01])])
-    lsgm.reparent_to(base)
+    lsgm = gen_linesegs(
+        [np.array([.1, 0, .01]), np.array([.01, 0, .01]), np.array([.1, 0, .1]), np.array([.1, 0, .01])])
+    lsgm.attach_to(base)
 
-    gencircarrow(radius=.1, portion=.8).reparent_to(base)
-    gendasharrow(spos=np.array([0, 0, 0]), epos=np.array([0, 0, 2])).reparent_to(base)
-    gendashframe(pos=np.array([0, 0, 0]), rotmat=np.eye(3)).reparent_to(base)
-    axmat = rm.rotmat_from_axangle([1, 1, 1], math.pi/4)
-    genframe(rotmat=axmat).reparent_to(base)
+    gen_circarrow(radius=.1, portion=.8).attach_to(base)
+    gen_dasharrow(spos=np.array([0, 0, 0]), epos=np.array([0, 0, 2])).attach_to(base)
+    gen_dashframe(pos=np.array([0, 0, 0]), rotmat=np.eye(3)).attach_to(base)
+    axmat = rm.rotmat_from_axangle([1, 1, 1], math.pi / 4)
+    gen_frame(rotmat=axmat).attach_to(base)
     axmat[:, 0] = .1 * axmat[:, 0]
     axmat[:, 1] = .07 * axmat[:, 1]
     axmat[:, 2] = .3 * axmat[:, 2]
-    genellipsoid(pos=np.array([0, 0, 0]), axmat=axmat).reparent_to(base)
+    gen_ellipsoid(pos=np.array([0, 0, 0]), axmat=axmat).attach_to(base)
     print(rm.unit_vector(np.array([0, 0, 0])))
 
     base.run()

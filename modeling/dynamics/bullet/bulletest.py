@@ -4,15 +4,14 @@
 
 import modeling.collisionmodel as cm
 import modeling.dynamics.bullet.bdbody as bbd
-import modeling.trimesh as trimesh
 import visualization.panda.world as wd
 import math
-import basics.robotmath as rm
+import basis.robotmath as rm
 import numpy as np
 
 base = wd.World(camp=np.array([2, 0, 2]), lookatpos=np.array([0, 0, 0]), toggledebug=True)
 # PlaneD
-plane = trimesh.primitives.Box(box_extents=[1, 1, .1], box_center=[0, 0, -0.05])
+plane = basics.trimesh.primitives.Box(box_extents=[1, 1, .1], box_center=[0, 0, -0.05])
 planecm = cm.CollisionModel(plane)
 # planenode = bch.genBulletCDMesh(planecm)
 planenode = bbd.BDBody(planecm, dynamic=False)

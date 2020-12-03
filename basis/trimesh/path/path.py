@@ -301,7 +301,6 @@ class Path3D(Path):
  
     def plot_discrete(self, show=False):
         import matplotlib.pyplot as plt
-        from mpl_toolkits.mplot3d import Axes3D
         fig  = plt.figure()
         axis = fig.add_subplot(111, projection='3d')
         for discrete in self.discrete:
@@ -310,7 +309,6 @@ class Path3D(Path):
 
     def plot_entities(self, show=False):
         import matplotlib.pyplot as plt
-        from mpl_toolkits.mplot3d import Axes3D
         fig  = plt.figure()
         axis = fig.add_subplot(111, projection='3d')
         for entity in self.entities:

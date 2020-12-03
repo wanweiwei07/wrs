@@ -1,6 +1,6 @@
 import math
 import numpy as np
-import basics.robotmath as rm
+import basis.robotmath as rm
 import warnings as wns
 
 
