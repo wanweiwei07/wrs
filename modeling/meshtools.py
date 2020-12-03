@@ -33,7 +33,7 @@ def scale_and_save(obj, ratio, savename):
 
 
 if __name__ == '__main__':
-    # The following commented contents are
+    # The following contents are commented out to avoid mis-exec.
     pass
     # root = "./objects/"
     # for subdir, dirs, files in os.walk(root):

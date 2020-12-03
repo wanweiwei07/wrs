@@ -39,7 +39,8 @@ class JntLnksMesh(object):
                 this_collisionmodel.reparent_to(meshmodel)
         # tool center coord
         if toggletcpcs:
-            self._toggle_tcpcs(meshmodel, tcp_jntid, tcp_localpos, tcp_localrotmat, tcpic_rgba=np.array([.5, 0, 1, 0]), tcpic_thickness=.0062)
+            self._toggle_tcpcs(meshmodel, tcp_jntid, tcp_localpos, tcp_localrotmat, tcpic_rgba=np.array([.5, 0, 1, 0]),
+                               tcpic_thickness=.0062)
         # toggle all coord
         if togglejntscs:
             self._toggle_jntcs(meshmodel, jntcs_thickness=.0062)
@@ -76,17 +77,15 @@ class JntLnksMesh(object):
             jgpos = self.jlobject.joints[id]['g_posq']  # joint global pos
             cjgpos = self.jlobject.joints[cjid]['g_pos0']  # child joint global pos
             jgmtnax = self.jlobject.joints[id]["g_mtnax"]  # joint global rot ax
-            gm.genstick(spos=jgpos, epos=cjgpos, thickness=thickness, type="rect", rgba=rgba).reparent_to(stickmodel)
+            gm.gen_stick(spos=jgpos, epos=cjgpos, thickness=thickness, type="rect", rgba=rgba).attach_to(stickmodel)
             if id > 0:
                 if self.jlobject.joints[id]['type'] == "revolute":
-                    gm.genstick(spos=jgpos - jgmtnax * thickness, epos=jgpos + jgmtnax * thickness, type="rect",
-                                thickness=thickness * jointratio, rgba=np.array([.3, .3, .2, 1])).reparent_to(
-                        stickmodel)
+                    gm.gen_stick(spos=jgpos - jgmtnax * thickness, epos=jgpos + jgmtnax * thickness, type="rect",
+                                 thickness=thickness * jointratio, rgba=np.array([.3, .3, .2, 1])).attach_to(stickmodel)
                 if self.jlobject.joints[id]['type'] == "prismatic":
                     jgpos0 = self.jlobject.joints[id]['g_pos0']
-                    gm.genstick(spos=jgpos0, epos=jgpos, type="round",
-                                thickness=thickness * jointratio, rgba=np.array([.2, .3, .3, 1])).reparent_to(
-                        stickmodel)
+                    gm.gen_stick(spos=jgpos0, epos=jgpos, type="round", hickness=thickness * jointratio,
+                                 rgba=np.array([.2, .3, .3, 1])).attach_to(stickmodel)
             id = cjid
         # tool center coord
         if toggletcpcs:
@@ -111,7 +110,7 @@ class JntLnksMesh(object):
 
         eesphere = gm.StaticGeometricModel(name=name)
         if rgba is not None:
-            gm.gensphere(pos=self.jlobject.joints[-1]['linkend'], radius=.025, rgba=rgba).reparent_to(eesphere)
+            gm.gen_sphere(pos=self.jlobject.joints[-1]['linkend'], radius=.025, rgba=rgba).attach_to(eesphere)
         return gm.StaticGeometricModel(eesphere)
 
     def _toggle_tcpcs(self, parentmodel, tcp_jntid, tcp_localpos, tcp_localrotmat, tcpic_rgba, tcpic_thickness,
@@ -143,16 +142,16 @@ class JntLnksMesh(object):
         if isinstance(tcp_globalpos, list):
             for i, jid in enumerate(tcp_jntid):
                 jgpos = self.jlobject.joints[jid]['g_posq']
-                gm.gendumbbell(spos=jgpos, epos=tcp_globalpos[i], thickness=tcpic_thickness,
-                               rgba=tcpic_rgba).reparent_to(parentmodel)
-                gm.genframe(pos=tcp_globalpos[i], rotmat=tcp_globalrotmat[i], length=tcpcs_length,
-                            thickness=tcpcs_thickness, alpha=1).reparent_to(parentmodel)
+                gm.gen_dumbbell(spos=jgpos, epos=tcp_globalpos[i], thickness=tcpic_thickness,
+                                rgba=tcpic_rgba).attach_to(parentmodel)
+                gm.gen_frame(pos=tcp_globalpos[i], rotmat=tcp_globalrotmat[i], length=tcpcs_length,
+                             thickness=tcpcs_thickness, alpha=1).attach_to(parentmodel)
         else:
             jgpos = self.jlobject.joints[tcp_jntid]['g_posq']
-            gm.gendumbbell(spos=jgpos, epos=tcp_globalpos, thickness=tcpic_thickness, rgba=tcpic_rgba).reparent_to(
+            gm.gen_dumbbell(spos=jgpos, epos=tcp_globalpos, thickness=tcpic_thickness, rgba=tcpic_rgba).attach_to(
                 parentmodel)
-            gm.genframe(pos=tcp_globalpos, rotmat=tcp_globalrotmat, length=tcpcs_length, thickness=tcpcs_thickness,
-                        alpha=1).reparent_to(parentmodel)
+            gm.gen_frame(pos=tcp_globalpos, rotmat=tcp_globalrotmat, length=tcpcs_length, thickness=tcpcs_thickness,
+                        alpha=1).attach_to(parentmodel)
 
     def _toggle_jntcs(self, parentmodel, jntcs_thickness, jntcs_length=None):
         """
@@ -165,7 +164,7 @@ class JntLnksMesh(object):
         if jntcs_length is None:
             jntcs_length = jntcs_thickness * 15
         for id in self.jlobject.tgtjnts:
-            gm.gendashframe(pos=self.jlobject.joints[id]['g_pos0'], rotmat=self.jlobject.joints[id]['g_rotmat0'],
-                            length=jntcs_length, thickness=jntcs_thickness).reparent_to(parentmodel)
-            gm.genframe(pos=self.jlobject.joints[id]['g_posq'], rotmat=self.jlobject.joints[id]['g_rotmatq'],
-                        length=jntcs_length, thickness=jntcs_thickness, alpha=1).reparent_to(parentmodel)
+            gm.gen_dashframe(pos=self.jlobject.joints[id]['g_pos0'], rotmat=self.jlobject.joints[id]['g_rotmat0'],
+                            length=jntcs_length, thickness=jntcs_thickness).attach_to(parentmodel)
+            gm.gen_frame(pos=self.jlobject.joints[id]['g_posq'], rotmat=self.jlobject.joints[id]['g_rotmatq'],
+                        length=jntcs_length, thickness=jntcs_thickness, alpha=1).attach_to(parentmodel)

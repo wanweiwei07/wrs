@@ -40,11 +40,11 @@ class JntLnksIK(object):
         counter = 0
         for jid in self.jlobject.tgtjnts:
             grax = self.jlobject.joints[jid]["g_mtnax"]
-            if self.jlobject.joints[jid]["type"] is "revolute":
+            if self.jlobject.joints[jid]["type"] == "revolute":
                 diffq = self.jlobject.joints[tcp_jntid]["g_posq"] - self.jlobject.joints[jid]["g_posq"]
                 jmat[:3, counter] = np.cross(grax, diffq)
                 jmat[3:6, counter] = grax
-            if self.jlobject.joints[jid]["type"] is "prismatic":
+            if self.jlobject.joints[jid]["type"] == "prismatic":
                 jmat[:3, counter] = grax
             counter += 1
             if jid == tcp_jntid:
@@ -211,7 +211,7 @@ class JntLnksIK(object):
         isdragged = np.zeros_like(jntvalues)
         jntvaluesdragged = jntvalues.copy()
         for id in self.jlobject.tgtjnts:
-            if self.jlobject.joints[id]["type"] is "revolute":
+            if self.jlobject.joints[id]["type"] == "revolute":
                 if self.jlobject.joints[id]["rngmax"] - self.jlobject.joints[id]["rngmin"] < math.pi * 2:
                     # if jntvalues[counter] < jlinstance.joints[id]["rngmin"]:
                     #     isdragged[counter] = 1
@@ -225,7 +225,7 @@ class JntLnksIK(object):
                         isdragged[counter] = 1
                         jntvaluesdragged[counter] = (self.jlobject.joints[id]["rngmax"] + self.jlobject.joints[id][
                             "rngmin"]) / 2
-            elif self.jlobject.joints[id]["type"] is "prismatic":  # prismatic
+            elif self.jlobject.joints[id]["type"] == "prismatic":  # prismatic
                 # if jntvalues[counter] < jlinstance.joints[id]["rngmin"]:
                 #     isdragged[counter] = 1
                 #     jntvaluesdragged[counter] = jlinstance.joints[id]["rngmin"]
@@ -348,13 +348,13 @@ class JntLnksIK(object):
                         axcorrec.plot(dqcorrected)
                         axaj.plot(ajpath)
                         plt.show()
-                    if localminima is "accept":
+                    if localminima == "accept":
                         wns.warn(
                             "Bypassing local minima! The return value is a local minima, rather than the exact IK result.")
                         jntvalues_return = self.jlobject.getjntvalues()
                         self.jlobject.fk(jntvalues_bk)
                         return jntvalues_return
-                    elif localminima is "randomrestart":
+                    elif localminima == "randomrestart":
                         wns.warn("Local Minima! Random restart at local minima!")
                         jntvalues_iter = self.jlobject.randompose()
                         self.jlobject.fk(jntvalues_iter)
@@ -426,7 +426,7 @@ class JntLnksIK(object):
             axaj.plot(ajpath)
             plt.show()
             self.jlobject.gen_stickmodel(tcp_jntid=tcp_jntid, tcp_localpos=tcp_localpos,
-                                         tcp_localrotmat=tcp_localrotmat, togglejntscs=True).reparent_to(base)
+                                         tcp_localrotmat=tcp_localrotmat, togglejntscs=True).attach_to(base)
             base.run()
         self.jlobject.fk(jntvalues_bk)
         return None

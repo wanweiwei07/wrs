@@ -246,10 +246,7 @@ class InputManager(DirectObject):
         date: 20200316
         """
         curm3pos = self.get_world_mouse3()
-        if curm3pos is None:
-            return
-        else:
-            print(curm3pos)
+        return None if curm3pos is None else print(curm3pos)
 
     def check_mousewheel(self):
         """

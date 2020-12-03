@@ -62,7 +62,7 @@ class JntLnks(object):
             links[id]['name'] = 'link0'
             links[id]['l_pos'] = np.array([0, 0, 0])
             links[id]['l_rotmat'] = rm.rotmat_from_euler(0, 0, 0)
-            links[id]['com'] = np.eye(3)
+            links[id]['com'] = np.zeros(3)
             links[id]['inertia'] = np.eye(3)
             links[id]['mass'] = 0  # the visual adjustment is ignored for simplisity
             links[id]['meshfile'] = None
@@ -292,7 +292,7 @@ class JntLnks(object):
         isdragged = np.zeros_like(jntvalues)
         jntvaluesdragged = jntvalues.copy()
         for id in self.tgtjnts:
-            if self.joints[id]["type"] is "revolute":
+            if self.joints[id]["type"] == "revolute":
                 if self.joints[id]["rngmax"] - self.joints[id]["rngmin"] < math.pi * 2:
                     if jntvalues[counter] < self.joints[id]["rngmin"]:
                         isdragged[counter] = 1
@@ -300,7 +300,7 @@ class JntLnks(object):
                     elif jntvalues[counter] > self.joints[id]["rngmax"]:
                         isdragged[counter] = 1
                         jntvaluesdragged[counter] = self.joints[id]["rngmax"]
-            elif self.joints[id]["type"] is "prismatic":  # prismatic
+            elif self.joints[id]["type"] == "prismatic":  # prismatic
                 if jntvalues[counter] < self.joints[id]["rngmin"]:
                     isdragged[counter] = 1
                     jntvaluesdragged[counter] = self.joints[id]["rngmin"]
@@ -403,7 +403,7 @@ if __name__ == "__main__":
     import modeling.geometricmodel as gm
 
     base = wd.World(camp=[3, 0, 3], lookatpos=[0, 0, 0])
-    gm.genframe().reparent_to(base)
+    gm.gen_frame().attach_to(base)
 
     jlinstance = JntLnks(initconf=np.array([0, 0, 0, 0, 0, 0, 0, 0]))
     # rjlinstance.settcp(tcp_jntid=rjlinstance.tgtjnts[-3], tcp_localpos=np.array([0,0,30]))
@@ -420,8 +420,8 @@ if __name__ == "__main__":
     tgtrot1 = np.eye(3)
     tgtposlist = [tgtpos0, tgtpos1]
     tgtrotlist = [tgtrot0, tgtrot1]
-    gm.genmycframe(pos=tgtpos0, rotmat=tgtrot0, length=.15, thickness=.01).reparent_to(base)
-    gm.genmycframe(pos=tgtpos1, rotmat=tgtrot1, length=.15, thickness=.01).reparent_to(base)
+    gm.gen_mycframe(pos=tgtpos0, rotmat=tgtrot0, length=.15, thickness=.01).attach_to(base)
+    gm.gen_mycframe(pos=tgtpos1, rotmat=tgtrot1, length=.15, thickness=.01).attach_to(base)
 
     tcp_jntidlist = [jlinstance.tgtjnts[-1], jlinstance.tgtjnts[-6]]
     tcp_localposlist = [np.array([.03, 0, -.05]), np.array([.03, 0, .0])]
