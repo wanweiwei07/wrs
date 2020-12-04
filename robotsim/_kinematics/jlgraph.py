@@ -259,6 +259,4 @@ class JntLnks(object):
 
 
 if __name__ == '__main__':
-    import matplotlib.pyplot as plt
-
     jl = JntLnks()
