@@ -18,7 +18,7 @@ class Jnt(object):
                  rng_max=+math.pi,
                  motion_val=.0,
                  p_name=None,
-                 chd_name=None):
+                 chd_name_list=[]):
         self.name = name
         self.type = type
         self.loc_pos = loc_pos
@@ -32,8 +32,8 @@ class Jnt(object):
         self.rng_min = rng_min
         self.rng_max = rng_max
         self.motion_val = motion_val
-        self.p_name = p_name # a single value
-        self.chd_name = chd_name # a single value or a list
+        self.p_name = p_name  # a single value
+        self.chd_name_list = chd_name_list  # a list, may include only a single value
 
 
 class Lnk(object):
@@ -80,51 +80,92 @@ class JntLnks(object):
         self.rotmat = np.array(rotmat)
         self.ndof = initconf.shape[0]
         self.jntrng_safemargin = 0
-        self.jnt_collection, self.lnk_collection = self._initjntlnks()
-        self.tgtjnt_ids = ['joint' + str(id) for id in range(self.ndof)]
-        self._root = self.name + 'fixed0'
+        # base: an nx1 list of compactly connected nodes, comprises at least two jnt_names
+        self.jnt_collection, self.lnk_collection, self._base = self._initjntlnks()
+        self.tgtjnt_ids = ['jnt' + str(id) for id in range(self.ndof)]
 
     def _initgraph(self):
+        """
+        :return:  jnt_collection, lnk_collection,
+        """
         # joints
         jnt_collection = {}
         jnt_name = self.name + '_fixed0'
-        jnt_collection[jnt_name] = Jnt()
+        jnt_collection[jnt_name] = Jnt(type='fixed')
         jnt_collection[jnt_name].p_name = None
-        jnt_collection[jnt_name].chd_name = self.name + '_joint0'
+        jnt_collection[jnt_name].chd_name_list = [self.name + '_joint0']
         for id in range(self.ndof):
             jnt_name = self.name + '_joint' + str(id)
             jnt_collection[jnt_name] = Jnt()
             if id == 0:
                 jnt_collection[jnt_name].p_name = self.name + '_fixed0'
-                jnt_collection[jnt_name].chd_name = self.name + '_joint1'
+                jnt_collection[jnt_name].chd_name_list = [self.name + '_joint1']
             elif id == self.ndof - 1:
                 jnt_collection[jnt_name].p_name = self.name + '_joint' + str(id - 1)
-                jnt_collection[jnt_name].chd_name = self.name + '_fixed1'
+                jnt_collection[jnt_name].chd_name_list = [self.name + '_fixed1']
             else:
                 jnt_collection[jnt_name].p_name = self.name + '_joint' + str(id - 1)
-                jnt_collection[jnt_name].chd_name = self.name + '_joint' + str(id + 1)
-        jnt_collection[self.name + '_fixed1'] = Jnt()
+                jnt_collection[jnt_name].chd_name_list = [self.name + '_joint' + str(id + 1)]
+        jnt_collection[self.name + '_fixed1'] = Jnt(type='fixed')
         jnt_collection[self.name + '_fixed1'].p_name = self.name + '_joint' + str(self.ndof - 1)
-        jnt_collection[self.name + '_fixed1'].chd_name = None
+        jnt_collection[self.name + '_fixed1'].chd_name_list = []
         # links
         lnk_collection = {}
-        lnk_name = self.name + '_link_base'
+        lnk_name = self.name + '_link_f0j0'
         lnk_collection[lnk_name] = Lnk()
         lnk_collection[lnk_name].refjnt_name = self.name + '_fixed0'
-        for id in range(self.ndof):
-            name = self.name + '_link' + str(id)
+        for id in range(self.ndof - 1):
+            name = self.name + '_link_j' + str(id) + 'j' + str(id + 1)
             lnk_collection[name] = Lnk()
             lnk_collection[name].refjnt_name = self.name + '_joint' + str(id)
-        return jnt_collection, lnk_collection
+        name = self.name + '_link_j' + str(self.ndof - 1) + 'f1'
+        lnk_collection[name] = Lnk()
+        lnk_collection[name].refjnt_name = self.name + '_joint' + str(self.ndof - 1)
+        return jnt_collection, lnk_collection, [self.name + '_fixed0', self.name + '_joint0']
 
     def _update_jnt_fk(self, jnt_name):
         """
+        update fk tree recursively
+        author: weiwei
+        date: 20201204osaka
+        """
+        p_jnt_name = self.jnt_collection[jnt_name].p_name
+        cur_jnt = self.jnt_collection[jnt_name]
+        # update gl_pos0 and gl_rotmat0
+        if p_jnt_name is None:
+            cur_jnt.gl_pos0 = cur_jnt.loc_pos
+            cur_jnt.gl_rotmat0 = cur_jnt.loc_rotmat
+        else:
+            p_jnt = self.jnt_collection[p_jnt_name]
+            curjnt_loc_pos = np.dot(p_jnt.gl_rotmatq, cur_jnt.loc_pos)
+            cur_jnt.gl_pos0 = p_jnt.gl_posq + curjnt_loc_pos
+            cur_jnt.gl_rotmat0 = np.dot(p_jnt.gl_rotmatq, cur_jnt.loc_rotmat)
+            cur_jnt.gl_motionax = np.dot(cur_jnt.gl_rotmat0, cur_jnt.loc_motionax)
+        # update gl_pos_q and gl_rotmat_q
+        if cur_jnt.type == "dummy":
+            cur_jnt.gl_posq = cur_jnt.gl_pos0
+            cur_jnt.gl_rotmatq = cur_jnt.gl_rotmat0
+        elif cur_jnt.type == "revolute":
+            cur_jnt.gl_posq = cur_jnt.gl_pos0
+            curjnt_loc_rotmat = rm.rotmat_from_axangle(cur_jnt.loc_motionax, cur_jnt.motion_val)
+            cur_jnt.gl_rotmatq = np.dot(cur_jnt.gl_rotmat0, curjnt_loc_rotmat)
+        elif cur_jnt.type == "prismatic":
+            cur_jnt.gl_posq = cur_jnt.gl_pos0 + cur_jnt.motion_val * cur_jnt.loc_motionax
+            cur_jnt.gl_rotmatq = cur_jnt.gl_rotmat0
+        else:
+            raise ValueError("The given joint type is not available!")
+        for each_jnt_name in cur_jnt.chd_name_list:
+            self._update_jnt_fk(each_jnt_name)
+
+    def _update_jnt_fk_faster(self, jnt_name):
+        """
+        is this fastedr than _update_jnt_fk?
         author: weiwei
         date: 20201203osaka
         """
         while jnt_name is not None:
-            p_jnt_name = self.jnt_collection[jnt_name].p_name
             cur_jnt = self.jnt_collection[jnt_name]
+            p_jnt_name = cur_jnt.p_name
             # update gl_pos0 and gl_rotmat0
             if p_jnt_name is None:
                 cur_jnt.gl_pos0 = cur_jnt.loc_pos
@@ -148,10 +189,8 @@ class JntLnks(object):
                 cur_jnt.gl_rotmatq = cur_jnt.gl_rotmat0
             else:
                 raise ValueError("The given joint type is not available!")
-            jnt_name = cur_jnt.chd_name
-            if isinstance(jnt_name, list):
-                for each_jnt_name in jnt_name:
-                    self._updatefk(each_jnt_name)
+            for each_jnt_name in cur_jnt.chd_name_list:
+                self._update_jnt_fk(each_jnt_name)
 
     def _update_lnk_fk(self):
         """
@@ -164,7 +203,13 @@ class JntLnks(object):
             cur_lnk.gl_pos = np.dot(ref_jnt.gl_rotmatq, cur_lnk.loc_pos) + ref_jnt.gl_posq
             cur_lnk.gl_rotmat = np.dot(ref_jnt.gl_rotmatq, cur_lnk.loc_rotmat)
 
-    def fk(self, jnt_motion_vals=None):
+    def _update_fk(self, root=None):
+        if root is None:
+            root = self._root
+        self._update_jnt_fk(jnt_name=root)
+        self._update_lnk_fk()
+
+    def fk(self, root=None, jnt_motion_vals=None):
         """
         move the joints using forward kinematics
         :param jnt_motion_vals: a nx1 list, each element indicates the value of a joint (in radian or meter);
@@ -182,30 +227,38 @@ class JntLnks(object):
                 counter += 1
         if isinstance(jnt_motion_vals, dict):
             pass
-        self._updatefk()
+        self._update_fk()
 
-    def change_base(self, jnt_name):
+    def change_base(self, base):
         """
-        change the base of the manipulator to the given joint_name
-        :param jnt_name: str
+        two joints determine a base
+        :param base: an nx1 list of compactly connected nodes, comprises at least two jnt_names
         :return:
         author: weiwei
         date: 20201203
         """
-
-        # successor
-        try:
-            successor_iter = self.graph.successors(jnt_name)
-            for successor in successor_iter:
-                self.graph.successors(successor)
-        except NetworkXError:
-            pass
+        # if a joint is a child, the family flow below it alway goes downward
+        # if a joint has a parent, the family flow is not clear. The original base might be above it at some where
+        # thus, we only need to reverse the parent
+        # when a list jnt_names is set to be a base, the family relation among them is ignored but kept
+        # they will be udpated when another list is set as the base
+        for jnt_name in base:
+            cur_jnt = self.jnt_collection[jnt_name]
+            if cur_jnt.p_name not in base:  # each joint has only one parent joint
+                p_jnt_name = cur_jnt.p_name
+                cur_jnt.p_name = None
+                while p_jnt_name is not None:
+                    # reverse all parents of cur_jnt
+                    p_jnt = self.jnt_collection[p_jnt_name]
+                    p_jnt.p_name = jnt_name
+                    cur_jnt.chd_name = cur_jnt.chd_name + [p_jnt_name]
+                    p_jnt.chd_name.remove(jnt_name)
+                    cur_jnt = p_jnt
+                    p_jnt_name = cur_jnt.p_name
+                    cur_jnt.p_name = None
 
 
 if __name__ == '__main__':
     import matplotlib.pyplot as plt
 
-    jlg = JLGraph()
-    nx.draw(jlg.graph, with_labels=True, arrows=True)
-    plt.title('draw_networkx')
-    plt.show()
+    jl = JntLnks()
