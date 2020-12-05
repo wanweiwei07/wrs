@@ -20,8 +20,8 @@ class JntLnksIK(object):
         self.jmvmax = np.zeros(jlobject.ndof)
         counter = 0
         for id in jlobject.tgtjnts:
-            self.jmvmin[counter] = jlobject.joints[id]['rngmin']
-            self.jmvmax[counter] = jlobject.joints[id]['rngmax']
+            self.jmvmin[counter] = jlobject.jnts[id]['rngmin']
+            self.jmvmax[counter] = jlobject.jnts[id]['rngmax']
             counter += 1
         self.jmvrng = self.jmvmax - self.jmvmin
         self.jmvmin_threshhold = self.jmvmin + self.jmvrng * wlnratio
@@ -39,12 +39,12 @@ class JntLnksIK(object):
         jmat = np.zeros((6, len(self.jlobject.tgtjnts)))
         counter = 0
         for jid in self.jlobject.tgtjnts:
-            grax = self.jlobject.joints[jid]["g_mtnax"]
-            if self.jlobject.joints[jid]["type"] == "revolute":
-                diffq = self.jlobject.joints[tcp_jntid]["g_posq"] - self.jlobject.joints[jid]["g_posq"]
+            grax = self.jlobject.jnts[jid]["gl_motionax"]
+            if self.jlobject.jnts[jid]["type"] == "revolute":
+                diffq = self.jlobject.jnts[tcp_jntid]["gl_posq"] - self.jlobject.jnts[jid]["gl_posq"]
                 jmat[:3, counter] = np.cross(grax, diffq)
                 jmat[3:6, counter] = grax
-            if self.jlobject.joints[jid]["type"] == "prismatic":
+            if self.jlobject.jnts[jid]["type"] == "prismatic":
                 jmat[:3, counter] = grax
             counter += 1
             if jid == tcp_jntid:
@@ -116,56 +116,56 @@ class JntLnksIK(object):
         axmat[:, 2] = np.sqrt(pcv[2]) * pcaxmat[:3, 2]
         return axmat
 
-    def get_globaltcp(self, tcp_jntid, tcp_localpos, tcp_localrotmat):
+    def get_globaltcp(self, tcp_jntid, tcp_loc_pos, tcp_loc_rotmat):
         """
-        Get the global tool center pose given tcp_jntid, tcp_localpos, tcp_localrotmat
-        tcp_jntid, tcp_localpos, tcp_localrotmat are the tool center pose parameters. They are
+        Get the global tool center pose given tcp_jntid, tcp_loc_pos, tcp_loc_rotmat
+        tcp_jntid, tcp_loc_pos, tcp_loc_rotmat are the tool center pose parameters. They are
         used for temporary computation, the self.tcp_xxx parameters will not be changed
-        in case None is provided, the self.tcp_jntid, self.tcp_localpos, self.tcp_localrotmat will be used
+        in case None is provided, the self.tcp_jntid, self.tcp_loc_pos, self.tcp_loc_rotmat will be used
         :param tcp_jntid: a joint ID in the self.tgtjnts
-        :param tcp_localpos: 1x3 nparray, decribed in the local frame of self.joints[tcp_jntid], single value or list
-        :param tcp_localrotmat: 3x3 nparray, decribed in the local frame of self.joints[tcp_jntid], single value or list
+        :param tcp_loc_pos: 1x3 nparray, decribed in the local frame of self.jnts[tcp_jntid], single value or list
+        :param tcp_loc_rotmat: 3x3 nparray, decribed in the local frame of self.jnts[tcp_jntid], single value or list
         :return: a single value or a list depending on the input
         author: weiwei
         date: 20200706
         """
         if tcp_jntid is None:
             tcp_jntid = self.jlobject.tcp_jntid
-        if tcp_localpos is None:
-            tcp_localpos = self.jlobject.tcp_localpos
-        if tcp_localrotmat is None:
-            tcp_localrotmat = self.jlobject.tcp_localrotmat
+        if tcp_loc_pos is None:
+            tcp_loc_pos = self.jlobject.tcp_loc_pos
+        if tcp_loc_rotmat is None:
+            tcp_loc_rotmat = self.jlobject.tcp_loc_rotmat
         if isinstance(tcp_jntid, list):
             returnposlist = []
             returnrotmatlist = []
             for i, jid in enumerate(tcp_jntid):
-                tcp_globalpos = np.dot(self.jlobject.joints[jid]["g_rotmatq"], tcp_localpos[i]) + \
-                                self.jlobject.joints[jid]["g_posq"]
-                tcp_globalrotmat = np.dot(self.jlobject.joints[jid]["g_rotmatq"], tcp_localrotmat[i])
+                tcp_globalpos = np.dot(self.jlobject.jnts[jid]["gl_rotmatq"], tcp_loc_pos[i]) + \
+                                self.jlobject.jnts[jid]["gl_posq"]
+                tcp_globalrotmat = np.dot(self.jlobject.jnts[jid]["gl_rotmatq"], tcp_loc_rotmat[i])
                 returnposlist.append(tcp_globalpos)
                 returnrotmatlist.append(tcp_globalrotmat)
             return [returnposlist, returnrotmatlist]
         else:
-            tcp_globalpos = np.dot(self.jlobject.joints[tcp_jntid]["g_rotmatq"], tcp_localpos) + \
-                            self.jlobject.joints[tcp_jntid]["g_posq"]
-            tcp_globalrotmat = np.dot(self.jlobject.joints[tcp_jntid]["g_rotmatq"], tcp_localrotmat)
+            tcp_globalpos = np.dot(self.jlobject.jnts[tcp_jntid]["gl_rotmatq"], tcp_loc_pos) + \
+                            self.jlobject.jnts[tcp_jntid]["gl_posq"]
+            tcp_globalrotmat = np.dot(self.jlobject.jnts[tcp_jntid]["gl_rotmatq"], tcp_loc_rotmat)
             return [tcp_globalpos, tcp_globalrotmat]
 
-    def tcperror(self, tgtpos, tgtrot, tcp_jntid, tcp_localpos, tcp_localrotmat):
+    def tcperror(self, tgtpos, tgtrot, tcp_jntid, tcp_loc_pos, tcp_loc_rotmat):
         """
         compute the error between the rjlinstance's end and tgtpos, tgtrot
-        NOTE: if list, len(tgtpos)=len(tgtrot) <= len(tcp_jntid)=len(tcp_localpos)=len(tcp_localrotmat)
+        NOTE: if list, len(tgtpos)=len(tgtrot) <= len(tcp_jntid)=len(tcp_loc_pos)=len(tcp_loc_rotmat)
         :param tgtpos: the position vector of the goal (could be a single value or a list of jntid)
         :param tgtrot: the rotation matrix of the goal (could be a single value or a list of jntid)
         :param tcp_jntid: a joint ID in the self.tgtjnts
-        :param tcp_localpos: 1x3 nparray, decribed in the local frame of self.joints[tcp_jntid], single value or list
-        :param tcp_localrotmat: 3x3 nparray, decribed in the local frame of self.joints[tcp_jntid], single value or list
+        :param tcp_loc_pos: 1x3 nparray, decribed in the local frame of self.jnts[tcp_jntid], single value or list
+        :param tcp_loc_rotmat: 3x3 nparray, decribed in the local frame of self.jnts[tcp_jntid], single value or list
         :return: a 1x6 nparray where the first three indicates the displacement in pos,
                     the second three indictes the displacement in rot
         author: weiwei
         date: 20180827, 20200331, 20200705
         """
-        tcp_globalpos, tcp_globalrotmat = self.get_globaltcp(tcp_jntid, tcp_localpos, tcp_localrotmat)
+        tcp_globalpos, tcp_globalrotmat = self.get_globaltcp(tcp_jntid, tcp_loc_pos, tcp_loc_rotmat)
         if isinstance(tgtpos, list):
             deltapw = np.zeros(6 * len(tgtpos))
             for i, thistgtpos in enumerate(tgtpos):
@@ -190,10 +190,10 @@ class JntLnksIK(object):
         """
         counter = 0
         for id in self.jlobject.tgtjnts:
-            if self.jlobject.joints[id]["type"] is "revolute":
-                if self.jlobject.joints[id]["rngmax"] - self.jlobject.joints[id]["rngmin"] >= math.pi * 2:
-                    rm.regulate_angle(self.jlobject.joints[id]["rngmin"], self.jlobject.joints[id]["rngmax"],
-                                      self.jlobject.joints[id]["movement"])
+            if self.jlobject.jnts[id]["type"] is "revolute":
+                if self.jlobject.jnts[id]["rngmax"] - self.jlobject.jnts[id]["rngmin"] >= math.pi * 2:
+                    rm.regulate_angle(self.jlobject.jnts[id]["rngmin"], self.jlobject.jnts[id]["rngmax"],
+                                      self.jlobject.jnts[id]["movement"])
             counter += 1
 
     def check_jntsrange_drag(self, jntvalues):
@@ -211,73 +211,73 @@ class JntLnksIK(object):
         isdragged = np.zeros_like(jntvalues)
         jntvaluesdragged = jntvalues.copy()
         for id in self.jlobject.tgtjnts:
-            if self.jlobject.joints[id]["type"] == "revolute":
-                if self.jlobject.joints[id]["rngmax"] - self.jlobject.joints[id]["rngmin"] < math.pi * 2:
-                    # if jntvalues[counter] < jlinstance.joints[id]["rngmin"]:
+            if self.jlobject.jnts[id]["type"] == "revolute":
+                if self.jlobject.jnts[id]["rngmax"] - self.jlobject.jnts[id]["rngmin"] < math.pi * 2:
+                    # if jntvalues[counter] < jlinstance.jnts[id]["rngmin"]:
                     #     isdragged[counter] = 1
-                    #     jntvaluesdragged[counter] = jlinstance.joints[id]["rngmin"]
-                    # elif jntvalues[counter] > jlinstance.joints[id]["rngmax"]:
+                    #     jntvaluesdragged[counter] = jlinstance.jnts[id]["rngmin"]
+                    # elif jntvalues[counter] > jlinstance.jnts[id]["rngmax"]:
                     #     isdragged[counter] = 1
-                    #     jntvaluesdragged[counter] = jlinstance.joints[id]["rngmax"]
+                    #     jntvaluesdragged[counter] = jlinstance.jnts[id]["rngmax"]
                     print("Drag revolute")
-                    if jntvalues[counter] < self.jlobject.joints[id]["rngmin"] or jntvalues[counter] > \
-                            self.jlobject.joints[id]["rngmax"]:
+                    if jntvalues[counter] < self.jlobject.jnts[id]["rngmin"] or jntvalues[counter] > \
+                            self.jlobject.jnts[id]["rngmax"]:
                         isdragged[counter] = 1
-                        jntvaluesdragged[counter] = (self.jlobject.joints[id]["rngmax"] + self.jlobject.joints[id][
+                        jntvaluesdragged[counter] = (self.jlobject.jnts[id]["rngmax"] + self.jlobject.jnts[id][
                             "rngmin"]) / 2
-            elif self.jlobject.joints[id]["type"] == "prismatic":  # prismatic
-                # if jntvalues[counter] < jlinstance.joints[id]["rngmin"]:
+            elif self.jlobject.jnts[id]["type"] == "prismatic":  # prismatic
+                # if jntvalues[counter] < jlinstance.jnts[id]["rngmin"]:
                 #     isdragged[counter] = 1
-                #     jntvaluesdragged[counter] = jlinstance.joints[id]["rngmin"]
-                # elif jntvalues[counter] > jlinstance.joints[id]["rngmax"]:
+                #     jntvaluesdragged[counter] = jlinstance.jnts[id]["rngmin"]
+                # elif jntvalues[counter] > jlinstance.jnts[id]["rngmax"]:
                 #     isdragged[counter] = 1
-                #     jntvaluesdragged[counter] = jlinstance.joints[id]["rngmax"]
+                #     jntvaluesdragged[counter] = jlinstance.jnts[id]["rngmax"]
                 print("Drag prismatic")
-                if jntvalues[counter] < self.jlobject.joints[id]["rngmin"] or jntvalues[counter] > \
-                        self.jlobject.joints[id]["rngmax"]:
+                if jntvalues[counter] < self.jlobject.jnts[id]["rngmin"] or jntvalues[counter] > \
+                        self.jlobject.jnts[id]["rngmax"]:
                     isdragged[counter] = 1
-                    jntvaluesdragged[counter] = (self.jlobject.joints[id]["rngmax"] + self.jlobject.joints[id][
+                    jntvaluesdragged[counter] = (self.jlobject.jnts[id]["rngmax"] + self.jlobject.jnts[id][
                         "rngmin"]) / 2
         return isdragged, jntvaluesdragged
 
-    def numik(self, tgtpos, tgtrot, startconf=None, tcp_jntid=None, tcp_localpos=None, tcp_localrotmat=None,
-              localminima="accept", toggledebug=False):
+    def numik(self, tgtpos, tgtrot, startconf=None, tcp_jntid=None, tcp_loc_pos=None, tcp_loc_rotmat=None,
+              local_minima="accept", toggle_debug=False):
         """
         solveik numerically using the Levenberg-Marquardt Method
         the details of this method can be found in: https://www.math.ucsd.edu/~sbuss/ResearchWeb/ikmethods/iksurvey.pdf
-        NOTE: if list, len(tgtpos)=len(tgtrot) <= len(tcp_jntid)=len(tcp_localpos)=len(tcp_localrotmat)
+        NOTE: if list, len(tgtpos)=len(tgtrot) <= len(tcp_jntid)=len(tcp_loc_pos)=len(tcp_loc_rotmat)
         :param tgtpos: the position of the goal, 1-by-3 numpy ndarray
         :param tgtrot: the orientation of the goal, 3-by-3 numpyndarray
         :param startconf: the starting configuration used in the numerical iteration
         :param tcp_jntid: a joint ID in the self.tgtjnts
-        :param tcp_localpos: 1x3 nparray, decribed in the local frame of self.joints[tcp_jntid], single value or list
-        :param tcp_localrotmat: 3x3 nparray, decribed in the local frame of self.joints[tcp_jntid], single value or list
-        :param localminima: what to do at local minima: "accept", "randomrestart", "end"
+        :param tcp_loc_pos: 1x3 nparray, decribed in the local frame of self.jnts[tcp_jntid], single value or list
+        :param tcp_loc_rotmat: 3x3 nparray, decribed in the local frame of self.jnts[tcp_jntid], single value or list
+        :param local_minima: what to do at local minima: "accept", "randomrestart", "end"
         :return: a 1xn numpy ndarray
         author: weiwei
         date: 20180203, 20200328
         """
-        deltapos = tgtpos - self.jlobject.joints[0]["g_pos0"]
+        deltapos = tgtpos - self.jlobject.jnts[0]["gl_pos0"]
         if np.linalg.norm(deltapos) > self.max_rng:
             wns.WarningMessage("The goal is outside maximum range!")
             return None
         if tcp_jntid is None:
             tcp_jntid = self.jlobject.tcp_jntid
-        if tcp_localpos is None:
-            tcp_localpos = self.jlobject.tcp_localpos
-        if tcp_localrotmat is None:
-            tcp_localrotmat = self.jlobject.tcp_localrotmat
+        if tcp_loc_pos is None:
+            tcp_loc_pos = self.jlobject.tcp_loc_pos
+        if tcp_loc_rotmat is None:
+            tcp_loc_rotmat = self.jlobject.tcp_loc_rotmat
         # trim list
         if isinstance(tgtpos, list):
             tcp_jntid = tcp_jntid[0:len(tgtpos)]
-            tcp_localpos = tcp_localpos[0:len(tgtpos)]
-            tcp_localrotmat = tcp_localrotmat[0:len(tgtpos)]
+            tcp_loc_pos = tcp_loc_pos[0:len(tgtpos)]
+            tcp_loc_rotmat = tcp_loc_rotmat[0:len(tgtpos)]
         elif isinstance(tcp_jntid, list):
             tcp_jntid = tcp_jntid[0]
-            tcp_localpos = tcp_localpos[0]
-            tcp_localrotmat = tcp_localrotmat[0]
-        jntvalues_bk = self.jlobject.getjntvalues()
-        jntvalues_iter = self.jlobject.initconf if startconf is None else startconf.copy()
+            tcp_loc_pos = tcp_loc_pos[0]
+            tcp_loc_rotmat = tcp_loc_rotmat[0]
+        jntvalues_bk = self.jlobject.get_jntvalues()
+        jntvalues_iter = self.jlobject.homeconf if startconf is None else startconf.copy()
         self.jlobject.fk(jntvalues_iter)
         jntvalues_ref = jntvalues_iter.copy()
 
@@ -290,9 +290,9 @@ class JntLnksIK(object):
             ws_wtdiagmat = np.diag(self.ws_wtlist)
         # sqrtinv_ws_wtdiagmat = np.linalg.inv(np.diag(np.sqrt(np.diag(ws_wtdiagmat))))
 
-        if toggledebug:
+        if toggle_debug:
             if "jlm" not in dir():
-                import robotsim._kinematics.jntlnksmesh as jlm
+                import robotsim._kinematics.jlchainmesh as jlm
             if "plt" not in dir():
                 import matplotlib.pyplot as plt
             # jlmgen = jlm.JntLnksMesh()
@@ -304,16 +304,16 @@ class JntLnksIK(object):
         errnormmax = 0.0
         for i in range(100):
             jmat = self.jacobian(tcp_jntid)
-            err = self.tcperror(tgtpos, tgtrot, tcp_jntid, tcp_localpos, tcp_localrotmat)
+            err = self.tcperror(tgtpos, tgtrot, tcp_jntid, tcp_loc_pos, tcp_loc_rotmat)
             errnorm = err.T.dot(ws_wtdiagmat).dot(err)
             # err = .05 / errnorm * err if errnorm > .05 else err
             if errnorm > errnormmax:
                 errnormmax = errnorm
-            if toggledebug:
+            if toggle_debug:
                 print(errnorm)
-                ajpath.append(self.jlobject.getjntvalues())
+                ajpath.append(self.jlobject.get_jntvalues())
             if errnorm < 1e-6:
-                if toggledebug:
+                if toggle_debug:
                     fig = plt.figure()
                     axbefore = fig.add_subplot(411)
                     axbefore.set_title("Original dq")
@@ -334,7 +334,7 @@ class JntLnksIK(object):
             else:
                 # judge local minima
                 if abs(errnorm - errnormlast) < 1e-12:
-                    if toggledebug:
+                    if toggle_debug:
                         fig = plt.figure()
                         axbefore = fig.add_subplot(411)
                         axbefore.set_title("Original dq")
@@ -348,15 +348,15 @@ class JntLnksIK(object):
                         axcorrec.plot(dqcorrected)
                         axaj.plot(ajpath)
                         plt.show()
-                    if localminima == "accept":
+                    if local_minima == "accept":
                         wns.warn(
                             "Bypassing local minima! The return value is a local minima, rather than the exact IK result.")
-                        jntvalues_return = self.jlobject.getjntvalues()
+                        jntvalues_return = self.jlobject.get_jntvalues()
                         self.jlobject.fk(jntvalues_bk)
                         return jntvalues_return
-                    elif localminima == "randomrestart":
+                    elif local_minima == "randomrestart":
                         wns.warn("Local Minima! Random restart at local minima!")
-                        jntvalues_iter = self.jlobject.randompose()
+                        jntvalues_iter = self.jlobject.rand_conf()
                         self.jlobject.fk(jntvalues_iter)
                         continue
                     else:
@@ -372,7 +372,7 @@ class JntLnksIK(object):
                     ## note5: avoid joint limits; Paper Name: Clamping weighted least-norm method for the manipulator kinematic control: Avoiding joint limits
                     ## note6: constant damper; Sugihara Paper: https://www.mi.ams.eng.osaka-u.ac.jp/member/sugihara/pub/jrsj_ik.pdf
                     # strecthingcoeff = 1 / (1 + math.exp(1 / ((errnorm / self.max_rng) * 1000 + 1)))
-                    strecthingcoeff = -2*math.pow(errnorm / errnormmax, 3)+3*math.pow(errnorm / errnormmax, 2)
+                    # strecthingcoeff = -2*math.pow(errnorm / errnormmax, 3)+3*math.pow(errnorm / errnormmax, 2)
                     # print("stretching ", strecthingcoeff)
                     # dampercoeff = (strecthingcoeff + .1) * 1e-6  # a non-zero regulation coefficient
                     dampercoeff = 1e-3*errnorm + 1e-6  # a non-zero regulation coefficient
@@ -388,10 +388,10 @@ class JntLnksIK(object):
                     # jsharp = jmat.T.dot(np.linalg.inv(jjt + damper))
                     # weighted jjt
                     qs_wtdiagmat = self._wln_weightmat(jntvalues_iter)
-                    winvjt = np.linalg.inv(qs_wtdiagmat).dot(jmat.T)
-                    jwinvjt = jmat.dot(winvjt)
-                    damper = dampercoeff * np.identity(jwinvjt.shape[0])
-                    jsharp = winvjt.dot(np.linalg.inv(jwinvjt + damper))
+                    winv_jt = np.linalg.inv(qs_wtdiagmat).dot(jmat.T)
+                    j_winv_jt = jmat.dot(winv_jt)
+                    damper = dampercoeff * np.identity(j_winv_jt.shape[0])
+                    jsharp = winv_jt.dot(np.linalg.inv(j_winv_jt + damper))
                     dq = .1 * jsharp.dot(err)
                     # dq = rm.regulate_angle(-math.pi, math.pi, dq)
                     # dq = Jsharp dx+(I-Jsharp J)dq0
@@ -399,7 +399,7 @@ class JntLnksIK(object):
                     dqref_on_ns = (np.identity(dqref.shape[0]) - jsharp.dot(jmat)).dot(dqref)
                     # dqref_on_ns = rm.regulate_angle(-math.pi, math.pi, dqref_on_ns)
                     dq_minimized = dq + dqref_on_ns
-                    if toggledebug:
+                    if toggle_debug:
                         dqbefore.append(dq)
                         dqcorrected.append(dq_minimized)
                         dqnull.append(dqref_on_ns)
@@ -407,11 +407,11 @@ class JntLnksIK(object):
                 # isdragged, jntvalues_iter = self.check_jntsrange_drag(jntvalues_iter)
                 # print(jntvalues_iter)
                 self.jlobject.fk(jntvalues_iter)
-                # if toggledebug:
-                #     jlmgen.gensnp(jlinstance, tcp_jntid=tcp_jntid, tcp_localpos=tcp_localpos,
-                #                   tcp_localrotmat=tcp_localrotmat, togglejntscs=True).reparentTo(base.render)
+                # if toggle_debug:
+                #     jlmgen.gensnp(jlinstance, tcp_jntid=tcp_jntid, tcp_loc_pos=tcp_loc_pos,
+                #                   tcp_loc_rotmat=tcp_loc_rotmat, togglejntscs=True).reparentTo(base.render)
             errnormlast = errnorm
-        if toggledebug:
+        if toggle_debug:
             fig = plt.figure()
             axbefore = fig.add_subplot(411)
             axbefore.set_title("Original dq")
@@ -425,25 +425,25 @@ class JntLnksIK(object):
             axcorrec.plot(dqcorrected)
             axaj.plot(ajpath)
             plt.show()
-            self.jlobject.gen_stickmodel(tcp_jntid=tcp_jntid, tcp_localpos=tcp_localpos,
-                                         tcp_localrotmat=tcp_localrotmat, togglejntscs=True).attach_to(base)
+            self.jlobject.gen_stickmodel(tcp_jntid=tcp_jntid, tcp_loc_pos=tcp_loc_pos,
+                                         tcp_loc_rotmat=tcp_loc_rotmat, togglejntscs=True).attach_to(base)
             base.run()
         self.jlobject.fk(jntvalues_bk)
         return None
 
-    def numik_rel(self, deltapos, deltarotmat, tcp_jntid=None, tcp_localpos=None, tcp_localrotmat=None):
+    def numik_rel(self, deltapos, deltarotmat, tcp_jntid=None, tcp_loc_pos=None, tcp_loc_rotmat=None):
         """
         add deltapos, deltarotmat to the current end
         :param deltapos:
         :param deltarotmat:
         :param tcp_jntid: a joint ID in the self.tgtjnts
-        :param tcp_localpos: 1x3 nparray, decribed in the local frame of self.joints[tcp_jntid], single value or list
-        :param tcp_localrotmat: 3x3 nparray, decribed in the local frame of self.joints[tcp_jntid], single value or list
+        :param tcp_loc_pos: 1x3 nparray, decribed in the local frame of self.jnts[tcp_jntid], single value or list
+        :param tcp_loc_rotmat: 3x3 nparray, decribed in the local frame of self.jnts[tcp_jntid], single value or list
         :return:
         author: weiwei
         date: 20170412, 20200331
         """
-        tcp_globalpos, tcp_globalrotmat = self.get_globaltcp(tcp_jntid, tcp_localpos, tcp_localrotmat)
+        tcp_globalpos, tcp_globalrotmat = self.get_globaltcp(tcp_jntid, tcp_loc_pos, tcp_loc_rotmat)
         if isinstance(tcp_jntid, list):
             tgtpos = []
             tgtrotmat = []
@@ -451,10 +451,10 @@ class JntLnksIK(object):
                 tgtpos.append(tcp_globalpos[i] + deltapos[i])
                 tgtrotmat.append(np.dot(deltarotmat, tcp_globalrotmat[i]))
             startconf = self.jlobject.getjntvalues()
-            # return numik(rjlinstance, tgtpos, tgtrotmat, startconf=startconf, tcp_jntid=tcp_jntid, tcp_localpos=tcp_localpos, tcp_localrotmat=tcp_localrotmat)
+            # return numik(rjlinstance, tgtpos, tgtrotmat, startconf=startconf, tcp_jntid=tcp_jntid, tcp_loc_pos=tcp_loc_pos, tcp_loc_rotmat=tcp_loc_rotmat)
         else:
             tgtpos = tcp_globalpos + deltapos
             tgtrotmat = np.dot(deltarotmat, tcp_globalrotmat)
             startconf = self.jlobject.getjntvalues()
-        return self.numik(tgtpos, tgtrotmat, startconf=startconf, tcp_jntid=tcp_jntid, tcp_localpos=tcp_localpos,
-                          tcp_localrotmat=tcp_localrotmat)
+        return self.numik(tgtpos, tgtrotmat, startconf=startconf, tcp_jntid=tcp_jntid, tcp_loc_pos=tcp_loc_pos,
+                          tcp_loc_rotmat=tcp_loc_rotmat)
