@@ -19,7 +19,7 @@ class Jnt(object):
                  motion_val=.0,
                  p_name=None,
                  chd_name_list=[],
-                 lnk_name_list=[]):
+                 lnk_name_dict={}):
         self.name = name
         self.type = type
         self.loc_pos = loc_pos
@@ -35,7 +35,7 @@ class Jnt(object):
         self.motion_val = motion_val
         self.p_name = p_name  # a single value
         self.chd_name_list = chd_name_list  # a list, may include only a single value
-        self.lnk_name_list = lnk_name_list  # a list, len(lnk_name_list)==len(chd_name_list)
+        self.lnk_name_dict = lnk_name_dict  # a dictionary, {chd_name: lnk_name, ...}
 
 
 class Lnk(object):
@@ -64,7 +64,7 @@ class Lnk(object):
         self.rgba = rgba
 
 
-class JntLnks(object):
+class JLTree(object):
     """
     Define Joint Links using Networkx DiGraph
     """
@@ -104,27 +104,27 @@ class JntLnks(object):
         jnt_collection[jnt_name] = Jnt(type='fixed')
         jnt_collection[jnt_name].p_name = None
         jnt_collection[jnt_name].chd_name_list = [self.name + '_j0']
-        jnt_collection[jnt_name].lnk_name_list = [self.name + '_lnk_f0j0']
+        jnt_collection[jnt_name].lnk_name_dict[self.name + '_j0'] = [self.name + '_lnk_f0j0']
         for id in range(self.ndof):
             jnt_name = self.name + '_j' + str(id)
             jnt_collection[jnt_name] = Jnt()
             if id == 0:
                 jnt_collection[jnt_name].p_name = self.name + '_f0'
                 jnt_collection[jnt_name].chd_name_list = [self.name + '_j1']
-                jnt_collection[jnt_name].lnk_name_list = [self.name + '_lnk_f0j1']
+                jnt_collection[jnt_name].lnk_name_dict[self.name + '_j1'] = [self.name + '_lnk_f0j1']
             elif id == self.ndof - 1:
                 jnt_collection[jnt_name].p_name = self.name + '_j' + str(id - 1)
                 jnt_collection[jnt_name].chd_name_list = [self.name + '_f1']
-                jnt_collection[jnt_name].lnk_name_list = [self.name + '_lnk_j' + str(id) + 'f1']
+                jnt_collection[jnt_name].lnk_name_dict[self.name + '_f1'] = [self.name + '_lnk_j' + str(id) + 'f1']
             else:
                 jnt_collection[jnt_name].p_name = self.name + '_j' + str(id - 1)
                 jnt_collection[jnt_name].chd_name_list = [self.name + '_j' + str(id + 1)]
-                jnt_collection[jnt_name].lnk_name_list = [self.name + '_lnk_j' + str(id) + 'j' + str(id + 1)]
+                jnt_collection[jnt_name].lnk_name_dict[self.name + '_j' + str(id + 1)] = [self.name + '_lnk_j' + str(id) + 'j' + str(id + 1)]
         jnt_name = self.name + '_f1'
         jnt_collection[jnt_name] = Jnt(type='fixed')
         jnt_collection[jnt_name].p_name = self.name + '_joint' + str(self.ndof - 1)
         jnt_collection[jnt_name].chd_name_list = []
-        jnt_collection[jnt_name].lnk_name_list = []
+        jnt_collection[jnt_name].lnk_name_dict = {}
         return jnt_collection, lnk_collection, [self.name + '_fixed0', self.name + '_joint0']
 
     def _update_jnt_fk(self, jnt_name):
@@ -263,13 +263,22 @@ class JntLnks(object):
                     # reverse all parents of cur_jnt
                     p_jnt = self.jnt_collection[p_jnt_name]
                     p_jnt.p_name = jnt_name
-                    cur_jnt.chd_name = cur_jnt.chd_name + [p_jnt_name]
-                    p_jnt.chd_name.remove(jnt_name)
-                    # revse lnk
-                    for lnk_name in p_jnt.lnk_name_list:
-                        self.lnk_collection[lnk_name].ref_jnt = jnt_name
-                        cur_jnt.lnk_name_list += lnk_name
-                    p_jnt.lnk_name_list = []
+                    cur_jnt.chd_name_list = cur_jnt.chd_name_list + [p_jnt_name]
+                    p_jnt.chd_name_list.remove(jnt_name)
+                    # reverse lnk
+                    lnk_name = p_jnt.lnk_name_dict[jnt_name]
+                    cur_jnt.lnk_name_dict[p_jnt_name] = lnk_name
+                    p_lnk = self.lnk_collection[lnk_name]
+                    p_lnk.loc_pos = p_jnt.loc_pos + np.dot(p_jnt.loc_rotmat, p_lnk.loc_pos)
+                    p_lnk.loc_rotmat = np.dot(p_jnt.loc_rotmat, p_lnk.loc_rotmat)
+                    # TODO
+                    # p_lnk.com = com
+                    # p_lnk.intertia = intertia
+                    # p_lnk.mass = mass
+                    # reverse rotation
+                    p_jnt.loc_motionax = -p_jnt.loc_motionax
+                    # iteration
+                    p_jnt.lnk_name_dict.pop[jnt_name]
                     cur_jnt = p_jnt
                     p_jnt_name = cur_jnt.p_name
                     cur_jnt.p_name = None
