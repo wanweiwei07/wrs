@@ -1,5 +1,4 @@
 import math
-import networkx as nx
 import numpy as np
 import basis.robotmath as rm
 
@@ -19,7 +18,8 @@ class Jnt(object):
                  rng_max=+math.pi,
                  motion_val=.0,
                  p_name=None,
-                 chd_name_list=[]):
+                 chd_name_list=[],
+                 lnk_name_list=[]):
         self.name = name
         self.type = type
         self.loc_pos = loc_pos
@@ -35,7 +35,7 @@ class Jnt(object):
         self.motion_val = motion_val
         self.p_name = p_name  # a single value
         self.chd_name_list = chd_name_list  # a list, may include only a single value
-        self.lnk_name_list = []  # for quick access, to be filled after initializing lnk
+        self.lnk_name_list = lnk_name_list  # a list, len(lnk_name_list)==len(chd_name_list)
 
 
 class Lnk(object):
@@ -52,7 +52,6 @@ class Lnk(object):
                  collisionmodel=None,
                  rgba=np.array([.7, .7, .7, 1])):
         self.name = name
-        self.refjnt_name = refjnt_name
         self.loc_pos = loc_pos
         self.loc_rotmat = loc_rotmat
         self.gl_pos = gl_pos
@@ -65,7 +64,7 @@ class Lnk(object):
         self.rgba = rgba
 
 
-class JLGraph(object):
+class JntLnks(object):
     """
     Define Joint Links using Networkx DiGraph
     """
@@ -83,118 +82,84 @@ class JLGraph(object):
         self.ndof = initconf.shape[0]
         self.jntrng_safemargin = 0
         # base: an nx1 list of compactly connected nodes, comprises at least two jnt_names
-        self.graph = self._initjntlnks()
+        self.jnt_collection, self.lnk_collection, self._base = self._initjntlnks()
         self.tgtjnt_ids = ['jnt' + str(id) for id in range(self.ndof)]
 
     def _initgraph(self):
         """
         :return:  jnt_collection, lnk_collection,
         """
-        graph = nx.DiGraph()
-        # joints
-        graph.add_node(self.name + '_fxd0',
-                            type='fixed',
-                            loc_pos=np.zeros(3),
-                            loc_rotmat=np.eye(3),
-                            loc_motionax=np.array([0, 0, 1]),
-                            gl_pos0=np.zeros(3),
-                            gl_rotmat0=np.eye(3),
-                            gl_posq=np.zeros(3),
-                            gl_rotmatq=np.eye(3),
-                            rng_min=-(math.pi - self.jntrng_safemargin),
-                            rng_max=+(math.pi - self.jntrng_safemargin),
-                            motion_val=.0)
-        graph.add_node(self.name + '_fxd1',
-                            type='fixed',
-                            loc_pos=np.zeros(3),
-                            loc_rotmat=np.eye(3),
-                            loc_motionax=np.array([0, 0, 1]),
-                            gl_pos0=np.zeros(3),
-                            gl_rotmat0=np.eye(3),
-                            gl_posq=np.zeros(3),
-                            gl_rotmatq=np.eye(3),
-                            rng_min=-(math.pi - self.jntrng_safemargin),
-                            rng_max=+(math.pi - self.jntrng_safemargin),
-                            motion_val=.0)
-        for id in range(self.ndof):
-            graph.add_node(self.name + '_jnt' + str(id),
-                                type='revolute',
-                                loc_pos=np.zeros(3),
-                                loc_rotmat=np.eye(3),
-                                loc_motionax=np.array([0, 0, 1]),
-                                gl_pos0=np.zeros(3),
-                                gl_rotmat0=np.eye(3),
-                                gl_posq=np.zeros(3),
-                                gl_rotmatq=np.eye(3),
-                                rng_min=-(math.pi - self.jntrng_safemargin),
-                                rng_max=+(math.pi - self.jntrng_safemargin),
-                                motion_val=.0)
         # links
-        graph.add_edge(self.name + '_fxd0', self.name + '_jnt0',
-                            refjnt_name=None,
-                            loc_pos=np.zeros(3),
-                            loc_rotmat=np.eye(3),
-                            gl_pos=np.zeros(3),  # to be updated by fk
-                            gl_rotmat=np.eye(3),  # to be updated by fk
-                            com=np.zeros(3),
-                            intertia=np.eye(3),
-                            mass=.0,
-                            meshfile=None,
-                            collisionmodel=None,
-                            rgba=np.array([.7, .7, .7, 1]))
-        graph.add_edge(self.name + '_jnt' + str(self.ndof - 1), self.name + '_fxd1',
-                            refjnt_name=None,
-                            loc_pos=np.zeros(3),
-                            loc_rotmat=np.eye(3),
-                            gl_pos=np.zeros(3),  # to be updated by fk
-                            gl_rotmat=np.eye(3),  # to be updated by fk
-                            com=np.zeros(3),
-                            intertia=np.eye(3),
-                            mass=.0,
-                            meshfile=None,
-                            collisionmodel=None,
-                            rgba=np.array([.7, .7, .7, 1]))
+        lnk_collection = {}
+        lnk_name = self.name + '_lnk_f0j0'
+        lnk_collection[lnk_name] = Lnk()
         for id in range(self.ndof - 1):
-            graph.add_edge(self.name + '_jnt' + str(id), self.name + '_jnt' + str(id + 1),
-                                refjnt_name=None,
-                                loc_pos=np.zeros(3),
-                                loc_rotmat=np.eye(3),
-                                gl_pos=np.zeros(3),  # to be updated by fk
-                                gl_rotmat=np.eye(3),  # to be updated by fk
-                                com=np.zeros(3),
-                                intertia=np.eye(3),
-                                mass=.0,
-                                meshfile=None,
-                                collisionmodel=None,
-                                rgba=np.array([.7, .7, .7, 1]))
+            lnk_name = self.name + '_link_j' + str(id) + 'j' + str(id + 1)
+            lnk_collection[lnk_name] = Lnk()
+        lnk_name = self.name + '_link_j' + str(self.ndof - 1) + 'f1'
+        lnk_collection[lnk_name] = Lnk()
+        # joints
+        jnt_collection = {}
+        jnt_name = self.name + '_f0'
+        jnt_collection[jnt_name] = Jnt(type='fixed')
+        jnt_collection[jnt_name].p_name = None
+        jnt_collection[jnt_name].chd_name_list = [self.name + '_j0']
+        jnt_collection[jnt_name].lnk_name_list = [self.name + '_lnk_f0j0']
+        for id in range(self.ndof):
+            jnt_name = self.name + '_j' + str(id)
+            jnt_collection[jnt_name] = Jnt()
+            if id == 0:
+                jnt_collection[jnt_name].p_name = self.name + '_f0'
+                jnt_collection[jnt_name].chd_name_list = [self.name + '_j1']
+                jnt_collection[jnt_name].lnk_name_list = [self.name + '_lnk_f0j1']
+            elif id == self.ndof - 1:
+                jnt_collection[jnt_name].p_name = self.name + '_j' + str(id - 1)
+                jnt_collection[jnt_name].chd_name_list = [self.name + '_f1']
+                jnt_collection[jnt_name].lnk_name_list = [self.name + '_lnk_j' + str(id) + 'f1']
+            else:
+                jnt_collection[jnt_name].p_name = self.name + '_j' + str(id - 1)
+                jnt_collection[jnt_name].chd_name_list = [self.name + '_j' + str(id + 1)]
+                jnt_collection[jnt_name].lnk_name_list = [self.name + '_lnk_j' + str(id) + 'j' + str(id + 1)]
+        jnt_name = self.name + '_f1'
+        jnt_collection[jnt_name] = Jnt(type='fixed')
+        jnt_collection[jnt_name].p_name = self.name + '_joint' + str(self.ndof - 1)
+        jnt_collection[jnt_name].chd_name_list = []
+        jnt_collection[jnt_name].lnk_name_list = []
+        return jnt_collection, lnk_collection, [self.name + '_fixed0', self.name + '_joint0']
 
     def _update_jnt_fk(self, jnt_name):
         """
-        update fk of all joints after the given jnt_name
+        update fk tree recursively
         author: weiwei
         date: 20201204osaka
         """
-        pred_jnt = self.graph.node(jnt_name)
-        succ_jnts_iter = self.graph.successors(jnt_name)
-        for curr_jnt in succ_jnts_iter:
-            # update gl_pos0 and gl_rotmat0
-            curr_jnt.gl_pos0 = pred_jnt.gl_posq + np.dot(pred_jnt.gl_rotmatq, curr_jnt.loc_pos)
-            curr_jnt.gl_rotmat0 = np.dot(pred_jnt.gl_rotmatq, curr_jnt.loc_rotmat)
-            curr_jnt.gl_motionax = np.dot(pred_jnt.gl_rotmat0, curr_jnt.loc_motionax)
-            # update gl_pos_q and gl_rotmat_q
-            if curr_jnt.type == "dummy":
-                curr_jnt.gl_posq = curr_jnt.gl_pos0
-                curr_jnt.gl_rotmatq = curr_jnt.gl_rotmat0
-            elif curr_jnt.type == "revolute":
-                curr_jnt.gl_posq = curr_jnt.gl_pos0
-                curr_jnt_loc_rotmat = rm.rotmat_from_axangle(curr_jnt.loc_motionax, curr_jnt.motion_val)
-                curr_jnt.gl_rotmatq = np.dot(curr_jnt.gl_rotmat0, curr_jnt_loc_rotmat)
-            elif curr_jnt.type == "prismatic":
-                curr_jnt.gl_posq = curr_jnt.gl_pos0 + curr_jnt.motion_val * curr_jnt.loc_motionax
-                curr_jnt.gl_rotmatq = curr_jnt.gl_rotmat0
-            else:
-                raise ValueError("The given joint type is not available!")
-            pred_jnt = curr_jnt
+        p_jnt_name = self.jnt_collection[jnt_name].p_name
+        cur_jnt = self.jnt_collection[jnt_name]
+        # update gl_pos0 and gl_rotmat0
+        if p_jnt_name is None:
+            cur_jnt.gl_pos0 = cur_jnt.loc_pos
+            cur_jnt.gl_rotmat0 = cur_jnt.loc_rotmat
+        else:
+            p_jnt = self.jnt_collection[p_jnt_name]
+            curjnt_loc_pos = np.dot(p_jnt.gl_rotmatq, cur_jnt.loc_pos)
+            cur_jnt.gl_pos0 = p_jnt.gl_posq + curjnt_loc_pos
+            cur_jnt.gl_rotmat0 = np.dot(p_jnt.gl_rotmatq, cur_jnt.loc_rotmat)
+            cur_jnt.gl_motionax = np.dot(cur_jnt.gl_rotmat0, cur_jnt.loc_motionax)
+        # update gl_pos_q and gl_rotmat_q
+        if cur_jnt.type == "dummy":
+            cur_jnt.gl_posq = cur_jnt.gl_pos0
+            cur_jnt.gl_rotmatq = cur_jnt.gl_rotmat0
+        elif cur_jnt.type == "revolute":
+            cur_jnt.gl_posq = cur_jnt.gl_pos0
+            curjnt_loc_rotmat = rm.rotmat_from_axangle(cur_jnt.loc_motionax, cur_jnt.motion_val)
+            cur_jnt.gl_rotmatq = np.dot(cur_jnt.gl_rotmat0, curjnt_loc_rotmat)
+        elif cur_jnt.type == "prismatic":
+            cur_jnt.gl_posq = cur_jnt.gl_pos0 + cur_jnt.motion_val * cur_jnt.loc_motionax
+            cur_jnt.gl_rotmatq = cur_jnt.gl_rotmat0
+        else:
+            raise ValueError("The given joint type is not available!")
+        for each_jnt_name in cur_jnt.chd_name_list:
+            self._update_jnt_fk(each_jnt_name)
 
     def _update_jnt_fk_faster(self, jnt_name):
         """
@@ -271,15 +236,6 @@ class JLGraph(object):
         if isinstance(jnt_motion_vals, dict):
             pass
         self._update_fk()
-
-    def reinitialize(self):
-        """
-        reinitialize jntlinks by updating fk and reconstructing jntlnkmesh
-        :return:
-        author: weiwei
-        date: 20201126
-        """
-        self.gotoinitconf()
 
     def change_base(self, base):
         """
