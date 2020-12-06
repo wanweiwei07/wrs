@@ -8,9 +8,11 @@ import robotsim._kinematics.jlchainik as jlik
 class JLChain(object):
     """
     Joint Link Chain, no branches allowed
-    inherit this class and overwrite self._initjntlnks()/self.tgtjnts to define new joint links
-    The joint types include "revolute", "prismatic", "end"
-    One JlChain object alwyas has two "end" joints
+    Usage:
+    1. Inherit this class and overwrite self._initjntlnks()/self.tgtjnts to define new joint links
+    2. Define multiple instances of this class to compose a complicated structure
+    Notes:
+    The joint types include "revolute", "prismatic", "end"; One JlChain object alwyas has two "end" joints
     """
 
     def __init__(self, position=np.zeros(3), rotmat=np.eye(3), homeconf=np.zeros(6), name='manipulator'):

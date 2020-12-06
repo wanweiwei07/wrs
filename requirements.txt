@@ -1,2 +1,3 @@
-panda3d>=1.10.7
-numpy>=1.17.4
+panda3d>=1.10.7 # vital
+numpy>=1.17.4 # vital
+pycollada>=0.7.1 # required by trimesh to load dae files
