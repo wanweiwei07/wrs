@@ -1,5 +1,6 @@
+# NOTE: This loader assumes no transformation in the dae file 20201207
+
 import io
-import copy
 import uuid
 import numpy as np
 
@@ -157,14 +158,14 @@ def _parse_node(node,
                 # vertex_index = primitive.vertex_index
                 # vertices = vertex[vertex_index].reshape(len(vertex_index) * 3, 3)
                 vertices = primitive.vertex
-                vertices[:, [1, 2]] = vertices[:, [2, 1]]
-                vertices[:, 1] = -vertices[:, 1]
+                # vertices[:, [1, 2]] = vertices[:, [2, 1]]
+                # vertices[:, 1] = -vertices[:, 1]
                 faces = primitive.vertex_index
                 normal = primitive.normal
                 vertex_normals = normal[primitive.normal_index]
                 face_normals = (vertex_normals[:, 0, :] + vertex_normals[:, 1, :] + vertex_normals[:, 2, :]) / 3
-                face_normals[:, [1, 2]] = face_normals[:, [2, 1]]
-                face_normals[:, 1] = -face_normals[:, 1]
+                # face_normals[:, [1, 2]] = face_normals[:, [2, 1]]
+                # face_normals[:, 1] = -face_normals[:, 1]
                 # # Get normals if present
                 # normals = None
                 # if primitive.normal is not None:
@@ -191,7 +192,7 @@ def _parse_node(node,
                 #     vis = visual.texture.TextureVisuals(uv=uv, material=material)
                 primid = '{}.{}'.format(geometry.id, i)
                 meshes[primid] = {
-                    'vertices': vertices * .001,
+                    'vertices': vertices,
                     'faces': faces,
                     'face_normals': face_normals}
                 graph.append({'frame_to': primid,
