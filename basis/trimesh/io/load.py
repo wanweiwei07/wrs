@@ -1,7 +1,7 @@
 import numpy as np
 from ..base import Trimesh
 from ..constants import _log_time, log
-from ..util import is_file, is_string, make_sequence, is_instance_named
+from ..util import is_file, is_string, make_sequence, is_instance_named, concatenate
 from .assimp import _assimp_loaders
 from .stl import _stl_loaders
 from .misc import _misc_loaders
@@ -61,39 +61,29 @@ def load(obj, file_type=None, **kwargs):
 def load_mesh(obj, file_type=None, process=True):
     '''
     Load a mesh file into a Trimesh object
-
     Arguments
     ---------
     file_obj: a filename string or a file-like object
     file_type: str representing file type (eg: 'stl')
     process:   boolean flag, whether to process the mesh on load
-
     Returns:
     mesh: a single Trimesh object, or a list of Trimesh objects, 
-          depending on the file format. 
-    
+          depending on the file format.
     '''
-
     if is_string(obj):
         file_type = (str(obj).split('.')[-1]).lower()
         obj = open(obj, 'rb')
-
     if file_type is None:
         file_type = obj.__class__.__name__
-
     file_type = str(file_type).lower()
     loaded = _mesh_loaders[file_type](obj, file_type)
-
     if is_file(obj):
         obj.close()
-
-    log.debug('loaded mesh using %s',
-              _mesh_loaders[file_type].__name__)
-
+    log.debug('loaded mesh using %s', _mesh_loaders[file_type].__name__)
     meshes = [Trimesh(process=process, **i) for i in make_sequence(loaded)]
-
-    if len(meshes) == 1:
-        return meshes[0]
+    # if len(meshes) == 1:
+    #     return meshes[0]
+    meshes = concatenate(meshes)
     return meshes
 
 

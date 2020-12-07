@@ -15,10 +15,10 @@ import numpy as np
 
 class World(ShowBase, object):
 
-    def __init__(self, camp=np.array([2.0, 0.5, 2.0]), lookatpos=np.array([0, 0, 0.25]), up=np.array([0, 0, 1]),
+    def __init__(self, campos=np.array([2.0, 0.5, 2.0]), lookatpos=np.array([0, 0, 0.25]), up=np.array([0, 0, 1]),
                  fov=40, w=1024, h=768, lenstype="perspective", toggledebug=False, autocamrotate=False):
         """
-        :param camp:
+        :param campos:
         :param lookatpos:
         :param fov:
         :param w: width of window
@@ -39,7 +39,7 @@ class World(ShowBase, object):
             lens.setFilmSize(1024, 768)
         # disable the default mouse control
         self.disableMouse()
-        self.cam.setPos(camp[0], camp[1], camp[2])
+        self.cam.setPos(campos[0], campos[1], campos[2])
         self.cam.lookAt(Point3(lookatpos[0], lookatpos[1], lookatpos[2]), Vec3(up[0], up[1], up[2]))
         self.cam.node().setLens(lens)
         # set up slight

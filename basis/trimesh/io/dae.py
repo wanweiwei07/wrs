@@ -2,6 +2,7 @@ import io
 import copy
 import uuid
 import numpy as np
+
 try:
     # pip install pycollada
     import collada
@@ -51,10 +52,10 @@ def load_collada(file_obj, resolver=None, **kwargs):
                     graph=graph,
                     resolver=resolver)
     # create kwargs for load_kwargs
-    result = {'class': 'Scene',
-              'graph': graph,
-              'geometry': meshes}
-    return result
+    # result = {'class': 'Scene',
+    #           'graph': graph,
+    #           'geometry': meshes}
+    return list(meshes.values())
 
 
 def export_collada(mesh, **kwargs):
@@ -152,40 +153,47 @@ def _parse_node(node,
             if isinstance(primitive, collada.polylist.Polylist):
                 primitive = primitive.triangleset()
             if isinstance(primitive, collada.triangleset.TriangleSet):
-                vertex = primitive.vertex
-                vertex_index = primitive.vertex_index
-                vertices = vertex[vertex_index].reshape(len(vertex_index) * 3, 3)
-                # Get normals if present
-                normals = None
-                if primitive.normal is not None:
-                    normal = primitive.normal
-                    normal_index = primitive.normal_index
-                    normals = normal[normal_index].reshape(len(normal_index) * 3, 3)
-                # Get colors if present
-                colors = None
-                s = primitive.sources
-                if ('COLOR' in s and len(s['COLOR']) > 0 and len(primitive.index) > 0):
-                    color = s['COLOR'][0][4].data
-                    color_index = primitive.index[:, :, s['COLOR'][0][0]]
-                    colors = color[color_index].reshape(len(color_index) * 3, 3)
-                faces = np.arange(vertices.shape[0]).reshape(vertices.shape[0] // 3, 3)
-                # Get UV coordinates if possible
-                vis = None
-                if primitive.material in local_material_map:
-                    material = copy.copy(local_material_map[primitive.material])
-                    uv = None
-                    if len(primitive.texcoordset) > 0:
-                        texcoord = primitive.texcoordset[0]
-                        texcoord_index = primitive.texcoord_indexset[0]
-                        uv = texcoord[texcoord_index].reshape((len(texcoord_index) * 3, 2))
-                    vis = visual.texture.TextureVisuals(uv=uv, material=material)
+                # vertex = primitive.vertex
+                # vertex_index = primitive.vertex_index
+                # vertices = vertex[vertex_index].reshape(len(vertex_index) * 3, 3)
+                vertices = primitive.vertex
+                vertices[:, [1, 2]] = vertices[:, [2, 1]]
+                vertices[:, 1] = -vertices[:, 1]
+                faces = primitive.vertex_index
+                normal = primitive.normal
+                vertex_normals = normal[primitive.normal_index]
+                face_normals = (vertex_normals[:, 0, :] + vertex_normals[:, 1, :] + vertex_normals[:, 2, :]) / 3
+                face_normals[:, [1, 2]] = face_normals[:, [2, 1]]
+                face_normals[:, 1] = -face_normals[:, 1]
+                # # Get normals if present
+                # normals = None
+                # if primitive.normal is not None:
+                #     normal = primitive.normal
+                #     normal_index = primitive.normal_index
+                #     normals = normal[normal_index].reshape(len(normal_index) * 3, 3)
+                # # Get colors if present
+                # colors = None
+                # s = primitive.sources
+                # if ('COLOR' in s and len(s['COLOR']) > 0 and len(primitive.index) > 0):
+                #     color = s['COLOR'][0][4].data
+                #     color_index = primitive.index[:, :, s['COLOR'][0][0]]
+                #     colors = color[color_index].reshape(len(color_index) * 3, 3)
+                # faces = np.arange(vertices.shape[0]).reshape(vertices.shape[0] // 3, 3)
+                # # Get UV coordinates if possible
+                # vis = None
+                # if primitive.material in local_material_map:
+                #     material = copy.copy(local_material_map[primitive.material])
+                #     uv = None
+                #     if len(primitive.texcoordset) > 0:
+                #         texcoord = primitive.texcoordset[0]
+                #         texcoord_index = primitive.texcoord_indexset[0]
+                #         uv = texcoord[texcoord_index].reshape((len(texcoord_index) * 3, 2))
+                #     vis = visual.texture.TextureVisuals(uv=uv, material=material)
                 primid = '{}.{}'.format(geometry.id, i)
                 meshes[primid] = {
-                    'vertices': vertices,
+                    'vertices': vertices * .001,
                     'faces': faces,
-                    'vertex_normals': normals,
-                    'vertex_colors': colors,
-                    'visual': vis}
+                    'face_normals': face_normals}
                 graph.append({'frame_to': primid,
                               'matrix': parent_matrix,
                               'geometry': primid})
@@ -289,7 +297,7 @@ def _unparse_material(material):
             emission = [float(emission[0]), float(emission[1]), float(emission[2]), 1.0]
         shininess = material.roughnessFactor
         if shininess is not None:
-            shininess = 2.0 / shininess**2 - 2.0
+            shininess = 2.0 / shininess ** 2 - 2.0
         effect = collada.material.Effect(
             uuid.uuid4().hex, params=[], shadingtype='phong',
             diffuse=diffuse, emission=emission,

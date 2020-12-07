@@ -8,7 +8,6 @@ import numpy as np
 import logging
 import hashlib
 import base64
-
 from collections import defaultdict, deque
 from sys import version_info
 
@@ -97,7 +96,6 @@ def is_sequence(obj):
     seq = (not hasattr(obj, "strip") and
            hasattr(obj, "__getitem__") or
            hasattr(obj, "__iter__"))
-
     seq = seq and not isinstance(obj, dict)
     # numpy sometimes returns objects that are single float64 values
     # but sure look like sequences, so we check the shape
@@ -778,28 +776,44 @@ def type_named(obj, name):
     raise ValueError('Unable to extract class of name ' + name)
 
 
-def concatenate(a, b):
+def concatenate(a, b=None):
     """
     Concatenate two meshes.
     :param a: Trimesh object
     :param b: Trimesh object
     :return: Trimesh object containing all faces of a and b
     """
-    # Extract the trimesh type to avoid a circular import,
+    if b is None:
+        b = []
+        # stack meshes into flat list
+    meshes = np.append(a, b)
+    # if there is only one mesh just return the first
+    if len(meshes) == 1:
+        return meshes[0].copy()
+    # extract the trimesh type to avoid a circular import
     # and assert that both inputs are Trimesh objects
-    trimesh_type = type_named(a, 'Trimesh')
-    trimesh_type = type_named(b, 'Trimesh')
-    new_normals = np.vstack((a.face_normals, b.face_normals))
-    new_faces = np.vstack((a.faces, (b.faces + len(a.vertices))))
-    new_vertices = np.vstack((a.vertices, b.vertices))
-    new_visual = a.visual.union(b.visual)
-    result = trimesh_type(vertices=new_vertices,
-                          faces=new_faces,
-                          face_normals=new_normals,
-                          visual=new_visual,
-                          process=False)
-    return result
-
+    trimesh_type = type_named(meshes[0], 'Trimesh')
+    # append faces and vertices of meshes
+    vertices, faces = append_faces(
+        [m.vertices.copy() for m in meshes],
+        [m.faces.copy() for m in meshes])
+    # only save face normals if already calculated
+    face_normals = None
+    if all('face_normals' in m._cache for m in meshes):
+        face_normals = np.vstack([m.face_normals for m in meshes])
+    try:
+        # concatenate visuals
+        visual = meshes[0].visual.concatenate([m.visual for m in meshes[1:]])
+    except BaseException:
+        log.warning('failed to combine visuals', exc_info=True)
+        visual = None
+    # create the mesh object
+    mesh = trimesh_type(vertices=vertices,
+                        faces=faces,
+                        face_normals=face_normals,
+                        visual=visual,
+                        process=False)
+    return mesh
 
 def submesh(mesh,
             faces_sequence,

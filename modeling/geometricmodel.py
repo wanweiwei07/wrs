@@ -33,7 +33,7 @@ class StaticGeometricModel(object):
         else:
             if isinstance(objinit, str):
                 self._objpath = objinit
-                self._trimesh = trimesh.load_mesh(self._objpath)
+                self._trimesh = trimesh.load(self._objpath)
                 self._pdnp = da.trimesh_to_nodepath(self._trimesh)
                 self._name = os.path.splitext(os.path.basename(self._objpath))[0]
             elif isinstance(objinit, trimesh.Trimesh):

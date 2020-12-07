@@ -3,11 +3,8 @@ import numpy as np
 from ..util import is_binary_file
 
 # define a numpy datatype for the STL file
-_stl_dtype = np.dtype([('normals', np.float32, (3)),
-                       ('vertices', np.float32, (3, 3)),
-                       ('attributes', np.uint16)])
-_stl_dtype_header = np.dtype([('header', np.void, 80),
-                              ('face_count', np.int32)])
+_stl_dtype = np.dtype([('normals', np.float32, (3)), ('vertices', np.float32, (3, 3)), ('attributes', np.uint16)])
+_stl_dtype_header = np.dtype([('header', np.void, 80), ('face_count', np.int32)])
 
 
 def load_stl(file_obj, file_type=None):
@@ -92,25 +89,20 @@ def load_stl_ascii(file_obj):
 def export_stl(mesh):
     '''
     Convert a Trimesh object into a binary STL file.
-
     Arguments
     ---------
     mesh: Trimesh object
-
     Returns
     ---------
     export: bytes, representing mesh in binary STL form
     '''
     header = np.zeros(1, dtype=_stl_dtype_header)
     header['face_count'] = len(mesh.faces)
-
     packed = np.zeros(len(mesh.faces), dtype=_stl_dtype)
     packed['normals'] = mesh.face_normals
     packed['vertices'] = mesh.triangles
-
     export = header.tostring()
     export += packed.tostring()
-
     return export
 
 

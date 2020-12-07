@@ -71,10 +71,10 @@ class Trimesh(object):
             # (m, 3) int of triangle faces, references self.vertices
             self.faces = faces
         # hold visual information about the mesh (vertex and face colors)
-        if 'visual' in kwargs:
-            self.visual = kwargs['visual']
-        else:
-            self.visual = visual.VisualAttributes(**kwargs)
+        # if 'visual' in kwargs:
+        #     self.visual = kwargs['visual']
+        # else:
+        self.visual = visual.VisualAttributes(**kwargs)
         self.visual.mesh = self
         # normals are accessed through setters/properties and are regenerated if the
         # dimensions are inconsistant, but can be set by the constructor to save
