@@ -1,15 +1,18 @@
 import os
 import numpy as np
+import modeling.geometricmodel as gm
 import robotsim._kinematics.jlchain as jl
 
 
 class XArmGripper(object):
 
-    def __init__(self):
+    def __init__(self, pos=np.zeros(3), rotmat=np.eye(3)):
         this_dir, this_filename = os.path.split(__file__)
+        self.pos = pos
+        self.rotmat = rotmat
         # joints
         # - lft_outer
-        self.lft_outer = jl.JLChain(position=np.zeros(3), rotmat=np.eye(3), homeconf=np.zeros(2), name='lft_outer')
+        self.lft_outer = jl.JLChain(pos=self.pos, rotmat=self.rotmat, homeconf=np.zeros(2), name='lft_outer')
         self.lft_outer.jnts[1]['loc_pos'] = np.array([0, .035, .059098])
         self.lft_outer.jnts[1]['rngmin'] = .0
         self.lft_outer.jnts[1]['rngmax'] = .85  # TODO change min-max to a tuple
@@ -19,13 +22,13 @@ class XArmGripper(object):
         self.lft_outer.jnts[2]['rngmax'] = .85  # TODO change min-max to a tuple
         self.lft_outer.jnts[2]['loc_motionax'] = np.array([-1, 0, 0])
         # - lft_inner
-        self.lft_inner = jl.JLChain(position=np.zeros(3), rotmat=np.eye(3), homeconf=np.zeros(1), name='lft_inner')
+        self.lft_inner = jl.JLChain(pos=self.pos, rotmat=self.rotmat, homeconf=np.zeros(1), name='lft_inner')
         self.lft_inner.jnts[1]['loc_pos'] = np.array([0, .02, .074098])
         self.lft_inner.jnts[1]['rngmin'] = .0
         self.lft_inner.jnts[1]['rngmax'] = .85  # TODO change min-max to a tuple
         self.lft_inner.jnts[1]['loc_motionax'] = np.array([1, 0, 0])
         # - rgt_outer
-        self.rgt_outer = jl.JLChain(position=np.zeros(3), rotmat=np.eye(3), homeconf=np.zeros(2), name='rgt_outer')
+        self.rgt_outer = jl.JLChain(pos=self.pos, rotmat=self.rotmat, homeconf=np.zeros(2), name='rgt_outer')
         self.rgt_outer.jnts[1]['loc_pos'] = np.array([0, -.035, .059098])
         self.rgt_outer.jnts[1]['rngmin'] = .0
         self.rgt_outer.jnts[1]['rngmax'] = .85  # TODO change min-max to a tuple
@@ -35,7 +38,7 @@ class XArmGripper(object):
         self.rgt_outer.jnts[2]['rngmax'] = .85  # TODO change min-max to a tuple
         self.rgt_outer.jnts[2]['loc_motionax'] = np.array([1, 0, 0])
         # - rgt_inner
-        self.rgt_inner = jl.JLChain(position=np.zeros(3), rotmat=np.eye(3), homeconf=np.zeros(1), name='rgt_inner')
+        self.rgt_inner = jl.JLChain(pos=self.pos, rotmat=self.rotmat, homeconf=np.zeros(1), name='rgt_inner')
         self.rgt_inner.jnts[1]['loc_pos'] = np.array([0, -.02, .074098])
         self.rgt_inner.jnts[1]['rngmin'] = .0
         self.rgt_inner.jnts[1]['rngmax'] = .85  # TODO change min-max to a tuple
@@ -87,10 +90,25 @@ class XArmGripper(object):
         self.rgt_inner.lnks[1]['meshfile'] = os.path.join(this_dir, "meshes", "right_inner_knuckle.stl")
         self.rgt_inner.lnks[1]['rgba'] = [.2, .2, .2, 1]
         # reinitialize
-        self.lft_inner.reinitialize()
         self.lft_outer.reinitialize()
+        self.lft_inner.reinitialize()
         self.rgt_outer.reinitialize()
         self.rgt_inner.reinitialize()
+
+    def fix_to(self, pos, rotmat, angle=None):
+        self.pos = pos
+        self.rotmat = rotmat
+        if angle is not None:
+            self.lft_outer.jnts[1]['motion_val'] = angle
+            self.lft_outer.jnts[2]['motion_val'] = self.lft_outer.jnts[1]['motion_val']
+            self.lft_inner.jnts[1]['motion_val'] = self.lft_outer.jnts[1]['motion_val']
+            self.rgt_outer.jnts[1]['motion_val'] = self.lft_outer.jnts[1]['motion_val']
+            self.rgt_outer.jnts[2]['motion_val'] = self.lft_outer.jnts[1]['motion_val']
+            self.rgt_inner.jnts[1]['motion_val'] = self.lft_outer.jnts[1]['motion_val']
+        self.lft_outer.fix_to(self.pos, self.rotmat)
+        self.lft_inner.fix_to(self.pos, self.rotmat)
+        self.rgt_outer.fix_to(self.pos, self.rotmat)
+        self.rgt_inner.fix_to(self.pos, self.rotmat)
 
     def gen_stickmodel(self, name='xarm_gripper_stickmodel'):
         stickmodel = gm.StaticGeometricModel(name=name)
@@ -101,12 +119,12 @@ class XArmGripper(object):
         return stickmodel
 
     def gen_meshmodel(self, name='xarm_gripper_meshmodel'):
-        stickmodel = gm.StaticGeometricModel(name=name)
-        self.lft_outer.gen_meshmodel().attach_to(stickmodel)
-        self.lft_inner.gen_meshmodel().attach_to(stickmodel)
-        self.rgt_outer.gen_meshmodel().attach_to(stickmodel)
-        self.rgt_inner.gen_meshmodel().attach_to(stickmodel)
-        return stickmodel
+        meshmodel = gm.StaticGeometricModel(name=name)
+        self.lft_outer.gen_meshmodel().attach_to(meshmodel)
+        self.lft_inner.gen_meshmodel().attach_to(meshmodel)
+        self.rgt_outer.gen_meshmodel().attach_to(meshmodel)
+        self.rgt_inner.gen_meshmodel().attach_to(meshmodel)
+        return meshmodel
 
     def fk(self, angle):
         """

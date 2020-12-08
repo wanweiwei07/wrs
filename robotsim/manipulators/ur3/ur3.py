@@ -7,8 +7,8 @@ from panda3d.core import NodePath, CollisionTraverser, CollisionHandlerQueue, Bi
 
 class UR3(jl.JLChain):
 
-    def __init__(self, position=np.zeros(3), rotmat=np.eye(3), homeconf=np.zeros(6), name='ur3'):
-        super().__init__(position=position, rotmat=rotmat, homeconf=homeconf, name=name)
+    def __init__(self, pos=np.zeros(3), rotmat=np.eye(3), homeconf=np.zeros(6), name='ur3'):
+        super().__init__(pos=pos, rotmat=rotmat, homeconf=homeconf, name=name)
         this_dir, this_filename = os.path.split(__file__)
         # six joints, njnts = 6+2 (tgt ranges from 1-6), nlinks = 6+1
         self.jnts[1]['loc_pos'] = np.array([0, 0, .1519])

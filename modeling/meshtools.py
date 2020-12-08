@@ -1,5 +1,6 @@
 import numpy as np
 import basis.trimesh as trm
+import basis.robotmath as rm
 
 def scale(obj, scale_ratio):
     """
@@ -42,9 +43,8 @@ def convert_to_stl(obj, savename, scale_ratio=1, pos=np.zeros(3), rotmat=np.eye(
     """
     trimesh = trm.load(obj)
     tmptrimesh = scale(trimesh, scale_ratio)
-    tmptrimesh.vertices = rotmat.dot(tmptrimesh.vertices.T).T
-    tmptrimesh.vertcies = tmptrimesh.vertices+pos
-    tmptrimesh.face_normals = rotmat.dot(tmptrimesh.face_normals.T).T
+    homomat = rm.homomat_from_posrot(pos, rotmat)
+    tmptrimesh.apply_transform(homomat)
     tmptrimesh.export(savename)
 
 if __name__ == '__main__':

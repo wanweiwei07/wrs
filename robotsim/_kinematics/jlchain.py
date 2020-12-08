@@ -142,11 +142,11 @@ class JLChain(object):
     def zeroconf(self):
         return np.array([self._zeroconf[i - 1] for i in self.tgtjnts])
 
-    def fix_to(self, pos, rotmat):
+    def fix_to(self, pos, rotmat, jnt_values=None):
         # fix the connecting end of the jlchain to the given pos and rotmat
         self.pos = pos
         self.rotmat = rotmat
-        self._update_fk()
+        self.fk(jnt_values=jnt_values)
 
     def set_homeconf(self, jnt_values=None):
         """

@@ -8,8 +8,8 @@ from panda3d.core import NodePath, CollisionTraverser, CollisionHandlerQueue, Bi
 
 class SIA5F(jl.JLChain):
 
-    def __init__(self, position=np.zeros(3), rotmat=np.eye(3), homeconf=np.zeros(7), name='sia5f'):
-        super().__init__(position=position, rotmat=rotmat, homeconf=homeconf, name=name)
+    def __init__(self, pos=np.zeros(3), rotmat=np.eye(3), homeconf=np.zeros(7), name='sia5f'):
+        super().__init__(pos=pos, rotmat=rotmat, homeconf=homeconf, name=name)
         this_dir, this_filename = os.path.split(__file__)
         # seven joints, njnts = 7+2 (tgt ranges from 1-7), nlinks = 7+1
         self.jnts[1]['loc_pos'] = np.array([0, 0, .31])

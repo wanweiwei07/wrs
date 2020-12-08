@@ -128,16 +128,23 @@ class Robotiq85(object):
         self.rgt_inner.lnks[1]['meshfile'] = os.path.join(this_dir, "meshes", "robotiq_arg2f_85_inner_knuckle_cvt.stl")
         self.rgt_inner.lnks[1]['rgba'] = [.2, .2, .2, 1]
         # reinitialize
-        self.lft_inner.reinitialize()
         self.lft_outer.reinitialize()
+        self.lft_inner.reinitialize()
         self.rgt_outer.reinitialize()
         self.rgt_inner.reinitialize()
 
-    def fix_to(self, pos, rotmat):
+    def fix_to(self, pos, rotmat, angle=None):
         self.pos = pos
         self.rotmat = rotmat
-        self.lft_inner.fix_to(self.pos, self.rotmat)
+        if angle is not None:
+            self.lft_outer.jnts[1]['motion_val'] = angle
+            self.lft_outer.jnts[3]['motion_val'] = -self.lft_outer.jnts[1]['motion_val']
+            self.lft_inner.jnts[1]['motion_val'] = self.lft_outer.jnts[1]['motion_val']
+            self.rgt_outer.jnts[1]['motion_val'] = self.lft_outer.jnts[1]['motion_val']
+            self.rgt_outer.jnts[3]['motion_val'] = -self.lft_outer.jnts[1]['motion_val']
+            self.rgt_inner.jnts[1]['motion_val'] = self.lft_outer.jnts[1]['motion_val']
         self.lft_outer.fix_to(self.pos, self.rotmat)
+        self.lft_inner.fix_to(self.pos, self.rotmat)
         self.rgt_inner.fix_to(self.pos, self.rotmat)
         self.rgt_outer.fix_to(self.pos, self.rotmat)
 
