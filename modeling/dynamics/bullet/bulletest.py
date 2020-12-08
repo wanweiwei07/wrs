@@ -38,7 +38,7 @@ cm.gm.genframe().reparent_to(base.render)
 
 # Boxes
 # model = loader.loadModel('models/box.egg')
-model = cm.CollisionModel("./objects/bunnysim.stl")
+model = cm.CollisionModel("./objects/bunnysim.meshes")
 node = bbd.BDBody(model, dynamic=True)
 bulletnodelist = []
 for i in range(10):

@@ -192,13 +192,15 @@ def homomat_transform_points(homomat, points):
     author: weiwei
     date: 20161213
     """
+    if isinstance(points, list):
+        points = np.asarray(points)
     if points.ndim == 1:
         homopoint = np.array([points[0], points[1], points[2], 1])
         return np.dot(homomat, homopoint)[:3]
     else:
-        homopcdnp = np.ones((4, len(points)))
+        homopcdnp = np.ones((4, points.shape[0]))
         homopcdnp[:3, :] = points.T[:3, :]
-        transformed_pointarray = np.dot(homomat, homopcdnp).T
+        transformed_pointarray = homomat.dot(homopcdnp).T
         return transformed_pointarray[:, :3]
 
 def homomat_average(homomatlist, bandwidth=10):
@@ -211,11 +213,10 @@ def homomat_average(homomatlist, bandwidth=10):
     author: weiwei
     date: 20200109
     """
-
     homomatarray = np.asarray(homomatlist)
     posavg = posvec_average(homomatarray[:, :3, 3], bandwidth)
     rotmatavg = rotmat_average(homomatarray[:, :3, :3],bandwidth)
-    return homobuild(posavg, rotmatavg)
+    return homomat_from_posrot(posavg, rotmatavg)
 
 # quaternion
 def quaternion_from_axangle(angle, axis):

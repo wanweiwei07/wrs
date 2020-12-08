@@ -159,7 +159,7 @@ if __name__=="__main__":
     rbd.linearv = np.array([0,0,0])
     rbd.angularw = np.array([0,0,50])
 
-    model = cm.CollisionModel('./objects/bunnysim.stl')
+    model = cm.CollisionModel('./objects/bunnysim.meshes')
     model.reparentTo(base.render)
     model.setMat(base.pg.np4ToMat4(rm.homobuild(rbd.pos, rbd.rotmat)))
 

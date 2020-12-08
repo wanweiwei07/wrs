@@ -30,43 +30,43 @@ class UR3E(jl.JLChain):
         self.lnks[0]['name'] = "base"
         self.lnks[0]['loc_pos'] = np.zeros(3)
         self.lnks[0]['mass'] = 2.0
-        self.lnks[0]['meshfile'] = os.path.join(this_dir, "meshes", "base.stl")
+        self.lnks[0]['meshfile'] = os.path.join(this_dir, "meshes", "base.dae")
         self.lnks[0]['rgba'] = [.5,.5,.5, 1.0]
         self.lnks[1]['name'] = "shoulder"
         self.lnks[1]['loc_pos'] = np.zeros(3)
         self.lnks[1]['com'] = np.array([.0, -.02, .0])
         self.lnks[1]['mass'] = 1.95
-        self.lnks[1]['meshfile'] = os.path.join(this_dir, "meshes", "shoulder.stl")
+        self.lnks[1]['meshfile'] = os.path.join(this_dir, "meshes", "shoulder.dae")
         self.lnks[1]['rgba'] = [.1,.3,.5, 1.0]
         self.lnks[2]['name'] = "upperarm"
         self.lnks[2]['loc_pos'] = np.array([.0, .0, .0])
         self.lnks[2]['com'] = np.array([.13, 0, .1157])
         self.lnks[2]['mass'] = 3.42
-        self.lnks[2]['meshfile'] = os.path.join(this_dir, "meshes", "upperarm.stl")
+        self.lnks[2]['meshfile'] = os.path.join(this_dir, "meshes", "upperarm.dae")
         self.lnks[2]['rgba'] = [.7,.7,.7, 1.0]
         self.lnks[3]['name'] = "forearm"
         self.lnks[3]['loc_pos'] = np.array([.0, .0, .0])
         self.lnks[3]['com'] = np.array([.05, .0, .0238])
         self.lnks[3]['mass'] = 1.437
-        self.lnks[3]['meshfile'] = os.path.join(this_dir, "meshes", "forearm.stl")
+        self.lnks[3]['meshfile'] = os.path.join(this_dir, "meshes", "forearm.dae")
         self.lnks[3]['rgba'] = [.35,.35,.35, 1.0]
         self.lnks[4]['name'] = "wrist1"
         self.lnks[4]['loc_pos'] = np.array([.0, .0, .0])
         self.lnks[4]['com'] = np.array([.0, .0, 0.01])
         self.lnks[4]['mass'] = 0.871
-        self.lnks[4]['meshfile'] = os.path.join(this_dir, "meshes", "wrist1.stl")
+        self.lnks[4]['meshfile'] = os.path.join(this_dir, "meshes", "wrist1.dae")
         self.lnks[4]['rgba'] = [.7,.7,.7, 1.0]
         self.lnks[5]['name'] = "wrist2"
         self.lnks[5]['loc_pos'] = np.array([.0, .0, .0])
         self.lnks[5]['com'] = np.array([.0, .0, 0.01])
         self.lnks[5]['mass'] = 0.8
-        self.lnks[5]['meshfile'] = os.path.join(this_dir, "meshes", "wrist2.stl")
+        self.lnks[5]['meshfile'] = os.path.join(this_dir, "meshes", "wrist2.dae")
         self.lnks[5]['rgba'] = [.1,.3,.5, 1.0]
         self.lnks[6]['name'] = "wrist3"
         self.lnks[6]['loc_pos'] = np.array([.0, .0, .0])
         self.lnks[6]['com'] = np.array([.0, .0, -0.02])
         self.lnks[6]['mass'] = 0.8
-        self.lnks[6]['meshfile'] = os.path.join(this_dir, "meshes", "wrist3.stl")
+        self.lnks[6]['meshfile'] = os.path.join(this_dir, "meshes", "wrist3.dae")
         self.lnks[6]['rgba'] = [.5,.5,.5, 1.0]
         self.reinitialize()
         self.linkcdpairs = [[[0,1], [3,5,6]], [[2], [4,5,6]], [[3], [6]]]
@@ -116,12 +116,12 @@ if __name__ == '__main__':
     manipulator_instance = UR3E()
     manipulator_instance.gen_meshmodel().attach_to(base)
     manipulator_instance.gen_stickmodel(togglejntscs=True).attach_to(base)
-    # tic = time.time()
-    # print(manipulator_instance.is_selfcollided(toggledebug=True))
-    # toc = time.time()
-    # print(toc - tic)
+    tic = time.time()
+    print(manipulator_instance.is_selfcollided(toggledebug=True))
+    toc = time.time()
+    print(toc - tic)
 
     # base = wd.World(campos=[1, 1, 1], lookatpos=[0,0,0])
-    # gm.GeometricModel("./stl/base.stl").attach_to(base)
+    # gm.GeometricModel("./meshes/base.dae").attach_to(base)
     # gm.gen_frame().attach_to(base)
     base.run()

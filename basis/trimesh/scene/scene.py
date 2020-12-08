@@ -124,7 +124,7 @@ class Scene:
     def export(self, file_type='dict64'):
         """
         Export a snapshot of the current scene.
-        :param: file_type: what encoding to use for meshes ie: dict, dict64, stl
+        :param: file_type: what encoding to use for meshes ie: dict, dict64, meshes
         :return: export: dict with keys:
                  meshes: list of meshes, encoded as per file_type
                  transforms: edge list of transforms, eg: ((u, v, {'matrix' : np.eye(4)}))

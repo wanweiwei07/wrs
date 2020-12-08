@@ -1173,11 +1173,11 @@ class Trimesh(object):
         self._cache[key] = identifier
         return identifier
 
-    def export(self, file_obj=None, file_type='stl'):
+    def export(self, file_obj=None, file_type='meshes'):
         """
         Export the current mesh to a file object. 
         If file_obj is a filename, file will be written there.
-        Supported formats are stl, off, and collada.
+        Supported formats are meshes, off, and collada.
         """
         return export_mesh(mesh=self, file_obj=file_obj, file_type=file_type)
 

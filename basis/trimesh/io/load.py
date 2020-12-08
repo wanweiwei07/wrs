@@ -35,7 +35,7 @@ def load(obj, file_type=None, **kwargs):
     """
     Load a mesh or vectorized path into a Trimesh, Path2D, or Path3D object.
     :param obj: a filename string or a file-like object
-    :param file_type: str representing file type (eg: 'stl'), parsed from obj if None
+    :param file_type: str representing file type (eg: 'meshes'), parsed from obj if None
     :param kwargs:
     :return: Trimesh, Path2D, Path3D, or list of same.
     author: revised by weiwei
@@ -64,7 +64,7 @@ def load_mesh(obj, file_type=None, process=True):
     Arguments
     ---------
     file_obj: a filename string or a file-like object
-    file_type: str representing file type (eg: 'stl')
+    file_type: str representing file type (eg: 'meshes')
     process:   boolean flag, whether to process the mesh on load
     Returns:
     mesh: a single Trimesh object, or a list of Trimesh objects, 

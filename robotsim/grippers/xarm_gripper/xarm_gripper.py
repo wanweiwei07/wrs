@@ -1,7 +1,6 @@
 import os
 import numpy as np
 import robotsim._kinematics.jlchain as jl
-import modeling.geometricmodel as gm
 
 
 class XArmGripper(object):
@@ -47,45 +46,45 @@ class XArmGripper(object):
         self.lft_outer.lnks[0]['loc_pos'] = np.zeros(3)
         self.lft_outer.lnks[0]['com'] = np.array([-0.00065489, -0.0018497, 0.048028])
         self.lft_outer.lnks[0]['mass'] = 0.5415
-        self.lft_outer.lnks[0]['meshfile'] = os.path.join(this_dir, "stl", "base_link.stl")
+        self.lft_outer.lnks[0]['meshfile'] = os.path.join(this_dir, "meshes", "base_link.stl")
         self.lft_outer.lnks[1]['name'] = "left_outer_knuckle"
         self.lft_outer.lnks[1]['loc_pos'] = np.zeros(3)
         self.lft_outer.lnks[1]['com'] = np.array([2.9948e-14, 0.021559, 0.015181])
         self.lft_outer.lnks[1]['mass'] = 0.033618
-        self.lft_outer.lnks[1]['meshfile'] = os.path.join(this_dir, "stl", "left_outer_knuckle.stl")
+        self.lft_outer.lnks[1]['meshfile'] = os.path.join(this_dir, "meshes", "left_outer_knuckle.stl")
         self.lft_outer.lnks[1]['rgba'] = [.2, .2, .2, 1]
         self.lft_outer.lnks[2]['name'] = "left_finger"
         self.lft_outer.lnks[2]['loc_pos'] = np.zeros(3)
         self.lft_outer.lnks[2]['com'] = np.array([-2.4536e-14, -0.016413, 0.029258])
         self.lft_outer.lnks[2]['mass'] = 0.048304
-        self.lft_outer.lnks[2]['meshfile'] = os.path.join(this_dir, "stl", "left_finger.stl")
+        self.lft_outer.lnks[2]['meshfile'] = os.path.join(this_dir, "meshes", "left_finger.stl")
         self.lft_outer.lnks[2]['rgba'] = [.2, .2, .2, 1]
         # - lft_inner
         self.lft_inner.lnks[1]['name'] = "left_inner_knuckle"
         self.lft_inner.lnks[1]['loc_pos'] = np.zeros(3)
         self.lft_inner.lnks[1]['com'] = np.array([2.9948e-14, 0.021559, 0.015181])
         self.lft_inner.lnks[1]['mass'] = 0.033618
-        self.lft_inner.lnks[1]['meshfile'] = os.path.join(this_dir, "stl", "left_inner_knuckle.stl")
+        self.lft_inner.lnks[1]['meshfile'] = os.path.join(this_dir, "meshes", "left_inner_knuckle.stl")
         self.lft_inner.lnks[1]['rgba'] = [.2, .2, .2, 1]
         # - rgt_outer
         self.rgt_outer.lnks[1]['name'] = "right_outer_knuckle"
         self.rgt_outer.lnks[1]['loc_pos'] = np.zeros(3)
         self.rgt_outer.lnks[1]['com'] = np.array([-3.1669e-14, -0.021559, 0.015181])
         self.rgt_outer.lnks[1]['mass'] = 0.033618
-        self.rgt_outer.lnks[1]['meshfile'] = os.path.join(this_dir, "stl", "right_outer_knuckle.stl")
+        self.rgt_outer.lnks[1]['meshfile'] = os.path.join(this_dir, "meshes", "right_outer_knuckle.stl")
         self.rgt_outer.lnks[1]['rgba'] = [.2, .2, .2, 1]
         self.rgt_outer.lnks[2]['name'] = "right_finger"
         self.rgt_outer.lnks[2]['loc_pos'] = np.zeros(3)
         self.rgt_outer.lnks[2]['com'] = np.array([2.5618e-14, 0.016413, 0.029258])
         self.rgt_outer.lnks[2]['mass'] = 0.048304
-        self.rgt_outer.lnks[2]['meshfile'] = os.path.join(this_dir, "stl", "right_finger.stl")
+        self.rgt_outer.lnks[2]['meshfile'] = os.path.join(this_dir, "meshes", "right_finger.stl")
         self.rgt_outer.lnks[2]['rgba'] = [.2, .2, .2, 1]
         # - rgt_inner
         self.rgt_inner.lnks[1]['name'] = "right_inner_knuckle"
         self.rgt_inner.lnks[1]['loc_pos'] = np.zeros(3)
         self.rgt_inner.lnks[1]['com'] = np.array([1.866e-06, -0.022047, 0.026133])
         self.rgt_inner.lnks[1]['mass'] = 0.023013
-        self.rgt_inner.lnks[1]['meshfile'] = os.path.join(this_dir, "stl", "right_inner_knuckle.stl")
+        self.rgt_inner.lnks[1]['meshfile'] = os.path.join(this_dir, "meshes", "right_inner_knuckle.stl")
         self.rgt_inner.lnks[1]['rgba'] = [.2, .2, .2, 1]
         # reinitialize
         self.lft_inner.reinitialize()
@@ -133,7 +132,7 @@ if __name__ == '__main__':
     import visualization.panda.world as wd
     import modeling.geometricmodel as gm
 
-    base = wd.World(camp=[2, 0, 1], lookatpos=[0, 0, 0])
+    base = wd.World(campos=[2, 0, 1], lookatpos=[0, 0, 0])
     gm.gen_frame().attach_to(base)
     # for angle in np.linspace(0, .85, 8):
     #     xag = XArmGripper()

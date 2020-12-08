@@ -1,16 +1,17 @@
+import math
+import numpy as np
+import basis.robotmath as rm
 import modeling.meshtools as mt
 
 if __name__ == '__main__':
     '''
-    The Universal Robot UR3E dae file is not well developed.
-    There is an inherent transformation.
-    Add the following transformation to dae.py loader to bypass the inherent transformation and convert them to stl.
+    There is an inherent transformation in the official Universal Robot UR3E dae file.
+    The old trimesh used by our system does not support applying the transoformation.
+    This file was designed to make up the failure.
+    As 20201208, I have included the transformation in the io/dae.py file. This conversion is no longer needed.
+    It is kept here for reference.
     author: weiwei
     date: 20201207osaka
-    # vertices[:, [1, 2]] = vertices[:, [2, 1]]
-    # vertices[:, 1] = -vertices[:, 1]
-    # face_normals[:, [1, 2]] = face_normals[:, [2, 1]]
-    # face_normals[:, 1] = -face_normals[:, 1]
     '''
     mt.convert_to_stl("base.dae", "base.stl")
     mt.convert_to_stl("shoulder.dae", "shoulder.stl")

@@ -455,7 +455,7 @@ if __name__ == '__main__':
     import numpy as np
 
     wd.World(camp=[1.0, 1,.0, 1.0], lookatpos=[0, 0, 0])
-    objcm = cm.CollisionModel("./objects/bunnysim.stl")
+    objcm = cm.CollisionModel("./objects/bunnysim.meshes")
     homomat = np.eye(4)
     homomat[:3, :3] = rm.rotmat_from_axangle([0, 0, 1], math.pi/2)
     homomat[:3, 3] = np.array([0, 0, 0])

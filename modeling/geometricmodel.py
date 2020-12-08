@@ -131,6 +131,9 @@ class StaticGeometricModel(object):
     def clear_color(self):
         self._pdnp.clearColor()
 
+    def set_scale(self, scale=[1, 1, 1]):
+        self._pdnp.setScale(scale[0], scale[1], scale[2])
+
     def attach_to(self, obj):
         if isinstance(obj, ShowBase):
             # for rendering to base.render
@@ -654,7 +657,7 @@ if __name__ == "__main__":
     import basis.robotmath as rm
     import visualization.panda.world as wd
 
-    base = wd.World(camp=[.1, .1, .1], lookatpos=[0, 0, 0])
+    base = wd.World(campos=[.1, .1, .1], lookatpos=[0, 0, 0])
     this_dir, this_filename = os.path.split(__file__)
     objpath = os.path.join(this_dir, "objects", "bunnysim.stl")
     bunnygm = GeometricModel(objpath)
@@ -663,6 +666,7 @@ if __name__ == "__main__":
     bunnygm.show_localframe()
     rotmat = rm.rotmat_from_axangle([1, 0, 0], math.pi / 2.0)
     bunnygm.set_rotmat(rotmat)
+    bunnygm.set_scale([2,1,3])
 
     bunnygm1 = GeometricModel(objpath)
     bunnygm1.set_color([0.7, 0, 0.7, 1.0])

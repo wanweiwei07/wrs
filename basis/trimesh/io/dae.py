@@ -3,6 +3,7 @@
 import io
 import uuid
 import numpy as np
+from .. import transform_points
 
 try:
     # pip install pycollada
@@ -140,56 +141,20 @@ def _parse_node(node,
     # Parse mesh node
     if isinstance(node, collada.scene.GeometryNode):
         geometry = node.geometry
-        # Create local material map from material symbol to actual material
-        local_material_map = {}
-        # for mn in node.materials:
-        #     symbol = mn.symbol
-        #     m = mn.target
-        #     if m.id in material_map:
-        #         local_material_map[symbol] = material_map[m.id]
-        #     else:
-        #         local_material_map[symbol] = _parse_material(m, resolver)
         # Iterate over primitives of geometry
         for i, primitive in enumerate(geometry.primitives):
             if isinstance(primitive, collada.polylist.Polylist):
                 primitive = primitive.triangleset()
             if isinstance(primitive, collada.triangleset.TriangleSet):
-                # vertex = primitive.vertex
-                # vertex_index = primitive.vertex_index
-                # vertices = vertex[vertex_index].reshape(len(vertex_index) * 3, 3)
                 vertices = primitive.vertex
-                # vertices[:, [1, 2]] = vertices[:, [2, 1]]
-                # vertices[:, 1] = -vertices[:, 1]
                 faces = primitive.vertex_index
                 normal = primitive.normal
                 vertex_normals = normal[primitive.normal_index]
                 face_normals = (vertex_normals[:, 0, :] + vertex_normals[:, 1, :] + vertex_normals[:, 2, :]) / 3
-                # face_normals[:, [1, 2]] = face_normals[:, [2, 1]]
-                # face_normals[:, 1] = -face_normals[:, 1]
-                # # Get normals if present
-                # normals = None
-                # if primitive.normal is not None:
-                #     normal = primitive.normal
-                #     normal_index = primitive.normal_index
-                #     normals = normal[normal_index].reshape(len(normal_index) * 3, 3)
-                # # Get colors if present
-                # colors = None
-                # s = primitive.sources
-                # if ('COLOR' in s and len(s['COLOR']) > 0 and len(primitive.index) > 0):
-                #     color = s['COLOR'][0][4].data
-                #     color_index = primitive.index[:, :, s['COLOR'][0][0]]
-                #     colors = color[color_index].reshape(len(color_index) * 3, 3)
-                # faces = np.arange(vertices.shape[0]).reshape(vertices.shape[0] // 3, 3)
-                # # Get UV coordinates if possible
-                # vis = None
-                # if primitive.material in local_material_map:
-                #     material = copy.copy(local_material_map[primitive.material])
-                #     uv = None
-                #     if len(primitive.texcoordset) > 0:
-                #         texcoord = primitive.texcoordset[0]
-                #         texcoord_index = primitive.texcoord_indexset[0]
-                #         uv = texcoord[texcoord_index].reshape((len(texcoord_index) * 3, 2))
-                #     vis = visual.texture.TextureVisuals(uv=uv, material=material)
+                if not np.allclose(parent_matrix, np.eye(4), 1e-8):
+                    vertices = transform_points(vertices, parent_matrix)
+                    normalized_matrix = parent_matrix/np.linalg.norm(parent_matrix[:,0])
+                    face_normals = transform_points(face_normals, normalized_matrix, translate=False)
                 primid = '{}.{}'.format(geometry.id, i)
                 meshes[primid] = {
                     'vertices': vertices,

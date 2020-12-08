@@ -24,6 +24,8 @@ class JntLnksMesh(object):
         for id in range(self.jlobject.ndof + 1):
             if self.jlobject.lnks[id]['meshfile'] is not None:
                 self.jlobject.lnks[id]['collisionmodel'] = cm.CollisionModel(self.jlobject.lnks[id]['meshfile'])
+                if self.jlobject.lnks[id]['scale'] is not None:
+                    self.jlobject.lnks[id]['collisionmodel'].set_scale(self.jlobject.lnks[id]['scale'])
 
     def gen_meshmodel(self, tcp_jntid=None, tcp_loc_pos=None, tcp_loc_rotmat=None, toggletcpcs=True, togglejntscs=False,
                       name='robotmesh', drawhand=True, rgbargt=None, rgbalft=None):
@@ -35,6 +37,8 @@ class JntLnksMesh(object):
                 rotmat = self.jlobject.lnks[id]['gl_rotmat']
                 this_collisionmodel.set_homomat(rm.homomat_from_posrot(pos, rotmat))
                 this_collisionmodel.set_color(self.jlobject.lnks[id]['rgba'])
+                if self.jlobject.lnks[id]['scale'] is not None:
+                    this_collisionmodel.set_scale(self.jlobject.lnks[id]['scale'])
                 this_collisionmodel.attach_to(meshmodel)
         # tool center coord
         if toggletcpcs:

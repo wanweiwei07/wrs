@@ -68,7 +68,8 @@ class JLChain(object):
             lnks[id]['mass'] = 0  # the visual adjustment is ignored for simplisity
             lnks[id]['meshfile'] = None
             lnks[id]['collisionmodel'] = None
-            lnks[id]['rgba'] = np.array([.7, .7, .7, 1])
+            lnks[id]['scale'] = None # 3 list
+            lnks[id]['rgba'] = [.7, .7, .7, 1] # 4 list
         for id in range(self.ndof + 2):
             jnts[id]['type'] = 'revolute'
             jnts[id]['parent'] = id - 1

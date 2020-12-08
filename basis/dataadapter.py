@@ -202,7 +202,7 @@ def pandageom_from_vf(vertices, facenormals, triangles, name='auto'):
                 break
         with open('selfloader.txt', 'wb') as fp2:
             ur3base_model  = pg.loadstlaspandanp_fn(ur3base_filepath)
-            ur3base_filepath = os.path.join(this_dir, "ur3stl", "base.stl")
+            ur3base_filepath = os.path.join(this_dir, "ur3stl", "base.meshes")
             geomNodeCollection = ur3base_model.findAllMatches('**/+GeomNode')
             for nodePath in geomNodeCollection:
                 geomNode = nodePath.node()
@@ -390,7 +390,7 @@ def nodepath_from_points(vertices, rgbas=None, name=''):
 
 def loadfile_vf(objpath):
     """
-    load stl objects into pandanp
+    load meshes objects into pandanp
     use face normals to pack
     :param objpath:
     :return:
@@ -404,7 +404,7 @@ def loadfile_vf(objpath):
 
 def loadfile_vvnf(objpath):
     """
-    load stl objects into panda nodepath
+    load meshes objects into panda nodepath
     use vertex normals to pack
     :param objpath:
     :return:

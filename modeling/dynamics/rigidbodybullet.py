@@ -23,7 +23,7 @@ base.pggen.plotAxis(base.render)
 # np = base.render.attachNewNode(node)
 # np.setPos(0, 0, 0)
 
-model = cm.CollisionModel("./objects/bunnysim.stl")
+model = cm.CollisionModel("./objects/bunnysim.meshes")
 # model.reparentTo(base.render)
 # model.setMat(Mat4.rotateMat(10, Vec3(1,0,0)))
 # model.setPos(0,0,300)

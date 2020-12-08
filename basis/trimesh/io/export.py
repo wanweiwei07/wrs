@@ -20,7 +20,7 @@ def export_mesh(mesh, file_obj, file_type=None):
     Arguments
     ---------
     file_obj: a filename string or a file-like object
-    file_type: str representing file type (eg: 'stl')
+    file_type: str representing file type (eg: 'meshes')
     process:   boolean flag, whether to process the mesh on load
     Returns:
     mesh: a single Trimesh object, or a list of Trimesh objects, 

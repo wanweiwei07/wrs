@@ -89,12 +89,12 @@ if __name__ == '__main__':
     import visualization.panda.world as wd
 
     base = wd.World(camp=[.7,.7,.7], lookatpos=[0, 0, 0])
-    objcm = cm.CollisionModel("./objects/bunnysim.stl")
+    objcm = cm.CollisionModel("./objects/bunnysim.meshes")
     objcm.setcolor(np.array([.2,.5,0,1]))
     objcm.setpos(np.array([.01,-.01,.01]))
     objcm.reparent_to(base.render)
     objcm.showcn()
-    objcm2 = cm.CollisionModel("./objects/housing.stl")
+    objcm2 = cm.CollisionModel("./objects/housing.meshes")
     objcm2.setcolor(np.array([1,.5,0,1]))
     objcm2.reparent_to(base.render)
     objcm2.showcn()
