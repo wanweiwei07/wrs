@@ -15,27 +15,27 @@ class JLChain(object):
     The joint types include "revolute", "prismatic", "end"; One JlChain object alwyas has two "end" joints
     """
 
-    def __init__(self, position=np.zeros(3), rotmat=np.eye(3), homeconf=np.zeros(6), name='manipulator'):
+    def __init__(self, pos=np.zeros(3), rotmat=np.eye(3), homeconf=np.zeros(6), name='manipulator'):
         """
         initialize a manipulator
         naming rules
         allvalues -- all values: values at all joints including the fixed ones at the base and the end (both are 0)
         conf -- configuration: target joint values
-        :param position:
+        :param pos:
         :param rotmat:
         :param homeconf:
         :param name:
         """
         self.name = name
-        self.position = np.array(position)
-        self.rotmat = np.array(rotmat)
+        self.pos = pos
+        self.rotmat = rotmat
         self.ndof = homeconf.shape[0]
         self._zeroconf = np.zeros(self.ndof)
         self._homeconf = homeconf.astype('float64')
         self.jntrng_safemargin = 0
         # initialize joints and links
         self.lnks, self.jnts = self._init_jlchain()
-        self.tgtjnts = range(1,self.ndof+1)
+        self.tgtjnts = range(1, self.ndof + 1)
         self.goto_homeconf()
         # default tcp
         self.tcp_jntid = -1
@@ -68,16 +68,16 @@ class JLChain(object):
             lnks[id]['mass'] = 0  # the visual adjustment is ignored for simplisity
             lnks[id]['meshfile'] = None
             lnks[id]['collisionmodel'] = None
-            lnks[id]['scale'] = None # 3 list
-            lnks[id]['rgba'] = [.7, .7, .7, 1] # 4 list
+            lnks[id]['scale'] = None  # 3 list
+            lnks[id]['rgba'] = [.7, .7, .7, 1]  # 4 list
         for id in range(self.ndof + 2):
             jnts[id]['type'] = 'revolute'
             jnts[id]['parent'] = id - 1
             jnts[id]['child'] = id + 1
-            jnts[id]['loc_pos'] = np.array([0, .1, 0])
+            jnts[id]['loc_pos'] = np.array([0, .1, 0]) if id > 0 else np.array([0, 0, 0])
             jnts[id]['loc_rotmat'] = np.eye(3)
             jnts[id]['loc_motionax'] = np.array([0, 0, 1])  # rot ax for rev joint, linear ax for pris joint
-            jnts[id]['gl_pos0'] = jnts[id]['loc_pos'] # to be updated by self._update_fk
+            jnts[id]['gl_pos0'] = jnts[id]['loc_pos']  # to be updated by self._update_fk
             jnts[id]['gl_rotmat0'] = jnts[id]['loc_rotmat']  # to be updated by self._update_fk
             jnts[id]['gl_motionax'] = jnts[id]['loc_motionax']  # to be updated by self._update_fk
             jnts[id]['gl_posq'] = jnts[id]['gl_pos0']  # to be updated by self._update_fk
@@ -85,8 +85,8 @@ class JLChain(object):
             jnts[id]['rngmin'] = -(math.pi - self.jntrng_safemargin)
             jnts[id]['rngmax'] = +(math.pi - self.jntrng_safemargin)
             jnts[id]['motion_val'] = 0
-        jnts[0]['loc_pos'] = self.position  # TODO, do not change local
-        jnts[0]['loc_rotmat'] = self.rotmat
+        jnts[0]['gl_pos0'] = self.pos  # This is not necessary, for easy read
+        jnts[0]['gl_rotmat0'] = self.rotmat
         jnts[0]['type'] = 'end'
         jnts[self.ndof + 1]['loc_pos'] = np.array([0, 0, 0])
         jnts[self.ndof + 1]['child'] = -1
@@ -107,8 +107,8 @@ class JLChain(object):
             # update joint values
             pjid = self.jnts[id]['parent']
             if pjid == -1:
-                self.jnts[id]['gl_pos0'] = self.jnts[id]['loc_pos']
-                self.jnts[id]['gl_rotmat0'] = self.jnts[id]['loc_rotmat']
+                self.jnts[id]['gl_pos0'] = self.pos
+                self.jnts[id]['gl_rotmat0'] = self.rotmat
             else:
                 self.jnts[id]['gl_pos0'] = self.jnts[pjid]['gl_posq'] + np.dot(self.jnts[pjid]['gl_rotmatq'],
                                                                                self.jnts[id]['loc_pos'])
@@ -136,11 +136,17 @@ class JLChain(object):
 
     @property
     def homeconf(self):
-        return np.array([self._homeconf[i-1] for i in self.tgtjnts])
+        return np.array([self._homeconf[i - 1] for i in self.tgtjnts])
 
     @property
     def zeroconf(self):
-        return np.array([self._zeroconf[i-1] for i in self.tgtjnts])
+        return np.array([self._zeroconf[i - 1] for i in self.tgtjnts])
+
+    def fix_to(self, pos, rotmat):
+        # fix the connecting end of the jlchain to the given pos and rotmat
+        self.pos = pos
+        self.rotmat = rotmat
+        self._update_fk()
 
     def set_homeconf(self, jnt_values=None):
         """
@@ -185,25 +191,6 @@ class JLChain(object):
         """
         return self._ikslvr.get_globaltcp(tcp_jntid, tcp_loc_pos, tcp_loc_rotmat)
 
-    # def jacobian(self):  # TODO: merge with jlik
-    #     """
-    #     compute the jacobian matrix
-    #     :return: jmat, a 6xn nparray
-    #     author: weiwei
-    #     date: 20161202, 20200331, 20200705
-    #     """
-    #     jmat = np.zeros((6, len(self.tgtjnts)))
-    #     counter = 0
-    #     for id in self.tgtjnts:
-    #         if self.jnts[id]["type"] == "revolute":
-    #             grax = self.jnts[id]["gl_motionax"]
-    #             jmat[:, counter] = np.append(
-    #                 np.cross(grax, self.jnts[self.tgtjnts[-1]]["gl_posq"] - self.jnts[id]["gl_posq"]), grax)
-    #         elif self.jnts[id]["type"] == "prismatic":
-    #             jmat[:, counter] = np.append(self.jnts[id]["gl_motionax"], np.zeros(3))
-    #         counter += 1
-    #     return jmat
-
     def get_jntranges(self):
         """
         get jntsrnage
@@ -238,7 +225,7 @@ class JLChain(object):
         author: weiwei
         date: 20161211osaka
         """
-        self.fk(self.homeconf)
+        self.fk(jnt_values=self.homeconf)
 
     def goto_zeroconf(self):
         """
@@ -247,7 +234,7 @@ class JLChain(object):
         author: weiwei
         date: 20161211osaka
         """
-        self.fk(self.zeroconf)
+        self.fk(jnt_values=self.zeroconf)
 
     def get_jntvalues(self):
         """
@@ -262,6 +249,25 @@ class JLChain(object):
             jnt_values[counter] = self.jnts[id]['motion_val']
             counter += 1
         return jnt_values
+
+    # def jacobian(self):  # TODO: merge with jlik
+    #     """
+    #     compute the jacobian matrix
+    #     :return: jmat, a 6xn nparray
+    #     author: weiwei
+    #     date: 20161202, 20200331, 20200705
+    #     """
+    #     jmat = np.zeros((6, len(self.tgtjnts)))
+    #     counter = 0
+    #     for id in self.tgtjnts:
+    #         if self.jnts[id]["type"] == "revolute":
+    #             grax = self.jnts[id]["gl_motionax"]
+    #             jmat[:, counter] = np.append(
+    #                 np.cross(grax, self.jnts[self.tgtjnts[-1]]["gl_posq"] - self.jnts[id]["gl_posq"]), grax)
+    #         elif self.jnts[id]["type"] == "prismatic":
+    #             jmat[:, counter] = np.append(self.jnts[id]["gl_motionax"], np.zeros(3))
+    #         counter += 1
+    #     return jmat
 
     # def chkrng(self, jnt_values):  # TODO: merge with jlik
     #     """
@@ -405,11 +411,11 @@ class JLChain(object):
 
     def gen_stickmodel(self, rgba=np.array([.5, 0, 0, 1]), thickness=.01, jointratio=1.62, linkratio=.62,
                        tcp_jntid=None, tcp_loc_pos=None, tcp_loc_rotmat=None,
-                       toggletcpcs=True, togglejntscs=False, togglecntjnt=False, name='robotstick'):
+                       toggletcpcs=True, togglejntscs=False, toggleconnjnt=False, name='robotstick'):
         return self._mg.gen_stickmodel(rgba=rgba, thickness=thickness, jointratio=jointratio, linkratio=linkratio,
                                        tcp_jntid=tcp_jntid, tcp_loc_pos=tcp_loc_pos,
                                        tcp_loc_rotmat=tcp_loc_rotmat, toggletcpcs=toggletcpcs,
-                                       togglejntscs=togglejntscs, togglecntjnt=togglecntjnt, name=name)
+                                       togglejntscs=togglejntscs, toggleconnjnt=toggleconnjnt, name=name)
 
     def gen_endsphere(self):
         return self._mg.gen_endsphere()
@@ -421,7 +427,7 @@ if __name__ == "__main__":
     import robotsim._kinematics.jlchainmesh as jlm
     import modeling.geometricmodel as gm
 
-    base = wd.World(camp=[3, 0, 3], lookatpos=[0, 0, 0])
+    base = wd.World(campos=[3, 0, 3], lookatpos=[0, 0, 0])
     gm.gen_frame().attach_to(base)
 
     jlinstance = JLChain(homeconf=np.array([0, 0, 0, 0, 0, 0, 0, 0]))
@@ -458,7 +464,7 @@ if __name__ == "__main__":
                                   local_minima="accept", toggle_debug=True)
     toc = time.time()
     print("ik cost: ", toc - tic, jntvalues)
-    jlinstance.fk(jntvalues)
+    jlinstance.fk(jnt_values=jntvalues)
     jlinstance.gen_stickmodel(tcp_jntid=tcp_jntidlist, tcp_loc_pos=tcp_loc_poslist,
                               tcp_loc_rotmat=tcp_loc_rotmatlist, togglejntscs=True).attach_to(base)
     base.run()

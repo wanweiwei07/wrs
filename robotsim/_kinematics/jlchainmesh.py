@@ -51,7 +51,7 @@ class JntLnksMesh(object):
 
     def gen_stickmodel(self, rgba=np.array([.5, 0, 0, 1]), thickness=.01, jointratio=1.62, linkratio=.62,
                        tcp_jntid=None, tcp_loc_pos=None, tcp_loc_rotmat=None, toggletcpcs=True, togglejntscs=False,
-                       togglecntjnt=False, name='robotstick'):
+                       toggleconnjnt=False, name='robotstick'):
         """
         generate the stick model for a jntlnk object
         snp means stick nodepath
@@ -61,7 +61,7 @@ class JntLnksMesh(object):
         :param tcp_loc_rotmat:
         :param toggletcpcs:
         :param togglejntscs:
-        :param togglecntjnt: draw the connecting joint explicitly or not
+        :param toggleconnjnt: draw the connecting joint explicitly or not
         :param name:
         :return:
 
@@ -71,7 +71,7 @@ class JntLnksMesh(object):
         stickmodel = gm.StaticGeometricModel(name=name)
         id = 0
         loopdof = self.jlobject.ndof + 1
-        if togglecntjnt:
+        if toggleconnjnt:
             loopdof = self.jlobject.ndof + 2
         while id < loopdof:
             cjid = self.jlobject.jnts[id]['child']

@@ -278,7 +278,7 @@ class JntLnksIK(object):
             tcp_loc_rotmat = tcp_loc_rotmat[0]
         jntvalues_bk = self.jlobject.get_jntvalues()
         jntvalues_iter = self.jlobject.homeconf if startconf is None else startconf.copy()
-        self.jlobject.fk(jntvalues_iter)
+        self.jlobject.fk(jnt_values=jntvalues_iter)
         jntvalues_ref = jntvalues_iter.copy()
 
         if isinstance(tcp_jntid, list):
@@ -328,8 +328,8 @@ class JntLnksIK(object):
                     axaj.plot(ajpath)
                     plt.show()
                 # self.regulate_jnts()
-                jntvalues_return = self.jlobject.getjntvalues()
-                self.jlobject.fk(jntvalues_bk)
+                jntvalues_return = self.jlobject.get_jntvalues()
+                self.jlobject.fk(jnt_values=jntvalues_bk)
                 return jntvalues_return
             else:
                 # judge local minima
@@ -406,7 +406,7 @@ class JntLnksIK(object):
                 jntvalues_iter += dq_minimized  # translation problem
                 # isdragged, jntvalues_iter = self.check_jntsrange_drag(jntvalues_iter)
                 # print(jntvalues_iter)
-                self.jlobject.fk(jntvalues_iter)
+                self.jlobject.fk(jnt_values=jntvalues_iter)
                 # if toggle_debug:
                 #     jlmgen.gensnp(jlinstance, tcp_jntid=tcp_jntid, tcp_loc_pos=tcp_loc_pos,
                 #                   tcp_loc_rotmat=tcp_loc_rotmat, togglejntscs=True).reparentTo(base.render)
