@@ -49,7 +49,7 @@ class World(ShowBase, object):
         self._ablightnode = self.cam.attachNewNode(ablight)
         self.render.setLight(self._ablightnode)
         ## point light 1
-        ptlight0 = PointLight("pointlight1")
+        ptlight0 = PointLight("pointlight0")
         ptlight0.setColor(Vec4(1, 1, 1, 1))
         self._ptlightnode0 = self.cam.attachNewNode(ptlight0)
         self._ptlightnode0.setPos(0, 0, 0)
@@ -82,10 +82,10 @@ class World(ShowBase, object):
         props.setSize(w, h)
         self.win.requestProperties(props)
         # set up cartoon effect
-        self._separation = 1
+        self._separation = 1.2
         self.filters = CommonFilters(self.win, self.cam)
         self.filters.setCartoonInk(separation=self._separation)
-        # self.setcartoonshader(False)
+        # self.setcartoonshader(True)
         # set up physics world
         self.physicsworld = BulletWorld()
         self.physicsworld.setGravity(Vec3(0, 0, -9.81))
@@ -207,11 +207,10 @@ class World(ShowBase, object):
             tempnode.setShader(loader.loadShader(lightinggen))
             self.cam.node().setInitialState(tempnode.getState())
             # self.render.setShaderInput("light", self.cam)
-            self.render.setShaderInput("light", self.__ptlightnode0)
+            self.render.setShaderInput("light", self._ablightnode)
         normalsBuffer = self.win.makeTextureBuffer("normalsBuffer", 0, 0)
         normalsBuffer.setClearColor(Vec4(0.5, 0.5, 0.5, 1))
-        normalsCamera = self.makeCamera(
-            normalsBuffer, lens=self.cam.node().getLens(), scene=self.render)
+        normalsCamera = self.makeCamera(normalsBuffer, lens=self.cam.node().getLens(), scene=self.render)
         normalsCamera.reparentTo(self.cam)
         normalgen = Filename.fromOsSpecific(os.path.join(this_dir, "shaders", "normalGen.sha"))
         tempnode = NodePath("temp")
@@ -222,9 +221,9 @@ class World(ShowBase, object):
         drawnScene.setColor(1, 1, 1, 0)
         drawnScene.reparentTo(render2d)
         self.drawnScene = drawnScene
-        self.separation = 0.0007
-        self.cutoff = 0.05
-        normalgen = Filename.fromOsSpecific(os.path.join(this_dir, "shaders", "inkGen.sha"))
-        drawnScene.setShader(loader.loadShader(normalgen))
+        self.separation = 0.0005
+        self.cutoff = 0.01
+        inkGen  = Filename.fromOsSpecific(os.path.join(this_dir, "shaders", "inkGen.sha"))
+        drawnScene.setShader(loader.loadShader(inkGen ))
         drawnScene.setShaderInput("separation", Vec4(self.separation, 0, self.separation, 0))
         drawnScene.setShaderInput("cutoff", Vec4(self.cutoff))
