@@ -69,6 +69,7 @@ class StaticGeometricModel(object):
                 self._name = name
             if btransparency:
                 self._pdnp.setTransparency(TransparencyAttrib.MDual)
+                # self._pdnp.setShaderAuto()
             self._localframe = None
 
     @property

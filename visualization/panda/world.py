@@ -1,5 +1,5 @@
 from panda3d.core import PerspectiveLens, OrthographicLens, AmbientLight, PointLight, Vec4, Vec3, Point3, \
-    WindowProperties, Filename, NodePath
+    WindowProperties, Filename, NodePath, Vec2
 from direct.filter.CommonFilters import CommonFilters
 from direct.showbase.ShowBase import ShowBase
 import visualization.panda.inputmanager as im
@@ -82,10 +82,11 @@ class World(ShowBase, object):
         props.setSize(w, h)
         self.win.requestProperties(props)
         # set up cartoon effect
-        self._separation = 1.2
-        self.filters = CommonFilters(self.win, self.cam)
-        self.filters.setCartoonInk(separation=self._separation)
-        # self.setcartoonshader(True)
+        # self._separation = 1
+        # self.filters = CommonFilters(self.win, self.cam)
+        # self.filters.setCartoonInk(separation=self._separation)
+        # self.setcartoonshader(False)
+        self.setoutlineshader(False)
         # set up physics world
         self.physicsworld = BulletWorld()
         self.physicsworld.setGravity(Vec3(0, 0, -9.81))
@@ -202,7 +203,7 @@ class World(ShowBase, object):
 
         this_dir, this_filename = os.path.split(__file__)
         if switchtoon:
-            lightinggen = Filename.fromOsSpecific(os.path.join(this_dir, "shaders", "lightingGen.sha"))
+            lightinggen = Filename.fromOsSpecific(os.path.join(this_dir, "shaders", "lighting_gen.sha"))
             tempnode = NodePath("temp")
             tempnode.setShader(loader.loadShader(lightinggen))
             self.cam.node().setInitialState(tempnode.getState())
@@ -212,7 +213,7 @@ class World(ShowBase, object):
         normalsBuffer.setClearColor(Vec4(0.5, 0.5, 0.5, 1))
         normalsCamera = self.makeCamera(normalsBuffer, lens=self.cam.node().getLens(), scene=self.render)
         normalsCamera.reparentTo(self.cam)
-        normalgen = Filename.fromOsSpecific(os.path.join(this_dir, "shaders", "normalGen.sha"))
+        normalgen = Filename.fromOsSpecific(os.path.join(this_dir, "shaders", "normal_gen.sha"))
         tempnode = NodePath("temp")
         tempnode.setShader(loader.loadShader(normalgen))
         normalsCamera.node().setInitialState(tempnode.getState())
@@ -221,9 +222,46 @@ class World(ShowBase, object):
         drawnScene.setColor(1, 1, 1, 0)
         drawnScene.reparentTo(render2d)
         self.drawnScene = drawnScene
-        self.separation = 0.0005
-        self.cutoff = 0.01
-        inkGen  = Filename.fromOsSpecific(os.path.join(this_dir, "shaders", "inkGen.sha"))
-        drawnScene.setShader(loader.loadShader(inkGen ))
-        drawnScene.setShaderInput("separation", Vec4(self.separation, 0, self.separation, 0))
+        self.separation = 0.001
+        self.cutoff = 0.05
+        inkGen  = Filename.fromOsSpecific(os.path.join(this_dir, "shaders", "ink_gen.sha"))
+        drawnScene.setShader(loader.loadShader(inkGen))
+        drawnScene.setShaderInput("separation", Vec4(0, 0, self.separation, 0))
         drawnScene.setShaderInput("cutoff", Vec4(self.cutoff))
+
+    def setoutlineshader(self, switchtoon=False):
+        """
+        set cartoon shader, the following program is a reference
+        https://github.com/panda3d/panda3d/blob/master/samples/cartoon-shader/advanced.py
+        :return:
+        author: weiwei
+        date: 20180601
+        """
+
+        this_dir, this_filename = os.path.split(__file__)
+        if switchtoon:
+            lightinggen = Filename.fromOsSpecific(os.path.join(this_dir, "shaders", "lighting_gen.sha"))
+            tempnode = NodePath("temp")
+            tempnode.setShader(loader.loadShader(lightinggen))
+            self.cam.node().setInitialState(tempnode.getState())
+            # self.render.setShaderInput("light", self.cam)
+            self.render.setShaderInput("light", self._ablightnode)
+        depthBuffer = self.win.makeTextureBuffer("depthBuffer", 0, 0)
+        depthBuffer.setClearColor(Vec4(1, 1, 1, 1))
+        depthCamera = self.makeCamera(depthBuffer, lens=self.cam.node().getLens(), scene=self.render)
+        depthCamera.reparentTo(self.cam)
+        outlinegen = Filename.fromOsSpecific(os.path.join(this_dir, "shaders", "depth_gen.sha"))
+        tempnode = NodePath("temp")
+        tempnode.setShader(loader.loadShader(outlinegen))
+        depthCamera.node().setInitialState(tempnode.getState())
+        drawnScene = depthBuffer.getTextureCard()
+        drawnScene.setTransparency(1)
+        drawnScene.setColor(1, 1, 1, 0)
+        drawnScene.reparentTo(render2d)
+        self.drawnScene = drawnScene
+        self.cutoff = 0.05
+        outline_gen  = Filename.fromOsSpecific(os.path.join(this_dir, "shaders", "outline_gen.sha"))
+        drawnScene.setShader(loader.loadShader(outline_gen))
+        drawnScene.setShaderInput("cutoff", Vec4(self.cutoff))
+        drawnScene.setShaderInput("windowsize", Vec2(self.win.getXSize(), self.win.getYSize()))
+

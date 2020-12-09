@@ -1,0 +1,44 @@
+// cg shader, generate boundaries considering depth buffer
+// author: weiwei
+// date: 20201209
+
+void vshader(float4 vtx_position : POSITION,
+             float2 vtx_texcoord0 : TEXCOORD0,
+             out float4 l_position : POSITION,
+             out float2 l_texcoord0 : TEXCOORD0,
+             uniform float4x4 mat_modelproj)
+{
+  l_position = mul(mat_modelproj, vtx_position);
+  l_texcoord0 = vtx_texcoord0;
+}
+
+void fshader(float2 l_texcoord0 : TEXCOORD0,
+             uniform sampler2D tex_0 : TEXUNIT0,
+             uniform float4 k_cutoff : C6,
+             uniform float2 windowsize : C8,
+             out float4 o_color : COLOR,
+             uniform float4x4 mat_modelproj)
+{
+  float sepx = 1/windowsize.x;
+  float sepy = 1/windowsize.y;
+  float4 color0 = tex2D(tex_0, l_texcoord0);
+  float2 texcoord1 = l_texcoord0+float2(sepx, 0);
+  float4 color1 = tex2D(tex_0, texcoord1);
+  float2 texcoord2 = l_texcoord0+float2(0, sepy);
+  float4 color2 = tex2D(tex_0, texcoord2);
+  float2 texcoord3 = l_texcoord0+float2(-sepx, 0);
+  float4 color3 = tex2D(tex_0, texcoord3);
+  float2 texcoord4 = l_texcoord0+float2(0, -sepy);
+  float4 color4 = tex2D(tex_0, texcoord4);
+  float2 texcoord5 = l_texcoord0+float2(sepx, sepy);
+  float4 color5 = tex2D(tex_0, texcoord5);
+  float2 texcoord6 = l_texcoord0+float2(-sepx, -sepy);
+  float4 color6 = tex2D(tex_0, texcoord6);
+  float2 texcoord7 = l_texcoord0+float2(-sepx, sepy);
+  float4 color7 = tex2D(tex_0, texcoord7);
+  float2 texcoord8 = l_texcoord0+float2(sepx, -sepy);
+  float4 color8 = tex2D(tex_0, texcoord8);
+  o_color = (color0-color1).z > .01||(color0-color2).z > .01||(color0-color3).z > .01||(color0-color4).z > .01 ||
+            (color0-color5).z > .01||(color0-color6).z > .01||(color0-color7).z > .01||(color0-color8).z > .01?
+  float4(0, 0, 0, 1) : float4(0, 0, 0, 0);
+}
