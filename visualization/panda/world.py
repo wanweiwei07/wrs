@@ -258,10 +258,6 @@ class World(ShowBase, object):
         drawnScene.setTransparency(1)
         drawnScene.setColor(1, 1, 1, 0)
         drawnScene.reparentTo(render2d)
-        self.drawnScene = drawnScene
-        self.cutoff = 0.05
         outline_gen  = Filename.fromOsSpecific(os.path.join(this_dir, "shaders", "outline_gen.sha"))
         drawnScene.setShader(loader.loadShader(outline_gen))
-        drawnScene.setShaderInput("cutoff", Vec4(self.cutoff))
-        drawnScene.setShaderInput("windowsize", Vec2(self.win.getXSize(), self.win.getYSize()))
 

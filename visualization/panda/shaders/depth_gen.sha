@@ -16,8 +16,5 @@ void vshader(float4 vtx_position : POSITION,
 
 void fshader(float4 l_color0: COLOR0,
              out float4 o_color : COLOR) {
-    //float z = max(l_pos.z, 0.0);
-    //float v0 = min(z, 1.0);
-    //o_color = float4(v0, v0, v0, 1);
     o_color = l_color0;
 }

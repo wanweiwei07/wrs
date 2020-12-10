@@ -14,13 +14,12 @@ void vshader(float4 vtx_position : POSITION,
 
 void fshader(float2 l_texcoord0 : TEXCOORD0,
              uniform sampler2D tex_0 : TEXUNIT0,
-             uniform float4 k_cutoff : C6,
-             uniform float2 windowsize : C8,
+             uniform float2 sys_windowsize,
              out float4 o_color : COLOR,
              uniform float4x4 mat_modelproj)
 {
-  float sepx = 1/windowsize.x;
-  float sepy = 1/windowsize.y;
+  float sepx = 1/sys_windowsize.x;
+  float sepy = 1/sys_windowsize.y;
   float4 color0 = tex2D(tex_0, l_texcoord0);
   float2 texcoord1 = l_texcoord0+float2(sepx, 0);
   float4 color1 = tex2D(tex_0, texcoord1);
