@@ -2,29 +2,43 @@
 //
 //Cg profile arbvp1 arbfp1
 
-void vshader(float4 vtx_position   : POSITION,
+void vshader(in float2 vtx_texcoord0 : TEXCOORD0,
+             out float2 l_texcoord0 : TEXCOORD0,
+             float4 vtx_position   : POSITION,
              float3 vtx_normal     : NORMAL,
              float4 vtx_color      : COLOR,
              out float4 l_position : POSITION,
-             out float4 l_brite    : TEXCOORD0,
+             out float4 l_brite,
              out float4 l_color    : COLOR,
              uniform float4 mspos_light,
-             uniform float4x4 mat_modelproj,
-             uniform float4x4 attr_material)
+             uniform float4x4 mat_modelproj)
 {
   l_position = mul(mat_modelproj, vtx_position);
   float3 N = normalize(vtx_normal);
   float3 lightVector = normalize(mspos_light - vtx_position);
   l_brite = max(dot(N,lightVector), 0);
-  l_color = attr_material[1];
+  l_color = vtx_color * (1.0 / 255.0);
+  l_texcoord0 = vtx_texcoord0;
 }
 
 
-void fshader(float4 l_brite     : TEXCOORD0,
-             float4 l_color     : COLOR,
-             out float4 o_color : COLOR)
+void fshader(in float2 l_texcoord0 : TEXCOORD0,
+             uniform sampler2D tex_0 : TEXUNIT0,
+             float4 l_brite,
+             in float4 l_color     : COLOR0,
+             out float4 o_color : COLOR0)
 {
   if (l_brite.x<0.5) l_brite=0.8;
   else l_brite=1.2;
-  o_color=l_brite * l_color;
+
+  float4 texcolor = tex2D( tex_0, float2( l_texcoord0) );
+
+  // Apply vertex colours
+  o_color = l_color;
+  // If we have a texture, lets apply that instead
+  if(texcolor.x){
+	o_color = texcolor;
+  }
+  // Apply final lighting
+  o_color *= l_brite;
 }

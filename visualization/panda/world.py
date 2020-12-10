@@ -1,8 +1,8 @@
 from panda3d.core import PerspectiveLens, OrthographicLens, AmbientLight, PointLight, Vec4, Vec3, Point3, \
     WindowProperties, Filename, NodePath, Vec2
-from direct.filter.CommonFilters import CommonFilters
 from direct.showbase.ShowBase import ShowBase
 import visualization.panda.inputmanager as im
+import visualization.panda.filter as flt
 from panda3d.bullet import BulletWorld
 from panda3d.bullet import BulletDebugNode
 import os
@@ -46,8 +46,8 @@ class World(ShowBase, object):
         ## ambient light
         ablight = AmbientLight("ambientlight")
         ablight.setColor(Vec4(0.2, 0.2, 0.2, 1))
-        self._ablightnode = self.cam.attachNewNode(ablight)
-        self.render.setLight(self._ablightnode)
+        self.ablightnode = self.cam.attachNewNode(ablight)
+        self.render.setLight(self.ablightnode)
         ## point light 1
         ptlight0 = PointLight("pointlight0")
         ptlight0.setColor(Vec4(1, 1, 1, 1))
@@ -81,12 +81,12 @@ class World(ShowBase, object):
         props = WindowProperties()
         props.setSize(w, h)
         self.win.requestProperties(props)
+        # outline edge shader
+        self.setoutlineshader()
         # set up cartoon effect
         # self._separation = 1
-        # self.filters = CommonFilters(self.win, self.cam)
-        # self.filters.setCartoonInk(separation=self._separation)
-        # self.setcartoonshader(False)
-        self.setoutlineshader(False)
+        # self.filter = flt.Filter(self.win, self.cam)
+        # self.filter.setCartoonInk(separation=self._separation)
         # set up physics world
         self.physicsworld = BulletWorld()
         self.physicsworld.setGravity(Vec3(0, 0, -9.81))
@@ -229,29 +229,21 @@ class World(ShowBase, object):
         drawnScene.setShaderInput("separation", Vec4(0, 0, self.separation, 0))
         drawnScene.setShaderInput("cutoff", Vec4(self.cutoff))
 
-    def setoutlineshader(self, switchtoon=False):
+    def setoutlineshader(self):
         """
         set cartoon shader, the following program is a reference
         https://github.com/panda3d/panda3d/blob/master/samples/cartoon-shader/advanced.py
         :return:
         author: weiwei
-        date: 20180601
+        date: 20180601, 20201210osaka
         """
-
         this_dir, this_filename = os.path.split(__file__)
-        if switchtoon:
-            lightinggen = Filename.fromOsSpecific(os.path.join(this_dir, "shaders", "lighting_gen.sha"))
-            tempnode = NodePath("temp")
-            tempnode.setShader(loader.loadShader(lightinggen))
-            self.cam.node().setInitialState(tempnode.getState())
-            # self.render.setShaderInput("light", self.cam)
-            self.render.setShaderInput("light", self._ablightnode)
         depthBuffer = self.win.makeTextureBuffer("depthBuffer", 0, 0)
         depthBuffer.setClearColor(Vec4(1, 1, 1, 1))
         depthCamera = self.makeCamera(depthBuffer, lens=self.cam.node().getLens(), scene=self.render)
         depthCamera.reparentTo(self.cam)
         outlinegen = Filename.fromOsSpecific(os.path.join(this_dir, "shaders", "depth_gen.sha"))
-        tempnode = NodePath("temp")
+        tempnode = NodePath("depth")
         tempnode.setShader(loader.loadShader(outlinegen))
         depthCamera.node().setInitialState(tempnode.getState())
         drawnScene = depthBuffer.getTextureCard()
@@ -260,4 +252,3 @@ class World(ShowBase, object):
         drawnScene.reparentTo(render2d)
         outline_gen  = Filename.fromOsSpecific(os.path.join(this_dir, "shaders", "outline_gen.sha"))
         drawnScene.setShader(loader.loadShader(outline_gen))
-
