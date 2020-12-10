@@ -1,8 +1,8 @@
 from panda3d.core import PerspectiveLens, OrthographicLens, AmbientLight, PointLight, Vec4, Vec3, Point3, \
-    WindowProperties, Filename, NodePath, Vec2
+    WindowProperties, Filename, NodePath, Shader, GraphicsPipe, FrameBufferProperties, GraphicsOutput
 from direct.showbase.ShowBase import ShowBase
 import visualization.panda.inputmanager as im
-import visualization.panda.filter as flt
+# import visualization.panda.filter as flt
 from panda3d.bullet import BulletWorld
 from panda3d.bullet import BulletDebugNode
 import os
@@ -82,9 +82,9 @@ class World(ShowBase, object):
         props.setSize(w, h)
         self.win.requestProperties(props)
         # outline edge shader
-        self.setoutlineshader()
+        self.set_outlineshader()
         # set up cartoon effect
-        # self._separation = 1
+        # self._separation = .7
         # self.filter = flt.Filter(self.win, self.cam)
         # self.filter.setCartoonInk(separation=self._separation)
         # set up physics world
@@ -188,11 +188,10 @@ class World(ShowBase, object):
         author: weiwei
         date: 20180606
         """
-
         self.cam.lookAt(lookatpos[0], lookatpos[1], lookatpos[2])
         self.inputmgr = im.InputManager(self, lookatpos, self.pggen)
 
-    def setcartoonshader(self, switchtoon=False):
+    def set_cartoonshader(self, switchtoon=False):
         """
         set cartoon shader, the following program is a reference
         https://github.com/panda3d/panda3d/blob/master/samples/cartoon-shader/advanced.py
@@ -200,7 +199,6 @@ class World(ShowBase, object):
         author: weiwei
         date: 20180601
         """
-
         this_dir, this_filename = os.path.split(__file__)
         if switchtoon:
             lightinggen = Filename.fromOsSpecific(os.path.join(this_dir, "shaders", "lighting_gen.sha"))
@@ -224,31 +222,92 @@ class World(ShowBase, object):
         self.drawnScene = drawnScene
         self.separation = 0.001
         self.cutoff = 0.05
-        inkGen  = Filename.fromOsSpecific(os.path.join(this_dir, "shaders", "ink_gen.sha"))
+        inkGen = Filename.fromOsSpecific(os.path.join(this_dir, "shaders", "ink_gen.sha"))
         drawnScene.setShader(loader.loadShader(inkGen))
         drawnScene.setShaderInput("separation", Vec4(0, 0, self.separation, 0))
         drawnScene.setShaderInput("cutoff", Vec4(self.cutoff))
 
-    def setoutlineshader(self):
+    def set_outlineshader(self):
         """
-        set cartoon shader, the following program is a reference
-        https://github.com/panda3d/panda3d/blob/master/samples/cartoon-shader/advanced.py
+        document 1: https://qiita.com/nmxi/items/bfd10a3b3f519878e74e
+        document 2: https://docs.panda3d.org/1.10/python/programming/shaders/list-of-cg-inputs
         :return:
         author: weiwei
         date: 20180601, 20201210osaka
         """
-        this_dir, this_filename = os.path.split(__file__)
+        depth_sha = """
+        void vshader(float4 vtx_position : POSITION,
+                     float4 vtx_normal : NORMAL,
+                     uniform float4x4 mat_modelproj,
+                     uniform float4x4 mat_modelview,
+                     out float4 l_position : POSITION,
+                     out float4 l_color0: COLOR0) {
+            l_position = mul(mat_modelproj, vtx_position);
+            float depth = l_position.z*.15;
+            l_color0 = float4(depth, depth, depth, 1);
+        }
+        void fshader(float4 l_color0: COLOR0,
+                     uniform sampler2D tex_0 : TEXUNIT0,
+                     out float4 o_color : COLOR) {
+            o_color = l_color0;
+        }"""
+        outline_sha = """
+        void vshader(float4 vtx_position : POSITION,
+             float2 vtx_texcoord0 : TEXCOORD0,
+             uniform float4x4 mat_modelproj,
+             out float4 l_position : POSITION,
+             out float2 l_texcoord0 : TEXCOORD0)
+        {
+          l_position = mul(mat_modelproj, vtx_position);
+          l_texcoord0 = vtx_texcoord0;
+        }
+        void fshader(float2 l_texcoord0 : TEXCOORD0,
+                     uniform sampler2D tex_0 : TEXUNIT0,
+                     uniform float2 sys_windowsize,
+                     out float4 o_color : COLOR)
+        {
+          float sepx = 1/sys_windowsize.x;
+          float sepy = 1/sys_windowsize.y;
+          float4 color0 = tex2D(tex_0, l_texcoord0);
+          float2 texcoord1 = l_texcoord0+float2(sepx, 0);
+          float4 color1 = tex2D(tex_0, texcoord1);
+          float2 texcoord2 = l_texcoord0+float2(0, sepy);
+          float4 color2 = tex2D(tex_0, texcoord2);
+          float2 texcoord3 = l_texcoord0+float2(-sepx, 0);
+          float4 color3 = tex2D(tex_0, texcoord3);
+          float2 texcoord4 = l_texcoord0+float2(0, -sepy);
+          float4 color4 = tex2D(tex_0, texcoord4);
+          float2 texcoord5 = l_texcoord0+float2(sepx, sepy);
+          float4 color5 = tex2D(tex_0, texcoord5);
+          float2 texcoord6 = l_texcoord0+float2(-sepx, -sepy);
+          float4 color6 = tex2D(tex_0, texcoord6);
+          float2 texcoord7 = l_texcoord0+float2(-sepx, sepy);
+          float4 color7 = tex2D(tex_0, texcoord7);
+          float2 texcoord8 = l_texcoord0+float2(sepx, -sepy);
+          float4 color8 = tex2D(tex_0, texcoord8);
+          float2 texcoord9 = l_texcoord0+float2(2*sepx, 0);
+          float4 color9 = tex2D(tex_0, texcoord9);
+          float2 texcoord10 = l_texcoord0+float2(-2*sepx, 0);
+          float4 color10 = tex2D(tex_0, texcoord10);
+          float2 texcoord11 = l_texcoord0+float2(0, 2*sepy);
+          float4 color11 = tex2D(tex_0, texcoord11);
+          float2 texcoord12 = l_texcoord0+float2(0, -2*sepy);
+          float4 color12 = tex2D(tex_0, texcoord12);
+          o_color = (color0-color1).x > .005 || (color0-color2).x > .005 || (color0-color3).x > .005 ||
+                    (color0-color4).x > .005 || (color0-color5).x > .005 || (color0-color6).x > .005 ||
+                    (color0-color7).x > .005 || (color0-color8).x > .005 || (color0-color9).x > .005 ||
+                    (color0-color10).x > .005 || (color0-color11).x > .005 || (color0-color12).x > .005 ?
+                    float4(0, 0, 0, 1) : float4(0, 0, 0, 0);
+        }"""
         depthBuffer = self.win.makeTextureBuffer("depthBuffer", 0, 0)
         depthBuffer.setClearColor(Vec4(1, 1, 1, 1))
         depthCamera = self.makeCamera(depthBuffer, lens=self.cam.node().getLens(), scene=self.render)
         depthCamera.reparentTo(self.cam)
-        outlinegen = Filename.fromOsSpecific(os.path.join(this_dir, "shaders", "depth_gen.sha"))
         tempnode = NodePath("depth")
-        tempnode.setShader(loader.loadShader(outlinegen))
+        tempnode.setShader(Shader.make(depth_sha, Shader.SL_Cg))
         depthCamera.node().setInitialState(tempnode.getState())
         drawnScene = depthBuffer.getTextureCard()
         drawnScene.setTransparency(1)
         drawnScene.setColor(1, 1, 1, 0)
         drawnScene.reparentTo(render2d)
-        outline_gen  = Filename.fromOsSpecific(os.path.join(this_dir, "shaders", "outline_gen.sha"))
-        drawnScene.setShader(loader.loadShader(outline_gen))
+        drawnScene.setShader(Shader.make(outline_sha, Shader.SL_Cg))
