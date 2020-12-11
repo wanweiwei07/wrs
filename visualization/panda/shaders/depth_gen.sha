@@ -10,7 +10,7 @@ void vshader(float4 vtx_position : POSITION,
              out float4 l_position : POSITION,
              out float4 l_color0: COLOR0) {
     l_position = mul(mat_modelproj, vtx_position);
-    float depth = mul(mat_modelview, l_position).w*.15;
+    float depth = l_position.a*.15;
     l_color0 = float4(depth, depth, depth, 1);
 }
 

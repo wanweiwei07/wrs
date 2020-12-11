@@ -28,19 +28,23 @@ class StaticGeometricModel(object):
             self._objpath = copy.deepcopy(objinit.objpath)
             self._trimesh = copy.deepcopy(objinit.trimesh)
             self._pdnp = copy.deepcopy(objinit.pdnp)
-            self._name = copy.deepcopy(objinit.name)
+            self._name = objinit.name
             self._localframe = copy.deepcopy(objinit.localframe)
+            self._pdnp_shader = self._pdnp.find(self._pdnp.name+"_shader")
         else:
+            # make a grandma nodepath to separate markers (-autoshader) and objects (+autoshader)
+            self._name = name
+            self._pdnp = NodePath(name)
             if isinstance(objinit, str):
                 self._objpath = objinit
                 self._trimesh = trimesh.load(self._objpath)
-                self._pdnp = da.trimesh_to_nodepath(self._trimesh)
-                self._name = os.path.splitext(os.path.basename(self._objpath))[0]
+                self._pdnp_shader = da.trimesh_to_nodepath(self._trimesh)
+                self._pdnp_shader.reparentTo(self._pdnp)
             elif isinstance(objinit, trimesh.Trimesh):
                 self._objpath = None
                 self._trimesh = objinit
-                self._pdnp = da.trimesh_to_nodepath(objinit)
-                self._name = name
+                self._pdnp_shader = da.trimesh_to_nodepath(self._trimesh)
+                self._pdnp_shader.reparentTo(self._pdnp)
             # elif isinstance(objinit, o3d.geometry.TriangleMesh):
             #     self._objpath = None
             #     self._trimesh = trimesh.Trimesh(vertices=objinit.vertices, faces=objinit.triangles,
@@ -55,20 +59,24 @@ class StaticGeometricModel(object):
             elif isinstance(objinit, np.ndarray):
                 self._objpath = None
                 self._trimesh = trimesh.Trimesh(objinit)
-                self._pdnp = da.nodepath_from_points(self._trimesh.vertices)
+                self._pdnp_shader = da.nodepath_from_points(self._trimesh.vertices)
+                self._pdnp_shader.reparentTo(self._pdnp)
                 self._name = name
             elif isinstance(objinit, NodePath):
                 self._objpath = None
                 self._trimesh = None
-                self._pdnp = objinit
+                self._pdnp_shader = objinit
+                self._pdnp_shader.reparentTo(self._pdnp)
                 self._name = name
             else:
                 self._objpath = None
                 self._trimesh = None
-                self._pdnp = NodePath(name)
+                self._pdnp_shader = NodePath(name+"_shader")
+                self._pdnp_shader.reparentTo(self._pdnp)
                 self._name = name
             if btransparency:
                 self._pdnp.setTransparency(TransparencyAttrib.MDual)
+            self._pdnp_shader.setName(self.name+"_shader")
             self._localframe = None
 
     @property
@@ -183,10 +191,12 @@ class GeometricModel(StaticGeometricModel):
             self._objpath = copy.deepcopy(objinit.objpath)
             self._trimesh = copy.deepcopy(objinit.trimesh)
             self._pdnp = copy.deepcopy(objinit.pdnp)
+            self._pdnp_shader = self._pdnp.find(self._pdnp.name+"_shader")
             self._name = copy.deepcopy(objinit.name)
             self._localframe = copy.deepcopy(objinit.localframe)
         else:
             super().__init__(objinit=objinit, btransparency=btransparency, name=name)
+        self._pdnp_shader.setShaderAuto()
 
     def set_pos(self, npvec3):
         self._pdnp.setPos(npvec3[0], npvec3[1], npvec3[2])

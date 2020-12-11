@@ -2,7 +2,7 @@ from panda3d.core import PerspectiveLens, OrthographicLens, AmbientLight, PointL
     WindowProperties, Filename, NodePath, Shader, GraphicsPipe, FrameBufferProperties, GraphicsOutput
 from direct.showbase.ShowBase import ShowBase
 import visualization.panda.inputmanager as im
-# import visualization.panda.filter as flt
+import visualization.panda.filter as flt
 from panda3d.bullet import BulletWorld
 from panda3d.bullet import BulletDebugNode
 import os
@@ -16,7 +16,7 @@ import numpy as np
 class World(ShowBase, object):
 
     def __init__(self, campos=np.array([2.0, 0.5, 2.0]), lookatpos=np.array([0, 0, 0.25]), up=np.array([0, 0, 1]),
-                 fov=40, w=1024, h=768, lenstype="perspective", toggledebug=False, autocamrotate=False):
+                 fov=40, w=1920, h=1080, lenstype="perspective", toggledebug=False, autocamrotate=False):
         """
         :param campos:
         :param lookatpos:
@@ -82,11 +82,11 @@ class World(ShowBase, object):
         props.setSize(w, h)
         self.win.requestProperties(props)
         # outline edge shader
-        self.set_outlineshader()
+        # self.set_outlineshader()
         # set up cartoon effect
-        # self._separation = .7
-        # self.filter = flt.Filter(self.win, self.cam)
-        # self.filter.setCartoonInk(separation=self._separation)
+        self._separation = 1
+        self.filter = flt.Filter(self.win, self.cam)
+        self.filter.setCartoonInk(separation=self._separation)
         # set up physics world
         self.physicsworld = BulletWorld()
         self.physicsworld.setGravity(Vec3(0, 0, -9.81))
@@ -243,7 +243,8 @@ class World(ShowBase, object):
                      out float4 l_position : POSITION,
                      out float4 l_color0: COLOR0) {
             l_position = mul(mat_modelproj, vtx_position);
-            float depth = l_position.z*.15;
+            float depth = l_position.a*.1;
+            //l_color0 = vtx_position + float4(depth, depth, depth, 1);
             l_color0 = float4(depth, depth, depth, 1);
         }
         void fshader(float4 l_color0: COLOR0,
@@ -307,7 +308,7 @@ class World(ShowBase, object):
         tempnode.setShader(Shader.make(depth_sha, Shader.SL_Cg))
         depthCamera.node().setInitialState(tempnode.getState())
         drawnScene = depthBuffer.getTextureCard()
+        drawnScene.reparentTo(render2d)
         drawnScene.setTransparency(1)
         drawnScene.setColor(1, 1, 1, 0)
-        drawnScene.reparentTo(render2d)
         drawnScene.setShader(Shader.make(outline_sha, Shader.SL_Cg))

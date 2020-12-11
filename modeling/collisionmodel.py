@@ -21,10 +21,11 @@ class CollisionModel(gm.GeometricModel):
         :param expand_radius box expansion size for box type; ball radius for ball type (30 is good)
         """
         if isinstance(objinit, CollisionModel):
+            self._name = objinit.name
             self._objpath = copy.deepcopy(objinit.objpath)
             self._trimesh = copy.deepcopy(objinit.trimesh)
             self._pdnp = copy.deepcopy(objinit.pdnp)
-            self._name = copy.deepcopy(objinit.name)
+            self._pdnp_shader = self._pdnp.find(self.name+"_shader")
             self._localframe = copy.deepcopy(objinit.localframe)
             self._cdnp = objinit.copy_cdnp_to(self._pdnp)
             self._cdprimitive_type = objinit.cdprimitive_type
@@ -192,13 +193,13 @@ class CollisionModel(gm.GeometricModel):
         elif isinstance(objcm, list):
             return pcd.is_cmcmlist_collided(self, objcm)
 
-    def show_cdnp(self):
+    def show_cdprimit(self):
         """
         Show collision node
         """
         self._cdnp.show()
 
-    def unshow_cdnp(self):
+    def unshow_cdprimit(self):
         self._cdnp.hide()
 
     def is_mcdwith(self, objcm):
@@ -232,7 +233,7 @@ class CollisionModel(gm.GeometricModel):
     def copy(self):
         return CollisionModel(self)
 
-def gen_box(extent=np.array([1,1,1]), homomat=np.eye(4), rgba=np.array([1, 0, 0, 1])):
+def gen_box(extent=np.array([.1,.1,.1]), homomat=np.eye(4), rgba=np.array([1, 0, 0, 1])):
     """
     :param extent:
     :param homomat:
@@ -252,9 +253,9 @@ if __name__ == "__main__":
     import basis.robotmath as rm
     import visualization.panda.world as wd
 
-    base = wd.World(camp=[.3, .3, .3], lookatpos=[0, 0, 0], toggledebug=True)
+    base = wd.World(campos=[.3, .3, .3], lookatpos=[0, 0, 0], toggledebug=True)
     this_dir, this_filename = os.path.split(__file__)
-    objpath = os.path.join(this_dir, "objects", "bunnysim.meshes")
+    objpath = os.path.join(this_dir, "objects", "bunnysim.stl")
     bunnycm = CollisionModel(objpath)
     bunnycm.set_color([0.7, 0.7, 0.0, 1.0])
     bunnycm.attach_to(base)
@@ -296,9 +297,9 @@ if __name__ == "__main__":
     bunnycm2.show_cdmesh()
     bunnycm.show_cdmesh()
     bunnycm1.show_cdmesh()
-    bunnycm2.show_cdnp()
-    bunnycm.show_cdnp()
-    bunnycm1.show_cdnp()
+    bunnycm2.show_cdprimit()
+    bunnycm.show_cdprimit()
+    bunnycm1.show_cdprimit()
 
     gen_box().attach_to(base)
     base.run()

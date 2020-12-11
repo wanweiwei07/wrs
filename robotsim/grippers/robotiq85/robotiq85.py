@@ -1,6 +1,7 @@
 import os
 import math
 import numpy as np
+import modeling.geometricmodel as gm
 import robotsim._kinematics.jlchain as jl
 import basis.robotmath as rm
 
@@ -12,8 +13,17 @@ class Robotiq85(object):
         self.pos = pos
         self.rotmat = rotmat
         # joints
+        # - coupling
+        self.coupling = jl.JLChain(pos=self.pos, rotmat=self.rotmat, homeconf=np.zeros(0), name='lft_outer')
+        self.coupling.jnts[1]['loc_pos'] = np.array([0, 0, .011])
+        self.coupling.lnks[0]['name'] = "robotiq_gripper_coupling"
+        # self.coupling.lnks[0]['meshfile'] = os.path.join(this_dir, "meshes", "robotiq_gripper_coupling.stl")
+        self.coupling.lnks[0]['rgba'] = [.2, .2, .2, 1]
+        self.coupling.reinitialize()
+        cpl_end_pos = self.coupling.jnts[-1]['gl_posq']
+        cpl_end_rotmat = self.coupling.jnts[-1]['gl_rotmatq']
         # - lft_outer
-        self.lft_outer = jl.JLChain(pos=self.pos, rotmat=self.rotmat, homeconf=np.zeros(4), name='lft_outer')
+        self.lft_outer = jl.JLChain(pos=cpl_end_pos, rotmat=cpl_end_rotmat, homeconf=np.zeros(4), name='lft_outer')
         self.lft_outer.jnts[1]['loc_pos'] = np.array([0, -.0306011, .054904])
         self.lft_outer.jnts[1]['rngmin'] = .0
         self.lft_outer.jnts[1]['rngmax'] = .8  # TODO change min-max to a tuple
@@ -29,14 +39,14 @@ class Robotiq85(object):
         # https://github.com/Danfoa uses geometry instead of the dae mesh. The following coordiante is needed
         # self.lft_outer.jnts[4]['loc_pos'] = np.array([0, -0.0220203446692936, .03242])
         # - lft_inner
-        self.lft_inner = jl.JLChain(pos=self.pos, rotmat=self.rotmat, homeconf=np.zeros(1), name='lft_inner')
+        self.lft_inner = jl.JLChain(pos=cpl_end_pos, rotmat=cpl_end_rotmat, homeconf=np.zeros(1), name='lft_inner')
         self.lft_inner.jnts[1]['loc_pos'] = np.array([0, -.0127, .06142])
         self.lft_inner.jnts[1]['loc_rotmat'] = rm.rotmat_from_euler(0, 0, math.pi)
         self.lft_inner.jnts[1]['rngmin'] = .0
         self.lft_inner.jnts[1]['rngmax'] = .8757  # TODO change min-max to a tuple
         self.lft_inner.jnts[1]['loc_motionax'] = np.array([1, 0, 0])
         # - rgt_outer
-        self.rgt_outer = jl.JLChain(pos=self.pos, rotmat=self.rotmat, homeconf=np.zeros(4), name='rgt_outer')
+        self.rgt_outer = jl.JLChain(pos=cpl_end_pos, rotmat=cpl_end_rotmat, homeconf=np.zeros(4), name='rgt_outer')
         self.rgt_outer.jnts[1]['loc_pos'] = np.array([0, .0306011, .054904])
         self.rgt_outer.jnts[1]['rngmin'] = .0
         self.rgt_outer.jnts[1]['rngmax'] = .8  # TODO change min-max to a tuple
@@ -51,7 +61,7 @@ class Robotiq85(object):
         # https://github.com/Danfoa uses geometry instead of the dae mesh. The following coordiante is needed
         # self.rgt_outer.jnts[4]['loc_pos'] = np.array([0, -0.0220203446692936, .03242])
         # - rgt_inner
-        self.rgt_inner = jl.JLChain(pos=self.pos, rotmat=self.rotmat, homeconf=np.zeros(1), name='rgt_inner')
+        self.rgt_inner = jl.JLChain(pos=cpl_end_pos, rotmat=cpl_end_rotmat, homeconf=np.zeros(1), name='rgt_inner')
         self.rgt_inner.jnts[1]['loc_pos'] = np.array([0, .0127, .06142])
         self.rgt_inner.jnts[1]['rngmin'] = .0
         self.rgt_inner.jnts[1]['rngmax'] = .8757  # TODO change min-max to a tuple
@@ -143,14 +153,19 @@ class Robotiq85(object):
             self.rgt_outer.jnts[1]['motion_val'] = self.lft_outer.jnts[1]['motion_val']
             self.rgt_outer.jnts[3]['motion_val'] = -self.lft_outer.jnts[1]['motion_val']
             self.rgt_inner.jnts[1]['motion_val'] = self.lft_outer.jnts[1]['motion_val']
-        self.lft_outer.fix_to(self.pos, self.rotmat)
-        self.lft_inner.fix_to(self.pos, self.rotmat)
-        self.rgt_inner.fix_to(self.pos, self.rotmat)
-        self.rgt_outer.fix_to(self.pos, self.rotmat)
+        self.coupling.fix_to(self.pos, self.rotmat)
+        cpl_end_pos = self.coupling.jnts[-1]['gl_posq']
+        cpl_end_rotmat = self.coupling.jnts[-1]['gl_rotmatq']
+        self.lft_outer.fix_to(cpl_end_pos, cpl_end_rotmat)
+        self.lft_inner.fix_to(cpl_end_pos, cpl_end_rotmat)
+        self.rgt_inner.fix_to(cpl_end_pos, cpl_end_rotmat)
+        self.rgt_outer.fix_to(cpl_end_pos, cpl_end_rotmat)
 
     def gen_stickmodel(self, tcp_jntid=None, tcp_loc_pos=None, tcp_loc_rotmat=None, toggletcpcs=False,
                        togglejntscs=False, toggleconnjnt=False, name='xarm_gripper_stickmodel'):
         stickmodel = gm.StaticGeometricModel(name=name)
+        self.coupling.gen_stickmodel(tcp_loc_pos=None, tcp_loc_rotmat=None, toggletcpcs=False,
+                                     togglejntscs=togglejntscs).attach_to(stickmodel)
         self.lft_outer.gen_stickmodel(tcp_jntid=tcp_jntid, tcp_loc_pos=tcp_loc_pos, tcp_loc_rotmat=tcp_loc_rotmat,
                                       toggletcpcs=toggletcpcs, togglejntscs=togglejntscs,
                                       toggleconnjnt=toggleconnjnt).attach_to(stickmodel)
@@ -165,6 +180,8 @@ class Robotiq85(object):
     def gen_meshmodel(self, tcp_jntid=None, tcp_loc_pos=None, tcp_loc_rotmat=None, toggletcpcs=False,
                       togglejntscs=False, name='xarm_gripper_meshmodel'):
         stickmodel = gm.StaticGeometricModel(name=name)
+        self.coupling.gen_meshmodel(tcp_loc_pos=None, tcp_loc_rotmat=None, toggletcpcs=False,
+                                    togglejntscs=togglejntscs).attach_to(stickmodel)
         self.lft_outer.gen_meshmodel(tcp_jntid=tcp_jntid, tcp_loc_pos=tcp_loc_pos, tcp_loc_rotmat=tcp_loc_rotmat,
                                      toggletcpcs=toggletcpcs, togglejntscs=togglejntscs).attach_to(stickmodel)
         self.lft_inner.gen_meshmodel(tcp_loc_pos=None, tcp_loc_rotmat=None, toggletcpcs=False,
@@ -209,7 +226,7 @@ if __name__ == '__main__':
     grpr.fk(.8)
     grpr.gen_meshmodel().attach_to(base)
     # grpr.gen_stickmodel(togglejntscs=False).attach_to(base)
-    grpr.fix_to(pos=np.array([0,.3,.2]), rotmat=rm.rotmat_from_axangle([1,0,0], math.pi/6))
+    grpr.fix_to(pos=np.array([0, .3, .2]), rotmat=rm.rotmat_from_axangle([1, 0, 0], math.pi / 6))
     grpr.gen_meshmodel().attach_to(base)
     base.run()
 

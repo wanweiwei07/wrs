@@ -357,7 +357,7 @@ class JLChain(object):
         return self._ikslvr.numik(tgtpos, tgtrot, startconf, tcp_jntid, tcp_loc_pos, tcp_loc_rotmat, local_minima,
                                   toggle_debug=toggle_debug)
 
-    def get_worldpose(self, relpos, relrot, tcp_jntid=None, tcp_loc_pos=None, tcp_loc_rotmat=None):
+    def get_worldpose(self, relpos=np.zeros(3), relrot=np.eye(3), tcp_jntid=None, tcp_loc_pos=None, tcp_loc_rotmat=None):
         """
         given a relative pos and relative rot with respective to the ith jntlnk,
         get the world pos and world rot
@@ -368,13 +368,13 @@ class JLChain(object):
         date: 20190312
         """
         if tcp_jntid is None:
-            tcp_jntid = self.tgtjnts[-1]
+            tcp_jntid = self.tcp_jntid
         if tcp_loc_pos is None:
             tcp_loc_pos = np.zeros(3)
         if tcp_loc_rotmat is None:
             tcp_loc_rotmat = np.eye(3)
         tcp_gloc_pos = self.jnts[tcp_jntid]['gl_posq'] + self.jnts[tcp_jntid]['gl_rotmatq'].dot(tcp_loc_pos)
-        tcp_gloc_rotmat = self.jnts[tcp_jntid]['gl_rotmat'].dot(tcp_loc_rotmat)
+        tcp_gloc_rotmat = self.jnts[tcp_jntid]['gl_rotmatq'].dot(tcp_loc_rotmat)
         objpos = tcp_gloc_pos + tcp_gloc_rotmat.dot(relpos)
         objrot = tcp_gloc_rotmat.dot(relrot)
         return [objpos, objrot]
@@ -393,13 +393,13 @@ class JLChain(object):
         date: 20190312
         """
         if tcp_jntid is None:
-            tcp_jntid = self.tgtjnts[-1]
+            tcp_jntid = self.tcp_jntid
         if tcp_loc_pos is None:
             tcp_loc_pos = np.zeros(3)
         if tcp_loc_rotmat is None:
             tcp_loc_rotmat = np.eye(3)
         tcp_gloc_pos = self.jnts[tcp_jntid]['gl_posq'] + self.jnts[tcp_jntid]['gl_rotmatq'].dot(tcp_loc_pos)
-        tcp_gloc_rotmat = self.jnts[tcp_jntid]['gl_rotmat'].dot(tcp_loc_rotmat)
+        tcp_gloc_rotmat = self.jnts[tcp_jntid]['gl_rotmatq'].dot(tcp_loc_rotmat)
         relpos, relrot = rm.relpose(tcp_gloc_pos, tcp_gloc_rotmat, worldpos, worldrot)
         return [relpos, relrot]
 
@@ -419,6 +419,13 @@ class JLChain(object):
 
     def gen_endsphere(self):
         return self._mg.gen_endsphere()
+
+    def copy(self):
+        """
+        TODO 20201211
+        :return:
+        """
+        pass
 
 
 if __name__ == "__main__":

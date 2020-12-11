@@ -270,7 +270,7 @@ def nodepath_from_vf(vertices, facenormals, triangles, name=''):
     objgeom = pandageom_from_vf(vertices, facenormals, triangles, name + 'geom')
     geomnodeobj = GeomNode(name + 'geomnode')
     geomnodeobj.addGeom(objgeom)
-    pandanp = NodePath(name + 'nodepath')
+    pandanp = NodePath(name)
     pandanp.attachNewNode(geomnodeobj)
 
     return pandanp

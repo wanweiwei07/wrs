@@ -36,12 +36,12 @@ class XArm7YunjiMobile(object):
         self.hnd.fix_to(pos=self.arm.jnts[-1]['gl_posq'], rotmat=self.arm.jnts[-1]['gl_rotmatq'])
 
     def fk(self, general_jnt_values):
-        '''
+        """
         :param general_jnt_values: 3+7 or 3+7+1, 3=agv, 7=arm, 1=grpr; metrics: meter-radian
         :return:
         author: weiwei
         date: 20201208toyonaka
-        '''
+        """
         self.pos = np.zeros(0)
         self.pos[:2] = general_jnt_values[:2]
         self.rotmat = rm.rotmat_from_axangle([0, 0, 1], general_jnt_values[2])
@@ -49,7 +49,7 @@ class XArm7YunjiMobile(object):
         self.arm.fix_to(pos=self.agv.jnts[-1]['gl_posq'], rotmat=self.agv.jnts[-1]['gl_rotmatq'],
                         jnt_values=general_jnt_values[3:10])
         if len(general_jnt_values) == 10: # gripper is also set
-            self.hnd.fix_to(pos=self.agv.jnts[-1]['gl_posq'], rotmat=self.agv.jnts[-1]['gl_rotmatq'],
+            self.hnd.fix_to(pos=self.arm.jnts[-1]['gl_posq'], rotmat=self.arm.jnts[-1]['gl_rotmatq'],
                             jnt_values=general_jnt_values[10])
 
     def gen_stickmodel(self, name='xarm7_shuidi_mobile'):

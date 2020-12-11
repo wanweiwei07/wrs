@@ -25,7 +25,7 @@ class UR3E(jl.JLChain):
         self.jnts[6]['loc_pos'] = np.array([0, 0, .085])
         self.jnts[6]['loc_motionax'] = np.array([0, 1, 0])
         self.jnts[7]['loc_pos'] = np.array([0, .092, 0])
-        self.jnts[7]['loc_rotmat'] = rm.rotmat_from_euler(0, 0, math.pi/2.0)
+        self.jnts[7]['loc_rotmat'] = rm.rotmat_from_euler(-math.pi/2.0, 0, 0)
         # links
         self.lnks[0]['name'] = "base"
         self.lnks[0]['loc_pos'] = np.zeros(3)

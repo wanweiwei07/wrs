@@ -98,7 +98,7 @@ class XArmGripper(object):
     def fix_to(self, pos, rotmat, angle=None):
         self.pos = pos
         self.rotmat = rotmat
-        if angle is not None:
+        if angle is not None: # update transmission
             self.lft_outer.jnts[1]['motion_val'] = angle
             self.lft_outer.jnts[2]['motion_val'] = self.lft_outer.jnts[1]['motion_val']
             self.lft_inner.jnts[1]['motion_val'] = self.lft_outer.jnts[1]['motion_val']
