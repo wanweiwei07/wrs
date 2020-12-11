@@ -308,7 +308,7 @@ def _gen_cdmesh(objcm, basenodepath=None, name='autogen'):
     author: weiwei
     date: 20161212, tsukuba
     """
-    gndcollection = objcm.pdnp.findAllMatches("+GeomNode")
+    gndcollection = objcm.pdnp_raw.findAllMatches("+GeomNode")
     geombullnode = BulletRigidBodyNode(name)
     for gnd in gndcollection:
         geom = copy.deepcopy(gnd.node().getGeom(0))
@@ -338,7 +338,7 @@ def _gen_cdmesh_list(objcmlist, basenodepath=None, name='autogen'):
     """
     geombullnode = BulletRigidBodyNode(name)
     for objcm in objcmlist:
-        gndcollection = objcm.pdnp.findAllMatches("+GeomNode")
+        gndcollection = objcm.pdnp_raw.findAllMatches("+GeomNode")
         for gnd in gndcollection:
             geom = copy.deepcopy(gnd.node().getGeom(0))
             geomtf = gnd.getTransform(base.render)

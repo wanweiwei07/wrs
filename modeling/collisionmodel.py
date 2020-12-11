@@ -25,7 +25,7 @@ class CollisionModel(gm.GeometricModel):
             self._objpath = copy.deepcopy(objinit.objpath)
             self._trimesh = copy.deepcopy(objinit.trimesh)
             self._pdnp = copy.deepcopy(objinit.pdnp)
-            self._pdnp_shader = self._pdnp.find(self.name+"_shader")
+            self._pdnp_raw = self._pdnp.find(self.name+"_raw")
             self._localframe = copy.deepcopy(objinit.localframe)
             self._cdnp = objinit.copy_cdnp_to(self._pdnp)
             self._cdprimitive_type = objinit.cdprimitive_type
