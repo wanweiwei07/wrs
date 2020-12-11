@@ -6,8 +6,36 @@ import modeling.geometricmodel as gm
 import modeling.collisionmodel as cm
 import basis.robotmath as rm
 
-
 class JntLnksMesh(object):
+    """
+    for easy toggling on and off bounding boxes
+    """
+    def __init__(self, name):
+        self._name = name
+        pass
+
+    def show_cdprimit(self):
+        """
+        Show collision node
+        """
+        pass
+
+    def unshow_cdprimit(self):
+        self._cdnp.hide()
+
+    def show_cdmesh(self):
+        """
+        :return:
+        """
+        pass
+
+    def unshow_cdmesh(self):
+        """
+        :return:
+        """
+        pass
+
+class JntLnksMeshGen(object):
     """
     The mesh generator class for JntLnks
     NOTE: it is unnecessary to attach a nodepath to render repeatedly
@@ -29,7 +57,8 @@ class JntLnksMesh(object):
 
     def gen_meshmodel(self, tcp_jntid=None, tcp_loc_pos=None, tcp_loc_rotmat=None, toggletcpcs=True, togglejntscs=False,
                       name='robotmesh', drawhand=True, rgbargt=None, rgbalft=None):
-        meshmodel = gm.StaticGeometricModel(name=name)
+        # meshmodel = gm.StaticGeometricModel(name=name)
+        meshmodel = JntLnksMesh(name=name)
         for id in range(self.jlobject.ndof + 1):
             if self.jlobject.lnks[id]['collisionmodel'] is not None:
                 this_collisionmodel = self.jlobject.lnks[id]['collisionmodel'].copy()

@@ -42,7 +42,7 @@ class JLChain(object):
         self.tcp_loc_pos = np.zeros(3)
         self.tcp_loc_rotmat = np.eye(3)
         # mesh generator
-        self._mg = jlm.JntLnksMesh(self)
+        self._mg = jlm.JntLnksMeshGen(self)
         self._ikslvr = jlik.JntLnksIK(self)
 
     def _init_jlchain(self):
@@ -419,6 +419,14 @@ class JLChain(object):
 
     def gen_endsphere(self):
         return self._mg.gen_endsphere()
+
+    def show_cdprimit(self):
+        self._mg.show_cdprimit()
+
+    def unshow_cdprimit(self):
+        for id in range(self.ndof + 1):
+            if self.lnks[id]['collisionmodel'] is not None:
+                self.lnks[id]['collisionmodel'].unshow_cdprimit()
 
     def copy(self):
         """
