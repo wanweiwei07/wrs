@@ -2,6 +2,7 @@ import os
 import math
 import numpy as np
 import basis.robotmath as rm
+import modeling.collisionmodel as cm
 import modeling.geometricmodel as gm
 import robotsim._kinematics.jlchain as jl
 import robotsim.manipulators.xarm7.xarm7 as xa
@@ -60,7 +61,7 @@ class XArm7YunjiMobile(object):
         return stickmodel
 
     def gen_meshmodel(self, name='xarm_gripper_meshmodel'):
-        meshmodel = gm.StaticGeometricModel(name=name)
+        meshmodel = cm.CollisionModelCollection(name=name)
         self.agv.gen_meshmodel().attach_to(meshmodel)
         self.arm.gen_meshmodel().attach_to(meshmodel)
         self.hnd.gen_meshmodel().attach_to(meshmodel)
@@ -78,6 +79,9 @@ if __name__ == '__main__':
     #     xag.gen_meshmodel().attach_to(base)
     xav = XArm7YunjiMobile()
     # xav.fk(.85)
-    xav.gen_meshmodel().attach_to(base)
+
+    xav_meshmodel = xav.gen_meshmodel()
+    xav_meshmodel.attach_to(base)
+    xav_meshmodel.show_cdprimit()
     xav.gen_stickmodel().attach_to(base)
     base.run()

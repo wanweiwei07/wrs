@@ -4,7 +4,7 @@ import basis.robotmath as rm
 import warnings as wns
 
 
-class JntLnksIK(object):
+class JLChainIK(object):
 
     def __init__(self, jlobject, wlnratio=.15):
         self.jlobject = jlobject

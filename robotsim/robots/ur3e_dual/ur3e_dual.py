@@ -3,9 +3,10 @@ import math
 import numpy as np
 import basis.robotmath as rm
 import modeling.geometricmodel as gm
+import modeling.collisionmodel as cm
 import robotsim._kinematics.jlchain as jl
 import robotsim.manipulators.ur3e.ur3e as ur
-import robotsim.grippers.robotiq85.robotiq85 as rtq
+import robotsim.grippers.robotiqhe.robotiqhe as rtq
 
 
 class UR3EDual(object):
@@ -34,7 +35,7 @@ class UR3EDual(object):
         # lft hand offset (if needed)
         self.lft_hnd_offset = np.zeros(3)
         lft_hnd_pos, lft_hnd_rotmat = self.lft_arm.get_worldpose(relpos=self.lft_hnd_offset)
-        self.lft_hnd = rtq.Robotiq85(pos=lft_hnd_pos, rotmat=self.lft_arm.jnts[-1]['gl_rotmatq'])
+        self.lft_hnd = rtq.RobotiqHE(pos=lft_hnd_pos, rotmat=self.lft_arm.jnts[-1]['gl_rotmatq'])
         # rigth side
         self.rgt_base = jl.JLChain(pos=pos, rotmat=rotmat, homeconf=np.zeros(0), name='agv')
         self.rgt_base.jnts[1]['loc_pos'] = np.array([.365, -.345, 1.33])  # right from robot view
@@ -55,7 +56,7 @@ class UR3EDual(object):
         self.rgt_hnd_offset = np.zeros(3)
         rgt_hnd_pos, rgt_hnd_rotmat = self.rgt_arm.get_worldpose(relpos=self.rgt_hnd_offset)
         # TODO replace using copy
-        self.rgt_hnd = rtq.Robotiq85(pos=rgt_hnd_pos, rotmat=self.rgt_arm.jnts[-1]['gl_rotmatq'])
+        self.rgt_hnd = rtq.RobotiqHE(pos=rgt_hnd_pos, rotmat=self.rgt_arm.jnts[-1]['gl_rotmatq'])
 
     def move_to(self, pos, rotmat):
         self.pos = pos
@@ -107,7 +108,7 @@ class UR3EDual(object):
         return stickmodel
 
     def gen_meshmodel(self, name='xarm_gripper_meshmodel'):
-        meshmodel = gm.StaticGeometricModel(name=name)
+        meshmodel = cm.CollisionModelCollection(name=name)
         self.lft_base.gen_meshmodel().attach_to(meshmodel)
         self.lft_arm.gen_meshmodel().attach_to(meshmodel)
         self.lft_hnd.gen_meshmodel().attach_to(meshmodel)
@@ -125,6 +126,8 @@ if __name__ == '__main__':
     gm.gen_frame().attach_to(base)
     u3ed = UR3EDual()
     # u3ed.fk(.85)
-    u3ed.gen_meshmodel().attach_to(base)
+    u3ed_meshmodel = u3ed.gen_meshmodel()
+    u3ed_meshmodel.attach_to(base)
+    u3ed_meshmodel.show_cdprimit()
     u3ed.gen_stickmodel().attach_to(base)
     base.run()

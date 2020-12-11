@@ -14,7 +14,7 @@ class Robotiq85(object):
         self.rotmat = rotmat
         # joints
         # - coupling
-        self.coupling = jl.JLChain(pos=self.pos, rotmat=self.rotmat, homeconf=np.zeros(0), name='lft_outer')
+        self.coupling = jl.JLChain(pos=self.pos, rotmat=self.rotmat, homeconf=np.zeros(0), name='coupling')
         self.coupling.jnts[1]['loc_pos'] = np.array([0, 0, .011])
         self.coupling.lnks[0]['name'] = "robotiq_gripper_coupling"
         # self.coupling.lnks[0]['meshfile'] = os.path.join(this_dir, "meshes", "robotiq_gripper_coupling.stl")

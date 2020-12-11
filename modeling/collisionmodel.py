@@ -1,10 +1,12 @@
 import copy
 import numpy as np
 from panda3d.core import CollisionNode, CollisionBox, CollisionSphere, NodePath
+from visualization.panda.world import ShowBase
 import basis.dataadapter as da
 import modeling.geometricmodel as gm
 import modeling._pcdhelper as pcd
 import modeling._bcdhelper as bcd
+
 
 class CollisionModel(gm.GeometricModel):
     """
@@ -25,7 +27,7 @@ class CollisionModel(gm.GeometricModel):
             self._objpath = copy.deepcopy(objinit.objpath)
             self._trimesh = copy.deepcopy(objinit.trimesh)
             self._pdnp = copy.deepcopy(objinit.pdnp)
-            self._pdnp_raw = self._pdnp.find(self.name+"_raw")
+            self._pdnp_raw = self._pdnp.find(self.name + "_raw")
             self._localframe = copy.deepcopy(objinit.localframe)
             self._cdnp = objinit.copy_cdnp_to(self._pdnp)
             self._cdprimitive_type = objinit.cdprimitive_type
@@ -193,6 +195,17 @@ class CollisionModel(gm.GeometricModel):
         elif isinstance(objcm, list):
             return pcd.is_cmcmlist_collided(self, objcm)
 
+    def attach_to(self, obj):
+        if isinstance(obj, ShowBase):
+            # for rendering to base.render
+            self._pdnp.reparentTo(obj.render)
+        elif isinstance(obj, gm.StaticGeometricModel):
+            self._pdnp.reparentTo(obj.pdnp)
+        elif isinstance(obj, CollisionModelCollection):
+            obj.addcm(self)
+        else:
+            print("Must be modeling.StaticGeometricModel, GeometricModel, CollisionModel, or CollisionModelCollection!")
+
     def show_cdprimit(self):
         """
         Show collision node
@@ -233,7 +246,46 @@ class CollisionModel(gm.GeometricModel):
     def copy(self):
         return CollisionModel(self)
 
-def gen_box(extent=np.array([.1,.1,.1]), homomat=np.eye(4), rgba=np.array([1, 0, 0, 1])):
+
+class CollisionModelCollection(object):
+    """
+    a helper class to further hide pandanodes
+    list of collision models can be reparented to this collection for visualization
+    author: weiwei
+    date: 201900825, 20201212
+    """
+
+    def __init__(self, name="cmcollection"):
+        self._name = name
+        self._cm_list = []
+
+    @property
+    def name(self):
+        # read-only property
+        return self._name
+
+    @property
+    def cmlist(self):
+        # read-only property
+        return self._cm_list
+
+    def addcm(self, objcm):
+        self._cm_list.append(objcm)
+
+    def show_cdprimit(self):
+        for cm in self._cm_list:
+            cm.show_cdprimit()
+
+    def unshow_cdprimit(self):
+        for cm in self._cm_list:
+            cm.unshow_cdprimit()
+
+    def attach_to(self, obj):
+        for cm in self._cm_list:
+            cm.attach_to(obj)
+
+
+def gen_box(extent=np.array([.1, .1, .1]), homomat=np.eye(4), rgba=np.array([1, 0, 0, 1])):
     """
     :param extent:
     :param homomat:
@@ -244,6 +296,7 @@ def gen_box(extent=np.array([.1,.1,.1]), homomat=np.eye(4), rgba=np.array([1, 0,
     box_sgm = gm.gen_box(extent=extent, homomat=homomat, rgba=rgba)
     box_cm = CollisionModel(box_sgm)
     return box_cm
+
 
 if __name__ == "__main__":
     import os

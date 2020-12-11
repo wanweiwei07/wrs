@@ -42,8 +42,8 @@ class JLChain(object):
         self.tcp_loc_pos = np.zeros(3)
         self.tcp_loc_rotmat = np.eye(3)
         # mesh generator
-        self._mg = jlm.JntLnksMeshGen(self)
-        self._ikslvr = jlik.JntLnksIK(self)
+        self._mg = jlm.JLChainMeshGen(self)
+        self._ikslvr = jlik.JLChainIK(self)
 
     def _init_jlchain(self):
         """
@@ -169,7 +169,7 @@ class JLChain(object):
         date: 20201126
         """
         self.goto_homeconf()
-        self._mg = jlm.JntLnksMesh(self)
+        self._mg = jlm.JLChainMeshGen(self)
 
     def settcp(self, tcp_jntid=None, tcp_loc_pos=None, tcp_loc_rotmat=None):
         if tcp_jntid is not None:

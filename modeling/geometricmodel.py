@@ -3,7 +3,6 @@ import copy
 import basis.dataadapter as da
 import basis.trimesh as trimesh
 import basis.trimeshgenerator as trihelper
-import modeling.collisionmodelcollection as cmc
 import numpy as np
 # import open3d as o3d
 from panda3d.core import NodePath, LineSegs, GeomNode, TransparencyAttrib, RenderModeAttrib
@@ -153,8 +152,6 @@ class StaticGeometricModel(object):
             self._pdnp.reparentTo(obj.render)
         elif isinstance(obj, StaticGeometricModel):
             self._pdnp.reparentTo(obj.pdnp)
-        elif isinstance(obj, cmc.CollisionModelCollection):
-            obj.addcm(self)
         else:
             print("Must be modeling.StaticGeometricModel, GeometricModel, CollisionModel, or CollisionModelCollection!")
 

@@ -1,6 +1,7 @@
 import os
 import numpy as np
 import modeling.geometricmodel as gm
+import modeling.collisionmodel as cm
 import robotsim._kinematics.jlchain as jl
 
 
@@ -119,7 +120,7 @@ class XArmGripper(object):
         return stickmodel
 
     def gen_meshmodel(self, name='xarm_gripper_meshmodel'):
-        meshmodel = gm.StaticGeometricModel(name=name)
+        meshmodel = cm.CollisionModelCollection(name=name)
         self.lft_outer.gen_meshmodel().attach_to(meshmodel)
         self.lft_inner.gen_meshmodel().attach_to(meshmodel)
         self.rgt_outer.gen_meshmodel().attach_to(meshmodel)
