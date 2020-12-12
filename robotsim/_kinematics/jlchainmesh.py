@@ -1,6 +1,7 @@
 import numpy as np
 import modeling.geometricmodel as gm
 import modeling.collisionmodel as cm
+import modeling.modelcollection as mc
 import basis.robotmath as rm
 
 class JLChainMeshGen(object):
@@ -26,7 +27,7 @@ class JLChainMeshGen(object):
     def gen_meshmodel(self, tcp_jntid=None, tcp_loc_pos=None, tcp_loc_rotmat=None, toggletcpcs=True, togglejntscs=False,
                       name='robotmesh', drawhand=True, rgbargt=None, rgbalft=None):
         # meshmodel = gm.StaticGeometricModel(name=name)
-        meshmodel = cm.CollisionModelCollection(name=name) # TODO single collision model?
+        meshmodel = mc.ModelCollection(name=name) # TODO single collision model?
         for id in range(self.jlobject.ndof + 1):
             if self.jlobject.lnks[id]['collisionmodel'] is not None:
                 this_collisionmodel = self.jlobject.lnks[id]['collisionmodel'].copy()

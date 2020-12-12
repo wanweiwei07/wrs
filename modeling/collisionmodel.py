@@ -4,23 +4,34 @@ from panda3d.core import CollisionNode, CollisionBox, CollisionSphere, NodePath
 from visualization.panda.world import ShowBase
 import basis.dataadapter as da
 import modeling.geometricmodel as gm
+import modeling.modelcollection as mc
 import modeling._pcdhelper as pcd
-import modeling._bcdhelper as bcd
+import modeling._mcdhelper as mcd
 
 
 class CollisionModel(gm.GeometricModel):
     """
     Load an object as a collision model
-    both collison primitives will be generated automatically
+    Both collison primitives will be generated automatically
+    Note: This class heaviliy depends on Panda3D
+          cdnp nodepath of collsion detection primitives
+          pdnp nodepath of mesh+decorations; decorations = coordinate frames, markers, etc.
+          pdnp nodepath of mesh
     author: weiwei
     date: 20190312
     """
 
-    def __init__(self, objinit, btransparency=True, cdprimitive_type="box", expand_radius=None, name="defaultname"):
+    def __init__(self, objinit, btransparency=True, cdprimitive_type="box", expand_radius=None, name="defaultname",
+                 external_cdprimitive_callback=None):
         """
-        As 20201118, the cdnp and pdpn are separated, cdnp is not along a child of pdnp
-        :param objinit: path type defined by os.path or trimesh or nodepath
-        :param expand_radius box expansion size for box type; ball radius for ball type (30 is good)
+        :param objinit:
+        :param btransparency:
+        :param cdprimitive_type: box, ball, cylinder, pointcloud, external
+        :param expand_radius:
+        :param name:
+        :param external_cdprimitive_callback: the collision primitive will be defined in the provided callback function
+                                              if cdprimitive_type = external
+        date: 201290312, 20201212
         """
         if isinstance(objinit, CollisionModel):
             self._name = objinit.name
@@ -32,51 +43,48 @@ class CollisionModel(gm.GeometricModel):
             self._cdnp = objinit.copy_cdnp_to(self._pdnp)
             self._cdprimitive_type = objinit.cdprimitive_type
             self._pcd = objinit.pcd  # primitive collision detector
-            self._bcd = objinit.bcd  # bullet collision detector
+            self._mcd = objinit.mcd  # bullet collision detector
         else:
             if cdprimitive_type is not None and cdprimitive_type not in ["box", "ball", "cylinder", "pointcloud"]:
                 raise Exception("Wrong Collision Model type name.")
             super().__init__(objinit=objinit, btransparency=btransparency, name=name)
             self._cdprimitive_type = cdprimitive_type
             if cdprimitive_type is not None:
-                self._cdnp = NodePath(name + "_collision")
                 if cdprimitive_type == "ball":
                     if expand_radius is None:
                         expand_radius = 0.015
-                    cdnd = self._gen_surfaceballs_cdnp(radius=expand_radius)
+                    cdnd = self._gen_surfaceballs_cdnp(name=self.name+"_ballcd", radius=expand_radius)
                 else:
                     if expand_radius is None:
                         expand_radius = 0.002
                     if cdprimitive_type == "box":
-                        cdnd = self._gen_box_cdnp(radius=expand_radius)
+                        cdnd = self._gen_box_cdnp(name=self.name+"_boxcd", radius=expand_radius)
                     if cdprimitive_type == "cylinder":
-                        cdnd = self._gen_cylindrical_cdnp(radius=expand_radius)
+                        cdnd = self._gen_cylindrical_cdnp(name=self.name+"_cylindricalcd", radius=expand_radius)
                     if cdprimitive_type == "pointcloud":
-                        cdnd = self._gen_pointcloud_cdnp(radius=expand_radius)
+                        cdnd = self._gen_pointcloud_cdnp(name=self.name+"_pointcloudcd", radius=expand_radius)
+                    if cdprimitive_type == "external":
+                        cdnd = external_cdprimitive_callback(cmobj=self, radius=expand_radius)
                 self._cdnp = self._pdnp.attachNewNode(cdnd)
             self._localframe = None
             self._pcd = pcd  # primitive collision detector
-            self._bcd = bcd  # bullet collision detector
+            self._mcd = mcd  # bullet collision detector
 
     @property
     def cdprimitive_type(self):
-        # read-only property
         return self._cdprimitive_type
 
     @property
     def cdnp(self):
-        # read-only property
         return self._cdnp
 
     @property
     def pcd(self):
-        # read-only property
         return self._pcd
 
     @property
-    def bcd(self):
-        # read-only property
-        return self._bcd
+    def mcd(self):
+        return self._mcd
 
     def _gen_box_cdnp(self, name='boxbound', radius=0.01):
         """
@@ -201,10 +209,11 @@ class CollisionModel(gm.GeometricModel):
             self._pdnp.reparentTo(obj.render)
         elif isinstance(obj, gm.StaticGeometricModel):
             self._pdnp.reparentTo(obj.pdnp)
-        elif isinstance(obj, CollisionModelCollection):
-            obj.addcm(self)
+        elif isinstance(obj, mc.ModelCollection):
+            obj.add_cm(self)
         else:
-            print("Must be modeling.StaticGeometricModel, GeometricModel, CollisionModel, or CollisionModelCollection!")
+            print("Must be ShowBase, modeling.StaticGeometricModel, GeometricModel, CollisionModel, "
+                  "or CollisionModelCollection!")
 
     def show_cdprimit(self):
         """
@@ -223,66 +232,28 @@ class CollisionModel(gm.GeometricModel):
         date: 20201116
         """
         if isinstance(objcm, CollisionModel):
-            return self._bcd.is_mesh_cmcm_collided(self, objcm)
+            return self._mcd.is_mesh_cmcm_collided(self, objcm)
         elif isinstance(objcm, list):
-            return self._bcd.is_mesh_cmcmlist_collided(self, objcm)
+            return self._mcd.is_mesh_cmcmlist_collided(self, objcm)
 
     def show_cdmesh(self):
         """
         :return:
         """
-        self._bullnode = self._bcd.show_meshcm(self)
+        self._bullnode = self._mcd.show_meshcm(self)
 
     def unshow_cdmesh(self):
         """
         :return:
         """
         if hasattr(self, '_bullnode'):
-            self._bcd.unshow(self._bullnode)
+            self._mcd.unshow(self._bullnode)
 
     def is_mboxcdwith(self, objcm):
         raise NotImplementedError
 
     def copy(self):
         return CollisionModel(self)
-
-
-class CollisionModelCollection(object):
-    """
-    a helper class to further hide pandanodes
-    list of collision models can be reparented to this collection for visualization
-    author: weiwei
-    date: 201900825, 20201212
-    """
-
-    def __init__(self, name="cmcollection"):
-        self._name = name
-        self._cm_list = []
-
-    @property
-    def name(self):
-        # read-only property
-        return self._name
-
-    @property
-    def cmlist(self):
-        # read-only property
-        return self._cm_list
-
-    def addcm(self, objcm):
-        self._cm_list.append(objcm)
-
-    def show_cdprimit(self):
-        for cm in self._cm_list:
-            cm.show_cdprimit()
-
-    def unshow_cdprimit(self):
-        for cm in self._cm_list:
-            cm.unshow_cdprimit()
-
-    def attach_to(self, obj):
-        for cm in self._cm_list:
-            cm.attach_to(obj)
 
 
 def gen_box(extent=np.array([.1, .1, .1]), homomat=np.eye(4), rgba=np.array([1, 0, 0, 1])):

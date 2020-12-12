@@ -75,7 +75,7 @@ def show_boxcm(objcm):
     objcmboxbullnode = _gen_boxcdmesh(objcm)
     base.physicsworld.attach(objcmboxbullnode)
     base.physicsbodylist.append(objcmboxbullnode)
-    return objcmmeshbullnode
+    return objcmboxbullnode
 
 
 def show_boxcmlist(objcmlist):
@@ -92,7 +92,7 @@ def show_boxcmlist(objcmlist):
     objcmboxbullnode = _gen_boxcdmesh_list(objcmlist)
     base.physicsworld.attach(objcmboxbullnode)
     base.physicsbodylist.append(objcmboxbullnode)
-    return objcmmeshbullnode
+    return objcmboxbullnode
 
 
 # mesh collision model

@@ -3,6 +3,7 @@ import copy
 import basis.dataadapter as da
 import basis.trimesh as trimesh
 import basis.trimeshgenerator as trihelper
+import modeling.modelcollection as mc
 import numpy as np
 # import open3d as o3d
 from panda3d.core import NodePath, LineSegs, GeomNode, TransparencyAttrib, RenderModeAttrib
@@ -152,8 +153,10 @@ class StaticGeometricModel(object):
             self._pdnp.reparentTo(obj.render)
         elif isinstance(obj, StaticGeometricModel):
             self._pdnp.reparentTo(obj.pdnp)
+        elif isinstance(obj, mc.ModelCollection):
+            obj.add_gm(self)
         else:
-            print("Must be modeling.StaticGeometricModel, GeometricModel, CollisionModel, or CollisionModelCollection!")
+            print("Must be ShowBase, modeling.StaticGeometricModel, GeometricModel, CollisionModel, or CollisionModelCollection!")
 
     def remove(self):
         self._pdnp.removeNode()

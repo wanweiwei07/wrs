@@ -9,24 +9,21 @@ import robotsim.manipulators.xarm7.xarm7 as xa
 import robotsim.grippers.xarm_gripper.xarm_gripper as xag
 
 
-class XArm7YunjiMobile(object):
+class Yumi(object):
 
     def __init__(self, pos=np.zeros(3), rotmat=np.eye(3)):
         this_dir, this_filename = os.path.split(__file__)
         self.pos = pos
         self.rotmat = rotmat
-        self.agv = jl.JLChain(pos=pos, rotmat=rotmat, homeconf=np.zeros(0), name='agv') # TODO: change to 3-dof
-        self.agv.jnts[1]['loc_pos'] = np.array([0, .0, .34231])
-        self.agv.lnks[0]['name'] = "agv_body"
-        self.agv.lnks[0]['loc_pos'] = np.array([0, 0, 0])
-        self.agv.lnks[0]['meshfile'] = os.path.join(this_dir, "meshes", "shuidi_agv_meter.stl")
-        self.agv.lnks[0]['rgba'] = [.35,.35,.35,1.0]
-        self.agv.reinitialize()
+        self.body = jl.JLChain(pos=pos, rotmat=rotmat, homeconf=np.zeros(0), name='agv')
+        self.body.jnts[1]['loc_pos'] = np.array([0.05355, -0.0725, 0.41492])
+        self.body.lnks[0]['name'] = "yumi_body"
+        self.body.lnks[0]['loc_pos'] = np.array([0, 0, 0])
+        self.body.lnks[0]['meshfile'] = os.path.join(this_dir, "meshes", "body.stl")
+        self.body.lnks[0]['rgba'] = [.35,.35,.35,1.0]
+        self.body.reinitialize()
         arm_homeconf = np.zeros(7)
-        arm_homeconf[1] = -math.pi/3
-        arm_homeconf[3] = math.pi/12
-        arm_homeconf[5] = -math.pi/12
-        self.arm = xa.XArm7(pos=self.agv.jnts[-1]['gl_posq'], rotmat=self.agv.jnts[-1]['gl_rotmatq'], homeconf=arm_homeconf)
+        self.lft_arm = xa.XArm7(pos=self.agv.jnts[-1]['gl_posq'], rotmat=self.agv.jnts[-1]['gl_rotmatq'], homeconf=arm_homeconf)
         self.hnd = xag.XArmGripper(pos=self.arm.jnts[-1]['gl_posq'], rotmat=self.arm.jnts[-1]['gl_rotmatq'])
 
     def move_to(self, pos, rotmat):

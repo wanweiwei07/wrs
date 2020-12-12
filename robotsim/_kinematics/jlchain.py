@@ -15,7 +15,7 @@ class JLChain(object):
     The joint types include "revolute", "prismatic", "end"; One JlChain object alwyas has two "end" joints
     """
 
-    def __init__(self, pos=np.zeros(3), rotmat=np.eye(3), homeconf=np.zeros(6), name='manipulator'):
+    def __init__(self, pos=np.zeros(3), rotmat=np.eye(3), homeconf=np.zeros(6), name='jlchain'):
         """
         initialize a manipulator
         naming rules
@@ -32,7 +32,6 @@ class JLChain(object):
         self.ndof = homeconf.shape[0]
         self._zeroconf = np.zeros(self.ndof)
         self._homeconf = homeconf.astype('float64')
-        self.jntrng_safemargin = 0
         # initialize joints and links
         self.lnks, self.jnts = self._init_jlchain()
         self.tgtjnts = range(1, self.ndof + 1)
@@ -82,8 +81,8 @@ class JLChain(object):
             jnts[id]['gl_motionax'] = jnts[id]['loc_motionax']  # to be updated by self._update_fk
             jnts[id]['gl_posq'] = jnts[id]['gl_pos0']  # to be updated by self._update_fk
             jnts[id]['gl_rotmatq'] = jnts[id]['gl_rotmat0']  # to be updated by self._update_fk
-            jnts[id]['rngmin'] = -(math.pi - self.jntrng_safemargin)
-            jnts[id]['rngmax'] = +(math.pi - self.jntrng_safemargin)
+            jnts[id]['rngmin'] = -math.pi
+            jnts[id]['rngmax'] = +math.pi
             jnts[id]['motion_val'] = 0
         jnts[0]['gl_pos0'] = self.pos  # This is not necessary, for easy read
         jnts[0]['gl_rotmat0'] = self.rotmat

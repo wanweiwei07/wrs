@@ -15,7 +15,7 @@ class UR3EDual(object):
         this_dir, this_filename = os.path.split(__file__)
         self.pos = pos
         self.rotmat = rotmat
-        # left side
+        # left side TODO: direct cm, other than base link
         self.lft_base = jl.JLChain(pos=pos, rotmat=rotmat, homeconf=np.zeros(0), name='agv')
         self.lft_base.jnts[1]['loc_pos'] = np.array([.365, .345, 1.33])  # left from robot view
         self.lft_base.jnts[1]['loc_rotmat'] = rm.rotmat_from_euler(math.pi/2.0, 0, math.pi/2.0)  # left from robot view
