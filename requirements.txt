@@ -1,3 +1,6 @@
-panda3d>=1.10.7 # vital
-numpy>=1.17.4 # vital
-pycollada>=0.7.1 # required by trimesh to load dae files
+panda3d>=1.10.7 # vital, visualization
+numpy>=1.17.4 # vital, matrix computation
+pycollada>=0.7.1 # optional, required by trimesh to load dae files
+opencv-python>=4.4.0.46 # optional, required by vision
+opencv-contrib-python>=4.4.0.46 # optional, required by vision
+scikit-learn>=0.23.2 # vital?

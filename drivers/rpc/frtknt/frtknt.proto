@@ -1,0 +1,41 @@
+syntax = "proto3";
+
+service Knt {
+  rpc getrgbimg (Empty) returns (CamImg) {}
+  rpc getdepthimg (Empty) returns (CamImg) {}
+  rpc getpcd (Empty) returns (PointCloud) {}
+  rpc getpartialpcd(PartialPcdPara) returns (PointCloud) {}
+  rpc mapColorPointToCameraSpace (Pair) returns (PointCloud) {}
+}
+
+message Empty {
+}
+
+message MatKW {
+    // 4x4
+    bytes data = 1;
+}
+
+message Pair {
+    int32 data0 = 1;
+    int32 data1 = 2;
+}
+
+message PointCloud {
+    bytes  points = 1;
+}
+
+message CamImg {
+    // could be rgb (channel=3) or depth (channel=1)
+    int32  width = 1;
+    int32  height = 2;
+    int32  channel = 3;
+    bytes  image = 4;
+}
+
+message PartialPcdPara {
+    // depth image
+    CamImg data = 1;
+    Pair width = 2;
+    Pair height = 3;
+}
