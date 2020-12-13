@@ -4,7 +4,6 @@ import basis.robotmath as rm
 import robotsim._kinematics.jlchainmesh as jlm
 import robotsim._kinematics.jlchainik as jlik
 
-
 class JLChain(object):
     """
     Joint Link Chain, no branches allowed
@@ -41,8 +40,10 @@ class JLChain(object):
         self.tcp_loc_pos = np.zeros(3)
         self.tcp_loc_rotmat = np.eye(3)
         # mesh generator
-        self._mg = jlm.JLChainMeshGen(self)
-        self._ikslvr = jlik.JLChainIK(self)
+        self._mt = jlm.JLChainMesh(self) # mesh tools
+        self._ikt = jlik.JLChainIK(self) # ik tools
+        # collision pairs
+        self.linkcdpairs = [[[0], range(1, self.ndof+1)]]
 
     def _init_jlchain(self):
         """
@@ -67,6 +68,7 @@ class JLChain(object):
             lnks[id]['mass'] = 0  # the visual adjustment is ignored for simplisity
             lnks[id]['meshfile'] = None
             lnks[id]['collisionmodel'] = None
+            lnks[id]['cdnp_cache'] = None # cache for lazily updating cdprimitives, will be reset at each fk
             lnks[id]['scale'] = None  # 3 list
             lnks[id]['rgba'] = [.7, .7, .7, 1]  # 4 list
         for id in range(self.ndof + 2):
@@ -130,6 +132,7 @@ class JLChain(object):
                 self.lnks[id]['gl_pos'] = np.dot(self.jnts[id]['gl_rotmatq'], self.lnks[id]['loc_pos']) + \
                                           self.jnts[id]['gl_posq']
                 self.lnks[id]['gl_rotmat'] = np.dot(self.jnts[id]['gl_rotmatq'], self.lnks[id]['loc_rotmat'])
+                self.lnks[id]['cdnp_cache'] = None # clear previously transformed cdprimitives
             id = self.jnts[id]['child']
         return self.lnks, self.jnts
 
@@ -168,7 +171,7 @@ class JLChain(object):
         date: 20201126
         """
         self.goto_homeconf()
-        self._mg = jlm.JLChainMeshGen(self)
+        self._mt = jlm.JLChainMesh(self)
 
     def settcp(self, tcp_jntid=None, tcp_loc_pos=None, tcp_loc_rotmat=None):
         if tcp_jntid is not None:
@@ -188,7 +191,7 @@ class JLChain(object):
         :param locrotmat:
         :return:
         """
-        return self._ikslvr.get_globaltcp(tcp_jntid, tcp_loc_pos, tcp_loc_rotmat)
+        return self._ikt.get_globaltcp(tcp_jntid, tcp_loc_pos, tcp_loc_rotmat)
 
     def get_jntranges(self):
         """
@@ -353,7 +356,7 @@ class JLChain(object):
         :param local_minima:
         :return:
         """
-        return self._ikslvr.numik(tgtpos, tgtrot, startconf, tcp_jntid, tcp_loc_pos, tcp_loc_rotmat, local_minima,
+        return self._ikt.numik(tgtpos, tgtrot, startconf, tcp_jntid, tcp_loc_pos, tcp_loc_rotmat, local_minima,
                                   toggle_debug=toggle_debug)
 
     def get_worldpose(self, relpos=np.zeros(3), relrot=np.eye(3), tcp_jntid=None, tcp_loc_pos=None, tcp_loc_rotmat=None):
@@ -404,23 +407,23 @@ class JLChain(object):
 
     def gen_meshmodel(self, tcp_jntid=None, tcp_loc_pos=None, tcp_loc_rotmat=None, toggletcpcs=True,
                       togglejntscs=False, name='robotmesh', drawhand=True, rgbargt=None, rgbalft=None):
-        return self._mg.gen_meshmodel(tcp_jntid=tcp_jntid, tcp_loc_pos=tcp_loc_pos, tcp_loc_rotmat=tcp_loc_rotmat,
+        return self._mt.gen_meshmodel(tcp_jntid=tcp_jntid, tcp_loc_pos=tcp_loc_pos, tcp_loc_rotmat=tcp_loc_rotmat,
                                       toggletcpcs=toggletcpcs, togglejntscs=togglejntscs, name=name,
                                       drawhand=drawhand, rgbargt=rgbargt, rgbalft=rgbalft)
 
     def gen_stickmodel(self, rgba=np.array([.5, 0, 0, 1]), thickness=.01, jointratio=1.62, linkratio=.62,
                        tcp_jntid=None, tcp_loc_pos=None, tcp_loc_rotmat=None,
                        toggletcpcs=True, togglejntscs=False, toggleconnjnt=False, name='robotstick'):
-        return self._mg.gen_stickmodel(rgba=rgba, thickness=thickness, jointratio=jointratio, linkratio=linkratio,
+        return self._mt.gen_stickmodel(rgba=rgba, thickness=thickness, jointratio=jointratio, linkratio=linkratio,
                                        tcp_jntid=tcp_jntid, tcp_loc_pos=tcp_loc_pos,
                                        tcp_loc_rotmat=tcp_loc_rotmat, toggletcpcs=toggletcpcs,
                                        togglejntscs=togglejntscs, toggleconnjnt=toggleconnjnt, name=name)
 
     def gen_endsphere(self):
-        return self._mg.gen_endsphere()
+        return self._mt.gen_endsphere()
 
     def show_cdprimit(self):
-        self._mg.show_cdprimit()
+        self._mt.show_cdprimit()
 
     def unshow_cdprimit(self):
         for id in range(self.ndof + 1):

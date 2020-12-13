@@ -184,7 +184,8 @@ class CollisionModel(gm.GeometricModel):
         author: weiwei
         date: 20180811
         """
-        returnnp = nodepath.attachNewNode(copy.deepcopy(self._cdnp.getNode(0)))
+        # returnnp = nodepath.attachNewNode(copy.deepcopy(self._cdnp.getNode(0)))
+        returnnp = nodepath.attachNewNode(copy.deepcopy(self._cdnp.getNode(0))
         if homomat is None:
             returnnp.setMat(self._pdnp.getMat())
         else:

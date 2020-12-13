@@ -4,7 +4,8 @@ import modeling.collisionmodel as cm
 import modeling.modelcollection as mc
 import basis.robotmath as rm
 
-class JLChainMeshGen(object):
+
+class JLChainMesh(object):
     """
     The mesh generator class for JntLnks
     NOTE: it is unnecessary to attach a nodepath to render repeatedly
@@ -12,31 +13,45 @@ class JLChainMeshGen(object):
     will change the attached model directly
     """
 
-    def __init__(self, jlobject):
+    def __init__(self, jlcobj):
         """
         author: weiwei
         date: 20200331
         """
-        self.jlobject = jlobject
-        for id in range(self.jlobject.ndof + 1):
-            if self.jlobject.lnks[id]['meshfile'] is not None:
-                self.jlobject.lnks[id]['collisionmodel'] = cm.CollisionModel(self.jlobject.lnks[id]['meshfile'])
-                if self.jlobject.lnks[id]['scale'] is not None:
-                    self.jlobject.lnks[id]['collisionmodel'].set_scale(self.jlobject.lnks[id]['scale'])
+        self.jlcobj = jlcobj
+        for id in range(self.jlcobj.ndof + 1):
+            if self.jlcobj.lnks[id]['meshfile'] is not None:
+                self.jlcobj.lnks[id]['collisionmodel'] = cm.CollisionModel(self.jlcobj.lnks[id]['meshfile'])
+                self.jlcobj.lnks[id]['collisionmodel'].set_color(self.jlcobj.lnks[id]['rgba'])
+                if self.jlcobj.lnks[id]['scale'] is not None:
+                    self.jlcobj.lnks[id]['collisionmodel'].set_scale(self.jlcobj.lnks[id]['scale'])
+
+    def add_cdpair(self, id_list0, id_list1):
+
+
+    def update_meshmodel(self):
+        for id in range(self.jlcobj.ndof + 1):
+            if self.jlcobj.lnks[id]['collisionmodel'] is not None:
+                this_collisionmodel = self.jlcobj.lnks[id]['collisionmodel']
+                pos = self.jlcobj.lnks[id]['gl_pos']
+                rotmat = self.jlcobj.lnks[id]['gl_rotmat']
+                this_collisionmodel.set_homomat(rm.homomat_from_posrot(pos, rotmat))
+
 
     def gen_meshmodel(self, tcp_jntid=None, tcp_loc_pos=None, tcp_loc_rotmat=None, toggletcpcs=True, togglejntscs=False,
                       name='robotmesh', drawhand=True, rgbargt=None, rgbalft=None):
+        # check need update fk
         # meshmodel = gm.StaticGeometricModel(name=name)
         meshmodel = mc.ModelCollection(name=name) # TODO single collision model?
-        for id in range(self.jlobject.ndof + 1):
-            if self.jlobject.lnks[id]['collisionmodel'] is not None:
-                this_collisionmodel = self.jlobject.lnks[id]['collisionmodel'].copy()
-                pos = self.jlobject.lnks[id]['gl_pos']
-                rotmat = self.jlobject.lnks[id]['gl_rotmat']
+        for id in range(self.jlcobj.ndof + 1):
+            if self.jlcobj.lnks[id]['collisionmodel'] is not None:
+                this_collisionmodel = self.jlcobj.lnks[id]['collisionmodel'].copy()
+                pos = self.jlcobj.lnks[id]['gl_pos']
+                rotmat = self.jlcobj.lnks[id]['gl_rotmat']
                 this_collisionmodel.set_homomat(rm.homomat_from_posrot(pos, rotmat))
-                this_collisionmodel.set_color(self.jlobject.lnks[id]['rgba'])
-                if self.jlobject.lnks[id]['scale'] is not None:
-                    this_collisionmodel.set_scale(self.jlobject.lnks[id]['scale'])
+                # this_collisionmodel.set_color(self.jlcobj.lnks[id]['rgba'])
+                # if self.jlcobj.lnks[id]['scale'] is not None:
+                #     this_collisionmodel.set_scale(self.jlcobj.lnks[id]['scale'])
                 this_collisionmodel.attach_to(meshmodel)
         # tool center coord
         if toggletcpcs:
@@ -69,21 +84,21 @@ class JLChainMeshGen(object):
         stickmodel = gm.StaticGeometricModel(name=name) # TODO StaticGeometricModelCollection?
         # stickmodel = cmc.CollisionModelCollection(name=name)
         id = 0
-        loopdof = self.jlobject.ndof + 1
+        loopdof = self.jlcobj.ndof + 1
         if toggleconnjnt:
-            loopdof = self.jlobject.ndof + 2
+            loopdof = self.jlcobj.ndof + 2
         while id < loopdof:
-            cjid = self.jlobject.jnts[id]['child']
-            jgpos = self.jlobject.jnts[id]['gl_posq']  # joint global pos
-            cjgpos = self.jlobject.jnts[cjid]['gl_pos0']  # child joint global pos
-            jgmtnax = self.jlobject.jnts[id]["gl_motionax"]  # joint global rot ax
+            cjid = self.jlcobj.jnts[id]['child']
+            jgpos = self.jlcobj.jnts[id]['gl_posq']  # joint global pos
+            cjgpos = self.jlcobj.jnts[cjid]['gl_pos0']  # child joint global pos
+            jgmtnax = self.jlcobj.jnts[id]["gl_motionax"]  # joint global rot ax
             gm.gen_stick(spos=jgpos, epos=cjgpos, thickness=thickness, type="rect", rgba=rgba).attach_to(stickmodel)
             if id > 0:
-                if self.jlobject.jnts[id]['type'] == "revolute":
+                if self.jlcobj.jnts[id]['type'] == "revolute":
                     gm.gen_stick(spos=jgpos - jgmtnax * thickness, epos=jgpos + jgmtnax * thickness, type="rect",
                                  thickness=thickness * jointratio, rgba=np.array([.3, .3, .2, 1])).attach_to(stickmodel)
-                if self.jlobject.jnts[id]['type'] == "prismatic":
-                    jgpos0 = self.jlobject.jnts[id]['gl_pos0']
+                if self.jlcobj.jnts[id]['type'] == "prismatic":
+                    jgpos0 = self.jlcobj.jnts[id]['gl_pos0']
                     gm.gen_stick(spos=jgpos0, epos=jgpos, type="round", thickness=thickness * jointratio,
                                  rgba=np.array([.2, .3, .3, 1])).attach_to(stickmodel)
             id = cjid
@@ -100,7 +115,7 @@ class JLChainMeshGen(object):
         """
         generate an end sphere (es) to show the trajectory of the end effector
 
-        :param jlobject: a JntLnk object
+        :param jlcobj: a JntLnk object
         :param rbga: color of the arm
         :return: null
 
@@ -110,7 +125,7 @@ class JLChainMeshGen(object):
         pass
         # eesphere = gm.StaticGeometricModel(name=name)
         # if rgba is not None:
-        #     gm.gen_sphere(pos=self.jlobject.jnts[-1]['linkend'], radius=.025, rgba=rgba).attach_to(eesphere)
+        #     gm.gen_sphere(pos=self.jlcobj.jnts[-1]['linkend'], radius=.025, rgba=rgba).attach_to(eesphere)
         # return gm.StaticGeometricModel(eesphere)
 
     def _toggle_tcpcs(self, parentmodel, tcp_jntid, tcp_loc_pos, tcp_loc_rotmat, tcpic_rgba, tcpic_thickness,
@@ -129,25 +144,25 @@ class JLChainMeshGen(object):
         date: 20201125
         """
         if tcp_jntid is None:
-            tcp_jntid = self.jlobject.tcp_jntid
+            tcp_jntid = self.jlcobj.tcp_jntid
         if tcp_loc_pos is None:
-            tcp_loc_pos = self.jlobject.tcp_loc_pos
+            tcp_loc_pos = self.jlcobj.tcp_loc_pos
         if tcp_loc_rotmat is None:
-            tcp_loc_rotmat = self.jlobject.tcp_loc_rotmat
+            tcp_loc_rotmat = self.jlcobj.tcp_loc_rotmat
         if tcpcs_thickness is None:
             tcpcs_thickness = tcpic_thickness
         if tcpcs_length is None:
             tcpcs_length = tcpcs_thickness * 15
-        tcp_globalpos, tcp_globalrotmat = self.jlobject.get_globaltcp(tcp_jntid, tcp_loc_pos, tcp_loc_rotmat)
+        tcp_globalpos, tcp_globalrotmat = self.jlcobj.get_globaltcp(tcp_jntid, tcp_loc_pos, tcp_loc_rotmat)
         if isinstance(tcp_globalpos, list):
             for i, jid in enumerate(tcp_jntid):
-                jgpos = self.jlobject.jnts[jid]['gl_posq']
+                jgpos = self.jlcobj.jnts[jid]['gl_posq']
                 gm.gen_dumbbell(spos=jgpos, epos=tcp_globalpos[i], thickness=tcpic_thickness,
                                 rgba=tcpic_rgba).attach_to(parentmodel)
                 gm.gen_frame(pos=tcp_globalpos[i], rotmat=tcp_globalrotmat[i], length=tcpcs_length,
                              thickness=tcpcs_thickness, alpha=1).attach_to(parentmodel)
         else:
-            jgpos = self.jlobject.jnts[tcp_jntid]['gl_posq']
+            jgpos = self.jlcobj.jnts[tcp_jntid]['gl_posq']
             gm.gen_dumbbell(spos=jgpos, epos=tcp_globalpos, thickness=tcpic_thickness, rgba=tcpic_rgba).attach_to(
                 parentmodel)
             gm.gen_frame(pos=tcp_globalpos, rotmat=tcp_globalrotmat, length=tcpcs_length, thickness=tcpcs_thickness,
@@ -163,8 +178,8 @@ class JLChainMeshGen(object):
         """
         if jntcs_length is None:
             jntcs_length = jntcs_thickness * 15
-        for id in self.jlobject.tgtjnts:
-            gm.gen_dashframe(pos=self.jlobject.jnts[id]['gl_pos0'], rotmat=self.jlobject.jnts[id]['gl_rotmat0'],
+        for id in self.jlcobj.tgtjnts:
+            gm.gen_dashframe(pos=self.jlcobj.jnts[id]['gl_pos0'], rotmat=self.jlcobj.jnts[id]['gl_rotmat0'],
                              length=jntcs_length, thickness=jntcs_thickness).attach_to(parentmodel)
-            gm.gen_frame(pos=self.jlobject.jnts[id]['gl_posq'], rotmat=self.jlobject.jnts[id]['gl_rotmatq'],
+            gm.gen_frame(pos=self.jlcobj.jnts[id]['gl_posq'], rotmat=self.jlcobj.jnts[id]['gl_rotmatq'],
                          length=jntcs_length, thickness=jntcs_thickness, alpha=1).attach_to(parentmodel)
