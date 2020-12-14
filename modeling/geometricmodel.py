@@ -151,7 +151,7 @@ class StaticGeometricModel(object):
         if isinstance(obj, ShowBase):
             # for rendering to base.render
             self._pdnp.reparentTo(obj.render)
-        elif isinstance(obj, StaticGeometricModel):
+        elif isinstance(obj, StaticGeometricModel): # prepared for decorations like local frames
             self._pdnp.reparentTo(obj.pdnp)
         elif isinstance(obj, mc.ModelCollection):
             obj.add_gm(self)

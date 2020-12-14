@@ -31,6 +31,7 @@ class ModelCollection(object):
         self._gm_list.append(objcm)
 
     def attach_to(self, obj):
+        # TODO check if obj is ShowBase
         for cm in self._cm_list:
             cm.attach_to(obj)
         for gm in self._gm_list:

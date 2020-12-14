@@ -185,6 +185,7 @@ class CollisionModel(gm.GeometricModel):
         date: 20180811
         """
         returnnp = nodepath.attachNewNode(copy.deepcopy(self._cdnp.getNode(0)))
+        returnnp.node().setCollideMaks(0x00)
         if homomat is None:
             returnnp.setMat(self._pdnp.getMat())
         else:
@@ -207,8 +208,6 @@ class CollisionModel(gm.GeometricModel):
         if isinstance(obj, ShowBase):
             # for rendering to base.render
             self._pdnp.reparentTo(obj.render)
-        elif isinstance(obj, gm.StaticGeometricModel):
-            self._pdnp.reparentTo(obj.pdnp)
         elif isinstance(obj, mc.ModelCollection):
             obj.add_cm(self)
         else:

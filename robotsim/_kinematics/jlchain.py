@@ -67,6 +67,7 @@ class JLChain(object):
             lnks[id]['mass'] = 0  # the visual adjustment is ignored for simplisity
             lnks[id]['meshfile'] = None
             lnks[id]['collisionmodel'] = None
+            lnks[id]['cdprimit_cache'] = [False, None] # p1: need update? p2: tmp nodepath that holds the primit
             lnks[id]['scale'] = None  # 3 list
             lnks[id]['rgba'] = [.7, .7, .7, 1]  # 4 list
         for id in range(self.ndof + 2):
@@ -130,6 +131,7 @@ class JLChain(object):
                 self.lnks[id]['gl_pos'] = np.dot(self.jnts[id]['gl_rotmatq'], self.lnks[id]['loc_pos']) + \
                                           self.jnts[id]['gl_posq']
                 self.lnks[id]['gl_rotmat'] = np.dot(self.jnts[id]['gl_rotmatq'], self.lnks[id]['loc_rotmat'])
+                self.lnks[id]['cdprimit_cache'][0] = True
             id = self.jnts[id]['child']
         return self.lnks, self.jnts
 

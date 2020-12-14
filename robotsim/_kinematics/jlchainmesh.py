@@ -27,7 +27,7 @@ class JLChainMeshGen(object):
     def gen_meshmodel(self, tcp_jntid=None, tcp_loc_pos=None, tcp_loc_rotmat=None, toggletcpcs=True, togglejntscs=False,
                       name='robotmesh', drawhand=True, rgbargt=None, rgbalft=None):
         # meshmodel = gm.StaticGeometricModel(name=name)
-        meshmodel = mc.ModelCollection(name=name) # TODO single collision model?
+        meshmodel = mc.ModelCollection(name=name)
         for id in range(self.jlobject.ndof + 1):
             if self.jlobject.lnks[id]['collisionmodel'] is not None:
                 this_collisionmodel = self.jlobject.lnks[id]['collisionmodel'].copy()
@@ -66,8 +66,7 @@ class JLChainMeshGen(object):
         author: weiwei
         date: 20200331, 20201006
         """
-        stickmodel = gm.StaticGeometricModel(name=name) # TODO StaticGeometricModelCollection?
-        # stickmodel = cmc.CollisionModelCollection(name=name)
+        stickmodel = mc.ModelCollection(name=name)
         id = 0
         loopdof = self.jlobject.ndof + 1
         if toggleconnjnt:
