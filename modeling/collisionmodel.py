@@ -30,7 +30,9 @@ class CollisionModel(gm.GeometricModel):
         :param expand_radius:
         :param name:
         :param external_cdprimitive_callback: the collision primitive will be defined in the provided callback function
-                                              if cdprimitive_type = external
+                                              if cdprimitive_type = external;
+                                              protocal for the callback function: return CollisionNode,
+                                              may have multiple CollisionSolid
         date: 201290312, 20201212
         """
         if isinstance(objinit, CollisionModel):
@@ -174,7 +176,7 @@ class CollisionModel(gm.GeometricModel):
             collision_node.addSolid(CollisionSphere(sglpnt[0], sglpnt[1], sglpnt[2], radius=radius))
         return collision_node
 
-    def copy_cdnp_to(self, nodepath, homomat=None):
+    def copy_cdnp_to(self, nodepath, homomat=None, clearmask = True):
         """
         Return a nodepath including the cdcn,
         the returned nodepath is attached to the given one
@@ -184,8 +186,9 @@ class CollisionModel(gm.GeometricModel):
         author: weiwei
         date: 20180811
         """
-        # returnnp = nodepath.attachNewNode(copy.deepcopy(self._cdnp.getNode(0)))
-        returnnp = nodepath.attachNewNode(copy.deepcopy(self._cdnp.getNode(0))
+        returnnp = nodepath.attachNewNode(copy.deepcopy(self._cdnp.getNode(0)))
+        if clearmask:
+            returnnp.node().setCollideMask(0x00)
         if homomat is None:
             returnnp.setMat(self._pdnp.getMat())
         else:
@@ -208,8 +211,6 @@ class CollisionModel(gm.GeometricModel):
         if isinstance(obj, ShowBase):
             # for rendering to base.render
             self._pdnp.reparentTo(obj.render)
-        elif isinstance(obj, gm.StaticGeometricModel):
-            self._pdnp.reparentTo(obj.pdnp)
         elif isinstance(obj, mc.ModelCollection):
             obj.add_cm(self)
         else:

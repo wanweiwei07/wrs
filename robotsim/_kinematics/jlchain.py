@@ -4,6 +4,7 @@ import basis.robotmath as rm
 import robotsim._kinematics.jlchainmesh as jlm
 import robotsim._kinematics.jlchainik as jlik
 
+
 class JLChain(object):
     """
     Joint Link Chain, no branches allowed
@@ -40,10 +41,8 @@ class JLChain(object):
         self.tcp_loc_pos = np.zeros(3)
         self.tcp_loc_rotmat = np.eye(3)
         # mesh generator
-        self._mt = jlm.JLChainMesh(self) # mesh tools
-        self._ikt = jlik.JLChainIK(self) # ik tools
-        # collision pairs
-        self.linkcdpairs = [[[0], range(1, self.ndof+1)]]
+        self._mt = jlm.JLChainMesh(self)
+        self._ikt = jlik.JLChainIK(self)
 
     def _init_jlchain(self):
         """
@@ -68,7 +67,7 @@ class JLChain(object):
             lnks[id]['mass'] = 0  # the visual adjustment is ignored for simplisity
             lnks[id]['meshfile'] = None
             lnks[id]['collisionmodel'] = None
-            lnks[id]['cdnp_cache'] = None # cache for lazily updating cdprimitives, will be reset at each fk
+            lnks[id]['cdprimit_cache'] = [False, None] # p1: need update? p2: tmp nodepath that holds the primit
             lnks[id]['scale'] = None  # 3 list
             lnks[id]['rgba'] = [.7, .7, .7, 1]  # 4 list
         for id in range(self.ndof + 2):
@@ -132,7 +131,7 @@ class JLChain(object):
                 self.lnks[id]['gl_pos'] = np.dot(self.jnts[id]['gl_rotmatq'], self.lnks[id]['loc_pos']) + \
                                           self.jnts[id]['gl_posq']
                 self.lnks[id]['gl_rotmat'] = np.dot(self.jnts[id]['gl_rotmatq'], self.lnks[id]['loc_rotmat'])
-                self.lnks[id]['cdnp_cache'] = None # clear previously transformed cdprimitives
+                self.lnks[id]['cdprimit_cache'][0] = True
             id = self.jnts[id]['child']
         return self.lnks, self.jnts
 
@@ -171,7 +170,7 @@ class JLChain(object):
         date: 20201126
         """
         self.goto_homeconf()
-        self._mt = jlm.JLChainMesh(self)
+        self._mg = jlm.JLChainMesh(self)
 
     def settcp(self, tcp_jntid=None, tcp_loc_pos=None, tcp_loc_rotmat=None):
         if tcp_jntid is not None:
@@ -404,6 +403,16 @@ class JLChain(object):
         tcp_gloc_rotmat = self.jnts[tcp_jntid]['gl_rotmatq'].dot(tcp_loc_rotmat)
         relpos, relrot = rm.relpose(tcp_gloc_pos, tcp_gloc_rotmat, worldpos, worldrot)
         return [relpos, relrot]
+
+    def is_selfcollided(self):
+        return self._mt.is_selfcollided()
+
+    def disable_localcc(self):
+        """
+        disable local collision checker
+        :return:
+        """
+        self._mt.disable_localcc()
 
     def gen_meshmodel(self, tcp_jntid=None, tcp_loc_pos=None, tcp_loc_rotmat=None, toggletcpcs=True,
                       togglejntscs=False, name='robotmesh', drawhand=True, rgbargt=None, rgbalft=None):

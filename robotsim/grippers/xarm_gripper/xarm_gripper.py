@@ -1,13 +1,13 @@
 import os
 import numpy as np
-import modeling.geometricmodel as gm
-import modeling.collisionmodel as cm
+import modeling.modelcollection as mc
 import robotsim._kinematics.jlchain as jl
 
 
 class XArmGripper(object):
 
-    def __init__(self, pos=np.zeros(3), rotmat=np.eye(3)):
+    def __init__(self, pos=np.zeros(3), rotmat=np.eye(3), name='xarm_gripper'):
+        self.name = name
         this_dir, this_filename = os.path.split(__file__)
         self.pos = pos
         self.rotmat = rotmat
@@ -95,11 +95,13 @@ class XArmGripper(object):
         self.lft_inner.reinitialize()
         self.rgt_outer.reinitialize()
         self.rgt_inner.reinitialize()
+        # collision detection
+        # not needed
 
     def fix_to(self, pos, rotmat, angle=None):
         self.pos = pos
         self.rotmat = rotmat
-        if angle is not None: # update transmission
+        if angle is not None:  # update transmission
             self.lft_outer.jnts[1]['motion_val'] = angle
             self.lft_outer.jnts[2]['motion_val'] = self.lft_outer.jnts[1]['motion_val']
             self.lft_inner.jnts[1]['motion_val'] = self.lft_outer.jnts[1]['motion_val']
@@ -112,7 +114,7 @@ class XArmGripper(object):
         self.rgt_inner.fix_to(self.pos, self.rotmat)
 
     def gen_stickmodel(self, name='xarm_gripper_stickmodel'):
-        stickmodel = gm.StaticGeometricModel(name=name)
+        stickmodel = mc.ModelCollection(name=name)
         self.lft_outer.gen_stickmodel().attach_to(stickmodel)
         self.lft_inner.gen_stickmodel().attach_to(stickmodel)
         self.rgt_outer.gen_stickmodel().attach_to(stickmodel)
@@ -120,7 +122,7 @@ class XArmGripper(object):
         return stickmodel
 
     def gen_meshmodel(self, name='xarm_gripper_meshmodel'):
-        meshmodel = cm.CollisionModelCollection(name=name)
+        meshmodel = mc.ModelCollection(name=name)
         self.lft_outer.gen_meshmodel().attach_to(meshmodel)
         self.lft_inner.gen_meshmodel().attach_to(meshmodel)
         self.rgt_outer.gen_meshmodel().attach_to(meshmodel)
@@ -158,6 +160,8 @@ if __name__ == '__main__':
     #     xag.fk(angle)
     #     xag.gen_meshmodel().attach_to(base)
     xag = XArmGripper()
-    xag.fk(.85)
-    xag.gen_meshmodel().attach_to(base)
+    xag.fk(.0)
+    model = xag.gen_meshmodel()
+    model.attach_to(base)
+    model.show_cdprimit()
     base.run()

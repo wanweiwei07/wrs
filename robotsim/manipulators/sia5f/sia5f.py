@@ -3,7 +3,7 @@ import math
 import numpy as np
 import basis.robotmath as rm
 import robotsim._kinematics.jlchain as jl
-from panda3d.core import NodePath, CollisionTraverser, CollisionHandlerQueue, BitMask32
+import robotsim._kinematics.collisionchecker as cc
 
 
 class SIA5F(jl.JLChain):
@@ -78,57 +78,8 @@ class SIA5F(jl.JLChain):
         # self.setinitvalues(np.array([-math.pi/2, math.pi/3, math.pi/6, 0, 0, 0, 0]))
         # self.setinitvalues(np.array([-math.pi/2, 0, math.pi/3, math.pi/10, 0, 0, 0]))
         self.reinitialize()
-        # pairs for collision detection
-        self.linkcdpairs = [[0, 1, 2], [5, 6, 7]]
-
-    def is_selfcollided(self, toggleplot=False):
-        oocnp = NodePath("collision nodepath")
-        obj0cnplist = []
-        for onelcdp in self.linkcdpairs[0]:
-            this_collisionmodel = self.lnks[onelcdp]['collisionmodel']
-            pos = self.lnks[onelcdp]['gl_pos']
-            rotmat = self.lnks[onelcdp]['gl_rotmat']
-            obj0cnplist.append(this_collisionmodel.copy_cdnp_to(oocnp, rm.homomat_from_posrot(pos, rotmat)))
-        obj1cnplist = []
-        for onelcdp in self.linkcdpairs[1]:
-            this_collisionmodel = self.lnks[onelcdp]['collisionmodel']
-            pos = self.lnks[onelcdp]['gl_pos']
-            rotmat = self.lnks[onelcdp]['gl_rotmat']
-            obj1cnplist.append(this_collisionmodel.copy_cdnp_to(oocnp, rm.homomat_from_posrot(pos, rotmat)))
-        if toggleplot:
-            oocnp.reparentTo(base.render)
-            for obj0cnp in obj0cnplist:
-                obj0cnp.show()
-            for obj1cnp in obj1cnplist:
-                obj1cnp.show()
-        ctrav = CollisionTraverser()
-        chan = CollisionHandlerQueue()
-        for obj0cnp in obj0cnplist:
-            obj0cnp.node().setFromCollideMask(BitMask32(0x1))
-            obj0cnp.setCollideMask(BitMask32(0x2))
-            ctrav.addCollider(obj0cnp, chan)
-        ctrav.traverse(oocnp)
-        if chan.getNumEntries() > 0:
-            return True
-        else:
-            return False
-
-    # def is_selfcollided2(self): # DEPRECATED: costs around 0.002s 20201115
-    #     cmlist0 = []
-    #     for onelcdp in self.linkcdpairs[0]:
-    #         this_collisionmodel = self.lnks[onelcdp]['collisionmodel'].copy()
-    #         pos = self.lnks[onelcdp]['gl_pos']
-    #         rotmat = self.lnks[onelcdp]['gl_rotmat']
-    #         this_collisionmodel.sethomomat(rm.homomat_from_posrot(pos, rotmat))
-    #         cmlist0.append(this_collisionmodel)
-    #     cmlist1 = []
-    #     for onelcdp in self.linkcdpairs[1]:
-    #         this_collisionmodel = self.lnks[onelcdp]['collisionmodel'].copy()
-    #         pos = self.lnks[onelcdp]['gl_pos']
-    #         rotmat = self.lnks[onelcdp]['gl_rotmat']
-    #         this_collisionmodel.sethomomat(rm.homomat_from_posrot(pos, rotmat))
-    #         cmlist1.append(this_collisionmodel)
-    #     return pcd.is_cmlistcmlist_collided(cmlist0, cmlist1)
+        # collision detection
+        self._mt.add_cdpair([0, 1, 2], [5, 6, 7])
 
 
 if __name__ == '__main__':
@@ -139,10 +90,12 @@ if __name__ == '__main__':
     base = wd.World(campos=[2, 0, 1], lookatpos=[0, 0, 0.5])
     gm.gen_frame().attach_to(base)
     manipulator_instance = SIA5F()
-    manipulator_instance.gen_meshmodel().attach_to(base)
+    manipulator_meshmodel = manipulator_instance.gen_meshmodel()
+    manipulator_meshmodel.attach_to(base)
+    manipulator_meshmodel.show_cdprimit()
     manipulator_instance.gen_stickmodel(togglejntscs=True).attach_to(base)
-    # tic = time.time()
-    # print(manipulator_instance.is_selfcollided(toggleplot=True))
-    # toc = time.time()
-    # print(toc - tic)
+    tic = time.time()
+    print(manipulator_instance.is_selfcollided())
+    toc = time.time()
+    print(toc - tic)
     base.run()

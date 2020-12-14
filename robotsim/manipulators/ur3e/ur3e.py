@@ -3,7 +3,7 @@ import math
 import numpy as np
 import basis.robotmath as rm
 import robotsim._kinematics.jlchain as jl
-from panda3d.core import NodePath, CollisionTraverser, CollisionHandlerQueue, BitMask32
+import robotsim._kinematics.collisionchecker as cc
 
 class UR3E(jl.JLChain):
 
@@ -69,41 +69,11 @@ class UR3E(jl.JLChain):
         self.lnks[6]['meshfile'] = os.path.join(this_dir, "meshes", "wrist3.dae")
         self.lnks[6]['rgba'] = [.5,.5,.5, 1.0]
         self.reinitialize()
-        self.linkcdpairs = [[[0,1], [3,5,6]], [[2], [4,5,6]], [[3], [6]]]
+        # collision detection
+        self._mt.add_cdpair([0,1], [3,5,6])
+        self._mt.add_cdpair([2], [4,5,6])
+        self._mt.add_cdpair([3], [6])
 
-    def is_selfcollided(self, toggledebug=False):
-        for linkcdpair in self.linkcdpairs:
-            oocnp = NodePath("collision nodepath")
-            obj0cnp_list = []
-            for one_lcdp in linkcdpair[0]:
-                this_collisionmodel = self.lnks[one_lcdp]['collisionmodel']
-                pos = self.lnks[one_lcdp]['gl_pos']
-                rotmat = self.lnks[one_lcdp]['gl_rotmat']
-                obj0cnp_list.append(this_collisionmodel.copy_cdnp_to(oocnp, rm.homomat_from_posrot(pos, rotmat)))
-            obj1cnp_list = []
-            for one_lcdp in linkcdpair[1]:
-                this_collisionmodel = self.lnks[one_lcdp]['collisionmodel']
-                pos = self.lnks[one_lcdp]['gl_pos']
-                rotmat = self.lnks[one_lcdp]['gl_rotmat']
-                obj1cnp_list.append(this_collisionmodel.copy_cdnp_to(oocnp, rm.homomat_from_posrot(pos, rotmat)))
-            if toggledebug:
-                oocnp.reparentTo(base.render)
-                for obj0cnp in obj0cnp_list:
-                    obj0cnp.show()
-                for obj1cnp in obj1cnp_list:
-                    obj1cnp.show()
-            ctrav = CollisionTraverser()
-            chan = CollisionHandlerQueue()
-            for obj0cnp in obj0cnp_list:
-                obj0cnp.node().setFromCollideMask(BitMask32(0x1))
-                obj0cnp.setCollideMask(BitMask32(0x2))
-                ctrav.addCollider(obj0cnp, chan)
-            ctrav.traverse(oocnp)
-            if chan.getNumEntries() > 0:
-                if toggledebug:
-                    print(linkcdpair)
-                return True
-        return False
 
 
 if __name__ == '__main__':
@@ -116,9 +86,10 @@ if __name__ == '__main__':
     manipulator_instance = UR3E()
     manipulator_meshmodel = manipulator_instance.gen_meshmodel()
     manipulator_meshmodel.attach_to(base)
+    manipulator_meshmodel.show_cdprimit()
     manipulator_instance.gen_stickmodel(togglejntscs=True).attach_to(base)
     tic = time.time()
-    print(manipulator_instance.is_selfcollided(toggledebug=True))
+    print(manipulator_instance.is_selfcollided())
     toc = time.time()
     print(toc - tic)
 
