@@ -94,8 +94,7 @@ if __name__ == '__main__':
     base = wd.World(campos=[1.5, 0, 3], lookatpos=[0, 0, .5])
     gm.gen_frame().attach_to(base)
     xav = XArm7YunjiMobile()
-    xav.fk(np.array([0,0,0,0,-math.pi/9,0,0,0,0,0,0]))
-
+    xav.fk(np.array([0,0,0,0,math.pi *2/ 3,0,math.pi,0,-math.pi / 6,0,0]))
     xav_meshmodel = xav.gen_meshmodel()
     xav_meshmodel.attach_to(base)
     xav_meshmodel.show_cdprimit()
