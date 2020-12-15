@@ -13,8 +13,34 @@ class CollisionChecker(object):
         self.ctrav = CollisionTraverser()
         self.chan = CollisionHandlerQueue()
         self.np = NodePath(name)
-        self.cdpairs = [] # for counting number of pairs and other unexpected usage
+        self.nbitmask = 0 # 0-28
+
         self.lnks_inuse = [] # a list of collisionmodels for quick accessing the cd links
+
+    def add_jlcobj(self, jlobj, lnk_idlist):
+        for id in lnk_idlist:
+            if jlobj.lnks[id]['cdprimit_cache'][1] is None:  # first time add
+                jlobj.lnks[id]['cdprimit_cache'][1] = jlobj.lnks[id]['collisionmodel'].copy_cdnp_to(self.np)
+        else:
+            raise ValueError("The link is already added!")
+
+    def add_objinhnd(self, external_cdprimit_cache, objcm):
+        """
+        :param external_cdprimit_cache: an empty list for receiving the [Boolean, cdprimit_cache] pair
+        :param objcm:
+        :return:
+        """
+        external_cdprimit_cache.append(False)
+        external_cdprimit_cache.append(objcm.copy_cdnp_to(self.np))
+
+    def delete_objinhnd(self, external_cdprimit_cache):
+        """
+        :param external_cdprimit_cache: a list that holds the [Boolean, cdprimit_cache] pair
+        :param objcm:
+        :return:
+        """
+        external_cdprimit_cache[1].removeNode()
+        external_cdprimit_cache = []
 
     # def add_cdpair(self, jlobj0, lnk_idlist0, jlobj1, lnk_idlist1):
     #     """
@@ -58,7 +84,7 @@ class CollisionChecker(object):
     #     cdpair['lnk_idlist1'] = lnk_idlist1
     #     self.cdpairs.append(cdpair)
 
-    def add_cdpair(self, fromlist, intolist):
+    def add_self_cdpair(self, fromlist, intolist):
         """
         :param fromlist: [[jlcobj, lnk_idlist], ...]
         :param intolist: [[jlcobj, lnk_idlist], ...]
@@ -101,8 +127,31 @@ class CollisionChecker(object):
         cdpair['tolist'] = intolist
         self.cdpairs.append(cdpair)
 
+    def add_cdpair(self, fromlist, intolist):
+        """
+        :param fromlist: [[bool, cdprimit_cache], ...]
+        :param intolist: [[bool, cdprimit_cache], ...]
+        :return:
+        author: weiwei
+        date: 20201215
+        """
+        cdmask = BitMask32(2 ** len(self.cdpairs))
+        for cdprimit_cache in fromlist:
+            current_from_cdmask = cdprimit_cache[1].node().getFromCollideMask()
+            if current_from_cdmask == 0:  # if was never added as collider
+                self.ctrav.addCollider(cdprimit_cache[1], self.chan)
+            new_from_cdmask = current_from_cdmask | cdmask
+            cdprimit_cache[1].node().setFromCollideMask(new_from_cdmask)
+            current_into_cdmask = cdprimit_cache[1].node().getIntoCollideMask()
+            cdprimit_cache[1].node().setIntoCollideMask(current_into_cdmask & ~new_from_cdmask)
+        for cdprimit_cache in intolist:
+            current_into_cdmask = cdprimit_cache[1].node().getIntoCollideMask()
+            new_into_cdmask = current_into_cdmask | cdmask
+            cdprimit_cache[1].node().setIntoCollideMask(new_into_cdmask)
+        self.nbitmask += 1
+
     def is_selfcollided(self):
-        for one_lnkcdmodel in self.lnks_inuse:
+        for one_lnkcdmodel in self.lnks_inuse: # TODO global ik indicator
             if one_lnkcdmodel['cdprimit_cache'][0]: # need to update
                 pos = one_lnkcdmodel['gl_pos']
                 rotmat = one_lnkcdmodel['gl_rotmat']

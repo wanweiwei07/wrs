@@ -1,4 +1,5 @@
 import os
+import math
 import numpy as np
 import modeling.modelcollection as mc
 import robotsim._kinematics.jlchain as jl
@@ -148,6 +149,11 @@ class XArmGripper(object):
         else:
             raise ValueError("The angle parameter is out of range!")
 
+    def jaw_to(self, jawwidth):
+        if jawwidth > 0.082:
+            raise ValueError("Jawwidth must be 0mm~82mm!")
+        angle = .85 - math.asin(jawwidth/2.0/0.055)
+        self.fk(angle)
 
 if __name__ == '__main__':
     import visualization.panda.world as wd
@@ -160,8 +166,9 @@ if __name__ == '__main__':
     #     xag.fk(angle)
     #     xag.gen_meshmodel().attach_to(base)
     xag = XArmGripper()
-    xag.fk(.0)
+    xag.jaw_to(0.05)
     model = xag.gen_meshmodel()
     model.attach_to(base)
     model.show_cdprimit()
+    xag.gen_stickmodel().attach_to(base)
     base.run()

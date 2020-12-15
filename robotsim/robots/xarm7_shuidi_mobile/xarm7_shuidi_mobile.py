@@ -36,11 +36,13 @@ class XArm7YunjiMobile(object):
         # gripper
         self.hnd = xag.XArmGripper(pos=self.arm.jnts[-1]['gl_posq'], rotmat=self.arm.jnts[-1]['gl_rotmatq'],
                                    name=self.name + "_hnd")
+        # objects in hand
+        self.obj_inhnd_cdprimit_cache = []
         # collision detection
         self.cc = cc.CollisionChecker(self.name + "_collisionchecker")
         fromlist = [[self.agv, [0]], [self.arm, [0, 1, 2]]]
-        intolist = [[self.arm, [5, 6, 7]], [self.hnd.lft_outer, [0, 1, 2]], [self.hnd.rgt_outer, [1, 2]]]
-        self.cc.add_cdpair(fromlist, intolist)
+        intolist = [[self.arm, [5, 6]], [self.hnd.lft_outer, [0, 1, 2]], [self.hnd.rgt_outer, [1, 2]]]
+        self.cc.add_self_cdpair(fromlist, intolist)
 
     def move_to(self, pos, rotmat):
         self.pos = pos
@@ -62,11 +64,21 @@ class XArm7YunjiMobile(object):
         self.agv.fix_to(self.pos, self.rotmat)
         self.arm.fix_to(pos=self.agv.jnts[-1]['gl_posq'], rotmat=self.agv.jnts[-1]['gl_rotmatq'],
                         jnt_values=general_jnt_values[3:10])
-        if len(general_jnt_values) == 10:  # gripper is also set
-            self.hnd.fix_to(pos=self.arm.jnts[-1]['gl_posq'], rotmat=self.arm.jnts[-1]['gl_rotmatq'],
-                            jnt_values=general_jnt_values[10])
-        else:
-            self.hnd.fix_to(pos=self.arm.jnts[-1]['gl_posq'], rotmat=self.arm.jnts[-1]['gl_rotmatq'])
+        self.hnd.fix_to(pos=self.arm.jnts[-1]['gl_posq'], rotmat=self.arm.jnts[-1]['gl_rotmatq'])
+        if len(general_jnt_values) == 11:  # gripper is also set
+            self.hnd.jaw_to(general_jnt_values[10])
+
+    def hold(self, objcm, jawwidth=None):
+        """
+        the objcm is added as a part of the robot to the cd checker
+        :param jawwidth:
+        :param objcm:
+        :return:
+        """
+        if jawwidth is not None:
+            self.hnd.jaw_to(jawwidth)
+        rel_pos, rel_rotmat = self.hnd.lft_outer.get_relpose(objcm.get_pos(), objcm.get_rotmat())
+        self.objects_inhnd.append([objcm.copy(), rel_pos, rel_rotmat])
 
     def is_selfcollided(self):
         return self.cc.is_selfcollided()
@@ -83,6 +95,12 @@ class XArm7YunjiMobile(object):
         self.agv.gen_meshmodel().attach_to(meshmodel)
         self.arm.gen_meshmodel().attach_to(meshmodel)
         self.hnd.gen_meshmodel().attach_to(meshmodel)
+        for objcm_info in self.objects_inhnd:
+            objcm, rel_pos, rel_rotmat = objcm_info
+            world_pos, world_rotmat = self.hnd.lft_outer.get_worldpose(rel_pos, rel_rotmat)
+            objcm.set_pos(world_pos)
+            objcm.set_rotmat(world_rotmat)
+            objcm.attach_to(meshmodel)
         return meshmodel
 
 
@@ -92,6 +110,7 @@ if __name__ == '__main__':
     import modeling.geometricmodel as gm
 
     base = wd.World(campos=[1.5, 0, 3], lookatpos=[0, 0, .5])
+
     gm.gen_frame().attach_to(base)
     xav = XArm7YunjiMobile()
     xav.fk(np.array([0,0,0,0,math.pi *2/ 3,0,math.pi,0,-math.pi / 6,0,0]))

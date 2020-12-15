@@ -24,10 +24,13 @@ class JLChainMesh(object):
                 self.jlobject.lnks[id]['collisionmodel'] = cm.CollisionModel(self.jlobject.lnks[id]['meshfile'])
                 if self.jlobject.lnks[id]['scale'] is not None:
                     self.jlobject.lnks[id]['collisionmodel'].set_scale(self.jlobject.lnks[id]['scale'])
+            elif self.jlobject.lnks[id]['collisionmodel'] is not None: # in case the collision model is directly set
+                if self.jlobject.lnks[id]['scale'] is not None:
+                    self.jlobject.lnks[id]['collisionmodel'].set_scale(self.jlobject.lnks[id]['scale'])
         self.cc = cc.CollisionChecker(jlobject.name+"_collisionchecker")
 
-    def add_cdpair(self, lnk_idlist0, lnk_idlist1):
-        self.cc.add_cdpair([[self.jlobject, lnk_idlist0]], [[self.jlobject, lnk_idlist1]])
+    def add_self_cdpair(self, lnk_idlist0, lnk_idlist1):
+        self.cc.add_self_cdpair([[self.jlobject, lnk_idlist0]], [[self.jlobject, lnk_idlist1]])
 
     def is_selfcollided(self):
         return self.cc.is_selfcollided()

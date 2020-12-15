@@ -380,7 +380,7 @@ class JLChain(object):
         objrot = tcp_gloc_rotmat.dot(relrot)
         return [objpos, objrot]
 
-    def getrelpose(self, worldpos, worldrot, tcp_jntid=None, tcp_loc_pos=None, tcp_loc_rotmat=None):
+    def get_relpose(self, worldpos, worldrot, tcp_jntid=None, tcp_loc_pos=None, tcp_loc_rotmat=None):
         """
         given a world pos and world rot
         get the relative pos and relative rot with respective to the ith jntlnk
