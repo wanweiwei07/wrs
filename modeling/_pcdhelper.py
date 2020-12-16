@@ -12,10 +12,12 @@ def is_cmcm_collided(objcm1, objcm2, toggleplot = False):
     if toggleplot:
         objcm1.show_cdprimit()
         objcm2.show_cdprimit()
+    tmpnp = NodePath("collision nodepath")
     ctrav = CollisionTraverser()
     chan = CollisionHandlerQueue()
-    ctrav.addCollider(objcm1.cdnp, chan)
-    ctrav.traverse(objcm2.pdnp)
+    ctrav.addCollider(objcm1.copy_cdnp_to(tmpnp, clearmask=False), chan)
+    objcm2.copy_cdnp_to(tmpnp, clearmask=False)
+    ctrav.traverse(tmpnp)
     if chan.getNumEntries() > 0:
         return True
     else:
@@ -32,13 +34,12 @@ def is_cmcmlist_collided(objcm, objcmlist, toggleplot = False):
         objcm.show_cdprimit()
         for one_objcm in objcmlist:
             one_objcm.show_cdprimit()
+    tmpnp = NodePath("collision nodepath")
     ctrav = CollisionTraverser()
     chan = CollisionHandlerQueue()
-    ctrav.addCollider(objcm.cdnp, chan)
-    tmpnp = NodePath("collision nodepath")
-    objcnplist = []
+    ctrav.addCollider(objcm.copy_cdnp_to(tmpnp, clearmask=False), chan)
     for objcm2 in objcmlist:
-        objcnplist.append(objcm2.copy_cdnp_to(tmpnp, clearmask=False))
+        objcm2.copy_cdnp_to(tmpnp, clearmask=False)
     ctrav.traverse(tmpnp)
     if chan.getNumEntries() > 0:
         return True
@@ -58,14 +59,14 @@ def is_cmlistcmlist_collided(objcmlist0, objcmlist1, toggleplot = False):
             one_objcm.show_cdprimit()
         for one_objcm in objcmlist1:
             one_objcm.show_cdprimit()
+    tmpnp = NodePath("collision nodepath")
     ctrav = CollisionTraverser()
     chan = CollisionHandlerQueue()
     for one_objcm in objcmlist0:
-        ctrav.addCollider(one_objcm.cdnp, chan)
+        ctrav.addCollider(one_objcm.copy_cdnp_to(tmpnp, clearmask=False), chan)
     tmpnp = NodePath("collision nodepath")
-    objcnplist = []
     for objcm2 in objcmlist:
-        objcnplist.append(objcm2.copy_cdnp_to(tmpnp, clearmask=False))
+        objcm2.copy_cdnp_to(tmpnp, clearmask=False)
     ctrav.traverse(tmpnp)
     if chan.getNumEntries() > 0:
         return True
@@ -81,7 +82,7 @@ if __name__ == '__main__':
     base = wd.World(campos=[.7,.7,.7], lookatpos=[0, 0, 0])
     objcm = cm.CollisionModel("./objects/bunnysim.stl")
     objcm.set_color(np.array([.2,.5,0,1]))
-    objcm.set_pos(np.array([.01,-.01,.01]))
+    objcm.set_pos(np.array([.01,.01,.01]))
     objcm.attach_to(base)
     objcm.show_cdprimit()
     objcmlist = []

@@ -40,9 +40,24 @@ class XArm7YunjiMobile(object):
         self.obj_inhnd_cdprimit_cache = []
         # collision detection
         self.cc = cc.CollisionChecker(self.name + "_collisionchecker")
-        fromlist = [[self.agv, [0]], [self.arm, [0, 1, 2]]]
-        intolist = [[self.arm, [5, 6]], [self.hnd.lft_outer, [0, 1, 2]], [self.hnd.rgt_outer, [1, 2]]]
-        self.cc.add_self_cdpair(fromlist, intolist)
+        self.cc.add_cdlnks(self.agv, [0])
+        self.cc.add_cdlnks(self.arm, [0,1,2,3,4,5,6])
+        self.cc.add_cdlnks(self.hnd.lft_outer, [0,1,2])
+        self.cc.add_cdlnks(self.hnd.rgt_outer, [1,2])
+        fromlist = [self.agv.lnks[0]['cdprimit_cache'],
+                    self.arm.lnks[0]['cdprimit_cache'],
+                    self.arm.lnks[1]['cdprimit_cache'],
+                    self.arm.lnks[2]['cdprimit_cache']]
+        intolist = [self.arm.lnks[5]['cdprimit_cache'],
+                    self.arm.lnks[6]['cdprimit_cache'],
+                    self.hnd.lft_outer.lnks[0]['cdprimit_cache'],
+                    self.hnd.lft_outer.lnks[1]['cdprimit_cache'],
+                    self.hnd.lft_outer.lnks[2]['cdprimit_cache'],
+                    self.hnd.rgt_outer.lnks[1]['cdprimit_cache'],
+                    self.hnd.rgt_outer.lnks[2]['cdprimit_cache']]
+        self.cc.set_cdpair(fromlist, intolist)
+        # objects in hand [[Boolean, cdprimit_cache], ...] = p1: need to update?, p2: cache
+        self.objs_inhnd_infos = []
 
     def move_to(self, pos, rotmat):
         self.pos = pos
@@ -67,6 +82,12 @@ class XArm7YunjiMobile(object):
         self.hnd.fix_to(pos=self.arm.jnts[-1]['gl_posq'], rotmat=self.arm.jnts[-1]['gl_rotmatq'])
         if len(general_jnt_values) == 11:  # gripper is also set
             self.hnd.jaw_to(general_jnt_values[10])
+        # set objects in hand cache's need-to-update marker to True
+        for one_oih_info in self.objs_inhnd_infos:
+            gl_pos, gl_rotmat = self.hnd.lft_outer.get_worldpose(one_oih_info['rel_pos'], one_oih_info['rel_rotmat'])
+            one_oih_info['gl_pos'] = gl_pos
+            one_oih_info['gl_rotmat'] = gl_rotmat
+            one_oih_info['cdprimit_cache'][0] = True
 
     def hold(self, objcm, jawwidth=None):
         """
@@ -78,7 +99,30 @@ class XArm7YunjiMobile(object):
         if jawwidth is not None:
             self.hnd.jaw_to(jawwidth)
         rel_pos, rel_rotmat = self.hnd.lft_outer.get_relpose(objcm.get_pos(), objcm.get_rotmat())
-        self.objects_inhnd.append([objcm.copy(), rel_pos, rel_rotmat])
+        intolist = [self.agv.lnks[0]['cdprimit_cache'],
+                    self.arm.lnks[0]['cdprimit_cache'],
+                    self.arm.lnks[1]['cdprimit_cache'],
+                    self.arm.lnks[2]['cdprimit_cache'],
+                    self.arm.lnks[3]['cdprimit_cache'],
+                    self.arm.lnks[4]['cdprimit_cache'],
+                    self.arm.lnks[5]['cdprimit_cache'],
+                    self.arm.lnks[6]['cdprimit_cache']]
+        self.objs_inhnd_infos.append(self.cc.add_objinhnd(objcm, rel_pos, rel_rotmat, intolist))
+
+    def release(self, objcm, jawwidth=None):
+        """
+        the objcm is added as a part of the robot to the cd checker
+        :param jawwidth:
+        :param objcm:
+        :return:
+        """
+        if jawwidth is not None:
+            self.hnd.jaw_to(jawwidth)
+        for one_oih_info in self.objs_inhnd_infos:
+            if one_oih_info['collisionmodel'] is objcm:
+                self.cc.delete_objinhnd(one_oih_info)
+                self.objs_inhnd_infos.remove(one_oih_info)
+                break
 
     def is_selfcollided(self):
         return self.cc.is_selfcollided()
@@ -95,11 +139,10 @@ class XArm7YunjiMobile(object):
         self.agv.gen_meshmodel().attach_to(meshmodel)
         self.arm.gen_meshmodel().attach_to(meshmodel)
         self.hnd.gen_meshmodel().attach_to(meshmodel)
-        for objcm_info in self.objects_inhnd:
-            objcm, rel_pos, rel_rotmat = objcm_info
-            world_pos, world_rotmat = self.hnd.lft_outer.get_worldpose(rel_pos, rel_rotmat)
-            objcm.set_pos(world_pos)
-            objcm.set_rotmat(world_rotmat)
+        for obj_info in self.objs_inhnd_infos:
+            objcm = obj_info['collisionmodel']
+            objcm.set_pos(obj_info['gl_pos'])
+            objcm.set_rotmat(obj_info['gl_rotmat'])
             objcm.attach_to(meshmodel)
         return meshmodel
 

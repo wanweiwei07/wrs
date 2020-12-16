@@ -1,6 +1,6 @@
 import copy
 import numpy as np
-from panda3d.core import CollisionNode, CollisionBox, CollisionSphere, NodePath
+from panda3d.core import CollisionNode, CollisionBox, CollisionSphere, NodePath, BitMask32
 from visualization.panda.world import ShowBase
 import basis.dataadapter as da
 import modeling.geometricmodel as gm
@@ -42,7 +42,7 @@ class CollisionModel(gm.GeometricModel):
             self._pdnp = copy.deepcopy(objinit.pdnp)
             self._pdnp_raw = self._pdnp.find(self.name + "_raw")
             self._localframe = copy.deepcopy(objinit.localframe)
-            self._cdnp = objinit.copy_cdnp_to(self._pdnp)
+            self._cdnp = objinit.copy_cdnp_to(self._pdnp, clearmask=False)
             self._cdprimitive_type = objinit.cdprimitive_type
             self._pcd = objinit.pcd  # primitive collision detector
             self._mcd = objinit.mcd  # bullet collision detector
@@ -68,6 +68,7 @@ class CollisionModel(gm.GeometricModel):
                     if cdprimitive_type == "external":
                         cdnd = external_cdprimitive_callback(cmobj=self, radius=expand_radius)
                 self._cdnp = self._pdnp.attachNewNode(cdnd)
+                self._cdnp.node().setCollideMask(BitMask32(2**31))
             self._localframe = None
             self._pcd = pcd  # primitive collision detector
             self._mcd = mcd  # bullet collision detector
@@ -189,6 +190,8 @@ class CollisionModel(gm.GeometricModel):
         returnnp = nodepath.attachNewNode(copy.deepcopy(self._cdnp.getNode(0)))
         if clearmask:
             returnnp.node().setCollideMask(0x00)
+        else:
+            returnnp.node().setCollideMask(self._cdnp.getCollideMask())
         if homomat is None:
             returnnp.setMat(self._pdnp.getMat())
         else:

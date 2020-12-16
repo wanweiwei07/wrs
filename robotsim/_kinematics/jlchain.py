@@ -360,6 +360,7 @@ class JLChain(object):
 
     def get_worldpose(self, relpos=np.zeros(3), relrot=np.eye(3), tcp_jntid=None, tcp_loc_pos=None, tcp_loc_rotmat=None):
         """
+        TODO change name to get_locpose and get_glpose
         given a relative pos and relative rot with respective to the ith jntlnk,
         get the world pos and world rot
         :param relpos: nparray 1x3
