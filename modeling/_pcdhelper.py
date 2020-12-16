@@ -15,8 +15,8 @@ def is_cmcm_collided(objcm1, objcm2, toggleplot = False):
     tmpnp = NodePath("collision nodepath")
     ctrav = CollisionTraverser()
     chan = CollisionHandlerQueue()
-    ctrav.addCollider(objcm1.copy_cdnp_to(tmpnp, clearmask=False), chan)
-    objcm2.copy_cdnp_to(tmpnp, clearmask=False)
+    ctrav.addCollider(objcm1.copy_cdnp_to(tmpnp), chan)
+    objcm2.copy_cdnp_to(tmpnp)
     ctrav.traverse(tmpnp)
     if chan.getNumEntries() > 0:
         return True
@@ -37,9 +37,9 @@ def is_cmcmlist_collided(objcm, objcmlist, toggleplot = False):
     tmpnp = NodePath("collision nodepath")
     ctrav = CollisionTraverser()
     chan = CollisionHandlerQueue()
-    ctrav.addCollider(objcm.copy_cdnp_to(tmpnp, clearmask=False), chan)
+    ctrav.addCollider(objcm.copy_cdnp_to(tmpnp), chan)
     for objcm2 in objcmlist:
-        objcm2.copy_cdnp_to(tmpnp, clearmask=False)
+        objcm2.copy_cdnp_to(tmpnp)
     ctrav.traverse(tmpnp)
     if chan.getNumEntries() > 0:
         return True
@@ -63,10 +63,10 @@ def is_cmlistcmlist_collided(objcmlist0, objcmlist1, toggleplot = False):
     ctrav = CollisionTraverser()
     chan = CollisionHandlerQueue()
     for one_objcm in objcmlist0:
-        ctrav.addCollider(one_objcm.copy_cdnp_to(tmpnp, clearmask=False), chan)
+        ctrav.addCollider(one_objcm.copy_cdnp_to(tmpnp), chan)
     tmpnp = NodePath("collision nodepath")
     for objcm2 in objcmlist:
-        objcm2.copy_cdnp_to(tmpnp, clearmask=False)
+        objcm2.copy_cdnp_to(tmpnp)
     ctrav.traverse(tmpnp)
     if chan.getNumEntries() > 0:
         return True

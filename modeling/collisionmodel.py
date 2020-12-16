@@ -177,7 +177,7 @@ class CollisionModel(gm.GeometricModel):
             collision_node.addSolid(CollisionSphere(sglpnt[0], sglpnt[1], sglpnt[2], radius=radius))
         return collision_node
 
-    def copy_cdnp_to(self, nodepath, homomat=None, clearmask = True):
+    def copy_cdnp_to(self, nodepath, homomat=None, clearmask = False):
         """
         Return a nodepath including the cdcn,
         the returned nodepath is attached to the given one

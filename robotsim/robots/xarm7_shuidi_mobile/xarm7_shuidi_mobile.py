@@ -44,6 +44,21 @@ class XArm7YunjiMobile(object):
         self.cc.add_cdlnks(self.arm, [0,1,2,3,4,5,6])
         self.cc.add_cdlnks(self.hnd.lft_outer, [0,1,2])
         self.cc.add_cdlnks(self.hnd.rgt_outer, [1,2])
+        activelist = [self.agv.lnks[0]['cdprimit_cache'],
+                      self.arm.lnks[0]['cdprimit_cache'],
+                      self.arm.lnks[1]['cdprimit_cache'],
+                      self.arm.lnks[2]['cdprimit_cache'],
+                      self.arm.lnks[3]['cdprimit_cache'],
+                      self.arm.lnks[4]['cdprimit_cache'],
+                      self.arm.lnks[5]['cdprimit_cache'],
+                      self.arm.lnks[4]['cdprimit_cache'],
+                      self.arm.lnks[6]['cdprimit_cache'],
+                      self.hnd.lft_outer.lnks[0]['cdprimit_cache'],
+                      self.hnd.lft_outer.lnks[1]['cdprimit_cache'],
+                      self.hnd.lft_outer.lnks[2]['cdprimit_cache'],
+                      self.hnd.rgt_outer.lnks[1]['cdprimit_cache'],
+                      self.hnd.rgt_outer.lnks[2]['cdprimit_cache']]
+        self.cc.set_active_cdlnks(activelist)
         fromlist = [self.agv.lnks[0]['cdprimit_cache'],
                     self.arm.lnks[0]['cdprimit_cache'],
                     self.arm.lnks[1]['cdprimit_cache'],
@@ -56,7 +71,7 @@ class XArm7YunjiMobile(object):
                     self.hnd.rgt_outer.lnks[1]['cdprimit_cache'],
                     self.hnd.rgt_outer.lnks[2]['cdprimit_cache']]
         self.cc.set_cdpair(fromlist, intolist)
-        # objects in hand [[Boolean, cdprimit_cache], ...] = p1: need to update?, p2: cache
+        # a list of detailed information about objects in hand, see CollisionChecker.add_objinhnd
         self.objs_inhnd_infos = []
 
     def move_to(self, pos, rotmat):
@@ -65,6 +80,12 @@ class XArm7YunjiMobile(object):
         self.agv.fix_to(self.pos, self.rotmat)
         self.arm.fix_to(pos=self.agv.jnts[-1]['gl_posq'], rotmat=self.agv.jnts[-1]['gl_rotmatq'])
         self.hnd.fix_to(pos=self.arm.jnts[-1]['gl_posq'], rotmat=self.arm.jnts[-1]['gl_rotmatq'])
+        # set objects in hand cache's need-to-update marker to True
+        for one_oih_info in self.objs_inhnd_infos:
+            gl_pos, gl_rotmat = self.hnd.lft_outer.get_worldpose(one_oih_info['rel_pos'], one_oih_info['rel_rotmat'])
+            one_oih_info['gl_pos'] = gl_pos
+            one_oih_info['gl_rotmat'] = gl_rotmat
+            one_oih_info['cdprimit_cache'][0] = True
 
     def fk(self, general_jnt_values):
         """
@@ -107,7 +128,7 @@ class XArm7YunjiMobile(object):
                     self.arm.lnks[4]['cdprimit_cache'],
                     self.arm.lnks[5]['cdprimit_cache'],
                     self.arm.lnks[6]['cdprimit_cache']]
-        self.objs_inhnd_infos.append(self.cc.add_objinhnd(objcm, rel_pos, rel_rotmat, intolist))
+        self.objs_inhnd_infos.append(self.cc.add_cdobj(objcm, rel_pos, rel_rotmat, intolist))
 
     def release(self, objcm, jawwidth=None):
         """
@@ -120,12 +141,12 @@ class XArm7YunjiMobile(object):
             self.hnd.jaw_to(jawwidth)
         for one_oih_info in self.objs_inhnd_infos:
             if one_oih_info['collisionmodel'] is objcm:
-                self.cc.delete_objinhnd(one_oih_info)
+                self.cc.delete_cdobj(one_oih_info)
                 self.objs_inhnd_infos.remove(one_oih_info)
                 break
 
-    def is_selfcollided(self):
-        return self.cc.is_selfcollided()
+    def is_collided(self, obstacle_list=[], otherrobot_list=[]):
+        return self.cc.is_collided(obstacle_list=obstacle_list, otherrobot_list=otherrobot_list)
 
     def gen_stickmodel(self, name='xarm7_shuidi_mobile'):
         stickmodel = mc.ModelCollection(name=name)
@@ -162,7 +183,7 @@ if __name__ == '__main__':
     xav_meshmodel.show_cdprimit()
     xav.gen_stickmodel().attach_to(base)
     tic = time.time()
-    result = xav.is_selfcollided()
+    result = xav.is_collided()
     toc = time.time()
     print(result, toc-tic)
     base.run()
