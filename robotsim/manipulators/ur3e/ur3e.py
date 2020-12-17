@@ -3,7 +3,6 @@ import math
 import numpy as np
 import basis.robotmath as rm
 import robotsim._kinematics.jlchain as jl
-import robotsim._kinematics.collisionchecker as cc
 
 class UR3E(jl.JLChain):
 

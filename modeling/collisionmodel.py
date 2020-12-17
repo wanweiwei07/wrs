@@ -66,7 +66,7 @@ class CollisionModel(gm.GeometricModel):
                     if cdprimitive_type == "pointcloud":
                         cdnd = self._gen_pointcloud_cdnp(name=self.name+"_pointcloudcd", radius=expand_radius)
                     if cdprimitive_type == "userdefined":
-                        cdnd = userdefined_cdprimitive_callback(cmobj=self, name=self.name+"_userdefined", radius=expand_radius)
+                        cdnd = userdefined_cdprimitive_callback(name=self.name+"_userdefined", radius=expand_radius)
                 self._cdnp = self._pdnp.attachNewNode(cdnd)
                 self._cdnp.node().setCollideMask(BitMask32(2**31))
             self._localframe = None

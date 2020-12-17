@@ -7,14 +7,7 @@ import modeling.collisionmodel as cm
 import robotsim._kinematics.jlchain as jl
 import robotsim.manipulators.ur3e.ur3e as ur
 import robotsim.grippers.robotiqhe.robotiqhe as rtq
-
-
-class CollisionModel_User(cm.CollisionModel):
-    def __init__(self, objinit, btransparency=True, expand_radius=None, name="defaultname"):
-        super().__init__(objinit, btransparency=btransparency, cdprimitive_type="userdefined",
-                         expand_radius=expand_radius, name=name)
-
-
+from panda3d.core import CollisionNode, CollisionBox, Point3
 
 
 class UR3EDual(object):
@@ -31,10 +24,9 @@ class UR3EDual(object):
         self.lft_base.lnks[0]['name'] = "ur3e_dual_base"
         self.lft_base.lnks[0]['loc_pos'] = np.array([0, 0, 0])
         # manually specify cd primitives
-        self.lft_base.lnks[0]['meshfile'] = os.path.join(this_dir, "meshes", "ur3e_dual_base.stl")
-        self.lft_base.lnks[0]['collisionmodel'] = cm.CollisionModel(self.lft_base.lnks[0]['meshfile'],
-                                                                    cdprimitive_type="external",
-                                                                    userdefined_cdprimitive_callback=self._base_primitive)
+        self.lft_base.lnks[0]['collisionmodel'] = cm.CollisionModel(os.path.join(this_dir, "meshes", "ur3e_dual_base.stl"),
+                                                                    cdprimitive_type="userdefined",
+                                                                    userdefined_cdprimitive_callback=self._base_combined_cdnp)
         self.lft_base.lnks[0]['rgba'] = [.3, .3, .3, 1.0]
         self.lft_base.reinitialize()
         lft_arm_homeconf = np.zeros(6)
@@ -73,9 +65,19 @@ class UR3EDual(object):
         self.rgt_hnd = rtq.RobotiqHE(pos=rgt_hnd_pos, rotmat=self.rgt_arm.jnts[-1]['gl_rotmatq'])
 
     @staticmethod
-    def _base_primitive(self, objcm, name, radius):
+    def _base_combined_cdnp(name, radius):
         collision_node = CollisionNode(name)
-        collision_primitive = CollisionBox(bottom_left, top_right)
+        collision_primitive_c0 = CollisionBox(Point3(0.54, 0.0, 0.39), x=.54, y=.6, z=.39)
+        collision_node.addSolid(collision_primitive_c0)
+        collision_primitive_c1 = CollisionBox(Point3(0.06, 0.0, 0.9), x=.06, y=.375, z=.9)
+        collision_node.addSolid(collision_primitive_c1)
+        collision_primitive_c2 = CollisionBox(Point3(0.18, 0.0, 1.77), x=.18, y=.25, z=.03)
+        collision_node.addSolid(collision_primitive_c2)
+        collision_primitive_l0 = CollisionBox(Point3(0.3025, 0.345, 1.33), x=.1225, y=.06, z=.03)
+        collision_node.addSolid(collision_primitive_l0)
+        collision_primitive_l1 = CollisionBox(Point3(0.3025, -0.345, 1.33), x=.1225, y=.06, z=.03)
+        collision_node.addSolid(collision_primitive_l1)
+        return collision_node
 
     def move_to(self, pos, rotmat):
         self.pos = pos
