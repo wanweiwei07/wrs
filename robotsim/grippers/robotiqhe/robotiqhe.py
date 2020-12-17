@@ -1,8 +1,6 @@
 import os
-import math
 import numpy as np
-import modeling.geometricmodel as gm
-import modeling.collisionmodel as cm
+import modeling.modelcollection as mc
 import robotsim._kinematics.jlchain as jl
 import basis.robotmath as rm
 
@@ -83,7 +81,7 @@ class RobotiqHE(object):
 
     def gen_stickmodel(self, tcp_jntid=None, tcp_loc_pos=None, tcp_loc_rotmat=None, toggletcpcs=False,
                        togglejntscs=False, toggleconnjnt=False, name='xarm_gripper_stickmodel'):
-        stickmodel = gm.StaticGeometricModel(name=name)
+        stickmodel = mc.ModelCollection(name=name)
         self.coupling.gen_stickmodel(tcp_loc_pos=None, tcp_loc_rotmat=None, toggletcpcs=False,
                                      togglejntscs=togglejntscs).attach_to(stickmodel)
         self.lft.gen_stickmodel(tcp_jntid=tcp_jntid, tcp_loc_pos=tcp_loc_pos, tcp_loc_rotmat=tcp_loc_rotmat,
@@ -95,7 +93,7 @@ class RobotiqHE(object):
 
     def gen_meshmodel(self, tcp_jntid=None, tcp_loc_pos=None, tcp_loc_rotmat=None, toggletcpcs=False,
                       togglejntscs=False, name='xarm_gripper_meshmodel'):
-        meshmodel = cm.CollisionModelCollection(name=name)
+        meshmodel = mc.ModelCollection(name=name)
         self.coupling.gen_meshmodel(tcp_loc_pos=None, tcp_loc_rotmat=None, toggletcpcs=False,
                                     togglejntscs=togglejntscs).attach_to(meshmodel)
         self.lft.gen_meshmodel(tcp_jntid=tcp_jntid, tcp_loc_pos=tcp_loc_pos, tcp_loc_rotmat=tcp_loc_rotmat,

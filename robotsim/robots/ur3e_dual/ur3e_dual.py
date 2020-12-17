@@ -2,11 +2,19 @@ import os
 import math
 import numpy as np
 import basis.robotmath as rm
-import modeling.geometricmodel as gm
+import modeling.modelcollection as mc
 import modeling.collisionmodel as cm
 import robotsim._kinematics.jlchain as jl
 import robotsim.manipulators.ur3e.ur3e as ur
 import robotsim.grippers.robotiqhe.robotiqhe as rtq
+
+
+class CollisionModel_User(cm.CollisionModel):
+    def __init__(self, objinit, btransparency=True, expand_radius=None, name="defaultname"):
+        super().__init__(objinit, btransparency=btransparency, cdprimitive_type="userdefined",
+                         expand_radius=expand_radius, name=name)
+
+
 
 
 class UR3EDual(object):
@@ -18,10 +26,15 @@ class UR3EDual(object):
         # left side TODO: direct cm, other than base link
         self.lft_base = jl.JLChain(pos=pos, rotmat=rotmat, homeconf=np.zeros(0), name='agv')
         self.lft_base.jnts[1]['loc_pos'] = np.array([.365, .345, 1.33])  # left from robot view
-        self.lft_base.jnts[1]['loc_rotmat'] = rm.rotmat_from_euler(math.pi/2.0, 0, math.pi/2.0)  # left from robot view
+        self.lft_base.jnts[1]['loc_rotmat'] = rm.rotmat_from_euler(math.pi / 2.0, 0,
+                                                                   math.pi / 2.0)  # left from robot view
         self.lft_base.lnks[0]['name'] = "ur3e_dual_base"
         self.lft_base.lnks[0]['loc_pos'] = np.array([0, 0, 0])
-        self.lft_base.lnks[0]['meshfile'] = os.path.join(this_dir, "meshes", "ur3e_dual_base_cvt.stl")
+        # manually specify cd primitives
+        self.lft_base.lnks[0]['meshfile'] = os.path.join(this_dir, "meshes", "ur3e_dual_base.stl")
+        self.lft_base.lnks[0]['collisionmodel'] = cm.CollisionModel(self.lft_base.lnks[0]['meshfile'],
+                                                                    cdprimitive_type="external",
+                                                                    userdefined_cdprimitive_callback=self._base_primitive)
         self.lft_base.lnks[0]['rgba'] = [.3, .3, .3, 1.0]
         self.lft_base.reinitialize()
         lft_arm_homeconf = np.zeros(6)
@@ -39,10 +52,11 @@ class UR3EDual(object):
         # rigth side
         self.rgt_base = jl.JLChain(pos=pos, rotmat=rotmat, homeconf=np.zeros(0), name='agv')
         self.rgt_base.jnts[1]['loc_pos'] = np.array([.365, -.345, 1.33])  # right from robot view
-        self.rgt_base.jnts[1]['loc_rotmat'] = rm.rotmat_from_euler(math.pi/2.0, 0, math.pi/2.0)  # left from robot view
+        self.rgt_base.jnts[1]['loc_rotmat'] = rm.rotmat_from_euler(math.pi / 2.0, 0,
+                                                                   math.pi / 2.0)  # left from robot view
         self.rgt_base.lnks[0]['name'] = "ur3e_dual_base"
         self.rgt_base.lnks[0]['loc_pos'] = np.array([0, 0, 0])
-        self.rgt_base.lnks[0]['meshfile'] = os.path.join(this_dir, "meshes", "ur3e_dual_base_cvt.stl")
+        self.rgt_base.lnks[0]['meshfile'] = None
         self.rgt_base.lnks[0]['rgba'] = [.3, .3, .3, 1.0]
         self.rgt_base.reinitialize()
         rgt_arm_homeconf = np.zeros(6)
@@ -57,6 +71,11 @@ class UR3EDual(object):
         rgt_hnd_pos, rgt_hnd_rotmat = self.rgt_arm.get_worldpose(relpos=self.rgt_hnd_offset)
         # TODO replace using copy
         self.rgt_hnd = rtq.RobotiqHE(pos=rgt_hnd_pos, rotmat=self.rgt_arm.jnts[-1]['gl_rotmatq'])
+
+    @staticmethod
+    def _base_primitive(self, objcm, name, radius):
+        collision_node = CollisionNode(name)
+        collision_primitive = CollisionBox(bottom_left, top_right)
 
     def move_to(self, pos, rotmat):
         self.pos = pos
@@ -98,7 +117,7 @@ class UR3EDual(object):
         self.rgt_hnd.fix_to(pos=rgt_hnd_pos, rotmat=rgt_hnd_rotmat, jnt_values=general_jnt_values[10])
 
     def gen_stickmodel(self, name='xarm7_shuidi_mobile'):
-        stickmodel = gm.StaticGeometricModel(name=name)
+        stickmodel = mc.ModelCollection(name=name)
         self.lft_base.gen_stickmodel().attach_to(stickmodel)
         self.lft_arm.gen_stickmodel().attach_to(stickmodel)
         self.lft_hnd.gen_stickmodel().attach_to(stickmodel)
@@ -108,7 +127,7 @@ class UR3EDual(object):
         return stickmodel
 
     def gen_meshmodel(self, name='xarm_gripper_meshmodel'):
-        meshmodel = cm.CollisionModelCollection(name=name)
+        meshmodel = mc.ModelCollection(name=name)
         self.lft_base.gen_meshmodel().attach_to(meshmodel)
         self.lft_arm.gen_meshmodel().attach_to(meshmodel)
         self.lft_hnd.gen_meshmodel().attach_to(meshmodel)

@@ -405,8 +405,8 @@ class JLChain(object):
         relpos, relrot = rm.relpose(tcp_gloc_pos, tcp_gloc_rotmat, worldpos, worldrot)
         return [relpos, relrot]
 
-    def is_selfcollided(self):
-        return self._mt.is_selfcollided()
+    def is_collided(self, obstacle_list=[], otherrobot_list=[]):
+        return self._mt.is_collided(obstacle_list=obstacle_list, otherrobot_list=otherrobot_list)
 
     def disable_localcc(self):
         """

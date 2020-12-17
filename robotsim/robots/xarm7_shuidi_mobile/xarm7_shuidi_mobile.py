@@ -51,7 +51,6 @@ class XArm7YunjiMobile(object):
                       self.arm.lnks[3]['cdprimit_cache'],
                       self.arm.lnks[4]['cdprimit_cache'],
                       self.arm.lnks[5]['cdprimit_cache'],
-                      self.arm.lnks[4]['cdprimit_cache'],
                       self.arm.lnks[6]['cdprimit_cache'],
                       self.hnd.lft_outer.lnks[0]['cdprimit_cache'],
                       self.hnd.lft_outer.lnks[1]['cdprimit_cache'],
@@ -63,7 +62,8 @@ class XArm7YunjiMobile(object):
                     self.arm.lnks[0]['cdprimit_cache'],
                     self.arm.lnks[1]['cdprimit_cache'],
                     self.arm.lnks[2]['cdprimit_cache']]
-        intolist = [self.arm.lnks[5]['cdprimit_cache'],
+        intolist = [self.arm.lnks[4]['cdprimit_cache'],
+                    self.arm.lnks[5]['cdprimit_cache'],
                     self.arm.lnks[6]['cdprimit_cache'],
                     self.hnd.lft_outer.lnks[0]['cdprimit_cache'],
                     self.hnd.lft_outer.lnks[1]['cdprimit_cache'],

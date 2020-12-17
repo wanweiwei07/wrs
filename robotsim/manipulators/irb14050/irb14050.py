@@ -63,7 +63,10 @@ class IRB14050(jl.JLChain):
         # reinitialization
         self.reinitialize()
         # collision detection
-        self._mt.add_cdpair([1], [6])
+        self._mt.add_cdlnks([1,2,3,4,5,6])
+        fromlist = [self.lnks[1]['cdprimit_cache']]
+        intolist = [self.lnks[6]['cdprimit_cache']]
+        self._mt.set_cdpair(fromlist, intolist)
 
 
 if __name__ == '__main__':
@@ -80,7 +83,7 @@ if __name__ == '__main__':
     manipulator_instance.gen_stickmodel().attach_to(base)
     manipulator_meshmodel.show_cdprimit()
     tic = time.time()
-    print(manipulator_instance.is_selfcollided())
+    print(manipulator_instance.is_collided())
     toc = time.time()
     print(toc - tic)
     base.run()

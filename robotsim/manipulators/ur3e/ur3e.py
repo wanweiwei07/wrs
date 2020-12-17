@@ -70,11 +70,21 @@ class UR3E(jl.JLChain):
         self.lnks[6]['rgba'] = [.5,.5,.5, 1.0]
         self.reinitialize()
         # collision detection
-        self._mt.add_cdpair([0,1], [3,5,6])
-        self._mt.add_cdpair([2], [4,5,6])
-        self._mt.add_cdpair([3], [6])
-
-
+        self._mt.add_cdlnks([0,1,2,3,4,5,6])
+        fromlist = [self.lnks[0]['cdprimit_cache'],
+                    self.lnks[1]['cdprimit_cache']]
+        intolist = [self.lnks[3]['cdprimit_cache'],
+                    self.lnks[5]['cdprimit_cache'],
+                    self.lnks[6]['cdprimit_cache']]
+        self._mt.set_cdpair(fromlist, intolist)
+        fromlist = [self.lnks[2]['cdprimit_cache']]
+        intolist = [self.lnks[4]['cdprimit_cache'],
+                    self.lnks[5]['cdprimit_cache'],
+                    self.lnks[6]['cdprimit_cache']]
+        self._mt.set_cdpair(fromlist, intolist)
+        fromlist = [self.lnks[3]['cdprimit_cache']]
+        intolist = [self.lnks[6]['cdprimit_cache']]
+        self._mt.set_cdpair(fromlist, intolist)
 
 if __name__ == '__main__':
     import time
@@ -89,7 +99,7 @@ if __name__ == '__main__':
     manipulator_meshmodel.show_cdprimit()
     manipulator_instance.gen_stickmodel(togglejntscs=True).attach_to(base)
     tic = time.time()
-    print(manipulator_instance.is_selfcollided())
+    print(manipulator_instance.is_collided())
     toc = time.time()
     print(toc - tic)
 

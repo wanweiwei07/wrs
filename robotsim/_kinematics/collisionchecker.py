@@ -135,7 +135,7 @@ class CollisionChecker(object):
         # clear other robots
         for robot in otherrobot_list:
             for cdelement in robot.all_cdelements:
-                current_into_cdmask = cdlnk['cdprimit_cache'][1].node().getIntoCollideMask()
+                current_into_cdmask = cdelement['cdprimit_cache'][1].node().getIntoCollideMask()
                 cdelement['cdprimit_cache'][1].node().setIntoCollideMask(current_into_cdmask & ~self._bitmask_ext)
             robot.cc.np.detachNode()
         if self.chan.getNumEntries() > 0:
@@ -152,4 +152,5 @@ class CollisionChecker(object):
         for cdelement in self.all_cdelements:
             cdelement['cdprimit_cache'][1].removeNode()
             cdelement['cdprimit_cache'][1] = None
-        pass
+        self.all_cdelements = None
+        self.nbitmask = 0
