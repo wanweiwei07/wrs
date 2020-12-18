@@ -1,20 +1,21 @@
 import os
+import math
 import numpy as np
 import modeling.modelcollection as mc
 import robotsim._kinematics.jlchain as jl
 import basis.robotmath as rm
 
 
-class RobotiqHE(object):
+class YumiGripper(object):
 
     def __init__(self, pos=np.zeros(3), rotmat=np.eye(3)):
         this_dir, this_filename = os.path.split(__file__)
         self.pos = pos
         self.rotmat = rotmat
         # joints
-        # - coupling - .011 coupling by default
+        # - coupling - No coupling by default
         self.coupling = jl.JLChain(pos=self.pos, rotmat=self.rotmat, homeconf=np.zeros(0), name='coupling')
-        self.coupling.jnts[1]['loc_pos'] = np.array([0, 0, .011])
+        self.coupling.jnts[1]['loc_pos'] = np.array([0, 0, .0])
         self.coupling.lnks[0]['name'] = 'robotiq_gripper_coupling'
         # self.coupling.lnks[0]['meshfile'] = os.path.join(this_dir, "meshes", "robotiq_gripper_coupling.stl")
         self.coupling.lnks[0]['rgba'] = [.2, .2, .2, 1]
@@ -23,28 +24,29 @@ class RobotiqHE(object):
         cpl_end_rotmat = self.coupling.jnts[-1]['gl_rotmatq']
         # - lft
         self.lft = jl.JLChain(pos=cpl_end_pos, rotmat=cpl_end_rotmat, homeconf=np.zeros(1), name='base_lft_finger')
-        self.lft.jnts[1]['loc_pos'] = np.array([-.025, .0, .11])
+        self.lft.jnts[1]['loc_pos'] = np.array([0, 0.0065, 0.0837])
+        self.lft.jnts[1]['loc_rotmat'] = rm.rotmat_from_euler(0, 0, math.pi)
         self.lft.jnts[1]['type'] = 'prismatic'
         self.lft.jnts[1]['rngmin'] = .0
         self.lft.jnts[1]['rngmax'] = .025
-        self.lft.jnts[1]['loc_motionax'] = np.array([1, 0, 0])
+        self.lft.jnts[1]['loc_motionax'] = np.array([-1, 0, 0])
         self.lft.lnks[0]['name'] = "base"
         self.lft.lnks[0]['loc_pos'] = np.zeros(3)
-        self.lft.lnks[0]['meshfile'] = os.path.join(this_dir, "meshes", "base_cvt.stl")
-        self.lft.lnks[0]['rgba'] = [.2, .2, .2, 1]
+        self.lft.lnks[0]['meshfile'] = os.path.join(this_dir, "meshes", "base.stl")
+        self.lft.lnks[0]['rgba'] = [.5, .5, .5, 1]
         self.lft.lnks[1]['name'] = "finger1"
-        self.lft.lnks[1]['meshfile'] = os.path.join(this_dir, "meshes", "finger1_cvt.stl")
-        self.lft.lnks[1]['rgba'] = [.5, .5, .5, 1]
+        self.lft.lnks[1]['meshfile'] = os.path.join(this_dir, "meshes", "finger.stl")
+        self.lft.lnks[1]['rgba'] = [.2, .2, .2, 1]
         # - rgt
         self.rgt = jl.JLChain(pos=cpl_end_pos, rotmat=cpl_end_rotmat, homeconf=np.zeros(1), name='rgt_finger')
-        self.rgt.jnts[1]['loc_pos'] = np.array([.025, .0, .11])
+        self.rgt.jnts[1]['loc_pos'] = np.array([0, -0.0065, 0.0837])
         self.rgt.jnts[1]['type'] = 'prismatic'
         self.rgt.jnts[1]['rngmin'] = .0
         self.rgt.jnts[1]['rngmax'] = .025  # TODO change min-max to a tuple
         self.rgt.jnts[1]['loc_motionax'] = np.array([-1, 0, 0])
         self.rgt.lnks[1]['name'] = "finger2"
-        self.rgt.lnks[1]['meshfile'] = os.path.join(this_dir, "meshes", "finger2_cvt.stl")
-        self.rgt.lnks[1]['rgba'] = [.5, .5, .5, 1]
+        self.rgt.lnks[1]['meshfile'] = os.path.join(this_dir, "meshes", "finger.stl")
+        self.rgt.lnks[1]['rgba'] = [.2, .2, .2, 1]
         # reinitialize
         self.lft.reinitialize()
         self.rgt.reinitialize()
@@ -79,27 +81,56 @@ class RobotiqHE(object):
         else:
             raise ValueError("The angle parameter is out of range!")
 
-    def gen_stickmodel(self, tcp_jntid=None, tcp_loc_pos=None, tcp_loc_rotmat=None, toggletcpcs=False,
-                       togglejntscs=False, toggleconnjnt=False, name='xarm_gripper_stickmodel'):
+    def gen_stickmodel(self,
+                       tcp_jntid=None,
+                       tcp_loc_pos=None,
+                       tcp_loc_rotmat=None,
+                       toggletcpcs=False,
+                       togglejntscs=False,
+                       toggleconnjnt=False,
+                       name='yumi_gripper_stickmodel'):
         stickmodel = mc.ModelCollection(name=name)
-        self.coupling.gen_stickmodel(tcp_loc_pos=None, tcp_loc_rotmat=None, toggletcpcs=False,
+        self.coupling.gen_stickmodel(tcp_loc_pos=None,
+                                     tcp_loc_rotmat=None,
+                                     toggletcpcs=False,
                                      togglejntscs=togglejntscs).attach_to(stickmodel)
-        self.lft.gen_stickmodel(tcp_jntid=tcp_jntid, tcp_loc_pos=tcp_loc_pos, tcp_loc_rotmat=tcp_loc_rotmat,
-                                toggletcpcs=toggletcpcs, togglejntscs=togglejntscs,
+        self.lft.gen_stickmodel(tcp_jntid=tcp_jntid,
+                                tcp_loc_pos=tcp_loc_pos,
+                                tcp_loc_rotmat=tcp_loc_rotmat,
+                                toggletcpcs=toggletcpcs,
+                                togglejntscs=togglejntscs,
                                 toggleconnjnt=toggleconnjnt).attach_to(stickmodel)
-        self.rgt.gen_stickmodel(tcp_loc_pos=None, tcp_loc_rotmat=None, toggletcpcs=False, togglejntscs=togglejntscs,
+        self.rgt.gen_stickmodel(tcp_loc_pos=None,
+                                tcp_loc_rotmat=None,
+                                toggletcpcs=False,
+                                togglejntscs=togglejntscs,
                                 toggleconnjnt=toggleconnjnt).attach_to(stickmodel)
         return stickmodel
 
-    def gen_meshmodel(self, tcp_jntid=None, tcp_loc_pos=None, tcp_loc_rotmat=None, toggletcpcs=False,
-                      togglejntscs=False, name='xarm_gripper_meshmodel'):
+    def gen_meshmodel(self,
+                      tcp_jntid=None,
+                      tcp_loc_pos=None,
+                      tcp_loc_rotmat=None,
+                      toggletcpcs=False,
+                      togglejntscs=False,
+                      name='yumi_gripper_meshmodel', rgba=None):
         meshmodel = mc.ModelCollection(name=name)
-        self.coupling.gen_meshmodel(tcp_loc_pos=None, tcp_loc_rotmat=None, toggletcpcs=False,
-                                    togglejntscs=togglejntscs).attach_to(meshmodel)
-        self.lft.gen_meshmodel(tcp_jntid=tcp_jntid, tcp_loc_pos=tcp_loc_pos, tcp_loc_rotmat=tcp_loc_rotmat,
-                               toggletcpcs=toggletcpcs, togglejntscs=togglejntscs).attach_to(meshmodel)
-        self.rgt.gen_meshmodel(tcp_loc_pos=None, tcp_loc_rotmat=None, toggletcpcs=False,
-                               togglejntscs=togglejntscs).attach_to(meshmodel)
+        self.coupling.gen_meshmodel(tcp_loc_pos=None,
+                                    tcp_loc_rotmat=None,
+                                    toggletcpcs=False,
+                                    togglejntscs=togglejntscs,
+                                    rgba=rgba).attach_to(meshmodel)
+        self.lft.gen_meshmodel(tcp_jntid=tcp_jntid,
+                               tcp_loc_pos=tcp_loc_pos,
+                               tcp_loc_rotmat=tcp_loc_rotmat,
+                               toggletcpcs=toggletcpcs,
+                               togglejntscs=togglejntscs,
+                               rgba=rgba).attach_to(meshmodel)
+        self.rgt.gen_meshmodel(tcp_loc_pos=None,
+                               tcp_loc_rotmat=None,
+                               toggletcpcs=False,
+                               togglejntscs=togglejntscs,
+                               rgba=rgba).attach_to(meshmodel)
         return meshmodel
 
 
@@ -113,9 +144,9 @@ if __name__ == '__main__':
     #     grpr = Robotiq85()
     #     grpr.fk(angle)
     #     grpr.gen_meshmodel().attach_to(base)
-    grpr = RobotiqHE()
+    grpr = YumiGripper()
     grpr.fk(.05)
-    grpr.gen_meshmodel().attach_to(base)
+    grpr.gen_meshmodel(rgba=[0,.5,0,.5]).attach_to(base)
     # grpr.gen_stickmodel(togglejntscs=False).attach_to(base)
     grpr.fix_to(pos=np.array([0, .3, .2]), rotmat=rm.rotmat_from_axangle([1, 0, 0], .05))
     grpr.gen_meshmodel().attach_to(base)

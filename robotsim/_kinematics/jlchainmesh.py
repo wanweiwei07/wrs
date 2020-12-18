@@ -25,7 +25,9 @@ class JLChainMesh(object):
                 self.jlobject.lnks[id]['collisionmodel'] = cm.CollisionModel(self.jlobject.lnks[id]['meshfile'])
                 if self.jlobject.lnks[id]['scale'] is not None:
                     self.jlobject.lnks[id]['collisionmodel'].set_scale(self.jlobject.lnks[id]['scale'])
-            elif self.jlobject.lnks[id]['collisionmodel'] is not None:  # in case the collision model is directly set
+            elif self.jlobject.lnks[id]['collisionmodel'] is not None:
+                # in case the collision model is directly set, it allows manually specifying cd primitives
+                # instead of auto initialization. Steps: 1. keep meshmodel to None; 2. directly set cm
                 if self.jlobject.lnks[id]['scale'] is not None:
                     self.jlobject.lnks[id]['collisionmodel'].set_scale(self.jlobject.lnks[id]['scale'])
         self.cc = cc.CollisionChecker(jlobject.name + "_collisionchecker")
@@ -50,8 +52,8 @@ class JLChainMesh(object):
         """
         self.cc.disable()
 
-    def gen_meshmodel(self, tcp_jntid=None, tcp_loc_pos=None, tcp_loc_rotmat=None, toggletcpcs=True, togglejntscs=False,
-                      name='robotmesh', drawhand=True, rgbargt=None, rgbalft=None):
+    def gen_meshmodel(self, tcp_jntid=None, tcp_loc_pos=None, tcp_loc_rotmat=None,
+                      toggletcpcs=True, togglejntscs=False, name='robotmesh', rgba=None):
         # meshmodel = gm.StaticGeometricModel(name=name)
         meshmodel = mc.ModelCollection(name=name)
         for id in range(self.jlobject.ndof + 1):
@@ -60,14 +62,15 @@ class JLChainMesh(object):
                 pos = self.jlobject.lnks[id]['gl_pos']
                 rotmat = self.jlobject.lnks[id]['gl_rotmat']
                 this_collisionmodel.set_homomat(rm.homomat_from_posrot(pos, rotmat))
-                this_collisionmodel.set_color(self.jlobject.lnks[id]['rgba'])
+                rgba = self.jlobject.lnks[id]['rgba'] if rgba is None else rgba
+                this_collisionmodel.set_color(rgba)
                 if self.jlobject.lnks[id]['scale'] is not None:
                     this_collisionmodel.set_scale(self.jlobject.lnks[id]['scale'])
                 this_collisionmodel.attach_to(meshmodel)
         # tool center coord
         if toggletcpcs:
-            self._toggle_tcpcs(meshmodel, tcp_jntid, tcp_loc_pos, tcp_loc_rotmat, tcpic_rgba=np.array([.5, 0, 1, 0]),
-                               tcpic_thickness=.0062)
+            self._toggle_tcpcs(meshmodel, tcp_jntid, tcp_loc_pos, tcp_loc_rotmat,
+                               tcpic_rgba=np.array([.5, 0, 1, 0]), tcpic_thickness=.0062)
         # toggle all coord
         if togglejntscs:
             self._toggle_jntcs(meshmodel, jntcs_thickness=.0062)

@@ -122,12 +122,12 @@ class XArmGripper(object):
         self.rgt_inner.gen_stickmodel().attach_to(stickmodel)
         return stickmodel
 
-    def gen_meshmodel(self, name='xarm_gripper_meshmodel'):
+    def gen_meshmodel(self, name='xarm_gripper_meshmodel', rgba=None):
         meshmodel = mc.ModelCollection(name=name)
-        self.lft_outer.gen_meshmodel().attach_to(meshmodel)
-        self.lft_inner.gen_meshmodel().attach_to(meshmodel)
-        self.rgt_outer.gen_meshmodel().attach_to(meshmodel)
-        self.rgt_inner.gen_meshmodel().attach_to(meshmodel)
+        self.lft_outer.gen_meshmodel(rgba=rgba).attach_to(meshmodel)
+        self.lft_inner.gen_meshmodel(rgba=rgba).attach_to(meshmodel)
+        self.rgt_outer.gen_meshmodel(rgba=rgba).attach_to(meshmodel)
+        self.rgt_inner.gen_meshmodel(rgba=rgba).attach_to(meshmodel)
         return meshmodel
 
     def fk(self, angle):
@@ -167,7 +167,7 @@ if __name__ == '__main__':
     #     xag.gen_meshmodel().attach_to(base)
     xag = XArmGripper()
     xag.jaw_to(0.05)
-    model = xag.gen_meshmodel()
+    model = xag.gen_meshmodel(rgba=[.5,0,0,.3])
     model.attach_to(base)
     model.show_cdprimit()
     xag.gen_stickmodel().attach_to(base)

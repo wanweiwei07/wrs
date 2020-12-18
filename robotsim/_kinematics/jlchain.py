@@ -416,10 +416,9 @@ class JLChain(object):
         self._mt.disable_localcc()
 
     def gen_meshmodel(self, tcp_jntid=None, tcp_loc_pos=None, tcp_loc_rotmat=None, toggletcpcs=True,
-                      togglejntscs=False, name='robotmesh', drawhand=True, rgbargt=None, rgbalft=None):
+                      togglejntscs=False, name='robotmesh', rgba=None):
         return self._mt.gen_meshmodel(tcp_jntid=tcp_jntid, tcp_loc_pos=tcp_loc_pos, tcp_loc_rotmat=tcp_loc_rotmat,
-                                      toggletcpcs=toggletcpcs, togglejntscs=togglejntscs, name=name,
-                                      drawhand=drawhand, rgbargt=rgbargt, rgbalft=rgbalft)
+                                      toggletcpcs=toggletcpcs, togglejntscs=togglejntscs, name=name, rgba=rgba)
 
     def gen_stickmodel(self, rgba=np.array([.5, 0, 0, 1]), thickness=.01, jointratio=1.62, linkratio=.62,
                        tcp_jntid=None, tcp_loc_pos=None, tcp_loc_rotmat=None,
