@@ -3,9 +3,12 @@ import math
 import numpy as np
 import basis.robotmath as rm
 import modeling.modelcollection as mc
+import modeling.collisionmodel as cm
 import robotsim._kinematics.jlchain as jl
 import robotsim.manipulators.irb14050.irb14050 as ya
 import robotsim.grippers.yumi_gripper.yumi_gripper as yg
+from panda3d.core import CollisionNode, CollisionBox, Point3
+import scipy.spatial.transform
 
 
 class Yumi(object):
@@ -15,13 +18,53 @@ class Yumi(object):
         self.pos = pos
         self.rotmat = rotmat
         # lft
-        self.lft_body = jl.JLChain(pos=pos, rotmat=rotmat, homeconf=np.zeros(0), name='agv')
-        self.lft_body.jnts[1]['loc_pos'] = np.array([0.05355, -0.0725, 0.41492])
-        self.lft_body.jnts[1]['loc_rotmat'] = rm.rotmat_from_euler(-0.9795, -0.5682, -2.3155)  # left from robot view
-        self.lft_body.lnks[0]['name'] = "yumi_lft_body"
+        self.lft_body = jl.JLChain(pos=pos, rotmat=rotmat, homeconf=np.zeros(7), name='agv')
+        self.lft_body.jnts[1]['loc_pos'] = np.array([0, 0, 0])
+        self.lft_body.jnts[2]['loc_pos'] = np.array([0, 0, 0])
+        self.lft_body.jnts[3]['loc_pos'] = np.array([0, 0, 0])
+        self.lft_body.jnts[4]['loc_pos'] = np.array([0, 0, 0])
+        self.lft_body.jnts[5]['loc_pos'] = np.array([0, 0, 0])
+        self.lft_body.jnts[6]['loc_pos'] = np.array([0, 0, 0])
+        self.lft_body.jnts[7]['loc_pos'] = np.array([0, 0, 0])
+        self.lft_body.jnts[8]['loc_pos'] = np.array([0.05355, -0.0725, 0.41492])
+        self.lft_body.jnts[8]['loc_rotmat'] = rm.rotmat_from_euler(-0.9795, -0.5682, -2.3155)  # left from robot view
+        self.lft_body.lnks[0]['name'] = "yumi_lft_stand"
         self.lft_body.lnks[0]['loc_pos'] = np.array([0, 0, 0])
-        self.lft_body.lnks[0]['meshfile'] = os.path.join(this_dir, "meshes", "body.stl")
+        self.lft_body.lnks[0]['meshfile'] = os.path.join(this_dir, "meshes", "yumi_tablenotop.stl")
         self.lft_body.lnks[0]['rgba'] = [.35, .35, .35, 1.0]
+        self.lft_body.lnks[1]['name'] = "yumi_lft_body"
+        self.lft_body.lnks[1]['loc_pos'] = np.array([0, 0, 0])
+        self.lft_body.lnks[1]['collisionmodel'] = cm.CollisionModel(
+            os.path.join(this_dir, "meshes", "body.stl"),
+            cdprimitive_type="userdefined", expand_radius=.005,
+            userdefined_cdprimitive_callback=self._base_combined_cdnp)
+        self.lft_body.lnks[1]['rgba'] = [.7,.7,.7,1]
+        self.lft_body.lnks[2]['name'] = "yumi_lft_column"
+        self.lft_body.lnks[2]['loc_pos'] = np.array([-.327, -.24, -1.015])
+        self.lft_body.lnks[2]['meshfile'] = os.path.join(this_dir, "meshes", "yumi_column60602100.stl")
+        self.lft_body.lnks[2]['rgba'] = [.35, .35, .35, 1.0]
+        self.lft_body.lnks[3]['name'] = "yumi_rgt_column"
+        self.lft_body.lnks[3]['loc_pos'] = np.array([-.327, .24, -1.015])
+        self.lft_body.lnks[3]['meshfile'] = os.path.join(this_dir, "meshes", "yumi_column60602100.stl")
+        self.lft_body.lnks[3]['rgba'] = [.35, .35, .35, 1.0]
+        self.lft_body.lnks[4]['name'] = "yumi_top_back"
+        self.lft_body.lnks[4]['loc_pos'] = np.array([-.327, 0, 1.085])
+        self.lft_body.lnks[4]['meshfile'] = os.path.join(this_dir, "meshes", "yumi_column6060540.stl")
+        self.lft_body.lnks[4]['rgba'] = [.35, .35, .35, 1.0]
+        self.lft_body.lnks[5]['name'] = "yumi_top_lft"
+        self.lft_body.lnks[5]['loc_pos'] = np.array([-.027, -.24, 1.085])
+        self.lft_body.lnks[5]['loc_rotmat'] = rm.rotmat_from_axangle([0,0,1], -math.pi/2)
+        self.lft_body.lnks[5]['meshfile'] = os.path.join(this_dir, "meshes", "yumi_column6060540.stl")
+        self.lft_body.lnks[5]['rgba'] = [.35, .35, .35, 1.0]
+        self.lft_body.lnks[6]['name'] = "yumi_top_rgt"
+        self.lft_body.lnks[6]['loc_pos'] = np.array([-.027, .24, 1.085])
+        self.lft_body.lnks[6]['loc_rotmat'] = rm.rotmat_from_axangle([0,0,1], -math.pi/2)
+        self.lft_body.lnks[6]['meshfile'] = os.path.join(this_dir, "meshes", "yumi_column6060540.stl")
+        self.lft_body.lnks[6]['rgba'] = [.35, .35, .35, 1.0]
+        self.lft_body.lnks[7]['name'] = "yumi_top_front"
+        self.lft_body.lnks[7]['loc_pos'] = np.array([.273, 0, 1.085])
+        self.lft_body.lnks[7]['meshfile'] = os.path.join(this_dir, "meshes", "yumi_column6060540.stl")
+        self.lft_body.lnks[7]['rgba'] = [.35, .35, .35, 1.0]
         self.lft_body.reinitialize()
         lft_arm_homeconf = np.zeros(7)
         self.lft_arm = ya.IRB14050(pos=self.lft_body.jnts[-1]['gl_posq'],
@@ -43,6 +86,14 @@ class Yumi(object):
                                    homeconf=rgt_arm_homeconf)
         self.rgt_hnd = yg.YumiGripper(pos=self.rgt_arm.jnts[-1]['gl_posq'],
                                       rotmat=self.rgt_arm.jnts[-1]['gl_rotmatq'])
+
+    @staticmethod
+    def _base_combined_cdnp(name, radius):
+        collision_node = CollisionNode(name)
+        collision_primitive_c0 = CollisionBox(Point3(0.54, 0.0, 0.39),
+                                              x=.54 + radius, y=.6 + radius, z=.39 + radius)
+        collision_node.addSolid(collision_primitive_c0)
+        return collision_node
 
     def move_to(self, pos, rotmat):
         self.pos = pos
@@ -98,7 +149,7 @@ class Yumi(object):
                        toggleconnjnt=False,
                        name='xarm7_shuidi_mobile'):
         stickmodel = mc.ModelCollection(name=name)
-        self.rgt_body.gen_stickmodel(tcp_loc_pos=None,
+        self.lft_body.gen_stickmodel(tcp_loc_pos=None,
                                      tcp_loc_rotmat=None,
                                      toggletcpcs=False,
                                      togglejntscs=togglejntscs).attach_to(stickmodel)
@@ -113,6 +164,10 @@ class Yumi(object):
                                     toggletcpcs=False,
                                     togglejntscs=togglejntscs,
                                     toggleconnjnt=toggleconnjnt).attach_to(stickmodel)
+        self.rgt_body.gen_stickmodel(tcp_loc_pos=None,
+                                     tcp_loc_rotmat=None,
+                                     toggletcpcs=False,
+                                     togglejntscs=togglejntscs).attach_to(stickmodel)
         self.rgt_arm.gen_stickmodel(tcp_jntid=tcp_jntid,
                                     tcp_loc_pos=tcp_loc_pos,
                                     tcp_loc_rotmat=tcp_loc_rotmat,

@@ -45,21 +45,25 @@ class IRB14050(jl.JLChain):
         # links
         self.lnks[1]['name'] = "link_1"
         self.lnks[1]['meshfile'] = os.path.join(this_dir, "meshes", "link_1.stl")
+        self.lnks[1]['rgba'] = [.5,.5,.5,1]
         self.lnks[2]['name'] = "link_2"
         self.lnks[2]['meshfile'] = os.path.join(this_dir, "meshes", "link_2.stl")
-        self.lnks[2]['rgba'] = [.5,.5,.5,1.0]
+        self.lnks[2]['rgba'] = [.929,.584,.067,1]
         self.lnks[3]['name'] = "link_3"
         self.lnks[3]['meshfile'] = os.path.join(this_dir, "meshes", "link_3.stl")
+        self.lnks[3]['rgba'] = [.7,.7,.7,1]
         self.lnks[4]['name'] = "link_4"
         self.lnks[4]['meshfile'] = os.path.join(this_dir, "meshes", "link_4.stl")
-        self.lnks[4]['rgba'] = [.3,.5,.3,1.0]
+        self.lnks[4]['rgba'] = [0.180,.4,0.298,1]
         self.lnks[5]['name'] = "link_5"
         self.lnks[5]['meshfile'] = os.path.join(this_dir, "meshes", "link_5.stl")
+        self.lnks[5]['rgba'] = [.7,.7,.7,1]
         self.lnks[6]['name'] = "link_6"
         self.lnks[6]['meshfile'] = os.path.join(this_dir, "meshes", "link_6.stl")
-        self.lnks[6]['rgba'] = [.5,.5,.5,1.0]
+        self.lnks[6]['rgba'] = [0.180,.4,0.298,1]
         self.lnks[7]['name'] = "link_7"
         # self.lnks[7]['meshfile'] = os.path.join(this_dir, "meshes", "link_7.stl") # not really needed to visualize
+        # self.lnks[7]['rgba'] = [.5,.5,.5,1]
         # reinitialization
         self.reinitialize()
         # collision detection

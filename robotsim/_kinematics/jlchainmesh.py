@@ -54,7 +54,6 @@ class JLChainMesh(object):
 
     def gen_meshmodel(self, tcp_jntid=None, tcp_loc_pos=None, tcp_loc_rotmat=None,
                       toggletcpcs=True, togglejntscs=False, name='robotmesh', rgba=None):
-        # meshmodel = gm.StaticGeometricModel(name=name)
         meshmodel = mc.ModelCollection(name=name)
         for id in range(self.jlobject.ndof + 1):
             if self.jlobject.lnks[id]['collisionmodel'] is not None:
@@ -62,8 +61,8 @@ class JLChainMesh(object):
                 pos = self.jlobject.lnks[id]['gl_pos']
                 rotmat = self.jlobject.lnks[id]['gl_rotmat']
                 this_collisionmodel.set_homomat(rm.homomat_from_posrot(pos, rotmat))
-                rgba = self.jlobject.lnks[id]['rgba'] if rgba is None else rgba
-                this_collisionmodel.set_color(rgba)
+                this_rgba = self.jlobject.lnks[id]['rgba'] if rgba is None else rgba
+                this_collisionmodel.set_color(this_rgba)
                 if self.jlobject.lnks[id]['scale'] is not None:
                     this_collisionmodel.set_scale(self.jlobject.lnks[id]['scale'])
                 this_collisionmodel.attach_to(meshmodel)
