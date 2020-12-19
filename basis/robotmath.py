@@ -308,7 +308,7 @@ def orthogonal_vector(basevec, toggleunit=True):
     else:
         return np.array([b - c, -a + c, a - b])
 
-def relpose(pos0, rot0, pos1, rot1):
+def rel_pose(pos0, rot0, pos1, rot1):
     """
     relpos of rot1, pos1 with respect to rot0 pos0
     :param rot0: 3x3 nparray

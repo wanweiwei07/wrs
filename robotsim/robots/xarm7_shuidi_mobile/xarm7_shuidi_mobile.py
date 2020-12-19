@@ -71,6 +71,11 @@ class XArm7YunjiMobile(object):
                     self.hnd.rgt_outer.lnks[1]['cdprimit_cache'],
                     self.hnd.rgt_outer.lnks[2]['cdprimit_cache']]
         self.cc.set_cdpair(fromlist, intolist)
+        # tool center point
+        self.tcp_jlc = self.arm # which jlc is the tcp located at?
+        self.tcp_jlc.tcp_jntid = -1
+        self.tcp_jlc.tcp_loc_pos = np.array([0,0,.07])
+        self.tcp_jlc.tcp_loc_rotmat = np.eye(3)
         # a list of detailed information about objects in hand, see CollisionChecker.add_objinhnd
         self.objs_inhnd_infos = []
 
@@ -82,7 +87,7 @@ class XArm7YunjiMobile(object):
         self.hnd.fix_to(pos=self.arm.jnts[-1]['gl_posq'], rotmat=self.arm.jnts[-1]['gl_rotmatq'])
         # set objects in hand cache's need-to-update marker to True
         for one_oih_info in self.objs_inhnd_infos:
-            gl_pos, gl_rotmat = self.hnd.lft_outer.get_worldpose(one_oih_info['rel_pos'], one_oih_info['rel_rotmat'])
+            gl_pos, gl_rotmat = self.tcp_jlc.get_worldpose(one_oih_info['rel_pos'], one_oih_info['rel_rotmat'])
             one_oih_info['gl_pos'] = gl_pos
             one_oih_info['gl_rotmat'] = gl_rotmat
             one_oih_info['cdprimit_cache'][0] = True
@@ -105,7 +110,7 @@ class XArm7YunjiMobile(object):
             self.hnd.jaw_to(general_jnt_values[10])
         # set objects in hand cache's need-to-update marker to True
         for one_oih_info in self.objs_inhnd_infos:
-            gl_pos, gl_rotmat = self.hnd.lft_outer.get_worldpose(one_oih_info['rel_pos'], one_oih_info['rel_rotmat'])
+            gl_pos, gl_rotmat = self.tcp_jlc.get_worldpose(one_oih_info['rel_pos'], one_oih_info['rel_rotmat'])
             one_oih_info['gl_pos'] = gl_pos
             one_oih_info['gl_rotmat'] = gl_rotmat
             one_oih_info['cdprimit_cache'][0] = True
@@ -119,7 +124,7 @@ class XArm7YunjiMobile(object):
         """
         if jawwidth is not None:
             self.hnd.jaw_to(jawwidth)
-        rel_pos, rel_rotmat = self.hnd.lft_outer.get_relpose(objcm.get_pos(), objcm.get_rotmat())
+        rel_pos, rel_rotmat = self.tcp_jlc.get_relpose(objcm.get_pos(), objcm.get_rotmat())
         intolist = [self.agv.lnks[0]['cdprimit_cache'],
                     self.arm.lnks[0]['cdprimit_cache'],
                     self.arm.lnks[1]['cdprimit_cache'],
@@ -148,18 +153,56 @@ class XArm7YunjiMobile(object):
     def is_collided(self, obstacle_list=[], otherrobot_list=[]):
         return self.cc.is_collided(obstacle_list=obstacle_list, otherrobot_list=otherrobot_list)
 
-    def gen_stickmodel(self, name='xarm7_shuidi_mobile'):
+    def gen_stickmodel(self,
+                       tcp_jntid=None,
+                       tcp_loc_pos=None,
+                       tcp_loc_rotmat=None,
+                       toggle_tcpcs=False,
+                       toggle_jntscs=False,
+                       toggle_connjnt=False,
+                       name='xarm7_shuidi_mobile_stickmodel'):
         stickmodel = mc.ModelCollection(name=name)
-        self.agv.gen_stickmodel().attach_to(stickmodel)
-        self.arm.gen_stickmodel().attach_to(stickmodel)
-        self.hnd.gen_stickmodel().attach_to(stickmodel)
+        self.agv.gen_stickmodel(tcp_loc_pos=None,
+                               tcp_loc_rotmat=None,
+                               toggle_tcpcs=False,
+                               toggle_jntscs=toggle_jntscs).attach_to(stickmodel)
+        self.arm.gen_stickmodel(tcp_jntid=tcp_jntid,
+                                tcp_loc_pos=tcp_loc_pos,
+                                tcp_loc_rotmat=tcp_loc_rotmat,
+                                toggle_tcpcs=toggle_tcpcs,
+                                toggle_jntscs=toggle_jntscs,
+                                toggle_connjnt=toggle_connjnt).attach_to(stickmodel)
+        self.hnd.gen_stickmodel(tcp_loc_pos=None,
+                                tcp_loc_rotmat=None,
+                                toggle_tcpcs=False,
+                                toggle_jntscs=toggle_jntscs).attach_to(stickmodel)
         return stickmodel
 
-    def gen_meshmodel(self, name='xarm_gripper_meshmodel'):
+    def gen_meshmodel(self,
+                      tcp_jntid=None,
+                      tcp_loc_pos=None,
+                      tcp_loc_rotmat=None,
+                      toggle_tcpcs=False,
+                      toggle_jntscs=False,
+                      rgba=None,
+                      name='xarm_shuidi_mobile_meshmodel'):
         meshmodel = mc.ModelCollection(name=name)
-        self.agv.gen_meshmodel().attach_to(meshmodel)
-        self.arm.gen_meshmodel().attach_to(meshmodel)
-        self.hnd.gen_meshmodel().attach_to(meshmodel)
+        self.agv.gen_meshmodel(tcp_loc_pos=None,
+                               tcp_loc_rotmat=None,
+                               toggle_tcpcs=False,
+                               toggle_jntscs=toggle_jntscs,
+                               rgba=rgba).attach_to(meshmodel)
+        self.arm.gen_meshmodel(tcp_jntid=tcp_jntid,
+                               tcp_loc_pos=tcp_loc_pos,
+                               tcp_loc_rotmat=tcp_loc_rotmat,
+                               toggle_tcpcs=toggle_tcpcs,
+                               toggle_jntscs=toggle_jntscs,
+                               rgba=rgba).attach_to(meshmodel)
+        self.hnd.gen_meshmodel(tcp_loc_pos=None,
+                               tcp_loc_rotmat=None,
+                               toggle_tcpcs=False,
+                               toggle_jntscs=toggle_jntscs,
+                               rgba=rgba).attach_to(meshmodel)
         for obj_info in self.objs_inhnd_infos:
             objcm = obj_info['collisionmodel']
             objcm.set_pos(obj_info['gl_pos'])

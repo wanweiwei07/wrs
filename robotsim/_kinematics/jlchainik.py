@@ -151,12 +151,12 @@ class JLChainIK(object):
             tcp_globalrotmat = np.dot(self.jlobject.jnts[tcp_jntid]["gl_rotmatq"], tcp_loc_rotmat)
             return [tcp_globalpos, tcp_globalrotmat]
 
-    def tcperror(self, tgtpos, tgtrot, tcp_jntid, tcp_loc_pos, tcp_loc_rotmat):
+    def tcperror(self, tgt_pos, tgt_rot, tcp_jntid, tcp_loc_pos, tcp_loc_rotmat):
         """
-        compute the error between the rjlinstance's end and tgtpos, tgtrot
-        NOTE: if list, len(tgtpos)=len(tgtrot) <= len(tcp_jntid)=len(tcp_loc_pos)=len(tcp_loc_rotmat)
-        :param tgtpos: the position vector of the goal (could be a single value or a list of jntid)
-        :param tgtrot: the rotation matrix of the goal (could be a single value or a list of jntid)
+        compute the error between the rjlinstance's end and tgt_pos, tgt_rot
+        NOTE: if list, len(tgt_pos)=len(tgt_rot) <= len(tcp_jntid)=len(tcp_loc_pos)=len(tcp_loc_rotmat)
+        :param tgt_pos: the position vector of the goal (could be a single value or a list of jntid)
+        :param tgt_rot: the rotation matrix of the goal (could be a single value or a list of jntid)
         :param tcp_jntid: a joint ID in the self.tgtjnts
         :param tcp_loc_pos: 1x3 nparray, decribed in the local frame of self.jnts[tcp_jntid], single value or list
         :param tcp_loc_rotmat: 3x3 nparray, decribed in the local frame of self.jnts[tcp_jntid], single value or list
@@ -166,16 +166,16 @@ class JLChainIK(object):
         date: 20180827, 20200331, 20200705
         """
         tcp_globalpos, tcp_globalrotmat = self.get_globaltcp(tcp_jntid, tcp_loc_pos, tcp_loc_rotmat)
-        if isinstance(tgtpos, list):
-            deltapw = np.zeros(6 * len(tgtpos))
-            for i, thistgtpos in enumerate(tgtpos):
-                deltapw[6 * i:6 * i + 3] = (thistgtpos - tcp_globalpos[i])
-                deltapw[6 * i + 3:6 * i + 6] = rm.deltaw_between_rotmat(tgtrot[i], tcp_globalrotmat[i].T)
+        if isinstance(tgt_pos, list):
+            deltapw = np.zeros(6 * len(tgt_pos))
+            for i, thistgt_pos in enumerate(tgt_pos):
+                deltapw[6 * i:6 * i + 3] = (thistgt_pos - tcp_globalpos[i])
+                deltapw[6 * i + 3:6 * i + 6] = rm.deltaw_between_rotmat(tgt_rot[i], tcp_globalrotmat[i].T)
             return deltapw
         else:
             deltapw = np.zeros(6)
-            deltapw[0:3] = (tgtpos - tcp_globalpos)
-            deltapw[3:6] = rm.deltaw_between_rotmat(tgtrot, tcp_globalrotmat.T)
+            deltapw[0:3] = (tgt_pos - tcp_globalpos)
+            deltapw[3:6] = rm.deltaw_between_rotmat(tgt_rot, tcp_globalrotmat.T)
             return deltapw
 
     def regulate_jnts(self):
@@ -240,15 +240,22 @@ class JLChainIK(object):
                         "rngmin"]) / 2
         return isdragged, jntvaluesdragged
 
-    def numik(self, tgtpos, tgtrot, startconf=None, tcp_jntid=None, tcp_loc_pos=None, tcp_loc_rotmat=None,
-              local_minima="accept", toggle_debug=False):
+    def numik(self,
+              tgt_pos,
+              tgt_rot,
+              start_conf=None,
+              tcp_jntid=None,
+              tcp_loc_pos=None,
+              tcp_loc_rotmat=None,
+              local_minima="accept",
+              toggle_debug=False):
         """
         solveik numerically using the Levenberg-Marquardt Method
         the details of this method can be found in: https://www.math.ucsd.edu/~sbuss/ResearchWeb/ikmethods/iksurvey.pdf
-        NOTE: if list, len(tgtpos)=len(tgtrot) <= len(tcp_jntid)=len(tcp_loc_pos)=len(tcp_loc_rotmat)
-        :param tgtpos: the position of the goal, 1-by-3 numpy ndarray
-        :param tgtrot: the orientation of the goal, 3-by-3 numpyndarray
-        :param startconf: the starting configuration used in the numerical iteration
+        NOTE: if list, len(tgt_pos)=len(tgt_rot) <= len(tcp_jntid)=len(tcp_loc_pos)=len(tcp_loc_rotmat)
+        :param tgt_pos: the position of the goal, 1-by-3 numpy ndarray
+        :param tgt_rot: the orientation of the goal, 3-by-3 numpyndarray
+        :param start_conf: the starting configuration used in the numerical iteration
         :param tcp_jntid: a joint ID in the self.tgtjnts
         :param tcp_loc_pos: 1x3 nparray, decribed in the local frame of self.jnts[tcp_jntid], single value or list
         :param tcp_loc_rotmat: 3x3 nparray, decribed in the local frame of self.jnts[tcp_jntid], single value or list
@@ -257,7 +264,7 @@ class JLChainIK(object):
         author: weiwei
         date: 20180203, 20200328
         """
-        deltapos = tgtpos - self.jlobject.jnts[0]["gl_pos0"]
+        deltapos = tgt_pos - self.jlobject.jnts[0]["gl_pos0"]
         if np.linalg.norm(deltapos) > self.max_rng:
             wns.WarningMessage("The goal is outside maximum range!")
             return None
@@ -268,16 +275,16 @@ class JLChainIK(object):
         if tcp_loc_rotmat is None:
             tcp_loc_rotmat = self.jlobject.tcp_loc_rotmat
         # trim list
-        if isinstance(tgtpos, list):
-            tcp_jntid = tcp_jntid[0:len(tgtpos)]
-            tcp_loc_pos = tcp_loc_pos[0:len(tgtpos)]
-            tcp_loc_rotmat = tcp_loc_rotmat[0:len(tgtpos)]
+        if isinstance(tgt_pos, list):
+            tcp_jntid = tcp_jntid[0:len(tgt_pos)]
+            tcp_loc_pos = tcp_loc_pos[0:len(tgt_pos)]
+            tcp_loc_rotmat = tcp_loc_rotmat[0:len(tgt_pos)]
         elif isinstance(tcp_jntid, list):
             tcp_jntid = tcp_jntid[0]
             tcp_loc_pos = tcp_loc_pos[0]
             tcp_loc_rotmat = tcp_loc_rotmat[0]
         jntvalues_bk = self.jlobject.get_jntvalues()
-        jntvalues_iter = self.jlobject.homeconf if startconf is None else startconf.copy()
+        jntvalues_iter = self.jlobject.homeconf if start_conf is None else start_conf.copy()
         self.jlobject.fk(jnt_values=jntvalues_iter)
         jntvalues_ref = jntvalues_iter.copy()
 
@@ -304,7 +311,7 @@ class JLChainIK(object):
         errnormmax = 0.0
         for i in range(100):
             jmat = self.jacobian(tcp_jntid)
-            err = self.tcperror(tgtpos, tgtrot, tcp_jntid, tcp_loc_pos, tcp_loc_rotmat)
+            err = self.tcperror(tgt_pos, tgt_rot, tcp_jntid, tcp_loc_pos, tcp_loc_rotmat)
             errnorm = err.T.dot(ws_wtdiagmat).dot(err)
             # err = .05 / errnorm * err if errnorm > .05 else err
             if errnorm > errnormmax:
@@ -426,7 +433,7 @@ class JLChainIK(object):
             axaj.plot(ajpath)
             plt.show()
             self.jlobject.gen_stickmodel(tcp_jntid=tcp_jntid, tcp_loc_pos=tcp_loc_pos,
-                                         tcp_loc_rotmat=tcp_loc_rotmat, togglejntscs=True).attach_to(base)
+                                         tcp_loc_rotmat=tcp_loc_rotmat, toggle_jntscs=True).attach_to(base)
             base.run()
         self.jlobject.fk(jntvalues_bk)
         return None
@@ -445,16 +452,16 @@ class JLChainIK(object):
         """
         tcp_globalpos, tcp_globalrotmat = self.get_globaltcp(tcp_jntid, tcp_loc_pos, tcp_loc_rotmat)
         if isinstance(tcp_jntid, list):
-            tgtpos = []
-            tgtrotmat = []
+            tgt_pos = []
+            tgt_rotmat = []
             for i, jid in enumerate(tcp_jntid):
-                tgtpos.append(tcp_globalpos[i] + deltapos[i])
-                tgtrotmat.append(np.dot(deltarotmat, tcp_globalrotmat[i]))
-            startconf = self.jlobject.getjntvalues()
-            # return numik(rjlinstance, tgtpos, tgtrotmat, startconf=startconf, tcp_jntid=tcp_jntid, tcp_loc_pos=tcp_loc_pos, tcp_loc_rotmat=tcp_loc_rotmat)
+                tgt_pos.append(tcp_globalpos[i] + deltapos[i])
+                tgt_rotmat.append(np.dot(deltarotmat, tcp_globalrotmat[i]))
+            start_conf = self.jlobject.getjntvalues()
+            # return numik(rjlinstance, tgt_pos, tgt_rotmat, start_conf=start_conf, tcp_jntid=tcp_jntid, tcp_loc_pos=tcp_loc_pos, tcp_loc_rotmat=tcp_loc_rotmat)
         else:
-            tgtpos = tcp_globalpos + deltapos
-            tgtrotmat = np.dot(deltarotmat, tcp_globalrotmat)
-            startconf = self.jlobject.getjntvalues()
-        return self.numik(tgtpos, tgtrotmat, startconf=startconf, tcp_jntid=tcp_jntid, tcp_loc_pos=tcp_loc_pos,
+            tgt_pos = tcp_globalpos + deltapos
+            tgt_rotmat = np.dot(deltarotmat, tcp_globalrotmat)
+            start_conf = self.jlobject.getjntvalues()
+        return self.numik(tgt_pos, tgt_rotmat, start_conf=start_conf, tcp_jntid=tcp_jntid, tcp_loc_pos=tcp_loc_pos,
                           tcp_loc_rotmat=tcp_loc_rotmat)

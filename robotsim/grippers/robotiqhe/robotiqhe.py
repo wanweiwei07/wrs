@@ -79,27 +79,53 @@ class RobotiqHE(object):
         else:
             raise ValueError("The angle parameter is out of range!")
 
-    def gen_stickmodel(self, tcp_jntid=None, tcp_loc_pos=None, tcp_loc_rotmat=None, toggletcpcs=False,
-                       togglejntscs=False, toggleconnjnt=False, name='xarm_gripper_stickmodel'):
+    def gen_stickmodel(self,
+                       tcp_jntid=None,
+                       tcp_loc_pos=None,
+                       tcp_loc_rotmat=None,
+                       toggle_tcpcs=False,
+                       toggle_jntscs=False,
+                       toggle_connjnt=False,
+                       name='xarm_gripper_stickmodel'):
         stickmodel = mc.ModelCollection(name=name)
-        self.coupling.gen_stickmodel(tcp_loc_pos=None, tcp_loc_rotmat=None, toggletcpcs=False,
-                                     togglejntscs=togglejntscs).attach_to(stickmodel)
-        self.lft.gen_stickmodel(tcp_jntid=tcp_jntid, tcp_loc_pos=tcp_loc_pos, tcp_loc_rotmat=tcp_loc_rotmat,
-                                toggletcpcs=toggletcpcs, togglejntscs=togglejntscs,
-                                toggleconnjnt=toggleconnjnt).attach_to(stickmodel)
-        self.rgt.gen_stickmodel(tcp_loc_pos=None, tcp_loc_rotmat=None, toggletcpcs=False, togglejntscs=togglejntscs,
-                                toggleconnjnt=toggleconnjnt).attach_to(stickmodel)
+        self.coupling.gen_stickmodel(tcp_loc_pos=None,
+                                     tcp_loc_rotmat=None,
+                                     toggle_tcpcs=False,
+                                     toggle_jntscs=toggle_jntscs).attach_to(stickmodel)
+        self.lft.gen_stickmodel(tcp_jntid=tcp_jntid,
+                                tcp_loc_pos=tcp_loc_pos,
+                                tcp_loc_rotmat=tcp_loc_rotmat,
+                                toggle_tcpcs=toggle_tcpcs,
+                                toggle_jntscs=toggle_jntscs,
+                                toggle_connjnt=toggle_connjnt).attach_to(stickmodel)
+        self.rgt.gen_stickmodel(tcp_loc_pos=None,
+                                tcp_loc_rotmat=None,
+                                toggle_tcpcs=False,
+                                toggle_jntscs=toggle_jntscs,
+                                toggle_connjnt=toggle_connjnt).attach_to(stickmodel)
         return stickmodel
 
-    def gen_meshmodel(self, tcp_jntid=None, tcp_loc_pos=None, tcp_loc_rotmat=None, toggletcpcs=False,
-                      togglejntscs=False, name='xarm_gripper_meshmodel'):
+    def gen_meshmodel(self,
+                      tcp_jntid=None,
+                      tcp_loc_pos=None,
+                      tcp_loc_rotmat=None,
+                      toggle_tcpcs=False,
+                      toggle_jntscs=False,
+                      name='xarm_gripper_meshmodel'):
         meshmodel = mc.ModelCollection(name=name)
-        self.coupling.gen_meshmodel(tcp_loc_pos=None, tcp_loc_rotmat=None, toggletcpcs=False,
-                                    togglejntscs=togglejntscs).attach_to(meshmodel)
-        self.lft.gen_meshmodel(tcp_jntid=tcp_jntid, tcp_loc_pos=tcp_loc_pos, tcp_loc_rotmat=tcp_loc_rotmat,
-                               toggletcpcs=toggletcpcs, togglejntscs=togglejntscs).attach_to(meshmodel)
-        self.rgt.gen_meshmodel(tcp_loc_pos=None, tcp_loc_rotmat=None, toggletcpcs=False,
-                               togglejntscs=togglejntscs).attach_to(meshmodel)
+        self.coupling.gen_meshmodel(tcp_loc_pos=None,
+                                    tcp_loc_rotmat=None,
+                                    toggle_tcpcs=False,
+                                    toggle_jntscs=toggle_jntscs).attach_to(meshmodel)
+        self.lft.gen_meshmodel(tcp_jntid=tcp_jntid,
+                               tcp_loc_pos=tcp_loc_pos,
+                               tcp_loc_rotmat=tcp_loc_rotmat,
+                               toggle_tcpcs=toggle_tcpcs,
+                               toggle_jntscs=toggle_jntscs).attach_to(meshmodel)
+        self.rgt.gen_meshmodel(tcp_loc_pos=None,
+                               tcp_loc_rotmat=None,
+                               toggle_tcpcs=False,
+                               toggle_jntscs=toggle_jntscs).attach_to(meshmodel)
         return meshmodel
 
 

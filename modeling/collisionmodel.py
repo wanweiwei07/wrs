@@ -22,17 +22,17 @@ class CollisionModel(gm.GeometricModel):
     """
 
     def __init__(self, objinit, btransparency=True, cdprimitive_type="box", expand_radius=None, name="defaultname",
-                 userdefined_cdprimitive_callback=None):
+                 userdefined_cdprimitive_fn=None):
         """
         :param objinit:
         :param btransparency:
         :param cdprimitive_type: box, ball, cylinder, pointcloud, userdefined
         :param expand_radius:
         :param name:
-        :param userdefined_cdprimitive_callback: the collision primitive will be defined in the provided callback function
-                                                 if cdprimitive_type = external;
-                                                 protocal for the callback function: return CollisionNode,
-                                                 may have multiple CollisionSolid
+        :param userdefined_cdprimitive_fn: the collision primitive will be defined in the provided function
+                                           if cdprimitive_type = external;
+                                           protocal for the callback function: return CollisionNode,
+                                           may have multiple CollisionSolid
         date: 201290312, 20201212
         """
         if isinstance(objinit, CollisionModel):
@@ -66,7 +66,7 @@ class CollisionModel(gm.GeometricModel):
                     if cdprimitive_type == "pointcloud":
                         cdnd = self._gen_pointcloud_cdnp(name=self.name+"_pointcloudcd", radius=expand_radius)
                     if cdprimitive_type == "userdefined":
-                        cdnd = userdefined_cdprimitive_callback(name=self.name+"_userdefined", radius=expand_radius)
+                        cdnd = userdefined_cdprimitive_fn(name=self.name+"_userdefined", radius=expand_radius)
                 self._cdnp = self._pdnp.attachNewNode(cdnd)
                 self._cdnp.node().setCollideMask(BitMask32(2**31))
             self._localframe = None

@@ -53,7 +53,7 @@ class JLChainMesh(object):
         self.cc.disable()
 
     def gen_meshmodel(self, tcp_jntid=None, tcp_loc_pos=None, tcp_loc_rotmat=None,
-                      toggletcpcs=True, togglejntscs=False, name='robotmesh', rgba=None):
+                      toggle_tcpcs=True, toggle_jntscs=False, name='robotmesh', rgba=None):
         meshmodel = mc.ModelCollection(name=name)
         for id in range(self.jlobject.ndof + 1):
             if self.jlobject.lnks[id]['collisionmodel'] is not None:
@@ -67,17 +67,17 @@ class JLChainMesh(object):
                     this_collisionmodel.set_scale(self.jlobject.lnks[id]['scale'])
                 this_collisionmodel.attach_to(meshmodel)
         # tool center coord
-        if toggletcpcs:
+        if toggle_tcpcs:
             self._toggle_tcpcs(meshmodel, tcp_jntid, tcp_loc_pos, tcp_loc_rotmat,
                                tcpic_rgba=np.array([.5, 0, 1, 0]), tcpic_thickness=.0062)
         # toggle all coord
-        if togglejntscs:
+        if toggle_jntscs:
             self._toggle_jntcs(meshmodel, jntcs_thickness=.0062)
         return meshmodel
 
     def gen_stickmodel(self, rgba=np.array([.5, 0, 0, 1]), thickness=.01, jointratio=1.62, linkratio=.62,
-                       tcp_jntid=None, tcp_loc_pos=None, tcp_loc_rotmat=None, toggletcpcs=True, togglejntscs=False,
-                       toggleconnjnt=False, name='robotstick'):
+                       tcp_jntid=None, tcp_loc_pos=None, tcp_loc_rotmat=None, toggle_tcpcs=True, toggle_jntscs=False,
+                       toggle_connjnt=False, name='robotstick'):
         """
         generate the stick model for a jntlnk object
         snp means stick nodepath
@@ -85,9 +85,9 @@ class JLChainMesh(object):
         :param tcp_jntid:
         :param tcp_loc_pos:
         :param tcp_loc_rotmat:
-        :param toggletcpcs:
-        :param togglejntscs:
-        :param toggleconnjnt: draw the connecting joint explicitly or not
+        :param toggle_tcpcs:
+        :param toggle_jntscs:
+        :param toggle_connjnt: draw the connecting joint explicitly or not
         :param name:
         :return:
 
@@ -97,7 +97,7 @@ class JLChainMesh(object):
         stickmodel = mc.ModelCollection(name=name)
         id = 0
         loopdof = self.jlobject.ndof + 1
-        if toggleconnjnt:
+        if toggle_connjnt:
             loopdof = self.jlobject.ndof + 2
         while id < loopdof:
             cjid = self.jlobject.jnts[id]['child']
@@ -115,11 +115,11 @@ class JLChainMesh(object):
                                  rgba=np.array([.2, .3, .3, 1])).attach_to(stickmodel)
             id = cjid
         # tool center coord
-        if toggletcpcs:
+        if toggle_tcpcs:
             self._toggle_tcpcs(stickmodel, tcp_jntid, tcp_loc_pos, tcp_loc_rotmat,
                                tcpic_rgba=rgba + np.array([0, 0, 1, 0]), tcpic_thickness=thickness * linkratio)
         # toggle all coord
-        if togglejntscs:
+        if toggle_jntscs:
             self._toggle_jntcs(stickmodel, jntcs_thickness=thickness * linkratio)
         return stickmodel
 

@@ -8,7 +8,6 @@ import robotsim._kinematics.jlchain as jl
 import robotsim.manipulators.irb14050.irb14050 as ya
 import robotsim.grippers.yumi_gripper.yumi_gripper as yg
 from panda3d.core import CollisionNode, CollisionBox, Point3
-import scipy.spatial.transform
 
 
 class Yumi(object):
@@ -37,8 +36,8 @@ class Yumi(object):
         self.lft_body.lnks[1]['collisionmodel'] = cm.CollisionModel(
             os.path.join(this_dir, "meshes", "body.stl"),
             cdprimitive_type="userdefined", expand_radius=.005,
-            userdefined_cdprimitive_callback=self._base_combined_cdnp)
-        self.lft_body.lnks[1]['rgba'] = [.7,.7,.7,1]
+            userdefined_cdprimitive_fn=self._base_combined_cdnp)
+        self.lft_body.lnks[1]['rgba'] = [.7, .7, .7, 1]
         self.lft_body.lnks[2]['name'] = "yumi_lft_column"
         self.lft_body.lnks[2]['loc_pos'] = np.array([-.327, -.24, -1.015])
         self.lft_body.lnks[2]['meshfile'] = os.path.join(this_dir, "meshes", "yumi_column60602100.stl")
@@ -53,12 +52,12 @@ class Yumi(object):
         self.lft_body.lnks[4]['rgba'] = [.35, .35, .35, 1.0]
         self.lft_body.lnks[5]['name'] = "yumi_top_lft"
         self.lft_body.lnks[5]['loc_pos'] = np.array([-.027, -.24, 1.085])
-        self.lft_body.lnks[5]['loc_rotmat'] = rm.rotmat_from_axangle([0,0,1], -math.pi/2)
+        self.lft_body.lnks[5]['loc_rotmat'] = rm.rotmat_from_axangle([0, 0, 1], -math.pi / 2)
         self.lft_body.lnks[5]['meshfile'] = os.path.join(this_dir, "meshes", "yumi_column6060540.stl")
         self.lft_body.lnks[5]['rgba'] = [.35, .35, .35, 1.0]
         self.lft_body.lnks[6]['name'] = "yumi_top_rgt"
         self.lft_body.lnks[6]['loc_pos'] = np.array([-.027, .24, 1.085])
-        self.lft_body.lnks[6]['loc_rotmat'] = rm.rotmat_from_axangle([0,0,1], -math.pi/2)
+        self.lft_body.lnks[6]['loc_rotmat'] = rm.rotmat_from_axangle([0, 0, 1], -math.pi / 2)
         self.lft_body.lnks[6]['meshfile'] = os.path.join(this_dir, "meshes", "yumi_column6060540.stl")
         self.lft_body.lnks[6]['rgba'] = [.35, .35, .35, 1.0]
         self.lft_body.lnks[7]['name'] = "yumi_top_front"
@@ -90,9 +89,21 @@ class Yumi(object):
     @staticmethod
     def _base_combined_cdnp(name, radius):
         collision_node = CollisionNode(name)
-        collision_primitive_c0 = CollisionBox(Point3(0.54, 0.0, 0.39),
-                                              x=.54 + radius, y=.6 + radius, z=.39 + radius)
+        collision_primitive_c0 = CollisionBox(Point3(-.2, 0, 0.04),
+                                              x=.16 + radius, y=.2 + radius, z=.04 + radius)
         collision_node.addSolid(collision_primitive_c0)
+        collision_primitive_c1 = CollisionBox(Point3(-.24, 0, 0.24),
+                                              x=.12 + radius, y=.125 + radius, z=.24 + radius)
+        collision_node.addSolid(collision_primitive_c1)
+        collision_primitive_c2 = CollisionBox(Point3(-.07, 0, 0.4),
+                                              x=.07 + radius, y=.125 + radius, z=.06 + radius)
+        collision_node.addSolid(collision_primitive_c2)
+        collision_primitive_l0 = CollisionBox(Point3(0, 0.145, 0.03),
+                                              x=.135 + radius, y=.055 + radius, z=.03 + radius)
+        collision_node.addSolid(collision_primitive_l0)
+        collision_primitive_r0 = CollisionBox(Point3(0, -0.145, 0.03),
+                                              x=.135 + radius, y=.055 + radius, z=.03 + radius)
+        collision_node.addSolid(collision_primitive_r0)
         return collision_node
 
     def move_to(self, pos, rotmat):
@@ -144,77 +155,78 @@ class Yumi(object):
                        tcp_jntid=None,
                        tcp_loc_pos=None,
                        tcp_loc_rotmat=None,
-                       toggletcpcs=False,
-                       togglejntscs=False,
-                       toggleconnjnt=False,
-                       name='xarm7_shuidi_mobile'):
+                       toggle_tcpcs=False,
+                       toggle_jntscs=False,
+                       toggle_connjnt=False,
+                       name='yumi'):
         stickmodel = mc.ModelCollection(name=name)
         self.lft_body.gen_stickmodel(tcp_loc_pos=None,
                                      tcp_loc_rotmat=None,
-                                     toggletcpcs=False,
-                                     togglejntscs=togglejntscs).attach_to(stickmodel)
+                                     toggle_tcpcs=False,
+                                     toggle_jntscs=toggle_jntscs).attach_to(stickmodel)
         self.lft_arm.gen_stickmodel(tcp_jntid=tcp_jntid,
                                     tcp_loc_pos=tcp_loc_pos,
                                     tcp_loc_rotmat=tcp_loc_rotmat,
-                                    toggletcpcs=toggletcpcs,
-                                    togglejntscs=togglejntscs,
-                                    toggleconnjnt=toggleconnjnt).attach_to(stickmodel)
+                                    toggle_tcpcs=toggle_tcpcs,
+                                    toggle_jntscs=toggle_jntscs,
+                                    toggle_connjnt=toggle_connjnt).attach_to(stickmodel)
         self.lft_hnd.gen_stickmodel(tcp_loc_pos=None,
                                     tcp_loc_rotmat=None,
-                                    toggletcpcs=False,
-                                    togglejntscs=togglejntscs,
-                                    toggleconnjnt=toggleconnjnt).attach_to(stickmodel)
+                                    toggle_tcpcs=False,
+                                    toggle_jntscs=toggle_jntscs,
+                                    toggle_connjnt=toggle_connjnt).attach_to(stickmodel)
         self.rgt_body.gen_stickmodel(tcp_loc_pos=None,
                                      tcp_loc_rotmat=None,
-                                     toggletcpcs=False,
-                                     togglejntscs=togglejntscs).attach_to(stickmodel)
+                                     toggle_tcpcs=False,
+                                     toggle_jntscs=toggle_jntscs).attach_to(stickmodel)
         self.rgt_arm.gen_stickmodel(tcp_jntid=tcp_jntid,
                                     tcp_loc_pos=tcp_loc_pos,
                                     tcp_loc_rotmat=tcp_loc_rotmat,
-                                    toggletcpcs=toggletcpcs,
-                                    togglejntscs=togglejntscs,
-                                    toggleconnjnt=toggleconnjnt).attach_to(stickmodel)
+                                    toggle_tcpcs=toggle_tcpcs,
+                                    toggle_jntscs=toggle_jntscs,
+                                    toggle_connjnt=toggle_connjnt).attach_to(stickmodel)
         self.rgt_hnd.gen_stickmodel(tcp_loc_pos=None,
                                     tcp_loc_rotmat=None,
-                                    toggletcpcs=False,
-                                    togglejntscs=togglejntscs,
-                                    toggleconnjnt=toggleconnjnt).attach_to(stickmodel)
+                                    toggle_tcpcs=False,
+                                    toggle_jntscs=toggle_jntscs,
+                                    toggle_connjnt=toggle_connjnt).attach_to(stickmodel)
         return stickmodel
 
     def gen_meshmodel(self,
                       tcp_jntid=None,
                       tcp_loc_pos=None,
                       tcp_loc_rotmat=None,
-                      toggletcpcs=False,
-                      togglejntscs=False,
-                      name='xarm_gripper_meshmodel', rgba=None):
+                      toggle_tcpcs=False,
+                      toggle_jntscs=False,
+                      rgba=None,
+                      name='xarm_gripper_meshmodel'):
         meshmodel = mc.ModelCollection(name=name)
         self.lft_body.gen_meshmodel(tcp_loc_pos=None,
                                     tcp_loc_rotmat=None,
-                                    toggletcpcs=False,
-                                    togglejntscs=togglejntscs,
+                                    toggle_tcpcs=False,
+                                    toggle_jntscs=toggle_jntscs,
                                     rgba=rgba).attach_to(meshmodel)
         self.lft_arm.gen_meshmodel(tcp_jntid=tcp_jntid,
                                    tcp_loc_pos=tcp_loc_pos,
                                    tcp_loc_rotmat=tcp_loc_rotmat,
-                                   toggletcpcs=toggletcpcs,
-                                   togglejntscs=togglejntscs,
+                                   toggle_tcpcs=toggle_tcpcs,
+                                   toggle_jntscs=toggle_jntscs,
                                    rgba=rgba).attach_to(meshmodel)
         self.lft_hnd.gen_meshmodel(tcp_loc_pos=None,
                                    tcp_loc_rotmat=None,
-                                   toggletcpcs=False,
-                                   togglejntscs=togglejntscs,
+                                   toggle_tcpcs=False,
+                                   toggle_jntscs=toggle_jntscs,
                                    rgba=rgba).attach_to(meshmodel)
         self.rgt_arm.gen_meshmodel(tcp_jntid=tcp_jntid,
                                    tcp_loc_pos=tcp_loc_pos,
                                    tcp_loc_rotmat=tcp_loc_rotmat,
-                                   toggletcpcs=toggletcpcs,
-                                   togglejntscs=togglejntscs,
+                                   toggle_tcpcs=toggle_tcpcs,
+                                   toggle_jntscs=toggle_jntscs,
                                    rgba=rgba).attach_to(meshmodel)
         self.rgt_hnd.gen_meshmodel(tcp_loc_pos=None,
                                    tcp_loc_rotmat=None,
-                                   toggletcpcs=False,
-                                   togglejntscs=togglejntscs,
+                                   toggle_tcpcs=False,
+                                   toggle_jntscs=toggle_jntscs,
                                    rgba=rgba).attach_to(meshmodel)
         return meshmodel
 

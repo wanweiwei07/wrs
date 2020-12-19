@@ -164,32 +164,32 @@ class Robotiq85(object):
     def gen_stickmodel(self, tcp_jntid=None, tcp_loc_pos=None, tcp_loc_rotmat=None, toggletcpcs=False,
                        togglejntscs=False, toggleconnjnt=False, name='xarm_gripper_stickmodel'):
         stickmodel = gm.StaticGeometricModel(name=name)
-        self.coupling.gen_stickmodel(tcp_loc_pos=None, tcp_loc_rotmat=None, toggletcpcs=False,
-                                     togglejntscs=togglejntscs).attach_to(stickmodel)
+        self.coupling.gen_stickmodel(tcp_loc_pos=None, tcp_loc_rotmat=None, toggle_tcpcs=False,
+                                     toggle_jntscs=togglejntscs).attach_to(stickmodel)
         self.lft_outer.gen_stickmodel(tcp_jntid=tcp_jntid, tcp_loc_pos=tcp_loc_pos, tcp_loc_rotmat=tcp_loc_rotmat,
-                                      toggletcpcs=toggletcpcs, togglejntscs=togglejntscs,
-                                      toggleconnjnt=toggleconnjnt).attach_to(stickmodel)
-        self.lft_inner.gen_stickmodel(tcp_loc_pos=None, tcp_loc_rotmat=None, toggletcpcs=False,
-                                      togglejntscs=togglejntscs, toggleconnjnt=toggleconnjnt).attach_to(stickmodel)
-        self.rgt_outer.gen_stickmodel(tcp_loc_pos=None, tcp_loc_rotmat=None, toggletcpcs=False,
-                                      togglejntscs=togglejntscs, toggleconnjnt=toggleconnjnt).attach_to(stickmodel)
-        self.rgt_inner.gen_stickmodel(tcp_loc_pos=None, tcp_loc_rotmat=None, toggletcpcs=False,
-                                      togglejntscs=togglejntscs, toggleconnjnt=toggleconnjnt).attach_to(stickmodel)
+                                      toggle_tcpcs=toggletcpcs, toggle_jntscs=togglejntscs,
+                                      toggle_connjnt=toggleconnjnt).attach_to(stickmodel)
+        self.lft_inner.gen_stickmodel(tcp_loc_pos=None, tcp_loc_rotmat=None, toggle_tcpcs=False,
+                                      toggle_jntscs=togglejntscs, toggle_connjnt=toggleconnjnt).attach_to(stickmodel)
+        self.rgt_outer.gen_stickmodel(tcp_loc_pos=None, tcp_loc_rotmat=None, toggle_tcpcs=False,
+                                      toggle_jntscs=togglejntscs, toggle_connjnt=toggleconnjnt).attach_to(stickmodel)
+        self.rgt_inner.gen_stickmodel(tcp_loc_pos=None, tcp_loc_rotmat=None, toggle_tcpcs=False,
+                                      toggle_jntscs=togglejntscs, toggle_connjnt=toggleconnjnt).attach_to(stickmodel)
         return stickmodel
 
     def gen_meshmodel(self, tcp_jntid=None, tcp_loc_pos=None, tcp_loc_rotmat=None, toggletcpcs=False,
                       togglejntscs=False, name='xarm_gripper_meshmodel'):
         stickmodel = gm.StaticGeometricModel(name=name)
-        self.coupling.gen_meshmodel(tcp_loc_pos=None, tcp_loc_rotmat=None, toggletcpcs=False,
-                                    togglejntscs=togglejntscs).attach_to(stickmodel)
+        self.coupling.gen_meshmodel(tcp_loc_pos=None, tcp_loc_rotmat=None, toggle_tcpcs=False,
+                                    toggle_jntscs=togglejntscs).attach_to(stickmodel)
         self.lft_outer.gen_meshmodel(tcp_jntid=tcp_jntid, tcp_loc_pos=tcp_loc_pos, tcp_loc_rotmat=tcp_loc_rotmat,
-                                     toggletcpcs=toggletcpcs, togglejntscs=togglejntscs).attach_to(stickmodel)
-        self.lft_inner.gen_meshmodel(tcp_loc_pos=None, tcp_loc_rotmat=None, toggletcpcs=False,
-                                     togglejntscs=togglejntscs).attach_to(stickmodel)
-        self.rgt_outer.gen_meshmodel(tcp_loc_pos=None, tcp_loc_rotmat=None, toggletcpcs=False,
-                                     togglejntscs=togglejntscs).attach_to(stickmodel)
-        self.rgt_inner.gen_meshmodel(tcp_loc_pos=None, tcp_loc_rotmat=None, toggletcpcs=False,
-                                     togglejntscs=togglejntscs).attach_to(stickmodel)
+                                     toggle_tcpcs=toggletcpcs, toggle_jntscs=togglejntscs).attach_to(stickmodel)
+        self.lft_inner.gen_meshmodel(tcp_loc_pos=None, tcp_loc_rotmat=None, toggle_tcpcs=False,
+                                     toggle_jntscs=togglejntscs).attach_to(stickmodel)
+        self.rgt_outer.gen_meshmodel(tcp_loc_pos=None, tcp_loc_rotmat=None, toggle_tcpcs=False,
+                                     toggle_jntscs=togglejntscs).attach_to(stickmodel)
+        self.rgt_inner.gen_meshmodel(tcp_loc_pos=None, tcp_loc_rotmat=None, toggle_tcpcs=False,
+                                     toggle_jntscs=togglejntscs).attach_to(stickmodel)
         return stickmodel
 
     def fk(self, angle):

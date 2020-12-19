@@ -26,7 +26,7 @@ class UR3EDual(object):
         self.lft_base.lnks[0]['collisionmodel'] = cm.CollisionModel(
             os.path.join(this_dir, "meshes", "ur3e_dual_base.stl"),
             cdprimitive_type="userdefined", expand_radius=.005,
-            userdefined_cdprimitive_callback=self._base_combined_cdnp)
+            userdefined_cdprimitive_fn=self._base_combined_cdnp)
         self.lft_base.lnks[0]['rgba'] = [.3, .3, .3, 1.0]
         self.lft_base.reinitialize()
         lft_arm_homeconf = np.zeros(6)
