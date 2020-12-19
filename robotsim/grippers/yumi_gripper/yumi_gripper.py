@@ -9,8 +9,8 @@ import basis.robotmath as rm
 class YumiGripper(object):
 
     def __init__(self, pos=np.zeros(3), rotmat=np.eye(3), name='yumi_gripper'):
-        self.name = name
         this_dir, this_filename = os.path.split(__file__)
+        self.name = name
         self.pos = pos
         self.rotmat = rotmat
         # joints

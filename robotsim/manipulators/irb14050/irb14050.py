@@ -72,6 +72,15 @@ class IRB14050(jl.JLChain):
         intolist = [self.lnks[6]['cdprimit_cache']]
         self._mt.set_cdpair(fromlist, intolist)
 
+    def copy(self, name=None):
+        self_copy = super().copy(name=name)
+        # collision detection TODO copy from collisioncheckers directly
+        self_copy._mt.add_cdlnks([1,2,3,4,5,6])
+        fromlist = [self_copy.lnks[1]['cdprimit_cache']]
+        intolist = [self_copy.lnks[6]['cdprimit_cache']]
+        self_copy._mt.set_cdpair(fromlist, intolist)
+        return self_copy
+
 
 if __name__ == '__main__':
     import time
@@ -90,4 +99,9 @@ if __name__ == '__main__':
     print(manipulator_instance.is_collided())
     toc = time.time()
     print(toc - tic)
+
+    manipulator_instance2 = manipulator_instance.copy()
+    manipulator_instance2.fix_to(pos=np.array([.2,.2,0.2]), rotmat=np.eye(3))
+    manipulator_meshmodel2 = manipulator_instance2.gen_meshmodel()
+    manipulator_meshmodel2.attach_to(base)
     base.run()

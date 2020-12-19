@@ -1,29 +1,36 @@
 import os
 import math
 import numpy as np
-import modeling.geometricmodel as gm
+import modeling.modelcollection as mc
 import robotsim._kinematics.jlchain as jl
 import basis.robotmath as rm
 
 
 class Robotiq85(object):
 
-    def __init__(self, pos=np.zeros(3), rotmat=np.eye(3)):
+    def __init__(self, pos=np.zeros(3), rotmat=np.eye(3), name='robotiq85'):
         this_dir, this_filename = os.path.split(__file__)
+        self.name = name
         self.pos = pos
         self.rotmat = rotmat
         # joints
         # - coupling
-        self.coupling = jl.JLChain(pos=self.pos, rotmat=self.rotmat, homeconf=np.zeros(0), name='coupling')
+        self.coupling = jl.JLChain(pos=self.pos,
+                                   rotmat=self.rotmat,
+                                   homeconf=np.zeros(0),
+                                   name=self.name + '_coupling')
         self.coupling.jnts[1]['loc_pos'] = np.array([0, 0, .011])
-        self.coupling.lnks[0]['name'] = "robotiq_gripper_coupling"
+        self.coupling.lnks[0]['name'] = self.name+"_coupling"
         # self.coupling.lnks[0]['meshfile'] = os.path.join(this_dir, "meshes", "robotiq_gripper_coupling.stl")
         self.coupling.lnks[0]['rgba'] = [.2, .2, .2, 1]
         self.coupling.reinitialize()
         cpl_end_pos = self.coupling.jnts[-1]['gl_posq']
         cpl_end_rotmat = self.coupling.jnts[-1]['gl_rotmatq']
         # - lft_outer
-        self.lft_outer = jl.JLChain(pos=cpl_end_pos, rotmat=cpl_end_rotmat, homeconf=np.zeros(4), name='lft_outer')
+        self.lft_outer = jl.JLChain(pos=cpl_end_pos,
+                                    rotmat=cpl_end_rotmat,
+                                    homeconf=np.zeros(4),
+                                    name='lft_outer')
         self.lft_outer.jnts[1]['loc_pos'] = np.array([0, -.0306011, .054904])
         self.lft_outer.jnts[1]['rngmin'] = .0
         self.lft_outer.jnts[1]['rngmax'] = .8  # TODO change min-max to a tuple
@@ -39,14 +46,20 @@ class Robotiq85(object):
         # https://github.com/Danfoa uses geometry instead of the dae mesh. The following coordiante is needed
         # self.lft_outer.jnts[4]['loc_pos'] = np.array([0, -0.0220203446692936, .03242])
         # - lft_inner
-        self.lft_inner = jl.JLChain(pos=cpl_end_pos, rotmat=cpl_end_rotmat, homeconf=np.zeros(1), name='lft_inner')
+        self.lft_inner = jl.JLChain(pos=cpl_end_pos,
+                                    rotmat=cpl_end_rotmat,
+                                    homeconf=np.zeros(1),
+                                    name='lft_inner')
         self.lft_inner.jnts[1]['loc_pos'] = np.array([0, -.0127, .06142])
         self.lft_inner.jnts[1]['loc_rotmat'] = rm.rotmat_from_euler(0, 0, math.pi)
         self.lft_inner.jnts[1]['rngmin'] = .0
         self.lft_inner.jnts[1]['rngmax'] = .8757  # TODO change min-max to a tuple
         self.lft_inner.jnts[1]['loc_motionax'] = np.array([1, 0, 0])
         # - rgt_outer
-        self.rgt_outer = jl.JLChain(pos=cpl_end_pos, rotmat=cpl_end_rotmat, homeconf=np.zeros(4), name='rgt_outer')
+        self.rgt_outer = jl.JLChain(pos=cpl_end_pos,
+                                    rotmat=cpl_end_rotmat,
+                                    homeconf=np.zeros(4),
+                                    name='rgt_outer')
         self.rgt_outer.jnts[1]['loc_pos'] = np.array([0, .0306011, .054904])
         self.rgt_outer.jnts[1]['rngmin'] = .0
         self.rgt_outer.jnts[1]['rngmax'] = .8  # TODO change min-max to a tuple
@@ -61,7 +74,10 @@ class Robotiq85(object):
         # https://github.com/Danfoa uses geometry instead of the dae mesh. The following coordiante is needed
         # self.rgt_outer.jnts[4]['loc_pos'] = np.array([0, -0.0220203446692936, .03242])
         # - rgt_inner
-        self.rgt_inner = jl.JLChain(pos=cpl_end_pos, rotmat=cpl_end_rotmat, homeconf=np.zeros(1), name='rgt_inner')
+        self.rgt_inner = jl.JLChain(pos=cpl_end_pos,
+                                    rotmat=cpl_end_rotmat,
+                                    homeconf=np.zeros(1),
+                                    name='rgt_inner')
         self.rgt_inner.jnts[1]['loc_pos'] = np.array([0, .0127, .06142])
         self.rgt_inner.jnts[1]['rngmin'] = .0
         self.rgt_inner.jnts[1]['rngmax'] = .8757  # TODO change min-max to a tuple
@@ -161,35 +177,77 @@ class Robotiq85(object):
         self.rgt_inner.fix_to(cpl_end_pos, cpl_end_rotmat)
         self.rgt_outer.fix_to(cpl_end_pos, cpl_end_rotmat)
 
-    def gen_stickmodel(self, tcp_jntid=None, tcp_loc_pos=None, tcp_loc_rotmat=None, toggletcpcs=False,
-                       togglejntscs=False, toggleconnjnt=False, name='xarm_gripper_stickmodel'):
-        stickmodel = gm.StaticGeometricModel(name=name)
-        self.coupling.gen_stickmodel(tcp_loc_pos=None, tcp_loc_rotmat=None, toggle_tcpcs=False,
-                                     toggle_jntscs=togglejntscs).attach_to(stickmodel)
-        self.lft_outer.gen_stickmodel(tcp_jntid=tcp_jntid, tcp_loc_pos=tcp_loc_pos, tcp_loc_rotmat=tcp_loc_rotmat,
-                                      toggle_tcpcs=toggletcpcs, toggle_jntscs=togglejntscs,
-                                      toggle_connjnt=toggleconnjnt).attach_to(stickmodel)
-        self.lft_inner.gen_stickmodel(tcp_loc_pos=None, tcp_loc_rotmat=None, toggle_tcpcs=False,
-                                      toggle_jntscs=togglejntscs, toggle_connjnt=toggleconnjnt).attach_to(stickmodel)
-        self.rgt_outer.gen_stickmodel(tcp_loc_pos=None, tcp_loc_rotmat=None, toggle_tcpcs=False,
-                                      toggle_jntscs=togglejntscs, toggle_connjnt=toggleconnjnt).attach_to(stickmodel)
-        self.rgt_inner.gen_stickmodel(tcp_loc_pos=None, tcp_loc_rotmat=None, toggle_tcpcs=False,
-                                      toggle_jntscs=togglejntscs, toggle_connjnt=toggleconnjnt).attach_to(stickmodel)
+    def gen_stickmodel(self,
+                       tcp_jntid=None,
+                       tcp_loc_pos=None,
+                       tcp_loc_rotmat=None,
+                       toggle_tcpcs=False,
+                       toggle_jntscs=False,
+                       toggle_connjnt=False,
+                       name='robotiq85_stickmodel'):
+        stickmodel = mc.ModelCollection(name=name)
+        self.coupling.gen_stickmodel(tcp_loc_pos=None,
+                                     tcp_loc_rotmat=None,
+                                     toggle_tcpcs=False,
+                                     toggle_jntscs=toggle_jntscs).attach_to(stickmodel)
+        self.lft_outer.gen_stickmodel(tcp_jntid=tcp_jntid,
+                                      tcp_loc_pos=tcp_loc_pos,
+                                      tcp_loc_rotmat=tcp_loc_rotmat,
+                                      toggle_tcpcs=toggle_tcpcs,
+                                      toggle_jntscs=toggle_jntscs,
+                                      toggle_connjnt=toggle_connjnt).attach_to(stickmodel)
+        self.lft_inner.gen_stickmodel(tcp_loc_pos=None,
+                                      tcp_loc_rotmat=None,
+                                      toggle_tcpcs=False,
+                                      toggle_jntscs=toggle_jntscs,
+                                      toggle_connjnt=toggle_connjnt).attach_to(stickmodel)
+        self.rgt_outer.gen_stickmodel(tcp_loc_pos=None,
+                                      tcp_loc_rotmat=None,
+                                      toggle_tcpcs=False,
+                                      toggle_jntscs=toggle_jntscs,
+                                      toggle_connjnt=toggle_connjnt).attach_to(stickmodel)
+        self.rgt_inner.gen_stickmodel(tcp_loc_pos=None,
+                                      tcp_loc_rotmat=None,
+                                      toggle_tcpcs=False,
+                                      toggle_jntscs=toggle_jntscs,
+                                      toggle_connjnt=toggle_connjnt).attach_to(stickmodel)
         return stickmodel
 
-    def gen_meshmodel(self, tcp_jntid=None, tcp_loc_pos=None, tcp_loc_rotmat=None, toggletcpcs=False,
-                      togglejntscs=False, name='xarm_gripper_meshmodel'):
-        stickmodel = gm.StaticGeometricModel(name=name)
-        self.coupling.gen_meshmodel(tcp_loc_pos=None, tcp_loc_rotmat=None, toggle_tcpcs=False,
-                                    toggle_jntscs=togglejntscs).attach_to(stickmodel)
-        self.lft_outer.gen_meshmodel(tcp_jntid=tcp_jntid, tcp_loc_pos=tcp_loc_pos, tcp_loc_rotmat=tcp_loc_rotmat,
-                                     toggle_tcpcs=toggletcpcs, toggle_jntscs=togglejntscs).attach_to(stickmodel)
-        self.lft_inner.gen_meshmodel(tcp_loc_pos=None, tcp_loc_rotmat=None, toggle_tcpcs=False,
-                                     toggle_jntscs=togglejntscs).attach_to(stickmodel)
-        self.rgt_outer.gen_meshmodel(tcp_loc_pos=None, tcp_loc_rotmat=None, toggle_tcpcs=False,
-                                     toggle_jntscs=togglejntscs).attach_to(stickmodel)
-        self.rgt_inner.gen_meshmodel(tcp_loc_pos=None, tcp_loc_rotmat=None, toggle_tcpcs=False,
-                                     toggle_jntscs=togglejntscs).attach_to(stickmodel)
+    def gen_meshmodel(self,
+                      tcp_jntid=None,
+                      tcp_loc_pos=None,
+                      tcp_loc_rotmat=None,
+                      toggle_tcpcs=False,
+                      toggle_jntscs=False,
+                      rgba=None,
+                      name='robotiq85_meshmodel'):
+        stickmodel = mc.ModelCollection(name=name)
+        self.coupling.gen_meshmodel(tcp_loc_pos=None,
+                                    tcp_loc_rotmat=None,
+                                    toggle_tcpcs=False,
+                                    toggle_jntscs=toggle_jntscs,
+                                    rgba=rgba).attach_to(stickmodel)
+        self.lft_outer.gen_meshmodel(tcp_jntid=tcp_jntid,
+                                     tcp_loc_pos=tcp_loc_pos,
+                                     tcp_loc_rotmat=tcp_loc_rotmat,
+                                     toggle_tcpcs=toggle_tcpcs,
+                                     toggle_jntscs=toggle_jntscs,
+                                     rgba=rgba).attach_to(stickmodel)
+        self.lft_inner.gen_meshmodel(tcp_loc_pos=None,
+                                     tcp_loc_rotmat=None,
+                                     toggle_tcpcs=False,
+                                     toggle_jntscs=toggle_jntscs,
+                                     rgba=rgba).attach_to(stickmodel)
+        self.rgt_outer.gen_meshmodel(tcp_loc_pos=None,
+                                     tcp_loc_rotmat=None,
+                                     toggle_tcpcs=False,
+                                     toggle_jntscs=toggle_jntscs,
+                                     rgba=rgba).attach_to(stickmodel)
+        self.rgt_inner.gen_meshmodel(tcp_loc_pos=None,
+                                     tcp_loc_rotmat=None,
+                                     toggle_tcpcs=False,
+                                     toggle_jntscs=toggle_jntscs,
+                                     rgba=rgba).attach_to(stickmodel)
         return stickmodel
 
     def fk(self, angle):
@@ -215,16 +273,11 @@ class Robotiq85(object):
 if __name__ == '__main__':
     import visualization.panda.world as wd
     import modeling.geometricmodel as gm
-
     base = wd.World(campos=[.5, .5, .5], lookatpos=[0, 0, 0])
     gm.gen_frame().attach_to(base)
-    # for angle in np.linspace(0, .85, 8):
-    #     grpr = Robotiq85()
-    #     grpr.fk(angle)
-    #     grpr.gen_meshmodel().attach_to(base)
     grpr = Robotiq85()
     grpr.fk(.8)
-    grpr.gen_meshmodel().attach_to(base)
+    grpr.gen_meshmodel(rgba=[.3,.3,.0,.5]).attach_to(base)
     # grpr.gen_stickmodel(togglejntscs=False).attach_to(base)
     grpr.fix_to(pos=np.array([0, .3, .2]), rotmat=rm.rotmat_from_axangle([1, 0, 0], math.pi / 6))
     grpr.gen_meshmodel().attach_to(base)

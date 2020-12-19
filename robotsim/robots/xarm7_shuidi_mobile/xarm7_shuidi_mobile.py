@@ -17,7 +17,10 @@ class XArm7YunjiMobile(object):
         # agv
         self.pos = pos
         self.rotmat = rotmat
-        self.agv = jl.JLChain(pos=pos, rotmat=rotmat, homeconf=np.zeros(0), name='agv')  # TODO: change to 3-dof
+        self.agv = jl.JLChain(pos=pos,
+                              rotmat=rotmat,
+                              homeconf=np.zeros(0),
+                              name=self.name+'_agv')  # TODO: change to 3-dof
         self.agv.jnts[1]['loc_pos'] = np.array([0, .0, .34231])
         self.agv.lnks[0]['name'] = self.name + "_agv"
         self.agv.lnks[0]['loc_pos'] = np.array([0, 0, 0])
@@ -30,11 +33,14 @@ class XArm7YunjiMobile(object):
         arm_homeconf[1] = -math.pi / 3
         arm_homeconf[3] = math.pi / 12
         arm_homeconf[5] = -math.pi / 12
-        self.arm = xa.XArm7(pos=self.agv.jnts[-1]['gl_posq'], rotmat=self.agv.jnts[-1]['gl_rotmatq'],
-                            homeconf=arm_homeconf, name=self.name + "_arm")
+        self.arm = xa.XArm7(pos=self.agv.jnts[-1]['gl_posq'],
+                            rotmat=self.agv.jnts[-1]['gl_rotmatq'],
+                            homeconf=arm_homeconf,
+                            name=self.name + "_arm")
         self.arm.disable_localcc()
         # gripper
-        self.hnd = xag.XArmGripper(pos=self.arm.jnts[-1]['gl_posq'], rotmat=self.arm.jnts[-1]['gl_rotmatq'],
+        self.hnd = xag.XArmGripper(pos=self.arm.jnts[-1]['gl_posq'],
+                                   rotmat=self.arm.jnts[-1]['gl_rotmatq'],
                                    name=self.name + "_hnd")
         # objects in hand
         self.obj_inhnd_cdprimit_cache = []

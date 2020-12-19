@@ -21,15 +21,15 @@ class JLChainMesh(object):
         """
         self.jlobject = jlobject
         for id in range(self.jlobject.ndof + 1):
-            if self.jlobject.lnks[id]['meshfile'] is not None:
+            if self.jlobject.lnks[id]['meshfile'] is not None and self.jlobject.lnks[id]['collisionmodel'] is None:
+                # in case the collision model is directly set, it allows manually specifying cd primitives
+                # instead of auto initialization. Steps: 1. keep meshmodel to None; 2. directly set cm
                 self.jlobject.lnks[id]['collisionmodel'] = cm.CollisionModel(self.jlobject.lnks[id]['meshfile'])
                 if self.jlobject.lnks[id]['scale'] is not None:
                     self.jlobject.lnks[id]['collisionmodel'].set_scale(self.jlobject.lnks[id]['scale'])
-            elif self.jlobject.lnks[id]['collisionmodel'] is not None:
-                # in case the collision model is directly set, it allows manually specifying cd primitives
-                # instead of auto initialization. Steps: 1. keep meshmodel to None; 2. directly set cm
-                if self.jlobject.lnks[id]['scale'] is not None:
-                    self.jlobject.lnks[id]['collisionmodel'].set_scale(self.jlobject.lnks[id]['scale'])
+            # elif self.jlobject.lnks[id]['collisionmodel'] is not None:
+                # if self.jlobject.lnks[id]['scale'] is not None:
+                #     self.jlobject.lnks[id]['collisionmodel'].set_scale(self.jlobject.lnks[id]['scale'])
         self.cc = cc.CollisionChecker(jlobject.name + "_collisionchecker")
 
     def add_cdlnks(self, lnk_idlist):
@@ -75,7 +75,7 @@ class JLChainMesh(object):
             self._toggle_jntcs(meshmodel, jntcs_thickness=.0062)
         return meshmodel
 
-    def gen_stickmodel(self, rgba=np.array([.5, 0, 0, 1]), thickness=.01, jointratio=1.62, linkratio=.62,
+    def gen_stickmodel(self, rgba=np.array([.5, 0, 0, 1]), thickness=.01, joint_ratio=1.62, link_ratio=.62,
                        tcp_jntid=None, tcp_loc_pos=None, tcp_loc_rotmat=None, toggle_tcpcs=True, toggle_jntscs=False,
                        toggle_connjnt=False, name='robotstick'):
         """
@@ -108,19 +108,19 @@ class JLChainMesh(object):
             if id > 0:
                 if self.jlobject.jnts[id]['type'] == "revolute":
                     gm.gen_stick(spos=jgpos - jgmtnax * thickness, epos=jgpos + jgmtnax * thickness, type="rect",
-                                 thickness=thickness * jointratio, rgba=np.array([.3, .3, .2, 1])).attach_to(stickmodel)
+                                 thickness=thickness * joint_ratio, rgba=np.array([.3, .3, .2, 1])).attach_to(stickmodel)
                 if self.jlobject.jnts[id]['type'] == "prismatic":
                     jgpos0 = self.jlobject.jnts[id]['gl_pos0']
-                    gm.gen_stick(spos=jgpos0, epos=jgpos, type="round", thickness=thickness * jointratio,
+                    gm.gen_stick(spos=jgpos0, epos=jgpos, type="round", thickness=thickness * joint_ratio,
                                  rgba=np.array([.2, .3, .3, 1])).attach_to(stickmodel)
             id = cjid
         # tool center coord
         if toggle_tcpcs:
             self._toggle_tcpcs(stickmodel, tcp_jntid, tcp_loc_pos, tcp_loc_rotmat,
-                               tcpic_rgba=rgba + np.array([0, 0, 1, 0]), tcpic_thickness=thickness * linkratio)
+                               tcpic_rgba=rgba + np.array([0, 0, 1, 0]), tcpic_thickness=thickness * link_ratio)
         # toggle all coord
         if toggle_jntscs:
-            self._toggle_jntcs(stickmodel, jntcs_thickness=thickness * linkratio)
+            self._toggle_jntcs(stickmodel, jntcs_thickness=thickness * link_ratio)
         return stickmodel
 
     def gen_endsphere(self, rgba=None, name=''):

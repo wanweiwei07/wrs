@@ -38,6 +38,7 @@ class CollisionChecker(object):
 
     def set_active_cdlnks(self, activelist):
         """
+        TODO change from cdprimit_cache to real activelist
         The specified collistion links will be used for collision detection with external obstacles
         :param activelist: essentially a from list like [[bool, cdprimit_cache], ...],
                            the correspondent tolist will be set online in cd functions;

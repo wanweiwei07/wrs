@@ -7,15 +7,16 @@ import basis.robotmath as rm
 
 class RobotiqHE(object):
 
-    def __init__(self, pos=np.zeros(3), rotmat=np.eye(3)):
+    def __init__(self, pos=np.zeros(3), rotmat=np.eye(3), name='robotiqhe'):
         this_dir, this_filename = os.path.split(__file__)
+        self.name = name
         self.pos = pos
         self.rotmat = rotmat
         # joints
         # - coupling - .011 coupling by default
         self.coupling = jl.JLChain(pos=self.pos, rotmat=self.rotmat, homeconf=np.zeros(0), name='coupling')
         self.coupling.jnts[1]['loc_pos'] = np.array([0, 0, .011])
-        self.coupling.lnks[0]['name'] = 'robotiq_gripper_coupling'
+        self.coupling.lnks[0]['name'] = self.name+"_coupling"
         # self.coupling.lnks[0]['meshfile'] = os.path.join(this_dir, "meshes", "robotiq_gripper_coupling.stl")
         self.coupling.lnks[0]['rgba'] = [.2, .2, .2, 1]
         self.coupling.reinitialize()

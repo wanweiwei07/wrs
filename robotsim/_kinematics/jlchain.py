@@ -1,4 +1,5 @@
 import math
+import copy
 import numpy as np
 import basis.robotmath as rm
 import robotsim._kinematics.jlchainmesh as jlm
@@ -176,7 +177,7 @@ class JLChain(object):
         self.goto_homeconf()
         self._mg = jlm.JLChainMesh(self)
 
-    def settcp(self, tcp_jntid=None, tcp_loc_pos=None, tcp_loc_rotmat=None):
+    def set_tcp(self, tcp_jntid=None, tcp_loc_pos=None, tcp_loc_rotmat=None):
         if tcp_jntid is not None:
             self.tcp_jntid = tcp_jntid
         if tcp_loc_pos is not None:
@@ -192,9 +193,9 @@ class JLChain(object):
         tcp_jntid, tcp_loc_pos, tcp_loc_rotmat are the tool center pose parameters. They are
         used for temporary computation, the self.tcp_xxx parameters will not be changed
         in case None is provided, the self.tcp_jntid, self.tcp_loc_pos, self.tcp_loc_rotmat will be used
-        :param jntid:
-        :param locpos:
-        :param locrotmat:
+        :param tcp_jntid:
+        :param tcp_loc_pos:
+        :param tcp_loc_rotmat:
         :return:
         """
         return self._ikt.get_globaltcp(tcp_jntid, tcp_loc_pos, tcp_loc_rotmat)
@@ -463,8 +464,8 @@ class JLChain(object):
     def gen_stickmodel(self,
                        rgba=np.array([.5, 0, 0, 1]),
                        thickness=.01,
-                       jointratio=1.62,
-                       linkratio=.62,
+                       joint_ratio=1.62,
+                       link_ratio=.62,
                        tcp_jntid=None,
                        tcp_loc_pos=None,
                        tcp_loc_rotmat=None,
@@ -474,8 +475,8 @@ class JLChain(object):
                        name='jlcstick'):
         return self._mt.gen_stickmodel(rgba=rgba,
                                        thickness=thickness,
-                                       jointratio=jointratio,
-                                       linkratio=linkratio,
+                                       joint_ratio=joint_ratio,
+                                       link_ratio=link_ratio,
                                        tcp_jntid=tcp_jntid,
                                        tcp_loc_pos=tcp_loc_pos,
                                        tcp_loc_rotmat=tcp_loc_rotmat,
@@ -501,7 +502,42 @@ class JLChain(object):
         :param: name
         :return:
         """
-        pass
+        if name is None:
+            name = self.name
+        self_copy = JLChain(pos = self.pos,
+                            rotmat = self.rotmat,
+                            homeconf = self.homeconf,
+                            name = name)
+        for id in range(self.ndof + 1):
+            self_copy.lnks[id]['name'] = copy.deepcopy(self.lnks[id]['name'])
+            self_copy.lnks[id]['loc_pos'] = copy.deepcopy(self.lnks[id]['loc_pos'])
+            self_copy.lnks[id]['loc_rotmat'] = copy.deepcopy(self.lnks[id]['loc_rotmat'])
+            self_copy.lnks[id]['com'] = copy.deepcopy(self.lnks[id]['com'])
+            self_copy.lnks[id]['inertia'] = copy.deepcopy(self.lnks[id]['inertia'])
+            self_copy.lnks[id]['mass'] = copy.deepcopy(self.lnks[id]['mass'])
+            self_copy.lnks[id]['meshfile'] = copy.deepcopy(self.lnks[id]['meshfile'])
+            self_copy.lnks[id]['collisionmodel'] = copy.deepcopy(self.lnks[id]['collisionmodel'])
+            self_copy.lnks[id]['cdprimit_cache'] = [False, None]
+            self_copy.lnks[id]['scale'] = copy.deepcopy(self.lnks[id]['scale'])
+            self_copy.lnks[id]['rgba'] = copy.deepcopy(self.lnks[id]['rgba'])
+        for id in range(self.ndof + 2):
+            self_copy.jnts[id]['type'] = copy.deepcopy(self.jnts[id]['type'])
+            self_copy.jnts[id]['parent'] = copy.deepcopy(self.jnts[id]['parent'])
+            self_copy.jnts[id]['child'] = copy.deepcopy(self.jnts[id]['child'])
+            self_copy.jnts[id]['loc_pos'] = copy.deepcopy(self.jnts[id]['loc_pos'])
+            self_copy.jnts[id]['loc_rotmat'] = copy.deepcopy(self.jnts[id]['loc_rotmat'])
+            self_copy.jnts[id]['loc_motionax'] = copy.deepcopy(self.jnts[id]['loc_motionax'])
+            self_copy.jnts[id]['gl_pos0'] = copy.deepcopy(self.jnts[id]['gl_pos0'])
+            self_copy.jnts[id]['gl_rotmat0'] = copy.deepcopy(self.jnts[id]['gl_rotmat0'])
+            self_copy.jnts[id]['gl_motionax'] = copy.deepcopy(self.jnts[id]['gl_motionax'])
+            self_copy.jnts[id]['gl_posq'] = copy.deepcopy(self.jnts[id]['gl_posq'])
+            self_copy.jnts[id]['gl_rotmatq'] = copy.deepcopy(self.jnts[id]['gl_rotmatq'])
+            self_copy.jnts[id]['rngmin'] = copy.deepcopy(self.jnts[id]['rngmin'])
+            self_copy.jnts[id]['rngmax'] = copy.deepcopy(self.jnts[id]['rngmax'])
+            self_copy.jnts[id]['motion_val'] = copy.deepcopy(self.jnts[id]['motion_val'])
+        self_copy._mt = jlm.JLChainMesh(self_copy)
+
+        return self_copy
 
 
 if __name__ == "__main__":
@@ -557,4 +593,11 @@ if __name__ == "__main__":
                               tcp_loc_pos=tcp_loc_poslist,
                               tcp_loc_rotmat=tcp_loc_rotmatlist,
                               toggle_jntscs=True).attach_to(base)
+
+    jlinstance2 = jlinstance.copy()
+    jlinstance2.fix_to(pos=np.array([1,1,0]), rotmat=rm.rotmat_from_axangle([0,0,1], math.pi/2))
+    jlinstance2.gen_stickmodel(tcp_jntid=tcp_jntidlist,
+                               tcp_loc_pos=tcp_loc_poslist,
+                               tcp_loc_rotmat=tcp_loc_rotmatlist,
+                               toggle_jntscs=True).attach_to(base)
     base.run()
