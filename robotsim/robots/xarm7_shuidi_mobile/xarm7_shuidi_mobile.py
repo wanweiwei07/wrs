@@ -50,32 +50,32 @@ class XArm7YunjiMobile(object):
         self.cc.add_cdlnks(self.arm, [0,1,2,3,4,5,6])
         self.cc.add_cdlnks(self.hnd.lft_outer, [0,1,2])
         self.cc.add_cdlnks(self.hnd.rgt_outer, [1,2])
-        activelist = [self.agv.lnks[0]['cdprimit_cache'],
-                      self.arm.lnks[0]['cdprimit_cache'],
-                      self.arm.lnks[1]['cdprimit_cache'],
-                      self.arm.lnks[2]['cdprimit_cache'],
-                      self.arm.lnks[3]['cdprimit_cache'],
-                      self.arm.lnks[4]['cdprimit_cache'],
-                      self.arm.lnks[5]['cdprimit_cache'],
-                      self.arm.lnks[6]['cdprimit_cache'],
-                      self.hnd.lft_outer.lnks[0]['cdprimit_cache'],
-                      self.hnd.lft_outer.lnks[1]['cdprimit_cache'],
-                      self.hnd.lft_outer.lnks[2]['cdprimit_cache'],
-                      self.hnd.rgt_outer.lnks[1]['cdprimit_cache'],
-                      self.hnd.rgt_outer.lnks[2]['cdprimit_cache']]
+        activelist = [self.agv.lnks[0],
+                      self.arm.lnks[0],
+                      self.arm.lnks[1],
+                      self.arm.lnks[2],
+                      self.arm.lnks[3],
+                      self.arm.lnks[4],
+                      self.arm.lnks[5],
+                      self.arm.lnks[6],
+                      self.hnd.lft_outer.lnks[0],
+                      self.hnd.lft_outer.lnks[1],
+                      self.hnd.lft_outer.lnks[2],
+                      self.hnd.rgt_outer.lnks[1],
+                      self.hnd.rgt_outer.lnks[2]]
         self.cc.set_active_cdlnks(activelist)
-        fromlist = [self.agv.lnks[0]['cdprimit_cache'],
-                    self.arm.lnks[0]['cdprimit_cache'],
-                    self.arm.lnks[1]['cdprimit_cache'],
-                    self.arm.lnks[2]['cdprimit_cache']]
-        intolist = [self.arm.lnks[4]['cdprimit_cache'],
-                    self.arm.lnks[5]['cdprimit_cache'],
-                    self.arm.lnks[6]['cdprimit_cache'],
-                    self.hnd.lft_outer.lnks[0]['cdprimit_cache'],
-                    self.hnd.lft_outer.lnks[1]['cdprimit_cache'],
-                    self.hnd.lft_outer.lnks[2]['cdprimit_cache'],
-                    self.hnd.rgt_outer.lnks[1]['cdprimit_cache'],
-                    self.hnd.rgt_outer.lnks[2]['cdprimit_cache']]
+        fromlist = [self.agv.lnks[0],
+                    self.arm.lnks[0],
+                    self.arm.lnks[1],
+                    self.arm.lnks[2]]
+        intolist = [self.arm.lnks[4],
+                    self.arm.lnks[5],
+                    self.arm.lnks[6],
+                    self.hnd.lft_outer.lnks[0],
+                    self.hnd.lft_outer.lnks[1],
+                    self.hnd.lft_outer.lnks[2],
+                    self.hnd.rgt_outer.lnks[1],
+                    self.hnd.rgt_outer.lnks[2]]
         self.cc.set_cdpair(fromlist, intolist)
         # tool center point
         self.tcp_jlc = self.arm # which jlc is the tcp located at?
@@ -131,14 +131,14 @@ class XArm7YunjiMobile(object):
         if jawwidth is not None:
             self.hnd.jaw_to(jawwidth)
         rel_pos, rel_rotmat = self.tcp_jlc.get_relpose(objcm.get_pos(), objcm.get_rotmat())
-        intolist = [self.agv.lnks[0]['cdprimit_cache'],
-                    self.arm.lnks[0]['cdprimit_cache'],
-                    self.arm.lnks[1]['cdprimit_cache'],
-                    self.arm.lnks[2]['cdprimit_cache'],
-                    self.arm.lnks[3]['cdprimit_cache'],
-                    self.arm.lnks[4]['cdprimit_cache'],
-                    self.arm.lnks[5]['cdprimit_cache'],
-                    self.arm.lnks[6]['cdprimit_cache']]
+        intolist = [self.agv.lnks[0],
+                    self.arm.lnks[0],
+                    self.arm.lnks[1],
+                    self.arm.lnks[2],
+                    self.arm.lnks[3],
+                    self.arm.lnks[4],
+                    self.arm.lnks[5],
+                    self.arm.lnks[6]]
         self.objs_inhnd_infos.append(self.cc.add_cdobj(objcm, rel_pos, rel_rotmat, intolist))
 
     def release(self, objcm, jawwidth=None):
@@ -169,9 +169,9 @@ class XArm7YunjiMobile(object):
                        name='xarm7_shuidi_mobile_stickmodel'):
         stickmodel = mc.ModelCollection(name=name)
         self.agv.gen_stickmodel(tcp_loc_pos=None,
-                               tcp_loc_rotmat=None,
-                               toggle_tcpcs=False,
-                               toggle_jntscs=toggle_jntscs).attach_to(stickmodel)
+                                tcp_loc_rotmat=None,
+                                toggle_tcpcs=False,
+                                toggle_jntscs=toggle_jntscs).attach_to(stickmodel)
         self.arm.gen_stickmodel(tcp_jntid=tcp_jntid,
                                 tcp_loc_pos=tcp_loc_pos,
                                 tcp_loc_rotmat=tcp_loc_rotmat,

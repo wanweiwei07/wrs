@@ -68,17 +68,13 @@ class IRB14050(jl.JLChain):
         self.reinitialize()
         # collision detection
         self._mt.add_cdlnks([1,2,3,4,5,6])
-        fromlist = [self.lnks[1]['cdprimit_cache']]
-        intolist = [self.lnks[6]['cdprimit_cache']]
-        self._mt.set_cdpair(fromlist, intolist)
+        self._mt.set_cdpair([1], [6])
 
     def copy(self, name=None):
         self_copy = super().copy(name=name)
         # collision detection TODO copy from collisioncheckers directly
         self_copy._mt.add_cdlnks([1,2,3,4,5,6])
-        fromlist = [self_copy.lnks[1]['cdprimit_cache']]
-        intolist = [self_copy.lnks[6]['cdprimit_cache']]
-        self_copy._mt.set_cdpair(fromlist, intolist)
+        self_copy._mt.set_cdpair([1], [6])
         return self_copy
 
 

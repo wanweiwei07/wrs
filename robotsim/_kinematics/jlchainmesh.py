@@ -36,11 +36,13 @@ class JLChainMesh(object):
         self.cc.add_cdlnks(self.jlobject, lnk_idlist)
         active_cdlnks = []
         for id in lnk_idlist:
-            active_cdlnks.append(self.jlobject.lnks[id]['cdprimit_cache'])
+            active_cdlnks.append(self.jlobject.lnks[id])
         self.cc.set_active_cdlnks(active_cdlnks)
 
     def set_cdpair(self, fromlist, intolist):
-        self.cc.set_cdpair(fromlist, intolist)
+        cdlnk_fromlist = [self.jlobject.lnks[id] for id in fromlist]
+        cdlnk_intolist = [self.jlobject.lnks[id] for id in intolist]
+        self.cc.set_cdpair(cdlnk_fromlist, cdlnk_intolist)
 
     def is_collided(self, obstacle_list=[], otherrobot_list=[]):
         return self.cc.is_collided(obstacle_list=obstacle_list, otherrobot_list=otherrobot_list)
