@@ -141,6 +141,7 @@ class YumiGripper(object):
 
 
 if __name__ == '__main__':
+    import copy
     import visualization.panda.world as wd
     import modeling.geometricmodel as gm
 
@@ -152,4 +153,10 @@ if __name__ == '__main__':
     # grpr.gen_stickmodel(togglejntscs=False).attach_to(base)
     grpr.fix_to(pos=np.array([0, .3, .2]), rotmat=rm.rotmat_from_axangle([1, 0, 0], .05))
     grpr.gen_meshmodel().attach_to(base)
+
+    grpr2 = copy.deepcopy(grpr)
+    grpr2.fix_to(pos=np.array([.3,.3,.2]), rotmat=rm.rotmat_from_axangle([0,1,0],.01))
+    model = grpr2.gen_meshmodel(rgba=[0.5, .5, 0, .5])
+    model.attach_to(base)
+    model.show_cdprimit()
     base.run()

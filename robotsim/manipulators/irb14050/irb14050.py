@@ -67,19 +67,23 @@ class IRB14050(jl.JLChain):
         # reinitialization
         self.reinitialize()
         # collision detection
+        self._setup_collisionchecker()
+
+    def _setup_collisionchecker(self):
         self._mt.add_cdlnks([1,2,3,4,5,6])
         self._mt.set_cdpair([1], [6])
 
     def copy(self, name=None):
         self_copy = super().copy(name=name)
-        # collision detection TODO copy from collisioncheckers directly
-        self_copy._mt.add_cdlnks([1,2,3,4,5,6])
-        self_copy._mt.set_cdpair([1], [6])
+        # collision detection
+        self_copy._setup_collisionchecker()
+        if self._mt.is_localcc_disabled():
+            self_copy.disable_localcc()
         return self_copy
-
 
 if __name__ == '__main__':
     import time
+    import copy
     import visualization.panda.world as wd
     import modeling.geometricmodel as gm
 
@@ -88,9 +92,10 @@ if __name__ == '__main__':
     manipulator_instance = IRB14050()
     manipulator_instance.fk(jnt_values=[0,0,manipulator_instance.jnts[3]['rngmax']/2, manipulator_instance.jnts[4]['rngmax'], 0, 0, 0])
     manipulator_meshmodel = manipulator_instance.gen_meshmodel()
-    manipulator_meshmodel.attach_to(base)
-    manipulator_instance.gen_stickmodel().attach_to(base)
-    manipulator_meshmodel.show_cdprimit()
+    # manipulator_meshmodel.attach_to(base)
+    # manipulator_instance.gen_stickmodel().attach_to(base)
+    # manipulator_meshmodel.show_cdprimit()
+    # manipulator_instance.show_cdprimit()
     tic = time.time()
     print(manipulator_instance.is_collided())
     toc = time.time()
@@ -100,4 +105,5 @@ if __name__ == '__main__':
     manipulator_instance2.fix_to(pos=np.array([.2,.2,0.2]), rotmat=np.eye(3))
     manipulator_meshmodel2 = manipulator_instance2.gen_meshmodel()
     manipulator_meshmodel2.attach_to(base)
+    manipulator_instance2.show_cdprimit()
     base.run()

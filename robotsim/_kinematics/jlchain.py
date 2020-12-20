@@ -492,12 +492,11 @@ class JLChain(object):
         self._mt.show_cdprimit()
 
     def unshow_cdprimit(self):
-        for id in range(self.ndof + 1):
-            if self.lnks[id]['collisionmodel'] is not None:
-                self.lnks[id]['collisionmodel'].unshow_cdprimit()
+        self._mt.unshow_cdprimit()
 
     def copy(self, name=None):
         """
+        TODO not correct
         return a copy of the file with a new name if provided
         :param: name
         :return:
@@ -517,7 +516,7 @@ class JLChain(object):
             self_copy.lnks[id]['mass'] = copy.deepcopy(self.lnks[id]['mass'])
             self_copy.lnks[id]['meshfile'] = copy.deepcopy(self.lnks[id]['meshfile'])
             self_copy.lnks[id]['collisionmodel'] = copy.deepcopy(self.lnks[id]['collisionmodel'])
-            self_copy.lnks[id]['cdprimit_cache'] = [False, None]
+            self_copy.lnks[id]['cdprimit_cache'] = [self.lnks[id]['cdprimit_cache'][0], None]
             self_copy.lnks[id]['scale'] = copy.deepcopy(self.lnks[id]['scale'])
             self_copy.lnks[id]['rgba'] = copy.deepcopy(self.lnks[id]['rgba'])
         for id in range(self.ndof + 2):

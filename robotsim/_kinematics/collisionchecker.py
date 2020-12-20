@@ -15,7 +15,7 @@ class CollisionChecker(object):
         self.np = NodePath(name)
         self.nbitmask = 0 # capacity 1-30
         self._bitmask_ext = BitMask32(2**31) # 31 is prepared for cd with external objects
-        self.all_cdelements = [] # a list of collisionmodels for quick accessing the cd elements (cdlnks/cdobjs)
+        self.all_cdelements = [] # a list of cdlnks or cdobjs for quick accessing the cd elements (cdlnks/cdobjs)
 
     def add_cdlnks(self, jlcobj, lnk_idlist):
         """
@@ -50,7 +50,6 @@ class CollisionChecker(object):
             if cdlnk['cdprimit_cache'][1] is None:
                 raise ValueError("The link needs to be added to collider using the add_cdlnks function first!")
             cdlnk['cdprimit_cache'][1].node().setFromCollideMask(self._bitmask_ext)
-            self.ctrav.addCollider(cdlnk['cdprimit_cache'][1], self.chan)
 
     def set_cdpair(self, fromlist, intolist):
         """
@@ -70,8 +69,6 @@ class CollisionChecker(object):
             current_from_cdmask = cdlnk['cdprimit_cache'][1].node().getFromCollideMask()
             new_from_cdmask = current_from_cdmask | cdmask
             cdlnk['cdprimit_cache'][1].node().setFromCollideMask(new_from_cdmask)
-            # current_into_cdmask = cdlnk['cdprimit_cache'][1].node().getIntoCollideMask()
-            # cdlnk['cdprimit_cache'][1].node().setIntoCollideMask(current_into_cdmask & ~cdmask)
         for cdlnk in intolist:
             if cdlnk['cdprimit_cache'][1] is None:
                 raise ValueError("The link needs to be added to collider using the addjlcobj function first!")
@@ -106,11 +103,11 @@ class CollisionChecker(object):
         :return:
         """
         self.all_cdelements.remove(cdobj_info)
+        self.ctrav.removeCollider(cdobj_info['cdprimit_cache'][1])
         for cdlnk in cdobj_info['intolist']:
             current_into_cdmask = cdlnk['cdprimit_cache'][1].node().getIntoCollideMask()
             new_into_cdmask = current_into_cdmask & ~cdobj_info['cdprimit_cache'][1].node().getFromCollideMask()
             cdlnk['cdprimit_cache'][1].node().setIntoCollideMask(new_into_cdmask)
-        self.ctrav.removeCollider(cdobj_info['cdprimit_cache'][1])
 
     def is_collided(self, obstacle_list=[], otherrobot_list=[]):
         for cdelement in self.all_cdelements: # TODO global ik indicator, right now a bit consuming
@@ -139,10 +136,26 @@ class CollisionChecker(object):
                 cdelement['cdprimit_cache'][1].node().setIntoCollideMask(current_into_cdmask & ~self._bitmask_ext)
             robot.cc.np.detachNode()
         if self.chan.getNumEntries() > 0:
-            self.ctrav.showCollisions(base.render)
             return True
         else:
             return False
+
+    def show_cdprimit(self):
+        self.np.reparentTo(base.render)
+        print(self.all_cdelements)
+        for cdelement in self.all_cdelements:
+            print("count")
+            if cdelement['cdprimit_cache'][0]: # need to update
+                pos = cdelement['gl_pos']
+                rotmat = cdelement['gl_rotmat']
+                cdelement['cdprimit_cache'][1].setMat(da.npv3mat3_to_pdmat4(pos, rotmat))
+                cdelement['cdprimit_cache'][0] = False # updated
+            cdelement['cdprimit_cache'][1].show()
+
+    def unshow_cdprimit(self):
+        for cdelement in self.all_cdelements:
+            cdelement['cdprimit_cache'][1].hide()
+        self.np.detachNode()
 
     def disable(self):
         """
@@ -152,5 +165,8 @@ class CollisionChecker(object):
         for cdelement in self.all_cdelements:
             cdelement['cdprimit_cache'][1].removeNode()
             cdelement['cdprimit_cache'][1] = None
-        self.all_cdelements = None
+        self.all_cdelements = []
         self.nbitmask = 0
+
+    def is_disabled(self):
+        return True if len(self.all_cdelements) == 0 else False

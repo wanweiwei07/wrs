@@ -45,11 +45,21 @@ class XArm7YunjiMobile(object):
         # objects in hand
         self.obj_inhnd_cdprimit_cache = []
         # collision detection
-        self.cc = cc.CollisionChecker(self.name + "_collisionchecker")
-        self.cc.add_cdlnks(self.agv, [0])
-        self.cc.add_cdlnks(self.arm, [0,1,2,3,4,5,6])
-        self.cc.add_cdlnks(self.hnd.lft_outer, [0,1,2])
-        self.cc.add_cdlnks(self.hnd.rgt_outer, [1,2])
+        self.cc = self._setup_collisionchecker()
+        # tool center point
+        self.tcp_jlc = self.arm # which jlc is the tcp located at?
+        self.tcp_jlc.tcp_jntid = -1
+        self.tcp_jlc.tcp_loc_pos = np.array([0,0,.07])
+        self.tcp_jlc.tcp_loc_rotmat = np.eye(3)
+        # a list of detailed information about objects in hand, see CollisionChecker.add_objinhnd
+        self.objs_inhnd_infos = []
+
+    def _setup_collisionchecker(self):
+        checker = cc.CollisionChecker(self.name + "_collisionchecker")
+        checker.add_cdlnks(self.agv, [0])
+        checker.add_cdlnks(self.arm, [0,1,2,3,4,5,6])
+        checker.add_cdlnks(self.hnd.lft_outer, [0,1,2])
+        checker.add_cdlnks(self.hnd.rgt_outer, [1,2])
         activelist = [self.agv.lnks[0],
                       self.arm.lnks[0],
                       self.arm.lnks[1],
@@ -63,7 +73,7 @@ class XArm7YunjiMobile(object):
                       self.hnd.lft_outer.lnks[2],
                       self.hnd.rgt_outer.lnks[1],
                       self.hnd.rgt_outer.lnks[2]]
-        self.cc.set_active_cdlnks(activelist)
+        checker.set_active_cdlnks(activelist)
         fromlist = [self.agv.lnks[0],
                     self.arm.lnks[0],
                     self.arm.lnks[1],
@@ -76,14 +86,9 @@ class XArm7YunjiMobile(object):
                     self.hnd.lft_outer.lnks[2],
                     self.hnd.rgt_outer.lnks[1],
                     self.hnd.rgt_outer.lnks[2]]
-        self.cc.set_cdpair(fromlist, intolist)
-        # tool center point
-        self.tcp_jlc = self.arm # which jlc is the tcp located at?
-        self.tcp_jlc.tcp_jntid = -1
-        self.tcp_jlc.tcp_loc_pos = np.array([0,0,.07])
-        self.tcp_jlc.tcp_loc_rotmat = np.eye(3)
-        # a list of detailed information about objects in hand, see CollisionChecker.add_objinhnd
-        self.objs_inhnd_infos = []
+        checker.set_cdpair(fromlist, intolist)
+        return checker
+
 
     def move_to(self, pos, rotmat):
         self.pos = pos
@@ -215,6 +220,9 @@ class XArm7YunjiMobile(object):
             objcm.set_rotmat(obj_info['gl_rotmat'])
             objcm.attach_to(meshmodel)
         return meshmodel
+
+    def copy(self):
+        pass
 
 
 if __name__ == '__main__':

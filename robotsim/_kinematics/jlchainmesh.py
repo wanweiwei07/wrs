@@ -54,6 +54,15 @@ class JLChainMesh(object):
         """
         self.cc.disable()
 
+    def is_localcc_disabled(self):
+        return self.cc.is_disabled()
+
+    def show_cdprimit(self):
+        self.cc.show_cdprimit()
+
+    def unshow_cdprimit(self):
+        self.cc.unshow_cdprimit()
+
     def gen_meshmodel(self, tcp_jntid=None, tcp_loc_pos=None, tcp_loc_rotmat=None,
                       toggle_tcpcs=True, toggle_jntscs=False, name='robotmesh', rgba=None):
         meshmodel = mc.ModelCollection(name=name)
