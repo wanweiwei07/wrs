@@ -143,6 +143,8 @@ class CollisionChecker(object):
     def show_cdprimit(self):
         self.np.reparentTo(base.render)
         print(self.all_cdelements)
+        for child in self.np.getChildren():
+            print(child.getPos())
         for cdelement in self.all_cdelements:
             print("count")
             if cdelement['cdprimit_cache'][0]: # need to update

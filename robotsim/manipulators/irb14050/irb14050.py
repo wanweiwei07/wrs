@@ -73,15 +73,16 @@ class IRB14050(jl.JLChain):
         self._mt.add_cdlnks([1,2,3,4,5,6])
         self._mt.set_cdpair([1], [6])
 
-    def copy(self, name=None):
-        self_copy = super().copy(name=name)
-        # collision detection
-        self_copy._setup_collisionchecker()
-        if self._mt.is_localcc_disabled():
-            self_copy.disable_localcc()
-        return self_copy
+    # def copy(self, name=None):
+    #     self_copy = super().copy(name=name)
+    #     # collision detection
+    #     self_copy._setup_collisionchecker()
+    #     if self._mt.is_localcc_disabled():
+    #         self_copy.disable_localcc()
+    #     return self_copy
 
 if __name__ == '__main__':
+    import copy
     import time
     import copy
     import visualization.panda.world as wd
@@ -101,7 +102,7 @@ if __name__ == '__main__':
     toc = time.time()
     print(toc - tic)
 
-    manipulator_instance2 = manipulator_instance.copy()
+    manipulator_instance2 = copy.deepcopy(manipulator_instance)
     manipulator_instance2.fix_to(pos=np.array([.2,.2,0.2]), rotmat=np.eye(3))
     manipulator_meshmodel2 = manipulator_instance2.gen_meshmodel()
     manipulator_meshmodel2.attach_to(base)

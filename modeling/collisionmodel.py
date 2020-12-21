@@ -40,7 +40,7 @@ class CollisionModel(gm.GeometricModel):
             self._objpath = copy.deepcopy(objinit.objpath)
             self._trimesh = copy.deepcopy(objinit.trimesh)
             self._pdnp = copy.deepcopy(objinit.pdnp)
-            self._pdnp_raw = self._pdnp.find(self.name + "_raw")
+            self._pdnp_raw = self._pdnp.find("pdnp_raw")
             self._localframe = copy.deepcopy(objinit.localframe)
             self._cdnp = objinit.copy_cdnp_to(self._pdnp, clearmask=False)
             self._cdprimitive_type = objinit.cdprimitive_type
@@ -55,20 +55,23 @@ class CollisionModel(gm.GeometricModel):
                 if cdprimitive_type == "ball":
                     if expand_radius is None:
                         expand_radius = 0.015
-                    cdnd = self._gen_surfaceballs_cdnp(name=self.name+"_ballcd", radius=expand_radius)
+                    cdnd = self._gen_surfaceballs_cdnp(name="cdnp", radius=expand_radius)
                 else:
                     if expand_radius is None:
                         expand_radius = 0.002
                     if cdprimitive_type == "box":
-                        cdnd = self._gen_box_cdnp(name=self.name+"_boxcd", radius=expand_radius)
+                        cdnd = self._gen_box_cdnp(name="cdnp", radius=expand_radius)
                     if cdprimitive_type == "cylinder":
-                        cdnd = self._gen_cylindrical_cdnp(name=self.name+"_cylindricalcd", radius=expand_radius)
+                        cdnd = self._gen_cylindrical_cdnp(name="cdnp", radius=expand_radius)
                     if cdprimitive_type == "pointcloud":
-                        cdnd = self._gen_pointcloud_cdnp(name=self.name+"_pointcloudcd", radius=expand_radius)
+                        cdnd = self._gen_pointcloud_cdnp(name="cdnp", radius=expand_radius)
                     if cdprimitive_type == "userdefined":
-                        cdnd = userdefined_cdprimitive_fn(name=self.name+"_userdefined", radius=expand_radius)
-                self._cdnp = self._pdnp.attachNewNode(cdnd)
-                self._cdnp.node().setCollideMask(BitMask32(2**31))
+                        cdnd = userdefined_cdprimitive_fn(name="cdnp", radius=expand_radius)
+                # TODO: use pdnp.find("cdnp") instead of a new self._cdnp variable
+                # collision nodepath is not compatible with deepcopy
+                self._pdnp.attachNewNode(cdnd)
+                # self._cdnp = self._pdnp.attachNewNode(cdnd)
+                # self._cdnp.node().setCollideMask(BitMask32(2**31))
             self._localframe = None
             self._pcd = pcd  # primitive collision detector
             self._mcd = mcd  # bullet collision detector
@@ -257,11 +260,11 @@ class CollisionModel(gm.GeometricModel):
     def is_mboxcdwith(self, objcm):
         raise NotImplementedError
 
-    def copy(self):
-        return CollisionModel(self)
-
-    def __deepcopy__(self, memodict={}):
-        return self.copy()
+    # def copy(self):
+    #     return CollisionModel(self)
+    #
+    # def __deepcopy__(self, memodict={}):
+    #     return self.copy()
 
 
 def gen_box(extent=np.array([.1, .1, .1]), homomat=np.eye(4), rgba=np.array([1, 0, 0, 1])):

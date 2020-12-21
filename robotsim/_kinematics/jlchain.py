@@ -494,49 +494,49 @@ class JLChain(object):
     def unshow_cdprimit(self):
         self._mt.unshow_cdprimit()
 
-    def copy(self, name=None):
-        """
-        TODO not correct
-        return a copy of the file with a new name if provided
-        :param: name
-        :return:
-        """
-        if name is None:
-            name = self.name
-        self_copy = JLChain(pos = self.pos,
-                            rotmat = self.rotmat,
-                            homeconf = self.homeconf,
-                            name = name)
-        for id in range(self.ndof + 1):
-            self_copy.lnks[id]['name'] = copy.deepcopy(self.lnks[id]['name'])
-            self_copy.lnks[id]['loc_pos'] = copy.deepcopy(self.lnks[id]['loc_pos'])
-            self_copy.lnks[id]['loc_rotmat'] = copy.deepcopy(self.lnks[id]['loc_rotmat'])
-            self_copy.lnks[id]['com'] = copy.deepcopy(self.lnks[id]['com'])
-            self_copy.lnks[id]['inertia'] = copy.deepcopy(self.lnks[id]['inertia'])
-            self_copy.lnks[id]['mass'] = copy.deepcopy(self.lnks[id]['mass'])
-            self_copy.lnks[id]['meshfile'] = copy.deepcopy(self.lnks[id]['meshfile'])
-            self_copy.lnks[id]['collisionmodel'] = copy.deepcopy(self.lnks[id]['collisionmodel'])
-            self_copy.lnks[id]['cdprimit_cache'] = [self.lnks[id]['cdprimit_cache'][0], None]
-            self_copy.lnks[id]['scale'] = copy.deepcopy(self.lnks[id]['scale'])
-            self_copy.lnks[id]['rgba'] = copy.deepcopy(self.lnks[id]['rgba'])
-        for id in range(self.ndof + 2):
-            self_copy.jnts[id]['type'] = copy.deepcopy(self.jnts[id]['type'])
-            self_copy.jnts[id]['parent'] = copy.deepcopy(self.jnts[id]['parent'])
-            self_copy.jnts[id]['child'] = copy.deepcopy(self.jnts[id]['child'])
-            self_copy.jnts[id]['loc_pos'] = copy.deepcopy(self.jnts[id]['loc_pos'])
-            self_copy.jnts[id]['loc_rotmat'] = copy.deepcopy(self.jnts[id]['loc_rotmat'])
-            self_copy.jnts[id]['loc_motionax'] = copy.deepcopy(self.jnts[id]['loc_motionax'])
-            self_copy.jnts[id]['gl_pos0'] = copy.deepcopy(self.jnts[id]['gl_pos0'])
-            self_copy.jnts[id]['gl_rotmat0'] = copy.deepcopy(self.jnts[id]['gl_rotmat0'])
-            self_copy.jnts[id]['gl_motionax'] = copy.deepcopy(self.jnts[id]['gl_motionax'])
-            self_copy.jnts[id]['gl_posq'] = copy.deepcopy(self.jnts[id]['gl_posq'])
-            self_copy.jnts[id]['gl_rotmatq'] = copy.deepcopy(self.jnts[id]['gl_rotmatq'])
-            self_copy.jnts[id]['rngmin'] = copy.deepcopy(self.jnts[id]['rngmin'])
-            self_copy.jnts[id]['rngmax'] = copy.deepcopy(self.jnts[id]['rngmax'])
-            self_copy.jnts[id]['motion_val'] = copy.deepcopy(self.jnts[id]['motion_val'])
-        self_copy._mt = jlm.JLChainMesh(self_copy)
-
-        return self_copy
+    # def copy(self, name=None):
+    #     """
+    #     TODO not correct
+    #     return a copy of the file with a new name if provided
+    #     :param: name
+    #     :return:
+    #     """
+    #     if name is None:
+    #         name = self.name
+    #     self_copy = JLChain(pos = self.pos,
+    #                         rotmat = self.rotmat,
+    #                         homeconf = self.homeconf,
+    #                         name = name)
+    #     for id in range(self.ndof + 1):
+    #         self_copy.lnks[id]['name'] = copy.deepcopy(self.lnks[id]['name'])
+    #         self_copy.lnks[id]['loc_pos'] = copy.deepcopy(self.lnks[id]['loc_pos'])
+    #         self_copy.lnks[id]['loc_rotmat'] = copy.deepcopy(self.lnks[id]['loc_rotmat'])
+    #         self_copy.lnks[id]['com'] = copy.deepcopy(self.lnks[id]['com'])
+    #         self_copy.lnks[id]['inertia'] = copy.deepcopy(self.lnks[id]['inertia'])
+    #         self_copy.lnks[id]['mass'] = copy.deepcopy(self.lnks[id]['mass'])
+    #         self_copy.lnks[id]['meshfile'] = copy.deepcopy(self.lnks[id]['meshfile'])
+    #         self_copy.lnks[id]['collisionmodel'] = copy.deepcopy(self.lnks[id]['collisionmodel'])
+    #         self_copy.lnks[id]['cdprimit_cache'] = [self.lnks[id]['cdprimit_cache'][0], None]
+    #         self_copy.lnks[id]['scale'] = copy.deepcopy(self.lnks[id]['scale'])
+    #         self_copy.lnks[id]['rgba'] = copy.deepcopy(self.lnks[id]['rgba'])
+    #     for id in range(self.ndof + 2):
+    #         self_copy.jnts[id]['type'] = copy.deepcopy(self.jnts[id]['type'])
+    #         self_copy.jnts[id]['parent'] = copy.deepcopy(self.jnts[id]['parent'])
+    #         self_copy.jnts[id]['child'] = copy.deepcopy(self.jnts[id]['child'])
+    #         self_copy.jnts[id]['loc_pos'] = copy.deepcopy(self.jnts[id]['loc_pos'])
+    #         self_copy.jnts[id]['loc_rotmat'] = copy.deepcopy(self.jnts[id]['loc_rotmat'])
+    #         self_copy.jnts[id]['loc_motionax'] = copy.deepcopy(self.jnts[id]['loc_motionax'])
+    #         self_copy.jnts[id]['gl_pos0'] = copy.deepcopy(self.jnts[id]['gl_pos0'])
+    #         self_copy.jnts[id]['gl_rotmat0'] = copy.deepcopy(self.jnts[id]['gl_rotmat0'])
+    #         self_copy.jnts[id]['gl_motionax'] = copy.deepcopy(self.jnts[id]['gl_motionax'])
+    #         self_copy.jnts[id]['gl_posq'] = copy.deepcopy(self.jnts[id]['gl_posq'])
+    #         self_copy.jnts[id]['gl_rotmatq'] = copy.deepcopy(self.jnts[id]['gl_rotmatq'])
+    #         self_copy.jnts[id]['rngmin'] = copy.deepcopy(self.jnts[id]['rngmin'])
+    #         self_copy.jnts[id]['rngmax'] = copy.deepcopy(self.jnts[id]['rngmax'])
+    #         self_copy.jnts[id]['motion_val'] = copy.deepcopy(self.jnts[id]['motion_val'])
+    #     self_copy._mt = jlm.JLChainMesh(self_copy)
+    #
+    #     return self_copy
 
 
 if __name__ == "__main__":
