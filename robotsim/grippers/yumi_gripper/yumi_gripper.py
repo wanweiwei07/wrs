@@ -5,7 +5,6 @@ import modeling.modelcollection as mc
 import robotsim._kinematics.jlchain as jl
 import basis.robotmath as rm
 
-
 class YumiGripper(object):
 
     def __init__(self, pos=np.zeros(3), rotmat=np.eye(3), name='yumi_gripper'):
@@ -18,12 +17,13 @@ class YumiGripper(object):
         self.coupling = jl.JLChain(pos=self.pos,
                                    rotmat=self.rotmat,
                                    homeconf=np.zeros(0),
-                                   name=self.name + '_coupling')
+                                   name='coupling')
         self.coupling.jnts[1]['loc_pos'] = np.array([0, 0, .0])
-        self.coupling.lnks[0]['name'] = self.name + '_coupling_lnk0'
+        self.coupling.lnks[0]['name'] = 'coupling_lnk0'
         # self.coupling.lnks[0]['meshfile'] = os.path.join(this_dir, "meshes", "xxx.stl")
         # self.coupling.lnks[0]['rgba'] = [.2, .2, .2, 1]
         self.coupling.reinitialize()
+        self.coupling.disable_localcc()
         cpl_end_pos = self.coupling.jnts[-1]['gl_posq']
         cpl_end_rotmat = self.coupling.jnts[-1]['gl_rotmatq']
         # - lft
@@ -60,6 +60,10 @@ class YumiGripper(object):
         # reinitialize
         self.lft.reinitialize()
         self.rgt.reinitialize()
+        # disable the localcc of each the links
+        self.lft.disable_localcc()
+        self.rgt.disable_localcc()
+        # TODO external collision detection
 
     def fix_to(self, pos, rotmat):
         self.pos = pos
@@ -139,6 +143,10 @@ class YumiGripper(object):
                                rgba=rgba).attach_to(meshmodel)
         return meshmodel
 
+    def copy(self):
+        return copy.deepcopy(self)
+
+
 
 if __name__ == '__main__':
     import copy
@@ -154,7 +162,7 @@ if __name__ == '__main__':
     grpr.fix_to(pos=np.array([0, .3, .2]), rotmat=rm.rotmat_from_axangle([1, 0, 0], .05))
     grpr.gen_meshmodel().attach_to(base)
 
-    grpr2 = copy.deepcopy(grpr)
+    grpr2 = grpr.copy()
     grpr2.fix_to(pos=np.array([.3,.3,.2]), rotmat=rm.rotmat_from_axangle([0,1,0],.01))
     model = grpr2.gen_meshmodel(rgba=[0.5, .5, 0, .5])
     model.attach_to(base)

@@ -1,4 +1,5 @@
 import os
+import copy
 import math
 import numpy as np
 import basis.robotmath as rm
@@ -20,7 +21,7 @@ class XArm7YunjiMobile(object):
         self.agv = jl.JLChain(pos=pos,
                               rotmat=rotmat,
                               homeconf=np.zeros(0),
-                              name=self.name+'_agv')  # TODO: change to 3-dof
+                              name=self.name + '_agv')  # TODO: change to 3-dof
         self.agv.jnts[1]['loc_pos'] = np.array([0, .0, .34231])
         self.agv.lnks[0]['name'] = self.name + "_agv"
         self.agv.lnks[0]['loc_pos'] = np.array([0, 0, 0])
@@ -47,9 +48,9 @@ class XArm7YunjiMobile(object):
         # collision detection
         self.cc = self._setup_collisionchecker()
         # tool center point
-        self.tcp_jlc = self.arm # which jlc is the tcp located at?
+        self.tcp_jlc = self.arm  # which jlc is the tcp located at?
         self.tcp_jlc.tcp_jntid = -1
-        self.tcp_jlc.tcp_loc_pos = np.array([0,0,.07])
+        self.tcp_jlc.tcp_loc_pos = np.array([0, 0, .07])
         self.tcp_jlc.tcp_loc_rotmat = np.eye(3)
         # a list of detailed information about objects in hand, see CollisionChecker.add_objinhnd
         self.objs_inhnd_infos = []
@@ -57,9 +58,9 @@ class XArm7YunjiMobile(object):
     def _setup_collisionchecker(self):
         checker = cc.CollisionChecker(self.name + "_collisionchecker")
         checker.add_cdlnks(self.agv, [0])
-        checker.add_cdlnks(self.arm, [0,1,2,3,4,5,6])
-        checker.add_cdlnks(self.hnd.lft_outer, [0,1,2])
-        checker.add_cdlnks(self.hnd.rgt_outer, [1,2])
+        checker.add_cdlnks(self.arm, [0, 1, 2, 3, 4, 5, 6])
+        checker.add_cdlnks(self.hnd.lft_outer, [0, 1, 2])
+        checker.add_cdlnks(self.hnd.rgt_outer, [1, 2])
         activelist = [self.agv.lnks[0],
                       self.arm.lnks[0],
                       self.arm.lnks[1],
@@ -88,7 +89,6 @@ class XArm7YunjiMobile(object):
                     self.hnd.rgt_outer.lnks[2]]
         checker.set_cdpair(fromlist, intolist)
         return checker
-
 
     def move_to(self, pos, rotmat):
         self.pos = pos
@@ -162,7 +162,9 @@ class XArm7YunjiMobile(object):
                 break
 
     def is_collided(self, obstacle_list=[], otherrobot_list=[]):
-        return self.cc.is_collided(obstacle_list=obstacle_list, otherrobot_list=otherrobot_list)
+        is_fk_updated = self.agv.is_fk_updated or self.arm.is_fk_updated or self.hnd.lft_outer.is_fk_updated
+        return self.cc.is_collided(obstacle_list=obstacle_list, otherrobot_list=otherrobot_list,
+                                   need_update=is_fk_updated)
 
     def gen_stickmodel(self,
                        tcp_jntid=None,
@@ -222,7 +224,11 @@ class XArm7YunjiMobile(object):
         return meshmodel
 
     def copy(self):
-        pass
+        self_copy = copy.deepcopy(self)
+        # update colliders; they are problematic, I have to update it manually
+        for child in self_copy.cc.np.getChildren():
+            self_copy.cc.ctrav.addCollider(child, self_copy.cc.chan)
+        return self_copy
 
 
 if __name__ == '__main__':
@@ -234,7 +240,7 @@ if __name__ == '__main__':
 
     gm.gen_frame().attach_to(base)
     xav = XArm7YunjiMobile()
-    xav.fk(np.array([0,0,0,0,math.pi *2/ 3,0,math.pi,0,-math.pi / 6,0,0]))
+    xav.fk(np.array([0, 0, 0, 0, math.pi * 2 / 3, 0, math.pi, 0, -math.pi / 6, 0, 0]))
     xav_meshmodel = xav.gen_meshmodel()
     xav_meshmodel.attach_to(base)
     xav_meshmodel.show_cdprimit()
@@ -242,5 +248,16 @@ if __name__ == '__main__':
     tic = time.time()
     result = xav.is_collided()
     toc = time.time()
-    print(result, toc-tic)
+    print(result, toc - tic)
+
+    xav_cpy = xav.copy()
+    xav_cpy.move_to(pos=np.array([.5,.5,0]),rotmat=rm.rotmat_from_axangle([0,0,1],-math.pi/3))
+
+    xav_meshmodel = xav_cpy.gen_meshmodel()
+    xav_meshmodel.attach_to(base)
+    xav_meshmodel.show_cdprimit()
+    tic = time.time()
+    result = xav_cpy.is_collided(otherrobot_list=[xav])
+    toc = time.time()
+    print(result, toc - tic)
     base.run()

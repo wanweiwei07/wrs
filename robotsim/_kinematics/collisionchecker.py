@@ -124,20 +124,20 @@ class CollisionChecker(object):
                 rotmat = cdelement['gl_rotmat']
                 cdnp = self.np.getChild(cdelement['cdprimit_childid'])
                 cdnp.setMat(da.npv3mat3_to_pdmat4(pos, rotmat))
-                print(da.npv3mat3_to_pdmat4(pos, rotmat))
-                print("From", cdnp.node().getFromCollideMask())
-                print("Into", cdnp.node().getIntoCollideMask())
-        print("xxxx colliders xxxx")
-        for collider in self.ctrav.getColliders():
-            print(collider.getMat())
-            print("From", collider.node().getFromCollideMask())
-            print("Into", collider.node().getIntoCollideMask())
+                # print(da.npv3mat3_to_pdmat4(pos, rotmat))
+                # print("From", cdnp.node().getFromCollideMask())
+                # print("Into", cdnp.node().getIntoCollideMask())
+        # print("xxxx colliders xxxx")
+        # for collider in self.ctrav.getColliders():
+        #     print(collider.getMat())
+        #     print("From", collider.node().getFromCollideMask())
+        #     print("Into", collider.node().getIntoCollideMask())
         # attach obstacles
         for obstacle in obstacle_list:
             obstacle.pdnp.reparentTo(self.np)
         # attach other robots
         for robot in otherrobot_list:
-            for cdnp in robot.cc.getChildren():
+            for cdnp in robot.cc.np.getChildren():
                 current_into_cdmask = cdnp.node().getIntoCollideMask()
                 new_into_cdmask = current_into_cdmask | self._bitmask_ext
                 cdnp.node().setIntoCollideMask(new_into_cdmask)
@@ -149,7 +149,7 @@ class CollisionChecker(object):
             obstacle.pdnp.detachNode()
         # clear other robots
         for robot in otherrobot_list:
-            for cdnp in robot.cc.getChildren():
+            for cdnp in robot.cc.np.getChildren():
                 current_into_cdmask = cdnp.node().getIntoCollideMask()
                 new_into_cdmask = current_into_cdmask & ~self._bitmask_ext
                 cdnp.node().setIntoCollideMask(new_into_cdmask)
@@ -160,6 +160,7 @@ class CollisionChecker(object):
             return False
 
     def show_cdprimit(self, need_update=False):
+        # print("call show_cdprimit")
         self.np.reparentTo(base.render)
         if need_update:
             for cdelement in self.all_cdelements:
@@ -167,6 +168,7 @@ class CollisionChecker(object):
                 rotmat = cdelement['gl_rotmat']
                 cdnp = self.np.getChild(cdelement['cdprimit_childid'])
                 cdnp.setMat(da.npv3mat3_to_pdmat4(pos, rotmat))
+                # print(cdnp)
                 cdnp.show()
         else:
             for child in self.np.getChildren():
@@ -183,22 +185,8 @@ class CollisionChecker(object):
         :return:
         """
         for cdelement in self.all_cdelements:
-            cdnp = self.np.getChild(cdelement['cdprimit_childid'])
-            cdnp.removeNode()
             cdelement['cdprimit_childid'] = -1
         self.all_cdelements = []
+        for child in self.np.getChildren():
+            child.removeNode()
         self.nbitmask = 0
-
-    def __deepcopy__(self, memodict={}):
-        """
-        colliders is problematic, I have to update it manually
-        :param memodict:
-        :return:
-        """
-        self_copy = CollisionChecker()
-        self_copy.np = copy.deepcopy(self.np)
-        for child in self_copy.np.getChildren():
-            self_copy.ctrav.addCollider(child, self.chan)
-        self_copy.nbitmask = self.nbitmask
-        self_copy.all_cdelements = copy.deepcopy(self.all_cdelements)
-        return self_copy

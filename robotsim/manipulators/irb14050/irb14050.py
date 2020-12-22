@@ -73,13 +73,12 @@ class IRB14050(jl.JLChain):
         self._mt.add_cdlnks([1, 2, 3, 4, 5, 6])
         self._mt.set_cdpair([1], [5, 6])
 
-    # def copy(self, name=None):
-    #     self_copy = super().copy(name=name)
-    #     # collision detection
-    #     self_copy._setup_collisionchecker()
-    #     if self._mt.is_localcc_disabled():
-    #         self_copy.disable_localcc()
-    #     return self_copy
+    def copy(self):
+        self_copy = copy.deepcopy(self)
+        # update colliders; they are problematic, I have to update it manually
+        for child in self_copy._mt.cc.np.getChildren():
+            self_copy._mt.cc.ctrav.addCollider(child, self_copy._mt.cc.chan)
+        return self_copy
 
 
 if __name__ == '__main__':
@@ -95,15 +94,16 @@ if __name__ == '__main__':
     manipulator_instance.fk(
         jnt_values=[0, 0, manipulator_instance.jnts[3]['rngmax'] / 2, manipulator_instance.jnts[4]['rngmax'], 0, 0, 0])
     manipulator_meshmodel = manipulator_instance.gen_meshmodel()
-    # manipulator_meshmodel.attach_to(base)
-    # manipulator_instance.gen_stickmodel().attach_to(base)
-    # manipulator_instance.show_cdprimit()
+    manipulator_meshmodel.attach_to(base)
+    manipulator_instance.gen_stickmodel().attach_to(base)
+    manipulator_instance.show_cdprimit()
     tic = time.time()
     print(manipulator_instance.is_collided())
     toc = time.time()
     print(toc - tic)
 
-    manipulator_instance2 = copy.deepcopy(manipulator_instance)
+    manipulator_instance2 = manipulator_instance.copy()
+    # manipulator_instance2.disable_localcc()
     manipulator_instance2.fix_to(pos=np.array([.2, .2, 0.2]), rotmat=np.eye(3))
     manipulator_instance2.fk(
         jnt_values=[0, 0, manipulator_instance.jnts[3]['rngmax'] / 2, manipulator_instance.jnts[4]['rngmax']*1.1,

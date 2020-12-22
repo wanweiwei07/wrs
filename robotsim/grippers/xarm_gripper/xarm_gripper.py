@@ -1,4 +1,5 @@
 import os
+import copy
 import math
 import numpy as np
 import modeling.modelcollection as mc
@@ -23,6 +24,7 @@ class XArmGripper(object):
         # self.coupling.lnks[0]['meshfile'] = os.path.join(this_dir, "meshes", "xxx.stl")
         # self.coupling.lnks[0]['rgba'] = [.2, .2, .2, 1]
         self.coupling.reinitialize()
+        self.coupling.disable_localcc()
         cpl_end_pos = self.coupling.jnts[-1]['gl_posq']
         cpl_end_rotmat = self.coupling.jnts[-1]['gl_rotmatq']
         # - lft_outer
@@ -120,8 +122,12 @@ class XArmGripper(object):
         self.lft_inner.reinitialize()
         self.rgt_outer.reinitialize()
         self.rgt_inner.reinitialize()
-        # collision detection
-        # not needed
+        # disable the localcc of the inners and outers
+        self.lft_outer.disable_localcc()
+        self.lft_inner.disable_localcc()
+        self.rgt_outer.disable_localcc()
+        self.rgt_inner.disable_localcc()
+        # TODO external collision detection
 
     def fix_to(self, pos, rotmat):
         self.pos = pos
@@ -219,6 +225,9 @@ class XArmGripper(object):
                                      toggle_jntscs=toggle_jntscs,
                                      rgba=rgba).attach_to(meshmodel)
         return meshmodel
+
+    def copy(self):
+        return copy.deepcopy(self)
 
 if __name__ == '__main__':
     import visualization.panda.world as wd
