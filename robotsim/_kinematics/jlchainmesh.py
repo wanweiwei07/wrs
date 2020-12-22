@@ -44,8 +44,13 @@ class JLChainMesh(object):
         cdlnk_intolist = [self.jlobject.lnks[id] for id in intolist]
         self.cc.set_cdpair(cdlnk_fromlist, cdlnk_intolist)
 
-    def is_collided(self, obstacle_list=[], otherrobot_list=[]):
-        return self.cc.is_collided(obstacle_list=obstacle_list, otherrobot_list=otherrobot_list)
+    def is_collided(self,
+                    obstacle_list=[],
+                    otherrobot_list=[],
+                    need_update=False):
+        return self.cc.is_collided(obstacle_list=obstacle_list,
+                                   otherrobot_list=otherrobot_list,
+                                   need_update = need_update)
 
     def disable_localcc(self):
         """
@@ -54,11 +59,11 @@ class JLChainMesh(object):
         """
         self.cc.disable()
 
-    def is_localcc_disabled(self):
-        return self.cc.is_disabled()
+    # def is_localcc_disabled(self):
+    #     return self.cc.is_disabled()
 
-    def show_cdprimit(self):
-        self.cc.show_cdprimit()
+    def show_cdprimit(self, need_update = False):
+        self.cc.show_cdprimit(need_update = need_update)
 
     def unshow_cdprimit(self):
         self.cc.unshow_cdprimit()

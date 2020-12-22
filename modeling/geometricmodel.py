@@ -5,7 +5,7 @@ import basis.trimesh as trimesh
 import basis.trimeshgenerator as trihelper
 import modeling.modelcollection as mc
 import numpy as np
-# import open3d as o3d
+import open3d as o3d
 from panda3d.core import NodePath, LineSegs, GeomNode, TransparencyAttrib, RenderModeAttrib
 from visualization.panda.world import ShowBase
 
@@ -28,9 +28,8 @@ class StaticGeometricModel(object):
             self._objpath = copy.deepcopy(objinit.objpath)
             self._trimesh = copy.deepcopy(objinit.trimesh)
             self._pdnp = copy.deepcopy(objinit.pdnp)
-            self._name = objinit.name
+            self._name = copy.deepcopy(objinit.name)
             self._localframe = copy.deepcopy(objinit.localframe)
-            self._pdnp_raw = self._pdnp.find(self._pdnp.name+"_raw")
         else:
             # make a grandma nodepath to separate decorations (-autoshader) and raw nodepath (+autoshader)
             self._name = name
@@ -38,45 +37,41 @@ class StaticGeometricModel(object):
             if isinstance(objinit, str):
                 self._objpath = objinit
                 self._trimesh = trimesh.load(self._objpath)
-                self._pdnp_raw = da.trimesh_to_nodepath(self._trimesh)
-                self._pdnp_raw.reparentTo(self._pdnp)
+                pdnp_raw = da.trimesh_to_nodepath(self._trimesh, name='pdnp_raw')
+                pdnp_raw.reparentTo(self._pdnp)
             elif isinstance(objinit, trimesh.Trimesh):
                 self._objpath = None
                 self._trimesh = objinit
-                self._pdnp_raw = da.trimesh_to_nodepath(self._trimesh)
-                self._pdnp_raw.reparentTo(self._pdnp)
-            # elif isinstance(objinit, o3d.geometry.TriangleMesh):
-            #     self._objpath = None
-            #     self._trimesh = trimesh.Trimesh(vertices=objinit.vertices, faces=objinit.triangles,
-            #                                      face_normals=objinit.triangle_normals)
-            #     self._pdnp = da.trimesh_to_nodepath(self._trimesh)
-            #     self._name = name
-            # elif isinstance(objinit, o3d.geometry.PointCloud):
-            #     self._objpath = None
-            #     self._trimesh = trimesh.Trimesh(np.asarray(objinit.points))
-            #     self._pdnp = da.nodepath_from_points(self._trimesh.vertices)
-            #     self._name = name
-            elif isinstance(objinit, np.ndarray):
+                pdnp_raw = da.trimesh_to_nodepath(self._trimesh)
+                pdnp_raw.reparentTo(self._pdnp)
+            elif isinstance(objinit, o3d.geometry.PointCloud): # TODO should pointcloud be pdnp or pdnp_raw
+                self._objpath = None
+                self._trimesh = trimesh.Trimesh(np.asarray(objinit.points))
+                pdnp_raw = da.nodepath_from_points(self._trimesh.vertices, name='pdnp_raw')
+                pdnp_raw.reparentTo(self._pdnp)
+            elif isinstance(objinit, np.ndarray): # TODO should pointcloud be pdnp or pdnp_raw
                 self._objpath = None
                 self._trimesh = trimesh.Trimesh(objinit)
-                self._pdnp_raw = da.nodepath_from_points(self._trimesh.vertices)
-                self._pdnp_raw.reparentTo(self._pdnp)
-                self._name = name
+                pdnp_raw = da.nodepath_from_points(self._trimesh.vertices)
+                pdnp_raw.reparentTo(self._pdnp)
+            elif isinstance(objinit, o3d.geometry.TriangleMesh):
+                self._objpath = None
+                self._trimesh = trimesh.Trimesh(vertices=objinit.vertices, faces=objinit.triangles,
+                                                 face_normals=objinit.triangle_normals)
+                pdnp_raw = da.trimesh_to_nodepath(self._trimesh, name='pdnp_raw')
+                pdnp_raw.reparentTo(self._pdnp)
             elif isinstance(objinit, NodePath):
                 self._objpath = None
-                self._trimesh = None
-                self._pdnp_raw = objinit
-                self._pdnp_raw.reparentTo(self._pdnp)
-                self._name = name
+                self._trimesh = None # TODO nodepath to trimesh?
+                pdnp_raw = objinit
+                pdnp_raw.reparentTo(self._pdnp)
             else:
                 self._objpath = None
                 self._trimesh = None
-                self._pdnp_raw = NodePath(name+"_raw")
-                self._pdnp_raw.reparentTo(self._pdnp)
-                self._name = name
+                pdnp_raw = NodePath("pdnp_raw")
+                pdnp_raw.reparentTo(self._pdnp)
             if btransparency:
                 self._pdnp.setTransparency(TransparencyAttrib.MDual)
-            self._pdnp_raw.setName(self.name+"_raw")
             self._localframe = None
 
     @property
@@ -97,7 +92,7 @@ class StaticGeometricModel(object):
     @property
     def pdnp_raw(self):
         # read-only property
-        return self._pdnp_raw
+        return self._pdnp.getChild(0)
 
     @property
     def trimesh(self):
@@ -177,7 +172,7 @@ class StaticGeometricModel(object):
             self._localframe = None
 
     def copy(self):
-        return StaticGeometricModel(self)
+        return copy.deepcopy(self)
 
 
 class GeometricModel(StaticGeometricModel):
@@ -196,12 +191,11 @@ class GeometricModel(StaticGeometricModel):
             self._objpath = copy.deepcopy(objinit.objpath)
             self._trimesh = copy.deepcopy(objinit.trimesh)
             self._pdnp = copy.deepcopy(objinit.pdnp)
-            self._pdnp_raw = self._pdnp.find(self._pdnp.name+"_raw")
             self._name = copy.deepcopy(objinit.name)
             self._localframe = copy.deepcopy(objinit.localframe)
         else:
             super().__init__(objinit=objinit, btransparency=btransparency, name=name)
-        self._pdnp_raw.setShaderAuto()
+        self.pdnp_raw.setShaderAuto()
 
     def set_pos(self, npvec3):
         self._pdnp.setPos(npvec3[0], npvec3[1], npvec3[2])
@@ -257,7 +251,7 @@ class GeometricModel(StaticGeometricModel):
         return self._pdnp.setTransparency(attribute)
 
     def copy(self):
-        return GeometricModel(self)
+        return copy.deepcopy(self)
 
 
 ## primitives are stationarygeometric model, once defined, they cannot be changed
@@ -683,14 +677,14 @@ if __name__ == "__main__":
     bunnygm.set_rotmat(rotmat)
     bunnygm.set_scale([2,1,3])
 
-    bunnygm1 = GeometricModel(objpath)
+    bunnygm1 = bunnygm.copy()
     bunnygm1.set_color([0.7, 0, 0.7, 1.0])
     bunnygm1.attach_to(base)
     rotmat = rm.rotmat_from_euler(0, 0, math.radians(15))
     bunnygm1.set_pos(np.array([0, .01, 0]))
     bunnygm1.set_rotmat(rotmat)
 
-    bunnygm2 = GeometricModel(objpath)
+    bunnygm2 = bunnygm1.copy()
     bunnygm2.set_color([0, 0.7, 0.7, 1.0])
     bunnygm2.attach_to(base)
     rotmat = rm.rotmat_from_axangle([1, 0, 0], -math.pi / 4.0)

@@ -229,7 +229,7 @@ def show_meshcmlist(objcmlist):
     date: 20190313
     :return:
     """
-    if not self._toggledebug:
+    if not base.toggledebug:
         print("Toggle debug on during defining the XCMchecker object to use showfunctions!")
         return
     objcmmeshbullnode = _gen_cdmesh_list(objcmlist)

@@ -36,16 +36,12 @@ class CollisionModel(gm.GeometricModel):
         date: 201290312, 20201212
         """
         if isinstance(objinit, CollisionModel):
-            self._name = objinit.name
+            self._name = copy.deepcopy(objinit.name)
             self._objpath = copy.deepcopy(objinit.objpath)
             self._trimesh = copy.deepcopy(objinit.trimesh)
             self._pdnp = copy.deepcopy(objinit.pdnp)
-            self._pdnp_raw = self._pdnp.find("pdnp_raw")
             self._localframe = copy.deepcopy(objinit.localframe)
-            self._cdnp = objinit.copy_cdnp_to(self._pdnp, clearmask=False)
-            self._cdprimitive_type = objinit.cdprimitive_type
-            self._pcd = objinit.pcd  # primitive collision detector
-            self._mcd = objinit.mcd  # bullet collision detector
+            self._cdprimitive_type = copy.deepcopy(objinit.cdprimitive_type)
         else:
             if cdprimitive_type is not None and cdprimitive_type not in ["box", "ball", "cylinder", "pointcloud", "userdefined"]:
                 raise Exception("Wrong Collision Model type name.")
@@ -55,26 +51,24 @@ class CollisionModel(gm.GeometricModel):
                 if cdprimitive_type == "ball":
                     if expand_radius is None:
                         expand_radius = 0.015
-                    cdnd = self._gen_surfaceballs_cdnp(name="cdnp", radius=expand_radius)
+                    cdnd = self._gen_surfaceballs_cdnp(name="cdnp_ball", radius=expand_radius)
                 else:
                     if expand_radius is None:
                         expand_radius = 0.002
                     if cdprimitive_type == "box":
-                        cdnd = self._gen_box_cdnp(name="cdnp", radius=expand_radius)
+                        cdnd = self._gen_box_cdnp(name="cdnp_box", radius=expand_radius)
                     if cdprimitive_type == "cylinder":
-                        cdnd = self._gen_cylindrical_cdnp(name="cdnp", radius=expand_radius)
+                        cdnd = self._gen_cylindrical_cdnp(name="cdnp_cylinder", radius=expand_radius)
                     if cdprimitive_type == "pointcloud":
-                        cdnd = self._gen_pointcloud_cdnp(name="cdnp", radius=expand_radius)
+                        cdnd = self._gen_pointcloud_cdnp(name="cdnp_pointcloud", radius=expand_radius)
                     if cdprimitive_type == "userdefined":
-                        cdnd = userdefined_cdprimitive_fn(name="cdnp", radius=expand_radius)
-                # TODO: use pdnp.find("cdnp") instead of a new self._cdnp variable
-                # collision nodepath is not compatible with deepcopy
+                        cdnd = userdefined_cdprimitive_fn(name="cdnp_userdefined", radius=expand_radius)
+                # use pdnp.getChild instead of a new self._cdnp variable as collision nodepath is not compatible with deepcopy
                 self._pdnp.attachNewNode(cdnd)
+                self._pdnp.getChild(1).setCollideMask(BitMask32(2**31))
                 # self._cdnp = self._pdnp.attachNewNode(cdnd)
                 # self._cdnp.node().setCollideMask(BitMask32(2**31))
             self._localframe = None
-            self._pcd = pcd  # primitive collision detector
-            self._mcd = mcd  # bullet collision detector
 
     @property
     def cdprimitive_type(self):
@@ -82,26 +76,17 @@ class CollisionModel(gm.GeometricModel):
 
     @property
     def cdnp(self):
-        return self._cdnp
+        return self._pdnp.getChild(1) # child-0 = pdnp_raw, child-1 = cdnp
 
-    @property
-    def pcd(self):
-        return self._pcd
-
-    @property
-    def mcd(self):
-        return self._mcd
-
-    def _gen_box_cdnp(self, name='boxbound', radius=0.01):
+    def _gen_box_cdnp(self, name='cdnp_box', radius=0.01):
         """
         :param obstacle:
         :return:
         author: weiwei
         date: 20180811
         """
-        if self._trimesh is None:
+        if self._pdnp is None:
             raise ValueError("The defined object must has a nodepath!")
-        # TODO? Use trimesh.bounds to get decoupled from panda3d (slower)
         bottom_left, top_right = self._pdnp.getTightBounds()
         center = (bottom_left + top_right) / 2.0
         # enlarge the bounding box
@@ -112,7 +97,7 @@ class CollisionModel(gm.GeometricModel):
         collision_node.addSolid(collision_primitive)
         return collision_node
 
-    def _gen_cylindrical_cdnp(self, name='collisionbound', radius=0.01):
+    def _gen_cylindrical_cdnp(self, name='cdnp_cylinder', radius=0.01):
         """
         :param trimeshmodel:
         :param name:
@@ -121,9 +106,8 @@ class CollisionModel(gm.GeometricModel):
         author: weiwei
         date: 20200108
         """
-        if self._trimesh is None:
+        if self._pdnp is None:
             raise ValueError("The defined object must has a nodepath!")
-        # TODO? Use trimesh.bounds to get decoupled from panda3d (slower)
         bottom_left, top_right = self._pdnp.getTightBounds()
         center = (bottom_left + top_right) / 2.0
         # enlarge the bounding box
@@ -149,7 +133,7 @@ class CollisionModel(gm.GeometricModel):
             collision_node.addSolid(collision_primitive)
         return collision_node
 
-    def _gen_surfaceballs_cdnp(self, name='ballcd', radius=0.01):
+    def _gen_surfaceballs_cdnp(self, name='cdnp_ball', radius=0.01):
         """
         :param obstacle:
         :return:
@@ -166,7 +150,7 @@ class CollisionModel(gm.GeometricModel):
             collision_node.addSolid(CollisionSphere(sglsample[0], sglsample[1], sglsample[2], radius=radius))
         return collision_node
 
-    def _gen_pointcloud_cdnp(self, name='pointcloudcd', radius=0.02):
+    def _gen_pointcloud_cdnp(self, name='cdnp_pointcloud', radius=0.02):
         """
         :param obstacle:
         :return:
@@ -190,11 +174,11 @@ class CollisionModel(gm.GeometricModel):
         author: weiwei
         date: 20180811
         """
-        returnnp = nodepath.attachNewNode(copy.deepcopy(self._cdnp.getNode(0)))
+        returnnp = nodepath.attachNewNode(copy.deepcopy(self.cdnp.getNode(0)))
         if clearmask:
             returnnp.node().setCollideMask(0x00)
         else:
-            returnnp.node().setCollideMask(self._cdnp.getCollideMask())
+            returnnp.node().setCollideMask(self.cdnp.getCollideMask())
         if homomat is None:
             returnnp.setMat(self._pdnp.getMat())
         else:
@@ -227,10 +211,10 @@ class CollisionModel(gm.GeometricModel):
         """
         Show collision node
         """
-        self._cdnp.show()
+        self.cdnp.show()
 
     def unshow_cdprimit(self):
-        self._cdnp.hide()
+        self.cdnp.hide()
 
     def is_mcdwith(self, objcm):
         """
@@ -240,31 +224,28 @@ class CollisionModel(gm.GeometricModel):
         date: 20201116
         """
         if isinstance(objcm, CollisionModel):
-            return self._mcd.is_mesh_cmcm_collided(self, objcm)
+            return mcd.is_mesh_cmcm_collided(self, objcm)
         elif isinstance(objcm, list):
-            return self._mcd.is_mesh_cmcmlist_collided(self, objcm)
+            return mcd.is_mesh_cmcmlist_collided(self, objcm)
 
     def show_cdmesh(self):
         """
         :return:
         """
-        self._bullnode = self._mcd.show_meshcm(self)
+        self._bullnode = mcd.show_meshcm(self)
 
     def unshow_cdmesh(self):
         """
         :return:
         """
         if hasattr(self, '_bullnode'):
-            self._mcd.unshow(self._bullnode)
+            mcd.unshow(self._bullnode)
 
     def is_mboxcdwith(self, objcm):
         raise NotImplementedError
 
-    # def copy(self):
-    #     return CollisionModel(self)
-    #
-    # def __deepcopy__(self, memodict={}):
-    #     return self.copy()
+    def copy(self):
+        return copy.deepcopy(self)
 
 
 def gen_box(extent=np.array([.1, .1, .1]), homomat=np.eye(4), rgba=np.array([1, 0, 0, 1])):
@@ -305,12 +286,12 @@ if __name__ == "__main__":
     bunnycm1.set_pos(np.array([0, .01, 0]))
     bunnycm1.set_rotmat(rotmat)
 
-    bunnycm2 = CollisionModel(objpath, cdprimitive_type="cylinder")
+    bunnycm2 = bunnycm1.copy()
     bunnycm2.set_color([0, 0.7, 0.7, 1.0])
     bunnycm2.attach_to(base)
     rotmat = rm.rotmat_from_axangle([1, 0, 0], -math.pi / 4.0)
-    bunnycm1.set_pos(np.array([0, .2, 0]))
-    bunnycm1.set_rotmat(rotmat)
+    bunnycm2.set_pos(np.array([0, .2, 0]))
+    bunnycm2.set_rotmat(rotmat)
 
     bunnycmpoints, _ = bunnycm.sample_surface()
     bunnycm1points, _ = bunnycm1.sample_surface()

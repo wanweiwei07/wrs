@@ -1,3 +1,4 @@
+import copy
 import basis.dataadapter as da
 from panda3d.core import NodePath, CollisionTraverser, CollisionHandlerQueue, BitMask32
 
@@ -29,10 +30,11 @@ class CollisionChecker(object):
         date: 20201216toyonaka
         """
         for id in lnk_idlist:
-            if jlcobj.lnks[id]['cdprimit_cache'][1] is None:  # first time add
-                jlcobj.lnks[id]['cdprimit_cache'][1] = jlcobj.lnks[id]['collisionmodel'].copy_cdnp_to(self.np, clearmask=True)
-                self.ctrav.addCollider(jlcobj.lnks[id]['cdprimit_cache'][1], self.chan)
+            if jlcobj.lnks[id]['cdprimit_childid'] == -1:  # first time add
+                cdnp = jlcobj.lnks[id]['collisionmodel'].copy_cdnp_to(self.np, clearmask=True)
+                self.ctrav.addCollider(cdnp, self.chan)
                 self.all_cdelements.append(jlcobj.lnks[id])
+                jlcobj.lnks[id]['cdprimit_childid'] = len(self.all_cdelements)-1
             else:
                 raise ValueError("The link is already added!")
 
@@ -47,9 +49,10 @@ class CollisionChecker(object):
         date: 20201216toyonaka
         """
         for cdlnk in activelist:
-            if cdlnk['cdprimit_cache'][1] is None:
+            if cdlnk['cdprimit_childid'] == -1:
                 raise ValueError("The link needs to be added to collider using the add_cdlnks function first!")
-            cdlnk['cdprimit_cache'][1].node().setFromCollideMask(self._bitmask_ext)
+            cdnp = self.np.getChild(cdlnk['cdprimit_childid'])
+            cdnp.node().setFromCollideMask(self._bitmask_ext)
 
     def set_cdpair(self, fromlist, intolist):
         """
@@ -64,17 +67,19 @@ class CollisionChecker(object):
             raise ValueError("Too many collision pairs! Maximum: 29")
         cdmask = BitMask32(2 ** self.nbitmask)
         for cdlnk in fromlist:
-            if cdlnk['cdprimit_cache'][1] is None:
+            if cdlnk['cdprimit_childid'] is None:
                 raise ValueError("The link needs to be added to collider using the addjlcobj function first!")
-            current_from_cdmask = cdlnk['cdprimit_cache'][1].node().getFromCollideMask()
+            cdnp = self.np.getChild(cdlnk['cdprimit_childid'])
+            current_from_cdmask = cdnp.node().getFromCollideMask()
             new_from_cdmask = current_from_cdmask | cdmask
-            cdlnk['cdprimit_cache'][1].node().setFromCollideMask(new_from_cdmask)
+            cdnp.node().setFromCollideMask(new_from_cdmask)
         for cdlnk in intolist:
-            if cdlnk['cdprimit_cache'][1] is None:
+            if cdlnk['cdprimit_childid'] is None:
                 raise ValueError("The link needs to be added to collider using the addjlcobj function first!")
-            current_into_cdmask = cdlnk['cdprimit_cache'][1].node().getIntoCollideMask()
+            cdnp = self.np.getChild(cdlnk['cdprimit_childid'])
+            current_into_cdmask = cdnp.node().getIntoCollideMask()
             new_into_cdmask = current_into_cdmask | cdmask
-            cdlnk['cdprimit_cache'][1].node().setIntoCollideMask(new_into_cdmask)
+            cdnp.node().setIntoCollideMask(new_into_cdmask)
         self.nbitmask += 1
 
     def add_cdobj(self, objcm, rel_pos, rel_rotmat, intolist):
@@ -88,12 +93,13 @@ class CollisionChecker(object):
         cdobj_info['gl_rotmat'] = objcm.get_rotmat()
         cdobj_info['rel_pos'] = rel_pos
         cdobj_info['rel_rotmat'] = rel_rotmat
-        cdobj_info['cdprimit_cache'] = [False, objcm.copy_cdnp_to(self.np, clearmask=True)]
-        cdobj_info['cdprimit_cache'][1].node().setFromCollideMask(self._bitmask_ext) # set active
         cdobj_info['intolist'] = intolist
-        self.ctrav.addCollider(cdobj_info['cdprimit_cache'][1], self.chan)
+        cdnp = objcm.copy_cdnp_to(self.np, clearmask=True)
+        cdnp.node().setFromCollideMask(self._bitmask_ext) # set active
+        self.ctrav.addCollider(cdnp, self.chan)
         self.all_cdelements.append(cdobj_info)
-        self.set_cdpair([cdobj_info['cdprimit_cache']], intolist)
+        cdobj_info['cdprimit_cache'] = [False, len(self.all_cdelements)-1]
+        self.set_cdpair([cdobj_info], intolist)
         return cdobj_info
 
     def delete_cdobj(self, cdobj_info):
@@ -103,60 +109,72 @@ class CollisionChecker(object):
         :return:
         """
         self.all_cdelements.remove(cdobj_info)
-        self.ctrav.removeCollider(cdobj_info['cdprimit_cache'][1])
+        cdnp = self.np.getChild(cdobj_info['cdprimit_childid'])
+        self.ctrav.removeCollider(cdnp)
         for cdlnk in cdobj_info['intolist']:
-            current_into_cdmask = cdlnk['cdprimit_cache'][1].node().getIntoCollideMask()
-            new_into_cdmask = current_into_cdmask & ~cdobj_info['cdprimit_cache'][1].node().getFromCollideMask()
-            cdlnk['cdprimit_cache'][1].node().setIntoCollideMask(new_into_cdmask)
+            cdnp = self.np.getChild(cdlnk['cdprimit_childid'])
+            current_into_cdmask = cdnp.node().getIntoCollideMask()
+            new_into_cdmask = current_into_cdmask & ~cdnp.node().getFromCollideMask()
+            cdnp.node().setIntoCollideMask(new_into_cdmask)
 
-    def is_collided(self, obstacle_list=[], otherrobot_list=[]):
-        for cdelement in self.all_cdelements: # TODO global ik indicator, right now a bit consuming
-            if cdelement['cdprimit_cache'][0]: # need to update
+    def is_collided(self, obstacle_list=[], otherrobot_list=[], need_update=False):
+        if need_update:
+            for cdelement in self.all_cdelements:
                 pos = cdelement['gl_pos']
                 rotmat = cdelement['gl_rotmat']
-                cdelement['cdprimit_cache'][1].setMat(da.npv3mat3_to_pdmat4(pos, rotmat))
-                cdelement['cdprimit_cache'][0] = False # updated
-                # print("From", cdelement['cdprimit_cache'][1].node().getFromCollideMask())
-                # print("Into", cdelement['cdprimit_cache'][1].node().getIntoCollideMask())
-        # check obstacle
+                cdnp = self.np.getChild(cdelement['cdprimit_childid'])
+                cdnp.setMat(da.npv3mat3_to_pdmat4(pos, rotmat))
+                print(da.npv3mat3_to_pdmat4(pos, rotmat))
+                print("From", cdnp.node().getFromCollideMask())
+                print("Into", cdnp.node().getIntoCollideMask())
+        print("xxxx colliders xxxx")
+        for collider in self.ctrav.getColliders():
+            print(collider.getMat())
+            print("From", collider.node().getFromCollideMask())
+            print("Into", collider.node().getIntoCollideMask())
+        # attach obstacles
         for obstacle in obstacle_list:
             obstacle.pdnp.reparentTo(self.np)
-        # check other robots
+        # attach other robots
         for robot in otherrobot_list:
-            for cdelement in robot.all_cdelements:
-                current_into_cdmask = cdelement['cdprimit_cache'][1].node().getIntoCollideMask()
-                cdelement['cdprimit_cache'][1].node().setIntoCollideMask(current_into_cdmask | self._bitmask_ext)
+            for cdnp in robot.cc.getChildren():
+                current_into_cdmask = cdnp.node().getIntoCollideMask()
+                new_into_cdmask = current_into_cdmask | self._bitmask_ext
+                cdnp.node().setIntoCollideMask(new_into_cdmask)
             robot.cc.np.reparentTo(self.np)
         # collision check
         self.ctrav.traverse(self.np)
+        # clear obstacles
+        for obstacle in obstacle_list:
+            obstacle.pdnp.detachNode()
         # clear other robots
         for robot in otherrobot_list:
-            for cdelement in robot.all_cdelements:
-                current_into_cdmask = cdelement['cdprimit_cache'][1].node().getIntoCollideMask()
-                cdelement['cdprimit_cache'][1].node().setIntoCollideMask(current_into_cdmask & ~self._bitmask_ext)
+            for cdnp in robot.cc.getChildren():
+                current_into_cdmask = cdnp.node().getIntoCollideMask()
+                new_into_cdmask = current_into_cdmask & ~self._bitmask_ext
+                cdnp.node().setIntoCollideMask(new_into_cdmask)
             robot.cc.np.detachNode()
         if self.chan.getNumEntries() > 0:
             return True
         else:
             return False
 
-    def show_cdprimit(self):
+    def show_cdprimit(self, need_update=False):
         self.np.reparentTo(base.render)
-        print(self.all_cdelements)
-        for child in self.np.getChildren():
-            print(child.getPos())
-        for cdelement in self.all_cdelements:
-            print("count")
-            if cdelement['cdprimit_cache'][0]: # need to update
+        if need_update:
+            for cdelement in self.all_cdelements:
                 pos = cdelement['gl_pos']
                 rotmat = cdelement['gl_rotmat']
-                cdelement['cdprimit_cache'][1].setMat(da.npv3mat3_to_pdmat4(pos, rotmat))
-                cdelement['cdprimit_cache'][0] = False # updated
-            cdelement['cdprimit_cache'][1].show()
+                cdnp = self.np.getChild(cdelement['cdprimit_childid'])
+                cdnp.setMat(da.npv3mat3_to_pdmat4(pos, rotmat))
+                cdnp.show()
+        else:
+            for child in self.np.getChildren():
+                child.show()
 
     def unshow_cdprimit(self):
-        for cdelement in self.all_cdelements:
-            cdelement['cdprimit_cache'][1].hide()
+        for child in self.np.getChildren():
+            child.hide()
         self.np.detachNode()
 
     def disable(self):
@@ -165,10 +183,22 @@ class CollisionChecker(object):
         :return:
         """
         for cdelement in self.all_cdelements:
-            cdelement['cdprimit_cache'][1].removeNode()
-            cdelement['cdprimit_cache'][1] = None
+            cdnp = self.np.getChild(cdelement['cdprimit_childid'])
+            cdnp.removeNode()
+            cdelement['cdprimit_childid'] = -1
         self.all_cdelements = []
         self.nbitmask = 0
 
-    def is_disabled(self):
-        return True if len(self.all_cdelements) == 0 else False
+    def __deepcopy__(self, memodict={}):
+        """
+        colliders is problematic, I have to update it manually
+        :param memodict:
+        :return:
+        """
+        self_copy = CollisionChecker()
+        self_copy.np = copy.deepcopy(self.np)
+        for child in self_copy.np.getChildren():
+            self_copy.ctrav.addCollider(child, self.chan)
+        self_copy.nbitmask = self.nbitmask
+        self_copy.all_cdelements = copy.deepcopy(self.all_cdelements)
+        return self_copy

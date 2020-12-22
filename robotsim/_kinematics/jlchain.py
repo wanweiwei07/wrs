@@ -48,6 +48,7 @@ class JLChain(object):
         # mesh generator
         self._mt = jlm.JLChainMesh(self)
         self._ikt = jlik.JLChainIK(self)
+        self.is_fk_updated = False
 
     def _init_jlchain(self):
         """
@@ -72,7 +73,8 @@ class JLChain(object):
             lnks[id]['mass'] = 0  # the visual adjustment is ignored for simplisity
             lnks[id]['meshfile'] = None
             lnks[id]['collisionmodel'] = None
-            lnks[id]['cdprimit_cache'] = [False, None]  # p1: need update? p2: tmp nodepath that holds the primit
+            # lnks[id]['cdprimit_cache'] = [False, -1]  # p1: need update? p2: id of the CollisionChecker.np.Child
+            lnks[id]['cdprimit_childid'] = -1 # id of the CollisionChecker.np.Child
             lnks[id]['scale'] = None  # 3 list
             lnks[id]['rgba'] = [.7, .7, .7, 1]  # 4 list
         for id in range(self.ndof + 2):
@@ -136,8 +138,9 @@ class JLChain(object):
                 self.lnks[id]['gl_pos'] = np.dot(self.jnts[id]['gl_rotmatq'], self.lnks[id]['loc_pos']) + \
                                           self.jnts[id]['gl_posq']
                 self.lnks[id]['gl_rotmat'] = np.dot(self.jnts[id]['gl_rotmatq'], self.lnks[id]['loc_rotmat'])
-                self.lnks[id]['cdprimit_cache'][0] = True
+                # self.lnks[id]['cdprimit_cache'][0] = True
             id = self.jnts[id]['child']
+        self.is_fk_updated = True
         return self.lnks, self.jnts
 
     @property
@@ -437,7 +440,9 @@ class JLChain(object):
         return [loc_pos, loc_romat]
 
     def is_collided(self, obstacle_list=[], otherrobot_list=[]):
-        return self._mt.is_collided(obstacle_list=obstacle_list, otherrobot_list=otherrobot_list)
+        return self._mt.is_collided(obstacle_list=obstacle_list,
+                                    otherrobot_list=otherrobot_list,
+                                    need_update = self.is_fk_updated)
 
     def disable_localcc(self):
         """
@@ -489,10 +494,13 @@ class JLChain(object):
         return self._mt.gen_endsphere()
 
     def show_cdprimit(self):
-        self._mt.show_cdprimit()
+        self._mt.show_cdprimit(need_update = self.is_fk_updated)
 
     def unshow_cdprimit(self):
         self._mt.unshow_cdprimit()
+
+    def copy(self):
+        return copy.deepcopy(self)
 
     # def copy(self, name=None):
     #     """
