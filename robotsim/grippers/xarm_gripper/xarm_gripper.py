@@ -4,27 +4,14 @@ import math
 import numpy as np
 import modeling.modelcollection as mc
 import robotsim._kinematics.jlchain as jl
+import robotsim.grippers.grippers as gp
 
 
-class XArmGripper(object):
+class XArmGripper(gp.Gripper):
 
     def __init__(self, pos=np.zeros(3), rotmat=np.eye(3), name='xarm_gripper'):
+        super().__init__(pos=pos, rotmat=rotmat, name=name)
         this_dir, this_filename = os.path.split(__file__)
-        self.name = name
-        self.pos = pos
-        self.rotmat = rotmat
-        # joints
-        # - coupling - No coupling by default
-        self.coupling = jl.JLChain(pos=self.pos,
-                                   rotmat=self.rotmat,
-                                   homeconf=np.zeros(0),
-                                   name=self.name+'_coupling')
-        self.coupling.jnts[1]['loc_pos'] = np.array([0, 0, .0])
-        self.coupling.lnks[0]['name'] = 'coupling_lnk0'
-        # self.coupling.lnks[0]['meshfile'] = os.path.join(this_dir, "meshes", "xxx.stl")
-        # self.coupling.lnks[0]['rgba'] = [.2, .2, .2, 1]
-        self.coupling.reinitialize()
-        self.coupling.disable_localcc()
         cpl_end_pos = self.coupling.jnts[-1]['gl_posq']
         cpl_end_rotmat = self.coupling.jnts[-1]['gl_rotmatq']
         # - lft_outer
@@ -127,7 +114,28 @@ class XArmGripper(object):
         self.lft_inner.disable_localcc()
         self.rgt_outer.disable_localcc()
         self.rgt_inner.disable_localcc()
-        # TODO external collision detection
+        # collision detection
+        # self.cc.add_cdlnks(self.lft, [0, 1])
+        # self.cc.add_cdlnks(self.rgt, [1])
+        # activelist = [self.lft.lnks[0],
+        #               self.lft.lnks[1],
+        #               self.rgt.lnks[1]]
+        # self.cc.set_active_cdlnks(activelist)
+
+    # def is_collided(self, obstacle_list=[], otherrobot_list=[]):
+    #     # object in hand do not update by itself
+    #     is_fk_updated = self.lft.is_fk_updated
+    #     return self.cc.is_collided(obstacle_list=obstacle_list, otherrobot_list=otherrobot_list,
+    #                                need_update=is_fk_updated)
+    #
+    # def is_mesh_collided(self, objcm_list=[]):
+    #     hnd_objcm_list = [self.lft.lnks[0]['collisionmodel'],
+    #                       self.lft.lnks[1]['collisionmodel'],
+    #                       self.rgt.lnks[1]['collisionmodel']]
+    #     for objcm in objcm_list:
+    #         if objcm.is_mcdwith(hnd_objcm_list):
+    #             return True
+    #     return False
 
     def fix_to(self, pos, rotmat):
         self.pos = pos
@@ -164,6 +172,13 @@ class XArmGripper(object):
             raise ValueError("Jawwidth must be 0mm~82mm!")
         angle = .85 - math.asin(jawwidth/2.0/0.055)
         self.fk(angle)
+
+    # def show_cdprimit(self):
+    #     is_fk_updated = self.lft.is_fk_updated
+    #     self.cc.show_cdprimit(need_update=is_fk_updated)
+    #
+    # def show_cdmesh(self):
+    #     pass
 
     def gen_stickmodel(self,
                        tcp_jntid=None,

@@ -1,3 +1,4 @@
+import modeling._mcdhelper as mcd
 
 class ModelCollection(object):
     """
@@ -44,3 +45,10 @@ class ModelCollection(object):
     def unshow_cdprimit(self): # only work for cm
         for cm in self._cm_list:
             cm.unshow_cdprimit()
+
+    def show_cdmesh(self):
+        self._bullnode = mcd.show_meshcmlist(self._cm_list)
+
+    def unshow_cdmesh(self):
+        if hasattr(self, '_bullnode'):
+            mcd.unshow(self._bullnode)

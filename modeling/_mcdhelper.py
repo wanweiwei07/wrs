@@ -230,8 +230,8 @@ def show_meshcmlist(objcmlist):
     :return:
     """
     if not base.toggledebug:
-        print("Toggle debug on during defining the XCMchecker object to use showfunctions!")
-        return
+        print("Toggling on base.physicsworld debug mode...")
+        base.change_debugstatus(True)
     objcmmeshbullnode = _gen_cdmesh_list(objcmlist)
     base.physicsworld.attach(objcmmeshbullnode)
     base.physicsbodylist.append(objcmmeshbullnode)

@@ -1,31 +1,16 @@
 import os
-import copy
 import math
 import numpy as np
 import modeling.modelcollection as mc
 import robotsim._kinematics.jlchain as jl
 import basis.robotmath as rm
-import robotsim._kinematics.collisionchecker as cc
+import robotsim.grippers.grippers as gp
 
-class YumiGripper(object):
+class YumiGripper(gp.Gripper):
 
     def __init__(self, pos=np.zeros(3), rotmat=np.eye(3), name='yumi_gripper'):
+        super().__init__(pos=pos, rotmat=rotmat, name=name)
         this_dir, this_filename = os.path.split(__file__)
-        self.name = name
-        self.pos = pos
-        self.rotmat = rotmat
-        # joints
-        # - coupling - No coupling by default
-        self.coupling = jl.JLChain(pos=self.pos,
-                                   rotmat=self.rotmat,
-                                   homeconf=np.zeros(0),
-                                   name='coupling')
-        self.coupling.jnts[1]['loc_pos'] = np.array([0, 0, .0])
-        self.coupling.lnks[0]['name'] = 'coupling_lnk0'
-        # self.coupling.lnks[0]['meshfile'] = os.path.join(this_dir, "meshes", "xxx.stl")
-        # self.coupling.lnks[0]['rgba'] = [.2, .2, .2, 1]
-        self.coupling.reinitialize()
-        self.coupling.disable_localcc()
         cpl_end_pos = self.coupling.jnts[-1]['gl_posq']
         cpl_end_rotmat = self.coupling.jnts[-1]['gl_rotmatq']
         # - lft
@@ -66,16 +51,12 @@ class YumiGripper(object):
         self.lft.disable_localcc()
         self.rgt.disable_localcc()
         # collision detection
-        self.cc = self._setup_collisionchecker()
-
-    def _setup_collisionchecker(self):
-        checker = cc.CollisionChecker("collision_checker")
-        checker.add_cdlnks(self.lft, [0, 1])
-        checker.add_cdlnks(self.rgt, [1])
+        self.cc.add_cdlnks(self.lft, [0, 1])
+        self.cc.add_cdlnks(self.rgt, [1])
         activelist = [self.lft.lnks[0],
                       self.lft.lnks[1],
                       self.rgt.lnks[1]]
-        checker.set_active_cdlnks(activelist)
+        self.cc.set_active_cdlnks(activelist)
 
     def is_collided(self, obstacle_list=[], otherrobot_list=[]):
         # object in hand do not update by itself
@@ -83,24 +64,7 @@ class YumiGripper(object):
         return self.cc.is_collided(obstacle_list=obstacle_list, otherrobot_list=otherrobot_list,
                                    need_update=is_fk_updated)
 
-    def disable_localcc(self):
-        """
-        clear pairs and nodepath
-        :return:
-        """
-        for cdelement in self.cc.all_cdelements:
-            cdelement['cdprimit_childid'] = -1
-        self.cc.all_cdelements = []
-        for child in self.cc.np.getChildren():
-            child.removeNode()
-        self.cc.nbitmask = 0
-
     def is_mesh_collided(self, objcm_list=[]):
-        """
-        for fine collision detection
-        :param objcm_list:
-        :return:
-        """
         hnd_objcm_list = [self.lft.lnks[0]['collisionmodel'],
                           self.lft.lnks[1]['collisionmodel'],
                           self.rgt.lnks[1]['collisionmodel']]
@@ -118,21 +82,28 @@ class YumiGripper(object):
         self.lft.fix_to(cpl_end_pos, cpl_end_rotmat)
         self.rgt.fix_to(cpl_end_pos, cpl_end_rotmat)
 
-    def fk(self, jawwidth):
+    def fk(self, motion_val):
         """
         lft_outer is the only active joint, all others mimic this one
-        :param: angle, radian
+        :param: motion_val, meter or radian
         """
-        if jawwidth > .05:
+        if motion_val > .05:
             raise ValueError("The angle parameter is out of range!")
-        side_jawwidth = (.05 - jawwidth) / 2.0
-        self.lft.jnts[1]['motion_val'] = side_jawwidth;
+        side_motion_val = (.05 - motion_val) / 2.0
+        self.lft.jnts[1]['motion_val'] = side_motion_val
         self.rgt.jnts[1]['motion_val'] = self.lft.jnts[1]['motion_val']
         self.lft.fk()
         self.rgt.fk()
 
     def jaw_to(self, jawwidth):
         self.fk(jawwidth=jawwidth)
+
+    def show_cdprimit(self):
+        is_fk_updated = self.lft.is_fk_updated
+        self.cc.show_cdprimit(need_update=is_fk_updated)
+
+    def show_cdmesh(self):
+        pass
 
     def gen_stickmodel(self,
                        tcp_jntid=None,
@@ -187,10 +158,6 @@ class YumiGripper(object):
                                rgba=rgba).attach_to(meshmodel)
         return meshmodel
 
-    def copy(self):
-        return copy.deepcopy(self)
-
-
 
 if __name__ == '__main__':
     import copy
@@ -210,5 +177,6 @@ if __name__ == '__main__':
     grpr2.fix_to(pos=np.array([.3,.3,.2]), rotmat=rm.rotmat_from_axangle([0,1,0],.01))
     model = grpr2.gen_meshmodel(rgba=[0.5, .5, 0, .5])
     model.attach_to(base)
-    model.show_cdprimit()
+    grpr2.show_cdprimit()
+    model.show_cdmesh()
     base.run()
