@@ -85,12 +85,18 @@ class Yumi(object):
         self.rgt_body.reinitialize()
         self.rgt_body.disable_localcc()
         rgt_arm_homeconf = np.radians(np.array([20,-90,120,30,0,40,0]))
-        self.rgt_arm = ya.IRB14050(pos=self.rgt_body.jnts[-1]['gl_posq'],
-                                   rotmat=self.rgt_body.jnts[-1]['gl_rotmatq'],
-                                   homeconf=rgt_arm_homeconf)
+        # self.rgt_arm = ya.IRB14050(pos=self.rgt_body.jnts[-1]['gl_posq'],
+        #                            rotmat=self.rgt_body.jnts[-1]['gl_rotmatq'],
+        #                            homeconf=rgt_arm_homeconf)
+        self.rgt_arm = self.lft_arm.copy()
+        self.rgt_arm.fix_to(pos=self.rgt_body.jnts[-1]['gl_posq'], rotmat=self.rgt_body.jnts[-1]['gl_rotmatq'])
+        self.rgt_arm.set_homeconf(rgt_arm_homeconf)
+        self.rgt_arm.goto_homeconf()
         self.rgt_arm.disable_localcc()
-        self.rgt_hnd = yg.YumiGripper(pos=self.rgt_arm.jnts[-1]['gl_posq'],
-                                      rotmat=self.rgt_arm.jnts[-1]['gl_rotmatq'])
+        # self.rgt_hnd = yg.YumiGripper(pos=self.rgt_arm.jnts[-1]['gl_posq'],
+        #                               rotmat=self.rgt_arm.jnts[-1]['gl_rotmatq'])
+        self.rgt_hnd = self.lft_hnd.copy()
+        self.rgt_hnd.fix_to(pos=self.rgt_arm.jnts[-1]['gl_posq'], rotmat=self.rgt_arm.jnts[-1]['gl_rotmatq'])
         # collision detection
         self.cc = self._setup_collisionchecker()
         # tool center point

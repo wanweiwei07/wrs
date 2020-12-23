@@ -1,9 +1,11 @@
 import os
+import copy
 import math
 import numpy as np
 import modeling.modelcollection as mc
 import robotsim._kinematics.jlchain as jl
 import basis.robotmath as rm
+import robotsim._kinematics.collisionchecker as cc
 
 class YumiGripper(object):
 
@@ -63,7 +65,49 @@ class YumiGripper(object):
         # disable the localcc of each the links
         self.lft.disable_localcc()
         self.rgt.disable_localcc()
-        # TODO external collision detection
+        # collision detection
+        self.cc = self._setup_collisionchecker()
+
+    def _setup_collisionchecker(self):
+        checker = cc.CollisionChecker("collision_checker")
+        checker.add_cdlnks(self.lft, [0, 1])
+        checker.add_cdlnks(self.rgt, [1])
+        activelist = [self.lft.lnks[0],
+                      self.lft.lnks[1],
+                      self.rgt.lnks[1]]
+        checker.set_active_cdlnks(activelist)
+
+    def is_collided(self, obstacle_list=[], otherrobot_list=[]):
+        # object in hand do not update by itself
+        is_fk_updated = self.lft.is_fk_updated
+        return self.cc.is_collided(obstacle_list=obstacle_list, otherrobot_list=otherrobot_list,
+                                   need_update=is_fk_updated)
+
+    def disable_localcc(self):
+        """
+        clear pairs and nodepath
+        :return:
+        """
+        for cdelement in self.cc.all_cdelements:
+            cdelement['cdprimit_childid'] = -1
+        self.cc.all_cdelements = []
+        for child in self.cc.np.getChildren():
+            child.removeNode()
+        self.cc.nbitmask = 0
+
+    def is_mesh_collided(self, objcm_list=[]):
+        """
+        for fine collision detection
+        :param objcm_list:
+        :return:
+        """
+        hnd_objcm_list = [self.lft.lnks[0]['collisionmodel'],
+                          self.lft.lnks[1]['collisionmodel'],
+                          self.rgt.lnks[1]['collisionmodel']]
+        for objcm in objcm_list:
+            if objcm.is_mcdwith(hnd_objcm_list):
+                return True
+        return False
 
     def fix_to(self, pos, rotmat):
         self.pos = pos
