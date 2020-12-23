@@ -43,8 +43,6 @@ class XArm7YunjiMobile(object):
         self.hnd = xag.XArmGripper(pos=self.arm.jnts[-1]['gl_posq'],
                                    rotmat=self.arm.jnts[-1]['gl_rotmatq'],
                                    name=self.name + "_hnd")
-        # objects in hand
-        self.obj_inhnd_cdprimit_cache = []
         # collision detection
         self.cc = self._setup_collisionchecker()
         # tool center point
@@ -56,7 +54,7 @@ class XArm7YunjiMobile(object):
         self.objs_inhnd_infos = []
 
     def _setup_collisionchecker(self):
-        checker = cc.CollisionChecker(self.name + "_collisionchecker")
+        checker = cc.CollisionChecker("collision_checker")
         checker.add_cdlnks(self.agv, [0])
         checker.add_cdlnks(self.arm, [0, 1, 2, 3, 4, 5, 6])
         checker.add_cdlnks(self.hnd.lft_outer, [0, 1, 2])
@@ -98,10 +96,9 @@ class XArm7YunjiMobile(object):
         self.hnd.fix_to(pos=self.arm.jnts[-1]['gl_posq'], rotmat=self.arm.jnts[-1]['gl_rotmatq'])
         # set objects in hand cache's need-to-update marker to True
         for one_oih_info in self.objs_inhnd_infos:
-            gl_pos, gl_rotmat = self.tcp_jlc.get_worldpose(one_oih_info['rel_pos'], one_oih_info['rel_rotmat'])
+            gl_pos, gl_rotmat = self.tcp_jlc.get_gl_pose(one_oih_info['rel_pos'], one_oih_info['rel_rotmat'])
             one_oih_info['gl_pos'] = gl_pos
             one_oih_info['gl_rotmat'] = gl_rotmat
-            one_oih_info['cdprimit_cache'][0] = True
 
     def fk(self, general_jnt_values):
         """
@@ -120,11 +117,13 @@ class XArm7YunjiMobile(object):
         if len(general_jnt_values) == 11:  # gripper is also set
             self.hnd.jaw_to(general_jnt_values[10])
         # set objects in hand cache's need-to-update marker to True
-        for one_oih_info in self.objs_inhnd_infos:
-            gl_pos, gl_rotmat = self.tcp_jlc.get_worldpose(one_oih_info['rel_pos'], one_oih_info['rel_rotmat'])
-            one_oih_info['gl_pos'] = gl_pos
-            one_oih_info['gl_rotmat'] = gl_rotmat
-            one_oih_info['cdprimit_cache'][0] = True
+        for obj_info in self.objs_inhnd_infos:
+            gl_pos, gl_rotmat = self.tcp_jlc.get_gl_pose(obj_info['rel_pos'], obj_info['rel_rotmat'])
+            obj_info['gl_pos'] = gl_pos
+            obj_info['gl_rotmat'] = gl_rotmat
+
+    def jaw_to(self, jawwidth):
+        self.hnd.jaw_to(jawwidth)
 
     def hold(self, objcm, jawwidth=None):
         """
@@ -135,7 +134,7 @@ class XArm7YunjiMobile(object):
         """
         if jawwidth is not None:
             self.hnd.jaw_to(jawwidth)
-        rel_pos, rel_rotmat = self.tcp_jlc.get_relpose(objcm.get_pos(), objcm.get_rotmat())
+        rel_pos, rel_rotmat = self.tcp_jlc.get_loc_pose(objcm.get_pos(), objcm.get_rotmat())
         intolist = [self.agv.lnks[0],
                     self.arm.lnks[0],
                     self.arm.lnks[1],
@@ -146,6 +145,15 @@ class XArm7YunjiMobile(object):
                     self.arm.lnks[6]]
         self.objs_inhnd_infos.append(self.cc.add_cdobj(objcm, rel_pos, rel_rotmat, intolist))
 
+    def get_hold_objlist(self):
+        return_list = []
+        for obj_info in self.objs_inhnd_infos:
+            objcm = obj_info['collisionmodel']
+            objcm.set_pos(obj_info['gl_pos'])
+            objcm.set_rotmat(obj_info['gl_rotmat'])
+            return_list.append(objcm)
+        return return_list
+
     def release(self, objcm, jawwidth=None):
         """
         the objcm is added as a part of the robot to the cd checker
@@ -155,16 +163,21 @@ class XArm7YunjiMobile(object):
         """
         if jawwidth is not None:
             self.hnd.jaw_to(jawwidth)
-        for one_oih_info in self.objs_inhnd_infos:
-            if one_oih_info['collisionmodel'] is objcm:
-                self.cc.delete_cdobj(one_oih_info)
-                self.objs_inhnd_infos.remove(one_oih_info)
+        for obj_info in self.objs_inhnd_infos:
+            if obj_info['collisionmodel'] is objcm:
+                self.cc.delete_cdobj(obj_info)
+                self.objs_inhnd_infos.remove(obj_info)
                 break
 
     def is_collided(self, obstacle_list=[], otherrobot_list=[]):
+        # object in hand do not update by itself
         is_fk_updated = self.agv.is_fk_updated or self.arm.is_fk_updated or self.hnd.lft_outer.is_fk_updated
         return self.cc.is_collided(obstacle_list=obstacle_list, otherrobot_list=otherrobot_list,
                                    need_update=is_fk_updated)
+
+    def show_cdprimit(self):
+        is_fk_updated = self.agv.is_fk_updated or self.arm.is_fk_updated or self.hnd.lft_outer.is_fk_updated
+        self.cc.show_cdprimit(need_update=is_fk_updated)
 
     def gen_stickmodel(self,
                        tcp_jntid=None,
@@ -240,24 +253,24 @@ if __name__ == '__main__':
 
     gm.gen_frame().attach_to(base)
     xav = XArm7YunjiMobile()
-    xav.fk(np.array([0, 0, 0, 0, math.pi * 2 / 3, 0, math.pi, 0, -math.pi / 6, 0, 0]))
+    xav.fk(np.array([0, 0, 0, 0, 0, 0, math.pi, 0, -math.pi / 6, 0, 0]))
+    xav.jaw_to(.08)
     xav_meshmodel = xav.gen_meshmodel()
     xav_meshmodel.attach_to(base)
-    xav_meshmodel.show_cdprimit()
+    xav.show_cdprimit()
     xav.gen_stickmodel().attach_to(base)
     tic = time.time()
     result = xav.is_collided()
     toc = time.time()
     print(result, toc - tic)
 
-    xav_cpy = xav.copy()
-    xav_cpy.move_to(pos=np.array([.5,.5,0]),rotmat=rm.rotmat_from_axangle([0,0,1],-math.pi/3))
-
-    xav_meshmodel = xav_cpy.gen_meshmodel()
-    xav_meshmodel.attach_to(base)
-    xav_meshmodel.show_cdprimit()
-    tic = time.time()
-    result = xav_cpy.is_collided(otherrobot_list=[xav])
-    toc = time.time()
-    print(result, toc - tic)
+    # xav_cpy = xav.copy()
+    # xav_cpy.move_to(pos=np.array([.5,.5,0]),rotmat=rm.rotmat_from_axangle([0,0,1],-math.pi/3))
+    # xav_meshmodel = xav_cpy.gen_meshmodel()
+    # xav_meshmodel.attach_to(base)
+    # xav_cpy.show_cdprimit()
+    # tic = time.time()
+    # result = xav_cpy.is_collided(otherrobot_list=[xav])
+    # toc = time.time()
+    # print(result, toc - tic)
     base.run()

@@ -20,7 +20,7 @@ class XArmGripper(object):
                                    homeconf=np.zeros(0),
                                    name=self.name+'_coupling')
         self.coupling.jnts[1]['loc_pos'] = np.array([0, 0, .0])
-        self.coupling.lnks[0]['name'] = self.name+'_coupling_lnk0'
+        self.coupling.lnks[0]['name'] = 'coupling_lnk0'
         # self.coupling.lnks[0]['meshfile'] = os.path.join(this_dir, "meshes", "xxx.stl")
         # self.coupling.lnks[0]['rgba'] = [.2, .2, .2, 1]
         self.coupling.reinitialize()
@@ -31,7 +31,7 @@ class XArmGripper(object):
         self.lft_outer = jl.JLChain(pos=cpl_end_pos,
                                     rotmat=cpl_end_rotmat,
                                     homeconf=np.zeros(2),
-                                    name=self.name+'_lft_outer')
+                                    name='jlc_lft_outer')
         self.lft_outer.jnts[1]['loc_pos'] = np.array([0, .035, .059098])
         self.lft_outer.jnts[1]['rngmin'] = .0
         self.lft_outer.jnts[1]['rngmax'] = .85  # TODO change min-max to a tuple
@@ -44,7 +44,7 @@ class XArmGripper(object):
         self.lft_inner = jl.JLChain(pos=cpl_end_pos,
                                     rotmat=cpl_end_rotmat,
                                     homeconf=np.zeros(1),
-                                    name=self.name+'_lft_inner')
+                                    name='jlc_lft_inner')
         self.lft_inner.jnts[1]['loc_pos'] = np.array([0, .02, .074098])
         self.lft_inner.jnts[1]['rngmin'] = .0
         self.lft_inner.jnts[1]['rngmax'] = .85  # TODO change min-max to a tuple
@@ -53,7 +53,7 @@ class XArmGripper(object):
         self.rgt_outer = jl.JLChain(pos=cpl_end_pos,
                                     rotmat=cpl_end_rotmat,
                                     homeconf=np.zeros(2),
-                                    name=self.name+'_rgt_outer')
+                                    name='jlc_rgt_outer')
         self.rgt_outer.jnts[1]['loc_pos'] = np.array([0, -.035, .059098])
         self.rgt_outer.jnts[1]['rngmin'] = .0
         self.rgt_outer.jnts[1]['rngmax'] = .85  # TODO change min-max to a tuple
@@ -66,52 +66,52 @@ class XArmGripper(object):
         self.rgt_inner = jl.JLChain(pos=cpl_end_pos,
                                     rotmat=cpl_end_rotmat,
                                     homeconf=np.zeros(1),
-                                    name=self.name+'_rgt_inner')
+                                    name='jlc_rgt_inner')
         self.rgt_inner.jnts[1]['loc_pos'] = np.array([0, -.02, .074098])
         self.rgt_inner.jnts[1]['rngmin'] = .0
         self.rgt_inner.jnts[1]['rngmax'] = .85  # TODO change min-max to a tuple
         self.rgt_inner.jnts[1]['loc_motionax'] = np.array([-1, 0, 0])
         # links
         # - lft_outer
-        self.lft_outer.lnks[0]['name'] = self.name+'_base'
+        self.lft_outer.lnks[0]['name'] = 'lnk_base'
         self.lft_outer.lnks[0]['loc_pos'] = np.zeros(3)
         self.lft_outer.lnks[0]['com'] = np.array([-0.00065489, -0.0018497, 0.048028])
         self.lft_outer.lnks[0]['mass'] = 0.5415
         self.lft_outer.lnks[0]['meshfile'] = os.path.join(this_dir, "meshes", "base_link.stl")
-        self.lft_outer.lnks[1]['name'] = self.name+'_left_outer_knuckle'
+        self.lft_outer.lnks[1]['name'] = 'lnk_left_outer_knuckle'
         self.lft_outer.lnks[1]['loc_pos'] = np.zeros(3)
         self.lft_outer.lnks[1]['com'] = np.array([2.9948e-14, 0.021559, 0.015181])
         self.lft_outer.lnks[1]['mass'] = 0.033618
         self.lft_outer.lnks[1]['meshfile'] = os.path.join(this_dir, "meshes", "left_outer_knuckle.stl")
         self.lft_outer.lnks[1]['rgba'] = [.2, .2, .2, 1]
-        self.lft_outer.lnks[2]['name'] = self.name+'_left_finger'
+        self.lft_outer.lnks[2]['name'] = 'lnk_left_finger'
         self.lft_outer.lnks[2]['loc_pos'] = np.zeros(3)
         self.lft_outer.lnks[2]['com'] = np.array([-2.4536e-14, -0.016413, 0.029258])
         self.lft_outer.lnks[2]['mass'] = 0.048304
         self.lft_outer.lnks[2]['meshfile'] = os.path.join(this_dir, "meshes", "left_finger.stl")
         self.lft_outer.lnks[2]['rgba'] = [.2, .2, .2, 1]
         # - lft_inner
-        self.lft_inner.lnks[1]['name'] = self.name+'_left_inner_knuckle'
+        self.lft_inner.lnks[1]['name'] = 'lnk_left_inner_knuckle'
         self.lft_inner.lnks[1]['loc_pos'] = np.zeros(3)
         self.lft_inner.lnks[1]['com'] = np.array([2.9948e-14, 0.021559, 0.015181])
         self.lft_inner.lnks[1]['mass'] = 0.033618
         self.lft_inner.lnks[1]['meshfile'] = os.path.join(this_dir, "meshes", "left_inner_knuckle.stl")
         self.lft_inner.lnks[1]['rgba'] = [.2, .2, .2, 1]
         # - rgt_outer
-        self.rgt_outer.lnks[1]['name'] = self.name+'_right_outer_knuckle'
+        self.rgt_outer.lnks[1]['name'] = 'lnk_right_outer_knuckle'
         self.rgt_outer.lnks[1]['loc_pos'] = np.zeros(3)
         self.rgt_outer.lnks[1]['com'] = np.array([-3.1669e-14, -0.021559, 0.015181])
         self.rgt_outer.lnks[1]['mass'] = 0.033618
         self.rgt_outer.lnks[1]['meshfile'] = os.path.join(this_dir, "meshes", "right_outer_knuckle.stl")
         self.rgt_outer.lnks[1]['rgba'] = [.2, .2, .2, 1]
-        self.rgt_outer.lnks[2]['name'] = self.name+'_right_finger'
+        self.rgt_outer.lnks[2]['name'] = 'lnk_right_finger'
         self.rgt_outer.lnks[2]['loc_pos'] = np.zeros(3)
         self.rgt_outer.lnks[2]['com'] = np.array([2.5618e-14, 0.016413, 0.029258])
         self.rgt_outer.lnks[2]['mass'] = 0.048304
         self.rgt_outer.lnks[2]['meshfile'] = os.path.join(this_dir, "meshes", "right_finger.stl")
         self.rgt_outer.lnks[2]['rgba'] = [.2, .2, .2, 1]
         # - rgt_inner
-        self.rgt_inner.lnks[1]['name'] = self.name+'_right_inner_knuckle'
+        self.rgt_inner.lnks[1]['name'] = 'lnk_right_inner_knuckle'
         self.rgt_inner.lnks[1]['loc_pos'] = np.zeros(3)
         self.rgt_inner.lnks[1]['com'] = np.array([1.866e-06, -0.022047, 0.026133])
         self.rgt_inner.lnks[1]['mass'] = 0.023013

@@ -14,6 +14,7 @@ class CollisionChecker(object):
         self.ctrav = CollisionTraverser()
         self.chan = CollisionHandlerQueue()
         self.np = NodePath(name)
+        self.is_nprendered = False
         self.nbitmask = 0 # capacity 1-30
         self._bitmask_ext = BitMask32(2**31) # 31 is prepared for cd with external objects
         self.all_cdelements = [] # a list of cdlnks or cdobjs for quick accessing the cd elements (cdlnks/cdobjs)
@@ -67,14 +68,14 @@ class CollisionChecker(object):
             raise ValueError("Too many collision pairs! Maximum: 29")
         cdmask = BitMask32(2 ** self.nbitmask)
         for cdlnk in fromlist:
-            if cdlnk['cdprimit_childid'] is None:
+            if cdlnk['cdprimit_childid'] == -1:
                 raise ValueError("The link needs to be added to collider using the addjlcobj function first!")
             cdnp = self.np.getChild(cdlnk['cdprimit_childid'])
             current_from_cdmask = cdnp.node().getFromCollideMask()
             new_from_cdmask = current_from_cdmask | cdmask
             cdnp.node().setFromCollideMask(new_from_cdmask)
         for cdlnk in intolist:
-            if cdlnk['cdprimit_childid'] is None:
+            if cdlnk['cdprimit_childid'] == -1:
                 raise ValueError("The link needs to be added to collider using the addjlcobj function first!")
             cdnp = self.np.getChild(cdlnk['cdprimit_childid'])
             current_into_cdmask = cdnp.node().getIntoCollideMask()
@@ -98,7 +99,7 @@ class CollisionChecker(object):
         cdnp.node().setFromCollideMask(self._bitmask_ext) # set active
         self.ctrav.addCollider(cdnp, self.chan)
         self.all_cdelements.append(cdobj_info)
-        cdobj_info['cdprimit_cache'] = [False, len(self.all_cdelements)-1]
+        cdobj_info['cdprimit_childid'] = len(self.all_cdelements)-1
         self.set_cdpair([cdobj_info], intolist)
         return cdobj_info
 
@@ -153,7 +154,10 @@ class CollisionChecker(object):
                 current_into_cdmask = cdnp.node().getIntoCollideMask()
                 new_into_cdmask = current_into_cdmask & ~self._bitmask_ext
                 cdnp.node().setIntoCollideMask(new_into_cdmask)
-            robot.cc.np.detachNode()
+            if robot.cc.is_nprendered:
+                robot.cc.np.reparentTo(base.render)
+            else:
+                robot.cc.np.detachNode()
         if self.chan.getNumEntries() > 0:
             return True
         else:
@@ -162,13 +166,14 @@ class CollisionChecker(object):
     def show_cdprimit(self, need_update=False):
         # print("call show_cdprimit")
         self.np.reparentTo(base.render)
+        self.is_nprendered = True
         if need_update:
             for cdelement in self.all_cdelements:
                 pos = cdelement['gl_pos']
                 rotmat = cdelement['gl_rotmat']
                 cdnp = self.np.getChild(cdelement['cdprimit_childid'])
                 cdnp.setMat(da.npv3mat3_to_pdmat4(pos, rotmat))
-                # print(cdnp)
+                # print(cdnp.getMat())
                 cdnp.show()
         else:
             for child in self.np.getChildren():
@@ -178,6 +183,7 @@ class CollisionChecker(object):
         for child in self.np.getChildren():
             child.hide()
         self.np.detachNode()
+        self.is_nprendered = False
 
     def disable(self):
         """
