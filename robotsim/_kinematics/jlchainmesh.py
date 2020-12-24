@@ -68,6 +68,7 @@ class JLChainMesh(object):
     def unshow_cdprimit(self):
         self.cc.unshow_cdprimit()
 
+
     def gen_meshmodel(self, tcp_jntid=None, tcp_loc_pos=None, tcp_loc_rotmat=None,
                       toggle_tcpcs=True, toggle_jntscs=False, name='robotmesh', rgba=None):
         meshmodel = mc.ModelCollection(name=name)

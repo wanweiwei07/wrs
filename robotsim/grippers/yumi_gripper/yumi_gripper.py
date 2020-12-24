@@ -51,27 +51,21 @@ class YumiGripper(gp.Gripper):
         self.lft.disable_localcc()
         self.rgt.disable_localcc()
         # collision detection
+        # cdprimit
         self.cc.add_cdlnks(self.lft, [0, 1])
         self.cc.add_cdlnks(self.rgt, [1])
         activelist = [self.lft.lnks[0],
                       self.lft.lnks[1],
                       self.rgt.lnks[1]]
         self.cc.set_active_cdlnks(activelist)
-
-    def is_collided(self, obstacle_list=[], otherrobot_list=[]):
-        # object in hand do not update by itself
-        is_fk_updated = self.lft.is_fk_updated
-        return self.cc.is_collided(obstacle_list=obstacle_list, otherrobot_list=otherrobot_list,
-                                   need_update=is_fk_updated)
-
-    def is_mesh_collided(self, objcm_list=[]):
-        hnd_objcm_list = [self.lft.lnks[0]['collisionmodel'],
-                          self.lft.lnks[1]['collisionmodel'],
-                          self.rgt.lnks[1]['collisionmodel']]
-        for objcm in objcm_list:
-            if objcm.is_mcdwith(hnd_objcm_list):
-                return True
-        return False
+        # cdmesh
+        for cdelement in self.cc.all_cdelements:
+            pos = cdelement['gl_pos']
+            rotmat = cdelement['gl_rotmat']
+            cdmesh = cdelement['collisionmodel'].copy()
+            cdmesh.set_pos(pos)
+            cdmesh.set_rotmat(rotmat)
+            self.cdmesh_collection.add_cm(cdmesh)
 
     def fix_to(self, pos, rotmat):
         self.pos = pos
@@ -81,29 +75,23 @@ class YumiGripper(gp.Gripper):
         cpl_end_rotmat = self.coupling.jnts[-1]['gl_rotmatq']
         self.lft.fix_to(cpl_end_pos, cpl_end_rotmat)
         self.rgt.fix_to(cpl_end_pos, cpl_end_rotmat)
+        self.is_fk_updated = True
 
     def fk(self, motion_val):
         """
         lft_outer is the only active joint, all others mimic this one
         :param: motion_val, meter or radian
         """
-        if motion_val > .05:
-            raise ValueError("The angle parameter is out of range!")
-        side_motion_val = (.05 - motion_val) / 2.0
-        self.lft.jnts[1]['motion_val'] = side_motion_val
-        self.rgt.jnts[1]['motion_val'] = self.lft.jnts[1]['motion_val']
+        self.lft.jnts[1]['motion_val'] = motion_val
+        self.rgt.jnts[1]['motion_val'] = -self.lft.jnts[1]['motion_val']
         self.lft.fk()
         self.rgt.fk()
+        self.is_fk_updated = True
 
     def jaw_to(self, jawwidth):
-        self.fk(jawwidth=jawwidth)
-
-    def show_cdprimit(self):
-        is_fk_updated = self.lft.is_fk_updated
-        self.cc.show_cdprimit(need_update=is_fk_updated)
-
-    def show_cdmesh(self):
-        pass
+        if jawwidth > .05:
+            raise ValueError("The jawwidth parameter is out of range!")
+        self.fk(motion_val= -jawwidth / 2.0)
 
     def gen_stickmodel(self,
                        tcp_jntid=None,
@@ -160,14 +148,13 @@ class YumiGripper(gp.Gripper):
 
 
 if __name__ == '__main__':
-    import copy
     import visualization.panda.world as wd
     import modeling.geometricmodel as gm
 
     base = wd.World(campos=[.5, .5, .5], lookatpos=[0, 0, 0])
     gm.gen_frame().attach_to(base)
     grpr = YumiGripper()
-    grpr.fk(.05)
+    grpr.jaw_to(.0)
     grpr.gen_meshmodel(rgba=[0, .5, 0, .5]).attach_to(base)
     # grpr.gen_stickmodel(togglejntscs=False).attach_to(base)
     grpr.fix_to(pos=np.array([0, .3, .2]), rotmat=rm.rotmat_from_axangle([1, 0, 0], .05))

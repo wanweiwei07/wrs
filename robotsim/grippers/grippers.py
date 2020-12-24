@@ -1,5 +1,6 @@
 import copy
 import numpy as np
+import modeling.modelcollection as mc
 import robotsim._kinematics.jlchain as jl
 import robotsim._kinematics.collisionchecker as cc
 
@@ -25,6 +26,9 @@ class Gripper(object):
         self.coupling.disable_localcc()
         # collision detection
         self.cc = cc.CollisionChecker("collision_checker")
+        self.cdmesh_collection = mc.ModelCollection()
+        # fk tag
+        self.is_fk_updated = False
 
     def is_collided(self, obstacle_list=[], otherrobot_list=[]):
         """
@@ -35,17 +39,19 @@ class Gripper(object):
         author: weiwei
         date: 20201223
         """
-        raise NotImplementedError
+        return self.cc.is_collided(obstacle_list=obstacle_list, otherrobot_list=otherrobot_list,
+                                   need_update=self.is_fk_updated)
 
     def is_mesh_collided(self, objcm_list=[]):
-        """
-        Interface for "fine collision detection", must be implemented in child class
-        :param objcm_list:
-        :return:
-        author: weiwei
-        date: 20201223
-        """
-        raise NotImplementedError
+        if self.is_fk_updated:
+            for i, cdelement in enumerate(self.cc.all_cdelements):
+                pos = cdelement['gl_pos']
+                rotmat = cdelement['gl_rotmat']
+                self.cdmesh_collection.cm_list[i].set_pos(pos)
+                self.cdmesh_collection.cm_list[i].set_rotmat(rotmat)
+                if self.cdmesh_collection.cm_list[i].is_mcdwith(objcm_list):
+                    return True
+        return False
 
     def fix_to(self, pos, rotmat):
         raise NotImplementedError
@@ -57,10 +63,22 @@ class Gripper(object):
         raise NotImplementedError
 
     def show_cdprimit(self):
-        raise NotImplementedError
+        self.cc.show_cdprimit(need_update=self.is_fk_updated)
+
+    def unshow_cdprimit(self):
+        self.cc.unshow_cdprimit()
 
     def show_cdmesh(self):
-        raise NotImplementedError
+        if self.is_fk_updated:
+            for i, cdelement in enumerate(self.cc.all_cdelements):
+                pos = cdelement['gl_pos']
+                rotmat = cdelement['gl_rotmat']
+                self.cdmesh_collection.cm_list[i].set_pos(pos)
+                self.cdmesh_collection.cm_list[i].set_rotmat(rotmat)
+        self.cdmesh_collection.show_cdmesh()
+
+    def unshow_cdmesh(self):
+        self.cdmesh_collection.unshow_cdmesh()
 
     def gen_stickmodel(self,
                        tcp_jntid=None,

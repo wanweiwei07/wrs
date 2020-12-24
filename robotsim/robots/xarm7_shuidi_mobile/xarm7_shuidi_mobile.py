@@ -111,7 +111,8 @@ class XArm7YunjiMobile(object):
         self.pos[:2] = general_jnt_values[:2]
         self.rotmat = rm.rotmat_from_axangle([0, 0, 1], general_jnt_values[2])
         self.agv.fix_to(self.pos, self.rotmat)
-        self.arm.fix_to(pos=self.agv.jnts[-1]['gl_posq'], rotmat=self.agv.jnts[-1]['gl_rotmatq'],
+        self.arm.fix_to(pos=self.agv.jnts[-1]['gl_posq'],
+                        rotmat=self.agv.jnts[-1]['gl_rotmatq'],
                         jnt_values=general_jnt_values[3:10])
         self.hnd.fix_to(pos=self.arm.jnts[-1]['gl_posq'], rotmat=self.arm.jnts[-1]['gl_rotmatq'])
         if len(general_jnt_values) == 11:  # gripper is also set

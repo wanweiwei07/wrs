@@ -115,27 +115,22 @@ class XArmGripper(gp.Gripper):
         self.rgt_outer.disable_localcc()
         self.rgt_inner.disable_localcc()
         # collision detection
-        # self.cc.add_cdlnks(self.lft, [0, 1])
-        # self.cc.add_cdlnks(self.rgt, [1])
-        # activelist = [self.lft.lnks[0],
-        #               self.lft.lnks[1],
-        #               self.rgt.lnks[1]]
-        # self.cc.set_active_cdlnks(activelist)
-
-    # def is_collided(self, obstacle_list=[], otherrobot_list=[]):
-    #     # object in hand do not update by itself
-    #     is_fk_updated = self.lft.is_fk_updated
-    #     return self.cc.is_collided(obstacle_list=obstacle_list, otherrobot_list=otherrobot_list,
-    #                                need_update=is_fk_updated)
-    #
-    # def is_mesh_collided(self, objcm_list=[]):
-    #     hnd_objcm_list = [self.lft.lnks[0]['collisionmodel'],
-    #                       self.lft.lnks[1]['collisionmodel'],
-    #                       self.rgt.lnks[1]['collisionmodel']]
-    #     for objcm in objcm_list:
-    #         if objcm.is_mcdwith(hnd_objcm_list):
-    #             return True
-    #     return False
+        self.cc.add_cdlnks(self.lft_outer, [0, 1, 2])
+        self.cc.add_cdlnks(self.rgt_outer, [1, 2])
+        activelist = [self.lft_outer.lnks[0],
+                      self.lft_outer.lnks[1],
+                      self.lft_outer.lnks[2],
+                      self.rgt_outer.lnks[1],
+                      self.rgt_outer.lnks[2]]
+        self.cc.set_active_cdlnks(activelist)
+        # cdmesh
+        for cdelement in self.cc.all_cdelements:
+            pos = cdelement['gl_pos']
+            rotmat = cdelement['gl_rotmat']
+            cdmesh = cdelement['collisionmodel'].copy()
+            cdmesh.set_pos(pos)
+            cdmesh.set_rotmat(rotmat)
+            self.cdmesh_collection.add_cm(cdmesh)
 
     def fix_to(self, pos, rotmat):
         self.pos = pos
@@ -147,14 +142,15 @@ class XArmGripper(gp.Gripper):
         self.lft_inner.fix_to(cpl_end_pos, cpl_end_rotmat)
         self.rgt_outer.fix_to(cpl_end_pos, cpl_end_rotmat)
         self.rgt_inner.fix_to(cpl_end_pos, cpl_end_rotmat)
+        self.is_fk_updated = self.lft_outer.is_fk_updated
 
-    def fk(self, angle):
+    def fk(self, motion_val):
         """
         lft_outer is the only active joint, all others mimic this one
-        :param: angle, radian
+        :param: motion_val, radian
         """
-        if self.lft_outer.jnts[1]['rngmin'] <= angle <= self.lft_outer.jnts[1]['rngmax']:
-            self.lft_outer.jnts[1]['motion_val'] = angle
+        if self.lft_outer.jnts[1]['rngmin'] <= motion_val <= self.lft_outer.jnts[1]['rngmax']:
+            self.lft_outer.jnts[1]['motion_val'] = motion_val
             self.lft_outer.jnts[2]['motion_val'] = self.lft_outer.jnts[1]['motion_val']
             self.lft_inner.jnts[1]['motion_val'] = self.lft_outer.jnts[1]['motion_val']
             self.rgt_outer.jnts[1]['motion_val'] = self.lft_outer.jnts[1]['motion_val']
@@ -166,19 +162,13 @@ class XArmGripper(gp.Gripper):
             self.rgt_inner.fk()
         else:
             raise ValueError("The angle parameter is out of range!")
+        self.is_fk_updated = self.lft_outer.is_fk_updated
 
     def jaw_to(self, jawwidth):
         if jawwidth > 0.082:
             raise ValueError("Jawwidth must be 0mm~82mm!")
         angle = .85 - math.asin(jawwidth/2.0/0.055)
         self.fk(angle)
-
-    # def show_cdprimit(self):
-    #     is_fk_updated = self.lft.is_fk_updated
-    #     self.cc.show_cdprimit(need_update=is_fk_updated)
-    #
-    # def show_cdmesh(self):
-    #     pass
 
     def gen_stickmodel(self,
                        tcp_jntid=None,
@@ -241,8 +231,6 @@ class XArmGripper(gp.Gripper):
                                      rgba=rgba).attach_to(meshmodel)
         return meshmodel
 
-    def copy(self):
-        return copy.deepcopy(self)
 
 if __name__ == '__main__':
     import visualization.panda.world as wd
@@ -258,6 +246,7 @@ if __name__ == '__main__':
     xag.jaw_to(0.05)
     model = xag.gen_meshmodel(rgba=[.5,0,0,.3])
     model.attach_to(base)
-    # model.show_cdprimit()
+    xag.show_cdprimit()
+    xag.show_cdmesh()
     xag.gen_stickmodel().attach_to(base)
     base.run()
