@@ -4,9 +4,9 @@ import numpy as np
 import modeling.modelcollection as mc
 import robotsim._kinematics.jlchain as jl
 import basis.robotmath as rm
-import robotsim.grippers.grippers as gp
+import robotsim.grippers.gripper_interface as gp
 
-class YumiGripper(gp.Gripper):
+class YumiGripper(gp.GripperInterface):
 
     def __init__(self, pos=np.zeros(3), rotmat=np.eye(3), name='yumi_gripper'):
         super().__init__(pos=pos, rotmat=rotmat, name=name)

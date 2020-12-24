@@ -5,7 +5,7 @@ import robotsim._kinematics.jlchain as jl
 import robotsim._kinematics.collisionchecker as cc
 
 
-class Gripper(object):
+class GripperInterface(object):
 
     def __init__(self, pos=np.zeros(3), rotmat=np.eye(3), name='yumi_gripper'):
         self.name = name
@@ -113,5 +113,10 @@ class Gripper(object):
         self.cc.nbitmask = 0
 
     def copy(self):
-        return copy.deepcopy(self)
+        # TDO check is disabled?
+        self_copy = copy.deepcopy(self)
+        # deepcopying colliders are problematic, I have to update it manually
+        for child in self_copy.cc.np.getChildren():
+            self_copy.cc.ctrav.addCollider(child, self_copy.cc.chan)
+        return self_copy
 

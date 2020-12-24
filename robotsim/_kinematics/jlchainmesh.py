@@ -182,7 +182,7 @@ class JLChainMesh(object):
             tcpcs_thickness = tcpic_thickness
         if tcpcs_length is None:
             tcpcs_length = tcpcs_thickness * 15
-        tcp_globalpos, tcp_globalrotmat = self.jlobject.get_globaltcp(tcp_jntid, tcp_loc_pos, tcp_loc_rotmat)
+        tcp_globalpos, tcp_globalrotmat = self.jlobject.get_gl_tcp(tcp_jntid, tcp_loc_pos, tcp_loc_rotmat)
         if isinstance(tcp_globalpos, list):
             for i, jid in enumerate(tcp_jntid):
                 jgpos = self.jlobject.jnts[jid]['gl_posq']

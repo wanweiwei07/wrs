@@ -188,7 +188,7 @@ class JLChain(object):
         if tcp_loc_rotmat is not None:
             self.tcp_loc_rotmat = tcp_loc_rotmat
 
-    def get_globaltcp(self,
+    def get_gl_tcp(self,
                       tcp_jntid=None,
                       tcp_loc_pos=None,
                       tcp_loc_rotmat=None):
@@ -384,7 +384,7 @@ class JLChain(object):
 
     def get_gl_pose(self,
                     loc_pos=np.zeros(3),
-                    loc_romat=np.eye(3),
+                    loc_rotmat=np.eye(3),
                     tcp_jntid=None,
                     tcp_loc_pos=None,
                     tcp_loc_rotmat=None):
