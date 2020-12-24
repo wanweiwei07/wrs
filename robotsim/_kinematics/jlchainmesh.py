@@ -3,7 +3,6 @@ import modeling.geometricmodel as gm
 import modeling.collisionmodel as cm
 import modeling.modelcollection as mc
 import basis.robotmath as rm
-import robotsim._kinematics.collisionchecker as cc
 
 
 class JLChainMesh(object):
@@ -27,47 +26,6 @@ class JLChainMesh(object):
                 self.jlobject.lnks[id]['collisionmodel'] = cm.CollisionModel(self.jlobject.lnks[id]['meshfile'])
                 if self.jlobject.lnks[id]['scale'] is not None:
                     self.jlobject.lnks[id]['collisionmodel'].set_scale(self.jlobject.lnks[id]['scale'])
-            # elif self.jlobject.lnks[id]['collisionmodel'] is not None:
-                # if self.jlobject.lnks[id]['scale'] is not None:
-                #     self.jlobject.lnks[id]['collisionmodel'].set_scale(self.jlobject.lnks[id]['scale'])
-        self.cc = cc.CollisionChecker(jlobject.name + "_collisionchecker")
-
-    def add_cdlnks(self, lnk_idlist):
-        self.cc.add_cdlnks(self.jlobject, lnk_idlist)
-        active_cdlnks = []
-        for id in lnk_idlist:
-            active_cdlnks.append(self.jlobject.lnks[id])
-        self.cc.set_active_cdlnks(active_cdlnks)
-
-    def set_cdpair(self, fromlist, intolist):
-        cdlnk_fromlist = [self.jlobject.lnks[id] for id in fromlist]
-        cdlnk_intolist = [self.jlobject.lnks[id] for id in intolist]
-        self.cc.set_cdpair(cdlnk_fromlist, cdlnk_intolist)
-
-    def is_collided(self,
-                    obstacle_list=[],
-                    otherrobot_list=[],
-                    need_update=False):
-        return self.cc.is_collided(obstacle_list=obstacle_list,
-                                   otherrobot_list=otherrobot_list,
-                                   need_update = need_update)
-
-    def disable_localcc(self):
-        """
-        disable local collision checker
-        :return:
-        """
-        self.cc.disable()
-
-    # def is_localcc_disabled(self):
-    #     return self.cc.is_disabled()
-
-    def show_cdprimit(self, need_update = False):
-        self.cc.show_cdprimit(need_update = need_update)
-
-    def unshow_cdprimit(self):
-        self.cc.unshow_cdprimit()
-
 
     def gen_meshmodel(self, tcp_jntid=None, tcp_loc_pos=None, tcp_loc_rotmat=None,
                       toggle_tcpcs=True, toggle_jntscs=False, name='robotmesh', rgba=None):

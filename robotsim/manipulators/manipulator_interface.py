@@ -14,7 +14,15 @@ class ManipulatorInterface(object):
         # collision detection
         self.cc = cc.CollisionChecker("collision_checker")
 
-    @ property
+    @property
+    def jnts(self):
+        return self.jlc.jnts
+
+    @property
+    def lnks(self):
+        return self.jlc.lnks
+
+    @property
     def is_fk_updated(self):
         return self.jlc.is_fk_updated
 
@@ -180,6 +188,6 @@ class ManipulatorInterface(object):
     def copy(self):
         self_copy = copy.deepcopy(self)
         # deepcopying colliders are problematic, I have to update it manually
-        for child in self_copy.cc.np.getChildren():
+        for child in self_copy.cc.np.getChildren(): # empty NodePathCollection if the np does not have a child
             self_copy.cc.ctrav.addCollider(child, self_copy.cc.chan)
         return self_copy

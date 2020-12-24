@@ -4,81 +4,83 @@ import math
 import numpy as np
 import basis.robotmath as rm
 import robotsim._kinematics.jlchain as jl
+import robotsim.manipulators.manipulator_interface as mi
 
 
-class IRB14050(jl.JLChain):
+class IRB14050(mi.ManipulatorInterface):
 
     def __init__(self, pos=np.zeros(3), rotmat=np.eye(3), homeconf=np.zeros(7), name='irb14050'):
-        super().__init__(pos=pos, rotmat=rotmat, homeconf=homeconf, name=name)
+        super().__init__(pos=pos, rotmat=rotmat, name=name)
         this_dir, this_filename = os.path.split(__file__)
+        self.jlc = jl.JLChain(pos=pos, rotmat=rotmat, homeconf=homeconf, name=name)
         # seven joints, njnts = 7+2 (tgt ranges from 1-7), nlinks = 7+1
         jnt_saferngmargin = math.pi / 18.0
-        # self.jnts[1]['loc_pos'] = np.array([0.05355, -0.0725, 0.41492])
-        # self.jnts[1]['loc_rotmat'] = rm.rotmat_from_euler(-0.9795, -0.5682, -2.3155)
-        self.jnts[1]['loc_pos'] = np.array([0., 0., 0.])
-        self.jnts[1]['rngmin'] = -2.94087978961 + jnt_saferngmargin
-        self.jnts[1]['rngmax'] = 2.94087978961 - jnt_saferngmargin
-        self.jnts[2]['loc_pos'] = np.array([0.03, 0.0, 0.1])
-        self.jnts[2]['loc_rotmat'] = rm.rotmat_from_euler(1.57079632679, 0.0, 0.0)
-        self.jnts[2]['rngmin'] = -2.50454747661 + jnt_saferngmargin
-        self.jnts[2]['rngmax'] = 0.759218224618 - jnt_saferngmargin
-        self.jnts[3]['loc_pos'] = np.array([-0.03, 0.17283, 0.0])
-        self.jnts[3]['loc_rotmat'] = rm.rotmat_from_euler(-1.57079632679, 0.0, 0.0)
-        self.jnts[3]['rngmin'] = -2.94087978961 + jnt_saferngmargin
-        self.jnts[3]['rngmax'] = 2.94087978961 - jnt_saferngmargin
-        self.jnts[4]['loc_pos'] = np.array([-0.04188, 0.0, 0.07873])
-        self.jnts[4]['loc_rotmat'] = rm.rotmat_from_euler(1.57079632679, -1.57079632679, 0.0)
-        self.jnts[4]['rngmin'] = -2.15548162621 + jnt_saferngmargin
-        self.jnts[4]['rngmax'] = 1.3962634016 - jnt_saferngmargin
-        self.jnts[5]['loc_pos'] = np.array([0.0405, 0.16461, 0.0])
-        self.jnts[5]['loc_rotmat'] = rm.rotmat_from_euler(-1.57079632679, 0.0, 0.0)
-        self.jnts[5]['rngmin'] = -5.06145483078 + jnt_saferngmargin
-        self.jnts[5]['rngmax'] = 5.06145483078 - jnt_saferngmargin
-        self.jnts[6]['loc_pos'] = np.array([-0.027, 0, 0.10039])
-        self.jnts[6]['loc_rotmat'] = rm.rotmat_from_euler(1.57079632679, 0.0, 0.0)
-        self.jnts[6]['rngmin'] = -1.53588974176 + jnt_saferngmargin
-        self.jnts[6]['rngmax'] = 2.40855436775 - jnt_saferngmargin
-        self.jnts[7]['loc_pos'] = np.array([0.027, 0.029, 0.0])
-        self.jnts[7]['loc_rotmat'] = rm.rotmat_from_euler(-1.57079632679, 0.0, 0.0)
-        self.jnts[7]['rngmin'] = -3.99680398707 + jnt_saferngmargin
-        self.jnts[7]['rngmax'] = 3.99680398707 - jnt_saferngmargin
+        # self.jlc.jnts[1]['loc_pos'] = np.array([0.05355, -0.0725, 0.41492])
+        # self.jlc.jnts[1]['loc_rotmat'] = rm.rotmat_from_euler(-0.9795, -0.5682, -2.3155)
+        self.jlc.jnts[1]['loc_pos'] = np.array([0., 0., 0.])
+        self.jlc.jnts[1]['rngmin'] = -2.94087978961 + jnt_saferngmargin
+        self.jlc.jnts[1]['rngmax'] = 2.94087978961 - jnt_saferngmargin
+        self.jlc.jnts[2]['loc_pos'] = np.array([0.03, 0.0, 0.1])
+        self.jlc.jnts[2]['loc_rotmat'] = rm.rotmat_from_euler(1.57079632679, 0.0, 0.0)
+        self.jlc.jnts[2]['rngmin'] = -2.50454747661 + jnt_saferngmargin
+        self.jlc.jnts[2]['rngmax'] = 0.759218224618 - jnt_saferngmargin
+        self.jlc.jnts[3]['loc_pos'] = np.array([-0.03, 0.17283, 0.0])
+        self.jlc.jnts[3]['loc_rotmat'] = rm.rotmat_from_euler(-1.57079632679, 0.0, 0.0)
+        self.jlc.jnts[3]['rngmin'] = -2.94087978961 + jnt_saferngmargin
+        self.jlc.jnts[3]['rngmax'] = 2.94087978961 - jnt_saferngmargin
+        self.jlc.jnts[4]['loc_pos'] = np.array([-0.04188, 0.0, 0.07873])
+        self.jlc.jnts[4]['loc_rotmat'] = rm.rotmat_from_euler(1.57079632679, -1.57079632679, 0.0)
+        self.jlc.jnts[4]['rngmin'] = -2.15548162621 + jnt_saferngmargin
+        self.jlc.jnts[4]['rngmax'] = 1.3962634016 - jnt_saferngmargin
+        self.jlc.jnts[5]['loc_pos'] = np.array([0.0405, 0.16461, 0.0])
+        self.jlc.jnts[5]['loc_rotmat'] = rm.rotmat_from_euler(-1.57079632679, 0.0, 0.0)
+        self.jlc.jnts[5]['rngmin'] = -5.06145483078 + jnt_saferngmargin
+        self.jlc.jnts[5]['rngmax'] = 5.06145483078 - jnt_saferngmargin
+        self.jlc.jnts[6]['loc_pos'] = np.array([-0.027, 0, 0.10039])
+        self.jlc.jnts[6]['loc_rotmat'] = rm.rotmat_from_euler(1.57079632679, 0.0, 0.0)
+        self.jlc.jnts[6]['rngmin'] = -1.53588974176 + jnt_saferngmargin
+        self.jlc.jnts[6]['rngmax'] = 2.40855436775 - jnt_saferngmargin
+        self.jlc.jnts[7]['loc_pos'] = np.array([0.027, 0.029, 0.0])
+        self.jlc.jnts[7]['loc_rotmat'] = rm.rotmat_from_euler(-1.57079632679, 0.0, 0.0)
+        self.jlc.jnts[7]['rngmin'] = -3.99680398707 + jnt_saferngmargin
+        self.jlc.jnts[7]['rngmax'] = 3.99680398707 - jnt_saferngmargin
         # links
-        self.lnks[1]['name'] = "link_1"
-        self.lnks[1]['meshfile'] = os.path.join(this_dir, "meshes", "link_1.stl")
-        self.lnks[1]['rgba'] = [.5, .5, .5, 1]
-        self.lnks[2]['name'] = "link_2"
-        self.lnks[2]['meshfile'] = os.path.join(this_dir, "meshes", "link_2.stl")
-        self.lnks[2]['rgba'] = [.929, .584, .067, 1]
-        self.lnks[3]['name'] = "link_3"
-        self.lnks[3]['meshfile'] = os.path.join(this_dir, "meshes", "link_3.stl")
-        self.lnks[3]['rgba'] = [.7, .7, .7, 1]
-        self.lnks[4]['name'] = "link_4"
-        self.lnks[4]['meshfile'] = os.path.join(this_dir, "meshes", "link_4.stl")
-        self.lnks[4]['rgba'] = [0.180, .4, 0.298, 1]
-        self.lnks[5]['name'] = "link_5"
-        self.lnks[5]['meshfile'] = os.path.join(this_dir, "meshes", "link_5.stl")
-        self.lnks[5]['rgba'] = [.7, .7, .7, 1]
-        self.lnks[6]['name'] = "link_6"
-        self.lnks[6]['meshfile'] = os.path.join(this_dir, "meshes", "link_6.stl")
-        self.lnks[6]['rgba'] = [0.180, .4, 0.298, 1]
-        self.lnks[7]['name'] = "link_7"
-        # self.lnks[7]['meshfile'] = os.path.join(this_dir, "meshes", "link_7.stl") # not really needed to visualize
-        # self.lnks[7]['rgba'] = [.5,.5,.5,1]
+        self.jlc.lnks[1]['name'] = "link_1"
+        self.jlc.lnks[1]['meshfile'] = os.path.join(this_dir, "meshes", "link_1.stl")
+        self.jlc.lnks[1]['rgba'] = [.5, .5, .5, 1]
+        self.jlc.lnks[2]['name'] = "link_2"
+        self.jlc.lnks[2]['meshfile'] = os.path.join(this_dir, "meshes", "link_2.stl")
+        self.jlc.lnks[2]['rgba'] = [.929, .584, .067, 1]
+        self.jlc.lnks[3]['name'] = "link_3"
+        self.jlc.lnks[3]['meshfile'] = os.path.join(this_dir, "meshes", "link_3.stl")
+        self.jlc.lnks[3]['rgba'] = [.7, .7, .7, 1]
+        self.jlc.lnks[4]['name'] = "link_4"
+        self.jlc.lnks[4]['meshfile'] = os.path.join(this_dir, "meshes", "link_4.stl")
+        self.jlc.lnks[4]['rgba'] = [0.180, .4, 0.298, 1]
+        self.jlc.lnks[5]['name'] = "link_5"
+        self.jlc.lnks[5]['meshfile'] = os.path.join(this_dir, "meshes", "link_5.stl")
+        self.jlc.lnks[5]['rgba'] = [.7, .7, .7, 1]
+        self.jlc.lnks[6]['name'] = "link_6"
+        self.jlc.lnks[6]['meshfile'] = os.path.join(this_dir, "meshes", "link_6.stl")
+        self.jlc.lnks[6]['rgba'] = [0.180, .4, 0.298, 1]
+        self.jlc.lnks[7]['name'] = "link_7"
+        # self.jlc.lnks[7]['meshfile'] = os.path.join(this_dir, "meshes", "link_7.stl") # not really needed to visualize
+        # self.jlc.lnks[7]['rgba'] = [.5,.5,.5,1]
         # reinitialization
-        self.reinitialize()
+        self.jlc.reinitialize()
         # collision detection
-        self._setup_collisionchecker()
-
-    def _setup_collisionchecker(self):
-        self._mt.add_cdlnks([1, 2, 3, 4, 5, 6])
-        self._mt.set_cdpair([1], [5, 6])
-
-    def copy(self):
-        self_copy = copy.deepcopy(self)
-        # update colliders; they are problematic, I have to update it manually
-        for child in self_copy._mt.cc.np.getChildren():
-            self_copy._mt.cc.ctrav.addCollider(child, self_copy._mt.cc.chan)
-        return self_copy
+        self.cc.add_cdlnks(self.jlc, [1, 2, 3, 4, 5, 6])
+        activelist = [self.jlc.lnks[1],
+                      self.jlc.lnks[2],
+                      self.jlc.lnks[3],
+                      self.jlc.lnks[4],
+                      self.jlc.lnks[5],
+                      self.jlc.lnks[6]]
+        self.cc.set_active_cdlnks(activelist)
+        fromlist = [self.jlc.lnks[1]]
+        intolist = [self.jlc.lnks[5],
+                    self.jlc.lnks[6]]
+        self.cc.set_cdpair(fromlist, intolist)
 
 
 if __name__ == '__main__':

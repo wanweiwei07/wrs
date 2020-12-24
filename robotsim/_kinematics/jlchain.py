@@ -46,8 +46,8 @@ class JLChain(object):
         self.tcp_loc_pos = np.zeros(3)
         self.tcp_loc_rotmat = np.eye(3)
         # mesh generator
-        self._mt = jlm.JLChainMesh(self)
-        self._ikt = jlik.JLChainIK(self)
+        self._mt = jlm.JLChainMesh(self) # t = tool
+        self._ikt = jlik.JLChainIK(self) # t = tool
         self.is_fk_updated = False
 
     def _init_jlchain(self):

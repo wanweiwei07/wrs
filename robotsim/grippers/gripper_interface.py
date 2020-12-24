@@ -113,7 +113,6 @@ class GripperInterface(object):
         self.cc.nbitmask = 0
 
     def copy(self):
-        # TDO check is disabled?
         self_copy = copy.deepcopy(self)
         # deepcopying colliders are problematic, I have to update it manually
         for child in self_copy.cc.np.getChildren():
