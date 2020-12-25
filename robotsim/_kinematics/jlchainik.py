@@ -20,8 +20,8 @@ class JLChainIK(object):
         self.jmvmax = np.zeros(jlobject.ndof)
         counter = 0
         for id in jlobject.tgtjnts:
-            self.jmvmin[counter] = jlobject.jnts[id]['rngmin']
-            self.jmvmax[counter] = jlobject.jnts[id]['rngmax']
+            self.jmvmin[counter] = jlobject.jnts[id]['motion_rng'][0]
+            self.jmvmax[counter] = jlobject.jnts[id]['motion_rng'][1]
             counter += 1
         self.jmvrng = self.jmvmax - self.jmvmin
         self.jmvmin_threshhold = self.jmvmin + self.jmvrng * wlnratio
@@ -40,11 +40,11 @@ class JLChainIK(object):
         counter = 0
         for jid in self.jlobject.tgtjnts:
             grax = self.jlobject.jnts[jid]["gl_motionax"]
-            if self.jlobject.jnts[jid]["type"] == "revolute":
+            if self.jlobject.jnts[jid]["type"] == 'revolute':
                 diffq = self.jlobject.jnts[tcp_jntid]["gl_posq"] - self.jlobject.jnts[jid]["gl_posq"]
                 jmat[:3, counter] = np.cross(grax, diffq)
                 jmat[3:6, counter] = grax
-            if self.jlobject.jnts[jid]["type"] == "prismatic":
+            if self.jlobject.jnts[jid]["type"] == 'prismatic':
                 jmat[:3, counter] = grax
             counter += 1
             if jid == tcp_jntid:
@@ -190,9 +190,9 @@ class JLChainIK(object):
         """
         counter = 0
         for id in self.jlobject.tgtjnts:
-            if self.jlobject.jnts[id]["type"] is "revolute":
-                if self.jlobject.jnts[id]["rngmax"] - self.jlobject.jnts[id]["rngmin"] >= math.pi * 2:
-                    rm.regulate_angle(self.jlobject.jnts[id]["rngmin"], self.jlobject.jnts[id]["rngmax"],
+            if self.jlobject.jnts[id]["type"] is 'revolute':
+                if self.jlobject.jnts[id]['motion_rng'][1] - self.jlobject.jnts[id]['motion_rng'][0] >= math.pi * 2:
+                    rm.regulate_angle(self.jlobject.jnts[id]['motion_rng'][0], self.jlobject.jnts[id]['motion_rng'][1],
                                       self.jlobject.jnts[id]["movement"])
             counter += 1
 
@@ -211,32 +211,32 @@ class JLChainIK(object):
         isdragged = np.zeros_like(jntvalues)
         jntvaluesdragged = jntvalues.copy()
         for id in self.jlobject.tgtjnts:
-            if self.jlobject.jnts[id]["type"] == "revolute":
-                if self.jlobject.jnts[id]["rngmax"] - self.jlobject.jnts[id]["rngmin"] < math.pi * 2:
-                    # if jntvalues[counter] < jlinstance.jnts[id]["rngmin"]:
+            if self.jlobject.jnts[id]["type"] == 'revolute':
+                if self.jlobject.jnts[id]['motion_rng'][1] - self.jlobject.jnts[id]['motion_rng'][0] < math.pi * 2:
+                    # if jntvalues[counter] < jlinstance.jnts[id]['motion_rng'][0]:
                     #     isdragged[counter] = 1
-                    #     jntvaluesdragged[counter] = jlinstance.jnts[id]["rngmin"]
-                    # elif jntvalues[counter] > jlinstance.jnts[id]["rngmax"]:
+                    #     jntvaluesdragged[counter] = jlinstance.jnts[id]['motion_rng'][0]
+                    # elif jntvalues[counter] > jlinstance.jnts[id]['motion_rng'][1]:
                     #     isdragged[counter] = 1
-                    #     jntvaluesdragged[counter] = jlinstance.jnts[id]["rngmax"]
+                    #     jntvaluesdragged[counter] = jlinstance.jnts[id]['motion_rng'][1]
                     print("Drag revolute")
-                    if jntvalues[counter] < self.jlobject.jnts[id]["rngmin"] or jntvalues[counter] > \
-                            self.jlobject.jnts[id]["rngmax"]:
+                    if jntvalues[counter] < self.jlobject.jnts[id]['motion_rng'][0] or jntvalues[counter] > \
+                            self.jlobject.jnts[id]['motion_rng'][1]:
                         isdragged[counter] = 1
-                        jntvaluesdragged[counter] = (self.jlobject.jnts[id]["rngmax"] + self.jlobject.jnts[id][
-                            "rngmin"]) / 2
-            elif self.jlobject.jnts[id]["type"] == "prismatic":  # prismatic
-                # if jntvalues[counter] < jlinstance.jnts[id]["rngmin"]:
+                        jntvaluesdragged[counter] = (self.jlobject.jnts[id]['motion_rng'][1] + self.jlobject.jnts[id][
+                            'motion_rng'][0]) / 2
+            elif self.jlobject.jnts[id]["type"] == 'prismatic':  # prismatic
+                # if jntvalues[counter] < jlinstance.jnts[id]['motion_rng'][0]:
                 #     isdragged[counter] = 1
-                #     jntvaluesdragged[counter] = jlinstance.jnts[id]["rngmin"]
-                # elif jntvalues[counter] > jlinstance.jnts[id]["rngmax"]:
+                #     jntvaluesdragged[counter] = jlinstance.jnts[id]['motion_rng'][0]
+                # elif jntvalues[counter] > jlinstance.jnts[id]['motion_rng'][1]:
                 #     isdragged[counter] = 1
-                #     jntvaluesdragged[counter] = jlinstance.jnts[id]["rngmax"]
+                #     jntvaluesdragged[counter] = jlinstance.jnts[id]['motion_rng'][1]
                 print("Drag prismatic")
-                if jntvalues[counter] < self.jlobject.jnts[id]["rngmin"] or jntvalues[counter] > \
-                        self.jlobject.jnts[id]["rngmax"]:
+                if jntvalues[counter] < self.jlobject.jnts[id]['motion_rng'][0] or jntvalues[counter] > \
+                        self.jlobject.jnts[id]['motion_rng'][1]:
                     isdragged[counter] = 1
-                    jntvaluesdragged[counter] = (self.jlobject.jnts[id]["rngmax"] + self.jlobject.jnts[id][
+                    jntvaluesdragged[counter] = (self.jlobject.jnts[id]['motion_rng'][1] + self.jlobject.jnts[id][
                         "rngmin"]) / 2
         return isdragged, jntvaluesdragged
 
@@ -264,7 +264,7 @@ class JLChainIK(object):
         author: weiwei
         date: 20180203, 20200328
         """
-        deltapos = tgt_pos - self.jlobject.jnts[0]["gl_pos0"]
+        deltapos = tgt_pos - self.jlobject.jnts[0]['gl_pos0']
         if np.linalg.norm(deltapos) > self.max_rng:
             wns.WarningMessage("The goal is outside maximum range!")
             return None
@@ -323,11 +323,11 @@ class JLChainIK(object):
                 if toggle_debug:
                     fig = plt.figure()
                     axbefore = fig.add_subplot(411)
-                    axbefore.set_title("Original dq")
+                    axbefore.set_title('Original dq')
                     axnull = fig.add_subplot(412)
-                    axnull.set_title("dqref on Null space")
+                    axnull.set_title('dqref on Null space')
                     axcorrec = fig.add_subplot(413)
-                    axcorrec.set_title("Minimized dq")
+                    axcorrec.set_title('Minimized dq')
                     axaj = fig.add_subplot(414)
                     axbefore.plot(dqbefore)
                     axnull.plot(dqnull)
@@ -344,30 +344,30 @@ class JLChainIK(object):
                     if toggle_debug:
                         fig = plt.figure()
                         axbefore = fig.add_subplot(411)
-                        axbefore.set_title("Original dq")
+                        axbefore.set_title('Original dq')
                         axnull = fig.add_subplot(412)
-                        axnull.set_title("dqref on Null space")
+                        axnull.set_title('dqref on Null space')
                         axcorrec = fig.add_subplot(413)
-                        axcorrec.set_title("Minimized dq")
+                        axcorrec.set_title('Minimized dq')
                         axaj = fig.add_subplot(414)
                         axbefore.plot(dqbefore)
                         axnull.plot(dqnull)
                         axcorrec.plot(dqcorrected)
                         axaj.plot(ajpath)
                         plt.show()
-                    if local_minima == "accept":
+                    if local_minima == 'accept':
                         wns.warn(
-                            "Bypassing local minima! The return value is a local minima, rather than the exact IK result.")
+                            'Bypassing local minima! The return value is a local minima, rather than the exact IK result.')
                         jntvalues_return = self.jlobject.get_jntvalues()
                         self.jlobject.fk(jntvalues_bk)
                         return jntvalues_return
-                    elif local_minima == "randomrestart":
-                        wns.warn("Local Minima! Random restart at local minima!")
+                    elif local_minima == 'randomrestart':
+                        wns.warn('Local Minima! Random restart at local minima!')
                         jntvalues_iter = self.jlobject.rand_conf()
                         self.jlobject.fk(jntvalues_iter)
                         continue
                     else:
-                        print("No feasible IK solution!")
+                        print('No feasible IK solution!')
                         break
                 else:
                     # -- notes --
@@ -421,11 +421,11 @@ class JLChainIK(object):
         if toggle_debug:
             fig = plt.figure()
             axbefore = fig.add_subplot(411)
-            axbefore.set_title("Original dq")
+            axbefore.set_title('Original dq')
             axnull = fig.add_subplot(412)
-            axnull.set_title("dqref on Null space")
+            axnull.set_title('dqref on Null space')
             axcorrec = fig.add_subplot(413)
-            axcorrec.set_title("Minimized dq")
+            axcorrec.set_title('Minimized dq')
             axaj = fig.add_subplot(414)
             axbefore.plot(dqbefore)
             axnull.plot(dqnull)

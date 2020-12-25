@@ -19,12 +19,9 @@ class XArmGripper(gi.GripperInterface):
                                     homeconf=np.zeros(2),
                                     name='jlc_lft_outer')
         self.lft_outer.jnts[1]['loc_pos'] = np.array([0, .035, .059098])
-        self.lft_outer.jnts[1]['rngmin'] = .0
-        self.lft_outer.jnts[1]['rngmax'] = .85  # TODO change min-max to a tuple
+        self.lft_outer.jnts[1]['motion_rng'] = [.0, .85]
         self.lft_outer.jnts[1]['loc_motionax'] = np.array([1, 0, 0])
         self.lft_outer.jnts[2]['loc_pos'] = np.array([0, .035465, .042039])  # passive
-        self.lft_outer.jnts[2]['rngmin'] = .0
-        self.lft_outer.jnts[2]['rngmax'] = .85  # TODO change min-max to a tuple
         self.lft_outer.jnts[2]['loc_motionax'] = np.array([-1, 0, 0])
         # - lft_inner
         self.lft_inner = jl.JLChain(pos=cpl_end_pos,
@@ -32,8 +29,6 @@ class XArmGripper(gi.GripperInterface):
                                     homeconf=np.zeros(1),
                                     name='jlc_lft_inner')
         self.lft_inner.jnts[1]['loc_pos'] = np.array([0, .02, .074098])
-        self.lft_inner.jnts[1]['rngmin'] = .0
-        self.lft_inner.jnts[1]['rngmax'] = .85  # TODO change min-max to a tuple
         self.lft_inner.jnts[1]['loc_motionax'] = np.array([1, 0, 0])
         # - rgt_outer
         self.rgt_outer = jl.JLChain(pos=cpl_end_pos,
@@ -41,12 +36,8 @@ class XArmGripper(gi.GripperInterface):
                                     homeconf=np.zeros(2),
                                     name='jlc_rgt_outer')
         self.rgt_outer.jnts[1]['loc_pos'] = np.array([0, -.035, .059098])
-        self.rgt_outer.jnts[1]['rngmin'] = .0
-        self.rgt_outer.jnts[1]['rngmax'] = .85  # TODO change min-max to a tuple
         self.rgt_outer.jnts[1]['loc_motionax'] = np.array([-1, 0, 0])
         self.rgt_outer.jnts[2]['loc_pos'] = np.array([0, -.035465, .042039])  # passive
-        self.rgt_outer.jnts[2]['rngmin'] = .0
-        self.rgt_outer.jnts[2]['rngmax'] = .85  # TODO change min-max to a tuple
         self.rgt_outer.jnts[2]['loc_motionax'] = np.array([1, 0, 0])
         # - rgt_inner
         self.rgt_inner = jl.JLChain(pos=cpl_end_pos,
@@ -54,8 +45,6 @@ class XArmGripper(gi.GripperInterface):
                                     homeconf=np.zeros(1),
                                     name='jlc_rgt_inner')
         self.rgt_inner.jnts[1]['loc_pos'] = np.array([0, -.02, .074098])
-        self.rgt_inner.jnts[1]['rngmin'] = .0
-        self.rgt_inner.jnts[1]['rngmax'] = .85  # TODO change min-max to a tuple
         self.rgt_inner.jnts[1]['loc_motionax'] = np.array([-1, 0, 0])
         # links
         # - lft_outer
@@ -108,11 +97,6 @@ class XArmGripper(gi.GripperInterface):
         self.lft_inner.reinitialize()
         self.rgt_outer.reinitialize()
         self.rgt_inner.reinitialize()
-        # disable the localcc of the inners and outers
-        self.lft_outer.disable_localcc()
-        self.lft_inner.disable_localcc()
-        self.rgt_outer.disable_localcc()
-        self.rgt_inner.disable_localcc()
         # collision detection
         self.cc.add_cdlnks(self.lft_outer, [0, 1, 2])
         self.cc.add_cdlnks(self.rgt_outer, [1, 2])
@@ -148,7 +132,7 @@ class XArmGripper(gi.GripperInterface):
         lft_outer is the only active joint, all others mimic this one
         :param: motion_val, radian
         """
-        if self.lft_outer.jnts[1]['rngmin'] <= motion_val <= self.lft_outer.jnts[1]['rngmax']:
+        if self.lft_outer.jnts[1]['motion_rng'][0] <= motion_val <= self.lft_outer.jnts[1]['motion_rng'][1]:
             self.lft_outer.jnts[1]['motion_val'] = motion_val
             self.lft_outer.jnts[2]['motion_val'] = self.lft_outer.jnts[1]['motion_val']
             self.lft_inner.jnts[1]['motion_val'] = self.lft_outer.jnts[1]['motion_val']

@@ -4,26 +4,14 @@ import numpy as np
 import modeling.modelcollection as mc
 import robotsim._kinematics.jlchain as jl
 import basis.robotmath as rm
+import robotsim.grippers.gripper_interface as gp
 
 
-class Robotiq85(object):
+class Robotiq85(gp.GripperInterface):
 
     def __init__(self, pos=np.zeros(3), rotmat=np.eye(3), name='robotiq85'):
+        super().__init__(pos=pos, rotmat=rotmat, name=name)
         this_dir, this_filename = os.path.split(__file__)
-        self.name = name
-        self.pos = pos
-        self.rotmat = rotmat
-        # joints
-        # - coupling
-        self.coupling = jl.JLChain(pos=self.pos,
-                                   rotmat=self.rotmat,
-                                   homeconf=np.zeros(0),
-                                   name=self.name + '_coupling')
-        self.coupling.jnts[1]['loc_pos'] = np.array([0, 0, .011])
-        self.coupling.lnks[0]['name'] = self.name+"_coupling"
-        # self.coupling.lnks[0]['meshfile'] = os.path.join(this_dir, "meshes", "robotiq_gripper_coupling.stl")
-        self.coupling.lnks[0]['rgba'] = [.2, .2, .2, 1]
-        self.coupling.reinitialize()
         cpl_end_pos = self.coupling.jnts[-1]['gl_posq']
         cpl_end_rotmat = self.coupling.jnts[-1]['gl_rotmatq']
         # - lft_outer
@@ -32,15 +20,12 @@ class Robotiq85(object):
                                     homeconf=np.zeros(4),
                                     name='lft_outer')
         self.lft_outer.jnts[1]['loc_pos'] = np.array([0, -.0306011, .054904])
-        self.lft_outer.jnts[1]['rngmin'] = .0
-        self.lft_outer.jnts[1]['rngmax'] = .8  # TODO change min-max to a tuple
+        self.lft_outer.jnts[1]['motion_rng'] = [.0, .8]
         self.lft_outer.jnts[1]['loc_rotmat'] = rm.rotmat_from_euler(0, 0, math.pi)
         self.lft_outer.jnts[1]['loc_motionax'] = np.array([1, 0, 0])
         self.lft_outer.jnts[2]['loc_pos'] = np.array([0, .0315, -.0041])  # passive
         self.lft_outer.jnts[2]['loc_motionax'] = np.array([1, 0, 0])
         self.lft_outer.jnts[3]['loc_pos'] = np.array([0, .0061, .0471])
-        self.lft_outer.jnts[3]['rngmin'] = -.8757
-        self.lft_outer.jnts[3]['rngmax'] = .0  # TODO change min-max to a tuple
         self.lft_outer.jnts[3]['loc_motionax'] = np.array([1, 0, 0])
         self.lft_outer.jnts[4]['loc_pos'] = np.zeros(3)
         # https://github.com/Danfoa uses geometry instead of the dae mesh. The following coordiante is needed
@@ -52,8 +37,6 @@ class Robotiq85(object):
                                     name='lft_inner')
         self.lft_inner.jnts[1]['loc_pos'] = np.array([0, -.0127, .06142])
         self.lft_inner.jnts[1]['loc_rotmat'] = rm.rotmat_from_euler(0, 0, math.pi)
-        self.lft_inner.jnts[1]['rngmin'] = .0
-        self.lft_inner.jnts[1]['rngmax'] = .8757  # TODO change min-max to a tuple
         self.lft_inner.jnts[1]['loc_motionax'] = np.array([1, 0, 0])
         # - rgt_outer
         self.rgt_outer = jl.JLChain(pos=cpl_end_pos,
@@ -61,14 +44,10 @@ class Robotiq85(object):
                                     homeconf=np.zeros(4),
                                     name='rgt_outer')
         self.rgt_outer.jnts[1]['loc_pos'] = np.array([0, .0306011, .054904])
-        self.rgt_outer.jnts[1]['rngmin'] = .0
-        self.rgt_outer.jnts[1]['rngmax'] = .8  # TODO change min-max to a tuple
         self.rgt_outer.jnts[1]['loc_motionax'] = np.array([1, 0, 0])
         self.rgt_outer.jnts[2]['loc_pos'] = np.array([0, .0315, -.0041])  # passive
         self.rgt_outer.jnts[2]['loc_motionax'] = np.array([1, 0, 0])
         self.rgt_outer.jnts[3]['loc_pos'] = np.array([0, .0061, .0471])
-        self.rgt_outer.jnts[3]['rngmin'] = -.8757
-        self.rgt_outer.jnts[3]['rngmax'] = .0  # TODO change min-max to a tuple
         self.rgt_outer.jnts[3]['loc_motionax'] = np.array([1, 0, 0])
         self.rgt_outer.jnts[4]['loc_pos'] = np.zeros(3)
         # https://github.com/Danfoa uses geometry instead of the dae mesh. The following coordiante is needed
@@ -79,8 +58,6 @@ class Robotiq85(object):
                                     homeconf=np.zeros(1),
                                     name='rgt_inner')
         self.rgt_inner.jnts[1]['loc_pos'] = np.array([0, .0127, .06142])
-        self.rgt_inner.jnts[1]['rngmin'] = .0
-        self.rgt_inner.jnts[1]['rngmax'] = .8757  # TODO change min-max to a tuple
         self.rgt_inner.jnts[1]['loc_motionax'] = np.array([1, 0, 0])
         # links
         # - lft_outer
@@ -158,6 +135,28 @@ class Robotiq85(object):
         self.lft_inner.reinitialize()
         self.rgt_outer.reinitialize()
         self.rgt_inner.reinitialize()
+        # collision detection
+        # cdprimit
+        self.cc.add_cdlnks(self.lft_outer, [0, 1, 2, 3, 4])
+        self.cc.add_cdlnks(self.rgt_outer, [1, 2, 3, 4])
+        activelist = [self.lft_outer.lnks[0],
+                      self.lft_outer.lnks[1],
+                      self.lft_outer.lnks[2],
+                      self.lft_outer.lnks[3],
+                      self.lft_outer.lnks[4],
+                      self.rgt_outer.lnks[1],
+                      self.rgt_outer.lnks[2],
+                      self.rgt_outer.lnks[3],
+                      self.rgt_outer.lnks[4]]
+        self.cc.set_active_cdlnks(activelist)
+        # cdmesh
+        for cdelement in self.cc.all_cdelements:
+            pos = cdelement['gl_pos']
+            rotmat = cdelement['gl_rotmat']
+            cdmesh = cdelement['collisionmodel'].copy()
+            cdmesh.set_pos(pos)
+            cdmesh.set_rotmat(rotmat)
+            self.cdmesh_collection.add_cm(cdmesh)
 
     def fix_to(self, pos, rotmat, angle=None):
         self.pos = pos
@@ -176,6 +175,33 @@ class Robotiq85(object):
         self.lft_inner.fix_to(cpl_end_pos, cpl_end_rotmat)
         self.rgt_inner.fix_to(cpl_end_pos, cpl_end_rotmat)
         self.rgt_outer.fix_to(cpl_end_pos, cpl_end_rotmat)
+        self.is_fk_updated = self.lft_outer.is_fk_updated
+
+    def fk(self, motion_val):
+        """
+        lft_outer is the only active joint, all others mimic this one
+        :param: angle, radian
+        """
+        if self.lft_outer.jnts[1]['motion_rng'][0] <= motion_val <= self.lft_outer.jnts[1]['motion_rng'][1]:
+            self.lft_outer.jnts[1]['motion_val'] = motion_val
+            self.lft_outer.jnts[3]['motion_val'] = -self.lft_outer.jnts[1]['motion_val']
+            self.lft_inner.jnts[1]['motion_val'] = self.lft_outer.jnts[1]['motion_val']
+            self.rgt_outer.jnts[1]['motion_val'] = self.lft_outer.jnts[1]['motion_val']
+            self.rgt_outer.jnts[3]['motion_val'] = -self.lft_outer.jnts[1]['motion_val']
+            self.rgt_inner.jnts[1]['motion_val'] = self.lft_outer.jnts[1]['motion_val']
+            self.lft_outer.fk()
+            self.lft_inner.fk()
+            self.rgt_outer.fk()
+            self.rgt_inner.fk()
+        else:
+            raise ValueError("The angle parameter is out of range!")
+        self.is_fk_updated = self.lft_outer.is_fk_updated
+
+    def jaw_to(self, jawwidth):
+        if jawwidth > 0.082:
+            raise ValueError("Jawwidth must be 0mm~82mm!")
+        motion_val = .85 - math.asin(jawwidth/2.0/0.055)
+        self.fk(motion_val)
 
     def gen_stickmodel(self,
                        tcp_jntid=None,
@@ -250,37 +276,21 @@ class Robotiq85(object):
                                      rgba=rgba).attach_to(stickmodel)
         return stickmodel
 
-    def fk(self, angle):
-        """
-        lft_outer is the only active joint, all others mimic this one
-        :param: angle, radian
-        """
-        if self.lft_outer.jnts[1]['rngmin'] <= angle <= self.lft_outer.jnts[1]['rngmax']:
-            self.lft_outer.jnts[1]['motion_val'] = angle
-            self.lft_outer.jnts[3]['motion_val'] = -self.lft_outer.jnts[1]['motion_val']
-            self.lft_inner.jnts[1]['motion_val'] = self.lft_outer.jnts[1]['motion_val']
-            self.rgt_outer.jnts[1]['motion_val'] = self.lft_outer.jnts[1]['motion_val']
-            self.rgt_outer.jnts[3]['motion_val'] = -self.lft_outer.jnts[1]['motion_val']
-            self.rgt_inner.jnts[1]['motion_val'] = self.lft_outer.jnts[1]['motion_val']
-            self.lft_outer.fk()
-            self.lft_inner.fk()
-            self.rgt_outer.fk()
-            self.rgt_inner.fk()
-        else:
-            raise ValueError("The angle parameter is out of range!")
-
 
 if __name__ == '__main__':
     import visualization.panda.world as wd
     import modeling.geometricmodel as gm
+
     base = wd.World(campos=[.5, .5, .5], lookatpos=[0, 0, 0])
     gm.gen_frame().attach_to(base)
     grpr = Robotiq85()
     grpr.fk(.8)
-    grpr.gen_meshmodel(rgba=[.3,.3,.0,.5]).attach_to(base)
+    grpr.gen_meshmodel(rgba=[.3, .3, .0, .5]).attach_to(base)
     # grpr.gen_stickmodel(togglejntscs=False).attach_to(base)
     grpr.fix_to(pos=np.array([0, .3, .2]), rotmat=rm.rotmat_from_axangle([1, 0, 0], math.pi / 6))
     grpr.gen_meshmodel().attach_to(base)
+    grpr.show_cdprimit()
+    grpr.show_cdmesh()
     base.run()
 
     base = wd.World(campos=[.5, .5, .5], lookatpos=[0, 0, 0])

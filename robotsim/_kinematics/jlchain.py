@@ -89,8 +89,9 @@ class JLChain(object):
             jnts[id]['gl_motionax'] = jnts[id]['loc_motionax']  # to be updated by self._update_fk
             jnts[id]['gl_posq'] = jnts[id]['gl_pos0']  # to be updated by self._update_fk
             jnts[id]['gl_rotmatq'] = jnts[id]['gl_rotmat0']  # to be updated by self._update_fk
-            jnts[id]['rngmin'] = -math.pi
-            jnts[id]['rngmax'] = +math.pi
+            jnts[id]['motion_rng'] = [-math.pi, math.pi] # min, max
+            # jnts[id]['rngmin'] = -math.pi
+            # jnts[id]['rngmax'] = +math.pi
             jnts[id]['motion_val'] = 0
         jnts[0]['gl_pos0'] = self.pos  # This is not necessary, for easy read
         jnts[0]['gl_rotmat0'] = self.rotmat
@@ -167,7 +168,7 @@ class JLChain(object):
         if len(jnt_values) == self.ndof:
             self._homeconf = jnt_values
         else:
-            print("The given values must have enough dof!")
+            print('The given values must have enough dof!')
             raise Exception
 
     def reinitialize(self):
@@ -407,7 +408,7 @@ class JLChain(object):
         tcp_gloc_pos = self.jnts[tcp_jntid]['gl_posq'] + self.jnts[tcp_jntid]['gl_rotmatq'].dot(tcp_loc_pos)
         tcp_gloc_rotmat = self.jnts[tcp_jntid]['gl_rotmatq'].dot(tcp_loc_rotmat)
         objpos = tcp_gloc_pos + tcp_gloc_rotmat.dot(loc_pos)
-        objrot = tcp_gloc_rotmat.dot(loc_romat)
+        objrot = tcp_gloc_rotmat.dot(loc_rotmat)
         return [objpos, objrot]
 
     def get_loc_pose(self,
@@ -594,7 +595,7 @@ if __name__ == "__main__":
                                   local_minima="accept",
                                   toggle_debug=True)
     toc = time.time()
-    print("ik cost: ", toc - tic, jnt_values)
+    print('ik cost: ', toc - tic, jnt_values)
     jlinstance.fk(jnt_values=jnt_values)
     jlinstance.gen_stickmodel(tcp_jntid=tcp_jntidlist,
                               tcp_loc_pos=tcp_loc_poslist,

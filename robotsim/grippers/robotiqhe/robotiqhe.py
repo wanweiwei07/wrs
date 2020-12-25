@@ -3,31 +3,21 @@ import numpy as np
 import modeling.modelcollection as mc
 import robotsim._kinematics.jlchain as jl
 import basis.robotmath as rm
+import robotsim.grippers.gripper_interface as gp
 
 
-class RobotiqHE(object):
+class RobotiqHE(gp.GripperInterface):
 
     def __init__(self, pos=np.zeros(3), rotmat=np.eye(3), name='robotiqhe'):
+        super().__init__(pos=pos, rotmat=rotmat, name=name)
         this_dir, this_filename = os.path.split(__file__)
-        self.name = name
-        self.pos = pos
-        self.rotmat = rotmat
-        # joints
-        # - coupling - .011 coupling by default
-        self.coupling = jl.JLChain(pos=self.pos, rotmat=self.rotmat, homeconf=np.zeros(0), name='coupling')
-        self.coupling.jnts[1]['loc_pos'] = np.array([0, 0, .011])
-        self.coupling.lnks[0]['name'] = self.name+"_coupling"
-        # self.coupling.lnks[0]['meshfile'] = os.path.join(this_dir, "meshes", "robotiq_gripper_coupling.stl")
-        self.coupling.lnks[0]['rgba'] = [.2, .2, .2, 1]
-        self.coupling.reinitialize()
         cpl_end_pos = self.coupling.jnts[-1]['gl_posq']
         cpl_end_rotmat = self.coupling.jnts[-1]['gl_rotmatq']
         # - lft
         self.lft = jl.JLChain(pos=cpl_end_pos, rotmat=cpl_end_rotmat, homeconf=np.zeros(1), name='base_lft_finger')
         self.lft.jnts[1]['loc_pos'] = np.array([-.025, .0, .11])
         self.lft.jnts[1]['type'] = 'prismatic'
-        self.lft.jnts[1]['rngmin'] = .0
-        self.lft.jnts[1]['rngmax'] = .025
+        self.lft.jnts[1]['motion_rng'] = [0, .025]
         self.lft.jnts[1]['loc_motionax'] = np.array([1, 0, 0])
         self.lft.lnks[0]['name'] = "base"
         self.lft.lnks[0]['loc_pos'] = np.zeros(3)
@@ -40,8 +30,6 @@ class RobotiqHE(object):
         self.rgt = jl.JLChain(pos=cpl_end_pos, rotmat=cpl_end_rotmat, homeconf=np.zeros(1), name='rgt_finger')
         self.rgt.jnts[1]['loc_pos'] = np.array([.025, .0, .11])
         self.rgt.jnts[1]['type'] = 'prismatic'
-        self.rgt.jnts[1]['rngmin'] = .0
-        self.rgt.jnts[1]['rngmax'] = .025  # TODO change min-max to a tuple
         self.rgt.jnts[1]['loc_motionax'] = np.array([-1, 0, 0])
         self.rgt.lnks[1]['name'] = "finger2"
         self.rgt.lnks[1]['meshfile'] = os.path.join(this_dir, "meshes", "finger2_cvt.stl")
@@ -49,6 +37,22 @@ class RobotiqHE(object):
         # reinitialize
         self.lft.reinitialize()
         self.rgt.reinitialize()
+        # collision detection
+        # cdprimit
+        self.cc.add_cdlnks(self.lft, [0, 1])
+        self.cc.add_cdlnks(self.rgt, [1])
+        activelist = [self.lft.lnks[0],
+                      self.lft.lnks[1],
+                      self.rgt.lnks[1]]
+        self.cc.set_active_cdlnks(activelist)
+        # cdmesh -> TODO parent class?
+        for cdelement in self.cc.all_cdelements:
+            pos = cdelement['gl_pos']
+            rotmat = cdelement['gl_rotmat']
+            cdmesh = cdelement['collisionmodel'].copy()
+            cdmesh.set_pos(pos)
+            cdmesh.set_rotmat(rotmat)
+            self.cdmesh_collection.add_cm(cdmesh)
 
     def fix_to(self, pos, rotmat, jawwidth=None):
         self.pos = pos
@@ -65,20 +69,26 @@ class RobotiqHE(object):
         cpl_end_rotmat = self.coupling.jnts[-1]['gl_rotmatq']
         self.lft.fix_to(cpl_end_pos, cpl_end_rotmat)
         self.rgt.fix_to(cpl_end_pos, cpl_end_rotmat)
+        self.is_fk_updated = True
 
-    def fk(self, jawwidth):
+    def fk(self, motion_val):
         """
         lft_outer is the only active joint, all others mimic this one
         :param: angle, radian
         """
-        side_jawwidth = (.05 - jawwidth) / 2.0
-        if 0 <= side_jawwidth <= .025:
-            self.lft.jnts[1]['motion_val'] = side_jawwidth;
+        if self.lft.jnts[1]['motion_rng'][0] <= motion_val <= self.lft.jnts[1]['motion_rng'][1]:
+            self.lft.jnts[1]['motion_val'] = motion_val
             self.rgt.jnts[1]['motion_val'] = self.lft.jnts[1]['motion_val']
             self.lft.fk()
             self.rgt.fk()
+            self.is_fk_updated = True
         else:
-            raise ValueError("The angle parameter is out of range!")
+            raise ValueError("The motion_val parameter is out of range!")
+
+    def jaw_to(self, jawwidth):
+        if jawwidth > .05:
+            raise ValueError("The jawwidth parameter is out of range!")
+        self.fk(motion_val=(0.05-jawwidth) / 2.0)
 
     def gen_stickmodel(self,
                        tcp_jntid=None,
@@ -141,9 +151,11 @@ if __name__ == '__main__':
     #     grpr.fk(angle)
     #     grpr.gen_meshmodel().attach_to(base)
     grpr = RobotiqHE()
-    grpr.fk(.05)
+    grpr.jaw_to(.05)
     grpr.gen_meshmodel().attach_to(base)
     # grpr.gen_stickmodel(togglejntscs=False).attach_to(base)
     grpr.fix_to(pos=np.array([0, .3, .2]), rotmat=rm.rotmat_from_axangle([1, 0, 0], .05))
     grpr.gen_meshmodel().attach_to(base)
+    grpr.show_cdmesh()
+    grpr.show_cdprimit()
     base.run()

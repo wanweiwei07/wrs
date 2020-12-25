@@ -21,8 +21,7 @@ class YumiGripper(gp.GripperInterface):
         self.lft.jnts[1]['loc_pos'] = np.array([0, 0.0065, 0.0837])
         self.lft.jnts[1]['loc_rotmat'] = rm.rotmat_from_euler(0, 0, math.pi)
         self.lft.jnts[1]['type'] = 'prismatic'
-        self.lft.jnts[1]['rngmin'] = .0
-        self.lft.jnts[1]['rngmax'] = .025
+        self.lft.jnts[1]['motion_rng'] = [.0, .025]
         self.lft.jnts[1]['loc_motionax'] = np.array([-1, 0, 0])
         self.lft.lnks[0]['name'] = "base"
         self.lft.lnks[0]['loc_pos'] = np.zeros(3)
@@ -38,8 +37,6 @@ class YumiGripper(gp.GripperInterface):
                               name='rgt_finger')
         self.rgt.jnts[1]['loc_pos'] = np.array([0, -0.0065, 0.0837])
         self.rgt.jnts[1]['type'] = 'prismatic'
-        self.rgt.jnts[1]['rngmin'] = .0
-        self.rgt.jnts[1]['rngmax'] = .025  # TODO change min-max to a tuple
         self.rgt.jnts[1]['loc_motionax'] = np.array([-1, 0, 0])
         self.rgt.lnks[1]['name'] = "finger2"
         self.rgt.lnks[1]['meshfile'] = os.path.join(this_dir, "meshes", "finger.stl")
@@ -47,9 +44,6 @@ class YumiGripper(gp.GripperInterface):
         # reinitialize
         self.lft.reinitialize()
         self.rgt.reinitialize()
-        # disable the localcc of each the links
-        self.lft.disable_localcc()
-        self.rgt.disable_localcc()
         # collision detection
         # cdprimit
         self.cc.add_cdlnks(self.lft, [0, 1])
@@ -82,11 +76,14 @@ class YumiGripper(gp.GripperInterface):
         lft_outer is the only active joint, all others mimic this one
         :param: motion_val, meter or radian
         """
-        self.lft.jnts[1]['motion_val'] = motion_val
-        self.rgt.jnts[1]['motion_val'] = -self.lft.jnts[1]['motion_val']
-        self.lft.fk()
-        self.rgt.fk()
-        self.is_fk_updated = True
+        if self.lft.jnts[1]['motion_rng'][0] <= motion_val <= self.lft.jnts[1]['motion_rng'][1]:
+            self.lft.jnts[1]['motion_val'] = motion_val
+            self.rgt.jnts[1]['motion_val'] = -self.lft.jnts[1]['motion_val']
+            self.lft.fk()
+            self.rgt.fk()
+            self.is_fk_updated = True
+        else:
+            raise ValueError("The motion_val parameter is out of range!")
 
     def jaw_to(self, jawwidth):
         if jawwidth > .05:

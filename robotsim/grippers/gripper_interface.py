@@ -23,7 +23,6 @@ class GripperInterface(object):
         # self.coupling.lnks[0]['meshfile'] = os.path.join(this_dir, "meshes", "xxx.stl")
         # self.coupling.lnks[0]['rgba'] = [.2, .2, .2, 1]
         self.coupling.reinitialize()
-        self.coupling.disable_localcc()
         # collision detection
         self.cc = cc.CollisionChecker("collision_checker")
         self.cdmesh_collection = mc.ModelCollection()
