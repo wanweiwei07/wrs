@@ -3,12 +3,14 @@ import numpy as np
 import robotsim._kinematics.collisionchecker as cc
 
 
-class ManipulatorInterface(object):
+class RobotInterface(object):
 
     def __init__(self, pos=np.zeros(3), rotmat=np.eye(3), name='yumi_gripper'):
         self.name = name
         self.pos = pos
         self.rotmat = rotmat
+        # collision detection
+        self.cc = cc.CollisionChecker("collision_checker")
         # fk tag
         self.is_fk_updated = False
 

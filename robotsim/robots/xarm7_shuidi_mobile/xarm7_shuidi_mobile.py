@@ -7,28 +7,25 @@ import modeling.modelcollection as mc
 import robotsim._kinematics.jlchain as jl
 import robotsim.manipulators.xarm7.xarm7 as xa
 import robotsim.grippers.xarm_gripper.xarm_gripper as xag
-import robotsim._kinematics.collisionchecker as cc
+import robotsim.robots.robot_interface as ri
 
 
-class XArm7YunjiMobile(object):
+class XArm7YunjiMobile(ri.RobotInterface):
 
     def __init__(self, pos=np.zeros(3), rotmat=np.eye(3), name="xarm7_yunji_mobile"):
-        self.name = name
+        super().__init__(pos=pos, rotmat=rotmat, name=name)
         this_dir, this_filename = os.path.split(__file__)
         # agv
-        self.pos = pos
-        self.rotmat = rotmat
         self.agv = jl.JLChain(pos=pos,
                               rotmat=rotmat,
                               homeconf=np.zeros(0),
-                              name=self.name + '_agv')  # TODO: change to 3-dof
+                              name='agv')  # TODO: change to 3-dof
         self.agv.jnts[1]['loc_pos'] = np.array([0, .0, .34231])
-        self.agv.lnks[0]['name'] = self.name + "_agv"
+        self.agv.lnks[0]['name'] = 'agv'
         self.agv.lnks[0]['loc_pos'] = np.array([0, 0, 0])
-        self.agv.lnks[0]['meshfile'] = os.path.join(this_dir, "meshes", "shuidi_agv_meter.stl")
+        self.agv.lnks[0]['meshfile'] = os.path.join(this_dir, 'meshes', 'shuidi_agv_meter.stl')
         self.agv.lnks[0]['rgba'] = [.35, .35, .35, 1.0]
         self.agv.reinitialize()
-        self.agv.disable_localcc()
         # arm
         arm_homeconf = np.zeros(7)
         arm_homeconf[1] = -math.pi / 3
@@ -37,28 +34,18 @@ class XArm7YunjiMobile(object):
         self.arm = xa.XArm7(pos=self.agv.jnts[-1]['gl_posq'],
                             rotmat=self.agv.jnts[-1]['gl_rotmatq'],
                             homeconf=arm_homeconf,
-                            name=self.name + "_arm")
+                            name='arm')
         self.arm.disable_localcc()
         # gripper
         self.hnd = xag.XArmGripper(pos=self.arm.jnts[-1]['gl_posq'],
                                    rotmat=self.arm.jnts[-1]['gl_rotmatq'],
-                                   name=self.name + "_hnd")
+                                   name='hnd')
+        self.hnd.disable_localcc()
         # collision detection
-        self.cc = self._setup_collisionchecker()
-        # tool center point
-        self.tcp_jlc = self.arm  # which jlc is the tcp located at?
-        self.tcp_jlc.tcp_jntid = -1
-        self.tcp_jlc.tcp_loc_pos = np.array([0, 0, .07])
-        self.tcp_jlc.tcp_loc_rotmat = np.eye(3)
-        # a list of detailed information about objects in hand, see CollisionChecker.add_objinhnd
-        self.objs_inhnd_infos = []
-
-    def _setup_collisionchecker(self):
-        checker = cc.CollisionChecker("collision_checker")
-        checker.add_cdlnks(self.agv, [0])
-        checker.add_cdlnks(self.arm, [0, 1, 2, 3, 4, 5, 6])
-        checker.add_cdlnks(self.hnd.lft_outer, [0, 1, 2])
-        checker.add_cdlnks(self.hnd.rgt_outer, [1, 2])
+        self.cc.add_cdlnks(self.agv, [0])
+        self.cc.add_cdlnks(self.arm, [0, 1, 2, 3, 4, 5, 6])
+        self.cc.add_cdlnks(self.hnd.lft_outer, [0, 1, 2])
+        self.cc.add_cdlnks(self.hnd.rgt_outer, [1, 2])
         activelist = [self.agv.lnks[0],
                       self.arm.lnks[0],
                       self.arm.lnks[1],
@@ -72,7 +59,7 @@ class XArm7YunjiMobile(object):
                       self.hnd.lft_outer.lnks[2],
                       self.hnd.rgt_outer.lnks[1],
                       self.hnd.rgt_outer.lnks[2]]
-        checker.set_active_cdlnks(activelist)
+        self.cc.set_active_cdlnks(activelist)
         fromlist = [self.agv.lnks[0],
                     self.arm.lnks[0],
                     self.arm.lnks[1],
@@ -85,8 +72,14 @@ class XArm7YunjiMobile(object):
                     self.hnd.lft_outer.lnks[2],
                     self.hnd.rgt_outer.lnks[1],
                     self.hnd.rgt_outer.lnks[2]]
-        checker.set_cdpair(fromlist, intolist)
-        return checker
+        self.cc.set_cdpair(fromlist, intolist)
+        # tool center point
+        self.tcp_jlc = self.arm  # which jlc is the tcp located at?
+        self.tcp_jlc.tcp_jntid = -1
+        self.tcp_jlc.tcp_loc_pos = np.array([0, 0, .07])
+        self.tcp_jlc.tcp_loc_rotmat = np.eye(3)
+        # a list of detailed information about objects in hand, see CollisionChecker.add_objinhnd
+        self.oih_infos = []
 
     def move_to(self, pos, rotmat):
         self.pos = pos
@@ -94,11 +87,12 @@ class XArm7YunjiMobile(object):
         self.agv.fix_to(self.pos, self.rotmat)
         self.arm.fix_to(pos=self.agv.jnts[-1]['gl_posq'], rotmat=self.agv.jnts[-1]['gl_rotmatq'])
         self.hnd.fix_to(pos=self.arm.jnts[-1]['gl_posq'], rotmat=self.arm.jnts[-1]['gl_rotmatq'])
-        # set objects in hand cache's need-to-update marker to True
-        for one_oih_info in self.objs_inhnd_infos:
-            gl_pos, gl_rotmat = self.tcp_jlc.get_gl_pose(one_oih_info['rel_pos'], one_oih_info['rel_rotmat'])
-            one_oih_info['gl_pos'] = gl_pos
-            one_oih_info['gl_rotmat'] = gl_rotmat
+        # update objects in hand if available
+        for obj_info in self.oih_infos:
+            gl_pos, gl_rotmat = self.tcp_jlc.get_gl_pose(obj_info['rel_pos'], obj_info['rel_rotmat'])
+            obj_info['gl_pos'] = gl_pos
+            obj_info['gl_rotmat'] = gl_rotmat
+        self.is_fk_updated = True
 
     def fk(self, general_jnt_values):
         """
@@ -111,20 +105,21 @@ class XArm7YunjiMobile(object):
         self.pos[:2] = general_jnt_values[:2]
         self.rotmat = rm.rotmat_from_axangle([0, 0, 1], general_jnt_values[2])
         self.agv.fix_to(self.pos, self.rotmat)
-        self.arm.fix_to(pos=self.agv.jnts[-1]['gl_posq'],
-                        rotmat=self.agv.jnts[-1]['gl_rotmatq'],
-                        jnt_values=general_jnt_values[3:10])
+        self.arm.fix_to(pos=self.agv.jnts[-1]['gl_posq'], rotmat=self.agv.jnts[-1]['gl_rotmatq'])
+        self.arm.fk(jnt_values=general_jnt_values[3:10])
         self.hnd.fix_to(pos=self.arm.jnts[-1]['gl_posq'], rotmat=self.arm.jnts[-1]['gl_rotmatq'])
         if len(general_jnt_values) == 11:  # gripper is also set
             self.hnd.jaw_to(general_jnt_values[10])
-        # set objects in hand cache's need-to-update marker to True
-        for obj_info in self.objs_inhnd_infos:
+        # update objects in hand if available
+        for obj_info in self.oih_infos:
             gl_pos, gl_rotmat = self.tcp_jlc.get_gl_pose(obj_info['rel_pos'], obj_info['rel_rotmat'])
             obj_info['gl_pos'] = gl_pos
             obj_info['gl_rotmat'] = gl_rotmat
+        self.is_fk_updated = True
 
     def jaw_to(self, jawwidth):
         self.hnd.jaw_to(jawwidth)
+        self.is_fk_updated = True
 
     def hold(self, objcm, jawwidth=None):
         """
@@ -144,11 +139,11 @@ class XArm7YunjiMobile(object):
                     self.arm.lnks[4],
                     self.arm.lnks[5],
                     self.arm.lnks[6]]
-        self.objs_inhnd_infos.append(self.cc.add_cdobj(objcm, rel_pos, rel_rotmat, intolist))
+        self.oih_infos.append(self.cc.add_cdobj(objcm, rel_pos, rel_rotmat, intolist))
 
     def get_hold_objlist(self):
         return_list = []
-        for obj_info in self.objs_inhnd_infos:
+        for obj_info in self.oih_infos:
             objcm = obj_info['collisionmodel']
             objcm.set_pos(obj_info['gl_pos'])
             objcm.set_rotmat(obj_info['gl_rotmat'])
@@ -164,21 +159,11 @@ class XArm7YunjiMobile(object):
         """
         if jawwidth is not None:
             self.hnd.jaw_to(jawwidth)
-        for obj_info in self.objs_inhnd_infos:
+        for obj_info in self.oih_infos:
             if obj_info['collisionmodel'] is objcm:
                 self.cc.delete_cdobj(obj_info)
-                self.objs_inhnd_infos.remove(obj_info)
+                self.oih_infos.remove(obj_info)
                 break
-
-    def is_collided(self, obstacle_list=[], otherrobot_list=[]):
-        # object in hand do not update by itself
-        is_fk_updated = self.agv.is_fk_updated or self.arm.is_fk_updated or self.hnd.lft_outer.is_fk_updated
-        return self.cc.is_collided(obstacle_list=obstacle_list, otherrobot_list=otherrobot_list,
-                                   need_update=is_fk_updated)
-
-    def show_cdprimit(self):
-        is_fk_updated = self.agv.is_fk_updated or self.arm.is_fk_updated or self.hnd.lft_outer.is_fk_updated
-        self.cc.show_cdprimit(need_update=is_fk_updated)
 
     def gen_stickmodel(self,
                        tcp_jntid=None,
@@ -230,19 +215,12 @@ class XArm7YunjiMobile(object):
                                toggle_tcpcs=False,
                                toggle_jntscs=toggle_jntscs,
                                rgba=rgba).attach_to(meshmodel)
-        for obj_info in self.objs_inhnd_infos:
+        for obj_info in self.oih_infos:
             objcm = obj_info['collisionmodel']
             objcm.set_pos(obj_info['gl_pos'])
             objcm.set_rotmat(obj_info['gl_rotmat'])
             objcm.attach_to(meshmodel)
         return meshmodel
-
-    def copy(self):
-        self_copy = copy.deepcopy(self)
-        # update colliders; they are problematic, I have to update it manually
-        for child in self_copy.cc.np.getChildren():
-            self_copy.cc.ctrav.addCollider(child, self_copy.cc.chan)
-        return self_copy
 
 
 if __name__ == '__main__':
