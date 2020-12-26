@@ -28,6 +28,10 @@ class World(ShowBase, object):
         """
         # the taskMgr, loader, render2d, etc. are added to builtin after initializing the showbase parental class
         super().__init__()
+        # set up window
+        winprops = WindowProperties(base.win.getProperties())
+        winprops.setTitle("WRS Robot Planning and Control System")
+        base.win.requestProperties(winprops)
         self.disableAllAudio()
         self.setBackgroundColor(1, 1, 1)
         # set up lens

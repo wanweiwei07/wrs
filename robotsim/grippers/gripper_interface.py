@@ -26,8 +26,6 @@ class GripperInterface(object):
         # collision detection
         self.cc = cc.CollisionChecker("collision_checker")
         self.cdmesh_collection = mc.ModelCollection()
-        # fk tag
-        self.is_fk_updated = False
 
     @property
     def is_fk_updated(self):
