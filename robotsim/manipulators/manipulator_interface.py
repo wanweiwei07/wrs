@@ -173,7 +173,7 @@ class ManipulatorInterface(object):
     def gen_endsphere(self):
         return self.jlc._mt.gen_endsphere()
 
-    def disable_localcc(self):
+    def disable_cc(self):
         """
         clear pairs and nodepath
         :return:

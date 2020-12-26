@@ -12,7 +12,7 @@ import robotsim.robots.robot_interface as ri
 
 class XArm7YunjiMobile(ri.RobotInterface):
 
-    def __init__(self, pos=np.zeros(3), rotmat=np.eye(3), name="xarm7_yunji_mobile"):
+    def __init__(self, pos=np.zeros(3), rotmat=np.eye(3), name="xarm7_yunji_mobile", enable_cc=True):
         super().__init__(pos=pos, rotmat=rotmat, name=name)
         this_dir, this_filename = os.path.split(__file__)
         # agv
@@ -34,45 +34,44 @@ class XArm7YunjiMobile(ri.RobotInterface):
         self.arm = xa.XArm7(pos=self.agv.jnts[-1]['gl_posq'],
                             rotmat=self.agv.jnts[-1]['gl_rotmatq'],
                             homeconf=arm_homeconf,
-                            name='arm')
-        self.arm.disable_localcc()
+                            name='arm', enable_cc=False)
         # gripper
         self.hnd = xag.XArmGripper(pos=self.arm.jnts[-1]['gl_posq'],
                                    rotmat=self.arm.jnts[-1]['gl_rotmatq'],
-                                   name='hnd')
-        self.hnd.disable_localcc()
+                                   name='hnd', enable_cc=False)
         # collision detection
-        self.cc.add_cdlnks(self.agv, [0])
-        self.cc.add_cdlnks(self.arm, [0, 1, 2, 3, 4, 5, 6])
-        self.cc.add_cdlnks(self.hnd.lft_outer, [0, 1, 2])
-        self.cc.add_cdlnks(self.hnd.rgt_outer, [1, 2])
-        activelist = [self.agv.lnks[0],
-                      self.arm.lnks[0],
-                      self.arm.lnks[1],
-                      self.arm.lnks[2],
-                      self.arm.lnks[3],
-                      self.arm.lnks[4],
-                      self.arm.lnks[5],
-                      self.arm.lnks[6],
-                      self.hnd.lft_outer.lnks[0],
-                      self.hnd.lft_outer.lnks[1],
-                      self.hnd.lft_outer.lnks[2],
-                      self.hnd.rgt_outer.lnks[1],
-                      self.hnd.rgt_outer.lnks[2]]
-        self.cc.set_active_cdlnks(activelist)
-        fromlist = [self.agv.lnks[0],
-                    self.arm.lnks[0],
-                    self.arm.lnks[1],
-                    self.arm.lnks[2]]
-        intolist = [self.arm.lnks[4],
-                    self.arm.lnks[5],
-                    self.arm.lnks[6],
-                    self.hnd.lft_outer.lnks[0],
-                    self.hnd.lft_outer.lnks[1],
-                    self.hnd.lft_outer.lnks[2],
-                    self.hnd.rgt_outer.lnks[1],
-                    self.hnd.rgt_outer.lnks[2]]
-        self.cc.set_cdpair(fromlist, intolist)
+        if enable_cc:
+            self.cc.add_cdlnks(self.agv, [0])
+            self.cc.add_cdlnks(self.arm, [0, 1, 2, 3, 4, 5, 6])
+            self.cc.add_cdlnks(self.hnd.lft_outer, [0, 1, 2])
+            self.cc.add_cdlnks(self.hnd.rgt_outer, [1, 2])
+            activelist = [self.agv.lnks[0],
+                          self.arm.lnks[0],
+                          self.arm.lnks[1],
+                          self.arm.lnks[2],
+                          self.arm.lnks[3],
+                          self.arm.lnks[4],
+                          self.arm.lnks[5],
+                          self.arm.lnks[6],
+                          self.hnd.lft_outer.lnks[0],
+                          self.hnd.lft_outer.lnks[1],
+                          self.hnd.lft_outer.lnks[2],
+                          self.hnd.rgt_outer.lnks[1],
+                          self.hnd.rgt_outer.lnks[2]]
+            self.cc.set_active_cdlnks(activelist)
+            fromlist = [self.agv.lnks[0],
+                        self.arm.lnks[0],
+                        self.arm.lnks[1],
+                        self.arm.lnks[2]]
+            intolist = [self.arm.lnks[4],
+                        self.arm.lnks[5],
+                        self.arm.lnks[6],
+                        self.hnd.lft_outer.lnks[0],
+                        self.hnd.lft_outer.lnks[1],
+                        self.hnd.lft_outer.lnks[2],
+                        self.hnd.rgt_outer.lnks[1],
+                        self.hnd.rgt_outer.lnks[2]]
+            self.cc.set_cdpair(fromlist, intolist)
         # tool center point
         self.tcp_jlc = self.arm  # which jlc is the tcp located at?
         self.tcp_jlc.tcp_jntid = -1
@@ -80,6 +79,10 @@ class XArm7YunjiMobile(ri.RobotInterface):
         self.tcp_jlc.tcp_loc_rotmat = np.eye(3)
         # a list of detailed information about objects in hand, see CollisionChecker.add_objinhnd
         self.oih_infos = []
+
+    @property
+    def is_fk_updated(self):
+        return self.hnd.is_fk_updated
 
     def move_to(self, pos, rotmat):
         self.pos = pos
@@ -92,7 +95,9 @@ class XArm7YunjiMobile(ri.RobotInterface):
             gl_pos, gl_rotmat = self.tcp_jlc.get_gl_pose(obj_info['rel_pos'], obj_info['rel_rotmat'])
             obj_info['gl_pos'] = gl_pos
             obj_info['gl_rotmat'] = gl_rotmat
-        self.is_fk_updated = True
+
+    def fix_to(self, pos, rotmat):
+        self.move_to(pos=pos, rotmat=rotmat)
 
     def fk(self, general_jnt_values):
         """
@@ -115,11 +120,9 @@ class XArm7YunjiMobile(ri.RobotInterface):
             gl_pos, gl_rotmat = self.tcp_jlc.get_gl_pose(obj_info['rel_pos'], obj_info['rel_rotmat'])
             obj_info['gl_pos'] = gl_pos
             obj_info['gl_rotmat'] = gl_rotmat
-        self.is_fk_updated = True
 
     def jaw_to(self, jawwidth):
         self.hnd.jaw_to(jawwidth)
-        self.is_fk_updated = True
 
     def hold(self, objcm, jawwidth=None):
         """
@@ -141,7 +144,7 @@ class XArm7YunjiMobile(ri.RobotInterface):
                     self.arm.lnks[6]]
         self.oih_infos.append(self.cc.add_cdobj(objcm, rel_pos, rel_rotmat, intolist))
 
-    def get_hold_objlist(self):
+    def get_oih_list(self):
         return_list = []
         for obj_info in self.oih_infos:
             objcm = obj_info['collisionmodel']
@@ -231,7 +234,7 @@ if __name__ == '__main__':
     base = wd.World(campos=[1.5, 0, 3], lookatpos=[0, 0, .5])
 
     gm.gen_frame().attach_to(base)
-    xav = XArm7YunjiMobile()
+    xav = XArm7YunjiMobile(enable_cc=True)
     xav.fk(np.array([0, 0, 0, 0, 0, 0, math.pi, 0, -math.pi / 6, 0, 0]))
     xav.jaw_to(.08)
     xav_meshmodel = xav.gen_meshmodel()

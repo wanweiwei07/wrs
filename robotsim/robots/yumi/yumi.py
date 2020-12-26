@@ -9,15 +9,14 @@ import robotsim._kinematics.jlchain as jl
 import robotsim.manipulators.irb14050.irb14050 as ya
 import robotsim.grippers.yumi_gripper.yumi_gripper as yg
 from panda3d.core import CollisionNode, CollisionBox, Point3
-import robotsim._kinematics.collisionchecker as cc
+import robotsim.robots.robot_interface as ri
 
 
-class Yumi(object):
+class Yumi(ri.RobotInterface):
 
-    def __init__(self, pos=np.zeros(3), rotmat=np.eye(3)):
+    def __init__(self, pos=np.zeros(3), rotmat=np.eye(3), name='yumi', enable_cc=True):
+        super().__init__(pos=pos, rotmat=rotmat, name=name)
         this_dir, this_filename = os.path.split(__file__)
-        self.pos = pos
-        self.rotmat = rotmat
         # lft
         self.lft_body = jl.JLChain(pos=pos, rotmat=rotmat, homeconf=np.zeros(7), name='lft_body')
         self.lft_body.jnts[1]['loc_pos'] = np.array([0, 0, 0])
@@ -67,14 +66,13 @@ class Yumi(object):
         self.lft_body.lnks[7]['meshfile'] = os.path.join(this_dir, "meshes", "yumi_column6060540.stl")
         self.lft_body.lnks[7]['rgba'] = [.35, .35, .35, 1.0]
         self.lft_body.reinitialize()
-        self.lft_body.disable_localcc()
-        lft_arm_homeconf = np.radians(np.array([-20,-90,-120,30,.0,40,0]))
+        lft_arm_homeconf = np.radians(np.array([-20, -90, -120, 30, .0, 40, 0]))
         self.lft_arm = ya.IRB14050(pos=self.lft_body.jnts[-1]['gl_posq'],
                                    rotmat=self.lft_body.jnts[-1]['gl_rotmatq'],
-                                   homeconf=lft_arm_homeconf)
-        self.lft_arm.disable_localcc()
+                                   homeconf=lft_arm_homeconf, enable_cc=False)
         self.lft_hnd = yg.YumiGripper(pos=self.lft_arm.jnts[-1]['gl_posq'],
-                                      rotmat=self.lft_arm.jnts[-1]['gl_rotmatq'])
+                                      rotmat=self.lft_arm.jnts[-1]['gl_rotmatq'],
+                                      enable_cc=False)
         # rgt
         self.rgt_body = jl.JLChain(pos=pos, rotmat=rotmat, homeconf=np.zeros(0), name='rgt_body')
         self.rgt_body.jnts[1]['loc_pos'] = np.array([0.05355, 0.07250, 0.41492])
@@ -83,22 +81,71 @@ class Yumi(object):
         self.rgt_body.lnks[0]['loc_pos'] = np.array([0, 0, 0])
         self.rgt_body.lnks[0]['rgba'] = [.35, .35, .35, 1.0]
         self.rgt_body.reinitialize()
-        self.rgt_body.disable_localcc()
-        rgt_arm_homeconf = np.radians(np.array([20,-90,120,30,0,40,0]))
-        # self.rgt_arm = ya.IRB14050(pos=self.rgt_body.jnts[-1]['gl_posq'],
-        #                            rotmat=self.rgt_body.jnts[-1]['gl_rotmatq'],
-        #                            homeconf=rgt_arm_homeconf)
+        rgt_arm_homeconf = np.radians(np.array([20, -90, 120, 30, 0, 40, 0]))
         self.rgt_arm = self.lft_arm.copy()
         self.rgt_arm.fix_to(pos=self.rgt_body.jnts[-1]['gl_posq'], rotmat=self.rgt_body.jnts[-1]['gl_rotmatq'])
         self.rgt_arm.set_homeconf(rgt_arm_homeconf)
         self.rgt_arm.goto_homeconf()
-        self.rgt_arm.disable_localcc()
-        # self.rgt_hnd = yg.YumiGripper(pos=self.rgt_arm.jnts[-1]['gl_posq'],
-        #                               rotmat=self.rgt_arm.jnts[-1]['gl_rotmatq'])
         self.rgt_hnd = self.lft_hnd.copy()
         self.rgt_hnd.fix_to(pos=self.rgt_arm.jnts[-1]['gl_posq'], rotmat=self.rgt_arm.jnts[-1]['gl_rotmatq'])
         # collision detection
-        self.cc = self._setup_collisionchecker()
+        if enable_cc:
+            self.cc.add_cdlnks(self.lft_body, [0, 1, 2, 3, 4, 5, 6, 7])
+            self.cc.add_cdlnks(self.lft_arm, [1, 2, 3, 4, 5, 6])
+            self.cc.add_cdlnks(self.lft_hnd.lft, [0, 1])
+            self.cc.add_cdlnks(self.lft_hnd.rgt, [1])
+            self.cc.add_cdlnks(self.rgt_arm, [1, 2, 3, 4, 5, 6])
+            self.cc.add_cdlnks(self.rgt_hnd.lft, [0, 1])
+            self.cc.add_cdlnks(self.rgt_hnd.rgt, [1])
+            activelist = [self.lft_arm.lnks[1],
+                          self.lft_arm.lnks[2],
+                          self.lft_arm.lnks[3],
+                          self.lft_arm.lnks[4],
+                          self.lft_arm.lnks[5],
+                          self.lft_arm.lnks[6],
+                          self.lft_hnd.lft.lnks[0],
+                          self.lft_hnd.lft.lnks[1],
+                          self.lft_hnd.rgt.lnks[1],
+                          self.rgt_arm.lnks[1],
+                          self.rgt_arm.lnks[2],
+                          self.rgt_arm.lnks[3],
+                          self.rgt_arm.lnks[4],
+                          self.rgt_arm.lnks[5],
+                          self.rgt_arm.lnks[6],
+                          self.rgt_hnd.lft.lnks[0],
+                          self.rgt_hnd.lft.lnks[1],
+                          self.rgt_hnd.rgt.lnks[1]]
+            self.cc.set_active_cdlnks(activelist)
+            fromlist = [self.lft_body.lnks[0],  # table
+                        self.lft_body.lnks[1],  # body
+                        self.lft_arm.lnks[1],
+                        self.rgt_arm.lnks[1]]
+            intolist = [self.lft_arm.lnks[5],
+                        self.lft_arm.lnks[6],
+                        self.lft_hnd.lft.lnks[0],
+                        self.lft_hnd.lft.lnks[1],
+                        self.lft_hnd.rgt.lnks[1],
+                        self.rgt_arm.lnks[5],
+                        self.rgt_arm.lnks[6],
+                        self.rgt_hnd.lft.lnks[0],
+                        self.rgt_hnd.lft.lnks[1],
+                        self.rgt_hnd.rgt.lnks[1]]
+            self.cc.set_cdpair(fromlist, intolist)
+            fromlist = [self.lft_arm.lnks[3],
+                        self.lft_arm.lnks[4],
+                        self.lft_arm.lnks[5],
+                        self.lft_arm.lnks[6],
+                        self.lft_hnd.lft.lnks[0],
+                        self.lft_hnd.lft.lnks[1],
+                        self.lft_hnd.rgt.lnks[1]]
+            intolist = [self.rgt_arm.lnks[3],
+                        self.rgt_arm.lnks[4],
+                        self.rgt_arm.lnks[5],
+                        self.rgt_arm.lnks[6],
+                        self.rgt_hnd.lft.lnks[0],
+                        self.rgt_hnd.lft.lnks[1],
+                        self.rgt_hnd.rgt.lnks[1]]
+            self.cc.set_cdpair(fromlist, intolist)
         # tool center point
         # lft
         self.lft_tcp_jlc = self.lft_arm  # which jlc is the tcp located at?
@@ -134,67 +181,11 @@ class Yumi(object):
         collision_node.addSolid(collision_primitive_r0)
         return collision_node
 
-    def _setup_collisionchecker(self):
-        checker = cc.CollisionChecker("collision_checker")
-        checker.add_cdlnks(self.lft_body, [0, 1, 2, 3, 4, 5, 6, 7])
-        checker.add_cdlnks(self.lft_arm, [1, 2, 3, 4, 5, 6])
-        checker.add_cdlnks(self.lft_hnd.lft, [0, 1])
-        checker.add_cdlnks(self.lft_hnd.rgt, [1])
-        checker.add_cdlnks(self.rgt_arm, [1, 2, 3, 4, 5, 6])
-        checker.add_cdlnks(self.rgt_hnd.lft, [0, 1])
-        checker.add_cdlnks(self.rgt_hnd.rgt, [1])
-        activelist = [self.lft_arm.lnks[1],
-                      self.lft_arm.lnks[2],
-                      self.lft_arm.lnks[3],
-                      self.lft_arm.lnks[4],
-                      self.lft_arm.lnks[5],
-                      self.lft_arm.lnks[6],
-                      self.lft_hnd.lft.lnks[0],
-                      self.lft_hnd.lft.lnks[1],
-                      self.lft_hnd.rgt.lnks[1],
-                      self.rgt_arm.lnks[1],
-                      self.rgt_arm.lnks[2],
-                      self.rgt_arm.lnks[3],
-                      self.rgt_arm.lnks[4],
-                      self.rgt_arm.lnks[5],
-                      self.rgt_arm.lnks[6],
-                      self.rgt_hnd.lft.lnks[0],
-                      self.rgt_hnd.lft.lnks[1],
-                      self.rgt_hnd.rgt.lnks[1]]
-        checker.set_active_cdlnks(activelist)
-        fromlist = [self.lft_body.lnks[0],  # table
-                    self.lft_body.lnks[1],  # body
-                    self.lft_arm.lnks[1],
-                    self.rgt_arm.lnks[1]]
-        intolist = [self.lft_arm.lnks[5],
-                    self.lft_arm.lnks[6],
-                    self.lft_hnd.lft.lnks[0],
-                    self.lft_hnd.lft.lnks[1],
-                    self.lft_hnd.rgt.lnks[1],
-                    self.rgt_arm.lnks[5],
-                    self.rgt_arm.lnks[6],
-                    self.rgt_hnd.lft.lnks[0],
-                    self.rgt_hnd.lft.lnks[1],
-                    self.rgt_hnd.rgt.lnks[1]]
-        checker.set_cdpair(fromlist, intolist)
-        fromlist = [self.lft_arm.lnks[3],
-                    self.lft_arm.lnks[4],
-                    self.lft_arm.lnks[5],
-                    self.lft_arm.lnks[6],
-                    self.lft_hnd.lft.lnks[0],
-                    self.lft_hnd.lft.lnks[1],
-                    self.lft_hnd.rgt.lnks[1]]
-        intolist = [self.rgt_arm.lnks[3],
-                    self.rgt_arm.lnks[4],
-                    self.rgt_arm.lnks[5],
-                    self.rgt_arm.lnks[6],
-                    self.rgt_hnd.lft.lnks[0],
-                    self.rgt_hnd.lft.lnks[1],
-                    self.rgt_hnd.rgt.lnks[1]]
-        checker.set_cdpair(fromlist, intolist)
-        return checker
+    @property
+    def is_fk_updated(self):
+        return self.rgt_hnd.is_fk_updated or self.lft_hnd.is_fk_updated
 
-    def move_to(self, pos, rotmat):
+    def fix_to(self, pos, rotmat):
         self.pos = pos
         self.rotmat = rotmat
         self.lft_body.fix_to(self.pos, self.rotmat)
@@ -295,7 +286,12 @@ class Yumi(object):
         if jawwidth is not None:
             self.jaw_to(jawwidth, armname=armname)
 
-    def get_hold_objlist(self, armname='lft'):
+    def get_oih_list(self, armname='lft'):
+        """
+        oih = object in hand list
+        :param armname:
+        :return:
+        """
         if armname == 'lft':
             oih_infos = self.lft_oih_infos
         elif armname == 'rgt':
@@ -331,24 +327,6 @@ class Yumi(object):
                 self.cc.delete_cdobj(obj_info)
                 self.oih_infos.remove(obj_info)
                 break
-
-    def is_collided(self, obstacle_list=[], otherrobot_list=[]):
-        # object in hand do not update by itself
-        is_fk_updated = self.lft_body.is_fk_updated or \
-                        self.lft_arm.is_fk_updated or \
-                        self.lft_hnd.lft.is_fk_updated or \
-                        self.rgt_arm.is_fk_updated or \
-                        self._rgt_hnd.lft.is_fk_updated
-        return self.cc.is_collided(obstacle_list=obstacle_list, otherrobot_list=otherrobot_list,
-                                   need_update=is_fk_updated)
-
-    def show_cdprimit(self):
-        is_fk_updated = self.lft_body.is_fk_updated or \
-                        self.lft_arm.is_fk_updated or \
-                        self.lft_hnd.lft.is_fk_updated or \
-                        self.rgt_arm.is_fk_updated or \
-                        self._rgt_hnd.lft.is_fk_updated
-        self.cc.show_cdprimit(need_update=is_fk_updated)
 
     def gen_stickmodel(self,
                        tcp_jntid=None,
@@ -429,13 +407,6 @@ class Yumi(object):
                                    rgba=rgba).attach_to(meshmodel)
         return meshmodel
 
-    def copy(self):
-        self_copy = copy.deepcopy(self)
-        # update colliders; they are problematic, I have to update it manually
-        for child in self_copy.cc.np.getChildren():
-            self_copy.cc.ctrav.addCollider(child, self_copy.cc.chan)
-        return self_copy
-
 
 if __name__ == '__main__':
     import time
@@ -444,7 +415,7 @@ if __name__ == '__main__':
 
     base = wd.World(campos=[1.5, 0, 3], lookatpos=[0, 0, .5])
     gm.gen_frame().attach_to(base)
-    yumi_instance = Yumi()
+    yumi_instance = Yumi(enable_cc=True)
     yumi_meshmodel = yumi_instance.gen_meshmodel()
     yumi_meshmodel.attach_to(base)
     yumi_instance.show_cdprimit()

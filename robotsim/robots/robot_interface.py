@@ -11,8 +11,10 @@ class RobotInterface(object):
         self.rotmat = rotmat
         # collision detection
         self.cc = cc.CollisionChecker("collision_checker")
-        # fk tag
-        self.is_fk_updated = False
+
+    @property
+    def is_fk_updated(self):
+        raise NotImplementedError
 
     def is_collided(self, obstacle_list=[], otherrobot_list=[]):
         """

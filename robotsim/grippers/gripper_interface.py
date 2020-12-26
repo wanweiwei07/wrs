@@ -29,6 +29,10 @@ class GripperInterface(object):
         # fk tag
         self.is_fk_updated = False
 
+    @property
+    def is_fk_updated(self):
+        raise NotImplementedError
+
     def is_collided(self, obstacle_list=[], otherrobot_list=[]):
         """
         Interface for "is cdprimit collided", must be implemented in child class

@@ -8,7 +8,7 @@ import robotsim.grippers.gripper_interface as gp
 
 class YumiGripper(gp.GripperInterface):
 
-    def __init__(self, pos=np.zeros(3), rotmat=np.eye(3), name='yumi_gripper'):
+    def __init__(self, pos=np.zeros(3), rotmat=np.eye(3), name='yumi_gripper', enable_cc=True):
         super().__init__(pos=pos, rotmat=rotmat, name=name)
         this_dir, this_filename = os.path.split(__file__)
         cpl_end_pos = self.coupling.jnts[-1]['gl_posq']
@@ -45,21 +45,26 @@ class YumiGripper(gp.GripperInterface):
         self.lft.reinitialize()
         self.rgt.reinitialize()
         # collision detection
-        # cdprimit
-        self.cc.add_cdlnks(self.lft, [0, 1])
-        self.cc.add_cdlnks(self.rgt, [1])
-        activelist = [self.lft.lnks[0],
-                      self.lft.lnks[1],
-                      self.rgt.lnks[1]]
-        self.cc.set_active_cdlnks(activelist)
-        # cdmesh
-        for cdelement in self.cc.all_cdelements:
-            pos = cdelement['gl_pos']
-            rotmat = cdelement['gl_rotmat']
-            cdmesh = cdelement['collisionmodel'].copy()
-            cdmesh.set_pos(pos)
-            cdmesh.set_rotmat(rotmat)
-            self.cdmesh_collection.add_cm(cdmesh)
+        if enable_cc:
+            # cdprimit
+            self.cc.add_cdlnks(self.lft, [0, 1])
+            self.cc.add_cdlnks(self.rgt, [1])
+            activelist = [self.lft.lnks[0],
+                          self.lft.lnks[1],
+                          self.rgt.lnks[1]]
+            self.cc.set_active_cdlnks(activelist)
+            # cdmesh
+            for cdelement in self.cc.all_cdelements:
+                pos = cdelement['gl_pos']
+                rotmat = cdelement['gl_rotmat']
+                cdmesh = cdelement['collisionmodel'].copy()
+                cdmesh.set_pos(pos)
+                cdmesh.set_rotmat(rotmat)
+                self.cdmesh_collection.add_cm(cdmesh)
+
+    @property
+    def is_fk_updated(self):
+        return self.lft.is_fk_updated
 
     def fix_to(self, pos, rotmat):
         self.pos = pos
@@ -69,7 +74,6 @@ class YumiGripper(gp.GripperInterface):
         cpl_end_rotmat = self.coupling.jnts[-1]['gl_rotmatq']
         self.lft.fix_to(cpl_end_pos, cpl_end_rotmat)
         self.rgt.fix_to(cpl_end_pos, cpl_end_rotmat)
-        self.is_fk_updated = True
 
     def fk(self, motion_val):
         """
@@ -81,7 +85,6 @@ class YumiGripper(gp.GripperInterface):
             self.rgt.jnts[1]['motion_val'] = -self.lft.jnts[1]['motion_val']
             self.lft.fk()
             self.rgt.fk()
-            self.is_fk_updated = True
         else:
             raise ValueError("The motion_val parameter is out of range!")
 
@@ -150,7 +153,7 @@ if __name__ == '__main__':
 
     base = wd.World(campos=[.5, .5, .5], lookatpos=[0, 0, 0])
     gm.gen_frame().attach_to(base)
-    grpr = YumiGripper()
+    grpr = YumiGripper(enable_cc=True)
     grpr.jaw_to(.0)
     grpr.gen_meshmodel(rgba=[0, .5, 0, .5]).attach_to(base)
     # grpr.gen_stickmodel(togglejntscs=False).attach_to(base)

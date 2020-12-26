@@ -8,7 +8,7 @@ import robotsim.manipulators.manipulator_interface as mi
 
 class UR3(mi.ManipulatorInterface):
 
-    def __init__(self, pos=np.zeros(3), rotmat=np.eye(3), homeconf=np.zeros(6), name='ur3'):
+    def __init__(self, pos=np.zeros(3), rotmat=np.eye(3), homeconf=np.zeros(6), name='ur3', enable_cc=True):
         super().__init__(pos=pos, rotmat=rotmat, name=name)
         this_dir, this_filename = os.path.split(__file__)
         self.jlc = jl.JLChain(pos=pos, rotmat=rotmat, homeconf=homeconf, name=name)
@@ -75,29 +75,30 @@ class UR3(mi.ManipulatorInterface):
         self.jlc.lnks[6]['rgba'] = [.5,.5,.5, 1.0]
         self.jlc.reinitialize()
         # collision detection
-        self.cc.add_cdlnks(self.jlc, [0, 1, 2, 3, 4, 5, 6])
-        activelist = [self.jlc.lnks[0],
-                      self.jlc.lnks[1],
-                      self.jlc.lnks[2],
-                      self.jlc.lnks[3],
-                      self.jlc.lnks[4],
-                      self.jlc.lnks[5],
-                      self.jlc.lnks[6]]
-        self.cc.set_active_cdlnks(activelist)
-        fromlist = [self.jlc.lnks[0],
-                    self.jlc.lnks[1]]
-        intolist = [self.jlc.lnks[3],
-                    self.jlc.lnks[5],
-                    self.jlc.lnks[6]]
-        self.cc.set_cdpair(fromlist, intolist)
-        fromlist = [self.jlc.lnks[2]]
-        intolist = [self.jlc.lnks[4],
-                    self.jlc.lnks[5],
-                    self.jlc.lnks[6]]
-        self.cc.set_cdpair(fromlist, intolist)
-        fromlist = [self.jlc.lnks[3]]
-        intolist = [self.jlc.lnks[6]]
-        self.cc.set_cdpair(fromlist, intolist)
+        if enable_cc:
+            self.cc.add_cdlnks(self.jlc, [0, 1, 2, 3, 4, 5, 6])
+            activelist = [self.jlc.lnks[0],
+                          self.jlc.lnks[1],
+                          self.jlc.lnks[2],
+                          self.jlc.lnks[3],
+                          self.jlc.lnks[4],
+                          self.jlc.lnks[5],
+                          self.jlc.lnks[6]]
+            self.cc.set_active_cdlnks(activelist)
+            fromlist = [self.jlc.lnks[0],
+                        self.jlc.lnks[1]]
+            intolist = [self.jlc.lnks[3],
+                        self.jlc.lnks[5],
+                        self.jlc.lnks[6]]
+            self.cc.set_cdpair(fromlist, intolist)
+            fromlist = [self.jlc.lnks[2]]
+            intolist = [self.jlc.lnks[4],
+                        self.jlc.lnks[5],
+                        self.jlc.lnks[6]]
+            self.cc.set_cdpair(fromlist, intolist)
+            fromlist = [self.jlc.lnks[3]]
+            intolist = [self.jlc.lnks[6]]
+            self.cc.set_cdpair(fromlist, intolist)
 
 
 if __name__ == '__main__':
@@ -107,7 +108,7 @@ if __name__ == '__main__':
 
     base = wd.World(campos=[2, 0, 1], lookatpos=[0, 0, 0])
     gm.gen_frame().attach_to(base)
-    manipulator_instance = UR3()
+    manipulator_instance = UR3(enable_cc=True)
     manipulator_meshmodel = manipulator_instance.gen_meshmodel()
     manipulator_meshmodel.attach_to(base)
     manipulator_meshmodel.show_cdprimit()

@@ -8,7 +8,7 @@ import robotsim.grippers.gripper_interface as gi
 
 class XArmGripper(gi.GripperInterface):
 
-    def __init__(self, pos=np.zeros(3), rotmat=np.eye(3), name='xarm_gripper'):
+    def __init__(self, pos=np.zeros(3), rotmat=np.eye(3), name='xarm_gripper', enable_cc=True):
         super().__init__(pos=pos, rotmat=rotmat, name=name)
         this_dir, this_filename = os.path.split(__file__)
         cpl_end_pos = self.coupling.jnts[-1]['gl_posq']
@@ -98,22 +98,27 @@ class XArmGripper(gi.GripperInterface):
         self.rgt_outer.reinitialize()
         self.rgt_inner.reinitialize()
         # collision detection
-        self.cc.add_cdlnks(self.lft_outer, [0, 1, 2])
-        self.cc.add_cdlnks(self.rgt_outer, [1, 2])
-        activelist = [self.lft_outer.lnks[0],
-                      self.lft_outer.lnks[1],
-                      self.lft_outer.lnks[2],
-                      self.rgt_outer.lnks[1],
-                      self.rgt_outer.lnks[2]]
-        self.cc.set_active_cdlnks(activelist)
-        # cdmesh
-        for cdelement in self.cc.all_cdelements:
-            pos = cdelement['gl_pos']
-            rotmat = cdelement['gl_rotmat']
-            cdmesh = cdelement['collisionmodel'].copy()
-            cdmesh.set_pos(pos)
-            cdmesh.set_rotmat(rotmat)
-            self.cdmesh_collection.add_cm(cdmesh)
+        if enable_cc:
+            self.cc.add_cdlnks(self.lft_outer, [0, 1, 2])
+            self.cc.add_cdlnks(self.rgt_outer, [1, 2])
+            activelist = [self.lft_outer.lnks[0],
+                          self.lft_outer.lnks[1],
+                          self.lft_outer.lnks[2],
+                          self.rgt_outer.lnks[1],
+                          self.rgt_outer.lnks[2]]
+            self.cc.set_active_cdlnks(activelist)
+            # cdmesh
+            for cdelement in self.cc.all_cdelements:
+                pos = cdelement['gl_pos']
+                rotmat = cdelement['gl_rotmat']
+                cdmesh = cdelement['collisionmodel'].copy()
+                cdmesh.set_pos(pos)
+                cdmesh.set_rotmat(rotmat)
+                self.cdmesh_collection.add_cm(cdmesh)
+
+    @property
+    def is_fk_updated(self):
+        return self.lft_outer.is_fk_updated
 
     def fix_to(self, pos, rotmat):
         self.pos = pos
@@ -125,7 +130,6 @@ class XArmGripper(gi.GripperInterface):
         self.lft_inner.fix_to(cpl_end_pos, cpl_end_rotmat)
         self.rgt_outer.fix_to(cpl_end_pos, cpl_end_rotmat)
         self.rgt_inner.fix_to(cpl_end_pos, cpl_end_rotmat)
-        self.is_fk_updated = self.lft_outer.is_fk_updated
 
     def fk(self, motion_val):
         """
@@ -145,7 +149,6 @@ class XArmGripper(gi.GripperInterface):
             self.rgt_inner.fk()
         else:
             raise ValueError("The angle parameter is out of range!")
-        self.is_fk_updated = self.lft_outer.is_fk_updated
 
     def jaw_to(self, jawwidth):
         if jawwidth > 0.082:
@@ -225,7 +228,7 @@ if __name__ == '__main__':
     #     xag = XArmGripper()
     #     xag.fk(angle)
     #     xag.gen_meshmodel().attach_to(base)
-    xag = XArmGripper()
+    xag = XArmGripper(enable_cc=True)
     xag.jaw_to(0.05)
     model = xag.gen_meshmodel(rgba=[.5,0,0,.3])
     model.attach_to(base)

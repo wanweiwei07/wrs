@@ -9,7 +9,7 @@ import robotsim.grippers.gripper_interface as gp
 
 class Robotiq85(gp.GripperInterface):
 
-    def __init__(self, pos=np.zeros(3), rotmat=np.eye(3), name='robotiq85'):
+    def __init__(self, pos=np.zeros(3), rotmat=np.eye(3), name='robotiq85', enable_cc=True):
         super().__init__(pos=pos, rotmat=rotmat, name=name)
         this_dir, this_filename = os.path.split(__file__)
         cpl_end_pos = self.coupling.jnts[-1]['gl_posq']
@@ -136,27 +136,32 @@ class Robotiq85(gp.GripperInterface):
         self.rgt_outer.reinitialize()
         self.rgt_inner.reinitialize()
         # collision detection
+        if enable_cc:
         # cdprimit
-        self.cc.add_cdlnks(self.lft_outer, [0, 1, 2, 3, 4])
-        self.cc.add_cdlnks(self.rgt_outer, [1, 2, 3, 4])
-        activelist = [self.lft_outer.lnks[0],
-                      self.lft_outer.lnks[1],
-                      self.lft_outer.lnks[2],
-                      self.lft_outer.lnks[3],
-                      self.lft_outer.lnks[4],
-                      self.rgt_outer.lnks[1],
-                      self.rgt_outer.lnks[2],
-                      self.rgt_outer.lnks[3],
-                      self.rgt_outer.lnks[4]]
-        self.cc.set_active_cdlnks(activelist)
-        # cdmesh
-        for cdelement in self.cc.all_cdelements:
-            pos = cdelement['gl_pos']
-            rotmat = cdelement['gl_rotmat']
-            cdmesh = cdelement['collisionmodel'].copy()
-            cdmesh.set_pos(pos)
-            cdmesh.set_rotmat(rotmat)
-            self.cdmesh_collection.add_cm(cdmesh)
+            self.cc.add_cdlnks(self.lft_outer, [0, 1, 2, 3, 4])
+            self.cc.add_cdlnks(self.rgt_outer, [1, 2, 3, 4])
+            activelist = [self.lft_outer.lnks[0],
+                          self.lft_outer.lnks[1],
+                          self.lft_outer.lnks[2],
+                          self.lft_outer.lnks[3],
+                          self.lft_outer.lnks[4],
+                          self.rgt_outer.lnks[1],
+                          self.rgt_outer.lnks[2],
+                          self.rgt_outer.lnks[3],
+                          self.rgt_outer.lnks[4]]
+            self.cc.set_active_cdlnks(activelist)
+            # cdmesh
+            for cdelement in self.cc.all_cdelements:
+                pos = cdelement['gl_pos']
+                rotmat = cdelement['gl_rotmat']
+                cdmesh = cdelement['collisionmodel'].copy()
+                cdmesh.set_pos(pos)
+                cdmesh.set_rotmat(rotmat)
+                self.cdmesh_collection.add_cm(cdmesh)
+
+    @property
+    def is_fk_updated(self):
+        return self.lft_outer.is_fk_updated
 
     def fix_to(self, pos, rotmat, angle=None):
         self.pos = pos
@@ -175,7 +180,6 @@ class Robotiq85(gp.GripperInterface):
         self.lft_inner.fix_to(cpl_end_pos, cpl_end_rotmat)
         self.rgt_inner.fix_to(cpl_end_pos, cpl_end_rotmat)
         self.rgt_outer.fix_to(cpl_end_pos, cpl_end_rotmat)
-        self.is_fk_updated = self.lft_outer.is_fk_updated
 
     def fk(self, motion_val):
         """
@@ -195,7 +199,6 @@ class Robotiq85(gp.GripperInterface):
             self.rgt_inner.fk()
         else:
             raise ValueError("The angle parameter is out of range!")
-        self.is_fk_updated = self.lft_outer.is_fk_updated
 
     def jaw_to(self, jawwidth):
         if jawwidth > 0.082:
@@ -283,7 +286,7 @@ if __name__ == '__main__':
 
     base = wd.World(campos=[.5, .5, .5], lookatpos=[0, 0, 0])
     gm.gen_frame().attach_to(base)
-    grpr = Robotiq85()
+    grpr = Robotiq85(enable_cc=True)
     grpr.fk(.8)
     grpr.gen_meshmodel(rgba=[.3, .3, .0, .5]).attach_to(base)
     # grpr.gen_stickmodel(togglejntscs=False).attach_to(base)
