@@ -345,7 +345,7 @@ class JLChain(object):
         jnt_values = np.zeros(len(self.tgtjnts))
         counter = 0
         for i in self.tgtjnts:
-            jnt_values[counter] = np.random.uniform(self.jnts[i]["rngmin"], self.jnts[i]["rngmax"])
+            jnt_values[counter] = np.random.uniform(self.jnts[i]['motion_rng'][0], self.jnts[i]['motion_rng'][1])
             counter += 1
         return jnt_values
 
@@ -439,18 +439,6 @@ class JLChain(object):
         tcp_gloc_rotmat = self.jnts[tcp_jntid]['gl_rotmatq'].dot(tcp_loc_rotmat)
         loc_pos, loc_romat = rm.rel_pose(tcp_gloc_pos, tcp_gloc_rotmat, gl_pos, gl_rotmat)
         return [loc_pos, loc_romat]
-
-    def is_collided(self, obstacle_list=[], otherrobot_list=[]):
-        return self._mt.is_collided(obstacle_list=obstacle_list,
-                                    otherrobot_list=otherrobot_list,
-                                    need_update = self.is_fk_updated)
-
-    def disable_localcc(self):
-        """
-        disable local collision checker
-        :return:
-        """
-        self._mt.disable_localcc()
 
     def gen_meshmodel(self,
                       tcp_jntid=None,

@@ -72,15 +72,15 @@ class ManipulatorInterface(object):
     def rand_conf(self):
         return self.jlc.rand_conf()
 
-    def num_ik(self,
-               tgt_pos,
-               tgt_rot,
-               start_conf=None,
-               tcp_jntid=None,
-               tcp_loc_pos=None,
-               tcp_loc_rotmat=None,
-               local_minima="accept",
-               toggle_debug=False):
+    def ik(self,
+           tgt_pos,
+           tgt_rot,
+           start_conf=None,
+           tcp_jntid=None,
+           tcp_loc_pos=None,
+           tcp_loc_rotmat=None,
+           local_minima="accept",
+           toggle_debug=False):
         return self.jlc.numik(tgt_pos=tgt_pos,
                               tgt_rot=tgt_rot,
                               start_conf=start_conf,

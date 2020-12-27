@@ -99,23 +99,39 @@ class XArm7YunjiMobile(ri.RobotInterface):
     def fix_to(self, pos, rotmat):
         self.move_to(pos=pos, rotmat=rotmat)
 
-    def fk(self, general_jnt_values):
+    def fk(self, jnt_values, jlc_name='arm'):
         """
-        :param general_jnt_values: 3+7 or 3+7+1, 3=agv, 7=arm, 1=grpr; metrics: meter-radian
+        :param jnt_values: 7 or 3+7, 3=agv, 7=arm, 1=grpr; metrics: meter-radian
+        :param jlc_name: 'arm', 'agv', or 'agv_arm'
         :return:
         author: weiwei
         date: 20201208toyonaka
         """
-        self.pos = np.zeros(3)
-        self.pos[:2] = general_jnt_values[:2]
-        self.rotmat = rm.rotmat_from_axangle([0, 0, 1], general_jnt_values[2])
-        self.agv.fix_to(self.pos, self.rotmat)
-        self.arm.fix_to(pos=self.agv.jnts[-1]['gl_posq'], rotmat=self.agv.jnts[-1]['gl_rotmatq'])
-        self.arm.fk(jnt_values=general_jnt_values[3:10])
-        self.hnd.fix_to(pos=self.arm.jnts[-1]['gl_posq'], rotmat=self.arm.jnts[-1]['gl_rotmatq'])
-        if len(general_jnt_values) == 11:  # gripper is also set
-            self.hnd.jaw_to(general_jnt_values[10])
-        # update objects in hand if available
+        if jlc_name == 'arm':
+            if not isinstance(jnt_values, np.ndarray) or jnt_values.size != 7:
+                raise ValueError("An 1x7 npdarray must be specified to move the arm!")
+            self.arm.fk(jnt_values=jnt_values[3:10])
+            self.hnd.fix_to(pos=self.arm.jnts[-1]['gl_posq'], rotmat=self.arm.jnts[-1]['gl_rotmatq'])
+        elif jlc_name == 'agv':
+            if not isinstance(jnt_values, np.ndarray) or jnt_values.size != 3:
+                raise ValueError("An 1x7 npdarray must be specified to move the agv!")
+            self.pos = np.zeros(3)
+            self.pos[:2] = jnt_values[:2]
+            self.rotmat = rm.rotmat_from_axangle([0, 0, 1], jnt_values[2])
+            self.agv.fix_to(self.pos, self.rotmat)
+            self.arm.fix_to(pos=self.agv.jnts[-1]['gl_posq'], rotmat=self.agv.jnts[-1]['gl_rotmatq'])
+            self.hnd.fix_to(pos=self.arm.jnts[-1]['gl_posq'], rotmat=self.arm.jnts[-1]['gl_rotmatq'])
+        elif jlc_name == 'agv_arm':
+            if not isinstance(jnt_values, np.ndarray) or jnt_values.size != 10:
+                raise ValueError("An 1x7 npdarray must be specified to move both the agv and the arm!")
+            self.pos = np.zeros(3)
+            self.pos[:2] = jnt_values[:2]
+            self.rotmat = rm.rotmat_from_axangle([0, 0, 1], jnt_values[2])
+            self.agv.fix_to(self.pos, self.rotmat)
+            self.arm.fix_to(pos=self.agv.jnts[-1]['gl_posq'], rotmat=self.agv.jnts[-1]['gl_rotmatq']) # TODO repeated
+            self.arm.fk(jnt_values=jnt_values[3:10])
+            self.hnd.fix_to(pos=self.arm.jnts[-1]['gl_posq'], rotmat=self.arm.jnts[-1]['gl_rotmatq'])
+            # update objects in hand if available
         for obj_info in self.oih_infos:
             gl_pos, gl_rotmat = self.tcp_jlc.get_gl_pose(obj_info['rel_pos'], obj_info['rel_rotmat'])
             obj_info['gl_pos'] = gl_pos

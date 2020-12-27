@@ -31,6 +31,9 @@ class RobotInterface(object):
     def fix_to(self, pos, rotmat):
         raise NotImplementedError
 
+    def fk(self, jnt_values, jlc_name):
+        raise NotImplementedError
+
     def show_cdprimit(self):
         self.cc.show_cdprimit(need_update=self.is_fk_updated)
 

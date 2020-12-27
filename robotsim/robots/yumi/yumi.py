@@ -198,54 +198,54 @@ class Yumi(ri.RobotInterface):
         self.rgt_hnd.fix_to(pos=self.rgt_arm.jnts[-1]['gl_posq'],
                             rotmat=self.rgt_arm.jnts[-1]['gl_rotmatq'])
 
-    def fk(self, general_jnt_values, armname='lft'):
+    def fk(self, jnt_values, jlc_name='lft_arm'):
         """
-        :param general_jnt_values: [nparray, nparray], 7+7, meter-radian
-        :armname 'lft', 'rgt', 'both'
+        :param jnt_values: [nparray, nparray], 7+7, meter-radian
+        :jlc_name 'lft_arm', 'rgt_arm', 'both_arm'
         :return:
         author: weiwei
         date: 20201208toyonaka
         """
         # examine length
-        if armname == 'lft' or armname == 'rgt':
-            if not isinstance(general_jnt_values, np.ndarray) or general_jnt_values.size != 7:
+        if jlc_name == 'lft_arm' or jlc_name == 'rgt_arm':
+            if not isinstance(jnt_values, np.ndarray) or jnt_values.size != 7:
                 raise ValueError("An 1x7 npdarray must be specified to move a single arm!")
-            if armname == 'lft':
+            if jlc_name == 'lft_arm':
                 self.lft_arm.fix_to(pos=self.lft_body.jnts[-1]['gl_posq'],
                                     rotmat=self.lft_body.jnts[-1]['gl_rotmatq'],
-                                    jnt_values=general_jnt_values)
+                                    jnt_values=jnt_values)
             else:
                 self.rgt_arm.fix_to(pos=self.rgt_body.jnts[-1]['gl_posq'],
                                     rotmat=self.rgt_body.jnts[-1]['gl_rotmatq'],
-                                    jnt_values=general_jnt_values)
-        elif armname == 'both':
+                                    jnt_values=jnt_values)
+        elif jlc_name == 'both_arm':
             if (not isinstance(general_jnt_values, list)
                     or general_jnt_values[0].size != 7
                     or general_jnt_values[1].size != 7):
                 raise ValueError("A list of two 1x7 npdarrays must be specified to move both arm!")
             self.lft_arm.fix_to(pos=self.lft_body.jnts[-1]['gl_posq'],
                                 rotmat=self.lft_body.jnts[-1]['gl_rotmatq'],
-                                jnt_values=general_jnt_values[0])
+                                jnt_values=jnt_values[0])
             self.rgt_arm.fix_to(pos=self.rgt_body.jnts[-1]['gl_posq'],
                                 rotmat=self.rgt_body.jnts[-1]['gl_rotmatq'],
-                                jnt_values=general_jnt_values[1])
+                                jnt_values=jnt_values[1])
 
-    def jaw_to(self, jawwidth, armname='lft'):
-        if armname == 'lft':
+    def jaw_to(self, jawwidth, hnd_name='lft_hnd'):
+        if hnd_name == 'lft_hnd':
             self.lft_hnd.jaw_to(jawwidth)
-        elif armname == 'rgt':
+        elif hnd_name == 'rgt_hnd':
             self.rgt_hnd.jaw_to(jawwidth)
         else:
-            raise ValueError("Armname must be lft or rgt!")
+            raise ValueError("Hnd_name must be lft_hnd or rgt_hnd!")
 
-    def hold(self, objcm, jawwidth=None, armname='lft'):
+    def hold(self, objcm, jawwidth=None, hnd_name='lft_hnd'):
         """
         the objcm is added as a part of the robot to the cd checker
         :param jawwidth:
         :param objcm:
         :return:
         """
-        if armname == 'lft':
+        if hnd_name == 'lft_hnd':
             rel_pos, rel_rotmat = self.lft_tcp_jlc.get_loc_pose(objcm.get_pos(), objcm.get_rotmat())
             intolist = [self.lft_body.lnks[0],
                         self.lft_body.lnks[1],
@@ -263,7 +263,7 @@ class Yumi(ri.RobotInterface):
                         self.rgt_hnd.lft.lnks[1],
                         self.rgt_hnd.rgt.lnks[1]]
             self.lft_oih_infos.append(self.cc.add_cdobj(objcm, rel_pos, rel_rotmat, intolist))
-        elif armname == 'rgt':
+        elif hnd_name == 'rgt_hnd':
             rel_pos, rel_rotmat = self.lft_tcp_jlc.get_loc_pose(objcm.get_pos(), objcm.get_rotmat())
             intolist = [self.rgt_body.lnks[0],
                         self.rgt_body.lnks[1],
@@ -282,22 +282,22 @@ class Yumi(ri.RobotInterface):
                         self.lft_hnd.rgt.lnks[1]]
             self.rgt_oih_infos.append(self.cc.add_cdobj(objcm, rel_pos, rel_rotmat, intolist))
         else:
-            raise ValueError("Armname must be lft or rgt!")
+            raise ValueError("hnd_name must be lft_hnd or rgt_hnd!")
         if jawwidth is not None:
-            self.jaw_to(jawwidth, armname=armname)
+            self.jaw_to(jawwidth, hnd_name=hnd_name)
 
-    def get_oih_list(self, armname='lft'):
+    def get_oih_list(self, hnd_name='lft_hnd'):
         """
         oih = object in hand list
-        :param armname:
+        :param hnd_name:
         :return:
         """
-        if armname == 'lft':
+        if hnd_name == 'lft_hnd':
             oih_infos = self.lft_oih_infos
-        elif armname == 'rgt':
+        elif hnd_name == 'rgt_hnd':
             oih_infos = self.rgt_oih_infos
         else:
-            raise ValueError("Armname must be lft or rgt!")
+            raise ValueError("hnd_name must be lft_hnd or rgt_hnd!")
         return_list = []
         for obj_info in oih_infos:
             objcm = obj_info['collisionmodel']
@@ -306,22 +306,22 @@ class Yumi(ri.RobotInterface):
             return_list.append(objcm)
         return return_list
 
-    def release(self, objcm, jawwidth=None, armname='lft'):
+    def release(self, objcm, jawwidth=None, hnd_name='lft_hnd'):
         """
         the objcm is added as a part of the robot to the cd checker
         :param jawwidth:
         :param objcm:
-        :param armname:
+        :param hnd_name:
         :return:
         """
-        if armname == 'lft':
+        if hnd_name == 'lft_hnd':
             oih_infos = self.lft_oih_infos
-        elif armname == 'rgt':
+        elif hnd_name == 'rgt_hnd':
             oih_infos = self.rgt_oih_infos
         else:
-            raise ValueError("Armname must be lft or rgt!")
+            raise ValueError("hnd_name must be lft_hnd or rgt_hnd!")
         if jawwidth is not None:
-            self.jaw_to(jawwidth, armname)
+            self.jaw_to(jawwidth, hnd_name)
         for obj_info in oih_infos:
             if obj_info['collisionmodel'] is objcm:
                 self.cc.delete_cdobj(obj_info)
