@@ -230,18 +230,18 @@ class Yumi(ri.RobotInterface):
                                 rotmat=self.rgt_body.jnts[-1]['gl_rotmatq'],
                                 jnt_values=jnt_values[1])
 
-    def jaw_to(self, jawwidth, hnd_name='lft_hnd'):
+    def jaw_to(self, jaw_width, hnd_name='lft_hnd'):
         if hnd_name == 'lft_hnd':
-            self.lft_hnd.jaw_to(jawwidth)
+            self.lft_hnd.jaw_to(jaw_width)
         elif hnd_name == 'rgt_hnd':
-            self.rgt_hnd.jaw_to(jawwidth)
+            self.rgt_hnd.jaw_to(jaw_width)
         else:
             raise ValueError("Hnd_name must be lft_hnd or rgt_hnd!")
 
-    def hold(self, objcm, jawwidth=None, hnd_name='lft_hnd'):
+    def hold(self, objcm, jaw_width=None, hnd_name='lft_hnd'):
         """
         the objcm is added as a part of the robot to the cd checker
-        :param jawwidth:
+        :param jaw_width:
         :param objcm:
         :return:
         """
@@ -283,8 +283,8 @@ class Yumi(ri.RobotInterface):
             self.rgt_oih_infos.append(self.cc.add_cdobj(objcm, rel_pos, rel_rotmat, intolist))
         else:
             raise ValueError("hnd_name must be lft_hnd or rgt_hnd!")
-        if jawwidth is not None:
-            self.jaw_to(jawwidth, hnd_name=hnd_name)
+        if jaw_width is not None:
+            self.jaw_to(jaw_width, hnd_name=hnd_name)
 
     def get_oih_list(self, hnd_name='lft_hnd'):
         """
@@ -306,10 +306,10 @@ class Yumi(ri.RobotInterface):
             return_list.append(objcm)
         return return_list
 
-    def release(self, objcm, jawwidth=None, hnd_name='lft_hnd'):
+    def release(self, objcm, jaw_width=None, hnd_name='lft_hnd'):
         """
         the objcm is added as a part of the robot to the cd checker
-        :param jawwidth:
+        :param jaw_width:
         :param objcm:
         :param hnd_name:
         :return:
@@ -320,8 +320,8 @@ class Yumi(ri.RobotInterface):
             oih_infos = self.rgt_oih_infos
         else:
             raise ValueError("hnd_name must be lft_hnd or rgt_hnd!")
-        if jawwidth is not None:
-            self.jaw_to(jawwidth, hnd_name)
+        if jaw_width is not None:
+            self.jaw_to(jaw_width, hnd_name)
         for obj_info in oih_infos:
             if obj_info['collisionmodel'] is objcm:
                 self.cc.delete_cdobj(obj_info)

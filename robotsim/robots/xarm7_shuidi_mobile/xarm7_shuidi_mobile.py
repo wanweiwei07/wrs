@@ -75,7 +75,7 @@ class XArm7YunjiMobile(ri.RobotInterface):
         # tool center point
         self.tcp_jlc = self.arm  # which jlc is the tcp located at?
         self.tcp_jlc.tcp_jntid = -1
-        self.tcp_jlc.tcp_loc_pos = np.array([0, 0, .07])
+        self.tcp_jlc.tcp_loc_pos = self.hnd.jaw_center
         self.tcp_jlc.tcp_loc_rotmat = np.eye(3)
         # a list of detailed information about objects in hand, see CollisionChecker.add_objinhnd
         self.oih_infos = []

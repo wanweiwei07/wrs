@@ -1,6 +1,7 @@
 import copy
 import numpy as np
 import modeling.modelcollection as mc
+import basis.robotmath as rm
 import robotsim._kinematics.jlchain as jl
 import robotsim._kinematics.collisionchecker as cc
 
@@ -23,6 +24,8 @@ class GripperInterface(object):
         # self.coupling.lnks[0]['meshfile'] = os.path.join(this_dir, "meshes", "xxx.stl")
         # self.coupling.lnks[0]['rgba'] = [.2, .2, .2, 1]
         self.coupling.reinitialize()
+        # jaw center
+        self.jaw_center = np.zeros(3)
         # collision detection
         self.cc = cc.CollisionChecker("collision_checker")
         self.cdmesh_collection = mc.ModelCollection()
@@ -60,8 +63,18 @@ class GripperInterface(object):
     def fk(self, motion_val):
         raise NotImplementedError
 
-    def jaw_to(self, jawwidth):
+    def jaw_to(self, jaw_width):
         raise NotImplementedError
+
+    def grip_at(self, gl_jaw_center, gl_hndz, gl_hndx, jaw_width):
+        rotmat = np.eye(3)
+        rotmat[:, 2] = rm.unit_vector(gl_hndz)
+        rotmat[:, 0] = rm.unit_vector(gl_hndx)
+        rotmat[:, 1] = np.cross(rotmat[:3, 2], rotmat[:3, 0])
+        pos = gl_jaw_center - rotmat.dot(self.jaw_center)
+        self.fix_to(pos, rotmat)
+        self.jaw_to(jaw_width)
+        return [jaw_width, gl_jaw_center, pos, rotmat]
 
     def show_cdprimit(self):
         self.cc.show_cdprimit(need_update=self.is_fk_updated)

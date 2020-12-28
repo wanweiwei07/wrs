@@ -266,12 +266,12 @@ if __name__ == "__main__":
     import math
     import time
     import numpy as np
+    import basis
     import basis.robotmath as rm
     import visualization.panda.world as wd
 
     base = wd.World(campos=[.3, .3, .3], lookatpos=[0, 0, 0], toggledebug=True)
-    this_dir, this_filename = os.path.split(__file__)
-    objpath = os.path.join(this_dir, "objects", "bunnysim.stl")
+    objpath = os.path.join(basis.__path__[0], 'objects', 'bunnysim.stl')
     bunnycm = CollisionModel(objpath)
     bunnycm.set_color([0.7, 0.7, 0.0, 1.0])
     bunnycm.attach_to(base)

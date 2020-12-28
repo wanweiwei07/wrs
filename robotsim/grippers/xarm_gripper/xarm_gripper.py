@@ -97,6 +97,8 @@ class XArmGripper(gi.GripperInterface):
         self.lft_inner.reinitialize()
         self.rgt_outer.reinitialize()
         self.rgt_inner.reinitialize()
+        # jaw center
+        self.jaw_center = np.array([0,0,.15])
         # collision detection
         if enable_cc:
             self.cc.add_cdlnks(self.lft_outer, [0, 1, 2])
@@ -150,10 +152,10 @@ class XArmGripper(gi.GripperInterface):
         else:
             raise ValueError("The angle parameter is out of range!")
 
-    def jaw_to(self, jawwidth):
-        if jawwidth > 0.082:
-            raise ValueError("Jawwidth must be 0mm~82mm!")
-        angle = .85 - math.asin(jawwidth/2.0/0.055)
+    def jaw_to(self, jaw_width):
+        if jaw_width > 0.082:
+            raise ValueError("jaw_width must be 0mm~82mm!")
+        angle = .85 - math.asin(jaw_width/2.0/0.055)
         self.fk(angle)
 
     def gen_stickmodel(self,

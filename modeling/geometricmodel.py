@@ -663,12 +663,12 @@ if __name__ == "__main__":
     import os
     import math
     import numpy as np
+    import basis
     import basis.robotmath as rm
     import visualization.panda.world as wd
 
     base = wd.World(campos=[.1, .1, .1], lookatpos=[0, 0, 0])
-    this_dir, this_filename = os.path.split(__file__)
-    objpath = os.path.join(this_dir, "objects", "bunnysim.stl")
+    objpath = os.path.join(basis.__path__[0], 'objects', 'bunnysim.stl')
     bunnygm = GeometricModel(objpath)
     bunnygm.set_color([0.7, 0.7, 0.0, 1.0])
     bunnygm.attach_to(base)

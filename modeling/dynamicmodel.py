@@ -178,15 +178,14 @@ if __name__ == "__main__":
     import utiltools.robotmath as rm
     import pandaplotutils.pandactrl as pc
     import random
+    import basis
 
     base = pc.World(camp=[1000, 300, 1000], lookatpos=[0, 0, 0], toggledebug=False)
     base.setFrameRateMeter(True)
-
-    this_dir, this_filename = os.path.split(__file__)
-    objpath = os.path.join(this_dir, "objects", "block.meshes")
+    objpath = os.path.join(basis.__path__[0], 'objects', 'block.stl')
     bunnycm = BDModel(objpath, mass=1, shapetype="convex")
 
-    objpath2 = os.path.join(this_dir, "objects", "bowlblock.meshes")
+    objpath = os.path.join(basis.__path__[0], 'objects', 'bowlblock.stl')
     bunnycm2 = BDModel(objpath2, mass=0, shapetype="triangle", dynamic=False)
     bunnycm2.setColor(0, 0.7, 0.7, 1.0)
     # bunnycm2.reparentTo(base.render)
