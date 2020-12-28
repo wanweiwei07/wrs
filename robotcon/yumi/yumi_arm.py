@@ -169,7 +169,7 @@ class YuMiArm:
                     If True, uses yumi_history_logger to log state histories. Enables usage of flush_state_histories.
                     Defaults to False
             motion_planner : YuMiMotionPlanner, optional
-                    If given, will use for planning trajectories in joint space.
+                    If given, will use for motion trajectories in joint space.
                     Defaults to None
         '''
         self._motion_timeout = motion_timeout
@@ -571,7 +571,7 @@ class YuMiArm:
                               traj_len=10, eef_delta=0.01, jump_thresh=0.0):
         """ Go to a pose via the shortest path in joint space """
         if self._motion_planner is None:
-            raise ValueError('Motion planning not enabled')
+            raise ValueError('Motion motion not enabled')
 
         current_state = self.get_state()
         current_pose = self.get_pose().as_frames('gripper', 'world')
@@ -587,7 +587,7 @@ class YuMiArm:
     def goto_pose_shortest_path(self, pose, wait_for_res=True, plan_timeout=0.1):
         """ Go to a pose via the shortest path in joint space """
         if self._motion_planner is None:
-            raise ValueError('Motion planning not enabled')
+            raise ValueError('Motion motion not enabled')
 
         current_state = self.get_state()
         current_pose = self.get_pose().as_frames('gripper', 'world')

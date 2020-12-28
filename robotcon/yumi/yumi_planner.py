@@ -38,7 +38,7 @@ class YuMiMotionPlanner:
         self.set_planner(planner)
 
     def _init_planning_interface(self):
-        """ Initializes the MoveIn planning interface """
+        """ Initializes the MoveIn motion interface """
         self._robot_comm = moveit_commander.RobotCommander()
         self._planning_group = moveit_commander.MoveGroupCommander(self._arm)
         self._planning_group.set_pose_reference_frame(ymc.MOVEIT_PLANNING_REFERENCE_FRAME)
@@ -99,7 +99,7 @@ class YuMiMotionPlanner:
         goal_pose : RigidTransform
             goal pose of end effector tip
         traj_len : int
-            number of waypoints to use in planning
+            number of waypoints to use in motion
         eef_delta : float
             distance for interpolation of the final planner path in cartesian space
         jump_thresh : float
@@ -143,7 +143,7 @@ class YuMiMotionPlanner:
             logging.warning('Failed to plan full path.')
             return None
         if fraction < 0.0:
-            logging.warning('Error while planning path.')
+            logging.warning('Error while motion path.')
             return None
 
         # convert from moveit joint traj in radians 
@@ -169,7 +169,7 @@ class YuMiMotionPlanner:
         goal_pose : RigidTransform
             goal pose of end effector tip
         timeout : float
-            planner timeout (shorthand for setting new planning time then planning)
+            planner timeout (shorthand for setting new motion time then motion)
 
         Returns
         -------
@@ -188,7 +188,7 @@ class YuMiMotionPlanner:
         if start_pose.from_frame != 'gripper' or goal_pose.from_frame != 'gripper' or (start_pose.to_frame != 'world' and start_pose.to_frame != 'base') or (goal_pose.to_frame != 'world' and goal_pose.to_frame != 'base'):
             raise ValueError('Start and goal poses must be from frame \'gripper\' to frame \{\'world\', \'base\'\}')
             
-        # set planning time
+        # set motion time
         self.planning_time = timeout
 
         # set start state of planner

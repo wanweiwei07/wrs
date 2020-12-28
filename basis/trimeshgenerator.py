@@ -359,7 +359,7 @@ def facet_boundary(objtrimesh, facet, facetcenter, facetnormal):
 if __name__ == "__main__":
     import visualization.panda.world as wd
     import modeling.collisionmodel as cm
-    base = wd.World(camp=[0, .3, 0], lookatpos=[0, 0, 0], autocamrotate=True)
+    base = wd.World(campos=[.1, 0, 0], lookatpos=[0, 0, 0], autocamrotate=False)
     objcm = cm.CollisionModel(gen_torus())
     # objcm.reparentTo(base.render)
     # objcm = cm.CollisionModel(genrectstick(thickness=5))
