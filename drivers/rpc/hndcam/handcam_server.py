@@ -1,9 +1,9 @@
 import grpc
 import time
-import robotconn.rpc.hndcam.cameras as cameras
+import drivers.rpc.hndcam.cameras as cameras
 from concurrent import futures
-import robotconn.rpc.hndcam.hndcam_pb2 as hcmsg
-import robotconn.rpc.hndcam.hndcam_pb2_grpc as hcrpc
+import drivers.rpc.hndcam.hndcam_pb2 as hcmsg
+import drivers.rpc.hndcam.hndcam_pb2_grpc as hcrpc
 import numpy as np
 
 class HndCamServer(hcrpc.CamServicer):
