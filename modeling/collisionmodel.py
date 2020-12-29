@@ -207,6 +207,10 @@ class CollisionModel(gm.GeometricModel):
             print("Must be ShowBase, modeling.StaticGeometricModel, GeometricModel, CollisionModel, "
                   "or CollisionModelCollection!")
 
+    def detach(self):
+        # TODO detach from model collection?
+        self._pdnp.detachNode()
+
     def show_cdprimit(self):
         """
         Show collision node

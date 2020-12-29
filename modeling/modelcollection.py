@@ -28,8 +28,14 @@ class ModelCollection(object):
     def add_cm(self, objcm):
         self._cm_list.append(objcm)
 
+    def remove_cm(self, objcm):
+        self._cm_list.remove(objcm)
+
     def add_gm(self, objcm):
         self._gm_list.append(objcm)
+
+    def remove_gm(self, objcm):
+        self._gm_list.remove(objcm)
 
     def attach_to(self, obj):
         # TODO check if obj is ShowBase
@@ -37,6 +43,13 @@ class ModelCollection(object):
             cm.attach_to(obj)
         for gm in self._gm_list:
             gm.attach_to(obj)
+
+    def detach(self):
+        for cm in self._cm_list:
+            cm.detach()
+        for gm in self._gm_list:
+            gm.detach()
+
 
     def show_cdprimit(self): # only work for cm
         for cm in self._cm_list:

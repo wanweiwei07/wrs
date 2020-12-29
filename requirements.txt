@@ -4,3 +4,6 @@ pycollada>=0.7.1 # optional, required by trimesh to load dae files
 opencv-python>=4.4.0.46 # optional, required by vision
 opencv-contrib-python>=4.4.0.46 # optional, required by vision
 scikit-learn>=0.23.2 # vital?
+grpcio>=1.34.0
+grpcio-tools>=1.34.0
+PyYAML>=5.3.1 # grpc formatting

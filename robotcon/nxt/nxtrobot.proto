@@ -1,0 +1,39 @@
+syntax = "proto3";
+
+service Nxt {
+    rpc checkEncoders (Empty) returns (Status) {}
+    rpc servoOn (Empty) returns (Status) {}
+    rpc servoOff (Empty) returns (Status) {}
+    rpc goInitial (Empty) returns (Status) {}
+    rpc goOffPose (Empty) returns (Status) {}
+    rpc getJointAngles (Empty) returns (ReturnValue) {}
+    rpc setJointAngles (SendValue) returns (Status) {}
+    rpc playPattern (SendValue) returns (Status) {}
+    rpc closeHandToolLft (Empty) returns (Status) {}
+    rpc closeHandToolRgt (Empty) returns (Status) {}
+    rpc openHandToolLft (Empty) returns (Status) {}
+    rpc openHandToolRgt (Empty) returns (Status) {}
+    rpc ejectHandToolLft (Empty) returns (Status) {}
+    rpc ejectHandToolRgt (Empty) returns (Status) {}
+    rpc attachHandToolLft (Empty) returns (Status) {}
+    rpc attachHandToolRgt (Empty) returns (Status) {}
+}
+
+message Empty {
+}
+
+message Status {
+  enum StatusValue {
+    ERROR = 0;
+    DONE = 1;
+  }
+  StatusValue value = 1;
+}
+
+message SendValue {
+  string data = 1;
+}
+
+message ReturnValue {
+  string data = 1;
+}

@@ -153,6 +153,9 @@ class StaticGeometricModel(object):
         else:
             print("Must be ShowBase, modeling.StaticGeometricModel, GeometricModel, CollisionModel, or CollisionModelCollection!")
 
+    def detach(self):
+        self._pdnp.detachNode()
+
     def remove(self):
         self._pdnp.removeNode()
 

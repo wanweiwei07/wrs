@@ -1,0 +1,20 @@
+syntax = "proto3";
+
+service RViz {
+  rpc run_code (CodeRequest) returns (Status) {}
+}
+
+message Empty {
+}
+
+message CodeRequest {
+  bytes code = 1;
+}
+
+message Status {
+  enum StatusValue {
+    ERROR = 0;
+    DONE = 1;
+  }
+  StatusValue value = 1;
+}
