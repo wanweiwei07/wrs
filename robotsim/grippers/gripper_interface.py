@@ -66,6 +66,9 @@ class GripperInterface(object):
     def jaw_to(self, jaw_width):
         raise NotImplementedError
 
+    def get_jawwidth(self):
+        raise NotImplementedError
+
     def grip_at(self, gl_jaw_center, gl_hndz, gl_hndx, jaw_width):
         rotmat = np.eye(3)
         rotmat[:, 2] = rm.unit_vector(gl_hndz)

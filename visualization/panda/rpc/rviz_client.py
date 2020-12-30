@@ -1,5 +1,4 @@
 import grpc
-import random
 import numpy as np
 import visualization.panda.rpc.rviz_pb2 as rv_msg
 import visualization.panda.rpc.rviz_pb2_grpc as rv_rpc
@@ -11,44 +10,59 @@ class RVizClient(object):
         channel = grpc.insecure_channel(host)
         self.stub = rv_rpc.RVizStub(channel)
 
-    def add_obj_render_info(self, obj, path=None):
-        if path != None:
-            create_obj_path = "obj_path = ["
-            for pose in path:
-                create_obj_path += "np.array(%s)," % np.array2string(pose, separator=',')
-            create_obj_path = create_obj_path[:-1] + "]\n"
-        else:
-            create_obj_path = "obj_path = None"
+    def add_anime_obj(self, rmt_obj, loc_obj, loc_obj_path):
+        create_obj_path = "obj_path = ["
+        for pose in loc_obj_path:
+            create_obj_path += "np.array(%s)," % np.array2string(pose, separator=',')
+        create_obj_path = create_obj_path[:-1] + "]\n"
         self.run_code(create_obj_path)
-        code = ("obj.set_pos(np.array(%s)\n" % np.array2string(obj.get_pos(), separator=',') +
-                "obj.set_rotmat(np.array(%s))\n" % np.array2string(obj.get_rotmat(), separator=',') +
-                "obj.set_rgba([%s])\n" % ','.join(map(str, obj.get_rgba()))  +
-                "base.obj_render_info_list.append(create_obj_render_info(obj=obj, obj_path=obj_path))\n")
+        code = ("%s.set_pos(np.array(%s)\n" % (rmt_obj, np.array2string(loc_obj.get_pos(), separator=',')) +
+                "%s.set_rotmat(np.array(%s))\n" % (rmt_obj, np.array2string(loc_obj.get_rotmat(), separator=',')) +
+                "%s.set_rgba([%s])\n" % (rmt_obj, ','.join(map(str, loc_obj.get_rgba()))) +
+                "base.attach_manualupdate_obj(wd.ani.ObjInfo.create_obj_anime_info(obj=%s, obj_path=obj_path))\n" % rmt_obj)
         self.run_code(code)
 
-    def add_robot_render_info(self, robot_jlc_name, robot_meshmodel_parameters, path):
+    def add_anime_robot(self, rmt_robot_instance, loc_robot_jlc_name, loc_robot_meshmodel_parameters, loc_robot_path):
         create_robot_path = "robot_path = ["
-        for pose in path:
+        for pose in loc_robot_path:
             create_robot_path += "np.array(%s)," % np.array2string(pose, separator=',')
         create_robot_path = create_robot_path[:-1] + "]\n"
         self.run_code(create_robot_path)
-        code = ("base.robot_render_info_list.append(create_robot_render_info(robot_instance,\n"+
-                "                                                            '%s',\n" % robot_jlc_name+
-                "                                                            %s,\n" % robot_meshmodel_parameters+
-                "                                                            robot_path))\n")
+        code = ("base.attach_manualupdate_robot(wd.ani.RobotInfo.create_robot_anime_info(%s,\n" % rmt_robot_instance +
+                "'%s',\n" % loc_robot_jlc_name + "%s,\n" % loc_robot_meshmodel_parameters + "robot_path))\n")
         self.run_code(code)
 
-    def clear_obj_render_info_list(self):
-        code = "base.obj_render_info_list=[]\n"
+    def delete_anime_obj(self, rmt_obj):
+        code = "base.detach_manualupdate_obj(%s)\n" % rmt_obj
         self.run_code(code)
 
-    def clear_robot_render_info_list(self):
-        code = "base.robot_render_info_list=[]\n"
+    def delete_anime_robot(self, rmt_robot_instance):
+        code = "base.detach_manualupdate_robot(%s)\n" % rmt_robot_instance
+        self.run_code(code)
+
+    # def add_stationary_obj(self, rmt_obj, loc_obj):
+    #     code = ("%s.set_pos(np.array(%s)\n" % (rmt_obj, np.array2string(loc_obj.get_pos(), separator=',')) +
+    #             "%s.set_rotmat(np.array(%s))\n" % (rmt_obj, np.array2string(loc_obj.get_rotmat(), separator=',')) +
+    #             "%s.set_rgba([%s])\n" % (rmt_obj, ','.join(map(str, loc_obj.get_rgba()))) +
+    #             "base.obj_anime_info_list.append(wd.ani.ObjInfo.create_obj_anime_info(obj=%s, obj_path=obj_path))\n" % rmt_obj)
+    #     code = "base."
+    #
+    def add_stationary_robot(self, rmt_robot_instance, loc_robot_instance):
+        jnt_angles_str = np.array2string(loc_robot_instance.get_jntvalues(jlc_name='all'), separator=',')
+        code = ("%s.fk(jnt_values=np.array(%s), jlc_name='all')\n" % (rmt_robot_instance, jnt_angles_str) +
+                "randomname = %s.gen_meshmodel()\n" % rmt_robot_instance +
+                "base.attach_autoupdate_robot(randomname)\n")
+        self.run_code(code)
+        return 'randomname'
+
+    def delete_stationary_robot(self, rmt_robot_meshmodel):
+        code = "base.detach_autoupdate_robot(%s)" % rmt_robot_meshmodel
         self.run_code(code)
 
     def load_common_definition(self, file):
         with open(file, 'r') as cdfile:
             self.common_definition = cdfile.read()
+        # exec at remote
         self.run_code(self.common_definition)
 
     def change_campos(self, campos):
@@ -78,7 +92,6 @@ class RVizClient(object):
             raise Exception()
         else:
             return
-            print("The given code is succesfully executed.")
 
     def clear_task(self, name="all"):
         """

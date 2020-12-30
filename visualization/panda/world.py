@@ -11,6 +11,7 @@ from basis import dataadapter as p3dh
 # from vision.pointcloud import o3dhelper as o3dh
 import basis.robotmath as rm
 import numpy as np
+import visualization.panda.anime_info as ani
 
 
 class World(ShowBase, object):
@@ -108,12 +109,13 @@ class World(ShowBase, object):
             self.physicsworld.setDebugNode(self._debugNP.node())
         self.physicsbodylist = []
         # set up render update
-        self._objtodraw = []  # the nodepath, collision model, or bullet dynamics model to be drawn
-        taskMgr.add(self._render_update, "render", appendTask=True)
+        self._autoupdate_obj_list = []  # the nodepath, collision model, or bullet dynamics model to be drawn
+        self._autoupdate_robot_list = []
+        taskMgr.add(self._auto_update, "auto_update", appendTask=True)
         # for remote visualization
-        self.obj_render_info_list = []
-        self.robot_render_info_list = []
-        taskMgr.add(self._rviz_task, "rviz_task", appendTask=True)
+        self._manualupdate_objinfo_list = []  # see anime_info.py
+        self._manualupdate_robotinfo_list = []
+        taskMgr.add(self._manual_update, "manual_update", appendTask=True)
 
     def _interaction_update(self, task):
         # reset aspect ratio
@@ -131,10 +133,13 @@ class World(ShowBase, object):
         self.physicsworld.doPhysics(dt, 20, 1 / 1200)
         return task.cont
 
-    def _render_update(self, task):
-        for otdele in self._objtodraw:
-            otdele.detach()
-            otdele.attach_to(self.render)
+    def _auto_update(self, task):
+        for obj in self._autoupdate_obj_list:
+            obj.detach()
+            obj.attach_to(self)
+        for robot in self._autoupdate_robot_list:
+            robot.detach()
+            robot.attach_to(self)
         return task.cont
 
     def _rotatecam_update(self, task):
@@ -154,41 +159,41 @@ class World(ShowBase, object):
         self.cam.lookAt(self.lookatpos[0], self.lookatpos[1], self.lookatpos[2])
         return task.cont
 
-    def _rviz_task(self, task):
-        for i in range(len(self.robot_render_info_list)):
-            robot_instance = self.robot_render_info_list[i].robot_instance
-            robot_jlc_name = self.robot_render_info_list[i].robot_jlc_name
-            robot_meshmodel = self.robot_render_info_list[i].robot_meshmodel
-            robot_meshmodel_parameter = self.robot_render_info_list[i].robot_meshmodel_parameters
-            robot_path = self.robot_render_info_list[i].robot_path
-            robot_path_counter = self.robot_render_info_list[i].robot_path_counter
+    def _manual_update(self, task):
+        for _manualupdate_robotinfo in self._manualupdate_robotinfo_list:
+            robot_instance = _manualupdate_robotinfo.robot_instance
+            robot_jlc_name = _manualupdate_robotinfo.robot_jlc_name
+            robot_meshmodel = _manualupdate_robotinfo.robot_meshmodel
+            robot_meshmodel_parameter = _manualupdate_robotinfo.robot_meshmodel_parameters
+            robot_path = _manualupdate_robotinfo.robot_path
+            robot_path_counter = _manualupdate_robotinfo.robot_path_counter
             robot_meshmodel.detach()
             robot_instance.fk(robot_path[robot_path_counter], jlc_name=robot_jlc_name)
-            self.robot_render_info_list[i].robot_meshmodel = robot_instance.gen_meshmodel(
+            _manualupdate_robotinfo.robot_meshmodel = robot_instance.gen_meshmodel(
                 tcp_jntid=robot_meshmodel_parameter[0],
                 tcp_loc_pos=robot_meshmodel_parameter[1],
                 tcp_loc_rotmat=robot_meshmodel_parameter[2],
                 toggle_tcpcs=robot_meshmodel_parameter[3],
                 toggle_jntscs=robot_meshmodel_parameter[4],
                 rgba=robot_meshmodel_parameter[5],
-                name=robot_meshmodel_parameter[6], )
-            self.robot_render_info_list[i].robot_meshmodel.attach_to(self)
-            self.robot_render_info_list[i].robot_path_counter += 1
-            if self.robot_render_info_list[i].robot_path_counter >= len(robot_path):
-                self.robot_render_info_list[i].robot_path_counter = 0
-        for i in range(len(self.obj_render_info_list)):
-            obj = self.obj_render_info_list[i].obj
-            obj_parameters = self.obj_render_info_list[i].obj_parameters
-            obj_path = self.obj_render_info_list[i].obj_path
-            obj_path_counter = self.obj_render_info_list[i].obj_path_counter
+                name=robot_meshmodel_parameter[6])
+            _manualupdate_robotinfo.robot_meshmodel.attach_to(self)
+            _manualupdate_robotinfo.robot_path_counter += 1
+            if _manualupdate_robotinfo.robot_path_counter >= len(robot_path):
+                _manualupdate_robotinfo.robot_path_counter = 0
+        for _manualupdate_objinfo in self._manualupdate_objinfo_list:
+            obj = _manualupdate_objinfo.obj
+            obj_parameters = _manualupdate_objinfo.obj_parameters
+            obj_path = _manualupdate_objinfo.obj_path
+            obj_path_counter = _manualupdate_objinfo.obj_path_counter
             obj.detach()
             obj.set_pos(obj_path[obj_path_counter][0])
             obj.set_rotmat(obj_path[obj_path_counter][1])
             obj.set_rgba(obj_parameters[0])
             obj.attach_to(self)
-            self.obj_render_info_list[i].obj_path_counter += 1
-            if self.obj_render_info_list[i].obj_path_counter >= len(obj_path):
-                self.obj_render_info_list[i].obj_path_counter = 0
+            _manualupdate_objinfo.obj_path_counter += 1
+            if _manualupdate_objinfo.obj_path_counter >= len(obj_path):
+                _manualupdate_objinfo.obj_path_counter = 0
         return task.cont
 
     def change_debugstatus(self, toggledebug):
@@ -200,28 +205,49 @@ class World(ShowBase, object):
             self.physicsworld.clearDebugNode()
         self.toggledebug = toggledebug
 
-    def attach_autoupdate_object(self, *args):
+    def attach_autoupdate_obj(self, obj):
         """
-        add to the render update list
-        *args,**kwargs
-        :param obj: nodepath, collision model, or bullet dynamics model
+        :param obj: CollisionModel or (Static)GeometricModel
         :return:
-        author: weiwei
-        date: 20190627
         """
-        for obj in args:
-            self._objtodraw.append(obj)
+        self._autoupdate_obj_list.append(obj)
 
-    def detach_autoupdate_object(self, *args):
+    def detach_autoupdate_obj(self, obj):
+        self._autoupdate_obj_list.remove(obj)
+
+    def attach_autoupdate_robot(self, robot_meshmodel):
+        self._autoupdate_robot_list.append(robot_meshmodel)
+
+    def detach_autoupdate_robot(self, robot_meshmodel):
+        self._autoupdate_robot_list.remove(robot_meshmodel)
+
+    def attach_manualupdate_obj(self, objinfo):
         """
-        remove from the render update list
-        :param obj: nodepath, collision model, or bullet dynamics model
+        :param objinfo: anime_info.ObjInfo
         :return:
-        author: weiwei
-        date: 20190627
         """
-        for obj in args:
-            self._objtodraw.remove(obj)
+        self._manualupdate_objinfo_list.append(objinfo)
+
+    def detach_manualupdate_obj(self, obj):
+        for objinfo in self._manualupdate_objinfo_list:
+            if objinfo.obj is obj:
+                self._manualupdate_objinfo_list.remove(objinfo)
+                objinfo.obj.detach()
+                return
+
+    def attach_manualupdate_robot(self, robotinfo):
+        """
+        :param robotinfo: anime_info.RobotInfo
+        :return:
+        """
+        self._manualupdate_robotinfo_list.append(robotinfo)
+
+    def detach_manualupdate_robot(self, robot_instance):
+        for robotinfo in self._manualupdate_robotinfo_list:
+            if robotinfo.robot_instance is robot_instance:
+                self._manualupdate_robotinfo_list.remove(robotinfo)
+                robotinfo.robot_meshmodel.detach()
+                return
 
     def change_campos(self, campos):
         self.cam.setPos(campos[0], campos[1], campos[2])

@@ -410,7 +410,6 @@ def cosine_between_vector(v1, v2):
 
 def axangle_between_rotmat(rotmati, rotmatj):
     raise NotImplementedError("Not yet implemented!")
-    pass
 
 def quaternion_to_axangle(quaternion):
     """

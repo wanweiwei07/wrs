@@ -158,6 +158,10 @@ class XArmGripper(gi.GripperInterface):
         angle = .85 - math.asin(jaw_width/2.0/0.055)
         self.fk(angle)
 
+    def get_jawwidth(self):
+        angle = self.lft_outer.jnts[1]['motion_val']
+        return math.sin(.85-angle)*0.055*2.0
+
     def gen_stickmodel(self,
                        tcp_jntid=None,
                        tcp_loc_pos=None,
@@ -232,6 +236,7 @@ if __name__ == '__main__':
     #     xag.gen_meshmodel().attach_to(base)
     xag = XArmGripper(enable_cc=True)
     xag.jaw_to(0.05)
+    print(xag.get_jawwidth())
     model = xag.gen_meshmodel(rgba=[.5,0,0,.3])
     model.attach_to(base)
     xag.show_cdprimit()
