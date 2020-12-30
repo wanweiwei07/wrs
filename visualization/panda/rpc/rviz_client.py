@@ -1,4 +1,5 @@
 import grpc
+import random
 import numpy as np
 import visualization.panda.rpc.rviz_pb2 as rv_msg
 import visualization.panda.rpc.rviz_pb2_grpc as rv_rpc
@@ -9,6 +10,9 @@ class RVizClient(object):
     def __init__(self, host="localhost:18300"):
         channel = grpc.insecure_channel(host)
         self.stub = rv_rpc.RVizStub(channel)
+
+    def _gen_random_name(self):
+        return 'rmt_'+str(random.randint(0,1e6))
 
     def add_anime_obj(self, rmt_obj, loc_obj, loc_obj_path):
         create_obj_path = "obj_path = ["
@@ -48,12 +52,18 @@ class RVizClient(object):
     #     code = "base."
     #
     def add_stationary_robot(self, rmt_robot_instance, loc_robot_instance):
+        """
+        :param rmt_robot_instance:
+        :param loc_robot_instance:
+        :return: The name of the robot_meshmodel created in the remote end
+        """
+        random_rmt_robot_meshmodel_name = self._gen_random_name()
         jnt_angles_str = np.array2string(loc_robot_instance.get_jntvalues(jlc_name='all'), separator=',')
         code = ("%s.fk(jnt_values=np.array(%s), jlc_name='all')\n" % (rmt_robot_instance, jnt_angles_str) +
-                "randomname = %s.gen_meshmodel()\n" % rmt_robot_instance +
-                "base.attach_autoupdate_robot(randomname)\n")
+                "%s = %s.gen_meshmodel()\n" % (random_rmt_robot_meshmodel_name, rmt_robot_instance) +
+                "base.attach_autoupdate_robot(%s)\n" % random_rmt_robot_meshmodel_name)
         self.run_code(code)
-        return 'randomname'
+        return random_rmt_robot_meshmodel_name
 
     def delete_stationary_robot(self, rmt_robot_meshmodel):
         code = "base.detach_autoupdate_robot(%s)" % rmt_robot_meshmodel

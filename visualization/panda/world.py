@@ -7,6 +7,7 @@ from panda3d.bullet import BulletWorld
 from panda3d.bullet import BulletDebugNode
 import os
 import math
+import time
 from basis import dataadapter as p3dh
 # from vision.pointcloud import o3dhelper as o3dh
 import basis.robotmath as rm
@@ -214,12 +215,16 @@ class World(ShowBase, object):
 
     def detach_autoupdate_obj(self, obj):
         self._autoupdate_obj_list.remove(obj)
+        time.sleep(.1)
+        obj.detach()
 
     def attach_autoupdate_robot(self, robot_meshmodel):
         self._autoupdate_robot_list.append(robot_meshmodel)
 
     def detach_autoupdate_robot(self, robot_meshmodel):
         self._autoupdate_robot_list.remove(robot_meshmodel)
+        time.sleep(.1)
+        robot_meshmodel.detach()
 
     def attach_manualupdate_obj(self, objinfo):
         """
@@ -232,6 +237,7 @@ class World(ShowBase, object):
         for objinfo in self._manualupdate_objinfo_list:
             if objinfo.obj is obj:
                 self._manualupdate_objinfo_list.remove(objinfo)
+                time.sleep(.1)
                 objinfo.obj.detach()
                 return
 
@@ -246,6 +252,7 @@ class World(ShowBase, object):
         for robotinfo in self._manualupdate_robotinfo_list:
             if robotinfo.robot_instance is robot_instance:
                 self._manualupdate_robotinfo_list.remove(robotinfo)
+                time.sleep(.1)
                 robotinfo.robot_meshmodel.detach()
                 return
 

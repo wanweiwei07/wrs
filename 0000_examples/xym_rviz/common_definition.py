@@ -5,10 +5,13 @@ import numpy as np
 import modeling.geometricmodel as gm
 import modeling.collisionmodel as cm
 import robotsim.robots.xarm7_shuidi_mobile.xarm7_shuidi_mobile as xav
+import re
 
 global_frame = gm.gen_frame()
 # define robot and robot anime info
 robot_instance = xav.XArm7YunjiMobile()
+print(str(robot_instance.__class__))
+print(re.findall(r"'(.*?)'", str(robot_instance.__class__)))
 robot_jlc_name = 'arm'
 robot_meshmodel_parameters = [None,  # tcp_jntid
                               None,  # tcp_loc_pos
