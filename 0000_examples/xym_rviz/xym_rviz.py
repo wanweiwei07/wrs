@@ -41,7 +41,7 @@ path = rrtc_planner.plan(start_conf=np.array([0, math.pi * 2 / 3, 0, math.pi, 0,
                          jlc_name=jlc_name)
 rvc.clear_robot_render_info_list()
 rvc.add_robot_render_info(robot_jlc_name, robot_meshmodel_parameters, path)
-rvc.run_code("start_rendering_task(robot_render_info_list, obj_render_info_list)")
+# rvc.run_code("start_rendering_task(robot_render_info_list, obj_render_info_list)")
 #
 # # base = wd.World(campos=[1, 1, 1], lookatpos=[0, 0, 0])
 # # jlc_name='arm'

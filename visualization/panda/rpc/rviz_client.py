@@ -23,7 +23,7 @@ class RVizClient(object):
         code = ("obj.set_pos(np.array(%s)\n" % np.array2string(obj.get_pos(), separator=',') +
                 "obj.set_rotmat(np.array(%s))\n" % np.array2string(obj.get_rotmat(), separator=',') +
                 "obj.set_rgba([%s])\n" % ','.join(map(str, obj.get_rgba()))  +
-                "obj_render_info_list.append(create_obj_render_info(obj=obj, obj_path=obj_path))\n")
+                "base.obj_render_info_list.append(create_obj_render_info(obj=obj, obj_path=obj_path))\n")
         self.run_code(code)
 
     def add_robot_render_info(self, robot_jlc_name, robot_meshmodel_parameters, path):
@@ -32,18 +32,18 @@ class RVizClient(object):
             create_robot_path += "np.array(%s)," % np.array2string(pose, separator=',')
         create_robot_path = create_robot_path[:-1] + "]\n"
         self.run_code(create_robot_path)
-        code = ("robot_render_info_list.append(create_robot_render_info(robot_instance,\n"+
-                "                                                       '%s',\n" % robot_jlc_name+
-                "                                                       %s,\n" % robot_meshmodel_parameters+
-                "                                                       robot_path))\n")
+        code = ("base.robot_render_info_list.append(create_robot_render_info(robot_instance,\n"+
+                "                                                            '%s',\n" % robot_jlc_name+
+                "                                                            %s,\n" % robot_meshmodel_parameters+
+                "                                                            robot_path))\n")
         self.run_code(code)
 
     def clear_obj_render_info_list(self):
-        code = "obj_render_info_list=[]\n"
+        code = "base.obj_render_info_list=[]\n"
         self.run_code(code)
 
     def clear_robot_render_info_list(self):
-        code = "robot_render_info_list=[]\n"
+        code = "base.robot_render_info_list=[]\n"
         self.run_code(code)
 
     def load_common_definition(self, file):

@@ -110,6 +110,10 @@ class World(ShowBase, object):
         # set up render update
         self._objtodraw = []  # the nodepath, collision model, or bullet dynamics model to be drawn
         taskMgr.add(self._render_update, "render", appendTask=True)
+        # for remote visualization
+        self.obj_render_info_list = []
+        self.robot_render_info_list = []
+        taskMgr.add(self._rviz_task, "rviz_task", appendTask=True)
 
     def _interaction_update(self, task):
         # reset aspect ratio
@@ -130,7 +134,7 @@ class World(ShowBase, object):
     def _render_update(self, task):
         for otdele in self._objtodraw:
             otdele.detach()
-            otdele.reparent_to(self.render)
+            otdele.attach_to(self.render)
         return task.cont
 
     def _rotatecam_update(self, task):
@@ -148,6 +152,43 @@ class World(ShowBase, object):
         camy = camradius * math.sin(camangle)
         self.cam.setPos(self.lookatpos[0] + camx, self.lookatpos[1] + camy, campos[2])
         self.cam.lookAt(self.lookatpos[0], self.lookatpos[1], self.lookatpos[2])
+        return task.cont
+
+    def _rviz_task(self, task):
+        for i in range(len(self.robot_render_info_list)):
+            robot_instance = self.robot_render_info_list[i].robot_instance
+            robot_jlc_name = self.robot_render_info_list[i].robot_jlc_name
+            robot_meshmodel = self.robot_render_info_list[i].robot_meshmodel
+            robot_meshmodel_parameter = self.robot_render_info_list[i].robot_meshmodel_parameters
+            robot_path = self.robot_render_info_list[i].robot_path
+            robot_path_counter = self.robot_render_info_list[i].robot_path_counter
+            robot_meshmodel.detach()
+            robot_instance.fk(robot_path[robot_path_counter], jlc_name=robot_jlc_name)
+            self.robot_render_info_list[i].robot_meshmodel = robot_instance.gen_meshmodel(
+                tcp_jntid=robot_meshmodel_parameter[0],
+                tcp_loc_pos=robot_meshmodel_parameter[1],
+                tcp_loc_rotmat=robot_meshmodel_parameter[2],
+                toggle_tcpcs=robot_meshmodel_parameter[3],
+                toggle_jntscs=robot_meshmodel_parameter[4],
+                rgba=robot_meshmodel_parameter[5],
+                name=robot_meshmodel_parameter[6], )
+            self.robot_render_info_list[i].robot_meshmodel.attach_to(self)
+            self.robot_render_info_list[i].robot_path_counter += 1
+            if self.robot_render_info_list[i].robot_path_counter >= len(robot_path):
+                self.robot_render_info_list[i].robot_path_counter = 0
+        for i in range(len(self.obj_render_info_list)):
+            obj = self.obj_render_info_list[i].obj
+            obj_parameters = self.obj_render_info_list[i].obj_parameters
+            obj_path = self.obj_render_info_list[i].obj_path
+            obj_path_counter = self.obj_render_info_list[i].obj_path_counter
+            obj.detach()
+            obj.set_pos(obj_path[obj_path_counter][0])
+            obj.set_rotmat(obj_path[obj_path_counter][1])
+            obj.set_rgba(obj_parameters[0])
+            obj.attach_to(self)
+            self.obj_render_info_list[i].obj_path_counter += 1
+            if self.obj_render_info_list[i].obj_path_counter >= len(obj_path):
+                self.obj_render_info_list[i].obj_path_counter = 0
         return task.cont
 
     def change_debugstatus(self, toggledebug):
