@@ -11,6 +11,14 @@ class RVizClient(object):
     def __init__(self, host="localhost:18300"):
         channel = grpc.insecure_channel(host)
         self.stub = rv_rpc.RVizStub(channel)
+        self._
+
+    def show(self, parameter_code, update_code):
+        "def rviz_task(task):\n" \
+        "   " \
+        "   return task.cont\n" \
+        "taskMgr.add(rviz_task, appendTask=True)\n" \
+
 
     def run_code(self, code):
         """
@@ -27,3 +35,5 @@ class RVizClient(object):
         else:
             return
             print("The given code is succesfully executed.")
+
+
