@@ -37,7 +37,7 @@ class JLChainMesh(object):
                 rotmat = self.jlobject.lnks[id]['gl_rotmat']
                 this_collisionmodel.set_homomat(rm.homomat_from_posrot(pos, rotmat))
                 this_rgba = self.jlobject.lnks[id]['rgba'] if rgba is None else rgba
-                this_collisionmodel.set_color(this_rgba)
+                this_collisionmodel.set_rgba(this_rgba)
                 if self.jlobject.lnks[id]['scale'] is not None:
                     this_collisionmodel.set_scale(self.jlobject.lnks[id]['scale'])
                 this_collisionmodel.attach_to(meshmodel)

@@ -130,10 +130,10 @@ class StaticGeometricModel(object):
         samples, faceids = tmptrimesh.sample(nsample, toggle_faceid=True)
         return samples, faceids
 
-    def set_color(self, rgba):
+    def set_rgba(self, rgba):
         self._pdnp.setColor(rgba[0], rgba[1], rgba[2], rgba[3])
 
-    def get_color(self):
+    def get_rgba(self):
         return da.pdv4_to_npv4(self._pdnp.getColor())  # panda3d.core.LColor -> LBase4F
 
     def clear_color(self):
@@ -374,7 +374,7 @@ def gen_box(extent=np.array([1, 1, 1]), homomat=np.eye(4), rgba=[1, 0, 0, 1]):
     """
     box_trm = trihelper.gen_box(extent=extent, homomat=homomat)
     box_sgm = StaticGeometricModel(box_trm)
-    box_sgm.set_color(rgba=rgba)
+    box_sgm.set_rgba(rgba=rgba)
     return box_sgm
 
 
@@ -390,7 +390,7 @@ def gen_dumbbell(spos=np.array([0, 0, 0]), epos=np.array([.1, 0, 0]), thickness=
     """
     dumbbell_trm = trihelper.gen_dumbbell(spos=spos, epos=epos, thickness=thickness)
     dumbbell_sgm = StaticGeometricModel(dumbbell_trm)
-    dumbbell_sgm.set_color(rgba=rgba)
+    dumbbell_sgm.set_rgba(rgba=rgba)
     return dumbbell_sgm
 
 
@@ -407,7 +407,7 @@ def gen_arrow(spos=np.array([0, 0, 0]), epos=np.array([.1, 0, 0]), thickness=.00
     """
     arrow_trm = trihelper.gen_arrow(spos=spos, epos=epos, thickness=thickness, sticktype=type)
     arrow_sgm = StaticGeometricModel(arrow_trm)
-    arrow_trm.set_color(rgba=rgba)
+    arrow_trm.set_rgba(rgba=rgba)
     return arrow_sgm
 
 
@@ -427,7 +427,7 @@ def gen_dasharrow(spos=np.array([0, 0, 0]), epos=np.array([.1, 0, 0]), thickness
     dasharrow_trm = trihelper.gen_dasharrow(spos=spos, epos=epos, lsolid=lsolid, lspace=lspace, thickness=thickness,
                                             sticktype=type)
     dasharrow_sgm = StaticGeometricModel(dasharrow_trm)
-    dasharrow_sgm.set_color(rgba=rgba)
+    dasharrow_sgm.set_rgba(rgba=rgba)
     return dasharrow_sgm
 
 
@@ -571,7 +571,7 @@ def gen_torus(axis=np.array([1, 0, 0]), portion=.5, center=np.array([0, 0, 0]), 
     """
     torus_trm = trihelper.gen_torus(axis=axis, portion=portion, center=center, radius=radius, thickness=thickness)
     torus_sgm = StaticGeometricModel(torus_trm)
-    torus_sgm.set_color(rgba=rgba)
+    torus_sgm.set_rgba(rgba=rgba)
     return torus_sgm
 
 
@@ -588,7 +588,7 @@ def gen_circarrow(axis=np.array([1, 0, 0]), portion=.5, center=np.array([0, 0, 0
     circarrow_trm = trihelper.gen_circarrow(axis=axis, portion=portion, center=center, radius=radius,
                                             thickness=thickness)
     circarrow_sgm = StaticGeometricModel(circarrow_trm)
-    circarrow_sgm.set_color(rgba=rgba)
+    circarrow_sgm.set_rgba(rgba=rgba)
     return circarrow_sgm
 
 
@@ -673,7 +673,7 @@ if __name__ == "__main__":
     base = wd.World(campos=[.1, .1, .1], lookatpos=[0, 0, 0])
     objpath = os.path.join(basis.__path__[0], 'objects', 'bunnysim.stl')
     bunnygm = GeometricModel(objpath)
-    bunnygm.set_color([0.7, 0.7, 0.0, 1.0])
+    bunnygm.set_rgba([0.7, 0.7, 0.0, 1.0])
     bunnygm.attach_to(base)
     bunnygm.show_localframe()
     rotmat = rm.rotmat_from_axangle([1, 0, 0], math.pi / 2.0)
@@ -681,14 +681,14 @@ if __name__ == "__main__":
     bunnygm.set_scale([2,1,3])
 
     bunnygm1 = bunnygm.copy()
-    bunnygm1.set_color([0.7, 0, 0.7, 1.0])
+    bunnygm1.set_rgba([0.7, 0, 0.7, 1.0])
     bunnygm1.attach_to(base)
     rotmat = rm.rotmat_from_euler(0, 0, math.radians(15))
     bunnygm1.set_pos(np.array([0, .01, 0]))
     bunnygm1.set_rotmat(rotmat)
 
     bunnygm2 = bunnygm1.copy()
-    bunnygm2.set_color([0, 0.7, 0.7, 1.0])
+    bunnygm2.set_rgba([0, 0.7, 0.7, 1.0])
     bunnygm2.attach_to(base)
     rotmat = rm.rotmat_from_axangle([1, 0, 0], -math.pi / 4.0)
     bunnygm1.set_pos(np.array([0, .2, 0]))

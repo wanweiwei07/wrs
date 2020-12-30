@@ -219,9 +219,9 @@ class Yumi(ri.RobotInterface):
                                     rotmat=self.rgt_body.jnts[-1]['gl_rotmatq'],
                                     jnt_values=jnt_values)
         elif jlc_name == 'both_arm':
-            if (not isinstance(general_jnt_values, list)
-                    or general_jnt_values[0].size != 7
-                    or general_jnt_values[1].size != 7):
+            if (not isinstance(jnt_values, list)
+                    or jnt_values[0].size != 7
+                    or jnt_values[1].size != 7):
                 raise ValueError("A list of two 1x7 npdarrays must be specified to move both arm!")
             self.lft_arm.fix_to(pos=self.lft_body.jnts[-1]['gl_posq'],
                                 rotmat=self.lft_body.jnts[-1]['gl_rotmatq'],

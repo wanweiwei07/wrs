@@ -20,6 +20,8 @@ class RVizServer(rv_rpc.RVizServicer):
         """
         try:
             code = request.code.decode('utf-8')
+            for i, line in enumerate(code.splitlines()):
+                print("{:< 4d}".format(i), ": ", line)
             exec(code, globals())
             return rv_msg.Status(value = rv_msg.Status.DONE)
         except Exception as e:

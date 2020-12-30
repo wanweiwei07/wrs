@@ -180,9 +180,13 @@ class World(ShowBase, object):
         date: 20190627
         """
         for obj in args:
-            self.__objtodraw.remove(obj)
+            self._objtodraw.remove(obj)
 
-    def change_lookat(self, lookatpos):
+    def change_campos(self, campos):
+        self.cam.setPos(campos[0], campos[1], campos[2])
+        self.inputmgr = im.InputManager(self, self.lookatpos)
+
+    def change_lookatpos(self, lookatpos):
         """
         This function is questionable
         as lookat changes the rotation of the camera
@@ -193,7 +197,14 @@ class World(ShowBase, object):
         date: 20180606
         """
         self.cam.lookAt(lookatpos[0], lookatpos[1], lookatpos[2])
-        self.inputmgr = im.InputManager(self, lookatpos, self.pggen)
+        self.lookatpos = lookatpos
+        self.inputmgr = im.InputManager(self, self.lookatpos)
+
+    def change_campos_and_lookatpos(self, campos, lookatpos):
+        self.cam.setPos(campos[0], campos[1], campos[2])
+        self.cam.lookAt(lookatpos[0], lookatpos[1], lookatpos[2])
+        self.lookatpos = lookatpos
+        self.inputmgr = im.InputManager(self, self.lookatpos)
 
     def set_cartoonshader(self, switchtoon=False):
         """

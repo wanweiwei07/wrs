@@ -23,7 +23,7 @@ class RRT(object):
 
     def _sample_conf(self, jlc_name, rand_rate, default_conf):
         if random.randint(0, 100) < rand_rate:
-            return self.robot.rand_conf(jlc_name)
+            return self.robot.rand_conf(jlc_name=jlc_name)
         else:
             return default_conf
 
@@ -149,7 +149,7 @@ class RRT(object):
                     print("Too much motion time! Failed to find a path.")
                     return [None, None]
             # Random Sampling
-            rand_conf = self._sample_conf(jlc_name=jlc_name, rand_rate=rand_rate, default_conf=goal_conf)
+            rand_conf = self._sample_conf(rand_rate=rand_rate, default_conf=goal_conf)
             last_nid = self._extend_roadmap(self.roadmap,
                                             conf=rand_conf,
                                             ext_dist=ext_dist,
