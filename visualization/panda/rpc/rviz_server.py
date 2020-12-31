@@ -4,9 +4,12 @@ import pickle
 import numpy as np
 import basis.trimesh as trm # for creating obj
 from concurrent import futures
+import modeling.geometricmodel as gm
+import modeling.modelcollection as mc
 import visualization.panda.rpc.rviz_pb2 as rv_msg
 import visualization.panda.rpc.rviz_pb2_grpc as rv_rpc
 import visualization.panda.world as wd
+import robotsim.robots.robot_interface as ri
 
 
 class RVizServer(rv_rpc.RVizServicer):
@@ -41,6 +44,19 @@ class RVizServer(rv_rpc.RVizServicer):
             name = request.name
             data = request.data
             globals()[name] = pickle.loads(data)
+            # fix the unserializable Shaders and CollisionTraversers
+            # https://discourse.panda3d.org/t/serializing-pandanode-shaders-collisiontraverser-etc/26945/5
+            # https://github.com/panda3d/panda3d/issues/1090
+            if isinstance(globals()[name], gm.GeometricModel):
+                globals()[name].pdnp_raw.setShaderAuto()
+            elif isinstance(globals()[name], mc.ModelCollection):
+                for cm in globals()[name].cm_list:
+                    cm.pdnp_raw.setShaderAuto()
+                for gm in globals()[name].gm_list:
+                    if isinstance(gm, gm.GeometricModel):
+                        gm.pdnp_raw.setShaderAuto()
+            elif isinstance(globals()[name], ri.RobotInterface):
+                globals()[name].enable_cc()
             return rv_msg.Status(value=rv_msg.Status.DONE)
         except Exception as e:
             print(e, type(e))

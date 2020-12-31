@@ -50,7 +50,6 @@ class ModelCollection(object):
         for gm in self._gm_list:
             gm.detach()
 
-
     def show_cdprimit(self): # only work for cm
         for cm in self._cm_list:
             cm.show_cdprimit()

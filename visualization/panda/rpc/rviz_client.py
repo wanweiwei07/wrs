@@ -21,10 +21,11 @@ class RVizClient(object):
         return prefix + str(random.randint(100000, 1e6))  # 6 digits
 
     def reset(self):
-        code = "base.clear_autoupdate_obj()\n"
-        code += "base.clear_autoupdate_robot()\n"
-        code += "base.clear_manualupdate_obj()\n"
+        # code = "base.clear_autoupdate_obj()\n"
+        # code += "base.clear_autoupdate_robot()\n"
+        code = "base.clear_manualupdate_obj()\n"
         code += "base.clear_manualupdate_robot()\n"
+        code += "base.clear_noupdate_model()\n"
         # code += "for item in [%s]:\n" % ', '.join(self.rmt_mesh_list)
         # code += "    item.detach()"
         # self.rmt_mesh_list = []
@@ -89,8 +90,6 @@ class RVizClient(object):
         else:
             self.stub.create_instance(rv_msg.CreateInstanceRequest(name=given_rmt_instance_name,
                                                                    data=pickle.dumps(loc_instance)))
-            if not isinstance(loc_instance, mc.ModelCollection):
-                self.update_remote(given_rmt_instance_name, loc_instance) # fix the lost rendering attributes
         return given_rmt_instance_name
 
     def update_remote(self, rmt_instance, loc_instance):
@@ -107,19 +106,19 @@ class RVizClient(object):
             raise ValueError
         self.run_code(code)
 
-    def show_mesh(self, rmt_mesh):
-        code = "base.attach_autoupdate_obj(%s)\n" % rmt_mesh
+    def show_model(self, rmt_mesh):
+        code = "base.attach_noupdate_model(%s)\n" % rmt_mesh
         # code = "%s.attach_to(base)\n" % rmt_mesh
         # self.rmt_mesh_list.append(rmt_mesh)
         self.run_code(code)
 
-    def unshow_mesh(self, rmt_mesh):
-        code = "base.detach_autoupdate_obj(%s)\n" % rmt_mesh
+    def unshow_model(self, rmt_mesh):
+        code = "base.detach_noupdate_model(%s)\n" % rmt_mesh
         # code = "%s.detach()\n" % rmt_mesh
         # self.rmt_mesh_list.remove(rmt_mesh)
         self.run_code(code)
 
-    def showmesh_to_remote(self, loc_mesh, given_rmt_mesh_name=None):
+    def showmodel_to_remote(self, loc_mesh, given_rmt_mesh_name=None):
         """
         helper function that merges copy_to_remote, show_instance, and unshow_instance
         :param loc_mesh:
@@ -129,16 +128,16 @@ class RVizClient(object):
         date: 20201231
         """
         rmt_mesh = self.copy_to_remote(loc_instance=loc_mesh, given_rmt_instance_name=given_rmt_mesh_name)
-        self.show_mesh(rmt_mesh)
+        self.show_model(rmt_mesh)
         return rmt_mesh
 
-    def unshowmesh_from_remote(self, rmt_mesh):
+    def unshowmodel_from_remote(self, rmt_mesh):
         """
         for symmetry purpose
         :param rmt_mesh:
         :return:
         """
-        self.unshow_mesh(rmt_mesh)
+        self.unshow_model(rmt_mesh)
 
     def add_anime_obj(self,
                       rmt_obj,
@@ -164,7 +163,7 @@ class RVizClient(object):
         code += ("%s.set_pos(np.array(%s)\n" % (rmt_obj, np.array2string(loc_obj.get_pos(), separator=',')) +
                  "%s.set_rotmat(np.array(%s))\n" % (rmt_obj, np.array2string(loc_obj.get_rotmat(), separator=',')) +
                  "%s.set_rgba([%s])\n" % (rmt_obj, ','.join(map(str, loc_obj.get_rgba()))) +
-                 "%s = wd.ani.ObjInfo.create_obj_anime_info(obj=%s, obj_path=obj_path)\n" %
+                 "%s = wd.ani.ObjInfo.create_anime_info(obj=%s, obj_path=obj_path)\n" %
                  (given_rmt_anime_objinfo_name, rmt_obj))
         code += "base.attach_manualupdate_obj(%s)\n" % given_rmt_anime_objinfo_name
         self.run_code(code)
@@ -174,13 +173,13 @@ class RVizClient(object):
                         rmt_robot_instance,
                         loc_robot_jlc_name,
                         loc_robot_meshmodel_parameters,
-                        loc_robot_path,
+                        loc_robot_motion_path,
                         given_rmt_anime_robotinfo_name=None):
         """
         :param rmt_robot_instance:
         :param loc_robot_jlc_name:
         :param loc_robot_meshmodel_parameters:
-        :param loc_robot_path:
+        :param loc_robot_motion_path:
         :param given_rmt_anime_robotinfo_name:
         :return: remote anime_robotinfo
         author: weiwei
@@ -189,10 +188,10 @@ class RVizClient(object):
         if given_rmt_anime_robotinfo_name is None:
             given_rmt_anime_robotinfo_name = self._gen_random_name(prefix='rmt_anime_robotinfo_')
         code = "robot_path = ["
-        for pose in loc_robot_path:
+        for pose in loc_robot_motion_path:
             code += "np.array(%s)," % np.array2string(pose, separator=',')
         code = code[:-1] + "]\n"
-        code += ("%s = wd.ani.RobotInfo.create_robot_anime_info(%s, " %
+        code += ("%s = wd.ani.RobotInfo.create_anime_info(%s, " %
                  (given_rmt_anime_robotinfo_name, rmt_robot_instance) +
                  "'%s', " % loc_robot_jlc_name +
                  "%s, " % loc_robot_meshmodel_parameters + "robot_path)\n")
@@ -208,37 +207,41 @@ class RVizClient(object):
         code = "base.detach_manualupdate_robot(%s)\n" % rmt_anime_robotinfo
         self.run_code(code)
 
-    def add_stationary_obj(self,
-                           rmt_obj,
-                           loc_obj,
-                           given_rmt_obj_name=None):
-        if given_rmt_obj_name is None:
-            given_rmt_obj_name = self._gen_random_name(prefix='rmt_stationary_obj_')
-        code = ("%s.set_pos(np.array(%s)\n" % (rmt_obj, np.array2string(loc_obj.get_pos(), separator=',')) +
-                "%s.set_rotmat(np.array(%s))\n" % (rmt_obj, np.array2string(loc_obj.get_rotmat(), separator=',')) +
-                "%s.set_rgba([%s])\n" % (rmt_obj, ','.join(map(str, loc_obj.get_rgba()))) +
-                "base.attach_autoupdate_obj(%s)\n" % (rmt_obj))
-        self.run_code(code)
+    # def add_stationary_obj(self,
+    #                        rmt_obj,
+    #                        loc_obj,
+    #                        given_rmt_obj_name=None):
+    #     if given_rmt_obj_name is None:
+    #         given_rmt_obj_name = self._gen_random_name(prefix='rmt_stationary_obj_')
+    #     code = ("%s.set_pos(np.array(%s)\n" % (rmt_obj, np.array2string(loc_obj.get_pos(), separator=',')) +
+    #             "%s.set_rotmat(np.array(%s))\n" % (rmt_obj, np.array2string(loc_obj.get_rotmat(), separator=',')) +
+    #             "%s.set_rgba([%s])\n" % (rmt_obj, ','.join(map(str, loc_obj.get_rgba()))) +
+    #             "base.attach_noupdate_model(%s)\n" % (rmt_obj))
+    #     self.run_code(code)
+    #
+    # def delete_stationary_obj(self, rmt_obj):
+    #     code = "base.delete_noupdate_model(%s)" % rmt_obj
+    #     self.run_code(code)
 
     def add_stationary_robot(self,
                              rmt_robot_instance,
                              loc_robot_instance,
-                             given_rmt_robot_instance_name=None):
+                             given_rmt_robot_meshmodel_name=None):
         """
         :param rmt_robot_instance:
         :param loc_robot_instance:
-        :param given_rmt_robot_instance_name: str, a random name will be generated if None
+        :param given_rmt_robot_meshmodel_name: str, a random name will be generated if None
         :return: The name of the robot_meshmodel created in the remote end
         """
-        if given_rmt_robot_instance_name is None:
-            given_rmt_robot_instance_name = self._gen_random_name(prefix='rmt_stationary_robot_')
+        if given_rmt_robot_meshmodel_name is None:
+            given_rmt_robot_meshmodel_name = self._gen_random_name(prefix='rmt_robot_meshmodel_')
         jnt_angles_str = np.array2string(loc_robot_instance.get_jntvalues(jlc_name='all'), separator=',')
         code = ("%s.fk(jnt_values=np.array(%s), jlc_name='all')\n" % (rmt_robot_instance, jnt_angles_str) +
-                "%s = %s.gen_meshmodel()\n" % (given_rmt_robot_instance_name, rmt_robot_instance) +
-                "base.attach_autoupdate_robot(%s)\n" % given_rmt_robot_instance_name)
+                "%s = %s.gen_meshmodel()\n" % (given_rmt_robot_meshmodel_name, rmt_robot_instance) +
+                "base.attach_noupdate_model(%s)\n" % given_rmt_robot_meshmodel_name)
         self.run_code(code)
-        return given_rmt_robot_instance_name
+        return given_rmt_robot_meshmodel_name
 
     def delete_stationary_robot(self, rmt_robot_meshmodel):
-        code = "base.detach_autoupdate_robot(%s)" % rmt_robot_meshmodel
+        code = "base.delete_noupdate_model(%s)" % rmt_robot_meshmodel
         self.run_code(code)

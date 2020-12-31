@@ -38,8 +38,8 @@ if __name__ == '__main__':
     rvc.load_common_definition(__file__, line_ids = range(1,8))
     rvc.change_campos_and_lookatpos(np.array([5,0,2]), np.array([0,0,.5]))
     # copy to remote
-    rmt_global_frame = rvc.showmesh_to_remote(global_frame)
-    rmt_bunny = rvc.showmesh_to_remote(obj)
+    rmt_global_frame = rvc.showmodel_to_remote(global_frame)
+    rmt_bunny = rvc.showmodel_to_remote(obj)
     rmt_robot_instance = rvc.copy_to_remote(robot_instance)
     # rvc.show_stationary_obj(rmt_obj)
     robot_jlc_name = 'arm'
@@ -52,22 +52,24 @@ if __name__ == '__main__':
                              rand_rate=70,
                              maxtime=300,
                              jlc_name=robot_jlc_name)
-    rmt_anime_robotinfo = rvc.add_anime_robot(rmt_robot_instance=rmt_robot_instance,
-                                              loc_robot_jlc_name=robot_jlc_name,
-                                              loc_robot_meshmodel_parameters=robot_meshmodel_parameters,
-                                              loc_robot_path=path)
+    # rmt_anime_robotinfo = rvc.add_anime_robot(rmt_robot_instance=rmt_robot_instance,
+    #                                           loc_robot_jlc_name=robot_jlc_name,
+    #                                           loc_robot_meshmodel_parameters=robot_meshmodel_parameters,
+    #                                           loc_robot_motion_path=path)
     # rmt_robot_meshmodel = rvc.add_stationary_robot(rmt_robot_instance=rmt_robot_instance,
     #                                                loc_robot_instance=robot_instance)
-    time.sleep(3)
+    time.sleep(1)
+    # draw sequence, problem: cannot work together with anime? (lost poses)
     rmt_robot_mesh_list = []
-    for pose in path:
+    for pose in path[::1]:
         robot_instance.fk(pose, jlc_name='arm')
-        # rmt_robot_mesh_list.append(rvc.show_to_remote(robot_instance.gen_meshmodel()))
+        # rmt_robot_mesh_list.append(rvc.showmodel_to_remote(robot_instance.gen_meshmodel()))
         rmt_robot_mesh_list.append(rvc.add_stationary_robot(rmt_robot_instance, robot_instance))
+        # time.sleep(.1)
     # rvc.delete_anime_robot(rmt_anime_robotinfo)
     # rvc.delete_stationary_robot(rmt_robot_meshmodel)
     # robot_instance.fk(path[-1], jlc_name=robot_jlc_name)
     # rmt_robot_meshmodel = rvc.add_stationary_robot(rmt_robot_instance='robot_instance', loc_robot_instance=robot_instance)
-    obj.set_pos(obj.get_pos()+np.array([0,.1,0]))
-    obj.set_rgba([1,0,0,1])
-    rvc.update_remote(rmt_bunny, obj)
+    # obj.set_pos(obj.get_pos()+np.array([0,.1,0]))
+    # obj.set_rgba([1,0,0,1])
+    # rvc.update_remote(rmt_bunny, obj)
