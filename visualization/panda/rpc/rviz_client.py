@@ -207,21 +207,21 @@ class RVizClient(object):
         code = "base.detach_manualupdate_robot(%s)\n" % rmt_anime_robotinfo
         self.run_code(code)
 
-    # def add_stationary_obj(self,
-    #                        rmt_obj,
-    #                        loc_obj,
-    #                        given_rmt_obj_name=None):
-    #     if given_rmt_obj_name is None:
-    #         given_rmt_obj_name = self._gen_random_name(prefix='rmt_stationary_obj_')
-    #     code = ("%s.set_pos(np.array(%s)\n" % (rmt_obj, np.array2string(loc_obj.get_pos(), separator=',')) +
-    #             "%s.set_rotmat(np.array(%s))\n" % (rmt_obj, np.array2string(loc_obj.get_rotmat(), separator=',')) +
-    #             "%s.set_rgba([%s])\n" % (rmt_obj, ','.join(map(str, loc_obj.get_rgba()))) +
-    #             "base.attach_noupdate_model(%s)\n" % (rmt_obj))
-    #     self.run_code(code)
-    #
-    # def delete_stationary_obj(self, rmt_obj):
-    #     code = "base.delete_noupdate_model(%s)" % rmt_obj
-    #     self.run_code(code)
+    def add_stationary_obj(self,
+                           rmt_obj,
+                           loc_obj,
+                           given_rmt_obj_name=None):
+        if given_rmt_obj_name is None:
+            given_rmt_obj_name = self._gen_random_name(prefix='rmt_stationary_obj_')
+        code = ("%s.set_pos(np.array(%s)\n" % (rmt_obj, np.array2string(loc_obj.get_pos(), separator=',')) +
+                "%s.set_rotmat(np.array(%s))\n" % (rmt_obj, np.array2string(loc_obj.get_rotmat(), separator=',')) +
+                "%s.set_rgba([%s])\n" % (rmt_obj, ','.join(map(str, loc_obj.get_rgba()))) +
+                "base.attach_noupdate_model(%s)\n" % (rmt_obj))
+        self.run_code(code)
+
+    def delete_stationary_obj(self, rmt_obj):
+        code = "base.delete_noupdate_model(%s)" % rmt_obj
+        self.run_code(code)
 
     def add_stationary_robot(self,
                              rmt_robot_instance,
