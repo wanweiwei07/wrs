@@ -88,64 +88,6 @@ class Yumi(ri.RobotInterface):
         self.rgt_arm.goto_homeconf()
         self.rgt_hnd = self.lft_hnd.copy()
         self.rgt_hnd.fix_to(pos=self.rgt_arm.jnts[-1]['gl_posq'], rotmat=self.rgt_arm.jnts[-1]['gl_rotmatq'])
-        # collision detection
-        if enable_cc:
-            self.cc.add_cdlnks(self.lft_body, [0, 1, 2, 3, 4, 5, 6, 7])
-            self.cc.add_cdlnks(self.lft_arm, [1, 2, 3, 4, 5, 6])
-            self.cc.add_cdlnks(self.lft_hnd.lft, [0, 1])
-            self.cc.add_cdlnks(self.lft_hnd.rgt, [1])
-            self.cc.add_cdlnks(self.rgt_arm, [1, 2, 3, 4, 5, 6])
-            self.cc.add_cdlnks(self.rgt_hnd.lft, [0, 1])
-            self.cc.add_cdlnks(self.rgt_hnd.rgt, [1])
-            activelist = [self.lft_arm.lnks[1],
-                          self.lft_arm.lnks[2],
-                          self.lft_arm.lnks[3],
-                          self.lft_arm.lnks[4],
-                          self.lft_arm.lnks[5],
-                          self.lft_arm.lnks[6],
-                          self.lft_hnd.lft.lnks[0],
-                          self.lft_hnd.lft.lnks[1],
-                          self.lft_hnd.rgt.lnks[1],
-                          self.rgt_arm.lnks[1],
-                          self.rgt_arm.lnks[2],
-                          self.rgt_arm.lnks[3],
-                          self.rgt_arm.lnks[4],
-                          self.rgt_arm.lnks[5],
-                          self.rgt_arm.lnks[6],
-                          self.rgt_hnd.lft.lnks[0],
-                          self.rgt_hnd.lft.lnks[1],
-                          self.rgt_hnd.rgt.lnks[1]]
-            self.cc.set_active_cdlnks(activelist)
-            fromlist = [self.lft_body.lnks[0],  # table
-                        self.lft_body.lnks[1],  # body
-                        self.lft_arm.lnks[1],
-                        self.rgt_arm.lnks[1]]
-            intolist = [self.lft_arm.lnks[5],
-                        self.lft_arm.lnks[6],
-                        self.lft_hnd.lft.lnks[0],
-                        self.lft_hnd.lft.lnks[1],
-                        self.lft_hnd.rgt.lnks[1],
-                        self.rgt_arm.lnks[5],
-                        self.rgt_arm.lnks[6],
-                        self.rgt_hnd.lft.lnks[0],
-                        self.rgt_hnd.lft.lnks[1],
-                        self.rgt_hnd.rgt.lnks[1]]
-            self.cc.set_cdpair(fromlist, intolist)
-            fromlist = [self.lft_arm.lnks[3],
-                        self.lft_arm.lnks[4],
-                        self.lft_arm.lnks[5],
-                        self.lft_arm.lnks[6],
-                        self.lft_hnd.lft.lnks[0],
-                        self.lft_hnd.lft.lnks[1],
-                        self.lft_hnd.rgt.lnks[1]]
-            intolist = [self.rgt_arm.lnks[3],
-                        self.rgt_arm.lnks[4],
-                        self.rgt_arm.lnks[5],
-                        self.rgt_arm.lnks[6],
-                        self.rgt_hnd.lft.lnks[0],
-                        self.rgt_hnd.lft.lnks[1],
-                        self.rgt_hnd.rgt.lnks[1]]
-            self.cc.set_cdpair(fromlist, intolist)
         # tool center point
         # lft
         self.lft_tcp_jlc = self.lft_arm  # which jlc is the tcp located at?
@@ -160,6 +102,9 @@ class Yumi(ri.RobotInterface):
         # a list of detailed information about objects in hand, see CollisionChecker.add_objinhnd
         self.lft_oih_infos = []
         self.rgt_oih_infos = []
+        # collision detection
+        if enable_cc:
+            self.enable_cc()
 
     @staticmethod
     def _base_combined_cdnp(name, radius):
@@ -184,6 +129,66 @@ class Yumi(ri.RobotInterface):
     @property
     def is_fk_updated(self):
         return self.rgt_hnd.is_fk_updated or self.lft_hnd.is_fk_updated
+
+    def enable_cc(self):
+        # TODO when pose is changed, oih info goes wrong
+        super().enable_cc()
+        self.cc.add_cdlnks(self.lft_body, [0, 1, 2, 3, 4, 5, 6, 7])
+        self.cc.add_cdlnks(self.lft_arm, [1, 2, 3, 4, 5, 6])
+        self.cc.add_cdlnks(self.lft_hnd.lft, [0, 1])
+        self.cc.add_cdlnks(self.lft_hnd.rgt, [1])
+        self.cc.add_cdlnks(self.rgt_arm, [1, 2, 3, 4, 5, 6])
+        self.cc.add_cdlnks(self.rgt_hnd.lft, [0, 1])
+        self.cc.add_cdlnks(self.rgt_hnd.rgt, [1])
+        activelist = [self.lft_arm.lnks[1],
+                      self.lft_arm.lnks[2],
+                      self.lft_arm.lnks[3],
+                      self.lft_arm.lnks[4],
+                      self.lft_arm.lnks[5],
+                      self.lft_arm.lnks[6],
+                      self.lft_hnd.lft.lnks[0],
+                      self.lft_hnd.lft.lnks[1],
+                      self.lft_hnd.rgt.lnks[1],
+                      self.rgt_arm.lnks[1],
+                      self.rgt_arm.lnks[2],
+                      self.rgt_arm.lnks[3],
+                      self.rgt_arm.lnks[4],
+                      self.rgt_arm.lnks[5],
+                      self.rgt_arm.lnks[6],
+                      self.rgt_hnd.lft.lnks[0],
+                      self.rgt_hnd.lft.lnks[1],
+                      self.rgt_hnd.rgt.lnks[1]]
+        self.cc.set_active_cdlnks(activelist)
+        fromlist = [self.lft_body.lnks[0],  # table
+                    self.lft_body.lnks[1],  # body
+                    self.lft_arm.lnks[1],
+                    self.rgt_arm.lnks[1]]
+        intolist = [self.lft_arm.lnks[5],
+                    self.lft_arm.lnks[6],
+                    self.lft_hnd.lft.lnks[0],
+                    self.lft_hnd.lft.lnks[1],
+                    self.lft_hnd.rgt.lnks[1],
+                    self.rgt_arm.lnks[5],
+                    self.rgt_arm.lnks[6],
+                    self.rgt_hnd.lft.lnks[0],
+                    self.rgt_hnd.lft.lnks[1],
+                    self.rgt_hnd.rgt.lnks[1]]
+        self.cc.set_cdpair(fromlist, intolist)
+        fromlist = [self.lft_arm.lnks[3],
+                    self.lft_arm.lnks[4],
+                    self.lft_arm.lnks[5],
+                    self.lft_arm.lnks[6],
+                    self.lft_hnd.lft.lnks[0],
+                    self.lft_hnd.lft.lnks[1],
+                    self.lft_hnd.rgt.lnks[1]]
+        intolist = [self.rgt_arm.lnks[3],
+                    self.rgt_arm.lnks[4],
+                    self.rgt_arm.lnks[5],
+                    self.rgt_arm.lnks[6],
+                    self.rgt_hnd.lft.lnks[0],
+                    self.rgt_hnd.lft.lnks[1],
+                    self.rgt_hnd.rgt.lnks[1]]
+        self.cc.set_cdpair(fromlist, intolist)
 
     def fix_to(self, pos, rotmat):
         self.pos = pos

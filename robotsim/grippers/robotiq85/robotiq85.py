@@ -137,31 +137,35 @@ class Robotiq85(gp.GripperInterface):
         self.rgt_inner.reinitialize()
         # collision detection
         if enable_cc:
-        # cdprimit
-            self.cc.add_cdlnks(self.lft_outer, [0, 1, 2, 3, 4])
-            self.cc.add_cdlnks(self.rgt_outer, [1, 2, 3, 4])
-            activelist = [self.lft_outer.lnks[0],
-                          self.lft_outer.lnks[1],
-                          self.lft_outer.lnks[2],
-                          self.lft_outer.lnks[3],
-                          self.lft_outer.lnks[4],
-                          self.rgt_outer.lnks[1],
-                          self.rgt_outer.lnks[2],
-                          self.rgt_outer.lnks[3],
-                          self.rgt_outer.lnks[4]]
-            self.cc.set_active_cdlnks(activelist)
-            # cdmesh
-            for cdelement in self.cc.all_cdelements:
-                pos = cdelement['gl_pos']
-                rotmat = cdelement['gl_rotmat']
-                cdmesh = cdelement['collisionmodel'].copy()
-                cdmesh.set_pos(pos)
-                cdmesh.set_rotmat(rotmat)
-                self.cdmesh_collection.add_cm(cdmesh)
+            self.enable_cc()
 
     @property
     def is_fk_updated(self):
         return self.lft_outer.is_fk_updated
+
+    def enable_cc(self):
+        super().enable_cc()
+        # cdprimit
+        self.cc.add_cdlnks(self.lft_outer, [0, 1, 2, 3, 4])
+        self.cc.add_cdlnks(self.rgt_outer, [1, 2, 3, 4])
+        activelist = [self.lft_outer.lnks[0],
+                      self.lft_outer.lnks[1],
+                      self.lft_outer.lnks[2],
+                      self.lft_outer.lnks[3],
+                      self.lft_outer.lnks[4],
+                      self.rgt_outer.lnks[1],
+                      self.rgt_outer.lnks[2],
+                      self.rgt_outer.lnks[3],
+                      self.rgt_outer.lnks[4]]
+        self.cc.set_active_cdlnks(activelist)
+        # cdmesh
+        for cdelement in self.cc.all_cdelements:
+            pos = cdelement['gl_pos']
+            rotmat = cdelement['gl_rotmat']
+            cdmesh = cdelement['collisionmodel'].copy()
+            cdmesh.set_pos(pos)
+            cdmesh.set_rotmat(rotmat)
+            self.cdmesh_collection.add_cm(cdmesh)
 
     def fix_to(self, pos, rotmat, angle=None):
         self.pos = pos

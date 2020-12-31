@@ -72,29 +72,33 @@ class UR3E(mi.ManipulatorInterface):
         self.jlc.reinitialize()
         # collision checker
         if enable_cc:
-            self.cc.add_cdlnks(self.jlc, [0, 1, 2, 3, 4, 5, 6])
-            activelist = [self.jlc.lnks[0],
-                          self.jlc.lnks[1],
-                          self.jlc.lnks[2],
-                          self.jlc.lnks[3],
-                          self.jlc.lnks[4],
-                          self.jlc.lnks[5],
-                          self.jlc.lnks[6]]
-            self.cc.set_active_cdlnks(activelist)
-            fromlist = [self.jlc.lnks[0],
-                        self.jlc.lnks[1]]
-            intolist = [self.jlc.lnks[3],
-                        self.jlc.lnks[5],
-                        self.jlc.lnks[6]]
-            self.cc.set_cdpair(fromlist, intolist)
-            fromlist = [self.jlc.lnks[2]]
-            intolist = [self.jlc.lnks[4],
-                        self.jlc.lnks[5],
-                        self.jlc.lnks[6]]
-            self.cc.set_cdpair(fromlist, intolist)
-            fromlist = [self.jlc.lnks[3]]
-            intolist = [self.jlc.lnks[6]]
-            self.cc.set_cdpair(fromlist, intolist)
+            super().enable_cc()
+
+    def enable_cc(self):
+        super().enable_cc()
+        self.cc.add_cdlnks(self.jlc, [0, 1, 2, 3, 4, 5, 6])
+        activelist = [self.jlc.lnks[0],
+                      self.jlc.lnks[1],
+                      self.jlc.lnks[2],
+                      self.jlc.lnks[3],
+                      self.jlc.lnks[4],
+                      self.jlc.lnks[5],
+                      self.jlc.lnks[6]]
+        self.cc.set_active_cdlnks(activelist)
+        fromlist = [self.jlc.lnks[0],
+                    self.jlc.lnks[1]]
+        intolist = [self.jlc.lnks[3],
+                    self.jlc.lnks[5],
+                    self.jlc.lnks[6]]
+        self.cc.set_cdpair(fromlist, intolist)
+        fromlist = [self.jlc.lnks[2]]
+        intolist = [self.jlc.lnks[4],
+                    self.jlc.lnks[5],
+                    self.jlc.lnks[6]]
+        self.cc.set_cdpair(fromlist, intolist)
+        fromlist = [self.jlc.lnks[3]]
+        intolist = [self.jlc.lnks[6]]
+        self.cc.set_cdpair(fromlist, intolist)
 
 
 if __name__ == '__main__':

@@ -8,14 +8,14 @@ import robotsim._kinematics.jlchain as jl
 import robotsim.manipulators.ur3e.ur3e as ur
 import robotsim.grippers.robotiqhe.robotiqhe as rtq
 from panda3d.core import CollisionNode, CollisionBox, Point3
+import robotsim.robots.robot_interface as ri
 
 
-class UR3EDual(object):
+class UR3EDual(ri.RobotInterface):
 
-    def __init__(self, pos=np.zeros(3), rotmat=np.eye(3)):
+    def __init__(self, pos=np.zeros(3), rotmat=np.eye(3), name='ur3edual', enable_cc=True):
+        super().__init__(pos=pos, rotmat=rotmat, name=name)
         this_dir, this_filename = os.path.split(__file__)
-        self.pos = pos
-        self.rotmat = rotmat
         # left side
         self.lft_base = jl.JLChain(pos=pos, rotmat=rotmat, homeconf=np.zeros(0), name='agv')
         self.lft_base.jnts[1]['loc_pos'] = np.array([.365, .345, 1.33])  # left from robot view
@@ -37,11 +37,14 @@ class UR3EDual(object):
         lft_arm_homeconf[4] = -math.pi / 2.0
         self.lft_arm = ur.UR3E(pos=self.lft_base.jnts[-1]['gl_posq'],
                                rotmat=self.lft_base.jnts[-1]['gl_rotmatq'],
-                               homeconf=lft_arm_homeconf)
+                               homeconf=lft_arm_homeconf,
+                               enable_cc=False)
         # lft hand offset (if needed)
         self.lft_hnd_offset = np.zeros(3)
-        lft_hnd_pos, lft_hnd_rotmat = self.lft_arm.get_worldpose(relpos=self.lft_hnd_offset)
-        self.lft_hnd = rtq.RobotiqHE(pos=lft_hnd_pos, rotmat=self.lft_arm.jnts[-1]['gl_rotmatq'])
+        lft_hnd_pos, lft_hnd_rotmat = self.lft_arm.get_gl_pose(loc_pos=self.lft_hnd_offset)
+        self.lft_hnd = rtq.RobotiqHE(pos=lft_hnd_pos,
+                                     rotmat=self.lft_arm.jnts[-1]['gl_rotmatq'],
+                                     enable_cc=False)
         # rigth side
         self.rgt_base = jl.JLChain(pos=pos, rotmat=rotmat, homeconf=np.zeros(0), name='agv')
         self.rgt_base.jnts[1]['loc_pos'] = np.array([.365, -.345, 1.33])  # right from robot view
@@ -59,12 +62,32 @@ class UR3EDual(object):
         rgt_arm_homeconf[4] = math.pi / 2.0
         self.rgt_arm = ur.UR3E(pos=self.rgt_base.jnts[-1]['gl_posq'],
                                rotmat=self.rgt_base.jnts[-1]['gl_rotmatq'],
-                               homeconf=rgt_arm_homeconf)
+                               homeconf=rgt_arm_homeconf,
+                               enable_cc=False)
         # rgt hand offset (if needed)
         self.rgt_hnd_offset = np.zeros(3)
-        rgt_hnd_pos, rgt_hnd_rotmat = self.rgt_arm.get_worldpose(relpos=self.rgt_hnd_offset)
+        rgt_hnd_pos, rgt_hnd_rotmat = self.rgt_arm.get_gl_pose(loc_pos=self.rgt_hnd_offset)
         # TODO replace using copy
-        self.rgt_hnd = rtq.RobotiqHE(pos=rgt_hnd_pos, rotmat=self.rgt_arm.jnts[-1]['gl_rotmatq'])
+        self.rgt_hnd = rtq.RobotiqHE(pos=rgt_hnd_pos,
+                                     rotmat=self.rgt_arm.jnts[-1]['gl_rotmatq'],
+                                     enable_cc=False)
+        # tool center point
+        # lft
+        self.lft_tcp_jlc = self.lft_arm  # which jlc is the tcp located at?
+        self.lft_tcp_jlc.tcp_jntid = -1
+        self.lft_tcp_jlc.tcp_loc_pos = np.array([0, 0, .7])
+        self.lft_tcp_jlc.tcp_loc_rotmat = np.eye(3)
+        # rgt
+        self.rgt_tcp_jlc = self.rgt_arm  # which jlc is the tcp located at?
+        self.rgt_tcp_jlc.tcp_jntid = -1
+        self.rgt_tcp_jlc.tcp_loc_pos = np.array([0, 0, .7])
+        self.rgt_tcp_jlc.tcp_loc_rotmat = np.eye(3)
+        # a list of detailed information about objects in hand, see CollisionChecker.add_objinhnd
+        self.lft_oih_infos = []
+        self.rgt_oih_infos = []
+        # collision detection
+        if enable_cc:
+            self.enable_cc()
 
     @staticmethod
     def _base_combined_cdnp(name, radius):
@@ -91,6 +114,10 @@ class UR3EDual(object):
                                               x=.03 + radius, y=.06 + radius, z=.29 + radius)
         collision_node.addSolid(collision_primitive_r1)
         return collision_node
+
+    def enable_cc(self):
+        super().enable_cc()
+        # raise NotImplementedError
 
     def move_to(self, pos, rotmat):
         self.pos = pos
@@ -162,6 +189,6 @@ if __name__ == '__main__':
     # u3ed.fk(.85)
     u3ed_meshmodel = u3ed.gen_meshmodel()
     u3ed_meshmodel.attach_to(base)
-    u3ed_meshmodel.show_cdprimit()
+    # u3ed_meshmodel.show_cdprimit()
     u3ed.gen_stickmodel().attach_to(base)
     base.run()
