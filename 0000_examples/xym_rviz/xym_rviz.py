@@ -38,27 +38,32 @@ if __name__ == '__main__':
     rvc.load_common_definition(__file__, line_ids = range(1,8))
     rvc.change_campos_and_lookatpos(np.array([5,0,2]), np.array([0,0,.5]))
     # copy to remote
-    rmt_global_frame = rvc.show_to_remote(global_frame)
-    rmt_bunny = rvc.show_to_remote(obj)
+    rmt_global_frame = rvc.showmesh_to_remote(global_frame)
+    rmt_bunny = rvc.showmesh_to_remote(obj)
     rmt_robot_instance = rvc.copy_to_remote(robot_instance)
     # rvc.show_stationary_obj(rmt_obj)
-    # robot_jlc_name = 'arm'
-    # robot_instance.fk(np.array([0, math.pi * 2 / 3, 0, math.pi, 0, -math.pi / 6, 0]), jlc_name=robot_jlc_name)
-    # rrtc_planner = rrtc.RRTConnect(robot_instance)
-    # path = rrtc_planner.plan(start_conf=np.array([0, math.pi * 2 / 3, 0, math.pi, 0, -math.pi / 6, 0]),
-    #                          goal_conf=np.array([math.pi / 3, math.pi * 1 / 3, 0, math.pi / 2, 0, math.pi / 6, 0]),
-    #                          obstacle_list=[obj],
-    #                          ext_dist=.1,
-    #                          rand_rate=70,
-    #                          maxtime=300,
-    #                          jlc_name=robot_jlc_name)
-    # rmt_anime_robotinfo = rvc.add_anime_robot(rmt_robot_instance=rmt_robot_instance,
-    #                                           loc_robot_jlc_name=robot_jlc_name,
-    #                                           loc_robot_meshmodel_parameters=robot_meshmodel_parameters,
-    #                                           loc_robot_path=path)
+    robot_jlc_name = 'arm'
+    robot_instance.fk(np.array([0, math.pi * 2 / 3, 0, math.pi, 0, -math.pi / 6, 0]), jlc_name=robot_jlc_name)
+    rrtc_planner = rrtc.RRTConnect(robot_instance)
+    path = rrtc_planner.plan(start_conf=np.array([0, math.pi * 2 / 3, 0, math.pi, 0, -math.pi / 6, 0]),
+                             goal_conf=np.array([math.pi / 3, math.pi * 1 / 3, 0, math.pi / 2, 0, math.pi / 6, 0]),
+                             obstacle_list=[obj],
+                             ext_dist=.1,
+                             rand_rate=70,
+                             maxtime=300,
+                             jlc_name=robot_jlc_name)
+    rmt_anime_robotinfo = rvc.add_anime_robot(rmt_robot_instance=rmt_robot_instance,
+                                              loc_robot_jlc_name=robot_jlc_name,
+                                              loc_robot_meshmodel_parameters=robot_meshmodel_parameters,
+                                              loc_robot_path=path)
     # rmt_robot_meshmodel = rvc.add_stationary_robot(rmt_robot_instance=rmt_robot_instance,
     #                                                loc_robot_instance=robot_instance)
     time.sleep(3)
+    rmt_robot_mesh_list = []
+    for pose in path:
+        robot_instance.fk(pose, jlc_name='arm')
+        # rmt_robot_mesh_list.append(rvc.show_to_remote(robot_instance.gen_meshmodel()))
+        rmt_robot_mesh_list.append(rvc.add_stationary_robot(rmt_robot_instance, robot_instance))
     # rvc.delete_anime_robot(rmt_anime_robotinfo)
     # rvc.delete_stationary_robot(rmt_robot_meshmodel)
     # robot_instance.fk(path[-1], jlc_name=robot_jlc_name)

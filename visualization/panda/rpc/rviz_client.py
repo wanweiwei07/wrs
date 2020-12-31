@@ -6,6 +6,7 @@ import numpy as np
 import visualization.panda.rpc.rviz_pb2 as rv_msg
 import visualization.panda.rpc.rviz_pb2_grpc as rv_rpc
 import modeling.geometricmodel as gm
+import modeling.modelcollection as mc
 import robotsim.robots.robot_interface as ri
 
 
@@ -14,20 +15,130 @@ class RVizClient(object):
     def __init__(self, host="localhost:18300"):
         channel = grpc.insecure_channel(host)
         self.stub = rv_rpc.RVizStub(channel)
-        self.rmt_instance_list = []
+        # self.rmt_mesh_list = [] # TODO move to server side
 
     def _gen_random_name(self, prefix):
-        return prefix + str(random.randint(1000, 1e4))  # 4 digits
+        return prefix + str(random.randint(100000, 1e6))  # 6 digits
 
     def reset(self):
         code = "base.clear_autoupdate_obj()\n"
         code += "base.clear_autoupdate_robot()\n"
         code += "base.clear_manualupdate_obj()\n"
         code += "base.clear_manualupdate_robot()\n"
-        code += "for item in [%s]:\n" % ', '.join(self.rmt_instance_list)
-        code += "    item.detach()"
-        self.rmt_instance_list = []
+        # code += "for item in [%s]:\n" % ', '.join(self.rmt_mesh_list)
+        # code += "    item.detach()"
+        # self.rmt_mesh_list = []
         self.run_code(code)
+
+    def run_code(self, code):
+        """
+        :param code: string
+        :return:
+        author: weiwei
+        date: 20201229
+        """
+        code_bytes = code.encode('utf-8')
+        return_val = self.stub.run_code(rv_msg.CodeRequest(code=code_bytes)).value
+        if return_val == rv_msg.Status.ERROR:
+            print("Something went wrong with the server!! Try again!")
+            raise Exception()
+        else:
+            return
+
+    def load_common_definition(self, file, line_ids=None):
+        """
+        :param file:
+        :param line_ids: [1:3], load lines before main if None, else load specified line_ids
+        :return:
+        """
+        with open(file, 'r') as cdfile:
+            if line_ids is None:
+                tmp_text = cdfile.read()
+                main_idx = tmp_text.find('if __name__')
+                self.common_definition = tmp_text[:main_idx]
+            else:
+                self.common_definition = ""
+                tmp_text_lines = cdfile.readlines()
+                for line_id in line_ids:
+                    self.common_definition += tmp_text_lines[line_id - 1]
+        # exec at remote
+        print(self.common_definition)
+        self.run_code(self.common_definition)
+
+    def change_campos(self, campos):
+        code = "base.change_campos(np.array(%s))" % np.array2string(campos, separator=',')
+        self.run_code(code)
+
+    def change_lookatpos(self, lookatpos):
+        code = "base.change_lookatpos(np.array(%s))" % np.array2string(lookatpos, separator=',')
+        self.run_code(code)
+
+    def change_campos_and_lookatpos(self, campos, lookatpos):
+        code = ("base.change_campos_and_lookatpos(np.array(%s), np.array(%s))" %
+                (np.array2string(campos, separator=','), np.array2string(lookatpos, separator=',')))
+        self.run_code(code)
+
+    def copy_to_remote(self, loc_instance, given_rmt_instance_name=None):
+        if given_rmt_instance_name is None:
+            given_rmt_instance_name = self._gen_random_name(prefix='rmt_instance_')
+        if isinstance(loc_instance, ri.RobotInterface):
+            loc_instance.disable_cc()
+            self.stub.create_instance(rv_msg.CreateInstanceRequest(name=given_rmt_instance_name,
+                                                                   data=pickle.dumps(loc_instance)))
+            loc_instance.enable_cc()
+        else:
+            self.stub.create_instance(rv_msg.CreateInstanceRequest(name=given_rmt_instance_name,
+                                                                   data=pickle.dumps(loc_instance)))
+            if not isinstance(loc_instance, mc.ModelCollection):
+                self.update_remote(given_rmt_instance_name, loc_instance) # fix the lost rendering attributes
+        return given_rmt_instance_name
+
+    def update_remote(self, rmt_instance, loc_instance):
+        if isinstance(loc_instance, ri.RobotInterface):
+            code = ("%s.fk(jnt_values=np.array(%s), jlc_name='all')\n" %
+                    (rmt_instance, np.array2string(loc_instance.get_jntvalues(jlc_name='all'), separator=',')))
+        elif isinstance(loc_instance, gm.GeometricModel):
+            code = ("%s.set_pos(np.array(%s))\n" % (rmt_instance, np.array2string(loc_instance.get_pos(), separator=',')) +
+                    "%s.set_rotmat(np.array(%s))\n" % (rmt_instance, np.array2string(loc_instance.get_rotmat(), separator=',')) +
+                    "%s.set_rgba([%s])\n" % (rmt_instance, ','.join(map(str, loc_instance.get_rgba()))))
+        elif isinstance(loc_instance, gm.StaticGeometricModel):
+            code = "%s.set_rgba([%s])\n" % (rmt_instance, ','.join(map(str, loc_instance.get_rgba())))
+        else:
+            raise ValueError
+        self.run_code(code)
+
+    def show_mesh(self, rmt_mesh):
+        code = "base.attach_autoupdate_obj(%s)\n" % rmt_mesh
+        # code = "%s.attach_to(base)\n" % rmt_mesh
+        # self.rmt_mesh_list.append(rmt_mesh)
+        self.run_code(code)
+
+    def unshow_mesh(self, rmt_mesh):
+        code = "base.detach_autoupdate_obj(%s)\n" % rmt_mesh
+        # code = "%s.detach()\n" % rmt_mesh
+        # self.rmt_mesh_list.remove(rmt_mesh)
+        self.run_code(code)
+
+    def showmesh_to_remote(self, loc_mesh, given_rmt_mesh_name=None):
+        """
+        helper function that merges copy_to_remote, show_instance, and unshow_instance
+        :param loc_mesh:
+        :param given_rmt_mesh_name:
+        :return:
+        author: weiwei
+        date: 20201231
+        """
+        rmt_mesh = self.copy_to_remote(loc_instance=loc_mesh, given_rmt_instance_name=given_rmt_mesh_name)
+        self.show_mesh(rmt_mesh)
+        return rmt_mesh
+
+    def unshowmesh_from_remote(self, rmt_mesh):
+        """
+        for symmetry purpose
+        :param rmt_mesh:
+        :return:
+        """
+        self.unshow_mesh(rmt_mesh)
 
     def add_anime_obj(self,
                       rmt_obj,
@@ -107,7 +218,7 @@ class RVizClient(object):
                 "%s.set_rotmat(np.array(%s))\n" % (rmt_obj, np.array2string(loc_obj.get_rotmat(), separator=',')) +
                 "%s.set_rgba([%s])\n" % (rmt_obj, ','.join(map(str, loc_obj.get_rgba()))) +
                 "base.attach_autoupdate_obj(%s)\n" % (rmt_obj))
-        code = "base."
+        self.run_code(code)
 
     def add_stationary_robot(self,
                              rmt_robot_instance,
@@ -131,110 +242,3 @@ class RVizClient(object):
     def delete_stationary_robot(self, rmt_robot_meshmodel):
         code = "base.detach_autoupdate_robot(%s)" % rmt_robot_meshmodel
         self.run_code(code)
-
-    def load_common_definition(self, file, line_ids=None):
-        """
-        :param file:
-        :param line_ids: [1:3], load lines before main if None, else load specified line_ids
-        :return:
-        """
-        with open(file, 'r') as cdfile:
-            if line_ids is None:
-                tmp_text = cdfile.read()
-                main_idx = tmp_text.find('if __name__')
-                self.common_definition = tmp_text[:main_idx]
-            else:
-                self.common_definition = ""
-                tmp_text_lines = cdfile.readlines()
-                for line_id in line_ids:
-                    self.common_definition += tmp_text_lines[line_id - 1]
-        # exec at remote
-        print(self.common_definition)
-        self.run_code(self.common_definition)
-
-    def change_campos(self, campos):
-        code = "base.change_campos(np.array(%s))" % np.array2string(campos, separator=',')
-        self.run_code(code)
-
-    def change_lookatpos(self, lookatpos):
-        code = "base.change_lookatpos(np.array(%s))" % np.array2string(lookatpos, separator=',')
-        self.run_code(code)
-
-    def change_campos_and_lookatpos(self, campos, lookatpos):
-        code = ("base.change_campos_and_lookatpos(np.array(%s), np.array(%s))" %
-                (np.array2string(campos, separator=','), np.array2string(lookatpos, separator=',')))
-        self.run_code(code)
-
-    def run_code(self, code):
-        """
-        :param code: string
-        :return:
-        author: weiwei
-        date: 20201229
-        """
-        code_bytes = code.encode('utf-8')
-        return_val = self.stub.run_code(rv_msg.CodeRequest(code=code_bytes)).value
-        if return_val == rv_msg.Status.ERROR:
-            print("Something went wrong with the server!! Try again!")
-            raise Exception()
-        else:
-            return
-
-    def copy_to_remote(self, loc_instance, given_rmt_instance_name=None):
-        if given_rmt_instance_name is None:
-            given_rmt_instance_name = self._gen_random_name(prefix='rmt_instance_')
-        if isinstance(loc_instance, ri.RobotInterface):
-            loc_instance.disable_cc()
-            self.stub.create_instance(rv_msg.CreateInstanceRequest(name=given_rmt_instance_name,
-                                                                   data=pickle.dumps(loc_instance)))
-            loc_instance.enable_cc()
-        else:
-            self.stub.create_instance(rv_msg.CreateInstanceRequest(name=given_rmt_instance_name,
-                                                                   data=pickle.dumps(loc_instance)))
-            self.update_remote(given_rmt_instance_name, loc_instance) # fix the lost rendering attributes
-        return given_rmt_instance_name
-
-    def update_remote(self, rmt_instance, loc_instance):
-        if isinstance(loc_instance, ri.RobotInterface):
-            code = ("%s.fk(jnt_values=np.array(%s), jlc_name='all')\n" %
-                    (rmt_instance, np.array2string(loc_instance.get_jntvalues(jlc_name='all'), separator=',')))
-        elif isinstance(loc_instance, gm.GeometricModel):
-            code = ("%s.set_pos(np.array(%s))\n" % (rmt_instance, np.array2string(loc_instance.get_pos(), separator=',')) +
-                    "%s.set_rotmat(np.array(%s))\n" % (rmt_instance, np.array2string(loc_instance.get_rotmat(), separator=',')) +
-                    "%s.set_rgba([%s])\n" % (rmt_instance, ','.join(map(str, loc_instance.get_rgba()))))
-        elif isinstance(loc_instance, gm.StaticGeometricModel):
-            code = "%s.set_rgba([%s])\n" % (rmt_instance, ','.join(map(str, loc_instance.get_rgba())))
-        else:
-            raise ValueError
-        self.run_code(code)
-
-    def show_instance(self, rmt_instance):
-        code = "%s.attach_to(base)\n" % rmt_instance
-        self.rmt_instance_list.append(rmt_instance)
-        self.run_code(code)
-
-    def unshow_instance(self, rmt_instance):
-        code = "%s.detach()\n" % rmt_instance
-        self.rmt_instance_list.remove(rmt_instance)
-        self.run_code(code)
-
-    def show_to_remote(self, loc_instance, given_rmt_instance_name=None):
-        """
-        helper function that merges copy_to_remote, show_instance, and unshow_instance
-        :param loc_instance:
-        :param given_rmt_instance_name:
-        :return:
-        author: weiwei
-        date: 20201231
-        """
-        rmt_instance = self.copy_to_remote(loc_instance=loc_instance, given_rmt_instance_name=given_rmt_instance_name)
-        self.show_instance(rmt_instance)
-        return rmt_instance
-
-    def unshow_from_remote(self, rmt_instance):
-        """
-        for symmetry purpose
-        :param rmt_instance:
-        :return:
-        """
-        self.unshow_instance(rmt_instance)
