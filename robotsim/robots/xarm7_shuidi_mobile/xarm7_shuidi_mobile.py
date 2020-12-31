@@ -39,39 +39,6 @@ class XArm7YunjiMobile(ri.RobotInterface):
         self.hnd = xag.XArmGripper(pos=self.arm.jnts[-1]['gl_posq'],
                                    rotmat=self.arm.jnts[-1]['gl_rotmatq'],
                                    name='hnd', enable_cc=False)
-        # collision detection
-        if enable_cc:
-            self.cc.add_cdlnks(self.agv, [0])
-            self.cc.add_cdlnks(self.arm, [0, 1, 2, 3, 4, 5, 6])
-            self.cc.add_cdlnks(self.hnd.lft_outer, [0, 1, 2])
-            self.cc.add_cdlnks(self.hnd.rgt_outer, [1, 2])
-            activelist = [self.agv.lnks[0],
-                          self.arm.lnks[0],
-                          self.arm.lnks[1],
-                          self.arm.lnks[2],
-                          self.arm.lnks[3],
-                          self.arm.lnks[4],
-                          self.arm.lnks[5],
-                          self.arm.lnks[6],
-                          self.hnd.lft_outer.lnks[0],
-                          self.hnd.lft_outer.lnks[1],
-                          self.hnd.lft_outer.lnks[2],
-                          self.hnd.rgt_outer.lnks[1],
-                          self.hnd.rgt_outer.lnks[2]]
-            self.cc.set_active_cdlnks(activelist)
-            fromlist = [self.agv.lnks[0],
-                        self.arm.lnks[0],
-                        self.arm.lnks[1],
-                        self.arm.lnks[2]]
-            intolist = [self.arm.lnks[4],
-                        self.arm.lnks[5],
-                        self.arm.lnks[6],
-                        self.hnd.lft_outer.lnks[0],
-                        self.hnd.lft_outer.lnks[1],
-                        self.hnd.lft_outer.lnks[2],
-                        self.hnd.rgt_outer.lnks[1],
-                        self.hnd.rgt_outer.lnks[2]]
-            self.cc.set_cdpair(fromlist, intolist)
         # tool center point
         self.tcp_jlc = self.arm  # which jlc is the tcp located at?
         self.tcp_jlc.tcp_jntid = -1
@@ -79,10 +46,51 @@ class XArm7YunjiMobile(ri.RobotInterface):
         self.tcp_jlc.tcp_loc_rotmat = np.eye(3)
         # a list of detailed information about objects in hand, see CollisionChecker.add_objinhnd
         self.oih_infos = []
+        # collision detection
+        if enable_cc:
+            self.enable_cc()
 
     @property
     def is_fk_updated(self):
         return self.hnd.is_fk_updated
+
+    def enable_cc(self):
+        # TODO when pose is changed, oih info goes wrong
+        super().enable_cc()
+        self.cc.add_cdlnks(self.agv, [0])
+        self.cc.add_cdlnks(self.arm, [0, 1, 2, 3, 4, 5, 6])
+        self.cc.add_cdlnks(self.hnd.lft_outer, [0, 1, 2])
+        self.cc.add_cdlnks(self.hnd.rgt_outer, [1, 2])
+        activelist = [self.agv.lnks[0],
+                      self.arm.lnks[0],
+                      self.arm.lnks[1],
+                      self.arm.lnks[2],
+                      self.arm.lnks[3],
+                      self.arm.lnks[4],
+                      self.arm.lnks[5],
+                      self.arm.lnks[6],
+                      self.hnd.lft_outer.lnks[0],
+                      self.hnd.lft_outer.lnks[1],
+                      self.hnd.lft_outer.lnks[2],
+                      self.hnd.rgt_outer.lnks[1],
+                      self.hnd.rgt_outer.lnks[2]]
+        self.cc.set_active_cdlnks(activelist)
+        fromlist = [self.agv.lnks[0],
+                    self.arm.lnks[0],
+                    self.arm.lnks[1],
+                    self.arm.lnks[2]]
+        intolist = [self.arm.lnks[4],
+                    self.arm.lnks[5],
+                    self.arm.lnks[6],
+                    self.hnd.lft_outer.lnks[0],
+                    self.hnd.lft_outer.lnks[1],
+                    self.hnd.lft_outer.lnks[2],
+                    self.hnd.rgt_outer.lnks[1],
+                    self.hnd.rgt_outer.lnks[2]]
+        self.cc.set_cdpair(fromlist, intolist)
+        for oih_info in self.oih_infos:
+            objcm = oih_info['collisionmodel']
+            self.hold(objcm)
 
     def move_to(self, pos, rotmat):
         self.pos = pos

@@ -2,6 +2,7 @@ syntax = "proto3";
 
 service RViz {
   rpc run_code (CodeRequest) returns (Status) {}
+  rpc create_instance (CreateInstanceRequest) returns (Status) {}
 }
 
 message Empty {
@@ -9,6 +10,11 @@ message Empty {
 
 message CodeRequest {
   bytes code = 1;
+}
+
+message CreateInstanceRequest {
+  string name = 1;
+  bytes data = 2;
 }
 
 message Status {

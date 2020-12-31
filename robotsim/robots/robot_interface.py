@@ -10,7 +10,10 @@ class RobotInterface(object):
         self.pos = pos
         self.rotmat = rotmat
         # collision detection
-        self.cc = cc.CollisionChecker("collision_checker")
+        self.cc = None
+
+    def change_name(self, name):
+        self.name = name
 
     @property
     def is_fk_updated(self):
@@ -63,21 +66,26 @@ class RobotInterface(object):
                       name='yumi_gripper_meshmodel'):
         raise NotImplementedError
 
-    def disable_localcc(self):
+    def enable_cc(self):
+        self.cc = cc.CollisionChecker("collision_checker")
+
+    def disable_cc(self):
         """
         clear pairs and nodepath
         :return:
         """
         for cdelement in self.cc.all_cdelements:
             cdelement['cdprimit_childid'] = -1
-        self.cc.all_cdelements = []
-        for child in self.cc.np.getChildren():
-            child.removeNode()
-        self.cc.nbitmask = 0
+        self.cc = None
+        # self.cc.all_cdelements = []
+        # for child in self.cc.np.getChildren():
+        #     child.removeNode()
+        # self.cc.nbitmask = 0
 
     def copy(self):
         self_copy = copy.deepcopy(self)
         # deepcopying colliders are problematic, I have to update it manually
-        for child in self_copy.cc.np.getChildren():
-            self_copy.cc.ctrav.addCollider(child, self_copy.cc.chan)
+        if self_copy.cc is not None:
+            for child in self_copy.cc.np.getChildren():
+                self_copy.cc.ctrav.addCollider(child, self_copy.cc.chan)
         return self_copy

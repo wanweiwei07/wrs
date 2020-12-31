@@ -26,9 +26,9 @@ class GripperInterface(object):
         self.coupling.reinitialize()
         # jaw center
         self.jaw_center = np.zeros(3)
-        # collision detection
-        self.cc = cc.CollisionChecker("collision_checker")
         self.cdmesh_collection = mc.ModelCollection()
+        # collision detection
+        self.cc = None
 
     @property
     def is_fk_updated(self):
@@ -117,17 +117,17 @@ class GripperInterface(object):
                       name='yumi_gripper_meshmodel'):
         raise NotImplementedError
 
-    def disable_localcc(self):
+    def enable_cc(self):
+        self.cc = cc.CollisionChecker("collision_checker")
+
+    def disable_cc(self):
         """
         clear pairs and nodepath
         :return:
         """
         for cdelement in self.cc.all_cdelements:
             cdelement['cdprimit_childid'] = -1
-        self.cc.all_cdelements = []
-        for child in self.cc.np.getChildren():
-            child.removeNode()
-        self.cc.nbitmask = 0
+        self.cc = None
 
     def copy(self):
         self_copy = copy.deepcopy(self)

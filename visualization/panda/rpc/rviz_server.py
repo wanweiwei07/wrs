@@ -1,6 +1,8 @@
 import grpc
 import time
+import pickle
 import numpy as np
+import basis.trimesh as trm # for creating obj
 from concurrent import futures
 import visualization.panda.rpc.rviz_pb2 as rv_msg
 import visualization.panda.rpc.rviz_pb2_grpc as rv_rpc
@@ -27,10 +29,27 @@ class RVizServer(rv_rpc.RVizServicer):
             print(e, type(e))
             return rv_msg.Status(value=rv_msg.Status.ERROR)
 
+    def create_instance(self, request, context):
+        """
+        :param request:
+        :param context:
+        :return:
+        author: weiwei
+        date: 20201231
+        """
+        try:
+            name = request.name
+            data = request.data
+            globals()[name] = pickle.loads(data)
+            return rv_msg.Status(value=rv_msg.Status.DONE)
+        except Exception as e:
+            print(e, type(e))
+            return rv_msg.Status(value=rv_msg.Status.ERROR)
 
 def serve(host="localhost:18300"):
     _ONE_DAY_IN_SECONDS = 60 * 60 * 24
-    options = [('grpc.max_message_length', 100 * 1024 * 1024)]
+    options = [('grpc.max_send_message_length', 100 * 1024 * 1024),
+               ('grpc.max_receive_message_length', 100 * 1024 * 1024)]
     server = grpc.server(futures.ThreadPoolExecutor(max_workers=10), options=options)
     rvs = RVizServer()
     rvs.initialize()

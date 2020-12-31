@@ -85,7 +85,6 @@ class HndCamServer(hcrpc.CamServicer):
 
 def serve():
     _ONE_DAY_IN_SECONDS = 60 * 60 * 24
-
     server = grpc.server(futures.ThreadPoolExecutor(max_workers=10))
     hcrpc.add_CamServicer_to_server(HndCamServer(), server)
     server.add_insecure_port('[::]:18300')

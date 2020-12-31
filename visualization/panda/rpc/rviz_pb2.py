@@ -19,7 +19,7 @@ DESCRIPTOR = _descriptor.FileDescriptor(
   syntax='proto3',
   serialized_options=None,
   create_key=_descriptor._internal_create_key,
-  serialized_pb=b'\n\nrviz.proto\"\x07\n\x05\x45mpty\"\x1b\n\x0b\x43odeRequest\x12\x0c\n\x04\x63ode\x18\x01 \x01(\x0c\"P\n\x06Status\x12\"\n\x05value\x18\x01 \x01(\x0e\x32\x13.Status.StatusValue\"\"\n\x0bStatusValue\x12\t\n\x05\x45RROR\x10\x00\x12\x08\n\x04\x44ONE\x10\x01\x32+\n\x04RViz\x12#\n\x08run_code\x12\x0c.CodeRequest\x1a\x07.Status\"\x00\x62\x06proto3'
+  serialized_pb=b'\n\nrviz.proto\"\x07\n\x05\x45mpty\"\x1b\n\x0b\x43odeRequest\x12\x0c\n\x04\x63ode\x18\x01 \x01(\x0c\"3\n\x15\x43reateInstanceRequest\x12\x0c\n\x04name\x18\x01 \x01(\t\x12\x0c\n\x04\x64\x61ta\x18\x02 \x01(\x0c\"P\n\x06Status\x12\"\n\x05value\x18\x01 \x01(\x0e\x32\x13.Status.StatusValue\"\"\n\x0bStatusValue\x12\t\n\x05\x45RROR\x10\x00\x12\x08\n\x04\x44ONE\x10\x01\x32\x61\n\x04RViz\x12#\n\x08run_code\x12\x0c.CodeRequest\x1a\x07.Status\"\x00\x12\x34\n\x0f\x63reate_instance\x12\x16.CreateInstanceRequest\x1a\x07.Status\"\x00\x62\x06proto3'
 )
 
 
@@ -44,8 +44,8 @@ _STATUS_STATUSVALUE = _descriptor.EnumDescriptor(
   ],
   containing_type=None,
   serialized_options=None,
-  serialized_start=98,
-  serialized_end=132,
+  serialized_start=151,
+  serialized_end=185,
 )
 _sym_db.RegisterEnumDescriptor(_STATUS_STATUSVALUE)
 
@@ -107,6 +107,45 @@ _CODEREQUEST = _descriptor.Descriptor(
 )
 
 
+_CREATEINSTANCEREQUEST = _descriptor.Descriptor(
+  name='CreateInstanceRequest',
+  full_name='CreateInstanceRequest',
+  filename=None,
+  file=DESCRIPTOR,
+  containing_type=None,
+  create_key=_descriptor._internal_create_key,
+  fields=[
+    _descriptor.FieldDescriptor(
+      name='name', full_name='CreateInstanceRequest.name', index=0,
+      number=1, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=b"".decode('utf-8'),
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
+    _descriptor.FieldDescriptor(
+      name='data', full_name='CreateInstanceRequest.data', index=1,
+      number=2, type=12, cpp_type=9, label=1,
+      has_default_value=False, default_value=b"",
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
+  ],
+  extensions=[
+  ],
+  nested_types=[],
+  enum_types=[
+  ],
+  serialized_options=None,
+  is_extendable=False,
+  syntax='proto3',
+  extension_ranges=[],
+  oneofs=[
+  ],
+  serialized_start=52,
+  serialized_end=103,
+)
+
+
 _STATUS = _descriptor.Descriptor(
   name='Status',
   full_name='Status',
@@ -135,14 +174,15 @@ _STATUS = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=52,
-  serialized_end=132,
+  serialized_start=105,
+  serialized_end=185,
 )
 
 _STATUS.fields_by_name['value'].enum_type = _STATUS_STATUSVALUE
 _STATUS_STATUSVALUE.containing_type = _STATUS
 DESCRIPTOR.message_types_by_name['Empty'] = _EMPTY
 DESCRIPTOR.message_types_by_name['CodeRequest'] = _CODEREQUEST
+DESCRIPTOR.message_types_by_name['CreateInstanceRequest'] = _CREATEINSTANCEREQUEST
 DESCRIPTOR.message_types_by_name['Status'] = _STATUS
 _sym_db.RegisterFileDescriptor(DESCRIPTOR)
 
@@ -160,6 +200,13 @@ CodeRequest = _reflection.GeneratedProtocolMessageType('CodeRequest', (_message.
   })
 _sym_db.RegisterMessage(CodeRequest)
 
+CreateInstanceRequest = _reflection.GeneratedProtocolMessageType('CreateInstanceRequest', (_message.Message,), {
+  'DESCRIPTOR' : _CREATEINSTANCEREQUEST,
+  '__module__' : 'rviz_pb2'
+  # @@protoc_insertion_point(class_scope:CreateInstanceRequest)
+  })
+_sym_db.RegisterMessage(CreateInstanceRequest)
+
 Status = _reflection.GeneratedProtocolMessageType('Status', (_message.Message,), {
   'DESCRIPTOR' : _STATUS,
   '__module__' : 'rviz_pb2'
@@ -176,8 +223,8 @@ _RVIZ = _descriptor.ServiceDescriptor(
   index=0,
   serialized_options=None,
   create_key=_descriptor._internal_create_key,
-  serialized_start=134,
-  serialized_end=177,
+  serialized_start=187,
+  serialized_end=284,
   methods=[
   _descriptor.MethodDescriptor(
     name='run_code',
@@ -185,6 +232,16 @@ _RVIZ = _descriptor.ServiceDescriptor(
     index=0,
     containing_service=None,
     input_type=_CODEREQUEST,
+    output_type=_STATUS,
+    serialized_options=None,
+    create_key=_descriptor._internal_create_key,
+  ),
+  _descriptor.MethodDescriptor(
+    name='create_instance',
+    full_name='RViz.create_instance',
+    index=1,
+    containing_service=None,
+    input_type=_CREATEINSTANCEREQUEST,
     output_type=_STATUS,
     serialized_options=None,
     create_key=_descriptor._internal_create_key,

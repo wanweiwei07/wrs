@@ -1,7 +1,7 @@
 import grpc
 import yaml
-import robotconn.rpc.hndcam.hndcam_pb2 as hcmsg
-import robotconn.rpc.hndcam.hndcam_pb2_grpc as hcrpc
+import drivers.rpc.hndcam.hndcam_pb2 as hcmsg
+import drivers.rpc.hndcam.hndcam_pb2_grpc as hcrpc
 import numpy as np
 import cv2
 

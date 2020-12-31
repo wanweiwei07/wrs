@@ -215,16 +215,24 @@ class World(ShowBase, object):
 
     def detach_autoupdate_obj(self, obj):
         self._autoupdate_obj_list.remove(obj)
-        time.sleep(.1)
+        time.sleep(.01)
         obj.detach()
+
+    def clear_autoupdate_obj(self):
+        for obj in self._autoupdate_obj_list:
+            self.detach_autoupdate_obj(obj)
 
     def attach_autoupdate_robot(self, robot_meshmodel):
         self._autoupdate_robot_list.append(robot_meshmodel)
 
     def detach_autoupdate_robot(self, robot_meshmodel):
         self._autoupdate_robot_list.remove(robot_meshmodel)
-        time.sleep(.1)
+        time.sleep(.01)
         robot_meshmodel.detach()
+
+    def clear_autoupdate_robot(self):
+        for robot in self._autoupdate_robot_list:
+            self.detach_autoupdate_robot(robot)
 
     def attach_manualupdate_obj(self, objinfo):
         """
@@ -233,13 +241,14 @@ class World(ShowBase, object):
         """
         self._manualupdate_objinfo_list.append(objinfo)
 
-    def detach_manualupdate_obj(self, obj):
-        for objinfo in self._manualupdate_objinfo_list:
-            if objinfo.obj is obj:
-                self._manualupdate_objinfo_list.remove(objinfo)
-                time.sleep(.1)
-                objinfo.obj.detach()
-                return
+    def detach_manualupdate_obj(self, obj_info):
+        self._manualupdate_objinfo_list.remove(obj_info)
+        time.sleep(.01)
+        obj_info.obj.detach()
+
+    def clear_manualupdate_obj(self):
+        for obj in self._manualupdate_objinfo_list:
+            self.detach_manualupdate_obj(obj)
 
     def attach_manualupdate_robot(self, robotinfo):
         """
@@ -248,13 +257,14 @@ class World(ShowBase, object):
         """
         self._manualupdate_robotinfo_list.append(robotinfo)
 
-    def detach_manualupdate_robot(self, robot_instance):
-        for robotinfo in self._manualupdate_robotinfo_list:
-            if robotinfo.robot_instance is robot_instance:
-                self._manualupdate_robotinfo_list.remove(robotinfo)
-                time.sleep(.1)
-                robotinfo.robot_meshmodel.detach()
-                return
+    def detach_manualupdate_robot(self, robot_info):
+        self._manualupdate_robotinfo_list.remove(robot_info)
+        time.sleep(.01)
+        robot_info.robot_meshmodel.detach()
+
+    def clear_manualupdate_robot(self):
+        for robot in self._manualupdate_robotinfo_list:
+            self.detach_manualupdate_robot(robot)
 
     def change_campos(self, campos):
         self.cam.setPos(campos[0], campos[1], campos[2])

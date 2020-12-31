@@ -101,26 +101,30 @@ class XArmGripper(gi.GripperInterface):
         self.jaw_center = np.array([0,0,.15])
         # collision detection
         if enable_cc:
-            self.cc.add_cdlnks(self.lft_outer, [0, 1, 2])
-            self.cc.add_cdlnks(self.rgt_outer, [1, 2])
-            activelist = [self.lft_outer.lnks[0],
-                          self.lft_outer.lnks[1],
-                          self.lft_outer.lnks[2],
-                          self.rgt_outer.lnks[1],
-                          self.rgt_outer.lnks[2]]
-            self.cc.set_active_cdlnks(activelist)
-            # cdmesh
-            for cdelement in self.cc.all_cdelements:
-                pos = cdelement['gl_pos']
-                rotmat = cdelement['gl_rotmat']
-                cdmesh = cdelement['collisionmodel'].copy()
-                cdmesh.set_pos(pos)
-                cdmesh.set_rotmat(rotmat)
-                self.cdmesh_collection.add_cm(cdmesh)
+            self.enable_cc()
 
     @property
     def is_fk_updated(self):
         return self.lft_outer.is_fk_updated
+
+    def enable_cc(self):
+        super().enable_cc()
+        self.cc.add_cdlnks(self.lft_outer, [0, 1, 2])
+        self.cc.add_cdlnks(self.rgt_outer, [1, 2])
+        activelist = [self.lft_outer.lnks[0],
+                      self.lft_outer.lnks[1],
+                      self.lft_outer.lnks[2],
+                      self.rgt_outer.lnks[1],
+                      self.rgt_outer.lnks[2]]
+        self.cc.set_active_cdlnks(activelist)
+        # cdmesh
+        for cdelement in self.cc.all_cdelements:
+            pos = cdelement['gl_pos']
+            rotmat = cdelement['gl_rotmat']
+            cdmesh = cdelement['collisionmodel'].copy()
+            cdmesh.set_pos(pos)
+            cdmesh.set_rotmat(rotmat)
+            self.cdmesh_collection.add_cm(cdmesh)
 
     def fix_to(self, pos, rotmat):
         self.pos = pos

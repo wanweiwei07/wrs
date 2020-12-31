@@ -12,7 +12,7 @@ class ManipulatorInterface(object):
         # jlc
         self.jlc = None
         # collision detection
-        self.cc = cc.CollisionChecker("collision_checker")
+        self.cc = None
 
     @property
     def jnts(self):
@@ -173,6 +173,9 @@ class ManipulatorInterface(object):
     def gen_endsphere(self):
         return self.jlc._mt.gen_endsphere()
 
+    def enable_cc(self):
+        self.cc = cc.CollisionChecker("collision_checker")
+
     def disable_cc(self):
         """
         clear pairs and nodepath
@@ -180,10 +183,11 @@ class ManipulatorInterface(object):
         """
         for cdelement in self.cc.all_cdelements:
             cdelement['cdprimit_childid'] = -1
-        self.cc.all_cdelements = []
-        for child in self.cc.np.getChildren():
-            child.removeNode()
-        self.cc.nbitmask = 0
+        self.cc = None
+        # self.cc.all_cdelements = []
+        # for child in self.cc.np.getChildren():
+        #     child.removeNode()
+        # self.cc.nbitmask = 0
 
     def copy(self):
         self_copy = copy.deepcopy(self)
