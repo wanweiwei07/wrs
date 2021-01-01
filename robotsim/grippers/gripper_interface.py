@@ -70,14 +70,14 @@ class GripperInterface(object):
         raise NotImplementedError
 
     def grip_at(self, gl_jaw_center, gl_hndz, gl_hndx, jaw_width):
-        rotmat = np.eye(3)
-        rotmat[:, 2] = rm.unit_vector(gl_hndz)
-        rotmat[:, 0] = rm.unit_vector(gl_hndx)
-        rotmat[:, 1] = np.cross(rotmat[:3, 2], rotmat[:3, 0])
-        pos = gl_jaw_center - rotmat.dot(self.jaw_center)
-        self.fix_to(pos, rotmat)
+        hnd_rotmat = np.eye(3)
+        hnd_rotmat[:, 2] = rm.unit_vector(gl_hndz)
+        hnd_rotmat[:, 0] = rm.unit_vector(gl_hndx)
+        hnd_rotmat[:, 1] = np.cross(rotmat[:3, 2], rotmat[:3, 0])
+        hnd_pos = gl_jaw_center - rotmat.dot(self.jaw_center)
+        self.fix_to(hnd_pos, hnd_rotmat)
         self.jaw_to(jaw_width)
-        return [jaw_width, gl_jaw_center, pos, rotmat]
+        return [jaw_width, gl_jaw_center, hnd_pos, hnd_rotmat]
 
     def show_cdprimit(self):
         self.cc.show_cdprimit(need_update=self.is_fk_updated)
