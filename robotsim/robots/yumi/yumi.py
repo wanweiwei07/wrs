@@ -90,15 +90,13 @@ class Yumi(ri.RobotInterface):
         self.rgt_hnd.fix_to(pos=self.rgt_arm.jnts[-1]['gl_posq'], rotmat=self.rgt_arm.jnts[-1]['gl_rotmatq'])
         # tool center point
         # lft
-        self.lft_tcp_jlc = self.lft_arm  # which jlc is the tcp located at?
-        self.lft_tcp_jlc.tcp_jntid = -1
-        self.lft_tcp_jlc.tcp_loc_pos = np.array([0, 0, .12])
-        self.lft_tcp_jlc.tcp_loc_rotmat = np.eye(3)
+        self.lft_arm.tcp_jntid = -1
+        self.lft_arm.tcp_loc_pos = np.array([0, 0, .12])
+        self.lft_arm.tcp_loc_rotmat = np.eye(3)
         # rgt
-        self.rgt_tcp_jlc = self.rgt_arm  # which jlc is the tcp located at?
-        self.rgt_tcp_jlc.tcp_jntid = -1
-        self.rgt_tcp_jlc.tcp_loc_pos = np.array([0, 0, .12])
-        self.rgt_tcp_jlc.tcp_loc_rotmat = np.eye(3)
+        self.rgt_arm.tcp_jntid = -1
+        self.rgt_arm.tcp_loc_pos = np.array([0, 0, .12])
+        self.rgt_arm.tcp_loc_rotmat = np.eye(3)
         # a list of detailed information about objects in hand, see CollisionChecker.add_objinhnd
         self.lft_oih_infos = []
         self.rgt_oih_infos = []
@@ -251,7 +249,7 @@ class Yumi(ri.RobotInterface):
         :return:
         """
         if hnd_name == 'lft_hnd':
-            rel_pos, rel_rotmat = self.lft_tcp_jlc.get_loc_pose(objcm.get_pos(), objcm.get_rotmat())
+            rel_pos, rel_rotmat = self.lft_arm.get_loc_pose(objcm.get_pos(), objcm.get_rotmat())
             intolist = [self.lft_body.lnks[0],
                         self.lft_body.lnks[1],
                         self.lft_arm.lnks[1],
@@ -269,7 +267,7 @@ class Yumi(ri.RobotInterface):
                         self.rgt_hnd.rgt.lnks[1]]
             self.lft_oih_infos.append(self.cc.add_cdobj(objcm, rel_pos, rel_rotmat, intolist))
         elif hnd_name == 'rgt_hnd':
-            rel_pos, rel_rotmat = self.lft_tcp_jlc.get_loc_pose(objcm.get_pos(), objcm.get_rotmat())
+            rel_pos, rel_rotmat = self.rgt_arm.get_loc_pose(objcm.get_pos(), objcm.get_rotmat())
             intolist = [self.rgt_body.lnks[0],
                         self.rgt_body.lnks[1],
                         self.rgt_arm.lnks[1],
