@@ -126,7 +126,14 @@ class XArmGripper(gi.GripperInterface):
             cdmesh.set_rotmat(rotmat)
             self.cdmesh_collection.add_cm(cdmesh)
 
-    def fix_to(self, pos, rotmat):
+    def fix_to(self, pos, rotmat, motion_val=None):
+        if motion_val is not None:
+            self.lft_outer.jnts[1]['motion_val'] = motion_val
+            self.lft_outer.jnts[2]['motion_val'] = self.lft_outer.jnts[1]['motion_val']
+            self.lft_inner.jnts[1]['motion_val'] = self.lft_outer.jnts[1]['motion_val']
+            self.rgt_outer.jnts[1]['motion_val'] = self.lft_outer.jnts[1]['motion_val']
+            self.rgt_outer.jnts[2]['motion_val'] = self.lft_outer.jnts[1]['motion_val']
+            self.rgt_inner.jnts[1]['motion_val'] = self.lft_outer.jnts[1]['motion_val']
         self.pos = pos
         self.rotmat = rotmat
         self.coupling.fix_to(self.pos, self.rotmat)

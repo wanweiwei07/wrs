@@ -135,10 +135,9 @@ class XArm7YunjiMobile(ri.RobotInterface):
             self.pos[:2] = jnt_values[:2]
             self.rotmat = rm.rotmat_from_axangle([0, 0, 1], jnt_values[2])
             self.agv.fix_to(self.pos, self.rotmat)
-            self.arm.fix_to(pos=self.agv.jnts[-1]['gl_posq'], rotmat=self.agv.jnts[-1]['gl_rotmatq']) # TODO repeated
-            self.arm.fk(jnt_values=jnt_values[3:10])
+            self.arm.fix_to(pos=self.agv.jnts[-1]['gl_posq'], rotmat=self.agv.jnts[-1]['gl_rotmatq'], jnt_values=jnt_values[3:10])
             self.hnd.fix_to(pos=self.arm.jnts[-1]['gl_posq'], rotmat=self.arm.jnts[-1]['gl_rotmatq'])
-            # update objects in hand if available
+            # TODO ? update objects in hand if available
         elif jlc_name == 'all':
             if not isinstance(jnt_values, np.ndarray) or jnt_values.size != 11:
                 raise ValueError("An 1x10 npdarray must be specified to move all joints!")
@@ -146,10 +145,8 @@ class XArm7YunjiMobile(ri.RobotInterface):
             self.pos[:2] = jnt_values[:2]
             self.rotmat = rm.rotmat_from_axangle([0, 0, 1], jnt_values[2])
             self.agv.fix_to(self.pos, self.rotmat)
-            self.arm.fix_to(pos=self.agv.jnts[-1]['gl_posq'], rotmat=self.agv.jnts[-1]['gl_rotmatq']) # TODO repeated
-            self.arm.fk(jnt_values=jnt_values[3:10])
-            self.hnd.fix_to(pos=self.arm.jnts[-1]['gl_posq'], rotmat=self.arm.jnts[-1]['gl_rotmatq'])
-            self.hnd.fk(jnt_values[10])
+            self.arm.fix_to(pos=self.agv.jnts[-1]['gl_posq'], rotmat=self.agv.jnts[-1]['gl_rotmatq'], jnt_values=jnt_values[3:10])
+            self.hnd.fix_to(pos=self.arm.jnts[-1]['gl_posq'], rotmat=self.arm.jnts[-1]['gl_rotmatq'], motion_val = jnt_values[10])
         for obj_info in self.oih_infos:
             gl_pos, gl_rotmat = self.arm.get_gl_pose(obj_info['rel_pos'], obj_info['rel_rotmat'])
             obj_info['gl_pos'] = gl_pos

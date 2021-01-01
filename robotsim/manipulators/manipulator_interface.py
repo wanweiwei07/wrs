@@ -119,8 +119,8 @@ class ManipulatorInterface(object):
                                    otherrobot_list=otherrobot_list,
                                    need_update = self.is_fk_updated)
 
-    def fix_to(self, pos, rotmat):
-        self.jlc.fix_to(pos=pos, rotmat=rotmat)
+    def fix_to(self, pos, rotmat, jnt_values=None):
+        self.jlc.fix_to(pos=pos, rotmat=rotmat, jnt_values=jnt_values)
 
     def fk(self, jnt_values):
         return self.jlc.fk(jnt_values=jnt_values)
@@ -192,6 +192,7 @@ class ManipulatorInterface(object):
     def copy(self):
         self_copy = copy.deepcopy(self)
         # deepcopying colliders are problematic, I have to update it manually
-        for child in self_copy.cc.np.getChildren(): # empty NodePathCollection if the np does not have a child
-            self_copy.cc.ctrav.addCollider(child, self_copy.cc.chan)
+        if self.cc is not None:
+            for child in self_copy.cc.np.getChildren(): # empty NodePathCollection if the np does not have a child
+                self_copy.cc.ctrav.addCollider(child, self_copy.cc.chan)
         return self_copy
