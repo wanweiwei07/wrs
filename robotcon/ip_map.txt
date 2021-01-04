@@ -1,0 +1,18 @@
+UR3
+Left Arm: 10.2.0.50
+Right Arm: 10.2.0.51
+Left Cam?
+Right Cam?
+
+XArm
+Arm0: 192.168.1.50
+RealSense0: 192.168.1.60
+Arm1: 192.168.1.51
+RealSense1: 192.168.1.61
+
+UR3E
+Left Arm:
+Right Arm:
+
+Yumi:
+192.168.125.1

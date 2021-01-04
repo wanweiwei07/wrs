@@ -3,8 +3,8 @@ Constants for YuMi interface and control
 Author: Jacky Liang
 '''
 import logging
-from robotconn.yumirapid.yumi_state import YuMiState
-from robotconn.yumirapid.autolab_core import RigidTransform
+from robotcon.yumi.yumi_state import YuMiState
+from robotcon.yumi.autolab_core import RigidTransform
 
 class YuMiConstants:
 

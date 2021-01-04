@@ -7,8 +7,8 @@ import numpy as np
 METERS_TO_MM = 1000.0
 MM_TO_METERS = 1.0 / METERS_TO_MM
 
-from robotconn.yumirapid.yumi_state import YuMiState
-from robotconn.yumirapid.autolab_core import RigidTransform
+from robotcon.yumi.yumi_state import YuMiState
+from robotcon.yumi.autolab_core import RigidTransform
 
 def message_to_pose(message, from_frame='yumi'):
     tokens = message.split()

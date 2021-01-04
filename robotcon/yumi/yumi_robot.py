@@ -3,8 +3,8 @@ Abstraction for the YuMi Robot
 Authors: Jacky Liang
 '''
 import logging
-from robotconn.yumirapid.yumi_arm import YuMiArm, YuMiArmFactory
-from robotconn.yumirapid.yumi_constants import YuMiConstants as YMC
+from robotcon.yumi.yumi_arm import YuMiArm, YuMiArmFactory
+from robotcon.yumi.yumi_constants import YuMiConstants as YMC
 from time import sleep
 
 class YuMiRobot:
