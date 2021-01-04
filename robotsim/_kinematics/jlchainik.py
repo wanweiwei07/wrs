@@ -240,15 +240,15 @@ class JLChainIK(object):
                         "rngmin"]) / 2
         return isdragged, jntvaluesdragged
 
-    def numik(self,
-              tgt_pos,
-              tgt_rot,
-              start_conf=None,
-              tcp_jntid=None,
-              tcp_loc_pos=None,
-              tcp_loc_rotmat=None,
-              local_minima="accept",
-              toggle_debug=False):
+    def num_ik(self,
+               tgt_pos,
+               tgt_rot,
+               start_conf=None,
+               tcp_jntid=None,
+               tcp_loc_pos=None,
+               tcp_loc_rotmat=None,
+               local_minima="accept",
+               toggle_debug=False):
         """
         solveik numerically using the Levenberg-Marquardt Method
         the details of this method can be found in: https://www.math.ucsd.edu/~sbuss/ResearchWeb/ikmethods/iksurvey.pdf
@@ -272,6 +272,7 @@ class JLChainIK(object):
             tcp_jntid = self.jlobject.tcp_jntid
         if tcp_loc_pos is None:
             tcp_loc_pos = self.jlobject.tcp_loc_pos
+            print(self.jlobject.tcp_loc_pos)
         if tcp_loc_rotmat is None:
             tcp_loc_rotmat = self.jlobject.tcp_loc_rotmat
         # trim list
@@ -436,6 +437,7 @@ class JLChainIK(object):
                                          tcp_loc_rotmat=tcp_loc_rotmat, toggle_jntscs=True).attach_to(base)
             base.run()
         self.jlobject.fk(jntvalues_bk)
+        wns.warn('Failed to solve the IK, returning None.')
         return None
 
     def numik_rel(self, deltapos, deltarotmat, tcp_jntid=None, tcp_loc_pos=None, tcp_loc_rotmat=None):

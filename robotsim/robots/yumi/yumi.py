@@ -43,7 +43,7 @@ class Yumi(ri.RobotInterface):
         self.lft_body.lnks[2]['loc_pos'] = np.array([-.327, -.24, -1.015])
         self.lft_body.lnks[2]['meshfile'] = os.path.join(this_dir, "meshes", "yumi_column60602100.stl")
         self.lft_body.lnks[2]['rgba'] = [.35, .35, .35, 1.0]
-        self.lft_body.lnks[3]['name'] = "yumi_rgt_column"
+        self.lft_body.lnks[3]['name'] = "yumi_lft_column"
         self.lft_body.lnks[3]['loc_pos'] = np.array([-.327, .24, -1.015])
         self.lft_body.lnks[3]['meshfile'] = os.path.join(this_dir, "meshes", "yumi_column60602100.stl")
         self.lft_body.lnks[3]['rgba'] = [.35, .35, .35, 1.0]
@@ -56,7 +56,7 @@ class Yumi(ri.RobotInterface):
         self.lft_body.lnks[5]['loc_rotmat'] = rm.rotmat_from_axangle([0, 0, 1], -math.pi / 2)
         self.lft_body.lnks[5]['meshfile'] = os.path.join(this_dir, "meshes", "yumi_column6060540.stl")
         self.lft_body.lnks[5]['rgba'] = [.35, .35, .35, 1.0]
-        self.lft_body.lnks[6]['name'] = "yumi_top_rgt"
+        self.lft_body.lnks[6]['name'] = "yumi_top_lft"
         self.lft_body.lnks[6]['loc_pos'] = np.array([-.027, .24, 1.085])
         self.lft_body.lnks[6]['loc_rotmat'] = rm.rotmat_from_axangle([0, 0, 1], -math.pi / 2)
         self.lft_body.lnks[6]['meshfile'] = os.path.join(this_dir, "meshes", "yumi_column6060540.stl")
@@ -70,9 +70,11 @@ class Yumi(ri.RobotInterface):
         self.lft_arm = ya.IRB14050(pos=self.lft_body.jnts[-1]['gl_posq'],
                                    rotmat=self.lft_body.jnts[-1]['gl_rotmatq'],
                                    homeconf=lft_arm_homeconf, enable_cc=False)
+        self.lft_arm.fix_to(pos=self.lft_body.jnts[-1]['gl_posq'], rotmat=self.lft_body.jnts[-1]['gl_rotmatq'])
         self.lft_hnd = yg.YumiGripper(pos=self.lft_arm.jnts[-1]['gl_posq'],
                                       rotmat=self.lft_arm.jnts[-1]['gl_rotmatq'],
                                       enable_cc=False)
+        self.lft_hnd.fix_to(pos=self.lft_arm.jnts[-1]['gl_posq'], rotmat=self.lft_arm.jnts[-1]['gl_rotmatq'])
         # rgt
         self.rgt_body = jl.JLChain(pos=pos, rotmat=rotmat, homeconf=np.zeros(0), name='rgt_body')
         self.rgt_body.jnts[1]['loc_pos'] = np.array([0.05355, 0.07250, 0.41492])
@@ -90,15 +92,13 @@ class Yumi(ri.RobotInterface):
         self.rgt_hnd.fix_to(pos=self.rgt_arm.jnts[-1]['gl_posq'], rotmat=self.rgt_arm.jnts[-1]['gl_rotmatq'])
         # tool center point
         # lft
-        self.lft_tcp_jlc = self.lft_arm  # which jlc is the tcp located at?
-        self.lft_tcp_jlc.tcp_jntid = -1
-        self.lft_tcp_jlc.tcp_loc_pos = np.array([0, 0, .12])
-        self.lft_tcp_jlc.tcp_loc_rotmat = np.eye(3)
+        self.lft_arm.tcp_jntid = -1
+        self.lft_arm.tcp_loc_pos = np.array([0, 0, .12])
+        self.lft_arm.tcp_loc_rotmat = np.eye(3)
         # rgt
-        self.rgt_tcp_jlc = self.rgt_arm  # which jlc is the tcp located at?
-        self.rgt_tcp_jlc.tcp_jntid = -1
-        self.rgt_tcp_jlc.tcp_loc_pos = np.array([0, 0, .12])
-        self.rgt_tcp_jlc.tcp_loc_rotmat = np.eye(3)
+        self.rgt_arm.tcp_jntid = -1
+        self.rgt_arm.tcp_loc_pos = np.array([0, 0, .12])
+        self.rgt_arm.tcp_loc_rotmat = np.eye(3)
         # a list of detailed information about objects in hand, see CollisionChecker.add_objinhnd
         self.lft_oih_infos = []
         self.rgt_oih_infos = []
@@ -207,6 +207,7 @@ class Yumi(ri.RobotInterface):
         """
         :param jnt_values: [nparray, nparray], 7+7, meter-radian
         :jlc_name 'lft_arm', 'rgt_arm', 'both_arm'
+        :param jlc_name:
         :return:
         author: weiwei
         date: 20201208toyonaka
@@ -216,24 +217,46 @@ class Yumi(ri.RobotInterface):
             if not isinstance(jnt_values, np.ndarray) or jnt_values.size != 7:
                 raise ValueError("An 1x7 npdarray must be specified to move a single arm!")
             if jlc_name == 'lft_arm':
-                self.lft_arm.fix_to(pos=self.lft_body.jnts[-1]['gl_posq'],
-                                    rotmat=self.lft_body.jnts[-1]['gl_rotmatq'],
-                                    jnt_values=jnt_values)
+                self.lft_arm.fk(jnt_values=jnt_values)
+                self.lft_hnd.fix_to(pos=self.lft_arm.jnts[-1]['gl_posq'],
+                                    rotmat=self.lft_arm.jnts[-1]['gl_rotmatq'])
             else:
-                self.rgt_arm.fix_to(pos=self.rgt_body.jnts[-1]['gl_posq'],
-                                    rotmat=self.rgt_body.jnts[-1]['gl_rotmatq'],
-                                    jnt_values=jnt_values)
+                self.rgt_arm.fk(jnt_values=jnt_values)
+                self.rgt_hnd.fix_to(pos=self.rgt_arm.jnts[-1]['gl_posq'],
+                                    rotmat=self.rgt_arm.jnts[-1]['gl_rotmatq'])
         elif jlc_name == 'both_arm':
             if (not isinstance(jnt_values, list)
                     or jnt_values[0].size != 7
                     or jnt_values[1].size != 7):
                 raise ValueError("A list of two 1x7 npdarrays must be specified to move both arm!")
-            self.lft_arm.fix_to(pos=self.lft_body.jnts[-1]['gl_posq'],
-                                rotmat=self.lft_body.jnts[-1]['gl_rotmatq'],
-                                jnt_values=jnt_values[0])
-            self.rgt_arm.fix_to(pos=self.rgt_body.jnts[-1]['gl_posq'],
-                                rotmat=self.rgt_body.jnts[-1]['gl_rotmatq'],
-                                jnt_values=jnt_values[1])
+            self.lft_arm.fk(jnt_values=jnt_values[0])
+            self.lft_hnd.fix_to(pos=self.lft_arm.jnts[-1]['gl_posq'],
+                                rotmat=self.lft_arm.jnts[-1]['gl_rotmatq'])
+            self.rgt_arm.fk(jnt_values=jnt_values[1])
+            self.rgt_hnd.fix_to(pos=self.rgt_arm.jnts[-1]['gl_posq'],
+                                rotmat=self.rgt_arm.jnts[-1]['gl_rotmatq'])
+        elif jlc_name == 'all':
+            pass
+
+    def num_ik(self,
+               tgt_pos,
+               tgt_rot,
+               jlc_name='lft_arm',
+               start_conf=None,
+               tcp_jntid=None,
+               tcp_loc_pos=None,
+               tcp_loc_rotmat=None,
+               local_minima="accept",
+               toggle_debug=False):
+        manipulator = self.lft_arm if jlc_name == 'lft_arm' else self.rgt_arm
+        return manipulator.ik(tgt_pos,
+                              tgt_rot,
+                              start_conf=start_conf,
+                              tcp_jntid=tcp_jntid,
+                              tcp_loc_pos=tcp_loc_pos,
+                              tcp_loc_rotmat=tcp_loc_rotmat,
+                              local_minima=local_minima,
+                              toggle_debug=toggle_debug)
 
     def jaw_to(self, jaw_width, hnd_name='lft_hnd'):
         if hnd_name == 'lft_hnd':
@@ -251,7 +274,7 @@ class Yumi(ri.RobotInterface):
         :return:
         """
         if hnd_name == 'lft_hnd':
-            rel_pos, rel_rotmat = self.lft_tcp_jlc.get_loc_pose(objcm.get_pos(), objcm.get_rotmat())
+            rel_pos, rel_rotmat = self.lft_arm.get_loc_pose(objcm.get_pos(), objcm.get_rotmat())
             intolist = [self.lft_body.lnks[0],
                         self.lft_body.lnks[1],
                         self.lft_arm.lnks[1],
@@ -269,7 +292,7 @@ class Yumi(ri.RobotInterface):
                         self.rgt_hnd.rgt.lnks[1]]
             self.lft_oih_infos.append(self.cc.add_cdobj(objcm, rel_pos, rel_rotmat, intolist))
         elif hnd_name == 'rgt_hnd':
-            rel_pos, rel_rotmat = self.lft_tcp_jlc.get_loc_pose(objcm.get_pos(), objcm.get_rotmat())
+            rel_pos, rel_rotmat = self.rgt_arm.get_loc_pose(objcm.get_pos(), objcm.get_rotmat())
             intolist = [self.rgt_body.lnks[0],
                         self.rgt_body.lnks[1],
                         self.rgt_arm.lnks[1],
@@ -421,6 +444,11 @@ if __name__ == '__main__':
     base = wd.World(campos=[1.5, 0, 3], lookatpos=[0, 0, .5])
     gm.gen_frame().attach_to(base)
     yumi_instance = Yumi(enable_cc=True)
+    tgt_pos = np.array([.5, -.3, .3])
+    tgt_rotmat = rm.rotmat_from_axangle([0,1,0], math.pi/2)
+    gm.gen_frame(pos=tgt_pos, rotmat=tgt_rotmat).attach_to(base)
+    jnt_values = yumi_instance.num_ik(tgt_pos, tgt_rotmat)
+    yumi_instance.fk(jnt_values)
     yumi_meshmodel = yumi_instance.gen_meshmodel()
     yumi_meshmodel.attach_to(base)
     yumi_instance.show_cdprimit()

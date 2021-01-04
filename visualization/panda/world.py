@@ -109,7 +109,7 @@ class World(ShowBase, object):
         if toggledebug:
             self.physicsworld.setDebugNode(self._debugNP.node())
         self.physicsbodylist = []
-        # set up render update
+        # set up render update (TODO, only for dynamics?)
         self._autoupdate_obj_list = []  # the nodepath, collision model, or bullet dynamics model to be drawn
         self._autoupdate_robot_list = []
         taskMgr.add(self._auto_update, "auto_update", appendTask=True)
@@ -117,6 +117,8 @@ class World(ShowBase, object):
         self._manualupdate_objinfo_list = []  # see anime_info.py
         self._manualupdate_robotinfo_list = []
         taskMgr.add(self._manual_update, "manual_update", appendTask=True)
+        # for stationary models
+        self._noupdate_model_list = []
 
     def _interaction_update(self, task):
         # reset aspect ratio
@@ -135,12 +137,12 @@ class World(ShowBase, object):
         return task.cont
 
     def _auto_update(self, task):
+        for robot in self._autoupdate_robot_list:
+            robot.detach()  # TODO gen mesh model?
+            robot.attach_to(self)
         for obj in self._autoupdate_obj_list:
             obj.detach()
             obj.attach_to(self)
-        for robot in self._autoupdate_robot_list:
-            robot.detach()
-            robot.attach_to(self)
         return task.cont
 
     def _rotatecam_update(self, task):
@@ -195,7 +197,7 @@ class World(ShowBase, object):
             _manualupdate_objinfo.obj_path_counter += 1
             if _manualupdate_objinfo.obj_path_counter >= len(obj_path):
                 _manualupdate_objinfo.obj_path_counter = 0
-        return task.cont
+        return task.again
 
     def change_debugstatus(self, toggledebug):
         if self.toggledebug == toggledebug:
@@ -215,20 +217,22 @@ class World(ShowBase, object):
 
     def detach_autoupdate_obj(self, obj):
         self._autoupdate_obj_list.remove(obj)
-        time.sleep(.01)
         obj.detach()
 
     def clear_autoupdate_obj(self):
-        for obj in self._autoupdate_obj_list:
-            self.detach_autoupdate_obj(obj)
+        tmp_autoupdate_obj_list = self._autoupdate_obj_list.copy()
+        self._autoupdate_obj_list = []
+        for obj in tmp_autoupdate_obj_list:
+            obj.detach()
 
-    def attach_autoupdate_robot(self, robot_meshmodel):
+    def attach_autoupdate_robot(self, robot_meshmodel):  # TODO robot_meshmodel or robot_instance?
         self._autoupdate_robot_list.append(robot_meshmodel)
 
     def detach_autoupdate_robot(self, robot_meshmodel):
-        self._autoupdate_robot_list.remove(robot_meshmodel)
-        time.sleep(.01)
-        robot_meshmodel.detach()
+        tmp_autoupdate_robot_list = self._autoupdate_robot_list.copy()
+        self._autoupdate_robot_list = []
+        for robot in tmp_autoupdate_robot_list:
+            robot.detach()
 
     def clear_autoupdate_robot(self):
         for robot in self._autoupdate_robot_list:
@@ -243,7 +247,6 @@ class World(ShowBase, object):
 
     def detach_manualupdate_obj(self, obj_info):
         self._manualupdate_objinfo_list.remove(obj_info)
-        time.sleep(.01)
         obj_info.obj.detach()
 
     def clear_manualupdate_obj(self):
@@ -259,12 +262,24 @@ class World(ShowBase, object):
 
     def detach_manualupdate_robot(self, robot_info):
         self._manualupdate_robotinfo_list.remove(robot_info)
-        time.sleep(.01)
         robot_info.robot_meshmodel.detach()
 
     def clear_manualupdate_robot(self):
         for robot in self._manualupdate_robotinfo_list:
             self.detach_manualupdate_robot(robot)
+
+    def attach_noupdate_model(self, model):
+        model.attach_to(self)
+        self._noupdate_model_list.append(model)
+
+    def detach_noupdate_model(self, model):
+        model.detach()
+        self._noupdate_model_list.remove(model)
+
+    def clear_noupdate_model(self):
+        for model in self._noupdate_model_list:
+            model.detach()
+        self._noupdate_model_list = []
 
     def change_campos(self, campos):
         self.cam.setPos(campos[0], campos[1], campos[2])

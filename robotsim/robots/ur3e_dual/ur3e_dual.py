@@ -73,15 +73,13 @@ class UR3EDual(ri.RobotInterface):
                                      enable_cc=False)
         # tool center point
         # lft
-        self.lft_tcp_jlc = self.lft_arm  # which jlc is the tcp located at?
-        self.lft_tcp_jlc.tcp_jntid = -1
-        self.lft_tcp_jlc.tcp_loc_pos = np.array([0, 0, .7])
-        self.lft_tcp_jlc.tcp_loc_rotmat = np.eye(3)
+        self.lft_arm.tcp_jntid = -1
+        self.lft_arm.tcp_loc_pos = np.array([0, 0, .7])
+        self.lft_arm.tcp_loc_rotmat = np.eye(3)
         # rgt
-        self.rgt_tcp_jlc = self.rgt_arm  # which jlc is the tcp located at?
-        self.rgt_tcp_jlc.tcp_jntid = -1
-        self.rgt_tcp_jlc.tcp_loc_pos = np.array([0, 0, .7])
-        self.rgt_tcp_jlc.tcp_loc_rotmat = np.eye(3)
+        self.rgt_arm.tcp_jntid = -1
+        self.rgt_arm.tcp_loc_pos = np.array([0, 0, .7])
+        self.rgt_arm.tcp_loc_rotmat = np.eye(3)
         # a list of detailed information about objects in hand, see CollisionChecker.add_objinhnd
         self.lft_oih_infos = []
         self.rgt_oih_infos = []

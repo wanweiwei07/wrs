@@ -81,14 +81,14 @@ class ManipulatorInterface(object):
            tcp_loc_rotmat=None,
            local_minima="accept",
            toggle_debug=False):
-        return self.jlc.numik(tgt_pos=tgt_pos,
-                              tgt_rot=tgt_rot,
-                              start_conf=start_conf,
-                              tcp_jntid=tcp_jntid,
-                              tcp_loc_pos=tcp_loc_pos,
-                              tcp_loc_rotmat=tcp_loc_rotmat,
-                              local_minima=local_minima,
-                              toggle_debug=toggle_debug)
+        return self.jlc.num_ik(tgt_pos=tgt_pos,
+                               tgt_rot=tgt_rot,
+                               start_conf=start_conf,
+                               tcp_jntid=tcp_jntid,
+                               tcp_loc_pos=tcp_loc_pos,
+                               tcp_loc_rotmat=tcp_loc_rotmat,
+                               local_minima=local_minima,
+                               toggle_debug=toggle_debug)
 
     def get_gl_pose(self,
                     loc_pos=np.zeros(3),
@@ -119,8 +119,8 @@ class ManipulatorInterface(object):
                                    otherrobot_list=otherrobot_list,
                                    need_update = self.is_fk_updated)
 
-    def fix_to(self, pos, rotmat):
-        self.jlc.fix_to(pos=pos, rotmat=rotmat)
+    def fix_to(self, pos, rotmat, jnt_values=None):
+        self.jlc.fix_to(pos=pos, rotmat=rotmat, jnt_values=jnt_values)
 
     def fk(self, jnt_values):
         return self.jlc.fk(jnt_values=jnt_values)
@@ -192,6 +192,7 @@ class ManipulatorInterface(object):
     def copy(self):
         self_copy = copy.deepcopy(self)
         # deepcopying colliders are problematic, I have to update it manually
-        for child in self_copy.cc.np.getChildren(): # empty NodePathCollection if the np does not have a child
-            self_copy.cc.ctrav.addCollider(child, self_copy.cc.chan)
+        if self.cc is not None:
+            for child in self_copy.cc.np.getChildren(): # empty NodePathCollection if the np does not have a child
+                self_copy.cc.ctrav.addCollider(child, self_copy.cc.chan)
         return self_copy

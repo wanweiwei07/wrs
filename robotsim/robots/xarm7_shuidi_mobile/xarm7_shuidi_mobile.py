@@ -40,10 +40,9 @@ class XArm7YunjiMobile(ri.RobotInterface):
                                    rotmat=self.arm.jnts[-1]['gl_rotmatq'],
                                    name='hnd', enable_cc=False)
         # tool center point
-        self.tcp_jlc = self.arm  # which jlc is the tcp located at?
-        self.tcp_jlc.tcp_jntid = -1
-        self.tcp_jlc.tcp_loc_pos = self.hnd.jaw_center
-        self.tcp_jlc.tcp_loc_rotmat = np.eye(3)
+        self.arm.jlc.tcp_jntid = -1
+        self.arm.jlc.tcp_loc_pos = self.hnd.jaw_center
+        self.arm.jlc.tcp_loc_rotmat = np.eye(3)
         # a list of detailed information about objects in hand, see CollisionChecker.add_objinhnd
         self.oih_infos = []
         # collision detection
@@ -100,7 +99,7 @@ class XArm7YunjiMobile(ri.RobotInterface):
         self.hnd.fix_to(pos=self.arm.jnts[-1]['gl_posq'], rotmat=self.arm.jnts[-1]['gl_rotmatq'])
         # update objects in hand if available
         for obj_info in self.oih_infos:
-            gl_pos, gl_rotmat = self.tcp_jlc.get_gl_pose(obj_info['rel_pos'], obj_info['rel_rotmat'])
+            gl_pos, gl_rotmat = self.arm.get_gl_pose(obj_info['rel_pos'], obj_info['rel_rotmat'])
             obj_info['gl_pos'] = gl_pos
             obj_info['gl_rotmat'] = gl_rotmat
 
@@ -136,10 +135,9 @@ class XArm7YunjiMobile(ri.RobotInterface):
             self.pos[:2] = jnt_values[:2]
             self.rotmat = rm.rotmat_from_axangle([0, 0, 1], jnt_values[2])
             self.agv.fix_to(self.pos, self.rotmat)
-            self.arm.fix_to(pos=self.agv.jnts[-1]['gl_posq'], rotmat=self.agv.jnts[-1]['gl_rotmatq']) # TODO repeated
-            self.arm.fk(jnt_values=jnt_values[3:10])
+            self.arm.fix_to(pos=self.agv.jnts[-1]['gl_posq'], rotmat=self.agv.jnts[-1]['gl_rotmatq'], jnt_values=jnt_values[3:10])
             self.hnd.fix_to(pos=self.arm.jnts[-1]['gl_posq'], rotmat=self.arm.jnts[-1]['gl_rotmatq'])
-            # update objects in hand if available
+            # TODO ? update objects in hand if available
         elif jlc_name == 'all':
             if not isinstance(jnt_values, np.ndarray) or jnt_values.size != 11:
                 raise ValueError("An 1x10 npdarray must be specified to move all joints!")
@@ -147,14 +145,34 @@ class XArm7YunjiMobile(ri.RobotInterface):
             self.pos[:2] = jnt_values[:2]
             self.rotmat = rm.rotmat_from_axangle([0, 0, 1], jnt_values[2])
             self.agv.fix_to(self.pos, self.rotmat)
-            self.arm.fix_to(pos=self.agv.jnts[-1]['gl_posq'], rotmat=self.agv.jnts[-1]['gl_rotmatq']) # TODO repeated
-            self.arm.fk(jnt_values=jnt_values[3:10])
-            self.hnd.fix_to(pos=self.arm.jnts[-1]['gl_posq'], rotmat=self.arm.jnts[-1]['gl_rotmatq'])
-            self.hnd.fk(jnt_values[10])
+            self.arm.fix_to(pos=self.agv.jnts[-1]['gl_posq'], rotmat=self.agv.jnts[-1]['gl_rotmatq'], jnt_values=jnt_values[3:10])
+            self.hnd.fix_to(pos=self.arm.jnts[-1]['gl_posq'], rotmat=self.arm.jnts[-1]['gl_rotmatq'], motion_val = jnt_values[10])
         for obj_info in self.oih_infos:
-            gl_pos, gl_rotmat = self.tcp_jlc.get_gl_pose(obj_info['rel_pos'], obj_info['rel_rotmat'])
+            gl_pos, gl_rotmat = self.arm.get_gl_pose(obj_info['rel_pos'], obj_info['rel_rotmat'])
             obj_info['gl_pos'] = gl_pos
             obj_info['gl_rotmat'] = gl_rotmat
+
+    def num_ik(self,
+               tgt_pos,
+               tgt_rot,
+               jlc_name='arm',
+               start_conf=None,
+               tcp_jntid=None,
+               tcp_loc_pos=None,
+               tcp_loc_rotmat=None,
+               local_minima="accept",
+               toggle_debug=False):
+        if jlc_name == 'arm':
+            return self.arm.ik(tgt_pos,
+                               tgt_rot,
+                               start_conf=start_conf,
+                               tcp_jntid=tcp_jntid,
+                               tcp_loc_pos=tcp_loc_pos,
+                               tcp_loc_rotmat=tcp_loc_rotmat,
+                               local_minima=local_minima,
+                               toggle_debug=toggle_debug)
+        elif jlc_name == 'agv_arm' or jlc_name == 'all':
+            pass
 
     def get_jntvalues(self, jlc_name):
         if jlc_name == 'arm':
@@ -201,7 +219,7 @@ class XArm7YunjiMobile(ri.RobotInterface):
         """
         if jawwidth is not None:
             self.hnd.jaw_to(jawwidth)
-        rel_pos, rel_rotmat = self.tcp_jlc.get_loc_pose(objcm.get_pos(), objcm.get_rotmat())
+        rel_pos, rel_rotmat = self.arm.get_loc_pose(objcm.get_pos(), objcm.get_rotmat())
         intolist = [self.agv.lnks[0],
                     self.arm.lnks[0],
                     self.arm.lnks[1],
@@ -296,6 +314,7 @@ class XArm7YunjiMobile(ri.RobotInterface):
 
 if __name__ == '__main__':
     import time
+    import basis.robotmath as rm
     import visualization.panda.world as wd
     import modeling.geometricmodel as gm
 
@@ -305,7 +324,15 @@ if __name__ == '__main__':
     xav = XArm7YunjiMobile(enable_cc=True)
     xav.fk(np.array([0, 0, 0, 0, 0, 0, math.pi, 0, -math.pi / 6, 0, 0]), jlc_name='all')
     xav.jaw_to(.08)
-    xav_meshmodel = xav.gen_meshmodel()
+    tgt_pos = np.array([.85, 0, .5])
+    tgt_rotmat = rm.rotmat_from_axangle([0,1,0], math.pi/2)
+    gm.gen_frame(pos=tgt_pos, rotmat=tgt_rotmat).attach_to(base)
+    jnt_values = xav.num_ik(tgt_pos, tgt_rotmat)
+    tgt_pos2 = np.array([.7, 0, .5])
+    jnt_values2 = xav.num_ik(tgt_pos2, tgt_rotmat, start_conf=jnt_values)
+    print(jnt_values)
+    xav.fk(jnt_values2)
+    xav_meshmodel = xav.gen_meshmodel(toggle_tcpcs=True)
     xav_meshmodel.attach_to(base)
     xav.show_cdprimit()
     xav.gen_stickmodel().attach_to(base)

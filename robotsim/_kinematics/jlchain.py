@@ -374,14 +374,14 @@ class JLChain(object):
         :param local_minima:
         :return:
         """
-        return self._ikt.numik(tgt_pos=tgt_pos,
-                               tgt_rot=tgt_rot,
-                               start_conf=start_conf,
-                               tcp_jntid=tcp_jntid,
-                               tcp_loc_pos=tcp_loc_pos,
-                               tcp_loc_rotmat=tcp_loc_rotmat,
-                               local_minima=local_minima,
-                               toggle_debug=toggle_debug)
+        return self._ikt.num_ik(tgt_pos=tgt_pos,
+                                tgt_rot=tgt_rot,
+                                start_conf=start_conf,
+                                tcp_jntid=tcp_jntid,
+                                tcp_loc_pos=tcp_loc_pos,
+                                tcp_loc_rotmat=tcp_loc_rotmat,
+                                local_minima=local_minima,
+                                toggle_debug=toggle_debug)
 
     def get_gl_pose(self,
                     loc_pos=np.zeros(3),

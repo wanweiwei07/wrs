@@ -37,6 +37,18 @@ class RobotInterface(object):
     def fk(self, jnt_values, jlc_name):
         raise NotImplementedError
 
+    def num_ik(self,
+               tgt_pos,
+               tgt_rot,
+               jlc_name,
+               start_conf=None,
+               tcp_jntid=None,
+               tcp_loc_pos=None,
+               tcp_loc_rotmat=None,
+               local_minima="accept",
+               toggle_debug=False):
+        raise NotImplementedError
+
     def rand_conf(self, jlc_name):
         raise NotImplementedError
 
