@@ -93,7 +93,7 @@ if __name__ == '__main__':
     objcm.show_cdprimit()
     objcmlist = []
     for i in range(100):
-        objcmlist.append(os.path.join(basis.__path__[0], 'objects', 'housing.stl'))
+        objcmlist.append(cm.CollisionModel(os.path.join(basis.__path__[0], 'objects', 'housing.stl')))
         objcmlist[-1].set_pos(np.random.random_sample((3,)))
         objcmlist[-1].set_rgba(np.array([1, .5, 0, 1]))
         objcmlist[-1].attach_to(base)
