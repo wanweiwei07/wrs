@@ -13,7 +13,7 @@ gm.gen_frame().attach_to(base)
 # object
 object = cm.CollisionModel("./objects/bunnysim.stl")
 object.set_pos(np.array([.85, 0, .37]))
-object.set_color([.5,.7,.3,1])
+object.set_rgba([.5,.7,.3,1])
 object.attach_to(base)
 # robot
 jlc_name='arm'
