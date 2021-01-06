@@ -15,10 +15,7 @@ class RRT(object):
         self.goal_conf = None
 
     def _is_collided(self, jlc_name, conf, obstacle_list=[], otherrobot_list=[]):
-        if jlc_name is None:
-            self.robot.fk(conf)
-        else:
-            self.robot.fk(conf, jlc_name=jlc_name)
+        self.robot.fk(jlc_name=jlc_name, jnt_values=conf)
         return self.robot.is_collided(obstacle_list=obstacle_list, otherrobot_list=otherrobot_list)
 
     def _sample_conf(self, jlc_name, rand_rate, default_conf):
@@ -122,7 +119,7 @@ class RRT(object):
         return smoothed_path
 
     def plan(self, start_conf, goal_conf, obstacle_list=[], otherrobot_list=[], ext_dist=2, rand_rate=70,
-             maxiter=1000, maxtime=15.0, animation=False, jlc_name=None):
+             maxiter=1000, maxtime=15.0, animation=False, jlc_name='all'):
         """
         :return: [path, all_sampled_confs]
         author: weiwei
@@ -205,21 +202,38 @@ class RRT(object):
 
 if __name__ == '__main__':
     import robotsim._kinematics.jlchain as jl
+    import robotsim.robots.robot_interface as ri
 
 
-    class XYBot(jl.JLChain):
+    class XYBot(ri.RobotInterface):
 
-        def __init__(self):
-            super().__init__(homeconf=np.zeros(2), name='XYBot')
-            self.jnts[1]['type'] = 'prismatic'
-            self.jnts[1]['loc_motionax'] = np.array([1, 0, 0])
-            self.jnts[1]['loc_pos'] = np.zeros(3)
-            self.jnts[1]['motion_rng'] = [-2.0, 15.0]
-            self.jnts[2]['type'] = 'prismatic'
-            self.jnts[2]['loc_motionax'] = np.array([0, 1, 0])
-            self.jnts[2]['loc_pos'] = np.zeros(3)
-            self.jnts[2]['motion_rng'] = [-2.0, 15.0]
-            self.reinitialize()
+        def __init__(self, pos=np.zeros(3), rotmat=np.eye(3), name='XYBot'):
+            super().__init__(pos=pos, rotmat=rotmat, name=name)
+            self.jlc = jl.JLChain(homeconf=np.zeros(2), name='XYBot')
+            self.jlc.jnts[1]['type'] = 'prismatic'
+            self.jlc.jnts[1]['loc_motionax'] = np.array([1, 0, 0])
+            self.jlc.jnts[1]['loc_pos'] = np.zeros(3)
+            self.jlc.jnts[1]['motion_rng'] = [-2.0, 15.0]
+            self.jlc.jnts[2]['type'] = 'prismatic'
+            self.jlc.jnts[2]['loc_motionax'] = np.array([0, 1, 0])
+            self.jlc.jnts[2]['loc_pos'] = np.zeros(3)
+            self.jlc.jnts[2]['motion_rng'] = [-2.0, 15.0]
+            self.jlc.reinitialize()
+
+        def fk(self, jlc_name='all', jnt_values=np.zeros(2)):
+            if jlc_name != 'all':
+                raise ValueError("Only support jlc_name == 'all'!")
+            self.jlc.fk(jnt_values)
+
+        def rand_conf(self, jlc_name='all'):
+            if jlc_name != 'all':
+                raise ValueError("Only support jlc_name == 'all'!")
+            return self.jlc.rand_conf()
+
+        def get_jntvalues(self, jlc_name='all'):
+            if jlc_name != 'all':
+                raise ValueError("Only support jlc_name == 'all'!")
+            return self.jlc.get_jntvalues()
 
         def is_collided(self, obstacle_list=[], otherrobot_list=[]):
             for (obpos, size) in obstacle_list:
@@ -243,7 +257,7 @@ if __name__ == '__main__':
     robot = XYBot()
     rrt = RRT(robot)
     path = rrt.plan(start_conf=np.array([0, 0]), goal_conf=np.array([5, 10]), obstacle_list=obstacle_list,
-                    ext_dist=1, rand_rate=70, maxtime=300, jlc_name=None, animation=True)
+                    ext_dist=1, rand_rate=70, maxtime=300, jlc_name='all', animation=True)
     # plt.show()
     # nx.draw(rrt.roadmap, with_labels=True, font_weight='bold')
     # plt.show()

@@ -5,7 +5,7 @@ import robotsim._kinematics.collisionchecker as cc
 
 class RobotInterface(object):
 
-    def __init__(self, pos=np.zeros(3), rotmat=np.eye(3), name='yumi_gripper'):
+    def __init__(self, pos=np.zeros(3), rotmat=np.eye(3), name='robot_interface'):
         self.name = name
         self.pos = pos
         self.rotmat = rotmat
@@ -34,7 +34,7 @@ class RobotInterface(object):
     def fix_to(self, pos, rotmat):
         raise NotImplementedError
 
-    def fk(self, jnt_values, jlc_name):
+    def fk(self, jlc_name, jnt_values):
         raise NotImplementedError
 
     def num_ik(self,

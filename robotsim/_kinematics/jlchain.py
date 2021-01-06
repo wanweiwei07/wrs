@@ -336,7 +336,7 @@ class JLChain(object):
     #
     #     return isdragged, jnt_valuesdragged
 
-    def rand_conf(self, jlc_name=None):
+    def rand_conf(self):
         """
         generate a random configuration
         author: weiwei
