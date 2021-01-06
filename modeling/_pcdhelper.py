@@ -77,20 +77,23 @@ def is_cmlistcmlist_collided(objcmlist0, objcmlist1, toggleplot=False):
 
 
 if __name__ == '__main__':
+    import os
     import time
+    import basis
     import numpy as np
     import modeling.collisionmodel as cm
     import visualization.panda.world as wd
 
     base = wd.World(campos=[.7, .7, .7], lookatpos=[0, 0, 0])
-    objcm = cm.CollisionModel("./objects/bunnysim.stl")
+    objpath = os.path.join(basis.__path__[0], 'objects', 'bunnysim.stl')
+    objcm = cm.CollisionModel(objpath)
     objcm.set_color(np.array([.2, .5, 0, 1]))
     objcm.set_pos(np.array([.01, .01, .01]))
     objcm.attach_to(base)
     objcm.show_cdprimit()
     objcmlist = []
     for i in range(100):
-        objcmlist.append(cm.CollisionModel("./objects/housing.stl"))
+        objcmlist.append(os.path.join(basis.__path__[0], 'objects', 'housing.stl'))
         objcmlist[-1].set_pos(np.random.random_sample((3,)))
         objcmlist[-1].set_color(np.array([1, .5, 0, 1]))
         objcmlist[-1].attach_to(base)
