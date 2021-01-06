@@ -87,7 +87,7 @@ if __name__ == '__main__':
     base = wd.World(campos=[.7, .7, .7], lookatpos=[0, 0, 0])
     objpath = os.path.join(basis.__path__[0], 'objects', 'bunnysim.stl')
     objcm = cm.CollisionModel(objpath)
-    objcm.set_color(np.array([.2, .5, 0, 1]))
+    objcm.set_rgba(np.array([.2, .5, 0, 1]))
     objcm.set_pos(np.array([.01, .01, .01]))
     objcm.attach_to(base)
     objcm.show_cdprimit()
@@ -95,7 +95,7 @@ if __name__ == '__main__':
     for i in range(100):
         objcmlist.append(os.path.join(basis.__path__[0], 'objects', 'housing.stl'))
         objcmlist[-1].set_pos(np.random.random_sample((3,)))
-        objcmlist[-1].set_color(np.array([1, .5, 0, 1]))
+        objcmlist[-1].set_rgba(np.array([1, .5, 0, 1]))
         objcmlist[-1].attach_to(base)
         objcmlist[-1].show_cdprimit()
 
