@@ -49,7 +49,7 @@ class RRTConnect(rrt.RRT):
             return nearest_nid
 
     def plan(self, start_conf, goal_conf, obstacle_list=[], otherrobot_list=[], ext_dist=2, rand_rate=70,
-             maxiter=1000, maxtime=15.0, animation=False, jlc_name=None):
+             maxiter=1000, maxtime=15.0, animation=False, jlc_name='all'):
         self.roadmap.clear()
         self.roadmap_start.clear()
         self.roadmap_goal.clear()
@@ -77,7 +77,7 @@ class RRTConnect(rrt.RRT):
             # Random Sampling
             goal_nid = 'goal'
             goal_conf = self.roadmap_goal.nodes[goal_nid]['conf']
-            rand_conf = self._sample_conf(rand_rate=rand_rate, default_conf=goal_conf)
+            rand_conf = self._sample_conf(jlc_name=jlc_name, rand_rate=rand_rate, default_conf=goal_conf)
             last_nid = self._extend_roadmap(self.roadmap_start,
                                             conf=rand_conf,
                                             ext_dist=ext_dist,
@@ -93,7 +93,7 @@ class RRTConnect(rrt.RRT):
             else:
                 goal_nid = last_nid
                 goal_conf = self.roadmap_start.nodes[goal_nid]['conf']
-                rand_conf = self._sample_conf(rand_rate=rand_rate, default_conf=goal_conf)
+                rand_conf = self._sample_conf(jlc_name=jlc_name, rand_rate=rand_rate, default_conf=goal_conf)
                 last_nid = self._extend_roadmap(self.roadmap_goal,
                                                 conf=rand_conf,
                                                 ext_dist=ext_dist,
@@ -124,21 +124,38 @@ if __name__ == '__main__':
     import numpy as np
     import matplotlib.pyplot as plt
     import robotsim._kinematics.jlchain as jl
+    import robotsim.robots.robot_interface as ri
 
 
-    class XYBot(jl.JLChain):
+    class XYBot(ri.RobotInterface):
 
-        def __init__(self):
-            super().__init__(homeconf=np.zeros(2), name='XYBot')
-            self.jnts[1]['type'] = 'prismatic'
-            self.jnts[1]['loc_motionax'] = np.array([1, 0, 0])
-            self.jnts[1]['loc_pos'] = np.zeros(3)
-            self.jnts[1]['motion_rng'] = [-2.0, 15.0]
-            self.jnts[2]['type'] = 'prismatic'
-            self.jnts[2]['loc_motionax'] = np.array([0, 1, 0])
-            self.jnts[2]['loc_pos'] = np.zeros(3)
-            self.jnts[2]['motion_rng'] = [-2.0, 15.0]
-            self.reinitialize()
+        def __init__(self, pos=np.zeros(3), rotmat=np.eye(3), name='XYBot'):
+            super().__init__(pos=pos, rotmat=rotmat, name=name)
+            self.jlc = jl.JLChain(homeconf=np.zeros(2), name='XYBot')
+            self.jlc.jnts[1]['type'] = 'prismatic'
+            self.jlc.jnts[1]['loc_motionax'] = np.array([1, 0, 0])
+            self.jlc.jnts[1]['loc_pos'] = np.zeros(3)
+            self.jlc.jnts[1]['motion_rng'] = [-2.0, 15.0]
+            self.jlc.jnts[2]['type'] = 'prismatic'
+            self.jlc.jnts[2]['loc_motionax'] = np.array([0, 1, 0])
+            self.jlc.jnts[2]['loc_pos'] = np.zeros(3)
+            self.jlc.jnts[2]['motion_rng'] = [-2.0, 15.0]
+            self.jlc.reinitialize()
+
+        def fk(self, jlc_name='all', jnt_values=np.zeros(2)):
+            if jlc_name != 'all':
+                raise ValueError("Only support jlc_name == 'all'!")
+            self.jlc.fk(jnt_values)
+
+        def rand_conf(self, jlc_name='all'):
+            if jlc_name != 'all':
+                raise ValueError("Only support jlc_name == 'all'!")
+            return self.jlc.rand_conf()
+
+        def get_jntvalues(self, jlc_name='all'):
+            if jlc_name != 'all':
+                raise ValueError("Only support jlc_name == 'all'!")
+            return self.jlc.get_jntvalues()
 
         def is_collided(self, obstacle_list=[], otherrobot_list=[]):
             for (obpos, size) in obstacle_list:
@@ -177,7 +194,7 @@ if __name__ == '__main__':
     for i in range(100):
         tic = time.time()
         path = rrtc.plan(start_conf=np.array([0, 0]), goal_conf=np.array([5, 10]), obstacle_list=obstacle_list,
-                         ext_dist=1, rand_rate=70, maxtime=300, jlc_name=None, animation=False)
+                         ext_dist=1, rand_rate=70, maxtime=300, jlc_name='all', animation=False)
         toc = time.time()
         total_t = total_t + toc - tic
     print(total_t)
