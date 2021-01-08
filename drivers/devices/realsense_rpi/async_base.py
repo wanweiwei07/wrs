@@ -3,13 +3,15 @@ import sys
 import os
 import time
 
-READ_DEPTH_IMG = 1
-READ_RGB_IMG = 2
+READ_DEPTH = 1
+READ_RGB = 2
 READ_PTC = 3
+READ_RGB_PTC = 4
 server_opt = {
-    1: 'READ_DEPTH_IMG',
-    2: 'READ_RGB_IMG',
-    3: 'READ_PTC'
+    1: 'READ_DEPTH',
+    2: 'READ_RGB',
+    3: 'READ_PTC',
+    4: 'READ_RGB_PTC'
 }
 
 class AsyncServer:

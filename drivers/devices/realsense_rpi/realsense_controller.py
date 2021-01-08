@@ -10,12 +10,15 @@ STREAM_DEPTH = 2
 STREAM_PTC = 3
 STREAM_RGBPTC = 4
 
+
 class RealSenseController:
+
     def __init__(self):
         self.pipeline, self.streamcfg = self.openPipeline()
         self.colorizer = rs.colorizer()
         self.pc = rs.pointcloud()
         self.releaselist = []
+
     def disableAllConfiguration(self):
         self.streamcfg.disable_all_streams()
 
@@ -64,7 +67,7 @@ class RealSenseController:
         self.stop()
         self.useDepthCamera()
         self.start()
-        stream = RealSenseStreamer(pipeline=self.pipeline, streamertype=STREAM_PTC, pc= self.pc)
+        stream = RealSenseStreamer(pipeline=self.pipeline, streamertype=STREAM_PTC, pc=self.pc)
         self.releaselist.append(stream)
         return stream
 
@@ -74,7 +77,8 @@ class RealSenseController:
         self.useDepthCamera()
         self.useRGBCamera()
         self.start()
-        stream = RealSenseStreamer(pipeline=self.pipeline, streamertype=STREAM_RGBPTC,pc= self.pc, colorizer=self.colorizer)
+        stream = RealSenseStreamer(pipeline=self.pipeline, streamertype=STREAM_RGBPTC, pc=self.pc,
+                                   colorizer=self.colorizer)
         self.releaselist.append(stream)
         return stream
 
@@ -87,19 +91,19 @@ class RealSenseStreamer:
     """
     The Streamer should be released by user
     """
-    def __init__(self, pipeline, streamertype=STREAM_RGB, pc = None, colorizer = None):
-        self.pipeline= pipeline
+
+    def __init__(self, pipeline, streamertype=STREAM_RGB, pc=None, colorizer=None):
+        self.pipeline = pipeline
         self.streamtype = streamertype
         self.decimate_filter = rs.decimation_filter()
         decimate = 1
-        self.decimate_filter.set_option(rs.option.filter_magnitude, 2**decimate)
+        self.decimate_filter.set_option(rs.option.filter_magnitude, 2 ** decimate)
         self.colorizer = colorizer
         self.pc = pc
         self.frame_data = ''
 
     def update_frame(self):
-        depth, timestamp = self.__getStreamAndTimestamp()
-        print(depth)
+        depth, timestamp = self._getStreamAndTimestamp()
         if depth is not None:
             # convert the depth image to a string for broadcast
             data = pickle.dumps(depth)
@@ -111,10 +115,10 @@ class RealSenseStreamer:
             self.frame_data = length + ts + data
 
     def test(self):
-        depth, timestamp = self.__getStreamAndTimestamp()
+        depth, timestamp = self._getStreamAndTimestamp()
         return depth, timestamp
 
-    def __getStreamAndTimestamp(self):
+    def _getStreamAndTimestamp(self):
         frames = self.pipeline.wait_for_frames()
         # take owner ship of the frame for further processing
         # frames.keep()
@@ -123,25 +127,31 @@ class RealSenseStreamer:
         ts = frames.get_timestamp()
         if self.streamtype == STREAM_RGB or self.streamtype == STREAM_RGBPTC:
             color_frame = frames.get_color_frame()
-            # color_frame.keep()
         if self.streamtype == STREAM_DEPTH or self.streamtype == STREAM_PTC or self.streamtype == STREAM_RGBPTC:
             depth_frame = frames.get_depth_frame()
-            # depth_frame.keep()
         if self.streamtype == STREAM_RGB:
             return np.asanyarray(color_frame.get_data()), ts
         if self.streamtype == STREAM_DEPTH:
             return np.asanyarray(depth_frame.get_data()), ts
-        if self.streamtype == STREAM_PTC or self.streamtype == STREAM_RGBPTC:
+        if self.streamtype == STREAM_PTC:
             depth_frame = self.decimate_filter.process(depth_frame)
-            # depth_intrinsics = rs.video_stream_profile(
-            #     depth_frame.profile).get_intrinsics()
-            # w, h = depth_intrinsics.width, depth_intrinsics.height
             points = self.pc.calculate(depth_frame)
             v, t = points.get_vertices(), points.get_texture_coordinates()
             verts = np.asanyarray(v).view(np.float32).reshape(-1, 3)  # xyz
-            # texcoords = np.asanyarray(t).view(np.float32).reshape(-1, 2)  # uv
             return verts, ts
+        if self.streamtype == STREAM_RGBPTC:
+            depth_frame = self.decimate_filter.process(depth_frame)
+            points = self.pc.calculate(depth_frame)
+            v, t = points.get_vertices(), points.get_texture_coordinates()
+            verts = np.asanyarray(v).view(np.float32).reshape(-1, 3)  # xyz
+            texcoords = np.asanyarray(t).view(np.float32).reshape(-1, 2)  # uv
+            tex0 = np.rint(texcoords[:,0]*631).astype(np.int32)
+            tex1 = np.rint(texcoords[:,1]*479).astype(np.int32)
+            color_array = np.asanyarray(color_frame.get_data())
+            rgb = color_array[tex0, tex1, :]#xyzrgb
+            return np.hstack((verts, rgb)), ts
         return None, None
+
 
 if __name__ == "__main__":
     import cv2
@@ -149,7 +159,7 @@ if __name__ == "__main__":
     # test = RealSenseController().getRGBImgStream()
     ctl = RealSenseController()
     # while True:
-    # test = ctl.getDepthImgStream()
+    # test = ctl.getDepthImgStream()sudo rm pyrealsense*
     # depthimg, timeframe1 = test.test()
     # depthcolormap = cv2.applyColorMap(cv2.convertScaleAbs(depthimg, alpha=0.03), cv2.COLORMAP_JET)
     #

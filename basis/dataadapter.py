@@ -376,7 +376,9 @@ def nodepath_from_points(vertices, rgbas=None, name=''):
             colorwritter.addData4f(.2, .2, .2, 1)
         elif rgbas.shape == (4,):
             colorwritter.addData4f(rgbas[0], rgbas[1], rgbas[2], rgbas[3])
-        else:
+        elif rgbas.shape[1] == 3:
+            colorwritter.addData4f(rgbas[i][0], rgbas[i][1], rgbas[i][2], 1)
+        elif rgbas.shape[1] == 4:
             colorwritter.addData4f(rgbas[i][0], rgbas[i][1], rgbas[i][2], rgbas[i][3])
         primitive.addVertex(i)
     geom = Geom(vertexdata)

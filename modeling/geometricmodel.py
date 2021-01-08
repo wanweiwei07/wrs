@@ -51,8 +51,15 @@ class StaticGeometricModel(object):
                 pdnp_raw.reparentTo(self._pdnp)
             elif isinstance(initor, np.ndarray): # TODO should pointcloud be pdnp or pdnp_raw
                 self._objpath = None
-                self._trimesh = trimesh.Trimesh(initor)
-                pdnp_raw = da.nodepath_from_points(self._trimesh.vertices)
+                if initor.shape[1] == 3:
+                    self._trimesh = trimesh.Trimesh(initor)
+                    pdnp_raw = da.nodepath_from_points(self._trimesh.vertices)
+                elif initor.shape[1] == 6:
+                    self._trimesh = trimesh.Trimesh(initor[:,:3])
+                    pdnp_raw = da.nodepath_from_points(self._trimesh.vertices, initor[:,3:])
+                else:
+                    # TODO depth UV?
+                    raise NotImplementedError
                 pdnp_raw.reparentTo(self._pdnp)
             elif isinstance(initor, o3d.geometry.TriangleMesh):
                 self._objpath = None
