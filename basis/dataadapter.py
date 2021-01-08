@@ -2,7 +2,7 @@
 import basis.trimesh as trm
 import numpy as np
 from panda3d.core import Geom, GeomNode,GeomPoints, GeomTriangles, GeomVertexData, GeomVertexFormat, GeomVertexWriter
-from panda3d.core import NodePath, Vec3, Mat3, Mat4
+from panda3d.core import NodePath, Vec3, Mat3, Mat4, LQuaternion
 
 # data manipulation
 def randdom_colorarray(ncolors=1, alpha=1, nonrandcolor=None):
@@ -110,6 +110,26 @@ def pdmat4_to_npv3mat3(pdmat4):
     homomat = np.array(pdmat4.getRows()).T
     return [homomat[:3, 3], homomat[:3, :3]]
 
+def npmat3_to_pdquat(npmat3):
+    """
+    :param npmat3: 3x3 nparray
+    :return:
+    author: weiwei
+    date: 20210109
+    """
+    quat = LQuaternion()
+    quat.setFromMatrix(npmat3_to_pdmat3(npmat3))
+    return quat
+
+def pdquat_to_npmat3(pdquat):
+    """
+    :param pdquat: panda.core.LQuaternion
+    :return:
+    author: weiwei
+    date: 20210109
+    """
+    pdmat3 = pdquat*Mat3.identMat()
+    return pdmat3_to_npmat3(pdmat3)
 
 def npv3_to_pdv3(npv3):
     """

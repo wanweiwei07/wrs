@@ -71,8 +71,7 @@ class Robotiq85(gp.GripperInterface):
         self.lft_outer.lnks[1]['loc_pos'] = np.zeros(3)
         self.lft_outer.lnks[1]['com'] = np.array([-0.000200000000003065, 0.0199435877845359, 0.0292245259211331])
         self.lft_outer.lnks[1]['mass'] = 0.00853198276973456
-        self.lft_outer.lnks[1]['meshfile'] = os.path.join(this_dir, "meshes", "robotiq_arg2f_85_outer_knuckle.dae")
-        self.lft_outer.lnks[1]['scale'] = [1e-3, 1e-3, 1e-3]
+        self.lft_outer.lnks[1]['meshfile'] = os.path.join(this_dir, "meshes", "robotiq_arg2f_85_outer_knuckle.stl")
         self.lft_outer.lnks[1]['rgba'] = [0.792156862745098, 0.819607843137255, 0.933333333333333, 1]
         self.lft_outer.lnks[2]['name'] = "left_outer_finger"
         self.lft_outer.lnks[2]['loc_pos'] = np.zeros(3)
@@ -103,8 +102,7 @@ class Robotiq85(gp.GripperInterface):
         self.rgt_outer.lnks[1]['loc_pos'] = np.zeros(3)
         self.rgt_outer.lnks[1]['com'] = np.array([-0.000200000000003065, 0.0199435877845359, 0.0292245259211331])
         self.rgt_outer.lnks[1]['mass'] = 0.00853198276973456
-        self.rgt_outer.lnks[1]['meshfile'] = os.path.join(this_dir, "meshes", "robotiq_arg2f_85_outer_knuckle.dae")
-        self.rgt_outer.lnks[1]['scale'] = [1e-3, 1e-3, 1e-3]
+        self.rgt_outer.lnks[1]['meshfile'] = os.path.join(this_dir, "meshes", "robotiq_arg2f_85_outer_knuckle.stl")
         self.rgt_outer.lnks[1]['rgba'] = [0.792156862745098, 0.819607843137255, 0.933333333333333, 1]
         self.rgt_outer.lnks[2]['name'] = "left_outer_finger"
         self.rgt_outer.lnks[2]['loc_pos'] = np.zeros(3)
@@ -287,6 +285,7 @@ class Robotiq85(gp.GripperInterface):
 if __name__ == '__main__':
     import visualization.panda.world as wd
     import modeling.geometricmodel as gm
+    import modeling.collisionmodel as cm
 
     base = wd.World(campos=[.5, .5, .5], lookatpos=[0, 0, 0])
     gm.gen_frame().attach_to(base)
@@ -300,9 +299,10 @@ if __name__ == '__main__':
     grpr.show_cdmesh()
     base.run()
 
-    base = wd.World(campos=[.5, .5, .5], lookatpos=[0, 0, 0])
-    model = gm.GeometricModel("./meshes/robotiq_arg2f_85_pad.dae")
-    model.set_scale([1e-3, 1e-3, 1e-3])
-    model.attach_to(base)
-    gm.gen_frame().attach_to(base)
-    base.run()
+    # base = wd.World(campos=[.5, .5, .5], lookatpos=[0, 0, 0])
+    # model = cm.CollisionModel("./meshes/robotiq_arg2f_85_pad.dae")
+    # model.set_scale([1e-3, 1e-3, 1e-3])
+    # model.attach_to(base)
+    # # gm.gen_frame().attach_to(base)
+    # model.show_cdmesh()
+    # base.run()

@@ -296,7 +296,7 @@ def _gen_boxcdmesh_list(obstaclecmlist, name='autogen'):
     return bulletboxlistnode
 
 
-def _gen_cdmesh(objcm, basenodepath=None, name='autogen'):
+def _gen_cdmesh(objcm, name='autogen'):
     """
     generate the collision mesh of a nodepath using nodepath
     this function suppose the nodepath has multiple models with many geomnodes
@@ -312,18 +312,16 @@ def _gen_cdmesh(objcm, basenodepath=None, name='autogen'):
     geombullnode = BulletRigidBodyNode(name)
     for gnd in gndcollection:
         geom = copy.deepcopy(gnd.node().getGeom(0))
-        geomtf = gnd.getTransform(base.render)
-        if basenodepath is not None:
-            geomtf = gnd.getTransform(basenodepath)
+        geom.transformVertices(objcm.pdnp.getMat())
         geombullmesh = BulletTriangleMesh()
         geombullmesh.addGeom(geom)
         bullettmshape = BulletTriangleMeshShape(geombullmesh, dynamic=True)
         bullettmshape.setMargin(0)
-        geombullnode.addShape(bullettmshape, geomtf)
+        geombullnode.addShape(bullettmshape)
     return geombullnode
 
 
-def _gen_cdmesh_list(objcmlist, basenodepath=None, name='autogen'):
+def _gen_cdmesh_list(objcmlist, name='autogen'):
     """
     generate the collision mesh of a nodepath using nodepathlist
     this function suppose the nodepathlist is a list of models with many geomnodes
@@ -341,14 +339,12 @@ def _gen_cdmesh_list(objcmlist, basenodepath=None, name='autogen'):
         gndcollection = objcm.pdnp_raw.findAllMatches("+GeomNode")
         for gnd in gndcollection:
             geom = copy.deepcopy(gnd.node().getGeom(0))
-            geomtf = gnd.getTransform(base.render)
-            if basenodepath is not None:
-                geomtf = gnd.getTransform(basenodepath)
+            geom.transformVertices(objcm.pdnp.getMat())
             geombullmesh = BulletTriangleMesh()
             geombullmesh.addGeom(geom)
             bullettmshape = BulletTriangleMeshShape(geombullmesh, dynamic=True)
             bullettmshape.setMargin(0)
-            geombullnode.addShape(bullettmshape, geomtf)
+            geombullnode.addShape(bullettmshape)
     return geombullnode
 
 
@@ -361,13 +357,12 @@ def _gen_cdmesh_from_geom(geom, name='autogen'):
     author: weiwei
     date: 20161212, tsukuba
     """
-    geomtf = TransformState.makeIdentity()
     geombullmesh = BulletTriangleMesh()
     geombullmesh.addGeom(geom)
     geombullnode = BulletRigidBodyNode(name)
     bullettmshape = BulletTriangleMeshShape(geombullmesh, dynamic=True)
     bullettmshape.setMargin(0)
-    geombullnode.addShape(bullettmshape, geomtf)
+    geombullnode.addShape(bullettmshape)
     return geombullnode
 
 

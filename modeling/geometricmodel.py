@@ -149,6 +149,9 @@ class StaticGeometricModel(object):
     def set_scale(self, scale=[1, 1, 1]):
         self._pdnp.setScale(scale[0], scale[1], scale[2])
 
+    def get_scale(self):
+        return da.pdv3_to_npv3(self._pdnp.getScale())
+
     def attach_to(self, obj):
         if isinstance(obj, ShowBase):
             # for rendering to base.render
@@ -165,12 +168,6 @@ class StaticGeometricModel(object):
 
     def remove(self):
         self._pdnp.removeNode()
-
-    def detach(self):
-        """
-        unshow the object without removing it from memory
-        """
-        self._pdnp.detachNode()
 
     def show_localframe(self):
         self._localframe = gen_frame()
@@ -214,21 +211,18 @@ class GeometricModel(StaticGeometricModel):
         return da.pdv3_to_npv3(self._pdnp.getPos())
 
     def set_rotmat(self, npmat3):
-        pdv3 = self._pdnp.getPos()
-        pdmat3 = da.npmat3_to_pdmat3(npmat3)
-        pdmat4 = da.Mat4(pdmat3, pdv3)
-        self._pdnp.setMat(pdmat4)
+        self._pdnp.setQuat(da.npmat3_to_pdquat(npmat3))
 
     def get_rotmat(self):
-        pdmat4 = self._pdnp.getMat()
-        return da.pdmat4_to_npv3mat3(pdmat4)[1]
+        return da.pdquat_to_npmat3(self._pdnp.getQuat())
 
     def set_homomat(self, npmat4):
-        self._pdnp.setMat(da.npmat4_to_pdmat4(npmat4))
+        self._pdnp.setPosQuat(da.npv3_to_pdv3(npmat4[:3,3]), da.npmat3_to_pdquat(npmat4[:3,:3]))
 
     def get_homomat(self):
-        pdmat4 = self._pdnp.getMat()
-        return da.pdmat4_to_npmat4(pdmat4)
+        npv3 = da.pdv3_to_npv3(self._pdnp.getPos())
+        npmat3 = da.pdquat_to_npmat3(self._pdnp.getQuat())
+        return rm.homomat_from_posrot(npv3, npmat3)
 
     def set_rpy(self, roll, pitch, yaw):
         """
@@ -240,10 +234,8 @@ class GeometricModel(StaticGeometricModel):
         author: weiwei
         date: 20190513
         """
-        currentmat = self._pdnp.getMat()
-        currentmatnp = da.pdmat4_to_npmat4(currentmat)
-        newmatnp = rm.rotmat_from_euler(roll, pitch, yaw, axes="sxyz")
-        self._pdnp.setMat(da.npv3mat3_to_pdmat4(newmatnp, currentmatnp[:, 3]))
+        npmat3 = rm.rotmat_from_euler(roll, pitch, yaw, axes="sxyz")
+        self.set_rotmat(npmat3)
 
     def get_rpy(self):
         """
@@ -252,9 +244,8 @@ class GeometricModel(StaticGeometricModel):
         author: weiwei
         date: 20190513
         """
-        currentmat = self._pdnp.getMat()
-        currentmatnp = da.pdmat4_to_npmat4(currentmat)
-        rpy = rm.rotmat_to_euler(currentmatnp[:3, :3], axes="sxyz")
+        npmat3 = self.get_rotmat()
+        rpy = rm.rotmat_to_euler(npmat3, axes="sxyz")
         return np.array([rpy[0], rpy[1], rpy[2]])
 
     def set_transparency(self, attribute):
