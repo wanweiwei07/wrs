@@ -231,6 +231,8 @@ class CollisionModel(gm.GeometricModel):
             return mcd.is_box2triangles_collided(self, objcm_list)
         if type == 'box2box':
             return mcd.is_box2box_collided(self, objcm_list)
+        if type == 'convexhull2triangles':
+            return mcd.is_box2box_collided(self, objcm_list)
 
     def show_cdmesh(self, type='triangles'):
         self. unshow_cdmesh()

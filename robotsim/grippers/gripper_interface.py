@@ -52,6 +52,8 @@ class GripperInterface(object):
             type = 'triangles2triangles'
         elif self.cdmesh_type == 'box':
             type = 'box2triangles'
+        elif self.cdmesh_type == 'convexhull':
+            type = 'convexhull2triangles'
         else:
             raise NotImplementedError('The requested '+type+' type cdmesh is not supported!')
         for i, cdelement in enumerate(self.cc.all_cdelements):

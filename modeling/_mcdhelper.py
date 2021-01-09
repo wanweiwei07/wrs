@@ -1,6 +1,3 @@
-# mesh collision detection
-# this file has two classes: BMChecker, MChecker; MChecker inherits BMChecker
-
 from panda3d.bullet import BulletWorld, BulletRigidBodyNode, BulletPlaneShape, BulletBoxShape
 from panda3d.bullet import BulletTriangleMeshShape, BulletTriangleMesh
 from panda3d.bullet import BulletConvexHullShape
@@ -8,7 +5,7 @@ from panda3d.core import TransformState, Vec3, CollisionBox
 import copy
 import numpy as np
 import basis.robotmath as rm
-import basis.dataadapter as dh
+import basis.dataadapter as da
 
 
 # box collision model
@@ -66,7 +63,7 @@ def show_box_cdmesh(objcm_list):
     return objcmboxbullnode
 
 
-# mesh collision model
+# triangles collision model
 def is_triangles2triangles_collided(objcm_list0, objcm_list1):
     """
     check if two objects objcm0 and objcm1 are in collision with each other
@@ -95,7 +92,7 @@ def rayhit_triangles_closet(pfrom, pto, objcm):
     """
     tmptrimesh = objcm.trimesh.copy()
     tmptrimesh.apply_transform(objcm.get_homomat())
-    geom = dh.pandageom_from_vf(tmptrimesh.vertices, tmptrimesh.face_normals, tmptrimesh.faces)
+    geom = da.pandageom_from_vfnf(tmptrimesh.vertices, tmptrimesh.face_normals, tmptrimesh.faces)
     targetobjmesh = BulletTriangleMesh()
     targetobjmesh.addGeom(geom)
     bullettmshape = BulletTriangleMeshShape(targetobjmesh, dynamic=True)
@@ -103,10 +100,10 @@ def rayhit_triangles_closet(pfrom, pto, objcm):
     targetobjmeshnode = BulletRigidBodyNode('facet')
     targetobjmeshnode.addShape(bullettmshape)
     base.physicsworld.attach(targetobjmeshnode)
-    result = base.physicsworld.rayTestClosest(dh.npv3_to_pdv3(pfrom), dh.npv3_to_pdv3(pto))
+    result = base.physicsworld.rayTestClosest(da.npv3_to_pdv3(pfrom), da.npv3_to_pdv3(pto))
     base.physicsworld.removeRigidBody(targetobjmeshnode)
     if result.hasHit():
-        return [dh.pdv3_to_npv3(result.getHitPos()), dh.pdv3_to_npv3(result.getHitNormal())]
+        return [da.pdv3_to_npv3(result.getHitPos()), da.pdv3_to_npv3(result.getHitNormal())]
     else:
         return [None, None]
 
@@ -122,7 +119,7 @@ def rayhit_triangles_all(pfrom, pto, objcm):
     """
     tmptrimesh = objcm.trimesh.copy()
     tmptrimesh.apply_transform(objcm.gethomomat())
-    geom = dh.pandageom_from_vf(tmptrimesh.vertices, tmptrimesh.face_normals, tmptrimesh.faces)
+    geom = da.pandageom_from_vfnf(tmptrimesh.vertices, tmptrimesh.face_normals, tmptrimesh.faces)
     targetobjmesh = BulletTriangleMesh()
     targetobjmesh.addGeom(geom)
     bullettmshape = BulletTriangleMeshShape(targetobjmesh, dynamic=True)
@@ -130,12 +127,12 @@ def rayhit_triangles_all(pfrom, pto, objcm):
     targetobjmeshnode = BulletRigidBodyNode('facet')
     targetobjmeshnode.addShape(bullettmshape)
     base.physicsworld.attach(targetobjmeshnode)
-    result = base.physicsworld.rayTestAll(dh.npv3_to_pdv3(pfrom), dh.npv3_to_pdv3(pto))
+    result = base.physicsworld.rayTestAll(da.npv3_to_pdv3(pfrom), da.npv3_to_pdv3(pto))
     base.physicsworld.removeRigidBody(targetobjmeshnode)
     if result.hasHits():
         allhits = []
         for hit in result.getHits():
-            allhits.append([dh.pdv3_to_npv3(hit.getHitPos()), dh.pdv3_to_npv3(-hit.getHitNormal())])
+            allhits.append([da.pdv3_to_npv3(hit.getHitPos()), da.pdv3_to_npv3(-hit.getHitNormal())])
         return allhits
     else:
         return []
@@ -156,6 +153,39 @@ def show_triangles_cdmesh(objcm_list):
     base.physicsworld.attach(objcmmeshbullnode)
     base.physicsbodylist.append(objcmmeshbullnode)
     return objcmmeshbullnode
+
+# convexhull collision model
+def is_convexhull2triangles_collided(objcm_list0, objcm_list1):
+    """
+    check if two objects objcm0 and objcm1 are in collision with each other
+    the two objects are in the form of collision model
+    the bulletmeshes will be used
+    :param objcm_list0: the first object
+    :param objcm_list1: the second object
+    :return: boolean value showing if the two objects are in collision
+    author: weiwei
+    date: 20190313
+    """
+    objcm0bullnode = _gen_convexhull_cdmesh(objcm_list0)
+    objcm1bullnode = _gen_triangles_cdmesh(objcm_list1)
+    result = base.physicsworld.contactTestPair(objcm0bullnode, objcm1bullnode)
+    return True if result.getNumContacts() else False
+
+def is_convexhull2convexhull_collided(objcm_list0, objcm_list1):
+    """
+    check if two objects objcm0 and objcm1 are in collision with each other
+    the two objects are in the form of collision model
+    the bulletmeshes will be used
+    :param objcm_list0: the first object
+    :param objcm_list1: the second object
+    :return: boolean value showing if the two objects are in collision
+    author: weiwei
+    date: 20190313
+    """
+    objcm0bullnode = _gen_convexhull_cdmesh(objcm_list0)
+    objcm1bullnode = _gen_convexhull_cdmesh(objcm_list1)
+    result = base.physicsworld.contactTestPair(objcm0bullnode, objcm1bullnode)
+    return True if result.getNumContacts() else False
 
 
 def show_convexhull_cdmesh(objcm_list):
@@ -257,15 +287,13 @@ def _gen_convexhull_cdmesh(objcm_list, name='autogen'):
         objcm_list = [objcm_list]
     geombullnode = BulletRigidBodyNode(name)
     for objcm in objcm_list:
-        gndcollection = objcm.pdnp_raw.findAllMatches("+GeomNode")
-        for gnd in gndcollection:
-            geom = copy.deepcopy(gnd.node().getGeom(0))
-            print(geom.getVertexData().getArrays())
-            geom.transformVertices(objcm.pdnp.getMat())
-            bulletcvxhshape = BulletConvexHullShape()
-            bulletcvxhshape.addGeom(geom)
-            bulletcvxhshape.setMargin(0)
-            geombullnode.addShape(bulletcvxhshape)
+        objtrmcvx = objcm.trimesh.convex_hull
+        geom = da.pandageom_from_vvnf(objtrmcvx.vertices, objtrmcvx.vertex_normals, objtrmcvx.faces)
+        geom.transformVertices(objcm.pdnp.getMat())
+        bulletcvxhshape = BulletConvexHullShape()
+        bulletcvxhshape.addGeom(geom)
+        bulletcvxhshape.setMargin(0)
+        geombullnode.addShape(bulletcvxhshape)
     return geombullnode
 
 def _gen_triangles_cdmesh_from_geom(geom, name='autogen'):
@@ -346,8 +374,8 @@ if __name__ == '__main__':
     hitpos, hitnrml = rayhit_triangles_closet(pfrom=pfrom, pto=pto, objcm=objcm)
     objcm.attach_to(base)
     objcm.show_cdmesh(type='box')
-    objcm.show_cdmesh(type='triangles')
-    gm.gen_sphere(hitpos, radius=.003, rgba=np.array([0, 1, 1, 1])).attach_to(base)
-    gm.gen_stick(spos=pfrom, epos=pto, thickness=.002).attach_to(base)
-    gm.gen_arrow(spos=hitpos, epos=hitpos + hitnrml * .07, thickness=.002, rgba=np.array([0, 1, 0, 1])).attach_to(base)
+    objcm.show_cdmesh(type='convexhull')
+    # gm.gen_sphere(hitpos, radius=.003, rgba=np.array([0, 1, 1, 1])).attach_to(base)
+    # gm.gen_stick(spos=pfrom, epos=pto, thickness=.002).attach_to(base)
+    # gm.gen_arrow(spos=hitpos, epos=hitpos + hitnrml * .07, thickness=.002, rgba=np.array([0, 1, 0, 1])).attach_to(base)
     base.run()

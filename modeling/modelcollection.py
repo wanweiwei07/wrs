@@ -8,7 +8,7 @@ class ModelCollection(object):
     date: 201900825, 20201212
     """
 
-    def __init__(self, name="modelcollection"):
+    def __init__(self, name='modelcollection'):
         self._name = name
         self._gm_list = []
         self._cm_list = []
@@ -63,6 +63,8 @@ class ModelCollection(object):
             self._bullnode = mcd.show_triangles_cdmesh(self._cm_list)
         elif type == 'box':
             self._bullnode = mcd.show_box_cdmesh(self._cm_list)
+        elif type == 'convexhull':
+            self._bullnode = mcd.show_convexhull_cdmesh(self._cm_list)
         else:
             raise NotImplementedError('The requested '+type+' type cdmesh is not supported!')
 

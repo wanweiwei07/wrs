@@ -290,13 +290,13 @@ if __name__ == '__main__':
     base = wd.World(campos=[.5, .5, .5], lookatpos=[0, 0, 0])
     gm.gen_frame().attach_to(base)
     grpr = Robotiq85(enable_cc=True)
-    grpr.cdmesh_type='triangles'
+    grpr.cdmesh_type='convexhull'
     grpr.fk(.8)
     grpr.gen_meshmodel(rgba=[.3, .3, .0, .5]).attach_to(base)
     # grpr.gen_stickmodel(togglejntscs=False).attach_to(base)
-    grpr.fix_to(pos=np.array([0, .3, .2]), rotmat=rm.rotmat_from_axangle([1, 0, 0], math.pi / 6))
-    grpr.gen_meshmodel().attach_to(base)
-    grpr.show_cdprimit()
+    # grpr.fix_to(pos=np.array([0, .3, .2]), rotmat=rm.rotmat_from_axangle([1, 0, 0], math.pi / 6))
+    # grpr.gen_meshmodel().attach_to(base)
+    # grpr.show_cdprimit()
     grpr.show_cdmesh()
     base.run()
 

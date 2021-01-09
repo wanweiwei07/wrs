@@ -1,8 +1,10 @@
 # An adapter file that converts data between panda3d and trimesh
 import basis.trimesh as trm
 import numpy as np
-from panda3d.core import Geom, GeomNode,GeomPoints, GeomTriangles, GeomVertexData, GeomVertexFormat, GeomVertexWriter
+from panda3d.core import Geom, GeomNode, GeomPoints, GeomTriangles, GeomVertexData, GeomVertexFormat, GeomVertexWriter
+from panda3d.core import GeomEnums
 from panda3d.core import NodePath, Vec3, Mat3, Mat4, LQuaternion
+
 
 # data manipulation
 def randdom_colorarray(ncolors=1, alpha=1, nonrandcolor=None):
@@ -110,6 +112,7 @@ def pdmat4_to_npv3mat3(pdmat4):
     homomat = np.array(pdmat4.getRows()).T
     return [homomat[:3, 3], homomat[:3, :3]]
 
+
 def npmat3_to_pdquat(npmat3):
     """
     :param npmat3: 3x3 nparray
@@ -121,6 +124,7 @@ def npmat3_to_pdquat(npmat3):
     quat.setFromMatrix(npmat3_to_pdmat3(npmat3))
     return quat
 
+
 def pdquat_to_npmat3(pdquat):
     """
     :param pdquat: panda.core.LQuaternion
@@ -128,8 +132,9 @@ def pdquat_to_npmat3(pdquat):
     author: weiwei
     date: 20210109
     """
-    pdmat3 = pdquat*Mat3.identMat()
+    pdmat3 = pdquat * Mat3.identMat()
     return pdmat3_to_npmat3(pdmat3)
+
 
 def npv3_to_pdv3(npv3):
     """
@@ -183,7 +188,7 @@ def trimesh_to_nodepath(trimesh, name="auto"):
     author: weiwei
     date: 20180606
     """
-    return nodepath_from_vf(trimesh.vertices, trimesh.face_normals, trimesh.faces, name=name)
+    return nodepath_from_vfnf(trimesh.vertices, trimesh.face_normals, trimesh.faces, name=name)
 
 
 def o3dmesh_to_nodepath(o3dmesh, name="auto"):
@@ -194,131 +199,78 @@ def o3dmesh_to_nodepath(o3dmesh, name="auto"):
     author: weiwei
     date: 20191210
     """
-    return nodepath_from_vf(o3dmesh.vertices, o3dmesh.triangle_normals, o3dmesh.triangles, name=name)
+    return nodepath_from_vfnf(o3dmesh.vertices, o3dmesh.triangle_normals, o3dmesh.triangles, name=name)
 
 
-def pandageom_from_vf(vertices, facenormals, triangles, name='auto'):
+def pandageom_from_vfnf(vertices, face_normals, triangles, name='auto'):
     """
-    pack the given vertices and triangles into a panda3d geom, vf = vertices faces, face normals will be used automatically
-    # in 2017, the code was deprecated, by only using vertex normals, the shading was smoothed. sharp edges cannot be seem.
-    # in 2018, I compared the number of vertices loaded by loader.loadModel and the one loaded by this function and packpandageom_vn
-    # the code is as follows
-            with open('loader.txt', 'wb') as fp:
-            ur3base_filepath = Filename.fromOsSpecific(os.path.join(this_dir, "ur3egg", "base.egg"))
-            ur3base_model2  = loader.loadModel(ur3base_filepath)
-            geomNodeCollection = ur3base_model2.findAllMatches('**/+GeomNode')
-            for nodePath in geomNodeCollection:
-                geomNode = nodePath.node()
-                for i in range(geomNode.getNumGeoms()):
-                    geom = geomNode.getGeom(i)
-                    vdata = geom.getVertexData()
-                    vertex = GeomVertexReader(vdata, 'vertex')
-                    normal = GeomVertexReader(vdata, 'normal')
-                    while not vertex.isAtEnd():
-                        v = vertex.getData3f()
-                        t = normal.getData3f()
-                        fp.write("v = %s, t = %s\n" % (repr(v), repr(t)))
-                    break
-                break
-        with open('selfloader.txt', 'wb') as fp2:
-            ur3base_model  = pg.loadstlaspandanp_fn(ur3base_filepath)
-            ur3base_filepath = os.path.join(this_dir, "ur3stl", "base.meshes")
-            geomNodeCollection = ur3base_model.findAllMatches('**/+GeomNode')
-            for nodePath in geomNodeCollection:
-                geomNode = nodePath.node()
-                for i in range(geomNode.getNumGeoms()):
-                    geom = geomNode.getGeom(i)
-                    vdata = geom.getVertexData()
-                    vertex = GeomVertexReader(vdata, 'vertex')
-                    normal = GeomVertexReader(vdata, 'normal')
-                    while not vertex.isAtEnd():
-                        v = vertex.getData3f()
-                        t = normal.getData3f()
-                        fp2.write("v = %s, t = %s\n" % (repr(v), repr(t)))
-                    break
-                break
-    # the results showed that the loader.loadmodel also repeated the vertices to
-    # let each vertex have multiple normals and get better rendering effects.
-    # Thus, the function is reused
-    # The negative point is the method costs much memory
-    # I think it could be solved by developing an independent procedure
-    # to analyze normals and faces beforehand
-    # in 2019, the duplication is further confirm by reading
-    # https://discourse.panda3d.org/t/geom-with-flat-shading/12175/3
-    # the shared vertices method is not implemented since they require to make sure the last vertex is not shared
-    # a remainin question is does the duplication make the computation load three times larger
     :param vertices: nx3 nparray, each row is vertex
-    :param facenormals: nx3 nparray, each row is the normal of aface
+    :param face_normals: nx3 nparray, each row is the normal of a face
     :param triangles: nx3 nparray, each row is three idx to the vertices
     :param name:
     :return: a geom model that is ready to be used to define a nodepath
     author: weiwei
-    date: 20160613
+    date: 20160613, 20210109
     """
+    # expand vertices to let each triangle refer to a different vert+normal
+    # vertices and normals
     vertformat = GeomVertexFormat.getV3n3()
     vertexdata = GeomVertexData(name, vertformat, Geom.UHStatic)
-    vertwritter = GeomVertexWriter(vertexdata, 'vertex')
-    normalwritter = GeomVertexWriter(vertexdata, 'normal')
+    vertids = triangles.flatten()
+    multiplied_verticies = np.empty((len(vertids), 3), dtype=np.float32)
+    multiplied_verticies[:] = vertices[vertids]
+    vertex_normals = np.repeat(face_normals.astype(np.float32), repeats=3, axis=0)
+    npstr = np.hstack((multiplied_verticies, vertex_normals)).tostring()
+    vertexdata.modifyArrayHandle(0).setData(npstr)
+    # triangles
     primitive = GeomTriangles(Geom.UHStatic)
-    for i, fvidx in enumerate(triangles):
-        vert0 = vertices[fvidx[0], :]
-        vert1 = vertices[fvidx[1], :]
-        vert2 = vertices[fvidx[2], :]
-        vertwritter.addData3f(vert0[0], vert0[1], vert0[2])
-        normalwritter.addData3f(facenormals[i, 0], facenormals[i, 1], facenormals[i, 2])
-        vertwritter.addData3f(vert1[0], vert1[1], vert1[2])
-        normalwritter.addData3f(facenormals[i, 0], facenormals[i, 1], facenormals[i, 2])
-        vertwritter.addData3f(vert2[0], vert2[1], vert2[2])
-        normalwritter.addData3f(facenormals[i, 0], facenormals[i, 1], facenormals[i, 2])
-        primitive.addVertices(i * 3, i * 3 + 1, i * 3 + 2)
+    primitive.setIndexType(GeomEnums.NTUint32)
+    multiplied_triangles = np.arange(len(vertids), dtype=np.uint32).reshape(-1,3)
+    primitive.modifyVertices(-1).modifyHandle().setData(multiplied_triangles.tostring())
+    # make geom
     geom = Geom(vertexdata)
     geom.addPrimitive(primitive)
     return geom
 
 
-def nodepath_from_vf(vertices, facenormals, triangles, name=''):
+def nodepath_from_vfnf(vertices, face_normals, triangles, name=''):
     """
     pack the given vertices and triangles into a panda3d geom, vf = vertices faces
     :param vertices: nx3 nparray, each row is a vertex
-    :param facenormals: nx3 nparray, each row is the normal of a face
+    :param face_normals: nx3 nparray, each row is the normal of a face
     :param triangles: nx3 nparray, each row is three idx to the vertices
     :param name:
     :return: panda3d nodepath
     author: weiwei
-    date: 20170221
+    date: 20170221, 20210109
     """
-    objgeom = pandageom_from_vf(vertices, facenormals, triangles, name + 'geom')
+    objgeom = pandageom_from_vfnf(vertices, face_normals, triangles, name + 'geom')
     geomnodeobj = GeomNode(name + 'geomnode')
     geomnodeobj.addGeom(objgeom)
     pandanp = NodePath(name)
     pandanp.attachNewNode(geomnodeobj)
-
     return pandanp
 
 
-def pandageom_from_vvnf(vertices, vertnormals, triangles, name=''):
+def pandageom_from_vvnf(vertices, vertex_normals, triangles, name=''):
     """
-    use environment.collisionmodel instead, vvnf = vertices, vertice normals, faces
+    use environment.collisionmodel instead, vvnf = vertices, vertex normals, faces
     pack the vertices, vertice normals and triangles into a panda3d geom
     :param vertices: nx3 nparray, each row is a vertex
-    :param vertnormals: nx3 nparray, each row is the normal of a vertex
+    :param vertex_normals: nx3 nparray, each row is the normal of a vertex
     :param triangles: nx3 nparray, each row is three idx to the vertices
     :param name:
     :return:
     author: weiwei
-    date: 20171219
+    date: 20171219, 20210901
     """
     vertformat = GeomVertexFormat.getV3n3()
     vertexdata = GeomVertexData(name, vertformat, Geom.UHStatic)
-    vertwritter = GeomVertexWriter(vertexdata, 'vertex')
-    normalwritter = GeomVertexWriter(vertexdata, 'normal')
+    vertexdata.modifyArrayHandle(0).setData(np.hstack((vertices, vertex_normals)).astype(np.float32).tostring())
     primitive = GeomTriangles(Geom.UHStatic)
-    for i, vert in enumerate(vertices):
-        vertwritter.addData3f(vert[0], vert[1], vert[2])
-        normalwritter.addData3f(vertnormals[i, 0], vertnormals[i, 1], vertnormals[i, 2])
-    for triangle in triangles:
-        primitive.addVertices(triangle[0], triangle[1], triangle[2])
-    primitive.setShadeModel(GeomEnums.SM_uniform)
+    primitive.setIndexType(GeomEnums.NTUint32)
+    primitive.modifyVertices(-1).modifyHandle().setData(triangles.astype(np.uint32).tostring())
+    # make geom
     geom = Geom(vertexdata)
     geom.addPrimitive(primitive)
     return geom
@@ -326,7 +278,7 @@ def pandageom_from_vvnf(vertices, vertnormals, triangles, name=''):
 
 def nodepath_from_vvnf(vertices, vertnormals, triangles, name=''):
     """
-    use environment.collisionmodel instead, vvnf = vertices, vertice normals, faces
+    use environment.collisionmodel instead, vvnf = vertices, vertex normals, faces
     pack the vertices, vertice normals and triangles into a panda3d nodepath
     :param vertices: nx3 nparray, each row is a vertex
     :param vertnormals: nx3 nparray, each row is the normal of a vertex
@@ -334,7 +286,7 @@ def nodepath_from_vvnf(vertices, vertnormals, triangles, name=''):
     :param name: 
     :return:
     author: weiwei
-    date: 20170221
+    date: 20170221, 20210109
     """
     objgeom = pandageom_from_vvnf(vertices, vertnormals, triangles, name + 'geom')
     geomnodeobj = GeomNode('GeomNode')
@@ -344,71 +296,50 @@ def nodepath_from_vvnf(vertices, vertnormals, triangles, name=''):
     return pandanp
 
 
-def pandageom_from_points(vertices, rgbas=None, name=''):
+def pandageom_from_points(vertices, rgba_list=None, name=''):
     """
     pack the vertices into a panda3d point cloud geom
     :param vertices:
-    :param rgbas: 1x4 nparray for all points, or nx4 nparray for each point
+    :param rgba_list: 1x4 nparray for all points, or a list of 1x4 nparray for each point
     :param name:
     :return:
     author: weiwei
     date: 20170328
     """
+    if rgba_list is None:
+        # default
+        vertex_rgbas = np.array([[.2, .2, .2, 1], ]*len(vertices))
+    elif isinstance(rgba_list, np.ndarray):
+        vertex_rgbas = np.tile(rgba_list, (len(vertices),1))
+    elif isinstance(rgba_list, list):
+        vertex_rgbas = np.array(rgba_list)
+    else:
+        raise ValueError('rgba_list must be None, np.ndarray, or list!')
     vertformat = GeomVertexFormat.getV3c4()
     vertexdata = GeomVertexData(name, vertformat, Geom.UHStatic)
-    vertwritter = GeomVertexWriter(vertexdata, 'vertex')
-    colorwritter = GeomVertexWriter(vertexdata, 'color')
+    vertexdata.modifyArrayHandle(0).setData(np.hstack((vertices, vertex_rgbas)).astype(np.float32).tostring())
     primitive = GeomPoints(Geom.UHStatic)
-    for i, vert in enumerate(vertices):
-        vertwritter.addData3f(vert[0], vert[1], vert[2])
-        if rgbas is None:
-            # default
-            colorwritter.addData4f(.2, .2, .2, 1)
-        elif rgbas.shape == (4,):
-            colorwritter.addData4f(rgbas[0], rgbas[1], rgbas[2], rgbas[3])
-        else:
-            colorwritter.addData4f(rgbas[i][0], rgbas[i][1], rgbas[i][2], rgbas[i][3])
-        primitive.addVertex(i)
+    primitive.setIndexType(GeomEnums.NTUint32)
+    primitive.modifyVertices(-1).modifyHandle().setData(np.arange(len(vertices), dtype=np.uint32).tostring())
     geom = Geom(vertexdata)
     geom.addPrimitive(primitive)
     return geom
 
 
-def nodepath_from_points(vertices, rgbas=None, name=''):
+def nodepath_from_points(vertices, rgba_list=None, name=''):
     """
     pack the vertices into a panda3d point cloud nodepath
     :param vertices:
-    :param rgbas: 1x4 nparray for all points, or nx4 nparray for each point
+    :param rgba_list: 1x4 nparray for all points, or nx4 nparray for each point
     :param name:
     :return:
     author: weiwei
     date: 20170328
     """
-    vertformat = GeomVertexFormat.getV3c4()
-    vertexdata = GeomVertexData(name, vertformat, Geom.UHStatic)
-    vertwritter = GeomVertexWriter(vertexdata, 'vertex')
-    colorwritter = GeomVertexWriter(vertexdata, 'color')
-    primitive = GeomPoints(Geom.UHStatic)
-    for i, vert in enumerate(vertices):
-        vertwritter.addData3f(vert[0], vert[1], vert[2])
-        if rgbas is None:
-            # default
-            colorwritter.addData4f(.2, .2, .2, 1)
-        elif rgbas.shape == (4,):
-            colorwritter.addData4f(rgbas[0], rgbas[1], rgbas[2], rgbas[3])
-        elif rgbas.shape[1] == 3:
-            colorwritter.addData4f(rgbas[i][0], rgbas[i][1], rgbas[i][2], 1)
-        elif rgbas.shape[1] == 4:
-            colorwritter.addData4f(rgbas[i][0], rgbas[i][1], rgbas[i][2], rgbas[i][3])
-        primitive.addVertex(i)
-    geom = Geom(vertexdata)
-    geom.addPrimitive(primitive)
-    geom_node = GeomNode(name+'geom')
-    geom_node.addGeom(geom)
+    objgeom = pandageom_from_points(vertices, rgba_list, name + 'geom')
     pointcloud_nodepath = NodePath(name)
-    pointcloud_nodepath.attachNewNode(geom_node)
+    pointcloud_nodepath.attachNewNode(objgeom)
     return pointcloud_nodepath
-
 
 def loadfile_vf(objpath):
     """
@@ -419,9 +350,9 @@ def loadfile_vf(objpath):
     author: weiwei
     date: 20170221
     """
-    objtrimesh = trm.load_mesh(objpath)
-    objnp = nodepath_from_vf(objtrimesh.vertices, objtrimesh.face_normals, objtrimesh.faces)
-    return objnp
+    objtrm = trm.load_mesh(objpath)
+    pdnp = nodepath_from_vfnf(objtrm.vertices, objtrm.face_normals, objtrm.faces)
+    return pdnp
 
 
 def loadfile_vvnf(objpath):
@@ -433,6 +364,28 @@ def loadfile_vvnf(objpath):
     author: weiwei
     date: 20170221
     """
-    objtrimesh = trm.load_mesh(objpath)
-    objnp = nodepath_from_vvnf(objtrimesh.vertices, objtrimesh.vertex_normals, objtrimesh.faces)
-    return objnp
+    objtrm = trm.load_mesh(objpath)
+    pdnp = nodepath_from_vvnf(objtrm.vertices, objtrm.vertex_normals, objtrm.faces)
+    return pdnp
+
+
+if __name__ == '__main__':
+    import os, math, basis
+    import basis.trimesh as trimesh
+    import visualization.panda.world as wd
+    from panda3d.core import TransparencyAttrib
+
+    wd.World(campos=[1.0, 1, .0, 1.0], lookatpos=[0, 0, 0])
+    objpath = os.path.join(basis.__path__[0], 'objects', 'bunnysim.stl')
+    bt = trimesh.load(objpath)
+    btch = bt.convex_hull
+    pdnp = nodepath_from_vfnf(bt.vertices, bt.face_normals, bt.faces)
+    pdnp.reparentTo(base.render)
+    pdnp_cvxh = nodepath_from_vfnf(btch.vertices, btch.face_normals, btch.faces)
+    pdnp_cvxh.setTransparency(TransparencyAttrib.MDual)
+    pdnp_cvxh.setColor(0,1,0,.3)
+    pdnp_cvxh.reparentTo(base.render)
+    pdnp2 = nodepath_from_vvnf(bt.vertices, bt.vertex_normals, bt.faces)
+    pdnp2.setPos(0, 0, .1)
+    pdnp2.reparentTo(base.render)
+    base.run()
