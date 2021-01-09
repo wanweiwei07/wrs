@@ -3,6 +3,7 @@
 
 from panda3d.bullet import BulletWorld, BulletRigidBodyNode, BulletPlaneShape, BulletBoxShape
 from panda3d.bullet import BulletTriangleMeshShape, BulletTriangleMesh
+from panda3d.bullet import BulletConvexHullShape
 from panda3d.core import TransformState, Vec3, CollisionBox
 import copy
 import numpy as np
@@ -157,6 +158,24 @@ def show_triangles_cdmesh(objcm_list):
     return objcmmeshbullnode
 
 
+def show_convexhull_cdmesh(objcm_list):
+    """
+    show the collision meshes of the given objects
+    :param objcm_list environment.collisionmodel
+    :return:
+    author: weiwei
+    date: 20190313
+    """
+    if not base.toggledebug:
+        print("Toggling on base.physicsworld debug mode...")
+        base.change_debugstatus(True)
+    objcmmeshbullnode = _gen_convexhull_cdmesh(objcm_list)
+    base.physicsworld.attach(objcmmeshbullnode)
+    base.physicsbodylist.append(objcmmeshbullnode)
+    return objcmmeshbullnode
+
+
+
 def unshow_all():
     """
     unshow everything
@@ -222,6 +241,32 @@ def _gen_triangles_cdmesh(objcm_list, name='autogen'):
             geombullnode.addShape(bullettmshape)
     return geombullnode
 
+def _gen_convexhull_cdmesh(objcm_list, name='autogen'):
+    """
+    generate the collision mesh of a nodepath using nodepath
+    this function suppose the nodepath has multiple models with many geomnodes
+    use genCollisionMeshMultiNp instead of genCollisionMeshNp for generality
+    :param nodepath: the panda3d nodepath of the object
+    :param basenodepath: the nodepath to compute relative transform, identity if none
+    :param name: the name of the rigidbody
+    :return: bulletrigidbody
+    author: weiwei
+    date: 20161212, tsukuba
+    """
+    if not isinstance(objcm_list, list):
+        objcm_list = [objcm_list]
+    geombullnode = BulletRigidBodyNode(name)
+    for objcm in objcm_list:
+        gndcollection = objcm.pdnp_raw.findAllMatches("+GeomNode")
+        for gnd in gndcollection:
+            geom = copy.deepcopy(gnd.node().getGeom(0))
+            print(geom.getVertexData().getArrays())
+            geom.transformVertices(objcm.pdnp.getMat())
+            bulletcvxhshape = BulletConvexHullShape()
+            bulletcvxhshape.addGeom(geom)
+            bulletcvxhshape.setMargin(0)
+            geombullnode.addShape(bulletcvxhshape)
+    return geombullnode
 
 def _gen_triangles_cdmesh_from_geom(geom, name='autogen'):
     """
