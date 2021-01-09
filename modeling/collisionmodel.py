@@ -87,7 +87,7 @@ class CollisionModel(gm.GeometricModel):
         """
         if self._pdnp is None:
             raise ValueError("The defined object must has a nodepath!")
-        bottom_left, top_right = self._pdnp.getTightBounds()
+        bottom_left, top_right = self.pdnp_raw.getTightBounds()
         center = (bottom_left + top_right) / 2.0
         # enlarge the bounding box
         bottom_left -= (bottom_left - center).normalize() * radius
@@ -108,7 +108,7 @@ class CollisionModel(gm.GeometricModel):
         """
         if self._pdnp is None:
             raise ValueError("The defined object must has a nodepath!")
-        bottom_left, top_right = self._pdnp.getTightBounds()
+        bottom_left, top_right = self.pdnp_raw.getTightBounds()
         center = (bottom_left + top_right) / 2.0
         # enlarge the bounding box
         bottomleft_adjustvec = bottom_left - center
@@ -192,10 +192,7 @@ class CollisionModel(gm.GeometricModel):
         author: weiwei
         date: 20201116
         """
-        if isinstance(objcm, CollisionModel):
-            return pcd.is_cmcm_collided(self, objcm)
-        elif isinstance(objcm, list):
-            return pcd.is_cmcmlist_collided(self, objcm)
+        return pcd.is_cdprimit2cdprimit_collided(self, objcm)
 
     def attach_to(self, obj):
         if isinstance(obj, ShowBase):
@@ -220,28 +217,31 @@ class CollisionModel(gm.GeometricModel):
     def unshow_cdprimit(self):
         self.cdnp.hide()
 
-    def is_mcdwith(self, objcm):
+    def is_mcdwith(self, objcm_list, type='triangles2triangles'):
         """
         Is the mesh of the cm collide with the mesh of the given cm
-        :param objcm: one or a list of Collision Model object
+        :param objcm_list: one or a list of Collision Model object
+        :param type: 'triangles2triangles', 'box2triangles', 'box2box'
         author: weiwei
         date: 20201116
         """
-        if isinstance(objcm, CollisionModel):
-            return mcd.is_mesh_cmcm_collided(self, objcm)
-        elif isinstance(objcm, list):
-            return mcd.is_mesh_cmcmlist_collided(self, objcm)
+        if type == 'triangles2triangles':
+            return mcd.is_triangles2triangles_collided(self, objcm_list)
+        if type == 'box2triangles':
+            return mcd.is_box2triangles_collided(self, objcm_list)
+        if type == 'box2box':
+            return mcd.is_box2box_collided(self, objcm_list)
 
-    def show_cdmesh(self):
-        """
-        :return:
-        """
-        self._bullnode = mcd.show_meshcm(self)
+    def show_cdmesh(self, type='triangles'):
+        self. unshow_cdmesh()
+        if type == 'triangles':
+            self._bullnode = mcd.show_triangles_cdmesh(self)
+        elif type == 'box':
+            self._bullnode = mcd.show_box_cdmesh(self)
+        else:
+            raise NotImplementedError('The requested '+type+' type cdmesh is not supported!')
 
     def unshow_cdmesh(self):
-        """
-        :return:
-        """
         if hasattr(self, '_bullnode'):
             mcd.unshow(self._bullnode)
 
@@ -314,9 +314,9 @@ if __name__ == "__main__":
     bunnycm2.is_pcdwith([bunnycm, bunnycm1])
     toc = time.time()
     print("primitive cd cost: ", toc - tic)
-    bunnycm2.show_cdmesh()
-    bunnycm.show_cdmesh()
-    bunnycm1.show_cdmesh()
+    bunnycm2.show_cdmesh(type='box')
+    bunnycm.show_cdmesh(type='box')
+    bunnycm1.show_cdmesh(type='triangles')
     bunnycm2.show_cdprimit()
     bunnycm.show_cdprimit()
     bunnycm1.show_cdprimit()

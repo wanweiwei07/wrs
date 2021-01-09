@@ -8,10 +8,11 @@ import robotsim._kinematics.collisionchecker as cc
 
 class GripperInterface(object):
 
-    def __init__(self, pos=np.zeros(3), rotmat=np.eye(3), name='yumi_gripper'):
+    def __init__(self, pos=np.zeros(3), rotmat=np.eye(3), cdmesh_type='box', name='yumi_gripper'):
         self.name = name
         self.pos = pos
         self.rotmat = rotmat
+        self.cdmesh_type = cdmesh_type # box or triangles
         # joints
         # - coupling - No coupling by default
         self.coupling = jl.JLChain(pos=self.pos,
@@ -47,14 +48,19 @@ class GripperInterface(object):
                                    need_update=self.is_fk_updated)
 
     def is_mesh_collided(self, objcm_list=[]):
-        if self.is_fk_updated:
-            for i, cdelement in enumerate(self.cc.all_cdelements):
-                pos = cdelement['gl_pos']
-                rotmat = cdelement['gl_rotmat']
-                self.cdmesh_collection.cm_list[i].set_pos(pos)
-                self.cdmesh_collection.cm_list[i].set_rotmat(rotmat)
-                if self.cdmesh_collection.cm_list[i].is_mcdwith(objcm_list):
-                    return True
+        if self.cdmesh_type == 'triangles':
+            type = 'triangles2triangles'
+        elif self.cdmesh_type == 'box':
+            type = 'box2triangles'
+        else:
+            raise NotImplementedError('The requested '+type+' type cdmesh is not supported!')
+        for i, cdelement in enumerate(self.cc.all_cdelements):
+            pos = cdelement['gl_pos']
+            rotmat = cdelement['gl_rotmat']
+            self.cdmesh_collection.cm_list[i].set_pos(pos)
+            self.cdmesh_collection.cm_list[i].set_rotmat(rotmat)
+            if self.cdmesh_collection.cm_list[i].is_mcdwith(objcm_list, type=type):
+                return True
         return False
 
     def fix_to(self, pos, rotmat):
@@ -73,8 +79,8 @@ class GripperInterface(object):
         hnd_rotmat = np.eye(3)
         hnd_rotmat[:, 2] = rm.unit_vector(gl_hndz)
         hnd_rotmat[:, 0] = rm.unit_vector(gl_hndx)
-        hnd_rotmat[:, 1] = np.cross(rotmat[:3, 2], rotmat[:3, 0])
-        hnd_pos = gl_jaw_center - rotmat.dot(self.jaw_center)
+        hnd_rotmat[:, 1] = np.cross(hnd_rotmat[:3, 2], hnd_rotmat[:3, 0])
+        hnd_pos = gl_jaw_center - hnd_rotmat.dot(self.jaw_center)
         self.fix_to(hnd_pos, hnd_rotmat)
         self.jaw_to(jaw_width)
         return [jaw_width, gl_jaw_center, hnd_pos, hnd_rotmat]
@@ -92,7 +98,7 @@ class GripperInterface(object):
                 rotmat = cdelement['gl_rotmat']
                 self.cdmesh_collection.cm_list[i].set_pos(pos)
                 self.cdmesh_collection.cm_list[i].set_rotmat(rotmat)
-        self.cdmesh_collection.show_cdmesh()
+        self.cdmesh_collection.show_cdmesh(type=self.cdmesh_type)
 
     def unshow_cdmesh(self):
         self.cdmesh_collection.unshow_cdmesh()

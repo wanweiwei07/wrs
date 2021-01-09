@@ -1,8 +1,8 @@
-import os
-import copy
+import os, copy
 import basis.dataadapter as da
 import basis.trimesh as trimesh
 import basis.trimeshgenerator as trihelper
+import basis.robotmath as rm
 import modeling.modelcollection as mc
 import numpy as np
 import open3d as o3d
@@ -405,7 +405,7 @@ def gen_arrow(spos=np.array([0, 0, 0]), epos=np.array([.1, 0, 0]), thickness=.00
     """
     arrow_trm = trihelper.gen_arrow(spos=spos, epos=epos, thickness=thickness, sticktype=type)
     arrow_sgm = StaticGeometricModel(arrow_trm)
-    arrow_trm.set_rgba(rgba=rgba)
+    arrow_sgm.set_rgba(rgba=rgba)
     return arrow_sgm
 
 

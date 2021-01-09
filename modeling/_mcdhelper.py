@@ -3,7 +3,7 @@
 
 from panda3d.bullet import BulletWorld, BulletRigidBodyNode, BulletPlaneShape, BulletBoxShape
 from panda3d.bullet import BulletTriangleMeshShape, BulletTriangleMesh
-from panda3d.core import TransformState, Vec3
+from panda3d.core import TransformState, Vec3, CollisionBox
 import copy
 import numpy as np
 import basis.robotmath as rm
@@ -11,60 +11,47 @@ import basis.dataadapter as dh
 
 
 # box collision model
-def is_box_cmcm_collided(objcm0, objcm1):
+def is_box2box_collided(objcm_list0, objcm_list1):
     """
     check if two objects objcm0 as objcm1 are in collision with each other
     the two objects are in the form of collision model
     the AABB boxlist will be used
     type "box" is required
-    :param objcm0: the first object
-    :param objcm1: the second object
+    :param objcm_list0: the first object or list
+    :param objcm_list1: the second object or list
     :return: boolean value showing if the two objects are in collision
     author: weiwei
     date: 20190313
     """
-    objcm0boxbullnode = _gen_boxcdmesh(objcm0)
-    objcm1boxbullnode = _gen_boxcdmesh(objcm1)
+    objcm0boxbullnode = _gen_box_cdmesh(objcm_list0)
+    objcm1boxbullnode = _gen_box_cdmesh(objcm_list1)
     result = base.physicsworld.contactTestPair(objcm0boxbullnode, objcm1boxbullnode)
     return True if result.getNumContacts() else False
 
 
-def is_box_cmcmlist_collided(objcm0, objcmlist=[]):
+# 2 box - triangles
+def is_box2triangles_collided(objcm_list0, objcm_list1):
     """
-    check if objcm0 is in collision with a list of collisionmodels in objcmlist
-    each obj is in the form of a collision model
-    :param objcm0:
-    :param obcmjlist: a list of collision models
-    :return: boolean value showing if the object and the list are in collision
+    check if two objects objcm0 as objcm1 are in collision with each other
+    the two objects are in the form of collision model
+    the AABB boxlist will be used
+    type "box" is required
+    :param objcm_list0: the first object
+    :param objcm_list1: the second object
+    :return: boolean value showing if the two objects are in collision
     author: weiwei
-    date: 20190313
+    date: 201903138
     """
-    objcm0boxbullnode = _gen_boxcdmesh(objcm0)
-    objcm1boxbullnode = _gen_boxcdmesh_list(objcmlist)
-    result = base.physicsworld.contactTestPair(objcm0boxbullnode, objcm1boxbullnode)
+    objcm0boxbullnode = _gen_box_cdmesh(objcm_list0)
+    objcm1bullnode = _gen_triangles_cdmesh(objcm_list1)
+    result = base.physicsworld.contactTestPair(objcm0boxbullnode, objcm1bullnode)
     return True if result.getNumContacts() else False
 
 
-def is_box_cmlistcmlist_collided(objcm0list=[], objcm1list=[]):
-    """
-    check if a list of collisionmodels in objcm0list is in collision with a list of collisionmodels in objcm1list
-    each obj is in the form of a collision model
-    :param objcm0list: a list of collision models
-    :param obcmj1list: a list of collision models
-    :return: boolean value showing if the object and the list are in collision
-    author: weiwei
-    date: 20190313
-    """
-    objcm0boxbullnode = _gen_boxcdmesh_list(objcm0list)
-    objcm1boxbullnode = _gen_boxcdmesh_list(objcm1list)
-    result = base.physicsworld.contactTestPair(objcm0boxbullnode, objcm1boxbullnode)
-    return True if result.getNumContacts() else False
-
-
-def show_boxcm(objcm):
+def show_box_cdmesh(objcm_list):
     """
     show the AABB collision meshes of the given objects
-    :param objcm
+    :param objcm_list
     author: weiwei
     date: 20190313
     :return:
@@ -72,82 +59,31 @@ def show_boxcm(objcm):
     if not base.toggledebug:
         print("Toggling on base.physicsworld debug mode...")
         base.change_debugstatus(True)
-    objcmboxbullnode = _gen_boxcdmesh(objcm)
-    base.physicsworld.attach(objcmboxbullnode)
-    base.physicsbodylist.append(objcmboxbullnode)
-    return objcmboxbullnode
-
-
-def show_boxcmlist(objcmlist):
-    """
-    show the AABB collision meshes of the given objects
-    :param objcm0, objcm1
-    author: weiwei
-    date: 20190313
-    :return:
-    """
-    if not base.toggledebug:
-        print("Toggling on base.physicsworld debug mode...")
-        base.change_debugstatus(True)
-    objcmboxbullnode = _gen_boxcdmesh_list(objcmlist)
+    objcmboxbullnode = _gen_box_cdmesh(objcm_list)
     base.physicsworld.attach(objcmboxbullnode)
     base.physicsbodylist.append(objcmboxbullnode)
     return objcmboxbullnode
 
 
 # mesh collision model
-def is_mesh_cmcm_collided(objcm0, objcm1):
+def is_triangles2triangles_collided(objcm_list0, objcm_list1):
     """
     check if two objects objcm0 and objcm1 are in collision with each other
     the two objects are in the form of collision model
     the bulletmeshes will be used
-    :param objcm0: the first object
-    :param objcm1: the second object
+    :param objcm_list0: the first object
+    :param objcm_list1: the second object
     :return: boolean value showing if the two objects are in collision
     author: weiwei
     date: 20190313
     """
-    objcm0bullnode = _gen_cdmesh(objcm0)
-    objcm1bullnode = _gen_cdmesh(objcm1)
+    objcm0bullnode = _gen_triangles_cdmesh(objcm_list0)
+    objcm1bullnode = _gen_triangles_cdmesh(objcm_list1)
     result = base.physicsworld.contactTestPair(objcm0bullnode, objcm1bullnode)
     return True if result.getNumContacts() else False
 
 
-def is_mesh_cmcmlist_collided(objcm0, objcm1list):
-    """
-    check if object objcm0 and objectlist objcm1list are in collision with each other
-    the two objects are in the form of collision model
-    the bulletmeshes will be used
-    :param objcm0: the first collision model
-    :param objcm1list: the second collision model list
-    :return: boolean value showing if the object and object list are in collision
-    author: weiwei
-    date: 20190514
-    """
-    objcm0bullnode = _gen_cdmesh(objcm0)
-    objcm1bullnode = _gen_cdmesh_list(objcm1list)
-    result = base.physicsworld.contactTestPair(objcm0bullnode, objcm1bullnode)
-    return True if result.getNumContacts() else False
-
-
-def is_mesh_cmlistcmlist_collided(objcm0list, objcm1list):
-    """
-    check if two object lists objcm0list and objcm1list are in collision with each other
-    the two objects are in the form of collision model
-    the bulletmeshes will be used
-    :param objcm0list: the first collision model list
-    :param objcm1list: the second collision model list
-    :return: boolean value showing if the two objects are in collision
-    author: weiwei
-    date: 20190514
-    """
-    objcm0bullnode = _gen_cdmesh_list(objcm0list)
-    objcm1bullnode = _gen_cdmesh_list(objcm1list)
-    result = base.physicsworld.contactTestPair(objcm0bullnode, objcm1bullnode)
-    return True if result.getNumContacts() else False
-
-
-def rayhitmesh_closet(pfrom, pto, objcm):
+def rayhit_triangles_closet(pfrom, pto, objcm):
     """
     :param pfrom:
     :param pto:
@@ -157,7 +93,7 @@ def rayhitmesh_closet(pfrom, pto, objcm):
     date: 20190805
     """
     tmptrimesh = objcm.trimesh.copy()
-    tmptrimesh.apply_transform(objcm.gethomomat())
+    tmptrimesh.apply_transform(objcm.get_homomat())
     geom = dh.pandageom_from_vf(tmptrimesh.vertices, tmptrimesh.face_normals, tmptrimesh.faces)
     targetobjmesh = BulletTriangleMesh()
     targetobjmesh.addGeom(geom)
@@ -174,7 +110,7 @@ def rayhitmesh_closet(pfrom, pto, objcm):
         return [None, None]
 
 
-def rayhitmesh_all(pfrom, pto, objcm):
+def rayhit_triangles_all(pfrom, pto, objcm):
     """
     :param pfrom:
     :param pto:
@@ -204,10 +140,10 @@ def rayhitmesh_all(pfrom, pto, objcm):
         return []
 
 
-def show_meshcm(objcm):
+def show_triangles_cdmesh(objcm_list):
     """
     show the collision meshes of the given objects
-    :param objcm environment.collisionmodel
+    :param objcm_list environment.collisionmodel
     :return:
     author: weiwei
     date: 20190313
@@ -215,24 +151,7 @@ def show_meshcm(objcm):
     if not base.toggledebug:
         print("Toggling on base.physicsworld debug mode...")
         base.change_debugstatus(True)
-    objcmmeshbullnode = _gen_cdmesh(objcm)
-    base.physicsworld.attach(objcmmeshbullnode)
-    base.physicsbodylist.append(objcmmeshbullnode)
-    return objcmmeshbullnode
-
-
-def show_meshcmlist(objcmlist):
-    """
-    show the collision meshes of the given objects
-    :param objcmlist environment.collisionmodel
-    author: weiwei
-    date: 20190313
-    :return:
-    """
-    if not base.toggledebug:
-        print("Toggling on base.physicsworld debug mode...")
-        base.change_debugstatus(True)
-    objcmmeshbullnode = _gen_cdmesh_list(objcmlist)
+    objcmmeshbullnode = _gen_triangles_cdmesh(objcm_list)
     base.physicsworld.attach(objcmmeshbullnode)
     base.physicsbodylist.append(objcmmeshbullnode)
     return objcmmeshbullnode
@@ -250,53 +169,33 @@ def unshow_all():
         base.physicsworld.remove(physicsbody)
     base.physicsbodylist = []
 
+
 def unshow(cmbullnode):
     base.physicsworld.remove(cmbullnode)
 
 
 # util functions
-def _gen_boxcdmesh(obstaclecm, name='autogen'):
+def _gen_box_cdmesh(objcm_list, name='autogen'):
     """
     generate a bullet cd obj using the AABB boundary of a obstacle collision model
-    :param obstaclecm: a collision model
+    :param objcm_list: a collision model or a list of collision model
     :return: bulletrigidbody
     author: weiwei
     date: 20190313, toyonaka
     """
-    if obstaclecm.type != "box":
-        raise Exception("Wrong obstaclecm type! Box is required to genBulletCDBox.")
+    if not isinstance(objcm_list, list):
+        objcm_list = [objcm_list]
     bulletboxnode = BulletRigidBodyNode(name)
-    cdsolid = obstaclecm.cdcn.getSolid(0)
-    bulletboxshape = BulletBoxShape.makeFromSolid(cdsolid)
-    rotmat4_pd = obstaclecm.getMat(base.render)
-    bulletboxnode.addShape(bulletboxshape,
-                           TransformState.makeMat(rotmat4_pd).
-                           setPos(rotmat4_pd.xformPoint(cdsolid.getCenter())))
+    for objcm in objcm_list:
+        bottom_left, top_right = objcm.pdnp_raw.getTightBounds()
+        cd_solid = CollisionBox(bottom_left, top_right)
+        bulletboxshape = BulletBoxShape.makeFromSolid(cd_solid)
+        pdnp_pdmat4 = objcm.pdnp.getMat()
+        tfs = TransformState.makeMat(pdnp_pdmat4).setPos(pdnp_pdmat4.xformPoint(cd_solid.getCenter()))
+        bulletboxnode.addShape(bulletboxshape, tfs)
     return bulletboxnode
 
-
-def _gen_boxcdmesh_list(obstaclecmlist, name='autogen'):
-    """
-    generate a bullet cd obj using the AABB boundaries stored in obstacle collision models
-    :param obstaclecmlist: a list of collision models (cmshare doesnt work!)
-    :return: bulletrigidbody
-    author: weiwei
-    date: 20190313, toyonaka
-    """
-    bulletboxlistnode = BulletRigidBodyNode(name)
-    for obstaclecm in obstaclecmlist:
-        if obstaclecm.type != "box":
-            raise Exception("Wrong obstaclecm type! Box is required to genBulletCDBox.")
-        cdsolid = obstaclecm.cdcn.getSolid(0)
-        bulletboxshape = BulletBoxShape.makeFromSolid(cdsolid)
-        rotmatpd4 = obstaclecm.getMat(base.render)
-        bulletboxlistnode.addShape(bulletboxshape,
-                                   TransformState.makeMat(rotmatpd4).
-                                   setPos(rotmatpd4.xformPoint(cdsolid.getCenter())))
-    return bulletboxlistnode
-
-
-def _gen_cdmesh(objcm, name='autogen'):
+def _gen_triangles_cdmesh(objcm_list, name='autogen'):
     """
     generate the collision mesh of a nodepath using nodepath
     this function suppose the nodepath has multiple models with many geomnodes
@@ -308,34 +207,10 @@ def _gen_cdmesh(objcm, name='autogen'):
     author: weiwei
     date: 20161212, tsukuba
     """
-    gndcollection = objcm.pdnp_raw.findAllMatches("+GeomNode")
+    if not isinstance(objcm_list, list):
+        objcm_list = [objcm_list]
     geombullnode = BulletRigidBodyNode(name)
-    for gnd in gndcollection:
-        geom = copy.deepcopy(gnd.node().getGeom(0))
-        geom.transformVertices(objcm.pdnp.getMat())
-        geombullmesh = BulletTriangleMesh()
-        geombullmesh.addGeom(geom)
-        bullettmshape = BulletTriangleMeshShape(geombullmesh, dynamic=True)
-        bullettmshape.setMargin(0)
-        geombullnode.addShape(bullettmshape)
-    return geombullnode
-
-
-def _gen_cdmesh_list(objcmlist, name='autogen'):
-    """
-    generate the collision mesh of a nodepath using nodepathlist
-    this function suppose the nodepathlist is a list of models with many geomnodes
-    "Multi" means each nodepath in the nodepath list may have multiple nps (parent-child relations)
-    use genCollisionMeshMultiNp instead if the meshes have parent-child relations
-    :param nodepathlist: panda3d nodepathlist
-    :param basenodepath: the nodepath to compute relative transform, identity if none
-    :param name: the name of the rigidbody
-    :return: bulletrigidbody
-    author: weiwei
-    date: 20190514
-    """
-    geombullnode = BulletRigidBodyNode(name)
-    for objcm in objcmlist:
+    for objcm in objcm_list:
         gndcollection = objcm.pdnp_raw.findAllMatches("+GeomNode")
         for gnd in gndcollection:
             geom = copy.deepcopy(gnd.node().getGeom(0))
@@ -348,7 +223,7 @@ def _gen_cdmesh_list(objcmlist, name='autogen'):
     return geombullnode
 
 
-def _gen_cdmesh_from_geom(geom, name='autogen'):
+def _gen_triangles_cdmesh_from_geom(geom, name='autogen'):
     """
     generate the collision mesh of a nodepath using geom
     :param geom: the panda3d geom of the object
@@ -383,7 +258,7 @@ def _gen_plane_cdmesh(updirection=np.array([0, 0, 1]), offset=0, name='autogen')
     return bulletplnode
 
 
-def _rayhit(pfrom, pto, geom):
+def _rayhit_geom(pfrom, pto, geom):
     """
     TODO: To be deprecated, 20201119
     NOTE: this function is quite slow
@@ -408,24 +283,26 @@ def _rayhit(pfrom, pto, geom):
 
 
 if __name__ == '__main__':
+    import os, math, basis
+    import numpy as np
     import visualization.panda.world as wd
     import modeling.geometricmodel as gm
     import modeling.collisionmodel as cm
-    import math
-    import numpy as np
 
-    wd.World(camp=[1.0, 1, .0, 1.0], lookatpos=[0, 0, 0])
-    objcm = cm.CollisionModel("./objects/bunnysim.meshes")
+    wd.World(campos=[1.0, 1, .0, 1.0], lookatpos=[0, 0, 0])
+    objpath = os.path.join(basis.__path__[0], 'objects', 'bunnysim.stl')
+    objcm = cm.CollisionModel(objpath)
     homomat = np.eye(4)
     homomat[:3, :3] = rm.rotmat_from_axangle([0, 0, 1], math.pi / 2)
-    homomat[:3, 3] = np.array([0, 0, 0])
-    objcm.sethomomat(homomat)
+    homomat[:3, 3] = np.array([0, 0.02, 0])
+    objcm.set_homomat(homomat)
     pfrom = np.array([0, 0, 0]) + np.array([1.0, 1.0, 1.0])
     pto = np.array([0, 0, 0]) + np.array([-1.0, -1.0, -0.9])
-    hitpos, hitnrml = rayhitmesh_closet(pfrom=pfrom, pto=pto, objcm=objcm)
-    objcm.reparent_to(base.render)
-    gm.gensphere(hitpos, radius=.003, rgba=np.array([0, 1, 1, 1])).reparent_to(base.render)
-    gm.genstick(spos=pfrom, epos=pto, thickness=.002).reparent_to(base.render)
-    gm.genarrow(spos=hitpos, epos=hitpos + hitnrml * .07, thickness=.002, rgba=np.array([0, 1, 0, 1])).reparent_to(
-        base.render)
+    hitpos, hitnrml = rayhit_triangles_closet(pfrom=pfrom, pto=pto, objcm=objcm)
+    objcm.attach_to(base)
+    objcm.show_cdmesh(type='box')
+    objcm.show_cdmesh(type='triangles')
+    gm.gen_sphere(hitpos, radius=.003, rgba=np.array([0, 1, 1, 1])).attach_to(base)
+    gm.gen_stick(spos=pfrom, epos=pto, thickness=.002).attach_to(base)
+    gm.gen_arrow(spos=hitpos, epos=hitpos + hitnrml * .07, thickness=.002, rgba=np.array([0, 1, 0, 1])).attach_to(base)
     base.run()

@@ -58,8 +58,13 @@ class ModelCollection(object):
         for cm in self._cm_list:
             cm.unshow_cdprimit()
 
-    def show_cdmesh(self):
-        self._bullnode = mcd.show_meshcmlist(self._cm_list)
+    def show_cdmesh(self, type='triangles'):
+        if type == 'triangles':
+            self._bullnode = mcd.show_triangles_cdmesh(self._cm_list)
+        elif type == 'box':
+            self._bullnode = mcd.show_box_cdmesh(self._cm_list)
+        else:
+            raise NotImplementedError('The requested '+type+' type cdmesh is not supported!')
 
     def unshow_cdmesh(self):
         if hasattr(self, '_bullnode'):

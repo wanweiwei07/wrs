@@ -9,8 +9,8 @@ import robotsim.grippers.gripper_interface as gp
 
 class Robotiq85(gp.GripperInterface):
 
-    def __init__(self, pos=np.zeros(3), rotmat=np.eye(3), name='robotiq85', enable_cc=True):
-        super().__init__(pos=pos, rotmat=rotmat, name=name)
+    def __init__(self, pos=np.zeros(3), rotmat=np.eye(3), cdmesh_type='box', name='robotiq85', enable_cc=True):
+        super().__init__(pos=pos, rotmat=rotmat, cdmesh_type=cdmesh_type, name=name)
         this_dir, this_filename = os.path.split(__file__)
         cpl_end_pos = self.coupling.jnts[-1]['gl_posq']
         cpl_end_rotmat = self.coupling.jnts[-1]['gl_rotmatq']
@@ -290,6 +290,7 @@ if __name__ == '__main__':
     base = wd.World(campos=[.5, .5, .5], lookatpos=[0, 0, 0])
     gm.gen_frame().attach_to(base)
     grpr = Robotiq85(enable_cc=True)
+    grpr.cdmesh_type='triangles'
     grpr.fk(.8)
     grpr.gen_meshmodel(rgba=[.3, .3, .0, .5]).attach_to(base)
     # grpr.gen_stickmodel(togglejntscs=False).attach_to(base)
