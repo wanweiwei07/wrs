@@ -9,7 +9,7 @@ from scipy.optimize import minimize
 import basis.robotmath as rm
 
 
-class FkOptimizer(object):
+class FKOptimizer(object):
 
     def __init__(self, robot, jlc_name, toggle_debug=False):
         self.rbt = robot
@@ -157,7 +157,7 @@ if __name__ == '__main__':
     tgt_rotmat = rm.rotmat_from_axangle([0,1,0], math.pi/2)
     gm.gen_frame(pos=tgt_pos, rotmat=tgt_rotmat).attach_to(base)
     yumi_instance = ym.Yumi(enable_cc=True)
-    oik = FkOptimizer(yumi_instance, jlc_name=jlc_name, toggle_debug=False)
+    oik = FKOptimizer(yumi_instance, jlc_name=jlc_name, toggle_debug=False)
     jnt_values, _ = oik.solve(np.zeros(7), tgt_pos, tgt_rotmat=tgt_rotmat, method='SLSQP')
     print(jnt_values)
     yumi_instance.fk(jnt_values, jlc_name=jlc_name)
