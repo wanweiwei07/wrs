@@ -190,21 +190,21 @@ class JLChain(object):
             self.tcp_loc_rotmat = tcp_loc_rotmat
 
     def get_gl_tcp(self,
-                      tcp_jntid=None,
-                      tcp_loc_pos=None,
-                      tcp_loc_rotmat=None):
+                   tcp_jnt_id=None,
+                   tcp_loc_pos=None,
+                   tcp_loc_rotmat=None):
         """
         tcp_jntid, tcp_loc_pos, tcp_loc_rotmat are the tool center pose parameters. They are
         used for temporary computation, the self.tcp_xxx parameters will not be changed
         in case None is provided, the self.tcp_jntid, self.tcp_loc_pos, self.tcp_loc_rotmat will be used
-        :param tcp_jntid:
+        :param tcp_jnt_id:
         :param tcp_loc_pos:
         :param tcp_loc_rotmat:
         :return:
         """
-        return self._ikt.get_globaltcp(tcp_jntid, tcp_loc_pos, tcp_loc_rotmat)
+        return self._ikt.get_gl_tcp(tcp_jnt_id, tcp_loc_pos, tcp_loc_rotmat)
 
-    def get_jntranges(self):
+    def get_jnt_ranges(self):
         """
         get jntsrnage
         :return: [[jnt0min, jnt0max], [jnt1min, jnt1max], ...]
@@ -213,7 +213,7 @@ class JLChain(object):
         """
         jnt_limits = []
         for id in self.tgtjnts:
-            jnt_limits.append([self.jnts[id]['rngmin'], self.jnts[id]['rngmax']])
+            jnt_limits.append([self.jnts[id]['motion_rng'][0], self.jnts[id]['motion_rng'][1]])
         return jnt_limits
 
     def fk(self, jnt_values=None):

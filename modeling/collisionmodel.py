@@ -21,10 +21,10 @@ class CollisionModel(gm.GeometricModel):
     date: 20190312
     """
 
-    def __init__(self, initor, btransparency=True, cdprimitive_type="box", expand_radius=None, name="defaultname",
+    def __init__(self, initiator, btransparency=True, cdprimitive_type="box", expand_radius=None, name="defaultname",
                  userdefined_cdprimitive_fn=None):
         """
-        :param initor:
+        :param initiator:
         :param btransparency:
         :param cdprimitive_type: box, ball, cylinder, pointcloud, userdefined
         :param expand_radius:
@@ -35,17 +35,17 @@ class CollisionModel(gm.GeometricModel):
                                            may have multiple CollisionSolid
         date: 201290312, 20201212
         """
-        if isinstance(initor, CollisionModel):
-            self._name = copy.deepcopy(initor.name)
-            self._objpath = copy.deepcopy(initor.objpath)
-            self._trimesh = copy.deepcopy(initor.trimesh)
-            self._pdnp = copy.deepcopy(initor.pdnp)
-            self._localframe = copy.deepcopy(initor.localframe)
-            self._cdprimitive_type = copy.deepcopy(initor.cdprimitive_type)
+        if isinstance(initiator, CollisionModel):
+            self._name = copy.deepcopy(initiator.name)
+            self._objpath = copy.deepcopy(initiator.objpath)
+            self._trimesh = copy.deepcopy(initiator.trimesh)
+            self._pdnp = copy.deepcopy(initiator.pdnp)
+            self._localframe = copy.deepcopy(initiator.localframe)
+            self._cdprimitive_type = copy.deepcopy(initiator.cdprimitive_type)
         else:
             if cdprimitive_type is not None and cdprimitive_type not in ["box", "ball", "cylinder", "pointcloud", "userdefined"]:
                 raise Exception("Wrong Collision Model type name.")
-            super().__init__(initor=initor, btransparency=btransparency, name=name)
+            super().__init__(initiator=initiator, btransparency=btransparency, name=name)
             self._cdprimitive_type = cdprimitive_type
             if cdprimitive_type is not None:
                 if cdprimitive_type == "ball":

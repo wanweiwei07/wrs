@@ -116,42 +116,42 @@ class JLChainIK(object):
         axmat[:, 2] = np.sqrt(pcv[2]) * pcaxmat[:3, 2]
         return axmat
 
-    def get_globaltcp(self, tcp_jntid, tcp_loc_pos, tcp_loc_rotmat):
+    def get_gl_tcp(self, tcp_jnt_id, tcp_loc_pos, tcp_loc_rotmat):
         """
         Get the global tool center pose given tcp_jntid, tcp_loc_pos, tcp_loc_rotmat
         tcp_jntid, tcp_loc_pos, tcp_loc_rotmat are the tool center pose parameters. They are
         used for temporary computation, the self.tcp_xxx parameters will not be changed
         in case None is provided, the self.tcp_jntid, self.tcp_loc_pos, self.tcp_loc_rotmat will be used
-        :param tcp_jntid: a joint ID in the self.tgtjnts
+        :param tcp_jnt_id: a joint ID in the self.tgtjnts
         :param tcp_loc_pos: 1x3 nparray, decribed in the local frame of self.jnts[tcp_jntid], single value or list
         :param tcp_loc_rotmat: 3x3 nparray, decribed in the local frame of self.jnts[tcp_jntid], single value or list
         :return: a single value or a list depending on the input
         author: weiwei
         date: 20200706
         """
-        if tcp_jntid is None:
-            tcp_jntid = self.jlobject.tcp_jntid
+        if tcp_jnt_id is None:
+            tcp_jnt_id = self.jlobject.tcp_jntid
         if tcp_loc_pos is None:
             tcp_loc_pos = self.jlobject.tcp_loc_pos
         if tcp_loc_rotmat is None:
             tcp_loc_rotmat = self.jlobject.tcp_loc_rotmat
-        if isinstance(tcp_jntid, list):
+        if isinstance(tcp_jnt_id, list):
             returnposlist = []
             returnrotmatlist = []
-            for i, jid in enumerate(tcp_jntid):
-                tcp_globalpos = np.dot(self.jlobject.jnts[jid]["gl_rotmatq"], tcp_loc_pos[i]) + \
+            for i, jid in enumerate(tcp_jnt_id):
+                tcp_gl_pos = np.dot(self.jlobject.jnts[jid]["gl_rotmatq"], tcp_loc_pos[i]) + \
                                 self.jlobject.jnts[jid]["gl_posq"]
-                tcp_globalrotmat = np.dot(self.jlobject.jnts[jid]["gl_rotmatq"], tcp_loc_rotmat[i])
-                returnposlist.append(tcp_globalpos)
-                returnrotmatlist.append(tcp_globalrotmat)
+                tcp_gl_rotmat = np.dot(self.jlobject.jnts[jid]["gl_rotmatq"], tcp_loc_rotmat[i])
+                returnposlist.append(tcp_gl_pos)
+                returnrotmatlist.append(tcp_gl_rotmat)
             return [returnposlist, returnrotmatlist]
         else:
-            tcp_globalpos = np.dot(self.jlobject.jnts[tcp_jntid]["gl_rotmatq"], tcp_loc_pos) + \
-                            self.jlobject.jnts[tcp_jntid]["gl_posq"]
-            tcp_globalrotmat = np.dot(self.jlobject.jnts[tcp_jntid]["gl_rotmatq"], tcp_loc_rotmat)
-            return [tcp_globalpos, tcp_globalrotmat]
+            tcp_gl_pos = np.dot(self.jlobject.jnts[tcp_jnt_id]["gl_rotmatq"], tcp_loc_pos) + \
+                         self.jlobject.jnts[tcp_jnt_id]["gl_posq"]
+            tcp_gl_rotmat = np.dot(self.jlobject.jnts[tcp_jnt_id]["gl_rotmatq"], tcp_loc_rotmat)
+            return tcp_gl_pos, tcp_gl_rotmat
 
-    def tcperror(self, tgt_pos, tgt_rot, tcp_jntid, tcp_loc_pos, tcp_loc_rotmat):
+    def tcp_error(self, tgt_pos, tgt_rot, tcp_jntid, tcp_loc_pos, tcp_loc_rotmat):
         """
         compute the error between the rjlinstance's end and tgt_pos, tgt_rot
         NOTE: if list, len(tgt_pos)=len(tgt_rot) <= len(tcp_jntid)=len(tcp_loc_pos)=len(tcp_loc_rotmat)
@@ -165,7 +165,7 @@ class JLChainIK(object):
         author: weiwei
         date: 20180827, 20200331, 20200705
         """
-        tcp_globalpos, tcp_globalrotmat = self.get_globaltcp(tcp_jntid, tcp_loc_pos, tcp_loc_rotmat)
+        tcp_globalpos, tcp_globalrotmat = self.get_gl_tcp(tcp_jntid, tcp_loc_pos, tcp_loc_rotmat)
         if isinstance(tgt_pos, list):
             deltapw = np.zeros(6 * len(tgt_pos))
             for i, thistgt_pos in enumerate(tgt_pos):
@@ -196,7 +196,7 @@ class JLChainIK(object):
                                       self.jlobject.jnts[id]["movement"])
             counter += 1
 
-    def check_jntsrange_drag(self, jntvalues):
+    def check_jntranges_drag(self, jntvalues):
         """
         check if the given jntvalues is inside the oeprating range
         The joint values out of range will be pulled back to their maxima
@@ -312,7 +312,7 @@ class JLChainIK(object):
         errnormmax = 0.0
         for i in range(100):
             jmat = self.jacobian(tcp_jntid)
-            err = self.tcperror(tgt_pos, tgt_rot, tcp_jntid, tcp_loc_pos, tcp_loc_rotmat)
+            err = self.tcp_error(tgt_pos, tgt_rot, tcp_jntid, tcp_loc_pos, tcp_loc_rotmat)
             errnorm = err.T.dot(ws_wtdiagmat).dot(err)
             # err = .05 / errnorm * err if errnorm > .05 else err
             if errnorm > errnormmax:
@@ -452,7 +452,7 @@ class JLChainIK(object):
         author: weiwei
         date: 20170412, 20200331
         """
-        tcp_globalpos, tcp_globalrotmat = self.get_globaltcp(tcp_jntid, tcp_loc_pos, tcp_loc_rotmat)
+        tcp_globalpos, tcp_globalrotmat = self.get_gl_tcp(tcp_jntid, tcp_loc_pos, tcp_loc_rotmat)
         if isinstance(tcp_jntid, list):
             tgt_pos = []
             tgt_rotmat = []

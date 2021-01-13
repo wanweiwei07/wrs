@@ -26,8 +26,8 @@ class Yumi(ri.RobotInterface):
         self.lft_body.jnts[5]['loc_pos'] = np.array([0, 0, 0])
         self.lft_body.jnts[6]['loc_pos'] = np.array([0, 0, 0])
         self.lft_body.jnts[7]['loc_pos'] = np.array([0, 0, 0])
-        self.lft_body.jnts[8]['loc_pos'] = np.array([0.05355, -0.0725, 0.41492])
-        self.lft_body.jnts[8]['loc_rotmat'] = rm.rotmat_from_euler(-0.9795, -0.5682, -2.3155)  # left from robot view
+        self.lft_body.jnts[8]['loc_pos'] = np.array([0.05355, 0.07250, 0.41492])
+        self.lft_body.jnts[8]['loc_rotmat'] = rm.rotmat_from_euler(0.9781, -0.5716, 2.3180)  # left from robot view
         self.lft_body.lnks[0]['name'] = "yumi_lft_stand"
         self.lft_body.lnks[0]['loc_pos'] = np.array([0, 0, 0])
         self.lft_body.lnks[0]['meshfile'] = os.path.join(this_dir, "meshes", "yumi_tablenotop.stl")
@@ -66,7 +66,7 @@ class Yumi(ri.RobotInterface):
         self.lft_body.lnks[7]['meshfile'] = os.path.join(this_dir, "meshes", "yumi_column6060540.stl")
         self.lft_body.lnks[7]['rgba'] = [.35, .35, .35, 1.0]
         self.lft_body.reinitialize()
-        lft_arm_homeconf = np.radians(np.array([-20, -90, -120, 30, .0, 40, 0]))
+        lft_arm_homeconf = np.radians(np.array([20, -90, 120, 30, 0, 40, 0]))
         self.lft_arm = ya.IRB14050(pos=self.lft_body.jnts[-1]['gl_posq'],
                                    rotmat=self.lft_body.jnts[-1]['gl_rotmatq'],
                                    homeconf=lft_arm_homeconf, enable_cc=False)
@@ -77,13 +77,13 @@ class Yumi(ri.RobotInterface):
         self.lft_hnd.fix_to(pos=self.lft_arm.jnts[-1]['gl_posq'], rotmat=self.lft_arm.jnts[-1]['gl_rotmatq'])
         # rgt
         self.rgt_body = jl.JLChain(pos=pos, rotmat=rotmat, homeconf=np.zeros(0), name='rgt_body')
-        self.rgt_body.jnts[1]['loc_pos'] = np.array([0.05355, 0.07250, 0.41492])
-        self.rgt_body.jnts[1]['loc_rotmat'] = rm.rotmat_from_euler(0.9781, -0.5716, 2.3180)  # left from robot view
+        self.rgt_body.jnts[1]['loc_pos'] = np.array([0.05355, -0.0725, 0.41492])
+        self.rgt_body.jnts[1]['loc_rotmat'] = rm.rotmat_from_euler(-0.9795, -0.5682, -2.3155)  # left from robot view
         self.rgt_body.lnks[0]['name'] = "yumi_rgt_body"
         self.rgt_body.lnks[0]['loc_pos'] = np.array([0, 0, 0])
         self.rgt_body.lnks[0]['rgba'] = [.35, .35, .35, 1.0]
         self.rgt_body.reinitialize()
-        rgt_arm_homeconf = np.radians(np.array([20, -90, 120, 30, 0, 40, 0]))
+        rgt_arm_homeconf = np.radians(np.array([-20, -90, -120, 30, .0, 40, 0]))
         self.rgt_arm = self.lft_arm.copy()
         self.rgt_arm.fix_to(pos=self.rgt_body.jnts[-1]['gl_posq'], rotmat=self.rgt_body.jnts[-1]['gl_rotmatq'])
         self.rgt_arm.set_homeconf(rgt_arm_homeconf)
@@ -190,6 +190,22 @@ class Yumi(ri.RobotInterface):
                     self.rgt_hnd.rgt.lnks[1]]
         self.cc.set_cdpair(fromlist, intolist)
 
+    def get_hnd_on_jlc(self, jlc_name):
+        if jlc_name == 'rgt_arm':
+            return 'rgt_hnd', self.rgt_hnd
+        elif jlc_name == 'lft_arm':
+            return 'lft_hnd', self.lft_hnd
+        else:
+            raise ValueError("The given jlc does not have a hand!")
+
+    def get_jnt_ranges(self, jlc_name):
+        if jlc_name == 'rgt_arm':
+            return self.rgt_arm.get_jnt_ranges()
+        elif jlc_name == 'lft_arm':
+            return self.lft_arm.get_jnt_ranges()
+        else:
+            raise ValueError("The given jlc name is not available!")
+
     def fix_to(self, pos, rotmat):
         self.pos = pos
         self.rotmat = rotmat
@@ -237,6 +253,14 @@ class Yumi(ri.RobotInterface):
                                 rotmat=self.rgt_arm.jnts[-1]['gl_rotmatq'])
         elif jlc_name == 'all':
             pass
+        else:
+            raise ValueError("The given jlc name is not available!")
+
+    def get_gl_tcp(self, jlc_name):
+        if jlc_name == 'lft_arm':
+            return self.lft_arm.get_gl_tcp()
+        elif jlc_name == 'rgt_arm':
+            return self.rgt_arm.get_gl_tcp()
 
     def num_ik(self,
                tgt_pos,
@@ -264,7 +288,7 @@ class Yumi(ri.RobotInterface):
         elif hnd_name == 'rgt_hnd':
             self.rgt_hnd.jaw_to(jaw_width)
         else:
-            raise ValueError("Hnd_name must be lft_hnd or rgt_hnd!")
+            raise ValueError("The given hnd name is not available!")
 
     def hold(self, objcm, jaw_width=None, hnd_name='lft_hnd'):
         """
@@ -444,11 +468,15 @@ if __name__ == '__main__':
     base = wd.World(campos=[1.5, 0, 3], lookatpos=[0, 0, .5])
     gm.gen_frame().attach_to(base)
     yumi_instance = Yumi(enable_cc=True)
+    jlc_name='rgt_arm'
     tgt_pos = np.array([.5, -.3, .3])
     tgt_rotmat = rm.rotmat_from_axangle([0,1,0], math.pi/2)
     gm.gen_frame(pos=tgt_pos, rotmat=tgt_rotmat).attach_to(base)
-    jnt_values = yumi_instance.num_ik(tgt_pos, tgt_rotmat)
-    yumi_instance.fk(jnt_values)
+    tic = time.time()
+    jnt_values = yumi_instance.num_ik(tgt_pos, tgt_rotmat, jlc_name=jlc_name)
+    toc = time.time()
+    print(toc - tic)
+    yumi_instance.fk(jnt_values, jlc_name=jlc_name)
     yumi_meshmodel = yumi_instance.gen_meshmodel()
     yumi_meshmodel.attach_to(base)
     yumi_instance.show_cdprimit()

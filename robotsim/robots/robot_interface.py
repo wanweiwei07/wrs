@@ -6,17 +6,24 @@ import robotsim._kinematics.collisionchecker as cc
 class RobotInterface(object):
 
     def __init__(self, pos=np.zeros(3), rotmat=np.eye(3), name='robot_interface'):
+        # TODO self.jlcs = {}
         self.name = name
         self.pos = pos
         self.rotmat = rotmat
         # collision detection
         self.cc = None
 
+    @property
+    def is_fk_updated(self):
+        raise NotImplementedError
+
     def change_name(self, name):
         self.name = name
 
-    @property
-    def is_fk_updated(self):
+    def get_hnd_on_jlc(self, jlc_name):
+        raise NotImplementedError
+
+    def get_jnt_ranges(self, jlc_name):
         raise NotImplementedError
 
     def is_collided(self, obstacle_list=[], otherrobot_list=[]):

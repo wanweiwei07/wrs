@@ -41,24 +41,24 @@ class ManipulatorInterface(object):
     def set_homeconf(self, jnt_values):
         self.jlc.set_homeconf(jnt_values=jnt_values)
 
-    def set_tcp(self, tcp_jntid=None, tcp_loc_pos=None, tcp_loc_rotmat=None):
-        if tcp_jntid is not None:
-            self.jlc.tcp_jntid = tcp_jntid
+    def set_tcp(self, tcp_jnt_id=None, tcp_loc_pos=None, tcp_loc_rotmat=None):
+        if tcp_jnt_id is not None:
+            self.jlc.tcp_jntid = tcp_jnt_id
         if tcp_loc_pos is not None:
             self.jlc.tcp_loc_pos = tcp_loc_pos
         if tcp_loc_rotmat is not None:
             self.jlc.tcp_loc_rotmat = tcp_loc_rotmat
 
     def get_gl_tcp(self,
-                   tcp_jntid=None,
+                   tcp_jnt_id=None,
                    tcp_loc_pos=None,
                    tcp_loc_rotmat=None):
-        return self.jlc.get_gl_tcp(tcp_jnt_id=tcp_jntid,
+        return self.jlc.get_gl_tcp(tcp_jnt_id=tcp_jnt_id,
                                    tcp_loc_pos=tcp_loc_pos,
                                    tcp_loc_rotmat=tcp_loc_rotmat)
 
-    def get_jntranges(self):
-        return self.jlc.get_jntranges()
+    def get_jnt_ranges(self):
+        return self.jlc.get_jnt_ranges()
 
     def goto_homeconf(self):
         self.jlc.fk(jnt_values=self.jlc.homeconf)

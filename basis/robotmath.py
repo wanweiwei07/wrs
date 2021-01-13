@@ -409,7 +409,10 @@ def cosine_between_vector(v1, v2):
     return np.clip(np.dot(v1_u, v2_u), -1.0, 1.0)
 
 def axangle_between_rotmat(rotmati, rotmatj):
-    raise NotImplementedError("Not yet implemented!")
+    deltaw = deltaw_between_rotmat(rotmati, rotmatj)
+    angle = np.linalg.norm(deltaw)
+    ax = deltaw/angle if isinstance(deltaw, np.ndarray) else None
+    return ax, angle
 
 def quaternion_to_axangle(quaternion):
     """

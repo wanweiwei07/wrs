@@ -1,0 +1,29 @@
+from commonimport import *
+
+if __name__ == '__main__':
+    yhx = robothelper.RobotHelperX(usereal=True, startworld=True)
+
+    yhx.pxc.triggerframe()
+    realpcd = yhx.pxc.getpcd()
+    sensorhomomat = pickle.load(open(os.path.join(yhx.root, "datacalibration", "calibmat.pkl"), "rb"))
+    pcd = rm.homotransformpointarray(sensorhomomat, realpcd)
+    pcdnp = yhx.p3dh.genpointcloudnodepath(pcd)
+    pcdnp.reparentTo(yhx.base.render)
+
+    # refinedsensorhomomat = pickle.load(open(os.path.join(yhx.root, "datacalibration", "refinedcalibmat.pkl"), "rb"))
+    # refinedpcd = rm.homotransformpointarray(refinedsensorhomomat, realpcd)
+    # refinedpcdnp = yhx.p3dh.genpointcloudnodepath(refinedpcd, colors=[.5,1,.5,1])
+    # refinedpcdnp.reparentTo(yhx.base.render)
+
+    # yhx.rbt.movearmfk(yhx.rbtx.getarmjntsx(armname="rgt"), armname="rgt")
+    # tcppos, tcprot = yhx.rbt.gettcp()
+    # yhx.p3dh.genframe(tcppos, tcprot, thickness=15).reparentTo(yhx.base.render)
+    # minx = tcppos[0]-100
+    # maxx = minx+100
+    # miny = tcppos[1]
+    # maxy = miny+140
+    # minz = tcppos[2]
+    # maxz = tcppos[2]+70
+    # pcd = o3dh.cropnx3nparray(pcd, [minx, maxx], [miny, maxy], [minz, maxz])
+
+    yhx.show()
