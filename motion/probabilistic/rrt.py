@@ -15,12 +15,12 @@ class RRT(object):
         self.goal_conf = None
 
     def _is_collided(self, jlc_name, conf, obstacle_list=[], otherrobot_list=[]):
-        self.robot.fk(jlc_name=jlc_name, jnt_values=conf)
+        self.robot.fk(component_name=jlc_name, jnt_values=conf)
         return self.robot.is_collided(obstacle_list=obstacle_list, otherrobot_list=otherrobot_list)
 
     def _sample_conf(self, jlc_name, rand_rate, default_conf):
         if random.randint(0, 100) < rand_rate:
-            return self.robot.rand_conf(jlc_name=jlc_name)
+            return self.robot.rand_conf(component_name=jlc_name)
         else:
             return default_conf
 

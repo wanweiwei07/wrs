@@ -23,17 +23,17 @@ class RobotInterface(object):
     def change_name(self, name):
         self.name = name
 
-    def get_hnd_on_jlc(self, jlc_name):
+    def get_hnd_on_component(self, component_name):
         raise NotImplementedError
 
-    def get_jnt_ranges(self, jlc_name):
-        return self.manipulator_dict[jlc_name].get_jnt_ranges()
+    def get_jnt_ranges(self, component_name):
+        return self.manipulator_dict[component_name].get_jnt_ranges()
 
-    def get_jnt_values(self, jlc_name):
-        return self.manipulator_dict[jlc_name].get_jnt_values()
+    def get_jnt_values(self, manipulator_name):
+        return self.manipulator_dict[manipulator_name].get_jnt_values()
 
-    def get_gl_tcp(self, jlc_name):
-        return self.manipulator_dict[jlc_name].get_gl_tcp()
+    def get_gl_tcp(self, component_name):
+        return self.manipulator_dict[component_name].get_gl_tcp()
 
     def is_collided(self, obstacle_list=[], otherrobot_list=[]):
         """
@@ -50,14 +50,14 @@ class RobotInterface(object):
     def fix_to(self, pos, rotmat):
         raise NotImplementedError
 
-    def fk(self, jlc_name, jnt_values):
+    def fk(self, component_name, jnt_values):
         raise NotImplementedError
 
     def jaw_to(self, jaw_width, hnd_name='lft_hnd'):
         self.hnd_dict[hnd_name].jaw_to(jaw_width)
 
     def ik(self,
-           jlc_name,
+           component_name,
            tgt_pos,
            tgt_rot,
            seed_conf=None,
@@ -66,16 +66,16 @@ class RobotInterface(object):
            tcp_loc_rotmat=None,
            local_minima="accept",
            toggle_debug=False):
-        return self.manipulator_dict[jlc_name].ik(tgt_pos,
-                                                  tgt_rot,
-                                                  seed_conf=seed_conf,
-                                                  tcp_jntid=tcp_jntid,
-                                                  tcp_loc_pos=tcp_loc_pos,
-                                                  tcp_loc_rotmat=tcp_loc_rotmat,
-                                                  local_minima=local_minima,
-                                                  toggle_debug=toggle_debug)
+        return self.manipulator_dict[component_name].ik(tgt_pos,
+                                                        tgt_rot,
+                                                        seed_conf=seed_conf,
+                                                        tcp_jntid=tcp_jntid,
+                                                        tcp_loc_pos=tcp_loc_pos,
+                                                        tcp_loc_rotmat=tcp_loc_rotmat,
+                                                        local_minima=local_minima,
+                                                        toggle_debug=toggle_debug)
 
-    def rand_conf(self, jlc_name):
+    def rand_conf(self, component_name):
         raise NotImplementedError
 
     def show_cdprimit(self):

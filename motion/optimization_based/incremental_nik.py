@@ -1,15 +1,16 @@
 import math
 import numpy as np
 import basis.robotmath as rm
-import warnings as wns
-import robotsim._kinematics.jlchainik as jlcik
 
 class IncrementalNIK(object):
 
-    def __init__(self, robot, wln_ratio=.15):
+    def __init__(self, robot):
         self.rbt = robot
 
-    def _interplate(self, start_info, goal_info, granularity=.01):
+    def _interplate(self,
+                    start_info,
+                    goal_info,
+                    granularity=.01):
         """
         :param start_info: [pos, rotmat]
         :param goal_info: [pos, rotmat]
@@ -24,33 +25,46 @@ class IncrementalNIK(object):
         rotmat_list = rm.rotmat_slerp(start_rotmat, goal_rotmat, nval)
         return pos_list, rotmat_list
 
-    def gen_linear_motion(self, jlc_name, start_info, goal_info, obstacle_list=[], granularity=0.03):
-        jnt_values_bk = self.rbt.get_jnt_values(jlc_name)
+    def gen_linear_motion(self,
+                          component_name,
+                          start_info,
+                          goal_info,
+                          obstacle_list=[],
+                          granularity=0.03):
+        jnt_values_bk = self.rbt.get_jnt_values(component_name)
         pos_list, rotmat_list = self._interplate(start_info, goal_info, granularity=granularity)
         jnt_values_list = []
         seed_jnt_values = jnt_values_bk
         for (pos, rotmat) in zip(pos_list, rotmat_list):
-            jnt_values = self.rbt.ik(jlc_name, pos, rotmat, seed_conf=seed_jnt_values)
+            jnt_values = self.rbt.ik(component_name, pos, rotmat, seed_conf=seed_jnt_values)
             if jnt_values is None:
                 print("Not solvable!")
-                self.rbt.fk(jlc_name, jnt_values_bk)
+                self.rbt.fk(component_name, jnt_values_bk)
                 return []
             else:
-                self.rbt.fk(jlc_name, jnt_values)
+                self.rbt.fk(component_name, jnt_values)
                 if self.rbt.is_collided(obstacle_list):
                     print("Intermediate pose collided!")
-                    self.rbt.fk(jlc_name, jnt_values_bk)
+                    self.rbt.fk(component_name, jnt_values_bk)
                     return []
             jnt_values_list.append(jnt_values)
             seed_jnt_values = jnt_values
-        self.rbt.fk(jlc_name, jnt_values_bk)
+        self.rbt.fk(component_name, jnt_values_bk)
         return jnt_values_list
 
-    def gen_rel_linear_motion(self, pose_info, direction, distance, granularity=0.03, type='sink'):
+    def gen_rel_linear_motion(self,
+                              component_name,
+                              pose_info,
+                              direction,
+                              distance,
+                              obstacle_list=[],
+                              granularity=0.03,
+                              type='sink'):
         """
         :param pose_info:
         :param direction:
         :param distance:
+        :param obstacle_list:
         :param granularity:
         :param type: 'sink', or 'source'
         :return:
@@ -59,12 +73,27 @@ class IncrementalNIK(object):
         """
         if type == 'sink':
             start_info = [pose_info[0]-direction*distance, pose_info[1]]
-            return self.gen_linear_motion(start_info, pose_info, granularity)
+            return self.gen_linear_motion(component_name,
+                                          start_info,
+                                          pose_info,
+                                          obstacle_list,
+                                          granularity)
         elif type == 'source':
             goal_info = [pose_info[0]+direction*distance, pose_info[1]]
-            return self.gen_linear_motion(pose_info, goal_info, granularity)
+            return self.gen_linear_motion(component_name,
+                                          pose_info,
+                                          goal_info,
+                                          obstacle_list,
+                                          granularity)
         else:
             raise  ValueError("Type must be sink or source!")
+
+    def extend_motion_with_jawwidth(self, conf_list, jawwidth):
+        jawwidth_list = []
+        for _ in conf_list:
+            jawwidth_list.append(jawwidth)
+        return conf_list, jawwidth_list
+
 
 if __name__ == '__main__':
     import time

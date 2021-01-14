@@ -40,49 +40,49 @@ class FKOptimizer(object):
         return self.rbt.get_jnt_ranges(jlc_name)
 
     def _constraint_roll(self, jnt_values):
-        self.rbt.fk(jnt_values=jnt_values, jlc_name=self.jlc_name)
-        gl_tcp_pos, gl_tcp_rot = self.rbt.get_gl_tcp(jlc_name=self.jlc_name)
+        self.rbt.fk(jnt_values=jnt_values, component_name=self.jlc_name)
+        gl_tcp_pos, gl_tcp_rot = self.rbt.get_gl_tcp(component_name=self.jlc_name)
         angle = rm.angle_between_vectors(gl_tcp_rot[:3,0], self.tgt_rotmat[:3,0])
         self.roll_err.append(angle)
         return self._roll_limit-angle
 
     def _constraint_pitch(self, jnt_values):
-        self.rbt.fk(jnt_values=jnt_values, jlc_name=self.jlc_name)
-        gl_tcp_pos, gl_tcp_rot = self.rbt.get_gl_tcp(jlc_name=self.jlc_name)
+        self.rbt.fk(jnt_values=jnt_values, component_name=self.jlc_name)
+        gl_tcp_pos, gl_tcp_rot = self.rbt.get_gl_tcp(component_name=self.jlc_name)
         angle = rm.angle_between_vectors(gl_tcp_rot[:3,1], self.tgt_rotmat[:3,1])
         self.pitch_err.append(angle)
         return self._roll_limit-angle
 
     def _constraint_yaw(self, jnt_values):
-        self.rbt.fk(jnt_values=jnt_values, jlc_name=self.jlc_name)
-        gl_tcp_pos, gl_tcp_rot = self.rbt.get_gl_tcp(jlc_name=self.jlc_name)
+        self.rbt.fk(jnt_values=jnt_values, component_name=self.jlc_name)
+        gl_tcp_pos, gl_tcp_rot = self.rbt.get_gl_tcp(component_name=self.jlc_name)
         angle = rm.angle_between_vectors(gl_tcp_rot[:3,2], self.tgt_rotmat[:3,2])
         self.yaw_err.append(angle)
         return self._roll_limit-angle
 
     def _constraint_x(self, jnt_values):
-        self.rbt.fk(jnt_values=jnt_values, jlc_name=self.jlc_name)
-        gl_tcp_pos, gl_tcp_rot = self.rbt.get_gl_tcp(jlc_name=self.jlc_name)
+        self.rbt.fk(jnt_values=jnt_values, component_name=self.jlc_name)
+        gl_tcp_pos, gl_tcp_rot = self.rbt.get_gl_tcp(component_name=self.jlc_name)
         x_err = abs(self.tgt_pos[0] - gl_tcp_pos[0])
         self.x_err.append(x_err)
         return self._x_limit - x_err
 
     def _constraint_y(self, jnt_values):
-        self.rbt.fk(jnt_values=jnt_values, jlc_name=self.jlc_name)
-        gl_tcp_pos, gl_tcp_rot = self.rbt.get_gl_tcp(jlc_name=self.jlc_name)
+        self.rbt.fk(jnt_values=jnt_values, component_name=self.jlc_name)
+        gl_tcp_pos, gl_tcp_rot = self.rbt.get_gl_tcp(component_name=self.jlc_name)
         y_err = abs(self.tgt_pos[0] - gl_tcp_pos[0])
         self.y_err.append(y_err)
         return self._y_limit - y_err
 
     def _constraint_z(self, jnt_values):
-        self.rbt.fk(jnt_values=jnt_values, jlc_name=self.jlc_name)
-        gl_tcp_pos, gl_tcp_rot = self.rbt.get_gl_tcp(jlc_name=self.jlc_name)
+        self.rbt.fk(jnt_values=jnt_values, component_name=self.jlc_name)
+        gl_tcp_pos, gl_tcp_rot = self.rbt.get_gl_tcp(component_name=self.jlc_name)
         z_err = abs(self.tgt_pos[0] - gl_tcp_pos[0])
         self.z_err.append(z_err)
         return self._z_limit - z_err
 
     def _constraint_collision(self, jnt_values):
-        self.rbt.fk(jnt_values=jnt_values, jlc_name=self.jlc_name)
+        self.rbt.fk(jnt_values=jnt_values, component_name=self.jlc_name)
         if self.rbt.is_collided():
             return -1
         else:
@@ -160,7 +160,7 @@ if __name__ == '__main__':
     oik = FKOptimizer(yumi_instance, jlc_name=jlc_name, toggle_debug=False)
     jnt_values, _ = oik.solve(np.zeros(7), tgt_pos, tgt_rotmat=tgt_rotmat, method='SLSQP')
     print(jnt_values)
-    yumi_instance.fk(jnt_values, jlc_name=jlc_name)
+    yumi_instance.fk(jnt_values, component_name=jlc_name)
     yumi_meshmodel = yumi_instance.gen_meshmodel()
     yumi_meshmodel.attach_to(base)
     base.run()

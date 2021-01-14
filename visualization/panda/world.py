@@ -171,7 +171,7 @@ class World(ShowBase, object):
             robot_path = _manualupdate_robotinfo.robot_path
             robot_path_counter = _manualupdate_robotinfo.robot_path_counter
             robot_meshmodel.detach()
-            robot_instance.fk(robot_path[robot_path_counter], jlc_name=robot_jlc_name)
+            robot_instance.fk(robot_path[robot_path_counter], component_name=robot_jlc_name)
             _manualupdate_robotinfo.robot_meshmodel = robot_instance.gen_meshmodel(
                 tcp_jntid=robot_meshmodel_parameter[0],
                 tcp_loc_pos=robot_meshmodel_parameter[1],

@@ -43,7 +43,7 @@ if __name__ == '__main__':
     rmt_robot_instance = rvc.copy_to_remote(robot_instance)
     # rvc.show_stationary_obj(rmt_obj)
     robot_jlc_name = 'arm'
-    robot_instance.fk(np.array([0, math.pi * 2 / 3, 0, math.pi, 0, -math.pi / 6, 0]), jlc_name=robot_jlc_name)
+    robot_instance.fk(np.array([0, math.pi * 2 / 3, 0, math.pi, 0, -math.pi / 6, 0]), component_name=robot_jlc_name)
     rrtc_planner = rrtc.RRTConnect(robot_instance)
     path = rrtc_planner.plan(start_conf=np.array([0, math.pi * 2 / 3, 0, math.pi, 0, -math.pi / 6, 0]),
                              goal_conf=np.array([math.pi / 3, math.pi * 1 / 3, 0, math.pi / 2, 0, math.pi / 6, 0]),
@@ -51,7 +51,7 @@ if __name__ == '__main__':
                              ext_dist=.1,
                              rand_rate=70,
                              maxtime=300,
-                             jlc_name=robot_jlc_name)
+                             component_name=robot_jlc_name)
     import copy
     rmt_anime_robotinfo = rvc.add_anime_robot(rmt_robot_instance=rmt_robot_instance,
                                               loc_robot_jlc_name=robot_jlc_name,
@@ -65,7 +65,7 @@ if __name__ == '__main__':
     newpath = copy.deepcopy(path)
     rmt_robot_instance2 = rvc.copy_to_remote(robot_instance)
     for pose in newpath:
-        robot_instance.fk(pose, jlc_name='arm')
+        robot_instance.fk(pose, component_name='arm')
         # rmt_robot_mesh_list.append(rvc.showmodel_to_remote(robot_instance.gen_meshmodel()))
         rmt_robot_mesh_list.append(rvc.add_stationary_robot(rmt_robot_instance2, robot_instance))
         # time.sleep(.1)

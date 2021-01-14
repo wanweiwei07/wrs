@@ -106,20 +106,20 @@ class XArm7YunjiMobile(ri.RobotInterface):
     def fix_to(self, pos, rotmat):
         self.move_to(pos=pos, rotmat=rotmat)
 
-    def fk(self, jnt_values, jlc_name='arm'):
+    def fk(self, jnt_values, component_name='arm'):
         """
         :param jnt_values: 7 or 3+7, 3=agv, 7=arm, 1=grpr; metrics: meter-radian
-        :param jlc_name: 'arm', 'agv', or 'all'
+        :param component_name: 'arm', 'agv', or 'all'
         :return:
         author: weiwei
         date: 20201208toyonaka
         """
-        if jlc_name == 'arm':
+        if component_name == 'arm':
             if not isinstance(jnt_values, np.ndarray) or jnt_values.size != 7:
                 raise ValueError("An 1x7 npdarray must be specified to move the arm!")
             self.arm.fk(jnt_values=jnt_values)
             self.hnd.fix_to(pos=self.arm.jnts[-1]['gl_posq'], rotmat=self.arm.jnts[-1]['gl_rotmatq'])
-        elif jlc_name == 'agv':
+        elif component_name == 'agv':
             if not isinstance(jnt_values, np.ndarray) or jnt_values.size != 3:
                 raise ValueError("An 1x7 npdarray must be specified to move the agv!")
             self.pos = np.zeros(3)
@@ -128,7 +128,7 @@ class XArm7YunjiMobile(ri.RobotInterface):
             self.agv.fix_to(self.pos, self.rotmat)
             self.arm.fix_to(pos=self.agv.jnts[-1]['gl_posq'], rotmat=self.agv.jnts[-1]['gl_rotmatq'])
             self.hnd.fix_to(pos=self.arm.jnts[-1]['gl_posq'], rotmat=self.arm.jnts[-1]['gl_rotmatq'])
-        elif jlc_name == 'agv_arm':
+        elif component_name == 'agv_arm':
             if not isinstance(jnt_values, np.ndarray) or jnt_values.size != 10:
                 raise ValueError("An 1x9 npdarray must be specified to move both the agv and the arm!")
             self.pos = np.zeros(3)
@@ -138,7 +138,7 @@ class XArm7YunjiMobile(ri.RobotInterface):
             self.arm.fix_to(pos=self.agv.jnts[-1]['gl_posq'], rotmat=self.agv.jnts[-1]['gl_rotmatq'], jnt_values=jnt_values[3:10])
             self.hnd.fix_to(pos=self.arm.jnts[-1]['gl_posq'], rotmat=self.arm.jnts[-1]['gl_rotmatq'])
             # TODO ? update objects in hand if available
-        elif jlc_name == 'all':
+        elif component_name == 'all':
             if not isinstance(jnt_values, np.ndarray) or jnt_values.size != 11:
                 raise ValueError("An 1x10 npdarray must be specified to move all joints!")
             self.pos = np.zeros(3)
@@ -155,14 +155,14 @@ class XArm7YunjiMobile(ri.RobotInterface):
     def ik(self,
            tgt_pos,
            tgt_rot,
-           jlc_name='arm',
+           component_name='arm',
            seed_conf=None,
            tcp_jntid=None,
            tcp_loc_pos=None,
            tcp_loc_rotmat=None,
            local_minima="accept",
            toggle_debug=False):
-        if jlc_name == 'arm':
+        if component_name == 'arm':
             return self.arm.ik(tgt_pos,
                                tgt_rot,
                                seed_conf=seed_conf,
@@ -171,7 +171,7 @@ class XArm7YunjiMobile(ri.RobotInterface):
                                tcp_loc_rotmat=tcp_loc_rotmat,
                                local_minima=local_minima,
                                toggle_debug=toggle_debug)
-        elif jlc_name == 'agv_arm' or jlc_name == 'all':
+        elif component_name == 'agv_arm' or component_name == 'all':
             pass
 
     def get_jntvalues(self, jlc_name):
@@ -196,12 +196,12 @@ class XArm7YunjiMobile(ri.RobotInterface):
             return_val[10] = self.hnd.get_jawwidth()
             return return_val
 
-    def rand_conf(self, jlc_name):
-        if jlc_name == 'arm':
+    def rand_conf(self, component_name):
+        if component_name == 'arm':
             return self.arm.rand_conf()
-        if jlc_name == 'agv':
+        if component_name == 'agv':
             raise NotImplementedError
-        if jlc_name == 'agv_arm':
+        if component_name == 'agv_arm':
             raise NotImplementedError
 
     def jaw_to(self, jawwidth):
@@ -322,7 +322,7 @@ if __name__ == '__main__':
 
     gm.gen_frame().attach_to(base)
     xav = XArm7YunjiMobile(enable_cc=True)
-    xav.fk(np.array([0, 0, 0, 0, 0, 0, math.pi, 0, -math.pi / 6, 0, 0]), jlc_name='all')
+    xav.fk(np.array([0, 0, 0, 0, 0, 0, math.pi, 0, -math.pi / 6, 0, 0]), component_name='all')
     xav.jaw_to(.08)
     tgt_pos = np.array([.85, 0, .5])
     tgt_rotmat = rm.rotmat_from_axangle([0,1,0], math.pi/2)

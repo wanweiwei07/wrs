@@ -441,7 +441,7 @@ if __name__ == '__main__':
     jnt_values = niksolver.num_ik(tgt_pos, tgt_rotmat, toggle_debug=True)
     toc = time.time()
     print(toc - tic)
-    yumi_instance.fk(jnt_values, jlc_name=jlc_name)
+    yumi_instance.fk(jnt_values, component_name=jlc_name)
     yumi_meshmodel = yumi_instance.gen_meshmodel()
     yumi_meshmodel.attach_to(base)
     yumi_instance.show_cdprimit()

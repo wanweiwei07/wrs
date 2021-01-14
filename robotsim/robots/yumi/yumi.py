@@ -196,10 +196,10 @@ class Yumi(ri.RobotInterface):
                     self.rgt_hnd.rgt.lnks[1]]
         self.cc.set_cdpair(fromlist, intolist)
 
-    def get_hnd_on_jlc(self, jlc_name):
-        if jlc_name == 'rgt_arm':
+    def get_hnd_on_component(self, component_name):
+        if component_name == 'rgt_arm':
             return self.rgt_hnd
-        elif jlc_name == 'lft_arm':
+        elif component_name == 'lft_arm':
             return self.lft_hnd
         else:
             raise ValueError("The given jlc does not have a hand!")
@@ -217,23 +217,23 @@ class Yumi(ri.RobotInterface):
         self.rgt_hnd.fix_to(pos=self.rgt_arm.jnts[-1]['gl_posq'],
                             rotmat=self.rgt_arm.jnts[-1]['gl_rotmatq'])
 
-    def fk(self, jlc_name, jnt_values):
+    def fk(self, component_name, jnt_values):
         """
         :param jnt_values: [nparray, nparray], 7+7, meter-radian
         :jlc_name 'lft_arm', 'rgt_arm', 'both_arm'
-        :param jlc_name:
+        :param component_name:
         :return:
         author: weiwei
         date: 20201208toyonaka
         """
         # examine length
-        if jlc_name == 'lft_arm' or jlc_name == 'rgt_arm':
+        if component_name == 'lft_arm' or component_name == 'rgt_arm':
             if not isinstance(jnt_values, np.ndarray) or jnt_values.size != 7:
                 raise ValueError("An 1x7 npdarray must be specified to move a single arm!")
-            self.manipulator_dict[jlc_name].fk(jnt_values=jnt_values)
-            self.get_hnd_on_jlc(jlc_name).fix_to(pos=self.manipulator_dict[jlc_name].jnts[-1]['gl_posq'],
-                                                 rotmat=self.manipulator_dict[jlc_name].jnts[-1]['gl_rotmatq'])
-        elif jlc_name == 'both_arm':
+            self.manipulator_dict[component_name].fk(jnt_values=jnt_values)
+            self.get_hnd_on_jlc(component_name).fix_to(pos=self.manipulator_dict[component_name].jnts[-1]['gl_posq'],
+                                                       rotmat=self.manipulator_dict[component_name].jnts[-1]['gl_rotmatq'])
+        elif component_name == 'both_arm':
             if (not isinstance(jnt_values, list)
                     or jnt_values[0].size != 7
                     or jnt_values[1].size != 7):
@@ -244,7 +244,7 @@ class Yumi(ri.RobotInterface):
             self.rgt_arm.fk(jnt_values=jnt_values[1])
             self.rgt_hnd.fix_to(pos=self.rgt_arm.jnts[-1]['gl_posq'],
                                 rotmat=self.rgt_arm.jnts[-1]['gl_rotmatq'])
-        elif jlc_name == 'all':
+        elif component_name == 'all':
             pass
         else:
             raise ValueError("The given jlc name is not available!")
