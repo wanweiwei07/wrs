@@ -9,7 +9,7 @@ from scipy.optimize import minimize
 import basis.robotmath as rm
 
 
-class FKOptimizer(object):
+class FkOptimizer(object):
 
     def __init__(self, robot, jlc_name, toggle_debug=False):
         self.rbt = robot
@@ -42,23 +42,23 @@ class FKOptimizer(object):
     def _constraint_roll(self, jnt_values):
         self.rbt.fk(jnt_values=jnt_values, jlc_name=self.jlc_name)
         gl_tcp_pos, gl_tcp_rot = self.rbt.get_gl_tcp(jlc_name=self.jlc_name)
-        angle = rm.angle_between_vectors(gl_tcp_rot[:3,0], self.tgt_rotmat[:3,0])
+        angle = rm.angle_between_vectors(gl_tcp_rot[:3, 0], self.tgt_rotmat[:3, 0])
         self.roll_err.append(angle)
-        return self._roll_limit-angle
+        return self._roll_limit - angle
 
     def _constraint_pitch(self, jnt_values):
         self.rbt.fk(jnt_values=jnt_values, jlc_name=self.jlc_name)
         gl_tcp_pos, gl_tcp_rot = self.rbt.get_gl_tcp(jlc_name=self.jlc_name)
-        angle = rm.angle_between_vectors(gl_tcp_rot[:3,1], self.tgt_rotmat[:3,1])
+        angle = rm.angle_between_vectors(gl_tcp_rot[:3, 1], self.tgt_rotmat[:3, 1])
         self.pitch_err.append(angle)
-        return self._roll_limit-angle
+        return self._roll_limit - angle
 
     def _constraint_yaw(self, jnt_values):
         self.rbt.fk(jnt_values=jnt_values, jlc_name=self.jlc_name)
         gl_tcp_pos, gl_tcp_rot = self.rbt.get_gl_tcp(jlc_name=self.jlc_name)
-        angle = rm.angle_between_vectors(gl_tcp_rot[:3,2], self.tgt_rotmat[:3,2])
+        angle = rm.angle_between_vectors(gl_tcp_rot[:3, 2], self.tgt_rotmat[:3, 2])
         self.yaw_err.append(angle)
-        return self._roll_limit-angle
+        return self._roll_limit - angle
 
     def _constraint_x(self, jnt_values):
         self.rbt.fk(jnt_values=jnt_values, jlc_name=self.jlc_name)
@@ -70,14 +70,14 @@ class FKOptimizer(object):
     def _constraint_y(self, jnt_values):
         self.rbt.fk(jnt_values=jnt_values, jlc_name=self.jlc_name)
         gl_tcp_pos, gl_tcp_rot = self.rbt.get_gl_tcp(jlc_name=self.jlc_name)
-        y_err = abs(self.tgt_pos[0] - gl_tcp_pos[0])
+        y_err = abs(self.tgt_pos[1] - gl_tcp_pos[1])
         self.y_err.append(y_err)
         return self._y_limit - y_err
 
     def _constraint_z(self, jnt_values):
         self.rbt.fk(jnt_values=jnt_values, jlc_name=self.jlc_name)
         gl_tcp_pos, gl_tcp_rot = self.rbt.get_gl_tcp(jlc_name=self.jlc_name)
-        z_err = abs(self.tgt_pos[0] - gl_tcp_pos[0])
+        z_err = abs(self.tgt_pos[2] - gl_tcp_pos[2])
         self.z_err.append(z_err)
         return self._z_limit - z_err
 
@@ -96,7 +96,9 @@ class FKOptimizer(object):
             self.jnts.append(jnt_values)
             self.jnt_diff.append(np.linalg.norm(self.seed_jnt_values - jnt_values))
             # if random.choice(range(20)) == 0:
-            #     self.rbth.show_armjnts(armjnts=self.jnts[-1], rgba=(.7, .7, .7, .2))
+            #     yumi_meshmodel = yumi_instance.gen_meshmodel(rgba=(1, 0, 0, .2))
+            #     yumi_meshmodel.attach_to(base)
+
         return np.linalg.norm(jnt_values - self.seed_jnt_values)
 
     def solve(self, seed_jnt_values, tgt_pos, tgt_rotmat=None, method='SLSQP'):
@@ -134,17 +136,50 @@ class FKOptimizer(object):
         else:
             return None, None
 
+    def _plot_vlist(self, vlist, label=None, title=None):
+        plt.plot(range(len(vlist)), vlist, label=label)
+        if title is not None:
+            plt.title(title)
+        # plt.show()
+
+    def _plot_armjnts(self, path, scatter=False, title="armjnts", show=True):
+        path = np.array(path)
+        x = range(len(path))
+        if scatter:
+            plt.scatter(x, [p for p in path[:, 0]])
+            plt.scatter(x, [p for p in path[:, 1]])
+            plt.scatter(x, [p for p in path[:, 2]])
+            plt.scatter(x, [p for p in path[:, 3]])
+            plt.scatter(x, [p for p in path[:, 4]])
+            plt.scatter(x, [p for p in path[:, 5]])
+        else:
+            plt.plot(x, [p for p in path[:, 0]])
+            plt.plot(x, [p for p in path[:, 1]])
+            plt.plot(x, [p for p in path[:, 2]])
+            plt.plot(x, [p for p in path[:, 3]])
+            plt.plot(x, [p for p in path[:, 4]])
+            plt.plot(x, [p for p in path[:, 5]])
+        plt.title(title)
+        plt.legend(range(6))
+        if show:
+            plt.show()
+
     def _debug_plot(self):
         fig = plt.figure(1, figsize=(6.4 * 3, 4.8 * 2))
         plt.subplot(231)
-        self.rbth.plot_vlist(self.pos_err, title="translation error")
+        self._plot_vlist(self.x_err, title="translation error x")
         plt.subplot(232)
-        self.rbth.plot_vlist(self.rot_err, title="rotation error")
+        self._plot_vlist(self.y_err, title="translation error y")
         plt.subplot(233)
-        self.rbth.plot_vlist(self.jnt_diff, title="jnts displacement")
+        self._plot_vlist(self.z_err, title="translation error z")
         plt.subplot(234)
-        self.rbth.plot_armjnts(self.jnts, show=False)
+        self._plot_vlist(self.roll_err, title="rotation error")
+        plt.subplot(235)
+        self._plot_vlist(self.jnt_diff, title="jnts displacement")
+        plt.subplot(236)
+        self._plot_armjnts(self.jnts, show=False)
         plt.show()
+
 
 if __name__ == '__main__':
     import visualization.panda.world as wd
@@ -152,15 +187,17 @@ if __name__ == '__main__':
     import modeling.geometricmodel as gm
 
     base = wd.World(campos=[1.5, 0, 3], lookatpos=[0, 0, .5])
-    jlc_name='rgt_arm'
+    jlc_name = 'rgt_arm'
     tgt_pos = np.array([.5, -.3, .3])
-    tgt_rotmat = rm.rotmat_from_axangle([0,1,0], math.pi/2)
+    tgt_rotmat = rm.rotmat_from_axangle([0, 1, 0], math.pi / 2)
     gm.gen_frame(pos=tgt_pos, rotmat=tgt_rotmat).attach_to(base)
+
     yumi_instance = ym.Yumi(enable_cc=True)
-    oik = FKOptimizer(yumi_instance, jlc_name=jlc_name, toggle_debug=False)
+    oik = FkOptimizer(yumi_instance, jlc_name=jlc_name, toggle_debug=True)
     jnt_values, _ = oik.solve(np.zeros(7), tgt_pos, tgt_rotmat=tgt_rotmat, method='SLSQP')
     print(jnt_values)
     yumi_instance.fk(jnt_values, jlc_name=jlc_name)
+    print(yumi_instance.get_gl_tcp(jlc_name=jlc_name))
     yumi_meshmodel = yumi_instance.gen_meshmodel()
     yumi_meshmodel.attach_to(base)
     base.run()
