@@ -156,7 +156,7 @@ if __name__ == '__main__':
         def get_jntvalues(self, jlc_name='all'):
             if jlc_name != 'all':
                 raise ValueError("Only support jlc_name == 'all'!")
-            return self.jlc.get_jntvalues()
+            return self.jlc.get_jnt_values()
 
         def is_collided(self, obstacle_list=[], otherrobot_list=[]):
             for (obpos, size) in obstacle_list:

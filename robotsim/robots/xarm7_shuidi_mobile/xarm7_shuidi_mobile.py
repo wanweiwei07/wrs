@@ -152,20 +152,20 @@ class XArm7YunjiMobile(ri.RobotInterface):
             obj_info['gl_pos'] = gl_pos
             obj_info['gl_rotmat'] = gl_rotmat
 
-    def num_ik(self,
-               tgt_pos,
-               tgt_rot,
-               jlc_name='arm',
-               start_conf=None,
-               tcp_jntid=None,
-               tcp_loc_pos=None,
-               tcp_loc_rotmat=None,
-               local_minima="accept",
-               toggle_debug=False):
+    def ik(self,
+           tgt_pos,
+           tgt_rot,
+           jlc_name='arm',
+           seed_conf=None,
+           tcp_jntid=None,
+           tcp_loc_pos=None,
+           tcp_loc_rotmat=None,
+           local_minima="accept",
+           toggle_debug=False):
         if jlc_name == 'arm':
             return self.arm.ik(tgt_pos,
                                tgt_rot,
-                               start_conf=start_conf,
+                               seed_conf=seed_conf,
                                tcp_jntid=tcp_jntid,
                                tcp_loc_pos=tcp_loc_pos,
                                tcp_loc_rotmat=tcp_loc_rotmat,
@@ -176,7 +176,7 @@ class XArm7YunjiMobile(ri.RobotInterface):
 
     def get_jntvalues(self, jlc_name):
         if jlc_name == 'arm':
-            return self.arm.get_jntvalues()
+            return self.arm.get_jnt_values()
         elif jlc_name == 'agv':
             return_val = np.zeros(3)
             return_val[:2] = self.pos[:2]
@@ -186,13 +186,13 @@ class XArm7YunjiMobile(ri.RobotInterface):
             return_val = np.zeros(10)
             return_val[:2] = self.pos[:2]
             return_val[2] = rm.axangle_between_rotmat(np.eye(3), self.rotmat)[1]
-            return_val[3:10] = self.arm.get_jntvalues()[:]
+            return_val[3:10] = self.arm.get_jnt_values()[:]
             return return_val
         elif jlc_name == 'all':
             return_val = np.zeros(11)
             return_val[:2] = self.pos[:2]
             return_val[2] = np.linalg.norm(rm.deltaw_between_rotmat(np.eye(3), self.rotmat))
-            return_val[3:10] = self.arm.get_jntvalues()[:]
+            return_val[3:10] = self.arm.get_jnt_values()[:]
             return_val[10] = self.hnd.get_jawwidth()
             return return_val
 
@@ -327,9 +327,9 @@ if __name__ == '__main__':
     tgt_pos = np.array([.85, 0, .5])
     tgt_rotmat = rm.rotmat_from_axangle([0,1,0], math.pi/2)
     gm.gen_frame(pos=tgt_pos, rotmat=tgt_rotmat).attach_to(base)
-    jnt_values = xav.num_ik(tgt_pos, tgt_rotmat)
+    jnt_values = xav.ik(tgt_pos, tgt_rotmat)
     tgt_pos2 = np.array([.7, 0, .5])
-    jnt_values2 = xav.num_ik(tgt_pos2, tgt_rotmat, start_conf=jnt_values)
+    jnt_values2 = xav.ik(tgt_pos2, tgt_rotmat, seed_conf=jnt_values)
     print(jnt_values)
     xav.fk(jnt_values2)
     xav_meshmodel = xav.gen_meshmodel(toggle_tcpcs=True)

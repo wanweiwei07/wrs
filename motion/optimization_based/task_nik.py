@@ -4,53 +4,61 @@ import basis.robotmath as rm
 import warnings as wns
 
 
-class NIKOptimizer(object):
+class NIK(object):
 
-    def __init__(self, robot, jlc_name, wlnratio=.15):
+    def __init__(self, robot, jlc_name, wln_ratio=.15):
         self.rbt = robot
         self.jlc_name = jlc_name
+        self.jlc_object = self.rbt.component_dict[jlc_name].jlc
+        self.wln_ratio = wln_ratio
+        # workspace bound
+        self.max_rng = 2.0 # meter
         # IK macros
         wt_pos = 0.628  # 0.628m->1 == 0.01->0.00628m
         wt_agl = 1 / (math.pi * math.pi)  # pi->1 == 0.01->0.18degree
         self.ws_wtlist = [wt_pos, wt_pos, wt_pos, wt_agl, wt_agl, wt_agl]
         # maximum reach
-        self.max_rng = 2
-
+        self.jnt_bounds = np.array(self.rbt.get_jnt_ranges(jlc_name))
         # extract min max for quick access
-        self.jmvmin = np.zeros(self.rbt.ndof)
-        self.jmvmax = np.zeros(self.rbt.ndof)
-        counter = 0
-        for id in jlobject.tgtjnts:
-            self.jmvmin[counter] = jlobject.jnts[id]['motion_rng'][0]
-            self.jmvmax[counter] = jlobject.jnts[id]['motion_rng'][1]
-            counter += 1
-        self.jmvrng = self.jmvmax - self.jmvmin
-        self.jmvmin_threshhold = self.jmvmin + self.jmvrng * wlnratio
-        self.jmvmax_threshhold = self.jmvmax - self.jmvrng * wlnratio
+        self.jmvmin = self.jnt_bounds[:,0]
+        self.jmvmax = self.jnt_bounds[:,1]
+        self.jmvrng = self.jmvmax-self.jmvmin
+        self.jmvmin_threshhold = self.jmvmin + self.jmvrng * self.wln_ratio
+        self.jmvmax_threshhold = self.jmvmax - self.jmvrng * self.wln_ratio
 
-    def _jacobian_sgl(self, tcp_jntid):
+    def set_jlc(self, jlc_name):
+        self.jlc_name=jlc_name
+        self.jnt_bounds = np.array(self.rbt.get_jnt_ranges(jlc_name))
+        # extract min max for quick access
+        self.jmvmin = self.jnt_bounds[:,0]
+        self.jmvmax = self.jnt_bounds[:,1]
+        self.jmvrng = self.jmvmax-self.jmvmin
+        self.jmvmin_threshhold = self.jmvmin + self.jmvrng * self.wln_ratio
+        self.jmvmax_threshhold = self.jmvmax - self.jmvrng * self.wln_ratio
+
+    def jacobian(self, tcp_jntid):
         """
         compute the jacobian matrix of a rjlinstance
         only a single tcp_jntid is acceptable
         :param tcp_jntid: the joint id where the tool center pose is specified, single vlaue
-        :return: jmat, a 6xn nparray
+        :return: j, a 6xn nparray
         author: weiwei
         date: 20161202, 20200331, 20200706
         """
-        jmat = np.zeros((6, len(self.jlobject.tgtjnts)))
+        j = np.zeros((6, len(self.jlc_object.tgtjnts)))
         counter = 0
-        for jid in self.jlobject.tgtjnts:
-            grax = self.jlobject.jnts[jid]["gl_motionax"]
-            if self.jlobject.jnts[jid]["type"] == 'revolute':
-                diffq = self.jlobject.jnts[tcp_jntid]["gl_posq"] - self.jlobject.jnts[jid]["gl_posq"]
-                jmat[:3, counter] = np.cross(grax, diffq)
-                jmat[3:6, counter] = grax
-            if self.jlobject.jnts[jid]["type"] == 'prismatic':
-                jmat[:3, counter] = grax
+        for jid in self.jlc_object.tgtjnts:
+            grax = self.jlc_object.jnts[jid]["gl_motionax"]
+            if self.jlc_object.jnts[jid]["type"] == 'revolute':
+                diffq = self.jlc_object.jnts[tcp_jntid]["gl_posq"] - self.jlc_object.jnts[jid]["gl_posq"]
+                j[:3, counter] = np.cross(grax, diffq)
+                j[3:6, counter] = grax
+            if self.jlc_object.jnts[jid]["type"] == 'prismatic':
+                j[:3, counter] = grax
             counter += 1
             if jid == tcp_jntid:
                 break
-        return jmat
+        return j
 
     def _wln_weightmat(self, jntvalues):
         """
@@ -60,7 +68,7 @@ class NIKOptimizer(object):
         author: weiwei
         date: 20201126
         """
-        wtmat = np.ones(self.jlobject.ndof)
+        wtmat = np.ones(self.jlc_object.ndof)
         # min damping interval
         selection = (jntvalues - self.jmvmin_threshhold < 0)
         diff_selected = self.jmvmin_threshhold[selection] - jntvalues[selection]
@@ -73,23 +81,6 @@ class NIKOptimizer(object):
         wtmat[jntvalues <= self.jmvmin] = 1e-6
         return np.diag(wtmat)
 
-    def jacobian(self, tcp_jntid):
-        """
-        compute the jacobian matrix of a rjlinstance
-        multiple tcp_jntid acceptable
-        :param tcp_jntid: the joint id where the tool center pose is specified, single vlaue or list
-        :return: jmat, a sum(len(option))xn nparray
-        author: weiwei
-        date: 20161202, 20200331, 20200706, 20201114
-        """
-        if isinstance(tcp_jntid, list):
-            jmat = np.zeros((6 * (len(tcp_jntid)), len(self.jlobject.tgtjnts)))
-            for i, this_tcp_jntid in enumerate(tcp_jntid):
-                jmat[6 * i:6 * i + 6, :] = self._jacobian_sgl(this_tcp_jntid)
-            return jmat
-        else:
-            return self._jacobian_sgl(tcp_jntid)
-
     def manipulability(self, tcp_jntid):
         """
         compute the yoshikawa manipulability of the rjlinstance
@@ -98,8 +89,8 @@ class NIKOptimizer(object):
         author: weiwei
         date: 20200331
         """
-        jmat = self.jacobian(tcp_jntid)
-        return math.sqrt(np.linalg.det(np.dot(jmat, jmat.transpose())))
+        j = self.jacobian(tcp_jntid)
+        return math.sqrt(np.linalg.det(np.dot(j, j.transpose())))
 
     def manipulability_axmat(self, tcp_jntid):
         """
@@ -131,26 +122,15 @@ class NIKOptimizer(object):
         date: 20200706
         """
         if tcp_jnt_id is None:
-            tcp_jnt_id = self.jlobject.tcp_jntid
+            tcp_jnt_id = self.jlc_object.tcp_jntid
         if tcp_loc_pos is None:
-            tcp_loc_pos = self.jlobject.tcp_loc_pos
+            tcp_loc_pos = self.jlc_object.tcp_loc_pos
         if tcp_loc_rotmat is None:
-            tcp_loc_rotmat = self.jlobject.tcp_loc_rotmat
-        if isinstance(tcp_jnt_id, list):
-            returnposlist = []
-            returnrotmatlist = []
-            for i, jid in enumerate(tcp_jnt_id):
-                tcp_gl_pos = np.dot(self.jlobject.jnts[jid]["gl_rotmatq"], tcp_loc_pos[i]) + \
-                                self.jlobject.jnts[jid]["gl_posq"]
-                tcp_gl_rotmat = np.dot(self.jlobject.jnts[jid]["gl_rotmatq"], tcp_loc_rotmat[i])
-                returnposlist.append(tcp_gl_pos)
-                returnrotmatlist.append(tcp_gl_rotmat)
-            return [returnposlist, returnrotmatlist]
-        else:
-            tcp_gl_pos = np.dot(self.jlobject.jnts[tcp_jnt_id]["gl_rotmatq"], tcp_loc_pos) + \
-                         self.jlobject.jnts[tcp_jnt_id]["gl_posq"]
-            tcp_gl_rotmat = np.dot(self.jlobject.jnts[tcp_jnt_id]["gl_rotmatq"], tcp_loc_rotmat)
-            return tcp_gl_pos, tcp_gl_rotmat
+            tcp_loc_rotmat = self.jlc_object.tcp_loc_rotmat
+        tcp_gl_pos = np.dot(self.jlc_object.jnts[tcp_jnt_id]["gl_rotmatq"], tcp_loc_pos) + \
+                     self.jlc_object.jnts[tcp_jnt_id]["gl_posq"]
+        tcp_gl_rotmat = np.dot(self.jlc_object.jnts[tcp_jnt_id]["gl_rotmatq"], tcp_loc_rotmat)
+        return tcp_gl_pos, tcp_gl_rotmat
 
     def tcp_error(self, tgt_pos, tgt_rot, tcp_jntid, tcp_loc_pos, tcp_loc_rotmat):
         """
@@ -167,17 +147,10 @@ class NIKOptimizer(object):
         date: 20180827, 20200331, 20200705
         """
         tcp_globalpos, tcp_globalrotmat = self.get_gl_tcp(tcp_jntid, tcp_loc_pos, tcp_loc_rotmat)
-        if isinstance(tgt_pos, list):
-            deltapw = np.zeros(6 * len(tgt_pos))
-            for i, thistgt_pos in enumerate(tgt_pos):
-                deltapw[6 * i:6 * i + 3] = (thistgt_pos - tcp_globalpos[i])
-                deltapw[6 * i + 3:6 * i + 6] = rm.deltaw_between_rotmat(tgt_rot[i], tcp_globalrotmat[i].T)
-            return deltapw
-        else:
-            deltapw = np.zeros(6)
-            deltapw[0:3] = (tgt_pos - tcp_globalpos)
-            deltapw[3:6] = rm.deltaw_between_rotmat(tgt_rot, tcp_globalrotmat.T)
-            return deltapw
+        deltapw = np.zeros(6)
+        deltapw[0:3] = (tgt_pos - tcp_globalpos)
+        deltapw[3:6] = rm.deltaw_between_rotmat(tgt_rot, tcp_globalrotmat.T)
+        return deltapw
 
     def regulate_jnts(self):
         """
@@ -190,11 +163,11 @@ class NIKOptimizer(object):
         date: 20161205
         """
         counter = 0
-        for id in self.jlobject.tgtjnts:
-            if self.jlobject.jnts[id]["type"] is 'revolute':
-                if self.jlobject.jnts[id]['motion_rng'][1] - self.jlobject.jnts[id]['motion_rng'][0] >= math.pi * 2:
-                    rm.regulate_angle(self.jlobject.jnts[id]['motion_rng'][0], self.jlobject.jnts[id]['motion_rng'][1],
-                                      self.jlobject.jnts[id]["movement"])
+        for id in self.jlc_object.tgtjnts:
+            if self.jlc_object.jnts[id]["type"] is 'revolute':
+                if self.jlc_object.jnts[id]['motion_rng'][1] - self.jlc_object.jnts[id]['motion_rng'][0] >= math.pi * 2:
+                    rm.regulate_angle(self.jlc_object.jnts[id]['motion_rng'][0], self.jlc_object.jnts[id]['motion_rng'][1],
+                                      self.jlc_object.jnts[id]["movement"])
             counter += 1
 
     def check_jntranges_drag(self, jntvalues):
@@ -211,33 +184,21 @@ class NIKOptimizer(object):
         counter = 0
         isdragged = np.zeros_like(jntvalues)
         jntvaluesdragged = jntvalues.copy()
-        for id in self.jlobject.tgtjnts:
-            if self.jlobject.jnts[id]["type"] == 'revolute':
-                if self.jlobject.jnts[id]['motion_rng'][1] - self.jlobject.jnts[id]['motion_rng'][0] < math.pi * 2:
-                    # if jntvalues[counter] < jlinstance.jnts[id]['motion_rng'][0]:
-                    #     isdragged[counter] = 1
-                    #     jntvaluesdragged[counter] = jlinstance.jnts[id]['motion_rng'][0]
-                    # elif jntvalues[counter] > jlinstance.jnts[id]['motion_rng'][1]:
-                    #     isdragged[counter] = 1
-                    #     jntvaluesdragged[counter] = jlinstance.jnts[id]['motion_rng'][1]
+        for id in self.jlc_object.tgtjnts:
+            if self.jlc_object.jnts[id]["type"] == 'revolute':
+                if self.jlc_object.jnts[id]['motion_rng'][1] - self.jlc_object.jnts[id]['motion_rng'][0] < math.pi * 2:
                     print("Drag revolute")
-                    if jntvalues[counter] < self.jlobject.jnts[id]['motion_rng'][0] or jntvalues[counter] > \
-                            self.jlobject.jnts[id]['motion_rng'][1]:
+                    if jntvalues[counter] < self.jlc_object.jnts[id]['motion_rng'][0] or jntvalues[counter] > \
+                            self.jlc_object.jnts[id]['motion_rng'][1]:
                         isdragged[counter] = 1
-                        jntvaluesdragged[counter] = (self.jlobject.jnts[id]['motion_rng'][1] + self.jlobject.jnts[id][
+                        jntvaluesdragged[counter] = (self.jlc_object.jnts[id]['motion_rng'][1] + self.jlc_object.jnts[id][
                             'motion_rng'][0]) / 2
-            elif self.jlobject.jnts[id]["type"] == 'prismatic':  # prismatic
-                # if jntvalues[counter] < jlinstance.jnts[id]['motion_rng'][0]:
-                #     isdragged[counter] = 1
-                #     jntvaluesdragged[counter] = jlinstance.jnts[id]['motion_rng'][0]
-                # elif jntvalues[counter] > jlinstance.jnts[id]['motion_rng'][1]:
-                #     isdragged[counter] = 1
-                #     jntvaluesdragged[counter] = jlinstance.jnts[id]['motion_rng'][1]
+            elif self.jlc_object.jnts[id]["type"] == 'prismatic':  # prismatic
                 print("Drag prismatic")
-                if jntvalues[counter] < self.jlobject.jnts[id]['motion_rng'][0] or jntvalues[counter] > \
-                        self.jlobject.jnts[id]['motion_rng'][1]:
+                if jntvalues[counter] < self.jlc_object.jnts[id]['motion_rng'][0] or jntvalues[counter] > \
+                        self.jlc_object.jnts[id]['motion_rng'][1]:
                     isdragged[counter] = 1
-                    jntvaluesdragged[counter] = (self.jlobject.jnts[id]['motion_rng'][1] + self.jlobject.jnts[id][
+                    jntvaluesdragged[counter] = (self.jlc_object.jnts[id]['motion_rng'][1] + self.jlc_object.jnts[id][
                         "rngmin"]) / 2
         return isdragged, jntvaluesdragged
 
@@ -265,40 +226,22 @@ class NIKOptimizer(object):
         author: weiwei
         date: 20180203, 20200328
         """
-        deltapos = tgt_pos - self.jlobject.jnts[0]['gl_pos0']
+        deltapos = tgt_pos - self.jlc_object.jnts[0]['gl_pos0']
         if np.linalg.norm(deltapos) > self.max_rng:
             wns.WarningMessage("The goal is outside maximum range!")
             return None
         if tcp_jntid is None:
-            tcp_jntid = self.jlobject.tcp_jntid
+            tcp_jntid = self.jlc_object.tcp_jntid
         if tcp_loc_pos is None:
-            tcp_loc_pos = self.jlobject.tcp_loc_pos
-            print(self.jlobject.tcp_loc_pos)
+            tcp_loc_pos = self.jlc_object.tcp_loc_pos
+            print(self.jlc_object.tcp_loc_pos)
         if tcp_loc_rotmat is None:
-            tcp_loc_rotmat = self.jlobject.tcp_loc_rotmat
-        # trim list
-        if isinstance(tgt_pos, list):
-            tcp_jntid = tcp_jntid[0:len(tgt_pos)]
-            tcp_loc_pos = tcp_loc_pos[0:len(tgt_pos)]
-            tcp_loc_rotmat = tcp_loc_rotmat[0:len(tgt_pos)]
-        elif isinstance(tcp_jntid, list):
-            tcp_jntid = tcp_jntid[0]
-            tcp_loc_pos = tcp_loc_pos[0]
-            tcp_loc_rotmat = tcp_loc_rotmat[0]
-        jntvalues_bk = self.jlobject.get_jntvalues()
-        jntvalues_iter = self.jlobject.homeconf if start_conf is None else start_conf.copy()
-        self.jlobject.fk(jnt_values=jntvalues_iter)
+            tcp_loc_rotmat = self.jlc_object.tcp_loc_rotmat
+        jntvalues_bk = self.jlc_object.get_jnt_values()
+        jntvalues_iter = self.jlc_object.homeconf if start_conf is None else start_conf.copy()
+        self.jlc_object.fk(jnt_values=jntvalues_iter)
         jntvalues_ref = jntvalues_iter.copy()
-
-        if isinstance(tcp_jntid, list):
-            diaglist = []
-            for i in tcp_jntid:
-                diaglist += self.ws_wtlist
-            ws_wtdiagmat = np.diag(diaglist)
-        else:
-            ws_wtdiagmat = np.diag(self.ws_wtlist)
-        # sqrtinv_ws_wtdiagmat = np.linalg.inv(np.diag(np.sqrt(np.diag(ws_wtdiagmat))))
-
+        ws_wtdiagmat = np.diag(self.ws_wtlist)
         if toggle_debug:
             if "jlm" not in dir():
                 import robotsim._kinematics.jlchainmesh as jlm
@@ -311,17 +254,26 @@ class NIKOptimizer(object):
             ajpath = []
         errnormlast = 0.0
         errnormmax = 0.0
-        for i in range(100):
-            jmat = self.jacobian(tcp_jntid)
+        for i in range(1000):
+            j = self.jacobian(tcp_jntid)
+            j1 = j[:3, :]
+            j2 = j[3:6, :]
             err = self.tcp_error(tgt_pos, tgt_rot, tcp_jntid, tcp_loc_pos, tcp_loc_rotmat)
+            err_pos = err[:3]
+            err_rot = err[3:6]
+            errnorm_pos = err_pos.T.dot(err_pos)
+            errnorm_rot = np.linalg.norm(err_rot)
+            # if errnorm_rot < math.pi/6:
+            #     err_rot = np.zeros(3)
+                # errnorm_rot = 0
             errnorm = err.T.dot(ws_wtdiagmat).dot(err)
             # err = .05 / errnorm * err if errnorm > .05 else err
             if errnorm > errnormmax:
                 errnormmax = errnorm
             if toggle_debug:
-                print(errnorm)
-                ajpath.append(self.jlobject.get_jntvalues())
-            if errnorm < 1e-6:
+                print(errnorm_pos, errnorm_rot, errnorm)
+                ajpath.append(self.jlc_object.get_jnt_values())
+            if errnorm_pos < 1e-6 and errnorm_rot < math.pi/6:
                 if toggle_debug:
                     fig = plt.figure()
                     axbefore = fig.add_subplot(411)
@@ -337,8 +289,8 @@ class NIKOptimizer(object):
                     axaj.plot(ajpath)
                     plt.show()
                 # self.regulate_jnts()
-                jntvalues_return = self.jlobject.get_jntvalues()
-                self.jlobject.fk(jnt_values=jntvalues_bk)
+                jntvalues_return = self.jlc_object.get_jnt_values()
+                self.jlc_object.fk(jnt_values=jntvalues_bk)
                 return jntvalues_return
             else:
                 # judge local minima
@@ -360,13 +312,13 @@ class NIKOptimizer(object):
                     if local_minima == 'accept':
                         wns.warn(
                             'Bypassing local minima! The return value is a local minima, rather than the exact IK result.')
-                        jntvalues_return = self.jlobject.get_jntvalues()
-                        self.jlobject.fk(jntvalues_bk)
+                        jntvalues_return = self.jlc_object.get_jnt_values()
+                        self.jlc_object.fk(jntvalues_bk)
                         return jntvalues_return
                     elif local_minima == 'randomrestart':
                         wns.warn('Local Minima! Random restart at local minima!')
-                        jntvalues_iter = self.jlobject.rand_conf()
-                        self.jlobject.fk(jntvalues_iter)
+                        jntvalues_iter = self.jlc_object.rand_conf()
+                        self.jlc_object.fk(jntvalues_iter)
                         continue
                     else:
                         print('No feasible IK solution!')
@@ -392,22 +344,32 @@ class NIKOptimizer(object):
                     ## dq = jstar.dot(err)
                     # -- rgt moore-penrose inverse --
                     # # jjt
-                    # jjt = jmat.dot(jmat.T)
+                    # jjt = j.dot(j.T)
                     # damper = dampercoeff * np.identity(jjt.shape[0])
-                    # jsharp = jmat.T.dot(np.linalg.inv(jjt + damper))
+                    # jsharp = j.T.dot(np.linalg.inv(jjt + damper))
                     # weighted jjt
                     qs_wtdiagmat = self._wln_weightmat(jntvalues_iter)
-                    winv_jt = np.linalg.inv(qs_wtdiagmat).dot(jmat.T)
-                    j_winv_jt = jmat.dot(winv_jt)
-                    damper = dampercoeff * np.identity(j_winv_jt.shape[0])
-                    jsharp = winv_jt.dot(np.linalg.inv(j_winv_jt + damper))
-                    dq = .1 * jsharp.dot(err)
-                    # dq = rm.regulate_angle(-math.pi, math.pi, dq)
-                    # dq = Jsharp dx+(I-Jsharp J)dq0
+                    winv_j1t = np.linalg.inv(qs_wtdiagmat).dot(j1.T)
+                    j1_winv_j1t = j1.dot(winv_j1t)
+                    damper = dampercoeff * np.identity(j1_winv_j1t.shape[0])
+                    j1sharp = winv_j1t.dot(np.linalg.inv(j1_winv_j1t + damper))
+                    n1 = np.identity(jntvalues_ref.shape[0]) - j1sharp.dot(j1)
+                    j2n1 = j2.dot(n1)
+                    winv_j2n1t = np.linalg.inv(qs_wtdiagmat).dot(j2n1.T)
+                    j2n1_winv_j2n1t = j2n1.dot(winv_j2n1t)
+                    damper = dampercoeff * np.identity(j2n1_winv_j2n1t.shape[0])
+                    j2n1sharp = winv_j2n1t.dot(np.linalg.inv(j2n1_winv_j2n1t + damper))
+                    err_pos = .1 * err_pos
+                    # if errnorm_rot == 0:
+                    dq = j1sharp.dot(err_pos)
                     dqref = (jntvalues_ref - jntvalues_iter)
-                    dqref_on_ns = (np.identity(dqref.shape[0]) - jsharp.dot(jmat)).dot(dqref)
-                    # dqref_on_ns = rm.regulate_angle(-math.pi, math.pi, dqref_on_ns)
+                    dqref_on_ns = (np.identity(jntvalues_ref.shape[0]) - j1sharp.dot(j1)).dot(dqref)
                     dq_minimized = dq + dqref_on_ns
+                    # else:
+                    # err_rot = .1 * err_rot
+                    # dq = j1sharp.dot(err_pos)+j2n1sharp.dot(err_rot-j2.dot(j1sharp.dot(err_pos)))
+                    # dqref_on_ns = np.zeros(jntvalues_ref.shape[0])
+                    # dq_minimized = dq
                     if toggle_debug:
                         dqbefore.append(dq)
                         dqcorrected.append(dq_minimized)
@@ -415,7 +377,7 @@ class NIKOptimizer(object):
                 jntvalues_iter += dq_minimized  # translation problem
                 # isdragged, jntvalues_iter = self.check_jntsrange_drag(jntvalues_iter)
                 # print(jntvalues_iter)
-                self.jlobject.fk(jnt_values=jntvalues_iter)
+                self.jlc_object.fk(jnt_values=jntvalues_iter)
                 # if toggle_debug:
                 #     jlmgen.gensnp(jlinstance, tcp_jntid=tcp_jntid, tcp_loc_pos=tcp_loc_pos,
                 #                   tcp_loc_rotmat=tcp_loc_rotmat, togglejntscs=True).reparentTo(base.render)
@@ -434,10 +396,10 @@ class NIKOptimizer(object):
             axcorrec.plot(dqcorrected)
             axaj.plot(ajpath)
             plt.show()
-            self.jlobject.gen_stickmodel(tcp_jntid=tcp_jntid, tcp_loc_pos=tcp_loc_pos,
-                                         tcp_loc_rotmat=tcp_loc_rotmat, toggle_jntscs=True).attach_to(base)
+            self.jlc_object.gen_stickmodel(tcp_jntid=tcp_jntid, tcp_loc_pos=tcp_loc_pos,
+                                           tcp_loc_rotmat=tcp_loc_rotmat, toggle_jntscs=True).attach_to(base)
             base.run()
-        self.jlobject.fk(jntvalues_bk)
+        self.jlc_object.fk(jntvalues_bk)
         wns.warn('Failed to solve the IK, returning None.')
         return None
 
@@ -454,17 +416,39 @@ class NIKOptimizer(object):
         date: 20170412, 20200331
         """
         tcp_globalpos, tcp_globalrotmat = self.get_gl_tcp(tcp_jntid, tcp_loc_pos, tcp_loc_rotmat)
-        if isinstance(tcp_jntid, list):
-            tgt_pos = []
-            tgt_rotmat = []
-            for i, jid in enumerate(tcp_jntid):
-                tgt_pos.append(tcp_globalpos[i] + deltapos[i])
-                tgt_rotmat.append(np.dot(deltarotmat, tcp_globalrotmat[i]))
-            start_conf = self.jlobject.getjntvalues()
-            # return numik(rjlinstance, tgt_pos, tgt_rotmat, start_conf=start_conf, tcp_jntid=tcp_jntid, tcp_loc_pos=tcp_loc_pos, tcp_loc_rotmat=tcp_loc_rotmat)
-        else:
-            tgt_pos = tcp_globalpos + deltapos
-            tgt_rotmat = np.dot(deltarotmat, tcp_globalrotmat)
-            start_conf = self.jlobject.getjntvalues()
+        tgt_pos = tcp_globalpos + deltapos
+        tgt_rotmat = np.dot(deltarotmat, tcp_globalrotmat)
+        start_conf = self.jlc_object.getjntvalues()
         return self.numik(tgt_pos, tgt_rotmat, start_conf=start_conf, tcp_jntid=tcp_jntid, tcp_loc_pos=tcp_loc_pos,
                           tcp_loc_rotmat=tcp_loc_rotmat)
+
+
+if __name__ == '__main__':
+    import time
+    import robotsim.robots.yumi.yumi as ym
+    import visualization.panda.world as wd
+    import modeling.geometricmodel as gm
+
+    base = wd.World(campos=[1.5, 0, 3], lookatpos=[0, 0, .5])
+    gm.gen_frame().attach_to(base)
+    yumi_instance = ym.Yumi(enable_cc=True)
+    jlc_name='rgt_arm'
+    tgt_pos = np.array([.5, -.3, .3])
+    tgt_rotmat = rm.rotmat_from_axangle([0,1,0], math.pi/2)
+    gm.gen_frame(pos=tgt_pos, rotmat=tgt_rotmat).attach_to(base)
+    niksolver = NIK(yumi_instance, jlc_name='rgt_arm')
+    tic = time.time()
+    jnt_values = niksolver.num_ik(tgt_pos, tgt_rotmat, toggle_debug=True)
+    toc = time.time()
+    print(toc - tic)
+    yumi_instance.fk(jnt_values, jlc_name=jlc_name)
+    yumi_meshmodel = yumi_instance.gen_meshmodel()
+    yumi_meshmodel.attach_to(base)
+    yumi_instance.show_cdprimit()
+    yumi_instance.gen_stickmodel().attach_to(base)
+    tic = time.time()
+    result = yumi_instance.is_collided()
+    toc = time.time()
+    print(result, toc - tic)
+    base.run()
+

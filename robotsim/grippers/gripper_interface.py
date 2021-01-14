@@ -28,6 +28,8 @@ class GripperInterface(object):
         # jaw center
         self.jaw_center = np.zeros(3)
         self.cdmesh_collection = mc.ModelCollection()
+        # jaw width
+        self.jawwidth_rng = [0.0, 5.0]
         # collision detection
         self.cc = None
 

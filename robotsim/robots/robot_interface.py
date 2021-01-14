@@ -12,6 +12,9 @@ class RobotInterface(object):
         self.rotmat = rotmat
         # collision detection
         self.cc = None
+        # component map for quick access
+        self.manipulator_dict = {}
+        self.hnd_dict = {}
 
     @property
     def is_fk_updated(self):
@@ -24,7 +27,13 @@ class RobotInterface(object):
         raise NotImplementedError
 
     def get_jnt_ranges(self, jlc_name):
-        raise NotImplementedError
+        return self.manipulator_dict[jlc_name].get_jnt_ranges()
+
+    def get_jnt_values(self, jlc_name):
+        return self.manipulator_dict[jlc_name].get_jnt_values()
+
+    def get_gl_tcp(self, jlc_name):
+        return self.manipulator_dict[jlc_name].get_gl_tcp()
 
     def is_collided(self, obstacle_list=[], otherrobot_list=[]):
         """
@@ -44,17 +53,27 @@ class RobotInterface(object):
     def fk(self, jlc_name, jnt_values):
         raise NotImplementedError
 
-    def num_ik(self,
-               tgt_pos,
-               tgt_rot,
-               jlc_name,
-               start_conf=None,
-               tcp_jntid=None,
-               tcp_loc_pos=None,
-               tcp_loc_rotmat=None,
-               local_minima="accept",
-               toggle_debug=False):
-        raise NotImplementedError
+    def jaw_to(self, jaw_width, hnd_name='lft_hnd'):
+        self.hnd_dict[hnd_name].jaw_to(jaw_width)
+
+    def ik(self,
+           jlc_name,
+           tgt_pos,
+           tgt_rot,
+           seed_conf=None,
+           tcp_jntid=None,
+           tcp_loc_pos=None,
+           tcp_loc_rotmat=None,
+           local_minima="accept",
+           toggle_debug=False):
+        return self.manipulator_dict[jlc_name].ik(tgt_pos,
+                                                  tgt_rot,
+                                                  seed_conf=seed_conf,
+                                                  tcp_jntid=tcp_jntid,
+                                                  tcp_loc_pos=tcp_loc_pos,
+                                                  tcp_loc_rotmat=tcp_loc_rotmat,
+                                                  local_minima=local_minima,
+                                                  toggle_debug=toggle_debug)
 
     def rand_conf(self, jlc_name):
         raise NotImplementedError

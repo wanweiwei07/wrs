@@ -23,8 +23,44 @@ class ManipulatorInterface(object):
         return self.jlc.lnks
 
     @property
+    def tgtjnts(self):
+        return self.jlc.tgtjnts
+
+    @property
+    def ndof(self):
+        return self.jlc.ndof
+
+    @property
+    def homeconf(self):
+        return self.jlc.homeconf
+
+    @property
     def is_fk_updated(self):
         return self.jlc.is_fk_updated
+
+    @property
+    def tcp_jntid(self):
+        return self.jlc.tcp_jntid
+
+    @property
+    def tcp_loc_pos(self):
+        return self.jlc.tcp_loc_pos
+
+    @property
+    def tcp_loc_rotmat(self):
+        return self.jlc.tcp_loc_rotmat
+
+    @tcp_jntid.setter
+    def tcp_jntid(self, tcp_jntid):
+        self.jlc.tcp_jntid = tcp_jntid
+
+    @tcp_loc_pos.setter
+    def tcp_loc_pos(self, tcp_loc_pos):
+        self.jlc.tcp_loc_pos = tcp_loc_pos
+
+    @tcp_loc_rotmat.setter
+    def tcp_loc_rotmat(self, tcp_loc_rotmat):
+        self.jlc.tcp_loc_rotmat = tcp_loc_rotmat
 
     def is_collided(self, obstacle_list=[], otherrobot_list=[]):
         """
@@ -66,8 +102,8 @@ class ManipulatorInterface(object):
     def goto_zeroconf(self):
         self.jlc.fk(jnt_values=self.jlc.zeroconf)
 
-    def get_jntvalues(self):
-        return self.jlc.get_jntvalues()
+    def get_jnt_values(self):
+        return self.jlc.get_jnt_values()
 
     def rand_conf(self):
         return self.jlc.rand_conf()
@@ -75,7 +111,7 @@ class ManipulatorInterface(object):
     def ik(self,
            tgt_pos,
            tgt_rot,
-           start_conf=None,
+           seed_conf=None,
            tcp_jntid=None,
            tcp_loc_pos=None,
            tcp_loc_rotmat=None,
@@ -83,7 +119,7 @@ class ManipulatorInterface(object):
            toggle_debug=False):
         return self.jlc.num_ik(tgt_pos=tgt_pos,
                                tgt_rot=tgt_rot,
-                               start_conf=start_conf,
+                               seed_conf=seed_conf,
                                tcp_jntid=tcp_jntid,
                                tcp_loc_pos=tcp_loc_pos,
                                tcp_loc_rotmat=tcp_loc_rotmat,

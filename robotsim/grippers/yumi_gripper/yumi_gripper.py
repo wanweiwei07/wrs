@@ -44,6 +44,8 @@ class YumiGripper(gp.GripperInterface):
         # reinitialize
         self.lft.reinitialize()
         self.rgt.reinitialize()
+        # jaw width
+        self.jawwidth_rng = [0.0, 5.0]
         # collision detection
         if enable_cc:
             self.enable_cc()

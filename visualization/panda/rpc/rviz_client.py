@@ -232,7 +232,7 @@ class RVizClient(object):
         """
         if given_rmt_robot_meshmodel_name is None:
             given_rmt_robot_meshmodel_name = self._gen_random_name(prefix='rmt_robot_meshmodel_')
-        jnt_angles_str = np.array2string(loc_robot_instance.get_jntvalues(jlc_name='all'), separator=',')
+        jnt_angles_str = np.array2string(loc_robot_instance.get_jnt_values(jlc_name='all'), separator=',')
         code = ("%s.fk(jnt_values=np.array(%s), jlc_name='all')\n" % (rmt_robot_instance, jnt_angles_str) +
                 "%s = %s.gen_meshmodel()\n" % (given_rmt_robot_meshmodel_name, rmt_robot_instance) +
                 "base.attach_noupdate_model(%s)\n" % given_rmt_robot_meshmodel_name)

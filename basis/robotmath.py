@@ -6,6 +6,8 @@ from sklearn import cluster
 import functools
 import operator
 import warnings as wns
+from scipy.spatial.transform import Rotation as R
+from scipy.spatial.transform import Slerp
 
 # epsilon for testing whether a number is close to zero
 _EPS = numpy.finfo(float).eps * 4.0
@@ -152,6 +154,20 @@ def rotmat_average(rotmatlist, bandwidth=10):
     quatavg = quaternion_average(quaternionlist, bandwidth=bandwidth)
     rotmatavg = rotmat_from_quaternion(quatavg)[:3, :3]
     return rotmatavg
+
+def rotmat_slerp(rotmat0, rotmat1, nval):
+    """
+    :param rotmat0:
+    :param rotmat1:
+    :param nval:
+    :return: 1xnval list of slerped rotmat including rotmat0 and rotmat1
+    """
+    key_rots = R.from_matrix((rotmat0, rotmat1))
+    key_times = [0, 1]
+    slerp = Slerp(key_times, key_rots)
+    slerp_times = np.linspace(key_times[0], key_times[1], nval)
+    interp_rots = slerp(slerp_times)
+    return interp_rots.as_matrix()
 
 ## homogeneous matrix
 def homomat_from_posrot(pos, rot):
