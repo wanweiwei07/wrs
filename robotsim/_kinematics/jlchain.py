@@ -48,7 +48,6 @@ class JLChain(object):
         # mesh generator
         self._mt = jlm.JLChainMesh(self) # t = tool
         self._ikt = jlik.JLChainIK(self) # t = tool
-        self.is_fk_updated = False
 
     def _init_jlchain(self):
         """
@@ -132,8 +131,9 @@ class JLChain(object):
                 self.jnts[id]['gl_posq'] = self.jnts[id]['gl_pos0']
             elif self.jnts[id]['type'] == "prismatic":
                 self.jnts[id]['gl_rotmatq'] = self.jnts[id]['gl_rotmat0']
-                self.jnts[id]['gl_posq'] = self.jnts[id]['gl_pos0'] + self.jnts[id]['loc_motionax'] * self.jnts[id][
-                    'motion_val']
+                tmp_translation = np.dot(self.jnts[id]['gl_rotmatq'],
+                                         self.jnts[id]['loc_motionax'] * self.jnts[id]['motion_val'])
+                self.jnts[id]['gl_posq'] = self.jnts[id]['gl_pos0'] + tmp_translation
             # update link values, child link id = id
             if id < self.ndof + 1:
                 self.lnks[id]['gl_pos'] = np.dot(self.jnts[id]['gl_rotmatq'], self.lnks[id]['loc_pos']) + \
@@ -141,7 +141,6 @@ class JLChain(object):
                 self.lnks[id]['gl_rotmat'] = np.dot(self.jnts[id]['gl_rotmatq'], self.lnks[id]['loc_rotmat'])
                 # self.lnks[id]['cdprimit_cache'][0] = True
             id = self.jnts[id]['child']
-        self.is_fk_updated = True
         return self.lnks, self.jnts
 
     @property
@@ -482,11 +481,11 @@ class JLChain(object):
     def gen_endsphere(self):
         return self._mt.gen_endsphere()
 
-    def show_cdprimit(self):
-        self._mt.show_cdprimit(need_update = self.is_fk_updated)
-
-    def unshow_cdprimit(self):
-        self._mt.unshow_cdprimit()
+    # def show_cdprimit(self):
+    #     self._mt.show_cdprimit(need_update = self.is_fk_updated)
+    #
+    # def unshow_cdprimit(self):
+    #     self._mt.unshow_cdprimit()
 
     def copy(self):
         return copy.deepcopy(self)

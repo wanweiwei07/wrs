@@ -137,8 +137,8 @@ class PickPlacePlanner(object):
             if up_conf_list is None:
                 print('Cannot perform up action!')
             else:
-                pcfs, pjws = self.inik_slvr.extend_motion_with_jawwidth(pick_conf_list, hnd_instance.jawwidth_rng[1])
-                ucfs, ujws = self.inik_slvr.extend_motion_with_jawwidth(up_conf_list, hnd_instance.jawwidth_rng[0])
+                pcfs, pjws = self.inik_slvr.extend_motion_with_jawwidth(pick_conf_list, hnd_instance.jaw_width_rng[1])
+                ucfs, ujws = self.inik_slvr.extend_motion_with_jawwidth(up_conf_list, hnd_instance.jaw_width_rng[0])
                 return pcfs, ucfs
 
     def gen_pickup_motion(self,
@@ -183,7 +183,7 @@ class PickPlacePlanner(object):
                                                        rand_rate=70,
                                                        maxtime=300,
                                                        component_name=component_name)
-            self.inik_slvr.extend_motion_with_jawwidth(start2pick_conf_list, hnd_instance.jawwidth_rng[1])
+            self.inik_slvr.extend_motion_with_jawwidth(start2pick_conf_list, hnd_instance.jaw_width_rng[1])
         if goal_conf is not None:
             up2goal_conf_list = self.rrtc_plnr.plan(ucfs[1],
                                                     goal_conf,
@@ -192,7 +192,7 @@ class PickPlacePlanner(object):
                                                     rand_rate=70,
                                                     maxtime=300,
                                                     component_name=component_name)
-            self.inik_slvr.extend_motion_with_jawwidth(up2goal_conf_list, hnd_instance.jawwidth_rng[0])
+            self.inik_slvr.extend_motion_with_jawwidth(up2goal_conf_list, hnd_instance.jaw_width_rng[0])
 
     def gen_ppmotion(self, candidatepredgidlist, objinithomomat, objgoalhomomat, armname,
                     rbtinitarmjnts=None, rbtgoalarmjnts=None, finalstate="io",

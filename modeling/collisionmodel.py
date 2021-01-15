@@ -1,4 +1,5 @@
 import copy
+import math
 import numpy as np
 from panda3d.core import CollisionNode, CollisionBox, CollisionSphere, NodePath, BitMask32
 from visualization.panda.world import ShowBase
@@ -232,7 +233,7 @@ class CollisionModel(gm.GeometricModel):
         if type == 'box2box':
             return mcd.is_box2box_collided(self, objcm_list)
         if type == 'convexhull2triangles':
-            return mcd.is_box2box_collided(self, objcm_list)
+            return mcd.is_convexhull2triangles_collided(self, objcm_list)
 
     def show_cdmesh(self, type='triangles'):
         self. unshow_cdmesh()

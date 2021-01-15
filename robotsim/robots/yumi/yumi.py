@@ -94,12 +94,12 @@ class Yumi(ri.RobotInterface):
         # tool center point
         # lft
         self.lft_arm.tcp_jntid = -1
-        self.lft_arm.tcp_loc_pos = np.array([0, 0, .12])
-        self.lft_arm.tcp_loc_rotmat = np.eye(3)
+        self.lft_arm.tcp_loc_pos = self.lft_hnd.jaw_center_pos
+        self.lft_arm.tcp_loc_rotmat = self.lft_hnd.jaw_center_rotmat
         # rgt
         self.rgt_arm.tcp_jntid = -1
-        self.rgt_arm.tcp_loc_pos = np.array([0, 0, .12])
-        self.rgt_arm.tcp_loc_rotmat = np.eye(3)
+        self.rgt_arm.tcp_loc_pos = self.rgt_hnd.jaw_center_pos
+        self.rgt_arm.tcp_loc_rotmat = self.rgt_hnd.jaw_center_rotmat
         # a list of detailed information about objects in hand, see CollisionChecker.add_objinhnd
         self.lft_oih_infos = []
         self.rgt_oih_infos = []

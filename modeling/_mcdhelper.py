@@ -6,7 +6,7 @@ import copy
 import numpy as np
 import basis.robotmath as rm
 import basis.dataadapter as da
-
+import basis.trimeshgenerator as tg
 
 # box collision model
 def is_box2box_collided(objcm_list0, objcm_list1):
@@ -78,6 +78,11 @@ def is_triangles2triangles_collided(objcm_list0, objcm_list1):
     objcm0bullnode = _gen_triangles_cdmesh(objcm_list0)
     objcm1bullnode = _gen_triangles_cdmesh(objcm_list1)
     result = base.physicsworld.contactTestPair(objcm0bullnode, objcm1bullnode)
+    if result.getNumContacts():
+        import modeling.geometricmodel as gm
+        for contact in result.getContacts():
+            gm.gen_sphere(pos = da.pdv3_to_npv3(contact.getManifoldPoint().getPositionWorldOnA()), radius=0.001).attach_to(base)
+            gm.gen_sphere(pos = da.pdv3_to_npv3(contact.getManifoldPoint().getPositionWorldOnB()), radius=0.001).attach_to(base)
     return True if result.getNumContacts() else False
 
 
@@ -205,7 +210,6 @@ def show_convexhull_cdmesh(objcm_list):
     return objcmmeshbullnode
 
 
-
 def unshow_all():
     """
     unshow everything
@@ -234,15 +238,21 @@ def _gen_box_cdmesh(objcm_list, name='autogen'):
     """
     if not isinstance(objcm_list, list):
         objcm_list = [objcm_list]
-    bulletboxnode = BulletRigidBodyNode(name)
+    geombullnode = BulletRigidBodyNode(name)
     for objcm in objcm_list:
         bottom_left, top_right = objcm.pdnp_raw.getTightBounds()
-        cd_solid = CollisionBox(bottom_left, top_right)
-        bulletboxshape = BulletBoxShape.makeFromSolid(cd_solid)
-        pdnp_pdmat4 = objcm.pdnp.getMat()
-        tfs = TransformState.makeMat(pdnp_pdmat4).setPos(pdnp_pdmat4.xformPoint(cd_solid.getCenter()))
-        bulletboxnode.addShape(bulletboxshape, tfs)
-    return bulletboxnode
+        bound_tf = np.eye(4)
+        bound_tf[:3,3] = da.pdv3_to_npv3((bottom_left+top_right)/2)
+        extent = da.pdv3_to_npv3(top_right-bottom_left)
+        objtrm_box = tg.gen_box(extent, bound_tf)
+        geom = da.pandageom_from_vvnf(objtrm_box.vertices, objtrm_box.vertex_normals, objtrm_box.faces)
+        geom.transformVertices(objcm.pdnp.getMat())
+        geombullmesh = BulletTriangleMesh()
+        geombullmesh.addGeom(geom)
+        bullet_triangles_shape = BulletTriangleMeshShape(geombullmesh, dynamic=True)
+        bullet_triangles_shape.setMargin(0)
+        geombullnode.addShape(bullet_triangles_shape)
+    return geombullnode
 
 def _gen_triangles_cdmesh(objcm_list, name='autogen'):
     """
@@ -287,13 +297,14 @@ def _gen_convexhull_cdmesh(objcm_list, name='autogen'):
         objcm_list = [objcm_list]
     geombullnode = BulletRigidBodyNode(name)
     for objcm in objcm_list:
-        objtrmcvx = objcm.trimesh.convex_hull
-        geom = da.pandageom_from_vvnf(objtrmcvx.vertices, objtrmcvx.vertex_normals, objtrmcvx.faces)
+        objtrm_cvx = objcm.trimesh.convex_hull
+        geom = da.pandageom_from_vvnf(objtrm_cvx.vertices, objtrm_cvx.vertex_normals, objtrm_cvx.faces)
         geom.transformVertices(objcm.pdnp.getMat())
-        bulletcvxhshape = BulletConvexHullShape()
-        bulletcvxhshape.addGeom(geom)
-        bulletcvxhshape.setMargin(0)
-        geombullnode.addShape(bulletcvxhshape)
+        geombullmesh = BulletTriangleMesh()
+        geombullmesh.addGeom(geom)
+        bullettmshape = BulletTriangleMeshShape(geombullmesh, dynamic=True)
+        bullettmshape.setMargin(0)
+        geombullnode.addShape(bullettmshape)
     return geombullnode
 
 def _gen_triangles_cdmesh_from_geom(geom, name='autogen'):

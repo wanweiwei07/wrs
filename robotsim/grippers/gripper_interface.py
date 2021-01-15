@@ -12,7 +12,7 @@ class GripperInterface(object):
         self.name = name
         self.pos = pos
         self.rotmat = rotmat
-        self.cdmesh_type = cdmesh_type # box or triangles
+        self.cdmesh_type = cdmesh_type # box, convexhull, or triangles
         # joints
         # - coupling - No coupling by default
         self.coupling = jl.JLChain(pos=self.pos,
@@ -26,16 +26,20 @@ class GripperInterface(object):
         # self.coupling.lnks[0]['rgba'] = [.2, .2, .2, 1]
         self.coupling.reinitialize()
         # jaw center
-        self.jaw_center = np.zeros(3)
-        self.cdmesh_collection = mc.ModelCollection()
+        self.jaw_center_pos = np.zeros(3)
+        self.jaw_center_rotmat = np.eye(3)
         # jaw width
-        self.jawwidth_rng = [0.0, 5.0]
+        self.jaw_width_rng = [0.0, 5.0]
         # collision detection
         self.cc = None
+        # cd mesh collection for precise collision checking
+        self.cdmesh_collection = mc.ModelCollection()
+        # is fk updated for lazy update of cdmesh_collection
+        self._is_fk_updated = False
 
     @property
     def is_fk_updated(self):
-        raise NotImplementedError
+        return self._is_fk_updated
 
     def is_collided(self, obstacle_list=[], otherrobot_list=[]):
         """
@@ -46,8 +50,10 @@ class GripperInterface(object):
         author: weiwei
         date: 20201223
         """
-        return self.cc.is_collided(obstacle_list=obstacle_list, otherrobot_list=otherrobot_list,
-                                   need_update=self.is_fk_updated)
+        return_val =  self.cc.is_collided(obstacle_list=obstacle_list, otherrobot_list=otherrobot_list,
+                                          need_update=self._is_fk_updated)
+        self._is_fk_updated = False
+        return return_val
 
     def is_mesh_collided(self, objcm_list=[]):
         if self.cdmesh_type == 'triangles':
@@ -64,6 +70,12 @@ class GripperInterface(object):
             self.cdmesh_collection.cm_list[i].set_pos(pos)
             self.cdmesh_collection.cm_list[i].set_rotmat(rotmat)
             if self.cdmesh_collection.cm_list[i].is_mcdwith(objcm_list, type=type):
+                print(type)
+                self.cdmesh_collection.cm_list[i].show_cdmesh()
+                for objcm in objcm_list:
+                    objcm.attach_to(base)
+                    objcm.show_cdmesh()
+                print("collided")
                 return True
         return False
 
@@ -84,24 +96,26 @@ class GripperInterface(object):
         hnd_rotmat[:, 2] = rm.unit_vector(gl_hndz)
         hnd_rotmat[:, 0] = rm.unit_vector(gl_hndx)
         hnd_rotmat[:, 1] = np.cross(hnd_rotmat[:3, 2], hnd_rotmat[:3, 0])
-        hnd_pos = gl_jaw_center - hnd_rotmat.dot(self.jaw_center)
+        hnd_pos = gl_jaw_center - hnd_rotmat.dot(self.jaw_center_pos)
         self.fix_to(hnd_pos, hnd_rotmat)
         self.jaw_to(jaw_width)
         return [jaw_width, gl_jaw_center, hnd_pos, hnd_rotmat]
 
     def show_cdprimit(self):
-        self.cc.show_cdprimit(need_update=self.is_fk_updated)
+        self.cc.show_cdprimit(need_update=self._is_fk_updated)
+        self._is_fk_updated = False
 
     def unshow_cdprimit(self):
         self.cc.unshow_cdprimit()
 
     def show_cdmesh(self):
-        if self.is_fk_updated:
+        if self._is_fk_updated:
             for i, cdelement in enumerate(self.cc.all_cdelements):
                 pos = cdelement['gl_pos']
                 rotmat = cdelement['gl_rotmat']
                 self.cdmesh_collection.cm_list[i].set_pos(pos)
                 self.cdmesh_collection.cm_list[i].set_rotmat(rotmat)
+            self._is_fk_updated = False
         self.cdmesh_collection.show_cdmesh(type=self.cdmesh_type)
 
     def unshow_cdmesh(self):

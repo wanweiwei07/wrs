@@ -98,7 +98,9 @@ class XArmGripper(gi.GripperInterface):
         self.rgt_outer.reinitialize()
         self.rgt_inner.reinitialize()
         # jaw center
-        self.jaw_center = np.array([0,0,.15])
+        self.jaw_center_pos = np.array([0,0,.15])
+        # jaw width
+        self.jaw_width_rng = [0.0, .085]
         # collision detection
         if enable_cc:
             self.enable_cc()
