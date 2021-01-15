@@ -4,16 +4,15 @@ import time
 import random
 import numpy as np
 import warnings as wns
-import matplotlib.pyplot as plt
 from scipy.optimize import minimize
 import basis.robotmath as rm
 
 
-class FKOptimizer(object):
+class FKOptBasedIK(object):
 
-    def __init__(self, robot, jlc_name, toggle_debug=False):
+    def __init__(self, robot, component_name, toggle_debug=False):
         self.rbt = robot
-        self.jlc_name = jlc_name
+        self.jlc_name = component_name
         self.result = None
         self.seed_jnt_values = None
         self.tgt_pos = None
@@ -22,15 +21,13 @@ class FKOptimizer(object):
         self.bnds = self._get_bnds(jlc_name=self.jlc_name)
         self.jnts = []
         self.jnt_diff = []
-        self.roll_err = []
-        self.pitch_err = []
-        self.yaw_err = []
+        self.xangle_err = []
+        self.zangle_err = []
         self.x_err = []
         self.y_err = []
         self.z_err = []
-        self._roll_limit = 1e-6
-        self._pitch_limit = 1e-6
-        self._yaw_limit = 1e-6
+        self._xangle_limit = math.pi/360 # less than .5 degree
+        self._zangle_limit = math.pi/6
         self._x_limit = 1e-6
         self._y_limit = 1e-6
         self._z_limit = 1e-6
@@ -39,26 +36,19 @@ class FKOptimizer(object):
     def _get_bnds(self, jlc_name):
         return self.rbt.get_jnt_ranges(jlc_name)
 
-    def _constraint_roll(self, jnt_values):
+    def _constraint_zangle(self, jnt_values):
         self.rbt.fk(jnt_values=jnt_values, component_name=self.jlc_name)
-        gl_tcp_pos, gl_tcp_rot = self.rbt.get_gl_tcp(component_name=self.jlc_name)
-        angle = rm.angle_between_vectors(gl_tcp_rot[:3,0], self.tgt_rotmat[:3,0])
-        self.roll_err.append(angle)
-        return self._roll_limit-angle
+        gl_tcp_pos, gl_tcp_rotmat = self.rbt.get_gl_tcp(component_name=self.jlc_name)
+        delta_angle = rm.angle_between_vectors(gl_tcp_rotmat[:,2], self.tgt_rotmat[:,2])
+        self.zangle_err.append(delta_angle)
+        return self._zangle_limit-delta_angle
 
-    def _constraint_pitch(self, jnt_values):
+    def _constraint_xangle(self, jnt_values):
         self.rbt.fk(jnt_values=jnt_values, component_name=self.jlc_name)
-        gl_tcp_pos, gl_tcp_rot = self.rbt.get_gl_tcp(component_name=self.jlc_name)
-        angle = rm.angle_between_vectors(gl_tcp_rot[:3,1], self.tgt_rotmat[:3,1])
-        self.pitch_err.append(angle)
-        return self._roll_limit-angle
-
-    def _constraint_yaw(self, jnt_values):
-        self.rbt.fk(jnt_values=jnt_values, component_name=self.jlc_name)
-        gl_tcp_pos, gl_tcp_rot = self.rbt.get_gl_tcp(component_name=self.jlc_name)
-        angle = rm.angle_between_vectors(gl_tcp_rot[:3,2], self.tgt_rotmat[:3,2])
-        self.yaw_err.append(angle)
-        return self._roll_limit-angle
+        gl_tcp_pos, gl_tcp_rotmat = self.rbt.get_gl_tcp(component_name=self.jlc_name)
+        delta_angle = rm.angle_between_vectors(gl_tcp_rotmat[:,0], self.tgt_rotmat[:,0])
+        self.xangle_err.append(delta_angle)
+        return self._xangle_limit-delta_angle
 
     def _constraint_x(self, jnt_values):
         self.rbt.fk(jnt_values=jnt_values, component_name=self.jlc_name)
@@ -70,14 +60,14 @@ class FKOptimizer(object):
     def _constraint_y(self, jnt_values):
         self.rbt.fk(jnt_values=jnt_values, component_name=self.jlc_name)
         gl_tcp_pos, gl_tcp_rot = self.rbt.get_gl_tcp(component_name=self.jlc_name)
-        y_err = abs(self.tgt_pos[0] - gl_tcp_pos[0])
+        y_err = abs(self.tgt_pos[1] - gl_tcp_pos[1])
         self.y_err.append(y_err)
         return self._y_limit - y_err
 
     def _constraint_z(self, jnt_values):
         self.rbt.fk(jnt_values=jnt_values, component_name=self.jlc_name)
         gl_tcp_pos, gl_tcp_rot = self.rbt.get_gl_tcp(component_name=self.jlc_name)
-        z_err = abs(self.tgt_pos[0] - gl_tcp_pos[0])
+        z_err = abs(self.tgt_pos[2] - gl_tcp_pos[2])
         self.z_err.append(z_err)
         return self._z_limit - z_err
 
@@ -110,7 +100,8 @@ class FKOptimizer(object):
         self.seed_jnt_values = seed_jnt_values
         self.tgt_pos = tgt_pos
         self.tgt_rotmat = tgt_rotmat
-        # self._add_constraint(self._constraint_roll, condition="ineq")
+        self._add_constraint(self._constraint_xangle, condition="ineq")
+        self._add_constraint(self._constraint_zangle, condition="ineq")
         # self._add_constraint(self._constraint_pitch, condition="ineq")
         # self._add_constraint(self._constraint_yaw, condition="ineq")
         self._add_constraint(self._constraint_x, condition="ineq")
@@ -135,15 +126,24 @@ class FKOptimizer(object):
             return None, None
 
     def _debug_plot(self):
-        fig = plt.figure(1, figsize=(6.4 * 3, 4.8 * 2))
+        if "plt" not in dir():
+            import matplotlib.pyplot as plt
+            import visualization.matplot.helper as plth
+        plt.figure(1, figsize=(6.4 * 3, 4.8 * 2))
         plt.subplot(231)
-        self.rbth.plot_vlist(self.pos_err, title="translation error")
+        plth.plot_list(self.x_err, title="x error")
         plt.subplot(232)
-        self.rbth.plot_vlist(self.rot_err, title="rotation error")
+        plth.plot_list(self.y_err, title="y error")
         plt.subplot(233)
-        self.rbth.plot_vlist(self.jnt_diff, title="jnts displacement")
+        plth.plot_list(self.z_err, title="z error")
         plt.subplot(234)
-        self.rbth.plot_armjnts(self.jnts, show=False)
+        plth.plot_list(self.xangle_err, title="xangle error")
+        plt.subplot(235)
+        plth.plot_list(self.zangle_err, title="zangle error")
+        plt.subplot(236)
+        plth.plot_motion_by_joints(self.jnts)
+        # plth.plot_list(self.rot_err, title="rotation error")
+        # plth.plot_list(self.jnt_diff, title="jnts displacement")
         plt.show()
 
 if __name__ == '__main__':
@@ -157,10 +157,10 @@ if __name__ == '__main__':
     tgt_rotmat = rm.rotmat_from_axangle([0,1,0], math.pi/2)
     gm.gen_frame(pos=tgt_pos, rotmat=tgt_rotmat).attach_to(base)
     yumi_instance = ym.Yumi(enable_cc=True)
-    oik = FKOptimizer(yumi_instance, jlc_name=jlc_name, toggle_debug=False)
+    oik = FKOptBasedIK(yumi_instance, component_name=jlc_name, toggle_debug=True)
     jnt_values, _ = oik.solve(np.zeros(7), tgt_pos, tgt_rotmat=tgt_rotmat, method='SLSQP')
     print(jnt_values)
-    yumi_instance.fk(jnt_values, component_name=jlc_name)
+    yumi_instance.fk(component_name=jlc_name, jnt_values=jnt_values)
     yumi_meshmodel = yumi_instance.gen_meshmodel()
     yumi_meshmodel.attach_to(base)
     base.run()

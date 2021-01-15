@@ -165,17 +165,17 @@ class JLChainIK(object):
         author: weiwei
         date: 20180827, 20200331, 20200705
         """
-        tcp_globalpos, tcp_globalrotmat = self.get_gl_tcp(tcp_jntid, tcp_loc_pos, tcp_loc_rotmat)
+        tcp_gl_pos, tcp_gl_rotmat = self.get_gl_tcp(tcp_jntid, tcp_loc_pos, tcp_loc_rotmat)
         if isinstance(tgt_pos, list):
             deltapw = np.zeros(6 * len(tgt_pos))
-            for i, thistgt_pos in enumerate(tgt_pos):
-                deltapw[6 * i:6 * i + 3] = (thistgt_pos - tcp_globalpos[i])
-                deltapw[6 * i + 3:6 * i + 6] = rm.deltaw_between_rotmat(tgt_rot[i], tcp_globalrotmat[i].T)
+            for i, this_tgt_pos in enumerate(tgt_pos):
+                deltapw[6 * i:6 * i + 3] = (this_tgt_pos - tcp_gl_pos[i])
+                deltapw[6 * i + 3:6 * i + 6] = rm.deltaw_between_rotmat(tcp_gl_rotmat[i], tgt_rot[i])
             return deltapw
         else:
             deltapw = np.zeros(6)
-            deltapw[0:3] = (tgt_pos - tcp_globalpos)
-            deltapw[3:6] = rm.deltaw_between_rotmat(tgt_rot, tcp_globalrotmat.T)
+            deltapw[0:3] = (tgt_pos - tcp_gl_pos)
+            deltapw[3:6] = rm.deltaw_between_rotmat(tcp_gl_rotmat, tgt_rot)
             return deltapw
 
     def regulate_jnts(self):
@@ -196,11 +196,11 @@ class JLChainIK(object):
                                       self.jlc_object.jnts[id]["movement"])
             counter += 1
 
-    def check_jntranges_drag(self, jntvalues):
+    def check_jntranges_drag(self, jnt_values):
         """
         check if the given jntvalues is inside the oeprating range
         The joint values out of range will be pulled back to their maxima
-        :param jntvalues: a 1xn numpy ndarray
+        :param jnt_values: a 1xn numpy ndarray
         :return: Two parameters, one is true or false indicating if the joint values are inside the range or not
                 The other is the joint values after dragging.
                 If the joints were not dragged, the same joint values will be returned
@@ -208,8 +208,8 @@ class JLChainIK(object):
         date: 20161205
         """
         counter = 0
-        isdragged = np.zeros_like(jntvalues)
-        jntvaluesdragged = jntvalues.copy()
+        isdragged = np.zeros_like(jnt_values)
+        jntvaluesdragged = jnt_values.copy()
         for id in self.jlc_object.tgtjnts:
             if self.jlc_object.jnts[id]["type"] == 'revolute':
                 if self.jlc_object.jnts[id]['motion_rng'][1] - self.jlc_object.jnts[id]['motion_rng'][0] < math.pi * 2:
@@ -220,7 +220,7 @@ class JLChainIK(object):
                     #     isdragged[counter] = 1
                     #     jntvaluesdragged[counter] = jlinstance.jnts[id]['motion_rng'][1]
                     print("Drag revolute")
-                    if jntvalues[counter] < self.jlc_object.jnts[id]['motion_rng'][0] or jntvalues[counter] > \
+                    if jnt_values[counter] < self.jlc_object.jnts[id]['motion_rng'][0] or jnt_values[counter] > \
                             self.jlc_object.jnts[id]['motion_rng'][1]:
                         isdragged[counter] = 1
                         jntvaluesdragged[counter] = (self.jlc_object.jnts[id]['motion_rng'][1] + self.jlc_object.jnts[id][
@@ -233,7 +233,7 @@ class JLChainIK(object):
                 #     isdragged[counter] = 1
                 #     jntvaluesdragged[counter] = jlinstance.jnts[id]['motion_rng'][1]
                 print("Drag prismatic")
-                if jntvalues[counter] < self.jlc_object.jnts[id]['motion_rng'][0] or jntvalues[counter] > \
+                if jnt_values[counter] < self.jlc_object.jnts[id]['motion_rng'][0] or jnt_values[counter] > \
                         self.jlc_object.jnts[id]['motion_rng'][1]:
                     isdragged[counter] = 1
                     jntvaluesdragged[counter] = (self.jlc_object.jnts[id]['motion_rng'][1] + self.jlc_object.jnts[id][
@@ -451,18 +451,18 @@ class JLChainIK(object):
         author: weiwei
         date: 20170412, 20200331
         """
-        tcp_globalpos, tcp_globalrotmat = self.get_gl_tcp(tcp_jntid, tcp_loc_pos, tcp_loc_rotmat)
+        tcp_gl_pos, tcp_gl_rotmat = self.get_gl_tcp(tcp_jntid, tcp_loc_pos, tcp_loc_rotmat)
         if isinstance(tcp_jntid, list):
             tgt_pos = []
             tgt_rotmat = []
             for i, jid in enumerate(tcp_jntid):
-                tgt_pos.append(tcp_globalpos[i] + deltapos[i])
-                tgt_rotmat.append(np.dot(deltarotmat, tcp_globalrotmat[i]))
+                tgt_pos.append(tcp_gl_pos[i] + deltapos[i])
+                tgt_rotmat.append(np.dot(deltarotmat, tcp_gl_rotmat[i]))
             start_conf = self.jlc_object.getjntvalues()
             # return numik(rjlinstance, tgt_pos, tgt_rotmat, start_conf=start_conf, tcp_jntid=tcp_jntid, tcp_loc_pos=tcp_loc_pos, tcp_loc_rotmat=tcp_loc_rotmat)
         else:
-            tgt_pos = tcp_globalpos + deltapos
-            tgt_rotmat = np.dot(deltarotmat, tcp_globalrotmat)
+            tgt_pos = tcp_gl_pos + deltapos
+            tgt_rotmat = np.dot(deltarotmat, tcp_gl_rotmat)
             start_conf = self.jlc_object.getjntvalues()
         return self.numik(tgt_pos, tgt_rotmat, start_conf=start_conf, tcp_jntid=tcp_jntid, tcp_loc_pos=tcp_loc_pos,
                           tcp_loc_rotmat=tcp_loc_rotmat)

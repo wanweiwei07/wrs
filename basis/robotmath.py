@@ -405,7 +405,7 @@ def deltaw_between_rotmat(rotmati, rotmatj):
     author: weiwei
     date: 20200326
     """
-    deltarot = np.dot(rotmati, rotmatj)
+    deltarot = np.dot(rotmati.T, rotmatj)
     tempvec = np.array(
         [deltarot[2, 1] - deltarot[1, 2], deltarot[0, 2] - deltarot[2, 0], deltarot[1, 0] - deltarot[0, 1]])
     tempveclength = np.linalg.norm(tempvec)

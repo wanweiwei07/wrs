@@ -231,7 +231,7 @@ class Yumi(ri.RobotInterface):
             if not isinstance(jnt_values, np.ndarray) or jnt_values.size != 7:
                 raise ValueError("An 1x7 npdarray must be specified to move a single arm!")
             self.manipulator_dict[component_name].fk(jnt_values=jnt_values)
-            self.get_hnd_on_jlc(component_name).fix_to(pos=self.manipulator_dict[component_name].jnts[-1]['gl_posq'],
+            self.get_hnd_on_component(component_name).fix_to(pos=self.manipulator_dict[component_name].jnts[-1]['gl_posq'],
                                                        rotmat=self.manipulator_dict[component_name].jnts[-1]['gl_rotmatq'])
         elif component_name == 'both_arm':
             if (not isinstance(jnt_values, list)

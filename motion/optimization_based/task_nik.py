@@ -6,10 +6,10 @@ import warnings as wns
 
 class NIK(object):
 
-    def __init__(self, robot, jlc_name, wln_ratio=.15):
+    def __init__(self, robot, component_name, wln_ratio=.15):
         self.rbt = robot
-        self.jlc_name = jlc_name
-        self.jlc_object = self.rbt.component_dict[jlc_name].jlc
+        self.component_name = component_name
+        self.jlc_object = self.rbt.manipulator_dict[component_name].jlc
         self.wln_ratio = wln_ratio
         # workspace bound
         self.max_rng = 2.0 # meter
@@ -18,7 +18,7 @@ class NIK(object):
         wt_agl = 1 / (math.pi * math.pi)  # pi->1 == 0.01->0.18degree
         self.ws_wtlist = [wt_pos, wt_pos, wt_pos, wt_agl, wt_agl, wt_agl]
         # maximum reach
-        self.jnt_bounds = np.array(self.rbt.get_jnt_ranges(jlc_name))
+        self.jnt_bounds = np.array(self.rbt.get_jnt_ranges(component_name))
         # extract min max for quick access
         self.jmvmin = self.jnt_bounds[:,0]
         self.jmvmax = self.jnt_bounds[:,1]
@@ -27,7 +27,7 @@ class NIK(object):
         self.jmvmax_threshhold = self.jmvmax - self.jmvrng * self.wln_ratio
 
     def set_jlc(self, jlc_name):
-        self.jlc_name=jlc_name
+        self.component_name=jlc_name
         self.jnt_bounds = np.array(self.rbt.get_jnt_ranges(jlc_name))
         # extract min max for quick access
         self.jmvmin = self.jnt_bounds[:,0]
@@ -432,16 +432,16 @@ if __name__ == '__main__':
     base = wd.World(campos=[1.5, 0, 3], lookatpos=[0, 0, .5])
     gm.gen_frame().attach_to(base)
     yumi_instance = ym.Yumi(enable_cc=True)
-    jlc_name='rgt_arm'
+    component_name= 'rgt_arm'
     tgt_pos = np.array([.5, -.3, .3])
     tgt_rotmat = rm.rotmat_from_axangle([0,1,0], math.pi/2)
     gm.gen_frame(pos=tgt_pos, rotmat=tgt_rotmat).attach_to(base)
-    niksolver = NIK(yumi_instance, jlc_name='rgt_arm')
+    niksolver = NIK(yumi_instance, component_name='rgt_arm')
     tic = time.time()
     jnt_values = niksolver.num_ik(tgt_pos, tgt_rotmat, toggle_debug=True)
     toc = time.time()
     print(toc - tic)
-    yumi_instance.fk(jnt_values, component_name=jlc_name)
+    yumi_instance.fk(component_name, jnt_values)
     yumi_meshmodel = yumi_instance.gen_meshmodel()
     yumi_meshmodel.attach_to(base)
     yumi_instance.show_cdprimit()
