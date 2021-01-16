@@ -35,7 +35,7 @@ class GripperInterface(object):
         # cd mesh collection for precise collision checking
         self.cdmesh_collection = mc.ModelCollection()
         # is fk updated for lazy update of cdmesh_collection
-        self._is_fk_updated = False
+        self._is_fk_updated = True
 
     @property
     def is_fk_updated(self):
@@ -75,6 +75,8 @@ class GripperInterface(object):
                 for objcm in objcm_list:
                     objcm.attach_to(base)
                     objcm.show_cdmesh()
+                # self.cdmesh_collection.cm_list[i].set_homomat(np.eye(4))
+                # self.cdmesh_collection.cm_list[i].attach_to(base)
                 print("collided")
                 return True
         return False

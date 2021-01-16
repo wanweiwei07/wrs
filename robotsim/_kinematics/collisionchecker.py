@@ -135,7 +135,7 @@ class CollisionChecker(object):
         #     print("Into", collider.node().getIntoCollideMask())
         # attach obstacles
         for obstacle in obstacle_list:
-            obstacle.pdnp.reparentTo(self.np)
+            obstacle.objpdnp.reparentTo(self.np)
         # attach other robots
         for robot in otherrobot_list:
             for cdnp in robot.cc.np.getChildren():
@@ -147,7 +147,7 @@ class CollisionChecker(object):
         self.ctrav.traverse(self.np)
         # clear obstacles
         for obstacle in obstacle_list:
-            obstacle.pdnp.detachNode()
+            obstacle.objpdnp.detachNode()
         # clear other robots
         for robot in otherrobot_list:
             for cdnp in robot.cc.np.getChildren():

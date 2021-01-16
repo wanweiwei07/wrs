@@ -45,13 +45,13 @@ class RVizServer(rv_rpc.RVizServicer):
             # https://discourse.panda3d.org/t/serializing-pandanode-shaders-collisiontraverser-etc/26945/5
             # https://github.com/panda3d/panda3d/issues/1090
             if isinstance(globals()[name], gm.GeometricModel):
-                globals()[name].pdnp_raw.setShaderAuto()
+                globals()[name].objpdnp_raw.setShaderAuto()
             elif isinstance(globals()[name], mc.ModelCollection):
                 for cm in globals()[name].cm_list:
-                    cm.pdnp_raw.setShaderAuto()
+                    cm.objpdnp_raw.setShaderAuto()
                 for gm in globals()[name].gm_list:
                     if isinstance(gm, gm.GeometricModel):
-                        gm.pdnp_raw.setShaderAuto()
+                        gm.objpdnp_raw.setShaderAuto()
             elif isinstance(globals()[name], ri.RobotInterface):
                 globals()[name].enable_cc()
             return rv_msg.Status(value=rv_msg.Status.DONE)

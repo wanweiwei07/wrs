@@ -25,9 +25,9 @@ class BDBody(BulletRigidBodyNode):
         """
         super().__init__(name)
         if isinstance(objinit, gm.GeometricModel):
-            if objinit._trimesh is None:
+            if objinit._objtrm is None:
                 raise ValueError("Only applicable to models with a trimesh!")
-            self.com = objinit.trimesh.center_mass
+            self.com = objinit.objtrm.center_mass
             self.setMass(mass)
             self.setRestitution(restitution)
             self.setFriction(friction)
@@ -42,7 +42,7 @@ class BDBody(BulletRigidBodyNode):
             if allowccd:  # continuous collision detection
                 self.setCcdMotionThreshold(1e-6)
                 self.setCcdSweptSphereRadius(0.0005)
-            gnd = objinit.pdnp.find("+GeomNode")
+            gnd = objinit.objpdnp.find("+GeomNode")
             geom = copy.deepcopy(gnd.node().getGeom(0))
             vdata = geom.modifyVertexData()
             vertrewritter = GeomVertexRewriter(vdata, 'vertex')

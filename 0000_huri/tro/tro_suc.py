@@ -122,7 +122,7 @@ if __name__ == '__main__':
         # freesuctst.showfacets(togglesamples=True, togglenormals=False,
         #                       togglesamples_ref=True, togglenormals_ref=False,
         #                       togglesamples_refcls=True, togglenormals_refcls=False, specificfacet=True)
-        p3dh.gensphere(pos=np.mean(freesuctst.objcm.trimesh.vertices, axis=0), radius=5, rgba=[1,1,1,1]).reparentTo(rhx.base.render)
+        p3dh.gensphere(pos=np.mean(freesuctst.objcm.objtrm.vertices, axis=0), radius=5, rgba=[1, 1, 1, 1]).reparentTo(rhx.base.render)
         print(len(freesuctst.sucrotmats_planned))
         print(len(freesuctst.facets))
         for i, homomat in enumerate(freesuctst.sucrotmats_planned):

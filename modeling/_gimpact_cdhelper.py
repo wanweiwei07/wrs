@@ -1,12 +1,10 @@
-from panda3d.bullet import BulletWorld, BulletRigidBodyNode, BulletPlaneShape, BulletBoxShape
-from panda3d.bullet import BulletTriangleMeshShape, BulletTriangleMesh
-from panda3d.bullet import BulletConvexHullShape
-from panda3d.core import TransformState, Vec3, CollisionBox
 import copy
 import numpy as np
 import basis.robotmath as rm
 import basis.dataadapter as da
 import basis.trimeshgenerator as tg
+import modeling.geometricmodel as gm
+import gimpact as gi
 
 # box collision model
 def is_box2box_collided(objcm_list0, objcm_list1):
@@ -14,17 +12,16 @@ def is_box2box_collided(objcm_list0, objcm_list1):
     check if two objects objcm0 as objcm1 are in collision with each other
     the two objects are in the form of collision model
     the AABB boxlist will be used
-    type "box" is required
     :param objcm_list0: the first object or list
     :param objcm_list1: the second object or list
-    :return: boolean value showing if the two objects are in collision
+    :return: boolean value showing if the two objects are in collision, a list of contacts
     author: weiwei
-    date: 20190313
+    date: 20210116
     """
-    objcm0boxbullnode = _gen_box_cdmesh(objcm_list0)
-    objcm1boxbullnode = _gen_box_cdmesh(objcm_list1)
-    result = base.physicsworld.contactTestPair(objcm0boxbullnode, objcm1boxbullnode)
-    return True if result.getNumContacts() else False
+    gtrm0 = _gen_box_cdmesh(objcm_list0)
+    gtrm1 = _gen_box_cdmesh(objcm_list1)
+    contacts = gi.trimesh_trimesh_collision(gtrm0, gtrm1)
+    return (True, contacts) if len(contacts)>0 else (False, contacts)
 
 
 # 2 box - triangles
@@ -32,18 +29,44 @@ def is_box2triangles_collided(objcm_list0, objcm_list1):
     """
     check if two objects objcm0 as objcm1 are in collision with each other
     the two objects are in the form of collision model
-    the AABB boxlist will be used
-    type "box" is required
+    the AABB boxlist will be used for objcm_list0
     :param objcm_list0: the first object
     :param objcm_list1: the second object
-    :return: boolean value showing if the two objects are in collision
+    :return: boolean value showing if the two objects are in collision, a list of contacts
     author: weiwei
-    date: 201903138
+    date: 20210116
     """
-    objcm0boxbullnode = _gen_box_cdmesh(objcm_list0)
-    objcm1bullnode = _gen_triangles_cdmesh(objcm_list1)
-    result = base.physicsworld.contactTestPair(objcm0boxbullnode, objcm1bullnode)
-    return True if result.getNumContacts() else False
+    gtrm0 = _gen_box_cdmesh(objcm_list0)
+    gtrm1 = _gen_triangles_cdmesh(objcm_list1)
+    contacts = gi.trimesh_trimesh_collision(gtrm0, gtrm1)
+    return True, contacts if len(contacts)>0 else False, contacts
+
+
+# triangles collision model
+def is_triangles2triangles_collided(objcm_list0, objcm_list1):
+    """
+    check if two objects objcm0 and objcm1 are in collision with each other
+    the two objects are in the form of collision model
+    :param objcm_list0: the first object
+    :param objcm_list1: the second object
+    :return: boolean value showing if the two objects are in collision, a list of contacts
+    author: weiwei
+    date: 20210116
+    """
+    gtrm0 = _gen_triangles_cdmesh(objcm_list0)
+    gtrm1 = _gen_triangles_cdmesh(objcm_list1)
+    contacts = gi.trimesh_trimesh_collision(gtrm0, gtrm1)
+    return [True, contacts] if len(contacts)>0 else [False, contacts]
+    # if result.getNumContacts():
+    #     import modeling.geometricmodel as gm
+    #     for contact in result.getContacts():
+    #         gm.gen_sphere(pos = da.pdv3_to_npv3(contact.getManifoldPoint().getLocalPointA()), radius=0.001).attach_to(base)
+    #         gm.gen_sphere(pos = da.pdv3_to_npv3(contact.getManifoldPoint().getLocalPointB()), radius=0.001).attach_to(base)
+    #         gm.gen_arrow(spos = da.pdv3_to_npv3(contact.getManifoldPoint().getPositionWorldOnB()),
+    #                      epos = da.pdv3_to_npv3(contact.getManifoldPoint().getPositionWorldOnB())+da.pdv3_to_npv3(contact.getManifoldPoint().getNormalWorldOnB())).attach_to(base)
+    #         # gm.gen_sphere(pos = da.pdv3_to_npv3(contact.getManifoldPoint().getPositionWorldOnA()), radius=0.001, rgba=[0,1,0,1]).attach_to(base)
+    #         # gm.gen_sphere(pos = da.pdv3_to_npv3(contact.getManifoldPoint().getPositionWorldOnA()), radius=0.001, rgba=[0,1,0,1]).attach_to(base)
+    # return True if result.getNumContacts() else False
 
 
 def show_box_cdmesh(objcm_list):
@@ -54,40 +77,15 @@ def show_box_cdmesh(objcm_list):
     date: 20190313
     :return:
     """
-    if not base.toggledebug:
-        print("Toggling on base.physicsworld debug mode...")
-        base.change_debugstatus(True)
-    objcmboxbullnode = _gen_box_cdmesh(objcm_list)
-    base.physicsworld.attach(objcmboxbullnode)
-    base.physicsbodylist.append(objcmboxbullnode)
-    return objcmboxbullnode
-
-
-# triangles collision model
-def is_triangles2triangles_collided(objcm_list0, objcm_list1):
-    """
-    check if two objects objcm0 and objcm1 are in collision with each other
-    the two objects are in the form of collision model
-    the bulletmeshes will be used
-    :param objcm_list0: the first object
-    :param objcm_list1: the second object
-    :return: boolean value showing if the two objects are in collision
-    author: weiwei
-    date: 20190313
-    """
-    objcm0bullnode = _gen_triangles_cdmesh(objcm_list0)
-    objcm1bullnode = _gen_triangles_cdmesh(objcm_list1)
-    result = base.physicsworld.contactTestPair(objcm0bullnode, objcm1bullnode)
-    if result.getNumContacts():
-        import modeling.geometricmodel as gm
-        for contact in result.getContacts():
-            gm.gen_sphere(pos = da.pdv3_to_npv3(contact.getManifoldPoint().getLocalPointA()), radius=0.001).attach_to(base)
-            gm.gen_sphere(pos = da.pdv3_to_npv3(contact.getManifoldPoint().getLocalPointB()), radius=0.001).attach_to(base)
-            gm.gen_arrow(spos = da.pdv3_to_npv3(contact.getManifoldPoint().getPositionWorldOnB()),
-                         epos = da.pdv3_to_npv3(contact.getManifoldPoint().getPositionWorldOnB())+da.pdv3_to_npv3(contact.getManifoldPoint().getNormalWorldOnB())).attach_to(base)
-            # gm.gen_sphere(pos = da.pdv3_to_npv3(contact.getManifoldPoint().getPositionWorldOnA()), radius=0.001, rgba=[0,1,0,1]).attach_to(base)
-            # gm.gen_sphere(pos = da.pdv3_to_npv3(contact.getManifoldPoint().getPositionWorldOnA()), radius=0.001, rgba=[0,1,0,1]).attach_to(base)
-    return True if result.getNumContacts() else False
+    if not isinstance(objcm_list, list):
+        objcm_list = [objcm_list]
+    for objcm in objcm_list:
+        bottom_left, top_right = objcm.objpdnp_raw.getTightBounds()
+        extent = da.pdv3_to_npv3(top_right-bottom_left)
+        bound_tf = objcm.get_homomat().dot(rm.homomat_from_posrot(pos=da.pdv3_to_npv3((bottom_left+top_right)/2)))
+        trm_box = tg.gen_box(extent, bound_tf)
+        wm_box = gm.WireFrameModel(trm_box)
+        wm_box.attach_to(base)
 
 
 def rayhit_triangles_closet(pfrom, pto, objcm):
@@ -230,84 +228,66 @@ def unshow(cmbullnode):
 
 
 # util functions
-def _gen_box_cdmesh(objcm_list, name='autogen'):
+def _gen_box_cdmesh(objcm_list):
     """
-    generate a bullet cd obj using the AABB boundary of a obstacle collision model
+    generate the gimpact.TriMesh using the AABB boundary of a objcm_list
     :param objcm_list: a collision model or a list of collision model
-    :return: bulletrigidbody
+    :return: gimpact.TriMesh
     author: weiwei
-    date: 20190313, toyonaka
+    date: 20210116osaka-u
     """
     if not isinstance(objcm_list, list):
         objcm_list = [objcm_list]
-    geombullnode = BulletRigidBodyNode(name)
+    vertices = []
+    indices = []
     for objcm in objcm_list:
         bottom_left, top_right = objcm.objpdnp_raw.getTightBounds()
-        bound_tf = np.eye(4)
-        bound_tf[:3,3] = da.pdv3_to_npv3((bottom_left+top_right)/2)
         extent = da.pdv3_to_npv3(top_right-bottom_left)
-        objtrm_box = tg.gen_box(extent, bound_tf)
-        geom = da.pandageom_from_vvnf(objtrm_box.vertices, objtrm_box.vertex_normals, objtrm_box.faces)
-        geom.transformVertices(objcm.objpdnp.getMat())
-        geombullmesh = BulletTriangleMesh()
-        geombullmesh.addGeom(geom)
-        bullet_triangles_shape = BulletTriangleMeshShape(geombullmesh, dynamic=True)
-        bullet_triangles_shape.setMargin(0)
-        geombullnode.addShape(bullet_triangles_shape)
-    return geombullnode
+        bound_tf = objcm.get_homomat().dot(rm.homomat_from_posrot(pos=da.pdv3_to_npv3((bottom_left+top_right)/2)))
+        trm_box = tg.gen_box(extent, bound_tf)
+        vertices += trm_box.vertices.tolist()
+        indices += (trm_box.faces.flatten()+len(indices)).tolist()
+    gtrm = gi.TriMesh(np.array(vertices), np.array(indices))
+    return gtrm
 
-def _gen_triangles_cdmesh(objcm_list, name='autogen'):
+def _gen_triangles_cdmesh(objcm_list):
     """
-    generate the collision mesh of a nodepath using nodepath
-    this function suppose the nodepath has multiple models with many geomnodes
-    use genCollisionMeshMultiNp instead of genCollisionMeshNp for generality
-    :param nodepath: the panda3d nodepath of the object
-    :param basenodepath: the nodepath to compute relative transform, identity if none
-    :param name: the name of the rigidbody
-    :return: bulletrigidbody
+    generate gimpact.TriMesh of a objcm_list
+    :param objcm_list: a collision model or a list of collision model
+    :return: gimpact.TriMesh
     author: weiwei
-    date: 20161212, tsukuba
+    date: 20210116osaka-u
     """
     if not isinstance(objcm_list, list):
         objcm_list = [objcm_list]
-    geombullnode = BulletRigidBodyNode(name)
+    vertices = []
+    indices = []
     for objcm in objcm_list:
-        gndcollection = objcm.objpdnp_raw.findAllMatches("+GeomNode")
-        for gnd in gndcollection:
-            geom = copy.deepcopy(gnd.node().getGeom(0))
-            geom.transformVertices(objcm.objpdnp.getMat())
-            geombullmesh = BulletTriangleMesh()
-            geombullmesh.addGeom(geom)
-            bullettmshape = BulletTriangleMeshShape(geombullmesh, dynamic=True)
-            bullettmshape.setMargin(0)
-            geombullnode.addShape(bullettmshape)
-    return geombullnode
+        homomat = objcm.get_homomat()
+        vertices += rm.homomat_transform_points(homomat, objcm.objtrm.vertices).tolist()
+        indices += (objcm.objtrm.faces.flatten() + len(indices)).tolist()
+    gtrm = gi.TriMesh(np.array(vertices), np.array(indices))
+    return gtrm
 
-def _gen_convexhull_cdmesh(objcm_list, name='autogen'):
+def _gen_convexhull_cdmesh(objcm_list):
     """
-    generate the collision mesh of a nodepath using nodepath
-    this function suppose the nodepath has multiple models with many geomnodes
-    use genCollisionMeshMultiNp instead of genCollisionMeshNp for generality
-    :param nodepath: the panda3d nodepath of the object
-    :param basenodepath: the nodepath to compute relative transform, identity if none
-    :param name: the name of the rigidbody
-    :return: bulletrigidbody
+    generate gimpact.TriMesh using the convexhulls of a objcm_list
+    :param objcm_list: a collision model or a list of collision model
+    :return: gimpact.TriMesh
     author: weiwei
-    date: 20161212, tsukuba
+    date: 20210116osaka-u
     """
     if not isinstance(objcm_list, list):
         objcm_list = [objcm_list]
-    geombullnode = BulletRigidBodyNode(name)
+    vertices = []
+    indices = []
     for objcm in objcm_list:
         objtrm_cvx = objcm.objtrm.convex_hull
-        geom = da.pandageom_from_vvnf(objtrm_cvx.vertices, objtrm_cvx.vertex_normals, objtrm_cvx.faces)
-        geom.transformVertices(objcm.objpdnp.getMat())
-        geombullmesh = BulletTriangleMesh()
-        geombullmesh.addGeom(geom)
-        bullettmshape = BulletTriangleMeshShape(geombullmesh, dynamic=True)
-        bullettmshape.setMargin(0)
-        geombullnode.addShape(bullettmshape)
-    return geombullnode
+        homomat = objcm.get_homomat()
+        vertices += rm.homomat_transform_points(homomat, objtrm_cvx.objtrm.vertices).tolist()
+        indices += (objtrm_cvx.objtrm.faces.flatten() + len(indices)).tolist()
+    gtrm = gi.TriMesh(vertices, indices)
+    return gtrm
 
 def _gen_triangles_cdmesh_from_geom(geom, name='autogen'):
     """
@@ -377,17 +357,29 @@ if __name__ == '__main__':
 
     wd.World(campos=[1.0, 1, .0, 1.0], lookatpos=[0, 0, 0])
     objpath = os.path.join(basis.__path__[0], 'objects', 'bunnysim.stl')
-    objcm = cm.CollisionModel(objpath)
+    objcm1= cm.CollisionModel(objpath)
     homomat = np.eye(4)
     homomat[:3, :3] = rm.rotmat_from_axangle([0, 0, 1], math.pi / 2)
     homomat[:3, 3] = np.array([0, 0.02, 0])
-    objcm.set_homomat(homomat)
-    pfrom = np.array([0, 0, 0]) + np.array([1.0, 1.0, 1.0])
-    pto = np.array([0, 0, 0]) + np.array([-1.0, -1.0, -0.9])
-    hitpos, hitnrml = rayhit_triangles_closet(pfrom=pfrom, pto=pto, objcm=objcm)
-    objcm.attach_to(base)
-    objcm.show_cdmesh(type='box')
-    objcm.show_cdmesh(type='convexhull')
+    objcm1.set_homomat(homomat)
+    objcm1.set_rgba([1,1,.3,.2])
+    objcm2 = objcm1.copy()
+    objcm2.set_pos(objcm1.get_pos()+np.array([.0668,.03,0]))
+    iscollided, contacts = is_box2box_collided(objcm1, objcm2)
+    # objcm1.show_cdmesh(type='box')
+    show_box_cdmesh(objcm1)
+    objcm2.show_cdmesh(type='box')
+    objcm1.attach_to(base)
+    objcm2.attach_to(base)
+    print(iscollided)
+    for ct in contacts:
+        gm.gen_sphere(ct.point, radius=.001).attach_to(base)
+    # pfrom = np.array([0, 0, 0]) + np.array([1.0, 1.0, 1.0])
+    # pto = np.array([0, 0, 0]) + np.array([-1.0, -1.0, -0.9])
+    # hitpos, hitnrml = rayhit_triangles_closet(pfrom=pfrom, pto=pto, objcm=objcm)
+    # objcm.attach_to(base)
+    # objcm.show_cdmesh(type='box')
+    # objcm.show_cdmesh(type='convexhull')
     # gm.gen_sphere(hitpos, radius=.003, rgba=np.array([0, 1, 1, 1])).attach_to(base)
     # gm.gen_stick(spos=pfrom, epos=pto, thickness=.002).attach_to(base)
     # gm.gen_arrow(spos=hitpos, epos=hitpos + hitnrml * .07, thickness=.002, rgba=np.array([0, 1, 0, 1])).attach_to(base)

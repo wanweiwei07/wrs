@@ -1,6 +1,90 @@
 # primitive collision detection helper
-
+import math
+import numpy as np
+import basis.dataadapter as da
 from panda3d.core import NodePath, CollisionNode, CollisionTraverser, CollisionHandlerQueue, BitMask32
+from panda3d.core import CollisionBox, CollisionSphere
+
+def gen_box_cdnp(pdnp, name='cdnp_box', radius=0.01):
+    """
+    :param obstacle:
+    :return:
+    author: weiwei
+    date: 20180811
+    """
+    bottom_left, top_right = pdnp.getTightBounds()
+    center = (bottom_left + top_right) / 2.0
+    # enlarge the bounding box
+    bottom_left -= (bottom_left - center).normalize() * radius
+    top_right += (top_right - center).normalize() * radius
+    collision_primitive = CollisionBox(bottom_left, top_right)
+    collision_node = CollisionNode(name)
+    collision_node.addSolid(collision_primitive)
+    return collision_node
+
+
+def gen_cylindrical_cdnp(pdnp, name='cdnp_cylinder', radius=0.01):
+    """
+    :param trimeshmodel:
+    :param name:
+    :param radius:
+    :return:
+    author: weiwei
+    date: 20200108
+    """
+    bottom_left, top_right = pdnp.getTightBounds()
+    center = (bottom_left + top_right) / 2.0
+    # enlarge the bounding box
+    bottomleft_adjustvec = bottom_left - center
+    bottomleft_adjustvec[2] = 0
+    bottomleft_adjustvec.normalize()
+    bottom_left += bottomleft_adjustvec * radius
+    topright_adjustvec = top_right - center
+    topright_adjustvec[2] = 0
+    topright_adjustvec.normalize()
+    top_right += topright_adjustvec * radius
+    bottomleft_pos = da.pdv3_to_npv3(bottom_left)
+    topright_pos = da.pdv3_to_npv3(top_right)
+    collision_node = CollisionNode(name)
+    for angle in np.nditer(np.linspace(math.pi / 10, math.pi * 4 / 10, 4)):
+        ca = math.cos(angle)
+        sa = math.sin(angle)
+        new_bottomleft_pos = np.array([bottomleft_pos[0] * ca, bottomleft_pos[1] * sa, bottomleft_pos[2]])
+        new_topright_pos = np.array([topright_pos[0] * ca, topright_pos[1] * sa, topright_pos[2]])
+        new_bottomleft = da.npv3_to_pdv3(new_bottomleft_pos)
+        new_topright = da.npv3_to_pdv3(new_topright_pos)
+        collision_primitive = CollisionBox(new_bottomleft, new_topright)
+        collision_node.addSolid(collision_primitive)
+    return collision_node
+
+
+def gen_surfaceballs_cdnp(objtrm, name='cdnp_surfaceball', radius=0.01):
+    """
+    :param obstacle:
+    :return:
+    author: weiwei
+    date: 20180811
+    """
+    nsample = int(math.ceil(objtrm.area / (radius * 0.3) ** 2))
+    nsample = 120 if nsample > 120 else nsample  # threshhold
+    samples = objtrm.sample(nsample)
+    collision_node = CollisionNode(name)
+    for sglsample in samples:
+        collision_node.addSolid(CollisionSphere(sglsample[0], sglsample[1], sglsample[2], radius=radius))
+    return collision_node
+
+
+def gen_pointcloud_cdnp(objtrm, name='cdnp_pointcloud', radius=0.02):
+    """
+    :param obstacle:
+    :return:
+    author: weiwei
+    date: 20191210
+    """
+    collision_node = CollisionNode(name)
+    for sglpnt in objtrm.vertices:
+        collision_node.addSolid(CollisionSphere(sglpnt[0], sglpnt[1], sglpnt[2], radius=radius))
+    return collision_node
 
 
 def is_cdprimit2cdprimit_collided(objcm_list0, objcm_list1, toggleplot=False):

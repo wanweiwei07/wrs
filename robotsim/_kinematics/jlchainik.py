@@ -264,6 +264,7 @@ class JLChainIK(object):
         author: weiwei
         date: 20180203, 20200328
         """
+        toggle_debug=True
         deltapos = tgt_pos - self.jlc_object.jnts[0]['gl_pos0']
         if np.linalg.norm(deltapos) > self.max_rng:
             wns.WarningMessage("The goal is outside maximum range!")
@@ -288,7 +289,6 @@ class JLChainIK(object):
         jnt_values_iter = self.jlc_object.homeconf if seed_conf is None else seed_conf.copy()
         self.jlc_object.fk(jnt_values=jnt_values_iter)
         jnt_values_ref = jnt_values_iter.copy()
-
         if isinstance(tcp_jntid, list):
             diaglist = []
             for i in tcp_jntid:
@@ -297,7 +297,6 @@ class JLChainIK(object):
         else:
             ws_wtdiagmat = np.diag(self.ws_wtlist)
         # sqrtinv_ws_wtdiagmat = np.linalg.inv(np.diag(np.sqrt(np.diag(ws_wtdiagmat))))
-
         if toggle_debug:
             if "jlm" not in dir():
                 import robotsim._kinematics.jlchainmesh as jlm
@@ -415,8 +414,8 @@ class JLChainIK(object):
                 # print(jntvalues_iter)
                 self.jlc_object.fk(jnt_values=jnt_values_iter)
                 # if toggle_debug:
-                #     jlmgen.gensnp(jlinstance, tcp_jntid=tcp_jntid, tcp_loc_pos=tcp_loc_pos,
-                #                   tcp_loc_rotmat=tcp_loc_rotmat, togglejntscs=True).reparentTo(base.render)
+                #     self.jlc_object.gen_stickmodel(tcp_jntid=tcp_jntid, tcp_loc_pos=tcp_loc_pos,
+                #                                    tcp_loc_rotmat=tcp_loc_rotmat, toggle_jntscs=True).attach_to(base)
             errnormlast = errnorm
         if toggle_debug:
             fig = plt.figure()
@@ -434,7 +433,7 @@ class JLChainIK(object):
             plt.show()
             self.jlc_object.gen_stickmodel(tcp_jntid=tcp_jntid, tcp_loc_pos=tcp_loc_pos,
                                            tcp_loc_rotmat=tcp_loc_rotmat, toggle_jntscs=True).attach_to(base)
-            base.run()
+            # base.run()
         self.jlc_object.fk(jnt_values_bk)
         wns.warn('Failed to solve the IK, returning None.')
         return None

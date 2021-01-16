@@ -36,7 +36,7 @@ class Yumi(ri.RobotInterface):
         self.lft_body.lnks[1]['loc_pos'] = np.array([0, 0, 0])
         self.lft_body.lnks[1]['collisionmodel'] = cm.CollisionModel(
             os.path.join(this_dir, "meshes", "body.stl"),
-            cdprimitive_type="userdefined", expand_radius=.005,
+            cdprimitive_type="user_defined", expand_radius=.005,
             userdefined_cdprimitive_fn=self._base_combined_cdnp)
         self.lft_body.lnks[1]['rgba'] = [.7, .7, .7, 1]
         self.lft_body.lnks[2]['name'] = "yumi_lft_column"
@@ -454,15 +454,15 @@ if __name__ == '__main__':
     base = wd.World(campos=[1.5, 0, 3], lookatpos=[0, 0, .5])
     gm.gen_frame().attach_to(base)
     yumi_instance = Yumi(enable_cc=True)
-    jlc_name='rgt_arm'
-    tgt_pos = np.array([.5, -.3, .3])
+    component_name= 'rgt_arm'
+    tgt_pos = np.array([.4, -.4, .3])
     tgt_rotmat = rm.rotmat_from_axangle([0,1,0], math.pi/2)
     gm.gen_frame(pos=tgt_pos, rotmat=tgt_rotmat).attach_to(base)
     tic = time.time()
-    jnt_values = yumi_instance.ik(jlc_name, tgt_pos, tgt_rotmat)
+    jnt_values = yumi_instance.ik(component_name, tgt_pos, tgt_rotmat)
     toc = time.time()
     print(toc - tic)
-    yumi_instance.fk(jlc_name, jnt_values)
+    # yumi_instance.fk(jlc_name, jnt_values)
     yumi_meshmodel = yumi_instance.gen_meshmodel()
     yumi_meshmodel.attach_to(base)
     yumi_instance.show_cdprimit()

@@ -4,6 +4,7 @@ import numpy as np
 from panda3d.core import Geom, GeomNode, GeomPoints, GeomTriangles, GeomVertexData, GeomVertexFormat, GeomVertexWriter
 from panda3d.core import GeomEnums
 from panda3d.core import NodePath, Vec3, Mat3, Mat4, LQuaternion
+import gimpact as gi
 
 
 # data manipulation
@@ -300,24 +301,28 @@ def pandageom_from_points(vertices, rgba_list=None, name=''):
     """
     pack the vertices into a panda3d point cloud geom
     :param vertices:
-    :param rgba_list: 1x4 nparray for all points, or a list of 1x4 nparray for each point
+    :param rgba_list: 1x4 nparray for all points, or a list of 1x4 nparray for each point (NOT USED, SEE TODO)
     :param name:
     :return:
     author: weiwei
-    date: 20170328
+    date: 20170328, 20210116
     """
-    if rgba_list is None:
-        # default
-        vertex_rgbas = np.array([[.2, .2, .2, 1], ]*len(vertices))
-    elif isinstance(rgba_list, np.ndarray):
-        vertex_rgbas = np.tile(rgba_list, (len(vertices),1))
-    elif isinstance(rgba_list, list):
-        vertex_rgbas = np.array(rgba_list)
-    else:
-        raise ValueError('rgba_list must be None, np.ndarray, or list!')
-    vertformat = GeomVertexFormat.getV3c4()
+    # TODO unable to set color -> data format problem
+    # if rgba_list is None:
+    #     # default
+    #     vertex_rgbas = np.array([[0, 0, 0, 1], ]*len(vertices), dtype=np.float32)
+    # elif isinstance(rgba_list, np.ndarray):
+    #     vertex_rgbas = np.tile(rgba_list, (len(vertices),1), dtype=np.float32)
+    # elif isinstance(rgba_list, list):
+    #     vertex_rgbas = np.array(rgba_list, dtype=np.float32)
+    # else:
+    #     raise ValueError('rgba_list must be None, np.ndarray, or list!')
+    # vertformat = GeomVertexFormat.getV3c4()
+    # vertexdata = GeomVertexData(name, vertformat, Geom.UHStatic)
+    # vertexdata.modifyArrayHandle(0).setData(np.hstack((vertices.astype(np.float32), vertex_rgbas)).tostring())
+    vertformat = GeomVertexFormat.getV3()
     vertexdata = GeomVertexData(name, vertformat, Geom.UHStatic)
-    vertexdata.modifyArrayHandle(0).setData(np.hstack((vertices, vertex_rgbas)).astype(np.float32).tostring())
+    vertexdata.modifyArrayHandle(0).setData(vertices.astype(np.float32).tostring())
     primitive = GeomPoints(Geom.UHStatic)
     primitive.setIndexType(GeomEnums.NTUint32)
     primitive.modifyVertices(-1).modifyHandle().setData(np.arange(len(vertices), dtype=np.uint32).tostring())
@@ -337,8 +342,10 @@ def nodepath_from_points(vertices, rgba_list=None, name=''):
     date: 20170328
     """
     objgeom = pandageom_from_points(vertices, rgba_list, name + 'geom')
+    geomnodeobj = GeomNode('GeomNode')
+    geomnodeobj.addGeom(objgeom)
     pointcloud_nodepath = NodePath(name)
-    pointcloud_nodepath.attachNewNode(objgeom)
+    pointcloud_nodepath.attachNewNode(geomnodeobj)
     return pointcloud_nodepath
 
 def loadfile_vf(objpath):

@@ -25,6 +25,7 @@ _AXES2TUPLE = {
     'rzxz': (2, 0, 1, 1), 'rxyz': (2, 1, 0, 1), 'rzyz': (2, 1, 1, 1)}
 _TUPLE2AXES = dict((v, k) for k, v in _AXES2TUPLE.items())
 
+
 ## rotmat
 def rotmat_from_axangle(axis, theta):
     """
@@ -47,6 +48,7 @@ def rotmat_from_axangle(axis, theta):
                      [2.0 * (bc - ad), aa + cc - bb - dd, 2.0 * (cd + ab)],
                      [2.0 * (bd + ac), 2.0 * (cd - ab), aa + dd - bb - cc]])
 
+
 def rotmat_from_quaternion(quaternion):
     """
     convert a quaterion to rotmat
@@ -63,6 +65,7 @@ def rotmat_from_quaternion(quaternion):
         [q[1, 3] - q[2, 0], q[2, 3] + q[1, 0], 1.0 - q[1, 1] - q[2, 2], 0.0],
         [0.0, 0.0, 0.0, 1.0]])
 
+
 def rotmat_from_normal(surfacenormal):
     '''
     Compute the rotation matrix of a 3D mesh using a surface normal
@@ -76,6 +79,7 @@ def rotmat_from_normal(surfacenormal):
     rotmat[:, 0] = orthogonal_vector(rotmat[:, 2], toggleunit=True)
     rotmat[:, 1] = np.cross(rotmat[:, 2], rotmat[:, 0])
     return rotmat
+
 
 def rotmat_from_normalandpoints(facetnormal, facetfirstpoint, facetsecondpoint):
     '''
@@ -98,6 +102,7 @@ def rotmat_from_normalandpoints(facetnormal, facetfirstpoint, facetsecondpoint):
     rotmat[:, 1] = np.cross(rotmat[:, 2], rotmat[:, 0])
     return rotmat
 
+
 def rotmat_from_euler(ai, aj, ak, axes='sxyz'):
     """
     :param ai: degree
@@ -110,6 +115,7 @@ def rotmat_from_euler(ai, aj, ak, axes='sxyz'):
     """
     return _euler_matrix(ai, aj, ak, axes)[:3, :3]
 
+
 def rotmat_to_euler(rotmat, axes='sxyz'):
     """
     :param rotmat: 3x3 nparray
@@ -120,6 +126,7 @@ def rotmat_to_euler(rotmat, axes='sxyz'):
     """
     ax, ay, az = _euler_from_matrix(rotmat, axes)
     return np.array([ax, ay, az])
+
 
 def rotmat_between_vectors(v1, v2):
     """
@@ -136,6 +143,7 @@ def rotmat_between_vectors(v1, v2):
         return rotmat_from_axangle(orthogonal_vector(v1, toggleunit=True), theta)
     axis = unit_vector(np.cross(v1, v2))
     return rotmat_from_axangle(axis, theta)
+
 
 def rotmat_average(rotmatlist, bandwidth=10):
     """
@@ -155,6 +163,7 @@ def rotmat_average(rotmatlist, bandwidth=10):
     rotmatavg = rotmat_from_quaternion(quatavg)[:3, :3]
     return rotmatavg
 
+
 def rotmat_slerp(rotmat0, rotmat1, nval):
     """
     :param rotmat0:
@@ -169,8 +178,9 @@ def rotmat_slerp(rotmat0, rotmat1, nval):
     interp_rots = slerp(slerp_times)
     return interp_rots.as_matrix()
 
+
 ## homogeneous matrix
-def homomat_from_posrot(pos, rot):
+def homomat_from_posrot(pos=np.zeros(3), rot=np.eye(3)):
     """
     build a 4x4 nparray homogeneous matrix
     :param pos: nparray 1x3
@@ -183,6 +193,7 @@ def homomat_from_posrot(pos, rot):
     homomat[:3, :3] = rot
     homomat[:3, 3] = pos
     return homomat
+
 
 def homomat_inverse(homomat):
     """
@@ -198,6 +209,7 @@ def homomat_inverse(homomat):
     invhomomat[:3, :3] = np.transpose(rotmat)
     invhomomat[:3, 3] = -np.dot(np.transpose(rotmat), tranvec)
     return invhomomat
+
 
 def homomat_transform_points(homomat, points):
     """
@@ -219,6 +231,7 @@ def homomat_transform_points(homomat, points):
         transformed_pointarray = homomat.dot(homopcdnp).T
         return transformed_pointarray[:, :3]
 
+
 def homomat_average(homomatlist, bandwidth=10):
     """
     average a list of homomat (4x4)
@@ -231,8 +244,9 @@ def homomat_average(homomatlist, bandwidth=10):
     """
     homomatarray = np.asarray(homomatlist)
     posavg = posvec_average(homomatarray[:, :3, 3], bandwidth)
-    rotmatavg = rotmat_average(homomatarray[:, :3, :3],bandwidth)
+    rotmatavg = rotmat_average(homomatarray[:, :3, :3], bandwidth)
     return homomat_from_posrot(posavg, rotmatavg)
+
 
 # quaternion
 def quaternion_from_axangle(angle, axis):
@@ -248,6 +262,7 @@ def quaternion_from_axangle(angle, axis):
         quaternion *= math.sin(angle / 2.0) / qlen
     quaternion[0] = math.cos(angle / 2.0)
     return quaternion
+
 
 def quaternion_average(quaternionlist, bandwidth=10):
     """
@@ -284,6 +299,7 @@ def quaternion_average(quaternionlist, bandwidth=10):
     quatavg = np.linalg.eigh(accummat)[1][:, -1]
     return quatavg
 
+
 def quaternion_to_euler(quaternion, axes='sxyz'):
     """
     :param rotmat: 3x3 nparray
@@ -293,6 +309,7 @@ def quaternion_to_euler(quaternion, axes='sxyz'):
     date: 20190504
     """
     return rotmat_to_euler(rotmat_from_quaternion(quaternion), axes)
+
 
 def skewsymmetric(posvec):
     """
@@ -305,6 +322,7 @@ def skewsymmetric(posvec):
     return np.array([[0, -posvec[2], posvec[1]],
                      [posvec[2], 0, -posvec[0]],
                      [-posvec[1], posvec[0], 0]])
+
 
 def orthogonal_vector(basevec, toggleunit=True):
     """
@@ -324,6 +342,7 @@ def orthogonal_vector(basevec, toggleunit=True):
     else:
         return np.array([b - c, -a + c, a - b])
 
+
 def rel_pose(pos0, rot0, pos1, rot1):
     """
     relpos of rot1, pos1 with respect to rot0 pos0
@@ -339,6 +358,7 @@ def rel_pose(pos0, rot0, pos1, rot1):
     relrot = np.dot(rot0.T, rot1)
     return relpos, relrot
 
+
 def regulate_angle(lowerbound, upperbound, jntangles):
     """
     change the range of armjnts to [lowerbound, upperbound]
@@ -349,16 +369,16 @@ def regulate_angle(lowerbound, upperbound, jntangles):
     :return:
     """
     if isinstance(jntangles, np.ndarray):
-        rng = upperbound-lowerbound
-        if rng >= 2*math.pi:
+        rng = upperbound - lowerbound
+        if rng >= 2 * math.pi:
             jntangles[jntangles < lowerbound] = jntangles[jntangles < lowerbound] % -rng + rng
             jntangles[jntangles > upperbound] = jntangles[jntangles > upperbound] % rng - rng
         else:
             raise ValueError("upperbound-lowerbound must be multiplies of 2*math.pi or 360")
         return jntangles
     else:
-        rng = upperbound-lowerbound
-        if rng >= 2*math.pi:
+        rng = upperbound - lowerbound
+        if rng >= 2 * math.pi:
             jntangles = jntangles % -rng + rng if jntangles < lowerbound else jntangles % rng - rng
         else:
             raise ValueError("upperbound-lowerbound must be multiplies of 2*math.pi or 360")
@@ -383,6 +403,7 @@ def unit_vector(vector, togglelength=False):
     else:
         return vector / np.linalg.norm(vector)
 
+
 def angle_between_vectors(v1, v2):
     """
     :param v1: 1-by-3 nparray
@@ -396,6 +417,7 @@ def angle_between_vectors(v1, v2):
     if l1 == 0 or l2 == 0:
         return None
     return np.arccos(np.clip(np.dot(v1_u, v2_u), -1.0, 1.0))
+
 
 def deltaw_between_rotmat(rotmati, rotmatj):
     """
@@ -417,6 +439,7 @@ def deltaw_between_rotmat(rotmati, rotmatj):
         deltaw = math.pi / 2 * (np.diag(deltarot) + 1)
     return deltaw
 
+
 def cosine_between_vector(v1, v2):
     l1, v1_u = unit_vector(v1, togglelength=True)
     l2, v2_u = unit_vector(v2, togglelength=True)
@@ -424,11 +447,13 @@ def cosine_between_vector(v1, v2):
         raise Exception("One of the given vector is [0,0,0].")
     return np.clip(np.dot(v1_u, v2_u), -1.0, 1.0)
 
+
 def axangle_between_rotmat(rotmati, rotmatj):
     deltaw = deltaw_between_rotmat(rotmati, rotmatj)
     angle = np.linalg.norm(deltaw)
-    ax = deltaw/angle if isinstance(deltaw, np.ndarray) else None
+    ax = deltaw / angle if isinstance(deltaw, np.ndarray) else None
     return ax, angle
+
 
 def quaternion_to_axangle(quaternion):
     """
@@ -449,6 +474,7 @@ def quaternion_to_axangle(quaternion):
         axis = vec / normvec
     return angle, axis
 
+
 def posvec_average(posveclist, bandwidth=10):
     """
     average a list of posvec (1x3)
@@ -467,7 +493,8 @@ def posvec_average(posveclist, bandwidth=10):
     else:
         return np.array(posveclist).mean(axis=0)
 
-def gen_icorotmats(icolevel=1, rotagls=np.linspace(0, 2*math.pi, 8, endpoint=False), toggleflat=False):
+
+def gen_icorotmats(icolevel=1, rotagls=np.linspace(0, 2 * math.pi, 8, endpoint=False), toggleflat=False):
     """
     generate rotmats using icospheres and rotationaangle each origin-vertex vector of the icosphere
     :param icolevel, the default value 1 = 42vertices
@@ -493,7 +520,9 @@ def gen_icorotmats(icolevel=1, rotagls=np.linspace(0, 2*math.pi, 8, endpoint=Fal
         return functools.reduce(operator.iconcat, returnlist, [])
     return returnlist
 
-def gen_icohomomats(icolevel=1, position=np.array([0, 0, 0]), rotagls=np.linspace(0, 2*math.pi, 8, endpoint=False), toggleflat=False):
+
+def gen_icohomomats(icolevel=1, position=np.array([0, 0, 0]), rotagls=np.linspace(0, 2 * math.pi, 8, endpoint=False),
+                    toggleflat=False):
     """
     generate homomats using icospheres and rotationaangle each origin-vertex vector of the icosphere
     :param icolevel, the default value 1 = 42vertices
@@ -522,6 +551,7 @@ def gen_icohomomats(icolevel=1, position=np.array([0, 0, 0]), rotagls=np.linspac
         return functools.reduce(operator.iconcat, returnlist, [])
     return returnlist
 
+
 def getaabb(pointsarray):
     """
     get the axis aligned bounding box of nx3 array
@@ -540,6 +570,7 @@ def getaabb(pointsarray):
     # volume = (xmax-xmin)*(ymax-ymin)*(zmax-zmin)
     return [center, np.array([[xmin, xmax], [ymin, ymax], [zmin, zmax]])]
 
+
 def computepca(nparray):
     """
     :param nparray: nxd array, d is the dimension
@@ -547,9 +578,10 @@ def computepca(nparray):
     author: weiwei
     date: 20200701osaka
     """
-    ca = np.cov(nparray, y=None, rowvar=False, bias=True) # rowvar row=point, bias biased covariance
+    ca = np.cov(nparray, y=None, rowvar=False, bias=True)  # rowvar row=point, bias biased covariance
     pcv, pcaxmat = np.linalg.eig(ca)
     return pcv, pcaxmat
+
 
 def points_obb(pointsarray, toggledebug=False):
     """
@@ -594,6 +626,7 @@ def points_obb(pointsarray, toggledebug=False):
         plt.show()
     return [center, corners, pcaxmat]
 
+
 def gaussian_ellipsoid(pointsarray):
     """
     compute a 95% percent ellipsoid axmat for the given points array
@@ -606,10 +639,11 @@ def gaussian_ellipsoid(pointsarray):
     center = np.mean(pointsarray, axis=0)
     axmat = np.eye(3)
     # TODO is there a better way to do this?
-    axmat[:,0] = 2*math.sqrt(5.991*pcv[0])*pcaxmat[:,0]
-    axmat[:,1] = 2*math.sqrt(5.991*pcv[1])*pcaxmat[:,1]
-    axmat[:,2] = 2*math.sqrt(5.991*pcv[2])*pcaxmat[:,2]
+    axmat[:, 0] = 2 * math.sqrt(5.991 * pcv[0]) * pcaxmat[:, 0]
+    axmat[:, 1] = 2 * math.sqrt(5.991 * pcv[1]) * pcaxmat[:, 1]
+    axmat[:, 2] = 2 * math.sqrt(5.991 * pcv[2]) * pcaxmat[:, 2]
     return center, axmat
+
 
 # The following code is from Gohlke
 #

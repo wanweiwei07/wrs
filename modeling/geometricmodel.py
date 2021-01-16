@@ -26,59 +26,59 @@ class StaticGeometricModel(object):
         """
         if isinstance(initiator, StaticGeometricModel):
             self._objpath = copy.deepcopy(initiator.objpath)
-            self._trimesh = copy.deepcopy(initiator.trimesh)
-            self._pdnp = copy.deepcopy(initiator.pdnp)
+            self._objtrm = copy.deepcopy(initiator.objtrm)
+            self._objpdnp = copy.deepcopy(initiator.objpdnp)
             self._name = copy.deepcopy(initiator.name)
             self._localframe = copy.deepcopy(initiator.localframe)
         else:
             # make a grandma nodepath to separate decorations (-autoshader) and raw nodepath (+autoshader)
             self._name = name
-            self._pdnp = NodePath(name)
+            self._objpdnp = NodePath(name)
             if isinstance(initiator, str):
                 self._objpath = initiator
-                self._trimesh = trimesh.load(self._objpath)
-                pdnp_raw = da.trimesh_to_nodepath(self._trimesh, name='pdnp_raw')
-                pdnp_raw.reparentTo(self._pdnp)
+                self._objtrm = trimesh.load(self._objpath)
+                objpdnp_raw = da.trimesh_to_nodepath(self._objtrm, name='pdnp_raw')
+                objpdnp_raw.reparentTo(self._objpdnp)
             elif isinstance(initiator, trimesh.Trimesh):
                 self._objpath = None
-                self._trimesh = initiator
-                pdnp_raw = da.trimesh_to_nodepath(self._trimesh)
-                pdnp_raw.reparentTo(self._pdnp)
+                self._objtrm = initiator
+                objpdnp_raw = da.trimesh_to_nodepath(self._objtrm)
+                objpdnp_raw.reparentTo(self._objpdnp)
             elif isinstance(initiator, o3d.geometry.PointCloud): # TODO should pointcloud be pdnp or pdnp_raw
                 self._objpath = None
-                self._trimesh = trimesh.Trimesh(np.asarray(initiator.points))
-                pdnp_raw = da.nodepath_from_points(self._trimesh.vertices, name='pdnp_raw')
-                pdnp_raw.reparentTo(self._pdnp)
+                self._objtrm = trimesh.Trimesh(np.asarray(initiator.points))
+                objpdnp_raw = da.nodepath_from_points(self._objtrm.vertices, name='pdnp_raw')
+                objpdnp_raw.reparentTo(self._objpdnp)
             elif isinstance(initiator, np.ndarray): # TODO should pointcloud be pdnp or pdnp_raw
                 self._objpath = None
                 if initiator.shape[1] == 3:
-                    self._trimesh = trimesh.Trimesh(initiator)
-                    pdnp_raw = da.nodepath_from_points(self._trimesh.vertices)
+                    self._objtrm = trimesh.Trimesh(initiator)
+                    objpdnp_raw = da.nodepath_from_points(self._objtrm.vertices)
                 elif initiator.shape[1] == 6:
-                    self._trimesh = trimesh.Trimesh(initiator[:, :3])
-                    pdnp_raw = da.nodepath_from_points(self._trimesh.vertices, initiator[:, 3:])
+                    self._objtrm = trimesh.Trimesh(initiator[:, :3])
+                    objpdnp_raw = da.nodepath_from_points(self._objtrm.vertices, initiator[:, 3:])
                 else:
                     # TODO depth UV?
                     raise NotImplementedError
-                pdnp_raw.reparentTo(self._pdnp)
+                objpdnp_raw.reparentTo(self._objpdnp)
             elif isinstance(initiator, o3d.geometry.TriangleMesh):
                 self._objpath = None
-                self._trimesh = trimesh.Trimesh(vertices=initiator.vertices, faces=initiator.triangles,
-                                                face_normals=initiator.triangle_normals)
-                pdnp_raw = da.trimesh_to_nodepath(self._trimesh, name='pdnp_raw')
-                pdnp_raw.reparentTo(self._pdnp)
+                self._objtrm = trimesh.Trimesh(vertices=initiator.vertices, faces=initiator.triangles,
+                                               face_normals=initiator.triangle_normals)
+                objpdnp_raw = da.trimesh_to_nodepath(self._objtrm, name='pdnp_raw')
+                objpdnp_raw.reparentTo(self._objpdnp)
             elif isinstance(initiator, NodePath):
                 self._objpath = None
-                self._trimesh = None # TODO nodepath to trimesh?
-                pdnp_raw = initiator
-                pdnp_raw.reparentTo(self._pdnp)
+                self._objtrm = None # TODO nodepath to trimesh?
+                objpdnp_raw = initiator
+                objpdnp_raw.reparentTo(self._objpdnp)
             else:
                 self._objpath = None
-                self._trimesh = None
-                pdnp_raw = NodePath("pdnp_raw")
-                pdnp_raw.reparentTo(self._pdnp)
+                self._objtrm = None
+                objpdnp_raw = NodePath("pdnp_raw")
+                objpdnp_raw.reparentTo(self._objpdnp)
             if btransparency:
-                self._pdnp.setTransparency(TransparencyAttrib.MDual)
+                self._objpdnp.setTransparency(TransparencyAttrib.MDual)
             self._localframe = None
 
     @property
@@ -92,21 +92,21 @@ class StaticGeometricModel(object):
         return self._objpath
 
     @property
-    def pdnp(self):
+    def objpdnp(self):
         # read-only property
-        return self._pdnp
+        return self._objpdnp
 
     @property
-    def pdnp_raw(self):
+    def objpdnp_raw(self):
         # read-only property
-        return self._pdnp.getChild(0)
+        return self._objpdnp.getChild(0)
 
     @property
-    def trimesh(self):
+    def objtrm(self):
         # read-only property
-        if self._trimesh is None:
+        if self._objtrm is None:
             raise ValueError("Only applicable to models with a trimesh!")
-        return self._trimesh
+        return self._objtrm
 
     @property
     def localframe(self):
@@ -116,58 +116,41 @@ class StaticGeometricModel(object):
     @property
     def volume(self):
         # read-only property
-        if self._trimesh is None:
+        if self._objtrm is None:
             raise ValueError("Only applicable to models with a trimesh!")
-        return self._trimesh.volume
-
-    def sample_surface(self, radius=0.02, nsample=None):
-        """
-        :param raidus:
-        :return:
-        author: weiwei
-        date: 20191228
-        """
-        if self._trimesh is None:
-            raise ValueError("Only applicable to models with a trimesh!")
-        # do transformation first
-        tmptrimesh = self.trimesh.copy()
-        tmptrimesh.apply_transform(self.get_homomat())
-        if nsample is None:
-            nsample = int(round(tmptrimesh.area / ((radius * 0.3) ** 2)))
-        samples, faceids = tmptrimesh.sample(nsample, toggle_faceid=True)
-        return samples, faceids
+        return self._objtrm.volume
 
     def set_rgba(self, rgba):
-        self._pdnp.setColor(rgba[0], rgba[1], rgba[2], rgba[3])
+        self._objpdnp.setColor(rgba[0], rgba[1], rgba[2], rgba[3])
 
     def get_rgba(self):
-        return da.pdv4_to_npv4(self._pdnp.getColor())  # panda3d.core.LColor -> LBase4F
+        return da.pdv4_to_npv4(self._objpdnp.getColor())  # panda3d.core.LColor -> LBase4F
 
     def clear_color(self):
-        self._pdnp.clearColor()
+        self._objpdnp.clearColor()
 
     def set_scale(self, scale=[1, 1, 1]):
-        self._pdnp.setScale(scale[0], scale[1], scale[2])
+        self._objpdnp.setScale(scale[0], scale[1], scale[2])
 
     def get_scale(self):
-        return da.pdv3_to_npv3(self._pdnp.getScale())
+        return da.pdv3_to_npv3(self._objpdnp.getScale())
 
     def attach_to(self, obj):
         if isinstance(obj, ShowBase):
             # for rendering to base.render
-            self._pdnp.reparentTo(obj.render)
+            self._objpdnp.reparentTo(obj.render)
         elif isinstance(obj, StaticGeometricModel): # prepared for decorations like local frames
-            self._pdnp.reparentTo(obj.pdnp)
+            self._objpdnp.reparentTo(obj.objpdnp)
         elif isinstance(obj, mc.ModelCollection):
             obj.add_gm(self)
         else:
             print("Must be ShowBase, modeling.StaticGeometricModel, GeometricModel, CollisionModel, or CollisionModelCollection!")
 
     def detach(self):
-        self._pdnp.detachNode()
+        self._objpdnp.detachNode()
 
     def remove(self):
-        self._pdnp.removeNode()
+        self._objpdnp.removeNode()
 
     def show_localframe(self):
         self._localframe = gen_frame()
@@ -180,6 +163,104 @@ class StaticGeometricModel(object):
 
     def copy(self):
         return copy.deepcopy(self)
+
+
+class WireFrameModel(StaticGeometricModel):
+
+    def __init__(self, initiator=None, name="defaultname"):
+        """
+        :param initiator: path type defined by os.path or trimesh or nodepath
+        """
+        super().__init__(initiator=initiator, btransparency=False, name=name)
+        self.objpdnp_raw.setRenderModeWireframe()
+        self.objpdnp_raw.setLightOff()
+        self.set_rgba(rgba=[0,0,0,1])
+
+    # suppress functions
+    def __getattr__(self, attr_name):
+        if attr_name == 'sample_surface':
+            raise AttributeError("Wireframe Model does not support sampling surface!")
+        return getattr(self._wrapped, attr_name)
+
+    @property
+    def name(self):
+        # read-only property
+        return self._name
+
+    @property
+    def objpath(self):
+        # read-only property
+        return self._objpath
+
+    @property
+    def objpdnp(self):
+        # read-only property
+        return self._objpdnp
+
+    @property
+    def objpdnp_raw(self):
+        # read-only property
+        return self._objpdnp.getChild(0)
+
+    @property
+    def objtrm(self):
+        # read-only property
+        if self._objtrm is None:
+            raise ValueError("Only applicable to models with a trimesh!")
+        return self._objtrm
+
+    @property
+    def localframe(self):
+        # read-only property
+        return self._localframe
+
+    @property
+    def volume(self):
+        # read-only property
+        if self._objtrm is None:
+            raise ValueError("Only applicable to models with a trimesh!")
+        return self._objtrm.volume
+
+    def set_rgba(self, rgba):
+        self._objpdnp.setColor(rgba[0], rgba[1], rgba[2], rgba[3])
+
+    def get_rgba(self):
+        return da.pdv4_to_npv4(self._objpdnp.getColor())  # panda3d.core.LColor -> LBase4F
+
+    def clear_color(self):
+        self._objpdnp.clearColor()
+
+    def set_scale(self, scale=[1, 1, 1]):
+        self._objpdnp.setScale(scale[0], scale[1], scale[2])
+
+    def get_scale(self):
+        return da.pdv3_to_npv3(self._objpdnp.getScale())
+
+    def attach_to(self, obj):
+        if isinstance(obj, ShowBase):
+            # for rendering to base.render
+            self._objpdnp.reparentTo(obj.render)
+        elif isinstance(obj, StaticGeometricModel): # prepared for decorations like local frames
+            self._objpdnp.reparentTo(obj.objpdnp)
+        elif isinstance(obj, mc.ModelCollection):
+            obj.add_gm(self)
+        else:
+            print("Must be ShowBase, modeling.StaticGeometricModel, GeometricModel, CollisionModel, or CollisionModelCollection!")
+
+    def detach(self):
+        self._objpdnp.detachNode()
+
+    def remove(self):
+        self._objpdnp.removeNode()
+
+    def show_localframe(self):
+        self._localframe = gen_frame()
+        self._localframe.attach_to(self)
+
+    def unshow_localframe(self):
+        if self._localframe is not None:
+            self._localframe.removeNode()
+            self._localframe = None
 
 
 class GeometricModel(StaticGeometricModel):
@@ -196,32 +277,32 @@ class GeometricModel(StaticGeometricModel):
         """
         if isinstance(initiator, GeometricModel):
             self._objpath = copy.deepcopy(initiator.objpath)
-            self._trimesh = copy.deepcopy(initiator.trimesh)
-            self._pdnp = copy.deepcopy(initiator.pdnp)
+            self._objtrm = copy.deepcopy(initiator.objtrm)
+            self._objpdnp = copy.deepcopy(initiator.objpdnp)
             self._name = copy.deepcopy(initiator.name)
             self._localframe = copy.deepcopy(initiator.localframe)
         else:
             super().__init__(initiator=initiator, btransparency=btransparency, name=name)
-        self.pdnp_raw.setShaderAuto()
+        self.objpdnp_raw.setShaderAuto()
 
     def set_pos(self, npvec3):
-        self._pdnp.setPos(npvec3[0], npvec3[1], npvec3[2])
+        self._objpdnp.setPos(npvec3[0], npvec3[1], npvec3[2])
 
     def get_pos(self):
-        return da.pdv3_to_npv3(self._pdnp.getPos())
+        return da.pdv3_to_npv3(self._objpdnp.getPos())
 
     def set_rotmat(self, npmat3):
-        self._pdnp.setQuat(da.npmat3_to_pdquat(npmat3))
+        self._objpdnp.setQuat(da.npmat3_to_pdquat(npmat3))
 
     def get_rotmat(self):
-        return da.pdquat_to_npmat3(self._pdnp.getQuat())
+        return da.pdquat_to_npmat3(self._objpdnp.getQuat())
 
     def set_homomat(self, npmat4):
-        self._pdnp.setPosQuat(da.npv3_to_pdv3(npmat4[:3,3]), da.npmat3_to_pdquat(npmat4[:3,:3]))
+        self._objpdnp.setPosQuat(da.npv3_to_pdv3(npmat4[:3, 3]), da.npmat3_to_pdquat(npmat4[:3, :3]))
 
     def get_homomat(self):
-        npv3 = da.pdv3_to_npv3(self._pdnp.getPos())
-        npmat3 = da.pdquat_to_npmat3(self._pdnp.getQuat())
+        npv3 = da.pdv3_to_npv3(self._objpdnp.getPos())
+        npmat3 = da.pdquat_to_npmat3(self._objpdnp.getQuat())
         return rm.homomat_from_posrot(npv3, npmat3)
 
     def set_rpy(self, roll, pitch, yaw):
@@ -249,7 +330,23 @@ class GeometricModel(StaticGeometricModel):
         return np.array([rpy[0], rpy[1], rpy[2]])
 
     def set_transparency(self, attribute):
-        return self._pdnp.setTransparency(attribute)
+        return self._objpdnp.setTransparency(attribute)
+
+    def sample_surface(self, radius=0.005, nsample=None):
+        """
+        :param raidus:
+        :return:
+        author: weiwei
+        date: 20191228
+        """
+        if self._objtrm is None:
+            raise ValueError("Only applicable to models with a trimesh!")
+        if nsample is None:
+            nsample = int(round(self.objtrm.area / ((radius * 0.3) ** 2)))
+        samples, faceids = self.objtrm.sample(nsample, toggle_faceid=True)
+        # transform
+        samples = rm.homomat_transform_points(self.get_homomat(), samples)
+        return samples, faceids
 
     def copy(self):
         return copy.deepcopy(self)
