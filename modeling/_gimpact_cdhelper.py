@@ -57,16 +57,6 @@ def is_triangles2triangles_collided(objcm_list0, objcm_list1):
     gtrm1 = _gen_triangles_cdmesh(objcm_list1)
     contacts = gi.trimesh_trimesh_collision(gtrm0, gtrm1)
     return [True, contacts] if len(contacts)>0 else [False, contacts]
-    # if result.getNumContacts():
-    #     import modeling.geometricmodel as gm
-    #     for contact in result.getContacts():
-    #         gm.gen_sphere(pos = da.pdv3_to_npv3(contact.getManifoldPoint().getLocalPointA()), radius=0.001).attach_to(base)
-    #         gm.gen_sphere(pos = da.pdv3_to_npv3(contact.getManifoldPoint().getLocalPointB()), radius=0.001).attach_to(base)
-    #         gm.gen_arrow(spos = da.pdv3_to_npv3(contact.getManifoldPoint().getPositionWorldOnB()),
-    #                      epos = da.pdv3_to_npv3(contact.getManifoldPoint().getPositionWorldOnB())+da.pdv3_to_npv3(contact.getManifoldPoint().getNormalWorldOnB())).attach_to(base)
-    #         # gm.gen_sphere(pos = da.pdv3_to_npv3(contact.getManifoldPoint().getPositionWorldOnA()), radius=0.001, rgba=[0,1,0,1]).attach_to(base)
-    #         # gm.gen_sphere(pos = da.pdv3_to_npv3(contact.getManifoldPoint().getPositionWorldOnA()), radius=0.001, rgba=[0,1,0,1]).attach_to(base)
-    # return True if result.getNumContacts() else False
 
 
 def show_box_cdmesh(objcm_list):
@@ -83,9 +73,29 @@ def show_box_cdmesh(objcm_list):
         bottom_left, top_right = objcm.objpdnp_raw.getTightBounds()
         extent = da.pdv3_to_npv3(top_right-bottom_left)
         bound_tf = objcm.get_homomat().dot(rm.homomat_from_posrot(pos=da.pdv3_to_npv3((bottom_left+top_right)/2)))
-        trm_box = tg.gen_box(extent, bound_tf)
-        wm_box = gm.WireFrameModel(trm_box)
-        wm_box.attach_to(base)
+        objtrm = tg.gen_box(extent, bound_tf)
+        objwm = gm.WireFrameModel(objtrm)
+        objwm.attach_to(base)
+
+
+def show_triangles_cdmesh(objcm_list):
+    """
+    show the collision meshes of the given objects
+    :param objcm_list environment.collisionmodel
+    :return:
+    author: weiwei
+    date: 20190313
+    """
+    if not isinstance(objcm_list, list):
+        objcm_list = [objcm_list]
+    vertices = []
+    faces = []
+    for objcm in objcm_list:
+        homomat = objcm.get_homomat()
+        vertices += rm.homomat_transform_points(homomat, objcm.objtrm.vertices).tolist()
+        faces += (objcm.objtrm.faces + len(faces)).tolist()
+    objwm = gm.WireFrameModel(tg.trm.Trimesh(np.array(vertices), np.array(faces)))
+    objwm.attach_to(base)
 
 
 def rayhit_triangles_closet(pfrom, pto, objcm):
@@ -141,23 +151,6 @@ def rayhit_triangles_all(pfrom, pto, objcm):
         return allhits
     else:
         return []
-
-
-def show_triangles_cdmesh(objcm_list):
-    """
-    show the collision meshes of the given objects
-    :param objcm_list environment.collisionmodel
-    :return:
-    author: weiwei
-    date: 20190313
-    """
-    if not base.toggledebug:
-        print("Toggling on base.physicsworld debug mode...")
-        base.change_debugstatus(True)
-    objcmmeshbullnode = _gen_triangles_cdmesh(objcm_list)
-    base.physicsworld.attach(objcmmeshbullnode)
-    base.physicsbodylist.append(objcmmeshbullnode)
-    return objcmmeshbullnode
 
 # convexhull collision model
 def is_convexhull2triangles_collided(objcm_list0, objcm_list1):
@@ -364,11 +357,15 @@ if __name__ == '__main__':
     objcm1.set_homomat(homomat)
     objcm1.set_rgba([1,1,.3,.2])
     objcm2 = objcm1.copy()
-    objcm2.set_pos(objcm1.get_pos()+np.array([.0668,.03,0]))
+    objcm2.set_pos(objcm1.get_pos()+np.array([.05,.0,.0]))
     iscollided, contacts = is_box2box_collided(objcm1, objcm2)
     # objcm1.show_cdmesh(type='box')
+    # show_triangles_cdmesh(objcm1)
+    # show_triangles_cdmesh(objcm2)
     show_box_cdmesh(objcm1)
-    objcm2.show_cdmesh(type='box')
+    show_box_cdmesh(objcm2)
+    # objcm1.show_cdmesh(type='box')
+    # objcm2.show_cdmesh(type='triangles')
     objcm1.attach_to(base)
     objcm2.attach_to(base)
     print(iscollided)

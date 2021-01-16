@@ -135,6 +135,9 @@ class StaticGeometricModel(object):
     def get_scale(self):
         return da.pdv3_to_npv3(self._objpdnp.getScale())
 
+    def set_vert_size(self, size=.005):
+        self.objpdnp_raw.setRenderModeThickness(size*1000)
+
     def attach_to(self, obj):
         if isinstance(obj, ShowBase):
             # for rendering to base.render
@@ -796,6 +799,8 @@ if __name__ == "__main__":
     bpgm1 = GeometricModel(bunnygm1points)
     bpgm2 = GeometricModel(bunnygm2points)
     bpgm.attach_to(base)
+    bpgm.set_scale([2,1,3])
+    bpgm.set_vert_size(.01)
     bpgm1.attach_to(base)
     bpgm2.attach_to(base)
 

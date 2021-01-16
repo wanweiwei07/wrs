@@ -1,7 +1,8 @@
 # An adapter file that converts data between panda3d and trimesh
 import basis.trimesh as trm
 import numpy as np
-from panda3d.core import Geom, GeomNode, GeomPoints, GeomTriangles, GeomVertexData, GeomVertexFormat, GeomVertexWriter
+from panda3d.core import Geom, GeomNode, GeomPoints, GeomTriangles
+from panda3d.core import GeomVertexData, GeomVertexFormat, GeomVertexArrayFormat, InternalName
 from panda3d.core import GeomEnums
 from panda3d.core import NodePath, Vec3, Mat3, Mat4, LQuaternion
 import gimpact as gi
@@ -307,24 +308,29 @@ def pandageom_from_points(vertices, rgba_list=None, name=''):
     date: 20170328, 20210116
     """
     # TODO unable to set color -> data format problem
-    # if rgba_list is None:
-    #     # default
-    #     vertex_rgbas = np.array([[0, 0, 0, 1], ]*len(vertices), dtype=np.float32)
-    # elif isinstance(rgba_list, np.ndarray):
-    #     vertex_rgbas = np.tile(rgba_list, (len(vertices),1), dtype=np.float32)
-    # elif isinstance(rgba_list, list):
-    #     vertex_rgbas = np.array(rgba_list, dtype=np.float32)
-    # else:
-    #     raise ValueError('rgba_list must be None, np.ndarray, or list!')
-    # vertformat = GeomVertexFormat.getV3c4()
-    # vertexdata = GeomVertexData(name, vertformat, Geom.UHStatic)
-    # vertexdata.modifyArrayHandle(0).setData(np.hstack((vertices.astype(np.float32), vertex_rgbas)).tostring())
-    vertformat = GeomVertexFormat.getV3()
+    if rgba_list is None:
+        # default
+        vertex_rgbas = np.array([[0, 0, 0, 255], ]*len(vertices), dtype=np.uint8)
+    elif isinstance(rgba_list, np.ndarray):
+        vertex_rgbas = np.tile(rgba_list*255, (len(vertices),1), dtype=np.uint8)
+    elif isinstance(rgba_list, list):
+        vertex_rgbas = (np.array(rgba_list)*255).astype(np.uint8)
+    else:
+        raise ValueError('rgba_list must be None, np.ndarray, or list!')
+    vertformat = GeomVertexFormat()
+    arrayformat = GeomVertexArrayFormat()
+    arrayformat.addColumn(InternalName.getVertex(), 3, GeomEnums.NTFloat32, GeomEnums.CPoint)
+    vertformat.addArray(arrayformat)
+    arrayformat = GeomVertexArrayFormat()
+    arrayformat.addColumn(InternalName.getColor(), 4, GeomEnums.NTUint8, GeomEnums.CColor)
+    vertformat.addArray(arrayformat)
+    vertformat = GeomVertexFormat.registerFormat(vertformat)
     vertexdata = GeomVertexData(name, vertformat, Geom.UHStatic)
-    vertexdata.modifyArrayHandle(0).setData(vertices.astype(np.float32).tostring())
+    vertexdata.modifyArrayHandle(0).copyDataFrom(vertices.astype(np.float32))
+    vertexdata.modifyArrayHandle(1).copyDataFrom(vertex_rgbas)
     primitive = GeomPoints(Geom.UHStatic)
     primitive.setIndexType(GeomEnums.NTUint32)
-    primitive.modifyVertices(-1).modifyHandle().setData(np.arange(len(vertices), dtype=np.uint32).tostring())
+    primitive.modifyVertices(-1).modifyHandle().copyDataFrom(np.arange(len(vertices), dtype=np.uint32))
     geom = Geom(vertexdata)
     geom.addPrimitive(primitive)
     return geom
@@ -344,6 +350,7 @@ def nodepath_from_points(vertices, rgba_list=None, name=''):
     geomnodeobj = GeomNode('GeomNode')
     geomnodeobj.addGeom(objgeom)
     pointcloud_nodepath = NodePath(name)
+    pointcloud_nodepath.setLightOff()
     pointcloud_nodepath.attachNewNode(geomnodeobj)
     return pointcloud_nodepath
 

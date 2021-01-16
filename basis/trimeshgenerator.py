@@ -119,10 +119,10 @@ def gen_dumbbell(spos=np.array([0, 0, 0]), epos=np.array([0.1, 0, 0]), thickness
     stick = gen_rectstick(spos=spos, epos=epos, thickness=thickness, sections=sections)
     sposball = gen_sphere(pos=spos, radius=thickness, subdivisions=subdivisions)
     endball = gen_sphere(pos=epos, radius=thickness, subdivisions=subdivisions)
-    vertices = np.vstack((stick.vertices, sposball.vertices, endball.vertices))
+    vertices = np.array(stick.vertices.tolist()+sposball.vertices.tolist()+endball.vertices.tolist())
     sposballfaces = sposball.faces + len(stick.vertices)
     endballfaces = endball.faces + len(sposball.vertices) + len(stick.vertices)
-    faces = np.vstack((stick.faces, sposballfaces, endballfaces))
+    faces = np.array(stick.faces.tolist()+sposballfaces.tolist()+endballfaces.tolist())
     return trm.Trimesh(vertices=vertices, faces=faces)
 
 
@@ -159,9 +159,9 @@ def gen_arrow(spos=np.array([0, 0, 0]), epos=np.array([0.1, 0, 0]), thickness=0.
     stick = gen_stick(spos=spos, epos=epos - direction * thickness * 4, thickness=thickness, type=sticktype,
                      sections=sections)
     cap = gen_cone(spos=epos - direction * thickness * 4, epos=epos, radius=thickness, sections=sections)
-    vertices = np.vstack((stick.vertices, cap.vertices))
+    vertices = np.array(stick.vertices.tolist()+cap.vertices.tolist())
     capfaces = cap.faces + len(stick.vertices)
-    faces = np.vstack((stick.faces, capfaces))
+    faces = np.array(stick.faces.tolist()+capfaces.tolist())
     return trm.Trimesh(vertices=vertices, faces=faces)
 
 
@@ -189,17 +189,17 @@ def gen_dasharrow(spos=np.array([0, 0, 0]), epos=np.array([0.1, 0, 0]), thicknes
     cap = gen_cone(spos=epos - direction * thickness * 4, epos=epos, radius=thickness, sections=sections)
     stick = gen_stick(spos=epos - direction * thickness * 4 - lsolid * direction, epos=epos - direction * thickness * 4,
                      thickness=thickness, type=sticktype, sections=sections)
-    vertices = np.vstack((cap.vertices, stick.vertices))
+    vertices_list = cap.vertices.tolist()+stick.vertices.tolist()
     stickfaces = stick.faces + len(cap.vertices)
-    faces = np.vstack((cap.faces, stickfaces))
+    faces_list = cap.faces.tolist()+stickfaces.tolist()
     for i in range(1, nstick - 1):
         tmpspos = epos - direction * thickness * 4 - lsolid * direction - (lsolid * direction + lspace * direction) * i
         tmpstick = gen_stick(spos=tmpspos, epos=tmpspos + lsolid * direction, thickness=thickness, type=sticktype,
                             sections=sections)
-        tmpstickfaces = tmpstick.faces + len(vertices)
-        vertices = np.vstack((vertices, tmpstick.vertices))
-        faces = np.vstack((faces, tmpstickfaces))
-    return trm.Trimesh(vertices=vertices, faces=faces)
+        tmpstickfaces = tmpstick.faces + len(vertices_list)
+        vertices_list += tmpstick.vertices.tolist()
+        faces_list += tmpstickfaces.tolist()
+    return trm.Trimesh(vertices=np.array(vertices_list), faces=np.array(faces_list))
 
 
 def gen_axis(pos=np.array([0, 0, 0]), rotmat=np.eye(3), length=0.1, thickness=0.005):
@@ -226,15 +226,18 @@ def gen_axis(pos=np.array([0, 0, 0]), rotmat=np.eye(3), length=0.1, thickness=0.
     endz = directionz * length
     stickz = gen_stick(spos=pos, epos=endz, thickness=thickness)
     capz = gen_cone(spos=endz, epos=endz + directionz * thickness * 4, radius=thickness)
-    vertices = np.vstack(
-        (stickx.vertices, capx.vertices, sticky.vertices, capy.vertices, stickz.vertices, capz.vertices))
+    vertices = np.array(stickx.vertices.tolist()+capx.vertices.tolist()+
+                        sticky.vertices.tolist()+capy.vertices.tolist()+
+                        stickz.vertices.tolist()+capz.vertices.tolist())
     capxfaces = capx.faces + len(stickx.vertices)
     stickyfaces = sticky.faces + len(stickx.vertices) + len(capx.vertices)
     capyfaces = capy.faces + len(stickx.vertices) + len(capx.vertices) + len(sticky.vertices)
     stickzfaces = stickz.faces + len(stickx.vertices) + len(capx.vertices) + len(sticky.vertices) + len(capy.vertices)
     capzfaces = capz.faces + len(stickx.vertices) + len(capx.vertices) + len(sticky.vertices) + len(
         capy.vertices) + len(stickz.vertices)
-    faces = np.vstack((stickx.faces, capxfaces, stickyfaces, capyfaces, stickzfaces, capzfaces))
+    faces = np.array(stickx.faces.tolist()+capxfaces.tolist()+
+                     stickyfaces.tolist()+capyfaces.tolist()+
+                     stickzfaces.tolist()+capzfaces.tolist())
     return trm.Trimesh(vertices=vertices, faces=faces)
 
 
@@ -264,17 +267,17 @@ def gen_torus(axis=np.array([1, 0, 0]), portion=.5, center=np.array([0, 0, 0]), 
                                   startingaxis) * radius
         nxtpos = center + np.dot(rm.rotmat_from_axangle(unitaxis, ndist * discretizedangle), startingaxis) * radius
         stick = gen_stick(spos=lastpos, epos=nxtpos, thickness=thickness, sections=sections, type="round")
-        vertices = stick.vertices
-        faces = stick.faces
+        vertices_list = stick.vertices.tolist()
+        faces_list = stick.faces.tolist()
         lastpos = startingpos
         for i in range(1 * np.sign(ndist), ndist, 1 * np.sign(ndist)):
             nxtpos = center + np.dot(rm.rotmat_from_axangle(unitaxis, i * discretizedangle), startingaxis) * radius
             stick = gen_stick(spos=lastpos, epos=nxtpos, thickness=thickness, sections=sections, type="round")
-            stickfaces = stick.faces + len(vertices)
-            vertices = np.vstack((vertices, stick.vertices))
-            faces = np.vstack((faces, stickfaces))
+            stickfaces = stick.faces + len(vertices_list)
+            vertices_list += stick.vertices.tolist()
+            faces_list += stickfaces.tolist()
             lastpos = nxtpos
-        return trm.Trimesh(vertices=vertices, faces=faces)
+        return trm.Trimesh(vertices=np.array(vertices_list), faces=np.array(faces_list))
     else:
         return trm.Trimesh()
 
@@ -305,17 +308,17 @@ def gen_circarrow(axis=np.array([1, 0, 0]), portion=0.3, center=np.array([0, 0, 
                                   startingaxis) * radius
         nxtpos = center + np.dot(rm.rotmat_from_axangle(unitaxis, ndist * discretizedangle), startingaxis) * radius
         arrow = gen_arrow(spos=lastpos, epos=nxtpos, thickness=thickness, sections=sections, sticktype="round")
-        vertices = arrow.vertices
-        faces = arrow.faces
+        vertices_list = arrow.vertices.tolist()
+        faces_list = arrow.faces.tolist()
         lastpos = startingpos
         for i in range(1 * np.sign(ndist), ndist, 1 * np.sign(ndist)):
             nxtpos = center + np.dot(rm.rotmat_from_axangle(unitaxis, i * discretizedangle), startingaxis) * radius
             stick = gen_stick(spos=lastpos, epos=nxtpos, thickness=thickness, sections=sections, type="round")
-            stickfaces = stick.faces + len(vertices)
-            vertices = np.vstack((vertices, stick.vertices))
-            faces = np.vstack((faces, stickfaces))
+            stickfaces = stick.faces + len(vertices_list)
+            vertices_list += stick.vertices.tolist()
+            faces_list += stickfaces.tolist()
             lastpos = nxtpos
-        return trm.Trimesh(vertices=vertices, faces=faces)
+        return trm.Trimesh(vertices=np.array(vertices_list), faces=np.array(faces_list))
     else:
         return trm.Trimesh()
 
@@ -361,12 +364,9 @@ if __name__ == "__main__":
     import modeling.collisionmodel as cm
     base = wd.World(campos=[.1, 0, 0], lookatpos=[0, 0, 0], autocamrotate=False)
     objcm = cm.CollisionModel(gen_torus())
-    # objcm.reparentTo(base.render)
-    # objcm = cm.CollisionModel(genrectstick(thickness=5))
-    # objcm.setColor(1,0,0,1)
-    # objcm.reparentTo(base.render)
-    # objcm = cm.CollisionModel(gendumbbell())
-    objcm.set_color([1, 0, 0, 1])
+    objcm.set_rgba([1, 0, 0, 1])
     objcm.attach_to(base)
-    # base.pggen.genArrow(length=100, thickness=5).reparentTo(base.render)
+    objcm = cm.CollisionModel(gen_axis())
+    objcm.set_rgba([1, 0, 0, 1])
+    objcm.attach_to(base)
     base.run()
