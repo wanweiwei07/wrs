@@ -29,8 +29,8 @@ class RobotInterface(object):
     def get_jnt_ranges(self, component_name):
         return self.manipulator_dict[component_name].get_jnt_ranges()
 
-    def get_jnt_values(self, manipulator_name):
-        return self.manipulator_dict[manipulator_name].get_jnt_values()
+    def get_jnt_values(self, component_name):
+        return self.manipulator_dict[component_name].get_jnt_values()
 
     def get_gl_tcp(self, component_name):
         return self.manipulator_dict[component_name].get_gl_tcp()
