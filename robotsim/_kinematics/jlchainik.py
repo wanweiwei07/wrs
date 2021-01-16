@@ -264,7 +264,6 @@ class JLChainIK(object):
         author: weiwei
         date: 20180203, 20200328
         """
-        toggle_debug=True
         deltapos = tgt_pos - self.jlc_object.jnts[0]['gl_pos0']
         if np.linalg.norm(deltapos) > self.max_rng:
             wns.WarningMessage("The goal is outside maximum range!")

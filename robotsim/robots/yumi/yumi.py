@@ -462,7 +462,7 @@ if __name__ == '__main__':
     jnt_values = yumi_instance.ik(component_name, tgt_pos, tgt_rotmat)
     toc = time.time()
     print(toc - tic)
-    # yumi_instance.fk(jlc_name, jnt_values)
+    yumi_instance.fk(component_name, jnt_values)
     yumi_meshmodel = yumi_instance.gen_meshmodel()
     yumi_meshmodel.attach_to(base)
     yumi_instance.show_cdprimit()

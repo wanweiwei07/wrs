@@ -6,7 +6,6 @@ from panda3d.core import GeomEnums
 from panda3d.core import NodePath, Vec3, Mat3, Mat4, LQuaternion
 import gimpact as gi
 
-
 # data manipulation
 def randdom_colorarray(ncolors=1, alpha=1, nonrandcolor=None):
     """

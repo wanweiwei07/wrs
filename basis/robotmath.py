@@ -421,13 +421,15 @@ def angle_between_vectors(v1, v2):
 
 def deltaw_between_rotmat(rotmati, rotmatj):
     """
+    compute angle*ax from rotmati to rotmatj
+    rotmat_from_axangle(np.linalg.norm(deltaw), unit_vec(deltaw)).dot(rotmati) = rotmatj
     :param rotmati: 3x3 nparray
     :param rotmatj: 3x3 nparray
     :return:
     author: weiwei
     date: 20200326
     """
-    deltarot = np.dot(rotmati.T, rotmatj)
+    deltarot = np.dot(rotmatj, rotmati.T)
     tempvec = np.array(
         [deltarot[2, 1] - deltarot[1, 2], deltarot[0, 2] - deltarot[2, 0], deltarot[1, 0] - deltarot[0, 1]])
     tempveclength = np.linalg.norm(tempvec)

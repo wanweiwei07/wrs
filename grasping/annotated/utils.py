@@ -76,7 +76,6 @@ def define_grasp_with_rotation(hnd,
             model.attach_to(base)
             # hnd.show_cdmesh()
             base.run()
-    base.run()
     return grasp_info_list
 
 
