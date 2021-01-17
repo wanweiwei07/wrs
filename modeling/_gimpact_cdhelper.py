@@ -6,85 +6,185 @@ import basis.trimeshgenerator as tg
 import modeling.geometricmodel as gm
 import gimpact as gi
 
-# box collision model
-def is_box2box_collided(objcm_list0, objcm_list1):
+
+# util functions
+def _gen_aabb_cdmesh(objcm_list):
     """
-    check if two objects objcm0 as objcm1 are in collision with each other
-    the two objects are in the form of collision model
-    the AABB boxlist will be used
-    :param objcm_list0: the first object or list
-    :param objcm_list1: the second object or list
-    :return: boolean value showing if the two objects are in collision, a list of contacts
+    generate the gimpact.TriMesh using the AABB boundary of a objcm_list
+    :param objcm_list: a collision model or a list of collision model
+    :return: gimpact.TriMesh
     author: weiwei
-    date: 20210116
+    date: 20210116osaka-u
     """
-    gtrm0 = _gen_box_cdmesh(objcm_list0)
-    gtrm1 = _gen_box_cdmesh(objcm_list1)
+    if not isinstance(objcm_list, list):
+        objcm_list = [objcm_list]
+    vertices = []
+    indices = []
+    for objcm in objcm_list:
+        objtrm = objcm.objtrm.bounding_box
+        homomat = objcm.get_homomat()
+        vertices += rm.homomat_transform_points(homomat, objtrm.vertices).tolist()
+        indices += (objtrm.faces.flatten()+len(indices)).tolist()
+    gtrm = gi.TriMesh(np.array(vertices), np.array(indices))
+    return gtrm
+
+def _gen_obb_cdmesh(objcm_list):
+    """
+    generate the gimpact.TriMesh using the OBB boundary of a objcm_list
+    :param objcm_list: a collision model or a list of collision model
+    :return: gimpact.TriMesh
+    author: weiwei
+    date: 20210116osaka-u
+    """
+    if not isinstance(objcm_list, list):
+        objcm_list = [objcm_list]
+    vertices = []
+    indices = []
+    for objcm in objcm_list:
+        objtrm = objcm.objtrm.bounding_box_oriented
+        homomat = objcm.get_homomat()
+        vertices += rm.homomat_transform_points(homomat, objtrm.vertices).tolist()
+        indices += (objtrm.faces.flatten()+len(indices)).tolist()
+    gtrm = gi.TriMesh(np.array(vertices), np.array(indices))
+    return gtrm
+
+def _gen_convexhull_cdmesh(objcm_list):
+    """
+    generate gimpact.TriMesh using the convexhulls of a objcm_list
+    :param objcm_list: a collision model or a list of collision model
+    :return: gimpact.TriMesh
+    author: weiwei
+    date: 20210116osaka-u
+    """
+    if not isinstance(objcm_list, list):
+        objcm_list = [objcm_list]
+    vertices = []
+    indices = []
+    for objcm in objcm_list:
+        objtrm = objcm.objtrm.convex_hull
+        homomat = objcm.get_homomat()
+        vertices += rm.homomat_transform_points(homomat, objtrm.vertices).tolist()
+        indices += (objtrm.faces.flatten() + len(indices)).tolist()
+    gtrm = gi.TriMesh(np.array(vertices), np.array(indices))
+    return gtrm
+
+def _gen_triangles_cdmesh(objcm_list):
+    """
+    generate gimpact.TriMesh of a objcm_list
+    :param objcm_list: a collision model or a list of collision model
+    :return: gimpact.TriMesh
+    author: weiwei
+    date: 20210116osaka-u
+    """
+    if not isinstance(objcm_list, list):
+        objcm_list = [objcm_list]
+    vertices = []
+    indices = []
+    for objcm in objcm_list:
+        homomat = objcm.get_homomat()
+        vertices += rm.homomat_transform_points(homomat, objcm.objtrm.vertices).tolist()
+        indices += (objcm.objtrm.faces.flatten() + len(indices)).tolist()
+    gtrm = gi.TriMesh(np.array(vertices), np.array(indices))
+    return gtrm
+
+def _cdmesh_from_objcmlist(objcm):
+    """
+    :param objcm: a collision model
+    :return:
+    """
+    if objcm.cdmesh_type == 'aabb':
+        gen_cdmesh_fn = _gen_aabb_cdmesh
+    elif objcm.cdmesh_type == 'obb':
+        gen_cdmesh_fn = _gen_obb_cdmesh
+    elif objcm.cdmesh_type == 'convexhull':
+        gen_cdmesh_fn = _gen_convexhull_cdmesh
+    elif objcm.cdmesh_type == 'triangles':
+        gen_cdmesh_fn = _gen_triangles_cdmesh
+    return gen_cdmesh_fn(objcm)
+
+def is_collided(objcm0, objcm1):
+    """
+    check if two objcm are collided after converting the specified cdmesh_type
+    :param objcm0:
+    :param objcm1:
+    :return:
+    author: weiwei
+    date: 20210117
+    """
+    gtrm0 = _cdmesh_from_objcmlist(objcm0)
+    gtrm1 = _cdmesh_from_objcmlist(objcm1)
     contacts = gi.trimesh_trimesh_collision(gtrm0, gtrm1)
     return (True, contacts) if len(contacts)>0 else (False, contacts)
 
-
-# 2 box - triangles
-def is_box2triangles_collided(objcm_list0, objcm_list1):
-    """
-    check if two objects objcm0 as objcm1 are in collision with each other
-    the two objects are in the form of collision model
-    the AABB boxlist will be used for objcm_list0
-    :param objcm_list0: the first object
-    :param objcm_list1: the second object
-    :return: boolean value showing if the two objects are in collision, a list of contacts
-    author: weiwei
-    date: 20210116
-    """
-    gtrm0 = _gen_box_cdmesh(objcm_list0)
-    gtrm1 = _gen_triangles_cdmesh(objcm_list1)
-    contacts = gi.trimesh_trimesh_collision(gtrm0, gtrm1)
-    return True, contacts if len(contacts)>0 else False, contacts
-
-
-# triangles collision model
-def is_triangles2triangles_collided(objcm_list0, objcm_list1):
-    """
-    check if two objects objcm0 and objcm1 are in collision with each other
-    the two objects are in the form of collision model
-    :param objcm_list0: the first object
-    :param objcm_list1: the second object
-    :return: boolean value showing if the two objects are in collision, a list of contacts
-    author: weiwei
-    date: 20210116
-    """
-    gtrm0 = _gen_triangles_cdmesh(objcm_list0)
-    gtrm1 = _gen_triangles_cdmesh(objcm_list1)
-    contacts = gi.trimesh_trimesh_collision(gtrm0, gtrm1)
-    return [True, contacts] if len(contacts)>0 else [False, contacts]
-
-
-def show_box_cdmesh(objcm_list):
+def _show_aabb_cdmesh(objcm_list):
     """
     show the AABB collision meshes of the given objects
     :param objcm_list
     author: weiwei
-    date: 20190313
+    date: 20210116
     :return:
     """
     if not isinstance(objcm_list, list):
         objcm_list = [objcm_list]
+    vertices = []
+    faces = []
     for objcm in objcm_list:
-        bottom_left, top_right = objcm.objpdnp_raw.getTightBounds()
-        extent = da.pdv3_to_npv3(top_right-bottom_left)
-        bound_tf = objcm.get_homomat().dot(rm.homomat_from_posrot(pos=da.pdv3_to_npv3((bottom_left+top_right)/2)))
-        objtrm = tg.gen_box(extent, bound_tf)
-        objwm = gm.WireFrameModel(objtrm)
-        objwm.attach_to(base)
+        objtrm = objcm.objtrm.bounding_box
+        homomat = objcm.get_homomat()
+        vertices += rm.homomat_transform_points(homomat, objtrm.vertices).tolist()
+        faces += (objtrm.faces+len(faces)).tolist()
+    objwm = gm.WireFrameModel(tg.trm.Trimesh(np.array(vertices), np.array(faces)))
+    objwm.attach_to(base)
 
 
-def show_triangles_cdmesh(objcm_list):
+def _show_obb_cdmesh(objcm_list):
+    """
+    show the OBB collision meshes of the given objects
+    :param objcm_list
+    author: weiwei
+    date: 20210116
+    :return:
+    """
+    if not isinstance(objcm_list, list):
+        objcm_list = [objcm_list]
+    vertices = []
+    faces = []
+    for objcm in objcm_list:
+        objtrm = objcm.objtrm.bounding_box_oriented
+        homomat = objcm.get_homomat()
+        vertices += rm.homomat_transform_points(homomat, objtrm.vertices).tolist()
+        faces += (objtrm.faces+len(faces)).tolist()
+    objwm = gm.WireFrameModel(tg.trm.Trimesh(np.array(vertices), np.array(faces)))
+    objwm.attach_to(base)
+
+
+def _show_convexhull_cdmesh(objcm_list):
+    """
+    show the convex hull collision meshes of the given objects
+    :param objcm_list environment.collisionmodel
+    :return:
+    author: weiwei
+    date: 20210117
+    """
+    if not isinstance(objcm_list, list):
+        objcm_list = [objcm_list]
+    vertices = []
+    faces = []
+    for objcm in objcm_list:
+        objtrm = objcm.objtrm.convex_hull
+        homomat = objcm.get_homomat()
+        vertices += rm.homomat_transform_points(homomat, objtrm.vertices).tolist()
+        faces += (objtrm.faces+ len(faces)).tolist()
+    objwm = gm.WireFrameModel(tg.trm.Trimesh(np.array(vertices), np.array(faces)))
+    objwm.attach_to(base)
+
+def _show_triangles_cdmesh(objcm_list):
     """
     show the collision meshes of the given objects
     :param objcm_list environment.collisionmodel
     :return:
     author: weiwei
-    date: 20190313
+    date: 20210116
     """
     if not isinstance(objcm_list, list):
         objcm_list = [objcm_list]
@@ -96,6 +196,22 @@ def show_triangles_cdmesh(objcm_list):
         faces += (objcm.objtrm.faces + len(faces)).tolist()
     objwm = gm.WireFrameModel(tg.trm.Trimesh(np.array(vertices), np.array(faces)))
     objwm.attach_to(base)
+
+
+def show_cdmesh(objcm):
+    """
+    :param objcm: a collision model
+    :return:
+    """
+    if objcm.cdmesh_type == 'aabb':
+        show_cdmesh_fn = _show_aabb_cdmesh
+    elif objcm.cdmesh_type == 'obb':
+        show_cdmesh_fn = _show_obb_cdmesh
+    elif objcm.cdmesh_type == 'convexhull':
+        show_cdmesh_fn = _show_convexhull_cdmesh
+    elif objcm.cdmesh_type == 'triangles':
+        show_cdmesh_fn = _show_triangles_cdmesh
+    return show_cdmesh_fn(objcm)
 
 
 def rayhit_triangles_closet(pfrom, pto, objcm):
@@ -151,153 +267,6 @@ def rayhit_triangles_all(pfrom, pto, objcm):
         return allhits
     else:
         return []
-
-# convexhull collision model
-def is_convexhull2triangles_collided(objcm_list0, objcm_list1):
-    """
-    check if two objects objcm0 and objcm1 are in collision with each other
-    the two objects are in the form of collision model
-    the bulletmeshes will be used
-    :param objcm_list0: the first object
-    :param objcm_list1: the second object
-    :return: boolean value showing if the two objects are in collision
-    author: weiwei
-    date: 20190313
-    """
-    objcm0bullnode = _gen_convexhull_cdmesh(objcm_list0)
-    objcm1bullnode = _gen_triangles_cdmesh(objcm_list1)
-    result = base.physicsworld.contactTestPair(objcm0bullnode, objcm1bullnode)
-    return True if result.getNumContacts() else False
-
-def is_convexhull2convexhull_collided(objcm_list0, objcm_list1):
-    """
-    check if two objects objcm0 and objcm1 are in collision with each other
-    the two objects are in the form of collision model
-    the bulletmeshes will be used
-    :param objcm_list0: the first object
-    :param objcm_list1: the second object
-    :return: boolean value showing if the two objects are in collision
-    author: weiwei
-    date: 20190313
-    """
-    objcm0bullnode = _gen_convexhull_cdmesh(objcm_list0)
-    objcm1bullnode = _gen_convexhull_cdmesh(objcm_list1)
-    result = base.physicsworld.contactTestPair(objcm0bullnode, objcm1bullnode)
-    return True if result.getNumContacts() else False
-
-
-def show_convexhull_cdmesh(objcm_list):
-    """
-    show the collision meshes of the given objects
-    :param objcm_list environment.collisionmodel
-    :return:
-    author: weiwei
-    date: 20190313
-    """
-    if not base.toggledebug:
-        print("Toggling on base.physicsworld debug mode...")
-        base.change_debugstatus(True)
-    objcmmeshbullnode = _gen_convexhull_cdmesh(objcm_list)
-    base.physicsworld.attach(objcmmeshbullnode)
-    base.physicsbodylist.append(objcmmeshbullnode)
-    return objcmmeshbullnode
-
-
-def unshow_all():
-    """
-    unshow everything
-    author: weiwei
-    date: 20180621
-    :return:
-    """
-    print(base.physicsbodylist)
-    for physicsbody in base.physicsbodylist:
-        base.physicsworld.remove(physicsbody)
-    base.physicsbodylist = []
-
-
-def unshow(cmbullnode):
-    base.physicsworld.remove(cmbullnode)
-
-
-# util functions
-def _gen_box_cdmesh(objcm_list):
-    """
-    generate the gimpact.TriMesh using the AABB boundary of a objcm_list
-    :param objcm_list: a collision model or a list of collision model
-    :return: gimpact.TriMesh
-    author: weiwei
-    date: 20210116osaka-u
-    """
-    if not isinstance(objcm_list, list):
-        objcm_list = [objcm_list]
-    vertices = []
-    indices = []
-    for objcm in objcm_list:
-        bottom_left, top_right = objcm.objpdnp_raw.getTightBounds()
-        extent = da.pdv3_to_npv3(top_right-bottom_left)
-        bound_tf = objcm.get_homomat().dot(rm.homomat_from_posrot(pos=da.pdv3_to_npv3((bottom_left+top_right)/2)))
-        trm_box = tg.gen_box(extent, bound_tf)
-        vertices += trm_box.vertices.tolist()
-        indices += (trm_box.faces.flatten()+len(indices)).tolist()
-    gtrm = gi.TriMesh(np.array(vertices), np.array(indices))
-    return gtrm
-
-def _gen_triangles_cdmesh(objcm_list):
-    """
-    generate gimpact.TriMesh of a objcm_list
-    :param objcm_list: a collision model or a list of collision model
-    :return: gimpact.TriMesh
-    author: weiwei
-    date: 20210116osaka-u
-    """
-    if not isinstance(objcm_list, list):
-        objcm_list = [objcm_list]
-    vertices = []
-    indices = []
-    for objcm in objcm_list:
-        homomat = objcm.get_homomat()
-        vertices += rm.homomat_transform_points(homomat, objcm.objtrm.vertices).tolist()
-        indices += (objcm.objtrm.faces.flatten() + len(indices)).tolist()
-    gtrm = gi.TriMesh(np.array(vertices), np.array(indices))
-    return gtrm
-
-def _gen_convexhull_cdmesh(objcm_list):
-    """
-    generate gimpact.TriMesh using the convexhulls of a objcm_list
-    :param objcm_list: a collision model or a list of collision model
-    :return: gimpact.TriMesh
-    author: weiwei
-    date: 20210116osaka-u
-    """
-    if not isinstance(objcm_list, list):
-        objcm_list = [objcm_list]
-    vertices = []
-    indices = []
-    for objcm in objcm_list:
-        objtrm_cvx = objcm.objtrm.convex_hull
-        homomat = objcm.get_homomat()
-        vertices += rm.homomat_transform_points(homomat, objtrm_cvx.objtrm.vertices).tolist()
-        indices += (objtrm_cvx.objtrm.faces.flatten() + len(indices)).tolist()
-    gtrm = gi.TriMesh(vertices, indices)
-    return gtrm
-
-def _gen_triangles_cdmesh_from_geom(geom, name='autogen'):
-    """
-    generate the collision mesh of a nodepath using geom
-    :param geom: the panda3d geom of the object
-    :param basenodepath: the nodepath to compute relative transform
-    :return: bulletrigidbody
-    author: weiwei
-    date: 20161212, tsukuba
-    """
-    geombullmesh = BulletTriangleMesh()
-    geombullmesh.addGeom(geom)
-    geombullnode = BulletRigidBodyNode(name)
-    bullettmshape = BulletTriangleMeshShape(geombullmesh, dynamic=True)
-    bullettmshape.setMargin(0)
-    geombullnode.addShape(bullettmshape)
-    return geombullnode
 
 
 def _gen_plane_cdmesh(updirection=np.array([0, 0, 1]), offset=0, name='autogen'):
@@ -358,12 +327,14 @@ if __name__ == '__main__':
     objcm1.set_rgba([1,1,.3,.2])
     objcm2 = objcm1.copy()
     objcm2.set_pos(objcm1.get_pos()+np.array([.05,.02,.0]))
-    iscollided, contacts = is_box2box_collided(objcm1, objcm2)
+    objcm1.change_cdmesh_type('convexhull')
+    objcm2.change_cdmesh_type('obb')
+    iscollided, contacts = is_collided(objcm1, objcm2)
     # objcm1.show_cdmesh(type='box')
     # show_triangles_cdmesh(objcm1)
     # show_triangles_cdmesh(objcm2)
-    show_box_cdmesh(objcm1)
-    show_box_cdmesh(objcm2)
+    show_cdmesh(objcm1)
+    show_cdmesh(objcm2)
     # objcm1.show_cdmesh(type='box')
     # objcm2.show_cdmesh(type='triangles')
     objcm1.attach_to(base)

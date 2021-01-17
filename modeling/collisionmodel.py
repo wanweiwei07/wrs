@@ -8,7 +8,6 @@ import modeling.geometricmodel as gm
 import modeling.modelcollection as mc
 import modeling._pcdhelper as pcd
 import modeling._mcdhelper as mcd
-import modeling._gimpact_cdhelper as gcd
 
 
 class CollisionModel(gm.GeometricModel):
@@ -23,12 +22,18 @@ class CollisionModel(gm.GeometricModel):
     date: 20190312
     """
 
-    def __init__(self, initiator, btransparency=True, cdprimitive_type="box", expand_radius=None, name="auto",
+    def __init__(self,
+                 initor,
+                 btransparency=True,
+                 cdprimitive_type='box',
+                 cdmesh_type='triangles',
+                 expand_radius=None, name="auto",
                  userdefined_cdprimitive_fn=None):
         """
-        :param initiator:
+        :param initor:
         :param btransparency:
-        :param cdprimitive_type: box, ball, cylinder, pointcloud, userdefined
+        :param cdprimitive_type: box, ball, cylinder, point_cloud, user_defined
+        :param cdmesh_type: aabb, obb, convexhull, triangles
         :param expand_radius:
         :param name:
         :param userdefined_cdprimitive_fn: the collision primitive will be defined in the provided function
@@ -37,13 +42,14 @@ class CollisionModel(gm.GeometricModel):
                                            may have multiple CollisionSolid
         date: 201290312, 20201212
         """
-        if isinstance(initiator, CollisionModel):
-            self._name = copy.deepcopy(initiator.name)
-            self._objpath = copy.deepcopy(initiator.objpath)
-            self._objtrm = copy.deepcopy(initiator.objtrm)
-            self._objpdnp = copy.deepcopy(initiator.objpdnp)
-            self._localframe = copy.deepcopy(initiator.localframe)
-            self._cdprimitive_type = copy.deepcopy(initiator.cdprimitive_type)
+        if isinstance(initor, CollisionModel):
+            self._name = copy.deepcopy(initor.name)
+            self._objpath = copy.deepcopy(initor.objpath)
+            self._objtrm = copy.deepcopy(initor.objtrm)
+            self._objpdnp = copy.deepcopy(initor.objpdnp)
+            self._localframe = copy.deepcopy(initor.localframe)
+            self._cdprimitive_type = copy.deepcopy(initor.cdprimitive_type)
+            self._cdmesh_type = copy.deepcopy(initor.cdmesh_type)
         else:
             if cdprimitive_type is not None and cdprimitive_type not in ["box",
                                                                          "surface_ball",
@@ -51,13 +57,14 @@ class CollisionModel(gm.GeometricModel):
                                                                          "point_cloud",
                                                                          "user_defined"]:
                 raise Exception("Wrong Collision Model type name.")
-            super().__init__(initiator=initiator, btransparency=btransparency, name=name)
+            super().__init__(initor=initor, btransparency=btransparency, name=name)
             self._cdprimitive_type = cdprimitive_type
             if cdprimitive_type is not None:
                 collision_node = self._update_cdprimit(cdprimitive_type, expand_radius, userdefined_cdprimitive_fn)
                 # use pdnp.getChild instead of a new self._cdnp variable as collision nodepath is not compatible with deepcopy
                 self._objpdnp.attachNewNode(collision_node)
                 self._objpdnp.getChild(1).setCollideMask(BitMask32(2 ** 31))
+            self._cdmesh_type = cdmesh_type
             self._localframe = None
 
     def _update_cdprimit(self, cdprimitive_type, expand_radius, userdefined_cdprimitive_fn):
@@ -76,6 +83,7 @@ class CollisionModel(gm.GeometricModel):
                 collision_node = pcd.gen_pointcloud_cdnp(self.objtrm, name='cdnp_ptc', radius=expand_radius)
             if cdprimitive_type == "user_defined":
                 collision_node = userdefined_cdprimitive_fn(name="cdnp_usrdef", radius=expand_radius)
+        self._cdprimitive_type = cdprimitive_type
         return collision_node
 
     @property
@@ -83,10 +91,14 @@ class CollisionModel(gm.GeometricModel):
         return self._cdprimitive_type
 
     @property
+    def cdmesh_type(self):
+        return self._cdmesh_type
+
+    @property
     def cdnp(self):
         return self._objpdnp.getChild(1) # child-0 = pdnp_raw, child-1 = cdnp
 
-    def change_cdprimit(self, cdprimitive_type='ball', expand_radius=.01, userdefined_cdprimitive_fn=None):
+    def change_cdprimitive_type(self, cdprimitive_type='ball', expand_radius=.01, userdefined_cdprimitive_fn=None):
         """
         :param cdprimitive_type:
         :param expand_radius:
@@ -100,6 +112,15 @@ class CollisionModel(gm.GeometricModel):
         self.cdnp.removeNode()
         self._objpdnp.attachNewNode(cdnd)
         self._objpdnp.getChild(1).setCollideMask(BitMask32(2 ** 31))
+
+    def change_cdmesh_type(self, cdmesh_type='convexhull'):
+        """
+        :param cdmesh_type:
+        :return:
+        author: weiwei
+        date: 20210117
+        """
+        self._cdmesh_type = cdmesh_type
 
     def copy_cdnp_to(self, nodepath, homomat=None, clearmask = False):
         """
@@ -129,7 +150,7 @@ class CollisionModel(gm.GeometricModel):
         author: weiwei
         date: 20201116
         """
-        return pcd.is_cdprimit2cdprimit_collided(self, objcm)
+        return pcd.is_collided(self, objcm)
 
     def attach_to(self, obj):
         if isinstance(obj, ShowBase):

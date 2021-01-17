@@ -18,59 +18,59 @@ class StaticGeometricModel(object):
     date: 20190312
     """
 
-    def __init__(self, initiator=None, btransparency=True, name="defaultname"):
+    def __init__(self, initor=None, btransparency=True, name="defaultname"):
         """
-        :param initiator: path type defined by os.path or trimesh or nodepath
+        :param initor: path type defined by os.path or trimesh or nodepath
         :param btransparency
         :param name
         """
-        if isinstance(initiator, StaticGeometricModel):
-            self._objpath = copy.deepcopy(initiator.objpath)
-            self._objtrm = copy.deepcopy(initiator.objtrm)
-            self._objpdnp = copy.deepcopy(initiator.objpdnp)
-            self._name = copy.deepcopy(initiator.name)
-            self._localframe = copy.deepcopy(initiator.localframe)
+        if isinstance(initor, StaticGeometricModel):
+            self._objpath = copy.deepcopy(initor.objpath)
+            self._objtrm = copy.deepcopy(initor.objtrm)
+            self._objpdnp = copy.deepcopy(initor.objpdnp)
+            self._name = copy.deepcopy(initor.name)
+            self._localframe = copy.deepcopy(initor.localframe)
         else:
             # make a grandma nodepath to separate decorations (-autoshader) and raw nodepath (+autoshader)
             self._name = name
             self._objpdnp = NodePath(name)
-            if isinstance(initiator, str):
-                self._objpath = initiator
+            if isinstance(initor, str):
+                self._objpath = initor
                 self._objtrm = trimesh.load(self._objpath)
                 objpdnp_raw = da.trimesh_to_nodepath(self._objtrm, name='pdnp_raw')
                 objpdnp_raw.reparentTo(self._objpdnp)
-            elif isinstance(initiator, trimesh.Trimesh):
+            elif isinstance(initor, trimesh.Trimesh):
                 self._objpath = None
-                self._objtrm = initiator
+                self._objtrm = initor
                 objpdnp_raw = da.trimesh_to_nodepath(self._objtrm)
                 objpdnp_raw.reparentTo(self._objpdnp)
-            elif isinstance(initiator, o3d.geometry.PointCloud): # TODO should pointcloud be pdnp or pdnp_raw
+            elif isinstance(initor, o3d.geometry.PointCloud): # TODO should pointcloud be pdnp or pdnp_raw
                 self._objpath = None
-                self._objtrm = trimesh.Trimesh(np.asarray(initiator.points))
+                self._objtrm = trimesh.Trimesh(np.asarray(initor.points))
                 objpdnp_raw = da.nodepath_from_points(self._objtrm.vertices, name='pdnp_raw')
                 objpdnp_raw.reparentTo(self._objpdnp)
-            elif isinstance(initiator, np.ndarray): # TODO should pointcloud be pdnp or pdnp_raw
+            elif isinstance(initor, np.ndarray): # TODO should pointcloud be pdnp or pdnp_raw
                 self._objpath = None
-                if initiator.shape[1] == 3:
-                    self._objtrm = trimesh.Trimesh(initiator)
+                if initor.shape[1] == 3:
+                    self._objtrm = trimesh.Trimesh(initor)
                     objpdnp_raw = da.nodepath_from_points(self._objtrm.vertices)
-                elif initiator.shape[1] == 6:
-                    self._objtrm = trimesh.Trimesh(initiator[:, :3])
-                    objpdnp_raw = da.nodepath_from_points(self._objtrm.vertices, initiator[:, 3:])
+                elif initor.shape[1] == 6:
+                    self._objtrm = trimesh.Trimesh(initor[:, :3])
+                    objpdnp_raw = da.nodepath_from_points(self._objtrm.vertices, initor[:, 3:])
                 else:
                     # TODO depth UV?
                     raise NotImplementedError
                 objpdnp_raw.reparentTo(self._objpdnp)
-            elif isinstance(initiator, o3d.geometry.TriangleMesh):
+            elif isinstance(initor, o3d.geometry.TriangleMesh):
                 self._objpath = None
-                self._objtrm = trimesh.Trimesh(vertices=initiator.vertices, faces=initiator.triangles,
-                                               face_normals=initiator.triangle_normals)
+                self._objtrm = trimesh.Trimesh(vertices=initor.vertices, faces=initor.triangles,
+                                               face_normals=initor.triangle_normals)
                 objpdnp_raw = da.trimesh_to_nodepath(self._objtrm, name='pdnp_raw')
                 objpdnp_raw.reparentTo(self._objpdnp)
-            elif isinstance(initiator, NodePath):
+            elif isinstance(initor, NodePath):
                 self._objpath = None
                 self._objtrm = None # TODO nodepath to trimesh?
-                objpdnp_raw = initiator
+                objpdnp_raw = initor
                 objpdnp_raw.reparentTo(self._objpdnp)
             else:
                 self._objpath = None
@@ -170,11 +170,11 @@ class StaticGeometricModel(object):
 
 class WireFrameModel(StaticGeometricModel):
 
-    def __init__(self, initiator=None, name="defaultname"):
+    def __init__(self, initor=None, name="defaultname"):
         """
-        :param initiator: path type defined by os.path or trimesh or nodepath
+        :param initor: path type defined by os.path or trimesh or nodepath
         """
-        super().__init__(initiator=initiator, btransparency=False, name=name)
+        super().__init__(initor=initor, btransparency=False, name=name)
         self.objpdnp_raw.setRenderModeWireframe()
         self.objpdnp_raw.setLightOff()
         self.set_rgba(rgba=[0,0,0,1])
@@ -274,18 +274,18 @@ class GeometricModel(StaticGeometricModel):
     date: 20190312
     """
 
-    def __init__(self, initiator=None, btransparency=True, name="defaultname"):
+    def __init__(self, initor=None, btransparency=True, name="defaultname"):
         """
-        :param initiator: path type defined by os.path or trimesh or nodepath
+        :param initor: path type defined by os.path or trimesh or nodepath
         """
-        if isinstance(initiator, GeometricModel):
-            self._objpath = copy.deepcopy(initiator.objpath)
-            self._objtrm = copy.deepcopy(initiator.objtrm)
-            self._objpdnp = copy.deepcopy(initiator.objpdnp)
-            self._name = copy.deepcopy(initiator.name)
-            self._localframe = copy.deepcopy(initiator.localframe)
+        if isinstance(initor, GeometricModel):
+            self._objpath = copy.deepcopy(initor.objpath)
+            self._objtrm = copy.deepcopy(initor.objtrm)
+            self._objpdnp = copy.deepcopy(initor.objpdnp)
+            self._name = copy.deepcopy(initor.name)
+            self._localframe = copy.deepcopy(initor.localframe)
         else:
-            super().__init__(initiator=initiator, btransparency=btransparency, name=name)
+            super().__init__(initor=initor, btransparency=btransparency, name=name)
         self.objpdnp_raw.setShaderAuto()
 
     def set_pos(self, npvec3):

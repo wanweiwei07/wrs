@@ -118,7 +118,7 @@ if __name__ == '__main__':
     rvc.reset()
     last_rmt= None
     while True:
-        pcd = gm.GeometricModel(initiator=client.get_rgb_pointcloud())
+        pcd = gm.GeometricModel(initor=client.get_rgb_pointcloud())
         current_rmt = rvc.showmodel_to_remote(pcd)
         if last_rmt is not None:
             rvc.unshow_model(last_rmt)

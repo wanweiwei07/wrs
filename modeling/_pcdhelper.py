@@ -87,7 +87,7 @@ def gen_pointcloud_cdnp(objtrm, name='cdnp_pointcloud', radius=0.02):
     return collision_node
 
 
-def is_cdprimit2cdprimit_collided(objcm_list0, objcm_list1, toggleplot=False):
+def is_collided(objcm_list0, objcm_list1, toggleplot=False):
     """
     detect the collision between collision models
     :param: objcm_list0, a single collision model or a list of collision models
@@ -143,7 +143,7 @@ if __name__ == '__main__':
         objcmlist[-1].show_cdprimit()
 
     tic = time.time()
-    result = is_cdprimit2cdprimit_collided(objcm, objcmlist)
+    result = is_collided(objcm, objcmlist)
     toc = time.time()
     time_cost = toc - tic
     print(time_cost)
