@@ -71,11 +71,6 @@ def define_grasp_with_rotation(hnd,
                 grasp_info_flipped = [grasp_info[0], grasp_info[1], grasp_info[2],
                                       rm.rotmat_from_axangle(grasp_info[3][:, 2], math.pi).dot(grasp_info[3])]
                 grasp_info_list.append(grasp_info_flipped)
-        else:
-            model = hnd.gen_meshmodel(rgba=[1, 1, 0, .3])
-            model.attach_to(base)
-            # hnd.show_cdmesh()
-            base.run()
     return grasp_info_list
 
 
@@ -134,7 +129,7 @@ def define_grasp_with_rotation(hnd,
 #     return effect_grasp
 
 
-def write_pickle_file(objcm_name, grasp_info_list, root=None, file_name='predefined_grasps.pickle'):
+def write_pickle_file(objcm_name, grasp_info_list, root=None, file_name='preannotated_grasps.pickle'):
     """
     if model_name was saved, replace the old grasp info.
     if model_name was never saved, additionally save it.
@@ -161,7 +156,7 @@ def write_pickle_file(objcm_name, grasp_info_list, root=None, file_name='predefi
     pickle.dump(data, open(directory + file_name, 'wb'))
 
 
-def load_pickle_file(objcm_name, root=None, file_name='predefined_grasps.pickle'):
+def load_pickle_file(objcm_name, root=None, file_name='preannotated_grasps.pickle'):
     """
     :param objcm_name:
     :param root:

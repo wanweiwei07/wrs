@@ -98,7 +98,7 @@ class CollisionModel(gm.GeometricModel):
     def cdmesh_type(self, cdmesh_type):
         if cdmesh_type is not None and cdmesh_type not in ['aabb',
                                                            'obb',
-                                                           'convexhull',
+                                                           'convex_hull',
                                                            'triangles']:
             raise ValueError("Wrong mesh collision model type name!")
         self._cdmesh_type=cdmesh_type
@@ -116,7 +116,7 @@ class CollisionModel(gm.GeometricModel):
             objtrm = self.objtrm.bounding_box
         elif self.cdmesh_type == 'obb':
             objtrm = self.objtrm.bounding_box_oriented
-        elif self.cdmesh_type == 'convexhull':
+        elif self.cdmesh_type == 'convex_hull':
             objtrm = self.objtrm.convex_hull
         elif self.cdmesh_type == 'triangles':
             objtrm = self.objtrm

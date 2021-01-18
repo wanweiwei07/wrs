@@ -12,12 +12,10 @@ if __name__ == '__main__':
     import visualization.panda.world as wd
 
     base = wd.World(campos=[.5, .5, .3], lookatpos=[0, 0, 0])
-    gripper_instance = yg.YumiGripper(enable_cc=True, cdmesh_type='triangles')
-    objcm = cm.CollisionModel('../objects/tubebig.stl')
+    gripper_instance = yg.YumiGripper(enable_cc=True, cdmesh_type='aabb')
+    objcm = cm.CollisionModel('../objects/tubebig.stl', cdmesh_type='convex_hull')
     objcm.attach_to(base)
     objcm.show_localframe()
-    # objcm.show_cdmesh()
-    # base.run()
     grasp_info_list = []
     for height in [.08, .095]:
         for roll_angle in [math.pi*.1, math.pi*.2]:
@@ -35,4 +33,5 @@ if __name__ == '__main__':
         gripper_instance.fix_to(pos, rotmat)
         gripper_instance.jaw_to(jaw_width)
         gripper_instance.gen_meshmodel().attach_to(base)
+    gutil.write_pickle_file(objcm_name='tubebig', grasp_info_list=grasp_info_list)
     base.run()

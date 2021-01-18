@@ -52,7 +52,7 @@ class GripperInterface(object):
         self._is_fk_updated = False
         return return_val
 
-    def is_mesh_collided(self, objcm_list=[]):
+    def is_mesh_collided(self, objcm_list=[], toggle_debug=False):
         for i, cdelement in enumerate(self.cc.all_cdelements):
             pos = cdelement['gl_pos']
             rotmat = cdelement['gl_rotmat']
@@ -60,14 +60,15 @@ class GripperInterface(object):
             self.cdmesh_collection.cm_list[i].set_rotmat(rotmat)
             iscollided, collided_points = self.cdmesh_collection.cm_list[i].is_mcdwith(objcm_list, True)
             if iscollided:
-                print(self.cdmesh_collection.cm_list[i].get_homomat())
-                self.cdmesh_collection.cm_list[i].show_cdmesh()
-                for objcm in objcm_list:
-                    objcm.show_cdmesh()
-                for point in collided_points:
-                    import modeling.geometricmodel as gm
-                    gm.gen_sphere(point, radius=.001).attach_to(base)
-                print("collided")
+                if toggle_debug:
+                    print(self.cdmesh_collection.cm_list[i].get_homomat())
+                    self.cdmesh_collection.cm_list[i].show_cdmesh()
+                    for objcm in objcm_list:
+                        objcm.show_cdmesh()
+                    for point in collided_points:
+                        import modeling.geometricmodel as gm
+                        gm.gen_sphere(point, radius=.001).attach_to(base)
+                    print("collided")
                 return True
         return False
 
