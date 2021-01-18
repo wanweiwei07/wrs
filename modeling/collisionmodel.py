@@ -8,9 +8,9 @@ import basis.dataadapter as da
 import modeling.geometricmodel as gm
 import modeling.modelcollection as mc
 import modeling._panda_cdhelper as pcd
-# import modeling._ode_cdhelper as mcd
-import modeling._gimpact_cdhelper as mcd
-
+import modeling._ode_cdhelper as mcd
+# import modeling._gimpact_cdhelper as mcd
+# import modeling._bullet_cdhelper as mcd
 
 class CollisionModel(gm.GeometricModel):
     """
@@ -86,22 +86,6 @@ class CollisionModel(gm.GeometricModel):
             if cdprimitive_type == "user_defined":
                 collision_node = userdefined_cdprimitive_fn(name="cdnp_usrdef", radius=expand_radius)
         return cdprimitive_type, collision_node
-
-    def _extract_rotated_vvnf(self):
-        if self.cdmesh_type == 'aabb':
-            objtrm = self.objtrm.bounding_box
-        elif self.cdmesh_type == 'obb':
-            objtrm = self.objtrm.bounding_box_oriented
-        elif self.cdmesh_type == 'convexhull':
-            objtrm = self.objtrm.convex_hull
-        elif self.cdmesh_type == 'triangles':
-            objtrm = self.objtrm
-        homomat = self.get_homomat()
-        vertices = rm.homomat_transform_points(homomat, objtrm.vertices)
-        vertex_normals = rm.homomat_transform_points(homomat, objtrm.vertex_normals)
-        faces = objtrm.faces
-        return vertices, vertex_normals, faces
-
     @property
     def cdprimitive_type(self):
         return self._cdprimitive_type
@@ -125,8 +109,22 @@ class CollisionModel(gm.GeometricModel):
 
     @property
     def cdmesh(self):
-        vertices, vertex_normals, faces = self._extract_rotated_vvnf()
-        return mcd._gen_cdmesh_vvnf(vertices, vertex_normals, faces)
+        return mcd.gen_cdmesh_vvnf(*self.extract_rotated_vvnf())
+
+    def extract_rotated_vvnf(self):
+        if self.cdmesh_type == 'aabb':
+            objtrm = self.objtrm.bounding_box
+        elif self.cdmesh_type == 'obb':
+            objtrm = self.objtrm.bounding_box_oriented
+        elif self.cdmesh_type == 'convexhull':
+            objtrm = self.objtrm.convex_hull
+        elif self.cdmesh_type == 'triangles':
+            objtrm = self.objtrm
+        homomat = self.get_homomat()
+        vertices = rm.homomat_transform_points(homomat, objtrm.vertices)
+        vertex_normals = rm.homomat_transform_points(homomat, objtrm.vertex_normals)
+        faces = objtrm.faces
+        return vertices, vertex_normals, faces
 
     def change_cdprimitive_type(self, cdprimitive_type='ball', expand_radius=.01, userdefined_cdprimitive_fn=None):
         """
@@ -225,7 +223,7 @@ class CollisionModel(gm.GeometricModel):
         return [False, []] if toggle_contacts else False
 
     def show_cdmesh(self):
-        vertices, vertex_normals, faces = self._extract_rotated_vvnf()
+        vertices, vertex_normals, faces = self.extract_rotated_vvnf()
         objwm = gm.WireFrameModel(da.trm.Trimesh(vertices=vertices, vertex_normals=vertex_normals, faces=faces))
         self._tmp_shown_cdmesh = objwm.attach_to(base)
 

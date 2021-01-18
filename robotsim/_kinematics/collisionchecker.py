@@ -1,4 +1,3 @@
-import copy
 import basis.dataadapter as da
 from panda3d.core import NodePath, CollisionTraverser, CollisionHandlerQueue, BitMask32
 

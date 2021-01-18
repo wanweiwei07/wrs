@@ -44,7 +44,7 @@ class ModelCollection(object):
             vertices += rm.homomat_transform_points(homomat, objtrm.vertices)
             vertex_normals += rm.homomat_transform_points(homomat, objtrm.vertex_normals)
             faces += (objtrm.faces+len(faces))
-        return mcd._gen_cdmesh_vvnf(vertices, vertex_normals, faces)
+        return mcd.gen_cdmesh_vvnf(vertices, vertex_normals, faces)
 
     @property
     def cdmesh_list(self):

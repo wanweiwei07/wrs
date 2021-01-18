@@ -1,13 +1,8 @@
-import copy
 import numpy as np
-import basis.robotmath as rm
-import basis.dataadapter as da
-import basis.trimeshgenerator as tg
-import modeling.geometricmodel as gm
 import gimpact as gi
 
 # util functions
-def _gen_cdmesh_vvnf(vertices, vertex_normals, faces):
+def gen_cdmesh_vvnf(vertices, vertex_normals, faces):
     """
     generate cdmesh given vertices, _, and faces
     :return: gimpact.TriMesh (require gimpact to be installed)
@@ -25,68 +20,13 @@ def is_collided(objcm0, objcm1):
     author: weiwei
     date: 20210117
     """
-    obj_gitrm0 = objcm0.cdmesh
-    obj_gitrm1 = objcm1.cdmesh
-    contacts = gi.trimesh_trimesh_collision(obj_gitrm0, obj_gitrm1)
+    obj0 = gen_cdmesh_vvnf(*objcm0.extract_rotated_vvnf())
+    obj1 = gen_cdmesh_vvnf(*objcm1.extract_rotated_vvnf())
+    contacts = gi.trimesh_trimesh_collision(obj0, obj1)
     contact_points = [ct.point for ct in contacts]
     return (True, contact_points) if len(contact_points)>0 else (False, contact_points)
 
-def rayhit_triangles_closet(pfrom, pto, objcm):
-    """
-    :param pfrom:
-    :param pto:
-    :param objcm:
-    :return:
-    author: weiwei
-    date: 20190805
-    """
-    tmptrimesh = objcm.objtrm.copy()
-    tmptrimesh.apply_transform(objcm.get_homomat())
-    geom = da.pandageom_from_vfnf(tmptrimesh.vertices, tmptrimesh.face_normals, tmptrimesh.faces)
-    targetobjmesh = BulletTriangleMesh()
-    targetobjmesh.addGeom(geom)
-    bullettmshape = BulletTriangleMeshShape(targetobjmesh, dynamic=True)
-    targetobjmeshnode = BulletRigidBodyNode('facet')
-    targetobjmeshnode.addShape(bullettmshape)
-    base.physicsworld.attach(targetobjmeshnode)
-    result = base.physicsworld.rayTestClosest(da.npv3_to_pdv3(pfrom), da.npv3_to_pdv3(pto))
-    base.physicsworld.removeRigidBody(targetobjmeshnode)
-    if result.hasHit():
-        return [da.pdv3_to_npv3(result.getHitPos()), da.pdv3_to_npv3(result.getHitNormal())]
-    else:
-        return [None, None]
-
-
-def rayhit_triangles_all(pfrom, pto, objcm):
-    """
-    :param pfrom:
-    :param pto:
-    :param objcm:
-    :return:
-    author: weiwei
-    date: 20190805
-    """
-    tmptrimesh = objcm.objtrm.copy()
-    tmptrimesh.apply_transform(objcm.gethomomat())
-    geom = da.pandageom_from_vfnf(tmptrimesh.vertices, tmptrimesh.face_normals, tmptrimesh.faces)
-    targetobjmesh = BulletTriangleMesh()
-    targetobjmesh.addGeom(geom)
-    bullettmshape = BulletTriangleMeshShape(targetobjmesh, dynamic=True)
-    targetobjmeshnode = BulletRigidBodyNode('facet')
-    targetobjmeshnode.addShape(bullettmshape)
-    base.physicsworld.attach(targetobjmeshnode)
-    result = base.physicsworld.rayTestAll(da.npv3_to_pdv3(pfrom), da.npv3_to_pdv3(pto))
-    base.physicsworld.removeRigidBody(targetobjmeshnode)
-    if result.hasHits():
-        allhits = []
-        for hit in result.getHits():
-            allhits.append([da.pdv3_to_npv3(hit.getHitPos()), da.pdv3_to_npv3(-hit.getHitNormal())])
-        return allhits
-    else:
-        return []
-
-
-def _gen_plane_cdmesh(updirection=np.array([0, 0, 1]), offset=0, name='autogen'):
+def gen_plane_cdmesh(updirection=np.array([0, 0, 1]), offset=0, name='autogen'):
     """
     generate a plane bulletrigidbody node
     :param updirection: the normal parameter of bulletplaneshape at panda3d
@@ -96,35 +36,12 @@ def _gen_plane_cdmesh(updirection=np.array([0, 0, 1]), offset=0, name='autogen')
     author: weiwei
     date: 20170202, tsukuba
     """
+
     bulletplnode = BulletRigidBodyNode(name)
     bulletplshape = BulletPlaneShape(Vec3(updirection[0], updirection[1], updirection[2]), offset)
     bulletplshape.setMargin(0)
     bulletplnode.addShape(bulletplshape)
     return bulletplnode
-
-
-def _rayhit_geom(pfrom, pto, geom):
-    """
-    TODO: To be deprecated, 20201119
-    NOTE: this function is quite slow
-    find the nearest collision point between vec(pto-pfrom) and the mesh of nodepath
-    :param pfrom: starting point of the ray, Point3
-    :param pto: ending point of the ray, Point3
-    :param geom: meshmodel, a panda3d datatype
-    :return: None or Point3
-    author: weiwei
-    date: 20161201
-    """
-    bulletworld = BulletWorld()
-    facetmesh = BulletTriangleMesh()
-    facetmesh.addGeom(geom)
-    facetmeshnode = BulletRigidBodyNode('facet')
-    bullettmshape = BulletTriangleMeshShape(facetmesh, dynamic=True)
-    bullettmshape.setMargin(1e-6)
-    facetmeshnode.addShape(bullettmshape)
-    bulletworld.attach(facetmeshnode)
-    result = bulletworld.rayTestClosest(pfrom, pto)
-    return result.getHitPos() if result.hasHit() else None
 
 
 if __name__ == '__main__':

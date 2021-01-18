@@ -1,10 +1,9 @@
 import numpy as np
-import basis.robotmath as rm
 import basis.dataadapter as da
 from panda3d.ode import OdeTriMeshData, OdeTriMeshGeom, OdeUtil
 
 # util functions
-def _gen_cdmesh_vvnf(vertices, vertex_normals, faces):
+def gen_cdmesh_vvnf(vertices, vertex_normals, faces):
     """
     generate cdmesh given vertices, vertex_normals, and faces
     :return: panda3d.ode.OdeTriMeshGeomm
@@ -15,78 +14,7 @@ def _gen_cdmesh_vvnf(vertices, vertex_normals, faces):
     obj_ot_geom = OdeTriMeshGeom(OdeTriMeshData(objpdnp, True))
     return obj_ot_geom
 
-def is_collided(objcm0, objcm1):
-    """
-    check if two objcm are collided after converting the specified cdmesh_type
-    :param objcm0: an instance of CollisionModel or CollisionModelCollection
-    :param objcm1: an instance of CollisionModel or CollisionModelCollection
-    :return:
-    author: weiwei
-    date: 20210118
-    """
-    obj_ot_geom0 = objcm0.cdmesh
-    obj_ot_geom1 = objcm1.cdmesh
-    contact_entry = OdeUtil.collide(obj_ot_geom0, obj_ot_geom1)
-    contact_points = [da.pdv3_to_npv3(point) for point in contact_entry.getContactPoints()]
-    return (True, contact_points) if len(contact_points)>0 else (False, contact_points)
-
-
-def rayhit_triangles_closet(pfrom, pto, objcm):
-    """
-    :param pfrom:
-    :param pto:
-    :param objcm:
-    :return:
-    author: weiwei
-    date: 20190805
-    """
-    tmptrimesh = objcm.objtrm.copy()
-    tmptrimesh.apply_transform(objcm.get_homomat())
-    geom = da.pandageom_from_vfnf(tmptrimesh.vertices, tmptrimesh.face_normals, tmptrimesh.faces)
-    targetobjmesh = BulletTriangleMesh()
-    targetobjmesh.addGeom(geom)
-    bullettmshape = BulletTriangleMeshShape(targetobjmesh, dynamic=True)
-    targetobjmeshnode = BulletRigidBodyNode('facet')
-    targetobjmeshnode.addShape(bullettmshape)
-    base.physicsworld.attach(targetobjmeshnode)
-    result = base.physicsworld.rayTestClosest(da.npv3_to_pdv3(pfrom), da.npv3_to_pdv3(pto))
-    base.physicsworld.removeRigidBody(targetobjmeshnode)
-    if result.hasHit():
-        return [da.pdv3_to_npv3(result.getHitPos()), da.pdv3_to_npv3(result.getHitNormal())]
-    else:
-        return [None, None]
-
-
-def rayhit_triangles_all(pfrom, pto, objcm):
-    """
-    :param pfrom:
-    :param pto:
-    :param objcm:
-    :return:
-    author: weiwei
-    date: 20190805
-    """
-    tmptrimesh = objcm.objtrm.copy()
-    tmptrimesh.apply_transform(objcm.gethomomat())
-    geom = da.pandageom_from_vfnf(tmptrimesh.vertices, tmptrimesh.face_normals, tmptrimesh.faces)
-    targetobjmesh = BulletTriangleMesh()
-    targetobjmesh.addGeom(geom)
-    bullettmshape = BulletTriangleMeshShape(targetobjmesh, dynamic=True)
-    targetobjmeshnode = BulletRigidBodyNode('facet')
-    targetobjmeshnode.addShape(bullettmshape)
-    base.physicsworld.attach(targetobjmeshnode)
-    result = base.physicsworld.rayTestAll(da.npv3_to_pdv3(pfrom), da.npv3_to_pdv3(pto))
-    base.physicsworld.removeRigidBody(targetobjmeshnode)
-    if result.hasHits():
-        allhits = []
-        for hit in result.getHits():
-            allhits.append([da.pdv3_to_npv3(hit.getHitPos()), da.pdv3_to_npv3(-hit.getHitNormal())])
-        return allhits
-    else:
-        return []
-
-
-def _gen_plane_cdmesh(updirection=np.array([0, 0, 1]), offset=0, name='autogen'):
+def gen_plane_cdmesh(updirection=np.array([0, 0, 1]), offset=0, name='autogen'):
     """
     generate a plane bulletrigidbody node
     :param updirection: the normal parameter of bulletplaneshape at panda3d
@@ -102,29 +30,37 @@ def _gen_plane_cdmesh(updirection=np.array([0, 0, 1]), offset=0, name='autogen')
     bulletplnode.addShape(bulletplshape)
     return bulletplnode
 
-
-def _rayhit_geom(pfrom, pto, geom):
+def is_collided(objcm0, objcm1):
     """
-    TODO: To be deprecated, 20201119
-    NOTE: this function is quite slow
-    find the nearest collision point between vec(pto-pfrom) and the mesh of nodepath
-    :param pfrom: starting point of the ray, Point3
-    :param pto: ending point of the ray, Point3
-    :param geom: meshmodel, a panda3d datatype
-    :return: None or Point3
+    check if two objcm are collided after converting the specified cdmesh_type
+    :param objcm0: an instance of CollisionModel or CollisionModelCollection
+    :param objcm1: an instance of CollisionModel or CollisionModelCollection
+    :return:
     author: weiwei
-    date: 20161201
+    date: 20210118
     """
-    bulletworld = BulletWorld()
-    facetmesh = BulletTriangleMesh()
-    facetmesh.addGeom(geom)
-    facetmeshnode = BulletRigidBodyNode('facet')
-    bullettmshape = BulletTriangleMeshShape(facetmesh, dynamic=True)
-    bullettmshape.setMargin(1e-6)
-    facetmeshnode.addShape(bullettmshape)
-    bulletworld.attach(facetmeshnode)
-    result = bulletworld.rayTestClosest(pfrom, pto)
-    return result.getHitPos() if result.hasHit() else None
+    obj0 = gen_cdmesh_vvnf(*objcm0.extract_rotated_vvnf())
+    obj1 = gen_cdmesh_vvnf(*objcm1.extract_rotated_vvnf())
+    contact_entry = OdeUtil.collide(obj0, obj1)
+    contact_points = [da.pdv3_to_npv3(point) for point in contact_entry.getContactPoints()]
+    return (True, contact_points) if len(contact_points)>0 else (False, contact_points)
+
+# # incorrect result 20210119, from panda3d.ode import OdeRayGeom if toggled on
+# def rayhit_closet(pfrom, pto, objcm):
+#     """
+#     :param pfrom:
+#     :param pto:
+#     :param objcm:
+#     :return:
+#     author: weiwei
+#     date: 20190805
+#     """
+#     tgt_cdmesh = gen_cdmesh_vvnf(*objcm.extract_rotated_vvnf())
+#     ray = OdeRayGeom(1e12)
+#     ray.set(pfrom[0], pfrom[1], pfrom[2], pto[0], pto[1], pto[2])
+#     contact_entry = OdeUtil.collide(ray, tgt_cdmesh)
+#     contact_points = [da.pdv3_to_npv3(point) for point in contact_entry.getContactPoints()]
+#     print(contact_points)
 
 
 if __name__ == '__main__':
@@ -133,6 +69,7 @@ if __name__ == '__main__':
     import visualization.panda.world as wd
     import modeling.geometricmodel as gm
     import modeling.collisionmodel as cm
+    import basis.robotmath as rm
 
     wd.World(campos=[1.0, 1, .0, 1.0], lookatpos=[0, 0, 0])
     objpath = os.path.join(basis.__path__[0], 'objects', 'bunnysim.stl')
@@ -147,13 +84,8 @@ if __name__ == '__main__':
     objcm1.change_cdmesh_type('convexhull')
     objcm2.change_cdmesh_type('obb')
     iscollided, contact_points = is_collided(objcm1, objcm2)
-    # objcm1.show_cdmesh(type='box')
-    # show_triangles_cdmesh(objcm1)
-    # show_triangles_cdmesh(objcm2)
     objcm1.show_cdmesh()
     objcm2.show_cdmesh()
-    # objcm1.show_cdmesh(type='box')
-    # objcm2.show_cdmesh(type='triangles')
     objcm1.attach_to(base)
     objcm2.attach_to(base)
     print(iscollided)
@@ -161,7 +93,7 @@ if __name__ == '__main__':
         gm.gen_sphere(ctpt, radius=.001).attach_to(base)
     # pfrom = np.array([0, 0, 0]) + np.array([1.0, 1.0, 1.0])
     # pto = np.array([0, 0, 0]) + np.array([-1.0, -1.0, -0.9])
-    # hitpos, hitnrml = rayhit_triangles_closet(pfrom=pfrom, pto=pto, objcm=objcm)
+    # rayhit_closet(pfrom=pfrom, pto=pto, objcm=objcm2)
     # objcm.attach_to(base)
     # objcm.show_cdmesh(type='box')
     # objcm.show_cdmesh(type='convexhull')
