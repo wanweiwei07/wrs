@@ -3,7 +3,7 @@ from panda3d.bullet import BulletTriangleMeshShape, BulletTriangleMesh
 import numpy as np
 import basis.dataadapter as da
 
-SCALE_FOR_PRECISION = 1
+SCALE_FOR_PRECISION = 10000.0
 
 
 def gen_cdmesh_vvnf(vertices, vertex_normals, faces, name='auto'):

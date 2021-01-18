@@ -1,5 +1,5 @@
-import interfaces.scad as scad
-import interfaces.blender as blender
+import basis.trimesh.interfaces.scad as scad
+import basis.trimesh.interfaces.blender as blender
 
 def difference(meshes, engine=None):
     '''
