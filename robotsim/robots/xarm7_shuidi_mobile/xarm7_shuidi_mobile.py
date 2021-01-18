@@ -16,10 +16,7 @@ class XArm7YunjiMobile(ri.RobotInterface):
         super().__init__(pos=pos, rotmat=rotmat, name=name)
         this_dir, this_filename = os.path.split(__file__)
         # agv
-        self.agv = jl.JLChain(pos=pos,
-                              rotmat=rotmat,
-                              homeconf=np.zeros(0),
-                              name='agv')  # TODO: change to 3-dof
+        self.agv = jl.JLChain(pos=pos, rotmat=rotmat, homeconf=np.zeros(0), name='agv')  # TODO: change to 3-dof
         self.agv.jnts[1]['loc_pos'] = np.array([0, .0, .34231])
         self.agv.lnks[0]['name'] = 'agv'
         self.agv.lnks[0]['loc_pos'] = np.array([0, 0, 0])

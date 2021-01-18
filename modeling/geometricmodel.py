@@ -1,6 +1,5 @@
 import os, copy
 import basis.dataadapter as da
-import basis.trimesh as trimesh
 import basis.trimeshgenerator as trihelper
 import basis.robotmath as rm
 import modeling.modelcollection as mc
@@ -36,26 +35,26 @@ class StaticGeometricModel(object):
             self._objpdnp = NodePath(name)
             if isinstance(initor, str):
                 self._objpath = initor
-                self._objtrm = trimesh.load(self._objpath)
+                self._objtrm = da.trm.load(self._objpath)
                 objpdnp_raw = da.trimesh_to_nodepath(self._objtrm, name='pdnp_raw')
                 objpdnp_raw.reparentTo(self._objpdnp)
-            elif isinstance(initor, trimesh.Trimesh):
+            elif isinstance(initor, da.trm.Trimesh):
                 self._objpath = None
                 self._objtrm = initor
                 objpdnp_raw = da.trimesh_to_nodepath(self._objtrm)
                 objpdnp_raw.reparentTo(self._objpdnp)
             elif isinstance(initor, o3d.geometry.PointCloud): # TODO should pointcloud be pdnp or pdnp_raw
                 self._objpath = None
-                self._objtrm = trimesh.Trimesh(np.asarray(initor.points))
+                self._objtrm = da.trm.Trimesh(np.asarray(initor.points))
                 objpdnp_raw = da.nodepath_from_points(self._objtrm.vertices, name='pdnp_raw')
                 objpdnp_raw.reparentTo(self._objpdnp)
             elif isinstance(initor, np.ndarray): # TODO should pointcloud be pdnp or pdnp_raw
                 self._objpath = None
                 if initor.shape[1] == 3:
-                    self._objtrm = trimesh.Trimesh(initor)
+                    self._objtrm = da.trm.Trimesh(initor)
                     objpdnp_raw = da.nodepath_from_points(self._objtrm.vertices)
                 elif initor.shape[1] == 6:
-                    self._objtrm = trimesh.Trimesh(initor[:, :3])
+                    self._objtrm = da.trm.Trimesh(initor[:, :3])
                     objpdnp_raw = da.nodepath_from_points(self._objtrm.vertices, initor[:, 3:])
                 else:
                     # TODO depth UV?
@@ -63,8 +62,8 @@ class StaticGeometricModel(object):
                 objpdnp_raw.reparentTo(self._objpdnp)
             elif isinstance(initor, o3d.geometry.TriangleMesh):
                 self._objpath = None
-                self._objtrm = trimesh.Trimesh(vertices=initor.vertices, faces=initor.triangles,
-                                               face_normals=initor.triangle_normals)
+                self._objtrm = da.trm.Trimesh(vertices=initor.vertices, faces=initor.triangles,
+                                           face_normals=initor.triangle_normals)
                 objpdnp_raw = da.trimesh_to_nodepath(self._objtrm, name='pdnp_raw')
                 objpdnp_raw.reparentTo(self._objpdnp)
             elif isinstance(initor, NodePath):

@@ -8,17 +8,14 @@ import robotsim._kinematics.collisionchecker as cc
 
 class GripperInterface(object):
 
-    def __init__(self, pos=np.zeros(3), rotmat=np.eye(3), cdmesh_type='box', name='yumi_gripper'):
+    def __init__(self, pos=np.zeros(3), rotmat=np.eye(3), cdmesh_type='aabb', name='yumi_gripper'):
         self.name = name
         self.pos = pos
         self.rotmat = rotmat
-        self.cdmesh_type = cdmesh_type # box, convexhull, or triangles
+        self.cdmesh_type = cdmesh_type # aabb, convexhull, or triangles
         # joints
         # - coupling - No coupling by default
-        self.coupling = jl.JLChain(pos=self.pos,
-                                   rotmat=self.rotmat,
-                                   homeconf=np.zeros(0),
-                                   name='coupling')
+        self.coupling = jl.JLChain(pos=self.pos, rotmat=self.rotmat, homeconf=np.zeros(0), name='coupling')
         self.coupling.jnts[1]['loc_pos'] = np.array([0, 0, .0])
         self.coupling.lnks[0]['name'] = 'coupling_lnk0'
         # toggle on the following part to assign an explicit mesh model to a coupling
@@ -56,27 +53,20 @@ class GripperInterface(object):
         return return_val
 
     def is_mesh_collided(self, objcm_list=[]):
-        if self.cdmesh_type == 'triangles':
-            type = 'triangles2triangles'
-        elif self.cdmesh_type == 'box':
-            type = 'box2triangles'
-        elif self.cdmesh_type == 'convexhull':
-            type = 'convexhull2triangles'
-        else:
-            raise NotImplementedError('The requested '+type+' type cdmesh is not supported!')
         for i, cdelement in enumerate(self.cc.all_cdelements):
             pos = cdelement['gl_pos']
             rotmat = cdelement['gl_rotmat']
             self.cdmesh_collection.cm_list[i].set_pos(pos)
             self.cdmesh_collection.cm_list[i].set_rotmat(rotmat)
-            if self.cdmesh_collection.cm_list[i].is_mcdwith(objcm_list, type=type):
-                print(type)
+            iscollided, collided_points = self.cdmesh_collection.cm_list[i].is_mcdwith(objcm_list, True)
+            if iscollided:
+                print(self.cdmesh_collection.cm_list[i].get_homomat())
                 self.cdmesh_collection.cm_list[i].show_cdmesh()
                 for objcm in objcm_list:
-                    objcm.attach_to(base)
                     objcm.show_cdmesh()
-                # self.cdmesh_collection.cm_list[i].set_homomat(np.eye(4))
-                # self.cdmesh_collection.cm_list[i].attach_to(base)
+                for point in collided_points:
+                    import modeling.geometricmodel as gm
+                    gm.gen_sphere(point, radius=.001).attach_to(base)
                 print("collided")
                 return True
         return False
@@ -118,7 +108,7 @@ class GripperInterface(object):
                 self.cdmesh_collection.cm_list[i].set_pos(pos)
                 self.cdmesh_collection.cm_list[i].set_rotmat(rotmat)
             self._is_fk_updated = False
-        self.cdmesh_collection.show_cdmesh(type=self.cdmesh_type)
+        self.cdmesh_collection.show_cdmesh()
 
     def unshow_cdmesh(self):
         self.cdmesh_collection.unshow_cdmesh()

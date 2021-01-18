@@ -3,11 +3,13 @@ import math
 import numpy as np
 from panda3d.core import CollisionNode, CollisionBox, CollisionSphere, NodePath, BitMask32
 from visualization.panda.world import ShowBase
+import basis.robotmath as rm
 import basis.dataadapter as da
 import modeling.geometricmodel as gm
 import modeling.modelcollection as mc
-import modeling._pcdhelper as pcd
-import modeling._mcdhelper as mcd
+import modeling._panda_cdhelper as pcd
+# import modeling._ode_cdhelper as mcd
+import modeling._gimpact_cdhelper as mcd
 
 
 class CollisionModel(gm.GeometricModel):
@@ -51,23 +53,23 @@ class CollisionModel(gm.GeometricModel):
             self._cdprimitive_type = copy.deepcopy(initor.cdprimitive_type)
             self._cdmesh_type = copy.deepcopy(initor.cdmesh_type)
         else:
-            if cdprimitive_type is not None and cdprimitive_type not in ["box",
-                                                                         "surface_ball",
-                                                                         "cylinder",
-                                                                         "point_cloud",
-                                                                         "user_defined"]:
-                raise Exception("Wrong Collision Model type name.")
             super().__init__(initor=initor, btransparency=btransparency, name=name)
-            self._cdprimitive_type = cdprimitive_type
-            if cdprimitive_type is not None:
-                collision_node = self._update_cdprimit(cdprimitive_type, expand_radius, userdefined_cdprimitive_fn)
-                # use pdnp.getChild instead of a new self._cdnp variable as collision nodepath is not compatible with deepcopy
-                self._objpdnp.attachNewNode(collision_node)
-                self._objpdnp.getChild(1).setCollideMask(BitMask32(2 ** 31))
-            self._cdmesh_type = cdmesh_type
+            self._cdprimitive_type, collision_node = self._update_cdprimit(cdprimitive_type,
+                                                                           expand_radius,
+                                                                           userdefined_cdprimitive_fn)
+            # use pdnp.getChild instead of a new self._cdnp variable as collision nodepath is not compatible with deepcopy
+            self._objpdnp.attachNewNode(collision_node)
+            self._objpdnp.getChild(1).setCollideMask(BitMask32(2 ** 31))
+            self.cdmesh_type = cdmesh_type
             self._localframe = None
 
     def _update_cdprimit(self, cdprimitive_type, expand_radius, userdefined_cdprimitive_fn):
+        if cdprimitive_type is not None and cdprimitive_type not in ['box',
+                                                                     'surface_ball',
+                                                                     'cylinder',
+                                                                     'point_cloud',
+                                                                     'user_defined']:
+            raise ValueError("Wrong primitive collision model type name!")
         if cdprimitive_type == 'surface_ball':
             if expand_radius is None:
                 expand_radius = 0.015
@@ -83,8 +85,22 @@ class CollisionModel(gm.GeometricModel):
                 collision_node = pcd.gen_pointcloud_cdnp(self.objtrm, name='cdnp_ptc', radius=expand_radius)
             if cdprimitive_type == "user_defined":
                 collision_node = userdefined_cdprimitive_fn(name="cdnp_usrdef", radius=expand_radius)
-        self._cdprimitive_type = cdprimitive_type
-        return collision_node
+        return cdprimitive_type, collision_node
+
+    def _extract_rotated_vvnf(self):
+        if self.cdmesh_type == 'aabb':
+            objtrm = self.objtrm.bounding_box
+        elif self.cdmesh_type == 'obb':
+            objtrm = self.objtrm.bounding_box_oriented
+        elif self.cdmesh_type == 'convexhull':
+            objtrm = self.objtrm.convex_hull
+        elif self.cdmesh_type == 'triangles':
+            objtrm = self.objtrm
+        homomat = self.get_homomat()
+        vertices = rm.homomat_transform_points(homomat, objtrm.vertices)
+        vertex_normals = rm.homomat_transform_points(homomat, objtrm.vertex_normals)
+        faces = objtrm.faces
+        return vertices, vertex_normals, faces
 
     @property
     def cdprimitive_type(self):
@@ -94,9 +110,23 @@ class CollisionModel(gm.GeometricModel):
     def cdmesh_type(self):
         return self._cdmesh_type
 
+    @cdmesh_type.setter
+    def cdmesh_type(self, cdmesh_type):
+        if cdmesh_type is not None and cdmesh_type not in ['aabb',
+                                                           'obb',
+                                                           'convexhull',
+                                                           'triangles']:
+            raise ValueError("Wrong mesh collision model type name!")
+        self._cdmesh_type=cdmesh_type
+
     @property
     def cdnp(self):
         return self._objpdnp.getChild(1) # child-0 = pdnp_raw, child-1 = cdnp
+
+    @property
+    def cdmesh(self):
+        vertices, vertex_normals, faces = self._extract_rotated_vvnf()
+        return mcd._gen_cdmesh_vvnf(vertices, vertex_normals, faces)
 
     def change_cdprimitive_type(self, cdprimitive_type='ball', expand_radius=.01, userdefined_cdprimitive_fn=None):
         """
@@ -107,8 +137,8 @@ class CollisionModel(gm.GeometricModel):
         author: weiwei
         date: 20210116
         """
-        cdnd = self._update_cdprimit(cdprimitive_type, expand_radius, userdefined_cdprimitive_fn)
-        # use pdnp.getChild instead of a new self._cdnp variable as collision nodepath is not compatible with deepcopy
+        self._cdprimitive_type, cdnd = self._update_cdprimit(cdprimitive_type, expand_radius, userdefined_cdprimitive_fn)
+        # use _objpdnp.getChild instead of a new self._cdnp variable as collision nodepath is not compatible with deepcopy
         self.cdnp.removeNode()
         self._objpdnp.attachNewNode(cdnd)
         self._objpdnp.getChild(1).setCollideMask(BitMask32(2 ** 31))
@@ -120,7 +150,7 @@ class CollisionModel(gm.GeometricModel):
         author: weiwei
         date: 20210117
         """
-        self._cdmesh_type = cdmesh_type
+        self.cdmesh_type = cdmesh_type
 
     def copy_cdnp_to(self, nodepath, homomat=None, clearmask = False):
         """
@@ -175,37 +205,33 @@ class CollisionModel(gm.GeometricModel):
     def unshow_cdprimit(self):
         self.cdnp.hide()
 
-    def is_mcdwith(self, objcm_list, type='triangles2triangles'):
+    def is_mcdwith(self, objcm_list, toggle_contacts = False):
         """
         Is the mesh of the cm collide with the mesh of the given cm
         :param objcm_list: one or a list of Collision Model object
         :param type: 'triangles2triangles', 'box2triangles', 'box2box'
+        :param toggle_contacts: return a list of contact points if toggle_contacts is True
         author: weiwei
         date: 20201116
         """
-        if type == 'triangles2triangles':
-            return mcd.is_triangles2triangles_collided(self, objcm_list)
-        if type == 'box2triangles':
-            return mcd.is_box2triangles_collided(self, objcm_list)
-        if type == 'box2box':
-            return mcd.is_box2box_collided(self, objcm_list)
-        if type == 'convexhull2triangles':
-            return mcd.is_convexhull2triangles_collided(self, objcm_list)
+        if not isinstance(objcm_list, list):
+            objcm_list = [objcm_list]
+        for objcm in objcm_list:
+            iscollided, contacts = mcd.is_collided(self, objcm)
+            if iscollided and toggle_contacts:
+                return [True, [ct.point for ct in contacts]]
+            elif iscollided:
+                return True
+        return [False, []] if toggle_contacts else False
 
-    def show_cdmesh(self, type='triangles'):
-        self. unshow_cdmesh()
-        if type == 'triangles':
-            self._bullnode = mcd.show_triangles_cdmesh(self)
-        elif type == 'convexhull':
-            self._bullnode = mcd.show_convexhull_cdmesh(self)
-        elif type == 'box':
-            self._bullnode = mcd.show_box_cdmesh(self)
-        else:
-            raise NotImplementedError('The requested '+type+' type cdmesh is not supported!')
+    def show_cdmesh(self):
+        vertices, vertex_normals, faces = self._extract_rotated_vvnf()
+        objwm = gm.WireFrameModel(da.trm.Trimesh(vertices=vertices, vertex_normals=vertex_normals, faces=faces))
+        self._tmp_shown_cdmesh = objwm.attach_to(base)
 
     def unshow_cdmesh(self):
-        if hasattr(self, '_bullnode'):
-            mcd.unshow(self._bullnode)
+        if hasattr(self, '_tmp_shown_cdmesh'):
+            self._tmp_shown_cdmesh.detach()
 
     def is_mboxcdwith(self, objcm):
         raise NotImplementedError
@@ -225,7 +251,6 @@ def gen_box(extent=np.array([.1, .1, .1]), homomat=np.eye(4), rgba=np.array([1, 
     box_sgm = gm.gen_box(extent=extent, homomat=homomat, rgba=rgba)
     box_cm = CollisionModel(box_sgm)
     return box_cm
-
 
 if __name__ == "__main__":
     import os
@@ -251,7 +276,7 @@ if __name__ == "__main__":
     bunnycm1.set_rotmat(rotmat)
 
     bunnycm2 = bunnycm1.copy()
-    bunnycm2.change_cdprimit(cdprimitive_type='surface_ball')
+    bunnycm2.change_cdprimitive_type(cdprimitive_type='surface_ball')
     bunnycm2.set_rgba([0, 0.7, 0.7, 1.0])
     rotmat = rm.rotmat_from_axangle([1, 0, 0], -math.pi / 4.0)
     bunnycm2.set_pos(np.array([0, .2, 0]))

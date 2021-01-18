@@ -15,10 +15,7 @@ class Robotiq85(gp.GripperInterface):
         cpl_end_pos = self.coupling.jnts[-1]['gl_posq']
         cpl_end_rotmat = self.coupling.jnts[-1]['gl_rotmatq']
         # - lft_outer
-        self.lft_outer = jl.JLChain(pos=cpl_end_pos,
-                                    rotmat=cpl_end_rotmat,
-                                    homeconf=np.zeros(4),
-                                    name='lft_outer')
+        self.lft_outer = jl.JLChain(pos=cpl_end_pos, rotmat=cpl_end_rotmat, homeconf=np.zeros(4), name='lft_outer')
         self.lft_outer.jnts[1]['loc_pos'] = np.array([0, -.0306011, .054904])
         self.lft_outer.jnts[1]['motion_rng'] = [.0, .8]
         self.lft_outer.jnts[1]['loc_rotmat'] = rm.rotmat_from_euler(0, 0, math.pi)
@@ -31,18 +28,12 @@ class Robotiq85(gp.GripperInterface):
         # https://github.com/Danfoa uses geometry instead of the dae mesh. The following coordiante is needed
         # self.lft_outer.jnts[4]['loc_pos'] = np.array([0, -0.0220203446692936, .03242])
         # - lft_inner
-        self.lft_inner = jl.JLChain(pos=cpl_end_pos,
-                                    rotmat=cpl_end_rotmat,
-                                    homeconf=np.zeros(1),
-                                    name='lft_inner')
+        self.lft_inner = jl.JLChain(pos=cpl_end_pos, rotmat=cpl_end_rotmat, homeconf=np.zeros(1), name='lft_inner')
         self.lft_inner.jnts[1]['loc_pos'] = np.array([0, -.0127, .06142])
         self.lft_inner.jnts[1]['loc_rotmat'] = rm.rotmat_from_euler(0, 0, math.pi)
         self.lft_inner.jnts[1]['loc_motionax'] = np.array([1, 0, 0])
         # - rgt_outer
-        self.rgt_outer = jl.JLChain(pos=cpl_end_pos,
-                                    rotmat=cpl_end_rotmat,
-                                    homeconf=np.zeros(4),
-                                    name='rgt_outer')
+        self.rgt_outer = jl.JLChain(pos=cpl_end_pos, rotmat=cpl_end_rotmat, homeconf=np.zeros(4), name='rgt_outer')
         self.rgt_outer.jnts[1]['loc_pos'] = np.array([0, .0306011, .054904])
         self.rgt_outer.jnts[1]['loc_motionax'] = np.array([1, 0, 0])
         self.rgt_outer.jnts[2]['loc_pos'] = np.array([0, .0315, -.0041])  # passive
@@ -53,10 +44,7 @@ class Robotiq85(gp.GripperInterface):
         # https://github.com/Danfoa uses geometry instead of the dae mesh. The following coordiante is needed
         # self.rgt_outer.jnts[4]['loc_pos'] = np.array([0, -0.0220203446692936, .03242])
         # - rgt_inner
-        self.rgt_inner = jl.JLChain(pos=cpl_end_pos,
-                                    rotmat=cpl_end_rotmat,
-                                    homeconf=np.zeros(1),
-                                    name='rgt_inner')
+        self.rgt_inner = jl.JLChain(pos=cpl_end_pos, rotmat=cpl_end_rotmat, homeconf=np.zeros(1), name='rgt_inner')
         self.rgt_inner.jnts[1]['loc_pos'] = np.array([0, .0127, .06142])
         self.rgt_inner.jnts[1]['loc_motionax'] = np.array([1, 0, 0])
         # links

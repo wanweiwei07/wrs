@@ -1,4 +1,5 @@
-import modeling._mcdhelper as mcd
+import basis.robotmath as rm
+import modeling._ode_cdhelper as mcd
 
 class ModelCollection(object):
     """
@@ -24,6 +25,30 @@ class ModelCollection(object):
     @property
     def gm_list(self):
         return self._gm_list
+
+    @property
+    def cdmesh(self):
+        vertices = []
+        vertex_normals = []
+        faces = []
+        for objcm in self._cm_list:
+            if objcm.cdmesh_type == 'aabb':
+                objtrm = objcm.objtrm.bounding_box
+            elif objcm.cdmesh_type == 'obb':
+                objtrm = objcm.objtrm.bounding_box_oriented
+            elif objcm.cdmesh_type == 'convexhull':
+                objtrm = objcm.objtrm.convex_hull
+            elif objcm.cdmesh_type == 'triangles':
+                objtrm = objcm.objtrm
+            homomat = objcm.get_homomat()
+            vertices += rm.homomat_transform_points(homomat, objtrm.vertices)
+            vertex_normals += rm.homomat_transform_points(homomat, objtrm.vertex_normals)
+            faces += (objtrm.faces+len(faces))
+        return mcd._gen_cdmesh_vvnf(vertices, vertex_normals, faces)
+
+    @property
+    def cdmesh_list(self):
+        return [objcm.cdmesh for objcm in self._cm_list]
 
     def add_cm(self, objcm):
         self._cm_list.append(objcm)
@@ -58,16 +83,10 @@ class ModelCollection(object):
         for cm in self._cm_list:
             cm.unshow_cdprimit()
 
-    def show_cdmesh(self, type='triangles'):
-        if type == 'triangles':
-            self._bullnode = mcd.show_triangles_cdmesh(self._cm_list)
-        elif type == 'box':
-            self._bullnode = mcd.show_box_cdmesh(self._cm_list)
-        elif type == 'convexhull':
-            self._bullnode = mcd.show_convexhull_cdmesh(self._cm_list)
-        else:
-            raise NotImplementedError('The requested '+type+' type cdmesh is not supported!')
+    def show_cdmesh(self):
+        for objcm in self._cm_list:
+            objcm.show_cdmesh()
 
     def unshow_cdmesh(self):
-        if hasattr(self, '_bullnode'):
-            mcd.unshow(self._bullnode)
+        for objcm in self._cm_list:
+            objcm.unshow_cdmesh()

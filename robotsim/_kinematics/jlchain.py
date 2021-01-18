@@ -20,7 +20,9 @@ class JLChain(object):
                  pos=np.zeros(3),
                  rotmat=np.eye(3),
                  homeconf=np.zeros(6),
-                 name='jlchain'):
+                 name='jlchain',
+                 cdprimitive_type='box',
+                 cdmesh_type='triangles'):
         """
         initialize a manipulator
         naming rules
@@ -29,6 +31,8 @@ class JLChain(object):
         :param pos:
         :param rotmat:
         :param homeconf:
+        :param cdprimitive_type: 'aabb', '
+        :param cdmesh_type:
         :param name:
         """
         self.name = name
@@ -45,8 +49,11 @@ class JLChain(object):
         self.tcp_jntid = -1
         self.tcp_loc_pos = np.zeros(3)
         self.tcp_loc_rotmat = np.eye(3)
+        # collision primitives
         # mesh generator
-        self._mt = jlm.JLChainMesh(self) # t = tool
+        self.cdprimitive_type=cdprimitive_type
+        self.cdmesh_type=cdmesh_type
+        self._mt = jlm.JLChainMesh(self, cdprimitive_type=cdprimitive_type, cdmesh_type=cdmesh_type) # t = tool
         self._ikt = jlik.JLChainIK(self) # t = tool
 
     def _init_jlchain(self):
@@ -170,7 +177,7 @@ class JLChain(object):
             print('The given values must have enough dof!')
             raise Exception
 
-    def reinitialize(self):
+    def reinitialize(self, cdprimitive_type=None, cdmesh_type=None):
         """
         reinitialize jntlinks by updating fk and reconstructing jntlnkmesh
         :return:
@@ -178,7 +185,11 @@ class JLChain(object):
         date: 20201126
         """
         self.goto_homeconf()
-        self._mg = jlm.JLChainMesh(self)
+        if cdprimitive_type is None: # use previously set values if none
+            cdprimitive_type = self.cdprimitive_type
+        if cdmesh_type is None:
+            cdmesh_type = self.cdmesh_type
+        self._mg = jlm.JLChainMesh(self, cdprimitive_type, cdmesh_type)
 
     def set_tcp(self, tcp_jntid=None, tcp_loc_pos=None, tcp_loc_rotmat=None):
         if tcp_jntid is not None:

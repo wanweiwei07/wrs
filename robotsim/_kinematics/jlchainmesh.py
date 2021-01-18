@@ -13,7 +13,7 @@ class JLChainMesh(object):
     will change the attached model directly
     """
 
-    def __init__(self, jlobject):
+    def __init__(self, jlobject, cdprimitive_type='box', cdmesh_type='triangles'):
         """
         author: weiwei
         date: 20200331
@@ -23,7 +23,9 @@ class JLChainMesh(object):
             if self.jlobject.lnks[id]['meshfile'] is not None and self.jlobject.lnks[id]['collisionmodel'] is None:
                 # in case the collision model is directly set, it allows manually specifying cd primitives
                 # instead of auto initialization. Steps: 1. keep meshmodel to None; 2. directly set cm
-                self.jlobject.lnks[id]['collisionmodel'] = cm.CollisionModel(self.jlobject.lnks[id]['meshfile'])
+                self.jlobject.lnks[id]['collisionmodel'] = cm.CollisionModel(self.jlobject.lnks[id]['meshfile'],
+                                                                             cdprimitive_type=cdprimitive_type,
+                                                                             cdmesh_type=cdmesh_type)
                 if self.jlobject.lnks[id]['scale'] is not None:
                     self.jlobject.lnks[id]['collisionmodel'].set_scale(self.jlobject.lnks[id]['scale'])
 

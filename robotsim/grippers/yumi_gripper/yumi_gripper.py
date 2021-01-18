@@ -14,10 +14,7 @@ class YumiGripper(gp.GripperInterface):
         cpl_end_pos = self.coupling.jnts[-1]['gl_posq']
         cpl_end_rotmat = self.coupling.jnts[-1]['gl_rotmatq']
         # - lft
-        self.lft = jl.JLChain(pos=cpl_end_pos,
-                              rotmat=cpl_end_rotmat,
-                              homeconf=np.zeros(1),
-                              name='base_lft_finger')
+        self.lft = jl.JLChain(pos=cpl_end_pos, rotmat=cpl_end_rotmat, homeconf=np.zeros(1), name='base_lft_finger')
         self.lft.jnts[1]['loc_pos'] = np.array([0, 0.0065, 0.0837])
         self.lft.jnts[1]['loc_rotmat'] = rm.rotmat_from_euler(0, 0, math.pi)
         self.lft.jnts[1]['type'] = 'prismatic'
@@ -31,10 +28,7 @@ class YumiGripper(gp.GripperInterface):
         self.lft.lnks[1]['meshfile'] = os.path.join(this_dir, "meshes", "finger.stl")
         self.lft.lnks[1]['rgba'] = [.2, .2, .2, 1]
         # - rgt
-        self.rgt = jl.JLChain(pos=cpl_end_pos,
-                              rotmat=cpl_end_rotmat,
-                              homeconf=np.zeros(1),
-                              name='rgt_finger')
+        self.rgt = jl.JLChain(pos=cpl_end_pos, rotmat=cpl_end_rotmat, homeconf=np.zeros(1), name='rgt_finger')
         self.rgt.jnts[1]['loc_pos'] = np.array([0, -0.0065, 0.0837])
         self.rgt.jnts[1]['type'] = 'prismatic'
         self.rgt.jnts[1]['loc_motionax'] = np.array([1, 0, 0])
@@ -42,8 +36,8 @@ class YumiGripper(gp.GripperInterface):
         self.rgt.lnks[1]['meshfile'] = os.path.join(this_dir, "meshes", "finger.stl")
         self.rgt.lnks[1]['rgba'] = [.2, .2, .2, 1]
         # reinitialize
-        self.lft.reinitialize()
-        self.rgt.reinitialize()
+        self.lft.reinitialize(cdmesh_type=cdmesh_type)
+        self.rgt.reinitialize(cdmesh_type=cdmesh_type)
         # jaw width
         self.jaw_width_rng = [0.0, .05]
         # jaw center

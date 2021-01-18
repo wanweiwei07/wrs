@@ -14,36 +14,24 @@ class XArmGripper(gi.GripperInterface):
         cpl_end_pos = self.coupling.jnts[-1]['gl_posq']
         cpl_end_rotmat = self.coupling.jnts[-1]['gl_rotmatq']
         # - lft_outer
-        self.lft_outer = jl.JLChain(pos=cpl_end_pos,
-                                    rotmat=cpl_end_rotmat,
-                                    homeconf=np.zeros(2),
-                                    name='jlc_lft_outer')
+        self.lft_outer = jl.JLChain(pos=cpl_end_pos, rotmat=cpl_end_rotmat, homeconf=np.zeros(2), name='jlc_lft_outer')
         self.lft_outer.jnts[1]['loc_pos'] = np.array([0, .035, .059098])
         self.lft_outer.jnts[1]['motion_rng'] = [.0, .85]
         self.lft_outer.jnts[1]['loc_motionax'] = np.array([1, 0, 0])
         self.lft_outer.jnts[2]['loc_pos'] = np.array([0, .035465, .042039])  # passive
         self.lft_outer.jnts[2]['loc_motionax'] = np.array([-1, 0, 0])
         # - lft_inner
-        self.lft_inner = jl.JLChain(pos=cpl_end_pos,
-                                    rotmat=cpl_end_rotmat,
-                                    homeconf=np.zeros(1),
-                                    name='jlc_lft_inner')
+        self.lft_inner = jl.JLChain(pos=cpl_end_pos, rotmat=cpl_end_rotmat, homeconf=np.zeros(1), name='jlc_lft_inner')
         self.lft_inner.jnts[1]['loc_pos'] = np.array([0, .02, .074098])
         self.lft_inner.jnts[1]['loc_motionax'] = np.array([1, 0, 0])
         # - rgt_outer
-        self.rgt_outer = jl.JLChain(pos=cpl_end_pos,
-                                    rotmat=cpl_end_rotmat,
-                                    homeconf=np.zeros(2),
-                                    name='jlc_rgt_outer')
+        self.rgt_outer = jl.JLChain(pos=cpl_end_pos, rotmat=cpl_end_rotmat, homeconf=np.zeros(2), name='jlc_rgt_outer')
         self.rgt_outer.jnts[1]['loc_pos'] = np.array([0, -.035, .059098])
         self.rgt_outer.jnts[1]['loc_motionax'] = np.array([-1, 0, 0])
         self.rgt_outer.jnts[2]['loc_pos'] = np.array([0, -.035465, .042039])  # passive
         self.rgt_outer.jnts[2]['loc_motionax'] = np.array([1, 0, 0])
         # - rgt_inner
-        self.rgt_inner = jl.JLChain(pos=cpl_end_pos,
-                                    rotmat=cpl_end_rotmat,
-                                    homeconf=np.zeros(1),
-                                    name='jlc_rgt_inner')
+        self.rgt_inner = jl.JLChain(pos=cpl_end_pos, rotmat=cpl_end_rotmat, homeconf=np.zeros(1), name='jlc_rgt_inner')
         self.rgt_inner.jnts[1]['loc_pos'] = np.array([0, -.02, .074098])
         self.rgt_inner.jnts[1]['loc_motionax'] = np.array([-1, 0, 0])
         # links
