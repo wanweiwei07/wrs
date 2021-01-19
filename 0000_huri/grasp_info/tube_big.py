@@ -1,7 +1,7 @@
 import math
 import numpy as np
 import basis.robotmath as rm
-import grasping.annotated.utils as gutil
+import grasping.annotation.utils as gutil
 
 if __name__ == '__main__':
 

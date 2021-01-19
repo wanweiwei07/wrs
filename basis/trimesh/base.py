@@ -800,10 +800,10 @@ class Trimesh(object):
     # def facets_depth(self, return_area=False):
     #     return graph.facets_depth(self)
 
-    def facets_over(self, faceangle=.9, segangle=.9):
+    def facets_over(self, face_angle=.9, seg_angle=.9):
         """
         Compute facets using oversegmentation
-        :param faceangle: the angle that two adjacent faces are considered as coplanar
+        :param face_angle: the angle that two adjacent faces are considered as coplanar
         :return: a list of oversegmented facets and their normals
         author: weiwei
         date: 20161128tsukuba
@@ -812,7 +812,7 @@ class Trimesh(object):
         cached = self._cache[key]
         if cached is not None:
             return cached
-        facets, facetnormals, curvatures = graph.facets_over(self, faceangle, segangle)
+        facets, facetnormals, curvatures = graph.facets_over_segmentation(self, face_angle, seg_angle)
         result = [facets, facetnormals, curvatures]
         self._cache[key] = result
         return result

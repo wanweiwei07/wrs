@@ -29,7 +29,8 @@ class CollisionModel(gm.GeometricModel):
                  btransparency=True,
                  cdprimitive_type='box',
                  cdmesh_type='triangles',
-                 expand_radius=None, name="auto",
+                 expand_radius=None,
+                 name="auto",
                  userdefined_cdprimitive_fn=None):
         """
         :param initor:

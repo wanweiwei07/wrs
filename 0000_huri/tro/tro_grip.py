@@ -163,8 +163,8 @@ if __name__ == '__main__':
         facetsizes = []
         for i, faces in enumerate(freegriptst.facets):
             rgba = [np.random.random(), np.random.random(), np.random.random(), 1]
-            tm = trimesh.Trimesh(vertices=freegriptst.objtrimesh.vertices, faces=freegriptst.objtrimesh.faces[faces],
-                            face_normals=freegriptst.objtrimesh.face_normals[faces])
+            tm = trimesh.Trimesh(vertices=freegriptst.objtrm.vertices, faces=freegriptst.objtrm.faces[faces],
+                                 face_normals=freegriptst.objtrm.face_normals[faces])
             facetcm = cm.CollisionModel(objinit=tm)
             facetcm.setColor(rgba[0], rgba[1], rgba[2], rgba[3])
             facetcm.reparentTo(rhx.base.render)

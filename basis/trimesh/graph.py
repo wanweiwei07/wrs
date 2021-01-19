@@ -7,17 +7,19 @@ import math
 from collections import deque
 
 from .constants import log, tol
-from .grouping  import group, group_rows, boolean_rows
-from .geometry  import faces_to_edges
-from .util      import diagonal_dot
+from .grouping import group, group_rows, boolean_rows
+from .geometry import faces_to_edges
+from .util import diagonal_dot
 
-try: 
+try:
     from graph_tool import Graph as GTGraph
     from graph_tool.topology import label_components
+
     _has_gt = True
-except: 
+except:
     _has_gt = False
     log.warning('graph-tool unavailable, some operations will be much slower')
+
 
 def face_adjacency(faces, return_edges=False):
     '''
@@ -49,7 +51,7 @@ def face_adjacency(faces, return_edges=False):
 
     # first generate the list of edges for the current faces
     # also return the index for which face the edge is from
-    edges, edge_face_index = faces_to_edges(faces, return_index = True)
+    edges, edge_face_index = faces_to_edges(faces, return_index=True)
     edges.sort(axis=1)
     # this will return the indices for duplicate edges
     # every edge appears twice in a well constructed mesh
@@ -65,9 +67,10 @@ def face_adjacency(faces, return_edges=False):
     # self.faces[face_idx[*][1]] will share an edge
     face_adjacency = edge_face_index[edge_groups]
     if return_edges:
-        face_adjacency_edges = edges[edge_groups[:,0]]
+        face_adjacency_edges = edges[edge_groups[:, 0]]
         return face_adjacency, face_adjacency_edges
     return face_adjacency
+
 
 def adjacency_angle(mesh, angle, direction=np.less, return_edges=False):
     '''
@@ -95,7 +98,7 @@ def adjacency_angle(mesh, angle, direction=np.less, return_edges=False):
     # normal vectors for adjacent faces (n, 2, 3)
     normals = mesh.face_normals[adjacency]
     # dot products of normals (n)
-    dots = diagonal_dot(normals[:,0], normals[:,1])
+    dots = diagonal_dot(normals[:, 0], normals[:, 1])
     # clip for floating point error
     dots = np.clip(dots, -1.0, 1.0)
     adj_ok = direction(np.abs(np.arccos(dots)), angle)
@@ -105,6 +108,7 @@ def adjacency_angle(mesh, angle, direction=np.less, return_edges=False):
         edges = mesh.face_adjacency_edges[adj_ok]
         return new_adjacency, edges
     return new_adjacency
+
 
 def shared_edges(faces_a, faces_b):
     '''
@@ -124,6 +128,7 @@ def shared_edges(faces_a, faces_b):
     shared = boolean_rows(e_a, e_b, operation=set.intersection)
     return shared
 
+
 def connected_edges(G, nodes):
     '''
     Given graph G and list of nodes, return the list of edges that 
@@ -135,6 +140,7 @@ def connected_edges(G, nodes):
         nodes_in_G.extend(nx.node_connected_component(G, node))
     edges = G.subgraph(nodes_in_G).edges()
     return edges
+
 
 def facets(mesh):
     '''
@@ -149,6 +155,7 @@ def facets(mesh):
     facets: list of groups of face indexes (in mesh.faces) of parallel 
             adjacent faces. 
     '''
+
     def facets_nx():
         graph_parallel = nx.from_edgelist(face_idx[parallel])
         facets_idx = np.array([list(i) for i in nx.connected_components(graph_parallel)])
@@ -160,23 +167,23 @@ def facets(mesh):
                 facets_idx_extra.append([item])
         return np.array(facets_idx_extra)
         # return facets_idx
-        
+
     def facets_gt():
         graph_parallel = GTGraph()
         graph_parallel.add_edge_list(face_idx[parallel])
-        connected  = label_components(graph_parallel, directed=False)[0].a
+        connected = label_components(graph_parallel, directed=False)[0].a
         facets_idx = group(connected, min_len=2)
         return facets_idx
 
     # (n,2) list of adjacent face indices
-    face_idx    = mesh.face_adjacency
+    face_idx = mesh.face_adjacency
 
     # test adjacent faces for angle
     normal_pairs = mesh.face_normals[tuple([face_idx])]
-    normal_dot   = (np.sum(normal_pairs[:,0,:] * normal_pairs[:,1,:], axis=1) - 1)**2
+    normal_dot = (np.sum(normal_pairs[:, 0, :] * normal_pairs[:, 1, :], axis=1) - 1) ** 2
 
     # if normals are actually equal, they are parallel with a high degree of confidence
-    parallel     = normal_dot < tol.zero
+    parallel = normal_dot < tol.zero
     non_parallel = np.logical_not(parallel)
 
     # saying that two faces are *not* parallel is susceptible to error
@@ -187,12 +194,11 @@ def facets(mesh):
     # if you don't do this, floating point error on tiny faces can push
     # the normals past a pure angle threshold even though the actual 
     # deviation across the face is extremely small. 
-    center      = mesh.triangles.mean(axis=1)
+    center = mesh.triangles.mean(axis=1)
     center_sq = np.sum(np.diff(center[face_idx],
-                               axis = 1).reshape((-1,3)) ** 2, axis=1)
+                               axis=1).reshape((-1, 3)) ** 2, axis=1)
     radius_sq = center_sq[non_parallel] / normal_dot[non_parallel]
     parallel[non_parallel] = radius_sq > tol.facet_rsq
-
 
     #### commented by weiwei, always use graph-nx
     # graph-tool is ~6x faster than networkx but is more difficult to install
@@ -201,7 +207,7 @@ def facets(mesh):
     return facets_nx()
 
 
-def facets_over(mesh, faceangle=.9, segangle = .9):
+def facets_over_segmentation(mesh, faceangle=.9, segangle=.9):
     """
     compute the clusters using mesh oversegmentation
 
@@ -211,71 +217,67 @@ def facets_over(mesh, faceangle=.9, segangle = .9):
     :return: the same as facets
 
     author: weiwei
-    date: 20161116, cancun
+    date: 20161116cancun, 20210119osaka
     """
 
-    def __expand_adj(mesh, faceid, refnormal, faceadj, faceangle=.9):
+    def __expand_adj(mesh, face_id, reference_normal, adjacent_face_list, face_angle=.9):
         """
         find the adjacency of a face
         the normal of the newly added face should be coherent with the reference normal
         this is an iterative function
-
         :param: mesh: Trimesh object
-        :param: faceid: Index of the face to expand
-        :param: refnormal: The normal of the reference face
-        :param: faceadj: The adjacent list of a face
-        :param: faceangle: the angle of adjacent faces that are taken as coplanar
-        :return: None or a list of faceids
-
+        :param: face_id: Index of the face to expand
+        :param: reference_normal: The normal of the reference face
+        :param: adjacent_face_list: The adjacent list of a face
+        :param: face_angle: the angle of adjacent faces that are taken as coplanar
+        :return: None or a list of face_ids
         author: weiwei
-        date: 20161213, update faceangle
+        date: 20161213, 20210119
         """
-
         curvature = 0
-        facecenter = np.mean(mesh.vertices[mesh.faces[faceid]],axis=1)
-
-        boollist0 = np.asarray(faceadj[:, 0] == faceid)
-        boollist1 = np.asarray(faceadj[:, 1] == faceid)
-        xadjid0 = faceadj[boollist1][:, 0]
-        xadjid1 = faceadj[boollist0][:, 1]
+        face_center = np.mean(mesh.vertices[mesh.faces[face_id]], axis=1)
+        bool_list0 = np.asarray(adjacent_face_list[:, 0] == face_id)
+        bool_list1 = np.asarray(adjacent_face_list[:, 1] == face_id)
+        xadjid0 = adjacent_face_list[bool_list1][:, 0]
+        xadjid1 = adjacent_face_list[bool_list0][:, 1]
         xadjid = np.append(xadjid0, xadjid1)
         returnlist = []
-        faceadjx = faceadj[np.logical_not(np.logical_or(boollist0, boollist1))]
+        faceadjx = adjacent_face_list[np.logical_not(np.logical_or(bool_list0, bool_list1))]
         for j in xadjid:
             newnormal = mesh.face_normals[j]
-            dotnorm = np.dot(refnormal, newnormal)
-            if dotnorm > faceangle:
-                newfacecenter = np.mean(mesh.vertices[mesh.faces[j]],axis=1)
-                d=np.linalg.norm(newfacecenter-facecenter)
+            dotnorm = np.dot(reference_normal, newnormal)
+            if dotnorm > face_angle:
+                newfacecenter = np.mean(mesh.vertices[mesh.faces[j]], axis=1)
+                d = np.linalg.norm(newfacecenter - face_center)
                 if dotnorm > 1.0:
                     dotnorm = 1.0
-                tempcurvature = math.acos(dotnorm)/d
-                if tempcurvature>curvature:
-                    curvature = tempcurvature
+                tmp_curvature = math.acos(dotnorm) / d
+                if tmp_curvature > curvature:
+                    curvature = tmp_curvature
                 returnlist.append(j)
-        finalreturnlist = [faceid]
+        finalreturnlist = [face_id]
         while returnlist:
             finalreturnlist.extend(returnlist)
             finalreturnlist = list(set(finalreturnlist))
             newreturnlist = []
             for id, j in enumerate(returnlist):
-                boollist0 = np.asarray(faceadjx[:, 0] == j)
-                boollist1 = np.asarray(faceadjx[:, 1] == j)
-                xadjid0 = faceadjx[boollist1][:, 0]
-                xadjid1 = faceadjx[boollist0][:, 1]
+                bool_list0 = np.asarray(faceadjx[:, 0] == j)
+                bool_list1 = np.asarray(faceadjx[:, 1] == j)
+                xadjid0 = faceadjx[bool_list1][:, 0]
+                xadjid1 = faceadjx[bool_list0][:, 1]
                 xadjid = np.append(xadjid0, xadjid1)
-                faceadjx = faceadjx[np.logical_not(np.logical_or(boollist0, boollist1))]
+                faceadjx = faceadjx[np.logical_not(np.logical_or(bool_list0, bool_list1))]
                 for k in xadjid:
                     newnormal = mesh.face_normals[k]
-                    dotnorm = np.dot(refnormal, newnormal)
-                    if dotnorm > faceangle:
-                        newfacecenter = np.mean(mesh.vertices[mesh.faces[j]],axis=1)
-                        d=np.linalg.norm(newfacecenter-facecenter)
+                    dotnorm = np.dot(reference_normal, newnormal)
+                    if dotnorm > face_angle:
+                        newfacecenter = np.mean(mesh.vertices[mesh.faces[j]], axis=1)
+                        d = np.linalg.norm(newfacecenter - face_center)
                         if dotnorm > 1.0:
                             dotnorm = 1.0
-                        tempcurvature = math.acos(dotnorm)/d
-                        if tempcurvature>curvature:
-                            curvature = tempcurvature
+                        tmp_curvature = math.acos(dotnorm) / d
+                        if tmp_curvature > curvature:
+                            curvature = tmp_curvature
                         newreturnlist.append(k)
             returnlist = list(set(newreturnlist))
         return finalreturnlist, curvature
@@ -318,7 +320,7 @@ def facets_over(mesh, faceangle=.9, segangle = .9):
     # base.run()
 
     # the approach using large normal difference
-    faceadj  = mesh.face_adjacency
+    faceadj = mesh.face_adjacency
     faceids = list(range(len(mesh.faces)))
     random.shuffle(faceids)
     knownfacetnormals = np.array([])
@@ -337,7 +339,7 @@ def facets_over(mesh, faceangle=.9, segangle = .9):
         # rndcolor = visual.color_to_float(visual.random_color())
         adjidlist, curvature = __expand_adj(mesh, i, mesh.face_normals[i], faceadj, faceangle)
         facetnormal = np.sum(mesh.face_normals[adjidlist], axis=0)
-        facetnormal = facetnormal/np.linalg.norm(facetnormal)
+        facetnormal = facetnormal / np.linalg.norm(facetnormal)
         if knownfacetnormals.size:
             knownfacetnormals = np.vstack((knownfacetnormals, facetnormal))
         else:
@@ -365,7 +367,6 @@ def facets_over(mesh, faceangle=.9, segangle = .9):
     #         star.reparentTo(base.render)
     # base.run()
 
-
     # for i in range(1122,1123):
     #     rndcolor = visual.color_to_float(visual.DEFAULT_COLOR)
     #     vertxid = mesh.faces[i, :]
@@ -377,6 +378,7 @@ def facets_over(mesh, faceangle=.9, segangle = .9):
     #     tri.set_color([rndcolor])
     #     ax.add_collection3d(tri)
     # plt.show()
+
 
 def facets_noover(mesh, faceangle=.9):
     """
@@ -411,7 +413,7 @@ def facets_noover(mesh, faceangle=.9):
         knownidlist = [i for facet in knownfacets for i in facet]
 
         curvature = 0
-        facecenter = np.mean(mesh.vertices[mesh.faces[faceid]],axis=1)
+        facecenter = np.mean(mesh.vertices[mesh.faces[faceid]], axis=1)
 
         boollist0 = np.asarray(faceadj[:, 0] == faceid)
         boollist1 = np.asarray(faceadj[:, 1] == faceid)
@@ -426,12 +428,12 @@ def facets_noover(mesh, faceangle=.9):
             newnormal = mesh.face_normals[j]
             dotnorm = np.dot(refnormal, newnormal)
             if dotnorm > faceangle:
-                newfacecenter = np.mean(mesh.vertices[mesh.faces[j]],axis=1)
-                d=np.linalg.norm(newfacecenter-facecenter)
+                newfacecenter = np.mean(mesh.vertices[mesh.faces[j]], axis=1)
+                d = np.linalg.norm(newfacecenter - facecenter)
                 if dotnorm > 1.0:
                     dotnorm = 1.0
-                tempcurvature = math.acos(dotnorm)/d
-                if tempcurvature>curvature:
+                tempcurvature = math.acos(dotnorm) / d
+                if tempcurvature > curvature:
                     curvature = tempcurvature
                 returnlist.append(j)
         finalreturnlist = [faceid]
@@ -452,12 +454,12 @@ def facets_noover(mesh, faceangle=.9):
                     newnormal = mesh.face_normals[k]
                     dotnorm = np.dot(refnormal, newnormal)
                     if dotnorm > faceangle:
-                        newfacecenter = np.mean(mesh.vertices[mesh.faces[j]],axis=1)
-                        d=np.linalg.norm(newfacecenter-facecenter)
+                        newfacecenter = np.mean(mesh.vertices[mesh.faces[j]], axis=1)
+                        d = np.linalg.norm(newfacecenter - facecenter)
                         if dotnorm > 1.0:
                             dotnorm = 1.0
-                        tempcurvature = math.acos(dotnorm)/d
-                        if tempcurvature>curvature:
+                        tempcurvature = math.acos(dotnorm) / d
+                        if tempcurvature > curvature:
                             curvature = tempcurvature
                         newreturnlist.append(k)
             returnlist = list(set(newreturnlist))
@@ -467,24 +469,25 @@ def facets_noover(mesh, faceangle=.9):
     knownfacetnormals = np.array([])
     knownfacets = []
     knowncurvature = []
-    faceadj  = mesh.face_adjacency
+    faceadj = mesh.face_adjacency
     faceids = list(range(len(mesh.faces)))
     while True:
         random.shuffle(faceids)
         i = faceids[0]
         adjidlist, curvature = __expand_adj(mesh, i, mesh.face_normals[i], faceadj, faceangle, knownfacets)
         facetnormal = np.sum(mesh.face_normals[adjidlist], axis=0)
-        facetnormal = facetnormal/np.linalg.norm(facetnormal)
+        facetnormal = facetnormal / np.linalg.norm(facetnormal)
         if knownfacetnormals.size:
             knownfacetnormals = np.vstack((knownfacetnormals, facetnormal))
         else:
             knownfacetnormals = np.hstack((knownfacetnormals, facetnormal))
         knownfacets.append(adjidlist)
         knowncurvature.append(curvature)
-        faceids = list(set(faceids)-set(adjidlist))
-        if len(faceids)==0:
+        faceids = list(set(faceids) - set(adjidlist))
+        if len(faceids) == 0:
             break
     return [np.array(knownfacets), np.array(knownfacetnormals), np.array(knowncurvature)]
+
 
 def split(mesh, only_watertight=True, adjacency=None):
     '''
@@ -520,11 +523,12 @@ def split(mesh, only_watertight=True, adjacency=None):
 
     if adjacency is None:
         adjacency = mesh.face_adjacency
-    
-    if _has_gt: 
+
+    if _has_gt:
         return split_gt()
-    else:       
+    else:
         return split_nx()
+
 
 def smoothed(mesh, angle):
     '''
@@ -545,9 +549,10 @@ def smoothed(mesh, angle):
     graph = nx.from_edgelist(adjacency)
     graph.add_nodes_from(np.arange(len(mesh.faces)))
     smooth = mesh.submesh(nx.connected_components(graph),
-                          only_watertight = False,
-                          append = True)
+                          only_watertight=False,
+                          append=True)
     return smooth
+
 
 def is_watertight(edges, return_winding=False):
     '''
@@ -563,7 +568,7 @@ def is_watertight(edges, return_winding=False):
     groups = group_rows(edges_sorted, require_count=2)
     watertight = (len(groups) * 2) == len(edges)
     if return_winding:
-        opposing = edges[groups].reshape((-1,4))[:,1:3].T
+        opposing = edges[groups].reshape((-1, 4))[:, 1:3].T
         reversed = np.equal(*opposing).all()
         return watertight, reversed
     return watertight

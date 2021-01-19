@@ -78,8 +78,8 @@ class FKOptBasedIK(object):
         else:
             return 1
 
-    def _add_constraint(self, constraint, condition="ineq"):
-        self.cons.append({'type': condition, 'fun': constraint})
+    def add_constraint(self, fun, type="ineq"):
+        self.cons.append({'type': type, 'fun': fun})
 
     def optimization_goal(self, jnt_values):
         if self.toggle_debug:
@@ -100,13 +100,13 @@ class FKOptBasedIK(object):
         self.seed_jnt_values = seed_jnt_values
         self.tgt_pos = tgt_pos
         self.tgt_rotmat = tgt_rotmat
-        self._add_constraint(self._constraint_xangle, condition="ineq")
-        self._add_constraint(self._constraint_zangle, condition="ineq")
+        self.add_constraint(self._constraint_xangle, type="ineq")
+        self.add_constraint(self._constraint_zangle, type="ineq")
         # self._add_constraint(self._constraint_pitch, condition="ineq")
         # self._add_constraint(self._constraint_yaw, condition="ineq")
-        self._add_constraint(self._constraint_x, condition="ineq")
-        self._add_constraint(self._constraint_y, condition="ineq")
-        self._add_constraint(self._constraint_z, condition="ineq")
+        self.add_constraint(self._constraint_x, type="ineq")
+        self.add_constraint(self._constraint_y, type="ineq")
+        self.add_constraint(self._constraint_z, type="ineq")
         # self._add_constraint(self.con_collision, condition="ineq")
         time_start = time.time()
         # iks = IkSolver(self.env, self.rbt, self.rbtmg, self.rbtball, self.armname)
@@ -127,24 +127,23 @@ class FKOptBasedIK(object):
 
     def _debug_plot(self):
         if "plt" not in dir():
-            import matplotlib.pyplot as plt
             import visualization.matplot.helper as plth
-        plt.figure(1, figsize=(6.4 * 3, 4.8 * 2))
-        plt.subplot(231)
-        plth.plot_list(self.x_err, title="x error")
-        plt.subplot(232)
-        plth.plot_list(self.y_err, title="y error")
-        plt.subplot(233)
-        plth.plot_list(self.z_err, title="z error")
-        plt.subplot(234)
-        plth.plot_list(self.xangle_err, title="xangle error")
-        plt.subplot(235)
-        plth.plot_list(self.zangle_err, title="zangle error")
-        plt.subplot(236)
-        plth.plot_motion_by_joints(self.jnts)
+        plth.plt.figure(1, figsize=(6.4 * 3, 4.8 * 2))
+        plth.plt.subplot(231)
+        plth.plt.plot(*plth.list_to_plt_xy(self.x_err))
+        plth.plt.subplot(232)
+        plth.plt.plot(*plth.list_to_plt_xy(self.y_err))
+        plth.plt.subplot(233)
+        plth.plt.plot(*plth.list_to_plt_xy(self.z_err))
+        plth.plt.subplot(234)
+        plth.plt.plot(*plth.list_to_plt_xy(self.xangle_err))
+        plth.plt.subplot(235)
+        plth.plt.plot(*plth.list_to_plt_xy(self.zangle_err))
+        plth.plt.subplot(236)
+        plth.plt.plot(*plth.twodlist_to_plt_xys(self.jnts))
         # plth.plot_list(self.rot_err, title="rotation error")
         # plth.plot_list(self.jnt_diff, title="jnts displacement")
-        plt.show()
+        plth.plt.show()
 
 if __name__ == '__main__':
     import visualization.panda.world as wd
