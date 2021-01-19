@@ -647,6 +647,17 @@ def gaussian_ellipsoid(pointsarray):
     return center, axmat
 
 
+def random_rgba(toggle_alpha_random=False):
+    """
+    randomize a 1x4 list in range 0-1
+    :param toggle_alpha_random: alpha = 1 if False
+    :return: 
+    """
+    if not toggle_alpha_random:
+        return np.random.random_sample(3).tolist()+[1]
+    else:
+        return np.random.random_sample(4).tolist()
+
 # The following code is from Gohlke
 #
 #

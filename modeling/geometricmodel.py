@@ -17,7 +17,7 @@ class StaticGeometricModel(object):
     date: 20190312
     """
 
-    def __init__(self, initor=None, btransparency=True, name="defaultname"):
+    def __init__(self, initor=None, name="defaultname", btransparency=True, btwosided=False):
         """
         :param initor: path type defined by os.path or trimesh or nodepath
         :param btransparency
@@ -78,6 +78,8 @@ class StaticGeometricModel(object):
                 objpdnp_raw.reparentTo(self._objpdnp)
             if btransparency:
                 self._objpdnp.setTransparency(TransparencyAttrib.MDual)
+            if btwosided:
+                self._objpdnp.getChild(0).setTwoSided(True)
             self._localframe = None
 
     @property
@@ -273,7 +275,7 @@ class GeometricModel(StaticGeometricModel):
     date: 20190312
     """
 
-    def __init__(self, initor=None, btransparency=True, name="defaultname"):
+    def __init__(self, initor=None, name="defaultname", btransparency=True, btwosided=False):
         """
         :param initor: path type defined by os.path or trimesh or nodepath
         """
@@ -284,7 +286,7 @@ class GeometricModel(StaticGeometricModel):
             self._name = copy.deepcopy(initor.name)
             self._localframe = copy.deepcopy(initor.localframe)
         else:
-            super().__init__(initor=initor, btransparency=btransparency, name=name)
+            super().__init__(initor=initor, name=name, btransparency=btransparency, btwosided=btwosided)
         self.objpdnp_raw.setShaderAuto()
 
     def set_pos(self, npvec3):

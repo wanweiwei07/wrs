@@ -26,12 +26,13 @@ class CollisionModel(gm.GeometricModel):
 
     def __init__(self,
                  initor,
-                 btransparency=True,
                  cdprimitive_type='box',
                  cdmesh_type='triangles',
                  expand_radius=None,
                  name="auto",
-                 userdefined_cdprimitive_fn=None):
+                 userdefined_cdprimitive_fn=None,
+                 btransparency=True,
+                 btwosided = False):
         """
         :param initor:
         :param btransparency:
@@ -54,7 +55,7 @@ class CollisionModel(gm.GeometricModel):
             self._cdprimitive_type = copy.deepcopy(initor.cdprimitive_type)
             self._cdmesh_type = copy.deepcopy(initor.cdmesh_type)
         else:
-            super().__init__(initor=initor, btransparency=btransparency, name=name)
+            super().__init__(initor=initor, name=name, btransparency=btransparency, btwosided=btwosided)
             self._cdprimitive_type, collision_node = self._update_cdprimit(cdprimitive_type,
                                                                            expand_radius,
                                                                            userdefined_cdprimitive_fn)
