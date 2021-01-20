@@ -22,7 +22,7 @@ class JLChain(object):
                  homeconf=np.zeros(6),
                  name='jlchain',
                  cdprimitive_type='box',
-                 cdmesh_type='triangles'):
+                 cdmesh_type='triangulation'):
         """
         initialize a manipulator
         naming rules
@@ -31,7 +31,7 @@ class JLChain(object):
         :param pos:
         :param rotmat:
         :param homeconf:
-        :param cdprimitive_type: 'aabb', '
+        :param cdprimitive_type: 'aabb', 'obb', 'convex_hull', 'triangulation
         :param cdmesh_type:
         :param name:
         """

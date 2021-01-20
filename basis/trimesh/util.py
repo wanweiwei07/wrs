@@ -789,6 +789,8 @@ def concatenate(a, b=None):
     :param a: Trimesh object
     :param b: Trimesh object
     :return: Trimesh object containing all faces of a and b
+    author: weiwei
+    date: 20210120
     """
     if b is None:
         b = []
@@ -801,9 +803,7 @@ def concatenate(a, b=None):
     # and assert that both inputs are Trimesh objects
     trimesh_type = type_named(meshes[0], 'Trimesh')
     # append faces and vertices of meshes
-    vertices, faces = append_faces(
-        [m.vertices.copy() for m in meshes],
-        [m.faces.copy() for m in meshes])
+    vertices, faces = append_faces([m.vertices.copy() for m in meshes], [m.faces.copy() for m in meshes])
     # only save face normals if already calculated
     face_normals = None
     if all('face_normals' in m._cache for m in meshes):
@@ -821,6 +821,7 @@ def concatenate(a, b=None):
                         visual=visual,
                         process=False)
     return mesh
+
 
 def submesh(mesh,
             faces_sequence,

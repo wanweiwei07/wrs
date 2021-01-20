@@ -27,7 +27,7 @@ class CollisionModel(gm.GeometricModel):
     def __init__(self,
                  initor,
                  cdprimitive_type='box',
-                 cdmesh_type='triangles',
+                 cdmesh_type='triangulation',
                  expand_radius=None,
                  name="auto",
                  userdefined_cdprimitive_fn=None,
@@ -37,7 +37,7 @@ class CollisionModel(gm.GeometricModel):
         :param initor:
         :param btransparency:
         :param cdprimitive_type: box, ball, cylinder, point_cloud, user_defined
-        :param cdmesh_type: aabb, obb, convexhull, triangles
+        :param cdmesh_type: aabb, obb, convex_hull, triangulation
         :param expand_radius:
         :param name:
         :param userdefined_cdprimitive_fn: the collision primitive will be defined in the provided function
@@ -101,7 +101,7 @@ class CollisionModel(gm.GeometricModel):
         if cdmesh_type is not None and cdmesh_type not in ['aabb',
                                                            'obb',
                                                            'convex_hull',
-                                                           'triangles']:
+                                                           'triangulation']:
             raise ValueError("Wrong mesh collision model type name!")
         self._cdmesh_type=cdmesh_type
 
@@ -120,7 +120,7 @@ class CollisionModel(gm.GeometricModel):
             objtrm = self.objtrm.bounding_box_oriented
         elif self.cdmesh_type == 'convex_hull':
             objtrm = self.objtrm.convex_hull
-        elif self.cdmesh_type == 'triangles':
+        elif self.cdmesh_type == 'triangulation':
             objtrm = self.objtrm
         homomat = self.get_homomat()
         vertices = rm.homomat_transform_points(homomat, objtrm.vertices)
@@ -209,7 +209,6 @@ class CollisionModel(gm.GeometricModel):
         """
         Is the mesh of the cm collide with the mesh of the given cm
         :param objcm_list: one or a list of Collision Model object
-        :param type: 'triangles2triangles', 'box2triangles', 'box2box'
         :param toggle_contacts: return a list of contact points if toggle_contacts is True
         author: weiwei
         date: 20201116

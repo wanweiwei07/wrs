@@ -434,16 +434,3 @@ def cone(height=1.0, radius=1.0, sections=8, homomat=None):
         cone.apply_transform(homomat)
 
     return cone
-
-
-if __name__ == "__main__":
-    from pandaplotutils import pandactrl
-
-    base = pandactrl.World(camp=[1000, 0, 1000], lookatpos=[0, 0, 0])
-
-    import environment.collisionmodel as cm
-
-    objcm = cm.CollisionModel(cone(100, 50))
-    objcm.reparentTo(base.render)
-
-    base.run()

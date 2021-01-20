@@ -107,6 +107,7 @@ def gen_ellipsoid(pos=np.array([0, 0, 0]), axmat=np.eye(3), subdivisions=5):
 
 def gen_dumbbell(spos=np.array([0, 0, 0]), epos=np.array([0.1, 0, 0]), thickness=0.005, sections=8, subdivisions=1):
     """
+    NOTE: return stick+spos_ball+epos_ball also work, but it is a bit slower
     :param spos: 1x3 nparray
     :param epos: 1x3 nparray
     :param thickness: 0.005 m by default
@@ -117,11 +118,11 @@ def gen_dumbbell(spos=np.array([0, 0, 0]), epos=np.array([0.1, 0, 0]), thickness
     date: 20191228osaka
     """
     stick = gen_rectstick(spos=spos, epos=epos, thickness=thickness, sections=sections)
-    sposball = gen_sphere(pos=spos, radius=thickness, subdivisions=subdivisions)
-    endball = gen_sphere(pos=epos, radius=thickness, subdivisions=subdivisions)
-    vertices = np.vstack((stick.vertices, sposball.vertices, endball.vertices))
-    sposballfaces = sposball.faces + len(stick.vertices)
-    endballfaces = endball.faces + len(sposball.vertices) + len(stick.vertices)
+    spos_ball = gen_sphere(pos=spos, radius=thickness, subdivisions=subdivisions)
+    epos_ball = gen_sphere(pos=epos, radius=thickness, subdivisions=subdivisions)
+    vertices = np.vstack((stick.vertices, spos_ball.vertices, epos_ball.vertices))
+    sposballfaces = spos_ball.faces + len(stick.vertices)
+    endballfaces = epos_ball.faces + len(spos_ball.vertices) + len(stick.vertices)
     faces = np.vstack((stick.faces, sposballfaces, endballfaces))
     return trm.Trimesh(vertices=vertices, faces=faces)
 
@@ -409,4 +410,17 @@ if __name__ == "__main__":
     objcm = gm.StaticGeometricModel(gen_axis())
     objcm.set_rgba([1, 0, 0, 1])
     objcm.attach_to(base)
+
+    import time
+
+    tic = time.time()
+    for i in range(100):
+        gen_dumbbell()
+    toc = time.time()
+    print("mine", toc - tic)
+    tic = time.time()
+    for i in range(100):
+        gen_dumbbell2()
+    toc = time.time()
+    print("mike", toc - tic)
     base.run()

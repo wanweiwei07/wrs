@@ -1,14 +1,17 @@
 import numpy as np
 from collections import deque
 
-from networkx      import from_edgelist, connected_components
+from networkx import from_edgelist, connected_components
 
-from .util      import decimal_to_digits, vector_to_spherical, spherical_to_vector, unitize
+from .util import decimal_to_digits, vector_to_spherical, spherical_to_vector, unitize
 from .constants import log, tol
 
-try: from scipy.spatial import cKDTree as KDTree
-except ImportError: log.warning('Scipy unavailable')
-    
+try:
+    from scipy.spatial import cKDTree as KDTree
+except ImportError:
+    log.warning('Scipy unavailable')
+
+
 def merge_vertices_hash(mesh):
     '''
     Removes duplicate vertices, based on integer hashes.
@@ -16,6 +19,7 @@ def merge_vertices_hash(mesh):
     '''
     unique, inverse = unique_rows(mesh.vertices)
     mesh.update_vertices(unique, inverse)
+
 
 def merge_vertices_kdtree(mesh, angle=None):
     '''
@@ -34,29 +38,30 @@ def merge_vertices_kdtree(mesh, angle=None):
     '''
 
     tree = mesh.kdtree()
-    used    = np.zeros(len(mesh.vertices), dtype=np.bool)
+    used = np.zeros(len(mesh.vertices), dtype=np.bool)
     inverse = np.arange(len(mesh.vertices), dtype=np.int)
-    unique  = deque()
+    unique = deque()
 
     vectors = mesh.vertex_normals
 
     for index, vertex in enumerate(mesh.vertices):
-        if used[index]: 
+        if used[index]:
             continue
 
-        neighbors = np.array(tree.query_ball_point(mesh.vertices[index], 
+        neighbors = np.array(tree.query_ball_point(mesh.vertices[index],
                                                    tol.merge))
         if angle is not None:
             groups = group_vectors(vectors[neighbors], angle=angle)[1]
         else:
-            groups = np.arange(len(neighbors)).astype(int).reshape((1,-1))
-                            
+            groups = np.arange(len(neighbors)).astype(int).reshape((1, -1))
+
         used[neighbors] = True
         for group in groups:
             inverse[neighbors[group]] = len(unique)
             unique.append(neighbors[group[0]])
     mesh.update_vertices(np.array(unique), inverse)
-   
+
+
 def replace_references(data, reference_dict):
     '''
     Replace elements in an array as per a dictionary of replacement values. 
@@ -67,11 +72,12 @@ def replace_references(data, reference_dict):
     reference_dict: dictionary of replacement value mapping, eg: {2:1, 3:1, 4:5}
     '''
     shape = np.shape(data)
-    view  = np.array(data).view().reshape((-1))
+    view = np.array(data).view().reshape((-1))
     for i, value in enumerate(view):
         if value in reference_dict:
             view[i] = reference_dict[value]
     return view.reshape(shape)
+
 
 def group(values, min_len=0, max_len=np.inf):
     '''
@@ -90,16 +96,17 @@ def group(values, min_len=0, max_len=np.inf):
     groups: sequence of indices to form groups
             IE [0,1,0,1] returns [[0,2], [1,3]]
     '''
-    order    = values.argsort()
-    values   = values[order]
-    dupe     = np.greater(np.abs(np.diff(values)), tol.zero)
+    order = values.argsort()
+    values = values[order]
+    dupe = np.greater(np.abs(np.diff(values)), tol.zero)
     dupe_idx = np.append(0, np.nonzero(dupe)[0] + 1)
-    dupe_len = np.diff(np.hstack((dupe_idx, len(values)))) 
-    dupe_ok  = np.logical_and(np.greater_equal(dupe_len, min_len),
-                              np.less_equal(   dupe_len, max_len))
-    groups   = [order[i:(i+j)] for i, j in zip(dupe_idx[dupe_ok], dupe_len[dupe_ok])]
+    dupe_len = np.diff(np.hstack((dupe_idx, len(values))))
+    dupe_ok = np.logical_and(np.greater_equal(dupe_len, min_len),
+                             np.less_equal(dupe_len, max_len))
+    groups = [order[i:(i + j)] for i, j in zip(dupe_idx[dupe_ok], dupe_len[dupe_ok])]
     return groups
-    
+
+
 def hashable_rows(data, digits=None):
     '''
     We turn our array into integers, based on the precision 
@@ -116,10 +123,11 @@ def hashable_rows(data, digits=None):
     hashable:  (n) length array of custom data which can be sorted 
                 or used as hash keys
     '''
-    as_int   = float_to_int(data, digits)
-    dtype    = np.dtype((np.void, as_int.dtype.itemsize * as_int.shape[1]))
+    as_int = float_to_int(data, digits)
+    dtype = np.dtype((np.void, as_int.dtype.itemsize * as_int.shape[1]))
     hashable = np.ascontiguousarray(as_int).view(dtype).reshape(-1)
     return hashable
+
 
 def float_to_int(data, digits=None):
     '''
@@ -130,8 +138,8 @@ def float_to_int(data, digits=None):
     dtype_out = np.int32
     if data.size == 0:
         return data.astype(dtype_out)
-            
-    if digits is None: 
+
+    if digits is None:
         digits = decimal_to_digits(tol.merge)
     elif isinstance(digits, float) or isinstance(digits, np.float):
         digits = decimal_to_digits(digits)
@@ -139,15 +147,16 @@ def float_to_int(data, digits=None):
         log.warn('Digits were passed as %s!', digits.__class__.__name__)
         raise ValueError('Digits must be None, int, or float!')
 
-    #if data is already an integer or boolean, we're done
+    # if data is already an integer or boolean, we're done
     if data.dtype.kind in 'ib':
         as_int = data.astype(dtype_out)
     else:
-        data_max = np.abs(data).max() * 10**digits
-        dtype_out = [np.int32, np.int64][int(data_max > 2**31)]
-        as_int = (np.around(data, digits) * (10**digits)).astype(dtype_out)
-    
+        data_max = np.abs(data).max() * 10 ** digits
+        dtype_out = [np.int32, np.int64][int(data_max > 2 ** 31)]
+        as_int = (np.around(data, digits) * (10 ** digits)).astype(dtype_out)
+
     return as_int
+
 
 def unique_ordered(data):
     '''
@@ -164,15 +173,16 @@ def unique_ordered(data):
     In [3]: trimesh.grouping.unique_ordered(a)
     Out[3]: array([0, 3, 4, 1, 2])
     '''
-    data   = np.asanyarray(data)
-    order  = np.sort(np.unique(data, return_index=True)[1])
+    data = np.asanyarray(data)
+    order = np.sort(np.unique(data, return_index=True)[1])
     result = data[order]
     return result
 
-def unique_float(data, 
-                 return_index   = False,
-                 return_inverse = False,
-                 digits         = None):
+
+def unique_float(data,
+                 return_index=False,
+                 return_inverse=False,
+                 digits=None):
     '''
     Identical to the numpy.unique command, except evaluates floating point 
     numbers, using a specified number of digits. 
@@ -181,15 +191,16 @@ def unique_float(data,
     '''
 
     as_int = float_to_int(data, digits)
-    _junk, unique, inverse = np.unique(as_int, 
-                                       return_index   = True,
-                                       return_inverse = True)
+    _junk, unique, inverse = np.unique(as_int,
+                                       return_index=True,
+                                       return_inverse=True)
     if (not return_index) and (not return_inverse):
         return data[unique]
     result = [data[unique]]
     if return_index:   result.append(unique)
     if return_inverse: result.append(inverse)
     return tuple(result)
+
 
 def unique_rows(data, digits=None):
     '''
@@ -209,11 +220,12 @@ def unique_rows(data, digits=None):
                  example: unique[inverse] == data
     '''
     hashes = hashable_rows(data, digits=digits)
-    garbage, unique, inverse = np.unique(hashes, 
-                                         return_index   = True, 
-                                         return_inverse = True)
+    garbage, unique, inverse = np.unique(hashes,
+                                         return_index=True,
+                                         return_inverse=True)
     return unique, inverse
-    
+
+
 def unique_value_in_row(data, unique=None):
     '''
     For a 2D array of integers find the position of a value in each
@@ -262,8 +274,9 @@ def unique_value_in_row(data, unique=None):
         test_ok = test.sum(axis=1) == 1
         result[test_ok] = test[test_ok]
     return result
-    
-def group_rows(data, require_count = None, digits = None):
+
+
+def group_rows(data, require_count=None, digits=None):
     '''
     Returns index groups of duplicate rows, for example:
     [[1,2], [3,4], [1,2]] will return [[0,2], [1]]
@@ -289,7 +302,7 @@ def group_rows(data, require_count = None, digits = None):
                    If require_count != None, shape will be (j, require_count)
                    If require_count is None, shape will be irregular (AKA a sequence)
     '''
-    
+
     def group_dict():
         '''
         Simple hash table based grouping. 
@@ -300,36 +313,41 @@ def group_rows(data, require_count = None, digits = None):
         hashable = hashable_rows(data, digits=digits)
         for index, key in enumerate(hashable):
             key_string = key.tostring()
-            if key_string in observed: observed[key_string].append(index)
-            else:                      observed[key_string] = [index]
+            if key_string in observed:
+                observed[key_string].append(index)
+            else:
+                observed[key_string] = [index]
         return np.array(list(observed.values()))
-        
+
     def group_slice():
         # create a representation of the rows that can be sorted
         hashable = hashable_rows(data, digits=digits)
         # record the order of the rows so we can get the original indices back later
-        order    = np.argsort(hashable)
+        order = np.argsort(hashable)
         # but for now, we want our hashes sorted
         hashable = hashable[order]
         # this is checking each neighbour for equality, example: 
         # example: hashable = [1, 1, 1]; dupe = [0, 0]
-        dupe     = hashable[1:] != hashable[:-1]
+        dupe = hashable[1:] != hashable[:-1]
         # we want the first index of a group, so we can slice from that location
         # example: hashable = [0 1 1]; dupe = [1,0]; dupe_idx = [0,1]
         dupe_idx = np.append(0, np.nonzero(dupe)[0] + 1)
         # if you wanted to use this one function to deal with non- regular groups
         # you could use: np.array_split(dupe_idx)
         # this is roughly 3x slower than using the group_dict method above. 
-        start_ok   = np.diff(np.hstack((dupe_idx, len(hashable)))) == require_count
-        groups     = np.tile(dupe_idx[start_ok].reshape((-1,1)), 
-                             require_count) + np.arange(require_count)
+        start_ok = np.diff(np.hstack((dupe_idx, len(hashable)))) == require_count
+        groups = np.tile(dupe_idx[start_ok].reshape((-1, 1)),
+                         require_count) + np.arange(require_count)
         groups_idx = order[groups]
-        if require_count == 1: 
+        if require_count == 1:
             return groups_idx.reshape(-1)
         return groups_idx
 
-    if require_count is None: return group_dict()
-    else:                     return group_slice()
+    if require_count is None:
+        return group_dict()
+    else:
+        return group_slice()
+
 
 def boolean_rows(a, b, operation=set.intersection):
     '''
@@ -354,9 +372,10 @@ def boolean_rows(a, b, operation=set.intersection):
     shared = np.array(list(shared))
     return shared
 
-def group_vectors(vectors, 
-                  angle = np.radians(10), 
-                  include_negative = False):
+
+def group_vectors(vectors,
+                  angle=np.radians(10),
+                  include_negative=False):
     '''
     Group vectors based on an angle tolerance, with the option to 
     include negative vectors. 
@@ -365,31 +384,32 @@ def group_vectors(vectors,
     The main difference is that max_angle can be much looser, as we
     are doing actual distance queries. 
     '''
-    dist_max            = np.tan(angle)
-    unit_vectors, valid = unitize(vectors, check_valid = True)
-    valid_index         = np.nonzero(valid)[0]
-    consumed            = np.zeros(len(unit_vectors), dtype=np.bool)
-    tree                = KDTree(unit_vectors)
-    unique_vectors      = deque()
-    aligned_index       = deque()
-    
+    dist_max = np.tan(angle)
+    unit_vectors, valid = unitize(vectors, check_valid=True)
+    valid_index = np.nonzero(valid)[0]
+    consumed = np.zeros(len(unit_vectors), dtype=np.bool)
+    tree = KDTree(unit_vectors)
+    unique_vectors = deque()
+    aligned_index = deque()
+
     for index, vector in enumerate(unit_vectors):
-        if consumed[index]: 
+        if consumed[index]:
             continue
         aligned = np.array(tree.query_ball_point(vector, dist_max))
         vectors = unit_vectors[aligned]
         if include_negative:
-            aligned_neg = tree.query_ball_point(-1.0*vector, dist_max)
-            vectors     = np.vstack((vectors, -unit_vectors[aligned_neg]))
-            aligned     = np.append(aligned, aligned_neg)
+            aligned_neg = tree.query_ball_point(-1.0 * vector, dist_max)
+            vectors = np.vstack((vectors, -unit_vectors[aligned_neg]))
+            aligned = np.append(aligned, aligned_neg)
         aligned = aligned.astype(int)
         consumed[aligned] = True
         unique_vectors.append(np.median(vectors, axis=0))
         aligned_index.append(valid_index[aligned])
     return np.array(unique_vectors), np.array(aligned_index)
 
-def group_vectors_spherical(vectors, 
-                            angle = np.radians(10)):
+
+def group_vectors_spherical(vectors,
+                            angle=np.radians(10)):
     '''
     Group vectors based on an angle tolerance, with the option to 
     include negative vectors. 
@@ -403,59 +423,59 @@ def group_vectors_spherical(vectors,
     new_vectors = spherical_to_vector(angles)
     return new_vectors, groups
 
+
 def group_distance(values, distance):
     consumed = np.zeros(len(values), dtype=np.bool)
-    tree     = KDTree(values)
+    tree = KDTree(values)
 
     # (n, d) set of values that are unique
-    unique  = deque()
+    unique = deque()
     # (n) sequence of indicies in values
     groups = deque()
-    
+
     for index, value in enumerate(values):
-        if consumed[index]: 
+        if consumed[index]:
             continue
         group = np.array(tree.query_ball_point(value, distance), dtype=np.int)
         consumed[group] = True
         unique.append(np.median(values[group], axis=0))
         groups.append(group)
     return np.array(unique), np.array(groups)
- 
+
+
 def stack_negative(rows):
     '''
     Given an input of rows (n,d), return an array which is (n,2*d)
     Which is sign- independent
     '''
-    rows     = np.asanyarray(rows)
-    stacked  = np.column_stack((rows, rows*-1))
+    rows = np.asanyarray(rows)
+    stacked = np.column_stack((rows, rows * -1))
 
-    nonzero  = np.abs(rows) > tol.zero
+    nonzero = np.abs(rows) > tol.zero
     negative = rows < -tol.zero
 
     roll = np.logical_and(nonzero, negative).any(axis=1)
 
     stacked[roll] = np.roll(stacked[roll], 3, axis=1)
     return stacked
-            
+
+
 def clusters(points, radius):
-    '''
+    """
     Find clusters of points which have neighbours closer than radius
-    
-    Arguments
-    ---------
-    points: (n, d) points (of dimension d)
-    radius: max distance between points in a cluster
-
-    Returns:
-    groups: (m) sequence of indices for points
-
-    '''
-    tree   = KDTree(points)
-    pairs  = tree.query_pairs(radius)
-    graph  = from_edgelist(pairs)
+    :param points: nxd points
+    :param radius: max distance between points in a cluster
+    :return: [point_list, ...]
+    author: reviserd by weiwei
+    date: 20210120
+    """
+    tree = KDTree(points)
+    pairs = tree.query_pairs(radius)
+    graph = from_edgelist(pairs)
     groups = list(connected_components(graph))
     return groups
-                  
+
+
 def blocks(data, min_len=2, max_len=np.inf, digits=None):
     '''
     Given an array, find the indices of contiguous blocks
@@ -479,14 +499,14 @@ def blocks(data, min_len=2, max_len=np.inf, digits=None):
     infl = np.hstack(([0],
                       np.nonzero(np.diff(data))[0] + 1,
                       [len(data)]))
-    infl_len = np.diff(infl)    
-    infl_ok  = np.logical_and(infl_len >= min_len,
-                              infl_len <= max_len)
+    infl_len = np.diff(infl)
+    infl_ok = np.logical_and(infl_len >= min_len,
+                             infl_len <= max_len)
     if data.dtype.kind == 'b':
         # check to make sure the values of each contiguous block are True,
         # by checking the first value of each block
-        infl_ok  = np.logical_and(infl_ok, 
-                              data[infl[:-1]])
+        infl_ok = np.logical_and(infl_ok,
+                                 data[infl[:-1]])
     # inflate start/end indexes into full ranges of values 
-    blocks = [np.arange(infl[i], infl[i+1]) for i, ok in enumerate(infl_ok) if ok]
+    blocks = [np.arange(infl[i], infl[i + 1]) for i, ok in enumerate(infl_ok) if ok]
     return blocks

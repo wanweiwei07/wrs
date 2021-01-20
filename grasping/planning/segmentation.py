@@ -153,7 +153,7 @@ if __name__ == '__main__':
     for i in range(len(facet_nested_face_id_list)):
         offset_pos = facet_normal_list[i] * np.random.rand() * .05
         # segment
-        tmp_trm = tg.extract_subtrimesh(bunnycm.objtrm, facet_nested_face_id_list[i], offset_pos)
+        tmp_trm = tg.extract_subtrimesh(bunnycm.objtrm, facet_nested_face_id_list[i], offset_pos) # TODO submesh
         tmp_gm = gm.StaticGeometricModel(tmp_trm, btwosided=True)
         tmp_gm.attach_to(base)
         tmp_gm.set_rgba(rm.random_rgba())

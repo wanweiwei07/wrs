@@ -441,7 +441,7 @@ class Trimesh(object):
         TODO: confirm the return value
         Which face does each edge belong to.
         :return edges_face: 1xn int nparray, index of self.faces
-        author: Revised by weiwei
+        author: revised by weiwei
         date: 20201201
         """
         populate = self.edges
@@ -1245,6 +1245,8 @@ class Trimesh(object):
     def __add__(self, other):
         """
         Concatenate the mesh with another mesh
+        author: revised by weiwei
+        date: 20210120
         """
         result = util.concatenate(self, other)
         return result

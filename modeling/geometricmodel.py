@@ -172,7 +172,7 @@ class StaticGeometricModel(object):
 
 class WireFrameModel(StaticGeometricModel):
 
-    def __init__(self, initor=None, name="defaultname"):
+    def __init__(self, initor=None, name="auto"):
         """
         :param initor: path type defined by os.path or trimesh or nodepath
         """
