@@ -3,7 +3,7 @@ import math
 import copy
 import pickle
 import numpy as np
-import basis.dataadapter as da
+import basis.data_adapter as da
 import modeling.collisionmodel as cm
 import motion.optimization_based.incremental_nik as inik
 import motion.probabilistic.rrt_connect as rrtc
@@ -1862,7 +1862,7 @@ class PickPlacePlanner(object):
 
 if __name__ == '__main__':
     import time
-    import basis.robotmath as rm
+    import basis.robot_math as rm
     import robotsim.robots.yumi.yumi as ym
     import visualization.panda.world as wd
     import modeling.geometricmodel as gm

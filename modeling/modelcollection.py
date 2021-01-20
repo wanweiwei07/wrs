@@ -1,4 +1,4 @@
-import basis.robotmath as rm
+import basis.robot_math as rm
 import modeling._ode_cdhelper as mcd
 
 class ModelCollection(object):

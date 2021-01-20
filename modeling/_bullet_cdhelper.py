@@ -1,7 +1,7 @@
 from panda3d.bullet import BulletRigidBodyNode, BulletPlaneShape
 from panda3d.bullet import BulletTriangleMeshShape, BulletTriangleMesh
 import numpy as np
-import basis.dataadapter as da
+import basis.data_adapter as da
 
 SCALE_FOR_PRECISION = 10000.0
 

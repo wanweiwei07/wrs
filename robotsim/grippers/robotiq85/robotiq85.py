@@ -3,7 +3,7 @@ import math
 import numpy as np
 import modeling.modelcollection as mc
 import robotsim._kinematics.jlchain as jl
-import basis.robotmath as rm
+import basis.robot_math as rm
 import robotsim.grippers.gripper_interface as gp
 
 

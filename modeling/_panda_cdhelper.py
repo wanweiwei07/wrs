@@ -1,7 +1,7 @@
 # primitive collision detection helper
 import math
 import numpy as np
-import basis.dataadapter as da
+import basis.data_adapter as da
 from panda3d.core import NodePath, CollisionNode, CollisionTraverser, CollisionHandlerQueue, BitMask32
 from panda3d.core import CollisionBox, CollisionSphere
 

@@ -1,7 +1,7 @@
 import math
 import numpy as np
 import random as random
-import basis.robotmath as rm
+import basis.robot_math as rm
 import basis.trimesh.graph as tgph
 from scipy.spatial.ckdtree import cKDTree
 
@@ -131,11 +131,11 @@ if __name__ == '__main__':
     import math
     import numpy as np
     import basis
-    import basis.robotmath as rm
+    import basis.robot_math as rm
     import visualization.panda.world as wd
     import modeling.collisionmodel as cm
     import modeling.geometricmodel as gm
-    import basis.trimeshgenerator as tg
+    import basis.trimesh_generator as tg
     import cProfile as profile
     import pstats
 

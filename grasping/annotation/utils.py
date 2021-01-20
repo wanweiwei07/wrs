@@ -2,7 +2,7 @@ import copy
 import math
 import pickle
 import numpy as np
-import basis.robotmath as rm
+import basis.robot_math as rm
 
 
 def define_grasp(hnd,

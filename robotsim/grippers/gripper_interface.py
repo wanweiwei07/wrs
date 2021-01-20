@@ -1,7 +1,7 @@
 import copy
 import numpy as np
 import modeling.modelcollection as mc
-import basis.robotmath as rm
+import basis.robot_math as rm
 import robotsim._kinematics.jlchain as jl
 import robotsim._kinematics.collisionchecker as cc
 

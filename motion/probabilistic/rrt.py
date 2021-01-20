@@ -2,7 +2,7 @@ import time
 import math
 import random
 import numpy as np
-import basis.robotmath as rm
+import basis.robot_math as rm
 import networkx as nx
 import matplotlib.pyplot as plt
 

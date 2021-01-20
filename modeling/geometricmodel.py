@@ -1,7 +1,7 @@
 import os, copy
-import basis.dataadapter as da
-import basis.trimeshgenerator as trihelper
-import basis.robotmath as rm
+import basis.data_adapter as da
+import basis.trimesh_generator as trihelper
+import basis.robot_math as rm
 import modeling.modelcollection as mc
 import numpy as np
 import open3d as o3d
@@ -768,7 +768,7 @@ if __name__ == "__main__":
     import math
     import numpy as np
     import basis
-    import basis.robotmath as rm
+    import basis.robot_math as rm
     import visualization.panda.world as wd
 
     base = wd.World(campos=[.1, .1, .1], lookatpos=[0, 0, 0])

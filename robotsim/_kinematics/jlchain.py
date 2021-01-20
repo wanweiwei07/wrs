@@ -1,7 +1,7 @@
 import math
 import copy
 import numpy as np
-import basis.robotmath as rm
+import basis.robot_math as rm
 import robotsim._kinematics.jlchainmesh as jlm
 import robotsim._kinematics.jlchainik as jlik
 

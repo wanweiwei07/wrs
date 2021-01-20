@@ -2,7 +2,7 @@ import os
 import copy
 import math
 import numpy as np
-import basis.robotmath as rm
+import basis.robot_math as rm
 import robotsim._kinematics.jlchain as jl
 import robotsim.manipulators.manipulator_interface as mi
 

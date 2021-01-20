@@ -2,7 +2,7 @@ import numpy as np
 import modeling.geometricmodel as gm
 import modeling.collisionmodel as cm
 import modeling.modelcollection as mc
-import basis.robotmath as rm
+import basis.robot_math as rm
 
 
 class JLChainMesh(object):

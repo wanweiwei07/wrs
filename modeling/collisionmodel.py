@@ -3,8 +3,8 @@ import math
 import numpy as np
 from panda3d.core import CollisionNode, CollisionBox, CollisionSphere, NodePath, BitMask32
 from visualization.panda.world import ShowBase
-import basis.robotmath as rm
-import basis.dataadapter as da
+import basis.robot_math as rm
+import basis.data_adapter as da
 import modeling.geometricmodel as gm
 import modeling.modelcollection as mc
 import modeling._panda_cdhelper as pcd
@@ -257,7 +257,7 @@ if __name__ == "__main__":
     import time
     import numpy as np
     import basis
-    import basis.robotmath as rm
+    import basis.robot_math as rm
     import visualization.panda.world as wd
 
     base = wd.World(campos=[.3, .3, .3], lookatpos=[0, 0, 0], toggledebug=True)

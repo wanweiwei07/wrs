@@ -1,6 +1,6 @@
 import numpy as np
 import basis.trimesh as trm
-import basis.robotmath as rm
+import basis.robot_math as rm
 
 def scale(obj, scale_ratio):
     """

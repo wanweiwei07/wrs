@@ -1,7 +1,7 @@
 import time
 import math
 import numpy as np
-from basis import robotmath as rm
+from basis import robot_math as rm
 import visualization.panda.world as wd
 import modeling.geometricmodel as gm
 import modeling.collisionmodel as cm

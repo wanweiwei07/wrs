@@ -4,7 +4,7 @@ import copy
 from panda3d.core import NodePath
 import modeling.geometricmodel as gm
 import modeling.collisionmodel as cm
-import basis.robotmath as rm
+import basis.robot_math as rm
 
 
 class JLTreeMesh(object):

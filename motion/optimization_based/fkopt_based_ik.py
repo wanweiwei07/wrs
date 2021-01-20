@@ -5,7 +5,7 @@ import random
 import numpy as np
 import warnings as wns
 from scipy.optimize import minimize
-import basis.robotmath as rm
+import basis.robot_math as rm
 
 
 class FKOptBasedIK(object):

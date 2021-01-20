@@ -6,7 +6,7 @@ import modeling.collisionmodel as cm
 import modeling.dynamics.bullet.bdbody as bbd
 import visualization.panda.world as wd
 import math
-import basis.robotmath as rm
+import basis.robot_math as rm
 import numpy as np
 
 base = wd.World(camp=np.array([2, 0, 2]), lookatpos=np.array([0, 0, 0]), toggledebug=True)

@@ -1,6 +1,6 @@
 import math
 import numpy as np
-import basis.robotmath as rm
+import basis.robot_math as rm
 import modeling.meshtools as mt
 
 if __name__ == '__main__':

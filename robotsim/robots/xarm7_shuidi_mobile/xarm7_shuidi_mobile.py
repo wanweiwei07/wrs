@@ -2,7 +2,7 @@ import os
 import copy
 import math
 import numpy as np
-import basis.robotmath as rm
+import basis.robot_math as rm
 import modeling.modelcollection as mc
 import robotsim._kinematics.jlchain as jl
 import robotsim.manipulators.xarm7.xarm7 as xa
@@ -311,7 +311,7 @@ class XArm7YunjiMobile(ri.RobotInterface):
 
 if __name__ == '__main__':
     import time
-    import basis.robotmath as rm
+    import basis.robot_math as rm
     import visualization.panda.world as wd
     import modeling.geometricmodel as gm
 

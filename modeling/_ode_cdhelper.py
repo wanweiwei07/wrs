@@ -1,5 +1,5 @@
 import numpy as np
-import basis.dataadapter as da
+import basis.data_adapter as da
 from panda3d.ode import OdeTriMeshData, OdeTriMeshGeom, OdeUtil
 
 # util functions
@@ -69,7 +69,7 @@ if __name__ == '__main__':
     import visualization.panda.world as wd
     import modeling.geometricmodel as gm
     import modeling.collisionmodel as cm
-    import basis.robotmath as rm
+    import basis.robot_math as rm
 
     wd.World(campos=[1.0, 1, .0, 1.0], lookatpos=[0, 0, 0])
     objpath = os.path.join(basis.__path__[0], 'objects', 'bunnysim.stl')
