@@ -196,10 +196,17 @@ def vector_to_spherical(cartesian):
 
 
 def spherical_to_vector(spherical):
-    '''
-    Convert a set of (n,2) spherical vectors to (n,3) vectors
-    '''
-    theta, phi = np.array(spherical).T
+    """
+    Convert a set of nx2 spherical vectors to nx3 vectors
+    :param spherical:
+    :return:
+    author: revised by weiwei
+    date: 20210120
+    """
+    spherical = np.asanyarray(spherical, dtype=np.float64)
+    if not is_shape(spherical, (-1, 2)):
+        raise ValueError('spherical coordinates must be (n, 2)!')
+    theta, phi = spherical.T
     st, ct = np.sin(theta), np.cos(theta)
     sp, cp = np.sin(phi), np.cos(phi)
     vectors = np.column_stack((ct * sp,

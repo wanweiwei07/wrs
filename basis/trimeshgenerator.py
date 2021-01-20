@@ -119,10 +119,10 @@ def gen_dumbbell(spos=np.array([0, 0, 0]), epos=np.array([0.1, 0, 0]), thickness
     stick = gen_rectstick(spos=spos, epos=epos, thickness=thickness, sections=sections)
     sposball = gen_sphere(pos=spos, radius=thickness, subdivisions=subdivisions)
     endball = gen_sphere(pos=epos, radius=thickness, subdivisions=subdivisions)
-    vertices = np.array(stick.vertices.tolist()+sposball.vertices.tolist()+endball.vertices.tolist())
+    vertices = np.vstack((stick.vertices, sposball.vertices, endball.vertices))
     sposballfaces = sposball.faces + len(stick.vertices)
     endballfaces = endball.faces + len(sposball.vertices) + len(stick.vertices)
-    faces = np.array(stick.faces.tolist()+sposballfaces.tolist()+endballfaces.tolist())
+    faces = np.vstack((stick.faces, sposballfaces, endballfaces))
     return trm.Trimesh(vertices=vertices, faces=faces)
 
 
@@ -157,16 +157,16 @@ def gen_arrow(spos=np.array([0, 0, 0]), epos=np.array([0.1, 0, 0]), thickness=0.
     """
     direction = rm.unit_vector(epos - spos)
     stick = gen_stick(spos=spos, epos=epos - direction * thickness * 4, thickness=thickness, type=sticktype,
-                     sections=sections)
+                      sections=sections)
     cap = gen_cone(spos=epos - direction * thickness * 4, epos=epos, radius=thickness, sections=sections)
-    vertices = np.array(stick.vertices.tolist()+cap.vertices.tolist())
+    vertices = np.vstack((stick.vertices, cap.vertices))
     capfaces = cap.faces + len(stick.vertices)
-    faces = np.array(stick.faces.tolist()+capfaces.tolist())
+    faces = np.vstack((stick.faces, capfaces))
     return trm.Trimesh(vertices=vertices, faces=faces)
 
 
 def gen_dasharrow(spos=np.array([0, 0, 0]), epos=np.array([0.1, 0, 0]), thickness=0.005, lsolid=None, lspace=None,
-                 sections=8, sticktype="rect"):
+                  sections=8, sticktype="rect"):
     """
     :param spos: 1x3 nparray
     :param epos: 1x3 nparray
@@ -188,18 +188,18 @@ def gen_dasharrow(spos=np.array([0, 0, 0]), epos=np.array([0.1, 0, 0]), thicknes
     nstick = math.floor(length / (thickness * totalweight))
     cap = gen_cone(spos=epos - direction * thickness * 4, epos=epos, radius=thickness, sections=sections)
     stick = gen_stick(spos=epos - direction * thickness * 4 - lsolid * direction, epos=epos - direction * thickness * 4,
-                     thickness=thickness, type=sticktype, sections=sections)
-    vertices_list = cap.vertices.tolist()+stick.vertices.tolist()
+                      thickness=thickness, type=sticktype, sections=sections)
+    vertices = np.vstack((cap.vertices, stick.vertices))
     stickfaces = stick.faces + len(cap.vertices)
-    faces_list = cap.faces.tolist()+stickfaces.tolist()
+    faces = np.vstack((cap.faces, stickfaces))
     for i in range(1, nstick - 1):
         tmpspos = epos - direction * thickness * 4 - lsolid * direction - (lsolid * direction + lspace * direction) * i
         tmpstick = gen_stick(spos=tmpspos, epos=tmpspos + lsolid * direction, thickness=thickness, type=sticktype,
-                            sections=sections)
-        tmpstickfaces = tmpstick.faces + len(vertices_list)
-        vertices_list += tmpstick.vertices.tolist()
-        faces_list += tmpstickfaces.tolist()
-    return trm.Trimesh(vertices=np.array(vertices_list), faces=np.array(faces_list))
+                             sections=sections)
+        tmpstickfaces = tmpstick.faces + len(vertices)
+        vertices = np.vstack((vertices, tmpstick.vertices))
+        faces = np.vstack((faces, tmpstickfaces))
+    return trm.Trimesh(vertices=vertices, faces=faces)
 
 
 def gen_axis(pos=np.array([0, 0, 0]), rotmat=np.eye(3), length=0.1, thickness=0.005):
@@ -226,23 +226,20 @@ def gen_axis(pos=np.array([0, 0, 0]), rotmat=np.eye(3), length=0.1, thickness=0.
     endz = directionz * length
     stickz = gen_stick(spos=pos, epos=endz, thickness=thickness)
     capz = gen_cone(spos=endz, epos=endz + directionz * thickness * 4, radius=thickness)
-    vertices = np.array(stickx.vertices.tolist()+capx.vertices.tolist()+
-                        sticky.vertices.tolist()+capy.vertices.tolist()+
-                        stickz.vertices.tolist()+capz.vertices.tolist())
+    vertices = np.vstack(
+        (stickx.vertices, capx.vertices, sticky.vertices, capy.vertices, stickz.vertices, capz.vertices))
     capxfaces = capx.faces + len(stickx.vertices)
     stickyfaces = sticky.faces + len(stickx.vertices) + len(capx.vertices)
     capyfaces = capy.faces + len(stickx.vertices) + len(capx.vertices) + len(sticky.vertices)
     stickzfaces = stickz.faces + len(stickx.vertices) + len(capx.vertices) + len(sticky.vertices) + len(capy.vertices)
     capzfaces = capz.faces + len(stickx.vertices) + len(capx.vertices) + len(sticky.vertices) + len(
         capy.vertices) + len(stickz.vertices)
-    faces = np.array(stickx.faces.tolist()+capxfaces.tolist()+
-                     stickyfaces.tolist()+capyfaces.tolist()+
-                     stickzfaces.tolist()+capzfaces.tolist())
+    faces = np.vstack((stickx.faces, capxfaces, stickyfaces, capyfaces, stickzfaces, capzfaces))
     return trm.Trimesh(vertices=vertices, faces=faces)
 
 
-def gen_torus(axis=np.array([1, 0, 0]), portion=.5, center=np.array([0, 0, 0]), radius=0.005, thickness=0.0015,
-             sections=8, discretization=24):
+def gen_torus(axis=np.array([1, 0, 0]), portion=.5, center=np.array([0, 0, 0]), radius=0.1, thickness=0.005,
+              sections=8, discretization=24):
     """
     :param axis: the circ arrow will rotate around this axis 1x3 nparray
     :param portion: 0.0~1.0
@@ -267,17 +264,17 @@ def gen_torus(axis=np.array([1, 0, 0]), portion=.5, center=np.array([0, 0, 0]), 
                                   startingaxis) * radius
         nxtpos = center + np.dot(rm.rotmat_from_axangle(unitaxis, ndist * discretizedangle), startingaxis) * radius
         stick = gen_stick(spos=lastpos, epos=nxtpos, thickness=thickness, sections=sections, type="round")
-        vertices_list = stick.vertices.tolist()
-        faces_list = stick.faces.tolist()
+        vertices = stick.vertices
+        faces = stick.faces
         lastpos = startingpos
         for i in range(1 * np.sign(ndist), ndist, 1 * np.sign(ndist)):
             nxtpos = center + np.dot(rm.rotmat_from_axangle(unitaxis, i * discretizedangle), startingaxis) * radius
             stick = gen_stick(spos=lastpos, epos=nxtpos, thickness=thickness, sections=sections, type="round")
-            stickfaces = stick.faces + len(vertices_list)
-            vertices_list += stick.vertices.tolist()
-            faces_list += stickfaces.tolist()
+            stickfaces = stick.faces + len(vertices)
+            vertices = np.vstack((vertices, stick.vertices))
+            faces = np.vstack((faces, stickfaces))
             lastpos = nxtpos
-        return trm.Trimesh(vertices=np.array(vertices_list), faces=np.array(faces_list))
+        return trm.Trimesh(vertices=vertices, faces=faces)
     else:
         return trm.Trimesh()
 
@@ -308,17 +305,17 @@ def gen_circarrow(axis=np.array([1, 0, 0]), portion=0.3, center=np.array([0, 0, 
                                   startingaxis) * radius
         nxtpos = center + np.dot(rm.rotmat_from_axangle(unitaxis, ndist * discretizedangle), startingaxis) * radius
         arrow = gen_arrow(spos=lastpos, epos=nxtpos, thickness=thickness, sections=sections, sticktype="round")
-        vertices_list = arrow.vertices.tolist()
-        faces_list = arrow.faces.tolist()
+        vertices = arrow.vertices
+        faces = arrow.faces
         lastpos = startingpos
         for i in range(1 * np.sign(ndist), ndist, 1 * np.sign(ndist)):
             nxtpos = center + np.dot(rm.rotmat_from_axangle(unitaxis, i * discretizedangle), startingaxis) * radius
             stick = gen_stick(spos=lastpos, epos=nxtpos, thickness=thickness, sections=sections, type="round")
-            stickfaces = stick.faces + len(vertices_list)
-            vertices_list += stick.vertices.tolist()
-            faces_list += stickfaces.tolist()
+            stickfaces = stick.faces + len(vertices)
+            vertices = np.vstack((vertices, stick.vertices))
+            faces = np.vstack((faces, stickfaces))
             lastpos = nxtpos
-        return trm.Trimesh(vertices=np.array(vertices_list), faces=np.array(faces_list))
+        return trm.Trimesh(vertices=vertices, faces=faces)
     else:
         return trm.Trimesh()
 
@@ -359,14 +356,57 @@ def facet_boundary(objtrimesh, facet, facetcenter, facetnormal):
     return verts3d, verts2d, facethomomat
 
 
+def extract_subtrimesh(objtrm, face_id_list, offset_pos=np.zeros(3), offset_rotmat=np.eye(3)):
+    """
+    :param objtrm:
+    :param face_id_list:
+    :param offset_pos:
+    :param offset_rotmat:
+    :return:
+    author: weiwei
+    date: 20210120
+    """
+    if not isinstance(face_id_list, list):
+        face_id_list = [face_id_list]
+    tmp_vertices = offset_rotmat.dot(objtrm.vertices[objtrm.faces[face_id_list].flatten()].T).T + offset_pos
+    tmp_faces = np.array(range(len(tmp_vertices))).reshape(-1, 3)
+    return trm.Trimesh(vertices=tmp_vertices, faces=tmp_faces)
+
+
+def extract_face_center_and_normal(objtrm, face_id_list, offset_pos=np.zeros(3), offset_rotmat=np.eye(3)):
+    """
+    extract the face center array and the face normal array corresponding to the face id list
+    returns a single normal and face center if face_id_list has a single value
+    :param objtrm:
+    :param face_id_list:
+    :param offset_pos:
+    :param offset_rotmat:
+    :return:
+    author: weiwei
+    date: 20210120
+    """
+    return_sgl = False
+    if not isinstance(face_id_list, list):
+        face_id_list = [face_id_list]
+        return_sgl = True
+    seed_center_pos_array = offset_rotmat.dot(
+        np.mean(objtrm.vertices[objtrm.faces[face_id_list].flatten()], axis=1).reshape(-1, 3).T).T + offset_pos
+    seed_normal_array = offset_rotmat.dot(objtrm.face_normals[face_id_list].T).T
+    if return_sgl:
+        return seed_center_pos_array[0], seed_normal_array[0]
+    else:
+        return seed_center_pos_array, seed_normal_array
+
+
 if __name__ == "__main__":
     import visualization.panda.world as wd
-    import modeling.collisionmodel as cm
-    base = wd.World(campos=[.1, 0, 0], lookatpos=[0, 0, 0], autocamrotate=False)
-    objcm = cm.CollisionModel(gen_torus())
+    import modeling.geometricmodel as gm
+
+    base = wd.World(campos=[.5, .2, .3], lookatpos=[0, 0, 0], autocamrotate=False)
+    objcm = gm.WireFrameModel(gen_torus())
     objcm.set_rgba([1, 0, 0, 1])
     objcm.attach_to(base)
-    objcm = cm.CollisionModel(gen_axis())
+    objcm = gm.StaticGeometricModel(gen_axis())
     objcm.set_rgba([1, 0, 0, 1])
     objcm.attach_to(base)
     base.run()

@@ -2,6 +2,7 @@ from time import time as time_function
 from logging import getLogger   as _getLogger
 from logging import NullHandler as _NullHandler
 
+
 ### numerical tolerances for meshes
 class NumericalToleranceMesh(object):
     '''
@@ -17,14 +18,16 @@ class NumericalToleranceMesh(object):
                    robust than considering just normal angles as it is tolerant
                    of numerical error on very small faces. 
     '''
+
     def __init__(self, **kwargs):
         # original
-        self.zero      = 1e-12
-        self.merge     = 1e-8
-        self.planar    = 1e-5
+        self.zero = 1e-12
+        self.merge = 1e-8
+        self.planar = 1e-5
         self.facet_rsq = 1e8
-        self.fit       = 1e-2
-        self.id_len    = 6
+        self.fit = 1e-2
+        self.id_len = 6
+        self.strict = False
         # tube merge
         # self.zero      = 1e-5
         # self.merge     = 1e-3
@@ -40,13 +43,16 @@ class NumericalResolutionMesh(object):
     '''
     res.mesh: when meshing solids, what distance to use
     '''
+
     def __init__(self, **kwargs):
         self.mesh = 5e-3
 
         self.__dict__.update(kwargs)
 
+
 tol = NumericalToleranceMesh()
 res = NumericalResolutionMesh()
+
 
 ### numerical tolerances for paths
 class NumericalTolerancePath(object):
@@ -72,21 +78,23 @@ class NumericalTolerancePath(object):
     tol.tangent: when simplifying line segments to curves, what is the maximum
                  angle the end sections can deviate from tangent that is acceptable.   
     '''
+
     def __init__(self, **kwargs):
         # default values
-        self.zero        = 1e-12
-        self.merge       = 1e-5
-        self.planar      = 1e-5
-        self.buffer      = .05
-        self.seg_frac    = .125
-        self.seg_angle   = .8
+        self.zero = 1e-12
+        self.merge = 1e-5
+        self.planar = 1e-5
+        self.buffer = .05
+        self.seg_frac = .125
+        self.seg_angle = .8
         self.aspect_frac = .1
         self.radius_frac = 1e-2
-        self.radius_min  = 1e-4
-        self.radius_max  = 50
-        self.tangent     = .017
+        self.radius_min = 1e-4
+        self.radius_max = 50
+        self.tangent = .017
 
         self.__dict__.update(kwargs)
+
 
 class NumericalResolutionPath(object):
     '''
@@ -99,12 +107,14 @@ class NumericalResolutionPath(object):
                       of segments per control point
     res.export: format string to use when exporting floating point vertices
     '''
+
     def __init__(self, **kwargs):
-        self.seg_frac     = .05
-        self.seg_angle    = .08
+        self.seg_frac = .05
+        self.seg_angle = .08
         self.max_sections = 10
         self.min_sections = 5
-        self.export       = '.5f'
+        self.export = '.5f'
+
 
 tol_path = NumericalTolerancePath()
 res_path = NumericalResolutionPath()
@@ -112,20 +122,26 @@ res_path = NumericalResolutionPath()
 ### logging
 log = _getLogger('trimesh')
 log.addHandler(_NullHandler())
+
+
 def _log_time(method):
     def timed(*args, **kwargs):
-        tic    = time_function()
+        tic = time_function()
         result = method(*args, **kwargs)
         log.debug('%s executed in %.4f seconds.',
-                   method.__name__,
-                   time_function()-tic)
+                  method.__name__,
+                  time_function() - tic)
         return result
+
     timed.__name__ = method.__name__
-    timed.__doc__  = method.__doc__
+    timed.__doc__ = method.__doc__
     return timed
+
 
 ### exceptions
 class MeshError(Exception):
     pass
-class TransformError(Exception): 
+
+
+class TransformError(Exception):
     pass

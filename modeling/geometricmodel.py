@@ -7,6 +7,7 @@ import numpy as np
 import open3d as o3d
 from panda3d.core import NodePath, LineSegs, GeomNode, TransparencyAttrib, RenderModeAttrib
 from visualization.panda.world import ShowBase
+import warnings as wrn
 
 
 class StaticGeometricModel(object):
@@ -226,7 +227,8 @@ class WireFrameModel(StaticGeometricModel):
         return self._objtrm.volume
 
     def set_rgba(self, rgba):
-        self._objpdnp.setColor(rgba[0], rgba[1], rgba[2], rgba[3])
+        wrn.warn("Right not the set_rgba fn for a WireFrame instance is not implemented!")
+        # self._objpdnp.setColor(rgba[0], rgba[1], rgba[2], rgba[3])
 
     def get_rgba(self):
         return da.pdv4_to_npv4(self._objpdnp.getColor())  # panda3d.core.LColor -> LBase4F
@@ -347,10 +349,10 @@ class GeometricModel(StaticGeometricModel):
             raise ValueError("Only applicable to models with a trimesh!")
         if nsample is None:
             nsample = int(round(self.objtrm.area / ((radius * 0.3) ** 2)))
-        samples, faceids = self.objtrm.sample(nsample, toggle_faceid=True)
+        points, face_ids = self.objtrm.sample_surface(nsample, radius=radius, toggle_faceid=True)
         # transform
-        samples = rm.homomat_transform_points(self.get_homomat(), samples)
-        return samples, faceids
+        points = rm.homomat_transform_points(self.get_homomat(), points)
+        return points, face_ids
 
     def copy(self):
         return copy.deepcopy(self)

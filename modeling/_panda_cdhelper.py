@@ -67,7 +67,7 @@ def gen_surfaceballs_cdnp(objtrm, name='cdnp_surfaceball', radius=0.01):
     """
     nsample = int(math.ceil(objtrm.area / (radius * 0.3) ** 2))
     nsample = 120 if nsample > 120 else nsample  # threshhold
-    samples = objtrm.sample(nsample)
+    samples = objtrm.sample_surface(nsample)
     collision_node = CollisionNode(name)
     for sglsample in samples:
         collision_node.addSolid(CollisionSphere(sglsample[0], sglsample[1], sglsample[2], radius=radius))

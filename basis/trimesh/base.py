@@ -927,7 +927,7 @@ class Trimesh(object):
         return self._cache.set(key='convex_hull',
                                value=hull)
 
-    def sample(self, count, toggle_faceid=False):
+    def sample_surface(self, count, radius=None, toggle_faceid=False):
         """
         Return random samples distributed normally across the 
         surface of the mesh
@@ -937,10 +937,13 @@ class Trimesh(object):
         author: revised by weiwei
         date: 20201202toyonaka
         """
-        if toggle_faceid:
-            return sample.sample_surface_even_withfaceid(self, count)
+        if radius is not None:
+            points, index = sample.sample_surface_even(mesh=self, count=count, radius=radius)
         else:
-            return sample.sample_surface_even(self, count)
+            points, index = sample.sample_surface(mesh=self, count=count)
+        if toggle_faceid:
+            return points, index
+        return points
 
     def remove_unreferenced_vertices(self):
         '''

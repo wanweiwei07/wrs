@@ -1,5 +1,6 @@
 import itertools
 import os
+import math
 import numpy as np
 from panda3d.bullet import BulletRigidBodyNode
 from panda3d.bullet import BulletTriangleMesh
@@ -10,39 +11,26 @@ from shapely.geometry import Point
 from shapely.geometry import Polygon
 from sklearn.cluster import KMeans
 from sklearn.neighbors import RadiusNeighborsClassifier
-import basis.robotmath as rm
-import modeling.collisionmodel as cm
-import modeling.geometricmodel as gm
-# import pandaplotutils.pandactrl as pandactrl
-# import pandaplotutils.pandageom as pandageom
-# import trimesh.sample as sample
-import sys
+from . import segmentation as sg
 
-
-# import trimesh
-# from utiltools import robotmath
-# from utiltools.thirdparty import p3dhelper as p3dh
-# import pickle
 
 class AntipodalContactPairs(object):
 
     def __init__(self,
                  objcm,
-                 face_angle=.95,
-                 facet_angle=.95,
-                 min_distance_to_facet_edge=2,
+                 max_normal_bias_angle=math.pi/12,
+                 min_distance_to_facet_edge=.003,
                  max_distance_to_facet_edge=30,
-                 distance_adjacent_contacts=10,
+                 distance_adjacent_contacts=.01,
                  antipodal_angle=-0.7,
                  penetration_depth=5,
                  object_mass=20.0,
-                 toggle_over_segmentation=True,
                  toggle_soft_finger_contact=True,
                  toggle_debug=True):
         """
 
         :param objcm:
-        :param face_angle:
+        :param max_normal_bias_angle:
         :param facet_angle:
         :param min_distance_to_facet_edge:
         :param max_distance_to_facet_edge:
@@ -50,43 +38,43 @@ class AntipodalContactPairs(object):
         :param antipodal_angle:
         :param penetration_depth:
         :param object_mass:
-        :param toggle_over_segmentation:
         :param toggle_soft_finger_contact:
         author: weiwei
         date: 20190525osaka, 20210119
         """
         if toggle_debug:
             import time
-        self.objcm = objcm
         self.objtrm = self.objcm.trimesh
         # generate facets
         if toggle_debug:
             tic = time.time()
-        if toggle_over_segmentation:
-            self.facets, self.facetnormals, self.facetcurvatures = self.objtrm.facets_over_segmentation(
-                face_angle=face_angle, seg_angle=seg_angle)
-        else:
-            self.facets, self.facetnormals, self.facetcurvatures = self.objtrm.facets_noover(faceangle=faceangle)
-        toc = time.time()
-        print("facet cost", toc - tic)
-
-        # the sampled points and their normals
-        tic = time.time()
-        self.samplepnts = None
-        self.samplenrmls = None
-        self.sampleObjModel()
-        toc = time.time()
-        print("sampling cost", toc - tic)
-
-        # the sampled points (bad samples removed)
-        tic = time.time()
-        self.samplepnts_ref = None
+        self.seg_nested_face_id_list, self.seg_seed_face_id_list, self.seg_normal_list, self.seg_curvature_list = \
+            sg.over_segmentation(objcm, max_normal_bias_angle=max_normal_bias_angle)
+        if toggle_debug:
+            toc = time.time()
+            print("facet cost", toc - tic)
+        # sample points
+        if toggle_debug:
+            tic = time.time()
+        self.raw_contact_points, self.raw_contact_point_face_ids = self.objtrm.sample_surface()
+        self.raw_contact_normals = self.objtrm.face_normals[self.contact_point_face_ids.tolist()]
+        if toggle_debug:
+            toc = time.time()
+            print("sampling cost", toc - tic)
+        # remove points near boundaries
+        if toggle_debug:
+            tic = time.time()
+        samples_for_edge_detection, _ = self.objtrm.sample_surface(radius=distance_adjacent_contacts)
+        kdt = cKDTree(samples_for_edge_detection)
+        kdt.query_ball_point(, )
+        self.contact_points = None
         self.samplenrmls_ref = None
         # facet2dbdries saves the 2d boundaries of each facet
         self.facet2dbdries = None
         self.removeBadSamples(mindist=refine1min, maxdist=refine1max)
-        toc = time.time()
-        print("remove bad sample cost", toc - tic)
+        if toggle_debug:
+            toc = time.time()
+            print("remove bad sample cost", toc - tic)
 
         # the sampled points (clustered)
         tic = time.time()
