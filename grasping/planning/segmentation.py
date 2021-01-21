@@ -2,11 +2,26 @@ import math
 import numpy as np
 import random as random
 import basis.robot_math as rm
-import basis.trimesh.graph as tgph
+import basis.trimesh.graph as graph
+import basis.trimesh.geometry as geometry
+import basis.trimesh.grouping as grouping
 from scipy.spatial.ckdtree import cKDTree
 
 
-def _expand_adj(vertices, faces, face_normals, seed_face_id, rgt_ele_mat, sel_mat, max_normal_bias_angle):
+def extract_boundary(vertices, facet):
+    """
+    :param facet:
+    :return:
+    author: weiwei
+    date: 20210122
+    """
+    edges = geometry.faces_to_edges(facet)
+    edges_sorted = np.sort(edges, axis=1)
+    edges_boundary = edges[grouping.group_rows(edges_sorted, require_count=1)]
+    return vertices[edges_boundary].reshape(-1, 2, 3)
+
+
+def expand_adj(vertices, faces, face_normals, seed_face_id, rgt_ele_mat, sel_mat, max_normal_bias_angle):
     """
     find the adjacency of a face
     the normal of the newly added face should be coherent with the normal of the seed_face
@@ -57,7 +72,10 @@ def _expand_adj(vertices, faces, face_normals, seed_face_id, rgt_ele_mat, sel_ma
     distance = np.linalg.norm(face0_center - face1_center)
     # curvature
     curvature = max_angle / distance if distance != 0 else 0
-    return adj_face_id_list, curvature, face_id_pair_for_curvature
+    # boundary
+    adj_faces = faces[adj_face_id_list]
+    boundary_edges = extract_boundary(vertices, adj_faces)
+    return adj_face_id_list, boundary_edges, curvature, face_id_pair_for_curvature # todo list to nparray
 
 
 def over_segmentation(objcm, max_normal_bias_angle=rm.math.pi / 12,
@@ -76,13 +94,14 @@ def over_segmentation(objcm, max_normal_bias_angle=rm.math.pi / 12,
     face_normals = objcm.objtrm.face_normals
     nfaces = len(faces)
     ## angle-limited adjacency -> selection matrix
-    angle_limited_adjacency = tgph.adjacency_angle(objcm.objtrm, max_normal_bias_angle)
+    angle_limited_adjacency = graph.adjacency_angle(objcm.objtrm, max_normal_bias_angle)
     adjacency_mat = np.tile(np.vstack((angle_limited_adjacency, np.fliplr(angle_limited_adjacency))), nfaces)
     face_id_mat = np.tile(np.array([range(nfaces)]).T, len(adjacency_mat)).T
     rgt_ele_mat = adjacency_mat[:, 1::2]
     sel_mat = (adjacency_mat[:, ::2] - face_id_mat == 0)
     # prepare return values
     seg_nested_face_id_list = []
+    seg_nested_edge_list = []
     seg_seed_face_id_list = []
     seg_normal_list = []
     seg_curvature_list = []
@@ -94,19 +113,21 @@ def over_segmentation(objcm, max_normal_bias_angle=rm.math.pi / 12,
             break
         # random.shuffle(face_ids) # costly!
         current_face_id = face_ids[0]
-        adj_face_id_list, curvature, face_id_pair_for_curvature = \
-            _expand_adj(vertices, faces, face_normals, current_face_id, rgt_ele_mat, sel_mat, max_normal_bias_angle)
+        adj_face_id_list, edge_list, curvature, face_id_pair_for_curvature = \
+            expand_adj(vertices, faces, face_normals, current_face_id, rgt_ele_mat, sel_mat, max_normal_bias_angle)
         seg_nested_face_id_list.append(adj_face_id_list)
+        seg_nested_edge_list.append(edge_list)
         seg_seed_face_id_list.append(current_face_id)
         seg_normal_list.append(face_normals[current_face_id])
         seg_curvature_list.append(curvature)
         seg_face_id_pair_list_for_curvature.append(face_id_pair_for_curvature)
         face_ids = list(set(face_ids) - set(sum(seg_nested_face_id_list, [])))
     if toggle_face_id_pair_for_curvature:
-        return [seg_nested_face_id_list, seg_seed_face_id_list, seg_normal_list,
+        return [seg_nested_face_id_list, seg_nested_edge_list, seg_seed_face_id_list, seg_normal_list,
                 seg_curvature_list, seg_face_id_pair_list_for_curvature]
     else:
-        return [seg_nested_face_id_list, seg_seed_face_id_list, seg_normal_list, seg_curvature_list]
+        return [seg_nested_face_id_list, seg_nested_edge_list, seg_seed_face_id_list, seg_normal_list,
+                seg_curvature_list]
 
 
 def edge_points(objcm, radius=.005, max_normal_bias_angle=rm.math.pi / 12):
@@ -121,9 +142,9 @@ def edge_points(objcm, radius=.005, max_normal_bias_angle=rm.math.pi / 12):
     points, point_face_ids = objcm.sample_surface(radius=.001)
     kdt = cKDTree(points)
     point_pairs = np.array(list(kdt.query_pairs(radius)))
-    point_normals0 = objcm.objtrm.face_normals[point_face_ids[point_pairs[:,0].tolist()]]
-    point_normals1 = objcm.objtrm.face_normals[point_face_ids[point_pairs[:,1].tolist()]]
-    return points[point_pairs[np.sum(point_normals0*point_normals1, axis=1) < threshold].ravel()].reshape(-1,3)
+    point_normals0 = objcm.objtrm.face_normals[point_face_ids[point_pairs[:, 0].tolist()]]
+    point_normals1 = objcm.objtrm.face_normals[point_face_ids[point_pairs[:, 1].tolist()]]
+    return points[point_pairs[np.sum(point_normals0 * point_normals1, axis=1) < threshold].ravel()].reshape(-1, 3)
 
 
 if __name__ == '__main__':
@@ -145,18 +166,21 @@ if __name__ == '__main__':
     objpath = os.path.join(basis.__path__[0], 'objects', 'bunnysim.stl')
     bunnycm = cm.CollisionModel(objpath)
     pr.enable()
-    facet_nested_face_id_list, facet_seed_list, facet_normal_list, facet_curvature_list, face_id_pair_list_for_curvature = over_segmentation(
+    facet_nested_face_id_list, seg_nested_edge_list, facet_seed_list, facet_normal_list, facet_curvature_list, face_id_pair_list_for_curvature = over_segmentation(
         bunnycm, max_normal_bias_angle=math.pi / 6, toggle_face_id_pair_for_curvature=True)
     pr.disable()
     pstats.Stats(pr).sort_stats(pstats.SortKey.CUMULATIVE).print_stats(10)
     # TODO Extract Facet
     for i in range(len(facet_nested_face_id_list)):
-        offset_pos = facet_normal_list[i] * np.random.rand() * .05
+        offset_pos = facet_normal_list[i] * np.random.rand() * .0
         # segment
-        tmp_trm = tg.extract_subtrimesh(bunnycm.objtrm, facet_nested_face_id_list[i], offset_pos) # TODO submesh
+        tmp_trm = tg.extract_subtrimesh(bunnycm.objtrm, facet_nested_face_id_list[i], offset_pos)  # TODO submesh
         tmp_gm = gm.StaticGeometricModel(tmp_trm, btwosided=True)
         tmp_gm.attach_to(base)
         tmp_gm.set_rgba(rm.random_rgba())
+        # edge
+        edge_list = (np.array(seg_nested_edge_list[i])+offset_pos).tolist()
+        gm.gen_linesegs(edge_list, thickness=.05, rgba=[1,0,0,1]).attach_to(base)
         # seed segment
         tmp_trm = tg.extract_subtrimesh(bunnycm.objtrm, facet_seed_list[i], offset_pos)
         tmp_gm = gm.StaticGeometricModel(tmp_trm, btwosided=True)

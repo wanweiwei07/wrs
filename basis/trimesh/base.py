@@ -797,6 +797,22 @@ class Trimesh(object):
         self._cache[key] = result
         return result
 
+    def facets_boundary(self):
+        """
+        Return the edges which represent the boundary of each facet
+        Returns
+        ---------
+        edges_boundary : sequence of (n, 2) int
+          Indices of self.vertices
+        """
+        # make each row correspond to a single face
+        edges = self.edges_sorted.reshape((-1, 6))
+        # get the edges for each facet
+        edges_facet = [edges[i].reshape((-1, 2)) for i in self.facets]
+        edges_boundary = [i[grouping.group_rows(i, require_count=1)]
+                          for i in edges_facet]
+        return edges_boundary
+
     # def facets_depth(self, return_area=False):
     #     return graph.facets_depth(self)
 

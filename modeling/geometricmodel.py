@@ -360,7 +360,7 @@ class GeometricModel(StaticGeometricModel):
 
 ## primitives are stationarygeometric model, once defined, they cannot be changed
 # TODO: further decouple from Panda trimesh->staticgeometricmodel
-def gen_linesegs(linesegs, thickness=0.001, rgba=np.array([0, 0, 0, 1])):
+def gen_linesegs(linesegs, thickness=0.001, rgba=[0,0,0,1]):
     """
     gen linsegs -- non-continuous segs are allowed
     :param linesegs: [[pnt0, pn1], [pnt0, pnt1], ...], pnti 1x3 nparray, defined in local 0 frame
@@ -371,44 +371,46 @@ def gen_linesegs(linesegs, thickness=0.001, rgba=np.array([0, 0, 0, 1])):
     author: weiwei
     date: 20161216, 20201116
     """
+    M_TO_PIXEL = 3779.53
     # Create a set of line segments
     ls = LineSegs()
-    ls.setThickness(thickness * 1000.0)
+    ls.setThickness(thickness * M_TO_PIXEL)
+    ls.setColor(rgba[0], rgba[1], rgba[2], rgba[3])
     for p0p1tuple in linesegs:
-        ls.setColor(rgba[0], rgba[1], rgba[2], rgba[3])
         ls.moveTo(p0p1tuple[0][0], p0p1tuple[0][1], p0p1tuple[0][2])
         ls.drawTo(p0p1tuple[1][0], p0p1tuple[1][1], p0p1tuple[1][2])
     # Create and return a node with the segments
     lsnp = NodePath(ls.create())
     lsnp.setTransparency(TransparencyAttrib.MDual)
+    lsnp.setLightOff()
     ls_sgm = StaticGeometricModel(lsnp)
     return ls_sgm
 
 
-def gen_linesegs(verts, thickness=0.005, rgba=np.array([0, 0, 0, 1])):
-    """
-    gen continuous linsegs
-    :param verts: nx3 list, each nearby pair will be used to draw one segment, defined in a local 0 frame
-    :param rgba:
-    :param thickness:
-    :param refpos, refrot: the local coordinate frame where the pnti in the linsegs are defined
-    :return: a geomtric model
-    author: weiwei
-    date: 20161216
-    """
-    segs = LineSegs()
-    segs.setThickness(thickness * 1000.0)
-    segs.setColor(rgba[0], rgba[1], rgba[2], rgba[3])
-    for i in range(len(verts) - 1):
-        tmpstartvert = verts[i]
-        tmpendvert = verts[i + 1]
-        segs.moveTo(tmpstartvert[0], tmpstartvert[1], tmpstartvert[2])
-        segs.drawTo(tmpendvert[0], tmpendvert[1], tmpendvert[2])
-    lsnp = NodePath('linesegs')
-    lsnp.attachNewNode(segs.create())
-    lsnp.setTransparency(TransparencyAttrib.MDual)
-    ls_sgm = StaticGeometricModel(lsnp)
-    return ls_sgm
+# def gen_linesegs(verts, thickness=0.005, rgba=[0,0,0,1]):
+#     """
+#     gen continuous linsegs
+#     :param verts: nx3 list, each nearby pair will be used to draw one segment, defined in a local 0 frame
+#     :param rgba:
+#     :param thickness:
+#     :param refpos, refrot: the local coordinate frame where the pnti in the linsegs are defined
+#     :return: a geomtric model
+#     author: weiwei
+#     date: 20161216
+#     """
+#     segs = LineSegs()
+#     segs.setThickness(thickness * 1000.0)
+#     segs.setColor(rgba[0], rgba[1], rgba[2], rgba[3])
+#     for i in range(len(verts) - 1):
+#         tmpstartvert = verts[i]
+#         tmpendvert = verts[i + 1]
+#         segs.moveTo(tmpstartvert[0], tmpstartvert[1], tmpstartvert[2])
+#         segs.drawTo(tmpendvert[0], tmpendvert[1], tmpendvert[2])
+#     lsnp = NodePath('linesegs')
+#     lsnp.attachNewNode(segs.create())
+#     lsnp.setTransparency(TransparencyAttrib.MDual)
+#     ls_sgm = StaticGeometricModel(lsnp)
+#     return ls_sgm
 
 
 def gen_sphere(pos=np.array([0, 0, 0]), radius=0.01, rgba=[1, 0, 0, 1]):

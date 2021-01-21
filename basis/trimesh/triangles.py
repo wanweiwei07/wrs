@@ -1,6 +1,6 @@
 import numpy as np
 
-from .util import diagonal_dot, unitize
+from .util import diagonal_dot, unitize, is_shape
 from .points import point_plane_distance
 from .constants import tol
 
@@ -231,3 +231,121 @@ def nondegenerate(triangles):
     ok[np.logical_not(valid_b)] = False
 
     return ok
+
+
+def closest_point(triangles, points):
+    """
+    Return the closest point on the surface of each triangle for a
+    list of corresponding points.
+    Implements the method from "Real Time Collision Detection" and
+    use the same variable names as "ClosestPtPointTriangle" to avoid
+    being any more confusing.
+    Parameters
+    ----------
+    triangles : (n, 3, 3) float
+      Triangle vertices in space
+    points : (n, 3) float
+      Points in space
+    Returns
+    ----------
+    closest : (n, 3) float
+      Point on each triangle closest to each point
+    """
+
+    # check input triangles and points
+    triangles = np.asanyarray(triangles, dtype=np.float64)
+    points = np.asanyarray(points, dtype=np.float64)
+    if not util.is_shape(triangles, (-1, 3, 3)):
+        raise ValueError('triangles shape incorrect')
+    if not util.is_shape(points, (len(triangles), 3)):
+        raise ValueError('need same number of triangles and points!')
+
+    # store the location of the closest point
+    result = np.zeros_like(points)
+    # which points still need to be handled
+    remain = np.ones(len(points), dtype=np.bool)
+
+    # if we dot product this against a (n, 3)
+    # it is equivalent but faster than array.sum(axis=1)
+    ones = [1.0, 1.0, 1.0]
+
+    # get the three points of each triangle
+    # use the same notation as RTCD to avoid confusion
+    a = triangles[:, 0, :]
+    b = triangles[:, 1, :]
+    c = triangles[:, 2, :]
+
+    # check if P is in vertex region outside A
+    ab = b - a
+    ac = c - a
+    ap = points - a
+    # this is a faster equivalent of:
+    # diagonal_dot(ab, ap)
+    d1 = np.dot(ab * ap, ones)
+    d2 = np.dot(ac * ap, ones)
+
+    # is the point at A
+    is_a = np.logical_and(d1 < tol.zero, d2 < tol.zero)
+    if any(is_a):
+        result[is_a] = a[is_a]
+        remain[is_a] = False
+
+    # check if P in vertex region outside B
+    bp = points - b
+    d3 = np.dot(ab * bp, ones)
+    d4 = np.dot(ac * bp, ones)
+
+    # do the logic check
+    is_b = (d3 > -tol.zero) & (d4 <= d3) & remain
+    if any(is_b):
+        result[is_b] = b[is_b]
+        remain[is_b] = False
+
+    # check if P in edge region of AB, if so return projection of P onto A
+    vc = (d1 * d4) - (d3 * d2)
+    is_ab = ((vc < tol.zero) &
+             (d1 > -tol.zero) &
+             (d3 < tol.zero) & remain)
+    if any(is_ab):
+        v = (d1[is_ab] / (d1[is_ab] - d3[is_ab])).reshape((-1, 1))
+        result[is_ab] = a[is_ab] + (v * ab[is_ab])
+        remain[is_ab] = False
+
+    # check if P in vertex region outside C
+    cp = points - c
+    d5 = np.dot(ab * cp, ones)
+    d6 = np.dot(ac * cp, ones)
+    is_c = (d6 > -tol.zero) & (d5 <= d6) & remain
+    if any(is_c):
+        result[is_c] = c[is_c]
+        remain[is_c] = False
+
+    # check if P in edge region of AC, if so return projection of P onto AC
+    vb = (d5 * d2) - (d1 * d6)
+    is_ac = (vb < tol.zero) & (d2 > -tol.zero) & (d6 < tol.zero) & remain
+    if any(is_ac):
+        w = (d2[is_ac] / (d2[is_ac] - d6[is_ac])).reshape((-1, 1))
+        result[is_ac] = a[is_ac] + w * ac[is_ac]
+        remain[is_ac] = False
+
+    # check if P in edge region of BC, if so return projection of P onto BC
+    va = (d3 * d6) - (d5 * d4)
+    is_bc = ((va < tol.zero) &
+             ((d4 - d3) > - tol.zero) &
+             ((d5 - d6) > -tol.zero) & remain)
+    if any(is_bc):
+        d43 = d4[is_bc] - d3[is_bc]
+        w = (d43 / (d43 + (d5[is_bc] - d6[is_bc]))).reshape((-1, 1))
+        result[is_bc] = b[is_bc] + w * (c[is_bc] - b[is_bc])
+        remain[is_bc] = False
+
+    # any remaining points must be inside face region
+    if any(remain):
+        # point is inside face region
+        denom = 1.0 / (va[remain] + vb[remain] + vc[remain])
+        v = (vb[remain] * denom).reshape((-1, 1))
+        w = (vc[remain] * denom).reshape((-1, 1))
+        # compute Q through its barycentric coordinates
+        result[remain] = a[remain] + (ab[remain] * v) + (ac[remain] * w)
+
+    return result
