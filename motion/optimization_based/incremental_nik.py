@@ -2,39 +2,43 @@ import math
 import numpy as np
 import basis.robot_math as rm
 
+
 class IncrementalNIK(object):
 
     def __init__(self, robot):
         self.rbt = robot
 
-    def _interplate(self,
-                    start_info,
-                    goal_info,
-                    granularity=.01):
-        """
-        :param start_info: [pos, rotmat]
-        :param goal_info: [pos, rotmat]
-        :param granularity
-        :return: a list of 1xn nparray
-        """
-        start_pos, start_rotmat = start_info
-        goal_pos, goal_rotmat = goal_info
-        len, vec = rm.unit_vector(start_pos - goal_pos, togglelength=True)
-        nval = math.ceil(len / granularity)
-        pos_list = np.linspace(start_pos, goal_pos , nval)
-        rotmat_list = rm.rotmat_slerp(start_rotmat, goal_rotmat, nval)
-        return pos_list, rotmat_list
-
     def gen_linear_motion(self,
                           component_name,
-                          start_info,
-                          goal_info,
+                          start_hnd_pos,
+                          start_hnd_rotmat,
+                          goal_hnd_pos,
+                          goal_hnd_rotmat,
                           obstacle_list=[],
-                          granularity=0.03):
+                          granularity=0.03,
+                          seed_jnt_values=None):
+        """
+        :param component_name:
+        :param start_hnd_pos:
+        :param start_hnd_rotmat:
+        :param goal_hnd_pos:
+        :param goal_hnd_rotmat:
+        :param goal_info:
+        :param obstacle_list:
+        :param granularity:
+        :return:
+        author: weiwei
+        date: 20210125
+        """
         jnt_values_bk = self.rbt.get_jnt_values(component_name)
-        pos_list, rotmat_list = self._interplate(start_info, goal_info, granularity=granularity)
+        pos_list, rotmat_list = rm.interplate_pos_rotmat(start_hnd_pos,
+                                                         start_hnd_rotmat,
+                                                         goal_hnd_pos,
+                                                         goal_hnd_rotmat,
+                                                         granularity=granularity)
         jnt_values_list = []
-        seed_jnt_values = jnt_values_bk
+        if seed_jnt_values is None:
+            seed_jnt_values = jnt_values_bk
         for (pos, rotmat) in zip(pos_list, rotmat_list):
             jnt_values = self.rbt.ik(component_name, pos, rotmat, seed_conf=seed_jnt_values)
             if jnt_values is None:
@@ -54,14 +58,16 @@ class IncrementalNIK(object):
 
     def gen_rel_linear_motion(self,
                               component_name,
-                              pose_info,
+                              goal_hnd_pos,
+                              goal_hnd_rotmat,
                               direction,
                               distance,
                               obstacle_list=[],
                               granularity=0.03,
+                              seed_jnt_values=None,
                               type='sink'):
         """
-        :param pose_info:
+        :param goal_info:
         :param direction:
         :param distance:
         :param obstacle_list:
@@ -72,27 +78,45 @@ class IncrementalNIK(object):
         date: 20210114
         """
         if type == 'sink':
-            start_info = [pose_info[0]-direction*distance, pose_info[1]]
+            start_hnd_pos = goal_hnd_pos - direction * distance
+            start_hnd_rotmat = goal_hnd_rotmat
             return self.gen_linear_motion(component_name,
-                                          start_info,
-                                          pose_info,
+                                          start_hnd_pos,
+                                          start_hnd_rotmat,
+                                          goal_hnd_pos,
+                                          goal_hnd_rotmat,
                                           obstacle_list,
-                                          granularity)
+                                          granularity,
+                                          seed_jnt_values)
         elif type == 'source':
-            goal_info = [pose_info[0]+direction*distance, pose_info[1]]
+            start_hnd_pos = goal_hnd_pos
+            start_hnd_rotmat = goal_hnd_rotmat
+            goal_hnd_pos = goal_hnd_pos + direction * distance
+            goal_hnd_rotmat = goal_hnd_rotmat
             return self.gen_linear_motion(component_name,
-                                          pose_info,
-                                          goal_info,
+                                          start_hnd_pos,
+                                          start_hnd_rotmat,
+                                          goal_hnd_pos,
+                                          goal_hnd_rotmat,
                                           obstacle_list,
-                                          granularity)
+                                          granularity,
+                                          seed_jnt_values)
         else:
-            raise  ValueError("Type must be sink or source!")
+            raise ValueError("Type must be sink or source!")
 
-    def extend_motion_with_jawwidth(self, conf_list, jawwidth):
-        jawwidth_list = []
-        for _ in conf_list:
-            jawwidth_list.append(jawwidth)
-        return conf_list, jawwidth_list
+    def get_rotational_motion(self,
+                              component_name,
+                              start_hnd_pos,
+                              start_hnd_rotmat,
+                              goal_hnd_pos,
+                              goal_hnd_rotmat,
+                              obstacle_list=[],
+                              rot_center=np.zeros(3),
+                              rot_axis=np.array([1, 0, 0]),
+                              granularity=0.03,
+                              seed_jnt_values=None):
+        # TODO
+        pass
 
 
 if __name__ == '__main__':
@@ -104,23 +128,22 @@ if __name__ == '__main__':
     base = wd.World(campos=[1.5, 0, 3], lookatpos=[0, 0, .5])
     gm.gen_frame().attach_to(base)
     yumi_instance = ym.Yumi(enable_cc=True)
-    jlc_name='rgt_arm'
+    component_name = 'rgt_arm'
     start_pos = np.array([.5, -.3, .3])
-    start_rotmat = rm.rotmat_from_axangle([0,1,0], math.pi/2)
+    start_rotmat = rm.rotmat_from_axangle([0, 1, 0], math.pi / 2)
     start_info = [start_pos, start_rotmat]
     goal_pos = np.array([.55, .3, .5])
-    goal_rotmat = rm.rotmat_from_axangle([0,1,0], math.pi/2)
+    goal_rotmat = rm.rotmat_from_axangle([0, 1, 0], math.pi / 2)
     goal_info = [goal_pos, goal_rotmat]
     gm.gen_frame(pos=start_pos, rotmat=start_rotmat).attach_to(base)
     gm.gen_frame(pos=goal_pos, rotmat=goal_rotmat).attach_to(base)
     inik = IncrementalNIK(yumi_instance)
     tic = time.time()
-    jnt_values_list = inik.gen_linear_motion(jlc_name, start_info, goal_info)
+    jnt_values_list = inik.gen_linear_motion(component_name, start_info, goal_info)
     toc = time.time()
     print(toc - tic)
     for jnt_values in jnt_values_list:
-        yumi_instance.fk(jlc_name, jnt_values)
+        yumi_instance.fk(component_name, jnt_values)
         yumi_meshmodel = yumi_instance.gen_meshmodel()
         yumi_meshmodel.attach_to(base)
     base.run()
-

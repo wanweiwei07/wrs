@@ -122,7 +122,7 @@ class Yumi(ri.RobotInterface):
                                               x=.12 + radius, y=.125 + radius, z=.24 + radius)
         collision_node.addSolid(collision_primitive_c1)
         collision_primitive_c2 = CollisionBox(Point3(-.07, 0, 0.4),
-                                              x=.07 + radius, y=.125 + radius, z=.06 + radius)
+                                              x=.075 + radius, y=.125 + radius, z=.06 + radius)
         collision_node.addSolid(collision_primitive_c2)
         collision_primitive_l0 = CollisionBox(Point3(0, 0.145, 0.03),
                                               x=.135 + radius, y=.055 + radius, z=.03 + radius)
@@ -195,6 +195,10 @@ class Yumi(ri.RobotInterface):
                     self.rgt_hnd.lft.lnks[1],
                     self.rgt_hnd.rgt.lnks[1]]
         self.cc.set_cdpair(fromlist, intolist)
+        fromlist = [self.lft_body.lnks[1]]
+        intolist = [self.lft_arm.lnks[2],
+                    self.rgt_arm.lnks[2]]
+        self.cc.set_cdpair(fromlist, intolist)
 
     def get_hnd_on_component(self, component_name):
         if component_name == 'rgt_arm':
@@ -249,33 +253,6 @@ class Yumi(ri.RobotInterface):
         else:
             raise ValueError("The given jlc name is not available!")
 
-    # def num_ik(self,
-    #            tgt_pos,
-    #            tgt_rot,
-    #            jlc_name='lft_arm',
-    #            start_conf=None,
-    #            tcp_jntid=None,
-    #            tcp_loc_pos=None,
-    #            tcp_loc_rotmat=None,
-    #            local_minima="accept",
-    #            toggle_debug=False):
-    #     return self.jlc_dict[jlc_name].ik(tgt_pos,
-    #                                       tgt_rot,
-    #                                       start_conf=start_conf,
-    #                                       tcp_jntid=tcp_jntid,
-    #                                       tcp_loc_pos=tcp_loc_pos,
-    #                                       tcp_loc_rotmat=tcp_loc_rotmat,
-    #                                       local_minima=local_minima,
-    #                                       toggle_debug=toggle_debug)
-
-    # def jaw_to(self, jaw_width, hnd_name='lft_hnd'):
-    #     if hnd_name == 'lft_hnd':
-    #         self.lft_hnd.jaw_to(jaw_width)
-    #     elif hnd_name == 'rgt_hnd':
-    #         self.rgt_hnd.jaw_to(jaw_width)
-    #     else:
-    #         raise ValueError("The given hnd name is not available!")
-
     def hold(self, objcm, jaw_width=None, hnd_name='lft_hnd'):
         """
         the objcm is added as a part of the robot to the cd checker
@@ -323,8 +300,9 @@ class Yumi(ri.RobotInterface):
             raise ValueError("hnd_name must be lft_hnd or rgt_hnd!")
         if jaw_width is not None:
             self.jaw_to(jaw_width, hnd_name=hnd_name)
+        return rel_pos, rel_rotmat
 
-    def get_oih_list(self, hnd_name='lft_hnd'):
+    def get_oih_cm_list(self, hnd_name='lft_hnd'):
         """
         oih = object in hand list
         :param hnd_name:
@@ -363,8 +341,29 @@ class Yumi(ri.RobotInterface):
         for obj_info in oih_infos:
             if obj_info['collisionmodel'] is objcm:
                 self.cc.delete_cdobj(obj_info)
-                self.oih_infos.remove(obj_info)
+                oih_infos.remove(obj_info)
                 break
+
+    def release_all(self, jaw_width=None, hnd_name='lft_hnd'):
+        """
+        release all objects from the specified hand
+        :param jaw_width:
+        :param hnd_name:
+        :return:
+        author: weiwei
+        date: 20210125
+        """
+        if hnd_name == 'lft_hnd':
+            oih_infos = self.lft_oih_infos
+        elif hnd_name == 'rgt_hnd':
+            oih_infos = self.rgt_oih_infos
+        else:
+            raise ValueError("hnd_name must be lft_hnd or rgt_hnd!")
+        if jaw_width is not None:
+            self.jaw_to(jaw_width, hnd_name)
+        for obj_info in oih_infos:
+            self.cc.delete_cdobj(obj_info)
+        oih_infos.clear()
 
     def gen_stickmodel(self,
                        tcp_jntid=None,

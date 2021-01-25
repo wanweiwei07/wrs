@@ -248,6 +248,24 @@ def homomat_average(homomatlist, bandwidth=10):
     return homomat_from_posrot(posavg, rotmatavg)
 
 
+def interplate_pos_rotmat(start_pos,
+                          start_rotmat,
+                          goal_pos,
+                          goal_rotmat,
+                          granularity=.01):
+    """
+    :param start_info: [pos, rotmat]
+    :param goal_info: [pos, rotmat]
+    :param granularity
+    :return: a list of 1xn nparray
+    """
+    print(start_pos, goal_pos)
+    len, vec = unit_vector(start_pos - goal_pos, togglelength=True)
+    nval = math.ceil(len / granularity)
+    pos_list = np.linspace(start_pos, goal_pos , nval)
+    rotmat_list = rotmat_slerp(start_rotmat, goal_rotmat, nval)
+    return pos_list, rotmat_list
+
 # quaternion
 def quaternion_from_axangle(angle, axis):
     """
@@ -573,7 +591,7 @@ def getaabb(pointsarray):
     return [center, np.array([[xmin, xmax], [ymin, ymax], [zmin, zmax]])]
 
 
-def computepca(nparray):
+def compute_pca(nparray):
     """
     :param nparray: nxd array, d is the dimension
     :return: evs eigenvalues, axmat dxn array, each column is an eigenvector
@@ -593,7 +611,7 @@ def points_obb(pointsarray, toggledebug=False):
     author: weiwei
     date: 20191229, 20200701osaka
     """
-    pcv, pcaxmat = computepca(pointsarray)
+    pcv, pcaxmat = compute_pca(pointsarray)
     pcaxmat_t = pcaxmat.T
     # use the inverse of the eigenvectors as a rotation matrix and
     # rotate the points so they align with the x and y axes
@@ -637,7 +655,7 @@ def gaussian_ellipsoid(pointsarray):
     author: weiwei
     date: 20200701
     """
-    pcv, pcaxmat = computepca(pointsarray)
+    pcv, pcaxmat = compute_pca(pointsarray)
     center = np.mean(pointsarray, axis=0)
     axmat = np.eye(3)
     # TODO is there a better way to do this?

@@ -7,36 +7,45 @@ import basis.data_adapter as da
 import modeling.collisionmodel as cm
 import motion.optimization_based.incremental_nik as inik
 import motion.probabilistic.rrt_connect as rrtc
+from . import approach_depart_planner as adp
 
-class PickPlacePlanner(object):
 
-    def __init__(self, initiator, robot):
+class PickPlacePlanner(adp.ADPlanner):
+
+    def __init__(self, initor, robot):
         """
         :param object:
         :param robot_helper:
         author: weiwei, hao
         date: 20191122, 20210113
         """
-        if isinstance(initiator, str):
-            self.objname = initiator
-        elif isinstance(initiator, cm.CollisionModel):
-            self.objname = initiator.name
-            self.objcm = initiator
-        self.rbt = robot
-        self.inik_slvr = inik.IncrementalNIK(self.rbt)
-        self.rrtc_plnr = rrtc.RRTConnect(self.rbt)
+        super().__init__(robot)
 
-    def find_common_graspids(self, hnd_instance, grasp_info_list, goal_info_list, obstacle_list, toggle_debug=False):
+    def gen_object_motion(self, conf_list, obj_pos, obj_rotmat):
+        jawwidth_list = []
+        for _ in conf_list:
+            jawwidth_list.append(jawwidth)
+        return conf_list, jawwidth_list
+
+    def find_common_graspids(self,
+                             component_name,
+                             hnd_name,
+                             grasp_info_list,
+                             goal_info_list,
+                             obstacle_list,
+                             toggle_debug=False):
         """
         find the common collision free and IK feasible graspids
-        :param hnd_instance
+        :param component_name:
+        :param hnd_name: a component may have multiple hands
         :param grasp_info_list:
         :param goal_info_list: [[goal_pos, goal_rotmat], ...]
         :param obstacle_list
         :return:
         author: weiwei
-        date: 20210113
+        date: 20210113, 20210125
         """
+        hnd_instance = self.rbt.hnd_dict[hnd_name]
         # start reasoning
         previously_available_graspids = range(len(grasp_info_list))
         intermediate_available_graspids = []
@@ -54,106 +63,123 @@ class PickPlacePlanner(object):
                 gl_hnd_rotmat = goal_rotmat.dot(loc_hnd_rotmat)
                 hnd_instance.fix_to(gl_hnd_pos, gl_hnd_rotmat)
                 hnd_instance.jaw_to(jaw_width)  # TODO detect a range?
-                if not hnd_instance.is_mesh_collided(obstacle_list): # common graspid without considering robots
-                    jnt_values = self.rbt.ik(gl_hnd_pos, gl_hnd_rotmat, self.jlc_name)
-                    if jnt_values is not None: # common graspid consdiering robot ik
+                if not hnd_instance.is_mesh_collided(obstacle_list):  # common graspid without considering robots
+                    jnt_values = self.rbt.ik(gl_hnd_pos, gl_hnd_rotmat, component_name)
+                    if jnt_values is not None:  # common graspid consdiering robot ik
                         if toggle_debug:
                             hnd_tmp = hnd_instance.copy()
-                            hnd_tmp.gen_meshmodel(rgba=[0,1,0,.2]).attach_to(base)
-                        self.rbt.fk(jnt_values, self.jlc_name)
-                        is_rbt_collided = self.rbt.is_collided(obstacle_list) # common graspid consdiering robot cd
+                            hnd_tmp.gen_meshmodel(rgba=[0, 1, 0, .2]).attach_to(base)
+                        self.rbt.fk(jnt_values, component_name)
+                        is_rbt_collided = self.rbt.is_collided(obstacle_list)  # common graspid consdiering robot cd
                         # TODO is_obj_collided
-                        is_obj_collided = False # common graspid consdiering obj cd
-                        if (not is_rbt_collided) and (not is_obj_collided): # hnd cdfree, robot ikfeasible, robot cdfree
+                        is_obj_collided = False  # common graspid consdiering obj cd
+                        if (not is_rbt_collided) and (
+                                not is_obj_collided):  # hnd cdfree, robot ikfeasible, robot cdfree
                             if toggle_debug:
                                 self.rbt.gen_meshmodel(rgba=[0, 1, 0, .5]).attach_to(base)
                             previously_available_graspids.append(graspid)
-                        elif (not is_obj_collided): # hnd cdfree, robot ikfeasible, robot collided
+                        elif (not is_obj_collided):  # hnd cdfree, robot ikfeasible, robot collided
                             rbtcollided_grasps_num += 1
                             if toggle_debug:
                                 self.rbt.gen_meshmodel(rgba=[1, 0, 1, .5]).attach_to(base)
-                    else: # hnd cdfree, robot ik infeasible
+                    else:  # hnd cdfree, robot ik infeasible
                         ikfailed_grasps_num += 1
                         if toggle_debug:
                             hnd_tmp = hnd_instance.copy()
-                            hnd_tmp.gen_meshmodel(rgba=[1,.6,0,.2]).attach_to(base)
-                else: # hnd collided
+                            hnd_tmp.gen_meshmodel(rgba=[1, .6, 0, .2]).attach_to(base)
+                else:  # hnd collided
                     hndcollided_grasps_num += 1
                     if toggle_debug:
                         hnd_tmp = hnd_instance.copy()
-                        hnd_tmp.gen_meshmodel(rgba=[1,0,1,.2]).attach_to(base)
+                        hnd_tmp.gen_meshmodel(rgba=[1, 0, 1, .2]).attach_to(base)
             intermediate_available_graspids.append(previously_available_graspids.copy())
-            print('Number of collided grasps at goal-' + str(goalid) +': ', hndcollided_grasps_num)
-            print('Number of failed IK at goal-' + str(goalid) +': ', ikfailed_grasps_num)
-            print('Number of collided robots at goal-' + str(goalid) +': ', rbtcollided_grasps_num)
+            print('Number of collided grasps at goal-' + str(goalid) + ': ', hndcollided_grasps_num)
+            print('Number of failed IK at goal-' + str(goalid) + ': ', ikfailed_grasps_num)
+            print('Number of collided robots at goal-' + str(goalid) + ': ', rbtcollided_grasps_num)
         final_available_graspids = previously_available_graspids
         return final_available_graspids, intermediate_available_graspids
 
     def gen_pickup_primitive(self,
+                             objcm,
                              component_name,
+                             hnd_name,
                              grasp_info,
-                             goal_info,
+                             goal_obj_pos,
+                             goal_obj_rotmat,
                              approach_direction=np.array([0, 0, -1]),
-                             approach_distance=100,
+                             approach_distance=.1,
+                             approach_jawwidth=.05,
                              depart_direction=np.array([0, 0, 1]),
-                             depart_distance=100,
-                             obstacle_list=[]):
+                             depart_distance=.1,
+                             depart_jawwidth=.0,
+                             seed_jnt_values=None):
         """
         an action is a motion primitive
+        :param objcm
         :param component_name
+        :param hnd_name
         :param grasp_info:
-        :param goal_info:
+        :param goal_obj_pos:
+        :param goal_obj_rotmat:
         :param jlc_name:
         :param approach_direction:
         :param approach_distance:
+        :param approach_jawwidth:
         :param depart_direction:
         :param depart_distance:
-        :param obstacle_list:
-        :return:
+        :param depart_jawwidth:
+        :return: pickup_conf_list, pickup_jawwidth_list
         author: weiwei, hao
         date: 20191122, 20200105, 20210113
         """
-        hnd_instance = self.rbt.get_hnd_on_component(component_name)
-        goal_pos, goal_rotmat = goal_info
+        # hnd_instance = self.rbt.get_hnd_on_component(component_name)
         jaw_width, _, loc_hnd_pos, loc_hnd_rotmat = grasp_info
-        gl_hnd_pos = goal_rotmat.dot(loc_hnd_pos) + goal_pos
-        gl_hnd_rotmat = goal_rotmat.dot(loc_hnd_rotmat)
-        gl_hnd_info = [gl_hnd_pos, gl_hnd_rotmat]
-        pick_conf_list = self.inik_slvr.gen_linear_motion(component_name,
-                                                          gl_hnd_info,
-                                                          approach_direction,
-                                                          approach_distance,
-                                                          obstacle_list,
-                                                          type='sink')
-        if pick_conf_list is None:
-            print('Cannot perform pick action!')
+        goal_hnd_pos = goal_obj_rotmat.dot(loc_hnd_pos) + goal_obj_pos
+        goal_hnd_rotmat = goal_obj_rotmat.dot(loc_hnd_rotmat)
+        approach_conf_list = self.inik_slvr.gen_rel_linear_motion(component_name,
+                                                                  goal_hnd_pos,
+                                                                  goal_hnd_rotmat,
+                                                                  approach_direction,
+                                                                  approach_distance,
+                                                                  obstacle_list=[],
+                                                                  granularity=0.03,
+                                                                  type='sink',
+                                                                  seed_jnt_values=seed_jnt_values)
+        if len(approach_conf_list) == 0:
+            print('Cannot perform approach action!')
         else:
-            up_conf_list = self.inik_slvr.gen_linear_motion(component_name,
-                                                            gl_hnd_info,
-                                                            depart_direction,
-                                                            depart_distance,
-                                                            obstacle_list,
-                                                            type='source')
-            if up_conf_list is None:
-                print('Cannot perform up action!')
+            rel_pos, rel_rotmat = self.rbt.hold(self.objcm, jaw_width, hnd_name)
+            depart_conf_list = self.inik_slvr.gen_rel_linear_motion(component_name,
+                                                                    goal_hnd_pos,
+                                                                    goal_hnd_rotmat,
+                                                                    depart_direction,
+                                                                    depart_distance,
+                                                                    obstacle_list=[],
+                                                                    granularity=0.03,
+                                                                    type='source',
+                                                                    seed_jnt_values=approach_conf_list[-1])
+            self.gen_object_motion(depart_conf_list, rel_pos, rel_rotmat, type='relative')
+            self.rbt.release(self.objcm, jaw_width, hnd_name)
+            if len(depart_conf_list) == 0:
+                print('Cannot perform depart action!')
             else:
-                pcfs, pjws = self.inik_slvr.extend_motion_with_jawwidth(pick_conf_list, hnd_instance.jaw_width_rng[1])
-                ucfs, ujws = self.inik_slvr.extend_motion_with_jawwidth(up_conf_list, hnd_instance.jaw_width_rng[0])
-                return pcfs, ucfs
+                approach_jawwidth_list = self.gen_jawwidth_motion(approach_conf_list, approach_jawwidth)
+                depart_jawwidth_list = self.gen_jawwidth_motion(depart_conf_list, depart_jawwidth)
+                return approach_conf_list + depart_conf_list, approach_jawwidth_list + depart_jawwidth_list
 
     def gen_pickup_motion(self,
                           component_name,
                           grasp_info,
                           goal_info,
-                          start_conf = None,
-                          goal_conf = None,
+                          start_conf=None,
+                          goal_conf=None,
                           approach_direction=np.array([0, 0, -1]),
                           approach_distance=100,
                           depart_direction=np.array([0, 0, 1]),
                           depart_distance=100,
                           obstacle_list=[]):
         """
-        degenerate into gen_pickup_primitive if None
+        degenerate into gen_pickup_primitive if both start_conf and goal_conf are None
         :param component_name:
         :param grasp_info:
         :param goal_info:
@@ -167,40 +193,44 @@ class PickPlacePlanner(object):
         :return:
         """
         hnd_instance = self.rbt.get_hnd_on_component(component_name)
-        pcfs, pjws, ucfs, ujws = self.gen_pickup_primitive(component_name,
-                                                           grasp_info,
-                                                           goal_info,
-                                                           approach_direction,
-                                                           approach_distance,
-                                                           depart_direction,
-                                                           depart_distance,
-                                                           obstacle_list)
+        pickup_conf_list, pickup_jawwidth_list = self.gen_pickup_primitive(component_name,
+                                                                           grasp_info,
+                                                                           goal_info,
+                                                                           approach_direction,
+                                                                           approach_distance,
+                                                                           depart_direction,
+                                                                           depart_distance,
+                                                                           obstacle_list)
         if start_conf is not None:
             start2pick_conf_list = self.rrtc_plnr.plan(start_conf,
-                                                       pcfs[0],
+                                                       pickup_conf_list[0],
                                                        obstacle_list,
                                                        ext_dist=.05,
                                                        rand_rate=70,
                                                        maxtime=300,
                                                        component_name=component_name)
-            self.inik_slvr.extend_motion_with_jawwidth(start2pick_conf_list, hnd_instance.jaw_width_rng[1])
+            start2pick_conf_list, start2pick_jawwidth_list = \
+                self.inik_slvr.extend_motion_with_jawwidth(start2pick_conf_list, hnd_instance.jaw_width_rng[1])
         if goal_conf is not None:
-            up2goal_conf_list = self.rrtc_plnr.plan(ucfs[1],
+            up2goal_conf_list = self.rrtc_plnr.plan(pickup_conf_list[-1],
                                                     goal_conf,
                                                     obstacle_list,
                                                     ext_dist=.05,
                                                     rand_rate=70,
                                                     maxtime=300,
                                                     component_name=component_name)
-            self.inik_slvr.extend_motion_with_jawwidth(up2goal_conf_list, hnd_instance.jaw_width_rng[0])
+            up2goal_conf_list, up2goal_jawwidth_list = \
+                self.inik_slvr.extend_motion_with_jawwidth(up2goal_conf_list, hnd_instance.jaw_width_rng[0])
+        return start2pick_conf_list + pickup_conf_list + up2goal_conf_list, \
+               start2pick_jawwidth_list + pickup_jawwidth_list + up2goal_jawwidth_list
 
     def gen_ppmotion(self, candidatepredgidlist, objinithomomat, objgoalhomomat, armname,
-                    rbtinitarmjnts=None, rbtgoalarmjnts=None, finalstate="io",
-                    primitivedirection_init_forward=None, primitivedirection_init_backward=None,
-                    primitivedistance_init_foward=100, premitivedistance_init_backward=100,
-                    primitivedirection_final_forward=None, primitivedirection_final_backward=None,
-                    primitivedistance_final_foward=100, premitivedistance_final_backward=100, obscmlist=[],
-                    userrt=True):
+                     rbtinitarmjnts=None, rbtgoalarmjnts=None, finalstate="io",
+                     primitivedirection_init_forward=None, primitivedirection_init_backward=None,
+                     primitivedistance_init_foward=100, premitivedistance_init_backward=100,
+                     primitivedirection_final_forward=None, primitivedirection_final_backward=None,
+                     primitivedistance_final_foward=100, premitivedistance_final_backward=100, obscmlist=[],
+                     userrt=True):
         """
         generate the pick and place motion for the speicified arm
         the rbt init armjnts must be explicitly specified to avoid wrong robot poses
@@ -1860,6 +1890,7 @@ class PickPlacePlanner(object):
 
         return [numikmp, jawwidthmp, objmp]
 
+
 if __name__ == '__main__':
     import time
     import basis.robot_math as rm
@@ -1870,13 +1901,13 @@ if __name__ == '__main__':
     base = wd.World(campos=[1.5, 0, 3], lookatpos=[0, 0, .5])
     gm.gen_frame().attach_to(base)
     yumi_instance = ym.Yumi(enable_cc=True)
-    jlc_name='rgt_arm'
+    jlc_name = 'rgt_arm'
     goal_pos = np.array([.5, -.3, .1])
-    goal_rotmat = rm.rotmat_from_axangle([0,1,0], math.pi/2)
+    goal_rotmat = rm.rotmat_from_axangle([0, 1, 0], math.pi / 2)
     goal_info = [goal_pos, goal_rotmat]
     gm.gen_frame(pos=goal_pos, rotmat=goal_rotmat).attach_to(base)
 
-    ppp = PickPlacePlanner(yumi_instance)
+    ppp = ADPlanner(yumi_instance)
     inik = IncrementalNIK(yumi_instance)
     tic = time.time()
     jnt_values_list = inik.gen_linear_motion(jlc_name, start_info, goal_info)
@@ -1887,4 +1918,3 @@ if __name__ == '__main__':
         yumi_meshmodel = yumi_instance.gen_meshmodel()
         yumi_meshmodel.attach_to(base)
     base.run()
-

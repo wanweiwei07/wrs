@@ -272,7 +272,6 @@ class JLChainIK(object):
             tcp_jntid = self.jlc_object.tcp_jntid
         if tcp_loc_pos is None:
             tcp_loc_pos = self.jlc_object.tcp_loc_pos
-            print(self.jlc_object.tcp_loc_pos)
         if tcp_loc_rotmat is None:
             tcp_loc_rotmat = self.jlc_object.tcp_loc_rotmat
         # trim list

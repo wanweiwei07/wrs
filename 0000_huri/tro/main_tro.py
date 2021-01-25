@@ -32,7 +32,7 @@ if __name__ == '__main__':
     lctr = loc.TLocator(directory='..')
 
     armname = "rgt"
-    ppplanner = ppp.PickPlacePlanner(lctr.srccm, yhx)
+    ppplanner = ppp.ADPlanner(lctr.srccm, yhx)
 
     tgtpcd = lctr.capturecorrectedpcd(yhx.pxc)
     objhomomat = lctr.findobj(tgtpcd)

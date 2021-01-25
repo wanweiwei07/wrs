@@ -10,7 +10,7 @@ import basis.robot_math as rm
 
 class FKOptBasedIK(object):
 
-    def __init__(self, robot, component_name, toggle_debug=False):
+    def __init__(self, robot, component_name, obstacle_list=[], toggle_debug=False):
         self.rbt = robot
         self.jlc_name = component_name
         self.result = None
@@ -31,6 +31,7 @@ class FKOptBasedIK(object):
         self._x_limit = 1e-6
         self._y_limit = 1e-6
         self._z_limit = 1e-6
+        self.obstacle_list = obstacle_list
         self.toggle_debug = toggle_debug
 
     def _get_bnds(self, jlc_name):
@@ -73,7 +74,7 @@ class FKOptBasedIK(object):
 
     def _constraint_collision(self, jnt_values):
         self.rbt.fk(jnt_values=jnt_values, component_name=self.jlc_name)
-        if self.rbt.is_collided():
+        if self.rbt.is_collided(obstacle_list=self.obstacle_list):
             return -1
         else:
             return 1
@@ -89,11 +90,11 @@ class FKOptBasedIK(object):
             #     self.rbth.show_armjnts(armjnts=self.jnts[-1], rgba=(.7, .7, .7, .2))
         return np.linalg.norm(jnt_values - self.seed_jnt_values)
 
-    def solve(self, seed_jnt_values, tgt_pos, tgt_rotmat=None, method='SLSQP'):
+    def solve(self, tgt_pos, tgt_rotmat, seed_jnt_values, method='SLSQP'):
         """
-        :param seed_jnt_values:
         :param tgt_pos:
         :param tgt_rotmat:
+        :param seed_jnt_values:
         :param method:
         :return:
         """
@@ -102,15 +103,11 @@ class FKOptBasedIK(object):
         self.tgt_rotmat = tgt_rotmat
         self.add_constraint(self._constraint_xangle, type="ineq")
         self.add_constraint(self._constraint_zangle, type="ineq")
-        # self._add_constraint(self._constraint_pitch, condition="ineq")
-        # self._add_constraint(self._constraint_yaw, condition="ineq")
         self.add_constraint(self._constraint_x, type="ineq")
         self.add_constraint(self._constraint_y, type="ineq")
         self.add_constraint(self._constraint_z, type="ineq")
-        # self._add_constraint(self.con_collision, condition="ineq")
+        self.add_constraint(self._constraint_collision, type="ineq")
         time_start = time.time()
-        # iks = IkSolver(self.env, self.rbt, self.rbtmg, self.rbtball, self.armname)
-        # q0 = iks.slove_numik3(self.tgtpos, tgtrot=None, seed_jnt_values=self.seed_jnt_values, releemat4=self.releemat4)
         sol = minimize(self.optimization_goal,
                        seed_jnt_values,
                        method=method,
@@ -124,6 +121,39 @@ class FKOptBasedIK(object):
             return sol.x, sol.fun
         else:
             return None, None
+
+    def gen_linear_motion(self,
+                          start_info,
+                          goal_info,
+                          granularity=0.03,
+                          seed_jnt_values=None):
+        """
+        :param start_info:
+        :param goal_info:
+        :param granularity:
+        :return:
+        author: weiwei
+        date: 20210125
+        """
+        jnt_values_bk = self.rbt.get_jnt_values(self.jlc_name)
+        pos_list, rotmat_list = rm.interplate_pos_rotmat(start_info[0],
+                                                         start_info[1],
+                                                         goal_info[0],
+                                                         goal_info[1],
+                                                         granularity=granularity)
+        jnt_values_list = []
+        if seed_jnt_values is None:
+            seed_jnt_values = jnt_values_bk
+        for (pos, rotmat) in zip(pos_list, rotmat_list):
+            jnt_values = self.solve(pos, rotmat, seed_jnt_values)[0]
+            if jnt_values is None:
+                print("Not solvable!")
+                self.rbt.fk(self.jlc_name, jnt_values_bk)
+                return []
+            jnt_values_list.append(jnt_values)
+            seed_jnt_values = jnt_values
+        self.rbt.fk(self.jlc_name, jnt_values_bk)
+        return jnt_values_list
 
     def _debug_plot(self):
         if "plt" not in dir():
@@ -151,15 +181,31 @@ if __name__ == '__main__':
     import modeling.geometricmodel as gm
 
     base = wd.World(campos=[1.5, 0, 3], lookatpos=[0, 0, .5])
-    jlc_name='rgt_arm'
+    component_name= 'rgt_arm'
     tgt_pos = np.array([.5, -.3, .3])
     tgt_rotmat = rm.rotmat_from_axangle([0,1,0], math.pi/2)
     gm.gen_frame(pos=tgt_pos, rotmat=tgt_rotmat).attach_to(base)
     yumi_instance = ym.Yumi(enable_cc=True)
-    oik = FKOptBasedIK(yumi_instance, component_name=jlc_name, toggle_debug=True)
-    jnt_values, _ = oik.solve(np.zeros(7), tgt_pos, tgt_rotmat=tgt_rotmat, method='SLSQP')
-    print(jnt_values)
-    yumi_instance.fk(component_name=jlc_name, jnt_values=jnt_values)
-    yumi_meshmodel = yumi_instance.gen_meshmodel()
-    yumi_meshmodel.attach_to(base)
+    oik = FKOptBasedIK(yumi_instance, component_name=component_name, toggle_debug=False)
+    # jnt_values, _ = oik.solve(tgt_pos, tgt_rotmat, np.zeros(7), method='SLSQP')
+    # print(jnt_values)
+    # yumi_instance.fk(component_name=component_name, jnt_values=jnt_values)
+    # yumi_meshmodel = yumi_instance.gen_meshmodel()
+    # yumi_meshmodel.attach_to(base)
+    start_pos = np.array([.5, -.3, .3])
+    start_rotmat = rm.rotmat_from_axangle([0, 1, 0], math.pi / 2)
+    start_info = [start_pos, start_rotmat]
+    goal_pos = np.array([.6, .1, .5])
+    goal_rotmat = rm.rotmat_from_axangle([0, 1, 0], math.pi / 2)
+    goal_info = [goal_pos, goal_rotmat]
+    gm.gen_frame(pos=start_pos, rotmat=start_rotmat).attach_to(base)
+    gm.gen_frame(pos=goal_pos, rotmat=goal_rotmat).attach_to(base)
+    tic = time.time()
+    jnt_values_list = oik.gen_linear_motion(start_info, goal_info)
+    toc = time.time()
+    print(toc - tic)
+    for jnt_values in jnt_values_list:
+        yumi_instance.fk(component_name, jnt_values)
+        yumi_meshmodel = yumi_instance.gen_meshmodel()
+        yumi_meshmodel.attach_to(base)
     base.run()

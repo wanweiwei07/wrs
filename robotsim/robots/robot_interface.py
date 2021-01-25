@@ -76,7 +76,7 @@ class RobotInterface(object):
                                                         toggle_debug=toggle_debug)
 
     def rand_conf(self, component_name):
-        raise NotImplementedError
+        return self.manipulator_dict[component_name].rand_conf()
 
     def show_cdprimit(self):
         self.cc.show_cdprimit(need_update=self.is_fk_updated)
