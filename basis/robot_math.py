@@ -259,10 +259,9 @@ def interplate_pos_rotmat(start_pos,
     :param granularity
     :return: a list of 1xn nparray
     """
-    print(start_pos, goal_pos)
     len, vec = unit_vector(start_pos - goal_pos, togglelength=True)
     nval = math.ceil(len / granularity)
-    pos_list = np.linspace(start_pos, goal_pos , nval)
+    pos_list = np.linspace(start_pos, goal_pos, nval)
     rotmat_list = rotmat_slerp(start_rotmat, goal_rotmat, nval)
     return pos_list, rotmat_list
 

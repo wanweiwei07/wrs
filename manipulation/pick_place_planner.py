@@ -21,11 +21,30 @@ class PickPlacePlanner(adp.ADPlanner):
         """
         super().__init__(robot)
 
-    def gen_object_motion(self, conf_list, obj_pos, obj_rotmat):
-        jawwidth_list = []
-        for _ in conf_list:
-            jawwidth_list.append(jawwidth)
-        return conf_list, jawwidth_list
+    def gen_object_motion(self, component_name, conf_list, obj_pos, obj_rotmat, type='absolute'):
+        """
+        :param conf_list:
+        :param obj_pos:
+        :param obj_rotmat:
+        :param type: 'absolute' or 'relative'
+        :return:
+        author: weiwei
+        date: 20210125
+        """
+        objpose_list = []
+        if type == 'absolute':
+            for _ in conf_list:
+                objpose_list.append(rm.homomat_from_posrot(obj_pos, obj_rotmat))
+        elif type == 'relative':
+            jnt_values_bk = self.rbt.get_jnt_values(component_name)
+            for conf in conf_list:
+                self.rbt.fk(component_name, conf)
+                gl_obj_pos, gl_obj_rotmat = self.rbt.get_gl_pose(obj_pos, obj_rotmat)
+                objpose_list.append(rm.homomat_from_posrot(gl_obj_pos, gl_obj_rotmat))
+            self.rbt.fk(jnt_values_bk)
+        else:
+            raise ValueError('Type must be absolute or relative!')
+        return objpose_list
 
     def find_common_graspids(self,
                              component_name,
@@ -100,9 +119,9 @@ class PickPlacePlanner(adp.ADPlanner):
         return final_available_graspids, intermediate_available_graspids
 
     def gen_pickup_primitive(self,
-                             objcm,
                              component_name,
                              hnd_name,
+                             objcm,
                              grasp_info,
                              goal_obj_pos,
                              goal_obj_rotmat,
@@ -112,12 +131,13 @@ class PickPlacePlanner(adp.ADPlanner):
                              depart_direction=np.array([0, 0, 1]),
                              depart_distance=.1,
                              depart_jawwidth=.0,
+                             granularity=.03,
                              seed_jnt_values=None):
         """
         an action is a motion primitive
-        :param objcm
         :param component_name
         :param hnd_name
+        :param objcm
         :param grasp_info:
         :param goal_obj_pos:
         :param goal_obj_rotmat:
@@ -129,100 +149,258 @@ class PickPlacePlanner(adp.ADPlanner):
         :param depart_distance:
         :param depart_jawwidth:
         :return: pickup_conf_list, pickup_jawwidth_list
-        author: weiwei, hao
+        author: weiwei
         date: 20191122, 20200105, 20210113
         """
-        # hnd_instance = self.rbt.get_hnd_on_component(component_name)
+        objcm = objcm.copy()
+        objcm.set_pos(goal_obj_pos)
+        objcm.set_rotmat(goal_obj_rotmat)
         jaw_width, _, loc_hnd_pos, loc_hnd_rotmat = grasp_info
         goal_hnd_pos = goal_obj_rotmat.dot(loc_hnd_pos) + goal_obj_pos
         goal_hnd_rotmat = goal_obj_rotmat.dot(loc_hnd_rotmat)
-        approach_conf_list = self.inik_slvr.gen_rel_linear_motion(component_name,
-                                                                  goal_hnd_pos,
-                                                                  goal_hnd_rotmat,
-                                                                  approach_direction,
-                                                                  approach_distance,
-                                                                  obstacle_list=[],
-                                                                  granularity=0.03,
-                                                                  type='sink',
-                                                                  seed_jnt_values=seed_jnt_values)
+        abs_obj_pos = objcm.get_pos()
+        abs_obj_rotmat = objcm.get_rotmat()
+        approach_conf_list, approach_jawwidth_list = self.gen_approach_primitive(component_name,
+                                                                                 goal_hnd_pos,
+                                                                                 goal_hnd_rotmat,
+                                                                                 approach_direction,
+                                                                                 approach_distance,
+                                                                                 approach_jawwidth,
+                                                                                 granularity,
+                                                                                 seed_jnt_values)
+        approach_objpose_list = self.gen_object_motion(component_name, abs_obj_pos, abs_obj_rotmat)
         if len(approach_conf_list) == 0:
             print('Cannot perform approach action!')
         else:
-            rel_pos, rel_rotmat = self.rbt.hold(self.objcm, jaw_width, hnd_name)
-            depart_conf_list = self.inik_slvr.gen_rel_linear_motion(component_name,
-                                                                    goal_hnd_pos,
-                                                                    goal_hnd_rotmat,
-                                                                    depart_direction,
-                                                                    depart_distance,
-                                                                    obstacle_list=[],
-                                                                    granularity=0.03,
-                                                                    type='source',
-                                                                    seed_jnt_values=approach_conf_list[-1])
-            self.gen_object_motion(depart_conf_list, rel_pos, rel_rotmat, type='relative')
-            self.rbt.release(self.objcm, jaw_width, hnd_name)
+            rel_obj_pos, rel_obj_rotmat = self.rbt.hold(objcm, jaw_width, hnd_name)
+            depart_conf_list, depart_jawwidth_list = self.gen_depart_primitive(component_name,
+                                                                               goal_hnd_pos,
+                                                                               goal_hnd_rotmat,
+                                                                               depart_direction,
+                                                                               depart_distance,
+                                                                               depart_jawwidth,
+                                                                               granularity,
+                                                                               seed_jnt_values=approach_conf_list[-1])
+            depart_objpose_list = self.gen_object_motion(depart_conf_list, rel_obj_pos, rel_obj_rotmat, type='relative')
+            self.rbt.release(objcm, jaw_width, hnd_name)
             if len(depart_conf_list) == 0:
                 print('Cannot perform depart action!')
             else:
-                approach_jawwidth_list = self.gen_jawwidth_motion(approach_conf_list, approach_jawwidth)
-                depart_jawwidth_list = self.gen_jawwidth_motion(depart_conf_list, depart_jawwidth)
-                return approach_conf_list + depart_conf_list, approach_jawwidth_list + depart_jawwidth_list
+                return approach_conf_list + depart_conf_list, \
+                       approach_jawwidth_list + depart_jawwidth_list, \
+                       approach_objpose_list + depart_objpose_list
 
     def gen_pickup_motion(self,
                           component_name,
+                          hnd_name,
+                          objcm,
                           grasp_info,
-                          goal_info,
+                          goal_obj_pos,
+                          goal_obj_rotmat,
                           start_conf=None,
                           goal_conf=None,
                           approach_direction=np.array([0, 0, -1]),
-                          approach_distance=100,
+                          approach_distance=.1,
+                          approach_jawwidth=.05,
                           depart_direction=np.array([0, 0, 1]),
-                          depart_distance=100,
-                          obstacle_list=[]):
+                          depart_distance=.1,
+                          depart_jawwidth=.0,
+                          granularity=.03,
+                          obstacle_list=[],
+                          seed_jnt_values=None):
         """
         degenerate into gen_pickup_primitive if both start_conf and goal_conf are None
         :param component_name:
+        :param hnd_name:
+        :param objcm:
         :param grasp_info:
-        :param goal_info:
+        :param goal_obj_pos:
+        :param goal_obj_rotmat:
         :param start_conf:
         :param goal_conf:
         :param approach_direction:
         :param approach_distance:
+        :param approach_jawwidth:
         :param depart_direction:
         :param depart_distance:
+        :param depart_jawwidth:
+        :param granularity:
         :param obstacle_list:
+        :param seed_jnt_values:
         :return:
+        author: weiwei
+        date: 20210125
         """
-        hnd_instance = self.rbt.get_hnd_on_component(component_name)
-        pickup_conf_list, pickup_jawwidth_list = self.gen_pickup_primitive(component_name,
-                                                                           grasp_info,
-                                                                           goal_info,
-                                                                           approach_direction,
-                                                                           approach_distance,
-                                                                           depart_direction,
-                                                                           depart_distance,
-                                                                           obstacle_list)
-        if start_conf is not None:
-            start2pick_conf_list = self.rrtc_plnr.plan(start_conf,
-                                                       pickup_conf_list[0],
-                                                       obstacle_list,
-                                                       ext_dist=.05,
-                                                       rand_rate=70,
-                                                       maxtime=300,
-                                                       component_name=component_name)
-            start2pick_conf_list, start2pick_jawwidth_list = \
-                self.inik_slvr.extend_motion_with_jawwidth(start2pick_conf_list, hnd_instance.jaw_width_rng[1])
-        if goal_conf is not None:
-            up2goal_conf_list = self.rrtc_plnr.plan(pickup_conf_list[-1],
-                                                    goal_conf,
-                                                    obstacle_list,
-                                                    ext_dist=.05,
-                                                    rand_rate=70,
-                                                    maxtime=300,
-                                                    component_name=component_name)
-            up2goal_conf_list, up2goal_jawwidth_list = \
-                self.inik_slvr.extend_motion_with_jawwidth(up2goal_conf_list, hnd_instance.jaw_width_rng[0])
-        return start2pick_conf_list + pickup_conf_list + up2goal_conf_list, \
-               start2pick_jawwidth_list + pickup_jawwidth_list + up2goal_jawwidth_list
+        objcm = objcm.copy()
+        objcm.set_pos(goal_obj_pos)
+        objcm.set_rotmat(goal_obj_rotmat)
+        jaw_width, _, loc_hnd_pos, loc_hnd_rotmat = grasp_info
+        goal_hnd_pos = goal_obj_rotmat.dot(loc_hnd_pos) + goal_obj_pos
+        goal_hnd_rotmat = goal_obj_rotmat.dot(loc_hnd_rotmat)
+        abs_obj_pos = objcm.get_pos()
+        abs_obj_rotmat = objcm.get_rotmat()
+        approach_conf_list, approach_jawwidth_list = self.gen_approach_motion(component_name,
+                                                                              goal_hnd_pos,
+                                                                              goal_hnd_rotmat,
+                                                                              start_conf,
+                                                                              approach_direction,
+                                                                              approach_distance,
+                                                                              approach_jawwidth,
+                                                                              granularity,
+                                                                              obstacle_list,
+                                                                              seed_jnt_values)
+        approach_objpose_list = self.gen_object_motion(component_name, abs_obj_pos, abs_obj_rotmat)
+        if len(approach_conf_list) == 0:
+            print('Cannot perform approach action!')
+        else:
+            jnt_values_bk = self.rbt.get_jnt_values(component_name)
+            self.rbt.fk(approach_conf_list[-1])
+            rel_obj_pos, rel_obj_rotmat = self.rbt.hold(objcm, jaw_width, hnd_name)
+            self.rbt.fk(jnt_values_bk)
+            depart_conf_list, depart_jawwidth_list = self.gen_depart_motion(component_name,
+                                                                            goal_hnd_pos,
+                                                                            goal_hnd_rotmat,
+                                                                            goal_conf,
+                                                                            depart_direction,
+                                                                            depart_distance,
+                                                                            depart_jawwidth,
+                                                                            granularity,
+                                                                            obstacle_list,
+                                                                            seed_jnt_values=approach_conf_list[-1])
+            depart_objpose_list = self.gen_object_motion(depart_conf_list, rel_obj_pos, rel_obj_rotmat, type='relative')
+            self.rbt.release(objcm, jaw_width, hnd_name)
+            if len(depart_conf_list) == 0:
+                print('Cannot perform depart action!')
+            else:
+                return approach_conf_list + depart_conf_list, \
+                       approach_jawwidth_list + depart_jawwidth_list, \
+                       approach_objpose_list + depart_objpose_list
+
+    def gen_moveto_primitive(self,
+                             component_name,
+                             hnd_name,
+                             objcm,
+                             grasp_info,
+                             start_obj_pos,
+                             start_obj_rotmat,
+                             goal_obj_pos,
+                             goal_obj_rotmat,
+                             jawwidth=.0,
+                             granularity=.03,
+                             seed_jnt_values=None):
+        objcm = objcm.copy()
+        objcm.set_pos(start_obj_pos)
+        objcm.set_rotmat(start_obj_rotmat)
+        jaw_width, _, loc_hnd_pos, loc_hnd_rotmat = grasp_info
+        start_hnd_pos = start_obj_rotmat.dot(loc_hnd_pos) + start_obj_pos
+        start_hnd_rotmat = start_obj_rotmat.dot(loc_hnd_rotmat)
+        goal_hnd_pos = goal_obj_rotmat.dot(loc_hnd_pos) + goal_obj_pos
+        goal_hnd_rotmat = goal_obj_rotmat.dot(loc_hnd_rotmat)
+        jnt_values_bk = self.rbt.get_jnt_values(component_name)
+        self.rbt.fk(self.rbt.ik(component_name, start_hnd_pos, start_hnd_rotmat, seed_conf=seed_jnt_values))
+        rel_obj_pos, rel_obj_rotmat = self.rbt.hold(objcm, jaw_width, hnd_name)
+        self.rbt.fk(jnt_values_bk)
+        conf_list = self.inik_slvr.gen_linear_motion(component_name,
+                                                     start_hnd_pos,
+                                                     start_hnd_rotmat,
+                                                     goal_hnd_pos,
+                                                     goal_hnd_rotmat,
+                                                     obstacle_list=[],
+                                                     granularity=granularity,
+                                                     seed_jnt_values=seed_jnt_values)
+        jawwidth_list = self.gen_jawwidth_motion(conf_list, jawwidth)
+        objpose_list = self.gen_object_motion(component_name, conf_list, rel_obj_pos, rel_obj_rotmat, type='relative')
+        self.rbt.release(objcm, jaw_width, hnd_name)
+        return conf_list, jawwidth_list, objpose_list
+
+    def gen_moveto_motion(self):
+        pass
+
+    def gen_placedown_primitive(self):
+        pass
+
+    def gen_placedown_motion(self,
+                             component_name,
+                             hnd_name,
+                             objcm,
+                             grasp_info,
+                             goal_obj_pos,
+                             goal_obj_rotmat,
+                             start_conf=None,
+                             goal_conf=None,
+                             approach_direction=np.array([0, 0, -1]),
+                             approach_distance=.1,
+                             approach_jawwidth=.05,
+                             depart_direction=np.array([0, 0, 1]),
+                             depart_distance=.1,
+                             depart_jawwidth=.0,
+                             granularity=.03,
+                             obstacle_list=[],
+                             seed_jnt_values=None):
+        """
+        degenerate into gen_pickup_primitive if both start_conf and goal_conf are None
+        :param component_name:
+        :param hnd_name:
+        :param objcm:
+        :param grasp_info:
+        :param goal_obj_pos:
+        :param goal_obj_rotmat:
+        :param start_conf:
+        :param goal_conf:
+        :param approach_direction:
+        :param approach_distance:
+        :param approach_jawwidth:
+        :param depart_direction:
+        :param depart_distance:
+        :param depart_jawwidth:
+        :param granularity:
+        :param obstacle_list:
+        :param seed_jnt_values:
+        :return:
+        author: weiwei
+        date: 20210125
+        """
+        objcm = objcm.copy()
+        objcm.set_pos(goal_obj_pos)
+        objcm.set_rotmat(goal_obj_rotmat)
+        jaw_width, _, loc_hnd_pos, loc_hnd_rotmat = grasp_info
+        goal_hnd_pos = goal_obj_rotmat.dot(loc_hnd_pos) + goal_obj_pos
+        goal_hnd_rotmat = goal_obj_rotmat.dot(loc_hnd_rotmat)
+        abs_obj_pos = objcm.get_pos()
+        abs_obj_rotmat = objcm.get_rotmat()
+        approach_conf_list, approach_jawwidth_list = self.gen_approach_motion(component_name,
+                                                                              goal_hnd_pos,
+                                                                              goal_hnd_rotmat,
+                                                                              start_conf,
+                                                                              approach_direction,
+                                                                              approach_distance,
+                                                                              approach_jawwidth,
+                                                                              granularity,
+                                                                              obstacle_list,
+                                                                              seed_jnt_values)
+        approach_objpose_list = self.gen_object_motion(component_name, abs_obj_pos, abs_obj_rotmat)
+        if len(approach_conf_list) == 0:
+            print('Cannot perform approach action!')
+        else:
+            rel_obj_pos, rel_obj_rotmat = self.rbt.hold(objcm, jaw_width, hnd_name)
+            depart_conf_list, depart_jawwidth_list = self.gen_depart_motion(component_name,
+                                                                            goal_hnd_pos,
+                                                                            goal_hnd_rotmat,
+                                                                            goal_conf,
+                                                                            depart_direction,
+                                                                            depart_distance,
+                                                                            depart_jawwidth,
+                                                                            granularity,
+                                                                            obstacle_list,
+                                                                            seed_jnt_values=approach_conf_list[-1])
+            depart_objpose_list = self.gen_object_motion(depart_conf_list, rel_obj_pos, rel_obj_rotmat, type='relative')
+            self.rbt.release(objcm, jaw_width, hnd_name)
+            if len(depart_conf_list) == 0:
+                print('Cannot perform depart action!')
+            else:
+                return approach_conf_list + depart_conf_list, \
+                       approach_jawwidth_list + depart_jawwidth_list, \
+                       approach_objpose_list + depart_objpose_list
 
     def gen_ppmotion(self, candidatepredgidlist, objinithomomat, objgoalhomomat, armname,
                      rbtinitarmjnts=None, rbtgoalarmjnts=None, finalstate="io",

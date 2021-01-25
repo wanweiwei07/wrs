@@ -78,6 +78,12 @@ class RobotInterface(object):
     def rand_conf(self, component_name):
         return self.manipulator_dict[component_name].rand_conf()
 
+    def get_loc_pose(self, component_name, gl_obj_pos, gl_obj_rotmat):
+        return self.manipulator_dict[component_name].get_loc_pose(gl_obj_pos, gl_obj_rotmat)
+
+    def get_gl_pose(self, component_name, rel_obj_pos, rel_obj_rotmat):
+        return self.manipulator_dict[component_name].get_gl_pose(rel_obj_pos, rel_obj_pos)
+
     def show_cdprimit(self):
         self.cc.show_cdprimit(need_update=self.is_fk_updated)
 

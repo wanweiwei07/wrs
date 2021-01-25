@@ -34,6 +34,7 @@ class ADPlanner(object):  # AD = Approach_Depart
                                approach_direction=np.array([0, 0, -1]),
                                approach_distance=.1,
                                approach_jawwidth=.05,
+                               granularity=0.03,
                                seed_jnt_values=None,
                                toggle_end_grasp='False',
                                end_jawwidth=.0):
@@ -45,6 +46,7 @@ class ADPlanner(object):  # AD = Approach_Depart
         :param approach_direction:
         :param approach_distance:
         :param approach_jawwidth:
+        :param granularity:
         :param toggle_end_grasp:
         :param end_jawwidth: only used when toggle_end_grasp is True
         :return:
@@ -57,7 +59,7 @@ class ADPlanner(object):  # AD = Approach_Depart
                                                          approach_direction,
                                                          approach_distance,
                                                          obstacle_list=[],
-                                                         granularity=0.03,
+                                                         granularity=granularity,
                                                          type='sink',
                                                          seed_jnt_values=seed_jnt_values)
         if len(conf_list) == 0:
@@ -79,6 +81,7 @@ class ADPlanner(object):  # AD = Approach_Depart
                              depart_direction=np.array([0, 0, 1]),
                              depart_distance=.1,
                              depart_jawwidth=.05,
+                             granularity=0.03,
                              seed_jnt_values=None,
                              toggle_begin_release='False',
                              begin_jawwidth=.0):
@@ -90,6 +93,8 @@ class ADPlanner(object):  # AD = Approach_Depart
         :param depart_direction:
         :param depart_distance:
         :param depart_jawwidth:
+        :param granularity:
+        :param seed_jnt_values:
         :param toggle_begin_grasp:
         :param begin_jawwidth: only used when toggle_end_grasp is True
         :return:
@@ -102,7 +107,7 @@ class ADPlanner(object):  # AD = Approach_Depart
                                                          depart_direction,
                                                          depart_distance,
                                                          obstacle_list=[],
-                                                         granularity=0.03,
+                                                         granularity=granularity,
                                                          type='source',
                                                          seed_jnt_values=seed_jnt_values)
         if len(conf_list) == 0:
@@ -127,6 +132,7 @@ class ADPlanner(object):  # AD = Approach_Depart
                          depart_direction=np.array([0, 0, 1]),
                          depart_distance=.1,
                          depart_jawwidth=0,
+                         granularity=.03,
                          seed_jnt_values=None):
         """
         :param component_name:
@@ -139,6 +145,7 @@ class ADPlanner(object):  # AD = Approach_Depart
         :param depart_direction:
         :param depart_distance:
         :param depart_jawwidth:
+        :param granularity:
         :return: approach_conf_list, depart_jawwidth_list
         author: weiwei, hao
         date: 20191122, 20200105, 20210113, 20210125
@@ -149,10 +156,10 @@ class ADPlanner(object):  # AD = Approach_Depart
                                                                   approach_direction,
                                                                   approach_distance,
                                                                   obstacle_list=[],
-                                                                  granularity=0.03,
+                                                                  granularity=granularity,
                                                                   type='sink',
                                                                   seed_jnt_values=seed_jnt_values)
-        if len(approach_conf_list) == 0:
+        if approach_distance != 0 and len(approach_conf_list) == 0:
             print('Cannot perform approach action!')
         else:
             depart_conf_list = self.inik_slvr.gen_rel_linear_motion(component_name,
@@ -161,10 +168,10 @@ class ADPlanner(object):  # AD = Approach_Depart
                                                                     depart_direction,
                                                                     depart_distance,
                                                                     obstacle_list=[],
-                                                                    granularity=0.03,
+                                                                    granularity=granularity,
                                                                     type='source',
                                                                     seed_jnt_values=approach_conf_list[-1])
-            if len(depart_conf_list) == 0:
+            if depart_distance != 0 and len(depart_conf_list) == 0:
                 print('Cannot perform depart action!')
             else:
                 approach_jawwidth_list = self.gen_jawwidth_motion(approach_conf_list, approach_jawwidth)
@@ -180,16 +187,21 @@ class ADPlanner(object):  # AD = Approach_Depart
                             approach_direction=np.array([0, 0, -1]),
                             approach_distance=.1,
                             approach_jawwidth=.05,
+                            granularity=.03,
                             obstacle_list=[],
+                            seed_jnt_values=None,
                             toggle_end_grasp='False',
                             end_jawwidth=.0):
+        if seed_jnt_values is None:
+            seed_jnt_values = start_conf
         conf_list, jawwidth_list = self.gen_approach_primitive(component_name,
                                                                goal_hnd_pos,
                                                                goal_hnd_rotmat,
                                                                approach_direction,
                                                                approach_distance,
                                                                approach_jawwidth,
-                                                               start_conf,
+                                                               granularity,
+                                                               seed_jnt_values,
                                                                toggle_end_grasp,
                                                                end_jawwidth)
         if start_conf is not None:
@@ -211,16 +223,21 @@ class ADPlanner(object):  # AD = Approach_Depart
                           depart_direction=np.array([0, 0, 1]),
                           depart_distance=.1,
                           depart_jawwidth=.05,
+                          granularity=.03,
                           obstacle_list=[],
+                          seed_jnt_values=None,
                           toggle_begin_grasp='False',
                           begin_jawwidth=.0):
+        if seed_jnt_values is None:
+            seed_jnt_values = goal_conf
         conf_list, jawwidth_list = self.gen_depart_primitive(component_name,
                                                              start_hnd_pos,
                                                              start_hnd_rotmat,
                                                              depart_direction,
                                                              depart_distance,
                                                              depart_jawwidth,
-                                                             goal_conf,
+                                                             granularity,
+                                                             seed_jnt_values,
                                                              toggle_begin_grasp,
                                                              begin_jawwidth)
         if goal_conf is not None:
@@ -246,6 +263,8 @@ class ADPlanner(object):  # AD = Approach_Depart
                       depart_direction=np.array([0, 0, 1]),
                       depart_distance=.1,
                       depart_jawwidth=0,
+                      granularity=.03,
+                      seed_jnt_values=None,
                       obstacle_list=[]):
         """
         degenerate into gen_ad_primitive if both start_conf and goal_conf are None
@@ -260,11 +279,15 @@ class ADPlanner(object):  # AD = Approach_Depart
         :param depart_direction:
         :param depart_distance:
         :param depart_jawwidth:
+        :param granularity:
+        :param seed_jnt_values:
         :param obstacle_list:
         :return:
         author: weiwei
         date: 20210113, 20210125
         """
+        if seed_jnt_values is None:
+            seed_jnt_values = start_conf
         ad_conf_list, ad_jawwidth_list = self.gen_ad_primitive(component_name,
                                                                goal_hnd_pos,
                                                                goal_hnd_rotmat,
@@ -274,7 +297,8 @@ class ADPlanner(object):  # AD = Approach_Depart
                                                                depart_direction,
                                                                depart_distance,
                                                                depart_jawwidth,
-                                                               start_conf)
+                                                               granularity,
+                                                               seed_jnt_values)
         if start_conf is not None:
             start2approach_conf_list = self.rrtc_plnr.plan(start_conf,
                                                            ad_conf_list[0],
@@ -315,34 +339,36 @@ if __name__ == '__main__':
 
     adp = ADPlanner(yumi_instance)
     tic = time.time()
-    # conf_list, jawwidth_list = adp.gen_ad_primitive(manipulator_name, goal_info,
+    # conf_list, jawwidth_list = adp.gen_ad_primitive(manipulator_name,
+    #                                                 goal_pos,
+    #                                                 goal_rotmat,
     #                                                 approach_direction=np.array([0, 0, -1]),
     #                                                 approach_distance=.1,
     #                                                 depart_direction=np.array([0, 1, 0]),
-    #                                                 depart_distance=.3,
+    #                                                 depart_distance=.0,
     #                                                 depart_jawwidth=0)
-    # conf_list, jawwidth_list = adp.gen_ad_motion(manipulator_name,
-    #                                              goal_pos,
-    #                                              goal_rotmat,
-    #                                              start_conf=yumi_instance.get_jnt_values(manipulator_name),
-    #                                              goal_conf=yumi_instance.get_jnt_values(manipulator_name),
-    #                                              approach_direction=np.array([0, 0, -1]),
-    #                                              approach_distance=.1,
-    #                                              depart_direction=np.array([0, -1, 0]),
-    #                                              depart_distance=.3,
-    #                                              depart_jawwidth=0)
+    conf_list, jawwidth_list = adp.gen_ad_motion(manipulator_name,
+                                                 goal_pos,
+                                                 goal_rotmat,
+                                                 start_conf=yumi_instance.get_jnt_values(manipulator_name),
+                                                 goal_conf=yumi_instance.get_jnt_values(manipulator_name),
+                                                 approach_direction=np.array([0, 0, -1]),
+                                                 approach_distance=.1,
+                                                 depart_direction=np.array([0, -1, 0]),
+                                                 depart_distance=.0,
+                                                 depart_jawwidth=0)
     # conf_list, jawwidth_list = adp.gen_approach_motion(manipulator_name,
     #                                                    goal_pos,
     #                                                    goal_rotmat,
     #                                                    start_conf=yumi_instance.get_jnt_values(manipulator_name),
     #                                                    approach_direction=np.array([0, 0, -1]),
     #                                                    approach_distance=.1)
-    conf_list, jawwidth_list = adp.gen_depart_motion(manipulator_name,
-                                                     goal_pos,
-                                                     goal_rotmat,
-                                                     goal_conf=yumi_instance.get_jnt_values(manipulator_name),
-                                                     depart_direction=np.array([0, 0, 1]),
-                                                     depart_distance=.1)
+    # conf_list, jawwidth_list = adp.gen_depart_motion(manipulator_name,
+    #                                                  goal_pos,
+    #                                                  goal_rotmat,
+    #                                                  goal_conf=yumi_instance.get_jnt_values(manipulator_name),
+    #                                                  depart_direction=np.array([0, 0, 1]),
+    #                                                  depart_distance=.1)
     toc = time.time()
     print(toc - tic)
     for i, conf_value in enumerate(conf_list):
