@@ -216,9 +216,9 @@ class CollisionModel(gm.GeometricModel):
         if not isinstance(objcm_list, list):
             objcm_list = [objcm_list]
         for objcm in objcm_list:
-            iscollided, contacts = mcd.is_collided(self, objcm)
+            iscollided, contact_points = mcd.is_collided(self, objcm)
             if iscollided and toggle_contacts:
-                return [True, [ct.point for ct in contacts]]
+                return [True, contact_points]
             elif iscollided:
                 return True
         return [False, []] if toggle_contacts else False

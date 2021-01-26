@@ -43,26 +43,28 @@ class YumiGripper(gp.GripperInterface):
         # jaw center
         self.jaw_center_pos = np.array([0,0,.13])
         # collision detection
-        if enable_cc:
-            self.enable_cc()
+        self.all_cdelements=[]
+        self.enable_cc(toggle_cdprimit=enable_cc)
 
-    def enable_cc(self):
-        super().enable_cc()
-        # cdprimit
-        self.cc.add_cdlnks(self.lft, [0, 1])
-        self.cc.add_cdlnks(self.rgt, [1])
-        activelist = [self.lft.lnks[0],
-                      self.lft.lnks[1],
-                      self.rgt.lnks[1]]
-        self.cc.set_active_cdlnks(activelist)
-        # cdmesh
-        for cdelement in self.cc.all_cdelements:
-            # pos = cdelement['gl_pos']
-            # rotmat = cdelement['gl_rotmat']
-            cdmesh = cdelement['collisionmodel'].copy()
-            # cdmesh.set_pos(pos)
-            # cdmesh.set_rotmat(rotmat)
-            self.cdmesh_collection.add_cm(cdmesh)
+    def enable_cc(self, toggle_cdprimit):
+        if toggle_cdprimit:
+            super().enable_cc()
+            # cdprimit
+            self.cc.add_cdlnks(self.lft, [0, 1])
+            self.cc.add_cdlnks(self.rgt, [1])
+            activelist = [self.lft.lnks[0],
+                          self.lft.lnks[1],
+                          self.rgt.lnks[1]]
+            self.cc.set_active_cdlnks(activelist)
+            self.all_cdelements = self.cc.all_cdelements
+        else:
+            self.all_cdelements = [self.lft.lnks[0],
+                                   self.lft.lnks[1],
+                                   self.rgt.lnks[1]]
+            # cdmesh
+            for cdelement in self.all_cdelements:
+                cdmesh = cdelement['collisionmodel'].copy()
+                self.cdmesh_collection.add_cm(cdmesh)
 
     def fix_to(self, pos, rotmat):
         self.pos = pos

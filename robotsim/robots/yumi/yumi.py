@@ -251,7 +251,7 @@ class Yumi(ri.RobotInterface):
         elif component_name == 'all':
             pass
         else:
-            raise ValueError("The given jlc name is not available!")
+            raise ValueError("The given component name is not available!")
 
     def hold(self, objcm, jaw_width=None, hnd_name='lft_hnd'):
         """
@@ -280,8 +280,8 @@ class Yumi(ri.RobotInterface):
             self.lft_oih_infos.append(self.cc.add_cdobj(objcm, rel_pos, rel_rotmat, intolist))
         elif hnd_name == 'rgt_hnd':
             rel_pos, rel_rotmat = self.rgt_arm.get_loc_pose(objcm.get_pos(), objcm.get_rotmat())
-            intolist = [self.rgt_body.lnks[0],
-                        self.rgt_body.lnks[1],
+            intolist = [self.lft_body.lnks[0],
+                        self.lft_body.lnks[1],
                         self.rgt_arm.lnks[1],
                         self.rgt_arm.lnks[2],
                         self.rgt_arm.lnks[3],
@@ -299,7 +299,7 @@ class Yumi(ri.RobotInterface):
         else:
             raise ValueError("hnd_name must be lft_hnd or rgt_hnd!")
         if jaw_width is not None:
-            self.jaw_to(jaw_width, hnd_name=hnd_name)
+            self.jaw_to(hnd_name, jaw_width)
         return rel_pos, rel_rotmat
 
     def get_oih_cm_list(self, hnd_name='lft_hnd'):
@@ -337,7 +337,7 @@ class Yumi(ri.RobotInterface):
         else:
             raise ValueError("hnd_name must be lft_hnd or rgt_hnd!")
         if jaw_width is not None:
-            self.jaw_to(jaw_width, hnd_name)
+            self.jaw_to(hnd_name, jaw_width)
         for obj_info in oih_infos:
             if obj_info['collisionmodel'] is objcm:
                 self.cc.delete_cdobj(obj_info)

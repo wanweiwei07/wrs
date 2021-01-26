@@ -205,13 +205,13 @@ class ADPlanner(object):  # AD = Approach_Depart
                                                                toggle_end_grasp,
                                                                end_jawwidth)
         if start_conf is not None:
-            start2approach_conf_list = self.rrtc_plnr.plan(start_conf,
-                                                           conf_list[0],
-                                                           obstacle_list,
+            start2approach_conf_list = self.rrtc_plnr.plan(component_name=component_name,
+                                                           start_conf=start_conf,
+                                                           goal_conf=conf_list[0],
+                                                           obstacle_list=obstacle_list,
                                                            ext_dist=.05,
                                                            rand_rate=70,
-                                                           maxtime=300,
-                                                           component_name=component_name)
+                                                           maxtime=300)
             start2approach_jawwidth_list = self.gen_jawwidth_motion(start2approach_conf_list, approach_jawwidth)
         return start2approach_conf_list + conf_list, start2approach_jawwidth_list + jawwidth_list
 
@@ -241,14 +241,17 @@ class ADPlanner(object):  # AD = Approach_Depart
                                                              toggle_begin_grasp,
                                                              begin_jawwidth)
         if goal_conf is not None:
-            depart2goal_conf_list = self.rrtc_plnr.plan(conf_list[-1],
-                                                        goal_conf,
-                                                        obstacle_list,
+            depart2goal_conf_list = self.rrtc_plnr.plan(component_name=component_name,
+                                                        start_conf=conf_list[-1],
+                                                        goal_conf=goal_conf,
+                                                        obstacle_list=obstacle_list,
                                                         ext_dist=.05,
                                                         rand_rate=70,
-                                                        maxtime=300,
-                                                        component_name=component_name)
+                                                        maxtime=300)
             depart2goal_jawwidth_list = self.gen_jawwidth_motion(depart2goal_conf_list, depart_jawwidth)
+        else:
+            depart2goal_conf_list = []
+            depart2goal_jawwidth_list = []
         return conf_list + depart2goal_conf_list, jawwidth_list + depart2goal_jawwidth_list
 
     def gen_ad_motion(self,
@@ -300,22 +303,22 @@ class ADPlanner(object):  # AD = Approach_Depart
                                                                granularity,
                                                                seed_jnt_values)
         if start_conf is not None:
-            start2approach_conf_list = self.rrtc_plnr.plan(start_conf,
-                                                           ad_conf_list[0],
-                                                           obstacle_list,
+            start2approach_conf_list = self.rrtc_plnr.plan(component_name=component_name,
+                                                           start_conf=start_conf,
+                                                           goal_conf=ad_conf_list[0],
+                                                           obstacle_list=obstacle_list,
                                                            ext_dist=.05,
                                                            rand_rate=70,
-                                                           maxtime=300,
-                                                           component_name=component_name)
+                                                           maxtime=300)
             start2approach_jawwidth_list = self.gen_jawwidth_motion(start2approach_conf_list, approach_jawwidth)
         if goal_conf is not None:
-            depart2goal_conf_list = self.rrtc_plnr.plan(ad_conf_list[-1],
-                                                        goal_conf,
-                                                        obstacle_list,
+            depart2goal_conf_list = self.rrtc_plnr.plan(component_name=component_name,
+                                                        start_conf=ad_conf_list[-1],
+                                                        goal_conf=goal_conf,
+                                                        obstacle_list=obstacle_list,
                                                         ext_dist=.05,
                                                         rand_rate=70,
-                                                        maxtime=300,
-                                                        component_name=component_name)
+                                                        maxtime=300)
             depart2goal_jawwidth_list = self.gen_jawwidth_motion(depart2goal_conf_list, depart_jawwidth)
         return start2approach_conf_list + ad_conf_list + depart2goal_conf_list, \
                start2approach_jawwidth_list + ad_jawwidth_list + depart2goal_jawwidth_list

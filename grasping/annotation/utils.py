@@ -192,12 +192,13 @@ if __name__ == '__main__':
     objcm = cm.CollisionModel(objpath)
     objcm.attach_to(base)
     objcm.show_localframe()
-    base.run()
-    grasp_info_list = define_grasp_with_rotation(gripper_instance, objcm,
+    grasp_info_list = define_grasp_with_rotation(gripper_instance,
+                                                 objcm,
                                                  gl_jaw_center=np.array([0,0,0]),
                                                  gl_hndz=np.array([1,0,0]),
                                                  gl_hndx=np.array([0,1,0]),
-                                                 jaw_width=.04)
+                                                 jaw_width=.04,
+                                                 rotation_ax=np.array([0,0,1]))
     for grasp_info in grasp_info_list:
         jaw_width, gl_jaw_center, pos, rotmat = grasp_info
         gic = gripper_instance.copy()

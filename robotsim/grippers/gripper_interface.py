@@ -53,7 +53,7 @@ class GripperInterface(object):
         return return_val
 
     def is_mesh_collided(self, objcm_list=[], toggle_debug=False):
-        for i, cdelement in enumerate(self.cc.all_cdelements):
+        for i, cdelement in enumerate(self.all_cdelements):
             pos = cdelement['gl_pos']
             rotmat = cdelement['gl_rotmat']
             self.cdmesh_collection.cm_list[i].set_pos(pos)

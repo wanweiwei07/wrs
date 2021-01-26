@@ -53,7 +53,7 @@ class RobotInterface(object):
     def fk(self, component_name, jnt_values):
         raise NotImplementedError
 
-    def jaw_to(self, jaw_width, hnd_name='lft_hnd'):
+    def jaw_to(self, hnd_name, jaw_width):
         self.hnd_dict[hnd_name].jaw_to(jaw_width)
 
     def ik(self,

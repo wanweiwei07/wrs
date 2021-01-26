@@ -14,13 +14,17 @@ class RRT(object):
         self.start_conf = None
         self.goal_conf = None
 
-    def _is_collided(self, jlc_name, conf, obstacle_list=[], otherrobot_list=[]):
-        self.robot.fk(component_name=jlc_name, jnt_values=conf)
+    def _is_collided(self,
+                     component_name,
+                     conf,
+                     obstacle_list=[],
+                     otherrobot_list=[]):
+        self.robot.fk(component_name=component_name, jnt_values=conf)
         return self.robot.is_collided(obstacle_list=obstacle_list, otherrobot_list=otherrobot_list)
 
-    def _sample_conf(self, jlc_name, rand_rate, default_conf):
+    def _sample_conf(self, component_name, rand_rate, default_conf):
         if random.randint(0, 100) < rand_rate:
-            return self.robot.rand_conf(component_name=jlc_name)
+            return self.robot.rand_conf(component_name=component_name)
         else:
             return default_conf
 
@@ -42,10 +46,10 @@ class RRT(object):
         return list(conf_array)
 
     def _extend_roadmap(self,
+                        component_name,
                         roadmap,
                         conf,
                         ext_dist,
-                        jlc_name,
                         goal_conf,
                         obstacle_list=[],
                         otherrobot_list=[],
@@ -59,7 +63,7 @@ class RRT(object):
         nearest_nid = self._get_nearest_nid(roadmap, conf)
         new_conf_list = self._extend_conf(roadmap.nodes[nearest_nid]['conf'], conf, ext_dist)
         for new_conf in new_conf_list:
-            if self._is_collided(jlc_name, new_conf, obstacle_list, otherrobot_list):
+            if self._is_collided(component_name, new_conf, obstacle_list, otherrobot_list):
                 return nearest_nid
             else:
                 new_nid = random.randint(0, 1e16)
@@ -93,8 +97,8 @@ class RRT(object):
         return conf_path
 
     def _smooth_path(self,
+                     component_name,
                      path,
-                     jlc_name=None,
                      obstacle_list=[],
                      otherrobot_list=[],
                      granularity=2,
@@ -110,7 +114,7 @@ class RRT(object):
             if j < i:
                 i, j = j, i
             shortcut = self._extend_conf(smoothed_path[i], smoothed_path[j], granularity)
-            if (len(shortcut) < (j - i)) and all(not self._is_collided(jlc_name=jlc_name,
+            if (len(shortcut) < (j - i)) and all(not self._is_collided(component_name=component_name,
                                                                        conf=conf,
                                                                        obstacle_list=obstacle_list,
                                                                        otherrobot_list=otherrobot_list)
@@ -118,8 +122,17 @@ class RRT(object):
                 smoothed_path = smoothed_path[:i + 1] + shortcut + smoothed_path[j + 1:]
         return smoothed_path
 
-    def plan(self, start_conf, goal_conf, obstacle_list=[], otherrobot_list=[], ext_dist=2, rand_rate=70,
-             maxiter=1000, maxtime=15.0, animation=False, jlc_name='all'):
+    def plan(self,
+             component_name,
+             start_conf,
+             goal_conf,
+             obstacle_list=[],
+             otherrobot_list=[],
+             ext_dist=2,
+             rand_rate=70,
+             maxiter=1000,
+             maxtime=15.0,
+             animation=False):
         """
         :return: [path, all_sampled_confs]
         author: weiwei
@@ -129,10 +142,10 @@ class RRT(object):
         self.start_conf = start_conf
         self.goal_conf = goal_conf
         # check start_conf and goal_conf
-        if self._is_collided(jlc_name, start_conf, obstacle_list, otherrobot_list):
+        if self._is_collided(component_name, start_conf, obstacle_list, otherrobot_list):
             print("The start robot configuration is in collision!")
             return [None, None]
-        if self._is_collided(jlc_name, goal_conf, obstacle_list, otherrobot_list):
+        if self._is_collided(component_name, goal_conf, obstacle_list, otherrobot_list):
             print("The goal robot configuration is in collision!")
             return [None, None]
         if self._goal_test(conf=start_conf, goal_conf=goal_conf, threshold=ext_dist):
@@ -146,11 +159,11 @@ class RRT(object):
                     print("Too much motion time! Failed to find a path.")
                     return [None, None]
             # Random Sampling
-            rand_conf = self._sample_conf(jlc_name=jlc_name, rand_rate=rand_rate, default_conf=goal_conf)
-            last_nid = self._extend_roadmap(self.roadmap,
+            rand_conf = self._sample_conf(component_name=component_name, rand_rate=rand_rate, default_conf=goal_conf)
+            last_nid = self._extend_roadmap(component_name=component_name,
+                                            roadmap=self.roadmap,
                                             conf=rand_conf,
                                             ext_dist=ext_dist,
-                                            jlc_name=jlc_name,
                                             goal_conf=goal_conf,
                                             obstacle_list=obstacle_list,
                                             otherrobot_list=otherrobot_list,
@@ -159,8 +172,8 @@ class RRT(object):
                 mapping = {'connection':'goal'}
                 self.roadmap = nx.relabel_nodes(self.roadmap, mapping)
                 path = self._path_from_roadmap()
-                smoothed_path = self._smooth_path(path,
-                                                  jlc_name=jlc_name,
+                smoothed_path = self._smooth_path(component_name=component_name,
+                                                  path=path,
                                                   obstacle_list=obstacle_list,
                                                   otherrobot_list=otherrobot_list,
                                                   granularity=ext_dist,
@@ -220,19 +233,19 @@ if __name__ == '__main__':
             self.jlc.jnts[2]['motion_rng'] = [-2.0, 15.0]
             self.jlc.reinitialize()
 
-        def fk(self, jlc_name='all', jnt_values=np.zeros(2)):
-            if jlc_name != 'all':
-                raise ValueError("Only support jlc_name == 'all'!")
+        def fk(self, component_name='all', jnt_values=np.zeros(2)):
+            if component_name != 'all':
+                raise ValueError("Only support component_name == 'all'!")
             self.jlc.fk(jnt_values)
 
-        def rand_conf(self, jlc_name='all'):
-            if jlc_name != 'all':
-                raise ValueError("Only support jlc_name == 'all'!")
+        def rand_conf(self, component_name='all'):
+            if component_name != 'all':
+                raise ValueError("Only support component_name == 'all'!")
             return self.jlc.rand_conf()
 
-        def get_jntvalues(self, jlc_name='all'):
-            if jlc_name != 'all':
-                raise ValueError("Only support jlc_name == 'all'!")
+        def get_jntvalues(self, component_name='all'):
+            if component_name != 'all':
+                raise ValueError("Only support component_name == 'all'!")
             return self.jlc.get_jnt_values()
 
         def is_collided(self, obstacle_list=[], otherrobot_list=[]):
@@ -257,7 +270,7 @@ if __name__ == '__main__':
     robot = XYBot()
     rrt = RRT(robot)
     path = rrt.plan(start_conf=np.array([0, 0]), goal_conf=np.array([5, 10]), obstacle_list=obstacle_list,
-                    ext_dist=1, rand_rate=70, maxtime=300, jlc_name='all', animation=True)
+                    ext_dist=1, rand_rate=70, maxtime=300, component_name='all', animation=True)
     # plt.show()
     # nx.draw(rrt.roadmap, with_labels=True, font_weight='bold')
     # plt.show()

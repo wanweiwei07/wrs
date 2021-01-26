@@ -12,10 +12,10 @@ class RRTConnect(rrt.RRT):
         self.roadmap_goal = nx.Graph()
 
     def _extend_roadmap(self,
+                        component_name,
                         roadmap,
                         conf,
                         ext_dist,
-                        jlc_name,
                         goal_conf,
                         obstacle_list=[],
                         otherrobot_list=[],
@@ -29,7 +29,7 @@ class RRTConnect(rrt.RRT):
         nearest_nid = self._get_nearest_nid(roadmap, conf)
         new_conf_list = self._extend_conf(roadmap.nodes[nearest_nid]['conf'], conf, ext_dist)
         for new_conf in new_conf_list:
-            if self._is_collided(jlc_name, new_conf, obstacle_list, otherrobot_list):
+            if self._is_collided(component_name, new_conf, obstacle_list, otherrobot_list):
                 return -1
             else:
                 new_nid = random.randint(0, 1e16)
@@ -48,8 +48,17 @@ class RRTConnect(rrt.RRT):
         else:
             return nearest_nid
 
-    def plan(self, start_conf, goal_conf, obstacle_list=[], otherrobot_list=[], ext_dist=2, rand_rate=70,
-             maxiter=1000, maxtime=15.0, animation=False, component_name='all'):
+    def plan(self,
+             component_name,
+             start_conf,
+             goal_conf,
+             obstacle_list=[],
+             otherrobot_list=[],
+             ext_dist=2,
+             rand_rate=70,
+             maxiter=1000,
+             maxtime=15.0,
+             animation=False):
         self.roadmap.clear()
         self.roadmap_start.clear()
         self.roadmap_goal.clear()
@@ -79,12 +88,12 @@ class RRTConnect(rrt.RRT):
                 if last_nid != -1:
                     goal_nid = last_nid
                 goal_conf = self.roadmap_goal.nodes[goal_nid]['conf']
-                rand_conf = self._sample_conf(jlc_name=component_name, rand_rate=rand_rate, default_conf=goal_conf)
+                rand_conf = self._sample_conf(component_name=component_name, rand_rate=rand_rate, default_conf=goal_conf)
                 # goal_nid = 'goal'
-                last_nid = self._extend_roadmap(self.roadmap_start,
+                last_nid = self._extend_roadmap(component_name=component_name,
+                                                roadmap=self.roadmap_start,
                                                 conf=rand_conf,
                                                 ext_dist=ext_dist,
-                                                jlc_name=component_name,
                                                 goal_conf=goal_conf,
                                                 obstacle_list=obstacle_list,
                                                 otherrobot_list=otherrobot_list,
@@ -100,11 +109,11 @@ class RRTConnect(rrt.RRT):
                     if last_nid != -1:
                         goal_nid = last_nid
                     goal_conf = self.roadmap_start.nodes[goal_nid]['conf']
-                    rand_conf = self._sample_conf(jlc_name=component_name, rand_rate=rand_rate, default_conf=goal_conf)
-                    last_nid = self._extend_roadmap(self.roadmap_goal,
+                    rand_conf = self._sample_conf(component_name=component_name, rand_rate=rand_rate, default_conf=goal_conf)
+                    last_nid = self._extend_roadmap(component_name=component_name,
+                                                    roadmap=self.roadmap_goal,
                                                     conf=rand_conf,
                                                     ext_dist=ext_dist,
-                                                    jlc_name=component_name,
                                                     goal_conf=goal_conf,
                                                     obstacle_list=obstacle_list,
                                                     otherrobot_list=otherrobot_list,
@@ -119,8 +128,8 @@ class RRTConnect(rrt.RRT):
             print("Reach to maximum iteration! Failed to find a path.")
             return [None, None]
         path = self._path_from_roadmap()
-        smoothed_path = self._smooth_path(path,
-                                          jlc_name=component_name,
+        smoothed_path = self._smooth_path(component_name=component_name,
+                                          path=path,
                                           obstacle_list=obstacle_list,
                                           otherrobot_list=otherrobot_list,
                                           granularity=ext_dist,
@@ -150,18 +159,18 @@ if __name__ == '__main__':
             self.jlc.jnts[2]['motion_rng'] = [-2.0, 15.0]
             self.jlc.reinitialize()
 
-        def fk(self, jlc_name='all', jnt_values=np.zeros(2)):
-            if jlc_name != 'all':
+        def fk(self, component_name='all', jnt_values=np.zeros(2)):
+            if component_name != 'all':
                 raise ValueError("Only support jlc_name == 'all'!")
             self.jlc.fk(jnt_values)
 
-        def rand_conf(self, jlc_name='all'):
-            if jlc_name != 'all':
+        def rand_conf(self, component_name='all'):
+            if component_name != 'all':
                 raise ValueError("Only support jlc_name == 'all'!")
             return self.jlc.rand_conf()
 
-        def get_jntvalues(self, jlc_name='all'):
-            if jlc_name != 'all':
+        def get_jntvalues(self, component_name='all'):
+            if component_name != 'all':
                 raise ValueError("Only support jlc_name == 'all'!")
             return self.jlc.get_jnt_values()
 
@@ -192,8 +201,8 @@ if __name__ == '__main__':
     # Set Initial parameters
     robot = XYBot()
     rrtc = RRTConnect(robot)
-    path = rrtc.plan(start_conf=np.array([0, 0]), goal_conf=np.array([5, 10]), obstacle_list=obstacle_list,
-                     ext_dist=1, rand_rate=70, maxtime=300, component_name='all', animation=True)
+    path = rrtc.plan(component_name='all', start_conf=np.array([0, 0]), goal_conf=np.array([5, 10]), obstacle_list=obstacle_list,
+                     ext_dist=1, rand_rate=70, maxtime=300, animation=True)
     # import time
     # total_t = 0
     # for i in range(100):
