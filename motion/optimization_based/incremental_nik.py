@@ -42,13 +42,13 @@ class IncrementalNIK(object):
         for (pos, rotmat) in zip(pos_list, rotmat_list):
             jnt_values = self.rbt.ik(component_name, pos, rotmat, seed_conf=seed_jnt_values)
             if jnt_values is None:
-                print("Not solvable!")
+                print("IK not solvable in gen_linear_motion!")
                 self.rbt.fk(component_name, jnt_values_bk)
                 return []
             else:
                 self.rbt.fk(component_name, jnt_values)
                 if self.rbt.is_collided(obstacle_list):
-                    print("Intermediate pose collided!")
+                    print("Intermediate pose collided in gen_linear_motion!")
                     self.rbt.fk(component_name, jnt_values_bk)
                     return []
             jnt_values_list.append(jnt_values)
@@ -78,7 +78,7 @@ class IncrementalNIK(object):
         date: 20210114
         """
         if type == 'sink':
-            start_hnd_pos = goal_hnd_pos - direction * distance
+            start_hnd_pos = goal_hnd_pos - rm.unit_vector(direction) * distance
             start_hnd_rotmat = goal_hnd_rotmat
             return self.gen_linear_motion(component_name,
                                           start_hnd_pos,

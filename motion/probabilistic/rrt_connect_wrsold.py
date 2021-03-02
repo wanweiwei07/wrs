@@ -58,12 +58,12 @@ class RRTConnect(rrt.RRT):
         # check start and goal
         if self._is_collided(component_name, start_conf, obstacle_list, otherrobot_list):
             print("The start robot configuration is in collision!")
-            return [None, None]
+            return None
         if self._is_collided(component_name, goal_conf, obstacle_list, otherrobot_list):
             print("The goal robot configuration is in collision!")
-            return [None, None]
+            return None
         if self._goal_test(conf=start_conf, goal_conf=goal_conf, threshold=ext_dist):
-            return [[start_conf, goal_conf], None]
+            return [start_conf, goal_conf]
         self.roadmap_start.add_node('start', conf=start_conf)
         self.roadmap_goal.add_node('goal', conf=goal_conf)
         last_nid = 'goal'
@@ -73,7 +73,7 @@ class RRTConnect(rrt.RRT):
             if maxtime > 0.0:
                 if toc - tic > maxtime:
                     print("Too much motion time! Failed to find a path.")
-                    return [None, None]
+                    return None
             # Random Sampling
             goal_nid = last_nid
             goal_conf = self.roadmap_goal.nodes[goal_nid]['conf']
@@ -109,7 +109,7 @@ class RRTConnect(rrt.RRT):
                     break
         else:
             print("Reach to maximum iteration! Failed to find a path.")
-            return [None, None]
+            return None
         path = self._path_from_roadmap()
         return path
         smoothed_path = self._smooth_path(component_name=component_name,

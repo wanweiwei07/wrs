@@ -134,7 +134,6 @@ class XArm7YunjiMobile(ri.RobotInterface):
             self.agv.fix_to(self.pos, self.rotmat)
             self.arm.fix_to(pos=self.agv.jnts[-1]['gl_posq'], rotmat=self.agv.jnts[-1]['gl_rotmatq'], jnt_values=jnt_values[3:10])
             self.hnd.fix_to(pos=self.arm.jnts[-1]['gl_posq'], rotmat=self.arm.jnts[-1]['gl_rotmatq'])
-            # TODO ? update objects in hand if available
         elif component_name == 'all':
             if not isinstance(jnt_values, np.ndarray) or jnt_values.size != 11:
                 raise ValueError("An 1x10 npdarray must be specified to move all joints!")
@@ -144,6 +143,7 @@ class XArm7YunjiMobile(ri.RobotInterface):
             self.agv.fix_to(self.pos, self.rotmat)
             self.arm.fix_to(pos=self.agv.jnts[-1]['gl_posq'], rotmat=self.agv.jnts[-1]['gl_rotmatq'], jnt_values=jnt_values[3:10])
             self.hnd.fix_to(pos=self.arm.jnts[-1]['gl_posq'], rotmat=self.arm.jnts[-1]['gl_rotmatq'], motion_val = jnt_values[10])
+        # update objects in hand
         for obj_info in self.oih_infos:
             gl_pos, gl_rotmat = self.arm.get_gl_pose(obj_info['rel_pos'], obj_info['rel_rotmat'])
             obj_info['gl_pos'] = gl_pos

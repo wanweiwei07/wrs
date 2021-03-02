@@ -230,6 +230,17 @@ class Yumi(ri.RobotInterface):
         author: weiwei
         date: 20201208toyonaka
         """
+        def update_oih(component_name='rgt_arm'):
+            # inline function for update objects in hand
+            if component_name=='rgt_arm':
+                oih_info_list = self.rgt_oih_infos
+            elif component_name=='lft_arm':
+                oih_info_list = self.lft_oih_infos
+            for obj_info in oih_info_list:
+                gl_pos, gl_rotmat = self.get_gl_pose(component_name, obj_info['rel_pos'], obj_info['rel_rotmat'])
+                obj_info['gl_pos'] = gl_pos
+                obj_info['gl_rotmat'] = gl_rotmat
+
         # examine length
         if component_name == 'lft_arm' or component_name == 'rgt_arm':
             if not isinstance(jnt_values, np.ndarray) or jnt_values.size != 7:
@@ -237,6 +248,7 @@ class Yumi(ri.RobotInterface):
             self.manipulator_dict[component_name].fk(jnt_values=jnt_values)
             self.get_hnd_on_component(component_name).fix_to(pos=self.manipulator_dict[component_name].jnts[-1]['gl_posq'],
                                                        rotmat=self.manipulator_dict[component_name].jnts[-1]['gl_rotmatq'])
+            update_oih(component_name=component_name)
         elif component_name == 'both_arm':
             if (not isinstance(jnt_values, list)
                     or jnt_values[0].size != 7
@@ -248,6 +260,8 @@ class Yumi(ri.RobotInterface):
             self.rgt_arm.fk(jnt_values=jnt_values[1])
             self.rgt_hnd.fix_to(pos=self.rgt_arm.jnts[-1]['gl_posq'],
                                 rotmat=self.rgt_arm.jnts[-1]['gl_rotmatq'])
+            update_oih(component_name='rgt_arm')
+            update_oih(component_name='lft_arm')
         elif component_name == 'all':
             pass
         else:
@@ -302,6 +316,48 @@ class Yumi(ri.RobotInterface):
             self.jaw_to(hnd_name, jaw_width)
         return rel_pos, rel_rotmat
 
+    def get_loc_pose_from_hio(self, hio_pos, hio_rotmat, component_name='lft_arm'):
+        """
+        get the loc pose of an object from a grasp pose described in an object's local frame
+        :param hio_pos: a grasp pose described in an object's local frame -- pos
+        :param hio_rotmat: a grasp pose described in an object's local frame -- rotmat
+        :return:
+        author: weiwei
+        date: 20210302
+        """
+        if component_name is 'lft_arm':
+            arm = self.lft_arm
+        elif component_name is 'rgt_arm':
+            arm = self.rgt_arm
+        hnd_pos = arm.jnts[-1]['gl_posq']
+        hnd_rotmat = arm.jnts[-1]['gl_rotmatq']
+        hnd_homomat = rm.homomat_from_posrot(hnd_pos, hnd_rotmat)
+        hio_homomat = rm.homomat_from_posrot(hio_pos, hio_rotmat)
+        oih_homomat = rm.homomat_inverse(hio_homomat)
+        gl_obj_homomat = hnd_homomat.dot(oih_homomat)
+        return self.get_loc_pose(component_name, gl_obj_homomat[:3,3], gl_obj_homomat[:3,:3])
+
+    def get_gl_pose_from_hio(self, hio_pos, hio_rotmat, component_name='lft_arm'):
+        """
+        get the loc pose of an object from a grasp pose described in an object's local frame
+        :param hio_pos: a grasp pose described in an object's local frame -- pos
+        :param hio_rotmat: a grasp pose described in an object's local frame -- rotmat
+        :return:
+        author: weiwei
+        date: 20210302
+        """
+        if component_name is 'lft_arm':
+            arm = self.lft_arm
+        elif component_name is 'rgt_arm':
+            arm = self.rgt_arm
+        hnd_pos = arm.jnts[-1]['gl_posq']
+        hnd_rotmat = arm.jnts[-1]['gl_rotmatq']
+        hnd_homomat = rm.homomat_from_posrot(hnd_pos, hnd_rotmat)
+        hio_homomat = rm.homomat_from_posrot(hio_pos, hio_rotmat)
+        oih_homomat = rm.homomat_inverse(hio_homomat)
+        gl_obj_homomat = hnd_homomat.dot(oih_homomat)
+        return gl_obj_homomat[:3,3], gl_obj_homomat[:3,:3]
+
     def get_oih_cm_list(self, hnd_name='lft_hnd'):
         """
         oih = object in hand list
@@ -321,6 +377,45 @@ class Yumi(ri.RobotInterface):
             objcm.set_rotmat(obj_info['gl_rotmat'])
             return_list.append(objcm)
         return return_list
+
+    def get_oih_glhomomat_list(self, hnd_name='lft_hnd'):
+        """
+        oih = object in hand list
+        :param hnd_name:
+        :return:
+        author: weiwei
+        date: 20210302
+        """
+        if hnd_name == 'lft_hnd':
+            oih_infos = self.lft_oih_infos
+        elif hnd_name == 'rgt_hnd':
+            oih_infos = self.rgt_oih_infos
+        else:
+            raise ValueError("hnd_name must be lft_hnd or rgt_hnd!")
+        return_list = []
+        for obj_info in oih_infos:
+            return_list.append(rm.homomat_from_posrot(obj_info['gl_pos']), obj_info['gl_rotmat'])
+        return return_list
+
+    def get_oih_relhomomat(self, objcm, hnd_name='lft_hnd'):
+        """
+        TODO: useless? 20210320
+        oih = object in hand list
+        :param objcm
+        :param hnd_name:
+        :return:
+        author: weiwei
+        date: 20210302
+        """
+        if hnd_name == 'lft_hnd':
+            oih_info_list = self.lft_oih_infos
+        elif hnd_name == 'rgt_hnd':
+            oih_info_list = self.rgt_oih_infos
+        else:
+            raise ValueError("hnd_name must be lft_hnd or rgt_hnd!")
+        for obj_info in oih_info_list:
+            if obj_info['collisionmodel'] is objcm:
+                return rm.homomat_from_posrot(obj_info['rel_pos']), obj_info['rel_rotmat']
 
     def release(self, objcm, jaw_width=None, hnd_name='lft_hnd'):
         """
@@ -442,6 +537,16 @@ class Yumi(ri.RobotInterface):
                                    toggle_tcpcs=False,
                                    toggle_jntscs=toggle_jntscs,
                                    rgba=rgba).attach_to(meshmodel)
+        for obj_info in self.lft_oih_infos:
+            objcm = obj_info['collisionmodel']
+            objcm.set_pos(obj_info['gl_pos'])
+            objcm.set_rotmat(obj_info['gl_rotmat'])
+            objcm.attach_to(meshmodel)
+        for obj_info in self.rgt_oih_infos:
+            objcm = obj_info['collisionmodel']
+            objcm.set_pos(obj_info['gl_pos'])
+            objcm.set_rotmat(obj_info['gl_rotmat'])
+            objcm.attach_to(meshmodel)
         return meshmodel
 
 
@@ -449,10 +554,13 @@ if __name__ == '__main__':
     import time
     import visualization.panda.world as wd
     import modeling.geometricmodel as gm
+    import basis
 
     base = wd.World(campos=[1.5, 0, 3], lookatpos=[0, 0, .5])
     gm.gen_frame().attach_to(base)
     yumi_instance = Yumi(enable_cc=True)
+
+    # ik test
     component_name= 'rgt_arm'
     tgt_pos = np.array([.4, -.4, .3])
     tgt_rotmat = rm.rotmat_from_axangle([0,1,0], math.pi/2)
@@ -470,4 +578,23 @@ if __name__ == '__main__':
     result = yumi_instance.is_collided()
     toc = time.time()
     print(result, toc - tic)
+
+    # hold test
+    component_name= 'lft_arm'
+    obj_pos = np.array([-.1, .3, .3])
+    obj_rotmat = rm.rotmat_from_axangle([0,1,0], math.pi/2)
+    objfile = os.path.join(basis.__path__[0], 'objects', 'tubebig.stl')
+    objcm = cm.CollisionModel(objfile, cdprimitive_type='cylinder')
+    objcm.set_pos(obj_pos)
+    objcm.set_rotmat(obj_rotmat)
+    objcm.attach_to(base)
+    objcm_copy = objcm.copy()
+    yumi_instance.hold(objcm=objcm_copy, jaw_width=0.03, hnd_name='lft_hnd')
+    tgt_pos = np.array([.4, .5, .4])
+    tgt_rotmat = rm.rotmat_from_axangle([0,1,0], math.pi/3)
+    jnt_values = yumi_instance.ik(component_name, tgt_pos, tgt_rotmat)
+    yumi_instance.fk(component_name, jnt_values)
+    yumi_meshmodel = yumi_instance.gen_meshmodel()
+    yumi_meshmodel.attach_to(base)
+
     base.run()

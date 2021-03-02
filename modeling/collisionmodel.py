@@ -67,12 +67,13 @@ class CollisionModel(gm.GeometricModel):
 
     def _update_cdprimit(self, cdprimitive_type, expand_radius, userdefined_cdprimitive_fn):
         if cdprimitive_type is not None and cdprimitive_type not in ['box',
-                                                                     'surface_ball',
+                                                                     'surface_balls',
                                                                      'cylinder',
+                                                                     'polygons',
                                                                      'point_cloud',
                                                                      'user_defined']:
             raise ValueError("Wrong primitive collision model type name!")
-        if cdprimitive_type == 'surface_ball':
+        if cdprimitive_type == 'surface_balls':
             if expand_radius is None:
                 expand_radius = 0.015
             collision_node = pcd.gen_surfaceballs_cdnp(self.objtrm, name='cdnp_surface_ball', radius=expand_radius)
@@ -83,6 +84,8 @@ class CollisionModel(gm.GeometricModel):
                 collision_node = pcd.gen_box_cdnp(self.objpdnp_raw, name='cdnp_ball', radius=expand_radius)
             if cdprimitive_type == "cylinder":
                 collision_node = pcd.gen_cylindrical_cdnp(self.objpdnp_raw, name='cdnp_cyl', radius=expand_radius)
+            if cdprimitive_type == "polygons":
+                collision_node = pcd.gen_polygons_cdnp(self.objpdnp_raw, name='cdnp_plys', radius=expand_radius)
             if cdprimitive_type == "point_cloud":
                 collision_node = pcd.gen_pointcloud_cdnp(self.objtrm, name='cdnp_ptc', radius=expand_radius)
             if cdprimitive_type == "user_defined":
@@ -262,11 +265,14 @@ if __name__ == "__main__":
 
     base = wd.World(campos=[.3, .3, .3], lookatpos=[0, 0, 0], toggledebug=True)
     objpath = os.path.join(basis.__path__[0], 'objects', 'bunnysim.stl')
-    bunnycm = CollisionModel(objpath)
+    bunnycm = CollisionModel(objpath, cdprimitive_type='polygons')
     bunnycm.set_rgba([0.7, 0.7, 0.0, 1.0])
     bunnycm.show_localframe()
     rotmat = rm.rotmat_from_axangle([1, 0, 0], math.pi / 2.0)
     bunnycm.set_rotmat(rotmat)
+    bunnycm.show_cdprimit()
+    bunnycm.attach_to(base)
+    base.run()
 
     bunnycm1 = CollisionModel(objpath, cdprimitive_type="cylinder")
     bunnycm1.set_rgba([0.7, 0, 0.7, 1.0])

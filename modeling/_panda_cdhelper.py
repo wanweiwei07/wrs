@@ -3,7 +3,8 @@ import math
 import numpy as np
 import basis.data_adapter as da
 from panda3d.core import NodePath, CollisionNode, CollisionTraverser, CollisionHandlerQueue, BitMask32
-from panda3d.core import CollisionBox, CollisionSphere
+from panda3d.core import CollisionBox, CollisionSphere, CollisionPolygon, GeomVertexReader
+
 
 def gen_box_cdnp(pdnp, name='cdnp_box', radius=0.01):
     """
@@ -55,6 +56,40 @@ def gen_cylindrical_cdnp(pdnp, name='cdnp_cylinder', radius=0.01):
         new_topright = da.npv3_to_pdv3(new_topright_pos)
         collision_primitive = CollisionBox(new_bottomleft, new_topright)
         collision_node.addSolid(collision_primitive)
+    return collision_node
+
+
+def gen_polygons_cdnp(pdnp, name='cdnp_polygons', radius=.01):
+    """
+    :param trimeshmodel:
+    :param name:
+    :param radius: TODO
+    :return:
+    author: weiwei
+    date: 20210204
+    """
+    collision_node = CollisionNode(name)
+    # counter = 0
+    for geom in pdnp.findAllMatches('**/+GeomNode'):
+        geom_node = geom.node()
+        for g in range(geom_node.getNumGeoms()):
+            geom = geom_node.getGeom(g).decompose()
+            vdata = geom.getVertexData()
+            vreader = GeomVertexReader(vdata, 'vertex')
+            for p in range(geom.getNumPrimitives()):
+                prim = geom.getPrimitive(p)
+                for p2 in range(prim.getNumPrimitives()):
+                    s = prim.getPrimitiveStart(p2)
+                    e = prim.getPrimitiveEnd(p2)
+                    v = []
+                    for vi in range(s, e):
+                        vreader.setRow(prim.getVertex(vi))
+                        # TODO expand radius by moving along normal directions
+                        v.append(vreader.getData3f())
+                    col_poly = CollisionPolygon(*v)
+                    collision_node.addSolid(col_poly)
+                    # print("polygon ", counter)
+                    # counter += 1
     return collision_node
 
 
@@ -129,14 +164,14 @@ if __name__ == '__main__':
 
     base = wd.World(campos=[.7, .7, .7], lookatpos=[0, 0, 0])
     objpath = os.path.join(basis.__path__[0], 'objects', 'bunnysim.stl')
-    objcm = cm.CollisionModel(objpath)
+    objcm = cm.CollisionModel(objpath, cdprimitive_type='box')
     objcm.set_rgba(np.array([.2, .5, 0, 1]))
     objcm.set_pos(np.array([.01, .01, .01]))
     objcm.attach_to(base)
     objcm.show_cdprimit()
     objcmlist = []
     for i in range(100):
-        objcmlist.append(cm.CollisionModel(os.path.join(basis.__path__[0], 'objects', 'housing.stl')))
+        objcmlist.append(cm.CollisionModel(os.path.join(basis.__path__[0], 'objects', 'housing.stl'), cdprimitive_type='box'))
         objcmlist[-1].set_pos(np.random.random_sample((3,)))
         objcmlist[-1].set_rgba(np.array([1, .5, 0, 1]))
         objcmlist[-1].attach_to(base)
