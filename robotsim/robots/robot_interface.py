@@ -16,10 +16,6 @@ class RobotInterface(object):
         self.manipulator_dict = {}
         self.hnd_dict = {}
 
-    @property
-    def is_fk_updated(self):
-        raise NotImplementedError
-
     def change_name(self, name):
         self.name = name
 
@@ -35,26 +31,14 @@ class RobotInterface(object):
     def get_gl_tcp(self, component_name):
         return self.manipulator_dict[component_name].get_gl_tcp()
 
-    def is_collided(self, obstacle_list=[], otherrobot_list=[]):
-        """
-        Interface for "is cdprimit collided", must be implemented in child class
-        :param obstacle_list:
-        :param otherrobot_list:
-        :return:
-        author: weiwei
-        date: 20201223
-        """
-        return self.cc.is_collided(obstacle_list=obstacle_list, otherrobot_list=otherrobot_list,
-                                   need_update=self.is_fk_updated)
-
     def fix_to(self, pos, rotmat):
-        raise NotImplementedError
+        return NotImplementedError
 
     def fk(self, component_name, jnt_values):
-        raise NotImplementedError
+        return NotImplementedError
 
     def jaw_to(self, hnd_name, jaw_width):
-        self.hnd_dict[hnd_name].jaw_to(jaw_width)
+        self.hnd_dict[hnd_name].jaw_to(jaw_width=jaw_width)
 
     def ik(self,
            component_name,
@@ -78,14 +62,27 @@ class RobotInterface(object):
     def rand_conf(self, component_name):
         return self.manipulator_dict[component_name].rand_conf()
 
-    def get_loc_pose(self, component_name, gl_obj_pos, gl_obj_rotmat):
-        return self.manipulator_dict[component_name].get_loc_pose(gl_obj_pos, gl_obj_rotmat)
+    def cvt_gl_to_loc_tcp(self, component_name, gl_obj_pos, gl_obj_rotmat):
+        return self.manipulator_dict[component_name].cvt_gl_to_loc_intcp(gl_obj_pos, gl_obj_rotmat)
 
-    def get_gl_pose(self, component_name, rel_obj_pos, rel_obj_rotmat):
-        return self.manipulator_dict[component_name].get_gl_pose(rel_obj_pos, rel_obj_rotmat)
+    def cvt_loc_tcp_to_gl(self, component_name, rel_obj_pos, rel_obj_rotmat):
+        return self.manipulator_dict[component_name].cvt_loc_intcp_to_gl(rel_obj_pos, rel_obj_rotmat)
+
+    def is_collided(self, obstacle_list=[], otherrobot_list=[]):
+        """
+        Interface for "is cdprimit collided", must be implemented in child class
+        :param obstacle_list:
+        :param otherrobot_list:
+        :return:
+        author: weiwei
+        date: 20201223
+        """
+        is_collided =  self.cc.is_collided(obstacle_list=obstacle_list,
+                                           otherrobot_list=otherrobot_list)
+        return is_collided
 
     def show_cdprimit(self):
-        self.cc.show_cdprimit(need_update=self.is_fk_updated)
+        self.cc.show_cdprimit()
 
     def unshow_cdprimit(self):
         self.cc.unshow_cdprimit()
@@ -121,10 +118,6 @@ class RobotInterface(object):
         for cdelement in self.cc.all_cdelements:
             cdelement['cdprimit_childid'] = -1
         self.cc = None
-        # self.cc.all_cdelements = []
-        # for child in self.cc.np.getChildren():
-        #     child.removeNode()
-        # self.cc.nbitmask = 0
 
     def copy(self):
         self_copy = copy.deepcopy(self)

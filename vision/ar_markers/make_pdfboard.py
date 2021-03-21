@@ -295,6 +295,6 @@ if __name__ == '__main__':
     # makecharucoboard(7,5, squaresize=40)
     # makechessboard(7,5, squaresize=40)
     # makearucoboard(2,2, markersize=80)
-    # makearucoboard(1,1,markerdict=aruco.DICT_4X4_250, startid=1, markersize=45, framesize=[60,60])
+    makearucoboard(1,1,markerdict=aruco.DICT_4X4_250, startid=2, markersize=45, framesize=[60,60])
 
-    makechessboard(1, 1, squaresize=35, framesize = [100,150])
+    # makechessboard(1, 1, squaresize=35, framesize = [100,150])

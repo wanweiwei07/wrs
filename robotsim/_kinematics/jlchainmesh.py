@@ -24,7 +24,7 @@ class JLChainMesh(object):
                 # in case the collision model is directly set, it allows manually specifying cd primitives
                 # instead of auto initialization. Steps: 1. keep meshmodel to None; 2. directly set cm
                 self.jlobject.lnks[id]['collisionmodel'] = cm.CollisionModel(self.jlobject.lnks[id]['meshfile'],
-                                                                             cdprimitive_type=cdprimitive_type,
+                                                                             cdprimit_type=cdprimitive_type,
                                                                              cdmesh_type=cdmesh_type)
                 if self.jlobject.lnks[id]['scale'] is not None:
                     self.jlobject.lnks[id]['collisionmodel'].set_scale(self.jlobject.lnks[id]['scale'])

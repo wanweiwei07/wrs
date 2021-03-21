@@ -1,4 +1,5 @@
 import basis.data_adapter as da
+import modeling.modelcollection as mc
 from panda3d.core import NodePath, CollisionTraverser, CollisionHandlerQueue, BitMask32
 
 
@@ -117,16 +118,20 @@ class CollisionChecker(object):
             new_into_cdmask = current_into_cdmask & ~cdnp.node().getFromCollideMask()
             cdnp.node().setIntoCollideMask(new_into_cdmask)
 
-    def is_collided(self, obstacle_list=[], otherrobot_list=[], need_update=False):
-        if need_update:
-            for cdelement in self.all_cdelements:
-                pos = cdelement['gl_pos']
-                rotmat = cdelement['gl_rotmat']
-                cdnp = self.np.getChild(cdelement['cdprimit_childid'])
-                cdnp.setMat(da.npv3mat3_to_pdmat4(pos, rotmat))
-                # print(da.npv3mat3_to_pdmat4(pos, rotmat))
-                # print("From", cdnp.node().getFromCollideMask())
-                # print("Into", cdnp.node().getIntoCollideMask())
+    def is_collided(self, obstacle_list=[], otherrobot_list=[]):
+        """
+        :param obstacle_list: staticgeometricmodel
+        :param otherrobot_list:
+        :return:
+        """
+        for cdelement in self.all_cdelements:
+            pos = cdelement['gl_pos']
+            rotmat = cdelement['gl_rotmat']
+            cdnp = self.np.getChild(cdelement['cdprimit_childid'])
+            cdnp.setMat(da.npv3mat3_to_pdmat4(pos, rotmat))
+            # print(da.npv3mat3_to_pdmat4(pos, rotmat))
+            # print("From", cdnp.node().getFromCollideMask())
+            # print("Into", cdnp.node().getIntoCollideMask())
         # print("xxxx colliders xxxx")
         # for collider in self.ctrav.getColliders():
         #     print(collider.getMat())
@@ -162,21 +167,17 @@ class CollisionChecker(object):
         else:
             return False
 
-    def show_cdprimit(self, need_update=False):
+    def show_cdprimit(self):
         # print("call show_cdprimit")
         self.np.reparentTo(base.render)
-        self.is_nprendered = True
-        if need_update:
-            for cdelement in self.all_cdelements:
-                pos = cdelement['gl_pos']
-                rotmat = cdelement['gl_rotmat']
-                cdnp = self.np.getChild(cdelement['cdprimit_childid'])
-                cdnp.setMat(da.npv3mat3_to_pdmat4(pos, rotmat))
-                # print(cdnp.getMat())
-                cdnp.show()
-        else:
-            for child in self.np.getChildren():
-                child.show()
+        self.is_nprendered = True # TODO possible bug for copy
+        for cdelement in self.all_cdelements:
+            pos = cdelement['gl_pos']
+            rotmat = cdelement['gl_rotmat']
+            cdnp = self.np.getChild(cdelement['cdprimit_childid'])
+            cdnp.setMat(da.npv3mat3_to_pdmat4(pos, rotmat))
+            # print(cdnp.getMat())
+            cdnp.show()
 
     def unshow_cdprimit(self):
         for child in self.np.getChildren():

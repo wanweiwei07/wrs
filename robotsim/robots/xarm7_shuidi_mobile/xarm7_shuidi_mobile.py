@@ -46,10 +46,6 @@ class XArm7YunjiMobile(ri.RobotInterface):
         if enable_cc:
             self.enable_cc()
 
-    @property
-    def is_fk_updated(self):
-        return self.hnd.is_fk_updated
-
     def enable_cc(self):
         # TODO when pose is changed, oih info goes wrong
         super().enable_cc()
@@ -96,14 +92,14 @@ class XArm7YunjiMobile(ri.RobotInterface):
         self.hnd.fix_to(pos=self.arm.jnts[-1]['gl_posq'], rotmat=self.arm.jnts[-1]['gl_rotmatq'])
         # update objects in hand if available
         for obj_info in self.oih_infos:
-            gl_pos, gl_rotmat = self.arm.get_gl_pose(obj_info['rel_pos'], obj_info['rel_rotmat'])
+            gl_pos, gl_rotmat = self.arm.cvt_loc_intcp_to_gl(obj_info['rel_pos'], obj_info['rel_rotmat'])
             obj_info['gl_pos'] = gl_pos
             obj_info['gl_rotmat'] = gl_rotmat
 
     def fix_to(self, pos, rotmat):
         self.move_to(pos=pos, rotmat=rotmat)
 
-    def fk(self, jnt_values, component_name='arm'):
+    def fk(self, component_name='arm', jnt_values=np.zeros(7)):
         """
         :param jnt_values: 7 or 3+7, 3=agv, 7=arm, 1=grpr; metrics: meter-radian
         :param component_name: 'arm', 'agv', or 'all'
@@ -145,7 +141,7 @@ class XArm7YunjiMobile(ri.RobotInterface):
             self.hnd.fix_to(pos=self.arm.jnts[-1]['gl_posq'], rotmat=self.arm.jnts[-1]['gl_rotmatq'], motion_val = jnt_values[10])
         # update objects in hand
         for obj_info in self.oih_infos:
-            gl_pos, gl_rotmat = self.arm.get_gl_pose(obj_info['rel_pos'], obj_info['rel_rotmat'])
+            gl_pos, gl_rotmat = self.arm.cvt_loc_intcp_to_gl(obj_info['rel_pos'], obj_info['rel_rotmat'])
             obj_info['gl_pos'] = gl_pos
             obj_info['gl_rotmat'] = gl_rotmat
 
@@ -201,7 +197,7 @@ class XArm7YunjiMobile(ri.RobotInterface):
         if component_name == 'agv_arm':
             raise NotImplementedError
 
-    def jaw_to(self, jawwidth):
+    def jaw_to(self, hnd_name='hnd', jawwidth=0.0):
         self.hnd.jaw_to(jawwidth)
 
     def get_jawwidth(self):
@@ -216,7 +212,7 @@ class XArm7YunjiMobile(ri.RobotInterface):
         """
         if jawwidth is not None:
             self.hnd.jaw_to(jawwidth)
-        rel_pos, rel_rotmat = self.arm.get_loc_pose(objcm.get_pos(), objcm.get_rotmat())
+        rel_pos, rel_rotmat = self.arm.cvt_gl_to_loc_intcp(objcm.get_pos(), objcm.get_rotmat())
         intolist = [self.agv.lnks[0],
                     self.arm.lnks[0],
                     self.arm.lnks[1],
@@ -319,7 +315,7 @@ if __name__ == '__main__':
 
     gm.gen_frame().attach_to(base)
     xav = XArm7YunjiMobile(enable_cc=True)
-    xav.fk(np.array([0, 0, 0, 0, 0, 0, math.pi, 0, -math.pi / 6, 0, 0]), component_name='all')
+    xav.fk(component_name='all', jnt_values=np.array([0, 0, 0, 0, 0, 0, math.pi, 0, -math.pi / 6, 0, 0]))
     xav.jaw_to(.08)
     tgt_pos = np.array([.85, 0, .5])
     tgt_rotmat = rm.rotmat_from_axangle([0,1,0], math.pi/2)
@@ -328,7 +324,7 @@ if __name__ == '__main__':
     tgt_pos2 = np.array([.7, 0, .5])
     jnt_values2 = xav.ik(tgt_pos2, tgt_rotmat, seed_conf=jnt_values)
     print(jnt_values)
-    xav.fk(jnt_values2)
+    xav.fk(component_name='arm', jnt_values=jnt_values2)
     xav_meshmodel = xav.gen_meshmodel(toggle_tcpcs=True)
     xav_meshmodel.attach_to(base)
     xav.show_cdprimit()

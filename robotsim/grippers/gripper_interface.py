@@ -31,12 +31,6 @@ class GripperInterface(object):
         self.cc = None
         # cd mesh collection for precise collision checking
         self.cdmesh_collection = mc.ModelCollection()
-        # is fk updated for lazy update of cdmesh_collection
-        self._is_fk_updated = True
-
-    @property
-    def is_fk_updated(self):
-        return self._is_fk_updated
 
     def is_collided(self, obstacle_list=[], otherrobot_list=[]):
         """
@@ -47,9 +41,7 @@ class GripperInterface(object):
         author: weiwei
         date: 20201223
         """
-        return_val =  self.cc.is_collided(obstacle_list=obstacle_list, otherrobot_list=otherrobot_list,
-                                          need_update=self._is_fk_updated)
-        self._is_fk_updated = False
+        return_val =  self.cc.is_collided(obstacle_list=obstacle_list, otherrobot_list=otherrobot_list)
         return return_val
 
     def is_mesh_collided(self, objcm_list=[], toggle_debug=False):
@@ -95,20 +87,17 @@ class GripperInterface(object):
         return [jaw_width, gl_jaw_center, hnd_pos, hnd_rotmat]
 
     def show_cdprimit(self):
-        self.cc.show_cdprimit(need_update=self._is_fk_updated)
-        self._is_fk_updated = False
+        self.cc.show_cdprimit()
 
     def unshow_cdprimit(self):
         self.cc.unshow_cdprimit()
 
     def show_cdmesh(self):
-        if self._is_fk_updated:
-            for i, cdelement in enumerate(self.cc.all_cdelements):
-                pos = cdelement['gl_pos']
-                rotmat = cdelement['gl_rotmat']
-                self.cdmesh_collection.cm_list[i].set_pos(pos)
-                self.cdmesh_collection.cm_list[i].set_rotmat(rotmat)
-            self._is_fk_updated = False
+        for i, cdelement in enumerate(self.cc.all_cdelements):
+            pos = cdelement['gl_pos']
+            rotmat = cdelement['gl_rotmat']
+            self.cdmesh_collection.cm_list[i].set_pos(pos)
+            self.cdmesh_collection.cm_list[i].set_rotmat(rotmat)
         self.cdmesh_collection.show_cdmesh()
 
     def unshow_cdmesh(self):

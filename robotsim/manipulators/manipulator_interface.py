@@ -35,10 +35,6 @@ class ManipulatorInterface(object):
         return self.jlc.homeconf
 
     @property
-    def is_fk_updated(self):
-        return self.jlc.is_fk_updated
-
-    @property
     def tcp_jntid(self):
         return self.jlc.tcp_jntid
 
@@ -61,18 +57,6 @@ class ManipulatorInterface(object):
     @tcp_loc_rotmat.setter
     def tcp_loc_rotmat(self, tcp_loc_rotmat):
         self.jlc.tcp_loc_rotmat = tcp_loc_rotmat
-
-    def is_collided(self, obstacle_list=[], otherrobot_list=[]):
-        """
-        Interface for "is cdprimit collided", must be implemented in child class
-        :param obstacle_list:
-        :param otherrobot_list:
-        :return:
-        author: weiwei
-        date: 20201223
-        """
-        return self.cc.is_collided(obstacle_list=obstacle_list, otherrobot_list=otherrobot_list,
-                                   need_update=self.is_fk_updated)
 
     def set_homeconf(self, jnt_values):
         self.jlc.set_homeconf(jnt_values=jnt_values)
@@ -102,6 +86,12 @@ class ManipulatorInterface(object):
     def goto_zeroconf(self):
         self.jlc.fk(jnt_values=self.jlc.zeroconf)
 
+    def fix_to(self, pos, rotmat, jnt_values=None):
+        self.jlc.fix_to(pos=pos, rotmat=rotmat, jnt_values=jnt_values)
+
+    def fk(self, jnt_values):
+        return self.jlc.fk(jnt_values=jnt_values)
+
     def get_jnt_values(self):
         return self.jlc.get_jnt_values()
 
@@ -126,43 +116,44 @@ class ManipulatorInterface(object):
                                local_minima=local_minima,
                                toggle_debug=toggle_debug)
 
-    def get_gl_pose(self,
-                    loc_pos=np.zeros(3),
-                    loc_rotmat=np.eye(3),
-                    tcp_jntid=None,
-                    tcp_loc_pos=None,
-                    tcp_loc_rotmat=None):
-        return self.jlc.get_gl_pose(loc_pos=loc_pos,
-                                    loc_rotmat=loc_rotmat,
-                                    tcp_jntid=tcp_jntid,
-                                    tcp_loc_pos=tcp_loc_pos,
-                                    tcp_loc_rotmat=tcp_loc_rotmat)
+    def cvt_loc_intcp_to_gl(self,
+                            loc_pos=np.zeros(3),
+                            loc_rotmat=np.eye(3),
+                            tcp_jntid=None,
+                            tcp_loc_pos=None,
+                            tcp_loc_rotmat=None):
+        return self.jlc.cvt_loc_intcp_to_gl(loc_pos=loc_pos,
+                                            loc_rotmat=loc_rotmat,
+                                            tcp_jntid=tcp_jntid,
+                                            tcp_loc_pos=tcp_loc_pos,
+                                            tcp_loc_rotmat=tcp_loc_rotmat)
 
-    def get_loc_pose(self,
-                     gl_pos,
-                     gl_rotmat,
-                     tcp_jntid=None,
-                     tcp_loc_pos=None,
-                     tcp_loc_rotmat=None):
-        return self.jlc.get_loc_pose(gl_pos=gl_pos,
-                                     gl_rotmat=gl_rotmat,
-                                     tcp_jntid=tcp_jntid,
-                                     tcp_loc_pos=tcp_loc_pos,
-                                     tcp_loc_rotmat=tcp_loc_rotmat)
+    def cvt_gl_to_loc_intcp(self,
+                            gl_pos,
+                            gl_rotmat,
+                            tcp_jntid=None,
+                            tcp_loc_pos=None,
+                            tcp_loc_rotmat=None):
+        return self.jlc.cvt_gl_to_loc_intcp(gl_pos=gl_pos,
+                                            gl_rotmat=gl_rotmat,
+                                            tcp_jntid=tcp_jntid,
+                                            tcp_loc_pos=tcp_loc_pos,
+                                            tcp_loc_rotmat=tcp_loc_rotmat)
 
     def is_collided(self, obstacle_list=[], otherrobot_list=[]):
+        """
+        Interface for "is cdprimit collided", must be implemented in child class
+        :param obstacle_list:
+        :param otherrobot_list:
+        :return:
+        author: weiwei
+        date: 20201223
+        """
         return self.cc.is_collided(obstacle_list=obstacle_list,
-                                   otherrobot_list=otherrobot_list,
-                                   need_update = self.is_fk_updated)
-
-    def fix_to(self, pos, rotmat, jnt_values=None):
-        self.jlc.fix_to(pos=pos, rotmat=rotmat, jnt_values=jnt_values)
-
-    def fk(self, jnt_values):
-        return self.jlc.fk(jnt_values=jnt_values)
+                                          otherrobot_list=otherrobot_list)
 
     def show_cdprimit(self):
-        self.cc.show_cdprimit(need_update=self.is_fk_updated)
+        self.cc.show_cdprimit()
 
     def unshow_cdprimit(self):
         self.cc.unshow_cdprimit()

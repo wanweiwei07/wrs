@@ -25,7 +25,7 @@ class UR3EDual(ri.RobotInterface):
         self.lft_base.lnks[0]['loc_pos'] = np.array([0, 0, 0])
         self.lft_base.lnks[0]['collisionmodel'] = cm.CollisionModel(
             os.path.join(this_dir, "meshes", "ur3e_dual_base.stl"),
-            cdprimitive_type="userdefined", expand_radius=.005,
+            cdprimit_type="user_defined", expand_radius=.005,
             userdefined_cdprimitive_fn=self._base_combined_cdnp)
         self.lft_base.lnks[0]['rgba'] = [.3, .3, .3, 1.0]
         self.lft_base.reinitialize()
@@ -41,7 +41,7 @@ class UR3EDual(ri.RobotInterface):
                                enable_cc=False)
         # lft hand offset (if needed)
         self.lft_hnd_offset = np.zeros(3)
-        lft_hnd_pos, lft_hnd_rotmat = self.lft_arm.get_gl_pose(loc_pos=self.lft_hnd_offset)
+        lft_hnd_pos, lft_hnd_rotmat = self.lft_arm.cvt_loc_intcp_to_gl(loc_pos=self.lft_hnd_offset)
         self.lft_hnd = rtq.RobotiqHE(pos=lft_hnd_pos,
                                      rotmat=self.lft_arm.jnts[-1]['gl_rotmatq'],
                                      enable_cc=False)
@@ -66,7 +66,7 @@ class UR3EDual(ri.RobotInterface):
                                enable_cc=False)
         # rgt hand offset (if needed)
         self.rgt_hnd_offset = np.zeros(3)
-        rgt_hnd_pos, rgt_hnd_rotmat = self.rgt_arm.get_gl_pose(loc_pos=self.rgt_hnd_offset)
+        rgt_hnd_pos, rgt_hnd_rotmat = self.rgt_arm.cvt_loc_intcp_to_gl(loc_pos=self.rgt_hnd_offset)
         # TODO replace using copy
         self.rgt_hnd = rtq.RobotiqHE(pos=rgt_hnd_pos,
                                      rotmat=self.rgt_arm.jnts[-1]['gl_rotmatq'],

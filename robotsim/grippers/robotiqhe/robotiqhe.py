@@ -38,29 +38,23 @@ class RobotiqHE(gp.GripperInterface):
         self.lft.reinitialize()
         self.rgt.reinitialize()
         # collision detection
-        if enable_cc:
-            self.enable_cc()
+        self.all_cdelements=[]
+        self.enable_cc(toggle_cdprimit=enable_cc)
 
-    @property
-    def is_fk_updated(self):
-        return self.lft.is_fk_updated
-
-    def enable_cc(self):
-        super().enable_cc()
-        # cdprimit
-        self.cc.add_cdlnks(self.lft, [0, 1])
-        self.cc.add_cdlnks(self.rgt, [1])
-        activelist = [self.lft.lnks[0],
-                      self.lft.lnks[1],
-                      self.rgt.lnks[1]]
-        self.cc.set_active_cdlnks(activelist)
-        # cdmesh -> TODO parent class?
-        for cdelement in self.cc.all_cdelements:
-            pos = cdelement['gl_pos']
-            rotmat = cdelement['gl_rotmat']
+    def enable_cc(self, toggle_cdprimit):
+        if toggle_cdprimit:
+            super().enable_cc()
+            # cdprimit
+            self.cc.add_cdlnks(self.lft, [0, 1])
+            self.cc.add_cdlnks(self.rgt, [1])
+            activelist = [self.lft.lnks[0],
+                          self.lft.lnks[1],
+                          self.rgt.lnks[1]]
+            self.cc.set_active_cdlnks(activelist)
+            self.all_cdelements = self.cc.all_cdelements
+        # cdmesh
+        for cdelement in self.all_cdelements:
             cdmesh = cdelement['collisionmodel'].copy()
-            cdmesh.set_pos(pos)
-            cdmesh.set_rotmat(rotmat)
             self.cdmesh_collection.add_cm(cdmesh)
 
     def fix_to(self, pos, rotmat, jawwidth=None):

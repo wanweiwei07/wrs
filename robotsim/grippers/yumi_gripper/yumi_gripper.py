@@ -61,10 +61,10 @@ class YumiGripper(gp.GripperInterface):
             self.all_cdelements = [self.lft.lnks[0],
                                    self.lft.lnks[1],
                                    self.rgt.lnks[1]]
-            # cdmesh
-            for cdelement in self.all_cdelements:
-                cdmesh = cdelement['collisionmodel'].copy()
-                self.cdmesh_collection.add_cm(cdmesh)
+        # cdmesh
+        for cdelement in self.all_cdelements:
+            cdmesh = cdelement['collisionmodel'].copy()
+            self.cdmesh_collection.add_cm(cdmesh)
 
     def fix_to(self, pos, rotmat):
         self.pos = pos

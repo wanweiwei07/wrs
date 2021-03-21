@@ -36,7 +36,7 @@ class Yumi(ri.RobotInterface):
         self.lft_body.lnks[1]['loc_pos'] = np.array([0, 0, 0])
         self.lft_body.lnks[1]['collisionmodel'] = cm.CollisionModel(
             os.path.join(this_dir, "meshes", "body.stl"),
-            cdprimitive_type="user_defined", expand_radius=.005,
+            cdprimit_type="user_defined", expand_radius=.005,
             userdefined_cdprimitive_fn=self._base_combined_cdnp)
         self.lft_body.lnks[1]['rgba'] = [.7, .7, .7, 1]
         self.lft_body.lnks[2]['name'] = "yumi_lft_column"
@@ -132,10 +132,6 @@ class Yumi(ri.RobotInterface):
         collision_node.addSolid(collision_primitive_r0)
         return collision_node
 
-    @property
-    def is_fk_updated(self):
-        return self.rgt_hnd.is_fk_updated or self.lft_hnd.is_fk_updated
-
     def enable_cc(self):
         # TODO when pose is changed, oih info goes wrong
         super().enable_cc()
@@ -209,6 +205,7 @@ class Yumi(ri.RobotInterface):
             raise ValueError("The given jlc does not have a hand!")
 
     def fix_to(self, pos, rotmat):
+        super().fix_to(pos, rotmat)
         self.pos = pos
         self.rotmat = rotmat
         self.lft_body.fix_to(self.pos, self.rotmat)
@@ -237,10 +234,11 @@ class Yumi(ri.RobotInterface):
             elif component_name=='lft_arm':
                 oih_info_list = self.lft_oih_infos
             for obj_info in oih_info_list:
-                gl_pos, gl_rotmat = self.get_gl_pose(component_name, obj_info['rel_pos'], obj_info['rel_rotmat'])
+                gl_pos, gl_rotmat = self.cvt_loc_tcp_to_gl(component_name, obj_info['rel_pos'], obj_info['rel_rotmat'])
                 obj_info['gl_pos'] = gl_pos
                 obj_info['gl_rotmat'] = gl_rotmat
 
+        super().fk(component_name, jnt_values)
         # examine length
         if component_name == 'lft_arm' or component_name == 'rgt_arm':
             if not isinstance(jnt_values, np.ndarray) or jnt_values.size != 7:
@@ -275,7 +273,7 @@ class Yumi(ri.RobotInterface):
         :return:
         """
         if hnd_name == 'lft_hnd':
-            rel_pos, rel_rotmat = self.lft_arm.get_loc_pose(objcm.get_pos(), objcm.get_rotmat())
+            rel_pos, rel_rotmat = self.lft_arm.cvt_gl_to_loc_intcp(objcm.get_pos(), objcm.get_rotmat())
             intolist = [self.lft_body.lnks[0],
                         self.lft_body.lnks[1],
                         self.lft_arm.lnks[1],
@@ -293,7 +291,7 @@ class Yumi(ri.RobotInterface):
                         self.rgt_hnd.rgt.lnks[1]]
             self.lft_oih_infos.append(self.cc.add_cdobj(objcm, rel_pos, rel_rotmat, intolist))
         elif hnd_name == 'rgt_hnd':
-            rel_pos, rel_rotmat = self.rgt_arm.get_loc_pose(objcm.get_pos(), objcm.get_rotmat())
+            rel_pos, rel_rotmat = self.rgt_arm.cvt_gl_to_loc_intcp(objcm.get_pos(), objcm.get_rotmat())
             intolist = [self.lft_body.lnks[0],
                         self.lft_body.lnks[1],
                         self.rgt_arm.lnks[1],
@@ -335,7 +333,7 @@ class Yumi(ri.RobotInterface):
         hio_homomat = rm.homomat_from_posrot(hio_pos, hio_rotmat)
         oih_homomat = rm.homomat_inverse(hio_homomat)
         gl_obj_homomat = hnd_homomat.dot(oih_homomat)
-        return self.get_loc_pose(component_name, gl_obj_homomat[:3,3], gl_obj_homomat[:3,:3])
+        return self.cvt_gl_to_loc_tcp(component_name, gl_obj_homomat[:3, 3], gl_obj_homomat[:3, :3])
 
     def get_gl_pose_from_hio(self, hio_pos, hio_rotmat, component_name='lft_arm'):
         """
@@ -455,7 +453,7 @@ class Yumi(ri.RobotInterface):
         else:
             raise ValueError("hnd_name must be lft_hnd or rgt_hnd!")
         if jaw_width is not None:
-            self.jaw_to(jaw_width, hnd_name)
+            self.jaw_to(hnd_name, jaw_width)
         for obj_info in oih_infos:
             self.cc.delete_cdobj(obj_info)
         oih_infos.clear()
@@ -572,7 +570,6 @@ if __name__ == '__main__':
     yumi_instance.fk(component_name, jnt_values)
     yumi_meshmodel = yumi_instance.gen_meshmodel()
     yumi_meshmodel.attach_to(base)
-    yumi_instance.show_cdprimit()
     yumi_instance.gen_stickmodel().attach_to(base)
     tic = time.time()
     result = yumi_instance.is_collided()
@@ -584,7 +581,7 @@ if __name__ == '__main__':
     obj_pos = np.array([-.1, .3, .3])
     obj_rotmat = rm.rotmat_from_axangle([0,1,0], math.pi/2)
     objfile = os.path.join(basis.__path__[0], 'objects', 'tubebig.stl')
-    objcm = cm.CollisionModel(objfile, cdprimitive_type='cylinder')
+    objcm = cm.CollisionModel(objfile, cdprimit_type='cylinder')
     objcm.set_pos(obj_pos)
     objcm.set_rotmat(obj_rotmat)
     objcm.attach_to(base)
@@ -594,6 +591,7 @@ if __name__ == '__main__':
     tgt_rotmat = rm.rotmat_from_axangle([0,1,0], math.pi/3)
     jnt_values = yumi_instance.ik(component_name, tgt_pos, tgt_rotmat)
     yumi_instance.fk(component_name, jnt_values)
+    yumi_instance.show_cdprimit()
     yumi_meshmodel = yumi_instance.gen_meshmodel()
     yumi_meshmodel.attach_to(base)
 

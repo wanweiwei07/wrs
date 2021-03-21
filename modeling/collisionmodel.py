@@ -26,8 +26,8 @@ class CollisionModel(gm.GeometricModel):
 
     def __init__(self,
                  initor,
-                 cdprimitive_type='box',
-                 cdmesh_type='triangulation',
+                 cdprimit_type='box',
+                 cdmesh_type='triangles',
                  expand_radius=None,
                  name="auto",
                  userdefined_cdprimitive_fn=None,
@@ -36,7 +36,7 @@ class CollisionModel(gm.GeometricModel):
         """
         :param initor:
         :param btransparency:
-        :param cdprimitive_type: box, ball, cylinder, point_cloud, user_defined
+        :param cdprimit_type: box, ball, cylinder, point_cloud, user_defined
         :param cdmesh_type: aabb, obb, convex_hull, triangulation
         :param expand_radius:
         :param name:
@@ -56,7 +56,7 @@ class CollisionModel(gm.GeometricModel):
             self._cdmesh_type = copy.deepcopy(initor.cdmesh_type)
         else:
             super().__init__(initor=initor, name=name, btransparency=btransparency, btwosided=btwosided)
-            self._cdprimitive_type, collision_node = self._update_cdprimit(cdprimitive_type,
+            self._cdprimitive_type, collision_node = self._update_cdprimit(cdprimit_type,
                                                                            expand_radius,
                                                                            userdefined_cdprimitive_fn)
             # use pdnp.getChild instead of a new self._cdnp variable as collision nodepath is not compatible with deepcopy
@@ -81,7 +81,7 @@ class CollisionModel(gm.GeometricModel):
             if expand_radius is None:
                 expand_radius = 0.002
             if cdprimitive_type == "box":
-                collision_node = pcd.gen_box_cdnp(self.objpdnp_raw, name='cdnp_ball', radius=expand_radius)
+                collision_node = pcd.gen_box_cdnp(self.objpdnp_raw, name='cdnp_box', radius=expand_radius)
             if cdprimitive_type == "cylinder":
                 collision_node = pcd.gen_cylindrical_cdnp(self.objpdnp_raw, name='cdnp_cyl', radius=expand_radius)
             if cdprimitive_type == "polygons":
@@ -104,7 +104,7 @@ class CollisionModel(gm.GeometricModel):
         if cdmesh_type is not None and cdmesh_type not in ['aabb',
                                                            'obb',
                                                            'convex_hull',
-                                                           'triangulation']:
+                                                           'triangles']:
             raise ValueError("Wrong mesh collision model type name!")
         self._cdmesh_type=cdmesh_type
 
@@ -123,7 +123,7 @@ class CollisionModel(gm.GeometricModel):
             objtrm = self.objtrm.bounding_box_oriented
         elif self.cdmesh_type == 'convex_hull':
             objtrm = self.objtrm.convex_hull
-        elif self.cdmesh_type == 'triangulation':
+        elif self.cdmesh_type == 'triangles':
             objtrm = self.objtrm
         homomat = self.get_homomat()
         vertices = rm.homomat_transform_points(homomat, objtrm.vertices)
@@ -265,16 +265,14 @@ if __name__ == "__main__":
 
     base = wd.World(campos=[.3, .3, .3], lookatpos=[0, 0, 0], toggledebug=True)
     objpath = os.path.join(basis.__path__[0], 'objects', 'bunnysim.stl')
-    bunnycm = CollisionModel(objpath, cdprimitive_type='polygons')
-    bunnycm.set_rgba([0.7, 0.7, 0.0, 1.0])
+    bunnycm = CollisionModel(objpath, cdprimit_type='polygons')
+    bunnycm.set_rgba([0.7, 0.7, 0.0, .2])
     bunnycm.show_localframe()
     rotmat = rm.rotmat_from_axangle([1, 0, 0], math.pi / 2.0)
     bunnycm.set_rotmat(rotmat)
     bunnycm.show_cdprimit()
-    bunnycm.attach_to(base)
-    base.run()
 
-    bunnycm1 = CollisionModel(objpath, cdprimitive_type="cylinder")
+    bunnycm1 = CollisionModel(objpath, cdprimit_type="cylinder")
     bunnycm1.set_rgba([0.7, 0, 0.7, 1.0])
     rotmat = rm.rotmat_from_euler(0, 0, math.radians(15))
     bunnycm1.set_pos(np.array([0, .01, 0]))

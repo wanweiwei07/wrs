@@ -122,7 +122,7 @@ def gen_pointcloud_cdnp(objtrm, name='cdnp_pointcloud', radius=0.02):
     return collision_node
 
 
-def is_collided(objcm_list0, objcm_list1, toggleplot=False):
+def is_collided(objcm_list0, objcm_list1, toggle_contact_points=False, toggle_plot_cdprimit=False):
     """
     detect the collision between collision models
     :param: objcm_list0, a single collision model or a list of collision models
@@ -135,7 +135,7 @@ def is_collided(objcm_list0, objcm_list1, toggleplot=False):
         objcm_list0 = [objcm_list0]
     if not isinstance(objcm_list1, list):
         objcm_list1 = [objcm_list1]
-    if toggleplot:
+    if toggle_plot_cdprimit:
         for one_objcm in objcm_list0:
             one_objcm.show_cdprimit()
         for one_objcm in objcm_list1:
@@ -149,7 +149,11 @@ def is_collided(objcm_list0, objcm_list1, toggleplot=False):
         one_objcm.copy_cdnp_to(tmpnp)
     ctrav.traverse(tmpnp)
     if chan.getNumEntries() > 0:
-        return True
+        if toggle_contact_points:
+            contact_points = [da.pdv3_to_npv3(cd_entry.getSurfacePoint) for cd_entry in chan.getEntries()]
+            return True, contact_points
+        else:
+            return True
     else:
         return False
 
@@ -160,18 +164,19 @@ if __name__ == '__main__':
     import basis
     import numpy as np
     import modeling.collisionmodel as cm
+    import modeling.geometricmodel as gm
     import visualization.panda.world as wd
 
     base = wd.World(campos=[.7, .7, .7], lookatpos=[0, 0, 0])
     objpath = os.path.join(basis.__path__[0], 'objects', 'bunnysim.stl')
-    objcm = cm.CollisionModel(objpath, cdprimitive_type='box')
+    objcm = cm.CollisionModel(objpath, cdprimit_type='polygons')
     objcm.set_rgba(np.array([.2, .5, 0, 1]))
     objcm.set_pos(np.array([.01, .01, .01]))
     objcm.attach_to(base)
     objcm.show_cdprimit()
     objcmlist = []
     for i in range(100):
-        objcmlist.append(cm.CollisionModel(os.path.join(basis.__path__[0], 'objects', 'housing.stl'), cdprimitive_type='box'))
+        objcmlist.append(cm.CollisionModel(os.path.join(basis.__path__[0], 'objects', 'housing.stl'), cdprimit_type='box'))
         objcmlist[-1].set_pos(np.random.random_sample((3,)))
         objcmlist[-1].set_rgba(np.array([1, .5, 0, 1]))
         objcmlist[-1].attach_to(base)
@@ -189,3 +194,38 @@ if __name__ == '__main__':
     # time_cost = toc-tic
     # print(time_cost)
     base.run()
+
+    # NOTE 20210321, CollisionPolygon into CollisonPolygon detection is not available for 1.19
+    # :collide(error): Invalid attempt to detect collision from CollisionPolygon!
+    #
+    # This means that a CollisionPolygon object was added to a
+    # CollisionTraverser as if it were a colliding object.  However,
+    # no implementation for this kind of object has yet been defined
+    # to collide with other objects.
+    # wd.World(campos=[1.0, 1, .0, 1.0], lookatpos=[0, 0, 0])
+    # objpath = os.path.join(basis.__path__[0], 'objects', 'yumifinger.stl')
+    # objcm1 = cm.CollisionModel(objpath, cdprimitive_type='polygons')
+    # # homomat = np.array([[-0.5, -0.82363909, 0.2676166, -0.00203699],
+    # #                     [-0.86602539, 0.47552824, -0.1545085, 0.01272306],
+    # #                     [0., -0.30901703, -0.95105648, 0.12604253],
+    # #                     [0., 0., 0., 1.]])
+    # homomat = np.array([[ 1.00000000e+00,  2.38935501e-16,  3.78436685e-17, -7.49999983e-03],
+    #                     [ 2.38935501e-16, -9.51056600e-01, -3.09017003e-01,  2.04893537e-02],
+    #                     [-3.78436685e-17,  3.09017003e-01, -9.51056600e-01,  1.22025304e-01],
+    #                     [ 0.00000000e+00,  0.00000000e+00,  0.00000000e+00,  1.00000000e+00]])
+    # objcm1.set_homomat(homomat)
+    # objcm1.set_rgba([1, 1, .3, .2])
+    #
+    # objpath = os.path.join(basis.__path__[0], 'objects', 'tubebig.stl')
+    # objcm2 = cm.CollisionModel(objpath, cdprimitive_type='polygons')
+    # objcm2.set_rgba([1, 1, .3, .2])
+    # iscollided, contact_points = is_collided(objcm1, objcm2, toggle_contact_points=True)
+    # objcm1.show_cdmesh()
+    # objcm2.show_cdmesh()
+    # objcm1.attach_to(base)
+    # objcm2.attach_to(base)
+    # print(iscollided)
+    # for ct_pnt in contact_points:
+    #     gm.gen_sphere(ct_pnt, radius=.001).attach_to(base)
+    # base.run()
+

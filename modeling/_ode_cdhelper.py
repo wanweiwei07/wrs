@@ -14,21 +14,21 @@ def gen_cdmesh_vvnf(vertices, vertex_normals, faces):
     obj_ot_geom = OdeTriMeshGeom(OdeTriMeshData(objpdnp, True))
     return obj_ot_geom
 
-def gen_plane_cdmesh(updirection=np.array([0, 0, 1]), offset=0, name='autogen'):
-    """
-    generate a plane bulletrigidbody node
-    :param updirection: the normal parameter of bulletplaneshape at panda3d
-    :param offset: the d parameter of bulletplaneshape at panda3d
-    :param name:
-    :return: bulletrigidbody
-    author: weiwei
-    date: 20170202, tsukuba
-    """
-    bulletplnode = BulletRigidBodyNode(name)
-    bulletplshape = BulletPlaneShape(Vec3(updirection[0], updirection[1], updirection[2]), offset)
-    bulletplshape.setMargin(0)
-    bulletplnode.addShape(bulletplshape)
-    return bulletplnode
+# def gen_plane_cdmesh(updirection=np.array([0, 0, 1]), offset=0, name='autogen'):
+#     """
+#     generate a plane bulletrigidbody node
+#     :param updirection: the normal parameter of bulletplaneshape at panda3d
+#     :param offset: the d parameter of bulletplaneshape at panda3d
+#     :param name:
+#     :return: bulletrigidbody
+#     author: weiwei
+#     date: 20170202, tsukuba
+#     """
+#     bulletplnode = BulletRigidBodyNode(name)
+#     bulletplshape = BulletPlaneShape(Vec3(updirection[0], updirection[1], updirection[2]), offset)
+#     bulletplshape.setMargin(0)
+#     bulletplnode.addShape(bulletplshape)
+#     return bulletplnode
 
 def is_collided(objcm0, objcm1):
     """

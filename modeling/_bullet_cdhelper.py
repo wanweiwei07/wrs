@@ -100,22 +100,55 @@ if __name__ == '__main__':
     import modeling.geometricmodel as gm
     import modeling.collisionmodel as cm
 
+    # wd.World(campos=[1.0, 1, .0, 1.0], lookatpos=[0, 0, 0])
+    # objpath = os.path.join(basis.__path__[0], 'objects', 'yumifinger.stl')
+    # objcm1 = cm.CollisionModel(objpath, cdmesh_type='triangles')
+    # homomat = np.array([[-0.5, -0.82363909, 0.2676166, -0.00203699],
+    #                     [-0.86602539, 0.47552824, -0.1545085, 0.01272306],
+    #                     [0., -0.30901703, -0.95105648, 0.12604253],
+    #                     [0., 0., 0., 1.]])
+    # # homomat = np.array([[ 1.00000000e+00,  2.38935501e-16,  3.78436685e-17, -7.49999983e-03],
+    # #                     [ 2.38935501e-16, -9.51056600e-01, -3.09017003e-01,  2.04893537e-02],
+    # #                     [-3.78436685e-17,  3.09017003e-01, -9.51056600e-01,  1.22025304e-01],
+    # #                     [ 0.00000000e+00,  0.00000000e+00,  0.00000000e+00,  1.00000000e+00]])
+    # objcm1.set_homomat(homomat)
+    # objcm1.set_rgba([1, 1, .3, .2])
+    #
+    # objpath = os.path.join(basis.__path__[0], 'objects', 'tubebig.stl')
+    # objcm2 = cm.CollisionModel(objpath, cdmesh_type='triangles')
+    # iscollided, contact_points = is_collided(objcm1, objcm2)
+    # objcm1.show_cdmesh()
+    # objcm2.show_cdmesh()
+    # objcm1.attach_to(base)
+    # objcm2.attach_to(base)
+    # print(iscollided)
+    # for ct_pnt in contact_points:
+    #     gm.gen_sphere(ct_pnt, radius=.001).attach_to(base)
+    # pfrom = np.array([0, 0, 0]) + np.array([1.0, 1.0, 1.0])
+    # pto = np.array([0, 0, 0]) + np.array([-1.0, -1.0, -0.9])
+    # hitpos, hitnrml = rayhit_closet(pfrom=pfrom, pto=pto, objcm=objcm2)
+    # gm.gen_sphere(hitpos, radius=.003, rgba=np.array([0, 1, 1, 1])).attach_to(base)
+    # gm.gen_stick(spos=pfrom, epos=pto, thickness=.002).attach_to(base)
+    # gm.gen_arrow(spos=hitpos, epos=hitpos + hitnrml * .07, thickness=.002, rgba=np.array([0, 1, 0, 1])).attach_to(base)
+    # base.run()
+
     wd.World(campos=[1.0, 1, .0, 1.0], lookatpos=[0, 0, 0])
     objpath = os.path.join(basis.__path__[0], 'objects', 'yumifinger.stl')
-    objcm1 = cm.CollisionModel(objpath, cdmesh_type='triangles')
-    homomat = np.array([[-0.5, -0.82363909, 0.2676166, -0.00203699],
-                        [-0.86602539, 0.47552824, -0.1545085, 0.01272306],
-                        [0., -0.30901703, -0.95105648, 0.12604253],
-                        [0., 0., 0., 1.]])
-    # homomat = np.array([[ 1.00000000e+00,  2.38935501e-16,  3.78436685e-17, -7.49999983e-03],
-    #                     [ 2.38935501e-16, -9.51056600e-01, -3.09017003e-01,  2.04893537e-02],
-    #                     [-3.78436685e-17,  3.09017003e-01, -9.51056600e-01,  1.22025304e-01],
-    #                     [ 0.00000000e+00,  0.00000000e+00,  0.00000000e+00,  1.00000000e+00]])
+    objcm1 = cm.CollisionModel(objpath, cdprimit_type='polygons')
+    # homomat = np.array([[-0.5, -0.82363909, 0.2676166, -0.00203699],
+    #                     [-0.86602539, 0.47552824, -0.1545085, 0.01272306],
+    #                     [0., -0.30901703, -0.95105648, 0.12604253],
+    #                     [0., 0., 0., 1.]])
+    homomat = np.array([[ 1.00000000e+00,  2.38935501e-16,  3.78436685e-17, -7.49999983e-03],
+                        [ 2.38935501e-16, -9.51056600e-01, -3.09017003e-01,  2.04893537e-02],
+                        [-3.78436685e-17,  3.09017003e-01, -9.51056600e-01,  1.22025304e-01],
+                        [ 0.00000000e+00,  0.00000000e+00,  0.00000000e+00,  1.00000000e+00]])
     objcm1.set_homomat(homomat)
     objcm1.set_rgba([1, 1, .3, .2])
 
     objpath = os.path.join(basis.__path__[0], 'objects', 'tubebig.stl')
-    objcm2 = cm.CollisionModel(objpath, cdmesh_type='triangles')
+    objcm2 = cm.CollisionModel(objpath, cdprimit_type='polygons')
+    objcm2.set_rgba([1, 1, .3, .2])
     iscollided, contact_points = is_collided(objcm1, objcm2)
     objcm1.show_cdmesh()
     objcm2.show_cdmesh()
@@ -131,3 +164,4 @@ if __name__ == '__main__':
     gm.gen_stick(spos=pfrom, epos=pto, thickness=.002).attach_to(base)
     gm.gen_arrow(spos=hitpos, epos=hitpos + hitnrml * .07, thickness=.002, rgba=np.array([0, 1, 0, 1])).attach_to(base)
     base.run()
+

@@ -39,7 +39,7 @@ class PickPlacePlanner(adp.ADPlanner):
             jnt_values_bk = self.rbt.get_jnt_values(component_name)
             for conf in conf_list:
                 self.rbt.fk(component_name, conf)
-                gl_obj_pos, gl_obj_rotmat = self.rbt.get_gl_pose(component_name, obj_pos, obj_rotmat)
+                gl_obj_pos, gl_obj_rotmat = self.rbt.cvt_loc_intcp_to_gl(component_name, obj_pos, obj_rotmat)
                 objpose_list.append(rm.homomat_from_posrot(gl_obj_pos, gl_obj_rotmat))
             self.rbt.fk(component_name, jnt_values_bk)
         else:

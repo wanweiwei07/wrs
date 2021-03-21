@@ -22,7 +22,7 @@ class JLChain(object):
                  homeconf=np.zeros(6),
                  name='jlchain',
                  cdprimitive_type='box',
-                 cdmesh_type='triangulation'):
+                 cdmesh_type='triangles'):
         """
         initialize a manipulator
         naming rules
@@ -393,12 +393,12 @@ class JLChain(object):
                                 local_minima=local_minima,
                                 toggle_debug=toggle_debug)
 
-    def get_gl_pose(self,
-                    loc_pos=np.zeros(3),
-                    loc_rotmat=np.eye(3),
-                    tcp_jntid=None,
-                    tcp_loc_pos=None,
-                    tcp_loc_rotmat=None):
+    def cvt_loc_intcp_to_gl(self,
+                            loc_pos=np.zeros(3),
+                            loc_rotmat=np.eye(3),
+                            tcp_jntid=None,
+                            tcp_loc_pos=None,
+                            tcp_loc_rotmat=None):
         """
         TODO change name to get_locpose and get_glpose
         given a relative pos and relative rot with respective to the ith jntlnk,
@@ -421,12 +421,12 @@ class JLChain(object):
         objrot = tcp_gloc_rotmat.dot(loc_rotmat)
         return [objpos, objrot]
 
-    def get_loc_pose(self,
-                     gl_pos,
-                     gl_rotmat,
-                     tcp_jntid=None,
-                     tcp_loc_pos=None,
-                     tcp_loc_rotmat=None):
+    def cvt_gl_to_loc_intcp(self,
+                            gl_pos,
+                            gl_rotmat,
+                            tcp_jntid=None,
+                            tcp_loc_pos=None,
+                            tcp_loc_rotmat=None):
         """
         given a world pos and world rot
         get the relative pos and relative rot with respective to the ith jntlnk

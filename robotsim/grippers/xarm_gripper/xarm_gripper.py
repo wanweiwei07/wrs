@@ -93,11 +93,6 @@ class XArmGripper(gi.GripperInterface):
         self.all_cdelements=[]
         self.enable_cc(toggle_cdprimit=enable_cc)
 
-
-    @property
-    def is_fk_updated(self):
-        return self.lft_outer.is_fk_updated
-
     def enable_cc(self, toggle_cdprimit):
         if toggle_cdprimit:
             super().enable_cc()
