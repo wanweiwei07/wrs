@@ -6,17 +6,17 @@ import robotsim._kinematics.jlchain as jl
 import robotsim.manipulators.manipulator_interface as mi
 
 
-class SIA5F(mi.ManipulatorInterface):
+class SIA5(mi.ManipulatorInterface):
 
-    def __init__(self, pos=np.zeros(3), rotmat=np.eye(3), homeconf=np.zeros(7), name='sia5f', enable_cc=True):
+    def __init__(self, pos=np.zeros(3), rotmat=np.eye(3), homeconf=np.zeros(7), name='sia5', enable_cc=True):
         super().__init__(pos=pos, rotmat=rotmat, name=name)
         this_dir, this_filename = os.path.split(__file__)
         self.jlc = jl.JLChain(pos=pos, rotmat=rotmat, homeconf=homeconf, name=name)
         # seven joints, njnts = 7+2 (tgt ranges from 1-7), nlinks = 7+1
         jnt_safemargin = math.pi / 18.0
-        self.jlc.jnts[1]['loc_pos'] = np.array([0, 0, .31])
+        self.jlc.jnts[1]['loc_pos'] = np.array([0, 0, 0])
         self.jlc.jnts[1]['motion_rng'] = [-math.pi + jnt_safemargin, math.pi]
-        self.jlc.jnts[2]['loc_pos'] = np.array([0, 0, 0])
+        self.jlc.jnts[2]['loc_pos'] = np.array([0, 0, .168])
         self.jlc.jnts[2]['motion_rng'] = [-math.radians(110) + jnt_safemargin, math.radians(110) - jnt_safemargin]
         self.jlc.jnts[2]['loc_motionax'] = np.array([0, 1, 0])
         self.jlc.jnts[3]['loc_pos'] = np.array([0, 0, .27])
@@ -31,28 +31,30 @@ class SIA5F(mi.ManipulatorInterface):
         self.jlc.jnts[6]['motion_rng'] = [-math.radians(110) + jnt_safemargin, math.radians(110) - jnt_safemargin]
         self.jlc.jnts[6]['loc_motionax'] = np.array([0, -1, 0])
         self.jlc.jnts[7]['loc_pos'] = np.array([.134, .0, .0])
-        self.jlc.jnts[7]['loc_rotmat'] = rm.rotmat_from_euler(-1.5708, 0, 0)
+        self.jlc.jnts[7]['loc_rotmat'] = rm.rotmat_from_euler(-math.pi/2, 0, 0)
         self.jlc.jnts[7]['motion_rng'] = [-math.radians(90) + jnt_safemargin, math.radians(90) - jnt_safemargin]
         self.jlc.jnts[7]['loc_motionax'] = np.array([-1, 0, 0])
         self.jlc.jnts[8]['loc_pos'] = np.array([.011, .0, .0])
-        self.jlc.jnts[8]['loc_rotmat'] = rm.rotmat_from_euler(-1.5708, -1.5708, -1.5708)
+        self.jlc.jnts[8]['loc_rotmat'] = rm.rotmat_from_euler(-math.pi/2, -math.pi/2, -math.pi/2)
         # links
-        self.jlc.lnks[0]['name'] = "base"
-        self.jlc.lnks[0]['loc_pos'] = np.zeros(3)
-        self.jlc.lnks[0]['meshfile'] = os.path.join(this_dir, "meshes", "base.dae")
-        self.jlc.lnks[0]['rgba'] = [.5,.5,.5, 1.0]
+        # self.jlc.lnks[0]['name'] = "base"
+        # self.jlc.lnks[0]['loc_pos'] = np.zeros(3)
+        # self.jlc.lnks[0]['meshfile'] = os.path.join(this_dir, "meshes", "base.dae")
+        # self.jlc.lnks[0]['rgba'] = [.5,.5,.5, 1.0]
         self.jlc.lnks[1]['name'] = "link_s"
-        self.jlc.lnks[1]['loc_pos'] = np.zeros(3)
+        self.jlc.lnks[1]['loc_pos'] = np.array([0, 0, .142])
+        self.jlc.lnks[1]['loc_rotmat'] = rm.rotmat_from_euler(0, 0, math.pi)
         self.jlc.lnks[1]['meshfile'] = os.path.join(this_dir, "meshes", "link_s.dae")
-        self.jlc.lnks[1]['rgba'] = [.35,.35,.35, 1.0]
+        self.jlc.lnks[1]['rgba'] = [.55,.55,.55, 1.0]
         self.jlc.lnks[2]['name'] = "link_l"
         self.jlc.lnks[2]['loc_pos'] = np.zeros(3)
+        self.jlc.lnks[2]['loc_rotmat'] = rm.rotmat_from_euler(0, 0, math.pi)
         self.jlc.lnks[2]['meshfile'] = os.path.join(this_dir, "meshes", "link_l.dae")
         self.jlc.lnks[2]['rgba'] = [.1,.3,.5, 1.0]
         self.jlc.lnks[3]['name'] = "link_e"
         self.jlc.lnks[3]['loc_pos'] = np.zeros(3)
         self.jlc.lnks[3]['meshfile'] = os.path.join(this_dir, "meshes", "link_e.dae")
-        self.jlc.lnks[3]['rgba'] = [.35,.35,.35, 1.0]
+        self.jlc.lnks[3]['rgba'] = [.7,.7,.7, 1.0]
         self.jlc.lnks[4]['name'] = "link_u"
         self.jlc.lnks[4]['loc_pos'] = np.zeros(3)
         self.jlc.lnks[4]['meshfile'] = os.path.join(this_dir, "meshes", "link_u.dae")
@@ -64,7 +66,7 @@ class SIA5F(mi.ManipulatorInterface):
         self.jlc.lnks[6]['name'] = "link_b"
         self.jlc.lnks[6]['loc_pos'] = np.zeros(3)
         self.jlc.lnks[6]['meshfile'] = os.path.join(this_dir, "meshes", "link_b.dae")
-        self.jlc.lnks[6]['rgba'] = [.5,.5,.5, 1.0]
+        self.jlc.lnks[6]['rgba'] = [.1,.3,.5, 1.0]
         self.jlc.lnks[7]['name'] = "link_t"
         self.jlc.lnks[7]['loc_pos'] = np.zeros(3)
         self.jlc.lnks[7]['meshfile'] = os.path.join(this_dir, "meshes", "link_t.dae")
@@ -79,9 +81,8 @@ class SIA5F(mi.ManipulatorInterface):
 
     def enable_cc(self):
         super().enable_cc()
-        self.cc.add_cdlnks(self.jlc, [0, 1, 2, 3, 4, 5, 6, 7])
-        activelist = [self.jlc.lnks[0],
-                      self.jlc.lnks[1],
+        self.cc.add_cdlnks(self.jlc, [1, 2, 3, 4, 5, 6, 7])
+        activelist = [self.jlc.lnks[1],
                       self.jlc.lnks[2],
                       self.jlc.lnks[3],
                       self.jlc.lnks[4],
@@ -89,8 +90,7 @@ class SIA5F(mi.ManipulatorInterface):
                       self.jlc.lnks[6],
                       self.jlc.lnks[7]]
         self.cc.set_active_cdlnks(activelist)
-        fromlist = [self.jlc.lnks[0],
-                    self.jlc.lnks[1],
+        fromlist = [self.jlc.lnks[1],
                     self.jlc.lnks[2]]
         intolist = [self.jlc.lnks[5],
                     self.jlc.lnks[6],
@@ -105,7 +105,7 @@ if __name__ == '__main__':
 
     base = wd.World(campos=[2, 0, 1], lookatpos=[0, 0, 0.5])
     gm.gen_frame().attach_to(base)
-    manipulator_instance = SIA5F(enable_cc=True)
+    manipulator_instance = SIA5(enable_cc=True)
     manipulator_meshmodel = manipulator_instance.gen_meshmodel()
     manipulator_meshmodel.attach_to(base)
     manipulator_meshmodel.show_cdprimit()
