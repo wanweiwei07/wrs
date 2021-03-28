@@ -9,6 +9,8 @@ import modeling.geometricmodel as gm
 import modeling.modelcollection as mc
 import modeling._panda_cdhelper as pcd
 import modeling._ode_cdhelper as mcd
+
+
 # import modeling._gimpact_cdhelper as mcd
 # import modeling._bullet_cdhelper as mcd
 
@@ -32,7 +34,7 @@ class CollisionModel(gm.GeometricModel):
                  name="auto",
                  userdefined_cdprimitive_fn=None,
                  btransparency=True,
-                 btwosided = False):
+                 btwosided=False):
         """
         :param initor:
         :param btransparency:
@@ -91,6 +93,7 @@ class CollisionModel(gm.GeometricModel):
             if cdprimitive_type == "user_defined":
                 collision_node = userdefined_cdprimitive_fn(name="cdnp_usrdef", radius=expand_radius)
         return cdprimitive_type, collision_node
+
     @property
     def cdprimitive_type(self):
         return self._cdprimitive_type
@@ -106,11 +109,11 @@ class CollisionModel(gm.GeometricModel):
                                                            'convex_hull',
                                                            'triangles']:
             raise ValueError("Wrong mesh collision model type name!")
-        self._cdmesh_type=cdmesh_type
+        self._cdmesh_type = cdmesh_type
 
     @property
     def cdnp(self):
-        return self._objpdnp.getChild(1) # child-0 = pdnp_raw, child-1 = cdnp
+        return self._objpdnp.getChild(1)  # child-0 = pdnp_raw, child-1 = cdnp
 
     @property
     def cdmesh(self):
@@ -140,7 +143,8 @@ class CollisionModel(gm.GeometricModel):
         author: weiwei
         date: 20210116
         """
-        self._cdprimitive_type, cdnd = self._update_cdprimit(cdprimitive_type, expand_radius, userdefined_cdprimitive_fn)
+        self._cdprimitive_type, cdnd = self._update_cdprimit(cdprimitive_type, expand_radius,
+                                                             userdefined_cdprimitive_fn)
         # use _objpdnp.getChild instead of a new self._cdnp variable as collision nodepath is not compatible with deepcopy
         self.cdnp.removeNode()
         self._objpdnp.attachNewNode(cdnd)
@@ -155,7 +159,7 @@ class CollisionModel(gm.GeometricModel):
         """
         self.cdmesh_type = cdmesh_type
 
-    def copy_cdnp_to(self, nodepath, homomat=None, clearmask = False):
+    def copy_cdnp_to(self, nodepath, homomat=None, clearmask=False):
         """
         Return a nodepath including the cdcn,
         the returned nodepath is attached to the given one
@@ -208,7 +212,7 @@ class CollisionModel(gm.GeometricModel):
     def unshow_cdprimit(self):
         self.cdnp.hide()
 
-    def is_mcdwith(self, objcm_list, toggle_contacts = False):
+    def is_mcdwith(self, objcm_list, toggle_contacts=False):
         """
         Is the mesh of the cm collide with the mesh of the given cm
         :param objcm_list: one or a list of Collision Model object
@@ -253,6 +257,26 @@ def gen_box(extent=np.array([.1, .1, .1]), homomat=np.eye(4), rgba=np.array([1, 
     box_sgm = gm.gen_box(extent=extent, homomat=homomat, rgba=rgba)
     box_cm = CollisionModel(box_sgm)
     return box_cm
+
+
+def gen_stick(spos=np.array([.0, .0, .0]),
+              epos=np.array([.0, .0, .1]),
+              thickness=.005, type="rect",
+              rgba=[1, 0, 0, 1],
+              sections=8):
+    """
+    :param spos:
+    :param epos:
+    :param thickness:
+    :param rgba:
+    :return:
+    author: weiwei
+    date: 20210328
+    """
+    stick_sgm = gm.gen_stick(spos=spos, epos=epos, thickness=thickness, type=type, rgba=rgba, sections=sections)
+    stick_cm = CollisionModel(stick_sgm)
+    return stick_cm
+
 
 if __name__ == "__main__":
     import os

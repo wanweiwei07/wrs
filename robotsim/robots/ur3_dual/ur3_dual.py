@@ -38,11 +38,20 @@ class UR3Dual(ri.RobotInterface):
                               rotmat=self.lft_base.jnts[-1]['gl_rotmatq'],
                               homeconf=lft_arm_homeconf,
                               enable_cc=False)
-        # lft hand offset (if needed)
-        self.lft_hnd_offset = np.array([0, 0, 0.0484])
-        lft_hnd_pos, lft_hnd_rotmat = self.lft_arm.cvt_loc_intcp_to_gl(loc_pos=self.lft_hnd_offset)
-        self.lft_hnd = rtq.Robotiq85(pos=lft_hnd_pos,
-                                     rotmat=self.lft_arm.jnts[-1]['gl_rotmatq'],
+        # lft hand ftsensor
+        self.lft_ft_sensor = jl.JLChain(pos=self.lft_arm.jnts[-1]['gl_posq'],
+                                        rotmat=self.lft_arm.jnts[-1]['gl_rotmatq'],
+                                        homeconf=np.zeros(0), name='lft_ft_sensor_jl')
+        self.lft_ft_sensor.jnts[1]['loc_pos'] = np.array([.0, .0, .0484])
+        self.lft_ft_sensor.lnks[0]['name'] = "ur3_dual_lft_ft_sensor"
+        self.lft_ft_sensor.lnks[0]['loc_pos'] = np.array([0, 0, 0])
+        self.lft_ft_sensor.lnks[0]['collisionmodel'] = cm.gen_stick(spos=self.lft_ft_sensor.jnts[0]['loc_pos'],
+                                                                    epos=self.lft_ft_sensor.jnts[1]['loc_pos'],
+                                                                    thickness=.067, rgba=[.2, .3, .3, 1], sections=24)
+        self.lft_ft_sensor.reinitialize()
+        # lft hand
+        self.lft_hnd = rtq.Robotiq85(pos=self.lft_ft_sensor.jnts[-1]['gl_posq'],
+                                     rotmat=self.lft_ft_sensor.jnts[-1]['gl_rotmatq'],
                                      enable_cc=False)
         # rigth side
         self.rgt_base = jl.JLChain(pos=pos, rotmat=rotmat, homeconf=np.zeros(0), name='rgt_base_jl')
@@ -62,12 +71,20 @@ class UR3Dual(ri.RobotInterface):
                               rotmat=self.rgt_base.jnts[-1]['gl_rotmatq'],
                               homeconf=rgt_arm_homeconf,
                               enable_cc=False)
-        # rgt hand offset (if needed)
-        self.rgt_hnd_offset = np.array([0, 0, 0.0484])
-        rgt_hnd_pos, rgt_hnd_rotmat = self.rgt_arm.cvt_loc_intcp_to_gl(loc_pos=self.rgt_hnd_offset)
+        # rgt hand ft sensor
+        self.rgt_ft_sensor = jl.JLChain(pos=self.rgt_arm.jnts[-1]['gl_posq'],
+                                        rotmat=self.rgt_arm.jnts[-1]['gl_rotmatq'],
+                                        homeconf=np.zeros(0), name='rgt_ft_sensor_jl')
+        self.rgt_ft_sensor.jnts[1]['loc_pos'] = np.array([.0, .0, .0484])
+        self.rgt_ft_sensor.lnks[0]['name'] = "ur3_dual_rgt_ft_sensor"
+        self.rgt_ft_sensor.lnks[0]['loc_pos'] = np.array([0, 0, 0])
+        self.rgt_ft_sensor.lnks[0]['collisionmodel'] = cm.gen_stick(spos=self.rgt_ft_sensor.jnts[0]['loc_pos'],
+                                                                    epos=self.rgt_ft_sensor.jnts[1]['loc_pos'],
+                                                                    thickness=.067, rgba=[.2, .3, .3, 1], sections=24)
+        self.rgt_ft_sensor.reinitialize()
         # TODO replace using copy
-        self.rgt_hnd = rtq.Robotiq85(pos=rgt_hnd_pos,
-                                     rotmat=self.rgt_arm.jnts[-1]['gl_rotmatq'],
+        self.rgt_hnd = rtq.Robotiq85(pos=self.rgt_ft_sensor.jnts[-1]['gl_posq'],
+                                     rotmat=self.rgt_ft_sensor.jnts[-1]['gl_rotmatq'],
                                      enable_cc=False)
         # tool center point
         # lft
@@ -117,12 +134,12 @@ class UR3Dual(ri.RobotInterface):
         self.rotmat = rotmat
         self.lft_base.fix_to(self.pos, self.rotmat)
         self.lft_arm.fix_to(pos=self.lft_base.jnts[-1]['gl_posq'], rotmat=self.lft_base.jnts[-1]['gl_rotmatq'])
-        lft_hnd_pos, lft_hnd_rotmat = self.lft_arm.get_worldpose(relpos=self.rgt_hnd_offset)
-        self.lft_hnd.fix_to(pos=lft_hnd_pos, rotmat=lft_hnd_rotmat)
+        self.lft_ft_sensor.fix_to(pos=self.lft_arm.jnts[-1]['gl_posq'], rotmat=self.lft_arm.jnts[-1]['gl_rotmatq'])
+        self.lft_hnd.fix_to(pos=self.lft_ft_sensor.jnts[-1]['gl_posq'], rotmat=self.lft_ft_sensor.jnts[-1]['gl_rotmatq'])
         self.rgt_base.fix_to(self.pos, self.rotmat)
         self.rgt_arm.fix_to(pos=self.rgt_base.jnts[-1]['gl_posq'], rotmat=self.rgt_base.jnts[-1]['gl_rotmatq'])
-        rgt_hnd_pos, rgt_hnd_rotmat = self.rgt_arm.get_worldpose(relpos=self.rgt_hnd_offset)
-        self.rgt_hnd.fix_to(pos=rgt_hnd_pos, rotmat=rgt_hnd_rotmat)
+        self.rgt_ft_sensor.fix_to(pos=self.rgt_arm.jnts[-1]['gl_posq'], rotmat=self.rgt_arm.jnts[-1]['gl_rotmatq'])
+        self.rgt_hnd.fix_to(pos=self.rgt_ft_sensor.jnts[-1]['gl_posq'], rotmat=self.rgt_ft_sensor.jnts[-1]['gl_rotmatq'])
 
     def fk(self, general_jnt_values):
         """
@@ -136,38 +153,50 @@ class UR3Dual(ri.RobotInterface):
         self.rotmat = rm.rotmat_from_axangle([0, 0, 1], general_jnt_values[2])
         # left side
         self.lft_base.fix_to(self.pos, self.rotmat)
-        self.lft_arm.fix_to(pos=self.lft_base.jnts[-1]['gl_posq'], rotmat=self.lft_base.jnts[-1]['gl_rotmatq'],
+        self.lft_arm.fix_to(pos=self.lft_base.jnts[-1]['gl_posq'],
+                            rotmat=self.lft_base.jnts[-1]['gl_rotmatq'],
                             jnt_values=general_jnt_values[3:10])
+        self.lft_ft_sensor.fix_to(pos=self.lft_arm.jnts[-1]['gl_posq'],
+                                  rotmat=self.lft_arm.jnts[-1]['gl_rotmatq'])
         if len(general_jnt_values) != 10:  # gripper is also set
             general_jnt_values[10] = None
-        lft_hnd_pos, lft_hnd_rotmat = self.lft_arm.get_worldpose(relpos=self.rgt_hnd_offset)
-        self.lft_hnd.fix_to(pos=lft_hnd_pos, rotmat=lft_hnd_rotmat, jnt_values=general_jnt_values[10])
+        self.lft_hnd.fix_to(pos=self.lft_ft_sensor.jnts[-1]['gl_posq'],
+                            rotmat=self.lft_ft_sensor.jnts[-1]['gl_rotmatq'],
+                            jnt_values=general_jnt_values[10])
         # right side
         self.rgt_base.fix_to(self.pos, self.rotmat)
-        self.rgt_arm.fix_to(pos=self.rgt_base.jnts[-1]['gl_posq'], rotmat=self.rgt_base.jnts[-1]['gl_rotmatq'],
+        self.rgt_arm.fix_to(pos=self.rgt_base.jnts[-1]['gl_posq'],
+                            rotmat=self.rgt_base.jnts[-1]['gl_rotmatq'],
                             jnt_values=general_jnt_values[3:10])
+        self.rgt_ft_sensor.fix_to(pos=self.rgt_arm.jnts[-1]['gl_posq'],
+                                  rotmat=self.rgt_arm.jnts[-1]['gl_rotmatq'])
         if len(general_jnt_values) != 10:  # gripper is also set
             general_jnt_values[10] = None
-        rgt_hnd_pos, rgt_hnd_rotmat = self.rgt_arm.get_worldpose(relpos=self.rgt_hnd_offset)
-        self.rgt_hnd.fix_to(pos=rgt_hnd_pos, rotmat=rgt_hnd_rotmat, jnt_values=general_jnt_values[10])
+        self.rgt_hnd.fix_to(pos=self.rgt_ft_sensor.jnts[-1]['gl_posq'],
+                            rotmat=self.rgt_ft_sensor.jnts[-1]['gl_rotmatq'],
+                            jnt_values=general_jnt_values[10])
 
-    def gen_stickmodel(self, name='xarm7_shuidi_mobile'):
+    def gen_stickmodel(self, name='ur3_dual'):
         stickmodel = mc.ModelCollection(name=name)
         self.lft_base.gen_stickmodel().attach_to(stickmodel)
         self.lft_arm.gen_stickmodel().attach_to(stickmodel)
+        self.lft_ft_sensor.gen_stickmodel().attach_to(stickmodel)
         self.lft_hnd.gen_stickmodel().attach_to(stickmodel)
         self.rgt_base.gen_stickmodel().attach_to(stickmodel)
         self.rgt_arm.gen_stickmodel().attach_to(stickmodel)
+        self.rgt_ft_sensor.gen_stickmodel().attach_to(stickmodel)
         self.rgt_hnd.gen_stickmodel().attach_to(stickmodel)
         return stickmodel
 
-    def gen_meshmodel(self, name='xarm_gripper_meshmodel'):
+    def gen_meshmodel(self, name='ur3_dual'):
         meshmodel = mc.ModelCollection(name=name)
         self.lft_base.gen_meshmodel().attach_to(meshmodel)
         self.lft_arm.gen_meshmodel().attach_to(meshmodel)
+        self.lft_ft_sensor.gen_meshmodel().attach_to(meshmodel)
         self.lft_hnd.gen_meshmodel().attach_to(meshmodel)
         self.rgt_base.gen_meshmodel().attach_to(meshmodel)
         self.rgt_arm.gen_meshmodel().attach_to(meshmodel)
+        self.rgt_ft_sensor.gen_meshmodel().attach_to(meshmodel)
         self.rgt_hnd.gen_meshmodel().attach_to(meshmodel)
         return meshmodel
 
@@ -182,6 +211,6 @@ if __name__ == '__main__':
     # u3d.fk(.85)
     u3d_meshmodel = u3d.gen_meshmodel()
     u3d_meshmodel.attach_to(base)
-    u3d_meshmodel.show_cdprimit()
+    # u3d_meshmodel.show_cdprimit()
     u3d.gen_stickmodel().attach_to(base)
     base.run()

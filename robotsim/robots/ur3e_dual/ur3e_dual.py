@@ -129,34 +129,56 @@ class UR3EDual(ri.RobotInterface):
         rgt_hnd_pos, rgt_hnd_rotmat = self.rgt_arm.get_worldpose(relpos=self.rgt_hnd_offset)
         self.rgt_hnd.fix_to(pos=rgt_hnd_pos, rotmat=rgt_hnd_rotmat)
 
-    def fk(self, general_jnt_values):
+    def fk(self, component_name, jnt_values):
         """
-        :param general_jnt_values: 3+7 or 3+7+1, 3=agv, 7=arm, 1=grpr; metrics: meter-radian
+        :param jnt_values: [nparray, nparray], 6+6, meter-radian
+        :jlc_name 'lft_arm', 'rgt_arm', 'both_arm'
+        :param component_name:
         :return:
         author: weiwei
         date: 20201208toyonaka
         """
-        self.pos = np.zeros(0)  # no translation in z
-        self.pos[:2] = general_jnt_values[:2]
-        self.rotmat = rm.rotmat_from_axangle([0, 0, 1], general_jnt_values[2])
-        # left side
-        self.lft_base.fix_to(self.pos, self.rotmat)
-        self.lft_arm.fix_to(pos=self.lft_base.jnts[-1]['gl_posq'], rotmat=self.lft_base.jnts[-1]['gl_rotmatq'],
-                            jnt_values=general_jnt_values[3:10])
-        if len(general_jnt_values) != 10:  # gripper is also set
-            general_jnt_values[10] = None
-        lft_hnd_pos, lft_hnd_rotmat = self.lft_arm.get_worldpose(relpos=self.rgt_hnd_offset)
-        self.lft_hnd.fix_to(pos=lft_hnd_pos, rotmat=lft_hnd_rotmat, jnt_values=general_jnt_values[10])
-        # right side
-        self.rgt_base.fix_to(self.pos, self.rotmat)
-        self.rgt_arm.fix_to(pos=self.rgt_base.jnts[-1]['gl_posq'], rotmat=self.rgt_base.jnts[-1]['gl_rotmatq'],
-                            jnt_values=general_jnt_values[3:10])
-        if len(general_jnt_values) != 10:  # gripper is also set
-            general_jnt_values[10] = None
-        rgt_hnd_pos, rgt_hnd_rotmat = self.rgt_arm.get_worldpose(relpos=self.rgt_hnd_offset)
-        self.rgt_hnd.fix_to(pos=rgt_hnd_pos, rotmat=rgt_hnd_rotmat, jnt_values=general_jnt_values[10])
 
-    def gen_stickmodel(self, name='xarm7_shuidi_mobile'):
+        def update_oih(component_name='rgt_arm'):
+            # inline function for update objects in hand
+            if component_name == 'rgt_arm':
+                oih_info_list = self.rgt_oih_infos
+            elif component_name == 'lft_arm':
+                oih_info_list = self.lft_oih_infos
+            for obj_info in oih_info_list:
+                gl_pos, gl_rotmat = self.cvt_loc_tcp_to_gl(component_name, obj_info['rel_pos'], obj_info['rel_rotmat'])
+                obj_info['gl_pos'] = gl_pos
+                obj_info['gl_rotmat'] = gl_rotmat
+
+        super().fk(component_name, jnt_values)
+        # examine length
+        if component_name == 'lft_arm' or component_name == 'rgt_arm':
+            if not isinstance(jnt_values, np.ndarray) or jnt_values.size != 6:
+                raise ValueError("An 1x6 npdarray must be specified to move a single arm!")
+            self.manipulator_dict[component_name].fk(jnt_values=jnt_values)
+            self.get_hnd_on_component(component_name).fix_to(
+                pos=self.manipulator_dict[component_name].jnts[-1]['gl_posq'],
+                rotmat=self.manipulator_dict[component_name].jnts[-1]['gl_rotmatq'])
+            update_oih(component_name=component_name)
+        elif component_name == 'both_arm':
+            if (not isinstance(jnt_values, list)
+                    or jnt_values[0].size != 6
+                    or jnt_values[1].size != 6):
+                raise ValueError("A list of two 1x6 npdarrays must be specified to move both arm!")
+            self.lft_arm.fk(jnt_values=jnt_values[0])
+            self.lft_hnd.fix_to(pos=self.lft_arm.jnts[-1]['gl_posq'],
+                                rotmat=self.lft_arm.jnts[-1]['gl_rotmatq'])
+            self.rgt_arm.fk(jnt_values=jnt_values[1])
+            self.rgt_hnd.fix_to(pos=self.rgt_arm.jnts[-1]['gl_posq'],
+                                rotmat=self.rgt_arm.jnts[-1]['gl_rotmatq'])
+            update_oih(component_name='rgt_arm')
+            update_oih(component_name='lft_arm')
+        elif component_name == 'all':
+            pass
+        else:
+            raise ValueError("The given component name is not available!")
+
+    def gen_stickmodel(self, name='ur3e_dual'):
         stickmodel = mc.ModelCollection(name=name)
         self.lft_base.gen_stickmodel().attach_to(stickmodel)
         self.lft_arm.gen_stickmodel().attach_to(stickmodel)
@@ -166,7 +188,7 @@ class UR3EDual(ri.RobotInterface):
         self.rgt_hnd.gen_stickmodel().attach_to(stickmodel)
         return stickmodel
 
-    def gen_meshmodel(self, name='xarm_gripper_meshmodel'):
+    def gen_meshmodel(self, name='ur3e_dual'):
         meshmodel = mc.ModelCollection(name=name)
         self.lft_base.gen_meshmodel().attach_to(meshmodel)
         self.lft_arm.gen_meshmodel().attach_to(meshmodel)

@@ -106,8 +106,9 @@ class StaticGeometricModel(object):
     @property
     def objtrm(self):
         # read-only property
-        if self._objtrm is None:
-            raise ValueError("Only applicable to models with a trimesh!")
+        # 20210328 comment out, allow None
+        # if self._objtrm is None:
+        #     raise ValueError("Only applicable to models with a trimesh!")
         return self._objtrm
 
     @property
@@ -448,7 +449,7 @@ def gen_ellipsoid(pos=np.array([0, 0, 0]), axmat=np.eye(3), rgba=[1, 1, 0, .3]):
 
 
 def gen_stick(spos=np.array([0, 0, 0]), epos=np.array([.1, 0, 0]), thickness=.005, type="rect",
-              rgba=[1, 0, 0, 1]):
+              rgba=[1, 0, 0, 1], sections=8):
     """
     :param spos:
     :param epos:
@@ -459,7 +460,7 @@ def gen_stick(spos=np.array([0, 0, 0]), epos=np.array([.1, 0, 0]), thickness=.00
     author: weiwei
     date: 20191229osaka
     """
-    stick_trm = trihelper.gen_stick(spos=spos, epos=epos, thickness=thickness, type=type)
+    stick_trm = trihelper.gen_stick(spos=spos, epos=epos, thickness=thickness, type=type, sections=sections)
     stick_nodepath = da.trimesh_to_nodepath(stick_trm)
     stick_nodepath.setTransparency(TransparencyAttrib.MDual)
     stick_nodepath.setColor(rgba[0], rgba[1], rgba[2], rgba[3])
