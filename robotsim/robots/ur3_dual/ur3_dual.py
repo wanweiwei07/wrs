@@ -39,7 +39,7 @@ class UR3Dual(ri.RobotInterface):
                               homeconf=lft_arm_homeconf,
                               enable_cc=False)
         # lft hand offset (if needed)
-        self.lft_hnd_offset = np.zeros(3)
+        self.lft_hnd_offset = np.array([0, 0, 0.0484])
         lft_hnd_pos, lft_hnd_rotmat = self.lft_arm.cvt_loc_intcp_to_gl(loc_pos=self.lft_hnd_offset)
         self.lft_hnd = rtq.Robotiq85(pos=lft_hnd_pos,
                                      rotmat=self.lft_arm.jnts[-1]['gl_rotmatq'],
@@ -63,7 +63,7 @@ class UR3Dual(ri.RobotInterface):
                               homeconf=rgt_arm_homeconf,
                               enable_cc=False)
         # rgt hand offset (if needed)
-        self.rgt_hnd_offset = np.zeros(3)
+        self.rgt_hnd_offset = np.array([0, 0, 0.0484])
         rgt_hnd_pos, rgt_hnd_rotmat = self.rgt_arm.cvt_loc_intcp_to_gl(loc_pos=self.rgt_hnd_offset)
         # TODO replace using copy
         self.rgt_hnd = rtq.Robotiq85(pos=rgt_hnd_pos,
