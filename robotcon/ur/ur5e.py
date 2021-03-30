@@ -55,9 +55,9 @@ class Ur3EUrx():
         self.__jointscaler = 1000000
         self.__pb = pb.ProgramBuilder()
         script_dir = os.path.dirname(__file__)
-        rel_path = "urscripts/moderndriver_eseries.script"
-        self.__pb.loadprog(os.path.join(script_dir, rel_path))
-        self.__arm_urscript = self.__pb.ret_program_to_run()
+        rel_path = "urscript_eseries/moderndriver_eseries.script"
+        self.__pb.load_prog(os.path.join(script_dir, rel_path))
+        self.__arm_urscript = self.__pb.return_program_to_run()
         self.__arm_urscript = self.__arm_urscript.replace("parameter_ip", self.__urx_urmdsocket_ipad[0])
         self.__arm_urscript = self.__arm_urscript.replace("parameter_port", str(self.__urx_urmdsocket_ipad[1]))
         self.__arm_urscript = self.__arm_urscript.replace("parameter_jointscaler", str(self.__jointscaler))
@@ -86,7 +86,7 @@ class Ur3EUrx():
 
         targetarm = self.__arm
         self.__hand.open_gripper(speedpercentange, forcepercentage, fingerdistance)
-        targetarm.send_program(self.__hand.ret_program_to_run())
+        targetarm.send_program(self.__hand.return_program_to_run())
 
     def closegripper(self, speedpercentange = 80, forcepercentage = 50):
         """
@@ -101,7 +101,7 @@ class Ur3EUrx():
 
         targetarm = self.__arm
         self.__hand.close_gripper(speedpercentange, forcepercentage)
-        targetarm.send_program(self.__hand.ret_program_to_run())
+        targetarm.send_program(self.__hand.return_program_to_run())
 
     def movejntsin360(self):
         """
