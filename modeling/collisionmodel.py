@@ -303,7 +303,7 @@ if __name__ == "__main__":
     bunnycm1.set_rotmat(rotmat)
 
     bunnycm2 = bunnycm1.copy()
-    bunnycm2.change_cdprimitive_type(cdprimitive_type='surface_ball')
+    bunnycm2.change_cdprimitive_type(cdprimitive_type='surface_balls')
     bunnycm2.set_rgba([0, 0.7, 0.7, 1.0])
     rotmat = rm.rotmat_from_axangle([1, 0, 0], -math.pi / 4.0)
     bunnycm2.set_pos(np.array([0, .2, 0]))

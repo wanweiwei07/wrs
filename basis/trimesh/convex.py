@@ -8,13 +8,14 @@ import numpy as np
 
 from .constants import tol, log
 
-from .util   import type_named, diagonal_dot
+from .util import type_named, diagonal_dot
 from .points import project_to_plane
 
 try:
     from scipy.spatial import ConvexHull
 except ImportError:
     log.warning('Scipy import failed!')
+
 
 def convex_hull(mesh, clean=True):
     '''
@@ -32,23 +33,24 @@ def convex_hull(mesh, clean=True):
     '''
 
     type_trimesh = type_named(mesh, 'Trimesh')
-    c = ConvexHull(mesh.vertices.view(np.ndarray).reshape((-1,3)))
-    
+    c = ConvexHull(mesh.vertices.view(np.ndarray).reshape((-1, 3)))
+
     vid = np.sort(c.vertices)
     mask = np.zeros(len(c.points), dtype=np.int64)
     mask[vid] = np.arange(len(vid))
-        
-    faces    = mask[c.simplices]
+
+    faces = mask[c.simplices]
     vertices = c.points[vid].copy()
 
-    convex = type_trimesh(vertices = vertices, 
-                          faces    = faces,
-                          process  = True)
+    convex = type_trimesh(vertices=vertices,
+                          faces=faces,
+                          process=True)
     if clean:
         # the normals and triangle winding returned by scipy/qhull's
         # ConvexHull are apparently random, so we need to completely fix them
         convex.fix_normals()
     return convex
+
 
 def is_convex(mesh, chunks=None):
     '''
@@ -65,24 +67,24 @@ def is_convex(mesh, chunks=None):
     '''
     chunk_block = 5e4
     if chunks is None:
-        chunks = int(np.clip(len(mesh.faces) / chunk_block,1,10))
+        chunks = int(np.clip(len(mesh.faces) / chunk_block, 1, 10))
 
     # triangles from the second column of face adjacency
-    triangles = mesh.triangles.copy()[mesh.face_adjacency[:,1]]
+    triangles = mesh.triangles.copy()[mesh.face_adjacency[:, 1]]
     # normals and origins from the first column of face adjacency
-    normals = mesh.face_normals[mesh.face_adjacency[:,0]]
-    origins = mesh.vertices[mesh.face_adjacency_edges[:,0]]
+    normals = mesh.face_normals[mesh.face_adjacency[:, 0]]
+    origins = mesh.vertices[mesh.face_adjacency_edges[:, 0]]
 
     # reshape and tile everything to be the same dimension
-    triangles = triangles.reshape((-1,3))
-    normals = np.tile(normals, (1,3)).reshape((-1,3))
-    origins = np.tile(origins, (1,3)).reshape((-1,3))
+    triangles = triangles.reshape((-1, 3))
+    normals = np.tile(normals, (1, 3)).reshape((-1, 3))
+    origins = np.tile(origins, (1, 3)).reshape((-1, 3))
     triangles -= origins
 
     # in non- convex meshes, we don't necessarily have to compute all 
     # dots of every face since we are looking for logical ALL
     for chunk_tri, chunk_norm in zip(np.array_split(triangles, chunks),
-                                     np.array_split(normals,   chunks)):
+                                     np.array_split(normals, chunks)):
         # project vertices of adjacent triangle onto normal
         # note that two of these are always going to be zero so we 
         # are doing more dot products than we really have to but finding
@@ -95,8 +97,8 @@ def is_convex(mesh, chunks=None):
         if not bool((dots < tol.merge).all()):
             return False
     return True
-        
-    
+
+
 def planar_hull(points, normal, origin=None, input_convex=False):
     '''
     Find the convex outline of a set of points projected to a plane.
@@ -119,13 +121,13 @@ def planar_hull(points, normal, origin=None, input_convex=False):
     if not input_convex:
         pass
     planar, T = project_to_plane(points,
-                                 plane_normal     = normal,
-                                 plane_origin     = origin,
-                                 return_planar    = False,
-                                 return_transform = True)
-    hull_edges = ConvexHull(planar[:,0:2]).simplices
+                                 plane_normal=normal,
+                                 plane_origin=origin,
+                                 return_planar=False,
+                                 return_transform=True)
+    hull_edges = ConvexHull(planar[:, 0:2]).simplices
     hull_lines = planar[hull_edges]
-    planar_z = planar[:,2]
+    planar_z = planar[:, 2]
     height = np.array([planar_z.min(),
                        planar_z.max()])
     return hull_lines, T, height

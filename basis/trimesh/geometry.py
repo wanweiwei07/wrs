@@ -1,13 +1,14 @@
 import numpy as np
 
 from .transformations import rotation_matrix
-from .constants       import tol, log
-from .util            import unitize, stack_lines
+from .constants import tol, log
+from .util import unitize, stack_lines
 
-try: 
+try:
     from scipy.sparse import coo_matrix
-except ImportError: 
+except ImportError:
     log.warning('scipy.sparse.coo_matrix unavailable')
+
 
 def plane_transform(origin, normal):
     '''
@@ -23,10 +24,11 @@ def plane_transform(origin, normal):
     ---------
     transform: (4,4) float, transformation matrix
     '''
-    transform        =  align_vectors(normal, [0,0,1])
-    transform[0:3,3] = -np.dot(transform, np.append(origin, 1))[0:3]
+    transform = align_vectors(normal, [0, 0, 1])
+    transform[0:3, 3] = -np.dot(transform, np.append(origin, 1))[0:3]
     return transform
-    
+
+
 def transform_around(matrix, point):
     '''
     Given a transformation matrix, apply its rotation component around a 
@@ -43,11 +45,12 @@ def transform_around(matrix, point):
     '''
     point = np.array(point)
     translate = np.eye(4)
-    translate[0:3,3] = -point
+    translate[0:3, 3] = -point
     result = np.dot(matrix, translate)
-    translate[0:3,3] = point
+    translate[0:3, 3] = point
     result = np.dot(translate, result)
     return result
+
 
 def align_vectors(vector_start, vector_end, return_angle=False):
     '''
@@ -75,54 +78,57 @@ def align_vectors(vector_start, vector_end, return_angle=False):
         return T
 
     vector_start = unitize(vector_start)
-    vector_end   = unitize(vector_end)
-    cross        = np.cross(vector_start, vector_end)
+    vector_end = unitize(vector_end)
+    cross = np.cross(vector_start, vector_end)
     # we clip the norm to 1, as otherwise floating point bs
     # can cause the arcsin to error
-    norm         = np.clip(np.linalg.norm(cross), -1.0, 1.0)
-    direction    = np.sign(np.dot(vector_start, vector_end))
-  
+    norm = np.clip(np.linalg.norm(cross), -1.0, 1.0)
+    direction = np.sign(np.dot(vector_start, vector_end))
+
     if norm < tol.zero:
         # if the norm is zero, the vectors are the same
         # and no rotation is needed
-        T       = np.eye(4)
+        T = np.eye(4)
         T[0:3] *= direction
     else:
-        angle = np.arcsin(norm) 
+        angle = np.arcsin(norm)
         if direction < 0:
             angle = np.pi - angle
         T = rotation_matrix(angle, cross)
 
-    check = np.dot(T[:3,:3], vector_start) - vector_end
+    check = np.dot(T[:3, :3], vector_start) - vector_end
     if not np.allclose(check, 0.0):
         raise ValueError('Vectors unaligned!')
-    
+
     if return_angle:
         return T, angle
     return T
-    
+
+
 def faces_to_edges(faces, return_index=False):
     '''
     Given a list of faces (n,3), return a list of edges (n*3,2)
     '''
     faces = np.asanyarray(faces)
-    edges = np.column_stack((faces[:,(0,1)],
-                             faces[:,(1,2)],
-                             faces[:,(2,0)])).reshape(-1,2)
+    edges = np.column_stack((faces[:, (0, 1)],
+                             faces[:, (1, 2)],
+                             faces[:, (2, 0)])).reshape(-1, 2)
     if return_index:
-        face_index = np.tile(np.arange(len(faces)), (3,1)).T.reshape(-1)
+        face_index = np.tile(np.arange(len(faces)), (3, 1)).T.reshape(-1)
         return edges, face_index
     return edges
+
 
 def triangulate_quads(quads):
     '''
     Given a set of quad faces, return them as triangle faces.
     '''
     quads = np.array(quads)
-    faces = np.vstack((quads[:,[0,1,2]],
-                       quads[:,[2,3,0]]))
+    faces = np.vstack((quads[:, [0, 1, 2]],
+                       quads[:, [2, 3, 0]]))
     return faces
-    
+
+
 def mean_vertex_normals(vertex_count, faces, face_normals, **kwargs):
     '''
     Find vertex normals from the mean of the faces that contain that vertex.
@@ -138,6 +144,7 @@ def mean_vertex_normals(vertex_count, faces, face_normals, **kwargs):
     vertex_normals: (vertex_count, 3) float normals for every vertex
                     Uncontained vertices will be zero.
     '''
+
     def summed_sparse():
         # use a sparse matrix of which face contains each vertex to
         # figure out the summed normal at each vertex
@@ -157,18 +164,19 @@ def mean_vertex_normals(vertex_count, faces, face_normals, **kwargs):
         for face, normal in zip(faces, face_normals):
             summed[face] += normal
         return summed
-    
-    try: 
+
+    try:
         summed = summed_sparse()
-    except: 
+    except:
         log.warning('Unable to generate sparse matrix! Falling back!',
-                    exc_info = True)
+                    exc_info=True)
         summed = summed_loop()
     unit_normals, valid = unitize(summed, check_valid=True)
     vertex_normals = np.zeros((vertex_count, 3), dtype=np.float64)
     vertex_normals[valid] = unit_normals
 
     return vertex_normals
+
 
 def index_sparse(column_count, indices):
     '''
@@ -214,16 +222,17 @@ def index_sparse(column_count, indices):
     '''
     indices = np.asanyarray(indices)
     column_count = int(column_count)
-    
-    row  = indices.reshape(-1)
-    col  = np.tile(np.arange(len(indices)).reshape((-1,1)), (1,indices.shape[1])).reshape(-1)
 
-    shape  = (column_count, len(indices))
-    data   = np.ones(len(col), dtype=np.bool)
-    sparse = coo_matrix((data, (row,col)), 
-                        shape = shape, 
-                        dtype = np.bool)
+    row = indices.reshape(-1)
+    col = np.tile(np.arange(len(indices)).reshape((-1, 1)), (1, indices.shape[1])).reshape(-1)
+
+    shape = (column_count, len(indices))
+    data = np.ones(len(col), dtype=np.bool)
+    sparse = coo_matrix((data, (row, col)),
+                        shape=shape,
+                        dtype=np.bool)
     return sparse
+
 
 def medial_axis(samples, contains):
     '''
@@ -252,9 +261,10 @@ def medial_axis(samples, contains):
     # ridge vertices of -1 are outside, make sure they are False
     contained = np.append(contained, False)
     inside = [i for i in voronoi.ridge_vertices if contained[i].all()]
-    line_indices = np.vstack([stack_lines(i) for i in inside if len(i) >=2])
-    lines = voronoi.vertices[line_indices]    
+    line_indices = np.vstack([stack_lines(i) for i in inside if len(i) >= 2])
+    lines = voronoi.vertices[line_indices]
     return load_path(lines)
+
 
 def rotation_2D_to_3D(matrix_2D):
     '''
@@ -271,13 +281,13 @@ def rotation_2D_to_3D(matrix_2D):
     '''
 
     matrix_2D = np.asanyarray(matrix_2D)
-    if matrix_2D.shape != (3,3):
+    if matrix_2D.shape != (3, 3):
         raise ValueError('Homogenous 2D transformation matrix required!')
 
-    matrix_3D = np.eye(4)    
+    matrix_3D = np.eye(4)
     # translation
-    matrix_3D[0:2, 3]   = matrix_2D[0:2,2] 
+    matrix_3D[0:2, 3] = matrix_2D[0:2, 2]
     # rotation from 2D to around Z
-    matrix_3D[0:2, 0:2] = matrix_2D[0:2,0:2]
+    matrix_3D[0:2, 0:2] = matrix_2D[0:2, 0:2]
 
     return matrix_3D

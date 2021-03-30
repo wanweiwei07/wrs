@@ -810,8 +810,9 @@ if __name__ == "__main__":
     bpgm1.attach_to(base)
     bpgm2.attach_to(base)
 
-    lsgm = gen_linesegs(
-        [np.array([.1, 0, .01]), np.array([.01, 0, .01]), np.array([.1, 0, .1]), np.array([.1, 0, .01])])
+    lsgm = gen_linesegs([[np.array([.1, 0, .01]), np.array([.01, 0, .01])],
+                         [np.array([.01, 0, .01]), np.array([.1, 0, .1])],
+                         [np.array([.1, 0, .1]), np.array([.1, 0, .01])]])
     lsgm.attach_to(base)
 
     gen_circarrow(radius=.1, portion=.8).attach_to(base)

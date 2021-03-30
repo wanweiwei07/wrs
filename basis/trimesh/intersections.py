@@ -1,12 +1,13 @@
 import numpy as np
 
 from .constants import log, tol
-from .grouping  import unique_value_in_row
-from .util      import unitize
+from .grouping import unique_value_in_row
+from .util import unitize
 
-def mesh_plane(mesh, 
+
+def mesh_plane(mesh,
                plane_normal,
-               plane_origin  = None):
+               plane_origin=None):
     '''
     Find a the intersections between a mesh and a plane, 
     returning a set of line segments on that plane.
@@ -56,7 +57,7 @@ def mesh_plane(mesh,
         signs_sorted = np.sort(signs, axis=1)
         coded = np.zeros(len(signs_sorted), dtype=np.int8) + 14
         for i in range(3):
-            coded += signs_sorted[:,i] << 3-i
+            coded += signs_sorted[:, i] << 3 - i
 
         # one edge fully on the plane
         # note that we are only accepting *one* of the on- edge cases,
@@ -74,8 +75,8 @@ def mesh_plane(mesh,
         one_vertex = key[coded]
 
         # one vertex on one side of the plane, two on the other
-        key[:]      = False
-        key[[4,12]] = True
+        key[:] = False
+        key[[4, 12]] = True
         basic = key[coded]
 
         return basic, one_vertex, one_edge
@@ -83,55 +84,55 @@ def mesh_plane(mesh,
     def handle_on_vertex(signs, faces, vertices):
         # case where one vertex is on plane, two are on different sides
         vertex_plane = faces[signs == 0]
-        edge_thru    = faces[signs != 0].reshape((-1,2))
-        point_intersect, valid  = plane_lines(plane_origin, 
-                                              plane_normal, 
-                                              vertices[edge_thru.T],
-                                              line_segments = False)
+        edge_thru = faces[signs != 0].reshape((-1, 2))
+        point_intersect, valid = plane_lines(plane_origin,
+                                             plane_normal,
+                                             vertices[edge_thru.T],
+                                             line_segments=False)
         lines = np.column_stack((vertices[vertex_plane[valid]],
-                                 point_intersect)).reshape((-1,2,3))
+                                 point_intersect)).reshape((-1, 2, 3))
         return lines
 
     def handle_on_edge(signs, faces, vertices):
         # case where two vertices are on the plane and one is off
-        edges  = faces[signs == 0].reshape((-1,2))
+        edges = faces[signs == 0].reshape((-1, 2))
         points = vertices[edges]
         return points
 
     def handle_basic(signs, faces, vertices):
-        #case where one vertex is on one side and two are on the other
-        unique_element = unique_value_in_row(signs, unique = [-1,1])
+        # case where one vertex is on one side and two are on the other
+        unique_element = unique_value_in_row(signs, unique=[-1, 1])
         edges = np.column_stack((faces[unique_element],
                                  faces[np.roll(unique_element, 1, axis=1)],
                                  faces[unique_element],
-                                 faces[np.roll(unique_element, 2, axis=1)])).reshape((-1,2))
-        intersections, valid  = plane_lines(plane_origin, 
-                                            plane_normal, 
-                                            vertices[edges.T],
-                                            line_segments = False)
+                                 faces[np.roll(unique_element, 2, axis=1)])).reshape((-1, 2))
+        intersections, valid = plane_lines(plane_origin,
+                                           plane_normal,
+                                           vertices[edges.T],
+                                           line_segments=False)
         # since the data has been pre- culled, any invalid intersections at all
         # means the culling was done incorrectly and thus things are mega-fucked
         assert valid.all()
-        return intersections.reshape((-1,2,3))
+        return intersections.reshape((-1, 2, 3))
 
     # dot product of each vertex with the plane normal, indexed by face
     # so for each face the dot product of each vertex is a row
     # shape is the same as mesh.faces (n,3)
-    dots = np.dot(plane_normal, (mesh.vertices-plane_origin).T)[mesh.faces]
+    dots = np.dot(plane_normal, (mesh.vertices - plane_origin).T)[mesh.faces]
 
     # sign of the dot product is -1, 0, or 1
     # shape is the same as mesh.faces (n,3)
     signs = np.zeros(mesh.faces.shape, dtype=np.int8)
     signs[dots < -tol.merge] = -1
-    signs[dots >  tol.merge] =  1
+    signs[dots > tol.merge] = 1
 
     # figure out which triangles are in the cross section,
     # and which of the three intersection cases they are in
     cases = triangle_cases(signs)
     # handlers for each case
-    handlers = (handle_basic, 
-                handle_on_vertex, 
-                handle_on_edge)    
+    handlers = (handle_basic,
+                handle_on_vertex,
+                handle_on_edge)
 
     lines = np.vstack([h(signs[c],
                          mesh.faces[c],
@@ -141,10 +142,11 @@ def mesh_plane(mesh,
 
     return lines
 
-def plane_lines(plane_origin, 
-                plane_normal, 
-                endpoints,                            
-                line_segments = True):
+
+def plane_lines(plane_origin,
+                plane_normal,
+                endpoints,
+                line_segments=True):
     '''
     Calculate plane-line intersections
 
@@ -163,14 +165,14 @@ def plane_lines(plane_origin,
     valid        : (n, 3) list of booleans indicating whether a valid
                    intersection occurred
     '''
-    endpoints    = np.asanyarray(endpoints)
+    endpoints = np.asanyarray(endpoints)
     plane_origin = np.asanyarray(plane_origin).reshape(3)
-    line_dir     = unitize(endpoints[1] - endpoints[0])
+    line_dir = unitize(endpoints[1] - endpoints[0])
     plane_normal = unitize(np.asanyarray(plane_normal).reshape(3))
-    
+
     t = np.dot(plane_normal, (plane_origin - endpoints[0]).T)
     b = np.dot(plane_normal, line_dir.T)
-    
+
     # If the plane normal and line direction are perpendicular, it means
     # the vector is 'on plane', and there isn't a valid intersection.
     # We discard on-plane vectors by checking that the dot product is nonzero
@@ -184,7 +186,7 @@ def plane_lines(plane_origin,
         valid = np.logical_and(valid, nonzero)
 
     d = np.divide(t[valid], b[valid])
-    intersection  = endpoints[0][valid]
-    intersection += np.reshape(d, (-1,1)) * line_dir[valid]
+    intersection = endpoints[0][valid]
+    intersection += np.reshape(d, (-1, 1)) * line_dir[valid]
 
     return intersection, valid

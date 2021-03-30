@@ -4,27 +4,29 @@ from . import util
 from . import points
 from . import creation
 
-from .base      import Trimesh
+from .base import Trimesh
 from .constants import log
 from .triangles import windings_aligned
-   
+
+
 class Primitive(Trimesh):
     '''
     Geometric primitives which are a subclass of Trimesh.
     Mesh is generated lazily when vertices or faces are requested.
     '''
+
     def __init__(self, *args, **kwargs):
         super(Primitive, self).__init__(*args, **kwargs)
         self._data.clear()
         self._validate = False
-        
+
     @property
     def faces(self):
         stored = self._cache['faces']
         if util.is_shape(stored, (-1, 3)):
             return stored
         self._create_mesh()
-        #self._validate_face_normals()
+        # self._validate_face_normals()
         return self._cache['faces']
 
     @faces.setter
@@ -52,7 +54,7 @@ class Primitive(Trimesh):
             return stored
         self._create_mesh()
         return self._cache['face_normals']
-    
+
     @face_normals.setter
     def face_normals(self, values):
         if values is not None:
@@ -60,6 +62,7 @@ class Primitive(Trimesh):
 
     def _create_mesh(self):
         raise ValueError('Primitive doesn\'t define mesh creation!')
+
 
 class Sphere(Primitive):
     def __init__(self, *args, **kwargs):
@@ -107,12 +110,13 @@ class Sphere(Primitive):
 
     def _create_mesh(self):
         ico = self._unit_sphere
-        self._cache['vertices'] = ((ico.vertices * self.sphere_radius) + 
+        self._cache['vertices'] = ((ico.vertices * self.sphere_radius) +
                                    self.sphere_center)
         self._cache['faces'] = ico.faces
         self._cache['face_normals'] = ico.face_normals
 
-class Box(Primitive):    
+
+class Box(Primitive):
     def __init__(self, *args, **kwargs):
         '''
         Create a Box primitive, which is a subclass of Trimesh
@@ -135,12 +139,12 @@ class Box(Primitive):
 
     @property
     def box_center(self):
-        return self.box_transform[0:3,3]
+        return self.box_transform[0:3, 3]
 
     @box_center.setter
     def box_center(self, values):
         transform = self.box_transform
-        transform[0:3,3] = values
+        transform[0:3, 3] = values
         self._data['box_transform'] = transform
 
     @property
@@ -164,14 +168,14 @@ class Box(Primitive):
     @box_transform.setter
     def box_transform(self, matrix):
         matrix = np.asanyarray(matrix, dtype=np.float64)
-        if matrix.shape != (4,4):
+        if matrix.shape != (4, 4):
             raise ValueError('Matrix must be (4,4)!')
         self._data['box_transform'] = matrix
 
     @property
     def is_oriented(self):
         if util.is_shape(self.box_transform, (4, 4)):
-            return not np.allclose(self.box_transform[0:3,0:3], np.eye(3))
+            return not np.allclose(self.box_transform[0:3, 0:3], np.eye(3))
         else:
             return False
 
@@ -181,16 +185,17 @@ class Box(Primitive):
         vertices, faces, normals = box.vertices, box.faces, box.face_normals
         vertices = points.transform_points(vertices * self.box_extents,
                                            self.box_transform)
-        normals = np.dot(self.box_transform[0:3,0:3], 
+        normals = np.dot(self.box_transform[0:3, 0:3],
                          normals.T).T
         aligned = windings_aligned(vertices[faces[:1]], normals[:1])[0]
         if not aligned:
-            faces = np.fliplr(faces)        
-        # for a primitive the vertices and faces are derived from other information
+            faces = np.fliplr(faces)
+            # for a primitive the vertices and faces are derived from other information
         # so it goes in the cache, instead of the datastore
         self._cache['vertices'] = vertices
-        self._cache['faces']    = faces
+        self._cache['faces'] = faces
         self._cache['face_normals'] = normals
+
 
 class Cylinder(Primitive):
 
@@ -252,7 +257,7 @@ class Cylinder(Primitive):
         """
         distance = float(distance)
 
-        buffered = Cylinder(height=self.height + distance*2, radius=self.radius + distance, sections=self.sections,
+        buffered = Cylinder(height=self.height + distance * 2, radius=self.radius + distance, sections=self.sections,
                             homomat=self.homomat)
         return buffered
 
@@ -262,6 +267,7 @@ class Cylinder(Primitive):
         self._cache['vertices'] = mesh.vertices
         self._cache['faces'] = mesh.faces
         self._cache['face_normals'] = mesh.face_normals
+
 
 class Extrusion(Primitive):
     def __init__(self, *args, **kwargs):
@@ -276,30 +282,30 @@ class Extrusion(Primitive):
         '''
         super(Extrusion, self).__init__(*args, **kwargs)
         if 'extrude_polygon' in kwargs:
-            self.extrude_polygon   = kwargs['extrude_polygon']
+            self.extrude_polygon = kwargs['extrude_polygon']
         if 'extrude_transform' in kwargs:
             self.extrude_transform = kwargs['extrude_transform']
         if 'extrude_height' in kwargs:
-            self.extrude_height    = kwargs['extrude_height']
+            self.extrude_height = kwargs['extrude_height']
 
     @property
     def extrude_transform(self):
         stored = self._data['extrude_transform']
-        if np.shape(stored) == (4,4):
+        if np.shape(stored) == (4, 4):
             return stored
         return np.eye(4)
 
     @extrude_transform.setter
     def extrude_transform(self, matrix):
         matrix = np.asanyarray(matrix, dtype=np.float64)
-        if matrix.shape != (4,4):
+        if matrix.shape != (4, 4):
             raise ValueError('Matrix must be (4,4)!')
         self._data['extrude_transform'] = matrix
 
     @property
     def extrude_height(self):
         stored = self._data['extrude_height']
-        if stored is None: 
+        if stored is None:
             raise ValueError('extrude height not specified!')
         return stored.copy()[0]
 
@@ -310,7 +316,7 @@ class Extrusion(Primitive):
     @property
     def extrude_polygon(self):
         stored = self._data['extrude_polygon']
-        if stored is None: 
+        if stored is None:
             raise ValueError('extrude polygon not specified!')
         return stored[0]
 
@@ -318,17 +324,17 @@ class Extrusion(Primitive):
     def extrude_polygon(self, value):
         polygon = creation.validate_polygon(value)
         self._data['extrude_polygon'] = polygon
-        
+
     @property
     def extrude_direction(self):
-        direction = np.dot(self.extrude_transform[:3,:3], 
-                           [0.0,0.0,1.0])
+        direction = np.dot(self.extrude_transform[:3, :3],
+                           [0.0, 0.0, 1.0])
         return direction
-        
+
     def slide(self, distance):
         distance = float(distance)
         translation = np.eye(4)
-        translation[2,3] = distance
+        translation[2, 3] = distance
         new_transform = np.dot(self.extrude_transform.copy(),
                                translation.copy())
         self.extrude_transform = new_transform
@@ -338,9 +344,10 @@ class Extrusion(Primitive):
         mesh = creation.extrude_polygon(self.extrude_polygon,
                                         self.extrude_height)
         mesh.apply_transform(self.extrude_transform)
-        self._cache['vertices']     = mesh.vertices
-        self._cache['faces']        = mesh.faces
+        self._cache['vertices'] = mesh.vertices
+        self._cache['faces'] = mesh.faces
         self._cache['face_normals'] = mesh.face_normals
+
 
 class Cone(Primitive):
 
@@ -384,7 +391,7 @@ class Cone(Primitive):
         author: weiwei
         date: 20191228osaka
         """
-        volume = ((np.pi * self.radius ** 2) * self.height)/3
+        volume = ((np.pi * self.radius ** 2) * self.height) / 3
         return volume
 
     def buffer(self, distance):
@@ -401,7 +408,7 @@ class Cone(Primitive):
         distance = float(distance)
 
         buffered = Cone(height=self.height + distance * 2, radius=self.radius + distance, sections=self.sections,
-                           homomat=self.homomat)
+                        homomat=self.homomat)
         return buffered
 
     def _create_mesh(self):
@@ -410,6 +417,7 @@ class Cone(Primitive):
         self._cache['vertices'] = mesh.vertices
         self._cache['faces'] = mesh.faces
         self._cache['face_normals'] = mesh.face_normals
+
 
 class Capsule(Primitive):
 
@@ -439,7 +447,7 @@ class Capsule(Primitive):
         if 'count' in kwargs:
             self.count = kwargs['count']
         else:
-            self.count = [8,8]
+            self.count = [8, 8]
         if 'homomat' in kwargs:
             self.homomat = kwargs['homomat']
         else:
@@ -454,7 +462,7 @@ class Capsule(Primitive):
         author: weiwei
         date: 20191228osaka
         """
-        volume = (np.pi * self.radius ** 3)*3/4 +(np.pi * self.radius ** 2)*self.height
+        volume = (np.pi * self.radius ** 3) * 3 / 4 + (np.pi * self.radius ** 2) * self.height
         return volume
 
     def buffer(self, distance):
@@ -469,7 +477,7 @@ class Capsule(Primitive):
         """
         distance = float(distance)
 
-        buffered = Capsule(height=self.height + distance*2, radius=self.radius + distance, count=self.count,
+        buffered = Capsule(height=self.height + distance * 2, radius=self.radius + distance, count=self.count,
                            homomat=self.homomat)
         return buffered
 

@@ -1,4 +1,5 @@
-from .version import __version__
+# based on Trimesh 1.14.18
+
 from .base import Trimesh
 from .util import unitize
 from .points import transform_points
