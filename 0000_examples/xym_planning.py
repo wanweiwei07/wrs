@@ -16,9 +16,9 @@ object.set_pos(np.array([.85, 0, .37]))
 object.set_rgba([.5,.7,.3,1])
 object.attach_to(base)
 # robot
-jlc_name='arm'
+component_name='arm'
 robot_instance = xav.XArm7YunjiMobile()
-robot_instance.fk(np.array([0, math.pi * 2 / 3, 0, math.pi, 0, -math.pi / 6, 0]), component_name=jlc_name)
+robot_instance.fk(component_name, np.array([0, math.pi * 2 / 3, 0, math.pi, 0, -math.pi / 6, 0]))
 rrtc_planner = rrtc.RRTConnect(robot_instance)
 path = rrtc_planner.plan(start_conf=np.array([0, math.pi * 2 / 3, 0, math.pi, 0, -math.pi / 6, 0]),
                          goal_conf=np.array([math.pi/3, math.pi * 1 / 3, 0, math.pi/2, 0, math.pi / 6, 0]),
@@ -26,11 +26,11 @@ path = rrtc_planner.plan(start_conf=np.array([0, math.pi * 2 / 3, 0, math.pi, 0,
                          ext_dist=.1,
                          rand_rate=70,
                          maxtime=300,
-                         component_name=jlc_name)
+                         component_name=component_name)
 print(path)
 for pose in path:
     print(pose)
-    robot_instance.fk(pose, component_name=jlc_name)
+    robot_instance.fk(component_name, pose)
     robot_meshmodel = robot_instance.gen_meshmodel()
     robot_meshmodel.attach_to(base)
     # robot_meshmodel.show_cdprimit()
