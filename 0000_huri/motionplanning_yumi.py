@@ -71,7 +71,7 @@ if __name__ == '__main__':
     lfthnd = hndfa.genHand()
     robot = yumi.YumiRobot(rgthnd, lfthnd)
     robot.opengripper(armname="rgt")
-    robot.closegripper(armname="lft")
+    robot.close_gripper(armname="lft")
     robotball = yumiball.YumiBall()
     robotmesh = yumimesh.YumiMesh()
     robotnp = robotmesh.genmnp(robot)

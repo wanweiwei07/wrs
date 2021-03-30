@@ -13,199 +13,138 @@ import struct
 import os
 
 
-class Ur3DualUrx():
+class Ur3Urx():
     """
-    urx 50, right arm 51, left arm 52
     author: weiwei
     date: 20180131
     """
 
-    def __init__(self, robotsim):
+    def __init__(self, modern_driver, arm_base=(0, 0, 0), robot_ip='10.2.0.50', pc_ip='10.2.0.91'):
         """
-        :param robotsim: for global transformation, especially in attachfirm
-        author: weiwei
-        date: 20191014 osaka
+
+        :param modern_driver: "uscripts_cbseries/moderndriver_cbseries.script"
+        :param robot_ip:
+        :param pc_ip:
         """
-        iprgt = '10.2.0.50'
-        iplft = '10.2.0.51'
-        logging.basicConfig()
-        self.__lftarm = urrobot.URRobot(iplft)
-        self.__lftarm.set_tcp((0, 0, 0, 0, 0, 0))
-        self.__lftarm.set_payload(1.28)
-        self.__rgtarm = urrobot.URRobot(iprgt)
-        self.__rgtarm.set_tcp((0, 0, 0, 0, 0, 0))
-        self.__rgtarm.set_payload(1.28)
-        self.__rgtarm_ftsocket_addr = (iprgt, 63351)
-        self.__lftarm_ftsocket_addr = (iplft, 63351)
-        self.__hand = r2f.RobotiqTwoFinger(type=85)
-        self.__lftarmbase = [0, 235.00, 965.00]
-        self.__rgtarmbase = [0, -235.00, 965.00]
-        self.__sqrt2o2 = math.sqrt(2.0) / 2.0
-        self.__ftsensor = rft.RobotiqFT300()
-        self.__ftsensorscript = self.__ftsensor.get_program_to_run()
-        # setup server socket
-        ipurx = '10.2.0.91'
-        self.__urx_urmdsocket_addr = (ipurx, 50001)
-        self.__urx_urmdsocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        self.__urx_urmdsocket.setsockopt(socket.IPPROTO_TCP, socket.TCP_NODELAY, 1)
-        self.__urx_urmdsocket.setsockopt(socket.IPPROTO_TCP, socket.TCP_QUICKACK, 1)
-        self.__urx_urmdsocket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-        self.__urx_urmdsocket.bind(self.__urx_urmdsocket_addr)
-        self.__urx_urmdsocket.listen(5)
-        self.__jointscaler = 1e6
-        self.__pb = pb.ProgramBuilder()
+        # setup arm
+        self._arm = urrobot.URRobot(robot_ip)
+        self._arm.set_tcp((0, 0, 0, 0, 0, 0))
+        self._arm.set_payload(1.28)
+        # setup hand
+        self._hand = r2f.RobotiqTwoFinger(type=85)
+        # setup ftsensor
+        self._ftsensor = rft.RobotiqFT300()
+        self._ftsensor_socket_addr = (robot_ip, 63351)
+        self._ftsensor_urscript = self._ftsensor.get_program_to_run()
+        # setup pc server
+        self._pc_server_socket_addr = (pc_ip, 0)  # 0: the system finds an available port
+        self._pc_server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        self._pc_server_socket.setsockopt(socket.IPPROTO_TCP, socket.TCP_NODELAY, 1)
+        self._pc_server_socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+        self._pc_server_socket.bind(self._pc_server_socket_addr)
+        self._pc_server_socket.listen(5)
+        self._jointscaler = 1e6
+        self._pb = pb.ProgramBuilder()
         script_dir = os.path.dirname(__file__)
-        self.__pb.load_prog(os.path.join(script_dir, "uscripts_cbseries/moderndriver_cbseries.script"))
-        # set up right arm urscript
-        self.__rgtarm_urscript = self.__pb.get_program_to_run()
-        self.__rgtarm_urscript = self.__rgtarm_urscript.replace("parameter_ip", self.__urx_urmdsocket_addr[0])
-        self.__rgtarm_urscript = self.__rgtarm_urscript.replace("parameter_port", str(self.__urx_urmdsocket_addr[1]))
-        self.__rgtarm_urscript = self.__rgtarm_urscript.replace("parameter_jointscaler", str(self.__jointscaler))
-        # set up left arm urscript
-        self.__lftarm_urscript = self.__pb.get_program_to_run()
-        self.__lftarm_urscript = self.__lftarm_urscript.replace("parameter_ip", self.__urx_urmdsocket_addr[0])
-        self.__lftarm_urscript = self.__lftarm_urscript.replace("parameter_port", str(self.__urx_urmdsocket_addr[1]))
-        self.__lftarm_urscript = self.__lftarm_urscript.replace("parameter_jointscaler", str(self.__jointscaler))
-        # for firm placement
-        self.firmstopflag = False
-        self.__robotsim = robotsim
+        self._pb.load_prog(os.path.join(script_dir, modern_driver))
+        self._pc_server_urscript = self._pb.get_program_to_run()
+        self._pc_server_urscript = self._pc_server_urscript.replace("parameter_ip", self._pc_server_socket_addr[0])
+        self._pc_server_urscript = self._pc_server_urscript.replace("parameter_port",
+                                                                    str(self._pc_server_socket_addr[1]))
+        self._pc_server_urscript = self._pc_server_urscript.replace("parameter_jointscaler",
+                                                                    str(self._pc_server_socket_addr))
         self.__timestep = 0.008
+        self._ftsensor_thread = None
+        self._ftsensor_values = []
 
     @property
-    def rgtarm(self):
+    def arm(self):
         # read-only property
-        return self.__rgtarm
+        return self._arm
 
     @property
-    def lftarm(self):
+    def ftsensor_urscript(self):
         # read-only property
-        return self.__lftarm
+        return self._ftsensor_urscript
 
     @property
-    def ftsensorscript(self):
+    def ftsensor_socket_addr(self):
         # read-only property
-        return self.__ftsensorscript
+        return self._ftsensor_socket_addr
 
-    @property
-    def rgtarm_ftsocket_ipad(self):
-        # read-only property
-        return self.__rgtarm_ftsocket_ipad
-
-    @property
-    def lftarm_ftsocket_ipad(self):
-        # read-only property
-        return self.__lftarm_ftsocket_ipad
-
-    def opengripper(self, armname='rgt', speedpercentange=70, forcepercentage=50, fingerdistance=85):
+    def open_gripper(self, speedpercentange=70, forcepercentage=50, fingerdistance=85):
         """
         open the rtq85 hand on the arm specified by armname
-
         :param armname:
         :return:
-
         author: weiwei
         date: 20180220
         """
+        self._hand.open_gripper(speedpercentange, forcepercentage, fingerdistance)
+        self._arm.send_program(self._hand.return_program_to_run())
 
-        targetarm = self.__rgtarm
-        if armname == 'lft':
-            targetarm = self.__lftarm
-        self.__hand.open_gripper(speedpercentange, forcepercentage, fingerdistance)
-        targetarm.send_program(self.__hand.return_program_to_run())
-
-    def closegripper(self, armname='rgt', speedpercentange=80, forcepercentage=50):
+    def close_gripper(self, speedpercentange=80, forcepercentage=50):
         """
         close the rtq85 hand on the arm specified by armname
-
         :param armname:
         :return:
-
         author: weiwei
         date: 20180220
         """
+        self._hand.close_gripper(speedpercentange, forcepercentage)
+        self._arm.send_program(self._hand.get_program_to_run())
 
-        targetarm = self.__rgtarm
-        if armname == 'lft':
-            targetarm = self.__lftarm
-        self.__hand.close_gripper(speedpercentange, forcepercentage)
-        targetarm.send_program(self.__hand.return_program_to_run())
-
-    def recvft(self, armname='rgt'):
+    def start_recvft(self):
         """
-        receive force torque values from robotiq ft300 sensor
-
-        TODO: 1. formatting
-        2. reset coordinates
-
-        :param armname:
-        :return: [fx, fy, fz, tx, ty, tz] in N and Nm
-
-        author: weiwei
-        date: 20180220
+        start receive ft values using thread
+        the values are in the local frame of the force sensors
+        transformation is to be done by higher-level code
+        :return:
         """
+        def recvft():
+            self._arm.send_program(self._ftsensor_urscript)
+            ftsocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+            ftsocket.connect(self._ftsensor_socket_addr)
+            while True:
+                ftdata = ftsocket.recv(1024)
+                ftdata = ftdata.decode()
+                ftdata = ftdata.strip('()')
+                self._ftsensor_values.append([float(x) for x in ftdata.split(',')])
+        self._ftsensor_thread = threading.Thread(target=recvft, name="threadft")
+        self._ftsensor_thread.start()
 
-        self.__rgtarm.send_program(self.__ftsensorscript)
-        self.__lftarm.send_program(self.__ftsensorscript)
+    def stop_recvft(self):
+        self._ftsensor_thread.join()
 
-        rgtarm_ftsocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        rgtarm_ftsocket.connect(self.__rgtarm_ftsocket_ipad)
-        lftarm_ftsocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        lftarm_ftsocket.connect(self.__lftarm_ftsocket_ipad)
+    def reset_ftsensor(self):
+        pass
 
-        targetftsocket = rgtarm_ftsocket
-        if armname == 'lft':
-            targetftsocket = lftarm_ftsocket
-        rawft = targetftsocket.recv(1024)
-        # todo mean filter
-        numlist = rawft[1:].split(')(')
-        while len(numlist) < 3:
-            time.sleep(.01)
-            rawft = targetftsocket.recv(1024)
-            numlist = rawft[1:].split(')(')
-            print("sleep .2 for more data")
-        rawft = [float(i) for i in numlist[-2].split(' , ')]
+    def clear_ftsensor_values(self):
+        self._ftsensor_values = []
 
-        rgtarm_ftsocket.close()
-        lftarm_ftsocket.close()
-
-        return [rawft[0], rawft[1], rawft[2], rawft[3], rawft[4], rawft[5]]
-
-    def movejntsin360(self):
+    def move_jnts_pmpi(self):
         """
         the function move all joints back to -360,360
-        due to multi R problem, the last joint could be out of 360
-        this function moves the last joint back
-
+        due to improper operations, some joints could be out of 360
+        this function moves the outlier joints back
         :return:
-
         author: weiwei
         date: 20180202
         """
+        jnt_values = self.get_jnt_values()
+        regulated_jnt_values = rm.regulate_angle(-math.pi, math.pi, jnt_values)
+        self.move_jnts(regulated_jnt_values)
 
-        rgtarmjnts = self.getjnts('rgt')
-        lftarmjnts = self.getjnts('lft')
-        rgtarmjnts = rm.cvtRngPM360(rgtarmjnts)
-        lftarmjnts = rm.cvtRngPM360(lftarmjnts)
-        self.movejntssgl(rgtarmjnts, armname='rgt')
-        self.movejntssgl(lftarmjnts, armname='lft')
-
-    def movejntssgl(self, joints, armname='rgt', radius=0.01):
+    def move_jnts(self, jnt_values, radius=0.01):
         """
-
-        :param joints: a 1-by-6 list in degree
+        :param jnt_values: a 1-by-6 list in degree
         :param armname:
         :return:
-
         author: weiwei
         date: 20170411
         """
-
-        targetarm = self.__rgtarm
-        if armname == 'lft':
-            targetarm = self.__lftarm
-
-        jointsrad = [math.radians(angdeg) for angdeg in joints]
-        targetarm.movej(jointsrad, acc=1, vel=1, wait=True)
+        jointsrad = [math.radians(angdeg) for angdeg in jnt_values]
+        self._arm.movej(jointsrad, acc=1, vel=1, wait=True)
         # targetarm.movejr(jointsrad, acc = 1, vel = 1, radius = radius, wait = False)
 
     def movejntsall(self, joints):
@@ -532,7 +471,7 @@ class Ur3DualUrx():
 
         originaljnts = self.__robotsim.getarmjnts(armname=armname)
 
-        currentjnts = self.getjnts(armname)
+        currentjnts = self.get_jnt_values(armname)
         self.__robotsim.movearmfk(currentjnts, armname=armname)
         eepos, eerot = self.__robotsim.getee(armname=armname)
 
@@ -572,9 +511,9 @@ class Ur3DualUrx():
             eepos = eepos + direction * steplength
             newjnts = self.__robotsim.numikmsc(eepos, eerot, currentjnts, armname=armname)
             self.__robotsim.movearmfk(newjnts, armname=armname)
-            self.movejntssgl(newjnts, armname=armname)
+            self.move_jnts(newjnts, armname=armname)
 
-    def getjnts(self, armname='rgt'):
+    def get_jnt_values(self, armname='rgt'):
         """
         get the joint angles of the specified arm
 

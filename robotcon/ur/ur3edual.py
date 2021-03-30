@@ -64,12 +64,12 @@ class Ur3EDualUrx():
         rel_path = "urscript_eseries/moderndriver_eseries.script"
         self.__pb.load_prog(os.path.join(script_dir, rel_path))
         # set up right arm urscript
-        self.__rgtarm_urscript = self.__pb.return_program_to_run()
+        self.__rgtarm_urscript = self.__pb.get_program_to_run()
         self.__rgtarm_urscript = self.__rgtarm_urscript.replace("parameter_ip", self.__urx_urmdsocket_ipad[0])
         self.__rgtarm_urscript = self.__rgtarm_urscript.replace("parameter_port", str(self.__urx_urmdsocket_ipad[1]))
         self.__rgtarm_urscript = self.__rgtarm_urscript.replace("parameter_jointscaler", str(self.__jointscaler))
         # set up left arm urscript
-        self.__lftarm_urscript = self.__pb.return_program_to_run()
+        self.__lftarm_urscript = self.__pb.get_program_to_run()
         self.__lftarm_urscript = self.__lftarm_urscript.replace("parameter_ip", self.__urx_urmdsocket_ipad[0])
         self.__lftarm_urscript = self.__lftarm_urscript.replace("parameter_port", str(self.__urx_urmdsocket_ipad[1]))
         self.__lftarm_urscript = self.__lftarm_urscript.replace("parameter_jointscaler", str(self.__jointscaler))
@@ -104,8 +104,8 @@ class Ur3EDualUrx():
         targetarm = self.__rgtarm
         if armname == 'lft':
             targetarm = self.__lftarm
-        pr = self.__hand.return_program_to_run(mode="open", speedpercentage=speedpercentage,
-                                               forcepercentage=forcepercentage, distance=distance)
+        pr = self.__hand.get_program_to_run(mode="open", speedpercentage=speedpercentage,
+                                            forcepercentage=forcepercentage, distance=distance)
         targetarm.send_program(pr)
         time.sleep(1)
         while targetarm.is_program_running():
@@ -125,8 +125,8 @@ class Ur3EDualUrx():
         targetarm = self.__rgtarm
         if armname == 'lft':
             targetarm = self.__lftarm
-        pr = self.__hand.return_program_to_run(mode="close", speedpercentage=speedpercentage,
-                                               forcepercentage=forcepercentage)
+        pr = self.__hand.get_program_to_run(mode="close", speedpercentage=speedpercentage,
+                                            forcepercentage=forcepercentage)
         targetarm.send_program(pr)
         time.sleep(1)
         while targetarm.is_program_running():

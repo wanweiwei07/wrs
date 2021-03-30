@@ -2,7 +2,7 @@ import logging
 # import socket
 # import robotcon.ur3dual as ur3urx
 
-class Robotiq_FT300_Sensor(object):
+class RobotiqFT300(object):
     complete_program = ""
     header = "def myProg():" + "\n"
     end =  "\n" + "end"
@@ -33,7 +33,7 @@ class Robotiq_FT300_Sensor(object):
     #     while True:
     #         print s.recv(1024)
 
-    def return_program_to_run(self):
+    def get_program_to_run(self):
         if(self.complete_program == ""):
             self.logger.debug("ftsensor's program is empty")
             return ""
@@ -72,7 +72,7 @@ if __name__ == '__main__':
     # cdchecker = cdck.CollisionChecker(robotmesh)
     cdchecker = cdck.CollisionCheckerBall(robotball)
 
-    start = ur3u.getjnts('rgt')
+    start = ur3u.get_jnt_values('rgt')
     goal = robot.initjnts[3:9]
     # start = [50.0,0.0,-143.0,0.0,0.0,0.0]
     # goal = [-15.0,0.0,-143.0,0.0,0.0,0.0]
@@ -122,9 +122,9 @@ if __name__ == '__main__':
         robot.movearmfk(pose, armid = 'rgt')
         robotstick = robotmesh.gensnp(robot = robot)
         robotstick.reparentTo(base.render)
-    ur3u.movejntssgl(path[-1], armid='rgt')
+    ur3u.move_jnts(path[-1], armid='rgt')
 
-    start = ur3u.getjnts('lft')
+    start = ur3u.get_jnt_values('lft')
     goal = robot.initjnts[9:15]
     print(start, goal)
     jointlimits = [[robot.lftarm[1]['rngmin'], robot.lftarm[1]['rngmax']],
@@ -148,10 +148,10 @@ if __name__ == '__main__':
         robot.movearmfk(pose, armid='lft')
         robotstick = robotmesh.gensnp(robot=robot)
         robotstick.reparentTo(base.render)
-    ur3u.movejntssgl(path[-1], armid='lft')
+    ur3u.move_jnts(path[-1], armid='lft')
 
-    ur3u.closegripper(armid = 'lft')
-    ur3u.closegripper(armid = 'rgt')
+    ur3u.close_gripper(armid ='lft')
+    ur3u.close_gripper(armid ='rgt')
 
     while True:
         print(ur3u.recvft(armid = 'rgt')[0])

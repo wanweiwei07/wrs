@@ -1,6 +1,6 @@
 import logging
 
-class Robotiq_Two_Finger_Gripper(object):
+class RobotiqTwoFinger(object):
     complete_program = ""
     header = "def myProg():" + "\n"
     end =  "\n" + "end"
@@ -125,7 +125,7 @@ class Robotiq_Two_Finger_Gripper(object):
             self.complete_program += "\n"
         self.complete_program += new_line
 
-    def ret_program_to_run(self):
+    def get_program_to_run(self):
         if(self.complete_program == ""):
             self.logger.debug("robotiq_two_finger_gripper's program is empty")
             return ""

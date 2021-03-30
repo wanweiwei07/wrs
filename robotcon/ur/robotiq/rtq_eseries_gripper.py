@@ -1,6 +1,6 @@
 import os
 import copy
-import robotcon.robotiq.program_builder as pb
+import robotcon.ur.program_builder as pb
 
 
 class RobotiqHE(object):
@@ -15,7 +15,7 @@ class RobotiqHE(object):
         _this_dir, _ = os.path.split(__file__)
         filpath = os.path.join(_this_dir, "../urscript_eseries", "robotiqhe.script")
         pblder.load_prog(filpath)
-        self.original_program = pblder.return_program_to_run()
+        self.original_program = pblder.get_program_to_run()
 
     def _open_gripper(self, speedpercentage=90, forcepercentage=90):
         """

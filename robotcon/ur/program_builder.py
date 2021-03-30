@@ -24,7 +24,7 @@ class ProgramBuilder(object):
     #     while True:
     #         print s.recv(1024)
 
-    def return_program_to_run(self):
+    def get_program_to_run(self):
         if (self.complete_program == ""):
             self.logger.debug("impedance control using ftsensor's program is empty")
             return ""
