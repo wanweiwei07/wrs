@@ -8,7 +8,7 @@ s.connect((HOST, PORT))
 
 s.send("set_digital_out(1, False)"+"\n")
 print(s.recv(1024))
-# f = open ("gripper.script", "rb")   #Robotiq Gripper
+# f = open ("rtq_cbseries_hand.script", "rb")   #Robotiq Gripper
 # #f = open ("setzero.script", "rb")  #Robotiq FT sensor
 #
 # l = f.read(1024)

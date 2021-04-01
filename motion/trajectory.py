@@ -4,11 +4,11 @@ import numpy as np
 
 class Trajectory(object):
 
-    def __init__(self, type="cubic"):
-        if type is "cubic":
+    def __init__(self, method="cubic"):
+        if method is "cubic":
             self.fit = self._cubic_coeffs
             self.predict = self._predict_cubic
-        elif type is "quintic":
+        elif method is "quintic":
             self.fit = self._quintic_coeffs
             self.predict = self._predict_quintic
         self.cubicmat = np.array([[2, 1, -2, 1],
@@ -41,10 +41,11 @@ class Trajectory(object):
         date: 20200327
         """
         step_array = np.vstack([step ** 3, step ** 2, step, np.ones_like(step)])
+        spd_step_array = np.vstack([3 * step ** 2, 2 * step, step, np.zeros_like(step)])
         if isinstance(step, np.ndarray):
-            return np.dot(self.coeffs_array.T, step_array).T
+            return np.dot(self.coeffs_array.T, step_array).T, np.dot(self.coeffs_array.T, spd_step_array).T
         else:
-            return np.dot(self.coeffs_array.T, step_array).T[0][0]
+            return np.dot(self.coeffs_array.T, step_array).T[0][0], np.dot(self.coeffs_array.T, spd_step_array).T[0][0]
 
     def _predict_quintic(self, step):
         """
@@ -53,62 +54,90 @@ class Trajectory(object):
         author: weiwei
         date: 20200327
         """
-        step_array = np.vstack([step ** 5, step ** 4, step ** 3, step ** 2, step, np.ones_like(step)])
+        conf_step_array = np.vstack([step ** 5, step ** 4, step ** 3, step ** 2, step, np.ones_like(step)])
+        spd_step_array = np.vstack(
+            [5 * step ** 4, 4 * step ** 3, 3 * step ** 2, 2 * step, np.ones_like(step), np.zeros_like(step)])
         if isinstance(step, np.ndarray):
-            return np.dot(self.coeffs_array.T, step_array).T
+            return np.dot(self.coeffs_array.T, conf_step_array).T, np.dot(self.coeffs_array.T, spd_step_array).T
         else:
-            return np.dot(self.coeffs_array.T, step_array).T[0][0]
+            return np.dot(self.coeffs_array.T, conf_step_array).T[0][0], \
+                   np.dot(self.coeffs_array.T, spd_step_array).T[0][0]
 
-    def piecewise_interpolation(self, path, sampling=200, intervaltime=1.0):
+    def set_interpolation_method(self, method):
+        """
+        change interpolation method
+        :param name: 'cubic' or 'quintic'
+        :return:
+        author: weiwei
+        date: 20210331
+        """
+        if method is "cubic":
+            self.fit = self._cubic_coeffs
+            self.predict = self._predict_cubic
+        elif method is "quintic":
+            self.fit = self._quintic_coeffs
+            self.predict = self._predict_quintic
+        else:
+            pass
+
+    def piecewise_interpolation(self, path, control_frequency=.005, interval_time=1.0):
         """
         :param path: a 1d array of configurations
-        :param sampling: how many confs to generate in the intervaltime
-        :param intervaltime: time to move between adjacent joints, intervaltime = expandis/speed, speed = degree/second
-                             by default, the value is 1.0 and the speed is expandis/second
+        :param control_frequency: the program will sample interval_time/control_frequency confs
+        :param interval_time: time to move between adjacent joints
         :return:
         author: weiwei
         date: 20200328
         """
         path = np.array(path)
-        passingconflist = []
-        passingspdlist = []
+        passing_conf_list = []
+        passing_spd_list = []
         for id, jntconf in enumerate(path[:-1]):
-            passingconflist.append(jntconf)
+            passing_conf_list.append(jntconf)
             if id == 0:
-                passingspdlist.append(np.zeros_like(jntconf))
+                passing_spd_list.append(np.zeros_like(jntconf))
             else:
-                preconf = path[id - 1]
-                nxtconf = path[id + 1]
-                preavgspd = (jntconf - preconf) / intervaltime
-                nxtavgspd = (nxtconf - jntconf) / intervaltime
-                # set to 0 if signs are different
-                zeroid = np.where((np.sign(preavgspd) + np.sign(nxtavgspd)) == 0)
-                passspd = (preavgspd + nxtavgspd) / 2.0
-                passspd[zeroid] = 0.0
-                passingspdlist.append(passspd)
-        passingconflist.append(path[-1])
-        passingspdlist.append(np.zeros_like(path[-1]))
-        interpolatedconfs = []
-        for id, passingconf in enumerate(passingconflist):
+                pre_conf = path[id - 1]
+                nxt_conf = path[id + 1]
+                pre_avg_spd = (jntconf - pre_conf) / interval_time
+                nxt_avg_spd = (nxt_conf - jntconf) / interval_time
+                # set to 0 if signs are different -> reduces overshoot
+                zero_id = np.where((np.sign(pre_avg_spd) + np.sign(nxt_avg_spd)) == 0)
+                pass_spd = (pre_avg_spd + nxt_avg_spd) / 2.0
+                pass_spd[zero_id] = 0.0
+                passing_spd_list.append(pass_spd)
+        passing_conf_list.append(path[-1])
+        passing_spd_list.append(np.zeros_like(path[-1]))
+        interpolated_confs = []
+        interpolated_spds = []
+        for id, passing_conf in enumerate(passing_conf_list):
             if id == 0:
                 continue
-            prepassingconf = passingconflist[id - 1]
-            prepassingspd = passingspdlist[id - 1]
-            passingspd = passingspdlist[id]
-            self.fit(prepassingconf, prepassingspd, passingconf, passingspd)
-            samples = np.linspace(0, 1, sampling)
-            localinterpolatedconfs = self.predict(samples)
-            interpolatedconfs += localinterpolatedconfs.tolist()
-        return interpolatedconfs
+            pre_passing_conf = passing_conf_list[id - 1]
+            pre_passing_spd = passing_spd_list[id - 1]
+            passing_spd = passing_spd_list[id]
+            self.fit(pre_passing_conf, pre_passing_spd, passing_conf, passing_spd)
+            samples = np.linspace(0, 1, math.floor(interval_time / control_frequency))
+            local_interpolated_confs, local_interplated_spds = self.predict(samples)
+            interpolated_confs += local_interpolated_confs.tolist()
+            interpolated_spds += local_interplated_spds.tolist()
+        return interpolated_confs, interpolated_spds
 
 
 if __name__ == '__main__':
     import matplotlib.pyplot as plt
 
-    y = [[0], [3], [5], [9]]
-    traj = Trajectory(type="quintic")
-    interpolatedconfs = traj.piecewise_interpolation(y)
-    print(interpolatedconfs)
-    x = np.linspace(0, 9, 600)
-    plt.plot(x, interpolatedconfs)
+    y = [[0], [3], [0], [9], [0]]
+    control_frequency = .02
+    interval_time = 1.0
+    traj = Trajectory(method="quintic")
+    interpolated_confs, interpolated_spds = traj.piecewise_interpolation(y, control_frequency=control_frequency,
+                                                                         interval_time=interval_time)
+    # print(interpolated_spds)
+    # interpolated_spds=np.array(interpolated_spds)
+    print(interpolated_confs)
+    x = np.linspace(0, len(y) - 1, (len(y) - 1) * math.floor(interval_time / control_frequency))
+    plt.plot(x, interpolated_confs)
+    plt.quiver(x, interpolated_confs, x, interpolated_spds, width=.001)
+    plt.plot(y)
     plt.show()

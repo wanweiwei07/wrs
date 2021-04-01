@@ -52,7 +52,7 @@ def driverProg():
 				 params_mult[6]/parameter_jointscaler]
 			keepalive = params_mult[7]
 			set_servo_setpoint(q)
-	        sleep(.002)
+	        sleep(.002) # sync()?
 		end
 	end
 	sleep(.1)

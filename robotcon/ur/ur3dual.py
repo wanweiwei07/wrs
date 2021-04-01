@@ -1,7 +1,7 @@
 import logging
 import math
 import time
-from robotcon.ur.robotiq import rtq_gripper as r2f
+from robotcon.ur.robotiq import rtq_cbseries_gripper as r2f
 from robotcon.ur.robotiq import rtq_ft300 as rft
 from basis import robot_math as rm
 import drivers.urx.urrobot as urrobot
@@ -37,7 +37,7 @@ class Ur3DualUrx():
         self.__rgtarm.set_payload(1.28)
         self.__rgtarm_ftsocket_addr = (iprgt, 63351)
         self.__lftarm_ftsocket_addr = (iplft, 63351)
-        self.__hand = r2f.RobotiqTwoFinger(type=85)
+        self.__hand = r2f.RobotiqCBTwoFinger(type=85)
         self.__lftarmbase = [0, 235.00, 965.00]
         self.__rgtarmbase = [0, -235.00, 965.00]
         self.__sqrt2o2 = math.sqrt(2.0) / 2.0

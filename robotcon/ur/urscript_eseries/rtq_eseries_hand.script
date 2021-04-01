@@ -725,13 +725,11 @@ def unnamed():
   
   def rq_move_and_wait(pos, gripper_socket="1"):
       rq_move(pos, gripper_socket)
-  
       while (not rq_is_motion_complete(gripper_socket)):
           # wait for motion completed
           sleep(0.01)
           sync()
       end
-  
       # following code used for compatibility with previous versions
       rq_is_object_detected(gripper_socket)
   
@@ -1700,22 +1698,22 @@ def unnamed():
   set_closed_norm(100.0, 1)
   set_open_norm(0.0, 1)
   set_closed_mm(0.0, 1)
-  set_open_mm(50.0, 1)
+  set_open_mm(pogram_replace_open_limit, 1)
   set_closed_norm(100.0, 2)
   set_open_norm(0.0, 2)
   set_closed_mm(0.0, 2)
-  set_open_mm(50.0, 2)
+  set_open_mm(pogram_replace_open_limit, 2)
   set_closed_norm(100.0, 3)
   set_open_norm(0.0, 3)
   set_closed_mm(0.0, 3)
-  set_open_mm(50.0, 3)
+  set_open_mm(pogram_replace_open_limit, 3)
   set_closed_norm(100.0, 4)
   set_open_norm(0.0, 4)
   set_closed_mm(0.0, 4)
-  set_open_mm(50.0, 4)
+  set_open_mm(pogram_replace_open_limit, 4)
   # end: URCap Installation Node
 
-  reset_and_activate = False
+  # reset_and_activate = False
   rq_activate_all_grippers(False)
 
   clear_socket_buffer("1")

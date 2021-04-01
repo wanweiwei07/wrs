@@ -42,7 +42,7 @@ def driverProg():
 	while keepalive > 0:
 		# textmsg("preparing to read")
 		# textmsg(keepalive)
-		params_mult = socket_read_binary_integer(6+1)
+		params_mult = socket_read_binary_integer(6+1) # 20210331osaka check servo state to avoid overlook delayed joints?
 		if params_mult[0] > 0:
 			q = [params_mult[1]/parameter_jointscaler,
 				 params_mult[2]/parameter_jointscaler,
@@ -52,7 +52,7 @@ def driverProg():
 				 params_mult[6]/parameter_jointscaler]
 			keepalive = params_mult[7]
 			set_servo_setpoint(q)
-	        sleep(.008)
+	        sleep(.005) # if check servo state, there is no need to sleep here, or sync()?
 		end
 	end
 	sleep(.1)

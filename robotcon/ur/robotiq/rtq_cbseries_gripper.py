@@ -1,17 +1,15 @@
-import logging
 
-class RobotiqTwoFinger(object):
+class RobotiqCBTwoFinger(object):
     complete_program = ""
     header = "def myProg():" + "\n"
     end =  "\n" + "end"
     logger = False
 
-    def __init__(self, type=85):
-        self.logger = logging.getLogger("urx")
-        self.__reset()
+    def __init__(self, type='85'):
+        self._reset()
         self.__type = type
 
-    def __reset(self, speed = 100, force = 50):
+    def _reset(self, speed = 100, force = 50):
         # defining the gripper
         self.complete_program = ""
         self.add_line_to_program("set_analog_inputrange(0, 0)")
