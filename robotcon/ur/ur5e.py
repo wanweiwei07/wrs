@@ -55,7 +55,7 @@ class Ur3EUrx():
         self.__jointscaler = 1000000
         self.__pb = pb.ProgramBuilder()
         script_dir = os.path.dirname(__file__)
-        rel_path = "urscript_eseries/moderndriver_eseries.script"
+        rel_path = "urscripts_eseries/moderndriver_eseries.script"
         self.__pb.load_prog(os.path.join(script_dir, rel_path))
         self.__arm_urscript = self.__pb.get_program_to_run()
         self.__arm_urscript = self.__arm_urscript.replace("parameter_ip", self.__urx_urmdsocket_ipad[0])

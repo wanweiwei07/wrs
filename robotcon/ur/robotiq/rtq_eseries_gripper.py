@@ -20,18 +20,18 @@ class RobotiqETwoFinger(object):
         pblder = pb.ProgramBuilder()
         _this_dir, _ = os.path.split(__file__)
         script = "rtq_eseries_hand.script"
-        filpath = os.path.join(_this_dir, "../urscript_eseries", script)
+        filpath = os.path.join(_this_dir, "../urscripts_eseries", script)
         pblder.load_prog(filpath)
         self.original_program = pblder.get_program_to_run()
         if type is 'hande':
             self.open_limit = 50.0
-            self.original_program.replace("program_replace_open_limit", self.open_limit)
+            self.original_program = self.original_program.replace("program_replace_open_limit", self.open_limit)
         elif type is '2f85':
             self.open_limit = 85.0
-            self.original_program.replace("program_replace_open_limit", self.open_limit)
+            self.original_program = self.original_program.replace("program_replace_open_limit", self.open_limit)
         elif type is '2f140':
             self.open_limit = 140.0
-            self.original_program.replace("program_replace_open_limit", self.open_limit)
+            self.original_program = self.original_program.replace("program_replace_open_limit", self.open_limit)
         else:
             raise NotImplementedError
 

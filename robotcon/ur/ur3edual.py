@@ -61,7 +61,7 @@ class Ur3EDualUrx():
         self.__jointscaler = 1000000
         self.__pb = pb.ProgramBuilder()
         script_dir = os.path.dirname(__file__)
-        rel_path = "urscript_eseries/moderndriver_eseries.script"
+        rel_path = "urscripts_eseries/moderndriver_eseries.script"
         self.__pb.load_prog(os.path.join(script_dir, rel_path))
         # set up right arm urscript
         self.__rgtarm_urscript = self.__pb.get_program_to_run()

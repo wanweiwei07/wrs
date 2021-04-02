@@ -20,7 +20,7 @@ class UR3Rtq85():
     date: 20180131
     """
 
-    def __init__(self, modern_driver, robot_ip='10.2.0.50', pc_ip='10.2.0.91'):
+    def __init__(self, modern_driver, robot_ip='10.2.0.50', pc_ip='10.2.0.100'):
         """
         :param modern_driver: "uscripts_cbseries/moderndriver_cbseries.script"
         :param robot_ip:
@@ -31,7 +31,7 @@ class UR3Rtq85():
         self._arm.set_tcp((0, 0, 0, 0, 0, 0))
         self._arm.set_payload(1.28)
         # setup hand
-        self._hand = r2f.RobotiqCBTwoFinger(type='85')
+        self._hand = r2f.RobotiqCBTwoFinger(type='rtq85')
         # setup ftsensor
         self._ftsensor = rft.RobotiqFT300()
         self._ftsensor_socket_addr = (robot_ip, 63351)
@@ -80,8 +80,7 @@ class UR3Rtq85():
         author: weiwei
         date: 20180220
         """
-        self._hand.open_gripper(speedpercentange, forcepercentage, fingerdistance)
-        self._arm.send_program(self._hand.return_program_to_run())
+        self._arm.send_program(self._hand.return_program_to_run(speedpercentange, forcepercentage, fingerdistance=fingerdistance))
 
     def close_gripper(self, speedpercentange=80, forcepercentage=50):
         """
@@ -91,8 +90,7 @@ class UR3Rtq85():
         author: weiwei
         date: 20180220
         """
-        self._hand.close_gripper(speedpercentange, forcepercentage)
-        self._arm.send_program(self._hand.get_program_to_run())
+        self._arm.send_program(self._hand.return_program_to_run(speedpercentange, forcepercentage, fingerdistance=0))
 
     def start_recvft(self):
         """
@@ -253,9 +251,10 @@ if __name__ == '__main__':
     import visualization.panda.world as wd
 
     base = wd.World(campos=[3, 1, 2], lookatpos=[0, 0, 0])
-    u3r85_c = UR3Rtq85(modern_driver='./urscripts_cbseries/moderndriver_cbseries.script',
-                                   robot_ip='10.2.0.50', pc_ip='10.2.0.91')
-
+    u3r85_c = UR3Rtq85(modern_driver='uscripts_cbseries/moderndriver_cbseries.script',
+                       robot_ip='10.2.0.50', pc_ip='10.2.0.101')
     # u3r85_c.attachfirm(rbt, upthreshold=10, armname='lft')
-    u3r85_c.opengripper()
+    u3r85_c.close_gripper()
+    time.sleep(2)
+    u3r85_c.open_gripper()
     base.run()
