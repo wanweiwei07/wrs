@@ -16,7 +16,7 @@ class CollisionChecker(object):
         self.np = NodePath(name)
         self.is_nprendered = False
         self.nbitmask = 0 # capacity 1-30
-        self._bitmask_ext = BitMask32(2**31) # 31 is prepared for cd with external objects
+        self._bitmask_ext = BitMask32(2**31) # 31 is prepared for cd with external non-active objects
         self.all_cdelements = [] # a list of cdlnks or cdobjs for quick accessing the cd elements (cdlnks/cdobjs)
 
     def add_cdlnks(self, jlcobj, lnk_idlist):

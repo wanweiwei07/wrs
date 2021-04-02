@@ -191,7 +191,7 @@ class Yumi(ri.RobotInterface):
                     self.rgt_hnd.lft.lnks[1],
                     self.rgt_hnd.rgt.lnks[1]]
         self.cc.set_cdpair(fromlist, intolist)
-        fromlist = [self.lft_body.lnks[1]]
+        fromlist = [self.lft_body.lnks[1]] # 20210402 what is this?
         intolist = [self.lft_arm.lnks[2],
                     self.rgt_arm.lnks[2]]
         self.cc.set_cdpair(fromlist, intolist)
