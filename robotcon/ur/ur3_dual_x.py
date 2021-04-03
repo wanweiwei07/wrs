@@ -13,14 +13,14 @@ import struct
 import os
 
 
-class Ur3DualUrx():
+class Ur3DualX():
     """
     urx 50, right arm 51, left arm 52
     author: weiwei
     date: 20180131
     """
 
-    def __init__(self, robotsim):
+    def __init__(self):
         """
         :param robotsim: for global transformation, especially in attachfirm
         author: weiwei

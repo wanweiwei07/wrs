@@ -39,10 +39,10 @@ def driverProg():
 	textmsg("open connection")
 	thread_servo = run servoThread()
 	keepalive = 1
-	while keepalive > 0:
+	while keepalive > 0: # TODO change keepalive?
 		# textmsg("preparing to read")
 		# textmsg(keepalive)
-		params_mult = socket_read_binary_integer(6+1) # 20210331osaka check servo state to avoid overlook delayed joints?
+		params_mult = socket_read_binary_integer(6+1)
 		if params_mult[0] > 0:
 			q = [params_mult[1]/parameter_jointscaler,
 				 params_mult[2]/parameter_jointscaler,

@@ -14,7 +14,7 @@ import os
 import motion.trajectory as traj
 
 
-class UR3Rtq85():
+class UR3Rtq85X():
     """
     author: weiwei
     date: 20180131
@@ -251,8 +251,8 @@ if __name__ == '__main__':
     import visualization.panda.world as wd
 
     base = wd.World(campos=[3, 1, 2], lookatpos=[0, 0, 0])
-    u3r85_c = UR3Rtq85(modern_driver='uscripts_cbseries/moderndriver_cbseries.script',
-                       robot_ip='10.2.0.50', pc_ip='10.2.0.101')
+    u3r85_c = UR3Rtq85X(modern_driver='uscripts_cbseries/moderndriver_cbseries.script',
+                        robot_ip='10.2.0.50', pc_ip='10.2.0.101')
     # u3r85_c.attachfirm(rbt, upthreshold=10, armname='lft')
     u3r85_c.close_gripper()
     time.sleep(2)
