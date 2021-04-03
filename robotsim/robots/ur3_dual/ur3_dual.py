@@ -376,32 +376,29 @@ class UR3Dual(ri.RobotInterface):
                 obj_info['gl_pos'] = gl_pos
                 obj_info['gl_rotmat'] = gl_rotmat
 
-        super().fk(component_name, jnt_values)
-        # examine length
-        if component_name == 'lft_arm' or component_name == 'rgt_arm':
-            if not isinstance(jnt_values, np.ndarray) or jnt_values.size != 6:
-                raise ValueError("An 1x6 npdarray must be specified to move a single arm!")
+        def update_component(component_name, jnt_values):
             self.manipulator_dict[component_name].fk(jnt_values=jnt_values)
             self.ft_sensor_dict[component_name].fix_to(pos=self.manipulator_dict[component_name].jnts[-1]['gl_posq'],
                                                        rotmat=self.manipulator_dict[component_name].jnts[-1][
                                                            'gl_rotmatq'])
             self.get_hnd_on_component(component_name).fix_to(
-                pos=self.manipulator_dict[component_name].jnts[-1]['gl_posq'],
-                rotmat=self.manipulator_dict[component_name].jnts[-1]['gl_rotmatq'])
+                pos=self.ft_sensor_dict[component_name].jnts[-1]['gl_posq'],
+                rotmat=self.ft_sensor_dict[component_name].jnts[-1]['gl_rotmatq'])
             update_oih(component_name=component_name)
+
+        super().fk(component_name, jnt_values)
+        # examine length
+        if component_name == 'lft_arm' or component_name == 'rgt_arm':
+            if not isinstance(jnt_values, np.ndarray) or jnt_values.size != 6:
+                raise ValueError("An 1x6 npdarray must be specified to move a single arm!")
+            update_component(component_name, jnt_values)
         elif component_name == 'both_arm':
             if (not isinstance(jnt_values, list)
                     or jnt_values[0].size != 6
                     or jnt_values[1].size != 6):
                 raise ValueError("A list made of two 1x6 npdarrays must be specified to move both arm!")
-            self.lft_arm.fk(jnt_values=jnt_values[0])
-            self.lft_hnd.fix_to(pos=self.lft_arm.jnts[-1]['gl_posq'],
-                                rotmat=self.lft_arm.jnts[-1]['gl_rotmatq'])
-            self.rgt_arm.fk(jnt_values=jnt_values[1])
-            self.rgt_hnd.fix_to(pos=self.rgt_arm.jnts[-1]['gl_posq'],
-                                rotmat=self.rgt_arm.jnts[-1]['gl_rotmatq'])
-            update_oih(component_name='rgt_arm')
-            update_oih(component_name='lft_arm')
+            for component_name in ['lft_arm', 'rgt_arm']:
+                update_component(component_name, jnt_values)
         elif component_name == 'all':
             pass
         else:

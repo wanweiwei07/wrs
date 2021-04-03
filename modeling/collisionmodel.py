@@ -177,7 +177,8 @@ class CollisionModel(gm.GeometricModel):
         if homomat is None:
             returnnp.setMat(self._objpdnp.getMat())
         else:
-            returnnp.setMat(da.npmat4_to_pdmat4(homomat))
+            returnnp.setMat(da.npmat4_to_pdmat4(homomat)) # scale is reset to 1 1 1 after setMat to the given homomat
+            returnnp.setScale(self._objpdnp.getScale())
         return returnnp
 
     def is_pcdwith(self, objcm):

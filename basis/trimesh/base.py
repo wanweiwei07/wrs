@@ -995,17 +995,14 @@ class Trimesh(object):
                                    'vertex_normals'])
 
     def apply_scale(self, scaling):
-        '''
-        Scale the mesh equally on all axis.
-
-        Arguments
-        ----------
-        scaling: float, scale factor
-        '''
-        scaling = float(scaling)
-        matrix = np.eye(4)
-        matrix[:3, :3] *= scaling
-        # apply_transform will work nicely even on negative scales
+        """
+        :param scaling: [scale_x, scale_y, scale_z]
+        :return:
+        author: weiwei
+        date: 20210403
+        """
+        assert(scaling[0] > 0 and scaling[1] > 0 and scaling[2] > 0)
+        matrix = np.diag([scaling[0], scaling[1], scaling[2], 1])
         self.apply_transform(matrix)
 
     def apply_transform(self, matrix):

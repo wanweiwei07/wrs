@@ -18,19 +18,20 @@ component_name='rgt_arm'
 robot_instance = ur3d.UR3Dual()
 
 # robot_instance.fk(component_name, np.array([0, math.pi/9, 0, math.pi, 0, -math.pi / 6]))
-robot_instance.fk(component_name, np.array([math.pi/3, math.pi, 0, math.pi/2, 0, math.pi / 6]))
-robot_meshmodel = robot_instance.gen_meshmodel()
-robot_meshmodel.attach_to(base)
-robot_instance.show_cdprimit()
-is_collided, contact_points  = robot_instance.is_collided(toggle_contact_points=True)
-for point in contact_points:
-    gm.gen_sphere(point, radius=10).attach_to(base)
-base.run()
+# robot_instance.fk(component_name, np.array([0, math.pi/8, 0, math.pi/2, 0, math.pi / 6]))
+# robot_meshmodel = robot_instance.gen_meshmodel()
+# robot_meshmodel.attach_to(base)
+# robot_instance.show_cdprimit()
+# is_collided, contact_points  = robot_instance.is_collided(toggle_contact_points=True)
+# for point in contact_points:
+#     gm.gen_sphere(point, radius=10).attach_to(base)
+# print(is_collided)
+# base.run()
 rrtc_planner = rrtc.RRTConnect(robot_instance)
-path = rrtc_planner.plan(start_conf=np.array([0, math.pi/9, 0, math.pi, 0, -math.pi / 6]),
-                         goal_conf=np.array([math.pi/3, math.pi, 0, math.pi/2, 0, math.pi / 6]),
+path = rrtc_planner.plan(start_conf=robot_instance.rgt_arm.homeconf,
+                         goal_conf=np.array([0, -math.pi/4, 0, math.pi/2, math.pi/2, math.pi / 6]),
                          obstacle_list=[object],
-                         ext_dist=.1,
+                         ext_dist=.2,
                          rand_rate=70,
                          maxtime=300,
                          component_name=component_name)

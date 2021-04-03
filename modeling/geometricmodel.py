@@ -134,6 +134,7 @@ class StaticGeometricModel(object):
 
     def set_scale(self, scale=[1, 1, 1]):
         self._objpdnp.setScale(scale[0], scale[1], scale[2])
+        self._objtrm.apply_scale(scale)
 
     def get_scale(self):
         return da.pdv3_to_npv3(self._objpdnp.getScale())

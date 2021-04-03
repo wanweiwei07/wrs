@@ -81,7 +81,7 @@ class JLChain(object):
             lnks[id]['collisionmodel'] = None
             # lnks[id]['cdprimit_cache'] = [False, -1]  # p1: need update? p2: id of the CollisionChecker.np.Child
             lnks[id]['cdprimit_childid'] = -1 # id of the CollisionChecker.np.Child
-            lnks[id]['scale'] = None  # 3 list
+            lnks[id]['scale'] = [1, 1, 1]  # 3 list
             lnks[id]['rgba'] = [.7, .7, .7, 1]  # 4 list
         for id in range(self.ndof + 2):
             jnts[id]['type'] = 'revolute'

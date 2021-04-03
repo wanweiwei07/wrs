@@ -15,9 +15,9 @@ class CollisionChecker(object):
         self.chan = CollisionHandlerQueue()
         self.np = NodePath(name)
         self.is_nprendered = False
-        self.nbitmask = 0 # capacity 1-30
-        self._bitmask_ext = BitMask32(2**31) # 31 is prepared for cd with external non-active objects
-        self.all_cdelements = [] # a list of cdlnks or cdobjs for quick accessing the cd elements (cdlnks/cdobjs)
+        self.nbitmask = 0  # capacity 1-30
+        self._bitmask_ext = BitMask32(2 ** 31)  # 31 is prepared for cd with external non-active objects
+        self.all_cdelements = []  # a list of cdlnks or cdobjs for quick accessing the cd elements (cdlnks/cdobjs)
 
     def add_cdlnks(self, jlcobj, lnk_idlist):
         """
@@ -35,7 +35,7 @@ class CollisionChecker(object):
                 cdnp = jlcobj.lnks[id]['collisionmodel'].copy_cdnp_to(self.np, clearmask=True)
                 self.ctrav.addCollider(cdnp, self.chan)
                 self.all_cdelements.append(jlcobj.lnks[id])
-                jlcobj.lnks[id]['cdprimit_childid'] = len(self.all_cdelements)-1
+                jlcobj.lnks[id]['cdprimit_childid'] = len(self.all_cdelements) - 1
             else:
                 raise ValueError("The link is already added!")
 
@@ -89,17 +89,17 @@ class CollisionChecker(object):
                  key to hold intolist to easily toggle off the bitmasks.
         """
         cdobj_info = {}
-        cdobj_info['collisionmodel'] = objcm # for reversed lookup
+        cdobj_info['collisionmodel'] = objcm  # for reversed lookup
         cdobj_info['gl_pos'] = objcm.get_pos()
         cdobj_info['gl_rotmat'] = objcm.get_rotmat()
         cdobj_info['rel_pos'] = rel_pos
         cdobj_info['rel_rotmat'] = rel_rotmat
         cdobj_info['intolist'] = intolist
         cdnp = objcm.copy_cdnp_to(self.np, clearmask=True)
-        cdnp.node().setFromCollideMask(self._bitmask_ext) # set active
+        cdnp.node().setFromCollideMask(self._bitmask_ext)  # set active
         self.ctrav.addCollider(cdnp, self.chan)
         self.all_cdelements.append(cdobj_info)
-        cdobj_info['cdprimit_childid'] = len(self.all_cdelements)-1
+        cdobj_info['cdprimit_childid'] = len(self.all_cdelements) - 1
         self.set_cdpair([cdobj_info], intolist)
         return cdobj_info
 
@@ -128,7 +128,7 @@ class CollisionChecker(object):
             pos = cdelement['gl_pos']
             rotmat = cdelement['gl_rotmat']
             cdnp = self.np.getChild(cdelement['cdprimit_childid'])
-            cdnp.setMat(da.npv3mat3_to_pdmat4(pos, rotmat))
+            cdnp.setPosQuat(da.npv3_to_pdv3(pos), da.npmat3_to_pdquat(rotmat))
             # print(da.npv3mat3_to_pdmat4(pos, rotmat))
             # print("From", cdnp.node().getFromCollideMask())
             # print("Into", cdnp.node().getIntoCollideMask())
@@ -163,25 +163,26 @@ class CollisionChecker(object):
             else:
                 robot.cc.np.detachNode()
         if self.chan.getNumEntries() > 0:
-            if toggle_contact_points:
-                contact_points = [da.pdv3_to_npv3(cd_entry.getSurfacePoint(base.render)) for cd_entry in self.chan.getEntries()]
-                return True, contact_points
-            else:
-                return True
+            contact_points = [da.pdv3_to_npv3(cd_entry.getSurfacePoint(base.render)) for cd_entry in
+                              self.chan.getEntries()]
+            collision_result = True
         else:
-            return False
+            contact_points = []
+            collision_result = False
+        if toggle_contact_points:
+            return collision_result, contact_points
+        else:
+            return collision_result
 
     def show_cdprimit(self):
         # print("call show_cdprimit")
         self.np.reparentTo(base.render)
-        self.is_nprendered = True # TODO possible bug for copy
+        self.is_nprendered = True  # TODO possible bug for copy
         for cdelement in self.all_cdelements:
-            print(cdelement['name'])
             pos = cdelement['gl_pos']
             rotmat = cdelement['gl_rotmat']
             cdnp = self.np.getChild(cdelement['cdprimit_childid'])
-            cdnp.setMat(da.npv3mat3_to_pdmat4(pos, rotmat))
-            # print(cdnp.getMat())
+            cdnp.setPosQuat(da.npv3_to_pdv3(pos), da.npmat3_to_pdquat(rotmat))
             cdnp.show()
 
     def unshow_cdprimit(self):

@@ -26,8 +26,7 @@ class JLChainMesh(object):
                 self.jlobject.lnks[id]['collisionmodel'] = cm.CollisionModel(self.jlobject.lnks[id]['meshfile'],
                                                                              cdprimit_type=cdprimitive_type,
                                                                              cdmesh_type=cdmesh_type)
-                if self.jlobject.lnks[id]['scale'] is not None:
-                    self.jlobject.lnks[id]['collisionmodel'].set_scale(self.jlobject.lnks[id]['scale'])
+                self.jlobject.lnks[id]['collisionmodel'].set_scale(self.jlobject.lnks[id]['scale'])
 
     def gen_meshmodel(self, tcp_jntid=None, tcp_loc_pos=None, tcp_loc_rotmat=None,
                       toggle_tcpcs=True, toggle_jntscs=False, name='robotmesh', rgba=None):
@@ -40,8 +39,6 @@ class JLChainMesh(object):
                 this_collisionmodel.set_homomat(rm.homomat_from_posrot(pos, rotmat))
                 this_rgba = self.jlobject.lnks[id]['rgba'] if rgba is None else rgba
                 this_collisionmodel.set_rgba(this_rgba)
-                if self.jlobject.lnks[id]['scale'] is not None:
-                    this_collisionmodel.set_scale(self.jlobject.lnks[id]['scale'])
                 this_collisionmodel.attach_to(meshmodel)
         # tool center coord
         if toggle_tcpcs:
