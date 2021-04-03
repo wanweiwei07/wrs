@@ -14,6 +14,7 @@ class RobotInterface(object):
         self.cc = None
         # component map for quick access
         self.manipulator_dict = {}
+        self.ft_sensor_dict = {}
         self.hnd_dict = {}
 
     def change_name(self, name):
@@ -68,18 +69,20 @@ class RobotInterface(object):
     def cvt_loc_tcp_to_gl(self, component_name, rel_obj_pos, rel_obj_rotmat):
         return self.manipulator_dict[component_name].cvt_loc_intcp_to_gl(rel_obj_pos, rel_obj_rotmat)
 
-    def is_collided(self, obstacle_list=[], otherrobot_list=[]):
+    def is_collided(self, obstacle_list=[], otherrobot_list=[], toggle_contact_points=False):
         """
         Interface for "is cdprimit collided", must be implemented in child class
         :param obstacle_list:
         :param otherrobot_list:
-        :return:
+        :param toggle_contact_points: debug
+        :return: see CollisionChecker is_collided for details
         author: weiwei
         date: 20201223
         """
-        is_collided =  self.cc.is_collided(obstacle_list=obstacle_list,
-                                           otherrobot_list=otherrobot_list)
-        return is_collided
+        collision_info = self.cc.is_collided(obstacle_list=obstacle_list,
+                                             otherrobot_list=otherrobot_list,
+                                             toggle_contact_points=toggle_contact_points)
+        return collision_info
 
     def show_cdprimit(self):
         self.cc.show_cdprimit()

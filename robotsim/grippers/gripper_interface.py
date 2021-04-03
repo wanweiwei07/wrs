@@ -23,8 +23,8 @@ class GripperInterface(object):
         # self.coupling.lnks[0]['rgba'] = [.2, .2, .2, 1]
         self.coupling.reinitialize()
         # jaw center
-        self.jaw_center_pos = np.zeros(3)
-        self.jaw_center_rotmat = np.eye(3)
+        self.jaw_center_loc_pos = np.zeros(3)
+        self.jaw_center_loc_rotmat = np.eye(3)
         # jaw width
         self.jaw_width_rng = [0.0, 5.0]
         # collision detection

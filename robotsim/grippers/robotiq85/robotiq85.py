@@ -121,6 +121,10 @@ class Robotiq85(gp.GripperInterface):
         self.lft_inner.reinitialize()
         self.rgt_outer.reinitialize()
         self.rgt_inner.reinitialize()
+        # jaw width
+        self.jaw_width_rng = [0.0, .85]
+        # jaw center
+        self.jaw_center_loc_pos = np.array([0,0,.145])
         # collision detection
         self.all_cdelements=[]
         self.enable_cc(toggle_cdprimit=enable_cc)

@@ -94,8 +94,8 @@ class Yumi(ri.RobotInterface):
         # tool center point
         # lft
         self.lft_arm.tcp_jntid = -1
-        self.lft_arm.tcp_loc_pos = self.lft_hnd.jaw_center_pos
-        self.lft_arm.tcp_loc_rotmat = self.lft_hnd.jaw_center_rotmat
+        self.lft_arm.tcp_loc_pos = self.lft_hnd.jaw_center_loc_pos
+        self.lft_arm.tcp_loc_rotmat = self.lft_hnd.jaw_center_loc_rotmat
         # rgt
         self.rgt_arm.tcp_jntid = -1
         self.rgt_arm.tcp_loc_pos = self.rgt_hnd.jaw_center_pos

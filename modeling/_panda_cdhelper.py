@@ -150,7 +150,7 @@ def is_collided(objcm_list0, objcm_list1, toggle_contact_points=False, toggle_pl
     ctrav.traverse(tmpnp)
     if chan.getNumEntries() > 0:
         if toggle_contact_points:
-            contact_points = [da.pdv3_to_npv3(cd_entry.getSurfacePoint) for cd_entry in chan.getEntries()]
+            contact_points = [da.pdv3_to_npv3(cd_entry.getSurfacePoint(base.render)) for cd_entry in chan.getEntries()]
             return True, contact_points
         else:
             return True

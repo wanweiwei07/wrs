@@ -34,6 +34,8 @@ class RobotiqHE(gp.GripperInterface):
         self.rgt.lnks[1]['name'] = "finger2"
         self.rgt.lnks[1]['meshfile'] = os.path.join(this_dir, "meshes", "finger2_cvt.stl")
         self.rgt.lnks[1]['rgba'] = [.5, .5, .5, 1]
+        # jaw center
+        self.jaw_center_loc_pos = np.array([0,0,.07])
         # reinitialize
         self.lft.reinitialize()
         self.rgt.reinitialize()

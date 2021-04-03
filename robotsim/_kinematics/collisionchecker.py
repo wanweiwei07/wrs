@@ -118,7 +118,7 @@ class CollisionChecker(object):
             new_into_cdmask = current_into_cdmask & ~cdnp.node().getFromCollideMask()
             cdnp.node().setIntoCollideMask(new_into_cdmask)
 
-    def is_collided(self, obstacle_list=[], otherrobot_list=[]):
+    def is_collided(self, obstacle_list=[], otherrobot_list=[], toggle_contact_points=False):
         """
         :param obstacle_list: staticgeometricmodel
         :param otherrobot_list:
@@ -163,7 +163,11 @@ class CollisionChecker(object):
             else:
                 robot.cc.np.detachNode()
         if self.chan.getNumEntries() > 0:
-            return True
+            if toggle_contact_points:
+                contact_points = [da.pdv3_to_npv3(cd_entry.getSurfacePoint(base.render)) for cd_entry in self.chan.getEntries()]
+                return True, contact_points
+            else:
+                return True
         else:
             return False
 
@@ -172,6 +176,7 @@ class CollisionChecker(object):
         self.np.reparentTo(base.render)
         self.is_nprendered = True # TODO possible bug for copy
         for cdelement in self.all_cdelements:
+            print(cdelement['name'])
             pos = cdelement['gl_pos']
             rotmat = cdelement['gl_rotmat']
             cdnp = self.np.getChild(cdelement['cdprimit_childid'])

@@ -41,7 +41,7 @@ class YumiGripper(gp.GripperInterface):
         # jaw width
         self.jaw_width_rng = [0.0, .05]
         # jaw center
-        self.jaw_center_pos = np.array([0,0,.13])
+        self.jaw_center_loc_pos = np.array([0,0,.13])
         # collision detection
         self.all_cdelements=[]
         self.enable_cc(toggle_cdprimit=enable_cc)
