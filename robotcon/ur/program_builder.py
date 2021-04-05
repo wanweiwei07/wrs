@@ -1,6 +1,5 @@
 import logging
 
-
 class ProgramBuilder(object):
 
     def __init__(self):

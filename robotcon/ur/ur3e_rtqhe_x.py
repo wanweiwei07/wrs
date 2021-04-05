@@ -19,7 +19,7 @@ class UR3ERtqHE():
     """
     def __init__(self, modern_driver, robot_ip='10.2.0.50', pc_ip='10.2.0.91'):
         """
-        :param modern_driver: "uscripts_cbseries/moderndriver_eseries.script"
+        :param modern_driver: "urscripts_cbseries/moderndriver_eseries.script"
         :param robot_ip:
         :param pc_ip:
         """

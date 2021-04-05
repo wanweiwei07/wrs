@@ -20,7 +20,7 @@ class RobotiqCBTwoFinger(object):
         pblder = pb.ProgramBuilder()
         _this_dir, _ = os.path.split(__file__)
         script = "rtq_cbseries_hand.script"
-        filpath = os.path.join(_this_dir, "../uscripts_cbseries", script)
+        filpath = os.path.join(_this_dir, "../urscripts_cbseries", script)
         pblder.load_prog(filpath)
         self.original_program = pblder.get_program_to_run()
         if type is 'rtq85':
@@ -32,7 +32,7 @@ class RobotiqCBTwoFinger(object):
         else:
             raise NotImplementedError
 
-    def return_program_to_run(self, speedpercentage=90, forcepercentage=90, fingerdistance=0.0):
+    def get_program_to_run(self, speedpercentage=90, forcepercentage=90, fingerdistance=0.0):
         """
         return a program that changes the jawwidth of the gripper with
         given speed percentage, force percentage, and fingerdistance

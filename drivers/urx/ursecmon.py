@@ -212,11 +212,9 @@ class ParserUtils(object):
 
 
 class SecondaryMonitor(Thread):
-
     """
     Monitor data from secondary port and send programs to robot
     """
-
     def __init__(self, host):
         Thread.__init__(self)
         self.logger = logging.getLogger("ursecmon")

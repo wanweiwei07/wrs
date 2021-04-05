@@ -1,0 +1,97 @@
+def driverProg():
+	SERVO_IDLE = 0
+	SERVO_RUNNING = 1
+	cmd_servo_state = SERVO_IDLE
+	cmd_servo_q = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
+
+	def set_servo_setpoint(q):
+		enter_critical
+		cmd_servo_state = SERVO_RUNNING
+		cmd_servo_q = q
+		exit_critical
+	end
+
+	thread servoThread():
+		state = SERVO_IDLE
+		while True:
+			enter_critical
+			q = cmd_servo_q
+			do_brake = False
+			if (state == SERVO_RUNNING) and (cmd_servo_state == SERVO_IDLE):
+				do_brake = True
+			end
+			state = cmd_servo_state
+			cmd_servo_state = SERVO_IDLE
+			exit_critical
+			if do_brake:
+				stopj(1.0)
+				sync()
+			elif state == SERVO_RUNNING:
+				# textmsg(q)
+				servoj(q)
+			else:
+				sync()
+			end
+		end
+	end
+
+    # use two registers to represent a large integer
+    modbus_add_signal('parameter_master_ip', 0, 255, 3, "base_l")
+    modbus_add_signal('parameter_master_ip', 0, 254, 3, "base_u")
+    modbus_add_signal('parameter_master_ip', 0, 253, 3, "base_sgn")
+    modbus_add_signal('parameter_master_ip', 0, 252, 3, "shoulder_l")
+    modbus_add_signal('parameter_master_ip', 0, 251, 3, "shoulder_u")
+    modbus_add_signal('parameter_master_ip', 0, 250, 3, "shoulder_sgn")
+    modbus_add_signal('parameter_master_ip', 0, 249, 3, "elbow_l")
+    modbus_add_signal('parameter_master_ip', 0, 248, 3, "elbow_u")
+    modbus_add_signal('parameter_master_ip', 0, 247, 3, "elbow_sgn")
+    modbus_add_signal('parameter_master_ip', 0, 246, 3, "wrist1_l")
+    modbus_add_signal('parameter_master_ip', 0, 245, 3, "wrist1_u")
+    modbus_add_signal('parameter_master_ip', 0, 244, 3, "wrist1_sgn")
+    modbus_add_signal('parameter_master_ip', 0, 243, 3, "wrist2_l")
+    modbus_add_signal('parameter_master_ip', 0, 242, 3, "wrist2_u")
+    modbus_add_signal('parameter_master_ip', 0, 241, 3, "wrist2_sgn")
+    modbus_add_signal('parameter_master_ip', 0, 240, 3, "wrist3_l")
+    modbus_add_signal('parameter_master_ip', 0, 239, 3, "wrist3_u")
+    modbus_add_signal('parameter_master_ip', 0, 238, 3, "wrist3_gn")
+	thread_servo = run servoThread()
+	keepalive = 1
+	while keepalive > 0:
+        textmsg(modbus_get_signal_status("base_l", False))
+        textmsg(modbus_get_signal_status("base_u", False))
+        textmsg(modbus_get_signal_status("shoulder_l", False))
+        textmsg(modbus_get_signal_status("shoulder_u", False))
+        textmsg(modbus_get_signal_status("elbow_l", False))
+        textmsg(modbus_get_signal_status("elbow_u", False))
+        textmsg(modbus_get_signal_status("wrist1_l", False))
+        textmsg(modbus_get_signal_status("wrist1_u", False))
+        textmsg(modbus_get_signal_status("wrist2_l", False))
+        textmsg(modbus_get_signal_status("wrist2_u", False))
+        textmsg(modbus_get_signal_status("wrist3_l", False))
+        textmsg(modbus_get_signal_status("wrist3_u", False))
+		# textmsg('preparing to read')
+		# textmsg(keepalive)
+		params_mult = socket_read_binary_integer('pc_socket', 12+1)
+		if params_mult[0] > 0:
+			q_master = [params_mult[1]/parameter_jointscaler,
+				        params_mult[2]/parameter_jointscaler,
+				        params_mult[3]/parameter_jointscaler,
+				        params_mult[4]/parameter_jointscaler,
+				        params_mult[5]/parameter_jointscaler,
+				        params_mult[6]/parameter_jointscaler]
+			keepalive = params_mult[13]
+			q_slave = [params_mult[7]/parameter_jointscaler,
+				       params_mult[8]/parameter_jointscaler,
+				       params_mult[9]/parameter_jointscaler,
+				       params_mult[10]/parameter_jointscaler,
+				       params_mult[11]/parameter_jointscaler,
+				       params_mult[12]/parameter_jointscaler,
+				       keepalive]
+			set_servo_setpoint(q)
+	        sync()
+		end
+	end
+	sync()
+	socket_close()
+	kill thread_servo
+end

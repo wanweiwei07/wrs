@@ -1,7 +1,7 @@
 import math3d as m3d
 import numpy as np
 
-from urx.urrobot import URRobot
+from .urrobot import URRobot
 
 class Robot(URRobot):
 

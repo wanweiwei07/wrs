@@ -16,24 +16,20 @@ class RobotException(Exception):
 
 
 class URRobot(object):
-
     """
     Python interface to socket interface of UR robot.
-    programs are send to port 3002
+    programs are send to port 30002
     data is read from secondary interface(10Hz?) and real-time interface(125Hz) (called Matlab interface in documentation)
     Since parsing the RT interface uses som CPU, and does not support all robots versions, it is disabled by default
     The RT interfaces is only used for the get_force related methods
     Rmq: A program sent to the robot i executed immendiatly and any running program is stopped
     """
-
     def __init__(self, host, use_rt=False):
         self.logger = logging.getLogger("urx")
         self.host = host
         self.csys = None
-
         self.logger.debug("Opening secondary monitor socket")
         self.secmon = ursecmon.SecondaryMonitor(self.host)  # data from robot at 10Hz
-
         self.rtmon = None
         if use_rt:
             self.rtmon = self.get_realtime_monitor()
@@ -42,7 +38,6 @@ class URRobot(object):
         self.joinEpsilon = 0.01
         # It seems URScript is  limited in the character length of floats it accepts
         self.max_float_length = 6  # FIXME: check max length!!!
-
         self.secmon.wait()  # make sure we get data from robot before letting clients access our methods
 
     def __repr__(self):

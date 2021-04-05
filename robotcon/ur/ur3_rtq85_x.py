@@ -20,9 +20,8 @@ class UR3Rtq85X():
     date: 20180131
     """
 
-    def __init__(self, modern_driver, robot_ip='10.2.0.50', pc_ip='10.2.0.100'):
+    def __init__(self, robot_ip='10.2.0.50', pc_ip='10.2.0.100'):
         """
-        :param modern_driver: "uscripts_cbseries/moderndriver_cbseries.script"
         :param robot_ip:
         :param pc_ip:
         """
@@ -31,7 +30,7 @@ class UR3Rtq85X():
         self._arm.set_tcp((0, 0, 0, 0, 0, 0))
         self._arm.set_payload(1.28)
         # setup hand
-        self._hand = r2f.RobotiqCBTwoFinger(type='rtq85')
+        self._hnd = r2f.RobotiqCBTwoFinger(type='rtq85')
         # setup ftsensor
         self._ftsensor = rft.RobotiqFT300()
         self._ftsensor_socket_addr = (robot_ip, 63351)
@@ -43,16 +42,16 @@ class UR3Rtq85X():
         self._pc_server_socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
         self._pc_server_socket.bind(self._pc_server_socket_addr)
         self._pc_server_socket.listen(5)
-        self._jointscaler = 1e6
+        self._jnts_scaler = 1e6
         self._pb = pb.ProgramBuilder()
-        script_dir = os.path.dirname(__file__)
-        self._pb.load_prog(os.path.join(script_dir, modern_driver))
-        self._pc_server_urscript = self._pb.get_program_to_run()
-        self._pc_server_urscript = self._pc_server_urscript.replace("parameter_ip", self._pc_server_socket_addr[0])
-        self._pc_server_urscript = self._pc_server_urscript.replace("parameter_port",
-                                                                    str(self._pc_server_socket_addr[1]))
-        self._pc_server_urscript = self._pc_server_urscript.replace("parameter_jointscaler",
-                                                                    str(self._jointscaler))
+        self._script_dir = os.path.dirname(__file__)
+        self._pb.load_prog(os.path.join(self._script_dir, "urscripts_cbseries/moderndriver_cbseries.script"))
+        self._modern_driver_urscript = self._pb.get_program_to_run()
+        self._modern_driver_urscript = self._modern_driver_urscript.replace("parameter_ip", self._pc_server_socket.getsockname()[0])
+        self._modern_driver_urscript = self._modern_driver_urscript.replace("parameter_port",
+                                                                            str(self._pc_server_socket.getsockname()[1]))
+        self._modern_driver_urscript = self._modern_driver_urscript.replace("parameter_jointscaler",
+                                                                            str(self._jnts_scaler))
         self._ftsensor_thread = None
         self._ftsensor_values = []
         self.trajt = traj.Trajectory(method='quintic')
@@ -61,6 +60,11 @@ class UR3Rtq85X():
     def arm(self):
         # read-only property
         return self._arm
+
+    @property
+    def hnd(self):
+        # read-only property
+        return self._hnd
 
     @property
     def ftsensor_urscript(self):
@@ -72,6 +76,21 @@ class UR3Rtq85X():
         # read-only property
         return self._ftsensor_socket_addr
 
+    @property
+    def pc_server_socket_info(self):
+        """
+        :return: [ip, port]
+        """
+        return self._pc_server_socket.getsockname()
+
+    @property
+    def pc_server_socket(self):
+        return self._pc_server_socket
+
+    @property
+    def jnts_scaler(self):
+        return self._jnts_scaler
+
     def open_gripper(self, speedpercentange=70, forcepercentage=50, fingerdistance=85):
         """
         open the rtq85 hand on the arm specified by armname
@@ -80,7 +99,8 @@ class UR3Rtq85X():
         author: weiwei
         date: 20180220
         """
-        self._arm.send_program(self._hand.return_program_to_run(speedpercentange, forcepercentage, fingerdistance=fingerdistance))
+        self._arm.send_program(
+            self._hnd.get_program_to_run(speedpercentange, forcepercentage, fingerdistance=fingerdistance))
 
     def close_gripper(self, speedpercentange=80, forcepercentage=50):
         """
@@ -90,16 +110,15 @@ class UR3Rtq85X():
         author: weiwei
         date: 20180220
         """
-        self._arm.send_program(self._hand.return_program_to_run(speedpercentange, forcepercentage, fingerdistance=0))
+        self._arm.send_program(self._hnd.get_program_to_run(speedpercentange, forcepercentage, fingerdistance=0))
 
     def start_recvft(self):
         """
         start receive ft values using thread
         the values are in the local frame of the force sensors
         transformation is to be done by higher-level code
-        :return:
+        :return: [fx, fy, fz, tx, ty, tz] in N and Nm
         """
-
         def recvft():
             self._arm.send_program(self._ftsensor_urscript)
             ftsocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -122,7 +141,7 @@ class UR3Rtq85X():
     def clear_ftsensor_values(self):
         self._ftsensor_values = []
 
-    def move_jnts(self, jnt_values, radius=0.01):
+    def move_jnts(self, jnt_values, wait=True):
         """
         :param jnt_values: a 1-by-6 list in degree
         :param armname:
@@ -131,7 +150,7 @@ class UR3Rtq85X():
         date: 20170411
         """
         jointsrad = [math.radians(angdeg) for angdeg in jnt_values]
-        self._arm.movej(jointsrad, acc=1, vel=1, wait=True)
+        self._arm.movej(jointsrad, acc=1, vel=1, wait=wait)
         # targetarm.movejr(jointsrad, acc = 1, vel = 1, radius = radius, wait = False)
 
     def regulate_jnts_pmpi(self):
@@ -148,23 +167,23 @@ class UR3Rtq85X():
         regulated_jnt_values = rm.regulate_angle(-math.pi, math.pi, jnt_values)
         self.move_jnts(regulated_jnt_values)
 
-    def move_jntspace_path(self, path, control_frequency=.005, interval_time=1.0, method=None):
+    def move_jntspace_path(self, path, control_frequency=.008, interval_time=1.0, interpolation_method=None):
         """
         move robot arm following a given jointspace path
-        :param path:
+        :param path: a list of 1x6 arrays
         :param control_frequency: the program will sample interval_time/control_frequency confs, see motion.trajectory
         :param interval_time: equals to expandis/speed, speed = degree/second
                               by default, the value is 1.0 and the speed is expandis/second
-        :param method
+        :param interpolation_method
         :return:
         author: weiwei
         date: 20210331
         """
-        self.trajt.set_interpolation_method(method)
+        self.trajt.set_interpolation_method(interpolation_method)
         interpolated_confs, interpolated_spds = self.trajt.piecewise_interpolation(path, control_frequency,
                                                                                    interval_time)
         # upload a urscript to connect to the pc server started by this class
-        self._arm.send_program(self._pc_server_urscript)
+        self._arm.send_program(self._modern_driver_urscript)
         # accept arm socket
         pc_server_socket, pc_server_socket_addr = self._pc_server_socket.accept()
         print("Connected by ", pc_server_socket_addr)
@@ -174,67 +193,67 @@ class UR3Rtq85X():
         for id, conf in enumerate(interpolated_confs):
             if id == len(interpolated_confs) - 1:
                 keepalive = 0
-            jointsradint = [int(jnt_value * self._jointscaler) for jnt_value in conf]
+            jointsradint = [int(jnt_value * self._jnts_scaler) for jnt_value in conf]
             buf += struct.pack('!iiiiiii', jointsradint[0], jointsradint[1], jointsradint[2],
                                jointsradint[3], jointsradint[4], jointsradint[5], keepalive)
         pc_server_socket.send(buf)
         pc_server_socket.close()
 
-    def attachfirm(self, base_pos, base_rotmat, gl_direction=np.array([0, 0, -1]), steplength=1, forcethreshold=10):
-        """
-        TODO implement using urscript
-        place the object firmly on a table considering forcefeedback
-        :base_pos: installation position of the arm base
-        :base_rotmat: installation rotmat of the arm base
-        :gl_direction: attaching direction in global frame
-        :steplength: mm
-        :forcethreshold:
-        :return:
-        author: weiwei
-        date: 20190401osaka, 20210401osaka
-        """
-        originaljnts = self.__robotsim.getarmjnts(armname=armname)
-        currentjnts = self.get_jnt_values(armname)
-        self.__robotsim.movearmfk(currentjnts, armname=armname)
-        eepos, eerot = self.__robotsim.getee(armname=armname)
-
-        def getftthread(ur3u, eerot, armname='rgt'):
-            targetarm = ur3u.__rgtarm
-            targetarm_ftsocket_ipad = ur3u.rgtarm_ftsocket_ipad
-            if armname == 'lft':
-                targetarm = ur3u.__lftarm
-                targetarm_ftsocket_ipad = ur3u.lftarm_ftsocket_ipad
-            targetarm.send_program(ur3u.ftsensorscript)
-            targetarm_ftsocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-            targetarm_ftsocket.connect(targetarm_ftsocket_ipad)
-            while True:
-                ftdata = targetarm_ftsocket.recv(1024)
-                ftdata = ftdata.decode()
-                ftdata = ftdata.strip('()')
-                ftdata = [float(x) for x in ftdata.split(',')]
-                attachforce = ftdata[0] * eerot[:3, 0] + ftdata[1] * eerot[:3, 1] + ftdata[2] * eerot[:3, 2]
-                force = np.linalg.norm(np.dot(attachforce, -direction))
-                if force > forcethreshold:
-                    ur3u.firmstopflag = True
-                    targetarm_ftsocket.close()
-                    return
-
-        thread = threading.Thread(target=getftthread, args=([self, eerot, armname]), name="threadft")
-        thread.start()
-
-        while True:
-            if self.firmstopflag:
-                thread.join()
-                self.firmstopflag = False
-                self.__robotsim.movearmfk(originaljnts, armname=armname)
-                return
-            # move steplength towards the direction
-            eepos, eerot = self.__robotsim.getee(armname="lft")
-            currentjnts = self.__robotsim.getarmjnts(armname=armname)
-            eepos = eepos + direction * steplength
-            newjnts = self.__robotsim.numikmsc(eepos, eerot, currentjnts, armname=armname)
-            self.__robotsim.movearmfk(newjnts, armname=armname)
-            self.move_jnts(newjnts, armname=armname)
+    # def attachfirm(self, base_pos, base_rotmat, gl_direction=np.array([0, 0, -1]), steplength=1, forcethreshold=10):
+    #     """
+    #     TODO implement using urscript
+    #     place the object firmly on a table considering forcefeedback
+    #     :base_pos: installation position of the arm base
+    #     :base_rotmat: installation rotmat of the arm base
+    #     :gl_direction: attaching direction in global frame
+    #     :steplength: mm
+    #     :forcethreshold:
+    #     :return:
+    #     author: weiwei
+    #     date: 20190401osaka, 20210401osaka
+    #     """
+    #     originaljnts = self.__robotsim.getarmjnts(armname=armname)
+    #     currentjnts = self.get_jnt_values(armname)
+    #     self.__robotsim.movearmfk(currentjnts, armname=armname)
+    #     eepos, eerot = self.__robotsim.getee(armname=armname)
+    #
+    #     def getftthread(ur3u, eerot, armname='rgt'):
+    #         targetarm = ur3u.__rgtarm
+    #         targetarm_ftsocket_ipad = ur3u.rgtarm_ftsocket_ipad
+    #         if armname == 'lft':
+    #             targetarm = ur3u.__lftarm
+    #             targetarm_ftsocket_ipad = ur3u.lftarm_ftsocket_ipad
+    #         targetarm.send_program(ur3u.ftsensorscript)
+    #         targetarm_ftsocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    #         targetarm_ftsocket.connect(targetarm_ftsocket_ipad)
+    #         while True:
+    #             ftdata = targetarm_ftsocket.recv(1024)
+    #             ftdata = ftdata.decode()
+    #             ftdata = ftdata.strip('()')
+    #             ftdata = [float(x) for x in ftdata.split(',')]
+    #             attachforce = ftdata[0] * eerot[:3, 0] + ftdata[1] * eerot[:3, 1] + ftdata[2] * eerot[:3, 2]
+    #             force = np.linalg.norm(np.dot(attachforce, -direction))
+    #             if force > forcethreshold:
+    #                 ur3u.firmstopflag = True
+    #                 targetarm_ftsocket.close()
+    #                 return
+    #
+    #     thread = threading.Thread(target=getftthread, args=([self, eerot, armname]), name="threadft")
+    #     thread.start()
+    #
+    #     while True:
+    #         if self.firmstopflag:
+    #             thread.join()
+    #             self.firmstopflag = False
+    #             self.__robotsim.movearmfk(originaljnts, armname=armname)
+    #             return
+    #         # move steplength towards the direction
+    #         eepos, eerot = self.__robotsim.getee(armname="lft")
+    #         currentjnts = self.__robotsim.getarmjnts(armname=armname)
+    #         eepos = eepos + direction * steplength
+    #         newjnts = self.__robotsim.numikmsc(eepos, eerot, currentjnts, armname=armname)
+    #         self.__robotsim.movearmfk(newjnts, armname=armname)
+    #         self.move_jnts(newjnts, armname=armname)
 
     def get_jnt_values(self):
         """
@@ -251,8 +270,7 @@ if __name__ == '__main__':
     import visualization.panda.world as wd
 
     base = wd.World(campos=[3, 1, 2], lookatpos=[0, 0, 0])
-    u3r85_c = UR3Rtq85X(modern_driver='uscripts_cbseries/moderndriver_cbseries.script',
-                        robot_ip='10.2.0.50', pc_ip='10.2.0.101')
+    u3r85_c = UR3Rtq85X(robot_ip='10.2.0.51', pc_ip='10.2.0.100')
     # u3r85_c.attachfirm(rbt, upthreshold=10, armname='lft')
     u3r85_c.close_gripper()
     time.sleep(2)
