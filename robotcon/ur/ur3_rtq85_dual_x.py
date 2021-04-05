@@ -37,6 +37,8 @@ class UR3Rtq85DualX():
                                                                                           self._lft_arm_hnd.pc_server_socket_info[0])
         self._master_modern_driver_urscript = self._master_modern_driver_urscript.replace("parameter_pc_port",
                                                                                           str(self._lft_arm_hnd.pc_server_socket_info[1]))
+        self._master_modern_driver_urscript = self._master_modern_driver_urscript.replace("parameter_slave_ip",
+                                                                                          rgt_robot_ip)
         self._master_modern_driver_urscript = self._master_modern_driver_urscript.replace("parameter_jnts_scaler",
                                                                                           str(self._lft_arm_hnd.jnts_scaler))
         self._pb.load_prog(os.path.join(self._script_dir, "urscripts_cbseries/moderndriver_cbseries_slave.script"))
