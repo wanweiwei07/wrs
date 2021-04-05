@@ -37,8 +37,8 @@ def driverProg():
 
 	socket_open("parameter_pc_ip", parameter_pc_port, "pc_socket")
 	textmsg("open pc connection")
-	modbus_add_signal("parameter_slave_ip", 0, 200, 3, "conf_counter_feedback")
-	textmsg('open modbus feedback from slave')
+	modbus_add_signal("parameter_slave_ip", 0, 200, 3, "counter_fdbk")
+	textmsg("open modbus feedback from slave")
     thread_servo = run servoThread()
     sqrt_jnts_scaler = sqrt(parameter_jnts_scaler)
     keepalive = 1
@@ -127,11 +127,11 @@ def driverProg():
             write_port_register(240, wrist3_l_value)
             write_port_register(239, wrist3_u_value)
             write_port_register(238, wrist3_sgn)
-            conf_counter += 1
+            conf_counter = conf_counter + 1
             write_port_register(200, conf_counter)
 		    set_servo_setpoint(q_master)
             while True:
-                if modbus_get_signal_status("conf_counter_feedback", False) == conf_counter:
+                if modbus_get_signal_status("counter_fdbk", False) == conf_counter:
                     break
                 end
                 sleep(.001)
