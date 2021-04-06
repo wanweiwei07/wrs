@@ -11,20 +11,26 @@ gm.gen_frame().attach_to(base)
 # object
 object = cm.CollisionModel("./objects/bunnysim.stl")
 object.set_pos(np.array([.55, -.3, 1.3]))
-object.set_rgba([.5,.7,.3,1])
+object.set_rgba([.5, .7, .3, 1])
 object.attach_to(base)
 # robot
-component_name='rgt_arm'
+component_name = 'both_arm'
 robot_instance = ur3d.UR3Dual()
+# init_lft_arm_jnt_values = robot_instance.lft_arm.get_jnt_values()
+# init_rgt_arm_jnt_values = robot_instance.rgt_arm.get_jnt_values()
+# full_jnt_values = np.hstack((init_lft_arm_jnt_values, init_rgt_arm_jnt_values))
+full_jnt_values = np.hstack((robot_instance.lft_arm.homeconf, robot_instance.rgt_arm.homeconf))
+goal_lft_arm_jnt_values = np.array([0, -math.pi / 2, -math.pi/3, -math.pi / 2, math.pi / 6, math.pi / 6])
+goal_rgt_arm_jnt_values = np.array([0, -math.pi/4, 0, math.pi/2, math.pi/2, math.pi / 6])
 
 rrtc_planner = rrtc.RRTConnect(robot_instance)
-path = rrtc_planner.plan(start_conf=robot_instance.rgt_arm.homeconf,
-                         goal_conf=np.array([0, -math.pi/4, 0, math.pi/2, math.pi/2, math.pi / 6]),
+path = rrtc_planner.plan(component_name=component_name,
+                         start_conf=full_jnt_values,
+                         goal_conf=np.hstack((goal_lft_arm_jnt_values, goal_rgt_arm_jnt_values)),
                          obstacle_list=[object],
                          ext_dist=.2,
                          rand_rate=70,
-                         maxtime=300,
-                         component_name=component_name)
+                         maxtime=300)
 print(path)
 for pose in path:
     print(pose)

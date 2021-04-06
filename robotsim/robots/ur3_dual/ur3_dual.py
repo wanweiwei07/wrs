@@ -357,7 +357,7 @@ class UR3Dual(ri.RobotInterface):
 
     def fk(self, component_name, jnt_values):
         """
-        :param jnt_values: [nparray, nparray], 7+7, meter-radian
+        :param jnt_values: nparray 1x6 or 1x12 depending on component_names
         :jlc_name 'lft_arm', 'rgt_arm', 'both_arm'
         :param component_name:
         :return:
@@ -393,16 +393,29 @@ class UR3Dual(ri.RobotInterface):
                 raise ValueError("An 1x6 npdarray must be specified to move a single arm!")
             update_component(component_name, jnt_values)
         elif component_name == 'both_arm':
-            if (not isinstance(jnt_values, list)
-                    or jnt_values[0].size != 6
-                    or jnt_values[1].size != 6):
-                raise ValueError("A list made of two 1x6 npdarrays must be specified to move both arm!")
-            for component_name in ['lft_arm', 'rgt_arm']:
-                update_component(component_name, jnt_values)
+            if (jnt_values.size != 12):
+                raise ValueError("A 1x12 npdarrays must be specified to move both arm!")
+            update_component('lft_arm', jnt_values[0:6])
+            update_component('rgt_arm', jnt_values[6:12])
         elif component_name == 'all':
-            pass
+            raise NotImplementedError
         else:
             raise ValueError("The given component name is not available!")
+
+    def rand_conf(self, component_name):
+        """
+        override robot_interface.rand_conf
+        :param component_name:
+        :return:
+        author: weiwei
+        date: 20210406
+        """
+        if component_name == 'lft_arm' or component_name == 'rgt_arm':
+            return super().rand_conf(component_name)
+        elif component_name == 'both_arm':
+            return np.hstack((super().rand_conf('lft_arm'), super().rand_conf('rgt_arm')))
+        else:
+            raise NotImplementedError
 
     def hold(self, objcm, jaw_width=None, hnd_name='lft_hnd'):
         """

@@ -191,7 +191,7 @@ class Yumi(ri.RobotInterface):
                     self.rgt_hnd.lft.lnks[1],
                     self.rgt_hnd.rgt.lnks[1]]
         self.cc.set_cdpair(fromlist, intolist)
-        fromlist = [self.lft_body.lnks[1]] # 20210402 what is this?
+        fromlist = [self.lft_body.lnks[1]]  # 20210402 what is this?
         intolist = [self.lft_arm.lnks[2],
                     self.rgt_arm.lnks[2]]
         self.cc.set_cdpair(fromlist, intolist)
@@ -220,50 +220,62 @@ class Yumi(ri.RobotInterface):
 
     def fk(self, component_name, jnt_values):
         """
-        :param jnt_values: [nparray, nparray], 7+7, meter-radian
+        :param jnt_values: nparray 1x6 or 1x14 depending on component_names
         :jlc_name 'lft_arm', 'rgt_arm', 'both_arm'
         :param component_name:
         :return:
         author: weiwei
         date: 20201208toyonaka
         """
+
         def update_oih(component_name='rgt_arm'):
             # inline function for update objects in hand
-            if component_name=='rgt_arm':
+            if component_name == 'rgt_arm':
                 oih_info_list = self.rgt_oih_infos
-            elif component_name=='lft_arm':
+            elif component_name == 'lft_arm':
                 oih_info_list = self.lft_oih_infos
             for obj_info in oih_info_list:
                 gl_pos, gl_rotmat = self.cvt_loc_tcp_to_gl(component_name, obj_info['rel_pos'], obj_info['rel_rotmat'])
                 obj_info['gl_pos'] = gl_pos
                 obj_info['gl_rotmat'] = gl_rotmat
 
+        def update_component(component_name, jnt_values):
+            self.manipulator_dict[component_name].fk(jnt_values=jnt_values)
+            self.get_hnd_on_component(component_name).fix_to(
+                pos=self.manipulator_dict[component_name].jnts[-1]['gl_posq'],
+                rotmat=self.manipulator_dict[component_name].jnts[-1]['gl_rotmatq'])
+            update_oih(component_name=component_name)
+
         super().fk(component_name, jnt_values)
         # examine length
         if component_name == 'lft_arm' or component_name == 'rgt_arm':
             if not isinstance(jnt_values, np.ndarray) or jnt_values.size != 7:
                 raise ValueError("An 1x7 npdarray must be specified to move a single arm!")
-            self.manipulator_dict[component_name].fk(jnt_values=jnt_values)
-            self.get_hnd_on_component(component_name).fix_to(pos=self.manipulator_dict[component_name].jnts[-1]['gl_posq'],
-                                                       rotmat=self.manipulator_dict[component_name].jnts[-1]['gl_rotmatq'])
-            update_oih(component_name=component_name)
+            update_component(component_name, jnt_values)
         elif component_name == 'both_arm':
-            if (not isinstance(jnt_values, list)
-                    or jnt_values[0].size != 7
-                    or jnt_values[1].size != 7):
-                raise ValueError("A list of two 1x7 npdarrays must be specified to move both arm!")
-            self.lft_arm.fk(jnt_values=jnt_values[0])
-            self.lft_hnd.fix_to(pos=self.lft_arm.jnts[-1]['gl_posq'],
-                                rotmat=self.lft_arm.jnts[-1]['gl_rotmatq'])
-            self.rgt_arm.fk(jnt_values=jnt_values[1])
-            self.rgt_hnd.fix_to(pos=self.rgt_arm.jnts[-1]['gl_posq'],
-                                rotmat=self.rgt_arm.jnts[-1]['gl_rotmatq'])
-            update_oih(component_name='rgt_arm')
-            update_oih(component_name='lft_arm')
+            if jnt_values.size != 14:
+                raise ValueError("A 1x14 npdarrays must be specified to move both arm!")
+            update_component('lft_arm', jnt_values[0:7])
+            update_component('rgt_arm', jnt_values[7:14])
         elif component_name == 'all':
-            pass
+            raise NotImplementedError
         else:
             raise ValueError("The given component name is not available!")
+
+    def rand_conf(self, component_name):
+        """
+        override robot_interface.rand_conf
+        :param component_name:
+        :return:
+        author: weiwei
+        date: 20210406
+        """
+        if component_name == 'lft_arm' or component_name == 'rgt_arm':
+            return super().rand_conf(component_name)
+        elif component_name == 'both_arm':
+            return np.hstack((super().rand_conf('lft_arm'), super().rand_conf('rgt_arm')))
+        else:
+            raise NotImplementedError
 
     def hold(self, objcm, jaw_width=None, hnd_name='lft_hnd'):
         """
@@ -354,7 +366,7 @@ class Yumi(ri.RobotInterface):
         hio_homomat = rm.homomat_from_posrot(hio_pos, hio_rotmat)
         oih_homomat = rm.homomat_inverse(hio_homomat)
         gl_obj_homomat = hnd_homomat.dot(oih_homomat)
-        return gl_obj_homomat[:3,3], gl_obj_homomat[:3,:3]
+        return gl_obj_homomat[:3, 3], gl_obj_homomat[:3, :3]
 
     def get_oih_cm_list(self, hnd_name='lft_hnd'):
         """
@@ -559,9 +571,9 @@ if __name__ == '__main__':
     yumi_instance = Yumi(enable_cc=True)
 
     # ik test
-    component_name= 'rgt_arm'
+    component_name = 'rgt_arm'
     tgt_pos = np.array([.4, -.4, .3])
-    tgt_rotmat = rm.rotmat_from_axangle([0,1,0], math.pi/2)
+    tgt_rotmat = rm.rotmat_from_axangle([0, 1, 0], math.pi / 2)
     gm.gen_frame(pos=tgt_pos, rotmat=tgt_rotmat).attach_to(base)
     tic = time.time()
     jnt_values = yumi_instance.ik(component_name, tgt_pos, tgt_rotmat)
@@ -577,9 +589,9 @@ if __name__ == '__main__':
     print(result, toc - tic)
 
     # hold test
-    component_name= 'lft_arm'
+    component_name = 'lft_arm'
     obj_pos = np.array([-.1, .3, .3])
-    obj_rotmat = rm.rotmat_from_axangle([0,1,0], math.pi/2)
+    obj_rotmat = rm.rotmat_from_axangle([0, 1, 0], math.pi / 2)
     objfile = os.path.join(basis.__path__[0], 'objects', 'tubebig.stl')
     objcm = cm.CollisionModel(objfile, cdprimit_type='cylinder')
     objcm.set_pos(obj_pos)
@@ -588,7 +600,7 @@ if __name__ == '__main__':
     objcm_copy = objcm.copy()
     yumi_instance.hold(objcm=objcm_copy, jaw_width=0.03, hnd_name='lft_hnd')
     tgt_pos = np.array([.4, .5, .4])
-    tgt_rotmat = rm.rotmat_from_axangle([0,1,0], math.pi/3)
+    tgt_rotmat = rm.rotmat_from_axangle([0, 1, 0], math.pi / 3)
     jnt_values = yumi_instance.ik(component_name, tgt_pos, tgt_rotmat)
     yumi_instance.fk(component_name, jnt_values)
     yumi_instance.show_cdprimit()
