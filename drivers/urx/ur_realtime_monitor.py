@@ -6,7 +6,6 @@ import threading
 from copy import deepcopy
 
 import numpy as np
-import basis.robot_math as rm
 
 class URRTMonitor(threading.Thread):
 
@@ -40,12 +39,6 @@ class URRTMonitor(threading.Thread):
         self._buffering = False
         self._buffer_lock = threading.Lock()
         self._buffer = []
-        self._csys = None
-        self._csys_lock = threading.Lock()
-
-    def set_csys(self, csys):
-        with self._csys_lock:
-            self._csys = csys
 
     def __recv_bytes(self, nBytes):
         ''' Facility method for receiving exactly "nBytes" bytes from
@@ -165,11 +158,6 @@ class URRTMonitor(threading.Thread):
             self._qTarget = np.array(unp[1:7])
             self._tcp_force = np.array(unp[67:73])
             self._tcp = np.array(unp[73:79])
-
-            if self._csys:
-                with self._csys_lock:
-                    tcp = self._csys.dot(rm.homomat_from_pos_axanglevec(self._tcp[:3], self._tcp[3:]))
-                self._tcp = tcp[:3,3]
 
         if self._buffering:
             with self._buffer_lock:
