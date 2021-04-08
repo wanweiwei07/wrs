@@ -27,21 +27,21 @@ _TUPLE2AXES = dict((v, k) for k, v in _AXES2TUPLE.items())
 
 
 ## rotmat
-def rotmat_from_axangle(axis, theta):
+def rotmat_from_axangle(axis, angle):
     """
     Compute the rodrigues matrix using the given axis and angle
 
     :param axis: 1x3 nparray
-    :param theta:  angle in radian
+    :param angle:  angle in radian
     :return: 3x3 rotmat
     author: weiwei
     date: 20161220
     """
     axis = unit_vector(axis)
-    if theta > 2 * math.pi:
-        theta = theta % 2 * math.pi
-    a = math.cos(theta / 2.0)
-    b, c, d = -axis * math.sin(theta / 2.0)
+    if angle > 2 * math.pi:
+        angle = angle % 2 * math.pi
+    a = math.cos(angle / 2.0)
+    b, c, d = -axis * math.sin(angle / 2.0)
     aa, bb, cc, dd = a * a, b * b, c * c, d * d
     bc, ad, ac, ab, bd, cd = b * c, a * d, a * c, a * b, b * d, c * d
     return np.array([[aa + bb - cc - dd, 2.0 * (bc + ad), 2.0 * (bd - ac)],
@@ -193,6 +193,19 @@ def homomat_from_posrot(pos=np.zeros(3), rot=np.eye(3)):
     homomat[:3, :3] = rot
     homomat[:3, 3] = pos
     return homomat
+
+def homomat_from_pos_axanglevec(pos=np.zeros(3), axangle=np.ones(3)):
+    """
+    build a 4x4 nparray homogeneous matrix
+    :param pos: nparray 1x3
+    :param axanglevec: nparray 1x3, correspondent unit vector is rotation direction; length is radian rotation angle
+    :return:
+    author: weiwei
+    date: 20200408
+    """
+    ax, angle = unit_vector(axangle, togglelength=True)
+    rotmat = rotmat_from_axangle(ax, angle)
+    return homomat_from_posrot(pos, rotmat)
 
 
 def homomat_inverse(homomat):

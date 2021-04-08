@@ -6,8 +6,7 @@ import threading
 from copy import deepcopy
 
 import numpy as np
-
-import math3d as m3d
+import basis.robot_math as rm
 
 class URRTMonitor(threading.Thread):
 
@@ -169,9 +168,9 @@ class URRTMonitor(threading.Thread):
 
             if self._csys:
                 with self._csys_lock:
-                    # might be a godd idea to remove dependancy on m3d
-                    tcp = self._csys.inverse * m3d.Transform(self._tcp)
-                self._tcp = tcp.pose_vector
+                    tcp = self._csys.dot(rm.homomat_from_pos_axanglevec(self._tcp[:3], self._tcp[3:]))
+                self._tcp = tcp[:3,3]
+
         if self._buffering:
             with self._buffer_lock:
                 self._buffer.append(

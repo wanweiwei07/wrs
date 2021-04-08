@@ -8,8 +8,8 @@ import logging
 import numbers
 import collections
 
-from drivers.urx import urrtmon
-from drivers.urx import ursecmon
+from drivers.urx import ur_realtime_monitor
+from drivers.urx import ur_secondary_monitor
 
 class RobotException(Exception):
     pass
@@ -29,7 +29,7 @@ class URRobot(object):
         self.host = host
         self.csys = None
         self.logger.debug("Opening secondary monitor socket")
-        self.secmon = ursecmon.SecondaryMonitor(self.host)  # data from robot at 10Hz
+        self.secmon = ur_secondary_monitor.SecondaryMonitor(self.host)  # data from robot at 10Hz
         self.rtmon = None
         if use_rt:
             self.rtmon = self.get_realtime_monitor()
@@ -451,7 +451,7 @@ class URRobot(object):
         """
         if not self.rtmon:
             self.logger.info("Opening real-time monitor socket")
-            self.rtmon = urrtmon.URRTMonitor(self.host)  # som information is only available on rt interface
+            self.rtmon = ur_realtime_monitor.URRTMonitor(self.host)  # som information is only available on rt interface
             self.rtmon.start()
         self.rtmon.set_csys(self.csys)
         return self.rtmon

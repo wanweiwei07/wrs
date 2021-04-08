@@ -3,9 +3,10 @@ import robotcon.ur.ur3_rtq85_x as u3r85x
 import robotcon.ur.program_builder as pb
 import struct
 import os
+import numpy as np
 
 
-class UR3DualX():
+class UR3DualX(object):
     """
     urx 50, right arm 51, left arm 52
     author: weiwei
@@ -84,7 +85,7 @@ class UR3DualX():
         self._lft_arm_hnd.arm.send_program(self._master_modern_driver_urscript)
         # accept arm socket
         pc_server_socket, pc_server_socket_addr = self._lft_arm_hnd.pc_server_socket.accept()
-        print("Master arm (left arm) connected by ", pc_server_socket_addr)
+        print("PC server connected by ", pc_server_socket_addr)
         # send trajectory
         keepalive = 1
         buf = bytes()
@@ -106,7 +107,7 @@ class UR3DualX():
         author: ochi, revised by weiwei
         date: 20180410, 20210404
         """
-        return self._rgt_arm_hnd.get_jnt_values() + self._lft_arm_hnd.get_jnt_values()
+        return np.array(self._rgt_arm_hnd.get_jnt_values() + self._lft_arm_hnd.get_jnt_values())
 
 
 if __name__ == '__main__':

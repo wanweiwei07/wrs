@@ -1,11 +1,7 @@
-import logging
-
 class ProgramBuilder(object):
 
     def __init__(self):
-        self.logger = logging.getLogger("urx")
         self.complete_program = ""
-        self.logger = False
 
     def load_prog(self, filename):
         self.complete_program = ""

@@ -2,7 +2,7 @@ import math
 from robotcon.ur.robotiq import rtq_eseries_gripper as r2f
 from robotcon.ur.robotiq import rtq_ft300 as rft
 from basis import robot_math as rm
-import drivers.urx.urrobot as urrobot
+import drivers.urx.ur_robot as urrobot
 import robotcon.ur.program_builder as pb
 import numpy as np
 import threading

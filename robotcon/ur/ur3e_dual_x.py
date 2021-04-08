@@ -7,7 +7,7 @@ import time
 import  robotconn.robotiq.rtqesgripper as rg
 from robotconn.robotiq.rtqft300 import Robotiq_FT300_Sensor
 from utiltools import robotmath as rm
-import drivers.urx.urrobot as urrobot
+import drivers.urx.ur_robot as urrobot
 import robotconn.programbuilder as pb
 import numpy as np
 import threading

@@ -1,12 +1,10 @@
-import logging
 import math
 import time
 from robotcon.ur.robotiq import rtq_cbseries_gripper as r2f
 from robotcon.ur.robotiq import rtq_ft300 as rft
 from basis import robot_math as rm
-import drivers.urx.urrobot as urrobot
+import drivers.urx.ur_robot as urrobot
 import robotcon.ur.program_builder as pb
-import numpy as np
 import threading
 import socket
 import struct
@@ -14,7 +12,7 @@ import os
 import motion.trajectory as traj
 
 
-class UR3Rtq85X():
+class UR3Rtq85X(object):
     """
     author: weiwei
     date: 20180131
@@ -186,7 +184,7 @@ class UR3Rtq85X():
         self._arm.send_program(self._modern_driver_urscript)
         # accept arm socket
         pc_server_socket, pc_server_socket_addr = self._pc_server_socket.accept()
-        print("Connected by ", pc_server_socket_addr)
+        print("PC server onnected by ", pc_server_socket_addr)
         # send trajectory
         keepalive = 1
         buf = bytes()

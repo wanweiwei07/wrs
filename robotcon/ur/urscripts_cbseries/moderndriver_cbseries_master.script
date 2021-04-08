@@ -37,15 +37,30 @@ def driverProg():
 
 	socket_open("parameter_pc_ip", parameter_pc_port, "pc_socket")
 	textmsg("open pc connection")
-	modbus_add_signal("parameter_slave_ip", 0, 200, 3, "counter_fdbk")
-	textmsg("open modbus feedback from slave")
     thread_servo = run servoThread()
     sqrt_jnts_scaler = sqrt(parameter_jnts_scaler)
     keepalive = 1
     conf_counter = 0
+    write_port_register(255, 0)
+    write_port_register(254, 0)
+    write_port_register(253, 0)
+    write_port_register(252, 0)
+    write_port_register(251, 0)
+    write_port_register(250, 0)
+    write_port_register(249, 0)
+    write_port_register(248, 0)
+    write_port_register(247, 0)
+    write_port_register(246, 0)
+    write_port_register(245, 0)
+    write_port_register(244, 0)
+    write_port_register(243, 0)
+    write_port_register(242, 0)
+    write_port_register(241, 0)
+    write_port_register(240, 0)
+    write_port_register(239, 0)
+    write_port_register(238, 0)
+    write_port_register(200, 65535)
     while keepalive > 0:
-        # textmsg("preparing to read")
-        # textmsg(keepalive)
         params_mult = socket_read_binary_integer(12+1, "pc_socket")
         if params_mult[0] > 0:
             q_master = [params_mult[1]/parameter_jnts_scaler,
@@ -109,6 +124,7 @@ def driverProg():
             wrist3_abs_value = wrist3_sgn * q_slave[5]
             wrist3_l_value = wrist3_abs_value % sqrt_jnts_scaler
             wrist3_u_value = floor(wrist3_abs_value / sqrt_jnts_scaler)
+            # send by modbus
             write_port_register(255, base_l_value)
             write_port_register(254, base_u_value)
             write_port_register(253, base_sgn)
@@ -130,17 +146,11 @@ def driverProg():
             conf_counter = conf_counter + 1
             write_port_register(200, conf_counter)
 		    set_servo_setpoint(q_master)
-            while True:
-                if modbus_get_signal_status("counter_fdbk", False) == conf_counter:
-                    break
-                end
-                sleep(.001)
-            end
-            textmsg(q_master)
             sync()
         end
     end
-    sync()
-    socket_close()
+    write_port_register(200, 65534)
     kill thread_servo
+    sync()
+    socket_close("pc_socket")
 end
