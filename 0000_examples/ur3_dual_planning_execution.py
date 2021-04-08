@@ -5,6 +5,7 @@ import modeling.geometricmodel as gm
 import modeling.collisionmodel as cm
 import robotsim.robots.ur3_dual.ur3_dual as ur3d
 import motion.probabilistic.rrt_connect as rrtc
+import robotcon.ur.ur3_dual_x as ur3dx
 
 base = wd.World(campos=[2, 1, 3], lookatpos=[0, 0, 1.1])
 gm.gen_frame().attach_to(base)
@@ -38,5 +39,8 @@ for pose in path:
     robot_meshmodel = robot_instance.gen_meshmodel()
     robot_meshmodel.attach_to(base)
     robot_instance.gen_stickmodel().attach_to(base)
+
+ur_exe = ur3dx.UR3DualX(lft_robot_ip='10.2.0.50', rgt_robot_ip='10.2.0.51', pc_ip='10.2.0.100')
+ur_exe.move_jntspace_path(path)
 
 base.run()
