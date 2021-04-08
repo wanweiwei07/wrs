@@ -40,7 +40,7 @@ for pose in path:
     robot_meshmodel.attach_to(base)
     robot_instance.gen_stickmodel().attach_to(base)
 
-ur_exe = ur3dx.UR3DualX(lft_robot_ip='10.2.0.50', rgt_robot_ip='10.2.0.51', pc_ip='10.2.0.100')
-ur_exe.move_jntspace_path(path)
+ur_dual_x = ur3dx.UR3DualX(lft_robot_ip='10.2.0.50', rgt_robot_ip='10.2.0.51', pc_ip='10.2.0.100')
+ur_dual_x.move_jntspace_path(path)
 
 base.run()

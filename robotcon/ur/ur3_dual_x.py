@@ -107,7 +107,7 @@ class UR3DualX(object):
         author: ochi, revised by weiwei
         date: 20180410, 20210404
         """
-        return np.array(self._rgt_arm_hnd.get_jnt_values() + self._lft_arm_hnd.get_jnt_values())
+        return np.array(self._lft_arm_hnd.get_jnt_values() + self._rgt_arm_hnd.get_jnt_values())
 
 
 if __name__ == '__main__':
