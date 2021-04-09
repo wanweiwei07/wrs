@@ -19,12 +19,12 @@ class RRT(object):
                      conf,
                      obstacle_list=[],
                      otherrobot_list=[]):
-        self.robot.fk(component_name=component_name, jnt_values=conf)
+        self.robot.fk(manipulator_name=component_name, jnt_values=conf)
         return self.robot.is_collided(obstacle_list=obstacle_list, otherrobot_list=otherrobot_list)
 
     def _sample_conf(self, component_name, rand_rate, default_conf):
         if random.randint(0, 100) < rand_rate:
-            return self.robot.rand_conf(component_name=component_name)
+            return self.robot.rand_conf(manipulator_name=component_name)
         else:
             return default_conf
 
@@ -143,10 +143,10 @@ class RRT(object):
         self.goal_conf = goal_conf
         # check start_conf and goal_conf
         if self._is_collided(component_name, start_conf, obstacle_list, otherrobot_list):
-            print("The start robot configuration is in collision!")
+            print("The start robot_s configuration is in collision!")
             return None
         if self._is_collided(component_name, goal_conf, obstacle_list, otherrobot_list):
-            print("The goal robot configuration is in collision!")
+            print("The goal robot_s configuration is in collision!")
             return None
         if self._goal_test(conf=start_conf, goal_conf=goal_conf, threshold=ext_dist):
             return [[start_conf, goal_conf], None]

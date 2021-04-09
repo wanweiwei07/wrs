@@ -20,7 +20,7 @@ def define_grasp(hnd,
     :param jaw_width:
     :param objcm:
     :param toggle_flip:
-    :return: a list [[jaw_width, gl_jaw_center, pos, rotmat], ...]
+    :return: a list like [[jaw_width, gl_jaw_center, pos, rotmat], ...]
     author: chenhao, revised by weiwei
     date: 20200104
     """
@@ -186,13 +186,13 @@ if __name__ == '__main__':
     import modeling.collisionmodel as cm
     import visualization.panda.world as wd
 
-    base = wd.World(campos=[.5, .5, .3], lookatpos=[0, 0, 0])
-    gripper_instance = xag.XArmGripper(enable_cc=True)
+    base = wd.World(cam_pos=[.5, .5, .3], lookat_pos=[0, 0, 0])
+    gripper_s = xag.XArmGripper(enable_cc=True)
     objpath = os.path.join(basis.__path__[0], 'objects', 'block.stl')
     objcm = cm.CollisionModel(objpath)
     objcm.attach_to(base)
     objcm.show_localframe()
-    grasp_info_list = define_grasp_with_rotation(gripper_instance,
+    grasp_info_list = define_grasp_with_rotation(gripper_s,
                                                  objcm,
                                                  gl_jaw_center=np.array([0,0,0]),
                                                  gl_hndz=np.array([1,0,0]),
@@ -201,7 +201,7 @@ if __name__ == '__main__':
                                                  rotation_ax=np.array([0,0,1]))
     for grasp_info in grasp_info_list:
         jaw_width, gl_jaw_center, pos, rotmat = grasp_info
-        gic = gripper_instance.copy()
+        gic = gripper_s.copy()
         gic.fix_to(pos, rotmat)
         gic.jaw_to(jaw_width)
         print(pos, rotmat)

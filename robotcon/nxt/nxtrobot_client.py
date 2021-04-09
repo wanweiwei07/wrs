@@ -42,7 +42,7 @@ class NxtRobot(object):
             print("Something went wrong with the server!! Try again!")
             raise Exception()
         else:
-            print("The robot is moved to its initial pose.")
+            print("The robot_s is moved to its initial pose.")
 
     def goOffPose(self):
         returnvalue = self.stub.goOffPose(nxt_msg.Empty()).value
@@ -50,7 +50,7 @@ class NxtRobot(object):
             print("Something went wrong with the server!! Try again!")
             raise Exception()
         else:
-            print("The robot is moved to the off pose.")
+            print("The robot_s is moved to the off pose.")
 
     def getJointAngles(self):
         if self._oldyaml:
@@ -74,7 +74,7 @@ class NxtRobot(object):
             print("Something went wrong with the server!! Try again!")
             raise Exception()
         else:
-            print("The robot is moved to the given pose.")
+            print("The robot_s is moved to the given pose.")
 
     def playPattern(self, angleslist, tmlist = None):
         """
@@ -91,7 +91,7 @@ class NxtRobot(object):
             print("Something went wrong with the server!! Try again!")
             raise Exception()
         else:
-            print("The robot has finished the given motion.")
+            print("The robot_s has finished the given motion.")
 
     def closeHandToolRgt(self):
         returnvalue = self.stub.closeHandToolRgt(nxt_msg.Empty()).value
@@ -99,7 +99,7 @@ class NxtRobot(object):
             print("Something went wrong with the server!! Try again!")
             raise Exception()
         else:
-            print("The robot has closed its right handtool.")
+            print("The robot_s has closed its right handtool.")
 
     def closeHandToolLft(self):
         returnvalue = self.stub.closeHandToolLft(nxt_msg.Empty()).value
@@ -107,7 +107,7 @@ class NxtRobot(object):
             print("Something went wrong with the server!! Try again!")
             raise Exception()
         else:
-            print("The robot has closed its left handtool.")
+            print("The robot_s has closed its left handtool.")
 
     def openHandToolRgt(self):
         returnvalue = self.stub.openHandToolRgt(nxt_msg.Empty()).value
@@ -115,7 +115,7 @@ class NxtRobot(object):
             print("Something went wrong with the server!! Try again!")
             raise Exception()
         else:
-            print("The robot has opened its right handtool.")
+            print("The robot_s has opened its right handtool.")
 
     def openHandToolLft(self):
         returnvalue = self.stub.openHandToolLft(nxt_msg.Empty()).value
@@ -123,7 +123,7 @@ class NxtRobot(object):
             print("Something went wrong with the server!! Try again!")
             raise Exception()
         else:
-            print("The robot has opened its left handtool.")
+            print("The robot_s has opened its left handtool.")
 
     def attachHandToolRgt(self):
         returnvalue = self.stub.attachHandToolRgt(nxt_msg.Empty()).value
@@ -131,7 +131,7 @@ class NxtRobot(object):
             print("Something went wrong with the server!! Try again!")
             raise Exception()
         else:
-            print("The robot has attached its right handtool.")
+            print("The robot_s has attached its right handtool.")
 
     def attachHandToolLft(self):
         returnvalue = self.stub.attachHandToolLft(nxt_msg.Empty()).value
@@ -139,7 +139,7 @@ class NxtRobot(object):
             print("Something went wrong with the server!! Try again!")
             raise Exception()
         else:
-            print("The robot has attached its left handtool.")
+            print("The robot_s has attached its left handtool.")
 
     def ejectHandToolRgt(self):
         returnvalue = self.stub.ejectHandToolRgt(nxt_msg.Empty()).value
@@ -147,7 +147,7 @@ class NxtRobot(object):
             print("Something went wrong with the server!! Try again!")
             raise Exception()
         else:
-            print("The robot has ejected its right handtool.")
+            print("The robot_s has ejected its right handtool.")
 
     def ejectHandToolLft(self):
         returnvalue = self.stub.ejectHandToolLft(nxt_msg.Empty()).value
@@ -155,7 +155,7 @@ class NxtRobot(object):
             print("Something went wrong with the server!! Try again!")
             raise Exception()
         else:
-            print("The robot has ejected its left handtool.")
+            print("The robot_s has ejected its left handtool.")
 
 
 if __name__ == "__main__":

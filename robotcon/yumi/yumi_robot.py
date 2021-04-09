@@ -8,8 +8,8 @@ from robotcon.yumi.yumi_constants import YuMiConstants as YMC
 from time import sleep
 
 class YuMiRobot:
-    """ Interface to both arms of an ABB YuMi robot.
-    Communicates with the robot over Ethernet.
+    """ Interface to both arms of an ABB YuMi robot_s.
+    Communicates with the robot_s over Ethernet.
     """
 
     def __init__(self, ip=YMC.IP, port_l=YMC.PORTS["left"]["server"], port_r=YMC.PORTS["right"]["server"], tcp=YMC.TCP_ABB_GRASP_GRIPPER,

@@ -11,7 +11,7 @@ if __name__ == '__main__':
     import modeling.collisionmodel as cm
     import visualization.panda.world as wd
 
-    base = wd.World(campos=[.5, .5, .3], lookatpos=[0, 0, 0])
+    base = wd.World(cam_pos=[.5, .5, .3], lookat_pos=[0, 0, 0])
     gripper_instance = yg.YumiGripper(enable_cc=True, cdmesh_type='aabb')
     objcm = cm.CollisionModel('../objects/tubebig.stl', cdmesh_type='convex_hull')
     objcm.attach_to(base)
@@ -29,7 +29,7 @@ if __name__ == '__main__':
                                                                 rotation_ax=np.array([0,0,1]))
     for grasp_info in grasp_info_list:
         jaw_width, gl_jaw_center, pos, rotmat = grasp_info
-        # gic = gripper_instance.copy()
+        # gic = gripper_s.copy()
         gripper_instance.fix_to(pos, rotmat)
         gripper_instance.jaw_to(jaw_width)
         gripper_instance.gen_meshmodel().attach_to(base)

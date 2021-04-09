@@ -53,7 +53,7 @@ class UR3DualX(object):
 
     def move_jnts(self, jnt_values):
         """
-        move all joints of the ur5 dual-arm robot
+        move all joints of the ur5 dual-arm robot_s
         NOTE that the two arms are moved sequentially
         use wait=False for simultaneous motion
         :param jnt_values: a 1x12 array in radian, 6 for right, 6 for left

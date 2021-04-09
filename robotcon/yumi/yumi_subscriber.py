@@ -214,7 +214,7 @@ class _YuMiArmSubscriber:
         return self._get_data('torques', timestamp=timestamp)
 
 class YuMiSubscriber:
-    """ Interface to stream pose and state information from an ABB YuMI robot
+    """ Interface to stream pose and state information from an ABB YuMI robot_s
     over ethernet.
     """
 

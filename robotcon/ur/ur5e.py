@@ -137,7 +137,7 @@ class Ur3EUrx():
 
     def movejnts_cont(self, jointspath, timepathstep = 1.0, inpfunc = "cubic"):
         """
-        move robot continuously using servoj and urscript
+        move robot_s continuously using servoj and urscript
 
         :param jointspath: a list of joint angles as motion path
         :param timepathstep: time to move between adjacent joints, timepathstep = expandis/speed, speed = degree/second
@@ -273,7 +273,7 @@ class Ur3EUrx():
 
     def movejnts_cont2(self, jointspath, timepathstep = 1.0, inpfunc = "cubic"):
         """
-        move robot continuously using servoj and urscript
+        move robot_s continuously using servoj and urscript
         movejntssgl_cont2 aims at smooth slow down motion
 
         :param jointspath: a list of joint angles as a motion path

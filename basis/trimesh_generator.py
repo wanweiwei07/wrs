@@ -403,7 +403,7 @@ if __name__ == "__main__":
     import visualization.panda.world as wd
     import modeling.geometricmodel as gm
 
-    base = wd.World(campos=[.5, .2, .3], lookatpos=[0, 0, 0], autocamrotate=False)
+    base = wd.World(cam_pos=[.5, .2, .3], lookat_pos=[0, 0, 0], auto_cam_rotate=False)
     objcm = gm.WireFrameModel(gen_torus())
     objcm.set_rgba([1, 0, 0, 1])
     objcm.attach_to(base)

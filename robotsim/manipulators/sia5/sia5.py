@@ -103,7 +103,7 @@ if __name__ == '__main__':
     import visualization.panda.world as wd
     import modeling.geometricmodel as gm
 
-    base = wd.World(campos=[2, 0, 1], lookatpos=[0, 0, 0.5])
+    base = wd.World(cam_pos=[2, 0, 1], lookat_pos=[0, 0, 0.5])
     gm.gen_frame().attach_to(base)
     manipulator_instance = SIA5(enable_cc=True)
     manipulator_meshmodel = manipulator_instance.gen_meshmodel()

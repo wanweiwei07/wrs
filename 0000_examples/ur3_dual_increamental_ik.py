@@ -8,14 +8,14 @@ import math
 import basis.robot_math as rm
 
 if __name__ == '__main__':
-    base = wd.World(campos=[2, 1, 3], lookatpos=[0, 0, 1.1])
+    base = wd.World(cam_pos=[2, 1, 3], lookat_pos=[0, 0, 1.1])
     gm.gen_frame().attach_to(base)
     # object
     object = cm.CollisionModel("./objects/bunnysim.stl")
     object.set_pos(np.array([.55, -.3, 1.3]))
     object.set_rgba([.5, .7, .3, 1])
     object.attach_to(base)
-    # robot
+    # robot_s
     component_name = 'rgt_arm'
     robot_instance = ur3d.UR3Dual()
     start_hnd_pos=np.array([0.4, -0.5, 1.3])

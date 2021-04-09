@@ -42,7 +42,7 @@ class URRTMonitor(threading.Thread):
 
     def __recv_bytes(self, nBytes):
         ''' Facility method for receiving exactly "nBytes" bytes from
-        the robot connector socket.'''
+        the robot_s connector socket.'''
         # Record the time of arrival of the first of the stream block
         recvTime = 0
         pkg = b''
@@ -209,7 +209,7 @@ class URRTMonitor(threading.Thread):
 
     def get_all_data(self, wait=True):
         """
-        return all data parsed from robot as a dict
+        return all data parsed from robot_s as a dict
         """
         if wait:
             self.wait()

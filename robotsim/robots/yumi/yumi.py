@@ -27,7 +27,7 @@ class Yumi(ri.RobotInterface):
         self.lft_body.jnts[6]['loc_pos'] = np.array([0, 0, 0])
         self.lft_body.jnts[7]['loc_pos'] = np.array([0, 0, 0])
         self.lft_body.jnts[8]['loc_pos'] = np.array([0.05355, 0.07250, 0.41492])
-        self.lft_body.jnts[8]['loc_rotmat'] = rm.rotmat_from_euler(0.9781, -0.5716, 2.3180)  # left from robot view
+        self.lft_body.jnts[8]['loc_rotmat'] = rm.rotmat_from_euler(0.9781, -0.5716, 2.3180)  # left from robot_s view
         self.lft_body.lnks[0]['name'] = "yumi_lft_stand"
         self.lft_body.lnks[0]['loc_pos'] = np.array([0, 0, 0])
         self.lft_body.lnks[0]['meshfile'] = os.path.join(this_dir, "meshes", "yumi_tablenotop.stl")
@@ -78,7 +78,7 @@ class Yumi(ri.RobotInterface):
         # rgt
         self.rgt_body = jl.JLChain(pos=pos, rotmat=rotmat, homeconf=np.zeros(0), name='rgt_body')
         self.rgt_body.jnts[1]['loc_pos'] = np.array([0.05355, -0.0725, 0.41492])
-        self.rgt_body.jnts[1]['loc_rotmat'] = rm.rotmat_from_euler(-0.9795, -0.5682, -2.3155)  # left from robot view
+        self.rgt_body.jnts[1]['loc_rotmat'] = rm.rotmat_from_euler(-0.9795, -0.5682, -2.3155)  # left from robot_s view
         self.rgt_body.lnks[0]['name'] = "yumi_rgt_body"
         self.rgt_body.lnks[0]['loc_pos'] = np.array([0, 0, 0])
         self.rgt_body.lnks[0]['rgba'] = [.35, .35, .35, 1.0]
@@ -196,10 +196,10 @@ class Yumi(ri.RobotInterface):
                     self.rgt_arm.lnks[2]]
         self.cc.set_cdpair(fromlist, intolist)
 
-    def get_hnd_on_component(self, component_name):
-        if component_name == 'rgt_arm':
+    def get_hnd_on_manipulator(self, manipulator_name):
+        if manipulator_name == 'rgt_arm':
             return self.rgt_hnd
-        elif component_name == 'lft_arm':
+        elif manipulator_name == 'lft_arm':
             return self.lft_hnd
         else:
             raise ValueError("The given jlc does not have a hand!")
@@ -218,11 +218,11 @@ class Yumi(ri.RobotInterface):
         self.rgt_hnd.fix_to(pos=self.rgt_arm.jnts[-1]['gl_posq'],
                             rotmat=self.rgt_arm.jnts[-1]['gl_rotmatq'])
 
-    def fk(self, component_name, jnt_values):
+    def fk(self, manipulator_name, jnt_values):
         """
         :param jnt_values: nparray 1x6 or 1x14 depending on component_names
         :jlc_name 'lft_arm', 'rgt_arm', 'both_arm'
-        :param component_name:
+        :param manipulator_name:
         :return:
         author: weiwei
         date: 20201208toyonaka
@@ -241,51 +241,51 @@ class Yumi(ri.RobotInterface):
 
         def update_component(component_name, jnt_values):
             self.manipulator_dict[component_name].fk(jnt_values=jnt_values)
-            self.get_hnd_on_component(component_name).fix_to(
+            self.get_hnd_on_manipulator(component_name).fix_to(
                 pos=self.manipulator_dict[component_name].jnts[-1]['gl_posq'],
                 rotmat=self.manipulator_dict[component_name].jnts[-1]['gl_rotmatq'])
             update_oih(component_name=component_name)
 
-        super().fk(component_name, jnt_values)
+        super().fk(manipulator_name, jnt_values)
         # examine length
-        if component_name == 'lft_arm' or component_name == 'rgt_arm':
+        if manipulator_name == 'lft_arm' or manipulator_name == 'rgt_arm':
             if not isinstance(jnt_values, np.ndarray) or jnt_values.size != 7:
                 raise ValueError("An 1x7 npdarray must be specified to move a single arm!")
-            update_component(component_name, jnt_values)
-        elif component_name == 'both_arm':
+            update_component(manipulator_name, jnt_values)
+        elif manipulator_name == 'both_arm':
             if jnt_values.size != 14:
                 raise ValueError("A 1x14 npdarrays must be specified to move both arm!")
             update_component('lft_arm', jnt_values[0:7])
             update_component('rgt_arm', jnt_values[7:14])
-        elif component_name == 'all':
+        elif manipulator_name == 'all':
             raise NotImplementedError
         else:
             raise ValueError("The given component name is not available!")
 
-    def rand_conf(self, component_name):
+    def rand_conf(self, manipulator_name):
         """
         override robot_interface.rand_conf
-        :param component_name:
+        :param manipulator_name:
         :return:
         author: weiwei
         date: 20210406
         """
-        if component_name == 'lft_arm' or component_name == 'rgt_arm':
-            return super().rand_conf(component_name)
-        elif component_name == 'both_arm':
+        if manipulator_name == 'lft_arm' or manipulator_name == 'rgt_arm':
+            return super().rand_conf(manipulator_name)
+        elif manipulator_name == 'both_arm':
             return np.hstack((super().rand_conf('lft_arm'), super().rand_conf('rgt_arm')))
         else:
             raise NotImplementedError
 
     def hold(self, objcm, jaw_width=None, hnd_name='lft_hnd'):
         """
-        the objcm is added as a part of the robot to the cd checker
+        the objcm is added as a part of the robot_s to the cd checker
         :param jaw_width:
         :param objcm:
         :return:
         """
         if hnd_name == 'lft_hnd':
-            rel_pos, rel_rotmat = self.lft_arm.cvt_gl_to_loc_intcp(objcm.get_pos(), objcm.get_rotmat())
+            rel_pos, rel_rotmat = self.lft_arm.cvt_gl_to_loc_tcp(objcm.get_pos(), objcm.get_rotmat())
             intolist = [self.lft_body.lnks[0],
                         self.lft_body.lnks[1],
                         self.lft_arm.lnks[1],
@@ -303,7 +303,7 @@ class Yumi(ri.RobotInterface):
                         self.rgt_hnd.rgt.lnks[1]]
             self.lft_oih_infos.append(self.cc.add_cdobj(objcm, rel_pos, rel_rotmat, intolist))
         elif hnd_name == 'rgt_hnd':
-            rel_pos, rel_rotmat = self.rgt_arm.cvt_gl_to_loc_intcp(objcm.get_pos(), objcm.get_rotmat())
+            rel_pos, rel_rotmat = self.rgt_arm.cvt_gl_to_loc_tcp(objcm.get_pos(), objcm.get_rotmat())
             intolist = [self.lft_body.lnks[0],
                         self.lft_body.lnks[1],
                         self.rgt_arm.lnks[1],
@@ -321,7 +321,7 @@ class Yumi(ri.RobotInterface):
                         self.lft_hnd.rgt.lnks[1]]
             self.rgt_oih_infos.append(self.cc.add_cdobj(objcm, rel_pos, rel_rotmat, intolist))
         else:
-            raise ValueError("hnd_name must be lft_hnd or rgt_hnd!")
+            raise ValueError("hand_name must be lft_hnd or rgt_hnd!")
         if jaw_width is not None:
             self.jaw_to(hnd_name, jaw_width)
         return rel_pos, rel_rotmat
@@ -379,7 +379,7 @@ class Yumi(ri.RobotInterface):
         elif hnd_name == 'rgt_hnd':
             oih_infos = self.rgt_oih_infos
         else:
-            raise ValueError("hnd_name must be lft_hnd or rgt_hnd!")
+            raise ValueError("hand_name must be lft_hnd or rgt_hnd!")
         return_list = []
         for obj_info in oih_infos:
             objcm = obj_info['collisionmodel']
@@ -401,7 +401,7 @@ class Yumi(ri.RobotInterface):
         elif hnd_name == 'rgt_hnd':
             oih_infos = self.rgt_oih_infos
         else:
-            raise ValueError("hnd_name must be lft_hnd or rgt_hnd!")
+            raise ValueError("hand_name must be lft_hnd or rgt_hnd!")
         return_list = []
         for obj_info in oih_infos:
             return_list.append(rm.homomat_from_posrot(obj_info['gl_pos']), obj_info['gl_rotmat'])
@@ -422,14 +422,14 @@ class Yumi(ri.RobotInterface):
         elif hnd_name == 'rgt_hnd':
             oih_info_list = self.rgt_oih_infos
         else:
-            raise ValueError("hnd_name must be lft_hnd or rgt_hnd!")
+            raise ValueError("hand_name must be lft_hnd or rgt_hnd!")
         for obj_info in oih_info_list:
             if obj_info['collisionmodel'] is objcm:
                 return rm.homomat_from_posrot(obj_info['rel_pos']), obj_info['rel_rotmat']
 
     def release(self, objcm, jaw_width=None, hnd_name='lft_hnd'):
         """
-        the objcm is added as a part of the robot to the cd checker
+        the objcm is added as a part of the robot_s to the cd checker
         :param jaw_width:
         :param objcm:
         :param hnd_name:
@@ -440,7 +440,7 @@ class Yumi(ri.RobotInterface):
         elif hnd_name == 'rgt_hnd':
             oih_infos = self.rgt_oih_infos
         else:
-            raise ValueError("hnd_name must be lft_hnd or rgt_hnd!")
+            raise ValueError("hand_name must be lft_hnd or rgt_hnd!")
         if jaw_width is not None:
             self.jaw_to(hnd_name, jaw_width)
         for obj_info in oih_infos:
@@ -463,7 +463,7 @@ class Yumi(ri.RobotInterface):
         elif hnd_name == 'rgt_hnd':
             oih_infos = self.rgt_oih_infos
         else:
-            raise ValueError("hnd_name must be lft_hnd or rgt_hnd!")
+            raise ValueError("hand_name must be lft_hnd or rgt_hnd!")
         if jaw_width is not None:
             self.jaw_to(hnd_name, jaw_width)
         for obj_info in oih_infos:
@@ -566,7 +566,7 @@ if __name__ == '__main__':
     import modeling.geometricmodel as gm
     import basis
 
-    base = wd.World(campos=[1.5, 0, 3], lookatpos=[0, 0, .5])
+    base = wd.World(cam_pos=[1.5, 0, 3], lookat_pos=[0, 0, .5])
     gm.gen_frame().attach_to(base)
     yumi_instance = Yumi(enable_cc=True)
 

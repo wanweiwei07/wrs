@@ -2,6 +2,8 @@ import itertools
 import os
 import math
 import numpy as np
+import scipy.spatial as ss
+import basis.robot_math as rm
 from panda3d.bullet import BulletRigidBodyNode
 from panda3d.bullet import BulletTriangleMesh
 from panda3d.bullet import BulletTriangleMeshShape
@@ -65,7 +67,7 @@ class AntipodalContactPairs(object):
         if toggle_debug:
             tic = time.time()
         samples_for_edge_detection, _ = self.objtrm.sample_surface(radius=distance_adjacent_contacts)
-        kdt = cKDTree(samples_for_edge_detection)
+        kdt = ss.cKDTree(samples_for_edge_detection)
         kdt.query_ball_point(, )
         self.contact_points = None
         self.samplenrmls_ref = None
@@ -93,7 +95,7 @@ class AntipodalContactPairs(object):
         # for three fingers
         self.realcontactpairs = None
         tic = time.time()
-        self.planContactpairs(hmax, fpairparallel, objmass, oppositeoffset=oppositeoffset, bypasssoftfgr=bypasssoftfgr)
+        self.plan_contact_pairs(hmax, fpairparallel, objmass, oppositeoffset=oppositeoffset, bypasssoftfgr=bypasssoftfgr)
         toc = time.time()
         print("plan contact pairs cost", toc - tic)
 
@@ -268,8 +270,8 @@ class AntipodalContactPairs(object):
                 self.samplepnts_refcls[i] = np.empty(shape=(0, 0))
                 self.samplenrmls_refcls[i] = np.empty(shape=(0, 0))
 
-    def planContactpairs(self, hmax=10, fpairparallel=-0.8, objmass=20.0, fgrtipdist=82, oppositeoffset=0,
-                         bypasssoftfgr=True):
+    def plan_contact_pairs(self, hmax=10, fpairparallel=-0.8, objmass=20.0, fgrtipdist=82, oppositeoffset=0,
+                           bypasssoftfgr=True):
         """
         find the grasps using parallel pairs
 

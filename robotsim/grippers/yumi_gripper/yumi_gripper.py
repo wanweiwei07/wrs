@@ -151,7 +151,7 @@ if __name__ == '__main__':
     import visualization.panda.world as wd
     import modeling.geometricmodel as gm
 
-    base = wd.World(campos=[.5, .5, .5], lookatpos=[0, 0, 0])
+    base = wd.World(cam_pos=[.5, .5, .5], lookat_pos=[0, 0, 0])
     gm.gen_frame().attach_to(base)
     grpr = YumiGripper(enable_cc=True)
     grpr.fix_to(pos=np.array([0, .3, .2]), rotmat=rm.rotmat_from_euler(math.pi/3, math.pi/3, math.pi/3))

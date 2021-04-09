@@ -8,7 +8,7 @@ date: 20190417
 class BaseHands(object):
     '''
     This class provides methods that are generic for the hands of
-    Kawada Industries' dual-arm robot called Nextage Open.
+    Kawada Industries' dual-arm robot_s called Nextage Open.
     '''
     # TODO: Unittest is needed!!
 
@@ -20,7 +20,7 @@ class BaseHands(object):
     _DIO_ASSIGN_ON = 1
     _DIO_ASSIGN_OFF = 0
     _DIO_MASK = 0   # Masking value remains "0" regardless the design on the
-                    # robot; masking logic is defined in hrpsys, while robot
+                    # robot_s; masking logic is defined in hrpsys, while robot_s
                     # makers can decide DIO logic.
 
     # DIO pin numbers. It's convenient to be overridden and renamed in the
@@ -77,7 +77,7 @@ class BaseHands(object):
         @type dio_assignments: int[]
         @param dio_assignments: range(32). Also called as "masking bits" or
                                 just "mask". This number corresponds to the
-                               assigned digital pin of the robot.
+                               assigned digital pin of the robot_s.
 
                                eg. If the target pins are 25 and 26,
                                    dio_assignments = [24, 25]
@@ -110,7 +110,7 @@ class BaseHands(object):
         # Assign unmasked, effective bits
         for i in dio_assignments:
             # For masking, alternate symbol is always 1 regarless the design
-            # on robot's side.
+            # on robot_s's side.
             mask[i - 1] = 1
 
         # BEGIN; For convenience only; to show array number.

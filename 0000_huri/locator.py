@@ -469,7 +469,7 @@ if __name__ == '__main__':
     homomat = loc.findtubestand_matchonobb(objpcd, toggledebug=False)
     yhx.startworld()
 
-    # homomat = loc.findtubestand_match(objpcdmerged, toggledebug=True)
+    # homomat = loc.findtubestand_match(objpcdmerged, toggle_debug=True)
 
     elearray, eleconfidencearray = loc.findtubes(homomat, objpcd, toggledebug=False)
     yhx.p3dh.genframe(pos=homomat[:3,3], rotmat=homomat[:3,:3]).reparentTo(yhx.base.render)

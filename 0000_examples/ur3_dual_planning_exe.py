@@ -7,14 +7,14 @@ import robotsim.robots.ur3_dual.ur3_dual as ur3d
 import motion.probabilistic.rrt_connect as rrtc
 import robotcon.ur.ur3_dual_x as ur3dx
 
-base = wd.World(campos=[2, 1, 3], lookatpos=[0, 0, 1.1])
+base = wd.World(cam_pos=[2, 1, 3], lookat_pos=[0, 0, 1.1])
 gm.gen_frame().attach_to(base)
 # object
 object = cm.CollisionModel("./objects/bunnysim.stl")
 object.set_pos(np.array([.55, -.3, 1.3]))
 object.set_rgba([.5, .7, .3, 1])
 object.attach_to(base)
-# robot
+# robot_s
 component_name = 'both_arm'
 robot_instance = ur3d.UR3Dual()
 # init_lft_arm_jnt_values = robot_instance.lft_arm.get_jnt_values()

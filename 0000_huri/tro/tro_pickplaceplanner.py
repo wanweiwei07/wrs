@@ -475,13 +475,13 @@ class PickPlacePlanner(object):
                     userrt=True):
         """
         generate the pick and place motion for the speicified arm
-        the rbt init armjnts must be explicitly specified to avoid wrong robot poses
+        the rbt init armjnts must be explicitly specified to avoid wrong robot_s poses
 
         :param candidatepredgidlist: candidate predefined grasp id list [int, int, ...]
         :param objinithomomat:
         :param objgoalhomomat:
         :param armname:
-        :param rbtinitarmjnts, rbtgoalarmjnts: [lftarmjnts, rgtarmjnts], initial robot arm will be used if not set
+        :param rbtinitarmjnts, rbtgoalarmjnts: [lftarmjnts, rgtarmjnts], initial robot_s arm will be used if not set
         :param finalstate: use to orchestrate the motion, could be: "io"->backtoaninitialpose, gripper open, "uo"->backtoup, gripperopen, "gc"->stopatgoal, gripperclose
         :param primitivedirection_init_forward: the vector to move to the object init pose
         :param primitivedirection_init_backward: the vector to move back from the object init pose
@@ -793,7 +793,7 @@ class PickPlacePlanner(object):
         :param symmetricaxis: a special deal for symmetric objects, use None if not symmetric
         :param nangles: number of angles for the symmetricaxis, will be ignored if symmetricaxis is None
         :param armname:
-        :param rbtinitarmjnts, rbtgoalarmjnts: [rgtsarmjnts, lftarmjnts], initial robot arm will be used if not set
+        :param rbtinitarmjnts, rbtgoalarmjnts: [rgtsarmjnts, lftarmjnts], initial robot_s arm will be used if not set
         :param finalstate: use to orchestrate the motion, could be: "io"->backtoaninitialpose, gripper open, "uo"->backtoup, gripperopen, "gc"->stopatgoal, gripperclose
         :param primitivedirection_init_forward: the vector to move to the object init pose
         :param primitivedirection_init_backward: the vector to move back from the object init pose
@@ -838,7 +838,7 @@ class PickPlacePlanner(object):
         ikcolliedgraspsnum = 0
         availablegraspsatinit = []
         for idpre, predefined_grasp in enumerate(predefinedgrasps):
-            # if toggledebug:
+            # if toggle_debug:
             #     availablegraspsatinit.append(idpre)
             predefined_jawwidth, predefined_fc, predefined_homomat = predefined_grasp
             hndmat4 = np.dot(objinithomomat, predefined_homomat)
@@ -867,7 +867,7 @@ class PickPlacePlanner(object):
                             rbtmg.genmnp(rbt, drawhand=False, togglejntscoord=False, toggleendcoord=False, rgbargt=[0, 1, 0, .5]).reparentTo(
                                 self.rhx.base.render)
                             pass
-                        # if not toggledebug:
+                        # if not toggle_debug:
                         #     availablegraspsatinit.append(idpre)
                         availablegraspsatinit.append(idpre)
                     elif (not isobjcollided):
@@ -1005,7 +1005,7 @@ class PickPlacePlanner(object):
                 resultinghomomat = copy.deepcopy(objmat4)
                 resultinghomomat[:3, 3] = resultinghomomat[:3, 3] + resultinghomomat[:3,
                                                                     2] * 5  # move 5mm up, do not move until end
-                # if toggledebug:
+                # if toggle_debug:
                 #     for idsharedgrasps in finalsharedgrasps:
                 #         predefined_jawwidth, predefined_fc, predefined_homomat = predefinedgrasps[idsharedgrasps]
                 #         hndmat4 = np.dot(objinithomomat, predefined_homomat)
@@ -1405,7 +1405,7 @@ class PickPlacePlanner(object):
                     print("The shared grasps failed at symmetric angle " + str(rotangle) + ", trying the next...")
                     continue
 
-        # if toggledebug:
+        # if toggle_debug:
         #     base.run()
         print("No feasible motion between two key poses!")
         return [None, None, None]

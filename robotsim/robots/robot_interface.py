@@ -20,29 +20,29 @@ class RobotInterface(object):
     def change_name(self, name):
         self.name = name
 
-    def get_hnd_on_component(self, component_name):
+    def get_hnd_on_manipulator(self, manipulator_name):
         raise NotImplementedError
 
-    def get_jnt_ranges(self, component_name):
-        return self.manipulator_dict[component_name].get_jnt_ranges()
+    def get_jnt_ranges(self, manipulator_name):
+        return self.manipulator_dict[manipulator_name].get_jnt_ranges()
 
-    def get_jnt_values(self, component_name):
-        return self.manipulator_dict[component_name].get_jnt_values()
+    def get_jnt_values(self, manipulator_name):
+        return self.manipulator_dict[manipulator_name].get_jnt_values()
 
-    def get_gl_tcp(self, component_name):
-        return self.manipulator_dict[component_name].get_gl_tcp()
+    def get_gl_tcp(self, manipulator_name):
+        return self.manipulator_dict[manipulator_name].get_gl_tcp()
 
     def fix_to(self, pos, rotmat):
         return NotImplementedError
 
-    def fk(self, component_name, jnt_values):
+    def fk(self, manipulator_name, jnt_values):
         return NotImplementedError
 
     def jaw_to(self, hnd_name, jaw_width):
         self.hnd_dict[hnd_name].jaw_to(jaw_width=jaw_width)
 
     def ik(self,
-           component_name,
+           manipulator_name,
            tgt_pos,
            tgt_rot,
            seed_conf=None,
@@ -51,23 +51,23 @@ class RobotInterface(object):
            tcp_loc_rotmat=None,
            local_minima="accept",
            toggle_debug=False):
-        return self.manipulator_dict[component_name].ik(tgt_pos,
-                                                        tgt_rot,
-                                                        seed_conf=seed_conf,
-                                                        tcp_jntid=tcp_jntid,
-                                                        tcp_loc_pos=tcp_loc_pos,
-                                                        tcp_loc_rotmat=tcp_loc_rotmat,
-                                                        local_minima=local_minima,
-                                                        toggle_debug=toggle_debug)
+        return self.manipulator_dict[manipulator_name].ik(tgt_pos,
+                                                          tgt_rot,
+                                                          seed_conf=seed_conf,
+                                                          tcp_jntid=tcp_jntid,
+                                                          tcp_loc_pos=tcp_loc_pos,
+                                                          tcp_loc_rotmat=tcp_loc_rotmat,
+                                                          local_minima=local_minima,
+                                                          toggle_debug=toggle_debug)
 
-    def rand_conf(self, component_name):
-        return self.manipulator_dict[component_name].rand_conf()
+    def rand_conf(self, manipulator_name):
+        return self.manipulator_dict[manipulator_name].rand_conf()
 
-    def cvt_gl_to_loc_tcp(self, component_name, gl_obj_pos, gl_obj_rotmat):
-        return self.manipulator_dict[component_name].cvt_gl_to_loc_intcp(gl_obj_pos, gl_obj_rotmat)
+    def cvt_gl_to_loc_tcp(self, manipulator_name, gl_obj_pos, gl_obj_rotmat):
+        return self.manipulator_dict[manipulator_name].cvt_gl_to_loc_tcp(gl_obj_pos, gl_obj_rotmat)
 
-    def cvt_loc_tcp_to_gl(self, component_name, rel_obj_pos, rel_obj_rotmat):
-        return self.manipulator_dict[component_name].cvt_loc_intcp_to_gl(rel_obj_pos, rel_obj_rotmat)
+    def cvt_loc_tcp_to_gl(self, manipulator_name, rel_obj_pos, rel_obj_rotmat):
+        return self.manipulator_dict[manipulator_name].cvt_loc_tcp_to_gl(rel_obj_pos, rel_obj_rotmat)
 
     def is_collided(self, obstacle_list=[], otherrobot_list=[], toggle_contact_points=False):
         """

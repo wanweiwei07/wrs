@@ -29,7 +29,7 @@ class NxtServer(nxt_rpc.NxtServicer):
 
     def initialize(self):
         """
-        MUST configure the robot in the very beginning
+        MUST configure the robot_s in the very beginning
         :return:
         author: weiwei
         date: 20190417

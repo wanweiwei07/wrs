@@ -8,14 +8,14 @@ import modeling.collisionmodel as cm
 import robotsim.robots.xarm7_shuidi_mobile.xarm7_shuidi_mobile as xav
 import motion.probabilistic.rrt_connect as rrtc
 
-base = wd.World(campos=[3, 1, 2], lookatpos=[0, 0, 0])
+base = wd.World(cam_pos=[3, 1, 2], lookat_pos=[0, 0, 0])
 gm.gen_frame().attach_to(base)
 # object
 object = cm.CollisionModel("./objects/bunnysim.stl")
 object.set_pos(np.array([.85, 0, .37]))
 object.set_rgba([.5,.7,.3,1])
 object.attach_to(base)
-# robot
+# robot_s
 component_name='arm'
 robot_instance = xav.XArm7YunjiMobile()
 robot_instance.fk(component_name, np.array([0, math.pi * 2 / 3, 0, math.pi, 0, -math.pi / 6, 0]))

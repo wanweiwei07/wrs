@@ -243,7 +243,7 @@ class JLChain(object):
 
     def goto_homeconf(self):
         """
-        move the robot to initial pose
+        move the robot_s to initial pose
         :return: null
         author: weiwei
         date: 20161211osaka
@@ -252,7 +252,7 @@ class JLChain(object):
 
     def goto_zeroconf(self):
         """
-        move the robot to initial pose
+        move the robot_s to initial pose
         :return: null
         author: weiwei
         date: 20161211osaka
@@ -393,12 +393,12 @@ class JLChain(object):
                                 local_minima=local_minima,
                                 toggle_debug=toggle_debug)
 
-    def cvt_loc_intcp_to_gl(self,
-                            loc_pos=np.zeros(3),
-                            loc_rotmat=np.eye(3),
-                            tcp_jntid=None,
-                            tcp_loc_pos=None,
-                            tcp_loc_rotmat=None):
+    def cvt_loc_tcp_to_gl(self,
+                          loc_pos=np.zeros(3),
+                          loc_rotmat=np.eye(3),
+                          tcp_jntid=None,
+                          tcp_loc_pos=None,
+                          tcp_loc_rotmat=None):
         """
         TODO change name to get_locpose and get_glpose
         given a relative pos and relative rot with respective to the ith jntlnk,
@@ -421,12 +421,12 @@ class JLChain(object):
         objrot = tcp_gloc_rotmat.dot(loc_rotmat)
         return [objpos, objrot]
 
-    def cvt_gl_to_loc_intcp(self,
-                            gl_pos,
-                            gl_rotmat,
-                            tcp_jntid=None,
-                            tcp_loc_pos=None,
-                            tcp_loc_rotmat=None):
+    def cvt_gl_to_loc_tcp(self,
+                          gl_pos,
+                          gl_rotmat,
+                          tcp_jntid=None,
+                          tcp_loc_pos=None,
+                          tcp_loc_rotmat=None):
         """
         given a world pos and world rot
         get the relative pos and relative rot with respective to the ith jntlnk
@@ -552,7 +552,7 @@ if __name__ == "__main__":
     import robotsim._kinematics.jlchainmesh as jlm
     import modeling.geometricmodel as gm
 
-    base = wd.World(campos=[3, 0, 3], lookatpos=[0, 0, 0])
+    base = wd.World(cam_pos=[3, 0, 3], lookat_pos=[0, 0, 0])
     gm.gen_frame().attach_to(base)
 
     jlinstance = JLChain(homeconf=np.array([0, 0, 0, 0, 0, 0, 0, 0]))

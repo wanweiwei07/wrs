@@ -48,13 +48,13 @@ class SDA5F(ri.RobotInterface):
                                 enable_cc=False)
         # lft hand offset (if needed)
         self.lft_hnd_offset = np.zeros(3)
-        lft_hnd_pos, lft_hnd_rotmat = self.lft_arm.cvt_loc_intcp_to_gl(loc_pos=self.lft_hnd_offset)
+        lft_hnd_pos, lft_hnd_rotmat = self.lft_arm.cvt_loc_tcp_to_gl(loc_pos=self.lft_hnd_offset)
         self.lft_hnd = rtq.Robotiq85(pos=lft_hnd_pos,
                                      rotmat=self.lft_arm.jnts[-1]['gl_rotmatq'],
                                      enable_cc=False)
         # right side
         self.rgt_body = jl.JLChain(pos=pos, rotmat=rotmat, homeconf=np.zeros(1), name='rgt_body_jl')
-        self.rgt_body.jnts[1]['loc_pos'] = np.array([0.045, 0, 0.7296])  # right from robot view
+        self.rgt_body.jnts[1]['loc_pos'] = np.array([0.045, 0, 0.7296])  # right from robot_s view
         self.rgt_body.jnts[2]['loc_pos'] = np.array([0.15, -0.101, 0.1704])
         self.rgt_body.jnts[2]['loc_rotmat'] = rm.rotmat_from_euler(math.pi / 2.0, -math.pi / 2.0, 0)
         self.rgt_body.lnks[0]['name'] = "sda5f_rgt_body"
@@ -75,7 +75,7 @@ class SDA5F(ri.RobotInterface):
                                 enable_cc=False)
         # rgt hand offset (if needed)
         self.rgt_hnd_offset = np.zeros(3)
-        rgt_hnd_pos, rgt_hnd_rotmat = self.rgt_arm.cvt_loc_intcp_to_gl(loc_pos=self.rgt_hnd_offset)
+        rgt_hnd_pos, rgt_hnd_rotmat = self.rgt_arm.cvt_loc_tcp_to_gl(loc_pos=self.rgt_hnd_offset)
         # TODO replace using copy
         self.rgt_hnd = rtq.Robotiq85(pos=rgt_hnd_pos,
                                      rotmat=self.rgt_arm.jnts[-1]['gl_rotmatq'],
@@ -131,11 +131,11 @@ class SDA5F(ri.RobotInterface):
         rgt_hnd_pos, rgt_hnd_rotmat = self.rgt_arm.get_worldpose(relpos=self.rgt_hnd_offset)
         self.rgt_hnd.fix_to(pos=rgt_hnd_pos, rotmat=rgt_hnd_rotmat)
 
-    def fk(self, component_name, jnt_values):
+    def fk(self, manipulator_name, jnt_values):
         """
         :param jnt_values: 1x7 or 1x14 nparray
         :jlc_name 'lft_arm', 'rgt_arm', 'both_arm'
-        :param component_name:
+        :param manipulator_name:
         :return:
         author: weiwei
         date: 20201208toyonaka
@@ -154,38 +154,38 @@ class SDA5F(ri.RobotInterface):
 
         def update_component(component_name, jnt_values):
             self.manipulator_dict[component_name].fk(jnt_values=jnt_values)
-            self.get_hnd_on_component(component_name).fix_to(
+            self.get_hnd_on_manipulator(component_name).fix_to(
                 pos=self.manipulator_dict[component_name].jnts[-1]['gl_posq'],
                 rotmat=self.manipulator_dict[component_name].jnts[-1]['gl_rotmatq'])
             update_oih(component_name=component_name)
 
-        super().fk(component_name, jnt_values)
+        super().fk(manipulator_name, jnt_values)
         # examine length
-        if component_name == 'lft_arm' or component_name == 'rgt_arm':
+        if manipulator_name == 'lft_arm' or manipulator_name == 'rgt_arm':
             if not isinstance(jnt_values, np.ndarray) or jnt_values.size != 6:
                 raise ValueError("An 1x6 npdarray must be specified to move a single arm!")
-            update_component(component_name, jnt_values)
-        elif component_name == 'both_arm':
+            update_component(manipulator_name, jnt_values)
+        elif manipulator_name == 'both_arm':
             if (jnt_values.size != 12):
                 raise ValueError("A 1x12 npdarrays must be specified to move both arm!")
             update_component('lft_arm', jnt_values[0:6])
             update_component('rgt_arm', jnt_values[6:12])
-        elif component_name == 'all':
+        elif manipulator_name == 'all':
             raise NotImplementedError
         else:
             raise ValueError("The given component name is not available!")
 
-    def rand_conf(self, component_name):
+    def rand_conf(self, manipulator_name):
         """
         override robot_interface.rand_conf
-        :param component_name:
+        :param manipulator_name:
         :return:
         author: weiwei
         date: 20210406
         """
-        if component_name == 'lft_arm' or component_name == 'rgt_arm':
-            return super().rand_conf(component_name)
-        elif component_name == 'both_arm':
+        if manipulator_name == 'lft_arm' or manipulator_name == 'rgt_arm':
+            return super().rand_conf(manipulator_name)
+        elif manipulator_name == 'both_arm':
             return np.hstack((super().rand_conf('lft_arm'), super().rand_conf('rgt_arm')))
         else:
             raise NotImplementedError
@@ -284,7 +284,7 @@ if __name__ == '__main__':
     import visualization.panda.world as wd
     import modeling.geometricmodel as gm
 
-    base = wd.World(campos=[3, 0, 3], lookatpos=[0, 0, 1])
+    base = wd.World(cam_pos=[3, 0, 3], lookat_pos=[0, 0, 1])
     gm.gen_frame().attach_to(base)
     sdarbt = SDA5F()
     sdarbt_meshmodel = sdarbt.gen_meshmodel()

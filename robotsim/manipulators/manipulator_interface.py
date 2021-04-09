@@ -116,29 +116,29 @@ class ManipulatorInterface(object):
                                local_minima=local_minima,
                                toggle_debug=toggle_debug)
 
-    def cvt_loc_intcp_to_gl(self,
-                            loc_pos=np.zeros(3),
-                            loc_rotmat=np.eye(3),
-                            tcp_jntid=None,
-                            tcp_loc_pos=None,
-                            tcp_loc_rotmat=None):
-        return self.jlc.cvt_loc_intcp_to_gl(loc_pos=loc_pos,
-                                            loc_rotmat=loc_rotmat,
-                                            tcp_jntid=tcp_jntid,
-                                            tcp_loc_pos=tcp_loc_pos,
-                                            tcp_loc_rotmat=tcp_loc_rotmat)
+    def cvt_loc_tcp_to_gl(self,
+                          loc_pos=np.zeros(3),
+                          loc_rotmat=np.eye(3),
+                          tcp_jntid=None,
+                          tcp_loc_pos=None,
+                          tcp_loc_rotmat=None):
+        return self.jlc.cvt_loc_tcp_to_gl(loc_pos=loc_pos,
+                                          loc_rotmat=loc_rotmat,
+                                          tcp_jntid=tcp_jntid,
+                                          tcp_loc_pos=tcp_loc_pos,
+                                          tcp_loc_rotmat=tcp_loc_rotmat)
 
-    def cvt_gl_to_loc_intcp(self,
-                            gl_pos,
-                            gl_rotmat,
-                            tcp_jntid=None,
-                            tcp_loc_pos=None,
-                            tcp_loc_rotmat=None):
-        return self.jlc.cvt_gl_to_loc_intcp(gl_pos=gl_pos,
-                                            gl_rotmat=gl_rotmat,
-                                            tcp_jntid=tcp_jntid,
-                                            tcp_loc_pos=tcp_loc_pos,
-                                            tcp_loc_rotmat=tcp_loc_rotmat)
+    def cvt_gl_to_loc_tcp(self,
+                          gl_pos,
+                          gl_rotmat,
+                          tcp_jntid=None,
+                          tcp_loc_pos=None,
+                          tcp_loc_rotmat=None):
+        return self.jlc.cvt_gl_to_loc_tcp(gl_pos=gl_pos,
+                                          gl_rotmat=gl_rotmat,
+                                          tcp_jntid=tcp_jntid,
+                                          tcp_loc_pos=tcp_loc_pos,
+                                          tcp_loc_rotmat=tcp_loc_rotmat)
 
     def is_collided(self, obstacle_list=[], otherrobot_list=[]):
         """

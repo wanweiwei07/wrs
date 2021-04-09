@@ -96,7 +96,7 @@ class HrpsysConfigurator2(HrpsysConfigurator):  ## JUST FOR TEST, REMOVE WHEN YO
 
         eg.
         \verbatim
-             IN: robot.getCurrentPose('LARM_JOINT5')
+             IN: robot_s.getCurrentPose('LARM_JOINT5')
              OUT: [-0.0017702356144599085,
               0.00019034630541264752,
               -0.9999984150158207,
@@ -205,7 +205,7 @@ class HrpsysConfigurator2(HrpsysConfigurator):  ## JUST FOR TEST, REMOVE WHEN YO
         # https://github.com/fkanehiro/hrpsys-base/pull/1063 resolves.
         if gname.upper() not in map(lambda x: x[0].upper(), self.Groups):
             print("setTargetPose failed. {} is not available in the kinematic groups. "
-                  "Check available Groups (by e.g. self.Groups/robot.Groups). ".format(gname))
+                  "Check available Groups (by e.g. self.Groups/robot_s.Groups). ".format(gname))
             return False
         if StrictVersion(self.seq_version) >= StrictVersion('315.2.5'):  ### CHANGED
             if self.default_frame_name and frame_name is None:
@@ -230,7 +230,7 @@ class HIRONX(HrpsysConfigurator2):
                     "python/hrpsys_config.py">HrpsysConfigurator</a>
 
     This class holds methods that are specific to Kawada Industries' dual-arm
-    robot called Hiro.
+    robot_s called Hiro.
 
     For the API doc for the derived methods, please see the parent
     class via the link above; nicely formatted api doc web page
@@ -398,7 +398,7 @@ class HIRONX(HrpsysConfigurator2):
 
     def goOffPose(self, tm=7):
         """
-        Move arms to the predefined (as member variable) pose where robot can
+        Move arms to the predefined (as member variable) pose where robot_s can
         be safely turned off.
 
         @type tm: float
@@ -816,7 +816,7 @@ class HIRONX(HrpsysConfigurator2):
             # waitInputConfirm(msg)
             print(msg)
         except:
-            print("If you're connecting to the robot from remote, " + \
+            print("If you're connecting to the robot_s from remote, " + \
                   "make sure tunnel X (eg. -X option with ssh).")
             self.rh_svc.power('all', SWITCH_OFF)
             return 0
@@ -997,11 +997,11 @@ class HIRONX(HrpsysConfigurator2):
         This method internally calls startImpedance-*, hrpsys version-specific
         method.
 
-        @requires: ImpedanceController RTC to be activated on the robot's
+        @requires: ImpedanceController RTC to be activated on the robot_s's
                    controller.
         @param arm: Name of the kinematic group (i.e. self.Groups[n][0]).
         @param kwargs: This varies depending on the version of hrpsys your
-                       robot's controller runs on
+                       robot_s's controller runs on
                        (which you can find by "self.hrpsys_version" command).
                        For instance, if your hrpsys is 315.10.1, refer to
                        "startImpedance_315_4" method.
@@ -1022,7 +1022,7 @@ class HIRONX(HrpsysConfigurator2):
                                              0, 0, 0, 0, 0, 0,
                                              0, 0, 0, 0, 0, 0,])
 
-                   setWrenches takes 6 values per sensor, so the robot in
+                   setWrenches takes 6 values per sensor, so the robot_s in
                    the example above has 4 sensors where each line represents
                    a sensor. See this link (https://github.com/fkanehiro/hrpsys-base/pull/434/files) for a concrete example.
         """

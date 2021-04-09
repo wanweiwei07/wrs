@@ -71,7 +71,7 @@ if __name__ == '__main__':
     import modeling.collisionmodel as cm
     import basis.robot_math as rm
 
-    wd.World(campos=[1.0, 1, .0, 1.0], lookatpos=[0, 0, 0])
+    wd.World(cam_pos=[1.0, 1, .0, 1.0], lookat_pos=[0, 0, 0])
     objpath = os.path.join(basis.__path__[0], 'objects', 'bunnysim.stl')
     objcm1= cm.CollisionModel(objpath)
     homomat = np.eye(4)

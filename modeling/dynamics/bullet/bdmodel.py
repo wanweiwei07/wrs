@@ -121,7 +121,7 @@ if __name__ == "__main__":
     import visualization.panda.world as wd
     import random
 
-    base = wd.World(camp=[1, .3, 1], lookatpos=[0, 0, 0], toggledebug=False)
+    base = wd.World(camp=[1, .3, 1], lookat_pos=[0, 0, 0], toggle_debug=False)
     base.setFrameRateMeter(True)
 
     this_dir, this_filename = os.path.split(__file__)

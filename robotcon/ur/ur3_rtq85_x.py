@@ -167,7 +167,7 @@ class UR3Rtq85X(object):
 
     def move_jntspace_path(self, path, control_frequency=.008, interval_time=1.0, interpolation_method=None):
         """
-        move robot arm following a given jointspace path
+        move robot_s arm following a given jointspace path
         :param path: a list of 1x6 arrays
         :param control_frequency: the program will sample interval_time/control_frequency confs, see motion.trajectory
         :param interval_time: equals to expandis/speed, speed = degree/second
@@ -267,7 +267,7 @@ class UR3Rtq85X(object):
 if __name__ == '__main__':
     import visualization.panda.world as wd
 
-    base = wd.World(campos=[3, 1, 2], lookatpos=[0, 0, 0])
+    base = wd.World(cam_pos=[3, 1, 2], lookat_pos=[0, 0, 0])
     u3r85_c = UR3Rtq85X(robot_ip='10.2.0.51', pc_ip='10.2.0.100')
     # u3r85_c.attachfirm(rbt, upthreshold=10, armname='lft')
     u3r85_c.close_gripper()

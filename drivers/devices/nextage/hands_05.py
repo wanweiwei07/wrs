@@ -14,10 +14,10 @@ from robotconn.rpc.nxtrobot.nxtlib.command.toolchanger_command import Toolchange
 class Hands05(BaseHands):
     """
     This class holds methods to operate the hands of NEXTAGE OPEN, based on the
-    specification of the robot made by the manufacturer (Kawada)
+    specification of the robot_s made by the manufacturer (Kawada)
     in August 2014 and thereafter.
 
-    For the robot shipped before then, use Iros13Hands.
+    For the robot_s shipped before then, use Iros13Hands.
     """
 
     def __init__(self, parent):

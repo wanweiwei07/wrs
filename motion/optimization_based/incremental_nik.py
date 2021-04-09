@@ -125,7 +125,7 @@ if __name__ == '__main__':
     import visualization.panda.world as wd
     import modeling.geometricmodel as gm
 
-    base = wd.World(campos=[1.5, 0, 3], lookatpos=[0, 0, .5])
+    base = wd.World(cam_pos=[1.5, 0, 3], lookat_pos=[0, 0, .5])
     gm.gen_frame().attach_to(base)
     yumi_instance = ym.Yumi(enable_cc=True)
     component_name = 'rgt_arm'

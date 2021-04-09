@@ -387,7 +387,7 @@ if __name__ == '__main__':
     import visualization.panda.world as wd
     from panda3d.core import TransparencyAttrib
 
-    wd.World(campos=[1.0, 1, .0, 1.0], lookatpos=[0, 0, 0])
+    wd.World(cam_pos=[1.0, 1, .0, 1.0], lookat_pos=[0, 0, 0])
     objpath = os.path.join(basis.__path__[0], 'objects', 'bunnysim.stl')
     bt = trimesh.load(objpath)
     btch = bt.convex_hull

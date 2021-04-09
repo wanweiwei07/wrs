@@ -92,27 +92,27 @@ class XArm7YunjiMobile(ri.RobotInterface):
         self.hnd.fix_to(pos=self.arm.jnts[-1]['gl_posq'], rotmat=self.arm.jnts[-1]['gl_rotmatq'])
         # update objects in hand if available
         for obj_info in self.oih_infos:
-            gl_pos, gl_rotmat = self.arm.cvt_loc_intcp_to_gl(obj_info['rel_pos'], obj_info['rel_rotmat'])
+            gl_pos, gl_rotmat = self.arm.cvt_loc_tcp_to_gl(obj_info['rel_pos'], obj_info['rel_rotmat'])
             obj_info['gl_pos'] = gl_pos
             obj_info['gl_rotmat'] = gl_rotmat
 
     def fix_to(self, pos, rotmat):
         self.move_to(pos=pos, rotmat=rotmat)
 
-    def fk(self, component_name='arm', jnt_values=np.zeros(7)):
+    def fk(self, manipulator_name='arm', jnt_values=np.zeros(7)):
         """
         :param jnt_values: 7 or 3+7, 3=agv, 7=arm, 1=grpr; metrics: meter-radian
-        :param component_name: 'arm', 'agv', or 'all'
+        :param manipulator_name: 'arm', 'agv', or 'all'
         :return:
         author: weiwei
         date: 20201208toyonaka
         """
-        if component_name == 'arm':
+        if manipulator_name == 'arm':
             if not isinstance(jnt_values, np.ndarray) or jnt_values.size != 7:
                 raise ValueError("An 1x7 npdarray must be specified to move the arm!")
             self.arm.fk(jnt_values=jnt_values)
             self.hnd.fix_to(pos=self.arm.jnts[-1]['gl_posq'], rotmat=self.arm.jnts[-1]['gl_rotmatq'])
-        elif component_name == 'agv':
+        elif manipulator_name == 'agv':
             if not isinstance(jnt_values, np.ndarray) or jnt_values.size != 3:
                 raise ValueError("An 1x7 npdarray must be specified to move the agv!")
             self.pos = np.zeros(3)
@@ -121,7 +121,7 @@ class XArm7YunjiMobile(ri.RobotInterface):
             self.agv.fix_to(self.pos, self.rotmat)
             self.arm.fix_to(pos=self.agv.jnts[-1]['gl_posq'], rotmat=self.agv.jnts[-1]['gl_rotmatq'])
             self.hnd.fix_to(pos=self.arm.jnts[-1]['gl_posq'], rotmat=self.arm.jnts[-1]['gl_rotmatq'])
-        elif component_name == 'agv_arm':
+        elif manipulator_name == 'agv_arm':
             if not isinstance(jnt_values, np.ndarray) or jnt_values.size != 10:
                 raise ValueError("An 1x9 npdarray must be specified to move both the agv and the arm!")
             self.pos = np.zeros(3)
@@ -130,7 +130,7 @@ class XArm7YunjiMobile(ri.RobotInterface):
             self.agv.fix_to(self.pos, self.rotmat)
             self.arm.fix_to(pos=self.agv.jnts[-1]['gl_posq'], rotmat=self.agv.jnts[-1]['gl_rotmatq'], jnt_values=jnt_values[3:10])
             self.hnd.fix_to(pos=self.arm.jnts[-1]['gl_posq'], rotmat=self.arm.jnts[-1]['gl_rotmatq'])
-        elif component_name == 'all':
+        elif manipulator_name == 'all':
             if not isinstance(jnt_values, np.ndarray) or jnt_values.size != 11:
                 raise ValueError("An 1x10 npdarray must be specified to move all joints!")
             self.pos = np.zeros(3)
@@ -141,21 +141,21 @@ class XArm7YunjiMobile(ri.RobotInterface):
             self.hnd.fix_to(pos=self.arm.jnts[-1]['gl_posq'], rotmat=self.arm.jnts[-1]['gl_rotmatq'], motion_val = jnt_values[10])
         # update objects in hand
         for obj_info in self.oih_infos:
-            gl_pos, gl_rotmat = self.arm.cvt_loc_intcp_to_gl(obj_info['rel_pos'], obj_info['rel_rotmat'])
+            gl_pos, gl_rotmat = self.arm.cvt_loc_tcp_to_gl(obj_info['rel_pos'], obj_info['rel_rotmat'])
             obj_info['gl_pos'] = gl_pos
             obj_info['gl_rotmat'] = gl_rotmat
 
     def ik(self,
            tgt_pos,
            tgt_rot,
-           component_name='arm',
+           manipulator_name='arm',
            seed_conf=None,
            tcp_jntid=None,
            tcp_loc_pos=None,
            tcp_loc_rotmat=None,
            local_minima="accept",
            toggle_debug=False):
-        if component_name == 'arm':
+        if manipulator_name == 'arm':
             return self.arm.ik(tgt_pos,
                                tgt_rot,
                                seed_conf=seed_conf,
@@ -164,7 +164,7 @@ class XArm7YunjiMobile(ri.RobotInterface):
                                tcp_loc_rotmat=tcp_loc_rotmat,
                                local_minima=local_minima,
                                toggle_debug=toggle_debug)
-        elif component_name == 'agv_arm' or component_name == 'all':
+        elif manipulator_name == 'agv_arm' or manipulator_name == 'all':
             pass
 
     def get_jntvalues(self, jlc_name):
@@ -189,12 +189,12 @@ class XArm7YunjiMobile(ri.RobotInterface):
             return_val[10] = self.hnd.get_jawwidth()
             return return_val
 
-    def rand_conf(self, component_name):
-        if component_name == 'arm':
+    def rand_conf(self, manipulator_name):
+        if manipulator_name == 'arm':
             return self.arm.rand_conf()
-        if component_name == 'agv':
+        if manipulator_name == 'agv':
             raise NotImplementedError
-        if component_name == 'agv_arm':
+        if manipulator_name == 'agv_arm':
             raise NotImplementedError
 
     def jaw_to(self, hnd_name='hnd', jawwidth=0.0):
@@ -205,14 +205,14 @@ class XArm7YunjiMobile(ri.RobotInterface):
 
     def hold(self, objcm, jawwidth=None):
         """
-        the objcm is added as a part of the robot to the cd checker
+        the objcm is added as a part of the robot_s to the cd checker
         :param jawwidth:
         :param objcm:
         :return:
         """
         if jawwidth is not None:
             self.hnd.jaw_to(jawwidth)
-        rel_pos, rel_rotmat = self.arm.cvt_gl_to_loc_intcp(objcm.get_pos(), objcm.get_rotmat())
+        rel_pos, rel_rotmat = self.arm.cvt_gl_to_loc_tcp(objcm.get_pos(), objcm.get_rotmat())
         intolist = [self.agv.lnks[0],
                     self.arm.lnks[0],
                     self.arm.lnks[1],
@@ -234,7 +234,7 @@ class XArm7YunjiMobile(ri.RobotInterface):
 
     def release(self, objcm, jawwidth=None):
         """
-        the objcm is added as a part of the robot to the cd checker
+        the objcm is added as a part of the robot_s to the cd checker
         :param jawwidth:
         :param objcm:
         :return:
@@ -311,11 +311,11 @@ if __name__ == '__main__':
     import visualization.panda.world as wd
     import modeling.geometricmodel as gm
 
-    base = wd.World(campos=[1.5, 0, 3], lookatpos=[0, 0, .5])
+    base = wd.World(cam_pos=[1.5, 0, 3], lookat_pos=[0, 0, .5])
 
     gm.gen_frame().attach_to(base)
     xav = XArm7YunjiMobile(enable_cc=True)
-    xav.fk(component_name='all', jnt_values=np.array([0, 0, 0, 0, 0, 0, math.pi, 0, -math.pi / 6, 0, 0]))
+    xav.fk(manipulator_name='all', jnt_values=np.array([0, 0, 0, 0, 0, 0, math.pi, 0, -math.pi / 6, 0, 0]))
     xav.jaw_to(.08)
     tgt_pos = np.array([.85, 0, .5])
     tgt_rotmat = rm.rotmat_from_axangle([0,1,0], math.pi/2)
@@ -324,7 +324,7 @@ if __name__ == '__main__':
     tgt_pos2 = np.array([.7, 0, .5])
     jnt_values2 = xav.ik(tgt_pos2, tgt_rotmat, seed_conf=jnt_values)
     print(jnt_values)
-    xav.fk(component_name='arm', jnt_values=jnt_values2)
+    xav.fk(manipulator_name='arm', jnt_values=jnt_values2)
     xav_meshmodel = xav.gen_meshmodel(toggle_tcpcs=True)
     xav_meshmodel.attach_to(base)
     xav.show_cdprimit()

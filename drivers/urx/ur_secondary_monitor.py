@@ -122,7 +122,7 @@ class ParserUtils(object):
     def _get_data(self, data, fmt, names):
         """
         fill data into a dictionary
-            data is data from robot packet
+            data is data from robot_s packet
             fmt is struct format, but with added A for arrays and no support for numerical in fmt
             names args are strings used to store values
         """
@@ -213,7 +213,7 @@ class ParserUtils(object):
 
 class SecondaryMonitor(Thread):
     """
-    Monitor data from secondary port and send programs to robot
+    Monitor data from secondary port and send programs to robot_s
     """
     def __init__(self, host):
         Thread.__init__(self)
@@ -228,7 +228,7 @@ class SecondaryMonitor(Thread):
         self._prog_queue_lock = Lock()
         self._dataqueue = bytes()
         self._trystop = False  # to stop thread
-        self.running = False  # True when robot is on and listening
+        self.running = False  # True when robot_s is on and listening
         self._dataEvent = Condition()
         self.lastpacket_timestamp = 0
 
@@ -237,7 +237,7 @@ class SecondaryMonitor(Thread):
 
     def send_program(self, prog):
         """
-        send program to robot in URRobot format
+        send program to robot_s in URRobot format
         If another program is send while a program is running the first program is aborded.
         """
         prog.strip()
@@ -254,7 +254,7 @@ class SecondaryMonitor(Thread):
 
     def run(self):
         """
-        check program execution status in the secondary client data packet we get from the robot
+        check program execution status in the secondary client data packet we get from the robot_s
         This interface uses only data from the secondary client interface (see UR doc)
         Only the last connected client is the primary client,
         so this is not guaranted and we cannot rely on information to the primary client.
@@ -277,7 +277,7 @@ class SecondaryMonitor(Thread):
                 continue
 
             if "RobotModeData" not in self._dict:
-                self.logger.warning("Got a packet from robot without RobotModeData, strange ...")
+                self.logger.warning("Got a packet from robot_s without RobotModeData, strange ...")
                 continue
 
             self.lastpacket_timestamp = time.time()
@@ -319,13 +319,13 @@ class SecondaryMonitor(Thread):
 
     def wait(self, timeout=1):
         """
-        wait for next data packet from robot
+        wait for next data packet from robot_s
         """
         tstamp = self.lastpacket_timestamp
         with self._dataEvent:
             self._dataEvent.wait(timeout)
             if tstamp == self.lastpacket_timestamp:
-                raise TimeoutException("Did not receive a valid data packet from robot in {}".format(timeout))
+                raise TimeoutException("Did not receive a valid data packet from robot_s in {}".format(timeout))
 
     def get_cartesian_info(self, wait=False):
         if wait:
@@ -338,7 +338,7 @@ class SecondaryMonitor(Thread):
 
     def get_all_data(self, wait=False):
         """
-        return last data obtained from robot in dictionnary format
+        return last data obtained from robot_s in dictionnary format
         """
         if wait:
             self.wait()
@@ -402,7 +402,7 @@ class SecondaryMonitor(Thread):
 
     def is_program_running(self, wait=False):
         """
-        return True if robot is executing a program
+        return True if robot_s is executing a program
         Rmq: The refresh rate is only 10Hz so the information may be outdated
         """
         if wait:

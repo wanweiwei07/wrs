@@ -171,7 +171,7 @@ class Ur3EDualUrx():
 
     def movejntsall(self, joints, wait=True):
         """
-        move all joints of the ur5 dual-arm robot
+        move all joints of the ur5 dual-arm robot_s
         NOTE that the two arms are moved sequentially
         use wait=False for simultaneous motion
 
@@ -189,7 +189,7 @@ class Ur3EDualUrx():
 
     def movetposesgl_cont(self, tposelist, armname='rgt', acc = 1, vel = .1, radius = 0.1, wait = True):
         """
-        move robot continuously by inputing a list of tcp poses
+        move robot_s continuously by inputing a list of tcp poses
 
         :param tposelist:
         :param armname:
@@ -210,7 +210,7 @@ class Ur3EDualUrx():
 
     def movejntssgl_cont(self, jointspath, armname='rgt', timepathstep = 1.0, inpfunc = "cubic", wait = True):
         """
-        move robot continuously using servoj and urscript
+        move robot_s continuously using servoj and urscript
 
         :param jointspath: a list of joint angles as motion path
         :param armname:
@@ -353,7 +353,7 @@ class Ur3EDualUrx():
 
     def movejntssgl_cont2(self, jointspath, armname='rgt', timepathstep = 1.0, inpfunc = "cubic", wait=True):
         """
-        move robot continuously using servoj and urscript
+        move robot_s continuously using servoj and urscript
         movejntssgl_cont2 aims at smooth slow down motion
 
         :param jointspath: a list of joint angles as a motion path
@@ -590,7 +590,7 @@ if __name__ == '__main__':
     # rgthnd = hndfa.genHand()
     # lfthnd = hndfa.genHand()
     #
-    # rbt = robot.Ur3EDualRobot(rgthnd, lfthnd)
+    # rbt = robot_s.Ur3EDualRobot(rgthnd, lfthnd)
     # rbt.goinitpose()
     # ur3eu.attachfirm(rbt, upthreshold=10, armname='lft')
     ur3eu.opengripper(armname="lft",forcepercentage=0,distance=23)

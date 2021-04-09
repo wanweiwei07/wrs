@@ -214,7 +214,7 @@ class TensorDatapoint(dict):
             
 class TensorDataset(object):
     """ A class for efficient storage and access of datasets containing datapoints
-    with multiple attributes of different types (e.g. images and robot gripper poses).
+    with multiple attributes of different types (e.g. images and robot_s gripper poses).
     The dataset can only be modified by appending a datapoint
     or removing the last datapoint, but can be read from any index at any time.
 
