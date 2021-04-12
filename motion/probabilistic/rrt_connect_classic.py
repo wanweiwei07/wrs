@@ -66,10 +66,10 @@ class RRTConnect(rrt.RRT):
         self.goal_conf = goal_conf
         # check start and goal
         if self._is_collided(component_name, start_conf, obstacle_list, otherrobot_list):
-            print("The start robot configuration is in collision!")
+            print("The start robot_s configuration is in collision!")
             return [None, None]
         if self._is_collided(component_name, goal_conf, obstacle_list, otherrobot_list):
-            print("The goal robot configuration is in collision!")
+            print("The goal robot_s configuration is in collision!")
             return [None, None]
         if self._goal_test(conf=start_conf, goal_conf=goal_conf, threshold=ext_dist):
             return [[start_conf, goal_conf], None]

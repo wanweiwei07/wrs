@@ -273,7 +273,7 @@ if __name__ == '__main__':
     import modeling.geometricmodel as gm
     import modeling.collisionmodel as cm
 
-    base = wd.World(campos=[1, 1, 1], lookatpos=[0, 0, 0])
+    base = wd.World(cam_pos=[1, 1, 1], lookat_pos=[0, 0, 0])
     gm.gen_frame().attach_to(base)
     grpr = Robotiq85(enable_cc=True)
     grpr.cdmesh_type='convexhull'
@@ -286,7 +286,7 @@ if __name__ == '__main__':
     # grpr.show_cdmesh()
     base.run()
 
-    # base = wd.World(campos=[.5, .5, .5], lookatpos=[0, 0, 0])
+    # base = wd.World(cam_pos=[.5, .5, .5], lookat_pos=[0, 0, 0])
     # model = cm.CollisionModel("./meshes/robotiq_arg2f_85_pad.dae")
     # model.set_scale([1e-3, 1e-3, 1e-3])
     # model.attach_to(base)

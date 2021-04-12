@@ -329,7 +329,7 @@ if __name__ == '__main__':
     tbscm.reparentTo(yhx.base.render)
     # base.run()
 
-    # homomat = loc.findtubestand_matchonobb(objpcd, toggledebug=False)
+    # homomat = loc.findtubestand_matchonobb(objpcd, toggle_debug=False)
     # import registration.pattern as ptn
     # pto = ptn.Pattern(root=".")
     # pto.setpattern(np.array([[0,0,0,0,0,0,0,0,0,0],
@@ -361,7 +361,7 @@ if __name__ == '__main__':
     # pto.gendumbell(homomat=loc.tubestandhomomat).reparentTo(base.render)
     # base.run()
 
-    # homomat = loc.findtubestand_match(objpcdmerged, toggledebug=True)
+    # homomat = loc.findtubestand_match(objpcdmerged, toggle_debug=True)
 
     elearray, eleconfidencearray = loc.findtubes(loc.tubestandhomomat, objpcd, toggledebug=False)
     # yhx.base.run()

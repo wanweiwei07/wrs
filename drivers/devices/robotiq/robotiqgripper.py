@@ -31,7 +31,7 @@ class Robotiq_Two_Finger_Gripper(object):
         self.add_line_to_program("sync()")
         self.add_line_to_program("socket_set_var(\"FOR\","+str(force)+",\"gripper_socket\")") #Force 0-255 is valid
         self.add_line_to_program("sync()")
-        self.add_line_to_program("socket_set_var(\"ACT\",1,\"gripper_socket\")") # Activate robot
+        self.add_line_to_program("socket_set_var(\"ACT\",1,\"gripper_socket\")") # Activate robot_s
         self.add_line_to_program("sync()")
         self.add_line_to_program("socket_set_var(\"GTO\",1,\"gripper_socket\")")
         self.add_line_to_program("sync()")

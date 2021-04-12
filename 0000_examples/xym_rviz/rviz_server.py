@@ -13,7 +13,7 @@ import visualization.panda.rpc.rviz_pb2_grpc as rv_rpc
 
 
 def serve(host="localhost:18300"):
-    base = wd.World(campos=[1, 1, 1], lookatpos=[0, 0, 0])
+    base = wd.World(cam_pos=[1, 1, 1], lookat_pos=[0, 0, 0])
     _ONE_DAY_IN_SECONDS = 60 * 60 * 24
     options = [('grpc.max_send_message_length', 100 * 1024 * 1024),
                ('grpc.max_receive_message_length', 100 * 1024 * 1024)]

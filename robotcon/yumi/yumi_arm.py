@@ -119,8 +119,8 @@ class _YuMiEthernet(Process):
         return res
 
 class YuMiArm:
-    """ Interface to a single arm of an ABB YuMi robot.
-    Communicates with the robot over Ethernet.
+    """ Interface to a single arm of an ABB YuMi robot_s.
+    Communicates with the robot_s over Ethernet.
     """
 
     def __init__(self, name, ip=YMC.IP, port=YMC.PORTS["left"]["server"], bufsize=YMC.BUFSIZE,
@@ -154,10 +154,10 @@ class YuMiArm:
                     Timeout for ethernet process communication.
                     Default from YuMiConstants.PROCESS_TIMEOUT
             from_frame : string, optional
-                    String name of robot arm frame.
+                    String name of robot_s arm frame.
                     Default to "tool"
             to_frame : string, optional
-                    String name of reference for robot frame
+                    String name of reference for robot_s frame
                     Default to "base"
             debug : bool, optional
                     Boolean to indicate whether or not in debug mode. If in debug mode no ethernet communication is attempted. Mock responses will be returned.
@@ -204,7 +204,7 @@ class YuMiArm:
     def reset_settings(self):
         '''Reset zone, tool, and speed settings to their last known values. This is used when reconnecting to the RAPID server after a server restart.
         '''
-        # set robot settings
+        # set robot_s settings
         for key, val in self._last_sets.items():
             if val is not None:
                 getattr(self, 'set_{0}'.format(key))(val)
@@ -1322,7 +1322,7 @@ class YuMiArm:
         return self._request(req, wait_for_res)
 
 class YuMiArm_ROS:
-    """ Interface to remotely control a single arm of an ABB YuMi robot.
+    """ Interface to remotely control a single arm of an ABB YuMi robot_s.
     Communicates over ROS to a yumi arm server (initialize server through roslaunch)
 
     Parameters

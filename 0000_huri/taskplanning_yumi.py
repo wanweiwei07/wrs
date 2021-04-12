@@ -121,7 +121,7 @@ taskMgr.doMethodLater(0.05, update, "update",
                       extraArgs=[path, objst, objlt, counter, tubemnplist, objtsdpos],
                       appendTask=True)
 
-# robot.goinitpose()
+# robot_s.goinitpose()
 # starttreesamplerate = 50
 # endtreesamplerate = 50
 # rbtstartpos = np.array([250,-250,200])
@@ -130,34 +130,34 @@ taskMgr.doMethodLater(0.05, update, "update",
 #                     [0,0.382683,-0.92388]]).T
 # rbtgoalpos = np.array([300,0,100])
 # rbtgoalrot = np.dot(rm.rodrigues([0,0,1],-120),rbtstartrot)
-# start = robot.numik(rbtstartpos, rbtstartrot, armname=armname)
+# start = robot_s.numik(rbtstartpos, rbtstartrot, armname=armname)
 # print(start)
-# goal = robot.numik(rbtgoalpos, rbtgoalrot, armname=armname)
+# goal = robot_s.numik(rbtgoalpos, rbtgoalrot, armname=armname)
 # print(goal)
 # planner = rrtc.RRTConnect(start=start, goal=goal, ctcallback=ctcallback,
 #                               starttreesamplerate=starttreesamplerate,
 #                               endtreesamplerate=endtreesamplerate, expanddis=7,
 #                               maxiter=2000, maxtime=100.0)
-# robot.movearmfk(start, armname)
-# robotnp = robotmesh.genmnp(robot)
+# robot_s.movearmfk(start, armname)
+# robotnp = robotmesh.genmnp(robot_s)
 # robotnp.reparentTo(base.render)
-# robot.movearmfk(goal, armname)
-# robotnp = robotmesh.genmnp(robot)
+# robot_s.movearmfk(goal, armname)
+# robotnp = robotmesh.genmnp(robot_s)
 # robotnp.reparentTo(base.render)
-# robotball.showcn(robotball.genfullbcndict(robot))
+# robotball.showcn(robotball.genfullbcndict(robot_s))
 # # base.run()
 # [path, sampledpoints] = planner.planning(obscmlist+tubecmlist)
 # path = smoother.pathsmoothing(path, planner, maxiter=100)
 # print(path)
-# def update(rbtmnp, motioncounter, robot, path, armname, robotmesh, robotball, task):
+# def update(rbtmnp, motioncounter, robot_s, path, armname, robotmesh, robotball, task):
 #     if motioncounter[0] < len(path):
 #         if rbtmnp[0] is not None:
 #             rbtmnp[0].detachNode()
 #             rbtmnp[1].detachNode()
 #         pose = path[motioncounter[0]]
-#         robot.movearmfk(pose, armname)
-#         rbtmnp[0] = robotmesh.genmnp(robot)
-#         bcndict = robotball.genfullactivebcndict(robot)
+#         robot_s.movearmfk(pose, armname)
+#         rbtmnp[0] = robotmesh.genmnp(robot_s)
+#         bcndict = robotball.genfullactivebcndict(robot_s)
 #         rbtmnp[1] = robotball.showcn(bcndict)
 #         rbtmnp[0].reparentTo(base.render)
 #         motioncounter[0] += 1
@@ -168,6 +168,6 @@ taskMgr.doMethodLater(0.05, update, "update",
 # rbtmnp = [None, None]
 # motioncounter = [0]
 # taskMgr.doMethodLater(0.05, update, "update",
-#                       extraArgs=[rbtmnp, motioncounter, robot, path, armname, robotmesh, robotball],
+#                       extraArgs=[rbtmnp, motioncounter, robot_s, path, armname, robotmesh, robotball],
 #                       appendTask=True)
 base.run()

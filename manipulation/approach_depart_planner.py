@@ -11,13 +11,13 @@ import motion.probabilistic.rrt_connect as rrtc
 
 class ADPlanner(object):  # AD = Approach_Depart
 
-    def __init__(self, robot):
+    def __init__(self, robot_s):
         """
-        :param robot:
+        :param robot_s:
         author: weiwei, hao
         date: 20191122, 20210113
         """
-        self.rbt = robot
+        self.rbt = robot_s
         self.inik_slvr = inik.IncrementalNIK(self.rbt)
         self.rrtc_plnr = rrtc.RRTConnect(self.rbt)
 
@@ -331,7 +331,7 @@ if __name__ == '__main__':
     import visualization.panda.world as wd
     import modeling.geometricmodel as gm
 
-    base = wd.World(campos=[2, 0, 1.5], lookatpos=[0, 0, .2])
+    base = wd.World(cam_pos=[2, 0, 1.5], lookat_pos=[0, 0, .2])
     gm.gen_frame().attach_to(base)
     yumi_instance = ym.Yumi(enable_cc=True)
     manipulator_name = 'rgt_arm'
@@ -342,7 +342,7 @@ if __name__ == '__main__':
 
     adp = ADPlanner(yumi_instance)
     tic = time.time()
-    # conf_list, jawwidth_list = adp.gen_ad_primitive(manipulator_name,
+    # conf_list, jawwidth_list = adp.gen_ad_primitive(component_name,
     #                                                 goal_pos,
     #                                                 goal_rotmat,
     #                                                 approach_direction=np.array([0, 0, -1]),
@@ -360,16 +360,16 @@ if __name__ == '__main__':
                                                                   depart_direction=np.array([0, -1, 0]),
                                                                   depart_distance=.0,
                                                                   depart_jawwidth=0)
-    # conf_list, jawwidth_list = adp.gen_approach_motion(manipulator_name,
+    # conf_list, jawwidth_list = adp.gen_approach_motion(component_name,
     #                                                    goal_pos,
     #                                                    goal_rotmat,
-    #                                                    start_conf=yumi_instance.get_jnt_values(manipulator_name),
+    #                                                    start_conf=yumi_s.get_jnt_values(component_name),
     #                                                    approach_direction=np.array([0, 0, -1]),
     #                                                    approach_distance=.1)
-    # conf_list, jawwidth_list = adp.gen_depart_motion(manipulator_name,
+    # conf_list, jawwidth_list = adp.gen_depart_motion(component_name,
     #                                                  goal_pos,
     #                                                  goal_rotmat,
-    #                                                  goal_conf=yumi_instance.get_jnt_values(manipulator_name),
+    #                                                  goal_conf=yumi_s.get_jnt_values(component_name),
     #                                                  depart_direction=np.array([0, 0, 1]),
     #                                                  depart_distance=.1)
     toc = time.time()

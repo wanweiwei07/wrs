@@ -16,7 +16,7 @@ class NextageClient(HIRONX, object):
     # See http://stackoverflow.com/a/18392639/577001
     """
     This class holds methods that are specific to Kawada Industries' dual-arm
-    robot called Nextage Open.
+    robot_s called Nextage Open.
     """
 
     """ Overriding a variable in the superclass to set the arms at higher
@@ -28,7 +28,7 @@ class NextageClient(HIRONX, object):
                [0, 0, 0, 0]]
 
     # Default digital input groups defined by manufacturer, Kawada, as of
-    # July 2014. This may change per the robot in the future and in then
+    # July 2014. This may change per the robot_s in the future and in then
     # need modified. See also readDinGroup method.
     _DI_PORTS_L = [25, 21, 22, 23, 24]
     _DI_PORTS_R = [20, 16, 17, 18, 19]
@@ -174,7 +174,7 @@ class NextageClient(HIRONX, object):
 
             No hand attached:
 
-                In [1]: robot.printDin([20, 16, 17, 18, 19])
+                In [1]: robot_s.printDin([20, 16, 17, 18, 19])
                 DI21 is 0
                 DI17 is 0
                 DI18 is 0
@@ -184,7 +184,7 @@ class NextageClient(HIRONX, object):
 
             Hand attached, fingers closed:
 
-                In [1]: robot.printDin([20, 16, 17, 18, 19])
+                In [1]: robot_s.printDin([20, 16, 17, 18, 19])
                 DI21 is 1
                 DI17 is 1
                 DI18 is 0

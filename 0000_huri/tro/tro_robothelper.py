@@ -267,8 +267,8 @@ class RobotHelper(object):
 
         # 1700, -1000, -1000, 300
         self.base = pandactrl.World(camp=[3700, -2300, 1700], lookatpos=[380, -190, 0], autocamrotate=autorotate)
-        # self.base = pandactrl.World(camp=[1200, -700, 700], lookatpos=[380, -190, 0], autocamrotate=autorotate)
-        # self.base = pandactrl.World(camp=[1200, -190, 1000], lookatpos=[380, -190, 0], autocamrotate=autorotate)
+        # self.base = pandactrl.World(camp=[1200, -700, 700], lookat_pos=[380, -190, 0], auto_cam_rotate=autorotate)
+        # self.base = pandactrl.World(camp=[1200, -190, 1000], lookat_pos=[380, -190, 0], auto_cam_rotate=autorotate)
         self.env.reparentTo(self.base.render)
         # rbtnp = self.rbtmesh.genmnp(self.rbt)
         # rbtnp.reparentTo(base.render)
@@ -364,11 +364,11 @@ class RobotHelperX(RobotHelper):
         """
 
         # base = pandactrl.World(camp=[2700, -2000, 2000], lookatp=[0, 0, 500])
-        # rbtnp is the plot for the simulated robot
+        # rbtnp is the plot for the simulated robot_s
         rbtnp = self.rbtmesh.genmnp(self.rbt)
         rbtnp.setColor(1,0,.3,1)
         rbtnp.reparentTo(self.base.render)
-        # rbtxnp is the plot for the real robot
+        # rbtxnp is the plot for the real robot_s
         rbt_rbtx = copy.deepcopy(self.rbt)
         rbt_rbtx.movearmfk(self.getarmjntsx("rgt"), "rgt")
         rbt_rbtx.movearmfk(self.getarmjntsx("lft"), "lft")

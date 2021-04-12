@@ -17,11 +17,19 @@ import visualization.panda.anime_info as ani
 
 class World(ShowBase, object):
 
-    def __init__(self, campos=np.array([2.0, 0.5, 2.0]), lookatpos=np.array([0, 0, 0.25]), up=np.array([0, 0, 1]),
-                 fov=40, w=1920, h=1080, lenstype="perspective", toggledebug=False, autocamrotate=False):
+    def __init__(self,
+                 cam_pos=np.array([2.0, 0.5, 2.0]),
+                 lookat_pos=np.array([0, 0, 0.25]),
+                 up=np.array([0, 0, 1]),
+                 fov=40,
+                 w=1920,
+                 h=1080,
+                 lens_type="perspective",
+                 toggle_debug=False,
+                 auto_cam_rotate=False):
         """
-        :param campos:
-        :param lookatpos:
+        :param cam_pos:
+        :param lookat_pos:
         :param fov:
         :param w: width of window
         :param h: height of window
@@ -40,13 +48,13 @@ class World(ShowBase, object):
         lens = PerspectiveLens()
         lens.setFov(fov)
         lens.setNearFar(0.001, 50.0)
-        if lenstype == "orthographic":
+        if lens_type == "orthographic":
             lens = OrthographicLens()
             lens.setFilmSize(1024, 768)
         # disable the default mouse control
         self.disableMouse()
-        self.cam.setPos(campos[0], campos[1], campos[2])
-        self.cam.lookAt(Point3(lookatpos[0], lookatpos[1], lookatpos[2]), Vec3(up[0], up[1], up[2]))
+        self.cam.setPos(cam_pos[0], cam_pos[1], cam_pos[2])
+        self.cam.lookAt(Point3(lookat_pos[0], lookat_pos[1], lookat_pos[2]), Vec3(up[0], up[1], up[2]))
         self.cam.node().setLens(lens)
         # set up slight
         ## ambient light
@@ -77,11 +85,11 @@ class World(ShowBase, object):
         # self.o3dh = o3dh
         self.rbtmath = rm
         # set up inputmanager
-        self.lookatpos = lookatpos
+        self.lookatpos = lookat_pos
         self.inputmgr = im.InputManager(self, self.lookatpos)
         taskMgr.add(self._interaction_update, "interaction", appendTask=True)
         # set up rotational cam
-        if autocamrotate:
+        if auto_cam_rotate:
             taskMgr.doMethodLater(.1, self._rotatecam_update, "rotate cam")
         # set window size
         props = WindowProperties()
@@ -105,8 +113,8 @@ class World(ShowBase, object):
         debugNode.showNormals(True)
         self._debugNP = globalbprrender.attachNewNode(debugNode)
         self._debugNP.show()
-        self.toggledebug = toggledebug
-        if toggledebug:
+        self.toggledebug = toggle_debug
+        if toggle_debug:
             self.physicsworld.setDebugNode(self._debugNP.node())
         self.physicsbodylist = []
         # set up render update (TODO, only for dynamics?)
@@ -171,7 +179,7 @@ class World(ShowBase, object):
             robot_path = _manualupdate_robotinfo.robot_path
             robot_path_counter = _manualupdate_robotinfo.robot_path_counter
             robot_meshmodel.detach()
-            robot_instance.fk(robot_path[robot_path_counter], component_name=robot_jlc_name)
+            robot_instance.fk(robot_path[robot_path_counter], manipulator_name=robot_jlc_name)
             _manualupdate_robotinfo.robot_meshmodel = robot_instance.gen_meshmodel(
                 tcp_jntid=robot_meshmodel_parameter[0],
                 tcp_loc_pos=robot_meshmodel_parameter[1],

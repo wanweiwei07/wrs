@@ -22,8 +22,8 @@ class CollisionChecker(object):
     def add_cdlnks(self, jlcobj, lnk_idlist):
         """
         The collision node of the given links will be attached to self.np, but their collision bitmask will be cleared
-        When the a robot is treated as an obstacle by another robot, the IntoCollideMask of its all_cdelements will be
-        set to BitMask32(2**31), so that the other robot can compare its active_cdelements with the all_cdelements.
+        When the a robot_s is treated as an obstacle by another robot_s, the IntoCollideMask of its all_cdelements will be
+        set to BitMask32(2**31), so that the other robot_s can compare its active_cdelements with the all_cdelements.
         :param jlcobj:
         :param lnk_idlist:
         :return:

@@ -9,7 +9,7 @@ import math
 import basis.robot_math as rm
 import numpy as np
 
-base = wd.World(camp=np.array([2, 0, 2]), lookatpos=np.array([0, 0, 0]), toggledebug=True)
+base = wd.World(camp=np.array([2, 0, 2]), lookat_pos=np.array([0, 0, 0]), toggle_debug=True)
 # PlaneD
 plane = basics.objtrm.primitives.Box(box_extents=[1, 1, .1], box_center=[0, 0, -0.05])
 planecm = cm.CollisionModel(plane)

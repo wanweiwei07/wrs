@@ -5,10 +5,10 @@ import numpy as np
 class Trajectory(object):
 
     def __init__(self, method="cubic"):
-        if method is "cubic":
+        if method == "cubic":
             self.fit = self._cubic_coeffs
             self.predict = self._predict_cubic
-        elif method is "quintic":
+        elif method == "quintic":
             self.fit = self._quintic_coeffs
             self.predict = self._predict_quintic
         self.cubicmat = np.array([[2, 1, -2, 1],
@@ -71,10 +71,10 @@ class Trajectory(object):
         author: weiwei
         date: 20210331
         """
-        if method is "cubic":
+        if method == "cubic":
             self.fit = self._cubic_coeffs
             self.predict = self._predict_cubic
-        elif method is "quintic":
+        elif method == "quintic":
             self.fit = self._quintic_coeffs
             self.predict = self._predict_quintic
         else:

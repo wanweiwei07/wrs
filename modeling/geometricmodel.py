@@ -775,7 +775,7 @@ if __name__ == "__main__":
     import basis.robot_math as rm
     import visualization.panda.world as wd
 
-    base = wd.World(campos=[.1, .1, .1], lookatpos=[0, 0, 0])
+    base = wd.World(cam_pos=[.1, .1, .1], lookat_pos=[0, 0, 0])
     objpath = os.path.join(basis.__path__[0], 'objects', 'bunnysim.stl')
     bunnygm = GeometricModel(objpath)
     bunnygm.set_rgba([0.7, 0.7, 0.0, 1.0])

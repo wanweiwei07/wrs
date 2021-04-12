@@ -111,7 +111,7 @@ if __name__ == '__main__':
     import visualization.panda.world as wd
     import modeling.geometricmodel as gm
 
-    base = wd.World(campos=[2, 0, 1], lookatpos=[0, 0, 0])
+    base = wd.World(cam_pos=[2, 0, 1], lookat_pos=[0, 0, 0])
     gm.gen_frame().attach_to(base)
     manipulator_instance = UR3(enable_cc=True)
     manipulator_meshmodel = manipulator_instance.gen_meshmodel()
@@ -123,7 +123,7 @@ if __name__ == '__main__':
     toc = time.time()
     print(toc - tic)
 
-    # base = wd.World(campos=[1, 1, 1], lookatpos=[0,0,0])
+    # base = wd.World(cam_pos=[1, 1, 1], lookat_pos=[0,0,0])
     # gm.GeometricModel("./meshes/base.dae").attach_to(base)
     # gm.gen_frame().attach_to(base)
     base.run()

@@ -98,11 +98,11 @@ if __name__ == '__main__':
 
     # planner = rrt.RRT(start=start, goal=goal, iscollidedfunc = iscollidedfunc,
     #                   jointlimits = jointlimits, expanddis = 5,
-    #                   robot = robot, cdchecker = cdchecker)
+    #                   robot_s = robot_s, cdchecker = cdchecker)
     # planner = rrtc.RRTConnect(start=start, goal=goal, iscollidedfunc = iscollidedfunc,
-    #           jointlimits = jointlimits, expanddis = 10, robot = robot, cdchecker = cdchecker)
+    #           jointlimits = jointlimits, expanddis = 10, robot_s = robot_s, cdchecker = cdchecker)
     # planner = ddrrt.DDRRT(start=start, goal=goal, iscollidedfunc = iscollidedfunc,
-    #                   jointlimits = jointlimits, goalsamplerate=30, expanddis = 5, robot = robot,
+    #                   jointlimits = jointlimits, goalsamplerate=30, expanddis = 5, robot_s = robot_s,
     #                   cdchecker = cdchecker)
     #
     planner = ddrrtc.DDRRTConnect(start=start, goal=goal, iscollidedfunc = iscollidedfunc,

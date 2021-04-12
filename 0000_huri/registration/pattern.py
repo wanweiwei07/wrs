@@ -117,7 +117,7 @@ if __name__ == '__main__':
     import environment.suitayuminotop as yumisetting
     import scipy.signal as ss
 
-    # base = pandactrl.World(camp=[500, 200, 500], lookatpos=[500, 0, 0])
+    # base = pandactrl.World(camp=[500, 200, 500], lookat_pos=[500, 0, 0])
     base = pandactrl.World(camp=[380, -190, 2000], lookatpos=[380, -190, 0], lenstype = "orthographic", autocamrotate=False)
     env = yumisetting.Env()
     obscmlist = env.getstationaryobslist()

@@ -100,7 +100,7 @@ if __name__ == '__main__':
     import modeling.geometricmodel as gm
     import modeling.collisionmodel as cm
 
-    # wd.World(campos=[1.0, 1, .0, 1.0], lookatpos=[0, 0, 0])
+    # wd.World(cam_pos=[1.0, 1, .0, 1.0], lookat_pos=[0, 0, 0])
     # objpath = os.path.join(basis.__path__[0], 'objects', 'yumifinger.stl')
     # objcm1 = cm.CollisionModel(objpath, cdmesh_type='triangles')
     # homomat = np.array([[-0.5, -0.82363909, 0.2676166, -0.00203699],
@@ -132,7 +132,7 @@ if __name__ == '__main__':
     # gm.gen_arrow(spos=hitpos, epos=hitpos + hitnrml * .07, thickness=.002, rgba=np.array([0, 1, 0, 1])).attach_to(base)
     # base.run()
 
-    wd.World(campos=[1.0, 1, .0, 1.0], lookatpos=[0, 0, 0])
+    wd.World(cam_pos=[1.0, 1, .0, 1.0], lookat_pos=[0, 0, 0])
     objpath = os.path.join(basis.__path__[0], 'objects', 'yumifinger.stl')
     objcm1 = cm.CollisionModel(objpath, cdprimit_type='polygons')
     # homomat = np.array([[-0.5, -0.82363909, 0.2676166, -0.00203699],

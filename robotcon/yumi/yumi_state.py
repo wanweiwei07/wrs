@@ -1,5 +1,5 @@
 '''
-State Encapsulation for YuMi robot
+State Encapsulation for YuMi robot_s
 Author: Jacky
 '''
 import numpy as np

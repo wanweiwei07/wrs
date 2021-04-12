@@ -18,9 +18,9 @@ class UR3EDual(ri.RobotInterface):
         this_dir, this_filename = os.path.split(__file__)
         # left side
         self.lft_base = jl.JLChain(pos=pos, rotmat=rotmat, homeconf=np.zeros(0), name='lft_base_jl')
-        self.lft_base.jnts[1]['loc_pos'] = np.array([.365, .345, 1.33])  # left from robot view
+        self.lft_base.jnts[1]['loc_pos'] = np.array([.365, .345, 1.33])  # left from robot_s view
         self.lft_base.jnts[1]['loc_rotmat'] = rm.rotmat_from_euler(math.pi / 2.0, 0,
-                                                                   math.pi / 2.0)  # left from robot view
+                                                                   math.pi / 2.0)  # left from robot_s view
         self.lft_base.lnks[0]['name'] = "ur3e_dual_base"
         self.lft_base.lnks[0]['loc_pos'] = np.array([0, 0, 0])
         self.lft_base.lnks[0]['collisionmodel'] = cm.CollisionModel(
@@ -41,15 +41,15 @@ class UR3EDual(ri.RobotInterface):
                                enable_cc=False)
         # lft hand offset (if needed)
         self.lft_hnd_offset = np.zeros(3)
-        lft_hnd_pos, lft_hnd_rotmat = self.lft_arm.cvt_loc_intcp_to_gl(loc_pos=self.lft_hnd_offset)
+        lft_hnd_pos, lft_hnd_rotmat = self.lft_arm.cvt_loc_tcp_to_gl(loc_pos=self.lft_hnd_offset)
         self.lft_hnd = rtq.RobotiqHE(pos=lft_hnd_pos,
                                      rotmat=self.lft_arm.jnts[-1]['gl_rotmatq'],
                                      enable_cc=False)
         # rigth side
         self.rgt_base = jl.JLChain(pos=pos, rotmat=rotmat, homeconf=np.zeros(0), name='rgt_base_jl')
-        self.rgt_base.jnts[1]['loc_pos'] = np.array([.365, -.345, 1.33])  # right from robot view
+        self.rgt_base.jnts[1]['loc_pos'] = np.array([.365, -.345, 1.33])  # right from robot_s view
         self.rgt_base.jnts[1]['loc_rotmat'] = rm.rotmat_from_euler(math.pi / 2.0, 0,
-                                                                   math.pi / 2.0)  # left from robot view
+                                                                   math.pi / 2.0)  # left from robot_s view
         self.rgt_base.lnks[0]['name'] = "ur3e_dual_base"
         self.rgt_base.lnks[0]['loc_pos'] = np.array([0, 0, 0])
         self.rgt_base.lnks[0]['meshfile'] = None
@@ -66,7 +66,7 @@ class UR3EDual(ri.RobotInterface):
                                enable_cc=False)
         # rgt hand offset (if needed)
         self.rgt_hnd_offset = np.zeros(3)
-        rgt_hnd_pos, rgt_hnd_rotmat = self.rgt_arm.cvt_loc_intcp_to_gl(loc_pos=self.rgt_hnd_offset)
+        rgt_hnd_pos, rgt_hnd_rotmat = self.rgt_arm.cvt_loc_tcp_to_gl(loc_pos=self.rgt_hnd_offset)
         # TODO replace using copy
         self.rgt_hnd = rtq.RobotiqHE(pos=rgt_hnd_pos,
                                      rotmat=self.rgt_arm.jnts[-1]['gl_rotmatq'],
@@ -129,11 +129,11 @@ class UR3EDual(ri.RobotInterface):
         rgt_hnd_pos, rgt_hnd_rotmat = self.rgt_arm.get_worldpose(relpos=self.rgt_hnd_offset)
         self.rgt_hnd.fix_to(pos=rgt_hnd_pos, rotmat=rgt_hnd_rotmat)
 
-    def fk(self, component_name, jnt_values):
+    def fk(self, manipulator_name, jnt_values):
         """
-        :param jnt_values: [nparray, nparray], 6+6, meter-radian
+        :param jnt_values: 1x6 or 1x12 nparray
         :jlc_name 'lft_arm', 'rgt_arm', 'both_arm'
-        :param component_name:
+        :param manipulator_name:
         :return:
         author: weiwei
         date: 20201208toyonaka
@@ -150,52 +150,131 @@ class UR3EDual(ri.RobotInterface):
                 obj_info['gl_pos'] = gl_pos
                 obj_info['gl_rotmat'] = gl_rotmat
 
-        super().fk(component_name, jnt_values)
-        # examine length
-        if component_name == 'lft_arm' or component_name == 'rgt_arm':
-            if not isinstance(jnt_values, np.ndarray) or jnt_values.size != 6:
-                raise ValueError("An 1x6 npdarray must be specified to move a single arm!")
+        def update_component(component_name, jnt_values):
             self.manipulator_dict[component_name].fk(jnt_values=jnt_values)
-            self.get_hnd_on_component(component_name).fix_to(
+            self.get_hnd_on_manipulator(component_name).fix_to(
                 pos=self.manipulator_dict[component_name].jnts[-1]['gl_posq'],
                 rotmat=self.manipulator_dict[component_name].jnts[-1]['gl_rotmatq'])
             update_oih(component_name=component_name)
-        elif component_name == 'both_arm':
-            if (not isinstance(jnt_values, list)
-                    or jnt_values[0].size != 6
-                    or jnt_values[1].size != 6):
-                raise ValueError("A list of two 1x6 npdarrays must be specified to move both arm!")
-            self.lft_arm.fk(jnt_values=jnt_values[0])
-            self.lft_hnd.fix_to(pos=self.lft_arm.jnts[-1]['gl_posq'],
-                                rotmat=self.lft_arm.jnts[-1]['gl_rotmatq'])
-            self.rgt_arm.fk(jnt_values=jnt_values[1])
-            self.rgt_hnd.fix_to(pos=self.rgt_arm.jnts[-1]['gl_posq'],
-                                rotmat=self.rgt_arm.jnts[-1]['gl_rotmatq'])
-            update_oih(component_name='rgt_arm')
-            update_oih(component_name='lft_arm')
-        elif component_name == 'all':
-            pass
+
+        super().fk(manipulator_name, jnt_values)
+        # examine length
+        if manipulator_name == 'lft_arm' or manipulator_name == 'rgt_arm':
+            if not isinstance(jnt_values, np.ndarray) or jnt_values.size != 6:
+                raise ValueError("An 1x6 npdarray must be specified to move a single arm!")
+            update_component(manipulator_name, jnt_values)
+        elif manipulator_name == 'both_arm':
+            if (jnt_values.size != 12):
+                raise ValueError("A 1x12 npdarrays must be specified to move both arm!")
+            update_component('lft_arm', jnt_values[0:6])
+            update_component('rgt_arm', jnt_values[6:12])
+        elif manipulator_name == 'all':
+            raise NotImplementedError
         else:
             raise ValueError("The given component name is not available!")
 
-    def gen_stickmodel(self, name='ur3e_dual'):
+    def rand_conf(self, manipulator_name):
+        """
+        override robot_interface.rand_conf
+        :param manipulator_name:
+        :return:
+        author: weiwei
+        date: 20210406
+        """
+        if manipulator_name == 'lft_arm' or manipulator_name == 'rgt_arm':
+            return super().rand_conf(manipulator_name)
+        elif manipulator_name == 'both_arm':
+            return np.hstack((super().rand_conf('lft_arm'), super().rand_conf('rgt_arm')))
+        else:
+            raise NotImplementedError
+
+    def gen_stickmodel(self,
+                       tcp_jntid=None,
+                       tcp_loc_pos=None,
+                       tcp_loc_rotmat=None,
+                       toggle_tcpcs=False,
+                       toggle_jntscs=False,
+                       toggle_connjnt=False,
+                       name='ur3e_dual_stickmodel'):
         stickmodel = mc.ModelCollection(name=name)
-        self.lft_base.gen_stickmodel().attach_to(stickmodel)
-        self.lft_arm.gen_stickmodel().attach_to(stickmodel)
-        self.lft_hnd.gen_stickmodel().attach_to(stickmodel)
-        self.rgt_base.gen_stickmodel().attach_to(stickmodel)
-        self.rgt_arm.gen_stickmodel().attach_to(stickmodel)
-        self.rgt_hnd.gen_stickmodel().attach_to(stickmodel)
+        self.lft_body.gen_stickmodel(tcp_loc_pos=None,
+                                     tcp_loc_rotmat=None,
+                                     toggle_tcpcs=False,
+                                     toggle_jntscs=toggle_jntscs).attach_to(stickmodel)
+        self.lft_arm.gen_stickmodel(tcp_jntid=tcp_jntid,
+                                    tcp_loc_pos=tcp_loc_pos,
+                                    tcp_loc_rotmat=tcp_loc_rotmat,
+                                    toggle_tcpcs=toggle_tcpcs,
+                                    toggle_jntscs=toggle_jntscs,
+                                    toggle_connjnt=toggle_connjnt).attach_to(stickmodel)
+        self.lft_hnd.gen_stickmodel(tcp_loc_pos=None,
+                                    tcp_loc_rotmat=None,
+                                    toggle_tcpcs=False,
+                                    toggle_jntscs=toggle_jntscs,
+                                    toggle_connjnt=toggle_connjnt).attach_to(stickmodel)
+        self.rgt_body.gen_stickmodel(tcp_loc_pos=None,
+                                     tcp_loc_rotmat=None,
+                                     toggle_tcpcs=False,
+                                     toggle_jntscs=toggle_jntscs).attach_to(stickmodel)
+        self.rgt_arm.gen_stickmodel(tcp_jntid=tcp_jntid,
+                                    tcp_loc_pos=tcp_loc_pos,
+                                    tcp_loc_rotmat=tcp_loc_rotmat,
+                                    toggle_tcpcs=toggle_tcpcs,
+                                    toggle_jntscs=toggle_jntscs,
+                                    toggle_connjnt=toggle_connjnt).attach_to(stickmodel)
+        self.rgt_hnd.gen_stickmodel(tcp_loc_pos=None,
+                                    tcp_loc_rotmat=None,
+                                    toggle_tcpcs=False,
+                                    toggle_jntscs=toggle_jntscs,
+                                    toggle_connjnt=toggle_connjnt).attach_to(stickmodel)
         return stickmodel
 
-    def gen_meshmodel(self, name='ur3e_dual'):
+    def gen_meshmodel(self,
+                      tcp_jntid=None,
+                      tcp_loc_pos=None,
+                      tcp_loc_rotmat=None,
+                      toggle_tcpcs=False,
+                      toggle_jntscs=False,
+                      rgba=None,
+                      name='ur3e_dual_meshmodel'):
         meshmodel = mc.ModelCollection(name=name)
-        self.lft_base.gen_meshmodel().attach_to(meshmodel)
-        self.lft_arm.gen_meshmodel().attach_to(meshmodel)
-        self.lft_hnd.gen_meshmodel().attach_to(meshmodel)
-        self.rgt_base.gen_meshmodel().attach_to(meshmodel)
-        self.rgt_arm.gen_meshmodel().attach_to(meshmodel)
-        self.rgt_hnd.gen_meshmodel().attach_to(meshmodel)
+        self.lft_body.gen_meshmodel(tcp_loc_pos=None,
+                                    tcp_loc_rotmat=None,
+                                    toggle_tcpcs=False,
+                                    toggle_jntscs=toggle_jntscs,
+                                    rgba=rgba).attach_to(meshmodel)
+        self.lft_arm.gen_meshmodel(tcp_jntid=tcp_jntid,
+                                   tcp_loc_pos=tcp_loc_pos,
+                                   tcp_loc_rotmat=tcp_loc_rotmat,
+                                   toggle_tcpcs=toggle_tcpcs,
+                                   toggle_jntscs=toggle_jntscs,
+                                   rgba=rgba).attach_to(meshmodel)
+        self.lft_hnd.gen_meshmodel(tcp_loc_pos=None,
+                                   tcp_loc_rotmat=None,
+                                   toggle_tcpcs=False,
+                                   toggle_jntscs=toggle_jntscs,
+                                   rgba=rgba).attach_to(meshmodel)
+        self.rgt_arm.gen_meshmodel(tcp_jntid=tcp_jntid,
+                                   tcp_loc_pos=tcp_loc_pos,
+                                   tcp_loc_rotmat=tcp_loc_rotmat,
+                                   toggle_tcpcs=toggle_tcpcs,
+                                   toggle_jntscs=toggle_jntscs,
+                                   rgba=rgba).attach_to(meshmodel)
+        self.rgt_hnd.gen_meshmodel(tcp_loc_pos=None,
+                                   tcp_loc_rotmat=None,
+                                   toggle_tcpcs=False,
+                                   toggle_jntscs=toggle_jntscs,
+                                   rgba=rgba).attach_to(meshmodel)
+        for obj_info in self.lft_oih_infos:
+            objcm = obj_info['collisionmodel']
+            objcm.set_pos(obj_info['gl_pos'])
+            objcm.set_rotmat(obj_info['gl_rotmat'])
+            objcm.attach_to(meshmodel)
+        for obj_info in self.rgt_oih_infos:
+            objcm = obj_info['collisionmodel']
+            objcm.set_pos(obj_info['gl_pos'])
+            objcm.set_rotmat(obj_info['gl_rotmat'])
+            objcm.attach_to(meshmodel)
         return meshmodel
 
 
@@ -203,7 +282,7 @@ if __name__ == '__main__':
     import visualization.panda.world as wd
     import modeling.geometricmodel as gm
 
-    base = wd.World(campos=[3, 0, 3], lookatpos=[0, 0, 1])
+    base = wd.World(cam_pos=[3, 0, 3], lookat_pos=[0, 0, 1])
     gm.gen_frame().attach_to(base)
     u3ed = UR3EDual()
     # u3ed.fk(.85)

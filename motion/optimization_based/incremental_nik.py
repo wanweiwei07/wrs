@@ -5,8 +5,8 @@ import basis.robot_math as rm
 
 class IncrementalNIK(object):
 
-    def __init__(self, robot):
-        self.rbt = robot
+    def __init__(self, robot_sim):
+        self.rbt = robot_sim
 
     def gen_linear_motion(self,
                           component_name,
@@ -125,21 +125,20 @@ if __name__ == '__main__':
     import visualization.panda.world as wd
     import modeling.geometricmodel as gm
 
-    base = wd.World(campos=[1.5, 0, 3], lookatpos=[0, 0, .5])
+    base = wd.World(cam_pos=[1.5, 0, 3], lookat_pos=[0, 0, .5])
     gm.gen_frame().attach_to(base)
     yumi_instance = ym.Yumi(enable_cc=True)
     component_name = 'rgt_arm'
     start_pos = np.array([.5, -.3, .3])
     start_rotmat = rm.rotmat_from_axangle([0, 1, 0], math.pi / 2)
-    start_info = [start_pos, start_rotmat]
     goal_pos = np.array([.55, .3, .5])
     goal_rotmat = rm.rotmat_from_axangle([0, 1, 0], math.pi / 2)
-    goal_info = [goal_pos, goal_rotmat]
     gm.gen_frame(pos=start_pos, rotmat=start_rotmat).attach_to(base)
     gm.gen_frame(pos=goal_pos, rotmat=goal_rotmat).attach_to(base)
     inik = IncrementalNIK(yumi_instance)
     tic = time.time()
-    jnt_values_list = inik.gen_linear_motion(component_name, start_info, goal_info)
+    jnt_values_list = inik.gen_linear_motion(component_name, start_hnd_pos=start_pos, start_hnd_rotmat=start_rotmat,
+                                             goal_hnd_pos=goal_pos, goal_hnd_rotmat=goal_rotmat)
     toc = time.time()
     print(toc - tic)
     for jnt_values in jnt_values_list:

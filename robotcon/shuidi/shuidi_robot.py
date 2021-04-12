@@ -6,7 +6,7 @@ from robotcon.shuidi.shuidi_constants import ShuidiConstants as SDC
 
 class ShuidiRobot(object):
     """
-    Wrapper for controlling Yunjin Shuidi2 robot using Shuidi's string API
+    Wrapper for controlling Yunjin Shuidi2 robot_s using Shuidi's string API
     API Webpage, http://waterdocs.pages.yunjichina.com.cn/user_manual/exports/water_api.html
     author: hao, revised by weiwei
     date: 20210329

@@ -15,7 +15,7 @@ if __name__ == '__main__':
 
     # # local code
     global_frame = gm.gen_frame()
-    # define robot and robot anime info
+    # define robot_s and robot_s anime info
     robot_instance = xav.XArm7YunjiMobile()
     robot_meshmodel_parameters = [None,  # tcp_jntid
                                   None,  # tcp_loc_pos
@@ -43,7 +43,7 @@ if __name__ == '__main__':
     rmt_robot_instance = rvc.copy_to_remote(robot_instance)
     # rvc.show_stationary_obj(rmt_obj)
     robot_jlc_name = 'arm'
-    robot_instance.fk(np.array([0, math.pi * 2 / 3, 0, math.pi, 0, -math.pi / 6, 0]), component_name=robot_jlc_name)
+    robot_instance.fk(np.array([0, math.pi * 2 / 3, 0, math.pi, 0, -math.pi / 6, 0]), manipulator_name=robot_jlc_name)
     rrtc_planner = rrtc.RRTConnect(robot_instance)
     path = rrtc_planner.plan(start_conf=np.array([0, math.pi * 2 / 3, 0, math.pi, 0, -math.pi / 6, 0]),
                              goal_conf=np.array([math.pi / 3, math.pi * 1 / 3, 0, math.pi / 2, 0, math.pi / 6, 0]),
@@ -65,7 +65,7 @@ if __name__ == '__main__':
     newpath = copy.deepcopy(path)
     rmt_robot_instance2 = rvc.copy_to_remote(robot_instance)
     for pose in newpath:
-        robot_instance.fk(pose, component_name='arm')
+        robot_instance.fk(pose, manipulator_name='arm')
         # rmt_robot_mesh_list.append(rvc.showmodel_to_remote(robot_instance.gen_meshmodel()))
         rmt_robot_mesh_list.append(rvc.add_stationary_robot(rmt_robot_instance2, robot_instance))
         # time.sleep(.1)

@@ -229,7 +229,7 @@ if __name__ == '__main__':
     import visualization.panda.world as wd
     import modeling.geometricmodel as gm
 
-    base = wd.World(campos=[2, 0, 1], lookatpos=[0, 0, 0])
+    base = wd.World(cam_pos=[2, 0, 1], lookat_pos=[0, 0, 0])
     gm.gen_frame().attach_to(base)
     # for angle in np.linspace(0, .85, 8):
     #     xag = XArmGripper()

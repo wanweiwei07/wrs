@@ -33,7 +33,7 @@ class Iros13Hands(BaseHands):
         #  (2) Call via interface methods in the hand class.
         #
         # In Iros13Hands class, (1) is used. (1) is faster to implement. And
-        # I think it's ok for robot client classes to know what commands exist,
+        # I think it's ok for robot_s client classes to know what commands exist,
         # without the hand class has the interfaces for comamands. But you can
         # always apply (2) approach, which is cleaner.
         super(Iros13Hands, self).__init__(parent)
