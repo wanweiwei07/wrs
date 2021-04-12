@@ -1,0 +1,171 @@
+def driverProg():
+    # slave urscript for synchonized dual-arm motion
+    # author: weiwei
+    # date: 20210405osaka
+
+	SERVO_IDLE = 0
+	SERVO_RUNNING = 1
+	cmd_servo_state = SERVO_IDLE
+	cmd_servo_q = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
+
+	def set_servo_setpoint(q):
+		enter_critical
+		cmd_servo_state = SERVO_RUNNING
+		cmd_servo_q = q
+		exit_critical
+	end
+
+	thread servoThread():
+		state = SERVO_IDLE
+		while True:
+			enter_critical
+			q = cmd_servo_q
+			do_brake = False
+			if (state == SERVO_RUNNING) and (cmd_servo_state == SERVO_IDLE):
+				do_brake = True
+			end
+			state = cmd_servo_state
+			cmd_servo_state = SERVO_IDLE
+			exit_critical
+			if do_brake:
+				stopj(1.0)
+				sync()
+			elif state == SERVO_RUNNING:
+				# textmsg(q)
+				servoj(q)
+			else:
+				sync()
+			end
+		end
+	end
+
+    # use two registers to represent a large integer
+    modbus_add_signal("parameter_master_ip", 0, 255, 3, "base_l")
+    modbus_set_signal_update_frequency("base_l", 125)
+    modbus_add_signal("parameter_master_ip", 0, 254, 3, "base_u")
+    modbus_set_signal_update_frequency("base_u", 125)
+    modbus_add_signal("parameter_master_ip", 0, 253, 3, "base_sgn")
+    modbus_set_signal_update_frequency("base_sgn", 125)
+    modbus_add_signal("parameter_master_ip", 0, 252, 3, "shoulder_l")
+    modbus_set_signal_update_frequency("shoulder_l", 125)
+    modbus_add_signal("parameter_master_ip", 0, 251, 3, "shoulder_u")
+    modbus_set_signal_update_frequency("shoulder_u", 125)
+    modbus_add_signal("parameter_master_ip", 0, 250, 3, "shoulder_sgn")
+    modbus_set_signal_update_frequency("shoulder_sgn", 125)
+    modbus_add_signal("parameter_master_ip", 0, 249, 3, "elbow_l")
+    modbus_set_signal_update_frequency("elbow_l", 125)
+    modbus_add_signal("parameter_master_ip", 0, 248, 3, "elbow_u")
+    modbus_set_signal_update_frequency("elbow_u", 125)
+    modbus_add_signal("parameter_master_ip", 0, 247, 3, "elbow_sgn")
+    modbus_set_signal_update_frequency("elbow_sgn", 125)
+    modbus_add_signal("parameter_master_ip", 0, 246, 3, "wrist1_l")
+    modbus_set_signal_update_frequency("wrist1_l", 125)
+    modbus_add_signal("parameter_master_ip", 0, 245, 3, "wrist1_u")
+    modbus_set_signal_update_frequency("wrist1_u", 125)
+    modbus_add_signal("parameter_master_ip", 0, 244, 3, "wrist1_sgn")
+    modbus_set_signal_update_frequency("wrist1_sgn", 125)
+    modbus_add_signal("parameter_master_ip", 0, 243, 3, "wrist2_l")
+    modbus_set_signal_update_frequency("wrist2_l", 125)
+    modbus_add_signal("parameter_master_ip", 0, 242, 3, "wrist2_u")
+    modbus_set_signal_update_frequency("wrist2_u", 125)
+    modbus_add_signal("parameter_master_ip", 0, 241, 3, "wrist2_sgn")
+    modbus_set_signal_update_frequency("wrist2_sgn", 125)
+    modbus_add_signal("parameter_master_ip", 0, 240, 3, "wrist3_l")
+    modbus_set_signal_update_frequency("wrist3_l", 125)
+    modbus_add_signal("parameter_master_ip", 0, 239, 3, "wrist3_u")
+    modbus_set_signal_update_frequency("wrist3_u", 125)
+    modbus_add_signal("parameter_master_ip", 0, 238, 3, "wrist3_sgn")
+    modbus_set_signal_update_frequency("wrist3_sgn", 125)
+    modbus_add_signal("parameter_master_ip", 0, 200, 3, "conf_counter")
+    modbus_set_signal_update_frequency("conf_counter", 125)
+	thread_servo = run servoThread()
+    sqrt_jnts_scaler = sqrt(parameter_jnts_scaler)
+	previous_conf_counter = 0
+	while True:
+        conf_counter = modbus_get_signal_status("conf_counter", False)
+        if conf_counter == 65534:
+            break
+        end
+        if conf_counter - previous_conf_counter == 1:
+            # base
+            base_l_value = modbus_get_signal_status("base_l", False)
+            base_u_value = modbus_get_signal_status("base_u", False)
+            base_sgn = modbus_get_signal_status("base_sgn", False)
+            if base_sgn == 65535:
+                base_sgn = -1
+            end
+            base_value = base_sgn * (base_u_value * sqrt_jnts_scaler + base_l_value)
+            # shoulder
+            shoulder_l_value = modbus_get_signal_status("shoulder_l", False)
+            shoulder_u_value = modbus_get_signal_status("shoulder_u", False)
+            shoulder_sgn = modbus_get_signal_status("shoulder_sgn", False)
+            if shoulder_sgn == 65535:
+                shoulder_sgn = -1
+            end
+            shoulder_value = shoulder_sgn * (shoulder_u_value * sqrt_jnts_scaler + shoulder_l_value)
+            # elbow
+            elbow_l_value = modbus_get_signal_status("elbow_l", False)
+            elbow_u_value = modbus_get_signal_status("elbow_u", False)
+            elbow_sgn = modbus_get_signal_status("elbow_sgn", False)
+            if elbow_sgn == 65535:
+                elbow_sgn = -1
+            end
+            elbow_value = elbow_sgn * (elbow_u_value * sqrt_jnts_scaler + elbow_l_value)
+            # wrist1
+            wrist1_l_value = modbus_get_signal_status("wrist1_l", False)
+            wrist1_u_value = modbus_get_signal_status("wrist1_u", False)
+            wrist1_sgn = modbus_get_signal_status("wrist1_sgn", False)
+            if wrist1_sgn == 65535:
+                wrist1_sgn = -1
+            end
+            wrist1_value = wrist1_sgn * (wrist1_u_value * sqrt_jnts_scaler + wrist1_l_value)
+            # wrist2
+            wrist2_l_value = modbus_get_signal_status("wrist2_l", False)
+            wrist2_u_value = modbus_get_signal_status("wrist2_u", False)
+            wrist2_sgn = modbus_get_signal_status("wrist2_sgn", False)
+            if wrist2_sgn == 65535:
+                wrist2_sgn = -1
+            end
+            wrist2_value = wrist2_sgn * (wrist2_u_value * sqrt_jnts_scaler + wrist2_l_value)
+            # wrist3
+            wrist3_l_value = modbus_get_signal_status("wrist3_l", False)
+            wrist3_u_value = modbus_get_signal_status("wrist3_u", False)
+            wrist3_sgn = modbus_get_signal_status("wrist3_sgn", False)
+            if wrist3_sgn == 65535:
+                wrist3_sgn = -1
+            end
+            wrist3_value = wrist3_sgn * (wrist3_u_value * sqrt_jnts_scaler + wrist3_l_value)
+            # q
+            q = [base_value/parameter_jnts_scaler,
+                 shoulder_value/parameter_jnts_scaler,
+                 elbow_value/parameter_jnts_scaler,
+                 wrist1_value/parameter_jnts_scaler,
+                 wrist2_value/parameter_jnts_scaler,
+                 wrist3_value/parameter_jnts_scaler]
+		    set_servo_setpoint(q)
+            previous_conf_counter = conf_counter
+            sync()
+        end
+	end
+	kill thread_servo
+	sync()
+	modbus_delete_signal("base_l")
+	modbus_delete_signal("base_u")
+	modbus_delete_signal("base_sgn")
+	modbus_delete_signal("shoulder_l")
+	modbus_delete_signal("shoulder_u")
+	modbus_delete_signal("shoulder_sgn")
+	modbus_delete_signal("elbow_l")
+	modbus_delete_signal("elbow_u")
+	modbus_delete_signal("elbow_sgn")
+	modbus_delete_signal("wrist1_l")
+	modbus_delete_signal("wrist1_u")
+	modbus_delete_signal("wrist1_sgn")
+	modbus_delete_signal("wrist2_l")
+	modbus_delete_signal("wrist2_u")
+	modbus_delete_signal("wrist2_sgn")
+	modbus_delete_signal("wrist3_l")
+	modbus_delete_signal("wrist3_u")
+	modbus_delete_signal("wrist3_sgn")
+	modbus_delete_signal("conf_counter")
+end

@@ -1,0 +1,156 @@
+def driverProg():
+	SERVO_IDLE = 0
+	SERVO_RUNNING = 1
+	cmd_servo_state = SERVO_IDLE
+	cmd_servo_q = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
+
+	def set_servo_setpoint(q):
+		enter_critical
+		cmd_servo_state = SERVO_RUNNING
+		cmd_servo_q = q
+		exit_critical
+	end
+
+	thread servoThread():
+		state = SERVO_IDLE
+		while True:
+			enter_critical
+			q = cmd_servo_q
+			do_brake = False
+			if (state == SERVO_RUNNING) and (cmd_servo_state == SERVO_IDLE):
+				do_brake = True
+			end
+			state = cmd_servo_state
+			cmd_servo_state = SERVO_IDLE
+			exit_critical
+			if do_brake:
+				stopj(1.0)
+				sync()
+			elif state == SERVO_RUNNING:
+				# textmsg(q)
+				servoj(q)
+			else:
+				sync()
+			end
+		end
+	end
+
+	socket_open("parameter_pc_ip", parameter_pc_port, "pc_socket")
+	textmsg("open pc connection")
+    thread_servo = run servoThread()
+    sqrt_jnts_scaler = sqrt(parameter_jnts_scaler)
+    keepalive = 1
+    conf_counter = 0
+    write_port_register(255, 0)
+    write_port_register(254, 0)
+    write_port_register(253, 0)
+    write_port_register(252, 0)
+    write_port_register(251, 0)
+    write_port_register(250, 0)
+    write_port_register(249, 0)
+    write_port_register(248, 0)
+    write_port_register(247, 0)
+    write_port_register(246, 0)
+    write_port_register(245, 0)
+    write_port_register(244, 0)
+    write_port_register(243, 0)
+    write_port_register(242, 0)
+    write_port_register(241, 0)
+    write_port_register(240, 0)
+    write_port_register(239, 0)
+    write_port_register(238, 0)
+    write_port_register(200, 65535)
+    while keepalive > 0:
+        params_mult = socket_read_binary_integer(12+1, "pc_socket")
+        if params_mult[0] > 0:
+            q_master = [params_mult[1]/parameter_jnts_scaler,
+                        params_mult[2]/parameter_jnts_scaler,
+                        params_mult[3]/parameter_jnts_scaler,
+                        params_mult[4]/parameter_jnts_scaler,
+                        params_mult[5]/parameter_jnts_scaler,
+                        params_mult[6]/parameter_jnts_scaler]
+            keepalive = params_mult[13]
+            q_slave = [params_mult[7],
+                       params_mult[8],
+                       params_mult[9],
+                       params_mult[10],
+                       params_mult[11],
+                       params_mult[12]]
+            # base
+            base_sgn = 1
+            if q_slave[0] < 0:
+                base_sgn = -1
+            end
+            base_abs_value = base_sgn * q_slave[0]
+            base_l_value = base_abs_value % sqrt_jnts_scaler
+            base_u_value = floor(base_abs_value / sqrt_jnts_scaler)
+            # shoulder
+            shoulder_sgn = 1
+            if q_slave[1]<0:
+                shoulder_sgn = -1
+            end
+            shoulder_abs_value = shoulder_sgn * q_slave[1]
+            shoulder_l_value = shoulder_abs_value % sqrt_jnts_scaler
+            shoulder_u_value = floor(shoulder_abs_value / sqrt_jnts_scaler)
+            # elbow
+            elbow_sgn = 1
+            if q_slave[2] < 0:
+                elbow_sgn = -1
+            end
+            elbow_abs_value = elbow_sgn * q_slave[2]
+            elbow_l_value = elbow_abs_value % sqrt_jnts_scaler
+            elbow_u_value = floor(elbow_abs_value / sqrt_jnts_scaler)
+            # wrist1
+            wrist1_sgn = 1
+            if q_slave[3] < 0:
+                wrist1_sgn = -1
+            end
+            wrist1_abs_value = wrist1_sgn * q_slave[3]
+            wrist1_l_value = wrist1_abs_value % sqrt_jnts_scaler
+            wrist1_u_value = floor(wrist1_abs_value / sqrt_jnts_scaler)
+            # wrist2
+            wrist2_sgn = 1
+            if q_slave[4] < 0:
+                wrist2_sgn = -1
+            end
+            wrist2_abs_value = wrist2_sgn * q_slave[4]
+            wrist2_l_value = wrist2_abs_value % sqrt_jnts_scaler
+            wrist2_u_value = floor(wrist2_abs_value / sqrt_jnts_scaler)
+            # wrist3
+            wrist3_sgn = 1
+            if q_slave[5] < 0:
+                wrist3_sgn = -1
+            end
+            wrist3_abs_value = wrist3_sgn * q_slave[5]
+            wrist3_l_value = wrist3_abs_value % sqrt_jnts_scaler
+            wrist3_u_value = floor(wrist3_abs_value / sqrt_jnts_scaler)
+            # send by modbus
+            write_port_register(255, base_l_value)
+            write_port_register(254, base_u_value)
+            write_port_register(253, base_sgn)
+            write_port_register(252, shoulder_l_value)
+            write_port_register(251, shoulder_u_value)
+            write_port_register(250, shoulder_sgn)
+            write_port_register(249, elbow_l_value)
+            write_port_register(248, elbow_u_value)
+            write_port_register(247, elbow_sgn)
+            write_port_register(246, wrist1_l_value)
+            write_port_register(245, wrist1_u_value)
+            write_port_register(244, wrist1_sgn)
+            write_port_register(243, wrist2_l_value)
+            write_port_register(242, wrist2_u_value)
+            write_port_register(241, wrist2_sgn)
+            write_port_register(240, wrist3_l_value)
+            write_port_register(239, wrist3_u_value)
+            write_port_register(238, wrist3_sgn)
+            conf_counter = conf_counter + 1
+            write_port_register(200, conf_counter)
+		    set_servo_setpoint(q_master)
+            sync()
+        end
+    end
+    write_port_register(200, 65534)
+    kill thread_servo
+    sync()
+    socket_close("pc_socket")
+end

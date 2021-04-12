@@ -1,0 +1,7 @@
+def rq_set_zero():
+  	if(socket_open("127.0.0.1",63350,"acc")): 
+  		socket_send_string("SET ZRO","acc")
+  		sleep(0.1)
+  		socket_close("acc")
+  	end
+end

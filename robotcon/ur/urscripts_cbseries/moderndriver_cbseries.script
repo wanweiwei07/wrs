@@ -1,0 +1,61 @@
+def driverProg():
+	SERVO_IDLE = 0
+	SERVO_RUNNING = 1
+	cmd_servo_state = SERVO_IDLE
+	cmd_servo_q = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
+
+	def set_servo_setpoint(q):
+		enter_critical
+		cmd_servo_state = SERVO_RUNNING
+		cmd_servo_q = q
+		exit_critical
+	end
+
+	thread servoThread():
+		state = SERVO_IDLE
+		while True:
+			enter_critical
+			q = cmd_servo_q
+			do_brake = False
+			if (state == SERVO_RUNNING) and (cmd_servo_state == SERVO_IDLE):
+				do_brake = True
+			end
+			state = cmd_servo_state
+			cmd_servo_state = SERVO_IDLE
+			exit_critical
+			if do_brake:
+				stopj(1.0)
+				sync()
+			elif state == SERVO_RUNNING:
+				# textmsg(q)
+				servoj(q)
+			else:
+				sync()
+			end
+		end
+	end
+
+	socket_open("parameter_ip", parameter_port)
+	textmsg("open connection")
+	thread_servo = run servoThread()
+	keepalive = 1
+	while keepalive > 0:
+		# textmsg("preparing to read")
+		# textmsg(keepalive)
+		params_mult = socket_read_binary_integer(6+1)
+		if params_mult[0] > 0:
+			q = [params_mult[1]/parameter_jointscaler,
+				 params_mult[2]/parameter_jointscaler,
+				 params_mult[3]/parameter_jointscaler,
+				 params_mult[4]/parameter_jointscaler,
+				 params_mult[5]/parameter_jointscaler,
+				 params_mult[6]/parameter_jointscaler]
+			keepalive = params_mult[7]
+			set_servo_setpoint(q)
+	        sync()
+		end
+	end
+	sync()
+	socket_close()
+	kill thread_servo
+end
