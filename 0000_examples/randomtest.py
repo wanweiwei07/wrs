@@ -13,7 +13,7 @@ class MyApp(ShowBase):
         self.scene.reparentTo(self.render)
         # Apply scale and position transforms on the model.
         self.scene.setScale(0.25, 0.25, 0.25)
-        self.scene.setPos(-8, 40, 0)
+        self.scene.setPos(-8, 41, 0)
 
 
 if __name__ == '__main__':
