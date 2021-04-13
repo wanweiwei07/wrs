@@ -93,7 +93,7 @@ def define_grasp_with_rotation(hnd,
 #     hnd = hndfa.genHand(usesuction=True)
 #     grasp = hnd.approachat(finger_center[0], finger_center[1], finger_center[2],
 #                            finger_normal[0], finger_normal[1], finger_normal[2],
-#                            hand_normal[0], hand_normal[1], hand_normal[2], jawwidth=0)
+#                            hand_normal[0], hand_normal[1], hand_normal[2], jaw_width=0)
 #     if not ishndobjcollided(hndfa, grasp[0], grasp[2], objcm):
 #         effect_grasp.append(grasp)
 #     return effect_grasp
@@ -123,7 +123,7 @@ def define_grasp_with_rotation(hnd,
 #         hand_normal_rotated = np.dot(rm.rodrigues(finger_normal, rotate_angle), np.asarray(hand_normal))
 #         grasp = hnd.approachat(grasp_center[0], grasp_center[1], grasp_center[2],
 #                                finger_normal[0], finger_normal[1], finger_normal[2],
-#                                hand_normal_rotated[0], hand_normal_rotated[1], hand_normal_rotated[2], jawwidth=0)
+#                                hand_normal_rotated[0], hand_normal_rotated[1], hand_normal_rotated[2], jaw_width=0)
 #         if not ishndobjcollided(hndfa, grasp[0], grasp[2], objcm) == False:
 #             effect_grasp.append(grasp)
 #     return effect_grasp

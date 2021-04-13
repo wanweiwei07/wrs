@@ -626,13 +626,13 @@ if __name__ == '__main__':
     #     obj_pos = goal_homomat[:3, 3]
     #     obj_rotmat = goal_homomat[:3, :3]
     #     for grasp_id in common_grasp_id_list:
-    #         jawwidth, tcp_pos, hnd_pos, hnd_rotmat = grasp_info_list[grasp_id]
+    #         jaw_width, tcp_pos, hnd_pos, hnd_rotmat = grasp_info_list[grasp_id]
     #         new_tcp_pos = obj_rotmat.dot(tcp_pos) + obj_pos
     #         new_hnd_pos = obj_rotmat.dot(hnd_pos) + obj_pos
     #         new_hnd_rotmat = obj_rotmat.dot(hnd_rotmat)
     #         tmp_hnd = hnd_instance.copy()
     #         tmp_hnd.fix_to(new_hnd_pos, new_hnd_rotmat)
-    #         tmp_hnd.jaw_to(jawwidth)
+    #         tmp_hnd.jaw_to(jaw_width)
     #         tmp_hnd.gen_meshmodel().attach_to(base)
     #         jnt_values = yumi_s.ik(component_name,
     #                                       new_tcp_pos,

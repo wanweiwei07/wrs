@@ -37,7 +37,7 @@ class RobotiqETwoFinger(object):
 
     def return_program_to_run(self, speedpercentage=90, forcepercentage=90, fingerdistance=0.0):
         """
-        return a program that changes the jawwidth of the gripper with
+        return a program that changes the jaw_width of the gripper with
         given speed percentage, force percentage, and fingerdistance
         :param speedpercentange: 0~100 percent
         :param forcepercentage: 0~100 percent

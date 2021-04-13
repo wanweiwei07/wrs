@@ -81,7 +81,7 @@ class GripperInterface(object):
         hnd_rotmat[:, 2] = rm.unit_vector(gl_hndz)
         hnd_rotmat[:, 0] = rm.unit_vector(gl_hndx)
         hnd_rotmat[:, 1] = np.cross(hnd_rotmat[:3, 2], hnd_rotmat[:3, 0])
-        hnd_pos = gl_jaw_center - hnd_rotmat.dot(self.jaw_center_pos)
+        hnd_pos = gl_jaw_center - hnd_rotmat.dot(self.jaw_center_loc_pos)
         self.fix_to(hnd_pos, hnd_rotmat)
         self.jaw_to(jaw_width)
         return [jaw_width, gl_jaw_center, hnd_pos, hnd_rotmat]
