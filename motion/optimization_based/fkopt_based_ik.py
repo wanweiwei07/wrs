@@ -38,42 +38,42 @@ class FKOptBasedIK(object):
         return self.rbt.get_jnt_ranges(jlc_name)
 
     def _constraint_zangle(self, jnt_values):
-        self.rbt.fk(jnt_values=jnt_values, manipulator_name=self.jlc_name)
+        self.rbt.fk(jnt_values=jnt_values, component_name=self.jlc_name)
         gl_tcp_pos, gl_tcp_rotmat = self.rbt.get_gl_tcp(manipulator_name=self.jlc_name)
         delta_angle = rm.angle_between_vectors(gl_tcp_rotmat[:,2], self.tgt_rotmat[:,2])
         self.zangle_err.append(delta_angle)
         return self._zangle_limit-delta_angle
 
     def _constraint_xangle(self, jnt_values):
-        self.rbt.fk(jnt_values=jnt_values, manipulator_name=self.jlc_name)
+        self.rbt.fk(jnt_values=jnt_values, component_name=self.jlc_name)
         gl_tcp_pos, gl_tcp_rotmat = self.rbt.get_gl_tcp(manipulator_name=self.jlc_name)
         delta_angle = rm.angle_between_vectors(gl_tcp_rotmat[:,0], self.tgt_rotmat[:,0])
         self.xangle_err.append(delta_angle)
         return self._xangle_limit-delta_angle
 
     def _constraint_x(self, jnt_values):
-        self.rbt.fk(jnt_values=jnt_values, manipulator_name=self.jlc_name)
+        self.rbt.fk(jnt_values=jnt_values, component_name=self.jlc_name)
         gl_tcp_pos, gl_tcp_rot = self.rbt.get_gl_tcp(manipulator_name=self.jlc_name)
         x_err = abs(self.tgt_pos[0] - gl_tcp_pos[0])
         self.x_err.append(x_err)
         return self._x_limit - x_err
 
     def _constraint_y(self, jnt_values):
-        self.rbt.fk(jnt_values=jnt_values, manipulator_name=self.jlc_name)
+        self.rbt.fk(jnt_values=jnt_values, component_name=self.jlc_name)
         gl_tcp_pos, gl_tcp_rot = self.rbt.get_gl_tcp(manipulator_name=self.jlc_name)
         y_err = abs(self.tgt_pos[1] - gl_tcp_pos[1])
         self.y_err.append(y_err)
         return self._y_limit - y_err
 
     def _constraint_z(self, jnt_values):
-        self.rbt.fk(jnt_values=jnt_values, manipulator_name=self.jlc_name)
+        self.rbt.fk(jnt_values=jnt_values, component_name=self.jlc_name)
         gl_tcp_pos, gl_tcp_rot = self.rbt.get_gl_tcp(manipulator_name=self.jlc_name)
         z_err = abs(self.tgt_pos[2] - gl_tcp_pos[2])
         self.z_err.append(z_err)
         return self._z_limit - z_err
 
     def _constraint_collision(self, jnt_values):
-        self.rbt.fk(jnt_values=jnt_values, manipulator_name=self.jlc_name)
+        self.rbt.fk(jnt_values=jnt_values, component_name=self.jlc_name)
         if self.rbt.is_collided(obstacle_list=self.obstacle_list):
             return -1
         else:

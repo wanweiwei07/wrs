@@ -94,7 +94,7 @@ class RVizClient(object):
 
     def update_remote(self, rmt_instance, loc_instance):
         if isinstance(loc_instance, ri.RobotInterface):
-            code = ("%s.fk(jnt_values=np.array(%s), jlc_name='all')\n" %
+            code = ("%s.fk(jnt_values=np.array(%s), component_name='all')\n" %
                     (rmt_instance, np.array2string(loc_instance.get_jntvalues(jlc_name='all'), separator=',')))
         elif isinstance(loc_instance, gm.GeometricModel):
             code = ("%s.set_pos(np.array(%s))\n" % (rmt_instance, np.array2string(loc_instance.get_pos(), separator=',')) +
@@ -170,14 +170,14 @@ class RVizClient(object):
         return given_rmt_anime_objinfo_name
 
     def add_anime_robot(self,
-                        rmt_robot_instance,
-                        loc_robot_jlc_name,
+                        rmt_robot_s,
+                        loc_robot_component_name,
                         loc_robot_meshmodel_parameters,
                         loc_robot_motion_path,
                         given_rmt_anime_robotinfo_name=None):
         """
-        :param rmt_robot_instance:
-        :param loc_robot_jlc_name:
+        :param rmt_robot_s:
+        :param loc_robot_component_name:
         :param loc_robot_meshmodel_parameters:
         :param loc_robot_motion_path:
         :param given_rmt_anime_robotinfo_name:
@@ -192,8 +192,8 @@ class RVizClient(object):
             code += "np.array(%s)," % np.array2string(pose, separator=',')
         code = code[:-1] + "]\n"
         code += ("%s = wd.ani.RobotInfo.create_anime_info(%s, " %
-                 (given_rmt_anime_robotinfo_name, rmt_robot_instance) +
-                 "'%s', " % loc_robot_jlc_name +
+                 (given_rmt_anime_robotinfo_name, rmt_robot_s) +
+                 "'%s', " % loc_robot_component_name +
                  "%s, " % loc_robot_meshmodel_parameters + "robot_path)\n")
         code += "base.attach_manualupdate_robot(%s)\n" % given_rmt_anime_robotinfo_name
         self.run_code(code)
@@ -221,20 +221,20 @@ class RVizClient(object):
         self.run_code(code)
 
     def add_stationary_robot(self,
-                             rmt_robot_instance,
-                             loc_robot_instance,
+                             rmt_robot_s,
+                             loc_robot_s,
                              given_rmt_robot_meshmodel_name=None):
         """
-        :param rmt_robot_instance:
-        :param loc_robot_instance:
+        :param rmt_robot_s:
+        :param loc_robot_s:
         :param given_rmt_robot_meshmodel_name: str, a random name will be generated if None
         :return: The name of the robot_meshmodel created in the remote end
         """
         if given_rmt_robot_meshmodel_name is None:
             given_rmt_robot_meshmodel_name = self._gen_random_name(prefix='rmt_robot_meshmodel_')
-        jnt_angles_str = np.array2string(loc_robot_instance.get_jnt_values(manipulator_name='all'), separator=',')
-        code = ("%s.fk(jnt_values=np.array(%s), jlc_name='all')\n" % (rmt_robot_instance, jnt_angles_str) +
-                "%s = %s.gen_meshmodel()\n" % (given_rmt_robot_meshmodel_name, rmt_robot_instance) +
+        jnt_angles_str = np.array2string(loc_robot_s.get_jnt_values(component_name='all'), separator=',')
+        code = ("%s.fk(component_name='all', jnt_values=np.array(%s))\n" % (rmt_robot_s, jnt_angles_str) +
+                "%s = %s.gen_meshmodel()\n" % (given_rmt_robot_meshmodel_name, rmt_robot_s) +
                 "base.attach_noupdate_model(%s)\n" % given_rmt_robot_meshmodel_name)
         self.run_code(code)
         return given_rmt_robot_meshmodel_name

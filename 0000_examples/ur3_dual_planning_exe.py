@@ -17,8 +17,8 @@ object.attach_to(base)
 # robot_s
 component_name = 'both_arm'
 robot_instance = ur3d.UR3Dual()
-# init_lft_arm_jnt_values = robot_instance.lft_arm.get_jnt_values()
-# init_rgt_arm_jnt_values = robot_instance.rgt_arm.get_jnt_values()
+# init_lft_arm_jnt_values = robot_s.lft_arm.get_jnt_values()
+# init_rgt_arm_jnt_values = robot_s.rgt_arm.get_jnt_values()
 # full_jnt_values = np.hstack((init_lft_arm_jnt_values, init_rgt_arm_jnt_values))
 full_jnt_values = np.hstack((robot_instance.lft_arm.homeconf, robot_instance.rgt_arm.homeconf))
 goal_lft_arm_jnt_values = np.array([0, -math.pi / 2, -math.pi/3, -math.pi / 2, math.pi / 6, math.pi / 6])

@@ -19,7 +19,7 @@ class RRT(object):
                      conf,
                      obstacle_list=[],
                      otherrobot_list=[]):
-        self.robot.fk(manipulator_name=component_name, jnt_values=conf)
+        self.robot.fk(component_name=component_name, jnt_values=conf)
         return self.robot.is_collided(obstacle_list=obstacle_list, otherrobot_list=otherrobot_list)
 
     def _sample_conf(self, component_name, rand_rate, default_conf):

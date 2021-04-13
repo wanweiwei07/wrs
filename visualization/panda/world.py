@@ -172,14 +172,14 @@ class World(ShowBase, object):
 
     def _manual_update(self, task):
         for _manualupdate_robotinfo in self._manualupdate_robotinfo_list:
-            robot_instance = _manualupdate_robotinfo.robot_instance
+            robot_instance = _manualupdate_robotinfo.robot_s
             robot_jlc_name = _manualupdate_robotinfo.robot_jlc_name
             robot_meshmodel = _manualupdate_robotinfo.robot_meshmodel
             robot_meshmodel_parameter = _manualupdate_robotinfo.robot_meshmodel_parameters
             robot_path = _manualupdate_robotinfo.robot_path
             robot_path_counter = _manualupdate_robotinfo.robot_path_counter
             robot_meshmodel.detach()
-            robot_instance.fk(robot_path[robot_path_counter], manipulator_name=robot_jlc_name)
+            robot_instance.fk(robot_path[robot_path_counter], component_name=robot_jlc_name)
             _manualupdate_robotinfo.robot_meshmodel = robot_instance.gen_meshmodel(
                 tcp_jntid=robot_meshmodel_parameter[0],
                 tcp_loc_pos=robot_meshmodel_parameter[1],
@@ -233,7 +233,7 @@ class World(ShowBase, object):
         for obj in tmp_autoupdate_obj_list:
             obj.detach()
 
-    def attach_autoupdate_robot(self, robot_meshmodel):  # TODO robot_meshmodel or robot_instance?
+    def attach_autoupdate_robot(self, robot_meshmodel):  # TODO robot_meshmodel or robot_s?
         self._autoupdate_robot_list.append(robot_meshmodel)
 
     def detach_autoupdate_robot(self, robot_meshmodel):

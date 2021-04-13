@@ -163,13 +163,12 @@ class CollisionChecker(object):
             else:
                 robot.cc.np.detachNode()
         if self.chan.getNumEntries() > 0:
-            contact_points = [da.pdv3_to_npv3(cd_entry.getSurfacePoint(base.render)) for cd_entry in
-                              self.chan.getEntries()]
             collision_result = True
         else:
-            contact_points = []
             collision_result = False
         if toggle_contact_points:
+            contact_points = [da.pdv3_to_npv3(cd_entry.getSurfacePoint(base.render)) for cd_entry in
+                              self.chan.getEntries()]
             return collision_result, contact_points
         else:
             return collision_result

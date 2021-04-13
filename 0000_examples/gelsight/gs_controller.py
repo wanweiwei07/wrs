@@ -7,7 +7,7 @@ import time
 base = wd.World(cam_pos=[.03, .03, .07], lookat_pos=[0.015, 0.015, 0])
 itd_cvter = itd.ImageToDepth()
 
-video1 = cv2.VideoCapture(2)
+video1 = cv2.VideoCapture(1)
 width = (int(video1.get(cv2.CAP_PROP_FRAME_WIDTH)))
 height = (int(video1.get(cv2.CAP_PROP_FRAME_HEIGHT)))
 pointcloud = None

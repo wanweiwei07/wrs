@@ -138,7 +138,7 @@ class ADPlanner(object):  # AD = Approach_Depart
         :param component_name:
         :param goal_hnd_pos:
         :param goal_hnd_rotmat:
-        :param jlc_name:
+        :param component_name:
         :param approach_direction:
         :param approach_distance:
         :param approach_jawwidth:

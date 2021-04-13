@@ -134,7 +134,7 @@ class SDA5F(ri.RobotInterface):
     def fk(self, manipulator_name, jnt_values):
         """
         :param jnt_values: 1x7 or 1x14 nparray
-        :jlc_name 'lft_arm', 'rgt_arm', 'both_arm'
+        :component_name 'lft_arm', 'rgt_arm', 'both_arm'
         :param manipulator_name:
         :return:
         author: weiwei

@@ -219,7 +219,7 @@ class PickPlacePlanner(adp.ADPlanner):
         :param grasp_info:
         :param goal_obj_pos:
         :param goal_obj_rotmat:
-        :param jlc_name:
+        :param component_name:
         :param approach_direction:
         :param approach_distance:
         :param approach_jawwidth:
