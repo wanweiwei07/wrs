@@ -147,8 +147,7 @@ class UR3Rtq85X(object):
         author: weiwei
         date: 20170411
         """
-        jointsrad = [math.radians(angdeg) for angdeg in jnt_values]
-        self._arm.movej(jointsrad, acc=1, vel=1, wait=wait)
+        self._arm.movej(jnt_values, acc=1, vel=1, wait=wait)
         # targetarm.movejr(jointsrad, acc = 1, vel = 1, radius = radius, wait = False)
 
     def regulate_jnts_pmpi(self):

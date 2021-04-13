@@ -62,8 +62,8 @@ class UR3DualX(object):
         author: weiwei
         date: 20170411
         """
-        self._rgt_arm_hnd.move_jnts(jnt_values[0:6], wait=False)
-        self._lft_arm_hnd.move_jnts(jnt_values[6:12], wait=True)
+        self._lft_arm_hnd.move_jnts(jnt_values[0:6], wait=False)
+        self._rgt_arm_hnd.move_jnts(jnt_values[6:12], wait=True)
 
     def move_jntspace_path(self, path, control_frequency=.008, interval_time=1.0, interpolation_method=None):
         """
