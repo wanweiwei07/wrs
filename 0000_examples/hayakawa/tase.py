@@ -1,32 +1,20 @@
-from pandaplotutils import pandactrl as pandactrl
-import manipulation.grip.robotiq85.robotiq85 as rtq85
-import robotsim.ur3dual.ur3dual as robot
-import robotsim.ur3dual.ur3dualmesh as robotmesh
-import robotsim.ur3dual.ur3dualball as robotball
-import utiltools.robotmath as rm
+import visualization.panda.world as wd
+import robotsim.grippers.robotiq85.robotiq85 as rtq85
+import robotsim.robots.ur3_dual.ur3_dual as ur3ds
+import basis.robot_math as rm
 import numpy as np
-import environment.collisionmodel as cm
-import bunrisettingfree as bsf
-import motionplanning.collisioncheckerball as cdball
-import environment.bulletcdhelper as bch
-from motionplanning import collisioncheckerball as cdck
-from motionplanning import ctcallback as ctcb
-from motionplanning.rrt import rrtconnect as rrtc
-from motionplanning import smoother as sm
+import modeling.collisionmodel as cm
+import motion.probabilistic.rrt_connect as rrtc
 import copy
-import robotcon.rpc.frtknt.frtknt_client as frknt
+import drivers.rpc.frtknt.frtknt_client as frtknt
 import open3d as o3d
-from trimesh.sample import sample_surface
 from pyquaternion import Quaternion
 import random
 from skimage.measure import LineModelND, ransac
-# import matplotlib
-# matplotlib.use('Agg')
-# import matplotlib.pyplot as plt
-import research_posemake.research_posemake_many as pose
+import research_posemake_many as pose
 import math
 import socket
-import robotcon.robotiq.programbuilder as pb
+import robotcon.ur.program_builder as pb
 import pickle
 import time
 import sympy as sp
@@ -37,7 +25,6 @@ endthreshold = 3
 objpointrange = [300, 900, -400, 800, 1051, 1500]
 objpos_finalmax_lft = np.array([250, 250, 1600])
 objpos_finalmax_rgt = np.array([250, -250, 1600])
-
 ## ToDo : Change the param according to the object
 ## param(acrylic board) ----------------------------------
 # objpath = "./objects/research_flippingboard2.stl"
@@ -117,11 +104,11 @@ pulleypos = np.array([580, 370, 2500])
 ropetoppos = np.array([250, 0, 2500])
 rotateaxis = np.array([1,0,0])
 
-## calibrationMatrix 2020-0818
-calibrationMatrix = np.array([[ 3.95473025e-02, -8.94575014e-01, -4.45164638e-01,  7.62553715e+02],
-                             [-9.98624616e-01, -2.00371608e-02, -4.84498644e-02, 6.67240739e+01],
-                             [ 3.44222026e-02 , 4.46468426e-01, -8.94137045e-01 , 2.12149540e+03],
-                             [ 0.00000000e+00 , 0.00000000e+00 , 0.00000000e+00 , 1.00000000e+00]])
+## calibration_matrix 2020-0818
+calibration_matrix = np.array([[3.95473025e-02, -8.94575014e-01, -4.45164638e-01, 7.62553715e+02],
+                               [-9.98624616e-01, -2.00371608e-02, -4.84498644e-02, 6.67240739e+01],
+                               [ 3.44222026e-02 , 4.46468426e-01, -8.94137045e-01 , 2.12149540e+03],
+                               [ 0.00000000e+00 , 0.00000000e+00 , 0.00000000e+00 , 1.00000000e+00]])
 
 def gethangedpos(objpos, objrot):
     ## ベニヤ板の場合
@@ -152,12 +139,10 @@ def getpointcloudkinect(pointrange=[]):
     pcd = client.getpcd()
     pcd2 = np.ones((len(pcd), 4))
     pcd2[:, :3] = pcd
-    newpcd = np.dot(calibrationMatrix, pcd2.T).T[:, :3]
-
+    newpcd = np.dot(calibration_matrix, pcd2.T).T[:, :3]
     if len(pointrange) > 0:
         x0, x1, y0, y1, z0, z1 = pointrange
         newpcd = np.array([x for x in newpcd if (x0 < x[0] < x1) and (y0 < x[1] < y1) and (z0 < x[2] < z1)])
-
     return newpcd
 
 ## 2020_0722作成
@@ -165,67 +150,52 @@ def getpointcloudkinectforrope_up(rbt, armname, initialpoint, pointrange):
     # pcd = client.getpcd()
     # pcd2 = np.ones((len(pcd), 4))
     # pcd2[:, :3] = pcd
-    # newpcd = np.dot(calibrationMatrix, pcd2.T).T[:, :3]
+    # newpcd = np.dot(calibration_matrix, pcd2.T).T[:, :3]
     newpcd = getpointcloudkinect(pointrange)
-
-    finalpoint = rbt.getee("rgt")[0]
-    if armname == "lft":
-        finalpoint = rbt.getee("lft")[0]
-
+    finalpoint = rbt.get_gl_tcp(manipulator_name=armname)[0]
     tostartvec = copy.copy(initialpoint - finalpoint)
     newpcd = np.array([x for x in newpcd if x[2] < 1700])
-    newpcd = np.array([x for x in newpcd if rm.degree_betweenvector(tostartvec, x - finalpoint) < 30])
-
+    newpcd = np.array([x for x in newpcd if rm.angle_between_vectors(tostartvec, x - finalpoint) < math.radians(30)])
     return newpcd
 
 def getpointcloudkinectforrope_down(rbt, armname, pointrange=[]):
     # pcd = client.getpcd()
     # pcd2 = np.ones((len(pcd), 4))
     # pcd2[:, :3] = pcd
-    # newpcd = np.dot(calibrationMatrix, pcd2.T).T[:, :3]
+    # newpcd = np.dot(calibration_matrix, pcd2.T).T[:, :3]
     newpcd = getpointcloudkinect(pointrange)
-
-    initialpoint = rbt.getee("rgt")[0]
-    if armname == "lft":
-        initialpoint = rbt.getee("lft")[0]
-
+    initialpoint = rbt.get_gl_tcp(manipulator_name=armname)[0]
     # eepos_under = copy.copy(initialpoint)
     # eepos_under[2] -= 250
     # refvec = copy.copy(eepos_under - initialpoint)
     base.pggen.plotSphere(base.render, pos=initialpoint, radius=10, rgba=[1,0,0,1])
     minuszaxis = np.array([0,0,-1])
     newpcd = np.array([x for x in newpcd if 1100 < x[2] < initialpoint[2]])
-    newpcd = np.array([x for x in newpcd if rm.degree_betweenvector(minuszaxis, x - initialpoint) < 40])
-
+    newpcd = np.array([x for x in newpcd if rm.angle_between_vectors(minuszaxis, x - initialpoint) < math.radisn(40)])
     return newpcd
 
 ## RANSACでロープを検出
 def doRANSAC(newpcd, threshold):
     model_robust, inliers = ransac(newpcd, LineModelND, min_samples=100, residual_threshold=threshold, max_trials=1000)
     outliers = inliers == False
-
     ## 検出した直線の表示
     ropeline = []  # ロープの点群のみ取り出す
     for i, eachpoint in enumerate(newpcd):
         if inliers[i] == True:
             # base.pggen.plotSphere(base.render, pos=newpcd[numberofrope], radius=10, rgba=[1, 0, 0, .5])
             ropeline.append(newpcd[i])
-
     return ropeline
-
 
 ## リストを昇順に並べ替える(デフォルト:z座標)
 def ascendingorder(array, axis = 2):
     array = np.asarray(array)
     array_ascend = array[array[:, axis].argsort(), :]
-
     return array_ascend
 
 ## リストをz座標で降順に並べ替える
 def descendingorder(array, axis):
     array_ascend = ascendingorder(array, axis)
     array_descend = array_ascend[::-1]
-
     return array_descend
 
 def createcandidatepoints(armname, initialhandpos, obstacles=None, limitation=None):
@@ -233,34 +203,28 @@ def createcandidatepoints(armname, initialhandpos, obstacles=None, limitation=No
         pointlistrange = np.array([150, 300, 50, 300, 1300, initialhandpos[2]])
     elif armname == "rgt":
         pointlistrange = np.array([150, 300, -200, -50, 1300, initialhandpos[2]])
-
     if obstacles is not None and armname == "lft":
         for obs in obstacles:
             ## 3dモデルを点群化し、原点に配置
-            obs_points = sample_surface(obs.trimesh, 8000)
+            obs_points = obs.sample_surface(8000)
             mat4 = obs.gethomomat()
             obs_points_converted = np.ones((len(obs_points), 4))
             obs_points_converted[:, :3] = obs_points
             obs_points_converted = np.dot(mat4, obs_points_converted.T).T[:, :3]
             zmax = max(obs_points_converted[:, 2]) + 150
-
             pointlistrange[4] = zmax
-
     # print("pointrange", pointlistrange)
     if limitation is not None:
         pointlistrange[3] = limitation
-
     points = []
     number = 30
     for i in range(number):
         x = random.uniform(pointlistrange[0], pointlistrange[1])
         y = random.uniform(pointlistrange[2], pointlistrange[3])
         z = random.uniform(pointlistrange[4], pointlistrange[5])
-
         point = [x, y, z]
         # print("point", point)
         points.append(point)
-
     return points
 
 ## 始点での把持姿勢を探索
@@ -269,20 +233,22 @@ def decidestartpose(ropelinesorted, armname, predefined_grasps, ctcallback, from
     while True:
         objpos_initial = ropelinesorted[startpointid]
         objrot_initial = np.eye(3)
-        objmat4_initial = rm.homobuild(objpos_initial, objrot_initial)
-        obj_initial = copy.deepcopy(ropeobj)
-        obj_initial.setColor(1, 0, 0, .5)
-        obj_initial.setMat(base.pg.np4ToMat4(objmat4_initial))
+        objmat4_initial = rm.homomat_from_posrot(objpos_initial, objrot_initial)
+        obj_initial = copy.deepcopy(ropeobj) # ->早川：変数の定義はどこですか？また、obj.copy()を使ってください．
+        obj_initial.set_rgba(rgba=[1, 0, 0, .5])
+        obj_initial.set_homomat(objmat4_initial)
         for i, eachgrasp in enumerate(predefined_grasps):
             prejawwidth, prehndfc, prehndmat4 = eachgrasp
             hndmat4_initial = np.dot(objmat4_initial, prehndmat4)
-            eepos_initial = rm.homotransform(objmat4_initial, prehndfc)[:3]
+            eepos_initial = rm.homomat_transform_points(objmat4_initial, prehndfc)[:3]
             eerot_initial = hndmat4_initial[:3, :3]
-
-            start = rbt.numikmsc(eepos_initial, eerot_initial, fromjnt, armname)
+            start = rbt.ik(manipulator_name=armname,
+                           tgt_pos=eepos_initial,
+                           tgt_rot=eerot_initial,
+                           seed_jnt_values=fromjnt)
             if start is not None:
-                rbt.movearmfk(start, armname)
-                objrelmat = rbt.getinhandpose(objpos_initial, objrot_initial, armname)
+                rbt.fk(manipulator_name=armname, jnt_values=start)
+                objrelmat = rbt.cvt_gl_to_loc_tcp(objpos_initial, objrot_initial, armname)
                 ## 衝突検出
                 collisioncheck = cdchecker.isRobotObstacleCollidedOnearm(rbt, obscmlist, ignorearm="lft")
                 if armname == "lft":
@@ -293,40 +259,44 @@ def decidestartpose(ropelinesorted, armname, predefined_grasps, ctcallback, from
                     #### list[startjnt, objrelmat, id]
                     rbt.movearmfk(start, armname)
                     IKpossiblelist_start.append([start, objrelmat, i])
-
         if len(IKpossiblelist_start) > 0:
             return IKpossiblelist_start, objpos_initial, objrot_initial, startpointid
-
         startpointid = startpointid + 1
-
         if startpointid == len(ropelinesorted):
             print("始点が存在しませんでした")
             return [False, False, False, False]
-
         print("startpointid = ", startpointid)
 
 ## 終点での把持姿勢を探索(終点を1つにしたとき)
-def decidegoalpose_onepoint(IKpossiblelist_start, objpos_initial, objpos_final, armname, predefined_grasps, ctcallback, obscmlist):
+def decidegoalpose_onepoint(IKpossiblelist_start,
+                            objpos_initial,
+                            objpos_final,
+                            armname,
+                            predefined_grasps,
+                            ctcallback,
+                            obscmlist):
     IKpossiblelist_startgoal = []
     # objpos_final = np.array([260, 0, 1400])
     objrot_final = np.eye(3)
     tostartvec = objpos_initial - objpos_final      ## 終点から始点への方向ベクトル(非正規化)
     togoalvec = objpos_final - objpos_initial       ## 始点から終点への方向ベクトル(非正規化)
-    objmat4_final = rm.homobuild(objpos_final, objrot_final)
+    objmat4_final = rm.homomat_from_posrot(objpos_final, objrot_final)
     obj_final = copy.deepcopy(ropeobj)
-    obj_final.setColor(1, 0, 0, .5)
-    obj_final.setMat(base.pg.np4ToMat4(objmat4_final))
+    obj_final.set_rgba(rgba=[1, 0, 0, .5])
+    obj_final.set_homomat(objmat4_final)
     for i in IKpossiblelist_start:
         prejawwidth, prehndfc, prehndmat4 = predefined_grasps[i[2]]
         hndmat4_final = np.dot(objmat4_final, prehndmat4)
-        eepos_final = rm.homotransform(objmat4_final, prehndfc)[:3]
+        eepos_final = rm.homomat_transform_points(objmat4_final, prehndfc)[:3]
         eerot_final = hndmat4_final[:3, :3]
-
         # goal = rbt.numik(eepos_final, eerot_final, armname)
         fromjnt = i[0]
-        goal = rbt.numikmsc(eepos_final, eerot_final, fromjnt, armname)
+        goal = rbt.ik(manipulator_name=armname,
+                      tgt_pos=eepos_final,
+                      tgt_rot=eerot_final,
+                      seed_jnt_values=fromjnt)
         if goal is not None:
-            rbt.movearmfk(goal, armname)
+            rbt.fk(manipulator_name=armname, jnt_values=goal)
             objrelmat = i[1]
             collisioncheck = cdchecker.isRobotObstacleCollidedOnearm(rbt, obscmlist, ignorearm="lft")
             if armname == "lft":

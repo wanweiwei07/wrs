@@ -45,7 +45,7 @@ class RobotInterface(object):
            manipulator_name,
            tgt_pos,
            tgt_rot,
-           seed_conf=None,
+           seed_jnt_values=None,
            tcp_jntid=None,
            tcp_loc_pos=None,
            tcp_loc_rotmat=None,
@@ -53,7 +53,7 @@ class RobotInterface(object):
            toggle_debug=False):
         return self.manipulator_dict[manipulator_name].ik(tgt_pos,
                                                           tgt_rot,
-                                                          seed_conf=seed_conf,
+                                                          seed_jnt_values=seed_jnt_values,
                                                           tcp_jntid=tcp_jntid,
                                                           tcp_loc_pos=tcp_loc_pos,
                                                           tcp_loc_rotmat=tcp_loc_rotmat,

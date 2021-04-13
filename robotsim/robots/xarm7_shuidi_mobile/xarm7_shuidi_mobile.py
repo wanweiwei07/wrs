@@ -149,7 +149,7 @@ class XArm7YunjiMobile(ri.RobotInterface):
            tgt_pos,
            tgt_rot,
            manipulator_name='arm',
-           seed_conf=None,
+           seed_jnt_values=None,
            tcp_jntid=None,
            tcp_loc_pos=None,
            tcp_loc_rotmat=None,
@@ -158,7 +158,7 @@ class XArm7YunjiMobile(ri.RobotInterface):
         if manipulator_name == 'arm':
             return self.arm.ik(tgt_pos,
                                tgt_rot,
-                               seed_conf=seed_conf,
+                               seed_jnt_values=seed_jnt_values,
                                tcp_jntid=tcp_jntid,
                                tcp_loc_pos=tcp_loc_pos,
                                tcp_loc_rotmat=tcp_loc_rotmat,
@@ -322,7 +322,7 @@ if __name__ == '__main__':
     gm.gen_frame(pos=tgt_pos, rotmat=tgt_rotmat).attach_to(base)
     jnt_values = xav.ik(tgt_pos, tgt_rotmat)
     tgt_pos2 = np.array([.7, 0, .5])
-    jnt_values2 = xav.ik(tgt_pos2, tgt_rotmat, seed_conf=jnt_values)
+    jnt_values2 = xav.ik(tgt_pos2, tgt_rotmat, seed_jnt_values=jnt_values)
     print(jnt_values)
     xav.fk(component_name='arm', jnt_values=jnt_values2)
     xav_meshmodel = xav.gen_meshmodel(toggle_tcpcs=True)

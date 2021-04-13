@@ -270,7 +270,7 @@ class ADPlanner(object):  # AD = Approach_Depart
                                        seed_jnt_values=None,
                                        obstacle_list=[]):
         """
-        degenerate into gen_ad_primitive if both start_conf and goal_conf are None
+        degenerate into gen_ad_primitive if both seed_jnt_values and goal_conf are None
         :param component_name:
         :param goal_hnd_pos:
         :param goal_hnd_rotmat:
@@ -363,7 +363,7 @@ if __name__ == '__main__':
     # conf_list, jawwidth_list = adp.gen_approach_motion(component_name,
     #                                                    goal_pos,
     #                                                    goal_rotmat,
-    #                                                    start_conf=yumi_s.get_jnt_values(component_name),
+    #                                                    seed_jnt_values=yumi_s.get_jnt_values(component_name),
     #                                                    approach_direction=np.array([0, 0, -1]),
     #                                                    approach_distance=.1)
     # conf_list, jawwidth_list = adp.gen_depart_motion(component_name,

@@ -143,7 +143,7 @@ class PickPlacePlanner(adp.ADPlanner):
         goal_hnd_pos = goal_obj_rotmat.dot(loc_tcp_pos) + goal_obj_pos
         goal_hnd_rotmat = goal_obj_rotmat.dot(loc_hnd_rotmat)
         jnt_values_bk = self.rbt.get_jnt_values(component_name)
-        self.rbt.fk(self.rbt.ik(component_name, start_hnd_pos, start_hnd_rotmat, seed_conf=seed_jnt_values))
+        self.rbt.fk(self.rbt.ik(component_name, start_hnd_pos, start_hnd_rotmat, seed_jnt_values=seed_jnt_values))
         rel_obj_pos, rel_obj_rotmat = self.rbt.hold(objcm, jaw_width, hnd_name)
         self.rbt.fk(jnt_values_bk)
         conf_list = self.inik_slvr.gen_linear_motion(component_name,
@@ -179,8 +179,8 @@ class PickPlacePlanner(adp.ADPlanner):
         goal_hnd_pos = goal_obj_rotmat.dot(loc_tcp_pos) + goal_obj_pos
         goal_hnd_rotmat = goal_obj_rotmat.dot(loc_hnd_rotmat)
         jnt_values_bk = self.rbt.get_jnt_values(component_name)
-        start_conf = self.rbt.ik(component_name, start_hnd_pos, start_hnd_rotmat, seed_conf=seed_jnt_values)
-        goal_conf = self.rbt.ik(component_name, goal_hnd_pos, goal_hnd_rotmat, seed_conf=seed_jnt_values)
+        start_conf = self.rbt.ik(component_name, start_hnd_pos, start_hnd_rotmat, seed_jnt_values=seed_jnt_values)
+        goal_conf = self.rbt.ik(component_name, goal_hnd_pos, goal_hnd_rotmat, seed_jnt_values=seed_jnt_values)
         self.rbt.fk(start_conf)
         rel_obj_pos, rel_obj_rotmat = self.rbt.hold(objcm, jaw_width, hnd_name)
         self.rbt.fk(jnt_values_bk)
@@ -286,7 +286,7 @@ class PickPlacePlanner(adp.ADPlanner):
                           obstacle_list=[],
                           seed_jnt_values=None):
         """
-        degenerate into gen_pickup_primitive if both start_conf and goal_conf are None
+        degenerate into gen_pickup_primitive if both seed_jnt_values and goal_conf are None
         :param component_name:
         :param hnd_name:
         :param objcm:
@@ -369,14 +369,14 @@ class PickPlacePlanner(adp.ADPlanner):
                              obstacle_list=[],
                              seed_jnt_values=None):
         """
-        degenerate into gen_pickup_primitive if both start_conf and goal_conf are None
+        degenerate into gen_pickup_primitive if both seed_jnt_values and goal_conf are None
         :param component_name:
         :param hnd_name:
         :param objcm:
         :param grasp_info:
         :param goal_obj_pos:
         :param goal_obj_rotmat:
-        :param start_conf:
+        :param seed_jnt_values:
         :param goal_conf:
         :param down_direction:
         :param down_distance:
@@ -449,7 +449,7 @@ class PickPlacePlanner(adp.ADPlanner):
                              obstacle_list=[],
                              seed_jnt_values=None):
         """
-        degenerate into gen_pickup_primitive if both start_conf and goal_conf are None
+        degenerate into gen_pickup_primitive if both seed_jnt_values and goal_conf are None
         :param component_name:
         :param hnd_name:
         :param objcm:

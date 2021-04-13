@@ -243,7 +243,7 @@ class JLChainIK(object):
     def num_ik(self,
                tgt_pos,
                tgt_rot,
-               seed_conf=None,
+               seed_jnt_values=None,
                tcp_jntid=None,
                tcp_loc_pos=None,
                tcp_loc_rotmat=None,
@@ -255,7 +255,7 @@ class JLChainIK(object):
         NOTE: if list, len(tgt_pos)=len(tgt_rot) <= len(tcp_jntid)=len(tcp_loc_pos)=len(tcp_loc_rotmat)
         :param tgt_pos: the position of the goal, 1-by-3 numpy ndarray
         :param tgt_rot: the orientation of the goal, 3-by-3 numpyndarray
-        :param seed_conf: the starting configuration used in the numerical iteration
+        :param seed_jnt_values: the starting configuration used in the numerical iteration
         :param tcp_jntid: a joint ID in the self.tgtjnts
         :param tcp_loc_pos: 1x3 nparray, decribed in the local frame of self.jnts[tcp_jntid], single value or list
         :param tcp_loc_rotmat: 3x3 nparray, decribed in the local frame of self.jnts[tcp_jntid], single value or list
@@ -284,7 +284,7 @@ class JLChainIK(object):
             tcp_loc_pos = tcp_loc_pos[0]
             tcp_loc_rotmat = tcp_loc_rotmat[0]
         jnt_values_bk = self.jlc_object.get_jnt_values()
-        jnt_values_iter = self.jlc_object.homeconf if seed_conf is None else seed_conf.copy()
+        jnt_values_iter = self.jlc_object.homeconf if seed_jnt_values is None else seed_jnt_values.copy()
         self.jlc_object.fk(jnt_values=jnt_values_iter)
         jnt_values_ref = jnt_values_iter.copy()
         if isinstance(tcp_jntid, list):
@@ -456,7 +456,7 @@ class JLChainIK(object):
                 tgt_pos.append(tcp_gl_pos[i] + deltapos[i])
                 tgt_rotmat.append(np.dot(deltarotmat, tcp_gl_rotmat[i]))
             start_conf = self.jlc_object.getjntvalues()
-            # return numik(rjlinstance, tgt_pos, tgt_rotmat, start_conf=start_conf, tcp_jntid=tcp_jntid, tcp_loc_pos=tcp_loc_pos, tcp_loc_rotmat=tcp_loc_rotmat)
+            # return numik(rjlinstance, tgt_pos, tgt_rotmat, seed_jnt_values=seed_jnt_values, tcp_jntid=tcp_jntid, tcp_loc_pos=tcp_loc_pos, tcp_loc_rotmat=tcp_loc_rotmat)
         else:
             tgt_pos = tcp_gl_pos + deltapos
             tgt_rotmat = np.dot(deltarotmat, tcp_gl_rotmat)

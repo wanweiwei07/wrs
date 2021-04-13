@@ -205,7 +205,7 @@ class NIK(object):
     def num_ik(self,
                tgt_pos,
                tgt_rot,
-               start_conf=None,
+               seed_jnt_values=None,
                tcp_jntid=None,
                tcp_loc_pos=None,
                tcp_loc_rotmat=None,
@@ -217,7 +217,7 @@ class NIK(object):
         NOTE: if list, len(tgt_pos)=len(tgt_rot) <= len(tcp_jntid)=len(tcp_loc_pos)=len(tcp_loc_rotmat)
         :param tgt_pos: the position of the goal, 1-by-3 numpy ndarray
         :param tgt_rot: the orientation of the goal, 3-by-3 numpyndarray
-        :param start_conf: the starting configuration used in the numerical iteration
+        :param seed_jnt_values: the starting configuration used in the numerical iteration
         :param tcp_jntid: a joint ID in the self.tgtjnts
         :param tcp_loc_pos: 1x3 nparray, decribed in the local frame of self.jnts[tcp_jntid], single value or list
         :param tcp_loc_rotmat: 3x3 nparray, decribed in the local frame of self.jnts[tcp_jntid], single value or list
@@ -238,7 +238,7 @@ class NIK(object):
         if tcp_loc_rotmat is None:
             tcp_loc_rotmat = self.jlc_object.tcp_loc_rotmat
         jntvalues_bk = self.jlc_object.get_jnt_values()
-        jntvalues_iter = self.jlc_object.homeconf if start_conf is None else start_conf.copy()
+        jntvalues_iter = self.jlc_object.homeconf if seed_jnt_values is None else seed_jnt_values.copy()
         self.jlc_object.fk(jnt_values=jntvalues_iter)
         jntvalues_ref = jntvalues_iter.copy()
         ws_wtdiagmat = np.diag(self.ws_wtlist)

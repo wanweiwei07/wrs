@@ -101,7 +101,7 @@ class ManipulatorInterface(object):
     def ik(self,
            tgt_pos,
            tgt_rot,
-           seed_conf=None,
+           seed_jnt_values=None,
            tcp_jntid=None,
            tcp_loc_pos=None,
            tcp_loc_rotmat=None,
@@ -109,7 +109,7 @@ class ManipulatorInterface(object):
            toggle_debug=False):
         return self.jlc.num_ik(tgt_pos=tgt_pos,
                                tgt_rot=tgt_rot,
-                               seed_conf=seed_conf,
+                               seed_jnt_values=seed_jnt_values,
                                tcp_jntid=tcp_jntid,
                                tcp_loc_pos=tcp_loc_pos,
                                tcp_loc_rotmat=tcp_loc_rotmat,

@@ -141,7 +141,7 @@ class RRT(object):
         self.roadmap.clear()
         self.start_conf = start_conf
         self.goal_conf = goal_conf
-        # check start_conf and goal_conf
+        # check seed_jnt_values and goal_conf
         if self._is_collided(component_name, start_conf, obstacle_list, otherrobot_list):
             print("The start robot_s configuration is in collision!")
             return None
@@ -208,7 +208,7 @@ class RRT(object):
                      [near_rand_conf_pair[0][1], near_rand_conf_pair[1][1]], "--k")
         if new_conf is not None:
             plt.plot(new_conf[0], new_conf[1], new_conf_mark)
-        # plt.plot(planner.start_conf[0], planner.start_conf[1], "xr")
+        # plt.plot(planner.seed_jnt_values[0], planner.seed_jnt_values[1], "xr")
         # plt.plot(planner.goal_conf[0], planner.goal_conf[1], "xm")
         plt.pause(.02)
 

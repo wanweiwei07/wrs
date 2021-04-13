@@ -362,7 +362,7 @@ class JLChain(object):
     def num_ik(self,
                tgt_pos,
                tgt_rot,
-               seed_conf=None,
+               seed_jnt_values=None,
                tcp_jntid=None,
                tcp_loc_pos=None,
                tcp_loc_rotmat=None,
@@ -377,7 +377,7 @@ class JLChain(object):
         NOTE2: if list, len(tgtpos)=len(tgtrot) < len(tcp_jntid)=len(tcp_loc_pos)=len(tcp_loc_rotmat)
         :param tgt_pos: 1x3 nparray, single value or list
         :param tgt_rot: 3x3 nparray, single value or list
-        :param seed_conf: the starting configuration used in the numerical iteration
+        :param seed_jnt_values: the starting configuration used in the numerical iteration
         :param tcp_jntid: a joint ID in the self.tgtjnts
         :param tcp_loc_pos: 1x3 nparray, decribed in the local frame of self.jnts[tcp_jntid], single value or list
         :param tcp_loc_rotmat: 3x3 nparray, decribed in the local frame of self.jnts[tcp_jntid], single value or list
@@ -386,7 +386,7 @@ class JLChain(object):
         """
         return self._ikt.num_ik(tgt_pos=tgt_pos,
                                 tgt_rot=tgt_rot,
-                                seed_conf=seed_conf,
+                                seed_jnt_values=seed_jnt_values,
                                 tcp_jntid=tcp_jntid,
                                 tcp_loc_pos=tcp_loc_pos,
                                 tcp_loc_rotmat=tcp_loc_rotmat,
@@ -586,7 +586,7 @@ if __name__ == "__main__":
     tic = time.time()
     jnt_values = jlinstance.num_ik(tgt_pos_list,
                                    tgt_rotmat_list,
-                                   seed_conf=None,
+                                   seed_jnt_values=None,
                                    tcp_jntid=tcp_jntidlist,
                                    tcp_loc_pos=tcp_loc_poslist,
                                    tcp_loc_rotmat=tcp_loc_rotmatlist,
