@@ -172,15 +172,15 @@ class World(ShowBase, object):
 
     def _manual_update(self, task):
         for _manualupdate_robotinfo in self._manualupdate_robotinfo_list:
-            robot_instance = _manualupdate_robotinfo.robot_s
-            robot_jlc_name = _manualupdate_robotinfo.robot_jlc_name
+            robot_s = _manualupdate_robotinfo.robot_s
+            robot_component_name = _manualupdate_robotinfo.robot_component_name
             robot_meshmodel = _manualupdate_robotinfo.robot_meshmodel
             robot_meshmodel_parameter = _manualupdate_robotinfo.robot_meshmodel_parameters
             robot_path = _manualupdate_robotinfo.robot_path
             robot_path_counter = _manualupdate_robotinfo.robot_path_counter
             robot_meshmodel.detach()
-            robot_instance.fk(robot_path[robot_path_counter], component_name=robot_jlc_name)
-            _manualupdate_robotinfo.robot_meshmodel = robot_instance.gen_meshmodel(
+            robot_s.fk(component_name=robot_component_name, jnt_values=robot_path[robot_path_counter])
+            _manualupdate_robotinfo.robot_meshmodel = robot_s.gen_meshmodel(
                 tcp_jntid=robot_meshmodel_parameter[0],
                 tcp_loc_pos=robot_meshmodel_parameter[1],
                 tcp_loc_rotmat=robot_meshmodel_parameter[2],

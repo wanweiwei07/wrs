@@ -1,22 +1,22 @@
 class RobotInfo(object):
 
     def __init__(self):
-        self.robot_instance = None
-        self.robot_jlc_name = None
+        self.robot_s = None
+        self.robot_component_name = None
         self.robot_meshmodel = None
         self.robot_meshmodel_parameters = None
         self.robot_path = None
         self.robot_path_counter = None
 
     @staticmethod
-    def create_anime_info(robot_instance,
-                          robot_jlc_name,
+    def create_anime_info(robot_s,
+                          robot_component_name,
                           robot_meshmodel_parameters,
                           robot_path):
         anime_info = RobotInfo()
-        anime_info.robot_instance = robot_instance
-        anime_info.robot_jlc_name = robot_jlc_name
-        anime_info.robot_meshmodel = robot_instance.gen_meshmodel(robot_meshmodel_parameters)
+        anime_info.robot_s = robot_s
+        anime_info.robot_component_name = robot_component_name
+        anime_info.robot_meshmodel = robot_s.gen_meshmodel(robot_meshmodel_parameters)
         anime_info.robot_meshmodel_parameters = robot_meshmodel_parameters
         anime_info.robot_path = robot_path
         anime_info.robot_path_counter = 0

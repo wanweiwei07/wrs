@@ -38,6 +38,7 @@ class RVizClient(object):
         author: weiwei
         date: 20201229
         """
+        print(code)
         code_bytes = code.encode('utf-8')
         return_val = self.stub.run_code(rv_msg.CodeRequest(code=code_bytes)).value
         if return_val == rv_msg.Status.ERROR:
@@ -79,18 +80,18 @@ class RVizClient(object):
                 (np.array2string(campos, separator=','), np.array2string(lookatpos, separator=',')))
         self.run_code(code)
 
-    def copy_to_remote(self, loc_instance, given_rmt_instance_name=None):
-        if given_rmt_instance_name is None:
-            given_rmt_instance_name = self._gen_random_name(prefix='rmt_instance_')
+    def copy_to_remote(self, loc_instance, given_rmt_robot_s_name=None):
+        if given_rmt_robot_s_name is None:
+            given_rmt_robot_s_name = self._gen_random_name(prefix='rmt_robot_s_')
         if isinstance(loc_instance, ri.RobotInterface):
             loc_instance.disable_cc()
-            self.stub.create_instance(rv_msg.CreateInstanceRequest(name=given_rmt_instance_name,
+            self.stub.create_instance(rv_msg.CreateInstanceRequest(name=given_rmt_robot_s_name,
                                                                    data=pickle.dumps(loc_instance)))
             loc_instance.enable_cc()
         else:
-            self.stub.create_instance(rv_msg.CreateInstanceRequest(name=given_rmt_instance_name,
+            self.stub.create_instance(rv_msg.CreateInstanceRequest(name=given_rmt_robot_s_name,
                                                                    data=pickle.dumps(loc_instance)))
-        return given_rmt_instance_name
+        return given_rmt_robot_s_name
 
     def update_remote(self, rmt_instance, loc_instance):
         if isinstance(loc_instance, ri.RobotInterface):
@@ -127,7 +128,7 @@ class RVizClient(object):
         author: weiwei
         date: 20201231
         """
-        rmt_mesh = self.copy_to_remote(loc_instance=loc_mesh, given_rmt_instance_name=given_rmt_mesh_name)
+        rmt_mesh = self.copy_to_remote(loc_instance=loc_mesh, given_rmt_robot_s_name=given_rmt_mesh_name)
         self.show_model(rmt_mesh)
         return rmt_mesh
 
