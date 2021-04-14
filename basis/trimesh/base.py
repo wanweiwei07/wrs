@@ -1006,36 +1006,35 @@ class Trimesh(object):
         self.apply_transform(matrix)
 
     def apply_transform(self, matrix):
-        '''
+        """
         Transform mesh by a homogenous transformation matrix.
         Also transforms normals to avoid having to recompute them.
-
-        Arguments
-        ----------
-        matrix: (4,4) float, homogenous transformation matrix
-        '''
-
+        :param matrix:
+        :return: homomat
+        author: weiwei
+        date: 20210414
+        """
         matrix = np.asanyarray(matrix)
         if matrix.shape != (4, 4):
             raise ValueError('Transformation matrix must be (4,4)!')
-
-        new_normals = np.dot(matrix[0:3, 0:3], self.face_normals.T).T
-        # easier than figuring out what the scale factor of the matrix is
-        new_normals = util.unitize(new_normals)
         new_vertices = transform_points(self.vertices, matrix)
-        # check the first face against the first normal to see if winding is correct
-        aligned_pre = triangles.windings_aligned(self.vertices[self.faces[:1]],
-                                                 self.face_normals[:1])[0]
-        aligned_post = triangles.windings_aligned(new_vertices[self.faces[:1]],
-                                                  new_normals[:1])[0]
-        if aligned_pre != aligned_post:
-            log.debug('Triangle normals not aligned after transform; flipping')
-            self.faces = np.fliplr(self.faces)
+        new_normals = None
+        if self.faces is not None:
+            new_normals = np.dot(matrix[0:3, 0:3], self.face_normals.T).T
+            # easier than figuring out what the scale factor of the matrix is
+            new_normals = util.unitize(new_normals)
+            # check the first face against the first normal to see if winding is correct
+            aligned_pre = triangles.windings_aligned(self.vertices[self.faces[:1]],
+                                                     self.face_normals[:1])[0]
+            aligned_post = triangles.windings_aligned(new_vertices[self.faces[:1]],
+                                                      new_normals[:1])[0]
+            if aligned_pre != aligned_post:
+                log.debug('Triangle normals not aligned after transform; flipping')
+                self.faces = np.fliplr(self.faces)
         with self._cache:
             self.vertices = new_vertices
             self.face_normals = new_normals
         self._cache.clear(exclude=['face_normals'])
-
         log.debug('Mesh transformed by matrix, normals restored to cache')
         return self
 

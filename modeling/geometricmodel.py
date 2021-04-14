@@ -775,7 +775,7 @@ if __name__ == "__main__":
     import basis.robot_math as rm
     import visualization.panda.world as wd
 
-    base = wd.World(cam_pos=[.1, .1, .1], lookat_pos=[0, 0, 0])
+    base = wd.World(cam_pos=[1, 1, 1], lookat_pos=[0, 0, 0])
     objpath = os.path.join(basis.__path__[0], 'objects', 'bunnysim.stl')
     bunnygm = GeometricModel(objpath)
     bunnygm.set_rgba([0.7, 0.7, 0.0, 1.0])
@@ -783,7 +783,6 @@ if __name__ == "__main__":
     bunnygm.show_localframe()
     rotmat = rm.rotmat_from_axangle([1, 0, 0], math.pi / 2.0)
     bunnygm.set_rotmat(rotmat)
-    bunnygm.set_scale([2,1,3])
 
     bunnygm1 = bunnygm.copy()
     bunnygm1.set_rgba([0.7, 0, 0.7, 1.0])
@@ -796,8 +795,9 @@ if __name__ == "__main__":
     bunnygm2.set_rgba([0, 0.7, 0.7, 1.0])
     bunnygm2.attach_to(base)
     rotmat = rm.rotmat_from_axangle([1, 0, 0], -math.pi / 4.0)
-    bunnygm1.set_pos(np.array([0, .2, 0]))
-    bunnygm1.set_rotmat(rotmat)
+    bunnygm2.set_pos(np.array([0, .2, 0]))
+    bunnygm2.set_rotmat(rotmat)
+    bunnygm2.set_scale([2,1,3])
 
     bunnygmpoints, _ = bunnygm.sample_surface()
     bunnygm1points, _ = bunnygm1.sample_surface()
