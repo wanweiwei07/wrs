@@ -122,7 +122,7 @@ class Robotiq85(gp.GripperInterface):
         self.rgt_outer.reinitialize()
         self.rgt_inner.reinitialize()
         # jaw width
-        self.jaw_width_rng = [0.0, .082]
+        self.jaw_width_rng = [0.0, .085]
         # jaw center
         self.jaw_center_loc_pos = np.array([0,0,.145])
         # collision detection
@@ -189,9 +189,9 @@ class Robotiq85(gp.GripperInterface):
             raise ValueError("The angle parameter is out of range!")
 
     def jaw_to(self, jaw_width):
-        if jaw_width > .082:
-            raise ValueError("Jawwidth must be 0mm~85mm!")
-        motion_val = self.lft_outer.jnts[1]['motion_rng'][1] - math.asin(jaw_width / 2.0 / 0.055)
+        if jaw_width > self.jaw_width_rng[1]:
+            raise ValueError(f"Jawwidth must be {self.jaw_width_rng[0]}mm~{self.jaw_width_rng[1]}mm!")
+        motion_val = math.asin((self.jaw_width_rng[1] / 2.0+.0064-.0306011)/ 0.055) - math.asin((jaw_width / 2.0+.0064-.0306011)/ 0.055)
         self.fk(motion_val)
 
     def gen_stickmodel(self,
@@ -277,7 +277,8 @@ if __name__ == '__main__':
     gm.gen_frame().attach_to(base)
     grpr = Robotiq85(enable_cc=True)
     grpr.cdmesh_type='convexhull'
-    grpr.fk(.8)
+    # grpr.fk(.0)
+    grpr.jaw_to(.0)
     grpr.gen_meshmodel(rgba=[.3, .3, .0, .5]).attach_to(base)
     # grpr.gen_stickmodel(togglejntscs=False).attach_to(base)
     # grpr.fix_to(pos=np.array([0, .3, .2]), rotmat=rm.rotmat_from_axangle([1, 0, 0], math.pi / 6))

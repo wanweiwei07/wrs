@@ -1,6 +1,7 @@
 import math
 import numpy as np
 import basis.robot_math as rm
+import modeling.geometricmodel as gm
 
 
 class IncrementalNIK(object):
@@ -16,7 +17,8 @@ class IncrementalNIK(object):
                           goal_hnd_rotmat,
                           obstacle_list=[],
                           granularity=0.03,
-                          seed_jnt_values=None):
+                          seed_jnt_values=None,
+                          toggle_debug=False):
         """
         :param component_name:
         :param start_hnd_pos:
@@ -47,7 +49,11 @@ class IncrementalNIK(object):
                 return []
             else:
                 self.rbt.fk(component_name, jnt_values)
-                if self.rbt.is_collided(obstacle_list):
+                cd_result, ct_points = self.rbt.is_collided(obstacle_list, toggle_contact_points=True)
+                if cd_result:
+                    if toggle_debug:
+                        for ct_pnt in ct_points:
+                            gm.gen_sphere(ct_pnt).attach_to(base)
                     print("Intermediate pose collided in gen_linear_motion!")
                     self.rbt.fk(component_name, jnt_values_bk)
                     return []
@@ -65,7 +71,8 @@ class IncrementalNIK(object):
                               obstacle_list=[],
                               granularity=0.03,
                               seed_jnt_values=None,
-                              type='sink'):
+                              type='sink',
+                              toggle_debug=False):
         """
         :param goal_info:
         :param direction:
@@ -87,7 +94,8 @@ class IncrementalNIK(object):
                                           goal_hnd_rotmat,
                                           obstacle_list,
                                           granularity,
-                                          seed_jnt_values)
+                                          seed_jnt_values,
+                                          toggle_debug=toggle_debug)
         elif type == 'source':
             start_hnd_pos = goal_hnd_pos
             start_hnd_rotmat = goal_hnd_rotmat
@@ -100,7 +108,8 @@ class IncrementalNIK(object):
                                           goal_hnd_rotmat,
                                           obstacle_list,
                                           granularity,
-                                          seed_jnt_values)
+                                          seed_jnt_values,
+                                          toggle_debug=toggle_debug)
         else:
             raise ValueError("Type must be sink or source!")
 

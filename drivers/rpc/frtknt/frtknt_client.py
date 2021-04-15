@@ -1,7 +1,7 @@
 import grpc
 import numpy as np
-import robotconn.rpc.frtknt.frtknt_pb2 as fkmsg
-import robotconn.rpc.frtknt.frtknt_pb2_grpc as fkrpc
+import drivers.rpc.frtknt.frtknt_pb2 as fkmsg
+import drivers.rpc.frtknt.frtknt_pb2_grpc as fkrpc
 import copy
 
 class FrtKnt(object):

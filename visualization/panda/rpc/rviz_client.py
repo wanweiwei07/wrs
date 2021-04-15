@@ -98,8 +98,10 @@ class RVizClient(object):
             code = ("%s.fk(jnt_values=np.array(%s), component_name='all')\n" %
                     (rmt_instance, np.array2string(loc_instance.get_jntvalues(jlc_name='all'), separator=',')))
         elif isinstance(loc_instance, gm.GeometricModel):
-            code = ("%s.set_pos(np.array(%s))\n" % (rmt_instance, np.array2string(loc_instance.get_pos(), separator=',')) +
-                    "%s.set_rotmat(np.array(%s))\n" % (rmt_instance, np.array2string(loc_instance.get_rotmat(), separator=',')) +
+            code = ("%s.set_pos(np.array(%s))\n" % (
+            rmt_instance, np.array2string(loc_instance.get_pos(), separator=',')) +
+                    "%s.set_rotmat(np.array(%s))\n" % (
+                    rmt_instance, np.array2string(loc_instance.get_rotmat(), separator=',')) +
                     "%s.set_rgba([%s])\n" % (rmt_instance, ','.join(map(str, loc_instance.get_rgba()))))
         elif isinstance(loc_instance, gm.StaticGeometricModel):
             code = "%s.set_rgba([%s])\n" % (rmt_instance, ','.join(map(str, loc_instance.get_rgba())))
@@ -159,7 +161,9 @@ class RVizClient(object):
             given_rmt_anime_objinfo_name = self._gen_random_name(prefix='rmt_anime_objinfo_')
         code = "obj_path = ["
         for pose in loc_obj_path:
-            code += "np.array(%s)," % np.array2string(pose, separator=',')
+            pos, rotmat = pose
+            code += "[np.array(%s), np.array(%s)]" % (
+            np.array2string(pos, separator=','), np.array2string(rotmat, separator=','))
         code = code[:-1] + "]\n"
         code += ("%s.set_pos(np.array(%s)\n" % (rmt_obj, np.array2string(loc_obj.get_pos(), separator=',')) +
                  "%s.set_rotmat(np.array(%s))\n" % (rmt_obj, np.array2string(loc_obj.get_rotmat(), separator=',')) +
