@@ -162,9 +162,9 @@ class RVizClient(object):
         code = "obj_path = ["
         for pose in loc_obj_path:
             pos, rotmat = pose
-            code += "[np.array(%s), np.array(%s)]" % (
+            code += "[np.array(%s), np.array(%s)]," % (
             np.array2string(pos, separator=','), np.array2string(rotmat, separator=','))
-        code = code + "]\n"
+        code = code[:-1] + "]\n"
         code += ("%s.set_pos(np.array(%s))\n" % (rmt_obj, np.array2string(loc_obj.get_pos(), separator=',')) +
                  "%s.set_rotmat(np.array(%s))\n" % (rmt_obj, np.array2string(loc_obj.get_rotmat(), separator=',')) +
                  "%s.set_rgba([%s])\n" % (rmt_obj, ','.join(map(str, loc_obj.get_rgba()))) +
