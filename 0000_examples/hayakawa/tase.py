@@ -252,23 +252,24 @@ def decidestartpose(ropelinesorted, armname, predefined_grasps, fromjnt, startpo
         obj_initial.set_rgba(rgba=[1, 0, 0, .5])
         obj_initial.set_homomat(objmat4_initial)
         for i, eachgrasp in enumerate(predefined_grasps):
-            prejawwidth, prehndfc, prehndmat4 = eachgrasp
-            hndmat4_initial = np.dot(objmat4_initial, prehndmat4)
+            prejawwidth, prehndfc, prehndpos, prehndrotmat = eachgrasp
+            prehndhomomat = rm.homomat_from_posrot(prehndpos, prehndrotmat)
+            hndmat4_initial = np.dot(objmat4_initial, prehndhomomat)
             eepos_initial = rm.homomat_transform_points(objmat4_initial, prehndfc)[:3]
             eerot_initial = hndmat4_initial[:3, :3]
-            start = rbt.ik(manipulator_name=armname,
-                           tgt_pos=eepos_initial,
-                           tgt_rot=eerot_initial,
-                           seed_jnt_values=fromjnt)
+            start = robot_s.ik(manipulator_name=armname,
+                               tgt_pos=eepos_initial,
+                               tgt_rot=eerot_initial,
+                               seed_jnt_values=fromjnt)
             if start is not None:
-                original_jnt_values = rbt.get_jnt_values(manipulator_name=armname)
-                rbt.fk(manipulator_name=armname, jnt_values=start)
-                objrelmat = rbt.cvt_gl_to_loc_tcp(objpos_initial, objrot_initial, armname)
+                original_jnt_values = robot_s.get_jnt_values(manipulator_name=armname)
+                robot_s.fk(component_name=armname, jnt_values=start)
+                objrelmat = robot_s.cvt_gl_to_loc_tcp(armname, objpos_initial, objrot_initial)
                 ## 衝突検出
-                cd_result = rbt.is_collided(obscmlist)
+                cd_result = robot_s.is_collided(obscmlist)
                 if not cd_result:
                     IKpossiblelist_start.append([start, objrelmat, i])
-                rbt.fk(manipulator_name=armname, jnt_values=original_jnt_values)
+                robot_s.fk(component_name=armname, jnt_values=original_jnt_values)
         if len(IKpossiblelist_start) > 0:
             return IKpossiblelist_start, objpos_initial, objrot_initial, startpointid
         startpointid = startpointid + 1
@@ -295,23 +296,24 @@ def decidegoalpose_onepoint(IKpossiblelist_start,
     obj_final.set_rgba(rgba=[1, 0, 0, .5])
     obj_final.set_homomat(objmat4_final)
     for i in IKpossiblelist_start:
-        prejawwidth, prehndfc, prehndmat4 = predefined_grasps[i[2]]
-        hndmat4_final = np.dot(objmat4_final, prehndmat4)
+        prejawwidth, prehndfc, prehndpos, prehndrotmat = predefined_grasps[i[2]]
+        prehndhomomat = rm.homomat_from_posrot(prehndpos, prehndrotmat)
+        hndmat4_final = np.dot(objmat4_final, prehndhomomat)
         eepos_final = rm.homomat_transform_points(objmat4_final, prehndfc)[:3]
         eerot_final = hndmat4_final[:3, :3]
         # goal = rbt.numik(eepos_final, eerot_final, armname)
         fromjnt = i[0]
-        goal = rbt.ik(manipulator_name=armname,
-                      tgt_pos=eepos_final,
-                      tgt_rot=eerot_final,
-                      seed_jnt_values=fromjnt)
+        goal = robot_s.ik(manipulator_name=armname,
+                          tgt_pos=eepos_final,
+                          tgt_rot=eerot_final,
+                          seed_jnt_values=fromjnt)
         if goal is not None:
-            original_jnt_values = rbt.get_jnt_values(manipulator_name=armname)
-            rbt.fk(manipulator_name=armname, jnt_values=goal)
-            cd_result = rbt.is_collided(obscmlist)
+            original_jnt_values = robot_s.get_jnt_values(manipulator_name=armname)
+            robot_s.fk(component_name=armname, jnt_values=goal)
+            cd_result = robot_s.is_collided(obscmlist)
             if not cd_result:
                 IKpossiblelist_startgoal.append([i[0], goal, i[1], [2]])
-            rbt.fk(manipulator_name=armname, jnt_values=original_jnt_values)
+            robot_s.fk(component_name=armname, jnt_values=original_jnt_values)
     if len(IKpossiblelist_startgoal) > 0:
         return IKpossiblelist_startgoal
     else:
@@ -484,8 +486,9 @@ def decidegoalpose(IKpossiblelist_start, objpos_initial, armname, predefined_gra
         obj_final.set_rgba([1, 0, 0, .5])
         obj_final.set_rotmat(objmat4_final)
         for i in IKpossiblelist_start:
-            prejawwidth, prehndfc, prehndmat4 = predefined_grasps[i[2]]
-            hndmat4_final = np.dot(objmat4_final, prehndmat4)
+            prejawwidth, prehndfc, prehndpos, prehndrotmat = predefined_grasps[i[2]]
+            prehndhomomat = rm.homomat_from_posrot(prehndpos, prehndrotmat)
+            hndmat4_final = np.dot(objmat4_final, prehndhomomat)
             eepos_final = rm.homomat_transform_points(objmat4_final, prehndfc)[:3]
             eerot_final = hndmat4_final[:3, :3]
             # goal = rbt.numik(eepos_final, eerot_final, armname)
@@ -1148,6 +1151,7 @@ if __name__ == "__main__":
     startpointid = 0
     objpos_final = np.array([.25, .15, 1.4])
     armname="lft_arm"
+    print(predefined_grasps_lft)
     IKpossiblelist_start, objpos_initial, objrot_initial, startpointid = decidestartpose(ropelinesorted,
                                                                                          armname,
                                                                                          predefined_grasps_lft,
@@ -1159,10 +1163,9 @@ if __name__ == "__main__":
                                                        armname,
                                                        predefined_grasps_lft,
                                                        obscmlist)
-    print(IKpossiblelist_start)
-    start = IKpossiblelist_start[0][0]
-    print(start)
-    robot_s.fk(armname, start)
+    robot_s.fk(armname, IKpossiblelist_startgoal[0][0])
+    robot_s.gen_meshmodel().attach_to(base)
+    robot_s.fk(armname, IKpossiblelist_startgoal[0][1])
     robot_s.gen_meshmodel().attach_to(base)
     base.run()
     # goal = IKpossiblelist_startgoal[1][1]
