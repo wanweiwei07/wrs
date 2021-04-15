@@ -35,7 +35,7 @@ class ObjInfo(object):
     def create_anime_info(obj, obj_path=None):
         anime_info = ObjInfo()
         anime_info.obj = obj
-        anime_info.obj_parameters = obj.get_rgba()
+        anime_info.obj_parameters = [obj.get_rgba()]
         if obj_path is None:
             anime_info.obj_path = [[obj.get_pos(), obj.get_rotmat()]]
         else:

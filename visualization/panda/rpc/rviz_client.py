@@ -21,10 +21,10 @@ class RVizClient(object):
         return prefix + str(random.randint(100000, 1e6))  # 6 digits
 
     def reset(self):
-        # code = "base.clear_autoupdate_obj()\n"
-        # code += "base.clear_autoupdate_robot()\n"
-        code = "base.clear_manualupdate_obj()\n"
-        code += "base.clear_manualupdate_robot()\n"
+        # code = "base.clear_internal_update_obj()\n"
+        # code += "base.clear_internal_update_robot()\n"
+        code = "base.clear_external_update_obj()\n"
+        code += "base.clear_external_update_robot()\n"
         code += "base.clear_noupdate_model()\n"
         # code += "for item in [%s]:\n" % ', '.join(self.rmt_mesh_list)
         # code += "    item.detach()"
@@ -148,7 +148,7 @@ class RVizClient(object):
                       loc_obj_path,
                       given_rmt_anime_objinfo_name=None):
         """
-        add wd.ani.ObjInfo to base._manualupdate_obj_list
+        add wd.ani.ObjInfo to base._external_update_obj_list
         :param rmt_obj: str
         :param loc_obj: CollisionModel, Static/GeometricModel, ModelCollection
         :param loc_obj_path:
@@ -164,13 +164,13 @@ class RVizClient(object):
             pos, rotmat = pose
             code += "[np.array(%s), np.array(%s)]" % (
             np.array2string(pos, separator=','), np.array2string(rotmat, separator=','))
-        code = code[:-1] + "]\n"
-        code += ("%s.set_pos(np.array(%s)\n" % (rmt_obj, np.array2string(loc_obj.get_pos(), separator=',')) +
+        code = code + "]\n"
+        code += ("%s.set_pos(np.array(%s))\n" % (rmt_obj, np.array2string(loc_obj.get_pos(), separator=',')) +
                  "%s.set_rotmat(np.array(%s))\n" % (rmt_obj, np.array2string(loc_obj.get_rotmat(), separator=',')) +
                  "%s.set_rgba([%s])\n" % (rmt_obj, ','.join(map(str, loc_obj.get_rgba()))) +
                  "%s = wd.ani.ObjInfo.create_anime_info(obj=%s, obj_path=obj_path)\n" %
                  (given_rmt_anime_objinfo_name, rmt_obj))
-        code += "base.attach_manualupdate_obj(%s)\n" % given_rmt_anime_objinfo_name
+        code += "base.attach_external_update_obj(%s)\n" % given_rmt_anime_objinfo_name
         self.run_code(code)
         return given_rmt_anime_objinfo_name
 
@@ -200,16 +200,16 @@ class RVizClient(object):
                  (given_rmt_anime_robotinfo_name, rmt_robot_s) +
                  "'%s', " % loc_robot_component_name +
                  "%s, " % loc_robot_meshmodel_parameters + "robot_path)\n")
-        code += "base.attach_manualupdate_robot(%s)\n" % given_rmt_anime_robotinfo_name
+        code += "base.attach_external_update_robot(%s)\n" % given_rmt_anime_robotinfo_name
         self.run_code(code)
         return given_rmt_anime_robotinfo_name
 
     def delete_anime_obj(self, rmt_anime_objinfo):
-        code = "base.detach_manualupdate_obj(%s)\n" % rmt_anime_objinfo
+        code = "base.detach_external_update_obj(%s)\n" % rmt_anime_objinfo
         self.run_code(code)
 
     def delete_anime_robot(self, rmt_anime_robotinfo):
-        code = "base.detach_manualupdate_robot(%s)\n" % rmt_anime_robotinfo
+        code = "base.detach_external_update_robot(%s)\n" % rmt_anime_robotinfo
         self.run_code(code)
 
     def add_stationary_obj(self,

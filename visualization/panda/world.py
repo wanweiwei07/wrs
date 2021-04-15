@@ -118,13 +118,13 @@ class World(ShowBase, object):
             self.physicsworld.setDebugNode(self._debugNP.node())
         self.physicsbodylist = []
         # set up render update (TODO, only for dynamics?)
-        self._autoupdate_obj_list = []  # the nodepath, collision model, or bullet dynamics model to be drawn
-        self._autoupdate_robot_list = []
-        taskMgr.add(self._auto_update, "auto_update", appendTask=True)
+        self._internal_update_obj_list = []  # the nodepath, collision model, or bullet dynamics model to be drawn
+        self._internal_update_robot_list = []
+        taskMgr.add(self._internal_update, "internal_update", appendTask=True)
         # for remote visualization
-        self._manualupdate_objinfo_list = []  # see anime_info.py
-        self._manualupdate_robotinfo_list = []
-        taskMgr.add(self._manual_update, "manual_update", appendTask=True)
+        self._external_update_objinfo_list = []  # see anime_info.py
+        self._external_update_robotinfo_list = []
+        taskMgr.add(self._external_update, "external_update", appendTask=True)
         # for stationary models
         self._noupdate_model_list = []
 
@@ -144,11 +144,11 @@ class World(ShowBase, object):
         self.physicsworld.doPhysics(dt, 20, 1 / 1200)
         return task.cont
 
-    def _auto_update(self, task):
-        for robot in self._autoupdate_robot_list:
+    def _internal_update(self, task):
+        for robot in self._internal_update_robot_list:
             robot.detach()  # TODO gen mesh model?
             robot.attach_to(self)
-        for obj in self._autoupdate_obj_list:
+        for obj in self._internal_update_obj_list:
             obj.detach()
             obj.attach_to(self)
         return task.cont
@@ -170,17 +170,17 @@ class World(ShowBase, object):
         self.cam.lookAt(self.lookatpos[0], self.lookatpos[1], self.lookatpos[2])
         return task.cont
 
-    def _manual_update(self, task):
-        for _manualupdate_robotinfo in self._manualupdate_robotinfo_list:
-            robot_s = _manualupdate_robotinfo.robot_s
-            robot_component_name = _manualupdate_robotinfo.robot_component_name
-            robot_meshmodel = _manualupdate_robotinfo.robot_meshmodel
-            robot_meshmodel_parameter = _manualupdate_robotinfo.robot_meshmodel_parameters
-            robot_path = _manualupdate_robotinfo.robot_path
-            robot_path_counter = _manualupdate_robotinfo.robot_path_counter
+    def _external_update(self, task):
+        for _external_update_robotinfo in self._external_update_robotinfo_list:
+            robot_s = _external_update_robotinfo.robot_s
+            robot_component_name = _external_update_robotinfo.robot_component_name
+            robot_meshmodel = _external_update_robotinfo.robot_meshmodel
+            robot_meshmodel_parameter = _external_update_robotinfo.robot_meshmodel_parameters
+            robot_path = _external_update_robotinfo.robot_path
+            robot_path_counter = _external_update_robotinfo.robot_path_counter
             robot_meshmodel.detach()
             robot_s.fk(component_name=robot_component_name, jnt_values=robot_path[robot_path_counter])
-            _manualupdate_robotinfo.robot_meshmodel = robot_s.gen_meshmodel(
+            _external_update_robotinfo.robot_meshmodel = robot_s.gen_meshmodel(
                 tcp_jntid=robot_meshmodel_parameter[0],
                 tcp_loc_pos=robot_meshmodel_parameter[1],
                 tcp_loc_rotmat=robot_meshmodel_parameter[2],
@@ -188,23 +188,23 @@ class World(ShowBase, object):
                 toggle_jntscs=robot_meshmodel_parameter[4],
                 rgba=robot_meshmodel_parameter[5],
                 name=robot_meshmodel_parameter[6])
-            _manualupdate_robotinfo.robot_meshmodel.attach_to(self)
-            _manualupdate_robotinfo.robot_path_counter += 1
-            if _manualupdate_robotinfo.robot_path_counter >= len(robot_path):
-                _manualupdate_robotinfo.robot_path_counter = 0
-        for _manualupdate_objinfo in self._manualupdate_objinfo_list:
-            obj = _manualupdate_objinfo.obj
-            obj_parameters = _manualupdate_objinfo.obj_parameters
-            obj_path = _manualupdate_objinfo.obj_path
-            obj_path_counter = _manualupdate_objinfo.obj_path_counter
+            _external_update_robotinfo.robot_meshmodel.attach_to(self)
+            _external_update_robotinfo.robot_path_counter += 1
+            if _external_update_robotinfo.robot_path_counter >= len(robot_path):
+                _external_update_robotinfo.robot_path_counter = 0
+        for _external_update_objinfo in self._external_update_objinfo_list:
+            obj = _external_update_objinfo.obj
+            obj_parameters = _external_update_objinfo.obj_parameters
+            obj_path = _external_update_objinfo.obj_path
+            obj_path_counter = _external_update_objinfo.obj_path_counter
             obj.detach()
             obj.set_pos(obj_path[obj_path_counter][0])
             obj.set_rotmat(obj_path[obj_path_counter][1])
             obj.set_rgba(obj_parameters[0])
             obj.attach_to(self)
-            _manualupdate_objinfo.obj_path_counter += 1
-            if _manualupdate_objinfo.obj_path_counter >= len(obj_path):
-                _manualupdate_objinfo.obj_path_counter = 0
+            _external_update_objinfo.obj_path_counter += 1
+            if _external_update_objinfo.obj_path_counter >= len(obj_path):
+                _external_update_objinfo.obj_path_counter = 0
         return task.again
 
     def change_debugstatus(self, toggledebug):
@@ -216,65 +216,65 @@ class World(ShowBase, object):
             self.physicsworld.clearDebugNode()
         self.toggledebug = toggledebug
 
-    def attach_autoupdate_obj(self, obj):
+    def attach_internal_update_obj(self, obj):
         """
         :param obj: CollisionModel or (Static)GeometricModel
         :return:
         """
-        self._autoupdate_obj_list.append(obj)
+        self._internal_update_obj_list.append(obj)
 
-    def detach_autoupdate_obj(self, obj):
-        self._autoupdate_obj_list.remove(obj)
+    def detach_internal_update_obj(self, obj):
+        self._internal_update_obj_list.remove(obj)
         obj.detach()
 
-    def clear_autoupdate_obj(self):
-        tmp_autoupdate_obj_list = self._autoupdate_obj_list.copy()
-        self._autoupdate_obj_list = []
-        for obj in tmp_autoupdate_obj_list:
+    def clear_internal_update_obj(self):
+        tmp_internal_update_obj_list = self._internal_update_obj_list.copy()
+        self._internal_update_obj_list = []
+        for obj in tmp_internal_update_obj_list:
             obj.detach()
 
-    def attach_autoupdate_robot(self, robot_meshmodel):  # TODO robot_meshmodel or robot_s?
-        self._autoupdate_robot_list.append(robot_meshmodel)
+    def attach_internal_update_robot(self, robot_meshmodel):  # TODO robot_meshmodel or robot_s?
+        self._internal_update_robot_list.append(robot_meshmodel)
 
-    def detach_autoupdate_robot(self, robot_meshmodel):
-        tmp_autoupdate_robot_list = self._autoupdate_robot_list.copy()
-        self._autoupdate_robot_list = []
-        for robot in tmp_autoupdate_robot_list:
+    def detach_internal_update_robot(self, robot_meshmodel):
+        tmp_internal_update_robot_list = self._internal_update_robot_list.copy()
+        self._internal_update_robot_list = []
+        for robot in tmp_internal_update_robot_list:
             robot.detach()
 
-    def clear_autoupdate_robot(self):
-        for robot in self._autoupdate_robot_list:
-            self.detach_autoupdate_robot(robot)
+    def clear_internal_update_robot(self):
+        for robot in self._internal_update_robot_list:
+            self.detach_internal_update_robot(robot)
 
-    def attach_manualupdate_obj(self, objinfo):
+    def attach_external_update_obj(self, objinfo):
         """
         :param objinfo: anime_info.ObjInfo
         :return:
         """
-        self._manualupdate_objinfo_list.append(objinfo)
+        self._external_update_objinfo_list.append(objinfo)
 
-    def detach_manualupdate_obj(self, obj_info):
-        self._manualupdate_objinfo_list.remove(obj_info)
+    def detach_external_update_obj(self, obj_info):
+        self._external_update_objinfo_list.remove(obj_info)
         obj_info.obj.detach()
 
-    def clear_manualupdate_obj(self):
-        for obj in self._manualupdate_objinfo_list:
-            self.detach_manualupdate_obj(obj)
+    def clear_external_update_obj(self):
+        for obj in self._external_update_objinfo_list:
+            self.detach_external_update_obj(obj)
 
-    def attach_manualupdate_robot(self, robotinfo):
+    def attach_external_update_robot(self, robotinfo):
         """
         :param robotinfo: anime_info.RobotInfo
         :return:
         """
-        self._manualupdate_robotinfo_list.append(robotinfo)
+        self._external_update_robotinfo_list.append(robotinfo)
 
-    def detach_manualupdate_robot(self, robot_info):
-        self._manualupdate_robotinfo_list.remove(robot_info)
+    def detach_external_update_robot(self, robot_info):
+        self._external_update_robotinfo_list.remove(robot_info)
         robot_info.robot_meshmodel.detach()
 
-    def clear_manualupdate_robot(self):
-        for robot in self._manualupdate_robotinfo_list:
-            self.detach_manualupdate_robot(robot)
+    def clear_external_update_robot(self):
+        for robot in self._external_update_robotinfo_list:
+            self.detach_external_update_robot(robot)
 
     def attach_noupdate_model(self, model):
         model.attach_to(self)
