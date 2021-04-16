@@ -92,7 +92,7 @@ class Ur3EDualUrx():
 
     def opengripper(self, speedpercentage=5, forcepercentage=10, distance=100, armname="rgt"):
         """
-        open the rtq85 hand on the arm specified by armname
+        open the rtq85 hand on the arm specified by arm_name
 
         :param armname:
         :return:
@@ -113,7 +113,7 @@ class Ur3EDualUrx():
 
     def closegripper(self, speedpercentage=100, forcepercentage=100, armname='rgt'):
         """
-        close the rtq85 hand on the arm specified by armname
+        close the rtq85 hand on the arm specified by arm_name
 
         :param armname:
         :return:
@@ -592,15 +592,15 @@ if __name__ == '__main__':
     #
     # rbt = robot_s.Ur3EDualRobot(rgthnd, lfthnd)
     # rbt.goinitpose()
-    # ur3eu.attachfirm(rbt, upthreshold=10, armname='lft')
+    # ur3eu.attachfirm(rbt, upthreshold=10, arm_name='lft')
     ur3eu.opengripper(armname="lft",forcepercentage=0,distance=23)
     ur3eu.opengripper(armname="lft",forcepercentage=0 , distance=80)
-    # ur3eu.closegripper(armname="lft")
+    # ur3eu.closegripper(arm_name="lft")
     # initpose = ur3dualrobot.initjnts
     # initrgt = initpose[3:9]
     # initlft = initpose[9:15]
-    # ur3u.movejntssgl(initrgt, armname='rgt')
-    # ur3u.movejntssgl(initlft, armname='lft')
+    # ur3u.movejntssgl(initrgt, arm_name='rgt')
+    # ur3u.movejntssgl(initlft, arm_name='lft')
 
     # goalrgt = copy.deepcopy(initrgt)
     # goalrgt[0] = goalrgt[0]-10.0
@@ -609,13 +609,13 @@ if __name__ == '__main__':
     # goallft = copy.deepcopy(initlft)
     # goallft[0] = goallft[0]+10.0
 
-    # ur3u.movejntssgl_cont([initrgt, goalrgt, goalrgt1], armname='rgt')
+    # ur3u.movejntssgl_cont([initrgt, goalrgt, goalrgt1], arm_name='rgt')
     #
-    # postcp_robot, rottcp_robot =  ur3dualrobot.gettcp_robot(armname='rgt')
+    # postcp_robot, rottcp_robot =  ur3dualrobot.gettcp_robot(arm_name='rgt')
     # print math3d.Transform(rottcp_robot, postcp_robot).get_pose_vector()
     # print "getl ", ur3u.rgtarm.getl()
     #
-    # postcp_robot, rottcp_robot =  ur3dualrobot.gettcp_robot(armname='lft')
+    # postcp_robot, rottcp_robot =  ur3dualrobot.gettcp_robot(arm_name='lft')
     # print math3d.Transform(rottcp_robot, postcp_robot).get_pose_vector()
     # print "getl ", ur3u.lftarm.getl()
     #
@@ -625,8 +625,8 @@ if __name__ == '__main__':
     # u3dmgen = u3dm.Ur3DualMesh(rgthand, lfthand)
     # ur3dualmnp = u3dmgen.genmnp(ur3dualrobot, togglejntscoord=True)
     # ur3dualmnp.reparentTo(base.render)
-    # # armname = 'rgt'
-    # # armname = 'lft'
+    # # arm_name = 'rgt'
+    # # arm_name = 'lft'
     # # ur3u.movejntsall(ur3dualrobot.initjnts)
     # # ur3u.movejntsin360()
     # # print ur3u.getjnts('rgt')

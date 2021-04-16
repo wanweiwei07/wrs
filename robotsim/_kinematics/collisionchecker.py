@@ -1,3 +1,5 @@
+import copy
+
 import basis.data_adapter as da
 import modeling.modelcollection as mc
 from panda3d.core import NodePath, CollisionTraverser, CollisionHandlerQueue, BitMask32
@@ -151,7 +153,7 @@ class CollisionChecker(object):
         self.ctrav.traverse(self.np)
         # clear obstacles
         for obstacle in obstacle_list:
-            obstacle.objpdnp.detachNode()
+            obstacle.objpdnp.reparentTo(base.render)
         # clear other robots
         for robot in otherrobot_list:
             for cdnp in robot.cc.np.getChildren():

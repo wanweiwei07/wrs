@@ -559,10 +559,12 @@ if __name__ == "__main__":
     # rjlinstance.settcp(tcp_jntid=rjlinstance.tgtjnts[-3], tcp_loc_pos=np.array([0,0,30]))
     # jlinstance.jnts[4]['type'] = 'prismatic'
     # jlinstance.jnts[4]['loc_motionax'] = np.array([1, 0, 0])
-    # jlinstance.jnts[4]['motion_val'] = 0
+    # jlinstance.jnts[4]['motion_val'] = .2
     # jlinstance.jnts[4]['rngmax'] = 1
     # jlinstance.jnts[4]['rngmin'] = -1
     jlinstance.fk()
+    jlinstance.gen_stickmodel().attach_to(base)
+    base.run()
 
     tgt_pos0 = np.array([.45, 0, 0])
     tgt_rotmat0 = np.eye(3)

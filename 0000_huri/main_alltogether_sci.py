@@ -5,10 +5,10 @@ if __name__ == '__main__':
     yhx = robothelper.RobotHelperX(usereal=True)
     yhx.movetox(yhx.rbt.initrgtjnts, armname="rgt")
     yhx.movetox(yhx.rbt.initlftjnts, armname="lft")
-    # yhx.closegripperx(armname="rgt")
-    # yhx.closegripperx(armname="lft")
-    # yhx.opengripperx(armname="rgt")
-    # yhx.opengripperx(armname="lft")
+    # yhx.closegripperx(arm_name="rgt")
+    # yhx.closegripperx(arm_name="lft")
+    # yhx.opengripperx(arm_name="rgt")
+    # yhx.opengripperx(arm_name="lft")
     lctr = loc.Locator(standtype = "light")
 
     armname = "rgt"

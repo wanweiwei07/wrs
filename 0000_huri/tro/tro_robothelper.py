@@ -387,10 +387,10 @@ if __name__ == "__main__":
     # print(rhx.pcdchecker.isRobotCollided(rhx.rbt))
     rhx.movetox(rhx.rbt.initrgtjnts, armname="rgt")
     rhx.movetox(rhx.rbt.initlftjnts, armname="lft")
-    # rhx.closegripperx(armname="rgt")
-    # rhx.closegripperx(armname="lft")
-    # rhx.opengripperx(armname="rgt")
-    # rhx.opengripperx(armname="lft")
+    # rhx.closegripperx(arm_name="rgt")
+    # rhx.closegripperx(arm_name="lft")
+    # rhx.opengripperx(arm_name="rgt")
+    # rhx.opengripperx(arm_name="lft")
     rhx.show()
     eepos = np.array([300,-100,300])
     eerot = np.array([[0,0,1],[1,0,0],[0,1,0]]).T
@@ -409,21 +409,21 @@ if __name__ == "__main__":
     # rhx.base.run()
     # goalpos = np.array([50, -400, 10])
     # goalrot = np.array([[-1,0,0], [0,1,0], [0,0,-1]])
-    # armjnts = rhx.movetoposrot(eepos=goalpos, eerot=goalrot, armname="rgt")
-    # rhx.movetox(armjnts, armname="rgt")
+    # armjnts = rhx.movetoposrot(eepos=goalpos, eerot=goalrot, arm_name="rgt")
+    # rhx.movetox(armjnts, arm_name="rgt")
     # rhx.rbtmesh.genmnp(rhx.rbt).reparentTo(base.render)
-    # rhx.opengripperx(armname="rgt")
-    # rhx.opengripperx(armname="lft")
-    # rhx.moveto(rhx.rbt.initrgtjnts, armname="rgt")
-    # rhx.moveto(rhx.rbt.initlftjnts, armname="lft")
+    # rhx.opengripperx(arm_name="rgt")
+    # rhx.opengripperx(arm_name="lft")
+    # rhx.moveto(rhx.rbt.initrgtjnts, arm_name="rgt")
+    # rhx.moveto(rhx.rbt.initlftjnts, arm_name="lft")
     # print(yhx.rbt.initrgtjnts)
     # print(yhx.rbt.initlftjnts)
 
     # eepos = np.array([300,-100,300])
     # eerot = np.array([[0,0,1],[1,0,0],[0,1,0]]).T
-    # armname = "rgt"
-    # armjnts = yhx.movetoposrot(eepos=eepos, eerot=eerot, armname=armname)
-    # yhx.moveto(armjnts, armname)
+    # arm_name = "rgt"
+    # armjnts = yhx.movetoposrot(eepos=eepos, eerot=eerot, arm_name=arm_name)
+    # yhx.moveto(armjnts, arm_name)
 
     # base = pandactrl.World(camp=[2700, -2000, 2000], lookatp=[0, 0, 500])
     # yh = YumiHelper()
@@ -431,7 +431,7 @@ if __name__ == "__main__":
     # for x in range(200,401,50):
     #     for y in range(-300,301,50):
     #         for z in range(150, 301, 50):
-    #             armjnts = yh.movetoposrotmsc(eepos=np.array([x,y,z]), eerot = eerot, msc=lastarmjnts, armname="rgt")
+    #             armjnts = yh.movetoposrotmsc(eepos=np.array([x,y,z]), eerot = eerot, msc=lastarmjnts, arm_name="rgt")
     #             if armjnts is not None and not yh.cdchecker.isSelfCollided(yh.rbt):
     #                 lastarmjnts = armjnts
     #                 rbtnp = yh.rbtmesh.genmnp(yh.rbt)
@@ -443,10 +443,10 @@ if __name__ == "__main__":
     # for x in range(220,451,50):
     #     for y in range(-300,201,50):
     #         for z in range(150, 301, 50):
-    #             armjnts = yhx.movetoposrotmsc(eepos=np.array([x,y,z]), eerot = eerot, msc=lastarmjnts, armname="rgt")
+    #             armjnts = yhx.movetoposrotmsc(eepos=np.array([x,y,z]), eerot = eerot, msc=lastarmjnts, arm_name="rgt")
     #             if armjnts is not None and not yhx.cdchecker.isSelfCollided(yhx.rbt):
     #
     #                 lastarmjnts = armjnts
-    #                 yhx.moveto(armjnts, armname="rgt")
+    #                 yhx.moveto(armjnts, arm_name="rgt")
 
     # yhx.show()

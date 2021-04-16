@@ -99,7 +99,7 @@ class PickPlacePlanner(object):
                         hndnew.reparentTo(self.rhx.base.render)
                     rbt.movearmfk(armjnts, armname)
                     isrbtcollided = pcdchecker.isRobotCollided(rbt, obscmlist, holdarmname=armname)
-                    # isobjcollided = pcdchecker.isObjectsOthersCollided([obj], rbt, armname, obscmlist)
+                    # isobjcollided = pcdchecker.isObjectsOthersCollided([obj], rbt, arm_name, obscmlist)
                     isobjcollided = False  # for future use
                     if (not isrbtcollided) and (not isobjcollided):
                         if toggledebug:
@@ -162,7 +162,7 @@ class PickPlacePlanner(object):
                             hndnew.reparentTo(self.rhx.base.render)
                         rbt.movearmfk(armjnts, armname)
                         isrbtcollided = pcdchecker.isRobotCollided(rbt, obscmlist, holdarmname=armname)
-                        # isobjcollided = pcdchecker.isObjectsOthersCollided([obj], rbt, armname, obscmlist)
+                        # isobjcollided = pcdchecker.isObjectsOthersCollided([obj], rbt, arm_name, obscmlist)
                         isobjcollided = False
                         if (not isrbtcollided) and (not isobjcollided):
                             tmpresult.append(idavailableinit)
@@ -202,8 +202,8 @@ class PickPlacePlanner(object):
         #         hndmat4 = np.dot(inithomomat, predefined_homomat)
         #         eepos = rm.homotransformpoint(inithomomat, predefined_fc)[:3]
         #         eerot = hndmat4[:3, :3]
-        #         armjnts = rbt.numik(eepos, eerot, armname)
-        #         rbt.movearmfk(armjnts, armname)
+        #         armjnts = rbt.numik(eepos, eerot, arm_name)
+        #         rbt.movearmfk(armjnts, arm_name)
         #         rbtmg.genmnp(rbt, togglejntscoord=False).reparentTo(self.rhx.base.render)
 
         print("IK failed grasps at the goal pose(s): ", ikfailedgraspsnum)
@@ -284,7 +284,7 @@ class PickPlacePlanner(object):
                         hndnew.reparentTo(self.rhx.base.render)
                     rbt.movearmfk(armjnts, armname)
                     isrbtcollided = pcdchecker.isRobotCollided(rbt, obscmlist, holdarmname=armname)
-                    # isobjcollided = pcdchecker.isObjectsOthersCollided([obj], rbt, armname, obscmlist)
+                    # isobjcollided = pcdchecker.isObjectsOthersCollided([obj], rbt, arm_name, obscmlist)
                     isobjcollided = False  # for future use
                     if (not isrbtcollided) and (not isobjcollided):
                         if toggledebug:
@@ -358,7 +358,7 @@ class PickPlacePlanner(object):
                                 hndnew.reparentTo(self.rhx.base.render)
                             rbt.movearmfk(armjnts, armname)
                             isrbtcollided = pcdchecker.isRobotCollided(rbt, obscmlist, holdarmname=armname)
-                            # isobjcollided = pcdchecker.isObjectsOthersCollided([obj], rbt, armname, obscmlist)
+                            # isobjcollided = pcdchecker.isObjectsOthersCollided([obj], rbt, arm_name, obscmlist)
                             isobjcollided = False
                             if (not isrbtcollided) and (not isobjcollided):
                                 tmpresult.append(idavailableinit)
@@ -407,8 +407,8 @@ class PickPlacePlanner(object):
         #         hndmat4 = np.dot(inithomomat, predefined_homomat)
         #         eepos = rm.homotransformpoint(inithomomat, predefined_fc)[:3]
         #         eerot = hndmat4[:3, :3]
-        #         armjnts = rbt.numik(eepos, eerot, armname)
-        #         rbt.movearmfk(armjnts, armname)
+        #         armjnts = rbt.numik(eepos, eerot, arm_name)
+        #         rbt.movearmfk(armjnts, arm_name)
         #         rbtmg.genmnp(rbt, togglejntscoord=False).reparentTo(self.rhx.base.render)
 
         print("IK failed grasps at the goal pose(s): ", ikfailedgraspsnum)
@@ -509,7 +509,7 @@ class PickPlacePlanner(object):
                     print("The rgt arm must maintain unmoved during generating ppsglmotion for the lft arm.")
                     raise ValueError("")
             else:
-                print("Wrong armname. Must be rgt or lft.")
+                print("Wrong arm_name. Must be rgt or lft.")
                 raise ValueError("")
 
         rbt = self.rhx.rbt
@@ -865,7 +865,7 @@ class PickPlacePlanner(object):
                         # hndnew.reparentTo(self.rhx.base.render)
                     rbt.movearmfk(armjnts, armname)
                     isrbtcollided = pcdchecker.isRobotCollided(rbt, obscmlist, holdarmname=armname)
-                    # isobjcollided = pcdchecker.isObjectsOthersCollided([obj], rbt, armname, obscmlist)
+                    # isobjcollided = pcdchecker.isObjectsOthersCollided([obj], rbt, arm_name, obscmlist)
                     isobjcollided = False  # for future use
                     if (not isrbtcollided) and (not isobjcollided):
                         if toggledebug:
@@ -945,7 +945,7 @@ class PickPlacePlanner(object):
                             # hndnew.reparentTo(self.rhx.base.render)
                         rbt.movearmfk(armjnts, armname)
                         isrbtcollided = pcdchecker.isRobotCollided(rbt, obscmlist, holdarmname=armname)
-                        # isobjcollided = pcdchecker.isObjectsOthersCollided([obj], rbt, armname, obscmlist)
+                        # isobjcollided = pcdchecker.isObjectsOthersCollided([obj], rbt, arm_name, obscmlist)
                         isobjcollided = False
                         if (not isrbtcollided) and (not isobjcollided):
                             finalsharedgrasps.append(idavailableinit)
@@ -962,8 +962,8 @@ class PickPlacePlanner(object):
                                 # # hndnew.reparentTo(self.rhx.base.render)
                                 # eepos = rm.homotransformpoint(objinithomomat, predefined_fc)[:3]
                                 # eerot = hndmat4[:3, :3]
-                                # armjnts = rbt.numik(eepos, eerot, armname)
-                                # rbt.movearmfk(armjnts, armname)
+                                # armjnts = rbt.numik(eepos, eerot, arm_name)
+                                # rbt.movearmfk(armjnts, arm_name)
                                 # rbtmg.genmnp(rbt, togglejntscoord=False, toggleendcoord=False, rgbargt=[0, 1, 0, .5]).reparentTo(
                                 #     self.rhx.base.render)
                                 # # base.run()
@@ -1015,8 +1015,8 @@ class PickPlacePlanner(object):
                 #         hndmat4 = np.dot(objinithomomat, predefined_homomat)
                 #         eepos = rm.homotransformpoint(objinithomomat, predefined_fc)[:3]
                 #         eerot = hndmat4[:3, :3]
-                #         armjnts = rbt.numik(eepos, eerot, armname)
-                #         rbt.movearmfk(armjnts, armname)
+                #         armjnts = rbt.numik(eepos, eerot, arm_name)
+                #         rbt.movearmfk(armjnts, arm_name)
                 #         rbtmg.genmnp(rbt, togglejntscoord=False).reparentTo(self.rhx.base.render)
 
                 if rbtinitarmjnts is not None and rbtgoalarmjnts is not None:
@@ -1029,7 +1029,7 @@ class PickPlacePlanner(object):
                             print("The rgt arm must maintain unmoved during generating ppsglmotion for the lft arm.")
                             raise ValueError("")
                     else:
-                        print("Wrong armname. Must be rgt or lft.")
+                        print("Wrong arm_name. Must be rgt or lft.")
                         raise ValueError("")
                 if rbtinitarmjnts is not None:
                     rbt.movearmfk(rbtinitarmjnts[0], armname="rgt")
@@ -1495,7 +1495,7 @@ class PickPlacePlanner(object):
                         # hndnew.reparentTo(self.rhx.base.render)
                     rbt.movearmfk(armjnts, armname)
                     isrbtcollided = pcdchecker.isRobotCollided(rbt, obscmlist, holdarmname=armname)
-                    # isobjcollided = pcdchecker.isObjectsOthersCollided([obj], rbt, armname, obscmlist)
+                    # isobjcollided = pcdchecker.isObjectsOthersCollided([obj], rbt, arm_name, obscmlist)
                     isobjcollided = False  # for future use
                     if (not isrbtcollided) and (not isobjcollided):
                         if toggledebug:
@@ -1574,7 +1574,7 @@ class PickPlacePlanner(object):
                             # hndnew.reparentTo(self.rhx.base.render)
                         rbt.movearmfk(armjnts, armname)
                         isrbtcollided = pcdchecker.isRobotCollided(rbt, obscmlist, holdarmname=armname)
-                        # isobjcollided = pcdchecker.isObjectsOthersCollided([obj], rbt, armname, obscmlist)
+                        # isobjcollided = pcdchecker.isObjectsOthersCollided([obj], rbt, arm_name, obscmlist)
                         isobjcollided = False
                         if (not isrbtcollided) and (not isobjcollided):
                             finalsharedgrasps.append(idavailableinit)
@@ -1592,8 +1592,8 @@ class PickPlacePlanner(object):
                                 # # hndnew.reparentTo(self.rhx.base.render)
                                 # eepos = rm.homotransformpoint(objinithomomat, predefined_fc)[:3]
                                 # eerot = hndmat4[:3, :3]
-                                # armjnts = rbt.numik(eepos, eerot, armname)
-                                # rbt.movearmfk(armjnts, armname)
+                                # armjnts = rbt.numik(eepos, eerot, arm_name)
+                                # rbt.movearmfk(armjnts, arm_name)
                                 # rbtmg.genmnp(rbt, togglejntscoord=False, toggleendcoord=False, rgbargt=[0, 1, 0, .5]).reparentTo(
                                 #     self.rhx.base.render)
                                 # # base.run()
@@ -1642,8 +1642,8 @@ class PickPlacePlanner(object):
                 #         hndmat4 = np.dot(objinithomomat, predefined_homomat)
                 #         eepos = rm.homotransformpoint(objinithomomat, predefined_fc)[:3]
                 #         eerot = hndmat4[:3, :3]
-                #         armjnts = rbt.numik(eepos, eerot, armname)
-                #         rbt.movearmfk(armjnts, armname)
+                #         armjnts = rbt.numik(eepos, eerot, arm_name)
+                #         rbt.movearmfk(armjnts, arm_name)
                 #         rbtmg.genmnp(rbt, togglejntscoord=False).reparentTo(self.rhx.base.render)
 
                 if rbtinitarmjnts is not None and rbtgoalarmjnts is not None:
@@ -1656,7 +1656,7 @@ class PickPlacePlanner(object):
                             print("The rgt arm must maintain unmoved during generating ppsglmotion for the lft arm.")
                             raise ValueError("")
                     else:
-                        print("Wrong armname. Must be rgt or lft.")
+                        print("Wrong arm_name. Must be rgt or lft.")
                         raise ValueError("")
                 if rbtinitarmjnts is not None:
                     rbt.movearmfk(rbtinitarmjnts[0], armname="rgt")

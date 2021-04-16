@@ -130,18 +130,18 @@ taskMgr.doMethodLater(0.05, update, "update",
 #                     [0,0.382683,-0.92388]]).T
 # rbtgoalpos = np.array([300,0,100])
 # rbtgoalrot = np.dot(rm.rodrigues([0,0,1],-120),rbtstartrot)
-# start = robot_s.numik(rbtstartpos, rbtstartrot, armname=armname)
+# start = robot_s.numik(rbtstartpos, rbtstartrot, arm_name=arm_name)
 # print(start)
-# goal = robot_s.numik(rbtgoalpos, rbtgoalrot, armname=armname)
+# goal = robot_s.numik(rbtgoalpos, rbtgoalrot, arm_name=arm_name)
 # print(goal)
 # planner = rrtc.RRTConnect(start=start, goal=goal, ctcallback=ctcallback,
 #                               starttreesamplerate=starttreesamplerate,
 #                               endtreesamplerate=endtreesamplerate, expanddis=7,
 #                               maxiter=2000, maxtime=100.0)
-# robot_s.movearmfk(start, armname)
+# robot_s.movearmfk(start, arm_name)
 # robotnp = robotmesh.genmnp(robot_s)
 # robotnp.reparentTo(base.render)
-# robot_s.movearmfk(goal, armname)
+# robot_s.movearmfk(goal, arm_name)
 # robotnp = robotmesh.genmnp(robot_s)
 # robotnp.reparentTo(base.render)
 # robotball.showcn(robotball.genfullbcndict(robot_s))
@@ -149,13 +149,13 @@ taskMgr.doMethodLater(0.05, update, "update",
 # [path, sampledpoints] = planner.planning(obscmlist+tubecmlist)
 # path = smoother.pathsmoothing(path, planner, maxiter=100)
 # print(path)
-# def update(rbtmnp, motioncounter, robot_s, path, armname, robotmesh, robotball, task):
+# def update(rbtmnp, motioncounter, robot_s, path, arm_name, robotmesh, robotball, task):
 #     if motioncounter[0] < len(path):
 #         if rbtmnp[0] is not None:
 #             rbtmnp[0].detachNode()
 #             rbtmnp[1].detachNode()
 #         pose = path[motioncounter[0]]
-#         robot_s.movearmfk(pose, armname)
+#         robot_s.movearmfk(pose, arm_name)
 #         rbtmnp[0] = robotmesh.genmnp(robot_s)
 #         bcndict = robotball.genfullactivebcndict(robot_s)
 #         rbtmnp[1] = robotball.showcn(bcndict)
@@ -168,6 +168,6 @@ taskMgr.doMethodLater(0.05, update, "update",
 # rbtmnp = [None, None]
 # motioncounter = [0]
 # taskMgr.doMethodLater(0.05, update, "update",
-#                       extraArgs=[rbtmnp, motioncounter, robot_s, path, armname, robotmesh, robotball],
+#                       extraArgs=[rbtmnp, motioncounter, robot_s, path, arm_name, robotmesh, robotball],
 #                       appendTask=True)
 base.run()

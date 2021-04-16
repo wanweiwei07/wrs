@@ -745,7 +745,7 @@ if __name__ == '__main__':
     u3d = UR3Dual()
     u3d.show_cdprimit()
     # u3d.fk(.85)
-    u3d_meshmodel = u3d.gen_meshmodel()
+    u3d_meshmodel = u3d.gen_meshmodel(toggle_tcpcs=True)
     u3d_meshmodel.attach_to(base)
     u3d.gen_stickmodel().attach_to(base)
     base.run()

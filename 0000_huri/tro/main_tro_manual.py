@@ -27,9 +27,9 @@ if __name__ == '__main__':
     yhx.movetox(yhx.rbt.initrgtjnts, armname="rgt")
     yhx.movetox(yhx.rbt.initlftjnts, armname="lft")
     yhx.closegripperx(armname="rgt")
-    # yhx.closegripperx(armname="lft")
-    # yhx.opengripperx(armname="rgt")
-    # yhx.opengripperx(armname="lft")
+    # yhx.closegripperx(arm_name="lft")
+    # yhx.opengripperx(arm_name="rgt")
+    # yhx.opengripperx(arm_name="lft")
 
 
     objcm = cm.CollisionModel("../objects/vacuumhead.stl")
@@ -63,7 +63,7 @@ if __name__ == '__main__':
     armname = "rgt"
     rgtinitarmjnts = rgtupmotion[-1]
     yhx.rbt.movearmfk(armjnts1, armname)
-    # primitivedirection_backward = -yhx.rbt.getee(armname)[1][:,0]
+    # primitivedirection_backward = -yhx.rbt.getee(arm_name)[1][:,0]
     primitivedirection_backward = np.array([0,-1,1])
     primitivedistance_backward = 150
     rgtbackmotion = yhx.genmovebackwardmotion(primitivedirection_backward, primitivedistance_backward,
@@ -110,7 +110,7 @@ if __name__ == '__main__':
     # armjnts3 = np.array([-55.57, -66.58, 80.62, 18.66, -205.87, -17.62, -124.98])
     armjnts3 = np.array([-61.65, -58.98, 90.48, 12.00, -234.39, -31.60, -101.99])
     armname = "lft"
-    lftinitarmjnts = lftforwardmotion[-1] # yhx.rbt.movearmfk(armjnts3, armname)
+    lftinitarmjnts = lftforwardmotion[-1] # yhx.rbt.movearmfk(armjnts3, arm_name)
     primitivedirection_forward = np.array([0,0,1])
     primitivedistance_forward = -200
     lftforwardmotion = yhx.genmoveforwardmotion(primitivedirection_forward, primitivedistance_forward,

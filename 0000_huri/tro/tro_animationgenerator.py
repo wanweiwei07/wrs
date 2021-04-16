@@ -108,22 +108,22 @@ def animationgen(rhx, numikmsmp, jawwidthmsmp, objmsmp, othersmsmp, sg_doestimat
                 # if exeseccntr > 0:
                 #     if not math.isclose(rgtjawwidth, jawwidthmsmp[exeseccntr - 1][0][0]):
                 #         if rgtjawwidth < rhx.rgthndfa.jawwidthopen:
-                #             rhx.closegripperx(armname="rgt")
+                #             rhx.closegripperx(arm_name="rgt")
                 #         else:
-                #             rhx.opengripperx(armname="rgt")
+                #             rhx.opengripperx(arm_name="rgt")
                 #     if not math.isclose(lftjawwidth, jawwidthmsmp[exeseccntr - 1][0][1]):
                 #         if lftjawwidth < rhx.lfthndfa.jawwidthopen:
-                #             rhx.closegripperx(armname="lft")
+                #             rhx.closegripperx(arm_name="lft")
                 #         else:
-                #             rhx.opengripperx(armname="lft")
+                #             rhx.opengripperx(arm_name="lft")
                 # if len(numikmp) != 1:
-                #     armname = "rgt" if np.allclose(numikmp[0][2], numikmp[1][2]) else "lft"
-                #     armid = 1 if armname is "rgt" else 2
+                #     arm_name = "rgt" if np.allclose(numikmp[0][2], numikmp[1][2]) else "lft"
+                #     armid = 1 if arm_name is "rgt" else 2
                 #     armjntspath = []
                 #     for numik in numikmp:
                 #         armjnts = numik[armid].tolist()
                 #         armjntspath.append(armjnts)
-                #     rhx.movemotionx(armjntspath, armname=armname)
+                #     rhx.movemotionx(armjntspath, arm_name=arm_name)
             else:
                 motionseccounter[0] = 0
                 sg_doestimateagain[0] = True

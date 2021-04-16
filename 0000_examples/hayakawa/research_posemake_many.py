@@ -11,6 +11,7 @@ import numpy as np
 from pyquaternion import Quaternion
 import copy
 
+
 class PoseMaker(object):
 
     def __init__(self):
@@ -32,82 +33,106 @@ class PoseMaker(object):
         handrotrange = 5
         predefined_grasps_lft = []
         handdirect_lft = []
+        loc_z = np.array([0, -1, 0])
+        rotmat = rm.rotmat_from_axangle(loc_z, math.radians(-90))
         predefined_grasps_lft.append(
-            self.rtq85.grip_at(np.array([.005, .005, .005]), np.array([0, -1, 0]), np.array([1, 0, 0]),
+            self.rtq85.grip_at(np.array([.005, .005, .005]),
+                               loc_z,
+                               rotmat.dot(np.array([1, 0, 0])),
                                jaw_width=self.rtq85.jaw_width_rng[1]))
         handdirect_lft.append([0, -1, 0])
         for i in range(8):
+            loc_z = np.array([math.cos(math.radians(lftdirstart + i * handrotrange)),
+                              math.sin(math.radians(lftdirstart + i * handrotrange)), -.2])
+            rotmat = rm.rotmat_from_axangle(loc_z, math.radians(-90))
             predefined_grasps_lft.append(
                 self.rtq85.grip_at(np.array([.005, .005, .005]),
-                                   np.array([math.cos(math.radians(lftdirstart + i * handrotrange)),
-                                             math.sin(math.radians(lftdirstart + i * handrotrange)), -.2]),
-                                   np.array([math.cos(math.radians(lftverticalstart + i * handrotrange)),
-                                             math.sin(math.radians(lftverticalstart + i * handrotrange)), 0]),
+                                   loc_z,
+                                   rotmat.dot(np.array([math.cos(math.radians(lftverticalstart + i * handrotrange)),
+                                                        math.sin(math.radians(lftverticalstart + i * handrotrange)),
+                                                        0])),
                                    jaw_width=self.rtq85.jaw_width_rng[0]))
             handdirect_lft.append([math.cos(math.radians(lftdirstart + i * handrotrange)),
                                    math.sin(math.radians(lftdirstart + i * handrotrange)), -.2])
 
         for i in range(8):
+            loc_z = np.array([math.cos(math.radians(lftdirstart + i * handrotrange)),
+                              math.sin(math.radians(lftdirstart + i * handrotrange)), 0])
+            rotmat = rm.rotmat_from_axangle(loc_z, math.radians(-90))
             predefined_grasps_lft.append(
                 self.rtq85.grip_at(np.array([.005, .005, .005]),
-                                   np.array([math.cos(math.radians(lftdirstart + i * handrotrange)),
-                                             math.sin(math.radians(lftdirstart + i * handrotrange)), 0]),
-                                   np.array([math.cos(math.radians(lftverticalstart + i * handrotrange)),
-                                             math.sin(math.radians(lftverticalstart + i * handrotrange)), 0]),
+                                   loc_z,
+                                   rotmat.dot(np.array([math.cos(math.radians(lftverticalstart + i * handrotrange)),
+                                                        math.sin(math.radians(lftverticalstart + i * handrotrange)),
+                                                        0])),
                                    jaw_width=self.rtq85.jaw_width_rng[0]))
             handdirect_lft.append([math.cos(math.radians(lftdirstart + i * handrotrange)),
                                    math.sin(math.radians(lftdirstart + i * handrotrange)), 0])
 
         for i in range(8):
+            loc_z = np.array([math.cos(math.radians(lftdirstart + i * handrotrange)),
+                              math.sin(math.radians(lftdirstart + i * handrotrange)), 0])
+            rotmat = rm.rotmat_from_axangle(loc_z, math.radians(-90))
             predefined_grasps_lft.append(
                 self.rtq85.grip_at(np.array([.005, .005, .005]),
-                                   np.array([math.cos(math.radians(lftdirstart + i * handrotrange)),
-                                             math.sin(math.radians(lftdirstart + i * handrotrange)), .2]),
-                                   np.array([math.cos(math.radians(lftverticalstart + i * handrotrange)),
-                                             math.sin(math.radians(lftverticalstart + i * handrotrange)), 0]),
+                                   loc_z,
+                                   rotmat.dot(np.array([math.cos(math.radians(lftverticalstart + i * handrotrange)),
+                                                        math.sin(math.radians(lftverticalstart + i * handrotrange)),
+                                                        0])),
                                    jaw_width=self.rtq85.jaw_width_rng[0]))
             handdirect_lft.append([math.cos(math.radians(lftdirstart + i * handrotrange)),
                                    math.sin(math.radians(lftdirstart + i * handrotrange)), .2])
         return predefined_grasps_lft, handdirect_lft
 
     def rgtgrasppose(self):
-        rgtdirstart = 90
-        rgtverticalstart = rgtdirstart - 90
+        rgtdirstart = 90  # hand approach direction
+        rgtverticalstart = rgtdirstart - 90  # thumb direction
         handrotrange = 5
         predefined_grasps_rgt = []
         handdirect_rgt = []
+        loc_z = np.array([0, 1, 0])
+        rotmat = rm.rotmat_from_axangle(loc_z, math.radians(90))
         predefined_grasps_rgt.append(
-            self.rtq85.grip_at(np.array([.005, .005, .005]), np.array([0, 1, 0]), np.array([1, 0, 0]),
+            self.rtq85.grip_at(np.array([.005, .005, .005]), loc_z, rotmat.dot(np.array([1, 0, 0])),
                                jaw_width=self.rtq85.jaw_width_rng[1]))
         handdirect_rgt.append([0, 1, 0])
         for i in range(4):
+            loc_z = np.array([math.cos(math.radians(rgtdirstart - i * handrotrange)),
+                              math.sin(math.radians(rgtdirstart - i * handrotrange)), -.1])
+            rotmat = rm.rotmat_from_axangle(loc_z, math.radians(90))
             predefined_grasps_rgt.append(
                 self.rtq85.grip_at(np.array([.005, .005, .005]),
-                                   np.array([math.cos(math.radians(rgtdirstart - i * handrotrange)),
-                                             math.sin(math.radians(rgtdirstart - i * handrotrange)), -.1]),
-                                   np.array([math.cos(math.radians(rgtverticalstart - i * handrotrange)),
-                                             math.sin(math.radians(rgtverticalstart - i * handrotrange)), 0]),
+                                   loc_z,
+                                   rotmat.dot(np.array([math.cos(math.radians(rgtverticalstart - i * handrotrange)),
+                                                        math.sin(math.radians(rgtverticalstart - i * handrotrange)),
+                                                        0])),
                                    jaw_width=self.rtq85.jaw_width_rng[0]))
             handdirect_rgt.append([math.cos(math.radians(rgtdirstart - i * handrotrange)),
                                    math.sin(math.radians(rgtdirstart - i * handrotrange)), -.1])
         for i in range(4):
+            loc_z = np.array([math.cos(math.radians(rgtdirstart - i * handrotrange)),
+                              math.sin(math.radians(rgtdirstart - i * handrotrange)), 0])
+            rotmat = rm.rotmat_from_axangle(loc_z, math.radians(90))
             predefined_grasps_rgt.append(
                 self.rtq85.grip_at(np.array([.005, .005, .005]),
-                                   np.array([math.cos(math.radians(rgtdirstart - i * handrotrange)),
-                                             math.sin(math.radians(rgtdirstart - i * handrotrange)), 0]),
-                                   np.array([math.cos(math.radians(rgtverticalstart - i * handrotrange)),
-                                             math.sin(math.radians(rgtverticalstart - i * handrotrange)), 0]),
+                                   loc_z,
+                                   rotmat.dot(np.array([math.cos(math.radians(rgtverticalstart - i * handrotrange)),
+                                                        math.sin(math.radians(rgtverticalstart - i * handrotrange)),
+                                                        0])),
                                    jaw_width=self.rtq85.jaw_width_rng[0]))
             handdirect_rgt.append([math.cos(math.radians(rgtdirstart - i * handrotrange)),
                                    math.sin(math.radians(rgtdirstart - i * handrotrange)), 0])
 
             for i in range(4):
+                loc_z = np.array([math.cos(math.radians(rgtdirstart - i * handrotrange)),
+                                  math.sin(math.radians(rgtdirstart - i * handrotrange)), .1])
+                rotmat = rm.rotmat_from_axangle(loc_z, math.radians(90))
                 predefined_grasps_rgt.append(
                     self.rtq85.grip_at(np.array([.005, .005, .005]),
-                                       np.array([math.cos(math.radians(rgtdirstart - i * handrotrange)),
-                                                 math.sin(math.radians(rgtdirstart - i * handrotrange)), .1]),
-                                       np.array([math.cos(math.radians(rgtverticalstart - i * handrotrange)),
-                                                 math.sin(math.radians(rgtverticalstart - i * handrotrange)), 0]),
+                                       loc_z,
+                                       rotmat.dot(np.array([math.cos(math.radians(rgtverticalstart - i * handrotrange)),
+                                                            math.sin(math.radians(rgtverticalstart - i * handrotrange)),
+                                                            0])),
                                        jaw_width=self.rtq85.jaw_width_rng[0]))
             handdirect_rgt.append([math.cos(math.radians(rgtdirstart - i * handrotrange)),
                                    math.sin(math.radians(rgtdirstart - i * handrotrange)), .1])
@@ -158,7 +183,8 @@ class PoseMaker(object):
                     handrotmat = np.append(handrotmat, np.array([zaxis_hand]), axis=0)
                     handrotmat = np.append(handrotmat, np.array([handdir]), axis=0)
                     handrotmat = handrotmat.T
-                    handrotmat = np.dot(rm.rotmat_from_axangle(handrotmat[:, 2], - math.radians(handrotate * k)), handrotmat)
+                    handrotmat = np.dot(rm.rotmat_from_axangle(handrotmat[:, 2], - math.radians(handrotate * k)),
+                                        handrotmat)
                     pushposelist.append(
                         self.rtq85.grip_at(np.array([.005, .005, .005]),
                                            np.array([handrotmat[:, 2][0], handrotmat[:, 2][1], handrotmat[:, 2][2]]),

@@ -15,7 +15,7 @@ if __name__ == '__main__':
     # refinedpcdnp = yhx.p3dh.genpointcloudnodepath(refinedpcd, colors=[.5,1,.5,1])
     # refinedpcdnp.reparentTo(yhx.base.render)
 
-    # yhx.rbt.movearmfk(yhx.rbtx.getarmjntsx(armname="rgt"), armname="rgt")
+    # yhx.rbt.movearmfk(yhx.rbtx.getarmjntsx(arm_name="rgt"), arm_name="rgt")
     # tcppos, tcprot = yhx.rbt.gettcp()
     # yhx.p3dh.genframe(tcppos, tcprot, thickness=15).reparentTo(yhx.base.render)
     # minx = tcppos[0]-100

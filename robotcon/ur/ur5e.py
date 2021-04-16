@@ -75,9 +75,9 @@ class Ur3EUrx():
 
     def opengripper(self, speedpercentange = 70, forcepercentage = 50, fingerdistance = 50):
         """
-        open the rtq85 hand on the arm specified by armname
+        open the rtq85 hand on the arm specified by arm_name
 
-        :param armname:
+        :param arm_name:
         :return:
 
         author: weiwei
@@ -90,9 +90,9 @@ class Ur3EUrx():
 
     def closegripper(self, speedpercentange = 80, forcepercentage = 50):
         """
-        close the rtq85 hand on the arm specified by armname
+        close the rtq85 hand on the arm specified by arm_name
 
-        :param armname:
+        :param arm_name:
         :return:
 
         author: weiwei
@@ -123,7 +123,7 @@ class Ur3EUrx():
         """
 
         :param joints: a 1-by-6 list in degree
-        :param armname:
+        :param arm_name:
         :return:
 
         author: weiwei
@@ -405,7 +405,7 @@ class Ur3EUrx():
         """
         place the object firmly on a table considering forcefeedback
 
-        :param armname:
+        :param arm_name:
         :return:
         """
 
@@ -464,7 +464,7 @@ class Ur3EUrx():
         """
         get the joint angles of the specified arm
 
-        :param armname:
+        :param arm_name:
         :return:
 
         author: ochi

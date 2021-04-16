@@ -91,8 +91,8 @@ class UR3Rtq85X(object):
 
     def open_gripper(self, speedpercentange=70, forcepercentage=50, fingerdistance=85):
         """
-        open the rtq85 hand on the arm specified by armname
-        :param armname:
+        open the rtq85 hand on the arm specified by arm_name
+        :param arm_name:
         :return:
         author: weiwei
         date: 20180220
@@ -102,8 +102,8 @@ class UR3Rtq85X(object):
 
     def close_gripper(self, speedpercentange=80, forcepercentage=50):
         """
-        close the rtq85 hand on the arm specified by armname
-        :param armname:
+        close the rtq85 hand on the arm specified by arm_name
+        :param arm_name:
         :return:
         author: weiwei
         date: 20180220
@@ -142,7 +142,7 @@ class UR3Rtq85X(object):
     def move_jnts(self, jnt_values, wait=True):
         """
         :param jnt_values: a 1-by-6 list in degree
-        :param armname:
+        :param arm_name:
         :return:
         author: weiwei
         date: 20170411
@@ -209,15 +209,15 @@ class UR3Rtq85X(object):
     #     author: weiwei
     #     date: 20190401osaka, 20210401osaka
     #     """
-    #     originaljnts = self.__robotsim.getarmjnts(armname=armname)
-    #     currentjnts = self.get_jnt_values(armname)
-    #     self.__robotsim.movearmfk(currentjnts, armname=armname)
-    #     eepos, eerot = self.__robotsim.getee(armname=armname)
+    #     originaljnts = self.__robotsim.getarmjnts(arm_name=arm_name)
+    #     currentjnts = self.get_jnt_values(arm_name)
+    #     self.__robotsim.movearmfk(currentjnts, arm_name=arm_name)
+    #     eepos, eerot = self.__robotsim.getee(arm_name=arm_name)
     #
-    #     def getftthread(ur3u, eerot, armname='rgt'):
+    #     def getftthread(ur3u, eerot, arm_name='rgt'):
     #         targetarm = ur3u.__rgtarm
     #         targetarm_ftsocket_ipad = ur3u.rgtarm_ftsocket_ipad
-    #         if armname == 'lft':
+    #         if arm_name == 'lft':
     #             targetarm = ur3u.__lftarm
     #             targetarm_ftsocket_ipad = ur3u.lftarm_ftsocket_ipad
     #         targetarm.send_program(ur3u.ftsensorscript)
@@ -235,27 +235,27 @@ class UR3Rtq85X(object):
     #                 targetarm_ftsocket.close()
     #                 return
     #
-    #     thread = threading.Thread(target=getftthread, args=([self, eerot, armname]), name="threadft")
+    #     thread = threading.Thread(target=getftthread, args=([self, eerot, arm_name]), name="threadft")
     #     thread.start()
     #
     #     while True:
     #         if self.firmstopflag:
     #             thread.join()
     #             self.firmstopflag = False
-    #             self.__robotsim.movearmfk(originaljnts, armname=armname)
+    #             self.__robotsim.movearmfk(originaljnts, arm_name=arm_name)
     #             return
     #         # move steplength towards the direction
-    #         eepos, eerot = self.__robotsim.getee(armname="lft")
-    #         currentjnts = self.__robotsim.getarmjnts(armname=armname)
+    #         eepos, eerot = self.__robotsim.getee(arm_name="lft")
+    #         currentjnts = self.__robotsim.getarmjnts(arm_name=arm_name)
     #         eepos = eepos + direction * steplength
-    #         newjnts = self.__robotsim.numikmsc(eepos, eerot, currentjnts, armname=armname)
-    #         self.__robotsim.movearmfk(newjnts, armname=armname)
-    #         self.move_jnts(newjnts, armname=armname)
+    #         newjnts = self.__robotsim.numikmsc(eepos, eerot, currentjnts, arm_name=arm_name)
+    #         self.__robotsim.movearmfk(newjnts, arm_name=arm_name)
+    #         self.move_jnts(newjnts, arm_name=arm_name)
 
     def get_jnt_values(self):
         """
         get the joint angles in radian
-        :param armname:
+        :param arm_name:
         :return:
         author: ochi, revised by weiwei
         date: 20180410
@@ -268,7 +268,7 @@ if __name__ == '__main__':
 
     base = wd.World(cam_pos=[3, 1, 2], lookat_pos=[0, 0, 0])
     u3r85_c = UR3Rtq85X(robot_ip='10.2.0.51', pc_ip='10.2.0.100')
-    # u3r85_c.attachfirm(rbt, upthreshold=10, armname='lft')
+    # u3r85_c.attachfirm(rbt, upthreshold=10, arm_name='lft')
     u3r85_c.close_gripper()
     time.sleep(2)
     u3r85_c.open_gripper()

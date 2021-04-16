@@ -36,7 +36,7 @@ if __name__=='__main__':
     robotmesh = yumimesh.YumiMesh()
     pcdchecker = cdball.CollisionCheckerBall(robotball)
     bcdchecker = bch.MCMchecker(toggledebug=True)
-    # robot_s.opengripper(armname=armname)
+    # robot_s.opengripper(arm_name=arm_name)
     robotnp = robotmesh.genmnp(robot)
     # robotnp.reparentTo(base.render)
 

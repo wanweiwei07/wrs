@@ -79,12 +79,12 @@ if __name__ == '__main__':
     import manipulation.suction.hlabbig.hlabbig as hlb
 
     rhx = robothelper.RobotHelperX(usereal=True, startworld=True)
-    # rhx.movetox(rhx.rbt.initrgtjnts, armname="rgt")
-    # rhx.movetox(rhx.rbt.initlftjnts, armname="lft")
-    # rhx.closegripperx(armname="rgt")
-    # rhx.closegripperx(armname="lft")
-    # rhx.opengripperx(armname="rgt")
-    # rhx.opengripperx(armname="lft")
+    # rhx.movetox(rhx.rbt.initrgtjnts, arm_name="rgt")
+    # rhx.movetox(rhx.rbt.initlftjnts, arm_name="lft")
+    # rhx.closegripperx(arm_name="rgt")
+    # rhx.closegripperx(arm_name="lft")
+    # rhx.opengripperx(arm_name="rgt")
+    # rhx.opengripperx(arm_name="lft")
 
     pg = PcdGrab()
     nppcd = pg.capturecorrectedpcd(pxc=rhx.pxc)

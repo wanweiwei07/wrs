@@ -112,7 +112,7 @@ if __name__ == '__main__':
     rbtstartrot = np.array([[1,0,0],
                         [0,-0.92388,-0.382683],
                         [0,0.382683,-0.92388]]).T
-    # start = robot_s.numik(rbtstartpos, rbtstartrot, armname=armname)
+    # start = robot_s.numik(rbtstartpos, rbtstartrot, arm_name=arm_name)
     # print(start)
     rbtgoalpos = np.array([300,-200,200])
     rbtgoalrot = np.dot(rm.rodrigues([0,0,1],90),rbtstartrot)

@@ -211,20 +211,20 @@ def descendingorder(array, axis):
     return array_descend
 
 
-def createcandidatepoints(armname, initialhandpos, obstacles=None, limitation=None):
-    if armname == "lft":
-        pointlistrange = np.array([150, 300, 50, 300, 1300, initialhandpos[2]])
-    elif armname == "rgt":
-        pointlistrange = np.array([150, 300, -200, -50, 1300, initialhandpos[2]])
-    if obstacles is not None and armname == "lft":
+def create_candidate_points(arm_name, initialhandpos, obstacles=None, limitation=None):
+    if arm_name == "lft_arm":
+        pointlistrange = np.array([.15, .3, .05, .3, 1.3, initialhandpos[2]])
+    elif arm_name == "rgt_arm":
+        pointlistrange = np.array([.15, .3, -.2, -.05, 1.3, initialhandpos[2]])
+    if obstacles is not None and arm_name == "lft":
         for obs in obstacles:
             ## 3dモデルを点群化し、原点に配置
             obs_points = obs.sample_surface(8000)
-            mat4 = obs.gethomomat()
+            homomat = obs.gethomomat()
             obs_points_converted = np.ones((len(obs_points), 4))
             obs_points_converted[:, :3] = obs_points
-            obs_points_converted = np.dot(mat4, obs_points_converted.T).T[:, :3]
-            zmax = max(obs_points_converted[:, 2]) + 150
+            obs_points_converted = np.dot(homomat, obs_points_converted.T).T[:, :3]
+            zmax = max(obs_points_converted[:, 2]) + .15
             pointlistrange[4] = zmax
     # print("pointrange", pointlistrange)
     if limitation is not None:
@@ -280,40 +280,39 @@ def decidestartpose(ropelinesorted, armname, predefined_grasps, fromjnt, startpo
 
 
 ## 終点での把持姿勢を探索(終点を1つにしたとき)
-def decidegoalpose_onepoint(IKpossiblelist_start,
-                            objpos_initial,
-                            objpos_final,
-                            armname,
+def decidegoalpose_onepoint(arm_name,
+                            IKpossiblelist_start,
+                            hold_pos_final,
                             predefined_grasps,
                             obscmlist):
     IKpossiblelist_startgoal = []
-    # objpos_final = np.array([260, 0, 1400])
     objrot_final = np.eye(3)
-    tostartvec = objpos_initial - objpos_final  ## 終点から始点への方向ベクトル(非正規化)
-    togoalvec = objpos_final - objpos_initial  ## 始点から終点への方向ベクトル(非正規化)
-    objmat4_final = rm.homomat_from_posrot(objpos_final, objrot_final)
-    obj_final = copy.deepcopy(ropeobj)
-    obj_final.set_rgba(rgba=[1, 0, 0, .5])
-    obj_final.set_homomat(objmat4_final)
+    objmat4_final = rm.homomat_from_posrot(hold_pos_final, objrot_final)
+    # obj_final = copy.deepcopy(ropeobj)
+    # obj_final.set_rgba(rgba=[1, 0, 0, .5])
+    # obj_final.set_homomat(objmat4_final)
     for i in IKpossiblelist_start:
         prejawwidth, prehndfc, prehndpos, prehndrotmat = predefined_grasps[i[2]]
         prehndhomomat = rm.homomat_from_posrot(prehndpos, prehndrotmat)
         hndmat4_final = np.dot(objmat4_final, prehndhomomat)
         eepos_final = rm.homomat_transform_points(objmat4_final, prehndfc)[:3]
         eerot_final = hndmat4_final[:3, :3]
-        # goal = rbt.numik(eepos_final, eerot_final, armname)
         fromjnt = i[0]
-        goal = robot_s.ik(manipulator_name=armname,
+        goal = robot_s.ik(manipulator_name=arm_name,
                           tgt_pos=eepos_final,
                           tgt_rot=eerot_final,
                           seed_jnt_values=fromjnt)
+        # gm.gen_frame(pos=eepos_final, rotmat=eerot_final).attach_to(base)
+        # robot_s.fk(arm_name, fromjnt)
+        # robot_s.gen_meshmodel().attach_to(base)
+        # base.run()
         if goal is not None:
-            original_jnt_values = robot_s.get_jnt_values(manipulator_name=armname)
-            robot_s.fk(component_name=armname, jnt_values=goal)
+            original_jnt_values = robot_s.get_jnt_values(manipulator_name=arm_name)
+            robot_s.fk(component_name=arm_name, jnt_values=goal)
             cd_result = robot_s.is_collided(obscmlist)
             if not cd_result:
                 IKpossiblelist_startgoal.append([i[0], goal, i[1], [2]])
-            robot_s.fk(component_name=armname, jnt_values=original_jnt_values)
+            robot_s.fk(component_name=arm_name, jnt_values=original_jnt_values)
     if len(IKpossiblelist_startgoal) > 0:
         return IKpossiblelist_startgoal
     else:
@@ -322,35 +321,40 @@ def decidegoalpose_onepoint(IKpossiblelist_start,
 
 
 ## 最初の一回の引き動作のみ
-def getsuitablegoalpos_first(IKpossiblelist_start, objpos_initial, objpos_finallist, armname, predefined_grasps,
-                             ctcallback):
-    objpos_final_under = np.array([250, 0, 1650])
+def getsuitablegoalpos_first(arm_name,
+                             IKpossiblelist_start,
+                             objpos_initial,
+                             objpos_finallist,
+                             predefined_grasps):
     ## 重み
     w_length = 1
     w_FT = 1
     w_manip = 1
     pullinglengthlist = []
-    for i, use_objpos_final in enumerate(objpos_finallist):
-        pullinglength = np.linalg.norm(objpos_initial - use_objpos_final)
+    for i, selected_objpos_final in enumerate(objpos_finallist):
+        pullinglength = np.linalg.norm(objpos_initial - selected_objpos_final)
         pullinglengthlist.append(pullinglength)
     pullinglength_ref = min(pullinglengthlist)
     ## 評価要素を計算
     totalIKpossiblelist_startgoal = []
-    # veclist = []
     costlist = []
     assessment_value_list = []
-    for i, use_objpos_final in enumerate(objpos_finallist):
+    for i, selected_objpos_final in enumerate(objpos_finallist):
         ## pullinglength
         pullinglength = pullinglengthlist[i]
         pullinglength_cost = 1 - pullinglength_ref / pullinglength
         ## FT
         zaxis = np.array([0, 0, 1])
-        tostartvec = objpos_initial - use_objpos_final
+        tostartvec = objpos_initial - selected_objpos_final
         theta = rm.angle_between_vectors(rm.unit_vector(tostartvec), zaxis)
         FT_cost = math.cos(theta)
         ## manipulability
-        IKpossiblelist_startgoal = decidegoalpose_onepoint(IKpossiblelist_start, objpos_initial, use_objpos_final,
-                                                           armname, predefined_grasps, ctcallback, obscmlist)
+        IKpossiblelist_startgoal = decidegoalpose_onepoint(arm_name,
+                                                           IKpossiblelist_start,
+                                                           objpos_initial,
+                                                           selected_objpos_final,
+                                                           predefined_grasps,
+                                                           obscmlist)
         if IKpossiblelist_startgoal is not False and IKpossiblelist_start is not False:
             manipulability_cost = len(IKpossiblelist_startgoal) / len(IKpossiblelist_start)
         else:
@@ -370,9 +374,13 @@ def getsuitablegoalpos_first(IKpossiblelist_start, objpos_initial, objpos_finall
     return assessment_value_list, totalIKpossiblelist_startgoal, costlist
 
 
-def getsuitablegoalpos_second(IKpossiblelist_start, objpos_initial, objpos_finallist, armname, predefined_grasps,
-                              ctcallback, predictlist):
-    objpos_final_under = np.array([250, 0, 1650])
+def getsuitablegoalpos_second(arm_name,
+                              IKpossiblelist_start,
+                              objpos_initial,
+                              objpos_finallist,
+                              predefined_grasps,
+                              predictlist):
+    # objpos_final_under = np.array([250, 0, 1650])
     ## 重み
     w_length = 1
     w_FT = 0
@@ -426,8 +434,12 @@ def getsuitablegoalpos_second(IKpossiblelist_start, objpos_initial, objpos_final
         obscmlist.append(obj_predict)
         pickle.dump(obscmlist, open("obscmlist.pickle", "wb"))
         ## manipulability
-        IKpossiblelist_startgoal = decidegoalpose_onepoint(IKpossiblelist_start, objpos_initial, use_objpos_final,
-                                                           armname, predefined_grasps, ctcallback, obscmlist)
+        IKpossiblelist_startgoal = decidegoalpose_onepoint(arm_name,
+                                                           IKpossiblelist_start,
+                                                           objpos_initial,
+                                                           use_objpos_final,
+                                                           predefined_grasps,
+                                                           obscmlist)
         if IKpossiblelist_startgoal is not False and IKpossiblelist_start is not False:
             manipulability_cost = len(IKpossiblelist_startgoal) / len(IKpossiblelist_start)
         else:
@@ -454,15 +466,20 @@ def getsuitablegoalpos_second(IKpossiblelist_start, objpos_initial, objpos_final
 
 
 ## 終点での把持姿勢を探索(0203作成：左右で引く方向を変換)
-def decidegoalpose(IKpossiblelist_start, objpos_initial, armname, predefined_grasps, ctcallback,
-                   objpos_final=np.array([260, 0, 1200]), diff=None, label="down"):
-    tic = time.time()
+def decidegoalpose(arm_name,
+                   IKpossiblelist_start,
+                   objpos_initial,
+                   predefined_grasps,
+                   objpos_final=np.array([260, 0, 1200]),
+                   diff=None,
+                   label="down"):
+    # tic = time.time()
     IKpossiblelist_startgoal = []
     # if label == "down":
-    #     if armname == "lft":
-    #         objpos_final = np.array([260, 100, 1400])
+    #     if arm_name == "lft":
+    #         hold_pos_final = np.array([260, 100, 1400])
     #     else:
-    #         objpos_final = np.array([260, -100, 1400])
+    #         hold_pos_final = np.array([260, -100, 1400])
     objrot_final = np.eye(3)
     tostartvec = objpos_initial - objpos_final  ## 終点から始点への方向ベクトル(非正規化)
     togoalvec = objpos_final - objpos_initial  ## 始点から終点への方向ベクトル(非正規化)
@@ -480,7 +497,7 @@ def decidegoalpose(IKpossiblelist_start, objpos_initial, armname, predefined_gra
         else:
             pass
         togoalvec = objpos_final - objpos_initial
-        print("objpos_final", objpos_final)
+        print("hold_pos_final", objpos_final)
         objmat4_final = rm.homomat_from_posrot(objpos_final, objrot_final)
         obj_final = copy.deepcopy(ropeobj)
         obj_final.set_rgba([1, 0, 0, .5])
@@ -491,19 +508,19 @@ def decidegoalpose(IKpossiblelist_start, objpos_initial, armname, predefined_gra
             hndmat4_final = np.dot(objmat4_final, prehndhomomat)
             eepos_final = rm.homomat_transform_points(objmat4_final, prehndfc)[:3]
             eerot_final = hndmat4_final[:3, :3]
-            # goal = rbt.numik(eepos_final, eerot_final, armname)
+            # goal = rbt.numik(eepos_final, eerot_final, arm_name)
             fromjnt = i[0]
-            goal = rbt.ik(manipulator_name=armname,
-                          tgt_pos=eepos_final,
-                          tgt_rot=eerot_final,
-                          seed_jnt_values=fromjnt)
+            goal = robot_s.ik(manipulator_name=arm_name,
+                              tgt_pos=eepos_final,
+                              tgt_rot=eerot_final,
+                              seed_jnt_values=fromjnt)
             if goal is not None:
-                original_jnt_values = rbt.get_jnt_values(manipulator_name=armname)
-                rbt.fk(manipulator_name=armname, jnt_values=goal)
-                cd_result = rbt.is_collided(obscmlist)
+                original_jnt_values = robot_s.get_jnt_values(manipulator_name=arm_name)
+                robot_s.fk(component_name=arm_name, jnt_values=goal)
+                cd_result = robot_s.is_collided(obscmlist)
                 if not cd_result:
                     IKpossiblelist_startgoal.append([i[0], goal, i[1], [2]])
-                rbt.fk(manipulator_name=armname, jnt_values=original_jnt_values)
+                robot_s.fk(manipulator_name=arm_name, jnt_values=original_jnt_values)
         if len(IKpossiblelist_startgoal) > 0:
             print(str(pullinglength) + "mm引きます")
             return IKpossiblelist_startgoal, objpos_final, tostartvec, togoalvec
@@ -514,7 +531,7 @@ def decidegoalpose(IKpossiblelist_start, objpos_initial, armname, predefined_gra
 
 
 ## 中継点での把持姿勢を探索
-def decidemidpose(IKpossiblelist_startgoal, handdir, armname, ctcallback, objpos_final=None):
+def decidemidpose(IKpossiblelist_startgoal, handdir, arm_name, ctcallback, objpos_final=None):
     centerflag = 0
     if objpos_final is not None:
         if objpos_final[1] == 0:
@@ -525,13 +542,13 @@ def decidemidpose(IKpossiblelist_startgoal, handdir, armname, ctcallback, objpos
         direction = rm.unit_vector(handdir[i[3]]) * (-1)
         distance = 80
         while True:
-            if objpos_final is None or centerflag == 1:  ## 終点が中心のとき(objpos_final = Noneを設定)終点からの中継点も計算
+            if objpos_final is None or centerflag == 1:  ## 終点が中心のとき(hold_pos_final = Noneを設定)終点からの中継点も計算
                 ## 始点に対する中継点の経路
                 midpathstart = ctcallback.getLinearPrimitivenothold(i[0], direction, distance, obscmlist, type="source")
                 midpathgoal = ctcallback.getLinearPrimitivenothold(i[1], direction, distance, obscmlist, type="source")
                 if len(midpathstart) > 0 and len(midpathgoal) > 0:
-                    # rbt.movearmfk(midpath[-1], armname)
-                    # mideepos, mideerot = rbt.getee(armname)
+                    # rbt.movearmfk(midpath[-1], arm_name)
+                    # mideepos, mideerot = rbt.getee(arm_name)
                     midpathstart = midpathstart[::-1]
                     midjntstart = copy.copy(midpathstart[0])
                     midjntgoal = copy.copy(midpathgoal[0])
@@ -548,8 +565,8 @@ def decidemidpose(IKpossiblelist_startgoal, handdir, armname, ctcallback, objpos
                 ## 始点に対する中継点の経路
                 midpathstart = ctcallback.getLinearPrimitivenothold(i[0], direction, distance, [], type="source")
                 if len(midpathstart) > 0:
-                    # rbt.movearmfk(midpath[-1], armname)
-                    # mideepos, mideerot = rbt.getee(armname)
+                    # rbt.movearmfk(midpath[-1], arm_name)
+                    # mideepos, mideerot = rbt.getee(arm_name)
                     midpathstart = midpathstart[::-1]
                     midjntstart = copy.copy(midpathstart[0])
                     goaljnt = i[1]
@@ -566,7 +583,7 @@ def decidemidpose(IKpossiblelist_startgoal, handdir, armname, ctcallback, objpos
 
 
 def ropepullingmotion(IKpossiblelist, togoalvec, ctcallback, theta=None, theta_next=None):
-    tic = time.time()
+    # tic = time.time()
     for i in range(len(IKpossiblelist)):
         useid = random.randint(0, len(IKpossiblelist) - 1)
 
@@ -631,7 +648,6 @@ def RRTmotion(startjoint, goaljoint, ctcallback, obscmlist, expanddis, maxtime):
 def preprocess_point_cloud(pcd, voxel_size):
     print(":: Estimate normal with search radius %.3f." % 10)
     o3d.geometry.PointCloud.estimate_normals(pcd, o3d.geometry.KDTreeSearchParamHybrid(radius=10, max_nn=30))
-
     radius_feature = voxel_size * 5
     print(":: Compute FPFH feature with search radius %.3f." % radius_feature)
     pcd_fpfh = o3d.registration.compute_fpfh_feature(pcd,
@@ -666,39 +682,30 @@ def refine_registration(source, target, result_ransac):
 
 def objectfitting(newpcd, fitobjpcd, refpoint_fitting):
     samplepoint = copy.copy(newpcd)
-
     targetpoint = sample_volume(fitobjpcd, 20000)
     targetpointnew = copy.copy(targetpoint)
-
     while True:
         targetpoint = targetpointnew
-
         voxel_size = 30
         source = o3d.geometry.PointCloud()
         source.points = o3d.utility.Vector3dVector(samplepoint)
         target = o3d.geometry.PointCloud()
         target.points = o3d.utility.Vector3dVector(targetpoint)
-
         source_down, source_fpfh = preprocess_point_cloud(source, voxel_size)
         target_down, target_fpfh = preprocess_point_cloud(target, voxel_size)
-
         print("RANSAC start")
         result_ransac = execute_global_registration(source_down, target_down,
                                                     source_fpfh, source_fpfh, voxel_size)
         print(result_ransac)
-
         print("ICP start")
         result_icp = refine_registration(source, target, result_ransac)
         print(result_icp)
-
         transformation = result_icp.transformation
         transmatrix = np.linalg.inv(transformation)
         # print("transmatrix = ", transmatrix)
-
         targetpointnew = np.concatenate((targetpoint, np.ones((targetpoint.shape[0], 1))), axis=1)
         targetpointnew = np.dot(transmatrix, targetpointnew.T)
         targetpointnew = targetpointnew.T[:, :3]
-
         ## refpointを変換し、z座標で降順に並べる
         refpoint_fitting = np.dot(transmatrix, refpoint_fitting.T).T
         refpoint_fitting = descendingorder(refpoint_fitting, axis=2)
@@ -712,7 +719,6 @@ def objectfitting(newpcd, fitobjpcd, refpoint_fitting):
         if 0 < toppoints_zdiff < 10 and 300 < np.linalg.norm(toppoints_length) < 450:
             print("----------- fitting end ------------")
             break
-
     return targetpointnew, refpoint_fitting
 
 
@@ -832,65 +838,50 @@ def getpushingpath(theta, rotateaxis):
     ## Objective Function
     def func(p):
         f1, f0, t, alpha0, alpha1 = p
-
         n1 = np.array([-math.sin(math.radians(theta)), math.cos(math.radians(theta))])
         l1 = np.array([math.cos(math.radians(theta)), math.sin(math.radians(theta))])
         n0 = np.array([0, 1])
         l0 = np.array([1, 0])
-
         F1 = np.dot(f1, n1) + np.dot(alpha1 * myu1 * f1, l1)
         F0 = np.dot(f0, n0) + np.dot(alpha0 * myu0 * f0, l0)
         T = t * t_dir
-
         opt = 150 * np.dot(F1, F1) + np.dot(T, T) + np.dot(F0, F0)
         return opt
 
     ## Constraints
     def force_eq1(p):
         f1, f0, t, alpha0, alpha1 = p
-
         n1 = np.array([-math.cos(math.radians(theta)), math.sin(math.radians(theta))])
         l1 = np.array([math.sin(math.radians(theta)), math.cos(math.radians(theta))])
         n0 = np.array([0, 1])
         l0 = np.array([1, 0])
-
         F1 = np.dot(f1, n1) + np.dot(alpha1 * myu1 * f1, l1)
         F0 = np.dot(f0, n0) + np.dot(alpha0 * myu0 * f0, l0)
         T = t * t_dir
-
         return T + Mg + F0 + F1
 
     def torque_eq1(p):
         f1, f0, t, alpha0, alpha1 = p
-
         n1 = np.array([-math.cos(math.radians(theta)), math.sin(math.radians(theta))])
         l1 = np.array([math.sin(math.radians(theta)), math.cos(math.radians(theta))])
-
         # r1_3d = copy.copy(objpos) + rdir * rot[:, 1]
         r1_3d = chosenpos
         r1 = np.array([r1_3d[1], r1_3d[2]])
-
         F1 = np.dot(f1, n1) + np.dot(alpha1 * myu1 * f1, l1)
-
         return np.cross(rt, t * t_dir) + np.cross(rg, Mg) + np.cross(r1, F1)
 
     def f1ineq(p):
         f1, f0, t, alpha0, alpha1 = p
-
         n1 = np.array([-math.cos(math.radians(theta)), math.sin(math.radians(theta))])
         l1 = np.array([math.sin(math.radians(theta)), math.cos(math.radians(theta))])
-
         # r1 = copy.copy(objpos) + r * rot[:, 1]
-
         F1 = np.dot(f1, n1) + np.dot(alpha1 * myu1 * f1, l1)
-
         return 30 ** 2 - np.dot(F1, F1)
 
     pushpath_total = []
     pushpos_total = []
     obj_total = []
     hangedpos_total = []
-
     pushposlist1 = []
     pushposlist2 = []
     degreelist1 = []
@@ -907,7 +898,6 @@ def getpushingpath(theta, rotateaxis):
             degreelist1.append(theta)
         else:
             degreelist2.append(theta)
-
         box = copy.deepcopy(obj)
         objpos = copy.copy(objpos_start)
         rot = rm.rodrigues(rotateaxis, theta)
@@ -921,7 +911,6 @@ def getpushingpath(theta, rotateaxis):
         box.setColor(.8, .6, .3, .1)
         obj_total.append(box)
         # box.reparentTo(base.render)
-
         pushposlist = []
         nextpushlenlist = []
         for num in range(10):
@@ -942,7 +931,6 @@ def getpushingpath(theta, rotateaxis):
 
             # base.pggen.plotSphere(base.render, pos=pushpos, rgba=[0,1,0,1], radius=5)
             ## --------------------------------------------------------------------------
-
         hangedpos = gethangedpos(objpos, rot)
         hangedpos_total.append(hangedpos)
         # base.pggen.plotSphere(base.render, pos=hangedpos, radius=10, rgba=[0,1,0,1])
@@ -952,23 +940,17 @@ def getpushingpath(theta, rotateaxis):
             rotatecenter = getrotatecenter_after(objpos, rot)
         objcenter = getobjcenter(objpos, rot)
         # base.pggen.plotSphere(base.render, pos=objcenter, radius=10, rgba=[1,0,0,1])
-
         rg_3d = objcenter - rotatecenter
         rt_3d = hangedpos - rotatecenter
-
         rg = np.array([rg_3d[1], rg_3d[2]])
         rt = np.array([rt_3d[1], rt_3d[2]])
-
         optimizationlist = np.empty((0, 2))
-
         t_dir_3d = pulleypos - hangedpos
         t_dir = rm.unit_vector([t_dir_3d[1], t_dir_3d[2]])
-
         bounds = ((0, 30), (0, np.inf), (0, np.inf), (-1, 1), (-1, 1))
         conds = ({'type': 'eq', 'fun': force_eq1},
                  {'type': 'eq', 'fun': torque_eq1},
                  {'type': 'ineq', 'fun': f1ineq})
-
         p0 = [30, 30, 30, 0, 0]
         minimizer_kwargs = {"method": "SLSQP", "constraints": conds, "bounds": bounds}
         for chosenpos in pushposlist:
@@ -994,11 +976,9 @@ def getpushingpath(theta, rotateaxis):
                     value = func(o.x)
                     print(o.x)
                     optimizationlist = np.append(optimizationlist, np.array([np.array([chosenpos, value])]), axis=0)
-
         ## sorting the pushposlist by value
         optimizationlist = ascendingorder(optimizationlist, axis=1)
         for j, eachpos in enumerate(optimizationlist):
-
             maximumvaluepos = eachpos[0]
             # if i == 0:
             #     pos_iminus1 = [maximumvaluepos]
@@ -1007,9 +987,8 @@ def getpushingpath(theta, rotateaxis):
             # else:
             #     pos_iminus1[0] = pos_i[0]
             #     pos_i[0] = maximumvaluepos
-
             ## kinematic constraint
-            pushpose = rbt.numikmsc(maximumvaluepos, pushrot, msc=pushpose_iminus1[0], armname="lft")
+            pushpose = robot_s.ik("lft_arm", maximumvaluepos, pushrot, seed_jnt_values=pushpose_iminus1[0])
             if pushpose is not None:
                 if i == 0:
                     pos_iminus1 = [maximumvaluepos]
@@ -1075,11 +1054,9 @@ def getforce(armname):
         force_norm = force_array[0] * force_array[0] + force_array[1] * force_array[1] + force_array[2] * force_array[2]
         # force_norm = np.linalg.norm(force_array)
         force_norm = math.sqrt(force_norm)
-
         return force_norm
 
     targetftsocket.close()
-
     return getforcenorm(rawft_final)
 
 
@@ -1094,8 +1071,10 @@ def zeroforce(armname):
 
 
 if __name__ == "__main__":
-    base = wd.World(cam_pos=[7, 0, 2.2], lookat_pos=[0, 0, .7])  ## 元のやつ
-    board = cm.gen_box(extent=[.4, .5, .01])
+
+    base = wd.World(cam_pos=[7, 0, 2.2], lookat_pos=[0, 0, .7])
+    gm.gen_frame().attach_to(base)
+    board = cm.gen_box(extent=[.4, .5, .01])  # RANSAC用
     rtq85_s = rtq85.Robotiq85()
     robot_s = ur3ds.UR3Dual()
     robot_inik_solver = inik.IncrementalNIK(robot_s)
@@ -1104,35 +1083,13 @@ if __name__ == "__main__":
     obj = cm.CollisionModel(initor=objpath)
     ## 事前定義把持とハンド姿勢の呼び出し
     handpose = pose.PoseMaker()
-    predefined_grasps_lft, handdirlist_lft = handpose.lftgrasppose()
+    predefined_grasps_lft, handdirlist_lft = handpose.lftgrasppose()  # 予備の把持姿勢と把持方向
     predefined_grasps_rgt, handdirlist_rgt = handpose.rgtgrasppose()
-    rgt_jnt_values = np.radians(
-        np.array([-16.40505261, -52.96523856, 91.11206022, 36.08211617, 132.71248608, 67.39504932]))
-    armname='rgt_arm'
-    robot_s.fk(component_name=armname,jnt_values=rgt_jnt_values)
-    robot_s.fk(component_name=armname, jnt_values=rgt_jnt_values)
-    rgt_pos, rgt_rotmat = robot_s.get_gl_tcp(manipulator_name=armname)
-    ropelinesorted = []
-    dir = rm.unit_vector(ropetoppos - rgt_pos)
-    path = robot_inik_solver.gen_rel_linear_motion(component_name=armname,
-                                                   goal_hnd_pos=rgt_pos,
-                                                   goal_hnd_rotmat=rgt_rotmat,
-                                                   direction=-dir,
-                                                   distance=.15,
-                                                   type='source')
-    robot_s.fk(component_name=armname, jnt_values=path[-1])
-    robot_s.gen_meshmodel().attach_to(base)
-    rgt_pos, rgt_rotmat = robot_s.get_gl_tcp(manipulator_name=armname)
-    i = 1e-3
-    while True:
-        appendpos = rgt_pos + dir * i
-        ropelinesorted.append(appendpos)
-        i += 1e-3
-        if appendpos[2] > 1.7:
-            break
-    ropelinesorted = ropelinesorted[::-1]
-    for rope_point in ropelinesorted:
-        gm.gen_sphere(rope_point).attach_to(base)
+    # for grasp_pose in predefined_grasps_rgt:
+    #     jaw_width, gl_jaw_center, hnd_pos, hnd_rotmat = grasp_pose
+    #     gm.gen_frame(hnd_pos, hnd_rotmat).attach_to(base)
+    # base.run()
+    # objects
     test = copy.deepcopy(obj)
     rotmat = rm.rotmat_from_axangle(rotate_axis, math.radians(45))
     homomat = rm.homomat_from_posrot(objpos_start, rotmat)
@@ -1145,158 +1102,119 @@ if __name__ == "__main__":
     next.set_homomat(homomat)
     next.set_rgba([0, 1, 0, .4])
     next.attach_to(base)
-    obscmlist=[]
+    obscmlist = []
     obscmlist.append(test)
     obscmlist.append(next)
-    startpointid = 0
-    objpos_final = np.array([.25, .15, 1.4])
-    armname="lft_arm"
-    print(predefined_grasps_lft)
-    IKpossiblelist_start, objpos_initial, objrot_initial, startpointid = decidestartpose(ropelinesorted,
-                                                                                         armname,
-                                                                                         predefined_grasps_lft,
-                                                                                         robot_s.lft_arm.homeconf,
-                                                                                         startpointid)
-    IKpossiblelist_startgoal = decidegoalpose_onepoint(IKpossiblelist_start,
-                                                       objpos_initial,
-                                                       objpos_final,
-                                                       armname,
-                                                       predefined_grasps_lft,
-                                                       obscmlist)
-    robot_s.fk(armname, IKpossiblelist_startgoal[0][0])
+
+    # ## 確認用の者　右手の引き動作と対象物の移動
+    arm_name = 'rgt_arm'
+    rgt_jnt_values = np.radians(
+        np.array([-16.40505261, -52.96523856, 91.11206022, 36.08211617, 132.71248608, 67.39504932]))
+    robot_s.fk(component_name=arm_name, jnt_values=rgt_jnt_values)
     robot_s.gen_meshmodel().attach_to(base)
-    robot_s.fk(armname, IKpossiblelist_startgoal[0][1])
-    robot_s.gen_meshmodel().attach_to(base)
-    base.run()
-    # goal = IKpossiblelist_startgoal[1][1]
-    # rbtmg.genmnp(rbt, togglejntscoord=False).reparentTo(base.render)
-    # rbt.movearmfk(goal, "lft")
-    # rbtmg.genmnp(rbt, togglejntscoord=False).reparentTo(base.render)
-
-    # dir = rm.unit_vector(objpos_final - ropelinesorted[0])
-    # length = np.linalg.norm(objpos_final - ropelinesorted[0])
-    # path = ctcallback_lft.getLinearPrimitivenothold(start, dir, length, [], discretedist=50, type="source")
-    # for p in path:
-    #     rbt.movearmfk(p, "lft")
-    #     rbtmg.genmnp(rbt, togglejntscoord=False, rgbalft=[0,1,0,.4]).reparentTo(base.render)
-    # base.run()
-    ## ----------------------
-    lft = rbt.getee("lft")[0]
-    i = 0
-    ropelinesorted = []
-    for i in range(100):
-        appendpos = lft + i * np.array([0, 0, -1])
-        ropelinesorted.append(appendpos)
-    ropelinesorted = ropelinesorted[::-1]
-    startpointid = 0
-    objpos_final = np.array([250, -200, 1350])
-    base.pg.genPntsnp(ropelinesorted, pntsize=5, colors=[[1, 0, 0, 1] for x in ropelinesorted]).reparentTo(base.render)
-
-    IKpossiblelist_start, objpos_initial, objrot_initial, startpointid = decidestartpose(ropelinesorted, "rgt",
-                                                                                         predefined_grasps_rgt,
-                                                                                         ctcallback_rgt,
-                                                                                         rbt.initjnts[3:9],
-                                                                                         startpointid)
-    IKpossiblelist_startgoal = decidegoalpose_onepoint(IKpossiblelist_start, objpos_initial, objpos_final, "rgt",
-                                                       predefined_grasps_rgt, ctcallback_rgt, obscmlist)
-    rgtstart = IKpossiblelist_startgoal[1][0]
-    rgtgoal = IKpossiblelist_startgoal[1][1]
-    rbt.movearmfk(rgtstart, "rgt")
-    rbtmg.genmnp(rbt, togglejntscoord=False).reparentTo(base.render)
-    rbt.movearmfk(rgtgoal, "rgt")
-    rbtmg.genmnp(rbt, togglejntscoord=False, rgbargt=[0, 1, 0, .4]).reparentTo(base.render)
-    dir = rm.unit_vector(ropelinesorted[0] - objpos_final) * (-1)
-    print(dir)
-    length = np.linalg.norm(ropelinesorted[0] - objpos_final)
-    path = ctcallback_rgt.getLinearPrimitivenothold(rgtstart, dir, length, [], discretedist=40, type="source")
-    for p in path:
-        rbt.movearmfk(p, "rgt")
-        rbtmg.genmnp(rbt, togglejntscoord=False, rgbargt=[0, 1, 0, .4]).reparentTo(base.render)
-
-    base.run()
-
-    ###
-    ## goal angle >>> about 70
-    # prepushjnt = np.array([3.027119776468964, -112.46591217627397, -61.15326909309609, 128.30045903005393, -120.19601975057093, 104.9401670496673])
-    # pre_prepushjnt = np.array([-33.35622966184176, -138.5040412924666, -74.8527980774441, 128.17060347355363, -133.2811458983196, 104.94565852176])
-    # pregraspforlft = np.array([-10.728168111426358, -193.9447141062168, -45.034213897162765, 149.37995277108735, -126.43569808570105, 76.11025958193447])
-    # ###
-
-    from trimesh.primitives import Box
-
-    board = Box(box_extents=[400, 500, 10])
-    from trimesh.sample import sample_volume
-
-    ## test for pushing ------------------------------------------------
-    # theta = 52
-    # limitdegree = 105
-    # objpos_initial = copy.copy(objpos_start)
-    # objrot_initial = rm.rodrigues(rotate_axis, theta)
-    # pushpath_total, pushpos_total, obj_total, hangedpos_total = getpushingpath_first(obj, objpos_initial, objrot_initial, theta, rotate_axis)
-    # print("hangedpos_total = ", hangedpos_total)
-    #
-    # obj_ver = copy.deepcopy(obj_total[-1])
-    # objmat4_ver = obj_ver.gethomomat()
-    # objpos_ver = objmat4_ver[:3, 3]
-    # objrot_ver = objmat4_ver[:3, :3]
-    #
-    # pushpos = pushpos_total[-1]
-    # pushpath_total2, pushpos_total2, obj_total2, hangedpos_total2 = getpushingpath_second(obj_ver, objpos_ver, objrot_ver, pushpos, limitdegree, rotate_axis)
-    # print("hangedpos_total2", hangedpos_total2)
-    #
-    # for pos in hangedpos_total:
-    #     print("length=", np.linalg.norm(pulleypos - pos))
-    #     base.pggen.plotSphere(base.render, pos=pos, radius=10, rgba=[1,0,0,1])
-    #
-    # for pos in hangedpos_total2:
-    #     print("length = ", np.linalg.norm(pulleypos - pos))
-    #     base.pggen.plotSphere(base.render, pos=pos, radius=10, rgba=[1,0,0,1])
-    #
-    # base.run()
-    ### -------------------------------------------------------------------
+    # rgt_pos, rgt_rotmat = robot_s.get_gl_tcp(manipulator_name=arm_name)
+    # ropelinesorted = []
+    # dir = rm.unit_vector(ropetoppos - rgt_pos)
+    # path = robot_inik_solver.gen_rel_linear_motion(component_name=arm_name,
+    #                                                goal_hnd_pos=rgt_pos,
+    #                                                goal_hnd_rotmat=rgt_rotmat,
+    #                                                direction=-dir,
+    #                                                distance=.15,
+    #                                                type='source')
+    # # for conf in path:
+    # #     robot_s.fk(arm_name, conf)
+    # #     robot_s.gen_meshmodel().attach_to(base)
+    # # base.run()
+    # robot_s.fk(component_name=arm_name, jnt_values=path[-1])
+    # # robot_s.gen_meshmodel().attach_to(base)
+    # # base.run()
+    # rgt_pos, rgt_rotmat = robot_s.get_gl_tcp(manipulator_name=arm_name)
+    # counter = 0
+    # while True:
+    #     rgt_append_pos = rgt_pos + dir * counter * 1e-3
+    #     ropelinesorted.append(rgt_append_pos)
+    #     counter += 1
+    #     if rgt_append_pos[2] > 1.7:
+    #         break
+    # ropelinesorted = ropelinesorted[::-1]
+    # for rope_point in ropelinesorted:
+    #     gm.gen_sphere(rope_point).attach_to(base)
+    # # base.run()
+    # 
+    # # 左手の引き動作
+    # startpointid = 0  # 1.7
+    # hold_pos_final = np.array([.25, -.15, 1.4])  # 仮設置
+    # arm_name = "rgt_arm"
+    # IKpossiblelist_start, hold_pos_init, hold_rot_init, startpointid = decidestartpose(ropelinesorted,
+    #                                                                                    arm_name,
+    #                                                                                    predefined_grasps_rgt,
+    #                                                                                    robot_s.rgt_arm.homeconf,
+    #                                                                                    startpointid)
+    # # for data in IKpossiblelist_start:
+    # #     robot_s.fk(arm_name, data[0])
+    # #     robot_s.gen_meshmodel().attach_to(base)
+    # # base.run()
+    # IKpossiblelist_startgoal = decidegoalpose_onepoint(arm_name,
+    #                                                    IKpossiblelist_start,
+    #                                                    hold_pos_final,
+    #                                                    predefined_grasps_rgt,
+    #                                                    obscmlist)
+    # rgtstart = IKpossiblelist_startgoal[0][0]
+    # rgtgoal = IKpossiblelist_startgoal[0][1]
+    # robot_s.fk(arm_name, rgtstart)
+    # rgtstart_pos, rgtstart_rotmat = robot_s.get_gl_tcp(arm_name)
+    # robot_s.gen_meshmodel().attach_to(base)
+    # robot_s.fk(arm_name, rgtgoal)
+    # robot_s.gen_meshmodel().attach_to(base)
+    # # base.run()
+    # 
+    # dir = rm.unit_vector(hold_pos_final - ropelinesorted[0])
+    # length = np.linalg.norm(hold_pos_final - ropelinesorted[0])
+    # path = robot_inik_solver.gen_rel_linear_motion(arm_name, rgtstart_pos, rgtstart_rotmat, dir, length, [],
+    #                                                type="source")
+    # for conf in path:
+    #     robot_s.fk(arm_name, conf)
+    #     robot_s.gen_meshmodel().attach_to(base)
+    # # base.run()
 
     ## ------ シミュレーション用 ------
-    # ropelinesorted = []
-    # for i in range(200):
-    #     ropelinesorted.append(np.array([250, 0, 1650 - i]))
-    # # ropelinesorted = np.load('RopeVertex_test.npy')
-    # np.save('RopeVertex_test.npy', ropelinesorted)
+    ropelinesorted = []
+    for i in range(200):
+        ropelinesorted.append(np.array([.25, 0, 1.65 - i * 1e3]))
+    # ropelinesorted = np.load('RopeVertex_test.npy')
+    np.save('RopeVertex_test.npy', ropelinesorted)
     ## ------------------------------
 
     ## ------ 実際のロープの点群 ------
-    pointrange = [100, 400, -150, 150, 1200, 1800]
-    newpcd = getpointcloudkinect(pointrange)
-    ropelinesorted = doRANSAC(newpcd, 5)
-    np.save('RopeVertex_data.npy', ropelinesorted)
+    # pointrange = [.1, .4, -.15, .15, 1.2, 1.8]
+    # newpcd = getpointcloudkinect(pointrange)
+    # ropelinesorted = doRANSAC(newpcd, 5)
+    # np.save('RopeVertex_data.npy', ropelinesorted)
     # -----------------------
 
     ## todo プッシングのシミュレーションの際はコメントアウト
     ## 開始(右手で引く)
-    # useid_assessmentlist = 0
     startpointid = 0
     endflag = 0
     while True:
+        arm_name = 'rgt_arm'
         print("startpointid", startpointid)
         IKpossiblelist_start_rgt, objpos_initial_rgt, objrot_initial_rgt, startpointid = decidestartpose(ropelinesorted,
-                                                                                                         "rgt",
+                                                                                                         arm_name,
                                                                                                          predefined_grasps_rgt,
-                                                                                                         ctcallback_rgt,
-                                                                                                         rbt.initjnts[
-                                                                                                         3:9],
+                                                                                                         robot_s.rgt_arm.homeconf,
                                                                                                          startpointid)
-
-        objpos_finallist_rgt = createcandidatepoints(armname="rgt", initialhandpos=objpos_initial_rgt)
+        objpos_finallist_rgt = create_candidate_points(arm_name=arm_name, initialhandpos=objpos_initial_rgt)
         np.save('finalposlist.npy', objpos_finallist_rgt)
-
-        assessment_value_list_rgt, totalIKpossiblelist_startgoal_rgt, costlist_rgt = getsuitablegoalpos_first(
-            IKpossiblelist_start_rgt, objpos_initial_rgt,
-            objpos_finallist_rgt, "rgt", predefined_grasps_rgt,
-            ctcallback_rgt)
-
-        # IKpossiblelist_startgoal_lft, objpos_final, tostartvec, togoalvec = decidegoalpose(IKpossiblelist_start_lft, objpos_initial_lft,
-        #                                                                      "lft", predefined_grasps_lft,
-        #                                                                      ctcallback_lft)
-
+        # for point in objpos_finallist_rgt:
+        #     gm.gen_sphere(pos=point).attach_to(base)
+        # base.run()
+        assessment_value_list_rgt, totalIKpossiblelist_startgoal_rgt, costlist_rgt = \
+            getsuitablegoalpos_first(arm_name,
+                                     IKpossiblelist_start_rgt,
+                                     objpos_initial_rgt,
+                                     objpos_finallist_rgt,
+                                     predefined_grasps_rgt)
         for i, each_assessment_value_list in enumerate(assessment_value_list_rgt):
             useid = each_assessment_value_list[1]  ## 評価値が高いものから順に選択
             print("useid", useid)
@@ -1304,8 +1222,9 @@ if __name__ == "__main__":
             togoalvec_rgt = objpos_finallist_rgt[int(useid)] - objpos_initial_rgt
             tostartvec_rgt = copy.copy(togoalvec_rgt) * (-1)
             use_objpos_final_rgt = copy.copy(objpos_initial_rgt) + togoalvec_rgt
-
-            IKpossiblelist_rgt = decidemidpose(IKpossiblelist_startgoal_rgt, handdirlist_rgt, "rgt", ctcallback_rgt,
+            IKpossiblelist_rgt = decidemidpose(arm_name,
+                                               IKpossiblelist_startgoal_rgt,
+                                               handdirlist_rgt,
                                                objpos_final=use_objpos_final_rgt)
 
             ropepulling_rgt, usingposelist_rgt, usingposeid_rgt = ropepullingmotion(IKpossiblelist_rgt, togoalvec_rgt,
@@ -1361,10 +1280,10 @@ if __name__ == "__main__":
     # theta = theta_sim[0]
     # # experimentlist = [[gotoinitialrgtpoint + usingposelist_rgt[3][0], 85, 0, "rgt", "gotoinitialrgtpoint", 2.0]]
     #
-    # objpos_initial = copy.copy(objpos_start)
-    # objrot_initial = rm.rodrigues(rotate_axis, theta)
+    # hold_pos_init = copy.copy(objpos_start)
+    # hold_rot_init = rm.rodrigues(rotate_axis, theta)
     # # test = copy.deepcopy(obj)
-    # # mat = rm.homobuild(objpos_initial, objrot_initial)
+    # # mat = rm.homobuild(hold_pos_init, hold_rot_init)
     # # test.setMat(base.pg.np4ToMat4(mat))
     # # test.reparentTo(base.render)
     # # rbt.movearmfk(pushpose_pre, "lft")
@@ -1372,10 +1291,10 @@ if __name__ == "__main__":
     # # base.run()
     #
     # ## pushingの動作計画
-    # # limitdegree = getlimitdegree(objpos_initial, rotate_axis)
+    # # limitdegree = getlimitdegree(hold_pos_init, rotate_axis)
     # limitdegree = 100
     # ## test
-    # pushpath_total, pushpos_total, obj_total, hangedpos_total = getpushingpath_first(obj, objpos_initial,  objrot_initial,  theta, rotate_axis)
+    # pushpath_total, pushpos_total, obj_total, hangedpos_total = getpushingpath_first(obj, hold_pos_init,  hold_rot_init,  theta, rotate_axis)
     # print("pushpath_total", pushpath_total)
     #
     # obj_ver = copy.deepcopy(obj_total[-1])
@@ -1402,7 +1321,7 @@ if __name__ == "__main__":
     # base.run()
 
     ### シミュレーション　& 実機
-    ### Order of "experimentlist":[path, startjawwidth, endjawwidth, armname, pathlable, timepathstep]
+    ### Order of "experimentlist":[path, startjawwidth, endjawwidth, arm_name, pathlable, timepathstep]
     predictlist = [d_0, theta_1, theta_0]
     experimentlist = [[gotoinitialrgtpoint + usingposelist_rgt[3][0], 85, 0, "rgt", "gotoinitialrgtpoint", 2.0],
                       [ropepulling_rgt, 0, 0, "rgt", "ropepulling_rgt", 1.0]]
@@ -1496,14 +1415,14 @@ if __name__ == "__main__":
             activelist_real = experimentlist[pathcounter[0]]
             ## ---- 実機 ----
             # timepathstep = activelist_real[5]
-            # zeroforce(armname=activelist_real[3])
-            # uc.opengripper(armname=activelist_real[3], fingerdistance=activelist_real[1])
+            # zeroforce(arm_name=activelist_real[3])
+            # uc.opengripper(arm_name=activelist_real[3], fingerdistance=activelist_real[1])
             # # time.sleep(1)
-            # zeroforce(armname=activelist_real[3])
+            # zeroforce(arm_name=activelist_real[3])
             # if len(activelist_real[0]) > 0:
-            #     uc.movejntssgl(activelist_real[0][0],armname=activelist_real[3])
-            #     uc.movejntssgl_cont(activelist_real[0], armname=activelist_real[3], timepathstep=timepathstep)
-            # uc.opengripper(armname=activelist_real[3], fingerdistance=activelist_real[2])
+            #     uc.movejntssgl(activelist_real[0][0],arm_name=activelist_real[3])
+            #     uc.movejntssgl_cont(activelist_real[0], arm_name=activelist_real[3], timepathstep=timepathstep)
+            # uc.opengripper(arm_name=activelist_real[3], fingerdistance=activelist_real[2])
             #
             # ###
             # # if activelist_real[4] == "lftpush" and 70 < rotatecheck[0] + rotatedegree < 75:
@@ -1515,9 +1434,9 @@ if __name__ == "__main__":
             #
             # # if activelist_real[4] == "ropepulling_lft" or activelist_real[4] == "ropepulling_rgt":
             # #     # time.sleep(1)
-            # #     # zeroforce(armname=activelist_real[3])
+            # #     # zeroforce(arm_name=activelist_real[3])
             # #     time.sleep(1)
-            # #     ropepullingforce = getforce(armname=activelist_real[3])
+            # #     ropepullingforce = getforce(arm_name=activelist_real[3])
             # #     print("引いた際の力：", ropepullingforce)
             # #     ropepullingforcelist.append(ropepullingforce)
             # #     print("力のリスト：", ropepullingforcelist)
@@ -1596,8 +1515,8 @@ if __name__ == "__main__":
                         ropepullingflag[0] = 0
                         pushingflag[0] = 1
                     else:
-                        objpos_final = pickle.load(open("objpos_final.pickle", "rb"))
-                        print("objpos_final", objpos_final)
+                        objpos_final = pickle.load(open("hold_pos_final.pickle", "rb"))
+                        print("hold_pos_final", objpos_final)
                         midgoaljnt_lft, midpathgoal_lft, tostartvec = pickle.load(open("keeplist.pickle", "rb"))
 
                         ## ---シミュレーション用---
@@ -1650,8 +1569,8 @@ if __name__ == "__main__":
 
                             ## 終点について計算
                             # obstacles = [obj_current]
-                            objpos_finallist_rgt = createcandidatepoints(armname="rgt",
-                                                                         initialhandpos=objpos_initial_rgt)
+                            objpos_finallist_rgt = create_candidate_points(arm_name="rgt",
+                                                                           initialhandpos=objpos_initial_rgt)
                             np.save('finalposlist.npy', objpos_finallist_rgt)
 
                             assessment_value_list_rgt, totalIKpossiblelist_startgoal_rgt, costlist_rgt, elements_for_predictlist_rgt, togoalveclist_rgt = getsuitablegoalpos_second(
@@ -1838,7 +1757,7 @@ if __name__ == "__main__":
                         ropepullingflag[0] = 0
                         pushingflag[0] = 1
                     else:
-                        objpos_final = pickle.load(open("objpos_final.pickle", "rb"))
+                        objpos_final = pickle.load(open("hold_pos_final.pickle", "rb"))
                         midgoaljnt_rgt, midpathgoal_rgt, tostartvec = pickle.load(open("keeplist.pickle", "rb"))
 
                         ## ---シミュレーション用
@@ -1894,9 +1813,9 @@ if __name__ == "__main__":
 
                             obstacles = [obj_current]
                             # obstacles = [obs]
-                            objpos_finallist_lft = createcandidatepoints(armname="lft",
-                                                                         initialhandpos=objpos_initial_lft,
-                                                                         obstacles=obstacles)
+                            objpos_finallist_lft = create_candidate_points(arm_name="lft",
+                                                                           initialhandpos=objpos_initial_lft,
+                                                                           obstacles=obstacles)
                             np.save('finalposlist.npy', objpos_finallist_lft)
 
                             assessment_value_list_lft, totalIKpossiblelist_startgoal_lft, costlist_lft, elements_for_predictlist_lft, togoalveclist_lft = getsuitablegoalpos_second(
@@ -2071,9 +1990,9 @@ if __name__ == "__main__":
                         # dir = rm.unit_vector(ropetoppos - currentrgtpos)
                         # i = 1
                         # while True:
-                        #     appendpos = currentrgtpos + dir * i
-                        #     ropelinesorted.append(appendpos)
-                        #     if appendpos[2] > 1750:
+                        #     lft_append_pos = currentrgtpos + dir * i
+                        #     ropelinesorted.append(lft_append_pos)
+                        #     if lft_append_pos[2] > 1750:
                         #         break
                         #     i += 1
                         # ropelinesorted = ropelinesorted[::-1]
@@ -2221,8 +2140,9 @@ if __name__ == "__main__":
                         print("startpointid_second = ", startpointid_second)
 
                         # obstacles = [obj_current]
-                        objpos_finallist_rgt = createcandidatepoints(armname="rgt", initialhandpos=objpos_initial_rgt,
-                                                                     limitation=currentlftpos[1])
+                        objpos_finallist_rgt = create_candidate_points(arm_name="rgt",
+                                                                       initialhandpos=objpos_initial_rgt,
+                                                                       limitation=currentlftpos[1])
                         np.save('finalposlist.npy', objpos_finallist_rgt)
 
                         # elements_for_predictlist = predictlistforpullinglength(objpos_initial_rgt, objpos_finallist_rgt)
@@ -2311,8 +2231,8 @@ if __name__ == "__main__":
 
                     ## シミュレーション
                     # theta = thetathreshold
-                    # objpos_initial = copy.copy(objpos_start)
-                    # objrot_initial = rm.rodrigues(rotate_axis, theta)
+                    # hold_pos_init = copy.copy(objpos_start)
+                    # hold_rot_init = rm.rodrigues(rotate_axis, theta)
 
                     obj_current = copy.deepcopy(obj)
                     mat = rm.homobuild(objpos_initial, objrot_initial)
@@ -2626,7 +2546,7 @@ if __name__ == "__main__":
                         currentrgtjnt = rbt.getarmjnts("rgt")
                         currentlftjnt = rbt.getarmjnts("lft")
                         objpos_final = copy.copy(currentrgtpos)
-                        pickle.dump(objpos_final, open("objpos_final.pickle", "wb"))
+                        pickle.dump(objpos_final, open("hold_pos_final.pickle", "wb"))
 
                         # ## beniya boardの場合
                         # returntopushjnt = list(pickle.load(open("prestartlftpath.pickle", "rb")))
@@ -2682,7 +2602,7 @@ if __name__ == "__main__":
                             IKpossiblelist_startgoal_lft, objpos_final, tostartvec, togoalvec = decidegoalpose(
                                 IKpossiblelist_start_lft, objpos_initial_lft, "lft", predefined_grasps_lft,
                                 ctcallback_lft, objpos_final=objpos_final, label="up")
-                            # IKpossiblelist_startgoal_lft = decidegoalpose_onepoint(IKpossiblelist_start_lft, objpos_initial_lft, objpos_final, "lft", predefined_grasps_lft, ctcallback_lft)
+                            # IKpossiblelist_startgoal_lft = decidegoalpose_onepoint(IKpossiblelist_start_lft, objpos_initial_lft, hold_pos_final, "lft", predefined_grasps_lft, ctcallback_lft)
 
                             IKpossiblelist_lft = decidemidpose(IKpossiblelist_startgoal_lft, handdirlist_lft, "lft",
                                                                ctcallback_lft)
@@ -2725,7 +2645,7 @@ if __name__ == "__main__":
                 if activelist_real[4] == "ropepulling_lft":
                     currentrgtjnt = rbt.getarmjnts("rgt")
                     currentlftjnt = rbt.getarmjnts("lft")
-                    objpos_final = pickle.load(open("objpos_final.pickle", "rb"))
+                    objpos_final = pickle.load(open("hold_pos_final.pickle", "rb"))
                     midgoaljnt_lft, midpathgoal_lft, tostartvec = pickle.load(open("keeplist.pickle", "rb"))
 
                     ## 物体の点群を検出(実機)　todo シミュレーションの際はコメントアウト
@@ -2833,7 +2753,7 @@ if __name__ == "__main__":
                 elif activelist_real[4] == "ropepulling_rgt":
                     currentrgtjnt = rbt.getarmjnts("rgt")
                     currentlftjnt = rbt.getarmjnts("lft")
-                    objpos_final = pickle.load(open("objpos_final.pickle", "rb"))
+                    objpos_final = pickle.load(open("hold_pos_final.pickle", "rb"))
                     midgoaljnt_rgt, midpathgoal_rgt, tostartvec = pickle.load(open("keeplist.pickle", "rb"))
 
                     ## 物体の点群を検出(実機) todo シミュレーションの際はコメントアウト

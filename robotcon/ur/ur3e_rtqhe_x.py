@@ -71,8 +71,8 @@ class UR3ERtqHE():
 
     def open_gripper(self, speedpercentange=70, forcepercentage=50, fingerdistance=50.0):
         """
-        open the rtq85 hand on the arm specified by armname
-        :param armname:
+        open the rtq85 hand on the arm specified by arm_name
+        :param arm_name:
         :return:
         author: weiwei
         date: 20180220
@@ -81,8 +81,8 @@ class UR3ERtqHE():
 
     def close_gripper(self, speedpercentange=80, forcepercentage=50):
         """
-        close the rtq85 hand on the arm specified by armname
-        :param armname:
+        close the rtq85 hand on the arm specified by arm_name
+        :param arm_name:
         :return:
         author: weiwei
         date: 20180220
@@ -122,7 +122,7 @@ class UR3ERtqHE():
     def move_jnts(self, jnt_values, radius=0.01):
         """
         :param jnt_values: a 1-by-6 list in degree
-        :param armname:
+        :param arm_name:
         :return:
         author: weiwei
         date: 20170411
@@ -236,7 +236,7 @@ class UR3ERtqHE():
     def get_jnt_values(self):
         """
         get the joint angles in radian
-        :param armname:
+        :param arm_name:
         :return:
         author: ochi, revised by weiwei
         date: 20180410
@@ -251,6 +251,6 @@ if __name__ == '__main__':
     u3r85_c = UR3Rtq85(modern_driver='./urscripts_cbseries/moderndriver_cbseries.script',
                                    robot_ip='10.2.0.50', pc_ip='10.2.0.91')
 
-    # u3r85_c.attachfirm(rbt, upthreshold=10, armname='lft')
+    # u3r85_c.attachfirm(rbt, upthreshold=10, arm_name='lft')
     u3r85_c.opengripper()
     base.run()
