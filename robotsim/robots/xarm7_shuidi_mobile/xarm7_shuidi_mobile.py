@@ -45,6 +45,8 @@ class XArm7YunjiMobile(ri.RobotInterface):
         # collision detection
         if enable_cc:
             self.enable_cc()
+        # component map
+        self.manipulator_dict['arm'] = self.arm
 
     def enable_cc(self):
         # TODO when pose is changed, oih info goes wrong
