@@ -54,7 +54,7 @@ class PickPlacePlanner(object):
 
         objcmcopy = copy.deepcopy(self.objcm)
 
-        rbt = self.rhx.rbt
+        rbt = self.rhx.robot_s
         bk_armjnts_rgt = rbt.getarmjnts(armname="rgt")
         bk_armjnts_lft = rbt.getarmjnts(armname="lft")
         if rbtarmjnts is None:
@@ -99,7 +99,7 @@ class PickPlacePlanner(object):
                         hndnew.reparentTo(self.rhx.base.render)
                     rbt.movearmfk(armjnts, armname)
                     isrbtcollided = pcdchecker.isRobotCollided(rbt, obscmlist, holdarmname=armname)
-                    # isobjcollided = pcdchecker.isObjectsOthersCollided([obj], rbt, arm_name, obscmlist)
+                    # isobjcollided = pcdchecker.isObjectsOthersCollided([obj], robot_s, arm_name, obscmlist)
                     isobjcollided = False  # for future use
                     if (not isrbtcollided) and (not isobjcollided):
                         if toggledebug:
@@ -162,7 +162,7 @@ class PickPlacePlanner(object):
                             hndnew.reparentTo(self.rhx.base.render)
                         rbt.movearmfk(armjnts, armname)
                         isrbtcollided = pcdchecker.isRobotCollided(rbt, obscmlist, holdarmname=armname)
-                        # isobjcollided = pcdchecker.isObjectsOthersCollided([obj], rbt, arm_name, obscmlist)
+                        # isobjcollided = pcdchecker.isObjectsOthersCollided([obj], robot_s, arm_name, obscmlist)
                         isobjcollided = False
                         if (not isrbtcollided) and (not isobjcollided):
                             tmpresult.append(idavailableinit)
@@ -202,9 +202,9 @@ class PickPlacePlanner(object):
         #         hndmat4 = np.dot(inithomomat, predefined_homomat)
         #         eepos = rm.homotransformpoint(inithomomat, predefined_fc)[:3]
         #         eerot = hndmat4[:3, :3]
-        #         armjnts = rbt.numik(eepos, eerot, arm_name)
-        #         rbt.movearmfk(armjnts, arm_name)
-        #         rbtmg.genmnp(rbt, togglejntscoord=False).reparentTo(self.rhx.base.render)
+        #         armjnts = robot_s.numik(eepos, eerot, arm_name)
+        #         robot_s.movearmfk(armjnts, arm_name)
+        #         rbtmg.genmnp(robot_s, togglejntscoord=False).reparentTo(self.rhx.base.render)
 
         print("IK failed grasps at the goal pose(s): ", ikfailedgraspsnum)
         print("Collision at the goal pose(s): ", ikcolliedgraspsnum)
@@ -239,7 +239,7 @@ class PickPlacePlanner(object):
 
         objcmcopy = copy.deepcopy(self.objcm)
 
-        rbt = self.rhx.rbt
+        rbt = self.rhx.robot_s
         bk_armjnts_rgt = rbt.getarmjnts(armname="rgt")
         bk_armjnts_lft = rbt.getarmjnts(armname="lft")
         if rbtarmjnts is None:
@@ -284,7 +284,7 @@ class PickPlacePlanner(object):
                         hndnew.reparentTo(self.rhx.base.render)
                     rbt.movearmfk(armjnts, armname)
                     isrbtcollided = pcdchecker.isRobotCollided(rbt, obscmlist, holdarmname=armname)
-                    # isobjcollided = pcdchecker.isObjectsOthersCollided([obj], rbt, arm_name, obscmlist)
+                    # isobjcollided = pcdchecker.isObjectsOthersCollided([obj], robot_s, arm_name, obscmlist)
                     isobjcollided = False  # for future use
                     if (not isrbtcollided) and (not isobjcollided):
                         if toggledebug:
@@ -358,7 +358,7 @@ class PickPlacePlanner(object):
                                 hndnew.reparentTo(self.rhx.base.render)
                             rbt.movearmfk(armjnts, armname)
                             isrbtcollided = pcdchecker.isRobotCollided(rbt, obscmlist, holdarmname=armname)
-                            # isobjcollided = pcdchecker.isObjectsOthersCollided([obj], rbt, arm_name, obscmlist)
+                            # isobjcollided = pcdchecker.isObjectsOthersCollided([obj], robot_s, arm_name, obscmlist)
                             isobjcollided = False
                             if (not isrbtcollided) and (not isobjcollided):
                                 tmpresult.append(idavailableinit)
@@ -407,9 +407,9 @@ class PickPlacePlanner(object):
         #         hndmat4 = np.dot(inithomomat, predefined_homomat)
         #         eepos = rm.homotransformpoint(inithomomat, predefined_fc)[:3]
         #         eerot = hndmat4[:3, :3]
-        #         armjnts = rbt.numik(eepos, eerot, arm_name)
-        #         rbt.movearmfk(armjnts, arm_name)
-        #         rbtmg.genmnp(rbt, togglejntscoord=False).reparentTo(self.rhx.base.render)
+        #         armjnts = robot_s.numik(eepos, eerot, arm_name)
+        #         robot_s.movearmfk(armjnts, arm_name)
+        #         rbtmg.genmnp(robot_s, togglejntscoord=False).reparentTo(self.rhx.base.render)
 
         print("IK failed grasps at the goal pose(s): ", ikfailedgraspsnum)
         print("Collision at the goal pose(s): ", ikcolliedgraspsnum)
@@ -446,9 +446,9 @@ class PickPlacePlanner(object):
         eepos = rm.homotransformpoint(objhomomat, predefinedhndfc)
         eerot = hndmat4[:3, :3]
         if msc is None:
-            amjnts = self.rhx.rbt.numik(eepos, eerot, armname)
+            amjnts = self.rhx.robot_s.numik(eepos, eerot, armname)
         else:
-            amjnts = self.rhx.rbt.numikmsc(eepos, eerot, msc, armname)
+            amjnts = self.rhx.robot_s.numikmsc(eepos, eerot, msc, armname)
         if amjnts is not None:
             pickmotion = self.rhx.genmoveforwardmotion(primitivedirection_forward, primitivedistance_forward,
                                                        amjnts, obstaclecmlist, armname)
@@ -475,7 +475,7 @@ class PickPlacePlanner(object):
                     userrt=True):
         """
         generate the pick and place motion for the speicified arm
-        the rbt init armjnts must be explicitly specified to avoid wrong robot_s poses
+        the robot_s init armjnts must be explicitly specified to avoid wrong robot_s poses
 
         :param candidatepredgidlist: candidate predefined grasp id list [int, int, ...]
         :param objinithomomat:
@@ -512,7 +512,7 @@ class PickPlacePlanner(object):
                 print("Wrong arm_name. Must be rgt or lft.")
                 raise ValueError("")
 
-        rbt = self.rhx.rbt
+        rbt = self.rhx.robot_s
         hndfa = self.rhx.rgthndfa if armname is "rgt" else self.rhx.lfthndfa
         predefinedgrasps = self.identityglist_rgt if armname is "rgt" else self.identityglist_lft
         bk_armjnts_rgt = rbt.getarmjnts(armname="rgt")
@@ -567,7 +567,7 @@ class PickPlacePlanner(object):
             absinitrot = objinithomomat[:3, :3]
             absgoalpos = objgoalhomomat[:3, 3]
             absgoalrot = objgoalhomomat[:3, :3]
-            relpos, relrot = self.rhx.rbt.getinhandpose(absinitpos, absinitrot, initpick[-1], armname)
+            relpos, relrot = self.rhx.robot_s.getinhandpose(absinitpos, absinitrot, initpick[-1], armname)
             if userrt:
                 rrtpathinit = self.rhx.planmotion(initpose, initpick[0], obscmlist, armname)
                 if rrtpathinit is None:
@@ -816,7 +816,7 @@ class PickPlacePlanner(object):
 
         objcmcopy = copy.deepcopy(self.objcm)
 
-        rbt = self.rhx.rbt
+        rbt = self.rhx.robot_s
         bk_armjnts_rgt = rbt.getarmjnts(armname="rgt")
         bk_armjnts_lft = rbt.getarmjnts(armname="lft")
         bk_jawwidth_rgt = rbt.getjawwidth(armname="rgt")
@@ -860,7 +860,7 @@ class PickPlacePlanner(object):
                         hndnew.reparentTo(self.rhx.base.render)
                     rbt.movearmfk(armjnts, armname)
                     isrbtcollided = pcdchecker.isRobotCollided(rbt, obscmlist, holdarmname=armname)
-                    # isobjcollided = pcdchecker.isObjectsOthersCollided([obj], rbt, arm_name, obscmlist)
+                    # isobjcollided = pcdchecker.isObjectsOthersCollided([obj], robot_s, arm_name, obscmlist)
                     isobjcollided = False  # for future use
                     if (not isrbtcollided) and (not isobjcollided):
                         if toggledebug:
@@ -943,7 +943,7 @@ class PickPlacePlanner(object):
                             # hndnew.reparentTo(self.rhx.base.render)
                         rbt.movearmfk(armjnts, armname)
                         isrbtcollided = pcdchecker.isRobotCollided(rbt, obscmlist, holdarmname=armname)
-                        # isobjcollided = pcdchecker.isObjectsOthersCollided([obj], rbt, arm_name, obscmlist)
+                        # isobjcollided = pcdchecker.isObjectsOthersCollided([obj], robot_s, arm_name, obscmlist)
                         isobjcollided = False
                         if (not isrbtcollided) and (not isobjcollided):
                             finalsharedgrasps.append(idavailableinit)
@@ -951,7 +951,7 @@ class PickPlacePlanner(object):
                                 rbtmg.genmnp(rbt, togglejntscoord=False, toggleendcoord=False,
                                              rgbargt=[0, 1, 0, .5]).reparentTo(
                                     self.rhx.base.render)
-                                # rbtmg.genmnp(rbt, togglejntscoord=False).reparentTo(self.rhx.base.render)
+                                # rbtmg.genmnp(robot_s, togglejntscoord=False).reparentTo(self.rhx.base.render)
                                 # # toggle the following one in case both the common start and goal shall be rendered
                                 # hndmat4 = np.dot(objinithomomat, predefined_homomat)
                                 # # hndnew = hndfa.genHand()
@@ -961,16 +961,16 @@ class PickPlacePlanner(object):
                                 # # hndnew.reparentTo(self.rhx.base.render)
                                 # eepos = rm.homotransformpoint(objinithomomat, predefined_fc)[:3]
                                 # eerot = hndmat4[:3, :3]
-                                # armjnts = rbt.numik(eepos, eerot, arm_name)
-                                # rbt.movearmfk(armjnts, arm_name)
-                                # rbtmg.genmnp(rbt, togglejntscoord=False, toggleendcoord=False, rgbargt=[0, 1, 0, .5]).reparentTo(
+                                # armjnts = robot_s.numik(eepos, eerot, arm_name)
+                                # robot_s.movearmfk(armjnts, arm_name)
+                                # rbtmg.genmnp(robot_s, togglejntscoord=False, toggleendcoord=False, rgbargt=[0, 1, 0, .5]).reparentTo(
                                 #     self.rhx.base.render)
                                 # # base.run()
-                                # rbtmg.genmnp(rbt, togglejntscoord=False).reparentTo(self.rhx.base.render)
+                                # rbtmg.genmnp(robot_s, togglejntscoord=False).reparentTo(self.rhx.base.render)
                                 pass
                         elif (not isobjcollided):
                             if toggledebug:
-                                # rbtmg.genmnp(rbt, drawhand=False, togglejntscoord=False, toggleendcoord=False,
+                                # rbtmg.genmnp(robot_s, drawhand=False, togglejntscoord=False, toggleendcoord=False,
                                 #              rgbargt=[1, 0, 1, .5]).reparentTo(self.rhx.base.render)
                                 pass
                     else:
@@ -1011,9 +1011,9 @@ class PickPlacePlanner(object):
                 #         hndmat4 = np.dot(objinithomomat, predefined_homomat)
                 #         eepos = rm.homotransformpoint(objinithomomat, predefined_fc)[:3]
                 #         eerot = hndmat4[:3, :3]
-                #         armjnts = rbt.numik(eepos, eerot, arm_name)
-                #         rbt.movearmfk(armjnts, arm_name)
-                #         rbtmg.genmnp(rbt, togglejntscoord=False).reparentTo(self.rhx.base.render)
+                #         armjnts = robot_s.numik(eepos, eerot, arm_name)
+                #         robot_s.movearmfk(armjnts, arm_name)
+                #         rbtmg.genmnp(robot_s, togglejntscoord=False).reparentTo(self.rhx.base.render)
 
                 if rbtinitarmjnts is not None and rbtgoalarmjnts is not None:
                     if armname is "rgt":
@@ -1073,7 +1073,7 @@ class PickPlacePlanner(object):
                             hndmat4 = np.dot(objinithomomat, predefinedhandhomomat)
                             eepos = rm.homotransformpoint(objinithomomat, predefinedhndfc)
                             eerot = hndmat4[:3, :3]
-                            amjnts = self.rhx.rbt.numik(eepos, eerot, armname)
+                            amjnts = self.rhx.robot_s.numik(eepos, eerot, armname)
                             rbt.movearmfk(armjnts, armname="rgt")
                             if amjnts is not None:
                                 pickmotion = self.rhx.genmoveforwardmotion(primitivedirection_init_forward,
@@ -1101,14 +1101,14 @@ class PickPlacePlanner(object):
                             hndmat4 = np.dot(objinithomomat, predefinedhandhomomat)
                             eepos = rm.homotransformpoint(objinithomomat, predefinedhndfc)
                             eerot = hndmat4[:3, :3]
-                            amjnts = self.rhx.rbt.numikmsc(eepos, eerot, initpickup[1][-1], armname)
+                            amjnts = self.rhx.robot_s.numikmsc(eepos, eerot, initpickup[1][-1], armname)
                             rbt.movearmfk(armjnts, armname="rgt")
                             if amjnts is not None:
                                 pickmotion = self.rhx.genmoveforwardmotion(primitivedirection_init_forward,
                                                                            primitivedistance_init_foward,
                                                                            amjnts, armname)
                                 if pickmotion is None:
-                                    # rbtmg.genmnp(rbt, togglejntscoord=False, toggleendcoord=False, rgbargt=np.array([1, 0, 0, .7])).reparentTo(self.rhx.base.render)
+                                    # rbtmg.genmnp(robot_s, togglejntscoord=False, toggleendcoord=False, rgbargt=np.array([1, 0, 0, .7])).reparentTo(self.rhx.base.render)
                                     if candidatepredgid == finalsharedgrasps[-1]:
                                         base.run()
                             rbt.movearmfk(rbt.initrgtjnts, armname="rgt")
@@ -1120,7 +1120,7 @@ class PickPlacePlanner(object):
                     absinitrot = objinithomomat[:3, :3]
                     absgoalpos = resultinghomomat[:3, 3]
                     absgoalrot = resultinghomomat[:3, :3]
-                    relpos, relrot = self.rhx.rbt.getinhandpose(absinitpos, absinitrot, initpick[-1], armname)
+                    relpos, relrot = self.rhx.robot_s.getinhandpose(absinitpos, absinitrot, initpick[-1], armname)
                     if userrt:
                         rrtpathinit = self.rhx.planmotion(initpose, initpick[0], obscmlist, armname)
                         if rrtpathinit is None:
@@ -1429,7 +1429,7 @@ class PickPlacePlanner(object):
         jawwidthmp = []
         objmp = []
 
-        rbt = self.rhx.rbt
+        rbt = self.rhx.robot_s
         rm = self.rhx.rm
 
         for elemp in motionpath:
@@ -1468,7 +1468,7 @@ class PickPlacePlanner(object):
         jawwidthmp = []
         objmp = []
 
-        rbt = self.rhx.rbt
+        rbt = self.rhx.robot_s
         rm = self.rhx.rm
         bk_armjnts = rbt.getarmjnts(armname=armname)
 

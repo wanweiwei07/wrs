@@ -150,7 +150,7 @@ if __name__ == '__main__':
 
     elearray, eleconfidencearray = loc.findtubes(homomat, objpcd, toggledebug=False)
     yhx.p3dh.genframe(pos=homomat[:3,3], rotmat=homomat[:3,:3]).reparentTo(yhx.base.render)
-    rbtnp = yhx.rbtmesh.genmnp(yhx.rbt)
+    rbtnp = yhx.rbtmesh.genmnp(yhx.robot_s)
     rbtnp.reparentTo(yhx.base.render)
     pcdnp = p3dh.genpointcloudnodepath(objpcd, pntsize=5)
     pcdnp.reparentTo(yhx.base.render)

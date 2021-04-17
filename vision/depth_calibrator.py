@@ -39,7 +39,7 @@ class DepthCaliberator(object):
                 goal_pos = action_pos
                 goal_rot = np.dot(rm.rotmat_from_axangle(axis, angle), action_rotmat)
                 armjnts = yhx.movetoposrotmsc(eepos=goal_pos, eerot=goal_rot, msc=lastarmjnts, armname=armname)
-                if armjnts is not None and not yhx.pcdchecker.isSelfCollided(yhx.rbt):
+                if armjnts is not None and not yhx.pcdchecker.isSelfCollided(yhx.robot_s):
                     lastarmjnts = armjnts
                     yhx.movetox(armjnts, armname=armname)
                     pxc.triggerframe()

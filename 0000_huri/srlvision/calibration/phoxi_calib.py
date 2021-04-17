@@ -61,14 +61,14 @@ def phoxi_computeeeinphx(yhx, pxc, armname, actionpos, actionrot, parameters, ar
     rangey = [np.array([0,1,0]), [-30,-15,15,30]]
     rangez = [np.array([0,0,1]), [-90,-60,-30,30,60]]
     rangeaxis = [rangex, rangey, rangez]
-    lastarmjnts = yhx.rbt.initrgtjnts
+    lastarmjnts = yhx.robot_s.initrgtjnts
     for axisid in range(3):
         axis = rangeaxis[axisid][0]
         for angle in rangeaxis[axisid][1]:
             goalpos = actionpos
             goalrot = np.dot(rm.rodrigues(axis, angle), actionrot)
             armjnts = yhx.movetoposrotmsc(eepos=goalpos, eerot=goalrot, msc=lastarmjnts, armname=armname)
-            if armjnts is not None and not yhx.pcdchecker.isSelfCollided(yhx.rbt):
+            if armjnts is not None and not yhx.pcdchecker.isSelfCollided(yhx.robot_s):
                 lastarmjnts = armjnts
                 yhx.movetox(armjnts, armname=armname)
                 pxc.triggerframe()
@@ -121,7 +121,7 @@ def phoxi_computeboardcenterinhand(yhx, pxc, armname, parameters, aruco_dict, cr
 
     # moveback
     armjnts = yhx.movetoposrot(eepos=actionpos, eerot=actionrot, armname=armname)
-    if armjnts is not None and not yhx.pcdchecker.isSelfCollided(yhx.rbt):
+    if armjnts is not None and not yhx.pcdchecker.isSelfCollided(yhx.robot_s):
         yhx.movetox(armjnts, armname=armname)
         pxc.triggerframe()
         img = pxc.gettextureimg()
@@ -132,7 +132,7 @@ def phoxi_computeboardcenterinhand(yhx, pxc, armname, parameters, aruco_dict, cr
     movedist = 100
     actionpos_hx = actionpos+actionrot[:,0]*movedist
     armjnts = yhx.movetoposrot(eepos=actionpos_hx, eerot=actionrot, armname=armname)
-    if armjnts is not None and not yhx.pcdchecker.isSelfCollided(yhx.rbt):
+    if armjnts is not None and not yhx.pcdchecker.isSelfCollided(yhx.robot_s):
         yhx.movetox(armjnts, armname=armname)
         pxc.triggerframe()
         img = pxc.gettextureimg()
@@ -143,7 +143,7 @@ def phoxi_computeboardcenterinhand(yhx, pxc, armname, parameters, aruco_dict, cr
     movedist = 100
     actionpos_hy = actionpos+actionrot[:,1]*movedist
     armjnts = yhx.movetoposrot(eepos=actionpos_hy, eerot=actionrot, armname=armname)
-    if armjnts is not None and not yhx.pcdchecker.isSelfCollided(yhx.rbt):
+    if armjnts is not None and not yhx.pcdchecker.isSelfCollided(yhx.robot_s):
         yhx.movetox(armjnts, armname=armname)
         pxc.triggerframe()
         img = pxc.gettextureimg()
@@ -154,7 +154,7 @@ def phoxi_computeboardcenterinhand(yhx, pxc, armname, parameters, aruco_dict, cr
     movedist = 100
     actionpos_hz = actionpos+actionrot[:,2]*movedist
     armjnts = yhx.movetoposrot(eepos=actionpos_hz, eerot=actionrot, armname=armname)
-    if armjnts is not None and not yhx.pcdchecker.isSelfCollided(yhx.rbt):
+    if armjnts is not None and not yhx.pcdchecker.isSelfCollided(yhx.robot_s):
         yhx.movetox(armjnts, armname=armname)
         pxc.triggerframe()
         img = pxc.gettextureimg()
@@ -229,13 +229,13 @@ def phoxi_calib(yhx, pxc, armname, relpos, parameters, aruco_dict):
     realposlist = []
     phxposlist = []
 
-    lastarmjnts = yhx.rbt.initrgtjnts
+    lastarmjnts = yhx.robot_s.initrgtjnts
     eerot = np.array([[0,0,1],[1,0,0],[0,1,0]]).T # horizontal, facing right
     for x in [300, 360, 420]:
         for y in range(-200, 201, 200):
             for z in [70, 90, 130, 200]:
                 armjnts = yhx.movetoposrotmsc(eepos=np.array([x, y, z]), eerot=eerot, msc=lastarmjnts, armname=armname)
-                if armjnts is not None and not yhx.pcdchecker.isSelfCollided(yhx.rbt):
+                if armjnts is not None and not yhx.pcdchecker.isSelfCollided(yhx.robot_s):
                     lastarmjnts = armjnts
                     yhx.movetox(armjnts, armname=armname)
                     pxc.triggerframe()
@@ -274,16 +274,16 @@ def phoxi_calib_refinewithmodel(yhx, pxc, rawamat, armname):
 
     newhomomatlist = []
 
-    lastarmjnts = yhx.rbt.initrgtjnts
+    lastarmjnts = yhx.robot_s.initrgtjnts
     eerot = np.array([[1,0,0],[0,0,-1],[0,1,0]]).T # horizontal, facing right
     for x in [300, 360, 420]:
         for y in range(-200, 201, 200):
             for z in [70, 90, 130, 200]:
                 armjnts = yhx.movetoposrotmsc(eepos=np.array([x, y, z]), eerot=eerot, msc=lastarmjnts, armname=armname)
-                if armjnts is not None and not yhx.pcdchecker.isSelfCollided(yhx.rbt):
+                if armjnts is not None and not yhx.pcdchecker.isSelfCollided(yhx.robot_s):
                     lastarmjnts = armjnts
                     yhx.movetox(armjnts, armname=armname)
-                    tcppos, tcprot = yhx.rbt.gettcp()
+                    tcppos, tcprot = yhx.robot_s.gettcp()
                     initpos = tcppos+tcprot[:,2]*7
                     initrot = tcprot
                     inithomomat = rm.homobuild(initpos, initrot)
@@ -299,7 +299,7 @@ def phoxi_calib_refinewithmodel(yhx, pxc, rawamat, armname):
                     realpcdcrop = o3dh.cropnx3nparray(realpcd, [minx, maxx], [miny, maxy], [minz, maxz])
                     if len(realpcdcrop) < len(handpalmtemplate)/2:
                         continue
-                    # yhx.rbtmesh.genmnp(yhx.rbt).reparentTo(base.render)
+                    # yhx.rbtmesh.genmnp(yhx.robot_s).reparentTo(base.render)
                     # yhx.p3dh.genframe(tcppos, tcprot, thickness=10). reparentTo(base.render)
                     # yhx.p3dh.gensphere([minx, miny, minz], radius=10).reparentTo(base.render)
                     # yhx.p3dh.gensphere([maxx, maxy, maxz], radius=10).reparentTo(base.render)
@@ -362,9 +362,9 @@ if __name__ == '__main__':
     phoxi_calib(yhx, pxc, armname, relpos, parameters, aruco_dict)
     # rawamat = pickle.load(open(os.path.join(yhx.root, "datacalibration", "calibmat.pkl"), "rb"))
     # phoxi_calib_refine(yhx, pxc, rawamat, arm_name="rgt")
-    # yhx.rbt.movearmfk(yhx.getarmjntsx("rgt"), arm_name="rgt")
-    # yhx.rbt.movearmfk(yhx.getarmjntsx("lft"), arm_name="lft")
-    # rbtnp = yhx.rbtmesh.genmnp(yhx.rbt)
+    # yhx.robot_s.movearmfk(yhx.getarmjntsx("rgt"), arm_name="rgt")
+    # yhx.robot_s.movearmfk(yhx.getarmjntsx("lft"), arm_name="lft")
+    # rbtnp = yhx.rbtmesh.genmnp(yhx.robot_s)
     # rbtnp.reparentTo(base.render)
     #
     # amat = get_amat()

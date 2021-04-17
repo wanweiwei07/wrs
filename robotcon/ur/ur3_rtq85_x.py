@@ -268,7 +268,7 @@ if __name__ == '__main__':
 
     base = wd.World(cam_pos=[3, 1, 2], lookat_pos=[0, 0, 0])
     u3r85_c = UR3Rtq85X(robot_ip='10.2.0.51', pc_ip='10.2.0.100')
-    # u3r85_c.attachfirm(rbt, upthreshold=10, arm_name='lft')
+    # u3r85_c.attachfirm(robot_s, upthreshold=10, arm_name='lft')
     u3r85_c.close_gripper()
     time.sleep(2)
     u3r85_c.open_gripper()

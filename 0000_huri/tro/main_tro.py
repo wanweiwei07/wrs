@@ -23,8 +23,8 @@ import tro.tro_pickplaceplanner as ppp
 if __name__ == '__main__':
 
     yhx = robothelper.RobotHelperX(usereal=True)
-    yhx.movetox(yhx.rbt.initrgtjnts, armname="rgt")
-    yhx.movetox(yhx.rbt.initlftjnts, armname="lft")
+    yhx.movetox(yhx.robot_s.initrgtjnts, armname="rgt")
+    yhx.movetox(yhx.robot_s.initlftjnts, armname="lft")
     yhx.closegripperx(armname="rgt")
     yhx.closegripperx(armname="lft")
     yhx.opengripperx(armname="rgt")
@@ -45,8 +45,8 @@ if __name__ == '__main__':
     jawwidthmsmpall = []
     objmsmpall = []
     othersmsmpall = []
-    lastrgtarmjnts = yhx.rbt.initrgtjnts
-    lastlftarmjnts = yhx.rbt.initlftjnts
+    lastrgtarmjnts = yhx.robot_s.initrgtjnts
+    lastlftarmjnts = yhx.robot_s.initlftjnts
 
     obscmlist = yhx.obscmlist
     numikmsmp, jawwidthmsmp, objmsmp = ppplanner.findppmotion(inithomomat, goalhomomat, armname=armname,

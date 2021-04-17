@@ -79,8 +79,8 @@ if __name__ == '__main__':
     import manipulation.suction.hlabbig.hlabbig as hlb
 
     rhx = robothelper.RobotHelperX(usereal=True, startworld=True)
-    # rhx.movetox(rhx.rbt.initrgtjnts, arm_name="rgt")
-    # rhx.movetox(rhx.rbt.initlftjnts, arm_name="lft")
+    # rhx.movetox(rhx.robot_s.initrgtjnts, arm_name="rgt")
+    # rhx.movetox(rhx.robot_s.initlftjnts, arm_name="lft")
     # rhx.closegripperx(arm_name="rgt")
     # rhx.closegripperx(arm_name="lft")
     # rhx.opengripperx(arm_name="rgt")

@@ -251,6 +251,6 @@ if __name__ == '__main__':
     u3r85_c = UR3Rtq85(modern_driver='./urscripts_cbseries/moderndriver_cbseries.script',
                                    robot_ip='10.2.0.50', pc_ip='10.2.0.91')
 
-    # u3r85_c.attachfirm(rbt, upthreshold=10, arm_name='lft')
+    # u3r85_c.attachfirm(robot_s, upthreshold=10, arm_name='lft')
     u3r85_c.opengripper()
     base.run()

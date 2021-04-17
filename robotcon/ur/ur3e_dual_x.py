@@ -590,9 +590,9 @@ if __name__ == '__main__':
     # rgthnd = hndfa.genHand()
     # lfthnd = hndfa.genHand()
     #
-    # rbt = robot_s.Ur3EDualRobot(rgthnd, lfthnd)
-    # rbt.goinitpose()
-    # ur3eu.attachfirm(rbt, upthreshold=10, arm_name='lft')
+    # robot_s = robot_s.Ur3EDualRobot(rgthnd, lfthnd)
+    # robot_s.goinitpose()
+    # ur3eu.attachfirm(robot_s, upthreshold=10, arm_name='lft')
     ur3eu.opengripper(armname="lft",forcepercentage=0,distance=23)
     ur3eu.opengripper(armname="lft",forcepercentage=0 , distance=80)
     # ur3eu.closegripper(arm_name="lft")

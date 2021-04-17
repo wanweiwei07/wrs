@@ -63,6 +63,21 @@ class RobotInterface(object):
     def rand_conf(self, manipulator_name):
         return self.manipulator_dict[manipulator_name].rand_conf()
 
+    def cvt_conf_to_tcp(self, manipulator_name, jnt_values):
+        """
+        given jnt_values, this function returns the correspondent global tcp_pos, and tcp_rotmat
+        :param manipulator_name:
+        :param jnt_values:
+        :return:
+        author: weiwei
+        date: 20210417
+        """
+        jnt_values_bk = self.get_jnt_values(manipulator_name)
+        self.robot_s.fk(manipulator_name, jnt_values)
+        gl_tcp_pos, gl_tcp_rotmat = self.robot_s.get_gl_tcp(manipulator_name)
+        self.robot_s.fk(manipulator_name, jnt_values_bk)
+        return gl_tcp_pos, gl_tcp_rotmat
+
     def cvt_gl_to_loc_tcp(self, manipulator_name, gl_obj_pos, gl_obj_rotmat):
         return self.manipulator_dict[manipulator_name].cvt_gl_to_loc_tcp(gl_obj_pos, gl_obj_rotmat)
 

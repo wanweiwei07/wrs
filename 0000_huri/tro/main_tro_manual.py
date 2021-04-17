@@ -24,8 +24,8 @@ import tro.tro_pickplaceplanner as ppp
 if __name__ == '__main__':
 
     yhx = robothelper.RobotHelperX(usereal=True)
-    yhx.movetox(yhx.rbt.initrgtjnts, armname="rgt")
-    yhx.movetox(yhx.rbt.initlftjnts, armname="lft")
+    yhx.movetox(yhx.robot_s.initrgtjnts, armname="rgt")
+    yhx.movetox(yhx.robot_s.initlftjnts, armname="lft")
     yhx.closegripperx(armname="rgt")
     # yhx.closegripperx(arm_name="lft")
     # yhx.opengripperx(arm_name="rgt")
@@ -38,7 +38,7 @@ if __name__ == '__main__':
     armjnts0 = np.array([120.18, -41.71, -160.45, 7.16, 148.59, 95.69, -210.39])
     obstaclecmlist = []
     armname = "rgt"
-    rgtinitarmjnts = yhx.rbt.getarmjnts(armname=armname).tolist()
+    rgtinitarmjnts = yhx.robot_s.getarmjnts(armname=armname).tolist()
     primitivedirection_backward = np.array([0,0,1])
     primitivedistance_backward = 150
     rgtupmotion = yhx.genmovebackwardmotion(primitivedirection_backward, primitivedistance_backward,
@@ -46,7 +46,7 @@ if __name__ == '__main__':
     rgtpickmotion = rgtupmotion[::-1]
     rgtrrtgotobeforepick = yhx.planmotion(rgtinitarmjnts, rgtpickmotion[0], obstaclecmlist, armname)
     armname = "lft"
-    lftinitarmjnts = yhx.rbt.getarmjnts(armname=armname).tolist()
+    lftinitarmjnts = yhx.robot_s.getarmjnts(armname=armname).tolist()
     fakelftupmotion = [lftinitarmjnts]*len(rgtupmotion)
     fakelftpickmotion = [lftinitarmjnts]*len(rgtpickmotion)
     fakelftrrtgotobeforepick = [lftinitarmjnts]*len(rgtrrtgotobeforepick)
@@ -62,8 +62,8 @@ if __name__ == '__main__':
     obstaclecmlist = []
     armname = "rgt"
     rgtinitarmjnts = rgtupmotion[-1]
-    yhx.rbt.movearmfk(armjnts1, armname)
-    # primitivedirection_backward = -yhx.rbt.getee(arm_name)[1][:,0]
+    yhx.robot_s.movearmfk(armjnts1, armname)
+    # primitivedirection_backward = -yhx.robot_s.getee(arm_name)[1][:,0]
     primitivedirection_backward = np.array([0,-1,1])
     primitivedistance_backward = 150
     rgtbackmotion = yhx.genmovebackwardmotion(primitivedirection_backward, primitivedistance_backward,
@@ -79,8 +79,8 @@ if __name__ == '__main__':
     armjnts2 = np.array([-66.7, -90.01, 77.63, 49.53, 136.47, 32.54, -206.18])
     armname = "lft"
     rgtinitarmjnts = rgtrrtgotobeforehandover[-1]
-    yhx.rbt.movearmfk(armjnts2, armname)
-    primitivedirection_backward = -yhx.rbt.getee(armname)[1][:,2]
+    yhx.robot_s.movearmfk(armjnts2, armname)
+    primitivedirection_backward = -yhx.robot_s.getee(armname)[1][:, 2]
     primitivedistance_backward = 100
     lftbackmotion = yhx.genmovebackwardmotion(primitivedirection_backward, primitivedistance_backward,
                                             armjnts2, obstaclecmlist, armname)
@@ -110,14 +110,14 @@ if __name__ == '__main__':
     # armjnts3 = np.array([-55.57, -66.58, 80.62, 18.66, -205.87, -17.62, -124.98])
     armjnts3 = np.array([-61.65, -58.98, 90.48, 12.00, -234.39, -31.60, -101.99])
     armname = "lft"
-    lftinitarmjnts = lftforwardmotion[-1] # yhx.rbt.movearmfk(armjnts3, arm_name)
+    lftinitarmjnts = lftforwardmotion[-1] # yhx.robot_s.movearmfk(armjnts3, arm_name)
     primitivedirection_forward = np.array([0,0,1])
     primitivedistance_forward = -200
     lftforwardmotion = yhx.genmoveforwardmotion(primitivedirection_forward, primitivedistance_forward,
                                          armjnts3, obstaclecmlist, armname)
     lftdownwardmotion = lftforwardmotion
-    yhx.rbt.movearmfk(armjnts3, armname)
-    yhx.rbt.movearmfk(rgtbackmotion[-1], "rgt")
+    yhx.robot_s.movearmfk(armjnts3, armname)
+    yhx.robot_s.movearmfk(rgtbackmotion[-1], "rgt")
     lftrrtgotobeforeinsertion = yhx.planmotionhold(lftinitarmjnts, lftdownwardmotion[0], objcm=objcm, relpos=np.array([0,0,0]), relrot=rm.rodrigues(np.array([0,0,1]), 90), obscmlist=obstaclecmlist, armname=armname)
 
     fakergtrrtgotobeforeinsertion = [rgtbackmotion[-1]]*len(lftrrtgotobeforeinsertion)
@@ -137,8 +137,8 @@ if __name__ == '__main__':
         if motioncounter[0] < len(rgtmotion):
             if rbtmnp[0] is not None:
                 rbtmnp[0].detachNode()
-            yh.rbt.movealljnts([0, 0, 0] + rgtmotion[motioncounter[0]] + lftmotion[motioncounter[0]])
-            rbtmnp[0] = yh.rbtmesh.genmnp(yh.rbt)
+            yh.robot_s.movealljnts([0, 0, 0] + rgtmotion[motioncounter[0]] + lftmotion[motioncounter[0]])
+            rbtmnp[0] = yh.rbtmesh.genmnp(yh.robot_s)
             rbtmnp[0].reparentTo(yh.base.render)
             motioncounter[0] += 1
         else:

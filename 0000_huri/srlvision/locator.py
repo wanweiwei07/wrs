@@ -368,7 +368,7 @@ if __name__ == '__main__':
             framenp = yhx.p3dh.genframe(pos=homomat[:3,3], rotmat=homomat[:3,:3])
             framenp.reparentTo(yhx.base.render)
             onscreennodepaths[0] = framenp
-            rbtnp = yhx.rbtmesh.genmnp(yhx.rbt)
+            rbtnp = yhx.rbtmesh.genmnp(yhx.robot_s)
             rbtnp.reparentTo(yhx.base.render)
             onscreennodepaths[1] = rbtnp
             pcdnp = p3dh.genpointcloudnodepath(objpcd, pntsize=5)
@@ -394,5 +394,5 @@ if __name__ == '__main__':
     taskMgr.doMethodLater(0.04, estimate, "estimate",
                           extraArgs=[yhx, loc, onscreennodepaths],
                           appendTask=True)
-    yhx.rbtmesh.genmnp(yhx.rbt).reparentTo(base.render)
+    yhx.rbtmesh.genmnp(yhx.robot_s).reparentTo(base.render)
     yhx.base.run()

@@ -23,7 +23,7 @@ class PoseMaker(object):
         # self.rtq85 = self.hndfa.genHand()
         # self.rgthnd = self.hndfa.genHand()
         # self.lfthnd = self.hndfa.genHand()
-        # self.rbt = robot.Ur3DualRobot(self.rgthnd, self.lfthnd)
+        # self.robot_s = robot.Ur3DualRobot(self.rgthnd, self.lfthnd)
         # self.rbtmg = robotmesh.Ur3DualMesh()
         # # self.obj = cm.CollisionModel(objinit="./objects/research_box.stl")
 

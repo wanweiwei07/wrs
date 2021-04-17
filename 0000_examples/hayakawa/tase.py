@@ -242,7 +242,7 @@ def create_candidate_points(arm_name, initialhandpos, obstacles=None, limitation
 
 
 ## 始点での把持姿勢を探索
-def decidestartpose(ropelinesorted, armname, predefined_grasps, fromjnt, startpointid):
+def decidestartpose(armname, ropelinesorted, predefined_grasps, fromjnt, startpointid):
     IKpossiblelist_start = []
     while True:
         objpos_initial = ropelinesorted[startpointid]
@@ -508,7 +508,7 @@ def decidegoalpose(arm_name,
             hndmat4_final = np.dot(objmat4_final, prehndhomomat)
             eepos_final = rm.homomat_transform_points(objmat4_final, prehndfc)[:3]
             eerot_final = hndmat4_final[:3, :3]
-            # goal = rbt.numik(eepos_final, eerot_final, arm_name)
+            # goal = robot_s.numik(eepos_final, eerot_final, arm_name)
             fromjnt = i[0]
             goal = robot_s.ik(manipulator_name=arm_name,
                               tgt_pos=eepos_final,
@@ -531,7 +531,7 @@ def decidegoalpose(arm_name,
 
 
 ## 中継点での把持姿勢を探索
-def decidemidpose(IKpossiblelist_startgoal, handdir, arm_name, ctcallback, objpos_final=None):
+def decidemidpose(arm_name, IKpossiblelist_startgoal, handdir, objpos_final=None):
     centerflag = 0
     if objpos_final is not None:
         if objpos_final[1] == 0:
@@ -540,15 +540,25 @@ def decidemidpose(IKpossiblelist_startgoal, handdir, arm_name, ctcallback, objpo
     IKpossiblelist = []
     for i in IKpossiblelist_startgoal:
         direction = rm.unit_vector(handdir[i[3]]) * (-1)
-        distance = 80
+        distance = .08
         while True:
             if objpos_final is None or centerflag == 1:  ## 終点が中心のとき(hold_pos_final = Noneを設定)終点からの中継点も計算
                 ## 始点に対する中継点の経路
-                midpathstart = ctcallback.getLinearPrimitivenothold(i[0], direction, distance, obscmlist, type="source")
-                midpathgoal = ctcallback.getLinearPrimitivenothold(i[1], direction, distance, obscmlist, type="source")
+                midpathstart = robot_inik_solver.gen_rel_linear_motion_with_given_conf(arm_name,
+                                                                                       i[0],
+                                                                                       direction,
+                                                                                       distance,
+                                                                                       obscmlist,
+                                                                                       type="source")
+                midpathgoal = robot_inik_solver.gen_rel_linear_motion_with_given_conf(arm_name,
+                                                                                       i[1],
+                                                                                       direction,
+                                                                                       distance,
+                                                                                       obscmlist,
+                                                                                       type="source")
                 if len(midpathstart) > 0 and len(midpathgoal) > 0:
-                    # rbt.movearmfk(midpath[-1], arm_name)
-                    # mideepos, mideerot = rbt.getee(arm_name)
+                    # robot_s.movearmfk(midpath[-1], arm_name)
+                    # mideepos, mideerot = robot_s.getee(arm_name)
                     midpathstart = midpathstart[::-1]
                     midjntstart = copy.copy(midpathstart[0])
                     midjntgoal = copy.copy(midpathgoal[0])
@@ -563,10 +573,13 @@ def decidemidpose(IKpossiblelist_startgoal, handdir, arm_name, ctcallback, objpo
                         break
             else:
                 ## 始点に対する中継点の経路
-                midpathstart = ctcallback.getLinearPrimitivenothold(i[0], direction, distance, [], type="source")
+                midpathstart = robot_inik_solver.gen_rel_linear_motion_with_given_conf(arm_name,
+                                                                                       i[0],
+                                                                                       direction,
+                                                                                       distance,
+                                                                                       [],
+                                                                                       type="source")
                 if len(midpathstart) > 0:
-                    # rbt.movearmfk(midpath[-1], arm_name)
-                    # mideepos, mideerot = rbt.getee(arm_name)
                     midpathstart = midpathstart[::-1]
                     midjntstart = copy.copy(midpathstart[0])
                     goaljnt = i[1]
@@ -578,52 +591,49 @@ def decidemidpose(IKpossiblelist_startgoal, handdir, arm_name, ctcallback, objpo
                     if distance <= 30:
                         print(str(i[3]) + "番目の姿勢は始点に対する中継点が見つかりません")
                         break
-
     return IKpossiblelist
 
 
 def ropepullingmotion(IKpossiblelist, togoalvec, ctcallback, theta=None, theta_next=None):
-    # tic = time.time()
     for i in range(len(IKpossiblelist)):
         useid = random.randint(0, len(IKpossiblelist) - 1)
-
         use_startjnt = IKpossiblelist[useid][0]
         use_objrelmat = IKpossiblelist[useid][4]
-
         pullinglength = np.linalg.norm(togoalvec)
         print("pullinglength : ", pullinglength)
         togoalvec_copy = copy.copy(togoalvec)
         direction = rm.unit_vector(togoalvec_copy)
-
         obstacles_forpullingrope = copy.deepcopy(obscmlist)
         if theta is not None and theta_next is not None:
             currentobj = copy.deepcopy(obj)
-            currentrot = rm.rodrigues(rotate_axis, theta)
-            currentmat = rm.homobuild(objpos_start, currentrot)
-            currentobj.setMat(base.pg.np4ToMat4(currentmat))
-
+            currentrot = rm.rotmat_from_axangle(rotate_axis, theta)
+            currentmat = rm.homomat_from_posrot(objpos_start, currentrot)
+            currentobj.set_homomat(currentmat)
             nextobj = copy.deepcopy(obj)
-            nextrot = rm.rodrigues(rotate_axis, theta_next)
-            nextmat = rm.homobuild(objpos_start, nextrot)
-            nextobj.setMat(base.pg.np4ToMat4(nextmat))
-
+            nextrot = rm.rotmat_from_axangle(rotate_axis, theta_next)
+            nextmat = rm.homomat_from_posrot(objpos_start, nextrot)
+            nextobj.set_homomat(nextmat)
             i = 0.1
             while True:
                 appendobj = copy.deepcopy(obj)
-                appendrot = rm.rodrigues(rotate_axis, theta + i)
-                appendmat = rm.homobuild(objpos_start, appendrot)
-                appendobj.setMat(base.pg.np4ToMat4(appendmat))
+                appendrot = rm.rotmat_from_euler(rotate_axis, theta + i)
+                appendmat = rm.homomat_from_posrot(objpos_start, appendrot)
+                appendobj.set_homomat(appendmat)
                 obstacles_forpullingrope.append(appendobj)
                 i += 0.1
                 if theta + i >= theta_next:
                     break
-
+        ropepulling = robot_inik_solver.gen_rel_linear_motion_with_given_conf(arm_name,
+                                                                              use_startjnt,
+                                                                              direction,
+                                                                              pullinglength,
+                                                                              obstacles_forpullingrope,
+                                                                              type="source")
         ropepulling = ctcallback.getLinearPrimitive(use_startjnt, direction, pullinglength, [ropeobj], [use_objrelmat],
                                                     obstacles_forpullingrope, type="source")
         if len(ropepulling) > 0:
             print("ropepulling motion planning success!")
             return ropepulling, IKpossiblelist[useid], useid
-
     print("ropepulling motion not found!")
     return [False, False, False]
     # return ropepulling, IKpossiblelist[useid], useid
@@ -1199,8 +1209,8 @@ if __name__ == "__main__":
     while True:
         arm_name = 'rgt_arm'
         print("startpointid", startpointid)
-        IKpossiblelist_start_rgt, objpos_initial_rgt, objrot_initial_rgt, startpointid = decidestartpose(ropelinesorted,
-                                                                                                         arm_name,
+        IKpossiblelist_start_rgt, objpos_initial_rgt, objrot_initial_rgt, startpointid = decidestartpose(arm_name,
+                                                                                                         ropelinesorted,
                                                                                                          predefined_grasps_rgt,
                                                                                                          robot_s.rgt_arm.homeconf,
                                                                                                          startpointid)
@@ -1226,11 +1236,9 @@ if __name__ == "__main__":
                                                IKpossiblelist_startgoal_rgt,
                                                handdirlist_rgt,
                                                objpos_final=use_objpos_final_rgt)
-
             ropepulling_rgt, usingposelist_rgt, usingposeid_rgt = ropepullingmotion(IKpossiblelist_rgt, togoalvec_rgt,
                                                                                     ctcallback_rgt)
             print("ropepulling_rgt", ropepulling_rgt)
-
             gotoinitialrgtpoint = RRTmotion(rbt.initjnts[3:9], usingposelist_rgt[2][0], ctcallback_rgt, obscmlist, 30,
                                             10)
 
@@ -1286,8 +1294,8 @@ if __name__ == "__main__":
     # # mat = rm.homobuild(hold_pos_init, hold_rot_init)
     # # test.setMat(base.pg.np4ToMat4(mat))
     # # test.reparentTo(base.render)
-    # # rbt.movearmfk(pushpose_pre, "lft")
-    # # rbtmg.genmnp(rbt, togglejntscoord=False).reparentTo(base.render)
+    # # robot_s.movearmfk(pushpose_pre, "lft")
+    # # rbtmg.genmnp(robot_s, togglejntscoord=False).reparentTo(base.render)
     # # base.run()
     #
     # ## pushingの動作計画
@@ -1426,7 +1434,7 @@ if __name__ == "__main__":
             #
             # ###
             # # if activelist_real[4] == "lftpush" and 70 < rotatecheck[0] + rotatedegree < 75:
-            # rgt_pos = rbt.getee("rgt")[0]
+            # rgt_pos = robot_s.getee("rgt")[0]
             # if activelist_real[4] == "lftpush" and rgt_pos[2] >= 1700:
             #     uc.opengripper("rgt")
             #     rgtregraspflag[0] = 1
@@ -1447,7 +1455,7 @@ if __name__ == "__main__":
 
             ## シミュレーション用
             # print("label:", activelist_real[4])
-            # if activelist_real[4] == "lftpush" and rbt.getee("rgt")[0][2] > 1700:
+            # if activelist_real[4] == "lftpush" and robot_s.getee("rgt")[0][2] > 1700:
             #     rgtregraspflag[0] = 1
 
             ## ----------ロープを引く---------
@@ -1521,7 +1529,7 @@ if __name__ == "__main__":
 
                         ## ---シミュレーション用---
                         # ropelinesorted = []
-                        # currentlftpos = rbt.getee("lft")[0]
+                        # currentlftpos = robot_s.getee("lft")[0]
                         # dir = rm.unit_vector(ropetoppos - currentlftpos)
                         # i = 0
                         # while True:
@@ -1547,7 +1555,7 @@ if __name__ == "__main__":
 
                         ## 下側
                         # pointrange_under = [50, eeposlft[0] + 100, eeposlft[1] - 100, eeposlft[1] + 100, eeposlft[2] - 250, eeposlft[2] - 50]
-                        # newpcd = getpointcloudkinectforrope_down(rbt, "lft", pointrange_under)
+                        # newpcd = getpointcloudkinectforrope_down(robot_s, "lft", pointrange_under)
                         # ropeline_under = doRANSAC(newpcd, 10)
                         # ropelinesorted_under = descendingorder(ropeline_under, axis=2)
                         #
@@ -1560,7 +1568,7 @@ if __name__ == "__main__":
                         startpointid = 0
                         while True:
                             print("startpointid", startpointid)
-                            # rbt.goinitpose()
+                            # robot_s.goinitpose()
                             ## 始点について計算
                             IKpossiblelist_start_rgt, objpos_initial_rgt, objrot_initial_rgt, startpointid = decidestartpose(
                                 ropelinesorted, "rgt",
@@ -1762,7 +1770,7 @@ if __name__ == "__main__":
 
                         ## ---シミュレーション用
                         # ropelinesorted = []
-                        # currentrgtpos = rbt.getee("rgt")[0]
+                        # currentrgtpos = robot_s.getee("rgt")[0]
                         # dir = rm.unit_vector(ropetoppos - currentrgtpos)
                         # i = 0
                         # while True:
@@ -1785,7 +1793,7 @@ if __name__ == "__main__":
                         ropelinesorted = descendingorder(ropeline_up, 2)
 
                         # pointrange = [50, eeposrgt[0] + 100, eeposrgt[1] - 100, eeposrgt[1] + 100, eeposrgt[2] - 250, eeposrgt[2] - 50]
-                        # newpcd = getpointcloudkinectforrope_down(rbt, "rgt", pointrange)
+                        # newpcd = getpointcloudkinectforrope_down(robot_s, "rgt", pointrange)
                         # ropeline_under = doRANSAC(newpcd, 5)
                         # ropelinesorted_under = descendingorder(ropeline_under, 2)
 
@@ -1805,7 +1813,7 @@ if __name__ == "__main__":
 
                         while True:
                             print("startpointid", startpointid)
-                            # rbt.goinitpose()
+                            # robot_s.goinitpose()
                             IKpossiblelist_start_lft, objpos_initial_lft, objrot_initial_lft, startpointid = decidestartpose(
                                 ropelinesorted, "lft",
                                 predefined_grasps_lft, ctcallback_lft,
@@ -2001,7 +2009,7 @@ if __name__ == "__main__":
 
                         ## ---実験用(点群を取得)-----　TODO シミュレーションの際はコメントアウト---
                         # pointrange = [50, currentrgtpos[0] + 100, currentrgtpos[1]-50, currentlftpos[1]-50, currentrgtpos[2] + 50, 1750]
-                        # newpcd = getpointcloudkinectforrope_up(rbt, "rgt", ropetoppos, pointrange)
+                        # newpcd = getpointcloudkinectforrope_up(robot_s, "rgt", ropetoppos, pointrange)
                         # ropeline_up = doRANSAC(newpcd, 5)
                         # ropelinesorted = descendingorder(ropeline_up, 2)
                         ropelinesorted = []
@@ -2030,7 +2038,7 @@ if __name__ == "__main__":
                         endflag = 0
                         while True:
                             print("startpointid", startpointid)
-                            # rbt.goinitpose()
+                            # robot_s.goinitpose()
 
                             IKpossiblelist_start_lft, objpos_initial_lft, objrot_initial_lft, startpointid = decidestartpose(
                                 ropelinesorted, "lft", predefined_grasps_lft,
@@ -2133,7 +2141,7 @@ if __name__ == "__main__":
                     startpointid_second = 0
                     endflag_second = 0
                     while True:
-                        # rbt.goinitpose()
+                        # robot_s.goinitpose()
                         IKpossiblelist_start_rgt, objpos_initial_rgt, objrot_initial_rgt, startpointid_second = decidestartpose(
                             ropelinesorted, "rgt", predefined_grasps_rgt,
                             ctcallback_rgt, currentrgtjnt, startpointid_second)
@@ -2550,7 +2558,7 @@ if __name__ == "__main__":
 
                         # ## beniya boardの場合
                         # returntopushjnt = list(pickle.load(open("prestartlftpath.pickle", "rb")))
-                        # inipath = list(RRTmotion(returntopushjnt[0], rbt.initjnts[9:15], ctcallback_lft, obscmlist, 10, 30))
+                        # inipath = list(RRTmotion(returntopushjnt[0], robot_s.initjnts[9:15], ctcallback_lft, obscmlist, 10, 30))
                         #
                         # for eachpath in used_pushpathlist:
                         #     returntopushjnt = returntopushjnt + eachpath
@@ -2636,8 +2644,8 @@ if __name__ == "__main__":
                         rbt.movearmfk(currentlftjnt, "lft")
 
                         # experimentlist.append([returntopushjnt, 0, 0, "lft", "goinitpose", 2.0])
-                        # rbt.movearmfk(currentrgtjnt, "rgt")
-                        # rbt.movearmfk(currentlftjnt, "lft")
+                        # robot_s.movearmfk(currentrgtjnt, "rgt")
+                        # robot_s.movearmfk(currentlftjnt, "lft")
 
             ## ロープを緩める
             elif ropeloosningflag[0] == 1:

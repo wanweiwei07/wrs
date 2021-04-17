@@ -6,8 +6,8 @@ import modeling.geometricmodel as gm
 
 class IncrementalNIK(object):
 
-    def __init__(self, robot_sim):
-        self.rbt = robot_sim
+    def __init__(self, robot_s):
+        self.robot_s = robot_s
 
     def gen_linear_motion(self,
                           component_name,
@@ -32,7 +32,7 @@ class IncrementalNIK(object):
         author: weiwei
         date: 20210125
         """
-        jnt_values_bk = self.rbt.get_jnt_values(component_name)
+        jnt_values_bk = self.robot_s.get_jnt_values(component_name)
         pos_list, rotmat_list = rm.interplate_pos_rotmat(start_hnd_pos,
                                                          start_hnd_rotmat,
                                                          goal_hnd_pos,
@@ -42,24 +42,24 @@ class IncrementalNIK(object):
         if seed_jnt_values is None:
             seed_jnt_values = jnt_values_bk
         for (pos, rotmat) in zip(pos_list, rotmat_list):
-            jnt_values = self.rbt.ik(component_name, pos, rotmat, seed_jnt_values=seed_jnt_values)
+            jnt_values = self.robot_s.ik(component_name, pos, rotmat, seed_jnt_values=seed_jnt_values)
             if jnt_values is None:
                 print("IK not solvable in gen_linear_motion!")
-                self.rbt.fk(component_name, jnt_values_bk)
+                self.robot_s.fk(component_name, jnt_values_bk)
                 return []
             else:
-                self.rbt.fk(component_name, jnt_values)
-                cd_result, ct_points = self.rbt.is_collided(obstacle_list, toggle_contact_points=True)
+                self.robot_s.fk(component_name, jnt_values)
+                cd_result, ct_points = self.robot_s.is_collided(obstacle_list, toggle_contact_points=True)
                 if cd_result:
                     if toggle_debug:
                         for ct_pnt in ct_points:
                             gm.gen_sphere(ct_pnt).attach_to(base)
                     print("Intermediate pose collided in gen_linear_motion!")
-                    self.rbt.fk(component_name, jnt_values_bk)
+                    self.robot_s.fk(component_name, jnt_values_bk)
                     return []
             jnt_values_list.append(jnt_values)
             seed_jnt_values = jnt_values
-        self.rbt.fk(component_name, jnt_values_bk)
+        self.robot_s.fk(component_name, jnt_values_bk)
         return jnt_values_list
 
     def gen_rel_linear_motion(self,
@@ -84,6 +84,57 @@ class IncrementalNIK(object):
         author: weiwei
         date: 20210114
         """
+        if type == 'sink':
+            start_hnd_pos = goal_hnd_pos - rm.unit_vector(direction) * distance
+            start_hnd_rotmat = goal_hnd_rotmat
+            return self.gen_linear_motion(component_name,
+                                          start_hnd_pos,
+                                          start_hnd_rotmat,
+                                          goal_hnd_pos,
+                                          goal_hnd_rotmat,
+                                          obstacle_list,
+                                          granularity,
+                                          seed_jnt_values,
+                                          toggle_debug=toggle_debug)
+        elif type == 'source':
+            start_hnd_pos = goal_hnd_pos
+            start_hnd_rotmat = goal_hnd_rotmat
+            goal_hnd_pos = goal_hnd_pos + direction * distance
+            goal_hnd_rotmat = goal_hnd_rotmat
+            return self.gen_linear_motion(component_name,
+                                          start_hnd_pos,
+                                          start_hnd_rotmat,
+                                          goal_hnd_pos,
+                                          goal_hnd_rotmat,
+                                          obstacle_list,
+                                          granularity,
+                                          seed_jnt_values,
+                                          toggle_debug=toggle_debug)
+        else:
+            raise ValueError("Type must be sink or source!")
+
+    def gen_rel_linear_motion_with_given_conf(self,
+                                              component_name,
+                                              goal_jnt_values,
+                                              direction,
+                                              distance,
+                                              obstacle_list=[],
+                                              granularity=0.03,
+                                              seed_jnt_values=None,
+                                              type='sink',
+                                              toggle_debug=False):
+        """
+        :param goal_info:
+        :param direction:
+        :param distance:
+        :param obstacle_list:
+        :param granularity:
+        :param type: 'sink', or 'source'
+        :return:
+        author: weiwei
+        date: 20210114
+        """
+        goal_hnd_pos, goal_hnd_rotmat = self.robot_s.cvt_conf_to_tcp(component_name, goal_jnt_values)
         if type == 'sink':
             start_hnd_pos = goal_hnd_pos - rm.unit_vector(direction) * distance
             start_hnd_rotmat = goal_hnd_rotmat
