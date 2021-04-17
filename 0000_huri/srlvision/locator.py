@@ -298,7 +298,7 @@ class Locator(object):
         """
 
         tubestandcm = copy.deepcopy(self.tubestandcm)
-        tubestandcm.sethomomat(homomat)
+        tubestandcm.set_homomat(homomat)
         tubestandcm.setColor(0,.5,.7,1.9)
 
         return tubestandcm
@@ -335,7 +335,7 @@ class Locator(object):
                 tubepos_normalized = np.array([self.tubeholecenters[i,j][0], self.tubeholecenters[i,j][1], 5])
                 tubepos  = rm.homotransformpoint(tubestand_homomat, tubepos_normalized)
                 tubemat[:3, 3] = tubepos
-                newtubecm.sethomomat(tubemat)
+                newtubecm.set_homomat(tubemat)
                 newtubecm.setColor(rgba[0], rgba[1], rgba[2], rgba[3])
                 tubecmlist.append(newtubecm)
 
@@ -382,9 +382,9 @@ if __name__ == '__main__':
             tubecms = loc.gentubes(elearray, tubestand_homomat=homomat, eleconfidencearray=eleconfidencearray)
             for i, tbcm in enumerate(tubecms):
                 tbcm.reparentTo(yhx.base.render)
-                hmat = tbcm.gethomomat()
+                hmat = tbcm.get_homomat()
                 hmat[:3, 3] -= hmat[:3,2]*50
-                tbcm.sethomomat(hmat)
+                tbcm.set_homomat(hmat)
                 tbcm.showcn()
                 onscreennodepaths[i+4] = tbcm
             return task.again

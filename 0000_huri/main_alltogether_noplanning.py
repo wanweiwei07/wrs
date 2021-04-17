@@ -92,7 +92,7 @@ if __name__ == '__main__':
             objcmmp = []
             for objhomomat in objhomomatmp:
                 tmpobjcm = copy.deepcopy(ppplanner.objcm)
-                tmpobjcm.sethomomat(objhomomat)
+                tmpobjcm.set_homomat(objhomomat)
                 if tubeid == 1:
                     tmpobjcm.setColor(1, 1, 0, 1)
                 else:

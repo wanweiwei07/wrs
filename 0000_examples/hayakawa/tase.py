@@ -220,7 +220,7 @@ def create_candidate_points(arm_name, initialhandpos, obstacles=None, limitation
         for obs in obstacles:
             ## 3dモデルを点群化し、原点に配置
             obs_points = obs.sample_surface(8000)
-            homomat = obs.gethomomat()
+            homomat = obs.get_homomat()
             obs_points_converted = np.ones((len(obs_points), 4))
             obs_points_converted[:, :3] = obs_points
             obs_points_converted = np.dot(homomat, obs_points_converted.T).T[:, :3]

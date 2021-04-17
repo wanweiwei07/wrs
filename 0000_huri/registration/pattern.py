@@ -39,7 +39,7 @@ class Pattern(object):
             elearray = self.pattern
         resultnp = NodePath("patterndbnp")
         tempstand = copy.deepcopy(self.tubestandcm)
-        tempstand.sethomomat(homomat)
+        tempstand.set_homomat(homomat)
         tempstand.reparentTo(resultnp)
         tubecmlist = self.gentubes(homomat, elearray, type="dumbbell")
         for tbcm in tubecmlist:
@@ -51,7 +51,7 @@ class Pattern(object):
             elearray = self.pattern
         resultnp = NodePath("patterncadnp")
         tempstand = copy.deepcopy(self.tubestandcm)
-        tempstand.sethomomat(homomat)
+        tempstand.set_homomat(homomat)
         tempstand.reparentTo(resultnp)
         tubecmlist = self.gentubes(homomat, elearray, type="cad")
         for tbcm in tubecmlist:
@@ -107,7 +107,7 @@ class Pattern(object):
                 tubepos_normalized = np.array([self.tubeholecenters[i,j][0], self.tubeholecenters[i,j][1], 5])
                 tubepos  = rm.homotransformpoint(homomat, tubepos_normalized)
                 tubemat[:3, 3] = tubepos
-                newtubecm.sethomomat(tubemat)
+                newtubecm.set_homomat(tubemat)
                 tubecmlist.append(newtubecm)
 
         return tubecmlist

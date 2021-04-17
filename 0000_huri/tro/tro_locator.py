@@ -124,7 +124,7 @@ class TLocator(object):
         """
 
         objcm = copy.deepcopy(self.srccm)
-        objcm.sethomomat(homomat)
+        objcm.set_homomat(homomat)
         objcm.setColor(.5,.5,.5,1)
 
         return objcm

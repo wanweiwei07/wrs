@@ -132,8 +132,9 @@ def pdquat_to_npmat3(pdquat):
     author: weiwei
     date: 20210109
     """
-    pdmat3 = pdquat * Mat3.identMat()
-    return pdmat3_to_npmat3(pdmat3)
+    tmp_pdmat3 = Mat3()
+    pdquat.extractToMatrix(tmp_pdmat3)
+    return pdmat3_to_npmat3(tmp_pdmat3)
 
 
 def npv3_to_pdv3(npv3):
@@ -220,13 +221,13 @@ def pandageom_from_vfnf(vertices, face_normals, triangles, name='auto'):
     multiplied_verticies = np.empty((len(vertids), 3), dtype=np.float32)
     multiplied_verticies[:] = vertices[vertids]
     vertex_normals = np.repeat(face_normals.astype(np.float32), repeats=3, axis=0)
-    npstr = np.hstack((multiplied_verticies, vertex_normals)).tostring()
+    npstr = np.hstack((multiplied_verticies, vertex_normals)).tobytes()
     vertexdata.modifyArrayHandle(0).setData(npstr)
     # triangles
     primitive = GeomTriangles(Geom.UHStatic)
     primitive.setIndexType(GeomEnums.NTUint32)
     multiplied_triangles = np.arange(len(vertids), dtype=np.uint32).reshape(-1,3)
-    primitive.modifyVertices(-1).modifyHandle().setData(multiplied_triangles.tostring())
+    primitive.modifyVertices(-1).modifyHandle().setData(multiplied_triangles.tobytes())
     # make geom
     geom = Geom(vertexdata)
     geom.addPrimitive(primitive)
@@ -266,10 +267,10 @@ def pandageom_from_vvnf(vertices, vertex_normals, triangles, name=''):
     """
     vertformat = GeomVertexFormat.getV3n3()
     vertexdata = GeomVertexData(name, vertformat, Geom.UHStatic)
-    vertexdata.modifyArrayHandle(0).setData(np.hstack((vertices, vertex_normals)).astype(np.float32).tostring())
+    vertexdata.modifyArrayHandle(0).setData(np.hstack((vertices, vertex_normals)).astype(np.float32).tobytes())
     primitive = GeomTriangles(Geom.UHStatic)
     primitive.setIndexType(GeomEnums.NTUint32)
-    primitive.modifyVertices(-1).modifyHandle().setData(triangles.astype(np.uint32).tostring())
+    primitive.modifyVertices(-1).modifyHandle().setData(triangles.astype(np.uint32).tobytes())
     # make geom
     geom = Geom(vertexdata)
     geom.addPrimitive(primitive)

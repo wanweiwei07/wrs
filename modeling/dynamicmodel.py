@@ -28,10 +28,10 @@ class DynamicModel(gm.GeometricModel):
         :param dyn_cdtype: "convex", "triangle", etc.
         :param name:
         """
-        # if isinstance(objinit, BDModel):
-        #     super().__init__(objinit.objcm, )
-        #     self.__objcm = copy.deepcopy(objinit.objcm)
-        #     self.__objbdb = objinit.objbdb.copy()
+        # if isinstance(initor, BDModel):
+        #     super().__init__(initor.objcm, )
+        #     self.__objcm = copy.deepcopy(initor.objcm)
+        #     self.__objbdb = initor.objbdb.copy()
         #     base.physicsworld.attach(self.__objbdb)
         # else:
         super().__init__(initor.objcm, btransparency=betransparency, type=cm_cdtype, cm_expradius=None,
@@ -39,7 +39,7 @@ class DynamicModel(gm.GeometricModel):
         if mass is None:
             mass = 0
         self._bdb = bdb.BDBody(self.objcm, type=dyn_cdtype, mass=mass, restitution=restitution,
-                               allowdeactivation=allowdeactivation, allowccd=allowccd, friction=friction, name="bdm")
+                               allow_deactivation=allowdeactivation, allow_ccd=allowccd, friction=friction, name="bdm")
         base.physicsworld.attach(self.__objbdb)
 
     @property
@@ -53,26 +53,26 @@ class DynamicModel(gm.GeometricModel):
         :param npvec3
         :return:
         """
-        homomat_bdb = self._bdb.gethomomat()
+        homomat_bdb = self._bdb.get_homomat()
         homomat_bdb[:3, 3] = npvec3
-        self._bdb.sethomomat(homomat_bdb)
+        self._bdb.set_homomat(homomat_bdb)
         super().sethomomat(homomat_bdb)
 
     def getpos(self):
         homomat_bdb = self._bdb.pos()
-        self._bdb.sethomomat(homomat_bdb)
+        self._bdb.set_homomat(homomat_bdb)
         super().sethomomat(homomat_bdb)
 
         return self.__objcm.objnp.getPos()
 
     def setMat(self, pandamat4):
-        self.__objbdb.sethomomat(base.pg.mat4ToNp(pandamat4))
+        self.__objbdb.set_homomat(base.pg.mat4ToNp(pandamat4))
         self.__objcm.objnp.setMat(pandamat4)
         # self.__objcm.objnp.setMat(base.pg.np4ToMat4(self.objbdb.gethomomat()))
 
     def sethomomat(self, npmat4):
-        self.__objbdb.sethomomat(npmat4)
-        self.__objcm.sethomomat(npmat4)
+        self.__objbdb.set_homomat(npmat4)
+        self.__objcm.set_homomat(npmat4)
 
     def setRPY(self, roll, pitch, yaw):
         """
@@ -87,7 +87,7 @@ class DynamicModel(gm.GeometricModel):
         date: 20190513
         """
 
-        currentmat = self.__objbdb.gethomomat()
+        currentmat = self.__objbdb.get_homomat()
         currentmatnp = base.pg.mat4ToNp(currentmat)
         newmatnp = rm.rotmat_from_euler(roll, pitch, yaw, axes="sxyz")
         self.setMat(base.pg.npToMat4(newmatnp, currentmatnp[:, 3]))
@@ -141,7 +141,7 @@ class DynamicModel(gm.GeometricModel):
             self.__objcm.objnp.reparentTo(objnp)
         # self.setMat(self.__objcm.getMat())
         # print(self.objbdb.gethomomat())
-        self.__objcm.objnp.setMat(base.pg.np4ToMat4(self.objbdb.gethomomat()))
+        self.__objcm.objnp.setMat(base.pg.np4ToMat4(self.objbdb.get_homomat()))
 
     def removeNode(self):
         self.__objcm.objnp.removeNode()
@@ -175,7 +175,7 @@ class DynamicModel(gm.GeometricModel):
 if __name__ == "__main__":
     import os
     import numpy as np
-    import utiltools.robotmath as rm
+    import basis.robotmath as rm
     import pandaplotutils.pandactrl as pc
     import random
     import basis

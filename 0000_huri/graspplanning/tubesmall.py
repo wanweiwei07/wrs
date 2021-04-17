@@ -28,7 +28,7 @@ if __name__ == "__main__":
         jawwidth, finger_center, hand_homomat = eachgrasp
         newhnd = hndfa.genHand()
         newhnd.setjawwidth(jawwidth)
-        newhnd.sethomomat(hand_homomat)
+        newhnd.set_homomat(hand_homomat)
         newhnd.reparentTo(rhx.base.render)
     objcm.reparentTo(rhx.base.render)
     rhx.base.run()

@@ -25,7 +25,7 @@ class PoseMaker(object):
         # self.lfthnd = self.hndfa.genHand()
         # self.robot_s = robot.Ur3DualRobot(self.rgthnd, self.lfthnd)
         # self.rbtmg = robotmesh.Ur3DualMesh()
-        # # self.obj = cm.CollisionModel(objinit="./objects/research_box.stl")
+        # # self.obj = cm.CollisionModel(initor="./objects/research_box.stl")
 
     def lftgrasppose(self):
         lftdirstart = 250

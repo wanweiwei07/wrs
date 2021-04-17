@@ -65,7 +65,7 @@ if __name__ == '__main__':
         objcmmp = []
         for objhomomat in objhomomatmp:
             tmpobjcm = copy.deepcopy(ppplanner.objcm)
-            tmpobjcm.sethomomat(objhomomat)
+            tmpobjcm.set_homomat(objhomomat)
             tmpobjcm.setColor(.5, .5, .5, 1)
             objcmmp.append(tmpobjcm)
         objcmmsmp.append(objcmmp)

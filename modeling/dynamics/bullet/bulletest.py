@@ -9,22 +9,23 @@ import math
 import basis.robot_math as rm
 import numpy as np
 
-base = wd.World(camp=np.array([2, 0, 2]), lookat_pos=np.array([0, 0, 0]), toggle_debug=True)
+base = wd.World(cam_pos=np.array([2, 0, 2]), lookat_pos=np.array([0, 0, 0]), toggle_debug=False)
 # PlaneD
-plane = basics.objtrm.primitives.Box(box_extents=[1, 1, .1], box_center=[0, 0, -0.05])
-planecm = cm.CollisionModel(plane)
+homomat = np.eye(4)
+homomat[:3, 3] = np.array([0, 0, -.05])
+planecm = cm.gen_box(extent=[1, 1, .1], homomat=homomat)
 # planenode = bch.genBulletCDMesh(planecm)
 planenode = bbd.BDBody(planecm, dynamic=False)
 planemat = np.eye(4)
 planemat[:3, 3] = planemat[:3, 3] + np.array([0, 0, 0])
-planenode.sethomomat(planemat)
+planenode.set_homomat(planemat)
 planenode.setMass(0)
 planenode.setRestitution(0)
 planenode.setFriction(1)
 base.physicsworld.attachRigidBody(planenode)
-planecm.reparent_to(base.render)
-planecm.sethomomat(planenode.gethomomat())
-cm.gm.genframe().reparent_to(base.render)
+planecm.attach_to(base)
+planecm.set_homomat(planenode.get_homomat())
+cm.gm.gen_frame().attach_to(base)
 
 # for i in range(5):
 #     print("....")
@@ -38,17 +39,17 @@ cm.gm.genframe().reparent_to(base.render)
 
 # Boxes
 # model = loader.loadModel('models/box.egg')
-model = cm.CollisionModel("./objects/bunnysim.meshes")
-node = bbd.BDBody(model, dynamic=True)
+model = cm.CollisionModel("./objects/bunnysim.stl")
+node = bbd.BDBody(model, cdtype='triangle', dynamic=True)
 bulletnodelist = []
 for i in range(10):
     # node = bch.genBulletCDMesh(model)
     # newnode = copy.deepcopy(node)
     newnode = node.copy()
-    newnode.setmass(1)
+    newnode.setMass(1)
     rot = rm.rotmat_from_axangle([0, 1, 0], -math.pi / 4)
     pos = np.array([0, 0, .1 + i * .3])
-    newnode.sethomomat(rm.homomat_from_posrot(pos, rot))
+    newnode.set_homomat(rm.homomat_from_posrot(pos, rot))
     base.physicsworld.attachRigidBody(newnode)
     bulletnodelist.append(newnode)
     # modelcopy = copy.deepcopy(model)
@@ -85,25 +86,26 @@ def update(objmodel, bnlist, plotlist, task):
         plotele.remove()
 
     for bn in bnlist:
-        # print(bn.gethomomat())
+        # print(bn.get_pos())
         modelcopy = objmodel.copy()
-        modelcopy.setcolor(np.array([.8, .6, .3, .5]))
-        modelcopy.sethomomat(bn.gethomomat())
-        modelcopy.reparent_to(base.render)
+        modelcopy.set_rgba(np.array([.8, .6, .3, .5]))
+        modelcopy.set_homomat(bn.get_homomat())
+        modelcopy.attach_to(base)
         plotlist.append(modelcopy)
-
-    # for bn in bnlist:
-    #     if bn.isActive():
-    #         return task.cont
-    # currentmat = planenode[0].gethomomat()
-    # print(currentmat)
-    # currentmat[:3,3] = currentmat[:3,3]+np.array([0,0,.0001])
-    # planenode[0].sethomomat(currentmat)
-    # print(currentmat)
-    # planecm.setMat(base.pg.np4ToMat4(planenode[0].gethomomat()))
-    # print(planenode[0].gethomomat())
-    # print("....")
     return task.cont
+#
+#     # for bn in bnlist:
+#     #     if bn.isActive():
+#     #         return task.cont
+#     # currentmat = planenode[0].gethomomat()
+#     # print(currentmat)
+#     # currentmat[:3,3] = currentmat[:3,3]+np.array([0,0,.0001])
+#     # planenode[0].sethomomat(currentmat)
+#     # print(currentmat)
+#     # planecm.setMat(base.pg.np4ToMat4(planenode[0].gethomomat()))
+#     # print(planenode[0].gethomomat())
+#     # print("....")
+#     return task.cont
 
 
 # def update_tool(planecm, planebn, bnlist, task):
@@ -119,7 +121,7 @@ def update(objmodel, bnlist, plotlist, task):
 #     return task.cont
 
 plotlist = []
-# taskMgr.add(update, 'update', extraArgs=[model, bulletnodelist, plotlist], appendTask=True)
+taskMgr.add(update, 'update', extraArgs=[model, bulletnodelist, plotlist], appendTask=True)
 # taskMgr.add(update_tool, 'update_tool', extraArgs=[planecm, [planenode], bulletnodelist], appendTask=True)
 base.setFrameRateMeter(True)
 base.run()

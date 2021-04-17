@@ -177,7 +177,7 @@ class CollisionModel(gm.GeometricModel):
         if homomat is None:
             returnnp.setMat(self._objpdnp.getMat())
         else:
-            returnnp.setMat(da.npmat4_to_pdmat4(homomat)) # scale is reset to 1 1 1 after setMat to the given homomat
+            returnnp.setMat(da.npmat4_to_pdmat4(homomat))  # scale is reset to 1 1 1 after setMat to the given homomat
             returnnp.setScale(self._objpdnp.getScale())
         return returnnp
 
@@ -258,6 +258,20 @@ def gen_box(extent=np.array([.1, .1, .1]), homomat=np.eye(4), rgba=np.array([1, 
     box_sgm = gm.gen_box(extent=extent, homomat=homomat, rgba=rgba)
     box_cm = CollisionModel(box_sgm)
     return box_cm
+
+
+def gen_sphere(pos=np.array([0, 0, 0]), radius=0.01, rgba=[1, 0, 0, 1]):
+    """
+    :param pos:
+    :param radius:
+    :param rgba:
+    :return:
+    author: weiwei
+    date: 20161212tsukuba, 20191228osaka
+    """
+    sphere_sgm = gm.gen_sphere(pos=pos, radius=radius, rgba=rgba)
+    sphere_cm = CollisionModel(sphere_sgm)
+    return sphere_cm
 
 
 def gen_stick(spos=np.array([.0, .0, .0]),

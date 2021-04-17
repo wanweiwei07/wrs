@@ -74,7 +74,7 @@ class PickPlacePlanner(object):
         if armname is "lft":
             hndfa = self.rhx.lfthndfa
         # start pose
-        objcmcopy.sethomomat(inithomomat)
+        objcmcopy.set_homomat(inithomomat)
         ikfailedgraspsnum = 0
         ikcolliedgraspsnum = 0
         availablegraspsatinit = []
@@ -84,7 +84,7 @@ class PickPlacePlanner(object):
             eepos = rm.homotransformpoint(inithomomat, predefined_fc)[:3]
             eerot = hndmat4[:3, :3]
             hndnew = hndfa.genHand()
-            hndnew.sethomomat(hndmat4)
+            hndnew.set_homomat(hndmat4)
             # hndnew.setjawwidth(predefined_jawwidth)
             hndcmlist = hndnew.genrangecmlist(jawwidthstart=predefined_jawwidth, jawwidthend=hndnew.jawwidthopen)
             ishndcollided = bcdchecker.isMeshListMeshListCollided(hndcmlist, obscmlist)
@@ -94,7 +94,7 @@ class PickPlacePlanner(object):
                     if toggledebug:
                         hndnew = hndfa.genHand()
                         hndnew.setColor(0, 1, 0, .2)
-                        hndnew.sethomomat(hndmat4)
+                        hndnew.set_homomat(hndmat4)
                         hndnew.setjawwidth(predefined_jawwidth)
                         hndnew.reparentTo(self.rhx.base.render)
                     rbt.movearmfk(armjnts, armname)
@@ -115,7 +115,7 @@ class PickPlacePlanner(object):
                     if toggledebug:
                         hndnew = hndfa.genHand()
                         hndnew.setColor(1, .6, 0, .2)
-                        hndnew.sethomomat(hndmat4)
+                        hndnew.set_homomat(hndmat4)
                         hndnew.setjawwidth(predefined_jawwidth)
                         hndnew.reparentTo(self.rhx.base.render)
                     # bcdchecker.showMeshList(hndnew.cmlist)
@@ -124,7 +124,7 @@ class PickPlacePlanner(object):
                 if toggledebug:
                     hndnew = hndfa.genHand()
                     hndnew.setColor(1, 0, 1, .2)
-                    hndnew.sethomomat(hndmat4)
+                    hndnew.set_homomat(hndmat4)
                     hndnew.setjawwidth(predefined_jawwidth)
                     hndnew.reparentTo(self.rhx.base.render)
                 # bcdchecker.showMeshList(hndnew.cmlist)
@@ -139,7 +139,7 @@ class PickPlacePlanner(object):
         ikcolliedgraspsnum = 0
         for index in range(len(goalhomomatlist)):
             objmat4 = goalhomomatlist[index]
-            objcmcopy.sethomomat(objmat4)
+            objcmcopy.set_homomat(objmat4)
             tmpresult = []
             for idavailableinit in availablegraspsatinit:
                 predefined_jawwidth, predefined_fc, predefined_homomat = predefinedgrasps[idavailableinit]
@@ -147,7 +147,7 @@ class PickPlacePlanner(object):
                 eepos = rm.homotransformpoint(objmat4, predefined_fc)[:3]
                 eerot = hndmat4[:3, :3]
                 hndnew = hndfa.genHand()
-                hndnew.sethomomat(hndmat4)
+                hndnew.set_homomat(hndmat4)
                 # hndnew.setjawwidth(predefined_jawwidth)
                 hndcmlist = hndnew.genrangecmlist(jawwidthstart=predefined_jawwidth, jawwidthend=hndnew.jawwidthopen)
                 ishndcollided = bcdchecker.isMeshListMeshListCollided(hndcmlist, obscmlist)
@@ -157,7 +157,7 @@ class PickPlacePlanner(object):
                         if toggledebug:
                             hndnew = hndfa.genHand()
                             hndnew.setColor(0, 1, 0, .5)
-                            hndnew.sethomomat(hndmat4)
+                            hndnew.set_homomat(hndmat4)
                             hndnew.setjawwidth(predefined_jawwidth)
                             hndnew.reparentTo(self.rhx.base.render)
                         rbt.movearmfk(armjnts, armname)
@@ -178,7 +178,7 @@ class PickPlacePlanner(object):
                         if toggledebug:
                             hndnew = hndfa.genHand()
                             hndnew.setColor(1, .6, 0, .2)
-                            hndnew.sethomomat(hndmat4)
+                            hndnew.set_homomat(hndmat4)
                             hndnew.setjawwidth(predefined_jawwidth)
                             hndnew.reparentTo(self.rhx.base.render)
                 else:
@@ -186,7 +186,7 @@ class PickPlacePlanner(object):
                     if toggledebug:
                         hndnew = hndfa.genHand()
                         hndnew.setColor(1, 0, 1, .2)
-                        hndnew.sethomomat(hndmat4)
+                        hndnew.set_homomat(hndmat4)
                         hndnew.setjawwidth(predefined_jawwidth)
                         hndnew.reparentTo(self.rhx.base.render)
             if index == 0:
@@ -259,7 +259,7 @@ class PickPlacePlanner(object):
         if armname is "lft":
             hndfa = self.rhx.lfthndfa
         # start pose
-        objcmcopy.sethomomat(inithomomat)
+        objcmcopy.set_homomat(inithomomat)
         ikfailedgraspsnum = 0
         ikcolliedgraspsnum = 0
         availablegraspsatinit = []
@@ -269,7 +269,7 @@ class PickPlacePlanner(object):
             eepos = rm.homotransformpoint(inithomomat, predefined_fc)[:3]
             eerot = hndmat4[:3, :3]
             hndnew = hndfa.genHand()
-            hndnew.sethomomat(hndmat4)
+            hndnew.set_homomat(hndmat4)
             # hndnew.setjawwidth(predefined_jawwidth)
             hndcmlist = hndnew.genrangecmlist(jawwidthstart=predefined_jawwidth, jawwidthend=hndnew.jawwidthopen)
             ishndcollided = bcdchecker.isMeshListMeshListCollided(hndcmlist, obscmlist)
@@ -279,7 +279,7 @@ class PickPlacePlanner(object):
                     if toggledebug:
                         hndnew = hndfa.genHand()
                         hndnew.setColor(0, 1, 0, .2)
-                        hndnew.sethomomat(hndmat4)
+                        hndnew.set_homomat(hndmat4)
                         hndnew.setjawwidth(predefined_jawwidth)
                         hndnew.reparentTo(self.rhx.base.render)
                     rbt.movearmfk(armjnts, armname)
@@ -300,7 +300,7 @@ class PickPlacePlanner(object):
                     if toggledebug:
                         hndnew = hndfa.genHand()
                         hndnew.setColor(1, .6, 0, .2)
-                        hndnew.sethomomat(hndmat4)
+                        hndnew.set_homomat(hndmat4)
                         hndnew.setjawwidth(predefined_jawwidth)
                         hndnew.reparentTo(self.rhx.base.render)
                     # bcdchecker.showMeshList(hndnew.cmlist)
@@ -309,7 +309,7 @@ class PickPlacePlanner(object):
                 if toggledebug:
                     hndnew = hndfa.genHand()
                     hndnew.setColor(1, 0, 1, .2)
-                    hndnew.sethomomat(hndmat4)
+                    hndnew.set_homomat(hndmat4)
                     hndnew.setjawwidth(predefined_jawwidth)
                     hndnew.reparentTo(self.rhx.base.render)
                 # bcdchecker.showMeshList(hndnew.cmlist)
@@ -334,7 +334,7 @@ class PickPlacePlanner(object):
             for rotangle in candidateangles:
                 objmat4 = copy.deepcopy(goalhm)
                 objmat4[:3, :3] = np.dot(rm.rodrigues(rotax, rotangle), goalhm[:3, :3])
-                objcmcopy.sethomomat(objmat4)
+                objcmcopy.set_homomat(objmat4)
                 tmpresult = []
                 for idavailableinit in availablegraspsatinit:
                     predefined_jawwidth, predefined_fc, predefined_homomat = predefinedgrasps[idavailableinit]
@@ -342,7 +342,7 @@ class PickPlacePlanner(object):
                     eepos = rm.homotransformpoint(objmat4, predefined_fc)[:3]
                     eerot = hndmat4[:3, :3]
                     hndnew = hndfa.genHand()
-                    hndnew.sethomomat(hndmat4)
+                    hndnew.set_homomat(hndmat4)
                     hndcmlist = hndnew.genrangecmlist(jawwidthstart=predefined_jawwidth,
                                                       jawwidthend=hndnew.jawwidthopen)
                     # hndnew.setjawwidth(predefined_jawwidth)
@@ -353,7 +353,7 @@ class PickPlacePlanner(object):
                             if toggledebug:
                                 hndnew = hndfa.genHand()
                                 hndnew.setColor(0, 1, 0, .5)
-                                hndnew.sethomomat(hndmat4)
+                                hndnew.set_homomat(hndmat4)
                                 hndnew.setjawwidth(predefined_jawwidth)
                                 hndnew.reparentTo(self.rhx.base.render)
                             rbt.movearmfk(armjnts, armname)
@@ -374,7 +374,7 @@ class PickPlacePlanner(object):
                             if toggledebug:
                                 hndnew = hndfa.genHand()
                                 hndnew.setColor(1, .6, 0, .2)
-                                hndnew.sethomomat(hndmat4)
+                                hndnew.set_homomat(hndmat4)
                                 hndnew.setjawwidth(predefined_jawwidth)
                                 hndnew.reparentTo(self.rhx.base.render)
                     else:
@@ -382,7 +382,7 @@ class PickPlacePlanner(object):
                         if toggledebug:
                             hndnew = hndfa.genHand()
                             hndnew.setColor(1, 0, 1, .2)
-                            hndnew.sethomomat(hndmat4)
+                            hndnew.set_homomat(hndmat4)
                             hndnew.setjawwidth(predefined_jawwidth)
                             hndnew.reparentTo(self.rhx.base.render)
                 if len(tmpresult) == 0:
@@ -833,7 +833,7 @@ class PickPlacePlanner(object):
         np = self.rhx.np
         rm = self.rhx.rm
         # start pose
-        objcmcopy.sethomomat(objinithomomat)
+        objcmcopy.set_homomat(objinithomomat)
         ikfailedgraspsnum = 0
         ikcolliedgraspsnum = 0
         availablegraspsatinit = []
@@ -845,7 +845,7 @@ class PickPlacePlanner(object):
             eepos = rm.homotransformpoint(objinithomomat, predefined_fc)[:3]
             eerot = hndmat4[:3, :3]
             hndnew = hndfa.genHand()
-            hndnew.sethomomat(hndmat4)
+            hndnew.set_homomat(hndmat4)
             # hndnew.setjawwidth(predefined_jawwidth)
             hndcmlist = hndnew.genrangecmlist(jawwidthstart=predefined_jawwidth, jawwidthend=hndnew.jawwidthopen)
             ishndcollided = bcdchecker.isMeshListMeshListCollided(hndcmlist, obscmlist)
@@ -855,7 +855,7 @@ class PickPlacePlanner(object):
                     if toggledebug:
                         hndnew = hndfa.genHand()
                         hndnew.setColor(0, 1, 0, .2)
-                        hndnew.sethomomat(hndmat4)
+                        hndnew.set_homomat(hndmat4)
                         hndnew.setjawwidth(predefined_jawwidth)
                         hndnew.reparentTo(self.rhx.base.render)
                     rbt.movearmfk(armjnts, armname)
@@ -880,7 +880,7 @@ class PickPlacePlanner(object):
                     if toggledebug:
                         hndnew = hndfa.genHand()
                         hndnew.setColor(1, .6, 0, .7)
-                        hndnew.sethomomat(hndmat4)
+                        hndnew.set_homomat(hndmat4)
                         hndnew.setjawwidth(predefined_jawwidth)
                         hndnew.reparentTo(self.rhx.base.render)
                     # bcdchecker.showMeshList(hndnew.cmlist)
@@ -889,7 +889,7 @@ class PickPlacePlanner(object):
                 if toggledebug:
                     hndnew = hndfa.genHand()
                     hndnew.setColor(1, .5, .5, .7)
-                    hndnew.sethomomat(hndmat4)
+                    hndnew.set_homomat(hndmat4)
                     hndnew.setjawwidth(predefined_jawwidth)
                     hndnew.reparentTo(self.rhx.base.render)
                 # bcdchecker.showMeshList(hndnew.cmlist)
@@ -921,14 +921,14 @@ class PickPlacePlanner(object):
         for rotangle in candidateangles:
             objmat4 = copy.deepcopy(objgoalhomomat)
             objmat4[:3, :3] = np.dot(rm.rodrigues(rotax, rotangle), objgoalhomomat[:3, :3])
-            objcmcopy.sethomomat(objmat4)
+            objcmcopy.set_homomat(objmat4)
             for idavailableinit in availablegraspsatinit:
                 predefined_jawwidth, predefined_fc, predefined_homomat = predefinedgrasps[idavailableinit]
                 hndmat4 = np.dot(objmat4, predefined_homomat)
                 eepos = rm.homotransformpoint(objmat4, predefined_fc)[:3]
                 eerot = hndmat4[:3, :3]
                 hndnew = hndfa.genHand()
-                hndnew.sethomomat(hndmat4)
+                hndnew.set_homomat(hndmat4)
                 hndcmlist = hndnew.genrangecmlist(jawwidthstart=predefined_jawwidth, jawwidthend=hndnew.jawwidthopen)
                 # hndnew.setjawwidth(predefined_jawwidth)
                 ishndcollided = bcdchecker.isMeshListMeshListCollided(hndcmlist, obscmlist)
@@ -938,7 +938,7 @@ class PickPlacePlanner(object):
                         if toggledebug:
                             hndnew = hndfa.genHand()
                             hndnew.setColor(0, 1, 0, .5)
-                            hndnew.sethomomat(hndmat4)
+                            hndnew.set_homomat(hndmat4)
                             hndnew.setjawwidth(predefined_jawwidth)
                             # hndnew.reparentTo(self.rhx.base.render)
                         rbt.movearmfk(armjnts, armname)
@@ -978,7 +978,7 @@ class PickPlacePlanner(object):
                         if toggledebug:
                             hndnew = hndfa.genHand()
                             hndnew.setColor(1, .6, 0, .7)
-                            hndnew.sethomomat(hndmat4)
+                            hndnew.set_homomat(hndmat4)
                             hndnew.setjawwidth(predefined_jawwidth)
                             # hndnew.reparentTo(self.rhx.base.render)
                 else:
@@ -986,7 +986,7 @@ class PickPlacePlanner(object):
                     if toggledebug:
                         hndnew = hndfa.genHand()
                         hndnew.setColor(1, .5, .5, .7)
-                        hndnew.sethomomat(hndmat4)
+                        hndnew.set_homomat(hndmat4)
                         hndnew.setjawwidth(predefined_jawwidth)
                         # hndnew.reparentTo(self.rhx.base.render)
             print("IK failed grasps at the goal pose: ", ikfailedgraspsnum)
@@ -1387,7 +1387,7 @@ class PickPlacePlanner(object):
                                     p3dh.genlinesegnodepath([thispos, nxtpos], colors=[1, 0, 1, 1],
                                                             thickness=3.7).reparentTo(base.render)
                                 objcp = copy.deepcopy(self.objcm)
-                                objcp.sethomomat(objmsmp[i][j])
+                                objcp.set_homomat(objmsmp[i][j])
                                 objcp.setColor(1, 1, 0, 1)
                                 objcp.reparentTo(base.render)
                         base.run()

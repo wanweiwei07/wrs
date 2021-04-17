@@ -99,7 +99,7 @@ if __name__ == '__main__':
         jawwidth, finger_center, hand_homomat = predefinedgrasps[counter[0]]
         hndnps[0] = hndfa.genHand()
         hndnps[0].setjawwidth(30)
-        hndnps[0].sethomomat(hand_homomat)
+        hndnps[0].set_homomat(hand_homomat)
         hndnps[0].reparentTo(base.render)
         iscollided = bmc.isMeshListMeshListCollided(hndnps[0].cmlist, [objcm])
         if iscollided:

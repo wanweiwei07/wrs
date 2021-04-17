@@ -7,13 +7,23 @@ import copy
 import modeling.geometricmodel as gm
 import basis.data_adapter as dh
 import basis.robot_math as rm
+import numpy as np
 
 
 class BDBody(BulletRigidBodyNode):
-    def __init__(self, objinit, cdtype="triangle", mass=.3, restitution=0, allowdeactivation=False, allowccd=True,
-                 friction=.2, dynamic=True, name="rbd"):
+
+    def __init__(self,
+                 initor,
+                 cdtype="triangle",
+                 mass=.3,
+                 restitution=0,
+                 allow_deactivation=False,
+                 allow_ccd=True,
+                 friction=.2,
+                 dynamic=True,
+                 name="rbd"):
         """
-        :param objinit: could be itself (copy), or an instance of collision model
+        :param initor: could be itself (copy), or an instance of collision model
         :param type: triangle or convex
         :param mass:
         :param restitution: bounce parameter
@@ -24,32 +34,33 @@ class BDBody(BulletRigidBodyNode):
         date: 20190626, 20201119
         """
         super().__init__(name)
-        if isinstance(objinit, gm.GeometricModel):
-            if objinit._objtrm is None:
+        if isinstance(initor, gm.GeometricModel):
+            if initor._objtrm is None:
                 raise ValueError("Only applicable to models with a trimesh!")
-            self.com = objinit.objtrm.center_mass
+            self.com = initor.objtrm.center_mass * base.physics_scale
             self.setMass(mass)
             self.setRestitution(restitution)
             self.setFriction(friction)
             self.setLinearDamping(.3)
             self.setAngularDamping(.3)
-            if allowdeactivation:
+            if allow_deactivation:
                 self.setDeactivationEnabled(True)
-                self.setLinearSleepThreshold(0.001)
-                self.setAngularSleepThreshold(0.001)
+                self.setLinearSleepThreshold(.01*base.physics_scale)
+                self.setAngularSleepThreshold(.01*base.physics_scale)
             else:
                 self.setDeactivationEnabled(False)
-            if allowccd:  # continuous collision detection
-                self.setCcdMotionThreshold(1e-6)
-                self.setCcdSweptSphereRadius(0.0005)
-            gnd = objinit.objpdnp.find("+GeomNode")
+            if allow_ccd:  # continuous collision detection
+                self.setCcdMotionThreshold(1e-7)
+                self.setCcdSweptSphereRadius(0.0005*base.physics_scale)
+            gnd = initor.objpdnp.getChild(0).find("+GeomNode")
             geom = copy.deepcopy(gnd.node().getGeom(0))
             vdata = geom.modifyVertexData()
-            vertrewritter = GeomVertexRewriter(vdata, 'vertex')
-            while not vertrewritter.isAtEnd():  # shift local coordinate to geom to correctly update dynamic changes
-                v = vertrewritter.getData3f()
-                vertrewritter.setData3f(v[0] - self.com[0], v[1] - self.com[1], v[2] - self.com[2])
+            vertices = copy.deepcopy(np.frombuffer(vdata.modifyArrayHandle(0).getData(), dtype=np.float32))
+            vertices.shape=(-1,6)
+            vertices[:, :3]=vertices[:, :3]*base.physics_scale-self.com
+            vdata.modifyArrayHandle(0).setData(vertices.astype(np.float32).tobytes())
             geomtf = gnd.getTransform()
+            geomtf = geomtf.setPos(geomtf.getPos()*base.physics_scale)
             if cdtype is "triangle":
                 geombmesh = BulletTriangleMesh()
                 geombmesh.addGeom(geom)
@@ -63,49 +74,43 @@ class BDBody(BulletRigidBodyNode):
                 self.addShape(bulletshape, geomtf)
             else:
                 raise NotImplementedError
-            pdmat4 = geomtf.getMat()
-            pdv3 = pdmat4.xformPoint(Vec3(self.com[0], self.com[1], self.com[2]))
-            homomat = dh.pdmat4_to_npmat4(pdmat4)
-            pos = dh.pdv3_to_npv3(pdv3)
-            homomat[:3, 3] = pos  # update center to com
-            self.setTransform(TransformState.makeMat(dh.npmat4_to_pdmat4(homomat)))
-        elif isinstance(objinit, BDBody):
-            self.com = objinit.com.copy()
-            self.setMass(objinit.getMass())
-            self.setRestitution(objinit.restitution)
-            self.setFriction(objinit.friction)
+            pd_homomat = geomtf.getMat()
+            pd_com_pos = pd_homomat.xformPoint(Vec3(self.com[0], self.com[1], self.com[2]))
+            np_homomat = dh.pdmat4_to_npmat4(pd_homomat)
+            np_com_pos = dh.pdv3_to_npv3(pd_com_pos)
+            np_homomat[:3, 3] = np_com_pos  # update center to com
+            self.setTransform(TransformState.makeMat(dh.npmat4_to_pdmat4(np_homomat)))
+        elif isinstance(initor, BDBody):
+            self.com = initor.com.copy()
+            self.setMass(initor.getMass())
+            self.setRestitution(initor.restitution)
+            self.setFriction(initor.friction)
             self.setLinearDamping(.3)
             self.setAngularDamping(.3)
-            if allowdeactivation:
+            if allow_deactivation:
                 self.setDeactivationEnabled(True)
-                self.setLinearSleepThreshold(0.001)
-                self.setAngularSleepThreshold(0.001)
+                self.setLinearSleepThreshold(.01*base.physics_scale)
+                self.setAngularSleepThreshold(.01*base.physics_scale)
             else:
                 self.setDeactivationEnabled(False)
-            if allowccd:
-                self.setCcdMotionThreshold(1e-6)
-                self.setCcdSweptSphereRadius(0.0005)
-            self.setTransform(TransformState.makeMat(dh.npmat4_to_pdmat4(objinit.gethomomat())))
-            self.addShape(objinit.getShape(0), objinit.getShapeTransform(0))
+            if allow_ccd:
+                self.setCcdMotionThreshold(1e-7)
+                self.setCcdSweptSphereRadius(0.0005*base.physics_scale)
+            np_homomat = copy.deepcopy(initor.get_homomat())
+            np_homomat[:3,3] = np_homomat[:3,3]*base.physics_scale
+            self.setTransform(TransformState.makeMat(dh.npmat4_to_pdmat4(np_homomat)))
+            self.addShape(initor.getShape(0), initor.getShapeTransform(0))
 
-    def getpos(self):
-        """
-        :return: 1x3 nparray
-        """
+    def get_pos(self):
         pdmat4 = self.getTransform().getMat()
         pdv3 = pdmat4.xformPoint(Vec3(-self.com[0], -self.com[1], -self.com[2]))
-        # homomat = dh.pdmat4_to_npmat4(pdmat4)
-        pos = dh.pdv3_to_npv3(pdv3)
+        pos = dh.pdv3_to_npv3(pdv3)/base.physics_scale
         return pos
 
-    def setpos(self, npvec3):
-        """
-        :param npvec3: 1x3 nparray
-        :return:
-        """
-        self.setPos(dh.pdv3_to_npv3(npvec3))
+    def set_pos(self, npvec3):
+        self.setPos(dh.pdv3_to_npv3(npvec3)*base.physics_scale)
 
-    def gethomomat(self):
+    def get_homomat(self):
         """
         get the homomat considering the original local frame
         the dynamic body moves in a local frame defined at com (line 46 of this file), instead of returning the
@@ -115,14 +120,14 @@ class BDBody(BulletRigidBodyNode):
         author: weiwei
         date: 2019?, 20201119
         """
-        pdmat4 = self.getTransform().getMat()
-        pdv3 = pdmat4.xformPoint(Vec3(-self.com[0], -self.com[1], -self.com[2]))
-        homomat = dh.pdmat4_to_npmat4(pdmat4)
-        pos = dh.pdv3_to_npv3(pdv3)
-        homomat[:3, 3] = pos
-        return homomat
+        pd_homomat = self.getTransform().getMat()
+        pd_com_pos = pd_homomat.xformPoint(Vec3(-self.com[0], -self.com[1], -self.com[2]))
+        np_homomat = dh.pdmat4_to_npmat4(pd_homomat)
+        np_com_pos = dh.pdv3_to_npv3(pd_com_pos)
+        np_homomat[:3, 3] = np_com_pos/base.physics_scale
+        return np_homomat
 
-    def sethomomat(self, homomat):
+    def set_homomat(self, homomat):
         """
         set the pose of the dynamic body
         :param homomat: the homomat of the original frame (the collision model)
@@ -130,13 +135,11 @@ class BDBody(BulletRigidBodyNode):
         author: weiwei
         date: 2019?, 20201119
         """
-        pos = rm.homomat_transform_points(homomat, self.com)
-        rotmat = homomat[:3, :3]
+        tmp_homomat = copy.deepcopy(homomat)
+        tmp_homomat[:3, 3] = tmp_homomat[:3,3]*base.physics_scale
+        pos = rm.homomat_transform_points(tmp_homomat, self.com)
+        rotmat = tmp_homomat[:3, :3]
         self.setTransform(TransformState.makeMat(dh.npv3mat3_to_pdmat4(pos, rotmat)))
-
-    def setmass(self, mass):
-        self.mass=mass
-        self.setMass(mass)
 
     def copy(self):
         return BDBody(self)

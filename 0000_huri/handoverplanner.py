@@ -241,7 +241,7 @@ class HandoverPlanner(object):
             handtmp = self.rgthndfa.genHand()
         else:
             handtmp = self.lfthndfa.genHand()
-        handtmp.sethomomat(homomat)
+        handtmp.set_homomat(homomat)
         handtmp.setjawwidth(handtmp.jawwidthopen)
         iscollided = self.bcdchecker.isMeshListMeshListCollided(handtmp.cmlist, obstaclecmlist)
 

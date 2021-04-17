@@ -129,7 +129,7 @@ class StaticGeometricModel(object):
     def get_rgba(self):
         return da.pdv4_to_npv4(self._objpdnp.getColor())  # panda3d.core.LColor -> LBase4F
 
-    def clear_color(self):
+    def clear_rgba(self):
         self._objpdnp.clearColor()
 
     def set_scale(self, scale=[1, 1, 1]):
@@ -235,7 +235,7 @@ class WireFrameModel(StaticGeometricModel):
     def get_rgba(self):
         return da.pdv4_to_npv4(self._objpdnp.getColor())  # panda3d.core.LColor -> LBase4F
 
-    def clear_color(self):
+    def clear_rgba(self):
         self._objpdnp.clearColor()
 
     def set_scale(self, scale=[1, 1, 1]):

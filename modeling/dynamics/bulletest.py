@@ -16,13 +16,13 @@ planecm = cm.CollisionModel(plane)
 planenode = bbd.BDTriangleBody(planecm, dynamic=True)
 planemat = np.eye(4)
 planemat[:3,3] = planemat[:3,3]+np.array([0,0,0])
-planenode.sethomomat(planemat)
+planenode.set_homomat(planemat)
 planenode.setMass(0)
 planenode.setRestitution(0)
 planenode.setFriction(1)
 base.physicsworld.attachRigidBody(planenode)
 planecm.reparentTo(base.render)
-planecm.setMat(base.pg.np4ToMat4(planenode.gethomomat()))
+planecm.setMat(base.pg.np4ToMat4(planenode.get_homomat()))
 base.pggen.plotAxis(base.render)
 
 # for i in range(5):
@@ -47,10 +47,10 @@ for i in range(3):
     newnode.setMass(1)
     rot = rm.rodrigues([0,1,0],-45)
     pos = np.array([0,0,100+i*300])
-    newnode.sethomomat(rm.homobuild(pos, rot))
-    print(newnode.gethomomat())
-    newnode.sethomomat(rm.homobuild(pos, rot))
-    print(newnode.gethomomat())
+    newnode.set_homomat(rm.homobuild(pos, rot))
+    print(newnode.get_homomat())
+    newnode.set_homomat(rm.homobuild(pos, rot))
+    print(newnode.get_homomat())
     base.physicsworld.attachRigidBody(newnode)
     bulletnodelist.append(newnode)
     # modelcopy = copy.deepcopy(model)
@@ -76,7 +76,7 @@ def update(objmodel, bnlist, plotlist, task):
         # print(bn.gethomomat())
         modelcopy = copy.deepcopy(objmodel)
         modelcopy.setColor(.8, .6, .3, .5)
-        modelcopy.setMat(base.pg.np4ToMat4(bn.gethomomat()))
+        modelcopy.setMat(base.pg.np4ToMat4(bn.get_homomat()))
         modelcopy.reparentTo(base.render)
         plotlist.append(modelcopy)
 
@@ -97,10 +97,10 @@ def update_tool(planecm, planebn, bnlist, task):
     for bn in bnlist:
         if bn.isActive():
             return task.cont
-    currentmat = planebn[0].gethomomat()
+    currentmat = planebn[0].get_homomat()
     currentmat[:3,3] = currentmat[:3,3]+np.array([0,0,15])
-    planebn[0].sethomomat(currentmat)
-    planecm.setMat(base.pg.np4ToMat4(planebn[0].gethomomat()))
+    planebn[0].set_homomat(currentmat)
+    planecm.setMat(base.pg.np4ToMat4(planebn[0].get_homomat()))
     # planebn[0].setLinearVelocity(Vec3(0,0,10))
 
     return task.cont

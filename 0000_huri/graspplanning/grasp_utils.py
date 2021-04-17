@@ -21,7 +21,7 @@ def ishndobjcollided(hndfa, jawwidth, homomat, objcm):
     """
 
     hnd = hndfa.genHand()
-    hnd.sethomomat(homomat)
+    hnd.set_homomat(homomat)
     setjawwidth = 30 if jawwidth>=30 else jawwidth+10
     hnd.setjawwidth(setjawwidth)
     iscollided = bcdchecker.isMeshListMeshListCollided(hnd.cmlist, [objcm])

@@ -138,9 +138,9 @@ if __name__ == '__main__':
             if armjnts is not None:
                 # if i == 1:
                 tmpef = effa.genendeffector()
-                tmpef.sethomomat(homomat)
+                tmpef.set_homomat(homomat)
                 tmpef.reparentTo(rhx.base.render)
-                tmpef.setcolor(1, 1, 1, .3)
+                tmpef.set_rgba(1, 1, 1, .3)
                 pos = homomat[:3,3]
                 rot = homomat[:3,:3]
                 rhx.opengripperx("lft")

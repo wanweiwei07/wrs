@@ -189,7 +189,7 @@ class CalibrateFixture(object):
         """
 
         tubestandcm = copy.deepcopy(self.tubestandcm)
-        tubestandcm.sethomomat(homomat)
+        tubestandcm.set_homomat(homomat)
         tubestandcm.setColor(0, .5, .7, 1)
 
         return tubestandcm

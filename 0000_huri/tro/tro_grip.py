@@ -192,7 +192,7 @@ if __name__ == '__main__':
             armjnts = rhx.movetopose(freegriprotmat, "lft")
             if armjnts is not None:
                 tmpef = yifa.genHand()
-                tmpef.sethomomat(freegriprotmat)
+                tmpef.set_homomat(freegriprotmat)
                 tmpef.reparentTo(rhx.base.render)
                 tmpef.setColor(1, 1, 1, .3)
                 pos = freegriprotmat[:3, 3]

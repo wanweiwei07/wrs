@@ -47,7 +47,7 @@ class World(ShowBase, object):
         # set up lens
         lens = PerspectiveLens()
         lens.setFov(fov)
-        lens.setNearFar(0.001, 50.0)
+        lens.setNearFar(0.001, 5000.0)
         if lens_type == "orthographic":
             lens = OrthographicLens()
             lens.setFilmSize(1024, 768)
@@ -102,8 +102,9 @@ class World(ShowBase, object):
         self.filter = flt.Filter(self.win, self.cam)
         self.filter.setCartoonInk(separation=self._separation)
         # set up physics world
+        self.physics_scale=1e6
         self.physicsworld = BulletWorld()
-        self.physicsworld.setGravity(Vec3(0, 0, -9.81))
+        self.physicsworld.setGravity(Vec3(0, 0, -9.81*self.physics_scale))
         taskMgr.add(self._physics_update, "physics", appendTask=True)
         globalbprrender = base.render.attachNewNode("globalbpcollider")
         debugNode = BulletDebugNode('Debug')
@@ -299,7 +300,6 @@ class World(ShowBase, object):
         as lookat changes the rotation of the camera
         :param lookatpos:
         :return:
-
         author: weiwei
         date: 20180606
         """

@@ -101,7 +101,7 @@ class RobotHelper(object):
             self.rbt.movearmfk(initjnts, armname)
             self.rbtmesh.genmnp(self.rbt).reparentTo(base.render)
             abpos, abrot = self.rbt.getworldpose(relpos, relrot, armname)
-            objcm.sethomomat(self.rm.homobuild(abpos, abrot))
+            objcm.set_homomat(self.rm.homobuild(abpos, abrot))
             objcm.reparentTo(base.render)
             objcm.showcn()
             for obscm in obscmlist:
@@ -111,7 +111,7 @@ class RobotHelper(object):
             self.rbtmesh.genmnp(self.rbt).reparentTo(base.render)
             abpos, abrot = self.rbt.getworldpose(relpos, relrot, armname)
             objcmcopy = copy.deepcopy(objcm)
-            objcmcopy.sethomomat(self.rm.homobuild(abpos, abrot))
+            objcmcopy.set_homomat(self.rm.homobuild(abpos, abrot))
             objcmcopy.reparentTo(base.render)
             objcmcopy.showcn()
             for obscm in obscmlist:
