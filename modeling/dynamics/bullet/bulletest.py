@@ -84,7 +84,6 @@ for i in range(10):
 def update(objmodel, bnlist, plotlist, task):
     for plotele in plotlist:
         plotele.remove()
-
     for bn in bnlist:
         # print(bn.get_pos())
         modelcopy = objmodel.copy()

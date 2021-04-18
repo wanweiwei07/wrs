@@ -181,7 +181,7 @@ class WireFrameModel(StaticGeometricModel):
         super().__init__(initor=initor, btransparency=False, name=name)
         self.objpdnp_raw.setRenderModeWireframe()
         self.objpdnp_raw.setLightOff()
-        self.set_rgba(rgba=[0,0,0,1])
+        # self.set_rgba(rgba=[0,0,0,1])
 
     # suppress functions
     def __getattr__(self, attr_name):
@@ -425,14 +425,14 @@ def gen_sphere(pos=np.array([0, 0, 0]), radius=0.01, rgba=[1, 0, 0, 1]):
     date: 20161212tsukuba, 20191228osaka
     """
     sphere_trm = trihelper.gen_sphere(pos, radius)
-    sphere_nodepath = da.trimesh_to_nodepath(sphere_trm)
-    sphere_nodepath.setTransparency(TransparencyAttrib.MDual)
-    sphere_nodepath.setColor(rgba[0], rgba[1], rgba[2], rgba[3])
-    sphere_sgm = StaticGeometricModel(sphere_nodepath)
+    sphere_sgm = StaticGeometricModel(sphere_trm)
+    sphere_sgm.set_rgba(rgba)
     return sphere_sgm
 
 
-def gen_ellipsoid(pos=np.array([0, 0, 0]), axmat=np.eye(3), rgba=[1, 1, 0, .3]):
+def gen_ellipsoid(pos=np.array([0, 0, 0]),
+                  axmat=np.eye(3),
+                  rgba=[1, 1, 0, .3]):
     """
     :param pos:
     :param axmat: 3x3 mat, each column is an axis of the ellipse
@@ -442,14 +442,14 @@ def gen_ellipsoid(pos=np.array([0, 0, 0]), axmat=np.eye(3), rgba=[1, 1, 0, .3]):
     date: 20200701osaka
     """
     ellipsoid_trm = trihelper.gen_ellipsoid(pos=pos, axmat=axmat)
-    ellipsoid_nodepath = da.trimesh_to_nodepath(ellipsoid_trm)
-    ellipsoid_nodepath.setTransparency(TransparencyAttrib.MDual)
-    ellipsoid_nodepath.setColor(rgba[0], rgba[1], rgba[2], rgba[3])
-    ellipsoid_sgm = StaticGeometricModel(ellipsoid_nodepath)
+    ellipsoid_sgm = StaticGeometricModel(ellipsoid_trm)
+    ellipsoid_sgm.set_rgba(rgba)
     return ellipsoid_sgm
 
 
-def gen_stick(spos=np.array([0, 0, 0]), epos=np.array([.1, 0, 0]), thickness=.005, type="rect",
+def gen_stick(spos=np.array([0, 0, 0]),
+              epos=np.array([.1, 0, 0]),
+              thickness=.005, type="rect",
               rgba=[1, 0, 0, 1], sections=8):
     """
     :param spos:
@@ -462,14 +462,14 @@ def gen_stick(spos=np.array([0, 0, 0]), epos=np.array([.1, 0, 0]), thickness=.00
     date: 20191229osaka
     """
     stick_trm = trihelper.gen_stick(spos=spos, epos=epos, thickness=thickness, type=type, sections=sections)
-    stick_nodepath = da.trimesh_to_nodepath(stick_trm)
-    stick_nodepath.setTransparency(TransparencyAttrib.MDual)
-    stick_nodepath.setColor(rgba[0], rgba[1], rgba[2], rgba[3])
-    stick_sgm = StaticGeometricModel(stick_nodepath)
+    stick_sgm = StaticGeometricModel(stick_trm)
+    stick_sgm.set_rgba(rgba)
     return stick_sgm
 
 
-def gen_box(extent=np.array([1, 1, 1]), homomat=np.eye(4), rgba=[1, 0, 0, 1]):
+def gen_box(extent=np.array([1, 1, 1]),
+            homomat=np.eye(4),
+            rgba=[1, 0, 0, 1]):
     """
     :param extent:
     :param homomat:
@@ -483,7 +483,10 @@ def gen_box(extent=np.array([1, 1, 1]), homomat=np.eye(4), rgba=[1, 0, 0, 1]):
     return box_sgm
 
 
-def gen_dumbbell(spos=np.array([0, 0, 0]), epos=np.array([.1, 0, 0]), thickness=.005, rgba=[1, 0, 0, 1]):
+def gen_dumbbell(spos=np.array([0, 0, 0]),
+                 epos=np.array([.1, 0, 0]),
+                 thickness=.005,
+                 rgba=[1, 0, 0, 1]):
     """
     :param spos:
     :param epos:
@@ -499,7 +502,9 @@ def gen_dumbbell(spos=np.array([0, 0, 0]), epos=np.array([.1, 0, 0]), thickness=
     return dumbbell_sgm
 
 
-def gen_arrow(spos=np.array([0, 0, 0]), epos=np.array([.1, 0, 0]), thickness=.005, rgba=[1, 0, 0, 1],
+def gen_arrow(spos=np.array([0, 0, 0]),
+              epos=np.array([.1, 0, 0]),
+              thickness=.005, rgba=[1, 0, 0, 1],
               type="rect"):
     """
     :param spos:
@@ -516,7 +521,10 @@ def gen_arrow(spos=np.array([0, 0, 0]), epos=np.array([.1, 0, 0]), thickness=.00
     return arrow_sgm
 
 
-def gen_dasharrow(spos=np.array([0, 0, 0]), epos=np.array([.1, 0, 0]), thickness=.005, lsolid=None, lspace=None,
+def gen_dasharrow(spos=np.array([0, 0, 0]),
+                  epos=np.array([.1, 0, 0]),
+                  thickness=.005, lsolid=None,
+                  lspace=None,
                   rgba=[1, 0, 0, 1], type="rect"):
     """
     :param spos:
@@ -529,14 +537,23 @@ def gen_dasharrow(spos=np.array([0, 0, 0]), epos=np.array([.1, 0, 0]), thickness
     author: weiwei
     date: 20200625osaka
     """
-    dasharrow_trm = trihelper.gen_dasharrow(spos=spos, epos=epos, lsolid=lsolid, lspace=lspace, thickness=thickness,
+    dasharrow_trm = trihelper.gen_dasharrow(spos=spos,
+                                            epos=epos,
+                                            lsolid=lsolid,
+                                            lspace=lspace,
+                                            thickness=thickness,
                                             sticktype=type)
     dasharrow_sgm = StaticGeometricModel(dasharrow_trm)
     dasharrow_sgm.set_rgba(rgba=rgba)
     return dasharrow_sgm
 
 
-def gen_frame(pos=np.array([0, 0, 0]), rotmat=np.eye(3), length=.1, thickness=.005, rgbmatrix=None, alpha=None,
+def gen_frame(pos=np.array([0, 0, 0]),
+              rotmat=np.eye(3),
+              length=.1,
+              thickness=.005,
+              rgbmatrix=None,
+              alpha=None,
               plotname="frame"):
     """
     gen an axis for attaching

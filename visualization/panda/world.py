@@ -102,7 +102,7 @@ class World(ShowBase, object):
         self.filter = flt.Filter(self.win, self.cam)
         self.filter.setCartoonInk(separation=self._separation)
         # set up physics world
-        self.physics_scale=1e6
+        self.physics_scale=1e3
         self.physicsworld = BulletWorld()
         self.physicsworld.setGravity(Vec3(0, 0, -9.81*self.physics_scale))
         taskMgr.add(self._physics_update, "physics", appendTask=True)
