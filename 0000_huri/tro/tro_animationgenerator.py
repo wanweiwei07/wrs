@@ -59,7 +59,7 @@ def animationgen(rhx, numikmsmp, jawwidthmsmp, objmsmp, othersmsmp, sg_doestimat
             rbtmnp[0].reparentTo(rhx.base.render)
             objmnp[0] = objmpactive[0][motionpathcounter[0]]
             objmnp[0].reparentTo(rhx.base.render)
-            objmnp[0].showlocalframe()
+            objmnp[0].show_loc_frame()
             for idother, other in enumerate(othersmpactive[0][motionpathcounter[0]]):
                 # tmpother = copy.copy(other)
                 other.reparentTo(rhx.base.render)

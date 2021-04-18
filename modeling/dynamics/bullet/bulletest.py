@@ -15,7 +15,7 @@ homomat = np.eye(4)
 homomat[:3, 3] = np.array([0, 0, -.05])
 planecm = cm.gen_box(extent=[1, 1, .1], homomat=homomat)
 # planenode = bch.genBulletCDMesh(planecm)
-planenode = bbd.BDBody(planecm, dynamic=False)
+planenode = bbd.BDBody(planecm, cdtype='convex', dynamic=False)
 planemat = np.eye(4)
 planemat[:3, 3] = planemat[:3, 3] + np.array([0, 0, 0])
 planenode.set_homomat(planemat)
@@ -40,7 +40,7 @@ cm.gm.gen_frame().attach_to(base)
 # Boxes
 # model = loader.loadModel('models/box.egg')
 model = cm.CollisionModel("./objects/bunnysim.stl")
-node = bbd.BDBody(model, cdtype='triangle', dynamic=True)
+node = bbd.BDBody(model, cdtype='convex', dynamic=True)
 bulletnodelist = []
 for i in range(10):
     # node = bch.genBulletCDMesh(model)

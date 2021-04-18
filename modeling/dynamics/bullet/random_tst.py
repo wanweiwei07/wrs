@@ -9,21 +9,22 @@ from panda3d.bullet import BulletCapsuleShape, BulletConeShape,BulletConvexHullS
 import modeling.collisionmodel as cm
 import modeling.geometricmodel as gm
 import basis.data_adapter as da
+import copy
 
-base = wd.World(cam_pos=np.array([-10, 0, 0]), lookat_pos=np.array([0, 0, 0]))
+base = wd.World(cam_pos=np.array([1000, 0, 3000]), lookat_pos=np.array([0, 0, 0]), toggle_debug=True)
 # World
-world = BulletWorld()
-world.setGravity(Vec3(0, 0, -9.81))
-gm.gen_frame().attach_to(base)
+# world = BulletWorld()
+# world.setGravity(Vec3(0, 0, -9810))
+# gm.gen_frame().attach_to(base)
 
 # Plane
-shape = BulletBoxShape(Vec3(1, 1, 0.1))
+shape = BulletBoxShape(Vec3(500, 500, 100))
 # shape = BulletPlaneShape(Vec3(0, 0, 1), 1)
 node = BulletRigidBodyNode('Ground')
 node.addShape(shape)
 np = base.render.attachNewNode(node)
-np.setPos(0, 0, -1)
-world.attachRigidBody(node)
+np.setPos(0, 0, 0)
+base.physicsworld.attachRigidBody(node)
 
 # Box
 # shape = BulletBoxShape(Vec3(0.5, 0.5, 0.5))
@@ -34,9 +35,9 @@ world.attachRigidBody(node)
 # radius = 0.5
 # height = 1.0
 # shape = BulletCapsuleShape(radius, height, ZUp)
-radius = 0.6
-height = 1.0
-shape = BulletConeShape(radius, height, ZUp)
+# radius = 0.6
+# height = 1.0
+# shape = BulletConeShape(radius, height, ZUp)
 # shape = BulletConvexHullShape()
 # shape.addPoint(Point3(1, 1, 2))
 # shape.addPoint(Point3(0, 0, 0))
@@ -55,33 +56,49 @@ shape = BulletConeShape(radius, height, ZUp)
 # shape2 = BulletBoxShape((0.1, 0.1, 0.5))
 # shape3 = BulletBoxShape((0.1, 0.1, 0.5))
 # shape4 = BulletBoxShape((0.1, 0.1, 0.5))
-# shape5 = BulletBoxShape((0.1, 0.1, 0.5))
-node = BulletRigidBodyNode('Box')
-node.setMass(1.0)
-node.addShape(shape)
+# node = BulletRigidBodyNode('Box')
+# node.setMass(1.0)
+# node.addShape(shape)
 # node.addShape(shape1, TransformState.makePos(Point3(0, 0, 0.1)))
 # node.addShape(shape2, TransformState.makePos(Point3(-1, -1, -0.5)))
 # node.addShape(shape3, TransformState.makePos(Point3(-1, 1, -0.5)))
 # node.addShape(shape4, TransformState.makePos(Point3(1, -1, -0.5)))
 # node.addShape(shape5, TransformState.makePos(Point3(1, 1, -0.5)))
-np = base.render.attachNewNode(node)
-np.setPos(0, 0, 2)
-world.attachRigidBody(node)
+# np = base.render.attachNewNode(node)
+# np.setPos(0, 0, 2)
+# world.attachRigidBody(node)
 
-debugNode = BulletDebugNode('Debug')
-debugNode.showWireframe(True)
-debugNode.showConstraints(True)
-debugNode.showBoundingBoxes(False)
-debugNode.showNormals(True)
-_debugNP = base.render.attachNewNode(debugNode)
-world.setDebugNode(debugNode)
-_debugNP.show()
+bunny_cm = cm.CollisionModel("./objects/bunnysim_mm.stl")
+bunny_geom_nodepath = bunny_cm.objpdnp.getChild(0).find("+GeomNode")
+geom = copy.deepcopy(bunny_geom_nodepath.node().getGeom(0))
+geombmesh = BulletTriangleMesh()
+geombmesh.addGeom(geom)
+shape = BulletTriangleMeshShape(geombmesh, dynamic = True)
+shape.setMargin(1e-6)
 
-# Update
-def update(task):
-    dt = globalClock.getDt()
-    world.doPhysics(dt)
-    return task.cont
+for i in range(15):
+    node = BulletRigidBodyNode('bunny'+str(i))
+    node.setMass(20)
+    node.addShape(shape)
+    np = base.render.attachNewNode(node)
+    np.setPos(0, 0, 1000+i*300)
+    base.physicsworld.attachRigidBody(node)
 
-taskMgr.add(update, 'update')
+# debugNode = BulletDebugNode('Debug')
+# debugNode.showWireframe(True)
+# debugNode.showConstraints(True)
+# debugNode.showBoundingBoxes(False)
+# debugNode.showNormals(True)
+# _debugNP = base.render.attachNewNode(debugNode)
+# world.setDebugNode(debugNode)
+# _debugNP.show()
+#
+# # Update
+# def update(task):
+#     dt = globalClock.getDt()
+#     world.doPhysics(dt)
+#     return task.cont
+#
+# taskMgr.add(update, 'update')
+base.setFrameRateMeter(True)
 base.run()

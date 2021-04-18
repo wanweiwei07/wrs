@@ -14,7 +14,7 @@ class BDBody(BulletRigidBodyNode):
 
     def __init__(self,
                  initor,
-                 cdtype="triangle",
+                 cdtype="triangles",
                  mass=.3,
                  restitution=0,
                  allow_deactivation=False,
@@ -23,6 +23,8 @@ class BDBody(BulletRigidBodyNode):
                  dynamic=True,
                  name="rbd"):
         """
+        TODO: triangles do not seem to work (very slow) in the github version (20210418)
+        Use convex if possible
         :param initor: could be itself (copy), or an instance of collision model
         :param type: triangle or convex
         :param mass:
@@ -52,22 +54,22 @@ class BDBody(BulletRigidBodyNode):
             if allow_ccd:  # continuous collision detection
                 self.setCcdMotionThreshold(1e-7)
                 self.setCcdSweptSphereRadius(0.0005*base.physics_scale)
-            gnd = initor.objpdnp.getChild(0).find("+GeomNode")
-            geom = copy.deepcopy(gnd.node().getGeom(0))
+            geom_np = initor.objpdnp.getChild(0).find("+GeomNode")
+            geom = copy.deepcopy(geom_np.node().getGeom(0))
             vdata = geom.modifyVertexData()
             vertices = copy.deepcopy(np.frombuffer(vdata.modifyArrayHandle(0).getData(), dtype=np.float32))
             vertices.shape=(-1,6)
             vertices[:, :3]=vertices[:, :3]*base.physics_scale-self.com
             vdata.modifyArrayHandle(0).setData(vertices.astype(np.float32).tobytes())
-            geomtf = gnd.getTransform()
+            geomtf = geom_np.getTransform()
             geomtf = geomtf.setPos(geomtf.getPos()*base.physics_scale)
-            if cdtype is "triangle":
+            if cdtype == "triangles":
                 geombmesh = BulletTriangleMesh()
                 geombmesh.addGeom(geom)
                 bulletshape = BulletTriangleMeshShape(geombmesh, dynamic=dynamic)
                 bulletshape.setMargin(1e-6)
                 self.addShape(bulletshape, geomtf)
-            elif cdtype is "convex":
+            elif cdtype == "convex":
                 bulletshape = BulletConvexHullShape()  # TODO: compute a convex hull?
                 bulletshape.addGeom(geom, geomtf)
                 bulletshape.setMargin(1e-6)

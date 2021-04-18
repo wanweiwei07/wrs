@@ -100,16 +100,16 @@ class BDModel(object):
     def detach(self):
         self._gm.detach()
 
-    def startphysics(self):
+    def start_physics(self):
         base.physicsworld.attach(self._bdb)
 
-    def endphysics(self):
+    def end_physics(self):
         base.physicsworld.remove(self._bdb)
 
-    def showlocalframe(self):
+    def show_loc_frame(self):
         self._gm.showlocalframe()
 
-    def unshowlocalframe(self):
+    def unshow_loc_frame(self):
         self._gm.unshowlocalframe()
 
     def copy(self):
@@ -124,15 +124,18 @@ if __name__ == "__main__":
     import visualization.panda.world as wd
     import random
 
-    base = wd.World(cam_pos=[1, .3, 1], lookat_pos=[0, 0, 0], toggle_debug=False)
+    # base = wd.World(cam_pos=[1000, 300, 1000], lookat_pos=[0, 0, 0], toggle_debug=True)
+    base = wd.World(cam_pos=[.3, .3, 1], lookat_pos=[0, 0, 0], toggle_debug=False)
     base.setFrameRateMeter(True)
+    # objpath = os.path.join(basis.__path__[0], "objects", "bunnysim.stl")
     objpath = os.path.join(basis.__path__[0], "objects", "block.stl")
     bunnycm = BDModel(objpath, mass=1, type="convex")
 
     objpath2 = os.path.join(basis.__path__[0], "objects", "bowlblock.stl")
-    bunnycm2 = BDModel(objpath2, mass=0, type="triangle", dynamic=False)
+    bunnycm2 = BDModel(objpath2, mass=0, type="triangles", dynamic=False)
     bunnycm2.set_rgba(np.array([0, 0.7, 0.7, 1.0]))
     bunnycm2.set_pos(np.array([0, 0, 0]))
+    bunnycm2.start_physics()
     base.attach_internal_update_obj(bunnycm2)
 
     def update(bunnycm, task):
@@ -150,7 +153,7 @@ if __name__ == "__main__":
                 print(x, y, z, "\n")
                 bunnycm1.set_homomat(rm.homomat_from_posrot(np.array([x * 0.015 - 0.07, y * 0.015 - 0.07, 0.15 + z * 0.015]), rotmat))
                 base.attach_internal_update_obj(bunnycm1)
-                bunnycm1.startphysics()
+                bunnycm1.start_physics()
         base.inputmgr.keymap['space'] = False
         return task.cont
 

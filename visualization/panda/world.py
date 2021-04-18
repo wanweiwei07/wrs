@@ -50,7 +50,7 @@ class World(ShowBase, object):
         lens.setNearFar(0.001, 5000.0)
         if lens_type == "orthographic":
             lens = OrthographicLens()
-            lens.setFilmSize(1024, 768)
+            lens.setFilmSize(640, 480)
         # disable the default mouse control
         self.disableMouse()
         self.cam.setPos(cam_pos[0], cam_pos[1], cam_pos[2])
@@ -141,8 +141,7 @@ class World(ShowBase, object):
         return task.cont
 
     def _physics_update(self, task):
-        dt = globalClock.getDt()
-        self.physicsworld.doPhysics(dt, 20, 1 / 1200)
+        self.physicsworld.doPhysics(globalClock.getDt(), 20, 1/1200)
         return task.cont
 
     def _internal_update(self, task):
@@ -206,7 +205,7 @@ class World(ShowBase, object):
             _external_update_objinfo.obj_path_counter += 1
             if _external_update_objinfo.obj_path_counter >= len(obj_path):
                 _external_update_objinfo.obj_path_counter = 0
-        return task.again
+        return task.cont
 
     def change_debugstatus(self, toggledebug):
         if self.toggledebug == toggledebug:
