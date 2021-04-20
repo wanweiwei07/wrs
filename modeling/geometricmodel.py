@@ -44,12 +44,12 @@ class StaticGeometricModel(object):
                 self._objtrm = initor
                 objpdnp_raw = da.trimesh_to_nodepath(self._objtrm)
                 objpdnp_raw.reparentTo(self._objpdnp)
-            elif isinstance(initor, o3d.geometry.PointCloud): # TODO should pointcloud be pdnp or pdnp_raw
+            elif isinstance(initor, o3d.geometry.PointCloud):  # TODO should pointcloud be pdnp or pdnp_raw
                 self._objpath = None
                 self._objtrm = da.trm.Trimesh(np.asarray(initor.points))
                 objpdnp_raw = da.nodepath_from_points(self._objtrm.vertices, name='pdnp_raw')
                 objpdnp_raw.reparentTo(self._objpdnp)
-            elif isinstance(initor, np.ndarray): # TODO should pointcloud be pdnp or pdnp_raw
+            elif isinstance(initor, np.ndarray):  # TODO should pointcloud be pdnp or pdnp_raw
                 self._objpath = None
                 if initor.shape[1] == 3:
                     self._objtrm = da.trm.Trimesh(initor)
@@ -64,12 +64,12 @@ class StaticGeometricModel(object):
             elif isinstance(initor, o3d.geometry.TriangleMesh):
                 self._objpath = None
                 self._objtrm = da.trm.Trimesh(vertices=initor.vertices, faces=initor.triangles,
-                                           face_normals=initor.triangle_normals)
+                                              face_normals=initor.triangle_normals)
                 objpdnp_raw = da.trimesh_to_nodepath(self._objtrm, name='pdnp_raw')
                 objpdnp_raw.reparentTo(self._objpdnp)
             elif isinstance(initor, NodePath):
                 self._objpath = None
-                self._objtrm = None # TODO nodepath to trimesh?
+                self._objtrm = None  # TODO nodepath to trimesh?
                 objpdnp_raw = initor
                 objpdnp_raw.reparentTo(self._objpdnp)
             else:
@@ -140,18 +140,19 @@ class StaticGeometricModel(object):
         return da.pdv3_to_npv3(self._objpdnp.getScale())
 
     def set_vert_size(self, size=.005):
-        self.objpdnp_raw.setRenderModeThickness(size*1000)
+        self.objpdnp_raw.setRenderModeThickness(size * 1000)
 
     def attach_to(self, obj):
         if isinstance(obj, ShowBase):
             # for rendering to base.render
             self._objpdnp.reparentTo(obj.render)
-        elif isinstance(obj, StaticGeometricModel): # prepared for decorations like local frames
+        elif isinstance(obj, StaticGeometricModel):  # prepared for decorations like local frames
             self._objpdnp.reparentTo(obj.objpdnp)
         elif isinstance(obj, mc.ModelCollection):
             obj.add_gm(self)
         else:
-            print("Must be ShowBase, modeling.StaticGeometricModel, GeometricModel, CollisionModel, or CollisionModelCollection!")
+            print(
+                "Must be ShowBase, modeling.StaticGeometricModel, GeometricModel, CollisionModel, or CollisionModelCollection!")
 
     def detach(self):
         self._objpdnp.detachNode()
@@ -248,12 +249,13 @@ class WireFrameModel(StaticGeometricModel):
         if isinstance(obj, ShowBase):
             # for rendering to base.render
             self._objpdnp.reparentTo(obj.render)
-        elif isinstance(obj, StaticGeometricModel): # prepared for decorations like local frames
+        elif isinstance(obj, StaticGeometricModel):  # prepared for decorations like local frames
             self._objpdnp.reparentTo(obj.objpdnp)
         elif isinstance(obj, mc.ModelCollection):
             obj.add_gm(self)
         else:
-            print("Must be ShowBase, modeling.StaticGeometricModel, GeometricModel, CollisionModel, or CollisionModelCollection!")
+            print(
+                "Must be ShowBase, modeling.StaticGeometricModel, GeometricModel, CollisionModel, or CollisionModelCollection!")
 
     def detach(self):
         self._objpdnp.detachNode()
@@ -362,7 +364,7 @@ class GeometricModel(StaticGeometricModel):
 
 ## primitives are stationarygeometric model, once defined, they cannot be changed
 # TODO: further decouple from Panda trimesh->staticgeometricmodel
-def gen_linesegs(linesegs, thickness=0.001, rgba=[0,0,0,1]):
+def gen_linesegs(linesegs, thickness=0.001, rgba=[0, 0, 0, 1]):
     """
     gen linsegs -- non-continuous segs are allowed
     :param linesegs: [[pnt0, pn1], [pnt0, pnt1], ...], pnti 1x3 nparray, defined in local 0 frame
@@ -415,7 +417,7 @@ def gen_linesegs(linesegs, thickness=0.001, rgba=[0,0,0,1]):
 #     return ls_sgm
 
 
-def gen_sphere(pos=np.array([0, 0, 0]), radius=0.01, rgba=[1, 0, 0, 1]):
+def gen_sphere(pos=np.array([0, 0, 0]), radius=0.01, rgba=[1, 0, 0, 1], subdivisions=2):
     """
     :param pos:
     :param radius:
@@ -424,7 +426,7 @@ def gen_sphere(pos=np.array([0, 0, 0]), radius=0.01, rgba=[1, 0, 0, 1]):
     author: weiwei
     date: 20161212tsukuba, 20191228osaka
     """
-    sphere_trm = trihelper.gen_sphere(pos, radius)
+    sphere_trm = trihelper.gen_sphere(pos, radius, subdivisions)
     sphere_sgm = StaticGeometricModel(sphere_trm)
     sphere_sgm.set_rgba(rgba)
     return sphere_sgm
@@ -465,6 +467,35 @@ def gen_stick(spos=np.array([0, 0, 0]),
     stick_sgm = StaticGeometricModel(stick_trm)
     stick_sgm.set_rgba(rgba)
     return stick_sgm
+
+
+def gen_dashstick(spos=np.array([0, 0, 0]),
+                  epos=np.array([.1, 0, 0]),
+                  thickness=.005,
+                  lsolid=None,
+                  lspace=None,
+                  rgba=[1, 0, 0, 1],
+                  type="rect"):
+    """
+    :param spos:
+    :param epos:
+    :param thickness:
+    :param lsolid: length of the solid section, 1*thickness by default
+    :param lspace: length of the empty section, 1.5*thickness by default
+    :param rgba:
+    :return:
+    author: weiwei
+    date: 20200625osaka
+    """
+    dashstick_trm = trihelper.gen_dashstick(spos=spos,
+                                            epos=epos,
+                                            lsolid=lsolid,
+                                            lspace=lspace,
+                                            thickness=thickness,
+                                            sticktype=type)
+    dashstick_sgm = StaticGeometricModel(dashstick_trm)
+    dashstick_sgm.set_rgba(rgba=rgba)
+    return dashstick_sgm
 
 
 def gen_box(extent=np.array([1, 1, 1]),
@@ -681,8 +712,15 @@ def gen_dashframe(pos=np.array([0, 0, 0]), rotmat=np.eye(3), length=.1, thicknes
     return frame_sgm
 
 
-def gen_torus(axis=np.array([1, 0, 0]), portion=.5, center=np.array([0, 0, 0]), radius=.005, thickness=.0015,
-              rgba=[1, 0, 0, 1]):
+def gen_torus(axis=np.array([1, 0, 0]),
+              starting_vector=None,
+              portion=.5,
+              center=np.array([0, 0, 0]),
+              radius=.005,
+              thickness=.0015,
+              rgba=[1, 0, 0, 1],
+              sections=8,
+              discretization=24):
     """
     :param axis: the circ arrow will rotate around this axis 1x3 nparray
     :param portion: 0.0~1.0
@@ -691,14 +729,29 @@ def gen_torus(axis=np.array([1, 0, 0]), portion=.5, center=np.array([0, 0, 0]), 
     author: weiwei
     date: 20200602
     """
-    torus_trm = trihelper.gen_torus(axis=axis, portion=portion, center=center, radius=radius, thickness=thickness)
+    torus_trm = trihelper.gen_torus(axis=axis,
+                                    starting_vector=starting_vector,
+                                    portion=portion,
+                                    center=center,
+                                    radius=radius,
+                                    thickness=thickness,
+                                    sections=sections,
+                                    discretization=discretization)
     torus_sgm = StaticGeometricModel(torus_trm)
     torus_sgm.set_rgba(rgba=rgba)
     return torus_sgm
 
 
-def gen_circarrow(axis=np.array([1, 0, 0]), portion=.5, center=np.array([0, 0, 0]), radius=.05, thickness=.005,
-                  rgba=[1, 0, 0, 1]):
+def gen_dashtorus(axis=np.array([1, 0, 0]),
+                  portion=.5,
+                  center=np.array([0, 0, 0]),
+                  radius=0.1,
+                  thickness=0.005,
+                  rgba=[1,0,0,1],
+                  lsolid=None,
+                  lspace=None,
+                  sections=8,
+                  discretization=24):
     """
     :param axis: the circ arrow will rotate around this axis 1x3 nparray
     :param portion: 0.0~1.0
@@ -707,8 +760,45 @@ def gen_circarrow(axis=np.array([1, 0, 0]), portion=.5, center=np.array([0, 0, 0
     author: weiwei
     date: 20200602
     """
-    circarrow_trm = trihelper.gen_circarrow(axis=axis, portion=portion, center=center, radius=radius,
-                                            thickness=thickness)
+    torus_trm = trihelper.gen_dashtorus(axis=axis,
+                                        portion=portion,
+                                        center=center,
+                                        radius=radius,
+                                        thickness=thickness,
+                                        lsolid=lsolid,
+                                        lspace=lspace,
+                                        sections=sections,
+                                        discretization=discretization)
+    torus_sgm = StaticGeometricModel(torus_trm)
+    torus_sgm.set_rgba(rgba=rgba)
+    return torus_sgm
+
+
+def gen_circarrow(axis=np.array([1, 0, 0]),
+                  starting_vector=None,
+                  portion=.5,
+                  center=np.array([0, 0, 0]),
+                  radius=.05,
+                  thickness=.005,
+                  rgba=[1, 0, 0, 1],
+                  sections=8,
+                  discretization=24):
+    """
+    :param axis: the circ arrow will rotate around this axis 1x3 nparray
+    :param portion: 0.0~1.0
+    :param center: the center position of the circ 1x3 nparray
+    :return:
+    author: weiwei
+    date: 20200602
+    """
+    circarrow_trm = trihelper.gen_circarrow(axis=axis,
+                                            starting_vector=starting_vector,
+                                            portion=portion,
+                                            center=center,
+                                            radius=radius,
+                                            thickness=thickness,
+                                            sections=sections,
+                                            discretization=discretization)
     circarrow_sgm = StaticGeometricModel(circarrow_trm)
     circarrow_sgm.set_rgba(rgba=rgba)
     return circarrow_sgm
@@ -814,7 +904,7 @@ if __name__ == "__main__":
     rotmat = rm.rotmat_from_axangle([1, 0, 0], -math.pi / 4.0)
     bunnygm2.set_pos(np.array([0, .2, 0]))
     bunnygm2.set_rotmat(rotmat)
-    bunnygm2.set_scale([2,1,3])
+    bunnygm2.set_scale([2, 1, 3])
 
     bunnygmpoints, _ = bunnygm.sample_surface()
     bunnygm1points, _ = bunnygm1.sample_surface()
@@ -823,7 +913,7 @@ if __name__ == "__main__":
     bpgm1 = GeometricModel(bunnygm1points)
     bpgm2 = GeometricModel(bunnygm2points)
     bpgm.attach_to(base)
-    bpgm.set_scale([2,1,3])
+    bpgm.set_scale([2, 1, 3])
     bpgm.set_vert_size(.01)
     bpgm1.attach_to(base)
     bpgm2.attach_to(base)

@@ -78,6 +78,55 @@ def gen_roundstick(spos=np.array([0, 0, 0]), epos=np.array([0.1, 0, 0]), thickne
     return tp.Capsule(height=height, radius=thickness / 2.0, count=count, homomat=homomat)
 
 
+def gen_dashstick(spos=np.array([0, 0, 0]), epos=np.array([0.1, 0, 0]), thickness=0.005, lsolid=None, lspace=None,
+                  sections=8, sticktype="rect"):
+    """
+    :param spos: 1x3 nparray
+    :param epos: 1x3 nparray
+    :param thickness: 0.005 m by default
+    :param lsolid: length of the solid section, 1*thickness if None
+    :param lspace: length of the empty section, 1.5*thickness if None
+    :return:
+    author: weiwei
+    date: 20191228osaka
+    """
+    solidweight = 1.6
+    spaceweight = 1.07
+    if not lsolid:
+        lsolid = thickness * solidweight
+    if not lspace:
+        lspace = thickness * spaceweight
+    length, direction = rm.unit_vector(epos - spos, togglelength=True)
+    nstick = math.floor(length / (lsolid + lspace))
+    vertices = np.empty((0, 3))
+    faces = np.empty((0, 3))
+    for i in range(0, nstick):
+        tmp_spos = spos + (lsolid * direction + lspace * direction) * i
+        tmp_stick = gen_stick(spos=tmp_spos,
+                              epos=tmp_spos + lsolid * direction,
+                              thickness=thickness,
+                              type=sticktype,
+                              sections=sections)
+        tmp_stick_faces = tmp_stick.faces + len(vertices)
+        vertices = np.vstack((vertices, tmp_stick.vertices))
+        faces = np.vstack((faces, tmp_stick_faces))
+    # wrap up the last segment
+    tmp_spos = spos + (lsolid * direction + lspace * direction) * nstick
+    tmp_epos = tmp_spos + lsolid * direction
+    final_length, _ = rm.unit_vector(tmp_epos - spos, togglelength=True)
+    if final_length > length:
+        tmp_epos = epos
+    tmp_stick = gen_stick(spos=tmp_spos,
+                          epos=tmp_epos,
+                          thickness=thickness,
+                          type=sticktype,
+                          sections=sections)
+    tmp_stick_faces = tmp_stick.faces + len(vertices)
+    vertices = np.vstack((vertices, tmp_stick.vertices))
+    faces = np.vstack((faces, tmp_stick_faces))
+    return trm.Trimesh(vertices=vertices, faces=faces)
+
+
 def gen_sphere(pos=np.array([0, 0, 0]), radius=0.02, subdivisions=2):
     """
     :param pos: 1x3 nparray
@@ -178,28 +227,18 @@ def gen_dasharrow(spos=np.array([0, 0, 0]), epos=np.array([0.1, 0, 0]), thicknes
     author: weiwei
     date: 20191228osaka
     """
-    solidweight = 1.6
-    spaceweight = 1.07
-    totalweight = solidweight + spaceweight
-    if not lsolid:
-        lsolid = thickness * solidweight
-    if not lspace:
-        lspace = thickness * spaceweight
     length, direction = rm.unit_vector(epos - spos, togglelength=True)
-    nstick = math.floor(length / (thickness * totalweight))
     cap = gen_cone(spos=epos - direction * thickness * 4, epos=epos, radius=thickness, sections=sections)
-    stick = gen_stick(spos=epos - direction * thickness * 4 - lsolid * direction, epos=epos - direction * thickness * 4,
-                      thickness=thickness, type=sticktype, sections=sections)
-    vertices = np.vstack((cap.vertices, stick.vertices))
-    stickfaces = stick.faces + len(cap.vertices)
-    faces = np.vstack((cap.faces, stickfaces))
-    for i in range(1, nstick - 1):
-        tmpspos = epos - direction * thickness * 4 - lsolid * direction - (lsolid * direction + lspace * direction) * i
-        tmpstick = gen_stick(spos=tmpspos, epos=tmpspos + lsolid * direction, thickness=thickness, type=sticktype,
-                             sections=sections)
-        tmpstickfaces = tmpstick.faces + len(vertices)
-        vertices = np.vstack((vertices, tmpstick.vertices))
-        faces = np.vstack((faces, tmpstickfaces))
+    dash_stick = gen_dashstick(spos=spos,
+                               epos=epos - direction * thickness * 4,
+                               thickness=thickness,
+                               lsolid=lsolid,
+                               lspace=lspace,
+                               sections=sections,
+                               sticktype=sticktype)
+    tmp_stick_faces = dash_stick.faces + len(cap.vertices)
+    vertices = np.vstack((cap.vertices, dash_stick.vertices))
+    faces = np.vstack((cap.faces, tmp_stick_faces))
     return trm.Trimesh(vertices=vertices, faces=faces)
 
 
@@ -239,8 +278,14 @@ def gen_axis(pos=np.array([0, 0, 0]), rotmat=np.eye(3), length=0.1, thickness=0.
     return trm.Trimesh(vertices=vertices, faces=faces)
 
 
-def gen_torus(axis=np.array([1, 0, 0]), portion=.5, center=np.array([0, 0, 0]), radius=0.1, thickness=0.005,
-              sections=8, discretization=24):
+def gen_torus(axis=np.array([1, 0, 0]),
+              starting_vector=None,
+              portion=.5,
+              center=np.array([0, 0, 0]),
+              radius=0.1,
+              thickness=0.005,
+              sections=8,
+              discretization=24):
     """
     :param axis: the circ arrow will rotate around this axis 1x3 nparray
     :param portion: 0.0~1.0
@@ -254,22 +299,25 @@ def gen_torus(axis=np.array([1, 0, 0]), portion=.5, center=np.array([0, 0, 0]), 
     date: 20200602
     """
     unitaxis = rm.unit_vector(axis)
-    startingaxis = rm.orthogonal_vector(unitaxis)
-    startingpos = startingaxis * radius + center
+    if starting_vector is None:
+        starting_vector = rm.orthogonal_vector(unitaxis)
+    else:
+        starting_vector = rm.unit_vector(starting_vector)
+    starting_pos = starting_vector * radius + center
     discretizedangle = 2 * math.pi / discretization
     ndist = int(portion * discretization)
     # gen the last sec first
     # gen the remaining torus afterwards
     if ndist > 0:
         lastpos = center + np.dot(rm.rotmat_from_axangle(unitaxis, (ndist - 1) * discretizedangle),
-                                  startingaxis) * radius
-        nxtpos = center + np.dot(rm.rotmat_from_axangle(unitaxis, ndist * discretizedangle), startingaxis) * radius
+                                  starting_vector) * radius
+        nxtpos = center + np.dot(rm.rotmat_from_axangle(unitaxis, ndist * discretizedangle), starting_vector) * radius
         stick = gen_stick(spos=lastpos, epos=nxtpos, thickness=thickness, sections=sections, type="round")
         vertices = stick.vertices
         faces = stick.faces
-        lastpos = startingpos
+        lastpos = starting_pos
         for i in range(1 * np.sign(ndist), ndist, 1 * np.sign(ndist)):
-            nxtpos = center + np.dot(rm.rotmat_from_axangle(unitaxis, i * discretizedangle), startingaxis) * radius
+            nxtpos = center + np.dot(rm.rotmat_from_axangle(unitaxis, i * discretizedangle), starting_vector) * radius
             stick = gen_stick(spos=lastpos, epos=nxtpos, thickness=thickness, sections=sections, type="round")
             stickfaces = stick.faces + len(vertices)
             vertices = np.vstack((vertices, stick.vertices))
@@ -280,8 +328,64 @@ def gen_torus(axis=np.array([1, 0, 0]), portion=.5, center=np.array([0, 0, 0]), 
         return trm.Trimesh()
 
 
-def gen_circarrow(axis=np.array([1, 0, 0]), portion=0.3, center=np.array([0, 0, 0]), radius=0.005, thickness=0.0015,
-                  sections=8, discretization=24):
+def gen_dashtorus(axis=np.array([1, 0, 0]),
+                  portion=.5,
+                  center=np.array([0, 0, 0]),
+                  radius=0.1,
+                  thickness=0.005,
+                  lsolid=None,
+                  lspace=None,
+                  sections=8,
+                  discretization=24):
+    """
+    :param axis: the circ arrow will rotate around this axis 1x3 nparray
+    :param portion: 0.0~1.0
+    :param center: the center position of the circ 1x3 nparray
+    :param radius:
+    :param thickness:
+    :param lsolid: length of solid
+    :param lspace: length of space
+    :param sections: # of discretized sectors used to approximate a cylindrical stick
+    :param discretization: number sticks used for approximating a torus
+    :return:
+    author: weiwei
+    date: 20200602
+    """
+    assert(0 <= portion <=1)
+    solidweight = 1.6
+    spaceweight = 1.07
+    if not lsolid:
+        lsolid = thickness * solidweight
+    if not lspace:
+        lspace = thickness * spaceweight
+    unit_axis = rm.unit_vector(axis)
+    starting_vector = rm.orthogonal_vector(unit_axis)
+    min_discretization_value = math.ceil(2 * math.pi / (lsolid + lspace))
+    if discretization < min_discretization_value:
+        discretization = min_discretization_value
+    nsections = math.floor(portion * 2 * math.pi * radius / (lsolid + lspace))
+    vertices = np.empty((0, 3))
+    faces = np.empty((0, 3))
+    for i in range(0, nsections): # TODO wrap up end
+        torus_sec = gen_torus(axis=axis,
+                              starting_vector=rm.rotmat_from_axangle(axis, 2 * math.pi * portion / nsections * i).dot(
+                                  starting_vector),
+                              portion=portion / nsections * lsolid / (lsolid + lspace), center=center, radius=radius,
+                              thickness=thickness, sections=sections, discretization=discretization)
+        torus_sec_faces = torus_sec.faces + len(vertices)
+        vertices = np.vstack((vertices, torus_sec.vertices))
+        faces = np.vstack((faces, torus_sec_faces))
+    return trm.Trimesh(vertices=vertices, faces=faces)
+
+
+def gen_circarrow(axis=np.array([1, 0, 0]),
+                  starting_vector=None,
+                  portion=0.3,
+                  center=np.array([0, 0, 0]),
+                  radius=0.005,
+                  thickness=0.0015,
+                  sections=8,
+                  discretization=24):
     """
     :param axis: the circ arrow will rotate around this axis 1x3 nparray
     :param portion: 0.0~1.0
@@ -295,22 +399,25 @@ def gen_circarrow(axis=np.array([1, 0, 0]), portion=0.3, center=np.array([0, 0, 
     date: 20200602
     """
     unitaxis = rm.unit_vector(axis)
-    startingaxis = rm.orthogonal_vector(unitaxis)
-    startingpos = startingaxis * radius + center
+    if starting_vector is None:
+        starting_vector = rm.orthogonal_vector(unitaxis)
+    else:
+        starting_vector = rm.unit_vector(starting_vector)
+    starting_pos = starting_vector * radius + center
     discretizedangle = 2 * math.pi / discretization
     ndist = int(portion * discretization)
     # gen the last arrow first
     # gen the remaining torus
     if ndist > 0:
         lastpos = center + np.dot(rm.rotmat_from_axangle(unitaxis, (ndist - 1) * discretizedangle),
-                                  startingaxis) * radius
-        nxtpos = center + np.dot(rm.rotmat_from_axangle(unitaxis, ndist * discretizedangle), startingaxis) * radius
+                                  starting_vector) * radius
+        nxtpos = center + np.dot(rm.rotmat_from_axangle(unitaxis, ndist * discretizedangle), starting_vector) * radius
         arrow = gen_arrow(spos=lastpos, epos=nxtpos, thickness=thickness, sections=sections, sticktype="round")
         vertices = arrow.vertices
         faces = arrow.faces
-        lastpos = startingpos
+        lastpos = starting_pos
         for i in range(1 * np.sign(ndist), ndist, 1 * np.sign(ndist)):
-            nxtpos = center + np.dot(rm.rotmat_from_axangle(unitaxis, i * discretizedangle), startingaxis) * radius
+            nxtpos = center + np.dot(rm.rotmat_from_axangle(unitaxis, i * discretizedangle), starting_vector) * radius
             stick = gen_stick(spos=lastpos, epos=nxtpos, thickness=thickness, sections=sections, type="round")
             stickfaces = stick.faces + len(vertices)
             vertices = np.vstack((vertices, stick.vertices))
@@ -404,12 +511,12 @@ if __name__ == "__main__":
     import modeling.geometricmodel as gm
 
     base = wd.World(cam_pos=[.5, .2, .3], lookat_pos=[0, 0, 0], auto_cam_rotate=False)
-    objcm = gm.WireFrameModel(gen_torus())
-    objcm.set_rgba([1, 0, 0, 1])
-    objcm.attach_to(base)
-    objcm = gm.StaticGeometricModel(gen_axis())
-    objcm.set_rgba([1, 0, 0, 1])
-    objcm.attach_to(base)
+    # objcm = gm.WireFrameModel(gen_torus())
+    # objcm.set_rgba([1, 0, 0, 1])
+    # objcm.attach_to(base)
+    # objcm = gm.StaticGeometricModel(gen_axis())
+    # objcm.set_rgba([1, 0, 0, 1])
+    # objcm.attach_to(base)
 
     import time
 
@@ -418,9 +525,16 @@ if __name__ == "__main__":
         gen_dumbbell()
     toc = time.time()
     print("mine", toc - tic)
-    tic = time.time()
-    for i in range(100):
-        gen_dumbbell2()
-    toc = time.time()
-    print("mike", toc - tic)
+    objcm = gm.GeometricModel(gen_dashstick(lsolid=.005, lspace=.005))
+    objcm = gm.GeometricModel(gen_dashtorus(portion=1))
+    objcm.set_rgba([1, 0, 0, 1])
+    objcm.attach_to(base)
+    objcm = gm.GeometricModel(gen_stick())
+    objcm.set_rgba([1, 0, 0, 1])
+    objcm.set_pos(np.array([0, .01, 0]))
+    objcm.attach_to(base)
+    objcm = gm.GeometricModel(gen_dasharrow())
+    objcm.set_rgba([1, 0, 0, 1])
+    objcm.set_pos(np.array([0, -.01, 0]))
+    objcm.attach_to(base)
     base.run()
