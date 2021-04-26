@@ -1,8 +1,8 @@
 import motion.optimization_based.incremental_nik as inik
 import visualization.panda.world as wd
-import modeling.geometricmodel as gm
-import modeling.collisionmodel as cm
-import robotsim.robots.ur3_dual.ur3_dual as ur3d
+import modeling.geometric_model as gm
+import modeling.collision_model as cm
+import robot_sim.robots.ur3_dual.ur3_dual as ur3d
 import numpy as np
 import math
 import basis.robot_math as rm

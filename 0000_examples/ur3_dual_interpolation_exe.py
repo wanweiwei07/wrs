@@ -1,6 +1,6 @@
 import math
 import numpy as np
-import robotcon.ur.ur3_dual_x as u3r85dx
+import robot_con.ur.ur3_dual_x as u3r85dx
 
 rbtx = u3r85dx.UR3DualX(lft_robot_ip='10.2.0.50', rgt_robot_ip='10.2.0.51', pc_ip='10.2.0.101')
 # left randomization

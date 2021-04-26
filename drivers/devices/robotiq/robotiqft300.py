@@ -51,9 +51,9 @@ class RobotiqFT300Sensor(object):
 
 if __name__ == '__main__':
     import pandaplotutils.pandactrl as pandactrl
-    import robotsim.robots.dualarm.ur3dual as ur3dual
-    import robotsim.robots.singlearm.ur3e.ur3emesh as ur3dualmesh
-    import robotsim.robots.dualarm.ur3dual.ur3dualball as ur3dualball
+    import robot_sim.robots.dualarm.ur3dual as ur3dual
+    import robot_sim.robots.singlearm.ur3e.ur3emesh as ur3dualmesh
+    import robot_sim.robots.dualarm.ur3dual.ur3dualball as ur3dualball
     import manipulation.grip.robotiq85.rtq85 as rtq85
 
     import robotconn.ur3dual as ur3urx

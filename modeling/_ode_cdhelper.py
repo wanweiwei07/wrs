@@ -67,8 +67,8 @@ if __name__ == '__main__':
     import os, math, basis
     import numpy as np
     import visualization.panda.world as wd
-    import modeling.geometricmodel as gm
-    import modeling.collisionmodel as cm
+    import modeling.geometric_model as gm
+    import modeling.collision_model as cm
     import basis.robot_math as rm
 
     wd.World(cam_pos=[1.0, 1, .0, 1.0], lookat_pos=[0, 0, 0])

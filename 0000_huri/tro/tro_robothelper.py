@@ -1,7 +1,7 @@
 import numpy as np
 import utiltools.robotmath as rm
-from robotsim.robots.dualarm.yumi import yumi
-from robotsim.robots.dualarm.yumi import yumimesh, yumiball
+from robot_sim.robots.dualarm.yumi import yumi
+from robot_sim.robots.dualarm.yumi import yumimesh, yumiball
 import environment.suitayuminotop as yumisetting
 import manipulation.grip.yumiintegrated.yumiintegrated as yi
 from pandaplotutils import pandactrl

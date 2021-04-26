@@ -182,8 +182,8 @@ def load_pickle_file(objcm_name, root=None, file_name='preannotated_grasps.pickl
 if __name__ == '__main__':
     import os
     import basis
-    import robotsim.grippers.xarm_gripper.xarm_gripper as xag
-    import modeling.collisionmodel as cm
+    import robot_sim.grippers.xarm_gripper.xarm_gripper as xag
+    import modeling.collision_model as cm
     import visualization.panda.world as wd
 
     base = wd.World(cam_pos=[.5, .5, .3], lookat_pos=[0, 0, 0])

@@ -6,8 +6,8 @@ from panda3d.bullet import BulletPlaneShape, BulletDebugNode
 from panda3d.bullet import BulletRigidBodyNode
 from panda3d.bullet import BulletBoxShape, BulletTriangleMeshShape, BulletSphereShape, BulletCylinderShape, ZUp
 from panda3d.bullet import BulletCapsuleShape, BulletConeShape,BulletConvexHullShape, BulletTriangleMesh
-import modeling.collisionmodel as cm
-import modeling.geometricmodel as gm
+import modeling.collision_model as cm
+import modeling.geometric_model as gm
 import basis.data_adapter as da
 import copy
 

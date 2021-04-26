@@ -1,7 +1,7 @@
 import visualization.panda.world as wd
 from panda3d.ode import OdeWorld, OdeBody, OdeMass, OdeBallJoint
-import modeling.collisionmodel as cm
-import modeling.geometricmodel as gm
+import modeling.collision_model as cm
+import modeling.geometric_model as gm
 import basis.data_adapter as da
 import numpy as np
 

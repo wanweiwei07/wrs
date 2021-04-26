@@ -214,8 +214,8 @@ class RRT(object):
 
 
 if __name__ == '__main__':
-    import robotsim._kinematics.jlchain as jl
-    import robotsim.robots.robot_interface as ri
+    import robot_sim._kinematics.jlchain as jl
+    import robot_sim.robots.robot_interface as ri
 
 
     class XYBot(ri.RobotInterface):

@@ -4,10 +4,10 @@ import pickle
 from concurrent import futures
 import numpy as np
 import basis.trimesh as trm # for creating obj
-import modeling.geometricmodel as gm
-import modeling.modelcollection as mc
+import modeling.geometric_model as gm
+import modeling.model_collection as mc
 import visualization.panda.world as wd
-import robotsim.robots.robot_interface as ri
+import robot_sim.robots.robot_interface as ri
 import visualization.panda.rpc.rviz_server as rs
 import visualization.panda.rpc.rviz_pb2_grpc as rv_rpc
 

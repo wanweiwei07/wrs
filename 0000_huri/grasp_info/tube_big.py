@@ -7,8 +7,8 @@ if __name__ == '__main__':
 
     import os
     import basis
-    import robotsim.grippers.yumi_gripper.yumi_gripper as yg
-    import modeling.collisionmodel as cm
+    import robot_sim.grippers.yumi_gripper.yumi_gripper as yg
+    import modeling.collision_model as cm
     import visualization.panda.world as wd
 
     base = wd.World(cam_pos=[.5, .5, .3], lookat_pos=[0, 0, 0])

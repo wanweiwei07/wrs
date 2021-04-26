@@ -48,8 +48,8 @@ if __name__ == '__main__':
     import os, math, basis
     import numpy as np
     import visualization.panda.world as wd
-    import modeling.geometricmodel as gm
-    import modeling.collisionmodel as cm
+    import modeling.geometric_model as gm
+    import modeling.collision_model as cm
 
     # wd.World(cam_pos=[1.0, 1, .0, 1.0], lookat_pos=[0, 0, 0])
     # objpath = os.path.join(basis.__path__[0], 'objects', 'bunnysim.stl')

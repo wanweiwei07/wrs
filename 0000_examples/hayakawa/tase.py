@@ -1,10 +1,10 @@
 import visualization.panda.world as wd
-import robotsim.grippers.robotiq85.robotiq85 as rtq85
-import robotsim.robots.ur3_dual.ur3_dual as ur3ds
+import robot_sim.grippers.robotiq85.robotiq85 as rtq85
+import robot_sim.robots.ur3_dual.ur3_dual as ur3ds
 import basis.robot_math as rm
 import numpy as np
-import modeling.collisionmodel as cm
-import modeling.geometricmodel as gm
+import modeling.collision_model as cm
+import modeling.geometric_model as gm
 import motion.probabilistic.rrt_connect as rrtc
 import copy
 import drivers.rpc.frtknt.frtknt_client as frtknt
@@ -15,7 +15,7 @@ from skimage.measure import LineModelND, ransac
 import research_posemake_many as pose
 import math
 import socket
-import robotcon.ur.program_builder as pb
+import robot_con.ur.program_builder as pb
 import pickle
 import time
 import sympy as sp

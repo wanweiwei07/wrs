@@ -1,8 +1,8 @@
 from motion import smoother as sm
 from motion import checker as ctcb
 from motion import collisioncheckerball as cdck
-from robotsim.robots.dualarm.yumi import yumi
-from robotsim.robots.dualarm.yumi import yumimesh, yumiball
+from robot_sim.robots.dualarm.yumi import yumi
+from robot_sim.robots.dualarm.yumi import yumimesh, yumiball
 from pandaplotutils import pandactrl
 import manipulation.grip.yumiintegrated.yumiintegrated as yi
 import numpy as np

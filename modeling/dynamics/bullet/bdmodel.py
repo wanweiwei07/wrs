@@ -1,6 +1,6 @@
 import copy
 import math
-import modeling.geometricmodel as gm
+import modeling.geometric_model as gm
 import modeling.dynamics.bullet.bdbody as bdb
 from visualization.panda.world import ShowBase
 

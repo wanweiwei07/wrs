@@ -2,8 +2,8 @@ import grasping.annotation.utils as gau
 
 if __name__ == '__main__':
     import numpy as np
-    import robotsim.grippers.robotiq85.robotiq85 as rtq85
-    import modeling.collisionmodel as cm
+    import robot_sim.grippers.robotiq85.robotiq85 as rtq85
+    import modeling.collision_model as cm
     import visualization.panda.world as wd
 
     base = wd.World(cam_pos=[.5, .5, .3], lookat_pos=[0, 0, 0])

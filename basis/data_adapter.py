@@ -18,7 +18,7 @@ def randdom_colorarray(ncolors=1, alpha=1, nonrandcolor=None):
     """
     if ncolors == 1:
         if nonrandcolor:
-            return [nonrandcolor[0], nonrandcolor[1], nonrandcolor[2]]
+            return [nonrandcolor[0], nonrandcolor[1], nonrandcolor[2], alpha]
         else:
             return [np.random.random(), np.random.random(), np.random.random(), alpha]
     colorarray = []

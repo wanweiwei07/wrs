@@ -1,4 +1,4 @@
-import modeling.collisionmodel as cm
+import modeling.collision_model as cm
 from panda3d.ode import OdeWorld, OdeSimpleSpace, OdeJointGroup
 from panda3d.ode import OdeBody, OdeMass, OdeBoxGeom, OdePlaneGeom, OdeTriMeshGeom, OdeTriMeshData
 from panda3d.core import BitMask32, CardMaker, Vec4

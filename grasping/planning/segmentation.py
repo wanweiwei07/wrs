@@ -154,8 +154,8 @@ if __name__ == '__main__':
     import basis
     import basis.robot_math as rm
     import visualization.panda.world as wd
-    import modeling.collisionmodel as cm
-    import modeling.geometricmodel as gm
+    import modeling.collision_model as cm
+    import modeling.geometric_model as gm
     import basis.trimesh_generator as tg
     import cProfile as profile
     import pstats

@@ -3,9 +3,9 @@ import time
 import math
 import basis
 import numpy as np
-import modeling.geometricmodel as gm
-import modeling.collisionmodel as cm
-import robotsim.robots.xarm7_shuidi_mobile.xarm7_shuidi_mobile as xav
+import modeling.geometric_model as gm
+import modeling.collision_model as cm
+import robot_sim.robots.xarm7_shuidi_mobile.xarm7_shuidi_mobile as xav
 
 
 if __name__ == '__main__':

@@ -1,10 +1,10 @@
 #### Program for my research
 #### generate many pose of graspping in both hands(for pulling rope) and pushing in left hand(for pushing object)
 import visualization.panda.world as wd
-import robotsim.grippers.robotiq85.robotiq85 as rtq85
-import robotsim.robots.ur3_dual.ur3_dual as rbts
-import modeling.collisionmodel as cm
-import modeling.geometricmodel as gm
+import robot_sim.grippers.robotiq85.robotiq85 as rtq85
+import robot_sim.robots.ur3_dual.ur3_dual as rbts
+import modeling.collision_model as cm
+import modeling.geometric_model as gm
 import basis.robot_math as rm
 import math
 import numpy as np

@@ -4,7 +4,7 @@ from panda3d.bullet import BulletTriangleMeshShape
 from panda3d.bullet import BulletConvexHullShape
 from panda3d.core import TransformState, Vec3, GeomVertexRewriter
 import copy
-import modeling.geometricmodel as gm
+import modeling.geometric_model as gm
 import basis.data_adapter as dh
 import basis.robot_math as rm
 

@@ -5,8 +5,8 @@ import manipulation.grip.yumiintegrated.yumiintegrated as yi
 import manipulation.grip.freegrip as freegrip
 import environment.collisionmodel as cm
 import environment.suitayuminotop as yumisetting
-from robotsim.robots.dualarm.yumi import yumi
-from robotsim.robots.dualarm.yumi import yumimesh, yumiball
+from robot_sim.robots.dualarm.yumi import yumi
+from robot_sim.robots.dualarm.yumi import yumimesh, yumiball
 import copy
 import motion.collisioncheckerball as cdball
 import environment.bulletcdhelper as bch

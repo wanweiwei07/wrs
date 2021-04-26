@@ -1,4 +1,4 @@
-import modeling.geometricmodel as gm
+import modeling.geometric_model as gm
 import visualization.panda.world as wd
 import cv2
 import img_to_depth as itd

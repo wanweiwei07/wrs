@@ -177,8 +177,8 @@ class FKOptBasedIK(object):
 
 if __name__ == '__main__':
     import visualization.panda.world as wd
-    import robotsim.robots.yumi.yumi as ym
-    import modeling.geometricmodel as gm
+    import robot_sim.robots.yumi.yumi as ym
+    import modeling.geometric_model as gm
 
     base = wd.World(cam_pos=[1.5, 0, 3], lookat_pos=[0, 0, .5])
     component_name= 'rgt_arm'

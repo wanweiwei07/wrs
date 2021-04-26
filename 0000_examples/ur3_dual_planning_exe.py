@@ -1,11 +1,11 @@
 import math
 import numpy as np
 import visualization.panda.world as wd
-import modeling.geometricmodel as gm
-import modeling.collisionmodel as cm
-import robotsim.robots.ur3_dual.ur3_dual as ur3d
+import modeling.geometric_model as gm
+import modeling.collision_model as cm
+import robot_sim.robots.ur3_dual.ur3_dual as ur3d
 import motion.probabilistic.rrt_connect as rrtc
-import robotcon.ur.ur3_dual_x as ur3dx
+import robot_con.ur.ur3_dual_x as ur3dx
 
 base = wd.World(cam_pos=[2, 1, 3], lookat_pos=[0, 0, 1.1])
 gm.gen_frame().attach_to(base)

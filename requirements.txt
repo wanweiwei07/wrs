@@ -11,5 +11,4 @@ Rtree>=0.9.7 # required by trimesh
 open3d>=0.12.0 # required for cloud processing
 shapely>=1.7.1 # required by ?
 networkx>=2.5.1 # vital
-math3d>=3.4.1 # required by drivers.urx
 # gimpact # optional mesh-level collision detection

@@ -163,8 +163,8 @@ if __name__ == '__main__':
     import time
     import basis
     import numpy as np
-    import modeling.collisionmodel as cm
-    import modeling.geometricmodel as gm
+    import modeling.collision_model as cm
+    import modeling.geometric_model as gm
     import visualization.panda.world as wd
 
     base = wd.World(cam_pos=[.7, .7, .7], lookat_pos=[0, 0, 0])

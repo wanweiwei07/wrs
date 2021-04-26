@@ -244,7 +244,7 @@ class NIK(object):
         ws_wtdiagmat = np.diag(self.ws_wtlist)
         if toggle_debug:
             if "jlm" not in dir():
-                import robotsim._kinematics.jlchainmesh as jlm
+                import robot_sim._kinematics.jlchainmesh as jlm
             if "plt" not in dir():
                 import matplotlib.pyplot as plt
             # jlmgen = jlm.JntLnksMesh()
@@ -425,9 +425,9 @@ class NIK(object):
 
 if __name__ == '__main__':
     import time
-    import robotsim.robots.yumi.yumi as ym
+    import robot_sim.robots.yumi.yumi as ym
     import visualization.panda.world as wd
-    import modeling.geometricmodel as gm
+    import modeling.geometric_model as gm
 
     base = wd.World(cam_pos=[1.5, 0, 3], lookat_pos=[0, 0, .5])
     gm.gen_frame().attach_to(base)

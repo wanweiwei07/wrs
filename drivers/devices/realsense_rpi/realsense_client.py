@@ -113,7 +113,7 @@ if __name__ == '__main__':
     # time.sleep(3)
 
     import visualization.panda.rpc.rviz_client as rv_client
-    import modeling.geometricmodel as gm
+    import modeling.geometric_model as gm
     rvc = rv_client.RVizClient(host="localhost:182001")
     rvc.reset()
     last_rmt= None

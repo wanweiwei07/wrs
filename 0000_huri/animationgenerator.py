@@ -8,8 +8,8 @@ def animationgen(rhx, numikmsmp, jawwidthmsmp, objmsmp, othersmsmp, sg_doestimat
     create an animation with space
 
     :param base:
-    :param robot_s: robotsim/robot_s/robot_s.py
-    :param rbtmg: robotsim/robot_s/robotmesh.py
+    :param robot_s: robot_sim/robot_s/robot_s.py
+    :param rbtmg: robot_sim/robot_s/robotmesh.py
     :param numikmsmp: multisectional numikrms [waist, [left6], [right6]], ...
     :param jawwidthmsmp: multisectional jaw_width [leftwidth, rightwidth], ...
     :param objmsmp: object multisectional motion sequence
@@ -145,8 +145,8 @@ def animationgen_cont(rhx, numikmsmp, jawwidthmsmp, objmsmp, othersmsmp, sg_does
     _cont means there is no need for pressing "space"
 
     :param base:
-    :param robot_s: robotsim/robot_s/robot_s.py
-    :param rbtmg: robotsim/robot_s/robotmesh.py
+    :param robot_s: robot_sim/robot_s/robot_s.py
+    :param rbtmg: robot_sim/robot_s/robotmesh.py
     :param numikmsmp: multisectional numikrms [waist, [left6], [right6]], ...
     :param jawwidthmsmp: multisectional jaw_width [leftwidth, rightwidth], ...
     :param objmsmp: object multisectional motion sequence

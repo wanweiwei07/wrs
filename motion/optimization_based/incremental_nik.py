@@ -1,7 +1,7 @@
 import math
 import numpy as np
 import basis.robot_math as rm
-import modeling.geometricmodel as gm
+import modeling.geometric_model as gm
 
 
 class IncrementalNIK(object):
@@ -181,9 +181,9 @@ class IncrementalNIK(object):
 
 if __name__ == '__main__':
     import time
-    import robotsim.robots.yumi.yumi as ym
+    import robot_sim.robots.yumi.yumi as ym
     import visualization.panda.world as wd
-    import modeling.geometricmodel as gm
+    import modeling.geometric_model as gm
 
     base = wd.World(cam_pos=[1.5, 0, 3], lookat_pos=[0, 0, .5])
     gm.gen_frame().attach_to(base)

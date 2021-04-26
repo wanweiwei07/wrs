@@ -2,7 +2,7 @@
 # I am running physics for meshes. When using millimeter as the metrics, my frame rate reaches to 60fps,
 # but when I change them to meters, the number lowers down to 1fps or less. I am wondering if I did a wrong option.
 
-import modeling.collisionmodel as cm
+import modeling.collision_model as cm
 import modeling.dynamics.bullet.bdbody as bbd
 import visualization.panda.world as wd
 import math

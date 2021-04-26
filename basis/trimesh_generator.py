@@ -508,7 +508,7 @@ def extract_face_center_and_normal(objtrm, face_id_list, offset_pos=np.zeros(3),
 
 if __name__ == "__main__":
     import visualization.panda.world as wd
-    import modeling.geometricmodel as gm
+    import modeling.geometric_model as gm
 
     base = wd.World(cam_pos=[.5, .2, .3], lookat_pos=[0, 0, 0], auto_cam_rotate=False)
     # objcm = gm.WireFrameModel(gen_torus())
