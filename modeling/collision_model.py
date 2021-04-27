@@ -150,7 +150,7 @@ class CollisionModel(gm.GeometricModel):
         self._objpdnp.attachNewNode(cdnd)
         self._objpdnp.getChild(1).setCollideMask(BitMask32(2 ** 31))
 
-    def change_cdmesh_type(self, cdmesh_type='convexhull'):
+    def change_cdmesh_type(self, cdmesh_type='convex_hull'):
         """
         :param cdmesh_type:
         :return:

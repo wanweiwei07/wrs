@@ -3,7 +3,7 @@ import numpy as np
 import modeling.model_collection as mc
 import basis.robot_math as rm
 import robot_sim._kinematics.jlchain as jl
-import robot_sim._kinematics.collisionchecker as cc
+import robot_sim._kinematics.collision_checker as cc
 
 
 class GripperInterface(object):

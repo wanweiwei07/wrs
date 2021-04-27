@@ -297,7 +297,7 @@ class JLChainIK(object):
         # sqrtinv_ws_wtdiagmat = np.linalg.inv(np.diag(np.sqrt(np.diag(ws_wtdiagmat))))
         if toggle_debug:
             if "jlm" not in dir():
-                import robot_sim._kinematics.jlchainmesh as jlm
+                import robot_sim._kinematics.jlchain_mesh as jlm
             if "plt" not in dir():
                 import matplotlib.pyplot as plt
             dqbefore = []

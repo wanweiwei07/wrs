@@ -1,6 +1,6 @@
 import copy
 import numpy as np
-import robot_sim._kinematics.collisionchecker as cc
+import robot_sim._kinematics.collision_checker as cc
 
 
 class RobotInterface(object):

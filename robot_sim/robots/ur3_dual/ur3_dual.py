@@ -720,9 +720,11 @@ class UR3Dual(ri.RobotInterface):
                                    toggle_jntscs=toggle_jntscs,
                                    rgba=rgba).attach_to(meshmodel)
         self.lft_ft_sensor.gen_meshmodel(toggle_tcpcs=toggle_tcpcs,
-                                         toggle_jntscs=toggle_jntscs).attach_to(meshmodel)
+                                         toggle_jntscs=toggle_jntscs,
+                                         rgba=rgba).attach_to(meshmodel)
         self.rgt_ft_sensor.gen_meshmodel(toggle_tcpcs=toggle_tcpcs,
-                                         toggle_jntscs=toggle_jntscs).attach_to(meshmodel)
+                                         toggle_jntscs=toggle_jntscs,
+                                         rgba=rgba).attach_to(meshmodel)
         for obj_info in self.lft_oih_infos:
             objcm = obj_info['collisionmodel']
             objcm.set_pos(obj_info['gl_pos'])

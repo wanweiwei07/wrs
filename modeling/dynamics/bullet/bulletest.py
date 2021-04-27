@@ -40,7 +40,7 @@ cm.gm.gen_frame().attach_to(base)
 # Boxes
 # model = loader.loadModel('models/box.egg')
 model = cm.CollisionModel("./objects/bunnysim.stl")
-node = bbd.BDBody(model, cdtype='convex', dynamic=True)
+node = bbd.BDBody(model, cdtype='box', dynamic=True)
 bulletnodelist = []
 for i in range(10):
     # node = bch.genBulletCDMesh(model)

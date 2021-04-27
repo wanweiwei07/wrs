@@ -2,8 +2,8 @@ import math
 import copy
 import numpy as np
 import basis.robot_math as rm
-import robot_sim._kinematics.jlchainmesh as jlm
-import robot_sim._kinematics.jlchainik as jlik
+import robot_sim._kinematics.jlchain_mesh as jlm
+import robot_sim._kinematics.jlchain_ik as jlik
 
 
 class JLChain(object):
@@ -30,7 +30,8 @@ class JLChain(object):
         conf -- configuration: target joint values
         :param pos:
         :param rotmat:
-        :param homeconf:
+        :param homeconf: number of joints
+        :param name:
         :param cdprimitive_type: 'aabb', 'obb', 'convex_hull', 'triangulation
         :param cdmesh_type:
         :param name:
@@ -273,79 +274,6 @@ class JLChain(object):
             counter += 1
         return jnt_values
 
-    # def jacobian(self):  # TODO: merge with jlik
-    #     """
-    #     compute the jacobian matrix
-    #     :return: jmat, a 6xn nparray
-    #     author: weiwei
-    #     date: 20161202, 20200331, 20200705
-    #     """
-    #     jmat = np.zeros((6, len(self.tgtjnts)))
-    #     counter = 0
-    #     for id in self.tgtjnts:
-    #         if self.jnts[id]["type"] == "revolute":
-    #             grax = self.jnts[id]["gl_motionax"]
-    #             jmat[:, counter] = np.append(
-    #                 np.cross(grax, self.jnts[self.tgtjnts[-1]]["gl_posq"] - self.jnts[id]["gl_posq"]), grax)
-    #         elif self.jnts[id]["type"] == "prismatic":
-    #             jmat[:, counter] = np.append(self.jnts[id]["gl_motionax"], np.zeros(3))
-    #         counter += 1
-    #     return jmat
-
-    # def chkrng(self, jnt_values):  # TODO: merge with jlik
-    #     """
-    #     check if the given jnt_values is inside the oeprating range
-    #     this function doesn't check the waist
-    #     :param jnt_values: a 1xn ndarray
-    #     :return: True or False indicating inside the range or not
-    #     author: weiwei
-    #     date: 20161205
-    #     """
-    #     counter = 0
-    #     for id in self.tgtjnts:
-    #         if jnt_values[counter] < self.jnts[id]["rngmin"] or jnt_values[counter] > self.jnts[id]["rngmax"]:
-    #             print("Joint " + str(id) + " of the arm is out of range!")
-    #             print("Value is " + str(jnt_values[counter]) + " .")
-    #             print("Range is (" + str(self.jnts[id]["rngmin"]) + ", " + str(self.jnts[id]["rngmax"]) + ").")
-    #             return False
-    #         counter += 1
-    #
-    #     return True
-
-    # def chkrngdrag(self, jnt_values):  # TODO: merge with jlik
-    #     """
-    #     check if the given jnt_values is inside the oeprating range
-    #     The joint values out of range will be pulled back to their maxima
-    #     :param jnt_values: a 1xn numpy ndarray
-    #     :return: Two parameters, one is true or false indicating if the joint values are inside the range or not
-    #             The other is the joint values after dragging.
-    #             If the joints were not dragged, the same joint values will be returned
-    #     author: weiwei
-    #     date: 20161205
-    #     """
-    #     counter = 0
-    #     isdragged = np.zeros_like(jnt_values)
-    #     jnt_valuesdragged = jnt_values.copy()
-    #     for id in self.tgtjnts:
-    #         if self.jnts[id]["type"] == "revolute":
-    #             if self.jnts[id]["rngmax"] - self.jnts[id]["rngmin"] < math.pi * 2:
-    #                 if jnt_values[counter] < self.jnts[id]["rngmin"]:
-    #                     isdragged[counter] = 1
-    #                     jnt_valuesdragged[counter] = self.jnts[id]["rngmin"]
-    #                 elif jnt_values[counter] > self.jnts[id]["rngmax"]:
-    #                     isdragged[counter] = 1
-    #                     jnt_valuesdragged[counter] = self.jnts[id]["rngmax"]
-    #         elif self.jnts[id]["type"] == "prismatic":  # prismatic
-    #             if jnt_values[counter] < self.jnts[id]["rngmin"]:
-    #                 isdragged[counter] = 1
-    #                 jnt_valuesdragged[counter] = self.jnts[id]["rngmin"]
-    #             elif jnt_values[counter] > self.jnts[id]["rngmax"]:
-    #                 isdragged[counter] = 1
-    #                 jnt_valuesdragged[counter] = self.jnts[id]["rngmax"]
-    #         counter += 1
-    #
-    #     return isdragged, jnt_valuesdragged
-
     def rand_conf(self):
         """
         generate a random configuration
@@ -492,64 +420,14 @@ class JLChain(object):
     def gen_endsphere(self):
         return self._mt.gen_endsphere()
 
-    # def show_cdprimit(self):
-    #     self._mt.show_cdprimit(need_update = self.is_fk_updated)
-    #
-    # def unshow_cdprimit(self):
-    #     self._mt.unshow_cdprimit()
-
     def copy(self):
         return copy.deepcopy(self)
-
-    # def copy(self, name=None):
-    #     """
-    #     TODO not correct
-    #     return a copy of the file with a new name if provided
-    #     :param: name
-    #     :return:
-    #     """
-    #     if name is None:
-    #         name = self.name
-    #     self_copy = JLChain(pos = self.pos,
-    #                         rotmat = self.rotmat,
-    #                         homeconf = self.homeconf,
-    #                         name = name)
-    #     for id in range(self.ndof + 1):
-    #         self_copy.lnks[id]['name'] = copy.deepcopy(self.lnks[id]['name'])
-    #         self_copy.lnks[id]['loc_pos'] = copy.deepcopy(self.lnks[id]['loc_pos'])
-    #         self_copy.lnks[id]['loc_rotmat'] = copy.deepcopy(self.lnks[id]['loc_rotmat'])
-    #         self_copy.lnks[id]['com'] = copy.deepcopy(self.lnks[id]['com'])
-    #         self_copy.lnks[id]['inertia'] = copy.deepcopy(self.lnks[id]['inertia'])
-    #         self_copy.lnks[id]['mass'] = copy.deepcopy(self.lnks[id]['mass'])
-    #         self_copy.lnks[id]['meshfile'] = copy.deepcopy(self.lnks[id]['meshfile'])
-    #         self_copy.lnks[id]['collisionmodel'] = copy.deepcopy(self.lnks[id]['collisionmodel'])
-    #         self_copy.lnks[id]['cdprimit_cache'] = [self.lnks[id]['cdprimit_cache'][0], None]
-    #         self_copy.lnks[id]['scale'] = copy.deepcopy(self.lnks[id]['scale'])
-    #         self_copy.lnks[id]['rgba'] = copy.deepcopy(self.lnks[id]['rgba'])
-    #     for id in range(self.ndof + 2):
-    #         self_copy.jnts[id]['type'] = copy.deepcopy(self.jnts[id]['type'])
-    #         self_copy.jnts[id]['parent'] = copy.deepcopy(self.jnts[id]['parent'])
-    #         self_copy.jnts[id]['child'] = copy.deepcopy(self.jnts[id]['child'])
-    #         self_copy.jnts[id]['loc_pos'] = copy.deepcopy(self.jnts[id]['loc_pos'])
-    #         self_copy.jnts[id]['loc_rotmat'] = copy.deepcopy(self.jnts[id]['loc_rotmat'])
-    #         self_copy.jnts[id]['loc_motionax'] = copy.deepcopy(self.jnts[id]['loc_motionax'])
-    #         self_copy.jnts[id]['gl_pos0'] = copy.deepcopy(self.jnts[id]['gl_pos0'])
-    #         self_copy.jnts[id]['gl_rotmat0'] = copy.deepcopy(self.jnts[id]['gl_rotmat0'])
-    #         self_copy.jnts[id]['gl_motionax'] = copy.deepcopy(self.jnts[id]['gl_motionax'])
-    #         self_copy.jnts[id]['gl_posq'] = copy.deepcopy(self.jnts[id]['gl_posq'])
-    #         self_copy.jnts[id]['gl_rotmatq'] = copy.deepcopy(self.jnts[id]['gl_rotmatq'])
-    #         self_copy.jnts[id]['rngmin'] = copy.deepcopy(self.jnts[id]['rngmin'])
-    #         self_copy.jnts[id]['rngmax'] = copy.deepcopy(self.jnts[id]['rngmax'])
-    #         self_copy.jnts[id]['motion_val'] = copy.deepcopy(self.jnts[id]['motion_val'])
-    #     self_copy._mt = jlm.JLChainMesh(self_copy)
-    #
-    #     return self_copy
 
 
 if __name__ == "__main__":
     import time
     import visualization.panda.world as wd
-    import robot_sim._kinematics.jlchainmesh as jlm
+    import robot_sim._kinematics.jlchain_mesh as jlm
     import modeling.geometric_model as gm
 
     base = wd.World(cam_pos=[3, 0, 3], lookat_pos=[0, 0, 0])

@@ -1,8 +1,8 @@
 from panda3d.bullet import BulletRigidBodyNode
 from panda3d.bullet import BulletTriangleMesh
 from panda3d.bullet import BulletTriangleMeshShape
-from panda3d.bullet import BulletConvexHullShape
-from panda3d.core import TransformState, Vec3, GeomVertexRewriter
+from panda3d.bullet import BulletConvexHullShape, BulletBoxShape
+from panda3d.core import TransformState, Vec3, GeomVertexRewriter, CollisionBox, Point3
 import copy
 import modeling.geometric_model as gm
 import basis.data_adapter as dh
@@ -72,6 +72,17 @@ class BDBody(BulletRigidBodyNode):
             elif cdtype == "convex":
                 bulletshape = BulletConvexHullShape()  # TODO: compute a convex hull?
                 bulletshape.addGeom(geom, geomtf)
+                bulletshape.setMargin(1e-6)
+                self.addShape(bulletshape, geomtf)
+            elif cdtype == 'box':
+                minx = min(vertices[:,0])
+                miny = min(vertices[:,1])
+                minz = min(vertices[:,2])
+                maxx = max(vertices[:,0])
+                maxy = max(vertices[:,1])
+                maxz = max(vertices[:,2])
+                pcd_box = CollisionBox(Point3(minx, miny, minz),Point3(maxx, maxy, maxz))
+                bulletshape = BulletBoxShape.makeFromSolid(pcd_box)
                 bulletshape.setMargin(1e-6)
                 self.addShape(bulletshape, geomtf)
             else:

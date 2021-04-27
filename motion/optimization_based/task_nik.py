@@ -244,7 +244,7 @@ class NIK(object):
         ws_wtdiagmat = np.diag(self.ws_wtlist)
         if toggle_debug:
             if "jlm" not in dir():
-                import robot_sim._kinematics.jlchainmesh as jlm
+                import robot_sim._kinematics.jlchain_mesh as jlm
             if "plt" not in dir():
                 import matplotlib.pyplot as plt
             # jlmgen = jlm.JntLnksMesh()
