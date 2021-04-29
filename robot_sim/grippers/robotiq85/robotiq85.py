@@ -202,70 +202,63 @@ class Robotiq85(gp.GripperInterface):
                        toggle_jntscs=False,
                        toggle_connjnt=False,
                        name='robotiq85_stickmodel'):
-        stickmodel = mc.ModelCollection(name=name)
-        self.coupling.gen_stickmodel(tcp_loc_pos=None,
-                                     tcp_loc_rotmat=None,
-                                     toggle_tcpcs=False,
-                                     toggle_jntscs=toggle_jntscs).attach_to(stickmodel)
-        self.lft_outer.gen_stickmodel(tcp_jntid=tcp_jntid,
-                                      tcp_loc_pos=tcp_loc_pos,
-                                      tcp_loc_rotmat=tcp_loc_rotmat,
-                                      toggle_tcpcs=toggle_tcpcs,
+        sm_collection = mc.ModelCollection(name=name)
+        self.coupling.gen_stickmodel(toggle_tcpcs=False,
+                                     toggle_jntscs=toggle_jntscs).attach_to(sm_collection)
+        self.lft_outer.gen_stickmodel(toggle_tcpcs=toggle_tcpcs,
                                       toggle_jntscs=toggle_jntscs,
-                                      toggle_connjnt=toggle_connjnt).attach_to(stickmodel)
-        self.lft_inner.gen_stickmodel(tcp_loc_pos=None,
-                                      tcp_loc_rotmat=None,
-                                      toggle_tcpcs=False,
+                                      toggle_connjnt=toggle_connjnt).attach_to(sm_collection)
+        self.lft_inner.gen_stickmodel(toggle_tcpcs=False,
                                       toggle_jntscs=toggle_jntscs,
-                                      toggle_connjnt=toggle_connjnt).attach_to(stickmodel)
-        self.rgt_outer.gen_stickmodel(tcp_loc_pos=None,
-                                      tcp_loc_rotmat=None,
-                                      toggle_tcpcs=False,
+                                      toggle_connjnt=toggle_connjnt).attach_to(sm_collection)
+        self.rgt_outer.gen_stickmodel(toggle_tcpcs=False,
                                       toggle_jntscs=toggle_jntscs,
-                                      toggle_connjnt=toggle_connjnt).attach_to(stickmodel)
-        self.rgt_inner.gen_stickmodel(tcp_loc_pos=None,
-                                      tcp_loc_rotmat=None,
-                                      toggle_tcpcs=False,
+                                      toggle_connjnt=toggle_connjnt).attach_to(sm_collection)
+        self.rgt_inner.gen_stickmodel(toggle_tcpcs=False,
                                       toggle_jntscs=toggle_jntscs,
-                                      toggle_connjnt=toggle_connjnt).attach_to(stickmodel)
-        return stickmodel
+                                      toggle_connjnt=toggle_connjnt).attach_to(sm_collection)
+        if toggle_tcpcs:
+            jaw_center_gl_pos = self.rotmat.dot(grpr.jaw_center_loc_pos)+self.pos
+            jaw_center_gl_rotmat = self.rotmat.dot(grpr.jaw_center_loc_rotmat)
+            gm.gen_dashstick(spos=self.pos,
+                             epos=jaw_center_gl_pos,
+                             thickness=.0062,
+                             rgba=[.5,0,1,1],
+                             type="round").attach_to(sm_collection)
+            gm.gen_mycframe(pos=jaw_center_gl_pos, rotmat=jaw_center_gl_rotmat).attach_to(sm_collection)
+        return sm_collection
 
     def gen_meshmodel(self,
-                      tcp_jntid=None,
-                      tcp_loc_pos=None,
-                      tcp_loc_rotmat=None,
                       toggle_tcpcs=False,
                       toggle_jntscs=False,
                       rgba=None,
                       name='robotiq85_meshmodel'):
-        stickmodel = mc.ModelCollection(name=name)
-        self.coupling.gen_meshmodel(tcp_loc_pos=None,
-                                    tcp_loc_rotmat=None,
-                                    toggle_tcpcs=False,
+        mm_collection = mc.ModelCollection(name=name)
+        self.coupling.gen_meshmodel(toggle_tcpcs=False,
                                     toggle_jntscs=toggle_jntscs,
-                                    rgba=rgba).attach_to(stickmodel)
-        self.lft_outer.gen_meshmodel(tcp_jntid=tcp_jntid,
-                                     tcp_loc_pos=tcp_loc_pos,
-                                     tcp_loc_rotmat=tcp_loc_rotmat,
-                                     toggle_tcpcs=toggle_tcpcs,
+                                    rgba=rgba).attach_to(mm_collection)
+        self.lft_outer.gen_meshmodel(toggle_tcpcs=False,
                                      toggle_jntscs=toggle_jntscs,
-                                     rgba=rgba).attach_to(stickmodel)
-        self.lft_inner.gen_meshmodel(tcp_loc_pos=None,
-                                     tcp_loc_rotmat=None,
-                                     toggle_tcpcs=False,
+                                     rgba=rgba).attach_to(mm_collection)
+        self.lft_inner.gen_meshmodel(toggle_tcpcs=False,
                                      toggle_jntscs=toggle_jntscs,
-                                     rgba=rgba).attach_to(stickmodel)
-        self.rgt_outer.gen_meshmodel(tcp_loc_pos=None,
-                                     tcp_loc_rotmat=None,
-                                     toggle_tcpcs=False,
+                                     rgba=rgba).attach_to(mm_collection)
+        self.rgt_outer.gen_meshmodel(toggle_tcpcs=False,
                                      toggle_jntscs=toggle_jntscs,
-                                     rgba=rgba).attach_to(stickmodel)
-        self.rgt_inner.gen_meshmodel(tcp_loc_pos=None,
-                                     tcp_loc_rotmat=None,
-                                     toggle_tcpcs=False,
+                                     rgba=rgba).attach_to(mm_collection)
+        self.rgt_inner.gen_meshmodel(toggle_tcpcs=False,
                                      toggle_jntscs=toggle_jntscs,
-                                     rgba=rgba).attach_to(stickmodel)
-        return stickmodel
+                                     rgba=rgba).attach_to(mm_collection)
+        if toggle_tcpcs:
+            jaw_center_gl_pos = self.rotmat.dot(grpr.jaw_center_loc_pos)+self.pos
+            jaw_center_gl_rotmat = self.rotmat.dot(grpr.jaw_center_loc_rotmat)
+            gm.gen_dashstick(spos=self.pos,
+                             epos=jaw_center_gl_pos,
+                             thickness=.0062,
+                             rgba=[.5,0,1,1],
+                             type="round").attach_to(mm_collection)
+            gm.gen_mycframe(pos=jaw_center_gl_pos, rotmat=jaw_center_gl_rotmat).attach_to(mm_collection)
+        return mm_collection
 
 
 if __name__ == '__main__':
@@ -279,7 +272,7 @@ if __name__ == '__main__':
     grpr.cdmesh_type='convexhull'
     # grpr.fk(.0)
     grpr.jaw_to(.0)
-    grpr.gen_meshmodel(rgba=[.3, .3, .0, .5]).attach_to(base)
+    grpr.gen_meshmodel(toggle_tcpcs=True, rgba=[.3, .3, .0, .5]).attach_to(base)
     # grpr.gen_stickmodel(togglejntscs=False).attach_to(base)
     # grpr.fix_to(pos=np.array([0, .3, .2]), rotmat=rm.rotmat_from_axangle([1, 0, 0], math.pi / 6))
     # grpr.gen_meshmodel().attach_to(base)

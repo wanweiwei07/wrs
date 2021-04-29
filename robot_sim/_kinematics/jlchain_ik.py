@@ -68,8 +68,8 @@ class JLChainIK(object):
         selection = (jntvalues - self.jmvmax_threshhold > 0)
         diff_selected = jntvalues[selection] - self.jmvmax_threshhold[selection]
         wtmat[selection] = -2 * np.power(diff_selected, 3) + 3 * np.power(diff_selected, 2)
-        wtmat[jntvalues >= self.jmvmax] = 1e-6
-        wtmat[jntvalues <= self.jmvmin] = 1e-6
+        wtmat[jntvalues >= self.jmvmax] = 1e-16
+        wtmat[jntvalues <= self.jmvmin] = 1e-16
         return np.diag(wtmat)
 
     def jacobian(self, tcp_jntid):
@@ -392,6 +392,8 @@ class JLChainIK(object):
                     # jsharp = j.T.dot(np.linalg.inv(jjt + damper))
                     # weighted jjt
                     qs_wtdiagmat = self._wln_weightmat(jnt_values_iter)
+                    # print(jnt_values_iter)
+                    # print(qs_wtdiagmat)
                     winv_jt = np.linalg.inv(qs_wtdiagmat).dot(j.T)
                     j_winv_jt = j.dot(winv_jt)
                     damper = dampercoeff * np.identity(j_winv_jt.shape[0])

@@ -716,7 +716,7 @@ class UR3Dual(ri.RobotInterface):
                                    rgba=rgba).attach_to(meshmodel)
         self.rgt_hnd.gen_meshmodel(tcp_loc_pos=None,
                                    tcp_loc_rotmat=None,
-                                   toggle_tcpcs=toggle_tcpcs,
+                                   toggle_tcpcs=False,
                                    toggle_jntscs=toggle_jntscs,
                                    rgba=rgba).attach_to(meshmodel)
         self.lft_ft_sensor.gen_meshmodel(toggle_tcpcs=toggle_tcpcs,

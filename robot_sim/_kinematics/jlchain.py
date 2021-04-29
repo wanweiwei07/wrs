@@ -80,7 +80,6 @@ class JLChain(object):
             lnks[id]['mass'] = 0  # the visual adjustment is ignored for simplisity
             lnks[id]['meshfile'] = None
             lnks[id]['collisionmodel'] = None
-            # lnks[id]['cdprimit_cache'] = [False, -1]  # p1: need update? p2: id of the CollisionChecker.np.Child
             lnks[id]['cdprimit_childid'] = -1 # id of the CollisionChecker.np.Child
             lnks[id]['scale'] = [1, 1, 1]  # 3 list
             lnks[id]['rgba'] = [.7, .7, .7, 1]  # 4 list
@@ -97,8 +96,6 @@ class JLChain(object):
             jnts[id]['gl_posq'] = jnts[id]['gl_pos0']  # to be updated by self._update_fk
             jnts[id]['gl_rotmatq'] = jnts[id]['gl_rotmat0']  # to be updated by self._update_fk
             jnts[id]['motion_rng'] = [-math.pi, math.pi] # min, max
-            # jnts[id]['rngmin'] = -math.pi
-            # jnts[id]['rngmax'] = +math.pi
             jnts[id]['motion_val'] = 0
         jnts[0]['gl_pos0'] = self.pos  # This is not necessary, for easy read
         jnts[0]['gl_rotmat0'] = self.rotmat
@@ -191,6 +188,7 @@ class JLChain(object):
         if cdmesh_type is None:
             cdmesh_type = self.cdmesh_type
         self._mg = jlm.JLChainMesh(self, cdprimitive_type, cdmesh_type)
+        self._ikt = jlik.JLChainIK(self)
 
     def set_tcp(self, tcp_jntid=None, tcp_loc_pos=None, tcp_loc_rotmat=None):
         if tcp_jntid is not None:
@@ -456,7 +454,6 @@ if __name__ == "__main__":
     tcp_jntidlist = [jlinstance.tgtjnts[-1], jlinstance.tgtjnts[-6]]
     tcp_loc_poslist = [np.array([.03, 0, .0]), np.array([.03, 0, .0])]
     tcp_loc_rotmatlist = [np.eye(3), np.eye(3)]
-    #
     # tgt_pos_list = tgt_pos_list[0]
     # tgt_rotmat_list = tgt_rotmat_list[0]
     # tcp_jntidlist = tcp_jntidlist[0]

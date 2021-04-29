@@ -114,9 +114,6 @@ class GripperInterface(object):
         raise NotImplementedError
 
     def gen_meshmodel(self,
-                      tcp_jntid=None,
-                      tcp_loc_pos=None,
-                      tcp_loc_rotmat=None,
                       toggle_tcpcs=False,
                       toggle_jntscs=False,
                       rgba=None,

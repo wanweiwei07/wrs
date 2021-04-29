@@ -28,9 +28,15 @@ class JLChainMesh(object):
                                                                              cdmesh_type=cdmesh_type)
                 self.jlobject.lnks[id]['collisionmodel'].set_scale(self.jlobject.lnks[id]['scale'])
 
-    def gen_meshmodel(self, tcp_jntid=None, tcp_loc_pos=None, tcp_loc_rotmat=None,
-                      toggle_tcpcs=True, toggle_jntscs=False, name='robotmesh', rgba=None):
-        meshmodel = mc.ModelCollection(name=name)
+    def gen_meshmodel(self,
+                      tcp_jntid=None,
+                      tcp_loc_pos=None,
+                      tcp_loc_rotmat=None,
+                      toggle_tcpcs=True,
+                      toggle_jntscs=False,
+                      name='robot_mesh',
+                      rgba=None):
+        mm_collection = mc.ModelCollection(name=name)
         for id in range(self.jlobject.ndof + 1):
             if self.jlobject.lnks[id]['collisionmodel'] is not None:
                 this_collisionmodel = self.jlobject.lnks[id]['collisionmodel'].copy()
@@ -39,19 +45,33 @@ class JLChainMesh(object):
                 this_collisionmodel.set_homomat(rm.homomat_from_posrot(pos, rotmat))
                 this_rgba = self.jlobject.lnks[id]['rgba'] if rgba is None else rgba
                 this_collisionmodel.set_rgba(this_rgba)
-                this_collisionmodel.attach_to(meshmodel)
+                this_collisionmodel.attach_to(mm_collection)
         # tool center coord
         if toggle_tcpcs:
-            self._toggle_tcpcs(meshmodel, tcp_jntid, tcp_loc_pos, tcp_loc_rotmat,
-                               tcpic_rgba=np.array([.5, 0, 1, 0]), tcpic_thickness=.0062)
+            self._toggle_tcpcs(mm_collection,
+                               tcp_jntid,
+                               tcp_loc_pos,
+                               tcp_loc_rotmat,
+                               tcpic_rgba=np.array([.5, 0, 1, 1]), tcpic_thickness=.0062)
         # toggle all coord
         if toggle_jntscs:
-            self._toggle_jntcs(meshmodel, jntcs_thickness=.0062)
-        return meshmodel
+            self._toggle_jntcs(mm_collection,
+                               jntcs_thickness=.0062,
+                               alpha=rgba[3])
+        return mm_collection
 
-    def gen_stickmodel(self, rgba=np.array([.5, 0, 0, 1]), thickness=.01, joint_ratio=1.62, link_ratio=.62,
-                       tcp_jntid=None, tcp_loc_pos=None, tcp_loc_rotmat=None, toggle_tcpcs=True, toggle_jntscs=False,
-                       toggle_connjnt=False, name='robotstick'):
+    def gen_stickmodel(self,
+                       rgba=np.array([.5, 0, 0, 1]),
+                       thickness=.01,
+                       joint_ratio=1.62,
+                       link_ratio=.62,
+                       tcp_jntid=None,
+                       tcp_loc_pos=None,
+                       tcp_loc_rotmat=None,
+                       toggle_tcpcs=True,
+                       toggle_jntscs=False,
+                       toggle_connjnt=False,
+                       name='robotstick'):
         """
         generate the stick model for a jntlnk object
         snp means stick nodepath
@@ -82,11 +102,11 @@ class JLChainMesh(object):
             if id > 0:
                 if self.jlobject.jnts[id]['type'] == "revolute":
                     gm.gen_stick(spos=jgpos - jgmtnax * thickness, epos=jgpos + jgmtnax * thickness, type="rect",
-                                 thickness=thickness * joint_ratio, rgba=np.array([.3, .3, .2, 1])).attach_to(stickmodel)
+                                 thickness=thickness * joint_ratio, rgba=np.array([.3, .3, .2, rgba[3]])).attach_to(stickmodel)
                 if self.jlobject.jnts[id]['type'] == "prismatic":
                     jgpos0 = self.jlobject.jnts[id]['gl_pos0']
                     gm.gen_stick(spos=jgpos0, epos=jgpos, type="round", thickness=thickness * joint_ratio,
-                                 rgba=np.array([.2, .3, .3, 1])).attach_to(stickmodel)
+                                 rgba=np.array([.2, .3, .3, rgba[3]])).attach_to(stickmodel)
             id = cjid
         # tool center coord
         if toggle_tcpcs:
@@ -94,7 +114,7 @@ class JLChainMesh(object):
                                tcpic_rgba=rgba + np.array([0, 0, 1, 0]), tcpic_thickness=thickness * link_ratio)
         # toggle all coord
         if toggle_jntscs:
-            self._toggle_jntcs(stickmodel, jntcs_thickness=thickness * link_ratio)
+            self._toggle_jntcs(stickmodel, jntcs_thickness=thickness * link_ratio, alpha=rgba[3])
         return stickmodel
 
     def gen_endsphere(self, rgba=None, name=''):
@@ -114,10 +134,17 @@ class JLChainMesh(object):
         #     gm.gen_sphere(pos=self.jlobject.jnts[-1]['linkend'], radius=.025, rgba=rgba).attach_to(eesphere)
         # return gm.StaticGeometricModel(eesphere)
 
-    def _toggle_tcpcs(self, parentmodel, tcp_jntid, tcp_loc_pos, tcp_loc_rotmat, tcpic_rgba, tcpic_thickness,
-                      tcpcs_thickness=None, tcpcs_length=None):
+    def _toggle_tcpcs(self,
+                      parent_model,
+                      tcp_jntid,
+                      tcp_loc_pos,
+                      tcp_loc_rotmat,
+                      tcpic_rgba,
+                      tcpic_thickness,
+                      tcpcs_thickness=None,
+                      tcpcs_length=None):
         """
-        :param parentmodel: where to draw the frames to
+        :param parent_model: where to draw the frames to
         :param tcp_jntid: single id or a list of ids
         :param tcp_loc_pos:
         :param tcp_loc_rotmat:
@@ -139,22 +166,36 @@ class JLChainMesh(object):
             tcpcs_thickness = tcpic_thickness
         if tcpcs_length is None:
             tcpcs_length = tcpcs_thickness * 15
-        tcp_globalpos, tcp_globalrotmat = self.jlobject.get_gl_tcp(tcp_jntid, tcp_loc_pos, tcp_loc_rotmat)
-        if isinstance(tcp_globalpos, list):
+        tcp_gl_pos, tcp_gl_rotmat = self.jlobject.get_gl_tcp(tcp_jntid,
+                                                             tcp_loc_pos,
+                                                             tcp_loc_rotmat)
+        if isinstance(tcp_gl_pos, list):
             for i, jid in enumerate(tcp_jntid):
                 jgpos = self.jlobject.jnts[jid]['gl_posq']
-                gm.gen_dumbbell(spos=jgpos, epos=tcp_globalpos[i], thickness=tcpic_thickness,
-                                rgba=tcpic_rgba).attach_to(parentmodel)
-                gm.gen_frame(pos=tcp_globalpos[i], rotmat=tcp_globalrotmat[i], length=tcpcs_length,
-                             thickness=tcpcs_thickness, alpha=1).attach_to(parentmodel)
+                gm.gen_dashstick(spos=jgpos,
+                                 epos=tcp_gl_pos[i],
+                                 thickness=tcpic_thickness,
+                                 rgba=tcpic_rgba,
+                                 type="round").attach_to(parent_model)
+                gm.gen_mycframe(pos=tcp_gl_pos[i],
+                                rotmat=tcp_gl_rotmat[i],
+                                length=tcpcs_length,
+                                thickness=tcpcs_thickness,
+                                alpha=tcpic_rgba[3]).attach_to(parent_model)
         else:
             jgpos = self.jlobject.jnts[tcp_jntid]['gl_posq']
-            gm.gen_dumbbell(spos=jgpos, epos=tcp_globalpos, thickness=tcpic_thickness, rgba=tcpic_rgba).attach_to(
-                parentmodel)
-            gm.gen_frame(pos=tcp_globalpos, rotmat=tcp_globalrotmat, length=tcpcs_length, thickness=tcpcs_thickness,
-                         alpha=1).attach_to(parentmodel)
+            gm.gen_dashstick(spos=jgpos,
+                             epos=tcp_gl_pos,
+                             thickness=tcpic_thickness,
+                             rgba=tcpic_rgba,
+                             type="round").attach_to(parent_model)
+            gm.gen_mycframe(pos=tcp_gl_pos,
+                            rotmat=tcp_gl_rotmat,
+                            length=tcpcs_length,
+                            thickness=tcpcs_thickness,
+                            alpha=tcpic_rgba[3]).attach_to(parent_model)
 
-    def _toggle_jntcs(self, parentmodel, jntcs_thickness, jntcs_length=None):
+    def _toggle_jntcs(self, parentmodel, jntcs_thickness, jntcs_length=None, alpha=1):
         """
         :param parentmodel: where to draw the frames to
         :return:
@@ -165,7 +206,13 @@ class JLChainMesh(object):
         if jntcs_length is None:
             jntcs_length = jntcs_thickness * 15
         for id in self.jlobject.tgtjnts:
-            gm.gen_dashframe(pos=self.jlobject.jnts[id]['gl_pos0'], rotmat=self.jlobject.jnts[id]['gl_rotmat0'],
-                             length=jntcs_length, thickness=jntcs_thickness).attach_to(parentmodel)
-            gm.gen_frame(pos=self.jlobject.jnts[id]['gl_posq'], rotmat=self.jlobject.jnts[id]['gl_rotmatq'],
-                         length=jntcs_length, thickness=jntcs_thickness, alpha=1).attach_to(parentmodel)
+            gm.gen_dashframe(pos=self.jlobject.jnts[id]['gl_pos0'],
+                             rotmat=self.jlobject.jnts[id]['gl_rotmat0'],
+                             length=jntcs_length,
+                             thickness=jntcs_thickness,
+                             alpha=alpha).attach_to(parentmodel)
+            gm.gen_frame(pos=self.jlobject.jnts[id]['gl_posq'],
+                         rotmat=self.jlobject.jnts[id]['gl_rotmatq'],
+                         length=jntcs_length,
+                         thickness=jntcs_thickness,
+                         alpha=alpha).attach_to(parentmodel)

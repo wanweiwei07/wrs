@@ -27,7 +27,7 @@ def gen_stick(spos=np.array([0, 0, 0]), epos=np.array([0.1, 0, 0]), thickness=0.
     :param spos: 1x3 nparray
     :param epos: 1x3 nparray
     :param thickness: 0.005 m by default
-    :param type: simple or smooth
+    :param type: rect or round
     :param sections: # of discretized sectors used to approximate a cylinder
     :return:
     author: weiwei

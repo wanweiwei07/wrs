@@ -17,26 +17,26 @@ class UR3EDual(ri.RobotInterface):
         super().__init__(pos=pos, rotmat=rotmat, name=name)
         this_dir, this_filename = os.path.split(__file__)
         # left side
-        self.lft_base = jl.JLChain(pos=pos, rotmat=rotmat, homeconf=np.zeros(0), name='lft_base_jl')
-        self.lft_base.jnts[1]['loc_pos'] = np.array([.365, .345, 1.33])  # left from robot_s view
-        self.lft_base.jnts[1]['loc_rotmat'] = rm.rotmat_from_euler(math.pi / 2.0, 0,
+        self.lft_body = jl.JLChain(pos=pos, rotmat=rotmat, homeconf=np.zeros(0), name='lft_body_jl')
+        self.lft_body.jnts[1]['loc_pos'] = np.array([.365, .345, 1.33])  # left from robot_s view
+        self.lft_body.jnts[1]['loc_rotmat'] = rm.rotmat_from_euler(math.pi / 2.0, 0,
                                                                    math.pi / 2.0)  # left from robot_s view
-        self.lft_base.lnks[0]['name'] = "ur3e_dual_base"
-        self.lft_base.lnks[0]['loc_pos'] = np.array([0, 0, 0])
-        self.lft_base.lnks[0]['collisionmodel'] = cm.CollisionModel(
+        self.lft_body.lnks[0]['name'] = "ur3e_dual_base"
+        self.lft_body.lnks[0]['loc_pos'] = np.array([0, 0, 0])
+        self.lft_body.lnks[0]['collisionmodel'] = cm.CollisionModel(
             os.path.join(this_dir, "meshes", "ur3e_dual_base.stl"),
             cdprimit_type="user_defined", expand_radius=.005,
             userdefined_cdprimitive_fn=self._base_combined_cdnp)
-        self.lft_base.lnks[0]['rgba'] = [.3, .3, .3, 1.0]
-        self.lft_base.reinitialize()
+        self.lft_body.lnks[0]['rgba'] = [.3, .3, .3, 1.0]
+        self.lft_body.reinitialize()
         lft_arm_homeconf = np.zeros(6)
         lft_arm_homeconf[0] = -math.pi * 2.0 / 3.0
         lft_arm_homeconf[1] = -math.pi * 2.0 / 3.0
         lft_arm_homeconf[2] = math.pi / 2.0
         lft_arm_homeconf[3] = math.pi
         lft_arm_homeconf[4] = -math.pi / 2.0
-        self.lft_arm = ur.UR3E(pos=self.lft_base.jnts[-1]['gl_posq'],
-                               rotmat=self.lft_base.jnts[-1]['gl_rotmatq'],
+        self.lft_arm = ur.UR3E(pos=self.lft_body.jnts[-1]['gl_posq'],
+                               rotmat=self.lft_body.jnts[-1]['gl_rotmatq'],
                                homeconf=lft_arm_homeconf,
                                enable_cc=False)
         # lft hand offset (if needed)
@@ -46,22 +46,22 @@ class UR3EDual(ri.RobotInterface):
                                      rotmat=self.lft_arm.jnts[-1]['gl_rotmatq'],
                                      enable_cc=False)
         # rigth side
-        self.rgt_base = jl.JLChain(pos=pos, rotmat=rotmat, homeconf=np.zeros(0), name='rgt_base_jl')
-        self.rgt_base.jnts[1]['loc_pos'] = np.array([.365, -.345, 1.33])  # right from robot_s view
-        self.rgt_base.jnts[1]['loc_rotmat'] = rm.rotmat_from_euler(math.pi / 2.0, 0,
+        self.rgt_body = jl.JLChain(pos=pos, rotmat=rotmat, homeconf=np.zeros(0), name='rgt_body_jl')
+        self.rgt_body.jnts[1]['loc_pos'] = np.array([.365, -.345, 1.33])  # right from robot_s view
+        self.rgt_body.jnts[1]['loc_rotmat'] = rm.rotmat_from_euler(math.pi / 2.0, 0,
                                                                    math.pi / 2.0)  # left from robot_s view
-        self.rgt_base.lnks[0]['name'] = "ur3e_dual_base"
-        self.rgt_base.lnks[0]['loc_pos'] = np.array([0, 0, 0])
-        self.rgt_base.lnks[0]['meshfile'] = None
-        self.rgt_base.lnks[0]['rgba'] = [.3, .3, .3, 1.0]
-        self.rgt_base.reinitialize()
+        self.rgt_body.lnks[0]['name'] = "ur3e_dual_base"
+        self.rgt_body.lnks[0]['loc_pos'] = np.array([0, 0, 0])
+        self.rgt_body.lnks[0]['meshfile'] = None
+        self.rgt_body.lnks[0]['rgba'] = [.3, .3, .3, 1.0]
+        self.rgt_body.reinitialize()
         rgt_arm_homeconf = np.zeros(6)
         rgt_arm_homeconf[0] = math.pi * 2.0 / 3.0
         rgt_arm_homeconf[1] = -math.pi / 3.0
         rgt_arm_homeconf[2] = -math.pi / 2.0
         rgt_arm_homeconf[4] = math.pi / 2.0
-        self.rgt_arm = ur.UR3E(pos=self.rgt_base.jnts[-1]['gl_posq'],
-                               rotmat=self.rgt_base.jnts[-1]['gl_rotmatq'],
+        self.rgt_arm = ur.UR3E(pos=self.rgt_body.jnts[-1]['gl_posq'],
+                               rotmat=self.rgt_body.jnts[-1]['gl_rotmatq'],
                                homeconf=rgt_arm_homeconf,
                                enable_cc=False)
         # rgt hand offset (if needed)
@@ -120,12 +120,12 @@ class UR3EDual(ri.RobotInterface):
     def move_to(self, pos, rotmat):
         self.pos = pos
         self.rotmat = rotmat
-        self.lft_base.fix_to(self.pos, self.rotmat)
-        self.lft_arm.fix_to(pos=self.lft_base.jnts[-1]['gl_posq'], rotmat=self.lft_base.jnts[-1]['gl_rotmatq'])
+        self.lft_body.fix_to(self.pos, self.rotmat)
+        self.lft_arm.fix_to(pos=self.lft_body.jnts[-1]['gl_posq'], rotmat=self.lft_body.jnts[-1]['gl_rotmatq'])
         lft_hnd_pos, lft_hnd_rotmat = self.lft_arm.get_worldpose(relpos=self.rgt_hnd_offset)
         self.lft_hnd.fix_to(pos=lft_hnd_pos, rotmat=lft_hnd_rotmat)
-        self.rgt_base.fix_to(self.pos, self.rotmat)
-        self.rgt_arm.fix_to(pos=self.rgt_base.jnts[-1]['gl_posq'], rotmat=self.rgt_base.jnts[-1]['gl_rotmatq'])
+        self.rgt_body.fix_to(self.pos, self.rotmat)
+        self.rgt_arm.fix_to(pos=self.rgt_body.jnts[-1]['gl_posq'], rotmat=self.rgt_body.jnts[-1]['gl_rotmatq'])
         rgt_hnd_pos, rgt_hnd_rotmat = self.rgt_arm.get_worldpose(relpos=self.rgt_hnd_offset)
         self.rgt_hnd.fix_to(pos=rgt_hnd_pos, rotmat=rgt_hnd_rotmat)
 
@@ -237,56 +237,56 @@ class UR3EDual(ri.RobotInterface):
                       toggle_jntscs=False,
                       rgba=None,
                       name='ur3e_dual_meshmodel'):
-        meshmodel = mc.ModelCollection(name=name)
+        mm_collection = mc.ModelCollection(name=name)
         self.lft_body.gen_meshmodel(tcp_loc_pos=None,
                                     tcp_loc_rotmat=None,
                                     toggle_tcpcs=False,
                                     toggle_jntscs=toggle_jntscs,
-                                    rgba=rgba).attach_to(meshmodel)
+                                    rgba=rgba).attach_to(mm_collection)
         self.lft_arm.gen_meshmodel(tcp_jntid=tcp_jntid,
                                    tcp_loc_pos=tcp_loc_pos,
                                    tcp_loc_rotmat=tcp_loc_rotmat,
                                    toggle_tcpcs=toggle_tcpcs,
                                    toggle_jntscs=toggle_jntscs,
-                                   rgba=rgba).attach_to(meshmodel)
+                                   rgba=rgba).attach_to(mm_collection)
         self.lft_hnd.gen_meshmodel(tcp_loc_pos=None,
                                    tcp_loc_rotmat=None,
                                    toggle_tcpcs=False,
                                    toggle_jntscs=toggle_jntscs,
-                                   rgba=rgba).attach_to(meshmodel)
+                                   rgba=rgba).attach_to(mm_collection)
         self.rgt_arm.gen_meshmodel(tcp_jntid=tcp_jntid,
                                    tcp_loc_pos=tcp_loc_pos,
                                    tcp_loc_rotmat=tcp_loc_rotmat,
                                    toggle_tcpcs=toggle_tcpcs,
                                    toggle_jntscs=toggle_jntscs,
-                                   rgba=rgba).attach_to(meshmodel)
+                                   rgba=rgba).attach_to(mm_collection)
         self.rgt_hnd.gen_meshmodel(tcp_loc_pos=None,
                                    tcp_loc_rotmat=None,
                                    toggle_tcpcs=False,
                                    toggle_jntscs=toggle_jntscs,
-                                   rgba=rgba).attach_to(meshmodel)
+                                   rgba=rgba).attach_to(mm_collection)
         for obj_info in self.lft_oih_infos:
             objcm = obj_info['collisionmodel']
             objcm.set_pos(obj_info['gl_pos'])
             objcm.set_rotmat(obj_info['gl_rotmat'])
-            objcm.attach_to(meshmodel)
+            objcm.attach_to(mm_collection)
         for obj_info in self.rgt_oih_infos:
             objcm = obj_info['collisionmodel']
             objcm.set_pos(obj_info['gl_pos'])
             objcm.set_rotmat(obj_info['gl_rotmat'])
-            objcm.attach_to(meshmodel)
-        return meshmodel
+            objcm.attach_to(mm_collection)
+        return mm_collection
 
 
 if __name__ == '__main__':
     import visualization.panda.world as wd
     import modeling.geometric_model as gm
 
-    base = wd.World(cam_pos=[3, 0, 3], lookat_pos=[0, 0, 1])
+    base = wd.World(cam_pos=[5, 0, 3], lookat_pos=[0, 0, 1])
     gm.gen_frame().attach_to(base)
     u3ed = UR3EDual()
     # u3ed.fk(.85)
-    u3ed_meshmodel = u3ed.gen_meshmodel()
+    u3ed_meshmodel = u3ed.gen_meshmodel(toggle_tcpcs=True, rgba=[.3,.3,.3,.3])
     u3ed_meshmodel.attach_to(base)
     # u3ed_meshmodel.show_cdprimit()
     u3ed.gen_stickmodel().attach_to(base)
