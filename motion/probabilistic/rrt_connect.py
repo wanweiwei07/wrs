@@ -38,7 +38,7 @@ class RRTConnect(rrt.RRT):
                 nearest_nid = new_nid
                 # all_sampled_confs.append([new_node.point, False])
                 if animation:
-                    self.draw_wspace([self.roadmap_start, self.roadmap_goal],
+                    self.draw_wspace([self.roadmap_start, self.roadmap_goal], self.start_conf, self.goal_conf,
                                      obstacle_list, [roadmap.nodes[nearest_nid]['conf'], conf], new_conf, '^c')
                 # check goal
                 if self._goal_test(conf=roadmap.nodes[new_nid]['conf'], goal_conf=goal_conf, threshold=ext_dist):

@@ -402,17 +402,17 @@ class UR3Dual(ri.RobotInterface):
         else:
             raise ValueError("The given component name is not available!")
 
-    def rand_conf(self, manipulator_name):
+    def rand_conf(self, component_name):
         """
         override robot_interface.rand_conf
-        :param manipulator_name:
+        :param component_name:
         :return:
         author: weiwei
         date: 20210406
         """
-        if manipulator_name == 'lft_arm' or manipulator_name == 'rgt_arm':
-            return super().rand_conf(manipulator_name)
-        elif manipulator_name == 'both_arm':
+        if component_name == 'lft_arm' or component_name == 'rgt_arm':
+            return super().rand_conf(component_name)
+        elif component_name == 'both_arm':
             return np.hstack((super().rand_conf('lft_arm'), super().rand_conf('rgt_arm')))
         else:
             raise NotImplementedError

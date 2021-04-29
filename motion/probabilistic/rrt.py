@@ -6,6 +6,7 @@ import basis.robot_math as rm
 import networkx as nx
 import matplotlib.pyplot as plt
 
+
 class RRT(object):
 
     def __init__(self, robot):
@@ -24,7 +25,7 @@ class RRT(object):
 
     def _sample_conf(self, component_name, rand_rate, default_conf):
         if random.randint(0, 100) < rand_rate:
-            return self.robot.rand_conf(manipulator_name=component_name)
+            return self.robot.rand_conf(component_name=component_name)
         else:
             return default_conf
 
@@ -72,10 +73,12 @@ class RRT(object):
                 nearest_nid = new_nid
                 # all_sampled_confs.append([new_node.point, False])
                 if animation:
-                    self.draw_wspace([roadmap], obstacle_list, [roadmap.nodes[nearest_nid]['conf'], conf], new_conf, '^c')
+                    self.draw_wspace([roadmap], self.start_conf, self.goal_conf,
+                                     obstacle_list, [roadmap.nodes[nearest_nid]['conf'], conf],
+                                     new_conf, '^c')
                 # check goal
                 if self._goal_test(conf=roadmap.nodes[new_nid]['conf'], goal_conf=goal_conf, threshold=ext_dist):
-                    roadmap.add_node('connection', conf=goal_conf) # TODO current name -> connection
+                    roadmap.add_node('connection', conf=goal_conf)  # TODO current name -> connection
                     roadmap.add_edge(new_nid, 'connection')
                     return 'connection'
         else:
@@ -169,7 +172,7 @@ class RRT(object):
                                             otherrobot_list=otherrobot_list,
                                             animation=True)
             if last_nid == 'connection':
-                mapping = {'connection':'goal'}
+                mapping = {'connection': 'goal'}
                 self.roadmap = nx.relabel_nodes(self.roadmap, mapping)
                 path = self._path_from_roadmap()
                 smoothed_path = self._smooth_path(component_name=component_name,
@@ -184,7 +187,7 @@ class RRT(object):
             return None
 
     @staticmethod
-    def draw_wspace(roadmap_list, obstacle_list, near_rand_conf_pair=None, new_conf=None, new_conf_mark='^r'):
+    def draw_wspace(roadmap_list, start_conf, goal_conf, obstacle_list, near_rand_conf_pair=None, new_conf=None, new_conf_mark='^r'):
         """
         Draw Graph
         """
@@ -194,22 +197,30 @@ class RRT(object):
         plt.grid(True)
         plt.xlim(-4.0, 17.0)
         plt.ylim(-4.0, 17.0)
+        ax.add_patch(plt.Circle((start_conf[0], start_conf[1]), .5, color='r'))
+        ax.add_patch(plt.Circle((goal_conf[0], goal_conf[1]), .5, color='g'))
         for (point, size) in obstacle_list:
             ax.add_patch(plt.Circle((point[0], point[1]), size / 2.0, color='k'))
         colors = 'bgrcmykw'
         for i, roadmap in enumerate(roadmap_list):
             for (u, v) in roadmap.edges:
-                plt.plot(roadmap.nodes[u]['conf'][0], roadmap.nodes[u]['conf'][1], 'o'+colors[i])
-                plt.plot(roadmap.nodes[v]['conf'][0], roadmap.nodes[v]['conf'][1], 'o'+colors[i])
+                plt.plot(roadmap.nodes[u]['conf'][0], roadmap.nodes[u]['conf'][1], 'o' + colors[i])
+                plt.plot(roadmap.nodes[v]['conf'][0], roadmap.nodes[v]['conf'][1], 'o' + colors[i])
                 plt.plot([roadmap.nodes[u]['conf'][0], roadmap.nodes[v]['conf'][0]],
-                         [roadmap.nodes[u]['conf'][1], roadmap.nodes[v]['conf'][1]], '-'+colors[i])
+                         [roadmap.nodes[u]['conf'][1], roadmap.nodes[v]['conf'][1]], '-' + colors[i])
         if near_rand_conf_pair is not None:
             plt.plot([near_rand_conf_pair[0][0], near_rand_conf_pair[1][0]],
                      [near_rand_conf_pair[0][1], near_rand_conf_pair[1][1]], "--k")
+            ax.add_patch(plt.Circle((near_rand_conf_pair[1][0], near_rand_conf_pair[1][1]), .3, color='grey'))
         if new_conf is not None:
             plt.plot(new_conf[0], new_conf[1], new_conf_mark)
         # plt.plot(planner.seed_jnt_values[0], planner.seed_jnt_values[1], "xr")
         # plt.plot(planner.goal_conf[0], planner.goal_conf[1], "xm")
+        if not hasattr(RRT, 'img_counter'):
+            RRT.img_counter = 0
+        else:
+            RRT.img_counter += 1
+        # plt.savefig(str( RRT.img_counter)+'.jpg')
         plt.pause(.02)
 
 
@@ -269,7 +280,7 @@ if __name__ == '__main__':
     # Set Initial parameters
     robot = XYBot()
     rrt = RRT(robot)
-    path = rrt.plan(start_conf=np.array([0, 0]), goal_conf=np.array([5, 10]), obstacle_list=obstacle_list,
+    path = rrt.plan(start_conf=np.array([0, 0]), goal_conf=np.array([6, 9]), obstacle_list=obstacle_list,
                     ext_dist=1, rand_rate=70, maxtime=300, component_name='all', animation=True)
     # plt.show()
     # nx.draw(rrt.roadmap, with_labels=True, font_weight='bold')

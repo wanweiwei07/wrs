@@ -191,12 +191,12 @@ class XArm7YunjiMobile(ri.RobotInterface):
             return_val[10] = self.hnd.get_jawwidth()
             return return_val
 
-    def rand_conf(self, manipulator_name):
-        if manipulator_name == 'arm':
+    def rand_conf(self, component_name):
+        if component_name == 'arm':
             return self.arm.rand_conf()
-        if manipulator_name == 'agv':
+        if component_name == 'agv':
             raise NotImplementedError
-        if manipulator_name == 'agv_arm':
+        if component_name == 'agv_arm':
             raise NotImplementedError
 
     def jaw_to(self, hnd_name='hnd', jawwidth=0.0):

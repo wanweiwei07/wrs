@@ -132,7 +132,7 @@ class UR3EDual(ri.RobotInterface):
     def fk(self, manipulator_name, jnt_values):
         """
         :param jnt_values: 1x6 or 1x12 nparray
-        :manipulator_name 'lft_arm', 'rgt_arm', 'both_arm'
+        :component_name 'lft_arm', 'rgt_arm', 'both_arm'
         :param manipulator_name:
         :return:
         author: weiwei
@@ -173,17 +173,17 @@ class UR3EDual(ri.RobotInterface):
         else:
             raise ValueError("The given component name is not available!")
 
-    def rand_conf(self, manipulator_name):
+    def rand_conf(self, component_name):
         """
         override robot_interface.rand_conf
-        :param manipulator_name:
+        :param component_name:
         :return:
         author: weiwei
         date: 20210406
         """
-        if manipulator_name == 'lft_arm' or manipulator_name == 'rgt_arm':
-            return super().rand_conf(manipulator_name)
-        elif manipulator_name == 'both_arm':
+        if component_name == 'lft_arm' or component_name == 'rgt_arm':
+            return super().rand_conf(component_name)
+        elif component_name == 'both_arm':
             return np.hstack((super().rand_conf('lft_arm'), super().rand_conf('rgt_arm')))
         else:
             raise NotImplementedError
@@ -207,9 +207,7 @@ class UR3EDual(ri.RobotInterface):
                                     toggle_tcpcs=toggle_tcpcs,
                                     toggle_jntscs=toggle_jntscs,
                                     toggle_connjnt=toggle_connjnt).attach_to(stickmodel)
-        self.lft_hnd.gen_stickmodel(tcp_loc_pos=None,
-                                    tcp_loc_rotmat=None,
-                                    toggle_tcpcs=False,
+        self.lft_hnd.gen_stickmodel(toggle_tcpcs=False,
                                     toggle_jntscs=toggle_jntscs,
                                     toggle_connjnt=toggle_connjnt).attach_to(stickmodel)
         self.rgt_body.gen_stickmodel(tcp_loc_pos=None,
@@ -222,9 +220,7 @@ class UR3EDual(ri.RobotInterface):
                                     toggle_tcpcs=toggle_tcpcs,
                                     toggle_jntscs=toggle_jntscs,
                                     toggle_connjnt=toggle_connjnt).attach_to(stickmodel)
-        self.rgt_hnd.gen_stickmodel(tcp_loc_pos=None,
-                                    tcp_loc_rotmat=None,
-                                    toggle_tcpcs=False,
+        self.rgt_hnd.gen_stickmodel(toggle_tcpcs=False,
                                     toggle_jntscs=toggle_jntscs,
                                     toggle_connjnt=toggle_connjnt).attach_to(stickmodel)
         return stickmodel
@@ -249,9 +245,7 @@ class UR3EDual(ri.RobotInterface):
                                    toggle_tcpcs=toggle_tcpcs,
                                    toggle_jntscs=toggle_jntscs,
                                    rgba=rgba).attach_to(mm_collection)
-        self.lft_hnd.gen_meshmodel(tcp_loc_pos=None,
-                                   tcp_loc_rotmat=None,
-                                   toggle_tcpcs=False,
+        self.lft_hnd.gen_meshmodel(toggle_tcpcs=False,
                                    toggle_jntscs=toggle_jntscs,
                                    rgba=rgba).attach_to(mm_collection)
         self.rgt_arm.gen_meshmodel(tcp_jntid=tcp_jntid,
@@ -260,9 +254,7 @@ class UR3EDual(ri.RobotInterface):
                                    toggle_tcpcs=toggle_tcpcs,
                                    toggle_jntscs=toggle_jntscs,
                                    rgba=rgba).attach_to(mm_collection)
-        self.rgt_hnd.gen_meshmodel(tcp_loc_pos=None,
-                                   tcp_loc_rotmat=None,
-                                   toggle_tcpcs=False,
+        self.rgt_hnd.gen_meshmodel(toggle_tcpcs=False,
                                    toggle_jntscs=toggle_jntscs,
                                    rgba=rgba).attach_to(mm_collection)
         for obj_info in self.lft_oih_infos:
@@ -286,7 +278,7 @@ if __name__ == '__main__':
     gm.gen_frame().attach_to(base)
     u3ed = UR3EDual()
     # u3ed.fk(.85)
-    u3ed_meshmodel = u3ed.gen_meshmodel(toggle_tcpcs=True, rgba=[.3,.3,.3,.3])
+    u3ed_meshmodel = u3ed.gen_meshmodel(toggle_tcpcs=True)
     u3ed_meshmodel.attach_to(base)
     # u3ed_meshmodel.show_cdprimit()
     u3ed.gen_stickmodel().attach_to(base)

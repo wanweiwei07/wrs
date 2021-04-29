@@ -60,8 +60,8 @@ class RobotInterface(object):
                                                           local_minima=local_minima,
                                                           toggle_debug=toggle_debug)
 
-    def rand_conf(self, manipulator_name):
-        return self.manipulator_dict[manipulator_name].rand_conf()
+    def rand_conf(self, component_name):
+        return self.manipulator_dict[component_name].rand_conf()
 
     def cvt_conf_to_tcp(self, manipulator_name, jnt_values):
         """
