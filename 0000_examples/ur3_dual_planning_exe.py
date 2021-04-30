@@ -31,7 +31,7 @@ path = rrtc_planner.plan(component_name=component_name,
                          obstacle_list=[object],
                          ext_dist=.2,
                          rand_rate=70,
-                         maxtime=300)
+                         max_time=300)
 print(path)
 for pose in path:
     print(pose)

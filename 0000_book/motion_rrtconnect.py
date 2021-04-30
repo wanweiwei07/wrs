@@ -1,0 +1,60 @@
+import numpy as np
+import matplotlib.pyplot as plt
+import robot_sim._kinematics.jlchain as jl
+import robot_sim.robots.robot_interface as ri
+import motion.probabilistic.rrt_connect as rrtc
+
+
+class XYBot(ri.RobotInterface):
+
+    def __init__(self, pos=np.zeros(3), rotmat=np.eye(3), name='XYBot'):
+        super().__init__(pos=pos, rotmat=rotmat, name=name)
+        self.jlc = jl.JLChain(homeconf=np.zeros(2), name='XYBot')
+        self.jlc.jnts[1]['type'] = 'prismatic'
+        self.jlc.jnts[1]['loc_motionax'] = np.array([1, 0, 0])
+        self.jlc.jnts[1]['loc_pos'] = np.zeros(3)
+        self.jlc.jnts[1]['motion_rng'] = [-2.0, 15.0]
+        self.jlc.jnts[2]['type'] = 'prismatic'
+        self.jlc.jnts[2]['loc_motionax'] = np.array([0, 1, 0])
+        self.jlc.jnts[2]['loc_pos'] = np.zeros(3)
+        self.jlc.jnts[2]['motion_rng'] = [-2.0, 15.0]
+        self.jlc.reinitialize()
+
+    def fk(self, component_name='all', jnt_values=np.zeros(2)):
+        if component_name != 'all':
+            raise ValueError("Only support component_name == 'all'!")
+        self.jlc.fk(jnt_values)
+
+    def rand_conf(self, component_name='all'):
+        if component_name != 'all':
+            raise ValueError("Only support component_name == 'all'!")
+        return self.jlc.rand_conf()
+
+    def get_jntvalues(self, component_name='all'):
+        if component_name != 'all':
+            raise ValueError("Only support component_name == 'all'!")
+        return self.jlc.get_jnt_values()
+
+    def is_collided(self, obstacle_list=[], otherrobot_list=[]):
+        for (obpos, size) in obstacle_list:
+            dist = np.linalg.norm(np.asarray(obpos) - self.get_jntvalues())
+            if dist <= size / 2.0:
+                return True  # collision
+        return False  # safe
+
+
+if __name__ == '__main__':
+    # ====Search Path with RRT====
+    obstacle_list = [
+        ((5, 5), 3), ((3, 6), 3), ((3, 8), 3), ((3, 10), 3),
+        ((7, 5), 3), ((9, 5), 3), ((10, 5), 3), ((10, 0), 3),
+        ((10, -2), 3), ((10, -4), 3), ((0, 12), 3), ((-1, 10), 3), ((-2, 8), 3)
+    ]  # [x,y,size]
+    # Set Initial parameters
+    robot = XYBot()
+    rrtc_instance = rrtc.RRTConnect(robot)
+    path = rrtc_instance.plan(component_name='all', start_conf=np.array([0, 0]),
+                              goal_conf=np.array([5, 10]), obstacle_list=obstacle_list,
+                              ext_dist=1, rand_rate=70, max_time=300, animation=True)
+    plt.plot([conf[0] for conf in path], [conf[1] for conf in path], '-k')
+    plt.show()

@@ -50,7 +50,7 @@ if __name__ == '__main__':
                              obstacle_list=[obj],
                              ext_dist=.1,
                              rand_rate=70,
-                             maxtime=300,
+                             max_time=300,
                              component_name=robot_component_name)
     rmt_anime_robotinfo = rvc.add_anime_robot(rmt_robot_s=rmt_robot_s,
                                               loc_robot_component_name=robot_component_name,

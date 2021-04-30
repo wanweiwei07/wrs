@@ -176,6 +176,15 @@ class Yumi(ri.RobotInterface):
                     self.rgt_hnd.lft.lnks[1],
                     self.rgt_hnd.rgt.lnks[1]]
         self.cc.set_cdpair(fromlist, intolist)
+        fromlist = [self.lft_arm.lnks[2],
+                    self.rgt_arm.lnks[2]]
+        intolist = [self.lft_hnd.lft.lnks[0],
+                    self.lft_hnd.lft.lnks[1],
+                    self.lft_hnd.rgt.lnks[1],
+                    self.rgt_hnd.lft.lnks[0],
+                    self.rgt_hnd.lft.lnks[1],
+                    self.rgt_hnd.rgt.lnks[1]]
+        self.cc.set_cdpair(fromlist, intolist)
         fromlist = [self.lft_arm.lnks[3],
                     self.lft_arm.lnks[4],
                     self.lft_arm.lnks[5],
@@ -190,10 +199,6 @@ class Yumi(ri.RobotInterface):
                     self.rgt_hnd.lft.lnks[0],
                     self.rgt_hnd.lft.lnks[1],
                     self.rgt_hnd.rgt.lnks[1]]
-        self.cc.set_cdpair(fromlist, intolist)
-        fromlist = [self.lft_body.lnks[1]]  # 20210402 what is this?
-        intolist = [self.lft_arm.lnks[2],
-                    self.rgt_arm.lnks[2]]
         self.cc.set_cdpair(fromlist, intolist)
 
     def get_hnd_on_manipulator(self, manipulator_name):
@@ -566,9 +571,13 @@ if __name__ == '__main__':
     import modeling.geometric_model as gm
     import basis
 
-    base = wd.World(cam_pos=[1.5, 0, 3], lookat_pos=[0, 0, .5])
+    base = wd.World(cam_pos=[3, 1, 1], lookat_pos=[0, 0, 0.5])
     gm.gen_frame().attach_to(base)
     yumi_instance = Yumi(enable_cc=True)
+    yumi_meshmodel = yumi_instance.gen_meshmodel()
+    yumi_meshmodel.attach_to(base)
+    yumi_instance.show_cdprimit()
+    base.run()
 
     # ik test
     component_name = 'rgt_arm'

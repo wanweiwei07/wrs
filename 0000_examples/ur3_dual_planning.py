@@ -9,7 +9,7 @@ import motion.probabilistic.rrt_connect as rrtc
 base = wd.World(cam_pos=[2, 1, 3], lookat_pos=[0, 0, 1.1])
 gm.gen_frame().attach_to(base)
 # object
-object = cm.CollisionModel("./objects/bunnysim.stl")
+object = cm.CollisionModel("objects/bunnysim.stl")
 object.set_pos(np.array([.55, -.3, 1.3]))
 object.set_rgba([.5, .7, .3, 1])
 object.attach_to(base)
@@ -27,7 +27,7 @@ path = rrtc_planner.plan(component_name=component_name,
                          obstacle_list=[object],
                          ext_dist=.2,
                          rand_rate=70,
-                         maxtime=300)
+                         max_time=300)
 print(path)
 for pose in path:
     print(pose)

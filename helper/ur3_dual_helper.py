@@ -50,8 +50,8 @@ class UR3DualHelper(object):
                                      otherrobot_list=otherrobot_list,
                                      ext_dist=ext_dist,
                                      rand_rate=rand_rate,
-                                     maxiter=maxiter,
-                                     maxtime=maxtime,
+                                     max_iter=maxiter,
+                                     max_time=maxtime,
                                      animation=animation)
         return path
 

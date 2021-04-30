@@ -190,7 +190,7 @@ class PickPlacePlanner(adp.ADPlanner):
                                         obstacle_list,
                                         ext_dist=.05,
                                         rand_rate=70,
-                                        maxtime=300,
+                                        max_time=300,
                                         component_name=component_name)
         jawwidth_list = self.gen_jawwidth_motion(conf_list, jaw_width)
         objpose_list = self.gen_object_motion(component_name, conf_list, rel_obj_pos, rel_obj_rotmat, type='relative')

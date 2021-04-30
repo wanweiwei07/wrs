@@ -56,8 +56,8 @@ class RRTConnect(rrt.RRT):
              otherrobot_list=[],
              ext_dist=2,
              rand_rate=70,
-             maxiter=1000,
-             maxtime=15.0,
+             max_iter=1000,
+             max_time=15.0,
              animation=False):
         self.roadmap.clear()
         self.roadmap_start.clear()
@@ -77,10 +77,10 @@ class RRTConnect(rrt.RRT):
         self.roadmap_goal.add_node('goal', conf=goal_conf)
         last_nid = 'goal'
         tic = time.time()
-        for _ in range(maxiter):
+        for _ in range(max_iter):
             toc = time.time()
-            if maxtime > 0.0:
-                if toc - tic > maxtime:
+            if max_time > 0.0:
+                if toc - tic > max_time:
                     print("Too much motion time! Failed to find a path.")
                     return None
             # Random Sampling
@@ -202,13 +202,13 @@ if __name__ == '__main__':
     robot = XYBot()
     rrtc = RRTConnect(robot)
     path = rrtc.plan(component_name='all', start_conf=np.array([0, 0]), goal_conf=np.array([5, 10]), obstacle_list=obstacle_list,
-                     ext_dist=1, rand_rate=70, maxtime=300, animation=True)
+                     ext_dist=1, rand_rate=70, max_time=300, animation=True)
     # import time
     # total_t = 0
     # for i in range(100):
     #     tic = time.time()
     #     path = rrtc.plan(seed_jnt_values=np.array([0, 0]), goal_conf=np.array([5, 10]), obstacle_list=obstacle_list,
-    #                      ext_dist=1, rand_rate=70, maxtime=300, component_name=None, animation=False)
+    #                      ext_dist=1, rand_rate=70, max_time=300, component_name=None, animation=False)
     #     toc = time.time()
     #     total_t = total_t + toc - tic
     # print(total_t)

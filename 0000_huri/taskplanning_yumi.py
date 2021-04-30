@@ -137,7 +137,7 @@ taskMgr.doMethodLater(0.05, update, "update",
 # planner = rrtc.RRTConnect(start=start, goal=goal, ctcallback=ctcallback,
 #                               starttreesamplerate=starttreesamplerate,
 #                               endtreesamplerate=endtreesamplerate, expanddis=7,
-#                               maxiter=2000, maxtime=100.0)
+#                               max_iter=2000, max_time=100.0)
 # robot_s.movearmfk(start, arm_name)
 # robotnp = robotmesh.genmnp(robot_s)
 # robotnp.reparentTo(base.render)
@@ -147,7 +147,7 @@ taskMgr.doMethodLater(0.05, update, "update",
 # robotball.showcn(robotball.genfullbcndict(robot_s))
 # # base.run()
 # [path, sampledpoints] = planner.planning(obscmlist+tubecmlist)
-# path = smoother.pathsmoothing(path, planner, maxiter=100)
+# path = smoother.pathsmoothing(path, planner, max_iter=100)
 # print(path)
 # def update(rbtmnp, motioncounter, robot_s, path, arm_name, robotmesh, robotball, task):
 #     if motioncounter[0] < len(path):
