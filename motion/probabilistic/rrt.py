@@ -34,7 +34,7 @@ class RRT(object):
         min_dist_nid = min(dist_nid_list, key=lambda t: t[0])
         return min_dist_nid[1]
 
-    def _extend_conf(self, conf1, conf2, ext_dist):
+    def _extend_conf(self, conf1, conf2, ext_dist, exact_end = False):
         """
         :param conf1:
         :param conf2:
@@ -42,8 +42,13 @@ class RRT(object):
         :return: a list of 1xn nparray
         """
         len, vec = rm.unit_vector(conf2 - conf1, togglelength=True)
-        nval = math.ceil(len / ext_dist)
-        conf_array = np.linspace(conf1, conf1 + nval * ext_dist * vec, nval)
+        if not exact_end:
+            nval = math.ceil(len / ext_dist)
+            conf_array = np.linspace(conf1, conf1 + nval * ext_dist * vec, nval)
+        else:
+            nval = math.floor(len / ext_dist)
+            conf_array = np.linspace(conf1, conf1 + nval * ext_dist * vec, nval)
+            conf_array = np.vstack((conf_array, conf2))
         return list(conf_array)
 
     def _extend_roadmap(self,
@@ -105,7 +110,8 @@ class RRT(object):
                      obstacle_list=[],
                      otherrobot_list=[],
                      granularity=2,
-                     iterations=50):
+                     iterations=50,
+                     animation=False):
         smoothed_path = path
         for _ in range(iterations):
             if len(smoothed_path) <= 2:
@@ -123,6 +129,9 @@ class RRT(object):
                                                                        otherrobot_list=otherrobot_list)
                                                  for conf in shortcut):
                 smoothed_path = smoothed_path[:i + 1] + shortcut + smoothed_path[j + 1:]
+            if animation:
+                self.draw_wspace([self.roadmap], self.start_conf, self.goal_conf,
+                                 obstacle_list, shortcut=shortcut, smoothed_path=smoothed_path)
         return smoothed_path
 
     def plan(self,
@@ -170,7 +179,7 @@ class RRT(object):
                                             goal_conf=goal_conf,
                                             obstacle_list=obstacle_list,
                                             otherrobot_list=otherrobot_list,
-                                            animation=True)
+                                            animation=animation)
             if last_nid == 'connection':
                 mapping = {'connection': 'goal'}
                 self.roadmap = nx.relabel_nodes(self.roadmap, mapping)
@@ -180,14 +189,24 @@ class RRT(object):
                                                   obstacle_list=obstacle_list,
                                                   otherrobot_list=otherrobot_list,
                                                   granularity=ext_dist,
-                                                  iterations=100)
+                                                  iterations=100,
+                                                  animation=animation)
                 return smoothed_path
         else:
             print("Reach to maximum iteration! Failed to find a path.")
             return None
 
     @staticmethod
-    def draw_wspace(roadmap_list, start_conf, goal_conf, obstacle_list, near_rand_conf_pair=None, new_conf=None, new_conf_mark='^r'):
+    def draw_wspace(roadmap_list,
+                    start_conf,
+                    goal_conf,
+                    obstacle_list,
+                    near_rand_conf_pair=None,
+                    new_conf=None,
+                    new_conf_mark='^r',
+                    shortcut = None,
+                    smoothed_path = None,
+                    delay_time=.02):
         """
         Draw Graph
         """
@@ -214,14 +233,19 @@ class RRT(object):
             ax.add_patch(plt.Circle((near_rand_conf_pair[1][0], near_rand_conf_pair[1][1]), .3, color='grey'))
         if new_conf is not None:
             plt.plot(new_conf[0], new_conf[1], new_conf_mark)
+        if shortcut is not None:
+            plt.plot([conf[0] for conf in shortcut], [conf[1] for conf in shortcut], '-r')
+        if smoothed_path is not None:
+            plt.plot([conf[0] for conf in smoothed_path], [conf[1] for conf in smoothed_path], '-k')
         # plt.plot(planner.seed_jnt_values[0], planner.seed_jnt_values[1], "xr")
         # plt.plot(planner.goal_conf[0], planner.goal_conf[1], "xm")
         if not hasattr(RRT, 'img_counter'):
             RRT.img_counter = 0
         else:
             RRT.img_counter += 1
-        # plt.savefig(str( RRT.img_counter)+'.jpg')
-        plt.pause(.02)
+        plt.savefig(str( RRT.img_counter)+'.jpg')
+        if delay_time > 0:
+            plt.pause(delay_time)
 
 
 if __name__ == '__main__':
@@ -295,6 +319,7 @@ if __name__ == '__main__':
     # print(total_t)
     # Draw final path
     print(path)
+    rrt.draw_wspace([rrt.roadmap], rrt.start_conf, rrt.goal_conf, obstacle_list, delay_time=0)
     plt.plot([conf[0] for conf in path], [conf[1] for conf in path], '-k')
     # pathsm = smoother.pathsmoothing(path, rrt, 30)
     # plt.plot([point[0] for point in pathsm], [point[1] for point in pathsm], '-r')

@@ -48,6 +48,36 @@ class RRTConnect(rrt.RRT):
         else:
             return nearest_nid
 
+    def _smooth_path(self,
+                     component_name,
+                     path,
+                     obstacle_list=[],
+                     otherrobot_list=[],
+                     granularity=2,
+                     iterations=50,
+                     animation=False):
+        smoothed_path = path
+        for _ in range(iterations):
+            if len(smoothed_path) <= 2:
+                return smoothed_path
+            i = random.randint(0, len(smoothed_path) - 1)
+            j = random.randint(0, len(smoothed_path) - 1)
+            if abs(i - j) <= 1:
+                continue
+            if j < i:
+                i, j = j, i
+            shortcut = self._extend_conf(smoothed_path[i], smoothed_path[j], granularity, exact_end = True)
+            if (len(shortcut) <= (j - i)+1) and all(not self._is_collided(component_name=component_name,
+                                                                       conf=conf,
+                                                                       obstacle_list=obstacle_list,
+                                                                       otherrobot_list=otherrobot_list)
+                                                 for conf in shortcut):
+                smoothed_path = smoothed_path[:i - 1] + shortcut + smoothed_path[j + 1:]
+            if animation:
+                self.draw_wspace([self.roadmap_start, self.roadmap_goal], self.start_conf, self.goal_conf,
+                                 obstacle_list, shortcut=shortcut, smoothed_path=smoothed_path)
+        return smoothed_path
+
     def plan(self,
              component_name,
              start_conf,
@@ -133,7 +163,8 @@ class RRTConnect(rrt.RRT):
                                           obstacle_list=obstacle_list,
                                           otherrobot_list=otherrobot_list,
                                           granularity=ext_dist,
-                                          iterations=50)
+                                          iterations=50,
+                                          animation=animation)
         return smoothed_path
 
 
@@ -214,6 +245,8 @@ if __name__ == '__main__':
     # print(total_t)
     # Draw final path
     print(path)
+    rrtc.draw_wspace([rrtc.roadmap_start, rrtc.roadmap_goal],
+                     rrtc.start_conf, rrtc.goal_conf, obstacle_list, delay_time=0)
     plt.plot([conf[0] for conf in path], [conf[1] for conf in path], '-k')
     # pathsm = smoother.pathsmoothing(path, rrt, 30)
     # plt.plot([point[0] for point in pathsm], [point[1] for point in pathsm], '-r')
