@@ -655,9 +655,7 @@ class UR3Dual(ri.RobotInterface):
                                     toggle_tcpcs=toggle_tcpcs,
                                     toggle_jntscs=toggle_jntscs,
                                     toggle_connjnt=toggle_connjnt).attach_to(stickmodel)
-        self.lft_hnd.gen_stickmodel(tcp_loc_pos=None,
-                                    tcp_loc_rotmat=None,
-                                    toggle_tcpcs=False,
+        self.lft_hnd.gen_stickmodel(toggle_tcpcs=False,
                                     toggle_jntscs=toggle_jntscs,
                                     toggle_connjnt=toggle_connjnt).attach_to(stickmodel)
         self.rgt_body.gen_stickmodel(tcp_loc_pos=None,
@@ -670,9 +668,7 @@ class UR3Dual(ri.RobotInterface):
                                     toggle_tcpcs=toggle_tcpcs,
                                     toggle_jntscs=toggle_jntscs,
                                     toggle_connjnt=toggle_connjnt).attach_to(stickmodel)
-        self.rgt_hnd.gen_stickmodel(tcp_loc_pos=None,
-                                    tcp_loc_rotmat=None,
-                                    toggle_tcpcs=toggle_tcpcs,
+        self.rgt_hnd.gen_stickmodel(toggle_tcpcs=False,
                                     toggle_jntscs=toggle_jntscs,
                                     toggle_connjnt=toggle_connjnt).attach_to(stickmodel)
         self.lft_ft_sensor.gen_stickmodel(toggle_tcpcs=toggle_tcpcs,
