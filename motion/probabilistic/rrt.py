@@ -144,6 +144,7 @@ class RRT(object):
              rand_rate=70,
              maxiter=1000,
              maxtime=15.0,
+             smoothing_iterations=50,
              animation=False):
         """
         :return: [path, all_sampled_confs]
@@ -189,7 +190,7 @@ class RRT(object):
                                                   obstacle_list=obstacle_list,
                                                   otherrobot_list=otherrobot_list,
                                                   granularity=ext_dist,
-                                                  iterations=100,
+                                                  iterations=smoothing_iterations,
                                                   animation=animation)
                 return smoothed_path
         else:
@@ -233,17 +234,17 @@ class RRT(object):
             ax.add_patch(plt.Circle((near_rand_conf_pair[1][0], near_rand_conf_pair[1][1]), .3, color='grey'))
         if new_conf is not None:
             plt.plot(new_conf[0], new_conf[1], new_conf_mark)
-        if shortcut is not None:
-            plt.plot([conf[0] for conf in shortcut], [conf[1] for conf in shortcut], '-r')
         if smoothed_path is not None:
-            plt.plot([conf[0] for conf in smoothed_path], [conf[1] for conf in smoothed_path], '-k')
+            plt.plot([conf[0] for conf in smoothed_path], [conf[1] for conf in smoothed_path], linewidth=7, linestyle='-', color='c')
+        if shortcut is not None:
+            plt.plot([conf[0] for conf in shortcut], [conf[1] for conf in shortcut], linewidth=4, linestyle='--', color='r')
         # plt.plot(planner.seed_jnt_values[0], planner.seed_jnt_values[1], "xr")
         # plt.plot(planner.goal_conf[0], planner.goal_conf[1], "xm")
         if not hasattr(RRT, 'img_counter'):
             RRT.img_counter = 0
         else:
             RRT.img_counter += 1
-        plt.savefig(str( RRT.img_counter)+'.jpg')
+        # plt.savefig(str( RRT.img_counter)+'.jpg')
         if delay_time > 0:
             plt.pause(delay_time)
 

@@ -257,7 +257,7 @@ def decidestartpose(armname, ropelinesorted, predefined_grasps, fromjnt, startpo
             hndmat4_initial = np.dot(objmat4_initial, prehndhomomat)
             eepos_initial = rm.homomat_transform_points(objmat4_initial, prehndfc)[:3]
             eerot_initial = hndmat4_initial[:3, :3]
-            start = robot_s.ik(manipulator_name=armname,
+            start = robot_s.ik(component_name=armname,
                                tgt_pos=eepos_initial,
                                tgt_rot=eerot_initial,
                                seed_jnt_values=fromjnt)
@@ -298,7 +298,7 @@ def decidegoalpose_onepoint(arm_name,
         eepos_final = rm.homomat_transform_points(objmat4_final, prehndfc)[:3]
         eerot_final = hndmat4_final[:3, :3]
         fromjnt = i[0]
-        goal = robot_s.ik(manipulator_name=arm_name,
+        goal = robot_s.ik(component_name=arm_name,
                           tgt_pos=eepos_final,
                           tgt_rot=eerot_final,
                           seed_jnt_values=fromjnt)
@@ -510,7 +510,7 @@ def decidegoalpose(arm_name,
             eerot_final = hndmat4_final[:3, :3]
             # goal = robot_s.numik(eepos_final, eerot_final, arm_name)
             fromjnt = i[0]
-            goal = robot_s.ik(manipulator_name=arm_name,
+            goal = robot_s.ik(component_name=arm_name,
                               tgt_pos=eepos_final,
                               tgt_rot=eerot_final,
                               seed_jnt_values=fromjnt)

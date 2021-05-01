@@ -42,7 +42,7 @@ class RRTConnect(rrt.RRT):
                                      obstacle_list, [roadmap.nodes[nearest_nid]['conf'], conf], new_conf, '^c')
                 # check goal
                 if self._goal_test(conf=roadmap.nodes[new_nid]['conf'], goal_conf=goal_conf, threshold=ext_dist):
-                    roadmap.add_node('connection', conf=goal_conf) # TODO current name -> connection
+                    roadmap.add_node('connection', conf=goal_conf)  # TODO current name -> connection
                     roadmap.add_edge(new_nid, 'connection')
                     return 'connection'
         else:
@@ -66,13 +66,13 @@ class RRTConnect(rrt.RRT):
                 continue
             if j < i:
                 i, j = j, i
-            shortcut = self._extend_conf(smoothed_path[i], smoothed_path[j], granularity, exact_end = True)
-            if (len(shortcut) <= (j - i)+1) and all(not self._is_collided(component_name=component_name,
-                                                                       conf=conf,
-                                                                       obstacle_list=obstacle_list,
-                                                                       otherrobot_list=otherrobot_list)
-                                                 for conf in shortcut):
-                smoothed_path = smoothed_path[:i - 1] + shortcut + smoothed_path[j + 1:]
+            shortcut = self._extend_conf(smoothed_path[i], smoothed_path[j], granularity, exact_end=True)
+            if (len(shortcut) <= (j - i) + 1) and all(not self._is_collided(component_name=component_name,
+                                                                            conf=conf,
+                                                                            obstacle_list=obstacle_list,
+                                                                            otherrobot_list=otherrobot_list)
+                                                      for conf in shortcut):
+                smoothed_path = smoothed_path[:i] + shortcut + smoothed_path[j + 1:]
             if animation:
                 self.draw_wspace([self.roadmap_start, self.roadmap_goal], self.start_conf, self.goal_conf,
                                  obstacle_list, shortcut=shortcut, smoothed_path=smoothed_path)
@@ -88,6 +88,7 @@ class RRTConnect(rrt.RRT):
              rand_rate=70,
              max_iter=1000,
              max_time=15.0,
+             smoothing_iterations=50,
              animation=False):
         self.roadmap.clear()
         self.roadmap_start.clear()
@@ -118,7 +119,8 @@ class RRTConnect(rrt.RRT):
                 if last_nid != -1:
                     goal_nid = last_nid
                 goal_conf = self.roadmap_goal.nodes[goal_nid]['conf']
-                rand_conf = self._sample_conf(component_name=component_name, rand_rate=rand_rate, default_conf=goal_conf)
+                rand_conf = self._sample_conf(component_name=component_name, rand_rate=rand_rate,
+                                              default_conf=goal_conf)
                 # goal_nid = 'goal'
                 last_nid = self._extend_roadmap(component_name=component_name,
                                                 roadmap=self.roadmap_start,
@@ -139,7 +141,8 @@ class RRTConnect(rrt.RRT):
                     if last_nid != -1:
                         goal_nid = last_nid
                     goal_conf = self.roadmap_start.nodes[goal_nid]['conf']
-                    rand_conf = self._sample_conf(component_name=component_name, rand_rate=rand_rate, default_conf=goal_conf)
+                    rand_conf = self._sample_conf(component_name=component_name, rand_rate=rand_rate,
+                                                  default_conf=goal_conf)
                     last_nid = self._extend_roadmap(component_name=component_name,
                                                     roadmap=self.roadmap_goal,
                                                     conf=rand_conf,
@@ -163,7 +166,7 @@ class RRTConnect(rrt.RRT):
                                           obstacle_list=obstacle_list,
                                           otherrobot_list=otherrobot_list,
                                           granularity=ext_dist,
-                                          iterations=50,
+                                          iterations=smoothing_iterations,
                                           animation=animation)
         return smoothed_path
 
@@ -232,7 +235,8 @@ if __name__ == '__main__':
     # Set Initial parameters
     robot = XYBot()
     rrtc = RRTConnect(robot)
-    path = rrtc.plan(component_name='all', start_conf=np.array([0, 0]), goal_conf=np.array([5, 10]), obstacle_list=obstacle_list,
+    path = rrtc.plan(component_name='all', start_conf=np.array([0, 0]), goal_conf=np.array([5, 10]),
+                     obstacle_list=obstacle_list,
                      ext_dist=1, rand_rate=70, max_time=300, animation=True)
     # import time
     # total_t = 0
@@ -247,7 +251,8 @@ if __name__ == '__main__':
     print(path)
     rrtc.draw_wspace([rrtc.roadmap_start, rrtc.roadmap_goal],
                      rrtc.start_conf, rrtc.goal_conf, obstacle_list, delay_time=0)
-    plt.plot([conf[0] for conf in path], [conf[1] for conf in path], '-k')
+    plt.plot([conf[0] for conf in path], [conf[1] for conf in path], linewidth=7, linestyle='-', color='c')
+    # plt.savefig(str(rrtc.img_counter)+'.jpg')
     # pathsm = smoother.pathsmoothing(path, rrt, 30)
     # plt.plot([point[0] for point in pathsm], [point[1] for point in pathsm], '-r')
     # plt.pause(0.001)  # Need for Mac

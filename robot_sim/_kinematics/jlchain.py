@@ -44,7 +44,7 @@ class JLChain(object):
         self._homeconf = homeconf.astype('float64')
         # initialize joints and links
         self.lnks, self.jnts = self._init_jlchain()
-        self.tgtjnts = range(1, self.ndof + 1)
+        self._tgtjnts = range(1, self.ndof + 1)
         self.goto_homeconf()
         # default tcp
         self.tcp_jntid = -1
@@ -155,6 +155,15 @@ class JLChain(object):
     @property
     def zeroconf(self):
         return np.array([self._zeroconf[i - 1] for i in self.tgtjnts])
+
+    @property
+    def tgtjnts(self):
+        return self._tgtjnts
+
+    @tgtjnts.setter
+    def tgtjnts(self, values):
+        self._tgtjnts=values
+        self._ikt = jlik.JLChainIK(self)
 
     def fix_to(self, pos, rotmat, jnt_values=None):
         # fix the connecting end of the jlchain to the given pos and rotmat
@@ -285,15 +294,15 @@ class JLChain(object):
             counter += 1
         return jnt_values
 
-    def num_ik(self,
-               tgt_pos,
-               tgt_rot,
-               seed_jnt_values=None,
-               tcp_jntid=None,
-               tcp_loc_pos=None,
-               tcp_loc_rotmat=None,
-               local_minima="accept",
-               toggle_debug=False):
+    def ik(self,
+           tgt_pos,
+           tgt_rot,
+           seed_jnt_values=None,
+           tcp_jntid=None,
+           tcp_loc_pos=None,
+           tcp_loc_rotmat=None,
+           local_minima="accept",
+           toggle_debug=False):
         """
         Numerical IK
         NOTE1: in the numik function of rotjntlinksik,
@@ -461,14 +470,14 @@ if __name__ == "__main__":
     # tcp_loc_rotmatlist = tcp_loc_rotmatlist[0]
 
     tic = time.time()
-    jnt_values = jlinstance.num_ik(tgt_pos_list,
-                                   tgt_rotmat_list,
-                                   seed_jnt_values=None,
-                                   tcp_jntid=tcp_jntidlist,
-                                   tcp_loc_pos=tcp_loc_poslist,
-                                   tcp_loc_rotmat=tcp_loc_rotmatlist,
-                                   local_minima="accept",
-                                   toggle_debug=True)
+    jnt_values = jlinstance.ik(tgt_pos_list,
+                               tgt_rotmat_list,
+                               seed_jnt_values=None,
+                               tcp_jntid=tcp_jntidlist,
+                               tcp_loc_pos=tcp_loc_poslist,
+                               tcp_loc_rotmat=tcp_loc_rotmatlist,
+                               local_minima="accept",
+                               toggle_debug=True)
     toc = time.time()
     print('ik cost: ', toc - tic, jnt_values)
     jlinstance.fk(jnt_values=jnt_values)

@@ -16,8 +16,8 @@ class JLChainIK(object):
         # maximum reach
         self.max_rng = 2.0
         # extract min max for quick access
-        self.jmvmin = np.zeros(self.jlc_object.ndof)
-        self.jmvmax = np.zeros(self.jlc_object.ndof)
+        self.jmvmin = np.zeros(len(self.jlc_object.tgtjnts))
+        self.jmvmax = np.zeros(len(self.jlc_object.tgtjnts))
         counter = 0
         for id in self.jlc_object.tgtjnts:
             self.jmvmin[counter] = self.jlc_object.jnts[id]['motion_rng'][0]
@@ -59,9 +59,9 @@ class JLChainIK(object):
         author: weiwei
         date: 20201126
         """
-        wtmat = np.ones(self.jlc_object.ndof)
+        wtmat = np.ones(len(self.jlc_object.tgtjnts))
         # min damping interval
-        selection = (jntvalues - self.jmvmin_threshhold < 0)
+        selection = (jntvalues - self.jmvmin_threshhold) < 0
         diff_selected = self.jmvmin_threshhold[selection] - jntvalues[selection]
         wtmat[selection] = -2 * np.power(diff_selected, 3) + 3 * np.power(diff_selected, 2)
         # max damping interval

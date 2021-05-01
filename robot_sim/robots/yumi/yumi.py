@@ -494,9 +494,7 @@ class Yumi(ri.RobotInterface):
                                     toggle_tcpcs=toggle_tcpcs,
                                     toggle_jntscs=toggle_jntscs,
                                     toggle_connjnt=toggle_connjnt).attach_to(stickmodel)
-        self.lft_hnd.gen_stickmodel(tcp_loc_pos=None,
-                                    tcp_loc_rotmat=None,
-                                    toggle_tcpcs=False,
+        self.lft_hnd.gen_stickmodel(toggle_tcpcs=False,
                                     toggle_jntscs=toggle_jntscs,
                                     toggle_connjnt=toggle_connjnt).attach_to(stickmodel)
         self.rgt_body.gen_stickmodel(tcp_loc_pos=None,
@@ -509,9 +507,7 @@ class Yumi(ri.RobotInterface):
                                     toggle_tcpcs=toggle_tcpcs,
                                     toggle_jntscs=toggle_jntscs,
                                     toggle_connjnt=toggle_connjnt).attach_to(stickmodel)
-        self.rgt_hnd.gen_stickmodel(tcp_loc_pos=None,
-                                    tcp_loc_rotmat=None,
-                                    toggle_tcpcs=False,
+        self.rgt_hnd.gen_stickmodel(toggle_tcpcs=False,
                                     toggle_jntscs=toggle_jntscs,
                                     toggle_connjnt=toggle_connjnt).attach_to(stickmodel)
         return stickmodel
@@ -536,9 +532,7 @@ class Yumi(ri.RobotInterface):
                                    toggle_tcpcs=toggle_tcpcs,
                                    toggle_jntscs=toggle_jntscs,
                                    rgba=rgba).attach_to(meshmodel)
-        self.lft_hnd.gen_meshmodel(tcp_loc_pos=None,
-                                   tcp_loc_rotmat=None,
-                                   toggle_tcpcs=False,
+        self.lft_hnd.gen_meshmodel(toggle_tcpcs=False,
                                    toggle_jntscs=toggle_jntscs,
                                    rgba=rgba).attach_to(meshmodel)
         self.rgt_arm.gen_meshmodel(tcp_jntid=tcp_jntid,
@@ -547,9 +541,7 @@ class Yumi(ri.RobotInterface):
                                    toggle_tcpcs=toggle_tcpcs,
                                    toggle_jntscs=toggle_jntscs,
                                    rgba=rgba).attach_to(meshmodel)
-        self.rgt_hnd.gen_meshmodel(tcp_loc_pos=None,
-                                   tcp_loc_rotmat=None,
-                                   toggle_tcpcs=False,
+        self.rgt_hnd.gen_meshmodel(toggle_tcpcs=False,
                                    toggle_jntscs=toggle_jntscs,
                                    rgba=rgba).attach_to(meshmodel)
         for obj_info in self.lft_oih_infos:

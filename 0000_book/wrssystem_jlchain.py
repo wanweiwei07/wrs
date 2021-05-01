@@ -22,11 +22,11 @@ if __name__ == "__main__":
     gm.gen_mycframe(pos=tgt_pos0, rotmat=tgt_rotmat0, length=.15, thickness=.01).attach_to(base)
     jlinstance.set_tcp(tcp_jntid=4, tcp_loc_pos=np.array([.2, -.13, 0]), tcp_loc_rotmat=rm.rotmat_from_axangle(np.array([0,0,1]), math.pi/8))
     tic = time.time()
-    jnt_values = jlinstance.num_ik(tgt_pos0,
-                                   tgt_rotmat0,
-                                   seed_jnt_values=None,
-                                   local_minima="accept",
-                                   toggle_debug=False)
+    jnt_values = jlinstance.ik(tgt_pos0,
+                               tgt_rotmat0,
+                               seed_jnt_values=None,
+                               local_minima="accept",
+                               toggle_debug=False)
     toc = time.time()
     print('ik cost: ', toc - tic, jnt_values)
     jlinstance.fk(jnt_values=jnt_values)

@@ -5,8 +5,8 @@ import numpy as np
 import threading
 import time
 
-from misc.pykinect2 import PyKinectRuntime
-from misc.pykinect2 import PyKinectV2
+from _misc.pykinect2 import PyKinectRuntime
+from _misc.pykinect2 import PyKinectV2
 
 import ctypes
 

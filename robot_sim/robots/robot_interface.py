@@ -42,7 +42,7 @@ class RobotInterface(object):
         self.hnd_dict[hnd_name].jaw_to(jaw_width=jaw_width)
 
     def ik(self,
-           manipulator_name,
+           component_name,
            tgt_pos,
            tgt_rot,
            seed_jnt_values=None,
@@ -51,14 +51,14 @@ class RobotInterface(object):
            tcp_loc_rotmat=None,
            local_minima="accept",
            toggle_debug=False):
-        return self.manipulator_dict[manipulator_name].ik(tgt_pos,
-                                                          tgt_rot,
-                                                          seed_jnt_values=seed_jnt_values,
-                                                          tcp_jntid=tcp_jntid,
-                                                          tcp_loc_pos=tcp_loc_pos,
-                                                          tcp_loc_rotmat=tcp_loc_rotmat,
-                                                          local_minima=local_minima,
-                                                          toggle_debug=toggle_debug)
+        return self.manipulator_dict[component_name].ik(tgt_pos,
+                                                        tgt_rot,
+                                                        seed_jnt_values=seed_jnt_values,
+                                                        tcp_jntid=tcp_jntid,
+                                                        tcp_loc_pos=tcp_loc_pos,
+                                                        tcp_loc_rotmat=tcp_loc_rotmat,
+                                                        local_minima=local_minima,
+                                                        toggle_debug=toggle_debug)
 
     def rand_conf(self, component_name):
         return self.manipulator_dict[component_name].rand_conf()

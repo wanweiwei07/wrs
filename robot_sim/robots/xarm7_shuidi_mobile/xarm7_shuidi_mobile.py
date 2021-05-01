@@ -150,14 +150,14 @@ class XArm7YunjiMobile(ri.RobotInterface):
     def ik(self,
            tgt_pos,
            tgt_rot,
-           manipulator_name='arm',
+           component_name='arm',
            seed_jnt_values=None,
            tcp_jntid=None,
            tcp_loc_pos=None,
            tcp_loc_rotmat=None,
            local_minima="accept",
            toggle_debug=False):
-        if manipulator_name == 'arm':
+        if component_name == 'arm':
             return self.arm.ik(tgt_pos,
                                tgt_rot,
                                seed_jnt_values=seed_jnt_values,
@@ -166,7 +166,7 @@ class XArm7YunjiMobile(ri.RobotInterface):
                                tcp_loc_rotmat=tcp_loc_rotmat,
                                local_minima=local_minima,
                                toggle_debug=toggle_debug)
-        elif manipulator_name == 'agv_arm' or manipulator_name == 'all':
+        elif component_name == 'agv_arm' or component_name == 'all':
             pass
 
     def get_jnt_values(self, component_name):
