@@ -278,6 +278,29 @@ def interplate_pos_rotmat(start_pos,
     rotmat_list = rotmat_slerp(start_rotmat, goal_rotmat, nval)
     return pos_list, rotmat_list
 
+
+def interplate_pos_rotmat_around_circle(circle_center_pos,
+                                        circle_ax,
+                                        radius,
+                                        start_rotmat,
+                                        end_rotmat,
+                                        granularity=.01):
+    """
+    :param circle_center_pos:
+    :param start_rotmat:
+    :param end_rotmat:
+    :param granularity: mm between two key points in the workspace
+    :return:
+    """
+    vec = orthogonal_vector(circle_ax)
+    granularity_radius = granularity/radius
+    nval = math.ceil(math.pi*2 / granularity_radius)
+    rotmat_list = rotmat_slerp(start_rotmat, end_rotmat, nval)
+    pos_list = []
+    for angle in np.linspace(0, math.pi*2, nval).tolist():
+        pos_list.append(rotmat_from_axangle(circle_ax, angle).dot(vec*radius)+circle_center_pos)
+    return pos_list, rotmat_list
+
 # quaternion
 def quaternion_from_axangle(angle, axis):
     """

@@ -2,7 +2,7 @@ import math
 import numpy as np
 
 
-class Trajectory(object):
+class TrajPoly(object):
 
     def __init__(self, method="cubic"):
         if method == "cubic":
@@ -117,7 +117,7 @@ class Trajectory(object):
             pre_passing_spd = passing_spd_list[id - 1]
             passing_spd = passing_spd_list[id]
             self.fit(pre_passing_conf, pre_passing_spd, passing_conf, passing_spd)
-            samples = np.linspace(0, 1, math.floor(interval_time / control_frequency))
+            samples = np.linspace(0, interval_time, math.floor(interval_time / control_frequency))
             local_interpolated_confs, local_interplated_spds = self.predict(samples)
             interpolated_confs += local_interpolated_confs.tolist()
             interpolated_spds += local_interplated_spds.tolist()
@@ -130,7 +130,7 @@ if __name__ == '__main__':
     y = [[0], [3], [0], [9], [0]]
     control_frequency = .02
     interval_time = 1.0
-    traj = Trajectory(method="quintic")
+    traj = TrajPoly(method="quintic")
     interpolated_confs, interpolated_spds = traj.piecewise_interpolation(y, control_frequency=control_frequency,
                                                                          interval_time=interval_time)
     # print(interpolated_spds)

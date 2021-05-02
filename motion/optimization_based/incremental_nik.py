@@ -178,6 +178,68 @@ class IncrementalNIK(object):
         # TODO
         pass
 
+    def gen_circular_motion(self,
+                            component_name,
+                            circle_center_pos,
+                            circle_ax,
+                            start_hnd_rotmat,
+                            end_hnd_rotmat,
+                            radius=.02,
+                            obstacle_list=[],
+                            granularity=0.03,
+                            seed_jnt_values=None,
+                            toggle_tcp_list=False,
+                            toggle_debug=False):
+        """
+        :param component_name:
+        :param start_hnd_pos:
+        :param start_hnd_rotmat:
+        :param goal_hnd_pos:
+        :param goal_hnd_rotmat:
+        :param goal_info:
+        :param obstacle_list:
+        :param granularity:
+        :return:
+        author: weiwei
+        date: 20210501
+        """
+        jnt_values_bk = self.robot_s.get_jnt_values(component_name)
+        pos_list, rotmat_list = rm.interplate_pos_rotmat_around_circle(circle_center_pos,
+                                                                       circle_ax,
+                                                                       radius,
+                                                                       start_hnd_rotmat,
+                                                                       end_hnd_rotmat,
+                                                                       granularity=granularity)
+        # for (pos, rotmat) in zip(pos_list, rotmat_list):
+        #     gm.gen_frame(pos, rotmat).attach_to(base)
+        # base.run()
+        jnt_values_list = []
+        if seed_jnt_values is None:
+            seed_jnt_values = jnt_values_bk
+        for (pos, rotmat) in zip(pos_list, rotmat_list):
+            jnt_values = self.robot_s.ik(component_name, pos, rotmat, seed_jnt_values=seed_jnt_values)
+            if jnt_values is None:
+                print("IK not solvable in gen_circular_motion!")
+                self.robot_s.fk(component_name, jnt_values_bk)
+                return []
+            else:
+                self.robot_s.fk(component_name, jnt_values)
+                cd_result, ct_points = self.robot_s.is_collided(obstacle_list, toggle_contact_points=True)
+                if cd_result:
+                    if toggle_debug:
+                        for ct_pnt in ct_points:
+                            gm.gen_sphere(ct_pnt).attach_to(base)
+                    print("Intermediate pose collided in gen_linear_motion!")
+                    self.robot_s.fk(component_name, jnt_values_bk)
+                    return []
+            jnt_values_list.append(jnt_values)
+            seed_jnt_values = jnt_values
+        self.robot_s.fk(component_name, jnt_values_bk)
+        if toggle_tcp_list:
+            return jnt_values_list,[[pos_list[i], rotmat_list[i]] for i in range(len(pos_list))]
+        else:
+            return jnt_values_list
+
 
 if __name__ == '__main__':
     import time

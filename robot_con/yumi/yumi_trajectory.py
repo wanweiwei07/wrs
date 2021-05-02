@@ -1,5 +1,5 @@
 '''
-Trajectory encapsulation for YuMi robot_s
+TrajPoly encapsulation for YuMi robot_s
 Author: Jeff Mahler
 '''
 import numpy as np
