@@ -36,19 +36,19 @@ for step_angle in np.linspace(0, angle, 10).tolist():
     gm.gen_dashtorus(axis=rotmat[:3,2], portion=1, radius=.2, thickness=.003, rgba=[1, 1, 0, 1],
                      lspace=.007, lsolid=.01, sections=16, discretization=64).attach_to(base)
 gm.gen_sphere(radius=.2, rgba=[.67,.67,.67,.9], subdivisions=5).attach_to(base)
-# radius, _ = rm.unit_vector(cross_vec*.2-cross_vec.dot(ax)*ax*.2, togglelength=True)
+# radius, _ = rm.unit_vector(cross_vec*.2-cross_vec.dot(ax)*ax*.2, toggle_length=True)
 # print(radius)
 # gm.gen_circarrow(ax, portion=1, center=cross_vec.dot(ax)*ax*.2, radius=radius, discretization=64, sections=16, thickness=.003, rgba=[0,0,0,1]).attach_to(base)
 
 # print(ax)
 # vec=np.array([1,0,0])
-# radius, _ = rm.unit_vector(vec*.2-vec.dot(ax)*ax*.2, togglelength=True)
+# radius, _ = rm.unit_vector(vec*.2-vec.dot(ax)*ax*.2, toggle_length=True)
 # gm.gen_circarrow(ax, starting_vector=vec-vec.dot(ax)*ax, portion=.57, center=vec.dot(ax)*ax*.2, radius=radius, discretization=64, sections=16, thickness=.003, rgba=[1,0,0,1]).attach_to(base)
 # vec=np.array([0,1,0])
-# radius, _ = rm.unit_vector(vec*.2-vec.dot(ax)*ax*.2, togglelength=True)
+# radius, _ = rm.unit_vector(vec*.2-vec.dot(ax)*ax*.2, toggle_length=True)
 # gm.gen_circarrow(ax, portion=1, center=vec.dot(ax)*ax*.2, radius=radius, discretization=64, sections=16, thickness=.003, rgba=[0,1,0,1]).attach_to(base)
 # vec=np.array([0,0,1])
-# radius, _ = rm.unit_vector(vec*.2-vec.dot(ax)*ax*.2, togglelength=True)
+# radius, _ = rm.unit_vector(vec*.2-vec.dot(ax)*ax*.2, toggle_length=True)
 # gm.gen_circarrow(ax, starting_vector=vec-vec.dot(ax)*ax, portion=.57, center=vec.dot(ax)*ax*.2, radius=radius, discretization=64, sections=16, thickness=.003, rgba=[0,0,1,1]).attach_to(base)
 
 

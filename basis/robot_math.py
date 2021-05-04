@@ -203,7 +203,7 @@ def homomat_from_pos_axanglevec(pos=np.zeros(3), axangle=np.ones(3)):
     author: weiwei
     date: 20200408
     """
-    ax, angle = unit_vector(axangle, togglelength=True)
+    ax, angle = unit_vector(axangle, toggle_length=True)
     rotmat = rotmat_from_axangle(ax, angle)
     return homomat_from_posrot(pos, rotmat)
 
@@ -272,7 +272,7 @@ def interplate_pos_rotmat(start_pos,
     :param granularity
     :return: a list of 1xn nparray
     """
-    len, vec = unit_vector(start_pos - goal_pos, togglelength=True)
+    len, vec = unit_vector(start_pos - goal_pos, toggle_length=True)
     nval = math.ceil(len / granularity)
     pos_list = np.linspace(start_pos, goal_pos, nval)
     rotmat_list = rotmat_slerp(start_rotmat, goal_rotmat, nval)
@@ -438,7 +438,7 @@ def regulate_angle(lowerbound, upperbound, jntangles):
         return jntangles
 
 
-def unit_vector(vector, togglelength=False):
+def unit_vector(vector, toggle_length=False):
     """
     :param vector: 1-by-3 nparray
     :return: the unit of a vector
@@ -447,11 +447,11 @@ def unit_vector(vector, togglelength=False):
     """
     length = np.linalg.norm(vector)
     if math.isclose(length, 0):
-        if togglelength:
+        if toggle_length:
             return 0.0, np.zeros_like(vector)
         else:
             return np.zeros_like(vector)
-    if togglelength:
+    if toggle_length:
         return length, vector / np.linalg.norm(vector)
     else:
         return vector / np.linalg.norm(vector)
@@ -465,8 +465,8 @@ def angle_between_vectors(v1, v2):
     author: weiwei
     date: 20190504
     """
-    l1, v1_u = unit_vector(v1, togglelength=True)
-    l2, v2_u = unit_vector(v2, togglelength=True)
+    l1, v1_u = unit_vector(v1, toggle_length=True)
+    l2, v2_u = unit_vector(v2, toggle_length=True)
     if l1 == 0 or l2 == 0:
         return None
     return np.arccos(np.clip(np.dot(v1_u, v2_u), -1.0, 1.0))
@@ -496,8 +496,8 @@ def deltaw_between_rotmat(rotmati, rotmatj):
 
 
 def cosine_between_vector(v1, v2):
-    l1, v1_u = unit_vector(v1, togglelength=True)
-    l2, v2_u = unit_vector(v2, togglelength=True)
+    l1, v1_u = unit_vector(v1, toggle_length=True)
+    l2, v2_u = unit_vector(v2, toggle_length=True)
     if l1 == 0 or l2 == 0:
         raise Exception("One of the given vector is [0,0,0].")
     return np.clip(np.dot(v1_u, v2_u), -1.0, 1.0)

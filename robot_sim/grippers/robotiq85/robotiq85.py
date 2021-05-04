@@ -134,16 +134,20 @@ class Robotiq85(gp.GripperInterface):
             super().enable_cc()
             # cdprimit
             self.cc.add_cdlnks(self.lft_outer, [0, 1, 2, 3, 4])
+            self.cc.add_cdlnks(self.lft_inner, [1])
             self.cc.add_cdlnks(self.rgt_outer, [1, 2, 3, 4])
+            self.cc.add_cdlnks(self.rgt_inner, [1])
             activelist = [self.lft_outer.lnks[0],
                           self.lft_outer.lnks[1],
                           self.lft_outer.lnks[2],
                           self.lft_outer.lnks[3],
                           self.lft_outer.lnks[4],
+                          self.lft_inner.lnks[1],
                           self.rgt_outer.lnks[1],
                           self.rgt_outer.lnks[2],
                           self.rgt_outer.lnks[3],
-                          self.rgt_outer.lnks[4]]
+                          self.rgt_outer.lnks[4],
+                          self.rgt_inner.lnks[1]]
             self.cc.set_active_cdlnks(activelist)
             self.all_cdelements = self.cc.all_cdelements
         # cdmesh

@@ -35,7 +35,7 @@ class XArm7YunjiMobile(ri.RobotInterface):
         # gripper
         self.hnd = xag.XArmGripper(pos=self.arm.jnts[-1]['gl_posq'],
                                    rotmat=self.arm.jnts[-1]['gl_rotmatq'],
-                                   name='hnd', enable_cc=False)
+                                   name='hnd_s', enable_cc=False)
         # tool center point
         self.arm.jlc.tcp_jntid = -1
         self.arm.jlc.tcp_loc_pos = self.hnd.jaw_center_loc_pos
@@ -199,7 +199,7 @@ class XArm7YunjiMobile(ri.RobotInterface):
         if component_name == 'agv_arm':
             raise NotImplementedError
 
-    def jaw_to(self, hnd_name='hnd', jawwidth=0.0):
+    def jaw_to(self, hnd_name='hnd_s', jawwidth=0.0):
         self.hnd.jaw_to(jawwidth)
 
     def get_jawwidth(self):

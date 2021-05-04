@@ -30,11 +30,28 @@ path = rrtc_planner.plan(component_name=component_name,
                          start_conf=start_conf,
                          goal_conf=goal_conf,
                          obstacle_list=[object_box],
-                         ext_dist=.05,
+                         ext_dist=.1,
                          rand_rate=40,
                          smoothing_iterations=150,
                          max_time=300)
 print(path)
+import matplotlib.pyplot as plt
+import motion.trajectory.trajectory_polynomial as trajp
+control_frequency = .005
+interval_time = 1
+traj_gen = trajp.TrajPoly(method="quintic")
+interpolated_confs, interpolated_spds, interpolated_accs = \
+    traj_gen.piecewise_interpolation(path, control_frequency=control_frequency, interval_time=interval_time)
+
+fig, axs = plt.subplots(3, figsize=(21,7))
+fig.tight_layout(pad=.7)
+x = np.linspace(0, interval_time*(len(path) - 1), (len(path) - 1) * math.floor(interval_time / control_frequency))
+axs[0].plot(x, interpolated_confs)
+axs[0].plot(range(0, interval_time * (len(path)), interval_time), path, '--o')
+axs[1].plot(x, interpolated_spds)
+axs[2].plot(x, interpolated_accs)
+plt.show()
+
 for pose in path[1:-2]:
     print(pose)
     robot_s.fk(component_name, pose)

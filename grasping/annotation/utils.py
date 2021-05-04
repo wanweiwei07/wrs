@@ -5,18 +5,19 @@ import numpy as np
 import basis.robot_math as rm
 
 
-def define_grasp(hnd,
+def define_grasp(hnd_s,
                  objcm,
                  gl_jaw_center,
                  gl_hndz,
-                 gl_hndx,
+                 gl_hndy,
                  jaw_width,
                  toggle_flip=True):
     """
-    :param hnd:
-    :param fgr_center:
-    :param fgr_normal:
-    :param hnd_normal:
+    :param hnd_s:
+    :param objcm:
+    :param gl_jaw_center:
+    :param gl_hndz: hand approaching direction
+    :param gl_hndy: normal direction of thumb's contact surface
     :param jaw_width:
     :param objcm:
     :param toggle_flip:
@@ -25,8 +26,8 @@ def define_grasp(hnd,
     date: 20200104
     """
     grasp_info_list = []
-    grasp_info = hnd.grip_at(gl_jaw_center, gl_hndz, gl_hndx, jaw_width)
-    if not hnd.is_mesh_collided([objcm]):
+    grasp_info = hnd_s.grip_at(gl_jaw_center, gl_hndz, gl_hndy, jaw_width)
+    if not hnd_s.is_mesh_collided([objcm]):
         grasp_info_list.append(grasp_info)
         if toggle_flip:
             grasp_info_flipped = [grasp_info[0], grasp_info[1], grasp_info[2],
@@ -35,22 +36,23 @@ def define_grasp(hnd,
     return grasp_info_list
 
 
-def define_grasp_with_rotation(hnd,
+def define_grasp_with_rotation(hnd_s,
                                objcm,
                                gl_jaw_center,
                                gl_hndz,
-                               gl_hndx,
+                               gl_hndy,
                                jaw_width,
-                               rotation_ax,
+                               gl_rotation_ax,
                                rotation_interval=math.radians(60),
                                rotation_range=(math.radians(-180), math.radians(180)),
-                               toggle_flip=True):
+                               toggle_flip=True,
+                               toggle_debug=False):
     """
-    :param hnd: 
+    :param hnd_s:
     :param objcm: 
     :param gl_jaw_center: 
-    :param gl_hndz: 
-    :param gl_hndx: 
+    :param gl_hndz: hand approaching direction
+    :param gl_hndy: normal direction of thumb's contact surface
     :param jaw_width: 
     :param rotation_interval: 
     :param rotation_range: 
@@ -60,17 +62,35 @@ def define_grasp_with_rotation(hnd,
     date: 20200104
     """
     grasp_info_list = []
+    collided_grasp_info_list = []
     for rotate_angle in np.arange(rotation_range[0], rotation_range[1], rotation_interval):
-        tmp_rotmat = rm.rotmat_from_axangle(rotation_ax, rotate_angle)
+        tmp_rotmat = rm.rotmat_from_axangle(gl_rotation_ax, rotate_angle)
         gl_hndz_rotated = np.dot(tmp_rotmat, gl_hndz)
-        gl_hndx_rotated = np.dot(tmp_rotmat, gl_hndx)
-        grasp_info = hnd.grip_at(gl_jaw_center, gl_hndz_rotated, gl_hndx_rotated, jaw_width)
-        if not hnd.is_mesh_collided([objcm]):
+        gl_hndy_rotated = np.dot(tmp_rotmat, gl_hndy)
+        grasp_info = hnd_s.grip_at(gl_jaw_center, gl_hndz_rotated, gl_hndy_rotated, jaw_width)
+        if not hnd_s.is_mesh_collided([objcm]):
             grasp_info_list.append(grasp_info)
             if toggle_flip:
                 grasp_info_flipped = [grasp_info[0], grasp_info[1], grasp_info[2],
                                       rm.rotmat_from_axangle(grasp_info[3][:, 2], math.pi).dot(grasp_info[3])]
                 grasp_info_list.append(grasp_info_flipped)
+        else:
+            collided_grasp_info_list.append(grasp_info)
+            if toggle_flip:
+                grasp_info_flipped = [grasp_info[0], grasp_info[1], grasp_info[2],
+                                      rm.rotmat_from_axangle(grasp_info[3][:, 2], math.pi).dot(grasp_info[3])]
+                collided_grasp_info_list.append(grasp_info_flipped)
+    if toggle_debug:
+        for grasp_info in collided_grasp_info_list:
+            aw_width, gl_jaw_center, hnd_pos, hnd_rotmat = grasp_info
+            hnd_s.fix_to(hnd_pos, hnd_rotmat)
+            hnd_s.jaw_to(aw_width)
+            hnd_s.gen_meshmodel(rgba=[1, 0, 0, .3]).attach_to(base)
+        for grasp_info in grasp_info_list:
+            aw_width, gl_jaw_center, hnd_pos, hnd_rotmat = grasp_info
+            hnd_s.fix_to(hnd_pos, hnd_rotmat)
+            hnd_s.jaw_to(aw_width)
+            hnd_s.gen_meshmodel(rgba=[0, 1, 0, .3]).attach_to(base)
     return grasp_info_list
 
 
@@ -90,8 +110,8 @@ def define_grasp_with_rotation(hnd,
 #     """
 #
 #     effect_grasp = []
-#     hnd = hndfa.genHand(usesuction=True)
-#     grasp = hnd.approachat(finger_center[0], finger_center[1], finger_center[2],
+#     hnd_s = hndfa.genHand(usesuction=True)
+#     grasp = hnd_s.approachat(finger_center[0], finger_center[1], finger_center[2],
 #                            finger_normal[0], finger_normal[1], finger_normal[2],
 #                            hand_normal[0], hand_normal[1], hand_normal[2], jaw_width=0)
 #     if not ishndobjcollided(hndfa, grasp[0], grasp[2], objcm):
@@ -119,9 +139,9 @@ def define_grasp_with_rotation(hnd,
 #
 #     effect_grasp = []
 #     for rotate_angle in range(rotation_range[0], rotation_range[1], rotation_interval):
-#         hnd = hndfa.genHand(usesuction=True)
+#         hnd_s = hndfa.genHand(usesuction=True)
 #         hand_normal_rotated = np.dot(rm.rodrigues(finger_normal, rotate_angle), np.asarray(hand_normal))
-#         grasp = hnd.approachat(grasp_center[0], grasp_center[1], grasp_center[2],
+#         grasp = hnd_s.approachat(grasp_center[0], grasp_center[1], grasp_center[2],
 #                                finger_normal[0], finger_normal[1], finger_normal[2],
 #                                hand_normal_rotated[0], hand_normal_rotated[1], hand_normal_rotated[2], jaw_width=0)
 #         if not ishndobjcollided(hndfa, grasp[0], grasp[2], objcm) == False:
@@ -194,11 +214,11 @@ if __name__ == '__main__':
     objcm.show_localframe()
     grasp_info_list = define_grasp_with_rotation(gripper_s,
                                                  objcm,
-                                                 gl_jaw_center=np.array([0,0,0]),
-                                                 gl_hndz=np.array([1,0,0]),
-                                                 gl_hndx=np.array([0,1,0]),
+                                                 gl_jaw_center=np.array([0, 0, 0]),
+                                                 gl_hndz=np.array([1, 0, 0]),
+                                                 gl_hndy=np.array([0, 1, 0]),
                                                  jaw_width=.04,
-                                                 rotation_ax=np.array([0,0,1]))
+                                                 gl_rotation_ax=np.array([0, 0, 1]))
     for grasp_info in grasp_info_list:
         jaw_width, gl_jaw_center, pos, rotmat = grasp_info
         gic = gripper_s.copy()

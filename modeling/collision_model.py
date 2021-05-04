@@ -231,6 +231,23 @@ class CollisionModel(gm.GeometricModel):
                 return True
         return [False, []] if toggle_contacts else False
 
+    def ray_hit(self, point_from, point_to, option="all"):
+        """
+        check the intersection between segment point_from-point_to and the mesh
+        :param point_from: 1x3 nparray
+        :param point_to:
+        :param option: "all" or “closest"
+        :return:
+        author: weiwei
+        date: 20210504
+        """
+        if option == "all":
+            contact_points, contact_normals = mcd.rayhit_all(point_from, point_to, self)
+            return contact_points, contact_normals
+        elif option == "closest":
+            contact_point, contact_normal = mcd.rayhit_closet(point_from, point_to, self)
+            return contact_point, contact_normal
+
     def show_cdmesh(self):
         vertices, vertex_normals, faces = self.extract_rotated_vvnf()
         objwm = gm.WireFrameModel(da.trm.Trimesh(vertices=vertices, vertex_normals=vertex_normals, faces=faces))

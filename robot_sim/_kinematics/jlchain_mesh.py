@@ -55,9 +55,10 @@ class JLChainMesh(object):
                                tcpic_rgba=np.array([.5, 0, 1, 1]), tcpic_thickness=.0062)
         # toggle all coord
         if toggle_jntscs:
+            alpha = 1 if rgba == None else rgba[3]
             self._toggle_jntcs(mm_collection,
                                jntcs_thickness=.0062,
-                               alpha=rgba[3])
+                               alpha=alpha)
         return mm_collection
 
     def gen_stickmodel(self,

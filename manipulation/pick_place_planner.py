@@ -95,20 +95,20 @@ class PickPlacePlanner(adp.ADPlanner):
                         # TODO is_obj_collided
                         is_obj_collided = False  # common graspid consdiering obj cd
                         if (not is_rbt_collided) and (
-                                not is_obj_collided):  # hnd cdfree, robot_s ikfeasible, robot_s cdfree
+                                not is_obj_collided):  # hnd_s cdfree, robot_s ikfeasible, robot_s cdfree
                             if toggle_debug:
                                 self.rbt.gen_meshmodel(rgba=[0, 1, 0, .5]).attach_to(base)
                             previously_available_graspids.append(graspid)
-                        elif (not is_obj_collided):  # hnd cdfree, robot_s ikfeasible, robot_s collided
+                        elif (not is_obj_collided):  # hnd_s cdfree, robot_s ikfeasible, robot_s collided
                             rbtcollided_grasps_num += 1
                             if toggle_debug:
                                 self.rbt.gen_meshmodel(rgba=[1, 0, 1, .5]).attach_to(base)
-                    else:  # hnd cdfree, robot_s ik infeasible
+                    else:  # hnd_s cdfree, robot_s ik infeasible
                         ikfailed_grasps_num += 1
                         if toggle_debug:
                             hnd_tmp = hnd_instance.copy()
                             hnd_tmp.gen_meshmodel(rgba=[1, .6, 0, .2]).attach_to(base)
-                else:  # hnd collided
+                else:  # hnd_s collided
                     hndcollided_grasps_num += 1
                     if toggle_debug:
                         hnd_tmp = hnd_instance.copy()

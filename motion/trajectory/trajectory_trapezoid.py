@@ -9,31 +9,57 @@ class TrajTrap(object):
         self.predict = self._predict_max_acc
 
     def _fit_max_acc(self, conf0, spd0, conf1, spd1):
+        print(conf0, conf1)
         # assume max speed and check if it is needed in the given time interval
-        self.avg_spd = self._max_spd * (np.sign((spd0 + spd1) / 2) + (spd0 + spd1) / 2 == 0)
+        self.avg_spd = self._max_spd * (np.sign((conf0 + conf1)) + ((conf0 + conf1) == 0))
         self.acc_begin = np.sign(self.avg_spd - spd0) * self._max_acc
         self.acc_end = np.sign(spd1 - self.avg_spd) * self._max_acc
         self.t_begin = abs(self.avg_spd - spd0) / self._max_acc
         self.t_end = abs(self.avg_spd - spd1) / self._max_acc
-        # for those do not need the max speed, only consider acceleration
-        slctn = self.t_begin + self.t_end > self._interval_time
-        self.avg_spd[slctn] = ((self.acc_begin * self.acc_end * self._interval_time +
-                                spd0 * self.acc_end + spd1 * self.acc_begin) /
-                               (self.acc_begin + self.acc_end))[slctn]
-        self.t_begin[slctn] = (abs(self.avg_spd - spd0) / self._max_acc)[slctn]
-        self.t_end[slctn] = (abs(self.avg_spd - spd1) / self._max_acc)[slctn]
         begin_movement = spd0 * self.t_begin + (self.acc_begin * self.t_begin ** 2) / 2
         end_movement = self.avg_spd * self.t_end + (self.acc_end * self.t_end ** 2) / 2
         self.t_middle = (conf1 - conf0 - begin_movement - end_movement) / self.avg_spd
-        self.t_middle[slctn] = 0
-        if np.any(self.t_middle > self._interval_time-self.t_begin-self.t_end):
+        # print(self.t_middle, self.avg_spd, self._interval_time, self.t_begin, self.t_end)
+        # # for those do not need the max speed, only consider acceleration
+        # slctn = self.t_begin + self.t_end >= self._interval_time
+        # self.avg_spd[slctn] = ((-self.acc_begin * self.acc_end * self._interval_time -
+        #                         spd0 * self.acc_end + spd1 * self.acc_begin) /
+        #                        (self.acc_begin - self.acc_end))[slctn]
+        # self.t_begin[slctn] = (abs(self.avg_spd - spd0) / self._max_acc)[slctn]
+        # self.t_end[slctn] = (abs(self.avg_spd - spd1) / self._max_acc)[slctn]
+        # self.t_middle[slctn] = 0
+        # print(self._interval_time, self.t_begin, self.t_end)
+        print(self.t_middle, (self._interval_time - self.t_begin - self.t_end), self.t_begin, self.t_end)
+        if np.any(np.logical_and(self.t_middle > self._interval_time - self.t_begin - self.t_end, self.t_middle > 0)):
             # for those need that max speed, check if the max speed is fast enough to finish the given motion
             raise ValueError("The required time interval is too short!")
         # also check if a lower max speed works
+        # print(abs(self.t_middle - (self._interval_time - self.t_begin - self.t_end)), self.t_middle)
+        init_avg_spd = self.avg_spd
+        cnter = np.ones_like(self.avg_spd)
+        cnter_last = np.zeros_like(self.avg_spd, dtype=bool)
         while True:
-            slctn = abs(self.t_middle - (self._interval_time - self.t_begin - self.t_end)) > .001
+            slctn = np.logical_or(abs(self.t_middle - (self._interval_time - self.t_begin - self.t_end)) > .001,
+                                  self.t_middle < 1e-6)
+            if np.any(np.logical_and(abs(self._interval_time - self.t_begin - self.t_end)<1e-6, self.t_middle>0)):
+                raise ValueError("The required time interval is too short!")
+            # print(slctn)
             if np.any(slctn):
-                self.avg_spd[slctn] = self.avg_spd[slctn]-.0001
+                # print(self.t_middle)
+                sign = -np.ones_like(self.avg_spd)
+                loc_slctn = np.logical_and(self.t_middle > 1e-6, self._interval_time - self.t_begin - self.t_end > 0)
+                loc_slctn = np.logical_and(loc_slctn, self.t_middle > self._interval_time - self.t_begin - self.t_end)
+                print(loc_slctn)
+                if np.any(loc_slctn):
+                    sign[loc_slctn] = 1
+                    cnter[np.logical_and(loc_slctn, not cnter_last[loc_slctn])] += 1
+                    cnter_last[loc_slctn] = True
+                not_loc_slctn = np.logical_not(loc_slctn)
+                cnter[np.logical_and(not_loc_slctn, cnter_last[not_loc_slctn])] += 1
+                cnter_last[not_loc_slctn] = False
+                self.avg_spd[slctn] += (sign * init_avg_spd / np.exp2(cnter))[slctn]
+                # if any(abs(self.t_middle - (self._interval_time - self.t_begin - self.t_end)) < .001):
+                #     print(self.t_middle, self.t_begin, self.t_end, self.avg_spd)
                 self.acc_begin[slctn] = (np.sign(self.avg_spd - spd0) * self._max_acc)[slctn]
                 self.acc_end[slctn] = (np.sign(spd1 - self.avg_spd) * self._max_acc)[slctn]
                 self.t_begin[slctn] = (abs(self.avg_spd - spd0) / self._max_acc)[slctn]
@@ -41,6 +67,8 @@ class TrajTrap(object):
                 begin_movement = spd0 * self.t_begin + (self.acc_begin * self.t_begin ** 2) / 2
                 end_movement = self.avg_spd * self.t_end + (self.acc_end * self.t_end ** 2) / 2
                 self.t_middle = (conf1 - conf0 - begin_movement - end_movement) / self.avg_spd
+                print(self.t_middle, self.t_begin, self.t_end, self.avg_spd)
+                print(self.t_middle, (self._interval_time - self.t_begin - self.t_end))
                 # print("xxxx")
                 # print(self.acc_begin)
                 # print(self.acc_end)
@@ -79,8 +107,8 @@ class TrajTrap(object):
         local_accs[slctn] = self.acc_end
         return local_interpolated_confs, local_interplated_spds, local_accs
 
-    def piecewise_interpolation(self, path, control_frequency=.005, interval_time=2.0, max_acc=math.pi/2,
-                                max_spd=math.pi):
+    def piecewise_interpolation(self, path, control_frequency=.005, interval_time=2.0, max_acc=math.pi / 6,
+                                max_spd=math.pi * 2):
         """
         :param path: a 1d array of configurations
         :param control_frequency: the program will sample interval_time/control_frequency confs
@@ -133,22 +161,24 @@ if __name__ == '__main__':
     import matplotlib.pyplot as plt
 
     # y = [[0],[3]]
-    # control_frequency = .005
+    # control_frequency = .005１
     # interval_time = 15.0
-    y = [[0],[math.pi*3]]
+    # y = [[0],[math.pi*3]]
+    y = [[math.pi / 6], [math.pi/2]]
     control_frequency = .005
-    interval_time = 5.0
+    interval_time = 3
     traj = TrajTrap()
-    interpolated_confs, interpolated_spds, local_accs = traj.piecewise_interpolation(y, control_frequency=control_frequency,
+    interpolated_confs, interpolated_spds, local_accs = traj.piecewise_interpolation(y,
+                                                                                     control_frequency=control_frequency,
                                                                                      interval_time=interval_time)
     # print(interpolated_spds)
     # interpolated_spds=np.array(interpolated_spds)
     # print(interpolated_confs)
-    x = np.linspace(0, interval_time, (len(y) - 1) * math.floor(interval_time / control_frequency))
-    fig, axs = plt.subplots(3)
-    fig. tight_layout(pad=.7)
+    x = np.linspace(0, interval_time * (len(y) - 1), (len(y) - 1) * math.floor(interval_time / control_frequency))
+    fig, axs = plt.subplots(3, figsize=(3.5,4.75))
+    fig.tight_layout(pad=.7)
     axs[0].plot(x, interpolated_confs)
-    axs[0].plot([x[0],x[-1]], [interpolated_confs[0], interpolated_confs[-1]],'--o', color='tab:blue')
+    axs[0].plot(range(0, interval_time * (len(y)), interval_time), y, '--o',color='tab:blue')
     axs[1].plot(x, interpolated_spds)
     axs[2].plot(x, local_accs)
     # plt.quiver(x, interpolated_confs, x, interpolated_spds, width=.001)

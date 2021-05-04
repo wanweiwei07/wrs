@@ -96,7 +96,7 @@ def gen_dashstick(spos=np.array([0, 0, 0]), epos=np.array([0.1, 0, 0]), thicknes
         lsolid = thickness * solidweight
     if not lspace:
         lspace = thickness * spaceweight
-    length, direction = rm.unit_vector(epos - spos, togglelength=True)
+    length, direction = rm.unit_vector(epos - spos, toggle_length=True)
     nstick = math.floor(length / (lsolid + lspace))
     vertices = np.empty((0, 3))
     faces = np.empty((0, 3))
@@ -113,7 +113,7 @@ def gen_dashstick(spos=np.array([0, 0, 0]), epos=np.array([0.1, 0, 0]), thicknes
     # wrap up the last segment
     tmp_spos = spos + (lsolid * direction + lspace * direction) * nstick
     tmp_epos = tmp_spos + lsolid * direction
-    final_length, _ = rm.unit_vector(tmp_epos - spos, togglelength=True)
+    final_length, _ = rm.unit_vector(tmp_epos - spos, toggle_length=True)
     if final_length > length:
         tmp_epos = epos
     tmp_stick = gen_stick(spos=tmp_spos,
@@ -227,7 +227,7 @@ def gen_dasharrow(spos=np.array([0, 0, 0]), epos=np.array([0.1, 0, 0]), thicknes
     author: weiwei
     date: 20191228osaka
     """
-    length, direction = rm.unit_vector(epos - spos, togglelength=True)
+    length, direction = rm.unit_vector(epos - spos, toggle_length=True)
     cap = gen_cone(spos=epos - direction * thickness * 4, epos=epos, radius=thickness, sections=sections)
     dash_stick = gen_dashstick(spos=spos,
                                epos=epos - direction * thickness * 4,

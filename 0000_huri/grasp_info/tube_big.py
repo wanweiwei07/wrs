@@ -26,7 +26,7 @@ if __name__ == '__main__':
                                                                 gl_hndz=gl_hndz,
                                                                 gl_hndx=np.array([1,0,0]),
                                                                 jaw_width=.025,
-                                                                rotation_ax=np.array([0,0,1]))
+                                                                gl_rotation_ax=np.array([0, 0, 1]))
     for grasp_info in grasp_info_list:
         jaw_width, gl_jaw_center, pos, rotmat = grasp_info
         # gic = gripper_s.copy()

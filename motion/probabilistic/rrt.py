@@ -41,7 +41,7 @@ class RRT(object):
         :param ext_dist:
         :return: a list of 1xn nparray
         """
-        len, vec = rm.unit_vector(conf2 - conf1, togglelength=True)
+        len, vec = rm.unit_vector(conf2 - conf1, toggle_length=True)
         if not exact_end:
             nval = math.ceil(len / ext_dist)
             conf_array = np.linspace(conf1, conf1 + nval * ext_dist * vec, nval)

@@ -76,11 +76,18 @@ class GripperInterface(object):
     def get_jawwidth(self):
         raise NotImplementedError
 
-    def grip_at(self, gl_jaw_center, gl_hndz, gl_hndx, jaw_width):
+    def grip_at(self, gl_jaw_center, gl_hndz, gl_hndy, jaw_width):
+        """
+        :param gl_jaw_center:
+        :param gl_hndz: hand approaching direction
+        :param gl_hndy: normal direction of thumb's contact surface
+        :param jaw_width:
+        :return:
+        """
         hnd_rotmat = np.eye(3)
         hnd_rotmat[:, 2] = rm.unit_vector(gl_hndz)
-        hnd_rotmat[:, 0] = rm.unit_vector(gl_hndx)
-        hnd_rotmat[:, 1] = np.cross(hnd_rotmat[:3, 2], hnd_rotmat[:3, 0])
+        hnd_rotmat[:, 1] = rm.unit_vector(gl_hndy)
+        hnd_rotmat[:, 0] = np.cross(hnd_rotmat[:3, 1], hnd_rotmat[:3, 2])
         hnd_pos = gl_jaw_center - hnd_rotmat.dot(self.jaw_center_loc_pos)
         self.fix_to(hnd_pos, hnd_rotmat)
         self.jaw_to(jaw_width)
