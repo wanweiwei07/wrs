@@ -44,7 +44,7 @@ def is_collided(objcm0, objcm1):
     """
     obj0 = gen_cdmesh_vvnf(*objcm0.extract_rotated_vvnf())
     obj1 = gen_cdmesh_vvnf(*objcm1.extract_rotated_vvnf())
-    contact_entry = OdeUtil.collide(obj0, obj1)
+    contact_entry = OdeUtil.collide(obj0, obj1, max_contacts=20)
     contact_points = [da.pdv3_to_npv3(point) for point in contact_entry.getContactPoints()]
     return (True, contact_points) if len(contact_points) > 0 else (False, contact_points)
 
@@ -62,7 +62,7 @@ def rayhit_closet(pfrom, pto, objcm):
     length, dir = rm.unit_vector(pto - pfrom, toggle_length=True)
     ray.set(pfrom[0], pfrom[1], pfrom[2], dir[0], dir[1], dir[2])
     ray.setLength(length)
-    contact_entry = OdeUtil.collide(ray, tgt_cdmesh)
+    contact_entry = OdeUtil.collide(ray, tgt_cdmesh, max_contacts=10)
     contact_points = [da.pdv3_to_npv3(point) for point in contact_entry.getContactPoints()]
     min_id = np.argmin(np.linalg.norm(pfrom-np.array(contact_points), axis=1))
     contact_normals = [da.pdv3_to_npv3(contact_entry.getContactGeom(i).getNormal()) for i in range(contact_entry.getNumContacts())]

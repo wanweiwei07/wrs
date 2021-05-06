@@ -36,7 +36,7 @@ path = rrtc_planner.plan(component_name=component_name,
                          max_time=300)
 print(path)
 import matplotlib.pyplot as plt
-import motion.trajectory.trajectory_polynomial as trajp
+import motion.trajectory.polynomial as trajp
 control_frequency = .005
 interval_time = 1
 traj_gen = trajp.TrajPoly(method="quintic")

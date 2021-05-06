@@ -154,20 +154,20 @@ def sample_surface_even(mesh, count, radius=None):
     author: revised by weiwei
     date: 20210120
     """
-    from .points import remove_close
+    from .points import remove_close_withfaceid
     # guess radius from area
     if radius is None:
         radius = np.sqrt(mesh.area / (3 * count))
     # get points on the surface
     points, index = sample_surface(mesh, count * 3)
     # remove the points closer than radius
-    points, mask = remove_close(points, radius)
+    points, index = remove_close_withfaceid(points, index, radius)
     # we got all the samples we expect
     if len(points) >= count:
-        return points[:count], index[mask][:count]
+        return points[:count], index[:count]
     # warn if we didn't get all the samples we expect
     # util.log.warning('only got {}/{} samples!'.format(len(points), count)) TODO
-    return points, index[mask]
+    return points, index
 
 
 def sample_surface_sphere(count):

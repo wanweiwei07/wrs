@@ -4,7 +4,7 @@ import numpy as np
 import modeling.model_collection as mc
 import robot_sim._kinematics.jlchain as jl
 import basis.robot_math as rm
-import robot_sim.grippers.gripper_interface as gp
+import robot_sim.end_effectors.grippers.gripper_interface as gp
 
 
 class Robotiq85(gp.GripperInterface):
@@ -268,7 +268,6 @@ class Robotiq85(gp.GripperInterface):
 if __name__ == '__main__':
     import visualization.panda.world as wd
     import modeling.geometric_model as gm
-    import modeling.collision_model as cm
 
     base = wd.World(cam_pos=[1, 1, 1], lookat_pos=[0, 0, 0])
     gm.gen_frame().attach_to(base)

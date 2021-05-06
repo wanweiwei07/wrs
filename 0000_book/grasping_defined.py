@@ -1,11 +1,10 @@
 import math
 import numpy as np
-import basis.robot_math as rm
 import visualization.panda.world as wd
 import modeling.geometric_model as gm
 import modeling.collision_model as cm
 import grasping.annotation.utils as gu
-import robot_sim.grippers.robotiq85.robotiq85 as rtq85
+import robot_sim.end_effectors.grippers.robotiq85.robotiq85 as rtq85
 
 base = wd.World(cam_pos=[1, 1, 1], lookat_pos=[0, 0, 0])
 gm.gen_frame().attach_to(base)

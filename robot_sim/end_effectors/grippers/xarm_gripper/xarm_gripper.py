@@ -3,7 +3,7 @@ import math
 import numpy as np
 import modeling.model_collection as mc
 import robot_sim._kinematics.jlchain as jl
-import robot_sim.grippers.gripper_interface as gi
+import robot_sim.end_effectors.grippers.gripper_interface as gi
 
 
 class XArmGripper(gi.GripperInterface):
@@ -164,31 +164,19 @@ class XArmGripper(gi.GripperInterface):
         return math.sin(.85-angle)*0.055*2.0
 
     def gen_stickmodel(self,
-                       tcp_jntid=None,
-                       tcp_loc_pos=None,
-                       tcp_loc_rotmat=None,
                        toggle_tcpcs=False,
                        toggle_jntscs=False,
                        toggle_connjnt=False,
                        name='xarm_gripper_stickmodel'):
         stickmodel = mc.ModelCollection(name=name)
-        self.lft_outer.gen_stickmodel(tcp_jntid=tcp_jntid,
-                                      tcp_loc_pos=tcp_loc_pos,
-                                      tcp_loc_rotmat=tcp_loc_rotmat,
-                                      toggle_tcpcs=toggle_tcpcs,
+        self.lft_outer.gen_stickmodel(toggle_tcpcs=toggle_tcpcs,
                                       toggle_jntscs=toggle_jntscs,
                                       toggle_connjnt=toggle_connjnt).attach_to(stickmodel)
-        self.lft_inner.gen_stickmodel(tcp_loc_pos=None,
-                                      tcp_loc_rotmat=None,
-                                      toggle_tcpcs=False,
+        self.lft_inner.gen_stickmodel(toggle_tcpcs=False,
                                       toggle_jntscs=toggle_jntscs).attach_to(stickmodel)
-        self.rgt_outer.gen_stickmodel(tcp_loc_pos=None,
-                                      tcp_loc_rotmat=None,
-                                      toggle_tcpcs=False,
+        self.rgt_outer.gen_stickmodel(toggle_tcpcs=False,
                                       toggle_jntscs=toggle_jntscs).attach_to(stickmodel)
-        self.rgt_inner.gen_stickmodel(tcp_loc_pos=None,
-                                      tcp_loc_rotmat=None,
-                                      toggle_tcpcs=False,
+        self.rgt_inner.gen_stickmodel(toggle_tcpcs=False,
                                       toggle_jntscs=toggle_jntscs).attach_to(stickmodel)
         return stickmodel
 

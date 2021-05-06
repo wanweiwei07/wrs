@@ -27,7 +27,7 @@ if __name__ == "__main__":
                                                     radius=radius,
                                                     toggle_tcp_list=True)
     print(jnt_values_list)
-    import motion.trajectory.trajectory_polynomial as trajp
+    import motion.trajectory.polynomial as trajp
     control_frequency = .005
     interval_time = 1
     traj_gen = trajp.TrajPoly(method="quintic")

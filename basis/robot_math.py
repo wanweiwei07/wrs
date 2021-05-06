@@ -8,6 +8,7 @@ import operator
 import warnings as wns
 from scipy.spatial.transform import Rotation as R
 from scipy.spatial.transform import Slerp
+import matplotlib.pyplot as plt
 
 # epsilon for testing whether a number is close to zero
 _EPS = numpy.finfo(float).eps * 4.0
@@ -710,6 +711,18 @@ def random_rgba(toggle_alpha_random=False):
         return np.random.random_sample(3).tolist()+[1]
     else:
         return np.random.random_sample(4).tolist()
+
+def get_rgba_from_cmap(id):
+    """
+    get rgba from matplotlib cmap "tab20"
+    :param id:
+    :return:
+    author: weiwei
+    date: 20210505
+    """
+    cm_name = 'tab20'
+    cm = plt.get_cmap(cm_name)
+    return cm(id%20)
 
 # The following code is from Gohlke
 #

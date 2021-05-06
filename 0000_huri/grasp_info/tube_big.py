@@ -5,9 +5,7 @@ import grasping.annotation.utils as gutil
 
 if __name__ == '__main__':
 
-    import os
-    import basis
-    import robot_sim.grippers.yumi_gripper.yumi_gripper as yg
+    import robot_sim.end_effectors.grippers.yumi_gripper.yumi_gripper as yg
     import modeling.collision_model as cm
     import visualization.panda.world as wd
 

@@ -184,7 +184,7 @@ def absolute_orientation(points_A, points_B, return_error=False):
     return M
 
 
-def remove_close(points, radius):
+def remove_close_pairs(points, radius):
     """
     Given an nxd set of points where d=2or3 return a list of points where no point is closer than radius
     :param points: a nxd list of points
@@ -240,7 +240,7 @@ def remove_close_withfaceid(points, face_index, radius):
     return points[unique], face_index[unique]
 
 
-def remove_close_set(points_fixed, points_reduce, radius):
+def remove_close_between_two_sets(points_fixed, points_reduce, radius):
     """
     Given two sets of points and a radius, return a set of points that is the subset of points_reduce where no point is
     within radius of any point in points_fixed

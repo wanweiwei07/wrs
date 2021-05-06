@@ -1,4 +1,3 @@
-import copy
 import math
 import pickle
 import numpy as np
@@ -202,7 +201,7 @@ def load_pickle_file(objcm_name, root=None, file_name='preannotated_grasps.pickl
 if __name__ == '__main__':
     import os
     import basis
-    import robot_sim.grippers.xarm_gripper.xarm_gripper as xag
+    import robot_sim.end_effectors.grippers.xarm_gripper.xarm_gripper as xag
     import modeling.collision_model as cm
     import visualization.panda.world as wd
 
