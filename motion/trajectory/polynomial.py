@@ -134,7 +134,6 @@ class TrajPoly(object):
                 passing_spd_list.append(pass_spd)
         passing_conf_list.append(path[-1])
         passing_spd_list.append(np.zeros_like(path[-1]))
-        print(passing_spd_list)
         interpolated_confs = []
         interpolated_spds = []
         interpolated_accs = []

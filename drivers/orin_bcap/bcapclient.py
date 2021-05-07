@@ -28,9 +28,9 @@ import socket
 import struct
 from ctypes import *
 from datetime import datetime
-from orinexception import *
+from .orinexception import *
 from threading import Lock
-from variant import VarType
+from .variant import VarType
 
 class BCAPClient:
   _BCAP_SOH = 0x1

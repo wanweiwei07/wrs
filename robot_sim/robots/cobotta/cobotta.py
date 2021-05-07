@@ -81,7 +81,7 @@ class Cobotta(ri.RobotInterface):
     def fix_to(self, pos, rotmat):
         self.move_to(pos=pos, rotmat=rotmat)
 
-    def fk(self, component_name='arm', jnt_values=np.zeros(7)):
+    def fk(self, component_name='arm', jnt_values=np.zeros(6)):
         """
         :param jnt_values: 7 or 3+7, 3=agv, 7=arm, 1=grpr; metrics: meter-radian
         :param component_name: 'arm', 'agv', or 'all'
@@ -238,7 +238,7 @@ if __name__ == '__main__':
     robot_s = Cobotta(enable_cc=True)
     robot_s.jaw_to(.02)
     robot_s.gen_meshmodel(toggle_tcpcs=True).attach_to(base)
-    tgt_pos = np.array([.25, -.2, .15])
+    tgt_pos = np.array([.25, .2, .15])
     tgt_rotmat = rm.rotmat_from_axangle([0,1,0], math.pi/3)
     gm.gen_frame(pos=tgt_pos, rotmat=tgt_rotmat).attach_to(base)
     # base.run()
