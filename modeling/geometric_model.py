@@ -254,8 +254,8 @@ class WireFrameModel(StaticGeometricModel):
         elif isinstance(obj, mc.ModelCollection):
             obj.add_gm(self)
         else:
-            print(
-                "Must be ShowBase, modeling.StaticGeometricModel, GeometricModel, CollisionModel, or CollisionModelCollection!")
+            print("Must be ShowBase, modeling.StaticGeometricModel, GeometricModel, "
+                  "CollisionModel, or CollisionModelCollection!")
 
     def detach(self):
         self._objpdnp.detachNode()
