@@ -35,5 +35,4 @@ for pose in path:
     robot_meshmodel = robot_s.gen_meshmodel()
     robot_meshmodel.attach_to(base)
     robot_s.gen_stickmodel().attach_to(base)
-
 base.run()

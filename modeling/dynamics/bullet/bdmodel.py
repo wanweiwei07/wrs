@@ -22,7 +22,7 @@ class BDModel(object):
         :param allowccd:
         :param friction:
         :param dynamic:
-        :param type: "convex", "triangle"
+        :param type: "convex", "triangle", "box"
         :param name:
         """
         if isinstance(objinit, BDModel):
@@ -129,7 +129,7 @@ if __name__ == "__main__":
     base.setFrameRateMeter(True)
     objpath = os.path.join(basis.__path__[0], "objects", "bunnysim.stl")
     # objpath = os.path.join(basis.__path__[0], "objects", "block.stl")
-    bunnycm = BDModel(objpath, mass=1, type="convex")
+    bunnycm = BDModel(objpath, mass=1, type="box")
 
     objpath2 = os.path.join(basis.__path__[0], "objects", "bowlblock.stl")
     bunnycm2 = BDModel(objpath2, mass=0, type="triangles", dynamic=False)
@@ -151,7 +151,7 @@ if __name__ == "__main__":
                 y = math.floor((i - z * 100) / 10)
                 x = i - z * 100 - y * 10
                 print(x, y, z, "\n")
-                bunnycm1.set_homomat(rm.homomat_from_posrot(np.array([x * 0.015 - 0.07, y * 0.015 - 0.07, 0.15 + z * 0.015]), rotmat))
+                bunnycm1.set_homomat(rm.homomat_from_posrot(np.array([x * 0.015 - 0.07, y * 0.015 - 0.07, 0.35 + z * 0.015]), rotmat))
                 base.attach_internal_update_obj(bunnycm1)
                 bunnycm1.start_physics()
         base.inputmgr.keymap['space'] = False
