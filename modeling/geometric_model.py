@@ -166,7 +166,7 @@ class StaticGeometricModel(object):
 
     def unshow_localframe(self):
         if self._localframe is not None:
-            self._localframe.removeNode()
+            self._localframe.remove()
             self._localframe = None
 
     def copy(self):
