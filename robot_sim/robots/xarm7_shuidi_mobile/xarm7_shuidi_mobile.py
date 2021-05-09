@@ -36,8 +36,8 @@ class XArm7YunjiMobile(ri.RobotInterface):
                                    name='hnd_s', enable_cc=False)
         # tool center point
         self.arm.jlc.tcp_jntid = -1
-        self.arm.jlc.tcp_loc_pos = self.hnd.jaw_center_loc_pos
-        self.arm.jlc.tcp_loc_rotmat = self.hnd.jaw_center_loc_rotmat
+        self.arm.jlc.tcp_loc_pos = self.hnd.jaw_center_pos
+        self.arm.jlc.tcp_loc_rotmat = self.hnd.jaw_center_rotmat
         # a list of detailed information about objects in hand, see CollisionChecker.add_objinhnd
         self.oih_infos = []
         # collision detection
@@ -71,8 +71,7 @@ class XArm7YunjiMobile(ri.RobotInterface):
                     self.arm.lnks[0],
                     self.arm.lnks[1],
                     self.arm.lnks[2]]
-        intolist = [self.arm.lnks[4],
-                    self.arm.lnks[5],
+        intolist = [self.arm.lnks[5],
                     self.arm.lnks[6],
                     self.hnd.lft_outer.lnks[0],
                     self.hnd.lft_outer.lnks[1],
@@ -222,6 +221,7 @@ class XArm7YunjiMobile(ri.RobotInterface):
                     self.arm.lnks[5],
                     self.arm.lnks[6]]
         self.oih_infos.append(self.cc.add_cdobj(objcm, rel_pos, rel_rotmat, intolist))
+        return rel_pos, rel_rotmat
 
     def get_oih_list(self):
         return_list = []
@@ -301,7 +301,7 @@ class XArm7YunjiMobile(ri.RobotInterface):
             objcm = obj_info['collisionmodel']
             objcm.set_pos(obj_info['gl_pos'])
             objcm.set_rotmat(obj_info['gl_rotmat'])
-            objcm.attach_to(meshmodel)
+            objcm.copy().attach_to(meshmodel)
         return meshmodel
 
 

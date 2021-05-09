@@ -29,8 +29,8 @@ class ADPlanner(object):  # AD = Approach_Depart
 
     def gen_approach_linear(self,
                             component_name,
-                            goal_hnd_pos,
-                            goal_hnd_rotmat,
+                            goal_tcp_pos,
+                            goal_tcp_rotmat,
                             approach_direction=np.array([0, 0, -1]),
                             approach_distance=.1,
                             approach_jawwidth=.05,
@@ -41,8 +41,8 @@ class ADPlanner(object):  # AD = Approach_Depart
         """
 
         :param component_name:
-        :param goal_hnd_pos:
-        :param goal_hnd_rotmat:
+        :param goal_tcp_pos:
+        :param goal_tcp_rotmat:
         :param approach_direction:
         :param approach_distance:
         :param approach_jawwidth:
@@ -54,8 +54,8 @@ class ADPlanner(object):  # AD = Approach_Depart
         date: 20210125
         """
         conf_list = self.inik_slvr.gen_rel_linear_motion(component_name,
-                                                         goal_hnd_pos,
-                                                         goal_hnd_rotmat,
+                                                         goal_tcp_pos,
+                                                         goal_tcp_rotmat,
                                                          approach_direction,
                                                          approach_distance,
                                                          obstacle_list=[],
@@ -64,7 +64,7 @@ class ADPlanner(object):  # AD = Approach_Depart
                                                          seed_jnt_values=seed_jnt_values)
         if len(conf_list) == 0:
             print('Cannot perform approach action!')
-            return [], []
+            return None, None
         else:
             if toggle_end_grasp:
                 jawwidth_list = self.gen_jawwidth_motion(conf_list, approach_jawwidth)
@@ -76,8 +76,8 @@ class ADPlanner(object):  # AD = Approach_Depart
 
     def gen_depart_linear(self,
                           component_name,
-                          start_hnd_pos,
-                          start_hnd_rotmat,
+                          start_tcp_pos,
+                          start_tcp_rotmat,
                           depart_direction=np.array([0, 0, 1]),
                           depart_distance=.1,
                           depart_jawwidth=.05,
@@ -88,8 +88,8 @@ class ADPlanner(object):  # AD = Approach_Depart
         """
 
         :param component_name:
-        :param goal_hnd_pos:
-        :param goal_hnd_rotmat:
+        :param goal_tcp_pos:
+        :param goal_tcp_rotmat:
         :param depart_direction:
         :param depart_distance:
         :param depart_jawwidth:
@@ -102,8 +102,8 @@ class ADPlanner(object):  # AD = Approach_Depart
         date: 20210125
         """
         conf_list = self.inik_slvr.gen_rel_linear_motion(component_name,
-                                                         start_hnd_pos,
-                                                         start_hnd_rotmat,
+                                                         start_tcp_pos,
+                                                         start_tcp_rotmat,
                                                          depart_direction,
                                                          depart_distance,
                                                          obstacle_list=[],
@@ -124,8 +124,8 @@ class ADPlanner(object):  # AD = Approach_Depart
 
     def gen_approach_and_depart_linear(self,
                                        component_name,
-                                       goal_hnd_pos,
-                                       goal_hnd_rotmat,
+                                       goal_tcp_pos,
+                                       goal_tcp_rotmat,
                                        approach_direction=np.array([0, 0, -1]),
                                        approach_distance=.1,
                                        approach_jawwidth=.05,
@@ -136,8 +136,8 @@ class ADPlanner(object):  # AD = Approach_Depart
                                        seed_jnt_values=None):
         """
         :param component_name:
-        :param goal_hnd_pos:
-        :param goal_hnd_rotmat:
+        :param goal_tcp_pos:
+        :param goal_tcp_rotmat:
         :param component_name:
         :param approach_direction:
         :param approach_distance:
@@ -151,8 +151,8 @@ class ADPlanner(object):  # AD = Approach_Depart
         date: 20191122, 20200105, 20210113, 20210125
         """
         approach_conf_list = self.inik_slvr.gen_rel_linear_motion(component_name,
-                                                                  goal_hnd_pos,
-                                                                  goal_hnd_rotmat,
+                                                                  goal_tcp_pos,
+                                                                  goal_tcp_rotmat,
                                                                   approach_direction,
                                                                   approach_distance,
                                                                   obstacle_list=[],
@@ -163,8 +163,8 @@ class ADPlanner(object):  # AD = Approach_Depart
             print('Cannot perform approach action!')
         else:
             depart_conf_list = self.inik_slvr.gen_rel_linear_motion(component_name,
-                                                                    goal_hnd_pos,
-                                                                    goal_hnd_rotmat,
+                                                                    goal_tcp_pos,
+                                                                    goal_tcp_rotmat,
                                                                     depart_direction,
                                                                     depart_distance,
                                                                     obstacle_list=[],
@@ -181,8 +181,8 @@ class ADPlanner(object):  # AD = Approach_Depart
 
     def gen_approach_motion(self,
                             component_name,
-                            goal_hnd_pos,
-                            goal_hnd_rotmat,
+                            goal_tcp_pos,
+                            goal_tcp_rotmat,
                             start_conf=None,
                             approach_direction=np.array([0, 0, -1]),
                             approach_distance=.1,
@@ -195,8 +195,8 @@ class ADPlanner(object):  # AD = Approach_Depart
         if seed_jnt_values is None:
             seed_jnt_values = start_conf
         conf_list, jawwidth_list = self.gen_approach_linear(component_name,
-                                                            goal_hnd_pos,
-                                                            goal_hnd_rotmat,
+                                                            goal_tcp_pos,
+                                                            goal_tcp_rotmat,
                                                             approach_direction,
                                                             approach_distance,
                                                             approach_jawwidth,
@@ -204,6 +204,8 @@ class ADPlanner(object):  # AD = Approach_Depart
                                                             seed_jnt_values,
                                                             toggle_end_grasp,
                                                             end_jawwidth)
+        if conf_list is None:
+            return None, None
         if start_conf is not None:
             start2approach_conf_list = self.rrtc_plnr.plan(component_name=component_name,
                                                            start_conf=start_conf,
@@ -212,13 +214,15 @@ class ADPlanner(object):  # AD = Approach_Depart
                                                            ext_dist=.05,
                                                            rand_rate=70,
                                                            max_time=300)
+            if start2approach_conf_list is None:
+                return None, None
             start2approach_jawwidth_list = self.gen_jawwidth_motion(start2approach_conf_list, approach_jawwidth)
         return start2approach_conf_list + conf_list, start2approach_jawwidth_list + jawwidth_list
 
     def gen_depart_motion(self,
                           component_name,
-                          start_hnd_pos,
-                          start_hnd_rotmat,
+                          start_tcp_pos,
+                          start_tcp_rotmat,
                           goal_conf=None,
                           depart_direction=np.array([0, 0, 1]),
                           depart_distance=.1,
@@ -231,8 +235,8 @@ class ADPlanner(object):  # AD = Approach_Depart
         if seed_jnt_values is None:
             seed_jnt_values = goal_conf
         conf_list, jawwidth_list = self.gen_depart_linear(component_name,
-                                                          start_hnd_pos,
-                                                          start_hnd_rotmat,
+                                                          start_tcp_pos,
+                                                          start_tcp_rotmat,
                                                           depart_direction,
                                                           depart_distance,
                                                           depart_jawwidth,
@@ -256,8 +260,8 @@ class ADPlanner(object):  # AD = Approach_Depart
 
     def gen_approach_and_depart_motion(self,
                                        component_name,
-                                       goal_hnd_pos,
-                                       goal_hnd_rotmat,
+                                       goal_tcp_pos,
+                                       goal_tcp_rotmat,
                                        start_conf=None,
                                        goal_conf=None,
                                        approach_direction=np.array([0, 0, -1]),
@@ -272,8 +276,8 @@ class ADPlanner(object):  # AD = Approach_Depart
         """
         degenerate into gen_ad_primitive if both seed_jnt_values and goal_conf are None
         :param component_name:
-        :param goal_hnd_pos:
-        :param goal_hnd_rotmat:
+        :param goal_tcp_pos:
+        :param goal_tcp_rotmat:
         :param start_conf:
         :param goal_conf:
         :param approach_direction:
@@ -292,8 +296,8 @@ class ADPlanner(object):  # AD = Approach_Depart
         if seed_jnt_values is None:
             seed_jnt_values = start_conf
         ad_conf_list, ad_jawwidth_list = self.gen_approach_and_depart_linear(component_name,
-                                                                             goal_hnd_pos,
-                                                                             goal_hnd_rotmat,
+                                                                             goal_tcp_pos,
+                                                                             goal_tcp_rotmat,
                                                                              approach_direction,
                                                                              approach_distance,
                                                                              approach_jawwidth,

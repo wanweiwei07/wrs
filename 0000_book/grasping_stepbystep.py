@@ -52,9 +52,9 @@ for i, cp in enumerate(contact_pairs):
     hndz = rm.orthogonal_vector(contact_n0)
     grasp_info_list += gu.define_grasp_with_rotation(gripper_s,
                                                      object_bunny,
-                                                     gl_jaw_center=contact_center,
-                                                     gl_hndz=hndz,
-                                                     gl_hndy=hndy,
+                                                     gl_jaw_center_pos=contact_center,
+                                                     gl_jaw_center_z=hndz,
+                                                     gl_jaw_center_y=hndy,
                                                      jaw_width=jaw_width,
                                                      gl_rotation_ax=hndy,
                                                      rotation_interval=math.radians(30),

@@ -75,11 +75,11 @@ class UR3EDual(ri.RobotInterface):
         # lft
         self.lft_arm.tcp_jntid = -1
         self.lft_arm.tcp_loc_pos = self.lft_hnd.jaw_center_loc_pos
-        self.lft_arm.tcp_loc_rotmat = self.lft_hnd.jaw_center_loc_rotmat
+        self.lft_arm.tcp_loc_rotmat = self.lft_hnd.jaw_center_rotmat
         # rgt
         self.rgt_arm.tcp_jntid = -1
         self.rgt_arm.tcp_loc_pos = self.lft_hnd.jaw_center_loc_pos
-        self.rgt_arm.tcp_loc_rotmat = self.lft_hnd.jaw_center_loc_rotmat
+        self.rgt_arm.tcp_loc_rotmat = self.lft_hnd.jaw_center_rotmat
         # a list of detailed information about objects in hand, see CollisionChecker.add_objinhnd
         self.lft_oih_infos = []
         self.rgt_oih_infos = []
@@ -274,12 +274,12 @@ class UR3EDual(ri.RobotInterface):
             objcm = obj_info['collisionmodel']
             objcm.set_pos(obj_info['gl_pos'])
             objcm.set_rotmat(obj_info['gl_rotmat'])
-            objcm.attach_to(mm_collection)
+            objcm.copy().attach_to(mm_collection)
         for obj_info in self.rgt_oih_infos:
             objcm = obj_info['collisionmodel']
             objcm.set_pos(obj_info['gl_pos'])
             objcm.set_rotmat(obj_info['gl_rotmat'])
-            objcm.attach_to(mm_collection)
+            objcm.copy().attach_to(mm_collection)
         return mm_collection
 
 

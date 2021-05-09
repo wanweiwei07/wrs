@@ -27,10 +27,10 @@ if __name__ == '__main__':
 
     robot_inik_solver = inik.IncrementalNIK(robot_instance)
     pose_list = robot_inik_solver.gen_linear_motion(component_name,
-                                                    start_hnd_pos=start_hnd_pos,
-                                                    start_hnd_rotmat=start_hnd_rotmat,
-                                                    goal_hnd_pos=goal_hnd_pos,
-                                                    goal_hnd_rotmat=goal_hnd_rotmat,
+                                                    start_tcp_pos=start_hnd_pos,
+                                                    start_tcp_rotmat=start_hnd_rotmat,
+                                                    goal_tcp_pos=goal_hnd_pos,
+                                                    goal_tcp_rotmat=goal_hnd_rotmat,
                                                     obstacle_list=[object])
 
     for jnt_values in pose_list:

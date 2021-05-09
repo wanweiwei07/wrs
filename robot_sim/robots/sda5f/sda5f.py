@@ -271,12 +271,12 @@ class SDA5F(ri.RobotInterface):
             objcm = obj_info['collisionmodel']
             objcm.set_pos(obj_info['gl_pos'])
             objcm.set_rotmat(obj_info['gl_rotmat'])
-            objcm.attach_to(meshmodel)
+            objcm.copy().attach_to(meshmodel)
         for obj_info in self.rgt_oih_infos:
             objcm = obj_info['collisionmodel']
             objcm.set_pos(obj_info['gl_pos'])
             objcm.set_rotmat(obj_info['gl_rotmat'])
-            objcm.attach_to(meshmodel)
+            objcm.copy().attach_to(meshmodel)
         return meshmodel
 
 

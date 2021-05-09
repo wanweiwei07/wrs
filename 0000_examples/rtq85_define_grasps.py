@@ -14,8 +14,8 @@ if __name__ == '__main__':
     objcm.show_localframe()
     grasp_info_list = gau.define_grasp_with_rotation(gripper_s,
                                                      objcm,
-                                                     gl_jaw_center=np.array([0, 0, 0]),
-                                                     gl_hndz=np.array([1, 0, 0]),
+                                                     gl_jaw_center_pos=np.array([0, 0, 0]),
+                                                     gl_jaw_center_z=np.array([1, 0, 0]),
                                                      gl_hndx=np.array([0, 1, 0]),
                                                      jaw_width=.04,
                                                      gl_rotation_ax=np.array([0, 0, 1]))

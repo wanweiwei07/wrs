@@ -23,8 +23,8 @@ class GripperInterface(object):
         # self.coupling.lnks[0]['rgba'] = [.2, .2, .2, 1]
         self.coupling.reinitialize()
         # jaw center
-        self.jaw_center_loc_pos = np.zeros(3)
-        self.jaw_center_loc_rotmat = np.eye(3)
+        self.jaw_center_pos = np.zeros(3)
+        self.jaw_center_rotmat = np.eye(3)
         # jaw width
         self.jaw_width_rng = [0.0, 5.0]
         # collision detection
@@ -76,22 +76,33 @@ class GripperInterface(object):
     def get_jawwidth(self):
         raise NotImplementedError
 
-    def grip_at(self, gl_jaw_center, gl_hndz, gl_hndy, jaw_width):
+    def grip_at_with_jczy(self, gl_jaw_center_pos, gl_jaw_center_z, gl_jaw_center_y, jaw_width):
         """
-        :param gl_jaw_center:
-        :param gl_hndz: hand approaching direction
-        :param gl_hndy: normal direction of thumb's contact surface
+        :param gl_jaw_center_pos:
+        :param gl_jaw_center_z: jaw_center's approaching direction
+        :param gl_jaw_center_y: jaw_center's opening direction
         :param jaw_width:
         :return:
         """
-        hnd_rotmat = np.eye(3)
-        hnd_rotmat[:, 2] = rm.unit_vector(gl_hndz)
-        hnd_rotmat[:, 1] = rm.unit_vector(gl_hndy)
-        hnd_rotmat[:, 0] = np.cross(hnd_rotmat[:3, 1], hnd_rotmat[:3, 2])
-        hnd_pos = gl_jaw_center - hnd_rotmat.dot(self.jaw_center_loc_pos)
+        gl_jaw_center_rotmat = np.eye(3)
+        gl_jaw_center_rotmat[:, 2] = rm.unit_vector(gl_jaw_center_z)
+        gl_jaw_center_rotmat[:, 1] = rm.unit_vector(gl_jaw_center_y)
+        gl_jaw_center_rotmat[:, 0] = np.cross(gl_jaw_center_rotmat[:3, 1], gl_jaw_center_rotmat[:3, 2])
+        return self.grip_at_with_jcpose(gl_jaw_center_pos, gl_jaw_center_rotmat, jaw_width)
+
+    def grip_at_with_jcpose(self, gl_jaw_center_pos, gl_jaw_center_rotmat, jaw_width):
+        """
+        :param gl_jaw_center_pos:
+        :param gl_jaw_center_z: jaw_center's approaching direction
+        :param gl_jaw_center_y: jaw_center's opening direction
+        :param jaw_width:
+        :return:
+        """
+        hnd_rotmat = gl_jaw_center_rotmat.dot(self.jaw_center_rotmat.T)
+        hnd_pos = gl_jaw_center_pos - hnd_rotmat.dot(self.jaw_center_pos)
         self.fix_to(hnd_pos, hnd_rotmat)
         self.jaw_to(jaw_width)
-        return [jaw_width, gl_jaw_center, hnd_pos, hnd_rotmat]
+        return [jaw_width, gl_jaw_center_pos, gl_jaw_center_rotmat, hnd_pos, hnd_rotmat]
 
     def show_cdprimit(self):
         self.cc.show_cdprimit()

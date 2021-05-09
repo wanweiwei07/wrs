@@ -164,12 +164,12 @@ class UR3Dual(ri.RobotInterface):
         # tool center point
         # lft
         self.lft_arm.tcp_jntid = -1
-        self.lft_arm.tcp_loc_pos = self.lft_ft_sensor.jnts[-1]['loc_pos'] + self.lft_hnd.jaw_center_loc_pos
-        self.lft_arm.tcp_loc_rotmat = self.lft_ft_sensor.jnts[-1]['loc_rotmat'].dot(self.lft_hnd.jaw_center_loc_rotmat)
+        self.lft_arm.tcp_loc_pos = self.lft_ft_sensor.jnts[-1]['loc_pos'] + self.lft_hnd.jaw_center_pos
+        self.lft_arm.tcp_loc_rotmat = self.lft_ft_sensor.jnts[-1]['loc_rotmat'].dot(self.lft_hnd.jaw_center_rotmat)
         # rgt
         self.rgt_arm.tcp_jntid = -1
-        self.rgt_arm.tcp_loc_pos = self.lft_ft_sensor.jnts[-1]['loc_pos'] + self.lft_hnd.jaw_center_loc_pos
-        self.rgt_arm.tcp_loc_rotmat = self.lft_ft_sensor.jnts[-1]['loc_rotmat'].dot(self.lft_hnd.jaw_center_loc_rotmat)
+        self.rgt_arm.tcp_loc_pos = self.lft_ft_sensor.jnts[-1]['loc_pos'] + self.lft_hnd.jaw_center_pos
+        self.rgt_arm.tcp_loc_rotmat = self.lft_ft_sensor.jnts[-1]['loc_rotmat'].dot(self.lft_hnd.jaw_center_rotmat)
         # a list of detailed information about objects in hand, see CollisionChecker.add_objinhnd
         self.lft_oih_infos = []
         self.rgt_oih_infos = []
@@ -725,12 +725,12 @@ class UR3Dual(ri.RobotInterface):
             objcm = obj_info['collisionmodel']
             objcm.set_pos(obj_info['gl_pos'])
             objcm.set_rotmat(obj_info['gl_rotmat'])
-            objcm.attach_to(meshmodel)
+            objcm.copy().attach_to(meshmodel)
         for obj_info in self.rgt_oih_infos:
             objcm = obj_info['collisionmodel']
             objcm.set_pos(obj_info['gl_pos'])
             objcm.set_rotmat(obj_info['gl_rotmat'])
-            objcm.attach_to(meshmodel)
+            objcm.copy().attach_to(meshmodel)
         return meshmodel
 
 

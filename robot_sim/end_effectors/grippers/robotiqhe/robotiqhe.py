@@ -35,7 +35,7 @@ class RobotiqHE(gp.GripperInterface):
         self.rgt.lnks[1]['meshfile'] = os.path.join(this_dir, "meshes", "finger2_cvt.stl")
         self.rgt.lnks[1]['rgba'] = [.5, .5, .5, 1]
         # jaw center
-        self.jaw_center_loc_pos = np.array([0,0,.14])
+        self.jaw_center_pos = np.array([0,0,.14])
         # reinitialize
         self.lft.reinitialize()
         self.rgt.reinitialize()
@@ -109,7 +109,7 @@ class RobotiqHE(gp.GripperInterface):
                                 toggle_connjnt=toggle_connjnt).attach_to(stickmodel)
         if toggle_tcpcs:
             jaw_center_gl_pos = self.rotmat.dot(self.jaw_center_loc_pos)+self.pos
-            jaw_center_gl_rotmat = self.rotmat.dot(self.jaw_center_loc_rotmat)
+            jaw_center_gl_rotmat = self.rotmat.dot(self.jaw_center_rotmat)
             gm.gen_dashstick(spos=self.pos,
                              epos=jaw_center_gl_pos,
                              thickness=.0062,
@@ -135,7 +135,7 @@ class RobotiqHE(gp.GripperInterface):
                                rgba=rgba).attach_to(meshmodel)
         if toggle_tcpcs:
             jaw_center_gl_pos = self.rotmat.dot(grpr.jaw_center_loc_pos)+self.pos
-            jaw_center_gl_rotmat = self.rotmat.dot(grpr.jaw_center_loc_rotmat)
+            jaw_center_gl_rotmat = self.rotmat.dot(grpr.jaw_center_rotmat)
             gm.gen_dashstick(spos=self.pos,
                              epos=jaw_center_gl_pos,
                              thickness=.0062,

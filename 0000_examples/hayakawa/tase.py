@@ -1094,7 +1094,7 @@ if __name__ == "__main__":
     predefined_grasps_lft, handdirlist_lft = handpose.lftgrasppose()  # 予備の把持姿勢と把持方向
     predefined_grasps_rgt, handdirlist_rgt = handpose.rgtgrasppose()
     # for grasp_pose in predefined_grasps_rgt:
-    #     jaw_width, gl_jaw_center, hnd_pos, hnd_rotmat = grasp_pose
+    #     jaw_width, gl_jaw_center_pos, hnd_pos, hnd_rotmat = grasp_pose
     #     gm.gen_frame(hnd_pos, hnd_rotmat).attach_to(base)
     # base.run()
     # objects
@@ -1124,8 +1124,8 @@ if __name__ == "__main__":
     # ropelinesorted = []
     # dir = rm.unit_vector(ropetoppos - rgt_pos)
     # path = robot_inik_solver.gen_rel_linear_motion(component_name=arm_name,
-    #                                                goal_hnd_pos=rgt_pos,
-    #                                                goal_hnd_rotmat=rgt_rotmat,
+    #                                                goal_tcp_pos=rgt_pos,
+    #                                                goal_tcp_rotmat=rgt_rotmat,
     #                                                direction=-dir,
     #                                                distance=.15,
     #                                                type='source')

@@ -60,7 +60,7 @@ def plan_grasps(hnd_s,
     :param max_samples:
     :param min_dist_between_sampled_contact_points:
     :param contact_offset: offset at the cotnact to avoid being closely in touch with object surfaces
-    :return: a list [[jaw_width, gl_jaw_center, pos, rotmat], ...]
+    :return: a list [[jaw_width, gl_jaw_center_pos, pos, rotmat], ...]
     """
     contact_pairs = plan_contact_pairs(objcm,
                                        max_samples=max_samples,
@@ -75,15 +75,15 @@ def plan_grasps(hnd_s,
         jaw_width = np.linalg.norm(contact_p0 - contact_p1) + contact_offset * 2
         if jaw_width > hnd_s.jaw_width_rng[1]:
             continue
-        hndy = contact_n0
-        hndz = rm.orthogonal_vector(contact_n0)
+        jaw_center_y = contact_n0
+        jaw_center_z = rm.orthogonal_vector(contact_n0)
         grasp_info_list += gu.define_grasp_with_rotation(hnd_s,
                                                          objcm,
-                                                         gl_jaw_center=contact_center,
-                                                         gl_hndz=hndz,
-                                                         gl_hndy=hndy,
+                                                         gl_jaw_center_pos=contact_center,
+                                                         gl_jaw_center_z=jaw_center_z,
+                                                         gl_jaw_center_y=jaw_center_y,
                                                          jaw_width=jaw_width,
-                                                         gl_rotation_ax=hndy,
+                                                         gl_rotation_ax=jaw_center_y,
                                                          rotation_interval=rotation_interval,
                                                          toggle_flip=True)
     return grasp_info_list
@@ -114,12 +114,12 @@ if __name__ == '__main__':
     objcm = cm.CollisionModel(objpath)
     objcm.attach_to(base)
     objcm.show_localframe()
-    grasp_info_list = plan_grasps(gripper_s, objcm)
+    grasp_info_list = plan_grasps(gripper_s, objcm, min_dist_between_sampled_contact_points=.02)
     for grasp_info in grasp_info_list:
-        jaw_width, gl_jaw_center, pos, rotmat = grasp_info
+        jaw_width, gl_jaw_center_pos, gl_jaw_center_rotmat, hnd_pos, hnd_rotmat = grasp_info
         gic = gripper_s.copy()
-        gic.fix_to(pos, rotmat)
+        gic.fix_to(hnd_pos, hnd_rotmat)
         gic.jaw_to(jaw_width)
-        print(pos, rotmat)
+        print(hnd_pos, hnd_rotmat)
         gic.gen_meshmodel().attach_to(base)
     base.run()

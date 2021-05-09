@@ -44,7 +44,7 @@ def is_collided(objcm0, objcm1):
     """
     obj0 = gen_cdmesh_vvnf(*objcm0.extract_rotated_vvnf())
     obj1 = gen_cdmesh_vvnf(*objcm1.extract_rotated_vvnf())
-    contact_entry = OdeUtil.collide(obj0, obj1, max_contacts=20)
+    contact_entry = OdeUtil.collide(obj0, obj1, max_contacts=10)
     contact_points = [da.pdv3_to_npv3(point) for point in contact_entry.getContactPoints()]
     return (True, contact_points) if len(contact_points) > 0 else (False, contact_points)
 

@@ -11,20 +11,20 @@ class IncrementalNIK(object):
 
     def gen_linear_motion(self,
                           component_name,
-                          start_hnd_pos,
-                          start_hnd_rotmat,
-                          goal_hnd_pos,
-                          goal_hnd_rotmat,
+                          start_tcp_pos,
+                          start_tcp_rotmat,
+                          goal_tcp_pos,
+                          goal_tcp_rotmat,
                           obstacle_list=[],
                           granularity=0.03,
                           seed_jnt_values=None,
                           toggle_debug=False):
         """
         :param component_name:
-        :param start_hnd_pos:
-        :param start_hnd_rotmat:
-        :param goal_hnd_pos:
-        :param goal_hnd_rotmat:
+        :param start_tcp_pos:
+        :param start_tcp_rotmat:
+        :param goal_tcp_pos:
+        :param goal_tcp_rotmat:
         :param goal_info:
         :param obstacle_list:
         :param granularity:
@@ -33,10 +33,10 @@ class IncrementalNIK(object):
         date: 20210125
         """
         jnt_values_bk = self.robot_s.get_jnt_values(component_name)
-        pos_list, rotmat_list = rm.interplate_pos_rotmat(start_hnd_pos,
-                                                         start_hnd_rotmat,
-                                                         goal_hnd_pos,
-                                                         goal_hnd_rotmat,
+        pos_list, rotmat_list = rm.interplate_pos_rotmat(start_tcp_pos,
+                                                         start_tcp_rotmat,
+                                                         goal_tcp_pos,
+                                                         goal_tcp_rotmat,
                                                          granularity=granularity)
         jnt_values_list = []
         if seed_jnt_values is None:
@@ -64,8 +64,8 @@ class IncrementalNIK(object):
 
     def gen_rel_linear_motion(self,
                               component_name,
-                              goal_hnd_pos,
-                              goal_hnd_rotmat,
+                              goal_tcp_pos,
+                              goal_tcp_rotmat,
                               direction,
                               distance,
                               obstacle_list=[],
@@ -85,27 +85,27 @@ class IncrementalNIK(object):
         date: 20210114
         """
         if type == 'sink':
-            start_hnd_pos = goal_hnd_pos - rm.unit_vector(direction) * distance
-            start_hnd_rotmat = goal_hnd_rotmat
+            start_tcp_pos = goal_tcp_pos - rm.unit_vector(direction) * distance
+            start_tcp_rotmat = goal_tcp_rotmat
             return self.gen_linear_motion(component_name,
-                                          start_hnd_pos,
-                                          start_hnd_rotmat,
-                                          goal_hnd_pos,
-                                          goal_hnd_rotmat,
+                                          start_tcp_pos,
+                                          start_tcp_rotmat,
+                                          goal_tcp_pos,
+                                          goal_tcp_rotmat,
                                           obstacle_list,
                                           granularity,
                                           seed_jnt_values,
                                           toggle_debug=toggle_debug)
         elif type == 'source':
-            start_hnd_pos = goal_hnd_pos
-            start_hnd_rotmat = goal_hnd_rotmat
-            goal_hnd_pos = goal_hnd_pos + direction * distance
-            goal_hnd_rotmat = goal_hnd_rotmat
+            start_tcp_pos = goal_tcp_pos
+            start_tcp_rotmat = goal_tcp_rotmat
+            goal_tcp_pos = goal_tcp_pos + direction * distance
+            goal_tcp_rotmat = goal_tcp_rotmat
             return self.gen_linear_motion(component_name,
-                                          start_hnd_pos,
-                                          start_hnd_rotmat,
-                                          goal_hnd_pos,
-                                          goal_hnd_rotmat,
+                                          start_tcp_pos,
+                                          start_tcp_rotmat,
+                                          goal_tcp_pos,
+                                          goal_tcp_rotmat,
                                           obstacle_list,
                                           granularity,
                                           seed_jnt_values,
@@ -134,29 +134,29 @@ class IncrementalNIK(object):
         author: weiwei
         date: 20210114
         """
-        goal_hnd_pos, goal_hnd_rotmat = self.robot_s.cvt_conf_to_tcp(component_name, goal_jnt_values)
+        goal_tcp_pos, goal_tcp_rotmat = self.robot_s.cvt_conf_to_tcp(component_name, goal_jnt_values)
         if type == 'sink':
-            start_hnd_pos = goal_hnd_pos - rm.unit_vector(direction) * distance
-            start_hnd_rotmat = goal_hnd_rotmat
+            start_tcp_pos = goal_tcp_pos - rm.unit_vector(direction) * distance
+            start_tcp_rotmat = goal_tcp_rotmat
             return self.gen_linear_motion(component_name,
-                                          start_hnd_pos,
-                                          start_hnd_rotmat,
-                                          goal_hnd_pos,
-                                          goal_hnd_rotmat,
+                                          start_tcp_pos,
+                                          start_tcp_rotmat,
+                                          goal_tcp_pos,
+                                          goal_tcp_rotmat,
                                           obstacle_list,
                                           granularity,
                                           seed_jnt_values,
                                           toggle_debug=toggle_debug)
         elif type == 'source':
-            start_hnd_pos = goal_hnd_pos
-            start_hnd_rotmat = goal_hnd_rotmat
-            goal_hnd_pos = goal_hnd_pos + direction * distance
-            goal_hnd_rotmat = goal_hnd_rotmat
+            start_tcp_pos = goal_tcp_pos
+            start_tcp_rotmat = goal_tcp_rotmat
+            goal_tcp_pos = goal_tcp_pos + direction * distance
+            goal_tcp_rotmat = goal_tcp_rotmat
             return self.gen_linear_motion(component_name,
-                                          start_hnd_pos,
-                                          start_hnd_rotmat,
-                                          goal_hnd_pos,
-                                          goal_hnd_rotmat,
+                                          start_tcp_pos,
+                                          start_tcp_rotmat,
+                                          goal_tcp_pos,
+                                          goal_tcp_rotmat,
                                           obstacle_list,
                                           granularity,
                                           seed_jnt_values,
@@ -166,10 +166,10 @@ class IncrementalNIK(object):
 
     def get_rotational_motion(self,
                               component_name,
-                              start_hnd_pos,
-                              start_hnd_rotmat,
-                              goal_hnd_pos,
-                              goal_hnd_rotmat,
+                              start_tcp_pos,
+                              start_tcp_rotmat,
+                              goal_tcp_pos,
+                              goal_tcp_rotmat,
                               obstacle_list=[],
                               rot_center=np.zeros(3),
                               rot_axis=np.array([1, 0, 0]),
@@ -182,8 +182,8 @@ class IncrementalNIK(object):
                             component_name,
                             circle_center_pos,
                             circle_ax,
-                            start_hnd_rotmat,
-                            end_hnd_rotmat,
+                            start_tcp_rotmat,
+                            end_tcp_rotmat,
                             radius=.02,
                             obstacle_list=[],
                             granularity=0.03,
@@ -192,10 +192,10 @@ class IncrementalNIK(object):
                             toggle_debug=False):
         """
         :param component_name:
-        :param start_hnd_pos:
-        :param start_hnd_rotmat:
-        :param goal_hnd_pos:
-        :param goal_hnd_rotmat:
+        :param start_tcp_pos:
+        :param start_tcp_rotmat:
+        :param goal_tcp_pos:
+        :param goal_tcp_rotmat:
         :param goal_info:
         :param obstacle_list:
         :param granularity:
@@ -207,8 +207,8 @@ class IncrementalNIK(object):
         pos_list, rotmat_list = rm.interplate_pos_rotmat_around_circle(circle_center_pos,
                                                                        circle_ax,
                                                                        radius,
-                                                                       start_hnd_rotmat,
-                                                                       end_hnd_rotmat,
+                                                                       start_tcp_rotmat,
+                                                                       end_tcp_rotmat,
                                                                        granularity=granularity)
         # for (pos, rotmat) in zip(pos_list, rotmat_list):
         #     gm.gen_frame(pos, rotmat).attach_to(base)
@@ -259,8 +259,8 @@ if __name__ == '__main__':
     gm.gen_frame(pos=goal_pos, rotmat=goal_rotmat).attach_to(base)
     inik = IncrementalNIK(yumi_instance)
     tic = time.time()
-    jnt_values_list = inik.gen_linear_motion(component_name, start_hnd_pos=start_pos, start_hnd_rotmat=start_rotmat,
-                                             goal_hnd_pos=goal_pos, goal_hnd_rotmat=goal_rotmat)
+    jnt_values_list = inik.gen_linear_motion(component_name, start_tcp_pos=start_pos, start_tcp_rotmat=start_rotmat,
+                                             goal_tcp_pos=goal_pos, goal_tcp_rotmat=goal_rotmat)
     toc = time.time()
     print(toc - tic)
     for jnt_values in jnt_values_list:

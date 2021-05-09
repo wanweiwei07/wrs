@@ -20,8 +20,8 @@ if __name__ == '__main__':
             gl_hndz = rm.rotmat_from_axangle(np.array([1,0,0]), roll_angle).dot(np.array([0,0,-1]))
             grasp_info_list += gutil.define_grasp_with_rotation(gripper_instance,
                                                                 objcm,
-                                                                gl_jaw_center=np.array([0,0,height]),
-                                                                gl_hndz=gl_hndz,
+                                                                gl_jaw_center_pos=np.array([0, 0, height]),
+                                                                gl_jaw_center_z=gl_hndz,
                                                                 gl_hndx=np.array([1,0,0]),
                                                                 jaw_width=.025,
                                                                 gl_rotation_ax=np.array([0, 0, 1]))

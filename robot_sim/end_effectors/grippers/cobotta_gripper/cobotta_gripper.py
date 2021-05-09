@@ -36,7 +36,7 @@ class CobottaGripper(gp.GripperInterface):
         # jaw width
         self.jaw_width_rng = [0.0, .03]
         # jaw center
-        self.jaw_center_loc_pos = np.array([0,0,.05])
+        self.jaw_center_pos = np.array([0,0,.05])
         # reinitialize
         self.jlc.reinitialize()
         # collision detection
@@ -94,7 +94,7 @@ class CobottaGripper(gp.GripperInterface):
                                 toggle_connjnt=toggle_connjnt).attach_to(stickmodel)
         if toggle_tcpcs:
             jaw_center_gl_pos = self.rotmat.dot(self.jaw_center_loc_pos)+self.pos
-            jaw_center_gl_rotmat = self.rotmat.dot(self.jaw_center_loc_rotmat)
+            jaw_center_gl_rotmat = self.rotmat.dot(self.jaw_center_rotmat)
             gm.gen_dashstick(spos=self.pos,
                              epos=jaw_center_gl_pos,
                              thickness=.0062,
@@ -117,7 +117,7 @@ class CobottaGripper(gp.GripperInterface):
                                rgba=rgba).attach_to(meshmodel)
         if toggle_tcpcs:
             jaw_center_gl_pos = self.rotmat.dot(grpr.jaw_center_loc_pos)+self.pos
-            jaw_center_gl_rotmat = self.rotmat.dot(grpr.jaw_center_loc_rotmat)
+            jaw_center_gl_rotmat = self.rotmat.dot(grpr.jaw_center_rotmat)
             gm.gen_dashstick(spos=self.pos,
                              epos=jaw_center_gl_pos,
                              thickness=.0062,

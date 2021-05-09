@@ -5,8 +5,9 @@ import grasping.planning.antipodal as gpa
 import numpy as np
 import robot_sim.robots.xarm7_shuidi_mobile.xarm7_shuidi_mobile as xsm
 import robot_sim.end_effectors.grippers.xarm_gripper.xarm_gripper as xag
+import manipulation.approach_depart_planner as adp
 
-base = wd.World(cam_pos=[3, 3, 0.5], lookat_pos=[0, 0, 0.4])
+base = wd.World(cam_pos=[1.5, -.5, 2], lookat_pos=[.3, -.03,.05])
 gm.gen_frame().attach_to(base)
 
 ground = cm.gen_box(extent=[5, 5, 1], rgba=[.57, .57, .5, .7])
@@ -20,10 +21,11 @@ object_box.set_pos(object_box_gl_pos)
 object_box.set_rotmat(object_box_gl_rotmat)
 gm.gen_frame().attach_to(object_box)
 object_box.attach_to(base)
+object_box.show_cdprimit()
 
 robot_s = xsm.XArm7YunjiMobile()
 robot_s.gen_meshmodel().attach_to(base)
-base.run()
+adp_s = adp.ADPlanner(robot_s)
 
 grasp_info_list = gpa.load_pickle_file('box', './', 'xarm_box.pickle')
 component_name = "arm"
@@ -33,19 +35,17 @@ for grasp_info in grasp_info_list:
     jaw_width, jaw_center_pos, jaw_center_rotmat, hnd_pos, hnd_rotmat = grasp_info
     gl_jaw_center_pos = object_box_gl_pos+object_box_gl_rotmat.dot(jaw_center_pos)
     gl_jaw_center_rotmat = object_box_gl_rotmat.dot(jaw_center_rotmat)
-    gl_hnd_pos = object_box_gl_pos+object_box_gl_rotmat.dot(hnd_pos)
-    gl_hnd_rotmat = object_box_gl_rotmat.dot(hnd_rotmat)
-    gripper_s.fix_to(gl_hnd_pos, gl_hnd_rotmat)
-    if not gripper_s.is_mesh_collided([ground]):
-        jnt_values =  robot_s.ik(component_name,
-                                 tgt_pos=gl_jaw_center_pos,
-                                 tgt_rotmat=gl_jaw_center_rotmat)
-        if jnt_values is None:
-            gripper_s.gen_meshmodel(rgba=[0,1,0,.3]).attach_to(base)
-        else:
-            gripper_s.gen_meshmodel(rgba=[0,0,1,.3]).attach_to(base)
-            robot_s.fk(component_name, jnt_values=jnt_values)
-            robot_s.gen_meshmodel(rgba=[0,0,1,.3]).attach_to(base)
+    conf_path, jw_path = adp_s.gen_approach_motion(component_name,
+                                                   gl_jaw_center_pos,
+                                                   gl_jaw_center_rotmat,
+                                                   start_conf=robot_s.get_jnt_values(component_name),
+                                                   approach_direction=gl_jaw_center_rotmat[:,2],
+                                                   approach_distance=.2)
+    if conf_path is None:
+        continue
     else:
-        gripper_s.gen_meshmodel(rgba=[1,0,0,.3]).attach_to(base)
+        for jvs in conf_path:
+            robot_s.fk(component_name, jvs)
+            robot_s.gen_meshmodel(rgba=[0,1,1,.3]).attach_to(base)
+        break
 base.run()

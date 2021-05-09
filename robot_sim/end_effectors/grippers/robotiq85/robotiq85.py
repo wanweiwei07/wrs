@@ -124,7 +124,7 @@ class Robotiq85(gp.GripperInterface):
         # jaw width
         self.jaw_width_rng = [0.0, .085]
         # jaw center
-        self.jaw_center_loc_pos = np.array([0,0,.145])
+        self.jaw_center_pos = np.array([0, 0, .145])
         # collision detection
         self.all_cdelements=[]
         self.enable_cc(toggle_cdprimit=enable_cc)
@@ -222,8 +222,8 @@ class Robotiq85(gp.GripperInterface):
                                       toggle_jntscs=toggle_jntscs,
                                       toggle_connjnt=toggle_connjnt).attach_to(sm_collection)
         if toggle_tcpcs:
-            jaw_center_gl_pos = self.rotmat.dot(grpr.jaw_center_loc_pos)+self.pos
-            jaw_center_gl_rotmat = self.rotmat.dot(grpr.jaw_center_loc_rotmat)
+            jaw_center_gl_pos = self.rotmat.dot(grpr.jaw_center_pos) + self.pos
+            jaw_center_gl_rotmat = self.rotmat.dot(grpr.jaw_center_rotmat)
             gm.gen_dashstick(spos=self.pos,
                              epos=jaw_center_gl_pos,
                              thickness=.0062,
@@ -254,8 +254,8 @@ class Robotiq85(gp.GripperInterface):
                                      toggle_jntscs=toggle_jntscs,
                                      rgba=rgba).attach_to(mm_collection)
         if toggle_tcpcs:
-            jaw_center_gl_pos = self.rotmat.dot(grpr.jaw_center_loc_pos)+self.pos
-            jaw_center_gl_rotmat = self.rotmat.dot(grpr.jaw_center_loc_rotmat)
+            jaw_center_gl_pos = self.rotmat.dot(grpr.jaw_center_pos) + self.pos
+            jaw_center_gl_rotmat = self.rotmat.dot(grpr.jaw_center_rotmat)
             gm.gen_dashstick(spos=self.pos,
                              epos=jaw_center_gl_pos,
                              thickness=.0062,
