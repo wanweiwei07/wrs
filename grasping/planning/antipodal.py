@@ -9,7 +9,7 @@ def plan_contact_pairs(objcm,
                        max_samples=100,
                        min_dist_between_sampled_contact_points=.005,
                        angle_between_contact_normals=math.radians(160),
-                       toggle_sampled_points = False):
+                       toggle_sampled_points=False):
     """
     find the contact pairs using rayshooting
     the finally returned number of contact pairs may be smaller than the given max_samples due to the min_dist constraint
@@ -19,13 +19,14 @@ def plan_contact_pairs(objcm,
     author: weiwei
     date: 20190805, 20210504
     """
-    contact_points, face_ids = objcm.sample_surface(nsample=max_samples, radius=min_dist_between_sampled_contact_points/2)
+    contact_points, face_ids = objcm.sample_surface(nsample=max_samples,
+                                                    radius=min_dist_between_sampled_contact_points / 2)
     contact_normals = objcm.objtrm.face_normals[face_ids]
     contact_pairs = []
     tree = cKDTree(contact_points)
-    near_history = np.array([0]*len(contact_points), dtype=bool)
+    near_history = np.array([0] * len(contact_points), dtype=bool)
     for i, contact_p0 in enumerate(contact_points):
-        if near_history[i]: # if the point was previous near to some points, ignore
+        if near_history[i]:  # if the point was previous near to some points, ignore
             continue
         contact_n0 = contact_normals[i]
         hit_points, hit_normals = objcm.ray_hit(contact_p0 - contact_n0 * .001, contact_p0 - contact_n0 * 100)
@@ -86,6 +87,19 @@ def plan_grasps(hnd_s,
                                                          rotation_interval=rotation_interval,
                                                          toggle_flip=True)
     return grasp_info_list
+
+
+def write_pickle_file(objcm_name, grasp_info_list, root=None, file_name='preannotated_grasps.pickle'):
+    if root is None:
+        root = './'
+    gu.write_pickle_file(objcm_name, grasp_info_list, root=root, file_name=file_name)
+
+
+def load_pickle_file(objcm_name, root=None, file_name='preannotated_grasps.pickle'):
+    if root is None:
+        root = './'
+    return gu.load_pickle_file(objcm_name, root=root, file_name=file_name)
+
 
 if __name__ == '__main__':
     import os

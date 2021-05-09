@@ -92,62 +92,6 @@ def define_grasp_with_rotation(hnd_s,
             hnd_s.gen_meshmodel(rgba=[0, 1, 0, .3]).attach_to(base)
     return grasp_info_list
 
-
-# def define_suction(hndfa, finger_center, finger_normal, hand_normal, objcm):
-#     """
-#
-#     :param hndfa:
-#     :param finger_center:
-#     :param finger_normal:
-#     :param hand_normal:
-#     :param objcm:
-#     :param toggleflip:
-#     :return:
-#
-#     author: chenhao, revised by weiwei
-#     date: 20200104
-#     """
-#
-#     effect_grasp = []
-#     hnd_s = hndfa.genHand(usesuction=True)
-#     grasp = hnd_s.approachat(finger_center[0], finger_center[1], finger_center[2],
-#                            finger_normal[0], finger_normal[1], finger_normal[2],
-#                            hand_normal[0], hand_normal[1], hand_normal[2], jaw_width=0)
-#     if not ishndobjcollided(hndfa, grasp[0], grasp[2], objcm):
-#         effect_grasp.append(grasp)
-#     return effect_grasp
-#
-#
-# def define_suction_with_rotation(hndfa, grasp_center, finger_normal, hand_normal, objcm,
-#                                  rotation_interval=15, rotation_range=(-90, 90)):
-#     """
-#
-#     :param hndfa:
-#     :param grasp_center:
-#     :param finger_normal:
-#     :param hand_normal:
-#     :param objcm:
-#     :param rotation_interval:
-#     :param rotation_range:
-#     :param toggleflip:
-#     :return:
-#
-#     author: chenhao, revised by weiwei
-#     date: 20200104
-#     """
-#
-#     effect_grasp = []
-#     for rotate_angle in range(rotation_range[0], rotation_range[1], rotation_interval):
-#         hnd_s = hndfa.genHand(usesuction=True)
-#         hand_normal_rotated = np.dot(rm.rodrigues(finger_normal, rotate_angle), np.asarray(hand_normal))
-#         grasp = hnd_s.approachat(grasp_center[0], grasp_center[1], grasp_center[2],
-#                                finger_normal[0], finger_normal[1], finger_normal[2],
-#                                hand_normal_rotated[0], hand_normal_rotated[1], hand_normal_rotated[2], jaw_width=0)
-#         if not ishndobjcollided(hndfa, grasp[0], grasp[2], objcm) == False:
-#             effect_grasp.append(grasp)
-#     return effect_grasp
-
-
 def write_pickle_file(objcm_name, grasp_info_list, root=None, file_name='preannotated_grasps.pickle'):
     """
     if model_name was saved, replace the old grasp info.

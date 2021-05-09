@@ -134,8 +134,8 @@ class NIK(object):
 
     def tcp_error(self, tgt_pos, tgt_rot, tcp_jntid, tcp_loc_pos, tcp_loc_rotmat):
         """
-        compute the error between the rjlinstance's end and tgt_pos, tgt_rot
-        NOTE: if list, len(tgt_pos)=len(tgt_rot) <= len(tcp_jntid)=len(tcp_loc_pos)=len(tcp_loc_rotmat)
+        compute the error between the rjlinstance's end and tgt_pos, tgt_rotmat
+        NOTE: if list, len(tgt_pos)=len(tgt_rotmat) <= len(tcp_jntid)=len(tcp_loc_pos)=len(tcp_loc_rotmat)
         :param tgt_pos: the position vector of the goal (could be a single value or a list of jntid)
         :param tgt_rot: the rotation matrix of the goal (could be a single value or a list of jntid)
         :param tcp_jntid: a joint ID in the self.tgtjnts
@@ -214,7 +214,7 @@ class NIK(object):
         """
         solveik numerically using the Levenberg-Marquardt Method
         the details of this method can be found in: https://www.math.ucsd.edu/~sbuss/ResearchWeb/ikmethods/iksurvey.pdf
-        NOTE: if list, len(tgt_pos)=len(tgt_rot) <= len(tcp_jntid)=len(tcp_loc_pos)=len(tcp_loc_rotmat)
+        NOTE: if list, len(tgt_pos)=len(tgt_rotmat) <= len(tcp_jntid)=len(tcp_loc_pos)=len(tcp_loc_rotmat)
         :param tgt_pos: the position of the goal, 1-by-3 numpy ndarray
         :param tgt_rot: the orientation of the goal, 3-by-3 numpyndarray
         :param seed_jnt_values: the starting configuration used in the numerical iteration

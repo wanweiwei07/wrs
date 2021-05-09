@@ -146,9 +146,9 @@ class XArm7YunjiMobile(ri.RobotInterface):
             obj_info['gl_rotmat'] = gl_rotmat
 
     def ik(self,
+           component_name,
            tgt_pos,
-           tgt_rot,
-           component_name='arm',
+           tgt_rotmat,
            seed_jnt_values=None,
            tcp_jntid=None,
            tcp_loc_pos=None,
@@ -157,7 +157,7 @@ class XArm7YunjiMobile(ri.RobotInterface):
            toggle_debug=False):
         if component_name == 'arm':
             return self.arm.ik(tgt_pos,
-                               tgt_rot,
+                               tgt_rotmat,
                                seed_jnt_values=seed_jnt_values,
                                tcp_jntid=tcp_jntid,
                                tcp_loc_pos=tcp_loc_pos,
