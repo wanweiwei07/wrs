@@ -76,7 +76,7 @@ class PickPlacePlanner(adp.ADPlanner):
                                              [grasp_info_list[i] for i in previously_available_graspids])
             previously_available_graspids = []
             for graspid, grasp_info in graspid_and_graspinfo_list:
-                jaw_width, jaw_center_pos, jaw_center_rotmat, loc_hnd_pos, loc_hnd_rotmat = grasp_info
+                jaw_width, jaw_center_pos, jaw_center_rotmat, hnd_pos, hnd_rotmat = grasp_info
                 goal_jaw_center_pos = goal_pos + goal_rotmat.dot(jaw_center_pos)
                 goal_jaw_center_rotmat = goal_rotmat.dot(jaw_center_rotmat)
                 hnd_instance.grip_at_with_jcpose(goal_jaw_center_pos, goal_jaw_center_rotmat, jaw_width)
@@ -87,7 +87,8 @@ class PickPlacePlanner(adp.ADPlanner):
                             hnd_tmp = hnd_instance.copy()
                             hnd_tmp.gen_meshmodel(rgba=[0, 1, 0, .2]).attach_to(base)
                         self.robot_s.fk(manipulator_name, jnt_values)
-                        is_rbt_collided = self.robot_s.is_collided(obstacle_list)  # common graspid consdiering robot_s cd
+                        is_rbt_collided = self.robot_s.is_collided(
+                            obstacle_list)  # common graspid consdiering robot_s cd
                         # TODO is_obj_collided
                         is_obj_collided = False  # common graspid consdiering obj cd
                         if (not is_rbt_collided) and (
@@ -133,65 +134,68 @@ class PickPlacePlanner(adp.ADPlanner):
         objcm = objcm.copy()
         objcm.set_pos(start_obj_pos)
         objcm.set_rotmat(start_obj_rotmat)
-        jaw_width, loc_tcp_pos, loc_hnd_pos, loc_hnd_rotmat = grasp_info
-        start_hnd_pos = start_obj_rotmat.dot(loc_tcp_pos) + start_obj_pos
-        start_hnd_rotmat = start_obj_rotmat.dot(loc_hnd_rotmat)
-        goal_hnd_pos = goal_obj_rotmat.dot(loc_tcp_pos) + goal_obj_pos
-        goal_hnd_rotmat = goal_obj_rotmat.dot(loc_hnd_rotmat)
+        jaw_width, jaw_center_pos, jaw_center_rotmat, hnd_pos, hnd_rotmat = grasp_info
+        start_jaw_center_pos = start_obj_rotmat.dot(jaw_center_pos) + start_obj_pos
+        start_jaw_center_rotmat = start_obj_rotmat.dot(jaw_center_rotmat)
+        goal_jaw_center_pos = goal_obj_rotmat.dot(jaw_center_pos) + goal_obj_pos
+        goal_jaw_center_rotmat = goal_obj_rotmat.dot(jaw_center_rotmat)
         jnt_values_bk = self.robot_s.get_jnt_values(component_name)
-        self.robot_s.fk(self.robot_s.ik(component_name, start_hnd_pos, start_hnd_rotmat, seed_jnt_values=seed_jnt_values))
+        self.robot_s.fk(
+            self.robot_s.ik(component_name, start_jaw_center_pos, start_jaw_center_rotmat, seed_jnt_values=seed_jnt_values))
         rel_obj_pos, rel_obj_rotmat = self.robot_s.hold(objcm, jaw_width, hnd_name)
-        self.robot_s.fk(jnt_values_bk)
         conf_list = self.inik_slvr.gen_linear_motion(component_name,
-                                                     start_hnd_pos,
-                                                     start_hnd_rotmat,
-                                                     goal_hnd_pos,
-                                                     goal_hnd_rotmat,
+                                                     start_jaw_center_pos,
+                                                     start_jaw_center_rotmat,
+                                                     goal_jaw_center_pos,
+                                                     goal_jaw_center_rotmat,
                                                      obstacle_list=[],
                                                      granularity=granularity,
                                                      seed_jnt_values=seed_jnt_values)
         jawwidth_list = self.gen_jawwidth_motion(conf_list, jaw_width)
         objpose_list = self.gen_object_motion(component_name, conf_list, rel_obj_pos, rel_obj_rotmat, type='relative')
         self.robot_s.release(objcm, jaw_width, hnd_name)
+        self.robot_s.fk(jnt_values_bk)
         return conf_list, jawwidth_list, objpose_list
 
-    def gen_moveto_motion(self,
-                          component_name,
-                          hnd_name,
-                          objcm,
-                          grasp_info,
-                          start_obj_pos,
-                          start_obj_rotmat,
-                          goal_obj_pos,
-                          goal_obj_rotmat,
-                          obstacle_list=[],
-                          seed_jnt_values=None):
-        objcm = objcm.copy()
-        objcm.set_pos(start_obj_pos)
-        objcm.set_rotmat(start_obj_rotmat)
-        jaw_width, loc_tcp_pos, loc_hnd_pos, loc_hnd_rotmat = grasp_info
-        start_hnd_pos = start_obj_rotmat.dot(loc_tcp_pos) + start_obj_pos
-        start_hnd_rotmat = start_obj_rotmat.dot(loc_hnd_rotmat)
-        goal_hnd_pos = goal_obj_rotmat.dot(loc_tcp_pos) + goal_obj_pos
-        goal_hnd_rotmat = goal_obj_rotmat.dot(loc_hnd_rotmat)
-        jnt_values_bk = self.robot_s.get_jnt_values(component_name)
-        start_conf = self.robot_s.ik(component_name, start_hnd_pos, start_hnd_rotmat, seed_jnt_values=seed_jnt_values)
-        goal_conf = self.robot_s.ik(component_name, goal_hnd_pos, goal_hnd_rotmat, seed_jnt_values=seed_jnt_values)
-        self.robot_s.fk(start_conf)
-        rel_obj_pos, rel_obj_rotmat = self.robot_s.hold(objcm, jaw_width, hnd_name)
-        self.robot_s.fk(jnt_values_bk)
-        conf_list = self.rrtc_planner.plan(component_name,
-                                           start_conf,
-                                           goal_conf,
-                                           obstacle_list,
-                                           ext_dist=.05,
-                                           rand_rate=70,
-                                           max_time=300,
-                                           component_name=component_name)
-        jawwidth_list = self.gen_jawwidth_motion(conf_list, jaw_width)
-        objpose_list = self.gen_object_motion(component_name, conf_list, rel_obj_pos, rel_obj_rotmat, type='relative')
-        self.robot_s.release(objcm, jaw_width, hnd_name)
-        return conf_list, jawwidth_list, objpose_list
+    # def gen_moveto_motion(self,
+    #                       component_name,
+    #                       hnd_name,
+    #                       objcm,
+    #                       grasp_info,
+    #                       start_obj_pos,
+    #                       start_obj_rotmat,
+    #                       goal_obj_pos,
+    #                       goal_obj_rotmat,
+    #                       obstacle_list=[],
+    #                       seed_jnt_values=None):
+    #     objcm = objcm.copy()
+    #     objcm.set_pos(start_obj_pos)
+    #     objcm.set_rotmat(start_obj_rotmat)
+    #     jaw_width, jaw_center_pos, jaw_center_rotmat, hnd_pos, hnd_rotmat = grasp_info
+    #     start_jaw_center_pos = start_obj_rotmat.dot(jaw_center_pos) + start_obj_pos
+    #     start_jaw_center_rotmat = start_obj_rotmat.dot(jaw_center_rotmat)
+    #     goal_jaw_center_pos = goal_obj_rotmat.dot(jaw_center_pos) + goal_obj_pos
+    #     goal_jaw_center_rotmat = goal_obj_rotmat.dot(jaw_center_rotmat)
+    #     jnt_values_bk = self.robot_s.get_jnt_values(component_name)
+    #     start_conf = self.robot_s.ik(component_name, start_jaw_center_pos,
+    #                                  start_jaw_center_rotmat, seed_jnt_values=seed_jnt_values)
+    #     goal_conf = self.robot_s.ik(component_name, goal_jaw_center_pos,
+    #                                 goal_jaw_center_rotmat, seed_jnt_values=seed_jnt_values)
+    #     self.robot_s.fk(start_conf)
+    #     rel_obj_pos, rel_obj_rotmat = self.robot_s.hold(objcm, jaw_width, hnd_name)
+    #     conf_list = self.rrtc_planner.plan(component_name,
+    #                                        start_conf,
+    #                                        goal_conf,
+    #                                        obstacle_list,
+    #                                        ext_dist=.05,
+    #                                        rand_rate=70,
+    #                                        max_time=300,
+    #                                        component_name=component_name)
+    #     jawwidth_list = self.gen_jawwidth_motion(conf_list, jaw_width)
+    #     objpose_list = self.gen_object_motion(component_name, conf_list, rel_obj_pos, rel_obj_rotmat, type='relative')
+    #     self.robot_s.release(objcm, jaw_width, hnd_name)
+    #     self.robot_s.fk(jnt_values_bk)
+    #     return conf_list, jawwidth_list, objpose_list
 
     def gen_pickup_linear(self,
                           component_name,
@@ -200,10 +204,10 @@ class PickPlacePlanner(adp.ADPlanner):
                           grasp_info,
                           goal_obj_pos,
                           goal_obj_rotmat,
-                          approach_direction=np.array([0, 0, -1]),
+                          approach_direction=None,  # np.array([0, 0, -1])
                           approach_distance=.1,
                           approach_jawwidth=.05,
-                          depart_direction=np.array([0, 0, 1]),
+                          depart_direction=None,  # np.array([0, 0, 1])
                           depart_distance=.1,
                           granularity=.03,
                           seed_jnt_values=None):
@@ -229,14 +233,16 @@ class PickPlacePlanner(adp.ADPlanner):
         objcm = objcm.copy()
         objcm.set_pos(goal_obj_pos)
         objcm.set_rotmat(goal_obj_rotmat)
-        depart_jawwidth, loc_tcp_pos, loc_hnd_pos, loc_hnd_rotmat = grasp_info
-        goal_hnd_pos = goal_obj_rotmat.dot(loc_tcp_pos) + goal_obj_pos
-        goal_hnd_rotmat = goal_obj_rotmat.dot(loc_hnd_rotmat)
+        depart_jawwidth, jaw_center_pos, jaw_center_rotmat, hnd_pos, hnd_rotmat = grasp_info
+        gl_jaw_center_pos = goal_obj_rotmat.dot(jaw_center_pos) + goal_obj_pos
+        gl_jaw_center_rotmat = goal_obj_rotmat.dot(jaw_center_rotmat)
         abs_obj_pos = objcm.get_pos()
         abs_obj_rotmat = objcm.get_rotmat()
+        if approach_direction is None:
+            approach_direction = gl_jaw_center_rotmat[:, 2]
         approach_conf_list, approach_jawwidth_list = self.gen_approach_linear(component_name,
-                                                                              goal_hnd_pos,
-                                                                              goal_hnd_rotmat,
+                                                                              gl_jaw_center_pos,
+                                                                              gl_jaw_center_rotmat,
                                                                               approach_direction,
                                                                               approach_distance,
                                                                               approach_jawwidth,
@@ -247,9 +253,11 @@ class PickPlacePlanner(adp.ADPlanner):
             print('Cannot perform approach action!')
         else:
             rel_obj_pos, rel_obj_rotmat = self.robot_s.hold(objcm, depart_jawwidth, hnd_name)
+            if depart_direction is None:
+                depart_direction = -gl_jaw_center_rotmat[:, 2]
             depart_conf_list, depart_jawwidth_list = self.gen_depart_linear(component_name,
-                                                                            goal_hnd_pos,
-                                                                            goal_hnd_rotmat,
+                                                                            gl_jaw_center_pos,
+                                                                            gl_jaw_center_rotmat,
                                                                             depart_direction,
                                                                             depart_distance,
                                                                             depart_jawwidth,
@@ -273,10 +281,10 @@ class PickPlacePlanner(adp.ADPlanner):
                           goal_obj_rotmat,
                           start_conf=None,
                           goal_conf=None,
-                          approach_direction=np.array([0, 0, -1]),
+                          approach_direction=None,  # np.array([0, 0, -1])
                           approach_distance=.1,
                           approach_jawwidth=.05,
-                          depart_direction=np.array([0, 0, 1]),
+                          depart_direction=None,  # np.array([0, 0, 1])
                           depart_distance=.1,
                           granularity=.03,
                           obstacle_list=[],
@@ -307,11 +315,13 @@ class PickPlacePlanner(adp.ADPlanner):
         objcm = objcm.copy()
         objcm.set_pos(goal_obj_pos)
         objcm.set_rotmat(goal_obj_rotmat)
-        depart_jawwidth, jaw_center_pos, jaw_center_rotmat, loc_hnd_pos, loc_hnd_rotmat = grasp_info
+        depart_jawwidth, jaw_center_pos, jaw_center_rotmat, hnd_pos, hnd_rotmat = grasp_info
         goal_jaw_center_pos = goal_obj_pos + goal_obj_rotmat.dot(jaw_center_pos)
         goal_jaw_center_rotmat = goal_obj_rotmat.dot(jaw_center_rotmat)
         abs_obj_pos = objcm.get_pos()
         abs_obj_rotmat = objcm.get_rotmat()
+        if approach_direction is None:
+            approach_direction = goal_jaw_center_rotmat[:, 2]
         approach_conf_list, approach_jawwidth_list = self.gen_approach_motion(component_name,
                                                                               goal_jaw_center_pos,
                                                                               goal_jaw_center_rotmat,
@@ -325,10 +335,13 @@ class PickPlacePlanner(adp.ADPlanner):
         if len(approach_conf_list) == 0:
             print('Cannot perform approach action!')
         else:
-            approach_objpose_list = self.gen_object_motion(component_name, approach_conf_list, abs_obj_pos, abs_obj_rotmat)
+            approach_objpose_list = self.gen_object_motion(component_name, approach_conf_list, abs_obj_pos,
+                                                           abs_obj_rotmat)
             jnt_values_bk = self.robot_s.get_jnt_values(component_name)
             self.robot_s.fk(component_name, approach_conf_list[-1])
             rel_obj_pos, rel_obj_rotmat = self.robot_s.hold(hnd_name, objcm, depart_jawwidth)
+            if depart_direction is None:
+                depart_direction = -goal_jaw_center_rotmat[:, 2]
             depart_conf_list, depart_jawwidth_list = self.gen_depart_motion(component_name,
                                                                             goal_jaw_center_pos,
                                                                             goal_jaw_center_rotmat,
@@ -339,8 +352,10 @@ class PickPlacePlanner(adp.ADPlanner):
                                                                             granularity,
                                                                             obstacle_list,
                                                                             seed_jnt_values=approach_conf_list[-1])
-            depart_objpose_list = self.gen_object_motion(component_name, depart_conf_list, rel_obj_pos, rel_obj_rotmat, type='relative')
-            self.robot_s.release(hnd_name, objcm, depart_jawwidth) # we do not maintain inner states, directly return seqs
+            depart_objpose_list = self.gen_object_motion(component_name, depart_conf_list, rel_obj_pos, rel_obj_rotmat,
+                                                         type='relative')
+            self.robot_s.release(hnd_name, objcm,
+                                 depart_jawwidth)  # we do not maintain inner states, directly return seqs
             self.robot_s.fk(component_name, jnt_values_bk)
             if len(depart_conf_list) == 0:
                 print('Cannot perform depart action!')
@@ -356,11 +371,11 @@ class PickPlacePlanner(adp.ADPlanner):
                              grasp_info,
                              goal_obj_pos,
                              goal_obj_rotmat,
-                             down_direction=np.array([0, 0, -1]),
-                             down_distance=.1,
-                             up_direction=np.array([0, 0, 1]),
-                             up_distance=.1,
-                             up_jawwidth=.0,
+                             approach_direction=None,  # np.array([0, 0, -1])
+                             approach_distance=.1,
+                             depart_direction=None,  # np.array([0, 0, 1])
+                             depart_distance=.1,
+                             depart_jawwidth=.0,
                              granularity=.03,
                              obstacle_list=[],
                              seed_jnt_values=None):
@@ -374,11 +389,11 @@ class PickPlacePlanner(adp.ADPlanner):
         :param goal_obj_rotmat:
         :param seed_jnt_values:
         :param goal_conf:
-        :param down_direction:
-        :param down_distance:
-        :param up_direction:
-        :param up_distance:
-        :param up_jawwidth:
+        :param approach_direction:
+        :param approach_distance:
+        :param depart_direction:
+        :param depart_distance:
+        :param depart_jawwidth:
         :param granularity:
         :param obstacle_list:
         :param seed_jnt_values:
@@ -389,42 +404,69 @@ class PickPlacePlanner(adp.ADPlanner):
         objcm = objcm.copy()
         objcm.set_pos(goal_obj_pos)
         objcm.set_rotmat(goal_obj_rotmat)
-        down_jawwidth, loc_tcp_pos, loc_hnd_pos, loc_hnd_rotmat = grasp_info
-        start_obj_pos = goal_obj_pos - down_direction * down_distance
+        # jaw_width, jaw_center_pos, jaw_center_rotmat, hnd_pos, hnd_rotmat = grasp_info
+        # gl_obj_pos, gl_obj_rotmat = self.robot_s.get_gl_pose_from_hio(component_name, hnd_pos, hnd_rotmat)
+        # objcm.set_pos(gl_obj_pos)
+        # objcm.set_rotmat(gl_obj_rotmat)
+        # rel_obj_pos, rel_obj_rotmat = self.robot_s.hold(hnd_name, objcm, jaw_width)
+        # objcm.set_pos(goal_obj_pos)
+        # objcm.set_rotmat(goal_obj_rotmat)
+        # goal_jaw_center_pos = goal_obj_rotmat.dot(jaw_center_pos) + goal_obj_pos
+        # goal_jaw_center_rotmat = goal_obj_rotmat.dot(jaw_center_rotmat)
+        # if approach_direction is None:
+        #     approach_direction = goal_jaw_center_rotmat[:, 2]
+        # approach_conf_list, approach_jawwidth_list = self.gen_approach_motion(component_name,
+        #                                                                       goal_jaw_center_pos,
+        #                                                                       goal_jaw_center_rotmat,
+        #                                                                       start_conf,
+        #                                                                       approach_direction,
+        #                                                                       approach_distance,
+        #                                                                       jaw_width,
+        #                                                                       granularity,
+        #                                                                       obstacle_list,
+        #                                                                       seed_jnt_values)
+        # print(approach_conf_list)
+        jaw_width, jaw_center_pos, jaw_center_rotmat, hnd_pos, hnd_rotmat = grasp_info
+        if approach_direction is None:
+            approach_direction = jaw_center_rotmat[:, 2]
+        start_obj_pos = goal_obj_pos - approach_direction * approach_distance
         start_obj_rotmat = goal_obj_rotmat
-        down_conf_list, down_jawwidth_list, down_objpose_list = self.gen_moveto_linear(component_name,
-                                                                                       hnd_name,
-                                                                                       objcm,
-                                                                                       grasp_info,
-                                                                                       start_obj_pos,
-                                                                                       start_obj_rotmat,
-                                                                                       goal_obj_pos,
-                                                                                       goal_obj_rotmat,
-                                                                                       down_jawwidth,
-                                                                                       granularity,
-                                                                                       seed_jnt_values)
-        if len(down_conf_list) == 0:
+        approach_conf_list, approach_jawwidth_list, approach_objpose_list = self.gen_moveto_linear(component_name,
+                                                                                                   hnd_name,
+                                                                                                   objcm,
+                                                                                                   grasp_info,
+                                                                                                   start_obj_pos,
+                                                                                                   start_obj_rotmat,
+                                                                                                   goal_obj_pos,
+                                                                                                   goal_obj_rotmat,
+                                                                                                   granularity,
+                                                                                                   seed_jnt_values)
+        if len(approach_conf_list) == 0:
             print('Cannot perform place down action!')
         else:
-            goal_hnd_pos = goal_obj_rotmat.dot(loc_tcp_pos) + goal_obj_pos
-            goal_hnd_rotmat = goal_obj_rotmat.dot(loc_hnd_rotmat)
-            up_conf_list, up_jawwidth_list = self.gen_depart_linear(component_name,
-                                                                    goal_hnd_pos,
-                                                                    goal_hnd_rotmat,
-                                                                    up_direction,
-                                                                    up_distance,
-                                                                    up_jawwidth,
-                                                                    granularity,
-                                                                    obstacle_list,
-                                                                    seed_jnt_values=down_conf_list[-1])
-            up_objpose_list = self.gen_object_motion(up_conf_list, down_objpose_list[-1], down_objpose_list[-1],
-                                                     type='absolute')
-            if len(up_conf_list) == 0:
+            goal_jaw_center_pos = goal_obj_rotmat.dot(jaw_center_pos) + goal_obj_pos
+            goal_jaw_center_rotmat = goal_obj_rotmat.dot(jaw_center_rotmat)
+            if depart_direction is None:
+                depart_direction = goal_jaw_center_rotmat[:, 2]
+            depart_conf_list, depart_jawwidth_list = self.gen_depart_linear(component_name,
+                                                                            goal_jaw_center_pos,
+                                                                            goal_jaw_center_rotmat,
+                                                                            depart_direction,
+                                                                            depart_distance,
+                                                                            depart_jawwidth,
+                                                                            granularity,
+                                                                            obstacle_list,
+                                                                            seed_jnt_values=approach_conf_list[-1])
+            depart_objpose_list = self.gen_object_motion(depart_conf_list,
+                                                         approach_objpose_list[-1],
+                                                         approach_objpose_list[-1],
+                                                         type='absolute')
+            if len(depart_conf_list) == 0:
                 print('Cannot perform depart action!')
             else:
-                return down_conf_list + up_conf_list, \
-                       down_jawwidth_list + up_jawwidth_list, \
-                       down_objpose_list + up_objpose_list
+                return approach_conf_list + depart_conf_list, \
+                       approach_jawwidth_list + depart_jawwidth_list, \
+                       approach_objpose_list + depart_objpose_list
 
     def gen_placedown_motion(self,
                              component_name,
@@ -435,10 +477,9 @@ class PickPlacePlanner(adp.ADPlanner):
                              goal_obj_rotmat,
                              start_conf=None,
                              goal_conf=None,
-                             approach_direction=np.array([0, 0, -1]),
+                             approach_direction=None,  # np.array([0, 0, -1])
                              approach_distance=.1,
-                             approach_jawwidth=.05,
-                             depart_direction=np.array([0, 0, 1]),
+                             depart_direction=None,  # np.array([0, 0, 1])
                              depart_distance=.1,
                              depart_jawwidth=.0,
                              granularity=.03,
@@ -456,7 +497,6 @@ class PickPlacePlanner(adp.ADPlanner):
         :param goal_conf:
         :param approach_direction:
         :param approach_distance:
-        :param approach_jawwidth:
         :param depart_direction:
         :param depart_distance:
         :param depart_jawwidth:
@@ -479,13 +519,15 @@ class PickPlacePlanner(adp.ADPlanner):
         objcm.set_rotmat(goal_obj_rotmat)
         goal_jaw_center_pos = goal_obj_rotmat.dot(jaw_center_pos) + goal_obj_pos
         goal_jaw_center_rotmat = goal_obj_rotmat.dot(jaw_center_rotmat)
+        if approach_direction is None:
+            approach_direction = goal_jaw_center_rotmat[:, 2]
         approach_conf_list, approach_jawwidth_list = self.gen_approach_motion(component_name,
                                                                               goal_jaw_center_pos,
                                                                               goal_jaw_center_rotmat,
                                                                               start_conf,
                                                                               approach_direction,
                                                                               approach_distance,
-                                                                              approach_jawwidth,
+                                                                              jaw_width,
                                                                               granularity,
                                                                               obstacle_list,
                                                                               seed_jnt_values)
@@ -493,10 +535,13 @@ class PickPlacePlanner(adp.ADPlanner):
         if len(approach_conf_list) == 0:
             print('Cannot perform approach action!')
         else:
-            approach_objpose_list = self.gen_object_motion(component_name, approach_conf_list, rel_obj_pos, rel_obj_rotmat, type='relative')
+            approach_objpose_list = self.gen_object_motion(component_name, approach_conf_list, rel_obj_pos,
+                                                           rel_obj_rotmat, type='relative')
             self.robot_s.release(hnd_name, objcm, jaw_width)
             abs_obj_pos = goal_obj_pos
             abs_obj_rotmat = goal_obj_rotmat
+            if depart_direction is None:
+                depart_direction = -goal_jaw_center_rotmat[:, 2]
             depart_conf_list, depart_jawwidth_list = self.gen_depart_motion(component_name,
                                                                             goal_jaw_center_pos,
                                                                             goal_jaw_center_rotmat,
@@ -523,7 +568,11 @@ class PickPlacePlanner(adp.ADPlanner):
                                   objcm,
                                   grasp_info_list,
                                   start_conf,
-                                  goal_homomat_list):
+                                  goal_homomat_list,
+                                  pick_approach_direction_list,
+                                  pick_depart_direction_list,
+                                  place_approach_direction_list,
+                                  place_depart_direction_list):
         """
 
         :param manipulator_name:
@@ -543,7 +592,7 @@ class PickPlacePlanner(adp.ADPlanner):
         conf_list = []
         jawwidth_list = []
         objpose_list = []
-        for i in range(len(goal_homomat_list)-1):
+        for i in range(len(goal_homomat_list) - 1):
             goal_homomat0 = goal_homomat_list[i]
             obj_pos0 = goal_homomat0[:3, 3]
             obj_rotmat0 = goal_homomat0[:3, :3]
@@ -554,11 +603,11 @@ class PickPlacePlanner(adp.ADPlanner):
                                                                                goal_obj_pos=obj_pos0,
                                                                                goal_obj_rotmat=obj_rotmat0,
                                                                                start_conf=start_conf,
-                                                                               approach_direction=np.array([0,0,-1]),
+                                                                               approach_direction=np.array([0, 0, -1]),
                                                                                approach_distance=.1,
-                                                                               depart_direction=np.array([0,0,1]),
+                                                                               depart_direction=np.array([0, 0, 1]),
                                                                                depart_distance=.2)
-            goal_homomat1 = goal_homomat_list[i+1]
+            goal_homomat1 = goal_homomat_list[i + 1]
             obj_pos1 = goal_homomat1[:3, 3]
             obj_rotmat1 = goal_homomat1[:3, :3]
             conf_list1, jawwidth_list1, objpose_list1 = self.gen_placedown_motion(manipulator_name,
@@ -568,16 +617,17 @@ class PickPlacePlanner(adp.ADPlanner):
                                                                                   goal_obj_pos=obj_pos1,
                                                                                   goal_obj_rotmat=obj_rotmat1,
                                                                                   start_conf=conf_list0[-1],
-                                                                                  approach_direction=np.array([0,0,-1]),
+                                                                                  approach_direction=np.array(
+                                                                                      [0, 0, -1]),
                                                                                   approach_distance=.1,
-                                                                                  depart_direction=np.array([.5,.5,1]),
+                                                                                  depart_direction=np.array(
+                                                                                      [.5, .5, 1]),
                                                                                   depart_distance=.2)
-            start_conf=conf_list1[-1]
-            conf_list = conf_list+conf_list0+conf_list1
-            jawwidth_list = jawwidth_list+jawwidth_list0+jawwidth_list1
-            objpose_list= objpose_list+objpose_list0+objpose_list1
+            start_conf = conf_list1[-1]
+            conf_list = conf_list + conf_list0 + conf_list1
+            jawwidth_list = jawwidth_list + jawwidth_list0 + jawwidth_list1
+            objpose_list = objpose_list + objpose_list0 + objpose_list1
         return conf_list, jawwidth_list, objpose_list
-
 
 
 if __name__ == '__main__':

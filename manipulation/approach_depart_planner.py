@@ -31,7 +31,7 @@ class ADPlanner(object):  # AD = Approach_Depart
                             component_name,
                             goal_tcp_pos,
                             goal_tcp_rotmat,
-                            approach_direction=np.array([0, 0, -1]),
+                            approach_direction=None,  # np.array([0, 0, -1])
                             approach_distance=.1,
                             approach_jawwidth=.05,
                             granularity=0.03,
@@ -53,6 +53,8 @@ class ADPlanner(object):  # AD = Approach_Depart
         author: weiwei
         date: 20210125
         """
+        if approach_direction is None:
+            approach_direction = goal_tcp_rotmat[:, 2]
         conf_list = self.inik_slvr.gen_rel_linear_motion(component_name,
                                                          goal_tcp_pos,
                                                          goal_tcp_rotmat,
@@ -78,7 +80,7 @@ class ADPlanner(object):  # AD = Approach_Depart
                           component_name,
                           start_tcp_pos,
                           start_tcp_rotmat,
-                          depart_direction=np.array([0, 0, 1]),
+                          depart_direction=None,  # np.array([0, 0, 1])
                           depart_distance=.1,
                           depart_jawwidth=.05,
                           granularity=0.03,
@@ -101,6 +103,8 @@ class ADPlanner(object):  # AD = Approach_Depart
         author: weiwei
         date: 20210125
         """
+        if depart_direction is None:
+            depart_direction = -start_tcp_rotmat[:, 2]
         conf_list = self.inik_slvr.gen_rel_linear_motion(component_name,
                                                          start_tcp_pos,
                                                          start_tcp_rotmat,
@@ -126,10 +130,10 @@ class ADPlanner(object):  # AD = Approach_Depart
                                        component_name,
                                        goal_tcp_pos,
                                        goal_tcp_rotmat,
-                                       approach_direction=np.array([0, 0, -1]),
+                                       approach_direction=None,  # np.array([0, 0, -1])
                                        approach_distance=.1,
                                        approach_jawwidth=.05,
-                                       depart_direction=np.array([0, 0, 1]),
+                                       depart_direction=None,  # np.array([0, 0, 1])
                                        depart_distance=.1,
                                        depart_jawwidth=0,
                                        granularity=.03,
@@ -150,6 +154,8 @@ class ADPlanner(object):  # AD = Approach_Depart
         author: weiwei, hao
         date: 20191122, 20200105, 20210113, 20210125
         """
+        if approach_direction is None:
+            approach_direction = goal_tcp_rotmat[:, 2]
         approach_conf_list = self.inik_slvr.gen_rel_linear_motion(component_name,
                                                                   goal_tcp_pos,
                                                                   goal_tcp_rotmat,
@@ -162,6 +168,8 @@ class ADPlanner(object):  # AD = Approach_Depart
         if approach_distance != 0 and len(approach_conf_list) == 0:
             print('Cannot perform approach action!')
         else:
+            if depart_direction is None:
+                depart_direction = goal_tcp_rotmat[:, 2]
             depart_conf_list = self.inik_slvr.gen_rel_linear_motion(component_name,
                                                                     goal_tcp_pos,
                                                                     goal_tcp_rotmat,
@@ -184,7 +192,7 @@ class ADPlanner(object):  # AD = Approach_Depart
                             goal_tcp_pos,
                             goal_tcp_rotmat,
                             start_conf=None,
-                            approach_direction=np.array([0, 0, -1]),
+                            approach_direction=None,  # np.array([0, 0, -1])
                             approach_distance=.1,
                             approach_jawwidth=.05,
                             granularity=.03,
@@ -194,6 +202,8 @@ class ADPlanner(object):  # AD = Approach_Depart
                             end_jawwidth=.0):
         if seed_jnt_values is None:
             seed_jnt_values = start_conf
+        if approach_direction is None:
+            approach_direction = goal_tcp_rotmat[:, 2]
         conf_list, jawwidth_list = self.gen_approach_linear(component_name,
                                                             goal_tcp_pos,
                                                             goal_tcp_rotmat,
@@ -224,7 +234,7 @@ class ADPlanner(object):  # AD = Approach_Depart
                           start_tcp_pos,
                           start_tcp_rotmat,
                           goal_conf=None,
-                          depart_direction=np.array([0, 0, 1]),
+                          depart_direction=None,  # np.array([0, 0, 1])
                           depart_distance=.1,
                           depart_jawwidth=.05,
                           granularity=.03,
@@ -234,6 +244,8 @@ class ADPlanner(object):  # AD = Approach_Depart
                           begin_jawwidth=.0):
         if seed_jnt_values is None:
             seed_jnt_values = goal_conf
+        if depart_direction is None:
+            depart_direction = start_tcp_rotmat[:, 2]
         conf_list, jawwidth_list = self.gen_depart_linear(component_name,
                                                           start_tcp_pos,
                                                           start_tcp_rotmat,
@@ -264,10 +276,10 @@ class ADPlanner(object):  # AD = Approach_Depart
                                        goal_tcp_rotmat,
                                        start_conf=None,
                                        goal_conf=None,
-                                       approach_direction=np.array([0, 0, -1]),
+                                       approach_direction=None,  # np.array([0, 0, -1])
                                        approach_distance=.1,
                                        approach_jawwidth=.05,
-                                       depart_direction=np.array([0, 0, 1]),
+                                       depart_direction=None,  # np.array([0, 0, 1])
                                        depart_distance=.1,
                                        depart_jawwidth=0,
                                        granularity=.03,
@@ -295,6 +307,10 @@ class ADPlanner(object):  # AD = Approach_Depart
         """
         if seed_jnt_values is None:
             seed_jnt_values = start_conf
+        if approach_direction is None:
+            approach_direction = goal_tcp_rotmat[:, 2]
+        if depart_direction is None:
+            approach_direction = -goal_tcp_rotmat[:, 2]
         ad_conf_list, ad_jawwidth_list = self.gen_approach_and_depart_linear(component_name,
                                                                              goal_tcp_pos,
                                                                              goal_tcp_rotmat,
@@ -357,8 +373,10 @@ if __name__ == '__main__':
     conf_list, jawwidth_list = adp.gen_approach_and_depart_motion(manipulator_name,
                                                                   goal_pos,
                                                                   goal_rotmat,
-                                                                  start_conf=yumi_instance.get_jnt_values(manipulator_name),
-                                                                  goal_conf=yumi_instance.get_jnt_values(manipulator_name),
+                                                                  start_conf=yumi_instance.get_jnt_values(
+                                                                      manipulator_name),
+                                                                  goal_conf=yumi_instance.get_jnt_values(
+                                                                      manipulator_name),
                                                                   approach_direction=np.array([0, 0, -1]),
                                                                   approach_distance=.1,
                                                                   depart_direction=np.array([0, -1, 0]),
