@@ -593,7 +593,7 @@ class UR3Dual(ri.RobotInterface):
             if obj_info['collisionmodel'] is objcm:
                 return rm.homomat_from_posrot(obj_info['rel_pos']), obj_info['rel_rotmat']
 
-    def release(self, objcm, jaw_width=None, hnd_name='lft_hnd'):
+    def release(self, hnd_name, objcm, jaw_width=None):
         """
         the objcm is added as a part of the robot_s to the cd checker
         :param jaw_width:

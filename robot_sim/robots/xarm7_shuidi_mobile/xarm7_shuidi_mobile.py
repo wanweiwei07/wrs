@@ -1,6 +1,7 @@
 import os
 import math
 import numpy as np
+import basis.robot_math as rm
 import modeling.model_collection as mc
 import robot_sim._kinematics.jlchain as jl
 import robot_sim.manipulators.xarm7.xarm7 as xa
@@ -45,6 +46,7 @@ class XArm7YunjiMobile(ri.RobotInterface):
             self.enable_cc()
         # component map
         self.manipulator_dict['arm'] = self.arm
+        self.hnd_dict['hnd'] = self.hnd
 
     def enable_cc(self):
         # TODO when pose is changed, oih info goes wrong
@@ -202,13 +204,15 @@ class XArm7YunjiMobile(ri.RobotInterface):
     def get_jawwidth(self):
         return self.hnd.get_jawwidth()
 
-    def hold(self, objcm, jawwidth=None):
+    def hold(self, hnd_name, objcm, jawwidth=None):
         """
         the objcm is added as a part of the robot_s to the cd checker
         :param jawwidth:
         :param objcm:
         :return:
         """
+        if hnd_name is not "hnd":
+            raise ValueError("Hand name for Xarm7ShuidiRobot must be \'hnd\'!")
         if jawwidth is not None:
             self.hnd.jaw_to(jawwidth)
         rel_pos, rel_rotmat = self.arm.cvt_gl_to_loc_tcp(objcm.get_pos(), objcm.get_rotmat())
@@ -232,13 +236,34 @@ class XArm7YunjiMobile(ri.RobotInterface):
             return_list.append(objcm)
         return return_list
 
-    def release(self, objcm, jawwidth=None):
+    def get_gl_pose_from_hio(self, component_name, hio_pos, hio_rotmat):
+        """
+        get the global pose of an object from a grasp pose described in an object's local frame
+        :param hio_pos: a grasp pose described in an object's local frame -- pos
+        :param hio_rotmat: a grasp pose described in an object's local frame -- rotmat
+        :return:
+        author: weiwei
+        date: 20210302
+        """
+        if component_name is not 'arm':
+            raise ValueError("Component name for Xarm7ShuidiRobot must be \'arm\'!")
+        hnd_pos = self.arm.jnts[-1]['gl_posq']
+        hnd_rotmat = self.arm.jnts[-1]['gl_rotmatq']
+        hnd_homomat = rm.homomat_from_posrot(hnd_pos, hnd_rotmat)
+        hio_homomat = rm.homomat_from_posrot(hio_pos, hio_rotmat)
+        oih_homomat = rm.homomat_inverse(hio_homomat)
+        gl_obj_homomat = hnd_homomat.dot(oih_homomat)
+        return gl_obj_homomat[:3, 3], gl_obj_homomat[:3, :3]
+
+    def release(self, hnd_name, objcm, jawwidth=None):
         """
         the objcm is added as a part of the robot_s to the cd checker
         :param jawwidth:
         :param objcm:
         :return:
         """
+        if hnd_name is not "hnd":
+            raise ValueError("Hand name for Xarm7ShuidiRobot must be \'hnd\'!")
         if jawwidth is not None:
             self.hnd.jaw_to(jawwidth)
         for obj_info in self.oih_infos:

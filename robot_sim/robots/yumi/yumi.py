@@ -281,7 +281,7 @@ class Yumi(ri.RobotInterface):
         else:
             raise NotImplementedError
 
-    def hold(self, objcm, jaw_width=None, hnd_name='lft_hnd'):
+    def hold(self, hnd_name, objcm, jaw_width=None):
         """
         the objcm is added as a part of the robot_s to the cd checker
         :param jaw_width:
@@ -353,7 +353,7 @@ class Yumi(ri.RobotInterface):
 
     def get_gl_pose_from_hio(self, hio_pos, hio_rotmat, component_name='lft_arm'):
         """
-        get the loc pose of an object from a grasp pose described in an object's local frame
+        get the global pose of an object from a grasp pose described in an object's local frame
         :param hio_pos: a grasp pose described in an object's local frame -- pos
         :param hio_rotmat: a grasp pose described in an object's local frame -- rotmat
         :return:
@@ -431,7 +431,7 @@ class Yumi(ri.RobotInterface):
             if obj_info['collisionmodel'] is objcm:
                 return rm.homomat_from_posrot(obj_info['rel_pos']), obj_info['rel_rotmat']
 
-    def release(self, objcm, jaw_width=None, hnd_name='lft_hnd'):
+    def release(self, hnd_name, objcm, jaw_width=None):
         """
         the objcm is added as a part of the robot_s to the cd checker
         :param jaw_width:
