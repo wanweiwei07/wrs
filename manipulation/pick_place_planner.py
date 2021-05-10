@@ -164,12 +164,14 @@ class PickPlacePlanner(adp.ADPlanner):
                           hnd_name,
                           objcm,
                           grasp_info,
-                          start_obj_pos,
-                          start_obj_rotmat,
                           goal_obj_pos,
                           goal_obj_rotmat,
+                          motion_direction,
+                          motion_distance,
                           obstacle_list=[],
                           seed_jnt_values=None):
+        start_obj_pos = goal_obj_pos - motion_direction * motion_distance
+        start_obj_rotmat = goal_obj_rotmat
         objcm = objcm.copy()
         objcm.set_pos(start_obj_pos)
         objcm.set_rotmat(start_obj_rotmat)
@@ -487,16 +489,14 @@ class PickPlacePlanner(adp.ADPlanner):
         jaw_width, jaw_center_pos, jaw_center_rotmat, hnd_pos, hnd_rotmat = grasp_info
         if approach_direction is None:
             approach_direction = jaw_center_rotmat[:, 2]
-        start_obj_pos = goal_obj_pos - approach_direction * approach_distance
-        start_obj_rotmat = goal_obj_rotmat
         approach_conf_list, approach_jawwidth_list, approach_objpose_list = self.gen_moveto_motion(component_name,
                                                                                                    hnd_name,
                                                                                                    objcm,
                                                                                                    grasp_info,
-                                                                                                   start_obj_pos,
-                                                                                                   start_obj_rotmat,
                                                                                                    goal_obj_pos,
                                                                                                    goal_obj_rotmat,
+                                                                                                   approach_direction,
+                                                                                                   approach_distance,
                                                                                                    obstacle_list,
                                                                                                    seed_jnt_values)
         if len(approach_conf_list) == 0:
