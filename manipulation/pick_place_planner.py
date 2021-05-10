@@ -1,13 +1,9 @@
-import os
 import math
-import copy
-import pickle
 import numpy as np
+import basis.robot_math as rm
 import basis.data_adapter as da
-import modeling.collision_model as cm
 import motion.optimization_based.incremental_nik as inik
 import motion.probabilistic.rrt_connect as rrtc
-import basis.robot_math as rm
 import manipulation.approach_depart_planner as adp
 
 
@@ -586,11 +582,13 @@ class PickPlacePlanner(adp.ADPlanner):
 
 if __name__ == '__main__':
     import time
-    import basis.robot_math as rm
     import robot_sim.robots.yumi.yumi as ym
     import visualization.panda.world as wd
     import modeling.geometric_model as gm
+    import modeling.collision_model as cm
     import grasping.annotation.utils as gutil
+    import numpy as np
+    import basis.robot_math as rm
 
     base = wd.World(cam_pos=[2, 0, 1.5], lookat_pos=[0, 0, .2])
     gm.gen_frame().attach_to(base)
