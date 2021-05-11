@@ -47,6 +47,7 @@ def plan_contact_pairs(objcm,
 def plan_grasps(hnd_s,
                 objcm,
                 angle_between_contact_normals=math.radians(160),
+                openning_direction = 'loc_x',
                 rotation_interval=math.radians(22.5),
                 max_samples=100,
                 min_dist_between_sampled_contact_points=.005,
@@ -56,6 +57,7 @@ def plan_grasps(hnd_s,
     :param objcm:
     :param hnd_s:
     :param angle_between_contact_normals:
+    :param openning_direction: 'loc_x' or 'loc_y' depending on gripper types
     :param rotation_granularity:
     :param max_samples:
     :param min_dist_between_sampled_contact_points:
@@ -75,15 +77,22 @@ def plan_grasps(hnd_s,
         jaw_width = np.linalg.norm(contact_p0 - contact_p1) + contact_offset * 2
         if jaw_width > hnd_s.jaw_width_rng[1]:
             continue
-        jaw_center_y = contact_n0
-        jaw_center_z = rm.orthogonal_vector(contact_n0)
+        if openning_direction == 'loc_x':
+            jaw_center_x = contact_n0
+            jaw_center_z = rm.orthogonal_vector(contact_n0)
+            jaw_center_y = np.cross(jaw_center_z, jaw_center_x)
+        elif openning_direction == 'loc_y':
+            jaw_center_y = contact_n0
+            jaw_center_z = rm.orthogonal_vector(contact_n0)
+        else:
+            raise ValueError("Openning direction must be loc_x or loc_y!")
         grasp_info_list += gu.define_grasp_with_rotation(hnd_s,
                                                          objcm,
                                                          gl_jaw_center_pos=contact_center,
                                                          gl_jaw_center_z=jaw_center_z,
                                                          gl_jaw_center_y=jaw_center_y,
                                                          jaw_width=jaw_width,
-                                                         gl_rotation_ax=jaw_center_y,
+                                                         gl_rotation_ax=contact_n0,
                                                          rotation_interval=rotation_interval,
                                                          toggle_flip=True)
     return grasp_info_list

@@ -35,6 +35,7 @@ class ADPlanner(object):  # AD = Approach_Depart
                             approach_distance=.1,
                             approach_jawwidth=.05,
                             granularity=0.03,
+                            obstacle_list=[],
                             seed_jnt_values=None,
                             toggle_end_grasp='False',
                             end_jawwidth=.0):
@@ -60,11 +61,11 @@ class ADPlanner(object):  # AD = Approach_Depart
                                                          goal_tcp_rotmat,
                                                          approach_direction,
                                                          approach_distance,
-                                                         obstacle_list=[],
+                                                         obstacle_list=obstacle_list,
                                                          granularity=granularity,
                                                          type='sink',
                                                          seed_jnt_values=seed_jnt_values)
-        if len(conf_list) == 0:
+        if conf_list is None:
             print('Cannot perform approach linear!')
             return None, None
         else:
@@ -84,6 +85,7 @@ class ADPlanner(object):  # AD = Approach_Depart
                           depart_distance=.1,
                           depart_jawwidth=.05,
                           granularity=0.03,
+                          obstacle_list=[],
                           seed_jnt_values=None,
                           toggle_begin_grasp=False,
                           begin_jawwidth=.0):
@@ -110,7 +112,7 @@ class ADPlanner(object):  # AD = Approach_Depart
                                                          start_tcp_rotmat,
                                                          depart_direction,
                                                          depart_distance,
-                                                         obstacle_list=[],
+                                                         obstacle_list=obstacle_list,
                                                          granularity=granularity,
                                                          type='source',
                                                          seed_jnt_values=seed_jnt_values)
@@ -137,6 +139,7 @@ class ADPlanner(object):  # AD = Approach_Depart
                                        depart_distance=.1,
                                        depart_jawwidth=0,
                                        granularity=.03,
+                                       obstacle_list=[],
                                        seed_jnt_values=None):
         """
         :param component_name:
@@ -161,7 +164,7 @@ class ADPlanner(object):  # AD = Approach_Depart
                                                                   goal_tcp_rotmat,
                                                                   approach_direction,
                                                                   approach_distance,
-                                                                  obstacle_list=[],
+                                                                  obstacle_list=obstacle_list,
                                                                   granularity=granularity,
                                                                   type='sink',
                                                                   seed_jnt_values=seed_jnt_values)
@@ -175,7 +178,7 @@ class ADPlanner(object):  # AD = Approach_Depart
                                                                     goal_tcp_rotmat,
                                                                     depart_direction,
                                                                     depart_distance,
-                                                                    obstacle_list=[],
+                                                                    obstacle_list=obstacle_list,
                                                                     granularity=granularity,
                                                                     type='source',
                                                                     seed_jnt_values=approach_conf_list[-1])
@@ -211,11 +214,13 @@ class ADPlanner(object):  # AD = Approach_Depart
                                                             approach_distance,
                                                             approach_jawwidth,
                                                             granularity,
+                                                            obstacle_list,
                                                             seed_jnt_values,
                                                             toggle_end_grasp,
                                                             end_jawwidth)
         if conf_list is None:
-            return [], []
+            print("ADPlanner: Cannot gen approach linear!")
+            return None, None
         if start_conf is not None:
             start2approach_conf_list = self.rrtc_planner.plan(component_name=component_name,
                                                               start_conf=start_conf,
@@ -225,7 +230,8 @@ class ADPlanner(object):  # AD = Approach_Depart
                                                               rand_rate=70,
                                                               max_time=300)
             if start2approach_conf_list is None:
-                return [], []
+                print("ADPlanner: Cannot plan approach motion!")
+                return None, None
             start2approach_jawwidth_list = self.gen_jawwidth_motion(start2approach_conf_list, approach_jawwidth)
         return start2approach_conf_list + conf_list, start2approach_jawwidth_list + jawwidth_list
 
@@ -253,9 +259,13 @@ class ADPlanner(object):  # AD = Approach_Depart
                                                           depart_distance,
                                                           depart_jawwidth,
                                                           granularity,
+                                                          obstacle_list,
                                                           seed_jnt_values,
                                                           toggle_begin_grasp,
                                                           begin_jawwidth)
+        if conf_list is None:
+            print("ADPlanner: Cannot gen depart linear!")
+            return None, None
         if goal_conf is not None:
             depart2goal_conf_list = self.rrtc_planner.plan(component_name=component_name,
                                                            start_conf=conf_list[-1],
@@ -264,6 +274,9 @@ class ADPlanner(object):  # AD = Approach_Depart
                                                            ext_dist=.05,
                                                            rand_rate=70,
                                                            max_time=300)
+            if depart2goal_conf_list is None:
+                print("ADPlanner: Cannot plan depart motion!")
+                return None, None
             depart2goal_jawwidth_list = self.gen_jawwidth_motion(depart2goal_conf_list, depart_jawwidth)
         else:
             depart2goal_conf_list = []
@@ -283,8 +296,8 @@ class ADPlanner(object):  # AD = Approach_Depart
                                        depart_distance=.1,
                                        depart_jawwidth=0,
                                        granularity=.03,
-                                       seed_jnt_values=None,
-                                       obstacle_list=[]):
+                                       obstacle_list=[],
+                                       seed_jnt_values=None):
         """
         degenerate into gen_ad_primitive if both seed_jnt_values and goal_conf are None
         :param component_name:
@@ -321,7 +334,11 @@ class ADPlanner(object):  # AD = Approach_Depart
                                                                              depart_distance,
                                                                              depart_jawwidth,
                                                                              granularity,
+                                                                             obstacle_list,
                                                                              seed_jnt_values)
+        if ad_conf_list is None:
+            print("ADPlanner: Cannot gen ad linear!")
+            return None, None
         if start_conf is not None:
             start2approach_conf_list = self.rrtc_planner.plan(component_name=component_name,
                                                               start_conf=start_conf,
@@ -330,6 +347,9 @@ class ADPlanner(object):  # AD = Approach_Depart
                                                               ext_dist=.05,
                                                               rand_rate=70,
                                                               max_time=300)
+            if start2approach_conf_list is None:
+                print("ADPlanner: Cannot plan approach motion!")
+                return None, None
             start2approach_jawwidth_list = self.gen_jawwidth_motion(start2approach_conf_list, approach_jawwidth)
         if goal_conf is not None:
             depart2goal_conf_list = self.rrtc_planner.plan(component_name=component_name,
@@ -339,10 +359,18 @@ class ADPlanner(object):  # AD = Approach_Depart
                                                            ext_dist=.05,
                                                            rand_rate=70,
                                                            max_time=300)
+            if depart2goal_conf_list is None:
+                print("ADPlanner: Cannot plan depart motion!")
+                return None, None
             depart2goal_jawwidth_list = self.gen_jawwidth_motion(depart2goal_conf_list, depart_jawwidth)
         return start2approach_conf_list + ad_conf_list + depart2goal_conf_list, \
                start2approach_jawwidth_list + ad_jawwidth_list + depart2goal_jawwidth_list
 
+    def gen_depart_and_approach_linear(self):
+        pass
+
+    def gen_depart_and_approach_motion(self):
+        pass
 
 if __name__ == '__main__':
     import time

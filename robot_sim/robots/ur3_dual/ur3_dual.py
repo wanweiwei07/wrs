@@ -179,10 +179,14 @@ class UR3Dual(ri.RobotInterface):
         # component map
         self.manipulator_dict['rgt_arm'] = self.rgt_arm
         self.manipulator_dict['lft_arm'] = self.lft_arm
+        self.manipulator_dict['rgt_hnd'] = self.rgt_arm # specify which hand is a gripper installed to
+        self.manipulator_dict['lft_hnd'] = self.lft_arm # specify which hand is a gripper installed to
+        self.manipulator_dict['rgt_ftsensor'] = self.rgt_arm # specify which hand is a gripper installed to
+        self.manipulator_dict['lft_ftsensor'] = self.lft_arm # specify which hand is a gripper installed to
         self.hnd_dict['rgt_hnd'] = self.rgt_hnd
         self.hnd_dict['lft_hnd'] = self.lft_hnd
-        self.ft_sensor_dict['rgt_arm'] = self.rgt_ft_sensor
-        self.ft_sensor_dict['lft_arm'] = self.lft_ft_sensor
+        self.ft_sensor_dict['rgt_ftsensor'] = self.rgt_ft_sensor
+        self.ft_sensor_dict['lft_ftsensor'] = self.lft_ft_sensor
 
     @staticmethod
     def _base_combined_cdnp(name, radius):

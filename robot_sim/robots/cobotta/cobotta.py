@@ -37,6 +37,8 @@ class Cobotta(ri.RobotInterface):
             self.enable_cc()
         # component map
         self.manipulator_dict['arm'] = self.arm
+        self.manipulator_dict['hnd'] = self.arm
+        self.hnd_dict['hnd'] = self.hnd
 
     def enable_cc(self):
         # TODO when pose is changed, oih info goes wrong

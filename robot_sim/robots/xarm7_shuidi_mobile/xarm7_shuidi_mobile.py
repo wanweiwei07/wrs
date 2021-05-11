@@ -46,6 +46,7 @@ class XArm7YunjiMobile(ri.RobotInterface):
             self.enable_cc()
         # component map
         self.manipulator_dict['arm'] = self.arm
+        self.manipulator_dict['hnd'] = self.arm # specify which hand is a gripper installed to
         self.hnd_dict['hnd'] = self.hnd
 
     def enable_cc(self):

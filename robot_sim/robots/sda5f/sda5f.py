@@ -95,6 +95,12 @@ class SDA5F(ri.RobotInterface):
         # collision detection
         if enable_cc:
             self.enable_cc()
+        self.manipulator_dict['rgt_arm'] = self.rgt_arm
+        self.manipulator_dict['lft_arm'] = self.lft_arm
+        self.manipulator_dict['rgt_hnd'] = self.rgt_arm # specify which hand is a gripper installed to
+        self.manipulator_dict['lft_hnd'] = self.lft_arm # specify which hand is a gripper installed to
+        self.hnd_dict['rgt_hnd'] = self.rgt_hnd
+        self.hnd_dict['lft_hnd'] = self.lft_hnd
 
     @staticmethod
     def _base_combined_cdnp(name, radius):

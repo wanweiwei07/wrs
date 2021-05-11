@@ -46,7 +46,7 @@ class IncrementalNIK(object):
             if jnt_values is None:
                 print("IK not solvable in gen_linear_motion!")
                 self.robot_s.fk(component_name, jnt_values_bk)
-                return []
+                return None
             else:
                 self.robot_s.fk(component_name, jnt_values)
                 cd_result, ct_points = self.robot_s.is_collided(obstacle_list, toggle_contact_points=True)
@@ -56,7 +56,7 @@ class IncrementalNIK(object):
                             gm.gen_sphere(ct_pnt).attach_to(base)
                     print("Intermediate pose collided in gen_linear_motion!")
                     self.robot_s.fk(component_name, jnt_values_bk)
-                    return []
+                    return None
             jnt_values_list.append(jnt_values)
             seed_jnt_values = jnt_values
         self.robot_s.fk(component_name, jnt_values_bk)

@@ -70,7 +70,7 @@ taskMgr.doMethodLater(0.01, update, "update",
                       appendTask=True)
 
 # for jvp, objp in zip(conf_list, objpose_list):
-#     robot_s.fk(manipulator_name, jvp)
+#     robot_s.fk(component_name, jvp)
 #     robot_s.gen_meshmodel().attach_to(base)
 #     objb_copy = object_box.copy()
 #     objb_copy.set_homomat(objp)
