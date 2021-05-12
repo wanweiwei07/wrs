@@ -873,6 +873,49 @@ def gen_polygon(verts, thickness=0.002, rgba=[0, 0, 0, .7]):
     polygon_sgm = StaticGeometricModel(polygon_nodepath)
     return polygon_sgm
 
+def gen_edged_box(extent=[.02, .02, .02], homomat=np.eye(4), rgba=[0,0,0,1], thickness=.001):
+    """
+    draw a 3D box, only show edges
+    :param extent:
+    :param homomat:
+    :return:
+    """
+    M_TO_PIXEL = 3779.53
+    # Create a set of line segments
+    ls = LineSegs()
+    ls.setThickness(thickness * M_TO_PIXEL)
+    ls.setColor(rgba[0], rgba[1], rgba[2], rgba[3])
+    center_pos = homomat[:3,3]
+    x_axis = homomat[:3,0]
+    y_axis = homomat[:3,1]
+    z_axis = homomat[:3,2]
+    x_min, x_max = -x_axis*extent[0]/2, x_axis*extent[0]/2
+    y_min, y_max = -y_axis*extent[1]/2, y_axis*extent[1]/2
+    z_min, z_max = -z_axis*extent[2]/2, z_axis*extent[2]/2
+    # max, max, max
+    print(center_pos+np.array([x_max, y_max, z_max]))
+    ls.moveTo(da.npv3_to_pdv3(center_pos+x_max+y_max+z_max))
+    ls.drawTo(da.npv3_to_pdv3(center_pos+x_max+y_max+z_min))
+    ls.drawTo(da.npv3_to_pdv3(center_pos+x_max+y_min+z_min))
+    ls.drawTo(da.npv3_to_pdv3(center_pos+x_max+y_min+z_max))
+    ls.drawTo(da.npv3_to_pdv3(center_pos+x_max+y_max+z_max))
+    ls.drawTo(da.npv3_to_pdv3(center_pos+x_min+y_max+z_max))
+    ls.drawTo(da.npv3_to_pdv3(center_pos+x_min+y_min+z_max))
+    ls.drawTo(da.npv3_to_pdv3(center_pos+x_min+y_min+z_min))
+    ls.drawTo(da.npv3_to_pdv3(center_pos+x_min+y_max+z_min))
+    ls.drawTo(da.npv3_to_pdv3(center_pos+x_min+y_max+z_max))
+    ls.moveTo(da.npv3_to_pdv3(center_pos+x_max+y_max+z_min))
+    ls.drawTo(da.npv3_to_pdv3(center_pos+x_min+y_max+z_min))
+    ls.moveTo(da.npv3_to_pdv3(center_pos+x_max+y_min+z_min))
+    ls.drawTo(da.npv3_to_pdv3(center_pos+x_min+y_min+z_min))
+    ls.moveTo(da.npv3_to_pdv3(center_pos+x_max+y_min+z_max))
+    ls.drawTo(da.npv3_to_pdv3(center_pos+x_min+y_min+z_max))
+    # Create and return a node with the segments
+    lsnp = NodePath(ls.create())
+    lsnp.setTransparency(TransparencyAttrib.MDual)
+    lsnp.setLightOff()
+    ls_sgm = StaticGeometricModel(lsnp)
+    return ls_sgm
 
 if __name__ == "__main__":
     import os
@@ -933,5 +976,10 @@ if __name__ == "__main__":
     axmat[:, 2] = .3 * axmat[:, 2]
     gen_ellipsoid(pos=np.array([0, 0, 0]), axmat=axmat).attach_to(base)
     print(rm.unit_vector(np.array([0, 0, 0])))
+
+    pos= np.array([.3,0,0])
+    rotmat = rm.rotmat_from_euler(math.pi/6,0,0)
+    homomat = rm.homomat_from_posrot(pos, rotmat)
+    gen_edged_box([.1,.2,.3], homomat).attach_to(base)
 
     base.run()
