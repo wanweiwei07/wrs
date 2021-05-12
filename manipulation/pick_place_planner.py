@@ -45,7 +45,7 @@ class PickPlacePlanner(adp.ADPlanner):
 
     def find_common_graspids(self,
                              component_name,
-                             hnd_name,  # TODO hnd is on  a manipulator
+                             hand_name,  # TODO hnd is on  a manipulator
                              grasp_info_list,
                              goal_homomat_list,
                              obstacle_list=[],
@@ -53,7 +53,7 @@ class PickPlacePlanner(adp.ADPlanner):
         """
         find the common collision free and IK feasible graspids
         :param component_name:
-        :param hnd_name: a component may have multiple hands
+        :param hand_name: a component may have multiple hands
         :param grasp_info_list: a list like [[jaw_width, gl_jaw_center_pos, pos, rotmat], ...]
         :param goal_homomat_list: [homomat, ...]
         :param obstacle_list
@@ -61,7 +61,7 @@ class PickPlacePlanner(adp.ADPlanner):
         author: weiwei
         date: 20210113, 20210125
         """
-        hnd_instance = self.robot_s.hnd_dict[hnd_name]
+        hnd_instance = self.robot_s.hnd_dict[hand_name]
         # start reasoning
         previously_available_graspids = range(len(grasp_info_list))
         intermediate_available_graspids = []
@@ -120,9 +120,158 @@ class PickPlacePlanner(adp.ADPlanner):
         self.robot_s.fk(component_name, jnt_values_bk)
         return final_available_graspids, intermediate_available_graspids
 
+    def gen_holding_rel_linear(self):
+        pass
+
+    def gen_holding_linear(self):
+        pass
+
+    def gen_holding_moveto(self,
+                           hand_name,
+                           objcm,
+                           grasp_info,
+                           obj_pose_list,
+                           depart_direction_list,
+                           depart_distance_list,
+                           approach_direction_list,
+                           approach_distance_list,
+                           ad_linear_granularity=.003,
+                           obstacle_list=[],
+                           seed_jnt_values=None):
+        """
+        hold and move an object to multiple poses
+        :param hand_name:
+        :param grasp_info:
+        :param obj_pose_list:
+        :param depart_direction_list: the last element will be ignored
+        :param depart_distance_list: the last element will be ignored
+        :param approach_direction_list: the first element will be ignored
+        :param approach_distance_list: the first element will be ignored
+        :param ad_linear_granularity:
+        :param obstacle_list:
+        :param seed_jnt_values:
+        :return:
+        """
+        jnt_values_bk = self.robot_s.get_jnt_values(hand_name)
+        jaw_width_bk = self.robot_s.get_jaw_width(hand_name)
+        # final
+        conf_list = []
+        jaw_width_list = []
+        objpose_list = []
+        # hold object
+        jaw_width, jaw_center_pos, jaw_center_rotmat, hnd_pos, hnd_rotmat = grasp_info
+        first_obj_pos = obj_pose_list[0][:3, 3]
+        first_obj_rotmat = obj_pose_list[0][:3, :3]
+        first_jaw_center_pos = first_obj_rotmat.dot(jaw_center_pos) + first_obj_pos
+        first_jaw_center_rotmat = first_obj_rotmat.dot(jaw_center_rotmat)
+        first_conf = self.robot_s.ik(hand_name,
+                                     first_jaw_center_pos,
+                                     first_jaw_center_rotmat,
+                                     seed_jnt_values=seed_jnt_values)
+        if first_conf is None:
+            print("Cannot solve the ik at the first grasping pose!")
+            return None, None, None
+        self.robot_s.fk(component_name=hand_name, jnt_values=first_conf)
+        # set a copy of the object to the start pose, hold the object, and move it to goal object pose
+        objcm_copy = objcm.copy()
+        objcm_copy.set_pos(first_obj_pos)
+        objcm_copy.set_rotmat(first_obj_rotmat)
+        rel_obj_pos, rel_obj_rotmat = self.robot_s.hold(hand_name, objcm_copy, jaw_width)
+        seed_conf = first_conf
+        for i in range(len(obj_pose_list) - 1):
+            # get start and goal object poses
+            start_obj_pos = obj_pose_list[i][:3, 3]
+            start_obj_rotmat = obj_pose_list[i][:3, :3]
+            goal_obj_pos = obj_pose_list[i + 1][:3, 3]
+            goal_obj_rotmat = obj_pose_list[i + 1][:3, :3]
+            # transform grasps
+            start_jaw_center_pos = start_obj_rotmat.dot(jaw_center_pos) + start_obj_pos
+            start_jaw_center_rotmat = start_obj_rotmat.dot(jaw_center_rotmat)
+            goal_jaw_center_pos = goal_obj_rotmat.dot(jaw_center_pos) + goal_obj_pos
+            goal_jaw_center_rotmat = goal_obj_rotmat.dot(jaw_center_rotmat)
+            depart_direction = depart_direction_list[i]
+            if depart_direction is None:
+                depart_direction = -start_jaw_center_rotmat[:, 2]
+            depart_distance = depart_distance_list[i]
+            if depart_distance is None:
+                depart_distance = 0
+            approach_direction = approach_direction_list[i+1]
+            if approach_direction is None:
+                approach_direction = goal_jaw_center_rotmat[:, 2]
+            approach_distance = approach_distance_list[i+1]
+            if approach_distance is None:
+                approach_distance = 0
+            # depart linear
+            conf_list_depart_linear = self.inik_slvr.gen_rel_linear_motion(component_name=hand_name,
+                                                                           goal_tcp_pos=start_jaw_center_pos,
+                                                                           goal_tcp_rotmat=start_jaw_center_rotmat,
+                                                                           direction=depart_direction,
+                                                                           distance=depart_distance,
+                                                                           obstacle_list=obstacle_list,
+                                                                           granularity=ad_linear_granularity,
+                                                                           seed_jnt_values=seed_conf,
+                                                                           type='source')
+            if conf_list_depart_linear is None:
+                print(f"Cannot generate the linear part of the {i}th holding depart motion!")
+                self.robot_s.release(hand_name, objcm_copy, jaw_width_bk)
+                self.robot_s.fk(component_name=hand_name, jnt_values=jnt_values_bk)
+                return None, None, None
+            jaw_width_list_depart_linear = self.gen_jawwidth_motion(conf_list_depart_linear, jaw_width)
+            objpose_list_depart_linear = self.gen_object_motion(component_name=hand_name,
+                                                                conf_list=conf_list_depart_linear,
+                                                                obj_pos=rel_obj_pos,
+                                                                obj_rotmat=rel_obj_rotmat,
+                                                                type='relative')
+            # approach linear
+            seed_conf = conf_list_depart_linear[-1]
+            conf_list_approach_linear = self.inik_slvr.gen_rel_linear_motion(component_name=hand_name,
+                                                                             goal_tcp_pos=goal_jaw_center_pos,
+                                                                             goal_tcp_rotmat=goal_jaw_center_rotmat,
+                                                                             direction=approach_direction,
+                                                                             distance=approach_distance,
+                                                                             obstacle_list=obstacle_list,
+                                                                             granularity=ad_linear_granularity,
+                                                                             seed_jnt_values=seed_conf,
+                                                                             type='sink')
+            if conf_list_approach_linear is None:
+                print(f"Cannot generate the linear part of the {i}th holding approach motion!")
+                self.robot_s.release(hand_name, objcm_copy, jaw_width_bk)
+                self.robot_s.fk(component_name=hand_name, jnt_values=jnt_values_bk)
+                return None, None, None
+            jaw_width_list_approach_linear = self.gen_jawwidth_motion(conf_list_approach_linear, jaw_width)
+            objpose_list_approach_linear = self.gen_object_motion(component_name=hand_name,
+                                                                  conf_list=conf_list_approach_linear,
+                                                                  obj_pos=rel_obj_pos,
+                                                                  obj_rotmat=rel_obj_rotmat,
+                                                                  type='relative')
+            conf_list_rrtc = self.rrtc_planner.plan(component_name=hand_name,
+                                                    start_conf=conf_list_depart_linear[-1],
+                                                    goal_conf=conf_list_approach_linear[0],
+                                                    obstacle_list=obstacle_list,
+                                                    otherrobot_list=[],
+                                                    ext_dist=.03,
+                                                    max_iter=300)
+            if conf_list_rrtc is None:
+                print(f"Cannot generate the rrtc part of the {i}th holding approach motion!")
+                self.robot_s.release(hand_name, objcm_copy, jaw_width_bk)
+                self.robot_s.fk(component_name=hand_name, jnt_values=jnt_values_bk)
+                return None, None, None
+            jaw_width_list_rrtc = self.gen_jawwidth_motion(conf_list_rrtc, jaw_width)
+            objpose_list_rrtc = self.gen_object_motion(component_name=hand_name,
+                                                       conf_list=conf_list_rrtc,
+                                                       obj_pos=rel_obj_pos,
+                                                       obj_rotmat=rel_obj_rotmat,
+                                                       type='relative')
+            conf_list = conf_list + conf_list_depart_linear + conf_list_rrtc + conf_list_approach_linear
+            jaw_width_list = jaw_width_list + jaw_width_list_depart_linear + jaw_width_list_rrtc + jaw_width_list_approach_linear
+            objpose_list = objpose_list + objpose_list_depart_linear + objpose_list_rrtc + objpose_list_approach_linear
+            seed_conf = conf_list[-1]
+        self.robot_s.release(hand_name, objcm_copy, jaw_width_bk)
+        self.robot_s.fk(component_name=hand_name, jnt_values=jnt_values_bk)
+        return conf_list, jaw_width_list, objpose_list
+
     def gen_approach_linear_with_object(self,
-                                        component_name,
-                                        objcm,
+                                        hand_name,
                                         grasp_info,
                                         goal_obj_pos,
                                         goal_obj_rotmat,
@@ -135,9 +284,8 @@ class PickPlacePlanner(adp.ADPlanner):
                                         toggle_end_grasp='False',
                                         end_jawwidth=.0):
         """
-        wraps the
-        :param component_name:
-        :param hnd_name:
+        wraps the adp gen approach linear function with objects returned together
+        :param hand_name:
         :param objcm:
         :param grasp_info:
         :param goal_obj_pos:
@@ -154,7 +302,11 @@ class PickPlacePlanner(adp.ADPlanner):
         jaw_width, jaw_center_pos, jaw_center_rotmat, hnd_pos, hnd_rotmat = grasp_info
         goal_jaw_center_pos = goal_obj_rotmat.dot(jaw_center_pos) + goal_obj_pos
         goal_jaw_center_rotmat = goal_obj_rotmat.dot(jaw_center_rotmat)
-        conf_list, jawwidth_list = self.gen_approach_linear(component_name,
+        if approach_direction is None:
+            approach_direction = jaw_center_rotmat[:, 2]
+        if approach_jawwidth is None:
+            approach_jawwidth = self.robot_s.hnd_dict[hand_name].jaw_width_rng[1]
+        conf_list, jawwidth_list = self.gen_approach_linear(hand_name,
                                                             goal_jaw_center_pos,
                                                             goal_jaw_center_rotmat,
                                                             approach_direction=approach_direction,
@@ -168,12 +320,11 @@ class PickPlacePlanner(adp.ADPlanner):
         if conf_list is None:
             print("Cannot generate linear for approach with object!")
             return None, None, None
-        objpose_list = self.gen_object_motion(component_name, conf_list, goal_obj_pos, goal_obj_rotmat, type='absolute')
+        objpose_list = self.gen_object_motion(hand_name, conf_list, goal_obj_pos, goal_obj_rotmat, type='absolute')
         return conf_list, jawwidth_list, objpose_list
 
     def gen_approach_motion_with_object(self,
-                                        component_name,
-                                        objcm,
+                                        hand_name,
                                         grasp_info,
                                         goal_obj_pos,
                                         goal_obj_rotmat,
@@ -188,8 +339,7 @@ class PickPlacePlanner(adp.ADPlanner):
                                         end_jawwidth=.0):
         """
         wraps the
-        :param component_name:
-        :param hnd_name:
+        :param hand_name:
         :param objcm:
         :param grasp_info:
         :param goal_obj_pos:
@@ -206,7 +356,11 @@ class PickPlacePlanner(adp.ADPlanner):
         jaw_width, jaw_center_pos, jaw_center_rotmat, hnd_pos, hnd_rotmat = grasp_info
         goal_jaw_center_pos = goal_obj_rotmat.dot(jaw_center_pos) + goal_obj_pos
         goal_jaw_center_rotmat = goal_obj_rotmat.dot(jaw_center_rotmat)
-        conf_list, jawwidth_list = self.gen_approach_motion(component_name,
+        if approach_direction is None:
+            approach_direction = jaw_center_rotmat[:, 2]
+        if approach_jawwidth is None:
+            approach_jawwidth = self.robot_s.hnd_dict[hand_name].jaw_width_rng[1]
+        conf_list, jawwidth_list = self.gen_approach_motion(hand_name,
                                                             goal_jaw_center_pos,
                                                             goal_jaw_center_rotmat,
                                                             start_conf=start_conf,
@@ -222,13 +376,11 @@ class PickPlacePlanner(adp.ADPlanner):
         if conf_list is None:
             print("Cannot generate motion for approach with object!")
             return None, None, None
-        objpose_list = self.gen_object_motion(component_name, conf_list, goal_obj_pos, goal_obj_rotmat, type='absolute')
+        objpose_list = self.gen_object_motion(hand_name, conf_list, goal_obj_pos, goal_obj_rotmat, type='absolute')
         return conf_list, jawwidth_list, objpose_list
 
-
     def gen_holding_approach_linear(self,
-                                    component_name,
-                                    hnd_name,  # TODO hnd is on  a manipulator
+                                    hnd_name,
                                     objcm,
                                     grasp_info,
                                     goal_obj_pos,
@@ -239,7 +391,6 @@ class PickPlacePlanner(adp.ADPlanner):
                                     obstacle_list=[],
                                     seed_jnt_values=None):
         """
-        :param component_name:
         :param hnd_name:
         :param objcm:
         :param grasp_info:
@@ -266,9 +417,9 @@ class PickPlacePlanner(adp.ADPlanner):
         goal_jaw_center_pos = goal_obj_rotmat.dot(jaw_center_pos) + goal_obj_pos
         goal_jaw_center_rotmat = goal_obj_rotmat.dot(jaw_center_rotmat)
         # save current robot jnt values
-        jnt_values_bk = self.robot_s.get_jnt_values(component_name)
+        jnt_values_bk = self.robot_s.get_jnt_values(hnd_name)
         # find a robot conf that reaches to the start jaw pose, and move the robot there
-        start_conf = self.robot_s.ik(component_name,
+        start_conf = self.robot_s.ik(hnd_name,
                                      start_jaw_center_pos,
                                      start_jaw_center_rotmat,
                                      seed_jnt_values=seed_jnt_values)
@@ -278,7 +429,7 @@ class PickPlacePlanner(adp.ADPlanner):
         objcm_copy.set_pos(start_obj_pos)
         objcm_copy.set_rotmat(start_obj_rotmat)
         rel_obj_pos, rel_obj_rotmat = self.robot_s.hold(hnd_name, objcm_copy, jaw_width)
-        conf_list = self.inik_slvr.gen_linear_motion(component_name,
+        conf_list = self.inik_slvr.gen_linear_motion(hnd_name,
                                                      start_jaw_center_pos,
                                                      start_jaw_center_rotmat,
                                                      goal_jaw_center_pos,
@@ -287,7 +438,7 @@ class PickPlacePlanner(adp.ADPlanner):
                                                      granularity=granularity,
                                                      seed_jnt_values=start_conf)
         jawwidth_list = self.gen_jawwidth_motion(conf_list, jaw_width)
-        objpose_list = self.gen_object_motion(component_name, conf_list, rel_obj_pos, rel_obj_rotmat, type='relative')
+        objpose_list = self.gen_object_motion(hnd_name, conf_list, rel_obj_pos, rel_obj_rotmat, type='relative')
         # release the object and restore robot configuration
         self.robot_s.release(hnd_name, objcm_copy, jaw_width)
         self.robot_s.fk(jnt_values_bk)
@@ -302,7 +453,7 @@ class PickPlacePlanner(adp.ADPlanner):
                                     start_obj_rotmat,
                                     goal_obj_pos,
                                     goal_obj_rotmat,
-                                    approach_direction=None, # use np.array([0,0,0]) if do not need linear
+                                    approach_direction=None,  # use np.array([0,0,0]) if do not need linear
                                     approach_distance=.1,
                                     obstacle_list=[],
                                     seed_jnt_values=None,
@@ -1011,10 +1162,10 @@ if __name__ == '__main__':
     base = wd.World(cam_pos=[2, 0, 1.5], lookat_pos=[0, 0, .2])
     gm.gen_frame().attach_to(base)
     objcm = cm.CollisionModel('tubebig.stl')
-    yumi_s = ym.Yumi(enable_cc=True)
+    robot_s = ym.Yumi(enable_cc=True)
     manipulator_name = 'rgt_arm'
     hand_name = 'rgt_hnd'
-    start_conf = yumi_s.get_jnt_values(manipulator_name)
+    start_conf = robot_s.get_jnt_values(manipulator_name)
     goal_homomat_list = []
     for i in range(6):
         goal_pos = np.array([.55, -.1, .3]) - np.array([i * .1, i * .1, 0])
@@ -1022,28 +1173,97 @@ if __name__ == '__main__':
         goal_rotmat = np.eye(3)
         goal_homomat_list.append(rm.homomat_from_posrot(goal_pos, goal_rotmat))
         tmp_objcm = objcm.copy()
+        tmp_objcm.set_rgba([1,0,0,.3])
         tmp_objcm.set_homomat(rm.homomat_from_posrot(goal_pos, goal_rotmat))
         tmp_objcm.attach_to(base)
     grasp_info_list = gutil.load_pickle_file(objcm_name='tubebig', file_name='yumi_tube_big.pickle')
     grasp_info = grasp_info_list[0]
-    pp_planner = PickPlacePlanner(robot_s=yumi_s)
-    conf_list, jawwidth_list, objpose_list = \
-        pp_planner.gen_approach_motion_with_object(manipulator_name,
-                                                   objcm,
-                                                   grasp_info,
-                                                   goal_obj_pos=goal_homomat_list[0][:3,3],
-                                                   goal_obj_rotmat=goal_homomat_list[0][:3,:3],
-                                                   start_conf=start_conf)
+    pp_planner = PickPlacePlanner(robot_s=robot_s)
+    # conf_list, jawwidth_list, objpose_list = \
+    #     pp_planner.gen_approach_motion_with_object(hand_name,
+    #                                                objcm,
+    #                                                grasp_info,
+    #                                                goal_obj_pos=goal_homomat_list[0][:3, 3],
+    #                                                goal_obj_rotmat=goal_homomat_list[0][:3, :3],
+    #                                                start_conf=start_conf)
+    for grasp_info in grasp_info_list:
+        conf_list, jaw_width_list, objpose_list = \
+            pp_planner.gen_holding_moveto(hand_name=hand_name,
+                                          objcm=objcm,
+                                          grasp_info=grasp_info,
+                                          obj_pose_list=goal_homomat_list,
+                                          depart_direction_list=[np.array([0,0,1])] * len(goal_homomat_list),
+                                          depart_distance_list=[.2] * len(goal_homomat_list),
+                                          approach_direction_list=[np.array([0,0,-1])] * len(goal_homomat_list),
+                                          approach_distance_list=[.2] * len(goal_homomat_list),
+                                          ad_linear_granularity=.003,
+                                          obstacle_list=[],
+                                          seed_jnt_values=start_conf)
+        print(robot_s.rgt_oih_infos, robot_s.lft_oih_infos)
+        if conf_list is not None:
+            break
+        # pp_planner.gen_approach_motion_with_object(hand_name,
+        #                                            objcm,
+        #                                            grasp_info,
+        #                                            goal_obj_pos=goal_homomat_list[0][:3, 3],
+        #                                            goal_obj_rotmat=goal_homomat_list[0][:3, :3],
+        #                                            start_conf=start_conf)
+
+    # animation
+    robot_attached_list = []
+    object_attached_list = []
+    counter = [0]
+    def update(robot_s,
+               hand_name,
+               objcm,
+               robot_path,
+               jaw_width_path,
+               obj_path,
+               robot_attached_list,
+               object_attached_list,
+               counter,
+               task):
+        if counter[0] >= len(robot_path):
+            counter[0] = 0
+        if len(robot_attached_list) != 0:
+            for robot_attached in robot_attached_list:
+                robot_attached.detach()
+            for object_attached in object_attached_list:
+                object_attached.detach()
+        pose = robot_path[counter[0]]
+        robot_s.fk(hand_name, pose)
+        robot_s.jaw_to(hand_name, jaw_width_path[counter[0]])
+        robot_meshmodel = robot_s.gen_meshmodel()
+        robot_meshmodel.attach_to(base)
+        robot_attached_list.append(robot_meshmodel)
+        obj_pose = obj_path[counter[0]]
+        objb_copy = objcm.copy()
+        objb_copy.set_homomat(obj_pose)
+        objb_copy.attach_to(base)
+        object_attached_list.append(objb_copy)
+        counter[0] += 1
+        return task.again
+    taskMgr.doMethodLater(0.01, update, "update",
+                          extraArgs=[robot_s,
+                                     hand_name,
+                                     objcm,
+                                     conf_list,
+                                     jaw_width_list,
+                                     objpose_list,
+                                     robot_attached_list,
+                                     object_attached_list,
+                                     counter],
+                          appendTask=True)
+    base.run()
+
     for i, conf in enumerate(conf_list):
-        yumi_s.fk(manipulator_name, conf)
-        yumi_s.jaw_to(hand_name, jawwidth_list[i])
-        yumi_s.gen_meshmodel().attach_to(base)
+        robot_s.fk(manipulator_name, conf)
+        robot_s.jaw_to(hand_name, jaw_width_list[i])
+        robot_s.gen_meshmodel().attach_to(base)
         tmp_objcm = objcm.copy()
         tmp_objcm.set_homomat(objpose_list[i])
         tmp_objcm.attach_to(base)
     base.run()
-
-
 
     conf_list, jawwidth_list, objpose_list = pp_planner.gen_pick_and_place_motion(manipulator_name,
                                                                                   hand_name,
@@ -1052,13 +1272,13 @@ if __name__ == '__main__':
                                                                                   start_conf,
                                                                                   goal_homomat_list)
     for i, conf in enumerate(conf_list):
-        yumi_s.fk(manipulator_name, conf)
-        yumi_s.jaw_to(hand_name, jawwidth_list[i])
-        yumi_s.gen_meshmodel().attach_to(base)
+        robot_s.fk(manipulator_name, conf)
+        robot_s.jaw_to(hand_name, jawwidth_list[i])
+        robot_s.gen_meshmodel().attach_to(base)
         tmp_objcm = objcm.copy()
         tmp_objcm.set_homomat(objpose_list[i])
         tmp_objcm.attach_to(base)
-    # hnd_instance = yumi_s.hnd_dict[hand_name].copy()
+    # hnd_instance = robot_s.hnd_dict[hand_name].copy()
     # for goal_homomat in goal_homomat_list:
     #     obj_pos = goal_homomat[:3, 3]
     #     obj_rotmat = goal_homomat[:3, :3]
@@ -1071,12 +1291,12 @@ if __name__ == '__main__':
     #         tmp_hnd.fix_to(new_hnd_pos, new_hnd_rotmat)
     #         tmp_hnd.jaw_to(jaw_width)
     #         tmp_hnd.gen_meshmodel().attach_to(base)
-    #         jnt_values = yumi_s.ik(component_name,
+    #         jnt_values = robot_s.ik(hand_name,
     #                                       new_tcp_pos,
     #                                       new_hnd_rotmat)
     #         try:
-    #             yumi_s.fk(component_name, jnt_values)
-    #             yumi_s.gen_meshmodel().attach_to(base)
+    #             robot_s.fk(hand_name, jnt_values)
+    #             robot_s.gen_meshmodel().attach_to(base)
     #         except:
     #             continue
     # goal_pos = np.array([.55, -.1, .3])

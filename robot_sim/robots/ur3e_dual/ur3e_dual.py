@@ -147,7 +147,7 @@ class UR3EDual(ri.RobotInterface):
     def fk(self, component_name, jnt_values):
         """
         :param jnt_values: 1x6 or 1x12 nparray
-        :component_name 'lft_arm', 'rgt_arm', 'both_arm'
+        :hand_name 'lft_arm', 'rgt_arm', 'both_arm'
         :param component_name:
         :return:
         author: weiwei

@@ -275,6 +275,8 @@ def interplate_pos_rotmat(start_pos,
     """
     len, vec = unit_vector(start_pos - goal_pos, toggle_length=True)
     nval = math.ceil(len / granularity)
+    if nval == 0:
+        nval = 1
     pos_list = np.linspace(start_pos, goal_pos, nval)
     rotmat_list = rotmat_slerp(start_rotmat, goal_rotmat, nval)
     return pos_list, rotmat_list
@@ -2397,3 +2399,11 @@ def _unit_vector(data, axis=None, out=None):
     data /= length
     if out is None:
         return data
+
+if __name__ == '__main__':
+    start_pos = np.array([1,0,0])
+    start_rotmat = np.eye(3)
+    goal_pos = np.array([2,0,0])
+    goal_rotmat = np.eye(3)
+    pos_list, rotmat_list = interplate_pos_rotmat(start_pos,start_rotmat, goal_pos,goal_rotmat, granularity=3)
+    print(pos_list, rotmat_list)

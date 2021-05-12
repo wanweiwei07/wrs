@@ -23,11 +23,11 @@ class RobotInterface(object):
     def get_hnd_on_manipulator(self, manipulator_name):
         raise NotImplementedError
 
-    def get_jnt_ranges(self, manipulator_name):
-        return self.manipulator_dict[manipulator_name].get_jnt_ranges()
+    def get_jnt_ranges(self, component_name):
+        return self.manipulator_dict[component_name].get_jnt_ranges()
 
-    def get_jnt_values(self, manipulator_name):
-        return self.manipulator_dict[manipulator_name].get_jnt_values()
+    def get_jnt_values(self, component_name):
+        return self.manipulator_dict[component_name].get_jnt_values()
 
     def get_gl_tcp(self, manipulator_name):
         return self.manipulator_dict[manipulator_name].get_gl_tcp()
@@ -35,7 +35,7 @@ class RobotInterface(object):
     def fix_to(self, pos, rotmat):
         return NotImplementedError
 
-    def fk(self, manipulator_name, jnt_values):
+    def fk(self, component_name, jnt_values):
         return NotImplementedError
 
     def jaw_to(self, hnd_name, jaw_width):

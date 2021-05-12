@@ -159,7 +159,7 @@ class XArmGripper(gi.GripperInterface):
         angle = .85 - math.asin(jaw_width/2.0/0.055)
         self.fk(angle)
 
-    def get_jawwidth(self):
+    def get_jaw_width(self):
         angle = self.lft_outer.jnts[1]['motion_val']
         return math.sin(.85-angle)*0.055*2.0
 
@@ -225,7 +225,7 @@ if __name__ == '__main__':
     #     xag.gen_meshmodel().attach_to(base)
     xag = XArmGripper(enable_cc=True)
     xag.jaw_to(0.05)
-    print(xag.get_jawwidth())
+    print(xag.get_jaw_width())
     model = xag.gen_meshmodel(rgba=[.5,0,0,.3])
     model.attach_to(base)
     xag.show_cdprimit()

@@ -137,11 +137,11 @@ class SDA5F(ri.RobotInterface):
         rgt_hnd_pos, rgt_hnd_rotmat = self.rgt_arm.get_worldpose(relpos=self.rgt_hnd_offset)
         self.rgt_hnd.fix_to(pos=rgt_hnd_pos, rotmat=rgt_hnd_rotmat)
 
-    def fk(self, manipulator_name, jnt_values):
+    def fk(self, component_name, jnt_values):
         """
         :param jnt_values: 1x7 or 1x14 nparray
-        :component_name 'lft_arm', 'rgt_arm', 'both_arm'
-        :param manipulator_name:
+        :hand_name 'lft_arm', 'rgt_arm', 'both_arm'
+        :param component_name:
         :return:
         author: weiwei
         date: 20201208toyonaka
@@ -165,18 +165,18 @@ class SDA5F(ri.RobotInterface):
                 rotmat=self.manipulator_dict[component_name].jnts[-1]['gl_rotmatq'])
             update_oih(component_name=component_name)
 
-        super().fk(manipulator_name, jnt_values)
+        super().fk(component_name, jnt_values)
         # examine length
-        if manipulator_name == 'lft_arm' or manipulator_name == 'rgt_arm':
+        if component_name == 'lft_arm' or component_name == 'rgt_arm':
             if not isinstance(jnt_values, np.ndarray) or jnt_values.size != 6:
                 raise ValueError("An 1x6 npdarray must be specified to move a single arm!")
-            update_component(manipulator_name, jnt_values)
-        elif manipulator_name == 'both_arm':
+            update_component(component_name, jnt_values)
+        elif component_name == 'both_arm':
             if (jnt_values.size != 12):
                 raise ValueError("A 1x12 npdarrays must be specified to move both arm!")
             update_component('lft_arm', jnt_values[0:6])
             update_component('rgt_arm', jnt_values[6:12])
-        elif manipulator_name == 'all':
+        elif component_name == 'all':
             raise NotImplementedError
         else:
             raise ValueError("The given component name is not available!")

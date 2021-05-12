@@ -188,7 +188,7 @@ class XArm7YunjiMobile(ri.RobotInterface):
             return_val[:2] = self.pos[:2]
             return_val[2] = np.linalg.norm(rm.deltaw_between_rotmat(np.eye(3), self.rotmat))
             return_val[3:10] = self.arm.get_jnt_values()[:]
-            return_val[10] = self.hnd.get_jawwidth()
+            return_val[10] = self.hnd.get_jaw_width()
             return return_val
 
     def rand_conf(self, component_name):
@@ -203,7 +203,7 @@ class XArm7YunjiMobile(ri.RobotInterface):
         self.hnd.jaw_to(jawwidth)
 
     def get_jawwidth(self):
-        return self.hnd.get_jawwidth()
+        return self.hnd.get_jaw_width()
 
     def hold(self, hnd_name, objcm, jawwidth=None):
         """

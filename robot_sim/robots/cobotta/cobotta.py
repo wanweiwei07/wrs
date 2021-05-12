@@ -140,7 +140,7 @@ class Cobotta(ri.RobotInterface):
         self.hnd.jaw_to(jawwidth)
 
     def get_jawwidth(self):
-        return self.hnd.get_jawwidth()
+        return self.hnd.get_jaw_width()
 
     def hold(self, objcm, jawwidth=None):
         """

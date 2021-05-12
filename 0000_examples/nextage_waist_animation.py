@@ -43,7 +43,7 @@ for pose in path[1:-2]:
     robot_s.gen_stickmodel().attach_to(base)
 # for pose in [path[0], path[-1]]:
 #     print(pose)
-#     robot_s.fk(component_name, pose)
+#     robot_s.fk(hand_name, pose)
 #     robot_meshmodel = robot_s.gen_meshmodel(rgba=[.35,.35,.35,.13])
 #     robot_meshmodel.attach_to(base)
     # robot_s.gen_stickmodel().attach_to(base)

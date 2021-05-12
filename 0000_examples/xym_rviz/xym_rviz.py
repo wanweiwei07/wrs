@@ -65,7 +65,7 @@ if __name__ == '__main__':
     # rmt_robot_s2 = rvc.copy_to_remote(robot_s)
     # while True:
     #     for pose in newpath:
-    #         robot_s.fk(component_name='arm', jnt_values=pose)
+    #         robot_s.fk(hand_name='arm', jnt_values=pose)
     #         # rmt_robot_mesh_list.append(rvc.showmodel_to_remote(robot_s.gen_meshmodel()))
     #         rmt_robot_mesh_list.append(rvc.add_stationary_robot(rmt_robot_s2, robot_s))
     #         time.sleep(.1)
@@ -75,7 +75,7 @@ if __name__ == '__main__':
     #     time.sleep(.1)
     # rvc.delete_anime_robot(rmt_anime_robotinfo)
     # rvc.delete_stationary_robot(rmt_robot_meshmodel)
-    # robot_s.fk(path[-1], component_name=robot_component_name)
+    # robot_s.fk(path[-1], hand_name=robot_component_name)
     # rmt_robot_meshmodel = rvc.add_stationary_robot(rmt_robot_s='robot_s', loc_robot_s=robot_s)
     # obj.set_pos(obj.get_pos()+np.array([0,.1,0]))
     # obj.set_rgba([1,0,0,1])

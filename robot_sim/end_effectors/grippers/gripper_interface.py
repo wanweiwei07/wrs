@@ -73,7 +73,7 @@ class GripperInterface(object):
     def jaw_to(self, jaw_width):
         raise NotImplementedError
 
-    def get_jawwidth(self):
+    def get_jaw_width(self):
         raise NotImplementedError
 
     def grip_at_with_jczy(self, gl_jaw_center_pos, gl_jaw_center_z, gl_jaw_center_y, jaw_width):

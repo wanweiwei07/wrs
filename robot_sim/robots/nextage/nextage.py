@@ -253,9 +253,9 @@ class Nextage(ri.RobotInterface):
 
     def get_hnd_on_manipulator(self, manipulator_name):
         pass
-        # if component_name == 'rgt_arm':
+        # if hand_name == 'rgt_arm':
         #     return self.rgt_hnd
-        # elif component_name == 'lft_arm':
+        # elif hand_name == 'lft_arm':
         #     return self.lft_hnd
         # else:
         #     raise ValueError("The given jlc does not have a hand!")
@@ -276,7 +276,7 @@ class Nextage(ri.RobotInterface):
         """
         waist angle is transmitted to arms
         :param jnt_values: nparray 1x6 or 1x14 depending on component_names
-        :component_name 'lft_arm', 'rgt_arm', 'lft_arm_waist', 'rgt_arm_wasit', 'both_arm'
+        :hand_name 'lft_arm', 'rgt_arm', 'lft_arm_waist', 'rgt_arm_wasit', 'both_arm'
         :param component_name:
         :return:
         author: weiwei
@@ -387,7 +387,7 @@ class Nextage(ri.RobotInterface):
         :param objcm:
         :return:
         """
-        # if hnd_name == 'lft_hnd':
+        # if hand_name == 'lft_hnd':
         #     rel_pos, rel_rotmat = self.lft_arm.cvt_gl_to_loc_tcp(objcm.get_pos(), objcm.get_rotmat())
         #     intolist = [self.lft_body.lnks[0],
         #                 self.lft_body.lnks[1],
@@ -405,7 +405,7 @@ class Nextage(ri.RobotInterface):
         #                 self.rgt_hnd.lft.lnks[1],
         #                 self.rgt_hnd.rgt.lnks[1]]
         #     self.lft_oih_infos.append(self.cc.add_cdobj(objcm, rel_pos, rel_rotmat, intolist))
-        # elif hnd_name == 'rgt_hnd':
+        # elif hand_name == 'rgt_hnd':
         #     rel_pos, rel_rotmat = self.rgt_arm.cvt_gl_to_loc_tcp(objcm.get_pos(), objcm.get_rotmat())
         #     intolist = [self.lft_body.lnks[0],
         #                 self.lft_body.lnks[1],
@@ -426,7 +426,7 @@ class Nextage(ri.RobotInterface):
         # else:
         #     raise ValueError("hand_name must be lft_hnd or rgt_hnd!")
         # if jaw_width is not None:
-        #     self.jaw_to(hnd_name, jaw_width)
+        #     self.jaw_to(hand_name, jaw_width)
         # return rel_pos, rel_rotmat
 
     def get_loc_pose_from_hio(self, hio_pos, hio_rotmat, component_name='lft_arm'):

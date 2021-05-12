@@ -108,8 +108,12 @@ class Yumi(ri.RobotInterface):
         # component map
         self.manipulator_dict['rgt_arm'] = self.rgt_arm
         self.manipulator_dict['lft_arm'] = self.lft_arm
+        self.manipulator_dict['rgt_hnd'] = self.rgt_arm
+        self.manipulator_dict['lft_hnd'] = self.lft_arm
         self.hnd_dict['rgt_hnd'] = self.rgt_hnd
         self.hnd_dict['lft_hnd'] = self.lft_hnd
+        self.hnd_dict['rgt_arm'] = self.rgt_hnd
+        self.hnd_dict['lft_arm'] = self.lft_hnd
 
     @staticmethod
     def _base_combined_cdnp(name, radius):
@@ -225,7 +229,7 @@ class Yumi(ri.RobotInterface):
     def fk(self, component_name, jnt_values):
         """
         :param jnt_values: nparray 1x6 or 1x14 depending on component_names
-        :component_name 'lft_arm', 'rgt_arm', 'both_arm'
+        :hand_name 'lft_arm', 'rgt_arm', 'both_arm'
         :param component_name:
         :return:
         author: weiwei
@@ -234,9 +238,9 @@ class Yumi(ri.RobotInterface):
 
         def update_oih(component_name='rgt_arm'):
             # inline function for update objects in hand
-            if component_name == 'rgt_arm':
+            if component_name in ['rgt_arm', 'rgt_hnd']:
                 oih_info_list = self.rgt_oih_infos
-            elif component_name == 'lft_arm':
+            elif component_name ['lft_arm', 'lft_hnd']:
                 oih_info_list = self.lft_oih_infos
             for obj_info in oih_info_list:
                 gl_pos, gl_rotmat = self.cvt_loc_tcp_to_gl(component_name, obj_info['rel_pos'], obj_info['rel_rotmat'])
@@ -245,14 +249,14 @@ class Yumi(ri.RobotInterface):
 
         def update_component(component_name, jnt_values):
             self.manipulator_dict[component_name].fk(jnt_values=jnt_values)
-            self.get_hnd_on_manipulator(component_name).fix_to(
+            self.hnd_dict[component_name].fix_to(
                 pos=self.manipulator_dict[component_name].jnts[-1]['gl_posq'],
                 rotmat=self.manipulator_dict[component_name].jnts[-1]['gl_rotmatq'])
             update_oih(component_name=component_name)
 
         super().fk(component_name, jnt_values)
         # examine length
-        if component_name == 'lft_arm' or component_name == 'rgt_arm':
+        if component_name in self.manipulator_dict:
             if not isinstance(jnt_values, np.ndarray) or jnt_values.size != 7:
                 raise ValueError("An 1x7 npdarray must be specified to move a single arm!")
             update_component(component_name, jnt_values)
@@ -266,6 +270,20 @@ class Yumi(ri.RobotInterface):
         else:
             raise ValueError("The given component name is not available!")
 
+    def get_jnt_values(self, component_name):
+        if component_name in self.manipulator_dict:
+            return self.manipulator_dict[component_name].get_jnt_values()
+        elif component_name == 'both_arm':
+            return_val = np.zeros(14)
+            return_val[:7] = self.manipulator_dict['lft_arm'].get_jnt_values()
+            return_val[7:] = self.manipulator_dict['rgt_arm'].get_jnt_values()
+            return return_val
+        else:
+            raise ValueError("The given component name is not available!")
+
+    def get_jaw_width(self, hand_name):
+        return self.hnd_dict[hand_name].get_jaw_width()
+
     def rand_conf(self, component_name):
         """
         override robot_interface.rand_conf
@@ -274,7 +292,7 @@ class Yumi(ri.RobotInterface):
         author: weiwei
         date: 20210406
         """
-        if component_name == 'lft_arm' or component_name == 'rgt_arm':
+        if component_name in self.manipulator_dict:
             return super().rand_conf(component_name)
         elif component_name == 'both_arm':
             return np.hstack((super().rand_conf('lft_arm'), super().rand_conf('rgt_arm')))

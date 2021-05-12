@@ -260,7 +260,7 @@ def decidestartpose(armname, ropelinesorted, predefined_grasps, fromjnt, startpo
                                tgt_rot=eerot_initial,
                                seed_jnt_values=fromjnt)
             if start is not None:
-                original_jnt_values = robot_s.get_jnt_values(manipulator_name=armname)
+                original_jnt_values = robot_s.get_jnt_values(component_name=armname)
                 robot_s.fk(component_name=armname, jnt_values=start)
                 objrelmat = robot_s.cvt_gl_to_loc_tcp(armname, objpos_initial, objrot_initial)
                 ## 衝突検出
@@ -305,7 +305,7 @@ def decidegoalpose_onepoint(arm_name,
         # robot_s.gen_meshmodel().attach_to(base)
         # base.run()
         if goal is not None:
-            original_jnt_values = robot_s.get_jnt_values(manipulator_name=arm_name)
+            original_jnt_values = robot_s.get_jnt_values(component_name=arm_name)
             robot_s.fk(component_name=arm_name, jnt_values=goal)
             cd_result = robot_s.is_collided(obscmlist)
             if not cd_result:
@@ -513,7 +513,7 @@ def decidegoalpose(arm_name,
                               tgt_rot=eerot_final,
                               seed_jnt_values=fromjnt)
             if goal is not None:
-                original_jnt_values = robot_s.get_jnt_values(manipulator_name=arm_name)
+                original_jnt_values = robot_s.get_jnt_values(component_name=arm_name)
                 robot_s.fk(component_name=arm_name, jnt_values=goal)
                 cd_result = robot_s.is_collided(obscmlist)
                 if not cd_result:
@@ -1120,10 +1120,10 @@ if __name__ == "__main__":
         np.array([-16.40505261, -52.96523856, 91.11206022, 36.08211617, 132.71248608, 67.39504932]))
     robot_s.fk(component_name=arm_name, jnt_values=rgt_jnt_values)
     robot_s.gen_meshmodel().attach_to(base)
-    # rgt_pos, rgt_rotmat = robot_s.get_gl_tcp(component_name=arm_name)
+    # rgt_pos, rgt_rotmat = robot_s.get_gl_tcp(hand_name=arm_name)
     # ropelinesorted = []
     # dir = rm.unit_vector(ropetoppos - rgt_pos)
-    # path = robot_inik_solver.gen_rel_linear_motion(component_name=arm_name,
+    # path = robot_inik_solver.gen_rel_linear_motion(hand_name=arm_name,
     #                                                goal_tcp_pos=rgt_pos,
     #                                                goal_tcp_rotmat=rgt_rotmat,
     #                                                direction=-dir,
@@ -1133,10 +1133,10 @@ if __name__ == "__main__":
     # #     robot_s.fk(arm_name, conf)
     # #     robot_s.gen_meshmodel().attach_to(base)
     # # base.run()
-    # robot_s.fk(component_name=arm_name, jnt_values=path[-1])
+    # robot_s.fk(hand_name=arm_name, jnt_values=path[-1])
     # # robot_s.gen_meshmodel().attach_to(base)
     # # base.run()
-    # rgt_pos, rgt_rotmat = robot_s.get_gl_tcp(component_name=arm_name)
+    # rgt_pos, rgt_rotmat = robot_s.get_gl_tcp(hand_name=arm_name)
     # counter = 0
     # while True:
     #     rgt_append_pos = rgt_pos + dir * counter * 1e-3

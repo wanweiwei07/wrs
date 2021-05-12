@@ -271,17 +271,17 @@ if __name__ == '__main__':
 
         def fk(self, component_name='all', jnt_values=np.zeros(2)):
             if component_name != 'all':
-                raise ValueError("Only support component_name == 'all'!")
+                raise ValueError("Only support hand_name == 'all'!")
             self.jlc.fk(jnt_values)
 
         def rand_conf(self, component_name='all'):
             if component_name != 'all':
-                raise ValueError("Only support component_name == 'all'!")
+                raise ValueError("Only support hand_name == 'all'!")
             return self.jlc.rand_conf()
 
         def get_jntvalues(self, component_name='all'):
             if component_name != 'all':
-                raise ValueError("Only support component_name == 'all'!")
+                raise ValueError("Only support hand_name == 'all'!")
             return self.jlc.get_jnt_values()
 
         def is_collided(self, obstacle_list=[], otherrobot_list=[]):

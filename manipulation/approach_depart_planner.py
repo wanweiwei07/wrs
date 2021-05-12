@@ -145,7 +145,7 @@ class ADPlanner(object):  # AD = Approach_Depart
         :param component_name:
         :param goal_tcp_pos:
         :param goal_tcp_rotmat:
-        :param component_name:
+        :param hand_name:
         :param approach_direction:
         :param approach_distance:
         :param approach_jawwidth:
@@ -390,7 +390,7 @@ if __name__ == '__main__':
 
     adp = ADPlanner(yumi_instance)
     tic = time.time()
-    # conf_list, jawwidth_list = adp.gen_ad_primitive(component_name,
+    # conf_list, jawwidth_list = adp.gen_ad_primitive(hand_name,
     #                                                 goal_pos,
     #                                                 goal_rotmat,
     #                                                 approach_direction=np.array([0, 0, -1]),
@@ -410,16 +410,16 @@ if __name__ == '__main__':
                                                                   depart_direction=np.array([0, -1, 0]),
                                                                   depart_distance=.0,
                                                                   depart_jawwidth=0)
-    # conf_list, jawwidth_list = adp.gen_approach_motion(component_name,
+    # conf_list, jawwidth_list = adp.gen_approach_motion(hand_name,
     #                                                    goal_pos,
     #                                                    goal_rotmat,
-    #                                                    seed_jnt_values=yumi_s.get_jnt_values(component_name),
+    #                                                    seed_jnt_values=robot_s.get_jnt_values(hand_name),
     #                                                    approach_direction=np.array([0, 0, -1]),
     #                                                    approach_distance=.1)
-    # conf_list, jawwidth_list = adp.gen_depart_motion(component_name,
+    # conf_list, jawwidth_list = adp.gen_depart_motion(hand_name,
     #                                                  goal_pos,
     #                                                  goal_rotmat,
-    #                                                  goal_conf=yumi_s.get_jnt_values(component_name),
+    #                                                  goal_conf=robot_s.get_jnt_values(hand_name),
     #                                                  depart_direction=np.array([0, 0, 1]),
     #                                                  depart_distance=.1)
     toc = time.time()
