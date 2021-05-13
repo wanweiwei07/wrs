@@ -496,6 +496,7 @@ if __name__ == '__main__':
     #     if conf_list is not None:
     #         break
 
+
     # animation
     robot_attached_list = []
     object_attached_list = []
