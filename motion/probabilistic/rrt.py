@@ -154,7 +154,7 @@ class RRT(object):
         self.roadmap.clear()
         self.start_conf = start_conf
         self.goal_conf = goal_conf
-        # check seed_jnt_values and goal_conf
+        # check seed_jnt_values and end_conf
         if self._is_collided(component_name, start_conf, obstacle_list, otherrobot_list):
             print("The start robot_s configuration is in collision!")
             return None
@@ -239,7 +239,7 @@ class RRT(object):
         if shortcut is not None:
             plt.plot([conf[0] for conf in shortcut], [conf[1] for conf in shortcut], linewidth=4, linestyle='--', color='r')
         # plt.plot(planner.seed_jnt_values[0], planner.seed_jnt_values[1], "xr")
-        # plt.plot(planner.goal_conf[0], planner.goal_conf[1], "xm")
+        # plt.plot(planner.end_conf[0], planner.end_conf[1], "xm")
         if not hasattr(RRT, 'img_counter'):
             RRT.img_counter = 0
         else:

@@ -35,7 +35,7 @@ start_conf = robot_s.ik(component_name=component_name, tgt_pos=start_pos, tgt_ro
 goal_pos = np.array([.30, -.70, 1.20])
 goal_rot = rm.rotmat_from_euler(ai=math.pi/2, aj=math.pi, ak=0, axes='szxz')
 goal_conf = robot_s.ik(component_name=component_name, tgt_pos=goal_pos, tgt_rot=goal_rot)
-#goal_conf = np.array([0, -math.pi / 2, -math.pi/3, -math.pi / 2, math.pi / 6, math.pi / 6])
+#end_conf = np.array([0, -math.pi / 2, -math.pi/3, -math.pi / 2, math.pi / 6, math.pi / 6])
 
 #軌道の生成
 rrtc_planner = rrtc.RRTConnect(robot_s)

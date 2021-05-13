@@ -239,7 +239,7 @@ class ADPlanner(object):  # AD = Approach_Depart
                           component_name,
                           start_tcp_pos,
                           start_tcp_rotmat,
-                          goal_conf=None,
+                          end_conf=None,
                           depart_direction=None,  # np.array([0, 0, 1])
                           depart_distance=.1,
                           depart_jawwidth=.05,
@@ -249,7 +249,7 @@ class ADPlanner(object):  # AD = Approach_Depart
                           toggle_begin_grasp=False,
                           begin_jawwidth=.0):
         if seed_jnt_values is None:
-            seed_jnt_values = goal_conf
+            seed_jnt_values = end_conf
         if depart_direction is None:
             depart_direction = start_tcp_rotmat[:, 2]
         conf_list, jawwidth_list = self.gen_depart_linear(component_name,
@@ -266,10 +266,10 @@ class ADPlanner(object):  # AD = Approach_Depart
         if conf_list is None:
             print("ADPlanner: Cannot gen depart linear!")
             return None, None
-        if goal_conf is not None:
+        if end_conf is not None:
             depart2goal_conf_list = self.rrtc_planner.plan(component_name=component_name,
                                                            start_conf=conf_list[-1],
-                                                           goal_conf=goal_conf,
+                                                           goal_conf=end_conf,
                                                            obstacle_list=obstacle_list,
                                                            ext_dist=.05,
                                                            rand_rate=70,
@@ -299,7 +299,7 @@ class ADPlanner(object):  # AD = Approach_Depart
                                        obstacle_list=[],
                                        seed_jnt_values=None):
         """
-        degenerate into gen_ad_primitive if both seed_jnt_values and goal_conf are None
+        degenerate into gen_ad_primitive if both seed_jnt_values and end_conf are None
         :param component_name:
         :param goal_tcp_pos:
         :param goal_tcp_rotmat:
@@ -419,7 +419,7 @@ if __name__ == '__main__':
     # conf_list, jawwidth_list = adp.gen_depart_motion(hand_name,
     #                                                  goal_pos,
     #                                                  goal_rotmat,
-    #                                                  goal_conf=robot_s.get_jnt_values(hand_name),
+    #                                                  end_conf=robot_s.get_jnt_values(hand_name),
     #                                                  depart_direction=np.array([0, 0, 1]),
     #                                                  depart_distance=.1)
     toc = time.time()
