@@ -120,7 +120,15 @@ class PickPlacePlanner(adp.ADPlanner):
         self.robot_s.fk(component_name, jnt_values_bk)
         return final_available_graspids, intermediate_available_graspids
 
-    def gen_holding_rel_linear(self):
+    def gen_holding_rel_linear(self,
+                               hand_name,
+                               objcm,
+                               grasp_info,
+                               obj_pos,
+                               obj_rotmat,
+                               direction,
+                               distance
+                               ):
         pass
 
     def gen_holding_linear(self):
@@ -136,6 +144,7 @@ class PickPlacePlanner(adp.ADPlanner):
                            approach_direction_list,
                            approach_distance_list,
                            ad_linear_granularity=.003,
+                           use_rrt = True,
                            obstacle_list=[],
                            seed_jnt_values=None):
         """
@@ -222,49 +231,85 @@ class PickPlacePlanner(adp.ADPlanner):
                                                                 obj_pos=rel_obj_pos,
                                                                 obj_rotmat=rel_obj_rotmat,
                                                                 type='relative')
-            # approach linear
-            seed_conf = conf_list_depart_linear[-1]
-            conf_list_approach_linear = self.inik_slvr.gen_rel_linear_motion(component_name=hand_name,
-                                                                             goal_tcp_pos=goal_jaw_center_pos,
-                                                                             goal_tcp_rotmat=goal_jaw_center_rotmat,
-                                                                             direction=approach_direction,
-                                                                             distance=approach_distance,
-                                                                             obstacle_list=obstacle_list,
-                                                                             granularity=ad_linear_granularity,
-                                                                             seed_jnt_values=seed_conf,
-                                                                             type='sink')
-            if conf_list_approach_linear is None:
-                print(f"Cannot generate the linear part of the {i}th holding approach motion!")
-                self.robot_s.release(hand_name, objcm_copy, jaw_width_bk)
-                self.robot_s.fk(component_name=hand_name, jnt_values=jnt_values_bk)
-                return None, None, None
+            if use_rrt: # if use rrt, we shall find start and goal conf first and then perform rrt
+                # approach linear
+                seed_conf = conf_list_depart_linear[-1]
+                conf_list_approach_linear = self.inik_slvr.gen_rel_linear_motion(component_name=hand_name,
+                                                                                 goal_tcp_pos=goal_jaw_center_pos,
+                                                                                 goal_tcp_rotmat=goal_jaw_center_rotmat,
+                                                                                 direction=approach_direction,
+                                                                                 distance=approach_distance,
+                                                                                 obstacle_list=obstacle_list,
+                                                                                 granularity=ad_linear_granularity,
+                                                                                 seed_jnt_values=seed_conf,
+                                                                                 type='sink')
+                if conf_list_approach_linear is None:
+                    print(f"Cannot generate the linear part of the {i}th holding approach motion!")
+                    self.robot_s.release(hand_name, objcm_copy, jaw_width_bk)
+                    self.robot_s.fk(component_name=hand_name, jnt_values=jnt_values_bk)
+                    return None, None, None
+                conf_list_middle = self.rrtc_planner.plan(component_name=hand_name,
+                                                        start_conf=conf_list_depart_linear[-1],
+                                                        goal_conf=conf_list_approach_linear[0],
+                                                        obstacle_list=obstacle_list,
+                                                        otherrobot_list=[],
+                                                        ext_dist=.07,
+                                                        max_iter=300)
+                if conf_list_middle is None:
+                    print(f"Cannot generate the rrtc part of the {i}th holding approach motion!")
+                    self.robot_s.release(hand_name, objcm_copy, jaw_width_bk)
+                    self.robot_s.fk(component_name=hand_name, jnt_values=jnt_values_bk)
+                    return None, None, None
+            else: # if do not use rrt, we start from depart end to mid end and then approach from mid end to goal
+                seed_conf = conf_list_depart_linear[-1]
+                self.robot_s.fk(component_name=hand_name, jnt_values=seed_conf)
+                mid_start_tcp_pos, mid_start_tcp_rotmat = self.robot_s.get_gl_tcp(hand_name)
+                mid_goal_tcp_pos = goal_jaw_center_pos - approach_direction * approach_distance
+                mid_goal_tcp_rotmat = goal_jaw_center_rotmat
+                conf_list_middle = self.inik_slvr.gen_linear_motion(component_name=hand_name,
+                                                                    start_tcp_pos=mid_start_tcp_pos,
+                                                                    start_tcp_rotmat=mid_start_tcp_rotmat,
+                                                                    goal_tcp_pos=mid_goal_tcp_pos,
+                                                                    goal_tcp_rotmat=mid_goal_tcp_rotmat,
+                                                                    obstacle_list=obstacle_list,
+                                                                    granularity=ad_linear_granularity,
+                                                                    seed_jnt_values=seed_conf)
+                if conf_list_middle is None:
+                    print(f"Cannot generate the rrtc part of the {i}th holding approach motion!")
+                    self.robot_s.release(hand_name, objcm_copy, jaw_width_bk)
+                    self.robot_s.fk(component_name=hand_name, jnt_values=jnt_values_bk)
+                    return None, None, None
+                # approach linear
+                seed_conf = conf_list_middle[-1]
+                conf_list_approach_linear = self.inik_slvr.gen_rel_linear_motion(component_name=hand_name,
+                                                                                 goal_tcp_pos=goal_jaw_center_pos,
+                                                                                 goal_tcp_rotmat=goal_jaw_center_rotmat,
+                                                                                 direction=approach_direction,
+                                                                                 distance=approach_distance,
+                                                                                 obstacle_list=obstacle_list,
+                                                                                 granularity=ad_linear_granularity,
+                                                                                 seed_jnt_values=seed_conf,
+                                                                                 type='sink')
+                if conf_list_approach_linear is None:
+                    print(f"Cannot generate the linear part of the {i}th holding approach motion!")
+                    self.robot_s.release(hand_name, objcm_copy, jaw_width_bk)
+                    self.robot_s.fk(component_name=hand_name, jnt_values=jnt_values_bk)
+                    return None, None, None
             jaw_width_list_approach_linear = self.gen_jawwidth_motion(conf_list_approach_linear, jaw_width)
             objpose_list_approach_linear = self.gen_object_motion(component_name=hand_name,
                                                                   conf_list=conf_list_approach_linear,
                                                                   obj_pos=rel_obj_pos,
                                                                   obj_rotmat=rel_obj_rotmat,
                                                                   type='relative')
-            conf_list_rrtc = self.rrtc_planner.plan(component_name=hand_name,
-                                                    start_conf=conf_list_depart_linear[-1],
-                                                    goal_conf=conf_list_approach_linear[0],
-                                                    obstacle_list=obstacle_list,
-                                                    otherrobot_list=[],
-                                                    ext_dist=.03,
-                                                    max_iter=300)
-            if conf_list_rrtc is None:
-                print(f"Cannot generate the rrtc part of the {i}th holding approach motion!")
-                self.robot_s.release(hand_name, objcm_copy, jaw_width_bk)
-                self.robot_s.fk(component_name=hand_name, jnt_values=jnt_values_bk)
-                return None, None, None
-            jaw_width_list_rrtc = self.gen_jawwidth_motion(conf_list_rrtc, jaw_width)
-            objpose_list_rrtc = self.gen_object_motion(component_name=hand_name,
-                                                       conf_list=conf_list_rrtc,
+            jaw_width_list_middle = self.gen_jawwidth_motion(conf_list_middle, jaw_width)
+            objpose_list_middle = self.gen_object_motion(component_name=hand_name,
+                                                       conf_list=conf_list_middle,
                                                        obj_pos=rel_obj_pos,
                                                        obj_rotmat=rel_obj_rotmat,
                                                        type='relative')
-            conf_list = conf_list + conf_list_depart_linear + conf_list_rrtc + conf_list_approach_linear
-            jaw_width_list = jaw_width_list + jaw_width_list_depart_linear + jaw_width_list_rrtc + jaw_width_list_approach_linear
-            objpose_list = objpose_list + objpose_list_depart_linear + objpose_list_rrtc + objpose_list_approach_linear
+            conf_list = conf_list + conf_list_depart_linear + conf_list_middle + conf_list_approach_linear
+            jaw_width_list = jaw_width_list + jaw_width_list_depart_linear + jaw_width_list_middle + jaw_width_list_approach_linear
+            objpose_list = objpose_list + objpose_list_depart_linear + objpose_list_middle + objpose_list_approach_linear
             seed_conf = conf_list[-1]
         self.robot_s.release(hand_name, objcm_copy, jaw_width_bk)
         self.robot_s.fk(component_name=hand_name, jnt_values=jnt_values_bk)
@@ -1193,10 +1238,13 @@ if __name__ == '__main__':
                                           grasp_info=grasp_info,
                                           obj_pose_list=goal_homomat_list,
                                           depart_direction_list=[np.array([0,0,1])] * len(goal_homomat_list),
-                                          depart_distance_list=[.2] * len(goal_homomat_list),
                                           approach_direction_list=[np.array([0,0,-1])] * len(goal_homomat_list),
+                                          # depart_distance_list=[None] * len(goal_homomat_list),
+                                          # approach_distance_list=[None] * len(goal_homomat_list),
+                                          depart_distance_list=[.2] * len(goal_homomat_list),
                                           approach_distance_list=[.2] * len(goal_homomat_list),
                                           ad_linear_granularity=.003,
+                                          use_rrt = True,
                                           obstacle_list=[],
                                           seed_jnt_values=start_conf)
         print(robot_s.rgt_oih_infos, robot_s.lft_oih_infos)
@@ -1208,7 +1256,7 @@ if __name__ == '__main__':
         #                                            goal_obj_pos=goal_homomat_list[0][:3, 3],
         #                                            goal_obj_rotmat=goal_homomat_list[0][:3, :3],
         #                                            start_conf=start_conf)
-
+    print(conf_list[0])
     # animation
     robot_attached_list = []
     object_attached_list = []
@@ -1230,6 +1278,8 @@ if __name__ == '__main__':
                 robot_attached.detach()
             for object_attached in object_attached_list:
                 object_attached.detach()
+            robot_attached_list.clear()
+            object_attached_list.clear()
         pose = robot_path[counter[0]]
         robot_s.fk(hand_name, pose)
         robot_s.jaw_to(hand_name, jaw_width_path[counter[0]])

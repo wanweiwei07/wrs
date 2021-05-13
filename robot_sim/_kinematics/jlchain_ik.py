@@ -61,15 +61,15 @@ class JLChainIK(object):
         """
         wtmat = np.ones(len(self.jlc_object.tgtjnts))
         # min damping interval
-        selection = (jntvalues - self.jmvmin_threshhold) < 0
-        diff_selected = self.jmvmin_threshhold[selection] - jntvalues[selection]
-        wtmat[selection] = -2 * np.power(diff_selected, 3) + 3 * np.power(diff_selected, 2)
+        selection = self.jmvmin_threshhold - jntvalues > 0
+        normalized_diff_at_selected = ((jntvalues - self.jmvmin) / (self.jmvmin_threshhold - self.jmvmin))[selection]
+        wtmat[selection] = -2 * np.power(normalized_diff_at_selected, 3) + 3 * np.power(normalized_diff_at_selected, 2)
         # max damping interval
-        selection = (jntvalues - self.jmvmax_threshhold > 0)
-        diff_selected = jntvalues[selection] - self.jmvmax_threshhold[selection]
-        wtmat[selection] = -2 * np.power(diff_selected, 3) + 3 * np.power(diff_selected, 2)
-        wtmat[jntvalues >= self.jmvmax] = 1e-6
-        wtmat[jntvalues <= self.jmvmin] = 1e-6
+        selection = jntvalues - self.jmvmax_threshhold > 0
+        normalized_diff_at_selected = ((self.jmvmax-jntvalues)/(self.jmvmax-self.jmvmax_threshhold))[selection]
+        wtmat[selection] = -2 * np.power(normalized_diff_at_selected, 3) + 3 * np.power(normalized_diff_at_selected, 2)
+        wtmat[jntvalues >= self.jmvmax] = -1e6
+        wtmat[jntvalues <= self.jmvmin] = -1e6
         return np.diag(wtmat)
 
     def jacobian(self, tcp_jntid):
@@ -89,6 +89,7 @@ class JLChainIK(object):
         else:
             return self._jacobian_sgl(tcp_jntid)
 
+
     def manipulability(self, tcp_jntid):
         """
         compute the yoshikawa manipulability of the rjlinstance
@@ -99,6 +100,7 @@ class JLChainIK(object):
         """
         j = self.jacobian(tcp_jntid)
         return math.sqrt(np.linalg.det(np.dot(j, j.transpose())))
+
 
     def manipulability_axmat(self, tcp_jntid):
         """
@@ -115,6 +117,7 @@ class JLChainIK(object):
         axmat[:, 1] = np.sqrt(pcv[1]) * pcaxmat[:3, 1]
         axmat[:, 2] = np.sqrt(pcv[2]) * pcaxmat[:3, 2]
         return axmat
+
 
     def get_gl_tcp(self, tcp_jnt_id, tcp_loc_pos, tcp_loc_rotmat):
         """
@@ -151,6 +154,7 @@ class JLChainIK(object):
             tcp_gl_rotmat = np.dot(self.jlc_object.jnts[tcp_jnt_id]["gl_rotmatq"], tcp_loc_rotmat)
             return tcp_gl_pos, tcp_gl_rotmat
 
+
     def tcp_error(self, tgt_pos, tgt_rot, tcp_jntid, tcp_loc_pos, tcp_loc_rotmat):
         """
         compute the error between the rjlinstance's end and tgt_pos, tgt_rotmat
@@ -178,6 +182,7 @@ class JLChainIK(object):
             deltapw[3:6] = rm.deltaw_between_rotmat(tcp_gl_rotmat, tgt_rot)
             return deltapw
 
+
     def regulate_jnts(self):
         """
         check if the given jntvalues is inside the oeprating range
@@ -192,9 +197,11 @@ class JLChainIK(object):
         for id in self.jlc_object.tgtjnts:
             if self.jlc_object.jnts[id]["type"] is 'revolute':
                 if self.jlc_object.jnts[id]['motion_rng'][1] - self.jlc_object.jnts[id]['motion_rng'][0] >= math.pi * 2:
-                    rm.regulate_angle(self.jlc_object.jnts[id]['motion_rng'][0], self.jlc_object.jnts[id]['motion_rng'][1],
+                    rm.regulate_angle(self.jlc_object.jnts[id]['motion_rng'][0],
+                                      self.jlc_object.jnts[id]['motion_rng'][1],
                                       self.jlc_object.jnts[id]["movement"])
             counter += 1
+
 
     def check_jntranges_drag(self, jnt_values):
         """
@@ -223,8 +230,9 @@ class JLChainIK(object):
                     if jnt_values[counter] < self.jlc_object.jnts[id]['motion_rng'][0] or jnt_values[counter] > \
                             self.jlc_object.jnts[id]['motion_rng'][1]:
                         isdragged[counter] = 1
-                        jntvaluesdragged[counter] = (self.jlc_object.jnts[id]['motion_rng'][1] + self.jlc_object.jnts[id][
-                            'motion_rng'][0]) / 2
+                        jntvaluesdragged[counter] = (self.jlc_object.jnts[id]['motion_rng'][1] +
+                                                     self.jlc_object.jnts[id][
+                                                         'motion_rng'][0]) / 2
             elif self.jlc_object.jnts[id]["type"] == 'prismatic':  # prismatic
                 # if jntvalues[counter] < jlinstance.jnts[id]['motion_rng'][0]:
                 #     isdragged[counter] = 1
@@ -239,6 +247,7 @@ class JLChainIK(object):
                     jntvaluesdragged[counter] = (self.jlc_object.jnts[id]['motion_rng'][1] + self.jlc_object.jnts[id][
                         "rngmin"]) / 2
         return isdragged, jntvaluesdragged
+
 
     def num_ik(self,
                tgt_pos,
@@ -379,7 +388,7 @@ class JLChainIK(object):
                     # strecthingcoeff = -2*math.pow(errnorm / errnormmax, 3)+3*math.pow(errnorm / errnormmax, 2)
                     # print("stretching ", strecthingcoeff)
                     # dampercoeff = (strecthingcoeff + .1) * 1e-6  # a non-zero regulation coefficient
-                    dampercoeff = 1e-3*errnorm + 1e-6  # a non-zero regulation coefficient
+                    dampercoeff = 1e-3 * errnorm + 1e-6  # a non-zero regulation coefficient
                     # -- lft moore-penrose inverse --
                     ## jtj = armjac.T.dot(armjac)
                     ## regulator = regcoeff*np.identity(jtj.shape[0])
@@ -437,6 +446,7 @@ class JLChainIK(object):
         self.jlc_object.fk(jnt_values_bk)
         wns.warn('Failed to solve the IK, returning None.')
         return None
+
 
     def numik_rel(self, deltapos, deltarotmat, tcp_jntid=None, tcp_loc_pos=None, tcp_loc_rotmat=None):
         """
