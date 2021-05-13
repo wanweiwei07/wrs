@@ -292,9 +292,7 @@ class XArm7YunjiMobile(ri.RobotInterface):
                                 toggle_tcpcs=toggle_tcpcs,
                                 toggle_jntscs=toggle_jntscs,
                                 toggle_connjnt=toggle_connjnt).attach_to(stickmodel)
-        self.hnd.gen_stickmodel(tcp_loc_pos=None,
-                                tcp_loc_rotmat=None,
-                                toggle_tcpcs=False,
+        self.hnd.gen_stickmodel(toggle_tcpcs=False,
                                 toggle_jntscs=toggle_jntscs).attach_to(stickmodel)
         return stickmodel
 
