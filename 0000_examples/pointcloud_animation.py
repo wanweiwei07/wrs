@@ -13,6 +13,7 @@ def update(attached_list, pcd_list, counter, task):
     if len(attached_list) != 0:
         for objcm in attached_list:
             objcm.detach()
+        attached_list.clear()
     pcd = pcd_list[counter[0]]
     attached_list.append(cm.CollisionModel(pcd))
     attached_list[-1].attach_to(base)

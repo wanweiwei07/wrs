@@ -56,6 +56,7 @@ def update(robot_s, path, robot_attached_list, counter, task):
     if len(robot_attached_list) != 0:
         for robot_attached in robot_attached_list:
             robot_attached.detach()
+        robot_attached_list.clear()
     pose = path[counter[0]]
     robot_s.fk(component_name, pose)
     robot_meshmodel = robot_s.gen_meshmodel()

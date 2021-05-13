@@ -52,6 +52,8 @@ def update(robot_s, object_box, robot_path, obj_path, robot_attached_list, objec
             robot_attached.detach()
         for object_attached in object_attached_list:
             object_attached.detach()
+        robot_attached_list.clear()
+        object_attached_list.clear()
     pose = robot_path[counter[0]]
     robot_s.fk(manipulator_name, pose)
     robot_meshmodel = robot_s.gen_meshmodel()
