@@ -69,6 +69,7 @@ def plan_grasps(hnd_s,
                                        min_dist_between_sampled_contact_points=min_dist_between_sampled_contact_points,
                                        angle_between_contact_normals=angle_between_contact_normals)
     grasp_info_list = []
+    import modeling.geometric_model as gm
     for i, cp in enumerate(contact_pairs):
         print(f"{i} of {len(contact_pairs)} done!")
         contact_p0, contact_n0 = cp[0]

@@ -48,7 +48,7 @@ class CobottaArm(mi.ManipulatorInterface):
         self.jlc.lnks[2]['com'] = np.array([-.02, .1, .07])
         self.jlc.lnks[2]['mass'] = 0.39
         self.jlc.lnks[2]['meshfile'] = os.path.join(this_dir, "meshes", "j2.dae")
-        self.jlc.lnks[2]['rgba'] = [0, .22, .58, 1]
+        self.jlc.lnks[2]['rgba'] = [0, .55, .60, 1]
         self.jlc.lnks[3]['name'] = "j3"
         self.jlc.lnks[3]['loc_pos'] = np.array([.0, .0, .0])
         self.jlc.lnks[3]['com'] = np.array([-.01, .02, .03])
@@ -66,7 +66,7 @@ class CobottaArm(mi.ManipulatorInterface):
         self.jlc.lnks[5]['com'] = np.array([.0, -.04, .015])
         self.jlc.lnks[5]['mass'] = 0.19
         self.jlc.lnks[5]['meshfile'] = os.path.join(this_dir, "meshes", "j5.dae")
-        self.jlc.lnks[5]['rgba'] = [0, .22, .58, 1]
+        self.jlc.lnks[5]['rgba'] = [0, .55, .60, 1]
         self.jlc.lnks[6]['name'] = "j6"
         self.jlc.lnks[6]['loc_pos'] = np.array([.0, .0, .0])
         self.jlc.lnks[6]['com'] = np.array([.0, .0, 0])

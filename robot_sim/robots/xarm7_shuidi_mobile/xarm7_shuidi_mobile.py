@@ -110,7 +110,7 @@ class XArm7YunjiMobile(ri.RobotInterface):
         author: weiwei
         date: 20201208toyonaka
         """
-        def update_oih(component_name='rgt_arm'):
+        def update_oih(component_name='arm'):
             for obj_info in self.oih_infos:
                 gl_pos, gl_rotmat = self.cvt_loc_tcp_to_gl(component_name, obj_info['rel_pos'], obj_info['rel_rotmat'])
                 obj_info['gl_pos'] = gl_pos
@@ -136,6 +136,11 @@ class XArm7YunjiMobile(ri.RobotInterface):
             self.agv.fix_to(self.pos, self.rotmat)
             self.arm.fix_to(pos=self.agv.jnts[-1]['gl_posq'], rotmat=self.agv.jnts[-1]['gl_rotmatq'])
             self.hnd.fix_to(pos=self.arm.jnts[-1]['gl_posq'], rotmat=self.arm.jnts[-1]['gl_rotmatq'])
+            # update objects in hand
+            for obj_info in self.oih_infos:
+                gl_pos, gl_rotmat = self.arm.cvt_loc_tcp_to_gl(obj_info['rel_pos'], obj_info['rel_rotmat'])
+                obj_info['gl_pos'] = gl_pos
+                obj_info['gl_rotmat'] = gl_rotmat
         elif component_name == 'agv_arm':
             if not isinstance(jnt_values, np.ndarray) or jnt_values.size != 10:
                 raise ValueError("An 1x9 npdarray must be specified to move both the agv and the arm!")
@@ -145,6 +150,11 @@ class XArm7YunjiMobile(ri.RobotInterface):
             self.agv.fix_to(self.pos, self.rotmat)
             self.arm.fix_to(pos=self.agv.jnts[-1]['gl_posq'], rotmat=self.agv.jnts[-1]['gl_rotmatq'], jnt_values=jnt_values[3:10])
             self.hnd.fix_to(pos=self.arm.jnts[-1]['gl_posq'], rotmat=self.arm.jnts[-1]['gl_rotmatq'])
+            # update objects in hand
+            for obj_info in self.oih_infos:
+                gl_pos, gl_rotmat = self.arm.cvt_loc_tcp_to_gl(obj_info['rel_pos'], obj_info['rel_rotmat'])
+                obj_info['gl_pos'] = gl_pos
+                obj_info['gl_rotmat'] = gl_rotmat
         elif component_name == 'all':
             if not isinstance(jnt_values, np.ndarray) or jnt_values.size != 11:
                 raise ValueError("An 1x10 npdarray must be specified to move all joints!")
@@ -154,15 +164,15 @@ class XArm7YunjiMobile(ri.RobotInterface):
             self.agv.fix_to(self.pos, self.rotmat)
             self.arm.fix_to(pos=self.agv.jnts[-1]['gl_posq'], rotmat=self.agv.jnts[-1]['gl_rotmatq'], jnt_values=jnt_values[3:10])
             self.hnd.fix_to(pos=self.arm.jnts[-1]['gl_posq'], rotmat=self.arm.jnts[-1]['gl_rotmatq'], motion_val = jnt_values[10])
-        # update objects in hand
-        for obj_info in self.oih_infos:
-            gl_pos, gl_rotmat = self.arm.cvt_loc_tcp_to_gl(obj_info['rel_pos'], obj_info['rel_rotmat'])
-            obj_info['gl_pos'] = gl_pos
-            obj_info['gl_rotmat'] = gl_rotmat
+            # update objects in hand
+            for obj_info in self.oih_infos:
+                gl_pos, gl_rotmat = self.arm.cvt_loc_tcp_to_gl(obj_info['rel_pos'], obj_info['rel_rotmat'])
+                obj_info['gl_pos'] = gl_pos
+                obj_info['gl_rotmat'] = gl_rotmat
 
     def get_jnt_values(self, component_name):
         if component_name in self.manipulator_dict:
-            return self.arm.get_jnt_values()
+            return self.manipulator_dict[component_name].get_jnt_values()
         elif component_name == 'agv':
             return_val = np.zeros(3)
             return_val[:2] = self.pos[:2]
@@ -185,6 +195,8 @@ class XArm7YunjiMobile(ri.RobotInterface):
     def rand_conf(self, component_name):
         if component_name in self.manipulator_dict:
             return super().rand_conf(component_name)
+        else:
+            raise NotImplementedError
 
     def jaw_to(self, hnd_name='hnd_s', jawwidth=0.0):
         self.hnd.jaw_to(jawwidth)
@@ -196,11 +208,11 @@ class XArm7YunjiMobile(ri.RobotInterface):
         :param objcm:
         :return:
         """
-        if hnd_name is not "hnd":
-            raise ValueError("Hand name for Xarm7ShuidiRobot must be \'hnd\'!")
+        if hnd_name not in self.hnd_dict:
+            raise ValueError("Hand name does not exist!")
         if jawwidth is not None:
-            self.hnd.jaw_to(jawwidth)
-        rel_pos, rel_rotmat = self.arm.cvt_gl_to_loc_tcp(objcm.get_pos(), objcm.get_rotmat())
+            self.hnd_dict[hnd_name].jaw_to(jawwidth)
+        rel_pos, rel_rotmat = self.manipulator_dict[hnd_name].cvt_gl_to_loc_tcp(objcm.get_pos(), objcm.get_rotmat())
         intolist = [self.agv.lnks[0],
                     self.arm.lnks[0],
                     self.arm.lnks[1],
@@ -247,10 +259,10 @@ class XArm7YunjiMobile(ri.RobotInterface):
         :param objcm:
         :return:
         """
-        if hnd_name is not "hnd":
-            raise ValueError("Hand name for Xarm7ShuidiRobot must be \'hnd\'!")
+        if hnd_name not in self.hnd_dict:
+            raise ValueError("Hand name does not exist!")
         if jawwidth is not None:
-            self.hnd.jaw_to(jawwidth)
+            self.hnd_dict[hnd_name].jaw_to(jawwidth)
         for obj_info in self.oih_infos:
             if obj_info['collisionmodel'] is objcm:
                 self.cc.delete_cdobj(obj_info)

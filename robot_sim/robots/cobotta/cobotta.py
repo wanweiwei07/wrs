@@ -39,6 +39,7 @@ class Cobotta(ri.RobotInterface):
         self.manipulator_dict['arm'] = self.arm
         self.manipulator_dict['hnd'] = self.arm
         self.hnd_dict['hnd'] = self.hnd
+        self.hnd_dict['arm'] = self.hnd
 
     def enable_cc(self):
         # TODO when pose is changed, oih info goes wrong
@@ -91,73 +92,60 @@ class Cobotta(ri.RobotInterface):
         author: weiwei
         date: 20201208toyonaka
         """
-        if component_name == 'arm':
+        def update_oih(component_name='arm'):
+            for obj_info in self.oih_infos:
+                gl_pos, gl_rotmat = self.cvt_loc_tcp_to_gl(component_name, obj_info['rel_pos'], obj_info['rel_rotmat'])
+                obj_info['gl_pos'] = gl_pos
+                obj_info['gl_rotmat'] = gl_rotmat
+
+        def update_component(component_name, jnt_values):
+            self.manipulator_dict[component_name].fk(jnt_values=jnt_values)
+            self.hnd_dict[component_name].fix_to(
+                pos=self.manipulator_dict[component_name].jnts[-1]['gl_posq'],
+                rotmat=self.manipulator_dict[component_name].jnts[-1]['gl_rotmatq'])
+            update_oih(component_name=component_name)
+
+        if component_name in self.manipulator_dict:
             if not isinstance(jnt_values, np.ndarray) or jnt_values.size != 6:
                 raise ValueError("An 1x6 npdarray must be specified to move the arm!")
-            self.arm.fk(jnt_values=jnt_values)
-            self.hnd.fix_to(pos=self.arm.jnts[-1]['gl_posq'], rotmat=self.arm.jnts[-1]['gl_rotmatq'])
-        # update objects in hand
-        for obj_info in self.oih_infos:
-            gl_pos, gl_rotmat = self.arm.cvt_loc_tcp_to_gl(obj_info['rel_pos'], obj_info['rel_rotmat'])
-            obj_info['gl_pos'] = gl_pos
-            obj_info['gl_rotmat'] = gl_rotmat
-
-    def ik(self,
-           tgt_pos,
-           tgt_rotmat,
-           component_name='arm',
-           seed_jnt_values=None,
-           tcp_jntid=None,
-           tcp_loc_pos=None,
-           tcp_loc_rotmat=None,
-           local_minima="accept",
-           toggle_debug=False):
-        if component_name == 'arm':
-            return self.arm.ik(tgt_pos,
-                               tgt_rotmat,
-                               seed_jnt_values=seed_jnt_values,
-                               tcp_jntid=tcp_jntid,
-                               tcp_loc_pos=tcp_loc_pos,
-                               tcp_loc_rotmat=tcp_loc_rotmat,
-                               local_minima=local_minima,
-                               toggle_debug=toggle_debug)
-        elif component_name == 'agv_arm' or component_name == 'all':
-            pass
+            update_component(component_name, jnt_values)
+        else:
+            raise ValueError("The given component name is not supported!")
 
     def get_jnt_values(self, component_name):
-        if component_name == 'arm':
-            return self.arm.get_jnt_values()
+        if component_name in self.manipulator_dict:
+            return self.manipulator_dict[component_name].get_jnt_values()
         else:
-            raise ValueError("Only \'arm\' is supported!")
+            raise ValueError("The given component name is not supported!")
 
     def rand_conf(self, component_name):
-        if component_name == 'arm':
-            return self.arm.rand_conf()
+        if component_name in self.manipulator_dict:
+            return super().rand_conf(component_name)
         else:
             raise NotImplementedError
 
     def jaw_to(self, hnd_name='hnd_s', jawwidth=0.0):
         self.hnd.jaw_to(jawwidth)
 
-    def get_jawwidth(self):
-        return self.hnd.get_jawwidth()
-
-    def hold(self, objcm, jawwidth=None):
+    def hold(self, hnd_name, objcm, jawwidth=None):
         """
         the objcm is added as a part of the robot_s to the cd checker
         :param jawwidth:
         :param objcm:
         :return:
         """
+        if hnd_name not in self.hnd_dict:
+            raise ValueError("Hand name does not exist!")
         if jawwidth is not None:
-            self.hnd.jaw_to(jawwidth)
-        rel_pos, rel_rotmat = self.arm.cvt_gl_to_loc_tcp(objcm.get_pos(), objcm.get_rotmat())
+            self.hnd_dict[hnd_name].jaw_to(jawwidth)
+        rel_pos, rel_rotmat = self.manipulator_dict[hnd_name].cvt_gl_to_loc_tcp(objcm.get_pos(), objcm.get_rotmat())
         intolist = [self.arm.lnks[0],
                     self.arm.lnks[1],
                     self.arm.lnks[2],
                     self.arm.lnks[3],
                     self.arm.lnks[4]]
         self.oih_infos.append(self.cc.add_cdobj(objcm, rel_pos, rel_rotmat, intolist))
+        return rel_pos, rel_rotmat
 
     def get_oih_list(self):
         return_list = []
@@ -168,15 +156,17 @@ class Cobotta(ri.RobotInterface):
             return_list.append(objcm)
         return return_list
 
-    def release(self, objcm, jawwidth=None):
+    def release(self, hnd_name, objcm, jawwidth=None):
         """
         the objcm is added as a part of the robot_s to the cd checker
         :param jawwidth:
         :param objcm:
         :return:
         """
+        if hnd_name not in self.hnd_dict:
+            raise ValueError("Hand name does not exist!")
         if jawwidth is not None:
-            self.hnd.jaw_to(jawwidth)
+            self.hnd_dict[hnd_name].jaw_to(jawwidth)
         for obj_info in self.oih_infos:
             if obj_info['collisionmodel'] is objcm:
                 self.cc.delete_cdobj(obj_info)

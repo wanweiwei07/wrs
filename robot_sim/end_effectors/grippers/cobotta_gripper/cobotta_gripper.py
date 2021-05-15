@@ -34,7 +34,7 @@ class CobottaGripper(gp.GripperInterface):
         self.jlc.lnks[2]['meshfile'] = os.path.join(this_dir, "meshes", "right_finger.dae")
         self.jlc.lnks[2]['rgba'] = [.5, .5, .5, 1]
         # jaw width
-        self.jaw_width_rng = [0.0, .03]
+        self.jawwidth_rng = [0.0, .03]
         # jaw center
         self.jaw_center_pos = np.array([0,0,.05])
         # reinitialize
@@ -74,12 +74,15 @@ class CobottaGripper(gp.GripperInterface):
         self.jlc.fix_to(cpl_end_pos, cpl_end_rotmat)
 
     def jaw_to(self, jaw_width):
-        if jaw_width > self.jaw_width_rng[1]:
+        if jaw_width > self.jawwidth_rng[1]:
             raise ValueError("The jawwidth parameter is out of range!")
         side_jawwidth = jaw_width / 2.0
         self.jlc.jnts[1]['motion_val'] = side_jawwidth
         self.jlc.jnts[2]['motion_val'] = -jaw_width
         self.jlc.fk()
+
+    def get_jawwidth(self):
+        return -self.jlc.jnts[2]['motion_val']
 
     def gen_stickmodel(self,
                        toggle_tcpcs=False,
@@ -93,7 +96,7 @@ class CobottaGripper(gp.GripperInterface):
                                 toggle_jntscs=toggle_jntscs,
                                 toggle_connjnt=toggle_connjnt).attach_to(stickmodel)
         if toggle_tcpcs:
-            jaw_center_gl_pos = self.rotmat.dot(self.jaw_center_loc_pos)+self.pos
+            jaw_center_gl_pos = self.rotmat.dot(self.jaw_center_pos)+self.pos
             jaw_center_gl_rotmat = self.rotmat.dot(self.jaw_center_rotmat)
             gm.gen_dashstick(spos=self.pos,
                              epos=jaw_center_gl_pos,
@@ -116,7 +119,7 @@ class CobottaGripper(gp.GripperInterface):
                                toggle_jntscs=toggle_jntscs,
                                rgba=rgba).attach_to(meshmodel)
         if toggle_tcpcs:
-            jaw_center_gl_pos = self.rotmat.dot(grpr.jaw_center_loc_pos)+self.pos
+            jaw_center_gl_pos = self.rotmat.dot(grpr.jaw_center_pos)+self.pos
             jaw_center_gl_rotmat = self.rotmat.dot(grpr.jaw_center_rotmat)
             gm.gen_dashstick(spos=self.pos,
                              epos=jaw_center_gl_pos,

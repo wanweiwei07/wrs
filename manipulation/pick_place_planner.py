@@ -219,8 +219,6 @@ class PickPlacePlanner(adp.ADPlanner):
                                                          obj_pos=rel_obj_pos,
                                                          obj_rotmat=rel_obj_rotmat,
                                                          type='relative')
-            for item in objpose_list_depart:
-                print(item[:3,3])
             if use_rrt:  # if use rrt, we shall find start and goal conf first and then perform rrt
                 # approach linear
                 seed_conf = conf_list_depart[-1]
