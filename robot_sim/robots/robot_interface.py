@@ -41,19 +41,24 @@ class RobotInterface(object):
     def jaw_to(self, hnd_name, jaw_width):
         self.hnd_dict[hnd_name].jaw_to(jaw_width=jaw_width)
 
+    def get_jawwidth(self, hand_name):
+        return self.hnd_dict[hand_name].get_jawwidth()
+
     def ik(self,
            component_name,
            tgt_pos,
-           tgt_rot,
+           tgt_rotmat,
            seed_jnt_values=None,
+           max_niter=100,
            tcp_jntid=None,
            tcp_loc_pos=None,
            tcp_loc_rotmat=None,
            local_minima="accept",
            toggle_debug=False):
         return self.manipulator_dict[component_name].ik(tgt_pos,
-                                                        tgt_rot,
+                                                        tgt_rotmat,
                                                         seed_jnt_values=seed_jnt_values,
+                                                        max_niter=max_niter,
                                                         tcp_jntid=tcp_jntid,
                                                         tcp_loc_pos=tcp_loc_pos,
                                                         tcp_loc_rotmat=tcp_loc_rotmat,

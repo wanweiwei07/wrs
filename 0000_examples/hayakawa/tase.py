@@ -257,7 +257,7 @@ def decidestartpose(armname, ropelinesorted, predefined_grasps, fromjnt, startpo
             eerot_initial = hndmat4_initial[:3, :3]
             start = robot_s.ik(component_name=armname,
                                tgt_pos=eepos_initial,
-                               tgt_rot=eerot_initial,
+                               tgt_rotmat=eerot_initial,
                                seed_jnt_values=fromjnt)
             if start is not None:
                 original_jnt_values = robot_s.get_jnt_values(component_name=armname)
@@ -298,7 +298,7 @@ def decidegoalpose_onepoint(arm_name,
         fromjnt = i[0]
         goal = robot_s.ik(component_name=arm_name,
                           tgt_pos=eepos_final,
-                          tgt_rot=eerot_final,
+                          tgt_rotmat=eerot_final,
                           seed_jnt_values=fromjnt)
         # gm.gen_frame(pos=eepos_final, rotmat=eerot_final).attach_to(base)
         # robot_s.fk(arm_name, fromjnt)
@@ -510,7 +510,7 @@ def decidegoalpose(arm_name,
             fromjnt = i[0]
             goal = robot_s.ik(component_name=arm_name,
                               tgt_pos=eepos_final,
-                              tgt_rot=eerot_final,
+                              tgt_rotmat=eerot_final,
                               seed_jnt_values=fromjnt)
             if goal is not None:
                 original_jnt_values = robot_s.get_jnt_values(component_name=arm_name)

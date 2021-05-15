@@ -28,12 +28,12 @@ robot_s = ur3d.UR3Dual()
 #スタート姿勢
 s_pos = np.array([.4, -.7, 1.11])
 s_rotmat = rm.rotmat_from_euler(ai=math.pi/2,aj=math.pi,ak=math.pi,axes='szxz')
-s_conf = robot_s.ik(component_name=component_name, tgt_pos=s_pos, tgt_rot=s_rotmat)
+s_conf = robot_s.ik(component_name=component_name, tgt_pos=s_pos, tgt_rotmat=s_rotmat)
 
 #ゴール姿勢
 g_pos = np.array([.4, -.3, 1.11])
 g_rotmat = rm.rotmat_from_euler(ai=math.pi/2,aj=math.pi,ak=0,axes='szxz')
-g_conf = robot_s.ik(component_name=component_name, tgt_pos=g_pos, tgt_rot=g_rotmat)
+g_conf = robot_s.ik(component_name=component_name, tgt_pos=g_pos, tgt_rotmat=g_rotmat)
 
 
 # possible right goal np.array([0, -math.pi/4, 0, math.pi/2, math.pi/2, math.pi / 6])

@@ -24,6 +24,7 @@ class JLChainIK(object):
             self.jmvmax[counter] = self.jlc_object.jnts[id]['motion_rng'][1]
             counter += 1
         self.jmvrng = self.jmvmax - self.jmvmin
+        self.jmvmiddle = (self.jmvmax + self.jmvmin) / 2
         self.jmvmin_threshhold = self.jmvmin + self.jmvrng * self.wln_ratio
         self.jmvmax_threshhold = self.jmvmax - self.jmvrng * self.wln_ratio
 
@@ -66,10 +67,10 @@ class JLChainIK(object):
         wtmat[selection] = -2 * np.power(normalized_diff_at_selected, 3) + 3 * np.power(normalized_diff_at_selected, 2)
         # max damping interval
         selection = jntvalues - self.jmvmax_threshhold > 0
-        normalized_diff_at_selected = ((self.jmvmax-jntvalues)/(self.jmvmax-self.jmvmax_threshhold))[selection]
+        normalized_diff_at_selected = ((self.jmvmax - jntvalues) / (self.jmvmax - self.jmvmax_threshhold))[selection]
         wtmat[selection] = -2 * np.power(normalized_diff_at_selected, 3) + 3 * np.power(normalized_diff_at_selected, 2)
-        wtmat[jntvalues >= self.jmvmax] = -1e6
-        wtmat[jntvalues <= self.jmvmin] = -1e6
+        wtmat[jntvalues >= self.jmvmax] = 0
+        wtmat[jntvalues <= self.jmvmin] = 0
         return np.diag(wtmat)
 
     def jacobian(self, tcp_jntid):
@@ -89,7 +90,6 @@ class JLChainIK(object):
         else:
             return self._jacobian_sgl(tcp_jntid)
 
-
     def manipulability(self, tcp_jntid):
         """
         compute the yoshikawa manipulability of the rjlinstance
@@ -100,7 +100,6 @@ class JLChainIK(object):
         """
         j = self.jacobian(tcp_jntid)
         return math.sqrt(np.linalg.det(np.dot(j, j.transpose())))
-
 
     def manipulability_axmat(self, tcp_jntid):
         """
@@ -117,7 +116,6 @@ class JLChainIK(object):
         axmat[:, 1] = np.sqrt(pcv[1]) * pcaxmat[:3, 1]
         axmat[:, 2] = np.sqrt(pcv[2]) * pcaxmat[:3, 2]
         return axmat
-
 
     def get_gl_tcp(self, tcp_jnt_id, tcp_loc_pos, tcp_loc_rotmat):
         """
@@ -154,7 +152,6 @@ class JLChainIK(object):
             tcp_gl_rotmat = np.dot(self.jlc_object.jnts[tcp_jnt_id]["gl_rotmatq"], tcp_loc_rotmat)
             return tcp_gl_pos, tcp_gl_rotmat
 
-
     def tcp_error(self, tgt_pos, tgt_rot, tcp_jntid, tcp_loc_pos, tcp_loc_rotmat):
         """
         compute the error between the rjlinstance's end and tgt_pos, tgt_rotmat
@@ -182,7 +179,6 @@ class JLChainIK(object):
             deltapw[3:6] = rm.deltaw_between_rotmat(tcp_gl_rotmat, tgt_rot)
             return deltapw
 
-
     def regulate_jnts(self):
         """
         check if the given jntvalues is inside the oeprating range
@@ -201,7 +197,6 @@ class JLChainIK(object):
                                       self.jlc_object.jnts[id]['motion_rng'][1],
                                       self.jlc_object.jnts[id]["movement"])
             counter += 1
-
 
     def check_jntranges_drag(self, jnt_values):
         """
@@ -248,15 +243,15 @@ class JLChainIK(object):
                         "rngmin"]) / 2
         return isdragged, jntvaluesdragged
 
-
     def num_ik(self,
                tgt_pos,
                tgt_rot,
                seed_jnt_values=None,
+               max_niter = 100,
                tcp_jntid=None,
                tcp_loc_pos=None,
                tcp_loc_rotmat=None,
-               local_minima="accept",
+               local_minima="randomrestart",
                toggle_debug=False):
         """
         solveik numerically using the Levenberg-Marquardt Method
@@ -265,6 +260,7 @@ class JLChainIK(object):
         :param tgt_pos: the position of the goal, 1-by-3 numpy ndarray
         :param tgt_rot: the orientation of the goal, 3-by-3 numpyndarray
         :param seed_jnt_values: the starting configuration used in the numerical iteration
+        :param max_niter: max number of numercial iternations
         :param tcp_jntid: a joint ID in the self.tgtjnts
         :param tcp_loc_pos: 1x3 nparray, decribed in the local frame of self.jnts[tcp_jntid], single value or list
         :param tcp_loc_rotmat: 3x3 nparray, decribed in the local frame of self.jnts[tcp_jntid], single value or list
@@ -275,7 +271,7 @@ class JLChainIK(object):
         """
         deltapos = tgt_pos - self.jlc_object.jnts[0]['gl_pos0']
         if np.linalg.norm(deltapos) > self.max_rng:
-            wns.WarningMessage("The goal is outside maximum range!")
+            print("The goal is outside maximum range!")
             return None
         if tcp_jntid is None:
             tcp_jntid = self.jlc_object.tcp_jntid
@@ -303,7 +299,6 @@ class JLChainIK(object):
             ws_wtdiagmat = np.diag(diaglist)
         else:
             ws_wtdiagmat = np.diag(self.ws_wtlist)
-        # sqrtinv_ws_wtdiagmat = np.linalg.inv(np.diag(np.sqrt(np.diag(ws_wtdiagmat))))
         if toggle_debug:
             if "jlm" not in dir():
                 import robot_sim._kinematics.jlchain_mesh as jlm
@@ -313,9 +308,10 @@ class JLChainIK(object):
             dqcorrected = []
             dqnull = []
             ajpath = []
+        random_restart = False
         errnormlast = 0.0
         errnormmax = 0.0
-        for i in range(100):
+        for i in range(max_niter):
             j = self.jacobian(tcp_jntid)
             err = self.tcp_error(tgt_pos, tgt_rot, tcp_jntid, tcp_loc_pos, tcp_loc_rotmat)
             errnorm = err.T.dot(ws_wtdiagmat).dot(err)
@@ -327,6 +323,7 @@ class JLChainIK(object):
                 ajpath.append(self.jlc_object.get_jnt_values())
             if errnorm < 1e-6:
                 if toggle_debug:
+                    print(f"Number of IK iterations before finding a result: {i}")
                     fig = plt.figure()
                     axbefore = fig.add_subplot(411)
                     axbefore.set_title('Original dq')
@@ -340,7 +337,6 @@ class JLChainIK(object):
                     axcorrec.plot(dqcorrected)
                     axaj.plot(ajpath)
                     plt.show()
-                # self.regulate_jnts()
                 jntvalues_return = self.jlc_object.get_jnt_values()
                 self.jlc_object.fk(jnt_values=jnt_values_bk)
                 return jntvalues_return
@@ -362,15 +358,15 @@ class JLChainIK(object):
                         axaj.plot(ajpath)
                         plt.show()
                     if local_minima == 'accept':
-                        wns.warn(
-                            'Bypassing local minima! The return value is a local minima, rather than the exact IK result.')
+                        print('Bypassing local minima! The return value is a local minima, not an exact IK result.')
                         jntvalues_return = self.jlc_object.get_jnt_values()
                         self.jlc_object.fk(jnt_values_bk)
                         return jntvalues_return
                     elif local_minima == 'randomrestart':
-                        wns.warn('Local Minima! Random restart at local minima!')
+                        print('Local Minima! Random restart at local minima!')
                         jnt_values_iter = self.jlc_object.rand_conf()
                         self.jlc_object.fk(jnt_values_iter)
+                        random_restart = True
                         continue
                     else:
                         print('No feasible IK solution!')
@@ -401,18 +397,28 @@ class JLChainIK(object):
                     # jsharp = j.T.dot(np.linalg.inv(jjt + damper))
                     # weighted jjt
                     qs_wtdiagmat = self._wln_weightmat(jnt_values_iter)
-                    # print(jnt_values_iter)
-                    # print(qs_wtdiagmat)
-                    winv_jt = np.linalg.inv(qs_wtdiagmat).dot(j.T)
-                    j_winv_jt = j.dot(winv_jt)
-                    damper = dampercoeff * np.identity(j_winv_jt.shape[0])
-                    jsharp = winv_jt.dot(np.linalg.inv(j_winv_jt + damper))
+                    # WLN
+                    w_jt = qs_wtdiagmat.dot(j.T)
+                    j_w_jt = j.dot(w_jt)
+                    damper = dampercoeff * np.identity(j_w_jt.shape[0])
+                    jsharp = w_jt.dot(np.linalg.inv(j_w_jt + damper))
+                    # Clamping (Paper Name: Clamping weighted least-norm method for the manipulator kinematic control)
+                    phi_q = ((2 * jnt_values_iter - self.jmvmiddle) / self.jmvrng)
+                    clamping = -(np.identity(qs_wtdiagmat.shape[0]) - qs_wtdiagmat).dot(phi_q)
+                    # # if do not use WLN
+                    # j_jt = j.dot(j.T)
+                    # damper = dampercoeff * np.identity(j_jt.shape[0])
+                    # jsharp = j.T.dot(np.linalg.inv(j_jt + damper))
+                    # update dq
                     dq = .1 * jsharp.dot(err)
-                    # dq = rm.regulate_angle(-math.pi, math.pi, dq)
-                    # dq = Jsharp dx+(I-Jsharp J)dq0
-                    dqref = (jnt_values_ref - jnt_values_iter)
-                    dqref_on_ns = (np.identity(dqref.shape[0]) - jsharp.dot(j)).dot(dqref)
-                    # dqref_on_ns = rm.regulate_angle(-math.pi, math.pi, dqref_on_ns)
+                    if not random_restart:
+                        w_init = 0.1
+                    else:
+                        w_init = 0
+                    w_middle = 1
+                    ns_projmat = np.identity(jnt_values_iter.size) - jsharp.dot(j)
+                    dqref_init = (jnt_values_ref - jnt_values_iter)
+                    dqref_on_ns = ns_projmat.dot(w_init * dqref_init + w_middle * clamping)
                     dq_minimized = dq + dqref_on_ns
                     if toggle_debug:
                         dqbefore.append(dq)
@@ -420,7 +426,7 @@ class JLChainIK(object):
                         dqnull.append(dqref_on_ns)
                 jnt_values_iter += dq_minimized  # translation problem
                 # isdragged, jntvalues_iter = self.check_jntsrange_drag(jntvalues_iter)
-                # print(jntvalues_iter)
+                # print(jnt_values_iter)
                 self.jlc_object.fk(jnt_values=jnt_values_iter)
                 # if toggle_debug:
                 #     self.jlc_object.gen_stickmodel(tcp_jntid=tcp_jntid, tcp_loc_pos=tcp_loc_pos,
@@ -444,9 +450,8 @@ class JLChainIK(object):
                                            tcp_loc_rotmat=tcp_loc_rotmat, toggle_jntscs=True).attach_to(base)
             # base.run()
         self.jlc_object.fk(jnt_values_bk)
-        wns.warn('Failed to solve the IK, returning None.')
+        print('Failed to solve the IK, returning None.')
         return None
-
 
     def numik_rel(self, deltapos, deltarotmat, tcp_jntid=None, tcp_loc_pos=None, tcp_loc_rotmat=None):
         """

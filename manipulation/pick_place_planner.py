@@ -78,19 +78,17 @@ class PickPlacePlanner(adp.ADPlanner):
                 goal_jaw_center_pos = goal_pos + goal_rotmat.dot(jaw_center_pos)
                 goal_jaw_center_rotmat = goal_rotmat.dot(jaw_center_rotmat)
                 hnd_instance.grip_at_with_jcpose(goal_jaw_center_pos, goal_jaw_center_rotmat, jaw_width)
-                if not hnd_instance.is_mesh_collided(obstacle_list):  # common graspid without considering robots
+                if not hnd_instance.is_mesh_collided(obstacle_list):  # hnd_s cd
                     jnt_values = self.robot_s.ik(hand_name, goal_jaw_center_pos, goal_jaw_center_rotmat)
-                    if jnt_values is not None:  # common graspid consdiering robot_s ik
+                    if jnt_values is not None:  # common graspid with robot_s ik
                         if toggle_debug:
                             hnd_tmp = hnd_instance.copy()
                             hnd_tmp.gen_meshmodel(rgba=[0, 1, 0, .2]).attach_to(base)
                         self.robot_s.fk(hand_name, jnt_values)
-                        is_rbt_collided = self.robot_s.is_collided(
-                            obstacle_list)  # common graspid consdiering robot_s cd
+                        is_rbt_collided = self.robot_s.is_collided(obstacle_list)  # robot_s cd
                         # TODO is_obj_collided
-                        is_obj_collided = False  # common graspid consdiering obj cd
-                        if (not is_rbt_collided) and (
-                                not is_obj_collided):  # hnd_s cdfree, robot_s ikfeasible, robot_s cdfree
+                        is_obj_collided = False  # obj cd
+                        if (not is_rbt_collided) and (not is_obj_collided):  # hnd cdfree, rbt ikf/cdfree, obj cdfree
                             if toggle_debug:
                                 self.robot_s.gen_meshmodel(rgba=[0, 1, 0, .5]).attach_to(base)
                             previously_available_graspids.append(graspid)
@@ -152,7 +150,7 @@ class PickPlacePlanner(adp.ADPlanner):
         :return:
         """
         jnt_values_bk = self.robot_s.get_jnt_values(hand_name)
-        jawwidthbk = self.robot_s.get_jaw_width(hand_name)
+        jawwidthbk = self.robot_s.get_jawwidth(hand_name)
         # final
         conf_list = []
         jawwidthlist = []
@@ -308,10 +306,10 @@ class PickPlacePlanner(adp.ADPlanner):
     def gen_pick_and_place_motion(self,
                                   hand_name,
                                   objcm,
-                                  grasp_info_list,
-                                  goal_homomat_list,
                                   start_conf,
                                   end_conf,
+                                  grasp_info_list,
+                                  goal_homomat_list,
                                   approach_direction_list,
                                   approach_distance_list,
                                   depart_direction_list,
@@ -328,8 +326,8 @@ class PickPlacePlanner(adp.ADPlanner):
         :param objcm:
         :param grasp_info_list:
         :param goal_homomat_list:
-        :param start_conf:
-        :param end_conf:
+        :param start_conf: RRT motion between start_conf and pre_approach; No RRT motion if None
+        :param end_conf: RRT motion between post_depart and end_conf; Noe RRT motion if None
         :param approach_direction_list: the first element will be the pick approach direction
         :param approach_distance_list: the first element will be the pick approach direction
         :param depart_direction_list: the last element will be the release depart direction
@@ -345,9 +343,9 @@ class PickPlacePlanner(adp.ADPlanner):
         date: 20191122, 20200105
         """
         if approach_jawwidth is None:
-            approach_jawwidth = self.robot_s.hnd_dict[hand_name].jaw_width_rng[1]
+            approach_jawwidth = self.robot_s.hnd_dict[hand_name].jawwidth_rng[1]
         if depart_jawwidth is None:
-            depart_jawwidth = self.robot_s.hnd_dict[hand_name].jaw_width_rng[1]
+            depart_jawwidth = self.robot_s.hnd_dict[hand_name].jawwidth_rng[1]
         first_goal_pos = goal_homomat_list[0][:3, 3]
         first_goal_rotmat = goal_homomat_list[0][:3, :3]
         last_goal_pos = goal_homomat_list[-1][:3, 3]
@@ -358,6 +356,9 @@ class PickPlacePlanner(adp.ADPlanner):
             common_grasp_id_list, _ = self.find_common_graspids(hand_name,
                                                                 grasp_info_list,
                                                                 goal_homomat_list)
+        if len(common_grasp_id_list) == 0:
+            print("No common grasp id at the given goal homomats!")
+            return None, None, None
         for grasp_id in common_grasp_id_list:
             grasp_info = grasp_info_list[grasp_id]
             jaw_width, jaw_center_pos, jaw_center_rotmat, hnd_pos, hnd_rotmat = grasp_info
@@ -380,18 +381,18 @@ class PickPlacePlanner(adp.ADPlanner):
                 continue
             # middle
             conf_list_middle, jawwidthlist_middle, objpose_list_middle = \
-                pp_planner.gen_holding_moveto(hand_name=hand_name,
-                                              objcm=objcm,
-                                              grasp_info=grasp_info,
-                                              obj_pose_list=goal_homomat_list,
-                                              depart_direction_list=depart_direction_list,
-                                              approach_direction_list=approach_direction_list,
-                                              depart_distance_list=depart_distance_list,
-                                              approach_distance_list=approach_distance_list,
-                                              ad_granularity=.003,
-                                              use_rrt=use_rrt,
-                                              obstacle_list=[],
-                                              seed_jnt_values=conf_list_approach[-1])
+                self.gen_holding_moveto(hand_name=hand_name,
+                                        objcm=objcm,
+                                        grasp_info=grasp_info,
+                                        obj_pose_list=goal_homomat_list,
+                                        depart_direction_list=depart_direction_list,
+                                        approach_direction_list=approach_direction_list,
+                                        depart_distance_list=depart_distance_list,
+                                        approach_distance_list=approach_distance_list,
+                                        ad_granularity=.003,
+                                        use_rrt=use_rrt,
+                                        obstacle_list=[],
+                                        seed_jnt_values=conf_list_approach[-1])
             if conf_list_middle is None:
                 continue
             # departure

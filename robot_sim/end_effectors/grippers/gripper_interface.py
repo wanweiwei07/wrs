@@ -26,7 +26,7 @@ class GripperInterface(object):
         self.jaw_center_pos = np.zeros(3)
         self.jaw_center_rotmat = np.eye(3)
         # jaw width
-        self.jaw_width_rng = [0.0, 5.0]
+        self.jawwidth_rng = [0.0, 5.0]
         # collision detection
         self.cc = None
         # cd mesh collection for precise collision checking
@@ -73,7 +73,7 @@ class GripperInterface(object):
     def jaw_to(self, jaw_width):
         raise NotImplementedError
 
-    def get_jaw_width(self):
+    def get_jawwidth(self):
         raise NotImplementedError
 
     def grip_at_with_jczy(self, gl_jaw_center_pos, gl_jaw_center_z, gl_jaw_center_y, jaw_width):

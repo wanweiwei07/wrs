@@ -327,7 +327,7 @@ class Nextage(ri.RobotInterface):
     def ik(self,
            component_name,
            tgt_pos,
-           tgt_rot,
+           tgt_rotmat,
            seed_jnt_values=None,
            tcp_jntid=None,
            tcp_loc_pos=None,
@@ -338,7 +338,7 @@ class Nextage(ri.RobotInterface):
             old_tgt_jnts = self.manipulator_dict[component_name].tgtjnts
             self.manipulator_dict[component_name].tgtjnts = range(2, self.manipulator_dict[component_name].ndof + 1)
             ik_results = self.manipulator_dict[component_name].ik(tgt_pos,
-                                                                  tgt_rot,
+                                                                  tgt_rotmat,
                                                                   seed_jnt_values=seed_jnt_values,
                                                                   tcp_jntid=tcp_jntid,
                                                                   tcp_loc_pos=tcp_loc_pos,
@@ -349,7 +349,7 @@ class Nextage(ri.RobotInterface):
             return ik_results
         elif component_name == 'lft_arm_waist' or component_name == 'rgt_arm_waist':
             return self.manipulator_dict[component_name].ik(tgt_pos,
-                                                            tgt_rot,
+                                                            tgt_rotmat,
                                                             seed_jnt_values=seed_jnt_values,
                                                             tcp_jntid=tcp_jntid,
                                                             tcp_loc_pos=tcp_loc_pos,

@@ -28,10 +28,10 @@ if __name__ == '__main__':
     robot_s = ur3d.UR3Dual()
     start_pos = np.array([.4, .3, 1.11])
     start_rotmat = rm.rotmat_from_euler(ai=math.pi/2, aj=math.pi, ak=0, axes='szxz')
-    start_conf = robot_s.ik(component_name=component_name, tgt_pos=start_pos, tgt_rot=start_rotmat)
+    start_conf = robot_s.ik(component_name=component_name, tgt_pos=start_pos, tgt_rotmat=start_rotmat)
     goal_pos = np.array([.4, .7, 1.11])
     goal_rotmat = rm.rotmat_from_euler(ai=math.pi/2, aj=math.pi, ak=0, axes='szxz')
-    goal_conf = robot_s.ik(component_name=component_name, tgt_pos=goal_pos, tgt_rot=goal_rotmat)
+    goal_conf = robot_s.ik(component_name=component_name, tgt_pos=goal_pos, tgt_rotmat=goal_rotmat)
 
     # 経路計画
     rrtc_planner = rrtc.RRTConnect(robot_s)

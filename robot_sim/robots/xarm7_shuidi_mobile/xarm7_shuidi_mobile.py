@@ -147,28 +147,6 @@ class XArm7YunjiMobile(ri.RobotInterface):
             obj_info['gl_pos'] = gl_pos
             obj_info['gl_rotmat'] = gl_rotmat
 
-    def ik(self,
-           component_name,
-           tgt_pos,
-           tgt_rotmat,
-           seed_jnt_values=None,
-           tcp_jntid=None,
-           tcp_loc_pos=None,
-           tcp_loc_rotmat=None,
-           local_minima="accept",
-           toggle_debug=False):
-        if component_name == 'arm':
-            return self.arm.ik(tgt_pos,
-                               tgt_rotmat,
-                               seed_jnt_values=seed_jnt_values,
-                               tcp_jntid=tcp_jntid,
-                               tcp_loc_pos=tcp_loc_pos,
-                               tcp_loc_rotmat=tcp_loc_rotmat,
-                               local_minima=local_minima,
-                               toggle_debug=toggle_debug)
-        elif component_name == 'agv_arm' or component_name == 'all':
-            pass
-
     def get_jnt_values(self, component_name):
         if component_name == 'arm':
             return self.arm.get_jnt_values()
@@ -188,22 +166,15 @@ class XArm7YunjiMobile(ri.RobotInterface):
             return_val[:2] = self.pos[:2]
             return_val[2] = np.linalg.norm(rm.deltaw_between_rotmat(np.eye(3), self.rotmat))
             return_val[3:10] = self.arm.get_jnt_values()[:]
-            return_val[10] = self.hnd.get_jaw_width()
+            return_val[10] = self.hnd.get_jawwidth()
             return return_val
 
     def rand_conf(self, component_name):
-        if component_name == 'arm':
-            return self.arm.rand_conf()
-        if component_name == 'agv':
-            raise NotImplementedError
-        if component_name == 'agv_arm':
-            raise NotImplementedError
+        if component_name in self.manipulator_dict:
+            return super().rand_conf(component_name)
 
     def jaw_to(self, hnd_name='hnd_s', jawwidth=0.0):
         self.hnd.jaw_to(jawwidth)
-
-    def get_jawwidth(self):
-        return self.hnd.get_jaw_width()
 
     def hold(self, hnd_name, objcm, jawwidth=None):
         """

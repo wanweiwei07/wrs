@@ -281,9 +281,6 @@ class Yumi(ri.RobotInterface):
         else:
             raise ValueError("The given component name is not available!")
 
-    def get_jaw_width(self, hand_name):
-        return self.hnd_dict[hand_name].get_jaw_width()
-
     def rand_conf(self, component_name):
         """
         override robot_interface.rand_conf

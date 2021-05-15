@@ -25,7 +25,7 @@ component_name = 'rgt_arm'
 #スタート位置
 start_pos = np.array([.2, -.55, 1.2])
 start_rotmat = rm.rotmat_from_euler(ai=math.pi / 2, aj=math.pi, ak=0, axes="szxz")
-start_angle = robot_s.ik(component_name=component_name, tgt_pos=start_pos, tgt_rot=start_rotmat)
+start_angle = robot_s.ik(component_name=component_name, tgt_pos=start_pos, tgt_rotmat=start_rotmat)
 #start_angle = np.array([0, -math.pi / 2, math.pi / 6, 0, math.pi / 2, -math.pi])
 
 print(start_angle)
@@ -33,7 +33,7 @@ print(start_angle)
 #終端
 end_pos = np.array([.4, -.5, 1.2])
 end_rotmat = rm.rotmat_from_euler(ai=math.pi / 2, aj=math.pi / 2, ak=0, axes="szxz")
-end_angle = robot_s.ik(component_name=component_name, tgt_pos=end_pos, tgt_rot=end_rotmat)
+end_angle = robot_s.ik(component_name=component_name, tgt_pos=end_pos, tgt_rotmat=end_rotmat)
 #end_angle = np.array([0, math.pi / 6, math.pi / 3, -math.pi / 8, -math.pi / 5, math.pi / 10])
 
 print(end_angle)

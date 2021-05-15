@@ -24,11 +24,11 @@ robot_s = ur3d.UR3Dual()
 #スタート状態の定義
 start_pos = np.array([0.1, -0.55, 1.2])
 start_rotmat = rm.rotmat_from_euler(ai=math.pi/2, aj=math.pi, ak=0, axes='szxz')
-start_conf = robot_s.ik(component_name=component_name, tgt_pos=start_pos, tgt_rot=start_rotmat)
+start_conf = robot_s.ik(component_name=component_name, tgt_pos=start_pos, tgt_rotmat=start_rotmat)
 #ゴール状態の定義
 goal_pos = np.array([0.5, -0.5, 1.2])
 goal_rotmat = rm.rotmat_from_euler(ai=math.pi/2, aj=math.pi, ak=0, axes='szxz')
-goal_conf = robot_s.ik(component_name=component_name, tgt_pos=goal_pos, tgt_rot=goal_rotmat)
+goal_conf = robot_s.ik(component_name=component_name, tgt_pos=goal_pos, tgt_rotmat=goal_rotmat)
 
 rrtc_planner = rrtc.RRTConnect(robot_s)
 path = rrtc_planner.plan(component_name=component_name,

@@ -104,7 +104,7 @@ class Cobotta(ri.RobotInterface):
 
     def ik(self,
            tgt_pos,
-           tgt_rot,
+           tgt_rotmat,
            component_name='arm',
            seed_jnt_values=None,
            tcp_jntid=None,
@@ -114,7 +114,7 @@ class Cobotta(ri.RobotInterface):
            toggle_debug=False):
         if component_name == 'arm':
             return self.arm.ik(tgt_pos,
-                               tgt_rot,
+                               tgt_rotmat,
                                seed_jnt_values=seed_jnt_values,
                                tcp_jntid=tcp_jntid,
                                tcp_loc_pos=tcp_loc_pos,
@@ -140,7 +140,7 @@ class Cobotta(ri.RobotInterface):
         self.hnd.jaw_to(jawwidth)
 
     def get_jawwidth(self):
-        return self.hnd.get_jaw_width()
+        return self.hnd.get_jawwidth()
 
     def hold(self, objcm, jawwidth=None):
         """
