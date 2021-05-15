@@ -39,7 +39,7 @@ class YumiGripper(gp.GripperInterface):
         self.lft.reinitialize(cdmesh_type=cdmesh_type)
         self.rgt.reinitialize(cdmesh_type=cdmesh_type)
         # jaw width
-        self.jaw_width_rng = [0.0, .05]
+        self.jawwidth_rng = [0.0, .05]
         # jaw center
         self.jaw_center_pos = np.array([0,0,.13])
         # collision detection
@@ -88,10 +88,10 @@ class YumiGripper(gp.GripperInterface):
         else:
             raise ValueError("The motion_val parameter is out of range!")
 
-    def jaw_to(self, jaw_width):
-        if jaw_width > .05:
-            raise ValueError("The jaw_width parameter is out of range!")
-        self.fk(motion_val=-jaw_width / 2.0)
+    def jaw_to(self, jawwidth):
+        if jawwidth > .05:
+            raise ValueError("The jawwidth parameter is out of range!")
+        self.fk(motion_val=-jawwidth / 2.0)
 
     def get_jawwidth(self):
         return -self.lft.jnts[1]['motion_val']*2

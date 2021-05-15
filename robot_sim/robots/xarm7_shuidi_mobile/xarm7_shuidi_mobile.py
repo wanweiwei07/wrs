@@ -48,6 +48,7 @@ class XArm7YunjiMobile(ri.RobotInterface):
         self.manipulator_dict['arm'] = self.arm
         self.manipulator_dict['hnd'] = self.arm # specify which hand is a gripper installed to
         self.hnd_dict['hnd'] = self.hnd
+        self.hnd_dict['arm'] = self.hnd
 
     def enable_cc(self):
         # TODO when pose is changed, oih info goes wrong
@@ -109,11 +110,23 @@ class XArm7YunjiMobile(ri.RobotInterface):
         author: weiwei
         date: 20201208toyonaka
         """
-        if component_name == 'arm':
+        def update_oih(component_name='rgt_arm'):
+            for obj_info in self.oih_infos:
+                gl_pos, gl_rotmat = self.cvt_loc_tcp_to_gl(component_name, obj_info['rel_pos'], obj_info['rel_rotmat'])
+                obj_info['gl_pos'] = gl_pos
+                obj_info['gl_rotmat'] = gl_rotmat
+
+        def update_component(component_name, jnt_values):
+            self.manipulator_dict[component_name].fk(jnt_values=jnt_values)
+            self.hnd_dict[component_name].fix_to(
+                pos=self.manipulator_dict[component_name].jnts[-1]['gl_posq'],
+                rotmat=self.manipulator_dict[component_name].jnts[-1]['gl_rotmatq'])
+            update_oih(component_name=component_name)
+
+        if component_name in self.manipulator_dict:
             if not isinstance(jnt_values, np.ndarray) or jnt_values.size != 7:
                 raise ValueError("An 1x7 npdarray must be specified to move the arm!")
-            self.arm.fk(jnt_values=jnt_values)
-            self.hnd.fix_to(pos=self.arm.jnts[-1]['gl_posq'], rotmat=self.arm.jnts[-1]['gl_rotmatq'])
+            update_component(component_name, jnt_values)
         elif component_name == 'agv':
             if not isinstance(jnt_values, np.ndarray) or jnt_values.size != 3:
                 raise ValueError("An 1x7 npdarray must be specified to move the agv!")
@@ -148,7 +161,7 @@ class XArm7YunjiMobile(ri.RobotInterface):
             obj_info['gl_rotmat'] = gl_rotmat
 
     def get_jnt_values(self, component_name):
-        if component_name == 'arm':
+        if component_name in self.manipulator_dict:
             return self.arm.get_jnt_values()
         elif component_name == 'agv':
             return_val = np.zeros(3)

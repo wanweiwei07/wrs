@@ -57,7 +57,15 @@ conf_list, jawwidth_list, objpose_list = \
 robot_attached_list = []
 object_attached_list = []
 counter = [0]
-def update(robot_s, object_box, robot_path, obj_path, robot_attached_list, object_attached_list, counter, task):
+def update(robot_s,
+           object_box,
+           robot_path,
+           jawwidth_path,
+           obj_path,
+           robot_attached_list,
+           object_attached_list,
+           counter,
+           task):
     if counter[0] >= len(robot_path):
         counter[0] = 0
     if len(robot_attached_list) != 0:
@@ -69,11 +77,13 @@ def update(robot_s, object_box, robot_path, obj_path, robot_attached_list, objec
         object_attached_list.clear()
     pose = robot_path[counter[0]]
     robot_s.fk(manipulator_name, pose)
+    robot_s.jaw_to(hand_name, jawwidth_path[counter[0]])
     robot_meshmodel = robot_s.gen_meshmodel()
     robot_meshmodel.attach_to(base)
     robot_attached_list.append(robot_meshmodel)
     obj_pose = obj_path[counter[0]]
     objb_copy = object_box.copy()
+    objb_copy.set_rgba([1,0,0,1])
     objb_copy.set_homomat(obj_pose)
     objb_copy.attach_to(base)
     object_attached_list.append(objb_copy)
@@ -81,7 +91,13 @@ def update(robot_s, object_box, robot_path, obj_path, robot_attached_list, objec
     return task.again
 
 taskMgr.doMethodLater(0.01, update, "update",
-                      extraArgs=[robot_s, object_box, conf_list, objpose_list, robot_attached_list,
-                                 object_attached_list, counter],
+                      extraArgs=[robot_s,
+                                 object_box,
+                                 conf_list,
+                                 jawwidth_list,
+                                 objpose_list,
+                                 robot_attached_list,
+                                 object_attached_list,
+                                 counter],
                       appendTask=True)
 base.run()

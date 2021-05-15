@@ -52,7 +52,7 @@ class PickPlacePlanner(adp.ADPlanner):
         """
         find the common collision free and IK feasible graspids
         :param hand_name: a component may have multiple hands
-        :param grasp_info_list: a list like [[jaw_width, gl_jaw_center_pos, pos, rotmat], ...]
+        :param grasp_info_list: a list like [[jawwidth, gl_jaw_center_pos, pos, rotmat], ...]
         :param goal_homomat_list: [homomat, ...]
         :param obstacle_list
         :return: [final_available_graspids, intermediate_available_graspids]
@@ -150,7 +150,7 @@ class PickPlacePlanner(adp.ADPlanner):
         :return:
         """
         jnt_values_bk = self.robot_s.get_jnt_values(hand_name)
-        jawwidthbk = self.robot_s.get_jawwidth(hand_name)
+        jawwidth_bk = self.robot_s.get_jawwidth(hand_name)
         # final
         conf_list = []
         jawwidthlist = []
@@ -210,7 +210,7 @@ class PickPlacePlanner(adp.ADPlanner):
                                                                     type='source')
             if conf_list_depart is None:
                 print(f"Cannot generate the linear part of the {i}th holding depart motion!")
-                self.robot_s.release(hand_name, objcm_copy, jawwidthbk)
+                self.robot_s.release(hand_name, objcm_copy, jawwidth_bk)
                 self.robot_s.fk(component_name=hand_name, jnt_values=jnt_values_bk)
                 return None, None, None
             jawwidthlist_depart = self.gen_jawwidth_motion(conf_list_depart, jaw_width)
@@ -219,6 +219,8 @@ class PickPlacePlanner(adp.ADPlanner):
                                                          obj_pos=rel_obj_pos,
                                                          obj_rotmat=rel_obj_rotmat,
                                                          type='relative')
+            for item in objpose_list_depart:
+                print(item[:3,3])
             if use_rrt:  # if use rrt, we shall find start and goal conf first and then perform rrt
                 # approach linear
                 seed_conf = conf_list_depart[-1]
@@ -233,7 +235,7 @@ class PickPlacePlanner(adp.ADPlanner):
                                                                           type='sink')
                 if conf_list_approach is None:
                     print(f"Cannot generate the linear part of the {i}th holding approach motion!")
-                    self.robot_s.release(hand_name, objcm_copy, jawwidthbk)
+                    self.robot_s.release(hand_name, objcm_copy, jawwidth_bk)
                     self.robot_s.fk(component_name=hand_name, jnt_values=jnt_values_bk)
                     return None, None, None
                 conf_list_middle = self.rrtc_planner.plan(component_name=hand_name,
@@ -245,7 +247,7 @@ class PickPlacePlanner(adp.ADPlanner):
                                                           max_iter=300)
                 if conf_list_middle is None:
                     print(f"Cannot generate the rrtc part of the {i}th holding approach motion!")
-                    self.robot_s.release(hand_name, objcm_copy, jawwidthbk)
+                    self.robot_s.release(hand_name, objcm_copy, jawwidth_bk)
                     self.robot_s.fk(component_name=hand_name, jnt_values=jnt_values_bk)
                     return None, None, None
             else:  # if do not use rrt, we start from depart end to mid end and then approach from mid end to goal
@@ -264,7 +266,7 @@ class PickPlacePlanner(adp.ADPlanner):
                                                                     seed_jnt_values=seed_conf)
                 if conf_list_middle is None:
                     print(f"Cannot generate the rrtc part of the {i}th holding approach motion!")
-                    self.robot_s.release(hand_name, objcm_copy, jawwidthbk)
+                    self.robot_s.release(hand_name, objcm_copy, jawwidth_bk)
                     self.robot_s.fk(component_name=hand_name, jnt_values=jnt_values_bk)
                     return None, None, None
                 # approach linear
@@ -280,7 +282,7 @@ class PickPlacePlanner(adp.ADPlanner):
                                                                           type='sink')
                 if conf_list_approach is None:
                     print(f"Cannot generate the linear part of the {i}th holding approach motion!")
-                    self.robot_s.release(hand_name, objcm_copy, jawwidthbk)
+                    self.robot_s.release(hand_name, objcm_copy, jawwidth_bk)
                     self.robot_s.fk(component_name=hand_name, jnt_values=jnt_values_bk)
                     return None, None, None
             jawwidthlist_approach = self.gen_jawwidth_motion(conf_list_approach, jaw_width)
@@ -299,7 +301,7 @@ class PickPlacePlanner(adp.ADPlanner):
             jawwidthlist = jawwidthlist + jawwidthlist_depart + jawwidthlist_middle + jawwidthlist_approach
             objpose_list = objpose_list + objpose_list_depart + objpose_list_middle + objpose_list_approach
             seed_conf = conf_list[-1]
-        self.robot_s.release(hand_name, objcm_copy, jawwidthbk)
+        self.robot_s.release(hand_name, objcm_copy, jawwidth_bk)
         self.robot_s.fk(component_name=hand_name, jnt_values=jnt_values_bk)
         return conf_list, jawwidthlist, objpose_list
 
@@ -349,7 +351,7 @@ class PickPlacePlanner(adp.ADPlanner):
         first_goal_pos = goal_homomat_list[0][:3, 3]
         first_goal_rotmat = goal_homomat_list[0][:3, :3]
         last_goal_pos = goal_homomat_list[-1][:3, 3]
-        last_goal_rotmat = goal_homomat_list[0][:3, :3]
+        last_goal_rotmat = goal_homomat_list[-1][:3, :3]
         if use_incremental:
             common_grasp_id_list = range(len(grasp_info_list))
         else:

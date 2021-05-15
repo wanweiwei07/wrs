@@ -425,8 +425,8 @@ class Nextage(ri.RobotInterface):
         #     self.rgt_oih_infos.append(self.cc.add_cdobj(objcm, rel_pos, rel_rotmat, intolist))
         # else:
         #     raise ValueError("hand_name must be lft_hnd or rgt_hnd!")
-        # if jaw_width is not None:
-        #     self.jaw_to(hand_name, jaw_width)
+        # if jawwidth is not None:
+        #     self.jaw_to(hand_name, jawwidth)
         # return rel_pos, rel_rotmat
 
     def get_loc_pose_from_hio(self, hio_pos, hio_rotmat, component_name='lft_arm'):

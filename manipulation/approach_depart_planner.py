@@ -37,7 +37,7 @@ class ADPlanner(object):  # AD = Approach_Depart
                             granularity=0.03,
                             obstacle_list=[],
                             seed_jnt_values=None,
-                            toggle_end_grasp='False',
+                            toggle_end_grasp=False,
                             end_jawwidth=.0):
         """
 
@@ -201,7 +201,7 @@ class ADPlanner(object):  # AD = Approach_Depart
                             granularity=.03,
                             obstacle_list=[],
                             seed_jnt_values=None,
-                            toggle_end_grasp='False',
+                            toggle_end_grasp=False,
                             end_jawwidth=.0):
         if seed_jnt_values is None:
             seed_jnt_values = start_conf

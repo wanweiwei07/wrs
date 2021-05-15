@@ -154,9 +154,11 @@ class XArmGripper(gi.GripperInterface):
             raise ValueError("The angle parameter is out of range!")
 
     def jaw_to(self, jaw_width):
-        if jaw_width > 0.082:
-            raise ValueError("jaw_width must be 0mm~82mm!")
+        if jaw_width > 0.085:
+            raise ValueError("jawwidth must be 0mm~85mm!")
         angle = .85 - math.asin(jaw_width/2.0/0.055)
+        if angle < 0:
+            angle = 0
         self.fk(angle)
 
     def get_jawwidth(self):

@@ -90,7 +90,7 @@ class RobotiqHE(gp.GripperInterface):
 
     def jaw_to(self, jawwidth):
         if jawwidth > .05:
-            raise ValueError("The jaw_width parameter is out of range!")
+            raise ValueError("The jawwidth parameter is out of range!")
         self.fk(motion_val=(0.05-jawwidth) / 2.0)
 
     def gen_stickmodel(self,
