@@ -304,7 +304,7 @@ class PickPlacePlanner(adp.ADPlanner):
         return conf_list, jawwidthlist, objpose_list
 
     def gen_pick_and_place_motion(self,
-                                  hand_name,
+                                  hnd_name,
                                   objcm,
                                   start_conf,
                                   end_conf,
@@ -322,7 +322,7 @@ class PickPlacePlanner(adp.ADPlanner):
                                   use_incremental=False):
         """
 
-        :param hand_name:
+        :param hnd_name:
         :param objcm:
         :param grasp_info_list:
         :param goal_homomat_list:
@@ -343,9 +343,9 @@ class PickPlacePlanner(adp.ADPlanner):
         date: 20191122, 20200105
         """
         if approach_jawwidth is None:
-            approach_jawwidth = self.robot_s.hnd_dict[hand_name].jawwidth_rng[1]
+            approach_jawwidth = self.robot_s.hnd_dict[hnd_name].jawwidth_rng[1]
         if depart_jawwidth is None:
-            depart_jawwidth = self.robot_s.hnd_dict[hand_name].jawwidth_rng[1]
+            depart_jawwidth = self.robot_s.hnd_dict[hnd_name].jawwidth_rng[1]
         first_goal_pos = goal_homomat_list[0][:3, 3]
         first_goal_rotmat = goal_homomat_list[0][:3, :3]
         last_goal_pos = goal_homomat_list[-1][:3, 3]
@@ -353,7 +353,7 @@ class PickPlacePlanner(adp.ADPlanner):
         if use_incremental:
             common_grasp_id_list = range(len(grasp_info_list))
         else:
-            common_grasp_id_list, _ = self.find_common_graspids(hand_name,
+            common_grasp_id_list, _ = self.find_common_graspids(hnd_name,
                                                                 grasp_info_list,
                                                                 goal_homomat_list)
         if len(common_grasp_id_list) == 0:
@@ -365,8 +365,12 @@ class PickPlacePlanner(adp.ADPlanner):
             # approach
             first_jaw_center_pos = first_goal_rotmat.dot(jaw_center_pos) + first_goal_pos
             first_jaw_center_rotmat = first_goal_rotmat.dot(jaw_center_rotmat)
+            # objcm as an obstacle
+            objcm_copy = objcm.copy()
+            objcm_copy.set_pos(first_goal_pos)
+            objcm_copy.set_rotmat(first_goal_rotmat)
             conf_list_approach, jawwidthlist_approach = \
-                self.gen_approach_motion(component_name=hand_name,
+                self.gen_approach_motion(component_name=hnd_name,
                                          goal_tcp_pos=first_jaw_center_pos,
                                          goal_tcp_rotmat=first_jaw_center_rotmat,
                                          start_conf=start_conf,
@@ -375,13 +379,14 @@ class PickPlacePlanner(adp.ADPlanner):
                                          approach_jawwidth=approach_jawwidth,
                                          granularity=ad_granularity,
                                          obstacle_list=obstacle_list,
+                                         object_list=[objcm_copy],
                                          seed_jnt_values=start_conf)
             if conf_list_approach is None:
                 print("Cannot generate the pick motion!")
                 continue
             # middle
             conf_list_middle, jawwidthlist_middle, objpose_list_middle = \
-                self.gen_holding_moveto(hand_name=hand_name,
+                self.gen_holding_moveto(hand_name=hnd_name,
                                         objcm=objcm,
                                         grasp_info=grasp_info,
                                         obj_pose_list=goal_homomat_list,
@@ -398,8 +403,11 @@ class PickPlacePlanner(adp.ADPlanner):
             # departure
             last_jaw_center_pos = last_goal_rotmat.dot(jaw_center_pos) + last_goal_pos
             last_jaw_center_rotmat = last_goal_rotmat.dot(jaw_center_rotmat)
+            # objcm as an obstacle
+            objcm_copy.set_pos(last_goal_pos)
+            objcm_copy.set_rotmat(last_goal_rotmat)
             conf_list_depart, jawwidthlist_depart = \
-                self.gen_depart_motion(component_name=hand_name,
+                self.gen_depart_motion(component_name=hnd_name,
                                        start_tcp_pos=last_jaw_center_pos,
                                        start_tcp_rotmat=last_jaw_center_rotmat,
                                        end_conf=end_conf,
@@ -408,16 +416,17 @@ class PickPlacePlanner(adp.ADPlanner):
                                        depart_jawwidth=depart_jawwidth,
                                        granularity=ad_granularity,
                                        obstacle_list=obstacle_list,
+                                       object_list=[objcm_copy],
                                        seed_jnt_values=conf_list_middle[-1])
             if conf_list_depart is None:
                 print("Cannot generate the release motion!")
                 continue
-            objpose_list_approach = self.gen_object_motion(component_name=hand_name,
+            objpose_list_approach = self.gen_object_motion(component_name=hnd_name,
                                                            conf_list=jawwidthlist_approach,
                                                            obj_pos=first_goal_pos,
                                                            obj_rotmat=first_goal_rotmat,
                                                            type='absolute')
-            objpose_list_depart = self.gen_object_motion(component_name=hand_name,
+            objpose_list_depart = self.gen_object_motion(component_name=hnd_name,
                                                          conf_list=conf_list_depart,
                                                          obj_pos=last_goal_pos,
                                                          obj_rotmat=last_goal_rotmat,
@@ -459,11 +468,11 @@ if __name__ == '__main__':
     grasp_info = grasp_info_list[0]
     pp_planner = PickPlacePlanner(robot_s=robot_s)
     conf_list, jawwidth_list, objpose_list = \
-        pp_planner.gen_pick_and_place_motion(hand_name=hand_name,
+        pp_planner.gen_pick_and_place_motion(hnd_name=hand_name,
                                              objcm=objcm,
                                              grasp_info_list=grasp_info_list,
                                              goal_homomat_list=goal_homomat_list,
-                                             start_conf = robot_s.get_jnt_values(hand_name),
+                                             start_conf=robot_s.get_jnt_values(hand_name),
                                              end_conf=robot_s.get_jnt_values(hand_name),
                                              depart_direction_list=[np.array([0, 0, 1])] * len(goal_homomat_list),
                                              approach_direction_list=[np.array([0, 0, -1])] * len(goal_homomat_list),
@@ -479,7 +488,7 @@ if __name__ == '__main__':
                                              use_incremental=False)
     # for grasp_info in grasp_info_list:
     #     conf_list, jawwidth_list, objpose_list = \
-    #         pp_planner.gen_holding_moveto(hand_name=hand_name,
+    #         pp_planner.gen_holding_moveto(hnd_name=hnd_name,
     #                                       objcm=objcm,
     #                                       grasp_info=grasp_info,
     #                                       obj_pose_list=goal_homomat_list,
@@ -497,11 +506,12 @@ if __name__ == '__main__':
     #     if conf_list is not None:
     #         break
 
-
     # animation
     robot_attached_list = []
     object_attached_list = []
     counter = [0]
+
+
     def update(robot_s,
                hand_name,
                objcm,
@@ -534,6 +544,8 @@ if __name__ == '__main__':
         object_attached_list.append(objb_copy)
         counter[0] += 1
         return task.again
+
+
     taskMgr.doMethodLater(0.01, update, "update",
                           extraArgs=[robot_s,
                                      hand_name,

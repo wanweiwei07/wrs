@@ -189,7 +189,7 @@ if __name__ == '__main__':
     oik = FKOptBasedIK(yumi_instance, component_name=component_name, toggle_debug=False)
     # jnt_values, _ = oik.solve(tgt_pos, tgt_rotmat, np.zeros(7), method='SLSQP')
     # print(jnt_values)
-    # robot_s.fk(hand_name=hand_name, jnt_values=jnt_values)
+    # robot_s.fk(hnd_name=hnd_name, jnt_values=jnt_values)
     # yumi_meshmodel = robot_s.gen_meshmodel()
     # yumi_meshmodel.attach_to(base)
     start_pos = np.array([.5, -.3, .3])

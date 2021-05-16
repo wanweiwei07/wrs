@@ -253,9 +253,9 @@ class Nextage(ri.RobotInterface):
 
     def get_hnd_on_manipulator(self, manipulator_name):
         pass
-        # if hand_name == 'rgt_arm':
+        # if hnd_name == 'rgt_arm':
         #     return self.rgt_hnd
-        # elif hand_name == 'lft_arm':
+        # elif hnd_name == 'lft_arm':
         #     return self.lft_hnd
         # else:
         #     raise ValueError("The given jlc does not have a hand!")
@@ -276,7 +276,7 @@ class Nextage(ri.RobotInterface):
         """
         waist angle is transmitted to arms
         :param jnt_values: nparray 1x6 or 1x14 depending on component_names
-        :hand_name 'lft_arm', 'rgt_arm', 'lft_arm_waist', 'rgt_arm_wasit', 'both_arm'
+        :hnd_name 'lft_arm', 'rgt_arm', 'lft_arm_waist', 'rgt_arm_wasit', 'both_arm'
         :param component_name:
         :return:
         author: weiwei
@@ -387,7 +387,7 @@ class Nextage(ri.RobotInterface):
         :param objcm:
         :return:
         """
-        # if hand_name == 'lft_hnd':
+        # if hnd_name == 'lft_hnd':
         #     rel_pos, rel_rotmat = self.lft_arm.cvt_gl_to_loc_tcp(objcm.get_pos(), objcm.get_rotmat())
         #     intolist = [self.lft_body.lnks[0],
         #                 self.lft_body.lnks[1],
@@ -405,7 +405,7 @@ class Nextage(ri.RobotInterface):
         #                 self.rgt_hnd.lft.lnks[1],
         #                 self.rgt_hnd.rgt.lnks[1]]
         #     self.lft_oih_infos.append(self.cc.add_cdobj(objcm, rel_pos, rel_rotmat, intolist))
-        # elif hand_name == 'rgt_hnd':
+        # elif hnd_name == 'rgt_hnd':
         #     rel_pos, rel_rotmat = self.rgt_arm.cvt_gl_to_loc_tcp(objcm.get_pos(), objcm.get_rotmat())
         #     intolist = [self.lft_body.lnks[0],
         #                 self.lft_body.lnks[1],
@@ -424,9 +424,9 @@ class Nextage(ri.RobotInterface):
         #                 self.lft_hnd.rgt.lnks[1]]
         #     self.rgt_oih_infos.append(self.cc.add_cdobj(objcm, rel_pos, rel_rotmat, intolist))
         # else:
-        #     raise ValueError("hand_name must be lft_hnd or rgt_hnd!")
+        #     raise ValueError("hnd_name must be lft_hnd or rgt_hnd!")
         # if jawwidth is not None:
-        #     self.jaw_to(hand_name, jawwidth)
+        #     self.jaw_to(hnd_name, jawwidth)
         # return rel_pos, rel_rotmat
 
     def get_loc_pose_from_hio(self, hio_pos, hio_rotmat, component_name='lft_arm'):
@@ -482,7 +482,7 @@ class Nextage(ri.RobotInterface):
         elif hnd_name == 'rgt_hnd':
             oih_infos = self.rgt_oih_infos
         else:
-            raise ValueError("hand_name must be lft_hnd or rgt_hnd!")
+            raise ValueError("hnd_name must be lft_hnd or rgt_hnd!")
         return_list = []
         for obj_info in oih_infos:
             objcm = obj_info['collisionmodel']
@@ -504,7 +504,7 @@ class Nextage(ri.RobotInterface):
         elif hnd_name == 'rgt_hnd':
             oih_infos = self.rgt_oih_infos
         else:
-            raise ValueError("hand_name must be lft_hnd or rgt_hnd!")
+            raise ValueError("hnd_name must be lft_hnd or rgt_hnd!")
         return_list = []
         for obj_info in oih_infos:
             return_list.append(rm.homomat_from_posrot(obj_info['gl_pos']), obj_info['gl_rotmat'])
@@ -525,7 +525,7 @@ class Nextage(ri.RobotInterface):
         elif hnd_name == 'rgt_hnd':
             oih_info_list = self.rgt_oih_infos
         else:
-            raise ValueError("hand_name must be lft_hnd or rgt_hnd!")
+            raise ValueError("hnd_name must be lft_hnd or rgt_hnd!")
         for obj_info in oih_info_list:
             if obj_info['collisionmodel'] is objcm:
                 return rm.homomat_from_posrot(obj_info['rel_pos']), obj_info['rel_rotmat']
@@ -543,7 +543,7 @@ class Nextage(ri.RobotInterface):
         elif hnd_name == 'rgt_hnd':
             oih_infos = self.rgt_oih_infos
         else:
-            raise ValueError("hand_name must be lft_hnd or rgt_hnd!")
+            raise ValueError("hnd_name must be lft_hnd or rgt_hnd!")
         if jaw_width is not None:
             self.jaw_to(hnd_name, jaw_width)
         for obj_info in oih_infos:
@@ -566,7 +566,7 @@ class Nextage(ri.RobotInterface):
         elif hnd_name == 'rgt_hnd':
             oih_infos = self.rgt_oih_infos
         else:
-            raise ValueError("hand_name must be lft_hnd or rgt_hnd!")
+            raise ValueError("hnd_name must be lft_hnd or rgt_hnd!")
         if jaw_width is not None:
             self.jaw_to(hnd_name, jaw_width)
         for obj_info in oih_infos:

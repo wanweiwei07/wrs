@@ -153,17 +153,17 @@ if __name__ == '__main__':
 
         def fk(self, component_name='all', jnt_values=np.zeros(2)):
             if component_name != 'all':
-                raise ValueError("Only support hand_name == 'all'!")
+                raise ValueError("Only support hnd_name == 'all'!")
             self.jlc.fk(jnt_values)
 
         def rand_conf(self, component_name='all'):
             if component_name != 'all':
-                raise ValueError("Only support hand_name == 'all'!")
+                raise ValueError("Only support hnd_name == 'all'!")
             return self.jlc.rand_conf()
 
         def get_jntvalues(self, component_name='all'):
             if component_name != 'all':
-                raise ValueError("Only support hand_name == 'all'!")
+                raise ValueError("Only support hnd_name == 'all'!")
             return self.jlc.get_jnt_values()
 
         def is_collided(self, obstacle_list=[], otherrobot_list=[]):
@@ -194,7 +194,7 @@ if __name__ == '__main__':
     robot = XYBot()
     rrtc = RRTConnect(robot)
     # path = rrtc.plan(seed_jnt_values=np.array([0, 0]), end_conf=np.array([5, 10]), obstacle_list=obstacle_list,
-    #                  ext_dist=1, rand_rate=70, max_time=300, hand_name=None, animation=True)
+    #                  ext_dist=1, rand_rate=70, max_time=300, hnd_name=None, animation=True)
     # plt.show()
     # nx.draw(rrt.roadmap, with_labels=True, font_weight='bold')
     # plt.show()

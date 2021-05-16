@@ -362,7 +362,7 @@ class UR3Dual(ri.RobotInterface):
     def fk(self, component_name, jnt_values):
         """
         :param jnt_values: nparray 1x6 or 1x12 depending on component_names
-        :hand_name 'lft_arm', 'rgt_arm', 'both_arm'
+        :hnd_name 'lft_arm', 'rgt_arm', 'both_arm'
         :param component_name:
         :return:
         author: weiwei
@@ -491,7 +491,7 @@ class UR3Dual(ri.RobotInterface):
                         self.rgt_arm.lnks[4]]
             self.rgt_oih_infos.append(self.cc.add_cdobj(objcm, rel_pos, rel_rotmat, intolist))
         else:
-            raise ValueError("hand_name must be lft_hnd or rgt_hnd!")
+            raise ValueError("hnd_name must be lft_hnd or rgt_hnd!")
         if jaw_width is not None:
             self.jaw_to(hnd_name, jaw_width)
         return rel_pos, rel_rotmat
@@ -549,7 +549,7 @@ class UR3Dual(ri.RobotInterface):
         elif hnd_name == 'rgt_hnd':
             oih_infos = self.rgt_oih_infos
         else:
-            raise ValueError("hand_name must be lft_hnd or rgt_hnd!")
+            raise ValueError("hnd_name must be lft_hnd or rgt_hnd!")
         return_list = []
         for obj_info in oih_infos:
             objcm = obj_info['collisionmodel']
@@ -571,7 +571,7 @@ class UR3Dual(ri.RobotInterface):
         elif hnd_name == 'rgt_hnd':
             oih_infos = self.rgt_oih_infos
         else:
-            raise ValueError("hand_name must be lft_hnd or rgt_hnd!")
+            raise ValueError("hnd_name must be lft_hnd or rgt_hnd!")
         return_list = []
         for obj_info in oih_infos:
             return_list.append(rm.homomat_from_posrot(obj_info['gl_pos']), obj_info['gl_rotmat'])
@@ -592,7 +592,7 @@ class UR3Dual(ri.RobotInterface):
         elif hnd_name == 'rgt_hnd':
             oih_info_list = self.rgt_oih_infos
         else:
-            raise ValueError("hand_name must be lft_hnd or rgt_hnd!")
+            raise ValueError("hnd_name must be lft_hnd or rgt_hnd!")
         for obj_info in oih_info_list:
             if obj_info['collisionmodel'] is objcm:
                 return rm.homomat_from_posrot(obj_info['rel_pos']), obj_info['rel_rotmat']
@@ -610,7 +610,7 @@ class UR3Dual(ri.RobotInterface):
         elif hnd_name == 'rgt_hnd':
             oih_infos = self.rgt_oih_infos
         else:
-            raise ValueError("hand_name must be lft_hnd or rgt_hnd!")
+            raise ValueError("hnd_name must be lft_hnd or rgt_hnd!")
         if jaw_width is not None:
             self.jaw_to(hnd_name, jaw_width)
         for obj_info in oih_infos:
@@ -633,7 +633,7 @@ class UR3Dual(ri.RobotInterface):
         elif hnd_name == 'rgt_hnd':
             oih_infos = self.rgt_oih_infos
         else:
-            raise ValueError("hand_name must be lft_hnd or rgt_hnd!")
+            raise ValueError("hnd_name must be lft_hnd or rgt_hnd!")
         if jaw_width is not None:
             self.jaw_to(hnd_name, jaw_width)
         for obj_info in oih_infos:

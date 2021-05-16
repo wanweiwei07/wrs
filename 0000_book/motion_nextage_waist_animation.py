@@ -63,7 +63,7 @@ for pose in [path[-1]]:
 #             robot_attached.detach()
 #         robot_attached_list.clear()
 #     pose = path[counter[0]]
-#     robot_s.fk(hand_name, pose)
+#     robot_s.fk(hnd_name, pose)
 #     robot_meshmodel = robot_s.gen_meshmodel()
 #     robot_meshmodel.attach_to(base)
 #     robot_attached_list.append(robot_meshmodel)

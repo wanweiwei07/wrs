@@ -6,7 +6,7 @@ import numpy as np
 import cv2.aruco as aruco
 import yaml
 import math
-import utiltools.robotmath as rm
+import basis.robot_math as rm
 
 def genworldpoints(nrow, ncolumn, markersize):
     """
@@ -187,79 +187,72 @@ def captureimgbychessdetect(nrow, ncolumn, camid=0, type="png"):
             lastcaptime = newcaptime
             imgid+=1
 
-def estimatemarkerpose(imglist, calibrationdata, arucomarkersize=50, aruco_dict=aruco.DICT_4X4_250):
+def estimate_aruco_marker_pose(img_list,
+                               calibration_data,
+                               marker_size=50,
+                               aruco_dict=aruco.DICT_4X4_250):
     """
-
-    :param imglist:
-    :param calibrationdata: could be a yamlfilpath or a list [mtx, dist, rvecs, tvecs]
-    :param arucomarkersize:
+    :param img_list:
+    :param calibration_data: could be a yamlfilpath or a list [mtx, dist, rvecs, tvecs]
+    :param marker_size:
     :param aruco_dict:
     :return:
+    author: weiwei
+    date: 2018, 20210516
     """
-
-    if isinstance(calibrationdata, str):
-        mtx, dist, rvecs, tvecs, _ = yaml.load(open(calibrationdata, 'r'), Loader=yaml.UnsafeLoader)
+    if isinstance(calibration_data, str):
+        mtx, dist, rvecs, tvecs, _ = yaml.load(open(calibration_data, 'r'), Loader=yaml.UnsafeLoader)
     else:
-        mtx, dist, rvecs, tvecs = calibrationdata
-
+        mtx, dist, rvecs, tvecs = calibration_data
     aruco_dict = aruco.Dictionary_get(aruco_dict)
     parameters = aruco.DetectorParameters_create()
-
-    poslist = []
-    rotlist = []
-    for img in imglist:
+    pos_list = []
+    rotmat_list = []
+    for img in img_list:
         corners, ids, rejectedImgPoints = aruco.detectMarkers(img, aruco_dict, parameters=parameters)
         if ids is not None:
             aruco.drawDetectedMarkers(img, corners, borderColor=[255,255,0])
-            rvecs, tvecs, _objPoints = aruco.estimatePoseSingleMarkers(corners, arucomarkersize, mtx, dist)
+            rvecs, tvecs, _objPoints = aruco.estimatePoseSingleMarkers(corners, marker_size, mtx, dist)
             aruco.drawAxis(img, mtx, dist, rvecs[0], tvecs[0]/1000.0, 0.1)
-            rot = cv2.Rodrigues(rvecs[0])[0]
             pos = tvecs[0][0].ravel()
-            rotlist.append(rot)
-            poslist.append(pos)
-    posavg = rm.posvec_average(poslist)
-    rotavg = rm.rotmat_average(rotlist)
+            rotmat = cv2.Rodrigues(rvecs[0])[0]
+            pos_list.append(pos)
+            rotmat_list.append(rotmat)
+    average_pos = rm.posvec_average(pos_list)
+    average_rotmat = rm.rotmat_average(rotmat_list)
+    return average_pos, average_rotmat
 
-    return [posavg, rotavg]
-
-def estimatecorners(img):
+def estimate_corners(img):
     """
-
     :return:
     """
-
     gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
     gray = np.float32(gray)
     dst = cv2.cornerHarris(gray, 2, 3, 0.04)
     # result is dilated for marking the corners, not important
     dst = cv2.dilate(dst, None)
-
     if dst is not None:
         # Threshold for an optimal value, it may vary depending on the image.
         img[dst > 0.01 * dst.max()] = [0, 0, 255]
         cv2.imshow('dst', img)
         if cv2.waitKey(0) & 0xff == 27:
             cv2.destroyAllWindows()
-
     return []
 
-def computefov(mtx, imgwidth, imgheight):
+def compute_fov(mtx, imgwidth, imgheight):
     """
     This function is implemented by referring to
     line 1817 of https://github.com/opencv/opencv/blob/2.4/modules/calib3d/src/calibration.cpp#L1778
     Different from the one in opencv,
     this function does not need the aperture size, which might be unavailable for some webcams
-
     Usage: only use fov_h when setting up a new camera in panda3d,
     the fov_v will be automatically recomputed considering the width and height of an image
     and assuming box pixels
-
     :return: fov_h and fov_v, horizontal and vertical fov
     """
-
     fov_h = math.degrees(2*math.atan(imgwidth/(2*mtx[0,0])))
     fov_v = math.degrees(2*math.atan(imgheight/(2*mtx[1,1])))
-    return [fov_h, fov_v]
+    return fov_h, fov_v
 
 if __name__=='__main__':
     # makechessboard(7,5,markersize=40)
@@ -271,4 +264,4 @@ if __name__=='__main__':
     import robotconn.rpc.frtknt.frtknt_client as fkc
     fk = fkc.FrtKnt(host="192.168.125.60:18300")
     img = fk.getrgbimg()
-    estimatecorners(img)
+    estimate_corners(img)

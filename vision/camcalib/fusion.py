@@ -94,7 +94,7 @@ if __name__=='__main__':
     mtx4, dist4, rvecs4, tvecs4, candfiles4 = yaml.load(open('cam4_calib.yaml', 'r'), Loader=yaml.UnsafeLoader)
 
     import time
-    # arucomarkersize = int(40*.57)
+    # marker_size = int(40*.57)
     # aruco_dict = aruco.Dictionary_get(aruco.DICT_6X6_250)
 
     cap0 = cv2.VideoCapture(0)

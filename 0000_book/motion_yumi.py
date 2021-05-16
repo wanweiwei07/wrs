@@ -16,7 +16,7 @@ if __name__ == "__main__":
     # start_rotmat = rm.rotmat_from_axangle([0, 1, 0], math.pi / 2)
     # end_pos = np.array([.4, -.35, .45])
     # end_rotmat = start_rotmat
-    # jnt_values_list = inik_svlr.gen_linear_motion(hand_name, start_pos, start_rotmat, end_pos, end_rotmat)
+    # jnt_values_list = inik_svlr.gen_linear_motion(hnd_name, start_pos, start_rotmat, end_pos, end_rotmat)
     circle_center_pos = np.array([.3, -.4, .4])
     circle_ax = np.array([1,0,0])
     radius = .1
