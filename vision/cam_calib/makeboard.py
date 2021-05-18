@@ -292,9 +292,9 @@ def makechessandcharucoboard(nrowchess=3, ncolumnchess=5, squaresize=25,
 
 if __name__ == '__main__':
     # makechessandcharucoboard(4,6,32,5,7)
-    # makecharucoboard(7,5, squaresize=40)
-    # makechessboard(7,5, squaresize=40)
-    # makearucoboard(2,2, markersize=80)
-    # makearucoboard(1,1,markerdict=aruco.DICT_4X4_250, startid=1, markersize=45, framesize=[60,60])
+    # makecharucoboard(7,5, square_size=40)
+    # makechessboard(7,5, square_size=40)
+    # makearucoboard(2,2, marker_size=80)
+    # makearucoboard(1,1,marker_dict=aruco.DICT_4X4_250, start_id=1, marker_size=45, frame_size=[60,60])
 
     makechessboard(1, 1, squaresize=35, framesize = [100,150])

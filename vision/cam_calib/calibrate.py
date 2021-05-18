@@ -4,29 +4,28 @@ import glob
 import numpy as np
 from cv2 import aruco
 from sklearn import cluster
-import utiltools.robotmath as rm
-import vision.camcalib.util_functions as cu
+import basis.robotmath as rm
+import vision.cam_calib.util_functions as cu
 
-def calibchessboard(ncrossrow, ncrosscolumn, markersize = 25, imgspath='./', savename='mycam_data.yaml'):
+def calibrate_chessboard(ncrossrow,
+                         ncrosscolumn,
+                         markersize = 25,
+                         imgspath='./',
+                         savename='mycam_data.yaml'):
     """
-
     :param ncrossrow: the number of cross in row direction
     :param ncrosscolumn: the number of cross in column direction
     :param markersize: mm
     :param imgspath:
     :param savename:
     :return:
-
     author: weiwei
     date: 20190420
     """
-
-    worldpoints = cu.genworldpoints(ncrossrow, ncrosscolumn, markersize)
-
+    worldpoints = cu.gen_world_cross_positions_for_chess(ncrossrow, ncrosscolumn, markersize)
     objpoints = []
     imgpoints = []
     criteria = (cv2.TERM_CRITERIA_EPS + cv2.TERM_CRITERIA_MAX_ITER, 27, 0.001)
-
     images = glob.glob(imgspath+'*.png')
     candfiles=[]
     for fname in images:
@@ -44,7 +43,6 @@ def calibchessboard(ncrossrow, ncrosscolumn, markersize = 25, imgspath='./', sav
             img = cv2.drawChessboardCorners(img, (ncrossrow ,ncrosscolumn), corners2, ret)
             cv2.imshow('img', img)
             cv2.waitKey(500)
-
     cv2.destroyAllWindows()
     ret, mtx, dist, rvecs, tvecs = cv2.calibrateCamera(objpoints, imgpoints, gray.shape[::-1], None, None)
     print(ret, mtx, dist, rvecs, tvecs)
@@ -52,31 +50,32 @@ def calibchessboard(ncrossrow, ncrosscolumn, markersize = 25, imgspath='./', sav
         with open(savename, "w") as f:
             yaml.dump([mtx, dist, rvecs, tvecs, candfiles], f)
 
-def calibcharucoboard(nrow, ncolumn, arucomarkerdict=aruco.DICT_6X6_250, squaremarkersize=25, imgspath='./', imgformat='png', savename='mycam_charuco_data.yaml'):
+def calib_charucoboard(nrow,
+                       ncolumn,
+                       aruco_markerdict=aruco.DICT_6X6_250,
+                       square_markersize=25,
+                       imgs_path='./',
+                       img_format='png',
+                       save_name='mycam_charuco_data.yaml'):
     """
-
     :param nrow:
     :param ncolumn:
-    :param markerdict:
-    :param imgspath:
-    :param savename:
+    :param marker_dict:
+    :param imgs_path:
+    :param save_name:
     :return:
-
     author: weiwei
     date: 20190420
     """
-
     # read images and detect cornders
-    aruco_dict = aruco.Dictionary_get(arucomarkerdict)
+    aruco_dict = aruco.Dictionary_get(aruco_markerdict)
     allCorners = []
     allIds = []
     # SUB PIXEL CORNER DETECTION CRITERION
     criteria = (cv2.TERM_CRITERIA_EPS + cv2.TERM_CRITERIA_MAX_ITER, 27, 0.0001)
-
-    board = aruco.CharucoBoard_create(ncolumn, nrow, squaremarkersize, .57*squaremarkersize, aruco_dict)
-
-    print(imgspath)
-    images = glob.glob(imgspath+'*.'+imgformat)
+    board = aruco.CharucoBoard_create(ncolumn, nrow, square_markersize, .57 * square_markersize, aruco_dict)
+    print(imgs_path)
+    images = glob.glob(imgs_path + '*.' + img_format)
     candfiles=[]
     for fname in images:
         img = cv2.imread(fname)
@@ -96,7 +95,6 @@ def calibcharucoboard(nrow, ncolumn, arucomarkerdict=aruco.DICT_6X6_250, squarem
             imaxis = aruco.drawDetectedCornersCharuco(imaxis, res2[1], res2[2], (255,255,0))
             cv2.imshow('img', imaxis)
             cv2.waitKey(100)
-
     # The calibratedCameraCharucoExtended function additionally estimate calibration errors
     # Thus, stdDeviationsIntrinsics, stdDeviationsExtrinsics, perViewErrors are returned
     # We dont use them here though
@@ -109,50 +107,41 @@ def calibcharucoboard(nrow, ncolumn, arucomarkerdict=aruco.DICT_6X6_250, squarem
                                                  criteria=(cv2.TERM_CRITERIA_EPS & cv2.TERM_CRITERIA_COUNT, 10000, 1e-9))
     print(ret, mtx, dist, rvecs, tvecs, candfiles)
     if ret:
-        with open(savename, "w") as f:
+        with open(save_name, "w") as f:
             yaml.dump([mtx, dist, rvecs, tvecs, candfiles], f)
 
-def find_rhomo(basecamyamlpath, relcamyamlpath, savename):
+def find_rhomo(base_cam_calibyaml, rel_cam_calibyaml, save_name):
     """
-
     compute the _rative transformation matrix (homogenous) between two cameras
     the resulting matrix will be:
     resulthomomat*p_in_rel=p_in_base
-
-    :param basecamyamlpath: results of board calibration, with (rvecs, tvecs, and candfiles) included
-    :param relcamyamlpath: results of board calibration, with (rvecs, tvecs, and candfiles) included
+    :param base_cam_calibyaml: results of board calibration, with (rvecs, tvecs, and candfiles) included
+    :param rel_cam_calibyaml: results of board calibration, with (rvecs, tvecs, and candfiles) included
         format of base and rel yaml: [mtx, dist, rvecs, tvecs, candfiles] see calibcharucoboard for example
-    :param savename:
+    :param save_name:
     :return:
-
     author: weiwei
     date: 20190421
     """
-
-    mtx_b, dist_b, rvecs_b, tvecs_b, candfiles_b = yaml.load(open(basecamyamlpath, 'r'), Loader=yaml.UnsafeLoader)
-    mtx_r, dist_r, rvecs_r, tvecs_r, candfiles_r = yaml.load(open(relcamyamlpath, 'r'), Loader=yaml.UnsafeLoader)
-
+    mtx_b, dist_b, rvecs_b, tvecs_b, candfiles_b = yaml.load(open(base_cam_calibyaml, 'r'), Loader=yaml.UnsafeLoader)
+    mtx_r, dist_r, rvecs_r, tvecs_r, candfiles_r = yaml.load(open(rel_cam_calibyaml, 'r'), Loader=yaml.UnsafeLoader)
     # get a list of relative mat from rel to base
     homo_rb_list = []
     for id_b, candimg_b in enumerate(candfiles_b):
         try:
             id_r = candfiles_r.index(candimg_b)
-
             rot_b, _ = cv2.Rodrigues(rvecs_b[id_b].ravel())
             pos_b = tvecs_b[id_b].ravel()
             homo_b = rm.homobuild(pos_b, rot_b)
-
             rot_r, _ = cv2.Rodrigues(rvecs_r[id_r].ravel())
             pos_r = tvecs_r[id_r].ravel()
             homo_r = rm.homobuild(pos_r, rot_r)
-
             # homo_rb*homo_r = homo_b
             homo_rb = np.dot(homo_b, rm.homoinverse(homo_r))
             homo_rb_list.append(homo_rb)
         except Exception as e:
             print(e)
             continue
-
     # compute the average
     pos_rb_list = []
     quat_rb_list = []
@@ -168,21 +157,20 @@ def find_rhomo(basecamyamlpath, relcamyamlpath, savename):
     pos_rb_avg = mt.fit(pos_rb_list).cluster_centers_[0]
     homo_rb_avg = rm.quaternion_matrix(quat_rb_avg)
     homo_rb_avg[:3,3] = pos_rb_avg
-
-    with open(savename, "w") as f:
+    with open(save_name, "w") as f:
         yaml.dump(rm.homoinverse(homo_rb_avg), f)
 
 if __name__=='__main__':
-    # squaremarkersize = 40
+    # square_markersize = 40
     #
-    # calibcharucoboard(7,5, squaremarkersize=squaremarkersize, imgspath='./camimgs0/', savename='cam0_calib.yaml')
-    # calibcharucoboard(7,5, squaremarkersize=squaremarkersize, imgspath='./camimgs2/', savename='cam2_calib.yaml')
-    # calibcharucoboard(7,5, squaremarkersize=squaremarkersize, imgspath='./camimgs4/', savename='cam4_calib.yaml')
+    # calibcharucoboard(7,5, square_markersize=square_markersize, imgs_path='./camimgs0/', save_name='cam0_calib.yaml')
+    # calibcharucoboard(7,5, square_markersize=square_markersize, imgs_path='./camimgs2/', save_name='cam2_calib.yaml')
+    # calibcharucoboard(7,5, square_markersize=square_markersize, imgs_path='./camimgs4/', save_name='cam4_calib.yaml')
 
     arucomarkersize = int(40*.57)
 
-    # find_rhomo(basecamyamlpath = 'cam0_calib.yaml', relcamyamlpath = 'cam2_calib.yaml', savename = 'homo_rb20.yaml')
-    # find_rhomo(basecamyamlpath = 'cam0_calib.yaml', relcamyamlpath = 'cam4_calib.yaml', savename = 'homo_rb40.yaml')
+    # find_rhomo(base_cam_calibyaml = 'cam0_calib.yaml', rel_cam_calibyaml = 'cam2_calib.yaml', save_name = 'homo_rb20.yaml')
+    # find_rhomo(base_cam_calibyaml = 'cam0_calib.yaml', rel_cam_calibyaml = 'cam4_calib.yaml', save_name = 'homo_rb40.yaml')
 
     import math
 

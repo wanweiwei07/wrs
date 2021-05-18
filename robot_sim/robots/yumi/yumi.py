@@ -240,7 +240,7 @@ class Yumi(ri.RobotInterface):
             # inline function for update objects in hand
             if component_name in ['rgt_arm', 'rgt_hnd']:
                 oih_info_list = self.rgt_oih_infos
-            elif component_name ['lft_arm', 'lft_hnd']:
+            elif component_name in ['lft_arm', 'lft_hnd']:
                 oih_info_list = self.lft_oih_infos
             for obj_info in oih_info_list:
                 gl_pos, gl_rotmat = self.cvt_loc_tcp_to_gl(component_name, obj_info['rel_pos'], obj_info['rel_rotmat'])

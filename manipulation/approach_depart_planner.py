@@ -116,9 +116,9 @@ class ADPlanner(object):  # AD = Approach_Depart
                                                          granularity=granularity,
                                                          type='source',
                                                          seed_jnt_values=seed_jnt_values)
-        if len(conf_list) == 0:
+        if conf_list is None:
             print('Cannot perform depart action!')
-            return [], []
+            return None, None
         else:
             if toggle_begin_grasp:
                 jawwidth_list = self.gen_jawwidth_motion(conf_list, depart_jawwidth)

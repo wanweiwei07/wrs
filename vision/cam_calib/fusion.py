@@ -62,14 +62,14 @@ def trackobject_multicamfusion(camcaps, cammtxs, camdists, camrelhomos, aruco_di
 
 if __name__=='__main__':
 
-    # squaremarkersize = 40
+    # square_markersize = 40
     #
-    # calibcharucoboard(7,5, squaremarkersize=squaremarkersize, imgspath='./camimgs0/', savename='cam0_calib.yaml')
-    # calibcharucoboard(7,5, squaremarkersize=squaremarkersize, imgspath='./camimgs2/', savename='cam2_calib.yaml')
-    # calibcharucoboard(7,5, squaremarkersize=squaremarkersize, imgspath='./camimgs4/', savename='cam4_calib.yaml')
+    # calibcharucoboard(7,5, square_markersize=square_markersize, imgs_path='./camimgs0/', save_name='cam0_calib.yaml')
+    # calibcharucoboard(7,5, square_markersize=square_markersize, imgs_path='./camimgs2/', save_name='cam2_calib.yaml')
+    # calibcharucoboard(7,5, square_markersize=square_markersize, imgs_path='./camimgs4/', save_name='cam4_calib.yaml')
 
-    # find_rhomo(basecamyamlpath = 'cam0_calib.yaml', relcamyamlpath = 'cam2_calib.yaml', savename = 'homo_rb20.yaml')
-    # find_rhomo(basecamyamlpath = 'cam0_calib.yaml', relcamyamlpath = 'cam4_calib.yaml', savename = 'homo_rb40.yaml')
+    # find_rhomo(base_cam_calibyaml = 'cam0_calib.yaml', rel_cam_calibyaml = 'cam2_calib.yaml', save_name = 'homo_rb20.yaml')
+    # find_rhomo(base_cam_calibyaml = 'cam0_calib.yaml', rel_cam_calibyaml = 'cam4_calib.yaml', save_name = 'homo_rb40.yaml')
 
     base = pandactrl.World(camp=[2700, 300, 2700], lookatpos=[0, 0, 0])
     # framenp = base.pggen.genAxis()

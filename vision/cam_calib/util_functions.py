@@ -8,7 +8,7 @@ import yaml
 import math
 import basis.robot_math as rm
 
-def genworldpoints(nrow, ncolumn, markersize):
+def gen_world_cross_positions_for_chess(nrow, ncolumn, markersize):
     """
     get the realworld positions of the chessmarkers
     z is 0
@@ -27,7 +27,7 @@ def genworldpoints(nrow, ncolumn, markersize):
     worldpoints[:, :2] = np.mgrid[:nrow, :ncolumn].T.reshape(-1, 2)*markersize
     return worldpoints
 
-def captureimgbytime(camid=0, type="png", timeinterval=1):
+def capture_imgs_by_time(camid=0, type="png", timeinterval=1):
     """
 
     :param camid:
@@ -58,15 +58,15 @@ def captureimgbytime(camid=0, type="png", timeinterval=1):
         imgid+=1
         time.sleep(timeinterval)
 
-def captureimgbytimemulticam(camids=[0,2,4], type="png", timeinterval=1):
+def capture_imgs_by_time_multicam(camids=[0, 2, 4], type="png", timeinterval=1):
     """
-
     :param camid:
     :param type:
     :param timeinterval: seconds
     :return:
+    author: weiwei
+    date: 2018, 20210517
     """
-
     savepaths = []
     cameras = []
     windows = []
@@ -101,14 +101,14 @@ def captureimgbytimemulticam(camids=[0,2,4], type="png", timeinterval=1):
         imgid+=1
         time.sleep(timeinterval)
 
-def captureimgbyspacemulticam(camids=[0,2,4], width=640, height=480, type="png"):
+def capture_imgs_by_space_multicam(camids=[0, 2, 4], width=640, height=480, type="png"):
     """
-
     :param camid:
     :param type:
     :return:
+    author: weiwei
+    date: 2018, 20210517
     """
-
     savepaths = []
     cameras = []
     windows = []
@@ -151,13 +151,13 @@ def captureimgbyspacemulticam(camids=[0,2,4], width=640, height=480, type="png")
             print("Saving an image...ID"+str(imgid))
         time.sleep(.5)
 
-def captureimgbychessdetect(nrow, ncolumn, camid=0, type="png"):
+def capture_imgs_by_chessdetect(nrow, ncolumn, camid=0, type="png"):
     """
 
     :param camid:
     :param nrow: nrow of checker board
     :param ncolumn: ncolumn of checker board
-    :param savepath:
+    :param save_path:
     :return:
     """
 
@@ -201,9 +201,16 @@ def estimate_aruco_marker_pose(img_list,
     date: 2018, 20210516
     """
     if isinstance(calibration_data, str):
-        mtx, dist, rvecs, tvecs, _ = yaml.load(open(calibration_data, 'r'), Loader=yaml.UnsafeLoader)
+        mtx, dist, _, _, _ = yaml.load(open(calibration_data, 'r'), Loader=yaml.UnsafeLoader)
+    elif isinstance(calibration_data, list):
+        if len(calibration_data) == 4:
+            mtx, dist, _, _ = calibration_data
+        elif len(calibration_data) == 2:
+            mtx, dist = calibration_data
+        else:
+            raise ValueError("Calibration data must include focus-centeraxis matrix and distortion.")
     else:
-        mtx, dist, rvecs, tvecs = calibration_data
+        raise ValueError("Calibration data must be a str (file path) or a list.")
     aruco_dict = aruco.Dictionary_get(aruco_dict)
     parameters = aruco.DetectorParameters_create()
     pos_list = []
@@ -212,10 +219,10 @@ def estimate_aruco_marker_pose(img_list,
         corners, ids, rejectedImgPoints = aruco.detectMarkers(img, aruco_dict, parameters=parameters)
         if ids is not None:
             aruco.drawDetectedMarkers(img, corners, borderColor=[255,255,0])
-            rvecs, tvecs, _objPoints = aruco.estimatePoseSingleMarkers(corners, marker_size, mtx, dist)
-            aruco.drawAxis(img, mtx, dist, rvecs[0], tvecs[0]/1000.0, 0.1)
-            pos = tvecs[0][0].ravel()
-            rotmat = cv2.Rodrigues(rvecs[0])[0]
+            marker_rvecs, marker_tvecs, _objPoints = aruco.estimatePoseSingleMarkers(corners, marker_size, mtx, dist)
+            aruco.drawAxis(img, mtx, dist, marker_rvecs[0], marker_tvecs[0]/1000.0, 0.1)
+            pos = marker_tvecs[0][0].ravel()
+            rotmat = cv2.Rodrigues(marker_rvecs[0])[0]
             pos_list.append(pos)
             rotmat_list.append(rotmat)
     average_pos = rm.posvec_average(pos_list)
@@ -255,7 +262,7 @@ def compute_fov(mtx, imgwidth, imgheight):
     return fov_h, fov_v
 
 if __name__=='__main__':
-    # makechessboard(7,5,markersize=40)
+    # makechessboard(7,5,marker_size=40)
     # worldpoints = genworldpoints(8,6, 25)
     # print(worldpoints)
     # captureimgbydetect(8,6)
