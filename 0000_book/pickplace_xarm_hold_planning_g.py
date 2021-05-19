@@ -11,7 +11,7 @@ object_box.set_rgba([.7, .5, .3, 1])
 object_box.attach_to(base)
 # hnd_s
 gripper_s = xag.XArmGripper()
-grasp_info_list = gpa.plan_grasps(gripper_s, object_box, max_samples=10, min_dist_between_sampled_contact_points=.05)
+grasp_info_list = gpa.plan_grasps(gripper_s, object_box, openning_direction='loc_y', max_samples=10, min_dist_between_sampled_contact_points=.05)
 gpa.write_pickle_file('box', grasp_info_list, './', 'xarm_long_box.pickle')
 for grasp_info in grasp_info_list:
     jaw_width, gl_jaw_center_pos, gl_jaw_center_rotmat, hnd_pos, hnd_rotmat = grasp_info
