@@ -72,9 +72,9 @@ class PcdGrab(object):
             else:
                 objpcdmerged = np.vstack((objpcdmerged, objpcd))
 
-            tgtpcdo3d = o3dh.nparray2o3dpcd(objpcdmerged)
-            tgtpcdo3d_removed = o3dh.removeoutlier(tgtpcdo3d, nb_points=50, radius=10)
-            tgtpcdnp = o3dh.o3dpcd2nparray(tgtpcdo3d_removed)
+            tgtpcdo3d = o3dh.nparray_to_o3dpcd(objpcdmerged)
+            tgtpcdo3d_removed = o3dh.remove_outlier(tgtpcdo3d, nb_points=50, radius=10)
+            tgtpcdnp = o3dh.o3dpcd_to_parray(tgtpcdo3d_removed)
 
         return tgtpcdnp
 
@@ -121,11 +121,11 @@ if __name__ == '__main__':
 
     mergednppcd = nppcd4
     mergedlistnrmls = [[0,0,1]]*len(mergednppcd)
-    mergednppcd = o3dh.mergepcd(mergednppcd, nppcd1, rm.rodrigues([0,1,0], 270), posmat2=np.zeros(3))
+    mergednppcd = o3dh.merge_pcd(mergednppcd, nppcd1, rm.rodrigues([0, 1, 0], 270), posmat2=np.zeros(3))
     mergedlistnrmls += [[-1,0,0]]*len(nppcd1)
-    mergednppcd = o3dh.mergepcd(mergednppcd, nppcd2, rm.rodrigues([0,1,0], 180), posmat2=np.zeros(3))
+    mergednppcd = o3dh.merge_pcd(mergednppcd, nppcd2, rm.rodrigues([0, 1, 0], 180), posmat2=np.zeros(3))
     mergedlistnrmls += [[0,0,-1]]*len(nppcd2)
-    mergednppcd = o3dh.mergepcd(mergednppcd, nppcd3, rm.rodrigues([0,1,0], 90), posmat2=np.zeros(3))
+    mergednppcd = o3dh.merge_pcd(mergednppcd, nppcd3, rm.rodrigues([0, 1, 0], 90), posmat2=np.zeros(3))
     mergedlistnrmls += [[1,0,0]]*len(nppcd3)
     mergednppcdnrmls = np.array(mergedlistnrmls)
     mergednppcd += eepos
@@ -134,7 +134,7 @@ if __name__ == '__main__':
     # rhx.show()
 
     yifa = yi.YumiIntegratedFactory()
-    reconstructedtrimeshlist, nppcdlist = o3dh.reconstructsurfaces_bp(mergednppcd, mergednppcdnrmls, radii=(7,10))
+    reconstructedtrimeshlist, nppcdlist = o3dh.reconstruct_surfaces_bp(mergednppcd, mergednppcdnrmls, radii=(7, 10))
     # for i, tmpnppcd in enumerate(nppcdlist):
     #     p3dpcd = p3dh.genpointcloudnodepath(tmpnppcd, pntsize=1.57)
     #     p3dpcd.reparentTo(rhx.base.render)

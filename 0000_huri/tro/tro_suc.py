@@ -51,9 +51,9 @@ class PcdGrab(object):
             else:
                 objpcdmerged = np.vstack((objpcdmerged, objpcd))
 
-            tgtpcdo3d = o3dh.nparray2o3dpcd(objpcdmerged)
-            tgtpcdo3d_removed = o3dh.removeoutlier(tgtpcdo3d, nb_points=50, radius=10)
-            tgtpcdnp = o3dh.o3dpcd2nparray(tgtpcdo3d_removed)
+            tgtpcdo3d = o3dh.nparray_to_o3dpcd(objpcdmerged)
+            tgtpcdo3d_removed = o3dh.remove_outlier(tgtpcdo3d, nb_points=50, radius=10)
+            tgtpcdnp = o3dh.o3dpcd_to_parray(tgtpcdo3d_removed)
 
         return tgtpcdnp
 
@@ -94,7 +94,7 @@ if __name__ == '__main__':
 
     effa = hlb.EFFactory()
     freesuctst = fs.Freesuc()
-    reconstructedtrimeshlist, nppcdlist = o3dh.reconstructsurfaces_bp(nppcd, radii=(10,12))
+    reconstructedtrimeshlist, nppcdlist = o3dh.reconstruct_surfaces_bp(nppcd, radii=(10, 12))
     # for i, tmpnppcd in enumerate(nppcdlist):
     #     p3dpcd = p3dh.genpointcloudnodepath(tmpnppcd, pntsize=1.57)
     #     p3dpcd.reparentTo(rhx.base.render)

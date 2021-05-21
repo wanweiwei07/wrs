@@ -1,0 +1,54 @@
+syntax = "proto3";
+// The greeting service definition.
+service BaxterServer {
+  // gripper control
+  rpc bxt_set_gripper (Gripper_pos_armname) returns (Empty) {}
+  rpc bxt_get_gripper(Armname) returns (Gripper_pos) {}
+  // jnts
+  rpc bxt_get_jnts(Armname) returns (Jnt_angles) {}
+  // move to indicated jnt_angles
+  rpc bxt_movejnts_cont(Jnt_angles_armname) returns (Empty) {}
+  rpc bxt_movejnts(Jnt_angles_armname) returns (Empty) {}
+  rpc bxt_get_force(Armname) returns (ListData) {}
+  rpc bxt_get_image(Camera_name) returns (ListData) {}
+}
+
+// Gripper infomation.
+message Gripper_pos_armname {
+  float pos = 1;
+  string armname = 2;
+}
+
+message Armname {
+  string armname = 1;
+}
+
+message Gripper_pos {
+  float pos = 1;
+}
+
+// jnt_angles
+message Jnt_angles {
+  //jnts = "{jnt_id:angle...}"
+  bytes jnt_angles = 1;
+}
+
+message Jnt_angles_armname {
+  //jnts = "{jnt_id:angle...}"
+  bytes jnt_angles = 1;
+  float speed = 2;
+  string armname = 3;
+}
+
+message ListData {
+  bytes list = 1;
+}
+
+message Camera_name {
+    string name = 1;
+}
+
+message Empty {
+}
+
+//sudo python -m grpc_tools.protoc -I=./ --python_out=. --grpc_python_out=. ./baxter_server.proto

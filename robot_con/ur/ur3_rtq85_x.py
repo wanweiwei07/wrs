@@ -196,62 +196,6 @@ class UR3Rtq85X(object):
         pc_server_socket.send(buf)
         pc_server_socket.close()
 
-    # def attachfirm(self, base_pos, base_rotmat, gl_direction=np.array([0, 0, -1]), steplength=1, forcethreshold=10):
-    #     """
-    #     TODO implement using urscript
-    #     place the object firmly on a table considering forcefeedback
-    #     :base_pos: installation position of the arm base
-    #     :base_rotmat: installation rotmat of the arm base
-    #     :gl_direction: attaching direction in global frame
-    #     :steplength: mm
-    #     :forcethreshold:
-    #     :return:
-    #     author: weiwei
-    #     date: 20190401osaka, 20210401osaka
-    #     """
-    #     originaljnts = self.__robotsim.getarmjnts(arm_name=arm_name)
-    #     currentjnts = self.get_jnt_values(arm_name)
-    #     self.__robotsim.movearmfk(currentjnts, arm_name=arm_name)
-    #     eepos, eerot = self.__robotsim.getee(arm_name=arm_name)
-    #
-    #     def getftthread(ur3u, eerot, arm_name='rgt'):
-    #         targetarm = ur3u.__rgtarm
-    #         targetarm_ftsocket_ipad = ur3u.rgtarm_ftsocket_ipad
-    #         if arm_name == 'lft':
-    #             targetarm = ur3u.__lftarm
-    #             targetarm_ftsocket_ipad = ur3u.lftarm_ftsocket_ipad
-    #         targetarm.send_program(ur3u.ftsensorscript)
-    #         targetarm_ftsocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    #         targetarm_ftsocket.connect(targetarm_ftsocket_ipad)
-    #         while True:
-    #             ftdata = targetarm_ftsocket.recv(1024)
-    #             ftdata = ftdata.decode()
-    #             ftdata = ftdata.strip('()')
-    #             ftdata = [float(x) for x in ftdata.split(',')]
-    #             attachforce = ftdata[0] * eerot[:3, 0] + ftdata[1] * eerot[:3, 1] + ftdata[2] * eerot[:3, 2]
-    #             force = np.linalg.norm(np.dot(attachforce, -direction))
-    #             if force > forcethreshold:
-    #                 ur3u.firmstopflag = True
-    #                 targetarm_ftsocket.close()
-    #                 return
-    #
-    #     thread = threading.Thread(target=getftthread, args=([self, eerot, arm_name]), name="threadft")
-    #     thread.start()
-    #
-    #     while True:
-    #         if self.firmstopflag:
-    #             thread.join()
-    #             self.firmstopflag = False
-    #             self.__robotsim.movearmfk(originaljnts, arm_name=arm_name)
-    #             return
-    #         # move steplength towards the direction
-    #         eepos, eerot = self.__robotsim.getee(arm_name="lft")
-    #         currentjnts = self.__robotsim.getarmjnts(arm_name=arm_name)
-    #         eepos = eepos + direction * steplength
-    #         newjnts = self.__robotsim.numikmsc(eepos, eerot, currentjnts, arm_name=arm_name)
-    #         self.__robotsim.movearmfk(newjnts, arm_name=arm_name)
-    #         self.move_jnts(newjnts, arm_name=arm_name)
-
     def get_jnt_values(self):
         """
         get the joint angles in radian
@@ -267,9 +211,7 @@ if __name__ == '__main__':
     import visualization.panda.world as wd
 
     base = wd.World(cam_pos=[3, 1, 2], lookat_pos=[0, 0, 0])
-    u3r85_c = UR3Rtq85X(robot_ip='10.2.0.51', pc_ip='10.2.0.100')
-    # u3r85_c.attachfirm(robot_s, upthreshold=10, arm_name='lft')
-    u3r85_c.close_gripper()
-    time.sleep(2)
-    u3r85_c.open_gripper()
+    u3r85_x = UR3Rtq85X(robot_ip='10.2.0.51', pc_ip='10.2.0.100')
+    u3r85_x.close_gripper()
+    u3r85_x.open_gripper()
     base.run()

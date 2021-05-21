@@ -1,6 +1,7 @@
 import os
 import math
 import numpy as np
+import modeling.collision_model as cm
 import modeling.model_collection as mc
 import robot_sim._kinematics.jlchain as jl
 import robot_sim.manipulators.cobotta_arm.cobotta_arm as cbta
@@ -13,13 +14,22 @@ class Cobotta(ri.RobotInterface):
     def __init__(self, pos=np.zeros(3), rotmat=np.eye(3), name="cobotta", enable_cc=True):
         super().__init__(pos=pos, rotmat=rotmat, name=name)
         this_dir, this_filename = os.path.split(__file__)
+        # base plate
+        self.base_plate = jl.JLChain(pos=pos,
+                                     rotmat=rotmat,
+                                     homeconf=np.zeros(0),
+                                     name='base_plate')
+        self.base_plate.jnts[1]['loc_pos'] = np.array([0, 0, 0.035])
+        self.base_plate.lnks[0]['meshfile'] = os.path.join(this_dir, "meshes", "base_plate.stl")
+        self.base_plate.lnks[0]['rgba'] = [.35,.35,.35,1]
+        self.base_plate.reinitialize()
         # arm
         arm_homeconf = np.zeros(6)
         arm_homeconf[1] = -math.pi / 6
         arm_homeconf[2] = math.pi / 2
         arm_homeconf[4] = math.pi / 6
-        self.arm = cbta.CobottaArm(pos=pos,
-                                   rotmat=rotmat,
+        self.arm = cbta.CobottaArm(pos=self.base_plate.jnts[-1]['gl_posq'],
+                                   rotmat=self.base_plate.jnts[-1]['gl_rotmatq'],
                                    homeconf=arm_homeconf,
                                    name='arm', enable_cc=False)
         # gripper
@@ -44,9 +54,11 @@ class Cobotta(ri.RobotInterface):
     def enable_cc(self):
         # TODO when pose is changed, oih info goes wrong
         super().enable_cc()
+        self.cc.add_cdlnks(self.base_plate, [0])
         self.cc.add_cdlnks(self.arm, [0, 1, 2, 3, 4, 5, 6])
         self.cc.add_cdlnks(self.hnd.jlc, [0, 1, 2])
-        activelist = [self.arm.lnks[0],
+        activelist = [self.base_plate.lnks[0],
+                      self.arm.lnks[0],
                       self.arm.lnks[1],
                       self.arm.lnks[2],
                       self.arm.lnks[3],
@@ -57,11 +69,13 @@ class Cobotta(ri.RobotInterface):
                       self.hnd.jlc.lnks[1],
                       self.hnd.jlc.lnks[2]]
         self.cc.set_active_cdlnks(activelist)
-        fromlist = [self.arm.lnks[0],
+        fromlist = [self.base_plate.lnks[0],
+                    self.arm.lnks[0],
                     self.arm.lnks[1]]
         intolist = [self.arm.lnks[3]]
         self.cc.set_cdpair(fromlist, intolist)
-        fromlist = [self.arm.lnks[2]]
+        fromlist = [self.base_plate.lnks[0],
+                    self.arm.lnks[1]]
         intolist = [self.hnd.jlc.lnks[0],
                     self.hnd.jlc.lnks[1],
                     self.hnd.jlc.lnks[2]]
@@ -70,19 +84,17 @@ class Cobotta(ri.RobotInterface):
             objcm = oih_info['collisionmodel']
             self.hold(objcm)
 
-    def move_to(self, pos, rotmat):
+    def fix_to(self, pos, rotmat):
         self.pos = pos
         self.rotmat = rotmat
-        self.arm.fix_to(pos=self.agv.jnts[-1]['gl_posq'], rotmat=self.agv.jnts[-1]['gl_rotmatq'])
+        self.base_plate.fix_to(pos=pos, rotmat=rotmat)
+        self.arm.fix_to(pos=self.base_plate.jnts[-1]['gl_posq'], rotmat=self.base_plate.jnts[-1]['gl_rotmatq'])
         self.hnd.fix_to(pos=self.arm.jnts[-1]['gl_posq'], rotmat=self.arm.jnts[-1]['gl_rotmatq'])
         # update objects in hand if available
         for obj_info in self.oih_infos:
             gl_pos, gl_rotmat = self.arm.cvt_loc_tcp_to_gl(obj_info['rel_pos'], obj_info['rel_rotmat'])
             obj_info['gl_pos'] = gl_pos
             obj_info['gl_rotmat'] = gl_rotmat
-
-    def fix_to(self, pos, rotmat):
-        self.move_to(pos=pos, rotmat=rotmat)
 
     def fk(self, component_name='arm', jnt_values=np.zeros(6)):
         """
@@ -92,6 +104,7 @@ class Cobotta(ri.RobotInterface):
         author: weiwei
         date: 20201208toyonaka
         """
+
         def update_oih(component_name='arm'):
             for obj_info in self.oih_infos:
                 gl_pos, gl_rotmat = self.cvt_loc_tcp_to_gl(component_name, obj_info['rel_pos'], obj_info['rel_rotmat'])
@@ -182,6 +195,12 @@ class Cobotta(ri.RobotInterface):
                        toggle_connjnt=False,
                        name='xarm7_shuidi_mobile_stickmodel'):
         stickmodel = mc.ModelCollection(name=name)
+        self.base_plate.gen_stickmodel(tcp_jntid=tcp_jntid,
+                                       tcp_loc_pos=tcp_loc_pos,
+                                       tcp_loc_rotmat=tcp_loc_rotmat,
+                                       toggle_tcpcs=False,
+                                       toggle_jntscs=toggle_jntscs,
+                                       toggle_connjnt=toggle_connjnt).attach_to(stickmodel)
         self.arm.gen_stickmodel(tcp_jntid=tcp_jntid,
                                 tcp_loc_pos=tcp_loc_pos,
                                 tcp_loc_rotmat=tcp_loc_rotmat,
@@ -201,6 +220,11 @@ class Cobotta(ri.RobotInterface):
                       rgba=None,
                       name='xarm_shuidi_mobile_meshmodel'):
         meshmodel = mc.ModelCollection(name=name)
+        self.base_plate.gen_meshmodel(tcp_jntid=tcp_jntid,
+                                      tcp_loc_pos=tcp_loc_pos,
+                                      tcp_loc_rotmat=tcp_loc_rotmat,
+                                      toggle_tcpcs=False,
+                                      toggle_jntscs=toggle_jntscs).attach_to(meshmodel)
         self.arm.gen_meshmodel(tcp_jntid=tcp_jntid,
                                tcp_loc_pos=tcp_loc_pos,
                                tcp_loc_rotmat=tcp_loc_rotmat,
@@ -231,14 +255,15 @@ if __name__ == '__main__':
     robot_s.jaw_to(.02)
     robot_s.gen_meshmodel(toggle_tcpcs=True).attach_to(base)
     tgt_pos = np.array([.25, .2, .15])
-    tgt_rotmat = rm.rotmat_from_axangle([0,1,0], math.pi/3)
+    tgt_rotmat = rm.rotmat_from_axangle([0, 1, 0], math.pi / 3)
     gm.gen_frame(pos=tgt_pos, rotmat=tgt_rotmat).attach_to(base)
     # base.run()
-    jnt_values = robot_s.ik(tgt_pos, tgt_rotmat)
-    robot_s.fk(component_name='arm', jnt_values=jnt_values)
+    component_name = 'arm'
+    jnt_values = robot_s.ik(component_name, tgt_pos, tgt_rotmat)
+    robot_s.fk(component_name, jnt_values=jnt_values)
     robot_s_meshmodel = robot_s.gen_meshmodel(toggle_tcpcs=True)
     robot_s_meshmodel.attach_to(base)
-    robot_s.show_cdprimit()
+    # robot_s.show_cdprimit()
     robot_s.gen_stickmodel().attach_to(base)
     tic = time.time()
     result = robot_s.is_collided()

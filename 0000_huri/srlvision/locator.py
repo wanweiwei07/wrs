@@ -25,7 +25,7 @@ class Locator(object):
             self.tubebigcm = cm.CollisionModel(directory +"/objects/tubebig_capped.stl", type="cylinder", expand_radius=0)
             self.tubesmallcm = cm.CollisionModel(directory +"/objects/tubesmall_capped.stl", type="cylinder", expand_radius=0)
 
-        self.tstpcdo3d = o3dh.nparray2o3dpcd(self.tstpcdnp)
+        self.tstpcdo3d = o3dh.nparray_to_o3dpcd(self.tstpcdnp)
         # down x, right y
         tubeholecenters = []
         for x in [-38,-19,0,19,38]:
@@ -52,7 +52,7 @@ class Locator(object):
         # tgtpcdnp = tgtpcdnp[np.logical_and(tgtpcdnp[:,2]>40, tgtpcdnp[:,2]<60)]
 
         inithomomat = self.findtubestand_obb(tgtpcdnp, toggledebug)
-        tgtpcdo3d = o3dh.nparray2o3dpcd(tgtpcdnp)
+        tgtpcdo3d = o3dh.nparray_to_o3dpcd(tgtpcdnp)
         inlinnerrmse, homomat = o3dh.registration_icp_ptpt(self.tstpcdo3d, tgtpcdo3d, inithomomat, maxcorrdist=5, toggledebug=toggledebug)
         inithomomatflipped = copy.deepcopy(inithomomat)
         inithomomatflipped[:3,0] = -inithomomatflipped[:3,0]
@@ -75,7 +75,7 @@ class Locator(object):
         date: 20191229osaka
         """
 
-        tgtpcdo3d = o3dh.nparray2o3dpcd(tgtpcdnp)
+        tgtpcdo3d = o3dh.nparray_to_o3dpcd(tgtpcdnp)
         _, homomat = o3dh.registration_ptpln(self.tstpcdo3d, tgtpcdo3d, downsampling_voxelsize=5, toggledebug=toggledebug)
 
         return copy.deepcopy(homomat)
@@ -92,9 +92,9 @@ class Locator(object):
         date: 20191229osaka
         """
 
-        tgtpcdo3d = o3dh.nparray2o3dpcd(tgtpcdnp)
-        tgtpcdo3d_removed = o3dh.removeoutlier(tgtpcdo3d, nb_points=50, radius=10)
-        tgtpcdnp = o3dh.o3dpcd2nparray(tgtpcdo3d_removed)
+        tgtpcdo3d = o3dh.nparray_to_o3dpcd(tgtpcdnp)
+        tgtpcdo3d_removed = o3dh.remove_outlier(tgtpcdo3d, nb_points=50, radius=10)
+        tgtpcdnp = o3dh.o3dpcd_to_parray(tgtpcdo3d_removed)
 
         # main axes
         tgtpcdnp2d = tgtpcdnp[:,:2] # TODO clip using sensor z
@@ -150,9 +150,9 @@ class Locator(object):
         elearray = np.zeros((5,10))
         eleconfidencearray = np.zeros((5,10))
 
-        tgtpcdo3d = o3dh.nparray2o3dpcd(tgtpcdnp)
-        tgtpcdo3d_removed = o3dh.removeoutlier(tgtpcdo3d, downsampling_voxelsize=None, nb_points=90, radius=5)
-        tgtpcdnp = o3dh.o3dpcd2nparray(tgtpcdo3d_removed)
+        tgtpcdo3d = o3dh.nparray_to_o3dpcd(tgtpcdnp)
+        tgtpcdo3d_removed = o3dh.remove_outlier(tgtpcdo3d, downsampling_voxelsize=None, nb_points=90, radius=5)
+        tgtpcdnp = o3dh.o3dpcd_to_parray(tgtpcdo3d_removed)
         # transform tgtpcdnp back
         tgtpcdnp_normalized = rm.homotransformpointarray(rm.homoinverse(tubestand_homomat), tgtpcdnp)
         if toggledebug:

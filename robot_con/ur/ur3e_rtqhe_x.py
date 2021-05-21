@@ -17,9 +17,8 @@ class UR3ERtqHE():
     author: weiwei
     date: 20180131, 20210401osaka
     """
-    def __init__(self, modern_driver, robot_ip='10.2.0.50', pc_ip='10.2.0.91'):
+    def __init__(self, robot_ip='10.2.0.50', pc_ip='10.2.0.91'):
         """
-        :param modern_driver: "urscripts_cbseries/moderndriver_eseries.script"
         :param robot_ip:
         :param pc_ip:
         """
@@ -43,7 +42,7 @@ class UR3ERtqHE():
         self._jointscaler = 1e6
         self._pb = pb.ProgramBuilder()
         script_dir = os.path.dirname(__file__)
-        self._pb.load_prog(os.path.join(script_dir, modern_driver))
+        self._pb.load_prog(os.path.join(script_dir, "urscripts_cbseries/moderndriver_eseries.script"))
         self._pc_server_urscript = self._pb.get_program_to_run()
         self._pc_server_urscript = self._pc_server_urscript.replace("parameter_ip", self._pc_server_socket_addr[0])
         self._pc_server_urscript = self._pc_server_urscript.replace("parameter_port",
@@ -177,62 +176,6 @@ class UR3ERtqHE():
         pc_server_socket.send(buf)
         pc_server_socket.close()
 
-    def attachfirm(self, base_pos, base_rotmat, gl_direction=np.array([0, 0, -1]), steplength=1, forcethreshold=10):
-        """
-        TODO implement using urscript
-        place the object firmly on a table considering forcefeedback
-        :base_pos: installation position of the arm base
-        :base_rotmat: installation rotmat of the arm base
-        :gl_direction: attaching direction in global frame
-        :steplength: mm
-        :forcethreshold:
-        :return:
-        author: weiwei
-        date: 20190401osaka, 20210401osaka
-        """
-        originaljnts = self.__robotsim.getarmjnts(armname=armname)
-        currentjnts = self.get_jnt_values(armname)
-        self.__robotsim.movearmfk(currentjnts, armname=armname)
-        eepos, eerot = self.__robotsim.getee(armname=armname)
-
-        def getftthread(ur3u, eerot, armname='rgt'):
-            targetarm = ur3u.__rgtarm
-            targetarm_ftsocket_ipad = ur3u.rgtarm_ftsocket_ipad
-            if armname == 'lft':
-                targetarm = ur3u.__lftarm
-                targetarm_ftsocket_ipad = ur3u.lftarm_ftsocket_ipad
-            targetarm.send_program(ur3u.ftsensorscript)
-            targetarm_ftsocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-            targetarm_ftsocket.connect(targetarm_ftsocket_ipad)
-            while True:
-                ftdata = targetarm_ftsocket.recv(1024)
-                ftdata = ftdata.decode()
-                ftdata = ftdata.strip('()')
-                ftdata = [float(x) for x in ftdata.split(',')]
-                attachforce = ftdata[0] * eerot[:3, 0] + ftdata[1] * eerot[:3, 1] + ftdata[2] * eerot[:3, 2]
-                force = np.linalg.norm(np.dot(attachforce, -direction))
-                if force > forcethreshold:
-                    ur3u.firmstopflag = True
-                    targetarm_ftsocket.close()
-                    return
-
-        thread = threading.Thread(target=getftthread, args=([self, eerot, armname]), name="threadft")
-        thread.start()
-
-        while True:
-            if self.firmstopflag:
-                thread.join()
-                self.firmstopflag = False
-                self.__robotsim.movearmfk(originaljnts, armname=armname)
-                return
-            # move steplength towards the direction
-            eepos, eerot = self.__robotsim.getee(armname="lft")
-            currentjnts = self.__robotsim.getarmjnts(armname=armname)
-            eepos = eepos + direction * steplength
-            newjnts = self.__robotsim.numikmsc(eepos, eerot, currentjnts, armname=armname)
-            self.__robotsim.movearmfk(newjnts, armname=armname)
-            self.move_jnts(newjnts, armname=armname)
-
     def get_jnt_values(self):
         """
         get the joint angles in radian
@@ -248,9 +191,6 @@ if __name__ == '__main__':
     import visualization.panda.world as wd
 
     base = wd.World(cam_pos=[3, 1, 2], lookat_pos=[0, 0, 0])
-    u3r85_c = UR3Rtq85(modern_driver='./urscripts_cbseries/moderndriver_cbseries.script',
-                                   robot_ip='10.2.0.50', pc_ip='10.2.0.91')
-
-    # u3r85_c.attachfirm(robot_s, upthreshold=10, arm_name='lft')
-    u3r85_c.opengripper()
+    u3erhe_x = UR3ERtqHE(robot_ip='10.0.2.2', pc_ip='10.2.0.91')
+    u3erhe_x.opengripper()
     base.run()

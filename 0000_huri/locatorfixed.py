@@ -76,7 +76,7 @@ class LocatorFixed(object):
         elearray = np.zeros((5, 10))
         eleconfidencearray = np.zeros((5, 10))
 
-        tgtpcdnp = o3dh.removeoutlier(tgtpcdnp, downsampling_voxelsize=None, nb_points=90, radius=5)
+        tgtpcdnp = o3dh.remove_outlier(tgtpcdnp, downsampling_voxelsize=None, nb_points=90, radius=5)
         # transform back to the local frame of the tubestand
         tgtpcdnp_normalized = rm.homotransformpointarray(rm.homoinverse(tubestand_homomat), tgtpcdnp)
         if toggledebug:

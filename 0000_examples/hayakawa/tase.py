@@ -1123,7 +1123,7 @@ if __name__ == "__main__":
     # rgt_pos, rgt_rotmat = robot_s.get_gl_tcp(hnd_name=arm_name)
     # ropelinesorted = []
     # dir = rm.unit_vector(ropetoppos - rgt_pos)
-    # path = robot_inik_solver.gen_rel_linear_motion(hnd_name=arm_name,
+    # path = inik_solver.gen_rel_linear_motion(hnd_name=arm_name,
     #                                                goal_tcp_pos=rgt_pos,
     #                                                goal_tcp_rotmat=rgt_rotmat,
     #                                                direction=-dir,
@@ -1178,7 +1178,7 @@ if __name__ == "__main__":
     # 
     # dir = rm.unit_vector(hold_pos_final - ropelinesorted[0])
     # length = np.linalg.norm(hold_pos_final - ropelinesorted[0])
-    # path = robot_inik_solver.gen_rel_linear_motion(arm_name, rgtstart_pos, rgtstart_rotmat, dir, length, [],
+    # path = inik_solver.gen_rel_linear_motion(arm_name, rgtstart_pos, rgtstart_rotmat, dir, length, [],
     #                                                type="source")
     # for conf in path:
     #     robot_s.fk(arm_name, conf)

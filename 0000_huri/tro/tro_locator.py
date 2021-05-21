@@ -50,7 +50,7 @@ class TLocator(object):
         # tgtpcdnp = tgtpcdnp[np.logical_and(tgtpcdnp[:,2]>40, tgtpcdnp[:,2]<60)]
 
         # 20200425 cluster is further included
-        pcdarraylist, _ = o3dh.clusterpcd(tgtpcdnp)
+        pcdarraylist, _ = o3dh.cluster_pcd(tgtpcdnp)
         tgtpcdnp = max(pcdarraylist, key = lambda x:len(x))
         # for pcdarray in pcdarraylist:
         #     rgb = np.random.rand(3)

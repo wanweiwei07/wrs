@@ -296,7 +296,7 @@ def phoxi_calib_refinewithmodel(yhx, pxc, rawamat, armname):
                     maxy = tcppos[1]+140
                     minz = tcppos[2]
                     maxz = tcppos[2]+70
-                    realpcdcrop = o3dh.cropnx3nparray(realpcd, [minx, maxx], [miny, maxy], [minz, maxz])
+                    realpcdcrop = o3dh.crop_nx3_nparray(realpcd, [minx, maxx], [miny, maxy], [minz, maxz])
                     if len(realpcdcrop) < len(handpalmtemplate)/2:
                         continue
                     # yhx.rbtmesh.genmnp(yhx.robot_s).reparentTo(base.render)
@@ -307,8 +307,8 @@ def phoxi_calib_refinewithmodel(yhx, pxc, rawamat, armname):
                     # yhx.p3dh.genpointcloudnodepath(realpcdcrop, colors=[1,1,0,1]).reparentTo(base.render)
                     # yhx.p3dh.genpointcloudnodepath(rm.homotransformpointarray(inithomomat, handpalmtemplate), colors=[.5,1,.5,1]).reparentTo(base.render)
                     # yhx.base.run()
-                    hto3d = o3dh.nparray2o3dpcd(rm.homotransformpointarray(inithomomat, handpalmtemplate))
-                    rpo3d = o3dh.nparray2o3dpcd(realpcdcrop)
+                    hto3d = o3dh.nparray_to_o3dpcd(rm.homotransformpointarray(inithomomat, handpalmtemplate))
+                    rpo3d = o3dh.nparray_to_o3dpcd(realpcdcrop)
                     inlinnerrmse, newhomomat = o3dh.registration_icp_ptpt(hto3d, rpo3d, np.eye(4),
                                                                           maxcorrdist=2, toggledebug=False)
                     print(inlinnerrmse, ", one round is done!")

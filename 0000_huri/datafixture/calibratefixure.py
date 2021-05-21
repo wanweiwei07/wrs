@@ -70,7 +70,7 @@ class CalibrateFixture(object):
         date: 20191229osaka
         """
 
-        tgtpcdo3d = o3dh.nparray2o3dpcd(tgtpcdnp)
+        tgtpcdo3d = o3dh.nparray_to_o3dpcd(tgtpcdnp)
         _, homomat = o3dh.registration_ptpln(self.tstpcdnp, tgtpcdo3d, downsampling_voxelsize=5,
                                              toggledebug=toggledebug)
 
@@ -88,7 +88,7 @@ class CalibrateFixture(object):
         date: 20191229osaka
         """
 
-        tgtpcdnp = o3dh.removeoutlier(tgtpcdnp, nb_points=20, radius=10)
+        tgtpcdnp = o3dh.remove_outlier(tgtpcdnp, nb_points=20, radius=10)
 
         tgtpcdnp2d = tgtpcdnp[:, :2]  # TODO clip using sensor z
         ca = np.cov(tgtpcdnp2d, y=None, rowvar=0, bias=1)
