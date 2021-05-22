@@ -2,7 +2,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import robot_sim._kinematics.jlchain as jl
 import robot_sim.robots.robot_interface as ri
-import motion.probabilistic.rrt_connect as rrtc
+import motion.probabilistic.rrt_connect_wrsnew as rrtc
 
 
 class XYBot(ri.RobotInterface):

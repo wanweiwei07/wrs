@@ -106,50 +106,57 @@ class RRTConnect(rrt.RRT):
             return [start_conf, goal_conf]
         self.roadmap_start.add_node('start', conf=start_conf)
         self.roadmap_goal.add_node('goal', conf=goal_conf)
+        last_nid = 'goal'
         tic = time.time()
-        tree_a = self.roadmap_start
-        tree_b = self.roadmap_goal
-        tree_a_goal_conf = self.roadmap_goal.nodes['goal']['conf']
-        tree_b_goal_conf = self.roadmap_start.nodes['start']['conf']
         for _ in range(max_iter):
             toc = time.time()
             if max_time > 0.0:
                 if toc - tic > max_time:
                     print("Too much motion time! Failed to find a path.")
                     return None
-            # one tree grown using random target
-            rand_conf = self._sample_conf(component_name=component_name,
-                                          rand_rate=100,
-                                          default_conf=None)
-            last_nid = self._extend_roadmap(component_name=component_name,
-                                            roadmap=tree_a,
-                                            conf=rand_conf,
-                                            ext_dist=ext_dist,
-                                            goal_conf=tree_a_goal_conf,
-                                            obstacle_list=obstacle_list,
-                                            otherrobot_list=otherrobot_list,
-                                            animation=animation)
-            if last_nid != -1: # not trapped:
-                goal_nid = last_nid
-                tree_b_goal_conf = tree_a.nodes[goal_nid]['conf']
+            # Random Sampling
+            while True:
+                if last_nid != -1:
+                    goal_nid = last_nid
+                goal_conf = self.roadmap_goal.nodes[goal_nid]['conf']
+                rand_conf = self._sample_conf(component_name=component_name, rand_rate=rand_rate,
+                                              default_conf=goal_conf)
+                # goal_nid = 'goal'
                 last_nid = self._extend_roadmap(component_name=component_name,
-                                                roadmap=tree_b,
-                                                conf=tree_a.nodes[last_nid]['conf'],
+                                                roadmap=self.roadmap_start,
+                                                conf=rand_conf,
                                                 ext_dist=ext_dist,
-                                                goal_conf=tree_b_goal_conf,
+                                                goal_conf=goal_conf,
                                                 obstacle_list=obstacle_list,
                                                 otherrobot_list=otherrobot_list,
                                                 animation=animation)
+                if last_nid != -1:
+                    break
+            if last_nid == 'connection':
+                self.roadmap = nx.compose(self.roadmap_start, self.roadmap_goal)
+                self.roadmap.add_edge(last_nid, goal_nid)
+                break
+            else:
+                while True:
+                    if last_nid != -1:
+                        goal_nid = last_nid
+                    goal_conf = self.roadmap_start.nodes[goal_nid]['conf']
+                    rand_conf = self._sample_conf(component_name=component_name, rand_rate=rand_rate,
+                                                  default_conf=goal_conf)
+                    last_nid = self._extend_roadmap(component_name=component_name,
+                                                    roadmap=self.roadmap_goal,
+                                                    conf=rand_conf,
+                                                    ext_dist=ext_dist,
+                                                    goal_conf=goal_conf,
+                                                    obstacle_list=obstacle_list,
+                                                    otherrobot_list=otherrobot_list,
+                                                    animation=animation)
+                    if last_nid != -1:
+                        break
                 if last_nid == 'connection':
-                    self.roadmap = nx.compose(tree_a, tree_b)
+                    self.roadmap = nx.compose(self.roadmap_start, self.roadmap_goal)
                     self.roadmap.add_edge(last_nid, goal_nid)
                     break
-                elif last_nid != -1:
-                    goal_nid = last_nid
-                    tree_a_goal_conf = tree_b.nodes[goal_nid]['conf']
-            if tree_a.number_of_nodes() > tree_b.number_of_nodes():
-                tree_a, tree_b = tree_b, tree_a
-                tree_a_goal_conf, tree_b_goal_conf = tree_b_goal_conf, tree_a_goal_conf
         else:
             print("Reach to maximum iteration! Failed to find a path.")
             return None
@@ -221,10 +228,6 @@ if __name__ == '__main__':
         ((10, 0), 3),
         ((10, -2), 3),
         ((10, -4), 3),
-        ((15, 5), 3),
-        ((15, 7), 3),
-        ((15, 9), 3),
-        ((15, 11), 3),
         ((0, 12), 3),
         ((-1, 10), 3),
         ((-2, 8), 3)

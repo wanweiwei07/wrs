@@ -4,6 +4,7 @@ import random
 import numpy as np
 import basis.robot_math as rm
 import networkx as nx
+import _roadmap as rdmp
 import matplotlib.pyplot as plt
 
 
@@ -11,7 +12,7 @@ class RRT(object):
 
     def __init__(self, robot):
         self.robot = robot.copy()
-        self.roadmap = nx.Graph()
+        self.roadmap = rdmp.RoadMap()
         self.start_conf = None
         self.goal_conf = None
 
@@ -67,13 +68,15 @@ class RRT(object):
         date: 20201228
         """
         nearest_nid = self._get_nearest_nid(roadmap, conf)
-        new_conf_list = self._extend_conf(roadmap.nodes[nearest_nid]['conf'], conf, ext_dist)
+        new_conf_list = self._extend_conf(roadmap.nxg.nodes[nearest_nid]['conf'], conf, ext_dist)
         for new_conf in new_conf_list:
             if self._is_collided(component_name, new_conf, obstacle_list, otherrobot_list):
                 return nearest_nid
             else:
                 new_nid = random.randint(0, 1e16)
                 roadmap.add_node(new_nid, conf=new_conf)
+                # find new nearest_nid
+
                 roadmap.add_edge(nearest_nid, new_nid)
                 nearest_nid = new_nid
                 # all_sampled_confs.append([new_node.point, False])

@@ -4,7 +4,7 @@ import visualization.panda.world as wd
 import modeling.geometric_model as gm
 import modeling.collision_model as cm
 import robot_sim.robots.ur3_dual.ur3_dual as ur3d
-import motion.probabilistic.rrt_connect as rrtc
+import motion.probabilistic.rrt_connect_wrsnew as rrtc
 import basis.robot_math as rm
 
 if __name__ == '__main__':

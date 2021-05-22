@@ -5,7 +5,7 @@ import grasping.planning.antipodal as gpa
 import numpy as np
 import robot_sim.robots.xarm7_shuidi_mobile.xarm7_shuidi_mobile as xsm
 import robot_sim.end_effectors.grippers.xarm_gripper.xarm_gripper as xag
-import motion.probabilistic.rrt_connect as rrtc
+import motion.probabilistic.rrt_connect_wrsnew as rrtc
 import motion.optimization_based.incremental_nik as inik
 
 base = wd.World(cam_pos=[1.5, -.5, 2], lookat_pos=[.3, -.03,.05])

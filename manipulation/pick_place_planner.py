@@ -3,7 +3,7 @@ import numpy as np
 import basis.robot_math as rm
 import basis.data_adapter as da
 import motion.optimization_based.incremental_nik as inik
-import motion.probabilistic.rrt_connect as rrtc
+import motion.probabilistic.rrt_connect_wrsnew as rrtc
 import manipulation.approach_depart_planner as adp
 
 

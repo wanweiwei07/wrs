@@ -5,7 +5,7 @@ import basis.robot_math as rm
 import numpy as np
 import modeling.collision_model as cm
 import modeling.geometric_model as gm
-import motion.probabilistic.rrt_connect as rrtc
+import motion.probabilistic.rrt_connect_wrsnew as rrtc
 import copy
 import open3d as o3d
 import random

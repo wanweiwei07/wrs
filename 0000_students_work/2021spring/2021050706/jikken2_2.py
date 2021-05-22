@@ -5,7 +5,7 @@ import visualization.panda.world as wd
 import modeling.collision_model as cm
 import basis.robot_math as rm
 import robot_sim.robots.ur3_dual.ur3_dual as ur3d
-import motion.probabilistic.rrt_connect as rrtc
+import motion.probabilistic.rrt_connect_wrsnew as rrtc
 
 base = wd.World(cam_pos=[2, 1, 3], lookat_pos=[0, 0, 1.1])
 gm.gen_frame().attach_to(base)

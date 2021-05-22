@@ -38,7 +38,7 @@ class RRTConnect(rrt.RRT):
                 nearest_nid = new_nid
                 # all_sampled_confs.append([new_node.point, False])
                 if animation:
-                    self.draw_wspace([self.roadmap_start, self.roadmap_goal],
+                    self.draw_wspace([self.roadmap_start, self.roadmap_goal], self.start_conf, self.goal_conf,
                                      obstacle_list, [roadmap.nodes[nearest_nid]['conf'], conf], new_conf, '^c')
                 # check goal
                 if self._goal_test(conf=roadmap.nodes[new_nid]['conf'], goal_conf=goal_conf, threshold=ext_dist):
@@ -56,8 +56,9 @@ class RRTConnect(rrt.RRT):
              otherrobot_list=[],
              ext_dist=2,
              rand_rate=70,
-             maxiter=1000,
-             maxtime=15.0,
+             max_iter=1000,
+             max_time=15.0,
+             smoothing_iterations=50,
              animation=False):
         self.roadmap.clear()
         self.roadmap_start.clear()
@@ -77,10 +78,10 @@ class RRTConnect(rrt.RRT):
         self.roadmap_goal.add_node('goal', conf=goal_conf)
         last_nid = 'goal'
         tic = time.time()
-        for _ in range(maxiter):
+        for _ in range(max_iter):
             toc = time.time()
-            if maxtime > 0.0:
-                if toc - tic > maxtime:
+            if max_time > 0.0:
+                if toc - tic > max_time:
                     print("Too much motion time! Failed to find a path.")
                     return [None, None]
             # Random Sampling
@@ -125,7 +126,7 @@ class RRTConnect(rrt.RRT):
                                           obstacle_list=obstacle_list,
                                           otherrobot_list=otherrobot_list,
                                           granularity=ext_dist,
-                                          iterations=100)
+                                          iterations=smoothing_iterations)
         return smoothed_path
 
 
@@ -203,9 +204,10 @@ if __name__ == '__main__':
     for i in range(100):
         tic = time.time()
         path = rrtc.plan(start_conf=np.array([0, 0]), goal_conf=np.array([5, 10]), obstacle_list=obstacle_list,
-                         ext_dist=1, rand_rate=70, maxtime=300, component_name='all', animation=False)
+                         ext_dist=1, rand_rate=70, max_time=300, component_name='all', animation=True)
         toc = time.time()
         total_t = total_t + toc - tic
+        break
     print(total_t)
     # Draw final path
     print(path)

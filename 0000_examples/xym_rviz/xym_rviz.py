@@ -10,7 +10,7 @@ import robot_sim.robots.xarm7_shuidi_mobile.xarm7_shuidi_mobile as xav
 
 if __name__ == '__main__':
     import copy
-    import motion.probabilistic.rrt_connect as rrtc
+    import motion.probabilistic.rrt_connect_wrsnew as rrtc
     import visualization.panda.rpc.rviz_client as rv_client
 
     # # local code

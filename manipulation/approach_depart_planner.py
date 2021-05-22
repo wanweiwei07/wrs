@@ -6,7 +6,7 @@ import numpy as np
 import basis.data_adapter as da
 import modeling.collision_model as cm
 import motion.optimization_based.incremental_nik as inik
-import motion.probabilistic.rrt_connect as rrtc
+import motion.probabilistic.rrt_connect_wrsnew as rrtc
 
 
 class ADPlanner(object):  # AD = Approach_Depart

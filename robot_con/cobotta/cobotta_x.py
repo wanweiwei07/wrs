@@ -101,7 +101,7 @@ if __name__ == '__main__':
     import numpy as np
     import basis.robot_math as rm
     import robot_sim.robots.cobotta.cobotta as cbt
-    import motion.probabilistic.rrt_connect as rrtc
+    import motion.probabilistic.rrt_connect_wrsnew as rrtc
     import visualization.panda.world as wd
     import modeling.geometric_model as gm
     import motion.trajectory.polynomial as trjp
