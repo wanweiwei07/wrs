@@ -6,8 +6,8 @@ from motion.probabilistic import rrt
 
 class RRTConnect(rrt.RRT):
 
-    def __init__(self, robot):
-        super().__init__(robot)
+    def __init__(self, robot_s):
+        super().__init__(robot_s)
         self.roadmap_start = nx.Graph()
         self.roadmap_goal = nx.Graph()
 
@@ -47,6 +47,36 @@ class RRTConnect(rrt.RRT):
                     return 'connection'
         else:
             return nearest_nid
+
+    def _smooth_path(self,
+                     component_name,
+                     path,
+                     obstacle_list=[],
+                     otherrobot_list=[],
+                     granularity=2,
+                     iterations=50,
+                     animation=False):
+        smoothed_path = path
+        for _ in range(iterations):
+            if len(smoothed_path) <= 2:
+                return smoothed_path
+            i = random.randint(0, len(smoothed_path) - 1)
+            j = random.randint(0, len(smoothed_path) - 1)
+            if abs(i - j) <= 1:
+                continue
+            if j < i:
+                i, j = j, i
+            shortcut = self._shortcut_conf(smoothed_path[i], smoothed_path[j], granularity, exact_end=True)
+            if (len(shortcut) <= (j - i) + 1) and all(not self._is_collided(component_name=component_name,
+                                                                            conf=conf,
+                                                                            obstacle_list=obstacle_list,
+                                                                            otherrobot_list=otherrobot_list)
+                                                      for conf in shortcut):
+                smoothed_path = smoothed_path[:i] + shortcut + smoothed_path[j + 1:]
+            if animation:
+                self.draw_wspace([self.roadmap_start, self.roadmap_goal], self.start_conf, self.goal_conf,
+                                 obstacle_list, shortcut=shortcut, smoothed_path=smoothed_path)
+        return smoothed_path
 
     def plan(self,
              component_name,

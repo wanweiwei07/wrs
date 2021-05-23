@@ -5,12 +5,13 @@ import numpy as np
 import basis.robot_math as rm
 import networkx as nx
 import matplotlib.pyplot as plt
+from operator import itemgetter
 
 
 class RRT(object):
 
-    def __init__(self, robot):
-        self.robot = robot.copy()
+    def __init__(self, robot_s):
+        self.robot_s = robot_s.copy()
         self.roadmap = nx.Graph()
         self.start_conf = None
         self.goal_conf = None
@@ -20,21 +21,58 @@ class RRT(object):
                      conf,
                      obstacle_list=[],
                      otherrobot_list=[]):
-        self.robot.fk(component_name=component_name, jnt_values=conf)
-        return self.robot.is_collided(obstacle_list=obstacle_list, otherrobot_list=otherrobot_list)
+        self.robot_s.fk(component_name=component_name, jnt_values=conf)
+        return self.robot_s.is_collided(obstacle_list=obstacle_list, otherrobot_list=otherrobot_list)
 
     def _sample_conf(self, component_name, rand_rate, default_conf):
         if random.randint(0, 99) < rand_rate:
-            return self.robot.rand_conf(component_name=component_name)
+            return self.robot_s.rand_conf(component_name=component_name)
         else:
             return default_conf
 
     def _get_nearest_nid(self, roadmap, new_conf):
-        dist_nid_list = [[np.linalg.norm(new_conf - roadmap.nodes[nid]['conf']), nid] for nid in roadmap]
-        min_dist_nid = min(dist_nid_list, key=lambda t: t[0])
-        return min_dist_nid[1]
+        """
+        convert to numpy to accelerate access
+        :param roadmap:
+        :param new_conf:
+        :return:
+        author: weiwei
+        date: 20210523
+        """
+        nodes_dict = dict(roadmap.nodes(data='conf'))
+        nodes_key_list = list(nodes_dict.keys())
+        nodes_value_list = list(nodes_dict.values()) # attention, correspondence is not guanranteed in python
+        # use the following alternative if correspondence is bad (a bit slower), 20210523, weiwei
+        # # nodes_value_list = list(nodes_dict.values())
+        # nodes_value_list = itemgetter(*nodes_key_list)(nodes_dict)
+        # if type(nodes_value_list) == np.ndarray:
+        #     nodes_value_list = [nodes_value_list]
+        conf_array = np.array(nodes_value_list)
+        diff_conf_array = np.linalg.norm(conf_array - new_conf, axis=1)
+        min_dist_nid = np.argmin(diff_conf_array)
+        return nodes_key_list[min_dist_nid]
 
-    def _extend_conf(self, conf1, conf2, ext_dist, exact_end = False):
+    def _extend_conf(self, conf1, conf2, ext_dist, exact_end=False):
+        """
+        :param conf1:
+        :param conf2:
+        :param ext_dist:
+        :return: a list of 1xn nparray
+        """
+        len, vec = rm.unit_vector(conf2 - conf1, toggle_length=True)
+        # one step extension: not adopted because it is slower than full extensions, 20210523, weiwei
+        # return [conf1 + ext_dist * vec]
+        # switch to the following code for ful extensions
+        if not exact_end:
+            nval = math.ceil(len / ext_dist)
+            conf_array = np.linspace(conf1, conf1 + nval * ext_dist * vec, nval)
+        else:
+            nval = math.floor(len / ext_dist)
+            conf_array = np.linspace(conf1, conf1 + nval * ext_dist * vec, nval)
+            conf_array = np.vstack((conf_array, conf2))
+        return list(conf_array[1:,:])
+
+    def _shortcut_conf(self, conf1, conf2, ext_dist, exact_end=False):
         """
         :param conf1:
         :param conf2:
@@ -99,10 +137,7 @@ class RRT(object):
 
     def _path_from_roadmap(self):
         nid_path = nx.shortest_path(self.roadmap, 'start', 'goal')
-        conf_path = []
-        for nid in nid_path:
-            conf_path.append(self.roadmap.nodes[nid]['conf'])
-        return conf_path
+        return list(itemgetter(*nid_path)(self.roadmap.nodes(data='conf')))
 
     def _smooth_path(self,
                      component_name,
@@ -122,13 +157,19 @@ class RRT(object):
                 continue
             if j < i:
                 i, j = j, i
-            shortcut = self._extend_conf(smoothed_path[i], smoothed_path[j], granularity)
-            if (len(shortcut) < (j - i)) and all(not self._is_collided(component_name=component_name,
-                                                                       conf=conf,
-                                                                       obstacle_list=obstacle_list,
-                                                                       otherrobot_list=otherrobot_list)
+            shortcut = self._shortcut_conf(smoothed_path[i], smoothed_path[j], granularity, exact_end=True)
+            # 20210523, it seems we do not need to check line length
+            # if (len(shortcut) <= (j - i)) and all(not self._is_collided(component_name=component_name,
+            #                                                            conf=conf,
+            #                                                            obstacle_list=obstacle_list,
+            #                                                            otherrobot_list=otherrobot_list)
+            #                                      for conf in shortcut):
+            if all(not self._is_collided(component_name=component_name,
+                                         conf=conf,
+                                         obstacle_list=obstacle_list,
+                                         otherrobot_list=otherrobot_list)
                                                  for conf in shortcut):
-                smoothed_path = smoothed_path[:i + 1] + shortcut + smoothed_path[j + 1:]
+                smoothed_path = smoothed_path[:i] + shortcut + smoothed_path[j + 1:]
             if animation:
                 self.draw_wspace([self.roadmap], self.start_conf, self.goal_conf,
                                  obstacle_list, shortcut=shortcut, smoothed_path=smoothed_path)
@@ -142,8 +183,8 @@ class RRT(object):
              otherrobot_list=[],
              ext_dist=2,
              rand_rate=70,
-             maxiter=1000,
-             maxtime=15.0,
+             max_iter=1000,
+             max_time=15.0,
              smoothing_iterations=50,
              animation=False):
         """
@@ -165,10 +206,10 @@ class RRT(object):
             return [[start_conf, goal_conf], None]
         self.roadmap.add_node('start', conf=start_conf)
         tic = time.time()
-        for _ in range(maxiter):
+        for _ in range(max_iter):
             toc = time.time()
-            if maxtime > 0.0:
-                if toc - tic > maxtime:
+            if max_time > 0.0:
+                if toc - tic > max_time:
                     print("Too much motion time! Failed to find a path.")
                     return None
             # Random Sampling
@@ -205,8 +246,8 @@ class RRT(object):
                     near_rand_conf_pair=None,
                     new_conf=None,
                     new_conf_mark='^r',
-                    shortcut = None,
-                    smoothed_path = None,
+                    shortcut=None,
+                    smoothed_path=None,
                     delay_time=.02):
         """
         Draw Graph
@@ -235,9 +276,11 @@ class RRT(object):
         if new_conf is not None:
             plt.plot(new_conf[0], new_conf[1], new_conf_mark)
         if smoothed_path is not None:
-            plt.plot([conf[0] for conf in smoothed_path], [conf[1] for conf in smoothed_path], linewidth=7, linestyle='-', color='c')
+            plt.plot([conf[0] for conf in smoothed_path], [conf[1] for conf in smoothed_path], linewidth=7,
+                     linestyle='-', color='c')
         if shortcut is not None:
-            plt.plot([conf[0] for conf in shortcut], [conf[1] for conf in shortcut], linewidth=4, linestyle='--', color='r')
+            plt.plot([conf[0] for conf in shortcut], [conf[1] for conf in shortcut], linewidth=4, linestyle='--',
+                     color='r')
         # plt.plot(planner.seed_jnt_values[0], planner.seed_jnt_values[1], "xr")
         # plt.plot(planner.end_conf[0], planner.end_conf[1], "xm")
         if not hasattr(RRT, 'img_counter'):
@@ -306,7 +349,7 @@ if __name__ == '__main__':
     robot = XYBot()
     rrt = RRT(robot)
     path = rrt.plan(start_conf=np.array([0, 0]), goal_conf=np.array([6, 9]), obstacle_list=obstacle_list,
-                    ext_dist=1, rand_rate=70, maxtime=300, component_name='all', animation=True)
+                    ext_dist=1, rand_rate=70, max_time=300, component_name='all', animation=True)
     # plt.show()
     # nx.draw(rrt.roadmap, with_labels=True, font_weight='bold')
     # plt.show()

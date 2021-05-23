@@ -246,7 +246,7 @@ class Baxter:
         print("Changing the photo")
         img = cv.imread(path)
         msg = cv_bridge.CvBridge().cv2_to_imgmsg(img, encoding="bgr8")
-        pub = rospy.Publisher('/robot/xdisplay', Image, latch=True, queue_size=1)
+        pub = rospy.Publisher('/robot_s/xdisplay', Image, latch=True, queue_size=1)
         pub.publish(msg)
         # Sleep to allow for image to be published.
         rospy.sleep(1)
@@ -302,7 +302,7 @@ class Baxter:
 
 class Trajectory(object):
     def __init__(self, limb):
-        ns = 'robot/limb/' + limb + '/'
+        ns = 'robot_s/limb/' + limb + '/'
         self._client = actionlib.SimpleActionClient(ns + "follow_joint_trajectory", FollowJointTrajectoryAction)
         self._goal = FollowJointTrajectoryGoal()
         self._goal_time_tolerance = rospy.Time(0.1)

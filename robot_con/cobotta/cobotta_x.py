@@ -18,7 +18,7 @@ class CobottaX(object):
         # Connect to RC8 (RC8(VRC)provider)
         self.hctrl = self.bcc.controller_connect("", "CaoProv.DENSO.VRC", ("localhost"), (""))
         self.clear_error()
-        # get robot object hanlde
+        # get robot_s object hanlde
         self.hrbt = self.bcc.controller_getrobot(self.hctrl, "Arm", "")
         # self.bcc.controller_getextension(self.hctrl, "Hand", "")
         # take arm

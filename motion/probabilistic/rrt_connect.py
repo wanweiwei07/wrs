@@ -6,8 +6,8 @@ from motion.probabilistic import rrt
 
 class RRTConnect(rrt.RRT):
 
-    def __init__(self, robot):
-        super().__init__(robot)
+    def __init__(self, robot_s):
+        super().__init__(robot_s)
         self.roadmap_start = nx.Graph()
         self.roadmap_goal = nx.Graph()
 
@@ -45,8 +45,7 @@ class RRTConnect(rrt.RRT):
                     roadmap.add_node('connection', conf=goal_conf)  # TODO current name -> connection
                     roadmap.add_edge(new_nid, 'connection')
                     return 'connection'
-        else:
-            return nearest_nid
+        return nearest_nid
 
     def _smooth_path(self,
                      component_name,
@@ -66,7 +65,7 @@ class RRTConnect(rrt.RRT):
                 continue
             if j < i:
                 i, j = j, i
-            shortcut = self._extend_conf(smoothed_path[i], smoothed_path[j], granularity, exact_end=True)
+            shortcut = self._shortcut_conf(smoothed_path[i], smoothed_path[j], granularity, exact_end=True)
             if (len(shortcut) <= (j - i) + 1) and all(not self._is_collided(component_name=component_name,
                                                                             conf=conf,
                                                                             obstacle_list=obstacle_list,
