@@ -17,6 +17,7 @@ class RRTStar(rrt.RRT):
         :param nearby_ratio: the threshold_hold = ext_dist*nearby_ratio
         """
         super().__init__(robot_s)
+        self.roadmap = nx.DiGraph()
         self.nearby_ratio = nearby_ratio
 
     def _get_nearby_nid_with_min_cost(self, roadmap, new_conf, ext_dist):
@@ -71,6 +72,7 @@ class RRTStar(rrt.RRT):
                 new_nid = random.randint(0, 1e16)
                 # find nearby_nid_list
                 nearby_nid_list = self._get_nearby_nid_with_min_cost(roadmap, new_conf, ext_dist)
+                print(nearby_nid_list) # 20210523 cannot continue to simplify
                 # costs
                 nodes_cost_dict = dict(roadmap.nodes(data='cost'))
                 nearby_cost_list = itemgetter(*nearby_nid_list)(nodes_cost_dict)
@@ -84,15 +86,17 @@ class RRTStar(rrt.RRT):
                 for nearby_nid in nearby_nid_list:
                     if nearby_nid != nearby_min_cost_nid:
                         if roadmap.nodes[new_nid]['cost'] + 1 < roadmap.nodes[nearby_nid]['cost']:
-                            tmp_conf = roadmap.nodes[nearby_nid]['conf']
-                            roadmap.remove_node(nearby_nid)
-                            new_nearby_nid = random.randint(0, 1e16)
-                            roadmap.add_node(new_nearby_nid, conf=tmp_conf,
-                                             cost=roadmap.nodes[nearby_min_cost_nid]['cost'] + 1)
-                            roadmap.add_edge(new_nearby_nid, new_nid)
+                            nearby_parent_nid = next(roadmap.predecessors(nearby_nid))
+                            roadmap.remove_edge(nearby_parent_nid, nearby_nid)
+                            roadmap.add_edge(new_nid, nearby_nid)
+                            roadmap.nodes[nearby_nid]['cost'] = roadmap.nodes[new_nid]['cost'] + 1
+                            cost_counter = 0
+                            for nid in roadmap.successors(nearby_nid):
+                                cost_counter += 1
+                                roadmap.nodes[nid]['cost'] = roadmap.nodes[nearby_nid]['cost'] + cost_counter
                 if animation:
                     self.draw_wspace([roadmap], self.start_conf, self.goal_conf,
-                                     obstacle_list, [roadmap.nodes[new_nid]['conf'], conf],
+                                     obstacle_list, [roadmap.nodes[nearest_nid]['conf'], conf],
                                      new_conf, '^c')
                 # check goal
                 if self._goal_test(conf=roadmap.nodes[new_nid]['conf'], goal_conf=goal_conf, threshold=ext_dist):
@@ -132,7 +136,9 @@ class RRTStar(rrt.RRT):
             return [[start_conf, goal_conf], None]
         self.roadmap.add_node('start', conf=start_conf, cost=0)
         tic = time.time()
+        n = 0
         for _ in range(max_iter):
+            n+=1
             toc = time.time()
             if max_time > 0.0:
                 if toc - tic > max_time:
@@ -148,7 +154,7 @@ class RRTStar(rrt.RRT):
                                             obstacle_list=obstacle_list,
                                             otherrobot_list=otherrobot_list,
                                             animation=animation)
-            if last_nid == 'connection':
+            if last_nid == 'connection' and n > 1000:
                 mapping = {'connection': 'goal'}
                 self.roadmap = nx.relabel_nodes(self.roadmap, mapping)
                 path = self._path_from_roadmap()
