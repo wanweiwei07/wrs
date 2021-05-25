@@ -15,12 +15,23 @@ class XArm7YunjiMobile(ri.RobotInterface):
         super().__init__(pos=pos, rotmat=rotmat, name=name)
         this_dir, this_filename = os.path.split(__file__)
         # agv
-        self.agv = jl.JLChain(pos=pos, rotmat=rotmat, homeconf=np.zeros(0), name='agv')  # TODO: change to 3-dof
-        self.agv.jnts[1]['loc_pos'] = np.array([0, .0, .34231])
-        self.agv.lnks[0]['name'] = 'agv'
-        self.agv.lnks[0]['loc_pos'] = np.array([0, 0, 0])
-        self.agv.lnks[0]['meshfile'] = os.path.join(this_dir, 'meshes', 'shuidi_agv_meter.stl')
-        self.agv.lnks[0]['rgba'] = [.35, .35, .35, 1.0]
+        self.agv = jl.JLChain(pos=pos, rotmat=rotmat, homeconf=np.zeros(3), name='agv')  # TODO: change to 3-dof
+        self.agv.jnts[1]['loc_pos'] = np.zeros(3)
+        self.agv.jnts[1]['type'] = 'prismatic'
+        self.agv.jnts[1]['loc_motionax'] = np.array([1, 0, 0])
+        self.agv.jnts[1]['motion_rng'] = [0.0, 5.0]
+        self.agv.jnts[2]['loc_pos'] = np.zeros(3)
+        self.agv.jnts[2]['type'] = 'prismatic'
+        self.agv.jnts[2]['loc_motionax'] = np.array([0, 1, 0])
+        self.agv.jnts[2]['motion_rng'] = [-3.0, 3.0]
+        self.agv.jnts[3]['loc_pos'] = np.zeros(3)
+        self.agv.jnts[3]['loc_motionax'] = np.array([0, 0, 1])
+        self.agv.jnts[3]['motion_rng'] = [-math.pi, math.pi]
+        self.agv.jnts[4]['loc_pos'] = np.array([0, .0, .34231])
+        self.agv.lnks[3]['name'] = 'agv'
+        self.agv.lnks[3]['loc_pos'] = np.array([0, 0, 0])
+        self.agv.lnks[3]['meshfile'] = os.path.join(this_dir, 'meshes', 'shuidi_agv_meter.stl')
+        self.agv.lnks[3]['rgba'] = [.35, .35, .35, 1.0]
         self.agv.reinitialize()
         # arm
         arm_homeconf = np.zeros(7)
@@ -46,18 +57,18 @@ class XArm7YunjiMobile(ri.RobotInterface):
             self.enable_cc()
         # component map
         self.manipulator_dict['arm'] = self.arm
-        self.manipulator_dict['hnd'] = self.arm # specify which hand is a gripper installed to
+        self.manipulator_dict['hnd'] = self.arm  # specify which hand is a gripper installed to
         self.hnd_dict['hnd'] = self.hnd
         self.hnd_dict['arm'] = self.hnd
 
     def enable_cc(self):
         # TODO when pose is changed, oih info goes wrong
         super().enable_cc()
-        self.cc.add_cdlnks(self.agv, [0])
+        self.cc.add_cdlnks(self.agv, [3])
         self.cc.add_cdlnks(self.arm, [0, 1, 2, 3, 4, 5, 6])
         self.cc.add_cdlnks(self.hnd.lft_outer, [0, 1, 2])
         self.cc.add_cdlnks(self.hnd.rgt_outer, [1, 2])
-        activelist = [self.agv.lnks[0],
+        activelist = [self.agv.lnks[3],
                       self.arm.lnks[0],
                       self.arm.lnks[1],
                       self.arm.lnks[2],
@@ -71,7 +82,7 @@ class XArm7YunjiMobile(ri.RobotInterface):
                       self.hnd.rgt_outer.lnks[1],
                       self.hnd.rgt_outer.lnks[2]]
         self.cc.set_active_cdlnks(activelist)
-        fromlist = [self.agv.lnks[0],
+        fromlist = [self.agv.lnks[3],
                     self.arm.lnks[0],
                     self.arm.lnks[1],
                     self.arm.lnks[2]]
@@ -87,7 +98,7 @@ class XArm7YunjiMobile(ri.RobotInterface):
             objcm = oih_info['collisionmodel']
             self.hold(objcm)
 
-    def move_to(self, pos, rotmat):
+    def fix_to(self, pos, rotmat):
         self.pos = pos
         self.rotmat = rotmat
         self.agv.fix_to(self.pos, self.rotmat)
@@ -99,9 +110,6 @@ class XArm7YunjiMobile(ri.RobotInterface):
             obj_info['gl_pos'] = gl_pos
             obj_info['gl_rotmat'] = gl_rotmat
 
-    def fix_to(self, pos, rotmat):
-        self.move_to(pos=pos, rotmat=rotmat)
-
     def fk(self, component_name='arm', jnt_values=np.zeros(7)):
         """
         :param jnt_values: 7 or 3+7, 3=agv, 7=arm, 1=grpr; metrics: meter-radian
@@ -110,6 +118,7 @@ class XArm7YunjiMobile(ri.RobotInterface):
         author: weiwei
         date: 20201208toyonaka
         """
+
         def update_oih(component_name='arm'):
             for obj_info in self.oih_infos:
                 gl_pos, gl_rotmat = self.cvt_loc_tcp_to_gl(component_name, obj_info['rel_pos'], obj_info['rel_rotmat'])
@@ -130,10 +139,7 @@ class XArm7YunjiMobile(ri.RobotInterface):
         elif component_name == 'agv':
             if not isinstance(jnt_values, np.ndarray) or jnt_values.size != 3:
                 raise ValueError("An 1x7 npdarray must be specified to move the agv!")
-            self.pos = np.zeros(3)
-            self.pos[:2] = jnt_values[:2]
-            self.rotmat = rm.rotmat_from_axangle([0, 0, 1], jnt_values[2])
-            self.agv.fix_to(self.pos, self.rotmat)
+            self.agv.fk(jnt_values)
             self.arm.fix_to(pos=self.agv.jnts[-1]['gl_posq'], rotmat=self.agv.jnts[-1]['gl_rotmatq'])
             self.hnd.fix_to(pos=self.arm.jnts[-1]['gl_posq'], rotmat=self.arm.jnts[-1]['gl_rotmatq'])
             # update objects in hand
@@ -144,11 +150,9 @@ class XArm7YunjiMobile(ri.RobotInterface):
         elif component_name == 'agv_arm':
             if not isinstance(jnt_values, np.ndarray) or jnt_values.size != 10:
                 raise ValueError("An 1x9 npdarray must be specified to move both the agv and the arm!")
-            self.pos = np.zeros(3)
-            self.pos[:2] = jnt_values[:2]
-            self.rotmat = rm.rotmat_from_axangle([0, 0, 1], jnt_values[2])
-            self.agv.fix_to(self.pos, self.rotmat)
-            self.arm.fix_to(pos=self.agv.jnts[-1]['gl_posq'], rotmat=self.agv.jnts[-1]['gl_rotmatq'], jnt_values=jnt_values[3:10])
+            self.agv.fk(jnt_values)
+            self.arm.fix_to(pos=self.agv.jnts[-1]['gl_posq'], rotmat=self.agv.jnts[-1]['gl_rotmatq'],
+                            jnt_values=jnt_values[3:10])
             self.hnd.fix_to(pos=self.arm.jnts[-1]['gl_posq'], rotmat=self.arm.jnts[-1]['gl_rotmatq'])
             # update objects in hand
             for obj_info in self.oih_infos:
@@ -158,12 +162,11 @@ class XArm7YunjiMobile(ri.RobotInterface):
         elif component_name == 'all':
             if not isinstance(jnt_values, np.ndarray) or jnt_values.size != 11:
                 raise ValueError("An 1x10 npdarray must be specified to move all joints!")
-            self.pos = np.zeros(3)
-            self.pos[:2] = jnt_values[:2]
-            self.rotmat = rm.rotmat_from_axangle([0, 0, 1], jnt_values[2])
-            self.agv.fix_to(self.pos, self.rotmat)
-            self.arm.fix_to(pos=self.agv.jnts[-1]['gl_posq'], rotmat=self.agv.jnts[-1]['gl_rotmatq'], jnt_values=jnt_values[3:10])
-            self.hnd.fix_to(pos=self.arm.jnts[-1]['gl_posq'], rotmat=self.arm.jnts[-1]['gl_rotmatq'], motion_val = jnt_values[10])
+            self.agv.fk(jnt_values)
+            self.arm.fix_to(pos=self.agv.jnts[-1]['gl_posq'], rotmat=self.agv.jnts[-1]['gl_rotmatq'],
+                            jnt_values=jnt_values[3:10])
+            self.hnd.fix_to(pos=self.arm.jnts[-1]['gl_posq'], rotmat=self.arm.jnts[-1]['gl_rotmatq'],
+                            motion_val=jnt_values[10])
             # update objects in hand
             for obj_info in self.oih_infos:
                 gl_pos, gl_rotmat = self.arm.cvt_loc_tcp_to_gl(obj_info['rel_pos'], obj_info['rel_rotmat'])
@@ -195,6 +198,8 @@ class XArm7YunjiMobile(ri.RobotInterface):
     def rand_conf(self, component_name):
         if component_name in self.manipulator_dict:
             return super().rand_conf(component_name)
+        elif component_name == 'agv':
+            return self.agv.rand_conf()
         else:
             raise NotImplementedError
 
@@ -338,13 +343,14 @@ if __name__ == '__main__':
     xav.fk(component_name='all', jnt_values=np.array([0, 0, 0, 0, 0, 0, math.pi, 0, -math.pi / 6, 0, 0]))
     xav.jaw_to(.08)
     tgt_pos = np.array([.85, 0, .5])
-    tgt_rotmat = rm.rotmat_from_axangle([0,1,0], math.pi/2)
+    tgt_rotmat = rm.rotmat_from_axangle([0, 1, 0], math.pi / 2)
     gm.gen_frame(pos=tgt_pos, rotmat=tgt_rotmat).attach_to(base)
-    jnt_values = xav.ik(tgt_pos, tgt_rotmat)
+    jnt_values = xav.ik(component_name='arm', tgt_pos=tgt_pos, tgt_rotmat=tgt_rotmat)
     tgt_pos2 = np.array([.7, 0, .5])
-    jnt_values2 = xav.ik(tgt_pos2, tgt_rotmat, seed_jnt_values=jnt_values)
+    jnt_values2 = xav.ik(component_name='arm', tgt_pos=tgt_pos2, tgt_rotmat=tgt_rotmat, seed_jnt_values=jnt_values)
     print(jnt_values)
     xav.fk(component_name='arm', jnt_values=jnt_values2)
+    xav.fk(component_name='agv', jnt_values=np.array([.2,-.5,math.radians(30)]))
     xav_meshmodel = xav.gen_meshmodel(toggle_tcpcs=True)
     xav_meshmodel.attach_to(base)
     xav.show_cdprimit()
