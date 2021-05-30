@@ -1,0 +1,14 @@
+syntax = "proto3";
+
+service XArm {
+    rpc move_jspace_path (Empty) returns (Empty) {}
+}
+
+message Empty {
+}
+
+message Path {
+    int32  length = 1;
+    int32  njnts = 2;
+    bytes  data = 3;
+}

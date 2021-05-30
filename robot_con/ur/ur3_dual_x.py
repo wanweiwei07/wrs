@@ -75,12 +75,12 @@ class UR3DualX(object):
         else:
             raise ValueError("Component_name must be in ['all', 'lft_arm', 'rgt_arm']!")
 
-    def move_jntspace_path(self,
-                           component_name,
-                           path,
-                           control_frequency=.008,
-                           interval_time=1.0,
-                           interpolation_method=None):
+    def move_jspace_path(self,
+                         component_name,
+                         path,
+                         control_frequency=.008,
+                         interval_time=1.0,
+                         interpolation_method=None):
         """
         :param component_name
         :param path: a list of 1x12 arrays or 1x6 arrays, depending on component_name
