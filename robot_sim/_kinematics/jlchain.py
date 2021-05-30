@@ -298,10 +298,10 @@ class JLChain(object):
            tgt_pos,
            tgt_rotmat,
            seed_jnt_values=None,
-           max_niter=100,
            tcp_jntid=None,
            tcp_loc_pos=None,
            tcp_loc_rotmat=None,
+           max_niter=100,
            local_minima="accept",
            toggle_debug=False):
         """
@@ -317,6 +317,7 @@ class JLChain(object):
         :param tcp_jntid: a joint ID in the self.tgtjnts
         :param tcp_loc_pos: 1x3 nparray, decribed in the local frame of self.jnts[tcp_jntid], single value or list
         :param tcp_loc_rotmat: 3x3 nparray, decribed in the local frame of self.jnts[tcp_jntid], single value or list
+        :param max_niter
         :param local_minima:
         :return:
         """

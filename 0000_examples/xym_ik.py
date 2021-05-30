@@ -6,7 +6,6 @@ import visualization.panda.world as wd
 import modeling.geometric_model as gm
 import modeling.collision_model as cm
 import robot_sim.robots.xarm7_shuidi_mobile.xarm7_shuidi_mobile as xav
-import motion.probabilistic.rrt_connect_wrsnew as rrtc
 
 base = wd.World(cam_pos=[3, 1, 2], lookat_pos=[0, 0, 0])
 gm.gen_frame().attach_to(base)

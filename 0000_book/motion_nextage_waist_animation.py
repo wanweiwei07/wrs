@@ -5,7 +5,7 @@ import visualization.panda.world as wd
 import modeling.geometric_model as gm
 import modeling.collision_model as cm
 import robot_sim.robots.nextage.nextage as nxt
-import motion.probabilistic.rrt_connect_wrsnew as rrtc
+import motion.probabilistic.rrt_connect as rrtc
 
 base = wd.World(cam_pos=[4, -1, 2], lookat_pos=[0, 0, 0])
 gm.gen_frame().attach_to(base)
@@ -21,19 +21,15 @@ robot_s = nxt.Nextage()
 start_pos = np.array([.4, 0, .2])
 start_rotmat = rm.rotmat_from_euler(0, math.pi * 2 / 3, -math.pi / 4)
 start_conf = robot_s.ik(component_name, start_pos, start_rotmat)
-# goal_pos = np.array([.3, .5, .7])
-# goal_rotmat = rm.rotmat_from_axangle([0, 1, 0], math.pi)
-goal_pos = np.array([-.3, .45, .55])
-goal_rotmat = rm.rotmat_from_axangle([0, 0, 1], -math.pi/2)
+goal_pos = np.array([.3, .5, .7])
+goal_rotmat = rm.rotmat_from_axangle([0, 1, 0], math.pi)
 goal_conf = robot_s.ik(component_name, goal_pos, goal_rotmat)
-
 rrtc_planner = rrtc.RRTConnect(robot_s)
 path = rrtc_planner.plan(component_name=component_name,
                          start_conf=start_conf,
                          goal_conf=goal_conf,
                          obstacle_list=[object_box],
                          ext_dist=.05,
-                         rand_rate=40,
                          smoothing_iterations=150,
                          max_time=300)
 print(path)

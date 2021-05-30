@@ -1,7 +1,7 @@
 import numpy as np
 import robot_sim.robots.ur3_dual.ur3_dual as ur3ds
 import robot_con.ur.ur3_dual_x as ur3dx
-import motion.probabilistic.rrt_connect_wrsnew as rrtc
+import motion.probabilistic.rrt_connect as rrtc
 import motion.optimization_based.incremental_nik as inik
 import manipulation.pick_place_planner as ppp
 import visualization.panda.world as wd
@@ -39,7 +39,6 @@ class UR3DualHelper(object):
                     obstacle_list=[],
                     otherrobot_list=[],
                     ext_dist=2,
-                    rand_rate=70,
                     maxiter=1000,
                     maxtime=15.0,
                     animation=False):
@@ -49,7 +48,6 @@ class UR3DualHelper(object):
                                      obstacle_list=obstacle_list,
                                      otherrobot_list=otherrobot_list,
                                      ext_dist=ext_dist,
-                                     rand_rate=rand_rate,
                                      max_iter=maxiter,
                                      max_time=maxtime,
                                      animation=animation)

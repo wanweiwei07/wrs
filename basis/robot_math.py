@@ -474,6 +474,17 @@ def angle_between_vectors(v1, v2):
         return None
     return np.arccos(np.clip(np.dot(v1_u, v2_u), -1.0, 1.0))
 
+def angle_between_2d_vectors(v1, v2):
+    """
+    return the angle from v1 to v2, with signs
+    :param v1: 2d vector
+    :param v2:
+    :return:
+    author: weiwei
+    date: 20210530
+    """
+    return math.atan2(v2[1]*v1[0]-v2[0]*v1[1], v2[0]*v1[0]+v2[1]*v1[1])
+
 
 def deltaw_between_rotmat(rotmati, rotmatj):
     """

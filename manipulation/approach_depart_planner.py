@@ -6,7 +6,7 @@ import numpy as np
 import basis.data_adapter as da
 import modeling.collision_model as cm
 import motion.optimization_based.incremental_nik as inik
-import motion.probabilistic.rrt_connect_wrsnew as rrtc
+import motion.probabilistic.rrt_connect as rrtc
 
 
 class ADPlanner(object):  # AD = Approach_Depart
@@ -228,7 +228,6 @@ class ADPlanner(object):  # AD = Approach_Depart
                                                               goal_conf=conf_list[0],
                                                               obstacle_list=obstacle_list+object_list,
                                                               ext_dist=.05,
-                                                              rand_rate=70,
                                                               max_time=300)
             if start2approach_conf_list is None:
                 print("ADPlanner: Cannot plan approach motion!")
@@ -274,7 +273,6 @@ class ADPlanner(object):  # AD = Approach_Depart
                                                            goal_conf=end_conf,
                                                            obstacle_list=obstacle_list+object_list,
                                                            ext_dist=.05,
-                                                           rand_rate=70,
                                                            max_time=300)
             if depart2goal_conf_list is None:
                 print("ADPlanner: Cannot plan depart motion!")
@@ -349,7 +347,6 @@ class ADPlanner(object):  # AD = Approach_Depart
                                                               obstacle_list=obstacle_list,
                                                               object_list=object_list,
                                                               ext_dist=.05,
-                                                              rand_rate=70,
                                                               max_time=300)
             if start2approach_conf_list is None:
                 print("ADPlanner: Cannot plan approach motion!")
@@ -362,7 +359,6 @@ class ADPlanner(object):  # AD = Approach_Depart
                                                            obstacle_list=obstacle_list,
                                                            object_list=object_list,
                                                            ext_dist=.05,
-                                                           rand_rate=70,
                                                            max_time=300)
             if depart2goal_conf_list is None:
                 print("ADPlanner: Cannot plan depart motion!")

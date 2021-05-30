@@ -4,7 +4,7 @@ import visualization.panda.world as wd
 import modeling.geometric_model as gm
 import modeling.collision_model as cm
 import robot_sim.robots.ur3_dual.ur3_dual as ur3d
-import motion.probabilistic.rrt_connect_wrsnew as rrtc
+import motion.probabilistic.rrt_connect as rrtc
 import basis.robot_math as rm
 
 base = wd.World(cam_pos=[2, 1, 3], lookat_pos=[0, 0, 1.1])
@@ -36,7 +36,6 @@ path = rrtc_planner.plan(component_name=component_name,
                          goal_conf=goal_conf,
                          obstacle_list=[object],
                          ext_dist=.2,
-                         rand_rate=70,
                          max_time=300)
 # print(path)
 for pose in path:

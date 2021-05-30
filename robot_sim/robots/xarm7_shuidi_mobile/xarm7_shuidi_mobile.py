@@ -218,7 +218,7 @@ class XArm7YunjiMobile(ri.RobotInterface):
         if jawwidth is not None:
             self.hnd_dict[hnd_name].jaw_to(jawwidth)
         rel_pos, rel_rotmat = self.manipulator_dict[hnd_name].cvt_gl_to_loc_tcp(objcm.get_pos(), objcm.get_rotmat())
-        intolist = [self.agv.lnks[0],
+        intolist = [self.agv.lnks[3],
                     self.arm.lnks[0],
                     self.arm.lnks[1],
                     self.arm.lnks[2],

@@ -10,7 +10,7 @@ import robot_sim.robots.xarm7_shuidi_mobile.xarm7_shuidi_mobile as xav
 
 if __name__ == '__main__':
     import copy
-    import motion.probabilistic.rrt_connect_wrsnew as rrtc
+    import motion.probabilistic.rrt_connect as rrtc
     import visualization.panda.rpc.rviz_client as rv_client
 
     # # local code
@@ -49,7 +49,6 @@ if __name__ == '__main__':
                              goal_conf=np.array([math.pi / 3, math.pi * 1 / 3, 0, math.pi / 2, 0, math.pi / 6, 0]),
                              obstacle_list=[obj],
                              ext_dist=.1,
-                             rand_rate=70,
                              max_time=300,
                              component_name=robot_component_name)
     rmt_anime_robotinfo = rvc.add_anime_robot(rmt_robot_s=rmt_robot_s,

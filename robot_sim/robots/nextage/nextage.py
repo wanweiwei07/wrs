@@ -332,6 +332,7 @@ class Nextage(ri.RobotInterface):
            tcp_jntid=None,
            tcp_loc_pos=None,
            tcp_loc_rotmat=None,
+           max_niter=100,
            local_minima="accept",
            toggle_debug=False):
         if component_name == 'lft_arm' or component_name == 'rgt_arm':
@@ -343,6 +344,7 @@ class Nextage(ri.RobotInterface):
                                                                   tcp_jntid=tcp_jntid,
                                                                   tcp_loc_pos=tcp_loc_pos,
                                                                   tcp_loc_rotmat=tcp_loc_rotmat,
+                                                                  max_niter=max_niter,
                                                                   local_minima=local_minima,
                                                                   toggle_debug=toggle_debug)
             self.manipulator_dict[component_name].tgtjnts = old_tgt_jnts
@@ -354,6 +356,7 @@ class Nextage(ri.RobotInterface):
                                                             tcp_jntid=tcp_jntid,
                                                             tcp_loc_pos=tcp_loc_pos,
                                                             tcp_loc_rotmat=tcp_loc_rotmat,
+                                                            max_niter=max_niter,
                                                             local_minima=local_minima,
                                                             toggle_debug=toggle_debug)
         elif component_name == 'both_arm':
@@ -670,7 +673,7 @@ if __name__ == '__main__':
     # ik test
     component_name = 'lft_arm_waist'
     tgt_pos = np.array([-.3, .45, .55])
-    tgt_rotmat = rm.rotmat_from_axangle([0, 0, 1], -math.pi/2)
+    tgt_rotmat = rm.rotmat_from_axangle([0, 0, 1], -math.pi / 2)
     # tgt_rotmat = np.eye(3)
     gm.gen_frame(pos=tgt_pos, rotmat=tgt_rotmat).attach_to(base)
     tic = time.time()

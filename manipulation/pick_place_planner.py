@@ -3,7 +3,7 @@ import numpy as np
 import basis.robot_math as rm
 import basis.data_adapter as da
 import motion.optimization_based.incremental_nik as inik
-import motion.probabilistic.rrt_connect_wrsnew as rrtc
+import motion.probabilistic.rrt_connect as rrtc
 import manipulation.approach_depart_planner as adp
 
 
@@ -326,7 +326,7 @@ class PickPlacePlanner(adp.ADPlanner):
         :param objcm:
         :param grasp_info_list:
         :param goal_homomat_list:
-        :param start_conf: RRT motion between start_conf and pre_approach; No RRT motion if None
+        :param start_conf: RRT motion between start_state and pre_approach; No RRT motion if None
         :param end_conf: RRT motion between post_depart and end_conf; Noe RRT motion if None
         :param approach_direction_list: the first element will be the pick approach direction
         :param approach_distance_list: the first element will be the pick approach direction

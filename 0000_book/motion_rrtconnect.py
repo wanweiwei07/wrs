@@ -2,7 +2,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import robot_sim._kinematics.jlchain as jl
 import robot_sim.robots.robot_interface as ri
-import motion.probabilistic.rrt_connect_wrsnew as rrtc
+import motion.probabilistic.rrt_connect as rrtc
 
 
 class XYBot(ri.RobotInterface):
@@ -53,8 +53,12 @@ if __name__ == '__main__':
     # Set Initial parameters
     robot = XYBot()
     rrtc_instance = rrtc.RRTConnect(robot)
-    path = rrtc_instance.plan(component_name='all', start_conf=np.array([0, 0]),
-                              goal_conf=np.array([5, 10]), obstacle_list=obstacle_list,
-                              ext_dist=1, rand_rate=70, max_time=300, animation=True)
+    path = rrtc_instance.plan(component_name='all',
+                              start_conf=np.array([0, 0]),
+                              goal_conf=np.array([5, 10]),
+                              obstacle_list=obstacle_list,
+                              ext_dist=1,
+                              max_time=300,
+                              animation=True)
     plt.plot([conf[0] for conf in path], [conf[1] for conf in path], '-k')
     plt.show()

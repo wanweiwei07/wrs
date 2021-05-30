@@ -8,13 +8,74 @@ import matplotlib.pyplot as plt
 from operator import itemgetter
 
 
-class RRT(object):
+# NOTE: write your own extend_state_callback and goal_test_callback to implement your own kinodyanmics
+class Kinodynamics(object):
+    def __init__(self, time_interval=.1):
+        self.line_speed_rng = [-1.0, 1.0]
+        self.angular_speed_rng = [-.5, .5]
+        self.linear_acc = .7
+        self.angular_acc = .5
+        self.time_interval = time_interval
+        self.conf_dof = 3
 
-    def __init__(self, robot_s):
+    def extend_state_callback(self, state1, state2):
+        """
+        extend state call back for two-wheel car robot
+        :param state1: x, y, theta, x_dot, y_dot, theta_dot
+        :param state2:
+        :return:
+        """
+        random_step_array = [[self.linear_acc * self.time_interval, 0], \
+                             [-self.linear_acc * self.time_interval, 0], \
+                             [0, -self.angular_acc * self.time_interval], \
+                             [0, self.angular_acc * self.time_interval]]
+        current_speed = np.array([np.linalg.norm(state1[3:5]), state1[5]])
+        min_value = 1e12
+        return_result = None
+        for random_step in random_step_array:
+            # random increase speed, and clip the too large ones
+            next_speed = current_speed + random_step
+            next_speed[0] = np.clip(next_speed[0], self.line_speed_rng[0], self.line_speed_rng[1])
+            next_speed[1] = np.clip(next_speed[1], self.angular_speed_rng[0], self.angular_speed_rng[1])
+            # dynamics
+            avg_speed = (current_speed + next_speed) / 2
+            next_angle = state1[2] + avg_speed[1] * self.time_interval
+            avg_angle = (state1[2]+next_angle)/2.0
+            avg_annihilating_array = np.array([[np.cos(avg_angle), np.sin(avg_angle), 0], [0, 0, 1]])
+            new_state_conf = state1[:3] + (avg_speed * self.time_interval).dot(avg_annihilating_array)
+            next_annihilating_array = np.array([[np.cos(next_angle), np.sin(next_angle), 0], [0, 0, 1]])
+            new_state_speed = next_speed.dot(next_annihilating_array)
+            new_state = np.hstack((new_state_conf, new_state_speed))
+            diff_state = new_state - state2
+            diff_value = np.linalg.norm(diff_state)
+            if diff_value < min_value:
+                min_value = diff_value
+                return_result = new_state
+        return return_result
+
+    def goal_test_callback(self, state, goal_state):
+        if np.all(np.abs(goal_state[:3] - state[:3]) < -np.abs(state[3:]) / 2 * self.time_interval) and \
+                np.linalg.norm(state[3:5]) < self.linear_acc * self.time_interval and \
+                abs(state[5]) < self.angular_acc * self.time_interval:
+            return True
+        else:
+            return False
+
+
+class RRTConnectKinodynamic(object):
+
+    def __init__(self, robot_s, kds):
+        """
+        :param robot_s:
+        :param extend_conf_callback: call back function for extend_conf
+        """
         self.robot_s = robot_s.copy()
-        self.roadmap = nx.Graph()
+        self.roadmap_start = nx.Graph()
+        self.roadmap_goal = nx.Graph()
         self.start_conf = None
         self.goal_conf = None
+        self.roadmap = nx.DiGraph()
+        self.kds = kds
 
     def _is_collided(self,
                      component_name,
@@ -26,7 +87,11 @@ class RRT(object):
 
     def _sample_conf(self, component_name, rand_rate, default_conf):
         if random.randint(0, 99) < rand_rate:
-            return self.robot_s.rand_conf(component_name=component_name)
+            rand_conf = self.robot_s.rand_conf(component_name=component_name)
+            # return np.hstack((rand_conf, np.zeros_like(rand_conf)))
+            rand_speed = np.random.rand(3)-1
+            rand_speed[:2] = rand_speed[:2]*2
+            return np.hstack((rand_conf, rand_speed))
         else:
             return default_conf
 
@@ -41,42 +106,17 @@ class RRT(object):
         """
         nodes_dict = dict(roadmap.nodes(data='conf'))
         nodes_key_list = list(nodes_dict.keys())
-        nodes_value_list = list(nodes_dict.values()) # attention, correspondence is not guanranteed in python
-        # use the following alternative if correspondence is bad (a bit slower), 20210523, weiwei
-        # # nodes_value_list = list(nodes_dict.values())
-        # nodes_value_list = itemgetter(*nodes_key_list)(nodes_dict)
-        # if type(nodes_value_list) == np.ndarray:
-        #     nodes_value_list = [nodes_value_list]
+        nodes_value_list = list(nodes_dict.values())
         conf_array = np.array(nodes_value_list)
+        # diff_conf_array = np.linalg.norm(conf_array[:,:self.kds.conf_dof] - new_state[:self.kds.conf_dof], axis=1)
         diff_conf_array = np.linalg.norm(conf_array - new_conf, axis=1)
         min_dist_nid = np.argmin(diff_conf_array)
         return nodes_key_list[min_dist_nid]
-
-    def _extend_conf(self, conf1, conf2, ext_dist, exact_end=False):
-        """
-        :param conf1:
-        :param conf2:
-        :param ext_dist:
-        :return: a list of 1xn nparray
-        """
-        len, vec = rm.unit_vector(conf2 - conf1, toggle_length=True)
-        # one step extension: not adopted because it is slower than full extensions, 20210523, weiwei
-        # return [conf1 + ext_dist * vec]
-        # switch to the following code for ful extensions
-        if not exact_end:
-            nval = math.ceil(len / ext_dist)
-            conf_array = np.linspace(conf1, conf1 + nval * ext_dist * vec, nval)
-        else:
-            nval = math.floor(len / ext_dist)
-            conf_array = np.linspace(conf1, conf1 + nval * ext_dist * vec, nval)
-            conf_array = np.vstack((conf_array, conf2))
-        return list(conf_array)
 
     def _extend_roadmap(self,
                         component_name,
                         roadmap,
                         conf,
-                        ext_dist,
                         goal_conf,
                         obstacle_list=[],
                         otherrobot_list=[],
@@ -88,75 +128,29 @@ class RRT(object):
         date: 20201228
         """
         nearest_nid = self._get_nearest_nid(roadmap, conf)
-        new_conf_list = self._extend_conf(roadmap.nodes[nearest_nid]['conf'], conf, ext_dist)[1:]
-        for new_conf in new_conf_list:
-            if self._is_collided(component_name, new_conf, obstacle_list, otherrobot_list):
-                return nearest_nid
-            else:
-                new_nid = random.randint(0, 1e16)
-                roadmap.add_node(new_nid, conf=new_conf)
-                roadmap.add_edge(nearest_nid, new_nid)
-                nearest_nid = new_nid
-                # all_sampled_confs.append([new_node.point, False])
-                if animation:
-                    self.draw_wspace([roadmap], self.start_conf, self.goal_conf,
-                                     obstacle_list, [roadmap.nodes[nearest_nid]['conf'], conf],
-                                     new_conf, '^c')
-                # check goal
-                if self._goal_test(conf=roadmap.nodes[new_nid]['conf'], goal_conf=goal_conf, threshold=ext_dist):
-                    roadmap.add_node('connection', conf=goal_conf)  # TODO current name -> connection
-                    roadmap.add_edge(new_nid, 'connection')
-                    return 'connection'
-        else:
+        new_conf = self.kds.extend_state_callback(roadmap.nodes[nearest_nid]['conf'], conf)
+        if self._is_collided(component_name, new_conf, obstacle_list, otherrobot_list):
             return nearest_nid
-
-    def _goal_test(self, conf, goal_conf, threshold):
-        dist = np.linalg.norm(conf - goal_conf)
-        if dist <= threshold:
-            # print("Goal reached!")
-            return True
         else:
-            return False
+            new_nid = random.randint(0, 1e16)
+            roadmap.add_node(new_nid, conf=new_conf)
+            roadmap.add_edge(nearest_nid, new_nid)
+            nearest_nid = new_nid
+            # all_sampled_confs.append([new_node.point, False])
+            if animation:
+                self.draw_wspace([self.roadmap_start, self.roadmap_goal], self.start_conf, self.goal_conf,
+                                 obstacle_list, [roadmap.nodes[nearest_nid]['conf'], conf],
+                                 new_conf, '^c')
+            # check goal
+            if self.kds.goal_test_callback(roadmap.nodes[new_nid]['conf'], goal_conf):
+                roadmap.add_node('connection', conf=goal_conf)  # TODO current name -> connection
+                roadmap.add_edge(new_nid, 'connection')
+                return 'connection'
+        return nearest_nid
 
     def _path_from_roadmap(self):
         nid_path = nx.shortest_path(self.roadmap, 'start', 'goal')
         return list(itemgetter(*nid_path)(self.roadmap.nodes(data='conf')))
-
-    def _smooth_path(self,
-                     component_name,
-                     path,
-                     obstacle_list=[],
-                     otherrobot_list=[],
-                     granularity=2,
-                     iterations=50,
-                     animation=False):
-        smoothed_path = path
-        for _ in range(iterations):
-            if len(smoothed_path) <= 2:
-                return smoothed_path
-            i = random.randint(0, len(smoothed_path) - 1)
-            j = random.randint(0, len(smoothed_path) - 1)
-            if abs(i - j) <= 1:
-                continue
-            if j < i:
-                i, j = j, i
-            shortcut = self._extend_conf(smoothed_path[i], smoothed_path[j], granularity)
-            # 20210523, it seems we do not need to check line length
-            # if (len(shortcut) <= (j - i)) and all(not self._is_collided(component_name=component_name,
-            #                                                            conf=conf,
-            #                                                            obstacle_list=obstacle_list,
-            #                                                            otherrobot_list=otherrobot_list)
-            #                                      for conf in shortcut):
-            if all(not self._is_collided(component_name=component_name,
-                                         conf=conf,
-                                         obstacle_list=obstacle_list,
-                                         otherrobot_list=otherrobot_list)
-                                                 for conf in shortcut):
-                smoothed_path = smoothed_path[:i] + shortcut + smoothed_path[j + 1:]
-            if animation:
-                self.draw_wspace([self.roadmap], self.start_conf, self.goal_conf,
-                                 obstacle_list, shortcut=shortcut, smoothed_path=smoothed_path)
-        return smoothed_path
 
     def plan(self,
              component_name,
@@ -164,11 +158,8 @@ class RRT(object):
              goal_conf,
              obstacle_list=[],
              otherrobot_list=[],
-             ext_dist=2,
-             rand_rate=70,
              max_iter=1000,
              max_time=15.0,
-             smoothing_iterations=50,
              animation=False):
         """
         :return: [path, all_sampled_confs]
@@ -185,10 +176,15 @@ class RRT(object):
         if self._is_collided(component_name, goal_conf, obstacle_list, otherrobot_list):
             print("The goal robot_s configuration is in collision!")
             return None
-        if self._goal_test(conf=start_conf, goal_conf=goal_conf, threshold=ext_dist):
+        if self.kds.goal_test_callback(state=start_conf, goal_state=goal_conf):
             return [[start_conf, goal_conf], None]
-        self.roadmap.add_node('start', conf=start_conf)
+        self.roadmap_start.add_node('start', conf=start_conf)
+        self.roadmap_goal.add_node('goal', conf=goal_conf)
         tic = time.time()
+        tree_a = self.roadmap_start
+        tree_b = self.roadmap_goal
+        tree_a_goal_conf = self.roadmap_goal.nodes['goal']['conf']
+        tree_b_goal_conf = self.roadmap_start.nodes['start']['conf']
         for _ in range(max_iter):
             toc = time.time()
             if max_time > 0.0:
@@ -196,30 +192,39 @@ class RRT(object):
                     print("Too much motion time! Failed to find a path.")
                     return None
             # Random Sampling
-            rand_conf = self._sample_conf(component_name=component_name, rand_rate=rand_rate, default_conf=goal_conf)
+            rand_conf = self._sample_conf(component_name=component_name, rand_rate=100, default_conf=None)
             last_nid = self._extend_roadmap(component_name=component_name,
-                                            roadmap=self.roadmap,
+                                            roadmap=tree_a,
                                             conf=rand_conf,
-                                            ext_dist=ext_dist,
-                                            goal_conf=goal_conf,
+                                            goal_conf=tree_a_goal_conf,
                                             obstacle_list=obstacle_list,
                                             otherrobot_list=otherrobot_list,
                                             animation=animation)
-            if last_nid == 'connection':
-                mapping = {'connection': 'goal'}
-                self.roadmap = nx.relabel_nodes(self.roadmap, mapping)
-                path = self._path_from_roadmap()
-                smoothed_path = self._smooth_path(component_name=component_name,
-                                                  path=path,
-                                                  obstacle_list=obstacle_list,
-                                                  otherrobot_list=otherrobot_list,
-                                                  granularity=ext_dist,
-                                                  iterations=smoothing_iterations,
-                                                  animation=animation)
-                return smoothed_path
+            if last_nid != -1: # not trapped:
+                goal_nid = last_nid
+                tree_b_goal_conf = tree_a.nodes[goal_nid]['conf']
+                last_nid = self._extend_roadmap(component_name=component_name,
+                                                roadmap=tree_b,
+                                                conf=tree_a.nodes[last_nid]['conf'],
+                                                goal_conf=tree_b_goal_conf,
+                                                obstacle_list=obstacle_list,
+                                                otherrobot_list=otherrobot_list,
+                                                animation=animation)
+                if last_nid == 'connection':
+                    self.roadmap = nx.compose(tree_a, tree_b)
+                    self.roadmap.add_edge(last_nid, goal_nid)
+                    break
+                elif last_nid != -1:
+                    goal_nid = last_nid
+                    tree_a_goal_conf = tree_b.nodes[goal_nid]['conf']
+            if tree_a.number_of_nodes() > tree_b.number_of_nodes():
+                tree_a, tree_b = tree_b, tree_a
+                tree_a_goal_conf, tree_b_goal_conf = tree_b_goal_conf, tree_a_goal_conf
         else:
             print("Reach to maximum iteration! Failed to find a path.")
             return None
+        path = self._path_from_roadmap()
+        return path
 
     @staticmethod
     def draw_wspace(roadmap_list,
@@ -266,10 +271,10 @@ class RRT(object):
                      color='r')
         # plt.plot(planner.seed_jnt_values[0], planner.seed_jnt_values[1], "xr")
         # plt.plot(planner.end_conf[0], planner.end_conf[1], "xm")
-        if not hasattr(RRT, 'img_counter'):
-            RRT.img_counter = 0
+        if not hasattr(RRTConnectKinodynamic, 'img_counter'):
+            RRTConnectKinodynamic.img_counter = 0
         else:
-            RRT.img_counter += 1
+            RRTConnectKinodynamic.img_counter += 1
         # plt.savefig(str( RRT.img_counter)+'.jpg')
         if delay_time > 0:
             plt.pause(delay_time)
@@ -280,11 +285,11 @@ if __name__ == '__main__':
     import robot_sim.robots.robot_interface as ri
 
 
-    class XYBot(ri.RobotInterface):
+    class TWCARBOT(ri.RobotInterface):
 
-        def __init__(self, pos=np.zeros(3), rotmat=np.eye(3), name='XYBot'):
+        def __init__(self, pos=np.zeros(3), rotmat=np.eye(3), name='TwoWheelCarBot'):
             super().__init__(pos=pos, rotmat=rotmat, name=name)
-            self.jlc = jl.JLChain(homeconf=np.zeros(2), name='XYBot')
+            self.jlc = jl.JLChain(homeconf=np.zeros(3), name='XYBot')
             self.jlc.jnts[1]['type'] = 'prismatic'
             self.jlc.jnts[1]['loc_motionax'] = np.array([1, 0, 0])
             self.jlc.jnts[1]['loc_pos'] = np.zeros(3)
@@ -293,9 +298,12 @@ if __name__ == '__main__':
             self.jlc.jnts[2]['loc_motionax'] = np.array([0, 1, 0])
             self.jlc.jnts[2]['loc_pos'] = np.zeros(3)
             self.jlc.jnts[2]['motion_rng'] = [-2.0, 15.0]
+            self.jlc.jnts[3]['loc_motionax'] = np.array([0, 0, 1])
+            self.jlc.jnts[3]['loc_pos'] = np.zeros(3)
+            self.jlc.jnts[3]['motion_rng'] = [-math.radians(180), math.radians(180)]
             self.jlc.reinitialize()
 
-        def fk(self, component_name='all', jnt_values=np.zeros(2)):
+        def fk(self, component_name='all', jnt_values=np.zeros(3)):
             if component_name != 'all':
                 raise ValueError("Only support hnd_name == 'all'!")
             self.jlc.fk(jnt_values)
@@ -312,7 +320,7 @@ if __name__ == '__main__':
 
         def is_collided(self, obstacle_list=[], otherrobot_list=[]):
             for (obpos, size) in obstacle_list:
-                dist = np.linalg.norm(np.asarray(obpos) - self.get_jntvalues())
+                dist = np.linalg.norm(np.asarray(obpos) - self.get_jntvalues()[:2])
                 if dist <= size / 2.0:
                     return True  # collision
             return False  # safe
@@ -329,10 +337,13 @@ if __name__ == '__main__':
         ((10, 5), 3)
     ]  # [x,y,size]
     # Set Initial parameters
-    robot = XYBot()
-    rrt = RRT(robot)
-    path = rrt.plan(start_conf=np.array([0, 0]), goal_conf=np.array([6, 9]), obstacle_list=obstacle_list,
-                    ext_dist=1, rand_rate=70, max_time=300, component_name='all', animation=True)
+    robot_s = TWCARBOT()
+    kds = Kinodynamics(time_interval=1)
+    rrtkino_s = RRTConnectKinodynamic(robot_s, kds)
+    path = rrtkino_s.plan(start_conf=np.array([0, 0, 0, 0, 0, 0]), goal_conf=np.array([6, 9, 0, 0, 0, 0]),
+                          obstacle_list=obstacle_list, max_time=300,
+                          component_name='all',
+                          animation=True)
     # plt.show()
     # nx.draw(rrt.roadmap, with_labels=True, font_weight='bold')
     # plt.show()
@@ -346,8 +357,8 @@ if __name__ == '__main__':
     # print(total_t)
     # Draw final path
     print(path)
-    rrt.draw_wspace([rrt.roadmap], rrt.start_conf, rrt.goal_conf, obstacle_list, delay_time=0)
-    plt.plot([conf[0] for conf in path], [conf[1] for conf in path], '-k')
+    rrtkino_s.draw_wspace([rrtkino_s.roadmap], rrtkino_s.start_conf, rrtkino_s.goal_conf, obstacle_list, delay_time=0)
+    plt.plot([conf[0] for conf in path], [conf[1] for conf in path], linewidth=7, linestyle='-', color='c')
     # pathsm = smoother.pathsmoothing(path, rrt, 30)
     # plt.plot([point[0] for point in pathsm], [point[1] for point in pathsm], '-r')
     # plt.pause(0.001)  # Need for Mac

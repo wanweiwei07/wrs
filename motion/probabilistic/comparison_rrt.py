@@ -90,12 +90,12 @@ print("rrt costs:", total_t)
 total_t = 0
 for i in range(200):
     tic = time.time()
-    path = rrts_s.plan(start_conf=start_conf, goal_conf=goal_conf,
-                           obstacle_list=obstacle_list,
-                           ext_dist=1, rand_rate=70, max_time=1000,
-                           max_iter=100000,
-                           component_name='all', smoothing_iterations=0,
-                           animation=False)
+    path = rrts_s.plan(start_state=start_conf, goal_conf=goal_conf,
+                       obstacle_list=obstacle_list,
+                       ext_dist=1, rand_rate=70, max_time=1000,
+                       max_iter=100000,
+                       component_name='all', smoothing_iterations=0,
+                       animation=False)
     toc = time.time()
     total_t = total_t + toc - tic
 print("rrts costs:", total_t)

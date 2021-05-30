@@ -7,7 +7,7 @@ import numpy as np
 import basis.robot_math as rm
 import robot_sim.robots.cobotta.cobotta as cbt
 import manipulation.pick_place_planner as ppp
-import motion.probabilistic.rrt_connect_wrsnew as rrtc
+import motion.probabilistic.rrt_connect as rrtc
 
 base = wd.World(cam_pos=[1.2, .7, 1], lookat_pos=[.0, 0, .15])
 gm.gen_frame().attach_to(base)

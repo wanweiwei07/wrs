@@ -1,10 +1,10 @@
 import numpy as np
 import robot_sim._kinematics.jlchain as jl
 import robot_sim.robots.robot_interface as ri
-import rrt_connect_wrsnew as rrtc_wrn
+import _rrt_connect_wrsnew as rrtc_wrn
 import rrt_connect as rrtc
-import rrt_connect_intuitive as rrtc_iv
-import rrt_connect_wrsold as rrtc_wro
+import _rrt_connect_intuitive as rrtc_iv
+import _rrt_connect_wrsold as rrtc_wro
 
 
 class XYBot(ri.RobotInterface):

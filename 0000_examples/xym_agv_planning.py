@@ -6,7 +6,7 @@ import visualization.panda.world as wd
 import modeling.geometric_model as gm
 import modeling.collision_model as cm
 import robot_sim.robots.xarm7_shuidi_mobile.xarm7_shuidi_mobile as xav
-import motion.probabilistic.rrt_connect_wrsnew as rrtc
+import motion.probabilistic.rrt_differential_wheel_connect as rrtdwc
 
 base = wd.World(cam_pos=[3, 1, 2], lookat_pos=[0, 0, 0])
 gm.gen_frame().attach_to(base)
@@ -18,12 +18,11 @@ object.attach_to(base)
 # robot_s
 component_name='agv'
 robot_instance = xav.XArm7YunjiMobile()
-rrtc_planner = rrtc.RRTConnect(robot_instance)
+rrtc_planner = rrtdwc.RRTDWConnect(robot_instance)
 path = rrtc_planner.plan(start_conf=np.array([0,0,0]),
                          goal_conf=np.array([1,-1,math.radians(30)]),
                          obstacle_list=[object],
                          ext_dist= .1,
-                         rand_rate=70,
                          max_time=300,
                          component_name=component_name)
 # print(path)

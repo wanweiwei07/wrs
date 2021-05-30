@@ -5,7 +5,7 @@ import visualization.panda.world as wd
 import modeling.geometric_model as gm
 import modeling.collision_model as cm
 import robot_sim.robots.nextage.nextage as nxt
-import motion.probabilistic.rrt_connect_wrsnew as rrtc
+import motion.probabilistic.rrt_connect as rrtc
 
 base = wd.World(cam_pos=[4, -1, 2], lookat_pos=[0, 0, 0])
 gm.gen_frame().attach_to(base)
@@ -31,7 +31,6 @@ path = rrtc_planner.plan(component_name=component_name,
                          goal_conf=goal_conf,
                          obstacle_list=[object_box],
                          ext_dist=.1,
-                         rand_rate=40,
                          smoothing_iterations=150,
                          max_time=300)
 print(path)

@@ -10,7 +10,7 @@ import visualization.panda.world as wd
 import robot_sim.robots.yumi.yumi as ym
 import modeling.geometric_model as gm
 import modeling.collision_model as cm
-import motion.probabilistic.rrt_connect_wrsnew as rrtc
+import motion.probabilistic.rrt_connect as rrtc
 
 if __name__ == "__main__":
     base = wd.World(cam_pos=[2, 0.2, 1.2], lookat_pos=[0, 0, 0])
@@ -54,7 +54,6 @@ if __name__ == "__main__":
                              goal_conf=goal_conf,
                              obstacle_list=obstacle_list,
                              ext_dist=.2,
-                             rand_rate=70,
                              max_time=300)
     toc = time.time()
     print("done. ({} sec)".format(toc - tic))

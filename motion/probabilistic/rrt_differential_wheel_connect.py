@@ -1,10 +1,10 @@
 import time
 import random
 import networkx as nx
-from motion.probabilistic import rrt
+from motion.probabilistic import rrt_differential_wheel as rrtdw
 
 
-class RRTConnect(rrt.RRT):
+class RRTDWConnect(rrtdw.RRTDW):
 
     def __init__(self, robot_s):
         super().__init__(robot_s)
@@ -39,7 +39,7 @@ class RRTConnect(rrt.RRT):
                 # all_sampled_confs.append([new_node.point, False])
                 if animation:
                     self.draw_wspace([self.roadmap_start, self.roadmap_goal], self.start_conf, self.goal_conf,
-                                     obstacle_list, [roadmap.nodes[nearest_nid]['conf'], conf], new_conf, '^c')
+                                     obstacle_list, [roadmap.nodes[nearest_nid]['conf'], conf], new_conf)
                 # check goal
                 if self._goal_test(conf=roadmap.nodes[new_nid]['conf'], goal_conf=goal_conf, threshold=ext_dist):
                     roadmap.add_node('connection', conf=goal_conf)  # TODO current name -> connection
@@ -84,7 +84,7 @@ class RRTConnect(rrt.RRT):
              obstacle_list=[],
              otherrobot_list=[],
              ext_dist=2,
-             max_iter=300,
+             max_iter=1000,
              max_time=15.0,
              smoothing_iterations=50,
              animation=False):
@@ -127,7 +127,7 @@ class RRTConnect(rrt.RRT):
                                             obstacle_list=obstacle_list,
                                             otherrobot_list=otherrobot_list,
                                             animation=animation)
-            if last_nid != -1: # not trapped:
+            if last_nid != -1:  # not trapped:
                 goal_nid = last_nid
                 tree_b_goal_conf = tree_a.nodes[goal_nid]['conf']
                 last_nid = self._extend_roadmap(component_name=component_name,
@@ -163,17 +163,18 @@ class RRTConnect(rrt.RRT):
 
 
 if __name__ == '__main__':
+    import math
     import numpy as np
     import matplotlib.pyplot as plt
     import robot_sim._kinematics.jlchain as jl
     import robot_sim.robots.robot_interface as ri
 
 
-    class XYBot(ri.RobotInterface):
+    class DWCARBOT(ri.RobotInterface):
 
-        def __init__(self, pos=np.zeros(3), rotmat=np.eye(3), name='XYBot'):
+        def __init__(self, pos=np.zeros(3), rotmat=np.eye(3), name='TwoWheelCarBot'):
             super().__init__(pos=pos, rotmat=rotmat, name=name)
-            self.jlc = jl.JLChain(homeconf=np.zeros(2), name='XYBot')
+            self.jlc = jl.JLChain(homeconf=np.zeros(3), name='XYBot')
             self.jlc.jnts[1]['type'] = 'prismatic'
             self.jlc.jnts[1]['loc_motionax'] = np.array([1, 0, 0])
             self.jlc.jnts[1]['loc_pos'] = np.zeros(3)
@@ -182,9 +183,12 @@ if __name__ == '__main__':
             self.jlc.jnts[2]['loc_motionax'] = np.array([0, 1, 0])
             self.jlc.jnts[2]['loc_pos'] = np.zeros(3)
             self.jlc.jnts[2]['motion_rng'] = [-2.0, 15.0]
+            self.jlc.jnts[3]['loc_motionax'] = np.array([0, 0, 1])
+            self.jlc.jnts[3]['loc_pos'] = np.zeros(3)
+            self.jlc.jnts[3]['motion_rng'] = [-math.pi, math.pi]
             self.jlc.reinitialize()
 
-        def fk(self, component_name='all', jnt_values=np.zeros(2)):
+        def fk(self, component_name='all', jnt_values=np.zeros(3)):
             if component_name != 'all':
                 raise ValueError("Only support hnd_name == 'all'!")
             self.jlc.fk(jnt_values)
@@ -201,7 +205,7 @@ if __name__ == '__main__':
 
         def is_collided(self, obstacle_list=[], otherrobot_list=[]):
             for (obpos, size) in obstacle_list:
-                dist = np.linalg.norm(np.asarray(obpos) - self.get_jntvalues())
+                dist = np.linalg.norm(np.asarray(obpos) - self.get_jntvalues()[:2])
                 if dist <= size / 2.0:
                     return True  # collision
             return False  # safe
@@ -228,11 +232,11 @@ if __name__ == '__main__':
         ((-2, 8), 3)
     ]  # [x,y,size]
     # Set Initial parameters
-    robot = XYBot()
-    rrtc = RRTConnect(robot)
-    path = rrtc.plan(component_name='all', start_conf=np.array([0, 0]), goal_conf=np.array([5, 10]),
-                     obstacle_list=obstacle_list,
-                     ext_dist=1, max_time=300, animation=True)
+    robot = DWCARBOT()
+    rrtdwc = RRTDWConnect(robot)
+    path = rrtdwc.plan(component_name='all', start_conf=np.array([0, 0, 0]), goal_conf=np.array([5, 10, 0]),
+                       obstacle_list=obstacle_list,
+                       ext_dist=1, max_time=300, animation=True)
     # import time
     # total_t = 0
     # for i in range(100):
@@ -244,9 +248,9 @@ if __name__ == '__main__':
     # print(total_t)
     # Draw final path
     print(path)
-    rrtc.draw_wspace([rrtc.roadmap_start, rrtc.roadmap_goal],
-                     rrtc.start_conf, rrtc.goal_conf, obstacle_list, delay_time=0)
-    plt.plot([conf[0] for conf in path], [conf[1] for conf in path], linewidth=7, linestyle='-', color='c')
+    rrtdwc.draw_wspace([rrtdwc.roadmap], rrtdwc.start_conf, rrtdwc.goal_conf, obstacle_list, delay_time=0)
+    for conf in path:
+        RRTDWConnect.draw_robot(plt, conf, edgecolor='r')
     # plt.savefig(str(rrtc.img_counter)+'.jpg')
     # pathsm = smoother.pathsmoothing(path, rrt, 30)
     # plt.plot([point[0] for point in pathsm], [point[1] for point in pathsm], '-r')

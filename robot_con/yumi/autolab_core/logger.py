@@ -16,7 +16,9 @@ def configure_root():
     root_logger = logging.getLogger()
 
     # clear any existing handles to streams because we don't want duplicate logs
-    # NOTE: we assume that any stream handles we find are to ROOT_LOG_STREAM, which is usually the case(because it is stdout). This is fine because we will be re-creating that handle. Otherwise we might be deleting a handle that won't be re-created, which could result in dropped logs.
+    # NOTE: we assume that any stream handles we find are to ROOT_LOG_STREAM,
+    # which is usually the case(because it is stdout). This is fine because we will be re-creating that handle.
+    # Otherwise we might be deleting a handle that won't be re-created, which could result in dropped logs.
     for hdlr in root_logger.handlers:
         if isinstance(hdlr, logging.StreamHandler):
             root_logger.removeHandler(hdlr)

@@ -8,7 +8,7 @@ import basis.robot_math as rm
 import robot_sim.robots.xarm7_shuidi_mobile.xarm7_shuidi_mobile as xsm
 import robot_sim.end_effectors.grippers.xarm_gripper.xarm_gripper as xag
 import manipulation.approach_depart_planner as adp
-import motion.probabilistic.rrt_connect_wrsnew as rrtc
+import motion.probabilistic.rrt_connect as rrtc
 
 base = wd.World(cam_pos=[2, -2, 2], lookat_pos=[.0, 0,.3])
 gm.gen_frame().attach_to(base)

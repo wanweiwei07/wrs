@@ -5,7 +5,7 @@ import grasping.planning.antipodal as gpa
 import numpy as np
 import robot_sim.robots.xarm7_shuidi_mobile.xarm7_shuidi_mobile as xsm
 import robot_sim.end_effectors.grippers.xarm_gripper.xarm_gripper as xag
-import motion.probabilistic.rrt_connect_wrsnew as rrtc
+import motion.probabilistic.rrt_connect as rrtc
 import motion.optimization_based.incremental_nik as inik
 
 base = wd.World(cam_pos=[1.5, -.5, 2], lookat_pos=[.3, -.03,.05])
@@ -62,7 +62,8 @@ for grasp_info in grasp_info_list:
                                        start_conf=robot_s.get_jnt_values(component_name),
                                        goal_conf=retracted_jnt_values,
                                        obstacle_list=[object_box],
-                                       ext_dist=.1, rand_rate=70, max_time=300)
+                                       ext_dist=.1,
+                                       max_time=300)
                     for jvp in path:
                         robot_s.fk(component_name, jvp)
                         robot_s.gen_meshmodel(rgba=[1,0,1,.3]).attach_to(base)
