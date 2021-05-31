@@ -133,9 +133,9 @@ def write_pickle_file(objcm_name, grasp_info_list, root=None, file_name='preanno
         print("load failed, create new data.")
         data = {}
     if append:
-        data[objcm_name] = grasp_info_list
-    else:
         data[objcm_name].extend(grasp_info_list)
+    else:
+        data[objcm_name] = grasp_info_list
     for k, v in data.items():
         print(k, len(v))
     pickle.dump(data, open(directory + file_name, 'wb'))
