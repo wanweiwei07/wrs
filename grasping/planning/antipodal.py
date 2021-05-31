@@ -99,10 +99,10 @@ def plan_grasps(hnd_s,
     return grasp_info_list
 
 
-def write_pickle_file(objcm_name, grasp_info_list, root=None, file_name='preannotated_grasps.pickle'):
+def write_pickle_file(objcm_name, grasp_info_list, root=None, file_name='preannotated_grasps.pickle', append=False):
     if root is None:
         root = './'
-    gu.write_pickle_file(objcm_name, grasp_info_list, root=root, file_name=file_name)
+    gu.write_pickle_file(objcm_name, grasp_info_list, root=root, file_name=file_name, append=append)
 
 
 def load_pickle_file(objcm_name, root=None, file_name='preannotated_grasps.pickle'):

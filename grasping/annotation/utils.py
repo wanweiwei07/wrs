@@ -111,7 +111,7 @@ def define_grasp_with_rotation(hnd_s,
             hnd_s.gen_meshmodel(rgba=[0, 1, 0, .3]).attach_to(base)
     return grasp_info_list
 
-def write_pickle_file(objcm_name, grasp_info_list, root=None, file_name='preannotated_grasps.pickle'):
+def write_pickle_file(objcm_name, grasp_info_list, root=None, file_name='preannotated_grasps.pickle', append=False):
     """
     if model_name was saved, replace the old grasp info.
     if model_name was never saved, additionally save it.
@@ -132,7 +132,10 @@ def write_pickle_file(objcm_name, grasp_info_list, root=None, file_name='preanno
     except:
         print("load failed, create new data.")
         data = {}
-    data[objcm_name] = grasp_info_list
+    if append:
+        data[objcm_name].extend(grasp_info_list)
+    else:
+        data[objcm_name] = grasp_info_list
     for k, v in data.items():
         print(k, len(v))
     pickle.dump(data, open(directory + file_name, 'wb'))
