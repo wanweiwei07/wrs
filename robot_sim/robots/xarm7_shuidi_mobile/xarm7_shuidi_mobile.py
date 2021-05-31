@@ -177,20 +177,15 @@ class XArm7YunjiMobile(ri.RobotInterface):
         if component_name in self.manipulator_dict:
             return self.manipulator_dict[component_name].get_jnt_values()
         elif component_name == 'agv':
-            return_val = np.zeros(3)
-            return_val[:2] = self.pos[:2]
-            return_val[2] = rm.axangle_between_rotmat(np.eye(3), self.rotmat)[1]
-            return return_val
+            return self.agv.get_jnt_values()
         elif component_name == 'agv_arm':
             return_val = np.zeros(10)
-            return_val[:2] = self.pos[:2]
-            return_val[2] = rm.axangle_between_rotmat(np.eye(3), self.rotmat)[1]
-            return_val[3:10] = self.arm.get_jnt_values()[:]
+            return_val[:3] = self.agv.get_jnt_values()
+            return_val[3:10] = self.arm.get_jnt_values()
             return return_val
         elif component_name == 'all':
             return_val = np.zeros(11)
-            return_val[:2] = self.pos[:2]
-            return_val[2] = np.linalg.norm(rm.deltaw_between_rotmat(np.eye(3), self.rotmat))
+            return_val[:3] = self.agv.get_jnt_values()
             return_val[3:10] = self.arm.get_jnt_values()[:]
             return_val[10] = self.hnd.get_jawwidth()
             return return_val
