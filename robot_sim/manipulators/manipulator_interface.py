@@ -118,6 +118,9 @@ class ManipulatorInterface(object):
                            local_minima=local_minima,
                            toggle_debug=toggle_debug)
 
+    def manipulability(self):
+        return self.jlc.manipulability()
+
     def cvt_loc_tcp_to_gl(self,
                           loc_pos=np.zeros(3),
                           loc_rotmat=np.eye(3),

@@ -35,12 +35,12 @@ path = rrtc_planner.plan(component_name=component_name,
                          max_time=300)
 print(path)
 import matplotlib.pyplot as plt
-import motion.trajectory.polynomial as trajp
+import motion.trajectory.polynomial_wrsold as trajp
 control_frequency = .005
 interval_time = 1
 traj_gen = trajp.TrajPoly(method="quintic")
 interpolated_confs, interpolated_spds, interpolated_accs = \
-    traj_gen.piecewise_interpolation(path, control_frequency=control_frequency, interval_time=interval_time)
+    traj_gen.piecewise_interpolation(path, control_frequency=control_frequency, time_interval=interval_time)
 
 fig, axs = plt.subplots(3, figsize=(21,7))
 fig.tight_layout(pad=.7)

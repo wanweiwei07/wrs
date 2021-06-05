@@ -18,7 +18,7 @@ class PhoxiServer(pxrpc.PhoxiServicer):
     def initialize(self, pctrlinstance):
         """
 
-        :param pctrlinstance: an instancde of drivers.phoxi.phoxicontrol.pyd(PhoxiControl class)
+        :param pctrlinstance: an instancde of driver.phoxi.phoxicontrol.pyd(PhoxiControl class)
         :return:
         """
 

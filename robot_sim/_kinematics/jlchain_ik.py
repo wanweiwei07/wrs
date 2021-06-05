@@ -14,7 +14,7 @@ class JLChainIK(object):
         wt_agl = 1 / (math.pi * math.pi)  # pi->1 == 0.01->0.18degree
         self.ws_wtlist = [wt_pos, wt_pos, wt_pos, wt_agl, wt_agl, wt_agl]
         # maximum reach
-        self.max_rng = 2.0
+        self.max_rng = 20.0
         # extract min max for quick access
         self.jmvmin = np.zeros(len(self.jlc_object.tgtjnts))
         self.jmvmax = np.zeros(len(self.jlc_object.tgtjnts))
@@ -62,11 +62,11 @@ class JLChainIK(object):
         """
         wtmat = np.ones(len(self.jlc_object.tgtjnts))
         # min damping interval
-        selection = self.jmvmin_threshhold - jntvalues > 0
+        selection = jntvalues < self.jmvmin_threshhold
         normalized_diff_at_selected = ((jntvalues - self.jmvmin) / (self.jmvmin_threshhold - self.jmvmin))[selection]
         wtmat[selection] = -2 * np.power(normalized_diff_at_selected, 3) + 3 * np.power(normalized_diff_at_selected, 2)
         # max damping interval
-        selection = jntvalues - self.jmvmax_threshhold > 0
+        selection = jntvalues > self.jmvmax_threshhold
         normalized_diff_at_selected = ((self.jmvmax - jntvalues) / (self.jmvmax - self.jmvmax_threshhold))[selection]
         wtmat[selection] = -2 * np.power(normalized_diff_at_selected, 3) + 3 * np.power(normalized_diff_at_selected, 2)
         wtmat[jntvalues >= self.jmvmax] = 0
@@ -90,7 +90,7 @@ class JLChainIK(object):
         else:
             return self._jacobian_sgl(tcp_jntid)
 
-    def manipulability(self, tcp_jntid):
+    def manipulability(self, tcp_jntid=None):
         """
         compute the yoshikawa manipulability of the rjlinstance
         :param tcp_jntid: the joint id where the tool center pose is specified, single vlaue or list
@@ -98,15 +98,19 @@ class JLChainIK(object):
         author: weiwei
         date: 20200331
         """
+        if tcp_jntid is None:
+            tcp_jntid = self.jlc_object.tcp_jntid
         j = self.jacobian(tcp_jntid)
         return math.sqrt(np.linalg.det(np.dot(j, j.transpose())))
 
-    def manipulability_axmat(self, tcp_jntid):
+    def manipulability_axmat(self, tcp_jntid=None):
         """
         compute the yasukawa manipulability of the rjlinstance
         :param tcp_jntid: the joint id where the tool center pose is specified, single vlaue or list
         :return: axmat with each column being the manipulability
         """
+        if tcp_jntid is None:
+            tcp_jntid = self.jlc_object.tcp_jntid
         armjac = self.jacobian(tcp_jntid)
         jjt = np.dot(armjac, armjac.T)
         pcv, pcaxmat = np.linalg.eig(jjt)

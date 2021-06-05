@@ -2,7 +2,7 @@
 """Client and server classes corresponding to protobuf-defined services."""
 import grpc
 
-import xarm_pb2 as xarm__pb2
+import robot_con.xarm.xarm_pb2 as xarm__pb2
 
 
 class XArmStub(object):
@@ -16,8 +16,23 @@ class XArmStub(object):
         """
         self.move_jspace_path = channel.unary_unary(
                 '/XArm/move_jspace_path',
+                request_serializer=xarm__pb2.Path.SerializeToString,
+                response_deserializer=xarm__pb2.Status.FromString,
+                )
+        self.get_jnt_values = channel.unary_unary(
+                '/XArm/get_jnt_values',
                 request_serializer=xarm__pb2.Empty.SerializeToString,
-                response_deserializer=xarm__pb2.Empty.FromString,
+                response_deserializer=xarm__pb2.JntValues.FromString,
+                )
+        self.jaw_to = channel.unary_unary(
+                '/XArm/jaw_to',
+                request_serializer=xarm__pb2.GripperStatus.SerializeToString,
+                response_deserializer=xarm__pb2.Status.FromString,
+                )
+        self.get_gripper_status = channel.unary_unary(
+                '/XArm/get_gripper_status',
+                request_serializer=xarm__pb2.Empty.SerializeToString,
+                response_deserializer=xarm__pb2.GripperStatus.FromString,
                 )
 
 
@@ -30,13 +45,46 @@ class XArmServicer(object):
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
 
+    def get_jnt_values(self, request, context):
+        """Missing associated documentation comment in .proto file."""
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
+    def jaw_to(self, request, context):
+        """Missing associated documentation comment in .proto file."""
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
+    def get_gripper_status(self, request, context):
+        """Missing associated documentation comment in .proto file."""
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
 
 def add_XArmServicer_to_server(servicer, server):
     rpc_method_handlers = {
             'move_jspace_path': grpc.unary_unary_rpc_method_handler(
                     servicer.move_jspace_path,
+                    request_deserializer=xarm__pb2.Path.FromString,
+                    response_serializer=xarm__pb2.Status.SerializeToString,
+            ),
+            'get_jnt_values': grpc.unary_unary_rpc_method_handler(
+                    servicer.get_jnt_values,
                     request_deserializer=xarm__pb2.Empty.FromString,
-                    response_serializer=xarm__pb2.Empty.SerializeToString,
+                    response_serializer=xarm__pb2.JntValues.SerializeToString,
+            ),
+            'jaw_to': grpc.unary_unary_rpc_method_handler(
+                    servicer.jaw_to,
+                    request_deserializer=xarm__pb2.GripperStatus.FromString,
+                    response_serializer=xarm__pb2.Status.SerializeToString,
+            ),
+            'get_gripper_status': grpc.unary_unary_rpc_method_handler(
+                    servicer.get_gripper_status,
+                    request_deserializer=xarm__pb2.Empty.FromString,
+                    response_serializer=xarm__pb2.GripperStatus.SerializeToString,
             ),
     }
     generic_handler = grpc.method_handlers_generic_handler(
@@ -60,7 +108,58 @@ class XArm(object):
             timeout=None,
             metadata=None):
         return grpc.experimental.unary_unary(request, target, '/XArm/move_jspace_path',
+            xarm__pb2.Path.SerializeToString,
+            xarm__pb2.Status.FromString,
+            options, channel_credentials,
+            insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
+
+    @staticmethod
+    def get_jnt_values(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(request, target, '/XArm/get_jnt_values',
             xarm__pb2.Empty.SerializeToString,
-            xarm__pb2.Empty.FromString,
+            xarm__pb2.JntValues.FromString,
+            options, channel_credentials,
+            insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
+
+    @staticmethod
+    def jaw_to(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(request, target, '/XArm/jaw_to',
+            xarm__pb2.GripperStatus.SerializeToString,
+            xarm__pb2.Status.FromString,
+            options, channel_credentials,
+            insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
+
+    @staticmethod
+    def get_gripper_status(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(request, target, '/XArm/get_gripper_status',
+            xarm__pb2.Empty.SerializeToString,
+            xarm__pb2.GripperStatus.FromString,
             options, channel_credentials,
             insecure, call_credentials, compression, wait_for_ready, timeout, metadata)

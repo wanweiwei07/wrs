@@ -27,12 +27,12 @@ if __name__ == "__main__":
                                                     radius=radius,
                                                     toggle_tcp_list=True)
     print(jnt_values_list)
-    import motion.trajectory.polynomial as trajp
+    import motion.trajectory.polynomial_wrsold as trajp
     control_frequency = .005
     interval_time = 1
     traj_gen = trajp.TrajPoly(method="quintic")
     interpolated_confs, interpolated_spds, interpolated_accs = \
-        traj_gen.piecewise_interpolation(jnt_values_list, control_frequency=control_frequency, interval_time=interval_time)
+        traj_gen.piecewise_interpolation(jnt_values_list, control_frequency=control_frequency, time_interval=interval_time)
 
     fig, axs = plt.subplots(3, figsize=(3.5,4.75))
     fig.tight_layout(pad=.7)

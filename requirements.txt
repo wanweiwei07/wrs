@@ -11,4 +11,5 @@ Rtree>=0.9.7 # required by trimesh
 open3d>=0.12.0 # required for cloud processing
 shapely>=1.7.1 # required by ?
 networkx>=2.5.1 # vital
+pyserial>=3.4 # required by xarm controllers
 # gimpact # optional mesh-level collision detection

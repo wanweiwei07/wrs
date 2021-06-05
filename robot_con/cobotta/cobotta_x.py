@@ -1,4 +1,4 @@
-import motion.trajectory.polynomial as trajp
+import motion.trajectory.polynomial_wrsold as trajp
 import drivers.orin_bcap.bcapclient as bcapclient
 import time
 
@@ -104,7 +104,7 @@ if __name__ == '__main__':
     import motion.probabilistic.rrt_connect as rrtc
     import visualization.panda.world as wd
     import modeling.geometric_model as gm
-    import motion.trajectory.polynomial as trjp
+    import motion.trajectory.polynomial_wrsold as trjp
 
     base = wd.World(cam_pos=[1, 1, .5], lookat_pos=[0, 0, .2])
     gm.gen_frame().attach_to(base)

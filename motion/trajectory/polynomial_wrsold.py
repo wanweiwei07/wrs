@@ -106,11 +106,11 @@ class TrajPoly(object):
         else:
             pass
 
-    def piecewise_interpolation(self, path, control_frequency=.005, interval_time=1.0):
+    def piecewise_interpolation(self, path, control_frequency=.005, time_interval=1.0):
         """
         :param path: a 1d array of configurations
-        :param control_frequency: the program will sample interval_time/control_frequency confs
-        :param interval_time: time to move between adjacent joints
+        :param control_frequency: the program will sample time_interval/control_frequency confs
+        :param time_interval: time to move between adjacent joints
         :return:
         author: weiwei
         date: 20200328
@@ -118,22 +118,25 @@ class TrajPoly(object):
         path = np.array(path)
         passing_conf_list = []
         passing_spd_list = []
-        for id, jntconf in enumerate(path[:-1]):
-            passing_conf_list.append(jntconf)
+        for id, mid_jnt_values in enumerate(path[:-1]):
+            passing_conf_list.append(mid_jnt_values)
             if id == 0:
-                passing_spd_list.append(np.zeros_like(jntconf))
+                passing_spd_list.append(np.zeros_like(mid_jnt_values))
             else:
-                pre_conf = path[id - 1]
-                nxt_conf = path[id + 1]
-                pre_avg_spd = (jntconf - pre_conf) / interval_time
-                nxt_avg_spd = (nxt_conf - jntconf) / interval_time
-                # set to 0 if signs are different -> reduces overshoot
-                zero_id = np.where((np.sign(pre_avg_spd) + np.sign(nxt_avg_spd)) == 0)
+                pre_jnt_values = path[id - 1]
+                next_jnt_values = path[id + 1]
+                pre_avg_spd = (mid_jnt_values - pre_jnt_values) / time_interval
+                nxt_avg_spd = (next_jnt_values - mid_jnt_values) / time_interval
                 pass_spd = (pre_avg_spd + nxt_avg_spd) / 2.0
+                # set to 0 if signs are different -> reduces overshoot
+                zero_id = np.where((np.sign(pre_avg_spd) + np.sign(nxt_avg_spd)) == 0.0)
                 pass_spd[zero_id] = 0.0
                 passing_spd_list.append(pass_spd)
-        passing_conf_list.append(path[-1])
-        passing_spd_list.append(np.zeros_like(path[-1]))
+                print("prev spd ", pre_avg_spd)
+                print("next spd ", nxt_avg_spd)
+                print("avg_spd ", pass_spd)
+        passing_conf_list.append(path[-1]) # last pos
+        passing_spd_list.append(np.zeros_like(path[-1])) # last spd
         interpolated_confs = []
         interpolated_spds = []
         interpolated_accs = []
@@ -144,11 +147,20 @@ class TrajPoly(object):
             pre_passing_spd = passing_spd_list[id - 1]
             passing_spd = passing_spd_list[id]
             self.fit(pre_passing_conf, pre_passing_spd, passing_conf, passing_spd)
-            samples = np.linspace(0, interval_time, math.floor(interval_time / control_frequency))/interval_time
+            samples = np.linspace(0,
+                                  time_interval,
+                                  math.floor(time_interval / control_frequency),
+                                  endpoint=True) / time_interval
+            print("samples ", samples)
             local_interpolated_confs, local_interplated_spds, local_interplated_accs = self.predict(samples)
-            interpolated_confs += local_interpolated_confs.tolist()
-            interpolated_spds += local_interplated_spds.tolist()
-            interpolated_accs += local_interplated_accs.tolist()
+            if id == len(passing_conf_list)-1:
+                interpolated_confs += local_interpolated_confs.tolist()
+                interpolated_spds += local_interplated_spds.tolist()
+                interpolated_accs += local_interplated_accs.tolist()
+            else:
+                interpolated_confs += local_interpolated_confs.tolist()[:-1]
+                interpolated_spds += local_interplated_spds.tolist()[:-1]
+                interpolated_accs += local_interplated_accs.tolist()[:-1]
         return interpolated_confs, interpolated_spds, interpolated_accs
 
 
@@ -162,7 +174,7 @@ if __name__ == '__main__':
     interval_time = 1
     traj = TrajPoly(method="quintic")
     interpolated_confs, interpolated_spds, interpolated_accs = \
-        traj.piecewise_interpolation(y, control_frequency=control_frequency, interval_time=interval_time)
+        traj.piecewise_interpolation(y, control_frequency=control_frequency, time_interval=interval_time)
     # print(interpolated_spds)
     # interpolated_spds=np.array(interpolated_spds)
     # print(interpolated_confs)
