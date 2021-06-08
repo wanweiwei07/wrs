@@ -103,13 +103,14 @@ class EtherSenseClient(ab.AsyncClient):
 if __name__ == '__main__':
     import time
 
-    client = EtherSenseClient(address="192.168.11.9", port=18360)
+    client = EtherSenseClient(address="10.2.0.202", port=18360)
     cv2.namedWindow("window")
-    cv2.imshow("window", client.get_rgb_image())
-    cv2.waitKey(1)
-    time.sleep(3)
-    cv2.imshow("window2", client.get_rgb_image())
-    cv2.waitKey(1)
+    while True:
+        cv2.imshow("window", client.get_rgb_image())
+        cv2.waitKey(1)
+    # time.sleep(3)
+    # cv2.imshow("window2", client.get_rgb_image())
+    # cv2.waitKey(1)
     # time.sleep(3)
 
     import visualization.panda.rpc.rviz_client as rv_client

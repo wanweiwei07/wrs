@@ -1,0 +1,40 @@
+syntax = "proto3";
+
+service XArmShuidi {
+    rpc arm_move_jspace_path (Path) returns (Status) {}
+    rpc arm_get_jnt_values (Empty) returns (JntValues) {}
+    rpc arm_jaw_to (GripperStatus) returns (Status) {}
+    rpc arm_get_gripper_status (Empty) returns (GripperStatus) {}
+    rpc agv_move (Speed) returns (Status) {}
+}
+
+message Empty {
+}
+
+message Status {
+  enum StatusValue {
+    ERROR = 0;
+    DONE = 1;
+  }
+  StatusValue value = 1;
+}
+
+message JntValues {
+  bytes data = 1;
+}
+
+message Path {
+    int32  length = 1;
+    int32  njnts = 2;
+    bytes  data = 3;
+}
+
+message GripperStatus {
+    int32 speed = 1;
+    int32 position = 2;
+}
+
+message Speed {
+    float linear_velocity = 1;
+    float angular_velocity = 2;
+}

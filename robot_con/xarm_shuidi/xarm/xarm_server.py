@@ -2,8 +2,8 @@ import grpc
 import time
 import drivers.xarm.wrapper.xarm_api as xai
 from concurrent import futures
-import robot_con.xarm.xarm_pb2 as xarm_msg
-import robot_con.xarm.xarm_pb2_grpc as xarm_rpc
+import robot_con.xarm_shuidi.xarm.xarm_pb2 as xarm_msg
+import robot_con.xarm_shuidi.xarm.xarm_pb2_grpc as xarm_rpc
 import numpy as np
 
 
@@ -11,7 +11,7 @@ class XArmServer(xarm_rpc.XArmServicer):
 
     def __init__(self, arm_ip):
         """
-        :param _xai_x: an instancde of xai.XArmAPI
+        :param _arm_x: an instancde of arm.XArmAPI
         :return:
         """
         super().__init__()

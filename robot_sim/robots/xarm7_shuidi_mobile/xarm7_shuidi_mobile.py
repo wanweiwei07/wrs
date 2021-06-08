@@ -15,7 +15,7 @@ class XArm7YunjiMobile(ri.RobotInterface):
         super().__init__(pos=pos, rotmat=rotmat, name=name)
         this_dir, this_filename = os.path.split(__file__)
         # agv
-        self.agv = jl.JLChain(pos=pos, rotmat=rotmat, homeconf=np.zeros(3), name='agv')  # TODO: change to 3-dof
+        self.agv = jl.JLChain(pos=pos, rotmat=rotmat, homeconf=np.zeros(5), name='agv')  # 1-3 x,y,theta; 4-5 dummy
         self.agv.jnts[1]['loc_pos'] = np.zeros(3)
         self.agv.jnts[1]['type'] = 'prismatic'
         self.agv.jnts[1]['loc_motionax'] = np.array([1, 0, 0])
@@ -27,11 +27,18 @@ class XArm7YunjiMobile(ri.RobotInterface):
         self.agv.jnts[3]['loc_pos'] = np.zeros(3)
         self.agv.jnts[3]['loc_motionax'] = np.array([0, 0, 1])
         self.agv.jnts[3]['motion_rng'] = [-math.pi, math.pi]
-        self.agv.jnts[4]['loc_pos'] = np.array([0, .0, .34231])
+        self.agv.jnts[4]['loc_pos'] = np.array([0, .0, .34231])  # dummy
+        self.agv.jnts[5]['loc_pos'] = np.zeros(3)  # dummy
+        self.agv.jnts[6]['loc_pos'] = np.array([0, .0, .168862])
         self.agv.lnks[3]['name'] = 'agv'
         self.agv.lnks[3]['loc_pos'] = np.array([0, 0, 0])
         self.agv.lnks[3]['meshfile'] = os.path.join(this_dir, 'meshes', 'shuidi_agv_meter.stl')
-        self.agv.lnks[3]['rgba'] = [.35, .35, .35, 1.0]
+        self.agv.lnks[3]['rgba'] = [.7, .7, .7, 1.0]
+        self.agv.lnks[4]['meshfile'] = os.path.join(this_dir, 'meshes', 'battery.stl')
+        self.agv.lnks[4]['rgba'] = [.35, .35, .35, 1.0]
+        self.agv.lnks[5]['meshfile'] = os.path.join(this_dir, 'meshes', 'battery_fixture.stl')
+        self.agv.lnks[5]['rgba'] = [.55, .55, .55, 1.0]
+        self.agv.tgtjnts = [1, 2, 3]
         self.agv.reinitialize()
         # arm
         arm_homeconf = np.zeros(7)
@@ -64,11 +71,12 @@ class XArm7YunjiMobile(ri.RobotInterface):
     def enable_cc(self):
         # TODO when pose is changed, oih info goes wrong
         super().enable_cc()
-        self.cc.add_cdlnks(self.agv, [3])
+        self.cc.add_cdlnks(self.agv, [3, 4])
         self.cc.add_cdlnks(self.arm, [0, 1, 2, 3, 4, 5, 6])
         self.cc.add_cdlnks(self.hnd.lft_outer, [0, 1, 2])
         self.cc.add_cdlnks(self.hnd.rgt_outer, [1, 2])
         activelist = [self.agv.lnks[3],
+                      self.agv.lnks[4],
                       self.arm.lnks[0],
                       self.arm.lnks[1],
                       self.arm.lnks[2],
@@ -83,6 +91,7 @@ class XArm7YunjiMobile(ri.RobotInterface):
                       self.hnd.rgt_outer.lnks[2]]
         self.cc.set_active_cdlnks(activelist)
         fromlist = [self.agv.lnks[3],
+                    self.agv.lnks[4],
                     self.arm.lnks[0],
                     self.arm.lnks[1],
                     self.arm.lnks[2]]
@@ -337,15 +346,16 @@ if __name__ == '__main__':
     xav = XArm7YunjiMobile(enable_cc=True)
     xav.fk(component_name='all', jnt_values=np.array([0, 0, 0, 0, 0, 0, math.pi, 0, -math.pi / 6, 0, 0]))
     xav.jaw_to(.08)
-    tgt_pos = np.array([.85, 0, .5])
+    tgt_pos = np.array([.85, 0, .55])
     tgt_rotmat = rm.rotmat_from_axangle([0, 1, 0], math.pi / 2)
     gm.gen_frame(pos=tgt_pos, rotmat=tgt_rotmat).attach_to(base)
     jnt_values = xav.ik(component_name='arm', tgt_pos=tgt_pos, tgt_rotmat=tgt_rotmat)
-    tgt_pos2 = np.array([.7, 0, .5])
-    jnt_values2 = xav.ik(component_name='arm', tgt_pos=tgt_pos2, tgt_rotmat=tgt_rotmat, seed_jnt_values=jnt_values)
+    tgt_pos2 = np.array([.45, 0, .07])
+    tgt_rotmat2 = rm.rotmat_from_euler(0,math.pi,0)
+    jnt_values2 = xav.ik(component_name='arm', tgt_pos=tgt_pos2, tgt_rotmat=tgt_rotmat2, seed_jnt_values=jnt_values, max_niter=10000)
     print(jnt_values)
     xav.fk(component_name='arm', jnt_values=jnt_values2)
-    xav.fk(component_name='agv', jnt_values=np.array([.2,-.5,math.radians(30)]))
+    xav.fk(component_name='agv', jnt_values=np.array([.2, -.5, math.radians(30)]))
     xav_meshmodel = xav.gen_meshmodel(toggle_tcpcs=True)
     xav_meshmodel.attach_to(base)
     xav.show_cdprimit()

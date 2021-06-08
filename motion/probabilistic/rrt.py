@@ -273,6 +273,7 @@ class RRT(object):
         # plt.savefig(str( RRT.img_counter)+'.jpg')
         if delay_time > 0:
             plt.pause(delay_time)
+        plt.waitforbuttonpress()
 
 
 if __name__ == '__main__':
@@ -347,7 +348,7 @@ if __name__ == '__main__':
     # Draw final path
     print(path)
     rrt.draw_wspace([rrt.roadmap], rrt.start_conf, rrt.goal_conf, obstacle_list, delay_time=0)
-    plt.plot([conf[0] for conf in path], [conf[1] for conf in path], '-k')
+    plt.plot([conf[0] for conf in path], [conf[1] for conf in path], linewidth=4, color='c')
     # pathsm = smoother.pathsmoothing(path, rrt, 30)
     # plt.plot([point[0] for point in pathsm], [point[1] for point in pathsm], '-r')
     # plt.pause(0.001)  # Need for Mac

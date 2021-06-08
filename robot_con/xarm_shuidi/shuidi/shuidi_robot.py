@@ -1,7 +1,6 @@
 import json
 import socket
 import time
-from robot_con.shuidi.shuidi_constants import ShuidiConstants as SDC
 
 
 class ShuidiRobot(object):
@@ -12,26 +11,7 @@ class ShuidiRobot(object):
     date: 20210329
     """
 
-    @staticmethod
-    def generate_request_data(uuid, command="", parameters={}):
-        """
-        generate the request string following Shuidi's API
-        :param uuid:
-        :param command:
-        :param parameters:
-        :return:
-        """
-        para = "?"
-        for key, val in parameters.items():
-            if val is None:
-                continue
-            tmp_para = f"{key}={val}"
-            para += tmp_para
-            para += "&"
-        # print(f"/api/{command}{para}uuid={uuid}")
-        return f"/api/{command}{para}uuid={uuid}"
-
-    def __init__(self, ip=SDC.IP, port=SDC.PORT):
+    def __init__(self, ip="192.168.10.10", port="31001"):
         """
         :param ip:
         :param port:
@@ -42,7 +22,7 @@ class ShuidiRobot(object):
 
     def data_send_recv(self, data):
         self._socket.send(data.encode())
-        recv_data_raw = self._socket.recv(SDC.B)
+        recv_data_raw = self._socket.recv(4096)
         for data in recv_data_raw.decode().split("\n"):
             trimmed_recv_data = json.loads(data)
             if trimmed_recv_data["type"] == "response":
@@ -234,7 +214,7 @@ class ShuidiRobot(object):
         command = ShuidiRobot.generate_request_data(uuid, "markers/count")
         return self.data_send_recv(command)
 
-    def joy_control(self, uuid=1, angular_velocity=0, linear_velocity=0):
+    def joy_control(self, uuid=1, linear_velocity=0, angular_velocity=0):
         """
         对机器人进行部分的直接控制，如自转或停止（此控制优先级高于move指令），
         返回succeeded表示机器人已成功接收并开始运行此指令
@@ -456,10 +436,28 @@ class ShuidiRobot(object):
                                                      "goal_floor": goal_floor})
         return self.data_send_recv(command)
 
+    @staticmethod
+    def generate_request_data(uuid, command="", parameters={}):
+        """
+        generate the request string following Shuidi's API
+        :param uuid:
+        :param command:
+        :param parameters:
+        :return:
+        """
+        para = "?"
+        for key, val in parameters.items():
+            if val is None:
+                continue
+            tmp_para = f"{key}={val}"
+            para += tmp_para
+            para += "&"
+        # print(f"/api/{command}{para}uuid={uuid}")
+        return f"/api/{command}{para}uuid={uuid}"
+
 
 if __name__ == '__main__':
     w = ShuidiRobot()
-    w.marker_insert("cesuo")
 
 
     def turn_lft(speed=0.1):
@@ -478,12 +476,12 @@ if __name__ == '__main__':
         w.joy_control(angular_velocity=0, linear_velocity=-speed)
 
 
-    turn_rgt(speed=.5)
+    turn_rgt(speed=.1)
     time.sleep(.5)
-    turn_rgt(speed=.5)
+    turn_rgt(speed=.1)
     time.sleep(.5)
-    turn_rgt(speed=.5)
+    turn_rgt(speed=.1)
     time.sleep(.5)
-    turn_rgt(speed=.5)
+    turn_rgt(speed=.1)
     time.sleep(.5)
-    turn_rgt(speed=.5)
+    turn_rgt(speed=.1)
