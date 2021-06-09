@@ -341,26 +341,25 @@ class JLChain(object):
                           tcp_loc_pos=None,
                           tcp_loc_rotmat=None):
         """
-        TODO change name to get_locpose and get_glpose
         given a relative pos and relative rot with respective to the ith jntlnk,
         get the world pos and world rot
         :param loc_pos: nparray 1x3
         :param loc_romat: nparray 3x3
         :return:
         author: weiwei
-        date: 20190312
+        date: 20190312, 20210609
         """
         if tcp_jntid is None:
             tcp_jntid = self.tcp_jntid
         if tcp_loc_pos is None:
-            tcp_loc_pos = np.zeros(3)
+            tcp_loc_pos = self.tcp_loc_pos
         if tcp_loc_rotmat is None:
-            tcp_loc_rotmat = np.eye(3)
-        tcp_gloc_pos = self.jnts[tcp_jntid]['gl_posq'] + self.jnts[tcp_jntid]['gl_rotmatq'].dot(tcp_loc_pos)
-        tcp_gloc_rotmat = self.jnts[tcp_jntid]['gl_rotmatq'].dot(tcp_loc_rotmat)
-        objpos = tcp_gloc_pos + tcp_gloc_rotmat.dot(loc_pos)
-        objrot = tcp_gloc_rotmat.dot(loc_rotmat)
-        return [objpos, objrot]
+            tcp_loc_rotmat = self.tcp_loc_rotmat
+        tcp_gl_pos = self.jnts[tcp_jntid]['gl_posq'] + self.jnts[tcp_jntid]['gl_rotmatq'].dot(tcp_loc_pos)
+        tcp_gl_rotmat = self.jnts[tcp_jntid]['gl_rotmatq'].dot(tcp_loc_rotmat)
+        gl_pos = tcp_gl_pos + tcp_gl_rotmat.dot(loc_pos)
+        gl_rot = tcp_gl_rotmat.dot(loc_rotmat)
+        return [gl_pos, gl_rot]
 
     def cvt_gl_to_loc_tcp(self,
                           gl_pos,

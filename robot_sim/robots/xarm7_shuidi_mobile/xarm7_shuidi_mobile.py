@@ -182,7 +182,7 @@ class XArm7YunjiMobile(ri.RobotInterface):
                 obj_info['gl_pos'] = gl_pos
                 obj_info['gl_rotmat'] = gl_rotmat
 
-    def get_jnt_values(self, component_name):
+    def get_jnt_values(self, component_name="arm"):
         if component_name in self.manipulator_dict:
             return self.manipulator_dict[component_name].get_jnt_values()
         elif component_name == 'agv':
@@ -207,8 +207,11 @@ class XArm7YunjiMobile(ri.RobotInterface):
         else:
             raise NotImplementedError
 
-    def jaw_to(self, hnd_name='hnd_s', jawwidth=0.0):
-        self.hnd.jaw_to(jawwidth)
+    def jaw_to(self, hnd_name='hnd', jawwidth=0.0):
+        self.hnd_dict[hnd_name].jaw_to(jawwidth)
+
+    def get_gl_tcp(self, manipulator_name="arm"):
+        return super().get_gl_tcp(manipulator_name=manipulator_name)
 
     def hold(self, hnd_name, objcm, jawwidth=None):
         """

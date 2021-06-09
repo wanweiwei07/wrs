@@ -88,7 +88,7 @@ class PickPlacePlanner(adp.ADPlanner):
                         is_rbt_collided = self.robot_s.is_collided(obstacle_list)  # robot_s cd
                         # TODO is_obj_collided
                         is_obj_collided = False  # obj cd
-                        if (not is_rbt_collided) and (not is_obj_collided):  # hnd cdfree, rbt ikf/cdfree, obj cdfree
+                        if (not is_rbt_collided) and (not is_obj_collided):  # hnd cdfree, rbs ikf/cdfree, obj cdfree
                             if toggle_debug:
                                 self.robot_s.gen_meshmodel(rgba=[0, 1, 0, .5]).attach_to(base)
                             previously_available_graspids.append(graspid)

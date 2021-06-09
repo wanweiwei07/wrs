@@ -66,8 +66,8 @@ class XArmShuidiServer(aa_rpc.XArmShuidiServicer):
                                       position=position)
 
     def agv_mov(self, request, context):
-        linear_speed = request.linear_speed
-        angular_speed = request.angular_speed
+        linear_speed = request.agv_linear_speed
+        angular_speed = request.agv_angular_speed
         self._agv_x.joy_control(linear_velocity=linear_speed,
                                 angular_velocity=angular_speed)
         return aa_msg.Status(value=aa_msg.Status.DONE)

@@ -2,7 +2,7 @@
 """Client and server classes corresponding to protobuf-defined services."""
 import grpc
 
-import xarm_shuidi_pb2 as xarm__shuidi__pb2
+import robot_con.xarm_shuidi.xarm_shuidi_pb2 as xarm__shuidi__pb2
 
 
 class XArmShuidiStub(object):

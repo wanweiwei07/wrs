@@ -45,9 +45,9 @@ class RobotInterface(object):
         return self.hnd_dict[hand_name].get_jawwidth()
 
     def ik(self,
-           component_name,
-           tgt_pos,
-           tgt_rotmat,
+           component_name="arm",
+           tgt_pos=np.array([.7,0,.7]),
+           tgt_rotmat=np.eye(3),
            seed_jnt_values=None,
            max_niter=100,
            tcp_jntid=None,
