@@ -93,13 +93,19 @@ class XArmShuidiClient(object):
         else:
             print("The gripper has finished the given action.")
 
-    def agv_move(self, linear_speed=0, angular_speed=0, time_interval=.5):
+    def agv_move(self, linear_speed=.0, angular_speed=.0, time_interval=.5):
         while time_interval > 0:
             speed_msg = aa_msg.Speed(linear_velocity=linear_speed,
                                      angular_velocity=angular_speed)
-            self.stub.agv_move(speed_msg)
-            time_interval = time_interval - .5
-            time.sleep(.3)
+            try:
+                return_value = self.stub.agv_move(speed_msg)
+                if return_value == aa_msg.Status.ERROR:
+                    print("Something went wrong with the server!! Try again!")
+                    raise Exception()
+                time_interval = time_interval - .5
+                time.sleep(.3)
+            except Exception:
+                pass
 
 
 if __name__ == "__main__":
@@ -110,7 +116,7 @@ if __name__ == "__main__":
 
     base = wd.World(cam_pos=[3, 1, 1.5], lookat_pos=[0, 0, 0.7])
     rbt_s = rbt.XArm7YunjiMobile()
-    rbt_x = XArmShuidiClient(host="10.2.0.203:18300")
+    rbt_x = XArmShuidiClient(host="10.2.0.201:18300")
     jnt_values = rbt_x.arm_get_jnt_vlaues()
     jawwidth = rbt_x.arm_get_jawwidth()
     rbt_s.fk(jnt_values=jnt_values)
@@ -161,13 +167,13 @@ if __name__ == "__main__":
         elif pressed_keys["s"] and pressed_keys["d"]:
             rbt_x.agv_move(linear_speed=-agv_linear_speed, angular_speed=agv_angular_speed, time_interval=.5)
         elif pressed_keys["w"] and sum(values_list) == 1:  # if key 'q' is pressed
-            rbt_x.agv_move(linear_speed=agv_linear_speed, angular_speed=0, time_interval=.5)
+            rbt_x.agv_move(linear_speed=agv_linear_speed, angular_speed=.0, time_interval=.5)
         elif pressed_keys["s"] and sum(values_list) == 1:  # if key 'q' is pressed
-            rbt_x.agv_move(linear_speed=-agv_linear_speed, angular_speed=0, time_interval=.5)
+            rbt_x.agv_move(linear_speed=-agv_linear_speed, angular_speed=.0, time_interval=.5)
         elif pressed_keys["a"] and sum(values_list) == 1:  # if key 'q' is pressed
-            rbt_x.agv_move(linear_speed=0, angular_speed=agv_angular_speed, time_interval=.5)
+            rbt_x.agv_move(linear_speed=.0, angular_speed=agv_angular_speed, time_interval=.5)
         elif pressed_keys["d"] and sum(values_list) == 1:  # if key 'q' is pressed
-            rbt_x.agv_move(linear_speed=0, angular_speed=-agv_angular_speed, time_interval=.5)
+            rbt_x.agv_move(linear_speed=.0, angular_speed=-agv_angular_speed, time_interval=.5)
         elif any(pressed_keys[item] for item in ['r', 't', 'f', 'g', 'v', 'b', 'y', 'u', 'h', 'j', 'n', 'm']) and\
                 sum(values_list) == 1: # global
             tic = time.time()

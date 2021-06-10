@@ -179,7 +179,9 @@ class Yumi(ri.RobotInterface):
                     self.rgt_hnd.lft.lnks[1],
                     self.rgt_hnd.rgt.lnks[1]]
         self.cc.set_cdpair(fromlist, intolist)
-        fromlist = [self.lft_arm.lnks[2],
+        fromlist = [self.lft_arm.lnks[1],
+                    self.lft_arm.lnks[2],
+                    self.rgt_arm.lnks[1],
                     self.rgt_arm.lnks[2]]
         intolist = [self.lft_hnd.lft.lnks[0],
                     self.lft_hnd.lft.lnks[1],
@@ -188,14 +190,16 @@ class Yumi(ri.RobotInterface):
                     self.rgt_hnd.lft.lnks[1],
                     self.rgt_hnd.rgt.lnks[1]]
         self.cc.set_cdpair(fromlist, intolist)
-        fromlist = [self.lft_arm.lnks[3],
+        fromlist = [self.lft_arm.lnks[2],
+                    self.lft_arm.lnks[3],
                     self.lft_arm.lnks[4],
                     self.lft_arm.lnks[5],
                     self.lft_arm.lnks[6],
                     self.lft_hnd.lft.lnks[0],
                     self.lft_hnd.lft.lnks[1],
                     self.lft_hnd.rgt.lnks[1]]
-        intolist = [self.rgt_arm.lnks[3],
+        intolist = [self.rgt_arm.lnks[2],
+                    self.rgt_arm.lnks[3],
                     self.rgt_arm.lnks[4],
                     self.rgt_arm.lnks[5],
                     self.rgt_arm.lnks[6],
