@@ -9,7 +9,7 @@ import robot_con.xarm_shuidi.xarm_shuidi_client as rbx
 
 base = wd.World(cam_pos=[3, 1, 1.5], lookat_pos=[0, 0, 0.7])
 rbt_s = rbs.XArm7YunjiMobile()
-rbt_x = rbx.XArmShuidiClient(host="10.2.0.201:18300")
+rbt_x = rbx.XArmShuidiClient(host="10.2.0.203:18300")
 jnt_values = rbt_x.arm_get_jnt_vlaues()
 jawwidth = rbt_x.arm_get_jawwidth()
 rbt_s.fk(jnt_values=jnt_values)
