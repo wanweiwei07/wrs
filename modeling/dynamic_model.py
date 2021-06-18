@@ -175,7 +175,7 @@ class DynamicModel(gm.GeometricModel):
 if __name__ == "__main__":
     import os
     import numpy as np
-    import basis.robotmath as rm
+    import basis.robot_math as rm
     import pandaplotutils.pandactrl as pc
     import random
     import basis
