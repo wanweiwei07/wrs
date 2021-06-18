@@ -236,6 +236,7 @@ if __name__ == '__main__':
     robot_s = TBMChanger(enable_cc=True)
     # robot_s.jaw_to(.02)
     robot_s.gen_meshmodel(toggle_tcpcs=True).attach_to(base)
+    gm.gen_frame().attach_to(base)
     base.run()
     tgt_pos = np.array([2.5, .2, .15])
     tgt_rotmat = rm.rotmat_from_axangle([0, 1, 0], math.pi / 3)
