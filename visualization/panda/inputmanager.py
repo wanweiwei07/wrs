@@ -259,7 +259,6 @@ class InputManager(DirectObject):
         if self.keymap["wheel_up"] is True:
             self.keymap["wheel_up"] = False
             backward = self.base.cam.getPos() - self.lookatpos_pdv3
-            backward.normalize()
             newpos = self.base.cam.getPos() + backward * 0.05
             if newpos.length() < self.initviewdist * 100:
                 self.base.cam.setPos(newpos[0], newpos[1], newpos[2])
@@ -267,11 +266,10 @@ class InputManager(DirectObject):
         if self.keymap["wheel_down"] is True:
             self.keymap["wheel_down"] = False
             forward = self.lookatpos_pdv3 - self.base.cam.getPos()
-            forward.normalize()
             wheelscale_distance = 0.05
-            if self.base.cam.getPos().length() < 0.05:
+            if forward.length() < 0.05:
                 wheelscale_distance = 0.0025
-            elif self.base.cam.getPos().length() < 0.0025:
+            elif forward.length() < 0.0025:
                 return
             newpos = self.base.cam.getPos() + forward * wheelscale_distance
             if newpos.length() > self.initviewdist * .01:
