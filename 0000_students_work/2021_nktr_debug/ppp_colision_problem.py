@@ -114,7 +114,7 @@ rotmat = np.dot(rm.rotmat_from_axangle([0, 1, 0], math.radians(90)), rm.rotmat_f
 tool_final.set_pos(tool_final_pos)
 tool_final.set_rotmat(rotmat)
 tool_final_homomat = rm.homomat_from_posrot(tool_final_pos, rotmat)
-## robot and grasp list
+## rbt_s and grasp list
 robot_s = xsm.XArm7YunjiMobile()
 rrtc_s = rrtc.RRTConnect(robot_s)
 rrtc_planner = rrtdwc.RRTDWConnect(robot_s)
@@ -145,7 +145,7 @@ print(jnt_values_initial, jnt_values)
 #         jnt_values = pos.copy()
 #         jnt_values[2] = math.pi
 #         robot_s.fk(component_name="agv", jnt_values=jnt_values)
-#         # check if the robot is collided or not at the place
+#         # check if the rbt_s is collided or not at the place
 #         if robot_s.is_collided(obstacle_list=obstacle_list):
 #             print("1")
 #             continue
@@ -160,7 +160,7 @@ print(jnt_values_initial, jnt_values)
 #                 if armjnts is not None:
 #                     robot_s.fk(component_name="arm", jnt_values=armjnts)
 #                     is_robot_collided = robot_s.is_collided(obstacle_list=obstacle_list)
-#                     # display only if armjnts is not None and robot is not collided
+#                     # display only if armjnts is not None and rbt_s is not collided
 #                     if is_robot_collided is False and counter is 0:
 #                         dist_pos.append(jnt_values)
 #                         counter += 1

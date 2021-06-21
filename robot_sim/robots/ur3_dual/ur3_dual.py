@@ -267,15 +267,15 @@ class UR3Dual(ri.RobotInterface):
         fromlist = [self.lft_body.lnks[0],  # body
                     self.lft_body.lnks[1],  # back-rgt column
                     self.lft_body.lnks[2],  # back-lft column
-                    self.lft_body.lnks[3],  # front-rgt row
-                    self.lft_body.lnks[4],  # front-lft row
+                    self.lft_body.lnks[3],  # head-rgt row
+                    self.lft_body.lnks[4],  # head-lft row
                     self.lft_body.lnks[5],  # up right x_row
                     self.lft_body.lnks[6],  # bottom right x_row
                     self.lft_body.lnks[7],  # up left row
                     self.lft_body.lnks[8],  # bottom left row
                     self.lft_body.lnks[9],  # back up y_row
                     self.lft_body.lnks[10],  # back bottom y_row
-                    self.lft_body.lnks[11],  # front up y_row
+                    self.lft_body.lnks[11],  # head up y_row
                     self.lft_body.lnks[12],  # table
                     self.lft_arm.lnks[1],
                     self.rgt_arm.lnks[1]]
@@ -441,15 +441,15 @@ class UR3Dual(ri.RobotInterface):
             intolist = [self.lft_body.lnks[0],  # body
                         self.lft_body.lnks[1],  # back-rgt column
                         self.lft_body.lnks[2],  # back-lft column
-                        self.lft_body.lnks[3],  # front-rgt row
-                        self.lft_body.lnks[4],  # front-lft row
+                        self.lft_body.lnks[3],  # head-rgt row
+                        self.lft_body.lnks[4],  # head-lft row
                         self.lft_body.lnks[5],  # up right x_row
                         self.lft_body.lnks[6],  # bottom right x_row
                         self.lft_body.lnks[7],  # up left row
                         self.lft_body.lnks[8],  # bottom left row
                         self.lft_body.lnks[9],  # back up y_row
                         self.lft_body.lnks[10],  # back bottom y_row
-                        self.lft_body.lnks[11],  # front up y_row
+                        self.lft_body.lnks[11],  # head up y_row
                         self.lft_body.lnks[12],  # table
                         self.lft_arm.lnks[1],
                         self.lft_arm.lnks[2],
@@ -472,15 +472,15 @@ class UR3Dual(ri.RobotInterface):
             intolist = [self.lft_body.lnks[0],  # body
                         self.lft_body.lnks[1],  # back-rgt column
                         self.lft_body.lnks[2],  # back-lft column
-                        self.lft_body.lnks[3],  # front-rgt row
-                        self.lft_body.lnks[4],  # front-lft row
+                        self.lft_body.lnks[3],  # head-rgt row
+                        self.lft_body.lnks[4],  # head-lft row
                         self.lft_body.lnks[5],  # up right x_row
                         self.lft_body.lnks[6],  # bottom right x_row
                         self.lft_body.lnks[7],  # up left row
                         self.lft_body.lnks[8],  # bottom left row
                         self.lft_body.lnks[9],  # back up y_row
                         self.lft_body.lnks[10],  # back bottom y_row
-                        self.lft_body.lnks[11],  # front up y_row
+                        self.lft_body.lnks[11],  # head up y_row
                         self.lft_body.lnks[12],  # table
                         self.lft_arm.lnks[1],
                         self.lft_arm.lnks[2],

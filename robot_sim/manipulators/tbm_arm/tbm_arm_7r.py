@@ -6,78 +6,72 @@ import robot_sim._kinematics.jlchain as jl
 import robot_sim.manipulators.manipulator_interface as mi
 
 
-class TBMArm(mi.ManipulatorInterface):
+class TBMArm7R(mi.ManipulatorInterface):
 
-    def __init__(self, pos=np.zeros(3), rotmat=np.eye(3), homeconf=np.zeros(6), name='tbm_arm', enable_cc=True):
+    def __init__(self, pos=np.zeros(3), rotmat=np.eye(3), homeconf=np.zeros(7), name='tbm_arm', enable_cc=True):
         super().__init__(pos=pos, rotmat=rotmat, name=name)
         this_dir, this_filename = os.path.split(__file__)
         self.jlc = jl.JLChain(pos=pos, rotmat=rotmat, homeconf=homeconf, name=name)
-        # six joints, njnts = 6+2 (tgt ranges from 1-6), nlinks = 6+1
-        # self.jlc.jnts[1]['loc_pos'] = np.array([0.2, 0, 0])
-        # self.jlc.jnts[1]['type'] = 'prismatic'
-        # self.jlc.jnts[1]['loc_motionax'] = np.array([1, 0, 0])
-        # self.jlc.jnts[1]['motion_rng'] = [-.1, 1.25]
-        self.jlc.jnts[1]['loc_pos'] = np.array([0, 0, 0.346])
-        self.jlc.jnts[1]['loc_motionax'] = np.array([0, 0, 1])
-        self.jlc.jnts[1]['motion_rng'] = [-math.radians(20), math.radians(20)]
-        self.jlc.jnts[2]['loc_pos'] = np.array([0.645, .0, .0])
-        self.jlc.jnts[2]['loc_motionax'] = np.array([1, 0, 0])
-        # self.jlc.jnts[2]['motion_rng'] = [-2*math.pi, 2*math.pi]
-        self.jlc.jnts[3]['loc_pos'] = np.array([.425, .0, .0])
-        self.jlc.jnts[3]['loc_motionax'] = np.array([0, 0, 1])
-        self.jlc.jnts[3]['motion_rng'] = [-math.radians(90), math.radians(90)]
-        self.jlc.jnts[4]['loc_pos'] = np.array([0.587, .0, .0])
-        self.jlc.jnts[4]['loc_motionax'] = np.array([1, 0, 0])
-        # self.jlc.jnts[4]['motion_rng'] = [-2*math.pi, 2*math.pi]
-        self.jlc.jnts[5]['loc_pos'] = np.array([.63, .0, .0])
-        self.jlc.jnts[5]['loc_motionax'] = np.array([0, 1, 0])
-        self.jlc.jnts[5]['motion_rng'] = [-math.radians(115), math.radians(115)]
-        self.jlc.jnts[6]['loc_pos'] = np.array([.329, .0, .0])
-        self.jlc.jnts[6]['loc_motionax'] = np.array([1, 0, 0])
-        # self.jlc.jnts[6]['motion_rng'] = [-2*math.pi, 2*math.pi]
+        self.jlc.jnts[1]['loc_pos'] = np.array([0.0, 0.0, 0.0])
+        self.jlc.jnts[1]['type'] = 'prismatic'
+        self.jlc.jnts[1]['loc_motionax'] = np.array([1, 0, 0])
+        self.jlc.jnts[1]['motion_rng'] = [-.5, .0]
+        self.jlc.jnts[2]['loc_pos'] = np.array([0, 0, 0.396])
+        self.jlc.jnts[2]['loc_motionax'] = np.array([0, 0, 1])
+        self.jlc.jnts[2]['motion_rng'] = [-math.radians(20), math.radians(20)]
+        self.jlc.jnts[3]['loc_pos'] = np.array([0.654, .0, .0])
+        self.jlc.jnts[3]['loc_motionax'] = np.array([1, 0, 0])
+        self.jlc.jnts[4]['loc_pos'] = np.array([.625, .0, .0])
+        self.jlc.jnts[4]['loc_motionax'] = np.array([0, 0, 1])
+        self.jlc.jnts[4]['motion_rng'] = [-math.radians(90), math.radians(90)]
+        self.jlc.jnts[5]['loc_pos'] = np.array([0.687, .0, .0])
+        self.jlc.jnts[5]['loc_motionax'] = np.array([1, 0, 0])
+        self.jlc.jnts[6]['loc_pos'] = np.array([.83, .0, .0])
+        self.jlc.jnts[6]['loc_motionax'] = np.array([0, 1, 0])
+        self.jlc.jnts[6]['motion_rng'] = [-math.radians(115), math.radians(115)]
+        self.jlc.jnts[7]['loc_pos'] = np.array([.223, .0, .0])
+        self.jlc.jnts[7]['loc_motionax'] = np.array([1, 0, 0])
         # links
-        self.jlc.lnks[0]['name'] = "base"
-        self.jlc.lnks[0]['loc_pos'] = np.zeros(3)
-        # self.jlc.lnks[0]['mass'] = 1.4
-        # self.jlc.lnks[0]['com'] = np.array([-.02131, .000002, .044011])
-        self.jlc.lnks[0]['meshfile'] = os.path.join(this_dir, "meshes", "base.stl")
-        self.jlc.lnks[0]['rgba'] = [.5, .5, .5, 1.0]
-        self.jlc.lnks[1]['name'] = "j1"
+        self.jlc.lnks[1]['name'] = "base"
         self.jlc.lnks[1]['loc_pos'] = np.zeros(3)
-        self.jlc.lnks[1]['com'] = np.array([.0, .0, .15])
-        self.jlc.lnks[1]['mass'] = 1.29
-        self.jlc.lnks[1]['meshfile'] = os.path.join(this_dir, "meshes", "joint1.stl")
-        self.jlc.lnks[1]['rgba'] = [.7, .7, .7, 1.0]
-        self.jlc.lnks[2]['name'] = "j2"
-        self.jlc.lnks[2]['loc_pos'] = np.array([.0, .0, .0])
-        self.jlc.lnks[2]['com'] = np.array([-.02, .1, .07])
-        self.jlc.lnks[2]['mass'] = 0.39
-        self.jlc.lnks[2]['meshfile'] = os.path.join(this_dir, "meshes", "joint2.stl")
-        self.jlc.lnks[2]['rgba'] = [.77, .77, .60, 1]
-        self.jlc.lnks[3]['name'] = "j3"
+        self.jlc.lnks[1]['meshfile'] = os.path.join(this_dir, "meshes", "base_r.stl")
+        self.jlc.lnks[1]['rgba'] = [.5, .5, .5, 1.0]
+        self.jlc.lnks[2]['name'] = "j1"
+        self.jlc.lnks[2]['loc_pos'] = np.zeros(3)
+        self.jlc.lnks[2]['com'] = np.array([.0, .0, .15])
+        self.jlc.lnks[2]['mass'] = 1.29
+        self.jlc.lnks[2]['meshfile'] = os.path.join(this_dir, "meshes", "joint1_r.stl")
+        self.jlc.lnks[2]['rgba'] = [.7, .7, .7, 1.0]
+        self.jlc.lnks[3]['name'] = "j2"
         self.jlc.lnks[3]['loc_pos'] = np.array([.0, .0, .0])
-        self.jlc.lnks[3]['com'] = np.array([-.01, .02, .03])
-        self.jlc.lnks[3]['mass'] = .35
-        self.jlc.lnks[3]['meshfile'] = os.path.join(this_dir, "meshes", "joint3.stl")
-        self.jlc.lnks[3]['rgba'] = [.35, .35, .35, 1.0]
-        self.jlc.lnks[4]['name'] = "j4"
+        self.jlc.lnks[3]['com'] = np.array([-.02, .1, .07])
+        self.jlc.lnks[3]['mass'] = 0.39
+        self.jlc.lnks[3]['meshfile'] = os.path.join(this_dir, "meshes", "joint2_r.stl")
+        self.jlc.lnks[3]['rgba'] = [.77, .77, .60, 1]
+        self.jlc.lnks[4]['name'] = "j3"
         self.jlc.lnks[4]['loc_pos'] = np.array([.0, .0, .0])
-        self.jlc.lnks[4]['com'] = np.array([.0, .0, 0.055])
-        self.jlc.lnks[4]['mass'] = 0.35
-        self.jlc.lnks[4]['meshfile'] = os.path.join(this_dir, "meshes", "joint4.stl")
-        self.jlc.lnks[4]['rgba'] = [.7, .7, .7, 1.0]
-        self.jlc.lnks[5]['name'] = "j5"
+        self.jlc.lnks[4]['com'] = np.array([-.01, .02, .03])
+        self.jlc.lnks[4]['mass'] = .35
+        self.jlc.lnks[4]['meshfile'] = os.path.join(this_dir, "meshes", "joint3_r.stl")
+        self.jlc.lnks[4]['rgba'] = [.35, .35, .35, 1.0]
+        self.jlc.lnks[5]['name'] = "j4"
         self.jlc.lnks[5]['loc_pos'] = np.array([.0, .0, .0])
-        self.jlc.lnks[5]['com'] = np.array([.0, -.04, .015])
-        self.jlc.lnks[5]['mass'] = 0.19
-        self.jlc.lnks[5]['meshfile'] = os.path.join(this_dir, "meshes", "joint5.stl")
-        self.jlc.lnks[5]['rgba'] = [.77, .77, .60, 1]
-        self.jlc.lnks[6]['name'] = "j6"
+        self.jlc.lnks[5]['com'] = np.array([.0, .0, 0.055])
+        self.jlc.lnks[5]['mass'] = 0.35
+        self.jlc.lnks[5]['meshfile'] = os.path.join(this_dir, "meshes", "joint4_r.stl")
+        self.jlc.lnks[5]['rgba'] = [.7, .7, .7, 1.0]
+        self.jlc.lnks[6]['name'] = "j5"
         self.jlc.lnks[6]['loc_pos'] = np.array([.0, .0, .0])
-        self.jlc.lnks[6]['com'] = np.array([.0, .0, 0])
-        self.jlc.lnks[6]['mass'] = 0.03
-        self.jlc.lnks[6]['meshfile'] = None
-        self.jlc.lnks[6]['rgba'] = [.5, .5, .5, 1.0]
+        self.jlc.lnks[6]['com'] = np.array([.0, -.04, .015])
+        self.jlc.lnks[6]['mass'] = 0.19
+        self.jlc.lnks[6]['meshfile'] = os.path.join(this_dir, "meshes", "joint5_r.stl")
+        self.jlc.lnks[6]['rgba'] = [.77, .77, .60, 1]
+        self.jlc.lnks[7]['name'] = "j6"
+        self.jlc.lnks[7]['loc_pos'] = np.array([.0, .0, .0])
+        self.jlc.lnks[7]['com'] = np.array([.0, .0, 0])
+        self.jlc.lnks[7]['mass'] = 0.03
+        self.jlc.lnks[7]['meshfile'] = None
+        self.jlc.lnks[7]['rgba'] = [.5, .5, .5, 1.0]
         self.jlc.reinitialize()
         # collision detection
         if enable_cc:
@@ -117,11 +111,11 @@ if __name__ == '__main__':
 
     base = wd.World(cam_pos=[-5, -5, 3], lookat_pos=[3, 0, 0])
     gm.gen_frame().attach_to(base)
-    seed0 = np.zeros(6)
-    seed0[3] = math.pi / 2
-    seed1 = np.zeros(6)
-    seed1[3] = -math.pi / 2
-    manipulator_instance = TBMArm(enable_cc=True)
+    seed0 = np.zeros(7)
+    seed0[4] = math.pi / 2
+    seed1 = np.zeros(7)
+    seed1[4] = -math.pi / 2
+    manipulator_instance = TBMArm7R(enable_cc=True)
     manipulator_meshmodel = manipulator_instance.gen_meshmodel(toggle_jntscs=True)
     manipulator_meshmodel.attach_to(base)
     manipulator_instance.gen_stickmodel(toggle_tcpcs=True, toggle_jntscs=True).attach_to(base)

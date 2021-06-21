@@ -51,7 +51,7 @@ ServoCodeMap = {
     15: {
         'en': {
             'title': 'Joints Overheat',
-            'desc': 'If the robot arm is running for a long time, please stop running and restart the xArm after it\'s cool down. If multiple reboots are not working, please contact technical support.',
+            'desc': 'If the rbt_s arm is running for a long time, please stop running and restart the xArm after it\'s cool down. If multiple reboots are not working, please contact technical support.',
         },
         'cn': {
             'title': '关节过热',
@@ -71,7 +71,7 @@ ServoCodeMap = {
     17: {
         'en': {
             'title': 'Single Ring Encoder Error',
-            'desc': 'Please re-enable the robot.',
+            'desc': 'Please re-enable the rbt_s.',
         },
         'cn': {
             'title': '单圈编码器故障',
@@ -101,7 +101,7 @@ ServoCodeMap = {
     20: {
         'en': {
             'title': 'Driver IC Hardware Error',
-            'desc': 'Please re-enable the robot. If it appears frequently, please contact technical support.',
+            'desc': 'Please re-enable the rbt_s. If it appears frequently, please contact technical support.',
         },
         'cn': {
             'title': '驱动IC硬件异常',
@@ -427,7 +427,7 @@ ControllerErrorCodeMap = {
     1: {
         'en': {
             'title': 'The Emergency Stop Button on the xArm Controller is pushed in to stop',
-            'desc': 'Please release the Emergency Stop Button, and then re-enable the robot'
+            'desc': 'Please release the Emergency Stop Button, and then re-enable the rbt_s'
         },
         'cn': {
             'title': '控制器上的紧急停止按钮被按下',
@@ -437,7 +437,7 @@ ControllerErrorCodeMap = {
     2: {
         'en': {
             'title': 'The Emergency IO of the Control Box is triggered',
-            'desc': 'Please ground the 2 EIs of the Control Box, and then re-enable the robot'
+            'desc': 'Please ground the 2 EIs of the Control Box, and then re-enable the rbt_s'
         },
         'cn': {
             'title': '控制器上的紧急停止IO被触发',
@@ -447,7 +447,7 @@ ControllerErrorCodeMap = {
     3: {
         'en': {
             'title': 'The Emergency Stop Button of the Three-state Switch is pressed',
-            'desc': 'Please release the Emergency Stop Button of the Three-state Switch, and then re-enable the robot'
+            'desc': 'Please release the Emergency Stop Button of the Three-state Switch, and then re-enable the rbt_s'
         },
         'cn': {
             'title': '三态开关的紧急停止按钮被按下',
@@ -557,7 +557,7 @@ ControllerErrorCodeMap = {
     22: {
         'en': {
             'title': 'Self-Collision Error',
-            'desc': 'The robot is about to collide with itself. Please re-plan the path. If the robot reports the self-collision error continually, please turn on the manual mode and drag the robotic back to the normal area.'
+            'desc': 'The rbt_s is about to collide with itself. Please re-plan the path. If the rbt_s reports the self-collision error continually, please turn on the manual mode and drag the robotic back to the normal area.'
         },
         'cn': {
             'title': '自碰撞错误',
@@ -697,7 +697,7 @@ ControllerErrorCodeMap = {
     37: {
         'en': {
             'title': 'Abnormal movement in Manual Mode',
-            'desc': 'Please check whether the TCP payload setting and mounting setting of the robot arm are correct.'
+            'desc': 'Please check whether the TCP payload setting and mounting setting of the rbt_s arm are correct.'
         },
         'cn': {
             'title': '手动模式运动异常',

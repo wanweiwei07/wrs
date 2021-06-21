@@ -24,7 +24,7 @@ class Kinodynamics(object):
 
     def extend_state_callback(self, state1, state2):
         """
-        extend state call back for two-wheel car robot
+        extend state call back for two-wheel car rbt_s
         :param state1: x, y, theta, x_dot, y_dot, theta_dot
         :param state2:
         :return:
@@ -84,7 +84,7 @@ class Kinodynamics(object):
 
     # def extend_state_callback(self, state1, state2):
     #     """
-    #     extend state call back for two-wheel car robot
+    #     extend state call back for two-wheel car rbt_s
     #     :param state1: x, y, theta, x_dot, y_dot, theta_dot
     #     :param state2:
     #     :return:

@@ -6,7 +6,7 @@ import warnings as wns
 
 class JLChainIK(object):
 
-    def __init__(self, jlc_object, wln_ratio=.15):
+    def __init__(self, jlc_object, wln_ratio=.05):
         self.jlc_object = jlc_object
         self.wln_ratio = wln_ratio
         # IK macros

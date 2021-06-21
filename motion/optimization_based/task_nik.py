@@ -6,7 +6,7 @@ import warnings as wns
 
 class NIK(object):
 
-    def __init__(self, robot, component_name, wln_ratio=.15):
+    def __init__(self, robot, component_name, wln_ratio=.05):
         self.rbt = robot
         self.component_name = component_name
         self.jlc_object = self.rbt.manipulator_dict[component_name].jlc
@@ -70,15 +70,15 @@ class NIK(object):
         """
         wtmat = np.ones(self.jlc_object.ndof)
         # min damping interval
-        selection = (jntvalues - self.jmvmin_threshhold < 0)
-        diff_selected = self.jmvmin_threshhold[selection] - jntvalues[selection]
-        wtmat[selection] = -2 * np.power(diff_selected, 3) + 3 * np.power(diff_selected, 2)
+        selection = jntvalues < self.jmvmin_threshhold
+        normalized_diff_at_selected = ((jntvalues - self.jmvmin) / (self.jmvmin_threshhold - self.jmvmin))[selection]
+        wtmat[selection] = -2 * np.power(normalized_diff_at_selected, 3) + 3 * np.power(normalized_diff_at_selected, 2)
         # max damping interval
-        selection = (jntvalues - self.jmvmax_threshhold > 0)
-        diff_selected = jntvalues[selection] - self.jmvmax_threshhold[selection]
-        wtmat[selection] = -2 * np.power(diff_selected, 3) + 3 * np.power(diff_selected, 2)
-        wtmat[jntvalues >= self.jmvmax] = 1e-6
-        wtmat[jntvalues <= self.jmvmin] = 1e-6
+        selection = jntvalues > self.jmvmax_threshhold
+        normalized_diff_at_selected = ((self.jmvmax - jntvalues) / (self.jmvmax - self.jmvmax_threshhold))[selection]
+        wtmat[selection] = -2 * np.power(normalized_diff_at_selected, 3) + 3 * np.power(normalized_diff_at_selected, 2)
+        wtmat[jntvalues >= self.jmvmax] = 0
+        wtmat[jntvalues <= self.jmvmin] = 0
         return np.diag(wtmat)
 
     def manipulability(self, tcp_jntid):
@@ -349,6 +349,7 @@ class NIK(object):
                     # jsharp = j.T.dot(np.linalg.inv(jjt + damper))
                     # weighted jjt
                     qs_wtdiagmat = self._wln_weightmat(jntvalues_iter)
+                    # WLN
                     winv_j1t = np.linalg.inv(qs_wtdiagmat).dot(j1.T)
                     j1_winv_j1t = j1.dot(winv_j1t)
                     damper = dampercoeff * np.identity(j1_winv_j1t.shape[0])

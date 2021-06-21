@@ -62,7 +62,7 @@ class XArm7(object):
             print("Something went wrong with the server!! Try again!")
             raise Exception()
         else:
-            print("The robot has finished the given motion.")
+            print("The rbt_s has finished the given motion.")
 
     def get_jawwidth(self):
         gripper_msg = self.stub.get_gripper_status(xarm_msg.Empty())

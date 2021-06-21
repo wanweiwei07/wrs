@@ -167,7 +167,7 @@ class InputManager(DirectObject):
         curm1vec.normalize()
         lastm1vec.normalize()
         rotatevec = curm1vec.cross(lastm1vec)
-        if rotatevec.length() > 1e-6:  # avoid zero length
+        if rotatevec.length() > 1e-9:  # avoid zero length
             rotateangle = curm1vec.signedAngleDeg(lastm1vec, rotatevec)
             rotateangle = rotateangle * self.camdist * 5000
             if rotateangle > .02 or rotateangle < -.02:
@@ -275,59 +275,6 @@ class InputManager(DirectObject):
             if newpos.length() > self.initviewdist * .01:
                 self.base.cam.setPos(newpos[0], newpos[1], newpos[2])
                 self.update_trackballsphere(self.trackball_cn.getSolid(0).getCenter())
-
-    def check_mouse1drag_trackball(self):
-        """
-        This function uses the stereographic projection
-        introduced in https://en.wikipedia.org/wiki/Stereographic_projection to track the rotational mouse motion
-        Equations:
-        [e, f] -> [x, y, z] = [2e/(1+e^2+f^2), 2f/(1+e^2+f^2), (-1+e^2+f^2)/(2+2e^2+2f^2)]
-        :return:
-        author: weiwei
-        date: 20200315
-        """
-        def cvtvirtualtrackball(screenx, screeny, psec_squared=1 / 4):
-            """
-            convert a screen point to virtual trackball coordinate
-            psec indicates the size of the spherical section to be mapped to
-            default radius = 1
-            :param screenx:
-            :param screeny:
-            :param psec_squared:
-            :return:
-            author: weiwei
-            date: 20200315
-            """
-            screenpoint_squaredsum = screenx ** 2 + screeny ** 2
-            trackballx = 2 * psec_squared * screenx / (psec_squared + screenpoint_squaredsum)
-            trackballz = 2 * psec_squared * screeny / (psec_squared + screenpoint_squaredsum)
-            trackbally = -math.sqrt(1 - trackballx ** 2 - trackballz ** 2)
-            returnvec = Vec3(trackballx, trackbally, trackballz)
-            returnvec.normalize()
-            return returnvec
-        currentmouse = self.base.mouseWatcherNode.getMouse()
-        curm1pos = [currentmouse.getX(), currentmouse.getY()]
-        if curm1pos is None:
-            if self.lastm1pos is not None:
-                self.lastm1pos = None
-            return
-        if self.lastm1pos is None:
-            # first time click
-            self.lastm1pos = curm1pos
-            return
-        curm1vec_pdv3 = cvtvirtualtrackball(curm1pos[0], curm1pos[1])
-        lastm1vec_pdv3 = cvtvirtualtrackball(self.lastm1pos[0], self.lastm1pos[1])
-        rotatevec_pdv3 = curm1vec_pdv3.cross(lastm1vec_pdv3)
-        rotateangle = curm1vec_pdv3.signedAngleDeg(lastm1vec_pdv3, rotatevec_pdv3)
-        if rotateangle > .02 or rotateangle < -.02:
-            rotateangle = rotateangle * 5000
-            camrotmat_pd = self.base.cam.getMat().getUpper3()
-            calibrated_camrotmat_pd = Mat3.rotateMat(rotateangle, camrotmat_pd.xformVec(rotatevec_pdv3))
-            posvec_pd = self.base.cam.getPos()
-            self.base.cam.setMat(Mat4.identMat())
-            self.base.cam.setMat(camrotmat_pd * calibrated_camrotmat_pd)
-            self.base.cam.setPos(calibrated_camrotmat_pd.xform(posvec_pd - self.lookatpos_pdv3) + self.lookatpos_pdv3)
-            self.lastm1pos = curm1pos[:]
 
     def check_resetcamera(self):
         """

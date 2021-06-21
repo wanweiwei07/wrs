@@ -397,7 +397,7 @@ class XArmAPI(object):
     @property
     def is_simulation_robot(self):
         """
-        Is simulation robot not not
+        Is simulation rbt_s not not
         """
         return self._arm.is_simulation_robot
 
@@ -443,7 +443,7 @@ class XArmAPI(object):
         """
         Motor brake state list, only available in socket way and  enable_report is True and report_type is 'rich'
         Note:
-            For a robot with a number of axes n, only the first n states are valid, and the latter are reserved.
+            For a rbt_s with a number of axes n, only the first n states are valid, and the latter are reserved.
 
         :return: [motor-1-brake-state, ..., motor-7-brake-state, reserved]
             motor-{i}-brake-state:
@@ -457,7 +457,7 @@ class XArmAPI(object):
         """
         Motor enable state list, only available in socket way and  enable_report is True and report_type is 'rich'
         Note:
-            For a robot with a number of axes n, only the first n states are valid, and the latter are reserved.
+            For a rbt_s with a number of axes n, only the first n states are valid, and the latter are reserved.
 
         :return: [motor-1-enable-state, ..., motor-7-enable-state, reserved]
             motor-{i}-enable-state:
@@ -735,7 +735,7 @@ class XArmAPI(object):
             2. If it is xArm5, roll must be set to 180° or π rad, pitch must be set to 0
             3. If the parameter(roll/pitch/yaw) you are passing is an radian unit, be sure to set the parameter is_radian to True.
                 ex: code = arm.set_position(x=300, y=0, z=200, roll=-3.14, pitch=0, yaw=0, is_radian=True)
-            4. If you want to wait for the robot to complete this action and then return, please set the parameter wait to True.
+            4. If you want to wait for the rbt_s to complete this action and then return, please set the parameter wait to True.
                 ex: code = arm.set_position(x=300, y=0, z=200, roll=180, pitch=0, yaw=0, is_radian=False, wait=True)
             5. This interface is only used in the base coordinate system.
 
@@ -825,7 +825,7 @@ class XArmAPI(object):
         Note:
             1. If the parameter angle you are passing is an radian unit, be sure to set the parameter is_radian to True.
                 ex: code = arm.set_servo_angle(servo_id=1, angle=1.57, is_radian=True)
-            2. If you want to wait for the robot to complete this action and then return, please set the parameter wait to True.
+            2. If you want to wait for the rbt_s to complete this action and then return, please set the parameter wait to True.
                 ex: code = arm.set_servo_angle(servo_id=1, angle=45, is_radian=False,wait=True)
             3. This interface is only used in the base coordinate system.
 
@@ -928,7 +928,7 @@ class XArmAPI(object):
         Note:
             1. The API will change self.last_used_position value into [201.5, 0, 140.5, -180, 0, 0]
             2. The API will change self.last_used_angles value into [0, 0, 0, 0, 0, 0, 0]
-            3. If you want to wait for the robot to complete this action and then return, please set the parameter wait to True.
+            3. If you want to wait for the rbt_s to complete this action and then return, please set the parameter wait to True.
                 ex: code = arm.move_gohome(wait=True)
             4. This interface does not modify the value of last_used_angles/last_used_joint_speed/last_used_joint_acc
 
@@ -2276,7 +2276,7 @@ class XArmAPI(object):
 
     def set_tgpio_digital_with_xyz(self, ionum, value, xyz, fault_tolerance_radius):
         """
-        Set the digital value of the specified Tool GPIO when the robot has reached the specified xyz position           
+        Set the digital value of the specified Tool GPIO when the rbt_s has reached the specified xyz position
         
         :param ionum: 0 or 1
         :param value: value
@@ -2289,7 +2289,7 @@ class XArmAPI(object):
 
     def set_cgpio_digital_with_xyz(self, ionum, value, xyz, fault_tolerance_radius):
         """
-        Set the digital value of the specified Controller GPIO when the robot has reached the specified xyz position           
+        Set the digital value of the specified Controller GPIO when the rbt_s has reached the specified xyz position
         
         :param ionum: 0 ~ 7
         :param value: value
@@ -2302,7 +2302,7 @@ class XArmAPI(object):
 
     def set_cgpio_analog_with_xyz(self, ionum, value, xyz, fault_tolerance_radius):
         """
-        Set the analog value of the specified Controller GPIO when the robot has reached the specified xyz position           
+        Set the analog value of the specified Controller GPIO when the rbt_s has reached the specified xyz position
 
         :param ionum: 0 ~ 1
         :param value: value
@@ -2315,7 +2315,7 @@ class XArmAPI(object):
 
     def config_tgpio_reset_when_stop(self, on_off):
         """
-        Config the Tool GPIO reset the digital output when the robot is in stop state
+        Config the Tool GPIO reset the digital output when the rbt_s is in stop state
         
         :param on_off: True/False
         :return: code
@@ -2325,7 +2325,7 @@ class XArmAPI(object):
 
     def config_cgpio_reset_when_stop(self, on_off):
         """
-        Config the Controller GPIO reset the digital output when the robot is in stop state
+        Config the Controller GPIO reset the digital output when the rbt_s is in stop state
 
         :param on_off: True/False
         :return: code
@@ -2412,7 +2412,7 @@ class XArmAPI(object):
     def set_joints_torque(self, joints_torque):
         """
         Set joints torque,
-            Warning: If necessary, please do not set it randomly, it may damage the robot arm
+            Warning: If necessary, please do not set it randomly, it may damage the rbt_s arm
 
         :param joints_torque: 
         :return: code
@@ -2757,7 +2757,7 @@ class XArmAPI(object):
 
     def set_simulation_robot(self, on_off):
         """
-        Set the simulation robot
+        Set the simulation rbt_s
         
         :param on_off: True/False
         :return: code
@@ -2866,7 +2866,7 @@ class XArmAPI(object):
             1. only available if firmware_version >= 1.7.0
 
         :param coord: task frame. 0: base frame. 1: tool frame.
-        :param c_axis: a 6d vector of 0s and 1s. 1 means that robot will be impedance in the corresponding axis of the task frame.
+        :param c_axis: a 6d vector of 0s and 1s. 1 means that rbt_s will be impedance in the corresponding axis of the task frame.
         :param M: mass. (kg)
         :param K: stiffness coefficient.
         :param B: damping coefficient. invalid.   Note: the value is set to 2*sqrt(M*K) in controller.
@@ -2896,7 +2896,7 @@ class XArmAPI(object):
             1. only available if firmware_version >= 1.7.0
 
         :param coord: task frame. 0: base frame. 1: tool frame.
-        :param c_axis: a 6d vector of 0s and 1s. 1 means that robot will be impedance in the corresponding axis of the task frame.
+        :param c_axis: a 6d vector of 0s and 1s. 1 means that rbt_s will be impedance in the corresponding axis of the task frame.
         :return: code
             code: See the API code documentation for details.
         """
@@ -2909,8 +2909,8 @@ class XArmAPI(object):
             1. only available if firmware_version >= 1.7.0
 
         :param coord:  task frame. 0: base frame. 1: tool frame.
-        :param c_axis: a 6d vector of 0s and 1s. 1 means that robot will be compliant in the corresponding axis of the task frame.
-        :param f_ref:  the forces/torques the robot will apply to its environment. The robot adjusts its position along/about compliant axis in
+        :param c_axis: a 6d vector of 0s and 1s. 1 means that rbt_s will be compliant in the corresponding axis of the task frame.
+        :param f_ref:  the forces/torques the rbt_s will apply to its environment. The rbt_s adjusts its position along/about compliant axis in
                        order to achieve the specified force/torque.
         :param limits:  for compliant axes, these values are the maximum allowed tcp speed along/about the axis.
         :return: code
@@ -2982,7 +2982,7 @@ class XArmAPI(object):
 
     def ft_sensor_app_set(self, app_code):
         """
-        set robot to be controlled in force mode
+        set rbt_s to be controlled in force mode
         Note:
             1. only available if firmware_version >= 1.7.0
 
