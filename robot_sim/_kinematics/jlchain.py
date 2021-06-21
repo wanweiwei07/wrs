@@ -318,7 +318,7 @@ class JLChain(object):
         :param tcp_loc_pos: 1x3 nparray, decribed in the local frame of self.jnts[tcp_jntid], single value or list
         :param tcp_loc_rotmat: 3x3 nparray, decribed in the local frame of self.jnts[tcp_jntid], single value or list
         :param max_niter
-        :param local_minima:
+        :param local_minima: what to do at local minima: "accept", "randomrestart", "end"
         :return:
         """
         return self._ikt.num_ik(tgt_pos=tgt_pos,

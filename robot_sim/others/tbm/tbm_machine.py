@@ -21,7 +21,7 @@ class TBM(object):
         self.head.lnks[0]['name'] = 'tbm_front_shield'
         self.head.lnks[0]['loc_pos'] = np.array([0, 0, 0])
         self.head.lnks[0]['meshfile'] = os.path.join(this_dir, 'meshes', 'tbm_front_shield.stl')
-        self.head.lnks[0]['rgba'] = [.7, .7, .7, 0]
+        self.head.lnks[0]['rgba'] = [.7, .7, .7, .3]
         self.head.lnks[1]['name'] = 'tbm_cutter_head'
         self.head.lnks[1]['loc_pos'] = np.array([0, 0, 0])
         self.head.lnks[1]['meshfile'] = os.path.join(this_dir, 'meshes', 'tbm_cutter_head.stl')

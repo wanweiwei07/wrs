@@ -8,46 +8,57 @@ import math
 import pickle
 import opt_ik
 
-base = wd.World(cam_pos=[-15, 2.624-0.275, 15], lookat_pos=[-1.726-0.35, 2.624-0.275, 5.323], auto_cam_rotate=False)
+base = wd.World(cam_pos=[15, 2.624-0.275+5, 15], lookat_pos=[-1.726-0.35, 2.624-0.275, 5.323], auto_cam_rotate=False)
 mcn_s = mcn.TBM()
-mcn_s.fk(np.array([math.pi/60]))
-mcn_s.gen_meshmodel().attach_to(base)
-rbt_s = rbt.TBMChanger(pos=np.array([-1.726-0.35, 2.624-0.275, 5.323]))
+# mcn_s.gen_meshmodel().attach_to(base)
+rbt_s = rbt.TBMChanger(pos=np.array([-1.726-0.35, 2.624-0.275, 5.323+.35]), rotmat=rm.rotmat_from_euler(-math.pi/2,0,0))
 # rbt_s.gen_meshmodel(toggle_tcpcs=True).attach_to(base)
 ik_s = opt_ik.OptIK(rbt_s, component_name='arm', obstacle_list=[])
 # base.run()
-for cutter in mcn_s.cutters['0.75']:
-    tgt_pos = cutter.pos
-    tgt_rotmat = rm.rotmat_from_euler(math.pi/2, 0, 0).dot(cutter.rotmat)
-    gm.gen_frame(pos=tgt_pos, rotmat=tgt_rotmat, thickness=.05, length=1).attach_to(base)
-    seed0 = np.zeros(6)
-    seed0[2] = math.pi / 2
-    seed0[3] = math.pi / 2
-    seed0[4] = -math.pi / 2
-    seed1 = np.zeros(6)
-    seed1[2] = -math.pi / 2
-    seed1[3] = -math.pi / 2
-    seed1[4] = -math.pi / 2
-    jnt_values, _ = ik_s.solve(tgt_pos=tgt_pos, tgt_rotmat=tgt_rotmat, seed_jnt_values= seed0)
-    if jnt_values is None:
-        jnt_values, _ = ik_s.solve(tgt_pos=tgt_pos, tgt_rotmat=tgt_rotmat, seed_jnt_values= seed1)
-    # jnt_values = rbt_s.ik(component_name='arm',
-    #                       tgt_pos=tgt_pos,
-    #                       tgt_rotmat=tgt_rotmat,
-    #                       max_niter=1000,
-    #                       toggle_debug=False,
-    #                       seed_jnt_values=seed0)
-    # if jnt_values is None:
-    #     jnt_values = rbt_s.ik(component_name='arm',
-    #                           tgt_pos=tgt_pos,
-    #                           tgt_rotmat=tgt_rotmat,
-    #                           max_niter=1000,
-    #                           toggle_debug=False,
-    #                           seed_jnt_values=seed1)
-    if jnt_values is None:
-        continue
-    rbt_s.fk(component_name="arm", jnt_values=jnt_values)
-    rbt_s.gen_meshmodel(toggle_tcpcs=True).attach_to(base)
+for col_key in mcn_s.cutters.keys():
+# for col_key in ['10.5']:
+    print(col_key)
+    angle = float(col_key)/12*math.pi*2
+    for rot in [angle-math.pi/7, angle-math.pi/8, angle-math.pi/5]:
+    # for rot in [angle-math.pi/5]:
+        mcn_s.fk(np.array([rot]))
+        for cutter in mcn_s.cutters[col_key]:
+            tgt_pos = cutter.pos
+            tgt_rotmat = rm.rotmat_from_euler(math.pi/2, 0, 0).dot(cutter.rotmat)
+            # gm.gen_frame(pos=tgt_pos, rotmat=tgt_rotmat, thickness=.05, length=1).attach_to(base)
+            seed0 = np.zeros(6)
+            seed0[2] = math.pi / 2
+            seed0[3] = math.pi / 2
+            seed0[4] = -math.pi / 2
+            seed1 = np.zeros(6)
+            seed1[2] = -math.pi / 2
+            seed1[3] = -math.pi / 2
+            seed1[4] = -math.pi / 2
+            # jnt_values, _ = ik_s.solve(tgt_pos=tgt_pos, tgt_rotmat=tgt_rotmat, seed_jnt_values= seed0)
+            # if jnt_values is None:
+            #     jnt_values, _ = ik_s.solve(tgt_pos=tgt_pos, tgt_rotmat=tgt_rotmat, seed_jnt_values= seed1)
+            jnt_values = rbt_s.ik(component_name='arm',
+                                  tgt_pos=tgt_pos,
+                                  tgt_rotmat=tgt_rotmat,
+                                  max_niter=1000,
+                                  toggle_debug=False,
+                                  seed_jnt_values=seed0,
+                                  local_minima='randomrestart')
+            if jnt_values is None:
+                jnt_values = rbt_s.ik(component_name='arm',
+                                      tgt_pos=tgt_pos,
+                                      tgt_rotmat=tgt_rotmat,
+                                      max_niter=1000,
+                                      toggle_debug=False,
+                                      seed_jnt_values=seed1,
+                                      local_minima='randomrestart')
+            if jnt_values is None:
+                continue
+            cutter.lnks[1]['rgba']=[0,1,0,1]
+            # rbt_s.fk(component_name="arm", jnt_values=jnt_values)
+            # rbt_s.gen_meshmodel(toggle_tcpcs=True).attach_to(base)
+mcn_s.fk(np.array([0]))
+mcn_s.gen_meshmodel().attach_to(base)
 base.run()
 
 # solvable = []

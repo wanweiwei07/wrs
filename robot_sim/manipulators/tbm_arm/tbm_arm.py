@@ -19,7 +19,7 @@ class TBMArm(mi.ManipulatorInterface):
         # self.jlc.jnts[1]['motion_rng'] = [-.1, 1.25]
         self.jlc.jnts[1]['loc_pos'] = np.array([0, 0, 0.346])
         self.jlc.jnts[1]['loc_motionax'] = np.array([0, 0, 1])
-        self.jlc.jnts[1]['motion_rng'] = [-math.radians(20), math.radians(20)]
+        self.jlc.jnts[1]['motion_rng'] = [-math.radians(60), math.radians(60)]
         self.jlc.jnts[2]['loc_pos'] = np.array([0.645, .0, .0])
         self.jlc.jnts[2]['loc_motionax'] = np.array([1, 0, 0])
         # self.jlc.jnts[2]['motion_rng'] = [-2*math.pi, 2*math.pi]
