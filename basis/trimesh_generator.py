@@ -505,6 +505,24 @@ def extract_face_center_and_normal(objtrm, face_id_list, offset_pos=np.zeros(3),
     else:
         return seed_center_pos_array, seed_normal_array
 
+def mesh_from_xgrid(xgrid, vertices):
+    xg0, xg1 = xgrid
+    nrow = xg0.shape[0]
+    ncol = xg0.shape[1]
+    print(nrow, ncol)
+    print(xg1.shape)
+    faces = np.empty((0, 3))
+    for i in range(nrow-1):
+        urgt_pnt0 = np.arange(i*ncol, i*ncol+ncol-1).T
+        urgt_pnt1 = np.arange(i*ncol+1+ncol, i*ncol+ncol+ncol).T
+        urgt_pnt2 = np.arange(i*ncol+1, i*ncol+ncol).T
+        faces = np.vstack((faces, np.column_stack((urgt_pnt0, urgt_pnt1, urgt_pnt2))))
+        blft_pnt0 = np.arange(i*ncol, i*ncol+ncol-1).T
+        blft_pnt1 = np.arange(i*ncol+ncol, i*ncol+ncol+ncol-1).T
+        blft_pnt2 = np.arange(i*ncol+1+ncol, i*ncol+ncol+ncol).T
+        faces = np.vstack((faces, np.column_stack((blft_pnt0, blft_pnt1, blft_pnt2))))
+    return trm.Trimesh(vertices=vertices,faces=faces)
+
 
 if __name__ == "__main__":
     import visualization.panda.world as wd
