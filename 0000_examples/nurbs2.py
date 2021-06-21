@@ -27,7 +27,7 @@ for id, p in enumerate(points.tolist()):
 rotmat_uv = rm.rotmat_from_euler(0, math.pi/2, 0)
 sampled_points = rotmat_uv.dot(np.array(sampled_points).T).T
 surface = rbfs.RBFSurface(sampled_points[:, :2], sampled_points[:,2])
-surface_gm = surface.get_mesh()
+surface_gm = surface.get_gometricmodel()
 surface_gm.set_rotmat(rotmat_uv.T)
 surface_gm.attach_to(base)
 base.run()

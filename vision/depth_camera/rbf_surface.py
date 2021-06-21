@@ -56,7 +56,10 @@ class RBFSurface(object):
         self._surface_trm = tg.mesh_from_xgrid(xgrid, vertices)
         self._surface_gm = gm.GeometricModel(self._surface_trm, btwosided=True)
 
-    def get_mesh(self, rgba=[.7, .7, .3, 1]):
+    def get_gometricmodel(self, rgba=[.7, .7, .3, 1]):
         return_gm = self._surface_gm.copy()
         return_gm.set_rgba(rgba)
         return return_gm
+
+    def get_trimesh(self):
+        return self._surface_trm
