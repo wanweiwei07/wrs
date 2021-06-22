@@ -77,7 +77,7 @@ def rotmat_from_normal(surfacenormal):
     '''
     rotmat = np.eye(3, 3)
     rotmat[:, 2] = unit_vector(surfacenormal)
-    rotmat[:, 0] = orthogonal_vector(rotmat[:, 2], toggleunit=True)
+    rotmat[:, 0] = orthogonal_vector(rotmat[:, 2], toggle_unit=True)
     rotmat[:, 1] = np.cross(rotmat[:, 2], rotmat[:, 0])
     return rotmat
 
@@ -99,7 +99,7 @@ def rotmat_from_normalandpoints(facetnormal, facetfirstpoint, facetsecondpoint):
     rotmat[:, 0] = unit_vector(facetsecondpoint - facetfirstpoint)
     if np.allclose(rotmat[:, 0], 0):
         wns.warn("The provided facetpoints are the same! An autocomputed vector is used instead...")
-        rotmat[:, 0] = orthogonal_vector(rotmat[:, 2], toggleunit=True)
+        rotmat[:, 0] = orthogonal_vector(rotmat[:, 2], toggle_unit=True)
     rotmat[:, 1] = np.cross(rotmat[:, 2], rotmat[:, 0])
     return rotmat
 
@@ -141,7 +141,7 @@ def rotmat_between_vectors(v1, v2):
     if np.allclose(theta, 0):
         return np.eye(3)
     if np.allclose(theta, math.pi):  # in this case, the rotation axis is arbitrary; I am using v1 for reference
-        return rotmat_from_axangle(orthogonal_vector(v1, toggleunit=True), theta)
+        return rotmat_from_axangle(orthogonal_vector(v1, toggle_unit=True), theta)
     axis = unit_vector(np.cross(v1, v2))
     return rotmat_from_axangle(axis, theta)
 
@@ -336,7 +336,7 @@ def quaternion_average(quaternionlist, bandwidth=10):
     if bandwidth is not None:
         anglelist = []
         for quaternion in quaternionlist:
-            anglelist.append([quaternion_from_axangle(quaternion)[0]])
+            anglelist.append([quaternion_to_axangle(quaternion)[0]])
         mt = cluster.MeanShift(bandwidth=bandwidth)
         quaternionarray = quaternionarray[np.where(mt.fit(anglelist).labels_ == 0)]
     nquat = quaternionarray.shape[0]
@@ -380,7 +380,7 @@ def skewsymmetric(posvec):
                      [-posvec[1], posvec[0], 0]])
 
 
-def orthogonal_vector(basevec, toggleunit=True):
+def orthogonal_vector(basevec, toggle_unit=True):
     """
     given a vector np.array([a,b,c]),
     this function computes an orthogonal one using np.array([b-c, -a+c, a-c])
@@ -393,7 +393,7 @@ def orthogonal_vector(basevec, toggleunit=True):
     a = basevec[0]
     b = basevec[1]
     c = basevec[2]
-    if toggleunit:
+    if toggle_unit:
         return unit_vector(np.array([b - c, -a + c, a - b]))
     else:
         return np.array([b - c, -a + c, a - b])
