@@ -195,6 +195,7 @@ def homomat_from_posrot(pos=np.zeros(3), rot=np.eye(3)):
     homomat[:3, 3] = pos
     return homomat
 
+
 def homomat_from_pos_axanglevec(pos=np.zeros(3), axangle=np.ones(3)):
     """
     build a 4x4 nparray homogeneous matrix
@@ -296,13 +297,14 @@ def interplate_pos_rotmat_around_circle(circle_center_pos,
     :return:
     """
     vec = orthogonal_vector(circle_ax)
-    granularity_radius = granularity/radius
-    nval = math.ceil(math.pi*2 / granularity_radius)
+    granularity_radius = granularity / radius
+    nval = math.ceil(math.pi * 2 / granularity_radius)
     rotmat_list = rotmat_slerp(start_rotmat, end_rotmat, nval)
     pos_list = []
-    for angle in np.linspace(0, math.pi*2, nval).tolist():
-        pos_list.append(rotmat_from_axangle(circle_ax, angle).dot(vec*radius)+circle_center_pos)
+    for angle in np.linspace(0, math.pi * 2, nval).tolist():
+        pos_list.append(rotmat_from_axangle(circle_ax, angle).dot(vec * radius) + circle_center_pos)
     return pos_list, rotmat_list
+
 
 # quaternion
 def quaternion_from_axangle(angle, axis):
@@ -474,6 +476,7 @@ def angle_between_vectors(v1, v2):
         return None
     return np.arccos(np.clip(np.dot(v1_u, v2_u), -1.0, 1.0))
 
+
 def angle_between_2d_vectors(v1, v2):
     """
     return the angle from v1 to v2, with signs
@@ -483,7 +486,7 @@ def angle_between_2d_vectors(v1, v2):
     author: weiwei
     date: 20210530
     """
-    return math.atan2(v2[1]*v1[0]-v2[0]*v1[1], v2[0]*v1[0]+v2[1]*v1[1])
+    return math.atan2(v2[1] * v1[0] - v2[0] * v1[1], v2[0] * v1[0] + v2[1] * v1[1])
 
 
 def deltaw_between_rotmat(rotmati, rotmatj):
@@ -652,6 +655,26 @@ def compute_pca(nparray):
     return pcv, pcaxmat
 
 
+def fit_plane(points):
+    """
+    :param points: nx3 nparray
+    :return:
+    """
+    plane_center = points.mean(axis=0)
+    result = np.linalg.svd(points - plane_center)
+    plane_normal = unit_vector(np.cross(result[2][0], result[2][1]))
+    return plane_center, plane_normal
+
+
+def project_to_plane(point, plane_center, plane_normal):
+    dist = abs((point - plane_center).dot(plane_normal))
+    print((point - plane_center).dot(plane_normal))
+    if (point - plane_center).dot(plane_normal) < 0:
+        plane_normal = - plane_normal
+    projected_point = point - dist * plane_normal
+    return projected_point
+
+
 def points_obb(pointsarray, toggledebug=False):
     """
     applicable to both 2d and 3d pointsarray
@@ -721,9 +744,10 @@ def random_rgba(toggle_alpha_random=False):
     :return: 
     """
     if not toggle_alpha_random:
-        return np.random.random_sample(3).tolist()+[1]
+        return np.random.random_sample(3).tolist() + [1]
     else:
         return np.random.random_sample(4).tolist()
+
 
 def get_rgba_from_cmap(id):
     """
@@ -735,7 +759,8 @@ def get_rgba_from_cmap(id):
     """
     cm_name = 'tab20'
     cm = plt.get_cmap(cm_name)
-    return cm(id%20)
+    return cm(id % 20)
+
 
 # The following code is from Gohlke
 #
@@ -2411,10 +2436,11 @@ def _unit_vector(data, axis=None, out=None):
     if out is None:
         return data
 
+
 if __name__ == '__main__':
-    start_pos = np.array([1,0,0])
+    start_pos = np.array([1, 0, 0])
     start_rotmat = np.eye(3)
-    goal_pos = np.array([2,0,0])
+    goal_pos = np.array([2, 0, 0])
     goal_rotmat = np.eye(3)
-    pos_list, rotmat_list = interplate_pos_rotmat(start_pos,start_rotmat, goal_pos,goal_rotmat, granularity=3)
+    pos_list, rotmat_list = interplate_pos_rotmat(start_pos, start_rotmat, goal_pos, goal_rotmat, granularity=3)
     print(pos_list, rotmat_list)

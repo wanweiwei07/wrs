@@ -342,9 +342,10 @@ class GeometricModel(StaticGeometricModel):
     def set_transparency(self, attribute):
         return self._objpdnp.setTransparency(attribute)
 
-    def sample_surface(self, radius=0.005, nsample=None):
+    def sample_surface(self, radius=0.005, nsample=None, toggle_option=None):
         """
         :param raidus:
+        :param toggle_option; 'point_face_ids', 'point_normals', None
         :return:
         author: weiwei
         date: 20191228
@@ -356,7 +357,14 @@ class GeometricModel(StaticGeometricModel):
         points, face_ids = self.objtrm.sample_surface(nsample, radius=radius, toggle_faceid=True)
         # transform
         points = rm.homomat_transform_points(self.get_homomat(), points)
-        return points, face_ids
+        if toggle_option is None:
+            return np.array(points)
+        elif toggle_option == 'point_face_ids':
+            return np.array(points), np.array(face_ids)
+        elif toggle_option == 'point_normals':
+            return np.array(points), rm.homomat_transform_points(self.get_homomat(), self.objtrm.face_normals[face_ids])
+        else:
+            print("toggle_option must be None, point_face_ids, or point_nromals")
 
     def copy(self):
         return copy.deepcopy(self)
