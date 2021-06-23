@@ -15,7 +15,7 @@ bowl_model.attach_to(base)
 
 pn_direction = np.array([0, 0, -1])
 
-bowl_samples, bowl_sample_normals = bowl_model.sample_surface(toggle_option='point_normals', radius=.002)
+bowl_samples, bowl_sample_normals = bowl_model.sample_surface(toggle_option='normals', radius=.002)
 selection = bowl_sample_normals.dot(-pn_direction)>.1
 bowl_samples = bowl_samples[selection]
 bowl_sample_normals=bowl_sample_normals[selection]

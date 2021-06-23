@@ -342,10 +342,10 @@ class GeometricModel(StaticGeometricModel):
     def set_transparency(self, attribute):
         return self._objpdnp.setTransparency(attribute)
 
-    def sample_surface(self, radius=0.005, nsample=None, toggle_option=None):
+    def sample_surface(self, radius=0.005, nsample=None, toggle_option='face_ids'):
         """
         :param raidus:
-        :param toggle_option; 'point_face_ids', 'point_normals', None
+        :param toggle_option; 'face_ids', 'normals', None
         :return:
         author: weiwei
         date: 20191228

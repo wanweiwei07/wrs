@@ -19,9 +19,9 @@ def plan_contact_pairs(objcm,
     author: weiwei
     date: 20190805, 20210504
     """
-    contact_points, face_ids = objcm.sample_surface(nsample=max_samples,
-                                                    radius=min_dist_between_sampled_contact_points / 2)
-    contact_normals = objcm.objtrm.face_normals[face_ids]
+    contact_points, contact_normals = objcm.sample_surface(nsample=max_samples,
+                                                           radius=min_dist_between_sampled_contact_points / 2,
+                                                           toggle_option='normals')
     contact_pairs = []
     tree = cKDTree(contact_points)
     near_history = np.array([0] * len(contact_points), dtype=bool)
