@@ -359,9 +359,9 @@ class GeometricModel(StaticGeometricModel):
         points = rm.homomat_transform_points(self.get_homomat(), points)
         if toggle_option is None:
             return np.array(points)
-        elif toggle_option == 'point_face_ids':
+        elif toggle_option == 'face_ids':
             return np.array(points), np.array(face_ids)
-        elif toggle_option == 'point_normals':
+        elif toggle_option == 'normals':
             return np.array(points), rm.homomat_transform_points(self.get_homomat(), self.objtrm.face_normals[face_ids])
         else:
             print("toggle_option must be None, point_face_ids, or point_nromals")
@@ -926,8 +926,8 @@ def gen_frame_box(extent=[.02, .02, .02], homomat=np.eye(4), rgba=[0, 0, 0, 1], 
 
 def gen_surface(surface_callback, rng, granularity=.01):
     surface_trm = trihelper.gen_surface(surface_callback, rng, granularity)
-    surface_sgm = StaticGeometricModel(surface_trm)
-    return surface_sgm
+    surface_gm = GeometricModel(surface_trm, btwosided=True)
+    return surface_gm
 
 
 if __name__ == "__main__":

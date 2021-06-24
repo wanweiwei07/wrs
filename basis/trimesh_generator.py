@@ -524,11 +524,11 @@ def gen_surface(surface_callback, rng, granularity=.01):
             urgt_pnt0 = np.arange(i * ncol, i * ncol + ncol - 1).T
             urgt_pnt1 = np.arange(i * ncol + 1 + ncol, i * ncol + ncol + ncol).T
             urgt_pnt2 = np.arange(i * ncol + 1, i * ncol + ncol).T
-            faces = np.vstack((faces, np.column_stack((urgt_pnt0, urgt_pnt1, urgt_pnt2))))
+            faces = np.vstack((faces, np.column_stack((urgt_pnt0, urgt_pnt2, urgt_pnt1))))
             blft_pnt0 = np.arange(i * ncol, i * ncol + ncol - 1).T
             blft_pnt1 = np.arange(i * ncol + ncol, i * ncol + ncol + ncol - 1).T
             blft_pnt2 = np.arange(i * ncol + 1 + ncol, i * ncol + ncol + ncol).T
-            faces = np.vstack((faces, np.column_stack((blft_pnt0, blft_pnt1, blft_pnt2))))
+            faces = np.vstack((faces, np.column_stack((blft_pnt0, blft_pnt2, blft_pnt1))))
         return trm.Trimesh(vertices=vertices, faces=faces)
 
     a_min, a_max = rng[0]
