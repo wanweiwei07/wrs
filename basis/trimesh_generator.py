@@ -351,7 +351,7 @@ def gen_dashtorus(axis=np.array([1, 0, 0]),
     author: weiwei
     date: 20200602
     """
-    assert(0 <= portion <=1)
+    assert (0 <= portion <= 1)
     solidweight = 1.6
     spaceweight = 1.07
     if not lsolid:
@@ -366,7 +366,7 @@ def gen_dashtorus(axis=np.array([1, 0, 0]),
     nsections = math.floor(portion * 2 * math.pi * radius / (lsolid + lspace))
     vertices = np.empty((0, 3))
     faces = np.empty((0, 3))
-    for i in range(0, nsections): # TODO wrap up end
+    for i in range(0, nsections):  # TODO wrap up end
         torus_sec = gen_torus(axis=axis,
                               starting_vector=rm.rotmat_from_axangle(axis, 2 * math.pi * portion / nsections * i).dot(
                                   starting_vector),
@@ -505,23 +505,43 @@ def extract_face_center_and_normal(objtrm, face_id_list, offset_pos=np.zeros(3),
     else:
         return seed_center_pos_array, seed_normal_array
 
-def mesh_from_xgrid(xgrid, vertices):
-    xg0, xg1 = xgrid
-    nrow = xg0.shape[0]
-    ncol = xg0.shape[1]
-    print(nrow, ncol)
-    print(xg1.shape)
-    faces = np.empty((0, 3))
-    for i in range(nrow-1):
-        urgt_pnt0 = np.arange(i*ncol, i*ncol+ncol-1).T
-        urgt_pnt1 = np.arange(i*ncol+1+ncol, i*ncol+ncol+ncol).T
-        urgt_pnt2 = np.arange(i*ncol+1, i*ncol+ncol).T
-        faces = np.vstack((faces, np.column_stack((urgt_pnt0, urgt_pnt1, urgt_pnt2))))
-        blft_pnt0 = np.arange(i*ncol, i*ncol+ncol-1).T
-        blft_pnt1 = np.arange(i*ncol+ncol, i*ncol+ncol+ncol-1).T
-        blft_pnt2 = np.arange(i*ncol+1+ncol, i*ncol+ncol+ncol).T
-        faces = np.vstack((faces, np.column_stack((blft_pnt0, blft_pnt1, blft_pnt2))))
-    return trm.Trimesh(vertices=vertices,faces=faces)
+
+def gen_surface(surface_callback, rng, granularity=.01):
+    """
+    :param surface_callback:
+    :param rng: [[dim0_min, dim0_max], [dim1_min, dim1_max]]
+    :return:
+    author: weiwei
+    date: 20210624
+    """
+
+    def _mesh_from_domain_grid(domain_grid, vertices):
+        domain_0, domain_1 = domain_grid
+        nrow = domain_0.shape[0]
+        ncol = domain_0.shape[1]
+        faces = np.empty((0, 3))
+        for i in range(nrow - 1):
+            urgt_pnt0 = np.arange(i * ncol, i * ncol + ncol - 1).T
+            urgt_pnt1 = np.arange(i * ncol + 1 + ncol, i * ncol + ncol + ncol).T
+            urgt_pnt2 = np.arange(i * ncol + 1, i * ncol + ncol).T
+            faces = np.vstack((faces, np.column_stack((urgt_pnt0, urgt_pnt1, urgt_pnt2))))
+            blft_pnt0 = np.arange(i * ncol, i * ncol + ncol - 1).T
+            blft_pnt1 = np.arange(i * ncol + ncol, i * ncol + ncol + ncol - 1).T
+            blft_pnt2 = np.arange(i * ncol + 1 + ncol, i * ncol + ncol + ncol).T
+            faces = np.vstack((faces, np.column_stack((blft_pnt0, blft_pnt1, blft_pnt2))))
+        return trm.Trimesh(vertices=vertices, faces=faces)
+
+    a_min, a_max = rng[0]
+    b_min, b_max = rng[1]
+    n_a = round((a_max - a_min) / granularity)
+    n_b = round((b_max - b_min) / granularity)
+    domain_grid = np.meshgrid(np.linspace(a_min, a_max, n_a, endpoint=True),
+                              np.linspace(b_min, b_max, n_b, endpoint=True))
+    domain_0, domain_1 = domain_grid
+    domain = np.column_stack((domain_0.ravel(), domain_1.ravel()))
+    codomain = surface_callback(domain)
+    vertices = np.column_stack((domain, codomain))
+    return _mesh_from_domain_grid(domain_grid, vertices)
 
 
 if __name__ == "__main__":

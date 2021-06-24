@@ -301,22 +301,23 @@ def pandageom_from_points(vertices, rgba_list=None, name=''):
     """
     pack the vertices into a panda3d point cloud geom
     :param vertices:
-    :param rgba_list: 1x4 nparray for all points, or a list of 1x4 nparray for each point (NOT USED, SEE TODO)
+    :param rgba_list: a list with a single 1x4 nparray or with len(vertices) 1x4 nparray
     :param name:
     :return:
     author: weiwei
     date: 20170328, 20210116
     """
-    # TODO unable to set color -> data format problem
+    if type(rgba_list) is not list:
+        raise Exception('rgba\_list must be a list!')
     if rgba_list is None:
         # default
         vertex_rgbas = np.array([[0, 0, 0, 255], ]*len(vertices), dtype=np.uint8)
-    elif isinstance(rgba_list, np.ndarray):
-        vertex_rgbas = np.tile(rgba_list*255, (len(vertices),1), dtype=np.uint8)
-    elif isinstance(rgba_list, list):
+    elif len(rgba_list) == 1:
+        vertex_rgbas = np.tile(rgba_list[0]*255, (len(vertices),1), dtype=np.uint8)
+    elif len(rgba_list) == len(vertices):
         vertex_rgbas = (np.array(rgba_list)*255).astype(np.uint8)
     else:
-        raise ValueError('rgba_list must be None, np.ndarray, or list!')
+        raise ValueError('rgba_list must be a list of one or len(vertices) 1x4 nparray!')
     vertformat = GeomVertexFormat()
     arrayformat = GeomVertexArrayFormat()
     arrayformat.addColumn(InternalName.getVertex(), 3, GeomEnums.NTFloat32, GeomEnums.CPoint)
@@ -340,7 +341,7 @@ def nodepath_from_points(vertices, rgba_list=None, name=''):
     """
     pack the vertices into a panda3d point cloud nodepath
     :param vertices:
-    :param rgba_list: 1x4 nparray for all points, or nx4 nparray for each point
+    :param rgba_list: a list with a single 1x4 nparray or with len(vertices) 1x4 nparray
     :param name:
     :return:
     author: weiwei

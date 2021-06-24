@@ -56,7 +56,7 @@ class StaticGeometricModel(object):
                     objpdnp_raw = da.nodepath_from_points(self._objtrm.vertices)
                 elif initor.shape[1] == 6:
                     self._objtrm = da.trm.Trimesh(initor[:, :3])
-                    objpdnp_raw = da.nodepath_from_points(self._objtrm.vertices, initor[:, 3:])
+                    objpdnp_raw = gen_pointcloud(self._objtrm.vertices, initor[:, 3:].tolist())
                 else:
                     # TODO depth UV?
                     raise NotImplementedError
@@ -812,7 +812,7 @@ def gen_circarrow(axis=np.array([1, 0, 0]),
     return circarrow_sgm
 
 
-def gen_pointcloud(points, rgbas=[0, 0, 0, .7], pntsize=5):
+def gen_pointcloud(points, rgbas=[0, 0, 0, .7], pntsize=3):
     """
     do not use this raw function directly
     use environment.collisionmodel to call it
@@ -821,13 +821,13 @@ def gen_pointcloud(points, rgbas=[0, 0, 0, .7], pntsize=5):
     :param rgbas: None; Specify for each point; Specify a unified color
     :return:
     """
-    pointcloud_nodepath = da.nodepath_from_points(points, rgbas)
+    pointcloud_nodepath = da.nodepath_from_points(points, [np.array(rgbas)])
     pointcloud_nodepath.setRenderMode(RenderModeAttrib.MPoint, pntsize)
     pointcloud_sgm = StaticGeometricModel(pointcloud_nodepath)
     return pointcloud_sgm
 
 
-def gen_surface(verts, faces, rgba=[1, 0, 0, 1]):
+def gen_submesh(verts, faces, rgba=[1, 0, 0, 1]):
     """
     TODO 20201202: replace pandanode with trimesh
     :param verts: np.array([[v00, v01, v02], [v10, v11, v12], ...]
@@ -860,7 +860,6 @@ def gen_surface(verts, faces, rgba=[1, 0, 0, 1]):
     surface_sgm = StaticGeometricModel(surface_nodepath)
     return surface_sgm
 
-
 def gen_polygon(verts, thickness=0.002, rgba=[0, 0, 0, .7]):
     """
     gen objmnp
@@ -881,7 +880,7 @@ def gen_polygon(verts, thickness=0.002, rgba=[0, 0, 0, .7]):
     polygon_sgm = StaticGeometricModel(polygon_nodepath)
     return polygon_sgm
 
-def gen_edged_box(extent=[.02, .02, .02], homomat=np.eye(4), rgba=[0,0,0,1], thickness=.001):
+def gen_frame_box(extent=[.02, .02, .02], homomat=np.eye(4), rgba=[0, 0, 0, 1], thickness=.001):
     """
     draw a 3D box, only show edges
     :param extent:
@@ -924,6 +923,12 @@ def gen_edged_box(extent=[.02, .02, .02], homomat=np.eye(4), rgba=[0,0,0,1], thi
     lsnp.setLightOff()
     ls_sgm = StaticGeometricModel(lsnp)
     return ls_sgm
+
+def gen_surface(surface_callback, rng, granularity=.01):
+    surface_trm = trihelper.gen_surface(surface_callback, rng, granularity)
+    surface_sgm = StaticGeometricModel(surface_trm)
+    return surface_sgm
+
 
 if __name__ == "__main__":
     import os
@@ -988,6 +993,6 @@ if __name__ == "__main__":
     pos= np.array([.3,0,0])
     rotmat = rm.rotmat_from_euler(math.pi/6,0,0)
     homomat = rm.homomat_from_posrot(pos, rotmat)
-    gen_edged_box([.1,.2,.3], homomat).attach_to(base)
+    gen_frame_box([.1, .2, .3], homomat).attach_to(base)
 
     base.run()

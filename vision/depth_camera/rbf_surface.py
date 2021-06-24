@@ -53,7 +53,7 @@ class RBFSurface(object):
         if toggle_debug:
             for p in vertices:
                 gm.gen_sphere(p, rgba=[0, 1, 0, 1], radius=.0005).attach_to(base)
-        self._surface_trm = tg.mesh_from_xgrid(xgrid, vertices)
+        self._surface_trm = tg.mesh_from_domain_grid(xgrid, vertices)
         self._surface_gm = gm.GeometricModel(self._surface_trm, btwosided=True)
 
     def get_gometricmodel(self, rgba=[.7, .7, .3, 1]):
