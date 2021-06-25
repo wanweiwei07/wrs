@@ -6,6 +6,7 @@ import basis.robot_math as rm
 import math
 from scipy.spatial import cKDTree
 import vision.depth_camera.surface.quadrantic_surface as qs
+import vision.depth_camera.surface.gaussian_surface as gs
 
 base = wd.World(cam_pos=np.array([-.2,-.7,.42]), lookat_pos=np.array([0,0,0]))
 # gm.gen_frame().attach_to(base)
@@ -65,7 +66,7 @@ n=10
 for tick in range(1, n+1):
     t_npt = cpt+direction*.05/n
     gm.gen_arrow(spos=t_npt, epos=t_npt+last_normal*.015, thickness=0.001).attach_to(base)
-    nearby_sample_ids = tree.query_ball_point(t_npt, .005)
+    nearby_sample_ids = tree.query_ball_point(t_npt, .03)
     nearby_samples = bowl_samples[nearby_sample_ids]
     gm.GeometricModel(nearby_samples).attach_to(base)
     plane_center, plane_normal = rm.fit_plane(nearby_samples)
@@ -73,8 +74,8 @@ for tick in range(1, n+1):
     plane_tmp = np.cross(plane_normal, plane_tangential)
     plane_rotmat = np.column_stack((plane_tangential, plane_tmp, plane_normal))
     nearby_samples_on_xy = plane_rotmat.T.dot((nearby_samples-plane_center).T).T
-    gm.GeometricModel(nearby_samples_on_xy).attach_to(base)
     surface = qs.QuadraticSurface(nearby_samples_on_xy[:, :2], nearby_samples_on_xy[:,2])
+    # surface = gs.MixedGaussianSurface(nearby_samples_on_xy[:, :2], nearby_samples_on_xy[:,2],n_mix=1)
     t_npt_on_xy = plane_rotmat.T.dot(t_npt-plane_center)
     projected_t_npt_z_on_xy = surface.get_zdata(np.array([t_npt_on_xy[:2]]))
     projected_t_npt_on_xy = np.array([t_npt_on_xy[0], t_npt_on_xy[1], projected_t_npt_z_on_xy[0]])
