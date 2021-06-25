@@ -541,6 +541,25 @@ def gen_dumbbell(spos=np.array([0, 0, 0]),
     return dumbbell_sgm
 
 
+def gen_cone(spos=np.array([0, 0, 0]),
+             epos=np.array([0.1, 0, 0]),
+             rgba=np.array([.7, .7, .7, .3]),
+             radius=0.005,
+             sections=8):
+    """
+    :param spos:
+    :param epos:
+    :param radius:
+    :param sections:
+    :return:
+    author: weiwei
+    date: 20210625
+    """
+    cone_trm = trihelper.gen_cone(spos=spos, epos=epos, radius=radius, sections=sections)
+    cone_sgm = GeometricModel(cone_trm)
+    cone_sgm.set_rgba(rgba=rgba)
+    return cone_sgm
+
 def gen_arrow(spos=np.array([0, 0, 0]),
               epos=np.array([.1, 0, 0]),
               thickness=.005, rgba=[1, 0, 0, 1],

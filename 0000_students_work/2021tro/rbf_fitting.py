@@ -3,8 +3,8 @@ import modeling.geometric_model as gm
 import visualization.panda.world as wd
 import basis.robot_math as rm
 import math
-import vision.depth_camera.rbf_surface as rbfs
-import vision.depth_camera.gaussian_surface as gs
+# import vision.depth_camera.surface.gaussian_surface as gs
+import vision.depth_camera.surface.quadrantic_surface as qs
 
 base = wd.World(cam_pos=np.array([.5,.1,.3]), lookat_pos=np.array([0,0,0.05]))
 gm.gen_frame().attach_to(base)
@@ -23,7 +23,8 @@ for id, p in enumerate(points.tolist()):
 rotmat_uv = rm.rotmat_from_euler(0, math.pi/2, 0)
 sampled_points = rotmat_uv.dot(np.array(sampled_points).T).T
 # surface = rbfs.RBFSurface(sampled_points[:, :2], sampled_points[:,2])
-surface = gs.MixedGaussianSurface(sampled_points[:, :2], sampled_points[:,2], n_mix=1)
+# surface = gs.MixedGaussianSurface(sampled_points[:, :2], sampled_points[:,2], n_mix=1)
+surface = qs.QuadraticSurface(sampled_points[:, :2], sampled_points[:,2])
 surface_gm = surface.get_gometricmodel()
 surface_gm.set_rotmat(rotmat_uv.T)
 surface_gm.attach_to(base)

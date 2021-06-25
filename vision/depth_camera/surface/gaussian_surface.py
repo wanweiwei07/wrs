@@ -50,7 +50,7 @@ class MixedGaussianSurface(sfc.Surface):
 
 if __name__ == '__main__':
     import numpy as np
-    from scipy.optimize import curve_fit
+    # from scipy.optimize import curve_fit
     import matplotlib.pyplot as plt
     # The two-dimensional domain of the fit.
     xmin, xmax, nx = -5, 4, 75
