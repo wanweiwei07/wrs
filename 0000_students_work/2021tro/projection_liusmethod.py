@@ -60,8 +60,7 @@ gm.gen_linesegs(new_line_segs).attach_to(base)
 t_cpt = cpt
 last_normal = cnrml
 direction = rotmat.dot(pt_direction)
-tmp_direction = rotmat.dot(tmp_direction)
-n=3
+n=10
 for tick in range(1, n+1):
     t_npt = cpt+direction*.05/n
     gm.gen_arrow(spos=t_npt, epos=t_npt+last_normal*.015, thickness=0.001).attach_to(base)
@@ -72,23 +71,24 @@ for tick in range(1, n+1):
     plane_tangential = rm.orthogonal_vector(plane_normal)
     plane_tmp = np.cross(plane_normal, plane_tangential)
     plane_rotmat = np.column_stack((plane_tangential, plane_tmp, plane_normal))
+    # nearby_samples_on_xy = plane_rotmat.T.dot(nearby_samples)
     homomat = np.eye(4)
     homomat[:3,:3]=plane_rotmat
     homomat[:3,3]=plane_center
-    twod_plane = gm.gen_box(np.array([.2, .2, .001]), homomat=homomat, rgba=[.5,.7,1,.3]).attach_to(base)
+    twod_plane = gm.gen_box(np.array([.2, .2, .001]), homomat=homomat, rgba=[.5,.7,1,.1]).attach_to(base)
     projected_point = rm.project_to_plane(t_npt, plane_center, plane_normal)
-    # gm.gen_stick(t_npt, projected_point, thickness=.002).attach_to(base)
     new_normal = rm.unit_vector(t_npt-projected_point)
     gm.gen_arrow(spos=projected_point, epos=projected_point+new_normal*.015, thickness=0.001).attach_to(base)
-    angle = rm.angle_between_vectors(last_normal, new_normal)
-    vec = rm.unit_vector(np.cross(last_normal, new_normal))
+    angle = rm.angle_between_vectors(-pn_direction, new_normal)
+    vec = np.cross(-pn_direction, new_normal)
     new_rotmat = rm.rotmat_from_axangle(vec, angle)
-    direction = new_rotmat.dot(direction)
-    tmp_direction = new_rotmat.dot(tmp_direction)
+    direction = new_rotmat.dot(pt_direction)
+    new_tmp_direction = new_rotmat.dot(tmp_direction)
+    new_line_segs = [[cpt, projected_point]]
+    gm.gen_linesegs(new_line_segs, rgba=[1,.6,0,1]).attach_to(base)
     cpt=projected_point
-    new_line_segs = [[cpt, cpt+direction*(.05-tick*.05/n)],
-                     [cpt+direction*(.05-tick*.05/n), cpt+direction*(.05-tick*.05/n)+tmp_direction*.05]]
-    gm.gen_linesegs(new_line_segs).attach_to(base)
+    # new_line_segs = [[cpt, cpt+direction*(.05-tick*.05/n)],
+    #                  [cpt+direction*(.05-tick*.05/n), cpt+direction*(.05-tick*.05/n)+new_tmp_direction*.05]]
     last_normal = new_normal
     # break
 
