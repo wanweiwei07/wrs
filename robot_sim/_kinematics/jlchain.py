@@ -384,7 +384,7 @@ class JLChain(object):
         if tcp_loc_pos is None:
             tcp_loc_pos = self.tcp_loc_pos
         if tcp_loc_rotmat is None:
-            tcp_loc_rotmat = self.tcp_loc_pos
+            tcp_loc_rotmat = self.tcp_loc_rotmat
         tcp_gloc_pos = self.jnts[tcp_jntid]['gl_posq'] + self.jnts[tcp_jntid]['gl_rotmatq'].dot(tcp_loc_pos)
         tcp_gloc_rotmat = self.jnts[tcp_jntid]['gl_rotmatq'].dot(tcp_loc_rotmat)
         loc_pos, loc_romat = rm.rel_pose(tcp_gloc_pos, tcp_gloc_rotmat, gl_pos, gl_rotmat)
