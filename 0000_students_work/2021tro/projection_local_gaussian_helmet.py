@@ -23,8 +23,8 @@ bowl_model.attach_to(base)
 # base.run()
 
 tree = cKDTree(bowl_samples)
-point_id = 5000
-nearby_sample_ids = tree.query_ball_point(bowl_samples[point_id, :], .05)
+point_id = 7000
+nearby_sample_ids = tree.query_ball_point(bowl_samples[point_id, :], .01)
 nearby_samples = bowl_samples[nearby_sample_ids]
 colors = np.tile(np.array([1, 0, 0,1]), (len(nearby_samples),1))
 print(nearby_samples.shape)
@@ -34,7 +34,7 @@ gm.GeometricModel(nearby_samples_withcolor).attach_to(base)
 plane_center, plane_normal = rm.fit_plane(nearby_samples)
 plane_tangential = rm.orthogonal_vector(plane_normal)
 plane_tmp = np.cross(plane_normal, plane_tangential)
-plane_rotmat = np.column_stack((plane_tmp, plane_tangential, -plane_normal))
+plane_rotmat = np.column_stack((plane_tangential, plane_tmp, plane_normal))
 nearby_samples_on_xy = plane_rotmat.T.dot((nearby_samples - plane_center).T).T
 surface = gs.MixedGaussianSurface(nearby_samples_on_xy[:, :2], nearby_samples_on_xy[:, 2], n_mix=1)
 # t_npt_on_xy = plane_rotmat.T.dot(t_npt - plane_center)

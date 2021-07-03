@@ -2,12 +2,14 @@ import numpy as np
 import vision.depth_camera.surface._surface as sfc
 from scipy.optimize import curve_fit
 
+
 class MixedGaussianSurface(sfc.Surface):
 
     def __init__(self,
                  xydata,
                  zdata,
-                 n_mix = 4):
+                 n_mix=1,
+                 init_guess=[0, 0, .005, .005, .01]):
         """
         :param xydata:
         :param zdata:
@@ -22,7 +24,7 @@ class MixedGaussianSurface(sfc.Surface):
         date: 20210624
         """
         super().__init__(xydata, zdata)
-        guess_prms = np.array([[0, 0, .1, .1, 1]]*n_mix)
+        guess_prms = np.array([init_guess] * n_mix)
         self.popt, pcov = curve_fit(MixedGaussianSurface.mixed_gaussian, xydata, zdata, guess_prms.ravel())
 
     @staticmethod
@@ -36,30 +38,37 @@ class MixedGaussianSurface(sfc.Surface):
         author: weiwei
         date; 20210624
         """
+
         def gaussian(xdata, ydata, xmean, ymean, xdelta, ydelta, attitude):
-            return attitude * np.exp(-((xdata-xmean)/xdelta)**2 -((ydata-ymean)/ydelta)**2)
+            return attitude * np.exp(-((xdata - xmean) / xdelta) ** 2 - ((ydata - ymean) / ydelta) ** 2)
 
         z = np.zeros(len(xydata))
         for single_parameters in np.array(parameters).reshape(-1, 5):
-            z += gaussian(xydata[:,0], xydata[:,1], *single_parameters)
+            z += gaussian(xydata[:, 0], xydata[:, 1], *single_parameters)
         return z
 
     def get_zdata(self, xydata):
         zdata = MixedGaussianSurface.mixed_gaussian(xydata, self.popt)
         return zdata
 
+
 if __name__ == '__main__':
     import numpy as np
     # from scipy.optimize import curve_fit
     import matplotlib.pyplot as plt
+
     # The two-dimensional domain of the fit.
     xmin, xmax, nx = -5, 4, 75
     ymin, ymax, ny = -3, 7, 150
     x, y = np.linspace(xmin, xmax, nx), np.linspace(ymin, ymax, ny)
     X, Y = np.meshgrid(x, y)
+
+
     # Our function to fit is going to be a sum of two-dimensional Gaussians
     def gaussian(x, y, x0, y0, xalpha, yalpha, A):
-        return A * np.exp( -((x-x0)/xalpha)**2 -((y-y0)/yalpha)**2)
+        return A * np.exp(-((x - x0) / xalpha) ** 2 - ((y - y0) / yalpha) ** 2)
+
+
     # A list of the Gaussian parameters: x0, y0, xalpha, yalpha, A
     gprms = [(0, 2, 2.5, 5.4, 1.5),
              (-1, 4, 6, 2.5, 1.8),
@@ -77,11 +86,12 @@ if __name__ == '__main__':
     fig = plt.figure()
     ax = fig.gca(projection='3d')
     ax.plot_surface(X, Y, Z, cmap='plasma')
-    ax.set_zlim(0,np.max(Z)+2)
+    ax.set_zlim(0, np.max(Z) + 2)
     plt.show()
     xdata = np.vstack((X.ravel(), Y.ravel())).T
     import visualization.panda.world as wd
-    base = wd.World(cam_pos=np.array([7,7,20]), lookat_pos=np.array([0,0,0.05]))
+
+    base = wd.World(cam_pos=np.array([7, 7, 20]), lookat_pos=np.array([0, 0, 0.05]))
     surface = MixedGaussianSurface(xdata, Z.ravel())
     surface_gm = surface.get_gometricmodel()
     surface_gm.attach_to(base)
