@@ -22,7 +22,7 @@ class MixedGaussianSurface(sfc.Surface):
         date: 20210624
         """
         super().__init__(xydata, zdata)
-        guess_prms = np.array([[0, 0, 1, 1, 1]]*n_mix)
+        guess_prms = np.array([[0, 0, .1, .1, 1]]*n_mix)
         self.popt, pcov = curve_fit(MixedGaussianSurface.mixed_gaussian, xydata, zdata, guess_prms.ravel())
 
     @staticmethod

@@ -54,9 +54,10 @@ class StaticGeometricModel(object):
                 if initor.shape[1] == 3:
                     self._objtrm = da.trm.Trimesh(initor)
                     objpdnp_raw = da.nodepath_from_points(self._objtrm.vertices)
-                elif initor.shape[1] == 6:
+                elif initor.shape[1] == 7:
                     self._objtrm = da.trm.Trimesh(initor[:, :3])
-                    objpdnp_raw = gen_pointcloud(self._objtrm.vertices, initor[:, 3:].tolist())
+                    objpdnp_raw = da.nodepath_from_points(self._objtrm.vertices, initor[:, 3:].tolist())
+                    objpdnp_raw.setRenderMode(RenderModeAttrib.MPoint, 3)
                 else:
                     # TODO depth UV?
                     raise NotImplementedError
@@ -831,7 +832,7 @@ def gen_circarrow(axis=np.array([1, 0, 0]),
     return circarrow_sgm
 
 
-def gen_pointcloud(points, rgbas=[0, 0, 0, .7], pntsize=3):
+def gen_pointcloud(points, rgbas=[[0, 0, 0, .7]], pntsize=3):
     """
     do not use this raw function directly
     use environment.collisionmodel to call it
@@ -840,7 +841,7 @@ def gen_pointcloud(points, rgbas=[0, 0, 0, .7], pntsize=3):
     :param rgbas: None; Specify for each point; Specify a unified color
     :return:
     """
-    pointcloud_nodepath = da.nodepath_from_points(points, [np.array(rgbas)])
+    pointcloud_nodepath = da.nodepath_from_points(points, rgbas)
     pointcloud_nodepath.setRenderMode(RenderModeAttrib.MPoint, pntsize)
     pointcloud_sgm = StaticGeometricModel(pointcloud_nodepath)
     return pointcloud_sgm

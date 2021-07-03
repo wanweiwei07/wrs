@@ -51,7 +51,7 @@ class Trimesh(object):
         :param metadata: dict, any metadata about the mesh
         :param process: bool, if True basic mesh cleanup will be done on instantiation
         :param kwargs:
-        author: Revised by weiwei
+        author: revised by weiwei
         date: 20201201
         """
         # self._data stores information about the mesh which CANNOT be regenerated.
