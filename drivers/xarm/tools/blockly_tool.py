@@ -137,7 +137,7 @@ class BlocklyTool(object):
         self._insert_to_file(self.index, '# python setup.py install')
         self._insert_to_file(self.index, '"""')
         self._insert_to_file(self.index, 'try:')
-        self._insert_to_file(self.index, '    from xarm.tools import utils')
+        self._insert_to_file(self.index, '    from xarm.tools import gaussian_surface_bug')
         self._insert_to_file(self.index, 'except:')
         self._insert_to_file(self.index, '    pass')
         self._insert_to_file(self.index, 'from xarm import version')
@@ -1657,7 +1657,7 @@ class BlocklyTool(object):
                     return '{} % 2 == 1'.format(val_a)
                 elif field == 'PRIME':
                     # 质数
-                    return 'utils.is_prime({})'.format(val_a)
+                    return 'gaussian_surface_bug.is_prime({})'.format(val_a)
                 elif field == 'WHOLE':
                     return '{} % 1 == 0'.format(val_a)
                 elif field == 'POSITIVE':

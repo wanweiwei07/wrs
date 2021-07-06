@@ -1429,7 +1429,7 @@ class BlocklyTool(object):
                     return '{} % 2 == 1'.format(val_a)
                 elif field == 'PRIME':
                     # 质数
-                    return 'utils.is_prime({})'.format(val_a)
+                    return 'gaussian_surface_bug.is_prime({})'.format(val_a)
                 elif field == 'WHOLE':
                     return '{} % 1 == 0'.format(val_a)
                 elif field == 'POSITIVE':

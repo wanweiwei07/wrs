@@ -654,6 +654,26 @@ def compute_pca(nparray):
     pcv, pcaxmat = np.linalg.eig(ca)
     return pcv, pcaxmat
 
+def transform_data_pcv(data, random_rot=True):
+    """
+    :param data:
+    :param random_rot:
+    :return:
+    author: reuishuang
+    date: 20210706
+    """
+    pcv, pcaxmat = compute_pca(data)
+    inx = sorted(range(len(pcv)), key=lambda k: pcv[k])
+    x_v = pcaxmat[:, inx[2]]
+    y_v = pcaxmat[:, inx[1]]
+    z_v = pcaxmat[:, inx[0]]
+    pcaxmat = np.asarray([y_v, x_v, -z_v]).T
+    if random_rot:
+        pcaxmat = np.dot(rotmat_from_axangle([1, 0, 0], math.radians(5)), pcaxmat)
+        pcaxmat = np.dot(rotmat_from_axangle([0, 1, 0], math.radians(5)), pcaxmat)
+        pcaxmat = np.dot(rotmat_from_axangle([0, 0, 1], math.radians(5)), pcaxmat)
+    transformed_data = np.dot(pcaxmat.T, data.T).T
+    return transformed_data, pcaxmat
 
 def fit_plane(points):
     """
