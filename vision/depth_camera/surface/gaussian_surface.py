@@ -9,7 +9,7 @@ class MixedGaussianSurface(sfc.Surface):
                  xydata,
                  zdata,
                  n_mix=1,
-                 init_guess=[0, 0, .005, .005, .01]):
+                 init_guess=[0, 0, .05, .05, .01]):
         """
         :param xydata:
         :param zdata:

@@ -22,29 +22,31 @@ bowl_model.attach_to(base)
 bowl_model.attach_to(base)
 # base.run()
 
-tree = cKDTree(bowl_samples)
-point_id = 7000
-nearby_sample_ids = tree.query_ball_point(bowl_samples[point_id, :], .01)
-nearby_samples = bowl_samples[nearby_sample_ids]
-colors = np.tile(np.array([1, 0, 0,1]), (len(nearby_samples),1))
-print(nearby_samples.shape)
-print(colors.shape)
-nearby_samples_withcolor = np.column_stack((nearby_samples, colors))
-gm.GeometricModel(nearby_samples_withcolor).attach_to(base)
-plane_center, plane_normal = rm.fit_plane(nearby_samples)
-plane_tangential = rm.orthogonal_vector(plane_normal)
-plane_tmp = np.cross(plane_normal, plane_tangential)
-plane_rotmat = np.column_stack((plane_tangential, plane_tmp, plane_normal))
-nearby_samples_on_xy = plane_rotmat.T.dot((nearby_samples - plane_center).T).T
-surface = gs.MixedGaussianSurface(nearby_samples_on_xy[:, :2], nearby_samples_on_xy[:, 2], n_mix=1)
-# t_npt_on_xy = plane_rotmat.T.dot(t_npt - plane_center)
-# projected_t_npt_z_on_xy = surface.get_zdata(np.array([t_npt_on_xy[:2]]))
-# projected_t_npt_on_xy = np.array([t_npt_on_xy[0], t_npt_on_xy[1], projected_t_npt_z_on_xy[0]])
-# projected_point = plane_rotmat.dot(projected_t_npt_on_xy) + plane_center
-surface_gm = surface.get_gometricmodel([[-.05, .05], [-.05, .05]], rgba=[.5, .7, 1, 1])
-surface_gm.set_pos(plane_center)
-surface_gm.set_rotmat(plane_rotmat)
-surface_gm.attach_to(base)
+import random
+for point_id in range(3000,10000,100):
+    tree = cKDTree(bowl_samples)
+    # point_id = random.randint(3000, 10000)
+    nearby_sample_ids = tree.query_ball_point(bowl_samples[point_id, :], .03)
+    nearby_samples = bowl_samples[nearby_sample_ids]
+    colors = np.tile(np.array([1, 0, 0,1]), (len(nearby_samples),1))
+    print(nearby_samples.shape)
+    print(colors.shape)
+    nearby_samples_withcolor = np.column_stack((nearby_samples, colors))
+    gm.GeometricModel(nearby_samples_withcolor).attach_to(base)
+    plane_center, plane_normal = rm.fit_plane(nearby_samples)
+    plane_tangential = rm.orthogonal_vector(plane_normal)
+    plane_tmp = np.cross(plane_normal, plane_tangential)
+    plane_rotmat = np.column_stack((plane_tangential, plane_tmp, plane_normal))
+    nearby_samples_on_xy = plane_rotmat.T.dot((nearby_samples - plane_center).T).T
+    surface = gs.MixedGaussianSurface(nearby_samples_on_xy[:, :2], nearby_samples_on_xy[:, 2], n_mix=1)
+    # t_npt_on_xy = plane_rotmat.T.dot(t_npt - plane_center)
+    # projected_t_npt_z_on_xy = surface.get_zdata(np.array([t_npt_on_xy[:2]]))
+    # projected_t_npt_on_xy = np.array([t_npt_on_xy[0], t_npt_on_xy[1], projected_t_npt_z_on_xy[0]])
+    # projected_point = plane_rotmat.dot(projected_t_npt_on_xy) + plane_center
+    surface_gm = surface.get_gometricmodel([[-.05, .05], [-.05, .05]], rgba=[.5, .7, 1, 1])
+    surface_gm.set_pos(plane_center)
+    surface_gm.set_rotmat(plane_rotmat)
+    surface_gm.attach_to(base)
 base.run()
 
 pn_direction = np.array([0, 0, -1])

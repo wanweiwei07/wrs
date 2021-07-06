@@ -55,14 +55,14 @@ class Surface(object):
 
     def get_gometricmodel(self,
                           rng=None,
-                          granularity=1,
+                          granularity=.01,
                           rgba=[.7, .7, .3, 1]):
         if rng is None:
             rng = [[min(self.xydata[:, 0])-.01, max(self.xydata[:, 0])+.01],
                    [min(self.xydata[:, 1])-.01, max(self.xydata[:, 1])+.01]]
         surface_trm = self._gen_surface(self.get_zdata, rng=rng, granularity=granularity)
-        surface_cm = cm.CollisionModel(objinit=surface_trm, two_sided=True)
-        surface_cm.setColor(rgba[0], rgba[1], rgba[2], rgba[3])
+        surface_cm = cm.CollisionModel(initor=surface_trm, btwosided=True)
+        surface_cm.set_rgba(rgba)
         return surface_cm
 
 
@@ -121,7 +121,7 @@ class MixedGaussianSurface(Surface):
         date: 20210624
         """
         super().__init__(xydata, zdata)
-        guess_prms = np.array([[0, 0, .05, .05, .1]] * n_mix)
+        guess_prms = np.array([[0, 0, .05, .05, .01]] * n_mix)
         self.popt, pcov = curve_fit(MixedGaussianSurface.mixed_gaussian, xydata, zdata, guess_prms.ravel())
 
     @staticmethod

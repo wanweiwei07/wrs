@@ -156,7 +156,6 @@ def resize_drawpath(drawpath, w, h, space=.005):
     # if pl_w / w > 1 and pl_h / h > 1:
     scale = max([pl_w / (w - space), pl_h / (h - space)])
     p_narray = p_narray / scale
-
     return list(p_narray)
 
 
@@ -469,7 +468,7 @@ def __find_nxt_p_pca(drawpath_p1, drawpath_p2, kdt_d3, p0, n0, max_nn=150, direc
     return p_nxt, nrml
 
 
-def __find_nxt_p_psfc(drawpath_p1, drawpath_p2, kdt_d3, p0, n0, max_nn=1500, direction=np.array([0, 0, 1]),
+def __find_nxt_p_psfc(drawpath_p1, drawpath_p2, kdt_d3, p0, n0, max_nn=500, direction=np.array([0, 0, 1]),
                       toggledebug=False, step=0.1, pcd=None, pca_trans=True, mode='rbf', snap=False):
     v_draw = np.array(drawpath_p2) - np.array(drawpath_p1)
     if abs(direction[0]) == 1:
@@ -494,26 +493,28 @@ def __find_nxt_p_psfc(drawpath_p1, drawpath_p2, kdt_d3, p0, n0, max_nn=1500, dir
     rotmat = rm.rotmat_between_vectors(direction, n0)
     v_draw = np.dot(rotmat, v_draw)
     knn_p0 = get_knn(p0, kdt_d3, k=max_nn)
-    # pcdu.show_pcd(knn_p0, rgba=(1,0,0,1))
-    # base.run()
+    pcdu.show_pcd(knn_p0, rgba=(1,0,0,1))
     if pca_trans:
         knn_p0_tr, transmat = mu.trans_data_pcv(knn_p0, random_rot=False)
+        # pcdu.show_pcd(knn_p0_tr, rgba=(1,0,0,1))
+        # gm.gen_frame().attach_to(base)
+        # base.run()
         surface = __surface(knn_p0_tr, mode)
     else:
-        transmat = np.eye(3)
+        transmat = np.eye(4)
         surface = __surface(knn_p0, mode)
-    surface_cm = surface.get_gometricmodel(rgba=[.5, .7, 1, .3])
-    mat4 = np.eye(4)
-    mat4[:3, :3] = transmat
-    surface_cm.sethomomat(mat4)
-    surface_cm.reparentTo(base.render)
-    base.run()
+    surface_cm = surface.get_gometricmodel(rng=[[-.05,.05], [-.05,.05]], rgba=[.5, .7, 1, .3])
+    # base.run()
+    surface_cm.set_homomat(transmat)
+    surface_cm.attach_to(base)
+    # base.run()
     tgt_len = np.linalg.norm(v_draw)
-    pm = np.dot(np.linalg.inv(transmat), p0)
+    pm = np.dot(np.linalg.inv(transmat[:3,:3]), p0)
+    # pm =rm.homomat_transform_points(transmat,p0)
     tgt_len_list = [tgt_len]
     p_nxt = p0
     while True:
-        p_uv = (pm + np.dot(np.linalg.inv(transmat), v_draw) * step)[:2]
+        p_uv = (pm + np.dot(np.linalg.inv(transmat[:3,:3]), v_draw) * step)[:2]
         z = surface.get_zdata([p_uv])[0]
         pt = np.asarray([p_uv[0], p_uv[1], z])
         tgt_len -= np.linalg.norm(pt - pm)
@@ -523,7 +524,7 @@ def __find_nxt_p_psfc(drawpath_p1, drawpath_p2, kdt_d3, p0, n0, max_nn=1500, dir
             p_nxt = pt
         else:
             break
-    p_nxt = np.dot(transmat, p_nxt)
+    p_nxt = np.dot(transmat[:3,:3], p_nxt)
     knn = get_knn(p_nxt, kdt_d3, k=max_nn)
     nrml = get_nrml_pca(knn)
     if snap:
@@ -552,7 +553,7 @@ def __find_nxt_p_psfc(drawpath_p1, drawpath_p2, kdt_d3, p0, n0, max_nn=1500, dir
         xflat = xgrid.reshape(2, -1).T
         zflat = surface.get_zdata(xflat)
         inp_pts = np.column_stack((xflat, zflat))
-        inp_pts = np.dot(transmat, inp_pts.T).T
+        inp_pts = np.dot(transmat[:3,:3], inp_pts.T).T
         Z = inp_pts[:, 2].reshape((xgrid.shape[1], xgrid.shape[2]))
         ax.plot_surface(xgrid[0], xgrid[1], Z, rstride=1, cstride=1, alpha=.5, cmap='coolwarm')
         # ax.scatter(inp_pts[:, 0], inp_pts[:, 1], inp_pts[:, 2], c='r', alpha=1, s=1)
@@ -893,10 +894,13 @@ def __prj_stroke(stroke, drawcenter, pcd, pcd_nrmls, kdt_d3, mode='DI', objcm=No
             # base.pggen.plotSphere(base.render, pos=p_nxt, rgba=(1, 0, 0, 1))
             # base.pggen.plotArrow(base.render, spos=p_nxt, epos=p_nxt + p_nxt_nrml * 10, rgba=(1, 0, 0, 1))
         elif mode in ['rbf', 'gaussian', 'quad']:
-            p_nxt, p_nxt_nrml = __find_nxt_p_psfc(p1, p2, kdt_d3, pos_nrml_list[-1][0], pos_nrml_list[-1][1],
-                                                  direction=direction, toggledebug=toggledebug, pcd=pcd, step=.01,
-                                                  mode=mode, snap=SNAP_SFC)
-            pos_nrml_list.append([p_nxt, p_nxt_nrml])
+            try:
+                p_nxt, p_nxt_nrml = __find_nxt_p_psfc(p1, p2, kdt_d3, pos_nrml_list[-1][0], pos_nrml_list[-1][1],
+                                                      direction=direction, toggledebug=toggledebug, pcd=pcd, step=.01,
+                                                      mode=mode, snap=SNAP_SFC)
+                pos_nrml_list.append([p_nxt, p_nxt_nrml])
+            except:
+                pos_nrml_list.append([pos_nrml_list[-1][0], pos_nrml_list[-1][1]])
         elif mode == 'rbf_g':
             p_nxt, p_nxt_nrml = __find_nxt_p_rbf_g(p1, p2, surface, transmat, kdt_d3, pos_nrml_list[-1][0],
                                                    pos_nrml_list[-1][1], direction=direction, toggledebug=toggledebug,
@@ -1477,7 +1481,8 @@ if __name__ == '__main__':
     SNAP_SFC_G = False
     SNAP_SFC = True
 
-    dump_f_name = 'helmet'
+    # dump_f_name = 'helmet'
+    dump_f_name='cylinder_pcd'
     DRAWREC_SIZE = [.08, .08]
     stl_f_name = None
 
@@ -1505,16 +1510,17 @@ if __name__ == '__main__':
     """
     load draw path
     """
-    drawpath = du.gen_circle(.015, interval=5)
+    # drawpath = du.gen_circle(.015, interval=5)
     # drawpath = du.load_drawpath('circle.pkl')
     # drawpath = du.gen_square(side_len=DRAWREC_SIZE[0], step=5)[::-1]
-    drawpath = resize_drawpath(drawpath, DRAWREC_SIZE[0], DRAWREC_SIZE[1], space=0)
-
+    # drawpath = resize_drawpath(drawpath, DRAWREC_SIZE[0], DRAWREC_SIZE[1], space=0)
+    # print(drawpath)
     # drawpath_ms = du.load_drawpath('pig.pkl')
     # drawpath_ms = du.gen_grid(side_len=int(DRAWREC_SIZE[0] / 20), grid_len=1)
-    drawpath_ms = du.gen_grid(side_len=int(DRAWREC_SIZE[0]), grid_len=10, step=1)
+    drawpath_ms = du.gen_grid(side_len=80, grid_len=10, step=1)
     # drawpath_ms = du.gen_grid(side_len=int(DRAWREC_SIZE[0]), grid_len=20, step=20)
-    # drawpath_ms = resize_drawpath_ms(drawpath_ms, DRAWREC_SIZE[0], DRAWREC_SIZE[1], space=0)
+    drawpath_ms = resize_drawpath_ms(drawpath_ms, DRAWREC_SIZE[0], DRAWREC_SIZE[1], space=0)
+    # print(drawpath_ms)
     """
     load mesh model
     """
@@ -1539,10 +1545,11 @@ if __name__ == '__main__':
     if dump_f_name == 'box':
         tgt_item.set_drawcenter((.06, .05, .02))
     center = pcdu.get_pcd_center(tgt_item.pcd)
+    print(center)
     base = wd.World(cam_pos=[center[0], center[1], center[2] + .3],
                     lookat_pos=[center[0], center[1], center[2]])
     # base.pggen.plotAxis(base.render)
-    # tgt_item.show_objcm(rgba=[.7, .7, .3, .3])
+    tgt_item.show_objcm(rgba=[.7, .7, .3, .3])
     # base.run()
     """
     single stroke

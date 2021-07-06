@@ -15,6 +15,7 @@ from scipy.optimize import curve_fit
 
 import basis.robot_math as rm
 import math
+
 # import quadpy
 
 PLOT_EDGE = 1
@@ -66,8 +67,10 @@ def _annotate3D(ax, text, xyz, *args, **kwargs):
 setattr(Axes3D, 'annotate3D', _annotate3D)
 setattr(Axes3D, 'arrow3D', _arrow3D)
 
+
 def get_pcd_center(pcd):
     return np.array((np.mean(pcd[:, 0]), np.mean(pcd[:, 1]), np.mean(pcd[:, 2])))
+
 
 def linear_interp_2d(p1, p2, step=1.0):
     diff = np.array(p1) - np.array(p2)
@@ -198,7 +201,7 @@ def trans_data_pcv(data, toggledebug=False, random_rot=True):
     x_v = pcaxmat[:, inx[2]]
     y_v = pcaxmat[:, inx[1]]
     z_v = pcaxmat[:, inx[0]]
-    pcaxmat = np.asarray([y_v, x_v, -z_v]).T
+    pcaxmat = np.asarray([y_v, -x_v, -z_v]).T
     if random_rot:
         pcaxmat = np.dot(rm.rotmat_from_axangle([1, 0, 0], math.radians(5)), pcaxmat)
         pcaxmat = np.dot(rm.rotmat_from_axangle([0, 1, 0], math.radians(5)), pcaxmat)
@@ -216,7 +219,12 @@ def trans_data_pcv(data, toggledebug=False, random_rot=True):
                    mutation_scale=10, arrowstyle='->', color='b')
         ax.scatter(data[:, 0], data[:, 1], data[:, 2], c='r', s=5, alpha=.5)
         ax.scatter(data_tr[:, 0], data_tr[:, 1], data_tr[:, 2], c='g', s=5, alpha=.5)
-    return data_tr, pcaxmat
+    center = np.mean(data_tr, axis=0)
+    data_tr = data_tr - center
+    transmat = np.eye(4)
+    transmat[:3,:3]=pcaxmat
+    transmat[:3,3]=np.mean(data, axis=0)
+    return data_tr, transmat
 
 
 def gaussian(x, y, x0, y0, xalpha, yalpha, A):
@@ -586,6 +594,7 @@ def cal_surface_intersc_p2p(F, G, p1, p2, itg_axis='x'):
     :param toggledebug:
     :return:
     """
+
     def _elimination(F1, F2, p, obj='y'):
         if obj == 'x':
             y_x1 = solve(F1, x)[0]
