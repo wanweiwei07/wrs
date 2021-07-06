@@ -10,7 +10,7 @@ import turtle
 # import cairosvg
 # import canvasvg
 import cv2
-import geojson
+# import geojson
 import matplotlib.pyplot as plt
 import numpy as np
 from shapely.geometry import Polygon
@@ -512,7 +512,7 @@ def json2plist_ms(json_f_name, root=config.ROOT + "/drawpath/json/"):
     return np.array(drawpath_ms_resize)
 
 
-def gen_circle(r=15, interval=15):
+def gen_circle(r=.015, interval=15):
     p_list = []
     for i in range(-180, 180, interval):
         p_list.append((r * math.sin(math.radians(i)), r * math.cos(math.radians(i))))

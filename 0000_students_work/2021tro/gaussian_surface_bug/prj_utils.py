@@ -12,18 +12,18 @@ from matplotlib import cm
 from scipy.interpolate import RBFInterpolator
 from sklearn.neighbors import KDTree
 
-# import config
+import config
 # import environment.bulletcdhelper as bcdhelper
-from . import envloader as el
+import envloader as el
 import surface as sfc
 # import trimesh.intersections as inc
 # import utils.comformalmapping_utils as cu
-from . import drawpath_utils as du
-from . import pcd_utils as pcdu
-from . import math_utils as mu
-# import utils.phoxi as phoxi
-# import utils.phoxi_locator as pl
-# import utils.run_utils as ru
+import drawpath_utils as du
+import pcd_utils as pcdu
+import math_utils as mu
+import phoxi as phoxi
+import phoxi_locator as pl
+import run_utils as ru
 import basis.robot_math as rm
 import modeling.geometric_model as gm
 
@@ -134,29 +134,25 @@ def find_img_interior_rec(img, gray_threshold=1, toggledebug=False):
         return None, None, None, img
 
 
-def resize_drawpath(drawpath, w, h, space=5):
+def resize_drawpath(drawpath, w, h, space=.005):
     """
-
     :param drawpath: draw path point list
     :param w:
     :param h:
     :param space: space between drawing and rectangle edge
     :return:
     """
-
     def __sort_w_h(a, b):
         if a > b:
             return a, b
         else:
             return b, a
-
     drawpath = remove_list_dup(drawpath)
     p_narray = np.array(drawpath)
     pl_w = max(p_narray[:, 0]) - min(p_narray[:, 0])
     pl_h = max(p_narray[:, 1]) - min(p_narray[:, 1])
     pl_w, pl_h = __sort_w_h(pl_w, pl_h)
     w, h = __sort_w_h(w, h)
-
     # if pl_w / w > 1 and pl_h / h > 1:
     scale = max([pl_w / (w - space), pl_h / (h - space)])
     p_narray = p_narray / scale
@@ -219,20 +215,20 @@ def show_drawpath_on_img(p_list, img):
     cv2.waitKey(0)
 
 
-def rayhitmesh_closest(obj, pfrom, pto, toggledebug=False):
-    mcm = bcdhelper.MCMchecker()
-    pos, nrml = mcm.getRayHitMeshClosest(pfrom=pfrom, pto=pto, objcm=obj)
-    if toggledebug:
-        print('------------------')
-        print('pfrom, pto:', pfrom, pto)
-        print('pos:', pos)
-        print('normal:', -nrml)
-        # base.pggen.plotArrow(base.render, spos=pfrom, epos=pto, length=100, rgba=(0, 1, 0, 0.5))
-
-    if pos is not None:
-        return np.array(pos), -np.array(nrml)
-    else:
-        return None, None
+# def rayhitmesh_closest(obj, pfrom, pto, toggledebug=False):
+#     mcm = bcdhelper.MCMchecker()
+#     pos, nrml = mcm.getRayHitMeshClosest(pfrom=pfrom, pto=pto, objcm=obj)
+#     if toggledebug:
+#         print('------------------')
+#         print('pfrom, pto:', pfrom, pto)
+#         print('pos:', pos)
+#         print('normal:', -nrml)
+#         # base.pggen.plotArrow(base.render, spos=pfrom, epos=pto, length=100, rgba=(0, 1, 0, 0.5))
+#
+#     if pos is not None:
+#         return np.array(pos), -np.array(nrml)
+#     else:
+#         return None, None
 
 
 def rayhitmesh_drawpath_ss(obj_item, drawpath, direction=np.asarray((0, 0, 1)), toggledebug=False):
@@ -329,9 +325,9 @@ def rayhitmesh_p(obj, center, p, direction=np.asarray((0, 0, 1))):
     else:
         print('Wrong input direction!')
         return None, None
-    gm.gen_arrow(spos=pfrom, epos=pto, length=.1, rgba=(0, 1, 0, 1)).attach_to(base)
+    gm.gen_arrow(spos=pfrom, epos=pto, rgba=(0, 1, 0, 1)).attach_to(base)
     # base.run()
-    pos, nrml = rayhitmesh_closest(obj, pfrom, pto)
+    pos, nrml = obj.ray_hit(pfrom, pto,option='closest')
     return pos, -nrml
 
 
@@ -1227,7 +1223,6 @@ def prj_drawpath_ms_on_pcd(obj_item, drawpath_ms, mode='DI', step=1.0, direction
         pos_nrml_list_ms.append(stroke_pos_nrml_list)
     print('avg error', np.mean(error_ms))
     print('time cost(projetion)', time_cost_total + time_cost_rbf)
-
     return pos_nrml_list_ms, error_list_ms, time_cost_total + time_cost_rbf
 
 
@@ -1483,12 +1478,12 @@ if __name__ == '__main__':
     SNAP_SFC = True
 
     dump_f_name = 'helmet'
-    DRAWREC_SIZE = [80, 80]
+    DRAWREC_SIZE = [.08, .08]
     stl_f_name = None
 
     if dump_f_name == 'ball':
         stl_f_name = 'ball_surface.stl'
-        DRAWREC_SIZE = [60, 60]
+        DRAWREC_SIZE = [.06, .06]
         SAMPLE_NUM = 10
     elif dump_f_name == 'cylinder_cad':
         stl_f_name = 'cylinder_surface.stl'
@@ -1510,8 +1505,8 @@ if __name__ == '__main__':
     """
     load draw path
     """
-    # drawpath = du.gen_circle(15, interval=5)
-    drawpath = du.load_drawpath('circle.pkl')
+    drawpath = du.gen_circle(.015, interval=5)
+    # drawpath = du.load_drawpath('circle.pkl')
     # drawpath = du.gen_square(side_len=DRAWREC_SIZE[0], step=5)[::-1]
     drawpath = resize_drawpath(drawpath, DRAWREC_SIZE[0], DRAWREC_SIZE[1], space=0)
 
@@ -1520,7 +1515,6 @@ if __name__ == '__main__':
     drawpath_ms = du.gen_grid(side_len=int(DRAWREC_SIZE[0]), grid_len=10, step=1)
     # drawpath_ms = du.gen_grid(side_len=int(DRAWREC_SIZE[0]), grid_len=20, step=20)
     # drawpath_ms = resize_drawpath_ms(drawpath_ms, DRAWREC_SIZE[0], DRAWREC_SIZE[1], space=0)
-
     """
     load mesh model
     """
@@ -1537,14 +1531,13 @@ if __name__ == '__main__':
     direction = np.asarray((0, 0, 1))
     # direction = np.asarray((0, -1, 0))
     if dump_f_name == 'cube':
-        tgt_item.set_drawcenter((0, -25, 0))  # cube
+        tgt_item.set_drawcenter((0, -.025, 0))  # cube
     if dump_f_name == 'cylinder_pcd':
-        tgt_item.set_drawcenter((0, -5, 0))  # cylinder_pcd
+        tgt_item.set_drawcenter((0, -.005, 0))  # cylinder_pcd
     if dump_f_name == 'bowl':
-        tgt_item.set_drawcenter((-60, -60, 0))  # bowl
+        tgt_item.set_drawcenter((-.06, -.06, 0))  # bowl
     if dump_f_name == 'box':
-        tgt_item.set_drawcenter((60, 50, 20))
-
+        tgt_item.set_drawcenter((.06, .05, .02))
     center = pcdu.get_pcd_center(tgt_item.pcd)
     base = wd.World(cam_pos=[center[0], center[1], center[2] + .3],
                     lookat_pos=[center[0], center[1], center[2]])

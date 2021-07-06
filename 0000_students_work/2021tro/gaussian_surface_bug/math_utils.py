@@ -11,7 +11,7 @@ from scipy import integrate
 from scipy import interpolate
 from scipy.interpolate import griddata
 from scipy.optimize import curve_fit
-from sympy import symbols, diff, solve, exp
+# from sympy import symbols, diff, solve, exp
 
 import basis.robot_math as rm
 import math

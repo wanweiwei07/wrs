@@ -4,7 +4,7 @@ import pickle
 import cv2
 import numpy as np
 import open3d as o3d
-import pyrealsense2 as rs2
+# import pyrealsense2 as rs2
 
 import config
 

@@ -8,14 +8,14 @@ import numpy as np
 import sklearn.cluster as skc
 
 import config
-import environment.collisionmodel as cm
-import trimesh.sample as ts
-import utils.pcd_utils as pcdu
-import utils.phoxi as phoxi
-import utils.vision_utils as vu
-import utiltools.robotmath as rm
-import utiltools.thirdparty.o3dhelper as o3dh
-from localenv import envloader as el
+import modeling.collision_model as cm
+# import trimesh.sample as ts
+import pcd_utils as pcdu
+import phoxi as phoxi
+import vision_utils as vu
+import basis.robot_math as rm
+# import utiltools.thirdparty.o3dhelper as o3dh
+import envloader as el
 
 
 class PhxiLocator(object):
@@ -163,12 +163,10 @@ class PhxiLocator(object):
         # pcdu.show_pcd([p for p in real_pcd if p[2] < 900], rgba=(.5, .5, .5, .1))
         # base.run()
         pcd_result = []
-
         for p in real_pcd:
             if x_range[0] < p[0] < x_range[1] and y_range[0] < p[1] < y_range[1] and z_range[0] < p[2] < z_range[1]:
                 pcd_result.append(p)
         pcd_result = np.array(pcd_result)
-
         db = skc.DBSCAN(eps=eps, min_samples=50 * scan_num).fit(pcd_result)
         core_samples_mask = np.zeros_like(db.labels_, dtype=bool)
         core_samples_mask[db.core_sample_indices_] = True
@@ -177,7 +175,6 @@ class PhxiLocator(object):
         print("n_clusters:", n_clusters)
         unique_labels = set(labels)
         objpcd_list = []
-
         for k in unique_labels:
             if k == -1:
                 continue
@@ -192,7 +189,6 @@ class PhxiLocator(object):
             for objpcd in objpcd_list:
                 pcdu.show_pcd_withrbt(objpcd, rgba=(choice([0, 1]), choice([0, 1]), 1, 1))
             base.run()
-
         return objpcd_list
 
     def find_closest_objpcd_by_stl(self, src_stl_f_name, objpcd_list, inithomomat=None, use_rmse=True):

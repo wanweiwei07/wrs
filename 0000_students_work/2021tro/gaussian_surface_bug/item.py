@@ -1,7 +1,8 @@
 import math
 
 import numpy as np
-import utils.pcd_utils as pcdu
+import pcd_utils as pcdu
+import modeling.geometric_model as gm
 
 TOGGLEDEBUG = False
 
@@ -23,9 +24,9 @@ class Item(object):
             self.__w, self.__h = pcdu.get_pcd_w_h(self.__pcd_std)
         if "pcd" in list(kwargs.keys()):
             self.__pcd = kwargs["pcd"]
-            self.__nrmls = pcdu.get_nrmls(kwargs["pcd"], camera_location=(800, -200, 1800), toggledebug=TOGGLEDEBUG)
+            self.__nrmls = pcdu.get_nrmls(kwargs["pcd"], camera_location=(.8, -.2, 1.8), toggledebug=TOGGLEDEBUG)
             if self.__reconstruct:
-                self.__objcm = pcdu.reconstruct_surface(self.__pcd, radii=[5])
+                self.__objcm = pcdu.reconstruct_surface(self.__pcd, radii=[.005])
         else:
             self.__pcd, self.__nrmls = pcdu.get_objpcd_withnrmls(self.__objcm, sample_num=kwargs["sample_num"],
                                                                  objmat4=self.__objmat4, toggledebug=TOGGLEDEBUG)
@@ -43,7 +44,6 @@ class Item(object):
         self.__pcdcenter = np.array((np.mean(self.__pcd[:, 0]),
                                      np.mean(self.__pcd[:, 1]),
                                      np.mean(self.__pcd[:, 2])))
-
         if "drawcenter" in list(kwargs.keys()):
             self.__drawcenter = kwargs["drawcenter"]
         else:
@@ -96,7 +96,7 @@ class Item(object):
         samples = pcdu.trans_pcd(samples, self.objmat4)
         if show:
             for p in samples:
-                base.pggen.plotSphere(base.render, p, rgba=(1, 1, 0, .2), radius=radius)
+                gm.gen_sphere(pos=p, rgba=(1, 1, 0, .2), radius=radius)
         return samples
 
     def gen_colps_top(self, show=False):
@@ -114,7 +114,7 @@ class Item(object):
         col_ps = np.asarray(col_ps)
         if show:
             for p in col_ps:
-                base.pggen.plotSphere(base.render, p, rgba=(1, 0, 0, 1), radius=20)
+                gm.gen_sphere(pos=p, rgba=(1, 0, 0, 1), radius=20)
         return col_ps
 
     def show_objcm(self, rgba=(1, 1, 1, 1), show_localframe=False):
@@ -122,11 +122,11 @@ class Item(object):
         # objmat4 = copy.deepcopy(self.objmat4)
         # objmat4[:3, :3] = np.eye(3)
         # self.__objcm.sethomomat(objmat4)
-        self.__objcm.sethomomat(self.objmat4)
-        self.__objcm.setColor(rgba[0], rgba[1], rgba[2], rgba[3])
+        self.__objcm.set_homomat(self.objmat4)
+        self.__objcm.set_rgba([rgba[0], rgba[1], rgba[2], rgba[3]])
         if show_localframe:
-            self.__objcm.showlocalframe()
-        self.__objcm.reparentTo(base.render)
+            self.__objcm.show_localframe()
+        self.__objcm.attach_to(base)
 
     def show_objpcd(self, rgba=(1, 1, 1, 1)):
         pcdu.show_pcd(self.__pcd, rgba=rgba)

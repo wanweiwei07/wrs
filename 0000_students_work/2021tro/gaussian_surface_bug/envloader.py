@@ -4,10 +4,10 @@ import os
 import numpy as np
 import open3d as o3d
 
-# import config
+import config
 import modeling.collision_model as cm
 # import localenv.item as item
-from . import item
+import item
 # import manipulation.grip.robotiqhe.robotiqhe as rtqhe
 # import pandaplotutils.pandactrl as pc
 # import robotcon.ur3edual as ur3ex

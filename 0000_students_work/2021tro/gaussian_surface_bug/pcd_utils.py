@@ -10,16 +10,16 @@ from sklearn import linear_model
 
 import modeling.collision_model as cm
 import modeling.geometric_model as gm
-import trimesh
-import trimesh.sample as ts
-import utils.math_utils as mu
-import utiltools.robotmath as rm
-import utiltools.thirdparty.o3dhelper as o3d_helper
-from localenv import envloader as el
+import basis.trimesh as trimesh
+# import trimesh.sample as ts
+import math_utils as mu
+import basis.robot_math as rm
+import o3dhelper as o3d_helper
+import envloader as el
 
 
 def get_objpcd(objcm, objmat4=np.eye(4), sample_num=100000, toggledebug=False):
-    objpcd = np.asarray(ts.sample_surface(objcm.trimesh, count=sample_num))
+    objpcd = np.asarray(objcm.sample_surface(nsample=sample_num,toggle_option=None))
     objpcd = trans_pcd(objpcd, objmat4)
 
     if toggledebug:
@@ -107,9 +107,9 @@ def get_org_convexhull(pcd, color=(1, 1, 1), transparency=1, toggledebug=False):
 
     convexhull = trimesh.Trimesh(vertices=pcd)
     convexhull = convexhull.convex_hull
-    obj = cm.CollisionModel(objinit=convexhull, type="ball")
+    obj = cm.CollisionModel(initor=convexhull, type="ball")
     if toggledebug:
-        obj.setColor(color[0], color[1], color[2], transparency)
+        obj.set_rgba(color[0], color[1], color[2], transparency)
         obj.reparentTo(base.render)
         obj.showlocalframe()
 
@@ -138,7 +138,7 @@ def get_std_convexhull(pcd, origin="center", color=(1, 1, 1), transparency=1, to
 
     convexhull = trimesh.Trimesh(vertices=pcd)
     convexhull = convexhull.convex_hull
-    obj = cm.CollisionModel(objinit=convexhull)
+    obj = cm.CollisionModel(initor=convexhull)
     obj_w, obj_h = get_pcd_w_h(pcd)
 
     if origin == "tip":
@@ -149,10 +149,10 @@ def get_std_convexhull(pcd, origin="center", color=(1, 1, 1), transparency=1, to
 
         convexhull = trimesh.Trimesh(vertices=pcd)
         convexhull = convexhull.convex_hull
-        obj = cm.CollisionModel(objinit=convexhull)
+        obj = cm.CollisionModel(initor=convexhull)
 
     if toggledebug:
-        obj.setColor(color[0], color[1], color[2], transparency)
+        obj.set_rgba(color[0], color[1], color[2], transparency)
         obj.reparentTo(base.render)
         obj.showlocalframe()
         print("Rotation angle:", rot_angle)
@@ -220,13 +220,13 @@ def get_rot_frompcd(pcd, toggledebug=False, toggleransac=True):
         return math.degrees(math.atan(1 / coef))
 
 
-def reconstruct_surface(pcd, radii=[5], toggledebug=False):
+def reconstruct_surface(pcd, radii=[.005], toggledebug=False):
     print("---------------reconstruct surface bp---------------")
     pcd = np.asarray(pcd)
     tmmesh = o3d_helper.reconstructsurfaces_bp(pcd, radii=radii, doseparation=False)
-    obj = cm.CollisionModel(objinit=tmmesh)
+    obj = cm.CollisionModel(initor=tmmesh)
     if toggledebug:
-        obj.setColor(1, 1, 1, 1)
+        obj.set_rgba(1, 1, 1, 1)
         obj.reparentTo(base.render)
     return obj
 
@@ -236,10 +236,10 @@ def reconstruct_surface_list(pcd, radii=[5], color=(1, 1, 1), transparency=1, to
     tmmeshlist = o3d_helper.reconstructsurfaces_bp(pcd, radii=radii, doseparation=True)
     obj_list = []
     for tmmesh in tmmeshlist:
-        obj = cm.CollisionModel(objinit=tmmesh)
+        obj = cm.CollisionModel(initor=tmmesh)
         obj_list.append(obj)
         if toggledebug:
-            obj.setColor(color[0], color[1], color[2], transparency)
+            obj.set_rgba(color[0], color[1], color[2], transparency)
             obj.reparentTo(base.render)
     return obj_list
 
@@ -262,12 +262,12 @@ def get_pcdidx_by_pos(pcd, realpos, diff=10, dim=3):
 
 def get_objpcd_withnrmls(objcm, objmat4=np.eye(4), sample_num=100000, toggledebug=False, sample_edge=False):
     objpcd_nrmls = []
-    faces = objcm.trimesh.faces
-    vertices = objcm.trimesh.vertices
-    nrmls = objcm.trimesh.face_normals
+    faces = objcm.objtrm.faces
+    vertices = objcm.objtrm.vertices
+    nrmls = objcm.objtrm.face_normals
 
     if sample_num is not None:
-        objpcd, faceid = ts.sample_surface_withfaceid(objcm.trimesh, count=sample_num)
+        objpcd, faceid = objcm.sample_surface(nsample=sample_num)
         objpcd = list(objpcd)
         for i in faceid:
             objpcd_nrmls.append(np.array(nrmls[i]))
@@ -299,7 +299,7 @@ def get_objpcd_withnrmls(objcm, objmat4=np.eye(4), sample_num=100000, toggledebu
         # o3d.visualization.draw_geometries([objpcd])
 
         # objcm.sethomomat(objmat4)
-        # objcm.setColor(1, 1, 1, 0.7)
+        # objcm.set_rgba(1, 1, 1, 0.7)
         # objcm.reparentTo(base.render)
         # show_pcd(objpcd, rgba=(1, 0, 0, 1))
         for i, n in enumerate(objpcd_nrmls):
@@ -383,9 +383,9 @@ def get_objpcd_partial_bycampos(objcm, objmat4=np.eye(4), sample_num=100000, cam
             mask_temp = [False] * face_num
             mask_temp[i] = True
             objcm_temp.trimesh.update_faces(mask_temp)
-            objpcd_new.extend(np.asarray(ts.sample_surface(objcm_temp.trimesh,
-                                                           count=int(sample_num / area_sum * area_list[i] * sigmoid(
-                                                               angle) * 100))))
+            objpcd_new.extend(np.asarray(objcm_temp.sample_surface(
+                nsample=int(sample_num / area_sum * area_list[i] * sigmoid(angle) * 100),
+                toggle_option=None)))
     if len(objpcd_new) > sample_num:
         objpcd_new = random.sample(objpcd_new, sample_num)
     objpcd_new = np.array(objpcd_new)

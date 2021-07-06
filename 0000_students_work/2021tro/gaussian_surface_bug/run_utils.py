@@ -6,14 +6,14 @@ import cv2
 import numpy as np
 
 import config
-import environment.collisionmodel as cm
-import localenv.item as item
-import motionplanner.motion_planner as m_planner
-import utils.pcd_utils as pcdu
-import utils.phoxi as phoxi
-import utils.prj_utils as pu
-import utils.vision_utils as vu
-from localenv import envloader as el
+import modeling.collision_model as cm
+import item as item
+# import motionplanner.motion_planner as m_planner
+import pcd_utils as pcdu
+import phoxi as phoxi
+import prj_utils as pu
+import vision_utils as vu
+import envloader as el
 
 
 # import db_service.db_service as dbs
@@ -48,11 +48,10 @@ def get_obj_from_phoxiinfo_nobgf(phxilocator, load=True, phoxi_f_name=None, reco
     else:
         objpcd = phxilocator.find_largest_objpcd(objpcd_list)
         if sample_num is None:
-            return item.Item(pcd=objpcd, reconstruct=reconstruct_surface)
+            return item.Item(pcd=objpcd*1e-3, reconstruct=reconstruct_surface)
         else:
-            objcm = pcdu.reconstruct_surface(objpcd, radii=[5])
+            objcm = pcdu.reconstruct_surface(objpcd*1e-3, radii=[.005])
             return item.Item(reconstruct=reconstruct_surface, sample_num=sample_num, objcm=objcm)
-
 
 def get_obj_from_phoxiinfo_withmodel(phxilocator, stl_f_name, load_f_name=None, match_filp=False,
                                      bg_f_name="bg_0217.pkl"):
