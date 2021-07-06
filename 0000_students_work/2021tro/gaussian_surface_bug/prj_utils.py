@@ -14,7 +14,7 @@ from sklearn.neighbors import KDTree
 
 # import config
 # import environment.bulletcdhelper as bcdhelper
-# import localenv.envloader as el
+from . import envloader as el
 import surface as sfc
 # import trimesh.intersections as inc
 # import utils.comformalmapping_utils as cu

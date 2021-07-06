@@ -4,19 +4,20 @@ import os
 import numpy as np
 import open3d as o3d
 
-import config
-import environment.collisionmodel as cm
-import localenv.item as item
-import manipulation.grip.robotiqhe.robotiqhe as rtqhe
-import pandaplotutils.pandactrl as pc
-import robotcon.ur3edual as ur3ex
-import robotsim.robots.dualarm.ur3edual.ur3edual as ur3edual
-import robotsim.robots.dualarm.ur3edual.ur3edualball as robotball
-import robotsim.robots.dualarm.ur3edual.ur3edualmesh as robotmesh
-import trimesh.sample as ts
-import utiltools.robotmath as rm
-import utiltools.thirdparty.o3dhelper as o3d_helper
-from trimesh.primitives import Box
+# import config
+import modeling.collision_model as cm
+# import localenv.item as item
+from . import item
+# import manipulation.grip.robotiqhe.robotiqhe as rtqhe
+# import pandaplotutils.pandactrl as pc
+# import robotcon.ur3edual as ur3ex
+# import robotsim.robots.dualarm.ur3edual.ur3edual as ur3edual
+# import robotsim.robots.dualarm.ur3edual.ur3edualball as robotball
+# import robotsim.robots.dualarm.ur3edual.ur3edualmesh as robotmesh
+# import trimesh.sample as ts
+import basis.robot_math as rm
+# import utiltools.thirdparty.o3dhelper as o3d_helper
+# from trimesh.primitives import Box
 
 
 class Env_wrs(object):
@@ -101,39 +102,33 @@ class Env_wrs(object):
             objcm.remove()
 
 
-def loadEnv_wrs(camp=[4000, 0, 1700], lookatpos=[0, 0, 1000]):
-    # Table width: 120
-    # Table long: 1080
-
-    base = pc.World(camp=camp, lookatpos=lookatpos)
-    env = Env_wrs(boundingradius=7.0)
-    env.reparentTo(base.render)
-
-    # obstacle = cm.CollisionModel(objinit=Box(box_extents=[30, 298, 194]))
-    # env.addchangableobs(base.render, obstacle, [1080 + 30 / 2, -600 + 200 + 298 / 2 - 20, 780 + 97], np.eye(3))
-
-    # obstacle = cm.CollisionModel(objinit=Box(box_extents=[60, 298, 15]))
-    # env.addchangableobs(base.render, obstacle, [1080, -600 + 200 + 298 / 2 - 20, 780 + 130], np.eye(3))
-
-    # obstacle = cm.CollisionModel(objinit=Box(box_extents=[60, 40, 194]))
-    # env.addchangableobs(base.render, obstacle, [1080, -600 + 200 + 105 + 298 / 2, 780 + 97], np.eye(3))
-
-    # phonix
-    phoxicam = cm.CollisionModel(objinit=Box(box_extents=[550, 200, 100]))
-    phoxicam.setColor(.32, .32, .3, 1)
-    env.addchangableobs(base.render, phoxicam, [650, 0, 1760], np.eye(3))
-
-    # desk
-    desk = cm.CollisionModel(objinit=Box(box_extents=[1080, 400, 760]))
-    desk.setColor(0.7, 0.7, 0.7, 1)
-    env.addchangableobs(base.render, desk, [540, 800, 380], np.eye(3))
-
-    # penframe
-    # penframe = cm.CollisionModel(objinit=Box(box_extents=[200, 320, 100]))
-    # penframe.setColor(0.7, 0.7, 0.7, 0.8)
-    # env.addchangableobs(base.render, penframe, [1080 - 300 + 100, 600 - 175, 795], np.eye(3))
-
-    return base, env
+# def loadEnv_wrs(camp=[4000, 0, 1700], lookatpos=[0, 0, 1000]):
+#     # Table width: 120
+#     # Table long: 1080
+#
+#     base = pc.World(camp=camp, lookatpos=lookatpos)
+#     env = Env_wrs(boundingradius=7.0)
+#     env.reparentTo(base.render)
+#     # obstacle = cm.CollisionModel(objinit=Box(box_extents=[30, 298, 194]))
+#     # env.addchangableobs(base.render, obstacle, [1080 + 30 / 2, -600 + 200 + 298 / 2 - 20, 780 + 97], np.eye(3))
+#     # obstacle = cm.CollisionModel(objinit=Box(box_extents=[60, 298, 15]))
+#     # env.addchangableobs(base.render, obstacle, [1080, -600 + 200 + 298 / 2 - 20, 780 + 130], np.eye(3))
+#     # obstacle = cm.CollisionModel(objinit=Box(box_extents=[60, 40, 194]))
+#     # env.addchangableobs(base.render, obstacle, [1080, -600 + 200 + 105 + 298 / 2, 780 + 97], np.eye(3))
+#     # phonix
+#     phoxicam = cm.CollisionModel(objinit=Box(box_extents=[550, 200, 100]))
+#     phoxicam.setColor(.32, .32, .3, 1)
+#     env.addchangableobs(base.render, phoxicam, [650, 0, 1760], np.eye(3))
+#     # desk
+#     desk = cm.CollisionModel(objinit=Box(box_extents=[1080, 400, 760]))
+#     desk.setColor(0.7, 0.7, 0.7, 1)
+#     env.addchangableobs(base.render, desk, [540, 800, 380], np.eye(3))
+#     # penframe
+#     # penframe = cm.CollisionModel(objinit=Box(box_extents=[200, 320, 100]))
+#     # penframe.setColor(0.7, 0.7, 0.7, 0.8)
+#     # env.addchangableobs(base.render, penframe, [1080 - 300 + 100, 600 - 175, 795], np.eye(3))
+#
+#     return base, env
 
 
 def __pcd_trans(pcd, amat):
@@ -143,28 +138,28 @@ def __pcd_trans(pcd, amat):
     return realpcd[:, :3]
 
 
-def loadUr3e(showrbt=False):
-    hndfa = rtqhe.HandFactory()
-    rgthnd = hndfa.genHand(ftsensoroffset=36)
-    lfthnd = hndfa.genHand(ftsensoroffset=36)
+# def loadUr3e(showrbt=False):
+#     hndfa = rtqhe.HandFactory()
+#     rgthnd = hndfa.genHand(ftsensoroffset=36)
+#     lfthnd = hndfa.genHand(ftsensoroffset=36)
+#
+#     rbtball = robotball.Ur3EDualBall()
+#     rbt = ur3edual.Ur3EDualRobot(rgthnd, lfthnd)
+#
+#     rbt.opengripper(armname="lft")
+#     rbt.opengripper(armname="rgt")
+#     rbtmg = robotmesh.Ur3EDualMesh()
+#     rbt.goinitpose()
+#     if showrbt:
+#         rbtmg.genmnp(rbt, toggleendcoord=False).reparentTo(base.render)
+#
+#     return rbt, rbtmg, rbtball
 
-    rbtball = robotball.Ur3EDualBall()
-    rbt = ur3edual.Ur3EDualRobot(rgthnd, lfthnd)
 
-    rbt.opengripper(armname="lft")
-    rbt.opengripper(armname="rgt")
-    rbtmg = robotmesh.Ur3EDualMesh()
-    rbt.goinitpose()
-    if showrbt:
-        rbtmg.genmnp(rbt, toggleendcoord=False).reparentTo(base.render)
-
-    return rbt, rbtmg, rbtball
-
-
-def loadUr3ex(rbt):
-    rbtx = ur3ex.Ur3EDualUrx(rbt)
-
-    return rbtx
+# def loadUr3ex(rbt):
+#     rbtx = ur3ex.Ur3EDualUrx(rbt)
+#
+#     return rbtx
 
 
 def loadObj(f_name, pos=(0, 0, 0), rot=(0, 0, 0), color=(1, 1, 1), transparency=0.5):
@@ -181,18 +176,16 @@ def loadObjpcd(f_name, pos=(0, 0, 0), rot=(0, 0, 0), sample_num=100000, togglede
     rotmat4 = np.zeros([4, 4])
     rotmat4[:3, :3] = rm.rotmat_from_euler(rot[0], rot[1], rot[2], axes="sxyz")
     rotmat4[:3, 3] = pos
-
-    obj_surface = np.asarray(ts.sample_surface(obj.trimesh, count=sample_num))
+    obj_surface = np.asarray(obj.sample_surface(nsample=sample_num))
     # obj_surface = obj_surface[obj_surface[:, 2] > 2]
     obj_surface_real = __pcd_trans(obj_surface, rotmat4)
-
     if toggledebug:
-        obj_surface = o3d_helper.nparray2o3dpcd(copy.deepcopy(obj_surface))
-        obj_surface.paint_uniform_color([1, 0.706, 0])
-        o3d.visualization.draw_geometries([obj_surface], window_name='loadObjpcd')
-        pcddnp = base.pg.genpointcloudnp(obj_surface_real)
-        pcddnp.reparentTo(base.render)
-
+        # obj_surface = o3d_helper.nparray2o3dpcd(copy.deepcopy(obj_surface))
+        # obj_surface.paint_uniform_color([1, 0.706, 0])
+        # o3d.visualization.draw_geometries([obj_surface], window_name='loadObjpcd')
+        # pcddnp = base.pg.genpointcloudnp(obj_surface_real)
+        # pcddnp.reparentTo(base.render)
+        pass
     return obj_surface_real
 
 
@@ -214,12 +207,10 @@ def loadObjitem(f_name, pos=(0, 0, 0), rot=(0, 0, 0), sample_num=10000, type="bo
     if f_name[-3:] != 'stl':
         f_name += '.stl'
     objcm = cm.CollisionModel(objinit=os.path.join(config.ROOT, "obstacles", f_name), type=type)
-
     objmat4 = np.zeros([4, 4])
     objmat4[:3, :3] = rm.rotmat_from_euler(rot[0], rot[1], rot[2], axes="sxyz")
     objmat4[:3, 3] = pos
     objcm.sethomomat(objmat4)
-
     return item.Item(objcm=objcm, objmat4=objmat4, sample_num=sample_num)
 
 
