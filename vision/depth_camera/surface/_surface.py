@@ -16,8 +16,8 @@ class Surface(object):
                           granularity=.003,
                           rgba=[.7, .7, .3, 1]):
         if rng is None:
-            rng = [[min(self.xydata[:,0])-granularity, max(self.xydata[:,0])+granularity],
-                   [min(self.xydata[:,1])-granularity, max(self.xydata[:,1])+granularity]]
+            rng = [[min(self.xydata[:,0]), max(self.xydata[:,0])],
+                   [min(self.xydata[:,1]), max(self.xydata[:,1])]]
         surface_gm = gm.gen_surface(self.get_zdata, rng=rng, granularity=granularity)
         surface_gm.set_rgba(rgba=rgba)
         return surface_gm
