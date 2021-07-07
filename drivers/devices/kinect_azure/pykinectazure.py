@@ -410,6 +410,24 @@ class PyKinectAzure(object):
                                                                     transformed_depth_image_handle),
             "Transformation from depth to color failed!")
 
+    def transformation_color_image_to_depth_camera(self, transformation_handle, input_color_image_handle,
+                                                   transformed_color_image_handle):
+        """
+        Transforms the color image into the geometry of the depth camera.
+        transformed_color_image must have a width and height matching the width and height of the depth camera in the mode
+        specified by the k4a_calibration_t used to create the transformation_handle with k4a_transformation_create().
+        This produces a depth image for which each pixel matches the corresponding pixel coordinates of the depth camera.
+        :param transformation_handle (k4a_transformation_t): Transformation handle.
+               input_color_image_handle (k4a_image_t): Handle to input color image.
+               transformed_color_image_handle (k4a_image_t): Handle to output transformed color image.
+        :return K4A_RESULT_SUCCEEDED if transformed_depth_image was successfully written and ::K4A_RESULT_FAILED otherwise.
+        """
+        _k4a.VERIFY(
+            self.k4a.k4a_transformation_color_image_to_depth_camera(transformation_handle,
+                                                                    input_color_image_handle,
+                                                                    transformed_color_image_handle),
+            "Transformation from color to depth failed!")
+
     def image_convert_to_numpy(self, image_handle):
         """
         Get the image data as a numpy array
@@ -465,6 +483,29 @@ class PyKinectAzure(object):
                                                         transformed_depth_image_handle)
         # Get transformed image data
         transformed_image = self.image_convert_to_numpy(transformed_depth_image_handle)
+        # Close transformation
+        self.transformation_destroy(transformation_handle)
+        return transformed_image
+
+    def transform_color_to_depth(self, input_color_image_handle, depth_image_handle):
+        calibration = _k4a.k4a_calibration_t()
+        # Get desired image format
+        image_format = self.image_get_format(input_color_image_handle)
+        image_width = self.image_get_width_pixels(depth_image_handle)
+        image_height = self.image_get_height_pixels(depth_image_handle)
+        image_stride = 0
+        # Get the camera calibration
+        self.device_get_calibration(self.config.depth_mode, self.config.color_resolution, calibration)
+        # Create transformation
+        transformation_handle = self.transformation_create(calibration)
+        # Create the image handle
+        transformed_color_image_handle = _k4a.k4a_image_t()
+        self.image_create(image_format, image_width, image_height, image_stride, transformed_color_image_handle)
+        # Transform the color image to the depth image format
+        self.transformation_color_image_to_depth_camera(transformation_handle, input_color_image_handle,
+                                                        transformed_color_image_handle)
+        # Get transformed image data
+        transformed_image = self.image_convert_to_numpy(transformed_color_image_handle)
         # Close transformation
         self.transformation_destroy(transformation_handle)
         return transformed_image
