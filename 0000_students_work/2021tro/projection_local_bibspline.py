@@ -5,7 +5,9 @@ import visualization.panda.world as wd
 import basis.robot_math as rm
 import math
 from scipy.spatial import cKDTree
-import vision.depth_camera.surface.plane_surface as ps
+# import vision.depth_camera.surface.gaussian_surface as gs
+import vision.depth_camera.surface.rbf_surface as rs
+import vision.depth_camera.surface.bibspline_surface as bs
 
 base = wd.World(cam_pos=np.array([-.3,-.9,.3]), lookat_pos=np.array([0,0,0]))
 # gm.gen_frame().attach_to(base)
@@ -75,7 +77,7 @@ n=5
 for tick in range(1, n+1):
     t_npt = cpt+direction*.05/n
     gm.gen_arrow(spos=t_npt, epos=t_npt+last_normal*.025, thickness=0.001, rgba=[1, 1, 0, 1]).attach_to(base)
-    nearby_sample_ids = tree.query_ball_point(t_npt, .007)
+    nearby_sample_ids = tree.query_ball_point(t_npt, .07)
     nearby_samples = bowl_samples[nearby_sample_ids]
     # gm.GeometricModel(nearby_samples).attach_to(base)
     plane_center, plane_normal = rm.fit_plane(nearby_samples)
@@ -85,7 +87,9 @@ for tick in range(1, n+1):
     if pn_direction.dot(plane_normal) > .1:
         plane_rotmat = np.column_stack((plane_tmp, plane_tangential, -plane_normal))
     nearby_samples_on_xy = plane_rotmat.T.dot((nearby_samples-plane_center).T).T
-    surface = ps.PlaneSurface(nearby_samples_on_xy[:, :2], nearby_samples_on_xy[:,2])
+    # surface = gs.MixedGaussianSurface(nearby_samples_on_xy[:, :2], nearby_samples_on_xy[:,2], n_mix=1)
+    # surface = rs.RBFSurface(nearby_samples_on_xy[:, :2], nearby_samples_on_xy[:,2])
+    surface = bs.BiBSpline(nearby_samples_on_xy[:, :2], nearby_samples_on_xy[:,2])
     t_npt_on_xy = plane_rotmat.T.dot(t_npt-plane_center)
     projected_t_npt_z_on_xy = surface.get_zdata(np.array([t_npt_on_xy[:2]]))
     projected_t_npt_on_xy = np.array([t_npt_on_xy[0], t_npt_on_xy[1], projected_t_npt_z_on_xy[0]])
@@ -122,7 +126,7 @@ direction = new_rotmat.dot(tmp_direction)
 for tick in range(1, n+1):
     t_npt = cpt+direction*.05/n
     gm.gen_arrow(spos=t_npt, epos=t_npt+last_normal*.025, thickness=0.001, rgba=[1, 1, 0, 1]).attach_to(base)
-    nearby_sample_ids = tree.query_ball_point(t_npt, .007)
+    nearby_sample_ids = tree.query_ball_point(t_npt, .07)
     nearby_samples = bowl_samples[nearby_sample_ids]
     # gm.GeometricModel(nearby_samples).attach_to(base)
     plane_center, plane_normal = rm.fit_plane(nearby_samples)
@@ -132,7 +136,9 @@ for tick in range(1, n+1):
     if pn_direction.dot(plane_normal) > .1:
         plane_rotmat = np.column_stack((plane_tmp, plane_tangential, -plane_normal))
     nearby_samples_on_xy = plane_rotmat.T.dot((nearby_samples-plane_center).T).T
-    surface = ps.PlaneSurface(nearby_samples_on_xy[:, :2], nearby_samples_on_xy[:,2])
+    # surface = gs.MixedGaussianSurface(nearby_samples_on_xy[:, :2], nearby_samples_on_xy[:,2], n_mix=1)
+    # surface = rs.RBFSurface(nearby_samples_on_xy[:, :2], nearby_samples_on_xy[:,2])
+    surface = bs.BiBSpline(nearby_samples_on_xy[:, :2], nearby_samples_on_xy[:,2])
     t_npt_on_xy = plane_rotmat.T.dot(t_npt-plane_center)
     projected_t_npt_z_on_xy = surface.get_zdata(np.array([t_npt_on_xy[:2]]))
     projected_t_npt_on_xy = np.array([t_npt_on_xy[0], t_npt_on_xy[1], projected_t_npt_z_on_xy[0]])
@@ -141,6 +147,13 @@ for tick in range(1, n+1):
     surface_gm.set_pos(plane_center)
     surface_gm.set_rotmat(plane_rotmat)
     surface_gm.attach_to(base)
+    # plane_rotmat2 = np.column_stack((plane_tmp, plane_tangential, -plane_normal))
+    # nearby_samples_on_xy2 = plane_rotmat2.T.dot((nearby_samples-plane_center).T).T
+    # surface2 = rs.RBFSurface(nearby_samples_on_xy2[:, :2], nearby_samples_on_xy2[:,2])
+    # surface_gm = surface2.get_gometricmodel([[-.05,.05],[-.05,.05]], rgba=[.5,.7,1,.1])
+    # surface_gm.set_pos(plane_center)
+    # surface_gm.set_rotmat(plane_rotmat2)
+    # surface_gm.attach_to(base)
     # homomat = np.eye(4)
     # homomat[:3,:3]=plane_rotmat
     # homomat[:3,3]=plane_center

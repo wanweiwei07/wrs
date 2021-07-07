@@ -13,10 +13,11 @@ class Surface(object):
 
     def get_gometricmodel(self,
                           rng=None,
-                          granularity=.01,
+                          granularity=.003,
                           rgba=[.7, .7, .3, 1]):
         if rng is None:
-            rng = [[min(self.xydata[:,0]), max(self.xydata[:,0])], [min(self.xydata[:,1]), max(self.xydata[:,1])]]
+            rng = [[min(self.xydata[:,0])-granularity, max(self.xydata[:,0])+granularity],
+                   [min(self.xydata[:,1])-granularity, max(self.xydata[:,1])+granularity]]
         surface_gm = gm.gen_surface(self.get_zdata, rng=rng, granularity=granularity)
         surface_gm.set_rgba(rgba=rgba)
         return surface_gm

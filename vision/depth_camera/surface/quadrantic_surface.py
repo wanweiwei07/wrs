@@ -6,7 +6,7 @@ import vision.depth_camera.surface._surface as sfc
 class QuadraticSurface(sfc.Surface):
     """
     Quadratic surface fitting
-    author: Ruishuang
+    author: ruishuang
     date: 20210625
     """
 
