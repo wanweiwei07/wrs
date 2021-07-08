@@ -4,8 +4,8 @@ import drivers.devices.kinect_azure._k4a as _k4a
 class Config(object):
     
     def __init__(self,
-                 color_format=_k4a.K4A_IMAGE_FORMAT_COLOR_MJPG,
-                 color_resolution=_k4a.K4A_COLOR_RESOLUTION_720P,
+                 color_format=_k4a.K4A_IMAGE_FORMAT_COLOR_BGRA32,
+                 color_resolution=_k4a.K4A_COLOR_RESOLUTION_2160P,
                  depth_mode=_k4a.K4A_DEPTH_MODE_WFOV_2X2BINNED,
                  camera_fps=_k4a.K4A_FRAMES_PER_SECOND_30,
                  synchronized_images_only=False,
@@ -22,7 +22,6 @@ class Config(object):
         self.wired_sync_mode = wired_sync_mode
         self.subordinate_delay_off_master_usec = subordinate_delay_off_master_usec
         self.disable_streaming_indicator = disable_streaming_indicator
-
         self._on_change()
 
     def __setattr__(self, name, value):

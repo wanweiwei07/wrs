@@ -46,8 +46,8 @@ def pcd_read(depth_image, mtx):
     ky = (np.arange(image_size[0]) - rgbcam_cy) / (rgbcam_fy * 1000)
     ky = ky.repeat(image_size[1])
     k = np.array(list(zip(kx, ky, np.ones(length, dtype=int) / 1000)))
-    depth = depth_image.repeat(3).reshape(length, 3) + np.tile(np.array([rgbcam_fx, rgbcam_fy, 0]), length).reshape(
-        length, 3)
+    depth = depth_image.repeat(3).reshape(length, 3) + \
+            np.tile(np.array([rgbcam_fx, rgbcam_fy, 0]), length).reshape(length, 3)
     return k * depth
 
 
