@@ -1,9 +1,10 @@
+import os
 import math
 import time
-import  robot_con.ur.ur3e_rtqhe_x as u3erhex
-import robot_con.ur.program_builder as pb
+import struct
 import numpy as np
-import os
+import robot_con.ur.program_builder as pb
+import robot_con.ur.ur3e_rtqhe_x as u3erhex
 
 class Ur3EDualUrx(object):
     """
@@ -44,7 +45,7 @@ class Ur3EDualUrx(object):
         author: weiwei
         date: 20170411
         """
-        if component_name == "all": # TODO Examine length, synchronization
+        if component_name == "all":  # TODO Examine length, synchronization
             self._lft_arm_hnd.move_jnts(jnt_values[0:6], wait=False)
             self._rgt_arm_hnd.move_jnts(jnt_values[6:12], wait=True)
         elif component_name in ["lft_arm", "lft_hnd"]:
@@ -72,10 +73,11 @@ class Ur3EDualUrx(object):
         date: 20210404
         """
         if component_name == "all":
-            self._lft_arm_hnd.trajt.set_interpolation_method(interpolation_method)
-            interpolated_confs, interpolated_spds = self._lft_arm_hnd.trajt.piecewise_interpolation(path,
-                                                                                                    control_frequency,
-                                                                                                    interval_time)
+            if interpolation_method:
+                self._lft_arm_hnd.trajt.change_method(interpolation_method)
+            interpolated_confs, _, _, _ = self._lft_arm_hnd.trajt.interpolate(path,
+                                                                              control_frequency,
+                                                                              interval_time)
             # upload a urscript to connect to the pc server started by this class
             self._rgt_arm_hnd.arm.send_program(self._slave_modern_driver_urscript)
             self._lft_arm_hnd.arm.send_program(self._master_modern_driver_urscript)
@@ -124,13 +126,14 @@ class Ur3EDualUrx(object):
         else:
             raise ValueError("Component_name must be in ['all', 'lft_arm', 'rgt_arm']!")
 
+
 if __name__ == '__main__':
     import robot_sim.ur3edual.ur3edual as u3ed
     import pandaplotutils.pandactrl as pc
     import manipulation.grip.robotiqhe.robotiqhe as rtqhe
     import robot_sim.ur3edual.ur3edual as robot
 
-    base = pc.World(camp = [3000,0,3000], lookatp = [0,0,700])
+    base = pc.World(camp=[3000, 0, 3000], lookatp=[0, 0, 700])
 
     ur3edualrobot = u3ed.Ur3EDualRobot()
     ur3edualrobot.goinitpose()
@@ -143,8 +146,8 @@ if __name__ == '__main__':
     # robot_s = robot_s.Ur3EDualRobot(rgthnd, lfthnd)
     # robot_s.goinitpose()
     # ur3eu.attachfirm(robot_s, upthreshold=10, arm_name='lft')
-    ur3eu.opengripper(armname="lft",forcepercentage=0,distance=23)
-    ur3eu.opengripper(armname="lft",forcepercentage=0 , distance=80)
+    ur3eu.opengripper(armname="lft", forcepercentage=0, distance=23)
+    ur3eu.opengripper(armname="lft", forcepercentage=0, distance=80)
     # ur3eu.closegripper(arm_name="lft")
     # initpose = ur3dualrobot.initjnts
     # initrgt = initpose[3:9]

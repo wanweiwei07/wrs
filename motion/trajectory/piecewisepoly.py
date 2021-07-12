@@ -5,7 +5,10 @@ import math
 
 class PiecewisePoly(object):
 
-    def __init__(self, method="cubic"):
+    def __init__(self, method="linear"):
+        self.change_method(method=method)
+
+    def change_method(self, method="cubic"):
         self.method = method
         if method == "linear":
             self._solve = self._linear_solve

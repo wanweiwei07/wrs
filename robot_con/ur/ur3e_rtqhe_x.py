@@ -9,7 +9,7 @@ import threading
 import socket
 import struct
 import os
-import motion.trajectory as traj
+import motion.trajectory.piecewisepoly as pwp
 
 
 class UR3ERtqHE():
@@ -51,7 +51,7 @@ class UR3ERtqHE():
                                                                     str(self._jointscaler))
         self._ftsensor_thread = None
         self._ftsensor_values = []
-        self.trajt = traj.Trajectory(method='quintic')
+        self.trajt = pwp.PiecewisePoly(method='quintic')
 
     @property
     def arm(self):
@@ -144,21 +144,21 @@ class UR3ERtqHE():
         regulated_jnt_values = rm.regulate_angle(-math.pi, math.pi, jnt_values)
         self.move_jnts(regulated_jnt_values)
 
-    def move_jntspace_path(self, path, control_frequency=.005, interval_time=1.0, method=None):
+    def move_jntspace_path(self, path, control_frequency=.005, interval_time=1.0, interpolation_method=None):
         """
         move robot_s arm following a given jointspace path
         :param path:
         :param control_frequency: the program will sample time_interval/control_frequency confs, see motion.trajectory
         :param interval_time: equals to expandis/speed, speed = degree/second
                               by default, the value is 1.0 and the speed is expandis/second
-        :param method
+        :param interpolation_method
         :return:
         author: weiwei
         date: 20210331
         """
-        self.trajt.set_interpolation_method(method)
-        interpolated_confs, interpolated_spds = self.trajt.piecewise_interpolation(path, control_frequency,
-                                                                                   interval_time)
+        if interpolation_method:
+            self.trajt.change_method(interpolation_method)
+        interpolated_confs, _, _, _ = self.trajt.interpolate(path, control_frequency, interval_time)
         # upload a urscript to connect to the pc server started by this class
         self._arm.send_program(self._pc_server_urscript)
         # accept arm socket

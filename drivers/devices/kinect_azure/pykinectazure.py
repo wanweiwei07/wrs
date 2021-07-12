@@ -45,11 +45,10 @@ class PyKinectAzure(object):
             self.write_frame()
 
     def bt_start(self, bodyTrackerModulePath, modelType=_k4abt.K4ABT_DEFAULT_MODEL):
-        # Get depth sensor calibration
-        depthSensorCalibration = _k4a.k4a_calibration_t()
-        self.get_calibration(depthSensorCalibration)
+        # Get sensor calibration
+        calibration = self.get_calibration()
         # Initialize the body tracker
-        self.body_tracker = KinectBodyTracker(bodyTrackerModulePath, depthSensorCalibration, modelType)
+        self.body_tracker = KinectBodyTracker(bodyTrackerModulePath, calibration, modelType)
 
     def bt_update(self):
         # Add capture to the body tracker processing queue
@@ -375,8 +374,7 @@ class PyKinectAzure(object):
         author: weiwei
         date: 20210708
         """
-        calibration = _k4a.k4a_calibration_t()
-        self.get_calibration(calibration)
+        calibration = self.get_calibration()
         transformation_handle = self.transformation_create(calibration)
         point_cloud = _k4a_types.k4a_image_t()
         self.image_create(
@@ -527,23 +525,43 @@ class PyKinectAzure(object):
         self.transformation_destroy(transformation_handle)
         return transformed_image
 
-    # def transform_color_xy_to_depth_xy(self, input_color_image_handle, input_depth_image_handle, color_xy):
-    #     """
-    #     :param color_xy np.array([x,y])
-    #     author:weiwei
-    #     date: 20210708
-    #     """
-    #     image_format = _k4a_types.K4A_IMAGE_FORMAT_COLOR_BGRA32
-    #     image_width = self.image_get_width_pixels(input_color_image_handle)
-    #     image_height = self.image_get_height_pixels(input_color_image_handle)
-    #     image_stride = 0
-    #     tmp_color_image_handle = _k4a.k4a_image_t()
-    #     self.image_create(image_format, image_width, image_height, image_stride, tmp_color_image_handle)
-    #     print(self.image_convert_to_numpy(tmp_color_image_handle))
+    def transform_color_xy_to_pcd_xyz(self, input_color_image_handle, input_depth_image_handle, color_xy):
+        """
+        :param color_xy np.array([x,y])
+        author:weiwei
+        date: 20210712
+        """
+        # image_format = _k4a_types.K4A_IMAGE_FORMAT_COLOR_BGRA32
+        # image_width = self.image_get_width_pixels(input_color_image_handle)
+        # image_height = self.image_get_height_pixels(input_color_image_handle)
+        # image_stride = 0
+        # tmp_color_image_handle = _k4a.k4a_image_t()
+        # self.image_create(image_format, image_width, image_height, image_stride, tmp_color_image_handle)
+        calibration = self.get_calibration()
+        position_2d = _k4a.k4a_float2_t()
+        position_2d.xy.x = color_xy[0]
+        position_2d.xy.y = color_xy[1]
+        depth_on_color = self.transform_depth_to_color(input_depth_image_handle, input_color_image_handle)
+        source_depth_mm = depth_on_color[color_xy[1], color_xy[0]]
+        target_point3d_mm = _k4a.k4a_float3_t()
+        valid = ctypes.c_int()
+        _k4a.VERIFY(
+            self.k4a.k4a_calibration_2d_to_3d(calibration,
+                                              position_2d,
+                                              source_depth_mm,
+                                              _k4a.K4A_CALIBRATION_TYPE_COLOR,
+                                              _k4a.K4A_CALIBRATION_TYPE_DEPTH,
+                                              target_point3d_mm,
+                                              valid),
+            "Transformation from color to depth failed!")
+        xyz = target_point3d_mm.xyz
+        return np.array([xyz.x, xyz.y, xyz.z])*1e-3
 
 
-    def get_calibration(self, calibration):
+    def get_calibration(self):
+        calibration = _k4a.k4a_calibration_t()
         self.device_get_calibration(self.config.depth_mode, self.config.color_resolution, calibration)
+        return calibration
 
     def get_depth_intrinsics(self):
         """
@@ -551,8 +569,7 @@ class PyKinectAzure(object):
         author: weiwei
         date: 20210708
         """
-        calibration = _k4a.k4a_calibration_t()
-        self.get_calibration(calibration)
+        calibration = self.get_calibration()
         mtx = np.eye(3)
         mtx[0,0]=calibration.depth_camera_calibration.intrinsics.parameters.param.fx
         mtx[1,1]=calibration.depth_camera_calibration.intrinsics.parameters.param.fy
@@ -571,8 +588,7 @@ class PyKinectAzure(object):
         author: weiwei
         date: 20210708
         """
-        calibration = _k4a.k4a_calibration_t()
-        self.get_calibration(calibration)
+        calibration = self.get_calibration()
         mtx = np.eye(3)
         mtx[0,0]=calibration.color_camera_calibration.intrinsics.parameters.param.fx
         mtx[1,1]=calibration.color_camera_calibration.intrinsics.parameters.param.fy
