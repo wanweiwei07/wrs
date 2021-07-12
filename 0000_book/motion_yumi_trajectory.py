@@ -6,6 +6,7 @@ import robot_sim.robots.yumi.yumi as ym
 import modeling.geometric_model as gm
 import motion.optimization_based.incremental_nik as inik
 import matplotlib.pyplot as plt
+import motion.trajectory.piecewisepoly as pwp
 
 if __name__ == "__main__":
     base = wd.World(cam_pos=[3, -1, 1], lookat_pos=[0, 0, 0.5])
@@ -27,20 +28,27 @@ if __name__ == "__main__":
                                                     radius=radius,
                                                     toggle_tcp_list=True)
     print(jnt_values_list)
-    import motion.trajectory.polynomial_wrsold as trajp
-    control_frequency = .005
+    # import motion.trajectory.polynomial_wrsold as trajp
+    # control_frequency = .005
+    control_frequency = .1
     interval_time = 1
-    traj_gen = trajp.TrajPoly(method="quintic")
-    interpolated_confs, interpolated_spds, interpolated_accs = \
-        traj_gen.piecewise_interpolation(jnt_values_list, control_frequency=control_frequency, time_interval=interval_time)
+    # traj_gen = trajp.TrajPoly(method="quintic")
+    # interpolated_confs, interpolated_spds, interpolated_accs = \
+    #     traj_gen.piecewise_interpolation(jnt_values_list, control_frequency=control_frequency, time_interval=interval_time)
+    traj_gen = pwp.PiecewisePoly(method="linear")
+    # interpolated_confs, interpolated_spds, interpolated_accs, interpolated_x = \
+    #     traj_gen.interpolate(jnt_values_list, control_frequency=control_frequency, time_interval=interval_time)
+    interpolated_confs, interpolated_spds, interpolated_accs, interpolated_x = \
+        traj_gen.interpolate_by_max_jntspeed(jnt_values_list, control_frequency=control_frequency, max_jntspeed=1.0472)
 
     fig, axs = plt.subplots(3, figsize=(3.5,4.75))
     fig.tight_layout(pad=.7)
-    x = np.linspace(0, interval_time*(len(jnt_values_list) - 1), (len(jnt_values_list) - 1) * math.floor(interval_time / control_frequency))
-    axs[0].plot(x, interpolated_confs)
-    axs[0].plot(range(0, interval_time * (len(jnt_values_list)), interval_time), jnt_values_list, '--o')
-    axs[1].plot(x, interpolated_spds)
-    axs[2].plot(x, interpolated_accs)
+    axs[0].plot(interpolated_x, interpolated_confs, 'o')
+    for xc in np.arange(len(jnt_values_list)):
+        axs[0].axvline(x=xc)
+    # axs[0].plot(np.arange(len(jnt_values_list)), jnt_values_list, '--o')
+    axs[1].plot(interpolated_x, interpolated_spds)
+    axs[2].plot(interpolated_x, interpolated_accs)
     plt.show()
     for i in range(len(tcp_list)-1):
         spos = tcp_list[i][0]
