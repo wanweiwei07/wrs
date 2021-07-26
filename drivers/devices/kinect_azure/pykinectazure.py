@@ -7,7 +7,7 @@ import cv2
 import ctypes
 from drivers.devices.kinect_azure.config import Config
 import platform
-
+import time
 
 class IMUResult(object):
     def __init__(self):
@@ -36,6 +36,11 @@ class PyKinectAzure(object):
         self.cameras_running = False
         self.imu_running = False
         self.recording = False
+        # for fast access
+        self.device_open()
+        self.device_start_cameras()
+        self.calibration = self.get_calibration()
+        self.transformation_handle = self.transformation_create(self.calibration)
 
     def update(self):
         # Get capture
@@ -374,8 +379,6 @@ class PyKinectAzure(object):
         author: weiwei
         date: 20210708
         """
-        calibration = self.get_calibration()
-        transformation_handle = self.transformation_create(calibration)
         point_cloud = _k4a_types.k4a_image_t()
         self.image_create(
             _k4a_types.K4A_IMAGE_FORMAT_CUSTOM,
@@ -385,7 +388,7 @@ class PyKinectAzure(object):
             point_cloud
         )
         _k4a.VERIFY(self.k4a.k4a_transformation_depth_image_to_point_cloud(
-            transformation_handle,
+            self.transformation_handle,
             depth_image_handle,
             _k4a_types.K4A_CALIBRATION_TYPE_DEPTH,
             point_cloud
@@ -482,18 +485,14 @@ class PyKinectAzure(object):
         image_stride = 0
         # Get the camera calibration
         self.device_get_calibration(self.config.depth_mode, self.config.color_resolution, calibration)
-        # Create transformation
-        transformation_handle = self.transformation_create(calibration)
         # Create the image handle
         transformed_depth_image_handle = _k4a.k4a_image_t()
         self.image_create(image_format, image_width, image_height, image_stride, transformed_depth_image_handle)
         # Transform the depth image to the color image format
-        self.transformation_depth_image_to_color_camera(transformation_handle, input_depth_image_handle,
+        self.transformation_depth_image_to_color_camera(self.transformation_handle, input_depth_image_handle,
                                                         transformed_depth_image_handle)
         # Get transformed image data
         transformed_image = self.image_convert_to_numpy(transformed_depth_image_handle)
-        # Close transformation
-        self.transformation_destroy(transformation_handle)
         return transformed_image
 
     def transform_color_to_depth(self, input_color_image_handle, input_depth_image_handle):

@@ -15,7 +15,7 @@ bowl_model.attach_to(base)
 
 pn_direction = np.array([0, 0, -1])
 
-bowl_samples, bowl_sample_normals = bowl_model.sample_surface(toggle_option='normals', radius=.0007)
+bowl_samples, bowl_sample_normals = bowl_model.sample_surface(toggle_option='normals', radius=.002)
 selection = bowl_sample_normals.dot(-pn_direction)>.1
 bowl_samples = bowl_samples[selection]
 bowl_sample_normals=bowl_sample_normals[selection]
@@ -31,8 +31,8 @@ twod_plane = gm.gen_box(np.array([.2, .2, .001]), homomat=homomat, rgba=[1,1,1,.
 twod_plane.attach_to(base)
 
 circle_radius=.05
-line_segs = [[homomat[:3,3], homomat[:3,3]+pt_direction*.05], [homomat[:3,3]+pt_direction*.05, homomat[:3,3]+pt_direction*.05+tmp_direction*.05],
-             [homomat[:3,3]+pt_direction*.05+tmp_direction*.05, homomat[:3,3]+tmp_direction*.05], [homomat[:3,3]+tmp_direction*.05, homomat[:3,3]]]
+line_segs = [[homomat[:3,3], homomat[:3,3]+pt_direction*.07], [homomat[:3,3]+pt_direction*.07, homomat[:3,3]+pt_direction*.07+tmp_direction*.07],
+             [homomat[:3,3]+pt_direction*.07+tmp_direction*.07, homomat[:3,3]+tmp_direction*.07], [homomat[:3,3]+tmp_direction*.07, homomat[:3,3]]]
 # gm.gen_linesegs(line_segs).attach_to(base)
 for sec in line_segs:
     gm.gen_stick(spos=sec[0], epos=sec[1], rgba=[0, 0, 0, 1], thickness=.002, type='round').attach_to(base)
@@ -56,10 +56,10 @@ new_plane_homomat[:3,:3] = rotmat.dot(homomat[:3,:3])
 new_plane_homomat[:3,3] = cpt
 twod_plane = gm.gen_box(np.array([.2, .2, .001]), homomat=new_plane_homomat, rgba=[1,1,1,.3])
 twod_plane.attach_to(base)
-new_line_segs = [[cpt, cpt+rotmat.dot(pt_direction)*.05],
-                 [cpt+rotmat.dot(pt_direction)*.05, cpt+rotmat.dot(pt_direction)*.05+rotmat.dot(tmp_direction)*.05],
-                 [cpt+rotmat.dot(pt_direction)*.05+rotmat.dot(tmp_direction)*.05, cpt+rotmat.dot(tmp_direction)*.05],
-                 [cpt+rotmat.dot(tmp_direction)*.05, cpt]]
+new_line_segs = [[cpt, cpt+rotmat.dot(pt_direction)*.07],
+                 [cpt+rotmat.dot(pt_direction)*.07, cpt+rotmat.dot(pt_direction)*.07+rotmat.dot(tmp_direction)*.07],
+                 [cpt+rotmat.dot(pt_direction)*.07+rotmat.dot(tmp_direction)*.07, cpt+rotmat.dot(tmp_direction)*.07],
+                 [cpt+rotmat.dot(tmp_direction)*.07, cpt]]
 # gm.gen_linesegs(new_line_segs).attach_to(base)
 for sec in new_line_segs:
     gm.gen_stick(spos=sec[0], epos=sec[1], rgba=[0, 0, 0, 1], thickness=.002, type='round').attach_to(base)
@@ -72,9 +72,9 @@ direction = rotmat.dot(pt_direction)
 tmp_direction = rotmat.dot(tmp_direction)
 n=50
 for tick in range(1, n+1):
-    t_npt = cpt+direction*.05/n
+    t_npt = cpt+direction*.07/n
     # gm.gen_arrow(spos=t_npt, epos=t_npt+last_normal*.015, thickness=0.001, rgba=[1, 1, 0, 1]).attach_to(base)
-    nearby_sample_ids = tree.query_ball_point(t_npt, .0015)
+    nearby_sample_ids = tree.query_ball_point(t_npt, .005)
     nearby_samples = bowl_samples[nearby_sample_ids]
     # gm.GeometricModel(nearby_samples).attach_to(base)
     plane_center, plane_normal = rm.fit_plane(nearby_samples)
@@ -96,8 +96,8 @@ for tick in range(1, n+1):
     new_rotmat = rm.rotmat_from_axangle(vec, angle)
     direction = new_rotmat.dot(direction)
     tmp_direction = new_rotmat.dot(tmp_direction)
-    # new_line_segs = [[cpt, cpt+direction*(.05-tick*.05/n)],
-    #                  [cpt+direction*(.05-tick*.05/n), cpt+direction*(.05-tick*.05/n)+tmp_direction*.05]]
+    # new_line_segs = [[cpt, cpt+direction*(.07-tick*.07/n)],
+    #                  [cpt+direction*(.07-tick*.07/n), cpt+direction*(.07-tick*.07/n)+tmp_direction*.07]]
     # gm.gen_linesegs(new_line_segs).attach_to(base)
     gm.gen_stick(spos=cpt, epos=projected_point, rgba=[1,.6,0,1], thickness=.002, type='round').attach_to(base)
     cpt=projected_point
@@ -107,9 +107,9 @@ for tick in range(1, n+1):
 t_cpt = cpt
 direction = new_rotmat.dot(tmp_direction)
 for tick in range(1, n+1):
-    t_npt = cpt+direction*.05/n
+    t_npt = cpt+direction*.07/n
     # gm.gen_arrow(spos=t_npt, epos=t_npt+last_normal*.015, thickness=0.001, rgba=[1, 1, 0, 1]).attach_to(base)
-    nearby_sample_ids = tree.query_ball_point(t_npt, .0015)
+    nearby_sample_ids = tree.query_ball_point(t_npt, .005)
     nearby_samples = bowl_samples[nearby_sample_ids]
     # gm.GeometricModel(nearby_samples).attach_to(base)
     plane_center, plane_normal = rm.fit_plane(nearby_samples)
@@ -139,6 +139,7 @@ for tick in range(1, n+1):
     cpt=projected_point
     last_normal = new_normal
     # break
+base.run()
 
 t_cpt = cpt
 direction = new_rotmat.dot(-pt_direction)
