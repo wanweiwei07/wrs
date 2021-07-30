@@ -1,4 +1,4 @@
-import robotconn.rpc.nxtrobot.nxtlib.nextage_client as nextage_client
+import robot_con.nxt.nxtlib.nextage_client as nextage_client
 from hrpsys import rtm
 
 def pred():

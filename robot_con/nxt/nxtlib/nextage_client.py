@@ -5,9 +5,9 @@ author: weiwei, yan, osaka
 date: 20190417
 """
 
-from robotconn.rpc.nxtrobot.nxtlib.hironx_client import HIRONX
-from robotconn.rpc.nxtrobot.nxtlib.hands_05 import Hands05
-from robotconn.rpc.nxtrobot.nxtlib.iros13_hands import Iros13Hands
+from robot_con.nxt.nxtlib.hironx_client import HIRONX
+from robot_con.nxt.nxtlib.hands_05 import Hands05
+from robot_con.nxt.nxtlib.iros13_hands import Iros13Hands
 
 class NextageClient(HIRONX, object):
 

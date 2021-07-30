@@ -273,7 +273,7 @@ class RRT(object):
         # plt.savefig(str( RRT.img_counter)+'.jpg')
         if delay_time > 0:
             plt.pause(delay_time)
-        plt.waitforbuttonpress()
+        # plt.waitforbuttonpress()
 
 
 if __name__ == '__main__':
