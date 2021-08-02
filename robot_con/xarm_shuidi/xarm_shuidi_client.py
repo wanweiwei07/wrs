@@ -1,5 +1,3 @@
-import keyword
-
 import grpc
 import math
 import time
@@ -15,13 +13,32 @@ class XArmShuidiClient(object):
         channel = grpc.insecure_channel(host)
         self.stub = aa_rpc.XArmShuidiStub(channel)
 
-    def arm_get_jnt_vlaues(self):
+    def get_jnt_values(self, component_name="arm"):
+        if component_name == "arm":
+            return self.arm_get_jnt_values()
+
+    def move_jnts(self, component_name, jnt_values, time_interval=1):
+        """
+        TODO: use xarm function to get faster
+        author: weiwei
+        date: 20210729
+        """
+        if component_name == "arm":
+            current_jnt_values = self.arm_get_jnt_values()
+            print(current_jnt_values, jnt_values)
+            if np.allclose(jnt_values, current_jnt_values, atol=1e-5):
+                print("The robot's configuration is the same as the given one!")
+                return
+            self.arm_move_jspace_path(path=[self.arm_get_jnt_values(), jnt_values])
+
+    def arm_get_jnt_values(self):
         jntvalues_msg = self.stub.arm_get_jnt_values(aa_msg.Empty())
         jnt_values = np.frombuffer(jntvalues_msg.data, dtype=np.float64)
         return jnt_values
 
-    def arm_move_jspace_path(self, path, time_interval, start_frame_id=1, toggle_debug=False):
+    def arm_move_jspace_path(self, path, max_jntspeed=math.pi, start_frame_id=1, toggle_debug=False):
         """
+        TODO: make speed even
         :param path: [jnt_values0, jnt_values1, ...], results of motion planning
         :return:
         author: weiwei
@@ -31,28 +48,24 @@ class XArmShuidiClient(object):
             raise ValueError("The given is incorrect!")
         control_frequency = .005
         tpply = pwp.PiecewisePoly(method='linear')
-        interpolated_path, interpolated_spd, interpolated_acc, _ = tpply.interpolate(path=path,
-                                                                                     control_frequency=control_frequency,
-                                                                                     time_interval=time_interval)
+        interpolated_path, interpolated_spd, interpolated_acc, interpolated_x = \
+            tpply.interpolate_by_max_jntspeed(path=path,
+                                              control_frequency=control_frequency,
+                                              max_jntspeed=max_jntspeed)
         if toggle_debug:
             import matplotlib.pyplot as plt
             # plt.plot(interplated_path)
-            samples = np.linspace(0,
-                                  time_interval,
-                                  math.floor(time_interval / control_frequency),
-                                  endpoint=False) / time_interval
-            nsample = len(samples)
             plt.subplot(311)
             for i in range(len(path)):
-                plt.axvline(x=(nsample - 1) * i)
+                plt.axvline(x=i)
             plt.plot(interpolated_path)
             plt.subplot(312)
             for i in range(len(path)):
-                plt.axvline(x=(nsample - 1) * i)
+                plt.axvline(x=i)
             plt.plot(interpolated_spd)
             plt.subplot(313)
             for i in range(len(path)):
-                plt.axvline(x=(nsample - 1) * i)
+                plt.axvline(x=i)
             plt.plot(interpolated_acc)
             plt.show()
             import pickle
