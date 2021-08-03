@@ -28,9 +28,9 @@ class XArm7(object):
             raise ValueError("The given is incorrect!")
         control_frequency = .005
         tpply = pwply.PiecewisePoly(method='linear')
-        interpolated_path, interpolated_spd, interpolated_acc = tpply.interpolate(path=path,
-                                                                                  control_frequency=control_frequency,
-                                                                                  time_interval=time_interval)
+        interpolated_path, interpolated_spd, interpolated_acc = tpply.interpolate_by_time_interval(path=path,
+                                                                                                   control_frequency=control_frequency,
+                                                                                                   time_interval=time_interval)
         if toggle_debug:
             import matplotlib.pyplot as plt
             # plt.plot(interplated_path)

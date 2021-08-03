@@ -49,9 +49,9 @@ class XArmShuidiClient(object):
         control_frequency = .005
         tpply = pwp.PiecewisePoly(method='linear')
         interpolated_path, interpolated_spd, interpolated_acc, interpolated_x = \
-            tpply.interpolate_by_max_jntspeed(path=path,
-                                              control_frequency=control_frequency,
-                                              max_jntspeed=max_jntspeed)
+            tpply.interpolate_by_max_spdacc(path=path,
+                                            control_frequency=control_frequency,
+                                            max_jnt_spd=max_jntspeed)
         if toggle_debug:
             import matplotlib.pyplot as plt
             # plt.plot(interplated_path)

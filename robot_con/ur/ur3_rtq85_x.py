@@ -178,7 +178,7 @@ class UR3Rtq85X(object):
         """
         if interpolation_method:
             self.trajt.change_method(interpolation_method)
-        interpolated_confs, _, _, _ = self.trajt.interpolate(path, control_frequency, interval_time)
+        interpolated_confs, _, _, _ = self.trajt.interpolate_by_time_interval(path, control_frequency, interval_time)
         # upload a urscript to connect to the pc server started by this class
         self._arm.send_program(self._modern_driver_urscript)
         # accept arm socket

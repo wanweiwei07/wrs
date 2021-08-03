@@ -35,16 +35,16 @@ if __name__ == "__main__":
     # traj_gen = trajp.TrajPoly(method="quintic")
     # interpolated_confs, interpolated_spds, interpolated_accs = \
     #     traj_gen.piecewise_interpolation(jnt_values_list, control_frequency=control_frequency, time_interval=interval_time)
-    traj_gen = pwp.PiecewisePoly(method="linear")
+    traj_gen = pwp.PiecewisePoly(method="cubic")
     # interpolated_confs, interpolated_spds, interpolated_accs, interpolated_x = \
     #     traj_gen.interpolate(jnt_values_list, control_frequency=control_frequency, time_interval=interval_time)
-    interpolated_confs, interpolated_spds, interpolated_accs, interpolated_x = \
-        traj_gen.interpolate_by_max_jntspeed(jnt_values_list, control_frequency=control_frequency, max_jntspeed=1.0472)
+    interpolated_confs, interpolated_spds, interpolated_accs, interpolated_x, original_x = \
+        traj_gen.interpolate_by_max_spdacc(jnt_values_list, control_frequency=control_frequency, max_jnts_spd=None)
 
     fig, axs = plt.subplots(3, figsize=(3.5,4.75))
     fig.tight_layout(pad=.7)
     axs[0].plot(interpolated_x, interpolated_confs, 'o')
-    for xc in np.arange(len(jnt_values_list)):
+    for xc in original_x:
         axs[0].axvline(x=xc)
     # axs[0].plot(np.arange(len(jnt_values_list)), jnt_values_list, '--o')
     axs[1].plot(interpolated_x, interpolated_spds)
