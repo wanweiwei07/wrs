@@ -8,6 +8,8 @@ _stl_dtype_header = np.dtype([('header', np.void, 80), ('face_count', np.int32)]
 
 
 def load_stl(file_obj, file_type=None):
+    if 'b' not in file_obj.mode:
+        raise
     if is_binary_file(file_obj):
         return load_stl_binary(file_obj)
     else:
