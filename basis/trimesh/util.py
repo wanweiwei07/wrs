@@ -342,21 +342,24 @@ def tolist_dict(data):
     return result
 
 
-def is_binary_file(file_obj):
+def is_binary_file(file_obj, probe_sz=1024):
     '''
     Returns True if file has non-ASCII characters (> 0x7F, or 127)
     Should work in both Python 2 and 3
     '''
-    start = file_obj.tell()
-    fbytes = file_obj.read(1024)
-    file_obj.seek(start)
-    is_str = isinstance(fbytes, str)
-    for fbyte in fbytes:
-        if is_str:
-            code = ord(fbyte)
-        else:
-            code = fbyte
-        if code > 127: return True
+    try:
+        start = file_obj.tell()
+        fbytes = file_obj.read(probe_sz)
+        file_obj.seek(start)
+        is_str = isinstance(fbytes, str)
+        for fbyte in fbytes:
+            if is_str:
+                code = ord(fbyte)
+            else:
+                code = fbyte
+            if code > 127: return True
+    except UnicodeDecodeError:
+        return True
     return False
 
 
