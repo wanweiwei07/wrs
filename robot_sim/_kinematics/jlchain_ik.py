@@ -111,14 +111,19 @@ class JLChainIK(object):
         """
         if tcp_jntid is None:
             tcp_jntid = self.jlc_object.tcp_jntid
-        armjac = self.jacobian(tcp_jntid)
-        jjt = np.dot(armjac, armjac.T)
+        j = self.jacobian(tcp_jntid)
+        jjt = np.dot(j, j.transpose())
         pcv, pcaxmat = np.linalg.eig(jjt)
-        # only keep translation
         axmat = np.eye(3)
-        axmat[:, 0] = np.sqrt(pcv[0]) * pcaxmat[:3, 0]
-        axmat[:, 1] = np.sqrt(pcv[1]) * pcaxmat[:3, 1]
-        axmat[:, 2] = np.sqrt(pcv[2]) * pcaxmat[:3, 2]
+        sixd_x = np.array([1, 0, 0, 0, 0, 0])
+        sixd_y = np.array([0, 1, 0, 0, 0, 0])
+        sixd_z = np.array([0, 0, 1, 0, 0, 0])
+        axmat[:, 0] = np.sqrt(pcv[0]) * np.array(
+            [sixd_x.dot(pcaxmat[:, 0]), sixd_y.dot(pcaxmat[:, 0]), sixd_z.dot(pcaxmat[:, 0])])
+        axmat[:, 1] = np.sqrt(pcv[1]) * np.array(
+            [sixd_x.dot(pcaxmat[:, 1]), sixd_y.dot(pcaxmat[:, 1]), sixd_z.dot(pcaxmat[:, 1])])
+        axmat[:, 2] = np.sqrt(pcv[2]) * np.array(
+            [sixd_x.dot(pcaxmat[:, 2]), sixd_y.dot(pcaxmat[:, 2]), sixd_z.dot(pcaxmat[:, 2])])
         return axmat
 
     def get_gl_tcp(self, tcp_jnt_id, tcp_loc_pos, tcp_loc_rotmat):
@@ -251,7 +256,7 @@ class JLChainIK(object):
                tgt_pos,
                tgt_rot,
                seed_jnt_values=None,
-               max_niter = 100,
+               max_niter=100,
                tcp_jntid=None,
                tcp_loc_pos=None,
                tcp_loc_rotmat=None,

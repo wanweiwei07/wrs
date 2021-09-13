@@ -148,9 +148,9 @@ def gen_ellipsoid(pos=np.array([0, 0, 0]), axmat=np.eye(3), subdivisions=5):
     author: weiwei
     date: 20191228osaka
     """
-    homomat = rm.homomat_from_posrot(pos, axmat)
     sphere = tp.Sphere(sphere_radius=1, sphere_center=np.zeros(3), subdivisions=subdivisions)
-    vertices = rm.homomat_transform_points(homomat, sphere.vertices)
+    vertices = axmat.dot(sphere.vertices.T).T
+    vertices = vertices+pos
     return trm.Trimesh(vertices=vertices, faces=sphere.faces)
 
 

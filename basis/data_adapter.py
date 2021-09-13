@@ -313,7 +313,7 @@ def pandageom_from_points(vertices, rgba_list=None, name=''):
     elif type(rgba_list) is not list:
             raise Exception('rgba\_list must be a list!')
     elif len(rgba_list) == 1:
-        vertex_rgbas = np.tile(np.array(rgba_list[0])*255, (len(vertices),1), dtype=np.uint8)
+        vertex_rgbas = np.tile((np.array(rgba_list[0])*255).astype(np.uint8), (len(vertices),1))
     elif len(rgba_list) == len(vertices):
         vertex_rgbas = (np.array(rgba_list)*255).astype(np.uint8)
     else:
@@ -327,7 +327,7 @@ def pandageom_from_points(vertices, rgba_list=None, name=''):
     vertformat.addArray(arrayformat)
     vertformat = GeomVertexFormat.registerFormat(vertformat)
     vertexdata = GeomVertexData(name, vertformat, Geom.UHStatic)
-    vertexdata.modifyArrayHandle(0).copyDataFrom(vertices.astype(np.float32))
+    vertexdata.modifyArrayHandle(0).copyDataFrom(np.ascontiguousarray(vertices, dtype=np.float32))
     vertexdata.modifyArrayHandle(1).copyDataFrom(vertex_rgbas)
     primitive = GeomPoints(Geom.UHStatic)
     primitive.setIndexType(GeomEnums.NTUint32)
