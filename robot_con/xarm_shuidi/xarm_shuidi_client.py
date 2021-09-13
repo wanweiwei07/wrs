@@ -17,7 +17,7 @@ class XArmShuidiClient(object):
         if component_name == "arm":
             return self.arm_get_jnt_values()
 
-    def move_jnts(self, component_name, jnt_values, time_interval=1):
+    def move_jnts(self, component_name, jnt_values, method='linear', max_jntspeed=math.pi):
         """
         TODO: use xarm function to get faster
         author: weiwei
@@ -29,14 +29,20 @@ class XArmShuidiClient(object):
             if np.allclose(jnt_values, current_jnt_values, atol=1e-5):
                 print("The robot's configuration is the same as the given one!")
                 return
-            self.arm_move_jspace_path(path=[self.arm_get_jnt_values(), jnt_values])
+            self.arm_move_jspace_path(path=[self.arm_get_jnt_values(), jnt_values], method=method,
+                                      max_jntspeed=max_jntspeed)
 
     def arm_get_jnt_values(self):
         jntvalues_msg = self.stub.arm_get_jnt_values(aa_msg.Empty())
         jnt_values = np.frombuffer(jntvalues_msg.data, dtype=np.float64)
         return jnt_values
 
-    def arm_move_jspace_path(self, path, max_jntspeed=math.pi, start_frame_id=1, toggle_debug=False):
+    def arm_move_jspace_path(self,
+                             path,
+                             max_jntspeed=math.pi,
+                             method='linear',
+                             start_frame_id=1,
+                             toggle_debug=False):
         """
         TODO: make speed even
         :param path: [jnt_values0, jnt_values1, ...], results of motion planning
@@ -47,11 +53,12 @@ class XArmShuidiClient(object):
         if not path or path is None:
             raise ValueError("The given is incorrect!")
         control_frequency = .005
-        tpply = pwp.PiecewisePoly(method='linear')
+        tpply = pwp.PiecewisePoly(method=method)
         interpolated_path, interpolated_spd, interpolated_acc, interpolated_x = \
-            tpply.interpolate_by_max_spdacc(path=path,
-                                            control_frequency=control_frequency,
-                                            max_jnt_spd=max_jntspeed)
+            tpply.interpolate(path=path, control_frequency=.005, time_interval=.1)
+            # tpply.interpolate_by_max_jntspeed(path=path,
+            #                                   control_frequency=control_frequency,
+            #                                   max_jntspeed=max_jntspeed)
         if toggle_debug:
             import matplotlib.pyplot as plt
             # plt.plot(interplated_path)
@@ -110,15 +117,15 @@ class XArmShuidiClient(object):
         while time_interval > 0:
             speed_msg = aa_msg.Speed(linear_velocity=linear_speed,
                                      angular_velocity=angular_speed)
-            try:
-                return_value = self.stub.agv_move(speed_msg)
-                if return_value == aa_msg.Status.ERROR:
-                    print("Something went wrong with the server!! Try again!")
-                    raise Exception()
-                time_interval = time_interval - .5
-                time.sleep(.3)
-            except Exception:
-                pass
+            # try:
+            return_value = self.stub.agv_move(speed_msg)
+            if return_value == aa_msg.Status.ERROR:
+                print("Something went wrong with the server!!")
+                continue
+            time_interval = time_interval - .5
+            time.sleep(.3)
+            # except Exception:
+            #     pass
 
 
 if __name__ == "__main__":

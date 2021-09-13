@@ -195,7 +195,7 @@ class JLChainIK(object):
         """
         counter = 0
         for id in self.jlc_object.tgtjnts:
-            if self.jlc_object.jnts[id]["type"] is 'revolute':
+            if self.jlc_object.jnts[id]["type"] == 'revolute':
                 if self.jlc_object.jnts[id]['motion_rng'][1] - self.jlc_object.jnts[id]['motion_rng'][0] >= math.pi * 2:
                     rm.regulate_angle(self.jlc_object.jnts[id]['motion_rng'][0],
                                       self.jlc_object.jnts[id]['motion_rng'][1],

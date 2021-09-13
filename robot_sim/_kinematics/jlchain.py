@@ -334,6 +334,9 @@ class JLChain(object):
     def manipulability(self):
         return self._ikt.manipulability()
 
+    def manipulability_axmat(self):
+        return self._ikt.manipulability_axmat()
+
     def cvt_loc_tcp_to_gl(self,
                           loc_pos=np.zeros(3),
                           loc_rotmat=np.eye(3),

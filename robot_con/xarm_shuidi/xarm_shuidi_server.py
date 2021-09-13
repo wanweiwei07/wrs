@@ -3,7 +3,7 @@ import time
 from concurrent import futures
 import drivers.xarm.wrapper.xarm_api as arm
 import robot_con.xarm_shuidi.shuidi.shuidi_robot as agv
-import robot_con.xarm_shuidi.xarm_shuidi_pb2 as aa_msg # aa = arm_agv
+import robot_con.xarm_shuidi.xarm_shuidi_pb2 as aa_msg  # aa = arm_agv
 import robot_con.xarm_shuidi.xarm_shuidi_pb2_grpc as aa_rpc
 import numpy as np
 
@@ -31,9 +31,10 @@ class XArmShuidiServer(aa_rpc.XArmShuidiServicer):
         self._arm_x.set_gripper_enable(1)
         self._arm_x.set_gripper_mode(0)
         self.__speed = 5000
-        self._arm_x.set_gripper_speed(self.__speed) # 1000-5000
-        self._arm_x.set_gripper_position(850) # 1000-5000
+        self._arm_x.set_gripper_speed(self.__speed)  # 1000-5000
+        self._arm_x.set_gripper_position(850)  # 1000-5000
         self._agv_x = agv.ShuidiRobot(ip=agv_ip)
+        print("The Shuidi server is started!")
 
     def arm_get_jnt_values(self, request, context):
         code, jnt_values = self._arm_x.get_servo_angle(is_radian=True)
@@ -63,19 +64,20 @@ class XArmShuidiServer(aa_rpc.XArmShuidiServicer):
         if code != 0:
             raise Exception(f"The returned code of get_gripper_position is wrong! Code: {code}")
         return aa_msg.GripperStatus(speed=speed,
-                                      position=position)
+                                    position=position)
 
-    def agv_mov(self, request, context):
-        linear_speed = request.agv_linear_speed
-        angular_speed = request.agv_angular_speed
+    def agv_move(self, request, context):
+        linear_speed = request.linear_velocity
+        angular_speed = request.angular_velocity
         self._agv_x.joy_control(linear_velocity=linear_speed,
                                 angular_velocity=angular_speed)
         return aa_msg.Status(value=aa_msg.Status.DONE)
 
-def serve(arm_ip = "192.168.50.99", agv_ip="192.168.10.10", host = "localhost:18300"):
+
+def serve(arm_ip="192.168.50.99", agv_ip="192.168.10.10", host="localhost:18300"):
     _ONE_DAY_IN_SECONDS = 60 * 60 * 24
     options = [('grpc.max_message_length', 100 * 1024 * 1024)]
-    server = grpc.server(futures.ThreadPoolExecutor(max_workers=10), options = options)
+    server = grpc.server(futures.ThreadPoolExecutor(max_workers=10), options=options)
     aa_server = XArmShuidiServer(arm_ip=arm_ip, agv_ip=agv_ip)
     aa_rpc.add_XArmShuidiServicer_to_server(aa_server, server)
     server.add_insecure_port(host)
@@ -87,5 +89,6 @@ def serve(arm_ip = "192.168.50.99", agv_ip="192.168.10.10", host = "localhost:18
     except KeyboardInterrupt:
         server.stop(0)
 
+
 if __name__ == "__main__":
-    serve(arm_ip = "192.168.1.185", host = "192.168.50.99:18300")
+    serve(arm_ip="192.168.1.185", host="192.168.50.99:18300")

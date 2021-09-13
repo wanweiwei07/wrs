@@ -90,7 +90,6 @@ class PiecewisePoly(object):
         interpolated_y_dot = A(np.array(interpolated_x), 1).tolist()
         interpolated_y_dotdot = A(np.array(interpolated_x), 2).tolist()
         original_x = self._x
-        print(original_x)
         return interpolated_y, interpolated_y_dot, interpolated_y_dotdot, interpolated_x, original_x
 
     # def _quintic_solve(self):

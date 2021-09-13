@@ -101,6 +101,7 @@ class World(ShowBase, object):
         self._separation = 1
         self.filter = flt.Filter(self.win, self.cam)
         self.filter.setCartoonInk(separation=self._separation)
+        # self.filter.setViewGlow()
         # set up physics world
         self.physics_scale=1e3
         self.physicsworld = BulletWorld()
