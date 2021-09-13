@@ -14,6 +14,7 @@ gm.gen_frame().attach_to(base)
 component_name='agv'
 robot_s = xav.XArm7YunjiMobile()
 robot_s.gen_meshmodel().attach_to(base)
-m_mat = robot_s.manipulability_axmat("arm")
+m_mat = robot_s.manipulability_axmat("arm", type="rotational")
+print(m_mat)
 gm.gen_ellipsoid(pos=robot_s.get_gl_tcp("arm")[0], axmat=m_mat).attach_to(base)
 base.run()

@@ -121,8 +121,8 @@ class ManipulatorInterface(object):
     def manipulability(self):
         return self.jlc.manipulability()
 
-    def manipulability_axmat(self):
-        return self.jlc.manipulability_axmat()
+    def manipulability_axmat(self, type="translational"):
+        return self.jlc.manipulability_axmat(type=type)
 
     def cvt_loc_tcp_to_gl(self,
                           loc_pos=np.zeros(3),
@@ -158,7 +158,7 @@ class ManipulatorInterface(object):
         date: 20201223
         """
         return self.cc.is_collided(obstacle_list=obstacle_list,
-                                          otherrobot_list=otherrobot_list)
+                                   otherrobot_list=otherrobot_list)
 
     def show_cdprimit(self):
         self.cc.show_cdprimit()
@@ -228,6 +228,6 @@ class ManipulatorInterface(object):
         self_copy = copy.deepcopy(self)
         # deepcopying colliders are problematic, I have to update it manually
         if self.cc is not None:
-            for child in self_copy.cc.np.getChildren(): # empty NodePathCollection if the np does not have a child
+            for child in self_copy.cc.np.getChildren():  # empty NodePathCollection if the np does not have a child
                 self_copy.cc.ctrav.addCollider(child, self_copy.cc.chan)
         return self_copy

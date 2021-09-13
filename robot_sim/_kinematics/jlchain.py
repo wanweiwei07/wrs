@@ -52,10 +52,10 @@ class JLChain(object):
         self.tcp_loc_rotmat = np.eye(3)
         # collision primitives
         # mesh generator
-        self.cdprimitive_type=cdprimitive_type
-        self.cdmesh_type=cdmesh_type
-        self._mt = jlm.JLChainMesh(self, cdprimitive_type=cdprimitive_type, cdmesh_type=cdmesh_type) # t = tool
-        self._ikt = jlik.JLChainIK(self) # t = tool
+        self.cdprimitive_type = cdprimitive_type
+        self.cdmesh_type = cdmesh_type
+        self._mt = jlm.JLChainMesh(self, cdprimitive_type=cdprimitive_type, cdmesh_type=cdmesh_type)  # t = tool
+        self._ikt = jlik.JLChainIK(self)  # t = tool
 
     def _init_jlchain(self):
         """
@@ -80,7 +80,7 @@ class JLChain(object):
             lnks[id]['mass'] = 0  # the visual adjustment is ignored for simplisity
             lnks[id]['meshfile'] = None
             lnks[id]['collisionmodel'] = None
-            lnks[id]['cdprimit_childid'] = -1 # id of the CollisionChecker.np.Child
+            lnks[id]['cdprimit_childid'] = -1  # id of the CollisionChecker.np.Child
             lnks[id]['scale'] = [1, 1, 1]  # 3 list
             lnks[id]['rgba'] = [.7, .7, .7, 1]  # 4 list
         for id in range(self.ndof + 2):
@@ -95,7 +95,7 @@ class JLChain(object):
             jnts[id]['gl_motionax'] = jnts[id]['loc_motionax']  # to be updated by self._update_fk
             jnts[id]['gl_posq'] = jnts[id]['gl_pos0']  # to be updated by self._update_fk
             jnts[id]['gl_rotmatq'] = jnts[id]['gl_rotmat0']  # to be updated by self._update_fk
-            jnts[id]['motion_rng'] = [-math.pi, math.pi] # min, max
+            jnts[id]['motion_rng'] = [-math.pi, math.pi]  # min, max
             jnts[id]['motion_val'] = 0
         jnts[0]['gl_pos0'] = self.pos  # This is not necessary, for easy read
         jnts[0]['gl_rotmat0'] = self.rotmat
@@ -162,7 +162,7 @@ class JLChain(object):
 
     @tgtjnts.setter
     def tgtjnts(self, values):
-        self._tgtjnts=values
+        self._tgtjnts = values
         self._ikt = jlik.JLChainIK(self)
 
     def fix_to(self, pos, rotmat, jnt_values=None):
@@ -192,7 +192,7 @@ class JLChain(object):
         date: 20201126
         """
         self.goto_homeconf()
-        if cdprimitive_type is None: # use previously set values if none
+        if cdprimitive_type is None:  # use previously set values if none
             cdprimitive_type = self.cdprimitive_type
         if cdmesh_type is None:
             cdmesh_type = self.cdmesh_type
@@ -334,8 +334,8 @@ class JLChain(object):
     def manipulability(self):
         return self._ikt.manipulability()
 
-    def manipulability_axmat(self):
-        return self._ikt.manipulability_axmat()
+    def manipulability_axmat(self, type="translational"):
+        return self._ikt.manipulability_axmat(type=type)
 
     def cvt_loc_tcp_to_gl(self,
                           loc_pos=np.zeros(3),
@@ -495,7 +495,7 @@ if __name__ == "__main__":
                               toggle_jntscs=True).attach_to(base)
 
     jlinstance2 = jlinstance.copy()
-    jlinstance2.fix_to(pos=np.array([1,1,0]), rotmat=rm.rotmat_from_axangle([0,0,1], math.pi/2))
+    jlinstance2.fix_to(pos=np.array([1, 1, 0]), rotmat=rm.rotmat_from_axangle([0, 0, 1], math.pi / 2))
     jlinstance2.gen_stickmodel(tcp_jntid=tcp_jntidlist,
                                tcp_loc_pos=tcp_loc_poslist,
                                tcp_loc_rotmat=tcp_loc_rotmatlist,
