@@ -111,7 +111,7 @@ class TubePuzzle(object):
                                          [1,1,1,1,0,0,2,2,2,2],
                                          [1,1,1,0,0,0,0,2,2,2],
                                          [1,1,1,0,0,0,0,2,2,2]])
-            # self.goalpattern = np.array([[1,1,1,1,1,1,1,1,1,1],
+            # self.goal_pattern = np.array([[1,1,1,1,1,1,1,1,1,1],
             #                              [1,1,1,1,1,1,1,1,1,1],
             #                              [0,0,0,0,0,0,0,0,0,0],
             #                              [0,0,0,0,0,0,0,0,0,0],
@@ -122,7 +122,7 @@ class TubePuzzle(object):
 
     def _setValues(self, elearray):
         """
-        change the elements of the puzzle using elearray
+        change the elements of the puzzle using state
 
         :param elearray: 2d array
         :return:
@@ -183,8 +183,8 @@ class TubePuzzle(object):
             bpl = []
         else:
             bil, bpl = badlist
-        # print("weightarray")
-        # print(weightarray)
+        # print("weight_array")
+        # print(weight_array)
 
         # filtering
         # mask_ulbr = np.array([[1,0,0],[0,0,0],[0,0,1]])
@@ -217,21 +217,21 @@ class TubePuzzle(object):
         cf = ((cg_ucbc==0)+(cg_crcl==0))*(node.grid==0)
         # cf = ((cg_ucbc==0)+(cg_crcl==0)+(cg_ul==0)+(cg_ur==0)+(cg_bl==0)+(cg_br==0))*(node.grid==0)
         # always fill the first element
-        # fillable1array = np.asarray(np.where((self.goalpattern==1)*cf)).T
-        # fillable2array = np.asarray(np.where((self.goalpattern==2)*cf)).T
+        # fillable1array = np.asarray(np.where((self.goal_pattern==1)*cf)).T
+        # fillable2array = np.asarray(np.where((self.goal_pattern==2)*cf)).T
         fillable1array = np.asarray(np.where((self.goalpattern==1)*cf)).T
         fillable2array = np.asarray(np.where((self.goalpattern==2)*cf)).T
         # fillable 1
         # for i in range(fillable1array.shape[0]):
-        #     if weightarray[fillable1array[i][0], fillable1array[i][1]] !=0:
+        #     if weight_array[fillable1array[i][0], fillable1array[i][1]] !=0:
         #         continue
         #     else:
         #         break
         # fillable_type1 = [fillable1array[i]]
         # # fillable 2
-        # for i in range(np.asarray(np.where((self.goalpattern==2)*cf)).T.shape[0]):
-        #     fillable_type2 = [np.asarray(np.where((self.goalpattern==2)*cf)).T[i]]
-        #     if weightarray[fillable_type2[0][0], fillable_type2[0][1]] !=0:
+        # for i in range(np.asarray(np.where((self.goal_pattern==2)*cf)).T.shape[0]):
+        #     fillable_type2 = [np.asarray(np.where((self.goal_pattern==2)*cf)).T[i]]
+        #     if weight_array[fillable_type2[0][0], fillable_type2[0][1]] !=0:
         #         continue
         if fillable1array.shape[0] == 0:
             fillable_type1 = [np.asarray(np.where((self.goalpattern!=1)*cf)).T[0]]
@@ -242,9 +242,9 @@ class TubePuzzle(object):
         else:
             fillable_type2 = [fillable2array[0]]
         # # fillable 1
-        # fillable_type1 = np.asarray(np.where((self.goalpattern==1)*cf)).T
+        # fillable_type1 = np.asarray(np.where((self.goal_pattern==1)*cf)).T
         # # fillable 2
-        # fillable_type2 = np.asarray(np.where((self.goalpattern==2)*cf)).T
+        # fillable_type2 = np.asarray(np.where((self.goal_pattern==2)*cf)).T
         ## graspable
         # cg_ulbr[node.grid==0]=-1
         # cg_urbl[node.grid==0]=-1
@@ -368,7 +368,7 @@ class TubePuzzle(object):
 
         build a graph considering the movable and fillable ids
 
-        :param weightarray
+        :param weight_array
 
         :return:
 
@@ -399,8 +399,8 @@ class TubePuzzle(object):
             # for mid in movableids:
             #     for fid in fillableids:
             movableeles, fillableeles = self.getMovableFillablePair(self.closelist[-1], badlist)
-            # print("weightarray")
-            # print(weightarray)
+            # print("weight_array")
+            # print(weight_array)
             print("movablefillable")
             print(self.closelist[-1])
             print(movableeles, fillableeles)
@@ -413,7 +413,7 @@ class TubePuzzle(object):
             for i in range(movableeles.shape[0]):
                 mi, mj = movableeles[i]
                 fi, fj = fillableeles[i]
-                # if weightarray[mi, mj] != 0 and weightarray[fi, fj] != 0:
+                # if weight_array[mi, mj] != 0 and weight_array[fi, fj] != 0:
                 #     continue
                 tmpelearray = copy.deepcopy(self.closelist[-1])
                 tmpelearray.parent = self.closelist[-1]
@@ -474,9 +474,9 @@ if __name__=="__main__":
                          [0,0,2,1,2,2,0,0,0,0],
                          [0,0,0,0,2,0,0,0,0,0]])
     tp = TubePuzzle(elearray)
-    # tp.getMovableIds(Node(elearray))
-    # print(Node(elearray).fcost())
-    # print(tp.fcost(Node(elearray)))
+    # tp.getMovableIds(Node(state))
+    # print(Node(state).fcost())
+    # print(tp.fcost(Node(state)))
     path = tp.atarSearch()
-    # for node in path:////////////
-    #     print(node)
+    # for state in path:////////////
+    #     print(state)

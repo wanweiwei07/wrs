@@ -61,6 +61,12 @@ class CobottaX(object):
         author: weiwei
         date: 20210507
         """
+        new_path = []
+        for i, pose in enumerate(path):
+            if i < len(path)-1 and not np.allclose(pose, path[i+1]):
+                new_path.append(pose)
+        new_path.append(path[-1])
+        path = new_path
         interplated_path, _, _ = self.traj_s.piecewise_interpolation(path, control_frequency=.005)
         # Slave move: Change mode
         self.bcc.robot_execute(self.hrbt, "slvChangeMode", 0x102)

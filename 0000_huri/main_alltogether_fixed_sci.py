@@ -32,14 +32,14 @@ if __name__ == '__main__':
     #                         [0,0,0,0,0,0,0,0,0,0]])
     pto.setpattern(elearray)
     # pto.gencad(homomat=lctr.tubestandhomomat).reparentTo(base.render)
-    # elearray_ext = np.zeros((elearray.shape[0]*2, elearray.shape[1]))
-    # elearray_ext[0:elearray.shape[0], 0:elearray.shape[1]] = elearray[:, :]
+    # elearray_ext = np.zeros((state.shape[0]*2, state.shape[1]))
+    # elearray_ext[0:state.shape[0], 0:state.shape[1]] = state[:, :]
     # yhx.p3dh.genframe(pos=lctr.tubestandhomomat[:3, 3], rotmat=lctr.tubestandhomomat[:3, :3]).reparentTo(yhx.base.render)
     tubestandcm = lctr.gentubestand(homomat=lctr.tubestandhomomat)
     tubestandcm.reparentTo(base.render)
     # base.run()
 
-    # goalpattern = np.array([[2,2,2,0,0,0,0,1,1,1],
+    # goal_pattern = np.array([[2,2,2,0,0,0,0,1,1,1],
     #                          [2,2,2,0,0,0,0,1,1,1],
     #                          [2,2,2,0,0,0,0,1,1,1],
     #                          [2,2,2,0,0,0,0,1,1,1],
@@ -48,10 +48,10 @@ if __name__ == '__main__':
     if tpobj.isdone(tp.Node(elearray)):
         print("Tubes are arranged!")
         sys.exit()
-    # weightarray = np.zeros_like(elearray)
-    # weightarray[0,0] = 1
-    # weightarray[1,0] = 1
-    # path = tpobj.atarSearch(weightarray)
+    # weight_array = np.zeros_like(state)
+    # weight_array[0,0] = 1
+    # weight_array[1,0] = 1
+    # path = tpobj.atarSearch(weight_array)
     path = tpobj.atarSearch()
     for node in path:
         print(node)
@@ -91,7 +91,7 @@ if __name__ == '__main__':
     lastrgtarmjnts = yhx.rbt.initrgtjnts
     lastlftarmjnts = yhx.rbt.initlftjnts
     i = 0
-    # for bad node
+    # for bad state
     badarraylist = []
     badstartgoals = []
     finalpath = [path[0]]
@@ -165,8 +165,8 @@ if __name__ == '__main__':
             badstartgoals.append([[initij[0], initij[1]], [goalij[0], goalij[1]]])
             tpobj = tp.TubePuzzle(tmpelearray)
             weightarray = np.zeros_like(nodepresent.grid)
-            # weightarray[0,0] = 1
-            # weightarray[1,0] = 1
+            # weight_array[0,0] = 1
+            # weight_array[1,0] = 1
             for id, onebadarray in enumerate(badarraylist):
                 if np.array_equal(onebadarray, tmpelearray):
                     weightarray[badstartgoals[id][0][0], badstartgoals[id][0][1]] = id+1
@@ -178,7 +178,7 @@ if __name__ == '__main__':
             i = 0
             # print("Failure")
             # print(badarraylist)
-            # print(weightarray)
+            # print(weight_array)
             continue
         else:
             i += 1

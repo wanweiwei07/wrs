@@ -75,7 +75,7 @@ cdchecker = cdck.CollisionCheckerBall(robotball)
 ctcallback = ctcb.CtCallback(base, robot, cdchecker, armname=armname)
 smoother = sm.Smoother()
 
-# elearray = np.array([[1, 0, 0, 0, 0, 0, 1, 0, 0, 0],
+# state = np.array([[1, 0, 0, 0, 0, 0, 1, 0, 0, 0],
 #                      [0, 0, 0, 0, 0, 0, 0, 2, 0, 2],
 #                      [0, 0, 0, 0, 0, 0, 0, 0, 2, 0],
 #                      [1, 0, 0, 0, 0, 0, 0, 0, 2, 2],

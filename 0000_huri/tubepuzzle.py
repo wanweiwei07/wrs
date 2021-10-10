@@ -281,7 +281,7 @@ class TubePuzzle(object):
 
     def _setValues(self, elearray):
         """
-        change the elements of the puzzle using elearray
+        change the elements of the puzzle using state
 
         :param elearray: 2d array
         :return:

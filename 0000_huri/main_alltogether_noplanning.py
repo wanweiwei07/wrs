@@ -26,8 +26,8 @@ if __name__ == '__main__':
         print("Tubes are arranged!")
         sys.exit()
     path = tpobj.atarSearch()
-    # for node in path:
-    #     print(node)
+    # for state in path:
+    #     print(state)
     #
 
     numikmsmpall = []

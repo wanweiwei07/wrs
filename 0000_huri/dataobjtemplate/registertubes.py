@@ -364,7 +364,7 @@ if __name__ == '__main__':
 
     # homomat = loc.findtubestand_match(objpcdmerged, toggle_debug=True)
 
-    # elearray, eleconfidencearray = loc.findtubes(homomat, objpcd, toggle_debug=False)
+    # state, eleconfidencearray = loc.findtubes(homomat, objpcd, toggle_debug=False)
     # yhx.p3dh.genframe(pos=homomat[:3,3], rotmat=homomat[:3,:3]).reparentTo(yhx.base.render)
     # rbtnp = yhx.rbtmesh.genmnp(yhx.robot_s)
     # rbtnp.reparentTo(yhx.base.render)
@@ -380,7 +380,7 @@ if __name__ == '__main__':
     # tbscm = loc.gentubestand(homomat=homomat)
     # tbscm.reparentTo(yhx.base.render)
     # tbscm.showcn()
-    # tubecms = loc.gentubes(elearray, tubestand_homomat=homomat, eleconfidencearray=eleconfidencearray)
+    # tubecms = loc.gentubes(state, tubestand_homomat=homomat, eleconfidencearray=eleconfidencearray)
     # for tbcm in tubecms:
     #     tbcm.reparentTo(yhx.base.render)
     #     tbcm.showcn()

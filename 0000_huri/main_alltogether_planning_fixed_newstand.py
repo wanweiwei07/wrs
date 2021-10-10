@@ -22,7 +22,7 @@ if __name__ == '__main__':
 
     nrow = elearray.shape[0]
     ncol = elearray.shape[1]
-    # expand elearray
+    # expand state
     elearray_ext = np.zeros((nrow*2, ncol))
     elearray_ext[:nrow, :] = elearray[:, :]
 
@@ -31,8 +31,8 @@ if __name__ == '__main__':
         print("Tubes are arranged!")
         sys.exit()
     path = tpobj.atarSearch()
-    # for node in path:
-    #     print(node)
+    # for state in path:
+    #     print(state)
     #
 
     numikmsmpall = []
@@ -42,7 +42,7 @@ if __name__ == '__main__':
     lastrgtarmjnts = yhx.rbt.initrgtjnts
     lastlftarmjnts = yhx.rbt.initlftjnts
     i = 0
-    # for bad node
+    # for bad state
     badarraylist = []
     badstartgoals = []
     while i < len(path) - 1:
@@ -113,11 +113,11 @@ if __name__ == '__main__':
                     weightarray[badstartgoals[id][0][0], badstartgoals[id][0][1]] = id+1
                     weightarray[badstartgoals[id][1][0], badstartgoals[id][1][1]] = id+1
             path = tpobj.atarSearch(weightarray)
-            print("###weightarray", weightarray)
+            print("###weight_array", weightarray)
             i = 0
             # print("Failure")
             # print(badarraylist)
-            # print(weightarray)
+            # print(weight_array)
             continue
         else:
             i += 1

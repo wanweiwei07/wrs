@@ -43,8 +43,8 @@ model = cm.CollisionModel("./objects/bunnysim.stl")
 node = bbd.BDBody(model, cdtype='box', dynamic=True)
 bulletnodelist = []
 for i in range(10):
-    # node = bch.genBulletCDMesh(model)
-    # newnode = copy.deepcopy(node)
+    # state = bch.genBulletCDMesh(model)
+    # newnode = copy.deepcopy(state)
     newnode = node.copy()
     newnode.setMass(1)
     rot = rm.rotmat_from_axangle([0, 1, 0], -math.pi / 4)
@@ -64,7 +64,7 @@ for i in range(10):
 # debugNode.showNormals(False)
 # debugNP = base.render.attachNewNode(debugNode)
 # # debugNP.show()
-# world.setDebugNode(debugNP.node())
+# world.setDebugNode(debugNP.state())
 
 # Update
 # objmodellist = [model.copy(), model.copy(), model.copy()]

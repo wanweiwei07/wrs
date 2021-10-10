@@ -28,7 +28,7 @@ def is_collided(objcm0, objcm1):
 
 def gen_plane_cdmesh(updirection=np.array([0, 0, 1]), offset=0, name='autogen'):
     """
-    generate a plane bulletrigidbody node
+    generate a plane bulletrigidbody state
     :param updirection: the normal parameter of bulletplaneshape at panda3d
     :param offset: the d parameter of bulletplaneshape at panda3d
     :param name:

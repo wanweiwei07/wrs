@@ -24,7 +24,7 @@ if __name__ == '__main__':
         objpcd = lctr.capturecorrectedpcd(yhx.pxc)
         tshomomat = lctr.findtubestand_matchonobb(objpcd)
         elearray, eleconfidencearray = lctr.findtubes(tshomomat, objpcd, toggledebug=False)
-        print("new elearray", elearray)
+        print("new state", elearray)
         yhx.p3dh.genframe(pos=tshomomat[:3, 3], rotmat=tshomomat[:3, :3]).reparentTo(yhx.base.render)
         tubestandcm = lctr.gentubestand(homomat=tshomomat)
 

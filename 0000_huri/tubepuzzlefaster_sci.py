@@ -117,7 +117,7 @@ class TubePuzzle(object):
 
     def _setValues(self, elearray):
         """
-        change the elements of the puzzle using elearray
+        change the elements of the puzzle using state
 
         :param elearray: 2d array
         :return:
@@ -204,21 +204,21 @@ class TubePuzzle(object):
         cf = ((cg_ucbc==0)+(cg_crcl==0)+(cg_ul==0)+(cg_ur==0)+(cg_bl==0)+(cg_br==0))*(node.grid==0)
         # always fill the first element
         # # fillable 1
-        # for i in range(np.asarray(np.where((self.goalpattern==1)*cf)).T.shape[0]):
-        #     fillable_type1 = [np.asarray(np.where((self.goalpattern==1)*cf)).T[i]]
-        #     if weightarray[fillable_type1[0][0], fillable_type1[0][1]] !=0:
+        # for i in range(np.asarray(np.where((self.goal_pattern==1)*cf)).T.shape[0]):
+        #     fillable_type1 = [np.asarray(np.where((self.goal_pattern==1)*cf)).T[i]]
+        #     if weight_array[fillable_type1[0][0], fillable_type1[0][1]] !=0:
         #         continue
         # # fillable 2
-        # for i in range(np.asarray(np.where((self.goalpattern==2)*cf)).T.shape[0]):
-        #     fillable_type2 = [np.asarray(np.where((self.goalpattern==2)*cf)).T[i]]
-        #     if weightarray[fillable_type2[0][0], fillable_type2[0][1]] !=0:
+        # for i in range(np.asarray(np.where((self.goal_pattern==2)*cf)).T.shape[0]):
+        #     fillable_type2 = [np.asarray(np.where((self.goal_pattern==2)*cf)).T[i]]
+        #     if weight_array[fillable_type2[0][0], fillable_type2[0][1]] !=0:
         #         continue
         fillable_type1 = [np.asarray(np.where((self.goalpattern==1)*cf)).T[0]]
         fillable_type2 = [np.asarray(np.where((self.goalpattern==2)*cf)).T[0]]
         # # fillable 1
-        # fillable_type1 = np.asarray(np.where((self.goalpattern==1)*cf)).T
+        # fillable_type1 = np.asarray(np.where((self.goal_pattern==1)*cf)).T
         # # fillable 2
-        # fillable_type2 = np.asarray(np.where((self.goalpattern==2)*cf)).T
+        # fillable_type2 = np.asarray(np.where((self.goal_pattern==2)*cf)).T
         ## graspable
         # cg_ulbr[node.grid==0]=-1
         # cg_urbl[node.grid==0]=-1
@@ -364,9 +364,9 @@ if __name__=="__main__":
                          [0,0,2,1,2,2,0,0,0,0],
                          [0,0,0,0,2,0,0,0,0,0]])
     tp = TubePuzzle(elearray)
-    # tp.getMovableIds(Node(elearray))
-    # print(Node(elearray).fcost())
-    # print(tp.fcost(Node(elearray)))
+    # tp.getMovableIds(Node(state))
+    # print(Node(state).fcost())
+    # print(tp.fcost(Node(state)))
     path = tp.atarSearch()
-    # for node in path:////////////
-    #     print(node)
+    # for state in path:////////////
+    #     print(state)

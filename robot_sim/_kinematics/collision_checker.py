@@ -112,13 +112,14 @@ class CollisionChecker(object):
         :return:
         """
         self.all_cdelements.remove(cdobj_info)
-        cdnp = self.np.getChild(cdobj_info['cdprimit_childid'])
-        self.ctrav.removeCollider(cdnp)
+        cdnp_to_delete = self.np.getChild(cdobj_info['cdprimit_childid'])
+        self.ctrav.removeCollider(cdnp_to_delete)
         for cdlnk in cdobj_info['intolist']:
             cdnp = self.np.getChild(cdlnk['cdprimit_childid'])
             current_into_cdmask = cdnp.node().getIntoCollideMask()
-            new_into_cdmask = current_into_cdmask & ~cdnp.node().getFromCollideMask()
+            new_into_cdmask = current_into_cdmask & ~cdnp_to_delete.node().getFromCollideMask()
             cdnp.node().setIntoCollideMask(new_into_cdmask)
+        cdnp_to_delete.detachNode()
 
     def is_collided(self, obstacle_list=[], otherrobot_list=[], toggle_contact_points=False):
         """

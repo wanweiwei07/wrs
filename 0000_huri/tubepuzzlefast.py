@@ -97,7 +97,7 @@ class TubePuzzle(object):
 
     def _setValues(self, elearray):
         """
-        change the elements of the puzzle using elearray
+        change the elements of the puzzle using state
 
         :param elearray: 2d array
         :return:
@@ -299,9 +299,9 @@ if __name__=="__main__":
                          [0,0,2,1,2,2,0,0,0,0],
                          [0,0,0,0,2,0,0,0,0,0]])
     tp = TubePuzzle(elearray)
-    # tp.getMovableIds(Node(elearray))
-    # print(Node(elearray).fcost())
-    # print(tp.fcost(Node(elearray)))
+    # tp.getMovableIds(Node(state))
+    # print(Node(state).fcost())
+    # print(tp.fcost(Node(state)))
     path = tp.atarSearch()
-    # for node in path:////////////
-    #     print(node)
+    # for state in path:////////////
+    #     print(state)
