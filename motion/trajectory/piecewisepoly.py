@@ -106,7 +106,6 @@ class PiecewisePoly(object):
             tmp_eve_time_interval = (pose_diff - dists_zero_to_maxspd) / max_jnts_spd
             tmp_time_interval[selection] = (tmp_eve_time_interval + times_zero_to_maxspd)[selection]
             tmp_time_interval = np.max(tmp_time_interval)
-            # tmp_time_interval = math.sqrt(2 * max(abs(path[i + 1] - path[i]) / np.asarray(max_jnts_acc)))
             # tmp_time_interval = 1
             self._x.append(tmp_time_interval + tmp_total_time)
             tmp_total_time += tmp_time_interval
