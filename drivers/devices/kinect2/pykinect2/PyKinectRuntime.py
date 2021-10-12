@@ -2,7 +2,7 @@ import ctypes
 import sys
 import numpy
 import time
-from drivers.devices.kinect2 import kinect2ctype
+from drivers.devices.kinect2.pykinect2 import PyKinectV2
 
 if sys.hexversion >= 0x03000000:
     import _thread as thread
@@ -12,7 +12,8 @@ else:
 KINECT_MAX_BODY_COUNT = 6
 
 
-class Kinect2(object):
+class PyKinectRuntime(object):
+    """manages Kinect objects and simplifying access to them"""
 
     def __init__(self, frame_source_types):
         # recipe to get address of surface: http://archives.seul.org/pygame/users/Apr-2008/msg00218.html
@@ -21,6 +22,7 @@ class Kinect2(object):
             self.Py_ssize_t = ctypes.c_int
         else:
             self.Py_ssize_t = ctypes.c_int64
+
         self._PyObject_AsWriteBuffer = ctypes.pythonapi.PyObject_AsWriteBuffer
         self._PyObject_AsWriteBuffer.restype = ctypes.c_int
         self._PyObject_AsWriteBuffer.argtypes = [ctypes.py_object,
@@ -54,7 +56,7 @@ class Kinect2(object):
         self._audio_frame_lock = thread.allocate()
 
         # initialize sensor
-        self._sensor = ctypes.POINTER(kinect2ctype.IKinectSensor)()
+        self._sensor = ctypes.POINTER(PyKinectV2.IKinectSensor)()
         hres = ctypes.windll.kinect20.GetDefaultKinectSensor(ctypes.byref(self._sensor))
         hres = self._sensor.Open()
 
@@ -84,7 +86,7 @@ class Kinect2(object):
         self._body_index_source = self._sensor.BodyIndexFrameSource
         self.body_index_frame_desc = self._body_index_source.FrameDescription
         self._body_source = self._sensor.BodyFrameSource
-        self._body_frame_data = ctypes.POINTER(ctypes.POINTER(kinect2ctype.IBody))
+        self._body_frame_data = ctypes.POINTER(ctypes.POINTER(PyKinectV2.IBody))
         self.max_body_count = self._body_source.BodyCount
 
         self._color_frame_data = None
@@ -95,7 +97,7 @@ class Kinect2(object):
         self._long_exposure_infrared_frame_data = None
         self._audio_frame_data = None
 
-        if (self.frame_source_types & kinect2ctype.FrameSourceTypes_Color):
+        if (self.frame_source_types & PyKinectV2.FrameSourceTypes_Color):
             self._color_frame_data = ctypes.POINTER(ctypes.c_ubyte)
             self._color_frame_data_capacity = ctypes.c_uint(
                 self.color_frame_desc.Width * self.color_frame_desc.Height * 4)
@@ -106,7 +108,7 @@ class Kinect2(object):
             self._handles[self._waitHandleCount] = self._color_frame_arrived_event
             self._waitHandleCount += 1
 
-        if (self.frame_source_types & kinect2ctype.FrameSourceTypes_Infrared):
+        if (self.frame_source_types & PyKinectV2.FrameSourceTypes_Infrared):
             self._infrared_frame_data = ctypes.POINTER(ctypes.c_ushort)
             self._infrared_frame_data_capacity = ctypes.c_uint(
                 self.infrared_frame_desc.Width * self.infrared_frame_desc.Height)
@@ -117,7 +119,7 @@ class Kinect2(object):
             self._handles[self._waitHandleCount] = self._infrared_frame_arrived_event
             self._waitHandleCount += 1
 
-        if (self.frame_source_types & kinect2ctype.FrameSourceTypes_Depth):
+        if (self.frame_source_types & PyKinectV2.FrameSourceTypes_Depth):
             self._depth_frame_data = ctypes.POINTER(ctypes.c_ushort)
             self._depth_frame_data_capacity = ctypes.c_uint(self.depth_frame_desc.Width * self.depth_frame_desc.Height)
             self._depth_frame_data_type = ctypes.c_ushort * self._depth_frame_data_capacity.value
@@ -127,7 +129,7 @@ class Kinect2(object):
             self._handles[self._waitHandleCount] = self._depth_frame_arrived_event
             self._waitHandleCount += 1
 
-        if (self.frame_source_types & kinect2ctype.FrameSourceTypes_BodyIndex):
+        if (self.frame_source_types & PyKinectV2.FrameSourceTypes_BodyIndex):
             self._body_index_frame_data = ctypes.POINTER(ctypes.c_ubyte)
             self._body_index_frame_data_capacity = ctypes.c_uint(
                 self.body_index_frame_desc.Width * self.body_index_frame_desc.Height)
@@ -140,7 +142,7 @@ class Kinect2(object):
             self._waitHandleCount += 1
 
         self._body_frame_data = None
-        if (self.frame_source_types & kinect2ctype.FrameSourceTypes_Body):
+        if (self.frame_source_types & PyKinectV2.FrameSourceTypes_Body):
             self._body_frame_data_capacity = ctypes.c_uint(self.max_body_count)
             self._body_frame_data_type = ctypes.POINTER(IBody) * self._body_frame_data_capacity.value
             self._body_frame_data = ctypes.cast(self._body_frame_data_type(), ctypes.POINTER(ctypes.POINTER(IBody)))
@@ -290,17 +292,17 @@ class Kinect2(object):
         return self._mapper.MapCameraPointToDepthSpace(joint.Position)
 
     def body_joints_to_color_space(self, joints):
-        joint_points = numpy.ndarray((kinect2ctype.JointType_Count), dtype=numpy.object)
+        joint_points = numpy.ndarray((PyKinectV2.JointType_Count), dtype=numpy.object)
 
-        for j in range(0, kinect2ctype.JointType_Count):
+        for j in range(0, PyKinectV2.JointType_Count):
             joint_points[j] = self.body_joint_to_color_space(joints[j])
 
         return joint_points
 
     def body_joints_to_depth_space(self, joints):
-        joint_points = numpy.ndarray((kinect2ctype.JointType_Count), dtype=numpy.object)
+        joint_points = numpy.ndarray((PyKinectV2.JointType_Count), dtype=numpy.object)
 
-        for j in range(0, kinect2ctype.JointType_Count):
+        for j in range(0, PyKinectV2.JointType_Count):
             joint_points[j] = self.body_joint_to_depth_space(joints[j])
 
         return joint_points
@@ -308,7 +310,7 @@ class Kinect2(object):
     def kinect_frame_thread(self):
         while 1:
             wait = ctypes.windll.kernel32.WaitForMultipleObjects(self._waitHandleCount, self._handles, False,
-                                                                 kinect2ctype._INFINITE)
+                                                                 PyKinectV2._INFINITE)
 
             if wait == 0:
                 break
@@ -338,7 +340,7 @@ class Kinect2(object):
             try:
                 with self._color_frame_lock:
                     colorFrame.CopyConvertedFrameDataToArray(self._color_frame_data_capacity, self._color_frame_data,
-                                                             kinect2ctype.ColorImageFormat_Bgra)
+                                                             PyKinectV2.ColorImageFormat_Bgra)
                     self._last_color_frame_time = time.time()
             except:
                 pass
@@ -454,18 +456,18 @@ class KinectBody(object):
             self.hand_right_confidence = body.HandRightConfidence
             self.clipped_edges = body.ClippedEdges
 
-            joints = ctypes.POINTER(kinect2ctype._Joint)
-            joints_capacity = ctypes.c_uint(kinect2ctype.JointType_Count)
-            joints_data_type = kinect2ctype._Joint * joints_capacity.value
-            joints = ctypes.cast(joints_data_type(), ctypes.POINTER(kinect2ctype._Joint))
-            body.GetJoints(kinect2ctype.JointType_Count, joints)
+            joints = ctypes.POINTER(PyKinectV2._Joint)
+            joints_capacity = ctypes.c_uint(PyKinectV2.JointType_Count)
+            joints_data_type = PyKinectV2._Joint * joints_capacity.value
+            joints = ctypes.cast(joints_data_type(), ctypes.POINTER(PyKinectV2._Joint))
+            body.GetJoints(PyKinectV2.JointType_Count, joints)
             self.joints = joints
 
-            joint_orientations = ctypes.POINTER(kinect2ctype._JointOrientation)
-            joint_orientations_data_type = kinect2ctype._JointOrientation * joints_capacity.value
-            joint_orientations = ctypes.cast(joint_orientations_data_type(), ctypes.POINTER(
-                kinect2ctype._JointOrientation))
-            body.GetJointOrientations(kinect2ctype.JointType_Count, joint_orientations)
+            joint_orientations = ctypes.POINTER(PyKinectV2._JointOrientation)
+            joint_orientations_data_type = PyKinectV2._JointOrientation * joints_capacity.value
+            joint_orientations = ctypes.cast(joint_orientations_data_type(),
+                                             ctypes.POINTER(PyKinectV2._JointOrientation))
+            body.GetJointOrientations(PyKinectV2.JointType_Count, joint_orientations)
             self.joint_orientations = joint_orientations
 
 

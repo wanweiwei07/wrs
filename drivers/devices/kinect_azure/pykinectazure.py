@@ -500,28 +500,22 @@ class PyKinectAzure(object):
         author: weiwei
         date: 20210708
         """
-        calibration = _k4a.k4a_calibration_t()
         # Get desired image format
         image_format = _k4a_types.K4A_IMAGE_FORMAT_COLOR_BGRA32
         image_width = self.image_get_width_pixels(input_depth_image_handle)
         image_height = self.image_get_height_pixels(input_depth_image_handle)
         image_stride = 0
-        # Get the camera calibration
-        self.device_get_calibration(self.config.depth_mode, self.config.color_resolution, calibration)
-        # Create transformation
-        transformation_handle = self.transformation_create(calibration)
-        # Create the image handle
+
         transformed_color_image_handle = _k4a.k4a_image_t()
         self.image_create(image_format, image_width, image_height, image_stride, transformed_color_image_handle)
         # Transform the color image to the depth image format
-        self.transformation_color_image_to_depth_camera(transformation_handle,
+        self.transformation_color_image_to_depth_camera(self.transformation_handle,
                                                         input_depth_image_handle,
                                                         input_color_image_handle,
                                                         transformed_color_image_handle)
         # Get transformed image data
         transformed_image = self.image_convert_to_numpy(transformed_color_image_handle)
-        # Close transformation
-        self.transformation_destroy(transformation_handle)
+
         return transformed_image
 
     def transform_color_xy_to_pcd_xyz(self, input_color_image_handle, input_depth_image_handle, color_xy):
