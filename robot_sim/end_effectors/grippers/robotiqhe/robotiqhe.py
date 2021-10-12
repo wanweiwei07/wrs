@@ -4,6 +4,7 @@ import modeling.model_collection as mc
 import robot_sim._kinematics.jlchain as jl
 import basis.robot_math as rm
 import robot_sim.end_effectors.grippers.gripper_interface as gp
+import modeling.geometric_model as gm
 
 
 class RobotiqHE(gp.GripperInterface):
@@ -94,10 +95,13 @@ class RobotiqHE(gp.GripperInterface):
         self.fk(motion_val=(0.05-jawwidth) / 2.0)
 
     def gen_stickmodel(self,
+                       tcp_jntid=None,
+                       tcp_loc_pos=None,
+                       tcp_loc_rotmat=None,
                        toggle_tcpcs=False,
                        toggle_jntscs=False,
                        toggle_connjnt=False,
-                       name='xarm_gripper_stickmodel'):
+                       name='robotiqe_stickmodel'):
         stickmodel = mc.ModelCollection(name=name)
         self.coupling.gen_stickmodel(toggle_tcpcs=False,
                                      toggle_jntscs=toggle_jntscs).attach_to(stickmodel)
@@ -108,7 +112,7 @@ class RobotiqHE(gp.GripperInterface):
                                 toggle_jntscs=toggle_jntscs,
                                 toggle_connjnt=toggle_connjnt).attach_to(stickmodel)
         if toggle_tcpcs:
-            jaw_center_gl_pos = self.rotmat.dot(self.jaw_center_loc_pos)+self.pos
+            jaw_center_gl_pos = self.rotmat.dot(self.jaw_center_pos)+self.pos
             jaw_center_gl_rotmat = self.rotmat.dot(self.jaw_center_rotmat)
             gm.gen_dashstick(spos=self.pos,
                              epos=jaw_center_gl_pos,
@@ -134,8 +138,8 @@ class RobotiqHE(gp.GripperInterface):
                                toggle_jntscs=toggle_jntscs,
                                rgba=rgba).attach_to(meshmodel)
         if toggle_tcpcs:
-            jaw_center_gl_pos = self.rotmat.dot(grpr.jaw_center_loc_pos)+self.pos
-            jaw_center_gl_rotmat = self.rotmat.dot(grpr.jaw_center_rotmat)
+            jaw_center_gl_pos = self.rotmat.dot(self.jaw_center_pos)+self.pos
+            jaw_center_gl_rotmat = self.rotmat.dot(self.jaw_center_rotmat)
             gm.gen_dashstick(spos=self.pos,
                              epos=jaw_center_gl_pos,
                              thickness=.0062,
@@ -147,7 +151,6 @@ class RobotiqHE(gp.GripperInterface):
 
 if __name__ == '__main__':
     import visualization.panda.world as wd
-    import modeling.geometric_model as gm
 
     base = wd.World(cam_pos=[.5, .5, .5], lookat_pos=[0, 0, 0])
     gm.gen_frame().attach_to(base)
