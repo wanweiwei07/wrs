@@ -382,8 +382,12 @@ class PiecewisePoly(object):
     #     tmp_total_time = 0
     #     for i in range(self._n_pnts - 1):
     #         tmp_time_interval = np.zeros(path[0].shape[0])
-    #         tmp_pose_diff_start = abs(path[i] - path[0])
-    #         tmp_pose_diff_goal = abs(path[i] - path[-1])
+    #         tmp_pose_diff_start = np.zeros(path[0].shape[0])
+    #         for j in range(0,i):
+    #             tmp_pose_diff_start += abs(path[j+1] - path[j])
+    #         tmp_pose_diff_goal = np.zeros(path[0].shape[0])
+    #         for j in range(i, self._n_pnts-1):
+    #             tmp_pose_diff_goal += abs(path[j+1] - path[j])
     #         selection_acc = tmp_pose_diff_start < dists_zero_to_maxspd
     #         selection_dec = tmp_pose_diff_goal < dists_zero_to_maxspd
     #         selection_eve = np.logical_and(tmp_pose_diff_start >= dists_zero_to_maxspd,
