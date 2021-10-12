@@ -1,6 +1,5 @@
-import motion.trajectory.polynomial_wrsold as trajp
+import motion.trajectory.piecewisepoly as trajp
 import drivers.orin_bcap.bcapclient as bcapclient
-import time
 
 
 class CobottaX(object):
@@ -27,7 +26,7 @@ class CobottaX(object):
         self.bcc.robot_execute(self.hrbt, "Motor", [1, 0])
         # set ExtSpeed = [speed, acc, dec]
         self.bcc.robot_execute(self.hrbt, "ExtSpeed", [100, 100, 100])
-        self.traj_s = trajp.TrajPoly()
+        self.traj_gen = trajp.PiecewisePoly(method="cubic")
 
     def __del__(self):
         self.clear_error()
@@ -54,7 +53,7 @@ class CobottaX(object):
         jnt_values_degree = np.degrees(jnt_values)
         self.bcc.robot_move(self.hrbt, 1, [jnt_values_degree.tolist(), "J", "@E"], "")
 
-    def move_jnts_motion(self, path):
+    def move_jnts_motion(self, path, toggle_debug=False):
         """
         :param path:
         :return:
@@ -63,14 +62,16 @@ class CobottaX(object):
         """
         new_path = []
         for i, pose in enumerate(path):
-            if i < len(path)-1 and not np.allclose(pose, path[i+1]):
+            if i < len(path) - 1 and not np.allclose(pose, path[i + 1]):
                 new_path.append(pose)
         new_path.append(path[-1])
         path = new_path
-        interplated_path, _, _ = self.traj_s.piecewise_interpolation(path, control_frequency=.005)
+        interpolated_confs, interpolated_spds, interpolated_accs, interpolated_x, original_x = \
+            self.traj_gen.interpolate_by_max_spdacc(path, control_frequency=.008, max_jnts_spd=None,
+                                                    toggle_debug=toggle_debug)
         # Slave move: Change mode
         self.bcc.robot_execute(self.hrbt, "slvChangeMode", 0x102)
-        for jnt_values in interplated_path:
+        for jnt_values in interpolated_confs:
             jnt_values_degree = np.degrees(jnt_values)
             self.bcc.robot_execute(self.hrbt, "slvMove", jnt_values_degree.tolist() + [0, 0])
         self.bcc.robot_execute(self.hrbt, "slvChangeMode", 0x000)
@@ -91,7 +92,7 @@ class CobottaX(object):
         :return:
         """
         assert 0 <= dist <= .03
-        self.bcc.controller_execute(self.hctrl, "HandMoveA", [dist*1000, 100])
+        self.bcc.controller_execute(self.hctrl, "HandMoveA", [dist * 1000, 100])
 
     def close_gripper(self, dist=.0):
         """
@@ -99,7 +100,7 @@ class CobottaX(object):
         :return:
         """
         assert 0 <= dist <= .03
-        self.bcc.controller_execute(self.hctrl, "HandMoveA", [dist*1000, 100])
+        self.bcc.controller_execute(self.hctrl, "HandMoveA", [dist * 1000, 100])
 
 
 if __name__ == '__main__':

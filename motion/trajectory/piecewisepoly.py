@@ -12,28 +12,29 @@ class PiecewisePoly(object):
         self.method = method
         if method == "linear":
             self._solve = self._linear_solve
-            self._interpolate = self._interpolate
         if method == "quadratic":
             self._solve = self._quadratic_solve
-            self._interpolate = self._interpolate
         elif method == "cubic":
             self._solve = self._cubic_solve
-            self._interpolate = self._cubic_interpolate
         elif method == "quintic":
             self._solve = self._quintic_solve
-            self._interpolate = self._quintic_interpolate
 
     def _linear_solve(self):
-        x = self._x
-        y = self._path_array
-        # return sinter.interp1d(x, y, kind="linear", axis=0)
-        return sinter.make_interp_spline(x, y, k=1, axis=0)
+        return sinter.make_interp_spline(self._x, self._path_array, k=1, axis=0)
 
     def _quadratic_solve(self):
-        x = self._x
-        y = self._path_array
-        # return sinter.interp1d(x, y, kind="linear", axis=0)
-        return sinter.make_interp_spline(x, y, k=2, axis=0, bc_type=['clamped', None])
+        return sinter.make_interp_spline(self._x, self._path_array, k=2, axis=0, bc_type=['clamped', None])
+
+    def _cubic_solve(self):
+        return sinter.make_interp_spline(self._x, self._path_array, k=3, axis=0, bc_type='clamped')
+
+    def _quintic_solve(self):
+        bc_type = [[(1, np.zeros(self._n_dim)), (2, np.zeros(self._n_dim))],
+                   [(1, np.zeros(self._n_dim)), (2, np.zeros(self._n_dim))]]
+        return sinter.make_interp_spline(self._x, self._path_array, k=5, axis=0, bc_type=bc_type)
+
+    def _trapezoid_solve(self):
+        pass
 
     def _interpolate(self, A, samples_list):
         """
@@ -52,225 +53,13 @@ class PiecewisePoly(object):
                 interpolated_x_sec = (samples_list[i] + self._x[i]).tolist()[:-1]
             interpolated_x += interpolated_x_sec
         interpolated_y = A(np.array(interpolated_x)).tolist()
-        # interpolated_y_dot = np.zeros_like(interpolated_y).tolist()
-        # interpolated_y_dotdot = np.zeros_like(interpolated_y).tolist()
         interpolated_y_dot = A(np.array(interpolated_x), 1).tolist()
         interpolated_y_dotdot = A(np.array(interpolated_x), 2).tolist()
         original_x = self._x
         return interpolated_y, interpolated_y_dot, interpolated_y_dotdot, interpolated_x, original_x
-
-    def _trapezoid_solve(self):
-        pass
 
     def _trapezoid_interpolate(self):
         pass
-
-    def _cubic_solve(self):
-        x = np.array(self._x)
-        y = self._path_array
-        return sinter.make_interp_spline(x, y, k=3, axis=0, bc_type='clamped')
-
-    def _cubic_interpolate(self, A, samples_list):
-        """
-        :param A: a cubic call back function since we are using scipy
-        :param samples_list: a list of 1xn_jnts nparray, with each element holding the samples need to be interpolated
-        :return: interpolated_pos, interpolated_spd, interpolated_acc, interpolated_x (x axis ticks)
-        author: weiwei
-        date: 20210803
-        """
-        n_sections = self._n_pnts - 1
-        interpolated_x = []
-        for i in range(n_sections):
-            if i == n_sections - 1:  # last
-                interpolated_x_sec = (samples_list[i] + self._x[i]).tolist()
-            else:
-                interpolated_x_sec = (samples_list[i] + self._x[i]).tolist()[:-1]
-            interpolated_x += interpolated_x_sec
-        interpolated_y = A(np.array(interpolated_x)).tolist()
-        interpolated_y_dot = A(np.array(interpolated_x), 1).tolist()
-        interpolated_y_dotdot = A(np.array(interpolated_x), 2).tolist()
-        original_x = self._x
-        return interpolated_y, interpolated_y_dot, interpolated_y_dotdot, interpolated_x, original_x
-
-    # def _quintic_solve(self):
-    #     x = range(self._path_array.shape[0])
-    #     y = self._path_array
-    #     return sinter.make_interp_spline(x, y, k=5, axis=0, bc_type=([(1, 0.0)], [(1, 0.0)]))
-    #
-    # def _quintic_interpolate(self, A, samples_list):
-    #     """
-    #     :param A: a cubic call back function since we are using scipy
-    #     :param samples_list: a list of 1xn_jnts nparray, with each element holding the samples need to be interpolated
-    #     :return: interpolated_pos, interpolated_spd, interpolated_acc, interpolated_x (x axis ticks)
-    #     author: weiwei
-    #     date: 20210803
-    #     """
-    #     n_sections = self._n_pnts - 1
-    #     interpolated_x = []
-    #     for i in range(n_sections):
-    #         if i == n_sections - 1:  # last
-    #             interpolated_x_sec = (samples_list[i] + i).tolist()
-    #         else:
-    #             interpolated_x_sec = (samples_list[i] + i).tolist()[:-1]
-    #         interpolated_x += interpolated_x_sec
-    #     interpolated_y = A(np.array(interpolated_x)).tolist()
-    #     interpolated_y_dot = A(np.array(interpolated_x), 1).tolist()
-    #     interpolated_y_dotdot = A(np.array(interpolated_x), 2).tolist()
-    #     return interpolated_y, interpolated_y_dot, interpolated_y_dotdot, interpolated_x
-
-    # def _cubic_solve(self):
-    #     N = self._n_pnts - 1
-    #     X = np.zeros((4 * N, 4 * N))
-    #     Y = np.zeros((4 * N, self._n_dim))
-    #     ridx = 0
-    #     for i in range(N):  # left end (N in total)
-    #         X[ridx, i * 4:i * 4 + 4] = np.array([i ** 3, i ** 2, i, 1])
-    #         Y[ridx, :] = self._path_array[i][:]
-    #         ridx += 1
-    #     for i in range(N):  # right end (N in total)
-    #         X[ridx, i * 4:i * 4 + 4] = np.array([(i + 1) ** 3, (i + 1) ** 2, i + 1, 1])
-    #         Y[ridx, :] = self._path_array[i + 1][:]
-    #         ridx += 1
-    #     for i in range(N - 1):  # equal speed at key points
-    #         X[ridx, i * 4:i * 4 + 4] = np.array([3 * (i + 1) ** 2, 2 * (i + 1), 1, 0])
-    #         X[ridx, (i + 1) * 4:(i + 1) * 4 + 4] = np.array([-3 * (i + 1) ** 2, -2 * (i + 1), -1, 0])
-    #         Y[ridx, :] = np.zeros(self._n_dim)
-    #         ridx += 1
-    #     for i in range(N - 1):  # equal acceleration at key points
-    #         X[ridx, i * 4:i * 4 + 4] = np.array([3 * (i + 1), 1, 0, 0])
-    #         X[ridx, (i + 1) * 4:(i + 1) * 4 + 4] = np.array([-3 * (i + 1), -1, 0, 0])
-    #         Y[ridx, :] = np.zeros(self._n_dim)
-    #         ridx += 1
-    #     X[-2, :4] = np.array([3 * 0 ** 2, 2 * 0, 1, 0])
-    #     Y[-2, :] = np.zeros(self._n_dim)  # zero init speed
-    #     X[-1, -4:] = np.array([3 * (self._n_pnts - 1) ** 2, 2 * (self._n_pnts - 1), 1, 0])
-    #     Y[-1, :] = np.zeros(self._n_dim)  # zero end speed
-    #     A = np.linalg.solve(X, Y)
-    #     return A
-    #
-    # def _cubic_interpolate(self, A, samples_list):
-    #     """
-    #     :param A: cubic coefficient matrix
-    #     :param samples_list: a list of 1xn_jnts nparray, with each element holding the samples need to be interpolated
-    #     :return: interpolated_pos, interpolated_spd, interpolated_acc, interpolated_x (x axis ticks)
-    #     author: weiwei
-    #     date: 20210712
-    #     """
-    #     n_sections = self._n_pnts - 1
-    #     interpolated_y = []
-    #     interpolated_y_dot = []
-    #     interpolated_y_dotdot = []
-    #     interpolated_x = []
-    #     for i in range(n_sections):
-    #         if i == n_sections - 1:  # last
-    #             interpolated_x_sec = (samples_list[i] + i).tolist()
-    #         else:
-    #             interpolated_x_sec = (samples_list[i] + i).tolist()[:-1]
-    #         interpolated_x += interpolated_x_sec
-    #         interpolated_x_sec = np.asarray(interpolated_x_sec)
-    #         # y
-    #         tmp_x_items = np.ones((interpolated_x_sec.shape[0], 4))
-    #         tmp_x_items[:, 0] = interpolated_x_sec ** 3
-    #         tmp_x_items[:, 1] = interpolated_x_sec ** 2
-    #         tmp_x_items[:, 2] = interpolated_x_sec
-    #         interpolated_y_i = tmp_x_items.dot(A[4 * i:4 * i + 4, :])
-    #         interpolated_y += interpolated_y_i.tolist()
-    #         # y dot
-    #         tmp_x_items_dot = np.zeros((interpolated_x_sec.shape[0], 4))
-    #         tmp_x_items_dot[:, 0] = 3 * interpolated_x_sec ** 2
-    #         tmp_x_items_dot[:, 1] = 2 * interpolated_x_sec
-    #         tmp_x_items_dot[:, 2] = 1
-    #         interpolated_y_dot_i = tmp_x_items_dot.dot(A[4 * i:4 * i + 4, :])
-    #         interpolated_y_dot += interpolated_y_dot_i.tolist()
-    #         # y dot dot
-    #         tmp_x_items_dotdot = np.zeros((interpolated_x_sec.shape[0], 4))
-    #         tmp_x_items_dotdot[:, 0] = 6 * interpolated_x_sec
-    #         tmp_x_items_dotdot[:, 1] = 2
-    #         interpolated_y_dotdot_i = tmp_x_items_dotdot.dot(A[4 * i:4 * i + 4, :])
-    #         interpolated_y_dotdot += interpolated_y_dotdot_i.tolist()
-    #     return interpolated_y, interpolated_y_dot, interpolated_y_dotdot, interpolated_x
-
-    def _quintic_solve(self):
-        N = self._n_pnts - 1
-        X = np.zeros((5 * N, 5 * N))
-        Y = np.zeros((5 * N, self._n_dim))
-        ridx = 0
-        for i in range(N):  # left end (N in total)
-            X[ridx, i * 5:i * 5 + 5] = np.array([i ** 4, i ** 3, i ** 2, i, 1])
-            Y[ridx, :] = self._path_array[i][:]
-            ridx += 1
-        for i in range(N):  # right end (N in total)
-            X[ridx, i * 5:i * 5 + 5] = np.array([(i + 1) ** 4, (i + 1) ** 3, (i + 1) ** 2, i + 1, 1])
-            Y[ridx, :] = self._path_array[i + 1][:]
-            ridx += 1
-        for i in range(N - 1):  # speed 0
-            X[ridx, i * 5:i * 5 + 5] = np.array([4 * (i + 1) ** 3, 3 * (i + 1) ** 2, 2 * (i + 1), 1, 0])
-            X[ridx, (i + 1) * 5:(i + 1) * 5 + 5] = np.array([-4 * (i + 1) ** 3, -3 * (i + 1) ** 2, -2 * (i + 1), -1, 0])
-            Y[ridx, :] = np.zeros(self._n_dim)
-            ridx += 1
-        for i in range(N - 1):  # acc 0
-            X[ridx, i * 5:i * 5 + 5] = np.array([6 * (i + 1) ** 2, 3 * (i + 1), 1, 0, 0])
-            X[ridx, (i + 1) * 5:(i + 1) * 5 + 5] = np.array([-6 * (i + 1) ** 2, -3 * (i + 1), -1, 0, 0])
-            Y[ridx, :] = np.zeros(self._n_dim)
-            ridx += 1
-        for i in range(N - 1):  # jerk 0
-            X[ridx, i * 5:i * 5 + 5] = np.array([4 * (i + 1), 1, 0, 0, 0])
-            X[ridx, (i + 1) * 5:(i + 1) * 5 + 5] = np.array([-4 * (i + 1), -1, 0, 0, 0])
-            Y[ridx, :] = np.zeros(self._n_dim)
-            ridx += 1
-        X[-3, :5] = np.array([4 * 0 ** 3, 3 * 0 ** 2, 2 * 0, 1, 0])
-        Y[-3, :] = np.zeros(self._n_dim)  # zero init speed
-        X[-2, -5:] = np.array([4 * (self._n_pnts - 1) ** 3, 3 * (self._n_pnts - 1) ** 2, 2 * (self._n_pnts - 1), 1, 0])
-        Y[-2, :] = np.zeros(self._n_dim)  # zero end speed
-        X[-1, -5:] = np.array([6 * (self._n_pnts - 1) ** 2, 3 * (self._n_pnts - 1), 1, 0, 0])
-        Y[-1, :] = np.zeros(self._n_dim)  # zero end acc
-        A = np.linalg.solve(X, Y)
-        return A
-
-    def _quintic_interpolate(self, A, samples_list):
-        """
-        :param A: quintic coefficient matrix
-        :param samples_list: a list of 1xn_jnts nparray, with each element holding the samples need to be interpolated
-        :return: interpolated_pos, interpolated_spd, interpolated_acc, interpolated_x (x axis ticks)
-        author: weiwei
-        date: 20210712
-        """
-        n_sections = self._n_pnts - 1
-        interpolated_y = []
-        interpolated_y_dot = []
-        interpolated_y_dotdot = []
-        interpolated_x = []
-        for i in range(n_sections):
-            if i == n_sections - 1:  # last
-                interpolated_x_sec = (samples_list[i] + i).tolist()
-            else:
-                interpolated_x_sec = (samples_list[i] + i).tolist()[:-1]
-            interpolated_x += interpolated_x_sec
-            interpolated_x_sec = np.asarray(interpolated_x_sec)
-            # y
-            tmp_x_items = np.ones((interpolated_x_sec.shape[0], 5))
-            tmp_x_items[:, 0] = interpolated_x_sec ** 4
-            tmp_x_items[:, 1] = interpolated_x_sec ** 3
-            tmp_x_items[:, 2] = interpolated_x_sec ** 2
-            tmp_x_items[:, 3] = interpolated_x_sec
-            interpolated_y_i = tmp_x_items.dot(A[5 * i:5 * i + 5, :])
-            interpolated_y += interpolated_y_i.tolist()
-            # y dot
-            tmp_x_items_dot = np.zeros((interpolated_x_sec.shape[0], 5))
-            tmp_x_items_dot[:, 0] = 4 * interpolated_x_sec ** 3
-            tmp_x_items_dot[:, 1] = 3 * interpolated_x_sec ** 2
-            tmp_x_items_dot[:, 2] = 2 * interpolated_x_sec
-            tmp_x_items_dot[:, 3] = 1
-            interpolated_y_dot_i = tmp_x_items_dot.dot(A[5 * i:5 * i + 5, :])
-            interpolated_y_dot += interpolated_y_dot_i.tolist()
-            # y dot dot
-            tmp_x_items_dotdot = np.zeros((interpolated_x_sec.shape[0], 5))
-            tmp_x_items_dotdot[:, 0] = 12 * interpolated_x_sec ** 2
-            tmp_x_items_dotdot[:, 1] = 6 * interpolated_x_sec
-            tmp_x_items_dotdot[:, 2] = 2
-            interpolated_y_dotdot_i = tmp_x_items_dotdot.dot(A[5 * i:5 * i + 5, :])
-            interpolated_y_dotdot += interpolated_y_dotdot_i.tolist()
-        return interpolated_y, interpolated_y_dot, interpolated_y_dotdot, interpolated_x
 
     def _remove_duplicate(self, path):
         new_path = []
@@ -280,27 +69,12 @@ class PiecewisePoly(object):
         new_path.append(path[-1])
         return new_path
 
-    def interpolate_by_time_interval(self, path, control_frequency=.005, time_interval=1.0):
-        """
-        :param path:
-        :param control_frequency:
-        :param time_interval: motion time between two adjacent poses in the path, metrics = second
-        :return:
-        author: weiwei
-        date: 20210712
-        """
-        path = self._remove_duplicate(path)
-        self._path_array = np.array(path)
-        self._n_pnts, self._n_dim = self._path_array.shape
-        samples = np.linspace(0,
-                              time_interval,
-                              math.floor(time_interval / control_frequency),
-                              endpoint=True) / time_interval
-        samples_list = [samples] * (self._n_pnts - 1)
-        A = self._solve()
-        return self._interpolate(A, samples_list)
-
-    def interpolate_by_max_spdacc(self, path, control_frequency=.005, max_jnts_spd=None, max_jnts_acc=None):
+    def interpolate_by_max_spdacc(self,
+                                  path,
+                                  control_frequency=.005,
+                                  max_jnts_spd=None,
+                                  max_jnts_acc=None,
+                                  toggle_debug=True):
         """
         TODO: prismatic motor speed is not considered
         :param path:
@@ -309,10 +83,9 @@ class PiecewisePoly(object):
         :param max_jnts_acc: max jnt speed between two adjacent poses in the path, math.pi if None
         :return:
         author: weiwei
-        date: 20210712
+        date: 20210712, 20211012
         """
         path = self._remove_duplicate(path)
-        print(path)
         self._path_array = np.array(path)
         self._n_pnts, self._n_dim = self._path_array.shape
         if max_jnts_spd is None:
@@ -322,9 +95,7 @@ class PiecewisePoly(object):
         max_jnts_spd = np.asarray(max_jnts_spd)
         max_jnts_acc = np.asarray(max_jnts_acc)
         times_zero_to_maxspd = max_jnts_spd / max_jnts_acc
-        # times_maxspd_to_zero = times_zero_to_maxspd
         dists_zero_to_maxspd = .5 * max_jnts_acc * times_zero_to_maxspd ** 2
-        # dists_maxspd_to_zero = .5 * max_jnts_acc * times_maxspd_to_zero ** 2
         samples_list = []
         self._x = [0]
         tmp_total_time = 0
@@ -333,12 +104,12 @@ class PiecewisePoly(object):
             tmp_time_interval = np.sqrt(2 * pose_diff / max_jnts_acc)
             selection = tmp_time_interval * max_jnts_acc > max_jnts_spd
             tmp_eve_time_interval = (pose_diff - dists_zero_to_maxspd) / max_jnts_spd
-            tmp_time_interval[selection] = (tmp_eve_time_interval+times_zero_to_maxspd)[selection]
+            tmp_time_interval[selection] = (tmp_eve_time_interval + times_zero_to_maxspd)[selection]
             tmp_time_interval = np.max(tmp_time_interval)
             # tmp_time_interval = math.sqrt(2 * max(abs(path[i + 1] - path[i]) / np.asarray(max_jnts_acc)))
             # tmp_time_interval = 1
             self._x.append(tmp_time_interval + tmp_total_time)
-            tmp_total_time = tmp_total_time + tmp_time_interval
+            tmp_total_time += tmp_time_interval
             n_samples = math.floor(tmp_time_interval / control_frequency)
             print(n_samples)
             if n_samples <= 1:
@@ -349,71 +120,20 @@ class PiecewisePoly(object):
                                   endpoint=True)
             samples_list.append(samples)
         A = self._solve()
-        return self._interpolate(A, samples_list)
-
-    # def trapezoid_interpolate_by_max_spdacc(self, path, control_frequency=.005, max_jnts_spd=None, max_jnts_acc=None):
-    #     """
-    #     TODO: prismatic motor speed is not considered
-    #     :param path:
-    #     :param control_frequency:
-    #     :param max_jnts_spd: max jnt speed between two adjacent poses in the path, math.pi if None
-    #     :param max_jnts_acc: max jnt speed between two adjacent poses in the path, math.pi if None
-    #     :return:
-    #     author: weiwei
-    #     date: 20210712
-    #     """
-    #     path = self._remove_duplicate(path)
-    #     self._path_array = np.array(path)
-    #     self._n_pnts, self._n_dim = self._path_array.shape
-    #     if max_jnts_spd is None:
-    #         max_jnts_spd = [math.pi * 2 / 3] * path[0].shape[0]
-    #     if max_jnts_acc is None:
-    #         max_jnts_acc = [math.pi] * path[0].shape[0]
-    #     max_jnts_spd = np.asarray(max_jnts_spd)
-    #     max_jnts_acc = np.asarray(max_jnts_acc)
-    #     times_zero_to_maxspd = max_jnts_spd / max_jnts_acc
-    #     dists_zero_to_maxspd = .5 * max_jnts_acc * times_zero_to_maxspd ** 2
-    #     dists_acc_total = dists_zero_to_maxspd * 2
-    #     # judge if total distance is larger than dist_zero_to_max+dist_max_to_zero
-    #     max_pose_diff = abs(path[-1] - path[0])
-    #     dists_zero_to_maxspd[max_pose_diff < dists_acc_total] = (max_pose_diff / 2)[max_pose_diff < dists_acc_total]
-    #     samples_list = []
-    #     self._x = [0]
-    #     tmp_total_time = 0
-    #     for i in range(self._n_pnts - 1):
-    #         tmp_time_interval = np.zeros(path[0].shape[0])
-    #         tmp_pose_diff_start = np.zeros(path[0].shape[0])
-    #         for j in range(0,i):
-    #             tmp_pose_diff_start += abs(path[j+1] - path[j])
-    #         tmp_pose_diff_goal = np.zeros(path[0].shape[0])
-    #         for j in range(i, self._n_pnts-1):
-    #             tmp_pose_diff_goal += abs(path[j+1] - path[j])
-    #         selection_acc = tmp_pose_diff_start < dists_zero_to_maxspd
-    #         selection_dec = tmp_pose_diff_goal < dists_zero_to_maxspd
-    #         selection_eve = np.logical_and(tmp_pose_diff_start >= dists_zero_to_maxspd,
-    #                                      tmp_pose_diff_goal <= dists_zero_to_maxspd)
-    #         tmp_pose_diff = abs(path[i + 1] - path[i])
-    #         v0 = tmp_total_time * max_jnts_acc
-    #         tmp_t_accdec = (-v0 + np.sqrt(v0 ** 2 + tmp_pose_diff * max_jnts_acc * 2)) / (2 * max_jnts_acc)
-    #         tmp_t_eve = tmp_pose_diff/max_jnts_spd
-    #         tmp_time_interval[selection_acc] = tmp_t_accdec[selection_acc]
-    #         tmp_time_interval[selection_dec] = tmp_t_accdec[selection_dec]
-    #         tmp_time_interval[selection_eve] = tmp_t_eve[selection_eve]
-    #         max_tmp_time_interval = np.max(tmp_time_interval)
-    #         self._x.append(max_tmp_time_interval + tmp_total_time)
-    #         tmp_total_time = tmp_total_time + max_tmp_time_interval
-    #         n_samples = math.floor(max_tmp_time_interval / control_frequency)
-    #         if n_samples <= 1:
-    #             n_samples = 2
-    #         samples = np.linspace(0,
-    #                               max_tmp_time_interval,
-    #                               n_samples,
-    #                               endpoint=True)
-    #         samples_list.append(samples)
-    #     print(self._x)
-    #     A = self._linear_solve()
-    #     return self._interpolate(A, samples_list)
-
+        interpolated_confs, interpolated_spds, interpolated_accs, interpolated_x, original_x = \
+            self._interpolate(A, samples_list)
+        if toggle_debug:
+            import matplotlib.pyplot as plt
+            fig, axs = plt.subplots(3, figsize=(3.5, 4.75))
+            fig.tight_layout(pad=.7)
+            axs[0].plot(interpolated_x, interpolated_confs, 'o')
+            for xc in original_x:
+                axs[0].axvline(x=xc)
+            # axs[0].plot(np.arange(len(jnt_values_list)), jnt_values_list, '--o')
+            axs[1].plot(interpolated_x, interpolated_spds)
+            axs[2].plot(interpolated_x, interpolated_accs)
+            plt.show()
+        return interpolated_confs, interpolated_spds, interpolated_accs, interpolated_x, original_x
 
 # TODO
 """
