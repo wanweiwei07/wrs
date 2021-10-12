@@ -47,9 +47,9 @@ class PiecewisePoly(object):
         interpolated_x = []
         for i in range(n_sections):
             if i == n_sections - 1:  # last
-                interpolated_x_sec = (samples_list[i] +  self._x[i]).tolist()
+                interpolated_x_sec = (samples_list[i] + self._x[i]).tolist()
             else:
-                interpolated_x_sec = (samples_list[i] +  self._x[i]).tolist()[:-1]
+                interpolated_x_sec = (samples_list[i] + self._x[i]).tolist()[:-1]
             interpolated_x += interpolated_x_sec
         interpolated_y = A(np.array(interpolated_x)).tolist()
         # interpolated_y_dot = np.zeros_like(interpolated_y).tolist()
@@ -272,6 +272,14 @@ class PiecewisePoly(object):
             interpolated_y_dotdot += interpolated_y_dotdot_i.tolist()
         return interpolated_y, interpolated_y_dot, interpolated_y_dotdot, interpolated_x
 
+    def _remove_duplicate(self, path):
+        new_path = []
+        for i, pose in enumerate(path):
+            if i < len(path) - 1 and not np.allclose(pose, path[i + 1]):
+                new_path.append(pose)
+        new_path.append(path[-1])
+        return new_path
+
     def interpolate_by_time_interval(self, path, control_frequency=.005, time_interval=1.0):
         """
         :param path:
@@ -281,6 +289,7 @@ class PiecewisePoly(object):
         author: weiwei
         date: 20210712
         """
+        path = self._remove_duplicate(path)
         self._path_array = np.array(path)
         self._n_pnts, self._n_dim = self._path_array.shape
         samples = np.linspace(0,
@@ -302,23 +311,34 @@ class PiecewisePoly(object):
         author: weiwei
         date: 20210712
         """
+        path = self._remove_duplicate(path)
+        print(path)
         self._path_array = np.array(path)
         self._n_pnts, self._n_dim = self._path_array.shape
         if max_jnts_spd is None:
-            max_jnts_spd = [math.pi*2/3] * path[0].shape[0]
-        # if max_jnts_acc is None:
-        #     max_jnts_acc = [math.pi]*path[1].shape[0]
-        # times_zero_to_maxspd = max_jnts_spd/max_jnts_acc
+            max_jnts_spd = [math.pi * 2 / 3] * path[0].shape[0]
+        if max_jnts_acc is None:
+            max_jnts_acc = [math.pi] * path[0].shape[0]
+        max_jnts_spd = np.asarray(max_jnts_spd)
+        max_jnts_acc = np.asarray(max_jnts_acc)
+        times_zero_to_maxspd = max_jnts_spd / max_jnts_acc
         # times_maxspd_to_zero = times_zero_to_maxspd
-        # dists_zero_to_maxspd = .5*max_jnts_acc*times_zero_to_maxspd**2
-        # dists_maxspd_to_zero = .5*max_jnts_acc*times_maxspd_to_zero**2
+        dists_zero_to_maxspd = .5 * max_jnts_acc * times_zero_to_maxspd ** 2
+        # dists_maxspd_to_zero = .5 * max_jnts_acc * times_maxspd_to_zero ** 2
         samples_list = []
         self._x = [0]
         tmp_total_time = 0
         for i in range(self._n_pnts - 1):
-            tmp_time_interval = max(abs(path[i + 1] - path[i]) / np.asarray(max_jnts_spd))
-            self._x.append(tmp_time_interval+tmp_total_time)
-            tmp_total_time = tmp_total_time+tmp_time_interval
+            pose_diff = abs(path[i + 1] - path[i])
+            tmp_time_interval = np.sqrt(2 * pose_diff / max_jnts_acc)
+            selection = tmp_time_interval * max_jnts_acc > max_jnts_spd
+            tmp_eve_time_interval = (pose_diff - dists_zero_to_maxspd) / max_jnts_spd
+            tmp_time_interval[selection] = (tmp_eve_time_interval+times_zero_to_maxspd)[selection]
+            tmp_time_interval = np.max(tmp_time_interval)
+            # tmp_time_interval = math.sqrt(2 * max(abs(path[i + 1] - path[i]) / np.asarray(max_jnts_acc)))
+            # tmp_time_interval = 1
+            self._x.append(tmp_time_interval + tmp_total_time)
+            tmp_total_time = tmp_total_time + tmp_time_interval
             n_samples = math.floor(tmp_time_interval / control_frequency)
             print(n_samples)
             if n_samples <= 1:
@@ -330,6 +350,65 @@ class PiecewisePoly(object):
             samples_list.append(samples)
         A = self._solve()
         return self._interpolate(A, samples_list)
+
+    # def trapezoid_interpolate_by_max_spdacc(self, path, control_frequency=.005, max_jnts_spd=None, max_jnts_acc=None):
+    #     """
+    #     TODO: prismatic motor speed is not considered
+    #     :param path:
+    #     :param control_frequency:
+    #     :param max_jnts_spd: max jnt speed between two adjacent poses in the path, math.pi if None
+    #     :param max_jnts_acc: max jnt speed between two adjacent poses in the path, math.pi if None
+    #     :return:
+    #     author: weiwei
+    #     date: 20210712
+    #     """
+    #     path = self._remove_duplicate(path)
+    #     self._path_array = np.array(path)
+    #     self._n_pnts, self._n_dim = self._path_array.shape
+    #     if max_jnts_spd is None:
+    #         max_jnts_spd = [math.pi * 2 / 3] * path[0].shape[0]
+    #     if max_jnts_acc is None:
+    #         max_jnts_acc = [math.pi] * path[0].shape[0]
+    #     max_jnts_spd = np.asarray(max_jnts_spd)
+    #     max_jnts_acc = np.asarray(max_jnts_acc)
+    #     times_zero_to_maxspd = max_jnts_spd / max_jnts_acc
+    #     dists_zero_to_maxspd = .5 * max_jnts_acc * times_zero_to_maxspd ** 2
+    #     dists_acc_total = dists_zero_to_maxspd * 2
+    #     # judge if total distance is larger than dist_zero_to_max+dist_max_to_zero
+    #     max_pose_diff = abs(path[-1] - path[0])
+    #     dists_zero_to_maxspd[max_pose_diff < dists_acc_total] = (max_pose_diff / 2)[max_pose_diff < dists_acc_total]
+    #     samples_list = []
+    #     self._x = [0]
+    #     tmp_total_time = 0
+    #     for i in range(self._n_pnts - 1):
+    #         tmp_time_interval = np.zeros(path[0].shape[0])
+    #         tmp_pose_diff_start = abs(path[i] - path[0])
+    #         tmp_pose_diff_goal = abs(path[i] - path[-1])
+    #         selection_acc = tmp_pose_diff_start < dists_zero_to_maxspd
+    #         selection_dec = tmp_pose_diff_goal < dists_zero_to_maxspd
+    #         selection_eve = np.logical_and(tmp_pose_diff_start >= dists_zero_to_maxspd,
+    #                                      tmp_pose_diff_goal <= dists_zero_to_maxspd)
+    #         tmp_pose_diff = abs(path[i + 1] - path[i])
+    #         v0 = tmp_total_time * max_jnts_acc
+    #         tmp_t_accdec = (-v0 + np.sqrt(v0 ** 2 + tmp_pose_diff * max_jnts_acc * 2)) / (2 * max_jnts_acc)
+    #         tmp_t_eve = tmp_pose_diff/max_jnts_spd
+    #         tmp_time_interval[selection_acc] = tmp_t_accdec[selection_acc]
+    #         tmp_time_interval[selection_dec] = tmp_t_accdec[selection_dec]
+    #         tmp_time_interval[selection_eve] = tmp_t_eve[selection_eve]
+    #         max_tmp_time_interval = np.max(tmp_time_interval)
+    #         self._x.append(max_tmp_time_interval + tmp_total_time)
+    #         tmp_total_time = tmp_total_time + max_tmp_time_interval
+    #         n_samples = math.floor(max_tmp_time_interval / control_frequency)
+    #         if n_samples <= 1:
+    #             n_samples = 2
+    #         samples = np.linspace(0,
+    #                               max_tmp_time_interval,
+    #                               n_samples,
+    #                               endpoint=True)
+    #         samples_list.append(samples)
+    #     print(self._x)
+    #     A = self._linear_solve()
+    #     return self._interpolate(A, samples_list)
 
 
 # TODO

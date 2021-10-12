@@ -358,9 +358,9 @@ class Yumi(ri.RobotInterface):
         author: weiwei
         date: 20210302
         """
-        if component_name is 'lft_arm':
+        if component_name == 'lft_arm':
             arm = self.lft_arm
-        elif component_name is 'rgt_arm':
+        elif component_name == 'rgt_arm':
             arm = self.rgt_arm
         hnd_pos = arm.jnts[-1]['gl_posq']
         hnd_rotmat = arm.jnts[-1]['gl_rotmatq']
@@ -379,9 +379,9 @@ class Yumi(ri.RobotInterface):
         author: weiwei
         date: 20210302
         """
-        if component_name is 'lft_arm':
+        if component_name == 'lft_arm':
             arm = self.lft_arm
-        elif component_name is 'rgt_arm':
+        elif component_name == 'rgt_arm':
             arm = self.rgt_arm
         hnd_pos = arm.jnts[-1]['gl_posq']
         hnd_rotmat = arm.jnts[-1]['gl_rotmatq']

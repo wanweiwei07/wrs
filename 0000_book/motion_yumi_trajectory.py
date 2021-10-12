@@ -40,7 +40,6 @@ if __name__ == "__main__":
     #     traj_gen.interpolate(jnt_values_list, control_frequency=control_frequency, time_interval=interval_time)
     interpolated_confs, interpolated_spds, interpolated_accs, interpolated_x, original_x = \
         traj_gen.interpolate_by_max_spdacc(jnt_values_list, control_frequency=control_frequency, max_jnts_spd=None)
-
     fig, axs = plt.subplots(3, figsize=(3.5,4.75))
     fig.tight_layout(pad=.7)
     axs[0].plot(interpolated_x, interpolated_confs, 'o')
