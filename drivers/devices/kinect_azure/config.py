@@ -5,8 +5,8 @@ class Config(object):
     
     def __init__(self,
                  color_format=_k4a.K4A_IMAGE_FORMAT_COLOR_BGRA32,
-                 color_resolution=_k4a.K4A_COLOR_RESOLUTION_2160P,
-                 depth_mode=_k4a.K4A_DEPTH_MODE_WFOV_2X2BINNED,
+                 color_resolution=_k4a.K4A_COLOR_RESOLUTION_1080P,
+                 depth_mode=_k4a.K4A_DEPTH_MODE_NFOV_UNBINNED,
                  camera_fps=_k4a.K4A_FRAMES_PER_SECOND_30,
                  synchronized_images_only=False,
                  depth_delay_off_color_usec=0,
