@@ -67,7 +67,7 @@ class CobottaX(object):
         new_path.append(path[-1])
         path = new_path
         interpolated_confs, interpolated_spds, interpolated_accs, interpolated_x, original_x = \
-            self.traj_gen.interpolate_by_max_spdacc(path, control_frequency=.008, max_jnts_spd=None,
+            self.traj_gen.interpolate_by_max_spdacc(path, control_frequency=.008, max_spds=None,
                                                     toggle_debug=toggle_debug)
         # Slave move: Change mode
         self.bcc.robot_execute(self.hrbt, "slvChangeMode", 0x102)

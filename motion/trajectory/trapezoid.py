@@ -112,7 +112,7 @@ class TrajTrap(object):
         """
         :param path: a 1d array of configurations
         :param control_frequency: the program will sample time_interval/control_frequency confs
-        :param max_acc, max_spd
+        :param max_acc, max_spds
         :return:
         author: weiwei
         date: 20200328

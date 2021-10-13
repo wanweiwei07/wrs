@@ -7,6 +7,7 @@ import modeling.geometric_model as gm
 import motion.optimization_based.incremental_nik as inik
 import matplotlib.pyplot as plt
 import motion.trajectory.piecewisepoly as pwp
+import motion.trajectory.pwp_opt as pwpo
 
 if __name__ == "__main__":
     base = wd.World(cam_pos=[3, -1, 1], lookat_pos=[0, 0, 0.5])
@@ -35,14 +36,19 @@ if __name__ == "__main__":
     # traj_gen = trajp.TrajPoly(method="quintic")
     # interpolated_confs, interpolated_spds, interpolated_accs = \
     #     traj_gen.piecewise_interpolation(jnt_values_list, control_frequency=control_frequency, time_interval=interval_time)
-    traj_gen = pwp.PiecewisePoly(method="quintic")
+    # traj_gen = pwp.PiecewisePoly(method="quintic")
     # interpolated_confs, interpolated_spds, interpolated_accs, interpolated_x = \
     #     traj_gen.interpolate(jnt_values_list, control_frequency=control_frequency, time_interval=interval_time, toggle_debug=True)
-    interpolated_confs, interpolated_spds, interpolated_accs, interpolated_x, original_x = \
-        traj_gen.interpolate_by_max_spdacc(jnt_values_list, control_frequency=control_frequency, max_jnts_spd=None,
-                                           toggle_debug=True)
     # interpolated_confs, interpolated_spds, interpolated_accs, interpolated_x, original_x = \
-    #     traj_gen.trapezoid_interpolate_by_max_spdacc(jnt_values_list, control_frequency=control_frequency, max_jnts_spd=None)
+    #     traj_gen.interpolate_by_max_spdacc(jnt_values_list, control_frequency=control_frequency, max_spds=None,
+    #                                        toggle_debug=True)
+    # interpolated_confs, interpolated_spds, interpolated_accs, interpolated_x, original_x = \
+    #     traj_gen.trapezoid_interpolate_by_max_spdacc(jnt_values_list, control_frequency=control_frequency, max_spds=None)
+
+    trajopt_gen = pwpo.PWPOpt(method="quintic")
+    interpolated_confs, interpolated_spds, interpolated_accs, interpolated_x, original_x = \
+        trajopt_gen.interpolate_by_max_spdacc(jnt_values_list, control_frequency=control_frequency, max_spds=None,
+                                           toggle_debug=True)
     for i in range(len(tcp_list) - 1):
         spos = tcp_list[i][0]
         srotmat = tcp_list[i][1]

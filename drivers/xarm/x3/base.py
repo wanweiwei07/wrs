@@ -1105,7 +1105,7 @@ class Base(Events):
              self._max_tcp_acc,
              self._min_tcp_speed,
              self._max_tcp_speed) = trs_msg
-            # print('tcp_jerk: {}, min_acc: {}, max_acc: {}, min_speed: {}, max_speed: {}'.format(
+            # print('tcp_jerk: {}, min_acc: {}, max_accs: {}, min_speed: {}, max_speed: {}'.format(
             #     self._tcp_jerk, self._min_tcp_acc, self._max_tcp_acc, self._min_tcp_speed, self._max_tcp_speed
             # ))
 
@@ -1116,7 +1116,7 @@ class Base(Events):
              self._max_joint_acc,
              self._min_joint_speed,
              self._max_joint_speed) = p2p_msg
-            # print('joint_jerk: {}, min_acc: {}, max_acc: {}, min_speed: {}, max_speed: {}'.format(
+            # print('joint_jerk: {}, min_acc: {}, max_accs: {}, min_speed: {}, max_speed: {}'.format(
             #     self._joint_jerk, self._min_joint_acc, self._max_joint_acc,
             #     self._min_joint_speed, self._max_joint_speed
             # ))
@@ -1384,7 +1384,7 @@ class Base(Events):
              self._max_tcp_acc,
              self._min_tcp_speed,
              self._max_tcp_speed) = trs_msg
-            # print('tcp_jerk: {}, min_acc: {}, max_acc: {}, min_speed: {}, max_speed: {}'.format(
+            # print('tcp_jerk: {}, min_acc: {}, max_accs: {}, min_speed: {}, max_speed: {}'.format(
             #     self._tcp_jerk, self._min_tcp_acc, self._max_tcp_acc, self._min_tcp_speed, self._max_tcp_speed
             # ))
 
@@ -1395,7 +1395,7 @@ class Base(Events):
              self._max_joint_acc,
              self._min_joint_speed,
              self._max_joint_speed) = p2p_msg
-            # print('joint_jerk: {}, min_acc: {}, max_acc: {}, min_speed: {}, max_speed: {}'.format(
+            # print('joint_jerk: {}, min_acc: {}, max_accs: {}, min_speed: {}, max_speed: {}'.format(
             #     self._joint_jerk, self._min_joint_acc, self._max_joint_acc,
             #     self._min_joint_speed, self._max_joint_speed
             # ))
