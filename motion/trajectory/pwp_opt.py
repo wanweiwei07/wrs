@@ -11,12 +11,7 @@ class PWPOpt(object):
         self._log_time_intervals = []
         self.change_method(method=method)
 
-    def _add_constraint(self, fun, type="ineq"):
-        self._cons.append({'type': type, 'fun': fun})
-
     def _optimization_goal(self, time_intervals):
-        # if self._toggle_debug:
-        #     self._log_time_intervals.append(time_intervals)
         return np.sum(time_intervals)
 
     def _constraint_spdacc(self, time_intervals):
@@ -25,7 +20,7 @@ class PWPOpt(object):
         samples_list = []
         for i in range(self._n_pnts - 1):
             tmp_time_interval = time_intervals[i]
-            n_samples = math.floor(tmp_time_interval / self._control_frequency)
+            n_samples = round(tmp_time_interval / self._control_frequency)
             if n_samples <= 1:
                 n_samples = 2
             samples = np.linspace(0,
@@ -38,9 +33,15 @@ class PWPOpt(object):
         A = self._solve()
         interpolated_confs, interpolated_spds, interpolated_accs, interpolated_x, original_x = \
             self._interpolate(A, samples_list)
+        # spd_diff = self._max_spds - np.max(np.abs(interpolated_spds), axis=0)
         acc_diff = self._max_accs - np.max(np.abs(interpolated_accs), axis=0)
+        # acc_diff = np.tile(self._max_accs, (len(interpolated_accs),1)) - np.abs(interpolated_accs)
+        # print(np.min(acc_diff), np.min(spd_diff))
+        # print(np.min(acc_diff), np.min(spd_diff))
+        # print(np.min(acc_diff), np.max(acc_diff))
+        # print(acc_diff)
         print(np.sum(acc_diff[acc_diff<0]))
-        return np.sum(acc_diff[acc_diff<0])+.001
+        return np.sum(acc_diff[acc_diff<0])
 
     def _solve_opt(self, method='SLSQP', toggle_debug_fine=False):
         """
@@ -51,27 +52,17 @@ class PWPOpt(object):
         :return:
         """
         constraints = []
-        constraints.append({'type': 'ineq', 'fun': self._constraint_spdacc})
-        time_start = time.time()
+        constraints.append({'type': 'eq', 'fun': self._constraint_spdacc})
         bounds = []
         for i in range(len(self._seed_time_intervals)):
-            if i < 3:
-                bounds.append((self._seed_time_intervals[i]*2, None))
-            elif i > len(self._seed_time_intervals)-4:
-                bounds.append((self._seed_time_intervals[i]*2, None))
-            else:
-                bounds.append((self._seed_time_intervals[i], None))
+            bounds.append((self._seed_time_intervals[i], None))
         sol = minimize(self._optimization_goal,
                        self._seed_time_intervals,
                        method=method,
                        bounds=bounds,
                        constraints=constraints,
-                       options={"maxiter": 10e6, "disp": True})
-        # print(sol.message)
-        # print("time cost", time.time() - time_start)
-        # if self.toggle_debug:
-        #     print(sol)
-        #     self._debug_plot()
+                       options={"maxiter": 10e6, "disp": True},
+                       tol=.01)
         if sol.success:
             return sol.x, sol.fun
         else:
