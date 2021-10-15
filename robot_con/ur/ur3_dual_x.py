@@ -84,7 +84,7 @@ class UR3DualX(object):
         """
         :param component_name
         :param path: a list of 1x12 arrays or 1x6 arrays, depending on component_name
-        :param control_frequency: the program will sample time_interval/control_frequency confs, see motion.trajectory
+        :param control_frequency: the program will sample time_intervals/control_frequency confs, see motion.trajectory
         :param interval_time: equals to expandis/speed, speed = degree/second
                               by default, the value is 1.0 and the speed is expandis/second
         :param interpolation_method

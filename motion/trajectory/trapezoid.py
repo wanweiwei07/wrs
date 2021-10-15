@@ -111,7 +111,7 @@ class TrajTrap(object):
                                 max_spd=math.pi * 2):
         """
         :param path: a 1d array of configurations
-        :param control_frequency: the program will sample time_interval/control_frequency confs
+        :param control_frequency: the program will sample time_intervals/control_frequency confs
         :param max_acc, max_spds
         :return:
         author: weiwei
@@ -162,7 +162,7 @@ if __name__ == '__main__':
 
     # y = [[0],[3]]
     # control_frequency = .005１
-    # time_interval = 15.0
+    # time_intervals = 15.0
     # y = [[0],[math.pi*3]]
     y = [[math.pi / 6], [math.pi/2]]
     control_frequency = .005

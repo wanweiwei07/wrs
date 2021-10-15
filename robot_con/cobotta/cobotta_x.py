@@ -1,4 +1,4 @@
-import motion.trajectory.piecewisepoly as trajp
+import motion.trajectory.piecewisepoly_scl as trajp
 import drivers.orin_bcap.bcapclient as bcapclient
 
 

@@ -65,7 +65,7 @@ class Kinodynamics(object):
     def _goal_function(self, x):
         new_state = np.zeros_like(self._state1)
         new_state_angle = self._state1[2] + self._state1[5] * self.time_interval
-        # new_state_angle = self._state1[2] + (self._state1[5] + x[1]) / 2 * self.time_interval
+        # new_state_angle = self._state1[2] + (self._state1[5] + x[1]) / 2 * self.time_intervals
         new_state[3:] = x.dot(self.annihilator(new_state_angle))
         new_state[:3] = self._state1[:3] + (self._state1[3:] + new_state[3:]) / 2 * self.time_interval
         return_value = self.metric(new_state, self._state2)
@@ -100,18 +100,18 @@ class Kinodynamics(object):
     #     # optmize the ns_bnds for t+1
     #     # acc constraints
     #     ineq_cons = {'type': 'ineq',
-    #                  'fun': lambda x: np.array([self.linear_acc ** 2 - ((x[0] - s1_ls) / self.time_interval) ** 2,
-    #                                             self.angular_acc ** 2 - ((x[1] - s1_as) / self.time_interval) ** 2])}
+    #                  'fun': lambda x: np.array([self.linear_acc ** 2 - ((x[0] - s1_ls) / self.time_intervals) ** 2,
+    #                                             self.angular_acc ** 2 - ((x[1] - s1_as) / self.time_intervals) ** 2])}
     #     x0 = np.array([s1_ls, s1_as])
     #     res = minimize(self._goal_function, x0,
     #                    method='SLSQP', constraints=[ineq_cons],
     #                    options={'ftol': self.epsilon, 'disp': True},
     #                    bounds=x_bnds)
     #     return_state = np.zeros_like(state1)
-    #     return_state_angle = state1[2] + state1[5] * self.time_interval
-    #     # return_state_angle = state1[2] + (state1[5] + res.x[1]) / 2 * self.time_interval
+    #     return_state_angle = state1[2] + state1[5] * self.time_intervals
+    #     # return_state_angle = state1[2] + (state1[5] + res.x[1]) / 2 * self.time_intervals
     #     return_state[3:] = res.x.dot(self.annihilator(return_state_angle))
-    #     return_state[:3] = state1[:3] + (state1[3:] + return_state[3:]) / 2 * self.time_interval
+    #     return_state[:3] = state1[:3] + (state1[3:] + return_state[3:]) / 2 * self.time_intervals
     #     current_metric = self.metric(state1, state2)
     #     new_metric = self.metric(return_state, state2)
     #     print("control ", res.x)

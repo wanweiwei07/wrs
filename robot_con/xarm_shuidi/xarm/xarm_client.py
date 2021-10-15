@@ -3,7 +3,7 @@ import math
 import numpy as np
 import robot_con.xarm_shuidi.xarm.xarm_pb2 as xarm_msg
 import robot_con.xarm_shuidi.xarm.xarm_pb2_grpc as xarm_rpc
-import motion.trajectory.piecewisepoly as pwply
+import motion.trajectory.piecewisepoly_scl as pwply
 
 
 class XArm7(object):

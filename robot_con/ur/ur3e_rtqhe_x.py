@@ -9,7 +9,7 @@ import threading
 import socket
 import struct
 import os
-import motion.trajectory.piecewisepoly as pwp
+import motion.trajectory.piecewisepoly_scl as pwp
 
 
 class UR3ERtqHE():
@@ -148,7 +148,7 @@ class UR3ERtqHE():
         """
         move robot_s arm following a given jointspace path
         :param path:
-        :param control_frequency: the program will sample time_interval/control_frequency confs, see motion.trajectory
+        :param control_frequency: the program will sample time_intervals/control_frequency confs, see motion.trajectory
         :param interval_time: equals to expandis/speed, speed = degree/second
                               by default, the value is 1.0 and the speed is expandis/second
         :param interpolation_method

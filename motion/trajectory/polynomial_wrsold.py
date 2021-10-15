@@ -109,7 +109,7 @@ class TrajPoly(object):
     def piecewise_interpolation(self, path, control_frequency=.005, time_interval=1.0):
         """
         :param path: a 1d array of configurations
-        :param control_frequency: the program will sample time_interval/control_frequency confs
+        :param control_frequency: the program will sample time_intervals/control_frequency confs
         :param time_interval: time to move between adjacent joints
         :return:
         author: weiwei

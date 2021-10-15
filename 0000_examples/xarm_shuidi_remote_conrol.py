@@ -16,7 +16,7 @@ rbt_s.fk(jnt_values=jnt_values)
 rbt_s.jaw_to(jawwidth=jawwidth)
 rbt_s.gen_meshmodel().attach_to(base)
 # base.run()
-# rbt_x.agv_move(agv_linear_speed=-.1, agv_angular_speed=.1, time_interval=5)
+# rbt_x.agv_move(agv_linear_speed=-.1, agv_angular_speed=.1, time_intervals=5)
 agv_linear_speed = .2
 agv_angular_speed = .5
 arm_linear_speed = .03

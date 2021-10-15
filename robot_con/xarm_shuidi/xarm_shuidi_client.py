@@ -4,7 +4,7 @@ import time
 import numpy as np
 import robot_con.xarm_shuidi.xarm_shuidi_pb2 as aa_msg
 import robot_con.xarm_shuidi.xarm_shuidi_pb2_grpc as aa_rpc
-import motion.trajectory.piecewisepoly as pwp
+import motion.trajectory.piecewisepoly_scl as pwp
 
 
 class XArmShuidiClient(object):
@@ -55,7 +55,7 @@ class XArmShuidiClient(object):
         control_frequency = .005
         tpply = pwp.PiecewisePoly(method=method)
         interpolated_path, interpolated_spd, interpolated_acc, interpolated_x = \
-            tpply.interpolate(path=path, control_frequency=.005, time_interval=.1)
+            tpply.interpolate(path=path, control_frequency=.005, time_intervals=.1)
             # tpply.interpolate_by_max_jntspeed(path=path,
             #                                   control_frequency=control_frequency,
             #                                   max_jntspeed=max_jntspeed)
@@ -143,7 +143,7 @@ if __name__ == "__main__":
     rbt_s.jaw_to(jawwidth=jawwidth)
     rbt_s.gen_meshmodel().attach_to(base)
     # base.run()
-    # rbt_x.agv_move(agv_linear_speed=-.1, agv_angular_speed=.1, time_interval=5)
+    # rbt_x.agv_move(agv_linear_speed=-.1, agv_angular_speed=.1, time_intervals=5)
     agv_linear_speed = .2
     agv_angular_speed = .5
     arm_linear_speed = .02
@@ -270,7 +270,7 @@ if __name__ == "__main__":
         #     rbt_s.fk(jnt_values=new_jnt_values)
         #     toc = time.time()
         #     start_frame_id = math.ceil((toc - tic) / .01)
-        #     rbt_x.arm_move_jspace_path([last_jnt_values, new_jnt_values], time_interval=.1, start_frame_id=start_frame_id)
+        #     rbt_x.arm_move_jspace_path([last_jnt_values, new_jnt_values], time_intervals=.1, start_frame_id=start_frame_id)
 
 # path = [[0, 0, 0, 0, 0, 0, 0]]wwwwwwwwwwww
 # rbt_x.move_jspace_path(path)

@@ -6,8 +6,8 @@ import robot_sim.robots.yumi.yumi as ym
 import modeling.geometric_model as gm
 import motion.optimization_based.incremental_nik as inik
 import matplotlib.pyplot as plt
-import motion.trajectory.piecewisepoly as pwp
-import motion.trajectory.pwp_opt as pwpo
+import motion.trajectory.piecewisepoly_scl as pwp
+import motion.trajectory.piecewisepoly_opt as pwpo
 
 if __name__ == "__main__":
     base = wd.World(cam_pos=[3, -1, 1], lookat_pos=[0, 0, 0.5])
@@ -35,10 +35,10 @@ if __name__ == "__main__":
     interval_time = 1
     # traj_gen = trajp.TrajPoly(method="quintic")
     # interpolated_confs, interpolated_spds, interpolated_accs = \
-    #     traj_gen.piecewise_interpolation(jnt_values_list, control_frequency=control_frequency, time_interval=interval_time)
+    #     traj_gen.piecewise_interpolation(jnt_values_list, control_frequency=control_frequency, time_intervals=interval_time)
     # traj_gen = pwp.PiecewisePoly(method="quintic")
     # interpolated_confs, interpolated_spds, interpolated_accs, interpolated_x = \
-    #     traj_gen.interpolate(jnt_values_list, control_frequency=control_frequency, time_interval=interval_time, toggle_debug=True)
+    #     traj_gen.interpolate(jnt_values_list, control_frequency=control_frequency, time_intervals=interval_time, toggle_debug=True)
     # interpolated_confs, interpolated_spds, interpolated_accs, interpolated_x, original_x = \
     #     traj_gen.interpolate_by_max_spdacc(jnt_values_list, control_frequency=control_frequency, max_spds=None,
     #                                        toggle_debug=True)

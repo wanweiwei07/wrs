@@ -47,7 +47,7 @@ def video2img(video_f_name):
                 aruco.drawAxis(frame, cameraMatrix, distCoeffs, rvecs[i], tvecs[i], 0.1)
                 cv2.imshow("img", frame)
             cv2.waitKey(0)
-            # cv2.imwrite(output_path+video_f_name.split(".mp4")[0] + str(int(c / time_interval)) + '.jpg', frame)
+            # cv2.imwrite(output_path+video_f_name.split(".mp4")[0] + str(int(c / time_intervals)) + '.jpg', frame)
         c += 1
     vc.release()
 

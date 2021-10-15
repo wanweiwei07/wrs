@@ -5,7 +5,7 @@ import time
 from scipy.optimize import minimize
 
 
-class PWPOpt(object):
+class PiecewisePolyOpt(object):
 
     def __init__(self, method="linear"):
         self._log_time_intervals = []
@@ -20,28 +20,29 @@ class PWPOpt(object):
         samples_list = []
         for i in range(self._n_pnts - 1):
             tmp_time_interval = time_intervals[i]
-            n_samples = round(tmp_time_interval / self._control_frequency)
+            n_samples = np.floor(tmp_time_interval / self._control_frequency)
             if n_samples <= 1:
                 n_samples = 2
+            n_samples = int(n_samples)
             samples = np.linspace(0,
                                   tmp_time_interval,
                                   n_samples,
                                   endpoint=True)
-            samples_list.append(samples + self._x[-1])
+            samples_list.append(samples + self._x[i])
             self._x.append(tmp_time_interval + tmp_total_time)
             tmp_total_time += tmp_time_interval
         A = self._solve()
         interpolated_confs, interpolated_spds, interpolated_accs, interpolated_x, original_x = \
             self._interpolate(A, samples_list)
         # spd_diff = self._max_spds - np.max(np.abs(interpolated_spds), axis=0)
-        acc_diff = self._max_accs - np.max(np.abs(interpolated_accs), axis=0)
-        # acc_diff = np.tile(self._max_accs, (len(interpolated_accs),1)) - np.abs(interpolated_accs)
+        # acc_diff = self._max_accs - np.max(np.abs(interpolated_accs), axis=0)
+        acc_diff = np.tile(self._max_accs, (len(interpolated_accs),1)) - np.abs(interpolated_accs)
         # print(np.min(acc_diff), np.min(spd_diff))
         # print(np.min(acc_diff), np.min(spd_diff))
         # print(np.min(acc_diff), np.max(acc_diff))
         # print(acc_diff)
-        print(np.sum(acc_diff[acc_diff<0]))
-        return np.sum(acc_diff[acc_diff<0])
+        # print(np.sum(acc_diff[acc_diff<0]**2)*np.sum(np.asarray(interpolated_spds)**2))
+        return np.sum(acc_diff[acc_diff<0]**2)*np.sum(np.asarray(interpolated_spds)**2)
 
     def _solve_opt(self, method='SLSQP', toggle_debug_fine=False):
         """
@@ -201,12 +202,35 @@ class PWPOpt(object):
             pose_diff = abs(path[i + 1] - path[i])
             tmp_time_interval = np.max(pose_diff / max_spds)
             time_intervals.append(tmp_time_interval)
+        time_intervals = np.asarray(time_intervals)
+        print("seed total time", np.sum(time_intervals))
+        # # time scaling
+        # # interpolate
+        # interpolated_confs, interpolated_spds, interpolated_accs, interpolated_x, original_x, samples_back_index_x = \
+        #     self.interpolate(control_frequency=control_frequency, time_intervals=time_intervals,
+        #                      toggle_debug=toggle_debug_fine)
+        # while True:
+        #     samples_back_index_x = np.asarray(samples_back_index_x)
+        #     interpolated_accs_abs = np.asarray(np.abs(interpolated_accs))
+        #     diff_accs = np.tile(max_accs, (len(interpolated_accs_abs), 1)) - interpolated_accs_abs
+        #     selection = np.where(np.min(diff_accs, axis=1) < 0)
+        #     if len(selection[0]) > 0:
+        #         time_intervals += .001
+        #         x_sel = np.unique(samples_back_index_x[selection[0] - 1])
+        #         time_intervals[x_sel] += .001
+        #     else:
+        #         break
+        #     interpolated_confs, interpolated_spds, interpolated_accs, interpolated_x, original_x, samples_back_index_x = \
+        #         self.interpolate(control_frequency=control_frequency, time_intervals=time_intervals,
+        #                          toggle_debug=toggle_debug_fine)
+
         self._seed_time_intervals = time_intervals
         time_intervals, _ = self._solve_opt(toggle_debug_fine=toggle_debug_fine)
         # interpolate
         interpolated_confs, interpolated_spds, interpolated_accs, interpolated_x, original_x, samples_back_index_x = \
             self.interpolate(control_frequency=control_frequency, time_intervals=time_intervals,
                              toggle_debug=toggle_debug)
+        print("final total time", original_x[-1])
         if toggle_debug:
             import matplotlib.pyplot as plt
             fig, axs = plt.subplots(3, figsize=(3.5, 4.75))
