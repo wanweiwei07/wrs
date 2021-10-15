@@ -4,7 +4,7 @@ import math
 import time
 from scipy.optimize import minimize
 
-
+# interpolation ignored during optimization
 class PiecewisePolyOpt(object):
 
     def __init__(self, method="linear"):
@@ -17,36 +17,17 @@ class PiecewisePolyOpt(object):
     def _constraint_spdacc(self, time_intervals):
         self._x = [0]
         tmp_total_time = 0
-        samples_list = []
         for i in range(self._n_pnts - 1):
             tmp_time_interval = time_intervals[i]
-            n_samples = np.floor(tmp_time_interval / self._control_frequency)
-            if n_samples <= 1:
-                n_samples = 2
-            n_samples = int(n_samples)
-            samples = np.linspace(0,
-                                  tmp_time_interval,
-                                  n_samples,
-                                  endpoint=True)
-            samples_list.append(samples + self._x[i])
             self._x.append(tmp_time_interval + tmp_total_time)
             tmp_total_time += tmp_time_interval
         A = self._solve()
-        interpolated_confs, interpolated_spds, interpolated_accs, interpolated_x, original_x = \
-            self._interpolate(A, samples_list)
-        # spd_diff = self._max_spds - np.max(np.abs(interpolated_spds), axis=0)
-        # acc_diff = self._max_accs - np.max(np.abs(interpolated_accs), axis=0)
-        acc_diff = np.tile(self._max_accs, (len(interpolated_accs),1)) - np.abs(interpolated_accs)
-        # print(np.min(acc_diff), np.min(spd_diff))
-        # print(np.min(acc_diff), np.min(spd_diff))
-        # print(np.min(acc_diff), np.max(acc_diff))
-        # print(acc_diff)
-        # print(np.sum(acc_diff[acc_diff<0]**2)*np.sum(np.asarray(interpolated_spds)**2))
-        # return np.sum(acc_diff[acc_diff<0]**2)*np.sum(np.asarray(interpolated_spds)**2)
+        interpolated_y_dotdot = A(np.array(self._x), 2).tolist()
+        acc_diff = np.tile(self._max_accs, (len(interpolated_y_dotdot),1)) - np.abs(interpolated_y_dotdot)
         print(np.sum(acc_diff[acc_diff<0]**2))
         return np.sum(acc_diff[acc_diff<0]**2)
 
-    def _solve_opt(self, method='SLSQP', toggle_debug_fine=False):
+    def _solve_opt(self, method='SLSQP'):
         """
         :param tgt_pos:
         :param tgt_rotmat:
@@ -227,7 +208,7 @@ class PiecewisePolyOpt(object):
         #                          toggle_debug=toggle_debug_fine)
 
         self._seed_time_intervals = time_intervals
-        time_intervals, _ = self._solve_opt(toggle_debug_fine=toggle_debug_fine)
+        time_intervals, _ = self._solve_opt()
         # interpolate
         interpolated_confs, interpolated_spds, interpolated_accs, interpolated_x, original_x, samples_back_index_x = \
             self.interpolate(control_frequency=control_frequency, time_intervals=time_intervals,

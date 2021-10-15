@@ -140,7 +140,7 @@ class PiecewisePolyScl(object):
         while True:
             count+=1
             if count > 50:
-                toggle_debug_fine=True
+                # toggle_debug_fine=True
                 break
             samples_back_index_x = np.asarray(samples_back_index_x)
             interpolated_spds_abs = np.asarray(np.abs(interpolated_spds))
@@ -157,7 +157,7 @@ class PiecewisePolyScl(object):
             if toggle_debug_fine:
                 print("toggle_debug_fine")
                 import matplotlib.pyplot as plt
-                fig, axs = plt.subplots(3, figsize=(20, 40))
+                fig, axs = plt.subplots(3, figsize=(10, 30))
                 fig.tight_layout(pad=.7)
                 axs[0].plot(interpolated_x, interpolated_confs, 'o')
                 for xc in original_x:
@@ -192,13 +192,13 @@ class PiecewisePolyScl(object):
             #         selection_accs]
             if len(selection_accs[0]) > 0:
                 x_sel_accs = np.unique(samples_back_index_x[selection_accs[0]])
-                # print("acc ", x_sel_accs)
+                print("acc ", x_sel_accs)
                 # for i in x_sel_accs:
                 #     indices = np.where(x_sel_raw == i)
                 #     print(np.max(1 - ratio_selected_accs[indices]))
                 #     print(.001 * np.max(1 - ratio_selected_accs[indices]))
                 #     time_intervals[i] += .01 * np.max(1 - ratio_selected_accs[indices])
-                time_intervals[x_sel_accs] += .001*((1/time_intervals[x_sel_accs])/np.max(1/time_intervals[x_sel_accs]))
+                time_intervals[x_sel_accs] += .01*((1/time_intervals[x_sel_accs])/np.max(1/time_intervals[x_sel_accs]))
             else:
                 break
             if toggle_debug_fine:

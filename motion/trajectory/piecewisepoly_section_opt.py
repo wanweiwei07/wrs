@@ -5,7 +5,7 @@ import time
 from scipy.optimize import minimize
 
 
-class PiecewisePolyOpt(object):
+class PiecewisePolySectionOpt(object):
 
     def __init__(self, method="linear"):
         self._log_time_intervals = []
