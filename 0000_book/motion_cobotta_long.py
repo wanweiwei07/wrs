@@ -7,7 +7,7 @@ if __name__ == '__main__':
     import visualization.panda.world as wd
     import modeling.geometric_model as gm
     import motion.trajectory.piecewisepoly_scl as trajp
-    import motion.trajectory.piecewisepoly_opt2 as trajpopt
+    import motion.trajectory.piecewisepoly_opt as trajpopt
 
     base = wd.World(cam_pos=[1, 1, .5], lookat_pos=[0, 0, .2])
     gm.gen_frame().attach_to(base)

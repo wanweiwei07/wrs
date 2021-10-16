@@ -5,10 +5,18 @@ import time
 from scipy.optimize import minimize
 
 
+# interpolation ignored during optimization
 class PiecewisePolyOpt(object):
 
     def __init__(self, method="linear"):
-        self._log_time_intervals = []
+        self._toggle_debug_fine = False
+        self._x = None
+        self._path_array = None
+        self._n_pnts = None
+        self._n_jnts = None
+        self._control_frequency = None
+        self._max_vels = None
+        self._max_accs = None
         self.change_method(method=method)
 
     def _optimization_goal(self, time_intervals):
@@ -18,35 +26,67 @@ class PiecewisePolyOpt(object):
         self._x = [0]
         tmp_total_time = 0
         samples_list = []
-        for i in range(self._n_pnts - 1):
+        for i in range(len(time_intervals)):
             tmp_time_interval = time_intervals[i]
-            n_samples = np.floor(tmp_time_interval / self._control_frequency)
+            n_samples = math.ceil(tmp_time_interval / .008)
             if n_samples <= 1:
                 n_samples = 2
-            n_samples = int(n_samples)
             samples = np.linspace(0,
                                   tmp_time_interval,
                                   n_samples,
                                   endpoint=True)
-            samples_list.append(samples + self._x[i])
+            samples_list.append(samples + self._x[-1])
             self._x.append(tmp_time_interval + tmp_total_time)
             tmp_total_time += tmp_time_interval
+        interpolated_x = []
+        for i in range(len(samples_list)):
+            if i == len(samples_list) - 1:  # last
+                interpolated_x_sec = (samples_list[i]).tolist()
+            else:
+                interpolated_x_sec = (samples_list[i]).tolist()[:-1]
+            interpolated_x += interpolated_x_sec
         A = self._solve()
-        interpolated_confs, interpolated_spds, interpolated_accs, interpolated_x, original_x = \
-            self._interpolate(A, samples_list)
-        # spd_diff = self._max_spds - np.max(np.abs(interpolated_spds), axis=0)
-        # acc_diff = self._max_accs - np.max(np.abs(interpolated_accs), axis=0)
-        acc_diff = np.tile(self._max_accs, (len(interpolated_accs),1)) - np.abs(interpolated_accs)
-        # print(np.min(acc_diff), np.min(spd_diff))
-        # print(np.min(acc_diff), np.min(spd_diff))
-        # print(np.min(acc_diff), np.max(acc_diff))
-        # print(acc_diff)
-        # print(np.sum(acc_diff[acc_diff<0]**2)*np.sum(np.asarray(interpolated_spds)**2))
-        # return np.sum(acc_diff[acc_diff<0]**2)*np.sum(np.asarray(interpolated_spds)**2)
-        print(np.sum(acc_diff[acc_diff<0]**2))
-        return np.sum(acc_diff[acc_diff<0]**2)
+        interpolated_y = A(np.array(interpolated_x)).tolist()
+        interpolated_y_d1 = A(np.array(interpolated_x), 1).tolist()
+        interpolated_y_d2 = A(np.array(interpolated_x), 2).tolist()
+        interpolated_y_d3 = A(np.array(interpolated_x), 3).tolist()
+        original_x = self._x
+        if self._toggle_debug_fine:
+            import matplotlib.pyplot as plt
+            fig, axs = plt.subplots(4, figsize=(35, 47.5))
+            fig.tight_layout(pad=.7)
+            axs[0].plot(interpolated_x, interpolated_y, 'o')
+            for xc in original_x:
+                axs[0].axvline(x=xc)
+            # axs[0].plot(np.arange(len(jnt_values_list)), jnt_values_list, '--o')
+            axs[1].plot(interpolated_x, interpolated_y_d1)
+            for xc in original_x:
+                axs[1].axvline(x=xc)
+            axs[2].plot(interpolated_x, interpolated_y_d2)
+            for xc in original_x:
+                axs[2].axvline(x=xc)
+            axs[3].plot(interpolated_x, interpolated_y_d3)
+            for xc in original_x:
+                axs[3].axvline(x=xc)
+            for xc in original_x:
+                axs[2].axvline(x=xc)
+            plt.show()
+        acc_diff = np.tile(self._max_accs, (len(interpolated_y_d2), 1)) - np.abs(interpolated_y_d2)
+        # jks_diff = np.tile(self._max_accs, (len(interpolated_y_d3), 1)) - np.abs(interpolated_y_d3)
+        print(np.sum(acc_diff[acc_diff < 0] ** 2))
+        return np.sum(acc_diff[acc_diff < 0] ** 2)
+        # The following code only uses give points
+        # for i in range(self._n_pnts - 1):
+        #     tmp_time_interval = time_intervals[i]
+        #     self._x.append(tmp_time_interval + tmp_total_time)
+        #     tmp_total_time += tmp_time_interval
+        # A = self._solve()
+        # interpolated_y_d2 = A(np.array(self._x), 2).tolist()
+        # acc_diff = np.tile(self._max_accs, (len(interpolated_y_d2),1)) - np.abs(interpolated_y_d2)
+        # print(np.sum(acc_diff[acc_diff<0]**2))
+        # return np.sum(acc_diff[acc_diff<0]**2)
 
-    def _solve_opt(self, method='SLSQP', toggle_debug_fine=False):
+    def _solve_opt(self, method='SLSQP'):
         """
         :param tgt_pos:
         :param tgt_rotmat:
@@ -92,14 +132,14 @@ class PiecewisePolyOpt(object):
         return sinter.make_interp_spline(self._x, self._path_array, k=3, axis=0, bc_type='clamped')
 
     def _quintic_solve(self):
-        bc_type = [[(1, np.zeros(self._n_dim)), (2, np.zeros(self._n_dim))],
-                   [(1, np.zeros(self._n_dim)), (2, np.zeros(self._n_dim))]]
+        bc_type = [[(1, np.zeros(self._n_jnts)), (2, np.zeros(self._n_jnts))],
+                   [(1, np.zeros(self._n_jnts)), (2, np.zeros(self._n_jnts))]]
         return sinter.make_interp_spline(self._x, self._path_array, k=5, axis=0, bc_type=bc_type)
 
     def _trapezoid_solve(self):
         pass
 
-    def _interpolate(self, A, samples_list, toggle_debug=False):
+    def _interpolate(self, A, samples_list):
         """
         :param A: a linear call back function since we are using scipy
         :param samples_list: a list of 1xn_jnts nparray, with each element holding the samples need to be interpolated
@@ -116,25 +156,11 @@ class PiecewisePolyOpt(object):
                 interpolated_x_sec = (samples_list[i]).tolist()[:-1]
             interpolated_x += interpolated_x_sec
         interpolated_y = A(np.array(interpolated_x)).tolist()
-        interpolated_y_dot = A(np.array(interpolated_x), 1).tolist()
-        interpolated_y_dotdot = A(np.array(interpolated_x), 2).tolist()
+        interpolated_y_d1 = A(np.array(interpolated_x), 1).tolist()
+        interpolated_y_d2 = A(np.array(interpolated_x), 2).tolist()
+        interpolated_y_d3 = A(np.array(interpolated_x), 3).tolist()
         original_x = self._x
-        if toggle_debug:
-            import matplotlib.pyplot as plt
-            fig, axs = plt.subplots(3, figsize=(3.5, 4.75))
-            fig.tight_layout(pad=.7)
-            axs[0].plot(interpolated_x, interpolated_y, 'o')
-            for xc in original_x:
-                axs[0].axvline(x=xc)
-            # axs[0].plot(np.arange(len(jnt_values_list)), jnt_values_list, '--o')
-            axs[1].plot(interpolated_x, interpolated_y_dot)
-            for xc in original_x:
-                axs[1].axvline(x=xc)
-            axs[2].plot(interpolated_x, interpolated_y_dotdot)
-            for xc in original_x:
-                axs[2].axvline(x=xc)
-            plt.show()
-        return interpolated_y, interpolated_y_dot, interpolated_y_dotdot, interpolated_x, original_x
+        return interpolated_y, interpolated_y_d1, interpolated_y_d2, interpolated_y_d3, interpolated_x, original_x
 
     def _trapezoid_interpolate(self):
         pass
@@ -147,7 +173,7 @@ class PiecewisePolyOpt(object):
         new_path.append(path[-1])
         return new_path
 
-    def interpolate(self, control_frequency, time_intervals, toggle_debug=False):
+    def interpolate(self, control_frequency, time_intervals):
         self._x = [0]
         tmp_total_time = 0
         samples_list = []
@@ -167,14 +193,14 @@ class PiecewisePolyOpt(object):
             self._x.append(tmp_time_interval + tmp_total_time)
             tmp_total_time += tmp_time_interval
         A = self._solve()
-        interpolated_confs, interpolated_spds, interpolated_accs, interpolated_x, original_x = \
-            self._interpolate(A, samples_list, toggle_debug=toggle_debug)
-        return interpolated_confs, interpolated_spds, interpolated_accs, interpolated_x, original_x, samples_back_index_x
+        interpolated_confs, interpolated_spds, interpolated_accs, interpolated_jks, interpolated_x, original_x = \
+            self._interpolate(A, samples_list)
+        return interpolated_confs, interpolated_spds, interpolated_accs, interpolated_jks, interpolated_x, original_x, samples_back_index_x
 
     def interpolate_by_max_spdacc(self,
                                   path,
                                   control_frequency=.005,
-                                  max_spds=None,
+                                  max_vels=None,
                                   max_accs=None,
                                   toggle_debug_fine=False,
                                   toggle_debug=True):
@@ -188,21 +214,22 @@ class PiecewisePolyOpt(object):
         author: weiwei
         date: 20210712, 20211012
         """
+        self._toggle_debug_fine = toggle_debug_fine
         path = self._remove_duplicate(path)
         self._path_array = np.array(path)
-        self._n_pnts, self._n_dim = self._path_array.shape
+        self._n_pnts, self._n_jnts = self._path_array.shape
         self._control_frequency = control_frequency
-        if max_spds is None:
-            max_spds = [math.pi * 2 / 3] * path[0].shape[0]
+        if max_vels is None:
+            max_vels = [math.pi * 2 / 3] * path[0].shape[0]
         if max_accs is None:
             max_accs = [math.pi] * path[0].shape[0]
-        self._max_spds = np.asarray(max_spds)
+        self._max_vels = np.asarray(max_vels)
         self._max_accs = np.asarray(max_accs)
         # initialize time inervals
         time_intervals = []
         for i in range(self._n_pnts - 1):
             pose_diff = abs(path[i + 1] - path[i])
-            tmp_time_interval = np.max(pose_diff / max_spds)
+            tmp_time_interval = np.max(pose_diff / max_vels)
             time_intervals.append(tmp_time_interval)
         time_intervals = np.asarray(time_intervals)
         print("seed total time", np.sum(time_intervals))
@@ -227,15 +254,14 @@ class PiecewisePolyOpt(object):
         #                          toggle_debug=toggle_debug_fine)
 
         self._seed_time_intervals = time_intervals
-        time_intervals, _ = self._solve_opt(toggle_debug_fine=toggle_debug_fine)
+        time_intervals, _ = self._solve_opt()
         # interpolate
-        interpolated_confs, interpolated_spds, interpolated_accs, interpolated_x, original_x, samples_back_index_x = \
-            self.interpolate(control_frequency=control_frequency, time_intervals=time_intervals,
-                             toggle_debug=toggle_debug)
+        interpolated_confs, interpolated_spds, interpolated_accs, interpolated_jks, interpolated_x, original_x, samples_back_index_x = self.interpolate(
+            control_frequency=control_frequency, time_intervals=time_intervals)
         print("final total time", original_x[-1])
         if toggle_debug:
             import matplotlib.pyplot as plt
-            fig, axs = plt.subplots(3, figsize=(3.5, 4.75))
+            fig, axs = plt.subplots(4, figsize=(35, 47.5))
             fig.tight_layout(pad=.7)
             axs[0].plot(interpolated_x, interpolated_confs, 'o')
             for xc in original_x:
@@ -247,5 +273,8 @@ class PiecewisePolyOpt(object):
             axs[2].plot(interpolated_x, interpolated_accs)
             for xc in original_x:
                 axs[2].axvline(x=xc)
+            axs[3].plot(interpolated_x, interpolated_jks)
+            for xc in original_x:
+                axs[3].axvline(x=xc)
             plt.show()
-        return interpolated_confs, interpolated_spds, interpolated_accs, interpolated_x, original_x
+        return interpolated_confs

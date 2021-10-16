@@ -7,7 +7,8 @@ if __name__ == '__main__':
     import visualization.panda.world as wd
     import modeling.geometric_model as gm
     import motion.trajectory.piecewisepoly_scl as trajp
-    import motion.trajectory.piecewisepoly_opt2 as trajpopt
+    import motion.trajectory.piecewisepoly_opt as trajpopt
+    import motion.trajectory.piecewisepoly_toppra as trajptop
 
     base = wd.World(cam_pos=[1, 1, .5], lookat_pos=[0, 0, .2])
     gm.gen_frame().attach_to(base)
@@ -32,8 +33,9 @@ if __name__ == '__main__':
             robot_meshmodel.attach_to(base)
 
         # tg = trajp.PiecewisePolyScl(method="quintic")
-        tg = trajpopt.PiecewisePolyOpt(method="cubic")
-        interpolated_confs, interpolated_spds, interpolated_accs, interpolated_x, original_x = \
-            tg.interpolate_by_max_spdacc(path, control_frequency=.008, max_spds=[math.pi / 2] * 6,
-                                         max_accs=[math.pi] * 6, toggle_debug_fine=True, toggle_debug=True)
+        # tg = trajpopt.PiecewisePolyOpt(method="quintic")
+        tg = trajptop.PiecewisePolyTOPPRA()
+        interpolated_confs = tg.interpolate_by_max_spdacc(path, control_frequency=.008, max_vels=[math.pi / 2] * 6,
+                                                          max_accs=[math.pi] * 6, toggle_debug_fine=False,
+                                                          toggle_debug=True)
     # base.run()
