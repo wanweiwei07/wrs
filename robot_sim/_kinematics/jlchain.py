@@ -337,6 +337,9 @@ class JLChain(object):
     def manipulability_axmat(self, type="translational"):
         return self._ikt.manipulability_axmat(type=type)
 
+    def jacobian(self):
+        return self._ikt.jacobian(tcp_jntid=self.tcp_jntid)
+
     def cvt_loc_tcp_to_gl(self,
                           loc_pos=np.zeros(3),
                           loc_rotmat=np.eye(3),
