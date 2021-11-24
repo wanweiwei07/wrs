@@ -27,12 +27,12 @@ class XArm7YunjiMobile(ri.RobotInterface):
         self.agv.jnts[3]['loc_pos'] = np.zeros(3)
         self.agv.jnts[3]['loc_motionax'] = np.array([0, 0, 1])
         self.agv.jnts[3]['motion_rng'] = [-math.pi, math.pi]
-        self.agv.jnts[4]['loc_pos'] = np.array([0, .0, .34231])  # dummy
+        self.agv.jnts[4]['loc_pos'] = np.array([0, .0, .277])  # dummy
         self.agv.jnts[5]['loc_pos'] = np.zeros(3)  # dummy
         self.agv.jnts[6]['loc_pos'] = np.array([0, .0, .168862])
         self.agv.lnks[3]['name'] = 'agv'
         self.agv.lnks[3]['loc_pos'] = np.array([0, 0, 0])
-        self.agv.lnks[3]['meshfile'] = os.path.join(this_dir, 'meshes', 'shuidi_agv_meter.stl')
+        self.agv.lnks[3]['meshfile'] = os.path.join(this_dir, 'meshes', 'shuidi_agv.stl')
         self.agv.lnks[3]['rgba'] = [.7, .7, .7, 1.0]
         self.agv.lnks[4]['meshfile'] = os.path.join(this_dir, 'meshes', 'battery.stl')
         self.agv.lnks[4]['rgba'] = [.35, .35, .35, 1.0]
@@ -254,7 +254,7 @@ class XArm7YunjiMobile(ri.RobotInterface):
         author: weiwei
         date: 20210302
         """
-        if component_name is not 'arm':
+        if component_name != 'arm':
             raise ValueError("Component name for Xarm7ShuidiRobot must be \'arm\'!")
         hnd_pos = self.arm.jnts[-1]['gl_posq']
         hnd_rotmat = self.arm.jnts[-1]['gl_rotmatq']
@@ -348,7 +348,7 @@ if __name__ == '__main__':
     gm.gen_frame().attach_to(base)
     xav = XArm7YunjiMobile(enable_cc=True)
     xav.fk(component_name='all', jnt_values=np.array([0, 0, 0, 0, 0, 0, math.pi, 0, -math.pi / 6, 0, 0]))
-    xav.jaw_to(.08)
+    xav.jaw_to(jawwidth=.08)
     tgt_pos = np.array([.85, 0, .55])
     tgt_rotmat = rm.rotmat_from_axangle([0, 1, 0], math.pi / 2)
     gm.gen_frame(pos=tgt_pos, rotmat=tgt_rotmat).attach_to(base)
