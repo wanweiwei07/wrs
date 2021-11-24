@@ -70,7 +70,7 @@ class CobottaX(object):
             self.traj_gen.interpolate_by_max_spdacc(path, control_frequency=.008, max_spds=None,
                                                     toggle_debug=toggle_debug)
         # Slave move: Change mode
-        self.bcc.robot_execute(self.hrbt, "slvChangeMode", 0x102)
+        self.bcc.robot_execute(self.hrbt, "slvChangeMode", 0x202)
         for jnt_values in interpolated_confs:
             jnt_values_degree = np.degrees(jnt_values)
             self.bcc.robot_execute(self.hrbt, "slvMove", jnt_values_degree.tolist() + [0, 0])

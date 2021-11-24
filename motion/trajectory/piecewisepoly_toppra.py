@@ -25,7 +25,6 @@ class PiecewisePolyTOPPRA(object):
                                   control_frequency=.005,
                                   max_vels=None,
                                   max_accs=None,
-                                  toggle_debug_fine=False,
                                   toggle_debug=True):
         """
         TODO: prismatic motor speed is not considered
@@ -53,6 +52,7 @@ class PiecewisePolyTOPPRA(object):
             tmp_time_interval = np.max(pose_diff / max_vels)
             time_intervals.append(tmp_time_interval)
         time_intervals = np.array(time_intervals)
+        print("seed total time", np.sum(time_intervals))
         x = [0]
         tmp_total_x = 0
         for i in range(len(time_intervals)):

@@ -92,9 +92,9 @@ class PiecewisePolyScl(object):
             tmp_total_time += tmp_time_interval
         samples_back_index_x.append(self._n_pnts - 1)
         A = self._solve()
-        interpolated_confs, interpolated_spds, interpolated_accs, interpolated_jks, interpolated_x, original_x = \
+        interpolated_confs, interpolated_vels, interpolated_accs, interpolated_jks, interpolated_x, original_x = \
             self._interpolate(A, samples_list)
-        return interpolated_confs, interpolated_spds, interpolated_accs, interpolated_jks, interpolated_x, original_x, samples_back_index_x
+        return interpolated_confs, interpolated_vels, interpolated_accs, interpolated_jks, interpolated_x, original_x, samples_back_index_x
 
     def interpolate_by_max_spdacc(self,
                                   path,
@@ -132,9 +132,15 @@ class PiecewisePolyScl(object):
             time_intervals.append(tmp_time_interval)
         time_intervals = np.array(time_intervals)
         # interpolate
-        interpolated_confs, interpolated_spds, interpolated_accs, interpolated_jks, interpolated_x, original_x, samples_back_index_x = \
+        interpolated_confs, interpolated_vels, interpolated_accs, interpolated_jks, interpolated_x, original_x, samples_back_index_x = \
             self.interpolate(control_frequency=control_frequency, time_intervals=time_intervals)
         print("seed total time", original_x[-1])
+        # original_interpolated_vels = copy.deepcopy(interpolated_vels)
+        # original_interpolated_vels_abs = np.asarray(np.abs(original_interpolated_vels))
+        # original_diff_vels = np.tile(max_vels, (len(original_interpolated_vels_abs), 1)) - original_interpolated_vels_abs
+        # original_selection_vels = np.where(np.min(original_diff_vels, axis=1) < -.01)
+        # samples_back_index_x = np.asarray(samples_back_index_x)
+        # original_x_sel_vels = np.unique(samples_back_index_x[original_selection_vels[0]])
         # time scaling for speed
         count = 0
         while True:
@@ -143,16 +149,83 @@ class PiecewisePolyScl(object):
                 # toggle_debug_fine=True
                 break
             samples_back_index_x = np.asarray(samples_back_index_x)
-            interpolated_spds_abs = np.asarray(np.abs(interpolated_spds))
-            diff_spds = np.tile(max_vels, (len(interpolated_spds_abs), 1)) - interpolated_spds_abs
-            selection_spds = np.where(np.min(diff_spds, axis=1) < 1e-6)
-            # print("max spd ", max_vels, "sel_spd ", selection_spds)
+            interpolated_vels_abs = np.asarray(np.abs(interpolated_vels))
+            diff_vels = np.tile(max_vels, (len(interpolated_vels_abs), 1)) - interpolated_vels_abs
+            selection_vels = np.where(np.min(diff_vels, axis=1) < 1e-6)
+            # print("max spd ", max_vels, "sel_spd ", selection_vels)
             # print("samples_back_index_x ", samples_back_index_x)
-            if len(selection_spds[0]) > 0:
-                x_sel_spds = np.unique(samples_back_index_x[selection_spds[0]])
-                # print("spd ", x_sel_spds)
-                time_intervals[x_sel_spds] += .001 * (
-                            (1 / time_intervals[x_sel_spds]) / np.max(1 / time_intervals[x_sel_spds]))
+            if len(selection_vels[0]) > 0:
+                x_sel_vels = np.unique(samples_back_index_x[selection_vels[0]])
+                # print("spd ", x_sel_vels)
+                time_intervals[x_sel_vels] += .001 * (
+                            (1 / time_intervals[x_sel_vels]) / np.max(1 / time_intervals[x_sel_vels]))
+            else:
+                break
+            # if toggle_debug_fine:
+            #     print("toggle_debug_fine")
+            #     import matplotlib.pyplot as plt
+            #     fig, axs = plt.subplots(4, figsize=(10, 30))
+            #     fig.tight_layout(pad=.7)
+            #     # curve
+            #     axs[0].plot(interpolated_x, interpolated_confs, 'o')
+            #     for xc in original_x:
+            #         axs[0].axvline(x=xc)
+            #     # axs[0].plot(np.arange(len(jnt_values_list)), jnt_values_list, '--o')
+            #     # speed
+            #     axs[1].plot(interpolated_x, interpolated_vels)
+            #     for xc in original_x:
+            #         axs[1].axvline(x=xc)
+            #     for ys in self._max_vels:
+            #         axs[1].axhline(y=ys)
+            #         axs[1].axhline(y=-ys)
+            #     # acceleration
+            #     axs[2].plot(interpolated_x, interpolated_accs)
+            #     for xc in original_x:
+            #         axs[2].axvline(x=xc)
+            #     for ys in self._max_accs:
+            #         axs[2].axhline(y=ys)
+            #         axs[2].axhline(y=-ys)
+            #     # jerk
+            #     axs[3].plot(interpolated_x, interpolated_jks)
+            #     for xc in original_x:
+            #         axs[3].axvline(x=xc)
+            #     for ys in [50, 50, 50, 50, 50, 50]:
+            #         axs[3].axhline(y=ys)
+            #         axs[3].axhline(y=-ys)
+            #     for i in x_sel_vels:
+            #         cx = (original_x[i] + original_x[i + 1]) / 2
+            #         axs[1].axvline(cx, linewidth=10, color='r', alpha=.1)
+            #     plt.show()
+            interpolated_confs, interpolated_vels, interpolated_accs, interpolated_jks, interpolated_x, original_x, samples_back_index_x = \
+                self.interpolate(control_frequency=control_frequency, time_intervals=time_intervals)
+        # time scaling for acceleration
+        while True:
+            samples_back_index_x = np.asarray(samples_back_index_x)
+            interpolated_accs_abs = np.asarray(np.abs(interpolated_accs))
+            diff_accs = np.tile(max_accs, (len(interpolated_accs_abs), 1)) - interpolated_accs_abs
+            selection_accs = np.where(np.min(diff_accs, axis=1) < 1e-6)
+            # selection_accs_plus = np.where(np.min(diff_accs_plus, axis=1) < 1e-6)
+            # selection_accs_minus = np.where(np.min(diff_accs_minus, axis=1) > -1e-6)
+            # selection_accs = [np.setxor1d(selection_accs_minus, selection_accs_plus)]
+            # ratio_selected_accs = \
+            #     np.min(np.tile(max_accs, (len(interpolated_accs_abs), 1)) / interpolated_accs_abs, axis=1)[
+            #         selection_accs]
+            if len(selection_accs[0]) > 0:
+                x_sel_accs = np.unique(samples_back_index_x[selection_accs[0]])
+                print("acc ", x_sel_accs)
+                # for i in x_sel_accs:
+                #     indices = np.where(x_sel_raw == i)
+                #     print(np.max(1 - ratio_selected_accs[indices]))
+                #     print(.001 * np.max(1 - ratio_selected_accs[indices]))
+                #     time_intervals[i] += .01 * np.max(1 - ratio_selected_accs[indices])
+                time_intervals[x_sel_accs] += .01 * (
+                            (1 / time_intervals[x_sel_accs]) / np.max(1 / time_intervals[x_sel_accs]))
+                # time_intervals[original_x_sel_vels] += .01 * (
+                #             (1 / time_intervals[original_x_sel_vels]) / np.max(1 / time_intervals[original_x_sel_vels]))
+                # print(original_x_sel_vels)
+                # x_sels = np.intersect1d(original_x_sel_vels, x_sel_accs)
+                # print(x_sels)
+                # time_intervals[x_sel_accs] += .01
             else:
                 break
             if toggle_debug_fine:
@@ -160,92 +233,37 @@ class PiecewisePolyScl(object):
                 import matplotlib.pyplot as plt
                 fig, axs = plt.subplots(4, figsize=(10, 30))
                 fig.tight_layout(pad=.7)
-                # curve
                 axs[0].plot(interpolated_x, interpolated_confs, 'o')
                 for xc in original_x:
                     axs[0].axvline(x=xc)
                 # axs[0].plot(np.arange(len(jnt_values_list)), jnt_values_list, '--o')
-                # speed
-                axs[1].plot(interpolated_x, interpolated_spds)
+                axs[1].plot(interpolated_x, interpolated_vels)
                 for xc in original_x:
                     axs[1].axvline(x=xc)
                 for ys in self._max_vels:
                     axs[1].axhline(y=ys)
                     axs[1].axhline(y=-ys)
-                # acceleration
                 axs[2].plot(interpolated_x, interpolated_accs)
                 for xc in original_x:
                     axs[2].axvline(x=xc)
                 for ys in self._max_accs:
                     axs[2].axhline(y=ys)
                     axs[2].axhline(y=-ys)
-                # jerk
                 axs[3].plot(interpolated_x, interpolated_jks)
                 for xc in original_x:
                     axs[3].axvline(x=xc)
                 for ys in [50, 50, 50, 50, 50, 50]:
                     axs[3].axhline(y=ys)
                     axs[3].axhline(y=-ys)
-                for i in x_sel_spds:
+                for i in x_sel_accs:
                     cx = (original_x[i] + original_x[i + 1]) / 2
-                    axs[1].axvline(cx, linewidth=10, color='r', alpha=.1)
+                    axs[2].axvline(cx, linewidth=10, color='b', alpha=.5)
+                # for i in original_x_sel_vels:
+                #     cx = (original_x[i] + original_x[i + 1]) / 2
+                #     axs[2].axvline(cx, linewidth=5, color='r', alpha=.5)
                 plt.show()
-            interpolated_confs, interpolated_spds, interpolated_accs, interpolated_jks, interpolated_x, original_x, samples_back_index_x = \
+            interpolated_confs, interpolated_vels, interpolated_accs, interpolated_jks, interpolated_x, original_x, samples_back_index_x = \
                 self.interpolate(control_frequency=control_frequency, time_intervals=time_intervals)
-        # # time scaling for acceleration
-        # while True:
-        #     samples_back_index_x = np.asarray(samples_back_index_x)
-        #     interpolated_accs_abs = np.asarray(np.abs(interpolated_accs))
-        #     diff_accs = np.tile(max_accs, (len(interpolated_accs_abs), 1)) - interpolated_accs_abs
-        #     selection_accs = np.where(np.min(diff_accs, axis=1) < 1e-6)
-        #     # ratio_selected_accs = \
-        #     #     np.min(np.tile(max_accs, (len(interpolated_accs_abs), 1)) / interpolated_accs_abs, axis=1)[
-        #     #         selection_accs]
-        #     if len(selection_accs[0]) > 0:
-        #         x_sel_accs = np.unique(samples_back_index_x[selection_accs[0]])
-        #         print("acc ", x_sel_accs)
-        #         # for i in x_sel_accs:
-        #         #     indices = np.where(x_sel_raw == i)
-        #         #     print(np.max(1 - ratio_selected_accs[indices]))
-        #         #     print(.001 * np.max(1 - ratio_selected_accs[indices]))
-        #         #     time_intervals[i] += .01 * np.max(1 - ratio_selected_accs[indices])
-        #         time_intervals[x_sel_accs] += .01 * (
-        #                     (1 / time_intervals[x_sel_accs]) / np.max(1 / time_intervals[x_sel_accs]))
-        #     else:
-        #         break
-        #     if toggle_debug_fine:
-        #         print("toggle_debug_fine")
-        #         # import matplotlib.pyplot as plt
-        #         # fig, axs = plt.subplots(4, figsize=(10, 30))
-        #         # fig.tight_layout(pad=.7)
-        #         # axs[0].plot(interpolated_x, interpolated_confs, 'o')
-        #         # for xc in original_x:
-        #         #     axs[0].axvline(x=xc)
-        #         # # axs[0].plot(np.arange(len(jnt_values_list)), jnt_values_list, '--o')
-        #         # axs[1].plot(interpolated_x, interpolated_spds)
-        #         # for xc in original_x:
-        #         #     axs[1].axvline(x=xc)
-        #         # for ys in self._max_vels:
-        #         #     axs[1].axhline(y=ys)
-        #         #     axs[1].axhline(y=-ys)
-        #         # axs[2].plot(interpolated_x, interpolated_accs)
-        #         # for xc in original_x:
-        #         #     axs[2].axvline(x=xc)
-        #         # for ys in self._max_accs:
-        #         #     axs[2].axhline(y=ys)
-        #         #     axs[2].axhline(y=-ys)
-        #         # axs[3].plot(interpolated_x, interpolated_jks)
-        #         # for xc in original_x:
-        #         #     axs[3].axvline(x=xc)
-        #         # for ys in [50, 50, 50, 50, 50, 50]:
-        #         #     axs[3].axhline(y=ys)
-        #         #     axs[3].axhline(y=-ys)
-        #         # for i in x_sel_accs:
-        #         #     cx = (original_x[i] + original_x[i + 1]) / 2
-        #         #     axs[2].axvline(cx, linewidth=10, color='b', alpha=.1)
-        #         # plt.show()
-        #     interpolated_confs, interpolated_spds, interpolated_accs, interpolated_jks, interpolated_x, original_x, samples_back_index_x = \
-        #         self.interpolate(control_frequency=control_frequency, time_intervals=time_intervals)
         print("final total time", original_x[-1])
         if toggle_debug:
             import matplotlib.pyplot as plt
@@ -257,7 +275,7 @@ class PiecewisePolyScl(object):
                 axs[0].axvline(x=xc)
             # axs[0].plot(np.arange(len(jnt_values_list)), jnt_values_list, '--o')
             # speed
-            axs[1].plot(interpolated_x, interpolated_spds)
+            axs[1].plot(interpolated_x, interpolated_vels)
             for xc in original_x:
                 axs[1].axvline(x=xc)
             for ys in max_vels:

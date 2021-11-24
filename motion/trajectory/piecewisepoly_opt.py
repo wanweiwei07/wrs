@@ -15,6 +15,10 @@ class PiecewisePolyOpt(object):
         self._n_pnts = None
         self._n_jnts = None
         self._control_frequency = None
+        self._start_vels = 0
+        self._start_accs = 0
+        self._end_vels = 0
+        self._goal_acc = 0
         self._max_vels = None
         self._max_accs = None
         self.change_method(method=method)
@@ -126,14 +130,16 @@ class PiecewisePolyOpt(object):
         return sinter.make_interp_spline(self._x, self._path_array, k=1, axis=0)
 
     def _quadratic_solve(self):
-        return sinter.make_interp_spline(self._x, self._path_array, k=2, axis=0, bc_type=['clamped', None])
+        bc_type = [(1, self._start_vels), None]
+        return sinter.make_interp_spline(self._x, self._path_array, k=2, axis=0, bc_type=bc_type)
 
     def _cubic_solve(self):
-        return sinter.make_interp_spline(self._x, self._path_array, k=3, axis=0, bc_type='clamped')
+        bc_type = [(1, self._start_vels), (1, self._end_vels)]
+        return sinter.make_interp_spline(self._x, self._path_array, k=3, axis=0, bc_type=bc_type)
 
     def _quintic_solve(self):
-        bc_type = [[(1, np.zeros(self._n_jnts)), (2, np.zeros(self._n_jnts))],
-                   [(1, np.zeros(self._n_jnts)), (2, np.zeros(self._n_jnts))]]
+        bc_type = [[(1, self._start_vels), (2, self._start_accs)],
+                   [(1, self._end_vels), (2, self._end_accs)]]
         return sinter.make_interp_spline(self._x, self._path_array, k=5, axis=0, bc_type=bc_type)
 
     def _trapezoid_solve(self):
@@ -193,13 +199,17 @@ class PiecewisePolyOpt(object):
             self._x.append(tmp_time_interval + tmp_total_time)
             tmp_total_time += tmp_time_interval
         A = self._solve()
-        interpolated_confs, interpolated_spds, interpolated_accs, interpolated_jks, interpolated_x, original_x = \
+        interpolated_confs, interpolated_vels, interpolated_accs, interpolated_jks, interpolated_x, original_x = \
             self._interpolate(A, samples_list)
-        return interpolated_confs, interpolated_spds, interpolated_accs, interpolated_jks, interpolated_x, original_x, samples_back_index_x
+        return interpolated_confs, interpolated_vels, interpolated_accs, interpolated_jks, interpolated_x, original_x, samples_back_index_x
 
     def interpolate_by_max_spdacc(self,
                                   path,
                                   control_frequency=.005,
+                                  start_vels=None,
+                                  end_vels=None,
+                                  start_accs=None,
+                                  end_accs=None,
                                   max_vels=None,
                                   max_accs=None,
                                   toggle_debug_fine=False,
@@ -208,7 +218,11 @@ class PiecewisePolyOpt(object):
         TODO: prismatic motor speed is not considered
         :param path:
         :param control_frequency:
-        :param max_jnts_spds: max jnt speed between two adjacent poses in the path, math.pi if None
+        :param start_vels:
+        :param end_vels:
+        :param start_accs:
+        :param end_accs:
+        :param max_jnts_vels: max jnt speed between two adjacent poses in the path, math.pi if None
         :param max_jnts_accs: max jnt speed between two adjacent poses in the path, math.pi if None
         :return:
         author: weiwei
@@ -219,6 +233,18 @@ class PiecewisePolyOpt(object):
         self._path_array = np.array(path)
         self._n_pnts, self._n_jnts = self._path_array.shape
         self._control_frequency = control_frequency
+        if start_vels is None:
+            start_vels = [0] * path[0].shape[0]
+        if start_accs is None:
+            start_accs = [0] * path[0].shape[0]
+        if end_vels is None:
+            end_vels = [0] * path[0].shape[0]
+        if end_accs is None:
+            end_accs = [0] * path[0].shape[0]
+        self._start_vels = np.asarray(start_vels)
+        self._start_accs = np.asarray(start_accs)
+        self._end_vels = np.asarray(end_vels)
+        self._end_accs = np.asarray(end_accs)
         if max_vels is None:
             max_vels = [math.pi * 2 / 3] * path[0].shape[0]
         if max_accs is None:
@@ -235,7 +261,7 @@ class PiecewisePolyOpt(object):
         print("seed total time", np.sum(time_intervals))
         # # time scaling
         # # interpolate
-        # interpolated_confs, interpolated_spds, interpolated_accs, interpolated_x, original_x, samples_back_index_x = \
+        # interpolated_confs, interpolated_vels, interpolated_accs, interpolated_x, original_x, samples_back_index_x = \
         #     self.interpolate(control_frequency=control_frequency, time_intervals=time_intervals,
         #                      toggle_debug=toggle_debug_fine)
         # while True:
@@ -249,14 +275,14 @@ class PiecewisePolyOpt(object):
         #         time_intervals[x_sel] += .001
         #     else:
         #         break
-        #     interpolated_confs, interpolated_spds, interpolated_accs, interpolated_x, original_x, samples_back_index_x = \
+        #     interpolated_confs, interpolated_vels, interpolated_accs, interpolated_x, original_x, samples_back_index_x = \
         #         self.interpolate(control_frequency=control_frequency, time_intervals=time_intervals,
         #                          toggle_debug=toggle_debug_fine)
 
         self._seed_time_intervals = time_intervals
         time_intervals, _ = self._solve_opt()
         # interpolate
-        interpolated_confs, interpolated_spds, interpolated_accs, interpolated_jks, interpolated_x, original_x, samples_back_index_x = self.interpolate(
+        interpolated_confs, interpolated_vels, interpolated_accs, interpolated_jks, interpolated_x, original_x, samples_back_index_x = self.interpolate(
             control_frequency=control_frequency, time_intervals=time_intervals)
         print("final total time", original_x[-1])
         if toggle_debug:
@@ -267,7 +293,7 @@ class PiecewisePolyOpt(object):
             for xc in original_x:
                 axs[0].axvline(x=xc)
             # axs[0].plot(np.arange(len(jnt_values_list)), jnt_values_list, '--o')
-            axs[1].plot(interpolated_x, interpolated_spds)
+            axs[1].plot(interpolated_x, interpolated_vels)
             for xc in original_x:
                 axs[1].axvline(x=xc)
             axs[2].plot(interpolated_x, interpolated_accs)

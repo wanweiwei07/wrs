@@ -1,75 +1,20 @@
+import copy
+
 import scipy.interpolate as sinter
 import numpy as np
 import math
 import time
+import basis.robot_math as rm
 from scipy.optimize import minimize
+import motion.trajectory.piecewisepoly_opt as trajpopt
 
 
 class PiecewisePolySectionOpt(object):
 
     def __init__(self, method="linear"):
         self._log_time_intervals = []
+        self._local_tg = trajpopt.PiecewisePolyOpt(method=method)
         self.change_method(method=method)
-
-    def _optimization_goal(self, time_intervals):
-        return np.sum(time_intervals)
-
-    def _constraint_spdacc(self, time_intervals):
-        self._x = [0]
-        tmp_total_time = 0
-        samples_list = []
-        for i in range(self._n_pnts - 1):
-            tmp_time_interval = time_intervals[i]
-            n_samples = np.floor(tmp_time_interval / self._control_frequency)
-            if n_samples <= 1:
-                n_samples = 2
-            n_samples = int(n_samples)
-            samples = np.linspace(0,
-                                  tmp_time_interval,
-                                  n_samples,
-                                  endpoint=True)
-            samples_list.append(samples + self._x[i])
-            self._x.append(tmp_time_interval + tmp_total_time)
-            tmp_total_time += tmp_time_interval
-        A = self._solve()
-        interpolated_confs, interpolated_spds, interpolated_accs, interpolated_x, original_x = \
-            self._interpolate(A, samples_list)
-        # spd_diff = self._max_spds - np.max(np.abs(interpolated_spds), axis=0)
-        # acc_diff = self._max_accs - np.max(np.abs(interpolated_accs), axis=0)
-        acc_diff = np.tile(self._max_accs, (len(interpolated_accs),1)) - np.abs(interpolated_accs)
-        # print(np.min(acc_diff), np.min(spd_diff))
-        # print(np.min(acc_diff), np.min(spd_diff))
-        # print(np.min(acc_diff), np.max(acc_diff))
-        # print(acc_diff)
-        # print(np.sum(acc_diff[acc_diff<0]**2)*np.sum(np.asarray(interpolated_spds)**2))
-        # return np.sum(acc_diff[acc_diff<0]**2)*np.sum(np.asarray(interpolated_spds)**2)
-        print(np.sum(acc_diff[acc_diff<0]**2))
-        return np.sum(acc_diff[acc_diff<0]**2)
-
-    def _solve_opt(self, method='SLSQP', toggle_debug_fine=False):
-        """
-        :param tgt_pos:
-        :param tgt_rotmat:
-        :param seed_jnt_values:
-        :param method:
-        :return:
-        """
-        constraints = []
-        constraints.append({'type': 'eq', 'fun': self._constraint_spdacc})
-        bounds = []
-        for i in range(len(self._seed_time_intervals)):
-            bounds.append((self._seed_time_intervals[i], None))
-        sol = minimize(self._optimization_goal,
-                       self._seed_time_intervals,
-                       method=method,
-                       bounds=bounds,
-                       constraints=constraints,
-                       options={"maxiter": 10e6, "disp": True},
-                       tol=.01)
-        if sol.success:
-            return sol.x, sol.fun
-        else:
-            return None, None
 
     def change_method(self, method="cubic"):
         self.method = method
@@ -81,6 +26,7 @@ class PiecewisePolySectionOpt(object):
             self._solve = self._cubic_solve
         elif method == "quintic":
             self._solve = self._quintic_solve
+        self._local_tg.change_method(method=method)
 
     def _linear_solve(self):
         return sinter.make_interp_spline(self._x, self._path_array, k=1, axis=0)
@@ -116,25 +62,29 @@ class PiecewisePolySectionOpt(object):
                 interpolated_x_sec = (samples_list[i]).tolist()[:-1]
             interpolated_x += interpolated_x_sec
         interpolated_y = A(np.array(interpolated_x)).tolist()
-        interpolated_y_dot = A(np.array(interpolated_x), 1).tolist()
-        interpolated_y_dotdot = A(np.array(interpolated_x), 2).tolist()
+        interpolated_y_d1 = A(np.array(interpolated_x), 1).tolist()
+        interpolated_y_d2 = A(np.array(interpolated_x), 2).tolist()
+        interpolated_y_d3 = A(np.array(interpolated_x), 3).tolist()
         original_x = self._x
         if toggle_debug:
             import matplotlib.pyplot as plt
-            fig, axs = plt.subplots(3, figsize=(3.5, 4.75))
+            fig, axs = plt.subplots(4, figsize=(10, 30))
             fig.tight_layout(pad=.7)
             axs[0].plot(interpolated_x, interpolated_y, 'o')
             for xc in original_x:
                 axs[0].axvline(x=xc)
             # axs[0].plot(np.arange(len(jnt_values_list)), jnt_values_list, '--o')
-            axs[1].plot(interpolated_x, interpolated_y_dot)
+            axs[1].plot(interpolated_x, interpolated_y_d1)
             for xc in original_x:
                 axs[1].axvline(x=xc)
-            axs[2].plot(interpolated_x, interpolated_y_dotdot)
+            axs[2].plot(interpolated_x, interpolated_y_d2)
             for xc in original_x:
                 axs[2].axvline(x=xc)
+            axs[3].plot(interpolated_x, interpolated_y_d3)
+            for xc in original_x:
+                axs[3].axvline(x=xc)
             plt.show()
-        return interpolated_y, interpolated_y_dot, interpolated_y_dotdot, interpolated_x, original_x
+        return interpolated_y, interpolated_y_d1, interpolated_y_d2, interpolated_y_d3, interpolated_x, original_x
 
     def _trapezoid_interpolate(self):
         pass
@@ -167,14 +117,14 @@ class PiecewisePolySectionOpt(object):
             self._x.append(tmp_time_interval + tmp_total_time)
             tmp_total_time += tmp_time_interval
         A = self._solve()
-        interpolated_confs, interpolated_spds, interpolated_accs, interpolated_x, original_x = \
+        interpolated_confs, interpolated_vels, interpolated_accs, interpolated_jks, interpolated_x, original_x = \
             self._interpolate(A, samples_list, toggle_debug=toggle_debug)
-        return interpolated_confs, interpolated_spds, interpolated_accs, interpolated_x, original_x, samples_back_index_x
+        return interpolated_confs, interpolated_vels, interpolated_accs, interpolated_jks, interpolated_x, original_x, samples_back_index_x
 
     def interpolate_by_max_spdacc(self,
                                   path,
                                   control_frequency=.005,
-                                  max_spds=None,
+                                  max_vels=None,
                                   max_accs=None,
                                   toggle_debug_fine=False,
                                   toggle_debug=True):
@@ -182,7 +132,7 @@ class PiecewisePolySectionOpt(object):
         TODO: prismatic motor speed is not considered
         :param path:
         :param control_frequency:
-        :param max_jnts_spds: max jnt speed between two adjacent poses in the path, math.pi if None
+        :param max_jnts_vels: max jnt speed between two adjacent poses in the path, math.pi if None
         :param max_jnts_accs: max jnt speed between two adjacent poses in the path, math.pi if None
         :return:
         author: weiwei
@@ -192,60 +142,70 @@ class PiecewisePolySectionOpt(object):
         self._path_array = np.array(path)
         self._n_pnts, self._n_dim = self._path_array.shape
         self._control_frequency = control_frequency
-        if max_spds is None:
-            max_spds = [math.pi * 2 / 3] * path[0].shape[0]
+        if max_vels is None:
+            max_vels = [math.pi * 2 / 3] * path[0].shape[0]
         if max_accs is None:
             max_accs = [math.pi] * path[0].shape[0]
-        self._max_spds = np.asarray(max_spds)
+        self._max_vels = np.asarray(max_vels)
         self._max_accs = np.asarray(max_accs)
         # initialize time inervals
         time_intervals = []
         for i in range(self._n_pnts - 1):
             pose_diff = abs(path[i + 1] - path[i])
-            tmp_time_interval = np.max(pose_diff / max_spds)
+            tmp_time_interval = np.max(pose_diff / max_vels)
             time_intervals.append(tmp_time_interval)
         time_intervals = np.asarray(time_intervals)
         print("seed total time", np.sum(time_intervals))
-        # # time scaling
-        # # interpolate
-        # interpolated_confs, interpolated_spds, interpolated_accs, interpolated_x, original_x, samples_back_index_x = \
-        #     self.interpolate(control_frequency=control_frequency, time_intervals=time_intervals,
-        #                      toggle_debug=toggle_debug_fine)
-        # while True:
-        #     samples_back_index_x = np.asarray(samples_back_index_x)
-        #     interpolated_accs_abs = np.asarray(np.abs(interpolated_accs))
-        #     diff_accs = np.tile(max_accs, (len(interpolated_accs_abs), 1)) - interpolated_accs_abs
-        #     selection = np.where(np.min(diff_accs, axis=1) < 0)
-        #     if len(selection[0]) > 0:
-        #         time_intervals += .001
-        #         x_sel = np.unique(samples_back_index_x[selection[0] - 1])
-        #         time_intervals[x_sel] += .001
-        #     else:
-        #         break
-        #     interpolated_confs, interpolated_spds, interpolated_accs, interpolated_x, original_x, samples_back_index_x = \
-        #         self.interpolate(control_frequency=control_frequency, time_intervals=time_intervals,
-        #                          toggle_debug=toggle_debug_fine)
-
-        self._seed_time_intervals = time_intervals
-        time_intervals, _ = self._solve_opt(toggle_debug_fine=toggle_debug_fine)
         # interpolate
-        interpolated_confs, interpolated_spds, interpolated_accs, interpolated_x, original_x, samples_back_index_x = \
-            self.interpolate(control_frequency=control_frequency, time_intervals=time_intervals,
-                             toggle_debug=toggle_debug)
+        interpolated_confs, interpolated_vels, interpolated_accs, interpolated_jks, interpolated_x, original_x, samples_back_index_x = \
+            self.interpolate(control_frequency=control_frequency, time_intervals=time_intervals)
+        samples_back_index_x = np.asarray(samples_back_index_x)
+        interpolated_accs_abs = np.asarray(np.abs(interpolated_accs))
+        diff_accs = np.tile(max_accs, (len(interpolated_accs_abs), 1)) - interpolated_accs_abs
+        selection_accs = np.where(np.min(diff_accs, axis=1) < 1e-6)
+        if len(selection_accs[0]) > 0:
+            x_sel_accs = np.unique(samples_back_index_x[selection_accs[0]])
+            sections = rm.consecutive(x_sel_accs)
+            new_interpolated_confs = []
+            last_eid = 0
+            for sec in sections:
+                print(sec)
+                local_path = path[sec[0]:sec[-1] + 1]
+                print(sec[0], sec[-1]+1, samples_back_index_x, len(samples_back_index_x))
+                sid = np.where(samples_back_index_x == sec[0])[0][0]
+                eid = np.where(samples_back_index_x == sec[-1] + 1)[0][-1]
+                print(sid, eid)
+                print(interpolated_vels, len(interpolated_vels))
+                start_vels = interpolated_vels[sid]
+                start_accs = interpolated_accs[sid]
+                end_vels = interpolated_vels[eid]
+                end_accs = interpolated_accs[eid]
+                local_interpolated_confs = self._local_tg.interpolate_by_max_spdacc(local_path,
+                                                                                    control_frequency=control_frequency,
+                                                                                    start_vels=start_vels,
+                                                                                    start_accs=start_accs,
+                                                                                    end_vels=end_vels,
+                                                                                    end_accs=end_accs,
+                                                                                    max_vels=max_vels,
+                                                                                    max_accs=max_accs,
+                                                                                    toggle_debug_fine=False,
+                                                                                    toggle_debug=True)
+                new_interpolated_confs += interpolated_confs[last_eid:sid] + local_interpolated_confs
+                last_eid = eid + 1
         print("final total time", original_x[-1])
         if toggle_debug:
             import matplotlib.pyplot as plt
             fig, axs = plt.subplots(3, figsize=(3.5, 4.75))
             fig.tight_layout(pad=.7)
             axs[0].plot(interpolated_x, interpolated_confs, 'o')
-            for xc in original_x:
-                axs[0].axvline(x=xc)
+            # for xc in original_x:
+            #     axs[0].axvline(x=xc)
             # axs[0].plot(np.arange(len(jnt_values_list)), jnt_values_list, '--o')
-            axs[1].plot(interpolated_x, interpolated_spds)
-            for xc in original_x:
-                axs[1].axvline(x=xc)
+            axs[1].plot(interpolated_x, interpolated_vels)
+            # for xc in original_x:
+            #     axs[1].axvline(x=xc)
             axs[2].plot(interpolated_x, interpolated_accs)
-            for xc in original_x:
-                axs[2].axvline(x=xc)
+            # for xc in original_x:
+            #     axs[2].axvline(x=xc)
             plt.show()
-        return interpolated_confs, interpolated_spds, interpolated_accs, interpolated_x, original_x
+        return interpolated_confs

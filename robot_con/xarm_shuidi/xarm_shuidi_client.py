@@ -4,7 +4,7 @@ import time
 import numpy as np
 import robot_con.xarm_shuidi.xarm_shuidi_pb2 as aa_msg
 import robot_con.xarm_shuidi.xarm_shuidi_pb2_grpc as aa_rpc
-import motion.trajectory.piecewisepoly_scl as pwp
+import motion.trajectory.piecewisepoly_toppra as pwp
 
 
 class XArmShuidiClient(object):
@@ -39,10 +39,9 @@ class XArmShuidiClient(object):
 
     def arm_move_jspace_path(self,
                              path,
-                             max_jntspeed=math.pi,
-                             method='linear',
-                             start_frame_id=1,
-                             toggle_debug=False):
+                             max_jntvel=None,
+                             max_jntacc=None,
+                             start_frame_id=1):
         """
         TODO: make speed even
         :param path: [jnt_values0, jnt_values1, ...], results of motion planning
@@ -53,30 +52,9 @@ class XArmShuidiClient(object):
         if not path or path is None:
             raise ValueError("The given is incorrect!")
         control_frequency = .005
-        tpply = pwp.PiecewisePoly(method=method)
-        interpolated_path, interpolated_spd, interpolated_acc, interpolated_x = \
-            tpply.interpolate(path=path, control_frequency=.005, time_intervals=.1)
-            # tpply.interpolate_by_max_jntspeed(path=path,
-            #                                   control_frequency=control_frequency,
-            #                                   max_jntspeed=max_jntspeed)
-        if toggle_debug:
-            import matplotlib.pyplot as plt
-            # plt.plot(interplated_path)
-            plt.subplot(311)
-            for i in range(len(path)):
-                plt.axvline(x=i)
-            plt.plot(interpolated_path)
-            plt.subplot(312)
-            for i in range(len(path)):
-                plt.axvline(x=i)
-            plt.plot(interpolated_spd)
-            plt.subplot(313)
-            for i in range(len(path)):
-                plt.axvline(x=i)
-            plt.plot(interpolated_acc)
-            plt.show()
-            import pickle
-            pickle.dump([interpolated_path, interpolated_spd, interpolated_acc], open("interpolated_traj.pkl", "wb"))
+        tpply = pwp.PiecewisePolyTOPPRA()
+        interpolated_path = tpply.interpolate_by_max_spdacc(path=path, control_frequency=control_frequency,
+                                                            max_jntvel=max_jntvel, max_jntacc=max_jntacc)
         interpolated_path = interpolated_path[start_frame_id:]
         path_msg = aa_msg.Path(length=len(interpolated_path),
                                njnts=len(interpolated_path[0]),

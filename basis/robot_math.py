@@ -782,6 +782,19 @@ def get_rgba_from_cmap(id):
     return cm(id % 20)
 
 
+def consecutive(nparray1d, stepsize=1):
+    """
+    find consecutive sequences from an array
+    example:
+    a = np.array([0, 47, 48, 49, 50, 97, 98, 99])
+    consecutive(a)
+    returns [array([0]), array([47, 48, 49, 50]), array([97, 98, 99])]
+    :param nparray1d:
+    :param stepsize:
+    :return:
+    """
+    return np.split(nparray1d, np.where(np.diff(nparray1d) != stepsize)[0] + 1)
+
 # The following code is from Gohlke
 #
 #

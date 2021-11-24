@@ -8,6 +8,7 @@ if __name__ == '__main__':
     import modeling.geometric_model as gm
     import motion.trajectory.piecewisepoly_scl as trajp
     import motion.trajectory.piecewisepoly_opt as trajpopt
+    import motion.trajectory.piecewisepoly_section_opt as trajpsecopt
     import motion.trajectory.piecewisepoly_toppra as trajptop
 
     base = wd.World(cam_pos=[1, 1, .5], lookat_pos=[0, 0, .2])
@@ -34,8 +35,8 @@ if __name__ == '__main__':
 
         # tg = trajp.PiecewisePolyScl(method="quintic")
         # tg = trajpopt.PiecewisePolyOpt(method="quintic")
+        # tg = trajpsecopt.PiecewisePolySectionOpt(method="quintic")
         tg = trajptop.PiecewisePolyTOPPRA()
         interpolated_confs = tg.interpolate_by_max_spdacc(path, control_frequency=.008, max_vels=[math.pi / 2] * 6,
-                                                          max_accs=[math.pi] * 6, toggle_debug_fine=False,
-                                                          toggle_debug=True)
+                                                          max_accs=[math.pi] * 6, toggle_debug=True)
     # base.run()
