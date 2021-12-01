@@ -1,4 +1,4 @@
-import motion.trajectory.piecewisepoly_scl as trajp
+import motion.trajectory.piecewisepoly_toppra as trajp
 import drivers.orin_bcap.bcapclient as bcapclient
 
 
@@ -26,7 +26,7 @@ class CobottaX(object):
         self.bcc.robot_execute(self.hrbt, "Motor", [1, 0])
         # set ExtSpeed = [speed, acc, dec]
         self.bcc.robot_execute(self.hrbt, "ExtSpeed", [100, 100, 100])
-        self.traj_gen = trajp.PiecewisePoly(method="cubic")
+        self.traj_gen = trajp.PiecewisePolyTOPPRA()
 
     def __del__(self):
         self.clear_error()
@@ -66,9 +66,8 @@ class CobottaX(object):
                 new_path.append(pose)
         new_path.append(path[-1])
         path = new_path
-        interpolated_confs, interpolated_spds, interpolated_accs, interpolated_x, original_x = \
-            self.traj_gen.interpolate_by_max_spdacc(path, control_frequency=.008, max_spds=None,
-                                                    toggle_debug=toggle_debug)
+        interpolated_confs = \
+            self.traj_gen.interpolate_by_max_spdacc(path, control_frequency=.008, toggle_debug=toggle_debug)
         # Slave move: Change mode
         self.bcc.robot_execute(self.hrbt, "slvChangeMode", 0x202)
         for jnt_values in interpolated_confs:
@@ -111,7 +110,6 @@ if __name__ == '__main__':
     import motion.probabilistic.rrt_connect as rrtc
     import visualization.panda.world as wd
     import modeling.geometric_model as gm
-    import motion.trajectory.polynomial_wrsold as trjp
 
     base = wd.World(cam_pos=[1, 1, .5], lookat_pos=[0, 0, .2])
     gm.gen_frame().attach_to(base)
@@ -121,8 +119,8 @@ if __name__ == '__main__':
     start_conf = robot_x.get_jnt_values()
     print("start_radians", start_conf)
     tgt_pos = np.array([.25, .2, .15])
-    tgt_rotmat = rm.rotmat_from_axangle([0, 1, 0], math.pi / 3)
-    jnt_values = robot_s.ik(tgt_pos, tgt_rotmat)
+    tgt_rotmat = rm.rotmat_from_axangle([0, 1, 0], math.pi * 2 / 3)
+    jnt_values = robot_s.ik(tgt_pos=tgt_pos, tgt_rotmat=tgt_rotmat)
     rrtc_planner = rrtc.RRTConnect(robot_s)
     path = rrtc_planner.plan(component_name="arm",
                              start_conf=start_conf,
