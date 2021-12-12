@@ -66,6 +66,13 @@ def rotmat_from_quaternion(quaternion):
         [q[1, 3] - q[2, 0], q[2, 3] + q[1, 0], 1.0 - q[1, 1] - q[2, 2], 0.0],
         [0.0, 0.0, 0.0, 1.0]])
 
+def rotmat_to_quaternion(rotmat):
+    """
+    convert a rotmat to quaternion
+    :param rotmat:
+    :return:
+    """
+    pass
 
 def rotmat_from_normal(surfacenormal):
     '''
@@ -1126,7 +1133,7 @@ def rotation_from_matrix(matrix):
     else:
         sina = (R[2, 1] + (cosa - 1.0) * direction[1] * direction[2]) / direction[0]
     angle = math.atan2(sina, cosa)
-    return angle, direction, point
+    return angle, direction, pint
 
 
 def scale_matrix(factor, origin=None, direction=None):

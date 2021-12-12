@@ -36,6 +36,7 @@ object_holder_goal_copy.attach_to(base)
 
 robot_s = cbt.Cobotta()
 # robot_s.gen_meshmodel().attach_to(base)
+# base.run()
 rrtc_s = rrtc.RRTConnect(robot_s)
 ppp_s = ppp.PickPlacePlanner(robot_s)
 

@@ -12,7 +12,7 @@ class SIA5(mi.ManipulatorInterface):
         super().__init__(pos=pos, rotmat=rotmat, name=name)
         this_dir, this_filename = os.path.split(__file__)
         self.jlc = jl.JLChain(pos=pos, rotmat=rotmat, homeconf=homeconf, name=name)
-        # seven joints, njnts = 7+2 (tgt ranges from 1-7), nlinks = 7+1
+        # seven joints, n_jnts = 7+2 (tgt ranges from 1-7), nlinks = 7+1
         jnt_safemargin = math.pi / 18.0
         self.jlc.jnts[1]['loc_pos'] = np.array([0, 0, 0])
         self.jlc.jnts[1]['motion_rng'] = [-math.pi + jnt_safemargin, math.pi]

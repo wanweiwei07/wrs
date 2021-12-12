@@ -12,7 +12,7 @@ class TBMArm(mi.ManipulatorInterface):
         super().__init__(pos=pos, rotmat=rotmat, name=name)
         this_dir, this_filename = os.path.split(__file__)
         self.jlc = jl.JLChain(pos=pos, rotmat=rotmat, homeconf=homeconf, name=name)
-        # six joints, njnts = 6+2 (tgt ranges from 1-6), nlinks = 6+1
+        # six joints, n_jnts = 6+2 (tgt ranges from 1-6), nlinks = 6+1
         # self.jlc.jnts[1]['loc_pos'] = np.array([0.2, 0, 0])
         # self.jlc.jnts[1]['type'] = 'prismatic'
         # self.jlc.jnts[1]['loc_motionax'] = np.array([1, 0, 0])

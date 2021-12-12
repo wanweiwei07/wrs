@@ -13,7 +13,7 @@ class IRB14050(mi.ManipulatorInterface):
         super().__init__(pos=pos, rotmat=rotmat, name=name)
         this_dir, this_filename = os.path.split(__file__)
         self.jlc = jl.JLChain(pos=pos, rotmat=rotmat, homeconf=homeconf, name=name)
-        # seven joints, njnts = 7+2 (tgt ranges from 1-7), nlinks = 7+1
+        # seven joints, n_jnts = 7+2 (tgt ranges from 1-7), nlinks = 7+1
         jnt_safemargin = math.pi / 18.0
         # self.jlc.jnts[1]['loc_pos'] = np.array([0.05355, -0.0725, 0.41492])
         # self.jlc.jnts[1]['loc_rotmat'] = rm.rotmat_from_euler(-0.9795, -0.5682, -2.3155)
