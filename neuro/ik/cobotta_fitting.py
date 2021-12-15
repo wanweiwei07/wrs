@@ -6,9 +6,6 @@ import torch.nn.functional as F
 from torch.utils.data import Dataset, DataLoader
 from torch.utils.tensorboard import SummaryWriter
 
-
-# torch.set_default_tensor_type('torch.cuda.FloatTensor')
-
 class IKDataSet(Dataset):
     def __init__(self, csv_file, transform=None):
         self.ik_frame = pd.read_csv(csv_file)
@@ -28,15 +25,38 @@ class IKDataSet(Dataset):
 class Net(nn.Module):
     def __init__(self, n_hidden, n_jnts):
         super().__init__()
+        # self.fc1 = nn.Linear(6, n_hidden)
+        # self.fc1_dropout = nn.Dropout(p=.05)
+        # self.fc2 = nn.Linear(n_hidden, n_hidden//2)
+        # self.fc2_dropout = nn.Dropout(p=.05)
+        # self.fc3 = nn.Linear(n_hidden//2, n_hidden//4)
+        # self.fc3_dropout = nn.Dropout(p=.05)
+        # self.fc4 = nn.Linear(n_hidden//4, n_hidden//8)
+        # self.fc4_dropout = nn.Dropout(p=.05)
+        # self.fc5 = nn.Linear(n_hidden//8, n_jnts)
         self.fc1 = nn.Linear(6, n_hidden)
         self.fc2 = nn.Linear(n_hidden, n_hidden//2)
         self.fc3 = nn.Linear(n_hidden//2, n_jnts)
 
+
     def forward(self, x):
+        # x = self.fc1(x)
+        # x = F.leaky_relu(x, 0.01)
+        # x = self.fc1_dropout(x)
+        # x = self.fc2(x)
+        # x = F.leaky_relu(x, 0.01)
+        # x = self.fc2_dropout(x)
+        # x = self.fc3(x)
+        # x = F.leaky_relu(x, 0.01)
+        # x = self.fc3_dropout(x)
+        # x = self.fc4(x)
+        # x = F.leaky_relu(x, 0.01)
+        # x = self.fc4_dropout(x)
+        # out = self.fc5(x)
         x = self.fc1(x)
-        x = F.relu(x)
+        x = F.leaky_relu(x, 0.01)
         x = self.fc2(x)
-        x = F.relu(x)
+        x = F.leaky_relu(x, 0.01)
         out = self.fc3(x)
         return out
 
@@ -60,7 +80,7 @@ def train_loop(dataloader, model, loss_fn, optimizer, device, writer, global_ste
             print(f"loss: {loss:>7f}  [{current:>5d}/{size:>5d}]")
 
 
-def test_loop(dataloader, model, loss_fn, device, writer):
+def test_loop(dataloader, model, loss_fn, device):
     size = len(dataloader.dataset)
     num_batches = len(dataloader)
     test_loss, correct = 0, 0
@@ -81,24 +101,28 @@ if __name__ == '__main__':
 
     device = torch.device('cpu')
     # device = (torch.device('cuda') if torch.cuda.is_available() else torch.device('cpu'))
+    # torch.set_default_tensor_type('torch.cuda.FloatTensor')
 
-    model = Net(n_hidden=30, n_jnts=6).to(device=device)
+
+    model = Net(n_hidden=100, n_jnts=6).to(device=device)
     learning_rate = 1e-3
     batch_size = 64
-    epochs = 100
+    epochs = 20
     loss_fn = nn.MSELoss()
     optimizer = torch.optim.Adam(model.parameters(), lr=learning_rate)
 
-    train_data = IKDataSet('./ik/cobotta_ik.csv')
-    test_data = IKDataSet('./ik/cobotta_ik_test.csv')
-    train_dataloader = DataLoader(train_data, batch_size=batch_size)
-    test_dataloader = DataLoader(test_data, batch_size=batch_size)
+    train_data = IKDataSet('data_gen/cobotta_ik.csv')
+    test_data = IKDataSet('data_gen/cobotta_ik_test.csv')
+    train_dataloader = DataLoader(train_data, batch_size=batch_size, shuffle=True)
+    test_dataloader = DataLoader(test_data, batch_size=batch_size, shuffle=True)
 
     writer = SummaryWriter()
     global_step = [0]
     for t in range(epochs):
         print(f"Epoch {t + 1}\n-------------------------------")
         train_loop(train_dataloader, model, loss_fn, optimizer, device, writer, global_step)
-        test_loop(test_dataloader, model, loss_fn, device, writer)
+    model_path = 'tester/cobotta_model.pth'
+    torch.save(model.state_dict(), model_path)
     print("Done!")
     writer.close()
+    test_loop(test_dataloader, model, loss_fn, device)
