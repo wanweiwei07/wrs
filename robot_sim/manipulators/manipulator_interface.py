@@ -124,6 +124,9 @@ class ManipulatorInterface(object):
     def manipulability_axmat(self, type="translational"):
         return self.jlc.manipulability_axmat(type=type)
 
+    def jacobian(self):
+        return self.jlc.jacobian()
+
     def cvt_loc_tcp_to_gl(self,
                           loc_pos=np.zeros(3),
                           loc_rotmat=np.eye(3),
