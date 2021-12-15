@@ -2,6 +2,7 @@ from panda3d.bullet import BulletRigidBodyNode, BulletPlaneShape
 from panda3d.bullet import BulletTriangleMeshShape, BulletTriangleMesh
 import numpy as np
 import basis.data_adapter as da
+from panda3d.core import TransformState
 
 SCALE_FOR_PRECISION = 1e5
 
@@ -34,25 +35,35 @@ def gen_plane_cdmesh(updirection=np.array([0, 0, 1]), offset=0, name='autogen'):
     return bulletplnode
 
 
-def is_collided(objcm0, objcm1):
+def is_collided(obj_bullet_rbd0, obj_bullet_rbd1):
     """
     check if two objcm are collided after converting the specified cdmesh_type
     :param objcm0:
     :param objcm1:
     :return:
     author: weiwei
-    date: 20210117
+    date: 20210117, 20211215
     """
-    # avoid using objcm.cdmesh -> be compatible with other cdhelpers
-    obj0 = gen_cdmesh_vvnf(*objcm0.extract_rotated_vvnf())
-    obj1 = gen_cdmesh_vvnf(*objcm1.extract_rotated_vvnf())
-    result = base.physicsworld.contactTestPair(obj0, obj1)
+    result = base.physicsworld.contactTestPair(obj_bullet_rbd0, obj_bullet_rbd1)
     contacts = result.getContacts()
     contact_points = [da.pdv3_to_npv3(ct.getManifoldPoint().getPositionWorldOnB()) / SCALE_FOR_PRECISION for ct in
                       contacts]
     contact_points += [da.pdv3_to_npv3(ct.getManifoldPoint().getPositionWorldOnA()) / SCALE_FOR_PRECISION for ct in
-                      contacts]
+                       contacts]
     return (True, contact_points) if len(contact_points) > 0 else (False, contact_points)
+
+
+def update_pose(obj_bullet_rbd, objnp):
+    """
+    update obj_bullet_rbd using the pos, nd quat of objnp
+    :param obj_bullet_rbd:
+    :param objnp:
+    :return:
+    author: weiwei
+    date: 20211215
+    """
+    obj_bullet_rbd.setTransform(
+        TransformState.makePosQuatScale(objnp.getPos(), objnp.getQuat(), da.npv3_to_pdv3(np.array([1, 1, 1]))))
 
 
 def rayhit_closet(pfrom, pto, objcm):
@@ -141,19 +152,19 @@ if __name__ == '__main__':
 
     wd.World(cam_pos=[.3, -.3, .3], lookat_pos=[0, 0, 0])
     objpath = os.path.join(basis.__path__[0], 'objects', 'bunnysim.stl')
-    objcm1= cm.CollisionModel(objpath)
+    objcm1 = cm.CollisionModel(objpath)
     homomat = np.eye(4)
     homomat[:3, :3] = rm.rotmat_from_axangle([0, 0, 1], math.pi / 2)
     homomat[:3, 3] = np.array([0.02, 0.02, 0])
     objcm1.set_homomat(homomat)
-    objcm1.set_rgba([1,1,.3,.2])
+    objcm1.set_rgba([1, 1, .3, .2])
     objcm2 = objcm1.copy()
     # objcm2= cm.gen_stick(thickness=.07)
     # objcm2.set_rgba([1, 0, 1, .1])
-    objcm2.set_pos(objcm1.get_pos()+np.array([.03,.0,.0]))
+    objcm2.set_pos(objcm1.get_pos() + np.array([.03, .0, .0]))
     # objcm1.change_cdmesh_type('convex_hull')
     # objcm2.change_cdmesh_type('obb')
-    iscollided, contact_points = is_collided(objcm1, objcm2)
+    iscollided, contact_points = is_collided(objcm1.cdmesh, objcm2.cdmesh)
     objcm1.show_cdmesh()
     objcm2.show_cdmesh()
     objcm1.attach_to(base)

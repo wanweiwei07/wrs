@@ -1,6 +1,6 @@
 import numpy as np
 import modeling.geometric_model as gm
-import modeling.collision_model as cm
+import modeling.collision_model_changable_cdmesh as cm
 import visualization.panda.world as wd
 
 if __name__ == '__main__':
@@ -27,7 +27,7 @@ if __name__ == '__main__':
 
     # object 3
     object3 = object_ref.copy()
-    object3.change_cdmesh_type(cdmesh_type="convex_hull")
+    # object3.change_cdmesh_type(cdmesh_type="convex_hull")
     object3.set_pos(np.array([0, .04, 0]))
     # object 4
     object4 = object_ref.copy()

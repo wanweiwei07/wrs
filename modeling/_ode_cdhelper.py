@@ -33,20 +33,30 @@ def gen_cdmesh_vvnf(vertices, vertex_normals, faces):
 #     bulletplnode.addShape(bulletplshape)
 #     return bulletplnode
 
-def is_collided(objcm0, objcm1):
+def is_collided(obj_ode_trimesh0, obj_ode_trimesh1):
     """
-    check if two objcm are collided after converting the specified cdmesh_type
-    :param objcm0: an instance of CollisionModel or CollisionModelCollection
-    :param objcm1: an instance of CollisionModel or CollisionModelCollection
+    check if two odetrimesh are collided
+    :param obj_ode_trimesh00: an instance of OdeTriMeshGeom
+    :param obj_ode_trimesh1: an instance of OdeTriMeshGeom
     :return:
     author: weiwei
-    date: 20210118
+    date: 20210118, 20211215
     """
-    obj0 = gen_cdmesh_vvnf(*objcm0.extract_rotated_vvnf())
-    obj1 = gen_cdmesh_vvnf(*objcm1.extract_rotated_vvnf())
-    contact_entry = OdeUtil.collide(obj0, obj1, max_contacts=10)
+    contact_entry = OdeUtil.collide(obj_ode_trimesh0, obj_ode_trimesh1, max_contacts=10)
     contact_points = [da.pdv3_to_npv3(point) for point in contact_entry.getContactPoints()]
     return (True, contact_points) if len(contact_points) > 0 else (False, contact_points)
+
+def update_pose(obj_ode_trimesh, objnp):
+    """
+    update obj_ode_trimesh using the pos, nd quat of objnp
+    :param obj_ode_trimesh:
+    :param objnp:
+    :return:
+    author: weiwei
+    date: 20211215
+    """
+    obj_ode_trimesh.setPosition(objnp.getPos())
+    obj_ode_trimesh.setPosition(objnp.getQuat())
 
 def rayhit_closet(pfrom, pto, objcm):
     """

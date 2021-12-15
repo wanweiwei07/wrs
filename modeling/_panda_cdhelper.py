@@ -1,4 +1,5 @@
 # primitive collision detection helper
+# note: This script is not used by robot simulations, as collison checker is faster
 import math
 import numpy as np
 import basis.data_adapter as da

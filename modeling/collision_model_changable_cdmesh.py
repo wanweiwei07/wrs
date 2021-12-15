@@ -14,6 +14,7 @@ import modeling._ode_cdhelper as mcd
 # import modeling._gimpact_cdhelper as mcd
 # import modeling._bullet_cdhelper as mcd
 
+
 class CollisionModel(gm.GeometricModel):
     """
     Load an object as a collision model
@@ -56,7 +57,6 @@ class CollisionModel(gm.GeometricModel):
             self._localframe = copy.deepcopy(initor.localframe)
             self._cdprimitive_type = copy.deepcopy(initor.cdprimitive_type)
             self._cdmesh_type = copy.deepcopy(initor.cdmesh_type)
-            self._cdmesh = copy.deepcopy(initor.cdmesh)
         else:
             super().__init__(initor=initor, name=name, btransparency=btransparency, btwosided=btwosided)
             self._cdprimitive_type, collision_node = self._update_cdprimit(cdprimit_type,
@@ -65,8 +65,7 @@ class CollisionModel(gm.GeometricModel):
             # use pdnp.getChild instead of a new self._cdnp variable as collision nodepath is not compatible with deepcopy
             self._objpdnp.attachNewNode(collision_node)
             self._objpdnp.getChild(1).setCollideMask(BitMask32(2 ** 31))
-            self._cdmesh_type = cdmesh_type
-            self._cdmesh = mcd.gen_cdmesh_vvnf(*self.extract_rotated_vvnf())
+            self.cdmesh_type = cdmesh_type
             self._localframe = None
 
     def _update_cdprimit(self, cdprimitive_type, expand_radius, userdefined_cdprimitive_fn):
@@ -112,7 +111,6 @@ class CollisionModel(gm.GeometricModel):
                                                            'triangles']:
             raise ValueError("Wrong mesh collision model type name!")
         self._cdmesh_type = cdmesh_type
-        self._cdmesh = mcd.gen_cdmesh_vvnf(*self.extract_rotated_vvnf())
 
     @property
     def cdnp(self):
@@ -120,33 +118,16 @@ class CollisionModel(gm.GeometricModel):
 
     @property
     def cdmesh(self):
-        """
-        using ode
-        TODO: move to functions that change poses;
-        :return:
-        author: weiwei
-        date: 20211215
-        """
-        mcd.update_pose(self._cdmesh, self._objpdnp)
-        return self._cdmesh
+        return mcd.gen_cdmesh_vvnf(*self.extract_rotated_vvnf())
 
-    def extract_rotated_vvnf(self, cdmesh_type=None):
-        """
-        allow either extract a vvnf following the specified cdmesh_type or the value of self.cdmesh_type
-        :param cdmesh_type:
-        :return:
-        author: weiwei
-        date: 20211215
-        """
-        if cdmesh_type is None:
-            cdmesh_type = self.cdmesh_type
-        if cdmesh_type == 'aabb':
+    def extract_rotated_vvnf(self):
+        if self.cdmesh_type == 'aabb':
             objtrm = self.objtrm.bounding_box
-        elif cdmesh_type == 'obb':
+        elif self.cdmesh_type == 'obb':
             objtrm = self.objtrm.bounding_box_oriented
-        elif cdmesh_type == 'convex_hull':
+        elif self.cdmesh_type == 'convex_hull':
             objtrm = self.objtrm.convex_hull
-        elif cdmesh_type == 'triangles':
+        elif self.cdmesh_type == 'triangles':
             objtrm = self.objtrm
         homomat = self.get_homomat()
         vertices = rm.homomat_transform_points(homomat, objtrm.vertices)

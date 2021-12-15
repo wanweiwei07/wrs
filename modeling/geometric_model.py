@@ -127,21 +127,21 @@ class StaticGeometricModel(object):
     def set_rgba(self, rgba):
         self._objpdnp.setColor(rgba[0], rgba[1], rgba[2], rgba[3])
 
+    def set_scale(self, scale=[1, 1, 1]):
+        self._objpdnp.setScale(scale[0], scale[1], scale[2])
+        self._objtrm.apply_scale(scale)
+
+    def set_vert_size(self, size=.005):
+        self.objpdnp_raw.setRenderModeThickness(size * 1000)
+
     def get_rgba(self):
         return da.pdv4_to_npv4(self._objpdnp.getColor())  # panda3d.core.LColor -> LBase4F
 
     def clear_rgba(self):
         self._objpdnp.clearColor()
 
-    def set_scale(self, scale=[1, 1, 1]):
-        self._objpdnp.setScale(scale[0], scale[1], scale[2])
-        self._objtrm.apply_scale(scale)
-
     def get_scale(self):
         return da.pdv3_to_npv3(self._objpdnp.getScale())
-
-    def set_vert_size(self, size=.005):
-        self.objpdnp_raw.setRenderModeThickness(size * 1000)
 
     def attach_to(self, obj):
         if isinstance(obj, ShowBase):
@@ -234,14 +234,14 @@ class WireFrameModel(StaticGeometricModel):
         wrn.warn("Right not the set_rgba fn for a WireFrame instance is not implemented!")
         # self._objpdnp.setColor(rgba[0], rgba[1], rgba[2], rgba[3])
 
+    def set_scale(self, scale=[1, 1, 1]):
+        self._objpdnp.setScale(scale[0], scale[1], scale[2])
+
     def get_rgba(self):
         return da.pdv4_to_npv4(self._objpdnp.getColor())  # panda3d.core.LColor -> LBase4F
 
     def clear_rgba(self):
         self._objpdnp.clearColor()
-
-    def set_scale(self, scale=[1, 1, 1]):
-        self._objpdnp.setScale(scale[0], scale[1], scale[2])
 
     def get_scale(self):
         return da.pdv3_to_npv3(self._objpdnp.getScale())
@@ -255,7 +255,7 @@ class WireFrameModel(StaticGeometricModel):
         elif isinstance(obj, mc.ModelCollection):
             obj.add_gm(self)
         else:
-            print("Must be ShowBase, modeling.StaticGeometricModel, GeometricModel, "
+            raise Exception("WRS Exception: Must be ShowBase, modeling.StaticGeometricModel, GeometricModel, "
                   "CollisionModel, or CollisionModelCollection!")
 
     def detach(self):
@@ -299,22 +299,11 @@ class GeometricModel(StaticGeometricModel):
     def set_pos(self, npvec3):
         self._objpdnp.setPos(npvec3[0], npvec3[1], npvec3[2])
 
-    def get_pos(self):
-        return da.pdv3_to_npv3(self._objpdnp.getPos())
-
     def set_rotmat(self, npmat3):
         self._objpdnp.setQuat(da.npmat3_to_pdquat(npmat3))
 
-    def get_rotmat(self):
-        return da.pdquat_to_npmat3(self._objpdnp.getQuat())
-
     def set_homomat(self, npmat4):
         self._objpdnp.setPosQuat(da.npv3_to_pdv3(npmat4[:3, 3]), da.npmat3_to_pdquat(npmat4[:3, :3]))
-
-    def get_homomat(self):
-        npv3 = da.pdv3_to_npv3(self._objpdnp.getPos())
-        npmat3 = da.pdquat_to_npmat3(self._objpdnp.getQuat())
-        return rm.homomat_from_posrot(npv3, npmat3)
 
     def set_rpy(self, roll, pitch, yaw):
         """
@@ -329,6 +318,20 @@ class GeometricModel(StaticGeometricModel):
         npmat3 = rm.rotmat_from_euler(roll, pitch, yaw, axes="sxyz")
         self.set_rotmat(npmat3)
 
+    def set_transparency(self, attribute):
+        return self._objpdnp.setTransparency(attribute)
+
+    def get_pos(self):
+        return da.pdv3_to_npv3(self._objpdnp.getPos())
+
+    def get_rotmat(self):
+        return da.pdquat_to_npmat3(self._objpdnp.getQuat())
+
+    def get_homomat(self):
+        npv3 = da.pdv3_to_npv3(self._objpdnp.getPos())
+        npmat3 = da.pdquat_to_npmat3(self._objpdnp.getQuat())
+        return rm.homomat_from_posrot(npv3, npmat3)
+
     def get_rpy(self):
         """
         get the pose of the object using rpy
@@ -339,9 +342,6 @@ class GeometricModel(StaticGeometricModel):
         npmat3 = self.get_rotmat()
         rpy = rm.rotmat_to_euler(npmat3, axes="sxyz")
         return np.array([rpy[0], rpy[1], rpy[2]])
-
-    def set_transparency(self, attribute):
-        return self._objpdnp.setTransparency(attribute)
 
     def sample_surface(self, radius=0.005, nsample=None, toggle_option='face_ids'):
         """
