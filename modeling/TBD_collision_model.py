@@ -11,6 +11,7 @@ import modeling._panda_cdhelper as pcd
 import modeling._ode_cdhelper as mcd
 
 # the following two helpers cannot correcty find collision positions, 20211216
+# TODO check if it is caused by the bad bullet transformation in mcd.update_pose
 # import modeling._gimpact_cdhelper as mcd
 # import modeling._bullet_cdhelper as mcd
 

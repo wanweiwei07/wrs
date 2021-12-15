@@ -1,7 +1,7 @@
 import numpy as np
 import modeling.geometric_model as gm
 import modeling.collision_model as cm
-import modeling.collision_model_changable_cdmesh as cmc
+import modeling.TBD_collision_model as cmc
 import visualization.panda.world as wd
 
 if __name__ == '__main__':
