@@ -8,6 +8,7 @@ import modeling.geometric_model as gm
 import visualization.panda.world as world
 import robot_sim.robots.cobotta.cobotta as cbt_s
 
+# file size: pandas (string) > pickle (binary) = torch.save > numpy, 20211216
 
 def gen_data(rbt_s, component_name='arm', granularity=math.pi / 8, save_name='cobotta_ik.csv'):
     n_jnts = rbt_s.manipulator_dict[component_name].ndof
@@ -29,8 +30,9 @@ def gen_data(rbt_s, component_name='arm', granularity=math.pi / 8, save_name='co
         input = (xyz[0], xyz[1], xyz[2], rpy[0], rpy[1], rpy[2])
         output = data
         data_set.append([input, output])
-    df = pd.DataFrame(data_set, columns=['xyzrpy', 'jnt_values'])
-    df.to_csv(save_name)
+    # df = pd.DataFrame(data_set, columns=['xyzrpy', 'jnt_values'])
+    # df.to_csv(save_name)
+    np.save(save_name, np.array(data_set))
 
 
 if __name__ == '__main__':
@@ -38,6 +40,6 @@ if __name__ == '__main__':
     gm.gen_frame().attach_to(base)
     rbt_s = cbt_s.Cobotta()
     rbt_s.gen_meshmodel(toggle_tcpcs=True).attach_to(base)
-    gen_data(rbt_s, granularity=math.pi / 12, save_name='cobotta_ik.csv')
-    gen_data(rbt_s, granularity=math.pi / 4, save_name='cobotta_ik_test.csv')
+    gen_data(rbt_s, granularity=math.pi / 18, save_name='cobotta_ik.trc')
+    gen_data(rbt_s, granularity=math.pi / 4, save_name='cobotta_ik_test.trc')
     base.run()

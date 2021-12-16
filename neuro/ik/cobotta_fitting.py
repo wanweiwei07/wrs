@@ -7,8 +7,9 @@ from torch.utils.data import Dataset, DataLoader
 from torch.utils.tensorboard import SummaryWriter
 
 class IKDataSet(Dataset):
-    def __init__(self, csv_file, transform=None):
-        self.ik_frame = pd.read_csv(csv_file)
+    def __init__(self, file, transform=None):
+        # self.ik_frame = pd.read_csv(file)
+        self.ik_frame = np.load(file)
         self.transform = transform
 
     def __len__(self):
@@ -17,8 +18,10 @@ class IKDataSet(Dataset):
     def __getitem__(self, idx):
         if torch.is_tensor(idx):
             idx = idx.tolist()
-        xyzrpy = eval(self.ik_frame.loc[idx, 'xyzrpy'])
-        jnt_values = eval(self.ik_frame.loc[idx, 'jnt_values'])
+        # xyzrpy = eval(self.ik_frame.loc[idx, 'xyzrpy'])
+        # jnt_values = eval(self.ik_frame.loc[idx, 'jnt_values'])
+        xyzrpy = self.ik_frame[idx][0]
+        jnt_values = self.ik_frame[idx][1]
         return torch.Tensor(xyzrpy), torch.Tensor(jnt_values)
 
 
@@ -111,8 +114,8 @@ if __name__ == '__main__':
     loss_fn = nn.MSELoss()
     optimizer = torch.optim.Adam(model.parameters(), lr=learning_rate)
 
-    train_data = IKDataSet('data_gen/cobotta_ik.csv')
-    test_data = IKDataSet('data_gen/cobotta_ik_test.csv')
+    train_data = IKDataSet('data_gen/cobotta_ik.npy')
+    test_data = IKDataSet('data_gen/cobotta_ik_test.npy')
     train_dataloader = DataLoader(train_data, batch_size=batch_size, shuffle=True)
     test_dataloader = DataLoader(test_data, batch_size=batch_size, shuffle=True)
 
