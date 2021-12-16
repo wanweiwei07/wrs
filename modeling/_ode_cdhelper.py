@@ -56,7 +56,7 @@ def update_pose(obj_ode_trimesh, objnp):
     date: 20211215
     """
     obj_ode_trimesh.setPosition(objnp.getPos())
-    obj_ode_trimesh.setPosition(objnp.getQuat())
+    obj_ode_trimesh.setQuaternion(objnp.getQuat())
 
 def rayhit_closet(pfrom, pto, objcm):
     """

@@ -9,6 +9,7 @@ import modeling.geometric_model as gm
 import modeling.model_collection as mc
 import modeling._panda_cdhelper as pcd
 import modeling._ode_cdhelper as mcd
+import warnings as wrn
 
 # the following two helpers cannot correcty find collision positions, 20211216
 # TODO check if it is caused by the bad bullet transformation in mcd.update_pose
@@ -57,7 +58,6 @@ class CollisionModel(gm.GeometricModel):
             self._localframe = copy.deepcopy(initor.localframe)
             self._cdprimitive_type = copy.deepcopy(initor.cdprimitive_type)
             self._cdmesh_type = copy.deepcopy(initor.cdmesh_type)
-            self._cdmesh = copy.deepcopy(initor.cdmesh)
         else:
             super().__init__(initor=initor, name=name, btransparency=btransparency, btwosided=btwosided)
             self._cdprimitive_type, collision_node = self._update_cdprimit(cdprimit_type,
@@ -67,8 +67,10 @@ class CollisionModel(gm.GeometricModel):
             self._objpdnp.attachNewNode(collision_node)
             self._objpdnp.getChild(1).setCollideMask(BitMask32(2 ** 31))
             self._cdmesh_type = cdmesh_type
-            self._cdmesh = mcd.gen_cdmesh_vvnf(*self.extract_rotated_vvnf())
             self._localframe = None
+        # reinit self._cdmesh while ignoring the initor types.
+        # The reinit helps to avoid the annoying ode warning caused by deepcopy.
+        self._cdmesh = mcd.gen_cdmesh_vvnf(*self.extract_rotated_vvnf())
 
     def _update_cdprimit(self, cdprimitive_type, expand_radius, userdefined_cdprimitive_fn):
         if cdprimitive_type is not None and cdprimitive_type not in ['box',
@@ -123,13 +125,44 @@ class CollisionModel(gm.GeometricModel):
     def cdmesh(self):
         """
         using ode
-        TODO: move to functions that change poses;
         :return:
         author: weiwei
         date: 20211215
         """
-        mcd.update_pose(self._cdmesh, self._objpdnp)
         return self._cdmesh
+
+    def set_scale(self, scale=None):
+        wrn.warn("WRS Warning: Set scale is not allowed for a CollisionModel object!")
+        pass
+
+    def get_scale(self):
+        raise Exception("WRS Exception: Get scale is not available for a CollisionModel object!")
+
+    def set_pos(self, npvec3):
+        self._objpdnp.setPos(npvec3[0], npvec3[1], npvec3[2])
+        mcd.update_pose(self._cdmesh, self._objpdnp)
+
+    def set_rotmat(self, npmat3):
+        self._objpdnp.setQuat(da.npmat3_to_pdquat(npmat3))
+        mcd.update_pose(self._cdmesh, self._objpdnp)
+
+    def set_homomat(self, npmat4):
+        self._objpdnp.setPosQuat(da.npv3_to_pdv3(npmat4[:3, 3]), da.npmat3_to_pdquat(npmat4[:3, :3]))
+        mcd.update_pose(self._cdmesh, self._objpdnp)
+
+    def set_rpy(self, roll, pitch, yaw):
+        """
+        set the pose of the object using rpy
+        :param roll: radian
+        :param pitch: radian
+        :param yaw: radian
+        :return:
+        author: weiwei
+        date: 20190513
+        """
+        npmat3 = rm.rotmat_from_euler(roll, pitch, yaw, axes="sxyz")
+        self.set_rotmat(npmat3)
+        mcd.update_pose(self._cdmesh, self._objpdnp)
 
     def extract_rotated_vvnf(self, cdmesh_type=None):
         """
@@ -282,7 +315,7 @@ class CollisionModel(gm.GeometricModel):
         raise NotImplementedError
 
     def copy(self):
-        return copy.deepcopy(self)
+        return CollisionModel(self)
 
 
 def gen_box(extent=np.array([.1, .1, .1]), homomat=np.eye(4), rgba=np.array([1, 0, 0, 1])):
