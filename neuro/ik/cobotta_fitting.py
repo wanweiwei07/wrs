@@ -9,8 +9,11 @@ from torch.utils.tensorboard import SummaryWriter
 class IKDataSet(Dataset):
     def __init__(self, file, transform=None):
         # self.ik_frame = pd.read_csv(file)
-        self.ik_frame = np.load(file)
+        self.ik_frame = np.load(file+".npy")
         self.transform = transform
+        _min_max = np.load(file+"_min_max.npy")
+        self.min = _min_max[0]
+        self.max = _min_max[1]
 
     def __len__(self):
         return len(self.ik_frame)
@@ -21,6 +24,7 @@ class IKDataSet(Dataset):
         # xyzrpy = eval(self.ik_frame.loc[idx, 'xyzrpy'])
         # jnt_values = eval(self.ik_frame.loc[idx, 'jnt_values'])
         xyzrpy = self.ik_frame[idx][0]
+        xyzrpy = (xyzrpy-self.min)/(self.max-self.min) #normalize
         jnt_values = self.ik_frame[idx][1]
         return torch.Tensor(xyzrpy), torch.Tensor(jnt_values)
 
@@ -107,15 +111,15 @@ if __name__ == '__main__':
     # torch.set_default_tensor_type('torch.cuda.FloatTensor')
 
 
-    model = Net(n_hidden=100, n_jnts=6).to(device=device)
+    model = Net(n_hidden=1000, n_jnts=6).to(device=device)
     learning_rate = 1e-3
     batch_size = 64
-    epochs = 20
+    epochs = 200
     loss_fn = nn.MSELoss()
     optimizer = torch.optim.Adam(model.parameters(), lr=learning_rate)
 
-    train_data = IKDataSet('data_gen/cobotta_ik.npy')
-    test_data = IKDataSet('data_gen/cobotta_ik_test.npy')
+    train_data = IKDataSet('data_gen/cobotta_ik')
+    test_data = IKDataSet('data_gen/cobotta_ik_test')
     train_dataloader = DataLoader(train_data, batch_size=batch_size, shuffle=True)
     test_dataloader = DataLoader(test_data, batch_size=batch_size, shuffle=True)
 

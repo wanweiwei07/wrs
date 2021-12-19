@@ -131,12 +131,13 @@ class CollisionModel(gm.GeometricModel):
         """
         return self._cdmesh
 
-    def set_scale(self, scale=None):
-        wrn.warn("WRS Warning: Set scale is not allowed for a CollisionModel object!")
-        pass
+    def set_scale(self, scale=[1, 1, 1]):
+        self._objpdnp.setScale(scale[0], scale[1], scale[2])
+        self._objtrm.apply_scale(scale)
+        self._cdmesh = mcd.gen_cdmesh_vvnf(*self.extract_rotated_vvnf())
 
     def get_scale(self):
-        raise Exception("WRS Exception: Get scale is not available for a CollisionModel object!")
+        return da.pdv3_to_npv3(self._objpdnp.getScale())
 
     def set_pos(self, npvec3):
         self._objpdnp.setPos(npvec3[0], npvec3[1], npvec3[2])
