@@ -10,6 +10,15 @@ import time
 import pickle
 
 
+rbt_s = cbt_s.Cobotta()
+x, y, z, r00, r01, r02, r10, r11, r12, r20, r21, r22 = sympy.symbols("x y z r00 r01 r02 r10 r11 r12 r20 r21 r22")
+diff = -(rbt_s.manipulator_dict['arm'].jnts[6]['loc_pos'][1]+rbt_s.manipulator_dict['arm'].tcp_loc_pos[1])
+Matrix([x,y,z])+Matrix([r02, r12, r22])*diff
+Matrix([[r00, r01, r02], [r10, r11, r12], [r20, r21, r22]])*diff
+
+Matrix([x,y,z])-
+
+
 def sym_axangle(ax, angle):
     st = sympy.sin(angle)
     ct = sympy.cos(angle)
@@ -162,16 +171,16 @@ resultant_pos4 = np.array(pos4.tolist()).ravel().astype(np.float64)
 gm.gen_sphere(pos=resultant_pos4).attach_to(base)
 base.run()
 
-sympy_resultant_rotmat = sympy_rotmat1.subs([(q1, jnt_values[0])])
-resultant_rotmat = np.array(sympy_resultant_rotmat.tolist()).astype(np.float64)
-gm.gen_mycframe(pos=rbt_s.manipulator_dict['arm'].jnts[1]['gl_posq'], rotmat=resultant_rotmat).attach_to(base)
-
-sympy_resultant_rotmat = (sympy_rotmat2 * sympy_rotmat1).subs([(q1, jnt_values[0]), (q2, jnt_values[1])])
-resultant_rotmat = np.array(sympy_resultant_rotmat.tolist()).astype(np.float64)
-gm.gen_mycframe(pos=rbt_s.manipulator_dict['arm'].jnts[2]['gl_posq'], rotmat=resultant_rotmat).attach_to(base)
-
-sympy_resultant_rotmat = (sympy_rotmat3 * sympy_rotmat2 * sympy_rotmat1).subs(
-    [(q1, jnt_values[0]), (q2, jnt_values[1]), (q3, jnt_values[3])])
-resultant_rotmat = np.array(sympy_resultant_rotmat.tolist()).astype(np.float64)
-gm.gen_mycframe(pos=rbt_s.manipulator_dict['arm'].jnts[3]['gl_posq'], rotmat=resultant_rotmat).attach_to(base)
-base.run()
+# sympy_resultant_rotmat = sympy_rotmat1.subs([(q1, jnt_values[0])])
+# resultant_rotmat = np.array(sympy_resultant_rotmat.tolist()).astype(np.float64)
+# gm.gen_mycframe(pos=rbt_s.manipulator_dict['arm'].jnts[1]['gl_posq'], rotmat=resultant_rotmat).attach_to(base)
+#
+# sympy_resultant_rotmat = (sympy_rotmat2 * sympy_rotmat1).subs([(q1, jnt_values[0]), (q2, jnt_values[1])])
+# resultant_rotmat = np.array(sympy_resultant_rotmat.tolist()).astype(np.float64)
+# gm.gen_mycframe(pos=rbt_s.manipulator_dict['arm'].jnts[2]['gl_posq'], rotmat=resultant_rotmat).attach_to(base)
+#
+# sympy_resultant_rotmat = (sympy_rotmat3 * sympy_rotmat2 * sympy_rotmat1).subs(
+#     [(q1, jnt_values[0]), (q2, jnt_values[1]), (q3, jnt_values[3])])
+# resultant_rotmat = np.array(sympy_resultant_rotmat.tolist()).astype(np.float64)
+# gm.gen_mycframe(pos=rbt_s.manipulator_dict['arm'].jnts[3]['gl_posq'], rotmat=resultant_rotmat).attach_to(base)
+# base.run()

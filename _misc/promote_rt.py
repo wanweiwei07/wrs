@@ -24,12 +24,18 @@ def promote_admin():
         ctypes.windll.shell32.ShellExecuteW(None, "runas", sys.executable, " ".join(sys.argv), None, 1)
 
 def set_realtime():
-    import win32api, win32process
-    promote_admin()
-    # pid = win32api.GetCurrentProcessId()
-    # handle = win32api.OpenProcess(win32con.PROCESS_ALL_ACCESS, True, pid)
-    # win32process.SetPriorityClass(handle, win32process.REALTIME_PRIORITY_CLASS)
-    win32process.SetPriorityClass(win32api.GetCurrentProcess(), win32process.REALTIME_PRIORITY_CLASS)
+    if check_winsys():
+        import win32api, win32process
+        promote_admin()
+        # pid = win32api.GetCurrentProcessId()
+        # handle = win32api.OpenProcess(win32con.PROCESS_ALL_ACCESS, True, pid)
+        # win32process.SetPriorityClass(handle, win32process.REALTIME_PRIORITY_CLASS)
+        win32process.SetPriorityClass(win32api.GetCurrentProcess(), win32process.REALTIME_PRIORITY_CLASS)
+    else:
+        import os
+        pid = os.getpid()
+        bash_command = f"chrt -f -p 99 {pid}"
+        os.system(bash_command)
 
 if __name__ == '__main__':
     import time

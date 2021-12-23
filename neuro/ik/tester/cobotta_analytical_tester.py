@@ -16,8 +16,8 @@ if __name__ == '__main__':
     rbt_s.fk(jnt_values=np.zeros(6))
     rbt_s.gen_meshmodel(toggle_tcpcs=True, rgba=[.5,.5,.5,.3]).attach_to(base)
     rbt_s.gen_stickmodel(toggle_tcpcs=True).attach_to(base)
-    tgt_pos = np.array([.25, .2, .15])
-    tgt_rotmat = rm.rotmat_from_axangle([0, 1, 0], math.pi * 2 / 3)
+    tgt_pos = np.array([.25, .2, .2])
+    tgt_rotmat = rm.rotmat_from_axangle([0, 1, 0], math.pi * 3 / 3)
     gm.gen_frame(pos=tgt_pos, rotmat=tgt_rotmat).attach_to(base)
 
     contraint_pos = rbt_s.manipulator_dict['arm'].jnts[5]['gl_posq']
@@ -43,6 +43,12 @@ if __name__ == '__main__':
                  starting_vector=contraint_rotmat[:, 1],
                  portion=1,
                  center=contraint_pos,
+                 radius=abs(rbt_s.manipulator_dict['arm'].jnts[6]['loc_pos'][1])+abs(rbt_s.manipulator_dict['arm'].jnts[5]['loc_pos'][1])).attach_to(base)
+
+    gm.gen_torus(contraint_rotmat[:, 2],
+                 starting_vector=contraint_rotmat[:, 1],
+                 portion=1,
+                 center=contraint_pos-rbt_s.manipulator_dict['arm'].jnts[1]['gl_rotmatq'].dot(np.array([0,rbt_s.manipulator_dict['arm'].jnts[4]['loc_pos'][1],0])),
                  radius=abs(rbt_s.manipulator_dict['arm'].jnts[6]['loc_pos'][1])+abs(rbt_s.manipulator_dict['arm'].jnts[5]['loc_pos'][1])).attach_to(base)
     # jnt_values[3:]=0
     # rbt_s.fk(jnt_values=jnt_values)
