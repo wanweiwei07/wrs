@@ -39,8 +39,6 @@ def rotmat_from_axangle(axis, angle):
     date: 20161220
     """
     axis = unit_vector(axis)
-    if angle > 2 * math.pi:
-        angle = angle % 2 * math.pi
     a = math.cos(angle / 2.0)
     b, c, d = -axis * math.sin(angle / 2.0)
     aa, bb, cc, dd = a * a, b * b, c * c, d * d
