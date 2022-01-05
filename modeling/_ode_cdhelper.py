@@ -16,6 +16,9 @@ def gen_cdmesh_vvnf(vertices, vertex_normals, faces):
     obj_ot_geom = OdeTriMeshGeom(OdeTriMeshData(objpdnp, True))
     return obj_ot_geom
 
+def copy_cdmesh(obj_ot_geom):
+    obj_ot_geom_copy = OdeTriMeshGeom(obj_ot_geom.getTriMeshData())
+    return obj_ot_geom_copy
 
 # def gen_plane_cdmesh(updirection=np.array([0, 0, 1]), offset=0, name='autogen'):
 #     """

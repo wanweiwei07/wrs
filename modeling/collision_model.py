@@ -58,6 +58,11 @@ class CollisionModel(gm.GeometricModel):
             self._localframe = copy.deepcopy(initor.localframe)
             self._cdprimitive_type = copy.deepcopy(initor.cdprimitive_type)
             self._cdmesh_type = copy.deepcopy(initor.cdmesh_type)
+            # TODO exceptions where both initor and types were set needs to be considered
+            # also, copy.deepcopy is not used because it invokes a deprecated getdata method,
+            # see my question&comments at https://discourse.panda3d.org/t/ode-odetrimeshdata-problem/28232 for details
+            # weiwei, 20220105
+            self._cdmesh = mcd.copy_cdmesh(initor.cdmesh)
         else:
             super().__init__(initor=initor, name=name, btransparency=btransparency, btwosided=btwosided)
             self._cdprimitive_type, collision_node = self._update_cdprimit(cdprimit_type,
@@ -67,10 +72,10 @@ class CollisionModel(gm.GeometricModel):
             self._objpdnp.attachNewNode(collision_node)
             self._objpdnp.getChild(1).setCollideMask(BitMask32(2 ** 31))
             self._cdmesh_type = cdmesh_type
+            self._cdmesh = mcd.gen_cdmesh_vvnf(*self.extract_rotated_vvnf())
             self._localframe = None
         # reinit self._cdmesh while ignoring the initor types.
         # The reinit helps to avoid the annoying ode warning caused by deepcopy.
-        self._cdmesh = mcd.gen_cdmesh_vvnf(*self.extract_rotated_vvnf())
 
     def _update_cdprimit(self, cdprimitive_type, expand_radius, userdefined_cdprimitive_fn):
         if cdprimitive_type is not None and cdprimitive_type not in ['box',
