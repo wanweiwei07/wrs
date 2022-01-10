@@ -7,6 +7,7 @@ import modeling.collision_model as cm
 import robot_sim._kinematics.jlchain as jl
 import robot_sim.manipulators.ur3.ur3 as ur
 import robot_sim.end_effectors.grippers.robotiq85.robotiq85 as rtq
+import robot_sim.end_effectors.grippers.robotiq85_gelsight.robotiq85_gelsight as rtq_gs
 from panda3d.core import CollisionNode, CollisionBox, Point3
 import robot_sim.robots.robot_interface as ri
 
@@ -125,13 +126,14 @@ class UR3Dual(ri.RobotInterface):
                                                                     thickness=.067, rgba=[.2, .3, .3, 1], sections=24)
         self.lft_ft_sensor.reinitialize()
         # lft hand
-        self.lft_hnd = rtq.Robotiq85(pos=self.lft_ft_sensor.jnts[-1]['gl_posq'],
-                                     rotmat=self.lft_ft_sensor.jnts[-1]['gl_rotmatq'],
-                                     enable_cc=False)
+        self.lft_hnd = rtq_gs.Robotiq85Gelsight(pos=self.lft_ft_sensor.jnts[-1]['gl_posq'],
+                                                rotmat=self.lft_ft_sensor.jnts[-1]['gl_rotmatq'],
+                                                enable_cc=False)
         # rigth side
         self.rgt_body = jl.JLChain(pos=pos, rotmat=rotmat, homeconf=np.zeros(0), name='rgt_body_jl')
         self.rgt_body.jnts[1]['loc_pos'] = np.array([.0, -.258485281374, 1.61051471863])  # right from robot_s view
-        self.rgt_body.jnts[1]['loc_rotmat'] = rm.rotmat_from_euler(3.0 * math.pi / 4.0, .0, .0)  # left from robot_s view
+        self.rgt_body.jnts[1]['loc_rotmat'] = rm.rotmat_from_euler(3.0 * math.pi / 4.0, .0,
+                                                                   .0)  # left from robot_s view
         self.rgt_body.lnks[0]['name'] = "ur3_dual_rgt_body"
         self.rgt_body.lnks[0]['loc_pos'] = np.array([0, 0, 0])
         self.rgt_body.lnks[0]['meshfile'] = None
@@ -179,10 +181,10 @@ class UR3Dual(ri.RobotInterface):
         # component map
         self.manipulator_dict['rgt_arm'] = self.rgt_arm
         self.manipulator_dict['lft_arm'] = self.lft_arm
-        self.manipulator_dict['rgt_hnd'] = self.rgt_arm # specify which hand is a gripper installed to
-        self.manipulator_dict['lft_hnd'] = self.lft_arm # specify which hand is a gripper installed to
-        self.manipulator_dict['rgt_ftsensor'] = self.rgt_arm # specify which hand is a gripper installed to
-        self.manipulator_dict['lft_ftsensor'] = self.lft_arm # specify which hand is a gripper installed to
+        self.manipulator_dict['rgt_hnd'] = self.rgt_arm  # specify which hand is a gripper installed to
+        self.manipulator_dict['lft_hnd'] = self.lft_arm  # specify which hand is a gripper installed to
+        self.manipulator_dict['rgt_ftsensor'] = self.rgt_arm  # specify which hand is a gripper installed to
+        self.manipulator_dict['lft_ftsensor'] = self.lft_arm  # specify which hand is a gripper installed to
         self.hnd_dict['rgt_hnd'] = self.rgt_hnd
         self.hnd_dict['lft_hnd'] = self.lft_hnd
         self.hnd_dict['rgt_arm'] = self.rgt_hnd
@@ -225,8 +227,8 @@ class UR3Dual(ri.RobotInterface):
         self.cc.add_cdlnks(self.lft_body, [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12])
         self.cc.add_cdlnks(self.lft_arm, [1, 2, 3, 4, 5, 6])
         self.cc.add_cdlnks(self.lft_ft_sensor, [0])
-        self.cc.add_cdlnks(self.lft_hnd.lft_outer, [0, 1, 2, 3, 4])
-        self.cc.add_cdlnks(self.lft_hnd.rgt_outer, [1, 2, 3, 4])
+        self.cc.add_cdlnks(self.lft_hnd.lft_outer, [0, 1, 2, 3])
+        self.cc.add_cdlnks(self.lft_hnd.rgt_outer, [1, 2, 3])
         self.cc.add_cdlnks(self.rgt_arm, [1, 2, 3, 4, 5, 6])
         self.cc.add_cdlnks(self.rgt_ft_sensor, [0])
         self.cc.add_cdlnks(self.rgt_hnd.lft_outer, [0, 1, 2, 3, 4])
@@ -242,11 +244,9 @@ class UR3Dual(ri.RobotInterface):
                       self.lft_hnd.lft_outer.lnks[1],
                       self.lft_hnd.lft_outer.lnks[2],
                       self.lft_hnd.lft_outer.lnks[3],
-                      self.lft_hnd.lft_outer.lnks[4],
                       self.lft_hnd.rgt_outer.lnks[1],
                       self.lft_hnd.rgt_outer.lnks[2],
                       self.lft_hnd.rgt_outer.lnks[3],
-                      self.lft_hnd.rgt_outer.lnks[4],
                       self.rgt_arm.lnks[2],
                       self.rgt_arm.lnks[3],
                       self.rgt_arm.lnks[4],
@@ -288,11 +288,9 @@ class UR3Dual(ri.RobotInterface):
                     self.lft_hnd.lft_outer.lnks[1],
                     self.lft_hnd.lft_outer.lnks[2],
                     self.lft_hnd.lft_outer.lnks[3],
-                    self.lft_hnd.lft_outer.lnks[4],
                     self.lft_hnd.rgt_outer.lnks[1],
                     self.lft_hnd.rgt_outer.lnks[2],
                     self.lft_hnd.rgt_outer.lnks[3],
-                    self.lft_hnd.rgt_outer.lnks[4],
                     self.rgt_arm.lnks[3],
                     self.rgt_arm.lnks[4],
                     self.rgt_arm.lnks[5],
@@ -323,11 +321,9 @@ class UR3Dual(ri.RobotInterface):
                     self.lft_hnd.lft_outer.lnks[1],
                     self.lft_hnd.lft_outer.lnks[2],
                     self.lft_hnd.lft_outer.lnks[3],
-                    self.lft_hnd.lft_outer.lnks[4],
                     self.lft_hnd.rgt_outer.lnks[1],
                     self.lft_hnd.rgt_outer.lnks[2],
-                    self.lft_hnd.rgt_outer.lnks[3],
-                    self.lft_hnd.rgt_outer.lnks[4]]
+                    self.lft_hnd.rgt_outer.lnks[3]]
         intolist = [self.rgt_arm.lnks[3],
                     self.rgt_arm.lnks[4],
                     self.rgt_arm.lnks[5],
