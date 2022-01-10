@@ -42,6 +42,8 @@ def convert_to_stl(obj, savename, scale_ratio=1, pos=np.zeros(3), rotmat=np.eye(
     date: 20201207
     """
     trimesh = trm.load(obj)
+    if type(scale_ratio) is not list:
+        scale_ratio = [scale_ratio, scale_ratio, scale_ratio]
     tmptrimesh = scale(trimesh, scale_ratio)
     homomat = rm.homomat_from_posrot(pos, rotmat)
     tmptrimesh.apply_transform(homomat)
