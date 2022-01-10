@@ -53,13 +53,15 @@ def transform_around(matrix, point):
 
 
 def align_vectors(vector_start, vector_end, return_angle=False):
-    '''
-    Returns the 4x4 transformation matrix which will rotate from 
+    """
+    Returns the 4x4 transformation matrix which will rotate from
     vector_start (3,) to vector_end (3,), ex:
-    
     vector_end == np.dot(T, np.append(vector_start, 1))[0:3]
-    '''
-
+    :param vector_start:
+    :param vector_end:
+    :param return_angle:
+    :return:
+    """
     # the following code is added by weiwei on 07212017
     # to correct the problems of same vectors and inverse vectors
     if np.array_equal(vector_start, vector_end):
@@ -69,12 +71,13 @@ def align_vectors(vector_start, vector_end, return_angle=False):
             return T, angle
         return T
     if np.array_equal(-vector_start, vector_end):
-        T = np.eye(4)
-        T[:3, 2] *= -1.0
-        T[:3, 1] *= -1.0
-        angle = np.pi
+        a = vector_start[0]
+        b = vector_start[1]
+        c = vector_start[2]
+        rot_ax = unitize(np.array([b - c, -a + c, a - b]))
+        T = rotation_matrix(np.pi, rot_ax)
         if return_angle:
-            return T, angle
+            return T, np.pi
         return T
 
     vector_start = unitize(vector_start)
