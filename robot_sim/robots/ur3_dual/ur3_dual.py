@@ -170,8 +170,8 @@ class UR3Dual(ri.RobotInterface):
         self.lft_arm.tcp_loc_rotmat = self.lft_ft_sensor.jnts[-1]['loc_rotmat'].dot(self.lft_hnd.jaw_center_rotmat)
         # rgt
         self.rgt_arm.tcp_jntid = -1
-        self.rgt_arm.tcp_loc_pos = self.lft_ft_sensor.jnts[-1]['loc_pos'] + self.lft_hnd.jaw_center_pos
-        self.rgt_arm.tcp_loc_rotmat = self.lft_ft_sensor.jnts[-1]['loc_rotmat'].dot(self.lft_hnd.jaw_center_rotmat)
+        self.rgt_arm.tcp_loc_pos = self.rgt_ft_sensor.jnts[-1]['loc_pos'] + self.rgt_hnd.jaw_center_pos
+        self.rgt_arm.tcp_loc_rotmat = self.rgt_ft_sensor.jnts[-1]['loc_rotmat'].dot(self.rgt_hnd.jaw_center_rotmat)
         # a list of detailed information about objects in hand, see CollisionChecker.add_objinhnd
         self.lft_oih_infos = []
         self.rgt_oih_infos = []
