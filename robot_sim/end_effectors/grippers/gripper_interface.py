@@ -98,10 +98,10 @@ class GripperInterface(object):
         :param jaw_width:
         :return:
         """
+        self.jaw_to(jaw_width)
         hnd_rotmat = gl_jaw_center_rotmat.dot(self.jaw_center_rotmat.T)
         hnd_pos = gl_jaw_center_pos - hnd_rotmat.dot(self.jaw_center_pos)
         self.fix_to(hnd_pos, hnd_rotmat)
-        self.jaw_to(jaw_width)
         return [jaw_width, gl_jaw_center_pos, gl_jaw_center_rotmat, hnd_pos, hnd_rotmat]
 
     def show_cdprimit(self):
