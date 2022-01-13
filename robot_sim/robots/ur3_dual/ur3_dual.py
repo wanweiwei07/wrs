@@ -410,6 +410,12 @@ class UR3Dual(ri.RobotInterface):
         else:
             raise ValueError("The given component name is not available!")
 
+    def jaw_to(self, hnd_name, jaw_width):
+        self.hnd_dict[hnd_name].jaw_to(jawwidth=jaw_width)
+        # update arm tcp
+        self.lft_arm.tcp_loc_pos = self.lft_ft_sensor.jnts[-1]['loc_pos'] + self.lft_hnd.jaw_center_pos
+        self.rgt_arm.tcp_loc_pos = self.rgt_ft_sensor.jnts[-1]['loc_pos'] + self.rgt_hnd.jaw_center_pos
+
     def rand_conf(self, component_name):
         """
         override robot_interface.rand_conf

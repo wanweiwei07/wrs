@@ -198,6 +198,7 @@ class Robotiq85(gp.GripperInterface):
             raise ValueError(f"Jawwidth must be {self.jawwidth_rng[0]}mm~{self.jawwidth_rng[1]}mm!")
         motion_val = math.asin((self.jawwidth_rng[1] / 2.0 + .0064 - .0306011) / 0.055) - math.asin((jaw_width / 2.0 + .0064 - .0306011) / 0.055)
         self.fk(motion_val)
+        # TODO dynamically change jaw center
 
     def gen_stickmodel(self,
                        tcp_jntid=None,

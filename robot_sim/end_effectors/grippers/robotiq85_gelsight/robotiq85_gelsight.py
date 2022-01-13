@@ -202,6 +202,10 @@ class Robotiq85Gelsight(gp.GripperInterface):
         motion_val = math.asin((self.jawwidth_rng[1] / 2.0 + .0064 - .0306011) / 0.055) - math.asin(
             (jaw_width / 2.0 + .0064 - .0306011) / 0.055)
         self.fk(motion_val)
+        # 20220113 matsuoka
+        rot = math.asin(math.asin(((jaw_width / 2.0 + 0.0064) - 0.0127) / 0.05715))
+        self.jaw_center_pos = np.array([0.0, 0.0, 0.06142]) + np.array([0.0, 0.0, math.cos(rot) * 0.05715]) + np.array(
+            [0.0, 0.0, 0.06325144]) + self.coupling.jnts[-1]['gl_posq']
 
     def gen_stickmodel(self,
                        tcp_jntid=None,
