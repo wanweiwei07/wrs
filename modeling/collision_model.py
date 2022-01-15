@@ -323,6 +323,15 @@ class CollisionModel(gm.GeometricModel):
     def copy(self):
         return CollisionModel(self)
 
+    def __deepcopy__(self, memodict={}):
+        """
+        override __deepcopy__ to bypass the ode deprecated function problem
+        :param memodict:
+        :return:
+        author: weiwei
+        date: 20220115toyonaka
+        """
+        return self.copy()
 
 def gen_box(extent=np.array([.1, .1, .1]), homomat=np.eye(4), rgba=np.array([1, 0, 0, 1])):
     """
