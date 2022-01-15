@@ -85,6 +85,24 @@ class CobottaX(object):
         jnt_values_degree = np.degrees(jnt_values)
         self.bcc.robot_move(self.hrbt, 1, [jnt_values_degree.tolist(), "J", "@E"], "")
 
+    def get_pose_values(self):
+        """
+        x,y,z,r,p,y,fig
+        :return:
+        author: weiwei
+        date: 20220115
+        """
+        pose = self.bcc.robot_execute(self.hrbt, "CurPos", None)
+        return_value = np.array(pose[:7])
+        return_value[:3] *= .001
+        return_value[3:6] = np.radians(return_value[3:6])
+        return return_value
+
+    def move_pose(self, pose_value):
+        pose_value[:3] *= 1000
+        pose_value[3:6] = np.degrees(pose_value[3:6])
+        self.bcc.robot_move(self.hrbt, 1, [pose_value.tolist(), "P", "@E"], "")
+
     def open_gripper(self, dist=.03):
         """
         :param dist:
