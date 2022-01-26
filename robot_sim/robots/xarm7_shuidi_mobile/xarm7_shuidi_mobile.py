@@ -2,6 +2,7 @@ import os
 import math
 import numpy as np
 import basis.robot_math as rm
+import modeling.collision_model as cm
 import modeling.model_collection as mc
 import robot_sim._kinematics.jlchain as jl
 import robot_sim.manipulators.xarm7.xarm7 as xa
@@ -49,14 +50,26 @@ class XArm7YunjiMobile(ri.RobotInterface):
                             rotmat=self.agv.jnts[-1]['gl_rotmatq'],
                             homeconf=arm_homeconf,
                             name='arm', enable_cc=False)
+        # ft sensor
+        self.ft_sensor = jl.JLChain(pos=self.arm.jnts[-1]['gl_posq'],
+                                    rotmat=self.arm.jnts[-1]['gl_rotmatq'],
+                                    homeconf=np.zeros(0), name='ft_sensor_jl')
+        self.ft_sensor.jnts[1]['loc_pos'] = np.array([.0, .0, .065])
+        self.ft_sensor.lnks[0]['name'] = "xs_ftsensor"
+        self.ft_sensor.lnks[0]['loc_pos'] = np.array([0, 0, 0])
+        self.ft_sensor.lnks[0]['collisionmodel'] = cm.gen_stick(spos=self.ft_sensor.jnts[0]['loc_pos'],
+                                                                epos=self.ft_sensor.jnts[1]['loc_pos'],
+                                                                thickness=.075, rgba=[.2, .3, .3, 1], sections=24)
+        self.ft_sensor.reinitialize()
         # gripper
-        self.hnd = xag.XArmGripper(pos=self.arm.jnts[-1]['gl_posq'],
-                                   rotmat=self.arm.jnts[-1]['gl_rotmatq'],
+        self.hnd = xag.XArmGripper(pos=self.ft_sensor.jnts[-1]['gl_posq'],
+                                   rotmat=self.ft_sensor.jnts[-1]['gl_rotmatq'],
                                    name='hnd_s', enable_cc=False)
         # tool center point
         self.arm.jlc.tcp_jntid = -1
-        self.arm.jlc.tcp_loc_pos = self.hnd.jaw_center_pos
-        self.arm.jlc.tcp_loc_rotmat = self.hnd.jaw_center_rotmat
+        self.arm.jlc.tcp_loc_rotmat = self.ft_sensor.jnts[-1]['loc_rotmat'].dot(self.hnd.jaw_center_rotmat)
+        self.arm.jlc.tcp_loc_pos = self.ft_sensor.jnts[-1]['loc_pos'] + self.arm.jlc.tcp_loc_rotmat.dot(
+            self.hnd.jaw_center_pos)
         # a list of detailed information about objects in hand, see CollisionChecker.add_objinhnd
         self.oih_infos = []
         # collision detection
@@ -64,15 +77,21 @@ class XArm7YunjiMobile(ri.RobotInterface):
             self.enable_cc()
         # component map
         self.manipulator_dict['arm'] = self.arm
+        self.manipulator_dict['ftsensor'] = self.arm
         self.manipulator_dict['hnd'] = self.arm  # specify which hand is a gripper installed to
-        self.hnd_dict['hnd'] = self.hnd
         self.hnd_dict['arm'] = self.hnd
+        self.hnd_dict['ftsensor'] = self.hnd
+        self.hnd_dict['hnd'] = self.hnd
+        self.ft_sensor_dict['arm'] = self.ft_sensor
+        self.ft_sensor_dict['ftsensor'] = self.ft_sensor
+        self.ft_sensor_dict['hnd'] = self.ft_sensor
 
     def enable_cc(self):
         # TODO when pose is changed, oih info goes wrong
         super().enable_cc()
         self.cc.add_cdlnks(self.agv, [3, 4])
         self.cc.add_cdlnks(self.arm, [0, 1, 2, 3, 4, 5, 6])
+        self.cc.add_cdlnks(self.ft_sensor, [0])
         self.cc.add_cdlnks(self.hnd.lft_outer, [0, 1, 2])
         self.cc.add_cdlnks(self.hnd.rgt_outer, [1, 2])
         activelist = [self.agv.lnks[3],
@@ -84,6 +103,7 @@ class XArm7YunjiMobile(ri.RobotInterface):
                       self.arm.lnks[4],
                       self.arm.lnks[5],
                       self.arm.lnks[6],
+                      self.ft_sensor.lnks[0],
                       self.hnd.lft_outer.lnks[0],
                       self.hnd.lft_outer.lnks[1],
                       self.hnd.lft_outer.lnks[2],
@@ -97,6 +117,7 @@ class XArm7YunjiMobile(ri.RobotInterface):
                     self.arm.lnks[2]]
         intolist = [self.arm.lnks[5],
                     self.arm.lnks[6],
+                    self.ft_sensor.lnks[0],
                     self.hnd.lft_outer.lnks[0],
                     self.hnd.lft_outer.lnks[1],
                     self.hnd.lft_outer.lnks[2],
@@ -112,7 +133,8 @@ class XArm7YunjiMobile(ri.RobotInterface):
         self.rotmat = rotmat
         self.agv.fix_to(self.pos, self.rotmat)
         self.arm.fix_to(pos=self.agv.jnts[-1]['gl_posq'], rotmat=self.agv.jnts[-1]['gl_rotmatq'])
-        self.hnd.fix_to(pos=self.arm.jnts[-1]['gl_posq'], rotmat=self.arm.jnts[-1]['gl_rotmatq'])
+        self.ft_sensor.fix_to(pos=self.arm.jnts[-1]['gl_posq'], rotmat=self.arm.jnts[-1]['gl_rotmatq'])
+        self.hnd.fix_to(pos=self.ft_sensor.jnts[-1]['gl_posq'], rotmat=self.ft_sensor.jnts[-1]['gl_rotmatq'])
         # update objects in hand if available
         for obj_info in self.oih_infos:
             gl_pos, gl_rotmat = self.arm.cvt_loc_tcp_to_gl(obj_info['rel_pos'], obj_info['rel_rotmat'])
@@ -136,9 +158,12 @@ class XArm7YunjiMobile(ri.RobotInterface):
 
         def update_component(component_name, jnt_values):
             self.manipulator_dict[component_name].fk(jnt_values=jnt_values)
+            self.ft_sensor_dict[component_name].fix_to(pos=self.manipulator_dict[component_name].jnts[-1]['gl_posq'],
+                                                       rotmat=self.manipulator_dict[component_name].jnts[-1][
+                                                           'gl_rotmatq'])
             self.hnd_dict[component_name].fix_to(
-                pos=self.manipulator_dict[component_name].jnts[-1]['gl_posq'],
-                rotmat=self.manipulator_dict[component_name].jnts[-1]['gl_rotmatq'])
+                pos=self.ft_sensor_dict[component_name].jnts[-1]['gl_posq'],
+                rotmat=self.ft_sensor_dict[component_name].jnts[-1]['gl_rotmatq'])
             update_oih(component_name=component_name)
 
         if component_name in self.manipulator_dict:
@@ -150,7 +175,8 @@ class XArm7YunjiMobile(ri.RobotInterface):
                 raise ValueError("An 1x7 npdarray must be specified to move the agv!")
             self.agv.fk(jnt_values)
             self.arm.fix_to(pos=self.agv.jnts[-1]['gl_posq'], rotmat=self.agv.jnts[-1]['gl_rotmatq'])
-            self.hnd.fix_to(pos=self.arm.jnts[-1]['gl_posq'], rotmat=self.arm.jnts[-1]['gl_rotmatq'])
+            self.ft_sensor.fix_to(pos=self.arm.jnts[-1]['gl_posq'], rotmat=self.arm.jnts[-1]['gl_rotmatq'])
+            self.hnd.fix_to(pos=self.ft_sensor.jnts[-1]['gl_posq'], rotmat=self.ft_sensor.jnts[-1]['gl_rotmatq'])
             # update objects in hand
             for obj_info in self.oih_infos:
                 gl_pos, gl_rotmat = self.arm.cvt_loc_tcp_to_gl(obj_info['rel_pos'], obj_info['rel_rotmat'])
@@ -162,7 +188,8 @@ class XArm7YunjiMobile(ri.RobotInterface):
             self.agv.fk(jnt_values)
             self.arm.fix_to(pos=self.agv.jnts[-1]['gl_posq'], rotmat=self.agv.jnts[-1]['gl_rotmatq'],
                             jnt_values=jnt_values[3:10])
-            self.hnd.fix_to(pos=self.arm.jnts[-1]['gl_posq'], rotmat=self.arm.jnts[-1]['gl_rotmatq'])
+            self.ft_sensor.fix_to(pos=self.arm.jnts[-1]['gl_posq'], rotmat=self.arm.jnts[-1]['gl_rotmatq'])
+            self.hnd.fix_to(pos=self.ft_sensor.jnts[-1]['gl_posq'], rotmat=self.ft_sensor.jnts[-1]['gl_rotmatq'])
             # update objects in hand
             for obj_info in self.oih_infos:
                 gl_pos, gl_rotmat = self.arm.cvt_loc_tcp_to_gl(obj_info['rel_pos'], obj_info['rel_rotmat'])
@@ -174,7 +201,8 @@ class XArm7YunjiMobile(ri.RobotInterface):
             self.agv.fk(jnt_values)
             self.arm.fix_to(pos=self.agv.jnts[-1]['gl_posq'], rotmat=self.agv.jnts[-1]['gl_rotmatq'],
                             jnt_values=jnt_values[3:10])
-            self.hnd.fix_to(pos=self.arm.jnts[-1]['gl_posq'], rotmat=self.arm.jnts[-1]['gl_rotmatq'],
+            self.ft_sensor.fix_to(pos=self.arm.jnts[-1]['gl_posq'], rotmat=self.arm.jnts[-1]['gl_rotmatq'])
+            self.hnd.fix_to(pos=self.ft_sensor.jnts[-1]['gl_posq'], rotmat=self.ft_sensor.jnts[-1]['gl_rotmatq'],
                             motion_val=jnt_values[10])
             # update objects in hand
             for obj_info in self.oih_infos:
@@ -212,6 +240,28 @@ class XArm7YunjiMobile(ri.RobotInterface):
 
     def get_gl_tcp(self, manipulator_name="arm"):
         return super().get_gl_tcp(manipulator_name=manipulator_name)
+
+    def ik(selfself,
+           component_name="arm",
+           tgt_pos=np.array([.7,0,.7]),
+           tgt_rotmat=np.eye(3),
+           seed_jnt_values=None,
+           max_niter=100,
+           tcp_jntid=None,
+           tcp_loc_pos=None,
+           tcp_loc_rotmat=None,
+           local_minima="accept",
+           toggle_debug=False):
+        return super().ik(component_name=component_name,
+                          tgt_pos=tgt_pos,
+                          tgt_rotmat=tgt_rotmat,
+                          seed_jnt_values=seed_jnt_values,
+                          max_niter=100,
+                          tcp_jntid=tcp_jntid,
+                          tcp_loc_pos=tcp_loc_pos,
+                          tcp_loc_rotmat=tcp_loc_rotmat,
+                          local_minima=local_minima,
+                          toggle_debug=toggle_debug)
 
     def hold(self, hnd_name, objcm, jawwidth=None):
         """
@@ -300,6 +350,8 @@ class XArm7YunjiMobile(ri.RobotInterface):
                                 toggle_tcpcs=toggle_tcpcs,
                                 toggle_jntscs=toggle_jntscs,
                                 toggle_connjnt=toggle_connjnt).attach_to(stickmodel)
+        self.ft_sensor.gen_stickmodel(tcp_loc_pos=tcp_loc_pos,
+                                      tcp_loc_rotmat=tcp_loc_rotmat).attach_to(stickmodel)
         self.hnd.gen_stickmodel(toggle_tcpcs=False,
                                 toggle_jntscs=toggle_jntscs).attach_to(stickmodel)
         return stickmodel
@@ -324,10 +376,14 @@ class XArm7YunjiMobile(ri.RobotInterface):
                                toggle_tcpcs=toggle_tcpcs,
                                toggle_jntscs=toggle_jntscs,
                                rgba=rgba).attach_to(meshmodel)
+        self.ft_sensor.gen_meshmodel(tcp_loc_pos=tcp_loc_pos,
+                                     tcp_loc_rotmat=tcp_loc_rotmat,
+                                     toggle_tcpcs=False,
+                                     toggle_jntscs=toggle_jntscs,
+                                     rgba=rgba).attach_to(meshmodel)
         self.hnd.gen_meshmodel(tcp_loc_pos=None,
                                tcp_loc_rotmat=None,
                                toggle_tcpcs=False,
-                               toggle_jntscs=toggle_jntscs,
                                rgba=rgba).attach_to(meshmodel)
         for obj_info in self.oih_infos:
             objcm = obj_info['collisionmodel']
@@ -354,8 +410,9 @@ if __name__ == '__main__':
     gm.gen_frame(pos=tgt_pos, rotmat=tgt_rotmat).attach_to(base)
     jnt_values = xav.ik(component_name='arm', tgt_pos=tgt_pos, tgt_rotmat=tgt_rotmat)
     tgt_pos2 = np.array([.45, 0, .07])
-    tgt_rotmat2 = rm.rotmat_from_euler(0,math.pi,0)
-    jnt_values2 = xav.ik(component_name='arm', tgt_pos=tgt_pos2, tgt_rotmat=tgt_rotmat2, seed_jnt_values=jnt_values, max_niter=10000)
+    tgt_rotmat2 = rm.rotmat_from_euler(0, math.pi, 0)
+    jnt_values2 = xav.ik(component_name='arm', tgt_pos=tgt_pos2, tgt_rotmat=tgt_rotmat2, seed_jnt_values=jnt_values,
+                         max_niter=10000)
     print(jnt_values)
     xav.fk(component_name='arm', jnt_values=jnt_values2)
     xav.fk(component_name='agv', jnt_values=np.array([.2, -.5, math.radians(30)]))

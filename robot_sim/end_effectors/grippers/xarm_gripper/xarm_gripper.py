@@ -2,6 +2,7 @@ import os
 import math
 import numpy as np
 import modeling.model_collection as mc
+import modeling.geometric_model as gm
 import robot_sim._kinematics.jlchain as jl
 import robot_sim.end_effectors.grippers.gripper_interface as gi
 
@@ -190,29 +191,29 @@ class XArmGripper(gi.GripperInterface):
                       toggle_jntscs=False,
                       rgba=None,
                       name='xarm_gripper_meshmodel'):
-        meshmodel = mc.ModelCollection(name=name)
-        self.lft_outer.gen_meshmodel(tcp_jntid=tcp_jntid,
-                                     tcp_loc_pos=tcp_loc_pos,
-                                     tcp_loc_rotmat=tcp_loc_rotmat,
-                                     toggle_tcpcs=toggle_tcpcs,
+        mm_collection = mc.ModelCollection(name=name)
+        self.lft_outer.gen_meshmodel(toggle_tcpcs=False,
                                      toggle_jntscs=toggle_jntscs,
-                                     rgba=rgba).attach_to(meshmodel)
-        self.lft_inner.gen_meshmodel(tcp_loc_pos=None,
-                                     tcp_loc_rotmat=None,
-                                     toggle_tcpcs=False,
+                                     rgba=rgba).attach_to(mm_collection)
+        self.lft_inner.gen_meshmodel(toggle_tcpcs=False,
                                      toggle_jntscs=toggle_jntscs,
-                                     rgba=rgba).attach_to(meshmodel)
-        self.rgt_outer.gen_meshmodel(tcp_loc_pos=None,
-                                     tcp_loc_rotmat=None,
-                                     toggle_tcpcs=False,
+                                     rgba=rgba).attach_to(mm_collection)
+        self.rgt_outer.gen_meshmodel(toggle_tcpcs=False,
                                      toggle_jntscs=toggle_jntscs,
-                                     rgba=rgba).attach_to(meshmodel)
-        self.rgt_inner.gen_meshmodel(tcp_loc_pos=None,
-                                     tcp_loc_rotmat=None,
-                                     toggle_tcpcs=False,
+                                     rgba=rgba).attach_to(mm_collection)
+        self.rgt_inner.gen_meshmodel(toggle_tcpcs=False,
                                      toggle_jntscs=toggle_jntscs,
-                                     rgba=rgba).attach_to(meshmodel)
-        return meshmodel
+                                     rgba=rgba).attach_to(mm_collection)
+        if toggle_tcpcs:
+            jaw_center_gl_pos = self.rotmat.dot(self.jaw_center_pos) + self.pos
+            jaw_center_gl_rotmat = self.rotmat.dot(self.jaw_center_rotmat)
+            gm.gen_dashstick(spos=self.pos,
+                             epos=jaw_center_gl_pos,
+                             thickness=.0062,
+                             rgba=[.5,0,1,1],
+                             type="round").attach_to(mm_collection)
+            gm.gen_mycframe(pos=jaw_center_gl_pos, rotmat=jaw_center_gl_rotmat).attach_to(mm_collection)
+        return mm_collection
 
 
 if __name__ == '__main__':

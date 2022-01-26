@@ -166,12 +166,14 @@ class UR3Dual(ri.RobotInterface):
         # tool center point
         # lft
         self.lft_arm.tcp_jntid = -1
-        self.lft_arm.tcp_loc_pos = self.lft_ft_sensor.jnts[-1]['loc_pos'] + self.lft_hnd.jaw_center_pos
         self.lft_arm.tcp_loc_rotmat = self.lft_ft_sensor.jnts[-1]['loc_rotmat'].dot(self.lft_hnd.jaw_center_rotmat)
+        self.lft_arm.tcp_loc_pos = self.lft_ft_sensor.jnts[-1]['loc_pos'] + self.lft_arm.tcp_loc_rotmat.dot(
+            self.lft_hnd.jaw_center_pos)
         # rgt
         self.rgt_arm.tcp_jntid = -1
-        self.rgt_arm.tcp_loc_pos = self.rgt_ft_sensor.jnts[-1]['loc_pos'] + self.rgt_hnd.jaw_center_pos
         self.rgt_arm.tcp_loc_rotmat = self.rgt_ft_sensor.jnts[-1]['loc_rotmat'].dot(self.rgt_hnd.jaw_center_rotmat)
+        self.rgt_arm.tcp_loc_pos = self.rgt_ft_sensor.jnts[-1]['loc_pos'] + self.rgt_arm.tcp_loc_rotmat.dot(
+            self.rgt_hnd.jaw_center_pos)
         # a list of detailed information about objects in hand, see CollisionChecker.add_objinhnd
         self.lft_oih_infos = []
         self.rgt_oih_infos = []
@@ -751,9 +753,9 @@ if __name__ == '__main__':
     base = wd.World(cam_pos=[2, 0, 3], lookat_pos=[0, 0, 1])
     gm.gen_frame().attach_to(base)
     u3d = UR3Dual()
-    u3d.show_cdprimit()
+    # u3d.show_cdprimit()
     # u3d.fk(.85)
     u3d_meshmodel = u3d.gen_meshmodel(toggle_tcpcs=True)
     u3d_meshmodel.attach_to(base)
-    u3d.gen_stickmodel().attach_to(base)
+    # u3d.gen_stickmodel().attach_to(base)
     base.run()
