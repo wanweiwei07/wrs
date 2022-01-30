@@ -233,7 +233,7 @@ class YuMiRobot:
             self.right.goto_state(YMC.R_HOME_STATE, wait_for_res=True)
 
     def calibrate_grippers(self):
-        '''Calibrates grippers for instantiated arms.
+        '''Calibrates gripper for instantiated arms.
 
         Raises
         ------

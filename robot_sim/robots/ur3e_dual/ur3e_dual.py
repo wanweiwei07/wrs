@@ -6,7 +6,7 @@ import modeling.model_collection as mc
 import modeling.collision_model as cm
 import robot_sim._kinematics.jlchain as jl
 import robot_sim.manipulators.ur3e.ur3e as ur
-import robot_sim.end_effectors.grippers.robotiqhe.robotiqhe as rtq
+import robot_sim.end_effectors.gripper.robotiqhe.robotiqhe as rtq
 from panda3d.core import CollisionNode, CollisionBox, Point3
 import robot_sim.robots.robot_interface as ri
 

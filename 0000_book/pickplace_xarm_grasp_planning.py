@@ -2,7 +2,7 @@ import visualization.panda.world as wd
 import modeling.geometric_model as gm
 import modeling.collision_model as cm
 import grasping.planning.antipodal as gpa
-import robot_sim.end_effectors.grippers.xarm_gripper.xarm_gripper as xag
+import robot_sim.end_effectors.gripper.xarm_gripper.xarm_gripper as xag
 
 base = wd.World(cam_pos=[1, 1, 1], lookat_pos=[0, 0, 0])
 gm.gen_frame().attach_to(base)

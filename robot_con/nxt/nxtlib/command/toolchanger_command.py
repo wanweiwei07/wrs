@@ -13,7 +13,7 @@ class ToolchangerCommand(AbsractHandCommand):
     a toolchanger of NEXTAGE OPEN.
     """
 
-    # For grippers
+    # For gripper
     HAND_TOOLCHANGE_ON = 'toolchange_on'
     HAND_TOOLCHANGE_OFF = 'toolchange_off'
 

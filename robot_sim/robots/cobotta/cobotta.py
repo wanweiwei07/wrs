@@ -5,7 +5,7 @@ import modeling.collision_model as cm
 import modeling.model_collection as mc
 import robot_sim._kinematics.jlchain as jl
 import robot_sim.manipulators.cobotta_arm.cobotta_arm as cbta
-import robot_sim.end_effectors.grippers.cobotta_gripper.cobotta_gripper as cbtg
+import robot_sim.end_effectors.gripper.cobotta_gripper.cobotta_gripper as cbtg
 import robot_sim.robots.robot_interface as ri
 
 

@@ -4,7 +4,7 @@ import visualization.panda.world as wd
 import modeling.geometric_model as gm
 import modeling.collision_model as cm
 import grasping.annotation.utils as gu
-import robot_sim.end_effectors.grippers.robotiq85.robotiq85 as rtq85
+import robot_sim.end_effectors.gripper.robotiq85.robotiq85 as rtq85
 import basis.robot_math as rm
 
 base = wd.World(cam_pos=[1, 1, 1], lookat_pos=[0, 0, 0])

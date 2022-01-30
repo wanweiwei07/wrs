@@ -5,14 +5,13 @@ import basis.robot_math as rm
 import robot_sim._kinematics.jlchain as jl
 import robot_sim._kinematics.collision_checker as cc
 
+class SuctionInterface(object):
 
-class GripperInterface(object):
-
-    def __init__(self, pos=np.zeros(3), rotmat=np.eye(3), cdmesh_type='aabb', name='yumi_gripper'):
+    def __init__(self, pos=np.zeros(3), rotmat=np.eye(3), cdmesh_type='aabb', name='suction'):
         self.name = name
         self.pos = pos
         self.rotmat = rotmat
-        self.cdmesh_type = cdmesh_type # aabb, convexhull, or triangles
+        self.cdmesh_type = cdmesh_type  # aabb, convexhull, or triangles
         # joints
         # - coupling - No coupling by default
         self.coupling = jl.JLChain(pos=self.pos, rotmat=self.rotmat, homeconf=np.zeros(0), name='coupling')
@@ -22,11 +21,9 @@ class GripperInterface(object):
         # self.coupling.lnks[0]['meshfile'] = os.path.join(this_dir, "meshes", "xxx.stl")
         # self.coupling.lnks[0]['rgba'] = [.2, .2, .2, 1]
         self.coupling.reinitialize()
-        # jaw center
-        self.jaw_center_pos = np.zeros(3)
-        self.jaw_center_rotmat = np.eye(3)
-        # jaw width
-        self.jawwidth_rng = [0.0, 5.0]
+        # suction center
+        self.suction_center_pos = np.zeros(3)
+        self.suction_center_rotmat = np.eye(3)
         # collision detection
         self.cc = None
         # cd mesh collection for precise collision checking
@@ -67,42 +64,34 @@ class GripperInterface(object):
     def fix_to(self, pos, rotmat):
         raise NotImplementedError
 
-    def fk(self, motion_val):
-        raise NotImplementedError
-
-    def jaw_to(self, jaw_width):
-        raise NotImplementedError
-
-    def get_jawwidth(self):
-        raise NotImplementedError
-
-    def grip_at_with_jczy(self, gl_jaw_center_pos, gl_jaw_center_z, gl_jaw_center_y, jaw_width):
+    def suction_to_with_scpose(self, gl_suction_center_pos, gl_suction_center_rotmat):
         """
-        :param gl_jaw_center_pos:
-        :param gl_jaw_center_z: jaw_center's approaching direction
-        :param gl_jaw_center_y: jaw_center's opening direction
+        :param gl_suction_center_posm:
+        :param gl_suction_center_rotmat: jaw_center's rotmat
         :param jaw_width:
         :return:
+        """
+        eef_root_rotmat = gl_suction_center_rotmat.dot(self.suction_center_rotmat.T)
+        eef_root_pos = gl_suction_center_pos - eef_root_rotmat.dot(self.suction_center_pos)
+        self.fix_to(eef_root_pos, eef_root_rotmat)
+        return [gl_suction_center_pos, gl_suction_center_rotmat, eef_root_pos, eef_root_rotmat]
+
+
+    def suction_to_with_sczy(self, gl_suction_center_pos, gl_suction_center_z, gl_suction_center_y):
+        """
+        :param gl_suction_center_pos:
+        :param gl_suction_center_z: jaw_center's approaching direction
+        :param gl_suction_center_y: jaw_center's opening direction
+        :param jaw_width:
+        :return:
+        author: weiwei
+        date: 20220127
         """
         gl_jaw_center_rotmat = np.eye(3)
-        gl_jaw_center_rotmat[:, 2] = rm.unit_vector(gl_jaw_center_z)
-        gl_jaw_center_rotmat[:, 1] = rm.unit_vector(gl_jaw_center_y)
+        gl_jaw_center_rotmat[:, 2] = rm.unit_vector(gl_suction_center_z)
+        gl_jaw_center_rotmat[:, 1] = rm.unit_vector(gl_suction_center_y)
         gl_jaw_center_rotmat[:, 0] = np.cross(gl_jaw_center_rotmat[:3, 1], gl_jaw_center_rotmat[:3, 2])
-        return self.grip_at_with_jcpose(gl_jaw_center_pos, gl_jaw_center_rotmat, jaw_width)
-
-    def grip_at_with_jcpose(self, gl_jaw_center_pos, gl_jaw_center_rotmat, jaw_width):
-        """
-        :param gl_jaw_center_pos:
-        :param gl_jaw_center_z: jaw_center's approaching direction
-        :param gl_jaw_center_y: jaw_center's opening direction
-        :param jaw_width:
-        :return:
-        """
-        self.jaw_to(jaw_width)
-        hnd_rotmat = gl_jaw_center_rotmat.dot(self.jaw_center_rotmat.T)
-        hnd_pos = gl_jaw_center_pos - hnd_rotmat.dot(self.jaw_center_pos)
-        self.fix_to(hnd_pos, hnd_rotmat)
-        return [jaw_width, gl_jaw_center_pos, gl_jaw_center_rotmat, hnd_pos, hnd_rotmat]
+        return self.suction_to_with_scpose(gl_suction_center_pos, gl_suction_center_z)
 
     def show_cdprimit(self):
         self.cc.show_cdprimit()
@@ -122,20 +111,17 @@ class GripperInterface(object):
         self.cdmesh_collection.unshow_cdmesh()
 
     def gen_stickmodel(self,
-                       tcp_jntid=None,
-                       tcp_loc_pos=None,
-                       tcp_loc_rotmat=None,
                        toggle_tcpcs=False,
                        toggle_jntscs=False,
                        toggle_connjnt=False,
-                       name='yumi_gripper_stickmodel'):
+                       name='suction_stickmodel'):
         raise NotImplementedError
 
     def gen_meshmodel(self,
                       toggle_tcpcs=False,
                       toggle_jntscs=False,
                       rgba=None,
-                      name='yumi_gripper_meshmodel'):
+                      name='suction_meshmodel'):
         raise NotImplementedError
 
     def enable_cc(self):
@@ -157,4 +143,3 @@ class GripperInterface(object):
             for child in self_copy.cc.np.getChildren():
                 self_copy.cc.ctrav.addCollider(child, self_copy.cc.chan)
         return self_copy
-

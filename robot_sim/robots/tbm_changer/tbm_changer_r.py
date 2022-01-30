@@ -5,7 +5,7 @@ import modeling.collision_model as cm
 import modeling.model_collection as mc
 import robot_sim._kinematics.jlchain as jl
 import robot_sim.manipulators.tbm_arm.tbm_arm_r as tbma
-import robot_sim.end_effectors.grippers.tbm_gripper.tbm_gripper_r as tbmg
+import robot_sim.end_effectors.gripper.tbm_gripper.tbm_gripper_r as tbmg
 import robot_sim.robots.robot_interface as ri
 
 

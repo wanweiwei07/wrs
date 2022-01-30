@@ -6,7 +6,7 @@ import modeling.collision_model as cm
 import modeling.model_collection as mc
 import robot_sim._kinematics.jlchain as jl
 import robot_sim.manipulators.xarm7.xarm7 as xa
-import robot_sim.end_effectors.grippers.xarm_gripper.xarm_gripper as xag
+import robot_sim.end_effectors.gripper.xarm_gripper.xarm_gripper as xag
 import robot_sim.robots.robot_interface as ri
 
 

@@ -6,7 +6,7 @@ import math
 import numpy as np
 import basis.robot_math as rm
 import robot_sim.robots.xarm7_shuidi_mobile.xarm7_shuidi_mobile as xsm
-import robot_sim.end_effectors.grippers.xarm_gripper.xarm_gripper as xag
+import robot_sim.end_effectors.gripper.xarm_gripper.xarm_gripper as xag
 import manipulation.approach_depart_planner as adp
 import motion.probabilistic.rrt_connect as rrtc
 

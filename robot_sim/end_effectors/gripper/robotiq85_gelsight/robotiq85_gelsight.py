@@ -5,7 +5,7 @@ import modeling.model_collection as mc
 import modeling.geometric_model as gm
 import robot_sim._kinematics.jlchain as jl
 import basis.robot_math as rm
-import robot_sim.end_effectors.grippers.gripper_interface as gp
+import robot_sim.end_effectors.gripper.gripper_interface as gp
 
 
 class Robotiq85Gelsight(gp.GripperInterface):

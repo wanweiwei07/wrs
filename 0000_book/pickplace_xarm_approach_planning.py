@@ -4,7 +4,7 @@ import modeling.collision_model as cm
 import grasping.planning.antipodal as gpa
 import numpy as np
 import robot_sim.robots.xarm7_shuidi_mobile.xarm7_shuidi_mobile as xsm
-import robot_sim.end_effectors.grippers.xarm_gripper.xarm_gripper as xag
+import robot_sim.end_effectors.gripper.xarm_gripper.xarm_gripper as xag
 import manipulation.approach_depart_planner as adp
 
 base = wd.World(cam_pos=[1.5, -.5, 2], lookat_pos=[.3, -.03,.05])

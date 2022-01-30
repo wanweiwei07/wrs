@@ -1,6 +1,6 @@
 import visualization.panda.world as wd
 import grasping.planning.antipodal as gp
-import robot_sim.end_effectors.grippers.cobotta_gripper.cobotta_gripper as cg
+import robot_sim.end_effectors.gripper.cobotta_gripper.cobotta_gripper as cg
 import modeling.collision_model as cm
 import modeling.geometric_model as gm
 import numpy as np

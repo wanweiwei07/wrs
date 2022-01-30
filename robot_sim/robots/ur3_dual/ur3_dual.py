@@ -6,8 +6,9 @@ import modeling.model_collection as mc
 import modeling.collision_model as cm
 import robot_sim._kinematics.jlchain as jl
 import robot_sim.manipulators.ur3.ur3 as ur
-import robot_sim.end_effectors.grippers.robotiq85.robotiq85 as rtq
-import robot_sim.end_effectors.grippers.robotiq85_gelsight.robotiq85_gelsight as rtq_gs
+import robot_sim.end_effectors.gripper.robotiq85.robotiq85 as rtq
+# import robot_sim.end_effectors.gripper.robotiq85_gelsight.robotiq85_gelsight as rtq_gs
+import robot_sim.end_effectors.gripper.robotiq85_gelsight.robotiq85_gelsight_pusher as rtq_gs
 from panda3d.core import CollisionNode, CollisionBox, Point3
 import robot_sim.robots.robot_interface as ri
 
@@ -18,7 +19,7 @@ class UR3Dual(ri.RobotInterface):
         super().__init__(pos=pos, rotmat=rotmat, name=name)
         this_dir, this_filename = os.path.split(__file__)
         # left side
-        self.lft_body = jl.JLChain(pos=pos, rotmat=rotmat, homeconf=np.zeros(12), name='lft_body_jl')
+        self.lft_body = jl.JLChain(pos=pos, rotmat=rotmat, homeconf=np.zeros(13), name='lft_body_jl')
         self.lft_body.jnts[0]['loc_pos'] = np.array([0.0, 0.0, 0.0])
         self.lft_body.jnts[1]['loc_pos'] = np.array([-0.0, 0.0, 0.0])
         self.lft_body.jnts[2]['loc_pos'] = np.array([0.0, 0.0, 0.0])
@@ -32,8 +33,9 @@ class UR3Dual(ri.RobotInterface):
         self.lft_body.jnts[10]['loc_pos'] = np.array([-0.0, 0.0, 0.0])
         self.lft_body.jnts[11]['loc_pos'] = np.array([0.0, 0.0, 0.0])
         self.lft_body.jnts[12]['loc_pos'] = np.array([0.0, 0.0, 0.0])
-        self.lft_body.jnts[13]['loc_pos'] = np.array([.0, .258485281374, 1.61051471863])
-        self.lft_body.jnts[13]['loc_rotmat'] = rm.rotmat_from_euler(-3.0 * math.pi / 4.0, 0, math.pi, 'rxyz')
+        self.lft_body.jnts[13]['loc_pos'] = np.array([0.0, 0.0, 0.0])
+        self.lft_body.jnts[14]['loc_pos'] = np.array([.0, .258485281374, 1.61051471863])
+        self.lft_body.jnts[14]['loc_rotmat'] = rm.rotmat_from_euler(-3.0 * math.pi / 4.0, 0, math.pi, 'rxyz')
         # body
         self.lft_body.lnks[0]['name'] = "ur3_dual_lft_body"
         self.lft_body.lnks[0]['loc_pos'] = np.array([0, 0, 0])
@@ -103,12 +105,18 @@ class UR3Dual(ri.RobotInterface):
         self.lft_body.lnks[12]['collisionmodel'] = cm.CollisionModel(
             os.path.join(this_dir, "meshes", "ur3_dual_table1820x54x800.stl"))
         self.lft_body.lnks[12]['rgba'] = [.9, .77, .52, 1.0]
+        # mounter
+        self.lft_body.lnks[13]['name'] = "ur3_dual_mounter"
+        self.lft_body.lnks[13]['loc_pos'] = np.array([0.0, 0.0, 1.439])
+        self.lft_body.lnks[13]['collisionmodel'] = cm.CollisionModel(
+            os.path.join(this_dir, "meshes", "mounter.stl"))
+        self.lft_body.lnks[13]['rgba'] = [.55, .55, .55, 1.0]
         self.lft_body.reinitialize()
         lft_arm_homeconf = np.zeros(6)
-        lft_arm_homeconf[0] = math.pi / 3.0
+        lft_arm_homeconf[0] = math.pi / 12.0
         lft_arm_homeconf[1] = -math.pi * 1.0 / 3.0
         lft_arm_homeconf[2] = -math.pi * 2.0 / 3.0
-        lft_arm_homeconf[3] = math.pi
+        lft_arm_homeconf[3] = -math.pi
         lft_arm_homeconf[4] = -math.pi / 2.0
         self.lft_arm = ur.UR3(pos=self.lft_body.jnts[-1]['gl_posq'],
                               rotmat=self.lft_body.jnts[-1]['gl_rotmatq'],
@@ -126,7 +134,7 @@ class UR3Dual(ri.RobotInterface):
                                                                     thickness=.067, rgba=[.2, .3, .3, 1], sections=24)
         self.lft_ft_sensor.reinitialize()
         # lft hand
-        self.lft_hnd = rtq_gs.Robotiq85Gelsight(pos=self.lft_ft_sensor.jnts[-1]['gl_posq'],
+        self.lft_hnd = rtq_gs.Robotiq85GelsightPusher(pos=self.lft_ft_sensor.jnts[-1]['gl_posq'],
                                                 rotmat=self.lft_ft_sensor.jnts[-1]['gl_rotmatq'],
                                                 enable_cc=False)
         # rigth side
@@ -140,10 +148,11 @@ class UR3Dual(ri.RobotInterface):
         self.rgt_body.lnks[0]['rgba'] = [.3, .3, .3, 1.0]
         self.rgt_body.reinitialize()
         rgt_arm_homeconf = np.zeros(6)
-        rgt_arm_homeconf[0] = -math.pi * 1.0 / 3.0
+        rgt_arm_homeconf[0] = -math.pi / 12.0
         rgt_arm_homeconf[1] = -math.pi * 2.0 / 3.0
-        rgt_arm_homeconf[2] = math.pi * 2.0 / 3.0
-        rgt_arm_homeconf[4] = math.pi / 2.0
+        rgt_arm_homeconf[2] =  math.pi * 2.0 / 3.0
+        lft_arm_homeconf[3] =  math.pi
+        rgt_arm_homeconf[4] =  math.pi / 2.0
         self.rgt_arm = ur.UR3(pos=self.rgt_body.jnts[-1]['gl_posq'],
                               rotmat=self.rgt_body.jnts[-1]['gl_rotmatq'],
                               homeconf=rgt_arm_homeconf,
@@ -413,7 +422,7 @@ class UR3Dual(ri.RobotInterface):
             raise ValueError("The given component name is not available!")
 
     def jaw_to(self, hnd_name, jaw_width):
-        self.hnd_dict[hnd_name].jaw_to(jawwidth=jaw_width)
+        self.hnd_dict[hnd_name].jaw_to(jaw_width=jaw_width)
         # update arm tcp
         self.lft_arm.tcp_loc_pos = self.lft_ft_sensor.jnts[-1]['loc_pos'] + self.lft_hnd.jaw_center_pos
         self.rgt_arm.tcp_loc_pos = self.rgt_ft_sensor.jnts[-1]['loc_pos'] + self.rgt_hnd.jaw_center_pos

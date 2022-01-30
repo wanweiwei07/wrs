@@ -1,5 +1,5 @@
 import visualization.panda.world as wd
-import robot_sim.end_effectors.grippers.robotiq85.robotiq85 as rtq85
+import robot_sim.end_effectors.gripper.robotiq85.robotiq85 as rtq85
 import robot_sim.robots.ur3_dual.ur3_dual as ur3ds
 import basis.robot_math as rm
 import numpy as np
