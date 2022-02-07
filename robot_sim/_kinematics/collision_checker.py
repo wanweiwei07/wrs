@@ -17,7 +17,7 @@ class CollisionChecker(object):
         self.chan = CollisionHandlerQueue()
         self.np = NodePath(name)
         self.is_nprendered = False
-        self.bitmask_list = list(range(31))
+        self.bitmask_list = [BitMask32(2**n) for n in range(31)]
         self._bitmask_ext = BitMask32(2 ** 31)  # 31 is prepared for cd with external non-active objects
         self.all_cdelements = []  # a list of cdlnks or cdobjs for quick accessing the cd elements (cdlnks/cdobjs)
 
@@ -69,20 +69,19 @@ class CollisionChecker(object):
         if len(self.bitmask_list) == 0:
             raise ValueError("Too many collision pairs! Maximum: 29")
         allocated_bitmask = self.bitmask_list.pop()
-        cdmask = BitMask32(2 ** allocated_bitmask)
         for cdlnk in fromlist:
             if cdlnk['cdprimit_childid'] == -1:
                 raise ValueError("The link needs to be added to collider using the addjlcobj function first!")
             cdnp = self.np.getChild(cdlnk['cdprimit_childid'])
             current_from_cdmask = cdnp.node().getFromCollideMask()
-            new_from_cdmask = current_from_cdmask | cdmask
+            new_from_cdmask = current_from_cdmask | allocated_bitmask
             cdnp.node().setFromCollideMask(new_from_cdmask)
         for cdlnk in intolist:
             if cdlnk['cdprimit_childid'] == -1:
                 raise ValueError("The link needs to be added to collider using the addjlcobj function first!")
             cdnp = self.np.getChild(cdlnk['cdprimit_childid'])
             current_into_cdmask = cdnp.node().getIntoCollideMask()
-            new_into_cdmask = current_into_cdmask | cdmask
+            new_into_cdmask = current_into_cdmask | allocated_bitmask
             cdnp.node().setIntoCollideMask(new_into_cdmask)
 
     def add_cdobj(self, objcm, rel_pos, rel_rotmat, intolist):
