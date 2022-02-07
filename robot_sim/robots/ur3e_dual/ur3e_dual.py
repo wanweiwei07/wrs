@@ -377,6 +377,6 @@ if __name__ == '__main__':
     # u3ed.fk(.85)
     u3ed_meshmodel = u3ed.gen_meshmodel(toggle_tcpcs=True)
     u3ed_meshmodel.attach_to(base)
-    u3ed_meshmodel.show_cdprimit()
+    # u3ed_meshmodel.show_cdprimit()
     # u3ed.gen_stickmodel().attach_to(base)
     base.run()

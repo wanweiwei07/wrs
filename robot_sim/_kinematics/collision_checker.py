@@ -17,7 +17,7 @@ class CollisionChecker(object):
         self.chan = CollisionHandlerQueue()
         self.np = NodePath(name)
         self.is_nprendered = False
-        self.nbitmask = 0  # capacity 1-30
+        self.bitmask_list = list(range(31))
         self._bitmask_ext = BitMask32(2 ** 31)  # 31 is prepared for cd with external non-active objects
         self.all_cdelements = []  # a list of cdlnks or cdobjs for quick accessing the cd elements (cdlnks/cdobjs)
 
@@ -66,9 +66,10 @@ class CollisionChecker(object):
         author: weiwei
         date: 20201215
         """
-        if self.nbitmask >= 30:
+        if len(self.bitmask_list) == 0:
             raise ValueError("Too many collision pairs! Maximum: 29")
-        cdmask = BitMask32(2 ** self.nbitmask)
+        allocated_bitmask = self.bitmask_list.pop()
+        cdmask = BitMask32(2 ** allocated_bitmask)
         for cdlnk in fromlist:
             if cdlnk['cdprimit_childid'] == -1:
                 raise ValueError("The link needs to be added to collider using the addjlcobj function first!")
@@ -83,7 +84,6 @@ class CollisionChecker(object):
             current_into_cdmask = cdnp.node().getIntoCollideMask()
             new_into_cdmask = current_into_cdmask | cdmask
             cdnp.node().setIntoCollideMask(new_into_cdmask)
-        self.nbitmask += 1
 
     def add_cdobj(self, objcm, rel_pos, rel_rotmat, intolist):
         """
@@ -114,12 +114,14 @@ class CollisionChecker(object):
         self.all_cdelements.remove(cdobj_info)
         cdnp_to_delete = self.np.getChild(cdobj_info['cdprimit_childid'])
         self.ctrav.removeCollider(cdnp_to_delete)
+        this_cdmask = cdnp_to_delete.node().getFromCollideMask()
         for cdlnk in cdobj_info['intolist']:
             cdnp = self.np.getChild(cdlnk['cdprimit_childid'])
             current_into_cdmask = cdnp.node().getIntoCollideMask()
-            new_into_cdmask = current_into_cdmask & ~cdnp_to_delete.node().getFromCollideMask()
+            new_into_cdmask = current_into_cdmask & ~this_cdmask
             cdnp.node().setIntoCollideMask(new_into_cdmask)
         cdnp_to_delete.detachNode()
+        self.bitmask_list.append(this_cdmask)
 
     def is_collided(self, obstacle_list=[], otherrobot_list=[], toggle_contact_points=False):
         """
@@ -205,4 +207,4 @@ class CollisionChecker(object):
         self.all_cdelements = []
         for child in self.np.getChildren():
             child.removeNode()
-        self.nbitmask = 0
+        self.bitmask_list = list(range(31))
