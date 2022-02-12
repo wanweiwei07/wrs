@@ -59,17 +59,17 @@ def load(obj, file_type=None, **kwargs):
 
 @_log_time
 def load_mesh(obj, file_type=None, process=True):
-    '''
+    """
     Load a mesh file into a Trimesh object
-    Arguments
-    ---------
-    file_obj: a filename string or a file-like object
-    file_type: str representing file type (eg: 'meshes')
-    process:   boolean flag, whether to process the mesh on load
-    Returns:
+    :param obj: a filename string or a file-like object
+    :param file_type: filename string or a file-like object
+    :param process: boolean flag, whether to process the mesh on load
+    :return: 
     mesh: a single Trimesh object, or a list of Trimesh objects, 
           depending on the file format.
-    '''
+    author: revised by weiwei
+    date: 20220212
+    """
     if is_string(obj):
         file_type = (str(obj).split('.')[-1]).lower()
         obj = open(obj, 'rb')

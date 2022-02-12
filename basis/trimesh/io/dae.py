@@ -5,11 +5,11 @@ import uuid
 import numpy as np
 from .. import transform_points
 
-try:
+# try:
     # pip install pycollada
-    import collada
-except BaseException:
-    collada = None
+from . import collada
+# except BaseException:
+#     collada = None
 try:
     import PIL.Image
 except ImportError:
