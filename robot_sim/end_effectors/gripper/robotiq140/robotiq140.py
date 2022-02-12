@@ -10,6 +10,10 @@ import robot_sim.end_effectors.gripper.gripper_interface as gp
 
 
 class Robotiq140(gp.GripperInterface):
+    """
+    author: kiyokawa, revised by weiwei
+    date: 2020212
+    """
 
     def __init__(self, pos=np.zeros(3), rotmat=np.eye(3), cdmesh_type='box', name='robotiq140', enable_cc=True):
 
@@ -127,9 +131,11 @@ class Robotiq140(gp.GripperInterface):
         # jaw width
         self.jawwidth_rng = [0.0, .140]
         # jaw center
-        self.jaw_center_pos = np.array([0, 0, .145])
+        self.jaw_center_pos = np.array([0, 0, .19])  # position for initial state (fully open)
+        # relative jaw center pos
+        self.jaw_center_pos_rel = self.jaw_center_pos - self.lft_outer.jnts[4]['gl_posq']
         # collision detection
-        self.all_cdelements=[]
+        self.all_cdelements = []
         self.enable_cc(toggle_cdprimit=enable_cc)
 
     def enable_cc(self, toggle_cdprimit):
@@ -195,21 +201,25 @@ class Robotiq140(gp.GripperInterface):
         else:
             raise ValueError("The angle parameter is out of range!")
 
-    def _from_distance_to_radians(self, linear_pose):
-      """
-      Private helper function to convert a command in meters to radians (joint value)
-      """
-      return np.clip(
-          self.lft_outer.jnts[1]['motion_rng'][1] - ((self.lft_outer.jnts[1]['motion_rng'][1]/self.jawwidth_rng[1]) * linear_pose),
-          self.lft_outer.jnts[1]['motion_rng'][0], self.lft_outer.jnts[1]['motion_rng'][1])
+    def _from_distance_to_radians(self, distance):
+        """
+        private helper function to convert a command in meters to radians (joint value)
+        """
+        # return np.clip(
+        #   self.lft_outer.jnts[1]['motion_rng'][1] - ((self.lft_outer.jnts[1]['motion_rng'][1]/self.jawwidth_rng[1]) * distance),
+        #   self.lft_outer.jnts[1]['motion_rng'][0], self.lft_outer.jnts[1]['motion_rng'][1]) # kiyokawa, commented out by weiwei
+        return np.clip(self.lft_outer.jnts[1]['motion_rng'][1] - math.asin(
+            (math.sin(self.lft_outer.jnts[1]['motion_rng'][1]) / self.jawwidth_rng[1]) * distance),
+                       self.lft_outer.jnts[1]['motion_rng'][0], self.lft_outer.jnts[1]['motion_rng'][1])
 
     def jaw_to(self, jaw_width):
         if jaw_width > self.jawwidth_rng[1]:
             raise ValueError(f"Jawwidth must be {self.jawwidth_rng[0]}mm~{self.jawwidth_rng[1]}mm!")
         motion_val = self._from_distance_to_radians(jaw_width)
-        print(motion_val)
         self.fk(motion_val)
         # TODO dynamically change jaw center
+        # print(self.jaw_center_pos_rel)
+        self.jaw_center_pos=np.array([0,0,self.lft_outer.jnts[4]['gl_posq'][2]+self.jaw_center_pos_rel[2]])
 
     def gen_stickmodel(self,
                        tcp_jntid=None,
@@ -222,7 +232,7 @@ class Robotiq140(gp.GripperInterface):
         sm_collection = mc.ModelCollection(name=name)
         self.coupling.gen_stickmodel(toggle_tcpcs=False,
                                      toggle_jntscs=toggle_jntscs).attach_to(sm_collection)
-        self.lft_outer.gen_stickmodel(toggle_tcpcs=toggle_tcpcs,
+        self.lft_outer.gen_stickmodel(toggle_tcpcs=False,
                                       toggle_jntscs=toggle_jntscs,
                                       toggle_connjnt=toggle_connjnt).attach_to(sm_collection)
         self.lft_inner.gen_stickmodel(toggle_tcpcs=False,
@@ -240,7 +250,7 @@ class Robotiq140(gp.GripperInterface):
             gm.gen_dashstick(spos=self.pos,
                              epos=jaw_center_gl_pos,
                              thickness=.0062,
-                             rgba=[.5,0,1,1],
+                             rgba=[.5, 0, 1, 1],
                              type="round").attach_to(sm_collection)
             gm.gen_mycframe(pos=jaw_center_gl_pos, rotmat=jaw_center_gl_rotmat).attach_to(sm_collection)
         return sm_collection
@@ -272,7 +282,7 @@ class Robotiq140(gp.GripperInterface):
             gm.gen_dashstick(spos=self.pos,
                              epos=jaw_center_gl_pos,
                              thickness=.0062,
-                             rgba=[.5,0,1,1],
+                             rgba=[.5, 0, 1, 1],
                              type="round").attach_to(mm_collection)
             gm.gen_mycframe(pos=jaw_center_gl_pos, rotmat=jaw_center_gl_rotmat).attach_to(mm_collection)
         return mm_collection
@@ -284,8 +294,7 @@ if __name__ == '__main__':
     base = wd.World(cam_pos=[1, 1, 1], lookat_pos=[0, 0, 0])
     gm.gen_frame().attach_to(base)
     grpr = Robotiq140(enable_cc=True)
-    grpr.cdmesh_type='convexhull'
-    grpr.jaw_to(.0)
-    grpr.gen_meshmodel(toggle_tcpcs=True, rgba=[.3, .3, .0, .5]).attach_to(base)
-    grpr.show_cdmesh()
+    # grpr.cdmesh_type='convexhull'
+    grpr.jaw_to(.1)
+    grpr.gen_meshmodel(toggle_tcpcs=True, rgba=[.3, .3, .0, .5], toggle_jntscs=True).attach_to(base)
     base.run()
