@@ -1,16 +1,18 @@
 import os
 import math
 import numpy as np
-import modeling.model_collection as mc
-import modeling.geometric_model as gm
-import robot_sim._kinematics.jlchain as jl
+
 import basis.robot_math as rm
+import modeling.geometric_model as gm
+import modeling.model_collection as mc
+import robot_sim._kinematics.jlchain as jl
 import robot_sim.end_effectors.gripper.gripper_interface as gp
 
 
 class Robotiq140(gp.GripperInterface):
 
     def __init__(self, pos=np.zeros(3), rotmat=np.eye(3), cdmesh_type='box', name='robotiq140', enable_cc=True):
+
         super().__init__(pos=pos, rotmat=rotmat, cdmesh_type=cdmesh_type, name=name)
         this_dir, this_filename = os.path.split(__file__)
         cpl_end_pos = self.coupling.jnts[-1]['gl_posq']
@@ -87,31 +89,31 @@ class Robotiq140(gp.GripperInterface):
         self.lft_inner.lnks[1]['meshfile'] = os.path.join(this_dir, "meshes", "robotiq_arg2f_140_inner_knuckle.stl")
         self.lft_inner.lnks[1]['rgba'] = [.2, .2, .2, 1]
         # - rgt_outer
-        self.rgt_outer.lnks[1]['name'] = "left_outer_knuckle"
+        self.rgt_outer.lnks[1]['name'] = "right_outer_knuckle"
         self.rgt_outer.lnks[1]['loc_pos'] = np.zeros(3)
         self.rgt_outer.lnks[1]['com'] = np.array([-0.000200000000003065, 0.0199435877845359, 0.0292245259211331])
         self.rgt_outer.lnks[1]['mass'] = 0.00853198276973456
         self.rgt_outer.lnks[1]['meshfile'] = os.path.join(this_dir, "meshes", "robotiq_arg2f_140_outer_knuckle.stl")
         self.rgt_outer.lnks[1]['rgba'] = [0.792156862745098, 0.819607843137255, 0.933333333333333, 1]
-        self.rgt_outer.lnks[2]['name'] = "left_outer_finger"
+        self.rgt_outer.lnks[2]['name'] = "right_outer_finger"
         self.rgt_outer.lnks[2]['loc_pos'] = np.zeros(3)
         self.rgt_outer.lnks[2]['com'] = np.array([0.00030115855001899, 0.0373907951953854, -0.0208027427000385])
         self.rgt_outer.lnks[2]['mass'] = 0.022614240507152
         self.rgt_outer.lnks[2]['meshfile'] = os.path.join(this_dir, "meshes", "robotiq_arg2f_140_outer_finger.stl")
         self.rgt_outer.lnks[2]['rgba'] = [.2, .2, .2, 1]
-        self.rgt_outer.lnks[3]['name'] = "left_inner_finger"
+        self.rgt_outer.lnks[3]['name'] = "right_inner_finger"
         self.rgt_outer.lnks[3]['loc_pos'] = np.zeros(3)
         self.rgt_outer.lnks[3]['com'] = np.array([0.000299999999999317, 0.0160078233491243, -0.0136945669206257])
         self.rgt_outer.lnks[3]['mass'] = 0.0104003125914103
         self.rgt_outer.lnks[3]['meshfile'] = os.path.join(this_dir, "meshes", "robotiq_arg2f_140_inner_finger.stl")
         self.rgt_outer.lnks[3]['rgba'] = [.2, .2, .2, 1]
-        self.rgt_outer.lnks[4]['name'] = "left_inner_finger_pad"
+        self.rgt_outer.lnks[4]['name'] = "right_inner_finger_pad"
         self.rgt_outer.lnks[4]['loc_pos'] = np.zeros(3)
         self.rgt_outer.lnks[4]['meshfile'] = os.path.join(this_dir, "meshes", "robotiq_arg2f_140_pad.stl")
         self.rgt_outer.lnks[4]['scale'] = [1e-3, 1e-3, 1e-3]
         self.rgt_outer.lnks[4]['rgba'] = [0.792156862745098, 0.819607843137255, 0.933333333333333, 1]
         # - rgt_inner
-        self.rgt_inner.lnks[1]['name'] = "left_inner_knuckle"
+        self.rgt_inner.lnks[1]['name'] = "right_inner_knuckle"
         self.rgt_inner.lnks[1]['loc_pos'] = np.zeros(3)
         self.rgt_inner.lnks[1]['com'] = np.array([0.000123011831763771, 0.0507850843201817, 0.00103968640075166])
         self.rgt_inner.lnks[1]['mass'] = 0.0271177346495152
@@ -278,18 +280,12 @@ class Robotiq140(gp.GripperInterface):
 
 if __name__ == '__main__':
     import visualization.panda.world as wd
-    import modeling.geometric_model as gm
 
     base = wd.World(cam_pos=[1, 1, 1], lookat_pos=[0, 0, 0])
     gm.gen_frame().attach_to(base)
     grpr = Robotiq140(enable_cc=True)
     grpr.cdmesh_type='convexhull'
-    # grpr.fk(.0)
     grpr.jaw_to(.0)
     grpr.gen_meshmodel(toggle_tcpcs=True, rgba=[.3, .3, .0, .5]).attach_to(base)
-    # grpr.gen_stickmodel(togglejntscs=False).attach_to(base)
-    # grpr.fix_to(pos=np.array([0, .3, .2]), rotmat=rm.rotmat_from_axangle([1, 0, 0], math.pi / 6))
-    # grpr.gen_meshmodel().attach_to(base)
-    # grpr.show_cdprimit()
     grpr.show_cdmesh()
     base.run()
