@@ -111,9 +111,9 @@ def rotmat_from_normalandpoints(facetnormal, facetfirstpoint, facetsecondpoint):
 
 def rotmat_from_euler(ai, aj, ak, axes='sxyz'):
     """
-    :param ai: degree
-    :param aj: degree
-    :param ak: degree
+    :param ai: radian
+    :param aj: radian
+    :param ak: radian
     :param axes:
     :return:
     author: weiwei
@@ -126,7 +126,7 @@ def rotmat_to_euler(rotmat, axes='sxyz'):
     """
     :param rotmat: 3x3 nparray
     :param axes: order
-    :return: degrees
+    :return: radian
     author: weiwei
     date: 20190504
     """
@@ -367,7 +367,7 @@ def quaternion_to_euler(quaternion, axes='sxyz'):
     """
     :param rotmat: 3x3 nparray
     :param axes: order
-    :return: degrees
+    :return: radian
     author: weiwei
     date: 20190504
     """
@@ -1613,7 +1613,7 @@ def compose_matrix(scale=None, shear=None, angles=None, translate=None,
 def orthogonalization_matrix(lengths, angles):
     """Return orthogonalization matrix for crystallographic cell coordinates.
 
-    Angles are expected in degrees.
+    Angles are expected in radian.
 
     The de-orthogonalization matrix is the inverse.
 

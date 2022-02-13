@@ -4,11 +4,12 @@ import numpy as np
 import modeling.collision_model as cm
 import modeling.model_collection as mc
 import robot_sim._kinematics.jlchain as jl
-import robot_sim.manipulators.cobotta_arm.cobotta_arm as cbta
-import robot_sim.end_effectors.gripper.cobotta_gripper.cobotta_gripper as cbtg
+import robot_sim.manipulators.ur5e.ur5e as rbt
+import robot_sim.end_effectors.gripper.robotiq140.robotiq140 as hnd
 import robot_sim.robots.robot_interface as ri
 
-#TODO This file is copied from Cobotta and is not updated yet
+
+# TODO This file is copied from Cobotta and is not updated yet
 
 class UR5EConveyorBelt(ri.RobotInterface):
 
@@ -16,27 +17,27 @@ class UR5EConveyorBelt(ri.RobotInterface):
         super().__init__(pos=pos, rotmat=rotmat, name=name)
         this_dir, this_filename = os.path.split(__file__)
         # base plate
-        self.base_plate = jl.JLChain(pos=pos,
+        self.base_stand = jl.JLChain(pos=pos,
                                      rotmat=rotmat,
                                      homeconf=np.zeros(0),
-                                     name='base_plate')
-        self.base_plate.jnts[1]['loc_pos'] = np.array([0, 0, 0.035])
-        self.base_plate.lnks[0]['meshfile'] = os.path.join(this_dir, "meshes", "base_plate.stl")
-        self.base_plate.lnks[0]['rgba'] = [.35,.35,.35,1]
-        self.base_plate.reinitialize()
+                                     name='base_stand')
+        self.base_stand.jnts[1]['loc_pos'] = np.array([0, 0, 0])
+        self.base_stand.lnks[0]['meshfile'] = os.path.join(this_dir, "meshes", "ur5e_base.stl")
+        self.base_stand.lnks[0]['rgba'] = [.35, .35, .35, 1]
+        self.base_stand.reinitialize()
         # arm
         arm_homeconf = np.zeros(6)
         arm_homeconf[1] = -math.pi / 6
         arm_homeconf[2] = math.pi / 2
         arm_homeconf[4] = math.pi / 6
-        self.arm = cbta.CobottaArm(pos=self.base_plate.jnts[-1]['gl_posq'],
-                                   rotmat=self.base_plate.jnts[-1]['gl_rotmatq'],
-                                   homeconf=arm_homeconf,
-                                   name='arm', enable_cc=False)
+        self.arm = rbt.UR5E(pos=self.base_stand.jnts[-1]['gl_posq'],
+                            rotmat=self.base_stand.jnts[-1]['gl_rotmatq'],
+                            homeconf=arm_homeconf,
+                            name='arm', enable_cc=False)
         # gripper
-        self.hnd = cbtg.CobottaGripper(pos=self.arm.jnts[-1]['gl_posq'],
-                                       rotmat=self.arm.jnts[-1]['gl_rotmatq'],
-                                       name='hnd_s', enable_cc=False)
+        self.hnd = hnd.Robotiq140(pos=self.arm.jnts[-1]['gl_posq'],
+                                  rotmat=self.arm.jnts[-1]['gl_rotmatq'],
+                                  name='hnd_s', enable_cc=False)
         # tool center point
         self.arm.jlc.tcp_jntid = -1
         self.arm.jlc.tcp_loc_pos = self.hnd.jaw_center_pos
@@ -55,31 +56,38 @@ class UR5EConveyorBelt(ri.RobotInterface):
     def enable_cc(self):
         # TODO when pose is changed, oih info goes wrong
         super().enable_cc()
-        self.cc.add_cdlnks(self.base_plate, [0])
-        self.cc.add_cdlnks(self.arm, [0, 1, 2, 3, 4, 5, 6])
-        self.cc.add_cdlnks(self.hnd.jlc, [0, 1, 2])
-        activelist = [self.base_plate.lnks[0],
-                      self.arm.lnks[0],
+        self.cc.add_cdlnks(self.base_stand, [0])
+        self.cc.add_cdlnks(self.arm, [1, 2, 3, 4, 5, 6])
+        self.cc.add_cdlnks(self.hnd.lft_outer, [0, 1, 2, 3])
+        self.cc.add_cdlnks(self.hnd.rgt_outer, [1, 2, 3])
+        activelist = [self.base_stand.lnks[0],
                       self.arm.lnks[1],
                       self.arm.lnks[2],
                       self.arm.lnks[3],
                       self.arm.lnks[4],
                       self.arm.lnks[5],
                       self.arm.lnks[6],
-                      self.hnd.jlc.lnks[0],
-                      self.hnd.jlc.lnks[1],
-                      self.hnd.jlc.lnks[2]]
+                      self.hnd.lft_outer.lnks[0],
+                      self.hnd.lft_outer.lnks[1],
+                      self.hnd.lft_outer.lnks[2],
+                      self.hnd.lft_outer.lnks[3],
+                      self.hnd.rgt_outer.lnks[1],
+                      self.hnd.rgt_outer.lnks[2],
+                      self.hnd.rgt_outer.lnks[3]]
         self.cc.set_active_cdlnks(activelist)
-        fromlist = [self.base_plate.lnks[0],
-                    self.arm.lnks[0],
+        fromlist = [self.base_stand.lnks[0],
                     self.arm.lnks[1]]
-        intolist = [self.arm.lnks[3]]
-        self.cc.set_cdpair(fromlist, intolist)
-        fromlist = [self.base_plate.lnks[0],
-                    self.arm.lnks[1]]
-        intolist = [self.hnd.jlc.lnks[0],
-                    self.hnd.jlc.lnks[1],
-                    self.hnd.jlc.lnks[2]]
+        intolist = [self.arm.lnks[3],
+                    self.arm.lnks[4],
+                    self.arm.lnks[5],
+                    self.arm.lnks[6],
+                    self.hnd.lft_outer.lnks[0],
+                    self.hnd.lft_outer.lnks[1],
+                    self.hnd.lft_outer.lnks[2],
+                    self.hnd.lft_outer.lnks[3],
+                    self.hnd.rgt_outer.lnks[1],
+                    self.hnd.rgt_outer.lnks[2],
+                    self.hnd.rgt_outer.lnks[3]]
         self.cc.set_cdpair(fromlist, intolist)
         for oih_info in self.oih_infos:
             objcm = oih_info['collisionmodel']
@@ -88,8 +96,8 @@ class UR5EConveyorBelt(ri.RobotInterface):
     def fix_to(self, pos, rotmat):
         self.pos = pos
         self.rotmat = rotmat
-        self.base_plate.fix_to(pos=pos, rotmat=rotmat)
-        self.arm.fix_to(pos=self.base_plate.jnts[-1]['gl_posq'], rotmat=self.base_plate.jnts[-1]['gl_rotmatq'])
+        self.base_stand.fix_to(pos=pos, rotmat=rotmat)
+        self.arm.fix_to(pos=self.base_stand.jnts[-1]['gl_posq'], rotmat=self.base_stand.jnts[-1]['gl_rotmatq'])
         self.hnd.fix_to(pos=self.arm.jnts[-1]['gl_posq'], rotmat=self.arm.jnts[-1]['gl_rotmatq'])
         # update objects in hand if available
         for obj_info in self.oih_infos:
@@ -153,7 +161,7 @@ class UR5EConveyorBelt(ri.RobotInterface):
         if jawwidth is not None:
             self.hnd_dict[hnd_name].jaw_to(jawwidth)
         rel_pos, rel_rotmat = self.manipulator_dict[hnd_name].cvt_gl_to_loc_tcp(objcm.get_pos(), objcm.get_rotmat())
-        intolist = [self.arm.lnks[0],
+        intolist = [self.base_stand.lnks[0],
                     self.arm.lnks[1],
                     self.arm.lnks[2],
                     self.arm.lnks[3],
@@ -196,7 +204,7 @@ class UR5EConveyorBelt(ri.RobotInterface):
                        toggle_connjnt=False,
                        name='xarm7_shuidi_mobile_stickmodel'):
         stickmodel = mc.ModelCollection(name=name)
-        self.base_plate.gen_stickmodel(tcp_jntid=tcp_jntid,
+        self.base_stand.gen_stickmodel(tcp_jntid=tcp_jntid,
                                        tcp_loc_pos=tcp_loc_pos,
                                        tcp_loc_rotmat=tcp_loc_rotmat,
                                        toggle_tcpcs=False,
@@ -221,7 +229,7 @@ class UR5EConveyorBelt(ri.RobotInterface):
                       rgba=None,
                       name='xarm_shuidi_mobile_meshmodel'):
         meshmodel = mc.ModelCollection(name=name)
-        self.base_plate.gen_meshmodel(tcp_jntid=tcp_jntid,
+        self.base_stand.gen_meshmodel(tcp_jntid=tcp_jntid,
                                       tcp_loc_pos=tcp_loc_pos,
                                       tcp_loc_rotmat=tcp_loc_rotmat,
                                       toggle_tcpcs=False,
@@ -249,16 +257,16 @@ if __name__ == '__main__':
     import visualization.panda.world as wd
     import modeling.geometric_model as gm
 
-    base = wd.World(cam_pos=[1.5, 0, 3], lookat_pos=[0, 0, .5])
+    base = wd.World(cam_pos=[1.5, 0, 3], lookat_pos=[0, 0, .0])
 
     gm.gen_frame().attach_to(base)
-    robot_s = Cobotta(enable_cc=True)
+    robot_s = UR5EConveyorBelt(enable_cc=True)
     robot_s.jaw_to(.02)
-    robot_s.gen_meshmodel(toggle_tcpcs=True).attach_to(base)
+    robot_s.gen_meshmodel(toggle_tcpcs=True, toggle_jntscs=True).attach_to(base)
     tgt_pos = np.array([.25, .2, .15])
-    tgt_rotmat = rm.rotmat_from_axangle([0, 1, 0], math.pi * 2/ 3)
+    tgt_rotmat = rm.rotmat_from_axangle([0, 1, 0], math.pi * 2 / 3)
     gm.gen_frame(pos=tgt_pos, rotmat=tgt_rotmat).attach_to(base)
-    # base.run()
+    base.run()
     component_name = 'arm'
     jnt_values = robot_s.ik(component_name, tgt_pos, tgt_rotmat)
     robot_s.fk(component_name, jnt_values=jnt_values)

@@ -80,6 +80,7 @@ class Cobotta(ri.RobotInterface):
                     self.hnd.jlc.lnks[1],
                     self.hnd.jlc.lnks[2]]
         self.cc.set_cdpair(fromlist, intolist)
+        # TODO is the following update needed?
         for oih_info in self.oih_infos:
             objcm = oih_info['collisionmodel']
             self.hold(objcm)
