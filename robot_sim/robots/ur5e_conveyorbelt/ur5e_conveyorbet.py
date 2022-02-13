@@ -69,18 +69,6 @@ class UR5EConveyorBelt(ri.RobotInterface):
         collision_primitive_c1 = CollisionBox(Point3(0.0, 0.0, -.3),
                                               x=.112 + radius, y=.112 + radius, z=.3 + radius)
         collision_node.addSolid(collision_primitive_c1)
-        # collision_primitive_c2 = CollisionBox(Point3(0.0, 0.0, 0.8895),
-        #                                       x=.05 + radius, y=.05 + radius, z=.6795 + radius)
-        # collision_node.addSolid(collision_primitive_c2)
-        # collision_primitive_c3 = CollisionBox(Point3(0.0, 0.0, 1.619),
-        #                                       x=.1 + radius, y=.275 + radius, z=.05 + radius)
-        # collision_node.addSolid(collision_primitive_c3)
-        # collision_primitive_l0 = CollisionBox(Point3(0.0, 0.300, 1.669),
-        #                                       x=.1 + radius, y=.029 + radius, z=.021 + radius)
-        # collision_node.addSolid(collision_primitive_l0)
-        # collision_primitive_r0 = CollisionBox(Point3(0.0, -0.300, 1.669),
-        #                                       x=.1 + radius, y=.029 + radius, z=.021 + radius)
-        # collision_node.addSolid(collision_primitive_r0)
         return collision_node
 
     def enable_cc(self):
