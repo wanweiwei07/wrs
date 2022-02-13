@@ -26,7 +26,7 @@ class UR5E(mi.ManipulatorInterface):
         self.jlc.jnts[6]['loc_pos'] = np.array([0, 0, .100])
         self.jlc.jnts[6]['loc_motionax'] = np.array([0, 1, 0])
         self.jlc.jnts[7]['loc_pos'] = np.array([0, .100, 0])
-        self.jlc.jnts[7]['loc_rotmat'] = rm.rotmat_from_euler(0, 0, math.pi/2.0)
+        self.jlc.jnts[7]['loc_rotmat'] = rm.rotmat_from_euler(-math.pi/2.0, 0, 0)
         # links
         self.jlc.lnks[0]['name'] = "base"
         self.jlc.lnks[0]['loc_pos'] = np.zeros(3)

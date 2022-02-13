@@ -7,9 +7,8 @@ import robot_sim._kinematics.jlchain as jl
 import robot_sim.manipulators.ur5e.ur5e as rbt
 import robot_sim.end_effectors.gripper.robotiq140.robotiq140 as hnd
 import robot_sim.robots.robot_interface as ri
+from panda3d.core import CollisionNode, CollisionBox, Point3
 
-
-# TODO This file is copied from Cobotta and is not updated yet
 
 class UR5EConveyorBelt(ri.RobotInterface):
 
@@ -19,17 +18,25 @@ class UR5EConveyorBelt(ri.RobotInterface):
         # base plate
         self.base_stand = jl.JLChain(pos=pos,
                                      rotmat=rotmat,
-                                     homeconf=np.zeros(0),
+                                     homeconf=np.zeros(1),
                                      name='base_stand')
-        self.base_stand.jnts[1]['loc_pos'] = np.array([0, 0, 0])
-        self.base_stand.lnks[0]['meshfile'] = os.path.join(this_dir, "meshes", "ur5e_base.stl")
+        self.base_stand.jnts[2]['loc_pos'] = np.array([-.9, 1.5, 0.06])
+        self.base_stand.jnts[1]['loc_pos'] = np.array([.9, -1.5, -0.06])
+        self.base_stand.lnks[0]['collisionmodel'] = cm.CollisionModel(
+            os.path.join(this_dir, "meshes", "ur5e_base.stl"),
+            cdprimit_type="user_defined", expand_radius=.005,
+            userdefined_cdprimitive_fn=self._base_combined_cdnp)
         self.base_stand.lnks[0]['rgba'] = [.35, .35, .35, 1]
+        self.base_stand.lnks[1]['meshfile'] = os.path.join(this_dir, "meshes", "conveyor.stl")
+        self.base_stand.lnks[1]['rgba'] = [.55, .55, .35, 1]
         self.base_stand.reinitialize()
         # arm
         arm_homeconf = np.zeros(6)
-        arm_homeconf[1] = -math.pi / 6
-        arm_homeconf[2] = math.pi / 2
-        arm_homeconf[4] = math.pi / 6
+        # arm_homeconf[0] = math.pi / 2
+        arm_homeconf[1] = -math.pi * 2 / 3
+        arm_homeconf[2] = math.pi / 3
+        arm_homeconf[3] = -math.pi / 2
+        arm_homeconf[4] = -math.pi / 2
         self.arm = rbt.UR5E(pos=self.base_stand.jnts[-1]['gl_posq'],
                             rotmat=self.base_stand.jnts[-1]['gl_rotmatq'],
                             homeconf=arm_homeconf,
@@ -53,14 +60,38 @@ class UR5EConveyorBelt(ri.RobotInterface):
         self.hnd_dict['hnd'] = self.hnd
         self.hnd_dict['arm'] = self.hnd
 
+    @staticmethod
+    def _base_combined_cdnp(name, radius):
+        collision_node = CollisionNode(name)
+        collision_primitive_c0 = CollisionBox(Point3(-0.1, 0.0, 0.14 - 0.82),
+                                              x=.35 + radius, y=.3 + radius, z=.14 + radius)
+        collision_node.addSolid(collision_primitive_c0)
+        collision_primitive_c1 = CollisionBox(Point3(0.0, 0.0, -.3),
+                                              x=.112 + radius, y=.112 + radius, z=.3 + radius)
+        collision_node.addSolid(collision_primitive_c1)
+        # collision_primitive_c2 = CollisionBox(Point3(0.0, 0.0, 0.8895),
+        #                                       x=.05 + radius, y=.05 + radius, z=.6795 + radius)
+        # collision_node.addSolid(collision_primitive_c2)
+        # collision_primitive_c3 = CollisionBox(Point3(0.0, 0.0, 1.619),
+        #                                       x=.1 + radius, y=.275 + radius, z=.05 + radius)
+        # collision_node.addSolid(collision_primitive_c3)
+        # collision_primitive_l0 = CollisionBox(Point3(0.0, 0.300, 1.669),
+        #                                       x=.1 + radius, y=.029 + radius, z=.021 + radius)
+        # collision_node.addSolid(collision_primitive_l0)
+        # collision_primitive_r0 = CollisionBox(Point3(0.0, -0.300, 1.669),
+        #                                       x=.1 + radius, y=.029 + radius, z=.021 + radius)
+        # collision_node.addSolid(collision_primitive_r0)
+        return collision_node
+
     def enable_cc(self):
         # TODO when pose is changed, oih info goes wrong
         super().enable_cc()
-        self.cc.add_cdlnks(self.base_stand, [0])
+        self.cc.add_cdlnks(self.base_stand, [0, 1])
         self.cc.add_cdlnks(self.arm, [1, 2, 3, 4, 5, 6])
         self.cc.add_cdlnks(self.hnd.lft_outer, [0, 1, 2, 3])
         self.cc.add_cdlnks(self.hnd.rgt_outer, [1, 2, 3])
         activelist = [self.base_stand.lnks[0],
+                      self.base_stand.lnks[1],
                       self.arm.lnks[1],
                       self.arm.lnks[2],
                       self.arm.lnks[3],
@@ -76,6 +107,7 @@ class UR5EConveyorBelt(ri.RobotInterface):
                       self.hnd.rgt_outer.lnks[3]]
         self.cc.set_active_cdlnks(activelist)
         fromlist = [self.base_stand.lnks[0],
+                    self.base_stand.lnks[1],
                     self.arm.lnks[1]]
         intolist = [self.arm.lnks[3],
                     self.arm.lnks[4],
@@ -257,7 +289,7 @@ if __name__ == '__main__':
     import visualization.panda.world as wd
     import modeling.geometric_model as gm
 
-    base = wd.World(cam_pos=[1.5, 0, 3], lookat_pos=[0, 0, .0])
+    base = wd.World(cam_pos=[4, 3, 1], lookat_pos=[0, 0, .0])
 
     gm.gen_frame().attach_to(base)
     robot_s = UR5EConveyorBelt(enable_cc=True)
@@ -266,6 +298,7 @@ if __name__ == '__main__':
     tgt_pos = np.array([.25, .2, .15])
     tgt_rotmat = rm.rotmat_from_axangle([0, 1, 0], math.pi * 2 / 3)
     gm.gen_frame(pos=tgt_pos, rotmat=tgt_rotmat).attach_to(base)
+    robot_s.show_cdprimit()
     base.run()
     component_name = 'arm'
     jnt_values = robot_s.ik(component_name, tgt_pos, tgt_rotmat)
