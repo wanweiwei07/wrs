@@ -18,17 +18,23 @@ class UR5EConveyorBelt(ri.RobotInterface):
         # base plate
         self.base_stand = jl.JLChain(pos=pos,
                                      rotmat=rotmat,
-                                     homeconf=np.zeros(1),
+                                     homeconf=np.zeros(3),
                                      name='base_stand')
-        self.base_stand.jnts[2]['loc_pos'] = np.array([-.9, 1.5, 0.06])
         self.base_stand.jnts[1]['loc_pos'] = np.array([.9, -1.5, -0.06])
+        self.base_stand.jnts[2]['loc_pos'] = np.array([0, 1.23, 0])
+        self.base_stand.jnts[3]['loc_pos'] = np.array([0, 0, 0])
+        self.base_stand.jnts[4]['loc_pos'] = np.array([-.9, .27, 0.06])
         self.base_stand.lnks[0]['collisionmodel'] = cm.CollisionModel(
             os.path.join(this_dir, "meshes", "ur5e_base.stl"),
             cdprimit_type="user_defined", expand_radius=.005,
             userdefined_cdprimitive_fn=self._base_combined_cdnp)
         self.base_stand.lnks[0]['rgba'] = [.35, .35, .35, 1]
         self.base_stand.lnks[1]['meshfile'] = os.path.join(this_dir, "meshes", "conveyor.stl")
-        self.base_stand.lnks[1]['rgba'] = [.55, .55, .35, 1]
+        self.base_stand.lnks[1]['rgba'] = [.35, .55, .35, 1]
+        self.base_stand.lnks[2]['meshfile'] = os.path.join(this_dir, "meshes", "camera_stand.stl")
+        self.base_stand.lnks[2]['rgba'] = [.55, .55, .55, 1]
+        self.base_stand.lnks[3]['meshfile'] = os.path.join(this_dir, "meshes", "cameras.stl")
+        self.base_stand.lnks[3]['rgba'] = [.55, .55, .55, 1]
         self.base_stand.reinitialize()
         # arm
         arm_homeconf = np.zeros(6)
@@ -74,12 +80,14 @@ class UR5EConveyorBelt(ri.RobotInterface):
     def enable_cc(self):
         # TODO when pose is changed, oih info goes wrong
         super().enable_cc()
-        self.cc.add_cdlnks(self.base_stand, [0, 1])
+        self.cc.add_cdlnks(self.base_stand, [0, 1, 2, 3])
         self.cc.add_cdlnks(self.arm, [1, 2, 3, 4, 5, 6])
         self.cc.add_cdlnks(self.hnd.lft_outer, [0, 1, 2, 3])
         self.cc.add_cdlnks(self.hnd.rgt_outer, [1, 2, 3])
         activelist = [self.base_stand.lnks[0],
                       self.base_stand.lnks[1],
+                      self.base_stand.lnks[2],
+                      self.base_stand.lnks[3],
                       self.arm.lnks[1],
                       self.arm.lnks[2],
                       self.arm.lnks[3],
@@ -96,6 +104,8 @@ class UR5EConveyorBelt(ri.RobotInterface):
         self.cc.set_active_cdlnks(activelist)
         fromlist = [self.base_stand.lnks[0],
                     self.base_stand.lnks[1],
+                    self.base_stand.lnks[2],
+                    self.base_stand.lnks[3],
                     self.arm.lnks[1]]
         intolist = [self.arm.lnks[3],
                     self.arm.lnks[4],
