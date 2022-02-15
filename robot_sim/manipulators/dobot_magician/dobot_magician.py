@@ -20,12 +20,12 @@ class DobotMagician(mi.ManipulatorInterface):
         self.jlc.jnts[1]['loc_motionax'] = np.array([0, 0, 1])
         self.jlc.jnts[1]['motion_rng'] = [-3.14159265, 3.14159265]
         self.jlc.jnts[2]['loc_pos'] = np.array([-0.01175, 0, 0.114])
-        self.jlc.jnts[2]['loc_rotmat'] = rm.rotmat_from_euler(1.570796325, 0, -1.570796325)
+        self.jlc.jnts[2]['loc_rotmat'] = rm.rotmat_from_euler(1.570796325,-0.20128231967888244, -1.570796325)
         self.jlc.jnts[2]['loc_motionax'] = np.array([0, 0, 1])
         self.jlc.jnts[2]['motion_rng'] = [0, 1.570796325]
         self.jlc.jnts[3]['loc_pos'] = np.array([0.02699, 0.13228, -0.01175])
-        self.jlc.jnts[3]['loc_rotmat'] = rm.rotmat_from_euler(0, 3.14159265, 0)
-        self.jlc.jnts[3]['loc_motionax'] = np.array([0, 0, 1])
+        self.jlc.jnts[3]['loc_rotmat'] = rm.rotmat_from_euler(0, 3.14159265, -1.24211575528)
+        self.jlc.jnts[3]['loc_motionax'] = np.array([0, 0, -1])
         self.jlc.jnts[3]['motion_rng'] = [0, 1.570796325]
         self.jlc.jnts[4]['loc_pos'] = np.array([0.07431, -0.12684, 0.0])
         self.jlc.jnts[4]['loc_rotmat'] = rm.rotmat_from_euler(0, 3.14159265, 0)
@@ -59,6 +59,7 @@ class DobotMagician(mi.ManipulatorInterface):
         lower_arm_vec = self.jlc.jnts[4]['gl_posq']-self.jlc.jnts[3]['gl_posq']
         self._init_j2_angle = math.asin(np.sqrt(upper_arm_vec[0]**2+upper_arm_vec[1]**2)/0.135)
         self._init_j3_angle = rm.angle_between_vectors(lower_arm_vec, -upper_arm_vec)
+        print(self._init_j3_angle, self._init_j2_angle)
         # collision detection
         if enable_cc:
             self.enable_cc()
@@ -75,7 +76,7 @@ class DobotMagician(mi.ManipulatorInterface):
 
     def _mimic_jnt_values(self, jnt_values):
         """
-        always set j4 to be -j2+j3
+        always set j4 to be j2+j3
         :param jnt_values:
         :return:
         author: weiwei
@@ -83,7 +84,7 @@ class DobotMagician(mi.ManipulatorInterface):
         """
         new_jnt_values = np.zeros(4)
         new_jnt_values[:3] = jnt_values
-        new_jnt_values[3] = -jnt_values[1] + jnt_values[2]
+        new_jnt_values[3] = jnt_values[1] + jnt_values[2]
         return new_jnt_values
 
     def fk(self, jnt_values=None):
@@ -105,11 +106,13 @@ class DobotMagician(mi.ManipulatorInterface):
         """
         j1_angle = math.atan(tgt_pos[0] / tgt_pos[1])
         j2_to_j4_distance = math.sqrt((tgt_pos[2] - 0.138) ** 2 + tgt_pos[0] ** 2 + tgt_pos[1] ** 2)
-        j3_angle = math.acos((0.147 ** 2 + 0.135 ** 2 - j2_to_j4_distance ** 2) / (2 * 0.147 * 0.135))-self._init_j3_angle
-        j2_angle = math.acos(
+        print(math.acos((0.147 ** 2 + 0.135 ** 2 - j2_to_j4_distance ** 2) / (2 * 0.147 * 0.135)))
+        j3_angle = math.pi/2-math.acos((0.147 ** 2 + 0.135 ** 2 - j2_to_j4_distance ** 2) / (2 * 0.147 * 0.135))
+        print(j3_angle)
+        j2_angle = math.pi/2-(math.acos(
             (0.135 ** 2 + j2_to_j4_distance ** 2 - 0.147 ** 2) / (2 * 0.135 * j2_to_j4_distance)) + math.atan(
-            (tgt_pos[2] - 0.138) / math.sqrt(tgt_pos[0] ** 2 + tgt_pos[1] ** 2))
-        j2_angle = math.pi/2+self._init_j2_angle-j2_angle
+            (tgt_pos[2] - 0.138) / math.sqrt(tgt_pos[0] ** 2 + tgt_pos[1] ** 2)))
+        # j2_angle = math.pi/2+self._init_j2_angle-j2_angle
         return np.array([j1_angle, j2_angle, j3_angle])
 
 
@@ -121,7 +124,7 @@ if __name__ == '__main__':
     base = wd.World(cam_pos=[2, 0, 1], lookat_pos=[0, 0, .3])
     gm.gen_frame().attach_to(base)
     robot_s = DobotMagician(enable_cc=True)
-    # robot_s.fk(jnt_values=np.array([math.radians(40), math.radians(30), math.radians(70)]))
+    robot_s.fk(jnt_values=np.array([math.radians(0), math.radians(0), math.radians(0)]))
     # manipulator_meshmodel = robot_s.gen_meshmodel()
     # manipulator_meshmodel.attach_to(base)
     # manipulator_meshmodel.show_cdprimit()

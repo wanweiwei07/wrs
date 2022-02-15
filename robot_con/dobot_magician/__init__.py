@@ -1,1 +1,1 @@
-from .dobot import Dobot
+from .dobot_x import Dobot
