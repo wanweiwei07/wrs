@@ -11,7 +11,7 @@ CON_STR = {
 api = dType.load()
 #建立与dobot的连接
 #Connect Dobot
-state = dType.ConnectDobot(api, "", 115200)[0]
+state = dType.ConnectDobot(api, "com4", 115200)[0]
 print("Connect status:",CON_STR[state])
 
 if (state == dType.DobotConnect.DobotConnect_NoError):
