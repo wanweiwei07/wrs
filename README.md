@@ -2,6 +2,8 @@
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
+WARNING: Python 3.9; Numpy 1.22 +
+
 This is a brief guide to the WRS Robot Planning & Control System. For detailed technical descriptions and usage, go to
 the [document pages](https://wanweiwei07.github.io/wrs/) hosted at [my homepage](https://wanweiwei07.github.io/).
 

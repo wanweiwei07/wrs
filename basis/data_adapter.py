@@ -1,13 +1,15 @@
 # An adapter file that converts data between panda3d and trimesh
 import basis.trimesh as trm
 import numpy as np
+import numpy.typing as npt
 from panda3d.core import Geom, GeomNode, GeomPoints, GeomTriangles
 from panda3d.core import GeomVertexData, GeomVertexFormat, GeomVertexArrayFormat, InternalName
 from panda3d.core import GeomEnums
 from panda3d.core import NodePath, Vec3, Mat3, Mat4, LQuaternion
 
+
 # data manipulation
-def randdom_colorarray(ncolors=1, alpha=1, nonrandcolor=None):
+def randdom_colorarray(ncolors: int = 1, alpha: float = 1, nonrandcolor=None):
     """
     Generate an array of random colors
     if ncolor = 1, returns a 4-element list
@@ -30,7 +32,7 @@ def randdom_colorarray(ncolors=1, alpha=1, nonrandcolor=None):
     return colorarray
 
 
-def npmat3_to_pdmat3(npmat3):
+def npmat3_to_pdmat3(npmat3: npt.NDArray[float]) -> Mat3:
     """
     convert numpy.2darray to LMatrix3f defined in Panda3d
     :param npmat3: a 3x3 numpy ndarray
@@ -43,7 +45,7 @@ def npmat3_to_pdmat3(npmat3):
                 npmat3[0, 2], npmat3[1, 2], npmat3[2, 2])
 
 
-def pdmat3_to_npmat3(pdmat3):
+def pdmat3_to_npmat3(pdmat3: Mat3) -> npt.NDArray[float]:
     """
     convert a mat3 matrix to a numpy 2darray...
     :param pdmat3:
@@ -58,7 +60,8 @@ def pdmat3_to_npmat3(pdmat3):
     return np.array([[row0[0], row1[0], row2[0]], [row0[1], row1[1], row2[1]], [row0[2], row1[2], row2[2]]])
 
 
-def npv3mat3_to_pdmat4(npvec3=np.array([0, 0, 0]), npmat3=np.eye(3)):
+def npv3mat3_to_pdmat4(npvec3: npt.NDArray[float]= np.array([0, 0, 0]),
+                       npmat3: npt.NDArray[float] = np.eye(3)):
     """
     convert numpy.2darray to LMatrix4 defined in Panda3d
     note the first parameter is rot, the second is pos
@@ -75,7 +78,7 @@ def npv3mat3_to_pdmat4(npvec3=np.array([0, 0, 0]), npmat3=np.eye(3)):
                 npvec3[0], npvec3[1], npvec3[2], 1)
 
 
-def npmat4_to_pdmat4(npmat4):
+def npmat4_to_pdmat4(npmat4: npt.NDArray[float]) -> Mat4:
     """
     # updated from cvtMat4
     convert numpy.2darray to LMatrix4 defined in Panda3d
@@ -91,7 +94,7 @@ def npmat4_to_pdmat4(npmat4):
                 npmat4[0, 3], npmat4[1, 3], npmat4[2, 3], 1)
 
 
-def pdmat4_to_npmat4(pdmat4):
+def pdmat4_to_npmat4(pdmat4: Mat4) -> npt.NDArray[float]:
     """
     convert a mat4 matrix to a nparray
     :param pdmat4
@@ -226,7 +229,7 @@ def pandageom_from_vfnf(vertices, face_normals, triangles, name='auto'):
     # triangles
     primitive = GeomTriangles(Geom.UHStatic)
     primitive.setIndexType(GeomEnums.NTUint32)
-    multiplied_triangles = np.arange(len(vertids), dtype=np.uint32).reshape(-1,3)
+    multiplied_triangles = np.arange(len(vertids), dtype=np.uint32).reshape(-1, 3)
     primitive.modifyVertices(-1).modifyHandle().setData(multiplied_triangles.tobytes())
     # make geom
     geom = Geom(vertexdata)
@@ -309,13 +312,13 @@ def pandageom_from_points(vertices, rgba_list=None, name=''):
     """
     if rgba_list is None:
         # default
-        vertex_rgbas = np.array([[0, 0, 0, 255]]*len(vertices), dtype=np.uint8)
+        vertex_rgbas = np.array([[0, 0, 0, 255]] * len(vertices), dtype=np.uint8)
     elif type(rgba_list) is not list:
-            raise Exception('rgba\_list must be a list!')
+        raise Exception('rgba\_list must be a list!')
     elif len(rgba_list) == 1:
-        vertex_rgbas = np.tile((np.array(rgba_list[0])*255).astype(np.uint8), (len(vertices),1))
+        vertex_rgbas = np.tile((np.array(rgba_list[0]) * 255).astype(np.uint8), (len(vertices), 1))
     elif len(rgba_list) == len(vertices):
-        vertex_rgbas = (np.array(rgba_list)*255).astype(np.uint8)
+        vertex_rgbas = (np.array(rgba_list) * 255).astype(np.uint8)
     else:
         raise ValueError('rgba_list must be a list of one or len(vertices) 1x4 nparray!')
     vertformat = GeomVertexFormat()
@@ -354,6 +357,7 @@ def nodepath_from_points(vertices, rgba_list=None, name=''):
     pointcloud_nodepath.setLightOff()
     pointcloud_nodepath.attachNewNode(geomnodeobj)
     return pointcloud_nodepath
+
 
 def loadfile_vf(objpath):
     """
@@ -397,7 +401,7 @@ if __name__ == '__main__':
     pdnp.reparentTo(base.render)
     pdnp_cvxh = nodepath_from_vfnf(btch.vertices, btch.face_normals, btch.faces)
     pdnp_cvxh.setTransparency(TransparencyAttrib.MDual)
-    pdnp_cvxh.setColor(0,1,0,.3)
+    pdnp_cvxh.setColor(0, 1, 0, .3)
     pdnp_cvxh.reparentTo(base.render)
     pdnp2 = nodepath_from_vvnf(bt.vertices, bt.vertex_normals, bt.faces)
     pdnp2.setPos(0, 0, .1)
