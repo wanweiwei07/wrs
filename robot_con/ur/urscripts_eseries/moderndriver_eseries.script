@@ -6,6 +6,9 @@ def driverProg():
 
 	def set_servo_setpoint(q):
 		enter_critical
+		while cmd_servo_state == SERVO_RUNNING:
+		    sync()
+        end
 		cmd_servo_q = q
 		cmd_servo_state = SERVO_RUNNING
 		exit_critical
