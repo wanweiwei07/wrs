@@ -27,7 +27,7 @@ class UR3EDual(ri.RobotInterface):
             os.path.join(this_dir, "meshes", "ur3e_dual_base.stl"),
             cdprimit_type="user_defined", expand_radius=.005,
             userdefined_cdprimitive_fn=self._base_combined_cdnp)
-        self.lft_body.lnks[0]['rgba'] = [.3, .3, .3, 1.0]
+        self.lft_body.lnks[0]['rgba'] = [.55, .55, .55, 1.0]
         self.lft_body.reinitialize()
         lft_arm_homeconf = np.zeros(6)
         lft_arm_homeconf[0] = -math.pi * 2.0 / 3.0

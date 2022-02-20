@@ -3,9 +3,9 @@ import numpy as np
 import visualization.panda.world as wd
 import modeling.geometric_model as gm
 import modeling.collision_model as cm
-import robot_sim.robots.xarm7_shuidi_mobile.xarm7_shuidi_mobile as xav
+import robot_sim.robots.xarm_shuidi.xarm_shuidi as xav
 import motion.probabilistic.rrt_connect as rrtc
-import robot_con.xarm_shuidi.xarm.xarm_client as xac
+import robot_con.xarm_shuidi_grpc.xarm.xarm_client as xac
 
 base = wd.World(cam_pos=[3, 1, 2], lookat_pos=[0, 0, 0])
 gm.gen_frame().attach_to(base)
@@ -16,7 +16,7 @@ object.set_rgba([.5,.7,.3,1])
 object.attach_to(base)
 # robot_s
 component_name='arm'
-robot_s = xav.XArm7YunjiMobile()
+robot_s = xav.XArmShuidi()
 robot_s.fk(component_name, np.array([0, math.pi * 2 / 3, 0, math.pi, 0, -math.pi / 6, 0]))
 # robot_x
 robot_x = xac.XArm7(host="192.168.50.77:18300")

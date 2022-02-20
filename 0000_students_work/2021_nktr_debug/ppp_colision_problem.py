@@ -5,7 +5,7 @@ import grasping.planning.antipodal as gpa
 import numpy as np
 import basis.robot_math as rm
 import robot_sim.robots.nextage.nextage as nxt
-import robot_sim.robots.xarm7_shuidi_mobile.xarm7_shuidi_mobile as xsm
+import robot_sim.robots.xarm_shuidi.xarm_shuidi as xsm
 import motion.probabilistic.rrt_connect as rrtc
 import math
 import manipulation.pick_place_planner as ppp
@@ -115,7 +115,7 @@ tool_final.set_pos(tool_final_pos)
 tool_final.set_rotmat(rotmat)
 tool_final_homomat = rm.homomat_from_posrot(tool_final_pos, rotmat)
 ## rbt_s and grasp list
-robot_s = xsm.XArm7YunjiMobile()
+robot_s = xsm.XArmShuidi()
 rrtc_s = rrtc.RRTConnect(robot_s)
 rrtc_planner = rrtdwc.RRTDWConnect(robot_s)
 grasp_info_list = gpa.load_pickle_file('box', './', 'xarm_long_box.pickle')

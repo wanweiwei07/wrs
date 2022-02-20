@@ -2,8 +2,8 @@ import grpc
 import time
 import drivers.xarm.wrapper.xarm_api as xai
 from concurrent import futures
-import robot_con.xarm_shuidi.xarm.xarm_pb2 as xarm_msg
-import robot_con.xarm_shuidi.xarm.xarm_pb2_grpc as xarm_rpc
+import robot_con.xarm_shuidi_grpc.xarm.xarm_pb2 as xarm_msg
+import robot_con.xarm_shuidi_grpc.xarm.xarm_pb2_grpc as xarm_rpc
 import numpy as np
 
 

@@ -10,7 +10,7 @@ import robot_sim.end_effectors.gripper.xarm_gripper.xarm_gripper as xag
 import robot_sim.robots.robot_interface as ri
 
 
-class XArm7YunjiMobile(ri.RobotInterface):
+class XArmShuidi(ri.RobotInterface):
 
     def __init__(self, pos=np.zeros(3), rotmat=np.eye(3), name="xarm7_yunji_mobile", enable_cc=True):
         super().__init__(pos=pos, rotmat=rotmat, name=name)
@@ -149,7 +149,6 @@ class XArm7YunjiMobile(ri.RobotInterface):
         author: weiwei
         date: 20201208toyonaka
         """
-
         def update_oih(component_name='arm'):
             for obj_info in self.oih_infos:
                 gl_pos, gl_rotmat = self.cvt_loc_tcp_to_gl(component_name, obj_info['rel_pos'], obj_info['rel_rotmat'])
@@ -402,7 +401,7 @@ if __name__ == '__main__':
     base = wd.World(cam_pos=[1.5, 0, 3], lookat_pos=[0, 0, .5])
 
     gm.gen_frame().attach_to(base)
-    xav = XArm7YunjiMobile(enable_cc=True)
+    xav = XArmShuidi(enable_cc=True)
     xav.fk(component_name='all', jnt_values=np.array([0, 0, 0, 0, 0, 0, math.pi, 0, -math.pi / 6, 0, 0]))
     xav.jaw_to(jawwidth=.08)
     tgt_pos = np.array([.85, 0, .55])
@@ -418,7 +417,7 @@ if __name__ == '__main__':
     xav.fk(component_name='agv', jnt_values=np.array([.2, -.5, math.radians(30)]))
     xav_meshmodel = xav.gen_meshmodel(toggle_tcpcs=True)
     xav_meshmodel.attach_to(base)
-    xav.show_cdprimit()
+    # xav.show_cdprimit()
     xav.gen_stickmodel().attach_to(base)
     tic = time.time()
     result = xav.is_collided()

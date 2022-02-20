@@ -7,6 +7,6 @@ protoc.main(
         '-I.',
         '--python_out=.',
         '--grpc_python_out=.',
-        './xarm_shuidi.proto',
+        './xarm_shuidi_grpc.proto',
     )
 )

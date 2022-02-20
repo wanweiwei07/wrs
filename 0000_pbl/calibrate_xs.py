@@ -1,7 +1,7 @@
 import visualization.panda.world as wd
 import modeling.geometric_model as gm
-import robot_sim.robots.xarm7_shuidi_mobile.xarm7_shuidi_mobile as xsm
-import robot_con.xarm_shuidi.xarm_shuidi_client as xsc
+import robot_sim.robots.xarm_shuidi.xarm_shuidi as xsm
+import robot_con.xarm_shuidi_grpc.xarm_shuidi_client as xsc
 import drivers.devices.kinect_azure.pykinectazure as pk
 import cv2
 import cv2.aruco as aruco
@@ -61,7 +61,7 @@ class SensorHandler:
 pkx = pk.PyKinectAzure()
 base = wd.World(cam_pos=[3, 3, 3], lookat_pos=[0, 0, 1])
 gm.gen_frame().attach_to(base)
-xss = xsm.XArm7YunjiMobile()
+xss = xsm.XArmShuidi()
 xsx = xsc.XArmShuidiClient(host="10.2.0.201:18300")
 jnt_values = xsx.get_jnt_values()
 xss.fk(component_name="arm", jnt_values=jnt_values)

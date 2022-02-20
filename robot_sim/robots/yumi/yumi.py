@@ -30,7 +30,7 @@ class Yumi(ri.RobotInterface):
         self.lft_body.lnks[0]['name'] = "yumi_lft_stand"
         self.lft_body.lnks[0]['loc_pos'] = np.array([0, 0, 0])
         self.lft_body.lnks[0]['meshfile'] = os.path.join(this_dir, "meshes", "yumi_tablenotop.stl")
-        self.lft_body.lnks[0]['rgba'] = [.35, .35, .35, 1.0]
+        self.lft_body.lnks[0]['rgba'] = [.55, .55, .55, 1.0]
         self.lft_body.lnks[1]['name'] = "yumi_lft_body"
         self.lft_body.lnks[1]['loc_pos'] = np.array([0, 0, 0])
         self.lft_body.lnks[1]['collisionmodel'] = cm.CollisionModel(
@@ -586,7 +586,7 @@ if __name__ == '__main__':
     yumi_instance = Yumi(enable_cc=True)
     yumi_meshmodel = yumi_instance.gen_meshmodel()
     yumi_meshmodel.attach_to(base)
-    yumi_instance.show_cdprimit()
+    # yumi_instance.show_cdprimit()
     base.run()
 
     # ik test

@@ -5,7 +5,7 @@ import basis
 import numpy as np
 import modeling.geometric_model as gm
 import modeling.collision_model as cm
-import robot_sim.robots.xarm7_shuidi_mobile.xarm7_shuidi_mobile as xav
+import robot_sim.robots.xarm_shuidi.xarm_shuidi as xav
 
 
 if __name__ == '__main__':
@@ -16,7 +16,7 @@ if __name__ == '__main__':
     # # local code
     global_frame = gm.gen_frame()
     # define robot_s and robot_s anime info
-    robot_s = xav.XArm7YunjiMobile()
+    robot_s = xav.XArmShuidi()
     robot_meshmodel_parameters = [None,  # tcp_jntid
                                   None,  # tcp_loc_pos
                                   None,  # tcp_loc_rotmat

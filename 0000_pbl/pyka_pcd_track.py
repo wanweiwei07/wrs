@@ -5,8 +5,8 @@ import visualization.panda.world as wd
 import modeling.geometric_model as gm
 from vision.depth_camera.calibrator import load_calibration_data
 import basis.robot_math as rm
-import robot_sim.robots.xarm7_shuidi_mobile.xarm7_shuidi_mobile as xsm
-import robot_con.xarm_shuidi.xarm_shuidi_client as xsc
+import robot_sim.robots.xarm_shuidi.xarm_shuidi as xsm
+import robot_con.xarm_shuidi_grpc.xarm_shuidi_client as xsc
 
 affine_matrix, _, _ = load_calibration_data()
 base = wd.World(cam_pos=[10, 2, 7], lookat_pos=[0, 0, 0])
@@ -27,7 +27,7 @@ while True:
         pkx.image_release(depth_image_handle)
         pkx.capture_release()
         break
-rbts = xsm.XArm7YunjiMobile()
+rbts = xsm.XArmShuidi()
 pos_start, rot_start = (np.array([-0.06960152, 0.01039783, 1.41780278]),
                         np.array([[-1, 0, 0],
                                   [0, -1, 0],

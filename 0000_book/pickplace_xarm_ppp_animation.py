@@ -5,7 +5,7 @@ import grasping.planning.antipodal as gpa
 import math
 import numpy as np
 import basis.robot_math as rm
-import robot_sim.robots.xarm7_shuidi_mobile.xarm7_shuidi_mobile as xsm
+import robot_sim.robots.xarm_shuidi.xarm_shuidi as xsm
 import manipulation.pick_place_planner as ppp
 import motion.probabilistic.rrt_connect as rrtc
 
@@ -37,7 +37,7 @@ object_box_goal_copy = object_box.copy()
 object_box_goal_copy.set_homomat(obgl_goal_homomat)
 object_box_goal_copy.attach_to(base)
 
-robot_s = xsm.XArm7YunjiMobile()
+robot_s = xsm.XArmShuidi()
 robot_s.gen_meshmodel(toggle_tcpcs=True).attach_to(base)
 # base.run()
 rrtc_s = rrtc.RRTConnect(robot_s)

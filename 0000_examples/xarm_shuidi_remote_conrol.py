@@ -4,11 +4,11 @@ import keyboard
 import numpy as np
 import basis.robot_math as rm
 import visualization.panda.world as wd
-import robot_sim.robots.xarm7_shuidi_mobile.xarm7_shuidi_mobile as rbs
-import robot_con.xarm_shuidi.xarm_shuidi_client as rbx
+import robot_sim.robots.xarm_shuidi.xarm_shuidi as rbs
+import robot_con.xarm_shuidi_grpc.xarm_shuidi_client as rbx
 
 base = wd.World(cam_pos=[3, 1, 1.5], lookat_pos=[0, 0, 0.7])
-rbt_s = rbs.XArm7YunjiMobile()
+rbt_s = rbs.XArmShuidi()
 rbt_x = rbx.XArmShuidiClient(host="10.2.0.203:18300")
 jnt_values = rbt_x.arm_get_jnt_values()
 jawwidth = rbt_x.arm_get_jawwidth()

@@ -6,13 +6,13 @@ import threading
 import basis.robot_math as rm
 import visualization.panda.world as wd
 import modeling.geometric_model as gm
-import robot_sim.robots.xarm7_shuidi_mobile.xarm7_shuidi_mobile as rbs
-# import robot_con.xarm_shuidi.xarm_shuidi_client as rbx
+import robot_sim.robots.xarm_shuidi.xarm_shuidi as rbs
+# import robot_con.xarm_shuidi_grpc.xarm_shuidi_client as rbx
 
 from direct.task.TaskManagerGlobal import taskMgr
 
 base = wd.World(cam_pos=[3, 1, 1.5], lookat_pos=[0, 0, 0.5])
-rbt_s = rbs.XArm7YunjiMobile()
+rbt_s = rbs.XArmShuidi()
 # rbt_s.gen_meshmodel().attach_to(base)
 # base.run()
 # rbt_x.agv_move(agv_linear_speed=-.1, agv_angular_speed=.1, time_intervals=5)

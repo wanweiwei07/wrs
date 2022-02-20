@@ -1,121 +1,117 @@
-import grpc
 import math
 import time
 import numpy as np
-import robot_con.xarm_shuidi.xarm_shuidi_pb2 as aa_msg
-import robot_con.xarm_shuidi.xarm_shuidi_pb2_grpc as aa_rpc
+import drivers.xarm.wrapper.xarm_api as arm
+import shuidi_x as agv
 import motion.trajectory.piecewisepoly_toppra as pwp
 
 
-class XArmShuidiClient(object):
+class XArmShuidiX(object):
 
-    def __init__(self, host="localhost:18300"):
-        channel = grpc.insecure_channel(host)
-        self.stub = aa_rpc.XArmShuidiStub(channel)
-
-    def get_jnt_values(self, component_name="arm"):
-        if component_name == "arm":
-            return self.arm_get_jnt_values()
-
-    def move_jnts(self, component_name, jnt_values, method='linear', max_jntspeed=math.pi):
+    def __init__(self, ip="10.2.0.203"):
         """
-        TODO: use xarm function to get faster
-        author: weiwei
-        date: 20210729
+        :param _arm_x: an instancde of arm.XArmAPI
+        :return:
         """
-        if component_name == "arm":
-            current_jnt_values = self.arm_get_jnt_values()
-            print(current_jnt_values, jnt_values)
-            if np.allclose(jnt_values, current_jnt_values, atol=1e-5):
-                print("The robot's configuration is the same as the given one!")
-                return
-            self.arm_move_jspace_path(path=[self.arm_get_jnt_values(), jnt_values], method=method,
-                                      max_jntspeed=max_jntspeed)
+        super().__init__()
+        self._arm_x = arm.XArmAPI(port=ip)
+        if self._arm_x.has_err_warn:
+            if self._arm_x.get_err_warn_code()[1][0] == 1:
+                print("The Emergency Button is pushed in to stop!")
+                input("Release the emergency button and press any key to continue. Press Enter to continue...")
+        self._arm_x.clean_error()
+        self._arm_x.clean_error()
+        self._arm_x.motion_enable()
+        self._arm_x.set_mode(1)  # servo motion mode
+        self._arm_x.set_state(state=0)
+        self._arm_x.reset(wait=True)
+        self._arm_x.clean_gripper_error()
+        self._arm_x.set_gripper_enable(1)
+        self._arm_x.set_gripper_mode(0)
+        self.__speed = 5000
+        self._arm_x.set_gripper_speed(self.__speed)  # 1000-5000
+        self._arm_x.set_gripper_position(850)  # 1000-5000
+        self._agv_x = agv.ShuidiX(ip=ip)
+        print("The Shuidi server is started!")
+
+    @property
+    def arm(self):
+        return self._arm_x
+
+    @property
+    def agv(self):
+        return self._agv_x
 
     def arm_get_jnt_values(self):
-        jntvalues_msg = self.stub.arm_get_jnt_values(aa_msg.Empty())
-        jnt_values = np.frombuffer(jntvalues_msg.data, dtype=np.float64)
-        return jnt_values
+        code, jnt_values = self._arm_x.get_servo_angle(is_radian=True)
+        if code != 0:
+            raise Exception(f"The returned code of get_servo_angle is wrong! Code: {code}")
+        return np.asarray(jnt_values)
 
     def arm_move_jspace_path(self,
                              path,
                              max_jntvel=None,
                              max_jntacc=None,
-                             start_frame_id=1):
+                             start_frame_id=1,
+                             toggle_debug=False):
         """
-        TODO: make speed even
         :param path: [jnt_values0, jnt_values1, ...], results of motion planning
+        :param max_jntvel:
+        :param max_jntacc:
+        :param start_frame_id:
         :return:
-        author: weiwei
-        date: 20190417
         """
         if not path or path is None:
             raise ValueError("The given is incorrect!")
         control_frequency = .005
         tpply = pwp.PiecewisePolyTOPPRA()
-        interpolated_path = tpply.interpolate_by_max_spdacc(path=path, control_frequency=control_frequency,
-                                                            max_jntvel=max_jntvel, max_jntacc=max_jntacc)
+        interpolated_path = tpply.interpolate_by_max_spdacc(path=path,
+                                                            control_frequency=control_frequency,
+                                                            max_vels=max_jntvel,
+                                                            max_accs=max_jntacc,
+                                                            toggle_debug=toggle_debug)
         interpolated_path = interpolated_path[start_frame_id:]
-        path_msg = aa_msg.Path(length=len(interpolated_path),
-                               njnts=len(interpolated_path[0]),
-                               data=np.array(interpolated_path).tobytes())
-        return_value = self.stub.arm_move_jspace_path(path_msg)
-        if return_value == aa_msg.Status.ERROR:
-            print("Something went wrong with the server!! Try again!")
-            raise Exception()
-        else:
-            print("The rbt_s has finished the given motion.")
-
-    def arm_get_jawwidth(self):
-        gripper_msg = self.stub.arm_get_gripper_status(aa_msg.Empty())
-        return (gripper_msg.position + 10) / 860 * .085
+        for jnt_values in interpolated_path:
+            self._arm_x.set_servo_angle_j(jnt_values, is_radian=True)
+        return
 
     def arm_jaw_to(self, jawwidth, speed=None):
-        """
-        both values are in percentage
-        :param jawwidth: 0~100
-        :param speed: 0~100
-        :return:
-        """
+        position = math.floor(860 * jawwidth / 100) - 10
         if speed is None:
             speed = 5000
         else:
             speed = math.floor(5000 * speed / 100)
-        position = math.floor(860 * jawwidth / 100) - 10
-        gripper_msg = aa_msg.GripperStatus(speed=speed,
-                                           position=position)
-        return_value = self.stub.arm_jaw_to(gripper_msg)
-        if return_value == aa_msg.Status.ERROR:
-            print("Something went wrong with the server!! Try again!")
-            raise Exception()
-        else:
-            print("The gripper has finished the given action.")
+        self.__speed = speed
+        self._arm_x.set_gripper_speed(self.__speed)
+        self._arm_x.set_gripper_position(position, wait=True)
+        return
+
+    def arm_get_jawwidth(self):
+        code, position = self._arm_x.get_gripper_position()
+        if code != 0:
+            raise Exception(f"The returned code of get_gripper_position is wrong! Code: {code}")
+        return (position + 10) / 860 * .085
 
     def agv_move(self, linear_speed=.0, angular_speed=.0, time_interval=.5):
         while time_interval > 0:
-            speed_msg = aa_msg.Speed(linear_velocity=linear_speed,
-                                     angular_velocity=angular_speed)
             # try:
-            return_value = self.stub.agv_move(speed_msg)
-            if return_value == aa_msg.Status.ERROR:
-                print("Something went wrong with the server!!")
-                continue
+            self._agv_x.joy_control(linear_velocity=linear_speed,
+                                    angular_velocity=angular_speed)
             time_interval = time_interval - .5
             time.sleep(.3)
-            # except Exception:
-            #     pass
-
+        return
 
 if __name__ == "__main__":
     import keyboard
     import basis.robot_math as rm
     import visualization.panda.world as wd
-    import robot_sim.robots.xarm7_shuidi_mobile.xarm7_shuidi_mobile as rbt
+    import robot_sim.robots.xarm_shuidi.xarm_shuidi as rbt
 
     base = wd.World(cam_pos=[3, 1, 1.5], lookat_pos=[0, 0, 0.7])
-    rbt_s = rbt.XArm7YunjiMobile()
-    rbt_x = XArmShuidiClient(host="10.2.0.201:18300")
-    jnt_values = rbt_x.arm_get_jnt_vlaues()
+    rbt_s = rbt.XArmShuidi()
+    rbt_x = XArmShuidiX(ip="10.2.0.203")
+    jnt_values = rbt_x.arm_get_jnt_values()
+    print(jnt_values)
     jawwidth = rbt_x.arm_get_jawwidth()
     rbt_s.fk(jnt_values=jnt_values)
     rbt_s.jaw_to(jawwidth=jawwidth)
@@ -205,57 +201,22 @@ if __name__ == "__main__":
             new_arm_tcp_pos = current_arm_tcp_pos + rel_pos
             new_arm_tcp_rotmat = rel_rotmat.dot(current_arm_tcp_rotmat)
             last_jnt_values = rbt_s.get_jnt_values()
-            new_jnt_values = rbt_s.ik(tgt_pos=new_arm_tcp_pos, tgt_rotmat=new_arm_tcp_rotmat)
+            new_jnt_values = rbt_s.ik(tgt_pos=new_arm_tcp_pos,
+                                      tgt_rotmat=new_arm_tcp_rotmat,
+                                      seed_jnt_values=last_jnt_values)
+            if new_jnt_values is not None:
+                print(new_jnt_values)
+                print(last_jnt_values)
+                max_change = np.max(new_jnt_values-last_jnt_values)
+                print(max_change)
+                # rbt_s.fk(jnt_values=new_jnt_values)
+                # rbt_s.jaw_to(jawwidth=jawwidth)
+                # rbt_s.gen_meshmodel().attach_to(base)
+                # base.run()
+            else:
+                continue
             rbt_s.fk(jnt_values=new_jnt_values)
             toc = time.time()
             start_frame_id = math.ceil((toc - tic) / .01)
-            rbt_x.arm_move_jspace_path([last_jnt_values, new_jnt_values], time_interval=.1,
+            rbt_x.arm_move_jspace_path([last_jnt_values, new_jnt_values],
                                        start_frame_id=start_frame_id)
-        # elif any(pressed_keys[item] for item in ['R', 'T', 'F', 'G', 'V', 'B', 'Y', 'U', 'H', 'J', 'N', 'M']) and\
-        #         sum(values_list) == 1: # local
-        #     tic = time.time()
-        #     rel_pos = np.zeros(3)
-        #     rel_rotmat = np.eye(3)
-        #     if pressed_keys['r']:
-        #         rel_pos = np.array([arm_linear_speed * .5, 0, 0])
-        #     elif pressed_keys['t']:
-        #         rel_pos = np.array([-arm_linear_speed * .5, 0, 0])
-        #     elif pressed_keys['f']:
-        #         rel_pos = np.array([0, arm_linear_speed * .5, 0])
-        #     elif pressed_keys['g']:
-        #         rel_pos = np.array([0, -arm_linear_speed * .5, 0])
-        #     elif pressed_keys['v']:
-        #         rel_pos = np.array([0, 0, arm_linear_speed * .5])
-        #     elif pressed_keys['b']:
-        #         rel_pos = np.array([0, 0, -arm_linear_speed * .5])
-        #     elif pressed_keys['y']:
-        #         rel_rotmat = rm.rotmat_from_euler(arm_angular_speed*.5, 0, 0)
-        #     elif pressed_keys['u']:
-        #         rel_rotmat = rm.rotmat_from_euler(-arm_angular_speed*.5, 0, 0)
-        #     elif pressed_keys['h']:
-        #         rel_rotmat = rm.rotmat_from_euler(0, arm_angular_speed*.5, 0)
-        #     elif pressed_keys['j']:
-        #         rel_rotmat = rm.rotmat_from_euler(0, -arm_angular_speed * .5, 0)
-        #     elif pressed_keys['n']:
-        #         rel_rotmat = rm.rotmat_from_euler(0, 0, arm_angular_speed*.5)
-        #     elif pressed_keys['m']:
-        #         rel_rotmat = rm.rotmat_from_euler(0, 0, -arm_angular_speed*.5)
-        #     new_arm_tcp_pos, new_arm_tcp_rotmat = rbt_s.cvt_loc_tcp_to_gl("arm",
-        #                                                                   rel_obj_pos=rel_pos,
-        #                                                                   rel_obj_rotmat=rel_rotmat)
-        #     last_jnt_values = rbt_s.get_jnt_values()
-        #     new_jnt_values = rbt_s.ik(tgt_pos=new_arm_tcp_pos, tgt_rotmat=new_arm_tcp_rotmat)
-        #     rbt_s.fk(jnt_values=new_jnt_values)
-        #     toc = time.time()
-        #     start_frame_id = math.ceil((toc - tic) / .01)
-        #     rbt_x.arm_move_jspace_path([last_jnt_values, new_jnt_values], time_intervals=.1, start_frame_id=start_frame_id)
-
-# path = [[0, 0, 0, 0, 0, 0, 0]]wwwwwwwwwwww
-# rbt_x.move_jspace_path(path)
-# nxt.playPattern([anglesrad], [5.0])
-# nxt.goOffPose()
-# init_jnt_angles = rbt_x.get_jnt_vlaues()
-# print(init_jnt_angles)
-# init_jawwidth = rbt_x.get_jawwidth()
-# print(init_jawwidth)
-# rbt_x.jaw_to(0)

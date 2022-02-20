@@ -5,7 +5,7 @@ from basis import robot_math as rm
 import visualization.panda.world as wd
 import modeling.geometric_model as gm
 import modeling.collision_model as cm
-import robot_sim.robots.xarm7_shuidi_mobile.xarm7_shuidi_mobile as xav
+import robot_sim.robots.xarm_shuidi.xarm_shuidi as xav
 import motion.probabilistic.rrt_differential_wheel_connect as rrtdwc
 
 base = wd.World(cam_pos=[10, 1, 5], lookat_pos=[0, 0, 0])
@@ -30,7 +30,7 @@ object_box4.set_pos(np.array([.9,-1,0]))
 object_box4.attach_to(base)
 # robot_s
 component_name='agv'
-robot_instance = xav.XArm7YunjiMobile()
+robot_instance = xav.XArmShuidi()
 rrtc_planner = rrtdwc.RRTDWConnect(robot_instance)
 path = rrtc_planner.plan(start_conf=np.array([0,0,0]),
                          goal_conf=np.array([2,-2,math.radians(190)]),

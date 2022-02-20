@@ -3,7 +3,7 @@ import modeling.geometric_model as gm
 import modeling.collision_model as cm
 import grasping.planning.antipodal as gpa
 import numpy as np
-import robot_sim.robots.xarm7_shuidi_mobile.xarm7_shuidi_mobile as xsm
+import robot_sim.robots.xarm_shuidi.xarm_shuidi as xsm
 import robot_sim.end_effectors.gripper.xarm_gripper.xarm_gripper as xag
 import manipulation.approach_depart_planner as adp
 
@@ -23,7 +23,7 @@ gm.gen_frame().attach_to(object_box)
 object_box.attach_to(base)
 object_box.show_cdprimit()
 
-robot_s = xsm.XArm7YunjiMobile()
+robot_s = xsm.XArmShuidi()
 robot_s.gen_meshmodel().attach_to(base)
 adp_s = adp.ADPlanner(robot_s)
 

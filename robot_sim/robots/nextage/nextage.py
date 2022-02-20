@@ -665,7 +665,7 @@ if __name__ == '__main__':
     nxt_instance = Nextage(enable_cc=True)
     nxt_meshmodel = nxt_instance.gen_meshmodel(toggle_tcpcs=True)
     nxt_meshmodel.attach_to(base)
-    nxt_instance.show_cdprimit()
+    # nxt_instance.show_cdprimit()
     base.run()
 
     # tgt_pos = np.array([.4, 0, .2])
@@ -705,7 +705,7 @@ if __name__ == '__main__':
     tgt_rotmat = rm.rotmat_from_axangle([0, 1, 0], math.pi / 3)
     jnt_values = nxt_instance.ik(component_name, tgt_pos, tgt_rotmat)
     nxt_instance.fk(component_name, jnt_values)
-    nxt_instance.show_cdprimit()
+    # nxt_instance.show_cdprimit()
     nxt_meshmodel = nxt_instance.gen_meshmodel()
     nxt_meshmodel.attach_to(base)
 

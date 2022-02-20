@@ -5,7 +5,7 @@ from basis import robot_math as rm
 import visualization.panda.world as wd
 import modeling.geometric_model as gm
 import modeling.collision_model as cm
-import robot_sim.robots.xarm7_shuidi_mobile.xarm7_shuidi_mobile as xav
+import robot_sim.robots.xarm_shuidi.xarm_shuidi as xav
 
 base = wd.World(cam_pos=[3, 1, 2], lookat_pos=[0, 0, 0])
 gm.gen_frame().attach_to(base)
@@ -16,7 +16,7 @@ object.set_rgba([.5, .7, .3, 1])
 object.attach_to(base)
 # robot_s
 component_name = 'arm'
-robot_s = xav.XArm7YunjiMobile()
+robot_s = xav.XArmShuidi()
 seed_jnt_values = robot_s.get_jnt_values(component_name=component_name)
 for y in range(-5, 5):
     tgt_pos = np.array([.3, y*.1, .5])

@@ -5,7 +5,7 @@ import grasping.planning.antipodal as gpa
 import math
 import numpy as np
 import basis.robot_math as rm
-import robot_sim.robots.xarm7_shuidi_mobile.xarm7_shuidi_mobile as xsm
+import robot_sim.robots.xarm_shuidi.xarm_shuidi as xsm
 import robot_sim.end_effectors.gripper.xarm_gripper.xarm_gripper as xag
 import manipulation.approach_depart_planner as adp
 import motion.probabilistic.rrt_connect as rrtc
@@ -24,7 +24,7 @@ object_box.set_pos(object_box_gl_pos)
 object_box.set_rotmat(object_box_gl_rotmat)
 gm.gen_frame().attach_to(object_box)
 
-robot_s = xsm.XArm7YunjiMobile()
+robot_s = xsm.XArmShuidi()
 rrtc_s = rrtc.RRTConnect(robot_s)
 adp_s = adp.ADPlanner(robot_s)
 
