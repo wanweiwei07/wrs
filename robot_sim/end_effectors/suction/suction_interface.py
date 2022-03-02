@@ -18,7 +18,7 @@ class SuctionInterface(object):
         self.coupling.jnts[1]['loc_pos'] = np.array([0, 0, .0])
         self.coupling.lnks[0]['name'] = 'coupling_lnk0'
         # toggle on the following part to assign an explicit mesh model to a coupling
-        # self.coupling.lnks[0]['meshfile'] = os.path.join(this_dir, "meshes", "xxx.stl")
+        # self.coupling.lnks[0]['mesh_file'] = os.path.join(this_dir, "meshes", "xxx.stl")
         # self.coupling.lnks[0]['rgba'] = [.2, .2, .2, 1]
         self.coupling.reinitialize()
         # suction center

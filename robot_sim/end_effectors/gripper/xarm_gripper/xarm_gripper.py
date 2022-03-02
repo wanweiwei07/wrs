@@ -41,45 +41,45 @@ class XArmGripper(gi.GripperInterface):
         self.lft_outer.lnks[0]['loc_pos'] = np.zeros(3)
         self.lft_outer.lnks[0]['com'] = np.array([-0.00065489, -0.0018497, 0.048028])
         self.lft_outer.lnks[0]['mass'] = 0.5415
-        self.lft_outer.lnks[0]['meshfile'] = os.path.join(this_dir, "meshes", "base_link.stl")
+        self.lft_outer.lnks[0]['mesh_file'] = os.path.join(this_dir, "meshes", "base_link.stl")
         self.lft_outer.lnks[1]['name'] = 'lnk_left_outer_knuckle'
         self.lft_outer.lnks[1]['loc_pos'] = np.zeros(3)
         self.lft_outer.lnks[1]['com'] = np.array([2.9948e-14, 0.021559, 0.015181])
         self.lft_outer.lnks[1]['mass'] = 0.033618
-        self.lft_outer.lnks[1]['meshfile'] = os.path.join(this_dir, "meshes", "left_outer_knuckle.stl")
+        self.lft_outer.lnks[1]['mesh_file'] = os.path.join(this_dir, "meshes", "left_outer_knuckle.stl")
         self.lft_outer.lnks[1]['rgba'] = [.2, .2, .2, 1]
         self.lft_outer.lnks[2]['name'] = 'lnk_left_finger'
         self.lft_outer.lnks[2]['loc_pos'] = np.zeros(3)
         self.lft_outer.lnks[2]['com'] = np.array([-2.4536e-14, -0.016413, 0.029258])
         self.lft_outer.lnks[2]['mass'] = 0.048304
-        self.lft_outer.lnks[2]['meshfile'] = os.path.join(this_dir, "meshes", "left_finger.stl")
+        self.lft_outer.lnks[2]['mesh_file'] = os.path.join(this_dir, "meshes", "left_finger.stl")
         self.lft_outer.lnks[2]['rgba'] = [.2, .2, .2, 1]
         # - lft_inner
         self.lft_inner.lnks[1]['name'] = 'lnk_left_inner_knuckle'
         self.lft_inner.lnks[1]['loc_pos'] = np.zeros(3)
         self.lft_inner.lnks[1]['com'] = np.array([2.9948e-14, 0.021559, 0.015181])
         self.lft_inner.lnks[1]['mass'] = 0.033618
-        self.lft_inner.lnks[1]['meshfile'] = os.path.join(this_dir, "meshes", "left_inner_knuckle.stl")
+        self.lft_inner.lnks[1]['mesh_file'] = os.path.join(this_dir, "meshes", "left_inner_knuckle.stl")
         self.lft_inner.lnks[1]['rgba'] = [.2, .2, .2, 1]
         # - rgt_outer
         self.rgt_outer.lnks[1]['name'] = 'lnk_right_outer_knuckle'
         self.rgt_outer.lnks[1]['loc_pos'] = np.zeros(3)
         self.rgt_outer.lnks[1]['com'] = np.array([-3.1669e-14, -0.021559, 0.015181])
         self.rgt_outer.lnks[1]['mass'] = 0.033618
-        self.rgt_outer.lnks[1]['meshfile'] = os.path.join(this_dir, "meshes", "right_outer_knuckle.stl")
+        self.rgt_outer.lnks[1]['mesh_file'] = os.path.join(this_dir, "meshes", "right_outer_knuckle.stl")
         self.rgt_outer.lnks[1]['rgba'] = [.2, .2, .2, 1]
         self.rgt_outer.lnks[2]['name'] = 'lnk_right_finger'
         self.rgt_outer.lnks[2]['loc_pos'] = np.zeros(3)
         self.rgt_outer.lnks[2]['com'] = np.array([2.5618e-14, 0.016413, 0.029258])
         self.rgt_outer.lnks[2]['mass'] = 0.048304
-        self.rgt_outer.lnks[2]['meshfile'] = os.path.join(this_dir, "meshes", "right_finger.stl")
+        self.rgt_outer.lnks[2]['mesh_file'] = os.path.join(this_dir, "meshes", "right_finger.stl")
         self.rgt_outer.lnks[2]['rgba'] = [.2, .2, .2, 1]
         # - rgt_inner
         self.rgt_inner.lnks[1]['name'] = 'lnk_right_inner_knuckle'
         self.rgt_inner.lnks[1]['loc_pos'] = np.zeros(3)
         self.rgt_inner.lnks[1]['com'] = np.array([1.866e-06, -0.022047, 0.026133])
         self.rgt_inner.lnks[1]['mass'] = 0.023013
-        self.rgt_inner.lnks[1]['meshfile'] = os.path.join(this_dir, "meshes", "right_inner_knuckle.stl")
+        self.rgt_inner.lnks[1]['mesh_file'] = os.path.join(this_dir, "meshes", "right_inner_knuckle.stl")
         self.rgt_inner.lnks[1]['rgba'] = [.2, .2, .2, 1]
         # reinitialize
         self.lft_outer.reinitialize()
@@ -114,7 +114,7 @@ class XArmGripper(gi.GripperInterface):
                                    self.rgt_outer.lnks[2]]
         # cdmesh
         for cdelement in self.all_cdelements:
-            cdmesh = cdelement['collisionmodel'].copy()
+            cdmesh = cdelement['collision_model'].copy()
             self.cdmesh_collection.add_cm(cdmesh)
 
     def fix_to(self, pos, rotmat, motion_val=None):

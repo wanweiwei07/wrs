@@ -17,7 +17,7 @@ class MVFLN40(si.SuctionInterface):
         self.jlc.jnts[1]['loc_pos'] = np.array([0, .0, .068])
         self.jlc.lnks[0]['name'] = "mvfln40"
         self.jlc.lnks[0]['loc_pos'] = np.zeros(3)
-        self.jlc.lnks[0]['meshfile'] = os.path.join(this_dir, "meshes", "mvfln40.stl")
+        self.jlc.lnks[0]['mesh_file'] = os.path.join(this_dir, "meshes", "mvfln40.stl")
         self.jlc.lnks[0]['rgba'] = [.55, .55, .55, 1]
         # reinitialize
         self.jlc.reinitialize()
@@ -37,7 +37,7 @@ class MVFLN40(si.SuctionInterface):
             self.all_cdelements = self.cc.all_cdelements
         # cdmesh
         for cdelement in self.all_cdelements:
-            cdmesh = cdelement['collisionmodel'].copy()
+            cdmesh = cdelement['collision_model'].copy()
             self.cdmesh_collection.add_cm(cdmesh)
 
     def fix_to(self, pos, rotmat):

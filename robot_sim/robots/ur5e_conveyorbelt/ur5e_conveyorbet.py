@@ -24,16 +24,16 @@ class UR5EConveyorBelt(ri.RobotInterface):
         self.base_stand.jnts[2]['loc_pos'] = np.array([0, 1.23, 0])
         self.base_stand.jnts[3]['loc_pos'] = np.array([0, 0, 0])
         self.base_stand.jnts[4]['loc_pos'] = np.array([-.9, .27, 0.06])
-        self.base_stand.lnks[0]['collisionmodel'] = cm.CollisionModel(
+        self.base_stand.lnks[0]['collision_model'] = cm.CollisionModel(
             os.path.join(this_dir, "meshes", "ur5e_base.stl"),
             cdprimit_type="user_defined", expand_radius=.005,
             userdefined_cdprimitive_fn=self._base_combined_cdnp)
         self.base_stand.lnks[0]['rgba'] = [.35, .35, .35, 1]
-        self.base_stand.lnks[1]['meshfile'] = os.path.join(this_dir, "meshes", "conveyor.stl")
+        self.base_stand.lnks[1]['mesh_file'] = os.path.join(this_dir, "meshes", "conveyor.stl")
         self.base_stand.lnks[1]['rgba'] = [.35, .55, .35, 1]
-        self.base_stand.lnks[2]['meshfile'] = os.path.join(this_dir, "meshes", "camera_stand.stl")
+        self.base_stand.lnks[2]['mesh_file'] = os.path.join(this_dir, "meshes", "camera_stand.stl")
         self.base_stand.lnks[2]['rgba'] = [.55, .55, .55, 1]
-        self.base_stand.lnks[3]['meshfile'] = os.path.join(this_dir, "meshes", "cameras.stl")
+        self.base_stand.lnks[3]['mesh_file'] = os.path.join(this_dir, "meshes", "cameras.stl")
         self.base_stand.lnks[3]['rgba'] = [.55, .55, .55, 1]
         self.base_stand.reinitialize()
         # arm
@@ -120,7 +120,7 @@ class UR5EConveyorBelt(ri.RobotInterface):
                     self.hnd.rgt_outer.lnks[3]]
         self.cc.set_cdpair(fromlist, intolist)
         for oih_info in self.oih_infos:
-            objcm = oih_info['collisionmodel']
+            objcm = oih_info['collision_model']
             self.hold(objcm)
 
     def fix_to(self, pos, rotmat):
@@ -202,7 +202,7 @@ class UR5EConveyorBelt(ri.RobotInterface):
     def get_oih_list(self):
         return_list = []
         for obj_info in self.oih_infos:
-            objcm = obj_info['collisionmodel']
+            objcm = obj_info['collision_model']
             objcm.set_pos(obj_info['gl_pos'])
             objcm.set_rotmat(obj_info['gl_rotmat'])
             return_list.append(objcm)
@@ -220,7 +220,7 @@ class UR5EConveyorBelt(ri.RobotInterface):
         if jawwidth is not None:
             self.hnd_dict[hnd_name].jaw_to(jawwidth)
         for obj_info in self.oih_infos:
-            if obj_info['collisionmodel'] is objcm:
+            if obj_info['collision_model'] is objcm:
                 self.cc.delete_cdobj(obj_info)
                 self.oih_infos.remove(obj_info)
                 break
@@ -274,7 +274,7 @@ class UR5EConveyorBelt(ri.RobotInterface):
                                toggle_jntscs=toggle_jntscs,
                                rgba=rgba).attach_to(meshmodel)
         for obj_info in self.oih_infos:
-            objcm = obj_info['collisionmodel']
+            objcm = obj_info['collision_model']
             objcm.set_pos(obj_info['gl_pos'])
             objcm.set_rotmat(obj_info['gl_rotmat'])
             objcm.copy().attach_to(meshmodel)

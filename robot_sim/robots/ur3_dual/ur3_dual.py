@@ -39,7 +39,7 @@ class UR3Dual(ri.RobotInterface):
         # body
         self.lft_body.lnks[0]['name'] = "ur3_dual_lft_body"
         self.lft_body.lnks[0]['loc_pos'] = np.array([0, 0, 0])
-        self.lft_body.lnks[0]['collisionmodel'] = cm.CollisionModel(
+        self.lft_body.lnks[0]['collision_model'] = cm.CollisionModel(
             os.path.join(this_dir, "meshes", "ur3_dual_base.stl"),
             cdprimit_type="user_defined", expand_radius=.005,
             userdefined_cdprimitive_fn=self._base_combined_cdnp)
@@ -47,68 +47,68 @@ class UR3Dual(ri.RobotInterface):
         # columns
         self.lft_body.lnks[1]['name'] = "ur3_dual_back_rgt_column"
         self.lft_body.lnks[1]['loc_pos'] = np.array([-0.41, -0.945, 0])
-        self.lft_body.lnks[1]['collisionmodel'] = cm.CollisionModel(
+        self.lft_body.lnks[1]['collision_model'] = cm.CollisionModel(
             os.path.join(this_dir, "meshes", "ur3_dual_column2400x60x60.stl"))
         self.lft_body.lnks[2]['name'] = "ur3_dual_back_lft_column"
         self.lft_body.lnks[2]['loc_pos'] = np.array([-0.41, 0.945, 0])
-        self.lft_body.lnks[2]['collisionmodel'] = cm.CollisionModel(
+        self.lft_body.lnks[2]['collision_model'] = cm.CollisionModel(
             os.path.join(this_dir, "meshes", "ur3_dual_column2400x60x60.stl"))
         self.lft_body.lnks[3]['name'] = "ur3_dual_front_rgt_column"
         self.lft_body.lnks[3]['loc_pos'] = np.array([0.73, -0.945, 0])
-        self.lft_body.lnks[3]['collisionmodel'] = cm.CollisionModel(
+        self.lft_body.lnks[3]['collision_model'] = cm.CollisionModel(
             os.path.join(this_dir, "meshes", "ur3_dual_column2400x60x60.stl"))
         self.lft_body.lnks[4]['name'] = "ur3_dual_front_lft_column"
         self.lft_body.lnks[4]['loc_pos'] = np.array([0.73, 0.945, 0])
-        self.lft_body.lnks[4]['collisionmodel'] = cm.CollisionModel(
+        self.lft_body.lnks[4]['collision_model'] = cm.CollisionModel(
             os.path.join(this_dir, "meshes", "ur3_dual_column2400x60x60.stl"))
         # x_rows
         self.lft_body.lnks[5]['name'] = "ur3_dual_up_rgt_xrow"
         self.lft_body.lnks[5]['loc_pos'] = np.array([-0.38, -0.945, 2.37])
         self.lft_body.lnks[5]['loc_rotmat'] = rm.rotmat_from_euler(0, math.pi / 2, 0)
-        self.lft_body.lnks[5]['collisionmodel'] = cm.CollisionModel(
+        self.lft_body.lnks[5]['collision_model'] = cm.CollisionModel(
             os.path.join(this_dir, "meshes", "ur3_dual_column1080x60x60.stl"))
         self.lft_body.lnks[6]['name'] = "ur3_dual_bottom_rgt_xrow"
         self.lft_body.lnks[6]['loc_pos'] = np.array([-0.38, -0.945, 1.07])
         self.lft_body.lnks[6]['loc_rotmat'] = rm.rotmat_from_euler(0, math.pi / 2, 0)
-        self.lft_body.lnks[6]['collisionmodel'] = cm.CollisionModel(
+        self.lft_body.lnks[6]['collision_model'] = cm.CollisionModel(
             os.path.join(this_dir, "meshes", "ur3_dual_column1080x60x60.stl"))
         self.lft_body.lnks[7]['name'] = "ur3_dual_up_lft_xrow"
         self.lft_body.lnks[7]['loc_pos'] = np.array([-0.38, 0.945, 2.37])
         self.lft_body.lnks[7]['loc_rotmat'] = rm.rotmat_from_euler(0, math.pi / 2, 0)
-        self.lft_body.lnks[7]['collisionmodel'] = cm.CollisionModel(
+        self.lft_body.lnks[7]['collision_model'] = cm.CollisionModel(
             os.path.join(this_dir, "meshes", "ur3_dual_column1080x60x60.stl"))
         self.lft_body.lnks[8]['name'] = "ur3_dual_bottom_lft_xrow"
         self.lft_body.lnks[8]['loc_pos'] = np.array([-0.38, 0.945, 1.07])
         self.lft_body.lnks[8]['loc_rotmat'] = rm.rotmat_from_euler(0, math.pi / 2, 0)
-        self.lft_body.lnks[8]['collisionmodel'] = cm.CollisionModel(
+        self.lft_body.lnks[8]['collision_model'] = cm.CollisionModel(
             os.path.join(this_dir, "meshes", "ur3_dual_column1080x60x60.stl"))
         # y_rows
         self.lft_body.lnks[9]['name'] = "ur3_dual_back_up_yrow"
         self.lft_body.lnks[9]['loc_pos'] = np.array([-0.41, -0.915, 2.37])
         self.lft_body.lnks[9]['loc_rotmat'] = rm.rotmat_from_euler(-math.pi / 2, 0, 0)
-        self.lft_body.lnks[9]['collisionmodel'] = cm.CollisionModel(
+        self.lft_body.lnks[9]['collision_model'] = cm.CollisionModel(
             os.path.join(this_dir, "meshes", "ur3_dual_column1830x60x60.stl"))
         self.lft_body.lnks[10]['name'] = "ur3_dual_back_bottom_yrow"
         self.lft_body.lnks[10]['loc_pos'] = np.array([-0.41, -0.915, 0.35])
         self.lft_body.lnks[10]['loc_rotmat'] = rm.rotmat_from_euler(-math.pi / 2, 0, 0)
-        self.lft_body.lnks[10]['collisionmodel'] = cm.CollisionModel(
+        self.lft_body.lnks[10]['collision_model'] = cm.CollisionModel(
             os.path.join(this_dir, "meshes", "ur3_dual_column1830x60x60.stl"))
         self.lft_body.lnks[11]['name'] = "ur3_dual_front_up_yrow"
         self.lft_body.lnks[11]['loc_pos'] = np.array([0.73, -0.915, 2.37])
         self.lft_body.lnks[11]['loc_rotmat'] = rm.rotmat_from_euler(-math.pi / 2, 0, 0)
-        self.lft_body.lnks[11]['collisionmodel'] = cm.CollisionModel(
+        self.lft_body.lnks[11]['collision_model'] = cm.CollisionModel(
             os.path.join(this_dir, "meshes", "ur3_dual_column1830x60x60.stl"))
         # table TODO update using vision sensors
         self.lft_body.lnks[12]['name'] = "ur3_dual_table"
         self.lft_body.lnks[12]['loc_pos'] = np.array([0.36, 0.0, 1.046])
         self.lft_body.lnks[12]['loc_rotmat'] = rm.rotmat_from_euler(0, 0, math.pi / 2)
-        self.lft_body.lnks[12]['collisionmodel'] = cm.CollisionModel(
+        self.lft_body.lnks[12]['collision_model'] = cm.CollisionModel(
             os.path.join(this_dir, "meshes", "ur3_dual_table1820x54x800.stl"))
         self.lft_body.lnks[12]['rgba'] = [.9, .77, .52, 1.0]
         # mounter
         self.lft_body.lnks[13]['name'] = "ur3_dual_mounter"
         self.lft_body.lnks[13]['loc_pos'] = np.array([0.0, 0.0, 1.439])
-        self.lft_body.lnks[13]['collisionmodel'] = cm.CollisionModel(
+        self.lft_body.lnks[13]['collision_model'] = cm.CollisionModel(
             os.path.join(this_dir, "meshes", "mounter.stl"))
         self.lft_body.lnks[13]['rgba'] = [.55, .55, .55, 1.0]
         self.lft_body.reinitialize()
@@ -129,14 +129,14 @@ class UR3Dual(ri.RobotInterface):
         self.lft_ft_sensor.jnts[1]['loc_pos'] = np.array([.0, .0, .0484])
         self.lft_ft_sensor.lnks[0]['name'] = "ur3_dual_lft_ft_sensor"
         self.lft_ft_sensor.lnks[0]['loc_pos'] = np.array([0, 0, 0])
-        self.lft_ft_sensor.lnks[0]['collisionmodel'] = cm.gen_stick(spos=self.lft_ft_sensor.jnts[0]['loc_pos'],
-                                                                    epos=self.lft_ft_sensor.jnts[1]['loc_pos'],
-                                                                    thickness=.067, rgba=[.2, .3, .3, 1], sections=24)
+        self.lft_ft_sensor.lnks[0]['collision_model'] = cm.gen_stick(spos=self.lft_ft_sensor.jnts[0]['loc_pos'],
+                                                                     epos=self.lft_ft_sensor.jnts[1]['loc_pos'],
+                                                                     thickness=.067, rgba=[.2, .3, .3, 1], sections=24)
         self.lft_ft_sensor.reinitialize()
         # lft hand
         self.lft_hnd = rtq_gs.Robotiq85GelsightPusher(pos=self.lft_ft_sensor.jnts[-1]['gl_posq'],
-                                                rotmat=self.lft_ft_sensor.jnts[-1]['gl_rotmatq'],
-                                                enable_cc=False)
+                                                      rotmat=self.lft_ft_sensor.jnts[-1]['gl_rotmatq'],
+                                                      enable_cc=False)
         # rigth side
         self.rgt_body = jl.JLChain(pos=pos, rotmat=rotmat, homeconf=np.zeros(0), name='rgt_body_jl')
         self.rgt_body.jnts[1]['loc_pos'] = np.array([.0, -.258485281374, 1.61051471863])  # right from robot_s view
@@ -144,15 +144,15 @@ class UR3Dual(ri.RobotInterface):
                                                                    .0)  # left from robot_s view
         self.rgt_body.lnks[0]['name'] = "ur3_dual_rgt_body"
         self.rgt_body.lnks[0]['loc_pos'] = np.array([0, 0, 0])
-        self.rgt_body.lnks[0]['meshfile'] = None
+        self.rgt_body.lnks[0]['mesh_file'] = None
         self.rgt_body.lnks[0]['rgba'] = [.3, .3, .3, 1.0]
         self.rgt_body.reinitialize()
         rgt_arm_homeconf = np.zeros(6)
         rgt_arm_homeconf[0] = -math.pi / 12.0
         rgt_arm_homeconf[1] = -math.pi * 2.0 / 3.0
-        rgt_arm_homeconf[2] =  math.pi * 2.0 / 3.0
-        lft_arm_homeconf[3] =  math.pi
-        rgt_arm_homeconf[4] =  math.pi / 2.0
+        rgt_arm_homeconf[2] = math.pi * 2.0 / 3.0
+        lft_arm_homeconf[3] = math.pi
+        rgt_arm_homeconf[4] = math.pi / 2.0
         self.rgt_arm = ur.UR3(pos=self.rgt_body.jnts[-1]['gl_posq'],
                               rotmat=self.rgt_body.jnts[-1]['gl_rotmatq'],
                               homeconf=rgt_arm_homeconf,
@@ -164,9 +164,9 @@ class UR3Dual(ri.RobotInterface):
         self.rgt_ft_sensor.jnts[1]['loc_pos'] = np.array([.0, .0, .0484])
         self.rgt_ft_sensor.lnks[0]['name'] = "ur3_dual_rgt_ft_sensor"
         self.rgt_ft_sensor.lnks[0]['loc_pos'] = np.array([0, 0, 0])
-        self.rgt_ft_sensor.lnks[0]['collisionmodel'] = cm.gen_stick(spos=self.rgt_ft_sensor.jnts[0]['loc_pos'],
-                                                                    epos=self.rgt_ft_sensor.jnts[1]['loc_pos'],
-                                                                    thickness=.067, rgba=[.2, .3, .3, 1], sections=24)
+        self.rgt_ft_sensor.lnks[0]['collision_model'] = cm.gen_stick(spos=self.rgt_ft_sensor.jnts[0]['loc_pos'],
+                                                                     epos=self.rgt_ft_sensor.jnts[1]['loc_pos'],
+                                                                     thickness=.067, rgba=[.2, .3, .3, 1], sections=24)
         self.rgt_ft_sensor.reinitialize()
         # TODO replace using copy
         self.rgt_hnd = rtq.Robotiq85(pos=self.rgt_ft_sensor.jnts[-1]['gl_posq'],
@@ -573,7 +573,7 @@ class UR3Dual(ri.RobotInterface):
             raise ValueError("hnd_name must be lft_hnd or rgt_hnd!")
         return_list = []
         for obj_info in oih_infos:
-            objcm = obj_info['collisionmodel']
+            objcm = obj_info['collision_model']
             objcm.set_pos(obj_info['gl_pos'])
             objcm.set_rotmat(obj_info['gl_rotmat'])
             return_list.append(objcm)
@@ -615,7 +615,7 @@ class UR3Dual(ri.RobotInterface):
         else:
             raise ValueError("hnd_name must be lft_hnd or rgt_hnd!")
         for obj_info in oih_info_list:
-            if obj_info['collisionmodel'] is objcm:
+            if obj_info['collision_model'] is objcm:
                 return rm.homomat_from_posrot(obj_info['rel_pos']), obj_info['rel_rotmat']
 
     def release(self, hnd_name, objcm, jaw_width=None):
@@ -635,7 +635,7 @@ class UR3Dual(ri.RobotInterface):
         if jaw_width is not None:
             self.jaw_to(hnd_name, jaw_width)
         for obj_info in oih_infos:
-            if obj_info['collisionmodel'] is objcm:
+            if obj_info['collision_model'] is objcm:
                 self.cc.delete_cdobj(obj_info)
                 oih_infos.remove(obj_info)
                 break
@@ -743,12 +743,12 @@ class UR3Dual(ri.RobotInterface):
                                          toggle_jntscs=toggle_jntscs,
                                          rgba=rgba).attach_to(meshmodel)
         for obj_info in self.lft_oih_infos:
-            objcm = obj_info['collisionmodel']
+            objcm = obj_info['collision_model']
             objcm.set_pos(obj_info['gl_pos'])
             objcm.set_rotmat(obj_info['gl_rotmat'])
             objcm.copy().attach_to(meshmodel)
         for obj_info in self.rgt_oih_infos:
-            objcm = obj_info['collisionmodel']
+            objcm = obj_info['collision_model']
             objcm.set_pos(obj_info['gl_pos'])
             objcm.set_rotmat(obj_info['gl_rotmat'])
             objcm.copy().attach_to(meshmodel)

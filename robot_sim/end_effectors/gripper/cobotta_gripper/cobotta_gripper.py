@@ -23,15 +23,15 @@ class CobottaGripper(gp.GripperInterface):
         self.jlc.jnts[2]['loc_motionax'] = np.array([0, 1, 0])
         self.jlc.lnks[0]['name'] = "base"
         self.jlc.lnks[0]['loc_pos'] = np.zeros(3)
-        self.jlc.lnks[0]['meshfile'] = os.path.join(this_dir, "meshes", "gripper_base.dae")
+        self.jlc.lnks[0]['mesh_file'] = os.path.join(this_dir, "meshes", "gripper_base.dae")
         self.jlc.lnks[0]['rgba'] = [.35, .35, .35, 1]
         self.jlc.lnks[1]['name'] = "finger1"
         self.jlc.lnks[1]['loc_pos'] = np.array([0, 0, -.06])
-        self.jlc.lnks[1]['meshfile'] = os.path.join(this_dir, "meshes", "left_finger.dae")
+        self.jlc.lnks[1]['mesh_file'] = os.path.join(this_dir, "meshes", "left_finger.dae")
         self.jlc.lnks[1]['rgba'] = [.5, .5, .5, 1]
         self.jlc.lnks[2]['name'] = "finger2"
         self.jlc.lnks[2]['loc_pos'] = np.array([0, 0, -.06])
-        self.jlc.lnks[2]['meshfile'] = os.path.join(this_dir, "meshes", "right_finger.dae")
+        self.jlc.lnks[2]['mesh_file'] = os.path.join(this_dir, "meshes", "right_finger.dae")
         self.jlc.lnks[2]['rgba'] = [.5, .5, .5, 1]
         # jaw width
         self.jawwidth_rng = [0.0, .03]
@@ -55,7 +55,7 @@ class CobottaGripper(gp.GripperInterface):
             self.all_cdelements = self.cc.all_cdelements
         # cdmesh
         for cdelement in self.all_cdelements:
-            cdmesh = cdelement['collisionmodel'].copy()
+            cdmesh = cdelement['collision_model'].copy()
             self.cdmesh_collection.add_cm(cdmesh)
 
     def fix_to(self, pos, rotmat, jaw_width=None):

@@ -20,11 +20,11 @@ class TBM(object):
         self.head.jnts[1]['loc_motionax'] = np.array([1, 0, 0])
         self.head.lnks[0]['name'] = 'tbm_front_shield'
         self.head.lnks[0]['loc_pos'] = np.array([0, 0, 0])
-        self.head.lnks[0]['meshfile'] = os.path.join(this_dir, 'meshes', 'tbm_front_shield.stl')
+        self.head.lnks[0]['mesh_file'] = os.path.join(this_dir, 'meshes', 'tbm_front_shield.stl')
         self.head.lnks[0]['rgba'] = [.7, .7, .7, .3]
         self.head.lnks[1]['name'] = 'tbm_cutter_head'
         self.head.lnks[1]['loc_pos'] = np.array([0, 0, 0])
-        self.head.lnks[1]['meshfile'] = os.path.join(this_dir, 'meshes', 'tbm_cutter_head.stl')
+        self.head.lnks[1]['mesh_file'] = os.path.join(this_dir, 'meshes', 'tbm_cutter_head.stl')
         self.head.lnks[1]['rgba'] = [.7, .3, .3, 1]
         self.head.tgtjnts = [1]
         self.head.reinitialize()
@@ -305,7 +305,7 @@ class TBM(object):
                 tmp_jlc.jnts[1]['loc_motionax'] = np.array([0, 0, 1])
                 tmp_jlc.lnks[1]['name'] = 'cutter'
                 tmp_jlc.lnks[1]['loc_pos'] = np.array([0, 0, 0])
-                tmp_jlc.lnks[1]['meshfile'] = os.path.join(this_dir, 'meshes', 'cutter.stl')
+                tmp_jlc.lnks[1]['mesh_file'] = os.path.join(this_dir, 'meshes', 'cutter.stl')
                 tmp_jlc.lnks[1]['rgba'] = [1, 1, .0, 1.0]
                 tmp_jlc.tgtjnts = [1]
                 tmp_jlc.reinitialize()

@@ -39,25 +39,25 @@ class IRB14050(mi.ManipulatorInterface):
         self.jlc.jnts[7]['motion_rng'] = [-3.99680398707 + jnt_safemargin, 3.99680398707 - jnt_safemargin]
         # links
         self.jlc.lnks[1]['name'] = "link_1"
-        self.jlc.lnks[1]['meshfile'] = os.path.join(this_dir, "meshes", "link_1.stl")
+        self.jlc.lnks[1]['mesh_file'] = os.path.join(this_dir, "meshes", "link_1.stl")
         self.jlc.lnks[1]['rgba'] = [.5, .5, .5, 1]
         self.jlc.lnks[2]['name'] = "link_2"
-        self.jlc.lnks[2]['meshfile'] = os.path.join(this_dir, "meshes", "link_2.stl")
+        self.jlc.lnks[2]['mesh_file'] = os.path.join(this_dir, "meshes", "link_2.stl")
         self.jlc.lnks[2]['rgba'] = [.929, .584, .067, 1]
         self.jlc.lnks[3]['name'] = "link_3"
-        self.jlc.lnks[3]['meshfile'] = os.path.join(this_dir, "meshes", "link_3.stl")
+        self.jlc.lnks[3]['mesh_file'] = os.path.join(this_dir, "meshes", "link_3.stl")
         self.jlc.lnks[3]['rgba'] = [.7, .7, .7, 1]
         self.jlc.lnks[4]['name'] = "link_4"
-        self.jlc.lnks[4]['meshfile'] = os.path.join(this_dir, "meshes", "link_4.stl")
+        self.jlc.lnks[4]['mesh_file'] = os.path.join(this_dir, "meshes", "link_4.stl")
         self.jlc.lnks[4]['rgba'] = [0.180, .4, 0.298, 1]
         self.jlc.lnks[5]['name'] = "link_5"
-        self.jlc.lnks[5]['meshfile'] = os.path.join(this_dir, "meshes", "link_5.stl")
+        self.jlc.lnks[5]['mesh_file'] = os.path.join(this_dir, "meshes", "link_5.stl")
         self.jlc.lnks[5]['rgba'] = [.7, .7, .7, 1]
         self.jlc.lnks[6]['name'] = "link_6"
-        self.jlc.lnks[6]['meshfile'] = os.path.join(this_dir, "meshes", "link_6.stl")
+        self.jlc.lnks[6]['mesh_file'] = os.path.join(this_dir, "meshes", "link_6.stl")
         self.jlc.lnks[6]['rgba'] = [0.180, .4, 0.298, 1]
         self.jlc.lnks[7]['name'] = "link_7"
-        # self.jlc.lnks[7]['meshfile'] = os.path.join(this_dir, "meshes", "link_7.stl") # not really needed to visualize
+        # self.jlc.lnks[7]['mesh_file'] = os.path.join(this_dir, "meshes", "link_7.stl") # not really needed to visualize
         # self.jlc.lnks[7]['rgba'] = [.5,.5,.5,1]
         # reinitialization
         self.jlc.reinitialize()

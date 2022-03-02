@@ -39,37 +39,37 @@ class SIA5(mi.ManipulatorInterface):
         # links
         self.jlc.lnks[0]['name'] = "base"
         self.jlc.lnks[0]['loc_pos'] = np.zeros(3)
-        self.jlc.lnks[0]['meshfile'] = os.path.join(this_dir, "meshes", "base.dae")
+        self.jlc.lnks[0]['mesh_file'] = os.path.join(this_dir, "meshes", "base.dae")
         self.jlc.lnks[0]['rgba'] = [.35,.35,.35, 1.0]
         self.jlc.lnks[1]['name'] = "link_s"
         self.jlc.lnks[1]['loc_pos'] = np.zeros(3)
         self.jlc.lnks[1]['loc_rotmat'] = rm.rotmat_from_euler(0, 0, math.pi)
-        self.jlc.lnks[1]['meshfile'] = os.path.join(this_dir, "meshes", "link_s.dae")
+        self.jlc.lnks[1]['mesh_file'] = os.path.join(this_dir, "meshes", "link_s.dae")
         self.jlc.lnks[1]['rgba'] = [.55,.55,.55, 1.0]
         self.jlc.lnks[2]['name'] = "link_l"
         self.jlc.lnks[2]['loc_pos'] = np.zeros(3)
         self.jlc.lnks[2]['loc_rotmat'] = rm.rotmat_from_euler(0, 0, math.pi)
-        self.jlc.lnks[2]['meshfile'] = os.path.join(this_dir, "meshes", "link_l.dae")
+        self.jlc.lnks[2]['mesh_file'] = os.path.join(this_dir, "meshes", "link_l.dae")
         self.jlc.lnks[2]['rgba'] = [.1,.3,.5, 1.0]
         self.jlc.lnks[3]['name'] = "link_e"
         self.jlc.lnks[3]['loc_pos'] = np.zeros(3)
-        self.jlc.lnks[3]['meshfile'] = os.path.join(this_dir, "meshes", "link_e.dae")
+        self.jlc.lnks[3]['mesh_file'] = os.path.join(this_dir, "meshes", "link_e.dae")
         self.jlc.lnks[3]['rgba'] = [.7,.7,.7, 1.0]
         self.jlc.lnks[4]['name'] = "link_u"
         self.jlc.lnks[4]['loc_pos'] = np.zeros(3)
-        self.jlc.lnks[4]['meshfile'] = os.path.join(this_dir, "meshes", "link_u.dae")
+        self.jlc.lnks[4]['mesh_file'] = os.path.join(this_dir, "meshes", "link_u.dae")
         self.jlc.lnks[4]['rgba'] = [.1,.3,.5, 1.0]
         self.jlc.lnks[5]['name'] = "link_r"
         self.jlc.lnks[5]['loc_pos'] = np.zeros(3)
-        self.jlc.lnks[5]['meshfile'] = os.path.join(this_dir, "meshes", "link_r.dae")
+        self.jlc.lnks[5]['mesh_file'] = os.path.join(this_dir, "meshes", "link_r.dae")
         self.jlc.lnks[5]['rgba'] = [.7,.7,.7, 1.0]
         self.jlc.lnks[6]['name'] = "link_b"
         self.jlc.lnks[6]['loc_pos'] = np.zeros(3)
-        self.jlc.lnks[6]['meshfile'] = os.path.join(this_dir, "meshes", "link_b.dae")
+        self.jlc.lnks[6]['mesh_file'] = os.path.join(this_dir, "meshes", "link_b.dae")
         self.jlc.lnks[6]['rgba'] = [.1,.3,.5, 1.0]
         self.jlc.lnks[7]['name'] = "link_t"
         self.jlc.lnks[7]['loc_pos'] = np.zeros(3)
-        self.jlc.lnks[7]['meshfile'] = os.path.join(this_dir, "meshes", "link_t.dae")
+        self.jlc.lnks[7]['mesh_file'] = os.path.join(this_dir, "meshes", "link_t.dae")
         self.jlc.lnks[7]['rgba'] = [.7,.7,.7, 1.0]
         # reinitialization
         # self.jlc.setinitvalues(np.array([-math.pi/2, math.pi/3, math.pi/6, 0, 0, 0, 0]))

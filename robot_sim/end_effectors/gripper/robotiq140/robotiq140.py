@@ -60,29 +60,29 @@ class Robotiq140(gp.GripperInterface):
         self.lft_outer.lnks[0]['loc_pos'] = np.zeros(3)
         self.lft_outer.lnks[0]['com'] = np.array([8.625e-08, -4.6583e-06, 0.03145])
         self.lft_outer.lnks[0]['mass'] = 0.22652
-        self.lft_outer.lnks[0]['meshfile'] = os.path.join(this_dir, "meshes", "robotiq_arg2f_base_link.stl")
+        self.lft_outer.lnks[0]['mesh_file'] = os.path.join(this_dir, "meshes", "robotiq_arg2f_base_link.stl")
         self.lft_outer.lnks[0]['rgba'] = [.2, .2, .2, 1]
         self.lft_outer.lnks[1]['name'] = "left_outer_knuckle"
         self.lft_outer.lnks[1]['loc_pos'] = np.zeros(3)
         self.lft_outer.lnks[1]['com'] = np.array([-0.000200000000003065, 0.0199435877845359, 0.0292245259211331])
         self.lft_outer.lnks[1]['mass'] = 0.00853198276973456
-        self.lft_outer.lnks[1]['meshfile'] = os.path.join(this_dir, "meshes", "robotiq_arg2f_140_outer_knuckle.stl")
+        self.lft_outer.lnks[1]['mesh_file'] = os.path.join(this_dir, "meshes", "robotiq_arg2f_140_outer_knuckle.stl")
         self.lft_outer.lnks[1]['rgba'] = [0.792156862745098, 0.819607843137255, 0.933333333333333, 1]
         self.lft_outer.lnks[2]['name'] = "left_outer_finger"
         self.lft_outer.lnks[2]['loc_pos'] = np.zeros(3)
         self.lft_outer.lnks[2]['com'] = np.array([0.00030115855001899, 0.0373907951953854, -0.0208027427000385])
         self.lft_outer.lnks[2]['mass'] = 0.022614240507152
-        self.lft_outer.lnks[2]['meshfile'] = os.path.join(this_dir, "meshes", "robotiq_arg2f_140_outer_finger.stl")
+        self.lft_outer.lnks[2]['mesh_file'] = os.path.join(this_dir, "meshes", "robotiq_arg2f_140_outer_finger.stl")
         self.lft_outer.lnks[2]['rgba'] = [.2, .2, .2, 1]
         self.lft_outer.lnks[3]['name'] = "left_inner_finger"
         self.lft_outer.lnks[3]['loc_pos'] = np.zeros(3)
         self.lft_outer.lnks[3]['com'] = np.array([0.000299999999999317, 0.0160078233491243, -0.0136945669206257])
         self.lft_outer.lnks[3]['mass'] = 0.0104003125914103
-        self.lft_outer.lnks[3]['meshfile'] = os.path.join(this_dir, "meshes", "robotiq_arg2f_140_inner_finger.stl")
+        self.lft_outer.lnks[3]['mesh_file'] = os.path.join(this_dir, "meshes", "robotiq_arg2f_140_inner_finger.stl")
         self.lft_outer.lnks[3]['rgba'] = [.2, .2, .2, 1]
         self.lft_outer.lnks[4]['name'] = "left_inner_finger_pad"
         self.lft_outer.lnks[4]['loc_pos'] = np.zeros(3)
-        self.lft_outer.lnks[4]['meshfile'] = os.path.join(this_dir, "meshes", "robotiq_arg2f_140_pad.stl")
+        self.lft_outer.lnks[4]['mesh_file'] = os.path.join(this_dir, "meshes", "robotiq_arg2f_140_pad.stl")
         self.lft_outer.lnks[4]['scale'] = [1e-3, 1e-3, 1e-3]
         self.lft_outer.lnks[4]['rgba'] = [0.792156862745098, 0.819607843137255, 0.933333333333333, 1]
         # - lft_inner
@@ -90,30 +90,30 @@ class Robotiq140(gp.GripperInterface):
         self.lft_inner.lnks[1]['loc_pos'] = np.zeros(3)
         self.lft_inner.lnks[1]['com'] = np.array([0.000123011831763771, 0.0507850843201817, 0.00103968640075166])
         self.lft_inner.lnks[1]['mass'] = 0.0271177346495152
-        self.lft_inner.lnks[1]['meshfile'] = os.path.join(this_dir, "meshes", "robotiq_arg2f_140_inner_knuckle.stl")
+        self.lft_inner.lnks[1]['mesh_file'] = os.path.join(this_dir, "meshes", "robotiq_arg2f_140_inner_knuckle.stl")
         self.lft_inner.lnks[1]['rgba'] = [.2, .2, .2, 1]
         # - rgt_outer
         self.rgt_outer.lnks[1]['name'] = "right_outer_knuckle"
         self.rgt_outer.lnks[1]['loc_pos'] = np.zeros(3)
         self.rgt_outer.lnks[1]['com'] = np.array([-0.000200000000003065, 0.0199435877845359, 0.0292245259211331])
         self.rgt_outer.lnks[1]['mass'] = 0.00853198276973456
-        self.rgt_outer.lnks[1]['meshfile'] = os.path.join(this_dir, "meshes", "robotiq_arg2f_140_outer_knuckle.stl")
+        self.rgt_outer.lnks[1]['mesh_file'] = os.path.join(this_dir, "meshes", "robotiq_arg2f_140_outer_knuckle.stl")
         self.rgt_outer.lnks[1]['rgba'] = [0.792156862745098, 0.819607843137255, 0.933333333333333, 1]
         self.rgt_outer.lnks[2]['name'] = "right_outer_finger"
         self.rgt_outer.lnks[2]['loc_pos'] = np.zeros(3)
         self.rgt_outer.lnks[2]['com'] = np.array([0.00030115855001899, 0.0373907951953854, -0.0208027427000385])
         self.rgt_outer.lnks[2]['mass'] = 0.022614240507152
-        self.rgt_outer.lnks[2]['meshfile'] = os.path.join(this_dir, "meshes", "robotiq_arg2f_140_outer_finger.stl")
+        self.rgt_outer.lnks[2]['mesh_file'] = os.path.join(this_dir, "meshes", "robotiq_arg2f_140_outer_finger.stl")
         self.rgt_outer.lnks[2]['rgba'] = [.2, .2, .2, 1]
         self.rgt_outer.lnks[3]['name'] = "right_inner_finger"
         self.rgt_outer.lnks[3]['loc_pos'] = np.zeros(3)
         self.rgt_outer.lnks[3]['com'] = np.array([0.000299999999999317, 0.0160078233491243, -0.0136945669206257])
         self.rgt_outer.lnks[3]['mass'] = 0.0104003125914103
-        self.rgt_outer.lnks[3]['meshfile'] = os.path.join(this_dir, "meshes", "robotiq_arg2f_140_inner_finger.stl")
+        self.rgt_outer.lnks[3]['mesh_file'] = os.path.join(this_dir, "meshes", "robotiq_arg2f_140_inner_finger.stl")
         self.rgt_outer.lnks[3]['rgba'] = [.2, .2, .2, 1]
         self.rgt_outer.lnks[4]['name'] = "right_inner_finger_pad"
         self.rgt_outer.lnks[4]['loc_pos'] = np.zeros(3)
-        self.rgt_outer.lnks[4]['meshfile'] = os.path.join(this_dir, "meshes", "robotiq_arg2f_140_pad.stl")
+        self.rgt_outer.lnks[4]['mesh_file'] = os.path.join(this_dir, "meshes", "robotiq_arg2f_140_pad.stl")
         self.rgt_outer.lnks[4]['scale'] = [1e-3, 1e-3, 1e-3]
         self.rgt_outer.lnks[4]['rgba'] = [0.792156862745098, 0.819607843137255, 0.933333333333333, 1]
         # - rgt_inner
@@ -121,7 +121,7 @@ class Robotiq140(gp.GripperInterface):
         self.rgt_inner.lnks[1]['loc_pos'] = np.zeros(3)
         self.rgt_inner.lnks[1]['com'] = np.array([0.000123011831763771, 0.0507850843201817, 0.00103968640075166])
         self.rgt_inner.lnks[1]['mass'] = 0.0271177346495152
-        self.rgt_inner.lnks[1]['meshfile'] = os.path.join(this_dir, "meshes", "robotiq_arg2f_140_inner_knuckle.stl")
+        self.rgt_inner.lnks[1]['mesh_file'] = os.path.join(this_dir, "meshes", "robotiq_arg2f_140_inner_knuckle.stl")
         self.rgt_inner.lnks[1]['rgba'] = [.2, .2, .2, 1]
         # reinitialize
         self.lft_outer.reinitialize()
@@ -161,7 +161,7 @@ class Robotiq140(gp.GripperInterface):
             self.all_cdelements = self.cc.all_cdelements
         # cdmesh
         for cdelement in self.all_cdelements:
-            cdmesh = cdelement['collisionmodel'].copy()
+            cdmesh = cdelement['collision_model'].copy()
             self.cdmesh_collection.add_cm(cdmesh)
 
     def fix_to(self, pos, rotmat, angle=None):

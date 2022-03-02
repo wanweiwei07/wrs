@@ -78,8 +78,8 @@ class JLChain(object):
             lnks[id]['com'] = np.zeros(3)
             lnks[id]['inertia'] = np.eye(3)
             lnks[id]['mass'] = 0  # the visual adjustment is ignored for simplisity
-            lnks[id]['meshfile'] = None
-            lnks[id]['collisionmodel'] = None
+            lnks[id]['mesh_file'] = None
+            lnks[id]['collision_model'] = None
             lnks[id]['cdprimit_childid'] = -1  # id of the CollisionChecker.np.Child
             lnks[id]['scale'] = [1, 1, 1]  # 3 list
             lnks[id]['rgba'] = [.7, .7, .7, 1]  # 4 list

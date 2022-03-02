@@ -34,7 +34,7 @@ class CollisionChecker(object):
         """
         for id in lnk_idlist:
             if jlcobj.lnks[id]['cdprimit_childid'] == -1:  # first time add
-                cdnp = jlcobj.lnks[id]['collisionmodel'].copy_cdnp_to(self.np, clearmask=True)
+                cdnp = jlcobj.lnks[id]['collision_model'].copy_cdnp_to(self.np, clearmask=True)
                 self.ctrav.addCollider(cdnp, self.chan)
                 self.all_cdelements.append(jlcobj.lnks[id])
                 jlcobj.lnks[id]['cdprimit_childid'] = len(self.all_cdelements) - 1
@@ -90,7 +90,7 @@ class CollisionChecker(object):
                  key to hold intolist to easily toggle off the bitmasks.
         """
         cdobj_info = {}
-        cdobj_info['collisionmodel'] = objcm  # for reversed lookup
+        cdobj_info['collision_model'] = objcm  # for reversed lookup
         cdobj_info['gl_pos'] = objcm.get_pos()
         cdobj_info['gl_rotmat'] = objcm.get_rotmat()
         cdobj_info['rel_pos'] = rel_pos

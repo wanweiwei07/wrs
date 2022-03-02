@@ -33,11 +33,11 @@ class XArmShuidi(ri.RobotInterface):
         self.agv.jnts[6]['loc_pos'] = np.array([0, .0, .168862])
         self.agv.lnks[3]['name'] = 'agv'
         self.agv.lnks[3]['loc_pos'] = np.array([0, 0, 0])
-        self.agv.lnks[3]['meshfile'] = os.path.join(this_dir, 'meshes', 'shuidi_agv.stl')
+        self.agv.lnks[3]['mesh_file'] = os.path.join(this_dir, 'meshes', 'shuidi_agv.stl')
         self.agv.lnks[3]['rgba'] = [.7, .7, .7, 1.0]
-        self.agv.lnks[4]['meshfile'] = os.path.join(this_dir, 'meshes', 'battery.stl')
+        self.agv.lnks[4]['mesh_file'] = os.path.join(this_dir, 'meshes', 'battery.stl')
         self.agv.lnks[4]['rgba'] = [.35, .35, .35, 1.0]
-        self.agv.lnks[5]['meshfile'] = os.path.join(this_dir, 'meshes', 'battery_fixture.stl')
+        self.agv.lnks[5]['mesh_file'] = os.path.join(this_dir, 'meshes', 'battery_fixture.stl')
         self.agv.lnks[5]['rgba'] = [.55, .55, .55, 1.0]
         self.agv.tgtjnts = [1, 2, 3]
         self.agv.reinitialize()
@@ -57,7 +57,7 @@ class XArmShuidi(ri.RobotInterface):
         self.ft_sensor.jnts[1]['loc_pos'] = np.array([.0, .0, .065])
         self.ft_sensor.lnks[0]['name'] = "xs_ftsensor"
         self.ft_sensor.lnks[0]['loc_pos'] = np.array([0, 0, 0])
-        self.ft_sensor.lnks[0]['collisionmodel'] = cm.gen_stick(spos=self.ft_sensor.jnts[0]['loc_pos'],
+        self.ft_sensor.lnks[0]['collision_model'] = cm.gen_stick(spos=self.ft_sensor.jnts[0]['loc_pos'],
                                                                 epos=self.ft_sensor.jnts[1]['loc_pos'],
                                                                 thickness=.075, rgba=[.2, .3, .3, 1], sections=24)
         self.ft_sensor.reinitialize()
@@ -125,7 +125,7 @@ class XArmShuidi(ri.RobotInterface):
                     self.hnd.rgt_outer.lnks[2]]
         self.cc.set_cdpair(fromlist, intolist)
         for oih_info in self.oih_infos:
-            objcm = oih_info['collisionmodel']
+            objcm = oih_info['collision_model']
             self.hold(objcm)
 
     def fix_to(self, pos, rotmat):
@@ -288,7 +288,7 @@ class XArmShuidi(ri.RobotInterface):
     def get_oih_list(self):
         return_list = []
         for obj_info in self.oih_infos:
-            objcm = obj_info['collisionmodel']
+            objcm = obj_info['collision_model']
             objcm.set_pos(obj_info['gl_pos'])
             objcm.set_rotmat(obj_info['gl_rotmat'])
             return_list.append(objcm)
@@ -325,7 +325,7 @@ class XArmShuidi(ri.RobotInterface):
         if jawwidth is not None:
             self.hnd_dict[hnd_name].jaw_to(jawwidth)
         for obj_info in self.oih_infos:
-            if obj_info['collisionmodel'] is objcm:
+            if obj_info['collision_model'] is objcm:
                 self.cc.delete_cdobj(obj_info)
                 self.oih_infos.remove(obj_info)
                 break
@@ -385,7 +385,7 @@ class XArmShuidi(ri.RobotInterface):
                                toggle_tcpcs=False,
                                rgba=rgba).attach_to(meshmodel)
         for obj_info in self.oih_infos:
-            objcm = obj_info['collisionmodel']
+            objcm = obj_info['collision_model']
             objcm.set_pos(obj_info['gl_pos'])
             objcm.set_rotmat(obj_info['gl_rotmat'])
             objcm.copy().attach_to(meshmodel)

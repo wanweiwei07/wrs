@@ -23,14 +23,14 @@ class SDA5F(ri.RobotInterface):
         self.lft_body.jnts[2]['loc_rotmat'] = rm.rotmat_from_euler(-math.pi / 2.0, -math.pi / 2.0, 0)
         self.lft_body.lnks[0]['name'] = "sda5f_lft_body"
         self.lft_body.lnks[0]['loc_pos'] = np.array([0, 0, 0])
-        self.lft_body.lnks[0]['collisionmodel'] = cm.CollisionModel(
+        self.lft_body.lnks[0]['collision_model'] = cm.CollisionModel(
             os.path.join(this_dir, "meshes", "base_link.stl"),
             cdprimit_type="user_defined", expand_radius=.005,
             userdefined_cdprimitive_fn=self._base_combined_cdnp)
         self.lft_body.lnks[0]['rgba'] = [.7, .7, .7, 1.0]
         self.lft_body.lnks[1]['name'] = "sda5f_lft_torso"
         self.lft_body.lnks[1]['loc_pos'] = np.array([0, 0, 0])
-        self.lft_body.lnks[1]['collisionmodel'] = cm.CollisionModel(
+        self.lft_body.lnks[1]['collision_model'] = cm.CollisionModel(
             os.path.join(this_dir, "meshes", "torso_link.stl"),
             cdprimit_type="user_defined", expand_radius=.005,
             userdefined_cdprimitive_fn=self._torso_combined_cdnp)
@@ -59,10 +59,10 @@ class SDA5F(ri.RobotInterface):
         self.rgt_body.jnts[2]['loc_rotmat'] = rm.rotmat_from_euler(math.pi / 2.0, -math.pi / 2.0, 0)
         self.rgt_body.lnks[0]['name'] = "sda5f_rgt_body"
         self.rgt_body.lnks[0]['loc_pos'] = np.array([0, 0, 0])
-        self.rgt_body.lnks[0]['meshfile'] = None
+        self.rgt_body.lnks[0]['mesh_file'] = None
         self.rgt_body.lnks[1]['name'] = "sda5f_rgt_torso"
         self.rgt_body.lnks[1]['loc_pos'] = np.array([0, 0, 0])
-        self.rgt_body.lnks[1]['meshfile'] = None
+        self.rgt_body.lnks[1]['mesh_file'] = None
         self.rgt_body.reinitialize()
         rgt_arm_homeconf = np.zeros(7)
         # rgt_arm_homeconf[0] = -math.pi * 1.0 / 3.0
@@ -270,12 +270,12 @@ class SDA5F(ri.RobotInterface):
                                    toggle_jntscs=toggle_jntscs,
                                    rgba=rgba).attach_to(meshmodel)
         for obj_info in self.lft_oih_infos:
-            objcm = obj_info['collisionmodel']
+            objcm = obj_info['collision_model']
             objcm.set_pos(obj_info['gl_pos'])
             objcm.set_rotmat(obj_info['gl_rotmat'])
             objcm.copy().attach_to(meshmodel)
         for obj_info in self.rgt_oih_infos:
-            objcm = obj_info['collisionmodel']
+            objcm = obj_info['collision_model']
             objcm.set_pos(obj_info['gl_pos'])
             objcm.set_rotmat(obj_info['gl_rotmat'])
             objcm.copy().attach_to(meshmodel)

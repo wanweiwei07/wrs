@@ -28,16 +28,16 @@ class TBMGripper(gp.GripperInterface):
         # palm and left finger
         self.lft_fgr.lnks[0]['name'] = "palm"
         self.lft_fgr.lnks[0]['loc_pos'] = np.zeros(3)
-        self.lft_fgr.lnks[0]['meshfile'] = os.path.join(this_dir, "meshes", "palm.stl")
+        self.lft_fgr.lnks[0]['mesh_file'] = os.path.join(this_dir, "meshes", "palm.stl")
         self.lft_fgr.lnks[0]['rgba'] = [.5, .5, .5, 1]
         self.lft_fgr.lnks[1]['name'] = "finger1"
         self.lft_fgr.lnks[1]['loc_pos'] = np.zeros(3)
-        self.lft_fgr.lnks[1]['meshfile'] = os.path.join(this_dir, "meshes", "finger1.stl")
+        self.lft_fgr.lnks[1]['mesh_file'] = os.path.join(this_dir, "meshes", "finger1.stl")
         self.lft_fgr.lnks[1]['rgba'] = [0.792156862745098, 0.819607843137255, 0.933333333333333, 1]
         # right finger
         self.rgt_fgr.lnks[1]['name'] = "finger2"
         self.rgt_fgr.lnks[1]['loc_pos'] = np.zeros(3)
-        self.rgt_fgr.lnks[1]['meshfile'] = os.path.join(this_dir, "meshes", "finger2.stl")
+        self.rgt_fgr.lnks[1]['mesh_file'] = os.path.join(this_dir, "meshes", "finger2.stl")
         self.rgt_fgr.lnks[1]['rgba'] = [0.792156862745098, 0.819607843137255, 0.933333333333333, 1]
         # reinitialize
         self.lft_fgr.reinitialize()
@@ -63,7 +63,7 @@ class TBMGripper(gp.GripperInterface):
             self.all_cdelements = self.cc.all_cdelements
         # cdmesh
         for cdelement in self.all_cdelements:
-            cdmesh = cdelement['collisionmodel'].copy()
+            cdmesh = cdelement['collision_model'].copy()
             self.cdmesh_collection.add_cm(cdmesh)
 
     def fix_to(self, pos, rotmat, angle=None):

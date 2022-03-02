@@ -23,7 +23,7 @@ class UR3EDual(ri.RobotInterface):
                                                                    math.pi / 2.0)  # left from robot_s view
         self.lft_body.lnks[0]['name'] = "ur3e_dual_base"
         self.lft_body.lnks[0]['loc_pos'] = np.array([0, 0, 0])
-        self.lft_body.lnks[0]['collisionmodel'] = cm.CollisionModel(
+        self.lft_body.lnks[0]['collision_model'] = cm.CollisionModel(
             os.path.join(this_dir, "meshes", "ur3e_dual_base.stl"),
             cdprimit_type="user_defined", expand_radius=.005,
             userdefined_cdprimitive_fn=self._base_combined_cdnp)
@@ -39,11 +39,9 @@ class UR3EDual(ri.RobotInterface):
                                rotmat=self.lft_body.jnts[-1]['gl_rotmatq'],
                                homeconf=lft_arm_homeconf,
                                enable_cc=False)
-        # lft hand offset (if needed)
-        self.lft_hnd_offset = np.zeros(3)
-        lft_hnd_pos, lft_hnd_rotmat = self.lft_arm.cvt_loc_tcp_to_gl(loc_pos=self.lft_hnd_offset)
-        self.lft_hnd = rtq.RobotiqHE(pos=lft_hnd_pos,
+        self.lft_hnd = rtq.RobotiqHE(pos=self.lft_arm.jnts[-1]['gl_posq'],
                                      rotmat=self.lft_arm.jnts[-1]['gl_rotmatq'],
+                                     coupling_offset_pos=np.array([0.0, 0.0, 0.0331]),
                                      enable_cc=False)
         # rigth side
         self.rgt_body = jl.JLChain(pos=pos, rotmat=rotmat, homeconf=np.zeros(0), name='rgt_body_jl')
@@ -52,7 +50,7 @@ class UR3EDual(ri.RobotInterface):
                                                                    math.pi / 2.0)  # left from robot_s view
         self.rgt_body.lnks[0]['name'] = "ur3e_dual_base"
         self.rgt_body.lnks[0]['loc_pos'] = np.array([0, 0, 0])
-        self.rgt_body.lnks[0]['meshfile'] = None
+        self.rgt_body.lnks[0]['mesh_file'] = None
         self.rgt_body.lnks[0]['rgba'] = [.3, .3, .3, 1.0]
         self.rgt_body.reinitialize()
         rgt_arm_homeconf = np.zeros(6)
@@ -64,12 +62,9 @@ class UR3EDual(ri.RobotInterface):
                                rotmat=self.rgt_body.jnts[-1]['gl_rotmatq'],
                                homeconf=rgt_arm_homeconf,
                                enable_cc=False)
-        # rgt hand offset (if needed)
-        self.rgt_hnd_offset = np.zeros(3)
-        rgt_hnd_pos, rgt_hnd_rotmat = self.rgt_arm.cvt_loc_tcp_to_gl(loc_pos=self.rgt_hnd_offset)
-        # TODO replace using copy
-        self.rgt_hnd = rtq.RobotiqHE(pos=rgt_hnd_pos,
+        self.rgt_hnd = rtq.RobotiqHE(pos=self.rgt_arm.jnts[-1]['gl_posq'],
                                      rotmat=self.rgt_arm.jnts[-1]['gl_rotmatq'],
+                                     coupling_offset_pos=np.array([0.0, 0.0, 0.0331]),
                                      enable_cc=False)
         # tool center point
         # lft
@@ -89,8 +84,8 @@ class UR3EDual(ri.RobotInterface):
         # component map
         self.manipulator_dict['rgt_arm'] = self.rgt_arm
         self.manipulator_dict['lft_arm'] = self.lft_arm
-        self.manipulator_dict['rgt_hnd'] = self.rgt_arm # specify which hand is a gripper installed to
-        self.manipulator_dict['lft_hnd'] = self.lft_arm # specify which hand is a gripper installed to
+        self.manipulator_dict['rgt_hnd'] = self.rgt_arm  # specify which hand is a gripper installed to
+        self.manipulator_dict['lft_hnd'] = self.lft_arm  # specify which hand is a gripper installed to
         self.hnd_dict['rgt_hnd'] = self.rgt_hnd
         self.hnd_dict['lft_hnd'] = self.lft_hnd
         self.hnd_dict['rgt_arm'] = self.rgt_hnd
@@ -355,12 +350,12 @@ class UR3EDual(ri.RobotInterface):
                                    toggle_jntscs=toggle_jntscs,
                                    rgba=rgba).attach_to(mm_collection)
         for obj_info in self.lft_oih_infos:
-            objcm = obj_info['collisionmodel']
+            objcm = obj_info['collision_model']
             objcm.set_pos(obj_info['gl_pos'])
             objcm.set_rotmat(obj_info['gl_rotmat'])
             objcm.copy().attach_to(mm_collection)
         for obj_info in self.rgt_oih_infos:
-            objcm = obj_info['collisionmodel']
+            objcm = obj_info['collision_model']
             objcm.set_pos(obj_info['gl_pos'])
             objcm.set_rotmat(obj_info['gl_rotmat'])
             objcm.copy().attach_to(mm_collection)

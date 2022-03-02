@@ -31,25 +31,25 @@ class Nextage(ri.RobotInterface):
         self.central_body.jnts[3]['motion_rng'] = [-0.349066, 1.22173]
         self.central_body.lnks[0]['name'] = "nextage_base"
         self.central_body.lnks[0]['loc_pos'] = np.array([0, 0, 0.97])
-        self.central_body.lnks[0]['collisionmodel'] = cm.CollisionModel(
+        self.central_body.lnks[0]['collision_model'] = cm.CollisionModel(
             os.path.join(this_dir, "meshes", "waist_link_mesh.dae"),
             cdprimit_type="user_defined", expand_radius=.005,
             userdefined_cdprimitive_fn=self._waist_combined_cdnp)
         self.central_body.lnks[0]['rgba'] = [.77, .77, .77, 1.0]
         self.central_body.lnks[1]['name'] = "nextage_chest"
         self.central_body.lnks[1]['loc_pos'] = np.array([0, 0, 0])
-        self.central_body.lnks[1]['collisionmodel'] = cm.CollisionModel(
+        self.central_body.lnks[1]['collision_model'] = cm.CollisionModel(
             os.path.join(this_dir, "meshes", "chest_joint0_link_mesh.dae"),
             cdprimit_type="user_defined", expand_radius=.005,
             userdefined_cdprimitive_fn=self._chest_combined_cdnp)
         self.central_body.lnks[1]['rgba'] = [.67, .65, .5, 1]
         self.central_body.lnks[2]['name'] = "head_joint0_link_mesh"
         self.central_body.lnks[2]['loc_pos'] = np.array([0, 0, 0.5695])
-        self.central_body.lnks[2]['meshfile'] = os.path.join(this_dir, "meshes", "head_joint0_link_mesh.dae")
+        self.central_body.lnks[2]['mesh_file'] = os.path.join(this_dir, "meshes", "head_joint0_link_mesh.dae")
         self.central_body.lnks[2]['rgba'] = [.35, .35, .35, 1]
         self.central_body.lnks[3]['name'] = "nextage_chest"
         self.central_body.lnks[3]['loc_pos'] = np.array([0, 0, 0])
-        self.central_body.lnks[3]['meshfile'] = os.path.join(this_dir, "meshes", "head_joint1_link_mesh.dae")
+        self.central_body.lnks[3]['mesh_file'] = os.path.join(this_dir, "meshes", "head_joint1_link_mesh.dae")
         self.central_body.lnks[3]['rgba'] = [.63, .63, .63, 1]
         self.central_body.reinitialize()
         # lft
@@ -80,27 +80,27 @@ class Nextage(ri.RobotInterface):
         self.lft_arm.lnks[2]['name'] = "lft_arm_joint0"
         self.lft_arm.lnks[2]['loc_pos'] = np.array([0, 0.145, 0.370296])
         self.lft_arm.lnks[2]['loc_rotmat'] = rm.rotmat_from_euler(-0.261799, 0, 0)
-        self.lft_arm.lnks[2]['meshfile'] = os.path.join(this_dir, "meshes", "larm_joint0_link_mesh.dae")
+        self.lft_arm.lnks[2]['mesh_file'] = os.path.join(this_dir, "meshes", "larm_joint0_link_mesh.dae")
         self.lft_arm.lnks[2]['rgba'] = [.35, .35, .35, 1]
         self.lft_arm.lnks[3]['name'] = "lft_arm_joint1"
         self.lft_arm.lnks[3]['loc_pos'] = np.array([0, 0, 0])
-        self.lft_arm.lnks[3]['meshfile'] = os.path.join(this_dir, "meshes", "larm_joint1_link_mesh.dae")
+        self.lft_arm.lnks[3]['mesh_file'] = os.path.join(this_dir, "meshes", "larm_joint1_link_mesh.dae")
         self.lft_arm.lnks[3]['rgba'] = [.57, .57, .57, 1]
         self.lft_arm.lnks[4]['name'] = "lft_arm_joint2"
         self.lft_arm.lnks[4]['loc_pos'] = np.array([0, 0.095, -0.25])
-        self.lft_arm.lnks[4]['meshfile'] = os.path.join(this_dir, "meshes", "larm_joint2_link_mesh.dae")
+        self.lft_arm.lnks[4]['mesh_file'] = os.path.join(this_dir, "meshes", "larm_joint2_link_mesh.dae")
         self.lft_arm.lnks[4]['rgba'] = [.35, .35, .35, 1]
         self.lft_arm.lnks[5]['name'] = "lft_arm_joint3"
         self.lft_arm.lnks[5]['loc_pos'] = np.array([-0.03, 0, 0])
-        self.lft_arm.lnks[5]['meshfile'] = os.path.join(this_dir, "meshes", "larm_joint3_link_mesh.dae")
+        self.lft_arm.lnks[5]['mesh_file'] = os.path.join(this_dir, "meshes", "larm_joint3_link_mesh.dae")
         self.lft_arm.lnks[5]['rgba'] = [.35, .35, .35, 1]
         self.lft_arm.lnks[6]['name'] = "lft_arm_joint4"
         self.lft_arm.lnks[6]['loc_pos'] = np.array([0, 0, -0.235])
-        self.lft_arm.lnks[6]['meshfile'] = os.path.join(this_dir, "meshes", "larm_joint4_link_mesh.dae")
+        self.lft_arm.lnks[6]['mesh_file'] = os.path.join(this_dir, "meshes", "larm_joint4_link_mesh.dae")
         self.lft_arm.lnks[6]['rgba'] = [.7, .7, .7, 1]
         self.lft_arm.lnks[7]['name'] = "lft_arm_joint5"
         self.lft_arm.lnks[7]['loc_pos'] = np.array([-0.047, 0, -0.09])
-        self.lft_arm.lnks[7]['meshfile'] = os.path.join(this_dir, "meshes", "larm_joint5_link_mesh.dae")
+        self.lft_arm.lnks[7]['mesh_file'] = os.path.join(this_dir, "meshes", "larm_joint5_link_mesh.dae")
         self.lft_arm.lnks[7]['rgba'] = [.57, .57, .57, 1]
         self.lft_arm.reinitialize()
         # rgt
@@ -131,27 +131,27 @@ class Nextage(ri.RobotInterface):
         self.rgt_arm.lnks[2]['name'] = "rgt_arm_joint0"
         self.rgt_arm.lnks[2]['loc_pos'] = np.array([0, -0.145, 0.370296])
         self.rgt_arm.lnks[2]['loc_rotmat'] = rm.rotmat_from_euler(0.261799, 0, 0)
-        self.rgt_arm.lnks[2]['meshfile'] = os.path.join(this_dir, "meshes", "rarm_joint0_link_mesh.dae")
+        self.rgt_arm.lnks[2]['mesh_file'] = os.path.join(this_dir, "meshes", "rarm_joint0_link_mesh.dae")
         self.rgt_arm.lnks[2]['rgba'] = [.35, .35, .35, 1]
         self.rgt_arm.lnks[3]['name'] = "rgt_arm_joint1"
         self.rgt_arm.lnks[3]['loc_pos'] = np.array([0, 0, 0])
-        self.rgt_arm.lnks[3]['meshfile'] = os.path.join(this_dir, "meshes", "rarm_joint1_link_mesh.dae")
+        self.rgt_arm.lnks[3]['mesh_file'] = os.path.join(this_dir, "meshes", "rarm_joint1_link_mesh.dae")
         self.rgt_arm.lnks[3]['rgba'] = [.57, .57, .57, 1]
         self.rgt_arm.lnks[4]['name'] = "rgt_arm_joint2"
         self.rgt_arm.lnks[4]['loc_pos'] = np.array([0, -0.095, -0.25])
-        self.rgt_arm.lnks[4]['meshfile'] = os.path.join(this_dir, "meshes", "rarm_joint2_link_mesh.dae")
+        self.rgt_arm.lnks[4]['mesh_file'] = os.path.join(this_dir, "meshes", "rarm_joint2_link_mesh.dae")
         self.rgt_arm.lnks[4]['rgba'] = [.35, .35, .35, 1]
         self.rgt_arm.lnks[5]['name'] = "rgt_arm_joint3"
         self.rgt_arm.lnks[5]['loc_pos'] = np.array([-0.03, 0, 0])
-        self.rgt_arm.lnks[5]['meshfile'] = os.path.join(this_dir, "meshes", "rarm_joint3_link_mesh.dae")
+        self.rgt_arm.lnks[5]['mesh_file'] = os.path.join(this_dir, "meshes", "rarm_joint3_link_mesh.dae")
         self.rgt_arm.lnks[5]['rgba'] = [.35, .35, .35, 1]
         self.rgt_arm.lnks[6]['name'] = "rgt_arm_joint4"
         self.rgt_arm.lnks[6]['loc_pos'] = np.array([0, 0, -0.235])
-        self.rgt_arm.lnks[6]['meshfile'] = os.path.join(this_dir, "meshes", "rarm_joint4_link_mesh.dae")
+        self.rgt_arm.lnks[6]['mesh_file'] = os.path.join(this_dir, "meshes", "rarm_joint4_link_mesh.dae")
         self.rgt_arm.lnks[6]['rgba'] = [.7, .7, .7, 1]
         self.rgt_arm.lnks[7]['name'] = "rgt_arm_joint5"
         self.rgt_arm.lnks[7]['loc_pos'] = np.array([-0.047, 0, -0.09])
-        self.rgt_arm.lnks[7]['meshfile'] = os.path.join(this_dir, "meshes", "rarm_joint5_link_mesh.dae")
+        self.rgt_arm.lnks[7]['mesh_file'] = os.path.join(this_dir, "meshes", "rarm_joint5_link_mesh.dae")
         self.rgt_arm.lnks[7]['rgba'] = [.57, .57, .57, 1]
         self.rgt_arm.reinitialize()
         # tool center point
@@ -441,9 +441,9 @@ class Nextage(ri.RobotInterface):
         author: weiwei
         date: 20210302
         """
-        if component_name is 'lft_arm':
+        if component_name == 'lft_arm':
             arm = self.lft_arm
-        elif component_name is 'rgt_arm':
+        elif component_name == 'rgt_arm':
             arm = self.rgt_arm
         hnd_pos = arm.jnts[-1]['gl_posq']
         hnd_rotmat = arm.jnts[-1]['gl_rotmatq']
@@ -462,9 +462,9 @@ class Nextage(ri.RobotInterface):
         author: weiwei
         date: 20210302
         """
-        if component_name is 'lft_arm':
+        if component_name == 'lft_arm':
             arm = self.lft_arm
-        elif component_name is 'rgt_arm':
+        elif component_name == 'rgt_arm':
             arm = self.rgt_arm
         hnd_pos = arm.jnts[-1]['gl_posq']
         hnd_rotmat = arm.jnts[-1]['gl_rotmatq']
@@ -488,7 +488,7 @@ class Nextage(ri.RobotInterface):
             raise ValueError("hnd_name must be lft_hnd or rgt_hnd!")
         return_list = []
         for obj_info in oih_infos:
-            objcm = obj_info['collisionmodel']
+            objcm = obj_info['collision_model']
             objcm.set_pos(obj_info['gl_pos'])
             objcm.set_rotmat(obj_info['gl_rotmat'])
             return_list.append(objcm)
@@ -530,7 +530,7 @@ class Nextage(ri.RobotInterface):
         else:
             raise ValueError("hnd_name must be lft_hnd or rgt_hnd!")
         for obj_info in oih_info_list:
-            if obj_info['collisionmodel'] is objcm:
+            if obj_info['collision_model'] is objcm:
                 return rm.homomat_from_posrot(obj_info['rel_pos']), obj_info['rel_rotmat']
 
     def release(self, hnd_name, objcm, jaw_width=None):
@@ -550,7 +550,7 @@ class Nextage(ri.RobotInterface):
         if jaw_width is not None:
             self.jaw_to(hnd_name, jaw_width)
         for obj_info in oih_infos:
-            if obj_info['collisionmodel'] is objcm:
+            if obj_info['collision_model'] is objcm:
                 self.cc.delete_cdobj(obj_info)
                 oih_infos.remove(obj_info)
                 break
@@ -642,12 +642,12 @@ class Nextage(ri.RobotInterface):
         #                            toggle_jntscs=toggle_jntscs,
         #                            rgba=rgba).attach_to(meshmodel)
         for obj_info in self.lft_oih_infos:
-            objcm = obj_info['collisionmodel']
+            objcm = obj_info['collision_model']
             objcm.set_pos(obj_info['gl_pos'])
             objcm.set_rotmat(obj_info['gl_rotmat'])
             objcm.copy().attach_to(meshmodel)
         for obj_info in self.rgt_oih_infos:
-            objcm = obj_info['collisionmodel']
+            objcm = obj_info['collision_model']
             objcm.set_pos(obj_info['gl_pos'])
             objcm.set_rotmat(obj_info['gl_rotmat'])
             objcm.copy().attach_to(meshmodel)

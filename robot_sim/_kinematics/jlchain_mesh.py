@@ -20,13 +20,13 @@ class JLChainMesh(object):
         """
         self.jlobject = jlobject
         for id in range(self.jlobject.ndof + 1):
-            if self.jlobject.lnks[id]['meshfile'] is not None and self.jlobject.lnks[id]['collisionmodel'] is None:
+            if self.jlobject.lnks[id]['mesh_file'] is not None and self.jlobject.lnks[id]['collision_model'] is None:
                 # in case the collision model is directly set, it allows manually specifying cd primitives
                 # instead of auto initialization. Steps: 1. keep meshmodel to None; 2. directly set cm
-                self.jlobject.lnks[id]['collisionmodel'] = cm.CollisionModel(self.jlobject.lnks[id]['meshfile'],
+                self.jlobject.lnks[id]['collision_model'] = cm.CollisionModel(self.jlobject.lnks[id]['mesh_file'],
                                                                              cdprimit_type=cdprimitive_type,
                                                                              cdmesh_type=cdmesh_type)
-                self.jlobject.lnks[id]['collisionmodel'].set_scale(self.jlobject.lnks[id]['scale'])
+                self.jlobject.lnks[id]['collision_model'].set_scale(self.jlobject.lnks[id]['scale'])
 
     def gen_meshmodel(self,
                       tcp_jntid=None,
@@ -38,8 +38,8 @@ class JLChainMesh(object):
                       rgba=None):
         mm_collection = mc.ModelCollection(name=name)
         for id in range(self.jlobject.ndof + 1):
-            if self.jlobject.lnks[id]['collisionmodel'] is not None:
-                this_collisionmodel = self.jlobject.lnks[id]['collisionmodel'].copy()
+            if self.jlobject.lnks[id]['collision_model'] is not None:
+                this_collisionmodel = self.jlobject.lnks[id]['collision_model'].copy()
                 pos = self.jlobject.lnks[id]['gl_pos']
                 rotmat = self.jlobject.lnks[id]['gl_rotmat']
                 this_collisionmodel.set_homomat(rm.homomat_from_posrot(pos, rotmat))
@@ -72,7 +72,7 @@ class JLChainMesh(object):
                        toggle_tcpcs=True,
                        toggle_jntscs=False,
                        toggle_connjnt=False,
-                       name='robotstick'):
+                       name='robot_stick'):
         """
         generate the stick model for a jntlnk object
         snp means stick nodepath

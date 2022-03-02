@@ -35,23 +35,23 @@ class DobotMagician(mi.ManipulatorInterface):
         # links
         self.jlc.lnks[0]['name'] = "base"
         self.jlc.lnks[0]['loc_pos'] = np.zeros(3)
-        self.jlc.lnks[0]['meshfile'] = os.path.join(this_dir, "meshes", "base_link.stl")
+        self.jlc.lnks[0]['mesh_file'] = os.path.join(this_dir, "meshes", "base_link.stl")
         self.jlc.lnks[0]['rgba'] = [.5, .5, .5, 1.0]
         self.jlc.lnks[1]['name'] = "link1"
         self.jlc.lnks[1]['loc_pos'] = np.zeros(3)
-        self.jlc.lnks[1]['meshfile'] = os.path.join(this_dir, "meshes", "link_1.stl")
+        self.jlc.lnks[1]['mesh_file'] = os.path.join(this_dir, "meshes", "link_1.stl")
         self.jlc.lnks[1]['rgba'] = [.55, .55, .55, 1.0]
         self.jlc.lnks[2]['name'] = "link2"
         self.jlc.lnks[2]['loc_pos'] = np.zeros(3)
-        self.jlc.lnks[2]['meshfile'] = os.path.join(this_dir, "meshes", "link_2.stl")
+        self.jlc.lnks[2]['mesh_file'] = os.path.join(this_dir, "meshes", "link_2.stl")
         self.jlc.lnks[2]['rgba'] = [.15, .15, .15, 1]
         self.jlc.lnks[3]['name'] = "link3"
         self.jlc.lnks[3]['loc_pos'] = np.array([.0, .0, .0])
-        self.jlc.lnks[3]['meshfile'] = os.path.join(this_dir, "meshes", "link_5.stl")
+        self.jlc.lnks[3]['mesh_file'] = os.path.join(this_dir, "meshes", "link_5.stl")
         self.jlc.lnks[3]['rgba'] = [.55, .55, .55, 1]
         self.jlc.lnks[4]['name'] = "link4"
         self.jlc.lnks[4]['loc_pos'] = np.array([.0, .0, .0])
-        self.jlc.lnks[4]['meshfile'] = os.path.join(this_dir, "meshes", "link_6.stl")
+        self.jlc.lnks[4]['mesh_file'] = os.path.join(this_dir, "meshes", "link_6.stl")
         self.jlc.lnks[4]['rgba'] = [.35, .35, .35, 1.0]
         self.jlc.reinitialize()
         # prepare parameters for analytical ik

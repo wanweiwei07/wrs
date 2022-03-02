@@ -29,40 +29,40 @@ class Yumi(ri.RobotInterface):
         self.lft_body.jnts[8]['loc_rotmat'] = rm.rotmat_from_euler(0.9781, -0.5716, 2.3180)  # left from robot_s view
         self.lft_body.lnks[0]['name'] = "yumi_lft_stand"
         self.lft_body.lnks[0]['loc_pos'] = np.array([0, 0, 0])
-        self.lft_body.lnks[0]['meshfile'] = os.path.join(this_dir, "meshes", "yumi_tablenotop.stl")
+        self.lft_body.lnks[0]['mesh_file'] = os.path.join(this_dir, "meshes", "yumi_tablenotop.stl")
         self.lft_body.lnks[0]['rgba'] = [.55, .55, .55, 1.0]
         self.lft_body.lnks[1]['name'] = "yumi_lft_body"
         self.lft_body.lnks[1]['loc_pos'] = np.array([0, 0, 0])
-        self.lft_body.lnks[1]['collisionmodel'] = cm.CollisionModel(
+        self.lft_body.lnks[1]['collision_model'] = cm.CollisionModel(
             os.path.join(this_dir, "meshes", "body.stl"),
             cdprimit_type="user_defined", expand_radius=.005,
             userdefined_cdprimitive_fn=self._base_combined_cdnp)
         self.lft_body.lnks[1]['rgba'] = [.7, .7, .7, 1]
         self.lft_body.lnks[2]['name'] = "yumi_lft_column"
         self.lft_body.lnks[2]['loc_pos'] = np.array([-.327, -.24, -1.015])
-        self.lft_body.lnks[2]['meshfile'] = os.path.join(this_dir, "meshes", "yumi_column60602100.stl")
+        self.lft_body.lnks[2]['mesh_file'] = os.path.join(this_dir, "meshes", "yumi_column60602100.stl")
         self.lft_body.lnks[2]['rgba'] = [.35, .35, .35, 1.0]
         self.lft_body.lnks[3]['name'] = "yumi_lft_column"
         self.lft_body.lnks[3]['loc_pos'] = np.array([-.327, .24, -1.015])
-        self.lft_body.lnks[3]['meshfile'] = os.path.join(this_dir, "meshes", "yumi_column60602100.stl")
+        self.lft_body.lnks[3]['mesh_file'] = os.path.join(this_dir, "meshes", "yumi_column60602100.stl")
         self.lft_body.lnks[3]['rgba'] = [.35, .35, .35, 1.0]
         self.lft_body.lnks[4]['name'] = "yumi_top_back"
         self.lft_body.lnks[4]['loc_pos'] = np.array([-.327, 0, 1.085])
-        self.lft_body.lnks[4]['meshfile'] = os.path.join(this_dir, "meshes", "yumi_column6060540.stl")
+        self.lft_body.lnks[4]['mesh_file'] = os.path.join(this_dir, "meshes", "yumi_column6060540.stl")
         self.lft_body.lnks[4]['rgba'] = [.35, .35, .35, 1.0]
         self.lft_body.lnks[5]['name'] = "yumi_top_lft"
         self.lft_body.lnks[5]['loc_pos'] = np.array([-.027, -.24, 1.085])
         self.lft_body.lnks[5]['loc_rotmat'] = rm.rotmat_from_axangle([0, 0, 1], -math.pi / 2)
-        self.lft_body.lnks[5]['meshfile'] = os.path.join(this_dir, "meshes", "yumi_column6060540.stl")
+        self.lft_body.lnks[5]['mesh_file'] = os.path.join(this_dir, "meshes", "yumi_column6060540.stl")
         self.lft_body.lnks[5]['rgba'] = [.35, .35, .35, 1.0]
         self.lft_body.lnks[6]['name'] = "yumi_top_lft"
         self.lft_body.lnks[6]['loc_pos'] = np.array([-.027, .24, 1.085])
         self.lft_body.lnks[6]['loc_rotmat'] = rm.rotmat_from_axangle([0, 0, 1], -math.pi / 2)
-        self.lft_body.lnks[6]['meshfile'] = os.path.join(this_dir, "meshes", "yumi_column6060540.stl")
+        self.lft_body.lnks[6]['mesh_file'] = os.path.join(this_dir, "meshes", "yumi_column6060540.stl")
         self.lft_body.lnks[6]['rgba'] = [.35, .35, .35, 1.0]
         self.lft_body.lnks[7]['name'] = "yumi_top_front"
         self.lft_body.lnks[7]['loc_pos'] = np.array([.273, 0, 1.085])
-        self.lft_body.lnks[7]['meshfile'] = os.path.join(this_dir, "meshes", "yumi_column6060540.stl")
+        self.lft_body.lnks[7]['mesh_file'] = os.path.join(this_dir, "meshes", "yumi_column6060540.stl")
         self.lft_body.lnks[7]['rgba'] = [.35, .35, .35, 1.0]
         self.lft_body.reinitialize()
         lft_arm_homeconf = np.radians(np.array([20, -90, 120, 30, 0, 40, 0]))
@@ -405,7 +405,7 @@ class Yumi(ri.RobotInterface):
             raise ValueError("hnd_name must be lft_hnd or rgt_hnd!")
         return_list = []
         for obj_info in oih_infos:
-            objcm = obj_info['collisionmodel']
+            objcm = obj_info['collision_model']
             objcm.set_pos(obj_info['gl_pos'])
             objcm.set_rotmat(obj_info['gl_rotmat'])
             return_list.append(objcm)
@@ -447,7 +447,7 @@ class Yumi(ri.RobotInterface):
         else:
             raise ValueError("hnd_name must be lft_hnd or rgt_hnd!")
         for obj_info in oih_info_list:
-            if obj_info['collisionmodel'] is objcm:
+            if obj_info['collision_model'] is objcm:
                 return rm.homomat_from_posrot(obj_info['rel_pos']), obj_info['rel_rotmat']
 
     def release(self, hnd_name, objcm, jaw_width=None):
@@ -467,7 +467,7 @@ class Yumi(ri.RobotInterface):
         if jaw_width is not None:
             self.jaw_to(hnd_name, jaw_width)
         for obj_info in oih_infos:
-            if obj_info['collisionmodel'] is objcm:
+            if obj_info['collision_model'] is objcm:
                 self.cc.delete_cdobj(obj_info)
                 oih_infos.remove(obj_info)
                 break
@@ -563,12 +563,12 @@ class Yumi(ri.RobotInterface):
                                    toggle_jntscs=toggle_jntscs,
                                    rgba=rgba).attach_to(meshmodel)
         for obj_info in self.lft_oih_infos:
-            objcm = obj_info['collisionmodel']
+            objcm = obj_info['collision_model']
             objcm.set_pos(obj_info['gl_pos'])
             objcm.set_rotmat(obj_info['gl_rotmat'])
             objcm.attach_to(meshmodel)
         for obj_info in self.rgt_oih_infos:
-            objcm = obj_info['collisionmodel']
+            objcm = obj_info['collision_model']
             objcm.set_pos(obj_info['gl_pos'])
             objcm.set_rotmat(obj_info['gl_rotmat'])
             objcm.attach_to(meshmodel)
