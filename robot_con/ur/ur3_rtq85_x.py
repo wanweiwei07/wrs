@@ -45,7 +45,8 @@ class UR3Rtq85X(object):
         self._script_dir = os.path.dirname(__file__)
         self._pb.load_prog(os.path.join(self._script_dir, "urscripts_cbseries/moderndriver_cbseries.script"))
         self._modern_driver_urscript = self._pb.get_program_to_run()
-        self._modern_driver_urscript = self._modern_driver_urscript.replace("parameter_ip", self._pc_server_socket.getsockname()[0])
+        self._modern_driver_urscript = self._modern_driver_urscript.replace("parameter_ip",
+                                                                            self._pc_server_socket_addr[0])
         self._modern_driver_urscript = self._modern_driver_urscript.replace("parameter_port",
                                                                             str(self._pc_server_socket.getsockname()[1]))
         self._modern_driver_urscript = self._modern_driver_urscript.replace("parameter_jointscaler",

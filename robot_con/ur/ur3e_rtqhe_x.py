@@ -46,7 +46,7 @@ class UR3ERtqHE():
         self._pc_server_urscript = self._pb.get_program_to_run()
         self._pc_server_urscript = self._pc_server_urscript.replace("parameter_ip", self._pc_server_socket_addr[0])
         self._pc_server_urscript = self._pc_server_urscript.replace("parameter_port",
-                                                                    str(self._pc_server_socket_addr[1]))
+                                                                    str(self._pc_server_socket.getsockname()[1]))
         self._pc_server_urscript = self._pc_server_urscript.replace("parameter_jointscaler",
                                                                     str(self._jointscaler))
         self._ftsensor_thread = None

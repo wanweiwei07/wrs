@@ -21,8 +21,8 @@ class Ur3EDualUrx(object):
         author: weiwei
         date: 20191014 osaka
         """
-        self._lft_arm_hnd = u3erhex.UR3Rtq85X(robot_ip=lft_robot_ip, pc_ip=pc_ip)
-        self._rgt_arm_hnd = u3erhex.UR3Rtq85X(robot_ip=rgt_robot_ip, pc_ip=pc_ip)
+        self._lft_arm_hnd = u3erhex.UR3ERtqHE(robot_ip=lft_robot_ip, pc_ip=pc_ip)
+        self._rgt_arm_hnd = u3erhex.UR3ERtqHE(robot_ip=rgt_robot_ip, pc_ip=pc_ip)
 
     @property
     def lft_arm_hnd(self):
