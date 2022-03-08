@@ -146,6 +146,7 @@ class Robotiq85GelsightPusher(gp.GripperInterface):
             self.cc.add_cdlnks(self.lft_inner, [1])
             self.cc.add_cdlnks(self.rgt_outer, [1, 2, 3])
             self.cc.add_cdlnks(self.rgt_inner, [1])
+            self.cc.add_cdlnks(self.middle, [1])
             activelist = [self.lft_outer.lnks[0],
                           self.lft_outer.lnks[1],
                           self.lft_outer.lnks[2],
@@ -154,7 +155,8 @@ class Robotiq85GelsightPusher(gp.GripperInterface):
                           self.rgt_outer.lnks[1],
                           self.rgt_outer.lnks[2],
                           self.rgt_outer.lnks[3],
-                          self.rgt_inner.lnks[1]]
+                          self.rgt_inner.lnks[1],
+                          self.middle.lnks[1]]
             self.cc.set_active_cdlnks(activelist)
             self.all_cdelements = self.cc.all_cdelements
         # cdmesh
@@ -219,6 +221,11 @@ class Robotiq85GelsightPusher(gp.GripperInterface):
     #     rot = math.asin(math.asin(((jaw_width / 2.0 + 0.0064) - 0.0127) / 0.05715))
         # self.jaw_center_pos = np.array([0.0, 0.0, 0.06142]) + np.array([0.0, 0.0, math.cos(rot) * 0.05715]) + np.array(
         #     [0.0, 0.0, 0.06325144]) + self.coupling.jnts[-1]['loc_pos']
+
+    def push_at(self, gl_push_pos, gl_push_rotmat):
+        _, gl_tip_pos, gl_tip_rotmat, eef_root_pos, eef_root_rotmat = \
+            self.grip_at_with_jcpose(gl_push_pos, gl_push_rotmat, jaw_width=self.jawwidth_rng[1])
+        return [gl_tip_pos, gl_tip_rotmat, eef_root_pos, eef_root_rotmat]
 
     def gen_stickmodel(self,
                        tcp_jntid=None,

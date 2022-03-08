@@ -64,6 +64,7 @@ def rotmat_from_quaternion(quaternion):
         [q[1, 3] - q[2, 0], q[2, 3] + q[1, 0], 1.0 - q[1, 1] - q[2, 2], 0.0],
         [0.0, 0.0, 0.0, 1.0]])
 
+
 def rotmat_to_quaternion(rotmat):
     """
     convert a rotmat to quaternion
@@ -71,6 +72,7 @@ def rotmat_to_quaternion(rotmat):
     :return:
     """
     pass
+
 
 def rotmat_from_normal(surfacenormal):
     '''
@@ -571,11 +573,17 @@ def posvec_average(posveclist, bandwidth=10):
         return np.array(posveclist).mean(axis=0)
 
 
-def gen_icorotmats(icolevel=1, rotagls=np.linspace(0, 2 * math.pi, 8, endpoint=False), toggleflat=False):
+def gen_icorotmats(icolevel=1,
+                   rotation_interval=math.radians(45),
+                   crop_normal=np.array([0, 0, 1]),
+                   crop_angle=math.pi,
+                   toggleflat=False):
     """
     generate rotmats using icospheres and rotationaangle each origin-vertex vector of the icosphere
     :param icolevel, the default value 1 = 42vertices
-    :param angles, 8 directions by default
+    :param rotation_interval
+    :param crop_normal: crop results around a normal with crop_angle (crop out a cone section)
+    :param crop_angle:
     :return: [[rotmat3, ...], ...] size of the inner list is size of the angles
     author: weiwei
     date: 20191015osaka
@@ -583,6 +591,9 @@ def gen_icorotmats(icolevel=1, rotagls=np.linspace(0, 2 * math.pi, 8, endpoint=F
     returnlist = []
     icos = trm.creation.icosphere(icolevel)
     for vert in icos.vertices:
+        if crop_angle < math.pi:
+            if angle_between_vectors(vert, crop_normal) > crop_angle:
+                continue
         z = -vert
         x = orthogonal_vector(z)
         y = unit_vector(np.cross(z, x))
@@ -591,7 +602,7 @@ def gen_icorotmats(icolevel=1, rotagls=np.linspace(0, 2 * math.pi, 8, endpoint=F
         temprotmat[:, 1] = y
         temprotmat[:, 2] = z
         returnlist.append([])
-        for angle in rotagls:
+        for angle in np.linspace(0, 2 * math.pi, int(2 * math.pi / rotation_interval), endpoint=False):
             returnlist[-1].append(np.dot(rotmat_from_axangle(z, angle), temprotmat))
     if toggleflat:
         return functools.reduce(operator.iconcat, returnlist, [])
@@ -659,6 +670,7 @@ def compute_pca(nparray):
     pcv, pcaxmat = np.linalg.eig(ca)
     return pcv, pcaxmat
 
+
 def transform_data_pcv(data, random_rot=True):
     """
     :param data:
@@ -679,6 +691,7 @@ def transform_data_pcv(data, random_rot=True):
         pcaxmat = np.dot(rotmat_from_axangle([0, 0, 1], math.radians(5)), pcaxmat)
     transformed_data = np.dot(pcaxmat.T, data.T).T
     return transformed_data, pcaxmat
+
 
 def fit_plane(points):
     """
@@ -799,6 +812,7 @@ def consecutive(nparray1d, stepsize=1):
     :return:
     """
     return np.split(nparray1d, np.where(np.diff(nparray1d) != stepsize)[0] + 1)
+
 
 # The following code is from Gohlke
 #
