@@ -52,7 +52,7 @@ class RRT(object):
         min_dist_nid = np.argmin(diff_conf_array)
         return nodes_key_list[min_dist_nid]
 
-    def _extend_conf(self, conf1, conf2, ext_dist, exact_end=False):
+    def _extend_conf(self, conf1, conf2, ext_dist, exact_end=True):
         """
         :param conf1:
         :param conf2:
@@ -65,9 +65,11 @@ class RRT(object):
         # switch to the following code for ful extensions
         if not exact_end:
             nval = math.ceil(len / ext_dist)
+            nval = 1 if nval == 0  else nval # at least include itself
             conf_array = np.linspace(conf1, conf1 + nval * ext_dist * vec, nval)
         else:
             nval = math.floor(len / ext_dist)
+            nval = 1 if nval == 0  else nval # at least include itself
             conf_array = np.linspace(conf1, conf1 + nval * ext_dist * vec, nval)
             conf_array = np.vstack((conf_array, conf2))
         return list(conf_array)
