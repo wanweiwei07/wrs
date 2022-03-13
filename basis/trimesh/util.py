@@ -813,7 +813,7 @@ def concatenate(a, b=None):
         face_normals = np.vstack([m.face_normals for m in meshes])
     try:
         # concatenate visuals
-        visual = meshes[0].visual.concatenate([m.visual for m in meshes[1:]])
+        visual = meshes[0].visual.union([m.visual for m in meshes[1:]])
     except BaseException:
         log.warning('failed to combine visuals', exc_info=True)
         visual = None
