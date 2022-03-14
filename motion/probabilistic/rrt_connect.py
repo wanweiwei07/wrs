@@ -27,7 +27,7 @@ class RRTConnect(rrt.RRT):
         date: 20201228
         """
         nearest_nid = self._get_nearest_nid(roadmap, conf)
-        new_conf_list = self._extend_conf(roadmap.nodes[nearest_nid]['conf'], conf, ext_dist)[1:]
+        new_conf_list = self._extend_conf(roadmap.nodes[nearest_nid]['conf'], conf, ext_dist, exact_end=False)[1:]
         for new_conf in new_conf_list:
             if self._is_collided(component_name, new_conf, obstacle_list, otherrobot_list):
                 return -1

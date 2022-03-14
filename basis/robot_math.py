@@ -8,6 +8,7 @@ import operator
 import warnings as wns
 from scipy.spatial.transform import Rotation as R
 from scipy.spatial.transform import Slerp
+import scipy
 import matplotlib.pyplot as plt
 
 # epsilon for testing whether a number is close to zero
@@ -812,6 +813,9 @@ def consecutive(nparray1d, stepsize=1):
     :return:
     """
     return np.split(nparray1d, np.where(np.diff(nparray1d) != stepsize)[0] + 1)
+
+def null_space(npmat):
+    return scipy.linalg.null_space(npmat)
 
 
 # The following code is from Gohlke
