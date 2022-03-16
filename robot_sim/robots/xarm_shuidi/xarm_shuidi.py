@@ -66,7 +66,7 @@ class XArmShuidi(ri.RobotInterface):
                                    rotmat=self.ft_sensor.jnts[-1]['gl_rotmatq'],
                                    name='hnd_s', enable_cc=False)
         # tool center point
-        self.arm.jlc.tcp_jntid = -1
+        self.arm.jlc.tcp_jnt_id = -1
         self.arm.jlc.tcp_loc_rotmat = self.ft_sensor.jnts[-1]['loc_rotmat'].dot(self.hnd.jaw_center_rotmat)
         self.arm.jlc.tcp_loc_pos = self.ft_sensor.jnts[-1]['loc_pos'] + self.arm.jlc.tcp_loc_rotmat.dot(
             self.hnd.jaw_center_pos)
@@ -246,7 +246,7 @@ class XArmShuidi(ri.RobotInterface):
            tgt_rotmat=np.eye(3),
            seed_jnt_values=None,
            max_niter=100,
-           tcp_jntid=None,
+           tcp_jnt_id=None,
            tcp_loc_pos=None,
            tcp_loc_rotmat=None,
            local_minima="accept",
@@ -256,7 +256,7 @@ class XArmShuidi(ri.RobotInterface):
                           tgt_rotmat=tgt_rotmat,
                           seed_jnt_values=seed_jnt_values,
                           max_niter=100,
-                          tcp_jntid=tcp_jntid,
+                          tcp_jnt_id=tcp_jnt_id,
                           tcp_loc_pos=tcp_loc_pos,
                           tcp_loc_rotmat=tcp_loc_rotmat,
                           local_minima=local_minima,
@@ -331,7 +331,7 @@ class XArmShuidi(ri.RobotInterface):
                 break
 
     def gen_stickmodel(self,
-                       tcp_jntid=None,
+                       tcp_jnt_id=None,
                        tcp_loc_pos=None,
                        tcp_loc_rotmat=None,
                        toggle_tcpcs=False,
@@ -343,7 +343,7 @@ class XArmShuidi(ri.RobotInterface):
                                 tcp_loc_rotmat=None,
                                 toggle_tcpcs=False,
                                 toggle_jntscs=toggle_jntscs).attach_to(stickmodel)
-        self.arm.gen_stickmodel(tcp_jntid=tcp_jntid,
+        self.arm.gen_stickmodel(tcp_jnt_id=tcp_jnt_id,
                                 tcp_loc_pos=tcp_loc_pos,
                                 tcp_loc_rotmat=tcp_loc_rotmat,
                                 toggle_tcpcs=toggle_tcpcs,
@@ -356,7 +356,7 @@ class XArmShuidi(ri.RobotInterface):
         return stickmodel
 
     def gen_meshmodel(self,
-                      tcp_jntid=None,
+                      tcp_jnt_id=None,
                       tcp_loc_pos=None,
                       tcp_loc_rotmat=None,
                       toggle_tcpcs=False,
@@ -369,7 +369,7 @@ class XArmShuidi(ri.RobotInterface):
                                toggle_tcpcs=False,
                                toggle_jntscs=toggle_jntscs,
                                rgba=rgba).attach_to(meshmodel)
-        self.arm.gen_meshmodel(tcp_jntid=tcp_jntid,
+        self.arm.gen_meshmodel(tcp_jnt_id=tcp_jnt_id,
                                tcp_loc_pos=tcp_loc_pos,
                                tcp_loc_rotmat=tcp_loc_rotmat,
                                toggle_tcpcs=toggle_tcpcs,
@@ -404,17 +404,18 @@ if __name__ == '__main__':
     xav = XArmShuidi(enable_cc=True)
     xav.fk(component_name='all', jnt_values=np.array([0, 0, 0, 0, 0, 0, math.pi, 0, -math.pi / 6, 0, 0]))
     xav.jaw_to(jawwidth=.08)
-    tgt_pos = np.array([.85, 0, .55])
+    tgt_pos = np.array([.55, 0, .55])
     tgt_rotmat = rm.rotmat_from_axangle([0, 1, 0], math.pi / 2)
     gm.gen_frame(pos=tgt_pos, rotmat=tgt_rotmat).attach_to(base)
     jnt_values = xav.ik(component_name='arm', tgt_pos=tgt_pos, tgt_rotmat=tgt_rotmat)
+    print(jnt_values)
     tgt_pos2 = np.array([.45, 0, .07])
     tgt_rotmat2 = rm.rotmat_from_euler(0, math.pi, 0)
     jnt_values2 = xav.ik(component_name='arm', tgt_pos=tgt_pos2, tgt_rotmat=tgt_rotmat2, seed_jnt_values=jnt_values,
                          max_niter=10000)
-    print(jnt_values)
-    xav.fk(component_name='arm', jnt_values=jnt_values2)
-    xav.fk(component_name='agv', jnt_values=np.array([.2, -.5, math.radians(30)]))
+    print(jnt_values2)
+    xav.fk(component_name='arm', jnt_values=jnt_values)
+    # xav.fk(component_name='agv', jnt_values=np.array([.2, -.5, math.radians(30)]))
     xav_meshmodel = xav.gen_meshmodel(toggle_tcpcs=True)
     xav_meshmodel.attach_to(base)
     # xav.show_cdprimit()

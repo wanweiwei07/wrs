@@ -33,7 +33,7 @@ class TBMChanger7R(ri.RobotInterface):
                                     rotmat=self.arm.jnts[-1]['gl_rotmatq'],
                                     name='hnd', enable_cc=False)
         # tool center point
-        self.arm.jlc.tcp_jntid = -1
+        self.arm.jlc.tcp_jnt_id = -1
         self.arm.jlc.tcp_loc_pos = self.hnd.jaw_center_pos
         self.arm.jlc.tcp_loc_rotmat = self.hnd.jaw_center_rotmat
         # a list of detailed information about objects in hand, see CollisionChecker.add_objinhnd
@@ -170,7 +170,7 @@ class TBMChanger7R(ri.RobotInterface):
                 break
 
     def gen_stickmodel(self,
-                       tcp_jntid=None,
+                       tcp_jnt_id=None,
                        tcp_loc_pos=None,
                        tcp_loc_rotmat=None,
                        toggle_tcpcs=False,
@@ -178,13 +178,13 @@ class TBMChanger7R(ri.RobotInterface):
                        toggle_connjnt=False,
                        name='xarm7_shuidi_mobile_stickmodel'):
         stickmodel = mc.ModelCollection(name=name)
-        self.base_plate.gen_stickmodel(tcp_jntid=tcp_jntid,
+        self.base_plate.gen_stickmodel(tcp_jnt_id=tcp_jnt_id,
                                        tcp_loc_pos=tcp_loc_pos,
                                        tcp_loc_rotmat=tcp_loc_rotmat,
                                        toggle_tcpcs=False,
                                        toggle_jntscs=toggle_jntscs,
                                        toggle_connjnt=toggle_connjnt).attach_to(stickmodel)
-        self.arm.gen_stickmodel(tcp_jntid=tcp_jntid,
+        self.arm.gen_stickmodel(tcp_jnt_id=tcp_jnt_id,
                                 tcp_loc_pos=tcp_loc_pos,
                                 tcp_loc_rotmat=tcp_loc_rotmat,
                                 toggle_tcpcs=toggle_tcpcs,
@@ -195,7 +195,7 @@ class TBMChanger7R(ri.RobotInterface):
         return stickmodel
 
     def gen_meshmodel(self,
-                      tcp_jntid=None,
+                      tcp_jnt_id=None,
                       tcp_loc_pos=None,
                       tcp_loc_rotmat=None,
                       toggle_tcpcs=False,
@@ -203,12 +203,12 @@ class TBMChanger7R(ri.RobotInterface):
                       rgba=None,
                       name='xarm_shuidi_mobile_meshmodel'):
         meshmodel = mc.ModelCollection(name=name)
-        self.base_plate.gen_meshmodel(tcp_jntid=tcp_jntid,
+        self.base_plate.gen_meshmodel(tcp_jnt_id=tcp_jnt_id,
                                       tcp_loc_pos=tcp_loc_pos,
                                       tcp_loc_rotmat=tcp_loc_rotmat,
                                       toggle_tcpcs=False,
                                       toggle_jntscs=toggle_jntscs).attach_to(meshmodel)
-        self.arm.gen_meshmodel(tcp_jntid=tcp_jntid,
+        self.arm.gen_meshmodel(tcp_jnt_id=tcp_jnt_id,
                                tcp_loc_pos=tcp_loc_pos,
                                tcp_loc_rotmat=tcp_loc_rotmat,
                                toggle_tcpcs=toggle_tcpcs,

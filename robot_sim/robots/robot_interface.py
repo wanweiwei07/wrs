@@ -46,11 +46,11 @@ class RobotInterface(object):
 
     def ik(self,
            component_name="arm",
-           tgt_pos=np.array([.7,0,.7]),
+           tgt_pos=np.zeros(3),
            tgt_rotmat=np.eye(3),
            seed_jnt_values=None,
            max_niter=100,
-           tcp_jntid=None,
+           tcp_jnt_id=None,
            tcp_loc_pos=None,
            tcp_loc_rotmat=None,
            local_minima="accept",
@@ -59,7 +59,7 @@ class RobotInterface(object):
                                                         tgt_rotmat,
                                                         seed_jnt_values=seed_jnt_values,
                                                         max_niter=max_niter,
-                                                        tcp_jntid=tcp_jntid,
+                                                        tcp_jnt_id=tcp_jnt_id,
                                                         tcp_loc_pos=tcp_loc_pos,
                                                         tcp_loc_rotmat=tcp_loc_rotmat,
                                                         local_minima=local_minima,
@@ -71,8 +71,14 @@ class RobotInterface(object):
     def manipulability_axmat(self, component_name='arm', type="translational"):
         return self.manipulator_dict[component_name].manipulability_axmat(type=type)
 
-    def jacobian(self, component_name='arm'):
-        return self.manipulator_dict[component_name].jacobian()
+    def jacobian(self,
+                 component_name='arm',
+                 tcp_jnt_id=None,
+                 tcp_loc_pos=None,
+                 tcp_loc_rotmat=None):
+        return self.manipulator_dict[component_name].jacobian(tcp_jnt_id=tcp_jnt_id,
+                                                              tcp_loc_pos=tcp_loc_pos,
+                                                              tcp_loc_rotmat=tcp_loc_rotmat)
 
     def rand_conf(self, component_name):
         return self.manipulator_dict[component_name].rand_conf()
@@ -120,7 +126,7 @@ class RobotInterface(object):
         self.cc.unshow_cdprimit()
 
     def gen_stickmodel(self,
-                       tcp_jntid=None,
+                       tcp_jnt_id=None,
                        tcp_loc_pos=None,
                        tcp_loc_rotmat=None,
                        toggle_tcpcs=False,
@@ -130,7 +136,7 @@ class RobotInterface(object):
         raise NotImplementedError
 
     def gen_meshmodel(self,
-                      tcp_jntid=None,
+                      tcp_jnt_id=None,
                       tcp_loc_pos=None,
                       tcp_loc_rotmat=None,
                       toggle_tcpcs=False,

@@ -47,7 +47,7 @@ class JLChain(object):
         self._tgtjnts = range(1, self.ndof + 1)
         self.goto_homeconf()
         # default tcp
-        self.tcp_jntid = -1
+        self.tcp_jnt_id = -1
         self.tcp_loc_pos = np.zeros(3)
         self.tcp_loc_rotmat = np.eye(3)
         # collision primitives
@@ -199,9 +199,9 @@ class JLChain(object):
         self._mg = jlm.JLChainMesh(self, cdprimitive_type, cdmesh_type)
         self._ikt = jlik.JLChainIK(self)
 
-    def set_tcp(self, tcp_jntid=None, tcp_loc_pos=None, tcp_loc_rotmat=None):
-        if tcp_jntid is not None:
-            self.tcp_jntid = tcp_jntid
+    def set_tcp(self, tcp_jnt_id=None, tcp_loc_pos=None, tcp_loc_rotmat=None):
+        if tcp_jnt_id is not None:
+            self.tcp_jnt_id = tcp_jnt_id
         if tcp_loc_pos is not None:
             self.tcp_loc_pos = tcp_loc_pos
         if tcp_loc_rotmat is not None:
@@ -212,9 +212,9 @@ class JLChain(object):
                    tcp_loc_pos=None,
                    tcp_loc_rotmat=None):
         """
-        tcp_jntid, tcp_loc_pos, tcp_loc_rotmat are the tool center pose parameters. They are
+        tcp_jnt_id, tcp_loc_pos, tcp_loc_rotmat are the tool center pose parameters. They are
         used for temporary computation, the self.tcp_xxx parameters will not be changed
-        in case None is provided, the self.tcp_jntid, self.tcp_loc_pos, self.tcp_loc_rotmat will be used
+        in case None is provided, the self.tcp_jnt_id, self.tcp_loc_pos, self.tcp_loc_rotmat will be used
         :param tcp_jnt_id:
         :param tcp_loc_pos:
         :param tcp_loc_rotmat:
@@ -298,7 +298,7 @@ class JLChain(object):
            tgt_pos,
            tgt_rotmat,
            seed_jnt_values=None,
-           tcp_jntid=None,
+           tcp_jnt_id=None,
            tcp_loc_pos=None,
            tcp_loc_rotmat=None,
            max_niter=100,
@@ -307,16 +307,16 @@ class JLChain(object):
         """
         Numerical IK
         NOTE1: in the numik function of rotjntlinksik,
-        tcp_jntid, tcp_loc_pos, tcp_loc_rotmat are the tool center pose parameters. They are
+        tcp_jnt_id, tcp_loc_pos, tcp_loc_rotmat are the tool center pose parameters. They are
         used for temporary computation, the self.tcp_xxx parameters will not be changed
-        in case None is provided, the self.tcp_jntid, self.tcp_loc_pos, self.tcp_loc_rotmat will be used
-        NOTE2: if list, len(tgtpos)=len(tgtrot) < len(tcp_jntid)=len(tcp_loc_pos)=len(tcp_loc_rotmat)
+        in case None is provided, the self.tcp_jnt_id, self.tcp_loc_pos, self.tcp_loc_rotmat will be used
+        NOTE2: if list, len(tgtpos)=len(tgtrot) < len(tcp_jnt_id)=len(tcp_loc_pos)=len(tcp_loc_rotmat)
         :param tgt_pos: 1x3 nparray, single value or list
         :param tgt_rotmat: 3x3 nparray, single value or list
         :param seed_jnt_values: the starting configuration used in the numerical iteration
-        :param tcp_jntid: a joint ID in the self.tgtjnts
-        :param tcp_loc_pos: 1x3 nparray, decribed in the local frame of self.jnts[tcp_jntid], single value or list
-        :param tcp_loc_rotmat: 3x3 nparray, decribed in the local frame of self.jnts[tcp_jntid], single value or list
+        :param tcp_jnt_id: a joint ID in the self.tgtjnts
+        :param tcp_loc_pos: 1x3 nparray, decribed in the local frame of self.jnts[tcp_jnt_id], single value or list
+        :param tcp_loc_rotmat: 3x3 nparray, decribed in the local frame of self.jnts[tcp_jnt_id], single value or list
         :param max_niter
         :param local_minima: what to do at local minima: "accept", "randomrestart", "end"
         :return:
@@ -325,25 +325,41 @@ class JLChain(object):
                                 tgt_rot=tgt_rotmat,
                                 seed_jnt_values=seed_jnt_values,
                                 max_niter=max_niter,
-                                tcp_jntid=tcp_jntid,
+                                tcp_jnt_id=tcp_jnt_id,
                                 tcp_loc_pos=tcp_loc_pos,
                                 tcp_loc_rotmat=tcp_loc_rotmat,
                                 local_minima=local_minima,
                                 toggle_debug=toggle_debug)
 
-    def manipulability(self):
-        return self._ikt.manipulability()
+    def manipulability(self,
+                       tcp_jnt_id,
+                       tcp_loc_pos,
+                       tcp_loc_rotmat):
+        tcp_jnt_id = self.tcp_jnt_id if tcp_jnt_id is None else tcp_jnt_id
+        tcp_loc_pos = self.tcp_loc_pos if tcp_loc_pos is None else tcp_loc_pos
+        tcp_loc_rotmat = self.tcp_loc_rotmat if tcp_loc_rotmat is None else tcp_loc_rotmat
+        return self._ikt.manipulability(tcp_jnt_id=tcp_jnt_id,
+                                        tcp_loc_pos=tcp_loc_pos,
+                                        tcp_loc_rotmat=tcp_loc_rotmat)
 
     def manipulability_axmat(self, type="translational"):
         return self._ikt.manipulability_axmat(type=type)
 
-    def jacobian(self):
-        return self._ikt.jacobian(tcp_jntid=self.tcp_jntid)
+    def jacobian(self,
+                 tcp_jnt_id,
+                 tcp_loc_pos,
+                 tcp_loc_rotmat):
+        tcp_jnt_id = self.tcp_jnt_id if tcp_jnt_id is None else tcp_jnt_id
+        tcp_loc_pos = self.tcp_loc_pos if tcp_loc_pos is None else tcp_loc_pos
+        tcp_loc_rotmat = self.tcp_loc_rotmat if tcp_loc_rotmat is None else tcp_loc_rotmat
+        return self._ikt.jacobian(tcp_jnt_id=tcp_jnt_id,
+                                  tcp_loc_pos=tcp_loc_pos,
+                                  tcp_loc_rotmat=tcp_loc_rotmat)
 
     def cvt_loc_tcp_to_gl(self,
                           loc_pos=np.zeros(3),
                           loc_rotmat=np.eye(3),
-                          tcp_jntid=None,
+                          tcp_jnt_id=None,
                           tcp_loc_pos=None,
                           tcp_loc_rotmat=None):
         """
@@ -355,14 +371,14 @@ class JLChain(object):
         author: weiwei
         date: 20190312, 20210609
         """
-        if tcp_jntid is None:
-            tcp_jntid = self.tcp_jntid
+        if tcp_jnt_id is None:
+            tcp_jnt_id = self.tcp_jnt_id
         if tcp_loc_pos is None:
             tcp_loc_pos = self.tcp_loc_pos
         if tcp_loc_rotmat is None:
             tcp_loc_rotmat = self.tcp_loc_rotmat
-        tcp_gl_pos = self.jnts[tcp_jntid]['gl_posq'] + self.jnts[tcp_jntid]['gl_rotmatq'].dot(tcp_loc_pos)
-        tcp_gl_rotmat = self.jnts[tcp_jntid]['gl_rotmatq'].dot(tcp_loc_rotmat)
+        tcp_gl_pos = self.jnts[tcp_jnt_id]['gl_posq'] + self.jnts[tcp_jnt_id]['gl_rotmatq'].dot(tcp_loc_pos)
+        tcp_gl_rotmat = self.jnts[tcp_jnt_id]['gl_rotmatq'].dot(tcp_loc_rotmat)
         gl_pos = tcp_gl_pos + tcp_gl_rotmat.dot(loc_pos)
         gl_rot = tcp_gl_rotmat.dot(loc_rotmat)
         return [gl_pos, gl_rot]
@@ -370,7 +386,7 @@ class JLChain(object):
     def cvt_gl_to_loc_tcp(self,
                           gl_pos,
                           gl_rotmat,
-                          tcp_jntid=None,
+                          tcp_jnt_id=None,
                           tcp_loc_pos=None,
                           tcp_loc_rotmat=None):
         """
@@ -378,33 +394,33 @@ class JLChain(object):
         get the relative pos and relative rot with respective to the ith jntlnk
         :param gl_pos: 1x3 nparray
         :param gl_rotmat: 3x3 nparray
-        :param tcp_jntid: id of the joint in which the tool center point is defined
-        :param tcp_loc_pos: 1x3 nparray, local pose of the tool center point in the frame of the given tcp_jntid
+        :param tcp_jnt_id: id of the joint in which the tool center point is defined
+        :param tcp_loc_pos: 1x3 nparray, local pose of the tool center point in the frame of the given tcp_jnt_id
         :param tcp_loc_rotmat: 3x3 nparray, local rotmat of the tool center point
         :return:
         author: weiwei
         date: 20190312
         """
-        if tcp_jntid is None:
-            tcp_jntid = self.tcp_jntid
+        if tcp_jnt_id is None:
+            tcp_jnt_id = self.tcp_jnt_id
         if tcp_loc_pos is None:
             tcp_loc_pos = self.tcp_loc_pos
         if tcp_loc_rotmat is None:
             tcp_loc_rotmat = self.tcp_loc_rotmat
-        tcp_gloc_pos = self.jnts[tcp_jntid]['gl_posq'] + self.jnts[tcp_jntid]['gl_rotmatq'].dot(tcp_loc_pos)
-        tcp_gloc_rotmat = self.jnts[tcp_jntid]['gl_rotmatq'].dot(tcp_loc_rotmat)
+        tcp_gloc_pos = self.jnts[tcp_jnt_id]['gl_posq'] + self.jnts[tcp_jnt_id]['gl_rotmatq'].dot(tcp_loc_pos)
+        tcp_gloc_rotmat = self.jnts[tcp_jnt_id]['gl_rotmatq'].dot(tcp_loc_rotmat)
         loc_pos, loc_romat = rm.rel_pose(tcp_gloc_pos, tcp_gloc_rotmat, gl_pos, gl_rotmat)
         return [loc_pos, loc_romat]
 
     def gen_meshmodel(self,
-                      tcp_jntid=None,
+                      tcp_jnt_id=None,
                       tcp_loc_pos=None,
                       tcp_loc_rotmat=None,
                       toggle_tcpcs=True,
                       toggle_jntscs=False,
                       rgba=None,
                       name='jlcmesh'):
-        return self._mt.gen_meshmodel(tcp_jntid=tcp_jntid,
+        return self._mt.gen_meshmodel(tcp_jnt_id=tcp_jnt_id,
                                       tcp_loc_pos=tcp_loc_pos,
                                       tcp_loc_rotmat=tcp_loc_rotmat,
                                       toggle_tcpcs=toggle_tcpcs,
@@ -416,7 +432,7 @@ class JLChain(object):
                        thickness=.01,
                        joint_ratio=1.62,
                        link_ratio=.62,
-                       tcp_jntid=None,
+                       tcp_jnt_id=None,
                        tcp_loc_pos=None,
                        tcp_loc_rotmat=None,
                        toggle_tcpcs=True,
@@ -427,7 +443,7 @@ class JLChain(object):
                                        thickness=thickness,
                                        joint_ratio=joint_ratio,
                                        link_ratio=link_ratio,
-                                       tcp_jntid=tcp_jntid,
+                                       tcp_jnt_id=tcp_jnt_id,
                                        tcp_loc_pos=tcp_loc_pos,
                                        tcp_loc_rotmat=tcp_loc_rotmat,
                                        toggle_tcpcs=toggle_tcpcs,
@@ -452,7 +468,7 @@ if __name__ == "__main__":
     gm.gen_frame().attach_to(base)
 
     jlinstance = JLChain(homeconf=np.array([0, 0, 0, 0, 0, 0, 0, 0]))
-    # rjlinstance.settcp(tcp_jntid=rjlinstance.tgtjnts[-3], tcp_loc_pos=np.array([0,0,30]))
+    # rjlinstance.settcp(tcp_jnt_id=rjlinstance.tgtjnts[-3], tcp_loc_pos=np.array([0,0,30]))
     # jlinstance.jnts[4]['type'] = 'prismatic'
     # jlinstance.jnts[4]['loc_motionax'] = np.array([1, 0, 0])
     # jlinstance.jnts[4]['motion_val'] = .2
@@ -471,12 +487,12 @@ if __name__ == "__main__":
     gm.gen_mycframe(pos=tgt_pos0, rotmat=tgt_rotmat0, length=.15, thickness=.01).attach_to(base)
     gm.gen_mycframe(pos=tgt_pos1, rotmat=tgt_rotmat1, length=.15, thickness=.01).attach_to(base)
 
-    tcp_jntidlist = [jlinstance.tgtjnts[-1], jlinstance.tgtjnts[-6]]
+    tcp_jnt_id_list = [jlinstance.tgtjnts[-1], jlinstance.tgtjnts[-6]]
     tcp_loc_poslist = [np.array([.03, 0, .0]), np.array([.03, 0, .0])]
     tcp_loc_rotmatlist = [np.eye(3), np.eye(3)]
     # tgt_pos_list = tgt_pos_list[0]
     # tgt_rotmat_list = tgt_rotmat_list[0]
-    # tcp_jntidlist = tcp_jntidlist[0]
+    # tcp_jnt_id_list = tcp_jnt_id_list[0]
     # tcp_loc_poslist = tcp_loc_poslist[0]
     # tcp_loc_rotmatlist = tcp_loc_rotmatlist[0]
 
@@ -484,7 +500,7 @@ if __name__ == "__main__":
     jnt_values = jlinstance.ik(tgt_pos_list,
                                tgt_rotmat_list,
                                seed_jnt_values=None,
-                               tcp_jntid=tcp_jntidlist,
+                               tcp_jnt_id=tcp_jnt_id_list,
                                tcp_loc_pos=tcp_loc_poslist,
                                tcp_loc_rotmat=tcp_loc_rotmatlist,
                                local_minima="accept",
@@ -492,14 +508,14 @@ if __name__ == "__main__":
     toc = time.time()
     print('ik cost: ', toc - tic, jnt_values)
     jlinstance.fk(jnt_values=jnt_values)
-    jlinstance.gen_stickmodel(tcp_jntid=tcp_jntidlist,
+    jlinstance.gen_stickmodel(tcp_jnt_id=tcp_jnt_id_list,
                               tcp_loc_pos=tcp_loc_poslist,
                               tcp_loc_rotmat=tcp_loc_rotmatlist,
                               toggle_jntscs=True).attach_to(base)
 
     jlinstance2 = jlinstance.copy()
     jlinstance2.fix_to(pos=np.array([1, 1, 0]), rotmat=rm.rotmat_from_axangle([0, 0, 1], math.pi / 2))
-    jlinstance2.gen_stickmodel(tcp_jntid=tcp_jntidlist,
+    jlinstance2.gen_stickmodel(tcp_jnt_id=tcp_jnt_id_list,
                                tcp_loc_pos=tcp_loc_poslist,
                                tcp_loc_rotmat=tcp_loc_rotmatlist,
                                toggle_jntscs=True).attach_to(base)

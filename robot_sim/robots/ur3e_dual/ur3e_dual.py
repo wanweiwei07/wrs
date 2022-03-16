@@ -68,11 +68,11 @@ class UR3EDual(ri.RobotInterface):
                                      enable_cc=False)
         # tool center point
         # lft
-        self.lft_arm.tcp_jntid = -1
+        self.lft_arm.tcp_jnt_id = -1
         self.lft_arm.tcp_loc_pos = self.lft_hnd.jaw_center_pos
         self.lft_arm.tcp_loc_rotmat = self.lft_hnd.jaw_center_rotmat
         # rgt
-        self.rgt_arm.tcp_jntid = -1
+        self.rgt_arm.tcp_jnt_id = -1
         self.rgt_arm.tcp_loc_pos = self.lft_hnd.jaw_center_pos
         self.rgt_arm.tcp_loc_rotmat = self.lft_hnd.jaw_center_rotmat
         # a list of detailed information about objects in hand, see CollisionChecker.add_objinhnd
@@ -281,7 +281,7 @@ class UR3EDual(ri.RobotInterface):
             raise NotImplementedError
 
     def gen_stickmodel(self,
-                       tcp_jntid=None,
+                       tcp_jnt_id=None,
                        tcp_loc_pos=None,
                        tcp_loc_rotmat=None,
                        toggle_tcpcs=False,
@@ -293,7 +293,7 @@ class UR3EDual(ri.RobotInterface):
                                      tcp_loc_rotmat=None,
                                      toggle_tcpcs=False,
                                      toggle_jntscs=toggle_jntscs).attach_to(stickmodel)
-        self.lft_arm.gen_stickmodel(tcp_jntid=tcp_jntid,
+        self.lft_arm.gen_stickmodel(tcp_jnt_id=tcp_jnt_id,
                                     tcp_loc_pos=tcp_loc_pos,
                                     tcp_loc_rotmat=tcp_loc_rotmat,
                                     toggle_tcpcs=toggle_tcpcs,
@@ -306,7 +306,7 @@ class UR3EDual(ri.RobotInterface):
                                      tcp_loc_rotmat=None,
                                      toggle_tcpcs=False,
                                      toggle_jntscs=toggle_jntscs).attach_to(stickmodel)
-        self.rgt_arm.gen_stickmodel(tcp_jntid=tcp_jntid,
+        self.rgt_arm.gen_stickmodel(tcp_jnt_id=tcp_jnt_id,
                                     tcp_loc_pos=tcp_loc_pos,
                                     tcp_loc_rotmat=tcp_loc_rotmat,
                                     toggle_tcpcs=toggle_tcpcs,
@@ -318,7 +318,7 @@ class UR3EDual(ri.RobotInterface):
         return stickmodel
 
     def gen_meshmodel(self,
-                      tcp_jntid=None,
+                      tcp_jnt_id=None,
                       tcp_loc_pos=None,
                       tcp_loc_rotmat=None,
                       toggle_tcpcs=False,
@@ -331,7 +331,7 @@ class UR3EDual(ri.RobotInterface):
                                     toggle_tcpcs=False,
                                     toggle_jntscs=toggle_jntscs,
                                     rgba=rgba).attach_to(mm_collection)
-        self.lft_arm.gen_meshmodel(tcp_jntid=tcp_jntid,
+        self.lft_arm.gen_meshmodel(tcp_jnt_id=tcp_jnt_id,
                                    tcp_loc_pos=tcp_loc_pos,
                                    tcp_loc_rotmat=tcp_loc_rotmat,
                                    toggle_tcpcs=toggle_tcpcs,
@@ -340,7 +340,7 @@ class UR3EDual(ri.RobotInterface):
         self.lft_hnd.gen_meshmodel(toggle_tcpcs=False,
                                    toggle_jntscs=toggle_jntscs,
                                    rgba=rgba).attach_to(mm_collection)
-        self.rgt_arm.gen_meshmodel(tcp_jntid=tcp_jntid,
+        self.rgt_arm.gen_meshmodel(tcp_jnt_id=tcp_jnt_id,
                                    tcp_loc_pos=tcp_loc_pos,
                                    tcp_loc_rotmat=tcp_loc_rotmat,
                                    toggle_tcpcs=toggle_tcpcs,

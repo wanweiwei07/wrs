@@ -29,7 +29,7 @@ class JLChainMesh(object):
                 self.jlobject.lnks[id]['collision_model'].set_scale(self.jlobject.lnks[id]['scale'])
 
     def gen_meshmodel(self,
-                      tcp_jntid=None,
+                      tcp_jnt_id=None,
                       tcp_loc_pos=None,
                       tcp_loc_rotmat=None,
                       toggle_tcpcs=True,
@@ -49,7 +49,7 @@ class JLChainMesh(object):
         # tool center coord
         if toggle_tcpcs:
             self._toggle_tcpcs(mm_collection,
-                               tcp_jntid,
+                               tcp_jnt_id,
                                tcp_loc_pos,
                                tcp_loc_rotmat,
                                tcpic_rgba=np.array([.5, 0, 1, 1]), tcpic_thickness=.0062)
@@ -66,7 +66,7 @@ class JLChainMesh(object):
                        thickness=.01,
                        joint_ratio=1.62,
                        link_ratio=.62,
-                       tcp_jntid=None,
+                       tcp_jnt_id=None,
                        tcp_loc_pos=None,
                        tcp_loc_rotmat=None,
                        toggle_tcpcs=True,
@@ -77,7 +77,7 @@ class JLChainMesh(object):
         generate the stick model for a jntlnk object
         snp means stick nodepath
         :param rgba:
-        :param tcp_jntid:
+        :param tcp_jnt_id:
         :param tcp_loc_pos:
         :param tcp_loc_rotmat:
         :param toggle_tcpcs:
@@ -111,7 +111,7 @@ class JLChainMesh(object):
             id = cjid
         # tool center coord
         if toggle_tcpcs:
-            self._toggle_tcpcs(stickmodel, tcp_jntid, tcp_loc_pos, tcp_loc_rotmat,
+            self._toggle_tcpcs(stickmodel, tcp_jnt_id, tcp_loc_pos, tcp_loc_rotmat,
                                tcpic_rgba=rgba + np.array([0, 0, 1, 0]), tcpic_thickness=thickness * link_ratio)
         # toggle all coord
         if toggle_jntscs:
@@ -137,7 +137,7 @@ class JLChainMesh(object):
 
     def _toggle_tcpcs(self,
                       parent_model,
-                      tcp_jntid,
+                      tcp_jnt_id,
                       tcp_loc_pos,
                       tcp_loc_rotmat,
                       tcpic_rgba,
@@ -146,7 +146,7 @@ class JLChainMesh(object):
                       tcpcs_length=None):
         """
         :param parent_model: where to draw the frames to
-        :param tcp_jntid: single id or a list of ids
+        :param tcp_jnt_id: single id or a list of ids
         :param tcp_loc_pos:
         :param tcp_loc_rotmat:
         :param tcpic_rgba: color that used to render the tcp indicator
@@ -157,8 +157,8 @@ class JLChainMesh(object):
         author: weiwei
         date: 20201125
         """
-        if tcp_jntid is None:
-            tcp_jntid = self.jlobject.tcp_jntid
+        if tcp_jnt_id is None:
+            tcp_jnt_id = self.jlobject.tcp_jnt_id
         if tcp_loc_pos is None:
             tcp_loc_pos = self.jlobject.tcp_loc_pos
         if tcp_loc_rotmat is None:
@@ -167,11 +167,11 @@ class JLChainMesh(object):
             tcpcs_thickness = tcpic_thickness
         if tcpcs_length is None:
             tcpcs_length = tcpcs_thickness * 15
-        tcp_gl_pos, tcp_gl_rotmat = self.jlobject.get_gl_tcp(tcp_jntid,
+        tcp_gl_pos, tcp_gl_rotmat = self.jlobject.get_gl_tcp(tcp_jnt_id,
                                                              tcp_loc_pos,
                                                              tcp_loc_rotmat)
         if isinstance(tcp_gl_pos, list):
-            for i, jid in enumerate(tcp_jntid):
+            for i, jid in enumerate(tcp_jnt_id):
                 jgpos = self.jlobject.jnts[jid]['gl_posq']
                 gm.gen_dashstick(spos=jgpos,
                                  epos=tcp_gl_pos[i],
@@ -184,7 +184,7 @@ class JLChainMesh(object):
                                 thickness=tcpcs_thickness,
                                 alpha=tcpic_rgba[3]).attach_to(parent_model)
         else:
-            jgpos = self.jlobject.jnts[tcp_jntid]['gl_posq']
+            jgpos = self.jlobject.jnts[tcp_jnt_id]['gl_posq']
             gm.gen_dashstick(spos=jgpos,
                              epos=tcp_gl_pos,
                              thickness=tcpic_thickness,

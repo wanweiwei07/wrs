@@ -35,8 +35,8 @@ class ManipulatorInterface(object):
         return self.jlc.homeconf
 
     @property
-    def tcp_jntid(self):
-        return self.jlc.tcp_jntid
+    def tcp_jnt_id(self):
+        return self.jlc.tcp_jnt_id
 
     @property
     def tcp_loc_pos(self):
@@ -46,9 +46,9 @@ class ManipulatorInterface(object):
     def tcp_loc_rotmat(self):
         return self.jlc.tcp_loc_rotmat
 
-    @tcp_jntid.setter
-    def tcp_jntid(self, tcp_jntid):
-        self.jlc.tcp_jntid = tcp_jntid
+    @tcp_jnt_id.setter
+    def tcp_jnt_id(self, tcp_jnt_id):
+        self.jlc.tcp_jnt_id = tcp_jnt_id
 
     @tcp_loc_pos.setter
     def tcp_loc_pos(self, tcp_loc_pos):
@@ -63,7 +63,7 @@ class ManipulatorInterface(object):
 
     def set_tcp(self, tcp_jnt_id=None, tcp_loc_pos=None, tcp_loc_rotmat=None):
         if tcp_jnt_id is not None:
-            self.jlc.tcp_jntid = tcp_jnt_id
+            self.jlc.tcp_jnt_id = tcp_jnt_id
         if tcp_loc_pos is not None:
             self.jlc.tcp_loc_pos = tcp_loc_pos
         if tcp_loc_rotmat is not None:
@@ -103,7 +103,7 @@ class ManipulatorInterface(object):
            tgt_rotmat,
            seed_jnt_values=None,
            max_niter=100,
-           tcp_jntid=None,
+           tcp_jnt_id=None,
            tcp_loc_pos=None,
            tcp_loc_rotmat=None,
            local_minima="accept",
@@ -112,42 +112,52 @@ class ManipulatorInterface(object):
                            tgt_rotmat=tgt_rotmat,
                            seed_jnt_values=seed_jnt_values,
                            max_niter=max_niter,
-                           tcp_jntid=tcp_jntid,
+                           tcp_jnt_id=tcp_jnt_id,
                            tcp_loc_pos=tcp_loc_pos,
                            tcp_loc_rotmat=tcp_loc_rotmat,
                            local_minima=local_minima,
                            toggle_debug=toggle_debug)
 
-    def manipulability(self):
-        return self.jlc.manipulability()
+    def manipulability(self,
+                       tcp_jnt_id,
+                       tcp_loc_pos,
+                       tcp_loc_rotmat):
+        return self.jlc.manipulability(tcp_jnt_id,
+                                       tcp_loc_pos,
+                                       tcp_loc_rotmat)
 
     def manipulability_axmat(self, type="translational"):
         return self.jlc.manipulability_axmat(type=type)
 
-    def jacobian(self):
-        return self.jlc.jacobian()
+    def jacobian(self,
+                 tcp_jnt_id,
+                 tcp_loc_pos,
+                 tcp_loc_rotmat):
+        return self.jlc.jacobian(tcp_jnt_id=tcp_jnt_id,
+                                 tcp_loc_pos=tcp_loc_pos,
+                                 tcp_loc_rotmat=tcp_loc_rotmat)
 
     def cvt_loc_tcp_to_gl(self,
                           loc_pos=np.zeros(3),
                           loc_rotmat=np.eye(3),
-                          tcp_jntid=None,
+                          tcp_jnt_id=None,
                           tcp_loc_pos=None,
                           tcp_loc_rotmat=None):
         return self.jlc.cvt_loc_tcp_to_gl(loc_pos=loc_pos,
                                           loc_rotmat=loc_rotmat,
-                                          tcp_jntid=tcp_jntid,
+                                          tcp_jnt_id=tcp_jnt_id,
                                           tcp_loc_pos=tcp_loc_pos,
                                           tcp_loc_rotmat=tcp_loc_rotmat)
 
     def cvt_gl_to_loc_tcp(self,
                           gl_pos,
                           gl_rotmat,
-                          tcp_jntid=None,
+                          tcp_jnt_id=None,
                           tcp_loc_pos=None,
                           tcp_loc_rotmat=None):
         return self.jlc.cvt_gl_to_loc_tcp(gl_pos=gl_pos,
                                           gl_rotmat=gl_rotmat,
-                                          tcp_jntid=tcp_jntid,
+                                          tcp_jnt_id=tcp_jnt_id,
                                           tcp_loc_pos=tcp_loc_pos,
                                           tcp_loc_rotmat=tcp_loc_rotmat)
 
@@ -170,14 +180,14 @@ class ManipulatorInterface(object):
         self.cc.unshow_cdprimit()
 
     def gen_meshmodel(self,
-                      tcp_jntid=None,
+                      tcp_jnt_id=None,
                       tcp_loc_pos=None,
                       tcp_loc_rotmat=None,
                       toggle_tcpcs=True,
                       toggle_jntscs=False,
                       rgba=None,
                       name='manipulator_mesh'):
-        return self.jlc._mt.gen_meshmodel(tcp_jntid=tcp_jntid,
+        return self.jlc._mt.gen_meshmodel(tcp_jnt_id=tcp_jnt_id,
                                           tcp_loc_pos=tcp_loc_pos,
                                           tcp_loc_rotmat=tcp_loc_rotmat,
                                           toggle_tcpcs=toggle_tcpcs,
@@ -189,7 +199,7 @@ class ManipulatorInterface(object):
                        thickness=.01,
                        joint_ratio=1.62,
                        link_ratio=.62,
-                       tcp_jntid=None,
+                       tcp_jnt_id=None,
                        tcp_loc_pos=None,
                        tcp_loc_rotmat=None,
                        toggle_tcpcs=True,
@@ -200,7 +210,7 @@ class ManipulatorInterface(object):
                                            thickness=thickness,
                                            joint_ratio=joint_ratio,
                                            link_ratio=link_ratio,
-                                           tcp_jntid=tcp_jntid,
+                                           tcp_jnt_id=tcp_jnt_id,
                                            tcp_loc_pos=tcp_loc_pos,
                                            tcp_loc_rotmat=tcp_loc_rotmat,
                                            toggle_tcpcs=toggle_tcpcs,
