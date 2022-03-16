@@ -1,3 +1,5 @@
+import math
+import numpy as np
 import motion.trajectory.piecewisepoly_toppra as trajp
 import drivers.orin_bcap.bcapclient as bcapclient
 
@@ -66,8 +68,11 @@ class CobottaX(object):
                 new_path.append(pose)
         new_path.append(path[-1])
         path = new_path
+        max_vels = [math.pi * .6, math.pi * .4, math.pi, math.pi, math.pi, math.pi * 1.5]
+        max_accs = [math.pi * 2] * 6
         interpolated_confs = \
-            self.traj_gen.interpolate_by_max_spdacc(path, control_frequency=.008, toggle_debug=toggle_debug)
+            self.traj_gen.interpolate_by_max_spdacc(path, control_frequency=.008, max_vels=max_vels, max_accs=max_accs,
+                                                    toggle_debug=toggle_debug)
         # Slave move: Change mode
         self.bcc.robot_execute(self.hrbt, "slvChangeMode", 0x202)
         for jnt_values in interpolated_confs:

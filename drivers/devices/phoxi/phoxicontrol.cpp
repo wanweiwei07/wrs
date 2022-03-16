@@ -377,7 +377,7 @@ public:
 //		}
 //		return results;
 //	}
-//};
+};
 
 /// <summary>
 /// python interface
