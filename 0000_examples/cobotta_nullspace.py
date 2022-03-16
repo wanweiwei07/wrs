@@ -5,6 +5,7 @@ import basis.robot_math as rm
 import robot_sim.robots.cobotta.cobotta as cbt
 import visualization.panda.world as wd
 import modeling.geometric_model as gm
+import robot_con.cobotta.cobotta_x as cbtx
 
 def genSphere(pos, radius=0.02, rgba=None):
     if rgba is None:
@@ -39,23 +40,26 @@ if __name__ == '__main__':
             path.append(cur_jnt_values)
             robot_s.gen_meshmodel(rgba=[0, 1, 1, .1]).attach_to(base)
 
-    def update(rbtmnp, motioncounter, robot, path, armname, task):
-        if motioncounter[0] < len(path):
-            if rbtmnp[0] is not None:
-                rbtmnp[0].detach()
-            pose = path[motioncounter[0]]
-            robot.fk(armname, pose)
-            rbtmnp[0] = robot.gen_meshmodel(toggle_tcpcs=True)
-            rbtmnp[0].attach_to(base)
-            genSphere(robot.get_gl_tcp(component_name)[0], radius=0.01, rgba=[1, 1, 0, 1])
-            motioncounter[0] += 1
-        else:
-            motioncounter[0] = 0
-        return task.again
-    rbtmnp = [None]
-    motioncounter = [0]
-    taskMgr.doMethodLater(0.1, update, "update",
-                          extraArgs=[rbtmnp, motioncounter, robot_s, path, component_name], appendTask=True)
-    base.setFrameRateMeter(True)
+    robot_x = cbtx.CobottaX()
+    robot_x.move_jnts_motion(path)
+    # uncomment the following part for animation
+    # def update(rbtmnp, motioncounter, robot, path, armname, task):
+    #     if motioncounter[0] < len(path):
+    #         if rbtmnp[0] is not None:
+    #             rbtmnp[0].detach()
+    #         pose = path[motioncounter[0]]
+    #         robot.fk(armname, pose)
+    #         rbtmnp[0] = robot.gen_meshmodel(toggle_tcpcs=True)
+    #         rbtmnp[0].attach_to(base)
+    #         genSphere(robot.get_gl_tcp(component_name)[0], radius=0.01, rgba=[1, 1, 0, 1])
+    #         motioncounter[0] += 1
+    #     else:
+    #         motioncounter[0] = 0
+    #     return task.again
+    # rbtmnp = [None]
+    # motioncounter = [0]
+    # taskMgr.doMethodLater(0.1, update, "update",
+    #                       extraArgs=[rbtmnp, motioncounter, robot_s, path, component_name], appendTask=True)
+    # base.setFrameRateMeter(True)
     base.run()
     
