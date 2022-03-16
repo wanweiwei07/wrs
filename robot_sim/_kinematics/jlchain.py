@@ -169,7 +169,7 @@ class JLChain(object):
         # fix the connecting end of the jlchain to the given pos and rotmat
         self.pos = pos
         self.rotmat = rotmat
-        self.fk(jnt_values=jnt_values)
+        return self.fk(jnt_values=jnt_values)
 
     def set_homeconf(self, jnt_values=None):
         """
@@ -242,12 +242,17 @@ class JLChain(object):
         author: weiwei
         date: 20161205, 20201009osaka
         """
+        status = "succ"  # "succ" or "out_of_rng"
         if jnt_values is not None:
             counter = 0
             for id in self.tgtjnts:
+                if jnt_values[counter] < self.jnts[id]["motion_rng"][0] or jnt_values[counter] > \
+                        self.jnts[id]["motion_rng"][1]:
+                    status = "out_of_rng"
                 self.jnts[id]['motion_val'] = jnt_values[counter]
                 counter += 1
         self._update_fk()
+        return status
 
     def goto_homeconf(self):
         """

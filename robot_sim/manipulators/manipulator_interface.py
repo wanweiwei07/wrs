@@ -87,7 +87,7 @@ class ManipulatorInterface(object):
         self.jlc.fk(jnt_values=self.jlc.zeroconf)
 
     def fix_to(self, pos, rotmat, jnt_values=None):
-        self.jlc.fix_to(pos=pos, rotmat=rotmat, jnt_values=jnt_values)
+        return self.jlc.fix_to(pos=pos, rotmat=rotmat, jnt_values=jnt_values)
 
     def fk(self, jnt_values):
         return self.jlc.fk(jnt_values=jnt_values)

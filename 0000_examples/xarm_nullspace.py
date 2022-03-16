@@ -27,7 +27,8 @@ if __name__ == '__main__':
 
     # null space planning
     path = []
-    for t in range(0, 500, 1):
+    ratio = .01
+    for t in range(0, 5000, 1):
         print("-------- timestep = ", t, " --------")
         xa_jacob = robot_s.jacobian()
         # xa_ns = rm.null_space(xa_jacob)
@@ -36,11 +37,14 @@ if __name__ == '__main__':
         # nullspace rotate
         xa_ns = rm.null_space(xa_jacob[:3,:])
         cur_jnt_values = robot_s.get_jnt_values()
-        cur_jnt_values += np.ravel(xa_ns[:,2])*-.01
-        robot_s.fk(component_name=component_name, jnt_values=cur_jnt_values)
-        if t % 20 == 0:
-            path.append(cur_jnt_values)
-            robot_s.gen_meshmodel(rgba=[0, 1, 1, .1]).attach_to(base)
+        cur_jnt_values += np.ravel(xa_ns[:, 0]) * ratio
+        status = robot_s.fk(component_name=component_name, jnt_values=cur_jnt_values)
+        if status == "succ":
+            if t % 20 == 0:
+                path.append(cur_jnt_values)
+                robot_s.gen_meshmodel(rgba=[0, 1, 1, .1]).attach_to(base)
+        elif status == "out_of_rng":
+            ratio=-ratio
 
     def update(rbtmnp, motioncounter, robot, path, armname, task):
         if motioncounter[0] < len(path):

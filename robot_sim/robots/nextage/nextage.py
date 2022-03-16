@@ -295,28 +295,30 @@ class Nextage(ri.RobotInterface):
                 obj_info['gl_rotmat'] = gl_rotmat
 
         def update_component(component_name, jnt_values):
-            self.manipulator_dict[component_name].fk(jnt_values=jnt_values)
+            status = self.manipulator_dict[component_name].fk(jnt_values=jnt_values)
             hnd_on_manipulator = self.get_hnd_on_manipulator(component_name)
             if hnd_on_manipulator is not None:
                 hnd_on_manipulator.fix_to(pos=self.manipulator_dict[component_name].jnts[-1]['gl_posq'],
                                           rotmat=self.manipulator_dict[component_name].jnts[-1]['gl_rotmatq'])
             update_oih(component_name=component_name)
+            return status
 
         # examine length
         if component_name == 'lft_arm' or component_name == 'rgt_arm':
             if not isinstance(jnt_values, np.ndarray) or jnt_values.size != 6:
                 raise ValueError("An 1x6 npdarray must be specified to move a single arm!")
             waist_value = self.central_body.jnts[1]['motion_val']
-            update_component(component_name, np.append(waist_value, jnt_values))
+            return update_component(component_name, np.append(waist_value, jnt_values))
         elif component_name == 'lft_arm_waist' or component_name == 'rgt_arm_waist':
             if not isinstance(jnt_values, np.ndarray) or jnt_values.size != 7:
                 raise ValueError("An 1x7 npdarray must be specified to move a single arm plus the waist!")
-            update_component(component_name, jnt_values)
+            status = update_component(component_name, jnt_values)
             self.central_body.jnts[1]['motion_val'] = jnt_values[0]
             self.central_body.fk()
             the_other_manipulator_name = 'lft_arm' if component_name[:7] == 'rgt_arm' else 'rgt_arm'
             self.manipulator_dict[the_other_manipulator_name].jnts[1]['motion_val'] = jnt_values[0]
             self.manipulator_dict[the_other_manipulator_name].fk()
+            return status # if waist is out of range, the first status will always be out of rng
         elif component_name == 'both_arm':
             raise NotImplementedError
         elif component_name == 'all':

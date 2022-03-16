@@ -58,8 +58,8 @@ class XArmShuidi(ri.RobotInterface):
         self.ft_sensor.lnks[0]['name'] = "xs_ftsensor"
         self.ft_sensor.lnks[0]['loc_pos'] = np.array([0, 0, 0])
         self.ft_sensor.lnks[0]['collision_model'] = cm.gen_stick(spos=self.ft_sensor.jnts[0]['loc_pos'],
-                                                                epos=self.ft_sensor.jnts[1]['loc_pos'],
-                                                                thickness=.075, rgba=[.2, .3, .3, 1], sections=24)
+                                                                 epos=self.ft_sensor.jnts[1]['loc_pos'],
+                                                                 thickness=.075, rgba=[.2, .3, .3, 1], sections=24)
         self.ft_sensor.reinitialize()
         # gripper
         self.hnd = xag.XArmGripper(pos=self.ft_sensor.jnts[-1]['gl_posq'],
@@ -149,6 +149,7 @@ class XArmShuidi(ri.RobotInterface):
         author: weiwei
         date: 20201208toyonaka
         """
+
         def update_oih(component_name='arm'):
             for obj_info in self.oih_infos:
                 gl_pos, gl_rotmat = self.cvt_loc_tcp_to_gl(component_name, obj_info['rel_pos'], obj_info['rel_rotmat'])
@@ -156,7 +157,7 @@ class XArmShuidi(ri.RobotInterface):
                 obj_info['gl_rotmat'] = gl_rotmat
 
         def update_component(component_name, jnt_values):
-            self.manipulator_dict[component_name].fk(jnt_values=jnt_values)
+            status = self.manipulator_dict[component_name].fk(jnt_values=jnt_values)
             self.ft_sensor_dict[component_name].fix_to(pos=self.manipulator_dict[component_name].jnts[-1]['gl_posq'],
                                                        rotmat=self.manipulator_dict[component_name].jnts[-1][
                                                            'gl_rotmatq'])
@@ -164,15 +165,16 @@ class XArmShuidi(ri.RobotInterface):
                 pos=self.ft_sensor_dict[component_name].jnts[-1]['gl_posq'],
                 rotmat=self.ft_sensor_dict[component_name].jnts[-1]['gl_rotmatq'])
             update_oih(component_name=component_name)
+            return status
 
         if component_name in self.manipulator_dict:
             if not isinstance(jnt_values, np.ndarray) or jnt_values.size != 7:
                 raise ValueError("An 1x7 npdarray must be specified to move the arm!")
-            update_component(component_name, jnt_values)
+            return update_component(component_name, jnt_values)
         elif component_name == 'agv':
             if not isinstance(jnt_values, np.ndarray) or jnt_values.size != 3:
                 raise ValueError("An 1x7 npdarray must be specified to move the agv!")
-            self.agv.fk(jnt_values)
+            status = self.agv.fk(jnt_values)
             self.arm.fix_to(pos=self.agv.jnts[-1]['gl_posq'], rotmat=self.agv.jnts[-1]['gl_rotmatq'])
             self.ft_sensor.fix_to(pos=self.arm.jnts[-1]['gl_posq'], rotmat=self.arm.jnts[-1]['gl_rotmatq'])
             self.hnd.fix_to(pos=self.ft_sensor.jnts[-1]['gl_posq'], rotmat=self.ft_sensor.jnts[-1]['gl_rotmatq'])
@@ -181,12 +183,13 @@ class XArmShuidi(ri.RobotInterface):
                 gl_pos, gl_rotmat = self.arm.cvt_loc_tcp_to_gl(obj_info['rel_pos'], obj_info['rel_rotmat'])
                 obj_info['gl_pos'] = gl_pos
                 obj_info['gl_rotmat'] = gl_rotmat
+            return status
         elif component_name == 'agv_arm':
             if not isinstance(jnt_values, np.ndarray) or jnt_values.size != 10:
-                raise ValueError("An 1x9 npdarray must be specified to move both the agv and the arm!")
-            self.agv.fk(jnt_values)
-            self.arm.fix_to(pos=self.agv.jnts[-1]['gl_posq'], rotmat=self.agv.jnts[-1]['gl_rotmatq'],
-                            jnt_values=jnt_values[3:10])
+                raise ValueError("An 1x10 npdarray must be specified to move both the agv and the arm!")
+            status_agv = self.agv.fk(jnt_values)
+            status_arm = self.arm.fix_to(pos=self.agv.jnts[-1]['gl_posq'], rotmat=self.agv.jnts[-1]['gl_rotmatq'],
+                                         jnt_values=jnt_values[3:10])
             self.ft_sensor.fix_to(pos=self.arm.jnts[-1]['gl_posq'], rotmat=self.arm.jnts[-1]['gl_rotmatq'])
             self.hnd.fix_to(pos=self.ft_sensor.jnts[-1]['gl_posq'], rotmat=self.ft_sensor.jnts[-1]['gl_rotmatq'])
             # update objects in hand
@@ -194,20 +197,23 @@ class XArmShuidi(ri.RobotInterface):
                 gl_pos, gl_rotmat = self.arm.cvt_loc_tcp_to_gl(obj_info['rel_pos'], obj_info['rel_rotmat'])
                 obj_info['gl_pos'] = gl_pos
                 obj_info['gl_rotmat'] = gl_rotmat
+            return "succ" if status_agv == "succ" and status_arm == "succ" else "out_of_rng"
         elif component_name == 'all':
             if not isinstance(jnt_values, np.ndarray) or jnt_values.size != 11:
-                raise ValueError("An 1x10 npdarray must be specified to move all joints!")
-            self.agv.fk(jnt_values)
-            self.arm.fix_to(pos=self.agv.jnts[-1]['gl_posq'], rotmat=self.agv.jnts[-1]['gl_rotmatq'],
-                            jnt_values=jnt_values[3:10])
+                raise ValueError("An 1x11 npdarray must be specified to move all joints!")
+            status_agv = self.agv.fk(jnt_values)
+            status_arm = self.arm.fix_to(pos=self.agv.jnts[-1]['gl_posq'], rotmat=self.agv.jnts[-1]['gl_rotmatq'],
+                                         jnt_values=jnt_values[3:10])
             self.ft_sensor.fix_to(pos=self.arm.jnts[-1]['gl_posq'], rotmat=self.arm.jnts[-1]['gl_rotmatq'])
-            self.hnd.fix_to(pos=self.ft_sensor.jnts[-1]['gl_posq'], rotmat=self.ft_sensor.jnts[-1]['gl_rotmatq'],
+            self.hnd.fix_to(pos=self.ft_sensor.jnts[-1]['gl_posq'],
+                            rotmat=self.ft_sensor.jnts[-1]['gl_rotmatq'],
                             motion_val=jnt_values[10])
             # update objects in hand
             for obj_info in self.oih_infos:
                 gl_pos, gl_rotmat = self.arm.cvt_loc_tcp_to_gl(obj_info['rel_pos'], obj_info['rel_rotmat'])
                 obj_info['gl_pos'] = gl_pos
                 obj_info['gl_rotmat'] = gl_rotmat
+            return "succ" if status_agv == "succ" and status_arm == "succ" else "out_of_rng"
 
     def get_jnt_values(self, component_name="arm"):
         if component_name in self.manipulator_dict:
@@ -242,7 +248,7 @@ class XArmShuidi(ri.RobotInterface):
 
     def ik(selfself,
            component_name="arm",
-           tgt_pos=np.array([.7,0,.7]),
+           tgt_pos=np.array([.7, 0, .7]),
            tgt_rotmat=np.eye(3),
            seed_jnt_values=None,
            max_niter=100,
