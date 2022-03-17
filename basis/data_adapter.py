@@ -12,7 +12,7 @@ from typing import Optional, List, Union
 # data manipulation
 def gen_colorarray(ncolors: int = 1,
                    alpha: float = 1,
-                   nonrandcolor: Optional[Union[List[float]], npt.NDArray[float]] = None) -> List[List[float]]:
+                   nonrandcolor: Optional[Union[List[float], npt.NDArray[float]]] = None) -> List[List[float]]:
     """
     Generate an array of random colors
     if ncolor = 1, returns a 4-element list
