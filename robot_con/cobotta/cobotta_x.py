@@ -2,6 +2,7 @@ import math
 import numpy as np
 import motion.trajectory.piecewisepoly_toppra as trajp
 import drivers.orin_bcap.bcapclient as bcapclient
+from typing import List
 
 
 class CobottaX(object):
@@ -41,27 +42,14 @@ class CobottaX(object):
     def clear_error(self):
         self.bcc.controller_execute(self.hctrl, "ClearError", None)
 
-    def get_jnt_values(self):
-        pose = self.bcc.robot_execute(self.hrbt, "CurJnt", None)
-        return np.radians(np.array(pose[:6]))
-
-    def move_jnts(self, jnt_values):
-        """
-        :param jnt_values:  1x6 np array
-        :return:
-        author: weiwei
-        date: 20210507
-        """
-        jnt_values_degree = np.degrees(jnt_values)
-        self.bcc.robot_move(self.hrbt, 1, [jnt_values_degree.tolist(), "J", "@E"], "")
-
-    def move_jnts_motion(self, path, toggle_debug=False):
+    def move_jnts_motion(self, path: List[np.typing.NDArray[float]], toggle_debug: bool = False):
         """
         :param path:
         :return:
         author: weiwei
         date: 20210507
         """
+        self.hhnd = self.bcc.robot_execute(self.hrbt, "TakeArm", [0, 0])  # 20220317, needs further check, speedmode?
         new_path = []
         for i, pose in enumerate(path):
             if i < len(path) - 1 and not np.allclose(pose, path[i + 1]):
@@ -80,15 +68,9 @@ class CobottaX(object):
             self.bcc.robot_execute(self.hrbt, "slvMove", jnt_values_degree.tolist() + [0, 0])
         self.bcc.robot_execute(self.hrbt, "slvChangeMode", 0x000)
 
-    def move_jnts(self, jnt_values):
-        """
-        :param jnt_values:  1x6 np array
-        :return:
-        author: weiwei
-        date: 20210507
-        """
-        jnt_values_degree = np.degrees(jnt_values)
-        self.bcc.robot_move(self.hrbt, 1, [jnt_values_degree.tolist(), "J", "@E"], "")
+    def get_jnt_values(self):
+        pose = self.bcc.robot_execute(self.hrbt, "CurJnt", None)
+        return np.radians(np.array(pose[:6]))
 
     def get_pose_values(self):
         """
@@ -102,6 +84,16 @@ class CobottaX(object):
         return_value[:3] *= .001
         return_value[3:6] = np.radians(return_value[3:6])
         return return_value
+
+    def move_jnts(self, jnt_values: np.typing.NDArray[float]):
+        """
+        :param jnt_values:  1x6 np array
+        :return:
+        author: weiwei
+        date: 20210507
+        """
+        jnt_values_degree = np.degrees(jnt_values)
+        self.bcc.robot_move(self.hrbt, 1, [jnt_values_degree.tolist(), "J", "@E"], "")
 
     def move_pose(self, pose_value):
         pose_value[:3] *= 1000

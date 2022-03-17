@@ -377,7 +377,7 @@ def quaternion_to_euler(quaternion, axes='sxyz'):
     return rotmat_to_euler(rotmat_from_quaternion(quaternion), axes)
 
 
-def skewsymmetric(posvec):
+def skew_symmetric(posvec):
     """
     compute the skew symmetric maxtix that corresponds to a cross
     :param posvec: 1x3 nparray
