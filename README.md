@@ -18,8 +18,7 @@ The following packages are needed to run this system.
 
 ```
 panda3d>=1.10.7 # vital, visualization
-numpy>=1.17.4 # vital, matrix computation
-pycollada>=0.7.1 # optional, required by trimesh to load dae files
+numpy>=1.22.2 # vital, matrix computation
 opencv-python>=4.4.0.46 # optional, required by vision
 opencv-contrib-python>=4.4.0.46 # optional, required by vision
 scikit-learn>=0.23.2 # vital?
@@ -32,6 +31,7 @@ shapely>=1.7.1 # required by ?
 networkx>=2.5.1 # vital
 pyserial>=3.4 # required by xarm controllers
 pandas>=1.3.4 # required for neuro ik
+# cython>=0.29.27 # required for speeding up
 # gimpact # optional mesh-level collision detection
 ```
 
