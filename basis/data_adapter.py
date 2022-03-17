@@ -6,10 +6,13 @@ from panda3d.core import Geom, GeomNode, GeomPoints, GeomTriangles
 from panda3d.core import GeomVertexData, GeomVertexFormat, GeomVertexArrayFormat, InternalName
 from panda3d.core import GeomEnums
 from panda3d.core import NodePath, Vec3, Mat3, Mat4, LQuaternion
+from typing import Optional, List, Union
 
 
 # data manipulation
-def randdom_colorarray(ncolors: int = 1, alpha: float = 1, nonrandcolor=None):
+def gen_colorarray(ncolors: int = 1,
+                   alpha: float = 1,
+                   nonrandcolor: Optional[Union[List[float]], npt.NDArray[float]] = None) -> List[List[float]]:
     """
     Generate an array of random colors
     if ncolor = 1, returns a 4-element list
@@ -60,7 +63,7 @@ def pdmat3_to_npmat3(pdmat3: Mat3) -> npt.NDArray[float]:
     return np.array([[row0[0], row1[0], row2[0]], [row0[1], row1[1], row2[1]], [row0[2], row1[2], row2[2]]])
 
 
-def npv3mat3_to_pdmat4(npvec3: npt.NDArray[float]= np.array([0, 0, 0]),
+def npv3mat3_to_pdmat4(npvec3: npt.NDArray[float] = np.array([0, 0, 0]),
                        npmat3: npt.NDArray[float] = np.eye(3)):
     """
     convert numpy.2darray to LMatrix4 defined in Panda3d

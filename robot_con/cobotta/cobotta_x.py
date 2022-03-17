@@ -2,6 +2,7 @@ import math
 import numpy as np
 import motion.trajectory.piecewisepoly_toppra as trajp
 import drivers.orin_bcap.bcapclient as bcapclient
+import numpy.typing as npt
 from typing import List
 
 
@@ -42,7 +43,7 @@ class CobottaX(object):
     def clear_error(self):
         self.bcc.controller_execute(self.hctrl, "ClearError", None)
 
-    def move_jnts_motion(self, path: List[np.typing.NDArray[float]], toggle_debug: bool = False):
+    def move_jnts_motion(self, path: List[npt.NDArray[float]], toggle_debug: bool = False):
         """
         :param path:
         :return:
@@ -85,7 +86,7 @@ class CobottaX(object):
         return_value[3:6] = np.radians(return_value[3:6])
         return return_value
 
-    def move_jnts(self, jnt_values: np.typing.NDArray[float]):
+    def move_jnts(self, jnt_values: npt.NDArray[float]):
         """
         :param jnt_values:  1x6 np array
         :return:
