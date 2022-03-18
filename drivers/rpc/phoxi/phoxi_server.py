@@ -13,7 +13,7 @@ class PhoxiServer(pxrpc.PhoxiServicer):
         h = dobj.width
         w = dobj.height
         ch = dobj.channel
-        return np.frombuffer(dobj.image, (h,w,ch))
+        return np.frombuffer(dobj.image, (h, w, ch))
 
     def initialize(self, pctrlinstance):
         """
@@ -22,14 +22,14 @@ class PhoxiServer(pxrpc.PhoxiServicer):
         :return:
         """
 
-        self.__hasframe = False
-        self.__pcins = pctrlinstance
+        self._hasframe = False
+        self._pcins = pctrlinstance
 
     def triggerframe(self, request, context):
-        self.__pcins.captureframe()
-        self.__width = self.__pcins.getframewidth()
-        self.__height = self.__pcins.getframeheight()
-        self.__hasframe = True
+        self._pcins.captureframe()
+        self._width = self._pcins.getframewidth()
+        self._height = self._pcins.getframeheight()
+        self._hasframe = True
 
         return pxmsg.Empty()
 
@@ -42,10 +42,11 @@ class PhoxiServer(pxrpc.PhoxiServicer):
         date: 20180207
         """
 
-        if self.__hasframe:
-            textureraw = self.__pcins.gettexture()
-            texturearray = np.array(textureraw).reshape((self.__height, self.__width))
-            return pxmsg.CamImg(width=self.__width, height=self.__height, channel=1, image=np.ndarray.tobytes(texturearray))
+        if self._hasframe:
+            textureraw = self._pcins.gettexture()
+            texturearray = np.array(textureraw).reshape((self._height, self._width))
+            return pxmsg.CamImg(width=self._width, height=self._height, channel=1,
+                                image=np.ndarray.tobytes(texturearray))
         else:
             raise ValueError("Trigger a frame first!")
 
@@ -58,9 +59,9 @@ class PhoxiServer(pxrpc.PhoxiServicer):
         date: 20180207
         """
 
-        depthmapraw = self.__pcins.getdepthmap()
-        deptharray = np.array(depthmapraw).reshape((self.__height, self.__width))
-        return pxmsg.CamImg(width=self.__width, height=self.__height, channel=1, image=np.ndarray.tobytes(deptharray))
+        depthmapraw = self._pcins.getdepthmap()
+        deptharray = np.array(depthmapraw).reshape((self._height, self._width))
+        return pxmsg.CamImg(width=self._width, height=self._height, channel=1, image=np.ndarray.tobytes(deptharray))
 
     def getpcd(self, request, context):
         """
@@ -72,8 +73,8 @@ class PhoxiServer(pxrpc.PhoxiServicer):
         date: 20181121
         """
 
-        pointcloudraw = self.__pcins.getpointcloud()
-        pcdarray = np.array(pointcloudraw).reshape((-1,3))
+        pointcloudraw = self._pcins.getpointcloud()
+        pcdarray = np.array(pointcloudraw).reshape((-1, 3))
         return pxmsg.PointCloud(points=np.ndarray.tobytes(pcdarray))
 
     def getnormals(self, request, context):
@@ -87,18 +88,30 @@ class PhoxiServer(pxrpc.PhoxiServicer):
         :return:
         """
 
-        normalsraw = self.__pcins.getnormals()
-        normalsarray = np.array(normalsraw).reshape((-1,3))
+        normalsraw = self._pcins.getnormals()
+        normalsarray = np.array(normalsraw).reshape((-1, 3))
         return pxmsg.PointCloud(points=np.ndarray.tobytes(normalsarray))
 
-def serve(serialno = "2019-09-051-LC3", host = "127.0.0.1:18300"):
-    portno = 65499
-    resolution = "low"
-    pcins = pctrl.PhoxiControl(serialno, portno, resolution)
+    def getrgbtextureimg(self, request, context):
+        """
+        get the rgb texture as an array
+        author: hao chen
+        date: 20220318
+        :return:
+        """
+        rgbtextureraw = self._pcins.getrgbtexture()
+        rgbtexturearray = np.array(rgbtextureraw)
+        return pxmsg.CamImg(width=self._width, height=self._height, channel=3, image=np.ndarray.tobytes(rgbtexturearray))
 
+
+def serve(serialno="2019-09-051-LC3", host="127.0.0.1:18300"):
+    portno = 65499
+    resolution = "high"
+    calibpath = "D:\chen\phoxi_server_tst\calib_external_cam_custom\calibration.txt"
+    pcins = pctrl.PhoxiControl(serialno, portno, resolution, calibpath)
     _ONE_DAY_IN_SECONDS = 60 * 60 * 24
     options = [('grpc.max_message_length', 100 * 1024 * 1024)]
-    server = grpc.server(futures.ThreadPoolExecutor(max_workers=10), options = options)
+    server = grpc.server(futures.ThreadPoolExecutor(max_workers=10), options=options)
     pxserver = PhoxiServer()
     pxserver.initialize(pcins)
     pxrpc.add_PhoxiServicer_to_server(pxserver, server)
@@ -112,4 +125,4 @@ def serve(serialno = "2019-09-051-LC3", host = "127.0.0.1:18300"):
         server.stop(0)
 
 if __name__ == "__main__":
-    serve(serialno = "2019-04-009-LC3", host = "127.0.0.1:18300")
+    serve(serialno="2019-04-009-LC3", host="127.0.0.1:18300")

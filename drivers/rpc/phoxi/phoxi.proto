@@ -6,6 +6,7 @@ service Phoxi {
     rpc getdepthimg (Empty) returns (CamImg) {}
     rpc getpcd (Empty) returns (PointCloud) {}
     rpc getnormals (Empty) returns (PointCloud) {}
+    rpc getrgbtextureimg (Empty) returns (CamImg) {}
 }
 
 message Empty {
