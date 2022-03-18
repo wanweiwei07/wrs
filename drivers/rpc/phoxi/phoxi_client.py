@@ -7,16 +7,16 @@ import cv2
 
 class PhxClient(object):
 
-    def __init__(self, host = "localhost:18300"):
+    def __init__(self, host="localhost:18300"):
         options = [('grpc.max_receive_message_length', 100 * 1024 * 1024)]
         channel = grpc.insecure_channel(host, options=options)
         self.stub = pxrpc.PhoxiStub(channel)
 
-    def __unpackarraydata(self, dobj):
-        h = dobj.width
-        w = dobj.height
+    def _unpackarraydata(self, dobj):
+        h = dobj.height
+        w = dobj.width
         ch = dobj.channel
-        return copy.deepcopy(np.frombuffer(dobj.image).reshape((w,h,ch)))
+        return copy.deepcopy(np.frombuffer(dobj.image).reshape((h, w, ch)))
 
     def triggerframe(self):
         self.stub.triggerframe(pxmsg.Empty())
@@ -31,9 +31,9 @@ class PhxClient(object):
         """
 
         txtreimg = self.stub.gettextureimg(pxmsg.Empty())
-        txtrenparray = self.__unpackarraydata(txtreimg)
+        txtrenparray = self._unpackarraydata(txtreimg)
         maxvalue = np.amax(txtrenparray)
-        txtrenparray = txtrenparray/maxvalue*255
+        txtrenparray = txtrenparray / maxvalue * 255
         return txtrenparray.astype(np.uint8)
 
     def getdepthimg(self):
@@ -47,7 +47,7 @@ class PhxClient(object):
         """
 
         depthimg = self.stub.getdepthimg(pxmsg.Empty())
-        depthnparray = self.__unpackarraydata(depthimg)
+        depthnparray = self._unpackarraydata(depthimg)
         depthnparray_float32 = copy.deepcopy(depthnparray)
         # depth_colormap = cv2.applyColorMap(cv2.convertScaleAbs(depthnparray, alpha=0.08), cv2.COLORMAP_JET)
         # convert float32 deptharray to unit8
@@ -68,7 +68,7 @@ class PhxClient(object):
         """
 
         pcd = self.stub.getpcd(pxmsg.Empty())
-        return np.frombuffer(pcd.points).reshape((-1,3))
+        return np.frombuffer(pcd.points).reshape((-1, 3))
 
     def getnormals(self):
         """
@@ -80,7 +80,7 @@ class PhxClient(object):
         """
 
         nrmls = self.stub.getnormals(pxmsg.Empty())
-        return np.frombuffer(nrmls.points).reshape((-1,3))
+        return np.frombuffer(nrmls.points).reshape((-1, 3))
 
     def cvtdepth(self, darr_float32):
         """
@@ -96,10 +96,16 @@ class PhxClient(object):
         depthnparray_scaled = copy.deepcopy(darr_float32)
         maxdepth = np.max(darr_float32)
         mindepth = np.min(darr_float32[darr_float32 != 0])
-        depthnparray_scaled[depthnparray_scaled!=0] = (darr_float32[darr_float32!=0]-mindepth)/(maxdepth-mindepth)*200+25
-        depthnparray_scaled = depthnparray_scaled.astype(dtype= np.uint8)
+        depthnparray_scaled[depthnparray_scaled != 0] = (darr_float32[darr_float32 != 0] - mindepth) / (maxdepth - mindepth) * 200 + 25
+        depthnparray_scaled = depthnparray_scaled.astype(dtype=np.uint8)
 
         return depthnparray_scaled
+
+    def getrgbtextureimg(self):
+        rgbtxtimg = self.stub.getrgbtextureimg(pxmsg.Empty())
+        rgbtxtnparray = self._unpackarraydata(rgbtxtimg)
+
+        return rgbtxtnparray.astype(np.uint8)[:,:,::-1]
 
 if __name__ == "__main__":
     import robotconn.rpc.phoxi.phoxi_client as pclt

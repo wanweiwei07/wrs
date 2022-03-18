@@ -2,11 +2,27 @@
 //
 //author: weiwei
 //date: 20191128
+//
+// Cooperate with external RGB camera to generate color pcd
+// author: hao chen
+// data: 20220318
 
 #include <iostream>
 #include <memory>
 #include <vector>
 #include "Phoxi.h"
+
+// added by chen 20220318
+#include <opencv2/core.hpp>
+#include <opencv2/imgcodecs.hpp>
+#include <opencv2/videoio.hpp>
+#include <PhoXiOpenCVSupport.h>
+#include <fstream>
+#if defined(_WIN32)
+#include <windows.h>
+#elif defined (__linux__)
+#include <unistd.h>
+#endif
 //#include "PhoLocalization.h"
 
 class PhoxiControl {
@@ -18,8 +34,15 @@ private:
 	bool isframeobtained = false;
 	pho::api::PFrame frame;
 
+	// added by chen 20220318
+	bool iscalibloaded = false;
+	bool isexternalcamconnected = false;
+	pho::api::AdditionalCameraCalibration calibration;
+	cv::VideoCapture cap;
+	cv::Mat externalcamimage;
+
 private:
-	bool isDeviceAvailable(pho::api::PhoXiFactory &factory, const std::string &serialNumber) {
+	bool isDeviceAvailable(pho::api::PhoXiFactory& factory, const std::string& serialNumber) {
 		if (!factory.isPhoXiControlRunning()) {
 			std::cout << "[!] PhoXi Control Software is not running." << std::endl;
 			return false;
@@ -38,7 +61,7 @@ private:
 		return isFound;
 	}
 
-	pho::api::PPhoXi connectToDevice(pho::api::PhoXiFactory &factory, const std::string &serialNumber) {
+	pho::api::PPhoXi connectToDevice(pho::api::PhoXiFactory& factory, const std::string& serialNumber) {
 		if (!factory.isPhoXiControlRunning()) {
 			std::cout << "PhoXi Control Software is not running!" << std::endl;
 			return 0;
@@ -47,7 +70,7 @@ private:
 		return PhoXiDevice;
 	}
 
-	void configDevice(const pho::api::PPhoXi &PhoXiDevice, const std::string &resolution) {
+	void configDevice(const pho::api::PPhoXi& PhoXiDevice, const std::string& resolution) {
 		// Set trigger to "freerun" mode
 		if (PhoXiDevice->TriggerMode != pho::api::PhoXiTriggerMode::Software) {
 			if (PhoXiDevice->isAcquiring()) {
@@ -83,7 +106,7 @@ private:
 		PhoXiDevice->CapturingMode = mode;
 	}
 
-	bool getFrame(const pho::api::PPhoXi &PhoXiDevice, pho::api::PFrame &FrameReturn) {
+	bool getFrame(const pho::api::PPhoXi& PhoXiDevice, pho::api::PFrame& FrameReturn) {
 		// start device acquisition if necessary
 		if (!PhoXiDevice->isAcquiring()) PhoXiDevice->StartAcquisition();
 		// clear the current acquisition buffer
@@ -110,11 +133,188 @@ private:
 			std::cout << "Frame is empty.";
 			return false;
 		}
-		if ((FrameIn->DepthMap.Empty()) || (FrameIn->Texture.Empty()) || 
-			(FrameIn->PointCloud.Empty()) || (FrameIn->NormalMap.Empty())) 
+		if ((FrameIn->DepthMap.Empty()) || (FrameIn->Texture.Empty()) ||
+			(FrameIn->PointCloud.Empty()) || (FrameIn->NormalMap.Empty()))
 			return false;
 		return true;
 	}
+
+	// added by hao chen 20220318
+	bool loadCalibration(const std::string& calibpath) {
+		// check if calibration file can be loaded
+		std::ifstream stream(calibpath);
+		if (!stream.good())
+			return false;
+		// cehck if calibration file is correct
+		calibration.LoadFromFile(calibpath);
+		auto isCorrect = true
+				&& calibration.CalibrationSettings.DistortionCoefficients.size() > 4
+				&& calibration.CameraResolution.Width != 0
+				&& calibration.CameraResolution.Height != 0;
+		if (!isCorrect)
+			return false;
+		return true;
+	}
+
+	bool configExternalCam() {
+		cap.open(cv::CAP_DSHOW);
+		if (!cap.isOpened())
+		{
+			std::cout << "[!] ERROR: Can't initialize camera capture" << std::endl;
+			return false;
+		}
+		cap.set(cv::CAP_PROP_FRAME_WIDTH, 3840);
+		cap.set(cv::CAP_PROP_FRAME_HEIGHT, 2160);
+		cap.set(cv::CAP_PROP_AUTOFOCUS, 0);
+		cap.set(cv::CAP_PROP_FOCUS, 0);
+		std::cout << "[*] Successfully initialize camera capture" << std::endl;
+		return true;
+	}
+
+	bool getColorImage() {
+		if (isexternalcamconnected) {
+			cap.read(externalcamimage);
+			cap.read(externalcamimage);
+		}
+		else
+			return false;
+		return true;
+	}
+
+	bool setColorPointCloudTexture() {
+		if (isframeobtained && isexternalcamconnected) {
+			auto TextureSize = frame->GetResolution();
+			// Set the deafult value RGB(0,0,0) of the texture
+			cv::Mat cvTextureRGB =
+				cv::Mat(TextureSize.Height,
+					TextureSize.Width,
+					CV_8UC3,
+					cv::Scalar(0., 0., 0.));
+			// Zero-point
+			pho::api::Point3_32f ZeroPoint(0.0f, 0.0f, 0.0f);
+			// Parameters of computation-----------------------------------------
+			cv::Mat MCWCMatrix = cv::Mat(4, 4, cv::DataType<float>::type);
+			cv::Mat trans = cv::Mat::eye(4, 4, cv::DataType<float>::type);
+			// Set 'trans' matrix == rotation and translation together in 4x4 matrix
+			const pho::api::RotationMatrix64f& transformRotation =
+				calibration.CoordinateTransformation.Rotation;
+			for (int y = 0; y < transformRotation.Size.Height; ++y) {
+				for (int x = 0; x < transformRotation.Size.Width; ++x) {
+					trans.at<float>(y, x) = (float)transformRotation[y][x];
+				}
+			}
+			trans.at<float>(0, 3) = (float)calibration.CoordinateTransformation.Translation.x;
+			trans.at<float>(1, 3) = (float)calibration.CoordinateTransformation.Translation.y;
+			trans.at<float>(2, 3) = (float)calibration.CoordinateTransformation.Translation.z;
+			// Set MCWCMatrix to the inverse of 'trans'
+			MCWCMatrix = trans.inv();
+
+			// Set projection parameters from CameraMatrix of the external camera
+			float fx, fy, cx, cy;
+			fx = (float)calibration.CalibrationSettings.CameraMatrix[0][0];
+			fy = (float)calibration.CalibrationSettings.CameraMatrix[1][1];
+			cx = (float)calibration.CalibrationSettings.CameraMatrix[0][2];
+			cy = (float)calibration.CalibrationSettings.CameraMatrix[1][2];
+
+			// Set distortion coefficients of the external camera
+			float k1, k2, p1, p2, k3;
+			k1 = (float)calibration.CalibrationSettings.DistortionCoefficients[0];
+			k2 = (float)calibration.CalibrationSettings.DistortionCoefficients[1];
+			p1 = (float)calibration.CalibrationSettings.DistortionCoefficients[2];
+			p2 = (float)calibration.CalibrationSettings.DistortionCoefficients[3];
+			k3 = (float)calibration.CalibrationSettings.DistortionCoefficients[4];
+
+			// Set the resolution of external camera
+			int width, height;
+			width = calibration.CameraResolution.Width;
+			height = calibration.CameraResolution.Height;
+			// End of setting the parameters--------------------------------------
+
+			// Loop through the PointCloud
+			for (int y = 0; y < frame->PointCloud.Size.Height; ++y) {
+				for (int x = 0; x < frame->PointCloud.Size.Width; ++x) {
+					// Do the computation for a valid point only
+					if (frame->PointCloud[y][x] != ZeroPoint) {
+
+						// Point in homogeneous coordinates
+						cv::Mat vertexMC = cv::Mat(4, 1, cv::DataType<float>::type);
+						vertexMC.at<float>(0, 0) =
+							frame->PointCloud[y][x].x;
+						vertexMC.at<float>(1, 0) =
+							frame->PointCloud[y][x].y;
+						vertexMC.at<float>(2, 0) =
+							frame->PointCloud[y][x].z;
+						vertexMC.at<float>(3, 0) = 1;
+
+						// Perform the transformation into the coordinates of external camera
+						cv::Mat vertexWC = MCWCMatrix * vertexMC;
+
+						// Projection from 3D to 2D
+						cv::Mat camPt = cv::Mat(2, 1, cv::DataType<float>::type);
+						camPt.at<float>(0, 0) = vertexWC.at<float>(0, 0) / vertexWC.at<float>(2, 0);
+						camPt.at<float>(1, 0) = vertexWC.at<float>(1, 0) / vertexWC.at<float>(2, 0);
+
+						// The distortion of the external camera need to be taken into account for details see e.g.
+						// https://docs.opencv.org/2.4/modules/calib3d/doc/camera_calibration_and_3d_reconstruction.html
+						pho::api::float32_t xx, xy2, yy, r2, r4, r6;
+
+						xx = camPt.at<float>(0, 0) * camPt.at<float>(0, 0);
+						xy2 = 2 * camPt.at<float>(0, 0) * camPt.at<float>(1, 0);
+						yy = camPt.at<float>(1, 0) * camPt.at<float>(1, 0);
+
+						r2 = xx + yy;
+						r4 = r2 * r2;
+						r6 = r4 * r2;
+
+						// Constant related to the radial distortion
+						pho::api::float32_t c = (1 + k1 * r2 + k2 * r4 + k3 * r6);
+
+						// Both radial and tangential distortion are applied
+						cv::Mat dist = cv::Mat(2, 1, cv::DataType<float>::type);
+						dist.at<float>(0, 0) = c * camPt.at<float>(0, 0) +
+							p1 * xy2 + p2 * (r2 + 2 * xx);
+						dist.at<float>(1, 0) = c * camPt.at<float>(1, 0) +
+							p1 * (r2 + 2 * yy) + p2 * xy2;
+
+						// Final film coordinates
+						cv::Mat position = cv::Mat(4, 1, cv::DataType<float>::type);
+						position.at<float>(0, 0) = (dist.at<float>(0, 0) * fx + cx);
+						position.at<float>(1, 0) = (dist.at<float>(1, 0) * fy + cy);
+						position.at<float>(2, 0) = (vertexWC.at<float>(2, 0) - 5000) / 5000;
+						position.at<float>(3, 0) = 1.;
+
+						//(i,j) -> screen space coordinates
+						int i = (int)std::round(position.at<float>(0, 0));
+						int j = (int)std::round(position.at<float>(1, 0));
+
+						if (i >= 0 && i < width && j >= 0 && j < height) {
+							// The loaded extCameraImage has channels ordered like BGR
+							auto yr = cvTextureRGB.ptr<uint8_t>(y);
+							auto jr = externalcamimage.ptr<uint8_t>(j);
+
+							// Set R - 0th channel
+							yr[3 * x + 0] = jr[3 * i + 2];
+							// Set G - 1st channel
+							yr[3 * x + 1] = jr[3 * i + 1];
+							// Set B - 2nd channel
+							yr[3 * x + 2] = jr[3 * i + 0];
+						}
+					}
+				}
+			}
+
+			pho::api::Mat2D<pho::api::ColorRGB_32f> textureRGB(TextureSize);
+			ConvertOpenCVMatToMat2D(cvTextureRGB, textureRGB);
+			frame->TextureRGB = textureRGB;
+			return true;
+		}
+		else {
+			std::cout << "Grap a frame first!" << std::endl;
+			return false;
+		}
+	}
+
+
 
 	/// <summary>
 	/// connec to the sensor, and save the cam to a global variable
@@ -123,10 +323,13 @@ private:
 	/// <param name="portno"> port number </param>
 	/// <param name="resolution"> resolution "low" or "high" </param>
 	/// <returns> phoxi cam object </returns>
-	/// 
+	///
 	/// <author> weiwei </author>
 	/// <date> 20191128 </date>
-	bool connect(std::string serialno, unsigned int portno, std::string resolution) {
+	/// <param name="calibpath"> file path for the calibration file</param>
+	/// <author> hao chen </author>
+	/// <date> 20220318 </date>
+	bool connect(std::string serialno, unsigned int portno, std::string resolution, const std::string& calibpath) {
 		if (isconnected) {
 			std::cout << "[!] The device has been connected. There is no need to connect again." << std::endl;
 			return true;
@@ -154,6 +357,24 @@ private:
 		}
 		// configure the device
 		configDevice(cam, resolution);
+		// calibration file path
+		if (!calibpath.empty()) {
+			if (loadCalibration(calibpath)) {
+				std::cout << "[*] Successfully load calibration matrix" << std::endl;
+				if (configExternalCam()) {
+					iscalibloaded = true;
+					isexternalcamconnected = true;
+				}
+			}
+			else {
+				std::cout << "[!] Fail to load calibration maxtrix. File path error. Color point cloud functionality stops." << std::endl;
+			}
+
+		}
+		else {
+			std::cout << "[!] Calibration file path does not be specified. Color point cloud functionality stops." << std::endl;
+		}
+
 		return true;
 	}
 
@@ -164,9 +385,10 @@ public:
 	/// <param name="serialno"></param>
 	/// <param name="portno"></param>
 	/// <param name="resolution"></param>
+	/// <param name="calibpath"> file path for the calibration file</param>
 	/// <returns></returns>
-	PhoxiControl(std::string serialno, unsigned int portno, std::string resolution) {
-		connect(serialno, portno, resolution);
+	PhoxiControl(std::string serialno, unsigned int portno, std::string resolution, std::string calibpatth) {
+		connect(serialno, portno, resolution, calibpatth);
 	}
 
 	/// <summary>
@@ -186,7 +408,7 @@ public:
 	/// capture a frame, and save it to the global frame variable
 	/// </summary>
 	/// <returns></returns>
-	/// 
+	///
 	/// <author> weiwei </author>
 	/// <date> 20191128 </date>
 	bool captureframe() {
@@ -195,6 +417,12 @@ public:
 			isframeobtained = true;
 			frameid += 1;
 			std::cout << "A new frame is obtained. FrameID: " << frameid << std::endl;
+			//added by chen 20220318
+			if (getColorImage()) {
+				if (setColorPointCloudTexture()) {
+					std::cout << "Color texture generated successfully. FrameID: " << frameid << std::endl;
+				}
+			}
 			return true;
 		}
 		else {
@@ -268,12 +496,12 @@ public:
 		if (isframeobtained) {
 			int height = frame->PointCloud.Size.Height;
 			int width = frame->PointCloud.Size.Width;
-			std::vector<float> result(height*width * 3);
+			std::vector<float> result(height * width * 3);
 			for (int i = 0; i < height; i++) {
 				for (int j = 0; j < width; j++) {
-					result[i*width*3+j*3+0] = frame->PointCloud[i][j].x;
-					result[i*width*3+j*3+1] = frame->PointCloud[i][j].y;
-					result[i*width*3+j*3+2] = frame->PointCloud[i][j].z;
+					result[i * width * 3 + j * 3 + 0] = frame->PointCloud[i][j].x;
+					result[i * width * 3 + j * 3 + 1] = frame->PointCloud[i][j].y;
+					result[i * width * 3 + j * 3 + 2] = frame->PointCloud[i][j].z;
 				}
 			}
 			return result;
@@ -287,12 +515,12 @@ public:
 		if (isframeobtained) {
 			int height = frame->NormalMap.Size.Height;
 			int width = frame->NormalMap.Size.Width;
-			std::vector<float> result(height*width * 3);
+			std::vector<float> result(height * width * 3);
 			for (int i = 0; i < height; i++) {
 				for (int j = 0; j < width; j++) {
-					result[i*width * 3 + j * 3 + 0] = frame->NormalMap[i][j].x;
-					result[i*width * 3 + j * 3 + 1] = frame->NormalMap[i][j].y;
-					result[i*width * 3 + j * 3 + 2] = frame->NormalMap[i][j].z;
+					result[i * width * 3 + j * 3 + 0] = frame->NormalMap[i][j].x;
+					result[i * width * 3 + j * 3 + 1] = frame->NormalMap[i][j].y;
+					result[i * width * 3 + j * 3 + 2] = frame->NormalMap[i][j].z;
 				}
 			}
 			return result;
@@ -323,6 +551,28 @@ public:
 		else {
 			std::cout << "Grap a frame first!" << std::endl;
 			return false;
+		}
+	}
+
+	//added by chen 20220318
+	std::vector<uchar> getexternalcamimg() {
+		if (isexternalcamconnected) {
+			cv::Mat flat = externalcamimage.reshape(1, externalcamimage.total() * externalcamimage.channels());
+			return externalcamimage.isContinuous() ? flat : flat.clone();
+		}
+		else {
+			std::cout << "Fail to get rgb texture" << std::endl;
+		}
+	}
+
+	std::vector<float> getrgbtexture() {
+		if (isframeobtained && isexternalcamconnected) {
+			unsigned long datasize = frame->TextureRGB.GetDataSize();
+			float* textureptr = (float*)frame->TextureRGB.GetDataPtr();
+			return std::vector<float>(textureptr, textureptr + datasize/4);
+		}
+		else {
+			std::cout << "Fail to get rgb texture" << std::endl;
 		}
 	}
 
@@ -391,7 +641,7 @@ namespace py = pybind11;
 
 PYBIND11_MODULE(phoxicontrol, m) {
 	py::class_<PhoxiControl>(m, "PhoxiControl")
-		.def(py::init<std::string, unsigned int, std::string>())
+		.def(py::init<std::string, unsigned int, std::string, std::string>())
 		.def("captureframe", &PhoxiControl::captureframe)
 		.def("getframeid", &PhoxiControl::getframeid)
 		.def("getframewidth", &PhoxiControl::getframewidth)
@@ -401,6 +651,8 @@ PYBIND11_MODULE(phoxicontrol, m) {
 		.def("getdepthmap", &PhoxiControl::getdepthmap)
 		.def("getpointcloud", &PhoxiControl::getpointcloud)
 		.def("getnormals", &PhoxiControl::getnormals)
-		.def("saveply", &PhoxiControl::saveply);
-//		.def("findmodel", &PhoxiControl::findmodel);
+		.def("saveply", &PhoxiControl::saveply)
+		.def("getrgbtexture", &PhoxiControl::getrgbtexture)
+		.def("getexternalcamimg", &PhoxiControl::getexternalcamimg);
+	//		.def("findmodel", &PhoxiControl::findmodel);
 }
