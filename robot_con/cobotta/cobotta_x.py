@@ -1,3 +1,4 @@
+import time
 import math
 import numpy as np
 import motion.trajectory.piecewisepoly_toppra as trajp
@@ -50,7 +51,7 @@ class CobottaX(object):
         author: weiwei
         date: 20210507
         """
-        self.hhnd = self.bcc.robot_execute(self.hrbt, "TakeArm", [0, 0])  # 20220317, needs further check, speedmode?
+        # self.hhnd = self.bcc.robot_execute(self.hrbt, "TakeArm", [0, 0])  # 20220317, needs further check, speedmode?
         new_path = []
         for i, pose in enumerate(path):
             if i < len(path) - 1 and not np.allclose(pose, path[i + 1]):
@@ -65,6 +66,7 @@ class CobottaX(object):
                                                     toggle_debug=toggle_debug)
         # Slave move: Change mode
         self.bcc.robot_execute(self.hrbt, "slvChangeMode", 0x202)
+        time.sleep(.1)
         for jnt_values in interpolated_confs:
             jnt_values_degree = np.degrees(jnt_values)
             self.bcc.robot_execute(self.hrbt, "slvMove", jnt_values_degree.tolist() + [0, 0])
