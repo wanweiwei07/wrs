@@ -17,7 +17,7 @@ from robotconn.yumirapid.yumi_constants import YuMiConstants as YMC
 from robotconn.yumirapid.yumi_state import YuMiState
 from robotconn.yumirapid.yumi_motion_logger import YuMiMotionLogger
 from robotconn.yumirapid.yumi_util import message_to_state, message_to_pose
-from robotconn.yumirapid.yumi_exceptions import YuMiCommException,YuMiControlException
+from robotconn.yumirapid.yumi_exceptions import YuMiCommException, YuMiControlException
 # from robot_con.yumirapid.yumi_planner import YuMiMotionPlanner
 import pickle
 
@@ -27,6 +27,7 @@ _REQ_PACKET = namedtuple('_REQ_PACKET', 'req timeout return_res')
 
 METERS_TO_MM = 1000.0
 MM_TO_METERS = 1.0 / METERS_TO_MM
+
 
 class _YuMiEthernet(Process):
 
@@ -106,7 +107,7 @@ class _YuMiEthernet(Process):
             try:
                 raw_res = self._socket.recv(self._bufsize).decode()
             except socket.error as e:
-                if e.errno == 114: # request time out
+                if e.errno == 114:  # request time out
                     raise YuMiCommException('Request timed out: {0}'.format(req_packet))
 
         logging.debug("Received: {0}".format(raw_res))
@@ -117,6 +118,7 @@ class _YuMiEthernet(Process):
         tokens = raw_res.split()
         res = _RAW_RES(int(tokens[0]), int(tokens[1]), ' '.join(tokens[2:]))
         return res
+
 
 class YuMiArm:
     """ Interface to a single arm of an ABB YuMi robot_s.
@@ -321,7 +323,7 @@ class YuMiArm:
         pose = pose.copy()
         pose.position = pose.position * METERS_TO_MM
         body = '{0}{1}'.format(YuMiArm._iter_to_str('{:.1f}', pose.position.tolist()),
-                                            YuMiArm._iter_to_str('{:.5f}', pose.quaternion.tolist()))
+                               YuMiArm._iter_to_str('{:.5f}', pose.quaternion.tolist()))
         return body
 
     @staticmethod
@@ -753,7 +755,7 @@ class YuMiArm:
         else:
             return self._request(req_move_by_circ_point, wait_for_res, timeout=self._motion_timeout)
 
-    def movetstate_cont(self, statelist, wait_for_res = True):
+    def movetstate_cont(self, statelist, is_add_all=True, wait_for_res=True):
         """
         add states to buffer, execute, and clear
 
@@ -766,11 +768,14 @@ class YuMiArm:
         """
 
         self.buffer_j_clear(wait_for_res)
-        self.buffer_j_add_all(statelist, wait_for_res)
+        if is_add_all:
+            self.buffer_j_add_all_atonce(statelist, wait_for_res=wait_for_res)
+        else:
+            self.buffer_j_add_all(statelist, wait_for_res)
         self.buffer_j_move(wait_for_res)
         self.buffer_j_clear(wait_for_res)
 
-    def movetstate_sgl(self, state, wait_for_res = True):
+    def movetstate_sgl(self, state, wait_for_res=True):
         """
         add states to buffer, execute, and clear
 
@@ -829,6 +834,16 @@ class YuMiArm:
             If communication times out or socket error.
         '''
         ress = [self.buffer_c_add_single(pose, wait_for_res) for pose in pose_list]
+        return ress
+
+    def buffer_j_add_single_atonce(self, state_list, wait_for_res):
+        body = YuMiArm._iter_to_str('{:.2f}', [v for state in state_list for v in state.joints])
+        req = YuMiArm._construct_req('buffer_j_add_all', f"{len(state_list)} " + body)
+        return self._request(req, wait_for_res)
+
+    def buffer_j_add_all_atonce(self, state_list, msg_len=35, wait_for_res=False):
+        ress = [self.buffer_j_add_single_atonce(_, wait_for_res) for _ in
+                [state_list[x:x + msg_len] for x in range(0, len(state_list), msg_len)]]
         return ress
 
     def buffer_c_clear(self, wait_for_res=True):
@@ -1043,7 +1058,7 @@ class YuMiArm:
         req = YuMiArm._construct_req('write_handcamimg_ftp')
         return self._request(req, wait_for_res=True)
 
-    def toggle_vacuum(self, toggletag = True):
+    def toggle_vacuum(self, toggletag=True):
         """
         toggle vacuum on and off, toggletag is True or False
 
@@ -1072,10 +1087,9 @@ class YuMiArm:
 
         req = YuMiArm._construct_req('get_pressure')
         res = self._request(req, wait_for_res=True)
-        pressure = float(res.message) #kpa
+        pressure = float(res.message)  # kpa
 
         return pressure
-
 
     def open_gripper(self, no_wait=False, wait_for_res=True):
         '''Opens the gripper to the target_width
@@ -1133,9 +1147,11 @@ class YuMiArm:
             If commanded pose triggers any motion errors that are catchable by RAPID sever.
         '''
         if force < 0 or force > YMC.MAX_GRIPPER_FORCE:
-            raise ValueError("Gripper force can only be between {} and {}. Got {}.".format(0, YMC.MAX_GRIPPER_FORCE, force))
+            raise ValueError(
+                "Gripper force can only be between {} and {}. Got {}.".format(0, YMC.MAX_GRIPPER_FORCE, force))
         if width < 0 or width > YMC.MAX_GRIPPER_WIDTH:
-            raise ValueError("Gripper width can only be between {} and {}. Got {}.".format(0, YMC.MAX_GRIPPER_WIDTH, width))
+            raise ValueError(
+                "Gripper width can only be between {} and {}. Got {}.".format(0, YMC.MAX_GRIPPER_WIDTH, width))
 
         width = METERS_TO_MM * width
         body = YuMiArm._iter_to_str('{0:.1f}', [force, width] + ([0] if no_wait else []))
@@ -1321,6 +1337,7 @@ class YuMiArm:
         req = YuMiArm._construct_req('reset_home')
         return self._request(req, wait_for_res)
 
+
 class YuMiArm_ROS:
     """ Interface to remotely control a single arm of an ABB YuMi robot_s.
     Communicates over ROS to a yumi arm server (initialize server through roslaunch)
@@ -1333,7 +1350,8 @@ class YuMiArm_ROS:
     namespace : string, optional
         Namespace to prepend to arm_service. If None, current namespace is prepended.
     """
-    def __init__(self, arm_service, namespace = None, timeout = YMC.ROS_TIMEOUT):
+
+    def __init__(self, arm_service, namespace=None, timeout=YMC.ROS_TIMEOUT):
         if namespace == None:
             self.arm_service = rospy.get_namespace() + arm_service
         else:
@@ -1362,7 +1380,7 @@ class YuMiArm_ROS:
             def handle_remote_call(*args, **kwargs):
                 """ Handle the remote call to some YuMiArm function.
                 """
-                rospy.wait_for_service(self.arm_service, timeout = self.timeout)
+                rospy.wait_for_service(self.arm_service, timeout=self.timeout)
                 arm = rospy.ServiceProxy(self.arm_service, ROSYumiArm)
                 if 'wait_for_res' in kwargs:
                     kwargs['wait_for_res'] = True
@@ -1371,9 +1389,10 @@ class YuMiArm_ROS:
                 except rospy.ServiceException as e:
                     raise RuntimeError("Service call failed: {0}".format(str(e)))
                 return pickle.loads(response.ret)
+
             return handle_remote_call
         else:
-            rospy.wait_for_service(self.arm_service, timeout = self.timeout)
+            rospy.wait_for_service(self.arm_service, timeout=self.timeout)
             arm = rospy.ServiceProxy(self.arm_service, ROSYumiArm)
             try:
                 response = arm(pickle.dumps('__getattribute__'), pickle.dumps(name), pickle.dumps(None))
@@ -1381,11 +1400,12 @@ class YuMiArm_ROS:
                 raise RuntimeError("Could not get attribute: {0}".format(str(e)))
             return pickle.loads(response.ret)
 
+
 class YuMiArmFactory:
     """ Factory class for YuMiArm interfaces. """
 
     @staticmethod
-    def YuMiArm(arm_type, name, ros_namespace = None):
+    def YuMiArm(arm_type, name, ros_namespace=None):
         """Initializes a YuMiArm interface.
 
         Parameters
@@ -1412,7 +1432,7 @@ class YuMiArmFactory:
             return YuMiArm(name, port=YMC.PORTS[name]["server"])
         elif arm_type == 'remote':
             if ROS_ENABLED:
-                return YuMiArm_ROS('yumi_robot/{0}_arm'.format(name), namespace = ros_namespace)
+                return YuMiArm_ROS('yumi_robot/{0}_arm'.format(name), namespace=ros_namespace)
             else:
                 raise RuntimeError("Remote YuMiArm is not enabled because yumipy is not installed as a catkin package")
         else:
