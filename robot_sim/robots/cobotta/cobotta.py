@@ -195,7 +195,7 @@ class Cobotta(ri.RobotInterface):
                        toggle_tcpcs=False,
                        toggle_jntscs=False,
                        toggle_connjnt=False,
-                       name='xarm7_shuidi_mobile_stickmodel'):
+                       name='cobotta_stickmodel'):
         stickmodel = mc.ModelCollection(name=name)
         self.base_plate.gen_stickmodel(tcp_jnt_id=tcp_jnt_id,
                                        tcp_loc_pos=tcp_loc_pos,
@@ -250,12 +250,15 @@ if __name__ == '__main__':
     import visualization.panda.world as wd
     import modeling.geometric_model as gm
 
-    base = wd.World(cam_pos=[1.5, 0, 3], lookat_pos=[0, 0, .5])
+    base = wd.World(cam_pos=[1.7, 1.7, 1.7], lookat_pos=[0, 0, .3])
 
     gm.gen_frame().attach_to(base)
     robot_s = Cobotta(enable_cc=True)
     robot_s.jaw_to(.02)
-    # robot_s.gen_meshmodel(toggle_tcpcs=True).attach_to(base)
+    # robot_s.gen_meshmodel(toggle_tcpcs=True, toggle_jntscs=True).attach_to(base)
+    # robot_s.gen_meshmodel(toggle_tcpcs=False, toggle_jntscs=False).attach_to(base)
+    robot_s.gen_stickmodel(toggle_tcpcs=True, toggle_jntscs=True).attach_to(base)
+    base.run()
     tgt_pos = np.array([.25, .2, .15])
     tgt_rotmat = rm.rotmat_from_axangle([0, 1, 0], math.pi * 2/ 3)
     gm.gen_frame(pos=tgt_pos, rotmat=tgt_rotmat).attach_to(base)
