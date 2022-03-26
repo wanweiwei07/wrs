@@ -89,6 +89,9 @@ class ManipulatorInterface(object):
     def fix_to(self, pos, rotmat, jnt_values=None):
         return self.jlc.fix_to(pos=pos, rotmat=rotmat, jnt_values=jnt_values)
 
+    def is_jnt_values_in_ranges(self, jnt_values):
+        return self.jlc.is_jnt_values_in_ranges(jnt_values)
+
     def fk(self, jnt_values):
         return self.jlc.fk(jnt_values=jnt_values)
 

@@ -21,8 +21,26 @@ class RRT(object):
                      conf,
                      obstacle_list=[],
                      otherrobot_list=[]):
-        self.robot_s.fk(component_name=component_name, jnt_values=conf)
-        return self.robot_s.is_collided(obstacle_list=obstacle_list, otherrobot_list=otherrobot_list)
+        """
+        The function first examines if joint values of the given conf are in ranges.
+        It will promptly return False if any joint value is out of range.
+        Or else, it will compute fk and carry out collision checking.
+        :param component_name:
+        :param conf:
+        :param obstacle_list:
+        :param otherrobot_list:
+        :return:
+        author: weiwei
+        date: 20220326
+        """
+        # self.robot_s.fk(component_name=component_name, jnt_values=conf)
+        # return self.robot_s.is_collided(obstacle_list=obstacle_list, otherrobot_list=otherrobot_list)
+        if self.robot_s.is_jnt_values_in_ranges(component_name=component_name, jnt_values=conf):
+            self.robot_s.fk(component_name=component_name, jnt_values=conf)
+            return self.robot_s.is_collided(obstacle_list=obstacle_list, otherrobot_list=otherrobot_list)
+        else:
+            print("The given joint angles are out of joint limits.")
+            return True
 
     def _sample_conf(self, component_name, rand_rate, default_conf):
         if random.randint(0, 99) < rand_rate:
@@ -279,47 +297,7 @@ class RRT(object):
 
 
 if __name__ == '__main__':
-    import robot_sim._kinematics.jlchain as jl
-    import robot_sim.robots.robot_interface as ri
-
-
-    class XYBot(ri.RobotInterface):
-
-        def __init__(self, pos=np.zeros(3), rotmat=np.eye(3), name='XYBot'):
-            super().__init__(pos=pos, rotmat=rotmat, name=name)
-            self.jlc = jl.JLChain(homeconf=np.zeros(2), name='XYBot')
-            self.jlc.jnts[1]['type'] = 'prismatic'
-            self.jlc.jnts[1]['loc_motionax'] = np.array([1, 0, 0])
-            self.jlc.jnts[1]['loc_pos'] = np.zeros(3)
-            self.jlc.jnts[1]['motion_rng'] = [-2.0, 15.0]
-            self.jlc.jnts[2]['type'] = 'prismatic'
-            self.jlc.jnts[2]['loc_motionax'] = np.array([0, 1, 0])
-            self.jlc.jnts[2]['loc_pos'] = np.zeros(3)
-            self.jlc.jnts[2]['motion_rng'] = [-2.0, 15.0]
-            self.jlc.reinitialize()
-
-        def fk(self, component_name='all', jnt_values=np.zeros(2)):
-            if component_name != 'all':
-                raise ValueError("Only support hnd_name == 'all'!")
-            self.jlc.fk(jnt_values)
-
-        def rand_conf(self, component_name='all'):
-            if component_name != 'all':
-                raise ValueError("Only support hnd_name == 'all'!")
-            return self.jlc.rand_conf()
-
-        def get_jntvalues(self, component_name='all'):
-            if component_name != 'all':
-                raise ValueError("Only support hnd_name == 'all'!")
-            return self.jlc.get_jnt_values()
-
-        def is_collided(self, obstacle_list=[], otherrobot_list=[]):
-            for (obpos, size) in obstacle_list:
-                dist = np.linalg.norm(np.asarray(obpos) - self.get_jntvalues())
-                if dist <= size / 2.0:
-                    return True  # collision
-            return False  # safe
-
+    import robot_sim.robots.xybot.xybot as xyb
 
     # ====Search Path with RRT====
     obstacle_list = [
@@ -332,7 +310,7 @@ if __name__ == '__main__':
         ((10, 5), 3)
     ]  # [x,y,size]
     # Set Initial parameters
-    robot = XYBot()
+    robot = xyb.XYBot()
     rrt = RRT(robot)
     path = rrt.plan(start_conf=np.array([0, 0]), goal_conf=np.array([6, 9]), obstacle_list=obstacle_list,
                     ext_dist=1, rand_rate=70, max_time=300, component_name='all', animation=True)

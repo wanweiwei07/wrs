@@ -26,6 +26,7 @@ if __name__ == '__main__':
                jnt_values=np.array([0, -math.pi / 6, math.pi * 2 / 3, 0, math.pi / 6, 0]))
     robot_s.gen_meshmodel().attach_to(base)
 
+    gl_tcp = robot_s.get_gl_tcp(manipulator_name="arm")
     # null space planning
     path = []
     ratio = .01
@@ -36,9 +37,15 @@ if __name__ == '__main__':
         # cur_jnt_values = robot_s.get_jnt_values()
         # cur_jnt_values += np.ravel(xa_ns)*.01
         # nullspace rotate
-        xa_ns = rm.null_space(xa_jacob[:3, :])
+        xa_ns = rm.null_space(xa_jacob[[0,1,2,3,4], :])
         cur_jnt_values = robot_s.get_jnt_values(component_name=component_name)
-        cur_jnt_values += np.ravel(xa_ns[:, 0]) * ratio
+        cur_jnt_values -= np.ravel(xa_ns[:, 0]) * ratio
+        # gm.gen_frame(pos=gl_tcp[0], rotmat=gl_tcp[1]).attach_to(base)
+        print(xa_ns)
+        print(gl_tcp[1][:3,2])
+        # cur_jnt_values += xa_ns.dot(gl_tcp[1][:3,2])*ratio
+        # gl_tcp[1][:3, 2].dot(xa_jacob[:3, :])
+        # cur_jnt_values += gl_tcp[1][:3,2].dot(xa_jacob[:3, :])*ratio
         status = robot_s.fk(component_name=component_name, jnt_values=cur_jnt_values)
         if status == "succ":
             if t % 20 == 0:
