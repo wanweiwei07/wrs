@@ -653,8 +653,8 @@ def gen_2d_spiral_points(max_radius: float = .002,
     :param toggle_origin: include 0 or not
     :return:
     """
-    if tangential_granularity > radial_granularity * np.pi:
-        warnings.warn("The tangential_granularity is suggested to be smaller than 3*radial_granularity!")
+    # if tangential_granularity > radial_granularity * np.pi:
+    #     warnings.warn("The tangential_granularity is suggested to be smaller than 3*radial_granularity!")
     r = np.arange(radial_granularity, max_radius, radial_granularity)
     t_ele = tangential_granularity / r
     t = np.cumsum(t_ele)
