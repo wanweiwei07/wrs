@@ -36,7 +36,7 @@ class CobottaArm(mi.ManipulatorInterface):
         self.jlc.lnks[0]['mass'] = 1.4
         self.jlc.lnks[0]['com'] = np.array([-.02131, .000002, .044011])
         self.jlc.lnks[0]['mesh_file'] = os.path.join(this_dir, "meshes", "base_link.dae")
-        self.jlc.lnks[0]['rgba'] = [.5,.5,.5, 1.0]
+        self.jlc.lnks[0]['rgba'] = [.7,.7,.7, 1.0]
         self.jlc.lnks[1]['name'] = "j1"
         self.jlc.lnks[1]['loc_pos'] = np.zeros(3)
         self.jlc.lnks[1]['com'] = np.array([.0,.0,.15])
@@ -48,7 +48,7 @@ class CobottaArm(mi.ManipulatorInterface):
         self.jlc.lnks[2]['com'] = np.array([-.02, .1, .07])
         self.jlc.lnks[2]['mass'] = 0.39
         self.jlc.lnks[2]['mesh_file'] = os.path.join(this_dir, "meshes", "j2.dae")
-        self.jlc.lnks[2]['rgba'] = [.5,.5,.5, 1]
+        self.jlc.lnks[2]['rgba'] = [.7,.7,.7, 1]
         self.jlc.lnks[3]['name'] = "j3"
         self.jlc.lnks[3]['loc_pos'] = np.array([.0, .0, .0])
         self.jlc.lnks[3]['com'] = np.array([-.01, .02, .03])
@@ -60,7 +60,7 @@ class CobottaArm(mi.ManipulatorInterface):
         self.jlc.lnks[4]['com'] = np.array([.0, .0, 0.055])
         self.jlc.lnks[4]['mass'] = 0.35
         self.jlc.lnks[4]['mesh_file'] = os.path.join(this_dir, "meshes", "j4.dae")
-        self.jlc.lnks[4]['rgba'] = [.5,.5,.5, 1.0]
+        self.jlc.lnks[4]['rgba'] = [.7,.7,.7, 1.0]
         self.jlc.lnks[5]['name'] = "j5"
         self.jlc.lnks[5]['loc_pos'] = np.array([.0, .0, .0])
         self.jlc.lnks[5]['com'] = np.array([.0, -.04, .015])
@@ -72,7 +72,7 @@ class CobottaArm(mi.ManipulatorInterface):
         self.jlc.lnks[6]['com'] = np.array([.0, .0, 0])
         self.jlc.lnks[6]['mass'] = 0.03
         self.jlc.lnks[6]['mesh_file'] = os.path.join(this_dir, "meshes", "j6.dae")
-        self.jlc.lnks[6]['rgba'] = [.5,.5,.5, 1.0]
+        self.jlc.lnks[6]['rgba'] = [.7,.7,.7, 1.0]
         self.jlc.reinitialize()
         # collision detection
         if enable_cc:
