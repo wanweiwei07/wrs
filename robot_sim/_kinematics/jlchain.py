@@ -127,7 +127,7 @@ class JLChain(object):
                                                                                self.jnts[id]['loc_pos'])
                 self.jnts[id]['gl_rotmat0'] = np.dot(self.jnts[pjid]['gl_rotmatq'], self.jnts[id]['loc_rotmat'])
             self.jnts[id]['gl_motionax'] = np.dot(self.jnts[id]['gl_rotmat0'], self.jnts[id]['loc_motionax'])
-            if self.jnts[id]['type'] == "end":
+            if self.jnts[id]['type'] == "end" or self.jnts[id]['type'] == "fixed":
                 self.jnts[id]['gl_rotmatq'] = self.jnts[id]['gl_rotmat0']
                 self.jnts[id]['gl_posq'] = self.jnts[id]['gl_pos0']
             elif self.jnts[id]['type'] == "revolute":
