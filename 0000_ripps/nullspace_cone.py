@@ -2,7 +2,7 @@ import os
 import math
 import numpy as np
 import basis.robot_math as rm
-import robot_sim.robots.cobotta.cobotta as cbt
+import robot_sim.robots.cobotta.cobotta_ripps as cbt
 import visualization.panda.world as wd
 import modeling.geometric_model as gm
 import robot_con.cobotta.cobotta_x as cbtx
@@ -21,8 +21,8 @@ if __name__ == '__main__':
 
     # robot_s
     component_name = 'arm'
-    robot_s = cbt.Cobotta()
-    tgt_pos = np.array([0.25, .0, .25])
+    robot_s = cbt.CobottaRIPPS()
+    tgt_pos = np.array([0.25, .0, .15])
     tgt_rotmat = rm.rotmat_from_axangle([0,1,0], math.pi/2).dot(rm.rotmat_from_axangle([0,0,1], 0))
     jnt_values = robot_s.ik(component_name=component_name, tgt_pos=tgt_pos, tgt_rotmat=tgt_rotmat)
     if jnt_values is None:
@@ -37,7 +37,7 @@ if __name__ == '__main__':
     # base.run()
 
     gl_tcp = robot_s.get_gl_tcp(manipulator_name="arm")
-    task_rot = rm.rotmat_from_axangle([0,1,0], math.pi/3)
+    task_rot = rm.rotmat_from_axangle([0,0,1], math.pi/6)
     j_rot = np.eye(6)
     j_rot[3:,3:] = task_rot
     gm.gen_frame(pos=tgt_pos, rotmat=task_rot.T).attach_to(base)
@@ -48,7 +48,7 @@ if __name__ == '__main__':
         print("-------- timestep = ", t, " --------")
         xa_jacob = j_rot.dot(robot_s.jacobian())
         # nullspace rotate
-        xa_ns = rm.null_space(xa_jacob[[0,1,2,3,4], :])
+        xa_ns = rm.null_space(xa_jacob[[0,1,2,3,5], :])
         cur_jnt_values = robot_s.get_jnt_values(component_name=component_name)
         cur_jnt_values -= np.ravel(xa_ns[:, 0]) * ratio
         # gm.gen_frame(pos=gl_tcp[0], rotmat=gl_tcp[1]).attach_to(base)
@@ -69,7 +69,7 @@ if __name__ == '__main__':
         print("-------- timestep = ", t, " --------")
         xa_jacob = j_rot.dot(robot_s.jacobian())
         # xa_ns = rm.null_space(xa_jacob)
-        xa_ns = rm.null_space(xa_jacob[[0,1,2,3,4], :])
+        xa_ns = rm.null_space(xa_jacob[[0,1,2,3,5], :])
         cur_jnt_values = robot_s.get_jnt_values(component_name=component_name)
         cur_jnt_values -= np.ravel(xa_ns[:, 0]) * ratio
         # gm.gen_frame(pos=gl_tcp[0], rotmat=gl_tcp[1]).attach_to(base)

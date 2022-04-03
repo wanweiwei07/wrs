@@ -72,7 +72,7 @@ class CobottaPipette(gp.GripperInterface):
         # jaw width
         self.jawwidth_rng = [0.0, .03]
         # jaw center
-        self.jaw_center_pos = np.array([0, 0, .05])
+        self.jaw_center_pos = np.array([0.008, 0.14305, 0.06075])
         # reinitialize
         self.jlc.reinitialize()
         # collision detection
