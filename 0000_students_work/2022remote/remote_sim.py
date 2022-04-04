@@ -99,10 +99,10 @@ def agv_move(task):
         # rbt_x.agv_move(linear_speed=0, angular_speed=-agv_angular_speed, time_interval=.5)
     elif pressed_keys["o"] and sum(values_list) == 1:  # if key 'q' is pressed
         print("Invalid Operation!!")
-        # rbt_x.arm_jaw_to(jawwidth=100)
+        # rbt_x.arm_jaw_to(jaw_width=100)
     elif pressed_keys["p"] and sum(values_list) == 1:  # if key 'q' is pressed
         print("Invalid Operation!!")
-        # rbt_x.arm_jaw_to(jawwidth=0)
+        # rbt_x.arm_jaw_to(jaw_width=0)
     elif any(pressed_keys[item] for item in ['r', 't', 'f', 'g', 'v', 'b', 'y', 'u', 'h', 'j', 'n', 'm']) and\
             sum(values_list) == 1: # global
         tic = time.time()

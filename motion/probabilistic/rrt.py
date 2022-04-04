@@ -10,8 +10,22 @@ from operator import itemgetter
 
 class RRT(object):
 
+    def _decorator_keep_jnt_values(foo):
+        """
+        decorator function for save and restore robot_s's jnt values
+        :return:
+        author: weiwei
+        date: 20220404
+        """
+        def wrapper(self, component_name, *args, **kwargs):
+            jnt_values_bk = self.robot_s.get_jnt_values(component_name)
+            result = foo(self, component_name, *args, **kwargs)
+            self.robot_s.fk(component_name=component_name, jnt_values=jnt_values_bk)
+            return result
+        return wrapper
+
     def __init__(self, robot_s):
-        self.robot_s = robot_s.copy()
+        self.robot_s = robot_s
         self.roadmap = nx.Graph()
         self.start_conf = None
         self.goal_conf = None
@@ -178,6 +192,7 @@ class RRT(object):
                                  obstacle_list, shortcut=shortcut, smoothed_path=smoothed_path)
         return smoothed_path
 
+    @_decorator_keep_jnt_values
     def plan(self,
              component_name,
              start_conf,

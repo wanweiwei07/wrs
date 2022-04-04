@@ -1,6 +1,7 @@
 import copy
 import math
 import numpy as np
+import numpy.typing as npt
 from panda3d.core import CollisionNode, CollisionBox, CollisionSphere, NodePath, BitMask32
 from visualization.panda.world import ShowBase
 import basis.robot_math as rm
@@ -10,6 +11,7 @@ import modeling.model_collection as mc
 import modeling._panda_cdhelper as pcd
 import modeling._ode_cdhelper as mcd
 import warnings as wrn
+
 
 # the following two helpers cannot correcty find collision positions, 20211216
 # TODO check if it is caused by the bad bullet transformation in mcd.update_pose
@@ -144,12 +146,16 @@ class CollisionModel(gm.GeometricModel):
     def get_scale(self):
         return da.pdv3_to_npv3(self._objpdnp.getScale())
 
-    def set_pos(self, npvec3):
-        self._objpdnp.setPos(npvec3[0], npvec3[1], npvec3[2])
+    def set_pos(self, pos: npt.NDArray = np.zeros(3)):
+        self._objpdnp.setPos(pos[0], pos[1], pos[2])
         mcd.update_pose(self._cdmesh, self._objpdnp)
 
-    def set_rotmat(self, npmat3):
-        self._objpdnp.setQuat(da.npmat3_to_pdquat(npmat3))
+    def set_rotmat(self, rotmat: npt.NDArray = np.eye(3)):
+        self._objpdnp.setQuat(da.npmat3_to_pdquat(rotmat))
+        mcd.update_pose(self._cdmesh, self._objpdnp)
+
+    def set_pose(self, pos: npt.NDArray = np.zeros(3), rotmat: npt.NDArray = np.eye(3)):
+        self._objpdnp.setPosQuat(da.npv3_to_pdv3(pos), da.npmat3_to_pdquat(rotmat))
         mcd.update_pose(self._cdmesh, self._objpdnp)
 
     def set_homomat(self, npmat4):
@@ -332,6 +338,7 @@ class CollisionModel(gm.GeometricModel):
         date: 20220115toyonaka
         """
         return self.copy()
+
 
 def gen_box(extent=np.array([.1, .1, .1]), homomat=np.eye(4), rgba=np.array([1, 0, 0, 1])):
     """

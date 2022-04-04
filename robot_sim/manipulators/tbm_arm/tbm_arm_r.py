@@ -94,18 +94,18 @@ class TBMArmR(mi.ManipulatorInterface):
         # self.cc.set_active_cdlnks(activelist)
         # fromlist = [self.jlc.lnks[0],
         #             self.jlc.lnks[1]]
-        # intolist = [self.jlc.lnks[3],
+        # into_list = [self.jlc.lnks[3],
         #             self.jlc.lnks[5],
         #             self.jlc.lnks[6]]
-        # self.cc.set_cdpair(fromlist, intolist)
+        # self.cc.set_cdpair(fromlist, into_list)
         # fromlist = [self.jlc.lnks[2]]
-        # intolist = [self.jlc.lnks[4],
+        # into_list = [self.jlc.lnks[4],
         #             self.jlc.lnks[5],
         #             self.jlc.lnks[6]]
-        # self.cc.set_cdpair(fromlist, intolist)
+        # self.cc.set_cdpair(fromlist, into_list)
         # fromlist = [self.jlc.lnks[3]]
-        # intolist = [self.jlc.lnks[6]]
-        # self.cc.set_cdpair(fromlist, intolist)
+        # into_list = [self.jlc.lnks[6]]
+        # self.cc.set_cdpair(fromlist, into_list)
 
 
 if __name__ == '__main__':

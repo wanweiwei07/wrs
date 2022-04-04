@@ -62,7 +62,7 @@ def plan_grasps(hnd_s,
     :param max_samples:
     :param min_dist_between_sampled_contact_points:
     :param contact_offset: offset at the cotnact to avoid being closely in touch with object surfaces
-    :return: a list [[jawwidth, gl_jaw_center_pos, pos, rotmat], ...]
+    :return: a list [[jaw_width, gl_jaw_center_pos, pos, rotmat], ...]
     """
     contact_pairs = plan_contact_pairs(objcm,
                                        max_samples=max_samples,

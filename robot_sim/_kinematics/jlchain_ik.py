@@ -335,7 +335,7 @@ class JLChainIK(object):
             if toggle_debug:
                 print(errnorm)
                 ajpath.append(self.jlc_object.get_jnt_values())
-            if errnorm < 1e-6:
+            if errnorm < 1e-9:
                 if toggle_debug:
                     print(f"Number of IK iterations before finding a result: {i}")
                     fig = plt.figure()

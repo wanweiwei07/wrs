@@ -73,6 +73,7 @@ class CobottaPipette(gp.GripperInterface):
         self.jawwidth_rng = [0.0, .03]
         # jaw center
         self.jaw_center_pos = np.array([0.008, 0.14305, 0.06075])
+        self.jaw_center_rotmat = rm.rotmat_from_axangle([1, 0, 0], -np.pi / 2)
         # reinitialize
         self.jlc.reinitialize()
         # collision detection
@@ -84,14 +85,13 @@ class CobottaPipette(gp.GripperInterface):
             super().enable_cc()
             # cdprimit
             self.cc.add_cdlnks(self.jlc, [0, 1, 2, 3, 4, 5, 7])
-            activelist = [self.jlc.lnks[0],
-                          self.jlc.lnks[1],
-                          self.jlc.lnks[2],
-                          self.jlc.lnks[3],
-                          self.jlc.lnks[4],
-                          self.jlc.lnks[5],
-                          self.jlc.lnks[7]]
-            self.cc.set_active_cdlnks(activelist)
+            active_list = [self.jlc.lnks[0],
+                           self.jlc.lnks[1],
+                           self.jlc.lnks[2],
+                           self.jlc.lnks[4],
+                           self.jlc.lnks[5],
+                           self.jlc.lnks[7]]
+            self.cc.set_active_cdlnks(active_list)
             self.all_cdelements = self.cc.all_cdelements
         # cdmesh
         for cdelement in self.all_cdelements:
@@ -115,7 +115,7 @@ class CobottaPipette(gp.GripperInterface):
 
     def jaw_to(self, jaw_width):
         if self.jawwidth_rng[1] < jaw_width or jaw_width < self.jawwidth_rng[0]:
-            raise ValueError("The jawwidth parameter is out of range!")
+            raise ValueError("The jaw_width parameter is out of range!")
         side_jawwidth = jaw_width / 2.0
         self.jlc.jnts[5]['motion_val'] = side_jawwidth
         self.jlc.jnts[7]['motion_val'] = -jaw_width
@@ -128,7 +128,7 @@ class CobottaPipette(gp.GripperInterface):
                        toggle_tcpcs=False,
                        toggle_jntscs=False,
                        toggle_connjnt=False,
-                       name='xarm_gripper_stickmodel'):
+                       name='cbtp_stickmodel'):
         stickmodel = mc.ModelCollection(name=name)
         self.coupling.gen_stickmodel(toggle_tcpcs=False,
                                      toggle_jntscs=toggle_jntscs).attach_to(stickmodel)
@@ -150,7 +150,7 @@ class CobottaPipette(gp.GripperInterface):
                       toggle_tcpcs=False,
                       toggle_jntscs=False,
                       rgba=None,
-                      name='xarm_gripper_meshmodel'):
+                      name='cbtp_meshmodel'):
         meshmodel = mc.ModelCollection(name=name)
         self.coupling.gen_meshmodel(toggle_tcpcs=False,
                                     toggle_jntscs=toggle_jntscs,

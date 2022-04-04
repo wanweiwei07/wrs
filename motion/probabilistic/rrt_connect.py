@@ -77,6 +77,7 @@ class RRTConnect(rrt.RRT):
                                  obstacle_list, shortcut=shortcut, smoothed_path=smoothed_path)
         return smoothed_path
 
+    @rrt.RRT._decorator_keep_jnt_values
     def plan(self,
              component_name,
              start_conf,

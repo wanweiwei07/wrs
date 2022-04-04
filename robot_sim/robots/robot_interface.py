@@ -42,7 +42,7 @@ class RobotInterface(object):
         return NotImplementedError
 
     def jaw_to(self, hnd_name, jaw_width):
-        self.hnd_dict[hnd_name].jaw_to(jawwidth=jaw_width)
+        self.hnd_dict[hnd_name].jaw_to(jaw_width=jaw_width)
 
     def get_jawwidth(self, hand_name):
         return self.hnd_dict[hand_name].get_jawwidth()
@@ -52,7 +52,7 @@ class RobotInterface(object):
            tgt_pos=np.zeros(3),
            tgt_rotmat=np.eye(3),
            seed_jnt_values=None,
-           max_niter=100,
+           max_niter=200,
            tcp_jnt_id=None,
            tcp_loc_pos=None,
            tcp_loc_rotmat=None,

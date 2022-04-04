@@ -90,7 +90,7 @@ class YumiGripper(gp.GripperInterface):
 
     def jaw_to(self, jawwidth):
         if jawwidth > .05:
-            raise ValueError("The jawwidth parameter is out of range!")
+            raise ValueError("The jaw_width parameter is out of range!")
         self.fk(motion_val=-jawwidth / 2.0)
 
     def get_jawwidth(self):

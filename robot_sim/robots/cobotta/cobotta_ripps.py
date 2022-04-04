@@ -56,9 +56,8 @@ class CobottaRIPPS(ri.RobotInterface):
         super().enable_cc()
         self.cc.add_cdlnks(self.base_plate, [0])
         self.cc.add_cdlnks(self.arm, [0, 1, 2, 3, 4, 5, 6])
-        self.cc.add_cdlnks(self.hnd.jlc, [0, 1, 2])
-        activelist = [self.base_plate.lnks[0],
-                      self.arm.lnks[0],
+        self.cc.add_cdlnks(self.hnd.jlc, [0, 1, 2, 4, 5, 7])
+        active_list = [self.arm.lnks[0],
                       self.arm.lnks[1],
                       self.arm.lnks[2],
                       self.arm.lnks[3],
@@ -67,19 +66,29 @@ class CobottaRIPPS(ri.RobotInterface):
                       self.arm.lnks[6],
                       self.hnd.jlc.lnks[0],
                       self.hnd.jlc.lnks[1],
-                      self.hnd.jlc.lnks[2]]
-        self.cc.set_active_cdlnks(activelist)
-        fromlist = [self.base_plate.lnks[0],
-                    self.arm.lnks[0],
-                    self.arm.lnks[1]]
-        intolist = [self.arm.lnks[3]]
-        self.cc.set_cdpair(fromlist, intolist)
-        fromlist = [self.base_plate.lnks[0],
-                    self.arm.lnks[1]]
-        intolist = [self.hnd.jlc.lnks[0],
-                    self.hnd.jlc.lnks[1],
-                    self.hnd.jlc.lnks[2]]
-        self.cc.set_cdpair(fromlist, intolist)
+                      self.hnd.jlc.lnks[2],
+                      self.hnd.jlc.lnks[4],
+                      self.hnd.jlc.lnks[5],
+                      self.hnd.jlc.lnks[7]]
+        self.cc.set_active_cdlnks(active_list)
+        from_list = [self.base_plate.lnks[0],
+                     self.arm.lnks[0],
+                     self.arm.lnks[1]]
+        into_list = [self.arm.lnks[4],
+                     self.hnd.jlc.lnks[0],
+                     self.hnd.jlc.lnks[1],
+                     self.hnd.jlc.lnks[2],
+                     self.hnd.jlc.lnks[4],
+                     self.hnd.jlc.lnks[5]]
+        self.cc.set_cdpair(from_list, into_list)
+        from_list = [self.arm.lnks[2],
+                     self.arm.lnks[3]]
+        into_list = [self.hnd.jlc.lnks[0],
+                     self.hnd.jlc.lnks[1],
+                     self.hnd.jlc.lnks[2],
+                     self.hnd.jlc.lnks[4],
+                     self.hnd.jlc.lnks[5]]
+        self.cc.set_cdpair(from_list, into_list)
         # TODO is the following update needed?
         for oih_info in self.oih_infos:
             objcm = oih_info['collision_model']
@@ -127,39 +136,40 @@ class CobottaRIPPS(ri.RobotInterface):
         else:
             raise ValueError("The given component name is not supported!")
 
-    def get_jnt_values(self, component_name):
+    def get_jnt_values(self, component_name="arm"):
         if component_name in self.manipulator_dict:
             return self.manipulator_dict[component_name].get_jnt_values()
         else:
             raise ValueError("The given component name is not supported!")
 
-    def rand_conf(self, component_name):
+    def rand_conf(self, component_name="arm"):
         if component_name in self.manipulator_dict:
             return super().rand_conf(component_name)
         else:
             raise NotImplementedError
 
-    def jaw_to(self, hnd_name='hnd_s', jawwidth=0.0):
-        self.hnd.jaw_to(jawwidth)
+    def jaw_to(self, hnd_name='hnd_s', jaw_width=0.0):
+        self.hnd.jaw_to(jaw_width)
 
-    def hold(self, hnd_name, objcm, jawwidth=None):
+    def hold(self, hnd_name, objcm, jaw_width=None):
         """
         the objcm is added as a part of the robot_s to the cd checker
-        :param jawwidth:
+        :param hnd_name:
+        :param jaw_width:
         :param objcm:
         :return:
         """
         if hnd_name not in self.hnd_dict:
             raise ValueError("Hand name does not exist!")
-        if jawwidth is not None:
-            self.hnd_dict[hnd_name].jaw_to(jawwidth)
+        if jaw_width is not None:
+            self.hnd_dict[hnd_name].jaw_to(jaw_width)
         rel_pos, rel_rotmat = self.manipulator_dict[hnd_name].cvt_gl_to_loc_tcp(objcm.get_pos(), objcm.get_rotmat())
-        intolist = [self.arm.lnks[0],
-                    self.arm.lnks[1],
-                    self.arm.lnks[2],
-                    self.arm.lnks[3],
-                    self.arm.lnks[4]]
-        self.oih_infos.append(self.cc.add_cdobj(objcm, rel_pos, rel_rotmat, intolist))
+        into_list = [self.arm.lnks[0],
+                     self.arm.lnks[1],
+                     self.arm.lnks[2],
+                     self.arm.lnks[3],
+                     self.arm.lnks[4]]
+        self.oih_infos.append(self.cc.add_cdobj(objcm, rel_pos, rel_rotmat, into_list))
         return rel_pos, rel_rotmat
 
     def get_oih_list(self):
@@ -237,10 +247,12 @@ class CobottaRIPPS(ri.RobotInterface):
                                toggle_jntscs=toggle_jntscs,
                                rgba=rgba).attach_to(meshmodel)
         for obj_info in self.oih_infos:
-            objcm = obj_info['collision_model']
+            objcm = obj_info['collision_model'].copy()
             objcm.set_pos(obj_info['gl_pos'])
             objcm.set_rotmat(obj_info['gl_rotmat'])
-            objcm.copy().attach_to(meshmodel)
+            if rgba is not None:
+                objcm.set_rgba(rgba)
+            objcm.attach_to(meshmodel)
         return meshmodel
 
 
@@ -256,8 +268,9 @@ if __name__ == '__main__':
     robot_s = CobottaRIPPS(enable_cc=True)
     robot_s.jaw_to(.02)
     # robot_s.gen_meshmodel(toggle_tcpcs=True, toggle_jntscs=True).attach_to(base)
-    robot_s.gen_meshmodel(toggle_tcpcs=False, toggle_jntscs=False).attach_to(base)
+    robot_s.gen_meshmodel(toggle_tcpcs=True, toggle_jntscs=False).attach_to(base)
     # robot_s.gen_stickmodel(toggle_tcpcs=True, toggle_jntscs=True).attach_to(base)
+    robot_s.show_cdprimit()
     base.run()
     tgt_pos = np.array([.25, .2, .15])
     tgt_rotmat = rm.rotmat_from_axangle([0, 1, 0], math.pi * 2 / 3)

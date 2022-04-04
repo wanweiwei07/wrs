@@ -15,11 +15,11 @@ class BH828X(object):
 
     def __init__(self, *args, **kwargs):
         """
-        load the robotiq85 model, set jawwidth
+        load the robotiq85 model, set jaw_width
 
         :param args:
         :param kwargs:
-            'jawwidth' 0-85
+            'jaw_width' 0-85
             'ftsensoroffset' the offset for forcesensor
             'toggleframes' True, False
 
@@ -35,8 +35,8 @@ class BH828X(object):
             self.__jawwidthclose = kwargs['jawwidthclose']
         else:
             self.__jawwidthclose = 0
-        if 'jawwidth' in kwargs:
-            self.__jawwidth = kwargs['jawwidth']
+        if 'jaw_width' in kwargs:
+            self.__jawwidth = kwargs['jaw_width']
         else:
             self.__jawwidth = self.__jawwidthopen
         if 'ftsensoroffset' in kwargs:
@@ -369,7 +369,7 @@ class BH828X(object):
 
     def setjawwidth(self, jawwidth=None):
         """
-        set the jawwidth of the hand
+        set the jaw_width of the hand
 
         :param jawwidth: mm
         :return:
@@ -507,7 +507,7 @@ class BH828X(object):
         set the hand to grip at fcx, fcy, fcz, fc = finger center
         the normal of the sglfgr contact is set to be c0nx, c0ny, c0nz
         the rotation around the normal is set to rotangle
-        the jawwidth is set to jawwidth
+        the jaw_width is set to jaw_width
 
         date: 20170322
         author: weiwei
@@ -539,7 +539,7 @@ class BH828X(object):
         set the hand to grip at fcx, fcy, fcz, fc = finger center
         the normal of the sglfgr contact is set to be c0nx, c0ny, c0nz
         the approach vector of the hand is set to apx, apy, apz
-        the jawwidth is set to jawwidth
+        the jaw_width is set to jaw_width
 
         date: 20190528
         author: weiwei
@@ -566,11 +566,11 @@ class BH828X(object):
     def genrangecmlist(self, jawwidthstart, jawwidthend=None, discretizedegree=10.0):
         '''
         generate a hand cm model for collision.
-        The finger motion is discretized in range (jawwidth, jawopen)
+        The finger motion is discretized in range (jaw_width, jawopen)
         The generated model is an independent copy, the hand itsself is not modified
 
         ## input
-        jawwidth:
+        jaw_width:
             the width of the jaw
 
         author: weiwei

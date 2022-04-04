@@ -148,7 +148,7 @@ def rotmat_between_vectors(v1, v2):
     theta = angle_between_vectors(v1, v2)
     if np.allclose(theta, 0):
         return np.eye(3)
-    if np.allclose(theta, math.pi):  # in this case, the rotation axis is arbitrary; I am using v1 for reference
+    if np.allclose(theta, np.pi):  # in this case, the rotation axis is arbitrary; I am using v1 for reference
         return rotmat_from_axangle(orthogonal_vector(v1, toggle_unit=True), theta)
     axis = unit_vector(np.cross(v1, v2))
     return rotmat_from_axangle(axis, theta)
@@ -306,10 +306,10 @@ def interplate_pos_rotmat_around_circle(circle_center_pos,
     """
     vec = orthogonal_vector(circle_ax)
     granularity_radius = granularity / radius
-    nval = math.ceil(math.pi * 2 / granularity_radius)
+    nval = math.ceil(np.pi * 2 / granularity_radius)
     rotmat_list = rotmat_slerp(start_rotmat, end_rotmat, nval)
     pos_list = []
-    for angle in np.linspace(0, math.pi * 2, nval).tolist():
+    for angle in np.linspace(0, np.pi * 2, nval).tolist():
         pos_list.append(rotmat_from_axangle(circle_ax, angle).dot(vec * radius) + circle_center_pos)
     return pos_list, rotmat_list
 
@@ -428,7 +428,7 @@ def rel_pose(pos0, rot0, pos1, rot1):
 def regulate_angle(lowerbound, upperbound, jntangles):
     """
     change the range of armjnts to [lowerbound, upperbound]
-    NOTE: upperbound-lowerbound must be multiplies of 2*math.pi or 360
+    NOTE: upperbound-lowerbound must be multiplies of 2*np.pi or 360
     :param lowerbound
     :param upperbound
     :param jntangles: an array or a single joint angle
@@ -436,18 +436,18 @@ def regulate_angle(lowerbound, upperbound, jntangles):
     """
     if isinstance(jntangles, np.ndarray):
         rng = upperbound - lowerbound
-        if rng >= 2 * math.pi:
+        if rng >= 2 * np.pi:
             jntangles[jntangles < lowerbound] = jntangles[jntangles < lowerbound] % -rng + rng
             jntangles[jntangles > upperbound] = jntangles[jntangles > upperbound] % rng - rng
         else:
-            raise ValueError("upperbound-lowerbound must be multiplies of 2*math.pi or 360")
+            raise ValueError("upperbound-lowerbound must be multiplies of 2*np.pi or 360")
         return jntangles
     else:
         rng = upperbound - lowerbound
-        if rng >= 2 * math.pi:
+        if rng >= 2 * np.pi:
             jntangles = jntangles % -rng + rng if jntangles < lowerbound else jntangles % rng - rng
         else:
-            raise ValueError("upperbound-lowerbound must be multiplies of 2*math.pi or 360")
+            raise ValueError("upperbound-lowerbound must be multiplies of 2*np.pi or 360")
         return jntangles
 
 
@@ -516,7 +516,7 @@ def deltaw_between_rotmat(rotmati, rotmatj):
     elif deltarot[0, 0] > 0 and deltarot[1, 1] > 0 and deltarot[2, 2] > 0:
         deltaw = np.array([0, 0, 0])
     else:
-        deltaw = math.pi / 2 * (np.diag(deltarot) + 1)
+        deltaw = np.pi / 2 * (np.diag(deltarot) + 1)
     return deltaw
 
 
@@ -577,8 +577,8 @@ def posvec_average(posveclist, bandwidth=10):
 def gen_icorotmats(icolevel=1,
                    rotation_interval=math.radians(45),
                    crop_normal=np.array([0, 0, 1]),
-                   crop_angle=math.pi,
-                   toggleflat=False):
+                   crop_angle=np.pi,
+                   toggle_flat=False):
     """
     generate rotmats using icospheres and rotationaangle each origin-vertex vector of the icosphere
     :param icolevel, the default value 1 = 42vertices
@@ -589,10 +589,10 @@ def gen_icorotmats(icolevel=1,
     author: weiwei
     date: 20191015osaka
     """
-    returnlist = []
+    return_list = []
     icos = trm.creation.icosphere(icolevel)
     for vert in icos.vertices:
-        if crop_angle < math.pi:
+        if crop_angle < np.pi:
             if angle_between_vectors(vert, crop_normal) > crop_angle:
                 continue
         z = -vert
@@ -602,24 +602,27 @@ def gen_icorotmats(icolevel=1,
         temprotmat[:, 0] = x
         temprotmat[:, 1] = y
         temprotmat[:, 2] = z
-        returnlist.append([])
-        for angle in np.linspace(0, 2 * math.pi, int(2 * math.pi / rotation_interval), endpoint=False):
-            returnlist[-1].append(np.dot(rotmat_from_axangle(z, angle), temprotmat))
-    if toggleflat:
-        return functools.reduce(operator.iconcat, returnlist, [])
-    return returnlist
+        return_list.append([])
+        for angle in np.linspace(0, 2 * np.pi, int(2 * np.pi / rotation_interval), endpoint=False):
+            return_list[-1].append(np.dot(rotmat_from_axangle(z, angle), temprotmat))
+    if toggle_flat:
+        return functools.reduce(operator.iconcat, return_list, [])
+    return return_list
 
 
-def gen_icohomomats(icolevel=1, position=np.array([0, 0, 0]), rotagls=np.linspace(0, 2 * math.pi, 8, endpoint=False),
-                    toggleflat=False):
+def gen_icohomomats(icolevel=1,
+                    position=np.array([0, 0, 0]),
+                    rotation_interval=math.radians(45),
+                    toggle_flat=False):
     """
     generate homomats using icospheres and rotationaangle each origin-vertex vector of the icosphere
     :param icolevel, the default value 1 = 42vertices
-    :param rotagls, 8 directions by default
+    :param rot_angles, 8 directions by default
     :return: [[homomat, ...], ...] size of the inner list is size of the angles
     author: weiwei
     date: 20200701osaka
     """
+    rot_angles = np.linspace(0, 2 * np.pi, np.pi * 2 / rotation_interval, endpoint=False)
     returnlist = []
     icos = trm.creation.icosphere(icolevel)
     for vert in icos.vertices:
@@ -631,12 +634,12 @@ def gen_icohomomats(icolevel=1, position=np.array([0, 0, 0]), rotagls=np.linspac
         temprotmat[:, 1] = y
         temprotmat[:, 2] = z
         returnlist.append([])
-        for angle in rotagls:
+        for angle in rot_angles:
             tmphomomat = np.eye(4)
             tmphomomat[:3, :3] = np.dot(rotmat_from_axangle(z, angle), temprotmat)
             tmphomomat[:3, 3] = position
             returnlist[-1].append(tmphomomat)
-    if toggleflat:
+    if toggle_flat:
         return functools.reduce(operator.iconcat, returnlist, [])
     return returnlist
 
@@ -686,7 +689,7 @@ def gen_3d_spiral_points(pos: npt.NDArray = np.zeros(3),
                                             tangential_granularity=tangential_granularity,
                                             toggle_origin=toggle_origin)
     xyz_spiral_points = np.column_stack((xy_spiral_points, np.zeros(len(xy_spiral_points))))
-    return rotmat.dot(xyz_spiral_points.T).T+pos
+    return rotmat.dot(xyz_spiral_points.T).T + pos
 
 
 def get_aabb(pointsarray):
@@ -755,7 +758,7 @@ def fit_plane(points):
 
 def project_to_plane(point, plane_center, plane_normal):
     dist = abs((point - plane_center).dot(plane_normal))
-    print((point - plane_center).dot(plane_normal))
+    # print((point - plane_center).dot(plane_normal))
     if (point - plane_center).dot(plane_normal) < 0:
         plane_normal = - plane_normal
     projected_point = point - dist * plane_normal
@@ -836,17 +839,18 @@ def random_rgba(toggle_alpha_random=False):
         return np.random.random_sample(4).tolist()
 
 
-def get_rgba_from_cmap(id):
+def get_rgba_from_cmap(id, cm_name='tab20', step=20):
     """
     get rgba from matplotlib cmap "tab20"
     :param id:
+    :param cm_name: see matplotlib tutorials
+    :param step:
     :return:
     author: weiwei
-    date: 20210505
+    date: 20210505, 20220404
     """
-    cm_name = 'tab20'
     cm = plt.get_cmap(cm_name)
-    return cm(id % 20)
+    return list(cm(id % step))
 
 
 def consecutive(nparray1d, stepsize=1):
@@ -1121,14 +1125,14 @@ def reflection_from_matrix(matrix):
 def rotation_matrix(angle, direction, point=None):
     """Return matrix to rotate about axis defined by point and direction.
 
-    >>> R = rotation_matrix(math.pi/2, [0, 0, 1], [1, 0, 0])
+    >>> R = rotation_matrix(np.pi/2, [0, 0, 1], [1, 0, 0])
     >>> np.allclose(np.dot(R, [0, 0, 0, 1]), [1, -1, 0, 1])
     True
-    >>> angle = (random.random() - 0.5) * (2*math.pi)
+    >>> angle = (random.random() - 0.5) * (2*np.pi)
     >>> direc = np.random.random(3) - 0.5
     >>> point = np.random.random(3) - 0.5
     >>> R0 = rotation_matrix(angle, direc, point)
-    >>> R1 = rotation_matrix(angle-2*math.pi, direc, point)
+    >>> R1 = rotation_matrix(angle-2*np.pi, direc, point)
     >>> is_same_transform(R0, R1)
     True
     >>> R0 = rotation_matrix(angle, direc, point)
@@ -1136,9 +1140,9 @@ def rotation_matrix(angle, direction, point=None):
     >>> is_same_transform(R0, R1)
     True
     >>> I = np.identity(4, np.float64)
-    >>> np.allclose(I, rotation_matrix(math.pi*2, direc))
+    >>> np.allclose(I, rotation_matrix(np.pi*2, direc))
     True
-    >>> np.allclose(2, np.trace(rotation_matrix(math.pi/2,
+    >>> np.allclose(2, np.trace(rotation_matrix(np.pi/2,
     ...                                               direc, point)))
     True
 
@@ -1165,7 +1169,7 @@ def rotation_matrix(angle, direction, point=None):
 def rotation_from_matrix(matrix):
     """Return rotation angle and axis from rotation matrix.
 
-    >>> angle = (random.random() - 0.5) * (2*math.pi)
+    >>> angle = (random.random() - 0.5) * (2*np.pi)
     >>> direc = np.random.random(3) - 0.5
     >>> point = np.random.random(3) - 0.5
     >>> R0 = rotation_matrix(angle, direc, point)
@@ -1474,7 +1478,7 @@ def shear_matrix(angle, direction, point, normal):
     given by the angle of P-P'-P", where P' is the orthogonal projection
     of P onto the shear plane.
 
-    >>> angle = (random.random() - 0.5) * 4*math.pi
+    >>> angle = (random.random() - 0.5) * 4*np.pi
     >>> direct = np.random.random(3) - 0.5
     >>> point = np.random.random(3) - 0.5
     >>> normal = np.cross(direct, np.random.random(3))
@@ -1497,7 +1501,7 @@ def shear_matrix(angle, direction, point, normal):
 def shear_from_matrix(matrix):
     """Return shear angle, direction and plane from shear matrix.
 
-    >>> angle = (random.random() - 0.5) * 4*math.pi
+    >>> angle = (random.random() - 0.5) * 4*np.pi
     >>> direct = np.random.random(3) - 0.5
     >>> point = np.random.random(3) - 0.5
     >>> normal = np.cross(direct, np.random.random(3))
@@ -1639,7 +1643,7 @@ def compose_matrix(scale=None, shear=None, angles=None, translate=None,
 
     >>> scale = np.random.random(3) - 0.5
     >>> shear = np.random.random(3) - 0.5
-    >>> angles = (np.random.random(3) - 0.5) * (2*math.pi)
+    >>> angles = (np.random.random(3) - 0.5) * (2*np.pi)
     >>> trans = np.random.random(3) - 0.5
     >>> persp = np.random.random(4) - 0.5
     >>> M0 = compose_matrix(scale, shear, angles, trans, persp)
@@ -1875,7 +1879,7 @@ def _euler_matrix(ai, aj, ak, axes='sxyz'):
         np.allclose(np.sum(R[0]), -1.34786452) > True
         R = _euler_matrix(1, 2, 3, (0, 1, 0, 1))
         np.allclose(np.sum(R[0]), -0.383436184) > True
-        ai, aj, ak = (4*math.pi) * (np.random.random(3) - 0.5)
+        ai, aj, ak = (4*np.pi) * (np.random.random(3) - 0.5)
         for axes in _AXES2TUPLE.keys():
             R = _euler_matrix(ai, aj, ak, axes)
         for axes in _TUPLE2AXES.keys():
@@ -1938,7 +1942,7 @@ def _euler_from_matrix(matrix, axes='sxyz'):
     al, be, ga = _euler_from_matrix(R0, 'syxz')
     R1 = _euler_matrix(al, be, ga, 'syxz')
     np.allclose(R0, R1) -> True
-    angles = (4*math.pi) * (np.random.random(3) - 0.5)
+    angles = (4*np.pi) * (np.random.random(3) - 0.5)
     for axes in _AXES2TUPLE.keys():
         R0 = _euler_matrix(axes=axes, *angles)
         R1 = _euler_matrix(axes=axes, *_euler_from_matrix(R0, axes))
@@ -2252,7 +2256,7 @@ def quaternion_slerp(quat0, quat1, fraction, spin=0, shortestpath=True):
         # invert rotation
         d = -d
         np.negative(q1, q1)
-    angle = math.acos(d) + spin * math.pi
+    angle = math.acos(d) + spin * np.pi
     if abs(angle) < _EPS:
         return q0
     isin = 1.0 / math.sin(angle)
@@ -2283,7 +2287,7 @@ def random_quaternion(rand=None):
         assert len(rand) == 3
     r1 = np.sqrt(1.0 - rand[0])
     r2 = np.sqrt(rand[0])
-    pi2 = math.pi * 2.0
+    pi2 = np.pi * 2.0
     t1 = pi2 * rand[1]
     t2 = pi2 * rand[2]
     return np.array([np.cos(t2) * r2, np.sin(t1) * r1,

@@ -75,7 +75,7 @@ class CobottaGripper(gp.GripperInterface):
 
     def jaw_to(self, jaw_width):
         if jaw_width > self.jawwidth_rng[1]:
-            raise ValueError("The jawwidth parameter is out of range!")
+            raise ValueError("The jaw_width parameter is out of range!")
         side_jawwidth = jaw_width / 2.0
         self.jlc.jnts[1]['motion_val'] = side_jawwidth
         self.jlc.jnts[2]['motion_val'] = -jaw_width
