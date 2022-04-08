@@ -102,11 +102,11 @@ class Env_wrs(object):
             objcm.remove()
 
 
-# def loadEnv_wrs(camp=[4000, 0, 1700], lookatpos=[0, 0, 1000]):
+# def loadEnv_wrs(camp=[4000, 0, 1700], lookat_pos=[0, 0, 1000]):
 #     # Table width: 120
 #     # Table long: 1080
 #
-#     base = pc.World(camp=camp, lookatpos=lookatpos)
+#     base = pc.World(camp=camp, lookat_pos=lookat_pos)
 #     env = Env_wrs(boundingradius=7.0)
 #     env.reparentTo(base.render)
 #     # obstacle = cm.CollisionModel(objinit=Box(box_extents=[30, 298, 194]))

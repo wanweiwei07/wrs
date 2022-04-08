@@ -307,10 +307,10 @@ class World(ShowBase, object):
         self.lookatpos = lookatpos
         self.inputmgr = im.InputManager(self, self.lookatpos)
 
-    def change_campos_and_lookatpos(self, campos, lookatpos):
-        self.cam.setPos(campos[0], campos[1], campos[2])
-        self.cam.lookAt(lookatpos[0], lookatpos[1], lookatpos[2])
-        self.lookatpos = lookatpos
+    def change_campos_and_lookat_pos(self, cam_pos, lookat_pos):
+        self.cam.setPos(cam_pos[0], cam_pos[1], cam_pos[2])
+        self.cam.lookAt(lookat_pos[0], lookat_pos[1], lookat_pos[2])
+        self.lookatpos = lookat_pos
         self.inputmgr = im.InputManager(self, self.lookatpos)
 
     def set_cartoonshader(self, switchtoon=False):

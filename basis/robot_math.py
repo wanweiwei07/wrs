@@ -692,6 +692,38 @@ def gen_3d_spiral_points(pos: npt.NDArray = np.zeros(3),
     return rotmat.dot(xyz_spiral_points.T).T + pos
 
 
+def gen_regpoly(radius, nedges=12):
+    angle_list = np.linspace(0, np.pi * 2, nedges + 1, endpoint=True)
+    x_vertex = np.sin(angle_list) * radius
+    y_vertex = np.cos(angle_list) * radius
+    return np.column_stack((x_vertex, y_vertex))
+
+
+def gen_2d_isosceles_verts(nlevel, edge_length, nedges=12):
+    xy_array = np.asarray([[0, 0]])
+    for level in range(nlevel):
+        xy_vertex = gen_regpoly(radius=edge_length * (level + 1), nedges=nedges)
+        for i in range(nedges):
+            xy_array = np.append(xy_array,
+                                 np.linspace(xy_vertex[i, :], xy_vertex[i + 1, :], num=level + 1, endpoint=False),
+                                 axis=0)
+    return xy_array
+
+
+def gen_2d_equilateral_verts(nlevel, edge_length):
+    return gen_2d_isosceles_verts(nlevel=nlevel, edge_length=edge_length, nedges=6)
+
+
+def gen_3d_isosceles_verts(pos, rotmat, nlevel=5, edge_length=0.001, nedges=12):
+    xy_array = gen_2d_isosceles_verts(nlevel=nlevel, edge_length=edge_length, nedges=nedges)
+    xyz_array = np.pad(xy_array, ((0, 0), (0, 1)), mode='constant', constant_values=0)
+    return rotmat.dot((xyz_array).T).T + pos
+
+
+def gen_3d_equilateral_verts(pos, rotmat, nlevel=5, edge_length=0.001):
+    return gen_3d_isosceles_verts(pos=pos, rotmat=rotmat, nlevel=nlevel, edge_length=edge_length, nedges=6)
+
+
 def get_aabb(pointsarray):
     """
     get the axis aligned bounding box of nx3 array
