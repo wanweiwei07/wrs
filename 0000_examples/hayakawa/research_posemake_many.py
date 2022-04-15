@@ -170,7 +170,7 @@ class PoseMaker(object):
                 thumb_verticalvec = np.cross(zaxis, handdir_projection)  ## x
                 zaxis_hand = np.cross(handdir, thumb_verticalvec)  ## y
                 # pushposelist.append(self.rtq85.approachAt(5,5,5,thumb_verticalvec[0], thumb_verticalvec[1], thumb_verticalvec[2],
-                #                                       handdir[0], handdir[1], handdir[2], jawwidth=0))
+                #                                       handdir[0], handdir[1], handdir[2], jaw_width=0))
                 ## ハンドの方向を軸に-90度ずつ回転した姿勢を生成
                 for k in range(handrotaterange):
                     handrotmat = np.empty((0, 3))

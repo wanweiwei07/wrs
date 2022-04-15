@@ -21,7 +21,7 @@ def define_grasp(hnd_s,
     :param jaw_width:
     :param objcm:
     :param toggle_flip:
-    :return: a list like [[jawwidth, gl_jaw_center_pos, pos, rotmat], ...]
+    :return: a list like [[jaw_width, gl_jaw_center_pos, pos, rotmat], ...]
     author: chenhao, revised by weiwei
     date: 20200104
     """
@@ -73,7 +73,7 @@ def define_grasp_with_rotation(hnd_s,
     :param rotation_interval: 
     :param rotation_range: 
     :param toggle_flip: 
-    :return: a list [[jawwidth, gl_jaw_center_pos, pos, rotmat], ...]
+    :return: a list [[jaw_width, gl_jaw_center_pos, pos, rotmat], ...]
     author: chenhao, revised by weiwei
     date: 20200104
     """
@@ -140,7 +140,7 @@ def define_pushing(hnd_s,
                                            crop_angle=cone_angle,
                                            crop_normal=gl_surface_normal,
                                            rotation_interval=local_rotation_interval,
-                                           toggleflat=True)
+                                           toggle_flat=True)
     for pushing_rotmat in pushing_icorotmats:
         push_info = hnd_s.push_at(gl_push_pos=gl_surface_pos, gl_push_rotmat=pushing_rotmat)
         if not hnd_s.is_mesh_collided([objcm]):

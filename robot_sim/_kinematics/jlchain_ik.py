@@ -15,14 +15,9 @@ class JLChainIK(object):
         self.ws_wtlist = [wt_pos, wt_pos, wt_pos, wt_agl, wt_agl, wt_agl]
         # maximum reach
         self.max_rng = 20.0
-        # extract min max for quick access
-        self.jmvmin = np.zeros(len(self.jlc_object.tgtjnts))
-        self.jmvmax = np.zeros(len(self.jlc_object.tgtjnts))
-        counter = 0
-        for id in self.jlc_object.tgtjnts:
-            self.jmvmin[counter] = self.jlc_object.jnts[id]['motion_rng'][0]
-            self.jmvmax[counter] = self.jlc_object.jnts[id]['motion_rng'][1]
-            counter += 1
+        # # extract min max for quick access
+        self.jmvmin = self.jlc_object.jnt_ranges[:, 0]
+        self.jmvmax = self.jlc_object.jnt_ranges[:, 1]
         self.jmvrng = self.jmvmax - self.jmvmin
         self.jmvmiddle = (self.jmvmax + self.jmvmin) / 2
         self.jmvmin_threshhold = self.jmvmin + self.jmvrng * self.wln_ratio
@@ -340,7 +335,7 @@ class JLChainIK(object):
             if toggle_debug:
                 print(errnorm)
                 ajpath.append(self.jlc_object.get_jnt_values())
-            if errnorm < 1e-6:
+            if errnorm < 1e-9:
                 if toggle_debug:
                     print(f"Number of IK iterations before finding a result: {i}")
                     fig = plt.figure()

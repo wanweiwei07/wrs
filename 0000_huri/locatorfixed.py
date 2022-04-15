@@ -154,7 +154,7 @@ class LocatorFixed(object):
                             stick_tr.setColor(rgb[0], rgb[1], rgb[2], 1)
                             stick_tr.reparentTo(base.render)
                             # box normalized
-                            center, bounds = rm.getaabb(tmppcd)
+                            center, bounds = rm.get_aabb(tmppcd)
                             boxextent = np.array(
                                 [bounds[0, 1] - bounds[0, 0], bounds[1, 1] - bounds[1, 0], bounds[2, 1] - bounds[2, 0]])
                             boxhomomat = np.eye(4)

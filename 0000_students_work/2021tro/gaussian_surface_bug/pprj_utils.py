@@ -95,7 +95,7 @@ if __name__ == '__main__':
     """
     set up env and param
     """
-    # base = pc.World(camp=np.array([500, -1000, 1000]), lookatpos=np.array([0, 0, 50]))
+    # base = pc.World(camp=np.array([500, -1000, 1000]), lookat_pos=np.array([0, 0, 50]))
     base = pc.World(camp=np.array([0, 0, 1000]), lookatpos=np.array([0, 0, 50]))
     mat4 = psp_mat4(30, 1, 100, 1000)
     ps = [[0, 0, 0],

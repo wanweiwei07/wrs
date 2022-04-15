@@ -16,12 +16,12 @@ class Sck918(object):
 
     def __init__(self, jawwidth=50, ftsensoroffset = 52):
         """
-        load the robotiq85 model, set jawwidth and return a nodepath
+        load the robotiq85 model, set jaw_width and return a nodepath
 
         ## input
         pandabase:
             the showbase() object
-        jawwidth:
+        jaw_width:
             the distance between fingertips
         ftsensoroffset:
             the offset for ftsensor
@@ -108,12 +108,12 @@ class Sck918(object):
 
     def setJawwidth(self, jawwidth):
         """
-        set the jawwidth of sck918hnd
+        set the jaw_width of sck918hnd
 
         ## input
         sck918hnd:
             nodepath of a schunk918hand
-        jawwidth:
+        jaw_width:
             the width of the jaw
 
         author: wangyan
@@ -222,7 +222,7 @@ class Sck918(object):
         set the hand to grip at fcx, fcy, fcz, fc = finger center
         the normal of the sglfgr contact is set to be c0nx, c0ny, c0nz
         the rotation around the normal is set to rotangle
-        the jawwidth is set to jawwidth
+        the jaw_width is set to jaw_width
 
         date: 20170322
         author: weiwei

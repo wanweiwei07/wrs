@@ -929,7 +929,7 @@ def myProg():
     end
 
     #**************************************
-    # FUNCTION: sk_spiral_search(force_threshold = 3, max_radius = 5.0, radius_incr=0.3, peck_mode = False)
+    # FUNCTION: sk_spiral_search(force_threshold = 3, ShuidiX = 5.0, radius_incr=0.3, peck_mode = False)
     # Description:
     # PARAMETER:
     #   force_threshold : If the force of contact drops below the force threshold, the hole has been found.

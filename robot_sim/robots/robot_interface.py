@@ -32,6 +32,9 @@ class RobotInterface(object):
     def get_gl_tcp(self, manipulator_name):
         return self.manipulator_dict[manipulator_name].get_gl_tcp()
 
+    def is_jnt_values_in_ranges(self, component_name, jnt_values):
+        return self.manipulator_dict[component_name].is_jnt_values_in_ranges(jnt_values)
+
     def fix_to(self, pos, rotmat):
         return NotImplementedError
 
@@ -39,21 +42,21 @@ class RobotInterface(object):
         return NotImplementedError
 
     def jaw_to(self, hnd_name, jaw_width):
-        self.hnd_dict[hnd_name].jaw_to(jawwidth=jaw_width)
+        self.hnd_dict[hnd_name].jaw_to(jaw_width=jaw_width)
 
     def get_jawwidth(self, hand_name):
         return self.hnd_dict[hand_name].get_jawwidth()
 
     def ik(self,
-           component_name="arm",
+           component_name: str = "arm",
            tgt_pos=np.zeros(3),
            tgt_rotmat=np.eye(3),
            seed_jnt_values=None,
-           max_niter=100,
+           max_niter=200,
            tcp_jnt_id=None,
            tcp_loc_pos=None,
            tcp_loc_rotmat=None,
-           local_minima="accept",
+           local_minima: str = "accept",
            toggle_debug=False):
         return self.manipulator_dict[component_name].ik(tgt_pos,
                                                         tgt_rotmat,

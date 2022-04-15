@@ -52,7 +52,7 @@ class PickPlacePlanner(adp.ADPlanner):
         """
         find the common collision free and IK feasible graspids
         :param hand_name: a component may have multiple hands
-        :param grasp_info_list: a list like [[jawwidth, gl_jaw_center_pos, pos, rotmat], ...]
+        :param grasp_info_list: a list like [[jaw_width, gl_jaw_center_pos, pos, rotmat], ...]
         :param goal_homomat_list: [homomat, ...]
         :param obstacle_list
         :return: [final_available_graspids, intermediate_available_graspids]

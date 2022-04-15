@@ -281,49 +281,7 @@ class RRTConnectKinodynamic(object):
 
 
 if __name__ == '__main__':
-    import robot_sim._kinematics.jlchain as jl
-    import robot_sim.robots.robot_interface as ri
-
-
-    class TWCARBOT(ri.RobotInterface):
-
-        def __init__(self, pos=np.zeros(3), rotmat=np.eye(3), name='TwoWheelCarBot'):
-            super().__init__(pos=pos, rotmat=rotmat, name=name)
-            self.jlc = jl.JLChain(homeconf=np.zeros(3), name='XYBot')
-            self.jlc.jnts[1]['type'] = 'prismatic'
-            self.jlc.jnts[1]['loc_motionax'] = np.array([1, 0, 0])
-            self.jlc.jnts[1]['loc_pos'] = np.zeros(3)
-            self.jlc.jnts[1]['motion_rng'] = [-2.0, 15.0]
-            self.jlc.jnts[2]['type'] = 'prismatic'
-            self.jlc.jnts[2]['loc_motionax'] = np.array([0, 1, 0])
-            self.jlc.jnts[2]['loc_pos'] = np.zeros(3)
-            self.jlc.jnts[2]['motion_rng'] = [-2.0, 15.0]
-            self.jlc.jnts[3]['loc_motionax'] = np.array([0, 0, 1])
-            self.jlc.jnts[3]['loc_pos'] = np.zeros(3)
-            self.jlc.jnts[3]['motion_rng'] = [-math.radians(180), math.radians(180)]
-            self.jlc.reinitialize()
-
-        def fk(self, component_name='all', jnt_values=np.zeros(3)):
-            if component_name != 'all':
-                raise ValueError("Only support hnd_name == 'all'!")
-            self.jlc.fk(jnt_values)
-
-        def rand_conf(self, component_name='all'):
-            if component_name != 'all':
-                raise ValueError("Only support hnd_name == 'all'!")
-            return self.jlc.rand_conf()
-
-        def get_jntvalues(self, component_name='all'):
-            if component_name != 'all':
-                raise ValueError("Only support hnd_name == 'all'!")
-            return self.jlc.get_jnt_values()
-
-        def is_collided(self, obstacle_list=[], otherrobot_list=[]):
-            for (obpos, size) in obstacle_list:
-                dist = np.linalg.norm(np.asarray(obpos) - self.get_jntvalues()[:2])
-                if dist <= size / 2.0:
-                    return True  # collision
-            return False  # safe
+    import robot_sim.robots.xybot.xybot as xyb
 
 
     # ====Search Path with RRT====
@@ -337,7 +295,7 @@ if __name__ == '__main__':
         ((10, 5), 3)
     ]  # [x,y,size]
     # Set Initial parameters
-    robot_s = TWCARBOT()
+    robot_s = xyb.XYTBot()
     kds = Kinodynamics(time_interval=1)
     rrtkino_s = RRTConnectKinodynamic(robot_s, kds)
     path = rrtkino_s.plan(start_conf=np.array([0, 0, 0, 0, 0, 0]), goal_conf=np.array([6, 9, 0, 0, 0, 0]),

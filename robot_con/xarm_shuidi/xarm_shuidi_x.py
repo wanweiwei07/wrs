@@ -210,7 +210,7 @@ if __name__ == "__main__":
                 max_change = np.max(new_jnt_values-last_jnt_values)
                 print(max_change)
                 # rbt_s.fk(jnt_values=new_jnt_values)
-                # rbt_s.jaw_to(jawwidth=jawwidth)
+                # rbt_s.jaw_to(jaw_width=jaw_width)
                 # rbt_s.gen_meshmodel().attach_to(base)
                 # base.run()
             else:

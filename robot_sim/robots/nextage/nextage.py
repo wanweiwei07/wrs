@@ -394,7 +394,7 @@ class Nextage(ri.RobotInterface):
         """
         # if hnd_name == 'lft_hnd':
         #     rel_pos, rel_rotmat = self.lft_arm.cvt_gl_to_loc_tcp(objcm.get_pos(), objcm.get_rotmat())
-        #     intolist = [self.lft_body.lnks[0],
+        #     into_list = [self.lft_body.lnks[0],
         #                 self.lft_body.lnks[1],
         #                 self.lft_arm.lnks[1],
         #                 self.lft_arm.lnks[2],
@@ -409,10 +409,10 @@ class Nextage(ri.RobotInterface):
         #                 self.rgt_hnd.lft.lnks[0],
         #                 self.rgt_hnd.lft.lnks[1],
         #                 self.rgt_hnd.rgt.lnks[1]]
-        #     self.lft_oih_infos.append(self.cc.add_cdobj(objcm, rel_pos, rel_rotmat, intolist))
+        #     self.lft_oih_infos.append(self.cc.add_cdobj(objcm, rel_pos, rel_rotmat, into_list))
         # elif hnd_name == 'rgt_hnd':
         #     rel_pos, rel_rotmat = self.rgt_arm.cvt_gl_to_loc_tcp(objcm.get_pos(), objcm.get_rotmat())
-        #     intolist = [self.lft_body.lnks[0],
+        #     into_list = [self.lft_body.lnks[0],
         #                 self.lft_body.lnks[1],
         #                 self.rgt_arm.lnks[1],
         #                 self.rgt_arm.lnks[2],
@@ -427,11 +427,11 @@ class Nextage(ri.RobotInterface):
         #                 self.lft_hnd.lft.lnks[0],
         #                 self.lft_hnd.lft.lnks[1],
         #                 self.lft_hnd.rgt.lnks[1]]
-        #     self.rgt_oih_infos.append(self.cc.add_cdobj(objcm, rel_pos, rel_rotmat, intolist))
+        #     self.rgt_oih_infos.append(self.cc.add_cdobj(objcm, rel_pos, rel_rotmat, into_list))
         # else:
         #     raise ValueError("hnd_name must be lft_hnd or rgt_hnd!")
-        # if jawwidth is not None:
-        #     self.jaw_to(hnd_name, jawwidth)
+        # if jaw_width is not None:
+        #     self.jaw_to(hnd_name, jaw_width)
         # return rel_pos, rel_rotmat
 
     def get_loc_pose_from_hio(self, hio_pos, hio_rotmat, component_name='lft_arm'):

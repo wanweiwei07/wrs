@@ -44,7 +44,8 @@ class JLChain(object):
         self._homeconf = homeconf.astype('float64')
         # initialize joints and links
         self.lnks, self.jnts = self._init_jlchain()
-        self._tgtjnts = range(1, self.ndof + 1)
+        self._tgtjnts = list(range(1, self.ndof + 1))
+        self._jnt_ranges = self._get_jnt_ranges()
         self.goto_homeconf()
         # default tcp
         self.tcp_jnt_id = -1
@@ -126,7 +127,7 @@ class JLChain(object):
                                                                                self.jnts[id]['loc_pos'])
                 self.jnts[id]['gl_rotmat0'] = np.dot(self.jnts[pjid]['gl_rotmatq'], self.jnts[id]['loc_rotmat'])
             self.jnts[id]['gl_motionax'] = np.dot(self.jnts[id]['gl_rotmat0'], self.jnts[id]['loc_motionax'])
-            if self.jnts[id]['type'] == "end":
+            if self.jnts[id]['type'] == "end" or self.jnts[id]['type'] == "fixed":
                 self.jnts[id]['gl_rotmatq'] = self.jnts[id]['gl_rotmat0']
                 self.jnts[id]['gl_posq'] = self.jnts[id]['gl_pos0']
             elif self.jnts[id]['type'] == "revolute":
@@ -160,10 +161,30 @@ class JLChain(object):
     def tgtjnts(self):
         return self._tgtjnts
 
+    @property
+    def jnt_ranges(self):
+        return self._jnt_ranges
+
     @tgtjnts.setter
     def tgtjnts(self, values):
         self._tgtjnts = values
+        self._jnt_ranges = self._get_jnt_ranges()
         self._ikt = jlik.JLChainIK(self)
+
+    def _get_jnt_ranges(self):
+        """
+        get jntsrnage
+        :return: [[jnt0min, jnt0max], [jnt1min, jnt1max], ...]
+        date: 20180602, 20200704osaka
+        author: weiwei
+        """
+        if self.tgtjnts:
+            jnt_limits = []
+            for id in self.tgtjnts:
+                jnt_limits.append(self.jnts[id]['motion_rng'])
+            return np.asarray(jnt_limits)
+        else:
+            return np.empty((0, 2))
 
     def fix_to(self, pos, rotmat, jnt_values=None):
         # fix the connecting end of the jlchain to the given pos and rotmat
@@ -191,6 +212,7 @@ class JLChain(object):
         author: weiwei
         date: 20201126
         """
+        self._jnt_ranges = self._get_jnt_ranges()
         self.goto_homeconf()
         if cdprimitive_type is None:  # use previously set values if none
             cdprimitive_type = self.cdprimitive_type
@@ -222,17 +244,19 @@ class JLChain(object):
         """
         return self._ikt.get_gl_tcp(tcp_jnt_id, tcp_loc_pos, tcp_loc_rotmat)
 
-    def get_jnt_ranges(self):
+    def is_jnt_values_in_ranges(self, jnt_values):
         """
-        get jntsrnage
-        :return: [[jnt0min, jnt0max], [jnt1min, jnt1max], ...]
-        date: 20180602, 20200704osaka
+        check if the given jnt_values
+        :param jnt_values:
+        :return:
         author: weiwei
+        date: 20220326toyonaka
         """
-        jnt_limits = []
-        for id in self.tgtjnts:
-            jnt_limits.append([self.jnts[id]['motion_rng'][0], self.jnts[id]['motion_rng'][1]])
-        return jnt_limits
+        jnt_values = np.asarray(jnt_values)
+        if np.all(self.jnt_ranges[:, 0] <= jnt_values) and np.all(jnt_values <= self.jnt_ranges[:,1]):
+            return True
+        else:
+            return False
 
     def fk(self, jnt_values=None):
         """
