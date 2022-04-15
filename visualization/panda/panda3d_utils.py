@@ -32,7 +32,10 @@ def img_to_n_channel(img, channel=3):
     return np.stack((img,) * channel, axis=-1)
 
 
-def letterbox(img, new_shape=(640, 640), color=(114, 114, 114), auto=True, scaleFill=False, scaleup=True, stride=32):
+def letter_box(img, new_shape=(640, 640), color=(.45, .45, .45), auto=True, scale_fill=False, scale_up=True, stride=32):
+    """
+    This function is copied from YOLOv5 (https://github.com/ultralytics/yolov5)
+    """
     # Resize and pad image while meeting stride-multiple constraints
     shape = img.shape[:2]  # current shape [height, width]
     if isinstance(new_shape, int):
@@ -40,7 +43,7 @@ def letterbox(img, new_shape=(640, 640), color=(114, 114, 114), auto=True, scale
 
     # Scale ratio (new / old)
     r = min(new_shape[0] / shape[0], new_shape[1] / shape[1])
-    if not scaleup:  # only scale down, do not scale up (for better val mAP)
+    if not scale_up:  # only scale down, do not scale up (for better val mAP)
         r = min(r, 1.0)
 
     # Compute padding
@@ -49,7 +52,7 @@ def letterbox(img, new_shape=(640, 640), color=(114, 114, 114), auto=True, scale
     dw, dh = new_shape[1] - new_unpad[0], new_shape[0] - new_unpad[1]  # wh padding
     if auto:  # minimum rectangle
         dw, dh = np.mod(dw, stride), np.mod(dh, stride)  # wh padding
-    elif scaleFill:  # stretch
+    elif scale_fill:  # stretch
         dw, dh = 0.0, 0.0
         new_unpad = (new_shape[1], new_shape[0])
         ratio = new_shape[1] / shape[1], new_shape[0] / shape[0]  # width, height ratios
@@ -61,11 +64,12 @@ def letterbox(img, new_shape=(640, 640), color=(114, 114, 114), auto=True, scale
         img = cv2.resize(img, new_unpad, interpolation=cv2.INTER_LINEAR)
     top, bottom = int(round(dh - 0.1)), int(round(dh + 0.1))
     left, right = int(round(dw - 0.1)), int(round(dw + 0.1))
-    img = cv2.copyMakeBorder(img, top, bottom, left, right, cv2.BORDER_CONSTANT, value=color)  # add border
-    return img, ratio, (dw, dh)
+    img = cv2.copyMakeBorder(img, top, bottom, left, right, cv2.BORDER_CONSTANT,
+                             value=(color[0] * 255, color[0] * 255, color[0] * 255))  # add border
+    return img
 
 
-class ImgOnscreen():
+class ImgOnscreen(object):
     """
     Add a on screen image in the render 2d scene of Showbase
     """
@@ -92,7 +96,7 @@ class ImgOnscreen():
         """
         if img.shape[2] == 1:
             img = img_to_n_channel(img)
-        resized_img = letterbox(img, new_shape=[self._size[1], self._size[0]], auto=False)[0]
+        resized_img = letter_box(img, new_shape=[self._size[1], self._size[0]], auto=False)
         self.tx.setRamImage(resized_img.tostring())
 
     def remove(self):
@@ -107,7 +111,7 @@ class ImgOnscreen():
         self.remove()
 
 
-class ExtraWindow():
+class ExtraWindow(object):
     """
     Create a extra window on the scene
     TODO: small bug to fix: win.requestProperties does not change the properties of window immediately
@@ -186,6 +190,11 @@ class ExtraWindow():
 
         base.taskMgr.add(self._interaction_update, "interaction_extra_window", appendTask=True)
 
+    @property
+    def size(self):
+        size = self.win.getProperties().size
+        return np.array([size[0], size[1]])
+
     def getAspectRatio(self):
         return self._base.getAspectRatio(self.win)
 
@@ -211,11 +220,6 @@ class ExtraWindow():
         win_props.setOrigin(origin[0], origin[1])
         self.win.requestProperties(win_props)
 
-    @property
-    def size(self):
-        size = self.win.getProperties().size
-        return np.array([size[0], size[1]])
-
 
 if __name__ == "__main__":
     import modeling.geometric_model as gm
@@ -225,7 +229,7 @@ if __name__ == "__main__":
 
     # extra window 1
     ew = ExtraWindow(base, cam_pos=[2, 0, 1.5], lookat_pos=[0, 0, .2])
-    ew.set_origin((0,40))
+    ew.set_origin((0, 40))
     # ImgOnscreen()
     img = cv2.imread("img.png")
     on_screen_img = ImgOnscreen(img.shape[:2][::-1], parent_np=ew)
@@ -233,7 +237,7 @@ if __name__ == "__main__":
 
     # extra window 2
     ew2 = ExtraWindow(base, cam_pos=[2, 0, 1.5], lookat_pos=[0, 0, .2])
-    ew2.set_origin((0,ew.size[1]))
+    ew2.set_origin((0, ew.size[1]))
     gm.gen_frame(length=.2).objpdnp.reparentTo(ew2.render)
 
     base.run()
