@@ -3,7 +3,7 @@
 2. Rules for python
   
   - All variable names should be pythonic way.
-  - Class
   
+  - Class
     - `@property` descriptors should behind member functions
     
