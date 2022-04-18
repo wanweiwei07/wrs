@@ -13,7 +13,6 @@ SkeletonDataFrame = namedtuple("SkeletonDataFrame", ["frame_id", "time_stamp", "
 class CoordData(object):
     """
     Fundamental Data Structure
-
     Author: Chen Hao, chen960216@gmail.com
     Date: 20220415
     """
@@ -48,7 +47,6 @@ class CoordData(object):
 class MarkerData(CoordData):
     """
     Data Structure for Marker
-
     Author: Chen Hao, chen960216@gmail.com
     Date: 20220415
     """
@@ -57,24 +55,22 @@ class MarkerData(CoordData):
         """
         x, y ,z : 3D coordinate
         """
-
-        super(MarkerData, self).__init__(data=np.array([x / 1000, y / 1000, z / 1000]))
+        super().__init__(data=np.array([x, y, z]) / 1000.0)
 
 
 class RigidBodyData(CoordData):
     """
     Data Structure for Rigid Body
-
-    Author: Chen Hao, chen960216@gmail.com
-    Date: 20220415
+    Author: Chen Hao, chen960216@gmail.com, updated by weiwei
+    Date: 20220415, 20220418weiwei
     """
 
     def __init__(self, x, y, z, qx, qy, qz, qw, mean_error):
         """
-            x, y ,z : 3D coordinate
-            qx, qy, qz, qw: Quaternion
+        x, y ,z : 3D coordinate
+        qx, qy, qz, qw: Quaternion
         """
-        super(RigidBodyData, self).__init__(data=np.array([x / 1000, y / 1000, z / 1000, qx, qy, qz, qw]))
+        super().__init__(data=np.array([x / 1000, y / 1000, z / 1000, qw, qx, qy, qz]))
         self._markers = []
         self._mean_error = mean_error
 
@@ -113,7 +109,7 @@ class RigidBodyData(CoordData):
         return len(self._markers)
 
     def __repr__(self):
-        return f"Segment：Tx:{self.x:.2f} Ty:{self.y:.2f} Tz:{self.z:.2f} qx:{self.qx:.3f} qy:{self.qy:.3f} qz:{self.qz:.3f} qw:{self.qw:.3f}"
+        return f"Segment：Tx:{self.x:.2f} Ty:{self.y:.2f} Tz:{self.z:.2f} qw:{self.qw:.3f} qx:{self.qx:.3f} qy:{self.qy:.3f} qz:{self.qz:.3f}"
 
 
 class SkeletonData(object):
@@ -125,25 +121,25 @@ class SkeletonData(object):
     """
 
     def __init__(self):
-        self._rigidbodys = []
+        self._rigidbodies = []
 
     @property
     def rigidbodys(self):
-        return self._rigidbodys
+        return self._rigidbodies
 
     def add_rigidbody(self, body: RigidBodyData):
-        self._rigidbodys.append(body)
+        self._rigidbodies.append(body)
 
     def __len__(self):
-        return len(self._rigidbodys)
+        return len(self._rigidbodies)
 
     def __repr__(self):
         out = f""
         for i in range(len(self)):
             if i > 0:
                 out += "\n"
-            rigidbody = self._rigidbodys[i]
-            out += f"Segment：Tx:{rigidbody.x:.2f} Ty:{rigidbody.y:.2f} Tz:{rigidbody.z:.2f} qx:{rigidbody.qx:.3f} qy:{rigidbody.qy:.3f} qz:{rigidbody.qz:.3f} qw:{rigidbody.qw:.3f}"
+            rigidbody = self._rigidbodies[i]
+            out += f"Segment：Tx:{rigidbody.x:.2f} Ty:{rigidbody.y:.2f} Tz:{rigidbody.z:.2f} qw:{rigidbody.qw:.3f} qx:{rigidbody.qx:.3f} qy:{rigidbody.qy:.3f} qz:{rigidbody.qz:.3f}"
         return out
 
 
@@ -167,7 +163,7 @@ class DataBuffer(object):
             self._data.pop(0)
             self._data.append(data)
 
-    def get_newest_data(self):
+    def get_last(self):
         if len(self._data) > 0:
             return self._data[-1]
         else:
@@ -217,8 +213,8 @@ def to_skeleton_data(skeleton: nokovsdk.SkeletonData) -> SkeletonData:
 
 class NokovClient(object):
     """
-    Author: Chen Hao, chen960216@gmail.com
-    Date: 20220415
+    Author: Chen Hao, chen960216@gmail.com, updated by weiwei
+    Date: 20220415, 20220418weiwei
     TODO: check if it is possible to match the MarkerID in RigidBody with MarkSet
     """
 
@@ -228,48 +224,15 @@ class NokovClient(object):
         self._rigidbody_set_buffer = DataBuffer(data_buf_len)
         self._skeleton_set_buffer = DataBuffer(data_buf_len)
         self._other_marker_set_buffer = DataBuffer(data_buf_len)
-
         # frame infomation
-        self._cur_frm_no = 0
-        self._pre_frm_no = 0
-
+        self._cur_frame_no = 0
+        self._pre_frame_no = 0
         # looger info
         self._logger = logger
-
         # init nokov client
         self._server_ip = server_ip
         self._client = nokovsdk.PySDKClient()
         self._client.PySetVerbosityLevel(0)
-        self._run()
-
-    def _get_data_frame(self, buffer: DataBuffer):
-        ntry = 0
-        while ntry < 3:
-            data = buffer.get_newest_data()
-            if data is None:
-                return None
-            ntry += 1
-            if data.frame_id == self._cur_frm_no:
-                return data
-        return None
-
-    def get_rigidbody_frame(self) -> RigidBodyDataFrame:
-        """
-        Get the neweast rigid body frame
-        """
-        return self._get_data_frame(buffer=self._rigidbody_set_buffer)
-
-    def get_marker_set_frame(self) -> MarkerDataFrame:
-        return self._get_data_frame(buffer=self._marker_set_buffer)
-
-    def get_skeleton_set_frame(self):
-        return self._get_data_frame(buffer=self._skeleton_set_buffer)
-
-    def _run(self):
-        """
-        Run the client to get data
-        """
-        # self._client.PySetMessageCallback(py_msg_func)
         self._client.PySetDataCallback(self._read_data_func, None)
         print("Begin to init the SDK Client")
         ret = self._client.Initialize(bytes(self._server_ip, encoding="utf8"))
@@ -278,10 +241,22 @@ class NokovClient(object):
         else:
             print("Connect Failed: [%d]" % ret)
             exit(0)
-        # ret = self._client.PyWaitForForcePlateInit(5000)
-        # if (ret != 0):
-        #     print("Init ForcePlate Failed[%d]" % ret)
-        #     exit(0)
+
+    def _get_data_frame(self, buffer: DataBuffer):
+        data = buffer.get_last()
+        if data is None:
+            return None
+        else:
+            return data
+
+    def get_rigidbody_frame(self) -> RigidBodyDataFrame:
+        return self._get_data_frame(buffer=self._rigidbody_set_buffer)
+
+    def get_marker_set_frame(self) -> MarkerDataFrame:
+        return self._get_data_frame(buffer=self._marker_set_buffer)
+
+    def get_skeleton_set_frame(self) -> SkeletonDataFrame:
+        return self._get_data_frame(buffer=self._skeleton_set_buffer)
 
     def _read_data_func(self, pFrameOfMocapData, pUserData):
         # check frame data
@@ -289,26 +264,23 @@ class NokovClient(object):
             self._logger.debug("Not get the data frame.\n")
         else:
             frameData = pFrameOfMocapData.contents
-            self._cur_frm_no = frameData.iFrame
-            if self._cur_frm_no == self._pre_frm_no:
+            self._cur_frame_no = frameData.iFrame
+            if self._cur_frame_no == self._pre_frame_no:
                 self._logger.debug("Current frame is not equal to previous frame")
                 return
-            self._pre_frm_no = self._cur_frm_no
-
+            self._pre_frame_no = self._cur_frame_no
             # frame and time stamp infomation
             frame_id, time_stamp = frameData.iFrame, frameData.iTimeStamp
-
             # read marker set data
             marker_set_dict = {}
             for iMarkerSet in range(frameData.nMarkerSets):
                 marker_set = frameData.MocapData[iMarkerSet]
-                # show information in the marker_set
+                # uncomment to show information in the marker_set
                 # marker_set.show()
                 marker_set_dict[marker_set.szName] = [to_marker_data(marker_set.Markers[_]) for _ in
                                                       range(marker_set.nMarkers)]
             self._marker_set_buffer.append(
                 MarkerDataFrame(frame_id=frame_id, time_stamp=time_stamp, marker_set_dict=marker_set_dict))
-
             # read rigidbody data
             rigidbody_set_dict = {}
             for iBody in range(frameData.nRigidBodies):
@@ -318,7 +290,6 @@ class NokovClient(object):
                 rigidbody_set_dict[body.ID] = to_body_data(body)
             self._rigidbody_set_buffer.append(
                 RigidBodyDataFrame(frame_id=frame_id, time_stamp=time_stamp, rigidbody_set_dict=rigidbody_set_dict))
-
             # read skeleton data
             skeleton_set_dict = {}
             for iSkeleton in range(frameData.nSkeletons):
@@ -327,7 +298,6 @@ class NokovClient(object):
                 skeleton_set_dict[skeleton.skeletonID] = to_skeleton_data(skeleton)
             self._skeleton_set_buffer.append(
                 SkeletonDataFrame(frame_id=frame_id, time_stamp=time_stamp, skeleton_set_dict=skeleton_set_dict))
-
             # read other marker information
             other_marker_set_dict = {}
             for i in range(frameData.nOtherMarkers):
