@@ -2,8 +2,9 @@
 
 2. Rules for python
   
-  - All variable names should be pythonic way.
+    - All variable names should be pythonic way.
   
-  - Class
-    - `@property` descriptors should behind member functions
+    - Class
+    
+        - `@property` descriptors should behind member functions
     
