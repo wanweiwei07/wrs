@@ -47,7 +47,6 @@ class CoordData(object):
 class MarkerData(CoordData):
     """
     Data Structure for Marker
-
     Author: Chen Hao, chen960216@gmail.com
     Date: 20220415
     """
@@ -56,7 +55,6 @@ class MarkerData(CoordData):
         """
         x, y ,z : 3D coordinate
         """
-
         super().__init__(data=np.array([x, y, z]) / 1000.0)
 
 
@@ -250,15 +248,6 @@ class NokovClient(object):
             return None
         else:
             return data
-        # ntry = 0
-        # while ntry < 3:
-        #     data = buffer.get_last()
-        #     if data is None:
-        #         return None
-        #     ntry += 1
-        #     if data.frame_id == self._cur_frame_no:
-        #         return data
-        # return None
 
     def get_rigidbody_frame(self) -> RigidBodyDataFrame:
         return self._get_data_frame(buffer=self._rigidbody_set_buffer)
