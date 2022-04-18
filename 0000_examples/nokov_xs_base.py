@@ -26,7 +26,7 @@ if __name__ == '__main__':
 
 
     def update(rbtmnp, robot_1, robot_2, nokov_client: NokovClient, armname, task):
-        rigidbody_dataframe = nokov_client.get_rigidbody_frame()
+        rigidbody_dataframe = nokov_client.get_rigidbody_set_frame()
         if rigidbody_dataframe is not None:
             if rbtmnp[0] is not None:
                 rbtmnp[0].detach()
@@ -34,10 +34,10 @@ if __name__ == '__main__':
                 rbtmnp[1].detach()
             # robot 1
             rigidbodydata = rigidbody_dataframe.rigidbody_set_dict[1]
-            rob_rotmat = rm.quaternion_matrix(rigidbodydata.quat)[:3, :3]
+            rob_rotmat = rigidbodydata.get_rotmat()
             offset = np.array([0.16, 0.088, -0.461862])
             # gm.gen_frame(pos=rigidbodydata.coord, rotmat=rob_rotmat, length=1).attach_to(base)
-            xyz_pose = rigidbodydata.coord + np.dot(rob_rotmat, offset)
+            xyz_pose = rigidbodydata.get_pos() + np.dot(rob_rotmat, offset)
             pose = np.zeros(3)
             pose[:2] = xyz_pose[:2]
             theta = rm.quaternion_to_euler(rigidbodydata.quat)[2] - np.pi
@@ -45,12 +45,13 @@ if __name__ == '__main__':
             robot_1.fk(armname, pose)
             rbtmnp[0] = robot_1.gen_meshmodel(toggle_tcpcs=True)
             rbtmnp[0].attach_to(base)
+            rigidbodydata.gen_mesh_model().attach_to(base)
             # robot 2
             rigidbodydata = rigidbody_dataframe.rigidbody_set_dict[2]
-            rob_rotmat = rm.quaternion_matrix(rigidbodydata.quat)[:3, :3]
+            rob_rotmat = rigidbodydata.get_rotmat()
             offset = np.array([0.12, 0.108, -0.461862])
             # gm.gen_frame(pos=rigidbodydata.coord, rotmat=rob_rotmat, length=1).attach_to(base)
-            xyz_pose = rigidbodydata.coord + np.dot(rob_rotmat, offset)
+            xyz_pose = rigidbodydata.get_pos() + np.dot(rob_rotmat, offset)
             pose = np.zeros(3)
             pose[:2] = xyz_pose[:2]
             theta = rm.quaternion_to_euler(rigidbodydata.quat)[2] - np.pi
