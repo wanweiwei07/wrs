@@ -58,18 +58,18 @@ class CobottaRIPPS(ri.RobotInterface):
         self.cc.add_cdlnks(self.arm, [0, 1, 2, 3, 4, 5, 6])
         self.cc.add_cdlnks(self.hnd.jlc, [0, 1, 2, 4, 5, 7])
         active_list = [self.arm.lnks[0],
-                      self.arm.lnks[1],
-                      self.arm.lnks[2],
-                      self.arm.lnks[3],
-                      self.arm.lnks[4],
-                      self.arm.lnks[5],
-                      self.arm.lnks[6],
-                      self.hnd.jlc.lnks[0],
-                      self.hnd.jlc.lnks[1],
-                      self.hnd.jlc.lnks[2],
-                      self.hnd.jlc.lnks[4],
-                      self.hnd.jlc.lnks[5],
-                      self.hnd.jlc.lnks[7]]
+                       self.arm.lnks[1],
+                       self.arm.lnks[2],
+                       self.arm.lnks[3],
+                       self.arm.lnks[4],
+                       self.arm.lnks[5],
+                       self.arm.lnks[6],
+                       self.hnd.jlc.lnks[0],
+                       self.hnd.jlc.lnks[1],
+                       self.hnd.jlc.lnks[2],
+                       self.hnd.jlc.lnks[4],
+                       self.hnd.jlc.lnks[5],
+                       self.hnd.jlc.lnks[7]]
         self.cc.set_active_cdlnks(active_list)
         from_list = [self.base_plate.lnks[0],
                      self.arm.lnks[0],
@@ -148,7 +148,7 @@ class CobottaRIPPS(ri.RobotInterface):
         else:
             raise NotImplementedError
 
-    def jaw_to(self, hnd_name='hnd_s', jaw_width=0.0):
+    def jaw_to(self, hnd_name: str = 'hnd', jaw_width: float = 0.0):
         self.hnd.jaw_to(jaw_width)
 
     def hold(self, hnd_name, objcm, jaw_width=None):

@@ -32,7 +32,8 @@ class CobottaPipette(gp.GripperInterface):
         self.jlc.jnts[7]['type'] = 'prismatic'
         self.jlc.jnts[7]['loc_motionax'] = np.array([0, 1, 0])
         self.jlc.jnts[8]['loc_pos'] = np.array([0, .0, .0])
-        self.jlc.jnts[8]['type'] = 'fixed'
+        self.jlc.jnts[8]['type'] = 'prismatic'
+        self.jlc.jnts[8]['loc_motionax'] = np.array([0, 1, 0])
         self.jlc.lnks[0]['name'] = "base"
         self.jlc.lnks[0]['loc_pos'] = np.zeros(3)
         self.jlc.lnks[0]['mesh_file'] = os.path.join(this_dir, "meshes", "pipette_hand_body.stl")
@@ -103,9 +104,13 @@ class CobottaPipette(gp.GripperInterface):
         self.rotmat = rotmat
         if jaw_width is not None:
             side_jawwidth = jaw_width / 2.0
-            if 0 <= side_jawwidth <= .015:
+            if self.jawwidth_rng[1] < jaw_width or jaw_width < self.jawwidth_rng[0]:
                 self.jlc.jnts[5]['motion_val'] = side_jawwidth
-                self.jlc.jnts[6]['motion_val'] = -jaw_width
+                self.jlc.jnts[7]['motion_val'] = -jaw_width
+                if side_jawwidth <= .007:
+                    self.jlc.jnts[8]['motion_val'] = .0
+                else:
+                    self.jlc.jnts[8]['motion_val'] = (jaw_width-.014)/2
             else:
                 raise ValueError("The angle parameter is out of range!")
         self.coupling.fix_to(self.pos, self.rotmat)
@@ -114,11 +119,16 @@ class CobottaPipette(gp.GripperInterface):
         self.jlc.fix_to(cpl_end_pos, cpl_end_rotmat)
 
     def jaw_to(self, jaw_width):
+        print(jaw_width)
         if self.jawwidth_rng[1] < jaw_width or jaw_width < self.jawwidth_rng[0]:
             raise ValueError("The jaw_width parameter is out of range!")
         side_jawwidth = jaw_width / 2.0
         self.jlc.jnts[5]['motion_val'] = side_jawwidth
         self.jlc.jnts[7]['motion_val'] = -jaw_width
+        if side_jawwidth <= .007:
+            self.jlc.jnts[8]['motion_val'] = .0
+        else:
+            self.jlc.jnts[8]['motion_val'] = (jaw_width-.014)/2
         self.jlc.fk()
 
     def get_jawwidth(self):

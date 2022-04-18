@@ -86,7 +86,7 @@ if __name__ == '__main__':
     id_x = 6
     id_y = 3
     tip_pos, tip_rotmat = tip_rack.get_rack_hole_pose(id_x=id_x, id_y=id_y)
-    z_offset = np.array([0, 0, .03])
+    z_offset = np.array([0, 0, .02])
     base.change_campos_and_lookat_pos(cam_pos=[.3, .0, .12], lookat_pos=tip_pos+z_offset)
     spiral_points = rm.gen_3d_equilateral_verts(pos=tip_pos+z_offset, rotmat=tip_rotmat)
     print(spiral_points)
@@ -96,4 +96,16 @@ if __name__ == '__main__':
         if pre_point is not None:
             gm.gen_stick(pre_point, point, thickness=.00012).attach_to(base)
         pre_point = point
+
+    goal_joint_values_attachment = utils.search_reachable_configuration(rbt_s=rbt_s,
+                                                                        ee_s=ee_s,
+                                                                        component_name=component_name,
+                                                                        tgt_pos=spiral_points[29],
+                                                                        cone_axis=-tip_rotmat[:3, 2],
+                                                                        rotation_interval=np.radians(15),
+                                                                        obstacle_list=[frame_bottom])
+    if goal_joint_values_attachment is not None:
+        rbt_s.fk(component_name=component_name, jnt_values=goal_joint_values_attachment)
+        rbt_s.gen_meshmodel(rgba=[1,1,1,.9]).attach_to(base)
+
     base.run()

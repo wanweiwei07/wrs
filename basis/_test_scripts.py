@@ -137,7 +137,7 @@ if __name__ == "__main__":
     print(toc1 - tic)
     tic = time.time()
     for i in range(200):
-        xy_list = gen_2d_equilateral_verts(5, 1)
+        xy_list = gen_2d_isosceles_verts(5, 1,12)
     toc1 = time.time()
     print(toc1 - tic)
     # for i in range(200):
@@ -145,6 +145,9 @@ if __name__ == "__main__":
     # toc1 = time.time()
     # print(toc1 - tic)
 
+    fig = plot.figure()
+    ax = fig.add_subplot(111)
+    ax.set_aspect('equal', 'box')
 
     plot.plot(xy_list[:,0], xy_list[:,1], "o-")
     # plot.plot(x_list[:], y_list[:], "o-")
