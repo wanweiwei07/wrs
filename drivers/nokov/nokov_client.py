@@ -1,93 +1,63 @@
 import logging
+import ctypes
 from collections import deque, namedtuple
-from typing import List
 
 import numpy as np
 import nokov.nokovsdk as nokovsdk
+
+import basis.robot_math as rm
+import modeling.geometric_model as gm
+import modeling.model_collection as mc
 
 MarkerDataFrame = namedtuple("MarkerDataFrame", ["frame_id", "time_stamp", "marker_set_dict"])
 RigidBodyDataFrame = namedtuple("RigidBodyDataFrame", ["frame_id", "time_stamp", "rigidbody_set_dict"])
 SkeletonDataFrame = namedtuple("SkeletonDataFrame", ["frame_id", "time_stamp", "skeleton_set_dict"])
 
 
-class CoordData(object):
-    """
-    Fundamental Data Structure
-    Author: Chen Hao, chen960216@gmail.com
-    Date: 20220415
-    """
-
-    def __init__(self, data: np.ndarray):
-        self._data = data
-
-    @property
-    def x(self):
-        if len(self._data) >= 1:
-            return self._data[0]
-
-    @property
-    def y(self):
-        if len(self._data) >= 2:
-            return self._data[1]
-
-    @property
-    def z(self):
-        if len(self._data) >= 3:
-            return self._data[2]
-
-    @property
-    def coord(self):
-        if len(self._data) >= 3:
-            return self._data[:3]
-
-    def __repr__(self):
-        return f"Marker：X:{self.x:.2f} Y:{self.y:.2f} Z:{self.z:.2f}"
-
-
-class MarkerData(CoordData):
-    """
-    Data Structure for Marker
-    Author: Chen Hao, chen960216@gmail.com
-    Date: 20220415
-    """
-
-    def __init__(self, x, y, z):
-        """
-        x, y ,z : 3D coordinate
-        """
-        super().__init__(data=np.array([x, y, z]) / 1000.0)
-
-
-class RigidBodyData(CoordData):
+class RigidBodyData(object):
     """
     Data Structure for Rigid Body
     Author: Chen Hao, chen960216@gmail.com, updated by weiwei
     Date: 20220415, 20220418weiwei
     """
 
-    def __init__(self, x, y, z, qx, qy, qz, qw, mean_error):
+    def __init__(self, x, y, z, qx, qy, qz, qw, mean_error, parent_id=0):
         """
-        x, y ,z : 3D coordinate
+        x, y ,z : 3D coordinate in meter
         qx, qy, qz, qw: Quaternion
+        parent_id : the Parent index, 0 for global
         """
-        super().__init__(data=np.array([x / 1000, y / 1000, z / 1000, qw, qx, qy, qz]))
-        self._markers = []
+        self._data = np.array([x, y, z, qw, qx, qy, qz])
+        self._markers = np.array([])
         self._mean_error = mean_error
+        self._parent_id = parent_id
 
     @property
-    def qx(self):
-        return self._data[3]
+    def x(self):
+        return self._data[0]
 
     @property
-    def qy(self):
-        return self._data[4]
+    def y(self):
+        return self._data[1]
 
     @property
-    def qz(self):
-        return self._data[5]
+    def z(self):
+        return self._data[2]
 
     @property
     def qw(self):
+        return self._data[3]
+
+    @property
+    def qx(self):
+        return self._data[4]
+
+    @property
+    def qy(self):
+        return self._data[5]
+
+    @property
+    def qz(self):
         return self._data[6]
 
     @property
@@ -96,14 +66,34 @@ class RigidBodyData(CoordData):
 
     @property
     def markers(self):
-        return self.markers
+        return self._markers
 
     @property
     def mean_error(self):
         return self._mean_error
 
-    def add_marker(self, marker: MarkerData):
-        self._markers.append(marker)
+    def get_homomat(self):
+        homomat = rm.quaternion_matrix(self.quat)
+        homomat[:3, 3] = self.get_pos()
+        return homomat
+
+    def get_pos(self):
+        return np.array([self.x, self.y, self.z])
+
+    def get_rotmat(self):
+        return self.get_homomat()[:3, :3]
+
+    def set_markers(self, markers: np.ndarray):
+        self._markers = markers
+
+    def gen_mesh_model(self, radius=.005, rgba=np.array([1, 0, 0, 1])) -> mc.ModelCollection:
+        """
+        Plot markers for rigid body
+        """
+        markers_mc = mc.ModelCollection()
+        for i in range(len(self)):
+            gm.gen_sphere(self.markers[i], radius=radius, rgba=rgba).attach_to(markers_mc)
+        return markers_mc
 
     def __len__(self):
         return len(self._markers)
@@ -146,7 +136,6 @@ class SkeletonData(object):
 class DataBuffer(object):
     """
     Data Buffer
-    TODO: Use deque to replace the list
 
     Author: Chen Hao, chen960216@gmail.com
     Date: 20220415
@@ -173,13 +162,17 @@ class DataBuffer(object):
         self._data = []
 
 
-def to_marker_data(marker) -> MarkerData:
+def markers_to_np(markers, n_markers) -> np.ndarray:
     """
     Author: Chen Hao, chen960216@gmail.com
     Date: 20220415
-    Convert Raw Marker Data from Nokov Client to MarkerData
+    Convert Raw Marker Data from Nokov Client to numpy array. Each row represents one marker's position
+    https://stackoverflow.com/questions/4355524/getting-data-from-ctypes-array-into-numpy
     """
-    return MarkerData(x=marker[0], y=marker[1], z=marker[2])
+    marker_set_markers_pntr = ctypes.cast(markers, ctypes.POINTER(ctypes.c_float * 3))
+    marker_set_markers_np = np.ctypeslib.as_array(marker_set_markers_pntr,
+                                                  shape=(n_markers,)).copy() / 1000
+    return marker_set_markers_np
 
 
 def to_body_data(body: nokovsdk.RigidBodyData) -> RigidBodyData:
@@ -188,15 +181,15 @@ def to_body_data(body: nokovsdk.RigidBodyData) -> RigidBodyData:
     Date: 20220415
     Convert Raw RigidBody Data from Nokov Client to RigidBodyData
     """
-    rigid_body_data = RigidBodyData(x=body.x,
-                                    y=body.y,
-                                    z=body.z,
+    rigid_body_data = RigidBodyData(x=body.x / 1000,
+                                    y=body.y / 1000,
+                                    z=body.z / 1000,
                                     qx=body.qx,
                                     qy=body.qy,
                                     qz=body.qz,
                                     qw=body.qw,
                                     mean_error=body.MeanError)
-    [rigid_body_data.add_marker(marker=to_marker_data(body.Markers[_])) for _ in range(body.nMarkers)]
+    rigid_body_data.set_markers(markers_to_np(body.Markers, body.nMarkers))
     return rigid_body_data
 
 
@@ -215,7 +208,8 @@ class NokovClient(object):
     """
     Author: Chen Hao, chen960216@gmail.com, updated by weiwei
     Date: 20220415, 20220418weiwei
-    TODO: check if it is possible to match the MarkerID in RigidBody with MarkSet
+    * When the rigid body is added (by Add/Remove) to the scene, it will always be shown in the retrieved data,
+      even it is not in the scene.
     """
 
     def __init__(self, server_ip='10.1.1.198', data_buf_len=100, logger=logging.getLogger(__name__)):
@@ -242,6 +236,12 @@ class NokovClient(object):
             print("Connect Failed: [%d]" % ret)
             exit(0)
 
+        # get data description
+        ph_data_description = ctypes.POINTER(nokovsdk.DataDescriptions)()
+        self._client.PyGetDataDescriptions(ph_data_description)
+        data_description = ph_data_description.contents
+        self.rigidbody_relations, self.skeleton_relations = self._parse_data(data_description)
+
     def _get_data_frame(self, buffer: DataBuffer):
         data = buffer.get_last()
         if data is None:
@@ -249,7 +249,7 @@ class NokovClient(object):
         else:
             return data
 
-    def get_rigidbody_frame(self) -> RigidBodyDataFrame:
+    def get_rigidbody_set_frame(self) -> RigidBodyDataFrame:
         return self._get_data_frame(buffer=self._rigidbody_set_buffer)
 
     def get_marker_set_frame(self) -> MarkerDataFrame:
@@ -277,8 +277,9 @@ class NokovClient(object):
                 marker_set = frameData.MocapData[iMarkerSet]
                 # uncomment to show information in the marker_set
                 # marker_set.show()
-                marker_set_dict[marker_set.szName] = [to_marker_data(marker_set.Markers[_]) for _ in
-                                                      range(marker_set.nMarkers)]
+                marker_set_dict[marker_set.szName] = markers_to_np(marker_set.Markers, marker_set.nMarkers)
+            # read other marker information
+            marker_set_dict["others"] = markers_to_np(frameData.OtherMarkers, frameData.nOtherMarkers)
             self._marker_set_buffer.append(
                 MarkerDataFrame(frame_id=frame_id, time_stamp=time_stamp, marker_set_dict=marker_set_dict))
             # read rigidbody data
@@ -298,18 +299,30 @@ class NokovClient(object):
                 skeleton_set_dict[skeleton.skeletonID] = to_skeleton_data(skeleton)
             self._skeleton_set_buffer.append(
                 SkeletonDataFrame(frame_id=frame_id, time_stamp=time_stamp, skeleton_set_dict=skeleton_set_dict))
-            # read other marker information
-            other_marker_set_dict = {}
-            for i in range(frameData.nOtherMarkers):
-                other_marker_set_dict[i] = to_marker_data(frameData.OtherMarkers[i])
-            self._other_marker_set_buffer.append(
-                MarkerDataFrame(frame_id=frame_id, time_stamp=time_stamp, marker_set_dict=other_marker_set_dict))
+
+    def _parse_data(self, data_description):
+        rigidbody_relations = {}
+        skeleton_relations = {}
+        for i in range(data_description.nDataDescriptions):
+            print(data_description.arrDataDescriptions[i].dump_dict()['type'])
+            data = data_description.arrDataDescriptions[i].dump_dict()['Data']
+            rigidbody_description = data.RigidBodyDescription.contents.dump_dict()
+            skeleton_description = data.SkeletonDescription.contents.dump_dict()
+            rigidbody_relations[rigidbody_description['szName']] = {'ID': rigidbody_description['ID'],
+                                                                    'parentID': rigidbody_description['parentID'],
+                                                                    'offsetx': rigidbody_description['offsetx'],
+                                                                    'offsety': rigidbody_description['offsety'],
+                                                                    'offsetz': rigidbody_description['offsetz']}
+            skeleton_relations[skeleton_description['szName']] = {'RigidBodies': skeleton_description['RigidBodies'],
+                                                                  'nRigidBodies': skeleton_description['nRigidBodies'],
+                                                                  'skeletonID': skeleton_description['skeletonID']}
+        return rigidbody_relations, skeleton_relations
 
 
 if __name__ == "__main__":
     # 160,
     server = NokovClient()
     while True:
-        data = server.get_rigidbody_frame()
+        data = server.get_rigidbody_set_frame()
         if data is not None:
             print(data)
