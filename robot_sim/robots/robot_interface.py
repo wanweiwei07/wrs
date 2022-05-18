@@ -68,11 +68,25 @@ class RobotInterface(object):
                                                         local_minima=local_minima,
                                                         toggle_debug=toggle_debug)
 
-    def manipulability(self, component_name='arm'):
-        return self.manipulator_dict[component_name].manipulability()
+    def manipulability(self,
+                       tcp_jnt_id=None,
+                       tcp_loc_pos=None,
+                       tcp_loc_rotmat=None,
+                       component_name='arm'):
+        return self.manipulator_dict[component_name].manipulability(tcp_jnt_id=tcp_jnt_id,
+                                                                    tcp_loc_pos=tcp_loc_pos,
+                                                                    tcp_loc_rotmat=tcp_loc_rotmat)
 
-    def manipulability_axmat(self, component_name='arm', type="translational"):
-        return self.manipulator_dict[component_name].manipulability_axmat(type=type)
+    def manipulability_axmat(self,
+                             tcp_jnt_id=None,
+                             tcp_loc_pos=None,
+                             tcp_loc_rotmat=None,
+                             component_name='arm',
+                             type="translational"):
+        return self.manipulator_dict[component_name].manipulability_axmat(tcp_jnt_id=tcp_jnt_id,
+                                                                          tcp_loc_pos=tcp_tloc_pos,
+                                                                          tcp_loc_rotmat=tcp_loc_rotma,
+                                                                          type=type)
 
     def jacobian(self,
                  component_name='arm',

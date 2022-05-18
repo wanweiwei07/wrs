@@ -253,7 +253,7 @@ class JLChain(object):
         date: 20220326toyonaka
         """
         jnt_values = np.asarray(jnt_values)
-        if np.all(self.jnt_ranges[:, 0] <= jnt_values) and np.all(jnt_values <= self.jnt_ranges[:,1]):
+        if np.all(self.jnt_ranges[:, 0] <= jnt_values) and np.all(jnt_values <= self.jnt_ranges[:, 1]):
             return True
         else:
             return False
@@ -371,8 +371,15 @@ class JLChain(object):
                                         tcp_loc_pos=tcp_loc_pos,
                                         tcp_loc_rotmat=tcp_loc_rotmat)
 
-    def manipulability_axmat(self, type="translational"):
-        return self._ikt.manipulability_axmat(type=type)
+    def manipulability_axmat(self,
+                             tcp_jnt_id,
+                             tcp_loc_pos,
+                             tcp_loc_rotmat,
+                             type="translational"):
+        return self._ikt.manipulability_axmat(tcp_jnt_id=tcp_jnt_id,
+                                              tcp_loc_pos=tcp_loc_pos,
+                                              tcp_loc_rotmat=tcp_loc_rotmat,
+                                              type=type)
 
     def jacobian(self,
                  tcp_jnt_id,
