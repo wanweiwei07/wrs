@@ -30,7 +30,7 @@ class UR5EConveyorBelt(ri.RobotInterface):
             userdefined_cdprimitive_fn=self._base_combined_cdnp)
         self.base_stand.lnks[0]['rgba'] = [.35, .35, .35, 1]
         self.base_stand.lnks[1]['mesh_file'] = os.path.join(this_dir, "meshes", "conveyor.stl")
-        self.base_stand.lnks[1]['rgba'] = [.35, .55, .35, 1]
+        self.base_stand.lnks[1]['rgba'] = [.35, .45, .35, 1]
         self.base_stand.lnks[2]['mesh_file'] = os.path.join(this_dir, "meshes", "camera_stand.stl")
         self.base_stand.lnks[2]['rgba'] = [.55, .55, .55, 1]
         self.base_stand.lnks[3]['mesh_file'] = os.path.join(this_dir, "meshes", "cameras.stl")

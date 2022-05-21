@@ -86,7 +86,7 @@ class XArmShuidiX(object):
         self._arm_x.set_gripper_position(position, wait=True)
         return
 
-    def arm_get_jawwidth(self):
+    def arm_get_jaw_width(self):
         code, position = self._arm_x.get_gripper_position()
         if code != 0:
             raise Exception(f"The returned code of get_gripper_position is wrong! Code: {code}")
@@ -112,7 +112,7 @@ if __name__ == "__main__":
     rbt_x = XArmShuidiX(ip="10.2.0.203")
     jnt_values = rbt_x.arm_get_jnt_values()
     print(jnt_values)
-    jawwidth = rbt_x.arm_get_jawwidth()
+    jawwidth = rbt_x.arm_get_jaw_width()
     rbt_s.fk(jnt_values=jnt_values)
     rbt_s.jaw_to(jawwidth=jawwidth)
     rbt_s.gen_meshmodel().attach_to(base)

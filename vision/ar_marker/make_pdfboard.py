@@ -12,7 +12,7 @@ def make_aruco_board(nrow,
                      marker_size=25,
                      savepath='./',
                      name='test',
-                     frame_size=None,
+                     frame_size=(100,100),
                      paper_width=210,
                      paper_height=297,
                      dpi=600):
@@ -371,6 +371,9 @@ if __name__ == '__main__':
     # makecharucoboard(7,5, square_size=40)
     # makechessboard(7,5, square_size=40)
     # makearucoboard(2,2, marker_size=80)
-    # make_aruco_board(1, 1, marker_dict=aruco.DICT_4X4_250, start_id=1, marker_size=45, frame_size=[60, 60])
-    make_dual_marker(marker_dict=aruco.DICT_4X4_250, marker_size=45, dpi=600)
+    make_aruco_board(1, 1, marker_dict=aruco.DICT_4X4_250, start_id=1, marker_size=45, frame_size=[60, 60])
+    # print(type(aruco.Dictionary_get(aruco.DICT_4X4_250)))
+    # result = aruco.drawMarker(dictionary=aruco.Dictionary_get(aruco.DICT_4X4_250), id=0, sidePixels=45)
+    # print(type(result))
+    # make_dual_marker(marker_dict=aruco.DICT_4X4_250, marker_size=45, dpi=600)
     # makechessboard(1, 1, square_size=35, frame_size = [100,150])

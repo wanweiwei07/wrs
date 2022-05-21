@@ -12,7 +12,7 @@ import robot_sim.robots.robot_interface as ri
 
 class XArmShuidi(ri.RobotInterface):
 
-    def __init__(self, pos=np.zeros(3), rotmat=np.eye(3), name="xarm7_yunji_mobile", enable_cc=True):
+    def __init__(self, pos=np.zeros(3), rotmat=np.eye(3), name="xarm7_shuidi_mobile", enable_cc=True):
         super().__init__(pos=pos, rotmat=rotmat, name=name)
         this_dir, this_filename = os.path.split(__file__)
         # agv
@@ -421,23 +421,23 @@ if __name__ == '__main__':
                          max_niter=10000)
     print(jnt_values2)
     xav.fk(component_name='arm', jnt_values=jnt_values)
-    # xav.fk(component_name='agv', jnt_values=np.array([.2, -.5, math.radians(30)]))
+    # xss.fk(component_name='agv', jnt_values=np.array([.2, -.5, math.radians(30)]))
     xav_meshmodel = xav.gen_meshmodel(toggle_tcpcs=True)
     xav_meshmodel.attach_to(base)
-    # xav.show_cdprimit()
+    # xss.show_cdprimit()
     xav.gen_stickmodel().attach_to(base)
     tic = time.time()
     result = xav.is_collided()
     toc = time.time()
     print(result, toc - tic)
 
-    # xav_cpy = xav.copy()
+    # xav_cpy = xss.copy()
     # xav_cpy.move_to(pos=np.array([.5,.5,0]),rotmat=rm.rotmat_from_axangle([0,0,1],-math.pi/3))
     # xav_meshmodel = xav_cpy.gen_meshmodel()
     # xav_meshmodel.attach_to(base)
     # xav_cpy.show_cdprimit()
     # tic = time.time()
-    # result = xav_cpy.is_collided(otherrobot_list=[xav])
+    # result = xav_cpy.is_collided(otherrobot_list=[xss])
     # toc = time.time()
     # print(result, toc - tic)
     base.run()

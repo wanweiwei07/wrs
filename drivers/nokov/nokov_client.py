@@ -105,7 +105,6 @@ class RigidBodyData(object):
 class SkeletonData(object):
     """
     Data Structure for Skeleton
-
     Author: Chen Hao, chen960216@gmail.com
     Date: 20220415
     """

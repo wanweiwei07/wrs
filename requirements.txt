@@ -12,5 +12,6 @@ shapely>=1.7.1 # required by ?
 networkx>=2.5.1 # vital
 pyserial>=3.4 # required by xarm controllers
 pandas>=1.3.4 # required for neuro ik
+matplotlib>=3.3 # 2D graph
 # cython>=0.29.27 # required for speeding up
 # gimpact # optional mesh-level collision detection

@@ -2,7 +2,6 @@ import json
 import socket
 import time
 
-
 class ShuidiX(object):
     """
     Wrapper for controlling Yunjin Shuidi2 robot_s using Shuidi's string API
@@ -10,7 +9,6 @@ class ShuidiX(object):
     author: hao, revised by weiwei
     date: 20210329
     """
-
     def __init__(self, ip="192.168.10.10", port="31001"):
         """
         :param ip:

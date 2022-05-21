@@ -5,18 +5,16 @@ import numpy as np
 import basis.robot_math as rm
 import visualization.panda.world as wd
 import robot_sim.robots.xarm_shuidi.xarm_shuidi as rbs
-import robot_con.xarm_shuidi_grpc.xarm_shuidi_client as rbx
+import robot_con.xarm_shuidi.xarm_shuidi_x as rbx
 
 base = wd.World(cam_pos=[3, 1, 1.5], lookat_pos=[0, 0, 0.7])
 rbt_s = rbs.XArmShuidi()
-rbt_x = rbx.XArmShuidiClient(host="10.2.0.203:18300")
+rbt_x = rbx.XArmShuidiX(ip="10.2.0.203")
 jnt_values = rbt_x.arm_get_jnt_values()
-jawwidth = rbt_x.arm_get_jawwidth()
+jawwidth = rbt_x.arm_get_jaw_width()
 rbt_s.fk(jnt_values=jnt_values)
 rbt_s.jaw_to(jawwidth=jawwidth)
 rbt_s.gen_meshmodel().attach_to(base)
-# base.run()
-# rbt_x.agv_move(agv_linear_speed=-.1, agv_angular_speed=.1, time_intervals=5)
 agv_linear_speed = .2
 agv_angular_speed = .5
 arm_linear_speed = .03
@@ -101,4 +99,4 @@ while True:
         rbt_s.fk(jnt_values=new_jnt_values)
         toc = time.time()
         start_frame_id = math.ceil((toc - tic) / .01)
-        rbt_x.arm_move_jspace_path([last_jnt_values, new_jnt_values], time_interval=.1, start_frame_id=start_frame_id)
+        rbt_x.arm_move_jspace_path([last_jnt_values, new_jnt_values], start_frame_id=start_frame_id)

@@ -10,6 +10,7 @@ if __name__ == '__main__':
                                    cdprimit_type="box",
                                    cdmesh_type="triangles")
     object_ref.set_rgba([.9, .75, .35, 1])
+
     # object1
     object1 = object_ref.copy()
     object1.set_pos(np.array([0, -.07, 0]))

@@ -230,29 +230,46 @@ class CobottaRIPPS(ri.RobotInterface):
                       toggle_tcpcs=False,
                       toggle_jntscs=False,
                       rgba=None,
-                      name='xarm_shuidi_mobile_meshmodel'):
+                      name='xarm_shuidi_mobile_meshmodel',
+                      option='full'):
+        """
+
+        :param tcp_jnt_id:
+        :param tcp_loc_pos:
+        :param tcp_loc_rotmat:
+        :param toggle_tcpcs:
+        :param toggle_jntscs:
+        :param rgba:
+        :param name:
+        :param option: 'full', 'hand_only', 'body_only'
+        :return:
+        """
         meshmodel = mc.ModelCollection(name=name)
-        self.base_plate.gen_meshmodel(tcp_jnt_id=tcp_jnt_id,
-                                      tcp_loc_pos=tcp_loc_pos,
-                                      tcp_loc_rotmat=tcp_loc_rotmat,
-                                      toggle_tcpcs=False,
-                                      toggle_jntscs=toggle_jntscs).attach_to(meshmodel)
-        self.arm.gen_meshmodel(tcp_jnt_id=tcp_jnt_id,
-                               tcp_loc_pos=tcp_loc_pos,
-                               tcp_loc_rotmat=tcp_loc_rotmat,
-                               toggle_tcpcs=toggle_tcpcs,
-                               toggle_jntscs=toggle_jntscs,
-                               rgba=rgba).attach_to(meshmodel)
-        self.hnd.gen_meshmodel(toggle_tcpcs=False,
-                               toggle_jntscs=toggle_jntscs,
-                               rgba=rgba).attach_to(meshmodel)
-        for obj_info in self.oih_infos:
-            objcm = obj_info['collision_model'].copy()
-            objcm.set_pos(obj_info['gl_pos'])
-            objcm.set_rotmat(obj_info['gl_rotmat'])
-            if rgba is not None:
-                objcm.set_rgba(rgba)
-            objcm.attach_to(meshmodel)
+        if option == 'full' or option == 'body_only':
+            self.base_plate.gen_meshmodel(tcp_jnt_id=tcp_jnt_id,
+                                          tcp_loc_pos=tcp_loc_pos,
+                                          tcp_loc_rotmat=tcp_loc_rotmat,
+                                          toggle_tcpcs=False,
+                                          toggle_jntscs=toggle_jntscs,
+                                          rgba=rgba).attach_to(meshmodel)
+            self.arm.gen_meshmodel(tcp_jnt_id=tcp_jnt_id,
+                                   tcp_loc_pos=tcp_loc_pos,
+                                   tcp_loc_rotmat=tcp_loc_rotmat,
+                                   toggle_tcpcs=toggle_tcpcs,
+                                   toggle_jntscs=toggle_jntscs,
+                                   rgba=rgba).attach_to(meshmodel)
+        if option == 'full' or option == 'hand_only':
+            self.hnd.gen_meshmodel(toggle_tcpcs=False,
+                                   toggle_jntscs=toggle_jntscs,
+                                   rgba=rgba).attach_to(meshmodel)
+        if option == 'full':
+            for obj_info in self.oih_infos:
+                objcm = obj_info['collision_model'].copy()
+                objcm.set_pos(obj_info['gl_pos'])
+                objcm.set_rotmat(obj_info['gl_rotmat'])
+                if rgba is not None:
+                    objcm.set_rgba(rgba)
+                objcm.attach_to(meshmodel)
         return meshmodel
 
 
@@ -270,7 +287,7 @@ if __name__ == '__main__':
     # robot_s.gen_meshmodel(toggle_tcpcs=True, toggle_jntscs=True).attach_to(base)
     robot_s.gen_meshmodel(toggle_tcpcs=True, toggle_jntscs=False).attach_to(base)
     # robot_s.gen_stickmodel(toggle_tcpcs=True, toggle_jntscs=True).attach_to(base)
-    robot_s.show_cdprimit()
+    # robot_s.show_cdprimit()
     base.run()
     tgt_pos = np.array([.25, .2, .15])
     tgt_rotmat = rm.rotmat_from_axangle([0, 1, 0], math.pi * 2 / 3)

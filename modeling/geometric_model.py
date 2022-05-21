@@ -810,11 +810,13 @@ def gen_circarrow(axis=np.array([1, 0, 0]),
                   thickness=.005,
                   rgba=[1, 0, 0, 1],
                   sections=8,
-                  discretization=24):
+                  discretization=24,
+                  end='single'):
     """
     :param axis: the circ arrow will rotate around this axis 1x3 nparray
     :param portion: 0.0~1.0
     :param center: the center position of the circ 1x3 nparray
+    :param end: 'single' or 'double'
     :return:
     author: weiwei
     date: 20200602
@@ -826,11 +828,11 @@ def gen_circarrow(axis=np.array([1, 0, 0]),
                                             radius=radius,
                                             thickness=thickness,
                                             sections=sections,
-                                            discretization=discretization)
+                                            discretization=discretization,
+                                            end=end)
     circarrow_sgm = StaticGeometricModel(circarrow_trm)
     circarrow_sgm.set_rgba(rgba=rgba)
     return circarrow_sgm
-
 
 def gen_pointcloud(points, rgbas=[[0, 0, 0, .7]], pntsize=3):
     """

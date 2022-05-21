@@ -56,7 +56,7 @@ class RobotInterface(object):
            tcp_jnt_id=None,
            tcp_loc_pos=None,
            tcp_loc_rotmat=None,
-           local_minima: str = "accept",
+           local_minima: str = "end",
            toggle_debug=False):
         return self.manipulator_dict[component_name].ik(tgt_pos,
                                                         tgt_rotmat,

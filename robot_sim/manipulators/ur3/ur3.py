@@ -49,7 +49,7 @@ class UR3(mi.ManipulatorInterface):
         self.jlc.lnks[2]['com'] = np.array([.13, 0, .1157])
         self.jlc.lnks[2]['mass'] = 3.42
         self.jlc.lnks[2]['mesh_file'] = os.path.join(this_dir, "meshes", "upperarm.stl")
-        self.jlc.lnks[2]['rgba'] = [.7,.7,.7, 1.0]
+        # self.jlc.lnks[2]['rgba'] = [.7,.7,.7, 1.0]
         self.jlc.lnks[3]['name'] = "forearm"
         self.jlc.lnks[3]['loc_pos'] = np.array([.0, .0, .0])
         self.jlc.lnks[3]['com'] = np.array([.05, .0, .0238])
@@ -61,7 +61,7 @@ class UR3(mi.ManipulatorInterface):
         self.jlc.lnks[4]['com'] = np.array([.0, .0, 0.01])
         self.jlc.lnks[4]['mass'] = 0.871
         self.jlc.lnks[4]['mesh_file'] = os.path.join(this_dir, "meshes", "wrist1.stl")
-        self.jlc.lnks[4]['rgba'] = [.7,.7,.7, 1.0]
+        # self.jlc.lnks[4]['rgba'] = [.7,.7,.7, 1.0]
         self.jlc.lnks[5]['name'] = "wrist2"
         self.jlc.lnks[5]['loc_pos'] = np.array([.0, .0, .0])
         self.jlc.lnks[5]['com'] = np.array([.0, .0, 0.01])

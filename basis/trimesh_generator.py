@@ -206,12 +206,17 @@ def gen_arrow(spos=np.array([0, 0, 0]), epos=np.array([0.1, 0, 0]), thickness=0.
     date: 20191228osaka
     """
     direction = rm.unit_vector(epos - spos)
-    stick = gen_stick(spos=spos, epos=epos - direction * thickness * 4, thickness=thickness, type=sticktype,
-                      sections=sections)
-    cap = gen_cone(spos=epos - direction * thickness * 4, epos=epos, radius=thickness, sections=sections)
-    vertices = np.vstack((stick.vertices, cap.vertices))
-    capfaces = cap.faces + len(stick.vertices)
-    faces = np.vstack((stick.faces, capfaces))
+    if np.linalg.norm(spos-epos) > thickness * 4:
+        stick = gen_stick(spos=spos, epos=epos - direction * thickness * 4, thickness=thickness, type=sticktype,
+                          sections=sections)
+        cap = gen_cone(spos=epos - direction * thickness * 4, epos=epos, radius=thickness, sections=sections)
+        vertices = np.vstack((stick.vertices, cap.vertices))
+        capfaces = cap.faces + len(stick.vertices)
+        faces = np.vstack((stick.faces, capfaces))
+    else:
+        cap = gen_cone(spos=epos - direction * thickness * 4, epos=epos, radius=thickness, sections=sections)
+        vertices = cap.vertices
+        faces = cap.faces
     return trm.Trimesh(vertices=vertices, faces=faces)
 
 
@@ -385,7 +390,8 @@ def gen_circarrow(axis=np.array([1, 0, 0]),
                   radius=0.005,
                   thickness=0.0015,
                   sections=8,
-                  discretization=24):
+                  discretization=24,
+                  end='single'):
     """
     :param axis: the circ arrow will rotate around this axis 1x3 nparray
     :param portion: 0.0~1.0
@@ -394,6 +400,7 @@ def gen_circarrow(axis=np.array([1, 0, 0]),
     :param thickness:
     :param rgba:
     :param discretization: number sticks used for approximation
+    :param end: 'single' or 'double'
     :return:
     author: weiwei
     date: 20200602
@@ -409,14 +416,26 @@ def gen_circarrow(axis=np.array([1, 0, 0]),
     # gen the last arrow first
     # gen the remaining torus
     if ndist > 0:
-        lastpos = center + np.dot(rm.rotmat_from_axangle(unitaxis, (ndist - 1) * discretizedangle),
+        arrow_ticks = int(thickness*4/(discretizedangle*radius))
+        lastpos = center + np.dot(rm.rotmat_from_axangle(unitaxis, (ndist - arrow_ticks) * discretizedangle),
                                   starting_vector) * radius
         nxtpos = center + np.dot(rm.rotmat_from_axangle(unitaxis, ndist * discretizedangle), starting_vector) * radius
         arrow = gen_arrow(spos=lastpos, epos=nxtpos, thickness=thickness, sections=sections, sticktype="round")
         vertices = arrow.vertices
         faces = arrow.faces
-        lastpos = starting_pos
-        for i in range(1 * np.sign(ndist), ndist, 1 * np.sign(ndist)):
+        if end=='single':
+            idstart = 1
+            lastpos = starting_pos
+        elif end=='double':
+            idstart = arrow_ticks
+            lastpos = center + np.dot(rm.rotmat_from_axangle(unitaxis, (arrow_ticks) * discretizedangle),
+                                      starting_vector) * radius
+            nxtpos = starting_pos
+            arrow = gen_arrow(spos=lastpos, epos=nxtpos, thickness=thickness, sections=sections, sticktype="round")
+            arrowfaces = arrow.faces + len(vertices)
+            vertices = np.vstack((vertices, arrow.vertices))
+            faces = np.vstack((faces, arrowfaces))
+        for i in range(idstart, ndist-arrow_ticks+1, 1):
             nxtpos = center + np.dot(rm.rotmat_from_axangle(unitaxis, i * discretizedangle), starting_vector) * radius
             stick = gen_stick(spos=lastpos, epos=nxtpos, thickness=thickness, sections=sections, type="round")
             stickfaces = stick.faces + len(vertices)

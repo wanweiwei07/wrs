@@ -38,7 +38,7 @@ def capture_imgs_by_time(camid=0, type="png", timeinterval=1):
 
     camera = cv2.VideoCapture(camid)
     imgid = 0
-    foldername = "./camimgs" + str(imgid) + "/"
+    foldername = "./camimgs_" + str(imgid) + "/"
     if not os.path.exists(foldername):
         os.mkdir(foldername)
     else:
@@ -71,7 +71,7 @@ def capture_imgs_by_time_multicam(camids=[0, 2, 4], type="png", timeinterval=1):
     cameras = []
     windows = []
     for camid in camids:
-        foldername = "./camimgs"+str(camid)+"/"
+        foldername = "./camimgs_"+str(camid)+"/"
         if not os.path.exists(foldername):
             os.mkdir(foldername)
         else:
@@ -113,7 +113,7 @@ def capture_imgs_by_space_multicam(camids=[0, 2, 4], width=640, height=480, type
     cameras = []
     windows = []
     for camid in camids:
-        foldername = "./camimgs"+str(camid)+"/"
+        foldername = "./camimgs_"+str(camid)+"/"
         if not os.path.exists(foldername):
             os.mkdir(foldername)
         else:
@@ -163,7 +163,7 @@ def capture_imgs_by_chessdetect(nrow, ncolumn, camid=0, type="png"):
 
     camera = cv2.VideoCapture(camid)
     imgid = 0
-    foldername = "./camimgs" + str(imgid) + "/"
+    foldername = "./camimgs_" + str(imgid) + "/"
     if not os.path.exists(foldername):
         os.mkdir(foldername)
     else:

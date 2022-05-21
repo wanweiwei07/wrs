@@ -4,7 +4,7 @@ import glob
 import numpy as np
 from cv2 import aruco
 from sklearn import cluster
-import basis.robotmath as rm
+import basis.robot_math as rm
 import vision.rgb_camera.util_functions as cu
 
 def calibrate_chessboard(ncrossrow,

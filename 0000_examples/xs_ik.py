@@ -5,7 +5,7 @@ from basis import robot_math as rm
 import visualization.panda.world as wd
 import modeling.geometric_model as gm
 import modeling.collision_model as cm
-import robot_sim.robots.xarm_shuidi.xarm_shuidi as xav
+import robot_sim.robots.xarm_shuidi.xarm_shuidi as xss
 
 base = wd.World(cam_pos=[3, 1, 2], lookat_pos=[0, 0, 0])
 gm.gen_frame().attach_to(base)
@@ -16,10 +16,12 @@ object.set_rgba([.5, .7, .3, 1])
 object.attach_to(base)
 # robot_s
 component_name = 'arm'
-robot_s = xav.XArmShuidi()
+robot_s = xss.XArmShuidi()
+robot_s.gen_meshmodel(toggle_tcpcs=True).attach_to(base)
+# base.run()
 seed_jnt_values = robot_s.get_jnt_values(component_name=component_name)
 for y in range(-5, 5):
-    tgt_pos = np.array([.3, y*.1, .5])
+    tgt_pos = np.array([.3, y*.1, 1])
     tgt_rotmat = rm.rotmat_from_euler(0, math.pi / 2, 0)
     gm.gen_frame(pos=tgt_pos, rotmat=tgt_rotmat).attach_to(base)
     tic = time.time()
@@ -35,6 +37,4 @@ for y in range(-5, 5):
     if jnt_values is not None:
         robot_s.fk(component_name=component_name, jnt_values=jnt_values)
         robot_s.gen_meshmodel(toggle_tcpcs=True).attach_to(base)
-base.run()
-robot_s.gen_meshmodel(toggle_tcpcs=True).attach_to(base)
 base.run()

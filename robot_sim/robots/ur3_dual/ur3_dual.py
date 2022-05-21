@@ -7,8 +7,8 @@ import modeling.collision_model as cm
 import robot_sim._kinematics.jlchain as jl
 import robot_sim.manipulators.ur3.ur3 as ur
 import robot_sim.end_effectors.gripper.robotiq85.robotiq85 as rtq
-# import robot_sim.end_effectors.gripper.robotiq85_gelsight.robotiq85_gelsight as rtq_gs
-import robot_sim.end_effectors.gripper.robotiq85_gelsight.robotiq85_gelsight_pusher as rtq_gs
+import robot_sim.end_effectors.gripper.robotiq85_gelsight.robotiq85_gelsight as rtq_gs
+# import robot_sim.end_effectors.gripper.robotiq85_gelsight.robotiq85_gelsight_pusher as rtq_gs
 from panda3d.core import CollisionNode, CollisionBox, Point3
 import robot_sim.robots.robot_interface as ri
 
@@ -134,9 +134,12 @@ class UR3Dual(ri.RobotInterface):
                                                                      thickness=.067, rgba=[.2, .3, .3, 1], sections=24)
         self.lft_ft_sensor.reinitialize()
         # lft hand
-        self.lft_hnd = rtq_gs.Robotiq85GelsightPusher(pos=self.lft_ft_sensor.jnts[-1]['gl_posq'],
-                                                      rotmat=self.lft_ft_sensor.jnts[-1]['gl_rotmatq'],
-                                                      enable_cc=False)
+        # self.lft_hnd = rtq_gs.Robotiq85GelsightPusher(pos=self.lft_ft_sensor.jnts[-1]['gl_posq'],
+        #                                               rotmat=self.lft_ft_sensor.jnts[-1]['gl_rotmatq'],
+        #                                               enable_cc=False)
+        self.lft_hnd = rtq_gs.Robotiq85Gelsight(pos=self.lft_ft_sensor.jnts[-1]['gl_posq'],
+                                                rotmat=self.lft_ft_sensor.jnts[-1]['gl_rotmatq'],
+                                                enable_cc=False)
         # rigth side
         self.rgt_body = jl.JLChain(pos=pos, rotmat=rotmat, homeconf=np.zeros(0), name='rgt_body_jl')
         self.rgt_body.jnts[1]['loc_pos'] = np.array([.0, -.258485281374, 1.61051471863])  # right from robot_s view

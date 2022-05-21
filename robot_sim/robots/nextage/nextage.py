@@ -42,7 +42,7 @@ class Nextage(ri.RobotInterface):
             os.path.join(this_dir, "meshes", "chest_joint0_link_mesh.dae"),
             cdprimit_type="user_defined", expand_radius=.005,
             userdefined_cdprimitive_fn=self._chest_combined_cdnp)
-        self.central_body.lnks[1]['rgba'] = [.67, .65, .5, 1]
+        self.central_body.lnks[1]['rgba'] = [1, .65, .5, 1]
         self.central_body.lnks[2]['name'] = "head_joint0_link_mesh"
         self.central_body.lnks[2]['loc_pos'] = np.array([0, 0, 0.5695])
         self.central_body.lnks[2]['mesh_file'] = os.path.join(this_dir, "meshes", "head_joint0_link_mesh.dae")
