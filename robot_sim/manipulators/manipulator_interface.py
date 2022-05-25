@@ -125,12 +125,18 @@ class ManipulatorInterface(object):
                        tcp_jnt_id,
                        tcp_loc_pos,
                        tcp_loc_rotmat):
-        return self.jlc.manipulability(tcp_jnt_id,
-                                       tcp_loc_pos,
-                                       tcp_loc_rotmat)
+        return self.jlc.manipulability(tcp_jnt_id=tcp_jnt_id,
+                                       tcp_loc_pos=tcp_loc_pos,
+                                       tcp_loc_rotmat=tcp_loc_rotmat)
 
-    def manipulability_axmat(self, type="translational"):
-        return self.jlc.manipulability_axmat(type=type)
+    def manipulability_axmat(self,
+                             tcp_jnt_id,
+                             tcp_loc_pos,
+                             tcp_loc_rotmat, type="translational"):
+        return self.jlc.manipulability_axmat(tcp_jnt_id=tcp_jnt_id,
+                                             tcp_loc_pos=tcp_loc_pos,
+                                             tcp_loc_rotmat=tcp_loc_rotmat,
+                                             type=type)
 
     def jacobian(self,
                  tcp_jnt_id,

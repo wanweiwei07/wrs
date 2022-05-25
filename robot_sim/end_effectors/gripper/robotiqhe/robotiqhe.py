@@ -24,7 +24,7 @@ class RobotiqHE(gp.GripperInterface):
         self.coupling.jnts[1]['loc_rotmat'] = coupling_offset_rotmat
         self.coupling.lnks[0]['collision_model'] = cm.gen_stick(self.coupling.jnts[0]['loc_pos'],
                                                                 self.coupling.jnts[1]['loc_pos'],
-                                                                thickness=.07, rgba=[.2,.2,.2,1],
+                                                                thickness=.07, rgba=[.2, .2, .2, 1],
                                                                 sections=24)
         self.coupling.reinitialize()
         cpl_end_pos = self.coupling.jnts[-1]['gl_posq']
@@ -104,10 +104,10 @@ class RobotiqHE(gp.GripperInterface):
         else:
             raise ValueError("The motion_val parameter is out of range!")
 
-    def jaw_to(self, jawwidth):
-        if jawwidth > .05:
-            raise ValueError("The jaw_width parameter is out of range!")
-        self.fk(motion_val=(0.05 - jawwidth) / 2.0)
+    def jaw_to(self, jaw_width):
+        if jaw_width > .05:
+            raise ValueError("The jawwidth parameter is out of range!")
+        self.fk(motion_val=(0.05 - jaw_width) / 2.0)
 
     def gen_stickmodel(self,
                        tcp_jntid=None,
