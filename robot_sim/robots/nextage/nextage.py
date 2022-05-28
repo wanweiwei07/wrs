@@ -12,6 +12,25 @@ import robot_sim.robots.robot_interface as ri
 
 class Nextage(ri.RobotInterface):
 
+    def _decorator_switch_tgt_jnts(foo):
+        """
+        decorator function for switching tgt_jnts
+        :return:
+        author: weiwei
+        date: 20220404
+        """
+        def wrapper(self, component_name, *args, **kwargs):
+
+            if component_name == 'lft_arm' or component_name == 'rgt_arm':
+                old_tgt_jnts = self.manipulator_dict[component_name].tgtjnts
+                self.manipulator_dict[component_name].tgtjnts = range(2, self.manipulator_dict[component_name].ndof + 1)
+                result = foo(self, component_name, *args, **kwargs)
+                self.manipulator_dict[component_name].tgtjnts = old_tgt_jnts
+                return result
+            else:
+                return foo(self, component_name, *args, **kwargs)
+        return wrapper
+
     def __init__(self, pos=np.zeros(3), rotmat=np.eye(3), name='nextage', enable_cc=True):
         super().__init__(pos=pos, rotmat=rotmat, name=name)
         this_dir, this_filename = os.path.split(__file__)
@@ -326,6 +345,7 @@ class Nextage(ri.RobotInterface):
         else:
             raise ValueError("The given component name is not available!")
 
+    @_decorator_switch_tgt_jnts
     def ik(self,
            component_name,
            tgt_pos,
@@ -337,21 +357,31 @@ class Nextage(ri.RobotInterface):
            max_niter=100,
            local_minima="accept",
            toggle_debug=False):
-        if component_name == 'lft_arm' or component_name == 'rgt_arm':
-            old_tgt_jnts = self.manipulator_dict[component_name].tgtjnts
-            self.manipulator_dict[component_name].tgtjnts = range(2, self.manipulator_dict[component_name].ndof + 1)
-            ik_results = self.manipulator_dict[component_name].ik(tgt_pos,
-                                                                  tgt_rotmat,
-                                                                  seed_jnt_values=seed_jnt_values,
-                                                                  tcp_jnt_id=tcp_jnt_id,
-                                                                  tcp_loc_pos=tcp_loc_pos,
-                                                                  tcp_loc_rotmat=tcp_loc_rotmat,
-                                                                  max_niter=max_niter,
-                                                                  local_minima=local_minima,
-                                                                  toggle_debug=toggle_debug)
-            self.manipulator_dict[component_name].tgtjnts = old_tgt_jnts
-            return ik_results
-        elif component_name == 'lft_arm_waist' or component_name == 'rgt_arm_waist':
+        # if component_name == 'lft_arm' or component_name == 'rgt_arm':
+        #     old_tgt_jnts = self.manipulator_dict[component_name].tgtjnts
+        #     self.manipulator_dict[component_name].tgtjnts = range(2, self.manipulator_dict[component_name].ndof + 1)
+        #     ik_results = self.manipulator_dict[component_name].ik(tgt_pos,
+        #                                                           tgt_rotmat,
+        #                                                           seed_jnt_values=seed_jnt_values,
+        #                                                           tcp_jnt_id=tcp_jnt_id,
+        #                                                           tcp_loc_pos=tcp_loc_pos,
+        #                                                           tcp_loc_rotmat=tcp_loc_rotmat,
+        #                                                           max_niter=max_niter,
+        #                                                           local_minima=local_minima,
+        #                                                           toggle_debug=toggle_debug)
+        #     self.manipulator_dict[component_name].tgtjnts = old_tgt_jnts
+        #     return ik_results
+        # elif component_name == 'lft_arm_waist' or component_name == 'rgt_arm_waist':
+        #     return self.manipulator_dict[component_name].ik(tgt_pos,
+        #                                                     tgt_rotmat,
+        #                                                     seed_jnt_values=seed_jnt_values,
+        #                                                     tcp_jnt_id=tcp_jnt_id,
+        #                                                     tcp_loc_pos=tcp_loc_pos,
+        #                                                     tcp_loc_rotmat=tcp_loc_rotmat,
+        #                                                     max_niter=max_niter,
+        #                                                     local_minima=local_minima,
+        #                                                     toggle_debug=toggle_debug)
+        if component_name in ['lft_arm', 'rgt_arm', 'lft_arm_waist', 'rgt_arm_waist']:
             return self.manipulator_dict[component_name].ik(tgt_pos,
                                                             tgt_rotmat,
                                                             seed_jnt_values=seed_jnt_values,
@@ -367,6 +397,21 @@ class Nextage(ri.RobotInterface):
             raise NotImplementedError
         else:
             raise ValueError("The given component name is not available!")
+
+    @_decorator_switch_tgt_jnts
+    def get_jnt_values(self, component_name):
+        return self.manipulator_dict[component_name].get_jnt_values()
+
+    @_decorator_switch_tgt_jnts
+    def is_jnt_values_in_ranges(self, component_name, jnt_values):
+        # if component_name == 'lft_arm' or component_name == 'rgt_arm':
+        #     old_tgt_jnts = self.manipulator_dict[component_name].tgtjnts
+        #     self.manipulator_dict[component_name].tgtjnts = range(2, self.manipulator_dict[component_name].ndof + 1)
+        #     result = self.manipulator_dict[component_name].is_jnt_values_in_ranges(jnt_values)
+        #     self.manipulator_dict[component_name].tgtjnts = old_tgt_jnts
+        #     return result
+        # else:
+        return self.manipulator_dict[component_name].is_jnt_values_in_ranges(jnt_values)
 
     def rand_conf(self, component_name):
         """
