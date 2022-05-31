@@ -36,7 +36,7 @@ if __name__ == '__main__':
     file_tip_rack = os.path.join(this_dir, "objects", "tip_rack.stl")
     tip_rack = utils.Rack96(file_tip_rack)
     tip_rack.set_rgba([140 / 255, 110 / 255, 170 / 255, 1])
-    tip_rack.set_pose(pos=np.array([.25, 0.0, .003]), rotmat=rm.rotmat_from_axangle([0, 0, 1], np.pi / 2))
+    tip_rack.set_pose(pos=np.array([.35, 0.0, .003]), rotmat=rm.rotmat_from_axangle([0, 0, 1], 0))
     tip_rack.attach_to(base)
 
     file_tip = os.path.join(this_dir, "objects", "tip.stl")
@@ -55,7 +55,7 @@ if __name__ == '__main__':
     file_microplate = os.path.join(this_dir, "objects", "microplate_96.stl")
     microplate96 = utils.Microplate96(file_microplate)
     microplate96.set_rgba([200 / 255, 180 / 255, 140 / 255, 1])
-    microplate96.set_pose(pos=np.array([.25, 0.1, .003]), rotmat=rm.rotmat_from_axangle([0, 0, 1], np.pi / 2))
+    microplate96.set_pose(pos=np.array([.25, 0, .003]), rotmat=rm.rotmat_from_axangle([0, 0, 1], 0))
     microplate96.attach_to(base)
 
     file_microplate = os.path.join(this_dir, "objects", "microplate_24.stl")

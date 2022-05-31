@@ -137,7 +137,8 @@ def search_reachable_configuration(rbt_s,
         rotmat = rm.rotmat_from_axangle([0, 0, 1], 0).dot(rm.rotmat_from_normal(cone_axis))
         for angle in np.linspace(0, np.pi * 2, int(np.pi * 2 / rotation_interval), endpoint=False):
             rotmat_list.append(rm.rotmat_from_axangle([0, 0, 1], -angle).dot(rotmat))
-    for rotmat in rotmat_list:
+    print("======new search!")
+    for i, rotmat in enumerate(rotmat_list):
         jnt_values = rbt_s.ik(component_name=component_name,
                               tgt_pos=tgt_pos,
                               tgt_rotmat=rotmat,
@@ -153,6 +154,7 @@ def search_reachable_configuration(rbt_s,
                 if not toggle_debug:
                     rbt_s.fk(component_name=component_name,
                              jnt_values=jnt_values_bk)
+                    print("times tried ", i)
                     return jnt_values
         else:
             if toggle_debug:
