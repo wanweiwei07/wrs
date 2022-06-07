@@ -33,7 +33,7 @@ class CobottaRIPPS(ri.RobotInterface):
                                    homeconf=arm_homeconf,
                                    name='arm', enable_cc=False)
         # gripper
-        self.gripper_loc_rotmat = rm.rotmat_from_axangle([0,0,1], np.pi)
+        self.gripper_loc_rotmat = rm.rotmat_from_axangle([0,0,1], np.pi) # 20220607 rotate the pipetting end with 180^o.
         self.hnd = cbtp.CobottaPipette(pos=self.arm.jnts[-1]['gl_posq'],
                                        rotmat=self.arm.jnts[-1]['gl_rotmatq'].dot(self.gripper_loc_rotmat),
                                        name='hnd_s', enable_cc=False)
