@@ -13,9 +13,7 @@ class CobottaPipette(gp.GripperInterface):
         this_dir, this_filename = os.path.split(__file__)
         cpl_end_pos = self.coupling.jnts[-1]['gl_posq']
         cpl_end_rotmat = self.coupling.jnts[-1]['gl_rotmatq']
-        # flip_hand_rotmat = cpl_end_rotmat
-        flip_hand_rotmat = rm.rotmat_from_axangle(cpl_end_rotmat[:,2],np.pi).dot(cpl_end_rotmat)
-        self.jlc = jl.JLChain(pos=cpl_end_pos, rotmat=flip_hand_rotmat, homeconf=np.zeros(8), name='base_jlc')
+        self.jlc = jl.JLChain(pos=cpl_end_pos, rotmat=cpl_end_rotmat, homeconf=np.zeros(8), name='base_jlc')
         self.jlc.jnts[1]['loc_pos'] = np.array([0, .0, .0])
         self.jlc.jnts[1]['type'] = 'fixed'
         self.jlc.jnts[2]['loc_pos'] = np.array([0, .0, .0])
@@ -112,7 +110,7 @@ class CobottaPipette(gp.GripperInterface):
                 if side_jawwidth <= .007:
                     self.jlc.jnts[8]['motion_val'] = .0
                 else:
-                    self.jlc.jnts[8]['motion_val'] = (jaw_width-.014)/2
+                    self.jlc.jnts[8]['motion_val'] = (jaw_width - .014) / 2
             else:
                 raise ValueError("The angle parameter is out of range!")
         self.coupling.fix_to(self.pos, self.rotmat)
@@ -130,7 +128,7 @@ class CobottaPipette(gp.GripperInterface):
         if side_jawwidth <= .007:
             self.jlc.jnts[8]['motion_val'] = .0
         else:
-            self.jlc.jnts[8]['motion_val'] = (jaw_width-.014)/2
+            self.jlc.jnts[8]['motion_val'] = (jaw_width - .014) / 2
         self.jlc.fk()
 
     def get_jawwidth(self):

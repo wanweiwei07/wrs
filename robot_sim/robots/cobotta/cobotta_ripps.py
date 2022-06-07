@@ -33,13 +33,14 @@ class CobottaRIPPS(ri.RobotInterface):
                                    homeconf=arm_homeconf,
                                    name='arm', enable_cc=False)
         # gripper
+        self.gripper_loc_rotmat = rm.rotmat_from_axangle([0,0,1], np.pi)
         self.hnd = cbtp.CobottaPipette(pos=self.arm.jnts[-1]['gl_posq'],
-                                       rotmat=self.arm.jnts[-1]['gl_rotmatq'],
+                                       rotmat=self.arm.jnts[-1]['gl_rotmatq'].dot(self.gripper_loc_rotmat),
                                        name='hnd_s', enable_cc=False)
         # tool center point
         self.arm.jlc.tcp_jnt_id = -1
-        self.arm.jlc.tcp_loc_pos = self.hnd.jaw_center_pos
-        self.arm.jlc.tcp_loc_rotmat = self.hnd.jaw_center_rotmat
+        self.arm.jlc.tcp_loc_pos = self.gripper_loc_rotmat.dot(self.hnd.jaw_center_pos)
+        self.arm.jlc.tcp_loc_rotmat = self.gripper_loc_rotmat.dot(self.hnd.jaw_center_rotmat)
         # a list of detailed information about objects in hand, see CollisionChecker.add_objinhnd
         self.oih_infos = []
         # collision detection
@@ -99,7 +100,7 @@ class CobottaRIPPS(ri.RobotInterface):
         self.rotmat = rotmat
         self.base_plate.fix_to(pos=pos, rotmat=rotmat)
         self.arm.fix_to(pos=self.base_plate.jnts[-1]['gl_posq'], rotmat=self.base_plate.jnts[-1]['gl_rotmatq'])
-        self.hnd.fix_to(pos=self.arm.jnts[-1]['gl_posq'], rotmat=self.arm.jnts[-1]['gl_rotmatq'])
+        self.hnd.fix_to(pos=self.arm.jnts[-1]['gl_posq'], rotmat=self.arm.jnts[-1]['gl_rotmatq'].dot(self.gripper_loc_rotmat))
         # update objects in hand if available
         for obj_info in self.oih_infos:
             gl_pos, gl_rotmat = self.arm.cvt_loc_tcp_to_gl(obj_info['rel_pos'], obj_info['rel_rotmat'])
@@ -283,7 +284,7 @@ if __name__ == '__main__':
 
     gm.gen_frame().attach_to(base)
     robot_s = CobottaRIPPS(enable_cc=True)
-    robot_s.jaw_to(.02)
+    # robot_s.jaw_to(.02)
     # robot_s.gen_meshmodel(toggle_tcpcs=True, toggle_jntscs=True).attach_to(base)
     robot_s.gen_meshmodel(toggle_tcpcs=True, toggle_jntscs=False).attach_to(base)
     # robot_s.gen_stickmodel(toggle_tcpcs=True, toggle_jntscs=True).attach_to(base)
