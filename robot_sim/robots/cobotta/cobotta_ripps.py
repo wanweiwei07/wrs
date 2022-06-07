@@ -126,7 +126,7 @@ class CobottaRIPPS(ri.RobotInterface):
             status = self.manipulator_dict[component_name].fk(jnt_values=jnt_values)
             self.hnd_dict[component_name].fix_to(
                 pos=self.manipulator_dict[component_name].jnts[-1]['gl_posq'],
-                rotmat=self.manipulator_dict[component_name].jnts[-1]['gl_rotmatq'])
+                rotmat=self.manipulator_dict[component_name].jnts[-1]['gl_rotmatq'].dot(self.gripper_loc_rotmat))
             update_oih(component_name=component_name)
             return status
 
