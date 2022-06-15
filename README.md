@@ -10,7 +10,7 @@ This is a brief guide to the WRS Robot Planning & Control System. For detailed t
 the [document pages](https://wanweiwei07.github.io/wrs/) hosted at [my homepage](https://wanweiwei07.github.io/).
 
 ## Code inspired by the system
-Universal Robots UR3e Planning & Control System： https://github.com/maganrobotics/urmanipulation
+* Universal Robots UR3e Planning & Control System: https://github.com/maganrobotics/urmanipulation
 
 ## Getting Started
 
