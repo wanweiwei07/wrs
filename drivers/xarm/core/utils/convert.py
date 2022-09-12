@@ -11,14 +11,14 @@
 import struct
 
 
-def fp32_to_bytes(data):
+def fp32_to_bytes(data, is_big_endian=False):
     """小端字节序"""
-    return bytes(struct.pack("<f", data))
+    return bytes(struct.pack('>f' if is_big_endian else '<f', data))
 
 
-def int32_to_bytes(data):
+def int32_to_bytes(data, is_big_endian=False):
     """小端字节序"""
-    return bytes(struct.pack("<i", data))
+    return bytes(struct.pack('>i' if is_big_endian else '<i', data))
 
 
 def int32s_to_bytes(data, n):
@@ -36,7 +36,7 @@ def bytes_to_fp32(data):
     byte += bytes([data[1]])
     byte += bytes([data[2]])
     byte += bytes([data[3]])
-    ret = struct.unpack("<f", byte)
+    ret = struct.unpack('<f', byte)
     return ret[0]
 
 
@@ -92,7 +92,7 @@ def bytes_to_16s(data, n):
     """大端字节序"""
     ret = [0] * n
     for i in range(n):
-        ret[i] = struct.unpack(">h", bytes(data[i * 2: i * 2 + 2]))[0]
+        ret[i] = struct.unpack('>h', bytes(data[i * 2: i * 2 + 2]))[0]
     return ret
 
 
@@ -102,11 +102,21 @@ def bytes_to_u32(data):
     return data_u32
 
 
-def bytes_to_long_big(data):
-    """大端字节序"""
+def bytes_to_u64(data):
+    data_u64 = data[0] << 56 | data[1] << 48 | data[2] << 40 | data[3] << 32 | data[4] << 24 | data[5] << 16 | data[6] << 8 | data[7]
+    return data_u64
+
+
+def bytes_to_num32(data, fmt='>l'):
     byte = bytes([data[0]])
     byte += bytes([data[1]])
     byte += bytes([data[2]])
     byte += bytes([data[3]])
-    ret = struct.unpack(">l", byte)
+    ret = struct.unpack(fmt, byte)
     return ret[0]
+
+
+def bytes_to_long_big(data):
+    """大端字节序"""
+    return bytes_to_num32(data, '>l')
+

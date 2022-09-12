@@ -11,9 +11,13 @@ import math
 
 class XCONF(object):
     ARM_AXIS_NUM = 7
-    GRIPPER_ID = 8
-    TGPIO_ID = 9
     MAX_CMD_NUM = 1024
+
+    TRACK_ID = 1
+    GRIPPER_ID = 8
+
+    TGPIO_HOST_ID = 9
+    LINEER_TRACK_HOST_ID = 11
 
     def __init__(self):
         pass
@@ -33,6 +37,8 @@ class XCONF(object):
             XARM6_X4 = 6
             XARM7_X4 = 7
             XARM6_X8 = 8
+            XARM6_X9 = 9
+            XARM6_X11 = 11
 
         JOINT_LIMITS = {
             Axis.XARM5: {
@@ -61,6 +67,23 @@ class XCONF(object):
                     (-1.692969, math.pi),  # (-1.75, math.pi),
                     (-2 * math.pi, 2 * math.pi)
                 ],
+                Type.XARM6_X9: [
+                    (-2 * math.pi, 2 * math.pi),
+                    (-2.6179938779914944, 2.6179938779914944),
+                    (-0.061086523819801536, 5.235987755982989),
+                    (-2 * math.pi, 2 * math.pi),
+                    (-2.1642082724729685, 2.1642082724729685),
+                    (-2 * math.pi, 2 * math.pi),
+                ],
+                Type.XARM6_X11: [
+                    (-2 * math.pi, 2 * math.pi),
+                    (-2 * math.pi, 2 * math.pi),
+                    (-2 * math.pi, 2 * math.pi),
+                    (-2 * math.pi, 2 * math.pi),
+                    (-1.692969, math.pi),
+                    (-2 * math.pi, 2 * math.pi),
+                ],
+
             },
             Axis.XARM7: {
                 Type.XARM7_X3: [
@@ -119,6 +142,22 @@ class XCONF(object):
                     (-math.pi, math.pi),
                     (-math.pi, math.pi)
                 ],
+                Type.XARM6_X9: [
+                    (-500, 500),
+                    (-500, 500),
+                    (-150, 750),
+                    (-math.pi, math.pi),
+                    (-math.pi, math.pi),
+                    (-math.pi, math.pi)
+                ],
+                Type.XARM6_X11: [
+                    (-900, 900),
+                    (-900, 900),
+                    (-900, 1200),
+                    (-math.pi, math.pi),
+                    (-math.pi, math.pi),
+                    (-math.pi, math.pi)
+                ],
             },
             Axis.XARM7: {
                 Type.XARM7_X3: [
@@ -167,6 +206,7 @@ class XCONF(object):
         CHECK_VERIFY = 3
         RELOAD_DYNAMICS = 4
         GET_REPORT_TAU_OR_I = 5
+        GET_TCP_ROTATION_RADIUS = 6
 
         SHUTDOWN_SYSTEM = 10
         MOTION_EN = 11
@@ -230,6 +270,7 @@ class XCONF(object):
         LOAD_TRAJ = 63
         PLAY_TRAJ = 64
         GET_TRAJ_RW_STATUS = 65
+        ALLOW_APPROX_MOTION = 66
 
         REPORT_TAU_OR_I = 70
         SET_TIMER = 71
@@ -243,9 +284,11 @@ class XCONF(object):
         SET_SELF_COLLIS_CHECK = 77
         SET_COLLIS_TOOL = 78
         SET_SIMULATION_ROBOT = 79
+        SET_CARTV_CONTINUE = 80
 
         VC_SET_JOINTV = 81
         VC_SET_CARTV = 82
+        MOVE_RELATIVE = 83
 
         GET_TCP_POSE_AA = 91
         MOVE_LINE_AA = 92
@@ -257,11 +300,13 @@ class XCONF(object):
         SERVO_R32B = 104
         SERVO_ZERO = 105
         SERVO_DBMSG = 106
+        SERVO_ERROR = 107
 
         CALI_TCP_POSE = 111
         CALI_TCP_ORIENT = 112
         CALI_WRLD_ORIENT = 113
         CALI_WRLD_POSE = 114
+        IDEN_FRIC = 115
 
         TGPIO_MB_TIOUT = 123
         TGPIO_MODBUS = 124
@@ -290,11 +335,12 @@ class XCONF(object):
         SET_IO_STOP_RESET = 146
         POSITION_CGPIO_SET_ANALOG = 147
 
-        GET_EXE_FT = 150
+        FTSENSOR_GET_DATA_OLD = 150  # only available in firmware version < 1.8.3
+        FTSENSOR_GET_DATA = 200
         FTSENSOR_ENABLE = 201
         FTSENSOR_SET_APP = 202
         FTSENSOR_GET_APP = 203
-        FTSENSOR_IDEN_LOAD = 204
+        IDEN_LOAD = 204
         FTSENSOR_CALI_LOAD_OFFSET = 205
         FTSENSOR_SET_ZERO = 206
         IMPEDANCE_CONFIG = 207
@@ -302,6 +348,12 @@ class XCONF(object):
         FORCE_CTRL_CONFIG = 209
         IMPEDANCE_CTRL_MBK = 210
         IMPEDANCE_CTRL_CONFIG = 211
+        FTSENSOR_GET_CONFIG = 212
+
+        GET_MAX_JOINT_VELOCITY = 231
+
+        TGPIO_COM_TIOUT = 240
+        TGPIO_COM_DATA = 241
 
     class UxbusConf:
         SET_TIMEOUT = 2000  # ms
@@ -358,10 +410,15 @@ class XCONF(object):
 
         MODBUS_BAUDRATE = 0x0A0B
         TOOL_MB_TIMEOUT = 0x0A0E
+        TI2_IN = 0x0A12
+        TI2_TIME = 0x0A13
         DIGITAL_IN = 0x0A14
         DIGITAL_OUT = 0x0A15
         ANALOG_IO1 = 0x0A16
         ANALOG_IO2 = 0x0A17
+
+        BACK_ORIGIN = 0x0A0A
+        STOP_TRACK = 0x0A0E
 
     class UxbusState:
         ERR_CODE = 1  # 有尚未清除的错误
@@ -373,7 +430,7 @@ class XCONF(object):
         ERR_FUN = 7  # TCP回复指令和发送指令不匹配
         ERR_NOTTCP = 8  # 发送错误
         STATE_NOT_READY = 9  # 未准备好运动
-        INVALID = 10  # 结果无效
+        INVALID = 10  # 结果无效或执行失败
         ERR_OTHER = 11  # 其它错误
         ERR_PARAM = 12  # 参数错误
 

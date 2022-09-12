@@ -9,11 +9,11 @@
 import json
 import time
 from urllib import request
-from .utils import xarm_is_connected
 from .code import APIState
 from ..core.config.x_config import XCONF
 from ..core.utils.log import logger
 from .base import Base
+from .decorator import xarm_is_connected
 
 
 class Record(Base):
@@ -67,20 +67,23 @@ class Record(Base):
         ret[0] = self._check_code(ret[0])
         if ret[0] == 0:
             if wait:
-                start_time = time.time()
-                while time.time() - start_time < timeout:
+                expired = time.monotonic() + timeout
+                idle_cnts = 0
+                while time.monotonic() < expired:
+                    time.sleep(0.1)
                     code, status = self.get_trajectory_rw_status()
                     if self._check_code(code) == 0:
                         if status == XCONF.TrajState.IDLE:
-                            logger.error('Save {} failed, idle'.format(filename))
-                            return APIState.TRAJ_RW_FAILED
+                            idle_cnts += 1
+                            if idle_cnts >= 5:
+                                logger.error('Save {} failed, idle'.format(filename))
+                                return APIState.TRAJ_RW_FAILED
                         elif status == XCONF.TrajState.SAVE_SUCCESS:
                             logger.info('Save {} success'.format(filename))
                             return 0
                         elif status == XCONF.TrajState.SAVE_FAIL:
                             logger.error('Save {} failed'.format(filename))
                             return APIState.TRAJ_RW_FAILED
-                    time.sleep(0.1)
                 logger.warning('Save {} timeout'.format(filename))
                 return APIState.TRAJ_RW_TOUT
             else:
@@ -100,20 +103,23 @@ class Record(Base):
         self.log_api_info('API -> load_trajectory -> code={}'.format(ret[0]), code=ret[0])
         if ret[0] == 0:
             if wait:
-                start_time = time.time()
-                while time.time() - start_time < timeout:
+                expired = time.monotonic() + timeout
+                idle_cnts = 0
+                while time.monotonic() < expired:
+                    time.sleep(0.1)
                     code, status = self.get_trajectory_rw_status()
                     if code == 0:
                         if status == XCONF.TrajState.IDLE:
-                            logger.info('Load {} failed, idle'.format(filename))
-                            return APIState.TRAJ_RW_FAILED
+                            idle_cnts += 1
+                            if idle_cnts >= 5:
+                                logger.info('Load {} failed, idle'.format(filename))
+                                return APIState.TRAJ_RW_FAILED
                         elif status == XCONF.TrajState.LOAD_SUCCESS:
                             logger.info('Load {} success'.format(filename))
                             return 0
                         elif status == XCONF.TrajState.LOAD_FAIL:
                             logger.error('Load {} failed'.format(filename))
                             return APIState.TRAJ_RW_FAILED
-                    time.sleep(0.1)
                 logger.warning('Load {} timeout'.format(filename))
                 return APIState.TRAJ_RW_TOUT
             else:
@@ -132,30 +138,30 @@ class Record(Base):
                 return ret
         if self.state in [4]:
             return APIState.NOT_READY
-        if self.version_is_ge_1_2_11:
+        if self.version_is_ge(1, 2, 11):
             ret = self.arm_cmd.playback_traj(times, double_speed)
         else:
             ret = self.arm_cmd.playback_traj_old(times)
         self.log_api_info('API -> playback_trajectory -> code={}'.format(ret[0]), code=ret[0])
         if ret[0] == 0 and wait:
-            start_time = time.time()
+            start_time = time.monotonic()
             while self.state != 1:
                 if self.state in [4]:
                     return APIState.NOT_READY
-                if time.time() - start_time > 5:
+                if time.monotonic() - start_time > 5:
                     return APIState.TRAJ_PLAYBACK_TOUT
                 time.sleep(0.1)
-            max_count = int((time.time() - start_time) / 0.1)
+            max_count = int((time.monotonic() - start_time) / 0.1)
             max_count = max_count if max_count > 10 else 10
-            start_time = time.time()
+            start_time = time.monotonic()
             while self.mode != 11:
                 if self.state == 1:
-                    start_time = time.time()
+                    start_time = time.monotonic()
                     time.sleep(0.1)
                     continue
                 if self.state in [4]:
                     return APIState.NOT_READY
-                if time.time() - start_time > 5:
+                if time.monotonic() - start_time > 5:
                     return APIState.TRAJ_PLAYBACK_TOUT
                 time.sleep(0.1)
             time.sleep(0.1)
@@ -173,8 +179,10 @@ class Record(Base):
             # while self.state != 4 and self.state != 2:
             #     time.sleep(0.1)
             if self.state not in [4]:
-                self.set_mode(mode)
+                # self.set_mode(mode)
+                self.set_mode(0)
                 self.set_state(0)
+            self._sync()
         return ret[0]
 
     @xarm_is_connected(_type='get')
