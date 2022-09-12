@@ -16,9 +16,10 @@ import json
 import time
 import random
 from .blockly_highlight_block import HIGHLIGHT_BLOCKS
+from .blockly import BlocklyTool
 
 
-class BlocklyTool(object):
+class BlocklyToolOld(object):
     def __init__(self, path):
         self.tree = ET.parse(path)
         self.root = self.tree.getroot()
@@ -137,7 +138,7 @@ class BlocklyTool(object):
         self._insert_to_file(self.index, '# python setup.py install')
         self._insert_to_file(self.index, '"""')
         self._insert_to_file(self.index, 'try:')
-        self._insert_to_file(self.index, '    from xarm.tools import gaussian_surface_bug')
+        self._insert_to_file(self.index, '    from xarm.tools import utils')
         self._insert_to_file(self.index, 'except:')
         self._insert_to_file(self.index, '    pass')
         self._insert_to_file(self.index, 'from xarm import version')
@@ -157,9 +158,9 @@ class BlocklyTool(object):
         # if self._highlight_callback is None:
         #     self._insert_to_file(self.index, 'highlight_callback = lambda x:x')
         if arm is None:
-            self._insert_to_file(self.index, 'arm = XArmAPI(sys.argv[1])')
+            self._insert_to_file(self.index, 'arm = XArmAPI(sys.argv[1], baud_checkset=False)')
         elif isinstance(arm, str):
-            self._insert_to_file(self.index, 'arm = XArmAPI(\'{}\')'.format(arm))
+            self._insert_to_file(self.index, 'arm = XArmAPI(\'{}\', baud_checkset=False)'.format(arm))
         if init:
             self._insert_to_file(self.index, 'arm.clean_warn()')
             self._insert_to_file(self.index, 'arm.clean_error()')
@@ -189,7 +190,7 @@ class BlocklyTool(object):
             self._insert_to_file(self.index, '\n\n# Register state changed callback')
             self._insert_to_file(self.index, 'def state_changed_callback(data):')
             self._insert_to_file(self.index, '    if data and data[\'state\'] == 4:')
-            self._insert_to_file(self.index, '        if arm.version_number[0] >= 1 and arm.version_number[1] >= 1 and arm.version_number[2] > 0:')
+            self._insert_to_file(self.index, '        if arm.version_number[0] > 1 or (arm.version_number[0] == 1 and arm.version_number[1] > 1):')
             self._insert_to_file(self.index, '            params[\'quit\'] = True')
             self._insert_to_file(self.index, '            pprint(\'state=4, quit\')')
             self._insert_to_file(self.index, '            arm.release_state_changed_callback(state_changed_callback)')
@@ -959,7 +960,7 @@ class BlocklyTool(object):
             speed = self.get_nodes('field', root=values[1], descendant=True)[0].text
             wait = self.get_nodes('field', root=values[2], descendant=True)[0].text == 'TRUE'
         if self._show_comment:
-            self._append_to_file('{}# set gripper position and '.format(prefix, 'wait' if wait else 'no wait'))
+            self._append_to_file('{}# set gripper position and {}'.format(prefix, 'wait' if wait else 'no wait'))
         self._append_to_file('{}if arm.error_code == 0 and not params[\'quit\']:'.format(prefix))
         self._append_to_file('{}    code = arm.set_gripper_position({}, wait={}, speed={}, auto_enable=True)'.format(prefix, pos, wait, speed))
         self._append_to_file('{}    if code != 0:'.format(prefix))
@@ -987,8 +988,8 @@ class BlocklyTool(object):
         self._append_to_file('{}    if code != 0:'.format(prefix))
         self._append_to_file('{}        params[\'quit\'] = True'.format(prefix))
         self._append_to_file('{}        pprint(\'set_bio_gripper_enable, code={{}}\'.format(code))'.format(prefix))
-        # self._append_to_file('{}expired = time.time() + 2'.format(prefix))
-        # self._append_to_file('{}while not params[\'quit\'] and time.time() < expired:'.format(prefix))
+        # self._append_to_file('{}expired = time.monotonic() + 2'.format(prefix))
+        # self._append_to_file('{}while not params[\'quit\'] and time.monotonic() < expired:'.format(prefix))
         # self._append_to_file('{}    time.sleep(0.1)'.format(prefix))
 
     def _handle_set_bio_gripper(self, block, prefix='', arg_map=None):
@@ -1340,7 +1341,8 @@ class BlocklyTool(object):
             return arg_map_
         except:
             self._succeed = False
-        self._is_insert = False
+        finally:
+            self._is_insert = False
 
     def _handle_procedures_defreturn(self, block, prefix='', arg_map=None):
         arg_map_ = self._handle_procedures_defnoreturn(block, prefix)
@@ -1399,8 +1401,9 @@ class BlocklyTool(object):
     def _handle_math_change(self, block, prefix='', arg_map=None):
         field = self.get_node('field', block).text
         value = self.get_node('value', root=block)
-        shadow = self.get_node('shadow', root=value)
-        val = self.get_node('field', root=shadow).text
+        # shadow = self.get_node('shadow', root=value)
+        # val = self.get_node('field', root=shadow).text
+        val = self.__get_block_val(value)
         # self._append_to_file('{}params[\'variables\'][\'{}\'] += {}'.format(prefix, field, val))
 
         prefix = self.__check_is_quit(prefix)
@@ -1424,10 +1427,10 @@ class BlocklyTool(object):
         statement = self.get_node('statement', root=block)
         if statement:
             if self._highlight_callback:
-                self._append_to_file('{}t1 = time.time()'.format(prefix))
+                self._append_to_file('{}t1 = time.monotonic()'.format(prefix))
             self.parse(statement, prefix, arg_map=arg_map)
             if self._highlight_callback:
-                self._append_to_file('{}interval = time.time() - t1'.format(prefix))
+                self._append_to_file('{}interval = time.monotonic() - t1'.format(prefix))
                 self._append_to_file('{}if interval < 0.001:'.format(prefix))
                 self._append_to_file('{}    time.sleep(0.001 - interval)'.format(prefix))
         else:
@@ -1450,10 +1453,10 @@ class BlocklyTool(object):
         statement = self.get_node('statement', root=block)
         if statement:
             if self._highlight_callback:
-                self._append_to_file('{}t1 = time.time()'.format(prefix))
+                self._append_to_file('{}t1 = time.monotonic()'.format(prefix))
             self.parse(statement, prefix, arg_map=arg_map)
             if self._highlight_callback:
-                self._append_to_file('{}interval = time.time() - t1'.format(prefix))
+                self._append_to_file('{}interval = time.monotonic() - t1'.format(prefix))
                 self._append_to_file('{}if interval < 0.001:'.format(prefix))
                 self._append_to_file('{}    time.sleep(0.001 - interval)'.format(prefix))
         else:
@@ -1467,10 +1470,10 @@ class BlocklyTool(object):
         statement = self.get_node('statement', root=block)
         if statement:
             if self._highlight_callback:
-                self._append_to_file('{}t1 = time.time()'.format(prefix))
+                self._append_to_file('{}t1 = time.monotonic()'.format(prefix))
             self.parse(statement, prefix, arg_map=arg_map)
             if self._highlight_callback:
-                self._append_to_file('{}interval = time.time() - t1'.format(prefix))
+                self._append_to_file('{}interval = time.monotonic() - t1'.format(prefix))
                 self._append_to_file('{}if interval < 0.001:'.format(prefix))
                 self._append_to_file('{}    time.sleep(0.001 - interval)'.format(prefix))
         else:
@@ -1588,6 +1591,9 @@ class BlocklyTool(object):
         elif block.attrib['type'] == 'gpio_get_controller_digital':
             io = self.get_node('field', block).text
             return 'arm.get_cgpio_digital({})[{}]'.format(io, 1)
+        elif block.attrib['type'] == 'gpio_get_controller_digital_di':
+            io = self.get_node('field', block).text
+            return 'arm.get_cgpio_digital({})[{}]'.format(io, 1)
         elif block.attrib['type'] == 'gpio_get_controller_analog':
             io = self.get_node('field', block).text
             return 'arm.get_cgpio_analog({})[{}]'.format(io, 1)
@@ -1657,7 +1663,7 @@ class BlocklyTool(object):
                     return '{} % 2 == 1'.format(val_a)
                 elif field == 'PRIME':
                     # 质数
-                    return 'gaussian_surface_bug.is_prime({})'.format(val_a)
+                    return 'utils.is_prime({})'.format(val_a)
                 elif field == 'WHOLE':
                     return '{} % 1 == 0'.format(val_a)
                 elif field == 'POSITIVE':
@@ -1812,6 +1818,36 @@ class BlocklyTool(object):
             shadow = self.get_node('shadow', root=block)
             val = self.get_node('field', root=shadow).text
         return val
+
+    def _handle_set_line_track(self, block, prefix='', arg_map=None):
+        fields = self.get_nodes('field', root=block)
+        if fields is not None:
+            pos = fields[0].text
+            speed = fields[1].text
+            wait = True
+        else:
+            values = self.get_nodes('value', root=block)
+            pos = self.get_nodes('field', root=values[0], descendant=True)[0].text
+            speed = self.get_nodes('field', root=values[1], descendant=True)[0].text
+            wait = True
+        if self._show_comment:
+            self._append_to_file('{}# set line track position and '.format(prefix, 'wait' if wait else 'no wait'))
+        self._append_to_file('{}if arm.error_code == 0 and not params[\'quit\']:'.format(prefix))
+        self._append_to_file('{}    code = arm.set_linear_track_pos({}, speed={}, wait={}, auto_enable=True)'.format(prefix, pos, speed, wait))
+        self._append_to_file('{}    if code != 0:'.format(prefix))
+        self._append_to_file('{}        params[\'quit\'] = True'.format(prefix))
+        self._append_to_file('{}        pprint(\'set_linear_track_pos, code={{}}\'.format(code))'.format(prefix))
+
+    def _handle_set_line_track_origin(self, block, prefix='', arg_map=None):
+        if self._show_comment:
+            self._append_to_file('{}# set_line_track_origin(wait=True, auto_enable=True)'.format(prefix))
+        self._append_to_file('{}if arm.error_code == 0 and not params[\'quit\']:'.format(prefix))
+        self._append_to_file('{}    code = arm.set_linear_track_back_origin(wait=True, auto_enable=True)'.format(prefix))
+        self._append_to_file('{}    code = arm.set_linear_track_enable(True)'.format(prefix))
+        self._append_to_file('{}    if code != 0:'.format(prefix))
+        self._append_to_file('{}        params[\'quit\'] = True'.format(prefix))
+        self._append_to_file('{}        pprint(\'line_track_back_origin, code={{}}\'.format(code))'.format(prefix))
+
 
 
 if __name__ == '__main__':

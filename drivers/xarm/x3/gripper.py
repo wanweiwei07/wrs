@@ -8,14 +8,12 @@
 
 import time
 import struct
-from .utils import xarm_is_connected, xarm_is_pause, check_modbus_baud, xarm_is_not_simulation_mode
 from ..core.config.x_config import XCONF
 from ..core.utils.log import logger
 from ..core.utils import convert
 from .code import APIState
 from .gpio import GPIO
-
-GRIPPER_BAUD = 2000000
+from .decorator import xarm_is_connected, xarm_wait_until_not_pause, xarm_is_not_simulation_mode
 
 
 class Gripper(GPIO):
@@ -40,8 +38,10 @@ class Gripper(GPIO):
                or (self.gripper_version_numbers[0] == 3 and self.gripper_version_numbers[1] == 4 and self.gripper_version_numbers[2] >= 3)
 
     @xarm_is_connected(_type='get')
-    @check_modbus_baud(baud=GRIPPER_BAUD, _type='get', default=0)
     def get_gripper_status(self):
+        code = self.checkset_modbus_baud(self._default_gripper_baud)
+        if code != 0:
+            return code, 0
         ret = self.arm_cmd.gripper_modbus_r16s(0x0000, 1)
         ret[0] = self._check_modbus_code(ret, only_check_code=True)
         status = 0
@@ -52,7 +52,7 @@ class Gripper(GPIO):
     @xarm_is_connected(_type='get')
     @xarm_is_not_simulation_mode(ret=(0, '*.*.*'))
     def get_gripper_version(self):
-        code = self.checkset_modbus_baud(GRIPPER_BAUD)
+        code = self.checkset_modbus_baud(self._default_gripper_baud)
         if code != 0:
             return code, '*.*.*'
         versions = ['*', '*', '*']
@@ -87,8 +87,10 @@ class Gripper(GPIO):
 
     @xarm_is_connected(_type='set')
     @xarm_is_not_simulation_mode(ret=0)
-    @check_modbus_baud(baud=GRIPPER_BAUD, _type='set', default=None)
     def set_gripper_enable(self, enable, is_modbus=True):
+        code = self.checkset_modbus_baud(self._default_gripper_baud)
+        if code != 0:
+            return code
         if is_modbus:
             return self._set_modbus_gripper_enable(enable)
         else:
@@ -96,8 +98,10 @@ class Gripper(GPIO):
 
     @xarm_is_connected(_type='set')
     @xarm_is_not_simulation_mode(ret=0)
-    @check_modbus_baud(baud=GRIPPER_BAUD, _type='set', default=None)
     def set_gripper_mode(self, mode, is_modbus=True):
+        code = self.checkset_modbus_baud(self._default_gripper_baud)
+        if code != 0:
+            return code
         if is_modbus:
             return self._set_modbus_gripper_mode(mode)
         else:
@@ -105,8 +109,10 @@ class Gripper(GPIO):
 
     @xarm_is_connected(_type='set')
     @xarm_is_not_simulation_mode(ret=0)
-    @check_modbus_baud(baud=GRIPPER_BAUD, _type='set', default=None)
     def set_gripper_speed(self, speed, is_modbus=True):
+        code = self.checkset_modbus_baud(self._default_gripper_baud)
+        if code != 0:
+            return code
         if is_modbus:
             return self._set_modbus_gripper_speed(speed)
         else:
@@ -114,15 +120,17 @@ class Gripper(GPIO):
 
     @xarm_is_connected(_type='get')
     @xarm_is_not_simulation_mode(ret=(0, 0))
-    @check_modbus_baud(baud=GRIPPER_BAUD, _type='get', default=None)
     def get_gripper_position(self, is_modbus=True):
+        code = self.checkset_modbus_baud(self._default_gripper_baud)
+        if code != 0:
+            return code, None
         if is_modbus:
             return self._get_modbus_gripper_position()
         else:
             return self._get_gripper_position()
 
+    @xarm_wait_until_not_pause
     @xarm_is_connected(_type='set')
-    @xarm_is_pause(_type='set')
     def set_gripper_position(self, pos, wait=False, speed=None, auto_enable=False, timeout=None, is_modbus=True, **kwargs):
         if is_modbus:
             return self._set_modbus_gripper_position(pos, wait=wait, speed=speed, auto_enable=auto_enable, timeout=timeout, **kwargs)
@@ -131,8 +139,10 @@ class Gripper(GPIO):
 
     @xarm_is_connected(_type='get')
     @xarm_is_not_simulation_mode(ret=(0, 0))
-    @check_modbus_baud(baud=GRIPPER_BAUD, _type='get', default=0)
     def get_gripper_err_code(self, is_modbus=True):
+        code = self.checkset_modbus_baud(self._default_gripper_baud)
+        if code != 0:
+            return code, 0
         if is_modbus:
             return self._get_modbus_gripper_err_code()
         else:
@@ -140,8 +150,10 @@ class Gripper(GPIO):
 
     @xarm_is_connected(_type='set')
     @xarm_is_not_simulation_mode(ret=0)
-    @check_modbus_baud(baud=GRIPPER_BAUD, _type='set', default=None)
     def clean_gripper_error(self, is_modbus=True):
+        code = self.checkset_modbus_baud(self._default_gripper_baud)
+        if code != 0:
+            return code
         if is_modbus:
             return self._clean_modbus_gripper_error()
         else:
@@ -149,12 +161,14 @@ class Gripper(GPIO):
 
     @xarm_is_connected(_type='set')
     @xarm_is_not_simulation_mode(ret=0)
-    @check_modbus_baud(baud=GRIPPER_BAUD, _type='set', default=None)
     def set_gripper_zero(self, is_modbus=True):
         """
         Warnning, do not use, may cause the arm to be abnormal,  just for debugging
         :return: 
         """
+        code = self.checkset_modbus_baud(self._default_gripper_baud)
+        if code != 0:
+            return code
         if is_modbus:
             return self._set_modbus_gripper_zero()
         else:
@@ -162,8 +176,10 @@ class Gripper(GPIO):
 
     @xarm_is_connected(_type='set')
     @xarm_is_not_simulation_mode(ret=0)
-    @check_modbus_baud(baud=GRIPPER_BAUD, _type='set', default=None)
     def set_gripper_status(self, status, delay_sec=0):
+        code = self.checkset_modbus_baud(self._default_gripper_baud)
+        if code != 0:
+            return code
         if status:
             code1 = self.set_tgpio_digital(ionum=0, value=1, delay_sec=delay_sec)
             code2 = self.set_tgpio_digital(ionum=1, value=0, delay_sec=delay_sec)
@@ -207,7 +223,7 @@ class Gripper(GPIO):
 
     @xarm_is_connected(_type='set')
     def _set_gripper_position(self, pos, wait=False, speed=None, auto_enable=False, timeout=None, **kwargs):
-        if wait or kwargs.get('wait_motion', True):
+        if kwargs.get('wait_motion', True):
             has_error = self.error_code != 0
             is_stop = self.is_stop
             code = self.wait_move()
@@ -216,7 +232,7 @@ class Gripper(GPIO):
                 return code
         if self.check_is_simulation_robot():
             return 0
-        code = self.checkset_modbus_baud(GRIPPER_BAUD)
+        code = self.checkset_modbus_baud(self._default_gripper_baud)
         if code != 0:
             return code
         if auto_enable:
@@ -236,10 +252,10 @@ class Gripper(GPIO):
                 is_add = True if pos > last_pos else False
             count = 0
             count2 = 0
-            start_time = time.time()
             if not timeout or not isinstance(timeout, (int, float)):
                 timeout = 10
-            while time.time() - start_time < timeout:
+            expired = time.monotonic() + timeout
+            while time.monotonic() < expired:
                 _, p = self._get_gripper_position()
                 if _ == 0 and p is not None:
                     cur_pos = int(p)
@@ -366,10 +382,10 @@ class Gripper(GPIO):
         count2 = 0
         if not timeout or not isinstance(timeout, (int, float)) or timeout <= 0:
             timeout = 10
-        expired = time.time() + timeout
+        expired = time.monotonic() + timeout
         failed_cnt = 0
         code = APIState.WAIT_FINISH_TIMEOUT
-        while self.connected and time.time() < expired:
+        while self.connected and time.monotonic() < expired:
             _, p = self._get_modbus_gripper_position()
             if self._gripper_error_code != 0:
                 print('xArm Gripper ErrorCode: {}'.format(self._gripper_error_code))
@@ -415,9 +431,9 @@ class Gripper(GPIO):
         failed_cnt = 0
         if not timeout or not isinstance(timeout, (int, float)) or timeout <= 0:
             timeout = 10
-        expired = time.time() + timeout
+        expired = time.monotonic() + timeout
         code = APIState.WAIT_FINISH_TIMEOUT
-        while self.connected and time.time() < expired:
+        while self.connected and time.monotonic() < expired:
             _, status = self.get_gripper_status()
             failed_cnt = 0 if _ == 0 else failed_cnt + 1
             if _ == 0:
@@ -439,7 +455,7 @@ class Gripper(GPIO):
 
     @xarm_is_connected(_type='set')
     def _set_modbus_gripper_position(self, pos, wait=False, speed=None, auto_enable=False, timeout=None, **kwargs):
-        if wait or kwargs.get('wait_motion', True):
+        if kwargs.get('wait_motion', True):
             has_error = self.error_code != 0
             is_stop = self.is_stop
             code = self.wait_move()
@@ -448,7 +464,7 @@ class Gripper(GPIO):
                 return code
         if self.check_is_simulation_robot():
             return 0
-        code = self.checkset_modbus_baud(GRIPPER_BAUD)
+        code = self.checkset_modbus_baud(self._default_gripper_baud)
         if code != 0:
             return code
         if auto_enable and not self.gripper_is_enabled:
@@ -509,16 +525,18 @@ class Gripper(GPIO):
         ret[0] = self._check_modbus_code(ret, only_check_code=True)
         return ret[0] if self._gripper_error_code == 0 else APIState.END_EFFECTOR_HAS_FAULT
 
-    @check_modbus_baud(baud=GRIPPER_BAUD, _type='get', default=-99)
     def __bio_gripper_send_modbus(self, data_frame, min_res_len=0):
+        code = self.checkset_modbus_baud(self._default_bio_baud)
+        if code != 0:
+            return code, []
         return self.getset_tgpio_modbus_data(data_frame, min_res_len=min_res_len, ignore_log=True)
 
     def __bio_gripper_wait_motion_completed(self, timeout=5, **kwargs):
         failed_cnt = 0
-        expired = time.time() + timeout
+        expired = time.monotonic() + timeout
         code = APIState.WAIT_FINISH_TIMEOUT
         check_detected = kwargs.get('check_detected', False)
-        while time.time() < expired:
+        while time.monotonic() < expired:
             _, status = self.get_bio_gripper_status()
             failed_cnt = 0 if _ == 0 else failed_cnt + 1
             if _ == 0:
@@ -538,9 +556,9 @@ class Gripper(GPIO):
 
     def __bio_gripper_wait_enable_completed(self, timeout=3):
         failed_cnt = 0
-        expired = time.time() + timeout
+        expired = time.monotonic() + timeout
         code = APIState.WAIT_FINISH_TIMEOUT
-        while time.time() < expired:
+        while time.monotonic() < expired:
             _, status = self.get_bio_gripper_status()
             failed_cnt = 0 if _ == 0 else failed_cnt + 1
             if _ == 0:
@@ -579,7 +597,7 @@ class Gripper(GPIO):
 
     @xarm_is_connected(_type='set')
     def set_bio_gripper_position(self, pos, speed=0, wait=True, timeout=5, **kwargs):
-        if wait or kwargs.get('wait_motion', True):
+        if kwargs.get('wait_motion', True):
             has_error = self.error_code != 0
             is_stop = self.is_stop
             code = self.wait_move()
@@ -677,3 +695,21 @@ class Gripper(GPIO):
         self.log_api_info('API -> clean_bio_gripper_error -> code={}'.format(code), code=code)
         self.get_bio_gripper_status()
         return code
+
+    @xarm_is_connected(_type='set')
+    def open_lite6_gripper(self):
+        code1 = self.set_tgpio_digital(0, 1)
+        code2 = self.set_tgpio_digital(1, 0)
+        return code1 if code2 == 0 else code2
+
+    @xarm_is_connected(_type='set')
+    def close_lite6_gripper(self):
+        code1 = self.set_tgpio_digital(0, 0)
+        code2 = self.set_tgpio_digital(1, 1)
+        return code1 if code2 == 0 else code2
+
+    @xarm_is_connected(_type='set')
+    def stop_lite6_gripper(self):
+        code1 = self.set_tgpio_digital(0, 0)
+        code2 = self.set_tgpio_digital(1, 0)
+        return code1 if code2 == 0 else code2

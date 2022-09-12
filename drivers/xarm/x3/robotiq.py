@@ -9,10 +9,8 @@
 import time
 from ..core.utils.log import logger
 from .code import APIState
-from .utils import xarm_is_connected, check_modbus_baud, xarm_is_not_simulation_mode
 from .base import Base
-
-ROBOTIQ_BAUD = 115200
+from .decorator import xarm_is_connected, xarm_is_not_simulation_mode
 
 
 class RobotIQ(Base):
@@ -42,8 +40,10 @@ class RobotIQ(Base):
     def robotiq_status(self):
         return self._robotiq_status
 
-    @check_modbus_baud(baud=ROBOTIQ_BAUD, _type='get', default=-99)
     def __robotiq_send_modbus(self, data_frame, min_res_len=0):
+        code = self.checkset_modbus_baud(self._default_robotiq_baud)
+        if code != 0:
+            return code, []
         return self.getset_tgpio_modbus_data(data_frame, min_res_len=min_res_len, ignore_log=True)
 
     @xarm_is_connected(_type='get')
@@ -99,7 +99,7 @@ class RobotIQ(Base):
 
     @xarm_is_connected(_type='get')
     def robotiq_set_position(self, pos, speed=0xFF, force=0xFF, wait=True, timeout=5, **kwargs):
-        if wait or kwargs.get('wait_motion', True):
+        if kwargs.get('wait_motion', True):
             has_error = self.error_code != 0
             is_stop = self.is_stop
             code = self.wait_move()
@@ -135,9 +135,9 @@ class RobotIQ(Base):
 
     def robotiq_wait_activation_completed(self, timeout=3):
         failed_cnt = 0
-        expired = time.time() + timeout if timeout is not None and timeout > 0 else 0
+        expired = time.monotonic() + timeout if timeout is not None and timeout > 0 else 0
         code = APIState.WAIT_FINISH_TIMEOUT
-        while expired == 0 or time.time() < expired:
+        while expired == 0 or time.monotonic() < expired:
             _, ret = self.robotiq_get_status(number_of_registers=3)
             failed_cnt = 0 if _ == 0 else failed_cnt + 1
             if _ == 0:
@@ -154,10 +154,10 @@ class RobotIQ(Base):
 
     def robotiq_wait_motion_completed(self, timeout=5, **kwargs):
         failed_cnt = 0
-        expired = time.time() + timeout if timeout is not None and timeout > 0 else 0
+        expired = time.monotonic() + timeout if timeout is not None and timeout > 0 else 0
         code = APIState.WAIT_FINISH_TIMEOUT
         check_detected = kwargs.get('check_detected', False)
-        while expired == 0 or time.time() < expired:
+        while expired == 0 or time.monotonic() < expired:
             _, ret = self.robotiq_get_status(number_of_registers=3)
             failed_cnt = 0 if _ == 0 else failed_cnt + 1
             if _ == 0:

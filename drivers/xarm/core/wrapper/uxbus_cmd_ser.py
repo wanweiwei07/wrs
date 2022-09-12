@@ -39,6 +39,12 @@ class UxbusCmdSer(UxbusCmd):
     def has_err_warn(self, value):
         self._has_err_warn = value
 
+    def set_prot_flag(self, prot_flag):
+        return 0
+    
+    def get_prot_flag(self):
+        return 0
+
     def check_xbus_prot(self, data, funcode=0):
         self._state_is_ready = not (data[3] & 0x10)
         if data[3] & 0x08:
@@ -55,10 +61,10 @@ class UxbusCmdSer(UxbusCmd):
 
     def send_pend(self, funcode, num, timeout):
         ret = [0] * 254 if num == -1 else [0] * (num + 1)
-        expired = time.time() + timeout
+        expired = time.monotonic() + timeout
         ret[0] = XCONF.UxbusState.ERR_TOUT
-        while time.time() < expired:
-            remaining = expired - time.time()
+        while time.monotonic() < expired:
+            remaining = expired - time.monotonic()
             rx_data = self.arm_port.read(remaining)
             if rx_data != -1 and len(rx_data) > 5:
                 if self._debug:

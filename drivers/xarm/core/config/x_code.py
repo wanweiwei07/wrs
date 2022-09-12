@@ -51,7 +51,7 @@ ServoCodeMap = {
     15: {
         'en': {
             'title': 'Joints Overheat',
-            'desc': 'If the rbt_s arm is running for a long time, please stop running and restart the xArm after it\'s cool down. If multiple reboots are not working, please contact technical support.',
+            'desc': 'If the robot arm is running for a long time, please stop running and restart the xArm after it\'s cool down. If multiple reboots are not working, please contact technical support.',
         },
         'cn': {
             'title': '关节过热',
@@ -71,7 +71,7 @@ ServoCodeMap = {
     17: {
         'en': {
             'title': 'Single Ring Encoder Error',
-            'desc': 'Please re-enable the rbt_s.',
+            'desc': 'Please re-enable the robot.',
         },
         'cn': {
             'title': '单圈编码器故障',
@@ -101,7 +101,7 @@ ServoCodeMap = {
     20: {
         'en': {
             'title': 'Driver IC Hardware Error',
-            'desc': 'Please re-enable the rbt_s. If it appears frequently, please contact technical support.',
+            'desc': 'Please re-enable the robot. If it appears frequently, please contact technical support.',
         },
         'cn': {
             'title': '驱动IC硬件异常',
@@ -427,7 +427,7 @@ ControllerErrorCodeMap = {
     1: {
         'en': {
             'title': 'The Emergency Stop Button on the xArm Controller is pushed in to stop',
-            'desc': 'Please release the Emergency Stop Button, and then re-enable the rbt_s'
+            'desc': 'Please release the Emergency Stop Button, and then re-enable the robot'
         },
         'cn': {
             'title': '控制器上的紧急停止按钮被按下',
@@ -437,7 +437,7 @@ ControllerErrorCodeMap = {
     2: {
         'en': {
             'title': 'The Emergency IO of the Control Box is triggered',
-            'desc': 'Please ground the 2 EIs of the Control Box, and then re-enable the rbt_s'
+            'desc': 'Please ground the 2 EIs of the Control Box, and then re-enable the robot'
         },
         'cn': {
             'title': '控制器上的紧急停止IO被触发',
@@ -447,7 +447,7 @@ ControllerErrorCodeMap = {
     3: {
         'en': {
             'title': 'The Emergency Stop Button of the Three-state Switch is pressed',
-            'desc': 'Please release the Emergency Stop Button of the Three-state Switch, and then re-enable the rbt_s'
+            'desc': 'Please release the Emergency Stop Button of the Three-state Switch, and then re-enable the robot'
         },
         'cn': {
             'title': '三态开关的紧急停止按钮被按下',
@@ -534,14 +534,24 @@ ControllerErrorCodeMap = {
             'desc': ''
         }
     },
-    19: {
+    18: {
         'en': {
-            'title': 'Gripper Communication Error',
-            'desc': 'Please check whether gripper is installed and the baud rate setting is correct'
+            'title': 'Force Torque Sensor Communication Error',
+            'desc': 'Please check whether the force torque sensor is installed.'
         },
         'cn': {
-            'title': '机械爪通信失败',
-            'desc': '请检查机械爪是否安装，波特率设置是否正确'
+            'title': '力矩传感器通信失败',
+            'desc': '请检查力矩传感器是否安装'
+        }
+    },
+    19: {
+        'en': {
+            'title': 'End Effector Communication Error',
+            'desc': 'Please check whether end effector is installed and the baud rate setting is correct'
+        },
+        'cn': {
+            'title': '末端工具通信失败',
+            'desc': '请检查末端工具是否安装，波特率设置是否正确'
         }
     },
     21: {
@@ -557,7 +567,7 @@ ControllerErrorCodeMap = {
     22: {
         'en': {
             'title': 'Self-Collision Error',
-            'desc': 'The rbt_s is about to collide with itself. Please re-plan the path. If the rbt_s reports the self-collision error continually, please turn on the manual mode and drag the robotic back to the normal area.'
+            'desc': 'The robot is about to collide with itself. Please re-plan the path. If the robot reports the self-collision error continually, please turn on the manual mode and drag the robotic back to the normal area.'
         },
         'cn': {
             'title': '自碰撞错误',
@@ -697,7 +707,7 @@ ControllerErrorCodeMap = {
     37: {
         'en': {
             'title': 'Abnormal movement in Manual Mode',
-            'desc': 'Please check whether the TCP payload setting and mounting setting of the rbt_s arm are correct.'
+            'desc': 'Please check whether the TCP payload setting and mounting setting of the robot arm are correct.'
         },
         'cn': {
             'title': '手动模式运动异常',
@@ -721,6 +731,66 @@ ControllerErrorCodeMap = {
         },
         'cn': {
             'title': '电源板主从IC通信异常',
+            'desc': '请联系技术支持。'
+        }
+    },
+    50: {
+        'en': {
+            'title': 'Six-axis Force Torque Sensor read error',
+            'desc': ''
+        },
+        'cn': {
+            'title': '六维力矩传感器读取数据错误',
+            'desc': ''
+        }
+    },
+    51: {
+        'en': {
+            'title': 'Six-axis Force Torque Sensor set mode error',
+            'desc': ''
+        },
+        'cn': {
+            'title': '六维力矩传感器设置模式错误',
+            'desc': ''
+        }
+    },
+    52: {
+        'en': {
+            'title': 'Six-axis Force Torque Sensor set zero error',
+            'desc': ''
+        },
+        'cn': {
+            'title': '六维力矩传感器设置零点错误',
+            'desc': ''
+        }
+    },
+    53: {
+        'en': {
+            'title': 'Six-axis Force Torque Sensor is overloaded or the reading exceeds the limit',
+            'desc': ''
+        },
+        'cn': {
+            'title': '六维力矩传感器过载或读数超限',
+            'desc': ''
+        }
+    },
+    110: {
+        'en': {
+            'title': 'Robot Arm Base Board Communication Error',
+            'desc': 'Please contact technical support.'
+        },
+        'cn': {
+            'title': '机械臂底座板通信异常',
+            'desc': '请联系技术支持。'
+        }
+    },
+    111: {
+        'en': {
+            'title': 'Control Box External 485 Device Communication Error',
+            'desc': 'Please contact technical support.'
+        },
+        'cn': {
+            'title': '控制器外接485设备通信异常',
             'desc': '请联系技术支持。'
         }
     },
@@ -774,6 +844,16 @@ ControllerWarnCodeMap = {
         },
         'cn': {
             'title': '用户指令和参数无解',
+            'desc': ''
+        }
+    },
+    15: {
+        'en': {
+            'title': 'Modbus cmd full',
+            'desc': ''
+        },
+        'cn': {
+            'title': 'Modbus指令已满',
             'desc': ''
         }
     },
@@ -937,6 +1017,282 @@ BioGripperErrorCodeMap = {
     },
 }
 
+LinearTrackErrorCodeMap = {
+    10: {
+        'en': {
+            'title': 'Linear Motor Current Detection Error',
+            'desc': 'Please restart the Controller. If multiple reboots are not working, please contact technical support.',
+        },
+        'cn': {
+            'title': '直线滑轨电流检测异常',
+            'desc': '请重启控制器。如多次重启无效，请联系技术支持。',
+        }
+      },
+    11: {
+        'en': {
+            'title': 'Linear Motor Current Overlimit',
+            'desc': 'Please clear the Linear Motor error. If it reports the same error repeatedly, please contact technical support.',
+        },
+        'cn': {
+            'title': '直线滑轨电流过大',
+            'desc': '请清除直线滑轨报错。如反复报错，请联系技术支持。',
+        }
+    },
+    12: {
+        'en': {
+            'title': 'Linear Motor Speed Overlimit',
+            'desc': 'Please clear the Linear Motor error. If it reports the same error repeatedly, please contact technical support.',
+        },
+        'cn': {
+            'title': '直线滑轨速度过大',
+            'desc': '请清除直线滑轨报错。如反复报错，请联系技术支持。',
+        }
+    },
+    13: {
+        'en': {
+            'title': 'Linear Motor Large Motor Position Deviation',
+            'desc': 'Please check if the movement of the Linear Motor is blocked, if not, please clear the Linear Motor error. If it reports the same error repeatedly, please contact technical support.',
+        },
+        'cn': {
+            'title': '直线滑轨电机位置偏差过大',
+            'desc': '请检查直线滑轨运动是否受阻，如直线滑轨运动未受阻，请清除直线滑轨报错。如反复报错，请联系技术支持。',
+        }
+    },
+    14: {
+        'en': {
+            'title': 'Linear Motor Position Command Overlimit',
+            'desc': 'Please clear the Linear Motor error. If it reports the same error repeatedly, please contact technical support.',
+        },
+        'cn': {
+            'title': '直线滑轨位置指令过大',
+            'desc': '请清除直线滑轨报错。如反复报错，请联系技术支持。',
+        }
+    },
+    20: {
+        'en': {
+            'title': 'Linear Motor Driver IC Hardware Error',
+            'desc': 'Please clear the Linear Motor error. If it reports the same error repeatedly, please contact technical support.',
+        },
+        'cn': {
+            'title': '直线滑轨驱动IC硬件异常',
+            'desc': '请清除直线滑轨报错。如反复报错，请联系技术支持。',
+        }
+    },
+    21: {
+        'en': {
+            'title': 'Linear Motor Driver IC Initialization Error',
+            'desc': 'Please clear the Linear Motor error. If it reports the same error repeatedly, please contact technical support.',
+        },
+        'cn': {
+            'title': '直线滑轨驱动IC初始化异常',
+            'desc': '请清除直线滑轨报错。如反复报错，请联系技术支持。',
+        }
+    },
+    25: {
+        'en': {
+            'title': 'Linear Motor Command Over Software Limit',
+            'desc': 'Please check if the Linear Motor command is set beyond the software limit. If it reports the same error repeatedly, please contact technical support.',
+        },
+        'cn': {
+            'title': '直线滑轨指令超软件限位',
+            'desc': '请检测直线滑轨指令是否设置超出软件限制。如频繁出现，请联系技术支持。',
+        }
+    },
+    26: {
+        'en': {
+            'title': 'Linear Motor Feedback Position Software Limit',
+            'desc': 'Please contact technical support.',
+        },
+        'cn': {
+            'title': '直线滑轨反馈位置超限软件限位',
+            'desc': '请联系技术支持。',
+        }
+    },
+    33: {
+        'en': {
+            'title': 'Linear Motor Drive Overloaded',
+            'desc': 'Please contact technical support.',
+        },
+        'cn': {
+            'title': '直线滑轨驱动器过载',
+            'desc': '请联系技术支持。',
+        }
+    },
+    34: {
+        'en': {
+            'title': 'Linear Motor Motor Overload',
+            'desc': 'Please contact technical support.',
+        },
+        'cn': {
+            'title': '直线滑轨电机过载',
+            'desc': '请联系技术支持。',
+        }
+    },
+    35: {
+        'en': {
+            'title': 'Linear Motor type error',
+            'desc': 'Please contact technical support.',
+        },
+        'cn': {
+            'title': '直线滑轨电机类型错误',
+            'desc': '请联系技术支持。',
+        }
+    },
+    36: {
+        'en': {
+            'title': 'Linear Motor Driver Type Error',
+            'desc': 'Please clear the Linear Motor error. If it reports the same error repeatedly, please contact technical support.',
+        },
+        'cn': {
+            'title': '直线滑轨驱动器类型错误',
+            'desc': '请清除直线滑轨报错。如反复报错，请联系技术支持。',
+        }
+    },
+    39: {
+        'en': {
+            'title': 'Linear Motor over voltage',
+            'desc': 'please contact technical support.',
+        },
+        'cn': {
+            'title': '直线滑轨过压',
+            'desc': '请联系技术支持。',
+        }
+    },
+    40: {
+        'en': {
+            'title': 'Linear Moter undervoltage',
+            'desc': 'please contact technical support.',
+        },
+        'cn': {
+            'title': '直线滑轨欠压',
+            'desc': '请联系技术支持。',
+        }
+    },
+    49: {
+        'en': {
+            'title': 'Linear Motor EEPROM Read and Write Error',
+            'desc': 'Please clear the Linear Motor error. If it reports the same error repeatedly, please contact technical support.',
+        },
+        'cn': {
+            'title': '直线滑轨EEPROM读写错误',
+            'desc': '请清除直线滑轨报错。如反复报错，请联系技术支持。',
+        }
+    },
+    'other': {
+        'en': {
+            'title': 'Linear Motor Error',
+            'desc': 'Please clear the Linear Motor error. If it reports the same error repeatedly, please contact technical support.',
+        },
+        'cn': {
+            'title': '直线滑轨异常',
+            'desc': '请清除直线滑轨报错。如反复报错，请联系技术支持。',
+        }
+    },
+}
+
+FtSensorErrorCodeMap = {
+    64: {
+        'en': {
+            'title': 'Six-axis Force Torque Sensor Communication Failure',
+            'desc': '',
+        },
+        'cn': {
+            'title': '力矩出现通讯中断',
+            'desc': '',
+        }
+    },
+    65: {
+        'en': {
+            'title': 'The Data Collected by the Six-axis Force Torque Sensor is Abnormal',
+            'desc': '',
+        },
+        'cn': {
+            'title': '力矩采集数据不变化',
+            'desc': '',
+        }
+    },
+    66: {
+        'en': {
+            'title': 'Six-axis Force Torque Sensor X-direction Torque Exceeds Limit',
+            'desc': '',
+        },
+        'cn': {
+            'title': '六维力矩传感器的Fx超限',
+            'desc': '',
+        }
+    },
+    67: {
+        'en': {
+            'title': 'Six-axis Force Torque Sensor Y-direction Torque Exceeds Limit',
+            'desc': '',
+        },
+        'cn': {
+            'title': '六维力矩传感器的Fy超限',
+            'desc': '',
+        }
+    },
+    68: {
+        'en': {
+            'title': 'Six-axis Force Torque Sensor Z-direction Torque Exceeds Limitrection',
+            'desc': '',
+        },
+        'cn': {
+            'title': '六维力矩传感器的Fz超限',
+            'desc': '',
+        }
+    },
+    69: {
+        'en': {
+            'title': 'Six-axis Force Torque Sensor Tx Torque Exceeds Limit',
+            'desc': '',
+        },
+        'cn': {
+            'title': '六维力矩传感器的Tx超限',
+            'desc': '',
+        }
+    },
+    70: {
+        'en': {
+            'title': 'Six-axis Force Torque Sensor Ty direction Torque Exceeds Limit',
+            'desc': '',
+        },
+        'cn': {
+            'title': '六维力矩传感器的Ty超限',
+            'desc': '',
+        }
+    },
+    71: {
+        'en': {
+            'title': 'Six-axis Force Torque Sensor Tz direction Torque Exceeds Limit',
+            'desc': '',
+        },
+        'cn': {
+            'title': '六维力矩传感器的Tz超限',
+            'desc': '',
+        }
+    },
+    73: {
+        'en': {
+            'title': 'Six-axis Force Torque Sensor Failed to Initialize',
+            'desc': '',
+        },
+        'cn': {
+            'title': '六维力矩传感器初始化不成功',
+            'desc': '',
+        }
+    },
+    'other': {
+        'en': {
+            'title': 'Six-axis Force Torque Sensor Error',
+            'desc': '',
+        },
+        'cn': {
+            'title': '六维力矩传感器异常',
+            'desc': '',
+        }
+    },
+}
+
 
 class BaseCode(object):
     def __init__(self, code, status=0):
@@ -993,7 +1349,7 @@ class ServoError(BaseCode):
 
 class GripperError(BaseCode):
     def __init__(self, code, status=0):
-        self._code_map = GripperError
+        self._code_map = GripperErrorCodeMap
         super(GripperError, self).__init__(code, status=status)
 
 
@@ -1008,3 +1364,14 @@ class RobotIqError(BaseCode):
         self._code_map = RobotiqErrorCodeMap
         super(RobotIqError, self).__init__(code, status=status)
 
+
+class LinearTrackError(BaseCode):
+    def __init__(self, code, status=0):
+        self._code_map = LinearTrackErrorCodeMap
+        super(LinearTrackError, self).__init__(code, status=status)
+
+
+class FtSensorError(BaseCode):
+    def __init__(self, code, status=0):
+        self._code_map = FtSensorErrorCodeMap
+        super(FtSensorError, self).__init__(code, status=status)
