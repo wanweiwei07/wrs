@@ -5,7 +5,7 @@ Reference: XArm Developer Manual (http://download.ufactory.cc/xarm/en/xArm%20Dev
            XArm Python SDK (https://github.com/xArm-Developer/xArm-Python-SDK)
 """
 
-from typing import Literal, Optional
+from typing import Optional
 
 import numpy as np
 
