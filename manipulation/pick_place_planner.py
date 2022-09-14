@@ -396,7 +396,7 @@ class PickPlacePlanner(adp.ADPlanner):
                                         approach_distance_list=approach_distance_list,
                                         ad_granularity=.003,
                                         use_rrt=use_rrt,
-                                        obstacle_list=[],
+                                        obstacle_list=obstacle_list,
                                         seed_jnt_values=conf_list_approach[-1])
             if conf_list_middle is None:
                 continue

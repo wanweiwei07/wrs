@@ -303,33 +303,34 @@ def nodepath_from_vvnf(vertices, vertnormals, triangles, name=''):
     return pandanp
 
 
-def pandageom_from_points(vertices, rgba_list=None, name=''):
+def pandageom_from_points(vertices, rgba=None, name=''):
     """
     pack the vertices into a panda3d point cloud geom
     :param vertices:
-    :param rgba_list: a list with a single 1x4 nparray or with len(vertices) 1x4 nparray
+    :param rgba: rgba color for each vertex, can be list or nparray (rgb is also acceptable)
     :param name:
     :return:
     author: weiwei
-    date: 20170328, 20210116
+    date: 20170328, 20210116, 20220721
     """
-    if rgba_list is None:
+    if rgba is None:
         # default
-        vertex_rgbas = np.array([[0, 0, 0, 255]] * len(vertices), dtype=np.uint8)
-    elif type(rgba_list) is not list:
-        raise Exception('rgba\_list must be a list!')
-    elif len(rgba_list) == 1:
-        vertex_rgbas = np.tile((np.array(rgba_list[0]) * 255).astype(np.uint8), (len(vertices), 1))
-    elif len(rgba_list) == len(vertices):
-        vertex_rgbas = (np.array(rgba_list) * 255).astype(np.uint8)
-    else:
-        raise ValueError('rgba_list must be a list of one or len(vertices) 1x4 nparray!')
+        vertex_rgbas = np.asarray([[0, 0, 0, 255]] * len(vertices), dtype=np.uint8)
+    if isinstance(rgba, list):
+        rgba = np.array(rgba)
+    if not isinstance(rgba, np.array):
+        raise ValueError('rgba must be a list or an nparray!')
+    if len(rgba) == 1:
+        vertex_rgbas = np.tile((rgba * 255).astype(np.uint8), (len(vertices), 1))
+    elif len(rgba) == len(vertices):
+        vertex_rgbas = (rgba * 255).astype(np.uint8)
+    n_color_bit = rgba.shape[1]
     vertformat = GeomVertexFormat()
     arrayformat = GeomVertexArrayFormat()
     arrayformat.addColumn(InternalName.getVertex(), 3, GeomEnums.NTFloat32, GeomEnums.CPoint)
     vertformat.addArray(arrayformat)
     arrayformat = GeomVertexArrayFormat()
-    arrayformat.addColumn(InternalName.getColor(), 4, GeomEnums.NTUint8, GeomEnums.CColor)
+    arrayformat.addColumn(InternalName.getColor(), n_color_bit, GeomEnums.NTUint8, GeomEnums.CColor)
     vertformat.addArray(arrayformat)
     vertformat = GeomVertexFormat.registerFormat(vertformat)
     vertexdata = GeomVertexData(name, vertformat, Geom.UHStatic)
