@@ -46,6 +46,9 @@ class TestXArmLite6X(unittest.TestCase):
         et = time.time()
         print(f"IK solution is {repr(iks)}. Time consuming is {1000000 * (et - st)} us")
 
+    def test_reset(self):
+        self.armx.reset()
+
 
 if __name__ == '__main__':
     unittest.main()
