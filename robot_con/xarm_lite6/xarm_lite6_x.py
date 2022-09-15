@@ -125,6 +125,12 @@ class XArmLite6X(object):
             self._arm_x.arm.set_mode(1)
             self._arm_x.arm.set_state(state=0)
 
+    def reset(self):
+        self._arm_x.reset()
+
+    def homeconf(self):
+        self.move_j(jnt_val=np.array([0., 0.173311, 0.555015, 0., 0.381703, 0.]), )
+
     def ik(self, tgt_pos: np.ndarray, tgt_rot: np.ndarray) -> np.ndarray:
         """
 

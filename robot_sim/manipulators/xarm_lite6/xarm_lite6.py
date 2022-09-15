@@ -20,7 +20,8 @@ import robot_sim.manipulators.manipulator_interface as mi
 
 class XArmLite6(mi.ManipulatorInterface):
 
-    def __init__(self, pos=np.zeros(3), rotmat=np.eye(3), homeconf=np.zeros(6), name='xarm_lite6', enable_cc=True):
+    def __init__(self, pos=np.zeros(3), rotmat=np.eye(3), homeconf=np.array([0., 0.173311, 0.555015, 0., 0.381703, 0.]),
+                 name='xarm_lite6', enable_cc=True):
         super().__init__(pos=pos, rotmat=rotmat, name=name)
         this_dir, this_filename = os.path.split(__file__)
         self.jlc = jl.JLChain(pos=pos, rotmat=rotmat, homeconf=homeconf, name=name)
