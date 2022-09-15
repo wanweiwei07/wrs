@@ -10,7 +10,7 @@ import multiprocessing as mp
 import numpy as np
 import pyrealsense2 as rs
 
-VERSION = "0.0.1"
+__VERSION__ = '0.0.1'
 PROCESS_SLEEP_TIME = .1
 # Read chapter 4 of datasheet for details
 DEPTH_RESOLUTION = (1280, 720)
