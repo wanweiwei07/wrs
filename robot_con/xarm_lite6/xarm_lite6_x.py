@@ -11,7 +11,13 @@ import numpy as np
 
 import basis.robot_math as rm
 import drivers.xarm.wrapper.xarm_api as arm
-import motion.trajectory.piecewisepoly_toppra as pwp
+
+try:
+    import motion.trajectory.piecewisepoly_toppra as pwp
+
+    TOPPRA_EXIST = True
+except:
+    TOPPRA_EXIST = False
 
 __VERSION__ = '0.0.1'
 
@@ -180,7 +186,8 @@ class XArmLite6X(object):
         self._ex_ret_code(code)
         return self.pos_unit_xarm2wrs(np.array(pose[:3])), rm.rotmat_from_euler(*pose[3:])
 
-    def move_j(self, jnt_val: np.ndarray,
+    def move_j(self,
+               jnt_val: np.ndarray,
                speed: Optional[float] = None,
                is_rel_mov: bool = False,
                wait: bool = True) -> bool:
@@ -224,10 +231,12 @@ class XArmLite6X(object):
         assert path_rad is None or path_rad >= 0
         self._position_mode()
         if pos is not None:
+            pos = np.array(pos)
             pos = self.pos_unit_wrs2xarm(pos)
         else:
             pos = [None] * 3
         if rot is not None:
+            rot = np.array(rot)
             if rot.shape == (3, 3):
                 rpy = rm.rotmat_to_euler(rot)
             else:
@@ -258,21 +267,24 @@ class XArmLite6X(object):
         :return:
         author: weiwei
         """
-        # enter servo mode
-        self._servo_mode()
-        if not path or path is None:
-            raise ValueError("The given is incorrect!")
-        control_frequency = .005
-        tpply = pwp.PiecewisePolyTOPPRA()
-        interpolated_path = tpply.interpolate_by_max_spdacc(path=path,
-                                                            control_frequency=control_frequency,
-                                                            max_vels=max_jntvel,
-                                                            max_accs=max_jntacc,
-                                                            toggle_debug=toggle_debug)
-        interpolated_path = interpolated_path[start_frame_id:]
-        for jnt_values in interpolated_path:
-            self._arm_x.set_servo_angle_j(jnt_values, is_radian=True)
-        return
+        if TOPPRA_EXIST:
+            # enter servo mode
+            self._servo_mode()
+            if not path or path is None:
+                raise ValueError("The given is incorrect!")
+            control_frequency = .005
+            tpply = pwp.PiecewisePolyTOPPRA()
+            interpolated_path = tpply.interpolate_by_max_spdacc(path=path,
+                                                                control_frequency=control_frequency,
+                                                                max_vels=max_jntvel,
+                                                                max_accs=max_jntacc,
+                                                                toggle_debug=toggle_debug)
+            interpolated_path = interpolated_path[start_frame_id:]
+            for jnt_values in interpolated_path:
+                self._arm_x.set_servo_angle_j(jnt_values, is_radian=True)
+            return
+        else:
+            raise NotImplementedError
 
     def __del__(self):
         self._arm_x.disconnect()
