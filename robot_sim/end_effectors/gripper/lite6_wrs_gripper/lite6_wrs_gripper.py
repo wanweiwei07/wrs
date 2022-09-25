@@ -24,7 +24,7 @@ class Lite6WRSGripper(gp.GripperInterface):
         self.lft.lnks[0]['collision_model'] = cm.CollisionModel(os.path.join(this_dir, "meshes", "base.stl"),
                                                                 cdprimit_type="user_defined", expand_radius=.001,
                                                                 userdefined_cdprimitive_fn=self._hnd_base_cdnp)
-        self.lft.lnks[0]['rgba'] = [.5, .5, .5, 1]
+        self.lft.lnks[0]['rgba'] = [.77, .77, .77, 1]
         self.lft.jnts[1]['loc_pos'] = np.array([0, 0.0040, 0.089])
         self.lft.jnts[1]['loc_rotmat'] = rm.rotmat_from_euler(0, 0, math.pi)
         self.lft.jnts[1]['type'] = 'prismatic'
@@ -65,8 +65,8 @@ class Lite6WRSGripper(gp.GripperInterface):
         collision_primitive_c1 = CollisionBox(Point3(.008, 0.028 - .002, -.011),
                                               x=.018 + radius, y=0.008 + radius, z=.011 + radius)
         collision_node.addSolid(collision_primitive_c1)
-        collision_primitive_c2 = CollisionBox(Point3(-.005, 0.012 - .002, -.002 + .01),
-                                              x=.005 + radius, y=0.008 + radius, z=.002 + .01 + radius)
+        collision_primitive_c2 = CollisionBox(Point3(-.005, 0.012 - .002, -.002 + .0025),
+                                              x=.005 + radius, y=0.008 + radius, z=.002 + .0025 + radius)
         collision_node.addSolid(collision_primitive_c2)
         return collision_node
 
