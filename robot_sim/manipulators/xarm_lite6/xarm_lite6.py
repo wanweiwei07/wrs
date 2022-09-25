@@ -72,7 +72,10 @@ class XArmLite6(mi.ManipulatorInterface):
         self.jlc.lnks[2]['loc_pos'] = np.zeros(3)
         self.jlc.lnks[2]['com'] = np.array([0.179, .0, .0584])
         self.jlc.lnks[2]['mass'] = 1.34
-        self.jlc.lnks[2]['mesh_file'] = os.path.join(this_dir, "meshes", "link2.stl")
+        self.jlc.lnks[2]['mesh_file'] = cm.CollisionModel(os.path.join(this_dir, "meshes", "link2.stl"),
+                                                          cdprimit_type="user_defined",
+                                                          userdefined_cdprimitive_fn=self._link2_cdnp)
+        # os.path.join(this_dir, "meshes", "link2.stl")
         self.jlc.lnks[2]['rgba'] = [.5, .5, .5, 1.0]
         # link 3
         self.jlc.lnks[3]['name'] = "link3"
@@ -135,6 +138,20 @@ class XArmLite6(mi.ManipulatorInterface):
         collision_node.addSolid(collision_primitive_c1)
         return collision_node
 
+    @staticmethod
+    def _link2_cdnp(name, radius):
+        collision_node = CollisionNode(name)
+        collision_primitive_c0 = CollisionBox(Point3(0, 0, 0.1065),
+                                              x=.041 + radius, y=.042 + radius, z=0.0315 + radius)
+        collision_node.addSolid(collision_primitive_c0)
+        collision_primitive_c1 = CollisionBox(Point3(0.100, 0, 0.1065),
+                                              x=.059 + radius, y=.042 + radius, z=0.0315 + radius)
+        collision_node.addSolid(collision_primitive_c1)
+        collision_primitive_c2 = CollisionBox(Point3(.2, 0, 0.0915),
+                                              x=.041 + radius, y=.042 + radius, z=0.0465 + radius)
+        collision_node.addSolid(collision_primitive_c2)
+        return collision_node
+
     def enable_cc(self):
         super().enable_cc()
         self.cc.add_cdlnks(self.jlc, [0, 1, 2, 3, 4, 5, 6])
@@ -163,6 +180,7 @@ if __name__ == '__main__':
     gm.gen_frame().attach_to(base)
     manipulator_instance = XArmLite6(enable_cc=True)
     random_conf = manipulator_instance.rand_conf()
+    random_conf = np.array([0, 0, np.radians(180), 0, 0, 0])
     manipulator_instance.fk(random_conf)
     manipulator_meshmodel = manipulator_instance.gen_meshmodel()
     manipulator_meshmodel.attach_to(base)

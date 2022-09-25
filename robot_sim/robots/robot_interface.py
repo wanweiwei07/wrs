@@ -121,7 +121,7 @@ class RobotInterface(object):
     def cvt_loc_tcp_to_gl(self, manipulator_name, rel_obj_pos, rel_obj_rotmat):
         return self.manipulator_dict[manipulator_name].cvt_loc_tcp_to_gl(rel_obj_pos, rel_obj_rotmat)
 
-    def is_collided(self, obstacle_list=[], otherrobot_list=[], toggle_contact_points=False):
+    def is_collided(self, obstacle_list=None, otherrobot_list=None, toggle_contact_points=False):
         """
         Interface for "is cdprimit collided", must be implemented in child class
         :param obstacle_list:
@@ -131,6 +131,10 @@ class RobotInterface(object):
         author: weiwei
         date: 20201223
         """
+        if obstacle_list is None:
+            obstacle_list = []
+        if otherrobot_list is None:
+            otherrobot_list = []
         collision_info = self.cc.is_collided(obstacle_list=obstacle_list,
                                              otherrobot_list=otherrobot_list,
                                              toggle_contact_points=toggle_contact_points)

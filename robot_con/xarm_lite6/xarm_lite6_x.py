@@ -144,13 +144,13 @@ class XArmLite6X(object):
         :param tgt_rot: The 3x3 Rotation matrix or 1x3 RPY matrix
         :return: inverse kinematics solution
         """
-        tgt_pos = self.pos_unit_wrs2xarm(tgt_pos).tolist()
+        tgt_pos = self.pos_unit_wrs2xarm(tgt_pos)
         if tgt_rot is not None:
             if tgt_rot.shape == (3, 3):
-                tgt_rpy = rm.rotmat_to_euler(tgt_rot).tolist()
+                tgt_rpy = rm.rotmat_to_euler(tgt_rot)
             else:
-                tgt_rpy = tgt_rot.flatten()[:3].tolist()
-        tgt_pose = tgt_pos + tgt_rpy
+                tgt_rpy = tgt_rot.flatten()[:3]
+        tgt_pose = tgt_pos.tolist() + tgt_rpy.tolist()
         code, ik_s = self._arm_x.get_inverse_kinematics(pose=tgt_pose, input_is_radian=True, return_is_radian=True)
         self._ex_ret_code(code)
         return np.array(ik_s)
