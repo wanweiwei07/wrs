@@ -1,3 +1,8 @@
+"""
+The simulation for the WRS gripper designed by Wan sensei
+Author: Chen Hao (chen960216@gmail.com), 20220924, osaka
+Reference: The code is implemented referring to the 'robot_sim/end_effectors/yumi_gripper/'
+"""
 import os
 import math
 import numpy as np

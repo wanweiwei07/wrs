@@ -60,7 +60,7 @@ class XArmLite6(mi.ManipulatorInterface):
             os.path.join(this_dir, "meshes", "base.stl"),
             cdprimit_type="user_defined",
             userdefined_cdprimitive_fn=self._base_cdnp)
-        self.jlc.lnks[0]['rgba'] = [.5, .5, .5, 1.0]
+        self.jlc.lnks[0]['rgba'] = [.7, .7, .7, 1.0]
         # link1
         self.jlc.lnks[1]['name'] = "link1"
         self.jlc.lnks[1]['loc_pos'] = np.zeros(3)
@@ -76,7 +76,7 @@ class XArmLite6(mi.ManipulatorInterface):
                                                           cdprimit_type="user_defined",
                                                           userdefined_cdprimitive_fn=self._link2_cdnp)
         # os.path.join(this_dir, "meshes", "link2.stl")
-        self.jlc.lnks[2]['rgba'] = [.5, .5, .5, 1.0]
+        self.jlc.lnks[2]['rgba'] = [.7, .7, .7, 1.0]
         # link 3
         self.jlc.lnks[3]['name'] = "link3"
         self.jlc.lnks[3]['loc_pos'] = np.zeros(3)
@@ -92,21 +92,21 @@ class XArmLite6(mi.ManipulatorInterface):
             os.path.join(this_dir, "meshes", "link4.stl"),
             cdprimit_type="user_defined",
             userdefined_cdprimitive_fn=self._link4_cdnp)
-        self.jlc.lnks[4]['rgba'] = [.3, .5, .3, 1.0]
+        self.jlc.lnks[4]['rgba'] = [.7, .7, .7, 1.0]
         # link 5
         self.jlc.lnks[5]['name'] = "link5"
         self.jlc.lnks[5]['loc_pos'] = np.zeros(3)
         self.jlc.lnks[5]['com'] = np.array([0.0, 0.010, 0.0019])
         self.jlc.lnks[5]['mass'] = 0.804
         self.jlc.lnks[5]['mesh_file'] = os.path.join(this_dir, "meshes", "link5.stl")
-        self.jlc.lnks[5]['rgba'] = [.5, .5, .5, 1.0]
+        self.jlc.lnks[5]['rgba'] = [.7, .7, .7, 1.0]
         # link 6
         self.jlc.lnks[6]['name'] = "link6"
         self.jlc.lnks[6]['loc_pos'] = np.zeros(3)
         self.jlc.lnks[6]['com'] = np.array([0.0, -0.00194, -0.0102])
         self.jlc.lnks[6]['mass'] = 0.180
         self.jlc.lnks[6]['mesh_file'] = os.path.join(this_dir, "meshes", "link6.stl")
-        self.jlc.lnks[6]['rgba'] = [.5, .5, .5, 1.0]
+        self.jlc.lnks[6]['rgba'] = [.57, .57, .57, 1.0]
         # reinitialization
         # self.jlc.setinitvalues(np.array([-math.pi/2, math.pi/3, math.pi/6, 0, 0, 0, 0]))
         # self.jlc.setinitvalues(np.array([-math.pi/2, 0, math.pi/3, math.pi/10, 0, 0, 0]))

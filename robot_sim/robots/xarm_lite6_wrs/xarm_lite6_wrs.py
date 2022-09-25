@@ -1,13 +1,15 @@
+"""
+Simulation for the XArm Lite 6 With the WRS gripper
+Author: Chen Hao (chen960216@gmail.com), 20220925, osaka
+Reference: The code is implemented referring to the 'robot_sim/robots/ur3e_dual/'
+"""
 import os
-import math
 import numpy as np
 import basis.robot_math as rm
 import modeling.model_collection as mc
-import modeling.collision_model as cm
 import robot_sim._kinematics.jlchain as jl
 from robot_sim.manipulators.xarm_lite6 import XArmLite6
 from robot_sim.end_effectors.gripper.lite6_wrs_gripper import Lite6WRSGripper
-from panda3d.core import CollisionNode, CollisionBox, Point3
 import robot_sim.robots.robot_interface as ri
 
 

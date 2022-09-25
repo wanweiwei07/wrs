@@ -4,7 +4,7 @@ Author: Chen Hao (chen960216@gmail.com), 20220912, osaka
 Reference: XArm Developer Manual (http://download.ufactory.cc/xarm/en/xArm%20Developer%20Manual.pdf?v=1600992000052)
            XArm Python SDK (https://github.com/xArm-Developer/xArm-Python-SDK)
 """
-
+import time
 from typing import Optional
 
 import numpy as np
@@ -47,6 +47,7 @@ class XArmLite6X(object):
             self._arm_x.reset(wait=True)
         else:
             self._arm_x.set_state(0)
+        time.sleep(.1)
         self.ndof = 6
 
     @staticmethod
@@ -122,6 +123,7 @@ class XArmLite6X(object):
         if self.mode != 0:
             self._arm_x.arm.set_mode(0)
             self._arm_x.arm.set_state(state=0)
+            time.sleep(.1)
 
     def _servo_mode(self):
         """
@@ -130,6 +132,7 @@ class XArmLite6X(object):
         if self.mode != 1:
             self._arm_x.arm.set_mode(1)
             self._arm_x.arm.set_state(state=0)
+            time.sleep(.1)
 
     def reset(self):
         self._arm_x.reset()
@@ -255,14 +258,14 @@ class XArmLite6X(object):
             return False
 
     def move_jntspace_path(self, path,
-                           max_jntvel=None,
-                           max_jntacc=None,
+                           max_jntvel: list = None,
+                           max_jntacc: list = None,
                            start_frame_id=1,
                            toggle_debug=False):
         """
         :param path: [jnt_values0, jnt_values1, ...], results of motion planning
-        :param max_jntvel:
-        :param max_jntacc:
+        :param max_jntvel: 1x6 list to describe the maximum joint speed for the arm
+        :param max_jntacc: 1x6 list to describe the maximum joint acceleration for the arm
         :param start_frame_id:
         :return:
         author: weiwei
@@ -272,16 +275,19 @@ class XArmLite6X(object):
             self._servo_mode()
             if not path or path is None:
                 raise ValueError("The given is incorrect!")
-            control_frequency = .005
+            # Refer to https://www.ufactory.cc/_files/ugd/896670_9ce29284b6474a97b0fc20c221615017.pdf
+            # the robotic arm can accept joint position commands sent at a fixed high frequency like 100Hz
+            control_frequency = .01
             tpply = pwp.PiecewisePolyTOPPRA()
             interpolated_path = tpply.interpolate_by_max_spdacc(path=path,
                                                                 control_frequency=control_frequency,
                                                                 max_vels=max_jntvel,
                                                                 max_accs=max_jntacc,
-                                                                toggle_debug=toggle_debug)
+                                                                toggle_debug=False)
             interpolated_path = interpolated_path[start_frame_id:]
             for jnt_values in interpolated_path:
                 self._arm_x.set_servo_angle_j(jnt_values, is_radian=True)
+                time.sleep(.01)
             return
         else:
             raise NotImplementedError
