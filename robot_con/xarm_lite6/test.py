@@ -21,7 +21,7 @@ class TestXArmLite6X(unittest.TestCase):
         print("Current joint values are", jnts)
 
     def test_move_p(self):
-        suc = self.armx.move_p(pos=np.array([0.2, 0.01, 0.4]), rot=np.array([3.1415926, 0, 0]), )
+        suc = self.armx.move_p(pos=np.array([0.3, 0.02, 0.3]), rot=np.array([3.1415926, 0, 0]), speed=1000)
         print("Is success", suc)
         pose = self.armx.get_pose()
         print("Current position is", pose[0])
@@ -48,6 +48,9 @@ class TestXArmLite6X(unittest.TestCase):
 
     def test_reset(self):
         self.armx.reset()
+
+    def test_home(self):
+        self.armx.homeconf()
 
 
 if __name__ == '__main__':
