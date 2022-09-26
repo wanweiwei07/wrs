@@ -11,6 +11,7 @@ import numpy as np
 
 import basis.robot_math as rm
 import drivers.xarm.wrapper.xarm_api as arm
+from xarm_lite6_dxl_x import XArmLite6DXLCon
 
 try:
     import motion.trajectory.piecewisepoly_toppra as pwp
@@ -19,7 +20,7 @@ try:
 except:
     TOPPRA_EXIST = False
 
-__VERSION__ = '0.0.1'
+__VERSION__ = '0.0.2'
 
 
 class XArmLite6X(object):
@@ -48,6 +49,12 @@ class XArmLite6X(object):
         else:
             self._arm_x.set_state(0)
         time.sleep(.1)
+
+        # for gripper
+        self._gripper = XArmLite6DXLCon(self._arm_x)
+        self._gripper.enable_dxl_torque()
+        self._gripper_limit = [0, 0.034]
+
         self.ndof = 6
 
     @staticmethod
@@ -67,6 +74,26 @@ class XArmLite6X(object):
         :return: Converted position array
         """
         return arr * 1000
+
+    @staticmethod
+    def pos_unit_dxl2wrs(pos: int) -> float:
+        """
+        Conver the position of Dynaxmiel motor to the WRS system
+        :param pos: pos of the Dynamixel Motor
+        :return: pos of the WRS system
+        """
+        # TODO implement
+        raise NotImplementedError
+
+    @staticmethod
+    def pos_unit_wrs2dxl(pos: float) -> int:
+        """
+        Convert the WRS system position to the Dynamixel motor position
+        :param pos: pos of the WRS system
+        :return: pos of the Dynamixel Motor
+        """
+        # TODO implement
+        raise NotImplementedError
 
     @property
     def mode(self) -> int:
@@ -158,17 +185,20 @@ class XArmLite6X(object):
         self._ex_ret_code(code)
         return np.array(ik_s)
 
-    def get_gripper_width(self):
-        raise NotImplementedError
+    def get_gripper_width(self) -> float:
+        dxl_pos = self._gripper.get_dxl_pos()
+        return self.pos_unit_dxl2wrs(dxl_pos)
 
-    def set_gripper_width(self):
-        raise NotImplementedError
+    def set_gripper_width(self, width: float) -> bool:
+        assert self._gripper_limit[0] <= width <= self._gripper_limit[1]
+        ret = self._gripper.set_dxl_pos(self.pos_unit_wrs2dxl(width))
+        return ret
 
-    def open_gripper(self):
-        raise NotImplementedError
+    def open_gripper(self) -> bool:
+        return self.set_gripper_width(self._gripper_limit[0])
 
-    def close_gripper(self):
-        raise NotImplementedError
+    def close_gripper(self) -> bool:
+        return self.set_gripper_width(self._gripper_limit[1])
 
     def get_jnt_values(self) -> np.ndarray:
         """
@@ -294,3 +324,4 @@ class XArmLite6X(object):
 
     def __del__(self):
         self._arm_x.disconnect()
+        self._gripper.disable_dxl_torque()
