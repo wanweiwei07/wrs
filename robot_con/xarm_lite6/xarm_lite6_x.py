@@ -219,6 +219,13 @@ class XArmLite6X(object):
         return self.set_gripper_width(self._gripper_limit[0], speed, wait)
 
     def manual_calibrate_gripper(self):
+        """
+        Manually calibrate the gripper. Only run this functions when the gear and racks on the gripper are separated.
+        Process:
+            1. The motor will first go to 360deg. Then go back to 180deg.
+            2. Then, wait a second and the motor will exit torque mode and the human can make the gear and rack into contact.
+        :return:
+        """
         self._gripper_x.set_dxl_position_p_gain(100)
         print(self._gripper_x.get_dxl_pos())
         # self._gripper_x.set_dxl_goal_pos(4095)
