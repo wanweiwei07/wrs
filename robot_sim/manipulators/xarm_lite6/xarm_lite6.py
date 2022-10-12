@@ -176,7 +176,7 @@ if __name__ == '__main__':
     import visualization.panda.world as wd
     import modeling.geometric_model as gm
 
-    base = wd.World(cam_pos=[2, 0, 1], lookat_pos=[0, 0, 0.5])
+    base = wd.World(cam_pos=[2, 0, 1], lookat_pos=[0, 0, 0])
     gm.gen_frame().attach_to(base)
     manipulator_instance = XArmLite6(enable_cc=True)
     random_conf = manipulator_instance.rand_conf()

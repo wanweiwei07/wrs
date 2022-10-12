@@ -78,7 +78,7 @@ class ManipulatorInterface(object):
                                    tcp_loc_rotmat=tcp_loc_rotmat)
 
     def get_jnt_ranges(self):
-        return self.jlc.get_jnt_ranges()
+        return self.jlc.jnt_ranges
 
     def goto_homeconf(self):
         self.jlc.fk(jnt_values=self.jlc.homeconf)

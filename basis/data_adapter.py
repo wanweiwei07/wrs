@@ -318,7 +318,7 @@ def pandageom_from_points(vertices, rgba=None, name=''):
         vertex_rgbas = np.asarray([[0, 0, 0, 255]] * len(vertices), dtype=np.uint8)
     if isinstance(rgba, list):
         rgba = np.array(rgba)
-    if not isinstance(rgba, np.array):
+    if not isinstance(rgba, np.ndarray):
         raise ValueError('rgba must be a list or an nparray!')
     if len(rgba) == 1:
         vertex_rgbas = np.tile((rgba * 255).astype(np.uint8), (len(vertices), 1))
