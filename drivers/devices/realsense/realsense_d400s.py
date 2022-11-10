@@ -1,5 +1,5 @@
 """
-Interface for Realsense D400 Serials.
+Interface for Realsense D400 Series.
 Realsense API Python example: https://dev.intelrealsense.com/docs/python2
 Realsense D405 Datasheet: https://dev.intelrealsense.com/docs/intel-realsense-d400-series-product-family-datasheet
 Author: Chen Hao (chen960216@gmail.com), osaka
