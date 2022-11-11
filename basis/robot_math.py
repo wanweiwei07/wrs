@@ -60,10 +60,9 @@ def rotmat_from_quaternion(quaternion):
     q *= math.sqrt(2.0 / n)
     q = np.outer(q, q)
     return np.array([
-        [1.0 - q[2, 2] - q[3, 3], q[1, 2] - q[3, 0], q[1, 3] + q[2, 0], 0.0],
-        [q[1, 2] + q[3, 0], 1.0 - q[1, 1] - q[3, 3], q[2, 3] - q[1, 0], 0.0],
-        [q[1, 3] - q[2, 0], q[2, 3] + q[1, 0], 1.0 - q[1, 1] - q[2, 2], 0.0],
-        [0.0, 0.0, 0.0, 1.0]])
+        [1.0 - q[2, 2] - q[3, 3], q[1, 2] - q[3, 0], q[1, 3] + q[2, 0]],
+        [q[1, 2] + q[3, 0], 1.0 - q[1, 1] - q[3, 3], q[2, 3] - q[1, 0]],
+        [q[1, 3] - q[2, 0], q[2, 3] + q[1, 0], 1.0 - q[1, 1] - q[2, 2]]])
 
 
 def rotmat_to_quaternion(rotmat):
@@ -165,12 +164,12 @@ def rotmat_average(rotmatlist, bandwidth=10):
     """
     if len(rotmatlist) == 0:
         return False
-    quaternionlist = []
+    quaternion_list = []
     for rotmat in rotmatlist:
-        quaternionlist.append(quaternion_from_matrix(rotmat))
-    quatavg = quaternion_average(quaternionlist, bandwidth=bandwidth)
-    rotmatavg = rotmat_from_quaternion(quatavg)[:3, :3]
-    return rotmatavg
+        quaternion_list.append(quaternion_from_matrix(rotmat))
+    quat_avg = quaternion_average(quaternion_list, bandwidth=bandwidth)
+    rotmat_avg = rotmat_from_quaternion(quat_avg)
+    return rotmat_avg
 
 
 def rotmat_slerp(rotmat0, rotmat1, nval):
@@ -269,6 +268,23 @@ def homomat_average(homomatlist, bandwidth=10):
     posavg = posvec_average(homomatarray[:, :3, 3], bandwidth)
     rotmatavg = rotmat_average(homomatarray[:, :3, :3], bandwidth)
     return homomat_from_posrot(posavg, rotmatavg)
+
+
+def homomat_from_quaternion(quaternion):
+    """
+    convert a quaterion to rotmat
+    """
+    q = np.array(quaternion, dtype=np.float64, copy=True)
+    n = np.dot(q, q)
+    if n < _EPS:
+        return np.identity(4)
+    q *= math.sqrt(2.0 / n)
+    q = np.outer(q, q)
+    return np.array([
+        [1.0 - q[2, 2] - q[3, 3], q[1, 2] - q[3, 0], q[1, 3] + q[2, 0], 0.0],
+        [q[1, 2] + q[3, 0], 1.0 - q[1, 1] - q[3, 3], q[2, 3] - q[1, 0], 0.0],
+        [q[1, 3] - q[2, 0], q[2, 3] + q[1, 0], 1.0 - q[1, 1] - q[2, 2], 0.0],
+        [0.0, 0.0, 0.0, 1.0]])
 
 
 def interplate_pos_rotmat(start_pos,

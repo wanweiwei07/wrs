@@ -208,14 +208,14 @@ if __name__ == '__main__':
     import visualization.panda.world as wd
     import modeling.geometric_model as gm
 
-    base = wd.World(cam_pos=[5, 0, 3], lookat_pos=[0, 0, 1])
+    base = wd.World(cam_pos=[1, 1, 1], lookat_pos=[0, 0, 0])
     gm.gen_frame().attach_to(base)
     xarm = XArmLite6WRSGripper(enable_cc=True)
     rand_conf = xarm.rand_conf(component_name='arm')
     xarm.fk('arm', rand_conf)
-    xarm_meshmodel = xarm.gen_meshmodel(toggle_tcpcs=True)
+    xarm_meshmodel = xarm.gen_meshmodel(toggle_tcpcs=False)
     xarm_meshmodel.attach_to(base)
-    xarm_meshmodel.show_cdprimit()
-    xarm.gen_stickmodel().attach_to(base)
+    # xarm_meshmodel.show_cdprimit()
+    # xarm.gen_stickmodel().attach_to(base)
     print("Is self collided?", xarm.is_collided())
     base.run()
