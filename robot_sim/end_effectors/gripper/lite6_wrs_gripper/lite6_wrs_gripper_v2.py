@@ -29,13 +29,13 @@ class Lite6WRSGripper2(gp.GripperInterface):
         self.body.lnks[0]['loc_pos'] = np.zeros(3)
         self.body.lnks[0]['collision_model'] = cm.CollisionModel(os.path.join(this_dir, "meshes", "base_v2.stl"),
                                                                  expand_radius=.001)
-        self.body.lnks[0]['rgba'] = [.77, .77, .77, 1]
+        self.body.lnks[0]['rgba'] = [.57, .57, .57, 1]
 
         self.body.lnks[1]['name'] = "realsense_dual"
         self.body.lnks[1]['loc_pos'] = np.zeros(3)
         self.body.lnks[1]['collision_model'] = cm.CollisionModel(os.path.join(this_dir, "meshes", "dual_realsense.stl"),
                                                                  expand_radius=.001)
-        self.body.lnks[1]['rgba'] = [.88, .88, .88, 1]
+        self.body.lnks[1]['rgba'] = [.37, .37, .37, 1]
 
         # lft finger
         self.lft = jl.JLChain(pos=cpl_end_pos, rotmat=cpl_end_rotmat, homeconf=np.zeros(1), name='lft_finger')
@@ -48,7 +48,7 @@ class Lite6WRSGripper2(gp.GripperInterface):
         self.lft.lnks[1]['mesh_file'] = cm.CollisionModel(
             os.path.join(this_dir, "meshes", "finger_v2.stl"), cdprimit_type="user_defined",
             userdefined_cdprimitive_fn=self._finger_cdnp, expand_radius=.001)
-        self.lft.lnks[1]['rgba'] = [.35, .35, .35, 1]
+        self.lft.lnks[1]['rgba'] = [.65, .65, .65, 1]
         # rgt finger
         self.rgt = jl.JLChain(pos=cpl_end_pos, rotmat=cpl_end_rotmat, homeconf=np.zeros(1), name='rgt_finger')
         self.rgt.jnts[1]['loc_pos'] = np.array([-0.01492498, -0.005, .05])
@@ -59,7 +59,7 @@ class Lite6WRSGripper2(gp.GripperInterface):
         self.rgt.lnks[1]['mesh_file'] = cm.CollisionModel(
             os.path.join(this_dir, "meshes", "finger_v2.stl"), cdprimit_type="user_defined",
             userdefined_cdprimitive_fn=self._finger_cdnp, expand_radius=.001)
-        self.rgt.lnks[1]['rgba'] = [.35, .35, .35, 1]
+        self.rgt.lnks[1]['rgba'] = [.65, .65, .65, 1]
         # # reinitialize
         self.body.reinitialize(cdmesh_type=cdmesh_type)
         self.lft.reinitialize(cdmesh_type=cdmesh_type)
