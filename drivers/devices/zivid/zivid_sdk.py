@@ -1,19 +1,14 @@
 """
 A high-level interface of the Zivid SDK for the WRS system
-
 Author: Hao Chen <chen960216@gmail.com>
-
 Update Notes: 20230213 Implement the fundamental functions
-
 Prerequisite:
     Install Zivid  SDK:
         "pip install zivid"
-
 Reference: https://support.zivid.com/en/latest/index.html
 """
 from pathlib import Path
 import datetime
-
 import numpy as np
 import zivid
 
@@ -118,7 +113,7 @@ class Zivid(object):
         """
         xyz, rgba = self._trigger_3d_frame()
         # change unit from mm to meter
-        raw_pcd = xyz.reshape(-1, 3)/1000
+        raw_pcd = xyz.reshape(-1, 3) / 1000
         pcd_no_nan_indices = (~np.isnan(raw_pcd)).any(axis=1)
         return raw_pcd, pcd_no_nan_indices, rgba
 
