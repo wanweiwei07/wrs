@@ -11,6 +11,7 @@ import numpy as np
 
 import basis.robot_math as rm
 import drivers.xarm.wrapper.xarm_api as arm
+from xarm_lite6_dxl_x import XArmLite6DXLCon
 
 try:
     import motion.trajectory.piecewisepoly_toppra as pwp
@@ -19,11 +20,11 @@ try:
 except:
     TOPPRA_EXIST = False
 
-__VERSION__ = '0.0.1'
+__VERSION__ = '0.0.3'
 
 
 class XArmLite6X(object):
-    def __init__(self, ip: str = "192.168.1.232", reset: bool = False):
+    def __init__(self, ip: str = "192.168.1.232", reset: bool = False, has_gripper=False):
         """
         :param ip: The ip address of the robot
         """
@@ -47,7 +48,22 @@ class XArmLite6X(object):
             self._arm_x.reset(wait=True)
         else:
             self._arm_x.set_state(0)
-        time.sleep(.1)
+        time.sleep(.5)
+
+        # for gripper
+        if has_gripper:
+            self._gripper_x = XArmLite6DXLCon(self._arm_x, baudrate=115200, dxl_id=2)
+            self._gripper_x.enable_dxl_torque()
+            self._gripper_limit = [0, 0.04]
+            if self._gripper_x.get_dxl_op_mode() != 5:
+                # enter current based position control mode
+                self._gripper_x.set_dxl_op_mode(5)
+            # set up gripper's parameters
+            self._max_current = 100  # torque related parameter
+            self._gripper_x.set_dxl_goal_current(self._max_current)
+            self._is_gripper_calibrated = False
+            self._zero_dxl_pos = None
+
         self.ndof = 6
 
     @staticmethod
@@ -67,6 +83,26 @@ class XArmLite6X(object):
         :return: Converted position array
         """
         return arr * 1000
+
+    @staticmethod
+    def pos_unit_dxl2wrs(pos: int) -> float:
+        """
+        Conver the position of Dynaxmiel motor to the WRS system
+        :param pos: pos of the Dynamixel Motor
+        :return: pos of the WRS system
+        """
+        gear_circum = np.pi * 25 / 1000
+        return gear_circum * 0.0879 / 360 * pos
+
+    @staticmethod
+    def pos_unit_wrs2dxl(pos: float, dxl_bias: int = 0) -> int:
+        """
+        Convert the WRS system position to the Dynamixel motor position
+        :param pos: pos of the WRS system
+        :return: pos of the Dynamixel Motor
+        """
+        gear_circum = np.pi * 25 / 1000
+        return int(pos / (gear_circum * 0.0879 / 360)) + dxl_bias
 
     @property
     def mode(self) -> int:
@@ -123,7 +159,7 @@ class XArmLite6X(object):
         if self.mode != 0:
             self._arm_x.arm.set_mode(0)
             self._arm_x.arm.set_state(state=0)
-            time.sleep(.1)
+            time.sleep(.5)
 
     def _servo_mode(self):
         """
@@ -132,7 +168,7 @@ class XArmLite6X(object):
         if self.mode != 1:
             self._arm_x.arm.set_mode(1)
             self._arm_x.arm.set_state(state=0)
-            time.sleep(.1)
+            time.sleep(.5)
 
     def reset(self):
         self._arm_x.reset()
@@ -158,17 +194,72 @@ class XArmLite6X(object):
         self._ex_ret_code(code)
         return np.array(ik_s)
 
-    def get_gripper_width(self):
-        raise NotImplementedError
+    def get_gripper_width(self) -> float:
+        if not self._is_gripper_calibrated or self._zero_dxl_pos is None:
+            raise Exception("Calibrate gripper first")
+        dxl_pos = self._gripper_x.get_dxl_pos()
+        print(dxl_pos, self._zero_dxl_pos)
+        return self.pos_unit_dxl2wrs(dxl_pos - self._zero_dxl_pos) * 2
 
-    def set_gripper_width(self):
-        raise NotImplementedError
+    def set_gripper_width(self, width: float, speed: int = 800, wait: bool = True) -> bool:
+        if not self._is_gripper_calibrated or self._zero_dxl_pos is None:
+            raise Exception("Calibrate gripper first")
+        assert self._gripper_limit[0] <= width <= self._gripper_limit[1]
+        self._gripper_x.set_dxl_position_p_gain(speed)
+        ret = self._gripper_x.set_dxl_goal_pos(self.pos_unit_wrs2dxl(width / 2, dxl_bias=self._zero_dxl_pos))
+        if wait:
+            while self._gripper_x.is_moving():
+                time.sleep(.1)
+        return ret
 
-    def open_gripper(self):
-        raise NotImplementedError
+    def open_gripper(self, speed: int = 800, wait: bool = True) -> bool:
+        return self.set_gripper_width(self._gripper_limit[1], speed, wait)
 
-    def close_gripper(self):
-        raise NotImplementedError
+    def close_gripper(self, speed: int = 800, wait=True) -> bool:
+        return self.set_gripper_width(self._gripper_limit[0], speed, wait)
+
+    def manual_calibrate_gripper(self):
+        """
+        Manually calibrate the gripper. Only run this functions when the gear and racks on the gripper are separated.
+        Process:
+            1. The motor will first go to 360deg. Then go back to 180deg.
+            2. Then, wait a second and the motor will exit torque mode and the human can make the gear and rack into contact.
+        :return:
+        """
+        self._gripper_x.set_dxl_position_p_gain(100)
+        print(self._gripper_x.get_dxl_pos())
+        # self._gripper_x.set_dxl_goal_pos(4095)
+        self._gripper_x.set_dxl_goal_pos(4095)
+        time.sleep(.5)
+        while self._gripper_x.is_moving():
+            time.sleep(.1)
+        self._gripper_x.set_dxl_goal_pos(2000)
+        while self._gripper_x.is_moving():
+            time.sleep(.1)
+        self._gripper_x.disable_dxl_torque()
+        input("Manually setup the gripper_1")
+        self._gripper_x.enable_dxl_torque()
+        self._gripper_x.set_dxl_goal_current(10)
+        time.sleep(.1)
+        self._gripper_x.set_dxl_goal_pos(0)
+        while self._gripper_x.is_moving():
+            time.sleep(.1)
+        self._zero_dxl_pos = self._gripper_x.get_dxl_pos()
+        print("The zero position is ", self._zero_dxl_pos)
+        self._gripper_x.set_dxl_goal_current(self._max_current)
+        self._is_gripper_calibrated = True
+
+    def calibrate_gripper(self):
+        self._gripper_x.set_dxl_position_p_gain(100)
+        self._gripper_x.set_dxl_goal_current(10)
+        time.sleep(.1)
+        self._gripper_x.set_dxl_goal_pos(0)
+        while self._gripper_x.is_moving():
+            time.sleep(.1)
+        self._zero_dxl_pos = self._gripper_x.get_dxl_pos()
+        print("The zero position is ", self._zero_dxl_pos)
+        self._gripper_x.set_dxl_goal_current(self._max_current)
+        self._is_gripper_calibrated = True
 
     def get_jnt_values(self) -> np.ndarray:
         """
@@ -277,7 +368,7 @@ class XArmLite6X(object):
                 raise ValueError("The given is incorrect!")
             # Refer to https://www.ufactory.cc/_files/ugd/896670_9ce29284b6474a97b0fc20c221615017.pdf
             # the robotic arm can accept joint position commands sent at a fixed high frequency like 100Hz
-            control_frequency = .01
+            control_frequency = .05
             tpply = pwp.PiecewisePolyTOPPRA()
             interpolated_path = tpply.interpolate_by_max_spdacc(path=path,
                                                                 control_frequency=control_frequency,
@@ -287,10 +378,11 @@ class XArmLite6X(object):
             interpolated_path = interpolated_path[start_frame_id:]
             for jnt_values in interpolated_path:
                 self._arm_x.set_servo_angle_j(jnt_values, is_radian=True)
-                time.sleep(.01)
+                time.sleep(.05)
             return
         else:
             raise NotImplementedError
 
     def __del__(self):
         self._arm_x.disconnect()
+        self._gripper_x.disable_dxl_torque()

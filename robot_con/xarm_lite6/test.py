@@ -9,7 +9,7 @@ from xarm_lite6_x import XArmLite6X
 
 class TestXArmLite6X(unittest.TestCase):
     def setUp(self):
-        self.armx = XArmLite6X()
+        self.armx = XArmLite6X(has_gripper=True)
 
     def test_get_pose(self):
         pose = self.armx.get_pose()
@@ -51,6 +51,19 @@ class TestXArmLite6X(unittest.TestCase):
 
     def test_home(self):
         self.armx.homeconf()
+
+    def test_gripper_calibration(self):
+        self.armx.manual_calibrate_gripper()
+
+    def test_gripper(self):
+        self.armx.calibrate_gripper()
+        # self.armx.set_gripper_width(.03,speed=200)
+        self.armx.open_gripper(speed=200)
+        print(self.armx.get_gripper_width())
+        input("wait...")
+        self.armx.close_gripper(speed=200)
+        print(self.armx.get_gripper_width())
+
 
 
 if __name__ == '__main__':
