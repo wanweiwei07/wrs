@@ -39,7 +39,6 @@ class Zivid(object):
         color.gamma = 1.0
         settings.processing.color.experimental.mode = "automatic"
         print(settings.processing)
-
         # print("Configuring acquisition settings different for all HDR acquisitions")
         exposure_values = [
             (2.71, 1.03, 1677,),
@@ -88,7 +87,6 @@ class Zivid(object):
             self.cam = self.app.connect_camera(serial_number=serial_number)
         else:
             self.cam = self.app.create_file_camera(file_cam_path)
-
         self._settings_2d = self.default_2d_setting()
         self._settings_3d = self.default_3d_settings() if not use_suggest_setting else self.cam_parameters_suggest()
 
@@ -139,7 +137,6 @@ class Zivid(object):
             max_capture_time=datetime.timedelta(milliseconds=1200),
             ambient_light_frequency=zivid.capture_assistant.SuggestSettingsParameters.AmbientLightFrequency.none,
         )
-
         print(f"Running Capture Assistant with parameters: {suggest_settings_parameters}")
         settings = zivid.capture_assistant.suggest_settings(self.cam, suggest_settings_parameters)
         return settings
@@ -166,7 +163,7 @@ if __name__ == "__main__":
     import cv2
 
     cam = Zivid()
-    pcd, img = cam.get_pcd_rgba()
+    pcd, pcd_no_nan_indices, img = cam.get_pcd_rgba()
     print(pcd)
     # img = cam.get_rgba()
     # cv2.imshow("img", img)
