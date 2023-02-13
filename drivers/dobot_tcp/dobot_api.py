@@ -7,8 +7,6 @@ Update Notes:
 
 import socket
 import datetime
-from typing import Literal
-
 from tkinter import Text, END
 
 
@@ -20,7 +18,6 @@ class DobotApi:
         self.text_log: Text = None
         if args:
             self.text_log = args[0]
-
         if self.port == 29999 or self.port == 30003 or self.port == 30004:
             try:
                 self.socket_dobot = socket.socket()

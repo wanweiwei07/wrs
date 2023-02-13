@@ -4,16 +4,12 @@ Author: Hao Chen <chen960216@gmail.com>, 20230113, osaka
 Update Note <Version:0.0.1,20230113>: Create a basic API for the WRS system
 """
 from typing import Optional
-
 import numpy as np
-
 import basis.robot_math as rm
 from drivers.dobot_tcp import Dobot
-from robot_con.xarm_lite6.xarm_lite6_dxl_x import XArmLite6DXLCon
 
 try:
     import motion.trajectory.piecewisepoly_toppra as pwp
-
     TOPPRA_EXIST = True
 except:
     TOPPRA_EXIST = False
@@ -22,20 +18,6 @@ __VERSION__ = (0, 0, 1)
 
 
 class Nova2X(object):
-    def __init__(self, ip: str = "192.168.5.1"):
-        """
-        :param ip: The ip address of the robot
-        """
-        # examine parameters
-        # initialization
-        self._arm_x = Dobot(ip=ip)
-
-        self._arm_x.clear_error()
-        if not self._arm_x.is_enable:
-            self._arm_x.power_on()
-            self._arm_x.enable_robot()
-        self.ndof = 6
-
     @staticmethod
     def pos_arm2wrs(arr: np.ndarray) -> np.ndarray:
         """
@@ -72,6 +54,19 @@ class Nova2X(object):
         """
         return np.rad2deg(arr)
 
+    def __init__(self, ip: str = "192.168.5.1"):
+        """
+        :param ip: The ip address of the robot
+        """
+        # examine parameters
+        # initialization
+        self._arm_x = Dobot(ip=ip)
+        self._arm_x.clear_error()
+        if not self._arm_x.is_enable:
+            self._arm_x.power_on()
+            self._arm_x.enable_robot()
+        self.ndof = 6
+
     @property
     def mode(self) -> int:
         """
@@ -102,11 +97,10 @@ class Nova2X(object):
         :param tgt_rot: The 3x3 Rotation matrix or 1x3 RPY matrix
         :return: inverse kinematics solution
         """
-        if tgt_rot is not None:
-            if tgt_rot.shape == (3, 3):
-                tgt_rpy = rm.rotmat_to_euler(tgt_rot)
-            else:
-                tgt_rpy = tgt_rot.flatten()[:3]
+        if tgt_rot.shape == (3, 3):
+            tgt_rpy = rm.rotmat_to_euler(tgt_rot)
+        else:
+            tgt_rpy = tgt_rot.flatten()[:3]
         ik_sol = self._arm_x.ik(pos=self.pos_wrs2arm(tgt_pos),
                                 rot=self.angle_wrs2arm(tgt_rpy),
                                 seed_jnts=self.angle_wrs2arm(seed_jnts))
@@ -129,7 +123,7 @@ class Nova2X(object):
         pose = self._arm_x.get_tcp_cartesian()
         return self.pos_arm2wrs(np.array(pose[:3])), rm.rotmat_from_euler(*self.angle_arm2wrs(pose[3:]))
 
-    def move_j(self, jnt_val: np.ndarray, ) -> bool:
+    def move_j(self, jnt_val: np.ndarray, ):
         """
         Move the robot to a target joint value
         :param jnt_val: Targe joint value (1x6 Array)
@@ -138,7 +132,7 @@ class Nova2X(object):
         assert isinstance(jnt_val, np.ndarray) and len(jnt_val) == self.ndof
         self._arm_x.movej(self.angle_wrs2arm(jnt_val))
 
-    def move_p(self, pos: np.ndarray, rot: np.ndarray, is_linear: bool = True) -> bool:
+    def move_p(self, pos: np.ndarray, rot: np.ndarray, is_linear: bool = True):
         """
         Move to a pose under the robot base coordinate
         :param pos: Position (Array([x,y,z])) of the pose
@@ -170,11 +164,10 @@ class Nova2X(object):
 
 if __name__ == "__main__":
     rbtx = Nova2X()
-    print(f"speed is {rbtx.mode}")
-
+    print(f"Mode is {rbtx.mode}")
     print(repr(rbtx.get_jnt_values()))
     print(rbtx.get_pose())
-    rbtx.move_p(np.array([0.20320204, -0.25951422, 0.30715834]), np.array([[-0.08450983, -0.8993117, -0.42906474],
-                                                                           [-0.99284347, 0.03953477, 0.11268916],
-                                                                           [-0.0843797, 0.43551747, -0.89621683]]))
-    print("is moving?")
+    rbtx.move_p(np.array([0.20320204, -0.25951422, 0.30715834]),
+                np.array([[-0.08450983, -0.8993117, -0.42906474],
+                          [-0.99284347, 0.03953477, 0.11268916],
+                          [-0.0843797, 0.43551747, -0.89621683]]))

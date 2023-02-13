@@ -167,14 +167,12 @@ class TimeoutException(Exception):
 class DobotMonitor(Thread):
     def __init__(self, host: str, monitor_port: Literal[30004, 30005, 30006] = 30004):
         """
-
         :param host:
         :param monitor_port:  Port 30004 feeds back robot information every 8ms.
                               Port 30005 provides robot information every 200ms.
                               Port 30006 is a configurable port to feed back robot information. By default, port 30006 provides feedback every 50ms.
         """
         super(DobotMonitor, self).__init__()
-
         self.logger = logging.getLogger("dobot_monitor")
         # connect to the dobot
         try:
@@ -182,7 +180,6 @@ class DobotMonitor(Thread):
         except socket.error:
             raise Exception(
                 f"Unable to set socket connection use port <{host}:{monitor_port}> !", socket.error)
-
         self._dict = {}
         self._dict_lock = Lock()
         self._data_event = Condition()
@@ -190,7 +187,6 @@ class DobotMonitor(Thread):
         self._trystop = False  # to stop thread
         self.running = False  # True when robot_s is on and listening
         self.lastpacket_timestamp = 0
-
         self.start()
         self.wait()  # make sure we got some data before someone calls us
 
@@ -211,18 +207,14 @@ class DobotMonitor(Thread):
             if hex((recv_data['test_value'][0])) != '0x123456789abcdef':
                 continue
             self._data_queue += tmp_data
-
             with self._dict_lock:
                 self._dict = dict(zip(recv_data.dtype.names, recv_data[0]))
                 # self._dict = recv_data
-
             self.lastpacket_timestamp = time.time()
-
             if self._dict['robot_mode'] == ROBOT_MODE['ROBOT_MODE_RUNNING']:
                 self.running = True
             else:
                 self.running = False
-
             with self._data_event:
                 self._data_event.notifyAll()
 
@@ -256,7 +248,6 @@ class DobotMonitor(Thread):
 
 
 class Dobot(object):
-
     def __init__(self, ip: str, dashboard_port: int = 29999, recv_data_port: Literal[30004, 30005, 30006] = 30004,
                  move_port: int = 30003):
         self.logger = logging.getLogger("dobot")
