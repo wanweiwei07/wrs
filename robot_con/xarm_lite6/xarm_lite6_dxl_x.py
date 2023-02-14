@@ -3,6 +3,11 @@ Control Dynamixel Motor Through XArm Ethernet Pass-Through Communication
 Author: Chen Hao (chen960216@gmail.com), 20220915, osaka
 Reference: XArm Developer Manual (http://download.ufactory.cc/xarm/en/xArm%20Developer%20Manual.pdf?v=1600992000052)
            Dynamixel Protocol 2.0 (https://emanual.robotis.com/docs/en/dxl/protocol2/)
+           Dynamixel XM430 Manual (https://emanual.robotis.com/docs/en/dxl/x/xm430-w350/)
+Update Notes:
+    -`0.0.1`: Implement the basic function (Ping, Enable/Disable Torque, Set/Get Motor Position)
+    -`0.0.2`: Add functions to access the velocity, current, and operation mode
+
 """
 import time
 import socket
@@ -12,15 +17,30 @@ from collections import namedtuple
 from drivers.devices.dynamixel_sdk.protocol2_packet_handler import (Protocol2PacketHandler,
                                                                     COMM_SUCCESS)
 
-__VERSION__ = '0.0.1'
+__VERSION__ = '0.0.2'
 
 LATENCY_TIMER = 16
-DXL_CONTROL_TABLE = namedtuple("DXL_CONTROL_TABLE", ['ADDR_TORQUE_ENABLE',
+DXL_CONTROL_TABLE = namedtuple("DXL_CONTROL_TABLE", ['ADDR_OPERATION_MODE',
+                                                     'ADDR_TORQUE_ENABLE',
                                                      'ADDR_GOAL_POSITION',
+                                                     'ADDR_GOAL_CURRENT',
+                                                     'ADDR_GOAL_VELOCITY',
+                                                     'ADDR_MOVING',
+                                                     'ADDR_MOVING_STATUS',
                                                      'ADDR_PRESENT_POSITION',
+                                                     'ADDR_PRESENT_CURRENT',
+                                                     'ADDR_PRESENT_VELOCITY',
                                                      'ADDR_LED_RED',
-                                                     'DXL_MINIMUM_POSITION_VALUE',
-                                                     'DXL_MAXIMUM_POSITION_VALUE'])
+                                                     'ADDR_POSITION_P_GAIN',
+                                                     'DXL_MIN_POSITION_VAL',
+                                                     'DXL_MAX_POSITION_VAL',
+                                                     'DXL_MIN_CURRENT_VAL',
+                                                     'DXL_MAX_CURRENT_VAL',
+                                                     'DXL_MIN_VELOCITY_VAL',
+                                                     'DXL_MAX_VELOCITY_VAL',
+                                                     'DXL_MIN_POSITION_P_GAIN_VAL',
+                                                     'DXL_MAX_POSITION_P_GAIN_VAL',
+                                                     ])
 
 
 class PortHandler(object):
@@ -109,11 +129,27 @@ class XArmLite6DXLCon(object):
      Note: Set the torque option of the motor ON. Otherwise, the communication will be error
      """
     CONTROL_TABLE = {
-        'X_SERIES': DXL_CONTROL_TABLE(ADDR_TORQUE_ENABLE=64, ADDR_GOAL_POSITION=116,
+        'X_SERIES': DXL_CONTROL_TABLE(ADDR_OPERATION_MODE=11,
+                                      ADDR_TORQUE_ENABLE=64,
+                                      ADDR_GOAL_POSITION=116,
+                                      ADDR_GOAL_CURRENT=102,
+                                      ADDR_GOAL_VELOCITY=104,
+                                      ADDR_MOVING=122,
+                                      ADDR_MOVING_STATUS=123,
+                                      ADDR_PRESENT_CURRENT=126,
+                                      ADDR_PRESENT_VELOCITY=128,
                                       ADDR_PRESENT_POSITION=132,
                                       ADDR_LED_RED=65,
-                                      DXL_MINIMUM_POSITION_VALUE=0,
-                                      DXL_MAXIMUM_POSITION_VALUE=4095)
+                                      DXL_MIN_POSITION_VAL=0,
+                                      DXL_MAX_POSITION_VAL=4095,  # 0.088deg per unit
+                                      DXL_MIN_CURRENT_VAL=0,
+                                      DXL_MAX_CURRENT_VAL=1193,  # 2.89mA per unit
+                                      DXL_MIN_VELOCITY_VAL=0,
+                                      DXL_MAX_VELOCITY_VAL=1023,  # 0.229rpm=0.024rad/s per unit
+                                      ADDR_POSITION_P_GAIN=84,
+                                      DXL_MIN_POSITION_P_GAIN_VAL=0,
+                                      DXL_MAX_POSITION_P_GAIN_VAL=16383,
+                                      )
     }
 
     def __init__(self, arm_x: 'XArmAPI', baudrate=9600, dxl_id=2, dxl_mdl: Literal['X_SERIES'] = 'X_SERIES'):
@@ -153,6 +189,7 @@ class XArmLite6DXLCon(object):
     def set_baudrate(self, baudrate):
         if self.baudrate != baudrate:
             suc = self._arm_x.set_tgpio_modbus_baudrate(baudrate)
+            time.sleep(.5)
             return suc == 0
         else:
             print(f"Baudrate has already been {baudrate}")
@@ -195,9 +232,9 @@ class XArmLite6DXLCon(object):
         else:
             return True
 
-    def set_dxl_pos(self, tgt_pos: int = 0) -> bool:
+    def set_dxl_goal_pos(self, tgt_pos: int = 0) -> bool:
         assert isinstance(tgt_pos, int)
-        assert self._control_table.DXL_MINIMUM_POSITION_VALUE <= tgt_pos <= self._control_table.DXL_MAXIMUM_POSITION_VALUE
+        assert self._control_table.DXL_MIN_POSITION_VAL <= tgt_pos <= self._control_table.DXL_MAX_POSITION_VAL
         dxl_comm_result, dxl_error = self._packet_handler.write4ByteTxRx(port=self._port_handler,
                                                                          dxl_id=self._dxl_id,
                                                                          address=self._control_table.ADDR_GOAL_POSITION,
@@ -211,7 +248,7 @@ class XArmLite6DXLCon(object):
         else:
             return True
 
-    def get_dxl_pos(self) -> int:
+    def get_dxl_goal_pos(self) -> int:
         dxl_present_position, dxl_comm_result, dxl_error = self._packet_handler.read4ByteTxRx(port=self._port_handler,
                                                                                               dxl_id=self._dxl_id,
                                                                                               address=self._control_table.ADDR_PRESENT_POSITION)
@@ -238,7 +275,8 @@ class XArmLite6DXLCon(object):
             return True
 
     def disable_led(self) -> bool:
-        dxl_comm_result, dxl_error = self._packet_handler.write1ByteTxRx(port=self._port_handler, dxl_id=self._dxl_id,
+        dxl_comm_result, dxl_error = self._packet_handler.write1ByteTxRx(port=self._port_handler,
+                                                                         dxl_id=self._dxl_id,
                                                                          address=self._control_table.ADDR_LED_RED,
                                                                          data=0)
         if dxl_comm_result != COMM_SUCCESS:
@@ -249,6 +287,149 @@ class XArmLite6DXLCon(object):
             return False
         else:
             return True
+
+    def get_dxl_op_mode(self):
+        dxl_present_mode, dxl_comm_result, dxl_error = self._packet_handler.read1ByteTxRx(port=self._port_handler,
+                                                                                          dxl_id=self._dxl_id,
+                                                                                          address=self._control_table.ADDR_OPERATION_MODE)
+        if dxl_comm_result != COMM_SUCCESS:
+            # print("%s" % self._packet_handler.getTxRxResult(dxl_comm_result))
+            return -1
+        elif dxl_error != 0:
+            # print("%s" % self._packet_handler.getRxPacketError(dxl_error))
+            return -1
+        else:
+            return dxl_present_mode
+
+    def set_dxl_op_mode(self, op_mode: int):
+        assert op_mode in [0, 1, 3, 4, 5, 16]
+        dxl_comm_result, dxl_error = self._packet_handler.write1ByteTxRx(port=self._port_handler,
+                                                                         dxl_id=self._dxl_id,
+                                                                         address=self._control_table.ADDR_OPERATION_MODE,
+                                                                         data=op_mode)
+        if dxl_comm_result != COMM_SUCCESS:
+            # print("%s" % self._packet_handler.getTxRxResult(dxl_comm_result))
+            return False
+        elif dxl_error != 0:
+            # print("%s" % self._packet_handler.getRxPacketError(dxl_error))
+            return False
+        else:
+            return True
+
+    def set_dxl_goal_vel(self, tgt_vel: int = 0) -> bool:
+        raise NotImplementedError
+
+    def set_dxl_goal_current(self, tgt_current: int):
+        assert isinstance(tgt_current, int)
+        assert self._control_table.DXL_MIN_CURRENT_VAL <= tgt_current <= self._control_table.DXL_MAX_CURRENT_VAL
+        dxl_comm_result, dxl_error = self._packet_handler.write2ByteTxRx(port=self._port_handler,
+                                                                         dxl_id=self._dxl_id,
+                                                                         address=self._control_table.ADDR_GOAL_CURRENT,
+                                                                         data=tgt_current)
+        if dxl_comm_result != COMM_SUCCESS:
+            print("%s" % self._packet_handler.getTxRxResult(dxl_comm_result))
+            return False
+        elif dxl_error != 0:
+            print("%s" % self._packet_handler.getRxPacketError(dxl_error))
+            return False
+        else:
+            return True
+
+    def get_dxl_pos(self) -> int:
+        dxl_present_pos, dxl_comm_result, dxl_error = self._packet_handler.read4ByteTxRx(port=self._port_handler,
+                                                                                         dxl_id=self._dxl_id,
+                                                                                         address=self._control_table.ADDR_PRESENT_POSITION)
+        if dxl_comm_result != COMM_SUCCESS:
+            # print("%s" % self._packet_handler.getTxRxResult(dxl_comm_result))
+            return -1
+        elif dxl_error != 0:
+            # print("%s" % self._packet_handler.getRxPacketError(dxl_error))
+            return -1
+        else:
+            return dxl_present_pos
+
+    def get_dxl_vel(self) -> int:
+        dxl_present_velocity, dxl_comm_result, dxl_error = self._packet_handler.read4ByteTxRx(port=self._port_handler,
+                                                                                              dxl_id=self._dxl_id,
+                                                                                              address=self._control_table.ADDR_PRESENT_VELOCITY)
+        if dxl_comm_result != COMM_SUCCESS:
+            # print("%s" % self._packet_handler.getTxRxResult(dxl_comm_result))
+            return -1
+        elif dxl_error != 0:
+            # print("%s" % self._packet_handler.getRxPacketError(dxl_error))
+            return -1
+        else:
+            return dxl_present_velocity
+
+    def get_dxl_current(self) -> int:
+        dxl_present_current, dxl_comm_result, dxl_error = self._packet_handler.read2ByteTxRx(port=self._port_handler,
+                                                                                             dxl_id=self._dxl_id,
+                                                                                             address=self._control_table.ADDR_PRESENT_CURRENT)
+        # https://stackoverflow.com/questions/1604464/twos-complement-in-python
+        dxl_present_current = dxl_present_current - (1 << 16)
+        if dxl_comm_result != COMM_SUCCESS:
+            # print("%s" % self._packet_handler.getTxRxResult(dxl_comm_result))
+            return -1
+        elif dxl_error != 0:
+            # print("%s" % self._packet_handler.getRxPacketError(dxl_error))
+            return -1
+        else:
+            return dxl_present_current
+
+    def is_moving(self) -> bool:
+        dxl_is_moving, dxl_comm_result, dxl_error = self._packet_handler.read1ByteTxRx(port=self._port_handler,
+                                                                                       dxl_id=self._dxl_id,
+                                                                                       address=self._control_table.ADDR_MOVING)
+        if dxl_comm_result != COMM_SUCCESS:
+            # print("%s" % self._packet_handler.getTxRxResult(dxl_comm_result))
+            raise Exception("Communication Error")
+        elif dxl_error != 0:
+            # print("%s" % self._packet_handler.getRxPacketError(dxl_error))
+            raise Exception("Communication Error")
+        else:
+            return dxl_is_moving
+
+    def get_moving_status(self) -> bool:
+        dxl_moving_status, dxl_comm_result, dxl_error = self._packet_handler.read1ByteTxRx(port=self._port_handler,
+                                                                                           dxl_id=self._dxl_id,
+                                                                                           address=self._control_table.ADDR_MOVING_STATUS)
+        if dxl_comm_result != COMM_SUCCESS:
+            # print("%s" % self._packet_handler.getTxRxResult(dxl_comm_result))
+            raise Exception("Communication Error")
+        elif dxl_error != 0:
+            # print("%s" % self._packet_handler.getRxPacketError(dxl_error))
+            raise Exception("Communication Error")
+        else:
+            return dxl_moving_status
+
+    def set_dxl_position_p_gain(self, p_gain_val: int) -> bool:
+        assert isinstance(p_gain_val, int)
+        assert self._control_table.DXL_MIN_CURRENT_VAL <= p_gain_val <= self._control_table.DXL_MAX_CURRENT_VAL
+        dxl_comm_result, dxl_error = self._packet_handler.write2ByteTxRx(port=self._port_handler,
+                                                                         dxl_id=self._dxl_id,
+                                                                         address=self._control_table.ADDR_POSITION_P_GAIN,
+                                                                         data=p_gain_val)
+        if dxl_comm_result != COMM_SUCCESS:
+            print("%s" % self._packet_handler.getTxRxResult(dxl_comm_result))
+            return False
+        elif dxl_error != 0:
+            print("%s" % self._packet_handler.getRxPacketError(dxl_error))
+            return False
+        else:
+            return True
+
+    def get_dxl_position_p_gain(self) -> int:
+        dxl_position_p_gain, dxl_comm_result, dxl_error = self._packet_handler.read2ByteTxRx(port=self._port_handler,
+                                                                                             dxl_id=self._dxl_id,
+                                                                                             address=self._control_table.ADDR_POSITION_P_GAIN, )
+        if dxl_comm_result != COMM_SUCCESS:
+            print("%s" % self._packet_handler.getTxRxResult(dxl_comm_result))
+            return -1
+        elif dxl_error != 0:
+            print("%s" % self._packet_handler.getRxPacketError(dxl_error))
+            return -1
+        else:
+            return dxl_position_p_gain
 
 
 if __name__ == "__main__":
@@ -263,11 +444,32 @@ if __name__ == "__main__":
     arm.set_mode(0)
     arm.set_state(state=0)
 
+    err_code = arm.get_err_warn_code()[1][0]
+    if err_code == 19:
+        arm.clean_error()
+        print("Clear")
+    # close : 870
+    # open: 2231
     dxl_con = XArmLite6DXLCon(arm, baudrate=peripheral_baud)
+    # r = dxl_con.ping()
+    # print(dxl_con.get_dxl_position_p_gain())
+    print(dxl_con.get_dxl_op_mode())
+    # print(dxl_con.get_dxl_goal_pos())
+    # # print(dxl_con.get_dxl_vel())
+    # print("is moving:", dxl_con.is_moving())
+    # # print(r)
+    # # exit(0)
     dxl_con.enable_dxl_torque()
-    dxl_con.set_dxl_pos(0)
+    # a = dxl_con.set_dxl_goal_current(20)
+    # dxl_con.set_dxl_position_p_gain(50)
+    # print("Set torque", a)
+    # print(a)
+    dxl_con.set_dxl_goal_pos(1000)
+    # print("is moving:", dxl_con.is_moving())
     time.sleep(2)
-    dxl_con.set_dxl_pos(4095)
+    dxl_con.set_dxl_goal_pos(389)
     time.sleep(2)
-    print(dxl_con.get_dxl_pos())
+    print("GOAL Position is ", dxl_con.get_dxl_pos())
+    print("Current is ", dxl_con.get_dxl_current())
+    time.sleep(2)
     dxl_con.disable_dxl_torque()
