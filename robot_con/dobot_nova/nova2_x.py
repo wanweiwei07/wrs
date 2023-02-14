@@ -54,6 +54,15 @@ class Nova2X(object):
         """
         return np.rad2deg(arr)
 
+    @staticmethod
+    def orientation_arm2wrs(arr: np.ndarray) -> np.ndarray:
+        """
+        Convert the orientation (r, p, y) in Arm API to the WRS system
+        :param arr: Orientation in the Arm API
+        :return: Converted orientation array
+        """
+        return rm.rotmat_from_euler(*Nova2X.angle_arm2wrs(arr))
+
     def __init__(self, ip: str = "192.168.5.1"):
         """
         :param ip: The ip address of the robot
@@ -89,6 +98,17 @@ class Nova2X(object):
 
     def reset(self):
         self._arm_x.reset_robot()
+
+    def fk(self, joint_values: np.ndarray) -> (np.ndarray, np.ndarray):
+        """
+        Forward kinematics
+        :param joint_values:
+        :return: 1. positions (1x3 array) and 2. orientations (3x3 matrix)
+        """
+        pose = self._arm_x.fk(self.angle_wrs2arm(joint_values))
+        pos = self.pos_arm2wrs(pose[:3])
+        rot = self.orientation_arm2wrs(pose[3:])
+        return pos, rot
 
     def ik(self, tgt_pos: np.ndarray, tgt_rot: np.ndarray, seed_jnts: np.ndarray = None) -> Optional[np.ndarray]:
         """
