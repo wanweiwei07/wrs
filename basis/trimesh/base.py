@@ -600,7 +600,7 @@ class Trimesh(object):
         if mask.dtype.name == 'bool':
             if mask.all(): return
         elif mask.dtype.name != 'int':
-            mask = mask.astype(np.int)
+            mask = mask.astype(np.int64)
         cached_normals = self._cache.get('face_normals')
         if util.is_shape(cached_normals, (-1, 3)):
             self.face_normals = cached_normals[mask]

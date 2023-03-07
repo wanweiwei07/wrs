@@ -230,10 +230,10 @@ def index_sparse(column_count, indices):
     col = np.tile(np.arange(len(indices)).reshape((-1, 1)), (1, indices.shape[1])).reshape(-1)
 
     shape = (column_count, len(indices))
-    data = np.ones(len(col), dtype=np.bool)
+    data = np.ones(len(col), dtype=bool)
     sparse = coo_matrix((data, (row, col)),
                         shape=shape,
-                        dtype=np.bool)
+                        dtype=bool)
     return sparse
 
 

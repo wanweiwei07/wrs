@@ -210,7 +210,7 @@ def box():
 
     faces = [1, 3, 0, 4, 1, 0, 0, 3, 2, 2, 4, 0, 1, 7, 3, 5, 1, 4,
              5, 7, 1, 3, 7, 2, 6, 4, 2, 2, 7, 6, 6, 5, 4, 7, 5, 6]
-    faces = np.array(faces, dtype=np.int64).reshape((-1, 3))
+    faces = np.array(faces, dtype=int).reshape((-1, 3))
 
     face_normals = [-1, 0, 0, 0, -1, 0, -1, 0, 0, 0, 0, -1, 0, 0, 1, 0, -1,
                     0, 0, 0, 1, 0, 1, 0, 0, 0, -1, 0, 1, 0, 1, 0, 0, 1, 0, 0]
@@ -281,7 +281,7 @@ def uv_sphere(radius=1.0, count=[32, 32], theta=None, phi=None):
        Mesh of UV sphere with specified parameters
     """
 
-    count = np.array(count, dtype=np.int)
+    count = np.array(count, dtype=int)
     count += np.mod(count, 2)
     count[1] *= 2
 
@@ -349,7 +349,7 @@ def cylinder(height, radius, sections=8, homomat=None):
     index = np.arange(1, len(vertices) + 1).reshape((-1, 1))
     index[-1] = 1
     faces = np.tile(index, (1, 2)).reshape(-1)[1:-1].reshape((-1, 2))
-    faces = np.column_stack((np.zeros(len(faces), dtype=np.int), faces))
+    faces = np.column_stack((np.zeros(len(faces), dtype=int), faces))
     cylinder = extrude_triangulation(vertices=vertices,
                                      faces=faces,
                                      height=height)
@@ -378,7 +378,7 @@ def capsule(height=1.0, radius=1.0, count=[8, 8], homomat=None):
 
     height = float(height)
     radius = float(radius)
-    count = np.array(count, dtype=np.int)
+    count = np.array(count, dtype=int)
     count += np.mod(count, 2)
     # create a theta where there is a double band around the equator
     # so that we can offset the top and bottom of a sphere to
@@ -413,19 +413,19 @@ def cone(height=1.0, radius=1.0, sections=8, homomat=None):
 
     # create a circular bottom
     theta = np.linspace(0, np.pi * 2, sections)
-    vertices = np.column_stack((np.sin(theta), np.cos(theta), np.zeros(sections, dtype=np.int))) * radius
+    vertices = np.column_stack((np.sin(theta), np.cos(theta), np.zeros(sections, dtype=int))) * radius
     vertices[0] = [0, 0, 0]
     index = np.arange(1, len(vertices) + 1).reshape((-1, 1))
     index[-1] = 1
     bottomfaces = np.tile(index, (1, 2)).reshape(-1)[1:-1].reshape((-1, 2))
-    bottomfaces = np.column_stack((np.zeros(len(bottomfaces), dtype=np.int), bottomfaces))
+    bottomfaces = np.column_stack((np.zeros(len(bottomfaces), dtype=int), bottomfaces))
 
     # create the cap
     vertices = np.vstack((vertices, [0, 0, height]))
     index = np.arange(1, len(vertices)).reshape((-1, 1))
     index[-1] = 1
     capfaces = np.tile(index, (1, 2)).reshape(-1)[1:-1].reshape((-1, 2))
-    capfaces = np.column_stack((np.full(len(capfaces), sections, dtype=np.int), capfaces[:, 1], capfaces[:, 0]))
+    capfaces = np.column_stack((np.full(len(capfaces), sections, dtype=int), capfaces[:, 1], capfaces[:, 0]))
     faces = np.vstack((bottomfaces, capfaces))
 
     cone = Trimesh(vertices=vertices, faces=faces)
