@@ -11,7 +11,7 @@ import numpy as np
 
 import basis.robot_math as rm
 import drivers.xarm.wrapper.xarm_api as arm
-from xarm_lite6_dxl_x import XArmLite6DXLCon
+from .xarm_lite6_dxl_x import XArmLite6DXLCon
 
 try:
     import motion.trajectory.piecewisepoly_toppra as pwp
