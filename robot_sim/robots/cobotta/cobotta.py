@@ -133,6 +133,9 @@ class Cobotta(ri.RobotInterface):
         else:
             raise ValueError("The given component name is not supported!")
 
+    def get_gl_tcp(self, manipulator_name='arm'):
+        return self.manipulator_dict[manipulator_name].get_gl_tcp()
+
     def rand_conf(self, component_name):
         if component_name in self.manipulator_dict:
             return super().rand_conf(component_name)

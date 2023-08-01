@@ -3,30 +3,36 @@ import os
 import numpy as np
 import basis.robot_math as rm
 import modeling.collision_model as cm
+import modeling.geometric_model as gm
 
 
 class Base(cm.CollisionModel):
     def __init__(self, file):
         super().__init__(initor=file, expand_radius=.009)
         self._hole_pos_list = []
-        self._pos_z0 = .037
-        self._pos_x0 = .0315
-        self._pos_y0 = .0495
-        self._x_step = .009
+        self._pos_z0 = .042
+        self._pos_y0 = -.0315
+        self._pos_x0 = .0495
         self._y_step = .009
-        self._x_holes = 8
-        self._y_holes = 12
+        self._x_step = .009
+        self._y_holes = 8
+        self._x_holes = 12
         self._reinitialize()
 
     def _reinitialize(self):
         self._hole_pos_list_0 = []
         pos_z = self._pos_z0
-        for id_x in range(self._x_holes):
-            pos_x = self._pos_x0 - self._x_step * id_x
-            for id_y in range(self._y_holes):
-                pos_y = self._pos_y0 - self._y_step * id_y
-                self._hole_pos_list_0.append(np.array([pos_x, pos_y, pos_z]))
-        self._hole_pos_list = self._hole_pos_list_0
+        for id_y in range(self._y_holes):
+            pos_y = self._pos_y0 + self._y_step * id_y
+            if id_y % 2 == 0:
+                for id_x in range(self._x_holes):
+                    pos_x = self._pos_x0 - self._x_step * id_x
+                    self._hole_pos_list_0.append(np.array([pos_y, pos_x, pos_z]))
+            else:
+                for id_x in range(self._x_holes):
+                    pos_x = self._x_step * id_x - self._pos_x0
+                    self._hole_pos_list_0.append(np.array([pos_y, pos_x, pos_z]))
+        self._hole_pos_list = self._hole_pos_list_0.reverse()
 
     def _update_hole_pos_list(self):
         self._hole_pos_list = list(self.get_rotmat().dot(np.asarray(self._hole_pos_list_0).T).T + self.get_pos())
@@ -49,13 +55,11 @@ class Base(cm.CollisionModel):
 
     def set_pose_from_2d_points(self, point1, point2, point3):
         """
-
-        :param point1:
-        :param point2:
-        :param point3:
-        :return:
-        author: junbo
-        date: 20230705
+        1
+        \
+        \
+        \
+        2----3
         """
         x1, y1 = point1
         x2, y2 = point2
@@ -75,7 +79,7 @@ class Base(cm.CollisionModel):
         author: weiwei
         date: 20220403
         """
-        id = id_x * 12 + id_y
+        id = id_y * 8 + id_x
         return self._hole_pos_list[id], self.get_rotmat()
 
     def copy(self):
@@ -87,42 +91,12 @@ class Base96(Base):
         super().__init__(file)
 
 
-class Rack96(Base96):
-    def __init__(self, file):
-        super().__init__(file)
-
-
 class Microplate96(Base96):
     def __init__(self, file):
         super().__init__(file)
 
 
-class Base24(Base):
-    def __init__(self, file):
-        super().__init__(file)
-        self._pos_z0 = .02
-        self._pos_x0 = .0295
-        self._pos_y0 = .049
-        self._x_step = .019667
-        self._y_step = .0196
-        self._x_holes = 4
-        self._y_holes = 6
-        self._reinitialize()
-
-    def copy(self):
-        return Base24(self)
-
-
-class Microplate24(Base24):
-    def __init__(self, file):
-        super().__init__(file)
-
-
 class Base6(Base):
-    """
-    author: junbo
-    date: 20230705
-    """
     def __init__(self, file):
         super().__init__(file)
         self._pos_z0 = .02
@@ -137,7 +111,18 @@ class Base6(Base):
     def copy(self):
         return Base6(self)
 
-class Microplate6(Base6):
+    def _reinitialize(self):
+        self._hole_pos_list_0 = []
+        pos_z = self._pos_z0
+        for id_y in range(self._y_holes):
+            pos_y = self._pos_y0 + self._y_step * id_y
+            for id_x in range(self._x_holes):
+                pos_x = self._pos_x0 - self._x_step * id_x
+                self._hole_pos_list_0.append(np.array([pos_y, pos_x, pos_z]))
+        self._hole_pos_list = self._hole_pos_list_0.reverse()
+
+
+class Dish6(Base6):
     def __init__(self, file):
         super().__init__(file)
 

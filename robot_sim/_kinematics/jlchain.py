@@ -75,7 +75,7 @@ class JLChain(object):
         for id in range(self.ndof + 1):
             lnks[id]['name'] = 'link0'
             lnks[id]['loc_pos'] = np.array([0, 0, 0])
-            lnks[id]['loc_rotmat'] = rm.rotmat_from_euler(0, 0, 0)
+            lnks[id]['loc_rotmat'] = np.eye(3)
             lnks[id]['com'] = np.zeros(3)
             lnks[id]['inertia'] = np.eye(3)
             lnks[id]['mass'] = 0  # the visual adjustment is ignored for simplisity
@@ -123,17 +123,16 @@ class JLChain(object):
                 self.jnts[id]['gl_pos0'] = self.pos
                 self.jnts[id]['gl_rotmat0'] = self.rotmat
             else:
-                self.jnts[id]['gl_pos0'] = self.jnts[pjid]['gl_posq'] + np.dot(self.jnts[pjid]['gl_rotmatq'],
-                                                                               self.jnts[id]['loc_pos'])
-                self.jnts[id]['gl_rotmat0'] = np.dot(self.jnts[pjid]['gl_rotmatq'], self.jnts[id]['loc_rotmat'])
+                self.jnts[id]['gl_pos0'] = self.jnts[pjid]['gl_posq'] + self.jnts[pjid]['gl_rotmatq'] @ self.jnts[id][
+                    'loc_pos']
+                self.jnts[id]['gl_rotmat0'] = self.jnts[pjid]['gl_rotmatq'] @ self.jnts[id]['loc_rotmat']
             self.jnts[id]['gl_motionax'] = np.dot(self.jnts[id]['gl_rotmat0'], self.jnts[id]['loc_motionax'])
             if self.jnts[id]['type'] == "end" or self.jnts[id]['type'] == "fixed":
                 self.jnts[id]['gl_rotmatq'] = self.jnts[id]['gl_rotmat0']
                 self.jnts[id]['gl_posq'] = self.jnts[id]['gl_pos0']
             elif self.jnts[id]['type'] == "revolute":
-                self.jnts[id]['gl_rotmatq'] = np.dot(self.jnts[id]['gl_rotmat0'],
-                                                     rm.rotmat_from_axangle(self.jnts[id]['loc_motionax'],
-                                                                            self.jnts[id]['motion_val']))
+                loc_rotmat = rm.rotmat_from_axangle(self.jnts[id]['loc_motionax'], self.jnts[id]['motion_val'])
+                self.jnts[id]['gl_rotmatq'] = self.jnts[id]['gl_rotmat0'] @ loc_rotmat
                 self.jnts[id]['gl_posq'] = self.jnts[id]['gl_pos0']
             elif self.jnts[id]['type'] == "prismatic":
                 self.jnts[id]['gl_rotmatq'] = self.jnts[id]['gl_rotmat0']

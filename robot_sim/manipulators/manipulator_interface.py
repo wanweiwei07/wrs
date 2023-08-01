@@ -93,6 +93,8 @@ class ManipulatorInterface(object):
         return self.jlc.is_jnt_values_in_ranges(jnt_values)
 
     def fk(self, jnt_values):
+        if jnt_values is None:
+            raise Exception("Joint values are None!")
         return self.jlc.fk(jnt_values=jnt_values)
 
     def get_jnt_values(self):
@@ -120,6 +122,24 @@ class ManipulatorInterface(object):
                            tcp_loc_rotmat=tcp_loc_rotmat,
                            local_minima=local_minima,
                            toggle_debug=toggle_debug)
+
+    def analytical_ik(self,
+                      tgt_pos: np.array,
+                      tgt_rotmat: np.array,
+                      tcp_loc_pos: np.array,
+                      tcp_loc_rotmat: np.array):
+        """
+        analytical ik sovler,
+        tcp_jnt_id is always jlc.tcp_jnt_id (-1)
+        :param tgt_pos:
+        :param tgt_rotmat:
+        :param tcp_loc_pos:
+        :param tcp_loc_rotmat:
+        :return:
+        author: weiwei
+        date: 20230728
+        """
+        pass
 
     def manipulability(self,
                        tcp_jnt_id,

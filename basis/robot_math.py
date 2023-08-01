@@ -27,6 +27,9 @@ _AXES2TUPLE = {
     'rzxz': (2, 0, 1, 1), 'rxyz': (2, 1, 0, 1), 'rzyz': (2, 1, 1, 1)}
 _TUPLE2AXES = dict((v, k) for k, v in _AXES2TUPLE.items())
 
+# helper
+def radians(degree_val):
+    return np.radians(degree_val)
 
 ## rotmat
 def rotmat_from_axangle(axis, angle):

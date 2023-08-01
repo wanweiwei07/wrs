@@ -1,6 +1,7 @@
 import os
 import math
 import numpy as np
+import basis.robot_math as rm
 import modeling.collision_model as cm
 import modeling.model_collection as mc
 import robot_sim._kinematics.jlchain as jl

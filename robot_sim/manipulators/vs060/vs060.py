@@ -108,7 +108,7 @@ if __name__ == '__main__':
 
     base = wd.World(cam_pos=[2, 0, 1], lookat_pos=[0, 0, 0])
     gm.gen_frame().attach_to(base)
-    manipulator_instance = UR5E(enable_cc=True)
+    manipulator_instance = VS060(enable_cc=True)
     manipulator_meshmodel = manipulator_instance.gen_meshmodel()
     manipulator_meshmodel.attach_to(base)
     manipulator_meshmodel.show_cdprimit()
