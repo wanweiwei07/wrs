@@ -15,8 +15,7 @@ class RS007L(mi.ManipulatorInterface):
     def __init__(self, pos=np.zeros(3), rotmat=np.eye(3), homeconf=np.zeros(6), name='khi_rs007l', enable_cc=True):
         super().__init__(pos=pos, rotmat=rotmat, name=name)
         this_dir, this_filename = os.path.split(__file__)
-        inherent_rotmat = rm.rotmat_from_euler(0, 0, np.radians(-90))
-        self.jlc = jl.JLChain(pos=pos, rotmat=rotmat @ inherent_rotmat, homeconf=homeconf, name=name)
+        self.jlc = jl.JLChain(pos=pos, rotmat=rotmat, homeconf=homeconf, name=name)
         # six joints, n_jnts = 6+2 (tgt ranges from 1-6), nlinks = 6+1
         self.jlc.jnts[1]['loc_pos'] = np.array([0, 0, 0.36])
         self.jlc.jnts[1]['loc_motionax'] = np.array([0, 0, -1])
@@ -124,11 +123,15 @@ class RS007L(mi.ManipulatorInterface):
         author: weiwei
         date: 20230728
         """
+        if tcp_loc_pos is None:
+            tcp_loc_pos = self.jlc.tcp_loc_pos
+        if tcp_loc_rotmat is None:
+            tcp_loc_rotmat = self.jlc.tcp_loc_rotmat
         flange_rotmat = tgt_rotmat @ tcp_loc_rotmat.T
         flange_pos = tgt_pos - flange_rotmat @ tcp_loc_pos
         rrr_pos = flange_pos - flange_rotmat[:, 2] * np.linalg.norm(self.jlc.jnts[6]['loc_pos'])
-        rrr_x, rrr_y, rrr_z = rrr_pos.tolist()
-        j1_value = math.atan2(rrr_x, rrr_y) - math.pi / 2
+        rrr_x, rrr_y, rrr_z = ((rrr_pos-self.jlc.pos) @ self.rotmat).tolist()
+        j1_value = math.atan2(rrr_x, rrr_y)
         if not self._is_jnt_in_range(1, jnt_value=j1_value):
             return None
         # assume a, b, c are the length of shoulders and bottom of the big triangle formed by the robot arm
@@ -199,7 +202,7 @@ if __name__ == '__main__':
 
     base = wd.World(cam_pos=[5, 0, 3], lookat_pos=[0, 0, .7])
     gm.gen_frame(length=.3, thickness=.01).attach_to(base)
-    manipulator_instance = RS007L(enable_cc=True)
+    manipulator_instance = RS007L(pos=np.array([0,0,0.2]), rotmat=rm.rotmat_from_euler(0,np.radians(30), 0), enable_cc=True)
     # manipulator_meshmodel = manipulator_instance.gen_meshmodel()
     # manipulator_meshmodel.attach_to(base)
     # manipulator_meshmodel.show_cdprimit()
@@ -209,14 +212,17 @@ if __name__ == '__main__':
     # toc = time.time()
     # print(toc - tic)
 
-    tgt_pos = np.array([.5, 0, .3])
-    tgt_rotmat = rm.rotmat_from_euler(np.radians(30), np.radians(120), np.radians(130))
-    gm.gen_frame(pos=tgt_pos, rotmat=tgt_rotmat).attach_to(base)
+    # tgt_pos = np.array([.5, 0, .3])
+    # tgt_rotmat = rm.rotmat_from_euler(np.radians(30), np.radians(120), np.radians(130))
+    # gm.gen_frame(pos=tgt_pos, rotmat=tgt_rotmat).attach_to(base)
     tic = time.time()
-    tcp_loc_pos = np.array([0, .1, 0.1])
-    tcp_loc_rotmat = rm.rotmat_from_euler(0, np.radians(30), 0)
-    # tcp_loc_pos = np.zeros(3)
-    # tcp_loc_rotmat = np.eye(3)
+    # tcp_loc_pos = np.array([0, .1, 0.1])
+    # tcp_loc_rotmat = rm.rotmat_from_euler(0, np.radians(30), 0)
+    tgt_pos = np.array([.25, .2, .15])
+    tgt_rotmat = rm.rotmat_from_axangle([0, 1, 0], math.pi * 2 / 3)
+    gm.gen_frame(pos=tgt_pos, rotmat=tgt_rotmat).attach_to(base)
+    tcp_loc_pos = np.array([0, 0, .1645])
+    tcp_loc_rotmat = np.eye(3)
     j_values = manipulator_instance.analytical_ik(tgt_pos=tgt_pos,
                                                   tgt_rotmat=tgt_rotmat,
                                                   tcp_loc_pos=tcp_loc_pos,
