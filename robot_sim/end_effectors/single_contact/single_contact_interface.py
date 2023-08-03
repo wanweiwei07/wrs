@@ -5,7 +5,7 @@ import basis.robot_math as rm
 import robot_sim._kinematics.jlchain as jl
 import robot_sim._kinematics.collision_checker as cc
 
-class SuctionInterface(object):
+class SCInterface(object):
 
     def __init__(self, pos=np.zeros(3), rotmat=np.eye(3), cdmesh_type='aabb', name='suction'):
         self.name = name
@@ -64,7 +64,7 @@ class SuctionInterface(object):
     def fix_to(self, pos, rotmat):
         raise NotImplementedError
 
-    def suction_to_with_scpose(self, gl_suction_center_pos, gl_suction_center_rotmat):
+    def attach_to_with_cpose(self, gl_suction_center_pos, gl_suction_center_rotmat):
         """
         :param gl_suction_center_posm:
         :param gl_suction_center_rotmat: jaw_center's rotmat
@@ -77,7 +77,7 @@ class SuctionInterface(object):
         return [gl_suction_center_pos, gl_suction_center_rotmat, eef_root_pos, eef_root_rotmat]
 
 
-    def suction_to_with_sczy(self, gl_suction_center_pos, gl_suction_center_z, gl_suction_center_y):
+    def attach_to_with_czy(self, gl_suction_center_pos, gl_suction_center_z, gl_suction_center_y):
         """
         :param gl_suction_center_pos:
         :param gl_suction_center_z: jaw_center's approaching direction
@@ -91,7 +91,7 @@ class SuctionInterface(object):
         gl_jaw_center_rotmat[:, 2] = rm.unit_vector(gl_suction_center_z)
         gl_jaw_center_rotmat[:, 1] = rm.unit_vector(gl_suction_center_y)
         gl_jaw_center_rotmat[:, 0] = np.cross(gl_jaw_center_rotmat[:3, 1], gl_jaw_center_rotmat[:3, 2])
-        return self.suction_to_with_scpose(gl_suction_center_pos, gl_suction_center_z)
+        return self.attach_to_with_cpose(gl_suction_center_pos, gl_suction_center_z)
 
     def show_cdprimit(self):
         self.cc.show_cdprimit()

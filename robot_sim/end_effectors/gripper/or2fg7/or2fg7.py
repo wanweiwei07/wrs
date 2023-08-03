@@ -20,8 +20,8 @@ class OR2FG7(gp.GripperInterface):
                  enable_cc=True):
         super().__init__(pos=pos, rotmat=rotmat, cdmesh_type=cdmesh_type, name=name)
         this_dir, this_filename = os.path.split(__file__)
-        self.coupling.jnts[1]['loc_pos'] = coupling_offset_pos
-        self.coupling.jnts[1]['loc_rotmat'] = coupling_offset_rotmat
+        self.coupling.jnts[-1]['loc_pos'] = coupling_offset_pos
+        self.coupling.jnts[-1]['loc_rotmat'] = coupling_offset_rotmat
         self.coupling.lnks[0]['collision_model'] = cm.gen_stick(self.coupling.jnts[0]['loc_pos'],
                                                                 self.coupling.jnts[1]['loc_pos'],
                                                                 thickness=0.07,

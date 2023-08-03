@@ -3,10 +3,10 @@ import numpy as np
 import modeling.model_collection as mc
 import robot_sim._kinematics.jlchain as jl
 import basis.robot_math as rm
-import robot_sim.end_effectors.suction.suction_interface as si
+import robot_sim.end_effectors.single_contact.single_contact_interface as si
 
 
-class MVFLN40(si.SuctionInterface):
+class MVFLN40(si.SCInterface):
 
     def __init__(self, pos=np.zeros(3), rotmat=np.eye(3), cdmesh_type='box', name='mvfln40', enable_cc=True):
         super().__init__(pos=pos, rotmat=rotmat, cdmesh_type=cdmesh_type, name=name)
