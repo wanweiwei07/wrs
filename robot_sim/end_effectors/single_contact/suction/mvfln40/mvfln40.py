@@ -61,7 +61,7 @@ class MVFLN40(si.SCInterface):
                                 toggle_connjnt=toggle_connjnt).attach_to(mm_collection)
         if toggle_tcpcs:
             suction_center_gl_pos = self.rotmat.dot(self.suction_center_pos) + self.pos
-            suction_center_gl_rotmat = self.rotmat.dot(self.suction_center_rotmat)
+            suction_center_gl_rotmat = self.rotmat.dot(self.contact_center_rotmat)
             gm.gen_dashstick(spos=self.pos,
                              epos=suction_center_gl_pos,
                              thickness=.0062,
@@ -84,7 +84,7 @@ class MVFLN40(si.SCInterface):
                                rgba=rgba).attach_to(mm_collection)
         if toggle_tcpcs:
             suction_center_gl_pos = self.rotmat.dot(self.suction_center_pos) + self.pos
-            suction_center_gl_rotmat = self.rotmat.dot(self.suction_center_rotmat)
+            suction_center_gl_rotmat = self.rotmat.dot(self.contact_center_rotmat)
             gm.gen_dashstick(spos=self.pos,
                              epos=suction_center_gl_pos,
                              thickness=.0062,

@@ -5,11 +5,11 @@ import modeling.collision_model as cm
 import modeling.model_collection as mc
 import robot_sim._kinematics.jlchain as jl
 import robot_sim.manipulators.rs007l.rs007l as manipulator
-import robot_sim.end_effectors.gripper.or2fg7.or2fg7 as end_effector
+import robot_sim.end_effectors.single_contact.screw_driver.orsd.orsd as end_effector
 import robot_sim.robots.robot_interface as ri
 
 
-class KHIG(ri.RobotInterface):
+class KHI_ORSD(ri.RobotInterface):
 
     def __init__(self, pos=np.zeros(3), rotmat=np.eye(3), name="khi_g", enable_cc=True):
         super().__init__(pos=pos, rotmat=rotmat, name=name)
@@ -33,14 +33,15 @@ class KHIG(ri.RobotInterface):
                                       homeconf=arm_homeconf,
                                       name='rs007l', enable_cc=False)
         # gripper
-        self.hnd = end_effector.OR2FG7(pos=self.arm.jnts[-1]['gl_posq'],
-                                       rotmat=self.arm.jnts[-1]['gl_rotmatq'],
-                                       coupling_offset_pos=np.array([0, 0, 0.0145]),
-                                       name='or2fg7', enable_cc=False)
+        self.hnd = end_effector.ORSD(pos=self.arm.jnts[-1]['gl_posq'],
+                                     rotmat=self.arm.jnts[-1]['gl_rotmatq'],
+                                     coupling_offset_pos=np.array([0, 0, 0.0145]),
+                                     coupling_offset_rotmat=rm.rotmat_from_euler(0, 0, np.radians(22.5)),
+                                     name='orsd', enable_cc=False)
         # tool center point
         self.arm.jlc.tcp_jnt_id = -1
-        self.arm.jlc.tcp_loc_pos = self.hnd.jaw_center_pos
-        self.arm.jlc.tcp_loc_rotmat = self.hnd.jaw_center_rotmat
+        self.arm.jlc.tcp_loc_pos = self.hnd.contact_center_pos
+        self.arm.jlc.tcp_loc_rotmat = self.hnd.contact_center_rotmat
         # a list of detailed information about objects in hand, see CollisionChecker.add_objinhnd
         self.oih_infos = []
         # collision detection
@@ -144,8 +145,8 @@ class KHIG(ri.RobotInterface):
         else:
             raise NotImplementedError
 
-    def jaw_to(self, hnd_name='hnd_s', jawwidth=0.0):
-        self.hnd.jaw_to(jawwidth)
+    def jaw_to(self, hnd_name='hnd', jawwidth=0.0):
+        raise Exception("This robot has a single-contact end effector (screw driver).")
 
     def hold(self, hnd_name, objcm, jawwidth=None):
         """
@@ -176,7 +177,7 @@ class KHIG(ri.RobotInterface):
             return_list.append(objcm)
         return return_list
 
-    def release(self, hnd_name, objcm, jawwidth=None):
+    def release(self, hnd_name, objcm):
         """
         the objcm is added as a part of the robot_s to the cd checker
         :param jawwidth:
@@ -185,8 +186,6 @@ class KHIG(ri.RobotInterface):
         """
         if hnd_name not in self.hnd_dict:
             raise ValueError("Hand name does not exist!")
-        if jawwidth is not None:
-            self.hnd_dict[hnd_name].jaw_to(jawwidth)
         for obj_info in self.oih_infos:
             if obj_info['collision_model'] is objcm:
                 self.cc.delete_cdobj(obj_info)
@@ -274,8 +273,8 @@ if __name__ == '__main__':
     base = wd.World(cam_pos=[1.7, 1.7, 1.7], lookat_pos=[0, 0, .3])
 
     gm.gen_frame().attach_to(base)
-    robot_s = KHIG(enable_cc=True)
-    robot_s.jaw_to(.02)
+    robot_s = KHI_ORSD(enable_cc=True)
+    # robot_s.jaw_to(.02)
     robot_s.gen_meshmodel(toggle_tcpcs=True, toggle_jntscs=True).attach_to(base)
     # robot_s.gen_meshmodel(toggle_tcpcs=False, toggle_jntscs=False).attach_to(base)
     robot_s.gen_stickmodel(toggle_tcpcs=True, toggle_jntscs=True).attach_to(base)

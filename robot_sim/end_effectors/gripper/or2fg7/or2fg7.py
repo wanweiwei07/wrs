@@ -22,10 +22,11 @@ class OR2FG7(gp.GripperInterface):
         this_dir, this_filename = os.path.split(__file__)
         self.coupling.jnts[-1]['loc_pos'] = coupling_offset_pos
         self.coupling.jnts[-1]['loc_rotmat'] = coupling_offset_rotmat
+        self.coupling.lnks[0]['rgba'] = np.array([.35, .35, .35, 1])
         self.coupling.lnks[0]['collision_model'] = cm.gen_stick(self.coupling.jnts[0]['loc_pos'],
-                                                                self.coupling.jnts[1]['loc_pos'],
+                                                                self.coupling.jnts[-1]['loc_pos'],
                                                                 thickness=0.07,
-                                                                rgba=[.2, .2, .2, 1],
+                                                                # rgba=[.2, .2, .2, 1], rgb will be overwritten
                                                                 type='rect',
                                                                 sections=36)
         self.coupling.reinitialize()

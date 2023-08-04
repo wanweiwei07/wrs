@@ -4,6 +4,8 @@ import modeling.model_collection as mc
 import basis.robot_math as rm
 import robot_sim._kinematics.jlchain as jl
 import robot_sim._kinematics.collision_checker as cc
+import modeling.geometric_model as gm
+
 
 class SCInterface(object):
 
@@ -21,9 +23,9 @@ class SCInterface(object):
         # self.coupling.lnks[0]['mesh_file'] = os.path.join(this_dir, "meshes", "xxx.stl")
         # self.coupling.lnks[0]['rgba'] = [.2, .2, .2, 1]
         self.coupling.reinitialize()
-        # suction center
-        self.suction_center_pos = np.zeros(3)
-        self.suction_center_rotmat = np.eye(3)
+        # contact center
+        self.contact_center_pos = np.zeros(3)
+        self.contact_center_rotmat = np.eye(3)
         # collision detection
         self.cc = None
         # cd mesh collection for precise collision checking
@@ -71,8 +73,8 @@ class SCInterface(object):
         :param jaw_width:
         :return:
         """
-        eef_root_rotmat = gl_suction_center_rotmat.dot(self.suction_center_rotmat.T)
-        eef_root_pos = gl_suction_center_pos - eef_root_rotmat.dot(self.suction_center_pos)
+        eef_root_rotmat = gl_suction_center_rotmat.dot(self.contact_center_rotmat.T)
+        eef_root_pos = gl_suction_center_pos - eef_root_rotmat.dot(self.contact_center_pos)
         self.fix_to(eef_root_pos, eef_root_rotmat)
         return [gl_suction_center_pos, gl_suction_center_rotmat, eef_root_pos, eef_root_rotmat]
 
@@ -123,6 +125,16 @@ class SCInterface(object):
                       rgba=None,
                       name='suction_meshmodel'):
         raise NotImplementedError
+
+    def _toggle_tcpcs(self, parent):
+        contact_center_gl_pos = self.rotmat.dot(self.contact_center_pos) + self.pos
+        contact_center_gl_rotmat = self.rotmat.dot(self.contact_center_rotmat)
+        gm.gen_dashstick(spos=self.pos,
+                         epos=contact_center_gl_pos,
+                         thickness=.0062,
+                         rgba=[.5, 0, 1, 1],
+                         type="round").attach_to(parent)
+        gm.gen_mycframe(pos=contact_center_gl_pos, rotmat=contact_center_gl_rotmat).attach_to(parent)
 
     def enable_cc(self):
         self.cc = cc.CollisionChecker("collision_checker")
