@@ -11,25 +11,19 @@ import robot_sim.robots.robot_interface as ri
 
 class KHI_OR2FG7(ri.RobotInterface):
 
-    def __init__(self, pos=np.zeros(3), rotmat=np.eye(3), name="khi_g", enable_cc=True):
+    def __init__(self,
+                 pos=np.zeros(3),
+                 rotmat=np.eye(3),
+                 name="khi_g",
+                 enable_cc=True):
         super().__init__(pos=pos, rotmat=rotmat, name=name)
-        this_dir, this_filename = os.path.split(__file__)
-        # base plate
-        self.base_plate = jl.JLChain(pos=pos,
-                                     rotmat=rotmat,
-                                     homeconf=np.zeros(0),
-                                     name='base_plate')
-        self.base_plate.jnts[1]['loc_pos'] = np.array([0, 0, 0.035])
-        # self.base_plate.lnks[0]['mesh_file'] = os.path.join(this_dir, "meshes", "base_plate.stl")
-        self.base_plate.lnks[0]['rgba'] = [.35, .35, .35, 1]
-        self.base_plate.reinitialize()
         # arm
         arm_homeconf = np.zeros(6)
         arm_homeconf[1] = -math.pi / 6
         arm_homeconf[2] = math.pi / 2
         arm_homeconf[4] = math.pi / 6
-        self.arm = manipulator.RS007L(pos=self.base_plate.jnts[-1]['gl_posq'],
-                                      rotmat=self.base_plate.jnts[-1]['gl_rotmatq'],
+        self.arm = manipulator.RS007L(pos=pos,
+                                      rotmat=rotmat,
                                       homeconf=arm_homeconf,
                                       name='rs007l', enable_cc=False)
         # gripper
@@ -202,12 +196,6 @@ class KHI_OR2FG7(ri.RobotInterface):
                        toggle_connjnt=False,
                        name='khi_g_stickmodel'):
         stickmodel = mc.ModelCollection(name=name)
-        self.base_plate.gen_stickmodel(tcp_jnt_id=tcp_jnt_id,
-                                       tcp_loc_pos=tcp_loc_pos,
-                                       tcp_loc_rotmat=tcp_loc_rotmat,
-                                       toggle_tcpcs=False,
-                                       toggle_jntscs=toggle_jntscs,
-                                       toggle_connjnt=toggle_connjnt).attach_to(stickmodel)
         self.arm.gen_stickmodel(tcp_jnt_id=tcp_jnt_id,
                                 tcp_loc_pos=tcp_loc_pos,
                                 tcp_loc_rotmat=tcp_loc_rotmat,
@@ -227,11 +215,6 @@ class KHI_OR2FG7(ri.RobotInterface):
                       rgba=None,
                       name='khi_g_meshmodel'):
         meshmodel = mc.ModelCollection(name=name)
-        self.base_plate.gen_meshmodel(tcp_jnt_id=tcp_jnt_id,
-                                      tcp_loc_pos=tcp_loc_pos,
-                                      tcp_loc_rotmat=tcp_loc_rotmat,
-                                      toggle_tcpcs=False,
-                                      toggle_jntscs=toggle_jntscs).attach_to(meshmodel)
         self.arm.gen_meshmodel(tcp_jnt_id=tcp_jnt_id,
                                tcp_loc_pos=tcp_loc_pos,
                                tcp_loc_rotmat=tcp_loc_rotmat,
