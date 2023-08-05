@@ -35,7 +35,7 @@ class KHI_OR2FG7(ri.RobotInterface):
         # gripper
         self.hnd = end_effector.OR2FG7(pos=self.arm.jnts[-1]['gl_posq'],
                                        rotmat=self.arm.jnts[-1]['gl_rotmatq'],
-                                       coupling_offset_pos=np.array([0, 0, 0.0145]),
+                                       coupling_offset_pos=np.array([0, 0, 0.0639]),
                                        name='or2fg7', enable_cc=False)
         # tool center point
         self.arm.jlc.tcp_jnt_id = -1

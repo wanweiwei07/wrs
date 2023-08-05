@@ -35,8 +35,8 @@ class KHI_ORSD(ri.RobotInterface):
         # gripper
         self.hnd = end_effector.ORSD(pos=self.arm.jnts[-1]['gl_posq'],
                                      rotmat=self.arm.jnts[-1]['gl_rotmatq'],
-                                     coupling_offset_pos=np.array([0, 0, 0.0145]),
-                                     coupling_offset_rotmat=rm.rotmat_from_euler(0, 0, np.radians(22.5)),
+                                     coupling_offset_pos=np.array([0, 0, 0.0639]),
+                                     # coupling_offset_rotmat=rm.rotmat_from_euler(0, 0, np.radians(22.5)), # ap104+qc10c+adapterc
                                      name='orsd', enable_cc=False)
         # tool center point
         self.arm.jlc.tcp_jnt_id = -1

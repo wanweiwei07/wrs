@@ -156,7 +156,6 @@ class XArmLite6WRSGripper(ri.RobotInterface):
         :param seed_jnt_values:
         :param return_all_solutions:
         :return:
-
         Modified D-H from base to tcp
         T01 = sympy.Matrix([[c1, -s1, 0, 0],
                             [s1, c1, 0, 0],
@@ -186,20 +185,16 @@ class XArmLite6WRSGripper(ri.RobotInterface):
                             [0, 1, 0, 0],
                             [0, 0, 1, d_hnd + d6],
                             [0, 0, 0, 1]])
-
         T0t=T01*T12*T23*T34*T45*T56*T6t
         """
-
         # lengths of link
         d1, d4, d6, dtcp = .2433, .2276, .0615, .175
         a3, a4 = .2, .087
         # global position of joint 1
         pos_1 = np.array([0, 0, d1])
-
         # Joint 1
         pos_w = tgt_pos - (d6 + dtcp) * tgt_rotmat[:, 2]
         theta1 = np.arctan2(pos_w[1], pos_w[0])
-
         # Joint 3
         d1w = np.sum((pos_w-pos_1)**2)
         num3_1 = 2*a3*a4
@@ -208,13 +203,11 @@ class XArmLite6WRSGripper(ri.RobotInterface):
         den3 = a3**2 + 2*a3*d4 + a4**2 - d1w + d4**2
         theta3_list = [-2*np.arctan2((num3_1-np.sqrt(num3_2)), den3),
                        -2*np.arctan2((num3_1+np.sqrt(num3_2)), den3)]
-
         theta2_4_5_6_list = []
         for theta3 in theta3_list:
             # Joint 2
             dxy = np.sqrt(pos_w[0]**2 + pos_w[1]**2)
             z_w = pos_w[2]
-
             num_c2 = -a3*d1 + a3*z_w - a4*d1*np.sin(theta3) + a4*dxy*np.cos(theta3) + a4*z_w*np.sin(theta3) + \
                      d1*d4*np.cos(theta3) + d4*dxy*np.sin(theta3) - d4*z_w*np.cos(theta3)
             num_s2 = a3*dxy + a4*d1*np.cos(theta3) + a4*dxy*np.sin(theta3) - a4*z_w*np.cos(theta3) + \
@@ -226,7 +219,6 @@ class XArmLite6WRSGripper(ri.RobotInterface):
                 num_s2 = -num_s2
                 num_c2 = -num_c2
             theta2 = np.arctan2(num_s2, num_c2)
-
             # Joint 4,5,6
             U06 = rm.homomat_from_posrot(pos=pos_w, rot=tgt_rotmat)
             s1, c1, s2, c2, s3, c3 = np.sin(theta1), np.cos(theta1), np.sin(theta2), np.cos(theta2), np.sin(theta3), np.cos(theta3)
@@ -252,41 +244,32 @@ class XArmLite6WRSGripper(ri.RobotInterface):
             theta5 = np.arctan2(s5, c5)
 
             theta2_4_5_6_list.append((theta2, theta4, theta5, theta6))
-
         # Adapt to joint range
         if theta3_list[0] < .0:
             theta3_list[0] = 2.*np.pi + theta3_list[0]
         if theta3_list[1] < .0:
             theta3_list[1] = 2.*np.pi + theta3_list[1]
-
         jnt_values_list = [np.array([theta1, j2, j3, j4, j5, j6]) for j3, (j2, j4, j5, j6) in zip(theta3_list, theta2_4_5_6_list)]
-
         if not ((self.arm.jnts[3]['motion_rng'][0] <= jnt_values_list[1][2] <= self.arm.jnts[3]['motion_rng'][1]) and
                 (self.arm.jnts[4]['motion_rng'][0] <= jnt_values_list[1][3] <= self.arm.jnts[4]['motion_rng'][1]) and
                 (self.arm.jnts[5]['motion_rng'][0] <= jnt_values_list[1][4] <= self.arm.jnts[5]['motion_rng'][1])):
             jnt_values_list.pop(1)
-
         if not ((self.arm.jnts[3]['motion_rng'][0] <= jnt_values_list[0][2] <= self.arm.jnts[3]['motion_rng'][1]) and
                 (self.arm.jnts[4]['motion_rng'][0] <= jnt_values_list[0][3] <= self.arm.jnts[4]['motion_rng'][1]) and
                 (self.arm.jnts[5]['motion_rng'][0] <= jnt_values_list[0][4] <= self.arm.jnts[5]['motion_rng'][1])):
             jnt_values_list.pop(0)
-
         if len(jnt_values_list) == 0:
             return None
-
         if return_all_solutions is True:
             return jnt_values_list
-
         if len(jnt_values_list) == 1:
             return jnt_values_list[0]
-
         # return joint values close to seed_jnt_values
         seed_jnt_values = np.zeros(6) if seed_jnt_values is None else seed_jnt_values
         if np.linalg.norm(jnt_values_list[0] - seed_jnt_values) < np.linalg.norm(jnt_values_list[1] - seed_jnt_values):
             return jnt_values_list[0]
         else:
             return jnt_values_list[1]
-
 
     def rand_conf(self, component_name):
         """
