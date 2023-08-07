@@ -130,8 +130,8 @@ class Robotiq85GelsightPusher(gp.GripperInterface):
         self.rgt_outer.reinitialize()
         self.rgt_inner.reinitialize()
         self.middle.reinitialize()
-        # jaw width
-        self.jawwidth_rng = [0.0, .085]
+        # jaw range
+        self.jaw_range = [0.0, .085]
         # jaw center
         self.jaw_center_pos = np.array([0, 0, .256])
         # collision detection
@@ -212,9 +212,9 @@ class Robotiq85GelsightPusher(gp.GripperInterface):
     #     jaw_width = jaw_width + .028
     #     if jaw_width > 0.085:
     #         jaw_width = 0.085
-    #     if jaw_width > self.jawwidth_rng[1]:
-    #         raise ValueError(f"Jawwidth must be {self.jawwidth_rng[0]}mm~{self.jawwidth_rng[1]}mm!")
-    #     motion_val = math.asin((self.jawwidth_rng[1] / 2.0 + .0064 - .0306011) / 0.055) - math.asin(
+    #     if jaw_width > self.jaw_range[1]:
+    #         raise ValueError(f"Jawwidth must be {self.jaw_range[0]}mm~{self.jaw_range[1]}mm!")
+    #     motion_val = math.asin((self.jaw_range[1] / 2.0 + .0064 - .0306011) / 0.055) - math.asin(
     #         (jaw_width / 2.0 + .0064 - .0306011) / 0.055)
     #     self.fk(motion_val)
     #     # 20220113 matsuoka
@@ -224,7 +224,7 @@ class Robotiq85GelsightPusher(gp.GripperInterface):
 
     def push_at(self, gl_push_pos, gl_push_rotmat):
         _, gl_tip_pos, gl_tip_rotmat, eef_root_pos, eef_root_rotmat = \
-            self.grip_at_with_jcpose(gl_push_pos, gl_push_rotmat, jaw_width=self.jawwidth_rng[1])
+            self.grip_at_with_jcpose(gl_push_pos, gl_push_rotmat, jaw_width=self.jaw_range[1])
         return [gl_tip_pos, gl_tip_rotmat, eef_root_pos, eef_root_rotmat]
 
     def gen_stickmodel(self,

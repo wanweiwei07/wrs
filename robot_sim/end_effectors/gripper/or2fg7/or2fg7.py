@@ -57,6 +57,8 @@ class OR2FG7(gp.GripperInterface):
         self.rgt.lnks[1]['rgba'] = [.7, .7, .7, 1]
         # jaw center
         self.jaw_center_pos = np.array([0, 0, .15]) + coupling_offset_pos
+        # jaw range
+        self.jaw_range = [0.0, 0.038]
         # reinitialize
         self.lft.reinitialize()
         self.rgt.reinitialize()
@@ -84,8 +86,8 @@ class OR2FG7(gp.GripperInterface):
         self.pos = pos
         self.rotmat = rotmat
         if jawwidth is not None:
-            side_jawwidth = (.038 - jawwidth) / 2.0
-            if 0 <= side_jawwidth <= .019:
+            side_jawwidth = (self.jaw_range[1] - jawwidth) / 2.0
+            if 0 <= side_jawwidth <= self.jaw_range[1]/2.0:
                 self.lft.jnts[1]['motion_val'] = side_jawwidth;
                 self.rgt.jnts[1]['motion_val'] = self.lft.jnts[1]['motion_val']  # right mimic left
             else:
@@ -110,9 +112,9 @@ class OR2FG7(gp.GripperInterface):
             raise ValueError("The motion_val parameter is out of range!")
 
     def jaw_to(self, jaw_width):
-        if jaw_width > .038:
+        if jaw_width > self.jaw_range[1]:
             raise ValueError("The jawwidth parameter is out of range!")
-        self.fk(motion_val=(0.038 - jaw_width) / 2.0)
+        self.fk(motion_val=(self.jaw_range[1] - jaw_width) / 2.0)
 
     def gen_stickmodel(self,
                        tcp_jntid=None,
@@ -180,11 +182,12 @@ if __name__ == '__main__':
     #     grpr.fk(angle)
     #     grpr.gen_meshmodel().attach_to(base)
     grpr = OR2FG7(coupling_offset_pos=np.array([0, 0, 0.0145]), enable_cc=True)
-    grpr.jaw_to(.0)
-    grpr.gen_meshmodel().attach_to(base)
-    grpr.gen_stickmodel(toggle_tcpcs=True).attach_to(base)
-    grpr.fix_to(pos=np.array([0, .3, .2]), rotmat=rm.rotmat_from_axangle([1, 0, 0], .05))
-    grpr.gen_meshmodel().attach_to(base)
-    grpr.show_cdmesh()
-    grpr.show_cdprimit()
-    base.run()
+    if grpr:
+        grpr.jaw_to(.0)
+        grpr.gen_meshmodel().attach_to(base)
+        grpr.gen_stickmodel(toggle_tcpcs=True).attach_to(base)
+        grpr.fix_to(pos=np.array([0, .3, .2]), rotmat=rm.rotmat_from_axangle([1, 0, 0], .05))
+        grpr.gen_meshmodel().attach_to(base)
+        grpr.show_cdmesh()
+        grpr.show_cdprimit()
+        base.run()

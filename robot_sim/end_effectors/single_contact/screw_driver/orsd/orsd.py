@@ -7,7 +7,7 @@ import robot_sim.end_effectors.single_contact.single_contact_interface as si
 import modeling.collision_model as cm
 
 
-class ORSD(si.SCInterface):
+class ORSD(si.SCTInterface):
     """
      # orsd = OnRobot ScrewDriver
     author: weiwei
@@ -45,9 +45,9 @@ class ORSD(si.SCInterface):
         self.jlc.lnks[0]['rgba'] = [.55, .55, .55, 1]
         # reinitialize
         self.jlc.reinitialize()
-        #  contact center
-        self.contact_center_pos = self.coupling.jnts[-1]['loc_rotmat'] @ np.array([0.16855000, 0, 0.09509044]) + coupling_offset_pos
-        self.contact_center_rotmat = self.coupling.jnts[-1]['loc_rotmat']
+        #  action center
+        self.action_center_pos = self.coupling.jnts[-1]['loc_rotmat'] @ np.array([0.16855000, 0, 0.09509044]) + coupling_offset_pos
+        self.action_center_rotmat = self.coupling.jnts[-1]['loc_rotmat']
         # collision detection
         self.all_cdelements = []
         self.enable_cc(toggle_cdprimit=enable_cc)

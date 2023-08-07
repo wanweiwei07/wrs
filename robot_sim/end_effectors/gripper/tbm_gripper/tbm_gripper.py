@@ -16,34 +16,34 @@ class TBMGripper(gp.GripperInterface):
         cpl_end_rotmat = self.coupling.jnts[-1]['gl_rotmatq']
         # left finger
         self.lft_fgr = jl.JLChain(pos=cpl_end_pos, rotmat=cpl_end_rotmat, homeconf=np.zeros(1), name='lft_outer')
-        self.lft_fgr.jnts[1]['loc_pos'] = np.array([0.119, 0, -.058])
+        self.lft_fgr.jnts[1]['loc_pos'] = np.array([0.113, 0, -.058])
         self.lft_fgr.jnts[1]['motion_rng'] = [-.8, .8]
         self.lft_fgr.jnts[1]['loc_motionax'] = np.array([0, 1, 0])
         # right finger
         self.rgt_fgr = jl.JLChain(pos=cpl_end_pos, rotmat=cpl_end_rotmat, homeconf=np.zeros(1), name='lft_outer')
-        self.rgt_fgr.jnts[1]['loc_pos'] = np.array([0.119, 0, 0.058])
+        self.rgt_fgr.jnts[1]['loc_pos'] = np.array([0.113, 0, 0.058])
         self.rgt_fgr.jnts[1]['motion_rng'] = [-.8, .8]
         self.rgt_fgr.jnts[1]['loc_motionax'] = np.array([0, 1, 0])
         # links
         # palm and left finger
         self.lft_fgr.lnks[0]['name'] = "palm"
         self.lft_fgr.lnks[0]['loc_pos'] = np.zeros(3)
-        self.lft_fgr.lnks[0]['mesh_file'] = os.path.join(this_dir, "meshes", "palm.stl")
+        self.lft_fgr.lnks[0]['mesh_file'] = os.path.join(this_dir, "meshes", "palm_r.stl")
         self.lft_fgr.lnks[0]['rgba'] = [.5, .5, .5, 1]
         self.lft_fgr.lnks[1]['name'] = "finger1"
         self.lft_fgr.lnks[1]['loc_pos'] = np.zeros(3)
-        self.lft_fgr.lnks[1]['mesh_file'] = os.path.join(this_dir, "meshes", "finger1.stl")
+        self.lft_fgr.lnks[1]['mesh_file'] = os.path.join(this_dir, "meshes", "finger1_r.stl")
         self.lft_fgr.lnks[1]['rgba'] = [0.792156862745098, 0.819607843137255, 0.933333333333333, 1]
         # right finger
         self.rgt_fgr.lnks[1]['name'] = "finger2"
         self.rgt_fgr.lnks[1]['loc_pos'] = np.zeros(3)
-        self.rgt_fgr.lnks[1]['mesh_file'] = os.path.join(this_dir, "meshes", "finger2.stl")
+        self.rgt_fgr.lnks[1]['mesh_file'] = os.path.join(this_dir, "meshes", "finger2_r.stl")
         self.rgt_fgr.lnks[1]['rgba'] = [0.792156862745098, 0.819607843137255, 0.933333333333333, 1]
         # reinitialize
         self.lft_fgr.reinitialize()
         self.rgt_fgr.reinitialize()
-        # jaw width
-        self.jawwidth_rng = [-.5, .5]
+        # jaw range
+        self.jaw_range = [0, .5]
         # jaw center
         self.jaw_center_pos = np.array([.325, 0, 0])
         # collision detection
@@ -92,8 +92,8 @@ class TBMGripper(gp.GripperInterface):
             raise ValueError("The angle parameter is out of range!")
 
     def jaw_to(self, jaw_width):
-        if jaw_width > self.jawwidth_rng[1]:
-            raise ValueError(f"Jawwidth must be {self.jawwidth_rng[0]}mm~{self.jawwidth_rng[1]}mm!")
+        if jaw_width > self.jaw_range[1]:
+            raise ValueError(f"Jawwidth must be {self.jaw_range[0]}mm~{self.jaw_range[1]}mm!")
         self.fk(jaw_width)
 
     def gen_stickmodel(self,
@@ -103,7 +103,7 @@ class TBMGripper(gp.GripperInterface):
                        toggle_tcpcs=False,
                        toggle_jntscs=False,
                        toggle_connjnt=False,
-                       name='robotiq85_stickmodel'):
+                       name='tbmg_stickmodel'):
         sm_collection = mc.ModelCollection(name=name)
         self.coupling.gen_stickmodel(toggle_tcpcs=False,
                                      toggle_jntscs=toggle_jntscs).attach_to(sm_collection)
@@ -128,7 +128,7 @@ class TBMGripper(gp.GripperInterface):
                       toggle_tcpcs=False,
                       toggle_jntscs=False,
                       rgba=None,
-                      name='robotiq85_meshmodel'):
+                      name='tbmg_meshmodel'):
         mm_collection = mc.ModelCollection(name=name)
         self.coupling.gen_meshmodel(toggle_tcpcs=False,
                                     toggle_jntscs=toggle_jntscs,
@@ -160,7 +160,7 @@ if __name__ == '__main__':
     grpr = TBMGripper(enable_cc=True)
     grpr.cdmesh_type = 'convexhull'
     # grpr.fk(.0)
-    grpr.jaw_to(-.7)
+    grpr.jaw_to(0.5)
     grpr.gen_meshmodel(toggle_tcpcs=True).attach_to(base)
     grpr.gen_stickmodel(toggle_jntscs=False).attach_to(base)
     # grpr.fix_to(pos=np.array([0, .3, .2]), rotmat=rm.rotmat_from_axangle([1, 0, 0], math.pi / 6))

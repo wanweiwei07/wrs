@@ -88,8 +88,8 @@ class XArmGripper(gi.GripperInterface):
         self.rgt_inner.reinitialize()
         # jaw center
         self.jaw_center_pos = np.array([0, 0, .15])
-        # jaw width
-        self.jawwidth_rng = [0.0, .085]
+        # jaw range
+        self.jaw_range = [0.0, .085]
         # collision detection
         self.all_cdelements = []
         self.enable_cc(toggle_cdprimit=enable_cc)
@@ -162,7 +162,7 @@ class XArmGripper(gi.GripperInterface):
             angle = 0
         self.fk(angle)
 
-    def get_jawwidth(self):
+    def get_jaw_width(self):
         angle = self.lft_outer.jnts[1]['motion_val']
         return math.sin(.85 - angle) * 0.055 * 2.0
 
@@ -228,7 +228,7 @@ if __name__ == '__main__':
     #     xag.gen_meshmodel().attach_to(base)
     xag = XArmGripper(enable_cc=True)
     xag.jaw_to(0.05)
-    print(xag.get_jawwidth())
+    print(xag.get_jaw_width())
     model = xag.gen_meshmodel()
     model.attach_to(base)
     # xag.show_cdprimit()

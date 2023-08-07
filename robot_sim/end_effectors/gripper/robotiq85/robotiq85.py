@@ -123,7 +123,7 @@ class Robotiq85(gp.GripperInterface):
         self.rgt_outer.reinitialize()
         self.rgt_inner.reinitialize()
         # jaw width
-        self.jawwidth_rng = [0.0, .085]
+        self.jaw_range = [0.0, .085]
         # jaw center
         self.jaw_center_pos = np.array([0, 0, .145])
         # collision detection
@@ -194,9 +194,9 @@ class Robotiq85(gp.GripperInterface):
             raise ValueError("The angle parameter is out of range!")
 
     def jaw_to(self, jaw_width):
-        if jaw_width > self.jawwidth_rng[1]:
-            raise ValueError(f"Jawwidth must be {self.jawwidth_rng[0]}mm~{self.jawwidth_rng[1]}mm!")
-        motion_val = math.asin((self.jawwidth_rng[1] / 2.0 + .0064 - .0306011) / 0.055) - math.asin((jaw_width / 2.0 + .0064 - .0306011) / 0.055)
+        if jaw_width > self.jaw_range[1]:
+            raise ValueError(f"Jawwidth must be {self.jaw_range[0]}mm~{self.jaw_range[1]}mm!")
+        motion_val = math.asin((self.jaw_range[1] / 2.0 + .0064 - .0306011) / 0.055) - math.asin((jaw_width / 2.0 + .0064 - .0306011) / 0.055)
         self.fk(motion_val)
         # TODO dynamically change jaw center
 

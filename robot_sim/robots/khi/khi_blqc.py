@@ -4,26 +4,29 @@ import numpy as np
 import modeling.collision_model as cm
 import modeling.model_collection as mc
 import robot_sim._kinematics.jlchain as jl
-import robot_sim.manipulators.rs007l.rs007l as manipulator
+import robot_sim.manipulators.rs007l.rs007l as manip
 import robot_sim.robots.robot_interface as ri
+import robot_sim.robots.arm_interface as ai
 
 
-class KHI_BLQC(ri.RobotInterface):
+class KHI_BLQC(ai.ArmInterface):
     """
     author: weiwei
-    date: 20230826, Toyonaka
+    date: 20230826toyonaka
     """
 
     def __init__(self, pos=np.zeros(3), rotmat=np.eye(3), name="khi_g", enable_cc=True):
         super().__init__(pos=pos, rotmat=rotmat, name=name)
         # arm
-        self.arm = manipulator.RS007L(pos=pos,
-                                      rotmat=rotmat,
-                                      homeconf=np.zeros(6),
-                                      name='rs007l', enable_cc=False)
+        self.manipulator = manip.RS007L(pos=pos,
+                                        rotmat=rotmat,
+                                        homeconf=np.zeros(6),
+                                        name='rs007l', enable_cc=False)
         # tool changer
-        self.tc_master = jl.JLChain(pos=self.arm.jnts[-1]['gl_posq'], rotmat=self.arm.jnts[-1]['gl_rotmatq'],
-                                    homeconf=np.zeros(0), name='tc_master')
+        self.tc_master = jl.JLChain(pos=self.manipulator.jnts[-1]['gl_posq'],
+                                    rotmat=self.manipulator.jnts[-1]['gl_rotmatq'],
+                                    homeconf=np.zeros(0),
+                                    name='tc_master')
         self.tc_master.lnks[0]['name'] = "tc_master"
         self.tc_master.jnts[-1]['loc_pos'] = np.array([0, 0, .0315])
         self.tc_master.lnks[0]['collision_model'] = cm.gen_stick(self.tc_master.jnts[0]['loc_pos'],
@@ -34,26 +37,35 @@ class KHI_BLQC(ri.RobotInterface):
                                                                  type='rect',
                                                                  sections=36)
         self.tc_master.reinitialize()
+        # tool
+        self.end_effector = None
         # tool center point
-        self.arm.jlc.tcp_jnt_id = -1
-        self.arm.jlc.tcp_loc_pos = self.tc_master.jnts[-1]['loc_pos']
-        self.arm.jlc.tcp_loc_rotmat = self.tc_master.jnts[-1]['loc_rotmat']
-        # a list of detailed information about objects in hand, see CollisionChecker.add_objinhnd
-        self._is_tool_attached = False
+        self.manipulator.tcp_jnt_id = -1
+        self.manipulator.tcp_loc_pos = self.tc_master.jnts[-1]['loc_pos']
+        self.manipulator.tcp_loc_rotmat = self.tc_master.jnts[-1]['loc_rotmat']
         # a list of detailed information about objects in hand, see CollisionChecker.add_objinhnd
         self.oih_infos = []
         # collision detection
         if enable_cc:
             self.enable_cc()
-        # component map
-        self.manipulator_dict['arm'] = self.arm
-        self.manipulator_dict['tc_master'] = self.tc_master
-        self.hnd_dict['arm'] = self.arm
-        self.hnd_dict['tc_master'] = self.tc_master
+
+    def _update_oof(self):
+        """
+        oof = object on flange
+        this function is to be implemented by subclasses for updating ft-sensors, tool changers, end-effectors, etc.
+        :return:
+        author: weiwei
+        date: 20230807
+        """
+        self.tc_master.fix_to(pos=self.manipulator.jnts[-1]['gl_posq'],
+                              rotmat=self.manipulator.jnts[-1]['gl_rotmatq'])
+        if self.is_tool_attached:
+            self.end_effector.fix_to(pos=self.tc_master.jnts[-1]['gl_posq'],
+                                     rotmat=self.tc_master.jnts[-1]['gl_rotmatq'])
 
     @property
     def is_tool_attached(self):
-        return self._is_tool_attached
+        return True if self.end_effector else False
 
     def enable_cc(self):
         pass
@@ -90,19 +102,7 @@ class KHI_BLQC(ri.RobotInterface):
         #     objcm = oih_info['collision_model']
         #     self.hold(objcm)
 
-    def fix_to(self, pos, rotmat):
-        self.pos = pos
-        self.rotmat = rotmat
-        self.base_plate.fix_to(pos=pos, rotmat=rotmat)
-        self.arm.fix_to(pos=self.base_plate.jnts[-1]['gl_posq'], rotmat=self.base_plate.jnts[-1]['gl_rotmatq'])
-        self.tc_master.fix_to(pos=self.arm.jnts[-1]['gl_posq'], rotmat=self.arm.jnts[-1]['gl_rotmatq'])
-        # update objects in hand if available
-        for obj_info in self.oih_infos:
-            gl_pos, gl_rotmat = self.arm.cvt_loc_tcp_to_gl(obj_info['rel_pos'], obj_info['rel_rotmat'])
-            obj_info['gl_pos'] = gl_pos
-            obj_info['gl_rotmat'] = gl_rotmat
-
-    def fk(self, component_name='arm', jnt_values=np.zeros(6)):
+    def fk(self, jnt_values=np.zeros(6)):
         """
         :param jnt_values: 7 or 3+7, 3=agv, 7=arm, 1=grpr; metrics: meter-radian
         :param component_name: 'arm', 'agv', or 'all'
@@ -110,71 +110,32 @@ class KHI_BLQC(ri.RobotInterface):
         author: weiwei
         date: 20201208toyonaka
         """
+        if not isinstance(jnt_values, np.ndarray) or jnt_values.size != 6:
+            raise ValueError("An 1x6 npdarray must be specified to move the arm!")
+        self.manipulator.fk(jnt_values)
+        self._update_oof()
 
-        def update_oih(component_name='arm'):
-            for obj_info in self.oih_infos:
-                gl_pos, gl_rotmat = self.cvt_loc_tcp_to_gl(component_name, obj_info['rel_pos'], obj_info['rel_rotmat'])
-                obj_info['gl_pos'] = gl_pos
-                obj_info['gl_rotmat'] = gl_rotmat
-
-        def update_component(component_name, jnt_values):
-            status = self.manipulator_dict[component_name].fk(jnt_values=jnt_values)
-            self.tc_master_dict[component_name].fix_to(
-                pos=self.manipulator_dict[component_name].jnts[-1]['gl_posq'],
-                rotmat=self.manipulator_dict[component_name].jnts[-1]['gl_rotmatq'])
-            update_oih(component_name=component_name)
-            return status
-
-        if component_name in self.manipulator_dict:
-            if not isinstance(jnt_values, np.ndarray) or jnt_values.size != 6:
-                raise ValueError("An 1x6 npdarray must be specified to move the arm!")
-            return update_component(component_name, jnt_values)
-        else:
-            raise ValueError("The given component name is not supported!")
-
-    def get_jnt_values(self, component_name):
-        if component_name in self.manipulator_dict:
-            return self.manipulator_dict[component_name].get_jnt_values()
-        else:
-            raise ValueError("The given component name is not supported!")
-
-    def get_gl_tcp(self, manipulator_name='arm'):
-        return self.manipulator_dict[manipulator_name].get_gl_tcp()
-
-    def rand_conf(self, component_name):
-        if component_name in self.manipulator_dict:
-            return super().rand_conf(component_name)
-        else:
-            raise NotImplementedError
-
-    def jaw_to(self, hnd_name='hnd', jawwidth=0.0):
-        raise Exception("This robot has a single-contact end effector (screw driver).")
-
-    def attach_tool(self, hnd):
+    def attach_tool(self, end_effector):
         """
-        :param hnd: an instance of robot_sim.end_effectors
+        :param end_effector: an instance of robot_sim.end_effectors
         :return:
         """
         if self._is_tool_attached:
             raise Exception("A tool has been attached!")
-        self.arm.jlc.tcp_loc_pos = self.tc_master.jnts[-1]['gl_posq'] + hnd.jaw_center_pos
-        self.arm.jlc.tcp_loc_rotmat = self.tc_master.jnts[-1]['gl_rotmatq'] + hnd.jaw_center_rotmat
-        self.manipulator_dict['hnd'] = self.hnd
-        self.hnd_dict['hnd'] = self.hnd
-        self._is_tool_attached = True
+        self.manipulator.tcp_loc_pos = self.tc_master.jnts[-1]['gl_posq'] + end_effector.action_center_pos
+        self.manipulator.tcp_loc_rotmat = self.tc_master.jnts[-1]['gl_rotmatq'] + end_effector.action_center_rotmat
+        self.end_effector = end_effector
 
     def detach_tool(self):
         """
         there is no need to specify a tool instance since only the currently attached tool can be detached
         :return:
         """
-        if not self._is_tool_attached:
+        if not self.is_tool_attached:
             raise Exception("Cannot detach a tool since nothing is attached!")
-        self.arm.jlc.tcp_loc_pos = self.tc_master.jnts[-1]['gl_posq']
-        self.arm.jlc.tcp_loc_rotmat = self.tc_master.jnts[-1]['gl_rotmatq']
-        self.manipulator_dict.pop('hnd')
-        self.hnd_dict.pop('hnd')
-        self._is_tool_attached = False
+        self.manipulator.tcp_loc_pos = self.tc_master.jnts[-1]['gl_posq']
+        self.manipulator.tcp_loc_rotmat = self.tc_master.jnts[-1]['gl_rotmatq']
+        self.end_effector = None
 
     def get_oih_list(self):
         return_list = []
@@ -194,17 +155,17 @@ class KHI_BLQC(ri.RobotInterface):
                        toggle_connjnt=False,
                        name='khi_g_stickmodel'):
         stickmodel = mc.ModelCollection(name=name)
-        self.arm.gen_stickmodel(tcp_jnt_id=tcp_jnt_id,
-                                tcp_loc_pos=tcp_loc_pos,
-                                tcp_loc_rotmat=tcp_loc_rotmat,
-                                toggle_tcpcs=toggle_tcpcs,
-                                toggle_jntscs=toggle_jntscs,
-                                toggle_connjnt=toggle_connjnt).attach_to(stickmodel)
+        self.manipulator.gen_stickmodel(tcp_jnt_id=tcp_jnt_id,
+                                        tcp_loc_pos=tcp_loc_pos,
+                                        tcp_loc_rotmat=tcp_loc_rotmat,
+                                        toggle_tcpcs=toggle_tcpcs,
+                                        toggle_jntscs=toggle_jntscs,
+                                        toggle_connjnt=toggle_connjnt).attach_to(stickmodel)
         self.tc_master.gen_stickmodel(toggle_tcpcs=False,
                                       toggle_jntscs=toggle_jntscs).attach_to(stickmodel)
-        if self.hnd_dict.get('hnd'):
-            self.hnd_dict['hnd'].gen_stickmodel(toggle_tcpcs=False,
-                                                toggle_jntscs=toggle_jntscs).attach_to(stickmodel)
+        if self.is_tool_attached:
+            self.end_effector.gen_stickmodel(toggle_tcpcs=False,
+                                             toggle_jntscs=toggle_jntscs).attach_to(stickmodel)
         return stickmodel
 
     def gen_meshmodel(self,
@@ -216,19 +177,19 @@ class KHI_BLQC(ri.RobotInterface):
                       rgba=None,
                       name='khi_g_meshmodel'):
         meshmodel = mc.ModelCollection(name=name)
-        self.arm.gen_meshmodel(tcp_jnt_id=tcp_jnt_id,
-                               tcp_loc_pos=tcp_loc_pos,
-                               tcp_loc_rotmat=tcp_loc_rotmat,
-                               toggle_tcpcs=toggle_tcpcs,
-                               toggle_jntscs=toggle_jntscs,
-                               rgba=rgba).attach_to(meshmodel)
+        self.manipulator.gen_meshmodel(tcp_jnt_id=tcp_jnt_id,
+                                       tcp_loc_pos=tcp_loc_pos,
+                                       tcp_loc_rotmat=tcp_loc_rotmat,
+                                       toggle_tcpcs=toggle_tcpcs,
+                                       toggle_jntscs=toggle_jntscs,
+                                       rgba=rgba).attach_to(meshmodel)
         self.tc_master.gen_meshmodel(toggle_tcpcs=False,
                                      toggle_jntscs=toggle_jntscs,
                                      rgba=rgba).attach_to(meshmodel)
-        if self.hnd_dict.get('hnd'):
-            self.hnd_dict['hnd'].gen_meshmodel(toggle_tcpcs=False,
-                                               toggle_jntscs=toggle_jntscs,
-                                               rgba=rgba).attach_to(meshmodel)
+        if self.is_tool_attached:
+            self.end_effector.gen_meshmodel(toggle_tcpcs=False,
+                                            toggle_jntscs=toggle_jntscs,
+                                            rgba=rgba).attach_to(meshmodel)
             for obj_info in self.oih_infos:
                 objcm = obj_info['collision_model']
                 objcm.set_pos(obj_info['gl_pos'])
@@ -237,20 +198,14 @@ class KHI_BLQC(ri.RobotInterface):
         return meshmodel
 
     def ik(self,
-           component_name: str = "arm",
            tgt_pos=np.zeros(3),
            tgt_rotmat=np.eye(3),
-           seed_jnt_values=None,
-           max_niter=200,
-           tcp_jnt_id=None,
            tcp_loc_pos=None,
-           tcp_loc_rotmat=None,
-           local_minima: str = "end",
-           toggle_debug=False):
-        return self.manipulator_dict[component_name].analytical_ik(tgt_pos,
-                                                                   tgt_rotmat,
-                                                                   tcp_loc_pos=tcp_loc_pos,
-                                                                   tcp_loc_rotmat=tcp_loc_rotmat)
+           tcp_loc_rotmat=None):
+        return self.manipulator.analytical_ik(tgt_pos,
+                                              tgt_rotmat,
+                                              tcp_loc_pos=tcp_loc_pos,
+                                              tcp_loc_rotmat=tcp_loc_rotmat)
 
 
 if __name__ == '__main__':
@@ -258,16 +213,36 @@ if __name__ == '__main__':
     import basis.robot_math as rm
     import visualization.panda.world as wd
     import modeling.geometric_model as gm
+    import robot_sim.end_effectors.gripper.or2fg7.or2fg7 as org
+    import robot_sim.end_effectors.single_contact.screw_driver.orsd.orsd as ors
 
     base = wd.World(cam_pos=[1.7, 1.7, 1.7], lookat_pos=[0, 0, .3])
 
     gm.gen_frame().attach_to(base)
     robot_s = KHI_BLQC(enable_cc=True)
-    # robot_s.jaw_to(.02)
     robot_s.gen_meshmodel(toggle_tcpcs=True, toggle_jntscs=True).attach_to(base)
-    # robot_s.gen_meshmodel(toggle_tcpcs=False, toggle_jntscs=False).attach_to(base)
-    robot_s.gen_stickmodel(toggle_tcpcs=True, toggle_jntscs=True).attach_to(base)
+
+    ee_g_pos = np.array([0, .8, .19])
+    ee_g_rotmat = rm.rotmat_from_euler(0, np.radians(180), 0)
+    ee_g = org.OR2FG7(pos=ee_g_pos,
+                      rotmat=ee_g_rotmat,
+                      coupling_offset_pos=np.array([0, 0, 0.0314]), enable_cc=True)
+    ee_g.gen_meshmodel().attach_to(base)
+
+    ee_sd_pos = np.array([.15, .8, .19])
+    ee_sd_rotmat = rm.rotmat_from_euler(0, np.radians(180), np.radians(-90))
+    ee_sd = ors.ORSD(pos=ee_sd_pos,
+                     rotmat=ee_sd_rotmat,
+                     coupling_offset_pos=np.array([0, 0, 0.0314]),
+                     enable_cc=True)
+    ee_sd.gen_meshmodel().attach_to(base)
+
+    jnt_values = robot_s.ik(ee_g_pos, ee_g_rotmat)
+    robot_s.fk(jnt_values=jnt_values)
+    robot_s_meshmodel = robot_s.gen_meshmodel(toggle_tcpcs=True)
+    robot_s_meshmodel.attach_to(base)
     base.run()
+
     tgt_pos = np.array([.45, .2, .35])
     tgt_rotmat = rm.rotmat_from_axangle([0, 1, 0], math.pi * 2 / 3)
     gm.gen_frame(pos=tgt_pos, rotmat=tgt_rotmat).attach_to(base)

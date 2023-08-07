@@ -77,7 +77,7 @@ box.set_rotmat(rm.rotmat_from_axangle([1, 0, 0], math.pi / 2))
 #
 # rtqgel_s = rtqgel.Robotiq85GelsightPusher()
 # print(rtqgel_s.jaw_center_pos)
-# rtqgel_s.grip_at_with_jcpose(gl_pos_box, gl_rotmat_box, jaw_width=rtqgel_s.jawwidth_rng[1])
+# rtqgel_s.grip_at_with_jcpose(gl_pos_box, gl_rotmat_box, jaw_width=rtqgel_s.jaw_range[1])
 # rtqgel_s.gen_meshmodel(toggle_tcpcs=False).attach_to(base)
 
 box.set_rotmat(rm.rotmat_from_axangle([1, 0, 0], math.pi / 2))

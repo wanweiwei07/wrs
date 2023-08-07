@@ -46,7 +46,7 @@ for i, cp in enumerate(contact_pairs):
     contact_p1, contact_n1 = cp[1]
     contact_center = (contact_p0 + contact_p1) / 2
     jaw_width = np.linalg.norm(contact_p0 - contact_p1) + contact_offset * 2
-    if jaw_width > gripper_s.jawwidth_rng[1]:
+    if jaw_width > gripper_s.jaw_range[1]:
         continue
     hndy = contact_n0
     hndz = rm.orthogonal_vector(contact_n0)
