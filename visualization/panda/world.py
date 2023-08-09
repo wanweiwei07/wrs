@@ -208,7 +208,7 @@ class World(ShowBase, object):
                 _external_update_objinfo.obj_path_counter = 0
         return task.cont
 
-    def change_debugstatus(self, toggledebug):
+    def change_debug_status(self, toggledebug):
         if self.toggledebug == toggledebug:
             return
         elif toggledebug:

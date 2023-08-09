@@ -18,29 +18,21 @@ class XYBot(ri.RobotInterface):
         self.jlc.jnts[2]['motion_rng'] = [-2.0, 15.0]
         self.jlc.reinitialize()
 
-    def fk(self, component_name='all', jnt_values=np.zeros(2)):
-        if component_name != 'all':
-            raise ValueError("Only support hnd_name == 'all'!")
+    def fk(self, jnt_values=np.zeros(2)):
         self.jlc.fk(jnt_values)
 
-    def rand_conf(self, component_name='all'):
-        if component_name != 'all':
-            raise ValueError("Only support hnd_name == 'all'!")
+    def rand_conf(self):
         return self.jlc.rand_conf()
 
-    def get_jntvalues(self, component_name='all'):
-        if component_name != 'all':
-            raise ValueError("Only support hnd_name == 'all'!")
+    def get_jnt_values(self):
         return self.jlc.get_jnt_values()
 
-    def is_jnt_values_in_ranges(self, component_name, jnt_values):
-        if component_name != 'all':
-            raise ValueError("Only support hnd_name == 'all'!")
+    def is_jnt_values_in_ranges(self, jnt_values):
         return self.jlc.is_jnt_values_in_ranges(jnt_values)
 
     def is_collided(self, obstacle_list=[], otherrobot_list=[]):
         for (obpos, size) in obstacle_list:
-            dist = np.linalg.norm(np.asarray(obpos) - self.get_jntvalues())
+            dist = np.linalg.norm(np.asarray(obpos) - self.get_jnt_values())
             if dist <= size / 2.0:
                 return True  # collision
         return False  # safe

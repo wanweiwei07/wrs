@@ -4,7 +4,7 @@ import modeling.collision_model as cm
 import grasping.planning.antipodal as gpa
 import numpy as np
 import basis.robot_math as rm
-import robot_sim.robots.nextage.nextage as nxt
+import robot_sim.robots.nextage.nextage_old as nxt
 import robot_sim.robots.xarm_shuidi.xarm_shuidi as xsm
 import motion.probabilistic.rrt_connect as rrtc
 import math

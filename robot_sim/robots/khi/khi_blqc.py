@@ -68,39 +68,25 @@ class KHI_BLQC(ai.ArmInterface):
         return True if self.end_effector else False
 
     def enable_cc(self):
-        pass
-        # TODO when pose is changed, oih info goes wrong
-        # super().enable_cc()
-        # self.cc.add_cdlnks(self.base_plate, [0])
-        # self.cc.add_cdlnks(self.arm, [0, 1, 2, 3, 4, 5, 6])
-        # self.cc.add_cdlnks(self.tc_master.jlc, [0, 1, 2])
-        # activelist = [self.base_plate.lnks[0],
-        #               self.arm.lnks[0],
-        #               self.arm.lnks[1],
-        #               self.arm.lnks[2],
-        #               self.arm.lnks[3],
-        #               self.arm.lnks[4],
-        #               self.arm.lnks[5],
-        #               self.arm.lnks[6],
-        #               self.tc_master.jlc.lnks[0],
-        #               self.tc_master.jlc.lnks[1],
-        #               self.tc_master.jlc.lnks[2]]
-        # self.cc.set_active_cdlnks(activelist)
-        # fromlist = [self.base_plate.lnks[0],
-        #             self.arm.lnks[0],
-        #             self.arm.lnks[1]]
-        # intolist = [self.arm.lnks[3]]
-        # self.cc.set_cdpair(fromlist, intolist)
-        # fromlist = [self.base_plate.lnks[0],
-        #             self.arm.lnks[1]]
-        # intolist = [self.tc_master.jlc.lnks[0],
-        #             self.tc_master.jlc.lnks[1],
-        #             self.tc_master.jlc.lnks[2]]
-        # self.cc.set_cdpair(fromlist, intolist)
-        # # TODO is the following update needed?
-        # for oih_info in self.oih_infos:
-        #     objcm = oih_info['collision_model']
-        #     self.hold(objcm)
+        super().enable_cc()
+        self.cc.add_cdlnks(self.manipulator, [0, 1, 2, 3, 4, 5, 6])
+        self.cc.add_cdlnks(self.tc_master, [0])
+        activelist = [self.manipulator.lnks[0],
+                      self.manipulator.lnks[1],
+                      self.manipulator.lnks[2],
+                      self.manipulator.lnks[3],
+                      self.manipulator.lnks[4],
+                      self.manipulator.lnks[5],
+                      self.manipulator.lnks[6],
+                      self.tc_master.lnks[0]]
+        self.cc.set_active_cdlnks(activelist)
+        fromlist = [self.manipulator.lnks[0],
+                    self.manipulator.lnks[1]]
+        intolist = [self.manipulator.lnks[4],
+                    self.manipulator.lnks[5],
+                    self.manipulator.lnks[6],
+                    self.tc_master.lnks[0]]
+        self.cc.set_cdpair(fromlist, intolist)
 
     def fk(self, jnt_values=np.zeros(6)):
         """
@@ -120,10 +106,10 @@ class KHI_BLQC(ai.ArmInterface):
         :param end_effector: an instance of robot_sim.end_effectors
         :return:
         """
-        if self._is_tool_attached:
+        if self.is_tool_attached:
             raise Exception("A tool has been attached!")
-        self.manipulator.tcp_loc_pos = self.tc_master.jnts[-1]['gl_posq'] + end_effector.action_center_pos
-        self.manipulator.tcp_loc_rotmat = self.tc_master.jnts[-1]['gl_rotmatq'] + end_effector.action_center_rotmat
+        self.manipulator.tcp_loc_pos = self.tc_master.jnts[-1]['loc_pos'] + end_effector.action_center_pos
+        self.manipulator.tcp_loc_rotmat = self.tc_master.jnts[-1]['loc_rotmat']
         self.end_effector = end_effector
 
     def detach_tool(self):
@@ -215,10 +201,81 @@ if __name__ == '__main__':
     import modeling.geometric_model as gm
     import robot_sim.end_effectors.gripper.or2fg7.or2fg7 as org
     import robot_sim.end_effectors.single_contact.screw_driver.orsd.orsd as ors
+    import motion.probabilistic.rrt_connect as rrtc
 
     base = wd.World(cam_pos=[1.7, 1.7, 1.7], lookat_pos=[0, 0, .3])
-
     gm.gen_frame().attach_to(base)
+    robot_s = KHI_BLQC(enable_cc=True)
+    rrtc_planner = rrtc.RRTConnect_v2(robot_s)
+
+    ee_g_pos = np.array([0, .8, .19])
+    ee_g_rotmat = rm.rotmat_from_euler(0, np.radians(180), 0)
+    ee_g = org.OR2FG7(pos=ee_g_pos,
+                      rotmat=ee_g_rotmat,
+                      coupling_offset_pos=np.array([0, 0, 0.0314]), enable_cc=True)
+    ee_g_meshmodel = ee_g.gen_meshmodel()
+    ee_g_meshmodel.attach_to(base)
+    jv_attach_eeg = robot_s.ik(ee_g_pos, ee_g_rotmat)
+
+    ee_sd_pos = np.array([.15, .8, .19])
+    ee_sd_rotmat = rm.rotmat_from_euler(0, np.radians(180), np.radians(-90))
+    ee_sd = ors.ORSD(pos=ee_sd_pos,
+                     rotmat=ee_sd_rotmat,
+                     coupling_offset_pos=np.array([0, 0, 0.0314]),
+                     enable_cc=True)
+    ee_sd_meshmodel = ee_g.gen_meshmodel()
+    ee_sd_meshmodel.attach_to(base)
+    jv_attach_eesd = robot_s.ik(ee_g_pos, ee_g_rotmat)
+
+    goal_pos = np.array([.3, -.8, .19])
+    goal_rotmat = rm.rotmat_from_euler(0, np.radians(90), 0)
+    jv_goal = robot_s.ik(tgt_pos=goal_pos, tgt_rotmat=goal_rotmat)
+
+    robot_path_attach_ee_g = rrtc_planner.plan(start_conf=robot_s.get_jnt_values(),
+                                               goal_conf=jv_attach_eeg,
+                                               obstacle_list=[],
+                                               ext_dist=.1,
+                                               max_time=300)
+    print(len(robot_path_attach_ee_g))
+
+    # for jnt_values in robot_path:
+    #     robot_s.fk(jnt_values)
+    #     robot_s.gen_meshmodel().attach_to(base)
+    # base.run()
+
+    robot_path = robot_path_attach_ee_g
+
+    counter = [0]
+    robot_attached_list = []
+    object_attached_list = []
+
+
+    def update(robot_s, ee_g, ee_sd, robot_path, counter, robot_attached_list, object_attached_list, task):
+        if counter[0] >= len(robot_path):
+            counter[0] = 0
+        if len(robot_attached_list) != 0:
+            for robot_attached in robot_attached_list:
+                robot_attached.detach()
+            for object_attached in object_attached_list:
+                object_attached.detach()
+            robot_attached_list.clear()
+            object_attached_list.clear()
+        jnt_values = robot_path[counter[0]]
+        robot_s.fk(jnt_values)
+        robot_meshmodel = robot_s.gen_meshmodel()
+        robot_meshmodel.attach_to(base)
+        robot_attached_list.append(robot_meshmodel)
+        counter[0] += 1
+        print(counter[0])
+        return task.again
+
+
+    taskMgr.doMethodLater(0.01, update, 'udpate',
+                          extraArgs=[robot_s, ee_g, ee_sd, robot_path, counter, robot_attached_list,
+                                     object_attached_list],
+                          appendTask=True)
+    base.run()
+
     robot_s = KHI_BLQC(enable_cc=True)
     robot_s.gen_meshmodel(toggle_tcpcs=True, toggle_jntscs=True).attach_to(base)
 
@@ -238,6 +295,14 @@ if __name__ == '__main__':
     ee_sd.gen_meshmodel().attach_to(base)
 
     jnt_values = robot_s.ik(ee_g_pos, ee_g_rotmat)
+    robot_s.fk(jnt_values=jnt_values)
+    robot_s_meshmodel = robot_s.gen_meshmodel(toggle_tcpcs=True)
+    robot_s_meshmodel.attach_to(base)
+
+    robot_s.attach_tool(ee_g)
+    goal_pos = np.array([.3, -.8, .19])
+    goal_rotmat = rm.rotmat_from_euler(0, np.radians(90), 0)
+    jnt_values = robot_s.ik(tgt_pos=goal_pos, tgt_rotmat=goal_rotmat)
     robot_s.fk(jnt_values=jnt_values)
     robot_s_meshmodel = robot_s.gen_meshmodel(toggle_tcpcs=True)
     robot_s_meshmodel.attach_to(base)
