@@ -38,7 +38,7 @@ class PoseMaker(object):
             self.rtq85.grip_at_with_jczy(np.array([.005, .005, .005]),
                                          loc_z,
                                          rotmat.dot(np.array([1, 0, 0])),
-                                         jaw_width=self.rtq85.jawwidth_rng[1]))
+                                         jaw_width=self.rtq85.jaw_range[1]))
         handdirect_lft.append([0, -1, 0])
         for i in range(8):
             loc_z = np.array([math.cos(math.radians(lftdirstart + i * handrotrange)),
@@ -50,7 +50,7 @@ class PoseMaker(object):
                                              rotmat.dot(np.array([math.cos(math.radians(lftverticalstart + i * handrotrange)),
                                                         math.sin(math.radians(lftverticalstart + i * handrotrange)),
                                                         0])),
-                                             jaw_width=self.rtq85.jawwidth_rng[0]))
+                                             jaw_width=self.rtq85.jaw_range[0]))
             handdirect_lft.append([math.cos(math.radians(lftdirstart + i * handrotrange)),
                                    math.sin(math.radians(lftdirstart + i * handrotrange)), -.2])
 
@@ -64,7 +64,7 @@ class PoseMaker(object):
                                              rotmat.dot(np.array([math.cos(math.radians(lftverticalstart + i * handrotrange)),
                                                         math.sin(math.radians(lftverticalstart + i * handrotrange)),
                                                         0])),
-                                             jaw_width=self.rtq85.jawwidth_rng[0]))
+                                             jaw_width=self.rtq85.jaw_range[0]))
             handdirect_lft.append([math.cos(math.radians(lftdirstart + i * handrotrange)),
                                    math.sin(math.radians(lftdirstart + i * handrotrange)), 0])
 
@@ -78,7 +78,7 @@ class PoseMaker(object):
                                              rotmat.dot(np.array([math.cos(math.radians(lftverticalstart + i * handrotrange)),
                                                         math.sin(math.radians(lftverticalstart + i * handrotrange)),
                                                         0])),
-                                             jaw_width=self.rtq85.jawwidth_rng[0]))
+                                             jaw_width=self.rtq85.jaw_range[0]))
             handdirect_lft.append([math.cos(math.radians(lftdirstart + i * handrotrange)),
                                    math.sin(math.radians(lftdirstart + i * handrotrange)), .2])
         return predefined_grasps_lft, handdirect_lft
@@ -93,7 +93,7 @@ class PoseMaker(object):
         rotmat = rm.rotmat_from_axangle(loc_z, math.radians(90))
         predefined_grasps_rgt.append(
             self.rtq85.grip_at_with_jczy(np.array([.005, .005, .005]), loc_z, rotmat.dot(np.array([1, 0, 0])),
-                                         jaw_width=self.rtq85.jawwidth_rng[1]))
+                                         jaw_width=self.rtq85.jaw_range[1]))
         handdirect_rgt.append([0, 1, 0])
         for i in range(4):
             loc_z = np.array([math.cos(math.radians(rgtdirstart - i * handrotrange)),
@@ -105,7 +105,7 @@ class PoseMaker(object):
                                              rotmat.dot(np.array([math.cos(math.radians(rgtverticalstart - i * handrotrange)),
                                                         math.sin(math.radians(rgtverticalstart - i * handrotrange)),
                                                         0])),
-                                             jaw_width=self.rtq85.jawwidth_rng[0]))
+                                             jaw_width=self.rtq85.jaw_range[0]))
             handdirect_rgt.append([math.cos(math.radians(rgtdirstart - i * handrotrange)),
                                    math.sin(math.radians(rgtdirstart - i * handrotrange)), -.1])
         for i in range(4):
@@ -118,7 +118,7 @@ class PoseMaker(object):
                                              rotmat.dot(np.array([math.cos(math.radians(rgtverticalstart - i * handrotrange)),
                                                         math.sin(math.radians(rgtverticalstart - i * handrotrange)),
                                                         0])),
-                                             jaw_width=self.rtq85.jawwidth_rng[0]))
+                                             jaw_width=self.rtq85.jaw_range[0]))
             handdirect_rgt.append([math.cos(math.radians(rgtdirstart - i * handrotrange)),
                                    math.sin(math.radians(rgtdirstart - i * handrotrange)), 0])
 
@@ -132,7 +132,7 @@ class PoseMaker(object):
                                                  rotmat.dot(np.array([math.cos(math.radians(rgtverticalstart - i * handrotrange)),
                                                             math.sin(math.radians(rgtverticalstart - i * handrotrange)),
                                                             0])),
-                                                 jaw_width=self.rtq85.jawwidth_rng[0]))
+                                                 jaw_width=self.rtq85.jaw_range[0]))
             handdirect_rgt.append([math.cos(math.radians(rgtdirstart - i * handrotrange)),
                                    math.sin(math.radians(rgtdirstart - i * handrotrange)), .1])
         return predefined_grasps_rgt, handdirect_rgt
@@ -188,7 +188,7 @@ class PoseMaker(object):
                         self.rtq85.grip_at_with_jczy(np.array([.005, .005, .005]),
                                                      np.array([handrotmat[:, 2][0], handrotmat[:, 2][1], handrotmat[:, 2][2]]),
                                                      np.array([handrotmat[:, 0][0], handrotmat[:, 0][1], handrotmat[:, 0][2]]),
-                                                     jaw_width=self.rtq85.jawwidth_rng[0]))
+                                                     jaw_width=self.rtq85.jaw_range[0]))
                     if toggle_debug:
                         self.rtq85.copy().gen_meshmodel().attach_to(base)
                     pushpose_rotmatlist.append(handrotmat)

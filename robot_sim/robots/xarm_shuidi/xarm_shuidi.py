@@ -229,7 +229,7 @@ class XArmShuidi(ri.RobotInterface):
             return_val = np.zeros(11)
             return_val[:3] = self.agv.get_jnt_values()
             return_val[3:10] = self.arm.get_jnt_values()[:]
-            return_val[10] = self.hnd.get_jawwidth()
+            return_val[10] = self.hnd.get_jaw_width()
             return return_val
 
     def rand_conf(self, component_name):

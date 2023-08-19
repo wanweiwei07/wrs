@@ -33,8 +33,8 @@ class CobottaGripper(gp.GripperInterface):
         self.jlc.lnks[2]['loc_pos'] = np.array([0, 0, -.06])
         self.jlc.lnks[2]['mesh_file'] = os.path.join(this_dir, "meshes", "right_finger.dae")
         self.jlc.lnks[2]['rgba'] = [.5, .5, .5, 1]
-        # jaw width
-        self.jawwidth_rng = [0.0, .03]
+        # jaw range
+        self.jaw_range = [0.0, .03]
         # jaw center
         self.jaw_center_pos = np.array([0,0,.05])
         # reinitialize
@@ -74,14 +74,14 @@ class CobottaGripper(gp.GripperInterface):
         self.jlc.fix_to(cpl_end_pos, cpl_end_rotmat)
 
     def jaw_to(self, jaw_width):
-        if jaw_width > self.jawwidth_rng[1]:
+        if jaw_width > self.jaw_range[1]:
             raise ValueError("The jaw_width parameter is out of range!")
         side_jawwidth = jaw_width / 2.0
         self.jlc.jnts[1]['motion_val'] = side_jawwidth
         self.jlc.jnts[2]['motion_val'] = -jaw_width
         self.jlc.fk()
 
-    def get_jawwidth(self):
+    def get_jaw_width(self):
         return -self.jlc.jnts[2]['motion_val']
 
     def gen_stickmodel(self,

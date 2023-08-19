@@ -70,8 +70,8 @@ class CobottaPipette(gp.GripperInterface):
         self.jlc.lnks[8]['loc_pos'] = np.array([.008, .14355, .06075])
         self.jlc.lnks[8]['mesh_file'] = os.path.join(this_dir, "meshes", "pipette_ejection.stl")
         self.jlc.lnks[8]['rgba'] = [1, 1, 1, 1]
-        # jaw width
-        self.jawwidth_rng = [0.0, .03]
+        # jaw range
+        self.jaw_range = [0.0, .03]
         # jaw center
         self.jaw_center_pos = np.array([0.008, 0.14305, 0.06075])
         self.jaw_center_rotmat = rm.rotmat_from_axangle([1, 0, 0], -np.pi / 2)
@@ -104,7 +104,7 @@ class CobottaPipette(gp.GripperInterface):
         self.rotmat = rotmat
         if jaw_width is not None:
             side_jawwidth = jaw_width / 2.0
-            if self.jawwidth_rng[1] < jaw_width or jaw_width < self.jawwidth_rng[0]:
+            if self.jaw_range[1] < jaw_width or jaw_width < self.jaw_range[0]:
                 self.jlc.jnts[5]['motion_val'] = side_jawwidth
                 self.jlc.jnts[7]['motion_val'] = -jaw_width
                 if side_jawwidth <= .007:
@@ -120,7 +120,7 @@ class CobottaPipette(gp.GripperInterface):
 
     def jaw_to(self, jaw_width):
         print(jaw_width)
-        if self.jawwidth_rng[1] < jaw_width or jaw_width < self.jawwidth_rng[0]:
+        if self.jaw_range[1] < jaw_width or jaw_width < self.jaw_range[0]:
             raise ValueError("The jaw_width parameter is out of range!")
         side_jawwidth = jaw_width / 2.0
         self.jlc.jnts[5]['motion_val'] = side_jawwidth
@@ -131,7 +131,7 @@ class CobottaPipette(gp.GripperInterface):
             self.jlc.jnts[8]['motion_val'] = (jaw_width - .014) / 2
         self.jlc.fk()
 
-    def get_jawwidth(self):
+    def get_jaw_width(self):
         return -self.jlc.jnts[2]['motion_val']
 
     def gen_stickmodel(self,

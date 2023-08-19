@@ -4,7 +4,7 @@ import basis.robot_math as rm
 import visualization.panda.world as wd
 import modeling.geometric_model as gm
 import modeling.collision_model as cm
-import robot_sim.robots.nextage.nextage as nxt
+import robot_sim.robots.nextage.nextage_old as nxt
 import motion.probabilistic.rrt_connect as rrtc
 
 base = wd.World(cam_pos=[4, -1, 2], lookat_pos=[0, 0, 0])

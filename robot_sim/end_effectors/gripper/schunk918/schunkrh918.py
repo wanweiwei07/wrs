@@ -52,8 +52,8 @@ class SchunkRH918(gp.GripperInterface):
         self.rgt.lnks[2]['rgba'] = [.8, .8, .8, 1]
         self.rgt.lnks[2]['loc_pos'] = np.zeros(3)
         self.rgt.lnks[2]['loc_rotmat'] = rm.rotmat_from_euler(0, math.pi, -math.pi / 2)
-        # jaw width
-        self.jawwidth_rng = [0.0, .05]
+        # jaw range
+        self.jaw_range = [0.0, .05]
         # jaw center
         self.jaw_center_pos = np.array([0, 0, .145])
         # reinitialize
@@ -115,9 +115,9 @@ class SchunkRH918(gp.GripperInterface):
             raise ValueError("The jaw_width parameter is out of range!")
         self.fk(motion_val=(0.05-jawwidth) / 2.0)
 
-    def get_jawwidth(self):
+    def get_jaw_width(self):
         motion_val = self.lft.jnts[1]['motion_val']
-        return self.jawwidth_rng[1] - motion_val*2.0
+        return self.jaw_range[1] - motion_val*2.0
 
     def gen_stickmodel(self,
                        tcp_jntid=None,
@@ -185,7 +185,7 @@ if __name__ == '__main__':
     #     grpr.gen_meshmodel().attach_to(base)
     grpr = SchunkRH918(enable_cc=True)
     grpr.jaw_to(.03)
-    print("jaw_width = ", grpr.get_jawwidth())
+    print("jaw_width = ", grpr.get_jaw_width())
     grpr.gen_meshmodel().attach_to(base)
     # grpr.gen_stickmodel().attach_to(base)
     grpr.fix_to(pos=np.array([0, .3, .2]), rotmat=rm.rotmat_from_axangle([1, 0, 0], .05))

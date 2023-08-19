@@ -1,6 +1,5 @@
 import os
 
-import nptyping
 import numpy as np
 import basis.robot_math as rm
 import modeling.collision_model as cm
@@ -46,6 +45,26 @@ class Base(cm.CollisionModel):
 
     def set_homomat(self, npmat4):
         super().set_homomat(npmat4)
+        self._update_hole_pos_list()
+
+    def set_pose_from_2d_points(self, point1, point2, point3):
+        """
+
+        :param point1:
+        :param point2:
+        :param point3:
+        :return:
+        author: junbo
+        date: 20230705
+        """
+        x1, y1 = point1
+        x2, y2 = point2
+        x3, y3 = point3
+        pos = np.array([(x1 + x3) / 2, (y1 + y3) / 2, 0])
+        super().set_pos(pos)
+        rot_angle = rm.angle_between_2d_vectors((x2 - x1, y2 - y1), (0, 1))
+        rotmat = rm.rotmat_from_axangle(np.array([0, 0, 1]), rot_angle)
+        super().set_rotmat(rotmat)
         self._update_hole_pos_list()
 
     def get_rack_hole_pose(self, id_x, id_y):
@@ -95,6 +114,30 @@ class Base24(Base):
 
 
 class Microplate24(Base24):
+    def __init__(self, file):
+        super().__init__(file)
+
+
+class Base6(Base):
+    """
+    author: junbo
+    date: 20230705
+    """
+    def __init__(self, file):
+        super().__init__(file)
+        self._pos_z0 = .02
+        self._pos_y0 = -.0295
+        self._pos_x0 = .049
+        self._y_step = .039
+        self._x_step = .039
+        self._y_holes = 2
+        self._x_holes = 3
+        self._reinitialize()
+
+    def copy(self):
+        return Base6(self)
+
+class Microplate6(Base6):
     def __init__(self, file):
         super().__init__(file)
 

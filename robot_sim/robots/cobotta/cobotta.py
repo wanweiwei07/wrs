@@ -133,6 +133,9 @@ class Cobotta(ri.RobotInterface):
         else:
             raise ValueError("The given component name is not supported!")
 
+    def get_gl_tcp(self, manipulator_name='arm'):
+        return self.manipulator_dict[manipulator_name].get_gl_tcp()
+
     def rand_conf(self, component_name):
         if component_name in self.manipulator_dict:
             return super().rand_conf(component_name)
@@ -220,7 +223,7 @@ class Cobotta(ri.RobotInterface):
                       toggle_tcpcs=False,
                       toggle_jntscs=False,
                       rgba=None,
-                      name='xarm_shuidi_mobile_meshmodel'):
+                      name='cobotta_meshmodel'):
         meshmodel = mc.ModelCollection(name=name)
         self.base_plate.gen_meshmodel(tcp_jnt_id=tcp_jnt_id,
                                       tcp_loc_pos=tcp_loc_pos,

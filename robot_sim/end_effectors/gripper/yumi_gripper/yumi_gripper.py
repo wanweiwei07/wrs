@@ -38,8 +38,8 @@ class YumiGripper(gp.GripperInterface):
         # reinitialize
         self.lft.reinitialize(cdmesh_type=cdmesh_type)
         self.rgt.reinitialize(cdmesh_type=cdmesh_type)
-        # jaw width
-        self.jawwidth_rng = [0.0, .05]
+        # jaw range
+        self.jaw_range = [0.0, .05]
         # jaw center
         self.jaw_center_pos = np.array([0,0,.13])
         # collision detection
@@ -93,7 +93,7 @@ class YumiGripper(gp.GripperInterface):
             raise ValueError("The jaw_width parameter is out of range!")
         self.fk(motion_val=-jawwidth / 2.0)
 
-    def get_jawwidth(self):
+    def get_jaw_width(self):
         return -self.lft.jnts[1]['motion_val']*2
 
     def gen_stickmodel(self,
@@ -159,7 +159,7 @@ if __name__ == '__main__':
     grpr = YumiGripper(enable_cc=True)
     grpr.fix_to(pos=np.array([0, .3, .2]), rotmat=rm.rotmat_from_euler(math.pi/3, math.pi/3, math.pi/3))
     grpr.jaw_to(.02)
-    print(grpr.get_jawwidth())
+    print(grpr.get_jaw_width())
     grpr.gen_stickmodel().attach_to(base)
     grpr.gen_meshmodel(rgba=[0, .5, 0, .5]).attach_to(base)
     # grpr.gen_stickmodel(togglejntscs=False).attach_to(base)

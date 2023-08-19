@@ -64,8 +64,8 @@ class Lite6WRSGripper2(gp.GripperInterface):
         self.body.reinitialize(cdmesh_type=cdmesh_type)
         self.lft.reinitialize(cdmesh_type=cdmesh_type)
         self.rgt.reinitialize(cdmesh_type=cdmesh_type)
-        # jaw width
-        self.jawwidth_rng = [0.0, .04]
+        # jaw range
+        self.jaw_range = [0.0, .04]
         # jaw center
         self.jaw_center_pos = np.array([0, 0, .175])
         # collision detection
@@ -152,11 +152,11 @@ class Lite6WRSGripper2(gp.GripperInterface):
             raise ValueError("The motion_val parameter is out of range!")
 
     def jaw_to(self, jaw_width):
-        if jaw_width > self.jawwidth_rng[1]:
+        if jaw_width > self.jaw_range[1]:
             raise ValueError("The jaw_width parameter is out of range!")
         self.fk(motion_val=-jaw_width / 2.0)
 
-    def get_jawwidth(self):
+    def get_jaw_width(self):
         return -self.lft.jnts[1]['motion_val'] * 2
 
     def gen_stickmodel(self,

@@ -34,7 +34,7 @@ class JLChainMesh(object):
                       tcp_loc_rotmat=None,
                       toggle_tcpcs=True,
                       toggle_jntscs=False,
-                      name='robot_mesh',
+                      name='jlc_mesh_model',
                       rgba=None):
         mm_collection = mc.ModelCollection(name=name)
         for id in range(self.jlobject.ndof + 1):
@@ -72,7 +72,7 @@ class JLChainMesh(object):
                        toggle_tcpcs=True,
                        toggle_jntscs=False,
                        toggle_connjnt=False,
-                       name='robot_stick'):
+                       name='jlc_stick_model'):
         """
         generate the stick model for a jntlnk object
         snp means stick nodepath

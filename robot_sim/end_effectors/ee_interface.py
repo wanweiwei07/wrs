@@ -1,13 +1,14 @@
 import copy
 import numpy as np
 import modeling.model_collection as mc
-import basis.robot_math as rm
 import robot_sim._kinematics.jlchain as jl
 import robot_sim._kinematics.collision_checker as cc
+import modeling.geometric_model as gm
 
-class SuctionInterface(object):
 
-    def __init__(self, pos=np.zeros(3), rotmat=np.eye(3), cdmesh_type='aabb', name='suction'):
+class EEInterface(object):
+
+    def __init__(self, pos=np.zeros(3), rotmat=np.eye(3), cdmesh_type='aabb', name='end_effector'):
         self.name = name
         self.pos = pos
         self.rotmat = rotmat
@@ -21,9 +22,9 @@ class SuctionInterface(object):
         # self.coupling.lnks[0]['mesh_file'] = os.path.join(this_dir, "meshes", "xxx.stl")
         # self.coupling.lnks[0]['rgba'] = [.2, .2, .2, 1]
         self.coupling.reinitialize()
-        # suction center
-        self.suction_center_pos = np.zeros(3)
-        self.suction_center_rotmat = np.eye(3)
+        # action center, acting point of the tool
+        self.action_center_pos = np.zeros(3)
+        self.action_center_rotmat = np.eye(3)
         # collision detection
         self.cc = None
         # cd mesh collection for precise collision checking
@@ -64,35 +65,6 @@ class SuctionInterface(object):
     def fix_to(self, pos, rotmat):
         raise NotImplementedError
 
-    def suction_to_with_scpose(self, gl_suction_center_pos, gl_suction_center_rotmat):
-        """
-        :param gl_suction_center_posm:
-        :param gl_suction_center_rotmat: jaw_center's rotmat
-        :param jaw_width:
-        :return:
-        """
-        eef_root_rotmat = gl_suction_center_rotmat.dot(self.suction_center_rotmat.T)
-        eef_root_pos = gl_suction_center_pos - eef_root_rotmat.dot(self.suction_center_pos)
-        self.fix_to(eef_root_pos, eef_root_rotmat)
-        return [gl_suction_center_pos, gl_suction_center_rotmat, eef_root_pos, eef_root_rotmat]
-
-
-    def suction_to_with_sczy(self, gl_suction_center_pos, gl_suction_center_z, gl_suction_center_y):
-        """
-        :param gl_suction_center_pos:
-        :param gl_suction_center_z: jaw_center's approaching direction
-        :param gl_suction_center_y: jaw_center's opening direction
-        :param jaw_width:
-        :return:
-        author: weiwei
-        date: 20220127
-        """
-        gl_jaw_center_rotmat = np.eye(3)
-        gl_jaw_center_rotmat[:, 2] = rm.unit_vector(gl_suction_center_z)
-        gl_jaw_center_rotmat[:, 1] = rm.unit_vector(gl_suction_center_y)
-        gl_jaw_center_rotmat[:, 0] = np.cross(gl_jaw_center_rotmat[:3, 1], gl_jaw_center_rotmat[:3, 2])
-        return self.suction_to_with_scpose(gl_suction_center_pos, gl_suction_center_z)
-
     def show_cdprimit(self):
         self.cc.show_cdprimit()
 
@@ -114,15 +86,25 @@ class SuctionInterface(object):
                        toggle_tcpcs=False,
                        toggle_jntscs=False,
                        toggle_connjnt=False,
-                       name='suction_stickmodel'):
+                       name='ee_stickmodel'):
         raise NotImplementedError
 
     def gen_meshmodel(self,
                       toggle_tcpcs=False,
                       toggle_jntscs=False,
                       rgba=None,
-                      name='suction_meshmodel'):
+                      name='ee_meshmodel'):
         raise NotImplementedError
+
+    def _toggle_tcpcs(self, parent):
+        action_center_gl_pos = self.rotmat.dot(self.action_center_pos) + self.pos
+        action_center_gl_rotmat = self.rotmat.dot(self.action_center_rotmat)
+        gm.gen_dashstick(spos=self.pos,
+                         epos=action_center_gl_pos,
+                         thickness=.0062,
+                         rgba=[.5, 0, 1, 1],
+                         type="round").attach_to(parent)
+        gm.gen_mycframe(pos=action_center_gl_pos, rotmat=action_center_gl_rotmat).attach_to(parent)
 
     def enable_cc(self):
         self.cc = cc.CollisionChecker("collision_checker")

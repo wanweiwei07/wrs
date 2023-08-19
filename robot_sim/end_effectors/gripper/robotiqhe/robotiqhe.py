@@ -50,6 +50,8 @@ class RobotiqHE(gp.GripperInterface):
         self.rgt.lnks[1]['name'] = "finger2"
         self.rgt.lnks[1]['mesh_file'] = os.path.join(this_dir, "meshes", "finger2_cvt.stl")
         self.rgt.lnks[1]['rgba'] = [.5, .5, .5, 1]
+        # jaw range
+        self.jaw_range = [0.0, 0.05]
         # jaw center
         self.jaw_center_pos = np.array([0, 0, .14]) + coupling_offset_pos
         # reinitialize
@@ -79,8 +81,8 @@ class RobotiqHE(gp.GripperInterface):
         self.pos = pos
         self.rotmat = rotmat
         if jawwidth is not None:
-            side_jawwidth = (.05 - jawwidth) / 2.0
-            if 0 <= side_jawwidth <= .025:
+            side_jawwidth = (self.jaw_range[1] - jawwidth) / 2.0
+            if 0 <= side_jawwidth <= self.jaw_range[1]/2.0:
                 self.lft.jnts[1]['motion_val'] = side_jawwidth;
                 self.rgt.jnts[1]['motion_val'] = self.lft.jnts[1]['motion_val']
             else:
@@ -105,9 +107,9 @@ class RobotiqHE(gp.GripperInterface):
             raise ValueError("The motion_val parameter is out of range!")
 
     def jaw_to(self, jaw_width):
-        if jaw_width > .05:
+        if jaw_width > self.jaw_range[1]:
             raise ValueError("The jawwidth parameter is out of range!")
-        self.fk(motion_val=(0.05 - jaw_width) / 2.0)
+        self.fk(motion_val=(self.jaw_range[1] - jaw_width) / 2.0)
 
     def gen_stickmodel(self,
                        tcp_jntid=None,

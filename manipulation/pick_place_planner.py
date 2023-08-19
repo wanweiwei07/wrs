@@ -150,7 +150,7 @@ class PickPlacePlanner(adp.ADPlanner):
         :return:
         """
         jnt_values_bk = self.robot_s.get_jnt_values(hand_name)
-        jawwidth_bk = self.robot_s.get_jawwidth(hand_name)
+        jawwidth_bk = self.robot_s.get_jaw_width(hand_name)
         # final
         conf_list = []
         jawwidthlist = []
@@ -343,9 +343,9 @@ class PickPlacePlanner(adp.ADPlanner):
         date: 20191122, 20200105
         """
         if approach_jawwidth is None:
-            approach_jawwidth = self.robot_s.hnd_dict[hnd_name].jawwidth_rng[1]
+            approach_jawwidth = self.robot_s.hnd_dict[hnd_name].jaw_range[1]
         if depart_jawwidth is None:
-            depart_jawwidth = self.robot_s.hnd_dict[hnd_name].jawwidth_rng[1]
+            depart_jawwidth = self.robot_s.hnd_dict[hnd_name].jaw_range[1]
         first_goal_pos = goal_homomat_list[0][:3, 3]
         first_goal_rotmat = goal_homomat_list[0][:3, :3]
         last_goal_pos = goal_homomat_list[-1][:3, 3]
