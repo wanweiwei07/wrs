@@ -23,7 +23,7 @@ The following packages are needed to run this system.
 
 ```
 panda3d>=1.10.7 # vital, visualization
-numpy>=1.22.2 # vital, matrix computation
+numpy<1.23.0,>=1.22.2 # vital, matrix computation
 opencv-python>=4.4.0.46 # optional, required by vision
 opencv-contrib-python>=4.4.0.46 # optional, required by vision
 scikit-learn>=0.23.2 # vital?
@@ -42,6 +42,7 @@ pandas>=1.3.4 # required for neuro ik
 
 ### Installing
 
+#### PyCharm IDE
 A step by step series of examples that tell you how to get a development env running. The recommended IDE(Integrated
 Development Environment) is [PyCharm](https://www.jetbrains.com/pycharm/). You can get a community version for research
 purpose at [PyCharm Community Version](https://www.jetbrains.com/pycharm/download/). Other platform like Visual Studio
@@ -69,6 +70,12 @@ to examine if your the prerequisites and key packages work correctly.
 ```
 TODO
 ```
+
+#### Using setup.py
+```bash
+cd wrs && python3 setup.py install
+```
+
 
 ## License
 
