@@ -17,18 +17,18 @@ try:
     from geometry_msgs import msg
 except:
     logging.warning('Failed to import geometry msgs in rigid_transformations.py.')
-    
+
 try:
     import rospy
     import rosservice
 except ImportError:
     logging.warning("Failed to import ros dependencies in rigid_transforms.py")
-    
+
 try:
     from autolab_core.srv import *
 except ImportError:
     logging.warning("autolab_core not installed as catkin package, RigidTransform ros methods will be unavailable")
-    
+
 import subprocess
 
 TF_EXTENSION = '.tf'
@@ -38,7 +38,10 @@ class RigidTransform(object):
     """A Rigid Transformation from one frame to another.
     """
 
-    def __init__(self, rotation=np.eye(3), translation=np.zeros(3),
+    def __init__(self,
+                 rotation=np.eye(3),
+                 translation=np.zeros(3),
+                 configuration=None,
                  from_frame='unassigned', to_frame='world'):
         """Initialize a RigidTransform.
 
@@ -49,6 +52,9 @@ class RigidTransform(object):
 
         translation : :obj:`numpy.ndarray` of float
             A 3-entry translation vector.
+
+        configuration : :obj:`None` or :obj:`numpy.ndarray` of int
+            A 4-entry configuration vector.
 
         from_frame : :obj:`str`
             A name for the frame of reference on which this transform
@@ -75,6 +81,7 @@ class RigidTransform(object):
 
         self.rotation = rotation
         self.translation = translation
+        self.configuration = configuration
         self._from_frame = str(from_frame)
         self._to_frame = str(to_frame)
 
@@ -86,7 +93,11 @@ class RigidTransform(object):
         :obj:`RigidTransform`
             A deep copy of the RigidTransform.
         """
-        return RigidTransform(np.copy(self.rotation), np.copy(self.translation), self.from_frame, self.to_frame)
+        return RigidTransform(np.copy(self.rotation),
+                              np.copy(self.translation),
+                              np.copy(self.configuration) if self.configuration is not None else None,
+                              self.from_frame,
+                              self.to_frame)
 
     def _check_valid_rotation(self, rotation):
         """Checks that the given rotation matrix is valid.
@@ -109,6 +120,17 @@ class RigidTransform(object):
         t = translation.squeeze()
         if len(t.shape) != 1 or t.shape[0] != 3:
             raise ValueError('Translation must be specified as a 3-vector, 3x1 ndarray, or 1x3 ndarray')
+
+    def _check_valid_configuration(self, configuration):
+        """Checks that the configuration is valid.
+        """
+        if configuration is not None:
+            if not isinstance(configuration, np.ndarray) or not np.issubdtype(configuration.dtype, np.number):
+                raise ValueError('Configuration must be specified as numeric numpy array')
+
+            t = configuration.squeeze()
+            if len(t.shape) != 1 or t.shape[0] != 4:
+                raise ValueError('Configuration must be specified as a 4-vector, 4x1 ndarray, or 1x4 ndarray')
 
     @property
     def rotation(self):
@@ -160,13 +182,27 @@ class RigidTransform(object):
         self.translation = position
 
     @property
+    def configuration(self):
+        return self._configuration
+
+    @configuration.setter
+    def configuration(self, configuration):
+        if configuration is not None:
+            # Convert lists to configuration arrays
+            if type(configuration) in (list, tuple) and len(configuration) == 4:
+                configuration = np.array([t for t in configuration]).astype(int)
+
+        self._check_valid_configuration(configuration)
+        self._configuration = configuration
+
+    @property
     def adjoint_tf(self):
         A = np.zeros([6,6])
         A[:3,:3] = self.rotation
         A[3:,:3] = utils.skew(self.translation).dot(self.rotation)
         A[3:,3:] = self.rotation
         return A
-        
+
     @property
     def from_frame(self):
         """:obj:`str`: The identifier for the 'from' frame of reference.
@@ -225,7 +261,7 @@ class RigidTransform(object):
             rz = qz / np.sqrt(1.0 - qw**2)
             omega = np.array([rx, ry, rz])
         return theta * omega
-    
+
     @property
     def euler(self):
         """TODO DEPRECATE THIS?"""
@@ -235,7 +271,7 @@ class RigidTransform(object):
     @property
     def vec(self):
         return np.r_[self.translation, self.quaternion]
-   
+
     @property
     def matrix(self):
         """:obj:`numpy.ndarray` of float: The canonical 4x4 matrix
@@ -452,7 +488,7 @@ class RigidTransform(object):
         if isinstance(rigid_object, BagOfPoints):
             return self.apply(rigid_object)
         raise ValueError('Cannot multiply rigid transform with object of type %s' %(type(rigid_object)))
-                              
+
     def inverse(self):
         """Take the inverse of the rigid transform.
 
@@ -519,15 +555,15 @@ class RigidTransform(object):
             The RigidTransform with new frames.
         """
         return RigidTransform(self.rotation, self.translation, from_frame, to_frame)
-    
+
     def publish_to_ros(self, mode='transform', service_name='rigid_transforms/rigid_transform_publisher', namespace=None):
         """Publishes RigidTransform to ROS
         If a transform referencing the same frames already exists in the ROS publisher, it is updated instead.
         This checking is not order sensitive
-        
+
         Requires ROS rigid_transform_publisher service to be running. Assuming autolab_core is installed as a catkin package,
         this can be done with: roslaunch autolab_core rigid_transforms.launch
-        
+
         Parameters
         ----------
         mode : :obj:`str`
@@ -538,7 +574,7 @@ class RigidTransform(object):
             rigid_transforms.launch it will be called rigid_transform_publisher
         namespace : string, optional
             Namespace to prepend to transform_listener_service. If None, current namespace is prepended.
-        
+
         Raises
         ------
         rospy.ServiceException
@@ -548,24 +584,24 @@ class RigidTransform(object):
             service_name = rospy.get_namespace() + service_name
         else:
             service_name = namespace + service_name
-        
+
         rospy.wait_for_service(service_name, timeout = 10)
         publisher = rospy.ServiceProxy(service_name, RigidTransformPublisher)
-        
+
         trans = self.translation
         rot = self.quaternion
-        
+
         publisher(trans[0], trans[1], trans[2], rot[0], rot[1], rot[2], rot[3], self.from_frame, self.to_frame, mode)
-        
+
     def delete_from_ros(self, service_name='rigid_transforms/rigid_transform_publisher', namespace=None):
         """Removes RigidTransform referencing from_frame and to_frame from ROS publisher.
         Note that this may not be this exact transform, but may that references the same frames (order doesn't matter)
-        
-        Also, note that it may take quite a while for the transform to disappear from rigid_transform_publisher's cache 
-        
+
+        Also, note that it may take quite a while for the transform to disappear from rigid_transform_publisher's cache
+
         Requires ROS rigid_transform_publisher service to be running. Assuming autolab_core is installed as a catkin package,
         this can be done with: roslaunch autolab_core rigid_transforms.launch
-        
+
         Parameters
         ----------
         service_name : string, optional
@@ -573,7 +609,7 @@ class RigidTransform(object):
             rigid_transforms.launch it will be called rigid_transform_publisher
         namespace : string, optional
             Namespace to prepend to transform_listener_service. If None, current namespace is prepended.
-        
+
         Raises
         ------
         rospy.ServiceException
@@ -583,20 +619,23 @@ class RigidTransform(object):
             service_name = rospy.get_namespace() + service_name
         else:
             service_name = namespace + service_name
-            
+
         rospy.wait_for_service(service_name, timeout = 10)
         publisher = rospy.ServiceProxy(service_name, RigidTransformPublisher)
-        
+
         publisher(0, 0, 0, 0, 0, 0, 0, self.from_frame, self.to_frame, 'delete')
 
     def __str__(self):
         out = 'Tra: {0}\n Rot: {1}\n Qtn: {2}\n from {3} to {4}'.format(self.translation, self.rotation,
-            self.quaternion, self.from_frame, self.to_frame)
+                                                                        self.quaternion, self.from_frame, self.to_frame)
         return out
 
     def __repr__(self):
-        out = 'RigidTransform(rotation=np.{0}, translation=np.{1}, from_frame={2}, to_frame={3})'.format(repr(self.rotation),
-                repr(self.translation), repr(self.from_frame), repr(self.to_frame))
+        out = 'RigidTransform(rotation=np.{0}, translation=np.{1}, conf=np.{2}, from_frame={3}, to_frame={4})'.format(
+            repr(self.rotation),
+            repr(self.translation),
+            repr(self.configuration),
+            repr(self.from_frame), repr(self.to_frame))
         return out
 
     @staticmethod
@@ -615,8 +654,8 @@ class RigidTransform(object):
     def from_ros_pose_msg(pose_msg,
                           from_frame='unassigned',
                           to_frame='world'):
-        """Creates a RigidTransform from a ROS pose msg. 
-        
+        """Creates a RigidTransform from a ROS pose msg.
+
         Parameters
         ----------
         pose_msg : :obj:`geometry_msgs.msg.Pose`
@@ -633,8 +672,8 @@ class RigidTransform(object):
                               translation=position,
                               from_frame=from_frame,
                               to_frame=to_frame)
-        return pose        
-        
+        return pose
+
     @staticmethod
     def from_vec(vec, from_frame='unassigned', to_frame='world'):
         return RigidTransform(rotation=vec[3:],
@@ -656,14 +695,14 @@ class RigidTransform(object):
                               from_frame=from_frame,
                               to_frame=to_frame)
 
-    
+
     @staticmethod
     def rigid_transform_from_ros(from_frame, to_frame, service_name='rigid_transforms/rigid_transform_listener', namespace=None):
         """Gets transform from ROS as a rigid transform
-        
+
         Requires ROS rigid_transform_publisher service to be running. Assuming autolab_core is installed as a catkin package,
         this can be done with: roslaunch autolab_core rigid_transforms.launch
-        
+
         Parameters
         ----------
         from_frame : :obj:`str`
@@ -673,7 +712,7 @@ class RigidTransform(object):
             rigid_transforms.launch it will be called rigid_transform_listener
         namespace : string, optional
             Namespace to prepend to transform_listener_service. If None, current namespace is prepended.
-        
+
         Raises
         ------
         rospy.ServiceException
@@ -683,19 +722,19 @@ class RigidTransform(object):
             service_name = rospy.get_namespace() + service_name
         else:
             service_name = namespace + service_name
-        
+
         rospy.wait_for_service(service_name, timeout = 10)
         listener = rospy.ServiceProxy(service_name, RigidTransformListener)
-        
+
         ret = listener(from_frame, to_frame)
-        
+
         quat = np.asarray([ret.w_rot, ret.x_rot, ret.y_rot, ret.z_rot])
         trans = np.asarray([ret.x_trans, ret.y_trans, ret.z_trans])
-        
+
         rot = RigidTransform.rotation_from_quaternion(quat)
-        
+
         return RigidTransform(rotation=rot, translation=trans, from_frame=from_frame, to_frame=to_frame)
-        
+
     @staticmethod
     def rotation_from_quaternion(q_wxyz):
         """Convert quaternion array to rotation matrix.
@@ -732,14 +771,14 @@ class RigidTransform(object):
         theta = np.linalg.norm(v)
         if theta > 0:
             v = v / np.linalg.norm(v)
-        ax, ay, az = v    
+        ax, ay, az = v
         qx = ax * np.sin(0.5 * theta)
         qy = ay * np.sin(0.5 * theta)
-        qz = az * np.sin(0.5 * theta)        
+        qz = az * np.sin(0.5 * theta)
         qw = np.cos(0.5 * theta)
         q = np.array([qw, qx, qy, qz])
         return q
-        
+
     @staticmethod
     def rotation_from_axis_angle(v):
         """Convert axis-angle representation to rotation matrix.
@@ -755,7 +794,7 @@ class RigidTransform(object):
             A 3x3 rotation matrix made from the axis-angle vector.
         """
         return RigidTransform.rotation_from_quaternion(RigidTransform.quaternion_from_axis_angle(v))
-        
+
     @staticmethod
     def transform_from_dual_quaternion(dq, from_frame='unassigned', to_frame='world'):
         """Create a RigidTransform from a DualQuaternion.
@@ -950,7 +989,7 @@ class RigidTransform(object):
     @staticmethod
     def sph_coords_to_pose(theta, psi):
         """ Convert spherical coordinates to a pose.
-        
+
         Parameters
         ----------
         theta : float
@@ -967,7 +1006,7 @@ class RigidTransform(object):
         rot_z = RigidTransform.z_axis_rotation(theta)
         rot_y = RigidTransform.y_axis_rotation(psi)
         R = rot_y.dot(rot_z)
-        return RigidTransform(rotation=R)        
+        return RigidTransform(rotation=R)
 
     @staticmethod
     def interpolate(T0, T1, t):
@@ -1182,7 +1221,7 @@ class SimilarityTransform(RigidTransform):
             return Direction(x_tf, frame=self._to_frame)
         elif isinstance(points, NormalCloud):
             return NormalCloud(x_tf, frame=self._to_frame)
-        raise ValueError('Type %s not yet supported' %(type(points)))
+        raise ValueError('Type %s not yet supported' % (type(points)))
 
     def dot(self, other_tf):
         """Compose this simliarity transform with another.
@@ -1341,11 +1380,13 @@ class SimilarityTransform(RigidTransform):
                                    to_frame=to_frame)
 
     def __str__(self):
-        out = 'Tra: {0}\n Rot: {1}\n Qtn: {2}\n Scale:{3}\n from {4} to {5}'.format(self.translation, self.rotation, self.scale,
-            self.quaternion, self.from_frame, self.to_frame)
+        out = 'Tra: {0}\n Rot: {1}\n Qtn: {2}\n Scale:{3}\n from {4} to {5}'.format(self.translation, self.rotation,
+                                                                                    self.scale,
+                                                                                    self.quaternion, self.from_frame,
+                                                                                    self.to_frame)
         return out
 
     def __repr__(self):
         out = "SimilarityTransform(rotation=np.{0}, translation=np.{1}, scale={2}, from_frame={3}, to_frame={4})".format(
-                                    repr(self.rotation), repr(self.translation), repr(self.scale), repr(self.from_frame), repr(self.to_frame))
+            repr(self.rotation), repr(self.translation), repr(self.scale), repr(self.from_frame), repr(self.to_frame))
         return out

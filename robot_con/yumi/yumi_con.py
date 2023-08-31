@@ -331,8 +331,11 @@ if __name__ == "__main__":
     ycc.close_gripper("rgt_hnd", force=5)
     a = ycc.get_gripper_width("rgt_hnd")
     print(a)
+    print(ycc.get_pose("rgt_arm", return_conf=True))
+    print(ycc.get_pose("lft_arm", return_conf=True))
 
     # ycc.get_pose("rgt_arm")
     # ycc.calibrate_gripper()
     # print(ycc.get_jnt_values("rgt_arm"))
     # ycc.set_gripper_speed("rgt_arm", 10)
+    ycc.stop()
