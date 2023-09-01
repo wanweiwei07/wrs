@@ -128,12 +128,13 @@ class Robotiq140(gp.GripperInterface):
         self.lft_inner.reinitialize()
         self.rgt_outer.reinitialize()
         self.rgt_inner.reinitialize()
-        # jaw range
-        self.jaw_range = [0.0, .140]
+        # jaw width
+        self.jawwidth_rng = [0.0, .140]
         # jaw center
-        self.jaw_center_pos = np.array([0, 0, .19])  # position for initial state (fully open)
+        self.jaw_center_pos = np.array([0, 0, .195])  # position for initial state (fully open)
         # relative jaw center pos
-        self.jaw_center_pos_rel = self.jaw_center_pos - self.lft_outer.jnts[4]['gl_posq']
+        #self.jaw_center_pos_rel = self.jaw_center_pos - self.lft_outer.jnts[4]['loc_pos'] #gl_posq
+        self.jaw_center_pos_rel = self.lft_outer.jnts[4]['gl_posq']
         # collision detection
         self.all_cdelements = []
         self.enable_cc(toggle_cdprimit=enable_cc)
@@ -206,20 +207,27 @@ class Robotiq140(gp.GripperInterface):
         private helper function to convert a command in meters to radians (joint value)
         """
         # return np.clip(
-        #   self.lft_outer.jnts[1]['motion_rng'][1] - ((self.lft_outer.jnts[1]['motion_rng'][1]/self.jaw_range[1]) * distance),
+        #   self.lft_outer.jnts[1]['motion_rng'][1] - ((self.lft_outer.jnts[1]['motion_rng'][1]/self.jawwidth_rng[1]) * distance),
         #   self.lft_outer.jnts[1]['motion_rng'][0], self.lft_outer.jnts[1]['motion_rng'][1]) # kiyokawa, commented out by weiwei
         return np.clip(self.lft_outer.jnts[1]['motion_rng'][1] - math.asin(
-            (math.sin(self.lft_outer.jnts[1]['motion_rng'][1]) / self.jaw_range[1]) * distance),
+            (math.sin(self.lft_outer.jnts[1]['motion_rng'][1]) / self.jawwidth_rng[1]) * distance),
                        self.lft_outer.jnts[1]['motion_rng'][0], self.lft_outer.jnts[1]['motion_rng'][1])
 
     def jaw_to(self, jaw_width):
-        if jaw_width > self.jaw_range[1]:
-            raise ValueError(f"Jawwidth must be {self.jaw_range[0]}mm~{self.jaw_range[1]}mm!")
+        if jaw_width > self.jawwidth_rng[1]:
+            raise ValueError(f"Jawwidth must be {self.jawwidth_rng[0]}mm~{self.jawwidth_rng[1]}mm!")
         motion_val = self._from_distance_to_radians(jaw_width)
         self.fk(motion_val)
         # TODO dynamically change jaw center
         # print(self.jaw_center_pos_rel)
-        self.jaw_center_pos=np.array([0,0,self.lft_outer.jnts[4]['gl_posq'][2]+self.jaw_center_pos_rel[2]])
+        gripper_copy = self.copy()
+        gripper_copy.fix_to([0,0,0], np.eye(3))
+        #self.jaw_center_pos=np.array([0,0,self.lft_outer.jnts[4]['loc_pos'][2]+self.jaw_center_pos_rel[2]]) #gl_posq
+        #self.jaw_center_pos = np.array([0, 0, 0.195 + abs(self.rotmat.dot((self.pos + self.rotmat.dot(self.jaw_center_pos_rel) - self.lft_outer.jnts[4]['gl_posq']))[2])])
+        self.jaw_center_pos = np.array([0, 0, 0.195 + gripper_copy.lft_outer.jnts[4]['gl_posq'][2] - 0.1732270473824662])
+        #open_pos = self.pos + self.rotmat.dot(self.jaw_center_pos_rel)
+        #dir_vec = np.dot([0,0,1], self.rotmat)
+        #print(np.dot(open_pos, dir_vec) / np.linalg.norm(dir_vec))
 
     def gen_stickmodel(self,
                        tcp_jntid=None,
@@ -295,6 +303,14 @@ if __name__ == '__main__':
     gm.gen_frame().attach_to(base)
     grpr = Robotiq140(enable_cc=True)
     # grpr.cdmesh_type='convexhull'
-    grpr.jaw_to(.1)
-    grpr.gen_meshmodel(toggle_tcpcs=True, rgba=[.3, .3, .0, .5], toggle_jntscs=True).attach_to(base)
+    print(grpr.lft_outer.jnts[4]['gl_posq'][2])
+    #grpr.fix_to([0,0.1,0.1], rm.rotmat_from_euler(math.pi/2, math.pi/2, math.pi/2))
+    grpr.jaw_to(.0)
+    grpr.show_cdprimit()
+    grpr.gen_meshmodel(toggle_tcpcs=False, rgba=[.3, .3, .0, .5], toggle_jntscs=False).attach_to(base)
+    gm.gen_frame(grpr.lft_outer.jnts[4]['gl_posq'], np.eye(3)).attach_to(base)
+    gm.gen_frame(grpr.rotmat.dot(grpr.jaw_center_pos) + grpr.pos, np.eye(3), length=0.05).attach_to(base)
+    print(grpr.rotmat)
+
     base.run()
+
