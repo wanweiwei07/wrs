@@ -35,7 +35,7 @@ class Sdmbs():
 
         this_dir, this_filename = os.path.split(__file__)
         self.mbs_eggpath = Filename.fromOsSpecific(os.path.join(this_dir, "mbsegg", "mbs.egg"))
-        self.mbs_stlpath = Filename.fromOsSpecific(os.path.join(this_dir, "mbs", "wholebody.STL"))
+        self.mbs_stlpath = Filename.fromOsSpecific(os.path.join(this_dir, "mbs", "wholebody.stl"))
         self.__mbsl = loader.loadModel(self.mbs_eggpath)
         self.__mbsl.instanceTo(self.__sdmbs)
 

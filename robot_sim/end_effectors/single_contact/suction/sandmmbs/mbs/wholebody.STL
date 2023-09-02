@@ -1,4 +1,4 @@
-solid wholebody
+robot wholebody
    facet normal -1.000000e+000 0.000000e+000 0.000000e+000
       outer loop
          vertex -1.000000e+001 -5.711733e+000 -2.945125e+001
@@ -2295,4 +2295,4 @@ solid wholebody
          vertex -1.600000e+002 3.215063e+000 -2.697758e+000
       endloop
    endfacet
-endsolid
+endrobot
