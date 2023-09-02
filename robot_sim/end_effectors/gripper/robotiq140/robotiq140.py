@@ -129,7 +129,7 @@ class Robotiq140(gp.GripperInterface):
         self.rgt_outer.reinitialize()
         self.rgt_inner.reinitialize()
         # jaw width
-        self.jawwidth_rng = [0.0, .140]
+        self.jaw_range = [0.0, .140]
         # jaw center
         self.jaw_center_pos = np.array([0, 0, .195])  # position for initial state (fully open)
         # relative jaw center pos
@@ -207,15 +207,15 @@ class Robotiq140(gp.GripperInterface):
         private helper function to convert a command in meters to radians (joint value)
         """
         # return np.clip(
-        #   self.lft_outer.jnts[1]['motion_rng'][1] - ((self.lft_outer.jnts[1]['motion_rng'][1]/self.jawwidth_rng[1]) * distance),
+        #   self.lft_outer.jnts[1]['motion_rng'][1] - ((self.lft_outer.jnts[1]['motion_rng'][1]/self.jaw_range[1]) * distance),
         #   self.lft_outer.jnts[1]['motion_rng'][0], self.lft_outer.jnts[1]['motion_rng'][1]) # kiyokawa, commented out by weiwei
         return np.clip(self.lft_outer.jnts[1]['motion_rng'][1] - math.asin(
-            (math.sin(self.lft_outer.jnts[1]['motion_rng'][1]) / self.jawwidth_rng[1]) * distance),
+            (math.sin(self.lft_outer.jnts[1]['motion_rng'][1]) / self.jaw_range[1]) * distance),
                        self.lft_outer.jnts[1]['motion_rng'][0], self.lft_outer.jnts[1]['motion_rng'][1])
 
     def jaw_to(self, jaw_width):
-        if jaw_width > self.jawwidth_rng[1]:
-            raise ValueError(f"Jawwidth must be {self.jawwidth_rng[0]}mm~{self.jawwidth_rng[1]}mm!")
+        if jaw_width > self.jaw_range[1]:
+            raise ValueError(f"Jawwidth must be {self.jaw_range[0]}mm~{self.jaw_range[1]}mm!")
         motion_val = self._from_distance_to_radians(jaw_width)
         self.fk(motion_val)
         # TODO dynamically change jaw center
