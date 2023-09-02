@@ -33,14 +33,10 @@ class SGB30():
         self.__sgb = NodePath("sgb")
 
         this_dir, this_filename = os.path.split(__file__)
-        # self.sgb_objpath = Filename.fromOsSpecific(
-        #     os.path.join(this_dir, "sgb30mm.obj"))
         self.sgb_eggpath = Filename.fromOsSpecific(
             os.path.join(this_dir, "sgb30.egg"))
         self.sgb_stlpath = Filename.fromOsSpecific(
             os.path.join(this_dir, "sgb30.stl"))
-        # self.sgb_eggpath = Filename.fromOsSpecific(
-        #    os.path.join(this_dir, "sgb30mm.egg"))
         self.__sgbl = loader.loadModel(self.sgb_eggpath)
         self.__sgbl.instanceTo(self.__sgb)
 
