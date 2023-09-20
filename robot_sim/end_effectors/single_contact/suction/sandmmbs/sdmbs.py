@@ -159,11 +159,10 @@ class Sdmbs():
         self.__sdmbs.setMat(Mat4.identMat())
         self.__sdmbs.lookAt(nrmlx, nrmly, nrmlz)
         rotmat4x = Mat4.rotateMat(rotangle, Vec3(1, 0, 0))
-        rotmat4y = Mat4.rotateMat(180, Vec3(0, 1, 0))
         rotmat4z = Mat4.rotateMat(90, Vec3(0, 0, 1))
-        self.__sdmbs.setMat(rotmat4x*rotmat4y*rotmat4z*self.__sdmbs.getMat())
+        self.__sdmbs.setMat(rotmat4x*rotmat4z*self.__sdmbs.getMat())
         rotmat4 = Mat4(self.__sdmbs.getMat())
-        handtipvec3 = rotmat4.getRow3(0)*-5
+        handtipvec3 = rotmat4.getRow3(0)*160
         rotmat4.setRow(3, Vec3(pntx, pnty, pntz)+handtipvec3)
         self.__sdmbs.setMat(rotmat4)
 
