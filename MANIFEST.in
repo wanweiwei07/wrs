@@ -1,0 +1,4 @@
+recursive-include basis *.stl *.template
+recursive-include manipulation *.pickle
+recursive-include modeling *.stl
+recursive-include robot_sim *.stl *.dae
