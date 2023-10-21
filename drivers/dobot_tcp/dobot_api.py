@@ -432,9 +432,16 @@ class DobotApiDashboard(DobotApi):
         Return:
             ErrorID,{x,y,z,a,b,c},PositiveSolution(J1,J2,J3,J4,J5,J6,User,Tool); //{x,y,z,a,b,c} refers to the returned spatial position
         """
+        # to prevent the ik solving problem
+        if rx == 0:
+            rx = 0.000001
+        if ry == 0:
+            ry = 0.000001
+        if rz == 0:
+            rz = 0.000001
         parameters_str = "{:f},{:f},{:f},{:f},{:f},{:f},{:d},{:d}".format(x, y, z, rx, ry, rz, user, tool)
         if joint_near is not None:
-            parameters_str += ",1,\{{:f},{:f},{:f},{:f},{:f},{:f}\}".format(*joint_near)
+            parameters_str += ",1,{{{:f},{:f},{:f},{:f},{:f},{:f}}}".format(*joint_near)
         string = f"InverseSolution({parameters_str})"
         self.send_data(string)
         return self.wait_reply()

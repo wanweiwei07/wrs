@@ -1,0 +1,1 @@
+from .nova2_huri_gripper import Nova2HuriGripper
