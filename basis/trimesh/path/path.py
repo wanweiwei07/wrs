@@ -188,7 +188,7 @@ class Path(object):
         
     def discretize_path(self, path):
         '''
-        Return a (n, dimension) list of vertices. 
+        Return a (n, dimension) list of vertices.
         Samples arcs/curves to be line segments
         '''
         discrete = discretize_path(self.entities, 
@@ -396,7 +396,7 @@ class Path2D(Path):
         ----------
         resolution: target distance between each sample on the polygon boundary
         clip:       [minimum number of samples, maximum number of samples]
-                    specifying a very fine resolution can cause the sample count to
+                    specifying a very fine resolution can cause the sample n_sec_minor to
                     explode, so clip specifies a minimum and maximum number of samples
                     to use per boundary region. To not clip, this can be specified as:
                     [0, np.inf]

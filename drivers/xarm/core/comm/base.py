@@ -191,7 +191,7 @@ class Port(threading.Thread):
                                 continue
 
                         if convert.bytes_to_u32(buffer[0:4]) != size:
-                            logger.error('report data error, close, length={}, size={}'.format(convert.bytes_to_u32(buffer[0:4]), size))
+                            logger.error('report data error, close, axis_length={}, size={}'.format(convert.bytes_to_u32(buffer[0:4]), size))
                             break
 
                         # # buffer[494:502]

@@ -96,7 +96,7 @@ class Trimesh(object):
         # normals and matching shape. Not validating can mean that you get different
         # number of values depending on the order which you look at faces and face normals,
         # but for some operations validation may want to be turned off during the operation
-        # then reinitialized for the end of the operation. 
+        # then reinitialized for the end_type of the operation.
         self._validate = True
         # process is a cleanup function which brings the mesh to a consistant state
         # by merging vertices and removing zero- area and duplicate faces
@@ -262,39 +262,54 @@ class Trimesh(object):
         return md5
 
     @property
-    def bounding_box(self):
+    def aabb_bound(self):
         """
         An axis aligned bounding box for the current mesh.
-        :return aabb: trimesh.primitives.Box object with transform and extents defined
-        to represent the axis aligned bounding box of the mesh
-        author: Revised by weiwei
+        :return aabb: trimesh.primitives.Box object
+        author: weiwei
         date: 20201201
         """
         aabb = self._cache['aabb']
         if aabb is None:
             from . import primitives
-            aabb = primitives.Box(box_center=self.bounds.mean(axis=0),
-                                  box_extents=self.extents)
+            aabb = primitives.Box(center=self.bounds.mean(axis=0),
+                                       extents=self.extents)
             self._cache['aabb'] = aabb
         return aabb
 
     @property
-    def bounding_box_oriented(self):
+    def obb_bound(self):
         """
         An oriented bounding box for the current mesh.
-        :returns obb: trimesh.primitives.Box object with transform and extents defined
-        to represent the minimum volume oriented bounding box of the mesh
-        author: Revised by weiwei
+        :returns obb: trimesh.primitives.Box object
+        author: weiwei
         date: 20201201
         """
         obb = self._cache['obb']
         if obb is None:
             from . import primitives
             to_origin, extents = bounds.oriented_bounds(self)
-            obb = primitives.Box(box_transform=np.linalg.inv(to_origin),
-                                 box_extents=extents)
+            obb = primitives.Box(homomat=np.linalg.inv(to_origin), extents=extents)
             self._cache['obb'] = obb
         return obb
+
+    @property
+    def cyl_bound(self):
+        """
+        Minimum bounding cylinder for the current mesh.
+        :returns cyl: trimesh.primitives.Cylinder object
+        author: weiwei
+        date: 20201201
+        """
+        cyl = self._cache['cyl']
+        if cyl is None:
+            from . import primitives
+            cyl_dict = bounds.minimum_cylinder(self)
+            cyl = primitives.Cylinder(height=cyl_dict['height'],
+                                      radius=cyl_dict['radius'],
+                                      homomat=cyl_dict['transform'])
+            self._cache['cyl'] = cyl
+        return cyl
 
     @property
     def bounds(self):
@@ -317,7 +332,7 @@ class Trimesh(object):
     @property
     def extents(self):
         """
-        The length, width, and height of the bounding box of the mesh.
+        The axis_length, width, and height of the bounding box of the mesh.
         :return extents: 1x3 float array containing axis aligned [l,w,h]
         author: Revised by weiwei
         date: 20201201
@@ -549,7 +564,7 @@ class Trimesh(object):
 
     def merge_vertices(self, angle=None):
         """
-        If a mesh has vertices that are closer than TOL_MERGE, 
+        If a mesh has vertices that are closer than TOL_MERGE,
         redefine them to be the same vertex, and replace face references
         :return angle_max: if defined, only vertices which are closer than TOL_MERGE
                    AND have vertex normals less than angle_max will be merged.
@@ -755,7 +770,7 @@ class Trimesh(object):
 
         Returns
         ---------
-        tree: scipy.spatial.cKDTree containing mesh vertices 
+        tree: scipy.spatial.cKDTree containing mesh vertices
         '''
 
         from scipy.spatial import cKDTree as KDTree
@@ -771,23 +786,15 @@ class Trimesh(object):
         self.update_faces(nondegenerate)
 
     def facets(self, return_area=False):
-        '''
+        """
         Return a list of face indices for coplanar adjacent faces.
-
-        Arguments
-        ---------
-        return_area: boolean, if True return area of each group of faces
-
-        Returns
-        ---------
-        facets: (n) sequence of face indices
-        area:   (n) float list of face group area (if return_area)
-        '''
+        :param return_area: boolean, if True return area of each list
+        :return: facets: nx[face indices list], area: 1xn facet areas
+        """
         key = 'facets_' + str(int(return_area))
         cached = self._cache[key]
         if cached is not None:
             return cached
-
         facets = graph.facets(self)
         if return_area:
             area = np.array([self.area_faces[i].sum() for i in facets])
@@ -947,7 +954,7 @@ class Trimesh(object):
         """
         Return random samples distributed normally across the 
         surface of the mesh
-        :param: count: int, number of points to sample
+        :param: n_sec_minor: int, number of points to sample
         :param: toggle_faceid: bool, if the afflicated face id will bereturned or not
         :return: samples: countx3 float, points on surface of mesh, faceids: 1xcount list
         author: revised by weiwei
@@ -963,7 +970,7 @@ class Trimesh(object):
 
     def remove_unreferenced_vertices(self):
         '''
-        Remove all vertices in the current mesh which are not referenced by a face. 
+        Remove all vertices in the current mesh which are not referenced by a face.
         '''
         unique, inverse = np.unique(self.faces.reshape(-1), return_inverse=True)
         self.faces = inverse.reshape((-1, 3))
@@ -994,15 +1001,15 @@ class Trimesh(object):
         self._cache.clear(exclude=['face_normals',
                                    'vertex_normals'])
 
-    def apply_scale(self, scaling):
+    def apply_scale(self, scale: np.ndarray):
         """
-        :param scaling: [scale_x, scale_y, scale_z]
+        :param scaling: np.array([scale_x, scale_y, scale_z])
         :return:
         author: weiwei
         date: 20210403
         """
-        assert(scaling[0] > 0 and scaling[1] > 0 and scaling[2] > 0)
-        matrix = np.diag([scaling[0], scaling[1], scaling[2], 1])
+        assert (scale[0] > 0 and scale[1] > 0 and scale[2] > 0)
+        matrix = np.diag([scale[0], scale[1], scale[2], 1])
         self.apply_transform(matrix)
 
     def apply_transform(self, matrix):
@@ -1010,7 +1017,7 @@ class Trimesh(object):
         Transform mesh by a homogenous transformation matrix.
         Also transforms normals to avoid having to recompute them.
         :param matrix:
-        :return: homomat
+        :return: pos
         author: weiwei
         date: 20210414
         """
@@ -1045,7 +1052,7 @@ class Trimesh(object):
 
         Arguments
         ----------
-        pitch: float, the edge length of a single voxel
+        pitch: float, the edge axis_length of a single voxel
 
         Returns
         ----------

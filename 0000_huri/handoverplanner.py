@@ -81,7 +81,7 @@ class HandoverPlanner(object):
 
     def genhvgplist(self, hvgplist):
         """
-        generate the handover grasps using the given list of homomat
+        generate the handover grasps using the given list of pos
 
         :param hvgplist, [homomat0, homomat1, ...]
         :return: data is saved as a file

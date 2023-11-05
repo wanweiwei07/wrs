@@ -11,14 +11,22 @@ import base64
 from collections import defaultdict, deque
 from sys import version_info
 
+try:
+    from collections.abc import Mapping
+except ImportError:
+    from collections import Mapping
+
 if version_info.major >= 3:
     basestring = str
 
 log = logging.getLogger('trimesh')
 log.addHandler(logging.NullHandler())
 
-# included here so util has only standard library imports
-_TOL_ZERO = 1e-12
+# include constants here so we don't have to import a floating point threshold for 0.0
+# we are setting it to 100x the resolution of a float64 which works out to be 1e-13
+TOL_ZERO = np.finfo(np.float64).resolution * 100
+# how close to merge vertices
+TOL_MERGE = 1e-8
 
 
 def unitize(points, check_valid=False):
@@ -34,16 +42,16 @@ def unitize(points, check_valid=False):
 
     Returns
     ---------
-    unit_vectors: (n,m) or (j) length array of unit vectors
+    unit_vectors: (n,m) or (j) axis_length array of unit vectors
 
     valid:        (n) boolean array, output only if check_valid.
-                   True for all valid (nonzero length) vectors, thus m=sum(valid)
+                   True for all valid (nonzero axis_length) vectors, thus m=sum(valid)
     '''
     points = np.asanyarray(points)
     axis = len(points.shape) - 1
     length = np.sum(points ** 2, axis=axis) ** .5
     if check_valid:
-        valid = np.greater(length, _TOL_ZERO)
+        valid = np.greater(length, TOL_ZERO)
         if axis == 1:
             unit_vectors = (points[valid].T / length[valid]).T
         elif len(points.shape) == 1 and valid:
@@ -90,63 +98,46 @@ def is_dict(obj):
 
 
 def is_sequence(obj):
-    '''
-    Returns True if obj is a sequence.
-    '''
+    """
+    returns True if obj is a sequence.
+    :param obj:
+    :return:
+    """
     seq = (not hasattr(obj, "strip") and
            hasattr(obj, "__getitem__") or
            hasattr(obj, "__iter__"))
     seq = seq and not isinstance(obj, dict)
-    # numpy sometimes returns objects that are single float64 values
-    # but sure look like sequences, so we check the shape
+    # numpy sometimes returns objects that are single float64 values but sure look like sequences, so we check the shape
     if hasattr(obj, 'shape'):
         seq = seq and obj.shape != ()
     return seq
 
 
 def is_shape(obj, shape):
-    '''
-    Compare the shape of a numpy.ndarray to a target shape, 
-    with any value less than zero being considered a wildcard
-
-    Arguments
-    ---------
-    obj: np.ndarray to check the shape of
-    shape: list or tuple of shape. 
-           Any negative term will be considered a wildcard
+    """
+    Compare the shape of a numpy.ndarray to a target shape,  with any value less than zero being considered a wildcard
+    :param obj: np.ndarray to check the shape of
+    :param shape: list or tuple of shape. Any negative term will be considered a wildcard
            Any tuple term will be evaluated as an OR
-
-    Returns
-    ---------
-    shape_ok: bool, True if shape of obj matches query shape
-
-    Examples
-    ------------------------
+    :return: bool, True if shape of obj matches query shape
+    ------------------------ e. g.
     In [1]: a = np.random.random((100,3))
-
     In [2]: a.shape
     Out[2]: (100, 3)
-
     In [3]: trimesh.util.is_shape(a, (-1,3))
     Out[3]: True
-
     In [4]: trimesh.util.is_shape(a, (-1,3,5))
     Out[4]: False
-
     In [5]: trimesh.util.is_shape(a, (100,-1))
     Out[5]: True
-
     In [6]: trimesh.util.is_shape(a, (-1,(3,4)))
     Out[6]: True
-
     In [7]: trimesh.util.is_shape(a, (-1,(4,5)))
     Out[7]: False
-    '''
-
+    """
     if (not hasattr(obj, 'shape') or
             len(obj.shape) != len(shape)):
         return False
-
     for i, target in zip(obj.shape, shape):
         # check if current field has multiple acceptable values
         if is_sequence(target):
@@ -160,11 +151,9 @@ def is_shape(obj, shape):
                 return False
             else:
                 continue
-        # since we have a single target and a single value,
-        # if they are not equal we have an answer
+        # since we have a single target and a single value, if they are not equal we have an answer
         if target != i:
             return False
-
     # since none of the checks failed, the two shapes are the same
     return True
 
@@ -172,7 +161,7 @@ def is_shape(obj, shape):
 def make_sequence(obj):
     '''
     Given an object, if it is a sequence return, otherwise
-    add it to a length 1 sequence and return.
+    add it to a axis_length 1 sequence and return.
 
     Useful for wrapping functions which sometimes return single 
     objects and other times return lists of objects. 
@@ -183,15 +172,62 @@ def make_sequence(obj):
         return np.array([obj])
 
 
+def vector_hemisphere(vectors, return_sign=False):
+    """
+    For a set of 3D vectors alter the sign so they are all in the upper hemisphere.
+    If the vector lies on the plane all vectors with negative Y will be reversed.
+    If the vector has a zero Z and Y value vectors with a negative X value will be reversed.
+    :param vectors: (n, 3) float
+    :param return_sign: bool Return the sign mask or not
+    :return: oriented: (n, 3) float Vectors with same magnitude as source but possibly reversed to ensure all vectors
+            are in the same hemisphere.
+    sign : (n,) float [OPTIONAL] sign of original vectors
+    """
+    # vectors as numpy array
+    vectors = np.asanyarray(vectors, dtype=np.float64)
+    if is_shape(vectors, (-1, 2)):
+        # 2D vector case check the Y value and reverse vector direction if negative.
+        negative = vectors < -TOL_ZERO
+        zero = np.logical_not(np.logical_or(negative, vectors > TOL_ZERO))
+        signs = np.ones(len(vectors), dtype=np.float64)
+        # negative Y values are reversed
+        signs[negative[:, 1]] = -1.0
+        # zero Y and negative X are reversed
+        signs[np.logical_and(zero[:, 1], negative[:, 0])] = -1.0
+    elif is_shape(vectors, (-1, 3)):
+        # 3D vector case
+        negative = vectors < -TOL_ZERO
+        zero = np.logical_not(np.logical_or(negative, vectors > TOL_ZERO))
+        # move all                          negative Z to positive
+        # then for zero Z vectors, move all negative Y to positive
+        # then for zero Y vectors, move all negative X to positive
+        signs = np.ones(len(vectors), dtype=np.float64)
+        # all vectors with negative Z values
+        signs[negative[:, 2]] = -1.0
+        # all on-plane vectors with negative Y values
+        signs[np.logical_and(zero[:, 2], negative[:, 1])] = -1.0
+        # all on-plane vectors with zero Y values
+        # and negative X values
+        signs[np.logical_and(np.logical_and(zero[:, 2], zero[:, 1]), negative[:, 0])] = -1.0
+    else:
+        raise ValueError('vectors must be (n, 3)!')
+    # apply the signs to the vectors
+    oriented = vectors * signs.reshape((-1, 1))
+    if return_sign:
+        return oriented, signs
+    return oriented
+
+
 def vector_to_spherical(cartesian):
-    '''
-    Convert a set of cartesian points to (n,2) spherical vectors
-    '''
+    """
+    convert a set of cartesian points to (n,2) spherical vectors
+    :param cartesian:
+    :return:
+    """
     x, y, z = np.array(cartesian).T
     # cheat on divide by zero errors
-    x[np.abs(x) < _TOL_ZERO] = _TOL_ZERO
-    spherical = np.column_stack((np.arctan(y / x),
-                                 np.arccos(z)))
+    x[np.abs(x) < TOL_MERGE] = TOL_ZERO
+    spherical = np.column_stack((np.arctan(y / x), np.arccos(z)))
     return spherical
 
 
@@ -224,6 +260,31 @@ def diagonal_dot(a, b):
     '''
     result = (np.array(a) * b).sum(axis=1)
     return result
+
+def row_norm(data):
+    """
+    Compute the norm per-row of a numpy array.
+
+    This is identical to np.linalg.norm(data, axis=1) but roughly
+    three times faster due to being less general.
+
+    In [3]: %timeit trimesh.util.row_norm(a)
+    76.3 us +/- 651 ns per loop
+
+    In [4]: %timeit np.linalg.norm(a, axis=1)
+    220 us +/- 5.41 us per loop
+
+    Parameters
+    -------------
+    data : (n, d) float
+      Input 2D data to calculate per-row norm of
+
+    Returns
+    -------------
+    norm : (n,) float
+      Norm of each row of input array
+    """
+    return np.sqrt(np.dot(data ** 2, [1] * data.shape[1]))
 
 
 def three_dimensionalize(points, return_2D=True):
@@ -283,7 +344,7 @@ def grid_arange_2D(bounds, step):
 
 def grid_linspace_2D(bounds, count):
     '''
-    Return a count*count 2D grid
+    Return a n_sec_minor*n_sec_minor 2D grid
 
     Arguments
     ---------
@@ -292,11 +353,35 @@ def grid_linspace_2D(bounds, count):
     
     Returns
     -------
-    grid: (count**2, 2) list of 2D points
+    grid: (n_sec_minor**2, 2) list of 2D points
     '''
     x_grid = np.linspace(*bounds[:, 0], count=count)
     y_grid = np.linspace(*bounds[:, 1], count=count)
     grid = np.dstack(np.meshgrid(x_grid, y_grid)).reshape((-1, 2))
+    return grid
+
+
+def grid_linspace(bounds, count):
+    """
+    Return a grid spaced inside a bounding box with edges spaced using np.linspace.
+
+    Parameters
+    ------------
+    bounds: (2,dimension) list of [[min x, min y, etc], [max x, max y, etc]]
+    count:  int, or (dimension,) int, number of samples per side
+
+    Returns
+    ---------
+    grid: (n, dimension) float, points in the specified bounds
+    """
+    bounds = np.asanyarray(bounds, dtype=np.float64)
+    if len(bounds) != 2:
+        raise ValueError('bounds must be (2, dimension!')
+    count = np.asanyarray(count, dtype=np.int64)
+    if count.shape == ():
+        count = np.tile(count, bounds.shape[1])
+    grid_elements = [np.linspace(*b, num=c) for b, c in zip(bounds.T, count)]
+    grid = np.vstack(np.meshgrid(*grid_elements, indexing='ij')).reshape(bounds.shape[1], -1).T
     return grid
 
 
@@ -475,7 +560,7 @@ class TrackedArray(np.ndarray):
         super(self.__class__, self).__setslice__(i, j, y)
 
 
-class Cache:
+class Cache(object):
     """
     Class to cache values until an id function changes.
     """
@@ -507,14 +592,12 @@ class Cache:
         date: 20201201
         """
         self.verify()
-        if key in self.cache:
-            return self.cache[key]
-        return None
+        return self.cache[key] if key in self.cache else None
 
     def verify(self):
         """
-        Verify that the cached values are still for the same value of id_function,
-        and delete all stored items if the value of id_function has changed.
+        Verify that the cached values are still for the same value of id_function, and delete all stored items if the
+         value of id_function has changed.
         :return:
         author: revised by weiwei
         date: 20201201
@@ -522,9 +605,7 @@ class Cache:
         id_new = self._id_function()
         if (self._lock == 0) and (id_new != self.id_current):
             if len(self.cache) > 0:
-                log.debug('%d items cleared from cache: %s',
-                          len(self.cache),
-                          str(self.cache.keys()))
+                log.debug('%d items cleared from cache: %s', len(self.cache), str(self.cache.keys()))
             self.clear()
             self.id_set()
 
@@ -578,11 +659,25 @@ class Cache:
         self.id_current = self._id_function()
 
 
-class DataStore:
+class DataStore(Mapping):
+
+    def __init__(self):
+        self.data = {}
+
+    def __iter__(self):
+        return iter(self.data)
+
+    def __delitem__(self, key):
+        del self.data[key]
+
     @property
     def mutable(self):
+        """
+        Is data allowed to be altered or not.
+        :return: bool, can data be altered in the DataStore
+        """
         if not hasattr(self, '_mutable'):
-            self._mutable = True
+            return True
         return self._mutable
 
     @mutable.setter
@@ -597,20 +692,21 @@ class DataStore:
             return True
         for v in self.data.values():
             if is_sequence(v):
-                if len(v) > 0:
+                if len(v) == 0:
+                    return True
+                else:
                     return False
             else:
                 if bool(np.isreal(v)):
                     return False
         return True
 
-    def __init__(self):
-        self.data = {}
-
     def clear(self):
         self.data = {}
 
     def __getitem__(self, key):
+        if not self.mutable:
+            raise ValueError('DataStore is configured immutable!')
         try:
             return self.data[key]
         except KeyError:
@@ -619,6 +715,9 @@ class DataStore:
     def __setitem__(self, key, data):
         self.data[key] = tracked_array(data)
 
+    def __contains__(self, key):
+        return key in self.data
+
     def __len__(self):
         return len(self.data)
 
@@ -626,9 +725,14 @@ class DataStore:
         return self.data.values()
 
     def md5(self):
-        md5 = ''
-        for key in np.sort(list(self.data.keys())):
-            md5 += self.data[key].md5()
+        # md5 = ''
+        # for key in np.sort(list(self.data.keys())):
+        #     md5 += self.data[key].md5()
+        # return md5
+        hasher = hashlib.md5()
+        for key in sorted(self.data.keys()):
+            hasher.update(self.data[key].md5().encode('utf-8'))
+        md5 = hasher.hexdigest()
         return md5
 
 
@@ -765,7 +869,7 @@ def type_bases(obj, depth=4):
 
 def type_named(obj, name):
     '''
-    Similar to the type() builtin, but looks in class bases for named instance.
+    Similar to the end_type() builtin, but looks in class bases for named instance.
 
     Arguments
     ----------
@@ -802,7 +906,7 @@ def concatenate(a, b=None):
     # if there is only one mesh just return the first
     if len(meshes) == 1:
         return meshes[0].copy()
-    # extract the trimesh type to avoid a circular import
+    # extract the trimesh end_type to avoid a circular import
     # and assert that both inputs are Trimesh objects
     trimesh_type = type_named(meshes[0], 'Trimesh')
     # append faces and vertices of meshes
@@ -871,7 +975,7 @@ def submesh(mesh,
         faces.append(mask[faces_current])
         vertices.append(original_vertices[unique])
         visuals.extend(mesh.visual.subsets([faces_index]))
-    # we use type(mesh) rather than importing Trimesh from base
+    # we use end_type(mesh) rather than importing Trimesh from base
     # as this causes a circular import
     trimesh_type = type_named(mesh, 'Trimesh')
     if append:
@@ -902,12 +1006,12 @@ def zero_pad(data, count, right=True):
     '''
     Arguments
     --------
-    data: (n) length 1D array 
+    data: (n) axis_length 1D array
     count: int
 
     Returns
     --------
-    padded: (count) length 1D array if (n < count), otherwise length (n)
+    padded: (n_sec_minor) axis_length 1D array if (n < n_sec_minor), otherwise axis_length (n)
     '''
     if len(data) == 0:
         return np.zeros(count)
@@ -971,7 +1075,7 @@ class Words:
 
         Returns
         ----------
-        phrase: str, length words separated by delimiter
+        phrase: str, axis_length words separated by delimiter
 
         Examples
         ----------

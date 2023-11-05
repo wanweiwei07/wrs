@@ -7,7 +7,7 @@ import modeling.geometric_model as gm
 
 if __name__ == "__main__":
     base = wd.World(cam_pos=[3, 1, 1], lookat_pos=[0, 0, 0.5])
-    gm.gen_frame(length=.2).attach_to(base)
+    gm.gen_frame(axis_length=.2).attach_to(base)
     yumi_s = ym.Yumi(enable_cc=True)
     # ik test
     manipulator_name = 'rgt_arm'
@@ -21,7 +21,7 @@ if __name__ == "__main__":
     # tgt_rotmat2 = rm.rotmat_from_axangle([0, 1, 0], -math.pi/6).dot(tgt_rotmat1)
     gm.gen_frame(pos=tgt_pos, rotmat=tgt_rotmat).attach_to(base)
     tic = time.time()
-    # jnt_values = robot_s.ik(hnd_name, tgt_pos, tgt_rotmat, seed_jnt_values=np.array([.0,.0,.0,.0,.0,.0,.0]))
+    # joint_values = robot_s.ik(hnd_name, tgt_pos, tgt_rotmat, seed_joint_values=np.array([.0,.0,.0,.0,.0,.0,.0]))
     jnt_values = yumi_s.ik(manipulator_name, tgt_pos, tgt_rotmat)
     # jnt_values1 = robot_s.ik(hnd_name, tgt_pos1, tgt_rotmat1)
     # jnt_values2 = robot_s.ik(hnd_name, tgt_pos2, tgt_rotmat2)
@@ -30,15 +30,15 @@ if __name__ == "__main__":
     toc = time.time()
     print(toc - tic)
     yumi_s.fk(manipulator_name, jnt_values)
-    # yumi_meshmodel = robot_s.gen_meshmodel(toggle_tcpcs=True, rgba=[.3, .3, .3, .3])
+    # yumi_meshmodel = robot_s.gen_meshmodel(toggle_tcp_frame=True, rgba=[.3, .3, .3, .3])
     yumi_meshmodel = yumi_s.gen_meshmodel(toggle_tcpcs=True, rgba=[1, .3, .3, .3])
     yumi_meshmodel.attach_to(base)
     yumi_s.fk(manipulator_name, jnt_values1)
-    # yumi_meshmodel = robot_s.gen_meshmodel(toggle_tcpcs=True, rgba=[.3, .3, .3, .3])
+    # yumi_meshmodel = robot_s.gen_meshmodel(toggle_tcp_frame=True, rgba=[.3, .3, .3, .3])
     yumi_meshmodel = yumi_s.gen_meshmodel(toggle_tcpcs=True, rgba=[.3, 1, .3, .3])
     yumi_meshmodel.attach_to(base)
     yumi_s.fk(manipulator_name, jnt_values2)
-    # yumi_meshmodel = robot_s.gen_meshmodel(toggle_tcpcs=True, rgba=[.3, .3, .3, .3])
+    # yumi_meshmodel = robot_s.gen_meshmodel(toggle_tcp_frame=True, rgba=[.3, .3, .3, .3])
     yumi_meshmodel = yumi_s.gen_meshmodel(toggle_tcpcs=True)
     yumi_meshmodel.attach_to(base)
     yumi_s.gen_stickmodel().attach_to(base)

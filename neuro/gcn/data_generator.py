@@ -27,7 +27,7 @@ import robot_sim.robots.cobotta.cobotta as cbt
 # for c in result:
 #     cnter = cnter + 1
 #     print(cnter, "/", n_total, ",", cnter / n_total)
-#     rbt_s.fk(jnt_values=np.asarray(c))
+#     rbt_s.fk(joint_values=np.asarray(c))
 #     tcp_gl_pos, tcp_gl_rotmat = rbt_s.get_gl_tcp()
 #     print(tcp_gl_pos, rm.quaternion_from_matrix(tcp_gl_rotmat))
 #
@@ -37,10 +37,10 @@ def gen_data(rbt_s,
              component_name='arm',
              granularity=[np.radians(4), np.radians(4), np.radians(6), np.radians(12), np.radians(12), np.radians(30)],
              save_name='cobotta_ik.csv'):
-    n_jnts = rbt_s.manipulator_dict[component_name].ndof
+    n_jnts = rbt_s.manipulator_dict[component_name].n_dof
     all_ranges = []
     for jnt_id in range(1, n_jnts + 1):
-        r0, r1 = rbt_s.manipulator_dict[component_name].jnts[jnt_id]['motion_rng']
+        r0, r1 = rbt_s.manipulator_dict[component_name].joints[jnt_id]['motion_rng']
         all_ranges.append(np.arange(r0, r1, granularity[jnt_id - 1]))
         # print(granularity, all_ranges[-1])
     all_data = itertools.product(*all_ranges)
@@ -52,7 +52,7 @@ def gen_data(rbt_s,
     in_data_npy = np.empty((0, 6))
     for i, data in enumerate(all_data):
         print(i, n_data, i/n_data)
-        rbt_s.fk(component_name=component_name, jnt_values=np.array(data))
+        rbt_s.fk(component_name=component_name, joint_values=np.array(data))
         xyz, rotmat = rbt_s.get_gl_tcp(manipulator_name=component_name)
         # qt = rm.quaternion_from_matrix(rotmat)
         in_data = np.asarray(xyz.tolist()+rm.rotmat_to_euler(rotmat).tolist())
@@ -64,7 +64,7 @@ def gen_data(rbt_s,
         out_data = data
         data_set_tcp.append(in_data)
         data_set_jnts.append(out_data)
-    # df = pd.DataFrame(data_set, columns=['xyzrpy', 'jnt_values'])
+    # df = pd.DataFrame(data_set, columns=['xyzrpy', 'joint_values'])
     # df.to_csv(save_name)
     # np.save(save_name + "_min_max", np.array([np.min(in_data_npy, 0), np.max(in_data_npy, 0)]))
     np.save(save_name+"_tcp", np.array(data_set_tcp))

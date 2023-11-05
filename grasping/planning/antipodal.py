@@ -19,7 +19,7 @@ def plan_contact_pairs(objcm,
     author: weiwei
     date: 20190805, 20210504
     """
-    contact_points, contact_normals = objcm.sample_surface(nsample=max_samples,
+    contact_points, contact_normals = objcm.sample_surface(n_samples=max_samples,
                                                            radius=min_dist_between_sampled_contact_points / 2,
                                                            toggle_option='normals')
     contact_pairs = []
@@ -123,7 +123,7 @@ if __name__ == '__main__':
     objpath = os.path.join(basis.__path__[0], 'objects', 'block.stl')
     objcm = cm.CollisionModel(objpath)
     objcm.attach_to(base)
-    objcm.show_localframe()
+    objcm.show_local_frame()
     grasp_info_list = plan_grasps(gripper_s, objcm, min_dist_between_sampled_contact_points=.02)
     for grasp_info in grasp_info_list:
         jaw_width, gl_jaw_center_pos, gl_jaw_center_rotmat, hnd_pos, hnd_rotmat = grasp_info
@@ -131,5 +131,5 @@ if __name__ == '__main__':
         gic.fix_to(hnd_pos, hnd_rotmat)
         gic.jaw_to(jaw_width)
         print(hnd_pos, hnd_rotmat)
-        gic.gen_meshmodel().attach_to(base)
+        gic.gen_mesh_model().attach_to(base)
     base.run()

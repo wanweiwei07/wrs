@@ -37,7 +37,7 @@ def face_adjacency(faces, return_edges=False):
     adjacency: (m,2) int, indexes of faces that are adjacent
     
     if return_edges: 
-         edges: (m,2) int, indexes of vertices which make up the 
+         edges: (m,2) int, indexes of vertices which make up the
                  edges shared by the adjacent faces
 
     Example
@@ -143,19 +143,11 @@ def connected_edges(G, nodes):
 
 
 def facets(mesh):
-    '''
-    Find the list of parallel adjacent faces.
-    
-    Arguments
-    ---------
-    mesh:  Trimesh
-    
-    Returns
-    ---------
-    facets: list of groups of face indexes (in mesh.faces) of parallel 
-            adjacent faces. 
-    '''
-
+    """
+    Find the list of coplanar and adjacent faces.
+    :param mesh: Trimesh
+    :return: nx[face indices list]
+    """
     def facets_nx():
         graph_parallel = nx.from_edgelist(face_idx[parallel])
         facets_idx = np.array([list(i) for i in nx.connected_components(graph_parallel)])
@@ -177,20 +169,17 @@ def facets(mesh):
 
     # (n,2) list of adjacent face indices
     face_idx = mesh.face_adjacency
-
     # test adjacent faces for angle
     normal_pairs = mesh.face_normals[tuple([face_idx])]
     normal_dot = (np.sum(normal_pairs[:, 0, :] * normal_pairs[:, 1, :], axis=1) - 1) ** 2
-
     # if normals are actually equal, they are parallel with a high degree of confidence
     parallel = normal_dot < tol.zero
     non_parallel = np.logical_not(parallel)
-
     # saying that two faces are *not* parallel is susceptible to error
-    # so we add a radius check which computes the distance between face
+    # so we add a major_radius check which computes the distance between face
     # centroids and divides it by the dot product of the normals
     # this means that small angles between big faces will have a large
-    # radius which we can filter out easily.
+    # major_radius which we can filter out easily.
     # if you don't do this, floating point error on tiny faces can push
     # the normals past a pure angle threshold even though the actual 
     # deviation across the face is extremely small. 
@@ -199,7 +188,6 @@ def facets(mesh):
                                axis=1).reshape((-1, 3)) ** 2, axis=1)
     radius_sq = center_sq[non_parallel] / normal_dot[non_parallel]
     parallel[non_parallel] = radius_sq > tol.facet_rsq
-
     #### commented by weiwei, always use graph-nx
     # graph-tool is ~6x faster than networkx but is more difficult to install
     # if _has_gt: return facets_gt()
@@ -306,10 +294,10 @@ def facets_over_segmentation(mesh, faceangle=.9, segangle=.9):
     #             vert0 = mesh.vertices[vertxid[0]]
     #             vert1 = mesh.vertices[vertxid[1]]
     #             vert2 = mesh.vertices[vertxid[2]]
-    #             verts = np.array([vert0, vert1, vert2])
+    #             vertices = np.array([vert0, vert1, vert2])
     #             normals = mesh.face_normals[j].reshape(1,3)
     #             triangles = np.array([[0, 1, 2]])
-    #             geom = pandageom.packpandageom(verts, normals, triangles)
+    #             geom = pandageom.packpandageom(vertices, normals, triangles)
     #             node = GeomNode('piece')
     #             node.addGeom(geom)
     #             star = NodePath('piece')
@@ -351,13 +339,13 @@ def facets_over_segmentation(mesh, faceangle=.9, segangle=.9):
     # plot using panda3d
     #     for j in adjidlist:
     #         vertxid = mesh.faces[j, :]
-    #         vert0 = mesh.vertices[vertxid[0]]+.012*i*facetnormal
-    #         vert1 = mesh.vertices[vertxid[1]]+.012*i*facetnormal
-    #         vert2 = mesh.vertices[vertxid[2]]+.012*i*facetnormal
-    #         verts = np.array([vert0, vert1, vert2])
+    #         vert0 = mesh.vertices[vertxid[0]]+.012*i*facet_normal
+    #         vert1 = mesh.vertices[vertxid[1]]+.012*i*facet_normal
+    #         vert2 = mesh.vertices[vertxid[2]]+.012*i*facet_normal
+    #         vertices = np.array([vert0, vert1, vert2])
     #         normals = mesh.face_normals[j].reshape(1,3)
     #         triangles = np.array([[0, 1, 2]])
-    #         geom = pandageom.packpandageom(verts, normals, triangles)
+    #         geom = pandageom.packpandageom(vertices, normals, triangles)
     #         node = GeomNode('piece')
     #         node.addGeom(geom)
     #         star = NodePath('piece')
@@ -373,8 +361,8 @@ def facets_over_segmentation(mesh, faceangle=.9, segangle=.9):
     #     vert0 = mesh.vertices[vertxid[0]]
     #     vert1 = mesh.vertices[vertxid[1]]
     #     vert2 = mesh.vertices[vertxid[2]]
-    #     verts = [[vert0, vert1, vert2]]
-    #     tri = Poly3DCollection(verts)
+    #     vertices = [[vert0, vert1, vert2]]
+    #     tri = Poly3DCollection(vertices)
     #     tri.set_color([rndcolor])
     #     ax.add_collection3d(tri)
     # plt.show()

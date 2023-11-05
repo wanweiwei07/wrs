@@ -3,10 +3,10 @@ import math
 import numpy as np
 import modeling.collision_model as cm
 import modeling.model_collection as mc
-import robot_sim._kinematics.jlchain as jl
+import robot_sim.kinematics.jlchain as jl
 import robot_sim.manipulators.ur5e.ur5e as rbt
 import robot_sim.end_effectors.gripper.robotiq140.robotiq140 as hnd
-import robot_sim.robots.robot_interface as ri
+import robot_sim.robots.system_interface as ri
 from panda3d.core import CollisionNode, CollisionBox, Point3
 
 
@@ -18,15 +18,15 @@ class UR5EConveyorBelt(ri.RobotInterface):
         # base plate
         self.base_stand = jl.JLChain(pos=pos,
                                      rotmat=rotmat,
-                                     homeconf=np.zeros(3),
+                                     home_conf=np.zeros(3),
                                      name='base_stand')
-        self.base_stand.jnts[1]['loc_pos'] = np.array([.9, -1.5, -0.06])
-        self.base_stand.jnts[2]['loc_pos'] = np.array([0, 1.23, 0])
-        self.base_stand.jnts[3]['loc_pos'] = np.array([0, 0, 0])
-        self.base_stand.jnts[4]['loc_pos'] = np.array([-.9, .27, 0.06])
+        self.base_stand.joints[1]['pos_in_loc_tcp'] = np.array([.9, -1.5, -0.06])
+        self.base_stand.joints[2]['pos_in_loc_tcp'] = np.array([0, 1.23, 0])
+        self.base_stand.joints[3]['pos_in_loc_tcp'] = np.array([0, 0, 0])
+        self.base_stand.joints[4]['pos_in_loc_tcp'] = np.array([-.9, .27, 0.06])
         self.base_stand.lnks[0]['collision_model'] = cm.CollisionModel(
             os.path.join(this_dir, "meshes", "ur5e_base.stl"),
-            cdprimit_type="user_defined", expand_radius=.005,
+            cdprimitive_type="user_defined", expand_radius=.005,
             userdefined_cdprimitive_fn=self._base_combined_cdnp)
         self.base_stand.lnks[0]['rgba'] = [.35, .35, .35, 1]
         self.base_stand.lnks[1]['mesh_file'] = os.path.join(this_dir, "meshes", "conveyor.stl")
@@ -43,8 +43,8 @@ class UR5EConveyorBelt(ri.RobotInterface):
         arm_homeconf[2] = math.pi / 3
         arm_homeconf[3] = -math.pi / 2
         arm_homeconf[4] = -math.pi / 2
-        self.arm = rbt.UR5E(pos=self.base_stand.jnts[-1]['gl_posq'],
-                            rotmat=self.base_stand.jnts[-1]['gl_rotmatq'],
+        self.arm = rbt.UR5E(pos=self.base_stand.joints[-1]['gl_posq'],
+                            rotmat=self.base_stand.joints[-1]['gl_rotmatq'],
                             homeconf=arm_homeconf,
                             name='arm', enable_cc=False)
         # gripper
@@ -52,7 +52,7 @@ class UR5EConveyorBelt(ri.RobotInterface):
                                   rotmat=self.arm.jnts[-1]['gl_rotmatq'],
                                   name='hnd_s', enable_cc=False)
         # tool center point
-        self.arm.jlc.tcp_jnt_id = -1
+        self.arm.jlc.tcp_joint_id = -1
         self.arm.jlc.tcp_loc_pos = self.hnd.jaw_center_pos
         self.arm.jlc.tcp_loc_rotmat = self.hnd.jaw_center_rotmat
         # a list of detailed information about objects in hand, see CollisionChecker.add_objinhnd
@@ -127,7 +127,7 @@ class UR5EConveyorBelt(ri.RobotInterface):
         self.pos = pos
         self.rotmat = rotmat
         self.base_stand.fix_to(pos=pos, rotmat=rotmat)
-        self.arm.fix_to(pos=self.base_stand.jnts[-1]['gl_posq'], rotmat=self.base_stand.jnts[-1]['gl_rotmatq'])
+        self.arm.fix_to(pos=self.base_stand.joints[-1]['gl_posq'], rotmat=self.base_stand.joints[-1]['gl_rotmatq'])
         self.hnd.fix_to(pos=self.arm.jnts[-1]['gl_posq'], rotmat=self.arm.jnts[-1]['gl_rotmatq'])
         # update objects in hand if available
         for obj_info in self.oih_infos:
@@ -151,10 +151,10 @@ class UR5EConveyorBelt(ri.RobotInterface):
                 obj_info['gl_rotmat'] = gl_rotmat
 
         def update_component(component_name, jnt_values):
-            status = self.manipulator_dict[component_name].fk(jnt_values=jnt_values)
+            status = self.manipulator_dict[component_name].fk(joint_values=jnt_values)
             self.hnd_dict[component_name].fix_to(
-                pos=self.manipulator_dict[component_name].jnts[-1]['gl_posq'],
-                rotmat=self.manipulator_dict[component_name].jnts[-1]['gl_rotmatq'])
+                pos=self.manipulator_dict[component_name].joints[-1]['gl_posq'],
+                rotmat=self.manipulator_dict[component_name].joints[-1]['gl_rotmatq'])
             update_oih(component_name=component_name)
             return status
 
@@ -167,7 +167,7 @@ class UR5EConveyorBelt(ri.RobotInterface):
 
     def get_jnt_values(self, component_name):
         if component_name in self.manipulator_dict:
-            return self.manipulator_dict[component_name].get_jnt_values()
+            return self.manipulator_dict[component_name].get_joint_values()
         else:
             raise ValueError("The given component name is not supported!")
 
@@ -260,11 +260,11 @@ class UR5EConveyorBelt(ri.RobotInterface):
                       rgba=None,
                       name='xarm_shuidi_mobile_meshmodel'):
         meshmodel = mc.ModelCollection(name=name)
-        self.base_stand.gen_meshmodel(tcp_jnt_id=tcp_jnt_id,
-                                      tcp_loc_pos=tcp_loc_pos,
-                                      tcp_loc_rotmat=tcp_loc_rotmat,
-                                      toggle_tcpcs=False,
-                                      toggle_jntscs=toggle_jntscs).attach_to(meshmodel)
+        self.base_stand.gen_mesh_model(tcp_jnt_id=tcp_jnt_id,
+                                       tcp_loc_pos=tcp_loc_pos,
+                                       tcp_loc_rotmat=tcp_loc_rotmat,
+                                       toggle_tcpcs=False,
+                                       toggle_jntscs=toggle_jntscs).attach_to(meshmodel)
         self.arm.gen_meshmodel(tcp_jnt_id=tcp_jnt_id,
                                tcp_loc_pos=tcp_loc_pos,
                                tcp_loc_rotmat=tcp_loc_rotmat,

@@ -3,10 +3,10 @@ import math
 import numpy as np
 import modeling.collision_model as cm
 import modeling.model_collection as mc
-import robot_sim._kinematics.jlchain as jl
+import robot_sim.kinematics.jlchain as jl
 import robot_sim.manipulators.cobotta_arm.cobotta_arm as cbta
 import robot_sim.end_effectors.gripper.cobotta_gripper.cobotta_gripper as cbtg
-import robot_sim.robots.robot_interface as ri
+import robot_sim.robots.system_interface as ri
 
 
 class Cobotta(ri.RobotInterface):
@@ -17,9 +17,9 @@ class Cobotta(ri.RobotInterface):
         # base plate
         self.base_plate = jl.JLChain(pos=pos,
                                      rotmat=rotmat,
-                                     homeconf=np.zeros(0),
+                                     home_conf=np.zeros(0),
                                      name='base_plate')
-        self.base_plate.jnts[1]['loc_pos'] = np.array([0, 0, 0.035])
+        self.base_plate.joints[1]['pos_in_loc_tcp'] = np.array([0, 0, 0.035])
         self.base_plate.lnks[0]['mesh_file'] = os.path.join(this_dir, "meshes", "base_plate.stl")
         self.base_plate.lnks[0]['rgba'] = [.35,.35,.35,1]
         self.base_plate.reinitialize()
@@ -28,8 +28,8 @@ class Cobotta(ri.RobotInterface):
         arm_homeconf[1] = -math.pi / 6
         arm_homeconf[2] = math.pi / 2
         arm_homeconf[4] = math.pi / 6
-        self.arm = cbta.CobottaArm(pos=self.base_plate.jnts[-1]['gl_posq'],
-                                   rotmat=self.base_plate.jnts[-1]['gl_rotmatq'],
+        self.arm = cbta.CobottaArm(pos=self.base_plate.joints[-1]['gl_posq'],
+                                   rotmat=self.base_plate.joints[-1]['gl_rotmatq'],
                                    homeconf=arm_homeconf,
                                    name='arm', enable_cc=False)
         # gripper
@@ -37,7 +37,7 @@ class Cobotta(ri.RobotInterface):
                                        rotmat=self.arm.jnts[-1]['gl_rotmatq'],
                                        name='hnd_s', enable_cc=False)
         # tool center point
-        self.arm.jlc.tcp_jnt_id = -1
+        self.arm.jlc.tcp_joint_id = -1
         self.arm.jlc.tcp_loc_pos = self.hnd.jaw_center_pos
         self.arm.jlc.tcp_loc_rotmat = self.hnd.jaw_center_rotmat
         # a list of detailed information about objects in hand, see CollisionChecker.add_objinhnd
@@ -89,7 +89,7 @@ class Cobotta(ri.RobotInterface):
         self.pos = pos
         self.rotmat = rotmat
         self.base_plate.fix_to(pos=pos, rotmat=rotmat)
-        self.arm.fix_to(pos=self.base_plate.jnts[-1]['gl_posq'], rotmat=self.base_plate.jnts[-1]['gl_rotmatq'])
+        self.arm.fix_to(pos=self.base_plate.joints[-1]['gl_posq'], rotmat=self.base_plate.joints[-1]['gl_rotmatq'])
         self.hnd.fix_to(pos=self.arm.jnts[-1]['gl_posq'], rotmat=self.arm.jnts[-1]['gl_rotmatq'])
         # update objects in hand if available
         for obj_info in self.oih_infos:
@@ -113,10 +113,10 @@ class Cobotta(ri.RobotInterface):
                 obj_info['gl_rotmat'] = gl_rotmat
 
         def update_component(component_name, jnt_values):
-            status = self.manipulator_dict[component_name].fk(jnt_values=jnt_values)
+            status = self.manipulator_dict[component_name].fk(joint_values=jnt_values)
             self.hnd_dict[component_name].fix_to(
-                pos=self.manipulator_dict[component_name].jnts[-1]['gl_posq'],
-                rotmat=self.manipulator_dict[component_name].jnts[-1]['gl_rotmatq'])
+                pos=self.manipulator_dict[component_name].joints[-1]['gl_posq'],
+                rotmat=self.manipulator_dict[component_name].joints[-1]['gl_rotmatq'])
             update_oih(component_name=component_name)
             return status
 
@@ -129,7 +129,7 @@ class Cobotta(ri.RobotInterface):
 
     def get_jnt_values(self, component_name):
         if component_name in self.manipulator_dict:
-            return self.manipulator_dict[component_name].get_jnt_values()
+            return self.manipulator_dict[component_name].get_joint_values()
         else:
             raise ValueError("The given component name is not supported!")
 
@@ -225,11 +225,11 @@ class Cobotta(ri.RobotInterface):
                       rgba=None,
                       name='cobotta_meshmodel'):
         meshmodel = mc.ModelCollection(name=name)
-        self.base_plate.gen_meshmodel(tcp_jnt_id=tcp_jnt_id,
-                                      tcp_loc_pos=tcp_loc_pos,
-                                      tcp_loc_rotmat=tcp_loc_rotmat,
-                                      toggle_tcpcs=False,
-                                      toggle_jntscs=toggle_jntscs).attach_to(meshmodel)
+        self.base_plate.gen_mesh_model(tcp_jnt_id=tcp_jnt_id,
+                                       tcp_loc_pos=tcp_loc_pos,
+                                       tcp_loc_rotmat=tcp_loc_rotmat,
+                                       toggle_tcpcs=False,
+                                       toggle_jntscs=toggle_jntscs).attach_to(meshmodel)
         self.arm.gen_meshmodel(tcp_jnt_id=tcp_jnt_id,
                                tcp_loc_pos=tcp_loc_pos,
                                tcp_loc_rotmat=tcp_loc_rotmat,
@@ -258,8 +258,8 @@ if __name__ == '__main__':
     gm.gen_frame().attach_to(base)
     robot_s = Cobotta(enable_cc=True)
     robot_s.jaw_to(.02)
-    # robot_s.gen_meshmodel(toggle_tcpcs=True, toggle_jntscs=True).attach_to(base)
-    # robot_s.gen_meshmodel(toggle_tcpcs=False, toggle_jntscs=False).attach_to(base)
+    # robot_s.gen_meshmodel(toggle_tcp_frame=True, toggle_joint_frame=True).attach_to(base)
+    # robot_s.gen_meshmodel(toggle_tcp_frame=False, toggle_joint_frame=False).attach_to(base)
     robot_s.gen_stickmodel(toggle_tcpcs=True, toggle_jntscs=True).attach_to(base)
     base.run()
     tgt_pos = np.array([.25, .2, .15])

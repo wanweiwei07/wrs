@@ -134,7 +134,7 @@ class Base(Events):
             axis = kwargs.get('axis', self._arm_axis)
             if axis in [5, 6, 7]:
                 self._arm_axis = axis
-            arm_type = kwargs.get('type', self._arm_type)
+            arm_type = kwargs.get('end_type', self._arm_type)
             if arm_type in [3, 5, 6, 7, 8, 11]:
                 self._arm_type = arm_type
             self._arm_master_id = 0
@@ -1063,7 +1063,7 @@ class Base(Events):
         }, name='temperature_changed')
 
     def _report_count_changed_callback(self):
-        self.__report_callback(self.REPORT_COUNT_CHANGED_ID, {'count': self._count}, name='count_changed')
+        self.__report_callback(self.REPORT_COUNT_CHANGED_ID, {'n_sec_minor': self._count}, name='count_changed')
 
     def _report_iden_progress_changed_callback(self):
         self.__report_callback(self.REPORT_IDEN_PROGRESS_CHANGED_ID, {'progress': self._iden_progress}, name='iden_progress_changed')
@@ -1181,7 +1181,7 @@ class Base(Events):
             interval = report_time - self._last_report_time
             self._max_report_interval = max(self._max_report_interval, interval)
             self._last_report_time = report_time
-            # print('length:', convert.bytes_to_u32(rx_data[0:4]))
+            # print('axis_length:', convert.bytes_to_u32(rx_data[0:4]))
             state, mtbrake, mtable, error_code, warn_code = rx_data[4:9]
             angles = convert.bytes_to_fp32s(rx_data[9:7 * 4 + 9], 7)
             pose = convert.bytes_to_fp32s(rx_data[37:6 * 4 + 37], 6)
@@ -1414,7 +1414,7 @@ class Base(Events):
             interval = report_time - self._last_report_time
             self._max_report_interval = max(self._max_report_interval, interval)
             self._last_report_time = report_time
-            # print('length:', convert.bytes_to_u32(rx_data[0:4]), len(rx_data))
+            # print('axis_length:', convert.bytes_to_u32(rx_data[0:4]), len(rx_data))
             state, mode = rx_data[4] & 0x0F, rx_data[4] >> 4
             # if state != self._state or mode != self._mode:
             #     print('mode: {}, state={}, time={}'.format(mode, state, time.monotonic()))
@@ -1436,7 +1436,7 @@ class Base(Events):
             if (length != data_len and (length != 233 or data_len != 245)) or collis_sens not in list(range(6)) or teach_sens not in list(range(6)) \
                 or mode not in list(range(12)) or state not in list(range(10)):
                 self._stream_report.close()
-                logger.warn('ReportDataException: length={}, data_len={}, '
+                logger.warn('ReportDataException: axis_length={}, data_len={}, '
                             'state={}, mode={}, collis_sens={}, teach_sens={}, '
                             'error_code={}, warn_code={}'.format(
                     length, data_len,
@@ -1646,7 +1646,7 @@ class Base(Events):
 
             self._first_report_over = True
 
-            # length = convert.bytes_to_u32(rx_data[0:4])
+            # axis_length = convert.bytes_to_u32(rx_data[0:4])
             length = len(rx_data)
             if length >= 252:
                 temperatures = list(map(int, rx_data[245:252]))
@@ -1660,7 +1660,7 @@ class Base(Events):
                 # print(speeds[0], speeds[1:])
             if length >= 288:
                 count = convert.bytes_to_u32(rx_data[284:288])
-                # print(count, rx_data[284:288])
+                # print(n_sec_minor, rx_data[284:288])
                 if self._count != -1 and count != self._count:
                     self._count = count
                     self._report_count_changed_callback()
@@ -2223,7 +2223,7 @@ class Base(Events):
                     else:
                         count = 0
                 #     return 0
-                # if count % 4 == 0:
+                # if n_sec_minor % 4 == 0:
                 #     self.get_state()
                 #     self.get_err_warn_code()
             else:

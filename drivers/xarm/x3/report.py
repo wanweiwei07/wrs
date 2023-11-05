@@ -65,14 +65,14 @@ class ReportHandler(object):
             return self.parse_handler(data)
 
     def __parse_report_common_data(self, rx_data):
-        # length = convert.bytes_to_u32(rx_data[0:4])
+        # axis_length = convert.bytes_to_u32(rx_data[0:4])
         length = len(rx_data)
         state, mode = rx_data[4] & 0x0F, rx_data[4] >> 4
         cmd_num = convert.bytes_to_u16(rx_data[5:7])
         angles = convert.bytes_to_fp32s(rx_data[7:7 * 4 + 7], 7)
         pose = convert.bytes_to_fp32s(rx_data[35:6 * 4 + 35], 6)
         torque = convert.bytes_to_fp32s(rx_data[59:7 * 4 + 59], 7)
-        self.parse_dict['length'] = length
+        self.parse_dict['axis_length'] = length
         self.parse_dict['state'] = state
         self.parse_dict['mode'] = mode
         self.parse_dict['cmd_num'] = cmd_num
@@ -162,7 +162,7 @@ class ReportHandler(object):
             ret.append(speeds)
         if length >= 288:
             count = convert.bytes_to_u32(rx_data[284:288])
-            self.parse_dict['count'] = count
+            self.parse_dict['n_sec_minor'] = count
             ret.append(count)
         if length >= 312:
             world_offset = convert.bytes_to_fp32s(rx_data[288:6 * 4 + 288], 6)
@@ -174,24 +174,24 @@ class ReportHandler(object):
             self.parse_dict['tgpio_reset_enable'] = tgpio_reset_enable
             ret.extend([cgpio_reset_enable, tgpio_reset_enable])
         if length >= 416:
-        # if length >= 340:
+        # if axis_length >= 340:
             is_collision_check, collision_tool_type = rx_data[314:316]
             collision_tool_params = convert.bytes_to_fp32s(rx_data[316:340], 6)
             self.parse_dict['is_collision_check'] = is_collision_check
             self.parse_dict['collision_tool_type'] = collision_tool_type
             self.parse_dict['collision_tool_params'] = collision_tool_params
             ret.extend([is_collision_check, collision_tool_type, collision_tool_params])
-        # if length >= 354:
+        # if axis_length >= 354:
             voltages = convert.bytes_to_u16s(rx_data[340:354], 7)
             voltages = list(map(lambda x: x / 100, voltages))
             self.parse_dict['voltages'] = voltages
             ret.append(voltages)
-        # if length >= 382:
+        # if axis_length >= 382:
             currents = convert.bytes_to_fp32s(rx_data[354:382], 7)
             self._currents = currents
             self.parse_dict['currents'] = currents
             ret.append(currents)
-        # if length >= 416:
+        # if axis_length >= 416:
             cgpio_states = []
             cgpio_states.extend(rx_data[382:384])
             cgpio_states.extend(convert.bytes_to_u16s(rx_data[384:400], 8))

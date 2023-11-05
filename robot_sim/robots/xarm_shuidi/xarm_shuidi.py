@@ -4,10 +4,10 @@ import numpy as np
 import basis.robot_math as rm
 import modeling.collision_model as cm
 import modeling.model_collection as mc
-import robot_sim._kinematics.jlchain as jl
+import robot_sim.kinematics.jlchain as jl
 import robot_sim.manipulators.xarm7.xarm7 as xa
 import robot_sim.end_effectors.gripper.xarm_gripper.xarm_gripper as xag
-import robot_sim.robots.robot_interface as ri
+import robot_sim.robots.system_interface as ri
 
 
 class XArmShuidi(ri.RobotInterface):
@@ -16,23 +16,23 @@ class XArmShuidi(ri.RobotInterface):
         super().__init__(pos=pos, rotmat=rotmat, name=name)
         this_dir, this_filename = os.path.split(__file__)
         # agv
-        self.agv = jl.JLChain(pos=pos, rotmat=rotmat, homeconf=np.zeros(5), name='agv')  # 1-3 x,y,theta; 4-5 dummy
-        self.agv.jnts[1]['loc_pos'] = np.zeros(3)
-        self.agv.jnts[1]['type'] = 'prismatic'
-        self.agv.jnts[1]['loc_motionax'] = np.array([1, 0, 0])
-        self.agv.jnts[1]['motion_rng'] = [0.0, 5.0]
-        self.agv.jnts[2]['loc_pos'] = np.zeros(3)
-        self.agv.jnts[2]['type'] = 'prismatic'
-        self.agv.jnts[2]['loc_motionax'] = np.array([0, 1, 0])
-        self.agv.jnts[2]['motion_rng'] = [-3.0, 3.0]
-        self.agv.jnts[3]['loc_pos'] = np.zeros(3)
-        self.agv.jnts[3]['loc_motionax'] = np.array([0, 0, 1])
-        self.agv.jnts[3]['motion_rng'] = [-math.pi, math.pi]
-        self.agv.jnts[4]['loc_pos'] = np.array([0, .0, .277])  # dummy
-        self.agv.jnts[5]['loc_pos'] = np.zeros(3)  # dummy
-        self.agv.jnts[6]['loc_pos'] = np.array([0, .0, .168862])
+        self.agv = jl.JLChain(pos=pos, rotmat=rotmat, home_conf=np.zeros(5), name='agv')  # 1-3 x,y,theta; 4-5 dummy
+        self.agv.joints[1]['pos_in_loc_tcp'] = np.zeros(3)
+        self.agv.joints[1]['end_type'] = 'prismatic'
+        self.agv.joints[1]['loc_motionax'] = np.array([1, 0, 0])
+        self.agv.joints[1]['motion_rng'] = [0.0, 5.0]
+        self.agv.joints[2]['pos_in_loc_tcp'] = np.zeros(3)
+        self.agv.joints[2]['end_type'] = 'prismatic'
+        self.agv.joints[2]['loc_motionax'] = np.array([0, 1, 0])
+        self.agv.joints[2]['motion_rng'] = [-3.0, 3.0]
+        self.agv.joints[3]['pos_in_loc_tcp'] = np.zeros(3)
+        self.agv.joints[3]['loc_motionax'] = np.array([0, 0, 1])
+        self.agv.joints[3]['motion_rng'] = [-math.pi, math.pi]
+        self.agv.joints[4]['pos_in_loc_tcp'] = np.array([0, .0, .277])  # dummy
+        self.agv.joints[5]['pos_in_loc_tcp'] = np.zeros(3)  # dummy
+        self.agv.joints[6]['pos_in_loc_tcp'] = np.array([0, .0, .168862])
         self.agv.lnks[3]['name'] = 'agv'
-        self.agv.lnks[3]['loc_pos'] = np.array([0, 0, 0])
+        self.agv.lnks[3]['pos_in_loc_tcp'] = np.array([0, 0, 0])
         self.agv.lnks[3]['mesh_file'] = os.path.join(this_dir, 'meshes', 'shuidi_agv.stl')
         self.agv.lnks[3]['rgba'] = [.7, .7, .7, 1.0]
         self.agv.lnks[4]['mesh_file'] = os.path.join(this_dir, 'meshes', 'battery.stl')
@@ -46,29 +46,29 @@ class XArmShuidi(ri.RobotInterface):
         arm_homeconf[1] = -math.pi / 3
         arm_homeconf[3] = math.pi / 12
         arm_homeconf[5] = -math.pi / 12
-        self.arm = xa.XArm7(pos=self.agv.jnts[-1]['gl_posq'],
-                            rotmat=self.agv.jnts[-1]['gl_rotmatq'],
+        self.arm = xa.XArm7(pos=self.agv.joints[-1]['gl_posq'],
+                            rotmat=self.agv.joints[-1]['gl_rotmatq'],
                             homeconf=arm_homeconf,
                             name='arm', enable_cc=False)
         # ft sensor
         self.ft_sensor = jl.JLChain(pos=self.arm.jnts[-1]['gl_posq'],
                                     rotmat=self.arm.jnts[-1]['gl_rotmatq'],
-                                    homeconf=np.zeros(0), name='ft_sensor_jl')
-        self.ft_sensor.jnts[1]['loc_pos'] = np.array([.0, .0, .065])
+                                    home_conf=np.zeros(0), name='ft_sensor_jl')
+        self.ft_sensor.joints[1]['pos_in_loc_tcp'] = np.array([.0, .0, .065])
         self.ft_sensor.lnks[0]['name'] = "xs_ftsensor"
-        self.ft_sensor.lnks[0]['loc_pos'] = np.array([0, 0, 0])
-        self.ft_sensor.lnks[0]['collision_model'] = cm.gen_stick(spos=self.ft_sensor.jnts[0]['loc_pos'],
-                                                                 epos=self.ft_sensor.jnts[1]['loc_pos'],
-                                                                 thickness=.075, rgba=[.2, .3, .3, 1], sections=24)
+        self.ft_sensor.lnks[0]['pos_in_loc_tcp'] = np.array([0, 0, 0])
+        self.ft_sensor.lnks[0]['collision_model'] = cm.gen_stick(spos=self.ft_sensor.joints[0]['pos_in_loc_tcp'],
+                                                                 epos=self.ft_sensor.joints[1]['pos_in_loc_tcp'],
+                                                                 radius=.075, rgba=[.2, .3, .3, 1], n_sec=24)
         self.ft_sensor.reinitialize()
         # gripper
-        self.hnd = xag.XArmGripper(pos=self.ft_sensor.jnts[-1]['gl_posq'],
-                                   rotmat=self.ft_sensor.jnts[-1]['gl_rotmatq'],
+        self.hnd = xag.XArmGripper(pos=self.ft_sensor.joints[-1]['gl_posq'],
+                                   rotmat=self.ft_sensor.joints[-1]['gl_rotmatq'],
                                    name='hnd_s', enable_cc=False)
         # tool center point
-        self.arm.jlc.tcp_jnt_id = -1
-        self.arm.jlc.tcp_loc_rotmat = self.ft_sensor.jnts[-1]['loc_rotmat'].dot(self.hnd.jaw_center_rotmat)
-        self.arm.jlc.tcp_loc_pos = self.ft_sensor.jnts[-1]['loc_pos'] + self.arm.jlc.tcp_loc_rotmat.dot(
+        self.arm.jlc.tcp_joint_id = -1
+        self.arm.jlc.tcp_loc_rotmat = self.ft_sensor.joints[-1]['gl_rotmat'].dot(self.hnd.jaw_center_rotmat)
+        self.arm.jlc.tcp_loc_pos = self.ft_sensor.joints[-1]['pos_in_loc_tcp'] + self.arm.jlc.tcp_loc_rotmat.dot(
             self.hnd.jaw_center_pos)
         # a list of detailed information about objects in hand, see CollisionChecker.add_objinhnd
         self.oih_infos = []
@@ -132,9 +132,9 @@ class XArmShuidi(ri.RobotInterface):
         self.pos = pos
         self.rotmat = rotmat
         self.agv.fix_to(self.pos, self.rotmat)
-        self.arm.fix_to(pos=self.agv.jnts[-1]['gl_posq'], rotmat=self.agv.jnts[-1]['gl_rotmatq'])
+        self.arm.fix_to(pos=self.agv.joints[-1]['gl_posq'], rotmat=self.agv.joints[-1]['gl_rotmatq'])
         self.ft_sensor.fix_to(pos=self.arm.jnts[-1]['gl_posq'], rotmat=self.arm.jnts[-1]['gl_rotmatq'])
-        self.hnd.fix_to(pos=self.ft_sensor.jnts[-1]['gl_posq'], rotmat=self.ft_sensor.jnts[-1]['gl_rotmatq'])
+        self.hnd.fix_to(pos=self.ft_sensor.joints[-1]['gl_posq'], rotmat=self.ft_sensor.joints[-1]['gl_rotmatq'])
         # update objects in hand if available
         for obj_info in self.oih_infos:
             gl_pos, gl_rotmat = self.arm.cvt_loc_tcp_to_gl(obj_info['rel_pos'], obj_info['rel_rotmat'])
@@ -157,13 +157,13 @@ class XArmShuidi(ri.RobotInterface):
                 obj_info['gl_rotmat'] = gl_rotmat
 
         def update_component(component_name, jnt_values):
-            status = self.manipulator_dict[component_name].fk(jnt_values=jnt_values)
-            self.ft_sensor_dict[component_name].fix_to(pos=self.manipulator_dict[component_name].jnts[-1]['gl_posq'],
-                                                       rotmat=self.manipulator_dict[component_name].jnts[-1][
+            status = self.manipulator_dict[component_name].fk(joint_values=jnt_values)
+            self.ft_sensor_dict[component_name].fix_to(pos=self.manipulator_dict[component_name].joints[-1]['gl_posq'],
+                                                       rotmat=self.manipulator_dict[component_name].joints[-1][
                                                            'gl_rotmatq'])
             self.hnd_dict[component_name].fix_to(
-                pos=self.ft_sensor_dict[component_name].jnts[-1]['gl_posq'],
-                rotmat=self.ft_sensor_dict[component_name].jnts[-1]['gl_rotmatq'])
+                pos=self.ft_sensor_dict[component_name].joints[-1]['gl_posq'],
+                rotmat=self.ft_sensor_dict[component_name].joints[-1]['gl_rotmatq'])
             update_oih(component_name=component_name)
             return status
 
@@ -175,9 +175,9 @@ class XArmShuidi(ri.RobotInterface):
             if not isinstance(jnt_values, np.ndarray) or jnt_values.size != 3:
                 raise ValueError("An 1x7 npdarray must be specified to move the agv!")
             status = self.agv.fk(jnt_values)
-            self.arm.fix_to(pos=self.agv.jnts[-1]['gl_posq'], rotmat=self.agv.jnts[-1]['gl_rotmatq'])
+            self.arm.fix_to(pos=self.agv.joints[-1]['gl_posq'], rotmat=self.agv.joints[-1]['gl_rotmatq'])
             self.ft_sensor.fix_to(pos=self.arm.jnts[-1]['gl_posq'], rotmat=self.arm.jnts[-1]['gl_rotmatq'])
-            self.hnd.fix_to(pos=self.ft_sensor.jnts[-1]['gl_posq'], rotmat=self.ft_sensor.jnts[-1]['gl_rotmatq'])
+            self.hnd.fix_to(pos=self.ft_sensor.joints[-1]['gl_posq'], rotmat=self.ft_sensor.joints[-1]['gl_rotmatq'])
             # update objects in hand
             for obj_info in self.oih_infos:
                 gl_pos, gl_rotmat = self.arm.cvt_loc_tcp_to_gl(obj_info['rel_pos'], obj_info['rel_rotmat'])
@@ -188,10 +188,10 @@ class XArmShuidi(ri.RobotInterface):
             if not isinstance(jnt_values, np.ndarray) or jnt_values.size != 10:
                 raise ValueError("An 1x10 npdarray must be specified to move both the agv and the arm!")
             status_agv = self.agv.fk(jnt_values)
-            status_arm = self.arm.fix_to(pos=self.agv.jnts[-1]['gl_posq'], rotmat=self.agv.jnts[-1]['gl_rotmatq'],
+            status_arm = self.arm.fix_to(pos=self.agv.joints[-1]['gl_posq'], rotmat=self.agv.joints[-1]['gl_rotmatq'],
                                          jnt_values=jnt_values[3:10])
             self.ft_sensor.fix_to(pos=self.arm.jnts[-1]['gl_posq'], rotmat=self.arm.jnts[-1]['gl_rotmatq'])
-            self.hnd.fix_to(pos=self.ft_sensor.jnts[-1]['gl_posq'], rotmat=self.ft_sensor.jnts[-1]['gl_rotmatq'])
+            self.hnd.fix_to(pos=self.ft_sensor.joints[-1]['gl_posq'], rotmat=self.ft_sensor.joints[-1]['gl_rotmatq'])
             # update objects in hand
             for obj_info in self.oih_infos:
                 gl_pos, gl_rotmat = self.arm.cvt_loc_tcp_to_gl(obj_info['rel_pos'], obj_info['rel_rotmat'])
@@ -202,11 +202,11 @@ class XArmShuidi(ri.RobotInterface):
             if not isinstance(jnt_values, np.ndarray) or jnt_values.size != 11:
                 raise ValueError("An 1x11 npdarray must be specified to move all joints!")
             status_agv = self.agv.fk(jnt_values)
-            status_arm = self.arm.fix_to(pos=self.agv.jnts[-1]['gl_posq'], rotmat=self.agv.jnts[-1]['gl_rotmatq'],
+            status_arm = self.arm.fix_to(pos=self.agv.joints[-1]['gl_posq'], rotmat=self.agv.joints[-1]['gl_rotmatq'],
                                          jnt_values=jnt_values[3:10])
             self.ft_sensor.fix_to(pos=self.arm.jnts[-1]['gl_posq'], rotmat=self.arm.jnts[-1]['gl_rotmatq'])
-            self.hnd.fix_to(pos=self.ft_sensor.jnts[-1]['gl_posq'],
-                            rotmat=self.ft_sensor.jnts[-1]['gl_rotmatq'],
+            self.hnd.fix_to(pos=self.ft_sensor.joints[-1]['gl_posq'],
+                            rotmat=self.ft_sensor.joints[-1]['gl_rotmatq'],
                             motion_val=jnt_values[10])
             # update objects in hand
             for obj_info in self.oih_infos:
@@ -217,17 +217,17 @@ class XArmShuidi(ri.RobotInterface):
 
     def get_jnt_values(self, component_name="arm"):
         if component_name in self.manipulator_dict:
-            return self.manipulator_dict[component_name].get_jnt_values()
+            return self.manipulator_dict[component_name].get_joint_values()
         elif component_name == 'agv':
-            return self.agv.get_jnt_values()
+            return self.agv.get_joint_values()
         elif component_name == 'agv_arm':
             return_val = np.zeros(10)
-            return_val[:3] = self.agv.get_jnt_values()
+            return_val[:3] = self.agv.get_joint_values()
             return_val[3:10] = self.arm.get_jnt_values()
             return return_val
         elif component_name == 'all':
             return_val = np.zeros(11)
-            return_val[:3] = self.agv.get_jnt_values()
+            return_val[:3] = self.agv.get_joint_values()
             return_val[3:10] = self.arm.get_jnt_values()[:]
             return_val[10] = self.hnd.get_jaw_width()
             return return_val
@@ -260,9 +260,9 @@ class XArmShuidi(ri.RobotInterface):
         return super().ik(component_name=component_name,
                           tgt_pos=tgt_pos,
                           tgt_rotmat=tgt_rotmat,
-                          seed_jnt_values=seed_jnt_values,
+                          seed_joint_values=seed_jnt_values,
                           max_niter=100,
-                          tcp_jnt_id=tcp_jnt_id,
+                          tcp_joint_id=tcp_jnt_id,
                           tcp_loc_pos=tcp_loc_pos,
                           tcp_loc_rotmat=tcp_loc_rotmat,
                           local_minima=local_minima,
@@ -370,22 +370,22 @@ class XArmShuidi(ri.RobotInterface):
                       rgba=None,
                       name='xarm_shuidi_mobile_meshmodel'):
         meshmodel = mc.ModelCollection(name=name)
-        self.agv.gen_meshmodel(tcp_loc_pos=None,
-                               tcp_loc_rotmat=None,
-                               toggle_tcpcs=False,
-                               toggle_jntscs=toggle_jntscs,
-                               rgba=rgba).attach_to(meshmodel)
+        self.agv.gen_mesh_model(tcp_loc_pos=None,
+                                tcp_loc_rotmat=None,
+                                toggle_tcpcs=False,
+                                toggle_jntscs=toggle_jntscs,
+                                rgba=rgba).attach_to(meshmodel)
         self.arm.gen_meshmodel(tcp_jnt_id=tcp_jnt_id,
                                tcp_loc_pos=tcp_loc_pos,
                                tcp_loc_rotmat=tcp_loc_rotmat,
                                toggle_tcpcs=toggle_tcpcs,
                                toggle_jntscs=toggle_jntscs,
                                rgba=rgba).attach_to(meshmodel)
-        self.ft_sensor.gen_meshmodel(tcp_loc_pos=tcp_loc_pos,
-                                     tcp_loc_rotmat=tcp_loc_rotmat,
-                                     toggle_tcpcs=False,
-                                     toggle_jntscs=toggle_jntscs,
-                                     rgba=rgba).attach_to(meshmodel)
+        self.ft_sensor.gen_mesh_model(tcp_loc_pos=tcp_loc_pos,
+                                      tcp_loc_rotmat=tcp_loc_rotmat,
+                                      toggle_tcpcs=False,
+                                      toggle_jntscs=toggle_jntscs,
+                                      rgba=rgba).attach_to(meshmodel)
         self.hnd.gen_meshmodel(tcp_loc_pos=None,
                                tcp_loc_rotmat=None,
                                toggle_tcpcs=False,
@@ -408,7 +408,7 @@ if __name__ == '__main__':
 
     gm.gen_frame().attach_to(base)
     xav = XArmShuidi(enable_cc=True)
-    # xav.fk(component_name='all', jnt_values=np.array([0, 0, 0, 0, 0, 0, math.pi, 0, math.pi / 6, 0, 0]))
+    # xav.fk(component_name='all', joint_values=np.array([0, 0, 0, 0, 0, 0, math.pi, 0, math.pi / 6, 0, 0]))
     xav.jaw_to(jawwidth=.08)
     xav_meshmodel = xav.gen_meshmodel(toggle_tcpcs=False)
     xav_meshmodel.attach_to(base)
@@ -424,7 +424,7 @@ if __name__ == '__main__':
                          max_niter=10000)
     print(jnt_values2)
     xav.fk(component_name='arm', jnt_values=jnt_values)
-    # xss.fk(component_name='agv', jnt_values=np.array([.2, -.5, math.radians(30)]))
+    # xss.fk(component_name='agv', joint_values=np.array([.2, -.5, math.radians(30)]))
     # xss.show_cdprimit()
     xav.gen_stickmodel().attach_to(base)
     tic = time.time()

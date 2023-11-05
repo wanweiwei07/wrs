@@ -52,7 +52,7 @@ def mesh_plane(mesh,
         # where the other vertex has a positive dot product (16) instead
         # of both on- edge cases ([6,16])
         # this is so that for regions that are co-planar with the the section plane
-        # we don't end up with an invalid boundary
+        # we don't end_type up with an invalid boundary
         key = np.zeros(29, dtype=np.bool)
         key[16] = True
         one_edge = key[coded]

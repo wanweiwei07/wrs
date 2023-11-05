@@ -7,6 +7,7 @@ import numpy as np
 import numpy.typing as npt
 from sklearn import cluster
 import basis.trimesh as trm
+import basis.constant as bc
 import matplotlib.pyplot as plt
 from scipy.spatial.transform import Slerp
 from scipy.spatial.transform import Rotation as R
@@ -27,9 +28,11 @@ _AXES2TUPLE = {
     'rzxz': (2, 0, 1, 1), 'rxyz': (2, 1, 0, 1), 'rzyz': (2, 1, 1, 1)}
 _TUPLE2AXES = dict((v, k) for k, v in _AXES2TUPLE.items())
 
+
 # helper
 def radians(degree_val):
     return np.radians(degree_val)
+
 
 ## rotmat
 def rotmat_from_axangle(axis, angle):
@@ -95,7 +98,7 @@ def rotmat_from_normal(surfacenormal):
 def rotmat_from_normalandpoints(facetnormal, facetfirstpoint, facetsecondpoint):
     '''
     Compute the rotation matrix of a 3D facet using
-    facetnormal and the first two points on the facet
+    facet_normal and the first two points on the facet
     The function uses the concepts defined by Trimesh
     :param facetnormal: 1x3 nparray
     :param facetfirstpoint: 1x3 nparray
@@ -191,17 +194,17 @@ def rotmat_slerp(rotmat0, rotmat1, nval):
 
 
 ## homogeneous matrix
-def homomat_from_posrot(pos=np.zeros(3), rot=np.eye(3)):
+def homomat_from_posrot(pos=np.zeros(3), rotmat=np.eye(3)):
     """
     build a 4x4 nparray homogeneous matrix
     :param pos: nparray 1x3
-    :param rot: nparray 3x3
+    :param rotmat: nparray 3x3
     :return:
     author: weiwei
     date: 20190313
     """
     homomat = np.eye(4, 4)
-    homomat[:3, :3] = rot
+    homomat[:3, :3] = rotmat
     homomat[:3, 3] = pos
     return homomat
 
@@ -210,7 +213,7 @@ def homomat_from_pos_axanglevec(pos=np.zeros(3), axangle=np.ones(3)):
     """
     build a 4x4 nparray homogeneous matrix
     :param pos: nparray 1x3
-    :param axanglevec: nparray 1x3, correspondent unit vector is rotation direction; length is radian rotation angle
+    :param axanglevec: nparray 1x3, correspondent unit vector is rotation direction; axis_length is radian rotation angle
     :return:
     author: weiwei
     date: 20200408
@@ -229,37 +232,16 @@ def homomat_inverse(homomat):
     date :20161213
     """
     rotmat = homomat[:3, :3]
-    tranvec = homomat[:3, 3]
-    invhomomat = np.eye(4, 4)
+    pos = homomat[:3, 3]
+    invhomomat = np.eye(4)
     invhomomat[:3, :3] = np.transpose(rotmat)
-    invhomomat[:3, 3] = -np.dot(np.transpose(rotmat), tranvec)
+    invhomomat[:3, 3] = -np.dot(np.transpose(rotmat), pos)
     return invhomomat
-
-
-def homomat_transform_points(homomat, points):
-    """
-    do homotransform on a point or an array of points using homomat
-    :param homomat:
-    :param points: 1x3 nparray or nx3 nparray
-    :return:
-    author: weiwei
-    date: 20161213
-    """
-    if isinstance(points, list):
-        points = np.asarray(points)
-    if points.ndim == 1:
-        homopoint = np.array([points[0], points[1], points[2], 1])
-        return np.dot(homomat, homopoint)[:3]
-    else:
-        homopcdnp = np.ones((4, points.shape[0]))
-        homopcdnp[:3, :] = points.T[:3, :]
-        transformed_pointarray = homomat.dot(homopcdnp).T
-        return transformed_pointarray[:, :3]
 
 
 def homomat_average(homomatlist, bandwidth=10):
     """
-    average a list of homomat (4x4)
+    average a list of pos (4x4)
     :param homomatlist:
     :param bandwidth:
     :param denoise:
@@ -268,7 +250,7 @@ def homomat_average(homomatlist, bandwidth=10):
     date: 20200109
     """
     homomatarray = np.asarray(homomatlist)
-    posavg = posvec_average(homomatarray[:, :3, 3], bandwidth)
+    posavg = pos_average(homomatarray[:, :3, 3], bandwidth)
     rotmatavg = rotmat_average(homomatarray[:, :3, :3], bandwidth)
     return homomat_from_posrot(posavg, rotmatavg)
 
@@ -288,6 +270,27 @@ def homomat_from_quaternion(quaternion):
         [q[1, 2] + q[3, 0], 1.0 - q[1, 1] - q[3, 3], q[2, 3] - q[1, 0], 0.0],
         [q[1, 3] - q[2, 0], q[2, 3] + q[1, 0], 1.0 - q[1, 1] - q[2, 2], 0.0],
         [0.0, 0.0, 0.0, 1.0]])
+
+
+def transform_points_by_homomat(homomat: np.ndarray, points: np.ndarray):
+    """
+    do homotransform on a point or an array of points using pos
+    :param homomat:
+    :param points: 1x3 nparray or nx3 nparray
+    :return:
+    author: weiwei
+    date: 20161213
+    """
+    if not isinstance(points, np.ndarray):
+        raise ValueError("Points must be np.ndarray!")
+    if points.ndim == 1:
+        homo_point = np.insert(points, 3, 1)
+        return np.dot(homomat, homo_point)[:3]
+    else:
+        homo_points = np.ones((4, points.shape[0]))
+        homo_points[:3, :] = points.T[:3, :]
+        transformed_points = np.dot(homomat, homo_points).T
+        return transformed_points[:, :3]
 
 
 def interplate_pos_rotmat(start_pos,
@@ -329,7 +332,7 @@ def interplate_pos_rotmat_around_circle(circle_center_pos,
     rotmat_list = rotmat_slerp(start_rotmat, end_rotmat, nval)
     pos_list = []
     for angle in np.linspace(0, np.pi * 2, nval).tolist():
-        pos_list.append(rotmat_from_axangle(circle_ax, angle).dot(vec * radius) + circle_center_pos)
+        pos_list.append(np.dot(rotmat_from_axangle(circle_ax, angle), vec * radius) + circle_center_pos)
     return pos_list, rotmat_list
 
 
@@ -409,26 +412,26 @@ def skew_symmetric(posvec):
                      [-posvec[1], posvec[0], 0]])
 
 
-def orthogonal_vector(basevec, toggle_unit=True):
+def orthogonal_vector(npvec3, toggle_unit=True):
     """
     given a vector np.array([a,b,c]),
     this function computes an orthogonal one using np.array([b-c, -a+c, a-c])
     and then make it unit
-    :param basevec: 1x3 nparray
+    :param npvec3: 1x3 nparray
     :return: a 1x3 unit nparray
     author: weiwei
     date: 20200528
     """
-    a = basevec[0]
-    b = basevec[1]
-    c = basevec[2]
+    a = npvec3[0]
+    b = npvec3[1]
+    c = npvec3[2]
     if toggle_unit:
         return unit_vector(np.array([b - c, -a + c, a - b]))
     else:
         return np.array([b - c, -a + c, a - b])
 
 
-def rel_pose(pos0, rot0, pos1, rot1):
+def rel_pose(pos0, rotmat0, pos1, rotmat1):
     """
     relpos of rot1, pos1 with respect to rot0 pos0
     :param rot0: 3x3 nparray
@@ -439,9 +442,9 @@ def rel_pose(pos0, rot0, pos1, rot1):
     author: weiwei
     date: 20180811
     """
-    relpos = np.dot(rot0.T, (pos1 - pos0))
-    relrot = np.dot(rot0.T, rot1)
-    return relpos, relrot
+    rel_pos = np.dot(rotmat0.T, (pos1 - pos0))
+    rel_rotmat = np.dot(rotmat0.T, rotmat1)
+    return (rel_pos, rel_rotmat)
 
 
 def regulate_angle(lowerbound, upperbound, jntangles):
@@ -504,7 +507,7 @@ def angle_between_vectors(v1, v2):
     return np.arccos(np.clip(np.dot(v1_u, v2_u), -1.0, 1.0))
 
 
-def angle_between_2d_vectors(v1, v2):
+def angle_between_2d_vecs(v1, v2):
     """
     return the angle from v1 to v2, with signs
     :param v1: 2d vector
@@ -516,30 +519,55 @@ def angle_between_2d_vectors(v1, v2):
     return math.atan2(v2[1] * v1[0] - v2[0] * v1[1], v2[0] * v1[0] + v2[1] * v1[1])
 
 
-def deltaw_between_rotmat(rotmati, rotmatj):
+def delta_w_between_rotmat(src_rotmat, tgt_rotmat):
     """
-    compute angle*ax from rotmati to rotmatj
-    rotmat_from_axangle(np.linalg.norm(deltaw), unit_vec(deltaw)).dot(rotmati) = rotmatj
-    :param rotmati: 3x3 nparray
-    :param rotmatj: 3x3 nparray
+    compute angle*ax from src_rotmat to tgt_rotmat
+    the following relation holds for the returned delta_w
+    rotmat_from_axangle(np.linalg.norm(deltaw), unit_vec(deltaw)).dot(src_rotmat) = tgt_rotmat
+    :param src_rotmat: 3x3 nparray
+    :param tgt_rotmat: 3x3 nparray
     :return:
     author: weiwei
     date: 20200326
     """
-    deltarot = np.dot(rotmatj, rotmati.T)
-    tempvec = np.array(
-        [deltarot[2, 1] - deltarot[1, 2], deltarot[0, 2] - deltarot[2, 0], deltarot[1, 0] - deltarot[0, 1]])
-    tempveclength = np.linalg.norm(tempvec)
-    if tempveclength > 1e-6:
-        deltaw = math.atan2(tempveclength, np.trace(deltarot) - 1.0) / tempveclength * tempvec
-    elif deltarot[0, 0] > 0 and deltarot[1, 1] > 0 and deltarot[2, 2] > 0:
-        deltaw = np.array([0, 0, 0])
+    delta_rotmat = tgt_rotmat @ src_rotmat.T
+    tmp_vec = np.array([delta_rotmat[2, 1] - delta_rotmat[1, 2],
+                        delta_rotmat[0, 2] - delta_rotmat[2, 0],
+                        delta_rotmat[1, 0] - delta_rotmat[0, 1]])
+    tmp_vec_norm = np.linalg.norm(tmp_vec)
+    if tmp_vec_norm > 1e-6:
+        delta_w = math.atan2(tmp_vec_norm, np.trace(delta_rotmat) - 1.0) / tmp_vec_norm * tmp_vec
+    elif delta_rotmat[0, 0] > 0 and delta_rotmat[1, 1] > 0 and delta_rotmat[2, 2] > 0:
+        delta_w = np.array([0, 0, 0])
     else:
-        deltaw = np.pi / 2 * (np.diag(deltarot) + 1)
-    return deltaw
+        delta_w = np.pi / 2 * (np.diag(delta_rotmat) + 1)
+    return delta_w
 
 
-def cosine_between_vector(v1, v2):
+def diff_between_posrot(src_pos,
+                        src_rotmat,
+                        tgt_pos,
+                        tgt_rotmat):
+    """
+    compute the error between the given tcp and tgt_tcp
+    :param src_pos:
+    :param src_rotmat
+    :param tgt_pos: the position vector of the goal (could be a single value or a list of jntid)
+    :param tgt_rotmat: the rotation matrix of the goal (could be a single value or a list of jntid)
+    :return: a 1x6 nparray where the first three indicates the displacement in pos,
+                the second three indictes the displacement in rotmat
+    author: weiwei
+    date: 20230929
+    """
+    delta = np.zeros(6)
+    delta[0:3] = (tgt_pos - src_pos)
+    delta[3:6] = delta_w_between_rotmat(src_rotmat, tgt_rotmat)
+    pos_err = np.linalg.norm(delta[:3])
+    rot_err = np.linalg.norm(delta[3:6])
+    return pos_err, rot_err, delta
+
+
+def cosine_between_vecs(v1, v2):
     l1, v1_u = unit_vector(v1, toggle_length=True)
     l2, v2_u = unit_vector(v2, toggle_length=True)
     if l1 == 0 or l2 == 0:
@@ -548,7 +576,7 @@ def cosine_between_vector(v1, v2):
 
 
 def axangle_between_rotmat(rotmati, rotmatj):
-    deltaw = deltaw_between_rotmat(rotmati, rotmatj)
+    deltaw = delta_w_between_rotmat(rotmati, rotmatj)
     angle = np.linalg.norm(deltaw)
     ax = deltaw / angle if isinstance(deltaw, np.ndarray) else None
     return ax, angle
@@ -574,23 +602,23 @@ def quaternion_to_axangle(quaternion):
     return angle, axis
 
 
-def posvec_average(posveclist, bandwidth=10):
+def pos_average(pos_list, bandwidth=10):
     """
     average a list of posvec (1x3)
-    :param posveclist:
+    :param pos_list:
     :param denoise: meanshift denoising is applied if True
     :return:
     author: weiwei
     date: 20190422
     """
-    if len(posveclist) == 0:
+    if len(pos_list) == 0:
         return False
     if bandwidth is not None:
         mt = cluster.MeanShift(bandwidth=bandwidth)
-        posvecavg = mt.fit(posveclist).cluster_centers_[0]
-        return posvecavg
+        pos_avg = mt.fit(pos_list).cluster_centers_[0]
+        return pos_avg
     else:
-        return np.array(posveclist).mean(axis=0)
+        return np.array(pos_list).mean(axis=0)
 
 
 def gen_icorotmats(icolevel=1,
@@ -637,7 +665,7 @@ def gen_icohomomats(icolevel=1,
     generate homomats using icospheres and rotationaangle each origin-vertex vector of the icosphere
     :param icolevel, the default value 1 = 42vertices
     :param rot_angles, 8 directions by default
-    :return: [[homomat, ...], ...] size of the inner list is size of the angles
+    :return: [[pos, ...], ...] size of the inner list is size of the angles
     author: weiwei
     date: 20200701osaka
     """
@@ -765,7 +793,7 @@ def get_aabb(pointsarray):
 def compute_pca(nparray):
     """
     :param nparray: nxd array, d is the dimension
-    :return: evs eigenvalues, axmat dxn array, each column is an eigenvector
+    :return: evs eigenvalues, axes_mat dxn array, each column is an eigenvector
     author: weiwei
     date: 20200701osaka
     """
@@ -807,13 +835,17 @@ def fit_plane(points):
     return plane_center, plane_normal
 
 
-def project_to_plane(point, plane_center, plane_normal):
+def project_point_to_plane(point, plane_center, plane_normal):
     dist = abs((point - plane_center).dot(plane_normal))
     # print((point - plane_center).dot(plane_normal))
     if (point - plane_center).dot(plane_normal) < 0:
         plane_normal = - plane_normal
     projected_point = point - dist * plane_normal
     return projected_point
+
+
+def project_vector_to_vector(vector1, vector2):
+    return (vector1 @ vector2) * vector2 / (vector2 @ vector2)
 
 
 def points_obb(pointsarray, toggledebug=False):
@@ -862,7 +894,7 @@ def points_obb(pointsarray, toggledebug=False):
 
 def gaussian_ellipsoid(pointsarray):
     """
-    compute a 95% percent ellipsoid axmat for the given points array
+    compute a 95% percent ellipsoid axes_mat for the given points array
     :param pointsarray:
     :return:
     author: weiwei
@@ -920,6 +952,15 @@ def consecutive(nparray1d, stepsize=1):
 
 def null_space(npmat):
     return scipy.linalg.null_space(npmat)
+
+
+def homopos(pos: np.ndarray):
+    """
+    append 1 to pos
+    :param pos:
+    :return:
+    """
+    return np.array([pos[0], pos[1], pos[2], 1])
 
 
 # The following code is from Gohlke
@@ -1525,7 +1566,7 @@ def shear_matrix(angle, direction, point, normal):
     vector must be orthogonal to the plane's normal vector.
 
     A point P is transformed by the shear matrix into P" such that
-    the vector P-P" is parallel to the direction vector and its extent is
+    the vector P-P" is parallel to the direction vector and its xyz_lengths is
     given by the angle of P-P'-P", where P' is the orthogonal projection
     of P onto the shear plane.
 
@@ -1607,7 +1648,7 @@ def decompose_matrix(matrix):
         translate : translation vector along x, y, z axes
         perspective : perspective partition of matrix
 
-    Raise ValueError if matrix is of wrong type or degenerative.
+    Raise ValueError if matrix is of wrong end_type or degenerative.
 
     >>> T0 = translation_matrix([1, 2, 3])
     >>> scale, shear, angles, trans, persp = decompose_matrix(T0)
@@ -1805,7 +1846,7 @@ def affine_matrix_from_points(v0, v1, shear=True, scale=True, usesvd=True):
 
     ndims = v0.shape[0]
     if ndims < 2 or v0.shape[1] < ndims or v0.shape != v1.shape:
-        raise ValueError("input arrays are of wrong shape or type")
+        raise ValueError("input arrays are of wrong shape or end_type")
 
     # move centroids to origin
     t0 = -np.mean(v0, axis=1)
@@ -2414,7 +2455,7 @@ class Arcball(object):
 
         center : sequence[2]
             Window coordinates of trackball center.
-        radius : float
+        major_radius : float
             Radius of trackball in window coordinates.
 
         """
@@ -2515,7 +2556,7 @@ def arcball_nearest_axis(point, axes):
 
 
 def vector_norm(data, axis=None, out=None):
-    """Return length, i.e. Euclidean norm, of ndarray along axis.
+    """Return axis_length, i.e. Euclidean norm, of ndarray along axis.
 
     >>> v = np.random.random(3)
     >>> n = vector_norm(v)
@@ -2554,7 +2595,7 @@ def vector_norm(data, axis=None, out=None):
 
 
 def _unit_vector(data, axis=None, out=None):
-    """Return ndarray normalized by length, i.e. Euclidean norm, along axis.
+    """Return ndarray normalized by axis_length, i.e. Euclidean norm, along axis.
 
     >>> v0 = np.random.random(3)
     >>> v1 = unit_vector(v0)

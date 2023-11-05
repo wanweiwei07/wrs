@@ -33,7 +33,7 @@ class DepthCaliberator(object):
         :param component_name:
         :param action_center_pos, action_rotmat:
         :param marker_callback:
-        :return: [estiamted tcp center in sensor, radius of the sphere formed by markers]
+        :return: [estiamted tcp center in sensor, major_radius of the sphere formed by markers]
         author: weiwei
         date: 20210408
         """
@@ -49,8 +49,8 @@ class DepthCaliberator(object):
         rot_range_y = [np.array([0, 1, 0]), [-30, -15, 15, 30]]
         rot_range_z = [np.array([0, 0, 1]), [-90, -60, -30, 30, 60]]
         range_axes = [rot_range_x, rot_range_y, rot_range_z]
-        last_jnt_values = self.robot_x.lft_arm_hnd.get_jnt_values()
-        jnt_values_bk = self.robot_s.get_jnt_values(component_name)
+        last_jnt_values = self.robot_x.lft_arm_hnd.get_joint_values()
+        jnt_values_bk = self.robot_s.get_joint_values(component_name)
         for axisid in range(3):
             axis = range_axes[axisid][0]
             for angle in range_axes[axisid][1]:
@@ -59,15 +59,15 @@ class DepthCaliberator(object):
                 jnt_values = self.robot_s.ik(component_name=component_name,
                                              tgt_pos=goal_pos,
                                              tgt_rotmat=goal_rotmat,
-                                             seed_jnt_values=last_jnt_values)
-                self.robot_s.fk(component_name=component_name, jnt_values=jnt_values)
+                                             seed_joint_values=last_jnt_values)
+                self.robot_s.fk(component_name=component_name, joint_values=jnt_values)
                 if jnt_values is not None and not self.robot_s.is_collided():
                     last_jnt_values = jnt_values
                     self.robot_x.move_jnts(component_name, jnt_values)
                     marker_pos_in_sensor = sensor_marker_handler.get_marker_center()
                     if marker_pos_in_sensor is not None:
                         marker_pos_in_sensor_list.append(marker_pos_in_sensor)
-        self.robot_s.fk(component_name=component_name, jnt_values=jnt_values_bk)
+        self.robot_s.fk(component_name=component_name, joint_values=jnt_values_bk)
         if len(marker_pos_in_sensor_list) < 3:
             return [None, None]
         center_in_camera_coords_array = np.asarray(marker_pos_in_sensor_list)
@@ -98,15 +98,15 @@ class DepthCaliberator(object):
                                                                     action_pos=action_center_pos,
                                                                     action_rotmat=action_center_rotmat,
                                                                     aruco_info=aruco_info)
-        jnt_values_bk = self.robot_s.get_jnt_values(component_name)
+        jnt_values_bk = self.robot_s.get_joint_values(component_name)
         # move to action pos, action rotmat
-        last_jnt_values = self.robot_x.lft_arm_hnd.get_jnt_values()
+        last_jnt_values = self.robot_x.lft_arm_hnd.get_joint_values()
         jnt_values = self.robot_s.ik(component_name=component_name,
                                      tgt_pos=action_center_pos,
                                      tgt_rotmat=action_center_rotmat,
-                                     seed_jnt_values=last_jnt_values)
+                                     seed_joint_values=last_jnt_values)
         if jnt_values is not None and not self.robot_s.is_collided():
-            self.robot_s.fk(component_name=component_name, jnt_values=jnt_values)
+            self.robot_s.fk(component_name=component_name, joint_values=jnt_values)
             last_jnt_values = jnt_values
             self.robot_x.move_jnts(component_name, jnt_values)
             marker_pos_in_sensor = sensor_marker_handler.get_marker_center()
@@ -117,9 +117,9 @@ class DepthCaliberator(object):
         jnt_values = self.robot_s.ik(component_name=component_name,
                                      tgt_pos=action_center_dist_x,
                                      tgt_rotmat=action_center_rotmat,
-                                     seed_jnt_values=last_jnt_values)
+                                     seed_joint_values=last_jnt_values)
         if jnt_values is not None and not self.robot_s.is_collided():
-            self.robot_s.fk(component_name=component_name, jnt_values=jnt_values)
+            self.robot_s.fk(component_name=component_name, joint_values=jnt_values)
             last_jnt_values = jnt_values
             self.robot_x.move_jnts(component_name, jnt_values)
             marker_pos_xplus_in_sensor = sensor_marker_handler.get_marker_center()
@@ -130,9 +130,9 @@ class DepthCaliberator(object):
         jnt_values = self.robot_s.ik(component_name=component_name,
                                      tgt_pos=action_center_dist_y,
                                      tgt_rotmat=action_center_rotmat,
-                                     seed_jnt_values=last_jnt_values)
+                                     seed_joint_values=last_jnt_values)
         if jnt_values is not None and not self.robot_s.is_collided():
-            self.robot_s.fk(component_name=component_name, jnt_values=jnt_values)
+            self.robot_s.fk(component_name=component_name, joint_values=jnt_values)
             last_jnt_values = jnt_values
             self.robot_x.move_jnts(component_name, jnt_values)
             marker_pos_yplus_in_sensor = sensor_marker_handler.get_marker_center()
@@ -143,9 +143,9 @@ class DepthCaliberator(object):
         jnt_values = self.robot_s.ik(component_name=component_name,
                                      tgt_pos=action_center_dist_z,
                                      tgt_rotmat=action_center_rotmat,
-                                     seed_jnt_values=last_jnt_values)
+                                     seed_joint_values=last_jnt_values)
         if jnt_values is not None and not self.robot_s.is_collided():
-            self.robot_s.fk(component_name=component_name, jnt_values=jnt_values)
+            self.robot_s.fk(component_name=component_name, joint_values=jnt_values)
             self.robot_x.move_jnts(component_name, jnt_values)
             marker_pos_zplus_in_sensor = sensor_marker_handler.get_marker_center()
         else:
@@ -155,7 +155,7 @@ class DepthCaliberator(object):
                                                       marker_pos_zplus_in_sensor-marker_pos_in_sensor]).T
         marker_rotmat_in_sensor, r = np.linalg.qr(unnormalized_marker_mat_in_sensor)
         marker_pos_in_hnd = np.dot(marker_rotmat_in_sensor.T, marker_pos_in_sensor-tcp_in_sensor)
-        self.robot_s.fk(component_name=component_name, jnt_values=jnt_values_bk)
+        self.robot_s.fk(component_name=component_name, joint_values=jnt_values_bk)
         return marker_pos_in_hnd
 
     def calibrate(self,
@@ -184,15 +184,15 @@ class DepthCaliberator(object):
                                                                action_dist=)
         pos_in_real_list = []
         pos_in_sensor_list = []
-        jnt_values_bk = self.robot_s.get_jnt_values(component_name)
-        last_jnt_values = self.robot_x.lft_arm_hnd.get_jnt_values()
+        jnt_values_bk = self.robot_s.get_joint_values(component_name)
+        last_jnt_values = self.robot_x.lft_arm_hnd.get_joint_values()
         for i, action_pos in enumerate(action_pos_list):
             jnt_values = self.robot_s.ik(component_name=component_name,
                                          tgt_pos=action_pos,
                                          tgt_rotmat=action_rotmat_list[i],
-                                         seed_jnt_values=last_jnt_values)
+                                         seed_joint_values=last_jnt_values)
             if jnt_values is not None:
-                self.robot_s.fk(component_name=component_name, jnt_values=jnt_values)
+                self.robot_s.fk(component_name=component_name, joint_values=jnt_values)
                 last_jnt_values = jnt_values
                 if not self.robot_s.is_collided():
                     self.robot_x.move_jnts(component_name, jnt_values)
@@ -204,7 +204,7 @@ class DepthCaliberator(object):
                     print(f"The {i}th action pose is collided!")
             else:
                 print(f"The {i}th action pose is reachable!")
-        self.robot_s.fk(component_name=component_name, jnt_values=jnt_values_bk)
+        self.robot_s.fk(component_name=component_name, joint_values=jnt_values_bk)
         pos_in_real_array = np.array(pos_in_real_list)
         pos_in_sensor_array = np.array(pos_in_sensor_list)
         affine_mat = rm.affine_matrix_from_points(pos_in_sensor_array.T, pos_in_real_array.T)

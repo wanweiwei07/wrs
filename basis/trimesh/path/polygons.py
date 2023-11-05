@@ -88,7 +88,7 @@ def rasterize_polygon(polygon, pitch, angle=0, return_points=False):
     Arguments
     ----------
     polygon: shapely polygon
-    pitch:   what is the edge length of a pixel
+    pitch:   what is the edge axis_length of a pixel
     angle:   what angle to rotate the polygon before rasterization, 
              relative to the oriented bounding box
     
@@ -169,7 +169,7 @@ def plot_raster(raster, pitch, offset=[0,0]):
     Plot a raster representation. 
 
     raster: (n,m) array of booleans, representing filled/empty area
-    pitch:  the edge length of a box from raster, in cartesian space
+    pitch:  the edge axis_length of a box from raster, in cartesian space
     offset: offset in cartesian space to the lower left corner of the raster grid
     '''
     import matplotlib.pyplot as plt
@@ -215,7 +215,7 @@ def medial_axis(polygon, resolution=.01, clip=None):
     polygon:    a shapely.geometry.Polygon 
     resolution: target distance between each sample on the polygon boundary
     clip:       [minimum number of samples, maximum number of samples]
-                specifying a very fine resolution can cause the sample count to
+                specifying a very fine resolution can cause the sample n_sec_minor to
                 explode, so clip specifies a minimum and maximum number of samples
                 to use per boundary region. To not clip, this can be specified as:
                 [0, np.inf]
@@ -301,7 +301,7 @@ def polygon_hash(polygon):
     
     Returns
     ---------
-    hash: (5) length list of hash representing input polygon
+    hash: (5) axis_length list of hash representing input polygon
     '''
     result = [len(polygon.interiors),
               polygon.convex_hull.area,
@@ -313,12 +313,12 @@ def polygon_hash(polygon):
 
 def random_polygon(segments=8, radius=1.0):
     '''
-    Generate a random polygon with a maximum number of sides and approximate radius.
+    Generate a random polygon with a maximum number of sides and approximate major_radius.
 
     Arguments
     ---------
     segments: int, the maximum number of sides the random polygon will have
-    radius:   float, the approximate radius of the polygon desired
+    radius:   float, the approximate major_radius of the polygon desired
 
     Returns
     ---------

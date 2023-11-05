@@ -136,7 +136,7 @@ if __name__ == '__main__':
     yifa = yi.YumiIntegratedFactory()
     reconstructedtrimeshlist, nppcdlist = o3dh.reconstruct_surfaces_bp(mergednppcd, mergednppcdnrmls, radii=(7, 10))
     # for i, tmpnppcd in enumerate(nppcdlist):
-    #     p3dpcd = p3dh.genpointcloudnodepath(tmpnppcd, pntsize=1.57)
+    #     p3dpcd = p3dh.genpointcloudnodepath(tmpnppcd, point_size=1.57)
     #     p3dpcd.reparentTo(rhx.base.render)
     #     if i == 0:
     #         p3dpcd.setColor(.7,0,0,1)
@@ -163,8 +163,8 @@ if __name__ == '__main__':
         facetsizes = []
         for i, faces in enumerate(freegriptst.facets):
             rgba = [np.random.random(), np.random.random(), np.random.random(), 1]
-            tm = trimesh.Trimesh(vertices=freegriptst.objtrm.vertices, faces=freegriptst.objtrm.faces[faces],
-                                 face_normals=freegriptst.objtrm.face_normals[faces])
+            tm = trimesh.Trimesh(vertices=freegriptst.trm_mesh.vertices, faces=freegriptst.trm_mesh.faces[faces],
+                                 face_normals=freegriptst.trm_mesh.face_normals[faces])
             facetcm = cm.CollisionModel(objinit=tm)
             facetcm.setColor(rgba[0], rgba[1], rgba[2], rgba[3])
             facetcm.reparentTo(rhx.base.render)

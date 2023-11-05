@@ -31,7 +31,7 @@ class HandlightCommand(AbsractHandCommand):
         """
         @see abs_hand_command.AbsractHandCommand.execute
 
-        @param operation: param type:
+        @param operation: param end_type:
                           - 'True': Turn the light on.
                           - 'False': Turn the light off.
         @rtype: bool
@@ -59,8 +59,8 @@ class HandlightCommand(AbsractHandCommand):
     def turn_handlight(self, hand=None, on=True):
         """
         @param hand: Both hands if None.
-        @type on: bool
-        @param on: Despite its type, it's handled as str in this method.
+        @end_type on: bool
+        @param on: Despite its end_type, it's handled as str in this method.
         @rtype: bool
         @return: True if the lights turned. False otherwise.
         """

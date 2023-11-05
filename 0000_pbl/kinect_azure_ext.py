@@ -20,8 +20,8 @@ pk_obj.device_start_cameras()
 # marker_center_list = []
 # def update(pk_obj, pcd_list, marker_center_list, task):
 #     if len(pcd_list) != 0:
-#         for pcd in pcd_list:
-#             pcd.detach()
+#         for pcd_helper in pcd_list:
+#             pcd_helper.detach()
 #         pcd_list.clear()
 #     if len(marker_center_list) != 0:
 #         for marker_center in marker_center_list:
@@ -84,12 +84,12 @@ while True:
         origin_rotmat[:, 1] = axis_y
         origin_rotmat[:, 2] = axis_z
         pickle.dump([origin, origin_rotmat], open("origin.pkl", "wb"))
-        gm.gen_frame(pos=origin_xyz, rotmat=origin_rotmat, length=1, thickness=.03).attach_to(base)
+        gm.gen_frame(pos=origin_xyz, rotmat=origin_rotmat, axis_length=1, axis_radius=.03).attach_to(base)
         # for image_xy in image_xy_list:
         #     cv2.circle(color_image, tuple(image_xy), 10, (255, 0, 0), -1)
         #     cv2.imshow("test", color_image)
         # cv2.waitKey(0)
-        mypoint_cloud = gm.GeometricModel(initor=point_cloud)
+        mypoint_cloud = gm.GeometricModel(initializer=point_cloud)
         mypoint_cloud.attach_to(base)
         for pcd_pnt in pcd_pnt_list:
             marker_center = gm.gen_sphere(pos=pcd_pnt, radius=.1)

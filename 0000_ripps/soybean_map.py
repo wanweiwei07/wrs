@@ -6,7 +6,7 @@ import basis.robot_math as rm
 import visualization.panda.world as wd
 import modeling.geometric_model as gm
 import modeling.collision_model as cm
-import robot_sim._kinematics.jlchain as jlc
+import robot_sim.kinematics.jlchain as jlc
 
 leaf_rgba = [45 / 255, 90 / 255, 39 / 255, 1]
 stem_rgba = [97 / 255, 138 / 255, 61 / 255, 1]
@@ -18,29 +18,29 @@ class Stem(object):
     def __init__(self, pos=np.zeros(3), rotmat=np.eye(3), ndof=5, base_thickness=.005, base_length=.3, name='stem'):
         self.pos = pos
         self.rotmat = rotmat
-        self.jlc = jlc.JLChain(pos=pos, rotmat=rotmat, homeconf=np.zeros(ndof), name=name + "jlchain")
-        for i in range(1, self.jlc.ndof + 1):
-            self.jlc.jnts[i]['loc_pos'] = np.array([0, 0, base_length / 5])
-            self.jlc.jnts[i]['loc_motionax'] = np.array([1, 0, 0])
+        self.jlc = jlc.JLChain(pos=pos, rotmat=rotmat, home_conf=np.zeros(ndof), name=name + "jlchain")
+        for i in range(1, self.jlc.n_dof + 1):
+            self.jlc.joints[i]['pos_in_loc_tcp'] = np.array([0, 0, base_length / 5])
+            self.jlc.joints[i]['loc_motionax'] = np.array([1, 0, 0])
         self.jlc.reinitialize()
-        for link_id in range(self.jlc.ndof + 1):
+        for link_id in range(self.jlc.n_dof + 1):
             self.jlc.lnks[link_id]['collision_model'] = cm.gen_stick(spos=np.zeros(3),
                                                                      epos=rotmat.T.dot(
-                                                                         self.jlc.jnts[link_id + 1]['gl_posq'] -
-                                                                         self.jlc.jnts[link_id]['gl_posq']),
-                                                                     thickness=base_thickness / (link_id + 1) ** (
+                                                                         self.jlc.joints[link_id + 1]['gl_posq'] -
+                                                                         self.jlc.joints[link_id]['gl_posq']),
+                                                                     radius=base_thickness / (link_id + 1) ** (
                                                                              1 / 3),
-                                                                     sections=24)
+                                                                     n_sec=24)
 
     def fk(self, jnt_values):
-        self.jlc.fk(jnt_values=jnt_values)
+        self.jlc.fk(joint_values=jnt_values)
 
     def gen_meshmodel(self,
                       toggle_tcpcs=False,
                       toggle_jntscs=False,
                       rgba=stem_rgba,
                       name='stem_meshmodel'):
-        return self.jlc.gen_meshmodel(toggle_tcpcs=toggle_tcpcs, toggle_jntscs=toggle_jntscs, name=name, rgba=rgba)
+        return self.jlc.gen_mesh_model(toggle_tcpcs=toggle_tcpcs, toggle_jntscs=toggle_jntscs, name=name, rgba=rgba)
 
     def gen_stickmodel(self):
         return self.jlc.gen_stickmodel()
@@ -148,9 +148,9 @@ rotmat_list = gen_rotmat_list()
 for id, rotmat in enumerate(rotmat_list[::4]):
     map_color = random.choice(map_list)
     # print(int(id +1) % 4)
-    # print(int(id / 3+1) % (main_stem.jlc.ndof + 1))
-    # stem1 = Stem(ndof=1, pos=main_stem.jlc.jnts[int(id / 3) % (main_stem.jlc.ndof + 1)+1]['gl_posq'], rotmat=rotmat, base_length=.2/ (id + 1) ** (1 / 2), base_thickness=.002)
-    branch_pos = main_stem.jlc.jnts[int(id / main_stem_ndof) % (main_stem.jlc.ndof + 1) + 1]['gl_posq']
+    # print(int(id / 3+1) % (main_stem.jlc.n_dof + 1))
+    # stem1 = Stem(n_dof=1, pos=main_stem.jlc.joints[int(id / 3) % (main_stem.jlc.n_dof + 1)+1]['gl_posq'], rotmat=rotmat, base_length=.2/ (id + 1) ** (1 / 2), base_thickness=.002)
+    branch_pos = main_stem.jlc.joints[int(id / main_stem_ndof) % (main_stem.jlc.n_dof + 1) + 1]['gl_posq']
     height = branch_pos[2] - main_stem.jlc.pos[2]
     print(height)
     # 4,5
@@ -190,16 +190,16 @@ for id, rotmat in enumerate(rotmat_list[::4]):
     branch = Stem(ndof=1, pos=branch_pos,
                   rotmat=rotmat, base_length=.1 / (height)**(1/2), base_thickness=.002)
     branch.gen_meshmodel(rgba=map_color).attach_to(base)
-    # main_stem.fk(jnt_values=[math.pi/36,math.pi/36, 0,-math.pi/36,-math.pi/36,0])
+    # main_stem.fk(joint_values=[math.pi/36,math.pi/36, 0,-math.pi/36,-math.pi/36,0])
     # stem1.gen_meshmodel().attach_to(base)
 
-    sb_leaf = gm.GeometricModel(initor="objects/soybean_leaf.stl")
+    sb_leaf = gm.GeometricModel(initializer="objects/soybean_leaf.stl")
     sb_leaf.set_rgba(rgba=leaf_rgba)
     sbl = sb_leaf.copy()
     sbl.set_rgba(rgba=map_color)
-    # sbl.set_scale(np.array([1,1,1])/(int(id/3)%(main_stem.jlc.ndof+1)+1))
+    # sbl.set_scale(np.array([1,1,1])/(int(id/3)%(main_stem.jlc.n_dof+1)+1))
     sbl.set_scale(np.array([1, 1, 1]))
-    jnt_pos = branch.jlc.jnts[-1]['gl_posq']
+    jnt_pos = branch.jlc.joints[-1]['gl_posq']
     sbl.set_pos(jnt_pos)
     sbl.set_rotmat(rotmat)
     sbl.attach_to(base)

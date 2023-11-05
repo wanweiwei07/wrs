@@ -35,7 +35,7 @@ class Line(object):
         self.texcoords = texcoords
         """A tuple where entries are numpy float arrays of size (2, 2) containing
         the texture coordinates for the endpoints of the line for each texture
-        coordinate set. Can be length 0 if there are no texture coordinates."""
+        coordinate set. Can be axis_length 0 if there are no texture coordinates."""
         self.material = material
         """If coming from an unbound :class:`collada.lineset.LineSet`, contains a
         string with the material symbol. If coming from a bound
@@ -183,7 +183,7 @@ class LineSet(primitive.Primitive):
         return BoundLineSet( self, matrix, materialnodebysymbol)
 
     def __str__(self):
-        return '<LineSet length=%d>' % len(self)
+        return '<LineSet axis_length=%d>' % len(self)
 
     def __repr__(self):
         return str(self)
@@ -251,7 +251,7 @@ class BoundLineSet(primitive.BoundPrimitive):
         return self.lines()
 
     def __str__(self):
-        return '<BoundLineSet length=%d>' % len(self)
+        return '<BoundLineSet axis_length=%d>' % len(self)
 
     def __repr__(self):
         return str(self)

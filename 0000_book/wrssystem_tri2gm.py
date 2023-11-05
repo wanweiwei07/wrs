@@ -1,5 +1,5 @@
 import numpy as np
-import basis.trimesh_generator as tg
+import basis.trimesh_factory as tg
 import modeling.geometric_model as gm
 import visualization.panda.world as wd
 

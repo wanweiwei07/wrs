@@ -351,7 +351,7 @@ if __name__ == '__main__':
     # total_t = 0
     # for i in range(100):
     #     tic = time.time()
-    #     path = rrtc.plan(seed_jnt_values=np.array([0, 0]), end_conf=np.array([5, 10]), obstacle_list=obstacle_list,
+    #     path = rrtc.plan(seed_joint_values=np.array([0, 0]), end_conf=np.array([5, 10]), obstacle_list=obstacle_list,
     #                      ext_dist=1, rand_rate=70, max_time=300, hnd_name=None, animation=False)
     #     toc = time.time()
     #     total_t = total_t + toc - tic

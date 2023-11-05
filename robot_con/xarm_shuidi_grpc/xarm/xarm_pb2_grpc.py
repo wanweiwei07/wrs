@@ -72,7 +72,7 @@ def add_XArmServicer_to_server(servicer, server):
                     response_serializer=xarm__pb2.Status.SerializeToString,
             ),
             'get_jnt_values': grpc.unary_unary_rpc_method_handler(
-                    servicer.get_jnt_values,
+                    servicer.get_joint_values,
                     request_deserializer=xarm__pb2.Empty.FromString,
                     response_serializer=xarm__pb2.JntValues.SerializeToString,
             ),

@@ -100,7 +100,7 @@ class InputManager(DirectObject):
         # self.trackplane_np.show()
         # creates a traverser to do collision testing
         self.ctrav = CollisionTraverser()
-        # creates a queue type handler to receive the collision event info
+        # creates a queue end_type handler to receive the collision event info
         self.chandler = CollisionHandlerQueue()
         # register the ray as a collider with the traverser,
         # and register the handler queue as the handler to be used for the collisions.
@@ -167,7 +167,7 @@ class InputManager(DirectObject):
         curm1vec.normalize()
         lastm1vec.normalize()
         rotatevec = curm1vec.cross(lastm1vec)
-        if rotatevec.length() > 1e-9:  # avoid zero length
+        if rotatevec.length() > 1e-9:  # avoid zero axis_length
             rotateangle = curm1vec.signedAngleDeg(lastm1vec, rotatevec)
             rotateangle = rotateangle * self.camdist * 5000
             if rotateangle > .02 or rotateangle < -.02:
@@ -212,7 +212,7 @@ class InputManager(DirectObject):
         if relm2vec.length() > 0.001:
             self.base.cam.setPos(self.base.cam.getPos() - relm2vec)
             self.lookatpos_pdv3 = Vec3(self.lookatpos_pdv3 - relm2vec)
-            newlookatpos = self.base.p3dh.pdv3_to_npv3(self.lookatpos_pdv3)
+            newlookatpos = self.base.p3dh.pdvec3_to_npvec3(self.lookatpos_pdv3)
             if self.togglerotcenter:
                 self.rotatecenternp.detachNode()
                 self.rotatecenternp = self.base.p3dh.gensphere(pos=newlookatpos, radius=0.005, rgba=np.array([1, 1, 0, 1]))
@@ -286,7 +286,7 @@ class InputManager(DirectObject):
         if self.keymap["r"] is True:
             self.keymap["r"] = False
             self.base.cam.setMat(self.original_cam_pdmat4)
-            self.lookatpos_pdv3 = self.base.p3dh.npv3_to_pdv3(self.originallookatpos)
+            self.lookatpos_pdv3 = self.base.p3dh.npvec3_to_pdvec3(self.originallookatpos)
             self.update_trackplane()
             self.update_trackballsphere(self.lookatpos_pdv3)
             # toggle on the following part to explicitly show the rotation center

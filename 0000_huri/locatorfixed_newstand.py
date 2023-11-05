@@ -38,7 +38,7 @@ class LocatorFixed(object):
         self.tubeholecenters = np.array(tubeholecenters)
         self.tubeholesize = np.array([17, 16.5])
         self.tubestandsize = np.array([97, 191])
-        # initialize the registered tubes, a dictionary with the template of each tube type in a list (multiple values allowed)
+        # initialize the registered tubes, a dictionary with the template of each tube end_type in a list (multiple values allowed)
         self.registeredtubetemps = {1:[], 2:[]}
 
     def _crop_pcd_overahole(self, tgtpcd_intsframe, holecenter_x, holecenter_y, crop_ratio = .9, crop_height = 70):
@@ -345,16 +345,16 @@ if __name__ == '__main__':
     yhx.p3dh.genframe(pos=loc.tubestandhomomat_start[:3,3], rotmat=loc.tubestandhomomat_start[:3,:3]).reparentTo(yhx.base.render)
     rbtnp = yhx.rbtmesh.genmnp(yhx.rbt)
     rbtnp.reparentTo(yhx.base.render)
-    # pcdnp = p3dh.genpointcloudnodepath(objpcd, pntsize=5)
+    # pcdnp = p3dh.genpointcloudnodepath(objpcd, point_size=5)
     # pcdnp.reparentTo(yhx.base.render)
     # cornerhole_pcdnp = p3dh.genpointcloudnodepath(loc.calibrate_holes(objpcd), colors=np.array([1, 0, 0, 1]),
-    #                                               pntsize=10)
+    #                                               point_size=10)
     # cornerhole_pcdnp.reparentTo(yhx.base.render)
     # positions, rotmats = loc.findtubestands_calibratewoodstickholes(objpcd)
     # for posrot in zip(positions, rotmats):
     #     loc.gentubestand(rm.homobuild(posrot[0], posrot[1])).reparentTo(yhx.base.render)
 
-    # tbscm = loc.gentubestand(homomat=homomat)
+    # tbscm = loc.gentubestand(pos=pos)
     # tbscm.reparentTo(yhx.base.render)
     # tbscm.showcn()
     tubecms = loc.gentubes(elearray, loc.tubestandhomomat_start, eleconfidencearray=eleconfidencearray)

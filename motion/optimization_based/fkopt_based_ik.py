@@ -38,56 +38,56 @@ class FKOptBasedIK(object):
         return self.rbt.get_jnt_ranges(jlc_name)
 
     def _constraint_zangle(self, jnt_values):
-        self.rbt.fk(jnt_values=jnt_values, component_name=self.jlc_name)
+        self.rbt.fk(joint_values=jnt_values, component_name=self.jlc_name)
         gl_tcp_pos, gl_tcp_rotmat = self.rbt.get_gl_tcp(manipulator_name=self.jlc_name)
         delta_angle = rm.angle_between_vectors(gl_tcp_rotmat[:,2], self.tgt_rotmat[:,2])
         self.zangle_err.append(delta_angle)
         return self._zangle_limit-delta_angle
 
     def _constraint_xangle(self, jnt_values):
-        self.rbt.fk(jnt_values=jnt_values, component_name=self.jlc_name)
+        self.rbt.fk(joint_values=jnt_values, component_name=self.jlc_name)
         gl_tcp_pos, gl_tcp_rotmat = self.rbt.get_gl_tcp(manipulator_name=self.jlc_name)
         delta_angle = rm.angle_between_vectors(gl_tcp_rotmat[:,0], self.tgt_rotmat[:,0])
         self.xangle_err.append(delta_angle)
         return self._xangle_limit-delta_angle
 
     def _constraint_x(self, jnt_values):
-        self.rbt.fk(jnt_values=jnt_values, component_name=self.jlc_name)
+        self.rbt.fk(joint_values=jnt_values, component_name=self.jlc_name)
         gl_tcp_pos, gl_tcp_rot = self.rbt.get_gl_tcp(manipulator_name=self.jlc_name)
         x_err = abs(self.tgt_pos[0] - gl_tcp_pos[0])
         self.x_err.append(x_err)
         return self._x_limit - x_err
 
     def _constraint_y(self, jnt_values):
-        self.rbt.fk(jnt_values=jnt_values, component_name=self.jlc_name)
+        self.rbt.fk(joint_values=jnt_values, component_name=self.jlc_name)
         gl_tcp_pos, gl_tcp_rot = self.rbt.get_gl_tcp(manipulator_name=self.jlc_name)
         y_err = abs(self.tgt_pos[1] - gl_tcp_pos[1])
         self.y_err.append(y_err)
         return self._y_limit - y_err
 
     def _constraint_z(self, jnt_values):
-        self.rbt.fk(jnt_values=jnt_values, component_name=self.jlc_name)
+        self.rbt.fk(joint_values=jnt_values, component_name=self.jlc_name)
         gl_tcp_pos, gl_tcp_rot = self.rbt.get_gl_tcp(manipulator_name=self.jlc_name)
         z_err = abs(self.tgt_pos[2] - gl_tcp_pos[2])
         self.z_err.append(z_err)
         return self._z_limit - z_err
 
     def _constraint_collision(self, jnt_values):
-        self.rbt.fk(jnt_values=jnt_values, component_name=self.jlc_name)
+        self.rbt.fk(joint_values=jnt_values, component_name=self.jlc_name)
         if self.rbt.is_collided(obstacle_list=self.obstacle_list):
             return -1
         else:
             return 1
 
     def add_constraint(self, fun, type="ineq"):
-        self.cons.append({'type': type, 'fun': fun})
+        self.cons.append({'end_type': type, 'fun': fun})
 
     def optimization_goal(self, jnt_values):
         if self.toggle_debug:
             self.jnts.append(jnt_values)
             self.jnt_diff.append(np.linalg.norm(self.seed_jnt_values - jnt_values))
             # if random.choice(range(20)) == 0:
-            #     self.rbth.show_armjnts(armjnts=self.jnts[-1], rgba=(.7, .7, .7, .2))
+            #     self.rbth.show_armjnts(armjnts=self.joints[-1], rgba=(.7, .7, .7, .2))
         return np.linalg.norm(jnt_values - self.seed_jnt_values)
 
     def solve(self, tgt_pos, tgt_rotmat, seed_jnt_values, method='SLSQP'):
@@ -135,7 +135,7 @@ class FKOptBasedIK(object):
         author: weiwei
         date: 20210125
         """
-        jnt_values_bk = self.rbt.get_jnt_values(self.jlc_name)
+        jnt_values_bk = self.rbt.get_joint_values(self.jlc_name)
         pos_list, rotmat_list = rm.interplate_pos_rotmat(start_info[0],
                                                          start_info[1],
                                                          goal_info[0],
@@ -172,7 +172,7 @@ class FKOptBasedIK(object):
         plth.plt.subplot(236)
         plth.plt.plot(*plth.twodlist_to_plt_xys(self.jnts))
         # plth.plot_list(self.rot_err, title="rotation error")
-        # plth.plot_list(self.jnt_diff, title="jnts displacement")
+        # plth.plot_list(self.jnt_diff, title="joints displacement")
         plth.plt.show()
 
 if __name__ == '__main__':
@@ -187,9 +187,9 @@ if __name__ == '__main__':
     gm.gen_frame(pos=tgt_pos, rotmat=tgt_rotmat).attach_to(base)
     yumi_instance = ym.Yumi(enable_cc=True)
     oik = FKOptBasedIK(yumi_instance, component_name=component_name, toggle_debug=False)
-    # jnt_values, _ = oik.solve(tgt_pos, tgt_rotmat, np.zeros(7), method='SLSQP')
-    # print(jnt_values)
-    # robot_s.fk(hnd_name=hnd_name, jnt_values=jnt_values)
+    # joint_values, _ = oik.solve(tgt_pos, tgt_rotmat, np.zeros(7), method='SLSQP')
+    # print(joint_values)
+    # robot_s.fk(hnd_name=hnd_name, joint_values=joint_values)
     # yumi_meshmodel = robot_s.gen_meshmodel()
     # yumi_meshmodel.attach_to(base)
     start_pos = np.array([.5, -.3, .3])

@@ -19,7 +19,7 @@ import envloader as el
 
 
 def get_objpcd(objcm, objmat4=np.eye(4), sample_num=100000, toggledebug=False):
-    objpcd = np.asarray(objcm.sample_surface(nsample=sample_num,toggle_option=None))
+    objpcd = np.asarray(objcm.sample_surface(n_samples=sample_num, toggle_option=None))
     objpcd = trans_pcd(objpcd, objmat4)
 
     if toggledebug:
@@ -48,7 +48,7 @@ def trans_p(p, transmat=None):
 
 
 def show_pcd(pcd, rgba=(1, 1, 1, 1)):
-    pcd_gm = gm.GeometricModel(initor=pcd)
+    pcd_gm = gm.GeometricModel(initializer=pcd)
     pcd_gm.set_rgba(rgba)
     pcd_gm.attach_to(base)
 
@@ -97,7 +97,7 @@ def get_pcd_w_h(objpcd_std):
 
 def get_org_convexhull(pcd, color=(1, 1, 1), transparency=1, toggledebug=False):
     """
-    create CollisionModel by pcd
+    create CollisionModel by pcd_helper
 
     :param pcd:
     :param color:
@@ -107,7 +107,7 @@ def get_org_convexhull(pcd, color=(1, 1, 1), transparency=1, toggledebug=False):
 
     convexhull = trimesh.Trimesh(vertices=pcd)
     convexhull = convexhull.convex_hull
-    obj = cm.CollisionModel(initor=convexhull, type="ball")
+    obj = cm.CollisionModel(initializer=convexhull, type="ball")
     if toggledebug:
         obj.set_rgba(color[0], color[1], color[2], transparency)
         obj.reparentTo(base.render)
@@ -118,7 +118,7 @@ def get_org_convexhull(pcd, color=(1, 1, 1), transparency=1, toggledebug=False):
 
 def get_std_convexhull(pcd, origin="center", color=(1, 1, 1), transparency=1, toggledebug=False, toggleransac=True):
     """
-    create CollisionModel by pcd, standardized rotation
+    create CollisionModel by pcd_helper, standardized rotation
 
     :param pcd:
     :param origin: "center" or "tip"
@@ -138,7 +138,7 @@ def get_std_convexhull(pcd, origin="center", color=(1, 1, 1), transparency=1, to
 
     convexhull = trimesh.Trimesh(vertices=pcd)
     convexhull = convexhull.convex_hull
-    obj = cm.CollisionModel(initor=convexhull)
+    obj = cm.CollisionModel(initializer=convexhull)
     obj_w, obj_h = get_pcd_w_h(pcd)
 
     if origin == "tip":
@@ -149,7 +149,7 @@ def get_std_convexhull(pcd, origin="center", color=(1, 1, 1), transparency=1, to
 
         convexhull = trimesh.Trimesh(vertices=pcd)
         convexhull = convexhull.convex_hull
-        obj = cm.CollisionModel(initor=convexhull)
+        obj = cm.CollisionModel(initializer=convexhull)
 
     if toggledebug:
         obj.set_rgba(color[0], color[1], color[2], transparency)
@@ -224,7 +224,7 @@ def reconstruct_surface(pcd, radii=[.005], toggledebug=False):
     print("---------------reconstruct surface bp---------------")
     pcd = np.asarray(pcd)
     tmmesh = o3d_helper.reconstructsurfaces_bp(pcd, radii=radii, doseparation=False)
-    obj = cm.CollisionModel(initor=tmmesh)
+    obj = cm.CollisionModel(initializer=tmmesh)
     if toggledebug:
         obj.set_rgba(1, 1, 1, 1)
         obj.reparentTo(base.render)
@@ -236,7 +236,7 @@ def reconstruct_surface_list(pcd, radii=[5], color=(1, 1, 1), transparency=1, to
     tmmeshlist = o3d_helper.reconstructsurfaces_bp(pcd, radii=radii, doseparation=True)
     obj_list = []
     for tmmesh in tmmeshlist:
-        obj = cm.CollisionModel(initor=tmmesh)
+        obj = cm.CollisionModel(initializer=tmmesh)
         obj_list.append(obj)
         if toggledebug:
             obj.set_rgba(color[0], color[1], color[2], transparency)
@@ -262,12 +262,12 @@ def get_pcdidx_by_pos(pcd, realpos, diff=10, dim=3):
 
 def get_objpcd_withnrmls(objcm, objmat4=np.eye(4), sample_num=100000, toggledebug=False, sample_edge=False):
     objpcd_nrmls = []
-    faces = objcm.objtrm.faces
-    vertices = objcm.objtrm.vertices
-    nrmls = objcm.objtrm.face_normals
+    faces = objcm.trm_mesh.faces
+    vertices = objcm.trm_mesh.vertices
+    nrmls = objcm.trm_mesh.face_normals
 
     if sample_num is not None:
-        objpcd, faceid = objcm.sample_surface(nsample=sample_num)
+        objpcd, faceid = objcm.sample_surface(n_samples=sample_num)
         objpcd = list(objpcd)
         for i in faceid:
             objpcd_nrmls.append(np.array(nrmls[i]))
@@ -332,8 +332,8 @@ def get_objpcd_partial(objcm, objmat4=np.eye(4), sample_num=100000, toggledebug=
             objpcd_new.append([p[0], p[1], z_max])
     objpcd_new = np.array(objpcd_new)
 
-    print("Length of org pcd", len(objpcd))
-    print("Length of partial pcd", len(objpcd_new))
+    print("Length of org pcd_helper", len(objpcd))
+    print("Length of partial pcd_helper", len(objpcd_new))
 
     if toggledebug:
         objpcd = o3d_helper.nparray2o3dpcd(copy.deepcopy(objpcd))
@@ -384,15 +384,15 @@ def get_objpcd_partial_bycampos(objcm, objmat4=np.eye(4), sample_num=100000, cam
             mask_temp[i] = True
             objcm_temp.trimesh.update_faces(mask_temp)
             objpcd_new.extend(np.asarray(objcm_temp.sample_surface(
-                nsample=int(sample_num / area_sum * area_list[i] * sigmoid(angle) * 100),
+                n_samples=int(sample_num / area_sum * area_list[i] * sigmoid(angle) * 100),
                 toggle_option=None)))
     if len(objpcd_new) > sample_num:
         objpcd_new = random.sample(objpcd_new, sample_num)
     objpcd_new = np.array(objpcd_new)
     objpcd_new = trans_pcd(objpcd_new, objmat4)
 
-    # print("Length of org pcd", len(objpcd))
-    # print("Length of source pcd", len(objpcd_new))
+    # print("Length of org pcd_helper", len(objpcd))
+    # print("Length of source pcd_helper", len(objpcd_new))
 
     if toggledebug:
         objpcd = o3d_helper.nparray2o3dpcd(copy.deepcopy(objpcd))
@@ -412,11 +412,11 @@ def get_objpcd_partial_bycampos(objcm, objmat4=np.eye(4), sample_num=100000, cam
 def get_nrmls(pcd, camera_location=(800, -200, 1800), toggledebug=False):
     pcd_o3d = o3d_helper.nparray2o3dpcd(pcd)
     pcd_o3d.estimate_normals(search_param=o3d.geometry.KDTreeSearchParamHybrid(radius=20, max_nn=1000))
-    # for n in np.asarray(pcd.normals)[:10]:
+    # for n in np.asarray(pcd_helper.normals)[:10]:
     #     print(n)
     # print("----------------")
     o3d.geometry.PointCloud.orient_normals_towards_camera_location(pcd_o3d, camera_location=camera_location)
-    # for n in np.asarray(pcd.normals)[:10]:
+    # for n in np.asarray(pcd_helper.normals)[:10]:
     #     print(n)
     pcd_nrmls = np.asarray(pcd_o3d.normals)
     pcd_nrmls = np.asarray([-n if np.dot(n, np.asarray([0, 0, 1])) < 0 else n for n in pcd_nrmls])
@@ -451,7 +451,7 @@ if __name__ == '__main__':
     base, env = el.loadEnv_wrs()
     objcm = el.loadObj("pentip.stl")
 
-    # source_pcd = np.asarray(ts.sample_surface(objcm.trimesh, count=10000))
+    # source_pcd = np.asarray(ts.sample_surface(objcm.trimesh, n_sec_minor=10000))
     source = o3d_helper.nparray2o3dpcd(source_pcd[source_pcd[:, 2] > 5])
     # source.paint_uniform_color([0, 0.706, 1])
     # o3d.visualization.draw_geometries([source])
@@ -462,15 +462,15 @@ if __name__ == '__main__':
     #     open(el.root + "/graspplanner/graspmap/pentip_cover_objmat4_list.pkl", "rb"))[1070]
     #
     # get_normals(get_objpcd(objcm, sample_num=10000))
-    # pcd, pcd_normals = get_objpcd_withnormals(objcm, sample_num=100000)
-    # for i, p in enumerate(pcd):
+    # pcd_helper, pcd_normals = get_objpcd_withnormals(objcm, sample_num=100000)
+    # for i, p in enumerate(pcd_helper):
     #     base.pggen.plotArrow(base.render, spos=p, epos=p + 10 * pcd_normals[i])
     # base.run()
     get_objpcd_partial_bycampos(objcm, sample_num=10000, toggledebug=True)
 
-    # pcd = pickle.load(open(el.root + "/dataset/pcd/a_lft_0.pkl", "rb"))
+    # pcd_helper = pickle.load(open(el.root + "/dataset/pcd_helper/a_lft_0.pkl", "rb"))
     # amat = pickle.load(open(el.root + "/camcalib/data/phoxi_calibmat_0117.pkl", "rb"))
-    # pcd = transform_pcd(remove_pcd_zeros(pcd), amat)
-    # print(len(pcd))
-    # obj = get_org_surface(pcd)
+    # pcd_helper = transform_pcd(remove_pcd_zeros(pcd_helper), amat)
+    # print(len(pcd_helper))
+    # obj = get_org_surface(pcd_helper)
     # base.run()

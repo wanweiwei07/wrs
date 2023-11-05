@@ -12,8 +12,12 @@ from basis import data_adapter as p3dh
 # from vision.pointcloud import o3dhelper as o3dh
 import basis.robot_math as rm
 import numpy as np
+from enum import Enum
 import visualization.panda.anime_info as ani
 
+class LensType(Enum):
+    PERSPECTIVE = 1
+    ORTHOGRAPHIC = 2
 
 class World(ShowBase, object):
 
@@ -24,7 +28,7 @@ class World(ShowBase, object):
                  fov=40,
                  w=1920,
                  h=1080,
-                 lens_type="perspective",
+                 lens_type=LensType.PERSPECTIVE,
                  toggle_debug=False,
                  auto_cam_rotate=False):
         """
@@ -48,7 +52,7 @@ class World(ShowBase, object):
         lens = PerspectiveLens()
         lens.setFov(fov)
         lens.setNearFar(0.001, 5000.0)
-        if lens_type == "orthographic":
+        if lens_type == LensType.ORTHOGRAPHIC:
             lens = OrthographicLens()
             lens.setFilmSize(640, 480)
         # disable the default mouse control
@@ -120,7 +124,7 @@ class World(ShowBase, object):
             self.physicsworld.setDebugNode(self._debugNP.node())
         self.physicsbodylist = []
         # set up render update (TODO, only for dynamics?)
-        self._internal_update_obj_list = []  # the nodepath, collision model, or bullet dynamics model to be drawn
+        self._internal_update_obj_list = []  # the pdndp, collision model, or bullet dynamics model to be drawn
         self._internal_update_robot_list = []
         taskMgr.add(self._internal_update, "internal_update", appendTask=True)
         # for remote visualization
@@ -142,7 +146,7 @@ class World(ShowBase, object):
         return task.cont
 
     def _physics_update(self, task):
-        self.physicsworld.doPhysics(globalClock.getDt(), 20, 1/1200)
+        self.physicsworld.doPhysics(globalClock.getDt(), 20, 1/120)
         return task.cont
 
     def _internal_update(self, task):
@@ -180,8 +184,8 @@ class World(ShowBase, object):
             robot_path = _external_update_robotinfo.robot_path
             robot_path_counter = _external_update_robotinfo.robot_path_counter
             robot_meshmodel.detach()
-            robot_s.fk(component_name=robot_component_name, jnt_values=robot_path[robot_path_counter])
-            _external_update_robotinfo.robot_meshmodel = robot_s.gen_meshmodel(
+            robot_s.fk(component_name=robot_component_name, joint_values=robot_path[robot_path_counter])
+            _external_update_robotinfo.robot_meshmodel = robot_s.gen_mesh_model(
                 tcp_jntid=robot_meshmodel_parameter[0],
                 tcp_loc_pos=robot_meshmodel_parameter[1],
                 tcp_loc_rotmat=robot_meshmodel_parameter[2],

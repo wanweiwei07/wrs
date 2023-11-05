@@ -55,7 +55,7 @@ class XArmAPI(object):
                     16: method: move_arc_lines
                     17: method: move_circle
                     18: method: set_servo_cartesian
-            Note: This parameter determines the default return type for some interfaces (such as the position, velocity, and acceleration associated with the return angle arc).
+            Note: This parameter determines the default return end_type for some interfaces (such as the position, velocity, and acceleration associated with the return angle arc).
                 The affected attributes are as follows:
                     1. property: position
                     2. property: last_used_position
@@ -545,7 +545,7 @@ class XArmAPI(object):
     @property
     def device_type(self):
         """
-        Device type, only available in socket way and  enable_report is True and report_type is 'rich'
+        Device end_type, only available in socket way and  enable_report is True and report_type is 'rich'
         """
         return self._arm.device_type
 
@@ -646,7 +646,7 @@ class XArmAPI(object):
         
         :return: params
             params[0]: self collision detection or not
-            params[1]: self collision tool type
+            params[1]: self collision tool end_type
             params[2]: self collision model params
         """
         return self._arm.self_collision_params
@@ -661,7 +661,7 @@ class XArmAPI(object):
     @property
     def ft_raw_force(self):
         """
-        The direct reading of the Six-axis Force Torque Sensor at the end, without any processing
+        The direct reading of the Six-axis Force Torque Sensor at the end_type, without any processing
         """
         return self._arm.ft_raw_force
 
@@ -694,7 +694,7 @@ class XArmAPI(object):
             'G4': 'set_pause_time: G4 T{second}'
             'G7': 'set_servo_angle: G7 I{servo_1} J{servo_2} K{servo_3} L{servo_4} M{servo_5} N{servo_6} O{servo_7} F{speed} Q{acc} T{mvtime}'
             'G8': 'move_gohome: G8 F{speed} Q{acc} T{mvtime}'
-            'G9': 'set_position(MoveArcLine): G9 X{x} Y{y} Z{z} A{roll} B{pitch} C{yaw} R{radius} F{speed} Q{acc} T{mvtime}'
+            'G9': 'set_position(MoveArcLine): G9 X{x} Y{y} Z{z} A{roll} B{pitch} C{yaw} R{major_radius} F{speed} Q{acc} T{mvtime}'
             'G11': 'set_servo_angle_j: G11 I{servo_1} J{servo_2} K{servo_3} L{servo_4} M{servo_5} N{servo_6} O{servo_7} F{speed} Q{acc} T{mvtime}'
             'H1': 'get_version: H1'
             'H11': 'motion_enable: H11 I{servo_id} V{enable}'
@@ -782,12 +782,12 @@ class XArmAPI(object):
         :param roll: rotate around the X axis, (unit: rad if is_radian is True else °), default is self.last_used_position[3]
         :param pitch: rotate around the Y axis, (unit: rad if is_radian is True else °), default is self.last_used_position[4]
         :param yaw: rotate around the Z axis, (unit: rad if is_radian is True else °), default is self.last_used_position[5]
-        :param radius: move radius, if radius is None or radius less than 0, will MoveLine, else MoveArcLine
+        :param radius: move major_radius, if major_radius is None or major_radius less than 0, will MoveLine, else MoveArcLine
             MoveLine: Linear motion
-                ex: code = arm.set_position(..., radius=None)
+                ex: code = arm.set_position(..., major_radius=None)
             MoveArcLine: Linear arc motion with interpolation
-                ex: code = arm.set_position(..., radius=0)
-                Note: Need to set radius>=0
+                ex: code = arm.set_position(..., major_radius=0)
+                Note: Need to set major_radius>=0
         :param speed: move speed (mm/s, rad/s), default is self.last_used_tcp_speed
         :param mvacc: move acceleration (mm/s^2, rad/s^2), default is self.last_used_tcp_acc
         :param mvtime: 0, reserved
@@ -828,13 +828,13 @@ class XArmAPI(object):
         :param is_radian: the roll/pitch/yaw in radians or not, default is self.default_is_radian
         :param wait: whether to wait for the arm to complete, default is False
         :param timeout: maximum waiting time(unit: second), default is None(no timeout), only valid if wait is True
-        :param radius: move radius, if radius is None or radius less than 0, will MoveToolLine, else MoveToolArcLine
+        :param radius: move major_radius, if major_radius is None or major_radius less than 0, will MoveToolLine, else MoveToolArcLine
             only available if firmware_version >= 1.11.100
             MoveToolLine: Linear motion
-                ex: code = arm.set_tool_position(..., radius=None)
+                ex: code = arm.set_tool_position(..., major_radius=None)
             MoveToolArcLine: Linear arc motion with interpolation
-                ex: code = arm.set_tool_position(..., radius=0)
-                Note: Need to set radius>=0
+                ex: code = arm.set_tool_position(..., major_radius=0)
+                Note: Need to set major_radius>=0
         :param kwargs: reserved
         :return: code
             code: See the [API Code Documentation](./xarm_api_code.md#api-code) for details.
@@ -876,12 +876,12 @@ class XArmAPI(object):
         :param servo_id: 1-(Number of axes), None(8)
             1. 1-(Number of axes) indicates the corresponding joint, the parameter angle should be a numeric value
                 ex: code = arm.set_servo_angle(servo_id=1, angle=45, is_radian=False)
-            2. None(8) means all joints, default is None, the parameter angle should be a list of values whose length is the number of joints
+            2. None(8) means all joints, default is None, the parameter angle should be a list of values whose axis_length is the number of joints
                 ex: code = arm.set_servo_angle(angle=[30, -45, 0, 0, 0, 0, 0], is_radian=False)
         :param angle: angle or angle list, (unit: rad if is_radian is True else °)
             1. If servo_id is 1-(Number of axes), angle should be a numeric value
                 ex: code = arm.set_servo_angle(servo_id=1, angle=45, is_radian=False)
-            2. If servo_id is None or 8, angle should be a list of values whose length is the number of joints
+            2. If servo_id is None or 8, angle should be a list of values whose axis_length is the number of joints
                 like [axis-1, axis-2, axis-3, axis-3, axis-4, axis-5, axis-6, axis-7]
                 ex: code = arm.set_servo_angle(angle=[30, -45, 0, 0, 0, 0, 0], is_radian=False)
         :param speed: move speed (unit: rad/s if is_radian is True else °/s), default is self.last_used_joint_speed
@@ -891,14 +891,14 @@ class XArmAPI(object):
         :param is_radian: the angle in radians or not, default is self.default_is_radian
         :param wait: whether to wait for the arm to complete, default is False
         :param timeout: maximum waiting time(unit: second), default is None(no timeout), only valid if wait is True
-        :param radius: move radius, if radius is None or radius less than 0, will MoveJoint, else MoveArcJoint
+        :param radius: move major_radius, if major_radius is None or major_radius less than 0, will MoveJoint, else MoveArcJoint
             Note: Only available if version > 1.5.20
-            Note: The blending radius cannot be greater than the track length.
+            Note: The blending major_radius cannot be greater than the track axis_length.
             MoveJoint: joint motion
-                ex: code = arm.set_servo_angle(..., radius=None)
+                ex: code = arm.set_servo_angle(..., major_radius=None)
             MoveArcJoint: joint fusion motion with interpolation
-                ex: code = arm.set_servo_angle(..., radius=0)
-                Note: Need to set radius>=0
+                ex: code = arm.set_servo_angle(..., major_radius=0)
+                Note: Need to set major_radius>=0
         :param kwargs: reserved
         :return: code
             code: See the [API Code Documentation](./xarm_api_code.md#api-code) for details.
@@ -951,7 +951,7 @@ class XArmAPI(object):
 
         :param pose1: cartesian position, [x(mm), y(mm), z(mm), roll(rad or °), pitch(rad or °), yaw(rad or °)]
         :param pose2: cartesian position, [x(mm), y(mm), z(mm), roll(rad or °), pitch(rad or °), yaw(rad or °)]
-        :param percent: the percentage of arc length and circumference of the movement
+        :param percent: the percentage of arc axis_length and circumference of the movement
         :param speed: move speed (mm/s, rad/s), default is self.last_used_tcp_speed
         :param mvacc: move acceleration (mm/s^2, rad/s^2), default is self.last_used_tcp_acc
         :param mvtime: 0, reserved
@@ -1003,9 +1003,9 @@ class XArmAPI(object):
             4. The last_used_angles/last_used_joint_speed/last_used_joint_acc will not be modified.
 
         :param paths: cartesian path list
-            1. Specify arc radius： [[x, y, z, roll, pitch, yaw, radius], ....]
-            2. Do not specify arc radius (radius=0)： [[x, y, z, roll, pitch, yaw], ....]
-            3. If you want to plan the continuous motion,set radius>0.
+            1. Specify arc major_radius： [[x, y, z, roll, pitch, yaw, major_radius], ....]
+            2. Do not specify arc major_radius (major_radius=0)： [[x, y, z, roll, pitch, yaw], ....]
+            3. If you want to plan the continuous motion,set major_radius>0.
 
         :param is_radian: roll/pitch/yaw of paths are in radians or not, default is self.default_is_radian
         :param times: repeat times, 0 is infinite loop, default is 1
@@ -1127,7 +1127,7 @@ class XArmAPI(object):
             1. This interface relies on Firmware 1.2.0 or above
 
         :param filename: The name to save
-            1. Only strings consisting of English or numbers are supported, and the length is no more than 50.
+            1. Only strings consisting of English or numbers are supported, and the axis_length is no more than 50.
             2. The trajectory is saved in the controller box.
             3. If the filename is None, just stop recording, do not save, you need to manually call `save_record_trajectory` save before changing the mode. otherwise it will be lost
             4. This action will overwrite the trajectory with the same name
@@ -1145,7 +1145,7 @@ class XArmAPI(object):
             1. This interface relies on Firmware 1.2.0 or above
 
         :param filename: The name to save
-            1. Only strings consisting of English or numbers are supported, and the length is no more than 50.
+            1. Only strings consisting of English or numbers are supported, and the axis_length is no more than 50.
             2. The trajectory is saved in the controller box.
             3. This action will overwrite the trajectory with the same name
             4. Empty the trajectory in memory after saving, so repeated calls will cause the recorded trajectory to be covered by an empty trajectory.
@@ -1179,7 +1179,7 @@ class XArmAPI(object):
             1. This interface relies on Firmware 1.2.0 or above
 
         :param times: Number of playbacks,
-            1. Only valid when the current position of the arm is the end position of the track, otherwise it will only be played once.
+            1. Only valid when the current position of the arm is the end_type position of the track, otherwise it will only be played once.
         :param filename: The name of the trajectory to play back
             1. If filename is None, you need to manually call the `load_trajectory` to load the trajectory.
         :param wait: whether to wait for the arm to complete, default is False
@@ -1409,7 +1409,7 @@ class XArmAPI(object):
             3: cartesian teaching mode (invalid)
             4: joint velocity control mode
             5: cartesian velocity control mode
-            6: joint online trajectory planning mode 
+            6: joint online trajectory planning mode
             7: cartesian online trajectory planning mode 
         :param detection_param: Teaching detection parameters, default is 0
             0: Turn on motion detection 
@@ -1424,7 +1424,7 @@ class XArmAPI(object):
 
     def get_cmdnum(self):
         """
-        Get the cmd count in cache
+        Get the cmd n_sec_minor in cache
         :return: tuple((code, cmd_num)), only when code is 0, the returned result is correct.
             code: See the [API Code Documentation](./xarm_api_code.md#api-code) for details.
         """
@@ -1503,7 +1503,7 @@ class XArmAPI(object):
 
     def set_tcp_offset(self, offset, is_radian=None, **kwargs):
         """
-        Set the tool coordinate system offset at the end
+        Set the tool coordinate system offset at the end_type
         Note:
             1. Do not use if not required
             2. If not saved and you want to revert to the last saved value, please reset the offset by set_tcp_offset([0, 0, 0, 0, 0, 0])
@@ -1583,7 +1583,7 @@ class XArmAPI(object):
 
     def set_tcp_load(self, weight, center_of_gravity):
         """
-        Set the end load of xArm
+        Set the end_type load of xArm
 
         Note:
             1. Do not use if not required
@@ -2147,7 +2147,7 @@ class XArmAPI(object):
         :param callback:
             callback data:
             {
-                "count": counter value
+                "n_sec_minor": counter value
             }
         :return: True/False
         """
@@ -2320,9 +2320,9 @@ class XArmAPI(object):
 
     def get_harmonic_type(self, servo_id=1):
         """
-        Get harmonic type, only for debu
+        Get harmonic end_type, only for debu
 
-        :return: (code, type)
+        :return: (code, end_type)
             code: See the [API Code Documentation](./xarm_api_code.md#api-code) for details.
         """
         return self._arm.get_harmonic_type(servo_id=servo_id)
@@ -2362,7 +2362,7 @@ class XArmAPI(object):
         :param ionum: 0 or 1
         :param value: value
         :param xyz: position xyz, as [x, y, z]
-        :param fault_tolerance_radius: fault tolerance radius
+        :param fault_tolerance_radius: fault tolerance major_radius
         :return: code
             code: See the [API Code Documentation](./xarm_api_code.md#api-code) for details. 
         """
@@ -2375,7 +2375,7 @@ class XArmAPI(object):
         :param ionum: 0 ~ 15
         :param value: value
         :param xyz: position xyz, as [x, y, z]
-        :param fault_tolerance_radius: fault tolerance radius
+        :param fault_tolerance_radius: fault tolerance major_radius
         :return: code
             code: See the [API Code Documentation](./xarm_api_code.md#api-code) for details.  
         """
@@ -2388,7 +2388,7 @@ class XArmAPI(object):
         :param ionum: 0 ~ 1
         :param value: value
         :param xyz: position xyz, as [x, y, z]
-        :param fault_tolerance_radius: fault tolerance radius
+        :param fault_tolerance_radius: fault tolerance major_radius
         :return: code
             code: See the [API Code Documentation](./xarm_api_code.md#api-code) for details.  
         """
@@ -2428,13 +2428,13 @@ class XArmAPI(object):
         :param relative: relative move or not
         :param wait: whether to wait for the arm to complete, default is False
         :param timeout: maximum waiting time(unit: second), default is None(no timeout), only valid if wait is True
-        :param radius: move radius, if radius is None or radius less than 0, will MoveLineAA, else MoveArcLineAA
+        :param radius: move major_radius, if major_radius is None or major_radius less than 0, will MoveLineAA, else MoveArcLineAA
             only available if firmware_version >= 1.11.100
             MoveLineAA: Linear motion
-                ex: code = arm.set_position_aa(..., radius=None)
+                ex: code = arm.set_position_aa(..., major_radius=None)
             MoveArcLineAA: Linear arc motion with interpolation
-                ex: code = arm.set_position_aa(..., radius=0)
-                Note: Need to set radius>=0
+                ex: code = arm.set_position_aa(..., major_radius=0)
+                Note: Need to set major_radius>=0
         :return: code
             code: See the [API Code Documentation](./xarm_api_code.md#api-code) for details.
         """
@@ -2538,7 +2538,7 @@ class XArmAPI(object):
     
     def set_baud_checkset_enable(self, enable):
         """
-        Enable auto checkset the baudrate of the end IO board or not
+        Enable auto checkset the baudrate of the end_type IO board or not
         Note:
             only available in the API of gripper/bio/robotiq/linear_track.
             
@@ -2552,7 +2552,7 @@ class XArmAPI(object):
         """
         Set the checkset baud value
         
-        :param type_: checkset type
+        :param type_: checkset end_type
             1: xarm gripper
             2: bio gripper
             3: robotiq gripper
@@ -2567,7 +2567,7 @@ class XArmAPI(object):
         """
         Get the checkset baud value
 
-        :param type_: checkset type
+        :param type_: checkset end_type
             1: xarm gripper
             2: bio gripper
             3: robotiq gripper
@@ -2816,7 +2816,7 @@ class XArmAPI(object):
         Send the modbus data to the tool gpio
         
         :param datas: data_list
-        :param min_res_len: the minimum length of modbus response data. Used to check the data length, if not specified, no check
+        :param min_res_len: the minimum axis_length of modbus response data. Used to check the data axis_length, if not specified, no check
         :param host_id: host_id, default is 9 (TGPIO_HOST_ID)
             9: END RS485
             10: CONTROLLER RS485
@@ -2870,24 +2870,24 @@ class XArmAPI(object):
 
     def set_collision_tool_model(self, tool_type, *args, **kwargs):
         """
-        Set the geometric model of the end effector for self collision detection
+        Set the geometric model of the end_type effector for self collision detection
          
-        :param tool_type: the geometric model type
-            0: No end effector, no additional parameters required
+        :param tool_type: the geometric model end_type
+            0: No end_type effector, no additional parameters required
             1: xArm Gripper, no additional parameters required
             2: xArm Vacuum Gripper, no additional parameters required
             3: xArm Bio Gripper, no additional parameters required
             4: Robotiq-2F-85 Gripper, no additional parameters required
             5: Robotiq-2F-140 Gripper, no additional parameters required
-            21: Cylinder, need additional parameters radius, height
-                self.set_collision_tool_model(21, radius=45, height=137)
-                :param radius: the radius of cylinder, (unit: mm)
+            21: Cylinder, need additional parameters major_radius, height
+                self.set_collision_tool_model(21, major_radius=45, height=137)
+                :param radius: the major_radius of cylinder, (unit: mm)
                 :param height: the height of cylinder, (unit: mm)
             22: Cuboid, need additional parameters x, y, z
                 self.set_collision_tool_model(22, x=234, y=323, z=23)
-                :param x: the length of the cuboid in the x coordinate direction, (unit: mm)
-                :param y: the length of the cuboid in the y coordinate direction, (unit: mm)
-                :param z: the length of the cuboid in the z coordinate direction, (unit: mm)
+                :param x: the axis_length of the cuboid in the x coordinate direction, (unit: mm)
+                :param y: the axis_length of the cuboid in the y coordinate direction, (unit: mm)
+                :param z: the axis_length of the cuboid in the z coordinate direction, (unit: mm)
         :param args: additional parameters
         :param kwargs: additional parameters
         :return: code
@@ -3215,7 +3215,7 @@ class XArmAPI(object):
                     1: impendance control
                     2: force control
                 [1] ft_is_started: ft sensor is enable or not
-                [2] ft_type: ft sensor type
+                [2] ft_type: ft sensor end_type
                 [3] ft_id: ft sensor id
                 [4] ft_freq: ft sensor frequency
                 [5] ft_mass: load mass
@@ -3571,7 +3571,7 @@ class XArmAPI(object):
 
     def set_only_check_type(self, only_check_type=0):
         """
-        Set the motion process detection type (valid for all motion interfaces of the current SDK instance)
+        Set the motion process detection end_type (valid for all motion interfaces of the current SDK instance)
 
         Note:
             1. only available if firmware_version >= 1.10.0
@@ -3610,7 +3610,7 @@ class XArmAPI(object):
         :param only_check_type: Motion Detection Type
             only_check_type == 0: Restore the original function of the motion interface, it will move, the default is 0
             only_check_type == 1: Only check the self-collision without moving, take the actual state of the manipulator as the initial planned path, and check whether the path has self-collision (the intermediate state will be updated at this time)
-            only_check_type == 2: Only check the self-collision without moving, use the intermediate state as the starting planning path, check whether the path has self-collision (the intermediate state will be updated at this time), and restore the intermediate state to the actual state after the end
+            only_check_type == 2: Only check the self-collision without moving, use the intermediate state as the starting planning path, check whether the path has self-collision (the intermediate state will be updated at this time), and restore the intermediate state to the actual state after the end_type
             only_check_type == 3: Only check the self-collision without moving, use the intermediate state as the starting planning path, and check whether the path has self-collision (the intermediate state will be updated at this time)
         :return: code
             code: See the [API Code Documentation](./xarm_api_code.md#api-code) for details.

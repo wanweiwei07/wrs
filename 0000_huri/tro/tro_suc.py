@@ -96,7 +96,7 @@ if __name__ == '__main__':
     freesuctst = fs.Freesuc()
     reconstructedtrimeshlist, nppcdlist = o3dh.reconstruct_surfaces_bp(nppcd, radii=(10, 12))
     # for i, tmpnppcd in enumerate(nppcdlist):
-    #     p3dpcd = p3dh.genpointcloudnodepath(tmpnppcd, pntsize=1.57)
+    #     p3dpcd = p3dh.genpointcloudnodepath(tmpnppcd, point_size=1.57)
     #     p3dpcd.reparentTo(rhx.base.render)
     #     if i == 0:
     #         p3dpcd.setColor(.7,0,0,1)
@@ -122,16 +122,16 @@ if __name__ == '__main__':
         # freesuctst.showfacets(togglesamples=True, togglenormals=False,
         #                       togglesamples_ref=True, togglenormals_ref=False,
         #                       togglesamples_refcls=True, togglenormals_refcls=False, specificfacet=True)
-        p3dh.gensphere(pos=np.mean(freesuctst.objcm.objtrm.vertices, axis=0), radius=5, rgba=[1, 1, 1, 1]).reparentTo(rhx.base.render)
+        p3dh.gensphere(pos=np.mean(freesuctst.objcm.trm_mesh.vertices, axis=0), radius=5, rgba=[1, 1, 1, 1]).reparentTo(rhx.base.render)
         print(len(freesuctst.sucrotmats_planned))
         print(len(freesuctst.facets))
         for i, homomat in enumerate(freesuctst.sucrotmats_planned):
-            # homomat[:3,3] = homomat[:3,3]-homomat[:3,2]*120
+            # pos[:3,3] = pos[:3,3]-pos[:3,2]*120
             homomatnew = np.copy(homomat)
             homomatnew[:3,3] = homomat[:3,3]-homomat[:3,2]*3
             homomatnew[:3, :3] = np.dot(rm.rodrigues(homomat[:3,0], 45), homomat[:3,:3])
             # tmpef = effa.genendeffector()
-            # tmpef.sethomomat(homomat)
+            # tmpef.sethomomat(pos)
             # tmpef.reparentTo(rhx.base.render)
             # tmpef.setcolor(1, 1, 1, .3)
             armjnts = rhx.movetopose(homomatnew, "lft")
@@ -147,10 +147,10 @@ if __name__ == '__main__':
                 rhx.movetox(armjnts, "lft")
                 break
                 # break
-        # for i, homomat in enumerate(freesuctst.sucrotmats_removed):
+        # for i, pos in enumerate(freesuctst.sucrotmats_removed):
         #     # if i == 1:
         #     tmpef = effa.genendeffector()
-        #     tmpef.sethomomat(homomat)
+        #     tmpef.sethomomat(pos)
         #     tmpef.reparentTo(rhx.base.render)
         #     tmpef.setcolor(1, 0, 0, .3)
         break

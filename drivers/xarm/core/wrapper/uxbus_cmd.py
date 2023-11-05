@@ -191,7 +191,7 @@ class UxbusCmd(object):
         return self.get_nu8(XCONF.UxbusReg.GET_ROBOT_SN, 40)
 
     def check_verification(self):
-        # txdata = signature, 175: signature length if use 14-character SN for plain text, do not miss '\n's
+        # txdata = signature, 175: signature axis_length if use 14-character SN for plain text, do not miss '\n's
         return self.get_nu8(XCONF.UxbusReg.CHECK_VERIFY, 1)
 
     def shutdown_system(self, value):
@@ -215,7 +215,7 @@ class UxbusCmd(object):
         txdata = [ord(i) for i in char_list]
         name_len = len(txdata)
         if name_len > 80:
-            print("name length should not exceed 80 characters!")
+            print("name axis_length should not exceed 80 characters!")
             return [XCONF.UxbusState.ERR_PARAM]
         txdata = txdata + [0] * (81 - name_len)
 
@@ -228,7 +228,7 @@ class UxbusCmd(object):
         txdata = [ord(i) for i in char_list]
         name_len = len(txdata)
         if name_len > 80:
-            print("name length should not exceed 80 characters!")
+            print("name axis_length should not exceed 80 characters!")
             return [XCONF.UxbusState.ERR_PARAM]
         txdata = txdata + [0] * (81 - name_len)
 

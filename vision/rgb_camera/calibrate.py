@@ -222,7 +222,7 @@ if __name__=='__main__':
                 aruco.drawAxis(frame2, mtx2, dist2, rvecs[i], tvecs[i]/1000.0, 0.1)
                 rot = cv2.Rodrigues(rvecs[i])[0]
                 pos = tvecs[i].ravel()
-                # base.pggen.plotAxis(base.render, spos = base.pg.npToV3(pos), pandamat3 = base.pg.npToMat3(rot), rgba=[1,0,1,1])
+                # base.pggen.plotAxis(base.render, spos = base.pg.npToV3(pos), pandamat3 = base.pg.npToMat3(rotmat), rgba=[1,0,1,1])
                 matinb = np.dot(rm.homoinverse(homo_rb20), rm.homobuild(pos, rot))
                 rot = matinb[:3,:3]
                 pos = matinb[:3,3]
@@ -241,7 +241,7 @@ if __name__=='__main__':
                 aruco.drawAxis(frame4, mtx4, dist4, rvecs[i], tvecs[i]/1000.0, 0.1)
                 rot = cv2.Rodrigues(rvecs[i])[0]
                 pos = tvecs[i].ravel()
-                # base.pggen.plotAxis(base.render, spos = base.pg.npToV3(pos), pandamat3 = base.pg.npToMat3(rot), rgba=[1,0,1,1])
+                # base.pggen.plotAxis(base.render, spos = base.pg.npToV3(pos), pandamat3 = base.pg.npToMat3(rotmat), rgba=[1,0,1,1])
                 matinb = np.dot(rm.homoinverse(homo_rb40), rm.homobuild(pos, rot))
                 rot = matinb[:3,:3]
                 pos = matinb[:3,3]
@@ -307,7 +307,7 @@ if __name__=='__main__':
     #
     # from pandaplotutils import pandactrl
     # base = pandactrl.World(camp=[2700, 300, 2700], lookatp=[0, 0, 0])
-    # homo0 = rm.homobuild(pos=np.ones(3), rot=np.eye(3))
+    # homo0 = rm.homobuild(pos=np.ones(3), rotmat=np.eye(3))
     # base.pggen.plotAxis(base.render)
     # for homo20 in homo20list:
     #     homo2 = np.dot(rm.homoinverse(homo20), homo0)

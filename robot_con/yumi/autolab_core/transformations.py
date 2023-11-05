@@ -628,7 +628,7 @@ def shear_matrix(angle, direction, point, normal):
     vector must be orthogonal to the plane's normal vector.
 
     A point P is transformed by the shear matrix into P" such that
-    the vector P-P" is parallel to the direction vector and its extent is
+    the vector P-P" is parallel to the direction vector and its xyz_lengths is
     given by the angle of P-P'-P", where P' is the orthogonal projection
     of P onto the shear plane.
 
@@ -710,7 +710,7 @@ def decompose_matrix(matrix):
         translate : translation vector along x, y, z axes
         perspective : perspective partition of matrix
 
-    Raise ValueError if matrix is of wrong type or degenerative.
+    Raise ValueError if matrix is of wrong end_type or degenerative.
 
     >>> T0 = translation_matrix((1, 2, 3))
     >>> scale, shear, angles, trans, persp = decompose_matrix(T0)
@@ -914,7 +914,7 @@ def superimposition_matrix(v0, v1, scaling=False, usesvd=True):
     v1 = numpy.array(v1, dtype=numpy.float64, copy=False)[:3]
 
     if v0.shape != v1.shape or v0.shape[1] < 3:
-        raise ValueError("Vector sets are of wrong shape or type.")
+        raise ValueError("Vector sets are of wrong shape or end_type.")
 
     # move centroids to origin
     t0 = numpy.mean(v0, axis=1)
@@ -947,7 +947,7 @@ def superimposition_matrix(v0, v1, scaling=False, usesvd=True):
         l, V = numpy.linalg.eig(N)
         q = V[:, numpy.argmax(l)]
         q /= vector_norm(q) # unit quaternion
-        q = numpy.roll(q, -1) # move w component to end
+        q = numpy.roll(q, -1) # move w component to end_type
         # homogeneous transformation matrix
         M = quaternion_matrix(q)
 
@@ -1409,7 +1409,7 @@ class Arcball(object):
 
         center : sequence[2]
             Window coordinates of trackball center.
-        radius : float
+        major_radius : float
             Radius of trackball in window coordinates.
 
         """
@@ -1533,7 +1533,7 @@ _TUPLE2AXES = dict((v, k) for k, v in _AXES2TUPLE.items())
 # helper functions
 
 def vector_norm(data, axis=None, out=None):
-    """Return length, i.e. eucledian norm, of ndarray along axis.
+    """Return axis_length, i.e. eucledian norm, of ndarray along axis.
 
     >>> v = numpy.random.random(3)
     >>> n = vector_norm(v)
@@ -1572,7 +1572,7 @@ def vector_norm(data, axis=None, out=None):
 
 
 def unit_vector(data, axis=None, out=None):
-    """Return ndarray normalized by length, i.e. eucledian norm, along axis.
+    """Return ndarray normalized by axis_length, i.e. eucledian norm, along axis.
 
     >>> v0 = numpy.random.random(3)
     >>> v1 = unit_vector(v0)

@@ -27,7 +27,7 @@ class MeshScript:
 
     def __enter__(self):
         # windows has problems with multiple programs using open files so we close
-        # them at the end of the enter call, and delete them ourselves at exit
+        # them at the end_type of the enter call, and delete them ourselves at exit
         # Blender sorts its objects alphabetically
         # so prefix the mesh number on the file name
         digit_count = len(str(len(self.meshes)))

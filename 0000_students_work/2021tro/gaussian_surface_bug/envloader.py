@@ -176,7 +176,7 @@ def loadObjpcd(f_name, pos=(0, 0, 0), rot=(0, 0, 0), sample_num=100000, togglede
     rotmat4 = np.zeros([4, 4])
     rotmat4[:3, :3] = rm.rotmat_from_euler(rot[0], rot[1], rot[2], axes="sxyz")
     rotmat4[:3, 3] = pos
-    obj_surface = np.asarray(obj.sample_surface(nsample=sample_num))
+    obj_surface = np.asarray(obj.sample_surface(n_samples=sample_num))
     # obj_surface = obj_surface[obj_surface[:, 2] > 2]
     obj_surface_real = __pcd_trans(obj_surface, rotmat4)
     if toggledebug:
@@ -218,8 +218,8 @@ if __name__ == '__main__':
     base, env = loadEnv_wrs()
     objcm = loadObj('cylinder.stl', pos=(700, 0, 780), rot=(0, 0, 0), transparency=1)
     objcm.reparentTo(base.render)
-    # loadObjpcd('obstacles/cylinder.stl', pos=(800, 400, 780), rot=(0, -90, 0))
-    # loadObjpcd('obstacles/pen.stl', pos=(800, 400, 785), rot=(0, -90, 0))
+    # loadObjpcd('obstacles/cylinder.stl', pos=(800, 400, 780), rotmat=(0, -90, 0))
+    # loadObjpcd('obstacles/pen.stl', pos=(800, 400, 785), rotmat=(0, -90, 0))
     rbt, rbtmg, rbtball = loadUr3e()
     # rbtmg.genmnp(rbt, togglejntscoord=True).reparentTo(base.render)
     rbtmg.gensnp(rbt, togglejntscoord=True).reparentTo(base.render)

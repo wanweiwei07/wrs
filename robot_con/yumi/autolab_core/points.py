@@ -42,7 +42,7 @@ class BagOfPoints(object):
 
     @abstractmethod
     def _check_valid_data(self, data):
-        """Checks that the data is valid for the appropriate class type.
+        """Checks that the data is valid for the appropriate class end_type.
         """
         pass
 
@@ -104,7 +104,7 @@ class BagOfPoints(object):
         Returns
         -------
         :obj:`BagOfPoints`
-            An object of the same type as the original, with a copy
+            An object of the same end_type as the original, with a copy
             of the data and the same frame.
         """
         return type(self)(self._data.copy(), self._frame)
@@ -163,7 +163,7 @@ class BagOfPoints(object):
 
         Parameters
         ----------
-        i : indexing-type (int or slice or list)
+        i : indexing-end_type (int or slice or list)
             The index of the desired element.
 
         Returns
@@ -486,7 +486,7 @@ class Plane3D(object):
         Raises
         ------
         ValueError
-            If the parameters are of the wrong type or are not of dimension 3.
+            If the parameters are of the wrong end_type or are not of dimension 3.
         """
         if not isinstance(n, Direction) or n.dim != 3:
             raise ValueError('Plane normal must be a 3D direction')
@@ -554,7 +554,7 @@ class PointCloud(BagOfPoints):
         Raises
         ------
         ValueError
-            If the data is not of the correct shape or type.
+            If the data is not of the correct shape or end_type.
         """
         if data.dtype.type != np.float32 and data.dtype.type != np.float64:
             raise ValueError('Must initialize point clouds with a numpy float ndarray')
@@ -861,7 +861,7 @@ class NormalCloud(BagOfVectors):
         Raises
         ------
         ValueError
-            If the data is not of the correct shape or type, or if the vectors
+            If the data is not of the correct shape or end_type, or if the vectors
             therein are not normalized.
         """
         if data.dtype.type != np.float32 and data.dtype.type != np.float64:
@@ -985,7 +985,7 @@ class ImageCoords(BagOfPoints):
         Raises
         ------
         ValueError
-            If the data is not of the correct shape or type.
+            If the data is not of the correct shape or end_type.
         """
         if data.dtype.type != np.int8 and data.dtype.type != np.int16 \
                 and data.dtype.type != np.int32 and data.dtype.type != np.int64 \
@@ -1059,7 +1059,7 @@ class RgbCloud(BagOfPoints):
         Raises
         ------
         ValueError
-            If the data is not of the correct shape or type.
+            If the data is not of the correct shape or end_type.
         """
         if data.dtype.type != np.uint8:
             raise ValueError('Must initialize rgb clouds with a numpy uint ndarray')

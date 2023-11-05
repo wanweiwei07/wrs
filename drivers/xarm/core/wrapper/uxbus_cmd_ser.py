@@ -18,7 +18,7 @@ def debug_log_datas(datas, label=''):
     print('{}:'.format(label), end=' ')
     for i in range(len(datas)):
         print('{:x}'.format(datas[i]).zfill(2), end=' ')
-        # print(hex(rx_data[i]), end=',')
+        # print(hex(rx_data[i]), end_type=',')
     print()
 
 

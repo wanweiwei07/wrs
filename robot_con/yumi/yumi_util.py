@@ -13,13 +13,14 @@ from robot_con.yumi.autolab_core import RigidTransform
 def message_to_pose(message, from_frame='yumi'):
     tokens = message.split()
     try:
-        if len(tokens) != 7:
+        if len(tokens) != 11:
             raise Exception("Invalid format for pose! Got:\n{0}".format(message))
         pose_vals = [float(token) for token in tokens]
-        q = pose_vals[3:]
+        q = pose_vals[3:7]
         t = pose_vals[:3]
+        conf = pose_vals[7:]
         R = RigidTransform.rotation_from_quaternion(q)
-        pose = RigidTransform(R, t, from_frame=from_frame)
+        pose = RigidTransform(R, t, conf, from_frame=from_frame)
         pose.position = pose.position * MM_TO_METERS
 
         return pose

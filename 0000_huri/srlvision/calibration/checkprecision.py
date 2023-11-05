@@ -17,13 +17,13 @@ if __name__ == '__main__':
 
     # yhx.robot_s.movearmfk(yhx.rbtx.getarmjntsx(arm_name="rgt"), arm_name="rgt")
     # tcppos, tcprot = yhx.robot_s.gettcp()
-    # yhx.p3dh.genframe(tcppos, tcprot, thickness=15).reparentTo(yhx.base.render)
+    # yhx.p3dh.genframe(tcppos, tcprot, major_radius=15).reparentTo(yhx.base.render)
     # minx = tcppos[0]-100
     # maxx = minx+100
     # miny = tcppos[1]
     # maxy = miny+140
     # minz = tcppos[2]
     # maxz = tcppos[2]+70
-    # pcd = o3dh.cropnx3nparray(pcd, [minx, maxx], [miny, maxy], [minz, maxz])
+    # pcd_helper = o3dh.cropnx3nparray(pcd_helper, [minx, maxx], [miny, maxy], [minz, maxz])
 
     yhx.show()

@@ -3,13 +3,13 @@ import math
 import numpy as np
 import modeling.collision_model as cm
 import modeling.model_collection as mc
-import robot_sim._kinematics.jlchain as jl
+import robot_sim.kinematics.jlchain as jl
 import robot_sim.manipulators.rs007l.rs007l as manipulator
 import robot_sim.end_effectors.single_contact.screw_driver.orsd.orsd as end_effector
-import robot_sim.robots.arm_interface as ai
+import robot_sim.robots.robot_interface as ai
 
 
-class KHI_ORSD(ai.ArmInterface):
+class KHI_ORSD(ai.RobotInterface):
 
     def __init__(self, pos=np.zeros(3), rotmat=np.eye(3), name="khi_g", enable_cc=True):
         super().__init__(pos=pos, rotmat=rotmat, name=name)
@@ -24,7 +24,7 @@ class KHI_ORSD(ai.ArmInterface):
                                               coupling_offset_pos=np.array([0, 0, 0.0639]),
                                               name='orsd', enable_cc=False)
         # tool center point
-        self.manipulator.jlc.tcp_jnt_id = -1
+        self.manipulator.jlc.tcp_joint_id = -1
         self.manipulator.jlc.tcp_loc_pos = self.end_effector.action_center_pos
         self.manipulator.jlc.tcp_loc_rotmat = self.end_effector.action_center_rotmat
         # collision detection
@@ -34,7 +34,7 @@ class KHI_ORSD(ai.ArmInterface):
     def _update_oof(self):
         """
         oof = object on flange
-        this function is to be implemented by subclasses for updating ft-sensors, tool changers, end-effectors, etc.
+        this function is to be implemented by subclasses for updating ft-sensors, tool changers, end_type-effectors, etc.
         :return:
         author: weiwei
         date: 20230807
@@ -162,7 +162,7 @@ if __name__ == '__main__':
     robot_s = KHI_ORSD(enable_cc=True)
     # robot_s.jaw_to(.02)
     robot_s.gen_meshmodel(toggle_tcpcs=True, toggle_jntscs=True).attach_to(base)
-    # robot_s.gen_meshmodel(toggle_tcpcs=False, toggle_jntscs=False).attach_to(base)
+    # robot_s.gen_meshmodel(toggle_tcp_frame=False, toggle_joint_frame=False).attach_to(base)
     robot_s.gen_stickmodel(toggle_tcpcs=True, toggle_jntscs=True).attach_to(base)
     # base.run()
     tgt_pos = np.array([.25, .2, .15])

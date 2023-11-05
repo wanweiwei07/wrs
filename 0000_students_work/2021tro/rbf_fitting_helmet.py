@@ -15,13 +15,13 @@ base = wd.World(cam_pos=np.array([.5,.1,.3]), lookat_pos=np.array([0,0,0.02]))
 model_pcd = pickle.load(open("helmet_gaussian.pkl", "rb"))['objpcd'] * 1e-3
 origin = np.mean(model_pcd, axis=0)
 bowl_samples = model_pcd - origin
-bowl_model = cm.CollisionModel(initor=bowl_samples)
+bowl_model = cm.CollisionModel(initializer=bowl_samples)
 bowl_model.attach_to(base)
 # base.run()
 # sampled_points = []
 # for id, p in enumerate(points.tolist()):
 #     if np.dot(np.array([1,0,0]), points_normals[id]) > .3 and p[0]>0:
-#         gm.gen_sphere(pos=p, radius=.001).attach_to(base)
+#         gm.gen_sphere(pos=p, major_radius=.001).attach_to(base)
 #         sampled_points.append(p)
 
 # x - v

@@ -21,8 +21,8 @@ human = nxt.Nextage()
 rotmat = rm.rotmat_from_axangle([0, 0, 1], math.pi/2)
 human.fix_to(np.array([0, -1.5, 1]), rotmat=rotmat)
 gm.gen_arrow(spos=np.array([0, -1.5, 1]),
-              epos=np.array([0, -1.5, 0]),
-             thickness=0.01,
+             epos=np.array([0, -1.5, 0]),
+             stick_radius=0.01,
              rgba=np.array([.5, 0, 0, 1])).attach_to(base)
 human.gen_stickmodel().attach_to(base)
 ## show table2
@@ -80,7 +80,7 @@ height += .017
 object_box3 = cm.gen_box(extent=[.296, .88, .018], rgba=[.7, .5, .3, 1])   # no.2
 object_box3.set_pos(table2_center + np.array([0, 0, height]))
 object_box3.attach_to(base)
-object_box3.show_localframe()
+object_box3.show_local_frame()
 pre_homo = object_box3.get_homomat()
 height += .018
 object_box4 = cm.gen_box(extent=[.296, .88, .018], rgba=[.7, .5, .3, .5])   # no.1
@@ -106,7 +106,7 @@ tool_initial_rotmat = rm.rotmat_from_axangle([0, 0, 1], math.radians(90))
 tool_initial.set_pos(tool_initial_pos)
 tool_initial.set_rotmat(tool_initial_rotmat)
 # tool_initial.attach_to(base)
-tool_initial.show_localframe()
+tool_initial.show_local_frame()
 tool_initial_homomat = rm.homomat_from_posrot(tool_initial_pos, rotmat)
 tool_final.set_rgba([0, 0, 1, 1])
 tool_final_pos = np.array([table2_center[0], table2_center[1], object_box4.get_pos()[2] + .009 + .11])
@@ -142,9 +142,9 @@ print(jnt_values_initial, jnt_values)
 #         print("number", i)
 #         rotmat = rm.rotmat_from_axangle(axis=np.array([0, 0, 1]), angle=math.radians(180 * i / 10))
 #         pos = np.dot(rotmat, s_pos) + c_pos
-#         jnt_values = pos.copy()
-#         jnt_values[2] = math.pi
-#         robot_s.fk(component_name="agv", jnt_values=jnt_values)
+#         joint_values = pos.copy()
+#         joint_values[2] = math.pi
+#         robot_s.fk(component_name="agv", joint_values=joint_values)
 #         # check if the rbt_s is collided or not at the place
 #         if robot_s.is_collided(obstacle_list=obstacle_list):
 #             print("1")
@@ -158,11 +158,11 @@ print(jnt_values_initial, jnt_values)
 #                 first_jaw_center_rotmat = tool_initial_rotmat.dot(jaw_center_rotmat)
 #                 armjnts = robot_s.ik(component_name="arm", tgt_pos=first_jaw_center_pos, tgt_rotmat=first_jaw_center_rotmat)
 #                 if armjnts is not None:
-#                     robot_s.fk(component_name="arm", jnt_values=armjnts)
+#                     robot_s.fk(component_name="arm", joint_values=armjnts)
 #                     is_robot_collided = robot_s.is_collided(obstacle_list=obstacle_list)
 #                     # display only if armjnts is not None and rbt_s is not collided
 #                     if is_robot_collided is False and counter is 0:
-#                         dist_pos.append(jnt_values)
+#                         dist_pos.append(joint_values)
 #                         counter += 1
 #                         continue
 # print(dist_pos)
@@ -214,7 +214,7 @@ for dict_goal_pos in dist_pos:
     #     obj_pos = target_obj.get_homomat()[:3, 3]
     #     obj_rotmat = target_obj.get_homomat()[:3, :3]
     #     objpose_list_box2 = ppp_s.gen_object_motion(component_name="arm", conf_list=conf_list1, obj_pos=obj_pos,
-    #                                                 obj_rotmat=obj_rotmat, type="absolute")
+    #                                                 obj_rotmat=obj_rotmat, end_type="absolute")
     #     for i, objpose in enumerate(objpose_list1):
     #         objpose_list2.append(objpose)
     #         conf_list2.append(conf_list1[i])
@@ -225,7 +225,7 @@ for dict_goal_pos in dist_pos:
     #             break
     #     ## gen object sliding motion
     #     inik_s = inik.IncrementalNIK(robot_s)
-    #     robot_s.fk(component_name="arm", jnt_values=conf_list2[-1])
+    #     robot_s.fk(component_name="arm", joint_values=conf_list2[-1])
     #     start_tcp_pos, start_tcp_rotmat = robot_s.get_gl_tcp(manipulator_name="arm")
     #     direction = [1, 0, 0]
     #     distance = .1
@@ -234,12 +234,12 @@ for dict_goal_pos in dist_pos:
     #     linear_conf_list = inik_s.gen_linear_motion(component_name="arm", start_tcp_pos=start_tcp_pos,
     #                                                 start_tcp_rotmat=start_tcp_rotmat,
     #                                                 goal_tcp_pos=goal_tcp_pos, goal_tcp_rotmat=goal_tcp_rotmat,
-    #                                                 granularity=0.01, seed_jnt_values=conf_list2[-1])
+    #                                                 granularity=0.01, seed_joint_values=conf_list2[-1])
     #     ## if fail to plan sliding with arm ? then use agv
     #     if linear_conf_list is None:
     #         print("--- 1 ----")
     #         temp_linear_conf = []
-    #         robot_s.fk(component_name="arm", jnt_values=conf_list2[-1])
+    #         robot_s.fk(component_name="arm", joint_values=conf_list2[-1])
     #         alljnts = robot_s.get_jnt_values(component_name="all")
     #         robot_pos = alljnts[0:3].tolist()
     #         for i in range(int(distance / 0.01)):
@@ -253,7 +253,7 @@ for dict_goal_pos in dist_pos:
     #         linear_jawwidth_list = []
     #         for i, armjnts in enumerate(linear_conf_list):
     #             temp_objpose = copy.deepcopy(objpose_list2[-1])
-    #             robot_s.fk(component_name="all", jnt_values=armjnts)
+    #             robot_s.fk(component_name="all", joint_values=armjnts)
     #             eepos, eerot = robot_s.get_gl_tcp(manipulator_name="arm")
     #             # pos = temp_objpose[:3, 3] + rm.unit_vector(direction) * i * 0.01
     #             linear_jawwidth_list.append(jawwidth_list2[-1])
@@ -268,13 +268,13 @@ for dict_goal_pos in dist_pos:
     #         rel_obj_pos, rel_obj_rotmat = robot_s.hold(hnd_name=hnd_name, objcm=objcm_copy)
     #         robot_s.release(hnd_name=hnd_name, objcm=objcm_copy)
     #         linear_objpose_list = ppp_s.gen_object_motion(component_name="arm", conf_list=temp_linear_conf, obj_pos=rel_obj_pos,
-    #                                                       obj_rotmat=rel_obj_rotmat, type='relative')
+    #                                                       obj_rotmat=rel_obj_rotmat, end_type='relative')
     #         # gen linear_objpose_list_box
     #         objcm_copy = target_obj.copy()
     #         rel_obj_pos, rel_obj_rotmat = robot_s.hold(hnd_name=hnd_name, objcm=objcm_copy)
     #         linear_objpose_list_box = ppp_s.gen_object_motion(component_name="arm", conf_list=temp_linear_conf,
     #                                                           obj_pos=rel_obj_pos, obj_rotmat=rel_obj_rotmat,
-    #                                                           type='relative')
+    #                                                           end_type='relative')
     #         robot_s.release(hnd_name=hnd_name, objcm=objcm_copy)
     #         linear_conf_list = robot_s.cvt_to_alljnts(conf_list_arm=temp_linear_conf, hnd_name=hnd_name)
     #         linear_jawwidth_list = []
@@ -353,9 +353,9 @@ def update(robot_s,
         robot_attached_list.clear()
         object_attached_list.clear()
     pose = robot_path[counter[0]]
-    robot_s.fk(component_name="all", jnt_values=pose)
+    robot_s.fk(component_name="all", joint_values=pose)
     robot_s.jaw_to(hnd_name, jawwidth_path[counter[0]])
-    robot_meshmodel = robot_s.gen_meshmodel()
+    robot_meshmodel = robot_s.gen_mesh_model()
     robot_meshmodel.attach_to(base)
     robot_attached_list.append(robot_meshmodel)
     obj_pose = obj_path[counter[0]]

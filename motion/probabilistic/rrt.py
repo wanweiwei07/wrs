@@ -13,15 +13,15 @@ class RRT(object):
     @staticmethod
     def _decorator_keep_jnt_values(foo):
         """
-        decorator function for save and restore robot_s's jnt values
+        decorator function for save and restore robot_s's joint values
         :return:
         author: weiwei
         date: 20220404
         """
         def wrapper(self, component_name, *args, **kwargs):
-            jnt_values_bk = self.robot_s.get_jnt_values(component_name)
+            jnt_values_bk = self.robot_s.get_joint_values(component_name)
             result = foo(self, component_name, *args, **kwargs)
-            self.robot_s.fk(component_name=component_name, jnt_values=jnt_values_bk)
+            self.robot_s.fk(component_name=component_name, joint_values=jnt_values_bk)
             return result
         return wrapper
 
@@ -48,10 +48,10 @@ class RRT(object):
         author: weiwei
         date: 20220326
         """
-        # self.robot_s.fk(component_name=component_name, jnt_values=conf)
+        # self.robot_s.fk(component_name=component_name, joint_values=conf)
         # return self.robot_s.is_collided(obstacle_list=obstacle_list, otherrobot_list=otherrobot_list)
-        if self.robot_s.is_jnt_values_in_ranges(component_name=component_name, jnt_values=conf):
-            self.robot_s.fk(component_name=component_name, jnt_values=conf)
+        if self.robot_s.are_joint_values_in_ranges(component_name=component_name, joint_values=conf):
+            self.robot_s.fk(component_name=component_name, joint_values=conf)
             return self.robot_s.is_collided(obstacle_list=obstacle_list, otherrobot_list=otherrobot_list)
         else:
             print("The given joint angles are out of joint limits.")
@@ -78,7 +78,7 @@ class RRT(object):
         # use the following alternative if correspondence is bad (a bit slower), 20210523, weiwei
         # # nodes_value_list = list(nodes_dict.values())
         # nodes_value_list = itemgetter(*nodes_key_list)(nodes_dict)
-        # if type(nodes_value_list) == np.ndarray:
+        # if end_type(nodes_value_list) == np.ndarray:
         #     nodes_value_list = [nodes_value_list]
         conf_array = np.array(nodes_value_list)
         diff_conf_array = np.linalg.norm(conf_array - new_conf, axis=1)
@@ -176,7 +176,7 @@ class RRT(object):
             if j < i:
                 i, j = j, i
             shortcut = self._extend_conf(smoothed_path[i], smoothed_path[j], granularity)
-            # 20210523, it seems we do not need to check line length
+            # 20210523, it seems we do not need to check line axis_length
             # if (len(shortcut) <= (j - i)) and all(not self._is_collided(component_name=component_name,
             #                                                            conf=conf,
             #                                                            obstacle_list=obstacle_list,
@@ -214,7 +214,7 @@ class RRT(object):
         self.roadmap.clear()
         self.start_conf = start_conf
         self.goal_conf = goal_conf
-        # check seed_jnt_values and end_conf
+        # check seed_joint_values and end_conf
         if self._is_collided(component_name, start_conf, obstacle_list, otherrobot_list):
             print("The start robot_s configuration is in collision!")
             return None
@@ -300,7 +300,7 @@ class RRT(object):
         if shortcut is not None:
             plt.plot([conf[0] for conf in shortcut], [conf[1] for conf in shortcut], linewidth=4, linestyle='--',
                      color='r')
-        # plt.plot(planner.seed_jnt_values[0], planner.seed_jnt_values[1], "xr")
+        # plt.plot(planner.seed_joint_values[0], planner.seed_joint_values[1], "xr")
         # plt.plot(planner.end_conf[0], planner.end_conf[1], "xm")
         if not hasattr(RRT, 'img_counter'):
             RRT.img_counter = 0
@@ -324,15 +324,15 @@ class RRT_v2(object):
     @staticmethod
     def _decorator_keep_jnt_values(foo):
         """
-        decorator function for save and restore robot_s's jnt values
+        decorator function for save and restore robot_s's joint values
         :return:
         author: weiwei
         date: 20220404
         """
         def wrapper(self, *args, **kwargs):
-            jnt_values_bk = self.robot_s.get_jnt_values()
+            jnt_values_bk = self.robot_s.get_joint_values()
             result = foo(self, *args, **kwargs)
-            self.robot_s.fk(jnt_values=jnt_values_bk)
+            self.robot_s.fk(joint_values=jnt_values_bk)
             return result
         return wrapper
 
@@ -357,8 +357,8 @@ class RRT_v2(object):
         author: weiwei
         date: 20220326
         """
-        if self.robot_s.is_jnt_values_in_ranges( jnt_values=conf):
-            self.robot_s.fk(jnt_values=conf)
+        if self.robot_s.are_joint_values_in_ranges(joint_values=conf):
+            self.robot_s.fk(joint_values=conf)
             return self.robot_s.is_collided(obstacle_list=obstacle_list, otherrobot_list=otherrobot_list)
         else:
             print("The given joint angles are out of joint limits.")
@@ -385,7 +385,7 @@ class RRT_v2(object):
         # use the following alternative if correspondence is bad (a bit slower), 20210523, weiwei
         # # nodes_value_list = list(nodes_dict.values())
         # nodes_value_list = itemgetter(*nodes_key_list)(nodes_dict)
-        # if type(nodes_value_list) == np.ndarray:
+        # if end_type(nodes_value_list) == np.ndarray:
         #     nodes_value_list = [nodes_value_list]
         conf_array = np.array(nodes_value_list)
         diff_conf_array = np.linalg.norm(conf_array - new_conf, axis=1)
@@ -481,7 +481,7 @@ class RRT_v2(object):
             if j < i:
                 i, j = j, i
             shortcut = self._extend_conf(smoothed_path[i], smoothed_path[j], granularity)
-            # 20210523, it seems we do not need to check line length
+            # 20210523, it seems we do not need to check line axis_length
             # if (len(shortcut) <= (j - i)) and all(not self._is_collided(component_name=component_name,
             #                                                            conf=conf,
             #                                                            obstacle_list=obstacle_list,
@@ -517,7 +517,7 @@ class RRT_v2(object):
         self.roadmap.clear()
         self.start_conf = start_conf
         self.goal_conf = goal_conf
-        # check seed_jnt_values and end_conf
+        # check seed_joint_values and end_conf
         if self._is_collided(start_conf, obstacle_list, otherrobot_list):
             print("The start robot_s configuration is in collision!")
             return None
@@ -601,7 +601,7 @@ class RRT_v2(object):
         if shortcut is not None:
             plt.plot([conf[0] for conf in shortcut], [conf[1] for conf in shortcut], linewidth=4, linestyle='--',
                      color='r')
-        # plt.plot(planner.seed_jnt_values[0], planner.seed_jnt_values[1], "xr")
+        # plt.plot(planner.seed_joint_values[0], planner.seed_joint_values[1], "xr")
         # plt.plot(planner.end_conf[0], planner.end_conf[1], "xm")
         if not hasattr(RRT, 'img_counter'):
             RRT.img_counter = 0

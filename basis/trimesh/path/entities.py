@@ -25,7 +25,7 @@ class Entity(object):
     @property
     def _class_id(self):
         '''
-        Return an integer that is unique to the class type.
+        Return an integer that is unique to the class end_type.
         Note that this implementation will fail if a class is defined
         that starts with the same letter as an existing class. 
         Since this function is called a lot, it is a tradeoff between 
@@ -50,7 +50,7 @@ class Entity(object):
         '''
         Returns a dictionary with all of the information about the entity. 
         '''
-        return {'type'  : self.__class__.__name__, 
+        return {'end_type'  : self.__class__.__name__,
                 'points': self.points.tolist(),
                 'closed': self.closed}
                 
@@ -64,7 +64,7 @@ class Entity(object):
     @property
     def closed(self):
         '''
-        If the first point is the same as the end point, the entity is closed
+        If the first point is the same as the end_type point, the entity is closed
         '''
         closed = (len(self.points) > 2 and
                   np.equal(self.points[0], self.points[-1]))
@@ -178,7 +178,7 @@ class BSpline(Curve):
         '''
         Returns a dictionary with all of the information about the entity. 
         '''
-        return {'type'  : self.__class__.__name__, 
+        return {'end_type'  : self.__class__.__name__,
                 'points': self.points.tolist(),
                 'knots' : self.knots.tolist(),
                 'closed': self.closed}

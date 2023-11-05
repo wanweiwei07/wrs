@@ -37,7 +37,7 @@ if __name__ == '__main__':
     base = wd.World(cam_pos=[10, 0, 5], lookat_pos=[0, 0, 1])
     base.setFrameRateMeter(True)
     gm.gen_frame().attach_to(base)
-    # obj_box = cm.gen_box(extent=[.2, 1, .3], rgba=[.3, 0, 0, 1])
+    # obj_box = cm.gen_box(xyz_lengths=[.2, 1, .3], rgba=[.3, 0, 0, 1])
     obj_box = cm.gen_sphere(radius=.5, rgba=[.3, 0, 0, 1])
     obj_bd_box = bdm.BDModel(obj_box, mass=.3, type="convex")
     obj_bd_box.set_pos(np.array([.7, 0, 2.7]))
@@ -55,13 +55,13 @@ if __name__ == '__main__':
 
     def update(robot_s, bd_lnk_list, task):
         if base.inputmgr.keymap['space'] is True:
-            la_jnt_values = robot_s.get_jnt_values("lft_arm")
-            ra_jnt_values = robot_s.get_jnt_values("rgt_arm")
+            la_jnt_values = robot_s.get_joint_values("lft_arm")
+            ra_jnt_values = robot_s.get_joint_values("rgt_arm")
             rand_la = np.random.rand(6)*.01
             rand_ra = np.random.rand(6)*.01
             la_jnt_values=la_jnt_values+rand_la
             ra_jnt_values=ra_jnt_values+rand_ra
-            robot_s.fk(component_name="both_arm", jnt_values=np.hstack((la_jnt_values, ra_jnt_values)))
+            robot_s.fk(component_name="both_arm", joint_values=np.hstack((la_jnt_values, ra_jnt_values)))
             update_robot_bdmodel(robot_s, bd_lnk_list)
             base.inputmgr.keymap['space'] = False
         return task.cont

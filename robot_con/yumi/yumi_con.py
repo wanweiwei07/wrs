@@ -1,24 +1,25 @@
 """
 Yumi Higher-level Control API.
 Author: Hao Chen
-Date: 20220123
+Date: 20220123, 20230831
 """
+from typing import List
 import time
-from typing import Tuple, List
-
 import numpy as np
-
+from robot_con.yumi.autolab_core import RigidTransform
 import robot_con.yumi.yumi_robot as yr
 import robot_con.yumi.yumi_state as ys
 
 
-class Yumi_Controller:
-    def __init__(self, debug: bool = False):
-        """
-        is_add_all: Set True, the function `move_jntspace_path` will send multiple joint angles at once.
-                    Otherwise, it will send single joint angle at once
-        """
+class YumiController:
+    """
+    A client to control the yumi. See drivers/yumi/README.md for creating Server.
+    """
+
+    def __init__(self, debug=False):
         self.rbtx = yr.YuMiRobot(debug=debug)
+        # is_add_all: Set True, the function `move_jntspace_path` will send multiple joint angles at once.
+        # Otherwise, it will send single joint angle at once.
         self._is_add_all = True
 
     @property
@@ -29,10 +30,10 @@ class Yumi_Controller:
     def rgt_arm_hnd(self):
         return self.rbtx.right
 
-    def get_pose(self, component_name: str) -> Tuple[np.ndarray, np.ndarray]:
+    def get_pose(self, component_name: str, return_conf: bool = False) -> List[np.ndarray]:
         """
-        Get pose of the robot computed by YUMI Server
-        :return 1x3 position vector and 3x3 rotation matrix
+        :return if return_conf = False, return 1. 1x3 position vector and 2. 3x3 rotation matrix
+                else, return 1. 1x3 position vector, 2. 3x3 rotation matrix, 3. robot configuration
         """
         if component_name in ["lft_arm", "lft_hnd"]:
             armx = self.rbtx.left
@@ -43,7 +44,11 @@ class Yumi_Controller:
         pose = armx.get_pose()
         pos = pose.translation
         rot = pose.rotation
-        return pos, rot
+        rot[:, 0] = - rot[:, 0]
+        rot[:, 1] = - rot[:, 1]
+        if not return_conf:
+            return pos, rot
+        return pos, rot, pose.configuration
 
     def move_jnts(self, component_name: str, jnt_vals: np.ndarray, speed_n: int = 100):
         """
@@ -69,10 +74,75 @@ class Yumi_Controller:
         ajstate = ys.YuMiState(armjnts)
         armx.movetstate_sgl(ajstate)
 
-    def contactL(self, component_name: str, jnt_vals: np.ndarray, desired_torque: float = .5) -> bool:
+    def fk(self, component_name: str, jnt_vals: np.ndarray, return_conf: bool = False) -> List[np.ndarray]:
+        """
+        Forward kinematics of YUMI calculated by the RAPID commands in the real robot
+        :param component_name
+        :param jnt_vals: 1x7 np.array
+        :param return_conf: If True, additionally return robot configuration
+        :return: If return_conf is True: 1x3 position, 3x3 rotation, 1x4 robot configuration
+                 Else 1x3 position, 3x3 rotation
+        Also see 1176 page of https://library.e.abb.com/public/688894b98123f87bc1257cc50044e809/Technical%20reference%20manual_RAPID_3HAC16581-1_revJ_en.pdf
+        for robot configuration
+        author: hao chen (chen960216@gmail.com)
+        date: 20230829
+        """
+        if component_name in ["lft_arm", "lft_hnd"]:
+            armx = self.rbtx.left
+        elif component_name in ["rgt_arm", "rgt_hnd"]:
+            armx = self.rbtx.right
+        else:
+            raise ValueError("Component_name must be in ['lft_arm', 'rgt_arm']!")
+        armjnts = np.rad2deg(jnt_vals)
+        ajstate = ys.YuMiState(armjnts)
+        pose = armx.fk(ajstate)
+        pos = pose.translation
+        rot = pose.rotation
+        if not return_conf:
+            return pos, rot
+        return pos, rot, pose.configuration
+
+    def move_p(self, component_name: str, pos: np.ndarray, rot: np.ndarray, conf: np.ndarray = None,
+               linear: bool = True, speed_n: int = 100):
+        """
+        Move to aa pose
+        :param component_name:
+        :param pos: 1x3 position
+        :param rot: 3x3 rotation matrix
+        :param conf: Optional[1x4 np.ndarray]. Indicate robot configuration. If conf=None, it will use default robot configuration.
+                     Note that robot configuration is used to determine the pose of the robot at a specific pose. If the robot configuration
+                     is bad. The move_p may fail.
+                     Also see 1176 page of https://library.e.abb.com/public/688894b98123f87bc1257cc50044e809/Technical%20reference%20manual_RAPID_3HAC16581-1_revJ_en.pdf
+                     for robot configuration
+        :param linear: If move_p is linear. If True, TCP will move linearly.
+        :param speed_n: speed number. If speed_n = 100, then speed will be set to the corresponding v100
+                specified in RAPID. Loosely, n is translational speed in milimeters per second
+                Please refer to page 1186 of
+                https://library.e.abb.com/public/688894b98123f87bc1257cc50044e809/Technical%20reference%20manual_RAPID_3HAC16581-1_revJ_en.pdf
+        :return:
+        """
+        if component_name in ["lft_arm", "lft_hnd"]:
+            armx = self.rbtx.left
+            _rot = rot.copy()
+            _rot[:, 0] = - _rot[:, 0]
+            _rot[:, 1] = - _rot[:, 1]
+        elif component_name in ["rgt_arm", "rgt_hnd"]:
+            armx = self.rbtx.right
+            _rot = rot.copy()
+        else:
+            raise ValueError("Component_name must be in ['lft_arm', 'rgt_arm']!")
+        if speed_n == -1:
+            armx.set_speed_max()
+        else:
+            self.rbtx.set_v(speed_n)
+        _pose = RigidTransform(rotation=_rot, translation=pos, configuration=conf)
+        res = armx.goto_pose(pose=_pose, linear=linear, wait_for_res=True)
+
+    def __contactL(self, component_name, jnt_vals, desired_torque=.5):
         """
         Use contactL. Move the robot to a target pose. The robot will stop in advance if the torque reach desired torque
         :return True if the robot reach target pose else False
+        This function is under construction.
         """
         if component_name in ["rgt_arm", "rgt_hnd"]:
             armx = self.rbtx.right
@@ -100,11 +170,12 @@ class Yumi_Controller:
 
     def move_jntspace_path(self, component_name: str, path: List[np.ndarray], speed_n: int = 100) -> bool:
         """
+        :param component_name
+        :param path: A list of joint angle values. The robot will follow these joint angle values
         :param speed_n: speed number. If speed_n = 100, then speed will be set to the corresponding v100
                 specified in RAPID. Loosely, n is translational speed in milimeters per second
                 Please refer to page 1186 of
                 https://library.e.abb.com/public/688894b98123f87bc1257cc50044e809/Technical%20reference%20manual_RAPID_3HAC16581-1_revJ_en.pdf
-
         """
         if component_name in ["lft_arm", "lft_hnd"]:
             armx = self.rbtx.left
@@ -203,7 +274,7 @@ class Yumi_Controller:
             raise ValueError("Component_name must be in ['lft_arm/lft_hnd', 'rgt_arm/rgt_hnd']!")
         armx.close_gripper(force=force)
 
-    def get_gripper_width(self, component_name: str):
+    def get_gripper_width(self, component_name: str) -> float:
         if component_name in ["lft_arm", "lft_hnd"]:
             armx = self.rbtx.left
         elif component_name in ["rgt_arm", "rgt_hnd"]:
@@ -240,12 +311,18 @@ class Yumi_Controller:
         elif armname == "lft":
             return self.rbtx.left.get_pressure()
 
+    def go_zero_pose(self):
+        """
+        Both arms go to the home pose
+        """
+        self.rbtx.reset_home()
+
     def stop(self):
         self.rbtx.stop()
 
 
 if __name__ == "__main__":
-    ycc = Yumi_Controller(debug=False)
+    ycc = YumiController(debug=False)
     ycc.set_gripper_speed("rgt_arm", 10)
 
     ycc.open_gripper("rgt_hnd")
@@ -254,8 +331,11 @@ if __name__ == "__main__":
     ycc.close_gripper("rgt_hnd", force=5)
     a = ycc.get_gripper_width("rgt_hnd")
     print(a)
+    print(ycc.get_pose("rgt_arm", return_conf=True))
+    print(ycc.get_pose("lft_arm", return_conf=True))
 
     # ycc.get_pose("rgt_arm")
     # ycc.calibrate_gripper()
     # print(ycc.get_jnt_values("rgt_arm"))
     # ycc.set_gripper_speed("rgt_arm", 10)
+    ycc.stop()

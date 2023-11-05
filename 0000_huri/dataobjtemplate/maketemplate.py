@@ -8,7 +8,7 @@ if __name__ == '__main__':
 
     # tubestand
     # tscm = cm.CollisionModel(os.path.join(yhx.root,  "objects",  "tubestand.stl"))
-    # tspcd, _ = tscm.samplesurface(radius=2)
+    # tspcd, _ = tscm.samplesurface(major_radius=2)
     # tspcd = tspcd[tspcd[:,2]>55]
     #
     # pickle.dump(tspcd, open(os.path.join(yhx.root, "dataobjtemplate", "tubestandtemplatepcd.pkl"), "wb"))
@@ -40,7 +40,7 @@ if __name__ == '__main__':
 
     # handpalm
     # tscm = cm.CollisionModel(os.path.join(yhx.root,  "objects", "handpalm.stl"))
-    # tspcd, _ = tscm.samplesurface(radius=2)
+    # tspcd, _ = tscm.samplesurface(major_radius=2)
     # tspcd = tspcd[tspcd[:,1]<-5]
     # tspcd = tspcd[tspcd[:,2]>5]
     #
@@ -52,7 +52,7 @@ if __name__ == '__main__':
 
     # handfinger
     # tscm = cm.CollisionModel(os.path.join(yhx.root,  "objects", "handfinger.stl"))
-    # tspcd, _ = tscm.samplesurface(radius=2)
+    # tspcd, _ = tscm.samplesurface(major_radius=2)
     # tspcd = tspcd[tspcd[:,1]<-5]
     # tspcd = tspcd[tspcd[:,2]>5]
     #

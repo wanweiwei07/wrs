@@ -55,7 +55,7 @@ class TLocator(object):
         # for pcdarray in pcdarraylist:
         #     rgb = np.random.rand(3)
         #     rgba = np.array([rgb[0], rgb[1], rgb[2], 1])
-        #     pcdnp = p3dh.genpointcloudnodepath(pcdarray, pntsize=5, colors=rgba)
+        #     pcdnp = p3dh.genpointcloudnodepath(pcdarray, point_size=5, colors=rgba)
         #     pcdnp.reparentTo(base.render)
         #     break
         # base.run()
@@ -146,7 +146,7 @@ if __name__ == '__main__':
     yhx.base.run()
 
 
-    # homomat = loc.findtubestand_match(objpcdmerged, toggle_debug=True)
+    # pos = loc.findtubestand_match(objpcdmerged, toggle_debug=True)
 
     elearray, eleconfidencearray = loc.findtubes(homomat, objpcd, toggledebug=False)
     yhx.p3dh.genframe(pos=homomat[:3,3], rotmat=homomat[:3,:3]).reparentTo(yhx.base.render)

@@ -4,10 +4,10 @@ import numpy as np
 import basis.robot_math as rm
 import modeling.collision_model as cm
 import modeling.model_collection as mc
-import robot_sim._kinematics.jlchain as jl
+import robot_sim.kinematics.jlchain as jl
 import robot_sim.manipulators.cobotta_arm.cobotta_arm as cbta
 import robot_sim.end_effectors.gripper.cobotta_pipette.cobotta_pipette as cbtp
-import robot_sim.robots.robot_interface as ri
+import robot_sim.robots.system_interface as ri
 
 
 class CobottaRIPPS(ri.RobotInterface):
@@ -18,9 +18,9 @@ class CobottaRIPPS(ri.RobotInterface):
         # base plate
         self.base_plate = jl.JLChain(pos=pos,
                                      rotmat=rotmat,
-                                     homeconf=np.zeros(0),
+                                     home_conf=np.zeros(0),
                                      name='base_plate_ripps')
-        self.base_plate.jnts[1]['loc_pos'] = np.array([0, 0, 0.01])
+        self.base_plate.joints[1]['pos_in_loc_tcp'] = np.array([0, 0, 0.01])
         self.base_plate.lnks[0]['mesh_file'] = os.path.join(this_dir, "meshes", "base_plate_ripps.stl")
         self.base_plate.lnks[0]['rgba'] = [.55, .55, .55, 1]
         self.base_plate.reinitialize()
@@ -29,17 +29,17 @@ class CobottaRIPPS(ri.RobotInterface):
         arm_homeconf[1] = -math.pi / 6
         arm_homeconf[2] = math.pi / 2
         arm_homeconf[4] = math.pi / 6
-        self.arm = cbta.CobottaArm(pos=self.base_plate.jnts[-1]['gl_posq'],
-                                   rotmat=self.base_plate.jnts[-1]['gl_rotmatq'],
+        self.arm = cbta.CobottaArm(pos=self.base_plate.joints[-1]['gl_posq'],
+                                   rotmat=self.base_plate.joints[-1]['gl_rotmatq'],
                                    homeconf=arm_homeconf,
                                    name='arm', enable_cc=False)
         # gripper
-        self.gripper_loc_rotmat = rm.rotmat_from_axangle([0,0,1], np.pi) # 20220607 rotate the pipetting end with 180^o.
+        self.gripper_loc_rotmat = rm.rotmat_from_axangle([0,0,1], np.pi) # 20220607 rotate the pipetting end_type with 180^o.
         self.hnd = cbtp.CobottaPipette(pos=self.arm.jnts[-1]['gl_posq'],
                                        rotmat=self.arm.jnts[-1]['gl_rotmatq'].dot(self.gripper_loc_rotmat),
                                        name='hnd_s', enable_cc=False)
         # tool center point
-        self.arm.jlc.tcp_jnt_id = -1
+        self.arm.jlc.tcp_joint_id = -1
         self.arm.jlc.tcp_loc_pos = self.gripper_loc_rotmat.dot(self.hnd.jaw_center_pos)
         self.arm.jlc.tcp_loc_rotmat = self.gripper_loc_rotmat.dot(self.hnd.jaw_center_rotmat)
         # a list of detailed information about objects in hand, see CollisionChecker.add_objinhnd
@@ -100,7 +100,7 @@ class CobottaRIPPS(ri.RobotInterface):
         self.pos = pos
         self.rotmat = rotmat
         self.base_plate.fix_to(pos=pos, rotmat=rotmat)
-        self.arm.fix_to(pos=self.base_plate.jnts[-1]['gl_posq'], rotmat=self.base_plate.jnts[-1]['gl_rotmatq'])
+        self.arm.fix_to(pos=self.base_plate.joints[-1]['gl_posq'], rotmat=self.base_plate.joints[-1]['gl_rotmatq'])
         self.hnd.fix_to(pos=self.arm.jnts[-1]['gl_posq'], rotmat=self.arm.jnts[-1]['gl_rotmatq'].dot(self.gripper_loc_rotmat))
         # update objects in hand if available
         for obj_info in self.oih_infos:
@@ -124,10 +124,10 @@ class CobottaRIPPS(ri.RobotInterface):
                 obj_info['gl_rotmat'] = gl_rotmat
 
         def update_component(component_name, jnt_values):
-            status = self.manipulator_dict[component_name].fk(jnt_values=jnt_values)
+            status = self.manipulator_dict[component_name].fk(joint_values=jnt_values)
             self.hnd_dict[component_name].fix_to(
-                pos=self.manipulator_dict[component_name].jnts[-1]['gl_posq'],
-                rotmat=self.manipulator_dict[component_name].jnts[-1]['gl_rotmatq'].dot(self.gripper_loc_rotmat))
+                pos=self.manipulator_dict[component_name].joints[-1]['gl_posq'],
+                rotmat=self.manipulator_dict[component_name].joints[-1]['gl_rotmatq'].dot(self.gripper_loc_rotmat))
             update_oih(component_name=component_name)
             return status
 
@@ -140,7 +140,7 @@ class CobottaRIPPS(ri.RobotInterface):
 
     def get_jnt_values(self, component_name="arm"):
         if component_name in self.manipulator_dict:
-            return self.manipulator_dict[component_name].get_jnt_values()
+            return self.manipulator_dict[component_name].get_joint_values()
         else:
             raise ValueError("The given component name is not supported!")
 
@@ -248,12 +248,12 @@ class CobottaRIPPS(ri.RobotInterface):
         """
         meshmodel = mc.ModelCollection(name=name)
         if option == 'full' or option == 'body_only':
-            self.base_plate.gen_meshmodel(tcp_jnt_id=tcp_jnt_id,
-                                          tcp_loc_pos=tcp_loc_pos,
-                                          tcp_loc_rotmat=tcp_loc_rotmat,
-                                          toggle_tcpcs=False,
-                                          toggle_jntscs=toggle_jntscs,
-                                          rgba=rgba).attach_to(meshmodel)
+            self.base_plate.gen_mesh_model(tcp_jnt_id=tcp_jnt_id,
+                                           tcp_loc_pos=tcp_loc_pos,
+                                           tcp_loc_rotmat=tcp_loc_rotmat,
+                                           toggle_tcpcs=False,
+                                           toggle_jntscs=toggle_jntscs,
+                                           rgba=rgba).attach_to(meshmodel)
             self.arm.gen_meshmodel(tcp_jnt_id=tcp_jnt_id,
                                    tcp_loc_pos=tcp_loc_pos,
                                    tcp_loc_rotmat=tcp_loc_rotmat,
@@ -286,9 +286,9 @@ if __name__ == '__main__':
     gm.gen_frame().attach_to(base)
     robot_s = CobottaRIPPS(enable_cc=True)
     # robot_s.jaw_to(.02)
-    # robot_s.gen_meshmodel(toggle_tcpcs=True, toggle_jntscs=True).attach_to(base)
+    # robot_s.gen_meshmodel(toggle_tcp_frame=True, toggle_joint_frame=True).attach_to(base)
     robot_s.gen_meshmodel(toggle_tcpcs=True, toggle_jntscs=False).attach_to(base)
-    # robot_s.gen_stickmodel(toggle_tcpcs=True, toggle_jntscs=True).attach_to(base)
+    # robot_s.gen_stickmodel(toggle_tcp_frame=True, toggle_joint_frame=True).attach_to(base)
     # robot_s.show_cdprimit()
     base.run()
     tgt_pos = np.array([.25, .2, .15])

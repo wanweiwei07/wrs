@@ -27,7 +27,7 @@ class DevInfo(Structure):
     _pack_ = 1
     _fields_ = [
         ("devId", c_int),
-        ("type", c_int),
+        ("end_type", c_int),
         ("firmwareName", c_byte * 50),
         ("firwareVersion", c_byte * 50),
         ("runTime", c_float)

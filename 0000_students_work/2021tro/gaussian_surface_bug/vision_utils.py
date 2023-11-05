@@ -36,11 +36,11 @@ def map_depth2pcd(depthnarray, pcd):
 #     x_ = np.linspace(1, w, w)
 #     mesh_x, mesh_y = np.meshgrid(x_, y_)
 #     z_ = depthnarray.flatten()
-#     pcd = np.zeros((np.size(mesh_x), 3))
-#     pcd[:, 0] = np.reshape(mesh_x, -1)
-#     pcd[:, 1] = np.reshape(mesh_y, -1)
-#     pcd[:, 2] = np.reshape(z_, -1)
-#     return np.delete(pcd, np.where(pcd[:, 2] == 0)[0], axis=0)
+#     pcd_helper = np.zeros((np.size(mesh_x), 3))
+#     pcd_helper[:, 0] = np.reshape(mesh_x, -1)
+#     pcd_helper[:, 1] = np.reshape(mesh_y, -1)
+#     pcd_helper[:, 2] = np.reshape(z_, -1)
+#     return np.delete(pcd_helper, np.where(pcd_helper[:, 2] == 0)[0], axis=0)
 
 def convert_depth2pcd(depthnarray, toggledebug=False):
     intr = pickle.load(open(os.path.join(config.ROOT, "gaussian_surface_bug", "realsense_intr.pkl"), "rb"))

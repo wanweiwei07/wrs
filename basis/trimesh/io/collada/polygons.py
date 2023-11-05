@@ -96,7 +96,7 @@ class Polygons(polylist.Polylist):
         return BoundPolygons( self, matrix, materialnodebysymbol )
 
     def __str__(self):
-        return '<Polygons length=%d>' % len(self)
+        return '<Polygons axis_length=%d>' % len(self)
 
     def __repr__(self):
         return str(self)
@@ -110,7 +110,7 @@ class BoundPolygons(polylist.BoundPolylist):
         super(BoundPolygons, self).__init__(pl, matrix, materialnodebysymbol)
 
     def __str__(self):
-        return '<BoundPolygons length=%d>' % len(self)
+        return '<BoundPolygons axis_length=%d>' % len(self)
 
     def __repr__(self):
         return str(self)

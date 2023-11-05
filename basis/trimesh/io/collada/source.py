@@ -101,7 +101,7 @@ class FloatSource(Source):
     <float_array> inside a <source>.
 
     If ``f`` is an instance of :class:`collada.source.FloatSource`, then
-    ``len(f)`` is the length of the shaped source. ``len(f)*len(f.components)``
+    ``len(f)`` is the axis_length of the shaped source. ``len(f)*len(f.components)``
     would give you the number of values in the source. ``f[i]`` is the i\\ :sup:`th`
     item in the source array.
     """
@@ -146,7 +146,7 @@ class FloatSource(Source):
                 E.technique_common(
                     E.accessor(
                         *[E.param(type='float', name=c) for c in self.components]
-                    , **{'count':str(acclen), 'stride':str(stridelen), 'source':"#%s"%sourcename} )
+                    , **{'n_sec_minor':str(acclen), 'stride':str(stridelen), 'source':"#%s"%sourcename} )
                 )
             , id=self.id )
 
@@ -165,11 +165,11 @@ class FloatSource(Source):
         acclen = len( self.data )
         node = self.xmlnode.find(tag('float_array'))
         node.text = txtdata
-        node.set('count', str(rawlen))
+        node.set('n_sec_minor', str(rawlen))
         node.set('id', self.id+'-array' )
         node = self.xmlnode.find('%s/%s'%(tag('technique_common'), tag('accessor')))
         node.clear()
-        node.set('count', str(acclen))
+        node.set('n_sec_minor', str(acclen))
         node.set('source', '#'+self.id+'-array')
         node.set('stride', str(len(self.components)))
         for c in self.components:
@@ -210,7 +210,7 @@ class IDRefSource(Source):
     <IDREF_array> inside a <source>.
 
     If ``r`` is an instance of :class:`collada.source.IDRefSource`, then
-    ``len(r)`` is the length of the shaped source. ``len(r)*len(r.components)``
+    ``len(r)`` is the axis_length of the shaped source. ``len(r)*len(r.components)``
     would give you the number of values in the source. ``r[i]`` is the i\\ :sup:`th`
     item in the source array.
 
@@ -256,7 +256,7 @@ class IDRefSource(Source):
                 E.technique_common(
                     E.accessor(
                         *[E.param(type='IDREF', name=c) for c in self.components]
-                    , **{'count':str(acclen), 'stride':str(stridelen), 'source':sourcename})
+                    , **{'n_sec_minor':str(acclen), 'stride':str(stridelen), 'source':sourcename})
                 )
             , id=self.id )
 
@@ -274,11 +274,11 @@ class IDRefSource(Source):
 
         node = self.xmlnode.find(tag('IDREF_array'))
         node.text = txtdata
-        node.set('count', str(rawlen))
+        node.set('n_sec_minor', str(rawlen))
         node.set('id', self.id+'-array' )
         node = self.xmlnode.find('%s/%s'%(tag('technique_common'), tag('accessor')))
         node.clear()
-        node.set('count', str(acclen))
+        node.set('n_sec_minor', str(acclen))
         node.set('source', '#'+self.id+'-array')
         node.set('stride', str(len(self.components)))
         for c in self.components:
@@ -309,7 +309,7 @@ class NameSource(Source):
     <Name_array> inside a <source>.
 
     If ``n`` is an instance of :class:`collada.source.NameSource`, then
-    ``len(n)`` is the length of the shaped source. ``len(n)*len(n.components)``
+    ``len(n)`` is the axis_length of the shaped source. ``len(n)*len(n.components)``
     would give you the number of values in the source. ``n[i]`` is the i\\ :sup:`th`
     item in the source array.
 
@@ -355,7 +355,7 @@ class NameSource(Source):
                 E.technique_common(
                     E.accessor(
                         *[E.param(type='Name', name=c) for c in self.components]
-                    , **{'count':str(acclen), 'stride':str(stridelen), 'source':sourcename})
+                    , **{'n_sec_minor':str(acclen), 'stride':str(stridelen), 'source':sourcename})
                 )
             , id=self.id )
 
@@ -373,11 +373,11 @@ class NameSource(Source):
 
         node = self.xmlnode.find(tag('Name_array'))
         node.text = txtdata
-        node.set('count', str(rawlen))
+        node.set('n_sec_minor', str(rawlen))
         node.set('id', self.id+'-array' )
         node = self.xmlnode.find('%s/%s'%(tag('technique_common'), tag('accessor')))
         node.clear()
-        node.set('count', str(acclen))
+        node.set('n_sec_minor', str(acclen))
         node.set('source', '#'+self.id+'-array')
         node.set('stride', str(len(self.components)))
         for c in self.components:

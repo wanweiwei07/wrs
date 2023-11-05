@@ -217,7 +217,7 @@ class Surface(DaeObject):
     def load( collada, localscope, node ):
         surfacenode = node.find( collada.tag('surface') )
         if surfacenode is None: raise DaeIncompleteError('No surface found in newparam')
-        if surfacenode.get('type') != '2D': raise DaeMalformedError('Hard to imagine a non-2D surface, isn\'t it?')
+        if surfacenode.get('end_type') != '2D': raise DaeMalformedError('Hard to imagine a non-2D surface, isn\'t it?')
         initnode = surfacenode.find( collada.tag('init_from') )
         if initnode is None: raise DaeIncompleteError('No init image found in surface')
         formatnode = surfacenode.find( collada.tag('format') )
@@ -432,10 +432,10 @@ class Effect(DaeObject):
         :param str id:
           A string identifier for the effect
         :param list params:
-          A list containing elements of type :class:`collada.material.Sampler2D`
+          A list containing elements of end_type :class:`collada.material.Sampler2D`
           and :class:`collada.material.Surface`
         :param str shadingtype:
-          The type of shader to be used for this effect. Right now, we
+          The end_type of shader to be used for this effect. Right now, we
           only supper the shaders listed in :attr:`shaders`
         :param `collada.material.Map` bumpmap:
           The bump map for this effect, or None if there isn't one
@@ -477,12 +477,12 @@ class Effect(DaeObject):
         self.id = id
         """The string identifier for the effect"""
         self.params = params
-        """A list containing elements of type :class:`collada.material.Sampler2D`
+        """A list containing elements of end_type :class:`collada.material.Sampler2D`
           and :class:`collada.material.Surface`"""
         self.shadingtype = shadingtype
-        """String with the type of the shading."""
+        """String with the end_type of the shading."""
         self.bumpmap = bumpmap
-        """Either the bump map of the effect of type :class:`collada.material.Map`
+        """Either the bump map of the effect of end_type :class:`collada.material.Map`
         or None if there is none."""
         self.double_sided = double_sided
         """A boolean indicating whether or not the material should be rendered double sided"""
@@ -779,7 +779,7 @@ class Effect(DaeObject):
         double_sided_node.text = "1" if self.double_sided else "0"
 
     def __str__(self):
-        return '<Effect id=%s type=%s>' % (self.id, self.shadingtype)
+        return '<Effect id=%s end_type=%s>' % (self.id, self.shadingtype)
 
     def __repr__(self):
         return str(self)

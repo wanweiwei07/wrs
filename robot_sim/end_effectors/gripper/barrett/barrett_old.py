@@ -78,7 +78,7 @@ class BH828X(object):
 
         # eetippos/eetiprot
         self.__eetip = np.array([0.0, 0.0, baselength + fingerlength]) + np.array(
-            [0.0, 0.0, self.__ftsensoroffset])  # max length 136
+            [0.0, 0.0, self.__ftsensoroffset])  # max axis_length 136
 
         # base
         # self.__hndbase.setrotmat(rm.rodrigues(np.array([0,0,1]), 180))
@@ -463,7 +463,7 @@ class BH828X(object):
     def gethomomat(self):
         """
 
-        :return: homomat: np.ndarray 4x4
+        :return: pos: np.ndarray 4x4
 
         author: weiwei
         date: 20191015, osaka
@@ -475,7 +475,7 @@ class BH828X(object):
         """
         add to scene, follows panda3d
 
-        :param nodepath: a panda3d nodepath
+        :param nodepath: a panda3d pdndp
         :return: null
 
         date: 20161109

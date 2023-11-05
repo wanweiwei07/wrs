@@ -207,12 +207,12 @@ class PhxiLocator(object):
                                                           toggledebug=False)
             rmse, fitness = self.__get_icp_scores(tgt_narray, src_narray, show_icp=False)
             if use_rmse:
-                print("rmse:", rmse, "pcd length", len(tgt))
+                print("rmse:", rmse, "pcd_helper axis_length", len(tgt))
                 if 0.0 < rmse < min_rmse:
                     result_pcd = copy.deepcopy(tgt_narray)
                     min_rmse = rmse
             else:
-                print("fitness:", fitness, "pcd length", len(tgt))
+                print("fitness:", fitness, "pcd_helper axis_length", len(tgt))
                 if fitness != 0.0 and fitness > max_fitness:
                     result_pcd = copy.deepcopy(tgt_narray)
                     max_fitness = fitness
@@ -226,7 +226,7 @@ class PhxiLocator(object):
             if len(objpcd) > max_length:
                 max_length = len(objpcd)
                 result_pcd = objpcd
-        print("largest pcd length:", max_length)
+        print("largest pcd_helper axis_length:", max_length)
         return result_pcd
 
     def find_objdepth_list_by_size(self, sourcenparray_float32, expandingdelta=5, toggledebug=False,
@@ -246,7 +246,7 @@ class PhxiLocator(object):
                 if wh_ratio[0] < w / h < wh_ratio[1] and radius_range[0] < radius < radius_range[1]:
                     print("---------------------")
                     print("center:", center)
-                    print("radius:", radius)
+                    print("major_radius:", radius)
                     print("w:", w)
                     print("h:", h)
                     result.append(component)
@@ -254,7 +254,7 @@ class PhxiLocator(object):
                     if toggledebug:
                         print("---------candidate--------")
                         print("center:", center)
-                        print("radius:", radius)
+                        print("major_radius:", radius)
                         print("w:", w)
                         print("h:", h)
                         cv2.imshow('Result', component)
@@ -279,7 +279,7 @@ class PhxiLocator(object):
                 if w / h < 3 and radius > 50:
                     print("---------------------")
                     print("center:", center)
-                    print("radius:", radius)
+                    print("major_radius:", radius)
                     print("w:", w)
                     print("h:", h)
                     rmse = self.__get_hand_icp_rmse(component, pcd, show_icp=show_icp)
@@ -292,7 +292,7 @@ class PhxiLocator(object):
                     if toggledebug:
                         print("---------candidate--------")
                         print("center:", center)
-                        print("radius:", radius)
+                        print("major_radius:", radius)
                         print("w:", w)
                         print("h:", h)
                         print("rmse:", rmse)
@@ -341,7 +341,7 @@ class PhxiLocator(object):
             cv2.imshow("result", result)
             cv2.waitKey(0)
 
-            # pcdu.show_pcd(pcd)
+            # pcdu.show_pcd(pcd_helper)
             base.pggen.plotSphere(base.render, tcppos, radius=10, rgba=(1, 0, 0, 1))
             base.pggen.plotSphere(base.render, tcp_pcd, radius=10, rgba=(0, 1, 0, 1))
             base.run()
@@ -388,13 +388,13 @@ class PhxiLocator(object):
         target_pcd_center = pcdu.get_pcd_center(target)
         if inithomomat is None:
             inithomomat = self.__match_pos(np.asarray(ts.sample_surface(source_cm.trimesh, count=10000)), target)
-        print("Length of target pcd", len(target))
+        print("Length of target pcd_helper", len(target))
         source = pcdu.get_objpcd_partial_bycampos(source_cm, inithomomat, sample_num=len(target), toggledebug=False)
         # source = pcdu.get_objpcd(source_cm, objmat4=inithomomat, sample_num=len(target_pcd))
 
         rmse, fitness, homomat = o3dh.registration_icp_ptpt(source, target, inithomomat=np.eye(4), maxcorrdist=5,
                                                             toggledebug=toggledebug)
-        # rmse, homomat = o3du.registration_ptpt(source, target, downsampling_voxelsize=10, toggledebug=toggledebug)
+        # rmse, pos = o3du.registration_ptpt(source, target, downsampling_voxelsize=10, toggledebug=toggledebug)
         print("match rmse, fitness:", rmse, fitness)
 
         if match_rotz:
@@ -409,7 +409,7 @@ class PhxiLocator(object):
                 rmse_rotted, fitness_rotted, homomat_rotted = \
                     o3dh.registration_icp_ptpt(source, target, inithomomat_rotted, maxcorrdist=5,
                                                toggledebug=toggledebug)
-                print("rot rmse, fitness:", rot, rmse_rotted, fitness_rotted)
+                print("rotmat rmse, fitness:", rot, rmse_rotted, fitness_rotted)
 
                 if rmse_rotted < min_rmse and rmse_rotted != 0.0:
                     homomat = homomat_rotted
@@ -420,7 +420,7 @@ class PhxiLocator(object):
         #     result = copy.deepcopy(result)
         #     result[:3, 0] = np.array([1, 0, 0])
         #     result[:3, 1] = np.array([0, 1, 0])
-        print("---------------match pcd&cm done---------------")
+        print("---------------match pcd_helper&cm done---------------")
 
         if toggledebug:
             show_cm = copy.deepcopy(source_cm)
@@ -453,7 +453,7 @@ class PhxiLocator(object):
 
     # def __match_2d(self, target_pcd, table_h):
     #     target_pcd = o3du.nparray2o3dpcd(target_pcd)
-    #     target_pcd_removed = o3du.removeoutlier(target_pcd, nb_points=50, radius=10)
+    #     target_pcd_removed = o3du.removeoutlier(target_pcd, nb_points=50, major_radius=10)
     #     target_pcd = o3du.o3dpcd2nparray(target_pcd_removed)
     #
     #     target_2d = target_pcd[:, :2]  # TODO clip using sensor z
@@ -480,14 +480,14 @@ class PhxiLocator(object):
     #     center = np.dot(center, tvect)
     #
     #     axind = np.argsort(v)
-    #     homomat = np.eye(4)
-    #     homomat[:3, axind[0]] = np.array([vect[0, 0], vect[1, 0], 0])
-    #     homomat[:3, axind[1]] = np.array([vect[0, 1], vect[1, 1], 0])
-    #     homomat[:3, 2] = np.array([0, 0, 1])
-    #     if np.cross(homomat[:3, 0], homomat[:3, 1])[2] < -.5:
-    #         homomat[:3, 1] = -homomat[:3, 1]
-    #     homomat[:3, 3] = np.array([center[0], center[1], table_h])
-    #     return homomat
+    #     pos = np.eye(4)
+    #     pos[:3, axind[0]] = np.array([vect[0, 0], vect[1, 0], 0])
+    #     pos[:3, axind[1]] = np.array([vect[0, 1], vect[1, 1], 0])
+    #     pos[:3, 2] = np.array([0, 0, 1])
+    #     if np.cross(pos[:3, 0], pos[:3, 1])[2] < -.5:
+    #         pos[:3, 1] = -pos[:3, 1]
+    #     pos[:3, 3] = np.array([center[0], center[1], table_h])
+    #     return pos
 
     def __match_pos(self, source_pcd, target_pcd):
         source_center = pcdu.get_pcd_center(source_pcd)

@@ -61,12 +61,12 @@ class CobottaRTServer(object):
             if buf == b"exit":
                 print("connection break")
                 break
-            elif buf == b"jnts":
+            elif buf == b"joints":
                 cur_jnts = self.robot_x.get_jnt_values()
                 buf_jnts = bytes(struct.pack("!ffffff", cur_jnts[0], cur_jnts[1], cur_jnts[2],
                                              cur_jnts[3], cur_jnts[4], cur_jnts[5]))
                 pc_server_socket.send(buf_jnts)
-            elif buf == b"end":
+            elif buf == b"end_type":
                 self.map_buffer_to_path()
             elif buf == b"run":
                 path_execute = copy.deepcopy(self.path_list)
@@ -82,7 +82,7 @@ class CobottaRTServer(object):
         author: junbo zhang
         date: 20211228
         """
-        print("buf length:", len(self.buf_list))
+        print("buf axis_length:", len(self.buf_list))
         pose_num = int(len(self.buf_list) / 24)
         path = []
         for i in range(pose_num):
@@ -90,7 +90,7 @@ class CobottaRTServer(object):
             self.buf_list = self.buf_list[24:]
             path.append(pose)
         self.buf_list = bytes()
-        print("path length:", len(path))
+        print("path axis_length:", len(path))
         self.path_list.append(path)
 
     def motion_execute(self, path_list):

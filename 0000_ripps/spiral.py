@@ -94,7 +94,7 @@ if __name__ == '__main__':
     for point in spiral_points:
         gm.gen_sphere(point, radius=.00016).attach_to(base)
         if pre_point is not None:
-            gm.gen_stick(pre_point, point, thickness=.00012).attach_to(base)
+            gm.gen_stick(pre_point, point, radius=.00012).attach_to(base)
         pre_point = point
 
     goal_joint_values_attachment = utils.search_reachable_configuration(rbt_s=rbt_s,

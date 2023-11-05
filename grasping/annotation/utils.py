@@ -43,12 +43,12 @@ def define_grasp(hnd_s,
             jaw_width, gl_jaw_center_pos, gl_jaw_center_rotmat, hnd_pos, hnd_rotmat = grasp_info
             hnd_s.fix_to(hnd_pos, hnd_rotmat)
             hnd_s.jaw_to(jaw_width)
-            hnd_s.gen_meshmodel(rgba=[1, 0, 0, .3]).attach_to(base)
+            hnd_s.gen_mesh_model(rgba=[1, 0, 0, .3]).attach_to(base)
         for grasp_info in grasp_info_list:
             jaw_width, gl_jaw_center_pos, gl_jaw_center_rotmat, hnd_pos, hnd_rotmat = grasp_info
             hnd_s.fix_to(hnd_pos, hnd_rotmat)
             hnd_s.jaw_to(jaw_width)
-            hnd_s.gen_meshmodel(rgba=[0, 1, 0, .3]).attach_to(base)
+            hnd_s.gen_mesh_model(rgba=[0, 1, 0, .3]).attach_to(base)
     return grasp_info_list
 
 
@@ -105,12 +105,12 @@ def define_grasp_with_rotation(hnd_s,
             jaw_width, gl_jaw_center_pos, gl_jaw_center_rotmat, hnd_pos, hnd_rotmat = grasp_info
             hnd_s.fix_to(hnd_pos, hnd_rotmat)
             hnd_s.jaw_to(jaw_width)
-            hnd_s.gen_meshmodel(rgba=[1, 0, 0, .3]).attach_to(base)
+            hnd_s.gen_mesh_model(rgba=[1, 0, 0, .3]).attach_to(base)
         for grasp_info in grasp_info_list:
             jaw_width, gl_jaw_center_pos, gl_jaw_center_rotmat, hnd_pos, hnd_rotmat = grasp_info
             hnd_s.fix_to(hnd_pos, hnd_rotmat)
             hnd_s.jaw_to(jaw_width)
-            hnd_s.gen_meshmodel(rgba=[0, 1, 0, .3]).attach_to(base)
+            hnd_s.gen_mesh_model(rgba=[0, 1, 0, .3]).attach_to(base)
     return grasp_info_list
 
 
@@ -151,11 +151,11 @@ def define_pushing(hnd_s,
         for push_info in collided_push_info_list:
             gl_tip_pos, gl_tip_rotmat, hnd_pos, hnd_rotmat = push_info
             hnd_s.fix_to(hnd_pos, hnd_rotmat)
-            hnd_s.gen_meshmodel(rgba=[1, 0, 0, .3]).attach_to(base)
+            hnd_s.gen_mesh_model(rgba=[1, 0, 0, .3]).attach_to(base)
         for push_info in push_info_list:
             gl_tip_pos, gl_tip_rotmat, hnd_pos, hnd_rotmat = push_info
             hnd_s.fix_to(hnd_pos, hnd_rotmat)
-            hnd_s.gen_meshmodel(rgba=[0, 1, 0, .3]).attach_to(base)
+            hnd_s.gen_mesh_model(rgba=[0, 1, 0, .3]).attach_to(base)
         base.run()
     return push_info_list
 
@@ -225,7 +225,7 @@ if __name__ == '__main__':
     objpath = os.path.join(basis.__path__[0], 'objects', 'block.stl')
     objcm = cm.CollisionModel(objpath)
     objcm.attach_to(base)
-    objcm.show_localframe()
+    objcm.show_local_frame()
     grasp_info_list = define_grasp_with_rotation(gripper_s,
                                                  objcm,
                                                  gl_jaw_center_pos=np.array([0, 0, 0]),
@@ -237,5 +237,5 @@ if __name__ == '__main__':
         jaw_width, jaw_center_pos, jaw_center_rotmat, hnd_pos, hnd_rotmat = grasp_info
         gic = gripper_s.copy()
         gic.grip_at_with_jcpose(jaw_center_pos, jaw_center_rotmat, jaw_width)
-        gic.gen_meshmodel().attach_to(base)
+        gic.gen_mesh_model().attach_to(base)
     base.run()

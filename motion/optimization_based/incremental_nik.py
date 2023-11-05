@@ -32,7 +32,7 @@ class IncrementalNIK(object):
         author: weiwei
         date: 20210125
         """
-        jnt_values_bk = self.robot_s.get_jnt_values(component_name)
+        jnt_values_bk = self.robot_s.get_joint_values(component_name)
         pos_list, rotmat_list = rm.interplate_pos_rotmat(start_tcp_pos,
                                                          start_tcp_rotmat,
                                                          goal_tcp_pos,
@@ -42,14 +42,14 @@ class IncrementalNIK(object):
         if seed_jnt_values is None:
             seed_jnt_values = jnt_values_bk
         for (pos, rotmat) in zip(pos_list, rotmat_list):
-            jnt_values = self.robot_s.ik(component_name, pos, rotmat, seed_jnt_values=seed_jnt_values)
+            jnt_values = self.robot_s.ik(component_name, pos, rotmat, seed_joint_values=seed_jnt_values)
             if jnt_values is None:
                 print("IK not solvable in gen_linear_motion!")
                 self.robot_s.fk(component_name, jnt_values_bk)
                 return None
             else:
                 self.robot_s.fk(component_name, jnt_values)
-                cd_result, ct_points = self.robot_s.is_collided(obstacle_list, toggle_contact_points=True)
+                cd_result, ct_points = self.robot_s.is_collided(obstacle_list, toggle_contacts=True)
                 if cd_result:
                     if toggle_debug:
                         for ct_pnt in ct_points:
@@ -203,7 +203,7 @@ class IncrementalNIK(object):
         author: weiwei
         date: 20210501
         """
-        jnt_values_bk = self.robot_s.get_jnt_values(component_name)
+        jnt_values_bk = self.robot_s.get_joint_values(component_name)
         pos_list, rotmat_list = rm.interplate_pos_rotmat_around_circle(circle_center_pos,
                                                                        circle_ax,
                                                                        radius,
@@ -217,14 +217,14 @@ class IncrementalNIK(object):
         if seed_jnt_values is None:
             seed_jnt_values = jnt_values_bk
         for (pos, rotmat) in zip(pos_list, rotmat_list):
-            jnt_values = self.robot_s.ik(component_name, pos, rotmat, seed_jnt_values=seed_jnt_values)
+            jnt_values = self.robot_s.ik(component_name, pos, rotmat, seed_joint_values=seed_jnt_values)
             if jnt_values is None:
                 print("IK not solvable in gen_circular_motion!")
                 self.robot_s.fk(component_name, jnt_values_bk)
                 return []
             else:
                 self.robot_s.fk(component_name, jnt_values)
-                cd_result, ct_points = self.robot_s.is_collided(obstacle_list, toggle_contact_points=True)
+                cd_result, ct_points = self.robot_s.is_collided(obstacle_list, toggle_contacts=True)
                 if cd_result:
                     if toggle_debug:
                         for ct_pnt in ct_points:

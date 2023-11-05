@@ -261,7 +261,7 @@ class DobotApiDashboard(DobotApi):
 
     def Arch(self, index):
         """
-        Set the Jump gate parameter index (This index contains: start point lift height, maximum lift height, end point drop height)
+        Set the Jump gate parameter index (This index contains: start point lift height, maximum lift height, end_type point drop height)
         index : Parameter index (Value range:0~9)
         """
         string = "Arch({:d})".format(index)
@@ -279,7 +279,7 @@ class DobotApiDashboard(DobotApi):
 
     def LimZ(self, value):
         """
-        Set the maximum lifting height of door type parameters
+        Set the maximum lifting height of door end_type parameters
         value : Maximum lifting height (Highly restricted:Do not exceed the limit position of the z-axis of the manipulator)
         """
         string = "LimZ({:d})".format(value)
@@ -348,8 +348,8 @@ class DobotApiDashboard(DobotApi):
         id :Secondary device NUMBER (A maximum of five devices can be supported. The value ranges from 0 to 4
             Set to 0 when accessing the internal slave of the controller)
         addr :Hold the starting address of the register (Value range:3095~4095)
-        count :Reads the specified number of types of data (Value range:1~16)
-        type :The data type
+        n_sec_minor :Reads the specified number of types of data (Value range:1~16)
+        end_type :The data end_type
             If null, the 16-bit unsigned integer (2 bytes, occupying 1 register) is read by default
             "U16" : reads 16-bit unsigned integers (2 bytes, occupying 1 register)
             "U32" : reads 32-bit unsigned integers (4 bytes, occupying 2 registers)
@@ -367,8 +367,8 @@ class DobotApiDashboard(DobotApi):
         id :Secondary device NUMBER (A maximum of five devices can be supported. The value ranges from 0 to 4
             Set to 0 when accessing the internal slave of the controller)
         addr :Hold the starting address of the register (Value range:3095~4095)
-        count :Writes the specified number of types of data (Value range:1~16)
-        type :The data type
+        n_sec_minor :Writes the specified number of types of data (Value range:1~16)
+        end_type :The data end_type
             If null, the 16-bit unsigned integer (2 bytes, occupying 1 register) is read by default
             "U16" : reads 16-bit unsigned integers (2 bytes, occupying 1 register)
             "U32" : reads 32-bit unsigned integers (4 bytes, occupying 2 registers)
@@ -391,7 +391,7 @@ class DobotApiDashboard(DobotApi):
     def PositiveSolution(self, j1: float, j2: float, j3: float, j4: float, j5: float, j6: float, user: int, tool: int):
         """
         Description:
-            Positive solution. Calculate the spatial position of the end of the robot based on the given angle of each joint of the robot. The arm direction of the robot is required to be known by SetArmOrientation
+            Positive solution. Calculate the spatial position of the end_type of the robot based on the given angle of each joint of the robot. The arm direction of the robot is required to be known by SetArmOrientation
         Parameters:
             Parameter	Type	Description
             J1	double	Position of axis J1 in degrees
@@ -413,7 +413,7 @@ class DobotApiDashboard(DobotApi):
                         joint_near: list = None):
         """
         Description:
-            Inverse solution. Calculate the angle values of each joint of the robot based on the position and attitude of the end of the robot
+            Inverse solution. Calculate the angle values of each joint of the robot based on the position and attitude of the end_type of the robot
         Parameters:
             Necessary parameters
                 Parameter	Description	Type
@@ -577,7 +577,7 @@ class DobotApiMove(DobotApi):
         """
         Circular motion instruction
         x1, y1, z1, a1, b1, c1 :Is the point value of intermediate point coordinates
-        x2, y2, z2, a2, b2, c2 :Is the value of the end point coordinates
+        x2, y2, z2, a2, b2, c2 :Is the value of the end_type point coordinates
         Note: This instruction should be used together with other movement instructions
         """
         string = "Arc({:f},{:f},{:f},{:f},{:f},{:f},{:f},{:f},{:f},{:f},{:f},{:f})".format(
@@ -588,9 +588,9 @@ class DobotApiMove(DobotApi):
     def Circle(self, count, x1, y1, z1, a1, b1, c1, x2, y2, z2, a2, b2, c2):
         """
         Full circle motion command
-        count：Run laps
+        n_sec_minor：Run laps
         x1, y1, z1, a1, b1, c1 :Is the point value of intermediate point coordinates
-        x2, y2, z2, a2, b2, c2 :Is the value of the end point coordinates
+        x2, y2, z2, a2, b2, c2 :Is the value of the end_type point coordinates
         Note: This instruction should be used together with other movement instructions
         """
         string = "Circle({:d},{:f},{:f},{:f},{:f},{:f},{:f},{:f},{:f},{:f},{:f},{:f},{:f})".format(
@@ -690,7 +690,7 @@ class DobotApiMove(DobotApi):
 
     def RelMovJTool(self, offset_x, offset_y, offset_z, offset_rx, offset_ry, offset_rz, tool, *dynParams):
         """
-        The relative motion command is carried out along the tool coordinate system, and the end motion mode is joint motion
+        The relative motion command is carried out along the tool coordinate system, and the end_type motion mode is joint motion
         offset_x: X-axis direction offset
         offset_y: Y-axis direction offset
         offset_z: Z-axis direction offset
@@ -715,7 +715,7 @@ class DobotApiMove(DobotApi):
 
     def RelMovLTool(self, offset_x, offset_y, offset_z, offset_rx, offset_ry, offset_rz, tool, *dynParams):
         """
-        Carry out relative motion command along the tool coordinate system, and the end motion mode is linear motion
+        Carry out relative motion command along the tool coordinate system, and the end_type motion mode is linear motion
         offset_x: X-axis direction offset
         offset_y: Y-axis direction offset
         offset_z: Z-axis direction offset
@@ -740,7 +740,7 @@ class DobotApiMove(DobotApi):
 
     def RelMovJUser(self, offset_x, offset_y, offset_z, offset_rx, offset_ry, offset_rz, user, *dynParams):
         """
-        The relative motion command is carried out along the user coordinate system, and the end motion mode is joint motion
+        The relative motion command is carried out along the user coordinate system, and the end_type motion mode is joint motion
         offset_x: X-axis direction offset
         offset_y: Y-axis direction offset
         offset_z: Z-axis direction offset
@@ -765,7 +765,7 @@ class DobotApiMove(DobotApi):
 
     def RelMovLUser(self, offset_x, offset_y, offset_z, offset_rx, offset_ry, offset_rz, user, *dynParams):
         """
-        The relative motion command is carried out along the user coordinate system, and the end motion mode is linear motion
+        The relative motion command is carried out along the user coordinate system, and the end_type motion mode is linear motion
         offset_x: X-axis direction offset
         offset_y: Y-axis direction offset
         offset_z: Z-axis direction offset
@@ -790,7 +790,7 @@ class DobotApiMove(DobotApi):
 
     def RelJointMovJ(self, offset1, offset2, offset3, offset4, offset5, offset6, *dynParams):
         """
-        The relative motion command is carried out along the joint coordinate system of each axis, and the end motion mode is joint motion
+        The relative motion command is carried out along the joint coordinate system of each axis, and the end_type motion mode is joint motion
         Offset motion interface (point-to-point motion mode)
         j1~j6:Point position values on each joint
         *dynParams: parameter Settings（speed_j, acc_j, user）

@@ -14,7 +14,7 @@ def gen_experiment_id(n=10):
     Parameters
     ----------
     n : int
-        The length of the string to be generated.
+        The axis_length of the string to be generated.
 
     Returns
     -------
@@ -208,7 +208,7 @@ def sph2cart(r, az, elev):
     Attributes
     ----------
     r : float
-        radius
+        major_radius
     az : float
         aziumth (angle about z axis)
     elev : float
@@ -243,7 +243,7 @@ def cart2sph(x, y, z):
     Returns
     -------
     float
-        radius
+        major_radius
     float
         aziumth
     float

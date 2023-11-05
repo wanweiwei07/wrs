@@ -18,30 +18,23 @@ except ImportError:
 
 
 def convex_hull(mesh, clean=True):
-    '''
-    Get a new Trimesh object representing the convex hull of the 
+    """
+    Get a new Trimesh object representing the convex hull of the
     current mesh. Requires scipy >.12.
-    
-    Argments
-    --------
-    clean: boolean, if True will fix normals and winding
-           to be coherent (as qhull/scipy outputs are not)
-
-    Returns
-    --------
-    convex: Trimesh object of convex hull of current mesh
-    '''
-
+    :param mesh:
+    :param clean: boolean, if True will fix normals and winding
+    to be coherent (as qhull/scipy outputs are not)
+    :return: Trimesh object of convex hull of current mesh
+    author: miked, revised by weiwei
+    date: 20230811
+    """
     type_trimesh = type_named(mesh, 'Trimesh')
     c = ConvexHull(mesh.vertices.view(np.ndarray).reshape((-1, 3)))
-
     vid = np.sort(c.vertices)
     mask = np.zeros(len(c.points), dtype=np.int64)
     mask[vid] = np.arange(len(vid))
-
     faces = mask[c.simplices]
     vertices = c.points[vid].copy()
-
     convex = type_trimesh(vertices=vertices,
                           faces=faces,
                           process=True)
@@ -53,34 +46,26 @@ def convex_hull(mesh, clean=True):
 
 
 def is_convex(mesh, chunks=None):
-    '''
-    Test if a mesh is convex by projecting the vertices of 
+    """
+    Test if a mesh is convex by projecting the vertices of
     a triangle onto the normal of its adjacent face.
-    
-    Arguments
-    ----------
-    mesh: Trimesh object
-    
-    Returns
-    ----------
-    convex: bool, is the mesh convex or not
-    '''
+    :param mesh: Trimesh object
+    :param chunks:
+    :return: bool, is the mesh convex or not
+    """
     chunk_block = 5e4
     if chunks is None:
         chunks = int(np.clip(len(mesh.faces) / chunk_block, 1, 10))
-
     # triangles from the second column of face adjacency
     triangles = mesh.triangles.copy()[mesh.face_adjacency[:, 1]]
     # normals and origins from the first column of face adjacency
     normals = mesh.face_normals[mesh.face_adjacency[:, 0]]
     origins = mesh.vertices[mesh.face_adjacency_edges[:, 0]]
-
     # reshape and tile everything to be the same dimension
     triangles = triangles.reshape((-1, 3))
     normals = np.tile(normals, (1, 3)).reshape((-1, 3))
     origins = np.tile(origins, (1, 3)).reshape((-1, 3))
     triangles -= origins
-
     # in non- convex meshes, we don't necessarily have to compute all 
     # dots of every face since we are looking for logical ALL
     for chunk_tri, chunk_norm in zip(np.array_split(triangles, chunks),
@@ -131,3 +116,28 @@ def planar_hull(points, normal, origin=None, input_convex=False):
     height = np.array([planar_z.min(),
                        planar_z.max()])
     return hull_lines, T, height
+
+def hull_points(obj, qhull_options='QbB Pp'):
+    """
+    Try to extract a convex set of points from multiple input formats.
+
+    Parameters
+    ---------
+    obj: Trimesh object
+         (n,d) points
+         (m,) Trimesh objects
+
+    Returns
+    --------
+    points: (o,d) convex set of points
+    """
+    if hasattr(obj, 'convex_hull'):
+        return obj.convex_hull.vertices
+
+    initial = np.asanyarray(obj, dtype=np.float64)
+    if len(initial.shape) != 2:
+        raise ValueError('points must be (n, dimension)!')
+    hull = ConvexHull(initial, qhull_options=qhull_options)
+    points = hull.points[hull.vertices]
+
+    return points

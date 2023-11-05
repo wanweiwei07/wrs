@@ -325,7 +325,7 @@ class Dobot(object):
         pose = self.get_tcp_cartesian(wait=True)
         dist = 0
         dist += np.sum((target[:3] - pose[:3]) ** 2)
-        # dist += np.sum(((target[3:6] - pose[3:6]) / 5) ** 2)  # arbitraty length like
+        dist += np.sum(((target[3:6] - pose[3:6]) / 5) ** 2)  # arbitraty axis_length like
         return dist ** 0.5
 
     def _get_joints_dist(self, target):
@@ -526,7 +526,7 @@ class Dobot(object):
     def fk(self, jnts: np.ndarray, user: int = 0, tool: int = 0, ):
         """
         Forward kinematics
-        jnts: angles of the robot
+        joints: angles of the robot
         user: indicate user frame (Set in the DobotStudio)
         tool: indicate the tool frame (Set in the DobotStudio)
         """
@@ -548,7 +548,7 @@ class Dobot(object):
         """
         Inverse kinematics
         pos: [x,y,z] position of the TCP
-        rot: [rx,ry,rz] euler angles of the TCP
+        rotmat: [rx,ry,rz] euler angles of the TCP
         user: indicate user frame (Set in the DobotStudio)
         tool: indicate the tool frame (Set in the DobotStudio)
         """
@@ -567,7 +567,7 @@ class Dobot(object):
     def movej(self, jnts: np.ndarray, wait=True):
         """
         move in joint space
-        jnts: angles of the robot
+        joints: angles of the robot
         """
         assert len(jnts) == 6, "The dof of the input joint values must be 6"
         self.dobot_mov.JointMovJ(jnts[0], jnts[1], jnts[2], jnts[3], jnts[4], jnts[5])
@@ -579,7 +579,7 @@ class Dobot(object):
         """
         linear movement, the target point is Cartesian point
         pos: [x,y,z] position of the TCP
-        rot: [rx,ry,rz] euler angles of the TCP
+        rotmat: [rx,ry,rz] euler angles of the TCP
         # TODO: add parameters for the speed and acceleration
         """
         self.dobot_mov.MovL(pos[0], pos[1], pos[2], rot[0], rot[1], rot[2])
@@ -591,7 +591,7 @@ class Dobot(object):
         """
         Point to point movement, the target point is Cartesian point
         pos: [x,y,z] position of the TCP
-        rot: [rx,ry,rz] euler angles of the TCP
+        rotmat: [rx,ry,rz] euler angles of the TCP
         # TODO: add parameters for the speed and acceleration
         """
         # The dobot API name sounds wired.
@@ -604,14 +604,14 @@ class Dobot(object):
         """
         Dynamic following command based on Cartesian space. You are advised to set the frequency of customer secondary development to 33Hz (30ms), that is, set the cycle interval to at least 30ms.
         pos: [x,y,z] position of the TCP
-        rot: [rx,ry,rz] euler angles of the TCP
+        rotmat: [rx,ry,rz] euler angles of the TCP
         """
         self.dobot_mov.ServoP(pos[0], pos[1], pos[2], rot[0], rot[1], rot[2])
 
     def servoj(self, jnts: np.ndarray, ):
         """
         Dynamic following command based on joint space. You are advised to set the frequency of customer secondary development to 33Hz (30ms), that is, set the cycle interval to at least 30ms.
-        jnts: angles of the robot
+        joints: angles of the robot
         """
         assert len(jnts) == 6, "The dof of the input joint values must be 6"
         self.dobot_mov.ServoJ(jnts[0], jnts[1], jnts[2], jnts[3], jnts[4], jnts[5])

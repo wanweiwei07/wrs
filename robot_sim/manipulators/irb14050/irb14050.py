@@ -3,7 +3,7 @@ import copy
 import math
 import numpy as np
 import basis.robot_math as rm
-import robot_sim._kinematics.jlchain as jl
+import robot_sim.kinematics.jlchain as jl
 import robot_sim.manipulators.manipulator_interface as mi
 
 
@@ -12,31 +12,31 @@ class IRB14050(mi.ManipulatorInterface):
     def __init__(self, pos=np.zeros(3), rotmat=np.eye(3), homeconf=np.zeros(7), name='irb14050', enable_cc=True):
         super().__init__(pos=pos, rotmat=rotmat, name=name)
         this_dir, this_filename = os.path.split(__file__)
-        self.jlc = jl.JLChain(pos=pos, rotmat=rotmat, homeconf=homeconf, name=name)
+        self.jlc = jl.JLChain(pos=pos, rotmat=rotmat, home_conf=homeconf, name=name)
         # seven joints, n_jnts = 7+2 (tgt ranges from 1-7), nlinks = 7+1
         jnt_safemargin = math.pi / 18.0
-        # self.jlc.jnts[1]['loc_pos'] = np.array([0.05355, -0.0725, 0.41492])
-        # self.jlc.jnts[1]['loc_rotmat'] = rm.rotmat_from_euler(-0.9795, -0.5682, -2.3155)
-        self.jlc.jnts[1]['loc_pos'] = np.array([0., 0., 0.])
-        self.jlc.jnts[1]['motion_rng'] = [-2.94087978961 + jnt_safemargin, 2.94087978961 - jnt_safemargin]
-        self.jlc.jnts[2]['loc_pos'] = np.array([0.03, 0.0, 0.1])
-        self.jlc.jnts[2]['loc_rotmat'] = rm.rotmat_from_euler(1.57079632679, 0.0, 0.0)
-        self.jlc.jnts[2]['motion_rng'] = [-2.50454747661 + jnt_safemargin, 0.759218224618 - jnt_safemargin]
-        self.jlc.jnts[3]['loc_pos'] = np.array([-0.03, 0.17283, 0.0])
-        self.jlc.jnts[3]['loc_rotmat'] = rm.rotmat_from_euler(-1.57079632679, 0.0, 0.0)
-        self.jlc.jnts[3]['motion_rng'] = [-2.94087978961 + jnt_safemargin, 2.94087978961 - jnt_safemargin]
-        self.jlc.jnts[4]['loc_pos'] = np.array([-0.04188, 0.0, 0.07873])
-        self.jlc.jnts[4]['loc_rotmat'] = rm.rotmat_from_euler(1.57079632679, -1.57079632679, 0.0)
-        self.jlc.jnts[4]['motion_rng'] = [-2.15548162621 + jnt_safemargin, 1.3962634016 - jnt_safemargin]
-        self.jlc.jnts[5]['loc_pos'] = np.array([0.0405, 0.16461, 0.0])
-        self.jlc.jnts[5]['loc_rotmat'] = rm.rotmat_from_euler(-1.57079632679, 0.0, 0.0)
-        self.jlc.jnts[5]['motion_rng'] = [-5.06145483078 + jnt_safemargin, 5.06145483078 - jnt_safemargin]
-        self.jlc.jnts[6]['loc_pos'] = np.array([-0.027, 0, 0.10039])
-        self.jlc.jnts[6]['loc_rotmat'] = rm.rotmat_from_euler(1.57079632679, 0.0, 0.0)
-        self.jlc.jnts[6]['motion_rng'] = [-1.53588974176 + jnt_safemargin, 2.40855436775 - jnt_safemargin]
-        self.jlc.jnts[7]['loc_pos'] = np.array([0.027, 0.029, 0.0])
-        self.jlc.jnts[7]['loc_rotmat'] = rm.rotmat_from_euler(-1.57079632679, 0.0, 0.0)
-        self.jlc.jnts[7]['motion_rng'] = [-3.99680398707 + jnt_safemargin, 3.99680398707 - jnt_safemargin]
+        # self.jlc.joints[1]['pos_in_loc_tcp'] = np.array([0.05355, -0.0725, 0.41492])
+        # self.jlc.joints[1]['gl_rotmat'] = rm.rotmat_from_euler(-0.9795, -0.5682, -2.3155)
+        self.jlc.joints[1]['pos_in_loc_tcp'] = np.array([0., 0., 0.])
+        self.jlc.joints[1]['motion_rng'] = [-2.94087978961 + jnt_safemargin, 2.94087978961 - jnt_safemargin]
+        self.jlc.joints[2]['pos_in_loc_tcp'] = np.array([0.03, 0.0, 0.1])
+        self.jlc.joints[2]['gl_rotmat'] = rm.rotmat_from_euler(1.57079632679, 0.0, 0.0)
+        self.jlc.joints[2]['motion_rng'] = [-2.50454747661 + jnt_safemargin, 0.759218224618 - jnt_safemargin]
+        self.jlc.joints[3]['pos_in_loc_tcp'] = np.array([-0.03, 0.17283, 0.0])
+        self.jlc.joints[3]['gl_rotmat'] = rm.rotmat_from_euler(-1.57079632679, 0.0, 0.0)
+        self.jlc.joints[3]['motion_rng'] = [-2.94087978961 + jnt_safemargin, 2.94087978961 - jnt_safemargin]
+        self.jlc.joints[4]['pos_in_loc_tcp'] = np.array([-0.04188, 0.0, 0.07873])
+        self.jlc.joints[4]['gl_rotmat'] = rm.rotmat_from_euler(1.57079632679, -1.57079632679, 0.0)
+        self.jlc.joints[4]['motion_rng'] = [-2.15548162621 + jnt_safemargin, 1.3962634016 - jnt_safemargin]
+        self.jlc.joints[5]['pos_in_loc_tcp'] = np.array([0.0405, 0.16461, 0.0])
+        self.jlc.joints[5]['gl_rotmat'] = rm.rotmat_from_euler(-1.57079632679, 0.0, 0.0)
+        self.jlc.joints[5]['motion_rng'] = [-5.06145483078 + jnt_safemargin, 5.06145483078 - jnt_safemargin]
+        self.jlc.joints[6]['pos_in_loc_tcp'] = np.array([-0.027, 0, 0.10039])
+        self.jlc.joints[6]['gl_rotmat'] = rm.rotmat_from_euler(1.57079632679, 0.0, 0.0)
+        self.jlc.joints[6]['motion_rng'] = [-1.53588974176 + jnt_safemargin, 2.40855436775 - jnt_safemargin]
+        self.jlc.joints[7]['pos_in_loc_tcp'] = np.array([0.027, 0.029, 0.0])
+        self.jlc.joints[7]['gl_rotmat'] = rm.rotmat_from_euler(-1.57079632679, 0.0, 0.0)
+        self.jlc.joints[7]['motion_rng'] = [-3.99680398707 + jnt_safemargin, 3.99680398707 - jnt_safemargin]
         # links
         self.jlc.lnks[1]['name'] = "link_1"
         self.jlc.lnks[1]['mesh_file'] = os.path.join(this_dir, "meshes", "link_1.stl")
@@ -106,9 +106,9 @@ if __name__ == '__main__':
     # manipulator_instance2.disable_localcc()
     manipulator_instance2.fix_to(pos=np.array([.2, .2, 0.2]), rotmat=np.eye(3))
     manipulator_instance2.fk(
-        jnt_values=[0, 0, manipulator_instance.jnts[3]['motion_rng'][1] / 2, manipulator_instance.jnts[4]['motion_rng'][1]*1.1,
-                    manipulator_instance.jnts[5]['motion_rng'][1], 0, 0])
-    manipulator_meshmodel2 = manipulator_instance2.gen_meshmodel()
+        joint_values=[0, 0, manipulator_instance.jnts[3]['motion_rng'][1] / 2, manipulator_instance.jnts[4]['motion_rng'][1] * 1.1,
+                      manipulator_instance.jnts[5]['motion_rng'][1], 0, 0])
+    manipulator_meshmodel2 = manipulator_instance2.gen_mesh_model()
     manipulator_meshmodel2.attach_to(base)
     manipulator_instance2.show_cdprimit()
     tic = time.time()

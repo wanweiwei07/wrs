@@ -208,7 +208,7 @@ def setting_sim(stl_f_name, pos=(600, 0, 780)):
     objcm.reparentTo(base.render)
 
 
-def setting_hand(phxilocator, pcd_f_name="/dataset/pcd/a_lft_0.pkl"):
+def setting_hand(phxilocator, pcd_f_name="/dataset/pcd_helper/a_lft_0.pkl"):
     amat = phxilocator.amat
     hand_pcd = pickle.load(open(config.ROOT + pcd_f_name, "rb"))
     hand_pcd = pcdu.trans_pcd(pcdu.remove_pcd_zeros(hand_pcd), amat)

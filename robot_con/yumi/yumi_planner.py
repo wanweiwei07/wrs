@@ -88,16 +88,16 @@ class YuMiMotionPlanner:
     def plan_linear_path(self, start_state, start_pose, goal_pose,
                          traj_len=10, eef_delta=0.01, jump_thresh=0.0):
         """
-        Plans a linear trajectory between the start and goal pose from the initial joint configuration. The poses should be specified in the frame of reference of the end effector tip. Start state must correspond to the start pose - right now this is up to the user.
+        Plans a linear trajectory between the start and goal pose from the initial joint configuration. The poses should be specified in the frame of reference of the end_type effector tip. Start state must correspond to the start pose - right now this is up to the user.
         
         Parameters
         ----------
         start_state : YuMiState
             initial state of the arm
         start_pose : RigidTransform
-            initial pose of end effector tip
+            initial pose of end_type effector tip
         goal_pose : RigidTransform
-            goal pose of end effector tip
+            goal pose of end_type effector tip
         traj_len : int
             number of waypoints to use in motion
         eef_delta : float
@@ -129,7 +129,7 @@ class YuMiMotionPlanner:
         start_state_msg.joint_state.position = start_state.in_radians
         self._planning_group.set_start_state(start_state_msg)
      
-        # convert start and end pose to the planner's reference frame
+        # convert start and end_type pose to the planner's reference frame
         start_pose_hand = start_pose * ymc.T_GRIPPER_HAND
         goal_pose_hand = goal_pose * ymc.T_GRIPPER_HAND
 
@@ -146,7 +146,7 @@ class YuMiMotionPlanner:
             logging.warning('Error while motion path.')
             return None
 
-        # convert from moveit joint traj in radians 
+        # convert from moveit joint traj in radians
         joint_names = plan.joint_trajectory.joint_names
         joint_traj = []
         for t in plan.joint_trajectory.points:
@@ -158,16 +158,16 @@ class YuMiMotionPlanner:
 
     def plan_shortest_path(self, start_state, start_pose, goal_pose, timeout=0.1):
         """
-        Plans the shortest path in joint space between the start and goal pose from the initial joint configuration. The poses should be specified in the frame of reference of the end effector tip. Start state must correspond to the start pose - right now this is up to the user.
+        Plans the shortest path in joint space between the start and goal pose from the initial joint configuration. The poses should be specified in the frame of reference of the end_type effector tip. Start state must correspond to the start pose - right now this is up to the user.
         
         Parameters
         ----------
         start_state : YuMiState
             initial state of the arm
         start_pose : RigidTransform
-            initial pose of end effector tip
+            initial pose of end_type effector tip
         goal_pose : RigidTransform
-            goal pose of end effector tip
+            goal pose of end_type effector tip
         timeout : float
             planner timeout (shorthand for setting new motion time then motion)
 
@@ -199,7 +199,7 @@ class YuMiMotionPlanner:
         start_state_msg.joint_state.position = start_state.in_radians
         self._planning_group.set_start_state(start_state_msg)
      
-        # convert start and end pose to the planner's reference frame
+        # convert start and end_type pose to the planner's reference frame
         start_pose_hand = start_pose * ymc.T_GRIPPER_HAND
         goal_pose_hand = goal_pose * ymc.T_GRIPPER_HAND
 
@@ -210,7 +210,7 @@ class YuMiMotionPlanner:
             logging.warning('Failed to plan path.')
             return None
 
-        # convert from moveit joint traj in radians 
+        # convert from moveit joint traj in radians
         joint_names = plan.joint_trajectory.joint_names
         joint_traj = []
         for t in plan.joint_trajectory.points:

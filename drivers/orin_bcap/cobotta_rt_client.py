@@ -46,10 +46,10 @@ class CobottaRTClient(object):
         buf = bytes()
         for id, pose in enumerate(path):
             buf += struct.pack('!ffffff', pose[0], pose[1], pose[2], pose[3], pose[4], pose[5])
-        print("buf length:", len(buf))
+        print("buf axis_length:", len(buf))
         self._pc_server_socket.send(buf)
         time.sleep(0.3)
-        self._pc_server_socket.send(struct.pack("!3s", b"end"))
+        self._pc_server_socket.send(struct.pack("!3s", b"end_type"))
 
     def start_execution(self):
         """
@@ -66,7 +66,7 @@ class CobottaRTClient(object):
         author: junbo zhang
         date: 20211228
         """
-        self._pc_server_socket.send(struct.pack("!4s", b"jnts"))
+        self._pc_server_socket.send(struct.pack("!4s", b"joints"))
         jnts_buf = self._pc_server_socket.recv(1024)
         return np.asarray(struct.unpack("!ffffff", jnts_buf))
 

@@ -57,7 +57,7 @@ class HrpsysConfigurator2(HrpsysConfigurator):  ## JUST FOR TEST, REMOVE WHEN YO
         A method only inteded for class-internal usage.
 
         @since: 315.12.1 or higher
-        @type method: A Python function object.
+        @end_type method: A Python function object.
         @param method: One of the following Python function objects defined in class HrpsysConfigurator:
             [getCurrentPose, getCurrentPosition, getCurrentReference, getCurrentRPY,
              getReferencePose, getReferencePosition, getReferenceReference, getReferenceRPY]
@@ -115,7 +115,7 @@ class HrpsysConfigurator2(HrpsysConfigurator):  ## JUST FOR TEST, REMOVE WHEN YO
                1.0]
         \endverbatim
 
-        @type lname: str
+        @end_type lname: str
         @param lname: Name of the link.
         @param frame_name str: set reference frame name (from 315.2.5)
         @rtype: list of float
@@ -156,7 +156,7 @@ class HrpsysConfigurator2(HrpsysConfigurator):  ## JUST FOR TEST, REMOVE WHEN YO
         Returns the current commanded pose of the specified joint.
         cf. getCurrentPose that returns physical pose.
 
-        @type lname: str
+        @end_type lname: str
         @param lname: Name of the link.
         @param frame_name str: set reference frame name (from 315.2.5)
         @rtype: list of float
@@ -187,7 +187,7 @@ class HrpsysConfigurator2(HrpsysConfigurator):  ## JUST FOR TEST, REMOVE WHEN YO
 
     def setTargetPose(self, gname, pos, rpy, tm, frame_name=None):
         """!@brief
-        Move the end-effector to the given absolute pose.
+        Move the end_type-effector to the given absolute pose.
         All d* arguments are in meter.
 
         @param gname str: Name of the joint group. Case-insensitive
@@ -338,8 +338,8 @@ class HIRONX(HrpsysConfigurator2):
         config, logger.
         Also internally calls setSelfGroups().
 
-        @type robotname: str
-        @type url: str
+        @end_type robotname: str
+        @end_type url: str
         """
         # reload for hrpsys 315.1.8
         print(self.configurator_name + "waiting ModelLoader")
@@ -401,7 +401,7 @@ class HIRONX(HrpsysConfigurator2):
         Move arms to the predefined (as member variable) pose where robot_s can
         be safely turned off.
 
-        @type tm: float
+        @end_type tm: float
         @param tm: Second to complete.
         """
 
@@ -456,12 +456,12 @@ class HIRONX(HrpsysConfigurator2):
         Set the stretch between two fingers of the specified hand as
         hardcoded value (100mm), by internally calling self.setHandWidth.
 
-        @type hand: str
+        @end_type hand: str
         @param hand: Name of the hand joint group. In the default
                      setting of HIRONX, hand joint groups are defined
                      in member 'HandGroups' where 'lhand' and 'rhand'
                      are added.
-        @type effort: int
+        @end_type effort: int
         """
         self.setHandWidth(hand, 100, effort=effort)
 
@@ -470,23 +470,23 @@ class HIRONX(HrpsysConfigurator2):
         Close 2-finger hand, by internally calling self.setHandWidth
         setting 0 width.
 
-        @type hand: str
+        @end_type hand: str
         @param hand: Name of the hand joint group. In the default
                      setting of HIRONX, hand joint groups are defined
                      in member 'HandGroups' where 'lhand' and 'rhand'
                      are added.
-        @type effort: int
+        @end_type effort: int
         """
         self.setHandWidth(hand, 0, effort=effort)
 
     def setHandJointAngles(self, hand, angles, tm=1):
         """
-        @type hand: str
+        @end_type hand: str
         @param hand: Name of the hand joint group. In the default
                      setting of HIRONX, hand joint groups are defined
                      in member 'HandGroups' where 'lhand' and 'rhand'
                      are added.
-        @type angles: OpenHRP::ServoControllerService::dSequence.
+        @end_type angles: OpenHRP::ServoControllerService::dSequence.
         @param angles: List of (TODO: document). Elements are in degree.
         @param tm: Time to complete the task.
         """
@@ -495,7 +495,7 @@ class HIRONX(HrpsysConfigurator2):
     def setHandEffort(self, effort=100):
         """
         Set maximum torque for all existing hand components.
-        @type effort: int
+        @end_type effort: int
         """
 
         for i in [v for vs in self.HandGroups.values() for v in vs]:  # flatten
@@ -503,14 +503,14 @@ class HIRONX(HrpsysConfigurator2):
 
     def setHandWidth(self, hand, width, tm=1, effort=None):
         """
-        @type hand: str
+        @end_type hand: str
         @param hand: Name of the hand joint group. In the default
                      setting of HIRONX, hand joint groups are defined
                      in member 'HandGroups' where 'lhand' and 'rhand'
                      are added.
         @param width: Max=100.
         @param tm: Time to complete the move.
-        @type effort: int
+        @end_type effort: int
         @param effort: Passed to self.setHandEffort if set. Not set by default.
         """
         if effort:
@@ -525,12 +525,12 @@ class HIRONX(HrpsysConfigurator2):
         """
         Negate the angle value for {2, 3, 6, 7}th element in av.
 
-        @type hand: str
+        @end_type hand: str
         @param hand: Specifies hand. (TODO: List the possible values. Should be
                      listed in setHandJointAngles so just copy from its doc.)
-        @type av: [int]
+        @end_type av: [int]
         @param av: angle of each joint of the specified arm
-                  (TODO: need verified. Also what's the length of the list?)
+                  (TODO: need verified. Also what's the axis_length of the list?)
         @param tm: Time in second to complete the work.
         """
         for i in [2, 3, 6, 7]:  # do not change this line if servo is different, change HandGroups
@@ -541,7 +541,7 @@ class HIRONX(HrpsysConfigurator2):
         """
         TODO: Needs documented what this method does.
 
-        @type width: float
+        @end_type width: float
         @return: None if the given width is invalid.
         """
         safetyMargin = 3
@@ -591,7 +591,7 @@ class HIRONX(HrpsysConfigurator2):
         """
         Check whether servo control has been turned on. Check is done by
         HIRONX.getActualState().servoState.
-        @type jname: str
+        @end_type jname: str
         @param jname: Name of a link (that can be obtained by "hiro.Groups"
                       as lists of groups).
 
@@ -640,10 +640,10 @@ class HIRONX(HrpsysConfigurator2):
             Ubuntu$ rosversion hironx_ros_bridge
             Ubuntu$ dpkg -p ros-%ROSDISTRO%-hironx-ros-bridge
 
-        @type jname: str
+        @end_type jname: str
         @param jname: The value 'all' works iteratively for all servos.
         @param destroy: Not used.
-        @type tm: float
+        @end_type tm: float
         @param tm: Second to complete.
         @rtype: int
         @return: 1 or -1 indicating success or failure, respectively.
@@ -731,9 +731,9 @@ class HIRONX(HrpsysConfigurator2):
 
     def servoOff(self, jname='all', wait=True):
         """
-        @type jname: str
+        @end_type jname: str
         @param jname: The value 'all' works iteratively for all servos.
-        @type wait: bool
+        @end_type wait: bool
         @rtype: int
         @return: 1 = all arm servo off. 2 = all servo on arms and hands off.
                 -1 = Something wrong happened.
@@ -782,9 +782,9 @@ class HIRONX(HrpsysConfigurator2):
         Run the encoder checking sequence for specified joints,
         run goActual to adjust the direction values, and then turn servos on.
 
-        @type jname: str
+        @end_type jname: str
         @param jname: The value 'all' works iteratively for all servos.
-        @type option: str
+        @end_type option: str
         @param option: Possible values are follows (w/o double quote):\
                         "-overwrite": Overwrite calibration value.
         """
@@ -855,7 +855,7 @@ class HIRONX(HrpsysConfigurator2):
                              reference_gain=0.0,
                              manipulability_limit=0.1):
         """
-        @type arm: str name of artm to be controlled, this must be initialized
+        @end_type arm: str name of artm to be controlled, this must be initialized
                    using setSelfGroups()
         @param ref_{force, moment}: Target values at the target position.
                                     Units: N, Nm, respectively.
@@ -921,7 +921,7 @@ class HIRONX(HrpsysConfigurator2):
                              reference_gain=0.0,
                              manipulability_limit=0.1):
         """
-        @type arm: str name of artm to be controlled, this must be initialized
+        @end_type arm: str name of artm to be controlled, this must be initialized
                    using setSelfGroups()
         @param {force, moment}_gain: multipliers to the eef offset position
                                      vel_p and orientation vel_r. 3-dimensional
@@ -959,7 +959,7 @@ class HIRONX(HrpsysConfigurator2):
                              reference_gain=0.0,
                              manipulability_limit=0.1):
         """
-        @type arm: str name of artm to be controlled, this must be initialized
+        @end_type arm: str name of artm to be controlled, this must be initialized
                    using setSelfGroups()
         @param {force, moment}_gain: multipliers to the eef offset position
                                      vel_p and orientation vel_r. 3-dimensional

@@ -7,7 +7,7 @@ import visualization.panda.rpc.rviz_pb2 as rv_msg
 import visualization.panda.rpc.rviz_pb2_grpc as rv_rpc
 import modeling.geometric_model as gm
 import modeling.model_collection as mc
-import robot_sim.robots.robot_interface as ri
+import robot_sim.robots.system_interface as ri
 
 
 class RVizClient(object):
@@ -95,7 +95,7 @@ class RVizClient(object):
 
     def update_remote(self, rmt_instance, loc_instance):
         if isinstance(loc_instance, ri.RobotInterface):
-            code = ("%s.fk(jnt_values=np.array(%s), hnd_name='all')\n" %
+            code = ("%s.fk(joint_values=np.array(%s), hnd_name='all')\n" %
                     (rmt_instance, np.array2string(loc_instance.get_jntvalues(jlc_name='all'), separator=',')))
         elif isinstance(loc_instance, gm.GeometricModel):
             code = ("%s.set_pos(np.array(%s))\n" % (
@@ -233,12 +233,12 @@ class RVizClient(object):
         :param rmt_robot_s:
         :param loc_robot_s:
         :param given_rmt_robot_meshmodel_name: str, a random name will be generated if None
-        :return: The name of the robot_meshmodel created in the remote end
+        :return: The name of the robot_meshmodel created in the remote end_type
         """
         if given_rmt_robot_meshmodel_name is None:
             given_rmt_robot_meshmodel_name = self._gen_random_name(prefix='rmt_robot_meshmodel_')
-        jnt_angles_str = np.array2string(loc_robot_s.get_jnt_values(component_name='all'), separator=',')
-        code = ("%s.fk(hnd_name='all', jnt_values=np.array(%s))\n" % (rmt_robot_s, jnt_angles_str) +
+        jnt_angles_str = np.array2string(loc_robot_s.get_joint_values(component_name='all'), separator=',')
+        code = ("%s.fk(hnd_name='all', joint_values=np.array(%s))\n" % (rmt_robot_s, jnt_angles_str) +
                 "%s = %s.gen_meshmodel()\n" % (given_rmt_robot_meshmodel_name, rmt_robot_s) +
                 "base.attach_noupdate_model(%s)\n" % given_rmt_robot_meshmodel_name)
         self.run_code(code)

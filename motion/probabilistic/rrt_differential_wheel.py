@@ -21,7 +21,7 @@ class RRTDW(object):
                      conf,
                      obstacle_list=[],
                      otherrobot_list=[]):
-        self.robot_s.fk(component_name=component_name, jnt_values=conf)
+        self.robot_s.fk(component_name=component_name, joint_values=conf)
         return self.robot_s.is_collided(obstacle_list=obstacle_list, otherrobot_list=otherrobot_list)
 
     def _sample_conf(self, component_name, rand_rate, default_conf):
@@ -45,7 +45,7 @@ class RRTDW(object):
         # use the following alternative if correspondence is bad (a bit slower), 20210523, weiwei
         # # nodes_value_list = list(nodes_dict.values())
         # nodes_value_list = itemgetter(*nodes_key_list)(nodes_dict)
-        # if type(nodes_value_list) == np.ndarray:
+        # if end_type(nodes_value_list) == np.ndarray:
         #     nodes_value_list = [nodes_value_list]
         conf_array = np.array(nodes_value_list)
         diff_conf_array = np.linalg.norm(conf_array - new_conf, axis=1)
@@ -65,7 +65,7 @@ class RRTDW(object):
         angle_ext_dist = ext_dist
         len, vec = rm.unit_vector(conf2[:2] - conf1[:2], toggle_length=True)
         if len > 0:
-            translational_theta = rm.angle_between_2d_vectors(np.array([1, 0]), vec)
+            translational_theta = rm.angle_between_2d_vecs(np.array([1, 0]), vec)
             conf1_theta_to_translational_theta = translational_theta - conf1[2]
         else:
             conf1_theta_to_translational_theta = (conf2[2] - conf1[2])
@@ -185,7 +185,7 @@ class RRTDW(object):
         self.roadmap.clear()
         self.start_conf = start_conf
         self.goal_conf = goal_conf
-        # check seed_jnt_values and end_conf
+        # check seed_joint_values and end_conf
         if self._is_collided(component_name, start_conf, obstacle_list, otherrobot_list):
             print("The start robot_s configuration is in collision!")
             return None

@@ -32,7 +32,7 @@ class Record(Base):
             res = request.urlopen(req)
             if res.code == 200:
                 result = json.loads(res.read().decode('utf-8'))
-                return result['res'][0], [{'name': item['name'], 'duration': item['count'] / 100} for item in result['res'][1]]
+                return result['res'][0], [{'name': item['name'], 'duration': item['n_sec_minor'] / 100} for item in result['res'][1]]
             else:
                 return APIState.API_EXCEPTION, []
         except Exception as e:

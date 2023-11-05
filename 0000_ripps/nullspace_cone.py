@@ -61,7 +61,7 @@ if __name__ == '__main__':
             #     for t_ext in range(0, 200, 20):
             #         cur_jnt_values -= np.ravel(xa_y[:, 0]) * ratio
             #         # gm.gen_frame(pos=gl_tcp[0], rotmat=gl_tcp[1]).attach_to(base)
-            #         status = robot_s.fk(component_name=component_name, jnt_values=cur_jnt_values)
+            #         status = robot_s.fk(component_name=component_name, joint_values=cur_jnt_values)
             #         # if status == "succ":
             status = robot_s.fk(component_name=component_name, jnt_values=cur_jnt_values_ext)
             if t % 20 == 0:
@@ -72,7 +72,7 @@ if __name__ == '__main__':
             robot_s.fk(component_name=component_name, jnt_values=cur_jnt_values)
     # path = path[::-1]
     # robot_s.fk(component_name=component_name,
-    #            jnt_values=jnt_values)
+    #            joint_values=joint_values)
     # ratio = -ratio
     # for t in range(0, 5000, 1):
     #     print("-------- timestep = ", t, " --------")
@@ -87,7 +87,7 @@ if __name__ == '__main__':
     #     # gm.gen_frame(pos=gl_tcp[0], rotmat=gl_tcp[1]).attach_to(base)
     #     print(xa_ns)
     #     print(gl_tcp[1][:3,2])
-    #     status = robot_s.fk(component_name=component_name, jnt_values=cur_jnt_values)
+    #     status = robot_s.fk(component_name=component_name, joint_values=cur_jnt_values)
     #     # if status == "succ":
     #     if t % 20 == 0:
     #         path.append(cur_jnt_values)
@@ -105,9 +105,9 @@ if __name__ == '__main__':
                 rbtmnp[0].detach()
             pose = path[motioncounter[0]]
             robot.fk(armname, pose)
-            rbtmnp[0] = robot.gen_meshmodel(toggle_tcpcs=True)
+            rbtmnp[0] = robot.gen_mesh_model(toggle_tcpcs=True)
             rbtmnp[0].attach_to(base)
-            # genSphere(robot.get_gl_tcp(component_name)[0], radius=0.01, rgba=[1, 1, 0, 1])
+            # genSphere(robot.get_gl_tcp(component_name)[0], major_radius=0.01, rgba=[1, 1, 0, 1])
             motioncounter[0] += 1
         else:
             motioncounter[0] = 0

@@ -12,7 +12,7 @@ class Voxel:
     @property
     def raw(self):
         '''
-        Generate a raw 3D boolean array from the internal run-length encoded data
+        Generate a raw 3D boolean array from the internal run-axis_length encoded data
         '''
         if self._raw is None:
             self._raw = run_to_raw(**self.run)
@@ -48,7 +48,7 @@ def run_to_raw(shape, index_xy, index_z, **kwargs):
 
 def mesh_to_run(mesh, pitch):
     '''
-    Convert a mesh to a run-length encoded voxel grid. 
+    Convert a mesh to a run-axis_length encoded voxel grid.
 
     This is done via ray tests which return intersection points,
     which is easily convertable to a raw 3D boolean voxel array

@@ -431,6 +431,6 @@ if __name__ == '__main__':
     pt.setpattern(elearray)
     tubehm = np.eye(4)
     tubehm[:3, 3] = np.array([380,-190,0])
-    # pt.gendumbell(homomat=tubehm).reparentTo(base.render)
+    # pt.gendumbell(pos=tubehm).reparentTo(base.render)
     pt.gencad(homomat=tubehm).reparentTo(base.render)
     base.run()

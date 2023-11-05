@@ -89,12 +89,12 @@ def over_segmentation(objcm, max_normal_bias_angle=rm.math.pi / 12,
     author: weiwei
     date: 20161116cancun, 20210119osaka
     """
-    vertices = objcm.objtrm.vertices
-    faces = objcm.objtrm.faces
-    face_normals = objcm.objtrm.face_normals
+    vertices = objcm.trm_mesh.vertices
+    faces = objcm.trm_mesh.faces
+    face_normals = objcm.trm_mesh.face_normals
     nfaces = len(faces)
     ## angle-limited adjacency -> selection matrix
-    angle_limited_adjacency = graph.adjacency_angle(objcm.objtrm, max_normal_bias_angle)
+    angle_limited_adjacency = graph.adjacency_angle(objcm.trm_mesh, max_normal_bias_angle)
     adjacency_mat = np.tile(np.vstack((angle_limited_adjacency, np.fliplr(angle_limited_adjacency))), nfaces)
     face_id_mat = np.tile(np.array([range(nfaces)]).T, len(adjacency_mat)).T
     rgt_ele_mat = adjacency_mat[:, 1::2]
@@ -142,8 +142,8 @@ def edge_points(objcm, radius=.005, max_normal_bias_angle=rm.math.pi / 12):
     points, point_face_ids = objcm.sample_surface(radius=.001)
     kdt = cKDTree(points)
     point_pairs = np.array(list(kdt.query_pairs(radius)))
-    point_normals0 = objcm.objtrm.face_normals[point_face_ids[point_pairs[:, 0].tolist()]]
-    point_normals1 = objcm.objtrm.face_normals[point_face_ids[point_pairs[:, 1].tolist()]]
+    point_normals0 = objcm.trm_mesh.face_normals[point_face_ids[point_pairs[:, 0].tolist()]]
+    point_normals1 = objcm.trm_mesh.face_normals[point_face_ids[point_pairs[:, 1].tolist()]]
     return points[point_pairs[np.sum(point_normals0 * point_normals1, axis=1) < threshold].ravel()].reshape(-1, 3)
 
 
@@ -156,7 +156,7 @@ if __name__ == '__main__':
     import visualization.panda.world as wd
     import modeling.collision_model as cm
     import modeling.geometric_model as gm
-    import basis.trimesh_generator as tg
+    import basis.trimesh_factory as tg
     import cProfile as profile
     import pstats
 
@@ -174,31 +174,31 @@ if __name__ == '__main__':
     for i in range(len(facet_nested_face_id_list)):
         offset_pos = facet_normal_list[i] * np.random.rand() * .0
         # segment
-        tmp_trm = tg.extract_subtrimesh(bunnycm.objtrm, facet_nested_face_id_list[i], offset_pos)  # TODO submesh
-        tmp_gm = gm.StaticGeometricModel(tmp_trm, btwosided=True)
+        tmp_trm = tg.facet_as_trm(bunnycm.trm_mesh, facet_nested_face_id_list[i], offset_pos)  # TODO submesh
+        tmp_gm = gm.StaticGeometricModel(tmp_trm, toggle_twosided=True)
         tmp_gm.attach_to(base)
         tmp_gm.set_rgba(rm.random_rgba())
         # edge
         edge_list = (np.array(seg_nested_edge_list[i])+offset_pos).tolist()
         gm.gen_linesegs(edge_list, thickness=.05, rgba=[1,0,0,1]).attach_to(base)
         # seed segment
-        tmp_trm = tg.extract_subtrimesh(bunnycm.objtrm, facet_seed_list[i], offset_pos)
-        tmp_gm = gm.StaticGeometricModel(tmp_trm, btwosided=True)
+        tmp_trm = tg.facet_as_trm(bunnycm.trm_mesh, facet_seed_list[i], offset_pos)
+        tmp_gm = gm.StaticGeometricModel(tmp_trm, toggle_twosided=True)
         tmp_gm.attach_to(base)
         tmp_gm.set_rgba([1, 0, 0, 1])
         # face center and normal
         seed_center = np.mean(tmp_trm.vertices, axis=0)
         gm.gen_sphere(pos=seed_center, radius=.001).attach_to(base)
-        gm.gen_arrow(spos=seed_center, epos=seed_center + tmp_trm.face_normals[0] * .01, thickness=.0006).attach_to(
+        gm.gen_arrow(spos=seed_center, epos=seed_center + tmp_trm.face_normals[0] * .01, stick_radius=.0006).attach_to(
             base)
         for face_id_for_curvature in face_id_pair_list_for_curvature[i]:
             rgba = [1, 1, 1, 1]
-            tmp_trm = tg.extract_subtrimesh(bunnycm.objtrm, face_id_for_curvature, offset_pos)
-            tmp_gm = gm.StaticGeometricModel(tmp_trm, btwosided=True)
+            tmp_trm = tg.facet_as_trm(bunnycm.trm_mesh, face_id_for_curvature, offset_pos)
+            tmp_gm = gm.StaticGeometricModel(tmp_trm, toggle_twosided=True)
             tmp_gm.attach_to(base)
             tmp_gm.set_rgba(rgba)
             seed_center = np.mean(tmp_trm.vertices, axis=0)
             gm.gen_sphere(pos=seed_center, radius=.001, rgba=rgba).attach_to(base)
-            gm.gen_arrow(spos=seed_center, epos=seed_center + tmp_trm.face_normals[0] * .01, thickness=.0006,
+            gm.gen_arrow(spos=seed_center, epos=seed_center + tmp_trm.face_normals[0] * .01, stick_radius=.0006,
                          rgba=rgba).attach_to(base)
     base.run()

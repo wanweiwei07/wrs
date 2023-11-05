@@ -102,7 +102,7 @@ class MotionPlannerRT():
         dist = 0.06
         if is_plant:
             dist = 0
-        current_jnts = self.robot_x.get_jnt_values()
+        current_jnts = self.robot_x.get_joint_values()
 
         for angle in self.angle_list:
             if direct_pose:
@@ -115,7 +115,7 @@ class MotionPlannerRT():
                 tgt_pose = self.get_rbt_pose_from_pipette(tgt_pos, angle, dist)
             try:
                 tgt_jnts = self.robot_x.P2J(tgt_pose)
-                if not self.robot_s.is_jnt_values_in_ranges("arm", tgt_jnts):
+                if not self.robot_s.are_joint_values_in_ranges("arm", tgt_jnts):
                     print("out of range")
                     continue
             except:
@@ -129,7 +129,7 @@ class MotionPlannerRT():
                 return tgt_jnts
 
             #     print(tgt_jnts)
-            #     self.robot_s.fk(jnt_values=tgt_jnts)
+            #     self.robot_s.fk(joint_values=tgt_jnts)
             #     if self.robot_s.is_collided():
             #         print("robot collision")
             #         continue
@@ -351,11 +351,11 @@ def dispose_tip(tip_id):
 
 def is_inside_range(jnt_values):
     for i in range(6):
-        if jnt_values[i] < robot_s.arm.jlc.jnts[i + 1]['motion_rng'][0] or jnt_values[i] > \
-                robot_s.arm.jlc.jnts[i + 1]['motion_rng'][1]:
-            # print(jnt_values[i], robot_s.arm.jlc.jnts[i]['motion_rng'])
+        if jnt_values[i] < robot_s.arm.jlc.joints[i + 1]['motion_rng'][0] or jnt_values[i] > \
+                robot_s.arm.jlc.joints[i + 1]['motion_rng'][1]:
+            # print(joint_values[i], robot_s.arm.jlc.joints[i]['motion_rng'])
             print(f"{i} out of range")
-            # robot_s.fk(jnt_values=jnt_values)
+            # robot_s.fk(joint_values=joint_values)
             # robot_s.gen_meshmodel().attach_to(base)
             # base.run()
             return False

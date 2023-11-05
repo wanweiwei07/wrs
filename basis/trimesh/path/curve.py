@@ -8,7 +8,7 @@ def discretize_bezier(points, count=None, scale=1.0):
     Arguments
     ----------
     points:  (o,d) list of points of the bezier. The first and last 
-             points should be the start and end of the curve.  
+             points should be the start and end_type of the curve.
              For a 2D cubic bezier, order o=3, dimension d=2
 
     Returns
@@ -54,12 +54,12 @@ def discretize_bspline(control, knots, count=None, scale=1.0):
     ----------
     control:  (o,d) list of control points of the b- spline. 
     knots:    (j) list of knots 
-    count:    int, number of sections to discretize the spline in to.
+    count:    int, number of n_sec_minor to discretize the spline in to.
               If not specified, RES_LENGTH will be used to inform this. 
 
     Returns
     ----------
-    discrete: (count,d) list of points, a polyline of the B-spline.
+    discrete: (n_sec_minor,d) list of points, a polyline of the B-spline.
     '''
 
     # evaluate the b-spline using scipy/fitpack

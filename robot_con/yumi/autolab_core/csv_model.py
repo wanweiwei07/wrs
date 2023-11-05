@@ -25,7 +25,7 @@ class CSVModel:
 
         headers_types_list : :obj:`list` of two-tuples :obj:`str`, :obj:`str`
             A list where each item is a tuple of string header for a column and
-            the correspoding data type as a string.
+            the correspoding data end_type as a string.
 
         default_entry : :obj:`str`
             The default entry for cells in the CSV.
@@ -39,9 +39,9 @@ class CSVModel:
         headers_types = {headers[i]:types[i] for i in range(len(headers))}
         for key, val in headers_types.items():
             if type(val) != str:
-                raise Exception("Types must be passed in as strings! For header {0}, type {1}".format(key, val))
+                raise Exception("Types must be passed in as strings! For header {0}, end_type {1}".format(key, val))
             if val not in CSVModel._KNOWN_TYPES_MAP:
-                raise Exception("Invalid type for header {0}. Got: {1}. Can only accept: {2}".format(key, val, CSVModel._KNOWN_TYPES_MAP.keys()))
+                raise Exception("Invalid end_type for header {0}. Got: {1}. Can only accept: {2}".format(key, val, CSVModel._KNOWN_TYPES_MAP.keys()))
             if key == '_uid' or key == '_default':
                 raise Exception("Cannot create reserved columns _uid or _default!")
         if type(default_entry) != str:
@@ -130,7 +130,7 @@ class CSVModel:
         Raises
         ------
         Exception
-            If the value for a given header is not of the appropriate type.
+            If the value for a given header is not of the appropriate end_type.
         """
         row = {key:self._default_entry for key in self._headers}
         row['_uid'] = self._get_new_uid()
@@ -140,7 +140,7 @@ class CSVModel:
                 logging.warn("Cannot manually set columns _uid or _default of a row! Given data: {0}".format(data))
                 continue
             if not isinstance(val, CSVModel._KNOWN_TYPES_MAP[self._headers_types[key]]):
-                raise Exception('Data type mismatch for column {0}. Expected: {1}, got: {2}'.format(key,
+                raise Exception('Data end_type mismatch for column {0}. Expected: {1}, got: {2}'.format(key,
                                                         CSVModel._KNOWN_TYPES_MAP[self._headers_types[key]], type(val)))
             row[key] = val
 
@@ -162,7 +162,7 @@ class CSVModel:
         Raises
         ------
         Exception
-            If the value for a given header is not of the appropriate type.
+            If the value for a given header is not of the appropriate end_type.
         """
         row = self._table[uid+1]
         for key, val in data.items():
@@ -172,7 +172,7 @@ class CSVModel:
                 logging.warn("Unknown column name: {0}".format(key))
                 continue
             if not isinstance(val, CSVModel._KNOWN_TYPES_MAP[self._headers_types[key]]):
-                raise Exception('Data type mismatch for column {0}. Expected: {1}, got: {2}'.format(key,
+                raise Exception('Data end_type mismatch for column {0}. Expected: {1}, got: {2}'.format(key,
                                                         CSVModel._KNOWN_TYPES_MAP[self._headers_types[key]], type(val)))
             row[key] = val
         self._save()
@@ -211,14 +211,14 @@ class CSVModel:
 
     def get_col(self, col_name, filter = lambda _ : True):
         """Return all values in the column corresponding to col_name that satisfies filter, which is
-        a function that takes in a value of the column's type and returns True or False
+        a function that takes in a value of the column's end_type and returns True or False
 
         Parameters
         ----------
         col_name : str
             Name of desired column
         filter : function, optional
-            A function that takes in a value of the column's type and returns True or False
+            A function that takes in a value of the column's end_type and returns True or False
             Defaults to a function that always returns True
 
         Returns
@@ -290,7 +290,7 @@ class CSVModel:
         col : :obj:`str`
             The header string for a column.
 
-        val : value type
+        val : value end_type
             The value to match in the column.
 
         Returns
@@ -311,7 +311,7 @@ class CSVModel:
         col : :obj:`str`
             The header string for a column.
 
-        val : value type
+        val : value end_type
             The value to match in the column.
 
         Returns
@@ -450,7 +450,7 @@ class CSVModel:
         headers_types : :obj:`list` of :obj:`tuple` of :obj:`str`, :obj:`str`
             A list of tuples, where the first element in each tuple is the
             string header for a column and the second element is that column's
-            data type as a string.
+            data end_type as a string.
 
         default_entry : :obj:`str`
             The default entry for cells in the CSV.

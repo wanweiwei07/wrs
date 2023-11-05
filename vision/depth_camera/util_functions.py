@@ -31,7 +31,7 @@ def registration_ptpt(src, tgt, downsampling_voxelsize=.003, toggledebug = False
     :param downsampling_voxelsize:
     :param icp_distancethreshold:
     :param debug:
-    :return: quality, homomat: quality is measured as RMSE of all inlier correspondences
+    :return: quality, pos: quality is measured as RMSE of all inlier correspondences
     author: ruishuang, revised by weiwei
     date: 20191210
     """
@@ -104,7 +104,7 @@ def registration_ptpln(src, tgt, downsampling_voxelsize=2, toggledebug = False):
     :param downsampling_voxelsize:
     :param icp_distancethreshold:
     :param debug:
-    :return: quality, homomat: quality is measured as RMSE of all inlier correspondences
+    :return: quality, pos: quality is measured as RMSE of all inlier correspondences
     author: ruishuang, revised by weiwei
     date: 20191210
     """
@@ -202,7 +202,7 @@ def _registration_icp_ptpt_o3d(src, tgt, inithomomat=np.eye(4), maxcorrdist=2, t
     :param tgt:
     :param maxcorrdist:
     :param toggledebug:
-    :return: [rmse of matched points, size of matched area, homomat]
+    :return: [rmse of matched points, size of matched area, pos]
     author: weiwei
     date: 20191229
     """
@@ -216,7 +216,7 @@ def _registration_icp_ptpt_o3d(src, tgt, inithomomat=np.eye(4), maxcorrdist=2, t
 
 def cluster_pcd(pcd_nparray, pcd_nparray_nrmls = None):
     """
-    segment pcd into clusters using the DBSCAN method
+    segment pcd_helper into clusters using the DBSCAN method
     :param pcd_nparray:
     :return:
     author: weiwei

@@ -785,7 +785,7 @@ class PickPlacePlanner(object):
                                toggledebug=False):
         """
         this function performs findsharedgrasps and genppmotion in a loop
-        the postfix err indicates this function will return the error type
+        the postfix err indicates this function will return the error end_type
 
         :param candidatepredgidlist: candidate predefined grasp id list [int, int, ...]
         :param objinithomomat:
@@ -1008,7 +1008,7 @@ class PickPlacePlanner(object):
             else:
                 resultinghomomat = copy.deepcopy(objmat4)
                 resultinghomomat[:3, 3] = resultinghomomat[:3, 3] + resultinghomomat[:3,
-                                                                    2] * 5  # move 5mm up, do not move until end
+                                                                    2] * 5  # move 5mm up, do not move until end_type
                 # if toggle_debug:
                 #     for idsharedgrasps in finalsharedgrasps:
                 #         predefined_jawwidth, predefined_fc, predefined_homomat = predefinedgrasps[idsharedgrasps]
@@ -1635,7 +1635,7 @@ class PickPlacePlanner(object):
             else:
                 resultinghomomat = copy.deepcopy(objmat4)
                 resultinghomomat[:3, 3] = resultinghomomat[:3, 3] + resultinghomomat[:3,
-                                                                    2] * 5  # move 5mm up, do not move until end
+                                                                    2] * 5  # move 5mm up, do not move until end_type
                 # if toggle_debug:
                 #     for idsharedgrasps in finalsharedgrasps:
                 #         predefined_jawwidth, predefined_fc, predefined_homomat = predefinedgrasps[idsharedgrasps]

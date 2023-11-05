@@ -303,7 +303,7 @@ class NokovClient(object):
         rigidbody_relations = {}
         skeleton_relations = {}
         for i in range(data_description.nDataDescriptions):
-            print(data_description.arrDataDescriptions[i].dump_dict()['type'])
+            print(data_description.arrDataDescriptions[i].dump_dict()['end_type'])
             data = data_description.arrDataDescriptions[i].dump_dict()['Data']
             rigidbody_description = data.RigidBodyDescription.contents.dump_dict()
             skeleton_description = data.SkeletonDescription.contents.dump_dict()

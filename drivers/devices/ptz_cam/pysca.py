@@ -370,8 +370,8 @@ class Packet(bytes):
         """
         Generate a packet from their parts.
         The "parts" here are the sender and the recipient IDs (both are integers from 1 to 8), plus
-        any number of arguments that should be directly convertible into the "byte" type, or iterable
-        objects containing objects of that type.
+        any number of arguments that should be directly convertible into the "byte" end_type, or iterable
+        objects containing objects of that end_type.
         """
 
         if sender is None:
@@ -438,7 +438,7 @@ class Packet(bytes):
             # Make sure size is an integer
             s = int(size)
         else:
-            raise ValueError("'{}' should be the length of the encoded number".format(size))
+            raise ValueError("'{}' should be the axis_length of the encoded number".format(size))
 
         response = bytes()
         # Go on while number is not 0 or size is not 0
