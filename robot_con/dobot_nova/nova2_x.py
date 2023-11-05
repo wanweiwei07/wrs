@@ -3,13 +3,16 @@ WRS control interface for Nova 2
 Author: Hao Chen <chen960216@gmail.com>, 20230113, osaka
 Update Note <Version:0.0.1,20230113>: Create a basic API for the WRS system
 """
-from typing import Optional
+import time
+from typing import Optional, Literal
 import numpy as np
 import basis.robot_math as rm
 from drivers.dobot_tcp import Dobot
+from robot_con.dobot_nova.nova2_gripper_x import Nova2GripperX
 
 try:
     import motion.trajectory.piecewisepoly_toppra as pwp
+
     TOPPRA_EXIST = True
 except:
     TOPPRA_EXIST = False
@@ -46,12 +49,14 @@ class Nova2X(object):
         return np.deg2rad(arr)
 
     @staticmethod
-    def angle_wrs2arm(arr: np.ndarray) -> np.ndarray:
+    def angle_wrs2arm(arr: np.ndarray) -> np.ndarray or None:
         """
         Convert the angle in WRS system to the Arm API
         :param arr: Position array in the WRS system
         :return: Converted position array
         """
+        if arr is None:
+            return None
         return np.rad2deg(arr)
 
     @staticmethod
@@ -63,7 +68,7 @@ class Nova2X(object):
         """
         return rm.rotmat_from_euler(*Nova2X.angle_arm2wrs(arr))
 
-    def __init__(self, ip: str = "192.168.5.1"):
+    def __init__(self, ip: str = "192.168.5.1", has_gripper=False, init_enable_rbt=True):
         """
         :param ip: The ip address of the robot
         """
@@ -71,10 +76,22 @@ class Nova2X(object):
         # initialization
         self._arm_x = Dobot(ip=ip)
         self._arm_x.clear_error()
-        if not self._arm_x.is_enable:
-            self._arm_x.power_on()
+        # self._arm_x.set_payload(1.4)
+
+        # self._arm_x.disable_robot()
+        # time.sleep(1)
+        if init_enable_rbt and not self._arm_x.is_enable:
+            # self._arm_x.power_on()
             self._arm_x.enable_robot()
+        print("Robot restart", self._arm_x.robot_mode)
         self.ndof = 6
+        self._has_gripper = has_gripper
+        if has_gripper:
+            self.gripper_x: Nova2GripperX = Nova2GripperX(device='COM8', motor_ids=[1, 2], baudrate=115200, op_mode=5,
+                                                          gripper_limit=(0, 0.198),
+                                                          motor_max_current=170, )
+        else:
+            self.gripper_x: Nova2GripperX = None
 
     @property
     def mode(self) -> int:
@@ -93,8 +110,19 @@ class Nova2X(object):
         """
         return self._arm_x.robot_mode
 
+    @property
+    def terminal_baudrate(self):
+        if self._has_gripper:
+            return self._arm_x.get_terminal485_baudrate()
+        else:
+            return
+
     def clear_error(self):
         self._arm_x.clear_error()
+
+    def set_speed(self, speed: int = 50):
+        assert 0 <= speed <= 100
+        self._arm_x.set_speed(speed)
 
     def reset(self):
         self._arm_x.reset_robot()
@@ -171,23 +199,73 @@ class Nova2X(object):
         else:
             self._arm_x.movep(pos, rpy)
 
+    def set_DO_digital_out(self, index: int, val: Literal[0, 1]):
+        """
+        set digital output for the DO port. val is a {0,1}
+        :param index:
+        :param val:
+        :return:
+        """
+        self._arm_x.set_digital_out(index, val)
+
     def move_jntspace_path(self, path,
                            max_jntvel: list = None,
                            max_jntacc: list = None,
                            start_frame_id=1,
+                           control_frequency=1 / 33,
                            toggle_debug=False):
-        raise NotImplementedError
+        if TOPPRA_EXIST:
+            # enter servo mode
+            if not path or path is None:
+                raise ValueError("The given is incorrect!")
+            # Refer to https://www.ufactory.cc/_files/ugd/896670_9ce29284b6474a97b0fc20c221615017.pdf
+            # the robotic arm can accept joint position commands sent at a fixed high frequency like 33 Hz
+            tpply = pwp.PiecewisePolyTOPPRA()
+            interpolated_path = tpply.interpolate_by_max_spdacc(path=path,
+                                                                control_frequency=control_frequency,
+                                                                max_vels=max_jntvel,
+                                                                max_accs=max_jntacc,
+                                                                toggle_debug=False)
+            interpolated_path = interpolated_path[start_frame_id:]
+            for jnt_values in interpolated_path:
+                self._arm_x.servoj(self.angle_wrs2arm(jnt_values))
+                time.sleep(.03)
+            return
+        else:
+            raise NotImplementedError
 
     def __del__(self):
         self._arm_x.close()
+        if self._has_gripper:
+            del self.gripper_x
 
 
 if __name__ == "__main__":
-    rbtx = Nova2X()
-    print(f"Mode is {rbtx.mode}")
-    print(repr(rbtx.get_jnt_values()))
-    print(rbtx.get_pose())
-    rbtx.move_p(np.array([0.20320204, -0.25951422, 0.30715834]),
-                np.array([[-0.08450983, -0.8993117, -0.42906474],
-                          [-0.99284347, 0.03953477, 0.11268916],
-                          [-0.0843797, 0.43551747, -0.89621683]]))
+    rbtx = Nova2X(has_gripper=True, init_enable_rbt=False)
+    # rbtx._arm_x.power_on()
+    # print(repr(rbtx.get_jnt_values()))
+    # print(rbtx.get_pose())
+    # print("The terminal BaudRate is: ", rbtx.terminal_baudrate)
+    # rbtx.gripper_x.set_gripper_width(.05)
+
+    rbtx.gripper_x.set_gripper_width(width=rbtx.gripper_x.get_gripper_width() - 0.01, grasp_force=30)
+    # rbtx.gripper_x.open_gripper()
+    # rbtx._arm_x.close_modbus(1)
+    # rbtx._arm_x.close_modbus(2)
+    # rbtx._arm_x.close_modbus(3)
+
+    # v = rbtx._arm_x.create_modbus('127.0.0.1', 60000, 1, True)
+    # print("modbus_connect: ", v)
+    # print("TEST")
+
+    # print(repr((rbtx.get_jnt_values())))
+    # 7: blow, 8 suction
+    # rbtx.set_DO_digital_out(8, 0)
+    # armx = rbtx._arm_x
+    # print(f"Mode is {rbtx.mode}")
+    # print(repr(rbtx.get_jnt_values()))
+    # print(rbtx.get_pose())
+    # rbtx.move_p(np.array([0.20320204, -0.25951422, 0.30715834]),
+    #             np.array([[-0.08450983, -0.8993117, -0.42906474],
+    #                       [-0.99284347, 0.03953477, 0.11268916],
+    #                       [-0.0843797, 0.43551747, -0.89621683]]))

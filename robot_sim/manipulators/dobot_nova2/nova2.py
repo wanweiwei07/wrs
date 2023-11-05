@@ -1,6 +1,8 @@
 """
 Definition for Dobot Nova 2
 Author: Chen Hao <chen960216@gmail.com>, 20230214, osaka
+TODO:
+    - Kinematics parameter of the robot seems not exactly the same as the official document
 """
 
 import os

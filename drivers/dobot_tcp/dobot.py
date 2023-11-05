@@ -234,6 +234,7 @@ class DobotMonitor(Thread):
         """
         if wait:
             self.wait()
+            time.sleep(.1)
         with self._dict_lock:
             return self._dict.copy()
 
@@ -272,9 +273,9 @@ class Dobot(object):
     def is_enable(self) -> bool:
         mode = self.robot_mode
         return (mode == ROBOT_MODE['ROBOT_MODE_ENABLE']) \
-               or (mode == ROBOT_MODE['ROBOT_MODE_RUNNING']) \
-               or (mode == ROBOT_MODE['ROBOT_MODE_RUNNING']) \
-               or (mode == ROBOT_MODE['ROBOT_MODE_RECORDING'])
+            or (mode == ROBOT_MODE['ROBOT_MODE_RUNNING']) \
+            or (mode == ROBOT_MODE['ROBOT_MODE_RUNNING']) \
+            or (mode == ROBOT_MODE['ROBOT_MODE_RECORDING'])
 
     def _wait_for_move(self, target, threshold=None, timeout=5, joints=False):
         """
@@ -293,6 +294,10 @@ class Dobot(object):
         count = 0
         while True:
             if not self.is_running():
+                dist = self._get_dist(target, joints)
+                print(dist)
+                if dist < threshold:
+                    return
                 raise Exception("Robot stopped")
             dist = self._get_dist(target, joints)
             self.logger.debug("distance to target is: %s, target dist is %s", dist, threshold)
@@ -307,6 +312,7 @@ class Dobot(object):
                             timeout, dist, threshold))
             else:
                 count = 0
+            time.sleep(.1)
 
     def _get_dist(self, target, joints=False):
         if joints:
@@ -548,6 +554,8 @@ class Dobot(object):
         """
         if seed_jnts is not None:
             assert len(seed_jnts) == 6, "The dof of the seed joint values must be 6"
+            if isinstance(seed_jnts, np.ndarray):
+                seed_jnts = seed_jnts.tolist()
         v = self.dobot_db.InverseSolution(pos[0], pos[1], pos[2], rot[0], rot[1], rot[2],
                                           user, tool, seed_jnts)
         error_code, return_val = parse_dobot_return(v)
@@ -564,6 +572,7 @@ class Dobot(object):
         assert len(jnts) == 6, "The dof of the input joint values must be 6"
         self.dobot_mov.JointMovJ(jnts[0], jnts[1], jnts[2], jnts[3], jnts[4], jnts[5])
         if wait:
+            time.sleep(.5)
             self._wait_for_move(jnts[:6], joints=True)
 
     def movel(self, pos: np.ndarray, rot: np.ndarray, wait=True):
@@ -575,7 +584,8 @@ class Dobot(object):
         """
         self.dobot_mov.MovL(pos[0], pos[1], pos[2], rot[0], rot[1], rot[2])
         if wait:
-            self._wait_for_move(np.hstack((pos, rot)))
+            time.sleep(.5)
+            self._wait_for_move(np.hstack((pos, rot)), )
 
     def movep(self, pos: np.ndarray, rot: np.ndarray, wait=True):
         """
@@ -587,6 +597,7 @@ class Dobot(object):
         # The dobot API name sounds wired.
         self.dobot_mov.MovJ(pos[0], pos[1], pos[2], rot[0], rot[1], rot[2])
         if wait:
+            time.sleep(.5)
             self._wait_for_move(np.hstack((pos, rot)))
 
     def servop(self, pos: np.ndarray, rot: np.ndarray, ):
