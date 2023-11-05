@@ -424,11 +424,14 @@ if __name__ == "__main__":
     # joint_values = jlc.ik(tgt_pos=tgt_pos0, tgt_rotmat=tgt_rotmat0, toggle_debug=False)
     # print(joint_values)
     seed_joint_values = jlc.get_joint_values()
-
-    tgt_pos0 = np.array([-0.09128654, -0.32810196, 0.09355688])
-    tgt_rotmat0 = np.array([[-0.97982454, 0.09119486, -0.17784085],
-                            [0.19139599, 0.68436184, -0.70357405],
-                            [0.05754516, -0.72341715, -0.68800886]])
+    tgt_pos0 = np.array([-0.05357837, -0.24155173, 0.38740088])
+    tgt_rotmat0 = np.array([[0.1113351, -0.91899593, -0.3782208],
+           [0.41182744, -0.30370395, 0.85916359],
+           [-0.90443499, -0.25141677, 0.34465483]])
+    # tgt_pos0 = np.array([-0.09128654, -0.32810196, 0.09355688])
+    # tgt_rotmat0 = np.array([[-0.97982454, 0.09119486, -0.17784085],
+    #                         [0.19139599, 0.68436184, -0.70357405],
+    #                         [0.05754516, -0.72341715, -0.68800886]])
     # tgt_pos0 = np.array([.3, .2, .1])
     # tgt_rotmat0 = rm.rotmat_from_euler(np.radians(-90), np.radians(0), np.radians(0))
     gm.gen_frame(pos=tgt_pos0, rotmat=tgt_rotmat0).attach_to(base)
