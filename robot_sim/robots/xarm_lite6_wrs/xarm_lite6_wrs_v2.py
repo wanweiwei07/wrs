@@ -264,7 +264,7 @@ class XArmLite6WRSGripper(ri.RobotInterface):
             return jnt_values_list
         if len(jnt_values_list) == 1:
             return jnt_values_list[0]
-        # return joint values close to seed_joint_values
+        # return joint values close to seed_jnt_vals
         seed_jnt_values = np.zeros(6) if seed_jnt_values is None else seed_jnt_values
         if np.linalg.norm(jnt_values_list[0] - seed_jnt_values) < np.linalg.norm(jnt_values_list[1] - seed_jnt_values):
             return jnt_values_list[0]

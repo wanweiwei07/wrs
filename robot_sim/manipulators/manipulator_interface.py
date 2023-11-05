@@ -132,7 +132,7 @@ class ManipulatorInterface(object):
                            tcp_loc_pos=tcp_loc_pos,
                            tcp_loc_rotmat=tcp_loc_rotmat,
                            tcp_joint_id=tcp_jnt_id,
-                           seed_joint_values=seed_jnt_values,
+                           seed_jnt_vals=seed_jnt_values,
                            max_niter=max_niter,
                            local_minima=local_minima,
                            toggle_debug=toggle_debug)

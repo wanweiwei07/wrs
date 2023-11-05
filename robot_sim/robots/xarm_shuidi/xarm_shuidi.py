@@ -260,7 +260,7 @@ class XArmShuidi(ri.RobotInterface):
         return super().ik(component_name=component_name,
                           tgt_pos=tgt_pos,
                           tgt_rotmat=tgt_rotmat,
-                          seed_joint_values=seed_jnt_values,
+                          seed_jnt_vals=seed_jnt_values,
                           max_niter=100,
                           tcp_joint_id=tcp_jnt_id,
                           tcp_loc_pos=tcp_loc_pos,

@@ -572,7 +572,7 @@ class NumIKSolver(object):
                 tgt_pos.append(tcp_gl_pos[i] + deltapos[i])
                 tgt_rotmat.append(np.dot(deltarotmat, tcp_gl_rotmat[i]))
             start_conf = self.jlc.getjntvalues()
-            # return numik(rjlinstance, tgt_pos, tgt_rotmat, seed_joint_values=seed_joint_values, tcp_joint_id=tcp_joint_id, tcp_loc_pos=tcp_loc_pos, tcp_loc_rotmat=tcp_loc_rotmat)
+            # return numik(rjlinstance, tgt_pos, tgt_rotmat, seed_jnt_vals=seed_jnt_vals, tcp_joint_id=tcp_joint_id, tcp_loc_pos=tcp_loc_pos, tcp_loc_rotmat=tcp_loc_rotmat)
         else:
             tgt_pos = tcp_gl_pos + deltapos
             tgt_rotmat = np.dot(deltarotmat, tcp_gl_rotmat)

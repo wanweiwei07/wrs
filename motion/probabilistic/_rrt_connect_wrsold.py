@@ -185,7 +185,7 @@ if __name__ == '__main__':
     # Set Initial parameters
     robot = xyb.XYBot()
     rrtc = RRTConnect(robot)
-    # path = rrtc.plan(seed_joint_values=np.array([0, 0]), end_conf=np.array([5, 10]), obstacle_list=obstacle_list,
+    # path = rrtc.plan(seed_jnt_vals=np.array([0, 0]), end_conf=np.array([5, 10]), obstacle_list=obstacle_list,
     #                  ext_dist=1, rand_rate=70, max_time=300, hnd_name=None, animation=True)
     import time
     total_t = 0

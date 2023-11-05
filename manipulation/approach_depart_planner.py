@@ -300,7 +300,7 @@ class ADPlanner(object):  # AD = Approach_Depart
                                        object_list=[], # target objects, will be checked by rrt, but not by linear
                                        seed_jnt_values=None):
         """
-        degenerate into gen_ad_primitive if both seed_joint_values and end_conf are None
+        degenerate into gen_ad_primitive if both seed_jnt_vals and end_conf are None
         :param component_name:
         :param goal_tcp_pos:
         :param goal_tcp_rotmat:
@@ -414,7 +414,7 @@ if __name__ == '__main__':
     # conf_list, jawwidth_list = adp.gen_approach_motion(hnd_name,
     #                                                    goal_pos,
     #                                                    goal_rotmat,
-    #                                                    seed_joint_values=robot_s.get_jnt_values(hnd_name),
+    #                                                    seed_jnt_vals=robot_s.get_jnt_values(hnd_name),
     #                                                    approach_direction=np.array([0, 0, -1]),
     #                                                    approach_distance=.1)
     # conf_list, jawwidth_list = adp.gen_depart_motion(hnd_name,

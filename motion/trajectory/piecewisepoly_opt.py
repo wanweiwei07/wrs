@@ -94,7 +94,7 @@ class PiecewisePolyOpt(object):
         """
         :param tgt_pos:
         :param tgt_rotmat:
-        :param seed_joint_values:
+        :param seed_jnt_vals:
         :param method:
         :return:
         """

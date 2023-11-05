@@ -359,7 +359,7 @@ class JLChain(object):
         # tic = time.time()
         # jnt_values = self._nik_solver.dls_rr(tgt_pos=tgt_pos,
         #                                               tgt_rotmat=tgt_rotmat,
-        #                                               seed_jnt_vals=seed_joint_values,
+        #                                               seed_jnt_vals=seed_jnt_vals,
         #                                               max_n_iter=max_niter,
         #                                               toggle_debug=toggle_debug)
         # toc = time.time()
@@ -367,7 +367,7 @@ class JLChain(object):
         # tic = time.time()
         # jnt_values = self._nik_solver.cwln(tgt_pos=tgt_pos,
         #                                             tgt_rotmat=tgt_rotmat,
-        #                                             seed_jnt_vals=seed_joint_values,
+        #                                             seed_jnt_vals=seed_jnt_vals,
         #                                             max_n_iter=max_niter,
         #                                             toggle_debug=toggle_debug)
         # toc = time.time()
@@ -375,7 +375,7 @@ class JLChain(object):
         # tic = time.time()
         # jnt_values = self._nik_solver.pinv_wc(tgt_pos=tgt_pos,
         #                                         tgt_rotmat=tgt_rotmat,
-        #                                         seed_jnt_vals=seed_joint_values,
+        #                                         seed_jnt_vals=seed_jnt_vals,
         #                                         max_n_iter=max_niter,
         #                                         toggle_debug=toggle_debug)
         # toc = time.time()
@@ -383,7 +383,7 @@ class JLChain(object):
         # tic = time.time()
         # jnt_values = self._nik_solver.pinv_rr(tgt_pos=tgt_pos,
         #                                             tgt_rotmat=tgt_rotmat,
-        #                                             seed_jnt_vals=seed_joint_values,
+        #                                             seed_jnt_vals=seed_jnt_vals,
         #                                             max_n_iter=max_niter,
         #                                             toggle_debug=toggle_debug)
         # toc = time.time()
@@ -391,7 +391,7 @@ class JLChain(object):
         # tic = time.time()
         # jnt_values = self._nik_solver.jt_rr(tgt_pos=tgt_pos,
         #                                             tgt_rotmat=tgt_rotmat,
-        #                                             seed_jnt_vals=seed_joint_values,
+        #                                             seed_jnt_vals=seed_jnt_vals,
         #                                             max_n_iter=max_niter,
         #                                             toggle_debug=toggle_debug)
         # toc = time.time()
@@ -407,7 +407,7 @@ class JLChain(object):
         # tic = time.time()
         # jnt_values = self._oik_solver.sqp(tgt_pos=tgt_pos,
         #                                            tgt_rotmat=tgt_rotmat,
-        #                                            seed_jnt_vals=seed_joint_values,
+        #                                            seed_jnt_vals=seed_jnt_vals,
         #                                            max_n_iter=max_niter,
         #                                            toggle_debug=toggle_debug)
         # toc = time.time()
@@ -502,7 +502,7 @@ if __name__ == "__main__":
     tic = time.time()
     jnt_values = jlinstance.ik(tgt_pos_list,
                                tgt_rotmat_list,
-                               seed_joint_values=None,
+                               seed_jnt_vals=None,
                                tcp_joint_id=tcp_jnt_id_list,
                                tcp_loc_pos=tcp_loc_poslist,
                                tcp_loc_rotmat=tcp_loc_rotmatlist,

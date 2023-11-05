@@ -39,12 +39,12 @@ for step in [1, 2, 3, 4]:
             except:
                 continue
             # try:
-            #     joint_values, _ = ik_s.solve(tgt_pos=tgt_pos, tgt_rotmat=tgt_rotmat, seed_joint_values= seed0)
+            #     joint_values, _ = ik_s.solve(tgt_pos=tgt_pos, tgt_rotmat=tgt_rotmat, seed_jnt_vals= seed0)
             # except:
             #     joint_values = None
             # if joint_values is None:
             #     try:
-            #         joint_values, _ = ik_s.solve(tgt_pos=tgt_pos, tgt_rotmat=tgt_rotmat, seed_joint_values= seed1)
+            #         joint_values, _ = ik_s.solve(tgt_pos=tgt_pos, tgt_rotmat=tgt_rotmat, seed_jnt_vals= seed1)
             #     except:
             #         joint_values = None
             # joint_values = rbt_s.ik(component_name='arm',
@@ -52,14 +52,14 @@ for step in [1, 2, 3, 4]:
             #                       tgt_rotmat=tgt_rotmat,
             #                       max_n_iter=500,
             #                       toggle_debug=False,
-            #                       seed_joint_values=seed0)
+            #                       seed_jnt_vals=seed0)
             # if joint_values is None:
             #     joint_values = rbt_s.ik(component_name='arm',
             #                           tgt_pos=tgt_pos,
             #                           tgt_rotmat=tgt_rotmat,
             #                           max_n_iter=500,
             #                           toggle_debug=False,
-            #                           seed_joint_values=seed1)
+            #                           seed_jnt_vals=seed1)
             if jnt_values is None:
                 continue
             else:
@@ -93,14 +93,14 @@ base.run()
 #                                   tgt_rotmat=tgt_rotmat,
 #                                   max_n_iter=1000,
 #                                   toggle_debug=False,
-#                                   seed_joint_values=seed0)
+#                                   seed_jnt_vals=seed0)
 #             if joint_values is None:
 #                 joint_values = rbt_s.ik(component_name='arm',
 #                                       tgt_pos=tgt_pos,
 #                                       tgt_rotmat=tgt_rotmat,
 #                                       max_n_iter=1000,
 #                                       toggle_debug=False,
-#                                       seed_joint_values=seed1)
+#                                       seed_jnt_vals=seed1)
 #             if joint_values is None:
 #                 continue
 #             # rbt_s.fk(component_name="arm", joint_values=joint_values)
@@ -126,7 +126,7 @@ seed1[3] = -math.pi / 2
 #                                    tgt_rotmat=tgt_rotmat,
 #                                    max_n_iter=100,
 #                                    toggle_debug=False,
-#                                    seed_joint_values=seed0)
+#                                    seed_jnt_vals=seed0)
 #             if jnt_values0 is not None:
 #                 joint_values = jnt_values0
 #             else:
@@ -135,7 +135,7 @@ seed1[3] = -math.pi / 2
 #                                        tgt_rotmat=tgt_rotmat,
 #                                        max_n_iter=100,
 #                                        toggle_debug=False,
-#                                        seed_joint_values=seed1)
+#                                        seed_jnt_vals=seed1)
 #                 if jnt_values1 is not None:
 #                     joint_values = jnt_values1
 #                 else:

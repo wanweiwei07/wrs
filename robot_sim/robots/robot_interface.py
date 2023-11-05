@@ -91,7 +91,7 @@ class RobotInterface(object):
            toggle_debug=False):
         return self.manipulator.ik(tgt_pos,
                                    tgt_rotmat,
-                                   seed_joint_values=seed_jnt_values,
+                                   seed_jnt_vals=seed_jnt_values,
                                    max_niter=max_niter,
                                    tcp_joint_id=tcp_jnt_id,
                                    tcp_loc_pos=tcp_loc_pos,

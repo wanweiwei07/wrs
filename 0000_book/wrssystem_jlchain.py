@@ -24,7 +24,7 @@ if __name__ == "__main__":
     tic = time.time()
     jnt_values = jlinstance.ik(tgt_pos0,
                                tgt_rotmat0,
-                               seed_joint_values=None,
+                               seed_jnt_vals=None,
                                local_minima="accept",
                                toggle_debug=False)
     toc = time.time()

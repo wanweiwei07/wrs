@@ -25,7 +25,7 @@ seed1[3] = -math.pi / 2
 #                                    tgt_rotmat=tgt_rotmat,
 #                                    max_n_iter=100,
 #                                    toggle_debug=False,
-#                                    seed_joint_values=seed0)
+#                                    seed_jnt_vals=seed0)
 #             if jnt_values0 is not None:
 #                 joint_values = jnt_values0
 #             else:
@@ -34,7 +34,7 @@ seed1[3] = -math.pi / 2
 #                                        tgt_rotmat=tgt_rotmat,
 #                                        max_n_iter=100,
 #                                        toggle_debug=False,
-#                                        seed_joint_values=seed1)
+#                                        seed_jnt_vals=seed1)
 #                 if jnt_values1 is not None:
 #                     joint_values = jnt_values1
 #                 else:

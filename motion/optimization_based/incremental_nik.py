@@ -42,7 +42,7 @@ class IncrementalNIK(object):
         if seed_jnt_values is None:
             seed_jnt_values = jnt_values_bk
         for (pos, rotmat) in zip(pos_list, rotmat_list):
-            jnt_values = self.robot_s.ik(component_name, pos, rotmat, seed_joint_values=seed_jnt_values)
+            jnt_values = self.robot_s.ik(component_name, pos, rotmat, seed_jnt_vals=seed_jnt_values)
             if jnt_values is None:
                 print("IK not solvable in gen_linear_motion!")
                 self.robot_s.fk(component_name, jnt_values_bk)
@@ -217,7 +217,7 @@ class IncrementalNIK(object):
         if seed_jnt_values is None:
             seed_jnt_values = jnt_values_bk
         for (pos, rotmat) in zip(pos_list, rotmat_list):
-            jnt_values = self.robot_s.ik(component_name, pos, rotmat, seed_joint_values=seed_jnt_values)
+            jnt_values = self.robot_s.ik(component_name, pos, rotmat, seed_jnt_vals=seed_jnt_values)
             if jnt_values is None:
                 print("IK not solvable in gen_circular_motion!")
                 self.robot_s.fk(component_name, jnt_values_bk)

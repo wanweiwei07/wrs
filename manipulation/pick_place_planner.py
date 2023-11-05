@@ -164,7 +164,7 @@ class PickPlacePlanner(adp.ADPlanner):
         first_conf = self.robot_s.ik(hand_name,
                                      first_jaw_center_pos,
                                      first_jaw_center_rotmat,
-                                     seed_joint_values=seed_jnt_values)
+                                     seed_jnt_vals=seed_jnt_values)
         if first_conf is None:
             print("Cannot solve the ik at the first grasping pose!")
             return None, None, None
@@ -501,7 +501,7 @@ if __name__ == '__main__':
     #                                       ad_granularity=.003,
     #                                       use_rrt=True,
     #                                       obstacle_list=[],
-    #                                       seed_joint_values=start_conf)
+    #                                       seed_jnt_vals=start_conf)
     #     print(robot_s.rgt_oih_infos, robot_s.lft_oih_infos)
     #     if conf_list is not None:
     #         break

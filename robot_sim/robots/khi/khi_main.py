@@ -176,7 +176,7 @@ class KHI_DUAL(ri.RobotInterface):
         #     self.manipulator_dict[component_name].tgtjnts = range(2, self.manipulator_dict[component_name].n_dof + 1)
         #     ik_results = self.manipulator_dict[component_name].ik(tgt_pos,
         #                                                           tgt_rotmat,
-        #                                                           seed_joint_values=seed_joint_values,
+        #                                                           seed_jnt_vals=seed_jnt_vals,
         #                                                           tcp_joint_id=tcp_joint_id,
         #                                                           tcp_loc_pos=tcp_loc_pos,
         #                                                           tcp_loc_rotmat=tcp_loc_rotmat,
@@ -188,7 +188,7 @@ class KHI_DUAL(ri.RobotInterface):
         # elif component_name == 'lft_arm_waist' or component_name == 'rgt_arm_waist':
         #     return self.manipulator_dict[component_name].ik(tgt_pos,
         #                                                     tgt_rotmat,
-        #                                                     seed_joint_values=seed_joint_values,
+        #                                                     seed_jnt_vals=seed_jnt_vals,
         #                                                     tcp_joint_id=tcp_joint_id,
         #                                                     tcp_loc_pos=tcp_loc_pos,
         #                                                     tcp_loc_rotmat=tcp_loc_rotmat,
@@ -198,7 +198,7 @@ class KHI_DUAL(ri.RobotInterface):
         if component_name in ['lft_arm', 'rgt_arm', 'lft_arm_waist', 'rgt_arm_waist']:
             return self.manipulator_dict[component_name].ik(tgt_pos,
                                                             tgt_rotmat,
-                                                            seed_joint_values=seed_jnt_values,
+                                                            seed_jnt_vals=seed_jnt_values,
                                                             tcp_joint_id=tcp_jnt_id,
                                                             tcp_loc_pos=tcp_loc_pos,
                                                             tcp_loc_rotmat=tcp_loc_rotmat,

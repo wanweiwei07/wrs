@@ -185,7 +185,7 @@ class RRTDW(object):
         self.roadmap.clear()
         self.start_conf = start_conf
         self.goal_conf = goal_conf
-        # check seed_joint_values and end_conf
+        # check seed_jnt_vals and end_conf
         if self._is_collided(component_name, start_conf, obstacle_list, otherrobot_list):
             print("The start robot_s configuration is in collision!")
             return None

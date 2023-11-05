@@ -170,7 +170,7 @@ def search_reachable_configuration(rbt_s,
         jnt_values = rbt_s.ik(component_name=component_name,
                               tgt_pos=tgt_pos,
                               tgt_rotmat=rotmat,
-                              seed_joint_values=seed_jnt_values)
+                              seed_jnt_vals=seed_jnt_values)
         if jnt_values is not None:
             rbt_s.fk(joint_values=jnt_values)
             if rbt_s.is_collided(obstacle_list=obstacle_list):

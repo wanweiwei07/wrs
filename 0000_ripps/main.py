@@ -248,7 +248,7 @@ if __name__ == '__main__':
     # for angle in np.linspace(0, np.pi * 2, 25):
     #     rotmat = rm.rotmat_from_axangle([0, 0, 1], angle).dot(rotmat)
     #     joint_values = rbt_s.ik(component_name=component_name, tgt_pos=well_pos + z_offset, tgt_rotmat=rotmat,
-    #                           seed_joint_values=previous_jnt_values)
+    #                           seed_jnt_vals=previous_jnt_values)
     #     if joint_values is not None:
     #         rbt_s.fk(joint_values=joint_values)
     #         rbt_s.gen_meshmodel().attach_to(base)

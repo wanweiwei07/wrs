@@ -91,7 +91,7 @@ class Left_Manipulator(mi.ManipulatorInterface):
            toggle_debug=False):
         self.jlc.ik(tgt_pos,
                     tgt_rotmat,
-                    seed_joint_values=seed_jnt_values,
+                    seed_jnt_vals=seed_jnt_values,
                     tcp_joint_id=tcp_jnt_id,
                     tcp_loc_pos=tcp_loc_pos,
                     tcp_loc_rotmat=tcp_loc_rotmat,
@@ -459,7 +459,7 @@ class Left_Manipulator(mi.ManipulatorInterface):
 #            component_name,
 #            tgt_pos,
 #            tgt_rotmat,
-#            seed_joint_values=None,
+#            seed_jnt_vals=None,
 #            tcp_joint_id=None,
 #            tcp_loc_pos=None,
 #            tcp_loc_rotmat=None,
@@ -471,7 +471,7 @@ class Left_Manipulator(mi.ManipulatorInterface):
 #         #     self.manipulator_dict[component_name].tgtjnts = range(2, self.manipulator_dict[component_name].n_dof + 1)
 #         #     ik_results = self.manipulator_dict[component_name].ik(tgt_pos,
 #         #                                                           tgt_rotmat,
-#         #                                                           seed_joint_values=seed_joint_values,
+#         #                                                           seed_jnt_vals=seed_jnt_vals,
 #         #                                                           tcp_joint_id=tcp_joint_id,
 #         #                                                           tcp_loc_pos=tcp_loc_pos,
 #         #                                                           tcp_loc_rotmat=tcp_loc_rotmat,
@@ -483,7 +483,7 @@ class Left_Manipulator(mi.ManipulatorInterface):
 #         # elif component_name == 'lft_arm_waist' or component_name == 'rgt_arm_waist':
 #         #     return self.manipulator_dict[component_name].ik(tgt_pos,
 #         #                                                     tgt_rotmat,
-#         #                                                     seed_joint_values=seed_joint_values,
+#         #                                                     seed_jnt_vals=seed_jnt_vals,
 #         #                                                     tcp_joint_id=tcp_joint_id,
 #         #                                                     tcp_loc_pos=tcp_loc_pos,
 #         #                                                     tcp_loc_rotmat=tcp_loc_rotmat,
@@ -493,7 +493,7 @@ class Left_Manipulator(mi.ManipulatorInterface):
 #         if component_name in ['lft_arm', 'rgt_arm', 'lft_arm_waist', 'rgt_arm_waist']:
 #             return self.manipulator_dict[component_name].ik(tgt_pos,
 #                                                             tgt_rotmat,
-#                                                             seed_joint_values=seed_joint_values,
+#                                                             seed_jnt_vals=seed_jnt_vals,
 #                                                             tcp_joint_id=tcp_joint_id,
 #                                                             tcp_loc_pos=tcp_loc_pos,
 #                                                             tcp_loc_rotmat=tcp_loc_rotmat,

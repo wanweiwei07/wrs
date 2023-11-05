@@ -146,7 +146,7 @@ if __name__ == '__main__':
                 #                                                         cone_axis=-tip_rotmat[:3, 2],
                 #                                                         rotation_interval=np.radians(15),
                 #                                                         obstacle_list=[frame_bottom],
-                #                                                         seed_joint_values=np.zeros(6))
+                #                                                         seed_jnt_vals=np.zeros(6))
                 # # gm.gen_frame(pos=tip_pos, major_radius=.001).attach_to(base)
                 # rbt_s.fk(component_name=component_name, joint_values=new_joint_values)
                 # # rbt_s.gen_meshmodel().attach_to(base)
@@ -266,7 +266,7 @@ if __name__ == '__main__':
     # for angle in np.linspace(0, np.pi * 2, 25):
     #     rotmat = rm.rotmat_from_axangle([0, 0, 1], angle).dot(rotmat)
     #     joint_values = rbt_s.ik(component_name=component_name, tgt_pos=well_pos + z_offset, tgt_rotmat=rotmat,
-    #                           seed_joint_values=previous_jnt_values)
+    #                           seed_jnt_vals=previous_jnt_values)
     #     if joint_values is not None:
     #         rbt_s.fk(joint_values=joint_values)
     #         rbt_s.gen_meshmodel().attach_to(base)

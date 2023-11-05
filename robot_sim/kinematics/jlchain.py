@@ -346,20 +346,20 @@ class JLChain(object):
     def ik(self,
            tgt_pos: np.ndarray,
            tgt_rotmat: np.ndarray,
-           seed_joint_values=None,
+           seed_jnt_vals=None,
            max_n_iter=100):
         """
         trac ik solver runs num_ik and opt_ik in parallel, and return the faster result
         :param tgt_pos: 1x3 nparray, single value or list
         :param tgt_rotmat: 3x3 nparray, single value or list
-        :param seed_joint_values: the starting configuration used in the numerical iteration
+        :param seed_jnt_vals: the starting configuration used in the numerical iteration
         :param max_n_iter
         :return:
         """
         tic = time.time()
         jnt_values = self._tracik_solver.ik(tgt_pos=tgt_pos,
                                             tgt_rotmat=tgt_rotmat,
-                                            seed_jnt_vals=seed_joint_values,
+                                            seed_jnt_vals=seed_jnt_vals,
                                             max_n_iter=max_n_iter)
         toc = time.time()
         print("trac ik time ", toc - tic)
@@ -371,6 +371,8 @@ class JLChain(object):
 
 if __name__ == "__main__":
     import time
+    import pickle
+    from tqdm import tqdm
     import visualization.panda.world as wd
     import robot_sim.kinematics.model_generator as rkmg
     import robot_sim.kinematics.constant as rkc
@@ -401,6 +403,53 @@ if __name__ == "__main__":
     jlc.joints[5].motion_range = np.array([-np.pi / 2, np.pi / 2])
     jlc.tcp_loc_pos = np.array([0, 0, .01])
     jlc.reinitialize()
+    rkmg.gen_jlc_stick(jlc, stick_rgba=basis.constant.navy_blue, toggle_tcp_frame=True,
+                       toggle_joint_frame=True).attach_to(base)
+    seed_jnt_vals = jlc.get_joint_values()
+    if True:
+
+        success = 0
+        time_list = []
+        tgt_pos_list = []
+        tgt_rot_list = []
+        for i in tqdm(range(100), desc='ik'):
+            jnts = jlc.rand_conf()
+            tgt_pos, tgt_rot = jlc.forward_kinematics(joint_values=jnts, update=False, toggle_jacobian=False)
+            a = time.time()
+            joint_values = jlc.ik(tgt_pos=tgt_pos,
+                                  tgt_rotmat=tgt_rot,
+                                  seed_jnt_vals=seed_jnt_vals,
+                                  max_n_iter=100)
+            b = time.time()
+            time_list.append(b - a)
+            if joint_values is not None:
+                success += 1
+                print(joint_values)
+                # jlc.forward_kinematics(joint_values=joint_values, update=True)
+                # rkmg.gen_jlc_stick(jlc, stick_rgba=basis.constant.navy_blue, toggle_tcp_frame=True,
+                #                    toggle_joint_frame=True).attach_to(base)
+            else:
+                print(tgt_pos, tgt_rot)
+                tgt_pos_list.append(tgt_pos)
+                tgt_rot_list.append(tgt_rot)
+                gm.gen_frame(pos=tgt_pos, rotmat=tgt_rot).attach_to(base)
+                # jlc.forward_kinematics(joint_values=jnts, update=True)
+                # rkmg.gen_jlc_stick(jlc, stick_rgba=basis.constant.navy_blue, toggle_tcp_frame=True,
+                #                    toggle_joint_frame=True).attach_to(base)
+
+            # if success > 10:
+            #     base.run()
+        with open("tpl_.pkl", "wb") as a:
+            pickle.dump(tgt_pos_list,a)
+        with open("trl_.pkl", "wb") as b:
+            pickle.dump(tgt_rot_list,b)
+        print(success)
+        print('average', np.mean(time_list))
+        print('max', np.max(time_list))
+        print('min', np.min(time_list))
+
+    base.run()
+
     # joint_values = np.array(
     #     [np.radians(90), np.radians(-30), np.radians(120), np.radians(30), np.radians(30), np.radians(30)])
     # tcp_pos_physical, tcp_rotmat_physical = jlc.go_given_conf(joint_values=joint_values)
@@ -423,27 +472,24 @@ if __name__ == "__main__":
     # # gm.gen_myc_frame(pos=tgt_pos1, rotmat=tgt_rotmat1).attach_to(base)
     # joint_values = jlc.ik(tgt_pos=tgt_pos0, tgt_rotmat=tgt_rotmat0, toggle_debug=False)
     # print(joint_values)
-    seed_joint_values = jlc.get_joint_values()
-    tgt_pos0 = np.array([-0.05357837, -0.24155173, 0.38740088])
-    tgt_rotmat0 = np.array([[0.1113351, -0.91899593, -0.3782208],
-           [0.41182744, -0.30370395, 0.85916359],
-           [-0.90443499, -0.25141677, 0.34465483]])
-    # tgt_pos0 = np.array([-0.09128654, -0.32810196, 0.09355688])
-    # tgt_rotmat0 = np.array([[-0.97982454, 0.09119486, -0.17784085],
-    #                         [0.19139599, 0.68436184, -0.70357405],
-    #                         [0.05754516, -0.72341715, -0.68800886]])
-    # tgt_pos0 = np.array([.3, .2, .1])
-    # tgt_rotmat0 = rm.rotmat_from_euler(np.radians(-90), np.radians(0), np.radians(0))
-    gm.gen_frame(pos=tgt_pos0, rotmat=tgt_rotmat0).attach_to(base)
-    joint_values = jlc.ik(tgt_pos=tgt_pos0,
-                          tgt_rotmat=tgt_rotmat0,
-                          seed_joint_values=seed_joint_values)
-    print("initial ik is done!")
-    print(joint_values)
-    if joint_values is not None:
-        jlc.forward_kinematics(joint_values=joint_values, update=True)
-        seed_joint_values = joint_values
-        rkmg.gen_jlc_stick(jlc).attach_to(base)
+    # seed_joint_values = jlc.get_joint_values()
+    with open("tpl_.pkl", "rb") as a:
+        tpl = pickle.load(a)
+    with open("trl_.pkl", "rb") as b:
+        trl = pickle.load(b)
+    success=0
+    for id in tqdm(range(len(tpl)), desc="failed iks"):
+        joint_values = jlc.ik(tgt_pos=tpl[id],
+                              tgt_rotmat=trl[id],
+                              seed_jnt_vals=seed_jnt_vals)
+        print("initial ik is done!")
+        print(joint_values)
+        if joint_values is not None:
+            success+=1
+            jlc.forward_kinematics(joint_values=joint_values, update=True)
+            seed_joint_values = joint_values
+            rkmg.gen_jlc_stick(jlc).attach_to(base)
+    print(f"success rate: {success}/{len(tpl)}")
     base.run()
     # time.sleep(.1)
 
@@ -453,7 +499,7 @@ if __name__ == "__main__":
         gm.gen_frame(pos=tgt_pos0, rotmat=tgt_rotmat0).attach_to(base)
         joint_values = jlc.ik(tgt_pos=tgt_pos0,
                               tgt_rotmat=tgt_rotmat0,
-                              seed_joint_values=seed_joint_values)
+                              seed_jnt_vals=seed_joint_values)
         print(f"{i}th ik is done! {joint_values}")
         time.sleep(.1)
         if joint_values is not None:
@@ -474,7 +520,7 @@ if __name__ == "__main__":
     tic = time.time()
     jnt_values = jlinstance.ik(tgt_pos_list,
                                tgt_rotmat_list,
-                               seed_joint_values=None,
+                               seed_jnt_vals=None,
                                tcp_joint_id=tcp_jnt_id_list,
                                tcp_loc_pos=tcp_loc_poslist,
                                tcp_loc_rotmat=tcp_loc_rotmatlist,
