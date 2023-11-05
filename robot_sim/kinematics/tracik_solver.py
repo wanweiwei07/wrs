@@ -250,7 +250,6 @@ class TracIKSolver(object):
         self.oik_solver_proc.start()
         tcp_gl_pos, tcp_gl_rotmat = self.jlc.get_gl_tcp()
         # run once to avoid long waiting time in the beginning
-        self._nik_param_queue.put((tcp_gl_pos, tcp_gl_rotmat, self.jlc.get_joint_values(), 10))
         self._oik_param_queue.put((tcp_gl_pos, tcp_gl_rotmat, self.jlc.get_joint_values(), 10))
         self._result_queue.get()
 
