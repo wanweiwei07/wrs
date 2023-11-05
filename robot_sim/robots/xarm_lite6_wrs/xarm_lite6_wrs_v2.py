@@ -7,10 +7,10 @@ import os
 import numpy as np
 import basis.robot_math as rm
 import modeling.model_collection as mc
-import robot_sim._kinematics.jlchain as jl
+import robot_sim.kinematics.jlchain as jl
 from robot_sim.manipulators.xarm_lite6 import XArmLite6
 from robot_sim.end_effectors.gripper.lite6_wrs_gripper.lite6_wrs_gripper_v2 import Lite6WRSGripper2
-import robot_sim.robots.robot_interface as ri
+import robot_sim.robots.system_interface as ri
 
 
 class XArmLite6WRSGripper(ri.RobotInterface):
@@ -19,21 +19,21 @@ class XArmLite6WRSGripper(ri.RobotInterface):
         super().__init__(pos=pos, rotmat=rotmat, name=name)
         this_dir, this_filename = os.path.split(__file__)
         # left side
-        self.body = jl.JLChain(pos=pos, rotmat=rotmat, homeconf=np.zeros(0), name='body_jl')
+        self.body = jl.JLChain(pos=pos, rotmat=rotmat, home_conf=np.zeros(0), name='body_jl')
         self.body.lnks[0]['name'] = "xarm_stand"
-        self.body.lnks[0]['loc_pos'] = np.array([0, 0, 0])
+        self.body.lnks[0]['pos_in_loc_tcp'] = np.array([0, 0, 0])
         self.body.lnks[0]['rgba'] = [.55, .55, .55, 1.0]
         self.body.lnks[0]['mesh_file'] = os.path.join(this_dir, "meshes", "xarm_lite6_stand.stl")
         self.body.reinitialize()
-        self.arm = XArmLite6(pos=self.body.jnts[-1]['gl_posq'],
-                             rotmat=self.body.jnts[-1]['gl_rotmatq'],
+        self.arm = XArmLite6(pos=self.body.joints[-1]['gl_posq'],
+                             rotmat=self.body.joints[-1]['gl_rotmatq'],
                              enable_cc=False)
         arm_tcp_rotmat = self.arm.jnts[-1]['gl_rotmatq']
         self.hnd = Lite6WRSGripper2(pos=self.arm.jnts[-1]['gl_posq'], rotmat=arm_tcp_rotmat,
                                     enable_cc=False)
 
         # tool center point
-        self.arm.jlc.tcp_jnt_id = -1
+        self.arm.jlc.tcp_joint_id = -1
         self.arm.jlc.tcp_loc_pos = self.hnd.jaw_center_pos
         self.arm.jlc.tcp_loc_rotmat = self.hnd.jaw_center_rotmat
         # a list of detailed information about objects in hand, see CollisionChecker.add_objinhnd
@@ -99,7 +99,7 @@ class XArmLite6WRSGripper(ri.RobotInterface):
         self.pos = pos
         self.rotmat = rotmat
         self.body.fix_to(self.pos, self.rotmat)
-        self.arm.fix_to(pos=self.body.jnts[-1]['gl_posq'], rotmat=self.body.jnts[-1]['gl_rotmatq'])
+        self.arm.fix_to(pos=self.body.joints[-1]['gl_posq'], rotmat=self.body.joints[-1]['gl_rotmatq'])
         arm_tcp_rotmat = self.arm.jnts[-1]['gl_rotmatq']
         self.hnd.fix_to(pos=self.arm.jnts[-1]['gl_posq'],
                         rotmat=arm_tcp_rotmat)
@@ -127,16 +127,16 @@ class XArmLite6WRSGripper(ri.RobotInterface):
                 obj_info['gl_rotmat'] = gl_rotmat
 
         def update_component(component_name, jnt_values):
-            status = self.manipulator_dict[component_name].fk(jnt_values=jnt_values)
-            arm_tcp_rotmat = self.manipulator_dict[component_name].jnts[-1]['gl_rotmatq']
+            status = self.manipulator_dict[component_name].fk(joint_values=jnt_values)
+            arm_tcp_rotmat = self.manipulator_dict[component_name].joints[-1]['gl_rotmatq']
             self.hnd_dict[component_name].fix_to(
-                pos=self.manipulator_dict[component_name].jnts[-1]['gl_posq'],
+                pos=self.manipulator_dict[component_name].joints[-1]['gl_posq'],
                 rotmat=arm_tcp_rotmat)
             update_oih(component_name=component_name)
             return status
 
         super().fk(component_name, jnt_values)
-        # examine length
+        # examine axis_length
         if component_name == 'arm':
             if not isinstance(jnt_values, np.ndarray) or jnt_values.size != self.arm.ndof:
                 raise ValueError(f"An 1x{self.arm.ndof} npdarray must be specified to move a single arm!")
@@ -220,7 +220,7 @@ class XArmLite6WRSGripper(ri.RobotInterface):
                 num_c2 = -num_c2
             theta2 = np.arctan2(num_s2, num_c2)
             # Joint 4,5,6
-            U06 = rm.homomat_from_posrot(pos=pos_w, rot=tgt_rotmat)
+            U06 = rm.homomat_from_posrot(pos=pos_w, rotmat=tgt_rotmat)
             s1, c1, s2, c2, s3, c3 = np.sin(theta1), np.cos(theta1), np.sin(theta2), np.cos(theta2), np.sin(theta3), np.cos(theta3)
             T03 = np.array([[s2*s3*c1 + c1*c2*c3, s2*c1*c3 - s3*c1*c2, s1, a3*s2*c1],
                             [s1*s2*s3 + s1*c2*c3, s1*s2*c3 - s1*s3*c2, -c1, a3*s1*s2],
@@ -264,7 +264,7 @@ class XArmLite6WRSGripper(ri.RobotInterface):
             return jnt_values_list
         if len(jnt_values_list) == 1:
             return jnt_values_list[0]
-        # return joint values close to seed_jnt_values
+        # return joint values close to seed_joint_values
         seed_jnt_values = np.zeros(6) if seed_jnt_values is None else seed_jnt_values
         if np.linalg.norm(jnt_values_list[0] - seed_jnt_values) < np.linalg.norm(jnt_values_list[1] - seed_jnt_values):
             return jnt_values_list[0]
@@ -356,11 +356,11 @@ class XArmLite6WRSGripper(ri.RobotInterface):
                       rgba=None,
                       name='xarm_lite6_meshmodel'):
         mm_collection = mc.ModelCollection(name=name)
-        self.body.gen_meshmodel(tcp_loc_pos=None,
-                                tcp_loc_rotmat=None,
-                                toggle_tcpcs=False,
-                                toggle_jntscs=toggle_jntscs,
-                                rgba=rgba).attach_to(mm_collection)
+        self.body.gen_mesh_model(tcp_loc_pos=None,
+                                 tcp_loc_rotmat=None,
+                                 toggle_tcpcs=False,
+                                 toggle_jntscs=toggle_jntscs,
+                                 rgba=rgba).attach_to(mm_collection)
         self.arm.gen_meshmodel(tcp_jnt_id=tcp_jnt_id,
                                tcp_loc_pos=tcp_loc_pos,
                                tcp_loc_rotmat=tcp_loc_rotmat,

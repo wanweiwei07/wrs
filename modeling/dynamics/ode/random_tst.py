@@ -29,13 +29,13 @@ body_sphere_a = OdeBody(world)
 M = OdeMass()
 M.setSphere(7874, radius)
 body_sphere_a.setMass(M)
-body_sphere_a.setPosition(da.npv3_to_pdv3(sphere_a.get_pos()))
+body_sphere_a.setPosition(da.npvec3_to_pdvec3(sphere_a.get_pos()))
 
 body_sphere_b = OdeBody(world)
 M = OdeMass()
 M.setSphere(7874, radius)
 body_sphere_b.setMass(M)
-body_sphere_b.setPosition(da.npv3_to_pdv3(sphere_b.get_pos()))
+body_sphere_b.setPosition(da.npvec3_to_pdvec3(sphere_b.get_pos()))
 
 # Create the joints
 earth_a_jnt = OdeBallJoint(world)
@@ -56,8 +56,8 @@ stepSize = 1.0 / 90.0
 def simulationTask(task):
     # Step the simulation and set the new positions
     world.quickStep(globalClock.getDt())
-    sphere_a.set_pos(da.pdv3_to_npv3(body_sphere_a.getPosition()))
-    sphere_b.set_pos(da.pdv3_to_npv3(body_sphere_b.getPosition()))
+    sphere_a.set_pos(da.pdvec3_to_npvec3(body_sphere_a.getPosition()))
+    sphere_b.set_pos(da.pdvec3_to_npvec3(body_sphere_b.getPosition()))
     gm.gen_linesegs([[np.zeros(3), sphere_a.get_pos()]], thickness=.05, rgba=[0, 1, 0, 1]).attach_to(base)
     gm.gen_linesegs([[sphere_a.get_pos(), sphere_b.get_pos()]], thickness=.05, rgba=[0, 0, 1, 1]).attach_to(base)
     return task.cont

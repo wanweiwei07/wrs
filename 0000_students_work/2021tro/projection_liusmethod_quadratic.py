@@ -10,7 +10,7 @@ import vision.depth_camera.surface.gaussian_surface as gs
 
 base = wd.World(cam_pos=np.array([-.2,-.7,.42]), lookat_pos=np.array([0,0,0]))
 # gm.gen_frame().attach_to(base)
-bowl_model = cm.CollisionModel(initor="./objects/bowl.stl")
+bowl_model = cm.CollisionModel(initializer="./objects/bowl.stl")
 bowl_model.set_rgba([.3,.3,.3,.3])
 bowl_model.set_rotmat(rm.rotmat_from_euler(math.pi,0,0))
 bowl_model.attach_to(base)
@@ -35,16 +35,16 @@ twod_plane.attach_to(base)
 circle_radius=.05
 line_segs = [[homomat[:3,3], homomat[:3,3]+pt_direction*.05], [homomat[:3,3]+pt_direction*.05, homomat[:3,3]+pt_direction*.05+tmp_direction*.05]]
 gm.gen_linesegs(line_segs).attach_to(base)
-gm.gen_arrow(spos=line_segs[0][0], epos=line_segs[0][1], thickness=0.004).attach_to(base)
+gm.gen_arrow(spos=line_segs[0][0], epos=line_segs[0][1], stick_radius=0.004).attach_to(base)
 spt = homomat[:3,3]
 # gm.gen_stick(spt, spt + pn_direction * 10, rgba=[0,1,0,1]).attach_to(base)
 # base.run()
-gm.gen_dasharrow(spt, spt-pn_direction*.07, thickness=.004).attach_to(base) # p0
+gm.gen_dashed_arrow(spt, spt - pn_direction * .07, stick_radius=.004).attach_to(base) # p0
 cpt, cnrml = bowl_model.ray_hit(spt, spt + pn_direction * 10000, option='closest')
-gm.gen_dashstick(spt, cpt, rgba=[.57,.57,.57,.7], thickness=0.003).attach_to(base)
+gm.gen_dashed_stick(spt, cpt, rgba=[.57, .57, .57, .7], radius=0.003).attach_to(base)
 gm.gen_sphere(pos=cpt, radius=.005).attach_to(base)
-gm.gen_dasharrow(cpt, cpt-pn_direction*.07, thickness=.004).attach_to(base) # p0
-gm.gen_dasharrow(cpt, cpt+cnrml*.07, thickness=.004).attach_to(base) # p0
+gm.gen_dashed_arrow(cpt, cpt - pn_direction * .07, stick_radius=.004).attach_to(base) # p0
+gm.gen_dashed_arrow(cpt, cpt + cnrml * .07, stick_radius=.004).attach_to(base) # p0
 
 angle = rm.angle_between_vectors(-pn_direction, cnrml)
 vec = np.cross(-pn_direction, cnrml)
@@ -57,7 +57,7 @@ twod_plane.attach_to(base)
 new_line_segs = [[cpt, cpt+rotmat.dot(pt_direction)*.05],
                  [cpt+rotmat.dot(pt_direction)*.05, cpt+rotmat.dot(pt_direction)*.05+rotmat.dot(tmp_direction)*.05]]
 gm.gen_linesegs(new_line_segs).attach_to(base)
-# gm.gen_arrow(spos=new_line_segs[0][0], epos=new_line_segs[0][1], thickness=0.004).attach_to(base)
+# gm.gen_arrow(spos=new_line_segs[0][0], epos=new_line_segs[0][1], major_radius=0.004).attach_to(base)
 
 t_cpt = cpt
 last_normal = cnrml
@@ -65,7 +65,7 @@ direction = rotmat.dot(pt_direction)
 n=10
 for tick in range(1, n+1):
     t_npt = cpt+direction*.05/n
-    gm.gen_arrow(spos=t_npt, epos=t_npt+last_normal*.015, thickness=0.001).attach_to(base)
+    gm.gen_arrow(spos=t_npt, epos=t_npt+last_normal*.015, stick_radius=0.001).attach_to(base)
     nearby_sample_ids = tree.query_ball_point(t_npt, .03)
     nearby_samples = bowl_samples[nearby_sample_ids]
     gm.GeometricModel(nearby_samples).attach_to(base)
@@ -85,7 +85,7 @@ for tick in range(1, n+1):
     surface_gm.set_rotmat(plane_rotmat)
     surface_gm.attach_to(base)
     new_normal = rm.unit_vector(t_npt-projected_point)
-    gm.gen_arrow(spos=projected_point, epos=projected_point+new_normal*.015, thickness=0.001).attach_to(base)
+    gm.gen_arrow(spos=projected_point, epos=projected_point+new_normal*.015, stick_radius=0.001).attach_to(base)
     angle = rm.angle_between_vectors(-pn_direction, new_normal)
     vec = np.cross(-pn_direction, new_normal)
     new_rotmat = rm.rotmat_from_axangle(vec, angle)

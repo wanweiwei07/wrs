@@ -26,7 +26,7 @@ def plan_pushing(hnd_s,
     :param contact_offset:
     :return:
     """
-    contact_points, contact_normals = objcm.sample_surface(nsample=max_samples,
+    contact_points, contact_normals = objcm.sample_surface(n_samples=max_samples,
                                                            radius=min_dist_between_sampled_contact_points / 2,
                                                            toggle_option='normals')
     push_info_list = []
@@ -68,12 +68,12 @@ if __name__ == '__main__':
     objpath = os.path.join(basis.__path__[0], 'objects', 'block.stl')
     objcm = cm.CollisionModel(objpath)
     objcm.attach_to(base)
-    objcm.show_localframe()
+    objcm.show_local_frame()
     push_info_list = plan_pushing(gripper_s, objcm, cone_angle=math.radians(60),
                                    local_rotation_interval=math.radians(45), toggle_debug=False)
     for push_info in push_info_list:
         gl_push_pos, gl_push_rotmat, hnd_pos, hnd_rotmat = push_info
         gic = gripper_s.copy()
         gic.fix_to(hnd_pos, hnd_rotmat)
-        gic.gen_meshmodel().attach_to(base)
+        gic.gen_mesh_model().attach_to(base)
     base.run()

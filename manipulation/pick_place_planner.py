@@ -33,7 +33,7 @@ class PickPlacePlanner(adp.ADPlanner):
             for _ in conf_list:
                 objpose_list.append(rm.homomat_from_posrot(obj_pos, obj_rotmat))
         elif type == 'relative':
-            jnt_values_bk = self.robot_s.get_jnt_values(component_name)
+            jnt_values_bk = self.robot_s.get_joint_values(component_name)
             for conf in conf_list:
                 self.robot_s.fk(component_name, conf)
                 gl_obj_pos, gl_obj_rotmat = self.robot_s.cvt_loc_tcp_to_gl(component_name, obj_pos, obj_rotmat)
@@ -53,7 +53,7 @@ class PickPlacePlanner(adp.ADPlanner):
         find the common collision free and IK feasible graspids
         :param hand_name: a component may have multiple hands
         :param grasp_info_list: a list like [[jaw_width, gl_jaw_center_pos, pos, rotmat], ...]
-        :param goal_homomat_list: [homomat, ...]
+        :param goal_homomat_list: [pos, ...]
         :param obstacle_list
         :return: [final_available_graspids, intermediate_available_graspids]
         author: weiwei
@@ -66,7 +66,7 @@ class PickPlacePlanner(adp.ADPlanner):
         hndcollided_grasps_num = 0
         ikfailed_grasps_num = 0
         rbtcollided_grasps_num = 0
-        jnt_values_bk = self.robot_s.get_jnt_values(hand_name)
+        jnt_values_bk = self.robot_s.get_joint_values(hand_name)
         for goalid, goal_homomat in enumerate(goal_homomat_list):
             goal_pos = goal_homomat[:3, 3]
             goal_rotmat = goal_homomat[:3, :3]
@@ -83,35 +83,35 @@ class PickPlacePlanner(adp.ADPlanner):
                     if jnt_values is not None:  # common graspid with robot_s ik
                         if toggle_debug:
                             hnd_tmp = hnd_instance.copy()
-                            hnd_tmp.gen_meshmodel(rgba=[0, 1, 0, .2]).attach_to(base)
+                            hnd_tmp.gen_mesh_model(rgba=[0, 1, 0, .2]).attach_to(base)
                         self.robot_s.fk(hand_name, jnt_values)
                         is_rbt_collided = self.robot_s.is_collided(obstacle_list)  # robot_s cd
                         # TODO is_obj_collided
                         is_obj_collided = False  # obj cd
                         if (not is_rbt_collided) and (not is_obj_collided):  # hnd cdfree, rbs ikf/cdfree, obj cdfree
                             if toggle_debug:
-                                self.robot_s.gen_meshmodel(rgba=[0, 1, 0, .5]).attach_to(base)
+                                self.robot_s.gen_mesh_model(rgba=[0, 1, 0, .5]).attach_to(base)
                             previously_available_graspids.append(graspid)
                         elif (not is_obj_collided):  # hnd_s cdfree, robot_s ikfeasible, robot_s collided
                             rbtcollided_grasps_num += 1
                             if toggle_debug:
-                                self.robot_s.gen_meshmodel(rgba=[1, 0, 1, .5]).attach_to(base)
+                                self.robot_s.gen_mesh_model(rgba=[1, 0, 1, .5]).attach_to(base)
                     else:  # hnd_s cdfree, robot_s ik infeasible
                         ikfailed_grasps_num += 1
                         if toggle_debug:
                             hnd_tmp = hnd_instance.copy()
-                            hnd_tmp.gen_meshmodel(rgba=[1, .6, 0, .2]).attach_to(base)
+                            hnd_tmp.gen_mesh_model(rgba=[1, .6, 0, .2]).attach_to(base)
                 else:  # hnd_s collided
                     hndcollided_grasps_num += 1
                     if toggle_debug:
                         hnd_tmp = hnd_instance.copy()
-                        hnd_tmp.gen_meshmodel(rgba=[1, 0, 1, .2]).attach_to(base)
+                        hnd_tmp.gen_mesh_model(rgba=[1, 0, 1, .2]).attach_to(base)
             intermediate_available_graspids.append(previously_available_graspids.copy())
             print('-----start-----')
             print('Number of collided grasps at goal-' + str(goalid) + ': ', hndcollided_grasps_num)
             print('Number of failed IK at goal-' + str(goalid) + ': ', ikfailed_grasps_num)
             print('Number of collided robots at goal-' + str(goalid) + ': ', rbtcollided_grasps_num)
-            print('------end------')
+            print('------end_type------')
         final_available_graspids = previously_available_graspids
         self.robot_s.fk(hand_name, jnt_values_bk)
         return final_available_graspids, intermediate_available_graspids
@@ -149,7 +149,7 @@ class PickPlacePlanner(adp.ADPlanner):
         :param seed_jnt_values:
         :return:
         """
-        jnt_values_bk = self.robot_s.get_jnt_values(hand_name)
+        jnt_values_bk = self.robot_s.get_joint_values(hand_name)
         jawwidth_bk = self.robot_s.get_jaw_width(hand_name)
         # final
         conf_list = []
@@ -164,11 +164,11 @@ class PickPlacePlanner(adp.ADPlanner):
         first_conf = self.robot_s.ik(hand_name,
                                      first_jaw_center_pos,
                                      first_jaw_center_rotmat,
-                                     seed_jnt_values=seed_jnt_values)
+                                     seed_joint_values=seed_jnt_values)
         if first_conf is None:
             print("Cannot solve the ik at the first grasping pose!")
             return None, None, None
-        self.robot_s.fk(component_name=hand_name, jnt_values=first_conf)
+        self.robot_s.fk(component_name=hand_name, joint_values=first_conf)
         # set a copy of the object to the start pose, hold the object, and move it to goal object pose
         objcm_copy = objcm.copy()
         objcm_copy.set_pos(first_obj_pos)
@@ -211,7 +211,7 @@ class PickPlacePlanner(adp.ADPlanner):
             if conf_list_depart is None:
                 print(f"Cannot generate the linear part of the {i}th holding depart motion!")
                 self.robot_s.release(hand_name, objcm_copy, jawwidth_bk)
-                self.robot_s.fk(component_name=hand_name, jnt_values=jnt_values_bk)
+                self.robot_s.fk(component_name=hand_name, joint_values=jnt_values_bk)
                 return None, None, None
             jawwidthlist_depart = self.gen_jawwidth_motion(conf_list_depart, jaw_width)
             objpose_list_depart = self.gen_object_motion(component_name=hand_name,
@@ -234,7 +234,7 @@ class PickPlacePlanner(adp.ADPlanner):
                 if conf_list_approach is None:
                     print(f"Cannot generate the linear part of the {i}th holding approach motion!")
                     self.robot_s.release(hand_name, objcm_copy, jawwidth_bk)
-                    self.robot_s.fk(component_name=hand_name, jnt_values=jnt_values_bk)
+                    self.robot_s.fk(component_name=hand_name, joint_values=jnt_values_bk)
                     return None, None, None
                 conf_list_middle = self.rrtc_planner.plan(component_name=hand_name,
                                                           start_conf=conf_list_depart[-1],
@@ -246,11 +246,11 @@ class PickPlacePlanner(adp.ADPlanner):
                 if conf_list_middle is None:
                     print(f"Cannot generate the rrtc part of the {i}th holding approach motion!")
                     self.robot_s.release(hand_name, objcm_copy, jawwidth_bk)
-                    self.robot_s.fk(component_name=hand_name, jnt_values=jnt_values_bk)
+                    self.robot_s.fk(component_name=hand_name, joint_values=jnt_values_bk)
                     return None, None, None
-            else:  # if do not use rrt, we start from depart end to mid end and then approach from mid end to goal
+            else:  # if do not use rrt, we start from depart end_type to mid end_type and then approach from mid end_type to goal
                 seed_conf = conf_list_depart[-1]
-                self.robot_s.fk(component_name=hand_name, jnt_values=seed_conf)
+                self.robot_s.fk(component_name=hand_name, joint_values=seed_conf)
                 mid_start_tcp_pos, mid_start_tcp_rotmat = self.robot_s.get_gl_tcp(hand_name)
                 mid_goal_tcp_pos = goal_jaw_center_pos - approach_direction * approach_distance
                 mid_goal_tcp_rotmat = goal_jaw_center_rotmat
@@ -265,7 +265,7 @@ class PickPlacePlanner(adp.ADPlanner):
                 if conf_list_middle is None:
                     print(f"Cannot generate the rrtc part of the {i}th holding approach motion!")
                     self.robot_s.release(hand_name, objcm_copy, jawwidth_bk)
-                    self.robot_s.fk(component_name=hand_name, jnt_values=jnt_values_bk)
+                    self.robot_s.fk(component_name=hand_name, joint_values=jnt_values_bk)
                     return None, None, None
                 # approach linear
                 seed_conf = conf_list_middle[-1]
@@ -281,7 +281,7 @@ class PickPlacePlanner(adp.ADPlanner):
                 if conf_list_approach is None:
                     print(f"Cannot generate the linear part of the {i}th holding approach motion!")
                     self.robot_s.release(hand_name, objcm_copy, jawwidth_bk)
-                    self.robot_s.fk(component_name=hand_name, jnt_values=jnt_values_bk)
+                    self.robot_s.fk(component_name=hand_name, joint_values=jnt_values_bk)
                     return None, None, None
             jawwidthlist_approach = self.gen_jawwidth_motion(conf_list_approach, jaw_width)
             objpose_list_approach = self.gen_object_motion(component_name=hand_name,
@@ -300,7 +300,7 @@ class PickPlacePlanner(adp.ADPlanner):
             objpose_list = objpose_list + objpose_list_depart + objpose_list_middle + objpose_list_approach
             seed_conf = conf_list[-1]
         self.robot_s.release(hand_name, objcm_copy, jawwidth_bk)
-        self.robot_s.fk(component_name=hand_name, jnt_values=jnt_values_bk)
+        self.robot_s.fk(component_name=hand_name, joint_values=jnt_values_bk)
         return conf_list, jawwidthlist, objpose_list
 
     def gen_pick_and_place_motion(self,
@@ -501,7 +501,7 @@ if __name__ == '__main__':
     #                                       ad_granularity=.003,
     #                                       use_rrt=True,
     #                                       obstacle_list=[],
-    #                                       seed_jnt_values=start_conf)
+    #                                       seed_joint_values=start_conf)
     #     print(robot_s.rgt_oih_infos, robot_s.lft_oih_infos)
     #     if conf_list is not None:
     #         break
@@ -534,7 +534,7 @@ if __name__ == '__main__':
         pose = robot_path[counter[0]]
         robot_s.fk(hand_name, pose)
         robot_s.jaw_to(hand_name, jawwidth_path[counter[0]])
-        robot_meshmodel = robot_s.gen_meshmodel()
+        robot_meshmodel = robot_s.gen_mesh_model()
         robot_meshmodel.attach_to(base)
         robot_attached_list.append(robot_meshmodel)
         obj_pose = obj_path[counter[0]]

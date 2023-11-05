@@ -1004,7 +1004,7 @@ class PickPlacePlanner(object):
             else:
                 resultinghomomat = copy.deepcopy(objmat4)
                 resultinghomomat[:3, 3] = resultinghomomat[:3, 3] + resultinghomomat[:3,
-                                                                    2] * 5  # move 5mm up, do not move until end
+                                                                    2] * 5  # move 5mm up, do not move until end_type
                 # if toggle_debug:
                 #     for idsharedgrasps in finalsharedgrasps:
                 #         predefined_jawwidth, predefined_fc, predefined_homomat = predefinedgrasps[idsharedgrasps]

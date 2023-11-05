@@ -17,7 +17,7 @@
 # for id in range(len(sp) - 1):
 #     pnt0 = sp[id, :]
 #     pnt1 = sp[id + 1, :]
-#     gm.gen_stick(spos=pnt0, epos=pnt1, type="round").attach_to(base)
+#     gm.gen_stick(spos=pnt0, epos=pnt1, end_type="round").attach_to(base)
 # base.run()
 
 import time
@@ -125,30 +125,36 @@ def gen_2d_equilaterial_verts(nlevel, edge_length):
     return xy_list
 
 if __name__ == "__main__":
-    tic = time.time()
-    for i in range(200):
-        x_list, y_list = concentric_circle_hex_polar(5, 1, math.pi / 8)
-    toc1 = time.time()
-    print(toc1 - tic)
-    tic = time.time()
-    for i in range(200):
-        x_list, y_list = concentric_circle_hex_equipartition(5, 1, math.pi / 8)
-    toc1 = time.time()
-    print(toc1 - tic)
-    tic = time.time()
-    for i in range(200):
-        xy_list = gen_2d_isosceles_verts(5, 1,12)
-    toc1 = time.time()
-    print(toc1 - tic)
+    # tic = time.time()
     # for i in range(200):
-    #     xy_list = gen_2d_equilaterial_verts(5, 1)
+    #     x_list, y_list = concentric_circle_hex_polar(5, 1, math.pi / 8)
     # toc1 = time.time()
     # print(toc1 - tic)
+    # tic = time.time()
+    # for i in range(200):
+    #     x_list, y_list = concentric_circle_hex_equipartition(5, 1, math.pi / 8)
+    # toc1 = time.time()
+    # print(toc1 - tic)
+    # tic = time.time()
+    # for i in range(200):
+    #     xy_list = gen_2d_isosceles_verts(5, 1,12)
+    # toc1 = time.time()
+    # print(toc1 - tic)
+    # # for i in range(200):
+    # #     xy_list = gen_2d_equilaterial_verts(5, 1)
+    # # toc1 = time.time()
+    # # print(toc1 - tic)
+    #
+    # fig = plot.figure()
+    # ax = fig.add_subplot(111)
+    # ax.set_aspect('equal', 'box')
+    #
+    # plot.plot(xy_list[:,0], xy_list[:,1], "o-")
+    # # plot.plot(x_list[:], y_list[:], "o-")
+    # plot.show()
 
-    fig = plot.figure()
-    ax = fig.add_subplot(111)
-    ax.set_aspect('equal', 'box')
+    def func(x,y,z):
+        return x+y+z
 
-    plot.plot(xy_list[:,0], xy_list[:,1], "o-")
-    # plot.plot(x_list[:], y_list[:], "o-")
-    plot.show()
+    a = [1,2,3]
+    print(func(*a))

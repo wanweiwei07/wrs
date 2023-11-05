@@ -88,7 +88,7 @@ if __name__ == '__main__':
     for point in spiral_points:
         gm.gen_sphere(point, radius=.00016).attach_to(base)
         if pre_point is not None:
-            gm.gen_stick(pre_point, point, thickness=.00012).attach_to(base)
+            gm.gen_stick(pre_point, point, radius=.00012).attach_to(base)
         pre_point = point
 
     goal_joint_values_attachment = utils.search_reachable_configuration(rbt_s=rbt_s,
@@ -112,7 +112,7 @@ if __name__ == '__main__':
     tip_rack_rotated.set_pose(pos=np.array([tip_pos[0], tip_pos[1],.003])+rm.rotmat_from_axangle([0, 0, 1], np.pi/6).dot(np.array([.25, 0.0, .003])-np.array([tip_pos[0], tip_pos[1],.003])), rotmat=rm.rotmat_from_axangle([0, 0, 1], np.pi / 2+np.pi/6))
     tip_rack_rotated.attach_to(base)
     # gl_tcp_pos, gl_tcp_rotmat = rbt_s.get_gl_tcp(manipulator_name="arm")
-    # gm.gen_circarrow(axis=-gl_tcp_rotmat[:,2], center=gl_tcp_pos+gl_tcp_rotmat[:,2]*.05, rgba=[1,.5,0,1], radius=.11, portion=.9, thickness=.007, sections=64, discretization=256, end='double', starting_vector=-gl_tcp_rotmat[:,0]).attach_to(base)
+    # gm.gen_circarrow(axis=-gl_tcp_rotmat[:,2], center=gl_tcp_pos+gl_tcp_rotmat[:,2]*.05, rgba=[1,.5,0,1], major_radius=.11, portion=.9, major_radius=.007, n_sec_minor=64, n_sec_major=256, end_type='double', starting_vector=-gl_tcp_rotmat[:,0]).attach_to(base)
 
     tip_cm_list = []
     for id_x in range(8):

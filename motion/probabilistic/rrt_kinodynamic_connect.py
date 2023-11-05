@@ -82,7 +82,7 @@ class RRTConnectKinodynamic(object):
                      conf,
                      obstacle_list=[],
                      otherrobot_list=[]):
-        self.robot_s.fk(component_name=component_name, jnt_values=conf)
+        self.robot_s.fk(component_name=component_name, joint_values=conf)
         return self.robot_s.is_collided(obstacle_list=obstacle_list, otherrobot_list=otherrobot_list)
 
     def _sample_conf(self, component_name, rand_rate, default_conf):
@@ -169,7 +169,7 @@ class RRTConnectKinodynamic(object):
         self.roadmap.clear()
         self.start_conf = start_conf
         self.goal_conf = goal_conf
-        # check seed_jnt_values and end_conf
+        # check seed_joint_values and end_conf
         if self._is_collided(component_name, start_conf, obstacle_list, otherrobot_list):
             print("The start robot_s configuration is in collision!")
             return None
@@ -269,7 +269,7 @@ class RRTConnectKinodynamic(object):
         if shortcut is not None:
             plt.plot([conf[0] for conf in shortcut], [conf[1] for conf in shortcut], linewidth=4, linestyle='--',
                      color='r')
-        # plt.plot(planner.seed_jnt_values[0], planner.seed_jnt_values[1], "xr")
+        # plt.plot(planner.seed_joint_values[0], planner.seed_joint_values[1], "xr")
         # plt.plot(planner.end_conf[0], planner.end_conf[1], "xm")
         if not hasattr(RRTConnectKinodynamic, 'img_counter'):
             RRTConnectKinodynamic.img_counter = 0

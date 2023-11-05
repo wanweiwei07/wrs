@@ -12,7 +12,7 @@ def transform_points(points, matrix, translate=True):
     If points is (n,2), matrix must be (3,3)
     if points is (n,3), matrix must be (4,4)
     :param points: nx2 or nx3 set of points
-    :param matrix: 3x3 or 4x4 homomat
+    :param matrix: 3x3 or 4x4 pos
     :param translate: apply translation from matrix or not
     :return:
     author: revised by weiwei
@@ -186,7 +186,7 @@ def absolute_orientation(points_A, points_B, return_error=False):
 
 def remove_close_pairs(points, radius):
     """
-    Given an nxd set of points where d=2or3 return a list of points where no point is closer than radius
+    Given an nxd set of points where d=2or3 return a list of points where no point is closer than major_radius
     :param points: a nxd list of points
     :param radius:
     :return:
@@ -195,7 +195,7 @@ def remove_close_pairs(points, radius):
     """
     from scipy.spatial import cKDTree
     tree = cKDTree(points)
-    # get the index of every pair of points closer than our radius
+    # get the index of every pair of points closer than our major_radius
     pairs = tree.query_pairs(radius, output_type='ndarray')
     # how often each vertex index appears in a pair
     # this is essentially a cheaply computed "vertex degree"
@@ -203,13 +203,13 @@ def remove_close_pairs(points, radius):
     count = np.bincount(pairs.ravel(), minlength=len(points))
     # for every pair we know we have to remove one of them
     # which of the two options we pick can have a large impact
-    # on how much over-culling we end up doing
+    # on how much over-culling we end_type up doing
     column = count[pairs].argmax(axis=1)
     # take the value in each row with the highest degree
     # there is probably better numpy slicing you could do here
     highest = pairs.ravel()[column + 2 * np.arange(len(column))]
     # mask the vertices by index
-    mask = np.ones(len(points), dtype=np.bool)
+    mask = np.ones(len(points), dtype=np.bool_)
     mask[highest] = False
     if tol.strict:
         # verify we actually did what we said we'd do
@@ -220,7 +220,7 @@ def remove_close_pairs(points, radius):
 
 def remove_close_withfaceid(points, face_index, radius):
     """
-    Given an nxd set of points where d=2or3 return a list of points where no point is closer than radius
+    Given an nxd set of points where d=2or3 return a list of points where no point is closer than major_radius
     :param points:
     :param face_index:
     :param radius:
@@ -230,8 +230,8 @@ def remove_close_withfaceid(points, face_index, radius):
     """
     from scipy.spatial import cKDTree as KDTree
     tree = KDTree(points)
-    consumed = np.zeros(len(points), dtype=np.bool)
-    unique = np.zeros(len(points), dtype=np.bool)
+    consumed = np.zeros(len(points), dtype=np.bool_)
+    unique = np.zeros(len(points), dtype=np.bool_)
     for i in range(len(points)):
         if consumed[i]: continue
         neighbors = tree.query_ball_point(points[i], r=radius)
@@ -242,8 +242,8 @@ def remove_close_withfaceid(points, face_index, radius):
 
 def remove_close_between_two_sets(points_fixed, points_reduce, radius):
     """
-    Given two sets of points and a radius, return a set of points that is the subset of points_reduce where no point is
-    within radius of any point in points_fixed
+    Given two sets of points and a major_radius, return a set of points that is the subset of points_reduce where no point is
+    within major_radius of any point in points_fixed
     author: revised by weiwei
     date: 20201202
     """
@@ -252,7 +252,7 @@ def remove_close_between_two_sets(points_fixed, points_reduce, radius):
     tree_reduce = KDTree(points_reduce)
     reduce_duplicates = tree_fixed.query_ball_tree(tree_reduce, r=radius)
     reduce_duplicates = np.unique(np.hstack(reduce_duplicates).astype(int))
-    reduce_mask = np.ones(len(points_reduce), dtype=np.bool)
+    reduce_mask = np.ones(len(points_reduce), dtype=np.bool_)
     reduce_mask[reduce_duplicates] = False
     points_clean = points_reduce[reduce_mask]
     return points_clean

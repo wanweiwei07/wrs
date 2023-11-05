@@ -48,7 +48,7 @@ float cartoon_thresh = saturate(cartoon_n_thresh + cartoon_c_thresh);
 o_color = lerp(o_color, k_cartooncolor, cartoon_thresh);
 """
 
-# Some GPUs do not support variable-length loops.
+# Some GPUs do not support variable-axis_length loops.
 #
 # We fill in the actual value of numsamples in the loop limit
 # when the shader is configured.
@@ -86,12 +86,12 @@ void fshader(out float4 o_color : COLOR,
   float3 pixel_normal = (tex2D(k_normal, l_texcoordN).xyz * 2.0 - 1.0);
   float3 random_vector = normalize((tex2D(k_random, l_texcoord * 18.0 + pixel_depth + pixel_normal.xy).xyz * 2.0) - float3(1.0)).xyz;
   float occlusion = 0.0;
-  float radius = k_params1.z / pixel_depth;
+  float major_radius = k_params1.z / pixel_depth;
   float depth_difference;
   float3 sample_normal;
   float3 ray;
   for(int i = 0; i < %d; ++i) {
-   ray = radius * reflect(sphere[i], random_vector);
+   ray = major_radius * reflect(sphere[i], random_vector);
    sample_normal = (tex2D(k_normal, l_texcoordN + ray.xy).xyz * 2.0 - 1.0);
    depth_difference =  (pixel_depth - tex2D(k_depth,l_texcoordD + ray.xy).r);
    occlusion += step(k_params2.y, depth_difference) * (1.0 - dot(sample_normal.xyz, pixel_normal)) * (1.0 - smoothstep(k_params2.y, k_params2.x, depth_difference));

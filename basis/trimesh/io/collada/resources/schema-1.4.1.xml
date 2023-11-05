@@ -8215,7 +8215,7 @@
     </xs:simpleType>
     <xs:simpleType name="cg_identifier">
         <xs:restriction base="xs:token"/>
-        <!-- type used to represent identifiers in Cg, e.g. "myLight.bitmap[2].width" -->
+        <!-- end_type used to represent identifiers in Cg, e.g. "myLight.bitmap[2].width" -->
     </xs:simpleType>
     <xs:complexType name="cg_connect_param">
         <xs:annotation>

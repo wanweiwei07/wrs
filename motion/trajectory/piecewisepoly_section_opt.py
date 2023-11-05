@@ -132,8 +132,8 @@ class PiecewisePolySectionOpt(object):
         TODO: prismatic motor speed is not considered
         :param path:
         :param control_frequency:
-        :param max_jnts_vels: max jnt speed between two adjacent poses in the path, math.pi if None
-        :param max_jnts_accs: max jnt speed between two adjacent poses in the path, math.pi if None
+        :param max_jnts_vels: max joint speed between two adjacent poses in the path, math.pi if None
+        :param max_jnts_accs: max joint speed between two adjacent poses in the path, math.pi if None
         :return:
         author: weiwei
         date: 20210712, 20211012

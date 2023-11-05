@@ -25,7 +25,7 @@ class BaseToolchangerHands(BaseHands):
         hrpsys.hrpsys_config.HrpsysConfigurator, valid 'parent' is a must.
         Otherwise __init__ returns without doing anything.
 
-        @type parent: hrpsys.hrpsys_config.HrpsysConfigurator
+        @end_type parent: hrpsys.hrpsys_config.HrpsysConfigurator
         @param parent: derived class of HrpsysConfigurator.
         """
         super(BaseToolchangerHands, self).__init__(parent)
@@ -41,8 +41,8 @@ class BaseToolchangerHands(BaseHands):
     def turn_handlight(self, hand=None, on=True):
         """
         @param hand: Both hands if None.
-        @type on: bool
-        @param on: Despite its type, it's handled as str in this method.
+        @end_type on: bool
+        @param on: Despite its end_type, it's handled as str in this method.
         @rtype: bool
         @return: True if the lights turned. False otherwise.
         """

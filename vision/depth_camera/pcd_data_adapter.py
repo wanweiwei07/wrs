@@ -5,9 +5,9 @@ import sklearn.cluster as skc
 import basis.trimesh as trimesh
 
 # abbreviations
-# pnp panda nodepath
+# pnp panda pdndp
 # o3d open3d
-# pnppcd - a point cloud in the panda nodepath format
+# pnppcd - a point cloud in the panda pdndp format
 
 def nparray_to_o3dpcd(nx3nparray_pnts, nx3nparray_nrmls=None, estimate_normals = False):
     """

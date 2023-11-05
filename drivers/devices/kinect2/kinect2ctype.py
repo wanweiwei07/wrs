@@ -764,7 +764,7 @@ class IAudioBeamFrame(comtypes.IUnknown):
     _idlflags_ = []
 IAudioBeamFrameList._methods_ = [
     COMMETHOD(['propget'], HRESULT, 'BeamCount',
-              ( ['retval', 'out'], POINTER(c_uint), 'count' )),
+              ( ['retval', 'out'], POINTER(c_uint), 'n_sec_minor' )),
     COMMETHOD([], HRESULT, 'OpenAudioBeamFrame',
               ( [], c_uint, 'index' ),
               ( ['out'], POINTER(POINTER(IAudioBeamFrame)), 'audioBeamFrame' )),
@@ -779,7 +779,7 @@ IAudioBeamFrameList._methods_ = [
 ##    @property
 ##    def BeamCount(self):
 ##        '-no docstring-'
-##        #return count
+##        #return n_sec_minor
 ##
 
 
@@ -1156,11 +1156,11 @@ IAudioSource._methods_ = [
     COMMETHOD(['propget'], HRESULT, 'IsActive',
               ( ['retval', 'out'], POINTER(c_bool), 'IsActive' )),
     COMMETHOD(['propget'], HRESULT, 'SubFrameLengthInBytes',
-              ( ['retval', 'out'], POINTER(c_uint), 'length' )),
+              ( ['retval', 'out'], POINTER(c_uint), 'axis_length' )),
     COMMETHOD(['propget'], HRESULT, 'SubFrameDuration',
               ( ['retval', 'out'], POINTER(c_longlong), 'duration' )),
     COMMETHOD(['propget'], HRESULT, 'MaxSubFrameCount',
-              ( ['retval', 'out'], POINTER(c_uint), 'count' )),
+              ( ['retval', 'out'], POINTER(c_uint), 'n_sec_minor' )),
     COMMETHOD([], HRESULT, 'OpenReader',
               ( ['retval', 'out'], POINTER(POINTER(IAudioBeamFrameReader)), 'reader' )),
     COMMETHOD(['propget'], HRESULT, 'AudioBeams',
@@ -1187,7 +1187,7 @@ IAudioSource._methods_ = [
 ##    @property
 ##    def SubFrameLengthInBytes(self):
 ##        '-no docstring-'
-##        #return length
+##        #return axis_length
 ##
 ##    @property
 ##    def AudioCalibrationState(self):
@@ -1205,7 +1205,7 @@ IAudioSource._methods_ = [
 ##    @property
 ##    def MaxSubFrameCount(self):
 ##        '-no docstring-'
-##        #return count
+##        #return n_sec_minor
 ##
 ##    @property
 ##    def AudioBeams(self):
@@ -2204,7 +2204,7 @@ ICoordinateMapper._methods_ = [
 
 tagSTATSTG._fields_ = [
     ('pwcsName', WSTRING),
-    ('type', c_ulong),
+    ('end_type', c_ulong),
     ('cbSize', _ULARGE_INTEGER),
     ('mtime', _FILETIME),
     ('ctime', _FILETIME),
@@ -2221,7 +2221,7 @@ assert sizeof(tagSTATSTG) == required_size, sizeof(tagSTATSTG)
 assert alignment(tagSTATSTG) == 8, alignment(tagSTATSTG)
 IAudioBeamList._methods_ = [
     COMMETHOD(['propget'], HRESULT, 'BeamCount',
-              ( ['retval', 'out'], POINTER(c_uint), 'count' )),
+              ( ['retval', 'out'], POINTER(c_uint), 'n_sec_minor' )),
     COMMETHOD([], HRESULT, 'OpenAudioBeam',
               ( [], c_uint, 'index' ),
               ( ['out'], POINTER(POINTER(IAudioBeam)), 'AudioBeam' )),
@@ -2236,7 +2236,7 @@ IAudioBeamList._methods_ = [
 ##    @property
 ##    def BeamCount(self):
 ##        '-no docstring-'
-##        #return count
+##        #return n_sec_minor
 ##
 
 class IInfraredFrameReader(comtypes.IUnknown):
@@ -2375,7 +2375,7 @@ class IAudioBodyCorrelation(comtypes.IUnknown):
     _idlflags_ = []
 IAudioBeamSubFrame._methods_ = [
     COMMETHOD(['propget'], HRESULT, 'FrameLengthInBytes',
-              ( ['retval', 'out'], POINTER(c_uint), 'length' )),
+              ( ['retval', 'out'], POINTER(c_uint), 'axis_length' )),
     COMMETHOD(['propget'], HRESULT, 'duration',
               ( ['retval', 'out'], POINTER(c_longlong), 'duration' )),
     COMMETHOD(['propget'], HRESULT, 'BeamAngle',
@@ -2422,7 +2422,7 @@ IAudioBeamSubFrame._methods_ = [
 ##    @property
 ##    def FrameLengthInBytes(self):
 ##        '-no docstring-'
-##        #return length
+##        #return axis_length
 ##
 ##    @property
 ##    def AudioBodyCorrelationCount(self):

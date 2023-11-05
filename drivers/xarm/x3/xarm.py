@@ -142,7 +142,7 @@ class XArm(Gripper, Servo, Record, RobotIQ, BaseBoard, Track, FtSensor):
             else:
                 ret = self.arm_cmd.move_line(tcp_pos, spd, acc, mvt, only_check_type)
         ret[0] = self._check_code(ret[0], is_move_cmd=True)
-        self.log_api_info('API -> set_position -> code={}, pos={}, radius={}, velo={}, acc={}'.format(
+        self.log_api_info('API -> set_position -> code={}, pos={}, major_radius={}, velo={}, acc={}'.format(
             ret[0], tcp_pos, radius, spd, acc), code=ret[0])
         self._is_set_move = True
         self._only_check_result = 0
@@ -177,7 +177,7 @@ class XArm(Gripper, Servo, Record, RobotIQ, BaseBoard, Track, FtSensor):
             radius = radius if radius is not None else -1
             ret = self.arm_cmd.move_relative(tcp_pos, spd, acc, mvt, radius, False, False, only_check_type)
             ret[0] = self._check_code(ret[0], is_move_cmd=True)
-            self.log_api_info('API -> set_relative_position -> code={}, pos={}, radius={}, velo={}, acc={}'.format(
+            self.log_api_info('API -> set_relative_position -> code={}, pos={}, major_radius={}, velo={}, acc={}'.format(
                 ret[0], tcp_pos, radius, spd, acc), code=ret[0])
             self._is_set_move = True
             self._only_check_result = 0
@@ -344,7 +344,7 @@ class XArm(Gripper, Servo, Record, RobotIQ, BaseBoard, Track, FtSensor):
         else:
             ret = self.arm_cmd.move_joint(joints, spd, acc, mvt, only_check_type)
         ret[0] = self._check_code(ret[0], is_move_cmd=True)
-        self.log_api_info('API -> set_servo_angle -> code={}, angles={}, velo={}, acc={}, radius={}'.format(
+        self.log_api_info('API -> set_servo_angle -> code={}, angles={}, velo={}, acc={}, major_radius={}'.format(
             ret[0], joints, spd, acc, radius
         ), code=ret[0])
         self._is_set_move = True
@@ -377,7 +377,7 @@ class XArm(Gripper, Servo, Record, RobotIQ, BaseBoard, Track, FtSensor):
             radius = radius if radius is not None else -1
             ret = self.arm_cmd.move_relative(joints, spd, acc, mvt, radius, True, False, only_check_type)
             ret[0] = self._check_code(ret[0], is_move_cmd=True)
-            self.log_api_info('API -> set_relative_servo_angle -> code={}, angles={}, velo={}, acc={}, radius={}'.format(
+            self.log_api_info('API -> set_relative_servo_angle -> code={}, angles={}, velo={}, acc={}, major_radius={}'.format(
                 ret[0], joints, spd, acc, radius
             ), code=ret[0])
             self._is_set_move = True
@@ -607,7 +607,7 @@ class XArm(Gripper, Servo, Record, RobotIQ, BaseBoard, Track, FtSensor):
                     logger.error('quit, emergency_stop')
         except:
             pass
-        logger.info('move_arc_lines--end')
+        logger.info('move_arc_lines--end_type')
         if wait:
             self.wait_move()
             self._sync()
@@ -620,7 +620,7 @@ class XArm(Gripper, Servo, Record, RobotIQ, BaseBoard, Track, FtSensor):
         ret = self.motion_enable(servo_id=servo_id, enable=True)
         self.set_state(0)
         self._sync()
-        logger.info('set_servo_attach--end')
+        logger.info('set_servo_attach--end_type')
         return ret
 
     @xarm_is_connected(_type='set')
@@ -772,7 +772,7 @@ class XArm(Gripper, Servo, Record, RobotIQ, BaseBoard, Track, FtSensor):
             self.motion_enable(enable=True, servo_id=8)
             self.set_state(state=0)
         self.move_gohome(speed=speed, mvacc=mvacc, mvtime=mvtime, is_radian=is_radian, wait=wait, timeout=timeout)
-        logger.info('reset--end')
+        logger.info('reset--end_type')
 
     @xarm_is_ready(_type='set')
     def set_joints_torque(self, joints_torque):
@@ -1013,7 +1013,7 @@ class XArm(Gripper, Servo, Record, RobotIQ, BaseBoard, Track, FtSensor):
             time.sleep(0.1)
         self._sleep_finish_time = 0
         self._sync()
-        logger.info('emergency_stop--end')
+        logger.info('emergency_stop--end_type')
 
     def send_cmd_async(self, command, timeout=None):
         pass
@@ -1054,7 +1054,7 @@ class XArm(Gripper, Servo, Record, RobotIQ, BaseBoard, Track, FtSensor):
                 mvacc = gcode_p.get_mvacc(command)
                 mvtime = gcode_p.get_mvtime(command)
                 ret = self.move_gohome(speed=mvvelo, mvacc=mvacc, mvtime=mvtime)
-            elif num == 9:  # G9 move_arc_line, ex: G9 X{} Y{} Z{} A{roll} B{pitch} C{yaw} R{radius} F{speed} Q{acc} T{}
+            elif num == 9:  # G9 move_arc_line, ex: G9 X{} Y{} Z{} A{roll} B{pitch} C{yaw} R{major_radius} F{speed} Q{acc} T{}
                 mvvelo = gcode_p.get_mvvelo(command)
                 mvacc = gcode_p.get_mvacc(command)
                 mvtime = gcode_p.get_mvtime(command)
@@ -1460,9 +1460,9 @@ class XArm(Gripper, Servo, Record, RobotIQ, BaseBoard, Track, FtSensor):
             z = kwargs.get('z') if 'z' in kwargs else args[2]
             params = [x, y, z]
         elif tool_type == XCONF.CollisionToolType.CYLINDER:
-            assert ('radius' in kwargs or len(args) >= 2) \
-                   and ('height' in kwargs or len(args) >= 1), 'params error, must specify radius,height parameter'
-            radius = kwargs.get('radius') if 'radius' in kwargs else args[0]
+            assert ('major_radius' in kwargs or len(args) >= 2) \
+                   and ('height' in kwargs or len(args) >= 1), 'params error, must specify major_radius,height parameter'
+            radius = kwargs.get('major_radius') if 'major_radius' in kwargs else args[0]
             height = kwargs.get('height') if 'height' in kwargs else args[1]
             params = [radius, height]
         else:
@@ -1700,7 +1700,7 @@ class XArm(Gripper, Servo, Record, RobotIQ, BaseBoard, Track, FtSensor):
         sn = sn.upper()
         axis_map = {5: 'F', 6: 'I', 7: 'S'}
         if sn[0] != ('L' if self.is_lite6 else 'X') or sn[1] != axis_map.get(self.axis, ''):
-            self.log_api_info('iden_joint_friction, sn is not correct, axis={}, type={}, sn={}'.format(self.axis, self.device_type, sn), code=APIState.API_EXCEPTION)
+            self.log_api_info('iden_joint_friction, sn is not correct, axis={}, end_type={}, sn={}'.format(self.axis, self.device_type, sn), code=APIState.API_EXCEPTION)
             return APIState.API_EXCEPTION, -1
 
         prot_flag = self.arm_cmd.get_prot_flag()

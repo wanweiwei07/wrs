@@ -8,7 +8,7 @@ import motion.optimization_based.incremental_nik as inik
 
 if __name__ == "__main__":
     base = wd.World(cam_pos=[3, -1, 1], lookat_pos=[0, 0, 0.5])
-    gm.gen_frame(length=.2).attach_to(base)
+    gm.gen_frame(axis_length=.2).attach_to(base)
     yumi_s = ym.Yumi(enable_cc=True)
     inik_svlr = inik.IncrementalNIK(yumi_s)
     component_name = 'rgt_arm'

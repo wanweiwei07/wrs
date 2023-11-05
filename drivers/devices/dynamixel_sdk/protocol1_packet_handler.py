@@ -101,7 +101,7 @@ class Protocol1PacketHandler(object):
             return COMM_PORT_BUSY
         port.is_using = True
 
-        # check max packet length
+        # check max packet axis_length
         if total_packet_length > TXPACKET_MAX_LEN:
             port.is_using = False
             return COMM_TX_ERROR
@@ -133,7 +133,7 @@ class Protocol1PacketHandler(object):
         result = COMM_TX_FAIL
         checksum = 0
         rx_length = 0
-        wait_length = 6  # minimum length (HEADER0 HEADER1 ID LENGTH ERROR CHKSUM)
+        wait_length = 6  # minimum axis_length (HEADER0 HEADER1 ID LENGTH ERROR CHKSUM)
 
         while True:
             rxpacket.extend(port.readPort(wait_length - rx_length))
@@ -153,7 +153,7 @@ class Protocol1PacketHandler(object):
                         rx_length -= 1
                         continue
 
-                    # re-calculate the exact length of the rx packet
+                    # re-calculate the exact axis_length of the rx packet
                     if wait_length != (rxpacket[PKT_LENGTH] + PKT_LENGTH + 1):
                         wait_length = rxpacket[PKT_LENGTH] + PKT_LENGTH + 1
                         continue

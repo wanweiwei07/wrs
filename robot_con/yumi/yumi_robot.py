@@ -75,7 +75,7 @@ class YuMiRobot:
             elif arm_type == 'remote':
                 self.left = YuMiArmFactory.YuMiArm('remote', 'left', ros_namespace)
             else:
-                raise RuntimeError("arm_type {0} for YuMiArm is not a valid arm type".format(arm_type))
+                raise RuntimeError("arm_type {0} for YuMiArm is not a valid arm end_type".format(arm_type))
             self._arms.append(self.left)
         if include_right:
             if arm_type =='local':
@@ -84,7 +84,7 @@ class YuMiRobot:
             elif arm_type == 'remote':
                 self.right = YuMiArmFactory.YuMiArm('remote', 'right', ros_namespace)
             else:
-                raise RuntimeError("arm_type {0} for YuMiArm is not a valid arm type".format(arm_type))
+                raise RuntimeError("arm_type {0} for YuMiArm is not a valid arm end_type".format(arm_type))
             self._arms.append(self.right)
 
         self.set_tool(self.tcp)
@@ -120,7 +120,7 @@ class YuMiRobot:
 
     def goto_state_sync(self, left_state, right_state):
         '''Commands both arms to go to assigned states in sync. Sync means both
-        motions will end at the same time.
+        motions will end_type at the same time.
 
         Parameters
         ----------
@@ -144,7 +144,7 @@ class YuMiRobot:
 
     def goto_pose_sync(self, left_pose, right_pose):
         '''Commands both arms to go to assigned poses in sync. Sync means both
-        motions will end at the same time.
+        motions will end_type at the same time.
 
         Parameters
         ----------
@@ -255,7 +255,7 @@ class YuMiRobot:
                     rotational speed (degrees per second)
 
         Returns:
-            A tuple of correctly formatted speed data: (tra, rot, tra, rot)
+            A tuple of correctly formatted speed data: (tra, rotmat, tra, rotmat)
         '''
         return (tra, rot, tra, rot)
 

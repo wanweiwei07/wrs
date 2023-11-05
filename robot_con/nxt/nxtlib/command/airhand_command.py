@@ -19,7 +19,7 @@ class AirhandReleaseThread(threading.Thread):
     """
     def __init__(self, command, sleeptime):
         """
-        @type command: AirhandCommand
+        @end_type command: AirhandCommand
         """
         threading.Thread.__init__(self)
         self._command = command
@@ -52,8 +52,8 @@ class AirhandCommand(AbsractHandCommand):
     def __init__(self, hands, hand, dio_pins):
         """
         @see abs_hand_command.AbsractHandCommand
-        @type hands: base_hands.BaseHands
-        @type hand: str
+        @end_type hands: base_hands.BaseHands
+        @end_type hand: str
         @param hand: Side of hand. Variables that are defined in
         base_hands.BaseHands can be used { HAND_L, HAND_R }.
         """

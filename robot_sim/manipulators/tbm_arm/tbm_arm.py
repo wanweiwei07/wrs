@@ -2,7 +2,7 @@ import os
 import math
 import numpy as np
 import basis.robot_math as rm
-import robot_sim._kinematics.jlchain as jl
+import robot_sim.kinematics.jlchain as jl
 import robot_sim.manipulators.manipulator_interface as mi
 
 
@@ -11,69 +11,69 @@ class TBMArm(mi.ManipulatorInterface):
     def __init__(self, pos=np.zeros(3), rotmat=np.eye(3), homeconf=np.zeros(6), name='tbm_arm', enable_cc=True):
         super().__init__(pos=pos, rotmat=rotmat, name=name)
         this_dir, this_filename = os.path.split(__file__)
-        self.jlc = jl.JLChain(pos=pos, rotmat=rotmat, homeconf=homeconf, name=name)
+        self.jlc = jl.JLChain(pos=pos, rotmat=rotmat, home_conf=homeconf, name=name)
         # six joints, n_jnts = 6+2 (tgt ranges from 1-6), nlinks = 6+1
-        # self.jlc.jnts[1]['loc_pos'] = np.array([0.2, 0, 0])
-        # self.jlc.jnts[1]['type'] = 'prismatic'
-        # self.jlc.jnts[1]['loc_motionax'] = np.array([1, 0, 0])
-        # self.jlc.jnts[1]['motion_rng'] = [-.1, 1.25]
-        self.jlc.jnts[1]['loc_pos'] = np.array([0, 0, 0.346])
-        self.jlc.jnts[1]['loc_motionax'] = np.array([0, 0, 1])
-        self.jlc.jnts[1]['motion_rng'] = [-math.radians(60), math.radians(60)]
-        self.jlc.jnts[2]['loc_pos'] = np.array([0.645, .0, .0])
-        self.jlc.jnts[2]['loc_motionax'] = np.array([1, 0, 0])
-        # self.jlc.jnts[2]['motion_rng'] = [-2*math.pi, 2*math.pi]
-        self.jlc.jnts[3]['loc_pos'] = np.array([.425, .0, .0])
-        self.jlc.jnts[3]['loc_motionax'] = np.array([0, 0, 1])
-        self.jlc.jnts[3]['motion_rng'] = [-math.radians(90), math.radians(90)]
-        self.jlc.jnts[4]['loc_pos'] = np.array([0.587, .0, .0])
-        self.jlc.jnts[4]['loc_motionax'] = np.array([1, 0, 0])
-        # self.jlc.jnts[4]['motion_rng'] = [-2*math.pi, 2*math.pi]
-        self.jlc.jnts[5]['loc_pos'] = np.array([.63, .0, .0])
-        self.jlc.jnts[5]['loc_motionax'] = np.array([0, 1, 0])
-        self.jlc.jnts[5]['motion_rng'] = [-math.radians(115), math.radians(115)]
-        self.jlc.jnts[6]['loc_pos'] = np.array([.329, .0, .0])
-        self.jlc.jnts[6]['loc_motionax'] = np.array([1, 0, 0])
-        # self.jlc.jnts[6]['motion_rng'] = [-2*math.pi, 2*math.pi]
+        # self.jlc.joints[1]['pos_in_loc_tcp'] = np.array([0.2, 0, 0])
+        # self.jlc.joints[1]['end_type'] = 'prismatic'
+        # self.jlc.joints[1]['loc_motionax'] = np.array([1, 0, 0])
+        # self.jlc.joints[1]['motion_rng'] = [-.1, 1.25]
+        self.jlc.joints[1]['pos_in_loc_tcp'] = np.array([0, 0, 0.346])
+        self.jlc.joints[1]['loc_motionax'] = np.array([0, 0, 1])
+        self.jlc.joints[1]['motion_rng'] = [-math.radians(60), math.radians(60)]
+        self.jlc.joints[2]['pos_in_loc_tcp'] = np.array([0.645, .0, .0])
+        self.jlc.joints[2]['loc_motionax'] = np.array([1, 0, 0])
+        # self.jlc.joints[2]['motion_rng'] = [-2*math.pi, 2*math.pi]
+        self.jlc.joints[3]['pos_in_loc_tcp'] = np.array([.425, .0, .0])
+        self.jlc.joints[3]['loc_motionax'] = np.array([0, 0, 1])
+        self.jlc.joints[3]['motion_rng'] = [-math.radians(90), math.radians(90)]
+        self.jlc.joints[4]['pos_in_loc_tcp'] = np.array([0.587, .0, .0])
+        self.jlc.joints[4]['loc_motionax'] = np.array([1, 0, 0])
+        # self.jlc.joints[4]['motion_rng'] = [-2*math.pi, 2*math.pi]
+        self.jlc.joints[5]['pos_in_loc_tcp'] = np.array([.63, .0, .0])
+        self.jlc.joints[5]['loc_motionax'] = np.array([0, 1, 0])
+        self.jlc.joints[5]['motion_rng'] = [-math.radians(115), math.radians(115)]
+        self.jlc.joints[6]['pos_in_loc_tcp'] = np.array([.329, .0, .0])
+        self.jlc.joints[6]['loc_motionax'] = np.array([1, 0, 0])
+        # self.jlc.joints[6]['motion_rng'] = [-2*math.pi, 2*math.pi]
         # links
         self.jlc.lnks[0]['name'] = "base"
-        self.jlc.lnks[0]['loc_pos'] = np.zeros(3)
+        self.jlc.lnks[0]['pos_in_loc_tcp'] = np.zeros(3)
         # self.jlc.lnks[0]['mass'] = 1.4
         # self.jlc.lnks[0]['com'] = np.array([-.02131, .000002, .044011])
         self.jlc.lnks[0]['mesh_file'] = os.path.join(this_dir, "meshes", "base.stl")
         self.jlc.lnks[0]['rgba'] = [.5, .5, .5, 1.0]
         self.jlc.lnks[1]['name'] = "j1"
-        self.jlc.lnks[1]['loc_pos'] = np.zeros(3)
+        self.jlc.lnks[1]['pos_in_loc_tcp'] = np.zeros(3)
         self.jlc.lnks[1]['com'] = np.array([.0, .0, .15])
         self.jlc.lnks[1]['mass'] = 1.29
         self.jlc.lnks[1]['mesh_file'] = os.path.join(this_dir, "meshes", "joint1.stl")
         self.jlc.lnks[1]['rgba'] = [.7, .7, .7, 1.0]
         self.jlc.lnks[2]['name'] = "j2"
-        self.jlc.lnks[2]['loc_pos'] = np.array([.0, .0, .0])
+        self.jlc.lnks[2]['pos_in_loc_tcp'] = np.array([.0, .0, .0])
         self.jlc.lnks[2]['com'] = np.array([-.02, .1, .07])
         self.jlc.lnks[2]['mass'] = 0.39
         self.jlc.lnks[2]['mesh_file'] = os.path.join(this_dir, "meshes", "joint2.stl")
         self.jlc.lnks[2]['rgba'] = [.77, .77, .60, 1]
         self.jlc.lnks[3]['name'] = "j3"
-        self.jlc.lnks[3]['loc_pos'] = np.array([.0, .0, .0])
+        self.jlc.lnks[3]['pos_in_loc_tcp'] = np.array([.0, .0, .0])
         self.jlc.lnks[3]['com'] = np.array([-.01, .02, .03])
         self.jlc.lnks[3]['mass'] = .35
         self.jlc.lnks[3]['mesh_file'] = os.path.join(this_dir, "meshes", "joint3.stl")
         self.jlc.lnks[3]['rgba'] = [.35, .35, .35, 1.0]
         self.jlc.lnks[4]['name'] = "j4"
-        self.jlc.lnks[4]['loc_pos'] = np.array([.0, .0, .0])
+        self.jlc.lnks[4]['pos_in_loc_tcp'] = np.array([.0, .0, .0])
         self.jlc.lnks[4]['com'] = np.array([.0, .0, 0.055])
         self.jlc.lnks[4]['mass'] = 0.35
         self.jlc.lnks[4]['mesh_file'] = os.path.join(this_dir, "meshes", "joint4.stl")
         self.jlc.lnks[4]['rgba'] = [.7, .7, .7, 1.0]
         self.jlc.lnks[5]['name'] = "j5"
-        self.jlc.lnks[5]['loc_pos'] = np.array([.0, .0, .0])
+        self.jlc.lnks[5]['pos_in_loc_tcp'] = np.array([.0, .0, .0])
         self.jlc.lnks[5]['com'] = np.array([.0, -.04, .015])
         self.jlc.lnks[5]['mass'] = 0.19
         self.jlc.lnks[5]['mesh_file'] = os.path.join(this_dir, "meshes", "joint5.stl")
         self.jlc.lnks[5]['rgba'] = [.77, .77, .60, 1]
         self.jlc.lnks[6]['name'] = "j6"
-        self.jlc.lnks[6]['loc_pos'] = np.array([.0, .0, .0])
+        self.jlc.lnks[6]['pos_in_loc_tcp'] = np.array([.0, .0, .0])
         self.jlc.lnks[6]['com'] = np.array([.0, .0, 0])
         self.jlc.lnks[6]['mass'] = 0.03
         self.jlc.lnks[6]['mesh_file'] = None
@@ -144,8 +144,8 @@ if __name__ == '__main__':
                 else:
                     jnt_values = None
             if jnt_values is not None:
-                # last_jnt_values = jnt_values
-                gm.gen_frame(pos=tgt_pos, rotmat=tgt_rotmat, thickness=.02).attach_to(base)
+                # last_jnt_values = joint_values
+                gm.gen_frame(pos=tgt_pos, rotmat=tgt_rotmat, axis_radius=.02).attach_to(base)
                 manipulator_instance.fk(jnt_values=jnt_values)
                 manipulator_instance.gen_meshmodel().attach_to(base)
             else:

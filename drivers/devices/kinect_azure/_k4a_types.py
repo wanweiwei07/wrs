@@ -224,7 +224,7 @@ class k4a_calibration_intrinsic_parameters_t(ctypes.Union):
 
 class _k4a_calibration_intrinsics_t(ctypes.Structure):
 	_fields_= [
-		("type", ctypes.c_int),
+		("end_type", ctypes.c_int),
 		("parameter_count", ctypes.c_uint),
 		("parameters", k4a_calibration_intrinsic_parameters_t),
 	]

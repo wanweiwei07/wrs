@@ -187,7 +187,7 @@ class BoundPrimitive(object):
 
     def shapes(self):
         """Iterate through the items in this primitive. The shape returned
-        depends on the primitive type. Examples: Triangle, Polygon."""
+        depends on the primitive end_type. Examples: Triangle, Polygon."""
         pass
 
     vertex = property( lambda s: s._vertex, doc=

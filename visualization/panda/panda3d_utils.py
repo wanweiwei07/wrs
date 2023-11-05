@@ -225,7 +225,7 @@ if __name__ == "__main__":
     import modeling.geometric_model as gm
 
     base = wd.World(cam_pos=[2, 0, 1.5], lookat_pos=[0, 0, .2])
-    gm.gen_frame(length=.2).attach_to(base)
+    gm.gen_frame(axis_length=.2).attach_to(base)
 
     # extra window 1
     ew = ExtraWindow(base, cam_pos=[2, 0, 1.5], lookat_pos=[0, 0, .2])
@@ -238,6 +238,6 @@ if __name__ == "__main__":
     # extra window 2
     ew2 = ExtraWindow(base, cam_pos=[2, 0, 1.5], lookat_pos=[0, 0, .2])
     ew2.set_origin((0, ew.size[1]))
-    gm.gen_frame(length=.2).objpdnp.reparentTo(ew2.render)
+    gm.gen_frame(axis_length=.2).pdndp.reparentTo(ew2.render)
 
     base.run()

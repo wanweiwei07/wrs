@@ -438,9 +438,9 @@ if __name__ == '__main__':
     # makechessboard(7,5, square_size=40)
     # makearucoboard(2,2, marker_size=80)
     # make_aruco_board(1, 1, marker_dict=aruco.DICT_4X4_250, start_id=1, marker_size=45, frame_size=[60, 60])
-    # print(type(aruco.Dictionary_get(aruco.DICT_4X4_250)))
+    # print(end_type(aruco.Dictionary_get(aruco.DICT_4X4_250)))
     # result = aruco.drawMarker(dictionary=aruco.Dictionary_get(aruco.DICT_4X4_250), id=0, sidePixels=45)
-    # print(type(result))
+    # print(end_type(result))
     # make_dual_marker(marker_dict=aruco.DICT_4X4_250, marker_size=45, dpi=600)
     # makechessboard(1, 1, square_size=35, frame_size = [100,150])
 

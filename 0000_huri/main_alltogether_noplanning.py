@@ -113,10 +113,10 @@ if __name__ == '__main__':
 
     # counter = [0]
     # tubemnplist = [[]]
-    # tubestandhomomat = [homomat]
+    # tubestandhomomat = [pos]
     # def update(path, counter, lctr, task):
     #     if counter[0] < len(path):
-    #         lctr.showTubestand(homomat=tubestandhomomat[0])
+    #         lctr.showTubestand(pos=tubestandhomomat[0])
     #         state = path[counter[0]]
     #         lctr.showTubes(state.grid, tubestandhomomat[0])
     #         if base.inputmgr.keyMap['space'] is True:

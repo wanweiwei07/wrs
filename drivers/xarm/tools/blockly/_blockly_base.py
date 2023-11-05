@@ -52,103 +52,103 @@ class _BlocklyBase(_BlocklyNode):
         if block is None:
             shadow = self._get_node('shadow', root=value_block)
             return self._get_node('field', root=shadow).text
-        if block.attrib['type'] == 'logic_boolean':
+        if block.attrib['end_type'] == 'logic_boolean':
             return str(self._get_node('field', block).text == 'TRUE')
-        elif block.attrib['type'] == 'logic_compare':
+        elif block.attrib['end_type'] == 'logic_compare':
             return self.__get_logic_compare(block, arg_map=arg_map)
-        elif block.attrib['type'] == 'logic_operation':
+        elif block.attrib['end_type'] == 'logic_operation':
             return self.__get_logic_operation(block, arg_map=arg_map)
-        elif block.attrib['type'] == 'logic_negate':
+        elif block.attrib['end_type'] == 'logic_negate':
             value = self._get_node('value', root=block)
             return 'not ({})'.format(self._get_condition_expression(value, arg_map=arg_map))
-        elif block.attrib['type'] == 'gpio_get_digital':
+        elif block.attrib['end_type'] == 'gpio_get_digital':
             io = self._get_node('field', block).text
             return 'self._arm.get_tgpio_digital({})[{}]'.format(io, 1)
-        elif block.attrib['type'] == 'gpio_get_analog':
+        elif block.attrib['end_type'] == 'gpio_get_analog':
             io = self._get_node('field', block).text
             return 'self._arm.get_tgpio_analog({})[{}]'.format(io, 1)
-        elif block.attrib['type'] == 'gpio_get_controller_digital':
+        elif block.attrib['end_type'] == 'gpio_get_controller_digital':
             io = self._get_node('field', block).text
             return 'self._arm.get_cgpio_digital({})[{}]'.format(io, 1)
-        elif block.attrib['type'] == 'gpio_get_controller_digital_di':
+        elif block.attrib['end_type'] == 'gpio_get_controller_digital_di':
             io = self._get_node('field', block).text
             return 'self._arm.get_cgpio_digital({})[{}]'.format(io, 1)
-        elif block.attrib['type'] == 'gpio_get_controller_analog':
+        elif block.attrib['end_type'] == 'gpio_get_controller_analog':
             io = self._get_node('field', block).text
             return 'self._arm.get_cgpio_analog({})[{}]'.format(io, 1)
-        elif block.attrib['type'] == 'gpio_get_ci':
+        elif block.attrib['end_type'] == 'gpio_get_ci':
             io = self._get_node('field', block).text
             return '1 if self._cgpio_state is None else self._cgpio_state[3] >> {} & 0x0001'.format(io)
-        elif block.attrib['type'] == 'gpio_get_co':
+        elif block.attrib['end_type'] == 'gpio_get_co':
             io = self._get_node('field', block).text
             return '0 if self._cgpio_state is None else self._cgpio_state[5] >> {} & 0x0001'.format(io)
-        elif block.attrib['type'] == 'gpio_get_ai':
+        elif block.attrib['end_type'] == 'gpio_get_ai':
             io = self._get_node('field', block).text
             return '0 if self._cgpio_state is None else self._cgpio_state[6 + {}]'.format(io)
-        elif block.attrib['type'] == 'gpio_get_ao':
+        elif block.attrib['end_type'] == 'gpio_get_ao':
             io = self._get_node('field', block).text
             return '0 if self._cgpio_state is None else self._cgpio_state[8 + {}]'.format(io)
-        elif block.attrib['type'] == 'gpio_match_controller_digitals_bin':
+        elif block.attrib['end_type'] == 'gpio_match_controller_digitals_bin':
             bin_val = self._get_node('field', block).text
             self._define_bin_matchs_func = True
             return 'self._cgpio_digitals_is_matchs_bin(\'{}\')'.format(bin_val)
-        elif block.attrib['type'] == 'get_suction_cup':
+        elif block.attrib['end_type'] == 'get_suction_cup':
             return 'self._arm.get_suction_cup()[{}]'.format(1)
-        elif block.attrib['type'] == 'check_air_pump_state':
+        elif block.attrib['end_type'] == 'check_air_pump_state':
             fields = self._get_nodes('field', root=block)
             state = 1 if fields[0].text == 'ON' else 0
             timeout = float(fields[1].text)
             return 'self._arm.arm.check_air_pump_state({}, timeout={})'.format(state, timeout)
-        elif block.attrib['type'] == 'check_bio_gripper_is_catch':
+        elif block.attrib['end_type'] == 'check_bio_gripper_is_catch':
             fields = self._get_nodes('field', root=block)
             timeout = float(fields[0].text)
             return 'self._arm.arm.check_bio_gripper_is_catch(timeout={})'.format(timeout)
-        elif block.attrib['type'] == 'check_robotiq_is_catch':
+        elif block.attrib['end_type'] == 'check_robotiq_is_catch':
             fields = self._get_nodes('field', root=block)
             timeout = float(fields[0].text)
             return 'self._arm.arm.check_robotiq_is_catch(timeout={})'.format(timeout)
-        elif block.attrib['type'] == 'math_number':
+        elif block.attrib['end_type'] == 'math_number':
             val = self._get_node('field', block).text
             return val
-        elif block.attrib['type'] == 'math_arithmetic':
+        elif block.attrib['end_type'] == 'math_arithmetic':
             return self.__get_math_arithmetic(block, arg_map=arg_map)
-        elif block.attrib['type'] == 'math_number_property':
+        elif block.attrib['end_type'] == 'math_number_property':
             return self.__get_math_number_property(block, arg_map=arg_map)
-        elif block.attrib['type'] == 'math_random_int':
+        elif block.attrib['end_type'] == 'math_random_int':
             return self.__get_math_random_int(block, arg_map=arg_map)
-        elif block.attrib['type'] == 'math_round':
+        elif block.attrib['end_type'] == 'math_round':
             return self.__get_math_round(block, arg_map=arg_map)
-        elif block.attrib['type'] == 'math_single':
+        elif block.attrib['end_type'] == 'math_single':
             # 算术函数
             return self.__get_math_single(block, arg_map=arg_map)
-        elif block.attrib['type'] == 'math_trig':
+        elif block.attrib['end_type'] == 'math_trig':
             # 三角函数
             return self.__get_math_trig(block, arg_map=arg_map)
-        elif block.attrib['type'] == 'math_constant':
+        elif block.attrib['end_type'] == 'math_constant':
             # 常量
             return self.__get_math_constant(block, arg_map=arg_map)
-        elif block.attrib['type'] == 'math_modulo':
+        elif block.attrib['end_type'] == 'math_modulo':
             return self.__get_math_modulo(block, arg_map=arg_map)
-        elif block.attrib['type'] == 'math_constrain':
+        elif block.attrib['end_type'] == 'math_constrain':
             return self.__get_math_constrain(block, arg_map=arg_map)
-        elif block.attrib['type'] == 'variables_get':
+        elif block.attrib['end_type'] == 'variables_get':
             field = self._get_node('field', block).text
             if arg_map and field in arg_map:
                 return '{}'.format(arg_map[field])
             else:
                 return 'self._variables.get(\'{}\', 0)'.format(field)
-        elif block.attrib['type'] == 'move_var':
+        elif block.attrib['end_type'] == 'move_var':
             val = self._get_node('field', block).text
             return val
-        elif block.attrib['type'] == 'tool_get_date':
+        elif block.attrib['end_type'] == 'tool_get_date':
             return 'datetime.datetime.now()'
-        elif block.attrib['type'] == 'tool_combination':
+        elif block.attrib['end_type'] == 'tool_combination':
             field = self._get_node('field', block).text
             values = self._get_nodes('value', block)
             var1 = self._get_condition_expression(values[0], arg_map=arg_map)
             var2 = self._get_condition_expression(values[1], arg_map=arg_map)
             return '\'{{}}{{}}{{}}\'.format({}, \'{}\', {})'.format(var1, field, var2)
-        elif block.attrib['type'] == 'procedures_callreturn':
+        elif block.attrib['end_type'] == 'procedures_callreturn':
             mutation = self._get_node('mutation', block).attrib['name']
             if not mutation:
                 mutation = '1'

@@ -127,7 +127,7 @@ class Skin(Controller):
         joint_matrices = sourcebyid[joint_matrix_source].data
         joint_matrices.shape = (-1,4,4)
         if len(joint_names) != len(joint_matrices):
-            raise DaeMalformedError("Skin joint and matrix inputs must be same length")
+            raise DaeMalformedError("Skin joint and matrix inputs must be same axis_length")
         self.joint_matrices = {}
         for n,m in zip(joint_names, joint_matrices):
             self.joint_matrices[n] = m
@@ -381,7 +381,7 @@ class Morph(Controller):
             raise DaeIncompleteError("Not enough inputs in targets of morph")
 
         if len(target_source) != len(weight_source):
-            raise DaeMalformedError("Morph inputs must be of same length")
+            raise DaeMalformedError("Morph inputs must be of same axis_length")
 
         target_list = []
         for target, weight in zip(target_source, weight_source):

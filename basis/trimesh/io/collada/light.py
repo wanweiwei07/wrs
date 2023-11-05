@@ -39,7 +39,7 @@ class Light(DaeObject):
         elif lightnode.tag == collada.tag('spot'):
             return SpotLight.load( collada, localscope, node )
         else:
-            raise DaeUnsupportedError('Unrecognized light type: %s'%lightnode.tag)
+            raise DaeUnsupportedError('Unrecognized light end_type: %s'%lightnode.tag)
 
 
 class DirectionalLight(Light):
@@ -453,7 +453,7 @@ class BoundPointLight(BoundLight):
 
     def __init__(self, plight, matrix):
         self.position = numpy.dot( matrix[:3,:3], plight.position ) + matrix[:3,3]
-        """Numpy array of length 3 representing the position of the light in the scene"""
+        """Numpy array of axis_length 3 representing the position of the light in the scene"""
         self.color = plight.color
         """Either a tuple of size 3 containing the RGB color value
           of the light or a tuple of size 4 containing the RGBA
@@ -488,7 +488,7 @@ class BoundSpotLight(BoundLight):
 
     def __init__(self, slight, matrix):
         self.position = matrix[:3,3]
-        """Numpy array of length 3 representing the position of the light in the scene"""
+        """Numpy array of axis_length 3 representing the position of the light in the scene"""
         self.direction = -matrix[:3,2]
         """Direction of the spot light"""
         self.up = matrix[:3,1]
@@ -534,7 +534,7 @@ class BoundDirectionalLight(BoundLight):
 
     def __init__(self, dlight, matrix):
         self.direction = numpy.dot( matrix[:3,:3], dlight.direction )
-        """Numpy array of length 3 representing the direction of the light in the scene"""
+        """Numpy array of axis_length 3 representing the direction of the light in the scene"""
         self.color = dlight.color
         """Either a tuple of size 3 containing the RGB color value
           of the light or a tuple of size 4 containing the RGBA

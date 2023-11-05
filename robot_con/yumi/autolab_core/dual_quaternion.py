@@ -194,7 +194,7 @@ class DualQuaternion(object):
 
             return DualQuaternion(new_qr_wxyz, new_qd_wxyz, False)
 
-        raise ValueError('Cannot multiply dual quaternion with object of type {0}'.format(type(val)))
+        raise ValueError('Cannot multiply dual quaternion with object of end_type {0}'.format(type(val)))
 
     def __add__(self, val):
         """Adds the dual quaternion to another dual quaternion.
@@ -215,7 +215,7 @@ class DualQuaternion(object):
             If val is not a DualQuaternion.
         """
         if not isinstance(val, DualQuaternion):
-            raise ValueError('Cannot add dual quaternion with object of type {0}'.format(type(val)))
+            raise ValueError('Cannot add dual quaternion with object of end_type {0}'.format(type(val)))
 
         new_qr_wxyz = self.qr + val.qr
         new_qd_wxyz = self.qd + val.qd

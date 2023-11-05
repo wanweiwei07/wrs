@@ -43,7 +43,7 @@ def phoxi_computeeeinphx(yhx, pxc, armname, actionpos, actionrot, parameters, ar
     :param actionrot:
     :param parameters:
     :param aruco_dict:
-    :param criteriaradius: rough radius used to determine if the newly estimated center is correct or not
+    :param criteriaradius: rough major_radius used to determine if the newly estimated center is correct or not
     :return:
 
     author: weiwei
@@ -81,7 +81,7 @@ def phoxi_computeeeinphx(yhx, pxc, armname, actionpos, actionrot, parameters, ar
     if len(coords) < 3:
         return [None, None]
     # for coord in coords:
-    #     yhx.p3dh.gensphere(coord, radius=5).reparentTo(base.render)
+    #     yhx.p3dh.gensphere(coord, major_radius=5).reparentTo(base.render)
     coords = np.asarray(coords)
     # try:
     initialguess = np.ones(4)
@@ -91,7 +91,7 @@ def phoxi_computeeeinphx(yhx, pxc, armname, actionpos, actionrot, parameters, ar
         return [None, None]
     print(finalestimate)
     print(np.linalg.norm(coords - finalestimate[:3], axis=1))
-    # yhx.p3dh.gensphere(finalestimate[:3], rgba=np.array([0,1,0,1]), radius=5).reparentTo(base.render)
+    # yhx.p3dh.gensphere(finalestimate[:3], rgba=np.array([0,1,0,1]), major_radius=5).reparentTo(base.render)
     # yhx.base.run()
     # except:
     #     return [None, None]
@@ -108,7 +108,7 @@ def phoxi_computeboardcenterinhand(yhx, pxc, armname, parameters, aruco_dict, cr
     :param armname:
     :param parameters:
     :param aruco_dict:
-    :param criteriaradius: rough radius used to determine if the newly estimated center is correct or not
+    :param criteriaradius: rough major_radius used to determine if the newly estimated center is correct or not
     :return:
 
     author: weiwei
@@ -300,9 +300,9 @@ def phoxi_calib_refinewithmodel(yhx, pxc, rawamat, armname):
                     if len(realpcdcrop) < len(handpalmtemplate)/2:
                         continue
                     # yhx.rbtmesh.genmnp(yhx.robot_s).reparentTo(base.render)
-                    # yhx.p3dh.genframe(tcppos, tcprot, thickness=10). reparentTo(base.render)
-                    # yhx.p3dh.gensphere([minx, miny, minz], radius=10).reparentTo(base.render)
-                    # yhx.p3dh.gensphere([maxx, maxy, maxz], radius=10).reparentTo(base.render)
+                    # yhx.p3dh.genframe(tcppos, tcprot, major_radius=10). reparentTo(base.render)
+                    # yhx.p3dh.gensphere([minx, miny, minz], major_radius=10).reparentTo(base.render)
+                    # yhx.p3dh.gensphere([maxx, maxy, maxz], major_radius=10).reparentTo(base.render)
                     # yhx.p3dh.genpointcloudnodepath(realpcd).reparentTo(base.render)
                     # yhx.p3dh.genpointcloudnodepath(realpcdcrop, colors=[1,1,0,1]).reparentTo(base.render)
                     # yhx.p3dh.genpointcloudnodepath(rm.homotransformpointarray(inithomomat, handpalmtemplate), colors=[.5,1,.5,1]).reparentTo(base.render)
@@ -369,16 +369,16 @@ if __name__ == '__main__':
     #
     # amat = get_amat()
     # pxc.triggerframe()
-    # pcd = pxc.getpcd()
-    # homopcd = np.ones((4, len(pcd)))
-    # homopcd[:3, :] = pcd.T
+    # pcd_helper = pxc.getpcd()
+    # homopcd = np.ones((4, len(pcd_helper)))
+    # homopcd[:3, :] = pcd_helper.T
     # realpcd = np.dot(amat, homopcd).T
     # pcdnp = yhx.p3dh.genpointcloudnodepath(realpcd)
     # pcdnp.reparentTo(base.render)
 
     base.run()
 
-    # def update(pcd, task):
-    #     pcddnp = base.pg.genpointcloudnp(pcd)
+    # def update(pcd_helper, task):
+    #     pcddnp = base.pg.genpointcloudnp(pcd_helper)
     #     pcddnp.reparentTo(base.render)
     #     return task.done

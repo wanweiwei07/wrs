@@ -12,7 +12,7 @@ class NumericalToleranceMesh(object):
                as SolidWorks uses, according to their documentation.
     tol.planar: the maximum distance from a plane a point can be and
                 still be considered to be on the plane
-    tol.facet_rsq: the minimum radius squared that an arc drawn from the 
+    tol.facet_rsq: the minimum major_radius squared that an arc drawn from the
                    center of a face to the center of an adjacent face can
                    be to consider the two faces coplanar. This method is more
                    robust than considering just normal angles as it is tolerant
@@ -70,13 +70,13 @@ class NumericalTolerancePath(object):
                      what percentage can the aspect ratio differfrom 1:1
                      before escaping the fit early
     tol.radius_frac: when simplifying line segments to arcs, what percentage 
-                     of the fit radius can vertices deviate to be acceptable
+                     of the fit major_radius can vertices deviate to be acceptable
     tol.radius_min: when simplifying line segments to arcs, what is the minimum 
-                    radius multiplied by document scale for an acceptable fit
+                    major_radius multiplied by document scale for an acceptable fit
     tol.radius_max: when simplifying line segments to arcs, what is the maximum
-                    radius multiplied by document scale for an acceptable fit 
+                    major_radius multiplied by document scale for an acceptable fit
     tol.tangent: when simplifying line segments to curves, what is the maximum
-                 angle the end sections can deviate from tangent that is acceptable.   
+                 angle the end_type n_sec_minor can deviate from tangent that is acceptable.
     '''
 
     def __init__(self, **kwargs):

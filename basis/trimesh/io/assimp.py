@@ -4,7 +4,7 @@ from ..constants import log
 
 def load_assimp(file_obj, file_type=None):
     '''
-    Use the assimp library to load a mesh, from a file object and type,
+    Use the assimp library to load a mesh, from a file object and end_type,
     or filename (if file_obj is a string)
 
     Assimp supports a huge number of mesh formats.

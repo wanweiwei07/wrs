@@ -10,13 +10,13 @@ class Box(object):
     Attributes
     ----------
     dims : :obj:`numpy.ndarray` of float
-        Maximal extent in x, y, and (optionally) z.
+        Maximal xyz_lengths in x, y, and (optionally) z.
 
     width : float
-        Maximal extent in x.
+        Maximal xyz_lengths in x.
 
     height : float
-        Maximal extent in y.
+        Maximal xyz_lengths in y.
 
     area : float
         Area of projection onto xy plane.
@@ -61,19 +61,19 @@ class Box(object):
 
     @property
     def dims(self):
-        """:obj:`numpy.ndarray` of float: Maximal extent in x, y, and (optionally) z
+        """:obj:`numpy.ndarray` of float: Maximal xyz_lengths in x, y, and (optionally) z
         """
         return self._max_pt - self._min_pt
 
     @property
     def width(self):
-        """float: Maximal extent in x.
+        """float: Maximal xyz_lengths in x.
         """
         return int(np.round(self.dims[1]))
 
     @property
     def height(self):
-        """float: Maximal extent in y.
+        """float: Maximal xyz_lengths in y.
         """
         return int(np.round(self.dims[0]))
 

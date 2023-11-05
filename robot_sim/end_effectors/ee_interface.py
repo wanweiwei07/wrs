@@ -1,8 +1,8 @@
 import copy
 import numpy as np
 import modeling.model_collection as mc
-import robot_sim._kinematics.jlchain as jl
-import robot_sim._kinematics.collision_checker as cc
+import robot_sim.kinematics.jlchain as jl
+import robot_sim.kinematics.collision_checker as cc
 import modeling.geometric_model as gm
 
 
@@ -15,8 +15,8 @@ class EEInterface(object):
         self.cdmesh_type = cdmesh_type  # aabb, convexhull, or triangles
         # joints
         # - coupling - No coupling by default
-        self.coupling = jl.JLChain(pos=self.pos, rotmat=self.rotmat, homeconf=np.zeros(0), name='coupling')
-        self.coupling.jnts[1]['loc_pos'] = np.array([0, 0, .0])
+        self.coupling = jl.JLChain(pos=self.pos, rotmat=self.rotmat, home_conf=np.zeros(0), name='coupling')
+        self.coupling.joints[1]['pos_in_loc_tcp'] = np.array([0, 0, .0])
         self.coupling.lnks[0]['name'] = 'coupling_lnk0'
         # toggle on the following part to assign an explicit mesh model to a coupling
         # self.coupling.lnks[0]['mesh_file'] = os.path.join(this_dir, "meshes", "xxx.stl")
@@ -29,6 +29,42 @@ class EEInterface(object):
         self.cc = None
         # cd mesh collection for precise collision checking
         self.cdmesh_collection = mc.ModelCollection()
+        # object grasped/held/attached to end_type-effector; oiee = object in end_type-effector
+        self.oiee_infos = []
+
+    def update_oiee(self):
+        """
+        oih = object in hand
+        :return:
+        author: weiwei
+        date: 20230807
+        """
+        for obj_info in self.oiee_infos:
+            gl_pos, gl_rotmat = self.cvt_loc_tcp_to_gl(obj_info['rel_pos'], obj_info['rel_rotmat'])
+            obj_info['gl_pos'] = gl_pos
+            obj_info['gl_rotmat'] = gl_rotmat
+
+    def hold(self, objcm, **kwargs):
+        """
+        the objcm is added as a part of the robot_s to the cd checker
+        **kwargs is for polyphorism purpose
+        :param jawwidth:
+        :param objcm:
+        :return:
+        author: weiwei
+        date: 20230811
+        """
+        rel_pos, rel_rotmat = self.manipulator_dict[hnd_name].cvt_gl_to_loc_tcp(objcm.get_pos(), objcm.get_rotmat())
+        intolist = [self.agv.lnks[3],
+                    self.arm.lnks[0],
+                    self.arm.lnks[1],
+                    self.arm.lnks[2],
+                    self.arm.lnks[3],
+                    self.arm.lnks[4],
+                    self.arm.lnks[5],
+                    self.arm.lnks[6]]
+        self.oih_infos.append(self.cc.add_cdobj(objcm, rel_pos, rel_rotmat, intolist))
+        return rel_pos, rel_rotmat
 
     def is_collided(self, obstacle_list=[], otherrobot_list=[]):
         """
@@ -72,7 +108,7 @@ class EEInterface(object):
         self.cc.unshow_cdprimit()
 
     def show_cdmesh(self):
-        for i, cdelement in enumerate(self.cc.all_cdelements):
+        for i, cdelement in enumerate(self.cc.all_cd_elements):
             pos = cdelement['gl_pos']
             rotmat = cdelement['gl_rotmat']
             self.cdmesh_collection.cm_list[i].set_pos(pos)
@@ -99,22 +135,22 @@ class EEInterface(object):
     def _toggle_tcpcs(self, parent):
         action_center_gl_pos = self.rotmat.dot(self.action_center_pos) + self.pos
         action_center_gl_rotmat = self.rotmat.dot(self.action_center_rotmat)
-        gm.gen_dashstick(spos=self.pos,
-                         epos=action_center_gl_pos,
-                         thickness=.0062,
-                         rgba=[.5, 0, 1, 1],
-                         type="round").attach_to(parent)
-        gm.gen_mycframe(pos=action_center_gl_pos, rotmat=action_center_gl_rotmat).attach_to(parent)
+        gm.gen_dashed_stick(spos=self.pos,
+                            epos=action_center_gl_pos,
+                            radius=.0062,
+                            rgba=[.5, 0, 1, 1],
+                            type="round").attach_to(parent)
+        gm.gen_myc_frame(pos=action_center_gl_pos, rotmat=action_center_gl_rotmat).attach_to(parent)
 
     def enable_cc(self):
         self.cc = cc.CollisionChecker("collision_checker")
 
     def disable_cc(self):
         """
-        clear pairs and nodepath
+        clear pairs and pdndp
         :return:
         """
-        for cdelement in self.cc.all_cdelements:
+        for cdelement in self.cc.all_cd_elements:
             cdelement['cdprimit_childid'] = -1
         self.cc = None
 
@@ -123,5 +159,5 @@ class EEInterface(object):
         # deepcopying colliders are problematic, I have to update it manually
         if self.cc is not None:
             for child in self_copy.cc.np.getChildren():
-                self_copy.cc.ctrav.addCollider(child, self_copy.cc.chan)
+                self_copy.cc.cd_trav.addCollider(child, self_copy.cc.cd_handler)
         return self_copy

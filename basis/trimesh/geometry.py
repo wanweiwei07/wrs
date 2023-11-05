@@ -11,19 +11,13 @@ except ImportError:
 
 
 def plane_transform(origin, normal):
-    '''
+    """
     Given the origin and normal of a plane, find the transform that will move
     that plane to be coplanar with the XY plane
-
-    Arguments
-    ----------
-    origin: (3,) float, point in space
-    normal: (3,) float, plane normal vector
-
-    Returns
-    ---------
-    transform: (4,4) float, transformation matrix
-    '''
+    :param origin: 1x3 nparray
+    :param normal: 1x3 nparray
+    :return: pos
+    """
     transform = align_vectors(normal, [0, 0, 1])
     transform[0:3, 3] = -np.dot(transform, np.append(origin, 1))[0:3]
     return transform
@@ -52,42 +46,41 @@ def transform_around(matrix, point):
     return result
 
 
-def align_vectors(vector_start, vector_end, return_angle=False):
+def align_vectors(npvec3_start, npvec3_end, return_angle=False):
     """
-    Returns the 4x4 transformation matrix which will rotate from
-    vector_start (3,) to vector_end (3,), ex:
-    vector_end == np.dot(T, np.append(vector_start, 1))[0:3]
-    :param vector_start:
-    :param vector_end:
+    returns the pos which will rotate from npvec3_start to npvec3_end
+    e.g. npvec3_end == np.dot(T, np.append(vector_start, 1))[0:3]
+    :param npvec3_start:
+    :param npvec3_end:
     :param return_angle:
     :return:
+    author: weiwei
+    date: 2017?, 20230812
     """
-    # the following code is added by weiwei on 07212017
+    # the following code is added by weiwei on 20170721
     # to correct the problems of same vectors and inverse vectors
-    if np.array_equal(vector_start, vector_end):
+    if np.array_equal(npvec3_start, npvec3_end):
         T = np.eye(4)
         angle = 0.0
         if return_angle:
             return T, angle
         return T
-    if np.array_equal(-vector_start, vector_end):
-        a = vector_start[0]
-        b = vector_start[1]
-        c = vector_start[2]
+    if np.array_equal(-npvec3_start, npvec3_end):
+        a = npvec3_start[0]
+        b = npvec3_start[1]
+        c = npvec3_start[2]
         rot_ax = unitize(np.array([b - c, -a + c, a - b]))
         T = rotation_matrix(np.pi, rot_ax)
         if return_angle:
             return T, np.pi
         return T
-
-    vector_start = unitize(vector_start)
-    vector_end = unitize(vector_end)
-    cross = np.cross(vector_start, vector_end)
+    npvec3_start = unitize(npvec3_start)
+    npvec3_end = unitize(npvec3_end)
+    cross = np.cross(npvec3_start, npvec3_end)
     # we clip the norm to 1, as otherwise floating point bs
     # can cause the arcsin to error
     norm = np.clip(np.linalg.norm(cross), -1.0, 1.0)
-    direction = np.sign(np.dot(vector_start, vector_end))
-
+    direction = np.sign(np.dot(npvec3_start, npvec3_end))
     if norm < tol.zero:
         # if the norm is zero, the vectors are the same
         # and no rotation is needed
@@ -98,11 +91,9 @@ def align_vectors(vector_start, vector_end, return_angle=False):
         if direction < 0:
             angle = np.pi - angle
         T = rotation_matrix(angle, cross)
-
-    check = np.dot(T[:3, :3], vector_start) - vector_end
+    check = np.dot(T[:3, :3], npvec3_start) - npvec3_end
     if not np.allclose(check, 0.0):
         raise ValueError('Vectors unaligned!')
-
     if return_angle:
         return T, angle
     return T

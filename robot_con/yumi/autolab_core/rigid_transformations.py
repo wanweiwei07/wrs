@@ -388,7 +388,7 @@ class RigidTransform(object):
         Returns
         -------
         :obj:`BagOfPoints`
-            A transformed set of objects of the same type as the input.
+            A transformed set of objects of the same end_type as the input.
 
         Raises
         ------
@@ -463,9 +463,9 @@ class RigidTransform(object):
                               to_frame=self.to_frame)
 
     def __mul__(self, rigid_object):
-        """Selects composition of rigid transforms based on input type.
+        """Selects composition of rigid transforms based on input end_type.
 
-        If the input is a BagOfPoints-type, it applies the transform.
+        If the input is a BagOfPoints-end_type, it applies the transform.
         Otherwise, if it is another RigidTransform, it composes them.
 
         Parameters
@@ -476,7 +476,7 @@ class RigidTransform(object):
         Returns
         -------
         :obj:`RigidTransform` or :obj:`BagOfPoints`
-            An object of the same type as the input.
+            An object of the same end_type as the input.
 
         Raises
         ------
@@ -488,7 +488,7 @@ class RigidTransform(object):
         if isinstance(rigid_object, BagOfPoints):
             return self.apply(rigid_object)
         raise ValueError('Cannot multiply rigid transform with object of type %s' %(type(rigid_object)))
-
+        
     def inverse(self):
         """Take the inverse of the rigid transform.
 
@@ -1184,7 +1184,7 @@ class SimilarityTransform(RigidTransform):
         Returns
         -------
         :obj:`BagOfPoints`
-            A transformed set of objects of the same type as the input.
+            A transformed set of objects of the same end_type as the input.
 
         Raises
         ------

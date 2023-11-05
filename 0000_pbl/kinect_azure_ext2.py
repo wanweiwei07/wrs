@@ -16,19 +16,19 @@ origin_homomat[:3, 3] = origin
 print(origin, origin_rotmat)
 # base = wd.World(cam_pos=origin, lookat_pos=origin_rotmat[:,0]-origin_rotmat[:,1]+origin_rotmat[:,2])
 base = wd.World(cam_pos=np.zeros(3), lookat_pos=np.array([0, 0, 10]))
-gm.gen_frame(length=1, thickness=.1).attach_to(base)
+gm.gen_frame(axis_length=1, axis_radius=.1).attach_to(base)
 # base.run()
 pk_obj = pk.PyKinectAzure()
 pk_obj.device_open()
 pk_obj.device_start_cameras()
-gm.gen_frame(pos=origin, rotmat=origin_rotmat, length=1, thickness=.03).attach_to(base)
+gm.gen_frame(pos=origin, rotmat=origin_rotmat, axis_length=1, axis_radius=.03).attach_to(base)
 # base.run()
 # pcd_list = []
 # marker_center_list = []
 # def update(pk_obj, pcd_list, marker_center_list, task):
 #     if len(pcd_list) != 0:
-#         for pcd in pcd_list:
-#             pcd.detach()
+#         for pcd_helper in pcd_list:
+#             pcd_helper.detach()
 #         pcd_list.clear()
 #     if len(marker_center_list) != 0:
 #         for marker_center in marker_center_list:
@@ -43,9 +43,9 @@ while True:
         # cv2.imshow("test", color_image)
         # cv2.waitKey(0)
         point_cloud = pk_obj.transform_depth_image_to_point_cloud(depth_image_handle)
-        point_cloud = rm.homomat_transform_points(rm.homomat_inverse(origin_homomat), point_cloud)
+        point_cloud = rm.transform_points_by_homomat(rm.homomat_inverse(origin_homomat), point_cloud)
         point_cloud[point_cloud[:,0]<-1]=point_cloud[point_cloud[:,0]<-1]*0
-        mypoint_cloud = gm.GeometricModel(initor=point_cloud)
+        mypoint_cloud = gm.GeometricModel(initializer=point_cloud)
         mypoint_cloud.attach_to(base)
         base.run()
         pk_obj.image_release(color_image_handle)

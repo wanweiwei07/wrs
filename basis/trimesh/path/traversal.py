@@ -129,7 +129,7 @@ def arctan2_points(points):
 
 def discretize_path(entities, vertices, path, scale=1.0):
     '''
-    Return a (n, dimension) list of vertices. 
+    Return a (n, dimension) list of vertices.
     Samples arcs/curves to be line segments
     '''
     path_len  = len(path)
@@ -153,7 +153,7 @@ class PathSample:
         self._points = np.array(points)
         # find the direction of each segment
         self._vectors = np.diff(self._points, axis=0)
-        # find the length of each segment
+        # find the axis_length of each segment
         self._norms = np.linalg.norm(self._vectors, axis=1)
         # unit vectors for each segment
         nonzero = self._norms > tol.zero
@@ -161,7 +161,7 @@ class PathSample:
         self._unit_vec[nonzero] /= self._norms[nonzero].reshape((-1,1))
         # total distance in the path
         self.length = self._norms.sum()
-        # cumulative sum of section length
+        # cumulative sum of section axis_length
         # note that this is sorted
         self._cum_norm  = np.cumsum(self._norms)        
 
@@ -214,8 +214,8 @@ def resample_path(points, count=None, step=None, step_round=True):
     corners, as the original vertices are NOT guaranteed to be in the
     new, resampled path. 
 
-    ONLY ONE of count or step can be specified
-    Result can be uniformly distributed (np.linspace) by specifying count
+    ONLY ONE of n_sec_minor or step can be specified
+    Result can be uniformly distributed (np.linspace) by specifying n_sec_minor
     Result can have a specific distance (np.arange) by specifying step
 
 
@@ -231,11 +231,11 @@ def resample_path(points, count=None, step=None, step_round=True):
     '''
 
     points = np.array(points, dtype=np.float)
-    # generate samples along the perimeter from kwarg count or step
+    # generate samples along the perimeter from kwarg n_sec_minor or step
     if (count is not None) and (step is not None):
-        raise ValueError('Only step OR count can be specified')
+        raise ValueError('Only step OR n_sec_minor can be specified')
     if (count is None) and (step is None):
-        raise ValueError('Either step or count must be specified')
+        raise ValueError('Either step or n_sec_minor must be specified')
 
     sampler = PathSample(points)
     if step is not None and step_round:

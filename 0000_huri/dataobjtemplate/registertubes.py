@@ -357,30 +357,30 @@ if __name__ == '__main__':
     tubepcdnp.reparentTo(yhx.base.render)
     yhx.base.run()
 
-    # homomat = loc.findtubestand_matchonobb(objpcd, toggle_debug=False)
-    # tbscm = loc.gentubestand(homomat=homomat)
-    # print(homomat)
+    # pos = loc.findtubestand_matchonobb(objpcd, toggle_debug=False)
+    # tbscm = loc.gentubestand(pos=pos)
+    # print(pos)
     # tbscm.reparentTo(yhx.base.render)
 
-    # homomat = loc.findtubestand_match(objpcdmerged, toggle_debug=True)
+    # pos = loc.findtubestand_match(objpcdmerged, toggle_debug=True)
 
-    # state, eleconfidencearray = loc.findtubes(homomat, objpcd, toggle_debug=False)
-    # yhx.p3dh.genframe(pos=homomat[:3,3], rotmat=homomat[:3,:3]).reparentTo(yhx.base.render)
+    # state, eleconfidencearray = loc.findtubes(pos, objpcd, toggle_debug=False)
+    # yhx.p3dh.genframe(pos=pos[:3,3], rotmat=pos[:3,:3]).reparentTo(yhx.base.render)
     # rbtnp = yhx.rbtmesh.genmnp(yhx.robot_s)
     # rbtnp.reparentTo(yhx.base.render)
-    # pcdnp = p3dh.genpointcloudnodepath(objpcd, pntsize=5)
+    # pcdnp = p3dh.genpointcloudnodepath(objpcd, point_size=5)
     # pcdnp.reparentTo(yhx.base.render)
     # cornerhole_pcdnp = p3dh.genpointcloudnodepath(loc.calibrate_holes(objpcd), colors=np.array([1, 0, 0, 1]),
-    #                                               pntsize=10)
+    #                                               point_size=10)
     # cornerhole_pcdnp.reparentTo(yhx.base.render)
     # positions, rotmats = loc.findtubestands_calibratewoodstickholes(objpcd)
     # for posrot in zip(positions, rotmats):
     #     loc.gentubestand(rm.homobuild(posrot[0], posrot[1])).reparentTo(yhx.base.render)
 
-    # tbscm = loc.gentubestand(homomat=homomat)
+    # tbscm = loc.gentubestand(pos=pos)
     # tbscm.reparentTo(yhx.base.render)
     # tbscm.showcn()
-    # tubecms = loc.gentubes(state, tubestand_homomat=homomat, eleconfidencearray=eleconfidencearray)
+    # tubecms = loc.gentubes(state, tubestand_homomat=pos, eleconfidencearray=eleconfidencearray)
     # for tbcm in tubecms:
     #     tbcm.reparentTo(yhx.base.render)
     #     tbcm.showcn()

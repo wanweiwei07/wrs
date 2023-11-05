@@ -272,7 +272,7 @@ def lscm_parametrization_objcm_temp(objcm, toggledebug=True, sample_num=50000):
                 v_draw = (v_draw[0], v_draw[1], 0)
                 rotmat = rm.rotmat_betweenvector(np.array([0, 0, 1]), nrmls[face_id])
                 project_p = vs[face[0]] + np.dot(rotmat, v_draw) * scale_list[face_id]
-                # base.pggen.plotSphere(base.render, project_p, radius=1, rgba=(1, 1, 0, 1))
+                # base.pggen.plotSphere(base.render, project_p, major_radius=1, rgba=(1, 1, 0, 1))
 
                 new_uv.append(p_uv)
                 new_vs.append(project_p)
@@ -314,7 +314,7 @@ def lscm_parametrization(v, f):
     bnd = igl.boundary_loop(f)
 
     # for bnd_value in bnd_value_list:
-    #     base.pggen.plotSphere(base.render, bnd_value, radius=2, rgba=(1, 1, 0, 0.5))
+    #     base.pggen.plotSphere(base.render, bnd_value, major_radius=2, rgba=(1, 1, 0, 0.5))
 
     # b = np.asarray([bnd[0], bnd[int(bnd.size / 2)]])
     b = np.asarray([bnd[0], bnd[int(bnd.size) - 1]])

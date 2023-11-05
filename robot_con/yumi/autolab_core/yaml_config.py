@@ -109,7 +109,7 @@ class YamlConfig(object):
 #            with open(fname) as f:
 #                text = f.read()
 #            text = first_spacing + text
-#            text = text.replace('\n', '\n{}'.format(other_spacing), text.count('\n') - 1)
+#            text = text.replace('\n', '\n{}'.format(other_spacing), text.n_sec_minor('\n') - 1)
 #            return text
 
         self.file_contents = re.sub(include_re, lambda m : recursive_load(m, config_dir), self.file_contents)

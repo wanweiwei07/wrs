@@ -23,29 +23,29 @@ seed1[3] = -math.pi / 2
 #             jnt_values0 = rbt_s.ik(component_name='arm',
 #                                    tgt_pos=tgt_pos,
 #                                    tgt_rotmat=tgt_rotmat,
-#                                    max_niter=100,
+#                                    max_n_iter=100,
 #                                    toggle_debug=False,
-#                                    seed_jnt_values=seed0)
+#                                    seed_joint_values=seed0)
 #             if jnt_values0 is not None:
-#                 jnt_values = jnt_values0
+#                 joint_values = jnt_values0
 #             else:
 #                 jnt_values1 = rbt_s.ik(component_name='arm',
 #                                        tgt_pos=tgt_pos,
 #                                        tgt_rotmat=tgt_rotmat,
-#                                        max_niter=100,
+#                                        max_n_iter=100,
 #                                        toggle_debug=False,
-#                                        seed_jnt_values=seed1)
+#                                        seed_joint_values=seed1)
 #                 if jnt_values1 is not None:
-#                     jnt_values = jnt_values1
+#                     joint_values = jnt_values1
 #                 else:
-#                     jnt_values = None
-#             if jnt_values is not None:
-#                 # gm.gen_frame(pos=tgt_pos, rotmat=tgt_rotmat, thickness=.02).attach_to(base)
-#                 rbt_s.fk(jnt_values=jnt_values)
+#                     joint_values = None
+#             if joint_values is not None:
+#                 # gm.gen_frame(pos=tgt_pos, rotmat=tgt_rotmat, major_radius=.02).attach_to(base)
+#                 rbt_s.fk(joint_values=joint_values)
 #                 # rbt_s.gen_meshmodel().attach_to(base)
 #                 data.append([tgt_pos, tgt_rotmat, rbt_s.manipulability()])
 #             else:
-#                 # gm.gen_frame(pos=tgt_pos, rotmat=tgt_rotmat, thickness=.02).attach_to(base)
+#                 # gm.gen_frame(pos=tgt_pos, rotmat=tgt_rotmat, major_radius=.02).attach_to(base)
 #                 data.append([tgt_pos, tgt_rotmat, 0])
 # pickle.dump(data, open('manipulability.pickle', 'wb'))
 # base.run()
@@ -59,7 +59,7 @@ seed1[3] = -math.pi / 2
 # for item in data:
 #     tgt_pos, tgt_rotmat, manipulability = item
 #     if manipulability > 0:
-#         gm.gen_sphere(pos=tgt_pos, radius=.07, rgba=[1-manipulability / max_manipulability, 0, 0, .87]).attach_to(base)
+#         gm.gen_sphere(pos=tgt_pos, major_radius=.07, rgba=[1-manipulability / max_manipulability, 0, 0, .87]).attach_to(base)
 # base.run()
 
 data = pickle.load(open('manipulability.pickle', 'rb'))

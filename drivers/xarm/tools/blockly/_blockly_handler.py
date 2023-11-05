@@ -67,19 +67,19 @@ class _BlocklyHandler(_BlocklyBase):
                     is_statement = False
                 if block.attrib.get('disabled', False):
                     continue
-                func = getattr(self, '_handle_{}'.format(block.attrib['type']), None)
+                func = getattr(self, '_handle_{}'.format(block.attrib['end_type']), None)
                 if func and callable(func):
                     if self._highlight_callback is not None:
-                        if block.attrib['type'] in HIGHLIGHT_BLOCKS:
+                        if block.attrib['end_type'] in HIGHLIGHT_BLOCKS:
                             self._append_main_code('highlight_callback(\'{}\')'.format(block.attrib['id']), indent=indent+2)
                     try:
                         func(block, indent, arg_map=arg_map, **kwargs)
                     except Exception as e:
                         self._succeed = False
-                        print('convert {} failed, {}'.format(block.attrib['type'], e))
+                        print('convert {} failed, {}'.format(block.attrib['end_type'], e))
                 else:
                     self._succeed = False
-                    print('block {} can\'t convert to python code'.format(block.attrib['type']))
+                    print('block {} can\'t convert to python code'.format(block.attrib['end_type']))
     
     def _handle_set_speed(self, block, indent=0, arg_map=None):
         self._append_main_code('self._tcp_speed = {}'.format(self._get_field_value(block)), indent + 2)
@@ -122,7 +122,7 @@ class _BlocklyHandler(_BlocklyBase):
         if param is None:
             return
         radius = -1 if wait else 0
-        self._append_main_code('code = self._arm.set_position({}={}, radius={}, speed=self._tcp_speed, mvacc=self._tcp_acc, relative=True, wait={})'.format(param, value, radius, wait), indent + 2)
+        self._append_main_code('code = self._arm.set_position({}={}, major_radius={}, speed=self._tcp_speed, mvacc=self._tcp_acc, relative=True, wait={})'.format(param, value, radius, wait), indent + 2)
         self._append_main_code('if not self._check_code(code, \'set_position\'):', indent + 2)
         self._append_main_code('    return', indent + 2)
 
@@ -135,7 +135,7 @@ class _BlocklyHandler(_BlocklyBase):
             values.append(float(field.text))
         radius = float(fields[-2].text)
         wait = fields[-1].text == 'TRUE'
-        self._append_main_code('code = self._arm.set_position(*{}, speed=self._tcp_speed, mvacc=self._tcp_acc, radius={}, wait={})'.format(values, radius, wait), indent + 2)
+        self._append_main_code('code = self._arm.set_position(*{}, speed=self._tcp_speed, mvacc=self._tcp_acc, major_radius={}, wait={})'.format(values, radius, wait), indent + 2)
         self._append_main_code('if not self._check_code(code, \'set_position\'):', indent + 2)
         self._append_main_code('    return', indent + 2)
 
@@ -183,7 +183,7 @@ class _BlocklyHandler(_BlocklyBase):
         else:
             radius = None
         wait = fields[-1].text == 'TRUE'
-        self._append_main_code('code = self._arm.set_servo_angle(angle={}, speed=self._angle_speed, mvacc=self._angle_acc, wait={}, radius={})'.format(values, wait, radius), indent + 2)
+        self._append_main_code('code = self._arm.set_servo_angle(angle={}, speed=self._angle_speed, mvacc=self._angle_acc, wait={}, major_radius={})'.format(values, wait, radius), indent + 2)
         self._append_main_code('if not self._check_code(code, \'set_servo_angle\'):', indent + 2)
         self._append_main_code('    return', indent + 2)
 
@@ -194,7 +194,7 @@ class _BlocklyHandler(_BlocklyBase):
             values.append(float(field.text))
         radius = float(fields[-2].text)
         wait = fields[-1].text == 'TRUE'
-        self._append_main_code('code = self._arm.set_position(*{}, speed=self._tcp_speed, mvacc=self._tcp_acc, radius={}, wait={})'.format(values, radius, wait), indent + 2)
+        self._append_main_code('code = self._arm.set_position(*{}, speed=self._tcp_speed, mvacc=self._tcp_acc, major_radius={}, wait={})'.format(values, radius, wait), indent + 2)
         self._append_main_code('if not self._check_code(code, \'set_position\'):', indent + 2)
         self._append_main_code('    return', indent + 2)
 
@@ -223,7 +223,7 @@ class _BlocklyHandler(_BlocklyBase):
         else:
             radius = None
         values = '[{}]'.format(','.join(values))
-        self._append_main_code('code = self._arm.set_servo_angle(angle={}, speed=self._angle_speed, mvacc=self._angle_acc, wait={}, radius={})'.format(values, wait, radius), indent + 2)
+        self._append_main_code('code = self._arm.set_servo_angle(angle={}, speed=self._angle_speed, mvacc=self._angle_acc, wait={}, major_radius={})'.format(values, wait, radius), indent + 2)
         self._append_main_code('if not self._check_code(code, \'set_servo_angle\'):', indent + 2)
         self._append_main_code('    return', indent + 2)
 
@@ -237,7 +237,7 @@ class _BlocklyHandler(_BlocklyBase):
             values.append(val)
         radius = values.pop()
         values = '[{}]'.format(','.join(values))
-        self._append_main_code('code = self._arm.set_position(*{}, speed=self._tcp_speed, mvacc=self._tcp_acc, radius={}, wait={})'.format(values, radius, wait), indent + 2)
+        self._append_main_code('code = self._arm.set_position(*{}, speed=self._tcp_speed, mvacc=self._tcp_acc, major_radius={}, wait={})'.format(values, radius, wait), indent + 2)
         self._append_main_code('if not self._check_code(code, \'set_position\'):', indent + 2)
         self._append_main_code('    return', indent + 2)
 

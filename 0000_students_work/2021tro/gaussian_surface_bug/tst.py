@@ -16,7 +16,7 @@ model_pcd = pickle.load(open("..\log\mapping\helmet_gaussian.pkl", "rb"))['objpc
 origin = np.mean(model_pcd, axis=0)
 bowl_samples = model_pcd - origin
 pcdu.show_pcd(bowl_samples,rgba=(.3, .3, .3, .3))
-# bowl_model = cm.CollisionModel(initor=bowl_samples)
+# bowl_model = cm.CollisionModel(initializer=bowl_samples)
 # bowl_model.set_rgba([.3, .3, .3, .3])
 # bowl_model.set_rotmat(rm.rotmat_from_euler(math.pi,0,0))
 # bowl_model.attach_to(base)

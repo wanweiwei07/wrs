@@ -23,7 +23,7 @@ def merge_vertices_hash(mesh):
 
 def merge_vertices_kdtree(mesh, angle=None):
     '''
-    Merges vertices which are identical, AKA within 
+    Merges vertices which are identical, AKA within
     Cartesian distance TOL_MERGE of each other.  
     Then replaces references in mesh.faces
     
@@ -33,12 +33,12 @@ def merge_vertices_kdtree(mesh, angle=None):
     their normals is less than angle_max
 
     Performance note:
-    cKDTree requires scipy >= .12 for this query type and you 
+    cKDTree requires scipy >= .12 for this query end_type and you
     probably don't want to use plain python KDTree as it is crazy slow (~1000x in tests)
     '''
 
     tree = mesh.kdtree()
-    used = np.zeros(len(mesh.vertices), dtype=np.bool)
+    used = np.zeros(len(mesh.vertices), dtype=np.bool_)
     inverse = np.arange(len(mesh.vertices), dtype=np.int)
     unique = deque()
 
@@ -108,21 +108,13 @@ def group(values, min_len=0, max_len=np.inf):
 
 
 def hashable_rows(data, digits=None):
-    '''
-    We turn our array into integers, based on the precision 
-    given by digits, and then put them in a hashable format. 
-    
-    Arguments
-    ---------
-    data:    (n,m) input array
-    digits:  how many digits to add to hash, if data is floating point
-             If none, TOL_MERGE will be turned into a digit count and used. 
-    
-    Returns
-    ---------
-    hashable:  (n) length array of custom data which can be sorted 
-                or used as hash keys
-    '''
+    """
+    we turn our array into integers, based on the precision given by digits, and then put them in a hashable format.
+    :param data: (n,m) input array
+    :param digits: how many digits to add to hash, if data is floating point
+                   If none, TOL_MERGE will be turned into a digit n_sec_minor and used.
+    :return: (n) axis_length array of custom data which can be sorted or used as hash keys
+    """
     as_int = float_to_int(data, digits)
     dtype = np.dtype((np.void, as_int.dtype.itemsize * as_int.shape[1]))
     hashable = np.ascontiguousarray(as_int).view(dtype).reshape(-1)
@@ -141,7 +133,7 @@ def float_to_int(data, digits=None):
 
     if digits is None:
         digits = decimal_to_digits(tol.merge)
-    elif isinstance(digits, float) or isinstance(digits, np.float):
+    elif isinstance(digits, float) or isinstance(digits, np.float32):
         digits = decimal_to_digits(digits)
     elif not (isinstance(digits, int) or isinstance(digits, np.integer)):
         log.warn('Digits were passed as %s!', digits.__class__.__name__)
@@ -203,22 +195,15 @@ def unique_float(data,
 
 
 def unique_rows(data, digits=None):
-    '''
-    Returns indices of unique rows. It will return the 
-    first occurrence of a row that is duplicated:
+    """
+    returns indices of unique rows. It will return the first occurrence of a row that is duplicated:
     [[1,2], [3,4], [1,2]] will return [0,1]
-
-    Arguments
-    ---------
-    data: (n,m) set of floating point data
-    digits: how many digits to consider for the purposes of uniqueness
-
-    Returns
-    --------
-    unique:  (j) array, index in data which is a unique row
-    inverse: (n) length array to reconstruct original
-                 example: unique[inverse] == data
-    '''
+    :param data: (n,m) set of floating point data
+    :param digits: how many digits to consider for the purposes of uniqueness
+    :return: unique:  (j) array, index in data which is a unique row
+             inverse: (n) axis_length array to reconstruct original
+                         example: unique[inverse] == data
+    """
     hashes = hashable_rows(data, digits=digits)
     garbage, unique, inverse = np.unique(hashes,
                                          return_index=True,
@@ -268,7 +253,7 @@ def unique_value_in_row(data, unique=None):
     if unique is None:
         unique = np.unique(data)
     data = np.asanyarray(data)
-    result = np.zeros_like(data, dtype=np.bool, subok=False)
+    result = np.zeros_like(data, dtype=np.bool_, subok=False)
     for value in unique:
         test = np.equal(data, value)
         test_ok = test.sum(axis=1) == 1
@@ -284,7 +269,7 @@ def group_rows(data, require_count=None, digits=None):
     Arguments
     ----------
     data:          (n,m) array
-    require_count: only returns groups of a specified length, eg:
+    require_count: only returns groups of a specified axis_length, eg:
                    require_count =  2
                    [[1,2], [3,4], [1,2]] will return [[0,2]]
     
@@ -294,7 +279,7 @@ def group_rows(data, require_count=None, digits=None):
                    
     digits:        If data is floating point, how many decimals to look at.
                    If this is None, the value in TOL_MERGE will be turned into a 
-                   digit count and used. 
+                   digit n_sec_minor and used.
 
     Returns
     ----------
@@ -387,7 +372,7 @@ def group_vectors(vectors,
     dist_max = np.tan(angle)
     unit_vectors, valid = unitize(vectors, check_valid=True)
     valid_index = np.nonzero(valid)[0]
-    consumed = np.zeros(len(unit_vectors), dtype=np.bool)
+    consumed = np.zeros(len(unit_vectors), dtype=np.bool_)
     tree = KDTree(unit_vectors)
     unique_vectors = deque()
     aligned_index = deque()
@@ -425,7 +410,7 @@ def group_vectors_spherical(vectors,
 
 
 def group_distance(values, distance):
-    consumed = np.zeros(len(values), dtype=np.bool)
+    consumed = np.zeros(len(values), dtype=np.bool_)
     tree = KDTree(values)
 
     # (n, d) set of values that are unique
@@ -462,7 +447,7 @@ def stack_negative(rows):
 
 def clusters(points, radius):
     """
-    Find clusters of points which have neighbours closer than radius
+    Find clusters of points which have neighbours closer than major_radius
     :param points: nxd points
     :param radius: max distance between points in a cluster
     :return: [point_list, ...]
@@ -484,8 +469,8 @@ def blocks(data, min_len=2, max_len=np.inf, digits=None):
     Arguments
     ---------
     data:    (n) array
-    min_len: int, the minimum length group to be returned
-    max_len: int, the maximum length group to be retuurned
+    min_len: int, the minimum axis_length group to be returned
+    max_len: int, the maximum axis_length group to be retuurned
     digits:  if dealing with floats, how many digits to use
 
     Returns
@@ -507,6 +492,6 @@ def blocks(data, min_len=2, max_len=np.inf, digits=None):
         # by checking the first value of each block
         infl_ok = np.logical_and(infl_ok,
                                  data[infl[:-1]])
-    # inflate start/end indexes into full ranges of values 
+    # inflate start/end_type indexes into full ranges of values
     blocks = [np.arange(infl[i], infl[i + 1]) for i, ok in enumerate(infl_ok) if ok]
     return blocks

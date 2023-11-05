@@ -46,7 +46,7 @@ def agv_move(task):
     # print(agv_direction)
     # onscreen_agv.append(gm.gen_dasharrow(spos=np.array([agv_pos[0], agv_pos[1], 0]), epos=np.array([agv_pos[0], agv_pos[1], 0]))+np.array(agv_direction))
     onscreen_agv.append(gm.gen_arrow(epos=np.array([agv_direction[0], agv_direction[1], agv_direction[2]]), rgba=[1,0,1,1]))
-    # onscreen_agv.append(gm.gen_frame(pos=np.array([agv_pos[0], agv_pos[1], 0]), rotmat=agv_loc_rotmat, length=3))
+    # onscreen_agv.append(gm.gen_frame(pos=np.array([agv_pos[0], agv_pos[1], 0]), rotmat=agv_loc_rotmat, axis_length=3))
     onscreen_agv[-1].attach_to(base)
     # print(agv_pos)
 
@@ -155,7 +155,7 @@ def agv_move(task):
     return task.cont
 
 if __name__ == '__main__':
-    gm.gen_frame(length=3, thickness=0.01).attach_to(base)
+    gm.gen_frame(axis_length=3, axis_radius=0.01).attach_to(base)
     # threading.Thread(target=agv_move, args=()).start()
     taskMgr.doMethodLater(1/60, agv_move, "agv_move",
                           extraArgs=None,

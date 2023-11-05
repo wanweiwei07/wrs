@@ -547,7 +547,7 @@ ControllerErrorCodeMap = {
     19: {
         'en': {
             'title': 'End Effector Communication Error',
-            'desc': 'Please check whether end effector is installed and the baud rate setting is correct'
+            'desc': 'Please check whether end_type effector is installed and the baud rate setting is correct'
         },
         'cn': {
             'title': '末端工具通信失败',
@@ -1130,7 +1130,7 @@ LinearTrackErrorCodeMap = {
     },
     35: {
         'en': {
-            'title': 'Linear Motor type error',
+            'title': 'Linear Motor end_type error',
             'desc': 'Please contact technical support.',
         },
         'cn': {

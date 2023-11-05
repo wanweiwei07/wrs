@@ -12,10 +12,10 @@ import robot_sim.robots.cobotta.cobotta as cbt_s
 # file size: pandas (string) > pickle (binary) = torch.save > numpy, 20211216
 
 def gen_data(rbt_s, component_name='arm', granularity=math.pi / 8, save_name='cobotta_ik.csv'):
-    n_jnts = rbt_s.manipulator_dict[component_name].ndof
+    n_jnts = rbt_s.manipulator_dict[component_name].n_dof
     all_ranges = []
     for jnt_id in range(1, n_jnts + 1):
-        r0, r1 = rbt_s.manipulator_dict[component_name].jnts[jnt_id]['motion_rng']
+        r0, r1 = rbt_s.manipulator_dict[component_name].joints[jnt_id]['motion_rng']
         all_ranges.append(np.arange(r0, r1, granularity))
         # print(granularity, all_ranges[-1])
     all_data = itertools.product(*all_ranges)
@@ -26,7 +26,7 @@ def gen_data(rbt_s, component_name='arm', granularity=math.pi / 8, save_name='co
     in_data_npy = np.empty((0, 6))
     for i, data in enumerate(all_data):
         print(i, n_data)
-        rbt_s.fk(component_name=component_name, jnt_values=np.array(data))
+        rbt_s.fk(component_name=component_name, joint_values=np.array(data))
         xyz, rotmat = rbt_s.get_gl_tcp(manipulator_name=component_name)
         rpy = rm.rotmat_to_euler(rotmat)
         in_data = (xyz[0], xyz[1], xyz[2], rpy[0], rpy[1], rpy[2])
@@ -37,7 +37,7 @@ def gen_data(rbt_s, component_name='arm', granularity=math.pi / 8, save_name='co
         in_data_npy = np.vstack((in_data_npy, np.array(in_data)))
         out_data = data
         data_set.append([in_data, out_data])
-    # df = pd.DataFrame(data_set, columns=['xyzrpy', 'jnt_values'])
+    # df = pd.DataFrame(data_set, columns=['xyzrpy', 'joint_values'])
     # df.to_csv(save_name)
     np.save(save_name+"_min_max", np.array([np.min(in_data_npy, 0), np.max(in_data_npy, 0)]))
     np.save(save_name, np.array(data_set))

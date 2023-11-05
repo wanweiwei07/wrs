@@ -149,7 +149,7 @@ class UR3Rtq85X(object):
         date: 20170411
         """
         self._arm.movej(jnt_values, acc=1, vel=1, wait=wait)
-        # targetarm.movejr(jointsrad, acc = 1, vel = 1, radius = radius, wait = False)
+        # targetarm.movejr(jointsrad, acc = 1, vel = 1, major_radius = major_radius, wait = False)
 
     def regulate_jnts_pmpi(self):
         """

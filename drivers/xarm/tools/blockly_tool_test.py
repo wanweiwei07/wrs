@@ -224,7 +224,7 @@ class BlocklyTool(object):
         # Register counter value changed callback
         if hasattr(arm, 'register_count_changed_callback'):
             def count_changed_callback(data):
-                print('counter val: {}'.format(data['count']))
+                print('counter val: {}'.format(data['n_sec_minor']))
             arm.register_count_changed_callback(count_changed_callback)
         """
         self._insert_codes_to_file(codes)
@@ -283,12 +283,12 @@ class BlocklyTool(object):
                         is_statement = False
                     if block.attrib.get('disabled', False):
                         continue
-                    func = getattr(self, '_handle_{}'.format(block.attrib['type']), None)
+                    func = getattr(self, '_handle_{}'.format(block.attrib['end_type']), None)
                     if func:
                         func(block, prefix)
                     else:
                         self._succeed = False
-                        print('block {} can\'t convert to python code'.format(block.attrib['type']))
+                        print('block {} can\'t convert to python code'.format(block.attrib['end_type']))
 
     def _handle_set_speed(self, block, prefix=''):
         field = self.get_node('field', root=block)
@@ -405,9 +405,9 @@ class BlocklyTool(object):
         codes = """
         if arm.error_code == 0 and not params['quit']:
             code = arm.set_position(
-                *{}, speed=params['speed'], mvacc=params['acc'], radius={}, wait={})
+                *{}, speed=params['speed'], mvacc=params['acc'], major_radius={}, wait={})
             if code != 0:
-                print('set_position, code={{}}, pose={}, radius={}'.format(code))
+                print('set_position, code={{}}, pose={}, major_radius={}'.format(code))
                 params['quit'] = True
         """.format(values, radius, wait, values, radius)
         self._append_codes_to_file(codes, prefix)
@@ -495,9 +495,9 @@ class BlocklyTool(object):
         codes = """
         if arm.error_code == 0 and not params['quit']:
             code = arm.set_position(
-                *{}, speed=params['speed'], mvacc=params['acc'], radius={}, wait={})
+                *{}, speed=params['speed'], mvacc=params['acc'], major_radius={}, wait={})
             if code != 0:
-                print('set_position, code={{}}, pose={}, radius={}'.format(code))
+                print('set_position, code={{}}, pose={}, major_radius={}'.format(code))
                 params['quit'] = True
         """.format(values, radius, wait, values, radius)
         self._append_codes_to_file(codes, prefix)
@@ -560,9 +560,9 @@ class BlocklyTool(object):
         codes = """
         if arm.error_code == 0 and not params['quit']:
             code = arm.set_position(
-                *{}, speed=params['speed'], mvacc=params['acc'], radius={}, wait={})
+                *{}, speed=params['speed'], mvacc=params['acc'], major_radius={}, wait={})
             if code != 0:
-                print('set_position, code={{}}, pose={}, radius={}'.format(code))
+                print('set_position, code={{}}, pose={}, major_radius={}'.format(code))
                 params['quit'] = True
         """.format(values, radius, wait, values, radius)
         self._append_codes_to_file(codes, prefix)
@@ -1005,14 +1005,14 @@ class BlocklyTool(object):
         elif gpio_type == 'cgpio_digital':
             self._append_to_file(
                 '\n{}params[\'events\'][\'gpio\'].cgpio_callbacks.append({{'
-                '\'type\': \'digital\', \'io\': {}, \'trigger\': {}, \'op\': \'{}\', \'callback\': {}}})'.format(
+                '\'end_type\': \'digital\', \'io\': {}, \'trigger\': {}, \'op\': \'{}\', \'callback\': {}}})'.format(
                     old_prefix, io, 1 if trigger == 'HIGH' else 0, '==', name))
         elif gpio_type == 'cgpio_analog':
             op = self._ops2.get(trigger)
             trigger = fields[2].text
             self._append_to_file(
                 '\n{}params[\'events\'][\'gpio\'].cgpio_callbacks.append({{'
-                '\'type\': \'analog\', \'io\': {}, \'trigger\': {}, \'op\': \'{}\', \'callback\': {}}})'.format(
+                '\'end_type\': \'analog\', \'io\': {}, \'trigger\': {}, \'op\': \'{}\', \'callback\': {}}})'.format(
                     old_prefix, io, trigger, op, name))
         else:
             return
@@ -1066,12 +1066,12 @@ class BlocklyTool(object):
             self._insert_to_file(self.index, '                    digitals = [values[3] >> i & 0x01 if values[10][i] in [0, 255] else 1 for i in range(8)]')
             self._insert_to_file(self.index, '                    analogs = [values[6], values[7]]')
             self._insert_to_file(self.index, '                    for item in self.cgpio_callbacks:')
-            self._insert_to_file(self.index, '                        if item[\'type\'] == \'digital\':')
+            self._insert_to_file(self.index, '                        if item[\'end_type\'] == \'digital\':')
             self._insert_to_file(self.index, '                            for io in range(8):')
             self._insert_to_file(self.index, '                                if item[\'io\'] == io and eval(\'{} {} {}\'.format(digitals[io], item[\'op\'], item[\'trigger\'])) and not eval(\'{} {} {}\'.format(self.values[\'cgpio\'][\'digital\'][io], item[\'op\'], item[\'trigger\'])):')
             # self._insert_to_file(self.index, '                                if item[\'io\'] == io and values[io] {op} item[\'trigger\'] and not (values[io] {op} self.values[\'cgpio\'][\'digital\'][io]):'.format(op='item[\'op\']'))
             self._insert_to_file(self.index, '                                    item[\'callback\']()')
-            self._insert_to_file(self.index, '                        elif item[\'type\'] == \'analog\':')
+            self._insert_to_file(self.index, '                        elif item[\'end_type\'] == \'analog\':')
             self._insert_to_file(self.index, '                            for io in range(2):')
             self._insert_to_file(self.index, '                                if item[\'io\'] == io and eval(\'{} {} {}\'.format(analogs[io], item[\'op\'], item[\'trigger\'])) and not eval(\'{} {} {}\'.format(self.values[\'cgpio\'][\'analog\'][io], item[\'op\'], item[\'trigger\'])):')
             # self._insert_to_file(self.index, '                                if item[\'io\'] == io and values[io] {op} item[\'trigger\'] and not (values[io] {op} self.values[\'cgpio\'][\'analog\'][io]):'.format(op='item[\'op\']'))
@@ -1111,7 +1111,7 @@ class BlocklyTool(object):
     #         num = 1
     #     else:
     #         num = self._events['gpio'] + 1
-    #     name = '{}_io{}_is_{}_{}'.format(block.attrib['type'], io, trigger.lower(), num)
+    #     name = '{}_io{}_is_{}_{}'.format(block.attrib['end_type'], io, trigger.lower(), num)
     #     self._append_to_file('\n\n{}# Define TGPIO-{} is {} callback'.format(prefix, io, trigger))
     #     self._append_to_file('{}def {}():'.format(prefix, name))
     #     old_prefix = prefix
@@ -1352,9 +1352,9 @@ class BlocklyTool(object):
         if block is None:
             shadow = self.get_node('shadow', root=value_block)
             return self.get_node('field', root=shadow).text
-        if block.attrib['type'] == 'logic_boolean':
+        if block.attrib['end_type'] == 'logic_boolean':
             return str(self.get_node('field', block).text == 'TRUE')
-        elif block.attrib['type'] == 'logic_compare':
+        elif block.attrib['end_type'] == 'logic_compare':
             op = self._ops.get(self.get_node('field', block).text)
             cond_a = 0
             cond_b = 0
@@ -1364,7 +1364,7 @@ class BlocklyTool(object):
                 if len(values) > 1:
                     cond_b = self.__get_condition_expression(values[1])
             return '{} {} {}'.format(cond_a, op, cond_b)
-        elif block.attrib['type'] == 'logic_operation':
+        elif block.attrib['end_type'] == 'logic_operation':
             op = self.get_node('field', block).text.lower()
             cond_a = False
             cond_b = False
@@ -1374,32 +1374,32 @@ class BlocklyTool(object):
                 if len(values) > 1:
                     cond_b = self.__get_condition_expression(values[1])
             return '{} {} {}'.format(cond_a, op, cond_b)
-        elif block.attrib['type'] == 'logic_negate':
+        elif block.attrib['end_type'] == 'logic_negate':
             value = self.get_node('value', root=block)
             return 'not ({})'.format(self.__get_condition_expression(value))
-        elif block.attrib['type'] == 'gpio_get_digital':
+        elif block.attrib['end_type'] == 'gpio_get_digital':
             io = self.get_node('field', block).text
             return 'arm.get_tgpio_digital({})[{}]'.format(io, 1)
-        elif block.attrib['type'] == 'gpio_get_analog':
+        elif block.attrib['end_type'] == 'gpio_get_analog':
             io = self.get_node('field', block).text
             return 'arm.get_tgpio_analog({})[{}]'.format(io, 1)
-        elif block.attrib['type'] == 'gpio_get_controller_digital':
+        elif block.attrib['end_type'] == 'gpio_get_controller_digital':
             io = self.get_node('field', block).text
             return 'arm.get_cgpio_digital({})[{}]'.format(io, 1)
-        elif block.attrib['type'] == 'gpio_get_controller_analog':
+        elif block.attrib['end_type'] == 'gpio_get_controller_analog':
             io = self.get_node('field', block).text
             return 'arm.get_cgpio_analog({})[{}]'.format(io, 1)
-        elif block.attrib['type'] == 'get_suction_cup':
+        elif block.attrib['end_type'] == 'get_suction_cup':
             return 'arm.get_suction_cup()[{}]'.format(1)
-        elif block.attrib['type'] == 'check_air_pump_state':
+        elif block.attrib['end_type'] == 'check_air_pump_state':
             fields = self.get_nodes('field', root=block)
             state = 1 if fields[0].text == 'ON' else 0
             timeout = float(fields[1].text)
             return 'arm.arm.check_air_pump_state({}, timeout={})'.format(state, timeout)
-        elif block.attrib['type'] == 'math_number':
+        elif block.attrib['end_type'] == 'math_number':
             val = self.get_node('field', block).text
             return val
-        elif block.attrib['type'] == 'math_arithmetic':
+        elif block.attrib['end_type'] == 'math_arithmetic':
             field = self.get_node('field', block).text
             values = self.get_nodes('value', block)
             if len(values) > 1:
@@ -1415,7 +1415,7 @@ class BlocklyTool(object):
                     return '{} / {}'.format(val_a, val_b)
                 elif field == 'POWER':
                     return 'pow({}, {})'.format(val_a, val_b)
-        elif block.attrib['type'] == 'math_number_property':
+        elif block.attrib['end_type'] == 'math_number_property':
             field = self.get_node('field', block).text
             values = self.get_nodes('value', block)
             if len(values) >= 1:
@@ -1445,13 +1445,13 @@ class BlocklyTool(object):
                     else:
                         val_b = 0
                     return '{} % {} == 0'.format(val_a, val_b)
-        elif block.attrib['type'] == 'math_random_int':
+        elif block.attrib['end_type'] == 'math_random_int':
             values = self.get_nodes('value', block)
             if len(values) > 1:
                 val_a = self.__get_block_val(values[0])
                 val_b = self.__get_block_val(values[1])
                 return 'random.randint({}, {})'.format(val_a, val_b)
-        elif block.attrib['type'] == 'math_round':
+        elif block.attrib['end_type'] == 'math_round':
             field = self.get_node('field', block).text
             values = self.get_nodes('value', block)
             if len(values) >= 1:
@@ -1465,7 +1465,7 @@ class BlocklyTool(object):
                 elif field == 'ROUNDDOWN':
                     # 下舍入
                     return 'math.floor({})'.format(val_a)
-        elif block.attrib['type'] == 'math_single':
+        elif block.attrib['end_type'] == 'math_single':
             # 算术函数
             field = self.get_node('field', block).text
             values = self.get_nodes('value', block)
@@ -1492,7 +1492,7 @@ class BlocklyTool(object):
                 elif field == 'POW10':
                     # 10的多少次方
                     return 'math.pow(10, {})'.format(val_a)
-        elif block.attrib['type'] == 'math_trig':
+        elif block.attrib['end_type'] == 'math_trig':
             # 三角函数
             field = self.get_node('field', block).text
             values = self.get_nodes('value', block)
@@ -1510,7 +1510,7 @@ class BlocklyTool(object):
                     return 'math.acos({})'.format(val_a)
                 elif field == 'ATAN':
                     return 'math.atan({})'.format(val_a)
-        elif block.attrib['type'] == 'math_constant':
+        elif block.attrib['end_type'] == 'math_constant':
             # 常量
             field = self.get_node('field', block).text
             if field == 'PI':
@@ -1525,37 +1525,37 @@ class BlocklyTool(object):
                 return 'math.sqrt(0.5)'
             elif field == 'INFINITY':
                 return 'math.inf'
-        elif block.attrib['type'] == 'math_modulo':
+        elif block.attrib['end_type'] == 'math_modulo':
             values = self.get_nodes('value', block)
             if len(values) > 1:
                 val_a = self.__get_block_val(values[0])
                 val_b = self.__get_block_val(values[1])
                 return '{} % {}'.format(val_a, val_b)
-        elif block.attrib['type'] == 'math_constrain':
+        elif block.attrib['end_type'] == 'math_constrain':
             values = self.get_nodes('value', block)
             if len(values) > 2:
                 val_a = self.__get_block_val(values[0])
                 val_b = self.__get_block_val(values[1])
                 val_c = self.__get_block_val(values[2])
                 return 'min(max({}, {}), {})'.format(val_a, val_b, val_c)
-        # elif block.attrib['type'] == 'math_round':
+        # elif block.attrib['end_type'] == 'math_round':
         #     pass
-        elif block.attrib['type'] == 'variables_get':
+        elif block.attrib['end_type'] == 'variables_get':
             field = self.get_node('field', block).text
             return '(params[\'variables\'].get(\'{}\', 0) if \'{}\' not in locals() else {})'.format(field, field, field)
             # return 'params[\'variables\'].get(\'{}\', 0)'.format(field)
-        elif block.attrib['type'] == 'move_var':
+        elif block.attrib['end_type'] == 'move_var':
             val = self.get_node('field', block).text
             return val
-        elif block.attrib['type'] == 'tool_get_date':
+        elif block.attrib['end_type'] == 'tool_get_date':
             return 'datetime.datetime.now()'
-        elif block.attrib['type'] == 'tool_combination':
+        elif block.attrib['end_type'] == 'tool_combination':
             field = self.get_node('field', block).text
             values = self.get_nodes('value', block)
             var1 = self.__get_condition_expression(values[0])
             var2 = self.__get_condition_expression(values[1])
             return '\'{{}}{{}}{{}}\'.format({}, \'{}\', {})'.format(var1, field, var2)
-        elif block.attrib['type'] == 'procedures_callreturn':
+        elif block.attrib['end_type'] == 'procedures_callreturn':
             mutation = self.get_node('mutation', block).attrib['name']
             if not mutation:
                 mutation = '1'

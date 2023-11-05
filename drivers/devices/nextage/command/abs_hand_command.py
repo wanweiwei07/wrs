@@ -14,12 +14,12 @@ class AbsractHandCommand(object):
 
     def __init__(self, hands, hand, dio_pins):
         """
-        @type hands: nextage_ros_bridge.base_hands.BaseHands
-        @type hand: str
+        @end_type hands: nextage_ros_bridge.base_hands.BaseHands
+        @end_type hand: str
         @param hand: Side of hand. Variables that are defined in
                      nextage_ros_bridge.base_hands.BaseHands can be used
                      { HAND_L, HAND_R }.
-        @type dio_pins: [int]
+        @end_type dio_pins: [int]
         @param dio_pins: List of DIO pins that are used in each HandCommand
                          class. The order is important; it needs be defined
                          in subclasses.
@@ -32,7 +32,7 @@ class AbsractHandCommand(object):
         """
         Needs overriddedn, otherwise expcetion occurs.
 
-        @type operation: str
+        @end_type operation: str
         @param operation: name of the operation.
         @rtype: bool
         @return: True if dout was writtable to the register. False otherwise.
@@ -48,7 +48,7 @@ class AbsractHandCommand(object):
         better represent the specific purposes of each DIO pin in there.
         Since doing so isn' mandatory, this method doesn't emit error even when
         it's not implemented.
-        @type dio_pins: [int]
+        @end_type dio_pins: [int]
         @param dio_pins: List of DIO pins that are used in each HandCommand
                          class. The order is important; it needs be defined
                          in subclasses.

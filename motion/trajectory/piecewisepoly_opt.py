@@ -94,12 +94,12 @@ class PiecewisePolyOpt(object):
         """
         :param tgt_pos:
         :param tgt_rotmat:
-        :param seed_jnt_values:
+        :param seed_joint_values:
         :param method:
         :return:
         """
         constraints = []
-        constraints.append({'type': 'eq', 'fun': self._constraint_spdacc})
+        constraints.append({'end_type': 'eq', 'fun': self._constraint_spdacc})
         bounds = []
         for i in range(len(self._seed_time_intervals)):
             bounds.append((self._seed_time_intervals[i], None))
@@ -222,8 +222,8 @@ class PiecewisePolyOpt(object):
         :param end_vels:
         :param start_accs:
         :param end_accs:
-        :param max_jnts_vels: max jnt speed between two adjacent poses in the path, math.pi if None
-        :param max_jnts_accs: max jnt speed between two adjacent poses in the path, math.pi if None
+        :param max_jnts_vels: max joint speed between two adjacent poses in the path, math.pi if None
+        :param max_jnts_accs: max joint speed between two adjacent poses in the path, math.pi if None
         :return:
         author: weiwei
         date: 20210712, 20211012

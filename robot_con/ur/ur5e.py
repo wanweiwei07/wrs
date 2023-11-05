@@ -497,8 +497,8 @@ if __name__ == '__main__':
 
     ur3e = Ur3EUrx(ur3erobot)
     jnts = ur3e.getjnts()
-    # jnts[0]+=10
-    # ur3e.movejnts(jnts)
+    # joints[0]+=10
+    # ur3e.movejnts(joints)
     # base.run()
     ur3erobot.movearmfk(jnts)
     ur3emg = u3emesh.Ur3EMesh()

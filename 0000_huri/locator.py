@@ -83,7 +83,7 @@ class Locator(object):
         # for pcdarray in pcdarraylist:
         #     rgb = np.random.rand(3)
         #     rgba = np.array([rgb[0], rgb[1], rgb[2], 1])
-        #     pcdnp = p3dh.genpointcloudnodepath(pcdarray, pntsize=5, colors=rgba)
+        #     pcdnp = p3dh.genpointcloudnodepath(pcdarray, point_size=5, colors=rgba)
         #     pcdnp.reparentTo(base.render)
         #     break
         # base.run()
@@ -134,7 +134,7 @@ class Locator(object):
 
         # clustering has been included
         # removing outlier is not longer needed, 20200425
-        # tgtpcdnp = o3dh.removeoutlier(tgtpcdnp, nb_points=20, radius=10)
+        # tgtpcdnp = o3dh.removeoutlier(tgtpcdnp, nb_points=20, major_radius=10)
 
         tgtpcdnp2d = tgtpcdnp[:,:2] # TODO clip using sensor z
         ca = np.cov(tgtpcdnp2d, y=None, rowvar=0, bias=1)
@@ -469,7 +469,7 @@ if __name__ == '__main__':
     homomat = loc.findtubestand_matchonobb(objpcd, toggledebug=False)
     yhx.startworld()
 
-    # homomat = loc.findtubestand_match(objpcdmerged, toggle_debug=True)
+    # pos = loc.findtubestand_match(objpcdmerged, toggle_debug=True)
 
     elearray, eleconfidencearray = loc.findtubes(homomat, objpcd, toggledebug=False)
     yhx.p3dh.genframe(pos=homomat[:3,3], rotmat=homomat[:3,:3]).reparentTo(yhx.base.render)

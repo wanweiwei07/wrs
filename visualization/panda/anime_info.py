@@ -16,7 +16,7 @@ class RobotInfo(object):
         anime_info = RobotInfo()
         anime_info.robot_s = robot_s
         anime_info.robot_component_name = robot_component_name
-        anime_info.robot_meshmodel = robot_s.gen_meshmodel(robot_meshmodel_parameters)
+        anime_info.robot_meshmodel = robot_s.gen_mesh_model(robot_meshmodel_parameters)
         anime_info.robot_meshmodel_parameters = robot_meshmodel_parameters
         anime_info.robot_path = robot_path
         anime_info.robot_path_counter = 0

@@ -11,11 +11,11 @@ class DynamicModel(gm.GeometricModel):
     date: 20190627
     """
 
-    def __init__(self, initor, mass=None, betransparency=True, cm_cdtype="box", cm_expradius=None,
+    def __init__(self, initializer, mass=None, betransparency=True, cm_cdtype="box", cm_expradius=None,
                  restitution=0, allowdeactivation=False, allowccd=True, friction=.2, dynamic=False,
                  dyn_cdtype="convex", name="bdm"):
         """
-        :param initor:
+        :param initializer:
         :param mass:
         :param betransparency:
         :param cm_cdtype:
@@ -28,13 +28,13 @@ class DynamicModel(gm.GeometricModel):
         :param dyn_cdtype: "convex", "triangle", etc.
         :param name:
         """
-        # if isinstance(initor, BDModel):
-        #     super().__init__(initor.objcm, )
-        #     self.__objcm = copy.deepcopy(initor.objcm)
-        #     self.__objbdb = initor.objbdb.copy()
+        # if isinstance(initializer, BDModel):
+        #     super().__init__(initializer.objcm, )
+        #     self.__objcm = copy.deepcopy(initializer.objcm)
+        #     self.__objbdb = initializer.objbdb.copy()
         #     base.physicsworld.attach(self.__objbdb)
         # else:
-        super().__init__(initor.objcm, btransparency=betransparency, type=cm_cdtype, cm_expradius=None,
+        super().__init__(initializer.objcm, toggle_transparency=betransparency, type=cm_cdtype, cm_expradius=None,
                          name="defaultname")
         if mass is None:
             mass = 0
@@ -68,7 +68,7 @@ class DynamicModel(gm.GeometricModel):
     def setMat(self, pandamat4):
         self.__objbdb.set_homomat(base.pg.mat4ToNp(pandamat4))
         self.__objcm.objnp.setMat(pandamat4)
-        # self.__objcm.objnp.setMat(base.pg.np4ToMat4(self.objbdb.gethomomat()))
+        # self.__objcm.pdndp.setMat(base.pg.np4ToMat4(self.objbdb.gethomomat()))
 
     def sethomomat(self, npmat4):
         self.__objbdb.set_homomat(npmat4)
@@ -119,7 +119,7 @@ class DynamicModel(gm.GeometricModel):
 
     def reparentTo(self, objnp):
         """
-        objnp must be base.render
+        pdndp must be base.render
 
         :param objnp:
         :return:
@@ -128,10 +128,10 @@ class DynamicModel(gm.GeometricModel):
         date: 20190627
         """
 
-        # if isinstance(objnp, cm.CollisionModel):
-        #     self.__objcm.objnp.reparentTo(objnp.objnp)
-        # elif isinstance(objnp, NodePath):
-        #     self.__objcm.objnp.reparentTo(objnp)
+        # if isinstance(pdndp, cm.CollisionModel):
+        #     self.__objcm.pdndp.reparentTo(pdndp.pdndp)
+        # elif isinstance(pdndp, NodePath):
+        #     self.__objcm.pdndp.reparentTo(pdndp)
         # else:
         #     print("NodePath.reparent_to() argument 1 must be environment.CollisionModel or panda3d.core.NodePath")
         if objnp is not base.render:

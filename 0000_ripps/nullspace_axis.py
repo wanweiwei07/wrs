@@ -93,9 +93,9 @@ if __name__ == '__main__':
                 rbtmnp[0].detach()
             pose = path[motioncounter[0]]
             robot.fk(armname, pose)
-            rbtmnp[0] = robot.gen_meshmodel(toggle_tcpcs=True)
+            rbtmnp[0] = robot.gen_mesh_model(toggle_tcpcs=True)
             rbtmnp[0].attach_to(base)
-            # genSphere(robot.get_gl_tcp(component_name)[0], radius=0.01, rgba=[1, 1, 0, 1])
+            # genSphere(robot.get_gl_tcp(component_name)[0], major_radius=0.01, rgba=[1, 1, 0, 1])
             motioncounter[0] += 1
         else:
             motioncounter[0] = 0

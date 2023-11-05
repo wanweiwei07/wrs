@@ -3,13 +3,13 @@ import math
 import numpy as np
 import modeling.collision_model as cm
 import modeling.model_collection as mc
-import robot_sim._kinematics.jlchain as jl
+import robot_sim.kinematics.jlchain as jl
 import robot_sim.manipulators.rs007l.rs007l as manipulator
 import robot_sim.end_effectors.gripper.or2fg7.or2fg7 as end_effector
-import robot_sim.robots.arm_interface as ai
+import robot_sim.robots.robot_interface as ai
 
 
-class KHI_OR2FG7(ai.ArmInterface):
+class KHI_OR2FG7(ai.RobotInterface):
 
     def __init__(self,
                  pos=np.zeros(3),
@@ -38,7 +38,7 @@ class KHI_OR2FG7(ai.ArmInterface):
     def _update_oof(self):
         """
         oof = object on flange
-        this function is to be implemented by subclasses for updating ft-sensors, tool changers, end-effectors, etc.
+        this function is to be implemented by subclasses for updating ft-sensors, tool changers, end_type-effectors, etc.
         :return:
         author: weiwei
         date: 20230807
@@ -169,7 +169,7 @@ if __name__ == '__main__':
     robot_s = KHI_OR2FG7(enable_cc=True)
     robot_s.jaw_to(.02)
     robot_s.gen_meshmodel(toggle_tcpcs=True, toggle_jntscs=True).attach_to(base)
-    # robot_s.gen_meshmodel(toggle_tcpcs=False, toggle_jntscs=False).attach_to(base)
+    # robot_s.gen_meshmodel(toggle_tcp_frame=False, toggle_joint_frame=False).attach_to(base)
     robot_s.gen_stickmodel(toggle_tcpcs=True, toggle_jntscs=True).attach_to(base)
     # base.run()
     tgt_pos = np.array([.25, .2, .15])

@@ -36,7 +36,7 @@ class RayMeshIntersector:
         ---------        
         hits: (n) sequence of triangle indexes which hit the ray
         '''
-        rays = np.array(rays, dtype=np.float)
+        rays = np.array(rays, dtype=np.float32)
         candidates = ray_triangle_candidates(rays=rays,
                                              tree=self.tree)
         hits = rays_triangles_id(triangles=self.mesh.triangles,
@@ -61,7 +61,7 @@ class RayMeshIntersector:
         locations: (n) sequence of (m,3) intersection points
         hits:      (n) list of face ids 
         '''
-        rays = np.array(rays, dtype=np.float)
+        rays = np.array(rays, dtype=np.float32)
         hits = self.intersects_id(rays)
         locations = ray_triangle_locations(triangles=self.mesh.triangles,
                                            rays=rays,
@@ -209,7 +209,7 @@ def ray_triangle_locations(triangles,
 
     for r, tri_group in enumerate(intersections):
         group_locations = np.zeros((len(tri_group), 3))
-        valid = np.zeros(len(tri_group), dtype=np.bool)
+        valid = np.zeros(len(tri_group), dtype=np.bool_)
         for i, tri_index in enumerate(tri_group):
             origin = triangles[tri_index][0]
             normal = tri_normals[tri_index]

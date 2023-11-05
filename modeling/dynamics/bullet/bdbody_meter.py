@@ -14,20 +14,20 @@ class BDBody(BulletRigidBodyNode):
                  friction=.2, dynamic=True, name="rbd"):
         """
         :param objinit: could be itself (copy), or an instance of collision model
-        :param type: triangle or convex
+        :param end_type: triangle or convex
         :param mass:
         :param restitution: bounce parameter
         :param friction:
-        :param dynamic: only applicable to triangle type, if an object does not move with force, it is not dynamic
+        :param dynamic: only applicable to triangle end_type, if an object does not move with force, it is not dynamic
         :param name:
         author: weiwei
         date: 20190626, 20201119
         """
         super().__init__(name)
         if isinstance(objinit, gm.GeometricModel):
-            if objinit._objtrm is None:
+            if objinit._trm_mesh is None:
                 raise ValueError("Only applicable to models with a trimesh!")
-            self.com = objinit.objtrm.center_mass
+            self.com = objinit.trm_mesh.center_mass
             self.setMass(mass)
             self.setRestitution(restitution)
             self.setFriction(friction)
@@ -42,7 +42,7 @@ class BDBody(BulletRigidBodyNode):
             if allowccd:  # continuous collision detection
                 self.setCcdMotionThreshold(1e-6)
                 self.setCcdSweptSphereRadius(0.0005)
-            gnd = objinit.objpdnp.getChild(0).find("+GeomNode")
+            gnd = objinit.pdndp.getChild(0).find("+GeomNode")
             geom = copy.deepcopy(gnd.node().getGeom(0))
             vdata = geom.modifyVertexData()
             vertrewritter = GeomVertexRewriter(vdata, 'vertex')
@@ -66,7 +66,7 @@ class BDBody(BulletRigidBodyNode):
             pdmat4 = geomtf.getMat()
             pdv3 = pdmat4.xformPoint(Vec3(self.com[0], self.com[1], self.com[2]))
             homomat = dh.pdmat4_to_npmat4(pdmat4)
-            pos = dh.pdv3_to_npv3(pdv3)
+            pos = dh.pdvec3_to_npvec3(pdv3)
             homomat[:3, 3] = pos  # update center to com
             self.setTransform(TransformState.makeMat(dh.npmat4_to_pdmat4(homomat)))
         elif isinstance(objinit, BDBody):
@@ -94,8 +94,8 @@ class BDBody(BulletRigidBodyNode):
         """
         pdmat4 = self.getTransform().getMat()
         pdv3 = pdmat4.xformPoint(Vec3(-self.com[0], -self.com[1], -self.com[2]))
-        # homomat = dh.pdmat4_to_npmat4(pdmat4)
-        pos = dh.pdv3_to_npv3(pdv3)
+        # pos = dh.pdmat4_to_npmat4(pdmat4)
+        pos = dh.pdvec3_to_npvec3(pdv3)
         return pos
 
     def setpos(self, npvec3):
@@ -103,14 +103,14 @@ class BDBody(BulletRigidBodyNode):
         :param npvec3: 1x3 nparray
         :return:
         """
-        self.setPos(dh.pdv3_to_npv3(npvec3))
+        self.setPos(dh.pdvec3_to_npvec3(npvec3))
 
     def gethomomat(self):
         """
-        get the homomat considering the original local frame
+        get the pos considering the original local frame
         the dynamic body moves in a local frame defined at com (line 46 of this file), instead of returning the
-        homomat of the dynamic body, this file returns the pose of original local frame
-        the returned homomat can be used by collision bodies for rendering.
+        pos of the dynamic body, this file returns the pose of original local frame
+        the returned pos can be used by collision bodies for rendering.
         :return:
         author: weiwei
         date: 2019?, 20201119
@@ -118,19 +118,19 @@ class BDBody(BulletRigidBodyNode):
         pdmat4 = self.getTransform().getMat()
         pdv3 = pdmat4.xformPoint(Vec3(-self.com[0], -self.com[1], -self.com[2]))
         homomat = dh.pdmat4_to_npmat4(pdmat4)
-        pos = dh.pdv3_to_npv3(pdv3)
+        pos = dh.pdvec3_to_npvec3(pdv3)
         homomat[:3, 3] = pos
         return homomat
 
     def sethomomat(self, homomat):
         """
         set the pose of the dynamic body
-        :param homomat: the homomat of the original frame (the collision model)
+        :param homomat: the pos of the original frame (the collision model)
         :return:
         author: weiwei
         date: 2019?, 20201119
         """
-        pos = rm.homomat_transform_points(homomat, self.com)
+        pos = rm.transform_points_by_homomat(homomat, self.com)
         rotmat = homomat[:3, :3]
         self.setTransform(TransformState.makeMat(dh.npv3mat3_to_pdmat4(pos, rotmat)))
 

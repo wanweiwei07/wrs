@@ -53,7 +53,7 @@ def trackobject_multicamfusion(camcaps, cammtxs, camdists, camrelhomos, aruco_di
         posveclist = [frame[0] for frame in framelist[id]]
         rotmatlist = [frame[1] for frame in framelist[id]]
         if len(posveclist) >= nframe:
-            posvecavg = rm.posvec_average(posveclist, bandwidth, denoise)
+            posvecavg = rm.pos_average(posveclist, bandwidth, denoise)
             rotmatavg = rm.rotmat_average(rotmatlist, bandwidth, denoise)
             frameavglist[id] = [posvecavg, rotmatavg]
 

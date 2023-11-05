@@ -61,7 +61,7 @@ if __name__ == '__main__':
     # tubestandhomomat = [lctr.tubestandhomomat]
     # def update(path, counter, lctr, tubemnplist, task):
     #     if counter[0] < len(path):
-    #         # lctr.gentubestand(homomat=tubestandhomomat[0]).reparentTo(base.render)
+    #         # lctr.gentubestand(pos=tubestandhomomat[0]).reparentTo(base.render)
     #         state = path[counter[0]]
     #         tubecmlist = lctr.gentubes(state.grid, tubestandhomomat[0], alpha=1)
     #         for tubenp in tubemnplist[0]:
@@ -135,13 +135,13 @@ if __name__ == '__main__':
         # if len(path) == 8:
         #     counter += 1
         #     if counter == 2:
-        #         # pto.setpattern(nodepresent.grid)
-        #         pto.setpattern(nodenext.grid)
+        #         # epos.setpattern(nodepresent.grid)
+        #         epos.setpattern(nodenext.grid)
         #         # newgrid = (nodenext.grid+nodepresent.grid)/2
         #         # griddiff = nodenext.grid-nodepresent.grid
         #         # newgrid[griddiff!=0] = 0
-        #         # pto.setpattern(newgrid)
-        #         pto.gencad(homomat=lctr.tubestandhomomat).reparentTo(base.render)
+        #         # epos.setpattern(newgrid)
+        #         epos.gencad(pos=lctr.tubestandhomomat).reparentTo(base.render)
         #         td = True
         status, numikmsmp, jawwidthmsmp, objmsmp = ppplanner.findppmotion_symmetric_err(inithm, goalhm, armname=armname,
                                                                                         rbtinitarmjnts = [lastrgtarmjnts, lastlftarmjnts],

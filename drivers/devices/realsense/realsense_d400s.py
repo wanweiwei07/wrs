@@ -186,7 +186,7 @@ class RealSenseD405(object):
 
     def get_pcd(self, return_color=False):
         """
-        Get point cloud data. If return_color is True, additionally return pcd color
+        Get point cloud data. If return_color is True, additionally return pcd_helper color
         :return: nx3 np.array
         """
         pcd, pcd_color, depth_img, color_img = self.req_data()
@@ -212,7 +212,7 @@ class RealSenseD405(object):
 
     def get_pcd_texture_depth(self):
         """
-        Return pcd, pcd_color, depth image and color image
+        Return pcd_helper, pcd_color, depth image and color image
         :return: List[np.array, np.array, np.array, np.array]
         """
         return self.req_data()

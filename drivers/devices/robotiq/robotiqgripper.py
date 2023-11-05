@@ -3,7 +3,7 @@ import logging
 class Robotiq_Two_Finger_Gripper(object):
     complete_program = ""
     header = "def myProg():" + "\n"
-    end =  "\n" + "end"
+    end =  "\n" + "end_type"
     logger = False
 
     def __init__(self, type=85):

@@ -71,7 +71,7 @@ if __name__ == '__main__':
         print(nodepresent.grid)
         print(nodepresent.grid-nodenext.grid)
         collisiontbcmlist = lctr.gentubes(collisionelearray[:nrow, :], tubestand_homomat=lctr.tubestandhomomat_start)
-        # collisiontbcmlist = [lctr.gentubeandstandboxcm(homomat=lctr.tubestandhomomat_start)]
+        # collisiontbcmlist = [lctr.gentubeandstandboxcm(pos=lctr.tubestandhomomat_start)]
         # collisiontbcmlist[0].reparentTo(yhx.base.render)
         collisiontbcmlist += lctr.gentubes(collisionelearray[nrow:, :], tubestand_homomat=lctr.tubestandhomomat_goal)
 
@@ -156,10 +156,10 @@ if __name__ == '__main__':
     yhx.base.run()
     # counter = [0]
     # tubemnplist = [[]]
-    # tubestandhomomat = [homomat]
+    # tubestandhomomat = [pos]
     # def update(path, counter, lctr, task):
     #     if counter[0] < len(path):
-    #         lctr.showTubestand(homomat=tubestandhomomat[0])
+    #         lctr.showTubestand(pos=tubestandhomomat[0])
     #         state = path[counter[0]]
     #         lctr.showTubes(state.grid, tubestandhomomat[0])
     #         if base.inputmgr.keyMap['space'] is True:

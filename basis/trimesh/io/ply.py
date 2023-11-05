@@ -33,14 +33,14 @@ def load_ply(file_obj, *args, **kwargs):
     
     # if the number of bytes is not the same the file is probably corrupt
     if size_file != size_elements:
-        raise ValueError('File is unexpected length!')
+        raise ValueError('File is unexpected axis_length!')
 
     # with everything populated and a reasonable confidence the file
     # is intact, read the data fields described by the header
     ply_populate_data(file_obj, elements)
     # all of the data is now stored in elements, but we need it as
     # a set of keyword arguments we can pass to the Trimesh constructor
-    # will look something like {'vertices' : (data), 'faces' : (data)} 
+    # will look something like {'vertices' : (data), 'faces' : (data)}
     mesh_kwargs = ply_elements_kwargs(elements)
     return mesh_kwargs
 
@@ -56,12 +56,12 @@ def export_ply(mesh):
     ----------
     export: bytes of result
     '''
-    dtype_face = np.dtype([('count', '<u1'), 
+    dtype_face = np.dtype([('n_sec_minor', '<u1'),
                            ('index', '<i4', (3))])
     dtype_vertex = np.dtype([('vertex', '<f4', (3))])
     
     faces = np.zeros(len(mesh.faces), dtype=dtype_face)
-    faces['count'] = 3
+    faces['n_sec_minor'] = 3
     faces['index'] = mesh.faces
     
     vertex = np.zeros(len(mesh.vertices), dtype=dtype_vertex)
@@ -122,7 +122,7 @@ def ply_read_header(file_obj):
 
         if 'element' in line[0]:
             name, length = line[1:]
-            elements[name] = {'length'     : int(length), 
+            elements[name] = {'axis_length'     : int(length),
                               'properties' : OrderedDict()}
         elif 'property' in line[0]:
             if len(line) == 3:
@@ -140,9 +140,9 @@ def ply_read_header(file_obj):
 def ply_populate_listsize(file_obj, elements):
     '''
     Given a set of elements populated from the header if there are any
-    list properties seek in the file the length of the list. 
+    list properties seek in the file the axis_length of the list.
 
-    Note that if you have a list where each instance is different length
+    Note that if you have a list where each instance is different axis_length
     (if for example you mixed triangles and quads) this won't work at all
     '''
     p_start = file_obj.tell()
@@ -153,8 +153,8 @@ def ply_populate_listsize(file_obj, elements):
         for k, dtype in props.items():
             if '$LIST' in dtype:
                 # every list field has two data types: 
-                # the list length (single value), and the list data (multiple)
-                # here we are only reading the single value for list length
+                # the list axis_length (single value), and the list data (multiple)
+                # here we are only reading the single value for list axis_length
                 field_dtype = np.dtype(dtype.split(',')[0])
                 if len(prior_data) == 0: 
                     offset = 0
@@ -166,18 +166,18 @@ def ply_populate_listsize(file_obj, elements):
                 props[k] = props[k].replace('$LIST', str(size))
             prior_data += props[k] +','
         itemsize = np.dtype(', '.join(props.values())).itemsize
-        p_current += element['length'] * itemsize
+        p_current += element['axis_length'] * itemsize
     file_obj.seek(p_start)
     
 def ply_populate_data(file_obj, elements):
     '''
-    Given the data type and field information from the header,
+    Given the data end_type and field information from the header,
     read the data and add it to a 'data' field in the element.
     '''
     for key in elements.keys():
         items = list(elements[key]['properties'].items())
         dtype = np.dtype(items)
-        data  = file_obj.read(elements[key]['length'] * dtype.itemsize)
+        data  = file_obj.read(elements[key]['axis_length'] * dtype.itemsize)
         elements[key]['data'] = np.fromstring(data, dtype=dtype)
     return elements
 
@@ -204,13 +204,13 @@ def ply_elements_size(elements):
     size = 0
     for element in elements.values():
         dtype = np.dtype(','.join(element['properties'].values()))
-        size += element['length'] * dtype.itemsize
+        size += element['axis_length'] * dtype.itemsize
     return size
 
 def size_to_end(file_obj):
     '''
     Given an open file object, return the number of bytes 
-    to the end of the file
+    to the end_type of the file
     '''
     position_current = file_obj.tell()
     file_obj.seek(0,2)

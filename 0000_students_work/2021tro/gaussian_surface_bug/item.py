@@ -22,9 +22,9 @@ class Item(object):
             self.__objcm = kwargs["objcm"]
             self.__pcd_std = pcdu.get_objpcd(kwargs["objcm"], objmat4=self.__objmat4)
             self.__w, self.__h = pcdu.get_pcd_w_h(self.__pcd_std)
-        if "pcd" in list(kwargs.keys()):
-            self.__pcd = kwargs["pcd"]
-            self.__nrmls = pcdu.get_nrmls(kwargs["pcd"], camera_location=(.8, -.2, 1.8), toggledebug=TOGGLEDEBUG)
+        if "pcd_helper" in list(kwargs.keys()):
+            self.__pcd = kwargs["pcd_helper"]
+            self.__nrmls = pcdu.get_nrmls(kwargs["pcd_helper"], camera_location=(.8, -.2, 1.8), toggledebug=TOGGLEDEBUG)
             if self.__reconstruct:
                 self.__objcm = pcdu.reconstruct_surface(self.__pcd, radii=[.005])
         else:
@@ -125,7 +125,7 @@ class Item(object):
         self.__objcm.set_homomat(self.objmat4)
         self.__objcm.set_rgba([rgba[0], rgba[1], rgba[2], rgba[3]])
         if show_localframe:
-            self.__objcm.show_localframe()
+            self.__objcm.show_local_frame()
         self.__objcm.attach_to(base)
 
     def show_objpcd(self, rgba=(1, 1, 1, 1)):

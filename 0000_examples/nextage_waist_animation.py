@@ -50,7 +50,7 @@ def update(robot_s, path, robot_attached_list, counter, task):
         robot_attached_list.clear()
     pose = path[counter[0]]
     robot_s.fk(component_name, pose)
-    robot_meshmodel = robot_s.gen_meshmodel()
+    robot_meshmodel = robot_s.gen_mesh_model()
     robot_meshmodel.attach_to(base)
     robot_attached_list.append(robot_meshmodel)
     counter[0]+=1

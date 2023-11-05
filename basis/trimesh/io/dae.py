@@ -91,11 +91,11 @@ def export_collada(mesh, **kwargs):
         c.materials.append(mat)
         # Create geometry object
         vertices = collada.source.FloatSource(
-            'verts-array', m.vertices.flatten(), ('X', 'Y', 'Z'))
+            'vertices-array', m.vertices.flatten(), ('X', 'Y', 'Z'))
         normals = collada.source.FloatSource(
             'normals-array', m.vertex_normals.flatten(), ('X', 'Y', 'Z'))
         input_list = collada.source.InputList()
-        input_list.addInput(0, 'VERTEX', '#verts-array')
+        input_list.addInput(0, 'VERTEX', '#vertices-array')
         input_list.addInput(1, 'NORMAL', '#normals-array')
         arrays = [vertices, normals]
         if uv is not None:

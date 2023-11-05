@@ -28,16 +28,16 @@ base.physicsworld.attachRigidBody(node)
 
 # Box
 # shape = BulletBoxShape(Vec3(0.5, 0.5, 0.5))
-# shape = BulletSphereShape(radius=.1)
-# radius = 0.5
+# shape = BulletSphereShape(major_radius=.1)
+# major_radius = 0.5
 # height = 1.4
-# shape = BulletCylinderShape(radius, height, ZUp)
-# radius = 0.5
+# shape = BulletCylinderShape(major_radius, height, ZUp)
+# major_radius = 0.5
 # height = 1.0
-# shape = BulletCapsuleShape(radius, height, ZUp)
-# radius = 0.6
+# shape = BulletCapsuleShape(major_radius, height, ZUp)
+# major_radius = 0.6
 # height = 1.0
-# shape = BulletConeShape(radius, height, ZUp)
+# shape = BulletConeShape(major_radius, height, ZUp)
 # shape = BulletConvexHullShape()
 # shape.addPoint(Point3(1, 1, 2))
 # shape.addPoint(Point3(0, 0, 0))
@@ -69,7 +69,7 @@ base.physicsworld.attachRigidBody(node)
 # world.attachRigidBody(node)
 
 bunny_cm = cm.CollisionModel("./objects/bunnysim_mm.stl")
-bunny_geom_nodepath = bunny_cm.objpdnp.getChild(0).find("+GeomNode")
+bunny_geom_nodepath = bunny_cm.pdndp.getChild(0).find("+GeomNode")
 geom = copy.deepcopy(bunny_geom_nodepath.node().getGeom(0))
 geombmesh = BulletTriangleMesh()
 geombmesh.addGeom(geom)

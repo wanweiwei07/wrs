@@ -13,7 +13,7 @@ if __name__ == "__main__":
     # Get point cloud
     raw_pcd, pcd_no_nan_indices, rgba = cam.get_pcd_rgba()
 
-    # Remove nan point from raw pcd data
+    # Remove nan point from raw pcd_helper data
     pcd = raw_pcd[pcd_no_nan_indices]
     # change to panda3d color
     pcd_rgb = rgba.reshape(-1, 4)[pcd_no_nan_indices] / 255

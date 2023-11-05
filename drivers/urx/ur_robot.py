@@ -36,8 +36,8 @@ class URRobot(object):
         # precision of joint movem used to wait for move completion
         # the value must be conservative! otherwise we may wait forever
         self.joinEpsilon = 0.01
-        # It seems URScript is  limited in the character length of floats it accepts
-        self.max_float_length = 6  # FIXME: check max length!!!
+        # It seems URScript is  limited in the character axis_length of floats it accepts
+        self.max_float_length = 6  # FIXME: check max axis_length!!!
         self.secmon.wait()  # make sure we get data from robot_s before letting clients access our methods
 
     def __repr__(self):
@@ -85,7 +85,7 @@ class URRobot(object):
 
     def get_force(self, wait=True):
         """
-        length of force vector returned by get_tcp_force
+        axis_length of force vector returned by get_tcp_force
         if wait==True, waits for next packet before returning
         """
         tcpf = self.get_tcp_force(wait)
@@ -232,7 +232,7 @@ class URRobot(object):
         for i in range(3):
             dist += (target[i] - pose[i]) ** 2
         for i in range(3, 6):
-            dist += ((target[i] - pose[i]) / 5) ** 2  # arbitraty length like
+            dist += ((target[i] - pose[i]) / 5) ** 2  # arbitraty axis_length like
         return dist ** 0.5
 
     def _get_joints_dist(self, target):
@@ -335,7 +335,7 @@ class URRobot(object):
     def movejs(self, joint_positions_list, acc=0.01, vel=0.01, radius=0.01,
                wait=True, threshold=None):
         """
-        Concatenate several movej commands and applies a blending radius
+        Concatenate several movej commands and applies a blending major_radius
         joint_positions_list is a list of joint_positions.
         This method is usefull since any new command from python
         to robot_s make the robot_s stop
@@ -346,7 +346,7 @@ class URRobot(object):
     def movels(self, pose_list, acc=0.01, vel=0.01, radius=0.01,
                wait=True, threshold=None):
         """
-        Concatenate several movel commands and applies a blending radius
+        Concatenate several movel commands and applies a blending major_radius
         pose_list is a list of pose.
         This method is usefull since any new command from python
         to robot_s make the robot_s stop
@@ -357,13 +357,13 @@ class URRobot(object):
     def movexs(self, command, pose_list, acc=0.01, vel=0.01, radius=0.01,
                wait=True, threshold=None):
         """
-        Concatenate several movex commands and applies a blending radius
+        Concatenate several movex commands and applies a blending major_radius
         pose_list is a list of pose.
         This method is usefull since any new command from python
         to robot_s make the robot_s stop
         """
         header = "def myProg():\n"
-        end = "end\n"
+        end = "end_type\n"
         prog = header
         # Check if 'vel' is a single number or a sequence.
         if isinstance(vel, numbers.Number):
@@ -376,21 +376,21 @@ class URRobot(object):
         if len(vel) != len(pose_list):
             raise RobotException(
                 'movexs: "vel" must be a number or a list '
-                + 'of numbers the same length as "pose_list"!')
-        # Check if 'radius' is a single number.
+                + 'of numbers the same axis_length as "pose_list"!')
+        # Check if 'major_radius' is a single number.
         if isinstance(radius, numbers.Number):
-            # Make 'radius' a sequence
+            # Make 'major_radius' a sequence
             radius = len(pose_list) * [radius]
         elif not isinstance(radius, collections.Sequence):
             raise RobotException(
-                'movexs: "radius" must be a single number or a sequence!')
+                'movexs: "major_radius" must be a single number or a sequence!')
         # Ensure that last pose a stopping pose.
         radius[-1] = 0.0
         # Require adequate number of radii.
         if len(radius) != len(pose_list):
             raise RobotException(
-                'movexs: "radius" must be a number or a list '
-                + 'of numbers the same length as "pose_list"!')
+                'movexs: "major_radius" must be a number or a list '
+                + 'of numbers the same axis_length as "pose_list"!')
         prefix = ''
         if command in ['movel', 'movec']:
             prefix = 'p'
@@ -433,10 +433,10 @@ class URRobot(object):
         Freedrive will timeout at 60 seconds.
         """
         if val:
-            self.send_program("def myProg():\n\tfreedrive_mode()\n\tsleep({})\nend".format(timeout))
+            self.send_program("def myProg():\n\tfreedrive_mode()\n\tsleep({})\nend_type".format(timeout))
         else:
             # This is a non-existant program, but running it will stop freedrive
-            self.send_program("def myProg():\n\tend_freedrive_mode()\nend")
+            self.send_program("def myProg():\n\tend_freedrive_mode()\nend_type")
 
     def set_simulation(self, val):
         if val:

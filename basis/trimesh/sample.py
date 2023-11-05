@@ -46,7 +46,7 @@ def sample_surface(mesh, count):
     return points, face_index
 
 
-# def sample_surface_withfaceid(mesh, count):
+# def sample_surface_withfaceid(mesh, n_sec_minor):
 #     '''
 #     Sample the surface of a mesh, returning the specified number of points
 #
@@ -56,11 +56,11 @@ def sample_surface(mesh, count):
 #     Arguments
 #     ---------
 #     mesh: Trimesh object
-#     count: number of points to return
+#     n_sec_minor: number of points to return
 #
 #     Returns
 #     ---------
-#     samples: (count,3) points in space on the surface of mesh
+#     samples: (n_sec_minor,3) points in space on the surface of mesh
 #
 #     '''
 #
@@ -70,7 +70,7 @@ def sample_surface(mesh, count):
 #     area_sum = np.sum(area)
 #     # cumulative area (len(mesh.faces))
 #     area_cum = np.cumsum(area)
-#     face_pick = np.random.random(count) * area_sum
+#     face_pick = np.random.random(n_sec_minor) * area_sum
 #     face_index = np.searchsorted(area_cum, face_pick)
 #
 #     # pull triangles into the form of an origin + 2 vectors
@@ -145,7 +145,7 @@ def sample_surface_even(mesh, count, radius=None):
     Sample the surface of a mesh, returning samples which are
     approximately evenly spaced.
     Note that since it is using rejection sampling it may return
-    fewer points than requested (i.e. n < count). If this is the
+    fewer points than requested (i.e. n < n_sec_minor). If this is the
     case a log.warning will be emitted.
     :param mesh:
     :param count:
@@ -155,18 +155,18 @@ def sample_surface_even(mesh, count, radius=None):
     date: 20210120
     """
     from .points import remove_close_withfaceid
-    # guess radius from area
+    # guess major_radius from area
     if radius is None:
         radius = np.sqrt(mesh.area / (3 * count))
     # get points on the surface
     points, index = sample_surface(mesh, count * 3)
-    # remove the points closer than radius
+    # remove the points closer than major_radius
     points, index = remove_close_withfaceid(points, index, radius)
     # we got all the samples we expect
     if len(points) >= count:
         return points[:count], index[:count]
     # warn if we didn't get all the samples we expect
-    # util.log.warning('only got {}/{} samples!'.format(len(points), count)) TODO
+    # util.log.warning('only got {}/{} samples!'.format(len(points), n_sec_minor)) TODO
     return points, index
 
 

@@ -147,7 +147,7 @@ def load_dxf(file_obj):
             if entity_type in loaders:
                 loaders[entity_type](chunk)
             else:
-                log.debug('Entity type %s not supported', entity_type)
+                log.debug('Entity end_type %s not supported', entity_type)
             
     result = {'vertices' : np.vstack(vertices).astype(np.float64),
               'entities' : np.array(entities),
