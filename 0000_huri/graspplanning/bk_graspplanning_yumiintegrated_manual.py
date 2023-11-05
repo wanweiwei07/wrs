@@ -48,7 +48,7 @@ if __name__=="__main__":
     #         for anglej in [0, 22.5, 45, 67.5, 90, 112.5, 135, 157.5, 180, 202.5, 225, 247.5, 270, 292.5, 315, 337.5]:
     #             newyihand = yihnd.copy()
     #             newav = np.dot(rm.rodrigues(newcv, anglej), tempav)
-    #             base.pggen.plotAxis(newyihand.hndnp, length=15, thickness=2)
+    #             base.pggen.plotAxis(newyihand.hndnp, axis_length=15, major_radius=2)
     #             pregrasps.append(
     #                 newyihand.approachAt(0, 0, z, newcv[0], newcv[1], newcv[2], newav[0], newav[1],
     #                                      newav[2], jaw_width=17))

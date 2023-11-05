@@ -33,7 +33,7 @@ class Camera(DaeObject):
         elif camnode.tag == collada.tag('orthographic'):
             return OrthographicCamera.load(collada, localscope, node)
         else:
-            raise DaeUnsupportedError('Unrecognized camera type: %s' % camnode.tag)
+            raise DaeUnsupportedError('Unrecognized camera end_type: %s' % camnode.tag)
 
 
 class PerspectiveCamera(Camera):

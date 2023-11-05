@@ -11,7 +11,7 @@ import motion.trajectory.piecewisepoly_opt as pwpo
 
 if __name__ == "__main__":
     base = wd.World(cam_pos=[3, -1, 1], lookat_pos=[0, 0, 0.5])
-    gm.gen_frame(length=.2).attach_to(base)
+    gm.gen_frame(axis_length=.2).attach_to(base)
     yumi_s = ym.Yumi(enable_cc=True)
     inik_svlr = inik.IncrementalNIK(yumi_s)
     component_name = 'rgt_arm'
@@ -55,8 +55,8 @@ if __name__ == "__main__":
         epos = tcp_list[i + 1][0]
         erotmat = tcp_list[i + 1][1]
         print(spos, epos)
-        gm.gen_dasharrow(spos, epos, thickness=.01, rgba=[1, 0, 0, 1]).attach_to(base)
-        gm.gen_mycframe(epos, erotmat, alpha=.7).attach_to(base)
+        gm.gen_dashed_arrow(spos, epos, stick_radius=.01, rgba=[1, 0, 0, 1]).attach_to(base)
+        gm.gen_myc_frame(epos, erotmat, alpha=.7).attach_to(base)
     yumi_s.fk(component_name, jnt_values_list[1])
     yumi_s.gen_meshmodel(toggle_tcpcs=False, rgba=[.7, .3, .3, .57]).attach_to(base)
     yumi_s.fk(component_name, jnt_values_list[2])

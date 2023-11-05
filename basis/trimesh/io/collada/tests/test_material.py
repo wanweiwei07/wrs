@@ -148,7 +148,7 @@ class TestMaterial(unittest.TestCase):
 
     def test_surface_empty(self):
         surface1 = """
-        <surface xmlns="http://www.collada.org/2005/11/COLLADASchema" type="2D">
+        <surface xmlns="http://www.collada.org/2005/11/COLLADASchema" end_type="2D">
         <init_from>file1-image</init_from>
         <format>A8R8G8B8</format>
         </surface>
@@ -157,7 +157,7 @@ class TestMaterial(unittest.TestCase):
         
         surface2 = """
         <newparam xmlns="http://www.collada.org/2005/11/COLLADASchema" sid="file1-surface">
-        <surface xmlns="http://www.collada.org/2005/11/COLLADASchema" type="2D">
+        <surface xmlns="http://www.collada.org/2005/11/COLLADASchema" end_type="2D">
         <init_from>file1-image</init_from>
         <format>A8R8G8B8</format>
         </surface>
@@ -167,7 +167,7 @@ class TestMaterial(unittest.TestCase):
         
         surface3 = """
         <newparam xmlns="http://www.collada.org/2005/11/COLLADASchema" sid="file1-surface">
-        <surface xmlns="http://www.collada.org/2005/11/COLLADASchema" type="2D">
+        <surface xmlns="http://www.collada.org/2005/11/COLLADASchema" end_type="2D">
         <init_from></init_from>
         <format>A8R8G8B8</format>
         </surface>

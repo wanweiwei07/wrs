@@ -41,7 +41,7 @@ def update(task):
     dt = globalClock.getDt()
     world.doPhysics(dt)
     # vecw= topbullnode.getAngularVelocity()
-    # arrownp = pg.plotArrow(base.render, epos = vecw*1000, thickness = 15)
+    # arrownp = pg.plotArrow(base.render, epos = vecw*1000, major_radius = 15)
     # print rotmat
     # model.setMat(base.pg.np4ToMat4(rm.homobuild(rbd.pos, rbd.rotmat)))
 

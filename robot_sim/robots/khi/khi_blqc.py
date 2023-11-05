@@ -3,13 +3,13 @@ import math
 import numpy as np
 import modeling.collision_model as cm
 import modeling.model_collection as mc
-import robot_sim._kinematics.jlchain as jl
+import robot_sim.kinematics.jlchain as jl
 import robot_sim.manipulators.rs007l.rs007l as manip
-import robot_sim.robots.robot_interface as ri
-import robot_sim.robots.arm_interface as ai
+import robot_sim.robots.system_interface as ri
+import robot_sim.robots.robot_interface as ai
 
 
-class KHI_BLQC(ai.ArmInterface):
+class KHI_BLQC(ai.RobotInterface):
     """
     author: weiwei
     date: 20230826toyonaka
@@ -25,24 +25,24 @@ class KHI_BLQC(ai.ArmInterface):
         # tool changer
         self.tc_master = jl.JLChain(pos=self.manipulator.jnts[-1]['gl_posq'],
                                     rotmat=self.manipulator.jnts[-1]['gl_rotmatq'],
-                                    homeconf=np.zeros(0),
+                                    home_conf=np.zeros(0),
                                     name='tc_master')
         self.tc_master.lnks[0]['name'] = "tc_master"
-        self.tc_master.jnts[-1]['loc_pos'] = np.array([0, 0, .0315])
-        self.tc_master.lnks[0]['collision_model'] = cm.gen_stick(self.tc_master.jnts[0]['loc_pos'],
+        self.tc_master.joints[-1]['pos_in_loc_tcp'] = np.array([0, 0, .0315])
+        self.tc_master.lnks[0]['collision_model'] = cm.gen_stick(self.tc_master.joints[0]['pos_in_loc_tcp'],
                                                                  # TODO: change to combined model, 20230806
-                                                                 self.tc_master.jnts[-1]['loc_pos'],
-                                                                 thickness=0.05,
+                                                                 self.tc_master.joints[-1]['pos_in_loc_tcp'],
+                                                                 radius=0.05,
                                                                  # rgba=[.2, .2, .2, 1], rgb will be overwritten
                                                                  type='rect',
-                                                                 sections=36)
+                                                                 n_sec=36)
         self.tc_master.reinitialize()
         # tool
         self.end_effector = None
         # tool center point
         self.manipulator.tcp_jnt_id = -1
-        self.manipulator.tcp_loc_pos = self.tc_master.jnts[-1]['loc_pos']
-        self.manipulator.tcp_loc_rotmat = self.tc_master.jnts[-1]['loc_rotmat']
+        self.manipulator.tcp_loc_pos = self.tc_master.joints[-1]['pos_in_loc_tcp']
+        self.manipulator.tcp_loc_rotmat = self.tc_master.joints[-1]['gl_rotmat']
         # a list of detailed information about objects in hand, see CollisionChecker.add_objinhnd
         self.oih_infos = []
         # collision detection
@@ -52,7 +52,7 @@ class KHI_BLQC(ai.ArmInterface):
     def _update_oof(self):
         """
         oof = object on flange
-        this function is to be implemented by subclasses for updating ft-sensors, tool changers, end-effectors, etc.
+        this function is to be implemented by subclasses for updating ft-sensors, tool changers, end_type-effectors, etc.
         :return:
         author: weiwei
         date: 20230807
@@ -60,8 +60,8 @@ class KHI_BLQC(ai.ArmInterface):
         self.tc_master.fix_to(pos=self.manipulator.jnts[-1]['gl_posq'],
                               rotmat=self.manipulator.jnts[-1]['gl_rotmatq'])
         if self.is_tool_attached:
-            self.end_effector.fix_to(pos=self.tc_master.jnts[-1]['gl_posq'],
-                                     rotmat=self.tc_master.jnts[-1]['gl_rotmatq'])
+            self.end_effector.fix_to(pos=self.tc_master.joints[-1]['gl_posq'],
+                                     rotmat=self.tc_master.joints[-1]['gl_rotmatq'])
 
     @property
     def is_tool_attached(self):
@@ -108,8 +108,8 @@ class KHI_BLQC(ai.ArmInterface):
         """
         if self.is_tool_attached:
             raise Exception("A tool has been attached!")
-        self.manipulator.tcp_loc_pos = self.tc_master.jnts[-1]['loc_pos'] + end_effector.action_center_pos
-        self.manipulator.tcp_loc_rotmat = self.tc_master.jnts[-1]['loc_rotmat']
+        self.manipulator.tcp_loc_pos = self.tc_master.joints[-1]['pos_in_loc_tcp'] + end_effector.action_center_pos
+        self.manipulator.tcp_loc_rotmat = self.tc_master.joints[-1]['gl_rotmat']
         self.end_effector = end_effector
 
     def detach_tool(self):
@@ -119,8 +119,8 @@ class KHI_BLQC(ai.ArmInterface):
         """
         if not self.is_tool_attached:
             raise Exception("Cannot detach a tool since nothing is attached!")
-        self.manipulator.tcp_loc_pos = self.tc_master.jnts[-1]['gl_posq']
-        self.manipulator.tcp_loc_rotmat = self.tc_master.jnts[-1]['gl_rotmatq']
+        self.manipulator.tcp_loc_pos = self.tc_master.joints[-1]['gl_posq']
+        self.manipulator.tcp_loc_rotmat = self.tc_master.joints[-1]['gl_rotmatq']
         self.end_effector = None
 
     def get_oih_list(self):
@@ -169,13 +169,13 @@ class KHI_BLQC(ai.ArmInterface):
                                        toggle_tcpcs=toggle_tcpcs,
                                        toggle_jntscs=toggle_jntscs,
                                        rgba=rgba).attach_to(meshmodel)
-        self.tc_master.gen_meshmodel(toggle_tcpcs=False,
-                                     toggle_jntscs=toggle_jntscs,
-                                     rgba=rgba).attach_to(meshmodel)
+        self.tc_master.gen_mesh_model(toggle_tcpcs=False,
+                                      toggle_jntscs=toggle_jntscs,
+                                      rgba=rgba).attach_to(meshmodel)
         if self.is_tool_attached:
-            self.end_effector.gen_meshmodel(toggle_tcpcs=False,
-                                            toggle_jntscs=toggle_jntscs,
-                                            rgba=rgba).attach_to(meshmodel)
+            self.end_effector.gen_mesh_model(toggle_tcpcs=False,
+                                             toggle_jntscs=toggle_jntscs,
+                                             rgba=rgba).attach_to(meshmodel)
             for obj_info in self.oih_infos:
                 objcm = obj_info['collision_model']
                 objcm.set_pos(obj_info['gl_pos'])
@@ -238,8 +238,8 @@ if __name__ == '__main__':
                                                max_time=300)
     print(len(robot_path_attach_ee_g))
 
-    # for jnt_values in robot_path:
-    #     robot_s.fk(jnt_values)
+    # for joint_values in robot_path:
+    #     robot_s.fk(joint_values)
     #     robot_s.gen_meshmodel().attach_to(base)
     # base.run()
 
@@ -262,7 +262,7 @@ if __name__ == '__main__':
             object_attached_list.clear()
         jnt_values = robot_path[counter[0]]
         robot_s.fk(jnt_values)
-        robot_meshmodel = robot_s.gen_meshmodel()
+        robot_meshmodel = robot_s.gen_mesh_model()
         robot_meshmodel.attach_to(base)
         robot_attached_list.append(robot_meshmodel)
         counter[0] += 1

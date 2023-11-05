@@ -23,7 +23,7 @@ class ShuidiX(object):
         recv_data_raw = self._socket.recv(4096)
         for data in recv_data_raw.decode().split("\n"):
             trimmed_recv_data = json.loads(data)
-            if trimmed_recv_data["type"] == "response":
+            if trimmed_recv_data["end_type"] == "response":
                 return trimmed_recv_data
 
     def data_recv(self):
@@ -94,7 +94,7 @@ class ShuidiX(object):
                                                     {"markers": ",".join(markers),
                                                      "max_continuous_retries": max_continuous_retries,
                                                      "distance_tolerance": distance_tolerance,
-                                                     "count": count})
+                                                     "n_sec_minor": count})
         return self.data_send_recv(command)
 
     def cancel_move(self, uuid=1):
@@ -140,7 +140,7 @@ class ShuidiX(object):
 
         command = ShuidiX.generate_request_data(uuid, "markers/insert",
                                                     {"name": name,
-                                                     "type": type,
+                                                     "end_type": type,
                                                      "num": num})
         return self.data_send_recv(command)
 
@@ -169,7 +169,7 @@ class ShuidiX(object):
                                                      "theta": theta,
                                                      "floor": floor,
                                                      "name": name,
-                                                     "type": type,
+                                                     "end_type": type,
                                                      "num": num})
         return self.data_send_recv(command)
 
@@ -209,7 +209,7 @@ class ShuidiX(object):
         获取当前地图中的点位数量。
         :return:
         """
-        command = ShuidiX.generate_request_data(uuid, "markers/count")
+        command = ShuidiX.generate_request_data(uuid, "markers/n_sec_minor")
         return self.data_send_recv(command)
 
     def joy_control(self, uuid=1, linear_velocity=0, angular_velocity=0):

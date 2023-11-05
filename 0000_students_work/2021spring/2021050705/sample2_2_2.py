@@ -29,7 +29,7 @@ robot_s = ur3d.UR3Dual()
 start_pos = np.array([.30, -.30, 1.20])
 start_rot = rm.rotmat_from_euler(ai=math.pi/2, aj=math.pi, ak=0, axes='szxz')
 start_conf = robot_s.ik(component_name=component_name, tgt_pos=start_pos, tgt_rotmat=start_rot)
-#start_conf = robot_s.lft_arm.homeconf
+#start_conf = robot_s.lft_arm.home
 
 #逆運動学でgoal姿勢を生成
 goal_pos = np.array([.30, -.70, 1.20])

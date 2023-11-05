@@ -61,7 +61,7 @@ class Surface(object):
             rng = [[min(self.xydata[:, 0])-.01, max(self.xydata[:, 0])+.01],
                    [min(self.xydata[:, 1])-.01, max(self.xydata[:, 1])+.01]]
         surface_trm = self._gen_surface(self.get_zdata, rng=rng, granularity=granularity)
-        surface_cm = cm.CollisionModel(initor=surface_trm, btwosided=True)
+        surface_cm = cm.CollisionModel(initializer=surface_trm, toggle_twosided=True)
         surface_cm.set_rgba(rgba)
         return surface_cm
 
@@ -84,7 +84,7 @@ class RBFSurface(Surface):
         :param kernel:
         :param epsilon:
         :param degree:
-        :param rng: [[xmin, xmax], [ymin, ymax]],
+        :param range: [[xmin, xmax], [ymin, ymax]],
                     min(xydata[:,0]), max(xydata[:,0]) and min(xydata[:,1]), max(xydata[:,1]) will be used in case of None
         author: weiwei
         date: 20210624
@@ -115,7 +115,7 @@ class MixedGaussianSurface(Surface):
         :param kernel:
         :param epsilon:
         :param degree:
-        :param rng: [[a0min, a0max], [a1min, a1max]],
+        :param range: [[a0min, a0max], [a1min, a1max]],
                     min(domain[:,0]), max(domain[:,0]) and min(domain[:,1]), max(domain[:,1]) will be used in case of None
         author: weiwei
         date: 20210624

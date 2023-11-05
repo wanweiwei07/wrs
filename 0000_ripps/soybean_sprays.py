@@ -7,7 +7,7 @@ import visualization.panda.world as wd
 import modeling.geometric_model as gm
 import modeling.collision_model as cm
 import modeling.model_collection as mc
-import robot_sim._kinematics.jlchain as jlc
+import robot_sim.kinematics.jlchain as jlc
 import robot_sim.manipulators.xarm7.xarm7 as rbt
 
 aluminium_rgba = [132 / 255, 135 / 255, 137 / 255, 1]
@@ -32,12 +32,12 @@ r_rotmat = rotmat
 # pos = np.zeros(3)
 # rotmat = np.eye(3)
 
-spray_host = cm.CollisionModel(initor="objects/airgun_host.stl")
+spray_host = cm.CollisionModel(initializer="objects/airgun_host.stl")
 spray_host.set_rgba(rgba=aluminium_rgba)
 spray_host.set_pose(pos, r_rotmat)
 spray_host.attach_to(base)
 
-spray = cm.CollisionModel(initor="objects/spray.stl")
+spray = cm.CollisionModel(initializer="objects/spray.stl")
 spray_loc_pos = np.array([.0, -.07, 0.07])
 spray_loc_rotmat = np.eye(3)
 spray_gl_rotmat = spray_loc_rotmat.dot(r_rotmat)
@@ -46,7 +46,7 @@ spray.set_pose(pos=spray_gl_pos, rotmat=spray_gl_rotmat)
 spray.attach_to(base)
 spray.set_rgba(matt_green)
 
-container = cm.CollisionModel(initor="objects/spray_container.stl")
+container = cm.CollisionModel(initializer="objects/spray_container.stl")
 container_loc_pos = np.array([.0, -.01, 0.15])
 container_loc_rotmat = np.eye(3)
 container_gl_rotmat = container_loc_rotmat.dot(r_rotmat)

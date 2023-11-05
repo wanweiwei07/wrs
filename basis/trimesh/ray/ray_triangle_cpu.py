@@ -33,7 +33,7 @@ def rays_triangles_id(triangles,
 
     # default set of candidate triangles to be queried 
     # is every triangle. this is very slow
-    candidates = np.ones(len(triangles), dtype=np.bool)
+    candidates = np.ones(len(triangles), dtype=np.bool_)
     hits = [None] * len(rays)
 
     for ray_index, ray in enumerate(rays):
@@ -58,7 +58,7 @@ def ray_triangles(triangles,
 
     Moller-Trumbore intersection algorithm.
     '''
-    candidates = np.ones(len(triangles), dtype=np.bool)
+    candidates = np.ones(len(triangles), dtype=np.bool_)
 
     # edge vectors and vertex locations in (n,3) format
     vert0 = triangles[:, 0, :]

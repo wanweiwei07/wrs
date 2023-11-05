@@ -45,7 +45,7 @@ class Ur3EDualUrx(object):
         author: weiwei
         date: 20170411
         """
-        if component_name == "all":  # TODO Examine length, synchronization
+        if component_name == "all":  # TODO Examine axis_length, synchronization
             self._lft_arm_hnd.move_jnts(jnt_values[0:6], wait=False)
             self._rgt_arm_hnd.move_jnts(jnt_values[6:12], wait=True)
         elif component_name in ["lft_arm", "lft_hnd"]:

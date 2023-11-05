@@ -149,7 +149,7 @@ _PATH = _descriptor.Descriptor(
   create_key=_descriptor._internal_create_key,
   fields=[
     _descriptor.FieldDescriptor(
-      name='length', full_name='Path.length', index=0,
+      name='axis_length', full_name='Path.axis_length', index=0,
       number=1, type=5, cpp_type=1, label=1,
       has_default_value=False, default_value=0,
       message_type=None, enum_type=None, containing_type=None,

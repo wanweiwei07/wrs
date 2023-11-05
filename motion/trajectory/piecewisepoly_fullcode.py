@@ -41,11 +41,11 @@ class PiecewisePoly(object):
         X = np.zeros((4 * N, 4 * N))
         Y = np.zeros((4 * N, self._n_dim))
         ridx = 0
-        for i in range(N):  # left end (N in total)
+        for i in range(N):  # left end_type (N in total)
             X[ridx, i * 4:i * 4 + 4] = np.array([i ** 3, i ** 2, i, 1])
             Y[ridx, :] = self._path_array[i][:]
             ridx += 1
-        for i in range(N):  # right end (N in total)
+        for i in range(N):  # right end_type (N in total)
             X[ridx, i * 4:i * 4 + 4] = np.array([(i + 1) ** 3, (i + 1) ** 2, i + 1, 1])
             Y[ridx, :] = self._path_array[i + 1][:]
             ridx += 1
@@ -62,7 +62,7 @@ class PiecewisePoly(object):
         X[-2, :4] = np.array([3 * 0 ** 2, 2 * 0, 1, 0])
         Y[-2, :] = np.zeros(self._n_dim)  # zero init speed
         X[-1, -4:] = np.array([3 * (self._n_pnts - 1) ** 2, 2 * (self._n_pnts - 1), 1, 0])
-        Y[-1, :] = np.zeros(self._n_dim)  # zero end speed
+        Y[-1, :] = np.zeros(self._n_dim)  # zero end_type speed
         A = np.linalg.solve(X, Y)
         return A
 
@@ -105,11 +105,11 @@ class PiecewisePoly(object):
         X = np.zeros((5 * N, 5 * N))
         Y = np.zeros((5 * N, self._n_dim))
         ridx = 0
-        for i in range(N):  # left end (N in total)
+        for i in range(N):  # left end_type (N in total)
             X[ridx, i * 5:i * 5 + 5] = np.array([i ** 4, i ** 3, i ** 2, i, 1])
             Y[ridx, :] = self._path_array[i][:]
             ridx += 1
-        for i in range(N):  # right end (N in total)
+        for i in range(N):  # right end_type (N in total)
             X[ridx, i * 5:i * 5 + 5] = np.array([(i + 1) ** 4, (i + 1) ** 3, (i + 1) ** 2, i + 1, 1])
             Y[ridx, :] = self._path_array[i + 1][:]
             ridx += 1
@@ -131,9 +131,9 @@ class PiecewisePoly(object):
         X[-3, :5] = np.array([4 * 0 ** 3, 3 * 0 ** 2, 2 * 0, 1, 0])
         Y[-3, :] = np.zeros(self._n_dim)  # zero init speed
         X[-2, -5:] = np.array([4 * (self._n_pnts - 1) ** 3, 3 * (self._n_pnts - 1) ** 2, 2 * (self._n_pnts - 1), 1, 0])
-        Y[-2, :] = np.zeros(self._n_dim)  # zero end speed
+        Y[-2, :] = np.zeros(self._n_dim)  # zero end_type speed
         X[-1, -5:] = np.array([6 * (self._n_pnts - 1) ** 2, 3 * (self._n_pnts - 1), 1, 0, 0])
-        Y[-1, :] = np.zeros(self._n_dim)  # zero end acc
+        Y[-1, :] = np.zeros(self._n_dim)  # zero end_type acc
         A = np.linalg.solve(X, Y)
         return A
 

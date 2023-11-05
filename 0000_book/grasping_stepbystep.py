@@ -9,7 +9,7 @@ import grasping.annotation.utils as gu
 import pickle
 
 base = wd.World(cam_pos=[.3, .3, .3], lookat_pos=[0, 0, 0])
-gm.gen_frame(length=.05, thickness=.0021).attach_to(base)
+gm.gen_frame(axis_length=.05, axis_radius=.0021).attach_to(base)
 # object
 object_bunny = cm.CollisionModel("objects/bunnysim.stl")
 object_bunny.set_rgba([.9, .75, .35, .3])
@@ -21,7 +21,7 @@ object_bunny.attach_to(base)
 #                                                        angle_between_contact_normals=math.radians(160),
 #                                                        toggle_sampled_points=True)
 # for p in contact_points:
-#     gm.gen_sphere(p, radius=.002).attach_to(base)
+#     gm.gen_sphere(p, major_radius=.002).attach_to(base)
 # base.run()
 # pickle.dump(contact_pairs, open( "save.p", "wb" ))
 contact_pairs = pickle.load(open( "save.p", "rb" ))
@@ -30,12 +30,12 @@ for i, cp in enumerate(contact_pairs):
     contact_p1, contact_n1 = cp[1]
     rgba = rm.get_rgba_from_cmap(i)
     gm.gen_sphere(contact_p0, radius=.002, rgba=rgba).attach_to(base)
-    gm.gen_arrow(contact_p0, contact_p0+contact_n0*.01, thickness=.0012, rgba = rgba).attach_to(base)
-    # gm.gen_arrow(contact_p0, contact_p0-contact_n0*.1, thickness=.0012, rgba = rgba).attach_to(base)
+    gm.gen_arrow(contact_p0, contact_p0 + contact_n0 * .01, stick_radius=.0012, rgba = rgba).attach_to(base)
+    # gm.gen_arrow(contact_p0, contact_p0-contact_n0*.1, major_radius=.0012, rgba = rgba).attach_to(base)
     gm.gen_sphere(contact_p1, radius=.002, rgba=rgba).attach_to(base)
-    # gm.gen_dashstick(contact_p0, contact_p1, thickness=.0012, rgba=rgba).attach_to(base)
-    gm.gen_arrow(contact_p1, contact_p1+contact_n1*.01, thickness=.0012, rgba=rgba).attach_to(base)
-    # gm.gen_dasharrow(contact_p1, contact_p1+contact_n1*.03, thickness=.0012, rgba=rgba).attach_to(base)
+    # gm.gen_dashstick(contact_p0, contact_p1, major_radius=.0012, rgba=rgba).attach_to(base)
+    gm.gen_arrow(contact_p1, contact_p1 + contact_n1 * .01, stick_radius=.0012, rgba=rgba).attach_to(base)
+    # gm.gen_dasharrow(contact_p1, contact_p1+contact_n1*.03, major_radius=.0012, rgba=rgba).attach_to(base)
 # base.run()
 gripper_s = rtq85.Robotiq85()
 contact_offset = .002

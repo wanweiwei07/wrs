@@ -8,7 +8,7 @@ import modeling.geometric_model as gm
 
 class Base(cm.CollisionModel):
     def __init__(self, file):
-        super().__init__(initor=file, expand_radius=.009)
+        super().__init__(initializer=file, expand_radius=.009)
         self._hole_pos_list = []
         self._pos_z0 = .042
         self._pos_y0 = -.0315
@@ -66,7 +66,7 @@ class Base(cm.CollisionModel):
         x3, y3 = point3
         pos = np.array([(x1 + x3) / 2, (y1 + y3) / 2, 0])
         super().set_pos(pos)
-        rot_angle = rm.angle_between_2d_vectors((x2 - x1, y2 - y1), (0, 1))
+        rot_angle = rm.angle_between_2d_vecs((x2 - x1, y2 - y1), (0, 1))
         rotmat = rm.rotmat_from_axangle(np.array([0, 0, 1]), rot_angle)
         super().set_rotmat(rotmat)
         self._update_hole_pos_list()
@@ -141,7 +141,7 @@ def search_reachable_configuration(rbt_s,
     search reachable configuration in a cone
     when the cone_angle is 0, the function degenerates into a search around the cone_axis
     :param rbt_s: instance of a robot
-    :param ee_s: instance of an end-effector
+    :param ee_s: instance of an end_type-effector
     :param tgt_pos:
     :param cone_axis:
     :param cone_angle:
@@ -151,7 +151,7 @@ def search_reachable_configuration(rbt_s,
     author: weiwei
     date: 20220404
     """
-    jnt_values_bk = rbt_s.get_jnt_values(component_name=component_name)
+    jnt_values_bk = rbt_s.get_joint_values(component_name=component_name)
     if seed_jnt_values is None:
         seed_jnt_values = jnt_values_bk
     rotmat_list = []
@@ -170,18 +170,18 @@ def search_reachable_configuration(rbt_s,
         jnt_values = rbt_s.ik(component_name=component_name,
                               tgt_pos=tgt_pos,
                               tgt_rotmat=rotmat,
-                              seed_jnt_values=seed_jnt_values)
+                              seed_joint_values=seed_jnt_values)
         if jnt_values is not None:
-            rbt_s.fk(jnt_values=jnt_values)
+            rbt_s.fk(joint_values=jnt_values)
             if rbt_s.is_collided(obstacle_list=obstacle_list):
                 if toggle_debug:
-                    rbt_s.gen_meshmodel(rgba=[.9, .5, 0, .3]).attach_to(base)
+                    rbt_s.gen_mesh_model(rgba=[.9, .5, 0, .3]).attach_to(base)
             else:
                 if toggle_debug:
-                    rbt_s.gen_meshmodel().attach_to(base)
+                    rbt_s.gen_mesh_model().attach_to(base)
                 if not toggle_debug:
                     rbt_s.fk(component_name=component_name,
-                             jnt_values=jnt_values_bk)
+                             joint_values=jnt_values_bk)
                     print("times tried ", i)
                     return jnt_values
         else:
@@ -189,6 +189,6 @@ def search_reachable_configuration(rbt_s,
                 ee_s.grip_at_with_jcpose(gl_jaw_center_pos=tgt_pos,
                                          gl_jaw_center_rotmat=rotmat,
                                          jaw_width=0)
-                ee_s.gen_meshmodel(rgba=[1, 0, 0, .3]).attach_to(base)
-    rbt_s.fk(component_name=component_name, jnt_values=jnt_values_bk)
+                ee_s.gen_mesh_model(rgba=[1, 0, 0, .3]).attach_to(base)
+    rbt_s.fk(component_name=component_name, joint_values=jnt_values_bk)
     return None

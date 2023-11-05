@@ -153,9 +153,9 @@ def getpointcloudkinect(pointrange=[]):
 
 ## 2020_0722作成
 def getpointcloudkinectforrope_up(rbt, armname, initialpoint, pointrange):
-    # pcd = client.getpcd()
-    # pcd2 = np.ones((len(pcd), 4))
-    # pcd2[:, :3] = pcd
+    # pcd_helper = client.getpcd()
+    # pcd2 = np.ones((len(pcd_helper), 4))
+    # pcd2[:, :3] = pcd_helper
     # newpcd = np.dot(calibration_matrix, pcd2.T).T[:, :3]
     newpcd = getpointcloudkinect(pointrange)
     finalpoint = rbt.get_gl_tcp(manipulator_name=armname)[0]
@@ -166,9 +166,9 @@ def getpointcloudkinectforrope_up(rbt, armname, initialpoint, pointrange):
 
 
 def getpointcloudkinectforrope_down(rbt, armname, pointrange=[]):
-    # pcd = client.getpcd()
-    # pcd2 = np.ones((len(pcd), 4))
-    # pcd2[:, :3] = pcd
+    # pcd_helper = client.getpcd()
+    # pcd2 = np.ones((len(pcd_helper), 4))
+    # pcd2[:, :3] = pcd_helper
     # newpcd = np.dot(calibration_matrix, pcd2.T).T[:, :3]
     newpcd = getpointcloudkinect(pointrange)
     initialpoint = rbt.get_gl_tcp(manipulator_name=armname)[0]
@@ -190,7 +190,7 @@ def doRANSAC(newpcd, threshold):
     ropeline = []  # ロープの点群のみ取り出す
     for i, eachpoint in enumerate(newpcd):
         if inliers[i] == True:
-            # base.pggen.plotSphere(base.render, pos=newpcd[numberofrope], radius=10, rgba=[1, 0, 0, .5])
+            # base.pggen.plotSphere(base.render, pos=newpcd[numberofrope], major_radius=10, rgba=[1, 0, 0, .5])
             ropeline.append(newpcd[i])
     return ropeline
 
@@ -253,7 +253,7 @@ def decidestartpose(armname, ropelinesorted, predefined_grasps, fromjnt, startpo
             prejawwidth, prehndfc, prehndpos, prehndrotmat = eachgrasp
             prehndhomomat = rm.homomat_from_posrot(prehndpos, prehndrotmat)
             hndmat4_initial = np.dot(objmat4_initial, prehndhomomat)
-            eepos_initial = rm.homomat_transform_points(objmat4_initial, prehndfc)[:3]
+            eepos_initial = rm.transform_points_by_homomat(objmat4_initial, prehndfc)[:3]
             eerot_initial = hndmat4_initial[:3, :3]
             start = robot_s.ik(component_name=armname,
                                tgt_pos=eepos_initial,
@@ -293,7 +293,7 @@ def decidegoalpose_onepoint(arm_name,
         prejawwidth, prehndfc, prehndpos, prehndrotmat = predefined_grasps[i[2]]
         prehndhomomat = rm.homomat_from_posrot(prehndpos, prehndrotmat)
         hndmat4_final = np.dot(objmat4_final, prehndhomomat)
-        eepos_final = rm.homomat_transform_points(objmat4_final, prehndfc)[:3]
+        eepos_final = rm.transform_points_by_homomat(objmat4_final, prehndfc)[:3]
         eerot_final = hndmat4_final[:3, :3]
         fromjnt = i[0]
         goal = robot_s.ik(component_name=arm_name,
@@ -414,7 +414,7 @@ def getsuitablegoalpos_second(arm_name,
         ## pullinglength
         pullinglength = pullinglengthlist[i]
         pullinglength_cost = 1 - pullinglength_ref / pullinglength
-        print("length cost = ", pullinglength_cost)
+        print("axis_length cost = ", pullinglength_cost)
         ## FT
         zaxis = np.array([0, 0, 1])
         togoalvec = use_element[4]
@@ -504,7 +504,7 @@ def decidegoalpose(arm_name,
             prejawwidth, prehndfc, prehndpos, prehndrotmat = predefined_grasps[i[2]]
             prehndhomomat = rm.homomat_from_posrot(prehndpos, prehndrotmat)
             hndmat4_final = np.dot(objmat4_final, prehndhomomat)
-            eepos_final = rm.homomat_transform_points(objmat4_final, prehndfc)[:3]
+            eepos_final = rm.transform_points_by_homomat(objmat4_final, prehndfc)[:3]
             eerot_final = hndmat4_final[:3, :3]
             # goal = robot_s.numik(eepos_final, eerot_final, arm_name)
             fromjnt = i[0]
@@ -654,10 +654,10 @@ def RRTmotion(startjoint, goaljoint, ctcallback, obscmlist, expanddis, maxtime):
 
 
 def preprocess_point_cloud(pcd, voxel_size):
-    print(":: Estimate normal with search radius %.3f." % 10)
+    print(":: Estimate normal with search major_radius %.3f." % 10)
     o3d.geometry.PointCloud.estimate_normals(pcd, o3d.geometry.KDTreeSearchParamHybrid(radius=10, max_nn=30))
     radius_feature = voxel_size * 5
-    print(":: Compute FPFH feature with search radius %.3f." % radius_feature)
+    print(":: Compute FPFH feature with search major_radius %.3f." % radius_feature)
     pcd_fpfh = o3d.registration.compute_fpfh_feature(pcd,
                                                      o3d.geometry.KDTreeSearchParamHybrid(radius=10, max_nn=100))
     return pcd, pcd_fpfh
@@ -720,12 +720,12 @@ def objectfitting(newpcd, fitobjpcd, refpoint_fitting):
         print("diff:", abs(refpoint_fitting[0][2] - refpoint_fitting[1][2]))
         print("refpoint", refpoint_fitting)
         # for i in refpoint_fitting:
-        #     base.pggen.plotSphere(base.render, pos=i[:3], radius=15, rgba=[1,1,0,1])
+        #     base.pggen.plotSphere(base.render, pos=i[:3], major_radius=15, rgba=[1,1,0,1])
         # break
         toppoints_zdiff = abs(refpoint_fitting[0][2] - refpoint_fitting[1][2])
         toppoints_length = abs(refpoint_fitting[0] - refpoint_fitting[1])
         if 0 < toppoints_zdiff < 10 and 300 < np.linalg.norm(toppoints_length) < 450:
-            print("----------- fitting end ------------")
+            print("----------- fitting end_type ------------")
             break
     return targetpointnew, refpoint_fitting
 
@@ -872,7 +872,7 @@ def getpushingpath(theta, rotateaxis):
         f1, f0, t, alpha0, alpha1 = p
         n1 = np.array([-math.cos(math.radians(theta)), math.sin(math.radians(theta))])
         l1 = np.array([math.sin(math.radians(theta)), math.cos(math.radians(theta))])
-        # r1_3d = copy.copy(objpos) + rdir * rot[:, 1]
+        # r1_3d = copy.copy(objpos) + rdir * rotmat[:, 1]
         r1_3d = chosenpos
         r1 = np.array([r1_3d[1], r1_3d[2]])
         F1 = np.dot(f1, n1) + np.dot(alpha1 * myu1 * f1, l1)
@@ -882,7 +882,7 @@ def getpushingpath(theta, rotateaxis):
         f1, f0, t, alpha0, alpha1 = p
         n1 = np.array([-math.cos(math.radians(theta)), math.sin(math.radians(theta))])
         l1 = np.array([math.sin(math.radians(theta)), math.cos(math.radians(theta))])
-        # r1 = copy.copy(objpos) + r * rot[:, 1]
+        # r1 = copy.copy(objpos) + r * rotmat[:, 1]
         F1 = np.dot(f1, n1) + np.dot(alpha1 * myu1 * f1, l1)
         return 30 ** 2 - np.dot(F1, F1)
 
@@ -924,30 +924,30 @@ def getpushingpath(theta, rotateaxis):
         for num in range(10):
             pushpos = copy.copy(objpos) + (w / 2) * rot[:, 0] + (l - 10 - num * 10) * rot[:, 1]
             pushposlist.append(pushpos)
-            # base.pggen.plotSphere(base.render, pos=pushpos, radius=5, rgba=[0, 1, 0, 1])
+            # base.pggen.plotSphere(base.render, pos=pushpos, major_radius=5, rgba=[0, 1, 0, 1])
             ## ------ for plotting arrow ----------------------------------------------
             # if i == 1:
             #     print("pre to pos : ", np.linalg.norm(pushpos - pos_iminus1[0]))
             #     nextpushlenlist.append(np.linalg.norm(pushpos - pos_iminus1[0]))
             #     base.pggen.plotArrow(base.render, spos=pos_iminus1[0], epos=pushpos,
-            #                          length=np.linalg.norm(pushpos - pos_iminus1[0]), thickness=1.0, rgba=[0, 0, 1, 1])
+            #                          axis_length=np.linalg.norm(pushpos - pos_iminus1[0]), major_radius=1.0, rgba=[0, 0, 1, 1])
             # elif i >= 2:
             #     print("pre to pos : ", np.linalg.norm(pushpos - pos_i[0]))
             #     nextpushlenlist.append(np.linalg.norm(pushpos - pos_i[0]))
             #     base.pggen.plotArrow(base.render, spos=pos_i[0], epos=pushpos,
-            #                          length=np.linalg.norm(pushpos - pos_i[0]), thickness=1.0, rgba=[0, 0, 1, 1])
+            #                          axis_length=np.linalg.norm(pushpos - pos_i[0]), major_radius=1.0, rgba=[0, 0, 1, 1])
 
-            # base.pggen.plotSphere(base.render, pos=pushpos, rgba=[0,1,0,1], radius=5)
+            # base.pggen.plotSphere(base.render, pos=pushpos, rgba=[0,1,0,1], major_radius=5)
             ## --------------------------------------------------------------------------
         hangedpos = gethangedpos(objpos, rot)
         hangedpos_total.append(hangedpos)
-        # base.pggen.plotSphere(base.render, pos=hangedpos, radius=10, rgba=[0,1,0,1])
+        # base.pggen.plotSphere(base.render, pos=hangedpos, major_radius=10, rgba=[0,1,0,1])
         rotatecenter = getrotatecenter(objpos, rot)
-        # base.pggen.plotSphere(base.render, pos=rotatecenter, radius=10, rgba=[0,0,1,1])
+        # base.pggen.plotSphere(base.render, pos=rotatecenter, major_radius=10, rgba=[0,0,1,1])
         if theta > 90:
             rotatecenter = getrotatecenter_after(objpos, rot)
         objcenter = getobjcenter(objpos, rot)
-        # base.pggen.plotSphere(base.render, pos=objcenter, radius=10, rgba=[1,0,0,1])
+        # base.pggen.plotSphere(base.render, pos=objcenter, major_radius=10, rgba=[1,0,0,1])
         rg_3d = objcenter - rotatecenter
         rt_3d = hangedpos - rotatecenter
         rg = np.array([rg_3d[1], rg_3d[2]])
@@ -956,9 +956,9 @@ def getpushingpath(theta, rotateaxis):
         t_dir_3d = pulleypos - hangedpos
         t_dir = rm.unit_vector([t_dir_3d[1], t_dir_3d[2]])
         bounds = ((0, 30), (0, np.inf), (0, np.inf), (-1, 1), (-1, 1))
-        conds = ({'type': 'eq', 'fun': force_eq1},
-                 {'type': 'eq', 'fun': torque_eq1},
-                 {'type': 'ineq', 'fun': f1ineq})
+        conds = ({'end_type': 'eq', 'fun': force_eq1},
+                 {'end_type': 'eq', 'fun': torque_eq1},
+                 {'end_type': 'ineq', 'fun': f1ineq})
         p0 = [30, 30, 30, 0, 0]
         minimizer_kwargs = {"method": "SLSQP", "constraints": conds, "bounds": bounds}
         for chosenpos in pushposlist:
@@ -1087,8 +1087,8 @@ if __name__ == "__main__":
     robot_s = ur3ds.UR3Dual()
     robot_inik_solver = inik.IncrementalNIK(robot_s)
     ## 物体の読み込み
-    ropeobj = cm.CollisionModel(initor="./research_box_mm.stl")
-    obj = cm.CollisionModel(initor=objpath)
+    ropeobj = cm.CollisionModel(initializer="./research_box_mm.stl")
+    obj = cm.CollisionModel(initializer=objpath)
     ## 事前定義把持とハンド姿勢の呼び出し
     handpose = pose.PoseMaker()
     predefined_grasps_lft, handdirlist_lft = handpose.lftgrasppose()  # 予備の把持姿勢と把持方向
@@ -1128,12 +1128,12 @@ if __name__ == "__main__":
     #                                                goal_tcp_rotmat=rgt_rotmat,
     #                                                direction=-dir,
     #                                                distance=.15,
-    #                                                type='source')
+    #                                                end_type='source')
     # # for conf in path:
     # #     robot_s.fk(arm_name, conf)
     # #     robot_s.gen_meshmodel().attach_to(base)
     # # base.run()
-    # robot_s.fk(hnd_name=arm_name, jnt_values=path[-1])
+    # robot_s.fk(hnd_name=arm_name, joint_values=path[-1])
     # # robot_s.gen_meshmodel().attach_to(base)
     # # base.run()
     # rgt_pos, rgt_rotmat = robot_s.get_gl_tcp(hnd_name=arm_name)
@@ -1156,7 +1156,7 @@ if __name__ == "__main__":
     # IKpossiblelist_start, hold_pos_init, hold_rot_init, startpointid = decidestartpose(ropelinesorted,
     #                                                                                    arm_name,
     #                                                                                    predefined_grasps_rgt,
-    #                                                                                    robot_s.rgt_arm.homeconf,
+    #                                                                                    robot_s.rgt_arm.home,
     #                                                                                    startpointid)
     # # for data in IKpossiblelist_start:
     # #     robot_s.fk(arm_name, data[0])
@@ -1177,9 +1177,9 @@ if __name__ == "__main__":
     # # base.run()
     # 
     # dir = rm.unit_vector(hold_pos_final - ropelinesorted[0])
-    # length = np.linalg.norm(hold_pos_final - ropelinesorted[0])
-    # path = inik_solver.gen_rel_linear_motion(arm_name, rgtstart_pos, rgtstart_rotmat, dir, length, [],
-    #                                                type="source")
+    # axis_length = np.linalg.norm(hold_pos_final - ropelinesorted[0])
+    # path = inik_solver.gen_rel_linear_motion(arm_name, rgtstart_pos, rgtstart_rotmat, dir, axis_length, [],
+    #                                                end_type="source")
     # for conf in path:
     #     robot_s.fk(arm_name, conf)
     #     robot_s.gen_meshmodel().attach_to(base)
@@ -2255,7 +2255,7 @@ if __name__ == "__main__":
                     # limitdegree = 100
                     # pushpath_all, pushpos_all, obj_all, hangedpos_all = pickle.load(open("pushinglist_sim.pickle", "rb"))
                     ## ---------------------------------------------------------------------------------
-                    print("------ pushing planning end -------")
+                    print("------ pushing planning end_type -------")
 
                     pre_pushpose_pre = np.array(
                         [-33.35622966184176, -138.5040412924666, -74.8527980774441, 128.17060347355363,

@@ -174,9 +174,9 @@ class BlocklyTool(_BlocklyHandler):
             self._append_main_init_code('        if self._cgpio_state is None:')
             self._append_main_init_code('            return True')
             self._append_main_init_code('        digitals_bin = \'\'.join(map(str, [self._cgpio_state[3] >> i & 0x0001 if self._cgpio_state[10][i] in [0, 255] else 1 for i in range(len(self._cgpio_state[10]))]))')
-            self._append_main_init_code('        length = min(len(digitals_bin), len(bin_val))')
+            self._append_main_init_code('        axis_length = min(len(digitals_bin), len(bin_val))')
             self._append_main_init_code('        bin_val_ = bin_val[::-1]')
-            self._append_main_init_code('        for i in range(length):')
+            self._append_main_init_code('        for i in range(axis_length):')
             self._append_main_init_code('            if bin_val_[i] != digitals_bin[i]:')
             self._append_main_init_code('                return False')
             self._append_main_init_code('        return True\n')
@@ -296,11 +296,11 @@ class BlocklyTool(_BlocklyHandler):
             self._append_main_init_code('            self._arm.release_state_changed_callback(self._state_changed_callback)\n')
 
     def __define_count_changed_callback_func(self):
-        # Define count changed callback
-        self._append_main_init_code('    # Register count changed callback')
+        # Define n_sec_minor changed callback
+        self._append_main_init_code('    # Register n_sec_minor changed callback')
         self._append_main_init_code('    def _count_changed_callback(self, data):')
         self._append_main_init_code('        if self.is_alive:')
-        self._append_main_init_code('            self.pprint(\'counter val: {}\'.format(data[\'count\']))\n')
+        self._append_main_init_code('            self.pprint(\'counter val: {}\'.format(data[\'n_sec_minor\']))\n')
 
     def __define_pprint_func(self):
         self._append_main_init_code('    @staticmethod')
@@ -318,9 +318,9 @@ class BlocklyTool(_BlocklyHandler):
         self._append_main_init_code('    def is_alive(self):')
         self._append_main_init_code('        if self.alive and self._arm.connected and self._arm.error_code == 0:')
         self._append_main_init_code('            if self._arm.state == 5:')
-        self._append_main_init_code('                cnt = 0')
-        self._append_main_init_code('                while self._arm.state == 5 and cnt < 5:')
-        self._append_main_init_code('                    cnt += 1')
+        self._append_main_init_code('                anchor = 0')
+        self._append_main_init_code('                while self._arm.state == 5 and anchor < 5:')
+        self._append_main_init_code('                    anchor += 1')
         self._append_main_init_code('                    time.sleep(0.1)')
         self._append_main_init_code('            return self._arm.state < 4')
         self._append_main_init_code('        else:')

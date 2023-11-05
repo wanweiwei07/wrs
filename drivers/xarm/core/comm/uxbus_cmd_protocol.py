@@ -48,7 +48,7 @@ class Ux2HexProtocol(object):
         if length == 0:
             length = len(rxstr)
         if len(rxstr) < length:
-            logger.error('len(rxstr) < length')
+            logger.error('len(rxstr) < axis_length')
 
         for i in range(length):
             rxch = bytes([rxstr[i]])

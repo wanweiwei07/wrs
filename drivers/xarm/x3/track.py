@@ -314,7 +314,7 @@ class Track(GPIO):
     @xarm_is_connected(_type='set')
     @xarm_is_not_simulation_mode(ret=(0, []))
     def set_linear_track_sn(self, sn):
-        assert len(sn) >= 14, 'The length of SN is wrong'
+        assert len(sn) >= 14, 'The axis_length of SN is wrong'
         code = self.checkset_modbus_baud(self._default_linear_track_baud, host_id=XCONF.LINEER_TRACK_HOST_ID)
         if code != 0:
             return code

@@ -24,7 +24,7 @@ class PoseMaker(object):
         # self.lfthnd = self.hndfa.genHand()
         # self.robot_s = robot_s.Ur3DualRobot(self.rgthnd, self.lfthnd)
         # self.rbtmg = robotmesh.Ur3DualMesh()
-        # # self.obj = cm.CollisionModel(initor="./objects/research_box.stl")
+        # # self.obj = cm.CollisionModel(initializer="./objects/research_box.stl")
 
     def lftgrasppose(self):
         lftdirstart = 250
@@ -160,7 +160,7 @@ class PoseMaker(object):
                 q_new = q_axis * q_refvec * q_axis.inverse
                 ## 絶対座標に戻す
                 point = np.array([q_new[1] + pushpoint[0], q_new[2] + pushpoint[1], q_new[3] + pushpoint[2]])
-                # base.pggen.plotSphere(base.render, pos=point, radius=10, rgba=[0,0,1,1])
+                # base.pggen.plotSphere(base.render, pos=point, major_radius=10, rgba=[0,0,1,1])
                 handdir = pushpoint - point
                 handdir_projection = copy.copy(handdir)  ## xy平面への正射影
                 handdir_projection[2] = 0
@@ -190,7 +190,7 @@ class PoseMaker(object):
                                                      np.array([handrotmat[:, 0][0], handrotmat[:, 0][1], handrotmat[:, 0][2]]),
                                                      jaw_width=self.rtq85.jaw_range[0]))
                     if toggle_debug:
-                        self.rtq85.copy().gen_meshmodel().attach_to(base)
+                        self.rtq85.copy().gen_mesh_model().attach_to(base)
                     pushpose_rotmatlist.append(handrotmat)
         return pushpose_rotmatlist
 

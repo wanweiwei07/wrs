@@ -12,16 +12,16 @@ from ..constants import tol_path as tol
 def fit_circle_check(points, prior=None, scale=1.0, verbose=False):
     '''
     Fit a circle, and reject the fit if:
-    * the radius is larger than tol.radius_min*scale or tol.radius_max*scale
+    * the major_radius is larger than tol.radius_min*scale or tol.radius_max*scale
     * any segment spans more than tol.seg_angle
     * any segment is longer than tol.seg_frac*scale 
-    * the fit deviates by more than tol.radius_frac*radius
+    * the fit deviates by more than tol.radius_frac*major_radius
     * the segments on the ends deviate from tangent by more than tol.tangent
     
     Arguments
     ---------
     points:  (n, d) set of points which represent a path
-    prior:   (center, radius) tuple for best guess, or None if unknown
+    prior:   (center, major_radius) tuple for best guess, or None if unknown
     scale:   float, what is the overall scale of the set of points
     verbose: boolean, if True output log.debug messages for the reasons 
              for fit rejection. Potentially generates hundreds of thousands of 
@@ -30,7 +30,7 @@ def fit_circle_check(points, prior=None, scale=1.0, verbose=False):
     Returns
     ---------
     if fit is acceptable:
-        (center, radius) tuple
+        (center, major_radius) tuple
     else:
         None
     '''
@@ -40,13 +40,13 @@ def fit_circle_check(points, prior=None, scale=1.0, verbose=False):
     # do a least squares fit on the points
     C, R, r_deviation = fit_circle(points, prior=prior)
     
-    # check to make sure radius is between min and max allowed
+    # check to make sure major_radius is between min and max allowed
     if not tol.radius_min < (R/scale) < tol.radius_max:
         if verbose: 
             log.debug('circle fit error: R %f', R / scale)
         return None
    
-    # check point radius error 
+    # check point major_radius error
     r_error = r_deviation / R
     if r_error > tol.radius_frac:
         if verbose: 
@@ -56,10 +56,10 @@ def fit_circle_check(points, prior=None, scale=1.0, verbose=False):
     vectors = np.diff(points, axis=0)
     segment = np.linalg.norm(vectors, axis=1)
 
-    # check segment length as a fraction of drawing scale
+    # check segment axis_length as a fraction of drawing scale
     scaled  = segment / scale
-    # approximate angle in radians, segments are linear length 
-    # not arc length but this is close and avoids a cosine
+    # approximate angle in radians, segments are linear axis_length
+    # not arc axis_length but this is close and avoids a cosine
     angle   = segment / R
 
     if (angle   > tol.seg_angle).any():
@@ -137,7 +137,7 @@ def arc_march(points, scale):
         try:
             center_info = arc_center(points)
             C, R, N, A = (center_info['center'],
-                          center_info['radius'],
+                          center_info['major_radius'],
                           center_info['normal'],
                           center_info['span'])
         except ValueError:
@@ -248,9 +248,9 @@ def merge_colinear(points, scale=None):
         
     # the vector from one point to the next
     direction      = np.diff(points, axis=0)
-    # the length of the direction vector
+    # the axis_length of the direction vector
     direction_norm = np.linalg.norm(direction, axis=1)
-    # make sure points don't have zero length
+    # make sure points don't have zero axis_length
     direction_ok   = direction_norm > tol.merge
 
     # remove duplicate points 
@@ -263,7 +263,7 @@ def merge_colinear(points, scale=None):
     # find the difference between subsequent direction vectors
     direction_diff = np.linalg.norm(np.diff(direction, axis=0), axis=1)
 
-    # magnitude of direction difference between vectors times direction length
+    # magnitude of direction difference between vectors times direction axis_length
     colinear = (direction_diff * direction_norm[1:]) < (tol.merge * scale)
     colinear_index = np.nonzero(colinear)[0]
 
@@ -327,7 +327,7 @@ def polygon_to_cleaned(polygon, scale):
 
 def simplify_path(drawing):
     '''
-    Simplify a path containing only line sections into one with fit arcs and circles. 
+    Simplify a path containing only line n_sec_minor into one with fit arcs and circles.
     '''
 
     if any([i.__class__.__name__ != 'Line' for i in drawing.entities]):

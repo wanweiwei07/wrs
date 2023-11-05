@@ -1,6 +1,6 @@
 import copy
 import numpy as np
-import robot_sim._kinematics.collision_checker as cc
+import robot_sim.kinematics.collision_checker as cc
 
 
 class ManipulatorInterface(object):
@@ -16,7 +16,7 @@ class ManipulatorInterface(object):
 
     @property
     def jnts(self):
-        return self.jlc.jnts
+        return self.jlc.joints
 
     @property
     def lnks(self):
@@ -28,7 +28,7 @@ class ManipulatorInterface(object):
 
     @property
     def ndof(self):
-        return self.jlc.ndof
+        return self.jlc.n_dof
 
     @property
     def homeconf(self):
@@ -36,7 +36,7 @@ class ManipulatorInterface(object):
 
     @property
     def tcp_jnt_id(self):
-        return self.jlc.tcp_jnt_id
+        return self.jlc.tcp_joint_id
 
     @property
     def tcp_loc_pos(self):
@@ -48,7 +48,7 @@ class ManipulatorInterface(object):
 
     @tcp_jnt_id.setter
     def tcp_jnt_id(self, tcp_jnt_id):
-        self.jlc.tcp_jnt_id = tcp_jnt_id
+        self.jlc.tcp_joint_id = tcp_jnt_id
 
     @tcp_loc_pos.setter
     def tcp_loc_pos(self, tcp_loc_pos):
@@ -59,11 +59,11 @@ class ManipulatorInterface(object):
         self.jlc.tcp_loc_rotmat = tcp_loc_rotmat
 
     def set_homeconf(self, jnt_values):
-        self.jlc.set_homeconf(jnt_values=jnt_values)
+        self.jlc.set_home(jnt_values=jnt_values)
 
     def set_tcp(self, tcp_jnt_id=None, tcp_loc_pos=None, tcp_loc_rotmat=None):
         if tcp_jnt_id is not None:
-            self.jlc.tcp_jnt_id = tcp_jnt_id
+            self.jlc.tcp_joint_id = tcp_jnt_id
         if tcp_loc_pos is not None:
             self.jlc.tcp_loc_pos = tcp_loc_pos
         if tcp_loc_rotmat is not None:
@@ -78,68 +78,64 @@ class ManipulatorInterface(object):
                                    tcp_loc_rotmat=tcp_loc_rotmat)
 
     def get_jnt_ranges(self):
-        return self.jlc.jnt_ranges
+        return self.jlc.joint_ranges
 
     def goto_homeconf(self):
-        self.jlc.fk(jnt_values=self.jlc.homeconf)
+        self.jlc.fk(joint_values=self.jlc.homeconf)
 
     def goto_zeroconf(self):
-        self.jlc.fk(jnt_values=self.jlc.zeroconf)
+        self.jlc.fk(joint_values=self.jlc.zeroconf)
 
     def fix_to(self, pos, rotmat, jnt_values=None):
         return self.jlc.fix_to(pos=pos, rotmat=rotmat, jnt_values=jnt_values)
 
     def is_jnt_values_in_ranges(self, jnt_values):
-        return self.jlc.is_jnt_values_in_ranges(jnt_values)
+        return self.jlc.are_joint_values_in_ranges(jnt_values)
 
     def fk(self, jnt_values):
         if jnt_values is None:
             raise Exception("Joint values are None!")
-        return self.jlc.fk(jnt_values=jnt_values)
+        return self.jlc.fk(joint_values=jnt_values)
 
     def get_jnt_values(self):
-        return self.jlc.get_jnt_values()
+        return self.jlc.get_joint_values()
 
     def rand_conf(self):
         return self.jlc.rand_conf()
 
     def ik(self,
-           tgt_pos,
-           tgt_rotmat,
+           tgt_pos: np.ndarray,
+           tgt_rotmat: np.ndarray,
+           tcp_loc_pos: np.ndarray = None,
+           tcp_loc_rotmat: np.ndarray = None,
+           tcp_jnt_id=None,
            seed_jnt_values=None,
            max_niter=100,
-           tcp_jnt_id=None,
-           tcp_loc_pos=None,
-           tcp_loc_rotmat=None,
            local_minima="accept",
            toggle_debug=False):
-        return self.jlc.ik(tgt_pos=tgt_pos,
-                           tgt_rotmat=tgt_rotmat,
-                           seed_jnt_values=seed_jnt_values,
-                           max_niter=max_niter,
-                           tcp_jnt_id=tcp_jnt_id,
-                           tcp_loc_pos=tcp_loc_pos,
-                           tcp_loc_rotmat=tcp_loc_rotmat,
-                           local_minima=local_minima,
-                           toggle_debug=toggle_debug)
-
-    def analytical_ik(self,
-                      tgt_pos: np.array,
-                      tgt_rotmat: np.array,
-                      tcp_loc_pos: np.array,
-                      tcp_loc_rotmat: np.array):
         """
-        analytical ik sovler,
-        tcp_jnt_id is always jlc.tcp_jnt_id (-1)
+        by default the function calls the numerical implementation of jlc
+        override this function in case of analytical IK; ignore the unrequired parameters
         :param tgt_pos:
         :param tgt_rotmat:
         :param tcp_loc_pos:
         :param tcp_loc_rotmat:
+        :param tcp_jnt_id:
+        :param seed_jnt_values:
+        :param max_niter:
+        :param local_minima:
+        :param toggle_debug:
         :return:
-        author: weiwei
-        date: 20230728
         """
-        pass
+        return self.jlc.ik(tgt_pos=tgt_pos,
+                           tgt_rotmat=tgt_rotmat,
+                           tcp_loc_pos=tcp_loc_pos,
+                           tcp_loc_rotmat=tcp_loc_rotmat,
+                           tcp_joint_id=tcp_jnt_id,
+                           seed_joint_values=seed_jnt_values,
+                           max_niter=max_niter,
+                           local_minima=local_minima,
+                           toggle_debug=toggle_debug)
 
     def manipulability(self,
                        tcp_jnt_id,
@@ -162,7 +158,7 @@ class ManipulatorInterface(object):
                  tcp_jnt_id,
                  tcp_loc_pos,
                  tcp_loc_rotmat):
-        return self.jlc.jacobian(tcp_jnt_id=tcp_jnt_id,
+        return self.jlc.jacobian(tcp_joint_id=tcp_jnt_id,
                                  tcp_loc_pos=tcp_loc_pos,
                                  tcp_loc_rotmat=tcp_loc_rotmat)
 
@@ -216,12 +212,12 @@ class ManipulatorInterface(object):
                       toggle_jntscs=False,
                       rgba=None,
                       name='manipulator_mesh'):
-        return self.jlc._mt.gen_meshmodel(tcp_jnt_id=tcp_jnt_id,
-                                          tcp_loc_pos=tcp_loc_pos,
-                                          tcp_loc_rotmat=tcp_loc_rotmat,
-                                          toggle_tcpcs=toggle_tcpcs,
-                                          toggle_jntscs=toggle_jntscs,
-                                          name=name, rgba=rgba)
+        return self.jlc._mt.gen_mesh_model(tcp_jnt_id=tcp_jnt_id,
+                                           tcp_loc_pos=tcp_loc_pos,
+                                           tcp_loc_rotmat=tcp_loc_rotmat,
+                                           toggle_tcpcs=toggle_tcpcs,
+                                           toggle_jntscs=toggle_jntscs,
+                                           name=name, rgba=rgba)
 
     def gen_stickmodel(self,
                        rgba=np.array([.5, 0, 0, 1]),
@@ -255,13 +251,13 @@ class ManipulatorInterface(object):
 
     def disable_cc(self):
         """
-        clear pairs and nodepath
+        clear pairs and pdndp
         :return:
         """
-        for cdelement in self.cc.all_cdelements:
+        for cdelement in self.cc.all_cd_elements:
             cdelement['cdprimit_childid'] = -1
         self.cc = None
-        # self.cc.all_cdelements = []
+        # self.cc.all_cd_elements = []
         # for child in self.cc.np.getChildren():
         #     child.removeNode()
         # self.cc.nbitmask = 0
@@ -271,5 +267,5 @@ class ManipulatorInterface(object):
         # deepcopying colliders are problematic, I have to update it manually
         if self.cc is not None:
             for child in self_copy.cc.np.getChildren():  # empty NodePathCollection if the np does not have a child
-                self_copy.cc.ctrav.addCollider(child, self_copy.cc.chan)
+                self_copy.cc.cd_trav.addCollider(child, self_copy.cc.cd_handler)
         return self_copy

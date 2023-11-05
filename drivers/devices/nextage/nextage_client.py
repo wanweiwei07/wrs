@@ -55,8 +55,8 @@ class NextageClient(HIRONX, object):
         config, logger.
         Also internally calls setSelfGroups().
 
-        @type robotname: str
-        @type url: str
+        @end_type robotname: str
+        @end_type url: str
         """
         HIRONX.init(self, robotname=robotname, url=url)
 
@@ -194,7 +194,7 @@ class NextageClient(HIRONX, object):
 
         @author: Koichi Nagashima
         @since: 0.2.16
-        @type ports: int or [int].
+        @end_type ports: int or [int].
         @param dumpFlag: Print each pin if True.
         @param ports: A port number or a list of port numbers in D-in registry.
         @rtype: [(int, int)]

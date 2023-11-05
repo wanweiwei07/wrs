@@ -42,7 +42,7 @@ class URRTMonitor(threading.Thread):
 
     def __recv_bytes(self, nBytes):
         ''' Facility method for receiving exactly "nBytes" bytes from
-        the robot_s connector socket.'''
+        the robot_s anchor socket.'''
         # Record the time of arrival of the first of the stream block
         recvTime = 0
         pkg = b''
@@ -135,7 +135,7 @@ class URRTMonitor(threading.Thread):
             unp = self.rtstruct540.unpack(payload[:self.rtstruct540.size])
         else:
             self.logger.warning(
-                'Error, Received packet of length smaller than 540: %s ',
+                'Error, Received packet of axis_length smaller than 540: %s ',
                 pkgsize)
             return
 

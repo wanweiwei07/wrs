@@ -62,7 +62,7 @@ def toUnitVec(vec):
     """Converts the given vector to a unit vector
 
     :param numpy.array vec:
-      The vector to transform to unit length
+      The vector to transform to unit axis_length
 
     :rtype: numpy.array
 
@@ -70,7 +70,7 @@ def toUnitVec(vec):
     return vec / numpy.sqrt(numpy.vdot(vec, vec))
 
 def checkSource( source, components, maxindex):
-    """Check if a source objects complies with the needed `components` and has the needed length
+    """Check if a source objects complies with the needed `components` and has the needed axis_length
 
     :param collada.source.Source source:
       A source instance to check

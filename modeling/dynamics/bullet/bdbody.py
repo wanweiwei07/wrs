@@ -26,20 +26,20 @@ class BDBody(BulletRigidBodyNode):
         TODO: triangles do not seem to work (very slow) in the github version (20210418)
         Use convex if possible
         :param initor: could be itself (copy), or an instance of collision model
-        :param type: triangle or convex
+        :param end_type: triangle or convex
         :param mass:
         :param restitution: bounce parameter
         :param friction:
-        :param dynamic: only applicable to triangle type, if an object does not move with force, it is not dynamic
+        :param dynamic: only applicable to triangle end_type, if an object does not move with force, it is not dynamic
         :param name:
         author: weiwei
         date: 20190626, 20201119
         """
         super().__init__(name)
         if isinstance(initor, gm.GeometricModel):
-            if initor._objtrm is None:
+            if initor._trm_mesh is None:
                 raise ValueError("Only applicable to models with a trimesh!")
-            self.com = initor.objtrm.center_mass * base.physics_scale
+            self.com = initor.trm_mesh.center_mass * base.physics_scale
             self.setMass(mass)
             self.setRestitution(restitution)
             self.setFriction(friction)
@@ -54,7 +54,7 @@ class BDBody(BulletRigidBodyNode):
             if allow_ccd:  # continuous collision detection
                 self.setCcdMotionThreshold(1e-7)
                 self.setCcdSweptSphereRadius(0.0005*base.physics_scale)
-            geom_np = initor.objpdnp.getChild(0).find("+GeomNode")
+            geom_np = initor.pdndp.getChild(0).find("+GeomNode")
             geom = copy.deepcopy(geom_np.node().getGeom(0))
             vdata = geom.modifyVertexData()
             vertices = copy.deepcopy(np.frombuffer(vdata.modifyArrayHandle(0).getData(), dtype=np.float32))
@@ -90,7 +90,7 @@ class BDBody(BulletRigidBodyNode):
             pd_homomat = geomtf.getMat()
             pd_com_pos = pd_homomat.xformPoint(Vec3(self.com[0], self.com[1], self.com[2]))
             np_homomat = dh.pdmat4_to_npmat4(pd_homomat)
-            np_com_pos = dh.pdv3_to_npv3(pd_com_pos)
+            np_com_pos = dh.pdvec3_to_npvec3(pd_com_pos)
             np_homomat[:3, 3] = np_com_pos  # update center to com
             self.setTransform(TransformState.makeMat(dh.npmat4_to_pdmat4(np_homomat)))
         elif isinstance(initor, BDBody):
@@ -117,18 +117,18 @@ class BDBody(BulletRigidBodyNode):
     def get_pos(self):
         pdmat4 = self.getTransform().getMat()
         pdv3 = pdmat4.xformPoint(Vec3(-self.com[0], -self.com[1], -self.com[2]))
-        pos = dh.pdv3_to_npv3(pdv3)/base.physics_scale
+        pos = dh.pdvec3_to_npvec3(pdv3) / base.physics_scale
         return pos
 
     def set_pos(self, npvec3):
-        self.setPos(dh.pdv3_to_npv3(npvec3)*base.physics_scale)
+        self.setPos(dh.pdvec3_to_npvec3(npvec3) * base.physics_scale)
 
     def get_homomat(self):
         """
-        get the homomat considering the original local frame
+        get the pos considering the original local frame
         the dynamic body moves in a local frame defined at com (line 46 of this file), instead of returning the
-        homomat of the dynamic body, this file returns the pose of original local frame
-        the returned homomat can be used by collision bodies for rendering.
+        pos of the dynamic body, this file returns the pose of original local frame
+        the returned pos can be used by collision bodies for rendering.
         :return:
         author: weiwei
         date: 2019?, 20201119
@@ -136,21 +136,21 @@ class BDBody(BulletRigidBodyNode):
         pd_homomat = self.getTransform().getMat()
         pd_com_pos = pd_homomat.xformPoint(Vec3(-self.com[0], -self.com[1], -self.com[2]))
         np_homomat = dh.pdmat4_to_npmat4(pd_homomat)
-        np_com_pos = dh.pdv3_to_npv3(pd_com_pos)
+        np_com_pos = dh.pdvec3_to_npvec3(pd_com_pos)
         np_homomat[:3, 3] = np_com_pos/base.physics_scale
         return np_homomat
 
     def set_homomat(self, homomat):
         """
         set the pose of the dynamic body
-        :param homomat: the homomat of the original frame (the collision model)
+        :param homomat: the pos of the original frame (the collision model)
         :return:
         author: weiwei
         date: 2019?, 20201119
         """
         tmp_homomat = copy.deepcopy(homomat)
         tmp_homomat[:3, 3] = tmp_homomat[:3,3]*base.physics_scale
-        pos = rm.homomat_transform_points(tmp_homomat, self.com)
+        pos = rm.transform_points_by_homomat(tmp_homomat, self.com)
         rotmat = tmp_homomat[:3, :3]
         self.setTransform(TransformState.makeMat(dh.npv3mat3_to_pdmat4(pos, rotmat)))
 

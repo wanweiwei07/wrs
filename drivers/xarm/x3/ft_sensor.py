@@ -206,7 +206,7 @@ class FtSensor(Base):
         return ret[0], ret[1]
 
     def set_ft_sensor_sn(self, sn):
-        assert len(sn) >= 14, 'The length of SN is wrong'
+        assert len(sn) >= 14, 'The axis_length of SN is wrong'
         ret = [0]
         if len(sn) == 14:
             for i in range(0, 14):

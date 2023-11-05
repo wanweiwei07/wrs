@@ -1,3 +1,7 @@
+"""
+TODO: Use this file for testing bullet primitives
+"""
+
 import copy
 import math
 import numpy as np
@@ -11,9 +15,9 @@ import modeling._panda_cdhelper as pcd
 import modeling._ode_cdhelper as mcd
 
 # the following two helpers cannot correcty find collision positions, 20211216
-# TODO check if it is caused by the bad bullet transformation in mcd.update_pose
-# import modeling._gimpact_cdhelper as mcd
-# import modeling._bullet_cdhelper as mcd
+# TODO check if it is caused by the bad bullet transformation in mcd_helper.update_pose
+# import modeling._gimpact_cdhelper as mcd_helper
+# import modeling._bullet_cdhelper as mcd_helper
 
 
 class CollisionModel(gm.GeometricModel):
@@ -21,25 +25,25 @@ class CollisionModel(gm.GeometricModel):
     Load an object as a collision model
     Both collison primitives will be generated automatically
     Note: This class heaviliy depends on Panda3D
-          cdnp nodepath of collsion detection primitives
-          pdnp nodepath of mesh+decorations; decorations = coordinate frames, markers, etc.
-          pdnp nodepath of mesh
+          cdnp pdndp of collsion detection primitives
+          pdndp pdndp of mesh+decorations; decorations = coordinate frames, markers, etc.
+          pdndp pdndp of mesh
     author: weiwei
     date: 20190312
     """
 
     def __init__(self,
-                 initor,
+                 initializer,
                  cdprimit_type='box',
                  cdmesh_type='triangles',
                  expand_radius=None,
                  name="auto",
                  userdefined_cdprimitive_fn=None,
-                 btransparency=True,
-                 btwosided=False):
+                 toggle_transparency=True,
+                 toggle_twosided=False):
         """
-        :param initor:
-        :param btransparency:
+        :param initializer:
+        :param toggle_transparency:
         :param cdprimit_type: box, ball, cylinder, point_cloud, user_defined
         :param cdmesh_type: aabb, obb, convex_hull, triangulation
         :param expand_radius:
@@ -50,20 +54,20 @@ class CollisionModel(gm.GeometricModel):
                                            may have multiple CollisionSolid
         date: 201290312, 20201212
         """
-        if isinstance(initor, CollisionModel):
-            self._name = copy.deepcopy(initor.name)
-            self._objpath = copy.deepcopy(initor.objpath)
-            self._objtrm = copy.deepcopy(initor.objtrm)
-            self._objpdnp = copy.deepcopy(initor.objpdnp)
-            self._localframe = copy.deepcopy(initor.localframe)
-            self._cdprimitive_type = copy.deepcopy(initor.cdprimitive_type)
-            self._cdmesh_type = copy.deepcopy(initor.cdmesh_type)
+        if isinstance(initializer, CollisionModel):
+            self._name = copy.deepcopy(initializer.name)
+            self._objpath = copy.deepcopy(initializer.file_path)
+            self._objtrm = copy.deepcopy(initializer.trm_mesh)
+            self._objpdnp = copy.deepcopy(initializer.pdndp)
+            self._localframe = copy.deepcopy(initializer.local_frame)
+            self._cdprimitive_type = copy.deepcopy(initializer.cdprimitive_type)
+            self._cdmesh_type = copy.deepcopy(initializer.cdmesh_type)
         else:
-            super().__init__(initor=initor, name=name, btransparency=btransparency, btwosided=btwosided)
+            super().__init__(initializer=initializer, name=name, toggle_transparency=toggle_transparency, toggle_twosided=toggle_twosided)
             self._cdprimitive_type, collision_node = self._update_cdprimit(cdprimit_type,
                                                                            expand_radius,
                                                                            userdefined_cdprimitive_fn)
-            # use pdnp.getChild instead of a new self._cdnp variable as collision nodepath is not compatible with deepcopy
+            # use pdndp.getChild instead of a new self._cdnp variable as collision pdndp is not compatible with deepcopy
             self._objpdnp.attachNewNode(collision_node)
             self._objpdnp.getChild(1).setCollideMask(BitMask32(2 ** 31))
             self.cdmesh_type = cdmesh_type
@@ -76,22 +80,22 @@ class CollisionModel(gm.GeometricModel):
                                                                      'polygons',
                                                                      'point_cloud',
                                                                      'user_defined']:
-            raise ValueError("Wrong primitive collision model type name!")
+            raise ValueError("Wrong primitive collision model end_type name!")
         if cdprimitive_type == 'surface_balls':
             if expand_radius is None:
                 expand_radius = 0.015
-            collision_node = pcd.gen_surfaceballs_cdnp(self.objtrm, name='cdnp_surface_ball', radius=expand_radius)
+            collision_node = pcd.gen_surfaceballs_pdcnd(self.trm_mesh, name='cdnp_surface_ball', radius=expand_radius)
         else:
             if expand_radius is None:
                 expand_radius = 0.002
             if cdprimitive_type == "box":
-                collision_node = pcd.gen_box_cdnp(self.objpdnp_raw, name='cdnp_box', radius=expand_radius)
+                collision_node = pcd.gen_box_pdcnd(self.pdndp_core, name='cdnp_box', radius=expand_radius)
             if cdprimitive_type == "cylinder":
-                collision_node = pcd.gen_cylindrical_cdnp(self.objpdnp_raw, name='cdnp_cyl', radius=expand_radius)
+                collision_node = pcd.gen_cylindrical_pdcnd(self.pdndp_core, name='cdnp_cyl', radius=expand_radius)
             if cdprimitive_type == "polygons":
-                collision_node = pcd.gen_polygons_cdnp(self.objpdnp_raw, name='cdnp_plys', radius=expand_radius)
+                collision_node = pcd.gen_polygons_pdcnd(self.pdndp_core, name='cdnp_plys', radius=expand_radius)
             if cdprimitive_type == "point_cloud":
-                collision_node = pcd.gen_pointcloud_cdnp(self.objtrm, name='cdnp_ptc', radius=expand_radius)
+                collision_node = pcd.gen_pointcloud_pdcnd(self.trm_mesh, name='cdnp_ptc', radius=expand_radius)
             if cdprimitive_type == "user_defined":
                 collision_node = userdefined_cdprimitive_fn(name="cdnp_usrdef", radius=expand_radius)
         return cdprimitive_type, collision_node
@@ -110,7 +114,7 @@ class CollisionModel(gm.GeometricModel):
                                                            'obb',
                                                            'convex_hull',
                                                            'triangles']:
-            raise ValueError("Wrong mesh collision model type name!")
+            raise ValueError("Wrong mesh collision model end_type name!")
         self._cdmesh_type = cdmesh_type
 
     @property
@@ -123,16 +127,16 @@ class CollisionModel(gm.GeometricModel):
 
     def extract_rotated_vvnf(self):
         if self.cdmesh_type == 'aabb':
-            objtrm = self.objtrm.bounding_box
+            objtrm = self.trm_mesh.aabb_bound
         elif self.cdmesh_type == 'obb':
-            objtrm = self.objtrm.bounding_box_oriented
+            objtrm = self.trm_mesh.obb_bound
         elif self.cdmesh_type == 'convex_hull':
-            objtrm = self.objtrm.convex_hull
+            objtrm = self.trm_mesh.convex_hull
         elif self.cdmesh_type == 'triangles':
-            objtrm = self.objtrm
+            objtrm = self.trm_mesh
         homomat = self.get_homomat()
-        vertices = rm.homomat_transform_points(homomat, objtrm.vertices)
-        vertex_normals = rm.homomat_transform_points(homomat, objtrm.vertex_normals)
+        vertices = rm.transform_points_by_homomat(homomat, objtrm.vertices)
+        vertex_normals = rm.transform_points_by_homomat(homomat, objtrm.vertex_normals)
         faces = objtrm.faces
         return vertices, vertex_normals, faces
 
@@ -147,7 +151,7 @@ class CollisionModel(gm.GeometricModel):
         """
         self._cdprimitive_type, cdnd = self._update_cdprimit(cdprimitive_type, expand_radius,
                                                              userdefined_cdprimitive_fn)
-        # use _objpdnp.getChild instead of a new self._cdnp variable as collision nodepath is not compatible with deepcopy
+        # use _pdndp.getChild instead of a new self._cdnp variable as collision pdndp is not compatible with deepcopy
         self.cdnp.removeNode()
         self._objpdnp.attachNewNode(cdnd)
         self._objpdnp.getChild(1).setCollideMask(BitMask32(2 ** 31))
@@ -163,10 +167,10 @@ class CollisionModel(gm.GeometricModel):
 
     def copy_cdnp_to(self, nodepath, homomat=None, clearmask=False):
         """
-        Return a nodepath including the cdcn,
-        the returned nodepath is attached to the given one
+        Return a pdndp including the cdcn,
+        the returned pdndp is attached to the given one
         :param nodepath: parent np
-        :param homomat: allow specifying a special homomat to virtually represent a pose that is different from the mesh
+        :param homomat: allow specifying a special pos to virtually represent a pose that is different from the mesh
         :return:
         author: weiwei
         date: 20180811
@@ -179,7 +183,7 @@ class CollisionModel(gm.GeometricModel):
         if homomat is None:
             returnnp.setMat(self._objpdnp.getMat())
         else:
-            returnnp.setMat(da.npmat4_to_pdmat4(homomat))  # scale is reset to 1 1 1 after setMat to the given homomat
+            returnnp.setMat(da.npmat4_to_pdmat4(homomat))  # scale is reset to 1 1 1 after setMat to the given pos
             returnnp.setScale(self._objpdnp.getScale())
         return returnnp
 
@@ -235,7 +239,7 @@ class CollisionModel(gm.GeometricModel):
 
     def ray_hit(self, point_from, point_to, option="all"):
         """
-        check the intersection between segment point_from-point_to and the mesh
+        check the intersection between segment spos-epos and the mesh
         :param point_from: 1x3 nparray
         :param point_to:
         :param option: "all" or “closest"
@@ -307,7 +311,7 @@ def gen_stick(spos=np.array([.0, .0, .0]),
     author: weiwei
     date: 20210328
     """
-    stick_sgm = gm.gen_stick(spos=spos, epos=epos, thickness=thickness, type=type, rgba=rgba, sections=sections)
+    stick_sgm = gm.gen_stick(spos=spos, epos=epos, radius=thickness, type=type, rgba=rgba, n_sec=sections)
     stick_cm = CollisionModel(stick_sgm)
     return stick_cm
 
@@ -325,7 +329,7 @@ if __name__ == "__main__":
     objpath = os.path.join(basis.__path__[0], 'objects', 'bunnysim.stl')
     bunnycm = CollisionModel(objpath, cdprimit_type='polygons')
     bunnycm.set_rgba([0.7, 0.7, 0.0, .2])
-    bunnycm.show_localframe()
+    bunnycm.show_local_frame()
     rotmat = rm.rotmat_from_axangle([1, 0, 0], math.pi / 2.0)
     bunnycm.set_rotmat(rotmat)
     bunnycm.show_cdprimit()
@@ -359,9 +363,9 @@ if __name__ == "__main__":
     bpcm.attach_to(base)
     bpcm1.attach_to(base)
     bpcm2.attach_to(base)
-    # bunnycm2.show_cdmesh(type='box')
-    # bunnycm.show_cdmesh(type='box')
-    # bunnycm1.show_cdmesh(type='convexhull')
+    # bunnycm2.show_cdmesh(end_type='box')
+    # bunnycm.show_cdmesh(end_type='box')
+    # bunnycm1.show_cdmesh(end_type='convexhull')
     # tic = time.time()
     # bunnycm2.is_mcdwith([bunnycm, bunnycm1])
     # toc = time.time()

@@ -74,7 +74,7 @@ class Geometry(DaeObject):
                 self.sourceById[src.id] = src
 
         self.primitives = []
-        """List of primitives (base type :class:`collada.primitive.Primitive`) inside this geometry."""
+        """List of primitives (base end_type :class:`collada.primitive.Primitive`) inside this geometry."""
         if primitives is not None:
             self.primitives = primitives
 
@@ -137,7 +137,7 @@ class Geometry(DaeObject):
           unshaped numpy array that contains the indices for
           the inputs referenced in inputlist
         :param numpy.array vcounts:
-          unshaped numpy array that contains the vertex count
+          unshaped numpy array that contains the vertex n_sec_minor
           for each polygon in this polylist
         :param collada.source.InputList inputlist:
           The inputs for this primitive
@@ -349,7 +349,7 @@ class BoundGeometry( object ):
 
     def primitives(self):
         """Returns an iterator that iterates through the primitives in
-        the bound geometry. Each value returned will be of base type
+        the bound geometry. Each value returned will be of base end_type
         :class:`collada.primitive.BoundPrimitive`"""
         for p in self._primitives:
             boundp = p.bind( self.matrix, self.materialnodebysymbol )

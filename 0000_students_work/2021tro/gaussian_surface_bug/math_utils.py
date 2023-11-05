@@ -380,7 +380,7 @@ def get_nrml(coef, p):
         nrml = nrml / np.linalg.norm(nrml)
         return nrml
     else:
-        print('wrong coef length!')
+        print('wrong coef axis_length!')
         return None
 
 

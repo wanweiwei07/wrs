@@ -33,13 +33,13 @@ def update(pk_obj, pcd_list, ball_center_list, counter, task):
         if color_image_handle and depth_image_handle:
             break
     point_cloud = pk_obj.transform_depth_image_to_point_cloud(depth_image_handle)
-    point_cloud = rm.homomat_transform_points(affine_matrix, point_cloud)
+    point_cloud = rm.transform_points_by_homomat(affine_matrix, point_cloud)
     ball = []
     for id, point_cloud_sub in enumerate(point_cloud):
         if 0.3 < point_cloud_sub[0] < 3.3 and -1.3 < point_cloud_sub[1] < .3 and 0.5 < point_cloud_sub[2] < 2.5:
             ball.append(point_cloud_sub)
 
-    mypoint_cloud = gm.GeometricModel(initor=point_cloud)
+    mypoint_cloud = gm.GeometricModel(initializer=point_cloud)
     mypoint_cloud.attach_to(base)
     pcd_list.append(mypoint_cloud)
 
@@ -70,7 +70,7 @@ def update(pk_obj, pcd_list, ball_center_list, counter, task):
                 orbit.append(np.array([f_x(t), f_y(t), f_z(t)]))
             for id in range(len(orbit)):
                 if id > 0:
-                    tmp_stick = gm.gen_stick(spos=orbit[id-1], epos=orbit[id], thickness=.01,type="round")
+                    tmp_stick = gm.gen_stick(spos=orbit[id-1], epos=orbit[id], radius=.01, type="round")
                     tmp_stick.attach_to(base)
                     para_list.append(tmp_stick)
             return task.done

@@ -179,10 +179,10 @@ def resize_drawpath_ms(drawpath_ms, w, h, space=5):
         else:
             return b, a
 
-    print('length of each stroke(dup):', [len(stroke) for stroke in drawpath_ms])
+    print('axis_length of each stroke(dup):', [len(stroke) for stroke in drawpath_ms])
     drawpath_ms = [remove_list_dup(stroke) for stroke in drawpath_ms]
     stroke_len_list = [len(stroke) for stroke in drawpath_ms]
-    print('length of each stroke:', stroke_len_list)
+    print('axis_length of each stroke:', stroke_len_list)
 
     p_narray = np.array([p for s in drawpath_ms for p in s])
     pl_w = max(p_narray[:, 0]) - min(p_narray[:, 0])
@@ -223,10 +223,10 @@ def rayhitmesh_closest(obj, pfrom, pto, toggledebug=False):
     pos, nrml = mcm.getRayHitMeshClosest(pfrom=pfrom, pto=pto, objcm=obj)
     if toggledebug:
         print('------------------')
-        print('pfrom, pto:', pfrom, pto)
+        print('spos, epos:', pfrom, pto)
         print('pos:', pos)
         print('normal:', -nrml)
-        # base.pggen.plotArrow(base.render, spos=pfrom, epos=pto, length=100, rgba=(0, 1, 0, 0.5))
+        # base.pggen.plotArrow(base.render, spos=spos, epos=epos, axis_length=100, rgba=(0, 1, 0, 0.5))
 
     if pos is not None:
         return np.array(pos), -np.array(nrml)
@@ -265,7 +265,7 @@ def rayhitmesh_drawpath_ss(obj_item, drawpath, direction=np.asarray((0, 0, 1)), 
                 z_range = (pos[2] - plot_edge_z - 9, pos[2] + plot_edge_z - .5)
 
                 pcd_edge = 0
-                pcd = [p for p in obj_item.pcd if
+                pcd = [p for p in obj_item.pcd_helper if
                        x_range[0] - pcd_edge < p[0] < x_range[1] + pcd_edge and
                        y_range[0] - pcd_edge < p[1] < y_range[1] + pcd_edge and
                        z_range[0] - pcd_edge < p[2] < z_range[1] + pcd_edge]
@@ -302,7 +302,7 @@ def rayhitmesh_drawpath_ms(obj_item, drawpath_ms, direction=np.asarray((0, 0, 1)
                 pos_nrml_list.append([None, None])
 
         if error_method == 'GD':
-            error, error_list = get_prj_error(drawpath, pos_nrml_list, method=error_method, obj_pcd=obj_item.pcd)
+            error, error_list = get_prj_error(drawpath, pos_nrml_list, method=error_method, obj_pcd=obj_item.pcd_helper)
         else:
             error, error_list = get_prj_error(drawpath, pos_nrml_list)
 
@@ -817,14 +817,14 @@ def __find_nxt_p_intg(drawpath_p1, drawpath_p2, kdt_d3, p0, n0, direction=np.arr
         y_range = (min(knn_p0[:, 1].flatten()) - plot_edge, max(knn_p0[:, 1].flatten()) + plot_edge)
         z_range = (min(knn_p0[:, 2].flatten()) - plot_edge_z, max(knn_p0[:, 2].flatten()) + plot_edge_z)
 
-        # if pcd is not None:
+        # if pcd_helper is not None:
         #     pcd_edge = 6.5
-        #     pcd = [p for p in pcd if
+        #     pcd_helper = [p for p in pcd_helper if
         #            x_range[0] - pcd_edge < p[0] < x_range[1] + pcd_edge and
         #            y_range[0] - pcd_edge+5 < p[1] < y_range[1] + pcd_edge and
         #            z_range[0] - pcd_edge < p[2] < z_range[1] + pcd_edge]
-        #     pcd = np.asarray(random.choices(pcd, k=2000))
-        #     ax.scatter(pcd[:, 0], pcd[:, 1], pcd[:, 2], c='k', alpha=.1, s=1)
+        #     pcd_helper = np.asarray(random.choices(pcd_helper, k=2000))
+        #     ax.scatter(pcd_helper[:, 0], pcd_helper[:, 1], pcd_helper[:, 2], c='k', alpha=.1, s=1)
 
         ax.scatter(knn_p0[:, 0], knn_p0[:, 1], knn_p0[:, 2], c='y', s=1, alpha=.5)
         f_q_base = mu.fit_qua_surface(knn_p0)
@@ -910,7 +910,7 @@ def __prj_stroke(stroke, drawcenter, pcd, pcd_nrmls, kdt_d3, mode='DI', objcm=No
             print('pcd_start_p:', pcd_start_p, 'pcd_start_n:', pcd_start_n)
         else:
             pcd_start_p, pcd_start_n = rayhitmesh_p(objcm, drawcenter, stroke[0], direction=direction)
-    # base.pggen.plotSphere(base.render, pcd_start_p, radius=2, rgba=(0, 0, 1, 1))
+    # base.pggen.plotSphere(base.render, pcd_start_p, major_radius=2, rgba=(0, 0, 1, 1))
     # base.run()
     pos_nrml_list = [[pcd_start_p, pcd_start_n]]
 
@@ -1124,8 +1124,8 @@ def prj_drawpath_ss_on_pcd(obj_item, drawpath, mode='DI', direction=np.asarray((
     for p in drawpath:
         base.pggen.plotSphere(base.render, pos=(p[0] + obj_item.drawcenter[0], p[1] + obj_item.drawcenter[1], 80),
                               radius=1, rgba=(1, 0, 0, 1))
-    print('--------------map single stroke on pcd--------------')
-    print('pcd num:', len(obj_item.pcd))
+    print('--------------map single stroke on pcd_helper--------------')
+    print('pcd_helper num:', len(obj_item.pcd_helper))
     print('draw path point num:', len(drawpath))
 
     surface = None
@@ -1134,19 +1134,19 @@ def prj_drawpath_ss_on_pcd(obj_item, drawpath, mode='DI', direction=np.asarray((
     pca_trans = True
     if mode == 'rbf_g':
         time_start = time.time()
-        # pcd = np.asarray(random.choices(pcd, k=5000))
+        # pcd_helper = np.asarray(random.choices(pcd_helper, k=5000))
         if pca_trans:
-            pcd_tr, transmat = mu.trans_data_pcv(obj_item.pcd, random_rot=False)
+            pcd_tr, transmat = mu.trans_data_pcv(obj_item.pcd_helper, random_rot=False)
             surface = sfc.RBFSurface(pcd_tr[:, :2], pcd_tr[:, 2], kernel=KERNEL)
             # surface = sfc.MixedGaussianSurface(pcd_tr[:, :2], pcd_tr[:, 2], n_mix=1)
         else:
-            surface = sfc.RBFSurface(obj_item.pcd[:, :2], obj_item.pcd[:, 2], kernel=KERNEL)
+            surface = sfc.RBFSurface(obj_item.pcd_helper[:, :2], obj_item.pcd_helper[:, 2], kernel=KERNEL)
         time_cost_rbf = time.time() - time_start
         print('time cost(rbf global):', time_cost_rbf)
 
-    kdt_d3, pcd_narray_d3 = get_kdt(obj_item.pcd.tolist(), dimension=3)
+    kdt_d3, pcd_narray_d3 = get_kdt(obj_item.pcd_helper.tolist(), dimension=3)
     pos_nrml_list, error, error_list, time_cost = \
-        __prj_stroke(drawpath, obj_item.drawcenter, obj_item.pcd, obj_item.nrmls, kdt_d3, objcm=obj_item.objcm,
+        __prj_stroke(drawpath, obj_item.drawcenter, obj_item.pcd_helper, obj_item.nrmls, kdt_d3, objcm=obj_item.objcm,
                      mode=mode, pcd_start_p=None, pcd_start_n=None, direction=direction, toggledebug=toggledebug,
                      error_method=error_method, surface=surface, transmat=transmat)
     print('avg error', np.mean(error_list))
@@ -1161,15 +1161,15 @@ def prj_drawpath_ss_loop(obj_item, drawpath, mode='DI', direction=np.asarray((0,
     loop_pos_nrml_list = []
     loop_time_cost_list = []
 
-    print('--------------map single stroke to pcd loop--------------')
-    print('pcd num:', len(obj_item.pcd))
+    print('--------------map single stroke to pcd_helper loop--------------')
+    print('pcd_helper num:', len(obj_item.pcd_helper))
     print('draw path point num:', len(drawpath))
     for i in range(0, len(drawpath), step):
         print('loop:', i)
         drawpath_tmp = drawpath[i:] + drawpath[:i]
-        kdt_d3, pcd_narray_d3 = get_kdt(obj_item.pcd.tolist(), dimension=3)
+        kdt_d3, pcd_narray_d3 = get_kdt(obj_item.pcd_helper.tolist(), dimension=3)
         pos_nrml_list, error, error_list, time_cost = \
-            __prj_stroke(drawpath_tmp, obj_item.drawcenter, obj_item.pcd, obj_item.nrmls, kdt_d3,
+            __prj_stroke(drawpath_tmp, obj_item.drawcenter, obj_item.pcd_helper, obj_item.nrmls, kdt_d3,
                          objcm=obj_item.objcm, mode=mode, pcd_start_p=None, pcd_start_n=None, direction=direction,
                          toggledebug=toggledebug, error_method=error_method)
         loop_error_list.append(error)
@@ -1186,8 +1186,8 @@ def prj_drawpath_ss_SI_loop(obj_item, drawpath, error_method='ED', toggledebug=F
     loop_pos_nrml_list = []
     loop_time_cost_list = []
 
-    print('--------------map single stroke to pcd loop--------------')
-    print('pcd num:', len(obj_item.pcd))
+    print('--------------map single stroke to pcd_helper loop--------------')
+    print('pcd_helper num:', len(obj_item.pcd_helper))
     print('draw path point num:', len(drawpath))
     for i in range(0, len(drawpath), step):
         print('loop:', i)
@@ -1208,10 +1208,10 @@ def prj_drawpath_ss_SI_loop(obj_item, drawpath, error_method='ED', toggledebug=F
 
 def prj_drawpath_ms_on_pcd(obj_item, drawpath_ms, mode='DI', step=1.0, direction=np.asarray((0, 0, 1)),
                            error_method='ED', toggledebug=False, pca_trans=True):
-    print(f'--------------map multiple strokes on pcd({mode})--------------')
-    print('pcd num:', len(obj_item.pcd))
+    print(f'--------------map multiple strokes on pcd_helper({mode})--------------')
+    print('pcd_helper num:', len(obj_item.pcd_helper))
     print('stroke num:', len(drawpath_ms))
-    kdt_d3, point_narray_d3 = get_kdt(obj_item.pcd, dimension=3)
+    kdt_d3, point_narray_d3 = get_kdt(obj_item.pcd_helper, dimension=3)
 
     pos_nrml_list_ms = []
     error_ms = []
@@ -1220,13 +1220,13 @@ def prj_drawpath_ms_on_pcd(obj_item, drawpath_ms, mode='DI', step=1.0, direction
     surface = None
     transmat = np.eye(3)
     time_cost_rbf = 0
-    # pcdu.show_pcd(obj_item.pcd)
+    # pcdu.show_pcd(obj_item.pcd_helper)
     # base.run()
     if mode == 'rbf_g':
         time_start = time.time()
-        pcd = obj_item.pcd
-        # print(len(obj_item.pcd))
-        # pcd = np.asarray(random.choices(pcd, k=50000))
+        pcd = obj_item.pcd_helper
+        # print(len(obj_item.pcd_helper))
+        # pcd_helper = np.asarray(random.choices(pcd_helper, k=50000))
         if pca_trans:
             pcd_tr, transmat = mu.trans_data_pcv(pcd, random_rot=False)
             surface = sfc.RBFSurface(pcd_tr[:, :2], pcd_tr[:, 2], kernel=KERNEL)
@@ -1250,14 +1250,14 @@ def prj_drawpath_ms_on_pcd(obj_item, drawpath_ms, mode='DI', step=1.0, direction
         if i > 0:
             gotostart_stroke = mu.linear_interp_2d(drawpath_ms[i - 1][-1], stroke[0], step=step)
             gotostart_pos_nrml_list, _, _, time_cost = \
-                __prj_stroke(gotostart_stroke, obj_item.drawcenter, obj_item.pcd, obj_item.nrmls, kdt_d3,
+                __prj_stroke(gotostart_stroke, obj_item.drawcenter, obj_item.pcd_helper, obj_item.nrmls, kdt_d3,
                              objcm=obj_item.objcm, mode=mode, direction=direction,
                              pcd_start_p=pos_nrml_list_ms[i - 1][-1][0], pcd_start_n=pos_nrml_list_ms[i - 1][-1][1],
                              toggledebug=toggledebug, surface=surface, transmat=transmat)
             time_cost_total += time_cost
 
             stroke_pos_nrml_list, error, error_list, time_cost = \
-                __prj_stroke(stroke, obj_item.drawcenter, obj_item.pcd, obj_item.nrmls, kdt_d3,
+                __prj_stroke(stroke, obj_item.drawcenter, obj_item.pcd_helper, obj_item.nrmls, kdt_d3,
                              objcm=obj_item.objcm, mode=mode, error_method=error_method, direction=direction,
                              pcd_start_p=gotostart_pos_nrml_list[-1][0], pcd_start_n=gotostart_pos_nrml_list[-1][1],
                              toggledebug=toggledebug, surface=surface, transmat=transmat)
@@ -1265,7 +1265,7 @@ def prj_drawpath_ms_on_pcd(obj_item, drawpath_ms, mode='DI', step=1.0, direction
 
         else:
             stroke_pos_nrml_list, error, error_list, time_cost = \
-                __prj_stroke(stroke, obj_item.drawcenter, obj_item.pcd, obj_item.nrmls, kdt_d3,
+                __prj_stroke(stroke, obj_item.drawcenter, obj_item.pcd_helper, obj_item.nrmls, kdt_d3,
                              objcm=obj_item.objcm, mode=mode, direction=direction, error_method=error_method,
                              toggledebug=toggledebug, surface=surface, transmat=transmat)
             time_cost_total += time_cost
@@ -1340,7 +1340,7 @@ def __prj_stroke_SI(stroke, drawcenter, uv, vs, nrmls, faces, scale_list, error_
                 v_draw = p_uv - polygon[0]
                 v_draw = (v_draw[0], v_draw[1], 0)
                 rotmat = rm.rotmat_betweenvector(np.array([0, 0, 1]), nrmls[face_id])
-                # base.pggen.plotSphere(base.render, vs[face[0]], radius=1, rgba=(1, 1, 0, 1))
+                # base.pggen.plotSphere(base.render, vs[face[0]], major_radius=1, rgba=(1, 1, 0, 1))
                 prj_p = vs[face[0]] + np.dot(rotmat, v_draw) * scale_list[face_id]
                 pos_nrml_list.append([prj_p, nrmls[face_id]])
                 break
@@ -1363,7 +1363,7 @@ def prj_drawpath_ss_SI(obj_item, drawpath, toggledebug=False):
 def prj_drawpath_ms_SI(obj_item, drawpath_ms, toggledebug=False):
     time_cost_total = 0
     uvs, vs, nrmls, faces, scale_list = cu.lscm_objcm(obj_item.objcm, toggledebug=toggledebug)
-    # uvs, vs, nrmls, faces, scale_list = cu.lscm_objcm(pcdu.reconstruct_surface(obj_item.pcd), toggledebug=toggledebug)
+    # uvs, vs, nrmls, faces, scale_list = cu.lscm_objcm(pcdu.reconstruct_surface(obj_item.pcd_helper), toggledebug=toggledebug)
     uv_center = cu.get_uv_center(uvs)
     error_ms = []
     error_list_ms = []
@@ -1382,7 +1382,7 @@ def prj_drawpath_ms_SI(obj_item, drawpath_ms, toggledebug=False):
 
 def prj_drawpath_ss_II(obj_item, drawpath, toggledebug=False):
     time_start = time.time()
-    uvs, vs, nrmls, faces, scale_list = cu.lscm_pcd(obj_item.pcd, obj_item.nrmls, toggledebug=toggledebug)
+    uvs, vs, nrmls, faces, scale_list = cu.lscm_pcd(obj_item.pcd_helper, obj_item.nrmls, toggledebug=toggledebug)
     uv_center = cu.get_uv_center(uvs)
     kdt_uv, _ = get_kdt(uvs, dimension=2)
     pos_nrml_list, error, error_list = __prj_stroke_II(drawpath, uv_center, vs, nrmls, kdt_uv, scale_list,
@@ -1394,7 +1394,7 @@ def prj_drawpath_ss_II(obj_item, drawpath, toggledebug=False):
 
 def prj_drawpath_ms_II(obj_item, drawpath_ms, toggledebug=False):
     time_strat = time.time()
-    uvs, vs, nrmls, faces, scale_list = cu.lscm_pcd(obj_item.pcd, obj_item.nrmls, toggledebug=toggledebug)
+    uvs, vs, nrmls, faces, scale_list = cu.lscm_pcd(obj_item.pcd_helper, obj_item.nrmls, toggledebug=toggledebug)
     uv_center = cu.get_uv_center(uvs)
 
     error_ms = []
@@ -1441,7 +1441,7 @@ def show_drawpath(pos_nrml_list, color=(1, 0, 0), show_nrmls=False, transparency
         if p is not None:
             # if i < len(pos_nrml_list) - 1:
             #     base.pggen.plotStick(base.render, spos=p, epos=pos_nrml_list[i + 1][0],
-            #                          thickness=1, rgba=(1, 1, 0, 1))
+            #                          major_radius=1, rgba=(1, 1, 0, 1))
             base.pggen.plotSphere(base.render, np.array(p), radius=1, rgba=(color[0], color[1], color[2], 1))
             if show_nrmls:
                 base.pggen.plotArrow(base.render, spos=p, epos=p + 10 * n,
@@ -1453,9 +1453,9 @@ def get_penmat4(pos_nrml_list, pen_orgrot=(1, 0, 0)):
     for p, n in pos_nrml_list:
         # TODO: remove if
         # if rm.angle_between_vectors(n, np.asarray((0, 1, 0))) > 3:
-        #     rot = rm.rotmat_betweenvector(pen_orgrot, -n)
+        #     rotmat = rm.rotmat_betweenvector(pen_orgrot, -n)
         # else:
-        #     rot = rm.rotmat_betweenvector(pen_orgrot, n)
+        #     rotmat = rm.rotmat_betweenvector(pen_orgrot, n)
         rot = rm.rotmat_betweenvector(pen_orgrot, n)
         objmat4_list.append(rm.homobuild(p, rot))
     return objmat4_list
@@ -1518,7 +1518,7 @@ def get_connection_error(pos_nrml_list, size=(80, 80), step=1):
 
 def dump_mapping_res(f_name, tgt_item, drawpath, pos_nrml_list, time_cost):
     res_dict = {'drawpath': drawpath, 'pos_nrml_list': pos_nrml_list, 'time_cost': time_cost,
-                'objpcd': tgt_item.pcd}
+                'objpcd': tgt_item.pcd_helper}
     pickle.dump(res_dict, open(os.path.join(config.ROOT, 'log/mapping', f_name), 'wb'))
 
 
@@ -1583,7 +1583,7 @@ if __name__ == '__main__':
     if dump_f_name == 'box':
         tgt_item.set_drawcenter((60, 50, 20))
 
-    center = pcdu.get_pcd_center(tgt_item.pcd)
+    center = pcdu.get_pcd_center(tgt_item.pcd_helper)
     base = pc.World(camp=[center[0], center[1], center[2] + 300],
                     lookatpos=[center[0], center[1], center[2]], w=500, h=500)
     # base.pggen.plotAxis(base.render)

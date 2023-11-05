@@ -29,7 +29,7 @@ def load_path(obj, file_type=None):
     elif is_sequence(obj):
         loaded = lines_to_path(obj)
     else:
-        raise ValueError('Not a supported object type!')
+        raise ValueError('Not a supported object end_type!')
     path = _create_path(**loaded)
     return path
 

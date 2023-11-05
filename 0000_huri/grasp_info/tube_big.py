@@ -13,7 +13,7 @@ if __name__ == '__main__':
     gripper_instance = yg.YumiGripper(enable_cc=True, cdmesh_type='aabb')
     objcm = cm.CollisionModel('../objects/tubebig.stl', cdmesh_type='convex_hull')
     objcm.attach_to(base)
-    objcm.show_localframe()
+    objcm.show_local_frame()
     grasp_info_list = []
     for height in [.08, .095]:
         for roll_angle in [math.pi*.1, math.pi*.2]:

@@ -163,7 +163,7 @@ class Asset(DaeObject):
         if upaxis is None:
             upaxis = UP_AXIS.Y_UP
         self.upaxis = upaxis
-        """Instance of type :class:`collada.asset.UP_AXIS` indicating the up-axis of the asset"""
+        """Instance of end_type :class:`collada.asset.UP_AXIS` indicating the up-axis of the asset"""
 
         if contributors is None:
             contributors = []

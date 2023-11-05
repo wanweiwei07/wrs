@@ -3,8 +3,8 @@ import math
 import numpy as np
 import basis.robot_math as rm
 import modeling.model_collection as mc
-import robot_sim._kinematics.jlchain as jl
-import robot_sim.robots.robot_interface as ri
+import robot_sim.kinematics.jlchain as jl
+import robot_sim.robots.system_interface as ri
 
 
 class TBM(object):
@@ -15,15 +15,15 @@ class TBM(object):
         self.name = name
         this_dir, this_filename = os.path.split(__file__)
         # head
-        self.head = jl.JLChain(pos=pos, rotmat=rotmat, homeconf=np.zeros(1), name='head')
-        self.head.jnts[1]['loc_pos'] = np.zeros(3)
-        self.head.jnts[1]['loc_motionax'] = np.array([1, 0, 0])
+        self.head = jl.JLChain(pos=pos, rotmat=rotmat, home_conf=np.zeros(1), name='head')
+        self.head.joints[1]['pos_in_loc_tcp'] = np.zeros(3)
+        self.head.joints[1]['loc_motionax'] = np.array([1, 0, 0])
         self.head.lnks[0]['name'] = 'tbm_front_shield'
-        self.head.lnks[0]['loc_pos'] = np.array([0, 0, 0])
+        self.head.lnks[0]['pos_in_loc_tcp'] = np.array([0, 0, 0])
         self.head.lnks[0]['mesh_file'] = os.path.join(this_dir, 'meshes', 'tbm_front_shield.stl')
         self.head.lnks[0]['rgba'] = [.7, .7, .7, .3]
         self.head.lnks[1]['name'] = 'tbm_cutter_head'
-        self.head.lnks[1]['loc_pos'] = np.array([0, 0, 0])
+        self.head.lnks[1]['pos_in_loc_tcp'] = np.array([0, 0, 0])
         self.head.lnks[1]['mesh_file'] = os.path.join(this_dir, 'meshes', 'tbm_cutter_head.stl')
         self.head.lnks[1]['rgba'] = [.7, .3, .3, 1]
         self.head.tgtjnts = [1]
@@ -299,12 +299,12 @@ class TBM(object):
             for i, pos in enumerate(self.cutter_pos_dict[k]):
                 tmp_jlc = jl.JLChain(pos=pos,
                                      rotmat=self.cutter_rotmat_dict[k][i],
-                                     homeconf=np.zeros(1),
+                                     home_conf=np.zeros(1),
                                      name='cutter_' + str(k) + '_' + str(i))
-                tmp_jlc.jnts[1]['loc_pos'] = np.zeros(3)
-                tmp_jlc.jnts[1]['loc_motionax'] = np.array([0, 0, 1])
+                tmp_jlc.joints[1]['pos_in_loc_tcp'] = np.zeros(3)
+                tmp_jlc.joints[1]['loc_motionax'] = np.array([0, 0, 1])
                 tmp_jlc.lnks[1]['name'] = 'cutter'
-                tmp_jlc.lnks[1]['loc_pos'] = np.array([0, 0, 0])
+                tmp_jlc.lnks[1]['pos_in_loc_tcp'] = np.array([0, 0, 0])
                 tmp_jlc.lnks[1]['mesh_file'] = os.path.join(this_dir, 'meshes', 'cutter.stl')
                 tmp_jlc.lnks[1]['rgba'] = [1, 1, .0, 1.0]
                 tmp_jlc.tgtjnts = [1]
@@ -317,9 +317,9 @@ class TBM(object):
         self.head.fix_to(self.pos, self.rotmat)
         for k in self.cutters.keys():
             for i, cutter in enumerate(self.cutters[k]):
-                new_pos = self.head.jnts[1]['gl_posq'] + self.head.jnts[1]['gl_rotmatq'].dot(
+                new_pos = self.head.joints[1]['gl_posq'] + self.head.joints[1]['gl_rotmatq'].dot(
                     self.cutter_pos_dict[k][i])
-                new_rotmat = self.head.jnts[1]['gl_posq'] + self.head.jnts[1]['gl_rotmatq'].dot(
+                new_rotmat = self.head.joints[1]['gl_posq'] + self.head.joints[1]['gl_rotmatq'].dot(
                     self.cutter_rotmat_dict[k][i])
                 cutter.fix_to(pos=new_pos, rotmat=new_rotmat)
 
@@ -331,17 +331,17 @@ class TBM(object):
         author: weiwei
         date: 20201208toyonaka
         """
-        self.head.fk(jnt_values=jnt_values)
+        self.head.fk(joint_values=jnt_values)
         for k in self.cutters.keys():
             for i, cutter in enumerate(self.cutters[k]):
-                new_pos = self.head.jnts[1]['gl_posq'] + self.head.jnts[1]['gl_rotmatq'].dot(
+                new_pos = self.head.joints[1]['gl_posq'] + self.head.joints[1]['gl_rotmatq'].dot(
                     self.cutter_pos_dict[k][i])
-                new_rotmat = self.head.jnts[1]['gl_posq'] + self.head.jnts[1]['gl_rotmatq'].dot(
+                new_rotmat = self.head.joints[1]['gl_posq'] + self.head.joints[1]['gl_rotmatq'].dot(
                     self.cutter_rotmat_dict[k][i])
                 cutter.fix_to(pos=new_pos, rotmat=new_rotmat)
 
     def get_jnt_values(self):
-        return self.head.get_jnt_values()
+        return self.head.get_joint_values()
 
     def gen_stickmodel(self,
                        tcp_jntid=None,
@@ -373,18 +373,18 @@ class TBM(object):
                       rgba=None,
                       name='tbm'):
         meshmodel = mc.ModelCollection(name=name)
-        self.head.gen_meshmodel(tcp_loc_pos=None,
-                                tcp_loc_rotmat=None,
-                                toggle_tcpcs=False,
-                                toggle_jntscs=toggle_jntscs,
-                                rgba=rgba).attach_to(meshmodel)
+        self.head.gen_mesh_model(tcp_loc_pos=None,
+                                 tcp_loc_rotmat=None,
+                                 toggle_tcpcs=False,
+                                 toggle_jntscs=toggle_jntscs,
+                                 rgba=rgba).attach_to(meshmodel)
         for k in self.cutters.keys():
             for cutter in self.cutters[k]:
-                cutter.gen_meshmodel(tcp_loc_pos=None,
-                                     tcp_loc_rotmat=None,
-                                     toggle_tcpcs=False,
-                                     toggle_jntscs=toggle_jntscs,
-                                     rgba=rgba).attach_to(meshmodel)
+                cutter.gen_mesh_model(tcp_loc_pos=None,
+                                      tcp_loc_rotmat=None,
+                                      toggle_tcpcs=False,
+                                      toggle_jntscs=toggle_jntscs,
+                                      rgba=rgba).attach_to(meshmodel)
         return meshmodel
 
 
@@ -398,6 +398,6 @@ if __name__ == '__main__':
 
     gm.gen_frame().attach_to(base)
     otherbot_s = TBM()
-    # otherbot_s.fk(jnt_values=np.array([math.pi / 3]))
+    # otherbot_s.fk(joint_values=np.array([math.pi / 3]))
     otherbot_s.gen_meshmodel().attach_to(base)
     base.run()

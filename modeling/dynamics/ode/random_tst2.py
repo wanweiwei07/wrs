@@ -44,7 +44,7 @@ for i in range(randint(5, 10)):
     M = OdeMass()
     M.setBox(3, .3, .3, .3)
     boxBody.setMass(M)
-    boxBody.setPosition(da.npv3_to_pdv3(new_box.get_pos()))
+    boxBody.setPosition(da.npvec3_to_pdvec3(new_box.get_pos()))
     boxBody.setQuaternion(da.npmat3_to_pdquat(new_box.get_rotmat()))
     # Create a BoxGeom
     boxGeom = OdeBoxGeom(space, .3, .3, .3)
@@ -69,7 +69,7 @@ def simulationTask(task):
     # Step the simulation and set the new positions
     world.step(globalClock.getDt())
     for cmobj, body in boxes:
-        cmobj.set_homomat(rm.homomat_from_posrot(da.npv3_to_pdv3(body.getPosition()),
+        cmobj.set_homomat(rm.homomat_from_posrot(da.npvec3_to_pdvec3(body.getPosition()),
                                                  da.pdmat3_to_npmat3(body.getRotation())))
     contactgroup.empty() # Clear the contact joints
     return task.cont

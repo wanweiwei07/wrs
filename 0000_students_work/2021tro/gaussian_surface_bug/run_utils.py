@@ -31,7 +31,7 @@ def load_phxiinfo(phoxi_f_name, load=True, toggledebug=False):
             pickle.dump([grayimg, depthnparray_float32, pcd], f)
     if toggledebug:
         print("img size:", grayimg.shape)
-        print("pcd size:", pcd.shape)
+        print("pcd_helper size:", pcd.shape)
         cv2.imshow("load_phxiinfo", grayimg)
         cv2.waitKey(0)
     return grayimg, depthnparray_float32, np.array(pcd)
@@ -96,7 +96,7 @@ def get_obj_from_phoxiinfo_withmodel_nobgf(phxilocator, stl_f_name, objpcd_list=
 def get_obj_inhand_from_phoxiinfo_withmodel_pcd(phxilocator, stl_f_name, tcp_pos, inithomomat=None, phoxi_f_name=None,
                                                 load=True, showicp=False, showcluster=False):
     """
-    find obj pcd directly by clustering
+    find obj pcd_helper directly by clustering
 
     :param phxilocator:
     :param stl_f_name:

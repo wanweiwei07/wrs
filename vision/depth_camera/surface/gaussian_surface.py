@@ -18,7 +18,7 @@ class MixedGaussianSurface(sfc.Surface):
         :param kernel:
         :param epsilon:
         :param degree:
-        :param rng: [[a0min, a0max], [a1min, a1max]],
+        :param range: [[a0min, a0max], [a1min, a1max]],
                     min(domain[:,0]), max(domain[:,0]) and min(domain[:,1]), max(domain[:,1]) will be used in case of None
         author: weiwei
         date: 20210624

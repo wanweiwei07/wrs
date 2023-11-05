@@ -1,7 +1,8 @@
 import os, copy
 import basis.data_adapter as da
-import basis.trimesh_generator as trihelper
+import basis.trimesh_factory as trm_factory
 import basis.robot_math as rm
+import basis.constant as cst
 import modeling.model_collection as mc
 import numpy as np
 import open3d as o3d
@@ -12,77 +13,85 @@ import warnings as wrn
 
 class StaticGeometricModel(object):
     """
-    load an object as a static geometric model -> changing pos, rot, color, etc. are not allowed
+    load an object as a static geometric model -> changing pos, rotmat, color, etc. are not allowed
     there is no extra elements for this model, thus is much faster
     author: weiwei
-    date: 20190312
+    date: 20190312, 20230812
     """
 
-    def __init__(self, initor=None, name="defaultname", btransparency=True, btwosided=False):
+    def __init__(self,
+                 initializer=None,
+                 name="sgm",
+                 toggle_transparency=True,
+                 toggle_twosided=False):
         """
-        :param initor: path type defined by os.path or trimesh or nodepath
-        :param btransparency
+        :param initializer: path end_type defined by os.path or trimesh or pdndp
+        :param toggle_transparency
         :param name
         """
-        if isinstance(initor, StaticGeometricModel):
-            self._objpath = copy.deepcopy(initor.objpath)
-            self._objtrm = copy.deepcopy(initor.objtrm)
-            self._objpdnp = copy.deepcopy(initor.objpdnp)
-            self._name = copy.deepcopy(initor.name)
-            self._localframe = copy.deepcopy(initor.localframe)
+        if isinstance(initializer, StaticGeometricModel):
+            self._file_path = copy.deepcopy(initializer.file_path)
+            self._trm_mesh = copy.deepcopy(initializer.trm_mesh)
+            self._pdndp = copy.deepcopy(initializer.pdndp)
+            self._name = copy.deepcopy(initializer.name)
+            self._local_frame = copy.deepcopy(initializer.local_frame)
         else:
-            # make a grandma nodepath to separate decorations (-autoshader) and raw nodepath (+autoshader)
+            # make a grandma pdndp to separate decorations (-autoshader) and raw pdndp (+autoshader)
             self._name = name
-            self._objpdnp = NodePath(name)
-            if isinstance(initor, str):
-                self._objpath = initor
-                self._objtrm = da.trm.load(self._objpath)
-                objpdnp_raw = da.trimesh_to_nodepath(self._objtrm, name='pdnp_raw')
-                objpdnp_raw.reparentTo(self._objpdnp)
-            elif isinstance(initor, da.trm.Trimesh):
-                self._objpath = None
-                self._objtrm = initor
-                objpdnp_raw = da.trimesh_to_nodepath(self._objtrm)
-                objpdnp_raw.reparentTo(self._objpdnp)
-            elif isinstance(initor, o3d.geometry.PointCloud):  # TODO should pointcloud be pdnp or pdnp_raw
-                self._objpath = None
-                self._objtrm = da.trm.Trimesh(np.asarray(initor.points))
-                objpdnp_raw = da.nodepath_from_points(self._objtrm.vertices, name='pdnp_raw')
-                objpdnp_raw.reparentTo(self._objpdnp)
-            elif isinstance(initor, np.ndarray):  # TODO should pointcloud be pdnp or pdnp_raw
-                self._objpath = None
-                if initor.shape[1] == 3:
-                    self._objtrm = da.trm.Trimesh(initor)
-                    objpdnp_raw = da.nodepath_from_points(self._objtrm.vertices)
-                elif initor.shape[1] == 7:
-                    self._objtrm = da.trm.Trimesh(initor[:, :3])
-                    objpdnp_raw = da.nodepath_from_points(self._objtrm.vertices, initor[:, 3:].tolist())
-                    objpdnp_raw.setRenderMode(RenderModeAttrib.MPoint, 3)
+            self._pdndp = NodePath(name)
+            if isinstance(initializer, str):
+                self._file_path = initializer
+                self._trm_mesh = da.trm.load(self._file_path)
+                pdndp_core = da.trimesh_to_nodepath(self._trm_mesh, name='pdndp_core')
+                pdndp_core.reparentTo(self._pdndp)
+            elif isinstance(initializer, da.trm.Trimesh):
+                self._file_path = None
+                self._trm_mesh = initializer
+                pdndp_core = da.trimesh_to_nodepath(self._trm_mesh)
+                pdndp_core.reparentTo(self._pdndp)
+            elif isinstance(initializer, o3d.geometry.PointCloud):  # TODO should pointcloud be pdndp or pdnp_raw
+                self._file_path = None
+                self._trm_mesh = da.trm.Trimesh(np.asarray(initializer.points))
+                pdndp_core = da.pdgeomndp_from_v(self._trm_mesh.vertices, name='pdndp_core')
+                pdndp_core.reparentTo(self._pdndp)
+            elif isinstance(initializer, np.ndarray):  # TODO should pointcloud be pdndp or pdnp_raw
+                self._file_path = None
+                if initializer.ndim == 2:
+                    if initializer.shape[1] == 3:
+                        self._trm_mesh = da.trm.Trimesh(initializer)
+                        pdndp_core = da.pdgeomndp_from_v(self._trm_mesh.vertices)
+                        pdndp_core.setRenderModeThickness(.001 * da.M_TO_PIXEL)
+                    elif initializer.shape[1] == 7:
+                        self._trm_mesh = da.trm.Trimesh(initializer[:, :3])
+                        pdndp_core = da.pdgeomndp_from_v(self._trm_mesh.vertices, initializer[:, 3:])
+                        pdndp_core.setRenderModeThickness(.001 * da.M_TO_PIXEL)
+                    else:
+                        # TODO depth UV?
+                        raise NotImplementedError
                 else:
-                    # TODO depth UV?
                     raise NotImplementedError
-                objpdnp_raw.reparentTo(self._objpdnp)
-            elif isinstance(initor, o3d.geometry.TriangleMesh):
-                self._objpath = None
-                self._objtrm = da.trm.Trimesh(vertices=initor.vertices, faces=initor.triangles,
-                                              face_normals=initor.triangle_normals)
-                objpdnp_raw = da.trimesh_to_nodepath(self._objtrm, name='pdnp_raw')
-                objpdnp_raw.reparentTo(self._objpdnp)
-            elif isinstance(initor, NodePath):
-                self._objpath = None
-                self._objtrm = None  # TODO nodepath to trimesh?
-                objpdnp_raw = initor
-                objpdnp_raw.reparentTo(self._objpdnp)
-            else:
-                self._objpath = None
-                self._objtrm = None
-                objpdnp_raw = NodePath("pdnp_raw")
-                objpdnp_raw.reparentTo(self._objpdnp)
-            if btransparency:
-                self._objpdnp.setTransparency(TransparencyAttrib.MDual)
-            if btwosided:
-                self._objpdnp.getChild(0).setTwoSided(True)
-            self._localframe = None
+                pdndp_core.reparentTo(self._pdndp)
+            elif isinstance(initializer, o3d.geometry.TriangleMesh):
+                self._file_path = None
+                self._trm_mesh = da.trm.Trimesh(vertices=initializer.vertices, faces=initializer.triangles,
+                                                face_normals=initializer.triangle_normals)
+                pdndp_core = da.trimesh_to_nodepath(self._trm_mesh, name='pdndp_core')
+                pdndp_core.reparentTo(self._pdndp)
+            elif isinstance(initializer, NodePath):  # TODO: deprecate 20230815
+                self._file_path = None
+                self._trm_mesh = None
+                pdndp_core = initializer
+                pdndp_core.reparentTo(self._pdndp)
+            else:  # empty model
+                self._file_path = None
+                self._trm_mesh = None
+                pdndp_core = NodePath("pdndp_core")
+                pdndp_core.reparentTo(self._pdndp)
+            if toggle_transparency:
+                self._pdndp.setTransparency(TransparencyAttrib.MDual)
+            if toggle_twosided:
+                self._pdndp.getChild(0).setTwoSided(True)
+            self._local_frame = None
 
     @property
     def name(self):
@@ -90,85 +99,98 @@ class StaticGeometricModel(object):
         return self._name
 
     @property
-    def objpath(self):
+    def file_path(self):
         # read-only property
-        return self._objpath
+        return self._file_path
 
     @property
-    def objpdnp(self):
+    def pdndp(self):
         # read-only property
-        return self._objpdnp
+        return self._pdndp
 
     @property
-    def objpdnp_raw(self):
-        # read-only property
-        return self._objpdnp.getChild(0)
+    def pdndp_core(self):
+        """
+        read-only property
+        for rendering purpose
+        i.e. frames will be attached to pdndp and will not be influenced by rendering changes made to pdndp_core
+        :return:
+        """
+        return self._pdndp.getChild(0)
 
     @property
-    def objtrm(self):
+    def trm_mesh(self):
         # read-only property
         # 20210328 comment out, allow None
-        # if self._objtrm is None:
+        # if self._trm_mesh is None:
         #     raise ValueError("Only applicable to models with a trimesh!")
-        return self._objtrm
+        return self._trm_mesh
 
     @property
-    def localframe(self):
+    def local_frame(self):
         # read-only property
-        return self._localframe
+        return self._local_frame
 
     @property
     def volume(self):
         # read-only property
-        if self._objtrm is None:
+        if self._trm_mesh is None:
             raise ValueError("Only applicable to models with a trimesh!")
-        return self._objtrm.volume
+        return self._trm_mesh.volume
 
     def set_rgba(self, rgba):
-        self._objpdnp.setColor(rgba[0], rgba[1], rgba[2], rgba[3])
+        self._pdndp.setColor(rgba[0], rgba[1], rgba[2], rgba[3])
 
-    def set_scale(self, scale=[1, 1, 1]):
-        self._objpdnp.setScale(scale[0], scale[1], scale[2])
-        self._objtrm.apply_scale(scale)
+    def set_alpha(self, alpha):
+        rgba = self._pdndp.getColor()
+        self._pdndp.setColor(rgba[0], rgba[1], rgba[2], alpha)
 
-    def set_vert_size(self, size=.005):
-        self.objpdnp_raw.setRenderModeThickness(size * 1000)
+    def set_scale(self, scale=np.array([1, 1, 1])):
+        """
+        :param scale: 1x3 nparray, each element denotes the scale in x, y, and z dimensions
+        :return:
+        """
+        self._pdndp.setScale(*scale)
+        self._trm_mesh.apply_scale(scale)
+
+    def set_point_size(self, size=.001):
+        # only applicable to point clouds
+        self.pdndp_core.setRenderModeThickness(size * da.M_TO_PIXEL)
 
     def get_rgba(self):
-        return da.pdv4_to_npv4(self._objpdnp.getColor())  # panda3d.core.LColor -> LBase4F
+        return da.pdvec4_to_npvec4(self._pdndp.getColor())  # panda3d.core.LColor -> LBase4F
 
     def clear_rgba(self):
-        self._objpdnp.clearColor()
+        self._pdndp.clearColor()
 
     def get_scale(self):
-        return da.pdv3_to_npv3(self._objpdnp.getScale())
+        return da.pdvec3_to_npvec3(self._pdndp.getScale())
 
-    def attach_to(self, obj):
-        if isinstance(obj, ShowBase):
+    def attach_to(self, target):
+        if isinstance(target, ShowBase):
             # for rendering to base.render
-            self._objpdnp.reparentTo(obj.render)
-        elif isinstance(obj, StaticGeometricModel):  # prepared for decorations like local frames
-            self._objpdnp.reparentTo(obj.objpdnp)
-        elif isinstance(obj, mc.ModelCollection):
-            obj.add_gm(self)
+            self._pdndp.reparentTo(target.render)
+        elif isinstance(target, StaticGeometricModel):  # prepared for decorations like local frames
+            self._pdndp.reparentTo(target.pdndp)
+        elif isinstance(target, mc.ModelCollection):
+            target.add_gm(self)
         else:
-            print(
-                "Must be ShowBase, modeling.StaticGeometricModel, GeometricModel, CollisionModel, or CollisionModelCollection!")
+            raise ValueError("Acceptable: ShowBase, StaticGeometricModel, ModelCollection!")
 
     def detach(self):
-        self._objpdnp.detachNode()
+        self._pdndp.detachNode()
 
     def remove(self):
-        self._objpdnp.removeNode()
+        self._pdndp.removeNode()
 
-    def show_localframe(self):
-        self._localframe = gen_frame()
-        self._localframe.attach_to(self)
+    def show_local_frame(self):
+        self._local_frame = gen_frame()
+        self._local_frame.attach_to(self)
 
-    def unshow_localframe(self):
-        if self._localframe is not None:
-            self._localframe.remove()
-            self._localframe = None
+    def unshow_local_frame(self):
+        if self._local_frame is not None:
+            self._local_frame.remove()
+            self._local_frame = None
 
     def copy(self):
         return copy.deepcopy(self)
@@ -176,102 +198,21 @@ class StaticGeometricModel(object):
 
 class WireFrameModel(StaticGeometricModel):
 
-    def __init__(self, initor=None, name="auto"):
+    def __init__(self,
+                 initializer=None,
+                 name="wsgm"):
         """
-        :param initor: path type defined by os.path or trimesh or nodepath
+        :param initializer: path end_type defined by os.path or trimesh or pdndp
         """
-        super().__init__(initor=initor, btransparency=False, name=name)
-        self.objpdnp_raw.setRenderModeWireframe()
-        self.objpdnp_raw.setLightOff()
+        super().__init__(initializer=initializer, toggle_transparency=False, name=name)
+        # apply rendering effects to pdndp_core
+        # frames will be attached to pdndp and will not be influenced by changes made to pdndp_core
+        self.pdndp_core.setRenderModeWireframe()
+        self.pdndp_core.setLightOff()
         # self.set_rgba(rgba=[0,0,0,1])
-
-    # suppress functions
-    def __getattr__(self, attr_name):
-        if attr_name == 'sample_surface':
-            raise AttributeError("Wireframe Model does not support sampling surface!")
-        return getattr(self._wrapped, attr_name)
-
-    @property
-    def name(self):
-        # read-only property
-        return self._name
-
-    @property
-    def objpath(self):
-        # read-only property
-        return self._objpath
-
-    @property
-    def objpdnp(self):
-        # read-only property
-        return self._objpdnp
-
-    @property
-    def objpdnp_raw(self):
-        # read-only property
-        return self._objpdnp.getChild(0)
-
-    @property
-    def objtrm(self):
-        # read-only property
-        if self._objtrm is None:
-            raise ValueError("Only applicable to models with a trimesh!")
-        return self._objtrm
-
-    @property
-    def localframe(self):
-        # read-only property
-        return self._localframe
-
-    @property
-    def volume(self):
-        # read-only property
-        if self._objtrm is None:
-            raise ValueError("Only applicable to models with a trimesh!")
-        return self._objtrm.volume
 
     def set_rgba(self, rgba):
         wrn.warn("Right not the set_rgba fn for a WireFrame instance is not implemented!")
-        # self._objpdnp.setColor(rgba[0], rgba[1], rgba[2], rgba[3])
-
-    def set_scale(self, scale=[1, 1, 1]):
-        self._objpdnp.setScale(scale[0], scale[1], scale[2])
-
-    def get_rgba(self):
-        return da.pdv4_to_npv4(self._objpdnp.getColor())  # panda3d.core.LColor -> LBase4F
-
-    def clear_rgba(self):
-        self._objpdnp.clearColor()
-
-    def get_scale(self):
-        return da.pdv3_to_npv3(self._objpdnp.getScale())
-
-    def attach_to(self, obj):
-        if isinstance(obj, ShowBase):
-            # for rendering to base.render
-            self._objpdnp.reparentTo(obj.render)
-        elif isinstance(obj, StaticGeometricModel):  # prepared for decorations like local frames
-            self._objpdnp.reparentTo(obj.objpdnp)
-        elif isinstance(obj, mc.ModelCollection):
-            obj.add_gm(self)
-        else:
-            raise Exception("WRS Exception: Must be ShowBase, modeling.StaticGeometricModel, GeometricModel, "
-                  "CollisionModel, or CollisionModelCollection!")
-
-    def detach(self):
-        self._objpdnp.detachNode()
-
-    def remove(self):
-        self._objpdnp.removeNode()
-
-    def show_localframe(self):
-        self._localframe = gen_frame()
-        self._localframe.attach_to(self)
-
-    def unshow_localframe(self):
-        if self._localframe is not None:
-            self._localframe.removeNode()
-            self._localframe = None
 
 
 class GeometricModel(StaticGeometricModel):
@@ -282,28 +223,35 @@ class GeometricModel(StaticGeometricModel):
     date: 20190312
     """
 
-    def __init__(self, initor=None, name="defaultname", btransparency=True, btwosided=False):
+    def __init__(self,
+                 initializer=None,
+                 name="gm",
+                 toggle_transparency=True,
+                 toggle_twosided=False):
         """
-        :param initor: path type defined by os.path or trimesh or nodepath
+        :param initializer: path end_type defined by os.path or trimesh or pdndp
         """
-        if isinstance(initor, GeometricModel):
-            self._objpath = copy.deepcopy(initor.objpath)
-            self._objtrm = copy.deepcopy(initor.objtrm)
-            self._objpdnp = copy.deepcopy(initor.objpdnp)
-            self._name = copy.deepcopy(initor.name)
-            self._localframe = copy.deepcopy(initor.localframe)
+        if isinstance(initializer, GeometricModel):
+            self._file_path = copy.deepcopy(initializer.file_path)
+            self._trm_mesh = copy.deepcopy(initializer.trm_mesh)
+            self._pdndp = copy.deepcopy(initializer.pdndp)
+            self._name = copy.deepcopy(initializer.name)
+            self._local_frame = copy.deepcopy(initializer.local_frame)
         else:
-            super().__init__(initor=initor, name=name, btransparency=btransparency, btwosided=btwosided)
-        self.objpdnp_raw.setShaderAuto()
+            super().__init__(initializer=initializer,
+                             name=name,
+                             toggle_transparency=toggle_transparency,
+                             toggle_twosided=toggle_twosided)
+        self.pdndp_core.setShaderAuto()
 
     def set_pos(self, npvec3):
-        self._objpdnp.setPos(npvec3[0], npvec3[1], npvec3[2])
+        self._pdndp.setPos(*npvec3)
 
     def set_rotmat(self, npmat3):
-        self._objpdnp.setQuat(da.npmat3_to_pdquat(npmat3))
+        self._pdndp.setQuat(da.npmat3_to_pdquat(npmat3))
 
     def set_homomat(self, npmat4):
-        self._objpdnp.setPosQuat(da.npv3_to_pdv3(npmat4[:3, 3]), da.npmat3_to_pdquat(npmat4[:3, :3]))
+        self._pdndp.setPosQuat(da.npvec3_to_pdvec3(npmat4[:3, 3]), da.npmat3_to_pdquat(npmat4[:3, :3]))
 
     def set_rpy(self, roll, pitch, yaw):
         """
@@ -319,31 +267,30 @@ class GeometricModel(StaticGeometricModel):
         self.set_rotmat(npmat3)
 
     def set_transparency(self, attribute):
-        return self._objpdnp.setTransparency(attribute)
+        return self._pdndp.setTransparency(attribute)
 
     def get_pos(self):
-        return da.pdv3_to_npv3(self._objpdnp.getPos())
+        return da.pdvec3_to_npvec3(self._pdndp.getPos())
 
     def get_rotmat(self):
-        return da.pdquat_to_npmat3(self._objpdnp.getQuat())
+        return da.pdquat_to_npmat3(self._pdndp.getQuat())
 
     def get_homomat(self):
-        npv3 = da.pdv3_to_npv3(self._objpdnp.getPos())
-        npmat3 = da.pdquat_to_npmat3(self._objpdnp.getQuat())
+        npv3 = da.pdvec3_to_npvec3(self._pdndp.getPos())
+        npmat3 = da.pdquat_to_npmat3(self._pdndp.getQuat())
         return rm.homomat_from_posrot(npv3, npmat3)
 
     def get_rpy(self):
         """
         get the pose of the object using rpy
-        :return: [r, p, y] in radian
+        :return: 1x3 nparray [r,p,y] in radian
         author: weiwei
         date: 20190513
         """
         npmat3 = self.get_rotmat()
-        rpy = rm.rotmat_to_euler(npmat3, axes="sxyz")
-        return np.array([rpy[0], rpy[1], rpy[2]])
+        return rm.rotmat_to_euler(npmat3, axes="sxyz")
 
-    def sample_surface(self, radius=0.005, nsample=None, toggle_option='face_ids'):
+    def sample_surface(self, radius=0.005, n_samples=None, toggle_option=None):
         """
         :param raidus:
         :param toggle_option; 'face_ids', 'normals', None
@@ -351,82 +298,59 @@ class GeometricModel(StaticGeometricModel):
         author: weiwei
         date: 20191228
         """
-        if self._objtrm is None:
+        if self._trm_mesh is None:
             raise ValueError("Only applicable to models with a trimesh!")
-        if nsample is None:
-            nsample = int(round(self.objtrm.area / ((radius * 0.3) ** 2)))
-        points, face_ids = self.objtrm.sample_surface(nsample, radius=radius, toggle_faceid=True)
+        if n_samples is None:
+            n_samples = int(round(self.trm_mesh.area / ((radius * 0.3) ** 2)))
+        points, face_ids = self.trm_mesh.sample_surface(n_samples, radius=radius, toggle_faceid=True)
         # transform
-        points = rm.homomat_transform_points(self.get_homomat(), points)
+        points = rm.transform_points_by_homomat(self.get_homomat(), points)
         if toggle_option is None:
             return np.array(points)
         elif toggle_option == 'face_ids':
             return np.array(points), np.array(face_ids)
         elif toggle_option == 'normals':
-            return np.array(points), rm.homomat_transform_points(self.get_homomat(), self.objtrm.face_normals[face_ids])
+            return np.array(points), rm.transform_points_by_homomat(self.get_homomat(),
+                                                                    self.trm_mesh.face_normals[face_ids])
         else:
-            print("toggle_option must be None, point_face_ids, or point_nromals")
+            print("The toggle_option parameter must be \"None\", \"point_face_ids\", or \"point_nromals\"!")
 
     def copy(self):
         return copy.deepcopy(self)
 
 
-## primitives are stationarygeometric model, once defined, they cannot be changed
-# TODO: further decouple from Panda trimesh->staticgeometricmodel
-def gen_linesegs(linesegs, thickness=0.001, rgba=[0, 0, 0, 1]):
+def gen_linesegs(linesegs,
+                 thickness=0.001,
+                 rgba=np.array([0, 0, 0, 1])):
     """
     gen linsegs -- non-continuous segs are allowed
-    :param linesegs: [[pnt0, pn1], [pnt0, pnt1], ...], pnti 1x3 nparray, defined in local 0 frame
+    :param linesegs: nx2x3 nparray, defined in local 0 frame
     :param rgba:
     :param thickness:
     :param refpos, refrot: the local coordinate frame where the pnti in the linsegs are defined
     :return: a geomtric model
     author: weiwei
-    date: 20161216, 20201116
+    date: 20161216, 20201116, 20230812
     """
-    M_TO_PIXEL = 3779.53
     # Create a set of line segments
     ls = LineSegs()
-    ls.setThickness(thickness * M_TO_PIXEL)
-    ls.setColor(rgba[0], rgba[1], rgba[2], rgba[3])
-    for p0p1tuple in linesegs:
-        ls.moveTo(p0p1tuple[0][0], p0p1tuple[0][1], p0p1tuple[0][2])
-        ls.drawTo(p0p1tuple[1][0], p0p1tuple[1][1], p0p1tuple[1][2])
+    ls.setThickness(thickness * da.M_TO_PIXEL)
+    ls.setColor(*rgba)
+    for p0_p1_tuple in linesegs:
+        ls.moveTo(*p0_p1_tuple[0])
+        ls.drawTo(*p0_p1_tuple[1])
     # Create and return a node with the segments
-    lsnp = NodePath(ls.create())
-    lsnp.setTransparency(TransparencyAttrib.MDual)
-    lsnp.setLightOff()
-    ls_sgm = StaticGeometricModel(lsnp)
+    ls_pdndp = NodePath(ls.create())
+    ls_pdndp.setTransparency(TransparencyAttrib.MDual)
+    ls_pdndp.setLightOff()
+    ls_sgm = StaticGeometricModel(initializer=ls_pdndp)
     return ls_sgm
 
 
-# def gen_linesegs(verts, thickness=0.005, rgba=[0,0,0,1]):
-#     """
-#     gen continuous linsegs
-#     :param verts: nx3 list, each nearby pair will be used to draw one segment, defined in a local 0 frame
-#     :param rgba:
-#     :param thickness:
-#     :param refpos, refrot: the local coordinate frame where the pnti in the linsegs are defined
-#     :return: a geomtric model
-#     author: weiwei
-#     date: 20161216
-#     """
-#     segs = LineSegs()
-#     segs.setThickness(thickness * 1000.0)
-#     segs.setColor(rgba[0], rgba[1], rgba[2], rgba[3])
-#     for i in range(len(verts) - 1):
-#         tmpstartvert = verts[i]
-#         tmpendvert = verts[i + 1]
-#         segs.moveTo(tmpstartvert[0], tmpstartvert[1], tmpstartvert[2])
-#         segs.drawTo(tmpendvert[0], tmpendvert[1], tmpendvert[2])
-#     lsnp = NodePath('linesegs')
-#     lsnp.attachNewNode(segs.create())
-#     lsnp.setTransparency(TransparencyAttrib.MDual)
-#     ls_sgm = StaticGeometricModel(lsnp)
-#     return ls_sgm
-
-
-def gen_sphere(pos=np.array([0, 0, 0]), radius=0.01, rgba=[1, 0, 0, 1], subdivisions=2):
+def gen_sphere(pos=np.array([0, 0, 0]),
+               radius=0.0015,
+               rgba=np.array([1, 0, 0, 1]),
+               ico_level=2):
     """
     :param pos:
     :param radius:
@@ -435,108 +359,142 @@ def gen_sphere(pos=np.array([0, 0, 0]), radius=0.01, rgba=[1, 0, 0, 1], subdivis
     author: weiwei
     date: 20161212tsukuba, 20191228osaka
     """
-    sphere_trm = trihelper.gen_sphere(pos, radius, subdivisions)
-    sphere_sgm = StaticGeometricModel(sphere_trm)
-    sphere_sgm.set_rgba(rgba)
+    sphere_trm = trm_factory.gen_sphere(pos=pos, radius=radius, ico_level=ico_level)
+    sphere_sgm = StaticGeometricModel(initializer=sphere_trm)
+    sphere_sgm.set_rgba(rgba=rgba)
     return sphere_sgm
 
 
 def gen_ellipsoid(pos=np.array([0, 0, 0]),
-                  axmat=np.eye(3),
-                  rgba=[1, 1, 0, .3]):
+                  axes_mat=np.eye(3),
+                  rgba=np.array([1, 1, 0, .3])):
     """
     :param pos:
-    :param axmat: 3x3 mat, each column is an axis of the ellipse
+    :param axes_mat: 3x3 mat, each column is an axis of the ellipse
     :param rgba:
     :return:
     author: weiwei
     date: 20200701osaka
     """
-    ellipsoid_trm = trihelper.gen_ellipsoid(pos=pos, axmat=axmat)
-    ellipsoid_sgm = StaticGeometricModel(ellipsoid_trm)
-    ellipsoid_sgm.set_rgba(rgba)
+    ellipsoid_trm = trm_factory.gen_ellipsoid(pos=pos, axmat=axes_mat)
+    ellipsoid_sgm = StaticGeometricModel(initializer=ellipsoid_trm)
+    ellipsoid_sgm.set_rgba(rgba=rgba)
     return ellipsoid_sgm
 
 
 def gen_stick(spos=np.array([0, 0, 0]),
               epos=np.array([.1, 0, 0]),
-              thickness=.005, type="rect",
-              rgba=[1, 0, 0, 1], sections=8):
+              radius=.0025,
+              rgba=np.array([1, 0, 0, 1]),
+              type="rect",
+              n_sec=18):
     """
     :param spos:
     :param epos:
-    :param thickness:
-    :param type: rect or round
+    :param radius:
     :param rgba:
+    :param type: rect or round
+    :param n_sec:
     :return:
     author: weiwei
     date: 20191229osaka
     """
-    stick_trm = trihelper.gen_stick(spos=spos, epos=epos, thickness=thickness, type=type, sections=sections)
-    stick_sgm = StaticGeometricModel(stick_trm)
-    stick_sgm.set_rgba(rgba)
+    stick_trm = trm_factory.gen_stick(spos=spos, epos=epos, radius=radius, type=type, n_sec=n_sec)
+    stick_sgm = StaticGeometricModel(initializer=stick_trm)
+    stick_sgm.set_rgba(rgba=rgba)
     return stick_sgm
 
 
-def gen_dashstick(spos=np.array([0, 0, 0]),
-                  epos=np.array([.1, 0, 0]),
-                  thickness=.005,
-                  lsolid=None,
-                  lspace=None,
-                  rgba=[1, 0, 0, 1],
-                  type="rect"):
+def gen_dashed_stick(spos=np.array([0, 0, 0]),
+                     epos=np.array([.1, 0, 0]),
+                     radius=.0025,
+                     rgba=np.array([1, 0, 0, 1]),
+                     len_solid=None,
+                     len_interval=None,
+                     type="rect",
+                     n_sec=18):
     """
     :param spos:
     :param epos:
-    :param thickness:
-    :param lsolid: length of the solid section, 1*thickness by default
-    :param lspace: length of the empty section, 1.5*thickness by default
+    :param radius:
+    :param len_solid: axis_length of the solid section, 1*major_radius by default
+    :param len_interval: axis_length of the interval between two solids, 1.5*major_radius by default
     :param rgba:
     :return:
     author: weiwei
     date: 20200625osaka
     """
-    dashstick_trm = trihelper.gen_dashstick(spos=spos,
-                                            epos=epos,
-                                            lsolid=lsolid,
-                                            lspace=lspace,
-                                            thickness=thickness,
-                                            sticktype=type)
-    dashstick_sgm = StaticGeometricModel(dashstick_trm)
+    dashstick_trm = trm_factory.gen_dashstick(spos=spos,
+                                              epos=epos,
+                                              len_solid=len_solid,
+                                              len_interval=len_interval,
+                                              radius=radius,
+                                              type=type,
+                                              n_sec=n_sec)
+    dashstick_sgm = StaticGeometricModel(initializer=dashstick_trm)
     dashstick_sgm.set_rgba(rgba=rgba)
     return dashstick_sgm
 
 
-def gen_box(extent=np.array([1, 1, 1]),
-            homomat=np.eye(4),
-            rgba=[1, 0, 0, 1]):
+# def gen_box(xyz_lengths=np.array([1, 1, 1]),
+#             pos=np.eye(4),
+#             rgba=np.array([1, 0, 0, 1])):
+#     """
+#     :param xyz_lengths:
+#     :param pos:
+#     :param rgba:
+#     :return:
+#     author: weiwei
+#     date: 20191229osaka
+#     """
+#     box_trm = trm_factory.gen_box(xyz_lengths=xyz_lengths, pos=pos)
+#     box_sgm = StaticGeometricModel(initializer=box_trm)
+#     box_sgm.set_rgba(rgba=rgba)
+#     return box_sgm
+
+
+def gen_box(xyz_lengths=np.array([1, 1, 1]),
+            pos=np.zeros(3),
+            rotmat=np.eye(3),
+            rgba=np.array([1, 0, 0, 1])):
     """
-    :param extent:
-    :param homomat:
+    :param xyz_lengths:
+    :param pos:
+    :param rotmat:
+    :param rgba:
     :return:
     author: weiwei
-    date: 20191229osaka
+    date: 20191229osaka, 20230830
     """
-    box_trm = trihelper.gen_box(extent=extent, homomat=homomat)
-    box_sgm = StaticGeometricModel(box_trm)
+    box_trm = trm_factory.gen_box(xyz_lengths=xyz_lengths, pos=pos, rotmat=rotmat)
+    box_sgm = StaticGeometricModel(initializer=box_trm)
     box_sgm.set_rgba(rgba=rgba)
     return box_sgm
 
 
 def gen_dumbbell(spos=np.array([0, 0, 0]),
                  epos=np.array([.1, 0, 0]),
-                 thickness=.005,
-                 rgba=[1, 0, 0, 1]):
+                 rgba=np.array([1, 0, 0, 1]),
+                 stick_radius=.0025,
+                 n_sec=18,
+                 sphere_radius=None,
+                 sphere_ico_level=2):
     """
+    :param sphere_radius:
     :param spos:
     :param epos:
-    :param thickness:
+    :param stick_radius:
     :param rgba:
     :return:
     author: weiwei
     date: 20161212tsukuba, 20191228osaka
     """
-    dumbbell_trm = trihelper.gen_dumbbell(spos=spos, epos=epos, thickness=thickness)
+    dumbbell_trm = trm_factory.gen_dumbbell(spos=spos,
+                                            epos=epos,
+                                            stick_radius=stick_radius,
+                                            n_sec=n_sec,
+                                            sphere_radius=sphere_radius,
+                                            sphere_ico_level=sphere_ico_level)
     dumbbell_sgm = StaticGeometricModel(dumbbell_trm)
     dumbbell_sgm.set_rgba(rgba=rgba)
     return dumbbell_sgm
@@ -545,63 +503,67 @@ def gen_dumbbell(spos=np.array([0, 0, 0]),
 def gen_cone(spos=np.array([0, 0, 0]),
              epos=np.array([0.1, 0, 0]),
              rgba=np.array([.7, .7, .7, .3]),
-             radius=0.005,
-             sections=8):
+             bottom_radius=0.005,
+             n_sec=8):
     """
     :param spos:
     :param epos:
-    :param radius:
-    :param sections:
+    :param bottom_radius:
+    :param n_sec:
     :return:
     author: weiwei
     date: 20210625
     """
-    cone_trm = trihelper.gen_cone(spos=spos, epos=epos, radius=radius, sections=sections)
+    cone_trm = trm_factory.gen_cone(spos=spos, epos=epos, bottom_radius=bottom_radius, n_sec=n_sec)
     cone_sgm = GeometricModel(cone_trm)
     cone_sgm.set_rgba(rgba=rgba)
     return cone_sgm
 
+
 def gen_arrow(spos=np.array([0, 0, 0]),
               epos=np.array([.1, 0, 0]),
-              thickness=.005, rgba=[1, 0, 0, 1],
-              type="rect"):
+              rgba=np.array([1, 0, 0, 1]),
+              stick_radius=.0025,
+              stick_type="rect"):
     """
     :param spos:
     :param epos:
-    :param thickness:
+    :param stick_radius:
     :param rgba:
     :return:
     author: weiwei
     date: 20200115osaka
     """
-    arrow_trm = trihelper.gen_arrow(spos=spos, epos=epos, thickness=thickness, sticktype=type)
+    arrow_trm = trm_factory.gen_arrow(spos=spos, epos=epos, stick_radius=stick_radius, stick_type=stick_type)
     arrow_sgm = StaticGeometricModel(arrow_trm)
     arrow_sgm.set_rgba(rgba=rgba)
     return arrow_sgm
 
 
-def gen_dasharrow(spos=np.array([0, 0, 0]),
-                  epos=np.array([.1, 0, 0]),
-                  thickness=.005, lsolid=None,
-                  lspace=None,
-                  rgba=[1, 0, 0, 1], type="rect"):
+def gen_dashed_arrow(spos=np.array([0, 0, 0]),
+                     epos=np.array([.1, 0, 0]),
+                     rgba=np.array([1, 0, 0, 1]),
+                     stick_radius=.0025,
+                     len_solid=None,
+                     len_interval=None,
+                     type="rect"):
     """
     :param spos:
     :param epos:
-    :param thickness:
-    :param lsolid: length of the solid section, 1*thickness by default
-    :param lspace: length of the empty section, 1.5*thickness by default
+    :param stick_radius:
+    :param len_solid: axis_length of the solid section, 1*major_radius by default
+    :param len_interval: axis_length of the empty section, 1.5*major_radius by default
     :param rgba:
     :return:
     author: weiwei
     date: 20200625osaka
     """
-    dasharrow_trm = trihelper.gen_dasharrow(spos=spos,
-                                            epos=epos,
-                                            lsolid=lsolid,
-                                            lspace=lspace,
-                                            thickness=thickness,
-                                            sticktype=type)
+    dasharrow_trm = trm_factory.gen_dasharrow(spos=spos,
+                                              epos=epos,
+                                              len_solid=len_solid,
+                                              len_interval=len_interval,
+                                              stick_radius=stick_radius,
+                                              stick_type=type)
     dasharrow_sgm = StaticGeometricModel(dasharrow_trm)
     dasharrow_sgm.set_rgba(rgba=rgba)
     return dasharrow_sgm
@@ -609,34 +571,33 @@ def gen_dasharrow(spos=np.array([0, 0, 0]),
 
 def gen_frame(pos=np.array([0, 0, 0]),
               rotmat=np.eye(3),
-              length=.1,
-              thickness=.005,
-              rgbmatrix=None,
-              alpha=None,
-              plotname="frame"):
+              axis_length=.1,
+              axis_radius=.0025,
+              rgb_mat=None,
+              alpha=None):
     """
     gen an axis for attaching
     :param pos:
     :param rotmat:
-    :param length:
-    :param thickness:
-    :param rgbmatrix: each column indicates the color of each base
+    :param axis_length:
+    :param axis_radius:
+    :param rgb_mat: each column indicates the color of each base
     :param plotname:
     :return:
     author: weiwei
     date: 20161212tsukuba, 20191228osaka
     """
-    endx = pos + rotmat[:, 0] * length
-    endy = pos + rotmat[:, 1] * length
-    endz = pos + rotmat[:, 2] * length
-    if rgbmatrix is None:
+    endx = pos + rotmat[:, 0] * axis_length
+    endy = pos + rotmat[:, 1] * axis_length
+    endz = pos + rotmat[:, 2] * axis_length
+    if rgb_mat is None:
         rgbx = np.array([1, 0, 0])
         rgby = np.array([0, 1, 0])
         rgbz = np.array([0, 0, 1])
     else:
-        rgbx = rgbmatrix[:, 0]
-        rgby = rgbmatrix[:, 1]
-        rgbz = rgbmatrix[:, 2]
+        rgbx = rgb_mat[:, 0]
+        rgby = rgb_mat[:, 1]
+        rgbz = rgb_mat[:, 2]
     if alpha is None:
         alphax = alphay = alphaz = 1
     elif isinstance(alpha, np.ndarray):
@@ -645,19 +606,20 @@ def gen_frame(pos=np.array([0, 0, 0]),
         alphaz = alpha[2]
     else:
         alphax = alphay = alphaz = alpha
-    # TODO 20201202 change it to StaticGeometricModelCollection
-    frame_nodepath = NodePath(plotname)
-    arrowx_trm = trihelper.gen_arrow(spos=pos, epos=endx, thickness=thickness)
+    # - 20201202 change it to ModelCollection
+    # + 20230813 changing to ModelCollection seems unnecessary
+    frame_nodepath = NodePath("frame")
+    arrowx_trm = trm_factory.gen_arrow(spos=pos, epos=endx, stick_radius=axis_radius)
     arrowx_nodepath = da.trimesh_to_nodepath(arrowx_trm)
-    arrowx_nodepath.setTransparency(TransparencyAttrib.MDual)
+    arrowx_nodepath.setTransparency(TransparencyAttrib.MAlpha)
     arrowx_nodepath.setColor(rgbx[0], rgbx[1], rgbx[2], alphax)
-    arrowy_trm = trihelper.gen_arrow(spos=pos, epos=endy, thickness=thickness)
+    arrowy_trm = trm_factory.gen_arrow(spos=pos, epos=endy, stick_radius=axis_radius)
     arrowy_nodepath = da.trimesh_to_nodepath(arrowy_trm)
-    arrowy_nodepath.setTransparency(TransparencyAttrib.MDual)
+    arrowy_nodepath.setTransparency(TransparencyAttrib.MAlpha)
     arrowy_nodepath.setColor(rgby[0], rgby[1], rgby[2], alphay)
-    arrowz_trm = trihelper.gen_arrow(spos=pos, epos=endz, thickness=thickness)
+    arrowz_trm = trm_factory.gen_arrow(spos=pos, epos=endz, stick_radius=axis_radius)
     arrowz_nodepath = da.trimesh_to_nodepath(arrowz_trm)
-    arrowz_nodepath.setTransparency(TransparencyAttrib.MDual)
+    arrowz_nodepath.setTransparency(TransparencyAttrib.MAlpha)
     arrowz_nodepath.setColor(rgbz[0], rgbz[1], rgbz[2], alphaz)
     arrowx_nodepath.reparentTo(frame_nodepath)
     arrowy_nodepath.reparentTo(frame_nodepath)
@@ -666,51 +628,167 @@ def gen_frame(pos=np.array([0, 0, 0]),
     return frame_sgm
 
 
-def gen_mycframe(pos=np.array([0, 0, 0]), rotmat=np.eye(3), length=.1, thickness=.005, alpha=None, plotname="mycframe"):
-    """
-    gen an axis for attaching, use magne for x, yellow for y, cyan for z
-    :param pos:
-    :param rotmat:
-    :param length:
-    :param thickness:
-    :param rgbmatrix: each column indicates the color of each base
-    :param plotname:
-    :return:
-    author: weiwei
-    date: 20161212tsukuba, 20191228osaka
-    """
-    rgbmatrix = np.array([[1, 0, 1], [1, 1, 0], [0, 1, 1]]).T
-    return gen_frame(pos=pos, rotmat=rotmat, length=length, thickness=thickness, rgbmatrix=rgbmatrix, alpha=alpha,
-                     plotname=plotname)
-
-
-def gen_dashframe(pos=np.array([0, 0, 0]), rotmat=np.eye(3), length=.1, thickness=.005, lsolid=None, lspace=None,
-                  rgbmatrix=None, alpha=None, plotname="dashframe"):
+def gen_2d_frame(pos=np.array([0, 0, 0]),
+              rotmat=np.eye(3),
+              axis_length=.1,
+              axis_radius=.0025,
+              rgb_mat=None,
+              alpha=None):
     """
     gen an axis for attaching
     :param pos:
     :param rotmat:
-    :param length:
-    :param thickness:
-    :param lsolid: length of the solid section, 1*thickness by default
-    :param lspace: length of the empty section, 1.5*thickness by default
-    :param rgbmatrix: each column indicates the color of each base
+    :param axis_length:
+    :param axis_radius:
+    :param rgb_mat: each column indicates the color of each base
     :param plotname:
+    :return:
+    author: weiwei
+    date: 20230913
+    """
+    endx = pos + rotmat[:, 0] * axis_length
+    endy = pos + rotmat[:, 1] * axis_length
+    if rgb_mat is None:
+        rgbx = np.array([1, 0, 0])
+        rgby = np.array([0, 1, 0])
+    else:
+        rgbx = rgb_mat[:, 0]
+        rgby = rgb_mat[:, 1]
+    if alpha is None:
+        alphax = alphay = 1
+    elif isinstance(alpha, np.ndarray):
+        alphax = alpha[0]
+        alphay = alpha[1]
+    else:
+        alphax = alphay = alpha
+    # - 20201202 change it to ModelCollection
+    # + 20230813 changing to ModelCollection seems unnecessary
+    frame_nodepath = NodePath("frame")
+    arrowx_trm = trm_factory.gen_arrow(spos=pos, epos=endx, stick_radius=axis_radius)
+    arrowx_nodepath = da.trimesh_to_nodepath(arrowx_trm)
+    arrowx_nodepath.setTransparency(TransparencyAttrib.MAlpha)
+    arrowx_nodepath.setColor(rgbx[0], rgbx[1], rgbx[2], alphax)
+    arrowy_trm = trm_factory.gen_arrow(spos=pos, epos=endy, stick_radius=axis_radius)
+    arrowy_nodepath = da.trimesh_to_nodepath(arrowy_trm)
+    arrowy_nodepath.setTransparency(TransparencyAttrib.MAlpha)
+    arrowy_nodepath.setColor(rgby[0], rgby[1], rgby[2], alphay)
+    arrowx_nodepath.reparentTo(frame_nodepath)
+    arrowy_nodepath.reparentTo(frame_nodepath)
+    frame_sgm = StaticGeometricModel(frame_nodepath)
+    return frame_sgm
+
+
+def gen_wireframe(vertices,
+                  edges,
+                  thickness=0.001,
+                  rgba=np.array([0, 0, 0, 1])):
+    """
+    gen wireframe
+    :param vertices: (n,3)
+    :param edges: (n,2) indices to vertices
+    :param thickness:
+    :param rgba:
+    :return: a geomtric model
+    author: weiwei
+    date: 20230815
+    """
+    # Create a set of line segments
+    ls = LineSegs()
+    ls.setThickness(thickness * da.M_TO_PIXEL)
+    ls.setColor(*rgba)
+    for line_seg in edges:
+        ls.moveTo(*vertices(line_seg[0]))
+        ls.drawTo(*vertices(line_seg[1]))
+    # Create and return a node with the segments
+    ls_pdndp = NodePath(ls.create())
+    ls_pdndp.setTransparency(TransparencyAttrib.MDual)
+    ls_pdndp.setLightOff()
+    ls_sgm = StaticGeometricModel(initializer=ls_pdndp)
+    return ls_sgm
+
+
+def gen_rgb_frame(pos=np.array([0, 0, 0]),
+                  rotmat=np.eye(3),
+                  axis_length=.1,
+                  axis_radius=.0025,
+                  alpha=None):
+    """
+    gen an axis for attaching, use red for x, blue for y, green for z
+    this is a helper function to gen_frame
+    :param pos:
+    :param rotmat:
+    :param axis_length:
+    :param axis_radius:
+    :param rgb_mat: each column indicates the color of each base
+    :return:
+    author: weiwei
+    date: 20230813
+    """
+    return gen_frame(pos=pos,
+                     rotmat=rotmat,
+                     axis_length=axis_length,
+                     axis_radius=axis_radius,
+                     rgb_mat=cst.rgb_mat,
+                     alpha=alpha)
+
+
+def gen_myc_frame(pos=np.array([0, 0, 0]),
+                  rotmat=np.eye(3),
+                  axis_length=.1,
+                  axis_radius=.0025,
+                  alpha=None):
+    """
+    gen an axis for attaching, use magne for x, yellow for y, cyan for z
+    this is a helper function to gen_frame
+    :param pos:
+    :param rotmat:
+    :param axis_length:
+    :param axis_radius:
+    :param rgb_mat: each column indicates the color of each base
+    :return:
+    author: weiwei
+    date: 20161212tsukuba, 20191228osaka
+    """
+    return gen_frame(pos=pos,
+                     rotmat=rotmat,
+                     axis_length=axis_length,
+                     axis_radius=axis_radius,
+                     rgb_mat=cst.myc_mat,
+                     alpha=alpha)
+
+
+def gen_dashed_frame(pos=np.array([0, 0, 0]),
+                     rotmat=np.eye(3),
+                     axis_length=.1,
+                     axis_radius=.0025,
+                     len_solid=None,
+                     len_interval=None,
+                     rgb_mat=None,
+                     alpha=None):
+    """
+    gen an axis for attaching
+    :param pos:
+    :param rotmat:
+    :param axis_length:
+    :param axis_radius:
+    :param len_solid: axis_length of the solid section, 1*major_radius by default
+    :param len_interval: axis_length of the empty section, 1.5*major_radius by default
+    :param rgb_mat: each column indicates the color of each base
     :return:
     author: weiwei
     date: 20200630osaka
     """
-    endx = pos + rotmat[:, 0] * length
-    endy = pos + rotmat[:, 1] * length
-    endz = pos + rotmat[:, 2] * length
-    if rgbmatrix is None:
+    endx = pos + rotmat[:, 0] * axis_length
+    endy = pos + rotmat[:, 1] * axis_length
+    endz = pos + rotmat[:, 2] * axis_length
+    if rgb_mat is None:
         rgbx = np.array([1, 0, 0])
         rgby = np.array([0, 1, 0])
         rgbz = np.array([0, 0, 1])
     else:
-        rgbx = rgbmatrix[:, 0]
-        rgby = rgbmatrix[:, 1]
-        rgbz = rgbmatrix[:, 2]
+        rgbx = rgb_mat[:, 0]
+        rgby = rgb_mat[:, 1]
+        rgbz = rgb_mat[:, 2]
     if alpha is None:
         alphax = alphay = alphaz = 1
     elif isinstance(alpha, np.ndarray):
@@ -719,17 +797,21 @@ def gen_dashframe(pos=np.array([0, 0, 0]), rotmat=np.eye(3), length=.1, thicknes
         alphaz = alpha[2]
     else:
         alphax = alphay = alphaz = alpha
-    # TODO 20201202 change it to StaticGeometricModelCollection
-    frame_nodepath = NodePath(plotname)
-    arrowx_trm = trihelper.gen_dasharrow(spos=pos, epos=endx, thickness=thickness, lsolid=lsolid, lspace=lspace)
+    # - 20201202 change it toModelCollection
+    # + 20230813 changing to ModelCollection seems unnecessary
+    frame_nodepath = NodePath("dash_frame")
+    arrowx_trm = trm_factory.gen_dasharrow(spos=pos, epos=endx, stick_radius=axis_radius, len_solid=len_solid,
+                                           len_interval=len_interval)
     arrowx_nodepath = da.trimesh_to_nodepath(arrowx_trm)
     arrowx_nodepath.setTransparency(TransparencyAttrib.MDual)
     arrowx_nodepath.setColor(rgbx[0], rgbx[1], rgbx[2], alphax)
-    arrowy_trm = trihelper.gen_dasharrow(spos=pos, epos=endy, thickness=thickness, lsolid=lsolid, lspace=lspace)
+    arrowy_trm = trm_factory.gen_dasharrow(spos=pos, epos=endy, stick_radius=axis_radius, len_solid=len_solid,
+                                           len_interval=len_interval)
     arrowy_nodepath = da.trimesh_to_nodepath(arrowy_trm)
     arrowy_nodepath.setTransparency(TransparencyAttrib.MDual)
     arrowy_nodepath.setColor(rgby[0], rgby[1], rgby[2], alphay)
-    arrowz_trm = trihelper.gen_dasharrow(spos=pos, epos=endz, thickness=thickness, lsolid=lsolid, lspace=lspace)
+    arrowz_trm = trm_factory.gen_dasharrow(spos=pos, epos=endz, stick_radius=axis_radius, len_solid=len_solid,
+                                           len_interval=len_interval)
     arrowz_nodepath = da.trimesh_to_nodepath(arrowz_trm)
     arrowz_nodepath.setTransparency(TransparencyAttrib.MDual)
     arrowz_nodepath.setColor(rgbz[0], rgbz[1], rgbz[2], alphaz)
@@ -739,16 +821,70 @@ def gen_dashframe(pos=np.array([0, 0, 0]), rotmat=np.eye(3), length=.1, thicknes
     frame_sgm = StaticGeometricModel(frame_nodepath)
     return frame_sgm
 
+
+def gen_2d_dashed_frame(pos=np.array([0, 0, 0]),
+                         rotmat=np.eye(3),
+                         axis_length=.1,
+                         axis_radius=.0025,
+                         len_solid=None,
+                         len_interval=None,
+                         rgb_mat=None,
+                         alpha=None):
+    """
+    gen an axis for attaching
+    :param pos:
+    :param rotmat:
+    :param axis_length:
+    :param axis_radius:
+    :param len_solid: axis_length of the solid section, 1*major_radius by default
+    :param len_interval: axis_length of the empty section, 1.5*major_radius by default
+    :param rgb_mat: each column indicates the color of each base
+    :return:
+    author: weiwei
+    date: 20200630osaka
+    """
+    endx = pos + rotmat[:, 0] * axis_length
+    endy = pos + rotmat[:, 1] * axis_length
+    if rgb_mat is None:
+        rgbx = np.array([1, 0, 0])
+        rgby = np.array([0, 1, 0])
+    else:
+        rgbx = rgb_mat[:, 0]
+        rgby = rgb_mat[:, 1]
+    if alpha is None:
+        alphax = alphay = 1
+    elif isinstance(alpha, np.ndarray):
+        alphax = alpha[0]
+        alphay = alpha[1]
+    else:
+        alphax = alphay = alpha
+    # - 20201202 change it toModelCollection
+    # + 20230813 changing to ModelCollection seems unnecessary
+    frame_nodepath = NodePath("dash_frame")
+    arrowx_trm = trm_factory.gen_dasharrow(spos=pos, epos=endx, stick_radius=axis_radius, len_solid=len_solid,
+                                           len_interval=len_interval)
+    arrowx_nodepath = da.trimesh_to_nodepath(arrowx_trm)
+    arrowx_nodepath.setTransparency(TransparencyAttrib.MDual)
+    arrowx_nodepath.setColor(rgbx[0], rgbx[1], rgbx[2], alphax)
+    arrowy_trm = trm_factory.gen_dasharrow(spos=pos, epos=endy, stick_radius=axis_radius, len_solid=len_solid,
+                                           len_interval=len_interval)
+    arrowy_nodepath = da.trimesh_to_nodepath(arrowy_trm)
+    arrowy_nodepath.setTransparency(TransparencyAttrib.MDual)
+    arrowy_nodepath.setColor(rgby[0], rgby[1], rgby[2], alphay)
+    arrowx_nodepath.reparentTo(frame_nodepath)
+    arrowy_nodepath.reparentTo(frame_nodepath)
+    frame_sgm = StaticGeometricModel(frame_nodepath)
+    return frame_sgm
 
 def gen_torus(axis=np.array([1, 0, 0]),
               starting_vector=None,
               portion=.5,
               center=np.array([0, 0, 0]),
-              radius=.005,
-              thickness=.0015,
-              rgba=[1, 0, 0, 1],
-              sections=8,
-              discretization=24):
+              major_radius=.005,
+              minor_radius=.00075,
+              rgba=np.array([1, 0, 0, 1]),
+              n_sec_major=24,
+              n_sec_minor=8):
     """
     :param axis: the circ arrow will rotate around this axis 1x3 nparray
     :param portion: 0.0~1.0
@@ -757,14 +893,14 @@ def gen_torus(axis=np.array([1, 0, 0]),
     author: weiwei
     date: 20200602
     """
-    torus_trm = trihelper.gen_torus(axis=axis,
-                                    starting_vector=starting_vector,
-                                    portion=portion,
-                                    center=center,
-                                    radius=radius,
-                                    thickness=thickness,
-                                    sections=sections,
-                                    discretization=discretization)
+    torus_trm = trm_factory.gen_torus(axis=axis,
+                                      starting_vector=starting_vector,
+                                      portion=portion,
+                                      center=center,
+                                      major_radius=major_radius,
+                                      minor_radius=minor_radius,
+                                      n_sec_major=n_sec_major,
+                                      n_sec_minor=n_sec_minor)
     torus_sgm = StaticGeometricModel(torus_trm)
     torus_sgm.set_rgba(rgba=rgba)
     return torus_sgm
@@ -773,13 +909,13 @@ def gen_torus(axis=np.array([1, 0, 0]),
 def gen_dashtorus(axis=np.array([1, 0, 0]),
                   portion=.5,
                   center=np.array([0, 0, 0]),
-                  radius=0.1,
-                  thickness=0.005,
-                  rgba=[1,0,0,1],
-                  lsolid=None,
-                  lspace=None,
-                  sections=8,
-                  discretization=24):
+                  major_radius=0.1,
+                  minor_radius=0.0025,
+                  rgba=np.array([1, 0, 0, 1]),
+                  len_solid=None,
+                  len_interval=None,
+                  n_sec_major=24,
+                  n_sec_minor=8):
     """
     :param axis: the circ arrow will rotate around this axis 1x3 nparray
     :param portion: 0.0~1.0
@@ -788,15 +924,15 @@ def gen_dashtorus(axis=np.array([1, 0, 0]),
     author: weiwei
     date: 20200602
     """
-    torus_trm = trihelper.gen_dashtorus(axis=axis,
-                                        portion=portion,
-                                        center=center,
-                                        radius=radius,
-                                        thickness=thickness,
-                                        lsolid=lsolid,
-                                        lspace=lspace,
-                                        sections=sections,
-                                        discretization=discretization)
+    torus_trm = trm_factory.gen_dashtorus(axis=axis,
+                                          portion=portion,
+                                          center=center,
+                                          major_radius=major_radius,
+                                          minor_radius=minor_radius,
+                                          len_solid=len_solid,
+                                          len_interval=len_interval,
+                                          n_sec_major=n_sec_major,
+                                          n_sec_minor=n_sec_minor)
     torus_sgm = StaticGeometricModel(torus_trm)
     torus_sgm.set_rgba(rgba=rgba)
     return torus_sgm
@@ -806,53 +942,53 @@ def gen_circarrow(axis=np.array([1, 0, 0]),
                   starting_vector=None,
                   portion=.5,
                   center=np.array([0, 0, 0]),
-                  radius=.05,
-                  thickness=.005,
-                  rgba=[1, 0, 0, 1],
-                  sections=8,
-                  discretization=24,
-                  end='single'):
+                  major_radius=.05,
+                  minor_radius=.0025,
+                  rgba=np.array([1, 0, 0, 1]),
+                  n_sec_major=24,
+                  n_sec_minor=8,
+                  end_type='single'):
     """
     :param axis: the circ arrow will rotate around this axis 1x3 nparray
     :param portion: 0.0~1.0
     :param center: the center position of the circ 1x3 nparray
-    :param end: 'single' or 'double'
+    :param end_type: 'single' or 'double'
     :return:
     author: weiwei
     date: 20200602
     """
-    circarrow_trm = trihelper.gen_circarrow(axis=axis,
-                                            starting_vector=starting_vector,
-                                            portion=portion,
-                                            center=center,
-                                            radius=radius,
-                                            thickness=thickness,
-                                            sections=sections,
-                                            discretization=discretization,
-                                            end=end)
+    circarrow_trm = trm_factory.gen_circarrow(axis=axis,
+                                              starting_vector=starting_vector,
+                                              portion=portion,
+                                              center=center,
+                                              major_radius=major_radius,
+                                              minor_radius=minor_radius,
+                                              n_sec_major=n_sec_major,
+                                              n_sec_minor=n_sec_minor,
+                                              end_type=end_type)
     circarrow_sgm = StaticGeometricModel(circarrow_trm)
     circarrow_sgm.set_rgba(rgba=rgba)
     return circarrow_sgm
 
-def gen_pointcloud(points, rgbas=[[0, 0, 0, .7]], pntsize=3):
+
+def gen_pointcloud(points, rgba=np.array([0, 0, 0, .7]), point_size=.001):
     """
     do not use this raw function directly
     use environment.collisionmodel to call it
     gen objmnp
-    :param points: nx3 list
-    :param rgbas: None; Specify for each point; Specify a unified color
+    :param points: nx3 nparray
+    :param rgba: None; Specify for each point; Specify a unified color
     :return:
     """
-    pointcloud_nodepath = da.nodepath_from_points(points, rgbas)
-    pointcloud_nodepath.setRenderMode(RenderModeAttrib.MPoint, pntsize)
-    pointcloud_sgm = StaticGeometricModel(pointcloud_nodepath)
+    pcd_pdndp = da.pdgeomndp_from_v(points, rgba)
+    pcd_pdndp.setRenderModeThickness(point_size * da.M_TO_PIXEL)
+    pointcloud_sgm = StaticGeometricModel(pcd_pdndp)
     return pointcloud_sgm
 
 
-def gen_submesh(verts, faces, rgba=[1, 0, 0, 1]):
+def gen_submesh(vertices, faces, rgba=np.array([1, 0, 0, 1])):
     """
-    TODO 20201202: replace pandanode with trimesh
-    :param verts: np.array([[v00, v01, v02], [v10, v11, v12], ...]
+    :param vertices: np.array([[v00, v01, v02], [v10, v11, v12], ...]
     :param faces: np.array([[ti00, ti01, ti02], [ti10, ti11, ti12], ...]
     :param color: rgba
     :return:
@@ -860,29 +996,33 @@ def gen_submesh(verts, faces, rgba=[1, 0, 0, 1]):
     date: 20171219
     """
     # gen vert normals
-    vertnormals = np.zeros((len(verts), 3))
-    for fc in faces:
-        vert0 = verts[fc[0], :]
-        vert1 = verts[fc[1], :]
-        vert2 = verts[fc[2], :]
+    vertex_normals = np.zeros((len(vertices), 3))
+    for fc in vertices:
+        vert0 = vertices[fc[0], :]
+        vert1 = vertices[fc[1], :]
+        vert2 = vertices[fc[2], :]
         facenormal = np.cross(vert2 - vert1, vert0 - vert1)
-        vertnormals[fc[0], :] = vertnormals[fc[0]] + facenormal
-        vertnormals[fc[1], :] = vertnormals[fc[1]] + facenormal
-        vertnormals[fc[2], :] = vertnormals[fc[2]] + facenormal
-    for i in range(0, len(vertnormals)):
-        vertnormals[i, :] = vertnormals[i, :] / np.linalg.norm(vertnormals[i, :])
-    geom = da.pandageom_from_vvnf(verts, vertnormals, faces)
-    node = GeomNode('surface')
-    node.addGeom(geom)
-    surface_nodepath = NodePath('surface')
-    surface_nodepath.attachNewNode(node)
-    surface_nodepath.setColor(rgba[0], rgba[1], rgba[2], rgba[3])
-    surface_nodepath.setTransparency(TransparencyAttrib.MDual)
-    surface_nodepath.setTwoSided(True)
-    surface_sgm = StaticGeometricModel(surface_nodepath)
-    return surface_sgm
+        vertex_normals[fc[0], :] = vertex_normals[fc[0]] + facenormal
+        vertex_normals[fc[1], :] = vertex_normals[fc[1]] + facenormal
+        vertex_normals[fc[2], :] = vertex_normals[fc[2]] + facenormal
+    for i in range(0, len(vertex_normals)):
+        vertex_normals[i, :] = vertex_normals[i, :] / np.linalg.norm(vertex_normals[i, :])
+    trm_mesh = trm_factory.trm_from_vvnf(vertices, vertex_normals, faces)
+    submesh_sgm = StaticGeometricModel(trm_mesh)
+    submesh_sgm.set_rgba(rgba=rgba)
+    # geom = da.pdgeom_from_vvnf(vertices, vertex_normals, faces)
+    # node = GeomNode('surface')
+    # node.addGeom(geom)
+    # surface_nodepath = NodePath('surface')
+    # surface_nodepath.attachNewNode(node)
+    # surface_nodepath.setColor(rgba[0], rgba[1], rgba[2], rgba[3])
+    # surface_nodepath.setTransparency(TransparencyAttrib.MDual)
+    # surface_nodepath.setTwoSided(True)
+    # surface_sgm = StaticGeometricModel(surface_nodepath)
+    return submesh_sgm
 
-def gen_polygon(verts, thickness=0.002, rgba=[0, 0, 0, .7]):
+
+def gen_polygon(verts, thickness=0.002, rgba=np.array([0, 0, 0, .7])):
     """
     gen objmnp
     :param objpath:
@@ -902,43 +1042,46 @@ def gen_polygon(verts, thickness=0.002, rgba=[0, 0, 0, .7]):
     polygon_sgm = StaticGeometricModel(polygon_nodepath)
     return polygon_sgm
 
-def gen_frame_box(extent=[.02, .02, .02], homomat=np.eye(4), rgba=[0, 0, 0, 1], thickness=.001):
+
+def gen_frame_box(extent=np.array([.02, .02, .02]),
+                  homomat=np.eye(4),
+                  rgba=np.array([0, 0, 0, 1]),
+                  thickness=.001):
     """
     draw a 3D box, only show edges
     :param extent:
     :param homomat:
     :return:
     """
-    M_TO_PIXEL = 3779.53
     # Create a set of line segments
     ls = LineSegs()
-    ls.setThickness(thickness * M_TO_PIXEL)
+    ls.setThickness(thickness * da.M_TO_PIXEL)
     ls.setColor(rgba[0], rgba[1], rgba[2], rgba[3])
-    center_pos = homomat[:3,3]
-    x_axis = homomat[:3,0]
-    y_axis = homomat[:3,1]
-    z_axis = homomat[:3,2]
-    x_min, x_max = -x_axis*extent[0]/2, x_axis*extent[0]/2
-    y_min, y_max = -y_axis*extent[1]/2, y_axis*extent[1]/2
-    z_min, z_max = -z_axis*extent[2]/2, z_axis*extent[2]/2
+    center_pos = homomat[:3, 3]
+    x_axis = homomat[:3, 0]
+    y_axis = homomat[:3, 1]
+    z_axis = homomat[:3, 2]
+    x_min, x_max = -x_axis * extent[0] / 2, x_axis * extent[0] / 2
+    y_min, y_max = -y_axis * extent[1] / 2, y_axis * extent[1] / 2
+    z_min, z_max = -z_axis * extent[2] / 2, z_axis * extent[2] / 2
     # max, max, max
-    print(center_pos+np.array([x_max, y_max, z_max]))
-    ls.moveTo(da.npv3_to_pdv3(center_pos+x_max+y_max+z_max))
-    ls.drawTo(da.npv3_to_pdv3(center_pos+x_max+y_max+z_min))
-    ls.drawTo(da.npv3_to_pdv3(center_pos+x_max+y_min+z_min))
-    ls.drawTo(da.npv3_to_pdv3(center_pos+x_max+y_min+z_max))
-    ls.drawTo(da.npv3_to_pdv3(center_pos+x_max+y_max+z_max))
-    ls.drawTo(da.npv3_to_pdv3(center_pos+x_min+y_max+z_max))
-    ls.drawTo(da.npv3_to_pdv3(center_pos+x_min+y_min+z_max))
-    ls.drawTo(da.npv3_to_pdv3(center_pos+x_min+y_min+z_min))
-    ls.drawTo(da.npv3_to_pdv3(center_pos+x_min+y_max+z_min))
-    ls.drawTo(da.npv3_to_pdv3(center_pos+x_min+y_max+z_max))
-    ls.moveTo(da.npv3_to_pdv3(center_pos+x_max+y_max+z_min))
-    ls.drawTo(da.npv3_to_pdv3(center_pos+x_min+y_max+z_min))
-    ls.moveTo(da.npv3_to_pdv3(center_pos+x_max+y_min+z_min))
-    ls.drawTo(da.npv3_to_pdv3(center_pos+x_min+y_min+z_min))
-    ls.moveTo(da.npv3_to_pdv3(center_pos+x_max+y_min+z_max))
-    ls.drawTo(da.npv3_to_pdv3(center_pos+x_min+y_min+z_max))
+    print(center_pos + np.array([x_max, y_max, z_max]))
+    ls.moveTo(da.npvec3_to_pdvec3(center_pos + x_max + y_max + z_max))
+    ls.drawTo(da.npvec3_to_pdvec3(center_pos + x_max + y_max + z_min))
+    ls.drawTo(da.npvec3_to_pdvec3(center_pos + x_max + y_min + z_min))
+    ls.drawTo(da.npvec3_to_pdvec3(center_pos + x_max + y_min + z_max))
+    ls.drawTo(da.npvec3_to_pdvec3(center_pos + x_max + y_max + z_max))
+    ls.drawTo(da.npvec3_to_pdvec3(center_pos + x_min + y_max + z_max))
+    ls.drawTo(da.npvec3_to_pdvec3(center_pos + x_min + y_min + z_max))
+    ls.drawTo(da.npvec3_to_pdvec3(center_pos + x_min + y_min + z_min))
+    ls.drawTo(da.npvec3_to_pdvec3(center_pos + x_min + y_max + z_min))
+    ls.drawTo(da.npvec3_to_pdvec3(center_pos + x_min + y_max + z_max))
+    ls.moveTo(da.npvec3_to_pdvec3(center_pos + x_max + y_max + z_min))
+    ls.drawTo(da.npvec3_to_pdvec3(center_pos + x_min + y_max + z_min))
+    ls.moveTo(da.npvec3_to_pdvec3(center_pos + x_max + y_min + z_min))
+    ls.drawTo(da.npvec3_to_pdvec3(center_pos + x_min + y_min + z_min))
+    ls.moveTo(da.npvec3_to_pdvec3(center_pos + x_max + y_min + z_max))
+    ls.drawTo(da.npvec3_to_pdvec3(center_pos + x_min + y_min + z_max))
     # Create and return a node with the segments
     lsnp = NodePath(ls.create())
     lsnp.setTransparency(TransparencyAttrib.MDual)
@@ -946,9 +1089,10 @@ def gen_frame_box(extent=[.02, .02, .02], homomat=np.eye(4), rgba=[0, 0, 0, 1], 
     ls_sgm = StaticGeometricModel(lsnp)
     return ls_sgm
 
+
 def gen_surface(surface_callback, rng, granularity=.01):
-    surface_trm = trihelper.gen_surface(surface_callback, rng, granularity)
-    surface_gm = GeometricModel(surface_trm, btwosided=True)
+    surface_trm = trm_factory.gen_surface(surface_callback, rng, granularity)
+    surface_gm = GeometricModel(surface_trm, toggle_twosided=True)
     return surface_gm
 
 
@@ -965,8 +1109,8 @@ if __name__ == "__main__":
     bunnygm = GeometricModel(objpath)
     bunnygm.set_rgba([0.7, 0.7, 0.0, 1.0])
     bunnygm.attach_to(base)
-    bunnygm.show_localframe()
-    rotmat = rm.rotmat_from_axangle([1, 0, 0], math.pi / 2.0)
+    bunnygm.show_local_frame()
+    rotmat = rm.rotmat_from_axangle(np.array([1, 0, 0]), math.pi / 2.0)
     bunnygm.set_rotmat(rotmat)
 
     bunnygm1 = bunnygm.copy()
@@ -984,36 +1128,38 @@ if __name__ == "__main__":
     bunnygm2.set_rotmat(rotmat)
     bunnygm2.set_scale([2, 1, 3])
 
-    bunnygmpoints, _ = bunnygm.sample_surface()
-    bunnygm1points, _ = bunnygm1.sample_surface()
-    bunnygm2points, _ = bunnygm2.sample_surface()
-    bpgm = GeometricModel(bunnygmpoints)
-    bpgm1 = GeometricModel(bunnygm1points)
-    bpgm2 = GeometricModel(bunnygm2points)
-    bpgm.attach_to(base)
-    bpgm.set_scale([2, 1, 3])
-    bpgm.set_vert_size(.01)
-    bpgm1.attach_to(base)
-    bpgm2.attach_to(base)
+    bunnygmpoints = bunnygm.sample_surface()
+    bunnygm1points = bunnygm1.sample_surface()
+    bunnygm2points = bunnygm2.sample_surface()
+    # bpgm = GeometricModel(bunnygmpoints)
+    # bpgm1 = GeometricModel(bunnygm1points)
+    # bpgm2 = GeometricModel(bunnygm2points)
+    # bpgm.attach_to(base)
+    # bpgm.set_scale([2, 1, 3])
+    # bpgm.set_point_size(.01)
+    # bpgm1.attach_to(base)
+    # bpgm2.attach_to(base)
+    bgm_pcd = gen_pointcloud(bunnygmpoints)
+    bgm_pcd.attach_to(base)
 
     lsgm = gen_linesegs([[np.array([.1, 0, .01]), np.array([.01, 0, .01])],
                          [np.array([.01, 0, .01]), np.array([.1, 0, .1])],
                          [np.array([.1, 0, .1]), np.array([.1, 0, .01])]])
     lsgm.attach_to(base)
 
-    gen_circarrow(radius=.1, portion=.8).attach_to(base)
-    gen_dasharrow(spos=np.array([0, 0, 0]), epos=np.array([0, 0, 2])).attach_to(base)
-    gen_dashframe(pos=np.array([0, 0, 0]), rotmat=np.eye(3)).attach_to(base)
+    gen_circarrow(major_radius=.1, portion=.8).attach_to(base)
+    gen_dashed_arrow(spos=np.array([0, 0, 0]), epos=np.array([0, 0, 2])).attach_to(base)
+    gen_dashed_frame(pos=np.array([0, 0, 0]), rotmat=np.eye(3)).attach_to(base)
     axmat = rm.rotmat_from_axangle([1, 1, 1], math.pi / 4)
     gen_frame(rotmat=axmat).attach_to(base)
     axmat[:, 0] = .1 * axmat[:, 0]
     axmat[:, 1] = .07 * axmat[:, 1]
     axmat[:, 2] = .3 * axmat[:, 2]
-    gen_ellipsoid(pos=np.array([0, 0, 0]), axmat=axmat).attach_to(base)
+    gen_ellipsoid(pos=np.array([0, 0, 0]), axes_mat=axmat).attach_to(base)
     print(rm.unit_vector(np.array([0, 0, 0])))
 
-    pos= np.array([.3,0,0])
-    rotmat = rm.rotmat_from_euler(math.pi/6,0,0)
+    pos = np.array([.3, 0, 0])
+    rotmat = rm.rotmat_from_euler(math.pi / 6, 0, 0)
     homomat = rm.homomat_from_posrot(pos, rotmat)
     gen_frame_box([.1, .2, .3], homomat).attach_to(base)
 

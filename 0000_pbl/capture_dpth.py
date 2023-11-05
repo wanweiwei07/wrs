@@ -33,7 +33,7 @@ while True:
     if depth_image_handle:
         depth_image = pk_obj.image_convert_to_numpy(depth_image_handle)
         # depth_image=cv2.erode(depth_image,np.ones((3,3)))
-        # cv2.imwrite(foldername + 'opencv' + str(imgid) + '.' + type, depth_image)
+        # cv2.imwrite(foldername + 'opencv' + str(imgid) + '.' + end_type, depth_image)
         print("Saving an image...ID" + str(imgid))
         imgid += 1
         if last_image is not None:

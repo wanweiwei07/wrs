@@ -245,7 +245,7 @@ if __name__ == "__main__":
         #                                                                   rel_obj_rotmat=rel_rotmat)
         #     last_jnt_values = rbt_s.get_jnt_values()
         #     new_jnt_values = rbt_s.ik(tgt_pos=new_arm_tcp_pos, tgt_rotmat=new_arm_tcp_rotmat)
-        #     rbt_s.fk(jnt_values=new_jnt_values)
+        #     rbt_s.fk(joint_values=new_jnt_values)
         #     toc = time.time()
         #     start_frame_id = math.ceil((toc - tic) / .01)
         #     rbt_x.arm_move_jspace_path([last_jnt_values, new_jnt_values], time_intervals=.1, start_frame_id=start_frame_id)

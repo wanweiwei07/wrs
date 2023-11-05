@@ -13,7 +13,7 @@ except ImportError:
 
 def arc_center(points):
     '''
-    Given three points of an arc, find the center, radius, normal, and angle.
+    Given three points of an arc, find the center, major_radius, normal, and angle.
 
     This uses the fact that the intersection of the perpendicular
     bisectors of the segments between the control points is the center of the arc.
@@ -25,7 +25,7 @@ def arc_center(points):
     Returns
     ---------
     center:       (d) point of the center of the arc
-    radius:       float, radius of the arc
+    major_radius:       float, major_radius of the arc
     plane_normal: (3) vector of the plane normal. 
     angle:        float, angle swept by the arc
     '''
@@ -60,7 +60,7 @@ def arc_center(points):
     angles_sorted = angles_sorted[::(1 - int(not reverse)*2)]
 
     result = {'center' : center[:(3-is_2D)], 
-              'radius' : radius, 
+              'major_radius' : radius,
               'normal' : plane_normal, 
               'span'   : angle, 
               'angles' : angles_sorted}
@@ -84,7 +84,7 @@ def discretize_arc(points, close = False, scale=1.0):
     two_dimensional, points = three_dimensionalize(points, return_2D = True)
     center_info = arc_center(points)
     center, R, N, angle = (center_info['center'],
-                           center_info['radius'],
+                           center_info['major_radius'],
                            center_info['normal'],
                            center_info['span'])
     if close: angle = np.pi * 2
@@ -148,13 +148,13 @@ def fit_circle(points, prior=None):
     Arguments
     ---------
     points: (n,d) set of points
-    prior:  tuple of best guess for (center, radius)
+    prior:  tuple of best guess for (center, major_radius)
 
     Returns
     ---------
     center: (d), location of center
-    radius: float, mean radius across circle
-    error:  float, peak to peak value of deviation from mean radius
+    major_radius: float, mean major_radius across circle
+    error:  float, peak to peak value of deviation from mean major_radius
     '''
     
     def residuals(center):

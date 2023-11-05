@@ -71,20 +71,20 @@ class Sphere(Primitive):
 
         Arguments
         ----------
-        sphere_radius: float, radius of sphere
+        sphere_radius: float, major_radius of sphere
         sphere_center: (3,) float, center of sphere
-        subdivisions: int, number of subdivisions for icosphere. Default is 3
+        subdivisions: int, number of sphere_ico_level for icosphere. Default is 3
         '''
         super(Sphere, self).__init__(*args, **kwargs)
         if 'sphere_radius' in kwargs:
             self.sphere_radius = kwargs['sphere_radius']
         if 'sphere_center' in kwargs:
             self.sphere_center = kwargs['sphere_center']
-        if 'subdivisions' in kwargs:
-            self._data['subdivisions'] = int(kwargs['subdivisions'])
+        if 'sphere_ico_level' in kwargs:
+            self._data['sphere_ico_level'] = int(kwargs['sphere_ico_level'])
         else:
-            self._data['subdivisions'] = 3
-        self._unit_sphere = creation.icosphere(subdivisions=self._data['subdivisions'][0])
+            self._data['sphere_ico_level'] = 3
+        self._unit_sphere = creation.icosphere(subdivisions=self._data['sphere_ico_level'][0])
 
     @property
     def sphere_center(self):
@@ -99,14 +99,14 @@ class Sphere(Primitive):
 
     @property
     def sphere_radius(self):
-        stored = self._data['radius']
+        stored = self._data['major_radius']
         if stored is None:
             return 1.0
         return stored
 
     @sphere_radius.setter
     def sphere_radius(self, value):
-        self._data['radius'] = float(value)
+        self._data['major_radius'] = float(value)
 
     def _create_mesh(self):
         ico = self._unit_sphere
@@ -118,64 +118,62 @@ class Sphere(Primitive):
 
 class Box(Primitive):
     def __init__(self, *args, **kwargs):
-        '''
+        """
         Create a Box primitive, which is a subclass of Trimesh
-
-        Arguments
-        ----------
-        box_extents:   (3,) float, size of box
-        box_transform: (4,4) float, transformation matrix for box
-        box_center:    (3,) float, convience function which updates box_transform
-                       with a translation- only matrix
-        '''
+        :param kwargs:
+                extents:   (3,) float, size of box
+                homomat:   (4,4) float, transformation matrix for box
+                center:    (3,) float, convience function which updates box_transform
+                               with a translation- only matrix
+        """
         super(Box, self).__init__(*args, **kwargs)
-        if 'box_extents' in kwargs:
-            self.box_extents = kwargs['box_extents']
-        if 'box_transform' in kwargs:
-            self.box_transform = kwargs['box_transform']
-        if 'box_center' in kwargs:
-            self.box_center = kwargs['box_center']
+        if 'extents' in kwargs:
+            self.extents = kwargs['extents']
+        if 'homomat' in kwargs:
+            self.homomat = kwargs['homomat']
+        if 'center' in kwargs:
+            self.center = kwargs['center']
         self._unit_box = creation.box()
 
     @property
-    def box_center(self):
-        return self.box_transform[0:3, 3]
+    def center(self):
+        return self.homomat[0:3, 3]
 
-    @box_center.setter
-    def box_center(self, values):
-        transform = self.box_transform
-        transform[0:3, 3] = values
-        self._data['box_transform'] = transform
+    @center.setter
+    def center(self, values):
+        transform = self.homomat
+        transform[:3, 3] = values
+        self._data['homomat'] = transform
 
     @property
-    def box_extents(self):
-        stored = self._data['box_extents']
+    def extents(self):
+        stored = self._data['extents']
         if util.is_shape(stored, (3,)):
             return stored
         return np.ones(3)
 
-    @box_extents.setter
-    def box_extents(self, values):
-        self._data['box_extents'] = np.asanyarray(values, dtype=np.float64)
+    @extents.setter
+    def extents(self, values):
+        self._data['extents'] = np.asanyarray(values, dtype=np.float64)
 
     @property
-    def box_transform(self):
-        stored = self._data['box_transform']
+    def homomat(self):
+        stored = self._data['homomat']
         if util.is_shape(stored, (4, 4)):
             return stored
         return np.eye(4)
 
-    @box_transform.setter
-    def box_transform(self, matrix):
+    @homomat.setter
+    def homomat(self, matrix):
         matrix = np.asanyarray(matrix, dtype=np.float64)
         if matrix.shape != (4, 4):
             raise ValueError('Matrix must be (4,4)!')
-        self._data['box_transform'] = matrix
+        self._data['homomat'] = matrix
 
     @property
     def is_oriented(self):
-        if util.is_shape(self.box_transform, (4, 4)):
-            return not np.allclose(self.box_transform[0:3, 0:3], np.eye(3))
+        if util.is_shape(self.homomat, (4, 4)):
+            return not np.allclose(self.homomat[:3, :3], np.eye(3))
         else:
             return False
 
@@ -183,10 +181,8 @@ class Box(Primitive):
         log.debug('Creating mesh for box primitive')
         box = self._unit_box
         vertices, faces, normals = box.vertices, box.faces, box.face_normals
-        vertices = points.transform_points(vertices * self.box_extents,
-                                           self.box_transform)
-        normals = np.dot(self.box_transform[0:3, 0:3],
-                         normals.T).T
+        vertices = points.transform_points(vertices * self.extents, self.homomat)
+        normals = np.dot(self.homomat[:3, :3], normals.T).T
         aligned = windings_aligned(vertices[faces[:1]], normals[:1])[0]
         if not aligned:
             faces = np.fliplr(faces)
@@ -208,7 +204,7 @@ class Cylinder(Primitive):
           Radius of cylinder
         height : float
           Height of cylinder
-        sections : int
+        n_sec : int
           Number of facets in circle
         """
         super(Cylinder, self).__init__(*args, **kwargs)
@@ -220,10 +216,10 @@ class Cylinder(Primitive):
             self.radius = kwargs['radius']
         else:
             self.radius = 1.0
-        if 'sections' in kwargs:
-            self.sections = kwargs['sections']
+        if 'n_sec' in kwargs:
+            self.n_sec = kwargs['n_sec']
         else:
-            self.sections = 12
+            self.n_sec = 12
         if 'homomat' in kwargs:
             self.homomat = kwargs['homomat']
         else:
@@ -237,33 +233,31 @@ class Cylinder(Primitive):
         volume : float
           Volume of the cylinder
         """
-        volume = ((np.pi * self.radius ** 2) *
-                  self.height)
+        volume = ((np.pi * self.radius ** 2) * self.height)
         return volume
 
     def buffer(self, distance):
         """
         Return a cylinder primitive which covers the source cylinder
-        by distance: radius is inflated by distance, height by twice
+        by distance: major_radius is inflated by distance, height by twice
         the distance.
         Parameters
         ------------
         distance : float
-          Distance to inflate cylinder radius and height
+          Distance to inflate cylinder major_radius and height
         Returns
         -------------
         buffered : Cylinder
          Cylinder primitive inflated by distance
         """
         distance = float(distance)
-
-        buffered = Cylinder(height=self.height + distance * 2, radius=self.radius + distance, sections=self.sections,
+        buffered = Cylinder(height=self.height + distance * 2, radius=self.radius + distance, n_sec=self.n_sec,
                             homomat=self.homomat)
         return buffered
 
     def _create_mesh(self):
-        log.debug('Creating cylinder mesh with r=%f, h=%f %d sections', self.radius, self.height, self.sections)
-        mesh = creation.cylinder(radius=self.radius, height=self.height, sections=self.sections, homomat=self.homomat)
+        log.debug('Creating cylinder mesh with r=%f, h=%f %d n_sec_minor', self.radius, self.height, self.n_sec)
+        mesh = creation.cylinder(radius=self.radius, height=self.height, n_sec=self.n_sec, homomat=self.homomat)
         self._cache['vertices'] = mesh.vertices
         self._cache['faces'] = mesh.faces
         self._cache['face_normals'] = mesh.face_normals
@@ -356,9 +350,9 @@ class Cone(Primitive):
         Create a Cone Primitive, a subclass of Trimesh.
         Parameters
 
-        :param radius : float, radius of cone
+        :param radius : float, major_radius of cone
         :param height : float, height of cone
-        :param sections : int, number of facets in circle
+        :param n_sec : int, number of facets in circle
 
         author: weiwei
         date: 20191228
@@ -373,10 +367,10 @@ class Cone(Primitive):
             self.radius = kwargs['radius']
         else:
             self.radius = 1.0
-        if 'sections' in kwargs:
-            self.sections = kwargs['sections']
+        if 'n_sec' in kwargs:
+            self.n_sec = kwargs['n_sec']
         else:
-            self.sections = 12
+            self.n_sec = 12
         if 'homomat' in kwargs:
             self.homomat = kwargs['homomat']
         else:
@@ -397,9 +391,9 @@ class Cone(Primitive):
     def buffer(self, distance):
         """
         Return a cylinder primitive which covers the source cone by distance:
-        radius is inflated by distance, height by twice the distance.
+        major_radius is inflated by distance, height by twice the distance.
 
-        :param distance: float, distance to inflate cylinder radius and height
+        :param distance: float, distance to inflate cylinder major_radius and height
         :return buffered: cone primitive inflated by distance
 
         author: weiwei
@@ -407,13 +401,13 @@ class Cone(Primitive):
         """
         distance = float(distance)
 
-        buffered = Cone(height=self.height + distance * 2, radius=self.radius + distance, sections=self.sections,
+        buffered = Cone(height=self.height + distance * 2, radius=self.radius + distance, n_sec=self.n_sec,
                         homomat=self.homomat)
         return buffered
 
     def _create_mesh(self):
-        log.debug('Creating cylinder mesh with r=%f, h=%f %d sections', self.radius, self.height, self.sections)
-        mesh = creation.cone(radius=self.radius, height=self.height, sections=self.sections, homomat=self.homomat)
+        log.debug('Creating cylinder mesh with r=%f, h=%f %d n_sec', self.radius, self.height, self.n_sec)
+        mesh = creation.cone(radius=self.radius, height=self.height, n_sec=self.n_sec, homomat=self.homomat)
         self._cache['vertices'] = mesh.vertices
         self._cache['faces'] = mesh.faces
         self._cache['face_normals'] = mesh.face_normals
@@ -426,7 +420,7 @@ class Capsule(Primitive):
         Create a Capsule Primitive, a subclass of Trimesh.
         Parameters
 
-        :param radius : float, radius of cone
+        :param radius : float, major_radius of cone
         :param height : float, height of cone
         :param count : [int, int], number of secs in log and alt
         :param homomat: 4x4 transformation matrix
@@ -469,7 +463,7 @@ class Capsule(Primitive):
         """
         Return a capsule primitive which covers the source capsule by distance:
 
-        :param distance: float, distance to inflate cylinder radius and height
+        :param distance: float, distance to inflate cylinder major_radius and height
         :return buffered: cone primitive inflated by distance
 
         author: weiwei

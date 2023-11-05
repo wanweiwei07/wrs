@@ -41,7 +41,7 @@ ERRNUM_RESULT_FAIL = 1  # Failed to process the instruction packet.
 ERRNUM_INSTRUCTION = 2  # Instruction error
 ERRNUM_CRC = 3  # CRC check error
 ERRNUM_DATA_RANGE = 4  # Data range error
-ERRNUM_DATA_LENGTH = 5  # Data length error
+ERRNUM_DATA_LENGTH = 5  # Data axis_length error
 ERRNUM_DATA_LIMIT = 6  # Data limit error
 ERRNUM_ACCESS = 7  # Access error
 
@@ -94,7 +94,7 @@ class Protocol2PacketHandler(object):
             return "[RxPacketError] The data value is out of range!"
 
         elif not_alert_error == ERRNUM_DATA_LENGTH:
-            return "[RxPacketError] The data length does not match as expected!"
+            return "[RxPacketError] The data axis_length does not match as expected!"
 
         elif not_alert_error == ERRNUM_DATA_LIMIT:
             return "[RxPacketError] The data value exceeds the limit value!"
@@ -217,7 +217,7 @@ class Protocol2PacketHandler(object):
         # byte stuffing for header
         self.addStuffing(txpacket)
 
-        # check max packet length
+        # check max packet axis_length
         total_packet_length = DXL_MAKEWORD(txpacket[PKT_LENGTH_L], txpacket[PKT_LENGTH_H]) + 7
         # 7: HEADER0 HEADER1 HEADER2 RESERVED ID LENGTH_L LENGTH_H
 
@@ -251,7 +251,7 @@ class Protocol2PacketHandler(object):
 
         result = COMM_TX_FAIL
         rx_length = 0
-        wait_length = 11  # minimum length (HEADER0 HEADER1 HEADER2 RESERVED ID LENGTH_L LENGTH_H INST ERROR CRC16_L CRC16_H)
+        wait_length = 11  # minimum axis_length (HEADER0 HEADER1 HEADER2 RESERVED ID LENGTH_L LENGTH_H INST ERROR CRC16_L CRC16_H)
 
         while True:
             rxpacket.extend(port.readPort(wait_length - rx_length))

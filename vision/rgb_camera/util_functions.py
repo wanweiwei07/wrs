@@ -225,7 +225,7 @@ def estimate_aruco_marker_pose(img_list,
             rotmat = cv2.Rodrigues(marker_rvecs[0])[0]
             pos_list.append(pos)
             rotmat_list.append(rotmat)
-    average_pos = rm.posvec_average(pos_list)
+    average_pos = rm.pos_average(pos_list)
     average_rotmat = rm.rotmat_average(rotmat_list)
     return average_pos, average_rotmat
 

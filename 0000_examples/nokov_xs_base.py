@@ -36,28 +36,28 @@ if __name__ == '__main__':
             rigidbodydata = rigidbody_dataframe.rigidbody_set_dict[1]
             rob_rotmat = rigidbodydata.get_rotmat()
             offset = np.array([0.16, 0.088, -0.461862])
-            # gm.gen_frame(pos=rigidbodydata.coord, rotmat=rob_rotmat, length=1).attach_to(base)
+            # gm.gen_frame(pos=rigidbodydata.coord, rotmat=rob_rotmat, axis_length=1).attach_to(base)
             xyz_pose = rigidbodydata.get_pos() + np.dot(rob_rotmat, offset)
             pose = np.zeros(3)
             pose[:2] = xyz_pose[:2]
             theta = rm.quaternion_to_euler(rigidbodydata.quat)[2] - np.pi
             pose[2] = theta
             robot_1.fk(armname, pose)
-            rbtmnp[0] = robot_1.gen_meshmodel(toggle_tcpcs=True)
+            rbtmnp[0] = robot_1.gen_mesh_model(toggle_tcpcs=True)
             rbtmnp[0].attach_to(base)
             rigidbodydata.gen_mesh_model().attach_to(base)
             # robot 2
             rigidbodydata = rigidbody_dataframe.rigidbody_set_dict[2]
             rob_rotmat = rigidbodydata.get_rotmat()
             offset = np.array([0.12, 0.108, -0.461862])
-            # gm.gen_frame(pos=rigidbodydata.coord, rotmat=rob_rotmat, length=1).attach_to(base)
+            # gm.gen_frame(pos=rigidbodydata.coord, rotmat=rob_rotmat, axis_length=1).attach_to(base)
             xyz_pose = rigidbodydata.get_pos() + np.dot(rob_rotmat, offset)
             pose = np.zeros(3)
             pose[:2] = xyz_pose[:2]
             theta = rm.quaternion_to_euler(rigidbodydata.quat)[2] - np.pi
             pose[2] = theta
             robot_2.fk(armname, pose)
-            rbtmnp[1] = robot_2.gen_meshmodel(toggle_tcpcs=True)
+            rbtmnp[1] = robot_2.gen_mesh_model(toggle_tcpcs=True)
             rbtmnp[1].attach_to(base)
         return task.again
 

@@ -20,7 +20,7 @@ class RBFSurface(sfc.Surface):
         :param kernel:
         :param epsilon:
         :param degree:
-        :param rng: [[xmin, xmax], [ymin, ymax]],
+        :param range: [[xmin, xmax], [ymin, ymax]],
                     min(xydata[:,0]), max(xydata[:,0]) and min(xydata[:,1]), max(xydata[:,1]) will be used in case of None
         author: weiwei
         date: 20210624

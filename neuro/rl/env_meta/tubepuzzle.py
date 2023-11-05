@@ -338,9 +338,9 @@ if __name__=="__main__":
                          [0,0,2,1,2,2,0,0,0,0],
                          [0,0,0,0,2,0,0,0,0,0]])
     tp = TubePuzzle(elearray)
-    # tp.getMovableIds(Node(state))
+    # trm_primit.getMovableIds(Node(state))
     # print(Node(state).fcost())
-    # print(tp.fcost(Node(state)))
+    # print(trm_primit.fcost(Node(state)))
     path = tp.astar_search()
     # for state in path:////////////
     #     print(state)

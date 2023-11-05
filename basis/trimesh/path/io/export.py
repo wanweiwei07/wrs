@@ -17,7 +17,7 @@ def export_path(path, file_type, file_obj=None):
     Arguments
     ---------
     file_obj:  a filename string or a file-like object
-    file_type: str representing file type (eg: 'svg')
+    file_type: str representing file end_type (eg: 'svg')
     process:   boolean flag, whether to process the mesh on load
 
     Returns:
@@ -67,7 +67,7 @@ def export_svg(drawing):
         vertex_start, vertex_mid, vertex_end = vertices
         center_info = arc_center(vertices)
         C, R, N, angle = (center_info['center'],
-                          center_info['radius'],
+                          center_info['major_radius'],
                           center_info['normal'],
                           center_info['span'])
         if arc.closed: return circle_to_svgpath(C, R, reverse)
@@ -152,7 +152,7 @@ def export_dxf(path):
                                               'CENTER_POINT' : format_points([info['center']]),
                                               'ANGLE_MIN'    : angles[0],
                                               'ANGLE_MAX'    : angles[1],
-                                              'RADIUS'       : info['radius'],
+                                              'RADIUS'       : info['major_radius'],
                                               'LAYER_NUMBER' : layer,
                                               'COLOR_NUMBER' : color})
         return result
@@ -173,7 +173,7 @@ def export_dxf(path):
         if name in conversions:
             entities_str += conversions[name](e, path.vertices)
         else:
-            log.warning('Entity type %s not exported!', name)
+            log.warning('Entity end_type %s not exported!', name)
 
     header = templates['header'].substitute({'BOUNDS_MIN': format_points([path.bounds[0]]),
                                              'BOUNDS_MAX': format_points([path.bounds[1]]),

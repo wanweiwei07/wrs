@@ -68,7 +68,7 @@ for push_info in push_info_list:
     gl_push_pos, gl_push_rotmat, hnd_pos, hnd_rotmat = push_info
     gic = rtq_s.copy()
     gic.fix_to(hnd_pos, hnd_rotmat)
-    gic.gen_meshmodel().attach_to(base)
+    gic.gen_mesh_model().attach_to(base)
 
 # push_info=push_info_list[70]
 # gl_push_pos, gl_push_rotmat, hnd_pos, hnd_rotmat = push_info

@@ -2,7 +2,7 @@ import os
 import math
 import numpy as np
 import modeling.model_collection as mc
-import robot_sim._kinematics.jlchain as jl
+import robot_sim.kinematics.jlchain as jl
 import basis.robot_math as rm
 import robot_sim.end_effectors.gripper.gripper_interface as gp
 
@@ -12,31 +12,31 @@ class TBMGripper(gp.GripperInterface):
     def __init__(self, pos=np.zeros(3), rotmat=np.eye(3), cdmesh_type='box', name='tbm_gripper', enable_cc=True):
         super().__init__(pos=pos, rotmat=rotmat, cdmesh_type=cdmesh_type, name=name)
         this_dir, this_filename = os.path.split(__file__)
-        cpl_end_pos = self.coupling.jnts[-1]['gl_posq']
-        cpl_end_rotmat = self.coupling.jnts[-1]['gl_rotmatq']
+        cpl_end_pos = self.coupling.joints[-1]['gl_posq']
+        cpl_end_rotmat = self.coupling.joints[-1]['gl_rotmatq']
         # left finger
-        self.lft_fgr = jl.JLChain(pos=cpl_end_pos, rotmat=cpl_end_rotmat, homeconf=np.zeros(1), name='lft_outer')
-        self.lft_fgr.jnts[1]['loc_pos'] = np.array([0.113, 0, -.058])
-        self.lft_fgr.jnts[1]['motion_rng'] = [-.8, .8]
-        self.lft_fgr.jnts[1]['loc_motionax'] = np.array([0, 1, 0])
+        self.lft_fgr = jl.JLChain(pos=cpl_end_pos, rotmat=cpl_end_rotmat, home_conf=np.zeros(1), name='lft_outer')
+        self.lft_fgr.joints[1]['pos_in_loc_tcp'] = np.array([0.113, 0, -.058])
+        self.lft_fgr.joints[1]['motion_rng'] = [-.8, .8]
+        self.lft_fgr.joints[1]['loc_motionax'] = np.array([0, 1, 0])
         # right finger
-        self.rgt_fgr = jl.JLChain(pos=cpl_end_pos, rotmat=cpl_end_rotmat, homeconf=np.zeros(1), name='lft_outer')
-        self.rgt_fgr.jnts[1]['loc_pos'] = np.array([0.113, 0, 0.058])
-        self.rgt_fgr.jnts[1]['motion_rng'] = [-.8, .8]
-        self.rgt_fgr.jnts[1]['loc_motionax'] = np.array([0, 1, 0])
+        self.rgt_fgr = jl.JLChain(pos=cpl_end_pos, rotmat=cpl_end_rotmat, home_conf=np.zeros(1), name='lft_outer')
+        self.rgt_fgr.joints[1]['pos_in_loc_tcp'] = np.array([0.113, 0, 0.058])
+        self.rgt_fgr.joints[1]['motion_rng'] = [-.8, .8]
+        self.rgt_fgr.joints[1]['loc_motionax'] = np.array([0, 1, 0])
         # links
         # palm and left finger
         self.lft_fgr.lnks[0]['name'] = "palm"
-        self.lft_fgr.lnks[0]['loc_pos'] = np.zeros(3)
+        self.lft_fgr.lnks[0]['pos_in_loc_tcp'] = np.zeros(3)
         self.lft_fgr.lnks[0]['mesh_file'] = os.path.join(this_dir, "meshes", "palm_r.stl")
         self.lft_fgr.lnks[0]['rgba'] = [.5, .5, .5, 1]
         self.lft_fgr.lnks[1]['name'] = "finger1"
-        self.lft_fgr.lnks[1]['loc_pos'] = np.zeros(3)
+        self.lft_fgr.lnks[1]['pos_in_loc_tcp'] = np.zeros(3)
         self.lft_fgr.lnks[1]['mesh_file'] = os.path.join(this_dir, "meshes", "finger1_r.stl")
         self.lft_fgr.lnks[1]['rgba'] = [0.792156862745098, 0.819607843137255, 0.933333333333333, 1]
         # right finger
         self.rgt_fgr.lnks[1]['name'] = "finger2"
-        self.rgt_fgr.lnks[1]['loc_pos'] = np.zeros(3)
+        self.rgt_fgr.lnks[1]['pos_in_loc_tcp'] = np.zeros(3)
         self.rgt_fgr.lnks[1]['mesh_file'] = os.path.join(this_dir, "meshes", "finger2_r.stl")
         self.rgt_fgr.lnks[1]['rgba'] = [0.792156862745098, 0.819607843137255, 0.933333333333333, 1]
         # reinitialize
@@ -60,7 +60,7 @@ class TBMGripper(gp.GripperInterface):
                           self.lft_fgr.lnks[1],
                           self.rgt_fgr.lnks[1]]
             self.cc.set_active_cdlnks(activelist)
-            self.all_cdelements = self.cc.all_cdelements
+            self.all_cdelements = self.cc.all_cd_elements
         # cdmesh
         for cdelement in self.all_cdelements:
             cdmesh = cdelement['collision_model'].copy()
@@ -70,11 +70,11 @@ class TBMGripper(gp.GripperInterface):
         self.pos = pos
         self.rotmat = rotmat
         if angle is not None:
-            self.lft_fgr.jnts[1]['motion_val'] = angle
-            self.rgt_fgr.jnts[1]['motion_val'] = -self.lft_fgr.jnts[1]['motion_val']
+            self.lft_fgr.joints[1]['motion_val'] = angle
+            self.rgt_fgr.joints[1]['motion_val'] = -self.lft_fgr.joints[1]['motion_val']
         self.coupling.fix_to(self.pos, self.rotmat)
-        cpl_end_pos = self.coupling.jnts[-1]['gl_posq']
-        cpl_end_rotmat = self.coupling.jnts[-1]['gl_rotmatq']
+        cpl_end_pos = self.coupling.joints[-1]['gl_posq']
+        cpl_end_rotmat = self.coupling.joints[-1]['gl_rotmatq']
         self.lft_fgr.fix_to(cpl_end_pos, cpl_end_rotmat)
         self.rgt_fgr.fix_to(cpl_end_pos, cpl_end_rotmat)
 
@@ -83,9 +83,9 @@ class TBMGripper(gp.GripperInterface):
         lft_outer is the only active joint, all others mimic this one
         :param: angle, radian
         """
-        if self.lft_fgr.jnts[1]['motion_rng'][0] <= motion_val <= self.lft_fgr.jnts[1]['motion_rng'][1]:
-            self.lft_fgr.jnts[1]['motion_val'] = motion_val
-            self.rgt_fgr.jnts[1]['motion_val'] = -self.lft_fgr.jnts[1]['motion_val']
+        if self.lft_fgr.joints[1]['motion_rng'][0] <= motion_val <= self.lft_fgr.joints[1]['motion_rng'][1]:
+            self.lft_fgr.joints[1]['motion_val'] = motion_val
+            self.rgt_fgr.joints[1]['motion_val'] = -self.lft_fgr.joints[1]['motion_val']
             self.lft_fgr.fk()
             self.rgt_fgr.fk()
         else:
@@ -116,12 +116,12 @@ class TBMGripper(gp.GripperInterface):
         if toggle_tcpcs:
             jaw_center_gl_pos = self.rotmat.dot(grpr.jaw_center_pos) + self.pos
             jaw_center_gl_rotmat = self.rotmat.dot(grpr.jaw_center_rotmat)
-            gm.gen_dashstick(spos=self.pos,
-                             epos=jaw_center_gl_pos,
-                             thickness=.0062,
-                             rgba=[.5, 0, 1, 1],
-                             type="round").attach_to(sm_collection)
-            gm.gen_mycframe(pos=jaw_center_gl_pos, rotmat=jaw_center_gl_rotmat).attach_to(sm_collection)
+            gm.gen_dashed_stick(spos=self.pos,
+                                epos=jaw_center_gl_pos,
+                                radius=.0062,
+                                rgba=[.5, 0, 1, 1],
+                                type="round").attach_to(sm_collection)
+            gm.gen_myc_frame(pos=jaw_center_gl_pos, rotmat=jaw_center_gl_rotmat).attach_to(sm_collection)
         return sm_collection
 
     def gen_meshmodel(self,
@@ -130,24 +130,24 @@ class TBMGripper(gp.GripperInterface):
                       rgba=None,
                       name='tbmg_meshmodel'):
         mm_collection = mc.ModelCollection(name=name)
-        self.coupling.gen_meshmodel(toggle_tcpcs=False,
+        self.coupling.gen_mesh_model(toggle_tcpcs=False,
+                                     toggle_jntscs=toggle_jntscs,
+                                     rgba=rgba).attach_to(mm_collection)
+        self.lft_fgr.gen_mesh_model(toggle_tcpcs=False,
                                     toggle_jntscs=toggle_jntscs,
                                     rgba=rgba).attach_to(mm_collection)
-        self.lft_fgr.gen_meshmodel(toggle_tcpcs=False,
-                                   toggle_jntscs=toggle_jntscs,
-                                   rgba=rgba).attach_to(mm_collection)
-        self.rgt_fgr.gen_meshmodel(toggle_tcpcs=False,
-                                   toggle_jntscs=toggle_jntscs,
-                                   rgba=rgba).attach_to(mm_collection)
+        self.rgt_fgr.gen_mesh_model(toggle_tcpcs=False,
+                                    toggle_jntscs=toggle_jntscs,
+                                    rgba=rgba).attach_to(mm_collection)
         if toggle_tcpcs:
             jaw_center_gl_pos = self.rotmat.dot(grpr.jaw_center_pos) + self.pos
             jaw_center_gl_rotmat = self.rotmat.dot(grpr.jaw_center_rotmat)
-            gm.gen_dashstick(spos=self.pos,
-                             epos=jaw_center_gl_pos,
-                             thickness=.0062,
-                             rgba=[.5, 0, 1, 1],
-                             type="round").attach_to(mm_collection)
-            gm.gen_mycframe(pos=jaw_center_gl_pos, rotmat=jaw_center_gl_rotmat).attach_to(mm_collection)
+            gm.gen_dashed_stick(spos=self.pos,
+                                epos=jaw_center_gl_pos,
+                                radius=.0062,
+                                rgba=[.5, 0, 1, 1],
+                                type="round").attach_to(mm_collection)
+            gm.gen_myc_frame(pos=jaw_center_gl_pos, rotmat=jaw_center_gl_rotmat).attach_to(mm_collection)
         return mm_collection
 
 

@@ -605,9 +605,9 @@ class YuMiArm:
 
         Parameters
         ----------
-        translation : list-like with length 3
+        translation : list-like with axis_length 3
             The translation vector (x, y, z) in meters.
-        rotation : list-like with length 3, optional
+        rotation : list-like with axis_length 3, optional
             The euler angles of given rotation in degrees.
             Defaults to 0 degrees - no rotation.
         wait_for_res : bool, optional
@@ -666,7 +666,7 @@ class YuMiArm:
 
         Parameters
         ----------
-        speed_data : list-like with length 4
+        speed_data : list-like with axis_length 4
             Specifies the speed data that will be used by RAPID when executing motions.
             Should be generated using YuMiRobot.get_v
         wait_for_res : bool, optional
@@ -693,7 +693,7 @@ class YuMiArm:
 
         Parameters
         ----------
-        speed_data : list-like with length 4
+        speed_data : list-like with axis_length 4
             Specifies the speed data that will be used by RAPID when executing motions.
             Should be generated using YuMiRobot.get_v
         wait_for_res : bool, optional
@@ -1436,7 +1436,7 @@ class YuMiArmFactory:
             else:
                 raise RuntimeError("Remote YuMiArm is not enabled because yumipy is not installed as a catkin package")
         else:
-            raise ValueError('YuMiArm type {0} not supported'.format(arm_type))
+            raise ValueError('YuMiArm end_type {0} not supported'.format(arm_type))
 
 
 if __name__ == '__main__':

@@ -9,7 +9,7 @@ import vision.depth_camera.surface.rbf_surface as rbfs
 
 base = wd.World(cam_pos=np.array([-.3,-.7,.42]), lookat_pos=np.array([0,0,0]))
 # gm.gen_frame().attach_to(base)
-bowl_model = cm.CollisionModel(initor="./objects/bowl.stl")
+bowl_model = cm.CollisionModel(initializer="./objects/bowl.stl")
 bowl_model.set_rgba([.3,.3,.3,.3])
 bowl_model.set_rotmat(rm.rotmat_from_euler(math.pi,0,0))
 # bowl_model.attach_to(base)
@@ -38,18 +38,18 @@ line_segs = [[homomat[:3,3], homomat[:3,3]+pt_direction*.05], [homomat[:3,3]+pt_
              [homomat[:3,3]+pt_direction*.05+tmp_direction*.05, homomat[:3,3]+tmp_direction*.05], [homomat[:3,3]+tmp_direction*.05, homomat[:3,3]]]
 # gm.gen_linesegs(line_segs).attach_to(base)
 for sec in line_segs:
-    gm.gen_stick(spos=sec[0], epos=sec[1], rgba=[0, 0, 0, 1], thickness=.002, type='round').attach_to(base)
+    gm.gen_stick(spos=sec[0], epos=sec[1], rgba=[0, 0, 0, 1], radius=.002, type='round').attach_to(base)
 epos = (line_segs[0][1]-line_segs[0][0])*.7+line_segs[0][0]
-gm.gen_arrow(spos=line_segs[0][0], epos=epos, thickness=0.004).attach_to(base)
+gm.gen_arrow(spos=line_segs[0][0], epos=epos, stick_radius=0.004).attach_to(base)
 spt = homomat[:3,3]
 # gm.gen_stick(spt, spt + pn_direction * 10, rgba=[0,1,0,1]).attach_to(base)
 # base.run()
-gm.gen_dasharrow(spt, spt-pn_direction*.07, thickness=.004).attach_to(base) # p0
+gm.gen_dashed_arrow(spt, spt - pn_direction * .07, stick_radius=.004).attach_to(base) # p0
 cpt, cnrml = bowl_model.ray_hit(spt, spt + pn_direction * 10000, option='closest')
-gm.gen_dashstick(spt, cpt, rgba=[.57,.57,.57,.7], thickness=0.003).attach_to(base)
+gm.gen_dashed_stick(spt, cpt, rgba=[.57, .57, .57, .7], radius=0.003).attach_to(base)
 gm.gen_sphere(pos=cpt, radius=.005).attach_to(base)
-gm.gen_dasharrow(cpt, cpt-pn_direction*.07, thickness=.004).attach_to(base) # p0
-gm.gen_dasharrow(cpt, cpt+cnrml*.07, thickness=.004).attach_to(base) # p0
+gm.gen_dashed_arrow(cpt, cpt - pn_direction * .07, stick_radius=.004).attach_to(base) # p0
+gm.gen_dashed_arrow(cpt, cpt + cnrml * .07, stick_radius=.004).attach_to(base) # p0
 
 angle = rm.angle_between_vectors(-pn_direction, cnrml)
 vec = np.cross(-pn_direction, cnrml)
@@ -65,9 +65,9 @@ new_line_segs = [[cpt, cpt+rotmat.dot(pt_direction)*.05],
                  [cpt+rotmat.dot(tmp_direction)*.05, cpt]]
 # gm.gen_linesegs(new_line_segs).attach_to(base)
 for sec in new_line_segs:
-    gm.gen_stick(spos=sec[0], epos=sec[1], rgba=[0, 0, 0, 1], thickness=.002, type='round').attach_to(base)
+    gm.gen_stick(spos=sec[0], epos=sec[1], rgba=[0, 0, 0, 1], radius=.002, type='round').attach_to(base)
 epos = (new_line_segs[0][1]-new_line_segs[0][0])*.7+new_line_segs[0][0]
-gm.gen_arrow(spos=new_line_segs[0][0], epos=epos, thickness=0.004).attach_to(base)
+gm.gen_arrow(spos=new_line_segs[0][0], epos=epos, stick_radius=0.004).attach_to(base)
 
 last_normal = cnrml
 direction = rotmat.dot(pt_direction)
@@ -102,7 +102,7 @@ for tick in range(1, n+1):
     vec = rm.unit_vector(np.cross(-pn_direction, new_normal))
     new_rotmat = rm.rotmat_from_axangle(vec, angle)
     direction = new_rotmat.dot(direction)
-    gm.gen_stick(spos=cpt, epos=projected_point, rgba=[1,.6,0,1], thickness=.002, type='round').attach_to(base)
+    gm.gen_stick(spos=cpt, epos=projected_point, rgba=[1,.6,0,1], radius=.002, type='round').attach_to(base)
     cpt=projected_point
     # last_normal = new_normal
 
@@ -137,7 +137,7 @@ for tick in range(1, n+1):
     vec = rm.unit_vector(np.cross(-pn_direction, new_normal))
     new_rotmat = rm.rotmat_from_axangle(vec, angle)
     direction = new_rotmat.dot(tmp_direction)
-    gm.gen_stick(spos=cpt, epos=projected_point, rgba=[1,.6,0,1], thickness=.002, type='round').attach_to(base)
+    gm.gen_stick(spos=cpt, epos=projected_point, rgba=[1,.6,0,1], radius=.002, type='round').attach_to(base)
     cpt=projected_point
     # last_normal = new_normal
 
@@ -172,7 +172,7 @@ for tick in range(1, n+1):
     vec = rm.unit_vector(np.cross(-pn_direction, new_normal))
     new_rotmat = rm.rotmat_from_axangle(vec, angle)
     direction = new_rotmat.dot(-pt_direction)
-    gm.gen_stick(spos=cpt, epos=projected_point, rgba=[1,.6,0,1], thickness=.002, type='round').attach_to(base)
+    gm.gen_stick(spos=cpt, epos=projected_point, rgba=[1,.6,0,1], radius=.002, type='round').attach_to(base)
     cpt=projected_point
     # last_normal = new_normal
 
@@ -207,7 +207,7 @@ for tick in range(1, n+1):
     vec = rm.unit_vector(np.cross(-pn_direction, new_normal))
     new_rotmat = rm.rotmat_from_axangle(vec, angle)
     direction = new_rotmat.dot(-tmp_direction)
-    gm.gen_stick(spos=cpt, epos=projected_point, rgba=[1,.6,0,1], thickness=.002, type='round').attach_to(base)
+    gm.gen_stick(spos=cpt, epos=projected_point, rgba=[1,.6,0,1], radius=.002, type='round').attach_to(base)
     cpt=projected_point
     # last_normal = new_normal
 

@@ -70,7 +70,7 @@ class BaxterServerServicer(object):
     raise NotImplementedError('Method not implemented!')
 
   def bxt_get_jnts(self, request, context):
-    """jnts
+    """joints
     """
     context.set_code(grpc.StatusCode.UNIMPLEMENTED)
     context.set_details('Method not implemented!')

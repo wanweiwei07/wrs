@@ -75,8 +75,8 @@ sensor_handler = SensorHandler(pkx)
 #                         np.array([[-1, 0, 0],
 #                                   [0, -1, 0],
 #                                   [0, 0, 1]]))
-# jnts = xss.ik(component_name="arm", tgt_pos=pos_start, tgt_rotmat=rot_start, max_niter=1000)
-# xsx.move_jnts(component_name="arm", jnt_values=jnts, time_intervals=1)
+# joints = xss.ik(component_name="arm", tgt_pos=pos_start, tgt_rotmat=rot_start, max_n_iter=1000)
+# xsx.move_jnts(component_name="arm", joint_values=joints, time_intervals=1)
 # pos = [np.array([0, 0, .2]),
 #        np.array([0, 0, -.2]),
 #        np.array([0, 0.2, 0]),
@@ -87,12 +87,12 @@ sensor_handler = SensorHandler(pkx)
 #        np.array([0, -.2, .2]),
 #        np.array([0.2, 0, .2]),
 #        np.array([0.2, 0, -.2])]
-# rot = [[np.array([0, 0, 1]), np.radians(10)]] * len(pos)
+# rotmat = [[np.array([0, 0, 1]), np.radians(10)]] * len(pos)
 # action_pos_list = []
 # action_rotmat_list = []
 # for i in range(10):
 #     action_pos_list.append(pos[i] + pos_start)
-#     action_rotmat_list.append(np.dot(rm.rotmat_from_axangle(rot[i][0], rot[i][1]),
+#     action_rotmat_list.append(np.dot(rm.rotmat_from_axangle(rotmat[i][0], rotmat[i][1]),
 #                                      rot_start))
 # # print(marker_pos_in_hnd)
 # pos_arm_tcp, rot_arm_tcp = xss.arm.jlc.lnks[7]["gl_pos"], xss.arm.jlc.lnks[7]["gl_rotmat"]
@@ -109,11 +109,11 @@ sensor_handler = SensorHandler(pkx)
 # print(calibration_r)
 # base.run()
 
-# validate pcd
+# validate pcd_helper
 from vision.depth_camera.calibrator import load_calibration_data
 
 affine_matrix, _, _ = load_calibration_data()
-gm.GeometricModel(initor=rm.homomat_transform_points(
+gm.GeometricModel(initializer=rm.transform_points_by_homomat(
     affine_matrix,
     sensor_handler.get_point_cloud()
 )).attach_to(base)

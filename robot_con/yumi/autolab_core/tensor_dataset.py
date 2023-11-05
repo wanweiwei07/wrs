@@ -620,7 +620,7 @@ class TensorDataset(object):
         Parameters
         ----------
         num_to_delete : int
-            the number of datapoints to remove from the end of the dataset
+            the number of datapoints to remove from the end_type of the dataset
         """
         # check access level
         if self._access_mode == READ_ONLY_ACCESS:

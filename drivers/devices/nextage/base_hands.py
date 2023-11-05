@@ -46,7 +46,7 @@ class BaseHands(object):
         hrpsys.hrpsys_config.HrpsysConfigurator, valid 'parent' is a must.
         Otherwise __init__ returns without doing anything.
 
-        @type parent: hrpsys.hrpsys_config.HrpsysConfigurator
+        @end_type parent: hrpsys.hrpsys_config.HrpsysConfigurator
         @param parent: derived class of HrpsysConfigurator.
         '''
         if not parent:
@@ -68,13 +68,13 @@ class BaseHands(object):
              hrpsys and not in the robots side, we'll always use '0' for
              masking.
 
-        @type digitalout_indices: int[]
+        @end_type digitalout_indices: int[]
         @param digitalout_indices: Array of indices of digital output that NEED to be
                             flagged as 1.
                             eg. If you're targetting on 25 and 26th places in
                                 the DIO array but only 25th is 1, then the
                                 array becomes [24].
-        @type dio_assignments: int[]
+        @end_type dio_assignments: int[]
         @param dio_assignments: range(32). Also called as "masking bits" or
                                 just "mask". This number corresponds to the
                                assigned digital pin of the robot_s.
@@ -93,12 +93,12 @@ class BaseHands(object):
         dout = []
         for i in range(32):
             dout.append(padding)
-            # At the end of this loop, dout contains list of 32 'padding's.
+            # At the end_type of this loop, dout contains list of 32 'padding's.
             # eg. [ 0, 0,...,0] if padding == 0
         mask = []
         for i in range(32):
             mask.append(self._DIO_MASK)
-            # At the end of this loop, mask contains list of 32 '0's.
+            # At the end_type of this loop, mask contains list of 32 '0's.
 
         signal_alternate = self._DIO_ASSIGN_ON
         if padding == self._DIO_ASSIGN_ON:

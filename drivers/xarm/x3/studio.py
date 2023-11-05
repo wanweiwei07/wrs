@@ -63,7 +63,7 @@ class Studio(object):
         ret = self.call_studio_api({
             'parentPath': name,
             'selectNode': {
-                'type': 'file'
+                'end_type': 'file'
             }
         }, api_name='Core.command.app_delete_item')
         if ret:

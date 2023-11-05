@@ -15,7 +15,7 @@ def rotationally_invariant_identifier(mesh, length=6, as_json=False, json_digits
     * robust to different tesselation of the surfaces
     * meshes that are similar but not identical return values that are close in euclidean distance
 
-    Does this by computing the area- weighted distribution of the radius (from the center of mass).
+    Does this by computing the area- weighted distribution of the major_radius (from the center of mass).
 
     Arguments
     ---------
@@ -25,7 +25,7 @@ def rotationally_invariant_identifier(mesh, length=6, as_json=False, json_digits
 
     Returns
     ---------
-    identifer: if not as_json: (length) float array of unique identifier
+    identifer: if not as_json: (axis_length) float array of unique identifier
                else:           same as above, but serialized as json
     '''
 
@@ -43,7 +43,7 @@ def rotationally_invariant_identifier(mesh, length=6, as_json=False, json_digits
                             mesh.vertices.shape[0] * 0.2,
                             mesh.faces.shape[0] * 0.2]))
 
-    # if any of the frequency checks fail, we will use this zero length vector as the 
+    # if any of the frequency checks fail, we will use this zero axis_length vector as the
     # formatted information for the identifier
     freq_formatted = np.zeros(frequency_count)
 
@@ -76,7 +76,7 @@ def fft_freq_histogram(data, bin_count, frequency_count=4, weight=None):
     hist, bin_edges = np.histogram(data,
                                    weights=weight,
                                    bins=bin_count)
-    # we calculate the fft of the radius distribution
+    # we calculate the fft of the major_radius distribution
     fft = np.abs(np.fft.fft(hist))
     # the magnitude is dependant on our weighting being good
     # frequency should be more solid in more cases 
@@ -135,7 +135,7 @@ def merge_duplicates(meshes):
 
         merged[i] = meshes[group[0]]
         merged[i].metadata = metadata
-    log.info('merge_duplicates reduced part count from %d to %d',
+    log.info('merge_duplicates reduced part n_sec_minor from %d to %d',
              len(meshes),
              len(merged))
     return np.array(merged)

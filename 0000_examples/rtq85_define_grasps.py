@@ -11,7 +11,7 @@ if __name__ == '__main__':
     objcm = cm.CollisionModel("./objects/bunnysim.stl")
     objcm.set_pos(np.array([.5,-.3,1.2]))
     objcm.attach_to(base)
-    objcm.show_localframe()
+    objcm.show_local_frame()
     grasp_info_list = gau.define_grasp_with_rotation(gripper_s,
                                                      objcm,
                                                      gl_jaw_center_pos=np.array([0, 0, 0]),
@@ -25,5 +25,5 @@ if __name__ == '__main__':
         gic.fix_to(pos, rotmat)
         gic.jaw_to(jaw_width)
         print(pos, rotmat)
-        gic.gen_meshmodel().attach_to(base)
+        gic.gen_mesh_model().attach_to(base)
     base.run()

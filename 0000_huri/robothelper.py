@@ -130,7 +130,7 @@ class RobotHelper(object):
         :param initjnts:
         :param goaljnts:
         :param objcmlist:
-        :param objrelmatlist: [[pos, rot], [pos, rot], ...]
+        :param objrelmatlist: [[pos, rotmat], [pos, rotmat], ...]
         :param armname:
         :param obscmlist: objcmlist including those in the env
         :return:
@@ -171,7 +171,7 @@ class RobotHelper(object):
             self.rbt.movearmfk(armjnts, armname)
             return armjnts
         else:
-            print("No IK solution for the given homomat.")
+            print("No IK solution for the given pos.")
             return None
 
     def movetoposrot(self, eepos, eerot, armname):
@@ -190,7 +190,7 @@ class RobotHelper(object):
             self.rbt.movearmfk(armjnts, armname)
             return armjnts
         else:
-            print("No IK solution for the given pos, rot.")
+            print("No IK solution for the given pos, rotmat.")
             return None
 
     def movetoposrotmsc(self, eepos, eerot, msc, armname):
@@ -210,7 +210,7 @@ class RobotHelper(object):
             self.rbt.movearmfk(armjnts, armname)
             return armjnts
         else:
-            print("No IK solution for the given pos, rot.")
+            print("No IK solution for the given pos, rotmat.")
             return None
 
     def genmoveforwardmotion(self, direction, distance, startarmjnts=None, obstaclecmlist=[], armname='rgt'):

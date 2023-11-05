@@ -27,16 +27,13 @@ def validate_polygon(obj):
         polygon = load_wkb(obj)
     else:
         raise ValueError('Input not a polygon!')
-
     if (not polygon.is_valid or
             polygon.area < tol.zero):
         raise ValueError('Polygon is zero- area or invalid!')
     return polygon
 
 
-def extrude_polygon(polygon,
-                    height,
-                    **kwargs):
+def extrude_polygon(polygon, height, **kwargs):
     # create a 2D triangulation of the shapely polygon
     vertices, faces = triangulate_polygon(polygon, **kwargs)
     mesh = extrude_triangulation(vertices=vertices,
@@ -124,11 +121,11 @@ def triangulate_polygon(polygon, **kwargs):
 
     def round_trip(start, length):
         '''
-        Given a start index and length, create a series of (n, 2) edges which
+        Given a start index and axis_length, create a series of (n, 2) edges which
         create a closed traversal. 
 
         Example:
-        start, length = 0, 3
+        start, axis_length = 0, 3
         returns:  [(0,1), (1,2), (2,0)]
         '''
         tiled = np.tile(np.arange(start, start + length).reshape((-1, 1)), 2)
@@ -201,21 +198,19 @@ def triangulate_polygon(polygon, **kwargs):
 
 
 def box():
-    '''
-    Return a unit cube, centered at the origin with edges of length 1.0
-    '''
+    """
+    Return a unit cube, centered at the origin with edges of axis_length 1.0
+    :return:
+    """
     vertices = [0, 0, 0, 0, 0, 1, 0, 1, 0, 0, 1, 1, 1, 0, 0, 1, 0, 1, 1, 1, 0, 1, 1, 1]
     vertices = np.array(vertices, dtype=np.float64).reshape((-1, 3))
     vertices -= 0.5
-
     faces = [1, 3, 0, 4, 1, 0, 0, 3, 2, 2, 4, 0, 1, 7, 3, 5, 1, 4,
              5, 7, 1, 3, 7, 2, 6, 4, 2, 2, 7, 6, 6, 5, 4, 7, 5, 6]
     faces = np.array(faces, dtype=int).reshape((-1, 3))
-
     face_normals = [-1, 0, 0, 0, -1, 0, -1, 0, 0, 0, 0, -1, 0, 0, 1, 0, -1,
                     0, 0, 0, 1, 0, 1, 0, 0, 0, -1, 0, 1, 0, 1, 0, 0, 1, 0, 0]
     face_normals = np.array(face_normals, dtype=np.float64).reshape(-1, 3)
-
     box = Trimesh(vertices=vertices,
                   faces=faces,
                   face_normals=face_normals)
@@ -223,9 +218,10 @@ def box():
 
 
 def icosahedron():
-    '''
+    """
     Create an icosahedron, a 20 faced polyhedron.
-    '''
+    :return:
+    """
     t = (1.0 + 5.0 ** .5) / 2.0
     v = [-1, t, 0, 1, t, 0, -1, -t, 0, 1, -t, 0, 0, -1, t, 0, 1, t,
          0, -1, -t, 0, 1, -t, t, 0, -1, t, 0, 1, -t, 0, -1, -t, 0, 1]
@@ -240,17 +236,17 @@ def icosahedron():
 
 
 def icosphere(subdivisions=3):
-    '''
-    Create an isophere of radius 1.0 centered at the origin.
-    '''
-
+    """
+    Create an isophere of major_radius 1.0 centered at the origin.
+    :param subdivisions:
+    :return:
+    """
     def refine_spherical():
         vectors = ico.vertices
         scalar = (vectors ** 2).sum(axis=1) ** .5
         unit = vectors / scalar.reshape((-1, 1))
         offset = 1.0 - scalar
         ico.vertices += unit * offset.reshape((-1, 1))
-
     ico = icosahedron()
     ico._validate = False
     for j in range(subdivisions):
@@ -260,31 +256,24 @@ def icosphere(subdivisions=3):
     return ico
 
 
-def uv_sphere(radius=1.0, count=[32, 32], theta=None, phi=None):
+def uv_sphere(radius=1.0,
+              count=[32, 32],
+              theta=None,
+              phi=None):
     """
-    Create a UV sphere (latitude + longitude) centered at the
-    origin. Roughly one order of magnitude faster than an
-    icosphere but slightly uglier.
-    Parameters
-    ----------
-    radius : float
-      Radius of sphere
-    count : (2,) int
-      Number of latitude and longitude lines
-    theta : (n,) float
-      Optional theta angles in radians
-    phi :   (n,) float
-      Optional phi angles in radians
-    Returns
-    ----------
-    mesh : trimesh.Trimesh
-       Mesh of UV sphere with specified parameters
+    Create a UV sphere (latitude + longitude) centered at the origin.
+    Roughly one order of magnitude faster than an icosphere but slightly uglier.
+    :param radius:
+    :param count: number of [latitude, longtitude] lines
+    :param theta: optional theta angles in radians
+    :param phi: optional phi angles in radians
+    :return:
+    author: revised by weiwei
+    date: 20230812
     """
-
     count = np.array(count, dtype=int)
     count += np.mod(count, 2)
     count[1] *= 2
-
     # generate vertices on a sphere using spherical coordinates
     if theta is None:
         theta = np.linspace(0, np.pi, count[0])
@@ -293,13 +282,11 @@ def uv_sphere(radius=1.0, count=[32, 32], theta=None, phi=None):
     spherical = np.dstack((np.tile(phi, (len(theta), 1)).T,
                            np.tile(theta, (len(phi), 1)))).reshape((-1, 2))
     vertices = util.spherical_to_vector(spherical) * radius
-
     # generate faces by creating a bunch of pie wedges
     c = len(theta)
     # a quad face as two triangles
     pairs = np.array([[c, 0, 1],
                       [c + 1, c, 1]])
-
     # increment both triangles in each quad face by the same offset
     incrementor = np.tile(np.arange(c - 1), (2, 1)).T.reshape((-1, 1))
     # create the faces for a single pie wedge of the sphere
@@ -308,74 +295,60 @@ def uv_sphere(radius=1.0, count=[32, 32], theta=None, phi=None):
     # the first and last faces will be degenerate since the first
     # and last vertex are identical in the two rows
     strip = strip[1:-1]
-
     # tile pie wedges into a sphere
     faces = np.vstack([strip + (i * c) for i in range(len(phi))])
-
     # poles are repeated in every strip, so a mask to merge them
     mask = np.arange(len(vertices))
     # the top pole are all the same vertex
     mask[0::c] = 0
     # the bottom pole are all the same vertex
     mask[c - 1::c] = c - 1
-
     # faces masked to remove the duplicated pole vertices
     # and mod to wrap to fill in the last pie wedge
     faces = mask[np.mod(faces, len(vertices))]
-
     # we save a lot of time by not processing again
     # since we did some bookkeeping mesh is watertight
     mesh = Trimesh(vertices=vertices, faces=faces, process=False)
     return mesh
 
 
-def cylinder(height, radius, sections=8, homomat=None):
+def cylinder(height, radius, n_sec=8, homomat=None):
     """
     Create a mesh of a cylinder along Z starting from the origin.
-
     :param height: float, the height of the cylinder
-    :param radius: float, the radius of the cylinder
-    :param sections: int, how many pie wedges should the cylinder be meshed as
+    :param radius: float, the major_radius of the cylinder
+    :param n_sec: int, how many pie wedges should the cylinder be meshed as
     :param homomat: 4x4 transformation matrix
     :return: cylinder: Trimesh, resulting mesh
-
     author: weiwei
     date: 20191228
     """
-
-    theta = np.linspace(0, np.pi * 2, sections)
+    theta = np.linspace(0, np.pi * 2, n_sec+1)
     vertices = np.column_stack((np.sin(theta), np.cos(theta))) * radius
     vertices[0] = [0, 0]
     index = np.arange(1, len(vertices) + 1).reshape((-1, 1))
     index[-1] = 1
     faces = np.tile(index, (1, 2)).reshape(-1)[1:-1].reshape((-1, 2))
     faces = np.column_stack((np.zeros(len(faces), dtype=int), faces))
-    cylinder = extrude_triangulation(vertices=vertices,
-                                     faces=faces,
-                                     height=height)
-    # toggle the following line to center at the origin
-    # cylinder.vertices[:,2] -= height * .5
-
+    cylinder = extrude_triangulation(vertices=vertices, faces=faces, height=height)
+    # center at the origin
+    cylinder.vertices[:,2] -= height * .5
     if homomat is not None:
         cylinder.apply_transform(homomat)
-
     return cylinder
 
 
 def capsule(height=1.0, radius=1.0, count=[8, 8], homomat=None):
     """
     Create a mesh of a capsule, or a cylinder with hemispheric ends.
-
-    :param radius: float, radius of the cylinder and hemispheres
+    :param radius: float, major_radius of the cylinder and hemispheres
     :param height: float, center to center distance of two spheres
-    :param count: int, number of sections on latitude and longitude
+    :param count: int, number of n_sec_minor on latitude and longitude
     :param homomat: 4x4 transformation matrix
     :return: cylinder: Trimesh, resulting mesh
-
     author: weiwei
     date: 20191228
     """
-
     height = float(height)
     radius = float(radius)
     count = np.array(count, dtype=int)
@@ -392,45 +365,36 @@ def capsule(height=1.0, radius=1.0, count=[8, 8], homomat=None):
     capsule = uv_sphere(radius=radius, count=count, theta=theta)
     top = capsule.vertices[:, 2] > tol.zero
     capsule.vertices[top] += [0, 0, height]
-
     if homomat is not None:
         capsule.apply_transform(homomat)
-
     return capsule
 
 
-def cone(height=1.0, radius=1.0, sections=8, homomat=None):
+def cone(height=1.0, radius=1.0, n_sec=8, homomat=None):
     """
-
     :param height:
     :param radius:
-    :param sections:
+    :param n_sec:
     :return:
-
     author: weiwei
     date: 20191228
     """
-
     # create a circular bottom
-    theta = np.linspace(0, np.pi * 2, sections)
-    vertices = np.column_stack((np.sin(theta), np.cos(theta), np.zeros(sections, dtype=int))) * radius
+    theta = np.linspace(0, np.pi * 2, n_sec)
+    vertices = np.column_stack((np.sin(theta), np.cos(theta), np.zeros(n_sec, dtype=int))) * radius
     vertices[0] = [0, 0, 0]
     index = np.arange(1, len(vertices) + 1).reshape((-1, 1))
     index[-1] = 1
     bottomfaces = np.tile(index, (1, 2)).reshape(-1)[1:-1].reshape((-1, 2))
     bottomfaces = np.column_stack((np.zeros(len(bottomfaces), dtype=int), bottomfaces))
-
     # create the cap
     vertices = np.vstack((vertices, [0, 0, height]))
     index = np.arange(1, len(vertices)).reshape((-1, 1))
     index[-1] = 1
     capfaces = np.tile(index, (1, 2)).reshape(-1)[1:-1].reshape((-1, 2))
-    capfaces = np.column_stack((np.full(len(capfaces), sections, dtype=int), capfaces[:, 1], capfaces[:, 0]))
+    capfaces = np.column_stack((np.full(len(capfaces), n_sec, dtype=int), capfaces[:, 1], capfaces[:, 0]))
     faces = np.vstack((bottomfaces, capfaces))
-
     cone = Trimesh(vertices=vertices, faces=faces)
-
     if homomat is not None:
         cone.apply_transform(homomat)
-
     return cone

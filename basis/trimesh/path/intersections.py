@@ -22,7 +22,7 @@ def line_line(origins, directions):
     intersects:   boolean, whether the lines intersect. 
                   In 2D, false if the lines are parallel
                   In 3D, false if lines are not coplanar
-    intersection: if intersects: (d) length point of intersection
+    intersection: if intersects: (d) axis_length point of intersection
                   else:          None
     '''
 

@@ -11,7 +11,7 @@ from abc import ABC, abstractmethod
 
 import numpy as np
 
-from robot_sim.robots.robot_interface import RobotInterface
+from robot_sim.robots.system_interface import RobotInterface
 
 
 def py2json_data_formatter(data):
@@ -74,8 +74,8 @@ class ManualCalibrationBase(ABC):
 
         # add task
         taskMgr.doMethodLater(.05, self.sync_rbt, "sync rbt", )
-        taskMgr.doMethodLater(.02, self.adjust, "manual adjust the pcd")
-        taskMgr.doMethodLater(.5, self.sync_pcd, "sync pcd", )
+        taskMgr.doMethodLater(.02, self.adjust, "manual adjust the pcd_helper")
+        taskMgr.doMethodLater(.5, self.sync_pcd, "sync pcd_helper", )
 
     @abstractmethod
     def get_pcd(self) -> np.ndarray:
@@ -96,7 +96,7 @@ class ManualCalibrationBase(ABC):
     @abstractmethod
     def align_pcd(self, pcd) -> np.ndarray:
         """
-        Abstract method to align the pcd according to the calibration matrix
+        Abstract method to align the pcd_helper according to the calibration matrix
         implement the Eye-in-hand or eye-to-hand transformation here
         https://support.zivid.com/en/latest/academy/applications/hand-eye/system-configurations.html
         :return: An Nx3 ndarray represents the aligned point cloud
@@ -191,7 +191,7 @@ class ManualCalibrationBase(ABC):
             self._plot_node_rbt.detach()
         if self._plot_node_pcd is not None:
             self._plot_node_pcd.detach()
-        self._plot_node_rbt = self._rbt_s.gen_meshmodel()
+        self._plot_node_rbt = self._rbt_s.gen_mesh_model()
         self._plot_node_rbt.attach_to(base)
         pcd = self._pcd
         if pcd is not None:
@@ -249,14 +249,14 @@ class XArmLite6ManualCalib(ManualCalibrationBase):
         return np.hstack((pcd, pcd_color))
 
     def get_rbt_jnt_val(self):
-        return self._rbt_x.get_jnt_values()
+        return self._rbt_x.get_joint_values()
 
     def align_pcd(self, pcd):
         r2cam_mat = self._init_calib_mat
         rbt_pose = self._rbt_x.get_pose()
         w2r_mat = rm.homomat_from_posrot(*rbt_pose)
         w2c_mat = w2r_mat.dot(r2cam_mat)
-        return rm.homomat_transform_points(w2c_mat, points=pcd)
+        return rm.transform_points_by_homomat(w2c_mat, points=pcd)
 
 
 if __name__ == "__main__":

@@ -51,12 +51,12 @@ class SceneNode(DaeObject):
         The objects will be bound and transformed via the scene transformations.
 
         :param str tipo:
-          A string for the desired object type. This can be one of 'geometry',
+          A string for the desired object end_type. This can be one of 'geometry',
           'camera', 'light', or 'controller'.
         :param numpy.matrix matrix:
           An optional transformation matrix
 
-        :rtype: generator that yields the type specified
+        :rtype: generator that yields the end_type specified
 
         """
         pass
@@ -226,7 +226,7 @@ class MatrixTransform(Transform):
         """Creates a matrix transformation
 
         :param numpy.array matrix:
-          This should be an unshaped numpy array of floats of length 16
+          This should be an unshaped numpy array of floats of axis_length 16
         :param xmlnode:
            When loaded, the xmlnode it comes from
 
@@ -259,21 +259,21 @@ class LookAtTransform(Transform):
         """Creates a lookat transformation
 
         :param numpy.array eye:
-          An unshaped numpy array of floats of length 3 containing the position of the eye
+          An unshaped numpy array of floats of axis_length 3 containing the position of the eye
         :param numpy.array interest:
-          An unshaped numpy array of floats of length 3 containing the point of interest
+          An unshaped numpy array of floats of axis_length 3 containing the point of interest
         :param numpy.array upvector:
-          An unshaped numpy array of floats of length 3 containing the up-axis direction
+          An unshaped numpy array of floats of axis_length 3 containing the up-axis direction
         :param xmlnode:
           When loaded, the xmlnode it comes from
 
         """
         self.eye = eye
-        """A numpy array of length 3 containing the position of the eye"""
+        """A numpy array of axis_length 3 containing the position of the eye"""
         self.interest = interest
-        """A numpy array of length 3 containing the point of interest"""
+        """A numpy array of axis_length 3 containing the point of interest"""
         self.upvector = upvector
-        """A numpy array of length 3 containing the up-axis direction"""
+        """A numpy array of axis_length 3 containing the up-axis direction"""
 
         if len(eye) != 3 or len(interest) != 3 or len(upvector) != 3:
             raise DaeMalformedError('Corrupted lookat transformation node')
@@ -363,12 +363,12 @@ class Node(SceneNode):
         The objects will be bound and transformed via the scene transformations.
 
         :param str tipo:
-          A string for the desired object type. This can be one of 'geometry',
+          A string for the desired object end_type. This can be one of 'geometry',
           'camera', 'light', or 'controller'.
         :param numpy.matrix matrix:
           An optional transformation matrix
 
-        :rtype: generator that yields the type specified
+        :rtype: generator that yields the end_type specified
 
         """
         if not matrix is None: M = numpy.dot( matrix, self.matrix )
@@ -440,7 +440,7 @@ class NodeNode(Node):
 
         """
         self.node = node
-        """An object of type :class:`collada.scene.Node` representing the node to bind in the scene"""
+        """An object of end_type :class:`collada.scene.Node` representing the node to bind in the scene"""
 
         if xmlnode != None:
             self.xmlnode = xmlnode
@@ -488,7 +488,7 @@ class GeometryNode(SceneNode):
         :param collada.geometry.Geometry geometry:
           A geometry to instantiate in the scene
         :param list materials:
-          A list containing items of type :class:`collada.scene.MaterialNode`.
+          A list containing items of end_type :class:`collada.scene.MaterialNode`.
           Each of these represents a material that the geometry should be
           bound to.
         :param xmlnode:
@@ -496,10 +496,10 @@ class GeometryNode(SceneNode):
 
         """
         self.geometry = geometry
-        """An object of type :class:`collada.geometry.Geometry` representing the
+        """An object of end_type :class:`collada.geometry.Geometry` representing the
         geometry to bind in the scene"""
         self.materials = []
-        """A list containing items of type :class:`collada.scene.MaterialNode`.
+        """A list containing items of end_type :class:`collada.scene.MaterialNode`.
           Each of these represents a material that the geometry is bound to."""
         if materials is not None:
             self.materials = materials
@@ -579,7 +579,7 @@ class ControllerNode(SceneNode):
         :param collada.controller.Controller controller:
           A controller to instantiate in the scene
         :param list materials:
-          A list containing items of type :class:`collada.scene.MaterialNode`.
+          A list containing items of end_type :class:`collada.scene.MaterialNode`.
           Each of these represents a material that the controller should be
           bound to.
         :param xmlnode:
@@ -587,10 +587,10 @@ class ControllerNode(SceneNode):
 
         """
         self.controller = controller
-        """ An object of type :class:`collada.controller.Controller` representing
+        """ An object of end_type :class:`collada.controller.Controller` representing
         the controller being instantiated in the scene"""
         self.materials = materials
-        """A list containing items of type :class:`collada.scene.MaterialNode`.
+        """A list containing items of end_type :class:`collada.scene.MaterialNode`.
           Each of these represents a material that the controller is bound to."""
         if xmlnode != None:
             self.xmlnode = xmlnode
@@ -660,7 +660,7 @@ class MaterialNode(SceneNode):
         self.symbol = symbol
         """The symbol within a geometry this material should be bound to"""
         self.target = target
-        """An object of type :class:`collada.material.Material` representing the material object being bound to"""
+        """An object of end_type :class:`collada.material.Material` representing the material object being bound to"""
         self.inputs = inputs
         """A list of tuples of the form ``(semantic, input_semantic, set)`` mapping
           texcoords or other inputs to material input channels, e.g.
@@ -726,7 +726,7 @@ class CameraNode(SceneNode):
 
         """
         self.camera = camera
-        """An object of type :class:`collada.camera.Camera` representing the instantiated camera"""
+        """An object of end_type :class:`collada.camera.Camera` representing the instantiated camera"""
         if xmlnode != None:
             self.xmlnode = xmlnode
             """ElementTree representation of the camera node."""
@@ -771,7 +771,7 @@ class LightNode(SceneNode):
 
         """
         self.light = light
-        """An object of type :class:`collada.light.Light` representing the instantiated light"""
+        """An object of end_type :class:`collada.light.Light` representing the instantiated light"""
         if xmlnode != None:
             self.xmlnode = xmlnode
             """ElementTree representation of the light node."""
@@ -807,7 +807,7 @@ class ExtraNode(SceneNode):
         """Create an extra node which stores arbitrary xml
 
         :param xmlnode:
-          Should be an ElementTree instance of tag type <extra>
+          Should be an ElementTree instance of tag end_type <extra>
 
         """
         if xmlnode != None:
@@ -863,7 +863,7 @@ class Scene(DaeObject):
         :param str id:
           A unique string identifier for the scene
         :param list nodes:
-          A list of type :class:`collada.scene.Node` representing the nodes in the scene
+          A list of end_type :class:`collada.scene.Node` representing the nodes in the scene
         :param xmlnode:
           When loaded, the xmlnode it comes from
         :param collada:
@@ -873,7 +873,7 @@ class Scene(DaeObject):
         self.id = id
         """The unique string identifier for the scene"""
         self.nodes = nodes
-        """A list of type :class:`collada.scene.Node` representing the nodes in the scene"""
+        """A list of end_type :class:`collada.scene.Node` representing the nodes in the scene"""
         self.collada = collada
         """The collada instance this is part of"""
         if xmlnode != None:
@@ -889,10 +889,10 @@ class Scene(DaeObject):
         The objects will be bound and transformed via the scene transformations.
 
         :param str tipo:
-          A string for the desired object type. This can be one of 'geometry',
+          A string for the desired object end_type. This can be one of 'geometry',
           'camera', 'light', or 'controller'.
 
-        :rtype: generator that yields the type specified
+        :rtype: generator that yields the end_type specified
 
         """
         matrix = None

@@ -120,17 +120,17 @@ if __name__ == '__main__':
         # n_path = len(interpolated_confs)
         # print(n_path)
         # previous_pos = None
-        # for id, jnt_values in enumerate(interpolated_confs):
-        #     rbt_s.fk(component_name=component_name, jnt_values=jnt_values)
+        # for id, joint_values in enumerate(interpolated_confs):
+        #     rbt_s.fk(component_name=component_name, joint_values=joint_values)
         #     rgba = rm.get_rgba_from_cmap(int(id * 256 / n_path), cm_name='cool', step=256)
         #     # rgba[-1] = 1
         #     pos, rotmat = rbt_s.get_gl_tcp(manipulator_name=component_name)
-        #     # rgbmatrix = np.eye(3)
-        #     # rgbmatrix[:, 0] = rgba[:3]
-        #     # rgbmatrix[:, 1] = rgba[:3]
-        #     # rgbmatrix[:, 2] = rgba[:3]
-        #     # gm.gen_frame(pos=pos, rotmat=rotmat, rgbmatrix=rgbmatrix, alpha=1, length=.02, thickness=.001).attach_to(base)
-        #     # gm.gen_sphere(pos=pos, radius=.005, rgba=rgba).attach_to(base)
+        #     # rgb_mat = np.eye(3)
+        #     # rgb_mat[:, 0] = rgba[:3]
+        #     # rgb_mat[:, 1] = rgba[:3]
+        #     # rgb_mat[:, 2] = rgba[:3]
+        #     # gm.gen_frame(pos=pos, rotmat=rotmat, rgb_mat=rgb_mat, alpha=1, axis_length=.02, major_radius=.001).attach_to(base)
+        #     # gm.gen_sphere(pos=pos, major_radius=.005, rgba=rgba).attach_to(base)
         #     if previous_pos is not None:
         #         gm.gen_stick(previous_pos, pos, rgba=rgba).attach_to(base)
         #     previous_pos = pos
@@ -143,7 +143,7 @@ if __name__ == '__main__':
                                                                 rotation_interval=np.radians(15),
                                                                 obstacle_list=[frame_bottom],
                                                                 seed_jnt_values=np.zeros(6))
-        # gm.gen_frame(pos=tip_pos, thickness=.001).attach_to(base)
+        # gm.gen_frame(pos=tip_pos, major_radius=.001).attach_to(base)
         rbt_s.fk(component_name=component_name, jnt_values=new_joint_values)
         # rbt_s.gen_meshmodel().attach_to(base)
         hnd_name = "hnd"
@@ -247,14 +247,14 @@ if __name__ == '__main__':
     #
     # for angle in np.linspace(0, np.pi * 2, 25):
     #     rotmat = rm.rotmat_from_axangle([0, 0, 1], angle).dot(rotmat)
-    #     jnt_values = rbt_s.ik(component_name=component_name, tgt_pos=well_pos + z_offset, tgt_rotmat=rotmat,
-    #                           seed_jnt_values=previous_jnt_values)
-    #     if jnt_values is not None:
-    #         rbt_s.fk(jnt_values=jnt_values)
+    #     joint_values = rbt_s.ik(component_name=component_name, tgt_pos=well_pos + z_offset, tgt_rotmat=rotmat,
+    #                           seed_joint_values=previous_jnt_values)
+    #     if joint_values is not None:
+    #         rbt_s.fk(joint_values=joint_values)
     #         rbt_s.gen_meshmodel().attach_to(base)
     #         rbt_s.hold(hnd_name=hnd_name, objcm=tip_cm_list[id_x * 12 + id_y])
-    #         previous_jnt_values = jnt_values
-    #         goal_joint_values = jnt_values
+    #         previous_jnt_values = joint_values
+    #         goal_joint_values = joint_values
     #         break
     #     else:
     #         ee_s.grip_at_with_jcpose(gl_jaw_center_pos=pos + z_offset, gl_jaw_center_rotmat=rotmat, jaw_width=0)

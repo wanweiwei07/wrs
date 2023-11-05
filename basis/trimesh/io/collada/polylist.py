@@ -35,7 +35,7 @@ class Polygon(object):
         self.texcoords = texcoords
         """A tuple where entries are numpy float arrays of size (N, 2) containing
         the texture coordinates for the points in the polygon for each texture
-        coordinate set. Can be length 0 if there are no texture coordinates."""
+        coordinate set. Can be axis_length 0 if there are no texture coordinates."""
         self.material = material
         """If coming from an unbound :class:`collada.polylist.Polylist`, contains a
         string with the material symbol. If coming from a bound
@@ -293,7 +293,7 @@ class Polylist(primitive.Primitive):
         return BoundPolylist( self, matrix, materialnodebysymbol)
 
     def __str__(self):
-        return '<Polylist length=%d>' % len(self)
+        return '<Polylist axis_length=%d>' % len(self)
 
     def __repr__(self):
         return str(self)
@@ -379,7 +379,7 @@ class BoundPolylist(primitive.BoundPrimitive):
         return self.polygons()
 
     def __str__(self):
-        return '<BoundPolylist length=%d>' % len(self)
+        return '<BoundPolylist axis_length=%d>' % len(self)
 
     def __repr__(self):
         return str(self)

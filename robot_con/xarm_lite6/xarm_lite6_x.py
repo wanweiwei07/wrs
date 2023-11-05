@@ -135,7 +135,7 @@ class XArmLite6X(object):
     @property
     def cmd_num(self) -> int:
         """
-        Get the cmd count in cache
+        Get the cmd n_sec_minor in cache
         :return: tuple((code, cmd_num)), only when code is 0, the returned result is correct.
             code: See the [API Code Documentation](./xarm_api_code.md#api-code) for details.
         """
@@ -316,7 +316,7 @@ class XArmLite6X(object):
         :param pos: Position (Array([x,y,z])) of the pose
         :param rot: Orientation (Array([roll,pitch,yaw]) or Array(3x3)) of the pose
         :param speed: Move speed (mm/s, rad/s)
-        :param path_rad: move radius, if radius is larger or equal than 0, will MoveArcLine, else MoveLine
+        :param path_rad: move major_radius, if major_radius is larger or equal than 0, will MoveArcLine, else MoveLine
         :param is_rel_mov: Relative move or not
         :return: if the path is moved successfully, it will return 0
         :param wait: whether to wait for the arm to complete, default is True

@@ -5,8 +5,8 @@ import numpy as np
 import basis.robot_math as rm
 import modeling.model_collection as mc
 import modeling.collision_model as cm
-import robot_sim._kinematics.jlchain as jl
-import robot_sim.robots.robot_interface as ri
+import robot_sim.kinematics.jlchain as jl
+import robot_sim.robots.system_interface as ri
 import robot_sim.robots.khi.khi_or2fg7 as kg
 import robot_sim.robots.khi.khi_orsd as ksd
 
@@ -23,14 +23,14 @@ class KHI_DUAL(ri.RobotInterface):
         lft_arm_homeconf = np.radians(np.array([0, 0, 0, 0, 0, 0]))
         rgt_arm_homeconf = np.radians(np.array([0, 0, 0, 0, 0, 0]))
         # base
-        self.base_table = jl.JLChain(pos=pos, rotmat=rotmat, homeconf=np.zeros(0), name='base_table')
+        self.base_table = jl.JLChain(pos=pos, rotmat=rotmat, home_conf=np.zeros(0), name='base_table')
         self.base_table.lnks[0]['name'] = "base_table"
-        self.base_table.jnts[-1]['loc_pos'] = np.array([0, -.4, .726])
+        self.base_table.joints[-1]['pos_in_loc_tcp'] = np.array([0, -.4, .726])
         self.base_table.lnks[0]['collision_model'] = cm.CollisionModel(
             os.path.join(this_dir, "meshes", "base_table.stl"))
         # pre-comptue coordinates
         lr_rotmat = rm.rotmat_from_euler(0, 0, np.radians(-90))
-        lft_pos = self.base_table.jnts[-1]['loc_pos']
+        lft_pos = self.base_table.joints[-1]['pos_in_loc_tcp']
         rgt_pos = lft_pos + np.array([0, .8, 0])
         # lft
         self.lft_arm = kg.KHI_OR2FG7(pos=lft_pos, rotmat=lr_rotmat, enable_cc=False)
@@ -100,11 +100,11 @@ class KHI_DUAL(ri.RobotInterface):
         self.rotmat = rotmat
         self.base_table.fix_to(self.pos, self.rotmat)
         self.lft_arm.fix_to(self.pos, self.rotmat)
-        # self.lft_hnd.fix_to(pos=self.lft_arm.jnts[-1]['gl_posq'],
-        #                     rotmat=self.lft_arm.jnts[-1]['gl_rotmatq'])
+        # self.lft_hnd.fix_to(pos=self.lft_arm.joints[-1]['gl_posq'],
+        #                     rotmat=self.lft_arm.joints[-1]['gl_rotmatq'])
         self.rgt_arm.fix_to(self.pos, self.rotmat)
-        # self.rgt_hnd.fix_to(pos=self.rgt_arm.jnts[-1]['gl_posq'],
-        #                     rotmat=self.rgt_arm.jnts[-1]['gl_rotmatq'])
+        # self.rgt_hnd.fix_to(pos=self.rgt_arm.joints[-1]['gl_posq'],
+        #                     rotmat=self.rgt_arm.joints[-1]['gl_rotmatq'])
 
     def fk(self, component_name, jnt_values):
         """
@@ -129,30 +129,30 @@ class KHI_DUAL(ri.RobotInterface):
                 obj_info['gl_rotmat'] = gl_rotmat
 
         def update_component(component_name, jnt_values):
-            status = self.manipulator_dict[component_name].fk(jnt_values=jnt_values)
+            status = self.manipulator_dict[component_name].fk(joint_values=jnt_values)
             hnd_on_manipulator = self.get_hnd_on_manipulator(component_name)
             if hnd_on_manipulator is not None:
-                hnd_on_manipulator.fix_to(pos=self.manipulator_dict[component_name].jnts[-1]['gl_posq'],
-                                          rotmat=self.manipulator_dict[component_name].jnts[-1]['gl_rotmatq'])
+                hnd_on_manipulator.fix_to(pos=self.manipulator_dict[component_name].joints[-1]['gl_posq'],
+                                          rotmat=self.manipulator_dict[component_name].joints[-1]['gl_rotmatq'])
             update_oih(component_name=component_name)
             return status
 
-        # examine length
+        # examine axis_length
         if component_name == 'lft_arm' or component_name == 'rgt_arm':
             if not isinstance(jnt_values, np.ndarray) or jnt_values.size != 6:
                 raise ValueError("An 1x6 npdarray must be specified to move a single arm!")
-            waist_value = self.base_table.jnts[1]['motion_val']
+            waist_value = self.base_table.joints[1]['motion_val']
             return update_component(component_name, np.append(waist_value, jnt_values))
         elif component_name == 'lft_arm_waist' or component_name == 'rgt_arm_waist':
             if not isinstance(jnt_values, np.ndarray) or jnt_values.size != 7:
                 raise ValueError("An 1x7 npdarray must be specified to move a single arm plus the waist!")
             status = update_component(component_name, jnt_values)
-            self.base_table.jnts[1]['motion_val'] = jnt_values[0]
+            self.base_table.joints[1]['motion_val'] = jnt_values[0]
             self.base_table.fk()
             the_other_manipulator_name = 'lft_arm' if component_name[:7] == 'rgt_arm' else 'rgt_arm'
-            self.manipulator_dict[the_other_manipulator_name].jnts[1]['motion_val'] = jnt_values[0]
+            self.manipulator_dict[the_other_manipulator_name].joints[1]['motion_val'] = jnt_values[0]
             self.manipulator_dict[the_other_manipulator_name].fk()
-            return status  # if waist is out of range, the first status will always be out of rng
+            return status  # if waist is out of range, the first status will always be out of range
         elif component_name == 'both_arm':
             raise NotImplementedError
         elif component_name == 'all':
@@ -173,33 +173,33 @@ class KHI_DUAL(ri.RobotInterface):
            toggle_debug=False):
         # if component_name == 'lft_arm' or component_name == 'rgt_arm':
         #     old_tgt_jnts = self.manipulator_dict[component_name].tgtjnts
-        #     self.manipulator_dict[component_name].tgtjnts = range(2, self.manipulator_dict[component_name].ndof + 1)
+        #     self.manipulator_dict[component_name].tgtjnts = range(2, self.manipulator_dict[component_name].n_dof + 1)
         #     ik_results = self.manipulator_dict[component_name].ik(tgt_pos,
         #                                                           tgt_rotmat,
-        #                                                           seed_jnt_values=seed_jnt_values,
-        #                                                           tcp_jnt_id=tcp_jnt_id,
+        #                                                           seed_joint_values=seed_joint_values,
+        #                                                           tcp_joint_id=tcp_joint_id,
         #                                                           tcp_loc_pos=tcp_loc_pos,
         #                                                           tcp_loc_rotmat=tcp_loc_rotmat,
-        #                                                           max_niter=max_niter,
-        #                                                           local_minima=local_minima,
+        #                                                           max_n_iter=max_n_iter,
+        #                                                           policy_for_local_minima=policy_for_local_minima,
         #                                                           toggle_debug=toggle_debug)
         #     self.manipulator_dict[component_name].tgtjnts = old_tgt_jnts
         #     return ik_results
         # elif component_name == 'lft_arm_waist' or component_name == 'rgt_arm_waist':
         #     return self.manipulator_dict[component_name].ik(tgt_pos,
         #                                                     tgt_rotmat,
-        #                                                     seed_jnt_values=seed_jnt_values,
-        #                                                     tcp_jnt_id=tcp_jnt_id,
+        #                                                     seed_joint_values=seed_joint_values,
+        #                                                     tcp_joint_id=tcp_joint_id,
         #                                                     tcp_loc_pos=tcp_loc_pos,
         #                                                     tcp_loc_rotmat=tcp_loc_rotmat,
-        #                                                     max_niter=max_niter,
-        #                                                     local_minima=local_minima,
+        #                                                     max_n_iter=max_n_iter,
+        #                                                     policy_for_local_minima=policy_for_local_minima,
         #                                                     toggle_debug=toggle_debug)
         if component_name in ['lft_arm', 'rgt_arm', 'lft_arm_waist', 'rgt_arm_waist']:
             return self.manipulator_dict[component_name].ik(tgt_pos,
                                                             tgt_rotmat,
-                                                            seed_jnt_values=seed_jnt_values,
-                                                            tcp_jnt_id=tcp_jnt_id,
+                                                            seed_joint_values=seed_jnt_values,
+                                                            tcp_joint_id=tcp_jnt_id,
                                                             tcp_loc_pos=tcp_loc_pos,
                                                             tcp_loc_rotmat=tcp_loc_rotmat,
                                                             max_niter=max_niter,
@@ -213,17 +213,17 @@ class KHI_DUAL(ri.RobotInterface):
             raise ValueError("The given component name is not available!")
 
     def get_jnt_values(self, component_name):
-        return self.manipulator_dict[component_name].get_jnt_values()
+        return self.manipulator_dict[component_name].get_joint_values()
 
     def is_jnt_values_in_ranges(self, component_name, jnt_values):
         # if component_name == 'lft_arm' or component_name == 'rgt_arm':
         #     old_tgt_jnts = self.manipulator_dict[component_name].tgtjnts
-        #     self.manipulator_dict[component_name].tgtjnts = range(2, self.manipulator_dict[component_name].ndof + 1)
-        #     result = self.manipulator_dict[component_name].is_jnt_values_in_ranges(jnt_values)
+        #     self.manipulator_dict[component_name].tgtjnts = range(2, self.manipulator_dict[component_name].n_dof + 1)
+        #     result = self.manipulator_dict[component_name].is_jnt_values_in_ranges(joint_values)
         #     self.manipulator_dict[component_name].tgtjnts = old_tgt_jnts
         #     return result
         # else:
-        return self.manipulator_dict[component_name].is_jnt_values_in_ranges(jnt_values)
+        return self.manipulator_dict[component_name].are_joint_values_in_ranges(jnt_values)
 
     def rand_conf(self, component_name):
         """
@@ -454,8 +454,8 @@ class KHI_DUAL(ri.RobotInterface):
                                     toggle_tcpcs=toggle_tcpcs,
                                     toggle_jntscs=toggle_jntscs,
                                     toggle_connjnt=toggle_connjnt).attach_to(stickmodel)
-        # self.lft_hnd.gen_stickmodel(toggle_tcpcs=False,
-        #                             toggle_jntscs=toggle_jntscs,
+        # self.lft_hnd.gen_stickmodel(toggle_tcp_frame=False,
+        #                             toggle_joint_frame=toggle_joint_frame,
         #                             toggle_connjnt=toggle_connjnt).attach_to(stickmodel)
         self.rgt_arm.gen_stickmodel(tcp_jnt_id=tcp_jnt_id,
                                     tcp_loc_pos=tcp_loc_pos,
@@ -463,8 +463,8 @@ class KHI_DUAL(ri.RobotInterface):
                                     toggle_tcpcs=toggle_tcpcs,
                                     toggle_jntscs=toggle_jntscs,
                                     toggle_connjnt=toggle_connjnt).attach_to(stickmodel)
-        # self.rgt_hnd.gen_stickmodel(toggle_tcpcs=False,
-        #                             toggle_jntscs=toggle_jntscs,
+        # self.rgt_hnd.gen_stickmodel(toggle_tcp_frame=False,
+        #                             toggle_joint_frame=toggle_joint_frame,
         #                             toggle_connjnt=toggle_connjnt).attach_to(stickmodel)
         return stickmodel
 
@@ -477,19 +477,19 @@ class KHI_DUAL(ri.RobotInterface):
                       rgba=None,
                       name='xarm_gripper_meshmodel'):
         meshmodel = mc.ModelCollection(name=name)
-        self.base_table.gen_meshmodel(tcp_loc_pos=None,
-                                        tcp_loc_rotmat=None,
-                                        toggle_tcpcs=False,
-                                        toggle_jntscs=toggle_jntscs,
-                                        rgba=rgba).attach_to(meshmodel)
+        self.base_table.gen_mesh_model(tcp_loc_pos=None,
+                                       tcp_loc_rotmat=None,
+                                       toggle_tcpcs=False,
+                                       toggle_jntscs=toggle_jntscs,
+                                       rgba=rgba).attach_to(meshmodel)
         self.lft_arm.gen_meshmodel(tcp_jnt_id=tcp_jnt_id,
                                    tcp_loc_pos=tcp_loc_pos,
                                    tcp_loc_rotmat=tcp_loc_rotmat,
                                    toggle_tcpcs=toggle_tcpcs,
                                    toggle_jntscs=toggle_jntscs,
                                    rgba=rgba).attach_to(meshmodel)
-        # self.lft_hnd.gen_meshmodel(toggle_tcpcs=False,
-        #                            toggle_jntscs=toggle_jntscs,
+        # self.lft_hnd.gen_meshmodel(toggle_tcp_frame=False,
+        #                            toggle_joint_frame=toggle_joint_frame,
         #                            rgba=rgba).attach_to(meshmodel)
         self.rgt_arm.gen_meshmodel(tcp_jnt_id=tcp_jnt_id,
                                    tcp_loc_pos=tcp_loc_pos,
@@ -497,8 +497,8 @@ class KHI_DUAL(ri.RobotInterface):
                                    toggle_tcpcs=toggle_tcpcs,
                                    toggle_jntscs=toggle_jntscs,
                                    rgba=rgba).attach_to(meshmodel)
-        # self.rgt_hnd.gen_meshmodel(toggle_tcpcs=False,
-        #                            toggle_jntscs=toggle_jntscs,
+        # self.rgt_hnd.gen_meshmodel(toggle_tcp_frame=False,
+        #                            toggle_joint_frame=toggle_joint_frame,
         #                            rgba=rgba).attach_to(meshmodel)
         for obj_info in self.lft_arm.oih_infos:
             objcm = obj_info['collision_model']
@@ -539,7 +539,7 @@ if __name__ == '__main__':
     toc = time.time()
     print(toc - tic)
     nxt_instance.fk(component_name, jnt_values)
-    nxt_meshmodel = nxt_instance.gen_meshmodel()
+    nxt_meshmodel = nxt_instance.gen_mesh_model()
     nxt_meshmodel.attach_to(base)
     nxt_instance.gen_stickmodel().attach_to(base)
     # tic = time.time()
@@ -553,7 +553,7 @@ if __name__ == '__main__':
     obj_pos = np.array([-.1, .3, .3])
     obj_rotmat = rm.rotmat_from_axangle([0, 1, 0], math.pi / 2)
     objfile = os.path.join(basis.__path__[0], 'objects', 'tubebig.stl')
-    objcm = cm.CollisionModel(objfile, cdprimit_type='cylinder')
+    objcm = cm.CollisionModel(objfile, cdprimitive_type='cylinder')
     objcm.set_pos(obj_pos)
     objcm.set_rotmat(obj_rotmat)
     objcm.attach_to(base)
@@ -564,7 +564,7 @@ if __name__ == '__main__':
     jnt_values = nxt_instance.ik(component_name, tgt_pos, tgt_rotmat)
     nxt_instance.fk(component_name, jnt_values)
     # nxt_instance.show_cdprimit()
-    nxt_meshmodel = nxt_instance.gen_meshmodel()
+    nxt_meshmodel = nxt_instance.gen_mesh_model()
     nxt_meshmodel.attach_to(base)
 
     base.run()
