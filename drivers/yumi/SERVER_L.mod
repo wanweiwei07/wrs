@@ -7,7 +7,7 @@ MODULE SERVER_L
     VAR num x;
     
     !//Robot configuration
-    PERS tooldata currentTool:=[TRUE,[[0,0,123],[1,0,0,0]],[0.001,[0,0,0.001],[1,0,0,0],0,0,0]];
+    PERS tooldata currentTool:=[TRUE,[[0,0,150],[1,0,0,0]],[0.001,[0,0,0.001],[1,0,0,0],0,0,0]];
     PERS wobjdata currentWobj:=[FALSE,TRUE,"",[[0,0,0],[1,0,0,0]],[[0,0,0],[1,0,0,0]]];
     PERS speeddata currentSpeed;
     PERS zonedata currentZone;
@@ -61,7 +61,12 @@ MODULE SERVER_L
     PERS num syncReqJ:=0;
     CONST confdata L_CONF := [-1,-1,0,11];
 
-    !// added by hao chen 20220115 for (CASE 41)
+    !//Camera
+    VAR datapos camblock;
+    VAR string camname;
+    VAR cameradev camdevice;
+
+    !//Added by Chen Hao 2022/01/15 for (CASE 41)
     VAR num path_length :=0;
 
     !/////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -72,28 +77,28 @@ MODULE SERVER_L
     !// - instructionCode.
     !// - nParams: Number of received parameters.
     !// - params{nParams}: Vector of received params.
-    !// author: hao chen
-    !// date: 20220115
     PROC ReceiveMsg(\num wait_time)
         VAR rawbytes buffer;
         VAR num time_val := WAIT_MAX;  ! default to wait-forever
         VAR num bytes_rcvd; ! parameter received
         IF Present(wait_time) time_val := wait_time;    ! test if wait time is setted
 
+        !//for debug
+        !TPErase;
+        !TPWrite "START RECEIVING";
         ClearRawBytes buffer;
 
-        !// receive data, 1 - 2 byte: number of parameters, 3- 4 byte: instruction code, 5bit - : parameters
+        !// receive data
         SocketReceive clientSocket, \RawData:=buffer, \ReadNoOfBytes:=1024, \NoRecBytes:=bytes_rcvd, \Time:=time_val;
         !// read number of parameters
         UnpackRawBytes buffer, 1, nParams, \IntX:=UINT;
         !// read instruction code
         UnpackRawBytes buffer, 3, instructionCode, \IntX:=UINT;
-        !// for debug (TPWrite makes programs run slower)
+        !// parameters are start from 5
         !TPWrite "param no." + NumToStr(nParams,0);
         !TPWrite "instruct no." +NumToStr(instructionCode,3);
         !TPWrite "No of bytes " + NumToStr(bytes_rcvd, 0);
         !TPWrite "No of parameters " + NumToStr((bytes_rcvd-4)/4,5);
-        !// read parameters
         IF (bytes_rcvd-4)/4 <> nParams THEN
             ErrWrite \W, "Socket Recv Failed", "Did not receive expected # of bytes.",
                  \RL2:="Expected: " + ValToStr(nParams),
@@ -114,13 +119,9 @@ MODULE SERVER_L
             RAISE;  ! raise errors to calling code
     ENDPROC
 
-    !// This is the function to run MoveJ.
-    !// - If the motion exec successfully, return True
-    !// - If the motion exec failed (due to collision), return False
-    !// - To successfully run this function, it should revise the system parameter to prevent the collision stop.
-    !//     - "Controller" -> "General Rapid" -> "CollisionErrorHandling", set "CollisionErrorHandling" to "Yes"
-    !// author: hao chen
-    !// date: 20220115
+    !// Added by Chen Hao. This is the function to run MoveJ.
+    !// If the motion exec successfully, return True
+    !// If the motion exec failed, return False
     FUNC bool ExecMoveJ()
         VAR bool error_flag := FALSE;
         FOR i FROM 1 TO BUFFER_POS_J DO
@@ -136,7 +137,6 @@ MODULE SERVER_L
         ENDFOR
         RETURN TRUE;
 
-        !// handle collision error
         ERROR
             TEST ERRNO
             CASE ERR_COLL_STOP:
@@ -259,6 +259,14 @@ MODULE SERVER_L
         !Find the current external axis values so they don't move when we start
         jointsTarget:=CJointT();
         externalAxis:=jointsTarget.extax;
+
+        SetDataSearch "cameradev" \Object:="HandCam_L";
+        WHILE GetNextSym(camname,camblock) DO
+            GetDataVal camname\Block:=camblock, camdevice;
+            CamSetProgramMode camdevice;
+            CamLoadJob camdevice, "camleft.job";
+            CamSetRunMode camdevice;
+        ENDWHILE
     ENDPROC
 
     FUNC string FormateRes(string clientMessage)
@@ -293,6 +301,8 @@ MODULE SERVER_L
         !//Drop and reconnection happened during serving a command
         VAR robtarget cartesianPose;
         VAR jointtarget jointsPose;
+         !// Create by HAO CHEN (chen960216@gmail.com) 20230829osaka for update CASE 1 & 5
+        VAR confdata T_CONF;
 
         !//Motion configuration
         ConfL\Off;
@@ -320,6 +330,8 @@ MODULE SERVER_L
             addString:="";
             !//Wait for a command
             ReceiveMsg;
+            !SocketReceive clientSocket\Str:=receivedString\Time:=WAIT_MAX;
+            !ParseMsg receivedString;
 
             !//Correctness of executed instruction.
             reconnected:=FALSE;
@@ -337,11 +349,20 @@ MODULE SERVER_L
                 !---------------------------------------------------------------------------------------------------------------
             CASE 1:
                 !Cartesian Move
-                IF nParams=7 THEN
-                    cartesianTarget:=[[params{1},params{2},params{3}],
+                !// Revised by Hao CHEN (chen960216@gmail.com) 20230829osaka
+                IF nParams=7 OR nParams=11 THEN
+                    IF nParams=7 THEN
+                        cartesianTarget:=[[params{1},params{2},params{3}],
                                        [params{4},params{5},params{6},params{7}],
                                        L_CONF,
                                        externalAxis];
+                    ELSE
+                        T_CONF := [params{8}, params{9}, params{10}, params{11}];
+                        cartesianTarget:=[[params{1},params{2},params{3}],
+                                       [params{4},params{5},params{6},params{7}],
+                                       T_CONF,
+                                       externalAxis];
+                    ENDIF
                     IF isPoseReachable(cartesianTarget, currentTool, currentWobj) THEN
                         ok:=SERVER_OK;
                         moveCompleted:=FALSE;
@@ -389,7 +410,12 @@ MODULE SERVER_L
                     addString:=addString+NumToStr(cartesianPose.rot.q1,3)+" ";
                     addString:=addString+NumToStr(cartesianPose.rot.q2,3)+" ";
                     addString:=addString+NumToStr(cartesianPose.rot.q3,3)+" ";
-                    addString:=addString+NumToStr(cartesianPose.rot.q4,3);
+                    addString:=addString+NumToStr(cartesianPose.rot.q4,3)+" ";
+                    !// Added by Hao CHEN (chen960216@gmail.com) 20230829osaka
+                    addString:=addString+NumToStr(cartesianPose.robconf.cf1,2)+" ";
+                    addString:=addString+NumToStr(cartesianPose.robconf.cf4,2)+" ";
+                    addString:=addString+NumToStr(cartesianPose.robconf.cf6,2)+" ";
+                    addString:=addString+NumToStr(cartesianPose.robconf.cfx,2);
                     !End of string
                     ok:=SERVER_OK;
                 ELSE
@@ -416,11 +442,20 @@ MODULE SERVER_L
                 !---------------------------------------------------------------------------------------------------------------
             CASE 5:
                 !Cartesian Move, nonlinear movement
-                IF nParams=7 THEN
-                    cartesianTarget:=[[params{1},params{2},params{3}],
+                !// Revised by Hao CHEN (chen960216@gmail.com) 20230829osaka
+                IF nParams=7 OR nParams=11 THEN
+                    IF nParams=7 THEN
+                        cartesianTarget:=[[params{1},params{2},params{3}],
                                        [params{4},params{5},params{6},params{7}],
                                        L_CONF,
                                        externalAxis];
+                    ELSE
+                        T_CONF := [params{8}, params{9}, params{10}, params{11}];
+                        cartesianTarget:=[[params{1},params{2},params{3}],
+                                       [params{4},params{5},params{6},params{7}],
+                                       T_CONF,
+                                       externalAxis];
+                    ENDIF
                     IF isPoseReachable(cartesianTarget, currentTool, currentWobj) THEN
                         ok:=SERVER_OK;
                         moveCompleted:=FALSE;
@@ -822,7 +857,7 @@ MODULE SERVER_L
                 ! ClearJointBuffer
                 IF nParams=0 THEN
                   BUFFER_POS_J:=0;
-                  !// added by hao chen 20220115
+                  !// Added by Chen Hao 2022/01/15
                   path_length :=0;
                   ok:=SERVER_OK;
                 ELSE
@@ -838,9 +873,19 @@ MODULE SERVER_L
                   ok:=SERVER_BAD_MSG;
                 ENDIF
                 !---------------------------------------------------------------------------------------------------------------
-              CASE 40:
+            CASE 40:
                 ! ExecuteJointBuffer
                 IF nParams=0 THEN
+                  !Trapezoidal velocity
+                  !bufferJointSpeeds{1}.v_tcp:=bufferJointSpeeds{1}.v_tcp*0.5;
+                  !bufferJointSpeeds{1}.v_ori:=bufferJointSpeeds{1}.v_ori*0.5;
+                  !bufferJointSpeeds{2}.v_tcp:=bufferJointSpeeds{2}.v_tcp*0.95;
+                  !bufferJointSpeeds{2}.v_ori:=bufferJointSpeeds{2}.v_ori*0.95;
+                  !bufferJointSpeeds{BUFFER_POS_J-1}.v_tcp:=bufferJointSpeeds{BUFFER_POS_J-1}.v_tcp*0.95;
+                  !bufferJointSpeeds{BUFFER_POS_J-1}.v_ori:=bufferJointSpeeds{BUFFER_POS_J-1}.v_ori*0.95;
+                  !bufferJointSpeeds{BUFFER_POS_J}.v_tcp:=bufferJointSpeeds{BUFFER_POS_J}.v_tcp*0.5;
+                  !bufferJointSpeeds{BUFFER_POS_J}.v_ori:=bufferJointSpeeds{BUFFER_POS_J}.v_ori*0.5;
+                  !Trapezoidal velocity
                     IF ExecMoveJ() THEN
                         addString := "1";
                     ELSE
@@ -852,7 +897,7 @@ MODULE SERVER_L
                 ENDIF
                 !---------------------------------------------------------------------------------------------------------------
             CASE 41:
-                ! AddJointBuffer. Comparing with CASE 37, CASE 41 receives more joint angles at once. Add by Chen Hao 20220115
+                ! Add by Chen Hao 2022/01/15
                 IF nParams >= 8 THEN
                     path_length := params{1};
                     FOR i FROM 1 TO path_length DO
@@ -869,11 +914,77 @@ MODULE SERVER_L
                   ok:=SERVER_BAD_MSG;
                 ENDIF
                 !---------------------------------------------------------------------------------------------------------------
+            CASE 50:
+                ! Request camera image
+                IF nParams=0 THEN
+                  CamReqImage camdevice;
+                  ok:=SERVER_OK;
+                ELSE
+                  ok:=SERVER_BAD_MSG;
+                ENDIF
+                !---------------------------------------------------------------------------------------------------------------
+            CASE 60:
+                ! Set vacuum on
+                IF nParams=0 THEN
+                  g_VacuumOn1;
+                  ok:=SERVER_OK;
+                ELSE
+                  ok:=SERVER_BAD_MSG;
+                ENDIF
+            CASE 61:
+                ! Set vacuum off
+                IF nParams=0 THEN
+                  g_VacuumOff1;
+                  g_BlowOn1;
+                  WaitTime 0.1;
+                  g_BlowOff1;
+                  ok:=SERVER_OK;
+                ELSE
+                  ok:=SERVER_BAD_MSG;
+                ENDIF
+            CASE 62:
+                ! Get pressure
+                IF nParams=0 THEN
+                  addString := NumToStr(g_GetPressure1(), 2);
+                  TPWrite "Pressure";
+                  TPWrite addString;
+                  ok:=SERVER_OK;
+                ELSE
+                  ok:=SERVER_BAD_MSG;
+                ENDIF
+                !---------------------------------------------------------------------------------------------------------------
             CASE 71:
-                !// setMaxSpeed added by hao chen 20220123
+                !// added by Chen Hao 01/23/2022
                 IF nParams=0 THEN
                     currentSpeed := vmax;
                     ok:=SERVER_OK;
+                ELSE
+                    ok:=SERVER_BAD_MSG;
+                ENDIF
+            CASE 95: !// Forward Kinematics, Added by Hao CHEN (chen960216@gmail.com) 20230829osaka
+                !returns 1 if given pose is reachable. 0 other wise.
+                IF nParams=7 THEN
+                    externalAxis.eax_a:=params{3};
+                    jointsTarget:=[[params{1},params{2},params{4},params{5},params{6},params{7}],externalAxis];
+                    IF isJointsReachable(jointsTarget, currentTool, currentWobj) THEN
+                        cartesianPose := CalcRobT(jointsTarget,currentTool \Wobj:=currentWobj);
+                        addString:=NumToStr(cartesianPose.trans.x,2)+" ";
+                        addString:=addString+NumToStr(cartesianPose.trans.y,2)+" ";
+                        addString:=addString+NumToStr(cartesianPose.trans.z,2)+" ";
+                        addString:=addString+NumToStr(cartesianPose.rot.q1,3)+" ";
+                        addString:=addString+NumToStr(cartesianPose.rot.q2,3)+" ";
+                        addString:=addString+NumToStr(cartesianPose.rot.q3,3)+" ";
+                        addString:=addString+NumToStr(cartesianPose.rot.q4,3)+" ";
+                        addString:=addString+NumToStr(cartesianPose.robconf.cf1,2)+" ";
+                        addString:=addString+NumToStr(cartesianPose.robconf.cf4,2)+" ";
+                        addString:=addString+NumToStr(cartesianPose.robconf.cf6,2)+" ";
+                        addString:=addString+NumToStr(cartesianPose.robconf.cfx,2);
+                        !End of string
+                        ok:=SERVER_OK;
+                    ELSE
+                        addString := "Unreachable Pose";
+                        ok:=SERVER_BAD_MSG;
+                    ENDIF
                 ELSE
                     ok:=SERVER_BAD_MSG;
                 ENDIF
@@ -898,7 +1009,10 @@ MODULE SERVER_L
             CASE 97:
                 !returns 1 if given joint configuration is reachable. 0 other wise.
                 IF nParams=7 THEN
-                    jointsTarget:=[[params{1},params{2},params{3},params{4},params{5},params{6}],externalAxis];
+                    !// Revised by Hao CHEN (chen960216@gmail.com) 20230829osaka
+                    externalAxis.eax_a:=params{3};
+                    jointsTarget:=[[params{1},params{2},params{4},params{5},params{6},params{7}],externalAxis];
+                    !// ---
                     IF isJointsReachable(jointsTarget, currentTool, currentWobj) THEN
                         addString := "1";
                     ELSE

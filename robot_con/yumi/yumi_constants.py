@@ -1,8 +1,8 @@
 '''
 Constants for YuMi interface and control
 Author: Jacky Liang
-Add command code for "ContactL", "buffer_j_add_all", "set_max_speed"
-Author: Hao Chen 20220123
+Add command code for "ContactL", "buffer_j_add_all", "set_max_speed", "fk"
+Author: Hao Chen 20220123 20230831
 '''
 import logging
 from robot_con.yumi.yumi_state import YuMiState
@@ -91,7 +91,10 @@ class YuMiConstants:
         'get_pressure': 62,
 
         "contactL": 70,
-        "set_speed_max":71,
+        "set_speed_max": 71,
+
+        'ik': 94,
+        'fk': 95,
 
         'is_pose_reachable': 96,
         'is_joints_reachable': 97,
@@ -200,9 +203,9 @@ class YuMiConstants:
     L_BIN_UPPER_LEFT = RigidTransform(translation=[0.55, 0.2, 0.04],
                                       rotation=[0,0,-1,0])
     L_BIN_PREGRASP_POSE = RigidTransform(translation=[0.4, 0.42, 0.32],
-                                        rotation=[0,0,-1,0])
+                                         rotation=[0, 0, -1, 0])
     L_BIN_DROP_POSE = RigidTransform(translation=[0.4, 0.42, 0.2],
-                                     rotation=[0,0,-1,0])
+                                     rotation=[0, 0, -1, 0])
 
     L_PACKAGE_DROP_POSES = [
         RigidTransform(translation=[0.33, 0.42, 0.25], rotation=[0.09078, -0.31101, 0.91820, -0.22790]),
