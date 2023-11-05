@@ -133,7 +133,7 @@ class Robotiq140(gp.GripperInterface):
         # jaw center
         self.jaw_center_pos = np.array([0, 0, .19])  # position for initial state (fully open)
         # relative jaw center pos
-        self.jaw_center_pos_rel = self.jaw_center_pos - self.lft_outer.joints[4]['gl_posq']
+        self.jaw_center_pos_rel = self.jaw_center_pos - self.lft_outer.joints[4]['loc_pos']
         # collision detection
         self.all_cdelements = []
         self.enable_cc(toggle_cdprimit=enable_cc)
