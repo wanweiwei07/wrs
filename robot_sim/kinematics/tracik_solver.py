@@ -1,53 +1,11 @@
+import time
 import numpy as np
 import multiprocessing as mp
 import basis.robot_math as rm
 import scipy.optimize as sopt
 import robot_sim.kinematics.constant as rkc
 
-
-def _fk(anchor, joints, tcp_joint_id, tcp_loc_homomat, joint_values, toggle_jacobian):
-    """
-    joints = jlc.joints
-    author: weiwei
-    date: 20231105
-    """
-    n_dof = len(joints)
-    homomat = anchor.homomat
-    j_pos = np.zeros((n_dof, 3))
-    j_axis = np.zeros((n_dof, 3))
-    for i in range(tcp_joint_id + 1):
-        j_axis[i, :] = homomat[:3, :3] @ joints[i].loc_motion_axis
-        if joints[i].type == rkc.JointType.REVOLUTE:
-            j_pos[i, :] = homomat[:3, 3] + homomat[:3, :3] @ joints[i].loc_pos
-        homomat = homomat @ joints[i].get_motion_homomat(motion_value=joint_values[i])
-    tcp_gl_homomat = homomat @ tcp_loc_homomat
-    tcp_gl_pos = tcp_gl_homomat[:3, 3]
-    tcp_gl_rotmat = tcp_gl_homomat[:3, :3]
-    if toggle_jacobian:
-        j_mat = np.zeros((6, n_dof))
-        for i in range(tcp_joint_id + 1):
-            if joints[i].type == rkc.JointType.REVOLUTE:
-                vec_jnt2tcp = tcp_gl_pos - j_pos[i, :]
-                j_mat[:3, i] = np.cross(j_axis[i, :], vec_jnt2tcp)
-                j_mat[3:6, i] = j_axis[i, :]
-            if joints[i].type == rkc.JointType.PRISMATIC:
-                j_mat[:3, i] = j_axis[i, :]
-        return tcp_gl_pos, tcp_gl_rotmat, j_mat
-    else:
-        return tcp_gl_pos, tcp_gl_rotmat
-
-
-def _get_joint_ranges(joints):
-    """
-    get jntsrnage
-    :return: [[jnt1min, jnt1max], [jnt2min, jnt2max], ...]
-    date: 20180602, 20200704osaka
-    author: weiwei
-    """
-    jnt_limits = []
-    for i in range(len(joints)):
-        jnt_limits.append(joints[i].motion_range)
-    return np.asarray(jnt_limits)
+_TOGGLE_DEBUG = True
 
 
 class NumIKSolverProc(mp.Process):
@@ -70,7 +28,10 @@ class NumIKSolverProc(mp.Process):
         # maximum reach
         self.max_rng = 10.0
         # # extract min max for quick access
-        self.joint_ranges = _get_joint_ranges(joints)
+        jnt_limits = []
+        for i in range(len(joints)):
+            jnt_limits.append(joints[i].motion_range)
+        self.joint_ranges = np.asarray(jnt_limits)
         self.min_jnt_vals = self.joint_ranges[:, 0]
         self.max_jnt_vals = self.joint_ranges[:, 1]
         self.jnt_rngs = self.max_jnt_vals - self.min_jnt_vals
@@ -118,12 +79,42 @@ class NumIKSolverProc(mp.Process):
         return clamped_tcp_vec
 
     def run(self):
+        def _fk(anchor, joints, tcp_joint_id, tcp_loc_homomat, joint_values, toggle_jacobian):
+            """
+            joints = jlc.joints
+            author: weiwei
+            date: 20231105
+            """
+            n_dof = len(joints)
+            homomat = anchor.homomat
+            j_pos = np.zeros((n_dof, 3))
+            j_axis = np.zeros((n_dof, 3))
+            for i in range(tcp_joint_id + 1):
+                j_axis[i, :] = homomat[:3, :3] @ joints[i].loc_motion_axis
+                if joints[i].type == rkc.JointType.REVOLUTE:
+                    j_pos[i, :] = homomat[:3, 3] + homomat[:3, :3] @ joints[i].loc_pos
+                homomat = homomat @ joints[i].get_motion_homomat(motion_value=joint_values[i])
+            tcp_gl_homomat = homomat @ tcp_loc_homomat
+            tcp_gl_pos = tcp_gl_homomat[:3, 3]
+            tcp_gl_rotmat = tcp_gl_homomat[:3, :3]
+            if toggle_jacobian:
+                j_mat = np.zeros((6, n_dof))
+                for i in range(tcp_joint_id + 1):
+                    if joints[i].type == rkc.JointType.REVOLUTE:
+                        vec_jnt2tcp = tcp_gl_pos - j_pos[i, :]
+                        j_mat[:3, i] = np.cross(j_axis[i, :], vec_jnt2tcp)
+                        j_mat[3:6, i] = j_axis[i, :]
+                    if joints[i].type == rkc.JointType.PRISMATIC:
+                        j_mat[:3, i] = j_axis[i, :]
+                return tcp_gl_pos, tcp_gl_rotmat, j_mat
+            else:
+                return tcp_gl_pos, tcp_gl_rotmat
+
         while True:
             tgt_pos, tgt_rotmat, seed_jnt_vals, max_n_iter = self._param_queue.get()
-            # print("numik starting")
             iter_jnt_vals = seed_jnt_vals.copy()
             counter = 0
-            while self._result_queue.empty():
+            while self._result_queue.empty():  # check if other solver succeeded in the beginning
                 tcp_gl_pos, tcp_gl_rotmat, j_mat = _fk(self.anchor,
                                                        self.joints,
                                                        self.tcp_joint_id,
@@ -135,8 +126,7 @@ class NumIKSolverProc(mp.Process):
                                                                                        tgt_pos=tgt_pos,
                                                                                        tgt_rotmat=tgt_rotmat)
                 if tcp_pos_err_val < 1e-4 and tcp_rot_err_val < 1e-3:
-                    # print("num got result")
-                    self._result_queue.put(iter_jnt_vals)
+                    self._result_queue.put(('n', iter_jnt_vals))
                     break
                 clamped_err_vec = self._clamp_tcp_err(tcp_pos_err_val, tcp_rot_err_val, tcp_err_vec)
                 wln, wln_sqrt = self._jnt_wt_mat(iter_jnt_vals)
@@ -149,10 +139,9 @@ class NumIKSolverProc(mp.Process):
                         clamped_err_vec - j_mat @ clamping)
                 iter_jnt_vals = iter_jnt_vals + delta_jnt_values
                 if counter > max_n_iter:
-                    # print("numik failed")
+                    # optik failed
                     break
                 counter += 1
-            # self._state_queue.put(1)
 
 
 class OptIKSolverProc(mp.Process):
@@ -163,9 +152,21 @@ class OptIKSolverProc(mp.Process):
         self._state_queue = state_queue
         self.anchor = anchor
         self.joints = joints
-        self.joint_ranges = _get_joint_ranges(joints)
+        jnt_limits = []
+        for i in range(len(joints)):
+            jnt_limits.append(joints[i].motion_range)
+        self.joint_ranges = np.asarray(jnt_limits)
         self.tcp_joint_id = tcp_joint_id
         self.tcp_loc_homomat = tcp_loc_homomat
+
+    def _rand_conf(self):
+        """
+        generate a random configuration
+        author: weiwei
+        date: 20200326
+        """
+        return np.multiply(np.random.rand(len(self.joints)),
+                           (self.joint_ranges[:, 1] - self.joint_ranges[:, 0])) + self.joint_ranges[:, 0]
 
     def run(self):  # OptIKSolver.sqpss
         """
@@ -174,6 +175,37 @@ class OptIKSolverProc(mp.Process):
         author: weiwei
         date: 20231101
         """
+
+        def _fk(anchor, joints, tcp_joint_id, tcp_loc_homomat, joint_values, toggle_jacobian):
+            """
+            joints = jlc.joints
+            author: weiwei
+            date: 20231105
+            """
+            n_dof = len(joints)
+            homomat = anchor.homomat
+            j_pos = np.zeros((n_dof, 3))
+            j_axis = np.zeros((n_dof, 3))
+            for i in range(tcp_joint_id + 1):
+                j_axis[i, :] = homomat[:3, :3] @ joints[i].loc_motion_axis
+                if joints[i].type == rkc.JointType.REVOLUTE:
+                    j_pos[i, :] = homomat[:3, 3] + homomat[:3, :3] @ joints[i].loc_pos
+                homomat = homomat @ joints[i].get_motion_homomat(motion_value=joint_values[i])
+            tcp_gl_homomat = homomat @ tcp_loc_homomat
+            tcp_gl_pos = tcp_gl_homomat[:3, 3]
+            tcp_gl_rotmat = tcp_gl_homomat[:3, :3]
+            if toggle_jacobian:
+                j_mat = np.zeros((6, n_dof))
+                for i in range(tcp_joint_id + 1):
+                    if joints[i].type == rkc.JointType.REVOLUTE:
+                        vec_jnt2tcp = tcp_gl_pos - j_pos[i, :]
+                        j_mat[:3, i] = np.cross(j_axis[i, :], vec_jnt2tcp)
+                        j_mat[3:6, i] = j_axis[i, :]
+                    if joints[i].type == rkc.JointType.PRISMATIC:
+                        j_mat[:3, i] = j_axis[i, :]
+                return tcp_gl_pos, tcp_gl_rotmat, j_mat
+            else:
+                return tcp_gl_pos, tcp_gl_rotmat
 
         def _objective(x, tgt_pos, tgt_rotmat):
             tcp_gl_pos, tcp_gl_rotmat = _fk(self.anchor,
@@ -189,33 +221,64 @@ class OptIKSolverProc(mp.Process):
             return tcp_err_vec.dot(tcp_err_vec)
 
         def _call_back(x):
+            """
+            check if other solvers succeeded at the end of each iteration
+            :param x:
+            :return:
+            """
             if not self._result_queue.empty():
                 raise StopIteration
 
+        # toggle the following one to switch to non-random restart version
+        # while True:
+        #     tgt_pos, tgt_rotmat, seed_jnt_vals, max_n_iter = self._param_queue.get()
+        #     options = {'ftol': 1e-6,
+        #                'eps': 1e-4,
+        #                'maxiter': max_n_iter}
+        #     try:
+        #         result = sopt.minimize(fun=_objective,
+        #                                args=(tgt_pos, tgt_rotmat),
+        #                                x0=seed_jnt_vals,
+        #                                method='SLSQP',
+        #                                bounds=self.joint_ranges,
+        #                                options=options,
+        #                                callback=_call_back)
+        #     except StopIteration:
+        #         continue  # other solver succeeded
+        #     if result.success and result.fun < 1e-4:
+        #         self._result_queue.put(('o', result.x))
+        #     else:
+        #         self._result_queue.put(None)  # optik failed
+
+        # sqpss with random restart
         while True:
             tgt_pos, tgt_rotmat, seed_jnt_vals, max_n_iter = self._param_queue.get()
-            # print("optik starting")
             options = {'ftol': 1e-6,
-                       'eps': 1e-12,
+                       'eps': 1e-4,
                        'maxiter': max_n_iter}
-            try:
-                result = sopt.minimize(fun=_objective,
-                                       args=(tgt_pos, tgt_rotmat),
-                                       x0=seed_jnt_vals,
-                                       method='SLSQP',
-                                       bounds=self.joint_ranges,
-                                       options=options,
-                                       callback=_call_back)
-            except StopIteration:
-                # self._state_queue.put(1)
-                continue
-            if result.success and result.fun < 1e-4:
-                # print("opt got result")
-                self._result_queue.put(result.x)
-            else:
-                self._result_queue.put(None)
-                # print("optik failed")
-            # self._state_queue.put(1)
+            counter = 0
+            while True:
+                counter += 1
+                try:
+                    result = sopt.minimize(fun=_objective,
+                                           args=(tgt_pos, tgt_rotmat),
+                                           x0=seed_jnt_vals,
+                                           method='SLSQP',
+                                           bounds=self.joint_ranges,
+                                           options=options,
+                                           callback=_call_back)
+                except StopIteration:
+                    break  # other solver succeeded
+                if result.success and result.fun < 1e-4:
+                    self._result_queue.put(('o', result.x))
+                    break
+                else:
+                    if counter > 10:
+                        self._result_queue.put(None)
+                        break
+                    else:
+                        seed_jnt_vals = self._rand_conf()
+                        continue
 
 
 class TracIKSolver(object):
@@ -226,6 +289,7 @@ class TracIKSolver(object):
 
     def __init__(self, jlc, wln_ratio=.05):
         self.jlc = jlc
+        self._default_seed_jnt_vals = self.jlc.get_joint_values()
         self._nik_param_queue = mp.Queue()
         self._oik_param_queue = mp.Queue()
         self._nik_state_queue = mp.Queue()
@@ -250,23 +314,20 @@ class TracIKSolver(object):
         self.oik_solver_proc.start()
         tcp_gl_pos, tcp_gl_rotmat = self.jlc.get_gl_tcp()
         # run once to avoid long waiting time in the beginning
-        self._oik_param_queue.put((tcp_gl_pos, tcp_gl_rotmat, self.jlc.get_joint_values(), 10))
+        self._oik_param_queue.put((tcp_gl_pos, tcp_gl_rotmat, self._default_seed_jnt_vals, 10))
         self._result_queue.get()
 
-    def ik(self, tgt_pos, tgt_rotmat, seed_jnt_vals=None, max_n_iter=100):
+    def ik(self, tgt_pos, tgt_rotmat, seed_jnt_vals=None, max_n_iter=100, toggle_dbg_info=False):
+        # tcp_gl_pos, tcp_gl_rotmat = self.jlc.get_gl_tcp()
+        # self._oik_param_queue.put((tcp_gl_pos, tcp_gl_rotmat, self._default_seed_jnt_vals, 10))
+        # self._result_queue.get()
         if seed_jnt_vals is None:
-            seed_jnt_vals = self.jlc.get_joint_values()
+            seed_jnt_vals = self._default_seed_jnt_vals
         self._nik_param_queue.put((tgt_pos, tgt_rotmat, seed_jnt_vals, max_n_iter))
         self._oik_param_queue.put((tgt_pos, tgt_rotmat, seed_jnt_vals, max_n_iter))
         result = self._result_queue.get()
-        print(result)
-        return result
-        # # oik_state = self._oik_state_queue.get()
-        # # nik_state = self._nik_state_queue.get()
-        # print(self._result_queue.empty())
-        # if not self._result_queue.empty():
-        #     print("done")
-        #     result = self._result_queue.get()
-        #     return result
-        # else:
-        #     return None
+        if toggle_dbg_info:
+            return result
+        else:
+            if result is not None:
+                return result[1]

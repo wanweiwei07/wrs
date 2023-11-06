@@ -448,7 +448,7 @@ if __name__ == "__main__":
     jlc.joints[5].loc_motion_axis = np.array([0, 0, 1])
     jlc.joints[5].motion_range = np.array([-np.pi / 2, np.pi / 2])
     jlc.tcp_loc_pos = np.array([0, 0, .01])
-    jlc.reinitialize()
+    jlc.finalize()
     # joint_values = jlc.get_joint_values()
     joint_values = np.array([0.43535098, 0.33114442, 1.72095796, -1.35903405, -1.18752684, -0.52251824])
     # joint_values = np.array(
