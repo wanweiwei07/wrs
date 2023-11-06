@@ -275,12 +275,12 @@ class SystemInterface(object):
         return self.manipulator_dict[component_name].ik(tgt_pos,
                                                         tgt_rotmat,
                                                         seed_jnt_vals=seed_jnt_values,
-                                                        max_niter=max_niter,
+                                                        max_n_iter=max_niter,
                                                         tcp_joint_id=tcp_jnt_id,
                                                         tcp_loc_pos=tcp_loc_pos,
                                                         tcp_loc_rotmat=tcp_loc_rotmat,
                                                         local_minima=local_minima,
-                                                        toggle_debug=toggle_debug)
+                                                        toggle_dbg=toggle_debug)
 
     def manipulability(self,
                        tcp_jnt_id=None,

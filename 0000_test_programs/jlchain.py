@@ -14,25 +14,25 @@ if __name__ == '__main__':
     gm.gen_frame().attach_to(base)
 
     jlc = rskj.JLChain(n_dof=6)
-    jlc.joints[0].loc_pos = np.array([0, 0, 0])
-    jlc.joints[0].loc_motion_axis = np.array([0, 0, 1])
-    jlc.joints[0].motion_range = np.array([-np.pi / 2, np.pi / 2])
+    jlc.jnts[0].loc_pos = np.array([0, 0, 0])
+    jlc.jnts[0].loc_motion_axis = np.array([0, 0, 1])
+    jlc.jnts[0].motion_rng = np.array([-np.pi / 2, np.pi / 2])
     # jlc.joints[1].change_type(rkc.JointType.PRISMATIC)
-    jlc.joints[1].loc_pos = np.array([0, 0, .05])
-    jlc.joints[1].loc_motion_axis = np.array([0, 1, 0])
-    jlc.joints[1].motion_range = np.array([-np.pi / 2, np.pi / 2])
-    jlc.joints[2].loc_pos = np.array([0, 0, .2])
-    jlc.joints[2].loc_motion_axis = np.array([0, 1, 0])
-    jlc.joints[2].motion_range = np.array([-np.pi, np.pi])
-    jlc.joints[3].loc_pos = np.array([0, 0, .2])
-    jlc.joints[3].loc_motion_axis = np.array([0, 0, 1])
-    jlc.joints[3].motion_range = np.array([-np.pi / 2, np.pi / 2])
-    jlc.joints[4].loc_pos = np.array([0, 0, .1])
-    jlc.joints[4].loc_motion_axis = np.array([0, 1, 0])
-    jlc.joints[4].motion_range = np.array([-np.pi / 2, np.pi / 2])
-    jlc.joints[5].loc_pos = np.array([0, 0, .05])
-    jlc.joints[5].loc_motion_axis = np.array([0, 0, 1])
-    jlc.joints[5].motion_range = np.array([-np.pi / 2, np.pi / 2])
+    jlc.jnts[1].loc_pos = np.array([0, 0, .05])
+    jlc.jnts[1].loc_motion_axis = np.array([0, 1, 0])
+    jlc.jnts[1].motion_rng = np.array([-np.pi / 2, np.pi / 2])
+    jlc.jnts[2].loc_pos = np.array([0, 0, .2])
+    jlc.jnts[2].loc_motion_axis = np.array([0, 1, 0])
+    jlc.jnts[2].motion_rng = np.array([-np.pi, np.pi])
+    jlc.jnts[3].loc_pos = np.array([0, 0, .2])
+    jlc.jnts[3].loc_motion_axis = np.array([0, 0, 1])
+    jlc.jnts[3].motion_rng = np.array([-np.pi / 2, np.pi / 2])
+    jlc.jnts[4].loc_pos = np.array([0, 0, .1])
+    jlc.jnts[4].loc_motion_axis = np.array([0, 1, 0])
+    jlc.jnts[4].motion_rng = np.array([-np.pi / 2, np.pi / 2])
+    jlc.jnts[5].loc_pos = np.array([0, 0, .05])
+    jlc.jnts[5].loc_motion_axis = np.array([0, 0, 1])
+    jlc.jnts[5].motion_rng = np.array([-np.pi / 2, np.pi / 2])
     jlc.tcp_loc_pos = np.array([0, 0, .01])
     jlc.finalize()
     rkmg.gen_jlc_stick(jlc, stick_rgba=basis.constant.navy_blue, toggle_tcp_frame=True,
@@ -48,10 +48,10 @@ if __name__ == '__main__':
     # tgt_rotmat = np.array([[0.1139233, 0.94946477, -0.29246902],
     #                        [0.9883866, -0.07851674, 0.130104],
     #                        [0.10056545, -0.30389433, -0.94738315]])
-    tgt_pos = np.array([0.03455701, -0.11311291, 0.5376421])
-    tgt_rotmat = np.array([[-0.026277, -0.55078843, 0.83423116],
-                           [0.89349137, 0.36131286, 0.26669492],
-                           [-0.44831092, 0.75238629, 0.48263049]])
+    tgt_pos = np.array([0.03306253, 0.04412065, -0.14756892])
+    tgt_rotmat = np.array([[-0.29832769, 0.91526211, -0.27073208],
+                           [0.50770504, 0.39236168, 0.76699929],
+                           [0.80823028, 0.09136508, -0.58173554]])
 
     gm.gen_frame(pos=tgt_pos, rotmat=tgt_rotmat).attach_to(base)
     tic = time.time()
@@ -61,9 +61,9 @@ if __name__ == '__main__':
                                         max_n_iter=100,
                                         toggle_dbg_info=True)
     toc = time.time()
-    print(f"time cost is {toc-tic}")
+    print(f"time cost is {toc - tic}")
     print(joint_values_with_dbg_info)
-    jlc.forward_kinematics(joint_values=joint_values_with_dbg_info[1], update=True)
+    jlc.forward_kinematics(jnt_vals=joint_values_with_dbg_info[1], update=True)
     rkmg.gen_jlc_stick(jlc, stick_rgba=basis.constant.navy_blue, toggle_tcp_frame=True,
                        toggle_joint_frame=True).attach_to(base)
     base.run()

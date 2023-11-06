@@ -28,10 +28,10 @@ class KHI_BLQC(ai.RobotInterface):
                                     home_conf=np.zeros(0),
                                     name='tc_master')
         self.tc_master.lnks[0]['name'] = "tc_master"
-        self.tc_master.joints[-1]['pos_in_loc_tcp'] = np.array([0, 0, .0315])
-        self.tc_master.lnks[0]['collision_model'] = cm.gen_stick(self.tc_master.joints[0]['pos_in_loc_tcp'],
+        self.tc_master.jnts[-1]['pos_in_loc_tcp'] = np.array([0, 0, .0315])
+        self.tc_master.lnks[0]['collision_model'] = cm.gen_stick(self.tc_master.jnts[0]['pos_in_loc_tcp'],
                                                                  # TODO: change to combined model, 20230806
-                                                                 self.tc_master.joints[-1]['pos_in_loc_tcp'],
+                                                                 self.tc_master.jnts[-1]['pos_in_loc_tcp'],
                                                                  radius=0.05,
                                                                  # rgba=[.2, .2, .2, 1], rgb will be overwritten
                                                                  type='rect',
@@ -41,8 +41,8 @@ class KHI_BLQC(ai.RobotInterface):
         self.end_effector = None
         # tool center point
         self.manipulator.tcp_jnt_id = -1
-        self.manipulator.tcp_loc_pos = self.tc_master.joints[-1]['pos_in_loc_tcp']
-        self.manipulator.tcp_loc_rotmat = self.tc_master.joints[-1]['gl_rotmat']
+        self.manipulator.tcp_loc_pos = self.tc_master.jnts[-1]['pos_in_loc_tcp']
+        self.manipulator.tcp_loc_rotmat = self.tc_master.jnts[-1]['gl_rotmat']
         # a list of detailed information about objects in hand, see CollisionChecker.add_objinhnd
         self.oih_infos = []
         # collision detection
@@ -60,8 +60,8 @@ class KHI_BLQC(ai.RobotInterface):
         self.tc_master.fix_to(pos=self.manipulator.jnts[-1]['gl_posq'],
                               rotmat=self.manipulator.jnts[-1]['gl_rotmatq'])
         if self.is_tool_attached:
-            self.end_effector.fix_to(pos=self.tc_master.joints[-1]['gl_posq'],
-                                     rotmat=self.tc_master.joints[-1]['gl_rotmatq'])
+            self.end_effector.fix_to(pos=self.tc_master.jnts[-1]['gl_posq'],
+                                     rotmat=self.tc_master.jnts[-1]['gl_rotmatq'])
 
     @property
     def is_tool_attached(self):
@@ -108,8 +108,8 @@ class KHI_BLQC(ai.RobotInterface):
         """
         if self.is_tool_attached:
             raise Exception("A tool has been attached!")
-        self.manipulator.tcp_loc_pos = self.tc_master.joints[-1]['pos_in_loc_tcp'] + end_effector.action_center_pos
-        self.manipulator.tcp_loc_rotmat = self.tc_master.joints[-1]['gl_rotmat']
+        self.manipulator.tcp_loc_pos = self.tc_master.jnts[-1]['pos_in_loc_tcp'] + end_effector.action_center_pos
+        self.manipulator.tcp_loc_rotmat = self.tc_master.jnts[-1]['gl_rotmat']
         self.end_effector = end_effector
 
     def detach_tool(self):
@@ -119,8 +119,8 @@ class KHI_BLQC(ai.RobotInterface):
         """
         if not self.is_tool_attached:
             raise Exception("Cannot detach a tool since nothing is attached!")
-        self.manipulator.tcp_loc_pos = self.tc_master.joints[-1]['gl_posq']
-        self.manipulator.tcp_loc_rotmat = self.tc_master.joints[-1]['gl_rotmatq']
+        self.manipulator.tcp_loc_pos = self.tc_master.jnts[-1]['gl_posq']
+        self.manipulator.tcp_loc_rotmat = self.tc_master.jnts[-1]['gl_rotmatq']
         self.end_effector = None
 
     def get_oih_list(self):

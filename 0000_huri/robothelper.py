@@ -323,9 +323,9 @@ class RobotHelperX(RobotHelper):
 
     def getarmjntsx(self, armname):
         if armname is "rgt":
-            return self.rbtx.right.get_state().joints
+            return self.rbtx.right.get_state().jnts
         elif armname is "lft":
-            return self.rbtx.left.get_state().joints
+            return self.rbtx.left.get_state().jnts
         else:
             raise ValueError("Arm name must be right or left!")
 

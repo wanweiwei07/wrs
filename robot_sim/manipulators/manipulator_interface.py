@@ -16,7 +16,7 @@ class ManipulatorInterface(object):
 
     @property
     def jnts(self):
-        return self.jlc.joints
+        return self.jlc.jnts
 
     @property
     def lnks(self):
@@ -36,7 +36,7 @@ class ManipulatorInterface(object):
 
     @property
     def tcp_jnt_id(self):
-        return self.jlc.tcp_joint_id
+        return self.jlc.tcp_jnt_id
 
     @property
     def tcp_loc_pos(self):
@@ -48,7 +48,7 @@ class ManipulatorInterface(object):
 
     @tcp_jnt_id.setter
     def tcp_jnt_id(self, tcp_jnt_id):
-        self.jlc.tcp_joint_id = tcp_jnt_id
+        self.jlc.tcp_jnt_id = tcp_jnt_id
 
     @tcp_loc_pos.setter
     def tcp_loc_pos(self, tcp_loc_pos):
@@ -63,7 +63,7 @@ class ManipulatorInterface(object):
 
     def set_tcp(self, tcp_jnt_id=None, tcp_loc_pos=None, tcp_loc_rotmat=None):
         if tcp_jnt_id is not None:
-            self.jlc.tcp_joint_id = tcp_jnt_id
+            self.jlc.tcp_jnt_id = tcp_jnt_id
         if tcp_loc_pos is not None:
             self.jlc.tcp_loc_pos = tcp_loc_pos
         if tcp_loc_rotmat is not None:
@@ -78,7 +78,7 @@ class ManipulatorInterface(object):
                                    tcp_loc_rotmat=tcp_loc_rotmat)
 
     def get_jnt_ranges(self):
-        return self.jlc.joint_ranges
+        return self.jlc.jnt_rngs
 
     def goto_homeconf(self):
         self.jlc.fk(joint_values=self.jlc.homeconf)
@@ -133,9 +133,9 @@ class ManipulatorInterface(object):
                            tcp_loc_rotmat=tcp_loc_rotmat,
                            tcp_joint_id=tcp_jnt_id,
                            seed_jnt_vals=seed_jnt_values,
-                           max_niter=max_niter,
+                           max_n_iter=max_niter,
                            local_minima=local_minima,
-                           toggle_debug=toggle_debug)
+                           toggle_dbg=toggle_debug)
 
     def manipulability(self,
                        tcp_jnt_id,

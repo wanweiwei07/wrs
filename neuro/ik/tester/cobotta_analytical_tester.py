@@ -20,8 +20,8 @@ if __name__ == '__main__':
     tgt_rotmat = rm.rotmat_from_axangle([0, 1, 0], math.pi * 3 / 3)
     gm.gen_frame(pos=tgt_pos, rotmat=tgt_rotmat).attach_to(base)
 
-    contraint_pos = rbt_s.manipulator_dict['arm'].joints[5]['gl_posq']
-    contraint_rotmat = rbt_s.manipulator_dict['arm'].joints[5]['gl_rotmatq']
+    contraint_pos = rbt_s.manipulator_dict['arm'].jnts[5]['gl_posq']
+    contraint_rotmat = rbt_s.manipulator_dict['arm'].jnts[5]['gl_rotmatq']
     gm.gen_frame(pos=contraint_pos, rotmat=contraint_rotmat).attach_to(base)
 
     # numerical ik
@@ -29,27 +29,27 @@ if __name__ == '__main__':
     rbt_s.fk(jnt_values=jnt_values)
     rbt_s.gen_meshmodel(toggle_tcpcs=True, rgba=[.5,.5,.5,.3]).attach_to(base)
     rbt_s.gen_stickmodel(toggle_tcpcs=True).attach_to(base)
-    contraint_pos = rbt_s.manipulator_dict['arm'].joints[5]['gl_posq']
-    contraint_rotmat = rbt_s.manipulator_dict['arm'].joints[5]['gl_rotmatq']
-    contraint_pos += rbt_s.manipulator_dict['arm'].joints[6]['pos_in_loc_tcp'][1] * contraint_rotmat[:, 1]
+    contraint_pos = rbt_s.manipulator_dict['arm'].jnts[5]['gl_posq']
+    contraint_rotmat = rbt_s.manipulator_dict['arm'].jnts[5]['gl_rotmatq']
+    contraint_pos += rbt_s.manipulator_dict['arm'].jnts[6]['pos_in_loc_tcp'][1] * contraint_rotmat[:, 1]
     gm.gen_frame(pos=contraint_pos, rotmat=contraint_rotmat).attach_to(base)
     gm.gen_torus(contraint_rotmat[:, 2],
                  starting_vector=contraint_rotmat[:, 1],
                  portion=1,
                  center=contraint_pos,
-                 radius=abs(rbt_s.manipulator_dict['arm'].joints[6]['pos_in_loc_tcp'][1])).attach_to(base)
+                 radius=abs(rbt_s.manipulator_dict['arm'].jnts[6]['pos_in_loc_tcp'][1])).attach_to(base)
 
     gm.gen_torus(contraint_rotmat[:, 2],
                  starting_vector=contraint_rotmat[:, 1],
                  portion=1,
                  center=contraint_pos,
-                 radius=abs(rbt_s.manipulator_dict['arm'].joints[6]['pos_in_loc_tcp'][1]) + abs(rbt_s.manipulator_dict['arm'].joints[5]['pos_in_loc_tcp'][1])).attach_to(base)
+                 radius=abs(rbt_s.manipulator_dict['arm'].jnts[6]['pos_in_loc_tcp'][1]) + abs(rbt_s.manipulator_dict['arm'].jnts[5]['pos_in_loc_tcp'][1])).attach_to(base)
 
     gm.gen_torus(contraint_rotmat[:, 2],
                  starting_vector=contraint_rotmat[:, 1],
                  portion=1,
-                 center=contraint_pos-rbt_s.manipulator_dict['arm'].joints[1]['gl_rotmatq'].dot(np.array([0, rbt_s.manipulator_dict['arm'].joints[4]['pos_in_loc_tcp'][1], 0])),
-                 radius=abs(rbt_s.manipulator_dict['arm'].joints[6]['pos_in_loc_tcp'][1]) + abs(rbt_s.manipulator_dict['arm'].joints[5]['pos_in_loc_tcp'][1])).attach_to(base)
+                 center=contraint_pos-rbt_s.manipulator_dict['arm'].jnts[1]['gl_rotmatq'].dot(np.array([0, rbt_s.manipulator_dict['arm'].jnts[4]['pos_in_loc_tcp'][1], 0])),
+                 radius=abs(rbt_s.manipulator_dict['arm'].jnts[6]['pos_in_loc_tcp'][1]) + abs(rbt_s.manipulator_dict['arm'].jnts[5]['pos_in_loc_tcp'][1])).attach_to(base)
     # joint_values[3:]=0
     # rbt_s.fk(joint_values=joint_values)
     # rbt_s.gen_meshmodel(toggle_tcp_frame=True, rgba=[.5,.5,.5,.3]).attach_to(base)

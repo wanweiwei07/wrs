@@ -11,29 +11,29 @@ class CobottaPipette(gp.GripperInterface):
     def __init__(self, pos=np.zeros(3), rotmat=np.eye(3), cdmesh_type='box', name='cobotta_pipette', enable_cc=True):
         super().__init__(pos=pos, rotmat=rotmat, cdmesh_type=cdmesh_type, name=name)
         this_dir, this_filename = os.path.split(__file__)
-        cpl_end_pos = self.coupling.joints[-1]['gl_posq']
-        cpl_end_rotmat = self.coupling.joints[-1]['gl_rotmatq']
+        cpl_end_pos = self.coupling.jnts[-1]['gl_posq']
+        cpl_end_rotmat = self.coupling.jnts[-1]['gl_rotmatq']
         self.jlc = jl.JLChain(pos=cpl_end_pos, rotmat=cpl_end_rotmat, home_conf=np.zeros(8), name='base_jlc')
-        self.jlc.joints[1]['pos_in_loc_tcp'] = np.array([0, .0, .0])
-        self.jlc.joints[1]['end_type'] = 'fixed'
-        self.jlc.joints[2]['pos_in_loc_tcp'] = np.array([0, .0, .0])
-        self.jlc.joints[2]['end_type'] = 'fixed'
-        self.jlc.joints[3]['pos_in_loc_tcp'] = np.array([0, .0, .0])
-        self.jlc.joints[3]['end_type'] = 'fixed'
-        self.jlc.joints[4]['pos_in_loc_tcp'] = np.array([0, .0, .0])
-        self.jlc.joints[4]['end_type'] = 'fixed'
-        self.jlc.joints[5]['pos_in_loc_tcp'] = np.array([0, -.007, .0])
-        self.jlc.joints[5]['end_type'] = 'prismatic'
-        self.jlc.joints[5]['motion_rng'] = [0, .015]
-        self.jlc.joints[5]['loc_motionax'] = np.array([0, 1, 0])
-        self.jlc.joints[6]['pos_in_loc_tcp'] = np.array([0, .0, .0])
-        self.jlc.joints[6]['end_type'] = 'fixed'
-        self.jlc.joints[7]['pos_in_loc_tcp'] = np.array([0, .014, .0])
-        self.jlc.joints[7]['end_type'] = 'prismatic'
-        self.jlc.joints[7]['loc_motionax'] = np.array([0, 1, 0])
-        self.jlc.joints[8]['pos_in_loc_tcp'] = np.array([0, .0, .0])
-        self.jlc.joints[8]['end_type'] = 'prismatic'
-        self.jlc.joints[8]['loc_motionax'] = np.array([0, 1, 0])
+        self.jlc.jnts[1]['pos_in_loc_tcp'] = np.array([0, .0, .0])
+        self.jlc.jnts[1]['end_type'] = 'fixed'
+        self.jlc.jnts[2]['pos_in_loc_tcp'] = np.array([0, .0, .0])
+        self.jlc.jnts[2]['end_type'] = 'fixed'
+        self.jlc.jnts[3]['pos_in_loc_tcp'] = np.array([0, .0, .0])
+        self.jlc.jnts[3]['end_type'] = 'fixed'
+        self.jlc.jnts[4]['pos_in_loc_tcp'] = np.array([0, .0, .0])
+        self.jlc.jnts[4]['end_type'] = 'fixed'
+        self.jlc.jnts[5]['pos_in_loc_tcp'] = np.array([0, -.007, .0])
+        self.jlc.jnts[5]['end_type'] = 'prismatic'
+        self.jlc.jnts[5]['motion_rng'] = [0, .015]
+        self.jlc.jnts[5]['loc_motionax'] = np.array([0, 1, 0])
+        self.jlc.jnts[6]['pos_in_loc_tcp'] = np.array([0, .0, .0])
+        self.jlc.jnts[6]['end_type'] = 'fixed'
+        self.jlc.jnts[7]['pos_in_loc_tcp'] = np.array([0, .014, .0])
+        self.jlc.jnts[7]['end_type'] = 'prismatic'
+        self.jlc.jnts[7]['loc_motionax'] = np.array([0, 1, 0])
+        self.jlc.jnts[8]['pos_in_loc_tcp'] = np.array([0, .0, .0])
+        self.jlc.jnts[8]['end_type'] = 'prismatic'
+        self.jlc.jnts[8]['loc_motionax'] = np.array([0, 1, 0])
         self.jlc.lnks[0]['name'] = "base"
         self.jlc.lnks[0]['pos_in_loc_tcp'] = np.zeros(3)
         self.jlc.lnks[0]['mesh_file'] = os.path.join(this_dir, "meshes", "pipette_hand_body.stl")
@@ -105,17 +105,17 @@ class CobottaPipette(gp.GripperInterface):
         if jaw_width is not None:
             side_jawwidth = jaw_width / 2.0
             if self.jaw_range[1] < jaw_width or jaw_width < self.jaw_range[0]:
-                self.jlc.joints[5]['motion_val'] = side_jawwidth
-                self.jlc.joints[7]['motion_val'] = -jaw_width
+                self.jlc.jnts[5]['motion_val'] = side_jawwidth
+                self.jlc.jnts[7]['motion_val'] = -jaw_width
                 if side_jawwidth <= .007:
-                    self.jlc.joints[8]['motion_val'] = .0
+                    self.jlc.jnts[8]['motion_val'] = .0
                 else:
-                    self.jlc.joints[8]['motion_val'] = (jaw_width - .014) / 2
+                    self.jlc.jnts[8]['motion_val'] = (jaw_width - .014) / 2
             else:
                 raise ValueError("The angle parameter is out of range!")
         self.coupling.fix_to(self.pos, self.rotmat)
-        cpl_end_pos = self.coupling.joints[-1]['gl_posq']
-        cpl_end_rotmat = self.coupling.joints[-1]['gl_rotmatq']
+        cpl_end_pos = self.coupling.jnts[-1]['gl_posq']
+        cpl_end_rotmat = self.coupling.jnts[-1]['gl_rotmatq']
         self.jlc.fix_to(cpl_end_pos, cpl_end_rotmat)
 
     def jaw_to(self, jaw_width):
@@ -123,16 +123,16 @@ class CobottaPipette(gp.GripperInterface):
         if self.jaw_range[1] < jaw_width or jaw_width < self.jaw_range[0]:
             raise ValueError("The jaw_width parameter is out of range!")
         side_jawwidth = jaw_width / 2.0
-        self.jlc.joints[5]['motion_val'] = side_jawwidth
-        self.jlc.joints[7]['motion_val'] = -jaw_width
+        self.jlc.jnts[5]['motion_val'] = side_jawwidth
+        self.jlc.jnts[7]['motion_val'] = -jaw_width
         if side_jawwidth <= .007:
-            self.jlc.joints[8]['motion_val'] = .0
+            self.jlc.jnts[8]['motion_val'] = .0
         else:
-            self.jlc.joints[8]['motion_val'] = (jaw_width - .014) / 2
+            self.jlc.jnts[8]['motion_val'] = (jaw_width - .014) / 2
         self.jlc.fk()
 
     def get_jaw_width(self):
-        return -self.jlc.joints[2]['motion_val']
+        return -self.jlc.jnts[2]['motion_val']
 
     def gen_stickmodel(self,
                        toggle_tcpcs=False,

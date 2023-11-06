@@ -13,14 +13,14 @@ class SchunkRH918(gp.GripperInterface):
     def __init__(self, pos=np.zeros(3), rotmat=np.eye(3), cdmesh_type='box', name='schunkrh918', enable_cc=True):
         super().__init__(pos=pos, rotmat=rotmat, cdmesh_type=cdmesh_type, name=name)
         this_dir, this_filename = os.path.split(__file__)
-        cpl_end_pos = self.coupling.joints[-1]['gl_posq']
-        cpl_end_rotmat = self.coupling.joints[-1]['gl_rotmatq']
+        cpl_end_pos = self.coupling.jnts[-1]['gl_posq']
+        cpl_end_rotmat = self.coupling.jnts[-1]['gl_rotmatq']
         # - lft
         self.lft = jl.JLChain(pos=cpl_end_pos, rotmat=cpl_end_rotmat, home_conf=np.zeros(2), name='base_lft_slider_finger')
-        self.lft.joints[1]['pos_in_loc_tcp'] = np.array([-.01, .04, .073])
-        self.lft.joints[1]['end_type'] = 'prismatic'
-        self.lft.joints[1]['motion_rng'] = [0, .025]
-        self.lft.joints[1]['loc_motionax'] = np.array([0, -1, 0])
+        self.lft.jnts[1]['pos_in_loc_tcp'] = np.array([-.01, .04, .073])
+        self.lft.jnts[1]['end_type'] = 'prismatic'
+        self.lft.jnts[1]['motion_rng'] = [0, .025]
+        self.lft.jnts[1]['loc_motionax'] = np.array([0, -1, 0])
         self.lft.lnks[0]['name'] = "base"
         self.lft.lnks[0]['pos_in_loc_tcp'] = np.zeros(3)
         self.lft.lnks[0]['mesh_file'] = os.path.join(this_dir, "meshes", "base.stl")
@@ -30,7 +30,7 @@ class SchunkRH918(gp.GripperInterface):
         self.lft.lnks[1]['rgba'] = [.5, .5, .5, 1]
         self.lft.lnks[1]['pos_in_loc_tcp'] = np.zeros(3)
         self.lft.lnks[1]['gl_rotmat'] = rm.rotmat_from_euler(0, 0, -math.pi/2)
-        self.lft.joints[2]['pos_in_loc_tcp'] = np.array([.02, .008, 0])
+        self.lft.jnts[2]['pos_in_loc_tcp'] = np.array([.02, .008, 0])
         self.lft.lnks[2]['name'] = "finger1"
         self.lft.lnks[2]['mesh_file'] = os.path.join(this_dir, "meshes", "finger.stl")
         self.lft.lnks[2]['rgba'] = [.8, .8, .8, 1]
@@ -38,15 +38,15 @@ class SchunkRH918(gp.GripperInterface):
         self.lft.lnks[2]['gl_rotmat'] = rm.rotmat_from_euler(0, math.pi, math.pi/2)
         # - rgt
         self.rgt = jl.JLChain(pos=cpl_end_pos, rotmat=cpl_end_rotmat, home_conf=np.zeros(2), name='rgt_finger')
-        self.rgt.joints[1]['pos_in_loc_tcp'] = np.array([.01, -.04, .073])
-        self.rgt.joints[1]['end_type'] = 'prismatic'
-        self.rgt.joints[1]['loc_motionax'] = np.array([0, 1, 0])
+        self.rgt.jnts[1]['pos_in_loc_tcp'] = np.array([.01, -.04, .073])
+        self.rgt.jnts[1]['end_type'] = 'prismatic'
+        self.rgt.jnts[1]['loc_motionax'] = np.array([0, 1, 0])
         self.rgt.lnks[1]['name'] = "slider2"
         self.rgt.lnks[1]['mesh_file'] = os.path.join(this_dir, "meshes", "slider.stl")
         self.rgt.lnks[1]['rgba'] = [.5, .5, .5, 1]
         self.rgt.lnks[1]['pos_in_loc_tcp'] = np.zeros(3)
         self.rgt.lnks[1]['gl_rotmat'] = rm.rotmat_from_euler(0, 0, math.pi / 2)
-        self.rgt.joints[2]['pos_in_loc_tcp'] = np.array([-.02, -.008, 0])
+        self.rgt.jnts[2]['pos_in_loc_tcp'] = np.array([-.02, -.008, 0])
         self.rgt.lnks[2]['name'] = "finger2"
         self.rgt.lnks[2]['mesh_file'] = os.path.join(this_dir, "meshes", "finger.stl")
         self.rgt.lnks[2]['rgba'] = [.8, .8, .8, 1]
@@ -87,13 +87,13 @@ class SchunkRH918(gp.GripperInterface):
         if jawwidth is not None:
             side_jawwidth = (.05 - jawwidth) / 2.0
             if 0 <= side_jawwidth <= .025:
-                self.lft.joints[1]['motion_val'] = side_jawwidth;
-                self.rgt.joints[1]['motion_val'] = self.lft.joints[1]['motion_val']
+                self.lft.jnts[1]['motion_val'] = side_jawwidth;
+                self.rgt.jnts[1]['motion_val'] = self.lft.jnts[1]['motion_val']
             else:
                 raise ValueError("The angle parameter is out of range!")
         self.coupling.fix_to(self.pos, self.rotmat)
-        cpl_end_pos = self.coupling.joints[-1]['gl_posq']
-        cpl_end_rotmat = self.coupling.joints[-1]['gl_rotmatq']
+        cpl_end_pos = self.coupling.jnts[-1]['gl_posq']
+        cpl_end_rotmat = self.coupling.jnts[-1]['gl_rotmatq']
         self.lft.fix_to(cpl_end_pos, cpl_end_rotmat)
         self.rgt.fix_to(cpl_end_pos, cpl_end_rotmat)
 
@@ -102,9 +102,9 @@ class SchunkRH918(gp.GripperInterface):
         lft_outer is the only active joint, all others mimic this one
         :param: angle, radian
         """
-        if self.lft.joints[1]['motion_rng'][0] <= motion_val <= self.lft.joints[1]['motion_rng'][1]:
-            self.lft.joints[1]['motion_val'] = motion_val
-            self.rgt.joints[1]['motion_val'] = self.lft.joints[1]['motion_val']
+        if self.lft.jnts[1]['motion_rng'][0] <= motion_val <= self.lft.jnts[1]['motion_rng'][1]:
+            self.lft.jnts[1]['motion_val'] = motion_val
+            self.rgt.jnts[1]['motion_val'] = self.lft.jnts[1]['motion_val']
             self.lft.fk()
             self.rgt.fk()
         else:
@@ -116,7 +116,7 @@ class SchunkRH918(gp.GripperInterface):
         self.fk(motion_val=(0.05-jawwidth) / 2.0)
 
     def get_jaw_width(self):
-        motion_val = self.lft.joints[1]['motion_val']
+        motion_val = self.lft.jnts[1]['motion_val']
         return self.jaw_range[1] - motion_val*2.0
 
     def gen_stickmodel(self,

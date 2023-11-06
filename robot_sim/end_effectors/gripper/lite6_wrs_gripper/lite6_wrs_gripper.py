@@ -20,8 +20,8 @@ class Lite6WRSGripper(gp.GripperInterface):
                  enable_cc=True):
         super().__init__(pos=pos, rotmat=rotmat, cdmesh_type=cdmesh_type, name=name)
         this_dir, this_filename = os.path.split(__file__)
-        cpl_end_pos = self.coupling.joints[-1]['gl_posq']
-        cpl_end_rotmat = self.coupling.joints[-1]['gl_rotmatq']
+        cpl_end_pos = self.coupling.jnts[-1]['gl_posq']
+        cpl_end_rotmat = self.coupling.jnts[-1]['gl_rotmatq']
         # lft finger and base
         self.lft = jl.JLChain(pos=cpl_end_pos, rotmat=cpl_end_rotmat, home_conf=np.zeros(1), name='base_lft_finger')
         self.lft.lnks[0]['name'] = "base"
@@ -30,11 +30,11 @@ class Lite6WRSGripper(gp.GripperInterface):
                                                                 cdprimitive_type="user_defined", expand_radius=.001,
                                                                 userdefined_cdprimitive_fn=self._hnd_base_cdnp)
         self.lft.lnks[0]['rgba'] = [.77, .77, .77, 1]
-        self.lft.joints[1]['pos_in_loc_tcp'] = np.array([0, 0.0040, 0.089])
-        self.lft.joints[1]['gl_rotmat'] = rm.rotmat_from_euler(0, 0, math.pi)
-        self.lft.joints[1]['end_type'] = 'prismatic'
-        self.lft.joints[1]['motion_rng'] = [.0, .025]
-        self.lft.joints[1]['loc_motionax'] = np.array([1, 0, 0])
+        self.lft.jnts[1]['pos_in_loc_tcp'] = np.array([0, 0.0040, 0.089])
+        self.lft.jnts[1]['gl_rotmat'] = rm.rotmat_from_euler(0, 0, math.pi)
+        self.lft.jnts[1]['end_type'] = 'prismatic'
+        self.lft.jnts[1]['motion_rng'] = [.0, .025]
+        self.lft.jnts[1]['loc_motionax'] = np.array([1, 0, 0])
         self.lft.lnks[1]['name'] = "finger1"
         self.lft.lnks[1]['mesh_file'] = cm.CollisionModel(
             os.path.join(this_dir, "meshes", "finger.stl"), cdprimitive_type="user_defined",
@@ -42,9 +42,9 @@ class Lite6WRSGripper(gp.GripperInterface):
         self.lft.lnks[1]['rgba'] = [.35, .35, .35, 1]
         # # rgt finger
         self.rgt = jl.JLChain(pos=cpl_end_pos, rotmat=cpl_end_rotmat, home_conf=np.zeros(1), name='rgt_finger')
-        self.rgt.joints[1]['pos_in_loc_tcp'] = np.array([0, -0.0040, 0.089])
-        self.rgt.joints[1]['end_type'] = 'prismatic'
-        self.rgt.joints[1]['loc_motionax'] = np.array([1, 0, 0])
+        self.rgt.jnts[1]['pos_in_loc_tcp'] = np.array([0, -0.0040, 0.089])
+        self.rgt.jnts[1]['end_type'] = 'prismatic'
+        self.rgt.jnts[1]['loc_motionax'] = np.array([1, 0, 0])
         self.rgt.lnks[1]['name'] = "finger2"
         self.rgt.lnks[1]['mesh_file'] = cm.CollisionModel(
             os.path.join(this_dir, "meshes", "finger.stl"), cdprimitive_type="user_defined",
@@ -118,8 +118,8 @@ class Lite6WRSGripper(gp.GripperInterface):
         self.pos = pos
         self.rotmat = rotmat
         self.coupling.fix_to(self.pos, self.rotmat)
-        cpl_end_pos = self.coupling.joints[-1]['gl_posq']
-        cpl_end_rotmat = self.coupling.joints[-1]['gl_rotmatq']
+        cpl_end_pos = self.coupling.jnts[-1]['gl_posq']
+        cpl_end_rotmat = self.coupling.jnts[-1]['gl_rotmatq']
         self.lft.fix_to(cpl_end_pos, cpl_end_rotmat)
         self.rgt.fix_to(cpl_end_pos, cpl_end_rotmat)
 
@@ -128,9 +128,9 @@ class Lite6WRSGripper(gp.GripperInterface):
         lft_outer is the only active joint, all others mimic this one
         :param: motion_val, meter or radian
         """
-        if self.lft.joints[1]['motion_rng'][0] <= -motion_val <= self.lft.joints[1]['motion_rng'][1]:
-            self.lft.joints[1]['motion_val'] = motion_val
-            self.rgt.joints[1]['motion_val'] = self.lft.joints[1]['motion_val']
+        if self.lft.jnts[1]['motion_rng'][0] <= -motion_val <= self.lft.jnts[1]['motion_rng'][1]:
+            self.lft.jnts[1]['motion_val'] = motion_val
+            self.rgt.jnts[1]['motion_val'] = self.lft.jnts[1]['motion_val']
             self.lft.fk()
             self.rgt.fk()
         else:
@@ -142,7 +142,7 @@ class Lite6WRSGripper(gp.GripperInterface):
         self.fk(motion_val=-jaw_width / 2.0)
 
     def get_jaw_width(self):
-        return -self.lft.joints[1]['motion_val'] * 2
+        return -self.lft.jnts[1]['motion_val'] * 2
 
     def gen_stickmodel(self,
                        tcp_jnt_id=None,

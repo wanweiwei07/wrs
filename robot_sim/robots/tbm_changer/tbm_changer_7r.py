@@ -25,15 +25,15 @@ class TBMChanger7R(ri.RobotInterface):
         # self.base_plate.lnks[0]['rgba'] = [.35,.35,.35,1]
         # self.base_plate.reinitialize()
         # arm
-        self.arm = tbma.TBMArm7R(pos=self.base_plate.joints[-1]['gl_posq'],
-                                 rotmat=self.base_plate.joints[-1]['gl_rotmatq'],
+        self.arm = tbma.TBMArm7R(pos=self.base_plate.jnts[-1]['gl_posq'],
+                                 rotmat=self.base_plate.jnts[-1]['gl_rotmatq'],
                                  name='arm', enable_cc=False)
         # gripper
         self.hnd = tbmg.TBMGripperR(pos=self.arm.jnts[-1]['gl_posq'],
                                     rotmat=self.arm.jnts[-1]['gl_rotmatq'],
                                     name='hnd', enable_cc=False)
         # tool center point
-        self.arm.jlc.tcp_joint_id = -1
+        self.arm.jlc.tcp_jnt_id = -1
         self.arm.jlc.tcp_loc_pos = self.hnd.jaw_center_pos
         self.arm.jlc.tcp_loc_rotmat = self.hnd.jaw_center_rotmat
         # a list of detailed information about objects in hand, see CollisionChecker.add_objinhnd
@@ -71,7 +71,7 @@ class TBMChanger7R(ri.RobotInterface):
         self.pos = pos
         self.rotmat = rotmat
         self.base_plate.fix_to(pos=pos, rotmat=rotmat)
-        self.arm.fix_to(pos=self.base_plate.joints[-1]['gl_posq'], rotmat=self.base_plate.joints[-1]['gl_rotmatq'])
+        self.arm.fix_to(pos=self.base_plate.jnts[-1]['gl_posq'], rotmat=self.base_plate.jnts[-1]['gl_rotmatq'])
         self.hnd.fix_to(pos=self.arm.jnts[-1]['gl_posq'], rotmat=self.arm.jnts[-1]['gl_rotmatq'])
         # update objects in hand if available
         for obj_info in self.oih_infos:
@@ -97,8 +97,8 @@ class TBMChanger7R(ri.RobotInterface):
         def update_component(component_name, jnt_values):
             self.manipulator_dict[component_name].fk(joint_values=jnt_values)
             self.hnd_dict[component_name].fix_to(
-                pos=self.manipulator_dict[component_name].joints[-1]['gl_posq'],
-                rotmat=self.manipulator_dict[component_name].joints[-1]['gl_rotmatq'])
+                pos=self.manipulator_dict[component_name].jnts[-1]['gl_posq'],
+                rotmat=self.manipulator_dict[component_name].jnts[-1]['gl_rotmatq'])
             update_oih(component_name=component_name)
 
         if component_name in self.manipulator_dict:

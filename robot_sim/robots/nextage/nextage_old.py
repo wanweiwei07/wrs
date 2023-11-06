@@ -39,15 +39,15 @@ class Nextage(ri.RobotInterface):
         rgt_arm_homeconf = np.radians(np.array([central_homeconf[0], -15, 0, -143, 0, 0, 0]))
         # central
         self.central_body = jl.JLChain(pos=pos, rotmat=rotmat, home_conf=central_homeconf, name='centeral_body')
-        self.central_body.joints[1]['pos_in_loc_tcp'] = np.array([0, 0, 0])
-        self.central_body.joints[1]['loc_motionax'] = np.array([0, 0, 1])
-        self.central_body.joints[1]['motion_rng'] = [-2.84489, 2.84489]
-        self.central_body.joints[2]['pos_in_loc_tcp'] = np.array([0, 0, 0.5695])
-        self.central_body.joints[2]['loc_motionax'] = np.array([0, 0, 1])
-        self.central_body.joints[2]['motion_rng'] = [-1.22173, 1.22173]
-        self.central_body.joints[3]['pos_in_loc_tcp'] = np.array([0, 0, 0])
-        self.central_body.joints[3]['loc_motionax'] = np.array([0, 1, 0])
-        self.central_body.joints[3]['motion_rng'] = [-0.349066, 1.22173]
+        self.central_body.jnts[1]['pos_in_loc_tcp'] = np.array([0, 0, 0])
+        self.central_body.jnts[1]['loc_motionax'] = np.array([0, 0, 1])
+        self.central_body.jnts[1]['motion_rng'] = [-2.84489, 2.84489]
+        self.central_body.jnts[2]['pos_in_loc_tcp'] = np.array([0, 0, 0.5695])
+        self.central_body.jnts[2]['loc_motionax'] = np.array([0, 0, 1])
+        self.central_body.jnts[2]['motion_rng'] = [-1.22173, 1.22173]
+        self.central_body.jnts[3]['pos_in_loc_tcp'] = np.array([0, 0, 0])
+        self.central_body.jnts[3]['loc_motionax'] = np.array([0, 1, 0])
+        self.central_body.jnts[3]['motion_rng'] = [-0.349066, 1.22173]
         self.central_body.lnks[0]['name'] = "nextage_base"
         self.central_body.lnks[0]['pos_in_loc_tcp'] = np.array([0, 0, 0.97])
         self.central_body.lnks[0]['collision_model'] = cm.CollisionModel(
@@ -72,30 +72,30 @@ class Nextage(ri.RobotInterface):
         self.central_body.lnks[3]['rgba'] = [.63, .63, .63, 1]
         self.central_body.reinitialize()
         # lft
-        self.lft_arm = jl.JLChain(pos=self.central_body.joints[1]['gl_posq'],
-                                  rotmat=self.central_body.joints[1]['gl_rotmatq'],
+        self.lft_arm = jl.JLChain(pos=self.central_body.jnts[1]['gl_posq'],
+                                  rotmat=self.central_body.jnts[1]['gl_rotmatq'],
                                   home_conf=lft_arm_homeconf, name='lft_arm')
-        self.lft_arm.joints[1]['pos_in_loc_tcp'] = np.array([0, 0, 0])
-        self.lft_arm.joints[1]['loc_motionax'] = np.array([0, 0, 1])
-        self.lft_arm.joints[2]['pos_in_loc_tcp'] = np.array([0, 0.145, 0.370296])
-        self.lft_arm.joints[2]['gl_rotmat'] = rm.rotmat_from_euler(-0.261799, 0, 0)
-        self.lft_arm.joints[2]['loc_motionax'] = np.array([0, 0, 1])
-        self.lft_arm.joints[2]['motion_rng'] = [-1.53589, 1.53589]
-        self.lft_arm.joints[3]['pos_in_loc_tcp'] = np.array([0, 0, 0])
-        self.lft_arm.joints[3]['loc_motionax'] = np.array([0, 1, 0])
-        self.lft_arm.joints[3]['motion_rng'] = [-2.44346, 1.0472]
-        self.lft_arm.joints[4]['pos_in_loc_tcp'] = np.array([0, 0.095, -0.25])
-        self.lft_arm.joints[4]['loc_motionax'] = np.array([0, 1, 0])
-        self.lft_arm.joints[4]['motion_rng'] = [-2.75762, 0]
-        self.lft_arm.joints[5]['pos_in_loc_tcp'] = np.array([-0.03, 0, 0])
-        self.lft_arm.joints[5]['loc_motionax'] = np.array([0, 0, 1])
-        self.lft_arm.joints[5]['motion_rng'] = [-1.8326, 2.87979]
-        self.lft_arm.joints[6]['pos_in_loc_tcp'] = np.array([0, 0, -0.235])
-        self.lft_arm.joints[6]['loc_motionax'] = np.array([0, 1, 0])
-        self.lft_arm.joints[6]['motion_rng'] = [-1.74533, 1.74533]
-        self.lft_arm.joints[7]['pos_in_loc_tcp'] = np.array([-0.047, 0, -0.09])
-        self.lft_arm.joints[7]['loc_motionax'] = np.array([1, 0, 0])
-        self.lft_arm.joints[7]['motion_rng'] = [-2.84489, 2.84489]
+        self.lft_arm.jnts[1]['pos_in_loc_tcp'] = np.array([0, 0, 0])
+        self.lft_arm.jnts[1]['loc_motionax'] = np.array([0, 0, 1])
+        self.lft_arm.jnts[2]['pos_in_loc_tcp'] = np.array([0, 0.145, 0.370296])
+        self.lft_arm.jnts[2]['gl_rotmat'] = rm.rotmat_from_euler(-0.261799, 0, 0)
+        self.lft_arm.jnts[2]['loc_motionax'] = np.array([0, 0, 1])
+        self.lft_arm.jnts[2]['motion_rng'] = [-1.53589, 1.53589]
+        self.lft_arm.jnts[3]['pos_in_loc_tcp'] = np.array([0, 0, 0])
+        self.lft_arm.jnts[3]['loc_motionax'] = np.array([0, 1, 0])
+        self.lft_arm.jnts[3]['motion_rng'] = [-2.44346, 1.0472]
+        self.lft_arm.jnts[4]['pos_in_loc_tcp'] = np.array([0, 0.095, -0.25])
+        self.lft_arm.jnts[4]['loc_motionax'] = np.array([0, 1, 0])
+        self.lft_arm.jnts[4]['motion_rng'] = [-2.75762, 0]
+        self.lft_arm.jnts[5]['pos_in_loc_tcp'] = np.array([-0.03, 0, 0])
+        self.lft_arm.jnts[5]['loc_motionax'] = np.array([0, 0, 1])
+        self.lft_arm.jnts[5]['motion_rng'] = [-1.8326, 2.87979]
+        self.lft_arm.jnts[6]['pos_in_loc_tcp'] = np.array([0, 0, -0.235])
+        self.lft_arm.jnts[6]['loc_motionax'] = np.array([0, 1, 0])
+        self.lft_arm.jnts[6]['motion_rng'] = [-1.74533, 1.74533]
+        self.lft_arm.jnts[7]['pos_in_loc_tcp'] = np.array([-0.047, 0, -0.09])
+        self.lft_arm.jnts[7]['loc_motionax'] = np.array([1, 0, 0])
+        self.lft_arm.jnts[7]['motion_rng'] = [-2.84489, 2.84489]
         self.lft_arm.lnks[2]['name'] = "lft_arm_joint0"
         self.lft_arm.lnks[2]['pos_in_loc_tcp'] = np.array([0, 0.145, 0.370296])
         self.lft_arm.lnks[2]['gl_rotmat'] = rm.rotmat_from_euler(-0.261799, 0, 0)
@@ -123,30 +123,30 @@ class Nextage(ri.RobotInterface):
         self.lft_arm.lnks[7]['rgba'] = [.57, .57, .57, 1]
         self.lft_arm.reinitialize()
         # rgt
-        self.rgt_arm = jl.JLChain(pos=self.central_body.joints[1]['gl_posq'],
-                                  rotmat=self.central_body.joints[1]['gl_rotmatq'],
+        self.rgt_arm = jl.JLChain(pos=self.central_body.jnts[1]['gl_posq'],
+                                  rotmat=self.central_body.jnts[1]['gl_rotmatq'],
                                   home_conf=rgt_arm_homeconf, name='rgt_arm')
-        self.rgt_arm.joints[1]['pos_in_loc_tcp'] = np.array([0, 0, 0])
-        self.rgt_arm.joints[1]['loc_motionax'] = np.array([0, 0, 1])
-        self.rgt_arm.joints[2]['pos_in_loc_tcp'] = np.array([0, -0.145, 0.370296])
-        self.rgt_arm.joints[2]['gl_rotmat'] = rm.rotmat_from_euler(0.261799, 0, 0)
-        self.rgt_arm.joints[2]['loc_motionax'] = np.array([0, 0, 1])
-        self.rgt_arm.joints[2]['motion_rng'] = [-1.53589, 1.53589]
-        self.rgt_arm.joints[3]['pos_in_loc_tcp'] = np.array([0, 0, 0])
-        self.rgt_arm.joints[3]['loc_motionax'] = np.array([0, 1, 0])
-        self.rgt_arm.joints[3]['motion_rng'] = [-2.44346, 1.0472]
-        self.rgt_arm.joints[4]['pos_in_loc_tcp'] = np.array([0, -0.095, -0.25])
-        self.rgt_arm.joints[4]['loc_motionax'] = np.array([0, 1, 0])
-        self.rgt_arm.joints[4]['motion_rng'] = [-2.75762, 0]
-        self.rgt_arm.joints[5]['pos_in_loc_tcp'] = np.array([-0.03, 0, 0])
-        self.rgt_arm.joints[5]['loc_motionax'] = np.array([0, 0, 1])
-        self.rgt_arm.joints[5]['motion_rng'] = [-1.8326, 2.87979]
-        self.rgt_arm.joints[6]['pos_in_loc_tcp'] = np.array([0, 0, -0.235])
-        self.rgt_arm.joints[6]['loc_motionax'] = np.array([0, 1, 0])
-        self.rgt_arm.joints[6]['motion_rng'] = [-1.74533, 1.74533]
-        self.rgt_arm.joints[7]['pos_in_loc_tcp'] = np.array([-0.047, 0, -0.09])
-        self.rgt_arm.joints[7]['loc_motionax'] = np.array([1, 0, 0])
-        self.rgt_arm.joints[7]['motion_rng'] = [-2.84489, 2.84489]
+        self.rgt_arm.jnts[1]['pos_in_loc_tcp'] = np.array([0, 0, 0])
+        self.rgt_arm.jnts[1]['loc_motionax'] = np.array([0, 0, 1])
+        self.rgt_arm.jnts[2]['pos_in_loc_tcp'] = np.array([0, -0.145, 0.370296])
+        self.rgt_arm.jnts[2]['gl_rotmat'] = rm.rotmat_from_euler(0.261799, 0, 0)
+        self.rgt_arm.jnts[2]['loc_motionax'] = np.array([0, 0, 1])
+        self.rgt_arm.jnts[2]['motion_rng'] = [-1.53589, 1.53589]
+        self.rgt_arm.jnts[3]['pos_in_loc_tcp'] = np.array([0, 0, 0])
+        self.rgt_arm.jnts[3]['loc_motionax'] = np.array([0, 1, 0])
+        self.rgt_arm.jnts[3]['motion_rng'] = [-2.44346, 1.0472]
+        self.rgt_arm.jnts[4]['pos_in_loc_tcp'] = np.array([0, -0.095, -0.25])
+        self.rgt_arm.jnts[4]['loc_motionax'] = np.array([0, 1, 0])
+        self.rgt_arm.jnts[4]['motion_rng'] = [-2.75762, 0]
+        self.rgt_arm.jnts[5]['pos_in_loc_tcp'] = np.array([-0.03, 0, 0])
+        self.rgt_arm.jnts[5]['loc_motionax'] = np.array([0, 0, 1])
+        self.rgt_arm.jnts[5]['motion_rng'] = [-1.8326, 2.87979]
+        self.rgt_arm.jnts[6]['pos_in_loc_tcp'] = np.array([0, 0, -0.235])
+        self.rgt_arm.jnts[6]['loc_motionax'] = np.array([0, 1, 0])
+        self.rgt_arm.jnts[6]['motion_rng'] = [-1.74533, 1.74533]
+        self.rgt_arm.jnts[7]['pos_in_loc_tcp'] = np.array([-0.047, 0, -0.09])
+        self.rgt_arm.jnts[7]['loc_motionax'] = np.array([1, 0, 0])
+        self.rgt_arm.jnts[7]['motion_rng'] = [-2.84489, 2.84489]
         self.rgt_arm.lnks[2]['name'] = "rgt_arm_joint0"
         self.rgt_arm.lnks[2]['pos_in_loc_tcp'] = np.array([0, -0.145, 0.370296])
         self.rgt_arm.lnks[2]['gl_rotmat'] = rm.rotmat_from_euler(0.261799, 0, 0)
@@ -175,13 +175,13 @@ class Nextage(ri.RobotInterface):
         self.rgt_arm.reinitialize()
         # tool center point
         # lft
-        self.lft_arm.tcp_joint_id = -1
+        self.lft_arm.tcp_jnt_id = -1
         # self.lft_arm.tcp_loc_pos = self.lft_hnd.jaw_center_pos
         # self.lft_arm.tcp_loc_rotmat = self.lft_hnd.jaw_center_rotmat
         self.lft_arm.tcp_loc_pos = np.zeros(3)
         self.lft_arm.tcp_loc_rotmat = np.eye(3)
         # rgt
-        self.rgt_arm.tcp_joint_id = -1
+        self.rgt_arm.tcp_jnt_id = -1
         # self.rgt_arm.tcp_loc_pos = self.rgt_hnd.jaw_center_pos
         # self.rgt_arm.tcp_loc_rotmat = self.rgt_hnd.jaw_center_rotmat
         self.rgt_arm.tcp_loc_pos = np.zeros(3)
@@ -317,8 +317,8 @@ class Nextage(ri.RobotInterface):
             status = self.manipulator_dict[component_name].fk(joint_values=jnt_values)
             hnd_on_manipulator = self.get_hnd_on_manipulator(component_name)
             if hnd_on_manipulator is not None:
-                hnd_on_manipulator.fix_to(pos=self.manipulator_dict[component_name].joints[-1]['gl_posq'],
-                                          rotmat=self.manipulator_dict[component_name].joints[-1]['gl_rotmatq'])
+                hnd_on_manipulator.fix_to(pos=self.manipulator_dict[component_name].jnts[-1]['gl_posq'],
+                                          rotmat=self.manipulator_dict[component_name].jnts[-1]['gl_rotmatq'])
             update_oih(component_name=component_name)
             return status
 
@@ -326,16 +326,16 @@ class Nextage(ri.RobotInterface):
         if component_name == 'lft_arm' or component_name == 'rgt_arm':
             if not isinstance(jnt_values, np.ndarray) or jnt_values.size != 6:
                 raise ValueError("An 1x6 npdarray must be specified to move a single arm!")
-            waist_value = self.central_body.joints[1]['motion_val']
+            waist_value = self.central_body.jnts[1]['motion_val']
             return update_component(component_name, np.append(waist_value, jnt_values))
         elif component_name == 'lft_arm_waist' or component_name == 'rgt_arm_waist':
             if not isinstance(jnt_values, np.ndarray) or jnt_values.size != 7:
                 raise ValueError("An 1x7 npdarray must be specified to move a single arm plus the waist!")
             status = update_component(component_name, jnt_values)
-            self.central_body.joints[1]['motion_val'] = jnt_values[0]
+            self.central_body.jnts[1]['motion_val'] = jnt_values[0]
             self.central_body.fk()
             the_other_manipulator_name = 'lft_arm' if component_name[:7] == 'rgt_arm' else 'rgt_arm'
-            self.manipulator_dict[the_other_manipulator_name].joints[1]['motion_val'] = jnt_values[0]
+            self.manipulator_dict[the_other_manipulator_name].jnts[1]['motion_val'] = jnt_values[0]
             self.manipulator_dict[the_other_manipulator_name].fk()
             return status # if waist is out of range, the first status will always be out of range
         elif component_name == 'both_arm':
@@ -388,9 +388,9 @@ class Nextage(ri.RobotInterface):
                                                             tcp_joint_id=tcp_jnt_id,
                                                             tcp_loc_pos=tcp_loc_pos,
                                                             tcp_loc_rotmat=tcp_loc_rotmat,
-                                                            max_niter=max_niter,
+                                                            max_n_iter=max_niter,
                                                             local_minima=local_minima,
-                                                            toggle_debug=toggle_debug)
+                                                            toggle_dbg=toggle_debug)
         elif component_name == 'both_arm':
             raise NotImplementedError
         elif component_name == 'all':
@@ -492,8 +492,8 @@ class Nextage(ri.RobotInterface):
             arm = self.lft_arm
         elif component_name == 'rgt_arm':
             arm = self.rgt_arm
-        hnd_pos = arm.joints[-1]['gl_posq']
-        hnd_rotmat = arm.joints[-1]['gl_rotmatq']
+        hnd_pos = arm.jnts[-1]['gl_posq']
+        hnd_rotmat = arm.jnts[-1]['gl_rotmatq']
         hnd_homomat = rm.homomat_from_posrot(hnd_pos, hnd_rotmat)
         hio_homomat = rm.homomat_from_posrot(hio_pos, hio_rotmat)
         oih_homomat = rm.homomat_inverse(hio_homomat)
@@ -513,8 +513,8 @@ class Nextage(ri.RobotInterface):
             arm = self.lft_arm
         elif component_name == 'rgt_arm':
             arm = self.rgt_arm
-        hnd_pos = arm.joints[-1]['gl_posq']
-        hnd_rotmat = arm.joints[-1]['gl_rotmatq']
+        hnd_pos = arm.jnts[-1]['gl_posq']
+        hnd_rotmat = arm.jnts[-1]['gl_rotmatq']
         hnd_homomat = rm.homomat_from_posrot(hnd_pos, hnd_rotmat)
         hio_homomat = rm.homomat_from_posrot(hio_pos, hio_rotmat)
         oih_homomat = rm.homomat_inverse(hio_homomat)

@@ -71,14 +71,14 @@ class Stem(object):
     def __init__(self, pos=np.zeros(3), rotmat=np.eye(3), ndof=5, base_thickness=.005, base_length=.3, name='stem'):
         self.jlc = jlc.JLChain(pos=pos, rotmat=rotmat, home_conf=np.zeros(ndof), name=name + "jlchain")
         for i in range(1, self.jlc.n_dof + 1):
-            self.jlc.joints[i]['pos_in_loc_tcp'] = np.array([0, 0, base_length / ndof])
-            self.jlc.joints[i]['loc_motionax'] = np.array([1, 0, 0])
+            self.jlc.jnts[i]['pos_in_loc_tcp'] = np.array([0, 0, base_length / ndof])
+            self.jlc.jnts[i]['loc_motionax'] = np.array([1, 0, 0])
         self.jlc.reinitialize()
         for link_id in range(self.jlc.n_dof + 1):
             self.jlc.lnks[link_id]['collision_model'] = cm.gen_stick(spos=np.zeros(3),
                                                                      epos=rotmat.T.dot(
-                                                                         self.jlc.joints[link_id + 1]['gl_posq'] -
-                                                                         self.jlc.joints[link_id]['gl_posq']),
+                                                                         self.jlc.jnts[link_id + 1]['gl_posq'] -
+                                                                         self.jlc.jnts[link_id]['gl_posq']),
                                                                      radius=base_thickness / (link_id + 1) ** (
                                                                                  1 / 3),
                                                                      n_sec=24)
@@ -130,7 +130,7 @@ for idx, x in enumerate(cup_pos_x[1::2]):
         rotmat_list = gen_rotmat_list(2 ** main_stem_ndof)
 
         for id, rotmat in enumerate(rotmat_list):
-            stem1 = Stem(ndof=1, pos=main_stem.jlc.joints[int(id / 3) % (main_stem.jlc.n_dof + 1) + 1]['gl_posq'],
+            stem1 = Stem(ndof=1, pos=main_stem.jlc.jnts[int(id / 3) % (main_stem.jlc.n_dof + 1) + 1]['gl_posq'],
                          rotmat=rotmat, base_length=.2 / (id + 1) ** (1 / 2), base_thickness=.002)
             stem1.gen_meshmodel().attach_to(base)
             sb_leaf = gm.GeometricModel(initializer="objects/soybean_leaf.stl")
@@ -138,7 +138,7 @@ for idx, x in enumerate(cup_pos_x[1::2]):
             sbl = sb_leaf.copy()
             # sbl.set_scale(np.array([1,1,1])/(int(id/3)%(main_stem.jlc.n_dof+1)+1))
             sbl.set_scale(np.array([1, 1, 1]))
-            jnt_pos = stem1.jlc.joints[-1]['gl_posq']
+            jnt_pos = stem1.jlc.jnts[-1]['gl_posq']
             sbl.set_pos(jnt_pos)
             sbl.set_rotmat(rotmat)
             sbl.attach_to(base)

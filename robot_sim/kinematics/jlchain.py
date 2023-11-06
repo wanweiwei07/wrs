@@ -48,10 +48,10 @@ class JLChain(object):
         self.home = np.zeros(self.n_dof)  # self.n_dof+1 joints in total, the first joint is a anchor joint
         # initialize joints and links
         self.anchor = rkjl.Anchor(name, pos=pos, rotmat=rotmat)
-        self.joints = [rkjl.create_joint_with_link(joint_name=f"j{i}", link_name=f"l{i}") for i in range(self.n_dof)]
-        self._joint_ranges = self._get_joint_ranges()
+        self.jnts = [rkjl.create_joint_with_link(joint_name=f"j{i}", link_name=f"l{i}") for i in range(self.n_dof)]
+        self._jnt_rngs = self._get_jnt_rngs()
         # default tcp
-        self._tcp_joint_id = self.n_dof - 1
+        self._tcp_jnt_id = self.n_dof - 1
         self.tcp_loc_pos = np.zeros(3)
         self.tcp_loc_rotmat = np.eye(3)
         # initialize
@@ -62,16 +62,16 @@ class JLChain(object):
         self.cdmesh_type = cdmesh_type
 
     @property
-    def joint_ranges(self):
-        return self._joint_ranges
+    def jnt_rngs(self):
+        return self._jnt_rngs
 
     @property
-    def tcp_joint_id(self):
-        return self._tcp_joint_id
+    def tcp_jnt_id(self):
+        return self._tcp_jnt_id
 
-    @tcp_joint_id.setter
-    def tcp_joint_id(self, value):
-        self._tcp_joint_id = value
+    @tcp_jnt_id.setter
+    def tcp_jnt_id(self, value):
+        self._tcp_jnt_id = value
 
     @property
     def tcp_loc_homomat(self):
@@ -85,22 +85,22 @@ class JLChain(object):
     def rotmat(self):
         return self.anchor.rotmat
 
-    def _get_joint_ranges(self):
+    def _get_jnt_rngs(self):
         """
-        get jntsrnage
+        get jnt ranges
         :return: [[jnt1min, jnt1max], [jnt2min, jnt2max], ...]
         date: 20180602, 20200704osaka
         author: weiwei
         """
         jnt_limits = []
         for i in range(self.n_dof):
-            jnt_limits.append(self.joints[i].motion_range)
+            jnt_limits.append(self.jnts[i].motion_rng)
         return np.asarray(jnt_limits)
 
-    def forward_kinematics(self, joint_values, toggle_jacobian=True, update=False, toggle_debug=False):
+    def forward_kinematics(self, jnt_vals, toggle_jac=True, update=False, toggle_dbg=False):
         """
         This function will update the global parameters
-        :param joint_values: a 1xn ndarray where each element indicates the value of a joint (in radian or meter)
+        :param jnt_vals: a 1xn ndarray where each element indicates the value of a joint (in radian or meter)
         :param update if True, update internal values
         :return: True (succ), False (failure)
         author: weiwei
@@ -110,26 +110,26 @@ class JLChain(object):
             homomat = self.anchor.homomat
             j_pos = np.zeros((self.n_dof, 3))
             j_axis = np.zeros((self.n_dof, 3))
-            for i in range(self.tcp_joint_id + 1):
-                j_axis[i, :] = homomat[:3, :3] @ self.joints[i].loc_motion_axis
-                if self.joints[i].type == rkc.JointType.REVOLUTE:
-                    j_pos[i, :] = homomat[:3, 3] + homomat[:3, :3] @ self.joints[i].loc_pos
-                homomat = homomat @ self.joints[i].get_motion_homomat(motion_value=joint_values[i])
+            for i in range(self.tcp_jnt_id + 1):
+                j_axis[i, :] = homomat[:3, :3] @ self.jnts[i].loc_motion_axis
+                if self.jnts[i].type == rkc.JointType.REVOLUTE:
+                    j_pos[i, :] = homomat[:3, 3] + homomat[:3, :3] @ self.jnts[i].loc_pos
+                homomat = homomat @ self.jnts[i].get_motion_homomat(motion_val=jnt_vals[i])
             tcp_gl_homomat = homomat @ self.tcp_loc_homomat
             tcp_gl_pos = tcp_gl_homomat[:3, 3]
             tcp_gl_rotmat = tcp_gl_homomat[:3, :3]
-            if toggle_jacobian:
+            if toggle_jac:
                 j_mat = np.zeros((6, self.n_dof))
-                for i in range(self.tcp_joint_id + 1):
-                    if self.joints[i].type == rkc.JointType.REVOLUTE:
+                for i in range(self.tcp_jnt_id + 1):
+                    if self.jnts[i].type == rkc.JointType.REVOLUTE:
                         vec_jnt2tcp = tcp_gl_pos - j_pos[i, :]
                         j_mat[:3, i] = np.cross(j_axis[i, :], vec_jnt2tcp)
                         j_mat[3:6, i] = j_axis[i, :]
-                        if toggle_debug:
+                        if toggle_dbg:
                             gm.gen_arrow(spos=j_pos[i, :],
                                          epos=j_pos[i, :] + .2 * j_axis[i, :],
                                          rgba=bc.black).attach_to(base)
-                    if self.joints[i].type == rkc.JointType.PRISMATIC:
+                    if self.jnts[i].type == rkc.JointType.PRISMATIC:
                         j_mat[:3, i] = j_axis[i, :]
                 return tcp_gl_pos, tcp_gl_rotmat, j_mat
             else:
@@ -138,24 +138,24 @@ class JLChain(object):
             pos = self.anchor.pos
             rotmat = self.anchor.rotmat
             for i in range(self.n_dof):
-                motion_value = joint_values[i]
-                self.joints[i].update_globals(pos=pos, rotmat=rotmat, motion_value=motion_value)
-                pos = self.joints[i].gl_pos_q
-                rotmat = self.joints[i].gl_rotmat_q
+                motion_value = jnt_vals[i]
+                self.jnts[i].update_globals(pos=pos, rotmat=rotmat, motion_val=motion_value)
+                pos = self.jnts[i].gl_pos_q
+                rotmat = self.jnts[i].gl_rotmat_q
             tcp_gl_pos, tcp_gl_rotmat = self.cvt_tcp_loc_to_gl()
-            if toggle_jacobian:
+            if toggle_jac:
                 j_mat = np.zeros((6, self.n_dof))
-                for i in range(self.tcp_joint_id + 1):
-                    if self.joints[i].type == rkc.JointType.REVOLUTE:
-                        vec_jnt2tcp = tcp_gl_pos - self.joints[i].gl_pos_q
-                        j_mat[:3, i] = np.cross(self.joints[i].gl_motion_axis, vec_jnt2tcp)
-                        j_mat[3:6, i] = self.joints[i].gl_motion_axis
-                        if toggle_debug:
-                            gm.gen_arrow(spos=self.joints[i].gl_pos_q,
-                                         epos=self.joints[i].gl_pos_q + .3 * self.joints[i].gl_motion_axis,
+                for i in range(self.tcp_jnt_id + 1):
+                    if self.jnts[i].type == rkc.JointType.REVOLUTE:
+                        vec_jnt2tcp = tcp_gl_pos - self.jnts[i].gl_pos_q
+                        j_mat[:3, i] = np.cross(self.jnts[i].gl_motion_ax, vec_jnt2tcp)
+                        j_mat[3:6, i] = self.jnts[i].gl_motion_ax
+                        if toggle_dbg:
+                            gm.gen_arrow(spos=self.jnts[i].gl_pos_q,
+                                         epos=self.jnts[i].gl_pos_q + .3 * self.jnts[i].gl_motion_ax,
                                          rgba=bc.black).attach_to(base)
-                    if self.joints[i].type == rkc.JointType.PRISMATIC:
-                        j_mat[:3, i] = self.joints[i].gl_motion_axis
+                    if self.jnts[i].type == rkc.JointType.PRISMATIC:
+                        j_mat[:3, i] = self.jnts[i].gl_motion_ax
                 return tcp_gl_pos, tcp_gl_rotmat, j_mat
             else:
                 return tcp_gl_pos, tcp_gl_rotmat
@@ -170,16 +170,16 @@ class JLChain(object):
         date: 20230829
         """
         if joint_values is None:  # use internal, ignore update
-            _, _, j_mat = self.forward_kinematics(joint_values=self.get_joint_values(),
-                                                  toggle_jacobian=True,
+            _, _, j_mat = self.forward_kinematics(jnt_vals=self.get_joint_values(),
+                                                  toggle_jac=True,
                                                   update=False)
         else:
-            _, _, j_mat = self.forward_kinematics(joint_values=joint_values,
-                                                  toggle_jacobian=True,
+            _, _, j_mat = self.forward_kinematics(jnt_vals=joint_values,
+                                                  toggle_jac=True,
                                                   update=False)
         return j_mat
 
-    def manipulability_vol(self, joint_values=None):
+    def manipulability_val(self, joint_values=None):
         """
         compute the yoshikawa manipulability
         :param tcp_joint_id:
@@ -228,13 +228,13 @@ class JLChain(object):
         author: weiwei
         date: 20201126
         """
-        self._joint_ranges = self._get_joint_ranges()
+        self._jnt_rngs = self._get_jnt_rngs()
         self.go_home()
         self._tracik_solver = rkt.TracIKSolver(self)
 
     def set_tcp(self, tcp_joint_id=None, tcp_loc_pos=None, tcp_loc_rotmat=None):
         if tcp_joint_id is not None:
-            self.tcp_joint_id = tcp_joint_id
+            self.tcp_jnt_id = tcp_joint_id
         if tcp_loc_pos is not None:
             self.tcp_loc_pos = tcp_loc_pos
         if tcp_loc_rotmat is not None:
@@ -245,8 +245,8 @@ class JLChain(object):
         return tcp_gl_pos, tcp_gl_rotmat
 
     def cvt_tcp_loc_to_gl(self):
-        gl_pos = self.joints[self.tcp_joint_id].gl_pos_q + self.joints[self.tcp_joint_id].gl_rotmat_q @ self.tcp_loc_pos
-        gl_rotmat = self.joints[self.tcp_joint_id].gl_rotmat_q @ self.tcp_loc_rotmat
+        gl_pos = self.jnts[self.tcp_jnt_id].gl_pos_q + self.jnts[self.tcp_jnt_id].gl_rotmat_q @ self.tcp_loc_pos
+        gl_rotmat = self.jnts[self.tcp_jnt_id].gl_rotmat_q @ self.tcp_loc_rotmat
         return (gl_pos, gl_rotmat)
 
     def cvt_posrot_in_tcp_to_gl(self,
@@ -291,7 +291,7 @@ class JLChain(object):
         if len(joint_values) == self.n_dof:
             raise ValueError('The given joint values do not match n_dof')
         joint_values = np.asarray(joint_values)
-        if np.any(joint_values < self.joint_ranges[:, 0]) or np.any(joint_values > self.joint_ranges[:, 1]):
+        if np.any(joint_values < self.jnt_rngs[:, 0]) or np.any(joint_values > self.jnt_rngs[:, 1]):
             return False
         else:
             return True
@@ -303,7 +303,7 @@ class JLChain(object):
         author: weiwei
         date: 20230927osaka
         """
-        return self.forward_kinematics(joint_values=joint_values, toggle_jacobian=False, update=True)
+        return self.forward_kinematics(jnt_vals=joint_values, toggle_jac=False, update=True)
 
     def go_home(self):
         """
@@ -332,7 +332,7 @@ class JLChain(object):
         """
         jnt_values = np.zeros(self.n_dof)
         for i in range(self.n_dof):
-            jnt_values[i] = self.joints[i].motion_value
+            jnt_values[i] = self.jnts[i].motion_val
         return jnt_values
 
     def rand_conf(self):
@@ -342,7 +342,7 @@ class JLChain(object):
         date: 20200326
         """
         return np.multiply(np.random.rand(self.n_dof),
-                           (self.joint_ranges[:, 1] - self.joint_ranges[:, 0])) + self.joint_ranges[:, 0]
+                           (self.jnt_rngs[:, 1] - self.jnt_rngs[:, 0])) + self.jnt_rngs[:, 0]
 
     def ik(self,
            tgt_pos: np.ndarray,
@@ -382,25 +382,25 @@ if __name__ == "__main__":
     gm.gen_frame().attach_to(base)
 
     jlc = JLChain(n_dof=6)
-    jlc.joints[0].loc_pos = np.array([0, 0, 0])
-    jlc.joints[0].loc_motion_axis = np.array([0, 0, 1])
-    jlc.joints[0].motion_range = np.array([-np.pi / 2, np.pi / 2])
+    jlc.jnts[0].loc_pos = np.array([0, 0, 0])
+    jlc.jnts[0].loc_motion_axis = np.array([0, 0, 1])
+    jlc.jnts[0].motion_rng = np.array([-np.pi / 2, np.pi / 2])
     # jlc.joints[1].change_type(rkc.JointType.PRISMATIC)
-    jlc.joints[1].loc_pos = np.array([0, 0, .05])
-    jlc.joints[1].loc_motion_axis = np.array([0, 1, 0])
-    jlc.joints[1].motion_range = np.array([-np.pi / 2, np.pi / 2])
-    jlc.joints[2].loc_pos = np.array([0, 0, .2])
-    jlc.joints[2].loc_motion_axis = np.array([0, 1, 0])
-    jlc.joints[2].motion_range = np.array([-np.pi, np.pi])
-    jlc.joints[3].loc_pos = np.array([0, 0, .2])
-    jlc.joints[3].loc_motion_axis = np.array([0, 0, 1])
-    jlc.joints[3].motion_range = np.array([-np.pi / 2, np.pi / 2])
-    jlc.joints[4].loc_pos = np.array([0, 0, .1])
-    jlc.joints[4].loc_motion_axis = np.array([0, 1, 0])
-    jlc.joints[4].motion_range = np.array([-np.pi / 2, np.pi / 2])
-    jlc.joints[5].loc_pos = np.array([0, 0, .05])
-    jlc.joints[5].loc_motion_axis = np.array([0, 0, 1])
-    jlc.joints[5].motion_range = np.array([-np.pi / 2, np.pi / 2])
+    jlc.jnts[1].loc_pos = np.array([0, 0, .05])
+    jlc.jnts[1].loc_motion_axis = np.array([0, 1, 0])
+    jlc.jnts[1].motion_rng = np.array([-np.pi / 2, np.pi / 2])
+    jlc.jnts[2].loc_pos = np.array([0, 0, .2])
+    jlc.jnts[2].loc_motion_axis = np.array([0, 1, 0])
+    jlc.jnts[2].motion_rng = np.array([-np.pi, np.pi])
+    jlc.jnts[3].loc_pos = np.array([0, 0, .2])
+    jlc.jnts[3].loc_motion_axis = np.array([0, 0, 1])
+    jlc.jnts[3].motion_rng = np.array([-np.pi / 2, np.pi / 2])
+    jlc.jnts[4].loc_pos = np.array([0, 0, .1])
+    jlc.jnts[4].loc_motion_axis = np.array([0, 1, 0])
+    jlc.jnts[4].motion_rng = np.array([-np.pi / 2, np.pi / 2])
+    jlc.jnts[5].loc_pos = np.array([0, 0, .05])
+    jlc.jnts[5].loc_motion_axis = np.array([0, 0, 1])
+    jlc.jnts[5].motion_rng = np.array([-np.pi / 2, np.pi / 2])
     jlc.tcp_loc_pos = np.array([0, 0, .01])
     jlc.finalize()
     rkmg.gen_jlc_stick(jlc, stick_rgba=basis.constant.navy_blue, toggle_tcp_frame=True,
@@ -412,9 +412,9 @@ if __name__ == "__main__":
     opt_win = 0
     time_list = []
     tgt_list = []
-    for i in tqdm(range(1000), desc="ik"):
+    for i in tqdm(range(10), desc="ik"):
         jnts = jlc.rand_conf()
-        tgt_pos, tgt_rotmat = jlc.forward_kinematics(joint_values=jnts, update=False, toggle_jacobian=False)
+        tgt_pos, tgt_rotmat = jlc.forward_kinematics(jnt_vals=jnts, update=False, toggle_jac=False)
         a = time.time()
         joint_values_with_dbg_info = jlc.ik(tgt_pos=tgt_pos,
                                             tgt_rotmat=tgt_rotmat,
@@ -444,41 +444,41 @@ if __name__ == "__main__":
     print('max', np.max(time_list))
     print('min', np.min(time_list))
 
-    f_name = "unsolved_0.pkl"
-    for i in range(15):
-        print("==============new================")
-        with open(f_name, "rb") as a:
-            tgt_list = pickle.load(a)
-        success = 0
-        num_win = 0
-        opt_win = 0
-        new_tgt_list = []
-        for id in range(len(tgt_list)):
-            tic = time.time()
-            joint_values_with_dbg_info = jlc.ik(tgt_pos=tgt_list[id][0],
-                                                tgt_rotmat=tgt_list[id][1],
-                                                seed_jnt_vals=seed_jnt_vals,
-                                                toggle_dbg_info=True)
-            toc = time.time()
-            if joint_values_with_dbg_info is not None:
-                success += 1
-                if joint_values_with_dbg_info[0] == 'o':
-                    opt_win += 1
-                elif joint_values_with_dbg_info[0] == 'n':
-                    num_win += 1
-                print(f"success: time cost is {toc-tic}, solver is {joint_values_with_dbg_info[0]}")
-            else:
-                print("failure: ", repr(tgt_list[id][0]), repr(tgt_list[id][1]))
-                new_tgt_list.append((tgt_list[id][0], tgt_list[id][1]))
-            print("............................")
-        print(f"success rate: {success}/{len(tgt_list)}")
-        print(f'num_win: {num_win}, opt_win: {opt_win}')
-        if len(new_tgt_list) == 0:
-            break
-        df = pandas.DataFrame({"tgt": new_tgt_list})
-        print(df.shape[0])
-        df.to_csv(f"{i + 1}.csv")
-        with open(f"unsolved{i}.pkl", "wb") as f_:
-            pickle.dump(new_tgt_list, f_)
-        f_name = f"unsolved{i}.pkl"
+    # f_name = "unsolved_0.pkl"
+    # for i in range(15):
+    #     print("==============new================")
+    #     with open(f_name, "rb") as a:
+    #         tgt_list = pickle.load(a)
+    #     success = 0
+    #     num_win = 0
+    #     opt_win = 0
+    #     new_tgt_list = []
+    #     for id in range(len(tgt_list)):
+    #         tic = time.time()
+    #         joint_values_with_dbg_info = jlc.ik(tgt_pos=tgt_list[id][0],
+    #                                             tgt_rotmat=tgt_list[id][1],
+    #                                             seed_jnt_vals=seed_jnt_vals,
+    #                                             toggle_dbg_info=True)
+    #         toc = time.time()
+    #         if joint_values_with_dbg_info is not None:
+    #             success += 1
+    #             if joint_values_with_dbg_info[0] == 'o':
+    #                 opt_win += 1
+    #             elif joint_values_with_dbg_info[0] == 'n':
+    #                 num_win += 1
+    #             print(f"success: time cost is {toc-tic}, solver is {joint_values_with_dbg_info[0]}")
+    #         else:
+    #             print("failure: ", repr(tgt_list[id][0]), repr(tgt_list[id][1]))
+    #             new_tgt_list.append((tgt_list[id][0], tgt_list[id][1]))
+    #         print("............................")
+    #     print(f"success rate: {success}/{len(tgt_list)}")
+    #     print(f'num_win: {num_win}, opt_win: {opt_win}')
+    #     if len(new_tgt_list) == 0:
+    #         break
+    #     df = pandas.DataFrame({"tgt": new_tgt_list})
+    #     print(df.shape[0])
+    #     df.to_csv(f"{i + 1}.csv")
+    #     with open(f"unsolved{i}.pkl", "wb") as f_:
+    #         pickle.dump(new_tgt_list, f_)
+    #     f_name = f"unsolved{i}.pkl"
     base.run()

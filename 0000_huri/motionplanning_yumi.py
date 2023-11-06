@@ -85,8 +85,8 @@ if __name__ == '__main__':
     # rgtjnts =  robot_s.getarmjnts("rgt")
 
     robotreal = yr.YuMiRobot()
-    lftjnts = robotreal.left.get_state().joints
-    rgtjnts = robotreal.right.get_state().joints
+    lftjnts = robotreal.left.get_state().jnts
+    rgtjnts = robotreal.right.get_state().jnts
     start = rgtjnts
     # print(start)
     # print(lftjnts)

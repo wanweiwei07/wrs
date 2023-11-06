@@ -12,18 +12,18 @@ class TBMGripper(gp.GripperInterface):
     def __init__(self, pos=np.zeros(3), rotmat=np.eye(3), cdmesh_type='box', name='tbm_gripper', enable_cc=True):
         super().__init__(pos=pos, rotmat=rotmat, cdmesh_type=cdmesh_type, name=name)
         this_dir, this_filename = os.path.split(__file__)
-        cpl_end_pos = self.coupling.joints[-1]['gl_posq']
-        cpl_end_rotmat = self.coupling.joints[-1]['gl_rotmatq']
+        cpl_end_pos = self.coupling.jnts[-1]['gl_posq']
+        cpl_end_rotmat = self.coupling.jnts[-1]['gl_rotmatq']
         # left finger
         self.lft_fgr = jl.JLChain(pos=cpl_end_pos, rotmat=cpl_end_rotmat, home_conf=np.zeros(1), name='lft_outer')
-        self.lft_fgr.joints[1]['pos_in_loc_tcp'] = np.array([0.113, 0, -.058])
-        self.lft_fgr.joints[1]['motion_rng'] = [-.8, .8]
-        self.lft_fgr.joints[1]['loc_motionax'] = np.array([0, 1, 0])
+        self.lft_fgr.jnts[1]['pos_in_loc_tcp'] = np.array([0.113, 0, -.058])
+        self.lft_fgr.jnts[1]['motion_rng'] = [-.8, .8]
+        self.lft_fgr.jnts[1]['loc_motionax'] = np.array([0, 1, 0])
         # right finger
         self.rgt_fgr = jl.JLChain(pos=cpl_end_pos, rotmat=cpl_end_rotmat, home_conf=np.zeros(1), name='lft_outer')
-        self.rgt_fgr.joints[1]['pos_in_loc_tcp'] = np.array([0.113, 0, 0.058])
-        self.rgt_fgr.joints[1]['motion_rng'] = [-.8, .8]
-        self.rgt_fgr.joints[1]['loc_motionax'] = np.array([0, 1, 0])
+        self.rgt_fgr.jnts[1]['pos_in_loc_tcp'] = np.array([0.113, 0, 0.058])
+        self.rgt_fgr.jnts[1]['motion_rng'] = [-.8, .8]
+        self.rgt_fgr.jnts[1]['loc_motionax'] = np.array([0, 1, 0])
         # links
         # palm and left finger
         self.lft_fgr.lnks[0]['name'] = "palm"
@@ -70,11 +70,11 @@ class TBMGripper(gp.GripperInterface):
         self.pos = pos
         self.rotmat = rotmat
         if angle is not None:
-            self.lft_fgr.joints[1]['motion_val'] = angle
-            self.rgt_fgr.joints[1]['motion_val'] = -self.lft_fgr.joints[1]['motion_val']
+            self.lft_fgr.jnts[1]['motion_val'] = angle
+            self.rgt_fgr.jnts[1]['motion_val'] = -self.lft_fgr.jnts[1]['motion_val']
         self.coupling.fix_to(self.pos, self.rotmat)
-        cpl_end_pos = self.coupling.joints[-1]['gl_posq']
-        cpl_end_rotmat = self.coupling.joints[-1]['gl_rotmatq']
+        cpl_end_pos = self.coupling.jnts[-1]['gl_posq']
+        cpl_end_rotmat = self.coupling.jnts[-1]['gl_rotmatq']
         self.lft_fgr.fix_to(cpl_end_pos, cpl_end_rotmat)
         self.rgt_fgr.fix_to(cpl_end_pos, cpl_end_rotmat)
 
@@ -83,9 +83,9 @@ class TBMGripper(gp.GripperInterface):
         lft_outer is the only active joint, all others mimic this one
         :param: angle, radian
         """
-        if self.lft_fgr.joints[1]['motion_rng'][0] <= motion_val <= self.lft_fgr.joints[1]['motion_rng'][1]:
-            self.lft_fgr.joints[1]['motion_val'] = motion_val
-            self.rgt_fgr.joints[1]['motion_val'] = -self.lft_fgr.joints[1]['motion_val']
+        if self.lft_fgr.jnts[1]['motion_rng'][0] <= motion_val <= self.lft_fgr.jnts[1]['motion_rng'][1]:
+            self.lft_fgr.jnts[1]['motion_val'] = motion_val
+            self.rgt_fgr.jnts[1]['motion_val'] = -self.lft_fgr.jnts[1]['motion_val']
             self.lft_fgr.fk()
             self.rgt_fgr.fk()
         else:

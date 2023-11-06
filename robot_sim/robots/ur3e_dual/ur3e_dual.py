@@ -18,9 +18,9 @@ class UR3EDual(ri.RobotInterface):
         this_dir, this_filename = os.path.split(__file__)
         # left side
         self.lft_body = jl.JLChain(pos=pos, rotmat=rotmat, home_conf=np.zeros(0), name='lft_body_jl')
-        self.lft_body.joints[1]['pos_in_loc_tcp'] = np.array([.365, .345, 1.33])  # left from robot_s view
-        self.lft_body.joints[1]['gl_rotmat'] = rm.rotmat_from_euler(math.pi / 2.0, 0,
-                                                                     math.pi / 2.0)  # left from robot_s view
+        self.lft_body.jnts[1]['pos_in_loc_tcp'] = np.array([.365, .345, 1.33])  # left from robot_s view
+        self.lft_body.jnts[1]['gl_rotmat'] = rm.rotmat_from_euler(math.pi / 2.0, 0,
+                                                                  math.pi / 2.0)  # left from robot_s view
         self.lft_body.lnks[0]['name'] = "ur3e_dual_base"
         self.lft_body.lnks[0]['pos_in_loc_tcp'] = np.array([0, 0, 0])
         self.lft_body.lnks[0]['collision_model'] = cm.CollisionModel(
@@ -35,8 +35,8 @@ class UR3EDual(ri.RobotInterface):
         lft_arm_homeconf[2] = math.pi / 2.0
         lft_arm_homeconf[3] = math.pi
         lft_arm_homeconf[4] = -math.pi / 2.0
-        self.lft_arm = ur.UR3E(pos=self.lft_body.joints[-1]['gl_posq'],
-                               rotmat=self.lft_body.joints[-1]['gl_rotmatq'],
+        self.lft_arm = ur.UR3E(pos=self.lft_body.jnts[-1]['gl_posq'],
+                               rotmat=self.lft_body.jnts[-1]['gl_rotmatq'],
                                homeconf=lft_arm_homeconf,
                                enable_cc=False)
         self.lft_hnd = rtq.RobotiqHE(pos=self.lft_arm.jnts[-1]['gl_posq'],
@@ -45,9 +45,9 @@ class UR3EDual(ri.RobotInterface):
                                      enable_cc=False)
         # rigth side
         self.rgt_body = jl.JLChain(pos=pos, rotmat=rotmat, home_conf=np.zeros(0), name='rgt_body_jl')
-        self.rgt_body.joints[1]['pos_in_loc_tcp'] = np.array([.365, -.345, 1.33])  # right from robot_s view
-        self.rgt_body.joints[1]['gl_rotmat'] = rm.rotmat_from_euler(math.pi / 2.0, 0,
-                                                                     math.pi / 2.0)  # left from robot_s view
+        self.rgt_body.jnts[1]['pos_in_loc_tcp'] = np.array([.365, -.345, 1.33])  # right from robot_s view
+        self.rgt_body.jnts[1]['gl_rotmat'] = rm.rotmat_from_euler(math.pi / 2.0, 0,
+                                                                  math.pi / 2.0)  # left from robot_s view
         self.rgt_body.lnks[0]['name'] = "ur3e_dual_base"
         self.rgt_body.lnks[0]['pos_in_loc_tcp'] = np.array([0, 0, 0])
         self.rgt_body.lnks[0]['mesh_file'] = None
@@ -58,8 +58,8 @@ class UR3EDual(ri.RobotInterface):
         rgt_arm_homeconf[1] = -math.pi / 3.0
         rgt_arm_homeconf[2] = -math.pi / 2.0
         rgt_arm_homeconf[4] = math.pi / 2.0
-        self.rgt_arm = ur.UR3E(pos=self.rgt_body.joints[-1]['gl_posq'],
-                               rotmat=self.rgt_body.joints[-1]['gl_rotmatq'],
+        self.rgt_arm = ur.UR3E(pos=self.rgt_body.jnts[-1]['gl_posq'],
+                               rotmat=self.rgt_body.jnts[-1]['gl_rotmatq'],
                                homeconf=rgt_arm_homeconf,
                                enable_cc=False)
         self.rgt_hnd = rtq.RobotiqHE(pos=self.rgt_arm.jnts[-1]['gl_posq'],
@@ -205,11 +205,11 @@ class UR3EDual(ri.RobotInterface):
         self.pos = pos
         self.rotmat = rotmat
         self.lft_body.fix_to(self.pos, self.rotmat)
-        self.lft_arm.fix_to(pos=self.lft_body.joints[-1]['gl_posq'], rotmat=self.lft_body.joints[-1]['gl_rotmatq'])
+        self.lft_arm.fix_to(pos=self.lft_body.jnts[-1]['gl_posq'], rotmat=self.lft_body.jnts[-1]['gl_rotmatq'])
         lft_hnd_pos, lft_hnd_rotmat = self.lft_arm.get_worldpose(relpos=self.rgt_hnd_offset)
         self.lft_hnd.fix_to(pos=lft_hnd_pos, rotmat=lft_hnd_rotmat)
         self.rgt_body.fix_to(self.pos, self.rotmat)
-        self.rgt_arm.fix_to(pos=self.rgt_body.joints[-1]['gl_posq'], rotmat=self.rgt_body.joints[-1]['gl_rotmatq'])
+        self.rgt_arm.fix_to(pos=self.rgt_body.jnts[-1]['gl_posq'], rotmat=self.rgt_body.jnts[-1]['gl_rotmatq'])
         rgt_hnd_pos, rgt_hnd_rotmat = self.rgt_arm.get_worldpose(relpos=self.rgt_hnd_offset)
         self.rgt_hnd.fix_to(pos=rgt_hnd_pos, rotmat=rgt_hnd_rotmat)
 
@@ -245,8 +245,8 @@ class UR3EDual(ri.RobotInterface):
         def update_component(component_name, jnt_values):
             status = self.manipulator_dict[component_name].fk(joint_values=jnt_values)
             self.get_hnd_on_manipulator(component_name).fix_to(
-                pos=self.manipulator_dict[component_name].joints[-1]['gl_posq'],
-                rotmat=self.manipulator_dict[component_name].joints[-1]['gl_rotmatq'])
+                pos=self.manipulator_dict[component_name].jnts[-1]['gl_posq'],
+                rotmat=self.manipulator_dict[component_name].jnts[-1]['gl_rotmatq'])
             update_oih(component_name=component_name)
             return status
 

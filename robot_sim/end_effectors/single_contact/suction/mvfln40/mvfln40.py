@@ -11,10 +11,10 @@ class MVFLN40(si.SCInterface):
     def __init__(self, pos=np.zeros(3), rotmat=np.eye(3), cdmesh_type='box', name='mvfln40', enable_cc=True):
         super().__init__(pos=pos, rotmat=rotmat, cdmesh_type=cdmesh_type, name=name)
         this_dir, this_filename = os.path.split(__file__)
-        cpl_end_pos = self.coupling.joints[-1]['gl_posq']
-        cpl_end_rotmat = self.coupling.joints[-1]['gl_rotmatq']
+        cpl_end_pos = self.coupling.jnts[-1]['gl_posq']
+        cpl_end_rotmat = self.coupling.jnts[-1]['gl_rotmatq']
         self.jlc = jl.JLChain(pos=cpl_end_pos, rotmat=cpl_end_rotmat, home_conf=np.zeros(0), name='mvfln40_jlc')
-        self.jlc.joints[1]['pos_in_loc_tcp'] = np.array([0, .0, .068])
+        self.jlc.jnts[1]['pos_in_loc_tcp'] = np.array([0, .0, .068])
         self.jlc.lnks[0]['name'] = "mvfln40"
         self.jlc.lnks[0]['pos_in_loc_tcp'] = np.zeros(3)
         self.jlc.lnks[0]['mesh_file'] = os.path.join(this_dir, "meshes", "mvfln40.stl")
@@ -44,8 +44,8 @@ class MVFLN40(si.SCInterface):
         self.pos = pos
         self.rotmat = rotmat
         self.coupling.fix_to(self.pos, self.rotmat)
-        cpl_end_pos = self.coupling.joints[-1]['gl_posq']
-        cpl_end_rotmat = self.coupling.joints[-1]['gl_rotmatq']
+        cpl_end_pos = self.coupling.jnts[-1]['gl_posq']
+        cpl_end_rotmat = self.coupling.jnts[-1]['gl_rotmatq']
         self.jlc.fix_to(cpl_end_pos, cpl_end_rotmat)
 
     def gen_stickmodel(self,

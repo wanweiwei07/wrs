@@ -24,7 +24,7 @@ class KHI_ORSD(ai.RobotInterface):
                                               coupling_offset_pos=np.array([0, 0, 0.0639]),
                                               name='orsd', enable_cc=False)
         # tool center point
-        self.manipulator.jlc.tcp_joint_id = -1
+        self.manipulator.jlc.tcp_jnt_id = -1
         self.manipulator.jlc.tcp_loc_pos = self.end_effector.action_center_pos
         self.manipulator.jlc.tcp_loc_rotmat = self.end_effector.action_center_rotmat
         # collision detection

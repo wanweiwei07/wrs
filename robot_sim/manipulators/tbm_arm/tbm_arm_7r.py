@@ -12,25 +12,25 @@ class TBMArm7R(mi.ManipulatorInterface):
         super().__init__(pos=pos, rotmat=rotmat, name=name)
         this_dir, this_filename = os.path.split(__file__)
         self.jlc = jl.JLChain(pos=pos, rotmat=rotmat, home_conf=homeconf, name=name)
-        self.jlc.joints[1]['pos_in_loc_tcp'] = np.array([0.0, 0.0, 0.0])
-        self.jlc.joints[1]['end_type'] = 'prismatic'
-        self.jlc.joints[1]['loc_motionax'] = np.array([1, 0, 0])
-        self.jlc.joints[1]['motion_rng'] = [-.5, .0]
-        self.jlc.joints[2]['pos_in_loc_tcp'] = np.array([0, 0, 0.396])
-        self.jlc.joints[2]['loc_motionax'] = np.array([0, 0, 1])
-        self.jlc.joints[2]['motion_rng'] = [-math.radians(20), math.radians(20)]
-        self.jlc.joints[3]['pos_in_loc_tcp'] = np.array([0.654, .0, .0])
-        self.jlc.joints[3]['loc_motionax'] = np.array([1, 0, 0])
-        self.jlc.joints[4]['pos_in_loc_tcp'] = np.array([.625, .0, .0])
-        self.jlc.joints[4]['loc_motionax'] = np.array([0, 0, 1])
-        self.jlc.joints[4]['motion_rng'] = [-math.radians(90), math.radians(90)]
-        self.jlc.joints[5]['pos_in_loc_tcp'] = np.array([0.687, .0, .0])
-        self.jlc.joints[5]['loc_motionax'] = np.array([1, 0, 0])
-        self.jlc.joints[6]['pos_in_loc_tcp'] = np.array([.83, .0, .0])
-        self.jlc.joints[6]['loc_motionax'] = np.array([0, 1, 0])
-        self.jlc.joints[6]['motion_rng'] = [-math.radians(115), math.radians(115)]
-        self.jlc.joints[7]['pos_in_loc_tcp'] = np.array([.223, .0, .0])
-        self.jlc.joints[7]['loc_motionax'] = np.array([1, 0, 0])
+        self.jlc.jnts[1]['pos_in_loc_tcp'] = np.array([0.0, 0.0, 0.0])
+        self.jlc.jnts[1]['end_type'] = 'prismatic'
+        self.jlc.jnts[1]['loc_motionax'] = np.array([1, 0, 0])
+        self.jlc.jnts[1]['motion_rng'] = [-.5, .0]
+        self.jlc.jnts[2]['pos_in_loc_tcp'] = np.array([0, 0, 0.396])
+        self.jlc.jnts[2]['loc_motionax'] = np.array([0, 0, 1])
+        self.jlc.jnts[2]['motion_rng'] = [-math.radians(20), math.radians(20)]
+        self.jlc.jnts[3]['pos_in_loc_tcp'] = np.array([0.654, .0, .0])
+        self.jlc.jnts[3]['loc_motionax'] = np.array([1, 0, 0])
+        self.jlc.jnts[4]['pos_in_loc_tcp'] = np.array([.625, .0, .0])
+        self.jlc.jnts[4]['loc_motionax'] = np.array([0, 0, 1])
+        self.jlc.jnts[4]['motion_rng'] = [-math.radians(90), math.radians(90)]
+        self.jlc.jnts[5]['pos_in_loc_tcp'] = np.array([0.687, .0, .0])
+        self.jlc.jnts[5]['loc_motionax'] = np.array([1, 0, 0])
+        self.jlc.jnts[6]['pos_in_loc_tcp'] = np.array([.83, .0, .0])
+        self.jlc.jnts[6]['loc_motionax'] = np.array([0, 1, 0])
+        self.jlc.jnts[6]['motion_rng'] = [-math.radians(115), math.radians(115)]
+        self.jlc.jnts[7]['pos_in_loc_tcp'] = np.array([.223, .0, .0])
+        self.jlc.jnts[7]['loc_motionax'] = np.array([1, 0, 0])
         # links
         self.jlc.lnks[1]['name'] = "base"
         self.jlc.lnks[1]['pos_in_loc_tcp'] = np.zeros(3)

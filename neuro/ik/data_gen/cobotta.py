@@ -15,7 +15,7 @@ def gen_data(rbt_s, component_name='arm', granularity=math.pi / 8, save_name='co
     n_jnts = rbt_s.manipulator_dict[component_name].n_dof
     all_ranges = []
     for jnt_id in range(1, n_jnts + 1):
-        r0, r1 = rbt_s.manipulator_dict[component_name].joints[jnt_id]['motion_rng']
+        r0, r1 = rbt_s.manipulator_dict[component_name].jnts[jnt_id]['motion_rng']
         all_ranges.append(np.arange(r0, r1, granularity))
         # print(granularity, all_ranges[-1])
     all_data = itertools.product(*all_ranges)

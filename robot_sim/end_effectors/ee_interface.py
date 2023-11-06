@@ -16,7 +16,7 @@ class EEInterface(object):
         # joints
         # - coupling - No coupling by default
         self.coupling = jl.JLChain(pos=self.pos, rotmat=self.rotmat, home_conf=np.zeros(0), name='coupling')
-        self.coupling.joints[1]['pos_in_loc_tcp'] = np.array([0, 0, .0])
+        self.coupling.jnts[1]['pos_in_loc_tcp'] = np.array([0, 0, .0])
         self.coupling.lnks[0]['name'] = 'coupling_lnk0'
         # toggle on the following part to assign an explicit mesh model to a coupling
         # self.coupling.lnks[0]['mesh_file'] = os.path.join(this_dir, "meshes", "xxx.stl")

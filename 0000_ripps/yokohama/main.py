@@ -351,8 +351,8 @@ def dispose_tip(tip_id):
 
 def is_inside_range(jnt_values):
     for i in range(6):
-        if jnt_values[i] < robot_s.arm.jlc.joints[i + 1]['motion_rng'][0] or jnt_values[i] > \
-                robot_s.arm.jlc.joints[i + 1]['motion_rng'][1]:
+        if jnt_values[i] < robot_s.arm.jlc.jnts[i + 1]['motion_rng'][0] or jnt_values[i] > \
+                robot_s.arm.jlc.jnts[i + 1]['motion_rng'][1]:
             # print(joint_values[i], robot_s.arm.jlc.joints[i]['motion_rng'])
             print(f"{i} out of range")
             # robot_s.fk(joint_values=joint_values)

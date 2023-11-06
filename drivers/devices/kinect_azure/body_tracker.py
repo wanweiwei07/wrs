@@ -59,9 +59,9 @@ class KinectBodyTracker:
 
 	def printBodyPosition(self, body):
 		print(f"BodyId: {body.id}", \
-			  f"X: {body.skeleton.joints[_k4abt.K4ABT_JOINT_SPINE_NAVEL].position.v[0]:.2f} mm", \
-			  f"Y: {body.skeleton.joints[_k4abt.K4ABT_JOINT_SPINE_NAVEL].position.v[1]:.2f} mm", \
-			  f"Z: {body.skeleton.joints[_k4abt.K4ABT_JOINT_SPINE_NAVEL].position.v[2]:.2f} mm") 
+			  f"X: {body.skeleton.jnts[_k4abt.K4ABT_JOINT_SPINE_NAVEL].position.v[0]:.2f} mm", \
+			  f"Y: {body.skeleton.jnts[_k4abt.K4ABT_JOINT_SPINE_NAVEL].position.v[1]:.2f} mm", \
+			  f"Z: {body.skeleton.jnts[_k4abt.K4ABT_JOINT_SPINE_NAVEL].position.v[2]:.2f} mm")
 
 	def draw2DSkeleton(self, skeleton2D, bodyId, image):
 		color = _k4abt.body_colors

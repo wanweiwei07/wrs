@@ -8,14 +8,14 @@ class XYBot(ri.RobotInterface):
     def __init__(self, pos=np.zeros(3), rotmat=np.eye(3), name='XYBot'):
         super().__init__(pos=pos, rotmat=rotmat, name=name)
         self.jlc = jl.JLChain(home_conf=np.zeros(2), name='XYBot')
-        self.jlc.joints[1]['end_type'] = 'prismatic'
-        self.jlc.joints[1]['loc_motionax'] = np.array([1, 0, 0])
-        self.jlc.joints[1]['pos_in_loc_tcp'] = np.zeros(3)
-        self.jlc.joints[1]['motion_rng'] = [-2.0, 15.0]
-        self.jlc.joints[2]['end_type'] = 'prismatic'
-        self.jlc.joints[2]['loc_motionax'] = np.array([0, 1, 0])
-        self.jlc.joints[2]['pos_in_loc_tcp'] = np.zeros(3)
-        self.jlc.joints[2]['motion_rng'] = [-2.0, 15.0]
+        self.jlc.jnts[1]['end_type'] = 'prismatic'
+        self.jlc.jnts[1]['loc_motionax'] = np.array([1, 0, 0])
+        self.jlc.jnts[1]['pos_in_loc_tcp'] = np.zeros(3)
+        self.jlc.jnts[1]['motion_rng'] = [-2.0, 15.0]
+        self.jlc.jnts[2]['end_type'] = 'prismatic'
+        self.jlc.jnts[2]['loc_motionax'] = np.array([0, 1, 0])
+        self.jlc.jnts[2]['pos_in_loc_tcp'] = np.zeros(3)
+        self.jlc.jnts[2]['motion_rng'] = [-2.0, 15.0]
         self.jlc.reinitialize()
 
     def fk(self, jnt_values=np.zeros(2)):
@@ -43,17 +43,17 @@ class XYTBot(ri.RobotInterface):
     def __init__(self, pos=np.zeros(3), rotmat=np.eye(3), name='TwoWheelCarBot'):
         super().__init__(pos=pos, rotmat=rotmat, name=name)
         self.jlc = jl.JLChain(home_conf=np.zeros(3), name='XYBot')
-        self.jlc.joints[1]['end_type'] = 'prismatic'
-        self.jlc.joints[1]['loc_motionax'] = np.array([1, 0, 0])
-        self.jlc.joints[1]['pos_in_loc_tcp'] = np.zeros(3)
-        self.jlc.joints[1]['motion_rng'] = [-2.0, 15.0]
-        self.jlc.joints[2]['end_type'] = 'prismatic'
-        self.jlc.joints[2]['loc_motionax'] = np.array([0, 1, 0])
-        self.jlc.joints[2]['pos_in_loc_tcp'] = np.zeros(3)
-        self.jlc.joints[2]['motion_rng'] = [-2.0, 15.0]
-        self.jlc.joints[3]['loc_motionax'] = np.array([0, 0, 1])
-        self.jlc.joints[3]['pos_in_loc_tcp'] = np.zeros(3)
-        self.jlc.joints[3]['motion_rng'] = [-math.pi, math.pi]
+        self.jlc.jnts[1]['end_type'] = 'prismatic'
+        self.jlc.jnts[1]['loc_motionax'] = np.array([1, 0, 0])
+        self.jlc.jnts[1]['pos_in_loc_tcp'] = np.zeros(3)
+        self.jlc.jnts[1]['motion_rng'] = [-2.0, 15.0]
+        self.jlc.jnts[2]['end_type'] = 'prismatic'
+        self.jlc.jnts[2]['loc_motionax'] = np.array([0, 1, 0])
+        self.jlc.jnts[2]['pos_in_loc_tcp'] = np.zeros(3)
+        self.jlc.jnts[2]['motion_rng'] = [-2.0, 15.0]
+        self.jlc.jnts[3]['loc_motionax'] = np.array([0, 0, 1])
+        self.jlc.jnts[3]['pos_in_loc_tcp'] = np.zeros(3)
+        self.jlc.jnts[3]['motion_rng'] = [-math.pi, math.pi]
         self.jlc.reinitialize()
 
     def fk(self, component_name='all', jnt_values=np.zeros(3)):

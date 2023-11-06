@@ -19,41 +19,41 @@ class Robotiq140(gp.GripperInterface):
 
         super().__init__(pos=pos, rotmat=rotmat, cdmesh_type=cdmesh_type, name=name)
         this_dir, this_filename = os.path.split(__file__)
-        cpl_end_pos = self.coupling.joints[-1]['gl_posq']
-        cpl_end_rotmat = self.coupling.joints[-1]['gl_rotmatq']
+        cpl_end_pos = self.coupling.jnts[-1]['gl_posq']
+        cpl_end_rotmat = self.coupling.jnts[-1]['gl_rotmatq']
         # - lft_outer
         self.lft_outer = jl.JLChain(pos=cpl_end_pos, rotmat=cpl_end_rotmat, home_conf=np.zeros(4), name='lft_outer')
-        self.lft_outer.joints[1]['pos_in_loc_tcp'] = np.array([0, -.0306011, .054904])
-        self.lft_outer.joints[1]['motion_rng'] = [.0, .7]
-        self.lft_outer.joints[1]['gl_rotmat'] = rm.rotmat_from_euler((math.pi / 2.0 + .725), 0, 0)
-        self.lft_outer.joints[1]['loc_motionax'] = np.array([-1, 0, 0])
-        self.lft_outer.joints[2]['pos_in_loc_tcp'] = np.array([0, 0.01821998610742, 0.0260018192872234])  # passive
-        self.lft_outer.joints[2]['loc_motionax'] = np.array([1, 0, 0])
-        self.lft_outer.joints[3]['pos_in_loc_tcp'] = np.array([0, 0.0817554015893473, -0.0282203446692936])
-        self.lft_outer.joints[3]['gl_rotmat'] = rm.rotmat_from_euler(-0.725, 0, 0)
-        self.lft_outer.joints[3]['loc_motionax'] = np.array([1, 0, 0])
-        self.lft_outer.joints[4]['pos_in_loc_tcp'] = np.array([0, 0.0420203446692936, -.03242])
+        self.lft_outer.jnts[1]['pos_in_loc_tcp'] = np.array([0, -.0306011, .054904])
+        self.lft_outer.jnts[1]['motion_rng'] = [.0, .7]
+        self.lft_outer.jnts[1]['gl_rotmat'] = rm.rotmat_from_euler((math.pi / 2.0 + .725), 0, 0)
+        self.lft_outer.jnts[1]['loc_motionax'] = np.array([-1, 0, 0])
+        self.lft_outer.jnts[2]['pos_in_loc_tcp'] = np.array([0, 0.01821998610742, 0.0260018192872234])  # passive
+        self.lft_outer.jnts[2]['loc_motionax'] = np.array([1, 0, 0])
+        self.lft_outer.jnts[3]['pos_in_loc_tcp'] = np.array([0, 0.0817554015893473, -0.0282203446692936])
+        self.lft_outer.jnts[3]['gl_rotmat'] = rm.rotmat_from_euler(-0.725, 0, 0)
+        self.lft_outer.jnts[3]['loc_motionax'] = np.array([1, 0, 0])
+        self.lft_outer.jnts[4]['pos_in_loc_tcp'] = np.array([0, 0.0420203446692936, -.03242])
         # - lft_inner
         self.lft_inner = jl.JLChain(pos=cpl_end_pos, rotmat=cpl_end_rotmat, home_conf=np.zeros(1), name='lft_inner')
-        self.lft_inner.joints[1]['pos_in_loc_tcp'] = np.array([0, -.0127, .06142])
-        self.lft_inner.joints[1]['gl_rotmat'] = rm.rotmat_from_euler((math.pi / 2.0 + .725), 0, 0)
-        self.lft_inner.joints[1]['loc_motionax'] = np.array([1, 0, 0])
+        self.lft_inner.jnts[1]['pos_in_loc_tcp'] = np.array([0, -.0127, .06142])
+        self.lft_inner.jnts[1]['gl_rotmat'] = rm.rotmat_from_euler((math.pi / 2.0 + .725), 0, 0)
+        self.lft_inner.jnts[1]['loc_motionax'] = np.array([1, 0, 0])
         # - rgt_outer
         self.rgt_outer = jl.JLChain(pos=cpl_end_pos, rotmat=cpl_end_rotmat, home_conf=np.zeros(4), name='rgt_outer')
-        self.rgt_outer.joints[1]['pos_in_loc_tcp'] = np.array([0, .0306011, .054904])
-        self.rgt_outer.joints[1]['gl_rotmat'] = rm.rotmat_from_euler((math.pi / 2.0 + .725), 0, math.pi)
-        self.rgt_outer.joints[1]['loc_motionax'] = np.array([1, 0, 0])
-        self.rgt_outer.joints[2]['pos_in_loc_tcp'] = np.array([0, 0.01821998610742, 0.0260018192872234])  # passive
-        self.rgt_outer.joints[2]['loc_motionax'] = np.array([1, 0, 0])
-        self.rgt_outer.joints[3]['pos_in_loc_tcp'] = np.array([0, 0.0817554015893473, -0.0282203446692936])
-        self.rgt_outer.joints[3]['gl_rotmat'] = rm.rotmat_from_euler(-0.725, 0, 0)
-        self.rgt_outer.joints[3]['loc_motionax'] = np.array([1, 0, 0])
-        self.rgt_outer.joints[4]['pos_in_loc_tcp'] = np.array([0, 0.0420203446692936, -.03242])
+        self.rgt_outer.jnts[1]['pos_in_loc_tcp'] = np.array([0, .0306011, .054904])
+        self.rgt_outer.jnts[1]['gl_rotmat'] = rm.rotmat_from_euler((math.pi / 2.0 + .725), 0, math.pi)
+        self.rgt_outer.jnts[1]['loc_motionax'] = np.array([1, 0, 0])
+        self.rgt_outer.jnts[2]['pos_in_loc_tcp'] = np.array([0, 0.01821998610742, 0.0260018192872234])  # passive
+        self.rgt_outer.jnts[2]['loc_motionax'] = np.array([1, 0, 0])
+        self.rgt_outer.jnts[3]['pos_in_loc_tcp'] = np.array([0, 0.0817554015893473, -0.0282203446692936])
+        self.rgt_outer.jnts[3]['gl_rotmat'] = rm.rotmat_from_euler(-0.725, 0, 0)
+        self.rgt_outer.jnts[3]['loc_motionax'] = np.array([1, 0, 0])
+        self.rgt_outer.jnts[4]['pos_in_loc_tcp'] = np.array([0, 0.0420203446692936, -.03242])
         # - rgt_inner
         self.rgt_inner = jl.JLChain(pos=cpl_end_pos, rotmat=cpl_end_rotmat, home_conf=np.zeros(1), name='rgt_inner')
-        self.rgt_inner.joints[1]['pos_in_loc_tcp'] = np.array([0, 0.0127, 0.06142])
-        self.rgt_inner.joints[1]['gl_rotmat'] = rm.rotmat_from_euler((math.pi / 2.0 + .725), 0, math.pi)
-        self.rgt_inner.joints[1]['loc_motionax'] = np.array([1, 0, 0])
+        self.rgt_inner.jnts[1]['pos_in_loc_tcp'] = np.array([0, 0.0127, 0.06142])
+        self.rgt_inner.jnts[1]['gl_rotmat'] = rm.rotmat_from_euler((math.pi / 2.0 + .725), 0, math.pi)
+        self.rgt_inner.jnts[1]['loc_motionax'] = np.array([1, 0, 0])
         # links
         # - lft_outer
         self.lft_outer.lnks[0]['name'] = "robotiq140_gripper_base"
@@ -133,7 +133,7 @@ class Robotiq140(gp.GripperInterface):
         # jaw center
         self.jaw_center_pos = np.array([0, 0, .19])  # position for initial state (fully open)
         # relative jaw center pos
-        self.jaw_center_pos_rel = self.jaw_center_pos - self.lft_outer.joints[4]['loc_pos']
+        self.jaw_center_pos_rel = self.jaw_center_pos - self.lft_outer.jnts[4]['loc_pos']
         # collision detection
         self.all_cdelements = []
         self.enable_cc(toggle_cdprimit=enable_cc)
@@ -168,15 +168,15 @@ class Robotiq140(gp.GripperInterface):
         self.pos = pos
         self.rotmat = rotmat
         if angle is not None:
-            self.lft_outer.joints[1]['motion_val'] = angle
-            self.lft_outer.joints[3]['motion_val'] = self.lft_outer.joints[1]['motion_val']
-            self.lft_inner.joints[1]['motion_val'] = -self.lft_outer.joints[1]['motion_val']
-            self.rgt_outer.joints[1]['motion_val'] = -self.lft_outer.joints[1]['motion_val']
-            self.rgt_outer.joints[3]['motion_val'] = self.lft_outer.joints[1]['motion_val']
-            self.rgt_inner.joints[1]['motion_val'] = -self.lft_outer.joints[1]['motion_val']
+            self.lft_outer.jnts[1]['motion_val'] = angle
+            self.lft_outer.jnts[3]['motion_val'] = self.lft_outer.jnts[1]['motion_val']
+            self.lft_inner.jnts[1]['motion_val'] = -self.lft_outer.jnts[1]['motion_val']
+            self.rgt_outer.jnts[1]['motion_val'] = -self.lft_outer.jnts[1]['motion_val']
+            self.rgt_outer.jnts[3]['motion_val'] = self.lft_outer.jnts[1]['motion_val']
+            self.rgt_inner.jnts[1]['motion_val'] = -self.lft_outer.jnts[1]['motion_val']
         self.coupling.fix_to(self.pos, self.rotmat)
-        cpl_end_pos = self.coupling.joints[-1]['gl_posq']
-        cpl_end_rotmat = self.coupling.joints[-1]['gl_rotmatq']
+        cpl_end_pos = self.coupling.jnts[-1]['gl_posq']
+        cpl_end_rotmat = self.coupling.jnts[-1]['gl_rotmatq']
         self.lft_outer.fix_to(cpl_end_pos, cpl_end_rotmat)
         self.lft_inner.fix_to(cpl_end_pos, cpl_end_rotmat)
         self.rgt_inner.fix_to(cpl_end_pos, cpl_end_rotmat)
@@ -187,13 +187,13 @@ class Robotiq140(gp.GripperInterface):
         lft_outer is the only active joint, all others mimic this one
         :param: angle, radian
         """
-        if self.lft_outer.joints[1]['motion_rng'][0] <= motion_val <= self.lft_outer.joints[1]['motion_rng'][1]:
-            self.lft_outer.joints[1]['motion_val'] = motion_val
-            self.lft_outer.joints[3]['motion_val'] = self.lft_outer.joints[1]['motion_val']
-            self.lft_inner.joints[1]['motion_val'] = -self.lft_outer.joints[1]['motion_val']
-            self.rgt_outer.joints[1]['motion_val'] = -self.lft_outer.joints[1]['motion_val']
-            self.rgt_outer.joints[3]['motion_val'] = self.lft_outer.joints[1]['motion_val']
-            self.rgt_inner.joints[1]['motion_val'] = -self.lft_outer.joints[1]['motion_val']
+        if self.lft_outer.jnts[1]['motion_rng'][0] <= motion_val <= self.lft_outer.jnts[1]['motion_rng'][1]:
+            self.lft_outer.jnts[1]['motion_val'] = motion_val
+            self.lft_outer.jnts[3]['motion_val'] = self.lft_outer.jnts[1]['motion_val']
+            self.lft_inner.jnts[1]['motion_val'] = -self.lft_outer.jnts[1]['motion_val']
+            self.rgt_outer.jnts[1]['motion_val'] = -self.lft_outer.jnts[1]['motion_val']
+            self.rgt_outer.jnts[3]['motion_val'] = self.lft_outer.jnts[1]['motion_val']
+            self.rgt_inner.jnts[1]['motion_val'] = -self.lft_outer.jnts[1]['motion_val']
             self.lft_outer.fk()
             self.lft_inner.fk()
             self.rgt_outer.fk()
@@ -208,9 +208,9 @@ class Robotiq140(gp.GripperInterface):
         # return np.clip(
         #   self.lft_outer.joints[1]['motion_rng'][1] - ((self.lft_outer.joints[1]['motion_rng'][1]/self.jaw_range[1]) * distance),
         #   self.lft_outer.joints[1]['motion_rng'][0], self.lft_outer.joints[1]['motion_rng'][1]) # kiyokawa, commented out by weiwei
-        return np.clip(self.lft_outer.joints[1]['motion_rng'][1] - math.asin(
-            (math.sin(self.lft_outer.joints[1]['motion_rng'][1]) / self.jaw_range[1]) * distance),
-                       self.lft_outer.joints[1]['motion_rng'][0], self.lft_outer.joints[1]['motion_rng'][1])
+        return np.clip(self.lft_outer.jnts[1]['motion_rng'][1] - math.asin(
+            (math.sin(self.lft_outer.jnts[1]['motion_rng'][1]) / self.jaw_range[1]) * distance),
+                       self.lft_outer.jnts[1]['motion_rng'][0], self.lft_outer.jnts[1]['motion_rng'][1])
 
     def jaw_to(self, jaw_width):
         if jaw_width > self.jaw_range[1]:
@@ -219,7 +219,7 @@ class Robotiq140(gp.GripperInterface):
         self.fk(motion_val)
         # TODO dynamically change jaw center
         # print(self.jaw_center_pos_rel)
-        self.jaw_center_pos=np.array([0, 0, self.lft_outer.joints[4]['gl_posq'][2] + self.jaw_center_pos_rel[2]])
+        self.jaw_center_pos=np.array([0, 0, self.lft_outer.jnts[4]['gl_posq'][2] + self.jaw_center_pos_rel[2]])
 
     def gen_stickmodel(self,
                        tcp_jntid=None,

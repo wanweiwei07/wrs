@@ -76,7 +76,7 @@ class PyKinectAzure(object):
         position_2d = _k4a.k4a_float2_t()
         valid = ctypes.c_int()
         skeleton2D = _k4abt.k4abt_skeleton2D_t()
-        for jointID, joint in enumerate(skeleton.joints):
+        for jointID, joint in enumerate(skeleton.jnts):
             _k4a.VERIFY(self.k4a.k4a_calibration_3d_to_2d(
                 self.body_tracker.sensor_calibration,
                 joint.position,

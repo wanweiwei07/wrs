@@ -41,10 +41,10 @@ if __name__ == '__main__':
     gm.gen_frame().attach_to(base)
 
     jlc = lib_jlc.JLChain(n_dof=2)
-    jlc.joints[1].loc_pos = np.array([0, 0, 0])
-    jlc.joints[1].loc_motion_axis = np.array([1, 0, 0])
-    jlc.joints[2].loc_pos = np.array([0, 0, .1])
-    jlc.joints[2].loc_motion_axis = np.array([1, 0, 0])
+    jlc.jnts[1].loc_pos = np.array([0, 0, 0])
+    jlc.jnts[1].loc_motion_axis = np.array([1, 0, 0])
+    jlc.jnts[2].loc_pos = np.array([0, 0, .1])
+    jlc.jnts[2].loc_motion_axis = np.array([1, 0, 0])
     jlc.tcp_loc_pos = np.array([0, 0, .1])
     jlc.reinitialize()
 

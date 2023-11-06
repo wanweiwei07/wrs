@@ -25,12 +25,12 @@ class KHI_DUAL(ri.RobotInterface):
         # base
         self.base_table = jl.JLChain(pos=pos, rotmat=rotmat, home_conf=np.zeros(0), name='base_table')
         self.base_table.lnks[0]['name'] = "base_table"
-        self.base_table.joints[-1]['pos_in_loc_tcp'] = np.array([0, -.4, .726])
+        self.base_table.jnts[-1]['pos_in_loc_tcp'] = np.array([0, -.4, .726])
         self.base_table.lnks[0]['collision_model'] = cm.CollisionModel(
             os.path.join(this_dir, "meshes", "base_table.stl"))
         # pre-comptue coordinates
         lr_rotmat = rm.rotmat_from_euler(0, 0, np.radians(-90))
-        lft_pos = self.base_table.joints[-1]['pos_in_loc_tcp']
+        lft_pos = self.base_table.jnts[-1]['pos_in_loc_tcp']
         rgt_pos = lft_pos + np.array([0, .8, 0])
         # lft
         self.lft_arm = kg.KHI_OR2FG7(pos=lft_pos, rotmat=lr_rotmat, enable_cc=False)
@@ -132,8 +132,8 @@ class KHI_DUAL(ri.RobotInterface):
             status = self.manipulator_dict[component_name].fk(joint_values=jnt_values)
             hnd_on_manipulator = self.get_hnd_on_manipulator(component_name)
             if hnd_on_manipulator is not None:
-                hnd_on_manipulator.fix_to(pos=self.manipulator_dict[component_name].joints[-1]['gl_posq'],
-                                          rotmat=self.manipulator_dict[component_name].joints[-1]['gl_rotmatq'])
+                hnd_on_manipulator.fix_to(pos=self.manipulator_dict[component_name].jnts[-1]['gl_posq'],
+                                          rotmat=self.manipulator_dict[component_name].jnts[-1]['gl_rotmatq'])
             update_oih(component_name=component_name)
             return status
 
@@ -141,16 +141,16 @@ class KHI_DUAL(ri.RobotInterface):
         if component_name == 'lft_arm' or component_name == 'rgt_arm':
             if not isinstance(jnt_values, np.ndarray) or jnt_values.size != 6:
                 raise ValueError("An 1x6 npdarray must be specified to move a single arm!")
-            waist_value = self.base_table.joints[1]['motion_val']
+            waist_value = self.base_table.jnts[1]['motion_val']
             return update_component(component_name, np.append(waist_value, jnt_values))
         elif component_name == 'lft_arm_waist' or component_name == 'rgt_arm_waist':
             if not isinstance(jnt_values, np.ndarray) or jnt_values.size != 7:
                 raise ValueError("An 1x7 npdarray must be specified to move a single arm plus the waist!")
             status = update_component(component_name, jnt_values)
-            self.base_table.joints[1]['motion_val'] = jnt_values[0]
+            self.base_table.jnts[1]['motion_val'] = jnt_values[0]
             self.base_table.fk()
             the_other_manipulator_name = 'lft_arm' if component_name[:7] == 'rgt_arm' else 'rgt_arm'
-            self.manipulator_dict[the_other_manipulator_name].joints[1]['motion_val'] = jnt_values[0]
+            self.manipulator_dict[the_other_manipulator_name].jnts[1]['motion_val'] = jnt_values[0]
             self.manipulator_dict[the_other_manipulator_name].fk()
             return status  # if waist is out of range, the first status will always be out of range
         elif component_name == 'both_arm':
@@ -202,9 +202,9 @@ class KHI_DUAL(ri.RobotInterface):
                                                             tcp_joint_id=tcp_jnt_id,
                                                             tcp_loc_pos=tcp_loc_pos,
                                                             tcp_loc_rotmat=tcp_loc_rotmat,
-                                                            max_niter=max_niter,
+                                                            max_n_iter=max_niter,
                                                             local_minima=local_minima,
-                                                            toggle_debug=toggle_debug)
+                                                            toggle_dbg=toggle_debug)
         elif component_name == 'both_arm':
             raise NotImplementedError
         elif component_name == 'all':
@@ -535,7 +535,7 @@ if __name__ == '__main__':
     # tgt_rotmat = np.eye(3)
     gm.gen_frame(pos=tgt_pos, rotmat=tgt_rotmat).attach_to(base)
     tic = time.time()
-    jnt_values = nxt_instance.ik(component_name, tgt_pos, tgt_rotmat, toggle_debug=True)
+    jnt_values = nxt_instance.ik(component_name, tgt_pos, tgt_rotmat, toggle_dbg=True)
     toc = time.time()
     print(toc - tic)
     nxt_instance.fk(component_name, jnt_values)

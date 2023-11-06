@@ -11,10 +11,10 @@ if __name__ == "__main__":
     gm.gen_frame(axis_length=.2).attach_to(base)
 
     jlinstance = jlc.JLChain(home_conf=np.array([0, 0, 0, 0, 0]))
-    jlinstance.joints[4]['end_type'] = 'prismatic'
-    jlinstance.joints[4]['loc_motionax'] = np.array([1, 0, 0])
-    jlinstance.joints[4]['motion_val'] = .2
-    jlinstance.joints[4]['motion_rng'] = [-.5, .5]
+    jlinstance.jnts[4]['end_type'] = 'prismatic'
+    jlinstance.jnts[4]['loc_motionax'] = np.array([1, 0, 0])
+    jlinstance.jnts[4]['motion_val'] = .2
+    jlinstance.jnts[4]['motion_rng'] = [-.5, .5]
     jlinstance.reinitialize()
     jlinstance.gen_stickmodel(toggle_jntscs=True, rgba=[1, 0, 0, .15]).attach_to(base)
     tgt_pos0 = np.array([.3, .1, 0])

@@ -26,8 +26,8 @@ class NumIKSolver(object):
         # maximum reach
         self.max_rng = 10.0
         # # extract min max for quick access
-        self.min_jnt_vals = self.jlc.joint_ranges[:, 0]
-        self.max_jnt_vals = self.jlc.joint_ranges[:, 1]
+        self.min_jnt_vals = self.jlc.jnt_rngs[:, 0]
+        self.max_jnt_vals = self.jlc.jnt_rngs[:, 1]
         self.jnt_rngs = self.max_jnt_vals - self.min_jnt_vals
         self.jnt_rngs_mid = (self.max_jnt_vals + self.min_jnt_vals) / 2
         self.min_jnt_threshold = self.min_jnt_vals + self.jnt_rngs * self.jnt_wt_ratio
@@ -36,8 +36,8 @@ class NumIKSolver(object):
     def _get_max_link_length(self):
         max_len = 0
         for i in range(1, self.jlc.n_dof):
-            if self.jlc.joints[i].type == rkc.JointType.REVOLUTE:
-                tmp_vec = self.jlc.joints[i].gl_pos_q - self.jlc.joints[i - 1].gl_pos_q
+            if self.jlc.jnts[i].type == rkc.JointType.REVOLUTE:
+                tmp_vec = self.jlc.jnts[i].gl_pos_q - self.jlc.jnts[i - 1].gl_pos_q
                 tmp_len = np.linalg.norm(tmp_vec)
                 if tmp_len > max_len:
                     max_len = tmp_len
@@ -89,8 +89,8 @@ class NumIKSolver(object):
             iter_jnt_vals = self.jlc.get_joint_values()
         counter = 0
         while True:
-            tcp_gl_pos, tcp_gl_rotmat, j_mat = self.jlc.forward_kinematics(joint_values=iter_jnt_vals,
-                                                                           toggle_jacobian=True,
+            tcp_gl_pos, tcp_gl_rotmat, j_mat = self.jlc.forward_kinematics(jnt_vals=iter_jnt_vals,
+                                                                           toggle_jac=True,
                                                                            update=False)
             tcp_pos_err_val, tcp_rot_err_val, tcp_err_vec = rm.diff_between_posrot(src_pos=tcp_gl_pos,
                                                                                    src_rotmat=tcp_gl_rotmat,
@@ -132,8 +132,8 @@ class NumIKSolver(object):
             iter_jnt_vals = self.jlc.get_joint_values()
         counter = 0
         while True:
-            tcp_gl_pos, tcp_gl_rotmat, j_mat = self.jlc.forward_kinematics(joint_values=iter_jnt_vals,
-                                                                           toggle_jacobian=True,
+            tcp_gl_pos, tcp_gl_rotmat, j_mat = self.jlc.forward_kinematics(jnt_vals=iter_jnt_vals,
+                                                                           toggle_jac=True,
                                                                            update=False)
             tcp_pos_err_val, tcp_rot_err_val, tcp_err_vec = rm.diff_between_posrot(src_pos=tcp_gl_pos,
                                                                                    src_rotmat=tcp_gl_rotmat,
@@ -172,8 +172,8 @@ class NumIKSolver(object):
             iter_jnt_vals = self.jlc.get_joint_values()
         counter = 0
         while True:
-            tcp_gl_pos, tcp_gl_rotmat, j_mat = self.jlc.forward_kinematics(joint_values=iter_jnt_vals,
-                                                                           toggle_jacobian=True,
+            tcp_gl_pos, tcp_gl_rotmat, j_mat = self.jlc.forward_kinematics(jnt_vals=iter_jnt_vals,
+                                                                           toggle_jac=True,
                                                                            update=False)
             tcp_pos_err_val, tcp_rot_err_val, tcp_err_vec = rm.diff_between_posrot(src_pos=tcp_gl_pos,
                                                                                    src_rotmat=tcp_gl_rotmat,
@@ -223,8 +223,8 @@ class NumIKSolver(object):
             iter_jnt_vals = self.jlc.get_joint_values()
         counter = 0
         while True:
-            tcp_gl_pos, tcp_gl_rotmat, j_mat = self.jlc.forward_kinematics(joint_values=iter_jnt_vals,
-                                                                           toggle_jacobian=True,
+            tcp_gl_pos, tcp_gl_rotmat, j_mat = self.jlc.forward_kinematics(jnt_vals=iter_jnt_vals,
+                                                                           toggle_jac=True,
                                                                            update=False)
             tcp_pos_err_val, tcp_rot_err_val, tcp_err_vec = rm.diff_between_posrot(src_pos=tcp_gl_pos,
                                                                                    src_rotmat=tcp_gl_rotmat,
@@ -267,8 +267,8 @@ class NumIKSolver(object):
             iter_jnt_vals = self.jlc.get_joint_values()
         counter = 0
         while True:
-            tcp_gl_pos, tcp_gl_rotmat, j_mat = self.jlc.forward_kinematics(joint_values=iter_jnt_vals,
-                                                                           toggle_jacobian=True,
+            tcp_gl_pos, tcp_gl_rotmat, j_mat = self.jlc.forward_kinematics(jnt_vals=iter_jnt_vals,
+                                                                           toggle_jac=True,
                                                                            update=False)
             tcp_pos_err_val, tcp_rot_err_val, tcp_err_vec = rm.diff_between_posrot(src_pos=tcp_gl_pos,
                                                                                    src_rotmat=tcp_gl_rotmat,
@@ -328,7 +328,7 @@ class NumIKSolver(object):
         author: weiwei
         date: 20180203, 20200328
         """
-        delta_pos = tgt_pos - self.jlc.joints[0].gl_pos0
+        delta_pos = tgt_pos - self.jlc.jnts[0].gl_pos0
         if np.linalg.norm(delta_pos) > self.max_rng:
             print("The goal is outside maximum range!")
             return None
@@ -500,11 +500,11 @@ class NumIKSolver(object):
         """
         counter = 0
         for id in self.jlc.tgtjnts:
-            if self.jlc.joints[id]["end_type"] == 'revolute':
-                if self.jlc.joints[id]['motion_rng'][1] - self.jlc.joints[id]['motion_rng'][0] >= math.pi * 2:
-                    rm.regulate_angle(self.jlc.joints[id]['motion_rng'][0],
-                                      self.jlc.joints[id]['motion_rng'][1],
-                                      self.jlc.joints[id]["movement"])
+            if self.jlc.jnts[id]["end_type"] == 'revolute':
+                if self.jlc.jnts[id]['motion_rng'][1] - self.jlc.jnts[id]['motion_rng'][0] >= math.pi * 2:
+                    rm.regulate_angle(self.jlc.jnts[id]['motion_rng'][0],
+                                      self.jlc.jnts[id]['motion_rng'][1],
+                                      self.jlc.jnts[id]["movement"])
             counter += 1
 
     def check_jntranges_drag(self, jnt_values):
@@ -522,8 +522,8 @@ class NumIKSolver(object):
         isdragged = np.zeros_like(jnt_values)
         jntvaluesdragged = jnt_values.copy()
         for id in self.jlc.tgtjnts:
-            if self.jlc.joints[id]["end_type"] == 'revolute':
-                if self.jlc.joints[id]['motion_rng'][1] - self.jlc.joints[id]['motion_rng'][0] < math.pi * 2:
+            if self.jlc.jnts[id]["end_type"] == 'revolute':
+                if self.jlc.jnts[id]['motion_rng'][1] - self.jlc.jnts[id]['motion_rng'][0] < math.pi * 2:
                     # if joint_values[counter] < jlinstance.joints[id]['motion_rng'][0]:
                     #     isdragged[counter] = 1
                     #     jntvaluesdragged[counter] = jlinstance.joints[id]['motion_rng'][0]
@@ -531,13 +531,13 @@ class NumIKSolver(object):
                     #     isdragged[counter] = 1
                     #     jntvaluesdragged[counter] = jlinstance.joints[id]['motion_rng'][1]
                     print("Drag revolute")
-                    if jnt_values[counter] < self.jlc.joints[id]['motion_rng'][0] or jnt_values[counter] > \
-                            self.jlc.joints[id]['motion_rng'][1]:
+                    if jnt_values[counter] < self.jlc.jnts[id]['motion_rng'][0] or jnt_values[counter] > \
+                            self.jlc.jnts[id]['motion_rng'][1]:
                         isdragged[counter] = 1
-                        jntvaluesdragged[counter] = (self.jlc.joints[id]['motion_rng'][1] +
-                                                     self.jlc.joints[id][
+                        jntvaluesdragged[counter] = (self.jlc.jnts[id]['motion_rng'][1] +
+                                                     self.jlc.jnts[id][
                                                          'motion_rng'][0]) / 2
-            elif self.jlc.joints[id]["end_type"] == 'prismatic':  # prismatic
+            elif self.jlc.jnts[id]["end_type"] == 'prismatic':  # prismatic
                 # if joint_values[counter] < jlinstance.joints[id]['motion_rng'][0]:
                 #     isdragged[counter] = 1
                 #     jntvaluesdragged[counter] = jlinstance.joints[id]['motion_rng'][0]
@@ -545,10 +545,10 @@ class NumIKSolver(object):
                 #     isdragged[counter] = 1
                 #     jntvaluesdragged[counter] = jlinstance.joints[id]['motion_rng'][1]
                 print("Drag prismatic")
-                if jnt_values[counter] < self.jlc.joints[id]['motion_rng'][0] or jnt_values[counter] > \
-                        self.jlc.joints[id]['motion_rng'][1]:
+                if jnt_values[counter] < self.jlc.jnts[id]['motion_rng'][0] or jnt_values[counter] > \
+                        self.jlc.jnts[id]['motion_rng'][1]:
                     isdragged[counter] = 1
-                    jntvaluesdragged[counter] = (self.jlc.joints[id]['motion_rng'][1] + self.jlc.joints[id][
+                    jntvaluesdragged[counter] = (self.jlc.jnts[id]['motion_rng'][1] + self.jlc.jnts[id][
                         "rngmin"]) / 2
         return isdragged, jntvaluesdragged
 

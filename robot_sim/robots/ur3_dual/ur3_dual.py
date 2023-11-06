@@ -20,22 +20,22 @@ class UR3Dual(ri.RobotInterface):
         this_dir, this_filename = os.path.split(__file__)
         # left side
         self.lft_body = jl.JLChain(pos=pos, rotmat=rotmat, home_conf=np.zeros(13), name='lft_body_jl')
-        self.lft_body.joints[0]['pos_in_loc_tcp'] = np.array([0.0, 0.0, 0.0])
-        self.lft_body.joints[1]['pos_in_loc_tcp'] = np.array([-0.0, 0.0, 0.0])
-        self.lft_body.joints[2]['pos_in_loc_tcp'] = np.array([0.0, 0.0, 0.0])
-        self.lft_body.joints[3]['pos_in_loc_tcp'] = np.array([0.0, 0.0, 0.0])
-        self.lft_body.joints[4]['pos_in_loc_tcp'] = np.array([-0.0, 0.0, 0.0])
-        self.lft_body.joints[5]['pos_in_loc_tcp'] = np.array([0.0, 0.0, 0.0])
-        self.lft_body.joints[6]['pos_in_loc_tcp'] = np.array([0.0, 0.0, 0.0])
-        self.lft_body.joints[7]['pos_in_loc_tcp'] = np.array([-0.0, 0.0, 0.0])
-        self.lft_body.joints[8]['pos_in_loc_tcp'] = np.array([0.0, 0.0, 0.0])
-        self.lft_body.joints[9]['pos_in_loc_tcp'] = np.array([0.0, 0.0, 0.0])
-        self.lft_body.joints[10]['pos_in_loc_tcp'] = np.array([-0.0, 0.0, 0.0])
-        self.lft_body.joints[11]['pos_in_loc_tcp'] = np.array([0.0, 0.0, 0.0])
-        self.lft_body.joints[12]['pos_in_loc_tcp'] = np.array([0.0, 0.0, 0.0])
-        self.lft_body.joints[13]['pos_in_loc_tcp'] = np.array([0.0, 0.0, 0.0])
-        self.lft_body.joints[14]['pos_in_loc_tcp'] = np.array([.0, .258485281374, 1.61051471863])
-        self.lft_body.joints[14]['gl_rotmat'] = rm.rotmat_from_euler(-3.0 * math.pi / 4.0, 0, math.pi, 'rxyz')
+        self.lft_body.jnts[0]['pos_in_loc_tcp'] = np.array([0.0, 0.0, 0.0])
+        self.lft_body.jnts[1]['pos_in_loc_tcp'] = np.array([-0.0, 0.0, 0.0])
+        self.lft_body.jnts[2]['pos_in_loc_tcp'] = np.array([0.0, 0.0, 0.0])
+        self.lft_body.jnts[3]['pos_in_loc_tcp'] = np.array([0.0, 0.0, 0.0])
+        self.lft_body.jnts[4]['pos_in_loc_tcp'] = np.array([-0.0, 0.0, 0.0])
+        self.lft_body.jnts[5]['pos_in_loc_tcp'] = np.array([0.0, 0.0, 0.0])
+        self.lft_body.jnts[6]['pos_in_loc_tcp'] = np.array([0.0, 0.0, 0.0])
+        self.lft_body.jnts[7]['pos_in_loc_tcp'] = np.array([-0.0, 0.0, 0.0])
+        self.lft_body.jnts[8]['pos_in_loc_tcp'] = np.array([0.0, 0.0, 0.0])
+        self.lft_body.jnts[9]['pos_in_loc_tcp'] = np.array([0.0, 0.0, 0.0])
+        self.lft_body.jnts[10]['pos_in_loc_tcp'] = np.array([-0.0, 0.0, 0.0])
+        self.lft_body.jnts[11]['pos_in_loc_tcp'] = np.array([0.0, 0.0, 0.0])
+        self.lft_body.jnts[12]['pos_in_loc_tcp'] = np.array([0.0, 0.0, 0.0])
+        self.lft_body.jnts[13]['pos_in_loc_tcp'] = np.array([0.0, 0.0, 0.0])
+        self.lft_body.jnts[14]['pos_in_loc_tcp'] = np.array([.0, .258485281374, 1.61051471863])
+        self.lft_body.jnts[14]['gl_rotmat'] = rm.rotmat_from_euler(-3.0 * math.pi / 4.0, 0, math.pi, 'rxyz')
         # body
         self.lft_body.lnks[0]['name'] = "ur3_dual_lft_body"
         self.lft_body.lnks[0]['pos_in_loc_tcp'] = np.array([0, 0, 0])
@@ -118,33 +118,33 @@ class UR3Dual(ri.RobotInterface):
         lft_arm_homeconf[2] = -math.pi * 2.0 / 3.0
         lft_arm_homeconf[3] = -math.pi
         lft_arm_homeconf[4] = -math.pi / 2.0
-        self.lft_arm = ur.UR3(pos=self.lft_body.joints[-1]['gl_posq'],
-                              rotmat=self.lft_body.joints[-1]['gl_rotmatq'],
+        self.lft_arm = ur.UR3(pos=self.lft_body.jnts[-1]['gl_posq'],
+                              rotmat=self.lft_body.jnts[-1]['gl_rotmatq'],
                               homeconf=lft_arm_homeconf,
                               enable_cc=False)
         # lft hand ftsensor
         self.lft_ft_sensor = jl.JLChain(pos=self.lft_arm.jnts[-1]['gl_posq'],
                                         rotmat=self.lft_arm.jnts[-1]['gl_rotmatq'],
                                         home_conf=np.zeros(0), name='lft_ft_sensor_jl')
-        self.lft_ft_sensor.joints[1]['pos_in_loc_tcp'] = np.array([.0, .0, .0484])
+        self.lft_ft_sensor.jnts[1]['pos_in_loc_tcp'] = np.array([.0, .0, .0484])
         self.lft_ft_sensor.lnks[0]['name'] = "ur3_dual_lft_ft_sensor"
         self.lft_ft_sensor.lnks[0]['pos_in_loc_tcp'] = np.array([0, 0, 0])
-        self.lft_ft_sensor.lnks[0]['collision_model'] = cm.gen_stick(spos=self.lft_ft_sensor.joints[0]['pos_in_loc_tcp'],
-                                                                     epos=self.lft_ft_sensor.joints[1]['pos_in_loc_tcp'],
+        self.lft_ft_sensor.lnks[0]['collision_model'] = cm.gen_stick(spos=self.lft_ft_sensor.jnts[0]['pos_in_loc_tcp'],
+                                                                     epos=self.lft_ft_sensor.jnts[1]['pos_in_loc_tcp'],
                                                                      radius=.067, rgba=[.2, .3, .3, 1], n_sec=24)
         self.lft_ft_sensor.reinitialize()
         # lft hand
         # self.lft_hnd = rtq_gs.Robotiq85GelsightPusher(pos=self.lft_ft_sensor.joints[-1]['gl_posq'],
         #                                               rotmat=self.lft_ft_sensor.joints[-1]['gl_rotmatq'],
         #                                               enable_cc=False)
-        self.lft_hnd = rtq_gs.Robotiq85Gelsight(pos=self.lft_ft_sensor.joints[-1]['gl_posq'],
-                                                rotmat=self.lft_ft_sensor.joints[-1]['gl_rotmatq'],
+        self.lft_hnd = rtq_gs.Robotiq85Gelsight(pos=self.lft_ft_sensor.jnts[-1]['gl_posq'],
+                                                rotmat=self.lft_ft_sensor.jnts[-1]['gl_rotmatq'],
                                                 enable_cc=False)
         # rigth side
         self.rgt_body = jl.JLChain(pos=pos, rotmat=rotmat, home_conf=np.zeros(0), name='rgt_body_jl')
-        self.rgt_body.joints[1]['pos_in_loc_tcp'] = np.array([.0, -.258485281374, 1.61051471863])  # right from robot_s view
-        self.rgt_body.joints[1]['gl_rotmat'] = rm.rotmat_from_euler(3.0 * math.pi / 4.0, .0,
-                                                                     .0)  # left from robot_s view
+        self.rgt_body.jnts[1]['pos_in_loc_tcp'] = np.array([.0, -.258485281374, 1.61051471863])  # right from robot_s view
+        self.rgt_body.jnts[1]['gl_rotmat'] = rm.rotmat_from_euler(3.0 * math.pi / 4.0, .0,
+                                                                  .0)  # left from robot_s view
         self.rgt_body.lnks[0]['name'] = "ur3_dual_rgt_body"
         self.rgt_body.lnks[0]['pos_in_loc_tcp'] = np.array([0, 0, 0])
         self.rgt_body.lnks[0]['mesh_file'] = None
@@ -156,35 +156,35 @@ class UR3Dual(ri.RobotInterface):
         rgt_arm_homeconf[2] = math.pi * 2.0 / 3.0
         lft_arm_homeconf[3] = math.pi
         rgt_arm_homeconf[4] = math.pi / 2.0
-        self.rgt_arm = ur.UR3(pos=self.rgt_body.joints[-1]['gl_posq'],
-                              rotmat=self.rgt_body.joints[-1]['gl_rotmatq'],
+        self.rgt_arm = ur.UR3(pos=self.rgt_body.jnts[-1]['gl_posq'],
+                              rotmat=self.rgt_body.jnts[-1]['gl_rotmatq'],
                               homeconf=rgt_arm_homeconf,
                               enable_cc=False)
         # rgt hand ft sensor
         self.rgt_ft_sensor = jl.JLChain(pos=self.rgt_arm.jnts[-1]['gl_posq'],
                                         rotmat=self.rgt_arm.jnts[-1]['gl_rotmatq'],
                                         home_conf=np.zeros(0), name='rgt_ft_sensor_jl')
-        self.rgt_ft_sensor.joints[1]['pos_in_loc_tcp'] = np.array([.0, .0, .0484])
+        self.rgt_ft_sensor.jnts[1]['pos_in_loc_tcp'] = np.array([.0, .0, .0484])
         self.rgt_ft_sensor.lnks[0]['name'] = "ur3_dual_rgt_ft_sensor"
         self.rgt_ft_sensor.lnks[0]['pos_in_loc_tcp'] = np.array([0, 0, 0])
-        self.rgt_ft_sensor.lnks[0]['collision_model'] = cm.gen_stick(spos=self.rgt_ft_sensor.joints[0]['pos_in_loc_tcp'],
-                                                                     epos=self.rgt_ft_sensor.joints[1]['pos_in_loc_tcp'],
+        self.rgt_ft_sensor.lnks[0]['collision_model'] = cm.gen_stick(spos=self.rgt_ft_sensor.jnts[0]['pos_in_loc_tcp'],
+                                                                     epos=self.rgt_ft_sensor.jnts[1]['pos_in_loc_tcp'],
                                                                      radius=.067, rgba=[.2, .3, .3, 1], n_sec=24)
         self.rgt_ft_sensor.reinitialize()
         # TODO replace using copy
-        self.rgt_hnd = rtq.Robotiq85(pos=self.rgt_ft_sensor.joints[-1]['gl_posq'],
-                                     rotmat=self.rgt_ft_sensor.joints[-1]['gl_rotmatq'],
+        self.rgt_hnd = rtq.Robotiq85(pos=self.rgt_ft_sensor.jnts[-1]['gl_posq'],
+                                     rotmat=self.rgt_ft_sensor.jnts[-1]['gl_rotmatq'],
                                      enable_cc=False)
         # tool center point
         # lft
         self.lft_arm.tcp_jnt_id = -1
-        self.lft_arm.tcp_loc_rotmat = self.lft_ft_sensor.joints[-1]['gl_rotmat'].dot(self.lft_hnd.jaw_center_rotmat)
-        self.lft_arm.tcp_loc_pos = self.lft_ft_sensor.joints[-1]['pos_in_loc_tcp'] + self.lft_arm.tcp_loc_rotmat.dot(
+        self.lft_arm.tcp_loc_rotmat = self.lft_ft_sensor.jnts[-1]['gl_rotmat'].dot(self.lft_hnd.jaw_center_rotmat)
+        self.lft_arm.tcp_loc_pos = self.lft_ft_sensor.jnts[-1]['pos_in_loc_tcp'] + self.lft_arm.tcp_loc_rotmat.dot(
             self.lft_hnd.jaw_center_pos)
         # rgt
         self.rgt_arm.tcp_jnt_id = -1
-        self.rgt_arm.tcp_loc_rotmat = self.rgt_ft_sensor.joints[-1]['gl_rotmat'].dot(self.rgt_hnd.jaw_center_rotmat)
-        self.rgt_arm.tcp_loc_pos = self.rgt_ft_sensor.joints[-1]['pos_in_loc_tcp'] + self.rgt_arm.tcp_loc_rotmat.dot(
+        self.rgt_arm.tcp_loc_rotmat = self.rgt_ft_sensor.jnts[-1]['gl_rotmat'].dot(self.rgt_hnd.jaw_center_rotmat)
+        self.rgt_arm.tcp_loc_pos = self.rgt_ft_sensor.jnts[-1]['pos_in_loc_tcp'] + self.rgt_arm.tcp_loc_rotmat.dot(
             self.rgt_hnd.jaw_center_pos)
         # a list of detailed information about objects in hand, see CollisionChecker.add_objinhnd
         self.lft_oih_infos = []
@@ -367,15 +367,15 @@ class UR3Dual(ri.RobotInterface):
         self.pos = pos
         self.rotmat = rotmat
         self.lft_body.fix_to(self.pos, self.rotmat)
-        self.lft_arm.fix_to(pos=self.lft_body.joints[-1]['gl_posq'], rotmat=self.lft_body.joints[-1]['gl_rotmatq'])
+        self.lft_arm.fix_to(pos=self.lft_body.jnts[-1]['gl_posq'], rotmat=self.lft_body.jnts[-1]['gl_rotmatq'])
         self.lft_ft_sensor.fix_to(pos=self.lft_arm.jnts[-1]['gl_posq'], rotmat=self.lft_arm.jnts[-1]['gl_rotmatq'])
-        self.lft_hnd.fix_to(pos=self.lft_ft_sensor.joints[-1]['gl_posq'],
-                            rotmat=self.lft_ft_sensor.joints[-1]['gl_rotmatq'])
+        self.lft_hnd.fix_to(pos=self.lft_ft_sensor.jnts[-1]['gl_posq'],
+                            rotmat=self.lft_ft_sensor.jnts[-1]['gl_rotmatq'])
         self.rgt_body.fix_to(self.pos, self.rotmat)
-        self.rgt_arm.fix_to(pos=self.rgt_body.joints[-1]['gl_posq'], rotmat=self.rgt_body.joints[-1]['gl_rotmatq'])
+        self.rgt_arm.fix_to(pos=self.rgt_body.jnts[-1]['gl_posq'], rotmat=self.rgt_body.jnts[-1]['gl_rotmatq'])
         self.rgt_ft_sensor.fix_to(pos=self.rgt_arm.jnts[-1]['gl_posq'], rotmat=self.rgt_arm.jnts[-1]['gl_rotmatq'])
-        self.rgt_hnd.fix_to(pos=self.rgt_ft_sensor.joints[-1]['gl_posq'],
-                            rotmat=self.rgt_ft_sensor.joints[-1]['gl_rotmatq'])
+        self.rgt_hnd.fix_to(pos=self.rgt_ft_sensor.jnts[-1]['gl_posq'],
+                            rotmat=self.rgt_ft_sensor.jnts[-1]['gl_rotmatq'])
 
     def fk(self, component_name, jnt_values):
         """
@@ -400,12 +400,12 @@ class UR3Dual(ri.RobotInterface):
 
         def update_component(component_name, jnt_values):
             status = self.manipulator_dict[component_name].fk(joint_values=jnt_values)
-            self.ft_sensor_dict[component_name].fix_to(pos=self.manipulator_dict[component_name].joints[-1]['gl_posq'],
-                                                       rotmat=self.manipulator_dict[component_name].joints[-1][
+            self.ft_sensor_dict[component_name].fix_to(pos=self.manipulator_dict[component_name].jnts[-1]['gl_posq'],
+                                                       rotmat=self.manipulator_dict[component_name].jnts[-1][
                                                            'gl_rotmatq'])
             self.get_hnd_on_manipulator(component_name).fix_to(
-                pos=self.ft_sensor_dict[component_name].joints[-1]['gl_posq'],
-                rotmat=self.ft_sensor_dict[component_name].joints[-1]['gl_rotmatq'])
+                pos=self.ft_sensor_dict[component_name].jnts[-1]['gl_posq'],
+                rotmat=self.ft_sensor_dict[component_name].jnts[-1]['gl_rotmatq'])
             update_oih(component_name=component_name)
             return status
 
@@ -429,8 +429,8 @@ class UR3Dual(ri.RobotInterface):
     def jaw_to(self, hnd_name, jaw_width):
         self.hnd_dict[hnd_name].jaw_to(jaw_width=jaw_width)
         # update arm tcp
-        self.lft_arm.tcp_loc_pos = self.lft_ft_sensor.joints[-1]['pos_in_loc_tcp'] + self.lft_hnd.jaw_center_pos
-        self.rgt_arm.tcp_loc_pos = self.rgt_ft_sensor.joints[-1]['pos_in_loc_tcp'] + self.rgt_hnd.jaw_center_pos
+        self.lft_arm.tcp_loc_pos = self.lft_ft_sensor.jnts[-1]['pos_in_loc_tcp'] + self.lft_hnd.jaw_center_pos
+        self.rgt_arm.tcp_loc_pos = self.rgt_ft_sensor.jnts[-1]['pos_in_loc_tcp'] + self.rgt_hnd.jaw_center_pos
 
     def rand_conf(self, component_name):
         """

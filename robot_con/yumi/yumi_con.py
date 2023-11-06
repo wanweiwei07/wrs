@@ -285,9 +285,9 @@ class YumiController:
 
     def _get_arm_jnts(self, armname: str):
         if armname == "rgt":
-            return np.deg2rad(self.rbtx.right.get_state().joints)
+            return np.deg2rad(self.rbtx.right.get_state().jnts)
         elif armname == "lft":
-            return np.deg2rad(self.rbtx.left.get_state().joints)
+            return np.deg2rad(self.rbtx.left.get_state().jnts)
         else:
             raise ValueError("Arm name must be right or left!")
 

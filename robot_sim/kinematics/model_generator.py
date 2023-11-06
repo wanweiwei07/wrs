@@ -29,7 +29,7 @@ def gen_tcp_frame(jlc,
     """
     m_col = mc.ModelCollection(name="tcp_frame")
     tcp_gl_pos, tcp_gl_rotmat = jlc.cvt_tcp_loc_to_gl()
-    gm.gen_dashed_stick(spos=jlc.joints[jlc.tcp_joint_id].gl_pos_q,
+    gm.gen_dashed_stick(spos=jlc.jnts[jlc.tcp_jnt_id].gl_pos_q,
                         epos=tcp_gl_pos,
                         radius=tcp_indicator_axis_radius,
                         rgba=tcp_indicator_rgba,
@@ -87,8 +87,8 @@ def gen_joint(joint,
               toggle_frame_q=True,
               toggle_link_mesh=False):
     m_col = mc.ModelCollection()
-    spos = joint._gl_pos_0 - joint.gl_motion_axis * radius
-    epos = joint._gl_pos_0 + joint.gl_motion_axis * radius
+    spos = joint._gl_pos_0 - joint.gl_motion_ax * radius
+    epos = joint._gl_pos_0 + joint.gl_motion_ax * radius
     if joint.type == rkc.JointType.REVOLUTE:
         gm.gen_stick(spos=spos,
                      epos=joint._gl_pos_0,
@@ -108,7 +108,7 @@ def gen_joint(joint,
                      type="round",
                      n_sec=6).attach_to(m_col)
         gm.gen_stick(spos=joint._gl_pos_0,
-                     epos=joint._gl_pos_0 + joint._gl_motion_axis * joint.motion_value,
+                     epos=joint._gl_pos_0 + joint._gl_motion_ax * joint.motion_val,
                      radius=radius,
                      rgba=bc.joint_child_rgba,
                      type="round",
@@ -143,21 +143,21 @@ def gen_jlc_stick(jlc,
                radius=joint_ratio * reference_radius,
                toggle_frame=toggle_joint_frame).attach_to(m_col)
     gm.gen_dashed_stick(spos=jlc.anchor.pos,
-                        epos=jlc.joints[0].gl_pos_0,
+                        epos=jlc.jnts[0].gl_pos_0,
                         radius=link_ratio * reference_radius,
                         type="rect",
                         rgba=stick_rgba).attach_to(m_col)
     for i in range(jlc.n_dof - 1):
-        gm.gen_stick(spos=jlc.joints[i].gl_pos_q,
-                     epos=jlc.joints[i + 1].gl_pos_0,
+        gm.gen_stick(spos=jlc.jnts[i].gl_pos_q,
+                     epos=jlc.jnts[i + 1].gl_pos_0,
                      radius=link_ratio * reference_radius,
                      type="rect",
                      rgba=stick_rgba).attach_to(m_col)
-        gen_joint(jlc.joints[i],
+        gen_joint(jlc.jnts[i],
                   radius=joint_ratio * reference_radius,
                   toggle_frame_0=toggle_joint_frame,
                   toggle_frame_q=toggle_joint_frame).attach_to(m_col)
-    gen_joint(jlc.joints[jlc.n_dof - 1],
+    gen_joint(jlc.jnts[jlc.n_dof - 1],
               radius=joint_ratio * reference_radius,
               toggle_frame_0=toggle_joint_frame,
               toggle_frame_q=toggle_joint_frame).attach_to(m_col)
@@ -173,8 +173,8 @@ def gen_jlc_mesh(jlc,
                  rgba=None):
     m_col = mc.ModelCollection(name=name)
     for i in range(jlc.n_dof):
-        if jlc.joints[i].link is not None:
-            gen_link_mesh(jlc.joints[i].link, rgba=rgba).attach_to(m_col)
+        if jlc.jnts[i].link is not None:
+            gen_link_mesh(jlc.jnts[i].link, rgba=rgba).attach_to(m_col)
     if toggle_tcp_frame:
         gen_tcp_frame(jlc=jlc,
                       tcp_frame_axis_radius=rkc.FRAME_STICK_RADIUS,
@@ -186,13 +186,13 @@ def gen_jlc_mesh(jlc,
                    frame_stick_length=rkc.FRAME_STICK_LENGTH_LONG,
                    toggle_frame=toggle_joint_frame).attach_to(m_col)
         # 0 frame
-        gm.gen_dashed_frame(pos=jlc.joints[i]._gl_pos_0,
-                            rotmat=jlc.joints[i]._gl_rotmat_0,
+        gm.gen_dashed_frame(pos=jlc.jnts[i]._gl_pos_0,
+                            rotmat=jlc.jnts[i]._gl_rotmat_0,
                             axis_radius=rkc.FRAME_STICK_RADIUS,
                             axis_length=rkc.FRAME_STICK_LENGTH_LONG).attach_to(m_col)
         # q frame
-        gm.gen_frame(pos=jlc.joints[i]._gl_pos_q,
-                     rotmat=jlc.joints[i]._gl_rotmat_q,
+        gm.gen_frame(pos=jlc.jnts[i]._gl_pos_q,
+                     rotmat=jlc.jnts[i]._gl_rotmat_q,
                      axis_radius=rkc.FRAME_STICK_RADIUS,
                      axis_length=rkc.FRAME_STICK_LENGTH_LONG).attach_to(m_col)
     return m_col

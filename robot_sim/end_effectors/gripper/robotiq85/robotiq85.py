@@ -13,41 +13,41 @@ class Robotiq85(gp.GripperInterface):
     def __init__(self, pos=np.zeros(3), rotmat=np.eye(3), cdmesh_type='box', name='robotiq85', enable_cc=True):
         super().__init__(pos=pos, rotmat=rotmat, cdmesh_type=cdmesh_type, name=name)
         this_dir, this_filename = os.path.split(__file__)
-        cpl_end_pos = self.coupling.joints[-1]['gl_posq']
-        cpl_end_rotmat = self.coupling.joints[-1]['gl_rotmatq']
+        cpl_end_pos = self.coupling.jnts[-1]['gl_posq']
+        cpl_end_rotmat = self.coupling.jnts[-1]['gl_rotmatq']
         # - lft_outer
         self.lft_outer = jl.JLChain(pos=cpl_end_pos, rotmat=cpl_end_rotmat, home_conf=np.zeros(4), name='lft_outer')
-        self.lft_outer.joints[1]['pos_in_loc_tcp'] = np.array([0, -.0306011, .054904])
-        self.lft_outer.joints[1]['motion_rng'] = [.0, .8]
-        self.lft_outer.joints[1]['gl_rotmat'] = rm.rotmat_from_euler(0, 0, math.pi)
-        self.lft_outer.joints[1]['loc_motionax'] = np.array([1, 0, 0])
-        self.lft_outer.joints[2]['pos_in_loc_tcp'] = np.array([0, .0315, -.0041])  # passive
-        self.lft_outer.joints[2]['loc_motionax'] = np.array([1, 0, 0])
-        self.lft_outer.joints[3]['pos_in_loc_tcp'] = np.array([0, .0061, .0471])
-        self.lft_outer.joints[3]['loc_motionax'] = np.array([1, 0, 0])
-        self.lft_outer.joints[4]['pos_in_loc_tcp'] = np.zeros(3)
+        self.lft_outer.jnts[1]['pos_in_loc_tcp'] = np.array([0, -.0306011, .054904])
+        self.lft_outer.jnts[1]['motion_rng'] = [.0, .8]
+        self.lft_outer.jnts[1]['gl_rotmat'] = rm.rotmat_from_euler(0, 0, math.pi)
+        self.lft_outer.jnts[1]['loc_motionax'] = np.array([1, 0, 0])
+        self.lft_outer.jnts[2]['pos_in_loc_tcp'] = np.array([0, .0315, -.0041])  # passive
+        self.lft_outer.jnts[2]['loc_motionax'] = np.array([1, 0, 0])
+        self.lft_outer.jnts[3]['pos_in_loc_tcp'] = np.array([0, .0061, .0471])
+        self.lft_outer.jnts[3]['loc_motionax'] = np.array([1, 0, 0])
+        self.lft_outer.jnts[4]['pos_in_loc_tcp'] = np.zeros(3)
         # https://github.com/Danfoa uses geometry instead of the dae mesh. The following coordiante is needed
         # self.lft_outer.joints[4]['pos_in_loc_tcp'] = np.array([0, -0.0220203446692936, .03242])
         # - lft_inner
         self.lft_inner = jl.JLChain(pos=cpl_end_pos, rotmat=cpl_end_rotmat, home_conf=np.zeros(1), name='lft_inner')
-        self.lft_inner.joints[1]['pos_in_loc_tcp'] = np.array([0, -.0127, .06142])
-        self.lft_inner.joints[1]['gl_rotmat'] = rm.rotmat_from_euler(0, 0, math.pi)
-        self.lft_inner.joints[1]['loc_motionax'] = np.array([1, 0, 0])
+        self.lft_inner.jnts[1]['pos_in_loc_tcp'] = np.array([0, -.0127, .06142])
+        self.lft_inner.jnts[1]['gl_rotmat'] = rm.rotmat_from_euler(0, 0, math.pi)
+        self.lft_inner.jnts[1]['loc_motionax'] = np.array([1, 0, 0])
         # - rgt_outer
         self.rgt_outer = jl.JLChain(pos=cpl_end_pos, rotmat=cpl_end_rotmat, home_conf=np.zeros(4), name='rgt_outer')
-        self.rgt_outer.joints[1]['pos_in_loc_tcp'] = np.array([0, .0306011, .054904])
-        self.rgt_outer.joints[1]['loc_motionax'] = np.array([1, 0, 0])
-        self.rgt_outer.joints[2]['pos_in_loc_tcp'] = np.array([0, .0315, -.0041])  # passive
-        self.rgt_outer.joints[2]['loc_motionax'] = np.array([1, 0, 0])
-        self.rgt_outer.joints[3]['pos_in_loc_tcp'] = np.array([0, .0061, .0471])
-        self.rgt_outer.joints[3]['loc_motionax'] = np.array([1, 0, 0])
-        self.rgt_outer.joints[4]['pos_in_loc_tcp'] = np.zeros(3)
+        self.rgt_outer.jnts[1]['pos_in_loc_tcp'] = np.array([0, .0306011, .054904])
+        self.rgt_outer.jnts[1]['loc_motionax'] = np.array([1, 0, 0])
+        self.rgt_outer.jnts[2]['pos_in_loc_tcp'] = np.array([0, .0315, -.0041])  # passive
+        self.rgt_outer.jnts[2]['loc_motionax'] = np.array([1, 0, 0])
+        self.rgt_outer.jnts[3]['pos_in_loc_tcp'] = np.array([0, .0061, .0471])
+        self.rgt_outer.jnts[3]['loc_motionax'] = np.array([1, 0, 0])
+        self.rgt_outer.jnts[4]['pos_in_loc_tcp'] = np.zeros(3)
         # https://github.com/Danfoa uses geometry instead of the dae mesh. The following coordiante is needed
         # self.rgt_outer.joints[4]['pos_in_loc_tcp'] = np.array([0, -0.0220203446692936, .03242])
         # - rgt_inner
         self.rgt_inner = jl.JLChain(pos=cpl_end_pos, rotmat=cpl_end_rotmat, home_conf=np.zeros(1), name='rgt_inner')
-        self.rgt_inner.joints[1]['pos_in_loc_tcp'] = np.array([0, .0127, .06142])
-        self.rgt_inner.joints[1]['loc_motionax'] = np.array([1, 0, 0])
+        self.rgt_inner.jnts[1]['pos_in_loc_tcp'] = np.array([0, .0127, .06142])
+        self.rgt_inner.jnts[1]['loc_motionax'] = np.array([1, 0, 0])
         # links
         # - lft_outer
         self.lft_outer.lnks[0]['name'] = "robotiq85_gripper_base"
@@ -160,15 +160,15 @@ class Robotiq85(gp.GripperInterface):
         self.pos = pos
         self.rotmat = rotmat
         if angle is not None:
-            self.lft_outer.joints[1]['motion_val'] = angle
-            self.lft_outer.joints[3]['motion_val'] = -self.lft_outer.joints[1]['motion_val']
-            self.lft_inner.joints[1]['motion_val'] = self.lft_outer.joints[1]['motion_val']
-            self.rgt_outer.joints[1]['motion_val'] = self.lft_outer.joints[1]['motion_val']
-            self.rgt_outer.joints[3]['motion_val'] = -self.lft_outer.joints[1]['motion_val']
-            self.rgt_inner.joints[1]['motion_val'] = self.lft_outer.joints[1]['motion_val']
+            self.lft_outer.jnts[1]['motion_val'] = angle
+            self.lft_outer.jnts[3]['motion_val'] = -self.lft_outer.jnts[1]['motion_val']
+            self.lft_inner.jnts[1]['motion_val'] = self.lft_outer.jnts[1]['motion_val']
+            self.rgt_outer.jnts[1]['motion_val'] = self.lft_outer.jnts[1]['motion_val']
+            self.rgt_outer.jnts[3]['motion_val'] = -self.lft_outer.jnts[1]['motion_val']
+            self.rgt_inner.jnts[1]['motion_val'] = self.lft_outer.jnts[1]['motion_val']
         self.coupling.fix_to(self.pos, self.rotmat)
-        cpl_end_pos = self.coupling.joints[-1]['gl_posq']
-        cpl_end_rotmat = self.coupling.joints[-1]['gl_rotmatq']
+        cpl_end_pos = self.coupling.jnts[-1]['gl_posq']
+        cpl_end_rotmat = self.coupling.jnts[-1]['gl_rotmatq']
         self.lft_outer.fix_to(cpl_end_pos, cpl_end_rotmat)
         self.lft_inner.fix_to(cpl_end_pos, cpl_end_rotmat)
         self.rgt_inner.fix_to(cpl_end_pos, cpl_end_rotmat)
@@ -179,13 +179,13 @@ class Robotiq85(gp.GripperInterface):
         lft_outer is the only active joint, all others mimic this one
         :param: angle, radian
         """
-        if self.lft_outer.joints[1]['motion_rng'][0] <= motion_val <= self.lft_outer.joints[1]['motion_rng'][1]:
-            self.lft_outer.joints[1]['motion_val'] = motion_val
-            self.lft_outer.joints[3]['motion_val'] = -self.lft_outer.joints[1]['motion_val']
-            self.lft_inner.joints[1]['motion_val'] = self.lft_outer.joints[1]['motion_val']
-            self.rgt_outer.joints[1]['motion_val'] = self.lft_outer.joints[1]['motion_val']
-            self.rgt_outer.joints[3]['motion_val'] = -self.lft_outer.joints[1]['motion_val']
-            self.rgt_inner.joints[1]['motion_val'] = self.lft_outer.joints[1]['motion_val']
+        if self.lft_outer.jnts[1]['motion_rng'][0] <= motion_val <= self.lft_outer.jnts[1]['motion_rng'][1]:
+            self.lft_outer.jnts[1]['motion_val'] = motion_val
+            self.lft_outer.jnts[3]['motion_val'] = -self.lft_outer.jnts[1]['motion_val']
+            self.lft_inner.jnts[1]['motion_val'] = self.lft_outer.jnts[1]['motion_val']
+            self.rgt_outer.jnts[1]['motion_val'] = self.lft_outer.jnts[1]['motion_val']
+            self.rgt_outer.jnts[3]['motion_val'] = -self.lft_outer.jnts[1]['motion_val']
+            self.rgt_inner.jnts[1]['motion_val'] = self.lft_outer.jnts[1]['motion_val']
             self.lft_outer.fk()
             self.lft_inner.fk()
             self.rgt_outer.fk()

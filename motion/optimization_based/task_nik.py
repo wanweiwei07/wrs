@@ -51,12 +51,12 @@ class NIK(object):
         j = np.zeros((6, len(self.jlc_object.tgtjnts)))
         counter = 0
         for jid in self.jlc_object.tgtjnts:
-            grax = self.jlc_object.joints[jid]["gl_motionax"]
-            if self.jlc_object.joints[jid]["end_type"] == 'revolute':
-                diffq = tcp_gl_pos - self.jlc_object.joints[jid]["gl_posq"]
+            grax = self.jlc_object.jnts[jid]["gl_motionax"]
+            if self.jlc_object.jnts[jid]["end_type"] == 'revolute':
+                diffq = tcp_gl_pos - self.jlc_object.jnts[jid]["gl_posq"]
                 j[:3, counter] = np.cross(grax, diffq)
                 j[3:6, counter] = grax
-            if self.jlc_object.joints[jid]["end_type"] == 'prismatic':
+            if self.jlc_object.jnts[jid]["end_type"] == 'prismatic':
                 j[:3, counter] = grax
             counter += 1
             if jid == tcp_jnt_id:
@@ -125,14 +125,14 @@ class NIK(object):
         date: 20200706
         """
         if tcp_jnt_id is None:
-            tcp_jnt_id = self.jlc_object.tcp_joint_id
+            tcp_jnt_id = self.jlc_object.tcp_jnt_id
         if tcp_loc_pos is None:
             tcp_loc_pos = self.jlc_object.tcp_loc_pos
         if tcp_loc_rotmat is None:
             tcp_loc_rotmat = self.jlc_object.tcp_loc_rotmat
-        tcp_gl_pos = np.dot(self.jlc_object.joints[tcp_jnt_id]["gl_rotmatq"], tcp_loc_pos) + \
-                     self.jlc_object.joints[tcp_jnt_id]["gl_posq"]
-        tcp_gl_rotmat = np.dot(self.jlc_object.joints[tcp_jnt_id]["gl_rotmatq"], tcp_loc_rotmat)
+        tcp_gl_pos = np.dot(self.jlc_object.jnts[tcp_jnt_id]["gl_rotmatq"], tcp_loc_pos) + \
+                     self.jlc_object.jnts[tcp_jnt_id]["gl_posq"]
+        tcp_gl_rotmat = np.dot(self.jlc_object.jnts[tcp_jnt_id]["gl_rotmatq"], tcp_loc_rotmat)
         return tcp_gl_pos, tcp_gl_rotmat
 
     def tcp_error(self, tgt_pos, tgt_rot, tcp_jnt_id, tcp_loc_pos, tcp_loc_rotmat):
@@ -167,10 +167,10 @@ class NIK(object):
         """
         counter = 0
         for id in self.jlc_object.tgtjnts:
-            if self.jlc_object.joints[id]["end_type"] == 'revolute':
-                if self.jlc_object.joints[id]['motion_rng'][1] - self.jlc_object.joints[id]['motion_rng'][0] >= math.pi * 2:
-                    rm.regulate_angle(self.jlc_object.joints[id]['motion_rng'][0], self.jlc_object.joints[id]['motion_rng'][1],
-                                      self.jlc_object.joints[id]["movement"])
+            if self.jlc_object.jnts[id]["end_type"] == 'revolute':
+                if self.jlc_object.jnts[id]['motion_rng'][1] - self.jlc_object.jnts[id]['motion_rng'][0] >= math.pi * 2:
+                    rm.regulate_angle(self.jlc_object.jnts[id]['motion_rng'][0], self.jlc_object.jnts[id]['motion_rng'][1],
+                                      self.jlc_object.jnts[id]["movement"])
             counter += 1
 
     def check_jntranges_drag(self, jntvalues):
@@ -188,20 +188,20 @@ class NIK(object):
         isdragged = np.zeros_like(jntvalues)
         jntvaluesdragged = jntvalues.copy()
         for id in self.jlc_object.tgtjnts:
-            if self.jlc_object.joints[id]["end_type"] == 'revolute':
-                if self.jlc_object.joints[id]['motion_rng'][1] - self.jlc_object.joints[id]['motion_rng'][0] < math.pi * 2:
+            if self.jlc_object.jnts[id]["end_type"] == 'revolute':
+                if self.jlc_object.jnts[id]['motion_rng'][1] - self.jlc_object.jnts[id]['motion_rng'][0] < math.pi * 2:
                     print("Drag revolute")
-                    if jntvalues[counter] < self.jlc_object.joints[id]['motion_rng'][0] or jntvalues[counter] > \
-                            self.jlc_object.joints[id]['motion_rng'][1]:
+                    if jntvalues[counter] < self.jlc_object.jnts[id]['motion_rng'][0] or jntvalues[counter] > \
+                            self.jlc_object.jnts[id]['motion_rng'][1]:
                         isdragged[counter] = 1
-                        jntvaluesdragged[counter] = (self.jlc_object.joints[id]['motion_rng'][1] + self.jlc_object.joints[id][
+                        jntvaluesdragged[counter] = (self.jlc_object.jnts[id]['motion_rng'][1] + self.jlc_object.jnts[id][
                             'motion_rng'][0]) / 2
-            elif self.jlc_object.joints[id]["end_type"] == 'prismatic':  # prismatic
+            elif self.jlc_object.jnts[id]["end_type"] == 'prismatic':  # prismatic
                 print("Drag prismatic")
-                if jntvalues[counter] < self.jlc_object.joints[id]['motion_rng'][0] or jntvalues[counter] > \
-                        self.jlc_object.joints[id]['motion_rng'][1]:
+                if jntvalues[counter] < self.jlc_object.jnts[id]['motion_rng'][0] or jntvalues[counter] > \
+                        self.jlc_object.jnts[id]['motion_rng'][1]:
                     isdragged[counter] = 1
-                    jntvaluesdragged[counter] = (self.jlc_object.joints[id]['motion_rng'][1] + self.jlc_object.joints[id][
+                    jntvaluesdragged[counter] = (self.jlc_object.jnts[id]['motion_rng'][1] + self.jlc_object.jnts[id][
                         "rngmin"]) / 2
         return isdragged, jntvaluesdragged
 
@@ -229,12 +229,12 @@ class NIK(object):
         author: weiwei
         date: 20180203, 20200328
         """
-        deltapos = tgt_pos - self.jlc_object.joints[0]['gl_pos0']
+        deltapos = tgt_pos - self.jlc_object.jnts[0]['gl_pos0']
         if np.linalg.norm(deltapos) > self.max_rng:
             wns.WarningMessage("The goal is outside maximum range!")
             return None
         if tcp_jnt_id is None:
-            tcp_jnt_id = self.jlc_object.tcp_joint_id
+            tcp_jnt_id = self.jlc_object.tcp_jnt_id
         if tcp_loc_pos is None:
             tcp_loc_pos = self.jlc_object.tcp_loc_pos
             print(self.jlc_object.tcp_loc_pos)

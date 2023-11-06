@@ -16,8 +16,8 @@ class TBM(object):
         this_dir, this_filename = os.path.split(__file__)
         # head
         self.head = jl.JLChain(pos=pos, rotmat=rotmat, home_conf=np.zeros(1), name='head')
-        self.head.joints[1]['pos_in_loc_tcp'] = np.zeros(3)
-        self.head.joints[1]['loc_motionax'] = np.array([1, 0, 0])
+        self.head.jnts[1]['pos_in_loc_tcp'] = np.zeros(3)
+        self.head.jnts[1]['loc_motionax'] = np.array([1, 0, 0])
         self.head.lnks[0]['name'] = 'tbm_front_shield'
         self.head.lnks[0]['pos_in_loc_tcp'] = np.array([0, 0, 0])
         self.head.lnks[0]['mesh_file'] = os.path.join(this_dir, 'meshes', 'tbm_front_shield.stl')
@@ -301,8 +301,8 @@ class TBM(object):
                                      rotmat=self.cutter_rotmat_dict[k][i],
                                      home_conf=np.zeros(1),
                                      name='cutter_' + str(k) + '_' + str(i))
-                tmp_jlc.joints[1]['pos_in_loc_tcp'] = np.zeros(3)
-                tmp_jlc.joints[1]['loc_motionax'] = np.array([0, 0, 1])
+                tmp_jlc.jnts[1]['pos_in_loc_tcp'] = np.zeros(3)
+                tmp_jlc.jnts[1]['loc_motionax'] = np.array([0, 0, 1])
                 tmp_jlc.lnks[1]['name'] = 'cutter'
                 tmp_jlc.lnks[1]['pos_in_loc_tcp'] = np.array([0, 0, 0])
                 tmp_jlc.lnks[1]['mesh_file'] = os.path.join(this_dir, 'meshes', 'cutter.stl')
@@ -317,9 +317,9 @@ class TBM(object):
         self.head.fix_to(self.pos, self.rotmat)
         for k in self.cutters.keys():
             for i, cutter in enumerate(self.cutters[k]):
-                new_pos = self.head.joints[1]['gl_posq'] + self.head.joints[1]['gl_rotmatq'].dot(
+                new_pos = self.head.jnts[1]['gl_posq'] + self.head.jnts[1]['gl_rotmatq'].dot(
                     self.cutter_pos_dict[k][i])
-                new_rotmat = self.head.joints[1]['gl_posq'] + self.head.joints[1]['gl_rotmatq'].dot(
+                new_rotmat = self.head.jnts[1]['gl_posq'] + self.head.jnts[1]['gl_rotmatq'].dot(
                     self.cutter_rotmat_dict[k][i])
                 cutter.fix_to(pos=new_pos, rotmat=new_rotmat)
 
@@ -334,9 +334,9 @@ class TBM(object):
         self.head.fk(joint_values=jnt_values)
         for k in self.cutters.keys():
             for i, cutter in enumerate(self.cutters[k]):
-                new_pos = self.head.joints[1]['gl_posq'] + self.head.joints[1]['gl_rotmatq'].dot(
+                new_pos = self.head.jnts[1]['gl_posq'] + self.head.jnts[1]['gl_rotmatq'].dot(
                     self.cutter_pos_dict[k][i])
-                new_rotmat = self.head.joints[1]['gl_posq'] + self.head.joints[1]['gl_rotmatq'].dot(
+                new_rotmat = self.head.jnts[1]['gl_posq'] + self.head.jnts[1]['gl_rotmatq'].dot(
                     self.cutter_rotmat_dict[k][i])
                 cutter.fix_to(pos=new_pos, rotmat=new_rotmat)
 

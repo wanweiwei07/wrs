@@ -24,35 +24,35 @@ class Nova2(mi.ManipulatorInterface):
         # six joints
         jnt_saferngmargin = math.pi / 18.0
         # joint 1
-        self.jlc.joints[1]['pos_in_loc_tcp'] = np.array([0., -0., 0.22339219])
-        self.jlc.joints[1]['motion_rng'] = [-2. * math.pi + jnt_saferngmargin, 2. * math.pi - jnt_saferngmargin]
+        self.jlc.jnts[1]['pos_in_loc_tcp'] = np.array([0., -0., 0.22339219])
+        self.jlc.jnts[1]['motion_rng'] = [-2. * math.pi + jnt_saferngmargin, 2. * math.pi - jnt_saferngmargin]
         # joint 2
-        self.jlc.joints[2]['pos_in_loc_tcp'] = np.zeros(3)
-        self.jlc.joints[2]['gl_rotmat'] = np.array([[1.15684894e-04, -9.99999993e-01, 0.00000000e+00],
-                                                     [-1.05396766e-03, -1.21928137e-07, -9.99999445e-01],
-                                                     [9.99999438e-01, 1.15684829e-04, -1.05396766e-03]])
-        self.jlc.joints[2]['motion_rng'] = [-math.pi + jnt_saferngmargin, math.pi - jnt_saferngmargin]
+        self.jlc.jnts[2]['pos_in_loc_tcp'] = np.zeros(3)
+        self.jlc.jnts[2]['gl_rotmat'] = np.array([[1.15684894e-04, -9.99999993e-01, 0.00000000e+00],
+                                                  [-1.05396766e-03, -1.21928137e-07, -9.99999445e-01],
+                                                  [9.99999438e-01, 1.15684829e-04, -1.05396766e-03]])
+        self.jlc.jnts[2]['motion_rng'] = [-math.pi + jnt_saferngmargin, math.pi - jnt_saferngmargin]
         # joint 3
-        self.jlc.joints[3]['pos_in_loc_tcp'] = np.array([0.28053836, -0., 0.])
-        self.jlc.joints[3]['motion_rng'] = [-2.722713633111154 + jnt_saferngmargin, 2.722713633111154 - jnt_saferngmargin]
+        self.jlc.jnts[3]['pos_in_loc_tcp'] = np.array([0.28053836, -0., 0.])
+        self.jlc.jnts[3]['motion_rng'] = [-2.722713633111154 + jnt_saferngmargin, 2.722713633111154 - jnt_saferngmargin]
         # joint 4
-        self.jlc.joints[4]['pos_in_loc_tcp'] = np.array([0.22461726, -0., 0.11752977])
-        self.jlc.joints[4]['gl_rotmat'] = np.array([[-9.54658556e-05, 9.99999995e-01, 0.00000000e+00],
-                                                     [-9.99999995e-01, -9.54658556e-05, -0.00000000e+00],
-                                                     [-0.00000000e+00, -0.00000000e+00, 1.00000000e+00]])
-        self.jlc.joints[4]['motion_rng'] = [-2. * math.pi + jnt_saferngmargin, 2. * math.pi - jnt_saferngmargin]
+        self.jlc.jnts[4]['pos_in_loc_tcp'] = np.array([0.22461726, -0., 0.11752977])
+        self.jlc.jnts[4]['gl_rotmat'] = np.array([[-9.54658556e-05, 9.99999995e-01, 0.00000000e+00],
+                                                  [-9.99999995e-01, -9.54658556e-05, -0.00000000e+00],
+                                                  [-0.00000000e+00, -0.00000000e+00, 1.00000000e+00]])
+        self.jlc.jnts[4]['motion_rng'] = [-2. * math.pi + jnt_saferngmargin, 2. * math.pi - jnt_saferngmargin]
         # joint 5
-        self.jlc.joints[5]['pos_in_loc_tcp'] = np.array([0, 1.19844295e-01, 9.28531056e-05])
-        self.jlc.joints[5]['gl_rotmat'] = np.array([[1.00000000e+00, -0.00000000e+00, 0.00000000e+00],
-                                                     [0.00000000e+00, 7.74780958e-04, 9.99999700e-01],
-                                                     [-0.00000000e+00, -9.99999700e-01, 7.74780958e-04]])
-        self.jlc.joints[5]['motion_rng'] = [-2. * math.pi + jnt_saferngmargin, 2. * math.pi - jnt_saferngmargin]
+        self.jlc.jnts[5]['pos_in_loc_tcp'] = np.array([0, 1.19844295e-01, 9.28531056e-05])
+        self.jlc.jnts[5]['gl_rotmat'] = np.array([[1.00000000e+00, -0.00000000e+00, 0.00000000e+00],
+                                                  [0.00000000e+00, 7.74780958e-04, 9.99999700e-01],
+                                                  [-0.00000000e+00, -9.99999700e-01, 7.74780958e-04]])
+        self.jlc.jnts[5]['motion_rng'] = [-2. * math.pi + jnt_saferngmargin, 2. * math.pi - jnt_saferngmargin]
         # joint 6
-        self.jlc.joints[6]['pos_in_loc_tcp'] = np.array([0., -8.80028118e-02, 0])
-        self.jlc.joints[6]['gl_rotmat'] = np.array([[-9.99996405e-01, -2.68157574e-03, 0.00000000e+00],
-                                                     [1.64199157e-19, -6.12321198e-17, -1.00000000e+00],
-                                                     [2.68157574e-03, -9.99996405e-01, 6.12323400e-17]])
-        self.jlc.joints[6]['motion_rng'] = [-2. * math.pi + jnt_saferngmargin, 2. * math.pi - jnt_saferngmargin]
+        self.jlc.jnts[6]['pos_in_loc_tcp'] = np.array([0., -8.80028118e-02, 0])
+        self.jlc.jnts[6]['gl_rotmat'] = np.array([[-9.99996405e-01, -2.68157574e-03, 0.00000000e+00],
+                                                  [1.64199157e-19, -6.12321198e-17, -1.00000000e+00],
+                                                  [2.68157574e-03, -9.99996405e-01, 6.12323400e-17]])
+        self.jlc.jnts[6]['motion_rng'] = [-2. * math.pi + jnt_saferngmargin, 2. * math.pi - jnt_saferngmargin]
         # links
         # link base
         self.jlc.lnks[0]['name'] = "link_base"

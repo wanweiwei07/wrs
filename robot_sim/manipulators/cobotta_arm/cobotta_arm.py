@@ -13,23 +13,23 @@ class CobottaArm(mi.ManipulatorInterface):
         this_dir, this_filename = os.path.split(__file__)
         self.jlc = jl.JLChain(pos=pos, rotmat=rotmat, home_conf=homeconf, name=name)
         # six joints, n_jnts = 6+2 (tgt ranges from 1-6), nlinks = 6+1
-        self.jlc.joints[1]['pos_in_loc_tcp'] = np.array([0, 0, 0])
-        self.jlc.joints[1]['motion_rng'] = [-2.617994, 2.617994]
-        self.jlc.joints[2]['pos_in_loc_tcp'] = np.array([0, 0, 0.18])
-        self.jlc.joints[2]['loc_motionax'] = np.array([0, 1, 0])
-        self.jlc.joints[2]['motion_rng'] = [-1.047198, 1.745329]
-        self.jlc.joints[3]['pos_in_loc_tcp'] = np.array([0, 0, 0.165])
-        self.jlc.joints[3]['loc_motionax'] = np.array([0, 1, 0])
-        self.jlc.joints[3]['motion_rng'] = [0.3141593, 2.443461]
-        self.jlc.joints[4]['pos_in_loc_tcp'] = np.array([-0.012, 0.02, 0.088])
-        self.jlc.joints[4]['loc_motionax'] = np.array([0, 0, 1])
-        self.jlc.joints[4]['motion_rng'] = [-2.96706, 2.96706]
-        self.jlc.joints[5]['pos_in_loc_tcp'] = np.array([0, -.02, .0895])
-        self.jlc.joints[5]['loc_motionax'] = np.array([0, 1, 0])
-        self.jlc.joints[5]['motion_rng'] = [-1.658063, 2.356194]
-        self.jlc.joints[6]['pos_in_loc_tcp'] = np.array([0, -.0445, 0.042])
-        self.jlc.joints[6]['loc_motionax'] = np.array([0, 0, 1])
-        self.jlc.joints[6]['motion_rng'] = [-2.96706, 2.96706]
+        self.jlc.jnts[1]['pos_in_loc_tcp'] = np.array([0, 0, 0])
+        self.jlc.jnts[1]['motion_rng'] = [-2.617994, 2.617994]
+        self.jlc.jnts[2]['pos_in_loc_tcp'] = np.array([0, 0, 0.18])
+        self.jlc.jnts[2]['loc_motionax'] = np.array([0, 1, 0])
+        self.jlc.jnts[2]['motion_rng'] = [-1.047198, 1.745329]
+        self.jlc.jnts[3]['pos_in_loc_tcp'] = np.array([0, 0, 0.165])
+        self.jlc.jnts[3]['loc_motionax'] = np.array([0, 1, 0])
+        self.jlc.jnts[3]['motion_rng'] = [0.3141593, 2.443461]
+        self.jlc.jnts[4]['pos_in_loc_tcp'] = np.array([-0.012, 0.02, 0.088])
+        self.jlc.jnts[4]['loc_motionax'] = np.array([0, 0, 1])
+        self.jlc.jnts[4]['motion_rng'] = [-2.96706, 2.96706]
+        self.jlc.jnts[5]['pos_in_loc_tcp'] = np.array([0, -.02, .0895])
+        self.jlc.jnts[5]['loc_motionax'] = np.array([0, 1, 0])
+        self.jlc.jnts[5]['motion_rng'] = [-1.658063, 2.356194]
+        self.jlc.jnts[6]['pos_in_loc_tcp'] = np.array([0, -.0445, 0.042])
+        self.jlc.jnts[6]['loc_motionax'] = np.array([0, 0, 1])
+        self.jlc.jnts[6]['motion_rng'] = [-2.96706, 2.96706]
         # links
         self.jlc.lnks[0]['name'] = "base"
         self.jlc.lnks[0]['pos_in_loc_tcp'] = np.zeros(3)

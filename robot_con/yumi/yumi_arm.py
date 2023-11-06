@@ -513,7 +513,7 @@ class YuMiArm:
         False if robot stops during the movement
         Author: 1/14/2022 Chen Hao
         """
-        body = YuMiArm._iter_to_str('{:.2f}', state.joints + [desired_torque])
+        body = YuMiArm._iter_to_str('{:.2f}', state.jnts + [desired_torque])
         req = YuMiArm._construct_req('contactL', body)
         res = self._request(req, wait_for_res, timeout=self._motion_timeout)
         return bool(int(res.message))
@@ -561,7 +561,7 @@ class YuMiArm:
         return
 
     def _goto_state_sync(self, state, wait_for_res=True):
-        body = YuMiArm._iter_to_str('{:.2f}', state.joints)
+        body = YuMiArm._iter_to_str('{:.2f}', state.jnts)
         req = YuMiArm._construct_req('goto_joints_sync', body)
         return self._request(req, wait_for_res, timeout=self._motion_timeout)
 
@@ -1028,7 +1028,7 @@ class YuMiArm:
         return ress
 
     def buffer_j_add_single2(self, state_list, wait_for_res):
-        body = YuMiArm._iter_to_str('{:.2f}', [v for state in state_list for v in state.joints])
+        body = YuMiArm._iter_to_str('{:.2f}', [v for state in state_list for v in state.jnts])
         req = YuMiArm._construct_req('buffer_j_add_all', f"{len(state_list)} " + body)
         return self._request(req, wait_for_res)
 
