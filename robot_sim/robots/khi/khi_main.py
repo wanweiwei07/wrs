@@ -182,7 +182,7 @@ class KHI_DUAL(ri.RobotInterface):
         #                                                           tcp_loc_rotmat=tcp_loc_rotmat,
         #                                                           max_n_iter=max_n_iter,
         #                                                           policy_for_local_minima=policy_for_local_minima,
-        #                                                           toggle_debug=toggle_debug)
+        #                                                           toggle_dbg=toggle_dbg)
         #     self.manipulator_dict[component_name].tgtjnts = old_tgt_jnts
         #     return ik_results
         # elif component_name == 'lft_arm_waist' or component_name == 'rgt_arm_waist':
@@ -194,7 +194,7 @@ class KHI_DUAL(ri.RobotInterface):
         #                                                     tcp_loc_rotmat=tcp_loc_rotmat,
         #                                                     max_n_iter=max_n_iter,
         #                                                     policy_for_local_minima=policy_for_local_minima,
-        #                                                     toggle_debug=toggle_debug)
+        #                                                     toggle_dbg=toggle_dbg)
         if component_name in ['lft_arm', 'rgt_arm', 'lft_arm_waist', 'rgt_arm_waist']:
             return self.manipulator_dict[component_name].ik(tgt_pos,
                                                             tgt_rotmat,

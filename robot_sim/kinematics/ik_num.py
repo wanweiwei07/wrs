@@ -83,7 +83,7 @@ class NumIKSolver(object):
                 tgt_rotmat,
                 seed_jnt_vals=None,
                 max_n_iter=100,
-                toggle_debug=False):
+                toggle_dbg=False):
         iter_jnt_vals = seed_jnt_vals
         if seed_jnt_vals is None:
             iter_jnt_vals = self.jlc.get_joint_values()
@@ -100,7 +100,6 @@ class NumIKSolver(object):
                 return iter_jnt_vals
             clamped_tcp_err_vec = self._clamp_tcp_err(tcp_pos_err_val, tcp_rot_err_val, tcp_err_vec)
             delta_jnt_values = np.linalg.pinv(j_mat, rcond=1e-4) @ clamped_tcp_err_vec
-            print(abs(np.sum(delta_jnt_values)))
             if abs(np.sum(delta_jnt_values)) < 1e-8:
                 # local minimia
                 pass
@@ -108,7 +107,7 @@ class NumIKSolver(object):
             if not self.are_jnts_in_range(iter_jnt_vals):
                 # random restart
                 iter_jnt_vals = self.jlc.rand_conf()
-            if toggle_debug:
+            if toggle_dbg:
                 import robot_sim.kinematics.model_generator as rkmg
                 joint_values = self.jlc.get_joint_values()
                 self.jlc.go_given_conf(joint_values=iter_jnt_vals)
@@ -118,7 +117,7 @@ class NumIKSolver(object):
                 gm.gen_arrow(spos=tcp_gl_pos, epos=tcp_gl_pos + tcp_err_vec[:3] * .1).attach_to(base)
                 print("tcp_pos_err ", tcp_pos_err_val, " tcp_rot_err ", tcp_rot_err_val)
             if counter > max_n_iter:
-                raise Exception("No IK solution")
+                return None
             counter += 1
 
     def dls_rr(self,
@@ -126,7 +125,7 @@ class NumIKSolver(object):
                tgt_rotmat,
                seed_jnt_vals=None,
                max_n_iter=100,
-               toggle_debug=False):
+               toggle_dbg=False):
         iter_jnt_vals = seed_jnt_vals
         if seed_jnt_vals is None:
             iter_jnt_vals = self.jlc.get_joint_values()
@@ -148,7 +147,7 @@ class NumIKSolver(object):
             if not self.are_jnts_in_range(iter_jnt_vals):
                 # random restart
                 iter_jnt_vals = self.jlc.rand_conf()
-            if toggle_debug:
+            if toggle_dbg:
                 import robot_sim.kinematics.model_generator as rkmg
                 joint_values = self.jlc.get_joint_values()
                 self.jlc.go_given_conf(joint_values=iter_jnt_vals)
@@ -166,7 +165,7 @@ class NumIKSolver(object):
               tgt_rotmat,
               seed_jnt_vals=None,
               max_n_iter=100,
-              toggle_debug=False):
+              toggle_dbg=False):
         iter_jnt_vals = seed_jnt_vals
         if seed_jnt_vals is None:
             iter_jnt_vals = self.jlc.get_joint_values()
@@ -189,7 +188,7 @@ class NumIKSolver(object):
             if not self.are_jnts_in_range(iter_jnt_vals):
                 # random restart
                 iter_jnt_vals = self.jlc.rand_conf()
-            if toggle_debug:
+            if toggle_dbg:
                 import robot_sim.kinematics.model_generator as rkmg
                 joint_values = self.jlc.get_joint_values()
                 self.jlc.go_given_conf(joint_values=iter_jnt_vals)
@@ -207,13 +206,13 @@ class NumIKSolver(object):
                 tgt_rotmat,
                 seed_jnt_vals=None,
                 max_n_iter=100,
-                toggle_debug=False):
+                toggle_dbg=False):
         """
         :param tgt_pos:
         :param tgt_rotmat:
         :param seed_jnt_vals:
         :param max_n_iter:
-        :param toggle_debug:
+        :param toggle_dbg:
         :return:
         author: weiwei
         date: 20231101
@@ -242,7 +241,7 @@ class NumIKSolver(object):
             delta_jnt_values = clamping + wln_sqrt @ np.linalg.pinv(j_mat @ wln_sqrt, rcond=1e-4) @ (
                         clamped_err_vec - j_mat @ clamping)
             iter_jnt_vals = iter_jnt_vals + delta_jnt_values
-            if toggle_debug:
+            if toggle_dbg:
                 import robot_sim.kinematics.model_generator as rkmg
                 joint_values = self.jlc.get_joint_values()
                 self.jlc.go_given_conf(joint_values=iter_jnt_vals)
@@ -252,7 +251,8 @@ class NumIKSolver(object):
                 gm.gen_arrow(spos=tcp_gl_pos, epos=tgt_pos).attach_to(base)
                 print("tcp_pos_err ", tcp_pos_err_val, " tcp_rot_err ", tcp_rot_err_val)
             if counter > max_n_iter:
-                raise Exception("No IK solution")
+                return None
+                # raise Exception("No IK solution")
             counter += 1
 
     def cwln(self,
@@ -260,7 +260,7 @@ class NumIKSolver(object):
              tgt_rotmat,
              seed_jnt_vals=None,
              max_n_iter=100,
-             toggle_debug=False):
+             toggle_dbg=False):
         # Paper: Clamping weighted least-norm method for themanipulator kinematic control with constraints
         iter_jnt_vals = seed_jnt_vals
         if seed_jnt_vals is None:
@@ -289,7 +289,7 @@ class NumIKSolver(object):
             delta_jnt_values = clamping + wln @ j_mat.T @ np.linalg.inv(
                 j_mat @ wln @ j_mat.T + lam * np.eye(j_mat.shape[1])) @ (clamped_err_vec - j_mat @ clamping)
             iter_jnt_vals = iter_jnt_vals + delta_jnt_values
-            if toggle_debug:
+            if toggle_dbg:
                 import robot_sim.kinematics.model_generator as rkmg
                 joint_values = self.jlc.get_joint_values()
                 self.jlc.go_given_conf(joint_values=iter_jnt_vals)
@@ -311,7 +311,7 @@ class NumIKSolver(object):
                seed_jnt_values=None,
                max_n_iter=100,
                policy_for_local_minima="randomrestart",
-               toggle_debug=False):
+               toggle_dbg=False):
         """
         solveik numerically using the Levenberg-Marquardt Method
         the details of this method can be found in: https://www.math.ucsd.edu/~sbuss/ResearchWeb/ikmethods/iksurvey.pdf
@@ -334,7 +334,7 @@ class NumIKSolver(object):
             return None
         iter_jnt_values = self.jlc.home if seed_jnt_values is None else seed_jnt_values
         ws_wtdiagmat = np.diag(self.ws_wtlist)
-        if toggle_debug:
+        if toggle_dbg:
             if "lib_jlm" not in dir():
                 import robot_sim.kinematics.model_generator as jlm
             if "plt" not in dir():
@@ -357,11 +357,11 @@ class NumIKSolver(object):
             # err = .05 / errnorm * err if errnorm > .05 else err
             if tcp_err_scalar > max_errornorm:
                 max_errornorm = tcp_err_scalar
-            if toggle_debug:
+            if toggle_dbg:
                 print(tcp_err_scalar)
                 ajpath.append(iter_jnt_values)
             if tcp_err_scalar < 1e-9:
-                if toggle_debug:
+                if toggle_dbg:
                     print(f"Number of IK iterations before finding a result: {i}")
                     fig = plt.figure()
                     axbefore = fig.add_subplot(411)
@@ -380,7 +380,7 @@ class NumIKSolver(object):
             else:
                 # judge local minima
                 if abs(tcp_err_scalar - prev_erronorm) < 1e-12:
-                    if toggle_debug:
+                    if toggle_dbg:
                         fig = plt.figure()
                         axbefore = fig.add_subplot(411)
                         axbefore.set_title('Original dq')
@@ -455,7 +455,7 @@ class NumIKSolver(object):
                     dqref_init = (jnt_values_ref - jnt_values_iter)
                     dqref_on_ns = ns_projmat.dot(w_init * dqref_init + w_middle * clamping)
                     dq_minimized = dq + dqref_on_ns
-                    if toggle_debug:
+                    if toggle_dbg:
                         dqbefore.append(dq)
                         dqcorrected.append(dq_minimized)
                         dqnull.append(dqref_on_ns)
@@ -463,11 +463,11 @@ class NumIKSolver(object):
                 # isdragged, jntvalues_iter = self.check_jntsrange_drag(jntvalues_iter)
                 # print(jnt_values_iter)
                 self.jlc.fk(joint_values=jnt_values_iter)
-                # if toggle_debug:
+                # if toggle_dbg:
                 #     self.jlc.gen_stickmodel(tcp_joint_id=tcp_joint_id, tcp_loc_pos=tcp_loc_pos,
                 #                                    tcp_loc_rotmat=tcp_loc_rotmat, toggle_joint_frame=True).attach_to(base)
             prev_erronorm = tcp_err_scalar
-        if toggle_debug:
+        if toggle_dbg:
             fig = plt.figure()
             axbefore = fig.add_subplot(411)
             axbefore.set_title('Original dq')

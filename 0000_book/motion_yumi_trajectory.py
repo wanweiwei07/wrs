@@ -38,10 +38,10 @@ if __name__ == "__main__":
     #     traj_gen.piecewise_interpolation(jnt_values_list, control_frequency=control_frequency, time_intervals=interval_time)
     # traj_gen = pwp.PiecewisePoly(method="quintic")
     # interpolated_confs, interpolated_spds, interpolated_accs, interpolated_x = \
-    #     traj_gen.interpolate(jnt_values_list, control_frequency=control_frequency, time_intervals=interval_time, toggle_debug=True)
+    #     traj_gen.interpolate(jnt_values_list, control_frequency=control_frequency, time_intervals=interval_time, toggle_dbg=True)
     # interpolated_confs, interpolated_spds, interpolated_accs, interpolated_x, original_x = \
     #     traj_gen.interpolate_by_max_spdacc(jnt_values_list, control_frequency=control_frequency, max_spds=None,
-    #                                        toggle_debug=True)
+    #                                        toggle_dbg=True)
     # interpolated_confs, interpolated_spds, interpolated_accs, interpolated_x, original_x = \
     #     traj_gen.trapezoid_interpolate_by_max_spdacc(jnt_values_list, control_frequency=control_frequency, max_spds=None)
 

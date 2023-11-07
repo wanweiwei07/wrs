@@ -146,7 +146,7 @@ if __name__ == '__main__':
     yhx.base.run()
 
 
-    # pos = loc.findtubestand_match(objpcdmerged, toggle_debug=True)
+    # pos = loc.findtubestand_match(objpcdmerged, toggle_dbg=True)
 
     elearray, eleconfidencearray = loc.findtubes(homomat, objpcd, toggledebug=False)
     yhx.p3dh.genframe(pos=homomat[:3,3], rotmat=homomat[:3,:3]).reparentTo(yhx.base.render)

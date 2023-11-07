@@ -1,15 +1,33 @@
-import time
+"""
+This trac ik solver is implemented following instructions from the trac ik paper.
+P. Beeson and B. Ames, "TRAC-IK: An open-source library for improved solving of generic inverse kinematics,"
+IEEE-RAS International Conference on Humanoid Robots (Humanoids), Seoul, Korea (South), 2015, pp. 928-935,
+doi: 10.1109/HUMANOIDS.2015.7363472.
+
+Key differences: KDL_RR is implemented as PINV_CW
+Known issues: The PINV_CW solver has a much lower success rate. Random restart does not improve performance.
+
+author: weiwei
+date: 20231107
+"""
+
 import numpy as np
 import multiprocessing as mp
 import basis.robot_math as rm
 import scipy.optimize as sopt
 import robot_sim.kinematics.constant as rkc
 
-_TOGGLE_DEBUG = True
-
 
 class NumIKSolverProc(mp.Process):
-    def __init__(self, anchor, joints, tcp_joint_id, tcp_loc_homomat, wln_ratio, param_queue, state_queue,
+
+    def __init__(self,
+                 anchor,
+                 joints,
+                 tcp_joint_id,
+                 tcp_loc_homomat,
+                 wln_ratio,
+                 param_queue,
+                 state_queue,
                  result_queue):
         super(NumIKSolverProc, self).__init__()
         self._param_queue = param_queue
@@ -146,7 +164,14 @@ class NumIKSolverProc(mp.Process):
 
 
 class OptIKSolverProc(mp.Process):
-    def __init__(self, anchor, joints, tcp_joint_id, tcp_loc_homomat, param_queue, state_queue, result_queue):
+    def __init__(self,
+                 anchor,
+                 joints,
+                 tcp_joint_id,
+                 tcp_loc_homomat,
+                 param_queue,
+                 state_queue,
+                 result_queue):
         super(OptIKSolverProc, self).__init__()
         self._param_queue = param_queue
         self._result_queue = result_queue
@@ -300,7 +325,12 @@ class TracIKSolver(object):
         self._oik_state_queue.get()
         self._result_queue.get()
 
-    def ik(self, tgt_pos, tgt_rotmat, seed_jnt_vals=None, max_n_iter=100, toggle_dbg_info=False):
+    def ik(self,
+           tgt_pos,
+           tgt_rotmat,
+           seed_jnt_vals=None,
+           max_n_iter=100,
+           toggle_dbg_info=False):
         if seed_jnt_vals is None:
             seed_jnt_vals = self._default_seed_jnt_vals
         self._nik_param_queue.put((tgt_pos, tgt_rotmat, seed_jnt_vals, max_n_iter))

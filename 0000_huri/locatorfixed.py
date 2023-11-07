@@ -329,7 +329,7 @@ if __name__ == '__main__':
     tbscm.reparentTo(yhx.base.render)
     # base.run()
 
-    # pos = loc.findtubestand_matchonobb(objpcd, toggle_debug=False)
+    # pos = loc.findtubestand_matchonobb(objpcd, toggle_dbg=False)
     # import registration.pattern as ptn
     # epos = ptn.Pattern(root=".")
     # epos.setpattern(np.array([[0,0,0,0,0,0,0,0,0,0],
@@ -361,7 +361,7 @@ if __name__ == '__main__':
     # epos.gendumbell(pos=loc.tubestandhomomat).reparentTo(base.render)
     # base.run()
 
-    # pos = loc.findtubestand_match(objpcdmerged, toggle_debug=True)
+    # pos = loc.findtubestand_match(objpcdmerged, toggle_dbg=True)
 
     elearray, eleconfidencearray = loc.findtubes(loc.tubestandhomomat, objpcd, toggledebug=False)
     # yhx.base.run()

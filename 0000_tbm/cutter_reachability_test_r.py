@@ -51,14 +51,14 @@ for step in [1, 2, 3, 4]:
             #                       tgt_pos=tgt_pos,
             #                       tgt_rotmat=tgt_rotmat,
             #                       max_n_iter=500,
-            #                       toggle_debug=False,
+            #                       toggle_dbg=False,
             #                       seed_jnt_vals=seed0)
             # if joint_values is None:
             #     joint_values = rbt_s.ik(component_name='arm',
             #                           tgt_pos=tgt_pos,
             #                           tgt_rotmat=tgt_rotmat,
             #                           max_n_iter=500,
-            #                           toggle_debug=False,
+            #                           toggle_dbg=False,
             #                           seed_jnt_vals=seed1)
             if jnt_values is None:
                 continue
@@ -92,14 +92,14 @@ base.run()
 #                                   tgt_pos=tgt_pos,
 #                                   tgt_rotmat=tgt_rotmat,
 #                                   max_n_iter=1000,
-#                                   toggle_debug=False,
+#                                   toggle_dbg=False,
 #                                   seed_jnt_vals=seed0)
 #             if joint_values is None:
 #                 joint_values = rbt_s.ik(component_name='arm',
 #                                       tgt_pos=tgt_pos,
 #                                       tgt_rotmat=tgt_rotmat,
 #                                       max_n_iter=1000,
-#                                       toggle_debug=False,
+#                                       toggle_dbg=False,
 #                                       seed_jnt_vals=seed1)
 #             if joint_values is None:
 #                 continue
@@ -125,7 +125,7 @@ seed1[3] = -math.pi / 2
 #                                    tgt_pos=tgt_pos,
 #                                    tgt_rotmat=tgt_rotmat,
 #                                    max_n_iter=100,
-#                                    toggle_debug=False,
+#                                    toggle_dbg=False,
 #                                    seed_jnt_vals=seed0)
 #             if jnt_values0 is not None:
 #                 joint_values = jnt_values0
@@ -134,7 +134,7 @@ seed1[3] = -math.pi / 2
 #                                        tgt_pos=tgt_pos,
 #                                        tgt_rotmat=tgt_rotmat,
 #                                        max_n_iter=100,
-#                                        toggle_debug=False,
+#                                        toggle_dbg=False,
 #                                        seed_jnt_vals=seed1)
 #                 if jnt_values1 is not None:
 #                     joint_values = jnt_values1

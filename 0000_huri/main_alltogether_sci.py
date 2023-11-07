@@ -152,7 +152,7 @@ if __name__ == '__main__':
                                                                                         primitivedistance_final_foward=130,
                                                                                         premitivedistance_final_backward=130,
                                                                                         toggledebug = td)
-        ## for toggle_debug, check the collisions between the hand and the tubes
+        ## for toggle_dbg, check the collisions between the hand and the tubes
         # for tbcm in collisiontbcmlist:
         #     tbcm.reparentTo(yhx.base.render)
         #     tbcm.setColor(1,0,0,.2)

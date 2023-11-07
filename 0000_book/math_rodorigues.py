@@ -10,7 +10,7 @@ rotmat2 = rm.rotmat_from_axangle(ax, math.pi/6)
 # cross_vec = rm.unit_vector(np.cross(np.array([0.1,0,1]), rotmat[:3,2]))
 cross_vec = rotmat2.dot(rotmat[:3,0])
 base = wd.World(cam_pos=[1, 1, 1], lookat_pos=[0, 0, 0], toggle_debug=True)
-# base = wd.World(cam_pos=ax*2, lookat_pos=[0, 0, 0], toggle_debug=True)
+# base = wd.World(cam_pos=ax*2, lookat_pos=[0, 0, 0], toggle_dbg=True)
 
 gm.gen_arrow(epos=ax*.3, rgba=[0,0,0,.3]).attach_to(base)
 gm.gen_frame(axis_length=.2).attach_to(base)

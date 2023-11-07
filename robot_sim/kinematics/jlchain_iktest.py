@@ -8,8 +8,8 @@ import basis.robot_math as rm
 import modeling.collision_model as cm
 import robot_sim.kinematics.constant as rkc
 import robot_sim.kinematics.jl as rkjl
-import robot_sim.kinematics.numik_solver as rkn
-import robot_sim.kinematics.optik_solver as rko
+import robot_sim.kinematics.ik_num as rkn
+import robot_sim.kinematics.ik_opt as rko
 import basis.constant as cst
 
 
@@ -325,10 +325,10 @@ class JLChain(object):
         author: weiwei
         date: 20161205tsukuba
         """
-        jnt_values = np.zeros(self.n_dof)
+        jnt_vals = np.zeros(self.n_dof)
         for i in range(self.n_dof):
-            jnt_values[i] = self.jnts[i].motion_val
-        return jnt_values
+            jnt_vals[i] = self.jnts[i].motion_val
+        return jnt_vals
 
     def rand_conf(self):
         """
@@ -357,62 +357,62 @@ class JLChain(object):
         :return:
         """
         # tic = time.time()
-        # jnt_values = self._nik_solver.dls_rr(tgt_pos=tgt_pos,
+        # jnt_vals = self._nik_solver.dls_rr(tgt_pos=tgt_pos,
         #                                               tgt_rotmat=tgt_rotmat,
         #                                               seed_jnt_vals=seed_jnt_vals,
-        #                                               max_n_iter=max_niter,
-        #                                               toggle_debug=toggle_debug)
+        #                                               max_n_iter=max_n_iter,
+        #                                               toggle_dbg=toggle_dbg)
         # toc = time.time()
         # print("DLS RR time ", toc - tic)
         # tic = time.time()
-        # jnt_values = self._nik_solver.cwln(tgt_pos=tgt_pos,
+        # jnt_vals = self._nik_solver.cwln(tgt_pos=tgt_pos,
         #                                             tgt_rotmat=tgt_rotmat,
         #                                             seed_jnt_vals=seed_jnt_vals,
-        #                                             max_n_iter=max_niter,
-        #                                             toggle_debug=toggle_debug)
+        #                                             max_n_iter=max_n_iter,
+        #                                             toggle_dbg=toggle_dbg)
         # toc = time.time()
         # print("CWLN time ", toc - tic)
+        tic = time.time()
+        jnt_vals = self._nik_solver.pinv_wc(tgt_pos=tgt_pos,
+                                              tgt_rotmat=tgt_rotmat,
+                                              seed_jnt_vals=seed_jnt_vals,
+                                              max_n_iter=max_n_iter,
+                                              toggle_dbg=toggle_dbg)
+        toc = time.time()
+        print("PINV WC time ", toc - tic)
         # tic = time.time()
-        # jnt_values = self._nik_solver.pinv_wc(tgt_pos=tgt_pos,
-        #                                         tgt_rotmat=tgt_rotmat,
-        #                                         seed_jnt_vals=seed_jnt_vals,
-        #                                         max_n_iter=max_niter,
-        #                                         toggle_debug=toggle_debug)
-        # toc = time.time()
-        # print("PINV CW time ", toc - tic)
-        # tic = time.time()
-        # jnt_values = self._nik_solver.pinv_rr(tgt_pos=tgt_pos,
+        # jnt_vals = self._nik_solver.pinv_rr(tgt_pos=tgt_pos,
         #                                             tgt_rotmat=tgt_rotmat,
         #                                             seed_jnt_vals=seed_jnt_vals,
-        #                                             max_n_iter=max_niter,
-        #                                             toggle_debug=toggle_debug)
+        #                                             max_n_iter=max_n_iter,
+        #                                             toggle_dbg=toggle_dbg)
         # toc = time.time()
         # print("PINV time ", toc - tic)
         # tic = time.time()
-        # jnt_values = self._nik_solver.jt_rr(tgt_pos=tgt_pos,
+        # jnt_vals = self._nik_solver.jt_rr(tgt_pos=tgt_pos,
         #                                             tgt_rotmat=tgt_rotmat,
         #                                             seed_jnt_vals=seed_jnt_vals,
-        #                                             max_n_iter=max_niter,
-        #                                             toggle_debug=toggle_debug)
+        #                                             max_n_iter=max_n_iter,
+        #                                             toggle_dbg=toggle_dbg)
         # toc = time.time()
         # print("JT time ", toc - tic)
-        tic = time.time()
-        jnt_values = self._oik_solver.sqpss(tgt_pos=tgt_pos,
-                                            tgt_rotmat=tgt_rotmat,
-                                            seed_jnt_vals=seed_jnt_vals,
-                                            max_n_iter=max_n_iter,
-                                            toggle_debug=toggle_dbg)
-        toc = time.time()
-        print("SQP-SS time ", toc - tic)
         # tic = time.time()
-        # jnt_values = self._oik_solver.sqp(tgt_pos=tgt_pos,
+        # jnt_vals = self._oik_solver.sqpss(tgt_pos=tgt_pos,
+        #                                     tgt_rotmat=tgt_rotmat,
+        #                                     seed_jnt_vals=seed_jnt_vals,
+        #                                     max_n_iter=max_n_iter,
+        #                                     toggle_dbg=toggle_dbg)
+        # toc = time.time()
+        # print("SQP-SS time ", toc - tic)
+        # tic = time.time()
+        # jnt_vals = self._oik_solver.sqp(tgt_pos=tgt_pos,
         #                                            tgt_rotmat=tgt_rotmat,
         #                                            seed_jnt_vals=seed_jnt_vals,
-        #                                            max_n_iter=max_niter,
-        #                                            toggle_debug=toggle_debug)
+        #                                            max_n_iter=max_n_iter,
+        #                                            toggle_dbg=toggle_dbg)
         # toc = time.time()
         # print("SQP time ", toc - tic)
-        return jnt_values
+        return jnt_vals
 
     def copy(self):
         return copy.deepcopy(self)

@@ -382,7 +382,7 @@ class NIK(object):
                 # isdragged, jntvalues_iter = self.check_jntsrange_drag(jntvalues_iter)
                 # print(jntvalues_iter)
                 self.jlc_object.fk(joint_values=jntvalues_iter)
-                # if toggle_debug:
+                # if toggle_dbg:
                 #     jlmgen.gensnp(jlinstance, tcp_joint_id=tcp_joint_id, tcp_loc_pos=tcp_loc_pos,
                 #                   tcp_loc_rotmat=tcp_loc_rotmat, togglejntscs=True).reparentTo(base.render)
             errnormlast = errnorm

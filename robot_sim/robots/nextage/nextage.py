@@ -465,7 +465,7 @@ class Left_Manipulator(mi.ManipulatorInterface):
 #            tcp_loc_rotmat=None,
 #            max_n_iter=100,
 #            policy_for_local_minima="accept",
-#            toggle_debug=False):
+#            toggle_dbg=False):
 #         # if component_name == 'lft_arm' or component_name == 'rgt_arm':
 #         #     old_tgt_jnts = self.manipulator_dict[component_name].tgtjnts
 #         #     self.manipulator_dict[component_name].tgtjnts = range(2, self.manipulator_dict[component_name].n_dof + 1)
@@ -477,7 +477,7 @@ class Left_Manipulator(mi.ManipulatorInterface):
 #         #                                                           tcp_loc_rotmat=tcp_loc_rotmat,
 #         #                                                           max_n_iter=max_n_iter,
 #         #                                                           policy_for_local_minima=policy_for_local_minima,
-#         #                                                           toggle_debug=toggle_debug)
+#         #                                                           toggle_dbg=toggle_dbg)
 #         #     self.manipulator_dict[component_name].tgtjnts = old_tgt_jnts
 #         #     return ik_results
 #         # elif component_name == 'lft_arm_waist' or component_name == 'rgt_arm_waist':
@@ -489,7 +489,7 @@ class Left_Manipulator(mi.ManipulatorInterface):
 #         #                                                     tcp_loc_rotmat=tcp_loc_rotmat,
 #         #                                                     max_n_iter=max_n_iter,
 #         #                                                     policy_for_local_minima=policy_for_local_minima,
-#         #                                                     toggle_debug=toggle_debug)
+#         #                                                     toggle_dbg=toggle_dbg)
 #         if component_name in ['lft_arm', 'rgt_arm', 'lft_arm_waist', 'rgt_arm_waist']:
 #             return self.manipulator_dict[component_name].ik(tgt_pos,
 #                                                             tgt_rotmat,
@@ -499,7 +499,7 @@ class Left_Manipulator(mi.ManipulatorInterface):
 #                                                             tcp_loc_rotmat=tcp_loc_rotmat,
 #                                                             max_n_iter=max_n_iter,
 #                                                             policy_for_local_minima=policy_for_local_minima,
-#                                                             toggle_debug=toggle_debug)
+#                                                             toggle_dbg=toggle_dbg)
 #         elif component_name == 'both_arm':
 #             raise NotImplementedError
 #         elif component_name == 'all':

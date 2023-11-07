@@ -357,14 +357,14 @@ if __name__ == '__main__':
     tubepcdnp.reparentTo(yhx.base.render)
     yhx.base.run()
 
-    # pos = loc.findtubestand_matchonobb(objpcd, toggle_debug=False)
+    # pos = loc.findtubestand_matchonobb(objpcd, toggle_dbg=False)
     # tbscm = loc.gentubestand(pos=pos)
     # print(pos)
     # tbscm.reparentTo(yhx.base.render)
 
-    # pos = loc.findtubestand_match(objpcdmerged, toggle_debug=True)
+    # pos = loc.findtubestand_match(objpcdmerged, toggle_dbg=True)
 
-    # state, eleconfidencearray = loc.findtubes(pos, objpcd, toggle_debug=False)
+    # state, eleconfidencearray = loc.findtubes(pos, objpcd, toggle_dbg=False)
     # yhx.p3dh.genframe(pos=pos[:3,3], rotmat=pos[:3,:3]).reparentTo(yhx.base.render)
     # rbtnp = yhx.rbtmesh.genmnp(yhx.robot_s)
     # rbtnp.reparentTo(yhx.base.render)

@@ -124,7 +124,7 @@ if __name__ == "__main__":
     import visualization.panda.world as wd
     import random
 
-    # base = wd.World(cam_pos=[1000, 300, 1000], lookat_pos=[0, 0, 0], toggle_debug=True)
+    # base = wd.World(cam_pos=[1000, 300, 1000], lookat_pos=[0, 0, 0], toggle_dbg=True)
     base = wd.World(cam_pos=[.3, .3, 1], lookat_pos=[0, 0, 0], toggle_debug=False)
     base.setFrameRateMeter(True)
     objpath = os.path.join(basis.__path__[0], "objects", "bunnysim.stl")

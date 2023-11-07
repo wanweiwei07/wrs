@@ -2,19 +2,20 @@ import math
 import copy
 import numpy as np
 import time
-
-import pandas
-
-import basis.constant
 import basis.constant as bc
 import basis.robot_math as rm
 import modeling.collision_model as cm
 import robot_sim.kinematics.constant as rkc
 import robot_sim.kinematics.jl as rkjl
-import robot_sim.kinematics.numik_solver as rkn
-import robot_sim.kinematics.optik_solver as rko
-import robot_sim.kinematics.tracik_solver as rkt
+import robot_sim.kinematics.ik_num as rkn
+import robot_sim.kinematics.ik_opt as rko
+import robot_sim.kinematics.ik_dd as rkd
+import robot_sim.kinematics.ik_trac as rkt
 import basis.constant as cst
+
+# _Default_IKSolver = rko.OptIKSolver
+# _Default_IKSolver = rkt.TracIKSolver
+_Default_IKSolver = rkd.DDIKSolver
 
 
 class JLChain(object):
@@ -60,6 +61,8 @@ class JLChain(object):
         # mesh generator
         self.cdprimitive_type = cdprimitive_type
         self.cdmesh_type = cdmesh_type
+        # iksolver
+        self._ik_solver = None
 
     @property
     def jnt_rngs(self):
@@ -222,7 +225,7 @@ class JLChain(object):
         self.anchor.rotmat = rotmat
         return self.go_given_conf(joint_values=self.get_joint_values())
 
-    def finalize(self):
+    def finalize(self, ik_solver_class=None):
         """
         :return:
         author: weiwei
@@ -230,7 +233,10 @@ class JLChain(object):
         """
         self._jnt_rngs = self._get_jnt_rngs()
         self.go_home()
-        self._tracik_solver = rkt.TracIKSolver(self)
+        if ik_solver_class is None:
+            self._ik_solver = _Default_IKSolver(self)
+        else:
+            self._ik_solver = ik_solver_class(self)
 
     def set_tcp(self, tcp_joint_id=None, tcp_loc_pos=None, tcp_loc_rotmat=None):
         if tcp_joint_id is not None:
@@ -358,11 +364,11 @@ class JLChain(object):
         :param max_n_iter
         :return:
         """
-        jnt_values = self._tracik_solver.ik(tgt_pos=tgt_pos,
-                                            tgt_rotmat=tgt_rotmat,
-                                            seed_jnt_vals=seed_jnt_vals,
-                                            max_n_iter=max_n_iter,
-                                            toggle_dbg_info=toggle_dbg_info)
+        jnt_values = self._ik_solver.ik(tgt_pos=tgt_pos,
+                                        tgt_rotmat=tgt_rotmat,
+                                        seed_jnt_vals=seed_jnt_vals,
+                                        max_n_iter=max_n_iter,
+                                        toggle_dbg_info=toggle_dbg_info)
         return jnt_values
 
     def copy(self):
@@ -403,7 +409,7 @@ if __name__ == "__main__":
     jlc.jnts[5].motion_rng = np.array([-np.pi / 2, np.pi / 2])
     jlc.tcp_loc_pos = np.array([0, 0, .01])
     jlc.finalize()
-    # rkmg.gen_jlc_stick(jlc, stick_rgba=basis.constant.navy_blue, toggle_tcp_frame=True,
+    # rkmg.gen_jlc_stick(jlc, stick_rgba=bc.navy_blue, toggle_tcp_frame=True,
     #                    toggle_joint_frame=True).attach_to(base)
     seed_jnt_vals = jlc.get_joint_values()
 
@@ -429,11 +435,11 @@ if __name__ == "__main__":
                 opt_win += 1
             elif joint_values_with_dbg_info[0] == 'n':
                 num_win += 1
-                gm.gen_frame(pos=tgt_pos, rotmat=tgt_rotmat).attach_to(base)
-                jlc.forward_kinematics(jnt_vals=joint_values_with_dbg_info[1], update=True, toggle_jac=False)
-                rkmg.gen_jlc_stick(jlc, stick_rgba=basis.constant.navy_blue, toggle_tcp_frame=True,
-                       toggle_joint_frame=True).attach_to(base)
-                base.run()
+                # gm.gen_frame(pos=tgt_pos, rotmat=tgt_rotmat).attach_to(base)
+                # jlc.forward_kinematics(jnt_vals=joint_values_with_dbg_info[1], update=True, toggle_jac=False)
+                # rkmg.gen_jlc_stick(jlc, stick_rgba=bc.navy_blue, toggle_tcp_frame=True,
+                #        toggle_joint_frame=True).attach_to(base)
+                # base.run()
         else:
             tgt_list.append((tgt_pos, tgt_rotmat))
     print(success)

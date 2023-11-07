@@ -263,7 +263,7 @@ class PiecewisePolyOpt(object):
         # # interpolate
         # interpolated_confs, interpolated_vels, interpolated_accs, interpolated_x, original_x, samples_back_index_x = \
         #     self.interpolate(control_frequency=control_frequency, time_intervals=time_intervals,
-        #                      toggle_debug=toggle_debug_fine)
+        #                      toggle_dbg=toggle_debug_fine)
         # while True:
         #     samples_back_index_x = np.asarray(samples_back_index_x)
         #     interpolated_accs_abs = np.asarray(np.abs(interpolated_accs))
@@ -277,7 +277,7 @@ class PiecewisePolyOpt(object):
         #         break
         #     interpolated_confs, interpolated_vels, interpolated_accs, interpolated_x, original_x, samples_back_index_x = \
         #         self.interpolate(control_frequency=control_frequency, time_intervals=time_intervals,
-        #                          toggle_debug=toggle_debug_fine)
+        #                          toggle_dbg=toggle_debug_fine)
 
         self._seed_time_intervals = time_intervals
         time_intervals, _ = self._solve_opt()

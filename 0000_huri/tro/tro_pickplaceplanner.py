@@ -838,7 +838,7 @@ class PickPlacePlanner(object):
         ikcolliedgraspsnum = 0
         availablegraspsatinit = []
         for idpre, predefined_grasp in enumerate(predefinedgrasps):
-            # if toggle_debug:
+            # if toggle_dbg:
             #     availablegraspsatinit.append(idpre)
             predefined_jawwidth, predefined_fc, predefined_homomat = predefined_grasp
             hndmat4 = np.dot(objinithomomat, predefined_homomat)
@@ -867,7 +867,7 @@ class PickPlacePlanner(object):
                             rbtmg.genmnp(rbt, drawhand=False, togglejntscoord=False, toggleendcoord=False, rgbargt=[0, 1, 0, .5]).reparentTo(
                                 self.rhx.base.render)
                             pass
-                        # if not toggle_debug:
+                        # if not toggle_dbg:
                         #     availablegraspsatinit.append(idpre)
                         availablegraspsatinit.append(idpre)
                     elif (not isobjcollided):
@@ -1005,7 +1005,7 @@ class PickPlacePlanner(object):
                 resultinghomomat = copy.deepcopy(objmat4)
                 resultinghomomat[:3, 3] = resultinghomomat[:3, 3] + resultinghomomat[:3,
                                                                     2] * 5  # move 5mm up, do not move until end_type
-                # if toggle_debug:
+                # if toggle_dbg:
                 #     for idsharedgrasps in finalsharedgrasps:
                 #         predefined_jawwidth, predefined_fc, predefined_homomat = predefinedgrasps[idsharedgrasps]
                 #         hndmat4 = np.dot(objinithomomat, predefined_homomat)
@@ -1405,7 +1405,7 @@ class PickPlacePlanner(object):
                     print("The shared grasps failed at symmetric angle " + str(rotangle) + ", trying the next...")
                     continue
 
-        # if toggle_debug:
+        # if toggle_dbg:
         #     base.run()
         print("No feasible motion between two key poses!")
         return [None, None, None]
