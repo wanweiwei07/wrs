@@ -58,28 +58,25 @@ class OptIKSolver(object):
                                                                                    src_rotmat=tcp_gl_rotmat,
                                                                                    tgt_pos=tgt_pos,
                                                                                    tgt_rotmat=tgt_rotmat)
+            return tcp_err_vec.T @ tcp_err_vec
 
-            # clamped_tcp_err_vec = self._clamp_tcp_err(tcp_pos_err_val, tcp_rot_err_val, tcp_err_vec)
-            # delta_jnt_values = np.linalg.pinv(j_mat, rcond=1e-4) @ tcp_err_vec * 1e-3
-            return tcp_err_vec.T @ tcp_err_vec, np.diag(np.linalg.pinv(j_mat, rcond=1e-4))
-
-        options = {'ftol': 1e-8,
-                   'eps': 1e-8,
-                   'maxiter': max_n_iter,
+        options = {'maxiter': max_n_iter,
                    'disp': toggle_debug}
-        result = sopt.minimize(fun=_objective,
-                               args=(tgt_pos, tgt_rotmat),
-                               x0=seed_jnt_vals,
-                               method='SLSQP',
-                               jac=True,
-                               bounds=self.jlc.jnt_rngs,
-                               options=options)
-        print(result)
-        # input("Press Enter to continue...")
-        if result.success and result.fun < 1e-4:
-            return result.x
-        else:
-            return None
+        for i in range(10):
+            result = sopt.minimize(fun=_objective,
+                                   args=(tgt_pos, tgt_rotmat),
+                                   x0=seed_jnt_vals,
+                                   method='SLSQP',
+                                   bounds=self.jlc.jnt_rngs,
+                                   options=options)
+            # print(result)
+            # input("Press Enter to continue...")
+            if result.success and result.fun < 1e-4:
+                return result.x
+            else:
+                seed_jnt_vals = self.jlc.rand_conf()
+                continue
+        return None
 
     def sqp(self,
             tgt_pos,

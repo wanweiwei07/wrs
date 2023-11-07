@@ -462,7 +462,7 @@ if __name__ == "__main__":
         joint_values_with_dbg_info = jlc.ik(tgt_pos=tgt_pos,
                                             tgt_rotmat=tgt_rotmat,
                                             seed_jnt_vals=seed_jnt_vals,
-                                            max_n_iter=100)
+                                            max_n_iter=30)
         toc = time.time()
         time_list.append(toc-tic)
         if joint_values_with_dbg_info is not None:

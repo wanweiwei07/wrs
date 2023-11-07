@@ -385,7 +385,7 @@ if __name__ == "__main__":
     jlc.jnts[0].loc_pos = np.array([0, 0, 0])
     jlc.jnts[0].loc_motion_axis = np.array([0, 0, 1])
     jlc.jnts[0].motion_rng = np.array([-np.pi / 2, np.pi / 2])
-    # jlc.joints[1].change_type(rkc.JointType.PRISMATIC)
+    # jlc.jnts[1].change_type(rkc.JointType.PRISMATIC)
     jlc.jnts[1].loc_pos = np.array([0, 0, .05])
     jlc.jnts[1].loc_motion_axis = np.array([0, 1, 0])
     jlc.jnts[1].motion_rng = np.array([-np.pi / 2, np.pi / 2])
@@ -403,8 +403,8 @@ if __name__ == "__main__":
     jlc.jnts[5].motion_rng = np.array([-np.pi / 2, np.pi / 2])
     jlc.tcp_loc_pos = np.array([0, 0, .01])
     jlc.finalize()
-    rkmg.gen_jlc_stick(jlc, stick_rgba=basis.constant.navy_blue, toggle_tcp_frame=True,
-                       toggle_joint_frame=True).attach_to(base)
+    # rkmg.gen_jlc_stick(jlc, stick_rgba=basis.constant.navy_blue, toggle_tcp_frame=True,
+    #                    toggle_joint_frame=True).attach_to(base)
     seed_jnt_vals = jlc.get_joint_values()
 
     success = 0
@@ -412,73 +412,33 @@ if __name__ == "__main__":
     opt_win = 0
     time_list = []
     tgt_list = []
-    for i in tqdm(range(10), desc="ik"):
-        jnts = jlc.rand_conf()
-        tgt_pos, tgt_rotmat = jlc.forward_kinematics(jnt_vals=jnts, update=False, toggle_jac=False)
-        a = time.time()
+    for i in tqdm(range(100), desc="ik"):
+        random_jnts = jlc.rand_conf()
+        tgt_pos, tgt_rotmat = jlc.forward_kinematics(jnt_vals=random_jnts, update=False, toggle_jac=False)
+        tic = time.time()
         joint_values_with_dbg_info = jlc.ik(tgt_pos=tgt_pos,
                                             tgt_rotmat=tgt_rotmat,
                                             seed_jnt_vals=seed_jnt_vals,
                                             max_n_iter=100,
                                             toggle_dbg_info=True)
-        b = time.time()
-        time_list.append(b - a)
+        toc = time.time()
+        time_list.append(toc - tic)
         if joint_values_with_dbg_info is not None:
-            print(b-a)
             success += 1
             if joint_values_with_dbg_info[0] == 'o':
                 opt_win += 1
             elif joint_values_with_dbg_info[0] == 'n':
                 num_win += 1
+                gm.gen_frame(pos=tgt_pos, rotmat=tgt_rotmat).attach_to(base)
+                jlc.forward_kinematics(jnt_vals=joint_values_with_dbg_info[1], update=True, toggle_jac=False)
+                rkmg.gen_jlc_stick(jlc, stick_rgba=basis.constant.navy_blue, toggle_tcp_frame=True,
+                       toggle_joint_frame=True).attach_to(base)
+                base.run()
         else:
-            print(repr(jnts), repr(tgt_pos), repr(tgt_rotmat))
             tgt_list.append((tgt_pos, tgt_rotmat))
-    df = pandas.DataFrame({"tgt": tgt_list})
-    print(df.shape[0])
-    df.to_csv(f"{0}.csv")
-    with open(f"unsolved_0.pkl", "wb") as f_:
-        pickle.dump(tgt_list, f_)
     print(success)
     print(f'num_win: {num_win}, opt_win: {opt_win}')
     print('average', np.mean(time_list))
     print('max', np.max(time_list))
     print('min', np.min(time_list))
-
-    # f_name = "unsolved_0.pkl"
-    # for i in range(15):
-    #     print("==============new================")
-    #     with open(f_name, "rb") as a:
-    #         tgt_list = pickle.load(a)
-    #     success = 0
-    #     num_win = 0
-    #     opt_win = 0
-    #     new_tgt_list = []
-    #     for id in range(len(tgt_list)):
-    #         tic = time.time()
-    #         joint_values_with_dbg_info = jlc.ik(tgt_pos=tgt_list[id][0],
-    #                                             tgt_rotmat=tgt_list[id][1],
-    #                                             seed_jnt_vals=seed_jnt_vals,
-    #                                             toggle_dbg_info=True)
-    #         toc = time.time()
-    #         if joint_values_with_dbg_info is not None:
-    #             success += 1
-    #             if joint_values_with_dbg_info[0] == 'o':
-    #                 opt_win += 1
-    #             elif joint_values_with_dbg_info[0] == 'n':
-    #                 num_win += 1
-    #             print(f"success: time cost is {toc-tic}, solver is {joint_values_with_dbg_info[0]}")
-    #         else:
-    #             print("failure: ", repr(tgt_list[id][0]), repr(tgt_list[id][1]))
-    #             new_tgt_list.append((tgt_list[id][0], tgt_list[id][1]))
-    #         print("............................")
-    #     print(f"success rate: {success}/{len(tgt_list)}")
-    #     print(f'num_win: {num_win}, opt_win: {opt_win}')
-    #     if len(new_tgt_list) == 0:
-    #         break
-    #     df = pandas.DataFrame({"tgt": new_tgt_list})
-    #     print(df.shape[0])
-    #     df.to_csv(f"{i + 1}.csv")
-    #     with open(f"unsolved{i}.pkl", "wb") as f_:
-    #         pickle.dump(new_tgt_list, f_)
-    #     f_name = f"unsolved{i}.pkl"
     base.run()

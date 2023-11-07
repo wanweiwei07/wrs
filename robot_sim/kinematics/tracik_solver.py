@@ -142,6 +142,7 @@ class NumIKSolverProc(mp.Process):
                     # optik failed
                     break
                 counter += 1
+            self._state_queue.put(1)
 
 
 class OptIKSolverProc(mp.Process):
@@ -227,58 +228,39 @@ class OptIKSolverProc(mp.Process):
             :return:
             """
             if not self._result_queue.empty():
+                self._state_queue.put(1)
                 raise StopIteration
 
-        # toggle the following one to switch to non-random restart version
+        # sqpss with random restart
         while True:
             tgt_pos, tgt_rotmat, seed_jnt_vals, max_n_iter = self._param_queue.get()
-            options = {'ftol': 1e-6,
-                       'eps': 1e-4,
-                       'maxiter': max_n_iter}
-            try:
-                result = sopt.minimize(fun=_objective,
-                                       args=(tgt_pos, tgt_rotmat),
-                                       x0=seed_jnt_vals,
-                                       method='SLSQP',
-                                       bounds=self.joint_ranges,
-                                       options=options,
-                                       callback=_call_back)
-            except StopIteration:
-                continue  # other solver succeeded
-            if result.success and result.fun < 1e-4:
-                self._result_queue.put(('o', result.x))
-            else:
-                self._result_queue.put(None)  # optik failed
-
-        # # sqpss with random restart
-        # while True:
-        #     tgt_pos, tgt_rotmat, seed_jnt_vals, max_n_iter = self._param_queue.get()
-        #     options = {'ftol': 1e-6,
-        #                'eps': 1e-4,
-        #                'maxiter': max_n_iter}
-        #     counter = 0
-        #     while True:
-        #         counter += 1
-        #         try:
-        #             result = sopt.minimize(fun=_objective,
-        #                                    args=(tgt_pos, tgt_rotmat),
-        #                                    x0=seed_jnt_vals,
-        #                                    method='SLSQP',
-        #                                    bounds=self.joint_ranges,
-        #                                    options=options,
-        #                                    callback=_call_back)
-        #         except StopIteration:
-        #             break  # other solver succeeded
-        #         if result.success and result.fun < 1e-4:
-        #             self._result_queue.put(('o', result.x))
-        #             break
-        #         else:
-        #             if counter > 10:
-        #                 self._result_queue.put(None)
-        #                 break
-        #             else:
-        #                 seed_jnt_vals = self._rand_conf()
-        #                 continue
+            options = {'maxiter': max_n_iter}
+            counter = 0
+            while True:
+                counter += 1
+                try:
+                    result = sopt.minimize(fun=_objective,
+                                           args=(tgt_pos, tgt_rotmat),
+                                           x0=seed_jnt_vals,
+                                           method='SLSQP',
+                                           bounds=self.joint_ranges,
+                                           options=options,
+                                           callback=_call_back)
+                except StopIteration:
+                    break  # other solver succeeded
+                if self._result_queue.empty():
+                    if result.success and result.fun < 1e-4:
+                        self._result_queue.put(('o', result.x))
+                        break
+                    else:
+                        if counter > 10:
+                            self._result_queue.put(None)
+                            break
+                        else:
+                            seed_jnt_vals = self._rand_conf()
+                            continue
+                break
+            self._state_queue.put(1)
 
 
 class TracIKSolver(object):
@@ -295,14 +277,14 @@ class TracIKSolver(object):
         self._nik_state_queue = mp.Queue()
         self._oik_state_queue = mp.Queue()
         self._result_queue = mp.Queue()
-        # self.nik_solver_proc = NumIKSolverProc(self.jlc.anchor,
-                                               # self.jlc.joints,
-                                               # self.jlc.tcp_joint_id,
-                                               # self.jlc.tcp_loc_homomat,
-                                               # wln_ratio,
-                                               # self._nik_param_queue,
-                                               # self._nik_state_queue,
-                                               # self._result_queue)
+        self.nik_solver_proc = NumIKSolverProc(self.jlc.anchor,
+                                               self.jlc.jnts,
+                                               self.jlc.tcp_jnt_id,
+                                               self.jlc.tcp_loc_homomat,
+                                               wln_ratio,
+                                               self._nik_param_queue,
+                                               self._nik_state_queue,
+                                               self._result_queue)
         self.oik_solver_proc = OptIKSolverProc(self.jlc.anchor,
                                                self.jlc.jnts,
                                                self.jlc.tcp_jnt_id,
@@ -310,26 +292,25 @@ class TracIKSolver(object):
                                                self._oik_param_queue,
                                                self._oik_state_queue,
                                                self._result_queue)
-        # self.nik_solver_proc.start()
+        self.nik_solver_proc.start()
         self.oik_solver_proc.start()
-        tcp_gl_pos, tcp_gl_rotmat = self.jlc.get_gl_tcp()
+        self._tcp_gl_pos, self._tcp_gl_rotmat = self.jlc.get_gl_tcp()
         # run once to avoid long waiting time in the beginning
-        self._oik_param_queue.put((tcp_gl_pos, tcp_gl_rotmat, self._default_seed_jnt_vals, 10))
+        self._oik_param_queue.put((self._tcp_gl_pos, self._tcp_gl_rotmat, self._default_seed_jnt_vals, 10))
+        self._oik_state_queue.get()
         self._result_queue.get()
 
     def ik(self, tgt_pos, tgt_rotmat, seed_jnt_vals=None, max_n_iter=100, toggle_dbg_info=False):
-        tcp_gl_pos, tcp_gl_rotmat = self.jlc.get_gl_tcp()
-        self._oik_param_queue.put((tcp_gl_pos, tcp_gl_rotmat, self._default_seed_jnt_vals, 10))
-        self._result_queue.get()
         if seed_jnt_vals is None:
             seed_jnt_vals = self._default_seed_jnt_vals
-        # self._nik_param_queue.put((tgt_pos, tgt_rotmat, seed_jnt_vals, max_n_iter))
+        self._nik_param_queue.put((tgt_pos, tgt_rotmat, seed_jnt_vals, max_n_iter))
         self._oik_param_queue.put((tgt_pos, tgt_rotmat, seed_jnt_vals, max_n_iter))
-        result = self._result_queue.get()
-        if toggle_dbg_info:
-            return result
-        else:
-            if result is None:
-                return None
+        if self._nik_state_queue.get() and self._oik_state_queue.get():
+            result = self._result_queue.get()
+            if toggle_dbg_info:
+                return result
             else:
-                return result[1]
+                if result is None:
+                    return None
+                else:
+                    return result[1]
