@@ -3,7 +3,7 @@ import math
 import numpy as np
 import basis.robot_math as rm
 import visualization.panda.world as wd
-import robot_sim.kinematics.jlchain as jlc
+import robot_sim._kinematics.jlchain as jlc
 import modeling.geometric_model as gm
 
 if __name__ == "__main__":

@@ -129,7 +129,7 @@ class Nova2X(object):
 
     def fk(self, joint_values: np.ndarray) -> (np.ndarray, np.ndarray):
         """
-        Forward kinematics
+        Forward _kinematics
         :param joint_values:
         :return: 1. positions (1x3 array) and 2. orientations (3x3 matrix)
         """
@@ -143,7 +143,7 @@ class Nova2X(object):
 
         :param tgt_pos: The position under WRS system
         :param tgt_rot: The 3x3 Rotation matrix or 1x3 RPY matrix
-        :return: inverse kinematics solution
+        :return: inverse _kinematics solution
         """
         if tgt_rot.shape == (3, 3):
             tgt_rpy = rm.rotmat_to_euler(tgt_rot)

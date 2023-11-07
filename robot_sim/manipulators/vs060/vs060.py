@@ -2,7 +2,7 @@ import os
 import math
 import numpy as np
 import basis.robot_math as rm
-import robot_sim.kinematics.jlchain as jl
+import robot_sim._kinematics.jlchain as jl
 import robot_sim.manipulators.manipulator_interface as mi
 
 class VS060(mi.ManipulatorInterface):

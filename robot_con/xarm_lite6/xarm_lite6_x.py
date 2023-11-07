@@ -181,7 +181,7 @@ class XArmLite6X(object):
 
         :param tgt_pos: The position under WRS system
         :param tgt_rot: The 3x3 Rotation matrix or 1x3 RPY matrix
-        :return: inverse kinematics solution
+        :return: inverse _kinematics solution
         """
         tgt_pos = self.pos_unit_wrs2xarm(tgt_pos)
         if tgt_rot is not None:

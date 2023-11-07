@@ -519,7 +519,7 @@ class YuMiArm:
         return bool(int(res.message))
 
     def fk(self, state, raw_res=False):
-        '''Get the forward kinematics of this arm to base frame of the arm.
+        '''Get the forward _kinematics of this arm to base frame of the arm.
 
         Parameters
         ----------

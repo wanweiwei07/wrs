@@ -1,6 +1,6 @@
 import numpy as np
 import matplotlib.pyplot as plt
-import robot_sim.kinematics.jlchain as jl
+import robot_sim._kinematics.jlchain as jl
 import robot_sim.robots.system_interface as ri
 import motion.probabilistic.rrt_connect as rrtc
 

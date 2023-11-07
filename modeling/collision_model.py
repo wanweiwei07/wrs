@@ -4,12 +4,12 @@ import numpy as np
 from panda3d.core import BitMask32
 from visualization.panda.world import ShowBase
 import basis.data_adapter as da
-import modeling.geometric_model as gm
-import modeling.model_collection as mc
+import modeling.geometric_model as mgm
+import modeling.model_collection as mmc
 import modeling._panda_cdhelper as pcd_helper
 import modeling._ode_cdhelper as mcd_helper
 # import modeling._bullet_cdhelper as mcd_helper
-from enum import Enum
+import modeling.constant as mc
 
 
 # the following two helpers cannot correcty find collision positions, 20211216
@@ -17,24 +17,8 @@ from enum import Enum
 # import modeling._gimpact_cdhelper as mcd_helper
 # import modeling._bullet_cdhelper as mcd_helper
 
-class CDMeshType(Enum):
-    AABB = 1
-    OBB = 2
-    CONVEX_HULL = 3
-    CYLINDER = 4
-    DEFAULT = 5  # triangle mesh
 
-
-class CDPrimitiveType(Enum):
-    BOX = 1
-    CAPSULE = 2
-    CYLINDER = 3
-    SURFACE_BALLS = 4
-    POINT_CLOUD = 5
-    USER_DEFINED = 6
-
-
-class CollisionModel(gm.GeometricModel):
+class CollisionModel(mgm.GeometricModel):
     """
     Load an object as a collision model
     Both collison primitives will be generated automatically
@@ -45,16 +29,16 @@ class CollisionModel(gm.GeometricModel):
     """
 
     def __init__(self,
-                 initializer,
-                 cdprimitive_type=CDPrimitiveType.BOX,
-                 cdmesh_type=CDMeshType.DEFAULT,
+                 initor,
+                 cdprimitive_type=mc.CDPrimitiveType.BOX,
+                 cdmesh_type=mc.CDMeshType.DEFAULT,
                  expand_radius=None,
                  name="cm",
                  userdefined_cdprimitive_fn=None,
                  toggle_transparency=True,
                  toggle_twosided=False):
         """
-        :param initializer:
+        :param initor:
         :param toggle_transparency:
         :param cdprimitive_type: box, ball, capsule, point_cloud, user_defined
         :param cdmesh_type: aabb, obb, convex_hull, default(triangulation)
@@ -66,19 +50,19 @@ class CollisionModel(gm.GeometricModel):
                                            may have multiple CollisionSolid
         date: 20190312, 20201212, 20230814
         """
-        if isinstance(initializer, CollisionModel):
-            self._name = copy.deepcopy(initializer.name)
-            self._file_path = copy.deepcopy(initializer.file_path)
-            self._trm_mesh = copy.deepcopy(initializer.trm_mesh)
-            self._pdndp = copy.deepcopy(initializer.pdndp)
-            self._cdmesh_type = copy.deepcopy(initializer.cdmesh_type)
-            self._cdmesh = initializer.copy_reference_cdmesh()
-            self._cdprimitive_type = copy.deepcopy(initializer.cdprimitive_type)
-            self._cdprimitive = initializer.copy_reference_cdprimitive()
-            self._cache_for_show = copy.deepcopy(initializer._cache_for_show)
-            self._local_frame = copy.deepcopy(initializer.local_frame)
+        if isinstance(initor, CollisionModel):
+            self._name = copy.deepcopy(initor.name)
+            self._file_path = copy.deepcopy(initor.file_path)
+            self._trm_mesh = copy.deepcopy(initor.trm_mesh)
+            self._pdndp = copy.deepcopy(initor.pdndp)
+            self._cdmesh_type = copy.deepcopy(initor.cdmesh_type)
+            self._cdmesh = initor.copy_reference_cdmesh()
+            self._cdprimitive_type = copy.deepcopy(initor.cdprimitive_type)
+            self._cdprimitive = initor.copy_reference_cdprimitive()
+            self._cache_for_show = copy.deepcopy(initor._cache_for_show)
+            self._local_frame = copy.deepcopy(initor.local_frame)
         else:
-            super().__init__(initializer=initializer,
+            super().__init__(initor=initor,
                              name=name,
                              toggle_transparency=toggle_transparency,
                              toggle_twosided=toggle_twosided)
@@ -107,15 +91,15 @@ class CollisionModel(gm.GeometricModel):
         """
         if cdmesh_type is None:
             cdmesh_type = self.cdmesh_type
-        if cdmesh_type == CDMeshType.AABB:
+        if cdmesh_type == mc.CDMeshType.AABB:
             trm_mesh = self.trm_mesh.aabb_bound
-        elif cdmesh_type == CDMeshType.OBB:
+        elif cdmesh_type == mc.CDMeshType.OBB:
             trm_mesh = self.trm_mesh.obb_bound
-        elif cdmesh_type == CDMeshType.CONVEX_HULL:
+        elif cdmesh_type == mc.CDMeshType.CONVEX_HULL:
             trm_mesh = self.trm_mesh.convex_hull
-        elif cdmesh_type == CDMeshType.CYLINDER:
+        elif cdmesh_type == mc.CDMeshType.CYLINDER:
             trm_mesh = self.trm_mesh.cyl_bound
-        elif cdmesh_type == CDMeshType.DEFAULT:
+        elif cdmesh_type == mc.CDMeshType.DEFAULT:
             trm_mesh = self.trm_mesh
         else:
             raise ValueError("Wrong mesh collision model end_type name!")
@@ -130,17 +114,17 @@ class CollisionModel(gm.GeometricModel):
             cdprimitive_type = self.cdprimitive_type
         if thickness is None:
             thickness = 0.002
-        if cdprimitive_type == CDPrimitiveType.BOX:
+        if cdprimitive_type == mc.CDPrimitiveType.BOX:
             pdcndp = pcd_helper.gen_box_pdcndp(self.trm_mesh, ex_radius=thickness)
-        elif cdprimitive_type == CDPrimitiveType.CAPSULE:
+        elif cdprimitive_type == mc.CDPrimitiveType.CAPSULE:
             pdcndp = pcd_helper.gen_capsule_pdcndp(self.trm_mesh, ex_radius=thickness)
-        elif cdprimitive_type == CDPrimitiveType.CYLINDER:
+        elif cdprimitive_type == mc.CDPrimitiveType.CYLINDER:
             pdcndp = pcd_helper.gen_cyl_pdcndp(self.trm_mesh, ex_radius=thickness)
-        elif cdprimitive_type == CDPrimitiveType.SURFACE_BALLS:
+        elif cdprimitive_type == mc.CDPrimitiveType.SURFACE_BALLS:
             pdcndp = pcd_helper.gen_surfaceballs_pdcnd(self.trm_mesh, radius=thickness)
-        elif cdprimitive_type == CDPrimitiveType.POINT_CLOUD:
+        elif cdprimitive_type == mc.CDPrimitiveType.POINT_CLOUD:
             pdcndp = pcd_helper.gen_pointcloud_pdcndp(self.trm_mesh, radius=thickness)
-        elif cdprimitive_type == CDPrimitiveType.USER_DEFINED:
+        elif cdprimitive_type == mc.CDPrimitiveType.USER_DEFINED:
             if userdefined_cdprimitive_fn is None:
                 raise ValueError("User defined functions must provided for user_defined cdprimitive!")
             pdcndp = userdefined_cdprimitive_fn(ex_radius=thickness)
@@ -265,7 +249,7 @@ class CollisionModel(gm.GeometricModel):
         if isinstance(obj, ShowBase):
             # for rendering to base.render
             self._pdndp.reparentTo(obj.render)
-        elif isinstance(obj, mc.ModelCollection):
+        elif isinstance(obj, mmc.ModelCollection):
             obj.add_cm(self)
         else:
             print("Must be ShowBase, modeling.StaticGeometricModel, GeometricModel, CollisionModel, "
@@ -336,7 +320,7 @@ def gen_box(extent=np.array([.1, .1, .1]), homomat=np.eye(4), rgba=np.array([1, 
     author: weiwei
     date: 20201202
     """
-    box_sgm = gm.gen_box(extent=extent, homomat=homomat, rgba=rgba)
+    box_sgm = mgm.gen_box(extent=extent, homomat=homomat, rgba=rgba)
     box_cm = CollisionModel(box_sgm)
     return box_cm
 
@@ -350,7 +334,7 @@ def gen_sphere(pos=np.array([0, 0, 0]), radius=0.01, rgba=[1, 0, 0, 1]):
     author: weiwei
     date: 20161212tsukuba, 20191228osaka
     """
-    sphere_sgm = gm.gen_sphere(pos=pos, radius=radius, rgba=rgba)
+    sphere_sgm = mgm.gen_sphere(pos=pos, radius=radius, rgba=rgba)
     sphere_cm = CollisionModel(sphere_sgm)
     return sphere_cm
 
@@ -370,7 +354,7 @@ def gen_stick(spos=np.array([.0, .0, .0]),
     author: weiwei
     date: 20210328
     """
-    stick_sgm = gm.gen_stick(spos=spos, epos=epos, radius=radius, type=type, rgba=rgba, n_sec=n_sec)
+    stick_sgm = mgm.gen_stick(spos=spos, epos=epos, radius=radius, type=type, rgba=rgba, n_sec=n_sec)
     stick_cm = CollisionModel(stick_sgm)
     return stick_cm
 
@@ -385,14 +369,14 @@ if __name__ == "__main__":
     import visualization.panda.world as wd
 
     base = wd.World(cam_pos=[.3, .3, .3], lookat_pos=[0, 0, 0], toggle_debug=True)
-    gm.gen_frame().attach_to(base)
+    mgm.gen_frame().attach_to(base)
 
     objpath = os.path.join(basis.__path__[0], "objects", "bunnysim.stl")
-    bunnycm = CollisionModel(objpath, cdprimitive_type=CDPrimitiveType.CAPSULE)
+    bunnycm = CollisionModel(objpath, cdprimitive_type=mc.CDPrimitiveType.CAPSULE)
     bunnycm.set_rgba([0.7, 0.7, 0.0, .2])
     bunnycm.show_local_frame()
     bunnycm.attach_to(base)
-    bunnycm.change_cdmesh_type(CDMeshType.CYLINDER)
+    bunnycm.change_cdmesh_type(mc.CDMeshType.CYLINDER)
     # bunnycm.show_cdmesh()
     bunnycm.show_cdprimitive()
     # bunnycm2 = CollisionModel(bunnycm)
@@ -404,7 +388,7 @@ if __name__ == "__main__":
     # bunnycm2.attach_to(base)
     # base.run()
 
-    bunnycm1 = CollisionModel(objpath, cdprimitive_type=CDPrimitiveType.CYLINDER)
+    bunnycm1 = CollisionModel(objpath, cdprimitive_type=mc.CDPrimitiveType.CYLINDER)
     bunnycm1.set_rgba([0.7, 0, 0.7, 1.0])
     rotmat = rm.rotmat_from_euler(0, 0, math.radians(15))
     bunnycm1.set_pos(np.array([0, .01, 0]))
@@ -437,7 +421,7 @@ if __name__ == "__main__":
     toc = time.time()
     print("mesh cd cost: ", toc - tic)
     print(result)
-    ct_objcm = gm.GeometricModel(contacts)
+    ct_objcm = mgm.GeometricModel(contacts)
     ct_objcm.attach_to(base)
     # tic = time.time()
     # bunnycm2.is_pcdwith([bunnycm, bunnycm1])

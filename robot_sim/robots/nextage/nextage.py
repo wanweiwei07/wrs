@@ -9,7 +9,7 @@ import robot_sim.manipulators.manipulator_interface as mi
 import robot_sim.robots.robot_interface as ai
 from panda3d.core import CollisionNode, CollisionBox, Point3
 import robot_sim.robots.system_interface as ri
-import robot_sim.kinematics.jlchain as jl
+import robot_sim._kinematics.jlchain as jl
 
 
 class Left_Manipulator(mi.ManipulatorInterface):

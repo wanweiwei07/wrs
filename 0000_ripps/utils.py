@@ -7,7 +7,7 @@ import modeling.collision_model as cm
 
 class Base(cm.CollisionModel):
     def __init__(self, file):
-        super().__init__(initializer=file, expand_radius=.009)
+        super().__init__(initor=file, expand_radius=.009)
         self._hole_pos_list = []
         self._pos_z0 = .037
         self._pos_x0 = .0315

@@ -1,26 +1,27 @@
 import copy
 import numpy as np
-import modeling.model_collection as mc
-import robot_sim.kinematics.jlchain as jl
-import robot_sim.kinematics.collision_checker as cc
-import modeling.geometric_model as gm
+import modeling.model_collection as mmc
+import robot_sim._kinematics.jlchain as rkjl
+import robot_sim._kinematics.collision_checker as cc
+import modeling.geometric_model as mgm
+import modeling.constant as mc
 
 
 class EEInterface(object):
 
-    def __init__(self, pos=np.zeros(3), rotmat=np.eye(3), cdmesh_type='aabb', name='end_effector'):
+    def __init__(self, pos=np.zeros(3), rotmat=np.eye(3), cdmesh_type=mc.CDMeshType.AABB, name='end_effector'):
         self.name = name
         self.pos = pos
         self.rotmat = rotmat
         self.cdmesh_type = cdmesh_type  # aabb, convexhull, or triangles
         # joints
         # - coupling - No coupling by default
-        self.coupling = jl.JLChain(pos=self.pos, rotmat=self.rotmat, home_conf=np.zeros(0), name='coupling')
-        self.coupling.jnts[1]['pos_in_loc_tcp'] = np.array([0, 0, .0])
-        self.coupling.lnks[0]['name'] = 'coupling_lnk0'
+        self.coupling = rkjl.JLChain(pos=self.pos, rotmat=self.rotmat, n_dof=1, name='coupling')
+        self.coupling.jnts[0].loc_pos = np.zeros(3)
+        self.coupling.anchor.name = 'coupling_anchor'
         # toggle on the following part to assign an explicit mesh model to a coupling
-        # self.coupling.lnks[0]['mesh_file'] = os.path.join(this_dir, "meshes", "xxx.stl")
-        # self.coupling.lnks[0]['rgba'] = [.2, .2, .2, 1]
+        # self.coupling.jnts[0].link = rkjl.create_link(mesh_file=os.path.join(this_dir, "meshes", "xxx.stl"))
+        # self.coupling.lnks[0].rgba = [.2, .2, .2, 1]
         self.coupling.reinitialize()
         # action center, acting point of the tool
         self.action_center_pos = np.zeros(3)
@@ -28,13 +29,12 @@ class EEInterface(object):
         # collision detection
         self.cc = None
         # cd mesh collection for precise collision checking
-        self.cdmesh_collection = mc.ModelCollection()
-        # object grasped/held/attached to end_type-effector; oiee = object in end_type-effector
+        self.cdmesh_collection = mmc.ModelCollection()
+        # object grasped/held/attached to end-effector; oiee = object in end-effector
         self.oiee_infos = []
 
     def update_oiee(self):
         """
-        oih = object in hand
         :return:
         author: weiwei
         date: 20230807
@@ -75,7 +75,7 @@ class EEInterface(object):
         author: weiwei
         date: 20201223
         """
-        return_val =  self.cc.is_collided(obstacle_list=obstacle_list, otherrobot_list=otherrobot_list)
+        return_val = self.cc.is_collided(obstacle_list=obstacle_list, otherrobot_list=otherrobot_list)
         return return_val
 
     def is_mesh_collided(self, objcm_list=[], toggle_debug=False):
@@ -135,12 +135,12 @@ class EEInterface(object):
     def _toggle_tcpcs(self, parent):
         action_center_gl_pos = self.rotmat.dot(self.action_center_pos) + self.pos
         action_center_gl_rotmat = self.rotmat.dot(self.action_center_rotmat)
-        gm.gen_dashed_stick(spos=self.pos,
-                            epos=action_center_gl_pos,
-                            radius=.0062,
-                            rgba=[.5, 0, 1, 1],
-                            type="round").attach_to(parent)
-        gm.gen_myc_frame(pos=action_center_gl_pos, rotmat=action_center_gl_rotmat).attach_to(parent)
+        mgm.gen_dashed_stick(spos=self.pos,
+                             epos=action_center_gl_pos,
+                             radius=.0062,
+                             rgba=[.5, 0, 1, 1],
+                             type="round").attach_to(parent)
+        mgm.gen_myc_frame(pos=action_center_gl_pos, rotmat=action_center_gl_rotmat).attach_to(parent)
 
     def enable_cc(self):
         self.cc = cc.CollisionChecker("collision_checker")

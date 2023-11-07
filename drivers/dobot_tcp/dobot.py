@@ -525,7 +525,7 @@ class Dobot(object):
 
     def fk(self, jnts: np.ndarray, user: int = 0, tool: int = 0, ):
         """
-        Forward kinematics
+        Forward _kinematics
         joints: angles of the robot
         user: indicate user frame (Set in the DobotStudio)
         tool: indicate the tool frame (Set in the DobotStudio)
@@ -546,7 +546,7 @@ class Dobot(object):
            tool: int = 0,
            seed_jnts: np.ndarray = None):
         """
-        Inverse kinematics
+        Inverse _kinematics
         pos: [x,y,z] position of the TCP
         rotmat: [rx,ry,rz] euler angles of the TCP
         user: indicate user frame (Set in the DobotStudio)

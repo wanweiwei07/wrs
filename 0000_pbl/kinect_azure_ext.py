@@ -89,7 +89,7 @@ while True:
         #     cv2.circle(color_image, tuple(image_xy), 10, (255, 0, 0), -1)
         #     cv2.imshow("test", color_image)
         # cv2.waitKey(0)
-        mypoint_cloud = gm.GeometricModel(initializer=point_cloud)
+        mypoint_cloud = gm.GeometricModel(initor=point_cloud)
         mypoint_cloud.attach_to(base)
         for pcd_pnt in pcd_pnt_list:
             marker_center = gm.gen_sphere(pos=pcd_pnt, radius=.1)

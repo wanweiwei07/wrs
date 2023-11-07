@@ -4,7 +4,7 @@ import numpy as np
 import basis.robot_math as rm
 import modeling.model_collection as mc
 import modeling.collision_model as cm
-import robot_sim.kinematics.jlchain as jl
+import robot_sim._kinematics.jlchain as jl
 import robot_sim.manipulators.sia5.sia5 as sia
 import robot_sim.end_effectors.gripper.robotiq85.robotiq85 as rtq
 from panda3d.core import CollisionNode, CollisionBox, Point3

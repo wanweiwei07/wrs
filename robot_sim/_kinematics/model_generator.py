@@ -4,7 +4,7 @@ import modeling.geometric_model as gm
 import modeling.collision_model as cm
 import modeling.model_collection as mc
 import basis.robot_math as rm
-import robot_sim.kinematics.constant as rkc
+import robot_sim._kinematics.constant as rkc
 
 
 def gen_tcp_frame(jlc,

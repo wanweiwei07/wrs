@@ -6,7 +6,7 @@ import basis.robot_math as rm
 import visualization.panda.world as wd
 import modeling.geometric_model as gm
 import modeling.collision_model as cm
-import robot_sim.kinematics.jlchain as jlc
+import robot_sim._kinematics.jlchain as jlc
 
 leaf_rgba = [45 / 255, 90 / 255, 39 / 255, 1]
 stem_rgba = [97 / 255, 138 / 255, 61 / 255, 1]
@@ -84,7 +84,7 @@ for id, rotmat in enumerate(rotmat_list):
     # main_stem.fk(joint_values=[math.pi/36,math.pi/36, 0,-math.pi/36,-math.pi/36,0])
     # stem1.gen_meshmodel().attach_to(base)
 
-    sb_leaf = gm.GeometricModel(initializer="objects/soybean_leaf.stl")
+    sb_leaf = gm.GeometricModel(initor="objects/soybean_leaf.stl")
     sb_leaf.set_rgba(rgba=leaf_rgba)
     sbl = sb_leaf.copy()
     # sbl.set_scale(np.array([1,1,1])/(int(id/3)%(main_stem.jlc.n_dof+1)+1))

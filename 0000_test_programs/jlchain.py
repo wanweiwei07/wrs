@@ -4,10 +4,10 @@ import basis
 import numpy as np
 from tqdm import tqdm
 import visualization.panda.world as wd
-import robot_sim.kinematics.model_generator as rkmg
-import robot_sim.kinematics.constant as rkc
+import robot_sim._kinematics.model_generator as rkmg
+import robot_sim._kinematics.constant as rkc
 import modeling.geometric_model as gm
-import robot_sim.kinematics.jlchain as rskj
+import robot_sim._kinematics.jlchain as rskj
 
 if __name__ == '__main__':
     base = wd.World(cam_pos=[1.25, .75, .75], lookat_pos=[0, 0, .3])
@@ -34,7 +34,7 @@ if __name__ == '__main__':
     jlc.jnts[5].loc_motion_axis = np.array([0, 0, 1])
     jlc.jnts[5].motion_rng = np.array([-np.pi / 2, np.pi / 2])
     jlc.tcp_loc_pos = np.array([0, 0, .01])
-    jlc.finalize()
+    jlc.reinitialize()
     rkmg.gen_jlc_stick(jlc, stick_rgba=basis.constant.navy_blue, toggle_tcp_frame=True,
                        toggle_joint_frame=True).attach_to(base)
     seed_jnt_vals = jlc.get_joint_values()

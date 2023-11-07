@@ -48,7 +48,7 @@ def trans_p(p, transmat=None):
 
 
 def show_pcd(pcd, rgba=(1, 1, 1, 1)):
-    pcd_gm = gm.GeometricModel(initializer=pcd)
+    pcd_gm = gm.GeometricModel(initor=pcd)
     pcd_gm.set_rgba(rgba)
     pcd_gm.attach_to(base)
 
@@ -107,7 +107,7 @@ def get_org_convexhull(pcd, color=(1, 1, 1), transparency=1, toggledebug=False):
 
     convexhull = trimesh.Trimesh(vertices=pcd)
     convexhull = convexhull.convex_hull
-    obj = cm.CollisionModel(initializer=convexhull, type="ball")
+    obj = cm.CollisionModel(initor=convexhull, type="ball")
     if toggledebug:
         obj.set_rgba(color[0], color[1], color[2], transparency)
         obj.reparentTo(base.render)
@@ -138,7 +138,7 @@ def get_std_convexhull(pcd, origin="center", color=(1, 1, 1), transparency=1, to
 
     convexhull = trimesh.Trimesh(vertices=pcd)
     convexhull = convexhull.convex_hull
-    obj = cm.CollisionModel(initializer=convexhull)
+    obj = cm.CollisionModel(initor=convexhull)
     obj_w, obj_h = get_pcd_w_h(pcd)
 
     if origin == "tip":
@@ -149,7 +149,7 @@ def get_std_convexhull(pcd, origin="center", color=(1, 1, 1), transparency=1, to
 
         convexhull = trimesh.Trimesh(vertices=pcd)
         convexhull = convexhull.convex_hull
-        obj = cm.CollisionModel(initializer=convexhull)
+        obj = cm.CollisionModel(initor=convexhull)
 
     if toggledebug:
         obj.set_rgba(color[0], color[1], color[2], transparency)
@@ -224,7 +224,7 @@ def reconstruct_surface(pcd, radii=[.005], toggledebug=False):
     print("---------------reconstruct surface bp---------------")
     pcd = np.asarray(pcd)
     tmmesh = o3d_helper.reconstructsurfaces_bp(pcd, radii=radii, doseparation=False)
-    obj = cm.CollisionModel(initializer=tmmesh)
+    obj = cm.CollisionModel(initor=tmmesh)
     if toggledebug:
         obj.set_rgba(1, 1, 1, 1)
         obj.reparentTo(base.render)
@@ -236,7 +236,7 @@ def reconstruct_surface_list(pcd, radii=[5], color=(1, 1, 1), transparency=1, to
     tmmeshlist = o3d_helper.reconstructsurfaces_bp(pcd, radii=radii, doseparation=True)
     obj_list = []
     for tmmesh in tmmeshlist:
-        obj = cm.CollisionModel(initializer=tmmesh)
+        obj = cm.CollisionModel(initor=tmmesh)
         obj_list.append(obj)
         if toggledebug:
             obj.set_rgba(color[0], color[1], color[2], transparency)

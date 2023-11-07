@@ -8,7 +8,7 @@ from scipy.spatial import cKDTree
 
 base = wd.World(cam_pos=np.array([-.3,-.7,.1]), lookat_pos=np.array([0,0,0]))
 # gm.gen_frame().attach_to(base)
-bowl_model = cm.CollisionModel(initializer="./objects/bowl.stl")
+bowl_model = cm.CollisionModel(initor="./objects/bowl.stl")
 bowl_model.set_rgba([.3,.3,.3,1])
 bowl_model.set_rotmat(rm.rotmat_from_euler(math.pi,0,0))
 bowl_model.attach_to(base)

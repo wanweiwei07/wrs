@@ -14,7 +14,7 @@ base = wd.World(cam_pos=np.array([-.3, -.9, .3]), lookat_pos=np.array([0, 0, 0])
 model_pcd = pickle.load(open("helmet_gaussian.pkl", "rb"))['objpcd'] * 1e-3
 origin = np.mean(model_pcd, axis=0)
 bowl_samples = model_pcd - origin
-bowl_model = cm.CollisionModel(initializer=bowl_samples)
+bowl_model = cm.CollisionModel(initor=bowl_samples)
 bowl_model.set_rgba([.3, .3, .3, .3])
 # bowl_model.set_rotmat(rm.rotmat_from_euler(math.pi,0,0))
 bowl_model.attach_to(base)

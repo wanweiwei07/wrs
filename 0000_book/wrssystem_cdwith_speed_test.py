@@ -10,7 +10,7 @@ if __name__ == '__main__':
 
     base = wd.World(cam_pos=np.array([.7, .05, .3]), lookat_pos=np.zeros(3))
     # object
-    object_ref = cm.CollisionModel(initializer="./objects/bunnysim.stl",
+    object_ref = cm.CollisionModel(initor="./objects/bunnysim.stl",
                                    cdprimitive_type=cm.CDPrimitiveType.BOX,
                                    cdmesh_type=cm.CDMeshType.OBB)
 

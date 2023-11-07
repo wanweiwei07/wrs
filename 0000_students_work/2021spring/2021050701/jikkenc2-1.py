@@ -8,7 +8,7 @@ import basis.robot_math as rm
 if __name__ == '__main__':
     base = wd.World(cam_pos=np.array([-.8, .3, .4]),lookat_pos=np.array([0, 0, .1]))
     # マグカップの生成
-    object1 = cm.CollisionModel(initializer="./objects/mug.stl",
+    object1 = cm.CollisionModel(initor="./objects/mug.stl",
                                 cdprimitive_type="box",
                                 cdmesh_type="obb")
     object1.set_pos(np.array([.04, 0, 0]))
@@ -17,7 +17,7 @@ if __name__ == '__main__':
     object1.show_cdmesh()
 
     # 牛乳パックの生成
-    object2 = cm.CollisionModel(initializer="./objects/milkCarton.stl",
+    object2 = cm.CollisionModel(initor="./objects/milkCarton.stl",
                                 cdprimitive_type="box",
                                 cdmesh_type="obb")
     object2.set_pos(np.array([0, .0, 0]))

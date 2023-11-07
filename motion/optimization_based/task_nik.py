@@ -247,7 +247,7 @@ class NIK(object):
         ws_wtdiagmat = np.diag(self.ws_wtlist)
         if toggle_debug:
             if "lib_jlm" not in dir():
-                import robot_sim.kinematics.model_generator as jlm
+                import robot_sim._kinematics.model_generator as jlm
             if "plt" not in dir():
                 import matplotlib.pyplot as plt
             # jlmgen = lib_jlm.JntLnksMesh()

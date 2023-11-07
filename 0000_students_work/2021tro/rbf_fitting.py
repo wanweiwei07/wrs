@@ -10,7 +10,7 @@ import vision.depth_camera.surface.plane_surface as ps
 
 base = wd.World(cam_pos=np.array([.5,.1,.3]), lookat_pos=np.array([0,0,0.05]))
 gm.gen_frame().attach_to(base)
-tube_model = gm.GeometricModel(initializer="./objects/bowl.stl")
+tube_model = gm.GeometricModel(initor="./objects/bowl.stl")
 tube_model.set_rgba([.3,.3,.3,.3])
 tube_model.attach_to(base)
 points, points_normals = tube_model.sample_surface(radius=.002, n_samples=10000, toggle_option='normals')

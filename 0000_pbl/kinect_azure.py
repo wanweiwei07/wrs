@@ -35,7 +35,7 @@ def update(pk_obj, pcd_list, marker_center_list, task):
         corners, ids, rejectedImgPoints = aruco.detectMarkers(color_image,
                                                               dictionary=aruco.Dictionary_get(aruco.DICT_4X4_250),
                                                               parameters=parameters)
-        mypoint_cloud = gm.GeometricModel(initializer=point_cloud)
+        mypoint_cloud = gm.GeometricModel(initor=point_cloud)
         mypoint_cloud.attach_to(base)
         pcd_list.append(mypoint_cloud)
         if len(corners) == 0:

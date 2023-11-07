@@ -7,7 +7,7 @@ import visualization.panda.world as wd
 import modeling.geometric_model as gm
 import modeling.collision_model as cm
 import modeling.model_collection as mc
-import robot_sim.kinematics.jlchain as jlc
+import robot_sim._kinematics.jlchain as jlc
 import robot_sim.manipulators.xarm7.xarm7 as rbt
 
 leaf_rgba = [45 / 255, 90 / 255, 39 / 255, 1]
@@ -45,7 +45,7 @@ class Cup(object):
 
 
 base = wd.World(cam_pos=[4.2, 4.2, 2.5], lookat_pos=[0, 0, .7], auto_cam_rotate=True)
-frame = gm.GeometricModel(initializer="meshes/frame.stl")
+frame = gm.GeometricModel(initor="meshes/frame.stl")
 frame.set_rgba(rgba=aluminium_rgba)
 frame.attach_to(base)
 
@@ -151,15 +151,15 @@ r_rotmat = rotmat.dot(rm.rotmat_from_axangle([0, 1, 0], -np.pi / 2))
 # pos = np.zeros(3)
 # rotmat = np.eye(3)
 
-cam_frame = cm.CollisionModel(initializer="objects/camera_frame.stl")
+cam_frame = cm.CollisionModel(initor="objects/camera_frame.stl")
 cam_frame.set_rgba(rgba=aluminium_rgba)
 cam_frame.set_pose(pos, r_rotmat)
 cam_frame.attach_to(base)
 
-cam_0 = cm.CollisionModel(initializer="objects/flircam.stl")
+cam_0 = cm.CollisionModel(initor="objects/flircam.stl")
 cam_1 = cam_0.copy()
 cam_2 = cam_0.copy()
-phoxi = cm.CollisionModel(initializer="objects/phoxi_m.stl")
+phoxi = cm.CollisionModel(initor="objects/phoxi_m.stl")
 
 cam_0.set_rgba(rgba=matt_red)
 cam_1.set_rgba(rgba=matt_blue)
@@ -211,12 +211,12 @@ rbt_model.attach_to(base)
 pos, rotmat = rbt_s.get_gl_tcp()
 r_rotmat = rotmat
 
-spray_host = cm.CollisionModel(initializer="objects/airgun_host.stl")
+spray_host = cm.CollisionModel(initor="objects/airgun_host.stl")
 spray_host.set_rgba(rgba=[1,1,1,1])
 spray_host.set_pose(pos, r_rotmat)
 spray_host.attach_to(base)
 
-spray = cm.CollisionModel(initializer="objects/spray.stl")
+spray = cm.CollisionModel(initor="objects/spray.stl")
 spray_loc_pos = np.array([.0, -.07, 0.07])
 spray_loc_rotmat = np.eye(3)
 spray_gl_rotmat = spray_loc_rotmat.dot(r_rotmat)
@@ -225,7 +225,7 @@ spray.set_pose(pos=spray_gl_pos, rotmat=spray_gl_rotmat)
 spray.attach_to(base)
 spray.set_rgba(red)
 
-container = cm.CollisionModel(initializer="objects/spray_container.stl")
+container = cm.CollisionModel(initor="objects/spray_container.stl")
 container_loc_pos = np.array([.0, -.01, 0.15])
 container_loc_rotmat = np.eye(3)
 container_gl_rotmat = container_loc_rotmat.dot(r_rotmat)
@@ -258,7 +258,7 @@ for idx, x in enumerate(cup_pos_x[1::2]):
             branch = Stem(ndof=1, pos=branch_pos,
                           rotmat=rotmat, base_length=.1 / math.sqrt(height), base_thickness=.002)
             branch.gen_meshmodel().attach_to(base)
-            sb_leaf = gm.GeometricModel(initializer="objects/soybean_leaf.stl")
+            sb_leaf = gm.GeometricModel(initor="objects/soybean_leaf.stl")
             sb_leaf.set_rgba(rgba=leaf_rgba)
             sbl = sb_leaf.copy()
             # sbl.set_scale(np.array([1,1,1])/(int(id/3)%(main_stem.jlc.n_dof+1)+1))

@@ -1,7 +1,7 @@
 import numpy as np
 import basis.robot_math as rm
-import robot_sim.kinematics.constant as rkc
-import robot_sim.kinematics.jl as lib_jl
+import robot_sim._kinematics.constant as rkc
+import robot_sim._kinematics.jl as lib_jl
 import warnings as wns
 import scipy.optimize as sopt
 

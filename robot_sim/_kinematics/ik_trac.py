@@ -1,6 +1,6 @@
 """
 This trac ik solver is implemented following instructions from the trac ik paper.
-P. Beeson and B. Ames, "TRAC-IK: An open-source library for improved solving of generic inverse kinematics,"
+P. Beeson and B. Ames, "TRAC-IK: An open-source library for improved solving of generic inverse _kinematics,"
 IEEE-RAS International Conference on Humanoid Robots (Humanoids), Seoul, Korea (South), 2015, pp. 928-935,
 doi: 10.1109/HUMANOIDS.2015.7363472.
 
@@ -15,7 +15,7 @@ import numpy as np
 import multiprocessing as mp
 import basis.robot_math as rm
 import scipy.optimize as sopt
-import robot_sim.kinematics.constant as rkc
+import robot_sim._kinematics.constant as rkc
 
 
 class NumIKSolverProc(mp.Process):

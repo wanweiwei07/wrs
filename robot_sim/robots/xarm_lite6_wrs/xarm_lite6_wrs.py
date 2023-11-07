@@ -7,7 +7,7 @@ import os
 import numpy as np
 import basis.robot_math as rm
 import modeling.model_collection as mc
-import robot_sim.kinematics.jlchain as jl
+import robot_sim._kinematics.jlchain as jl
 from robot_sim.manipulators.xarm_lite6 import XArmLite6
 from robot_sim.end_effectors.gripper.lite6_wrs_gripper import Lite6WRSGripper
 import robot_sim.robots.system_interface as ri

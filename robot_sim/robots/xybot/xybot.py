@@ -1,6 +1,6 @@
 import math
 import numpy as np
-import robot_sim.kinematics.jlchain as jl
+import robot_sim._kinematics.jlchain as jl
 import robot_sim.robots.system_interface as ri
 
 class XYBot(ri.RobotInterface):

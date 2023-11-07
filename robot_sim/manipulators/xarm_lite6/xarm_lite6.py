@@ -14,7 +14,7 @@ from panda3d.core import (CollisionNode,
 
 import basis.robot_math as rm
 import modeling.collision_model as cm
-import robot_sim.kinematics.jlchain as jl
+import robot_sim._kinematics.jlchain as jl
 import robot_sim.manipulators.manipulator_interface as mi
 
 

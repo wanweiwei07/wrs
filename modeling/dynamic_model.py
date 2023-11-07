@@ -11,11 +11,11 @@ class DynamicModel(gm.GeometricModel):
     date: 20190627
     """
 
-    def __init__(self, initializer, mass=None, betransparency=True, cm_cdtype="box", cm_expradius=None,
+    def __init__(self, initor, mass=None, betransparency=True, cm_cdtype="box", cm_expradius=None,
                  restitution=0, allowdeactivation=False, allowccd=True, friction=.2, dynamic=False,
                  dyn_cdtype="convex", name="bdm"):
         """
-        :param initializer:
+        :param initor:
         :param mass:
         :param betransparency:
         :param cm_cdtype:
@@ -34,7 +34,7 @@ class DynamicModel(gm.GeometricModel):
         #     self.__objbdb = initializer.objbdb.copy()
         #     base.physicsworld.attach(self.__objbdb)
         # else:
-        super().__init__(initializer.objcm, toggle_transparency=betransparency, type=cm_cdtype, cm_expradius=None,
+        super().__init__(initor.objcm, toggle_transparency=betransparency, type=cm_cdtype, cm_expradius=None,
                          name="defaultname")
         if mass is None:
             mass = 0

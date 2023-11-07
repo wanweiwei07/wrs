@@ -3,7 +3,7 @@ import math
 import numpy as np
 import modeling.collision_model as cm
 import modeling.model_collection as mc
-import robot_sim.kinematics.jlchain as jl
+import robot_sim._kinematics.jlchain as jl
 import robot_sim.manipulators.ur5e.ur5e as rbt
 import robot_sim.end_effectors.gripper.robotiq140.robotiq140 as hnd
 import robot_sim.robots.system_interface as ri

@@ -5,7 +5,7 @@ import basis.robot_math as rm
 import modeling.collision_model as cm
 import modeling.geometric_model as gm
 import modeling.model_collection as mc
-import robot_sim.kinematics.constant as rkc
+import robot_sim._kinematics.constant as rkc
 
 
 class Link(object):
@@ -208,7 +208,7 @@ def create_link(mesh_file: str,
                 inertia=np.eye(3),
                 mass=0,
                 rgba=bc.link_stick_rgba):
-    objcm = cm.CollisionModel(initializer=mesh_file)
+    objcm = cm.CollisionModel(initor=mesh_file)
     return Link(name=name,
                 loc_pos=loc_pos,
                 loc_rotmat=loc_rotmat,
@@ -229,7 +229,7 @@ def create_joint_with_link(joint_name="auto",
 
 if __name__ == '__main__':
     import visualization.panda.world as wd
-    import robot_sim.kinematics.model_generator as rkmg
+    import robot_sim._kinematics.model_generator as rkmg
 
     base = wd.World(cam_pos=[1, 1, 1], lookat_pos=[0, 0, 0])
     gm.gen_frame().attach_to(base)

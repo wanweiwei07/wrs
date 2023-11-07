@@ -1,7 +1,7 @@
 import os
 import numpy as np
 import modeling.model_collection as mc
-import robot_sim.kinematics.jlchain as jl
+import robot_sim._kinematics.jlchain as jl
 import basis.robot_math as rm
 import robot_sim.end_effectors.single_contact.single_contact_interface as si
 

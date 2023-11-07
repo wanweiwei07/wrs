@@ -10,9 +10,9 @@ import basis.robot_math as rm
 import scipy.spatial
 from scipy.spatial.transform import Rotation
 from tqdm import tqdm
-import robot_sim.kinematics.ik_num as rkn
-import robot_sim.kinematics.ik_opt as rko
-import robot_sim.kinematics.ik_trac as rkt
+import robot_sim._kinematics.ik_num as rkn
+import robot_sim._kinematics.ik_opt as rko
+import robot_sim._kinematics.ik_trac as rkt
 
 
 class DDIKSolver(object):
@@ -124,10 +124,10 @@ class DDIKSolver(object):
 
 if __name__ == '__main__':
     import modeling.geometric_model as gm
-    import robot_sim.kinematics.jlchain as rskj
+    import robot_sim._kinematics.jlchain as rskj
     import time
     import basis.constant as bc
-    import robot_sim.kinematics.model_generator as rkmg
+    import robot_sim._kinematics.model_generator as rkmg
     import visualization.panda.world as wd
 
     base = wd.World(cam_pos=[1.25, .75, .75], lookat_pos=[0, 0, .3])
@@ -154,7 +154,7 @@ if __name__ == '__main__':
     jlc.jnts[5].loc_motion_axis = np.array([0, 0, 1])
     jlc.jnts[5].motion_rng = np.array([-np.pi / 2, np.pi / 2])
     jlc.tcp_loc_pos = np.array([0, 0, .01])
-    jlc.finalize(ik_solver_class=DDIKSolver)
+    jlc.reinitialize(ik_solver_class=DDIKSolver)
     seed_jnt_vals = jlc.get_joint_values()
 
     # random_jnts = jlc.rand_conf()

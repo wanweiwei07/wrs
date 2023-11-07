@@ -20,50 +20,50 @@ class StaticGeometricModel(object):
     """
 
     def __init__(self,
-                 initializer=None,
+                 initor=None,
                  name="sgm",
                  toggle_transparency=True,
                  toggle_twosided=False):
         """
-        :param initializer: path end_type defined by os.path or trimesh or pdndp
+        :param initor: path end_type defined by os.path or trimesh or pdndp
         :param toggle_transparency
         :param name
         """
-        if isinstance(initializer, StaticGeometricModel):
-            self._file_path = copy.deepcopy(initializer.file_path)
-            self._trm_mesh = copy.deepcopy(initializer.trm_mesh)
-            self._pdndp = copy.deepcopy(initializer.pdndp)
-            self._name = copy.deepcopy(initializer.name)
-            self._local_frame = copy.deepcopy(initializer.local_frame)
+        if isinstance(initor, StaticGeometricModel):
+            self._file_path = copy.deepcopy(initor.file_path)
+            self._trm_mesh = copy.deepcopy(initor.trm_mesh)
+            self._pdndp = copy.deepcopy(initor.pdndp)
+            self._name = copy.deepcopy(initor.name)
+            self._local_frame = copy.deepcopy(initor.local_frame)
         else:
             # make a grandma pdndp to separate decorations (-autoshader) and raw pdndp (+autoshader)
             self._name = name
             self._pdndp = NodePath(name)
-            if isinstance(initializer, str):
-                self._file_path = initializer
+            if isinstance(initor, str):
+                self._file_path = initor
                 self._trm_mesh = da.trm.load(self._file_path)
                 pdndp_core = da.trimesh_to_nodepath(self._trm_mesh, name='pdndp_core')
                 pdndp_core.reparentTo(self._pdndp)
-            elif isinstance(initializer, da.trm.Trimesh):
+            elif isinstance(initor, da.trm.Trimesh):
                 self._file_path = None
-                self._trm_mesh = initializer
+                self._trm_mesh = initor
                 pdndp_core = da.trimesh_to_nodepath(self._trm_mesh)
                 pdndp_core.reparentTo(self._pdndp)
-            elif isinstance(initializer, o3d.geometry.PointCloud):  # TODO should pointcloud be pdndp or pdnp_raw
+            elif isinstance(initor, o3d.geometry.PointCloud):  # TODO should pointcloud be pdndp or pdnp_raw
                 self._file_path = None
-                self._trm_mesh = da.trm.Trimesh(np.asarray(initializer.points))
+                self._trm_mesh = da.trm.Trimesh(np.asarray(initor.points))
                 pdndp_core = da.pdgeomndp_from_v(self._trm_mesh.vertices, name='pdndp_core')
                 pdndp_core.reparentTo(self._pdndp)
-            elif isinstance(initializer, np.ndarray):  # TODO should pointcloud be pdndp or pdnp_raw
+            elif isinstance(initor, np.ndarray):  # TODO should pointcloud be pdndp or pdnp_raw
                 self._file_path = None
-                if initializer.ndim == 2:
-                    if initializer.shape[1] == 3:
-                        self._trm_mesh = da.trm.Trimesh(initializer)
+                if initor.ndim == 2:
+                    if initor.shape[1] == 3:
+                        self._trm_mesh = da.trm.Trimesh(initor)
                         pdndp_core = da.pdgeomndp_from_v(self._trm_mesh.vertices)
                         pdndp_core.setRenderModeThickness(.001 * da.M_TO_PIXEL)
-                    elif initializer.shape[1] == 7:
-                        self._trm_mesh = da.trm.Trimesh(initializer[:, :3])
-                        pdndp_core = da.pdgeomndp_from_v(self._trm_mesh.vertices, initializer[:, 3:])
+                    elif initor.shape[1] == 7:
+                        self._trm_mesh = da.trm.Trimesh(initor[:, :3])
+                        pdndp_core = da.pdgeomndp_from_v(self._trm_mesh.vertices, initor[:, 3:])
                         pdndp_core.setRenderModeThickness(.001 * da.M_TO_PIXEL)
                     else:
                         # TODO depth UV?
@@ -71,16 +71,16 @@ class StaticGeometricModel(object):
                 else:
                     raise NotImplementedError
                 pdndp_core.reparentTo(self._pdndp)
-            elif isinstance(initializer, o3d.geometry.TriangleMesh):
+            elif isinstance(initor, o3d.geometry.TriangleMesh):
                 self._file_path = None
-                self._trm_mesh = da.trm.Trimesh(vertices=initializer.vertices, faces=initializer.triangles,
-                                                face_normals=initializer.triangle_normals)
+                self._trm_mesh = da.trm.Trimesh(vertices=initor.vertices, faces=initor.triangles,
+                                                face_normals=initor.triangle_normals)
                 pdndp_core = da.trimesh_to_nodepath(self._trm_mesh, name='pdndp_core')
                 pdndp_core.reparentTo(self._pdndp)
-            elif isinstance(initializer, NodePath):  # TODO: deprecate 20230815
+            elif isinstance(initor, NodePath):  # TODO: deprecate 20230815
                 self._file_path = None
                 self._trm_mesh = None
-                pdndp_core = initializer
+                pdndp_core = initor
                 pdndp_core.reparentTo(self._pdndp)
             else:  # empty model
                 self._file_path = None
@@ -199,12 +199,12 @@ class StaticGeometricModel(object):
 class WireFrameModel(StaticGeometricModel):
 
     def __init__(self,
-                 initializer=None,
+                 initor=None,
                  name="wsgm"):
         """
-        :param initializer: path end_type defined by os.path or trimesh or pdndp
+        :param initor: path end_type defined by os.path or trimesh or pdndp
         """
-        super().__init__(initializer=initializer, toggle_transparency=False, name=name)
+        super().__init__(initor=initor, toggle_transparency=False, name=name)
         # apply rendering effects to pdndp_core
         # frames will be attached to pdndp and will not be influenced by changes made to pdndp_core
         self.pdndp_core.setRenderModeWireframe()
@@ -224,21 +224,21 @@ class GeometricModel(StaticGeometricModel):
     """
 
     def __init__(self,
-                 initializer=None,
+                 initor=None,
                  name="gm",
                  toggle_transparency=True,
                  toggle_twosided=False):
         """
-        :param initializer: path end_type defined by os.path or trimesh or pdndp
+        :param initor: path end_type defined by os.path or trimesh or pdndp
         """
-        if isinstance(initializer, GeometricModel):
-            self._file_path = copy.deepcopy(initializer.file_path)
-            self._trm_mesh = copy.deepcopy(initializer.trm_mesh)
-            self._pdndp = copy.deepcopy(initializer.pdndp)
-            self._name = copy.deepcopy(initializer.name)
-            self._local_frame = copy.deepcopy(initializer.local_frame)
+        if isinstance(initor, GeometricModel):
+            self._file_path = copy.deepcopy(initor.file_path)
+            self._trm_mesh = copy.deepcopy(initor.trm_mesh)
+            self._pdndp = copy.deepcopy(initor.pdndp)
+            self._name = copy.deepcopy(initor.name)
+            self._local_frame = copy.deepcopy(initor.local_frame)
         else:
-            super().__init__(initializer=initializer,
+            super().__init__(initor=initor,
                              name=name,
                              toggle_transparency=toggle_transparency,
                              toggle_twosided=toggle_twosided)
@@ -343,7 +343,7 @@ def gen_linesegs(linesegs,
     ls_pdndp = NodePath(ls.create())
     ls_pdndp.setTransparency(TransparencyAttrib.MDual)
     ls_pdndp.setLightOff()
-    ls_sgm = StaticGeometricModel(initializer=ls_pdndp)
+    ls_sgm = StaticGeometricModel(initor=ls_pdndp)
     return ls_sgm
 
 
@@ -360,7 +360,7 @@ def gen_sphere(pos=np.array([0, 0, 0]),
     date: 20161212tsukuba, 20191228osaka
     """
     sphere_trm = trm_factory.gen_sphere(pos=pos, radius=radius, ico_level=ico_level)
-    sphere_sgm = StaticGeometricModel(initializer=sphere_trm)
+    sphere_sgm = StaticGeometricModel(initor=sphere_trm)
     sphere_sgm.set_rgba(rgba=rgba)
     return sphere_sgm
 
@@ -377,7 +377,7 @@ def gen_ellipsoid(pos=np.array([0, 0, 0]),
     date: 20200701osaka
     """
     ellipsoid_trm = trm_factory.gen_ellipsoid(pos=pos, axmat=axes_mat)
-    ellipsoid_sgm = StaticGeometricModel(initializer=ellipsoid_trm)
+    ellipsoid_sgm = StaticGeometricModel(initor=ellipsoid_trm)
     ellipsoid_sgm.set_rgba(rgba=rgba)
     return ellipsoid_sgm
 
@@ -400,7 +400,7 @@ def gen_stick(spos=np.array([0, 0, 0]),
     date: 20191229osaka
     """
     stick_trm = trm_factory.gen_stick(spos=spos, epos=epos, radius=radius, type=type, n_sec=n_sec)
-    stick_sgm = StaticGeometricModel(initializer=stick_trm)
+    stick_sgm = StaticGeometricModel(initor=stick_trm)
     stick_sgm.set_rgba(rgba=rgba)
     return stick_sgm
 
@@ -431,7 +431,7 @@ def gen_dashed_stick(spos=np.array([0, 0, 0]),
                                               radius=radius,
                                               type=type,
                                               n_sec=n_sec)
-    dashstick_sgm = StaticGeometricModel(initializer=dashstick_trm)
+    dashstick_sgm = StaticGeometricModel(initor=dashstick_trm)
     dashstick_sgm.set_rgba(rgba=rgba)
     return dashstick_sgm
 
@@ -467,7 +467,7 @@ def gen_box(xyz_lengths=np.array([1, 1, 1]),
     date: 20191229osaka, 20230830
     """
     box_trm = trm_factory.gen_box(xyz_lengths=xyz_lengths, pos=pos, rotmat=rotmat)
-    box_sgm = StaticGeometricModel(initializer=box_trm)
+    box_sgm = StaticGeometricModel(initor=box_trm)
     box_sgm.set_rgba(rgba=rgba)
     return box_sgm
 
@@ -703,7 +703,7 @@ def gen_wireframe(vertices,
     ls_pdndp = NodePath(ls.create())
     ls_pdndp.setTransparency(TransparencyAttrib.MDual)
     ls_pdndp.setLightOff()
-    ls_sgm = StaticGeometricModel(initializer=ls_pdndp)
+    ls_sgm = StaticGeometricModel(initor=ls_pdndp)
     return ls_sgm
 
 

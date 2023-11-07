@@ -61,7 +61,7 @@ class Surface(object):
             rng = [[min(self.xydata[:, 0])-.01, max(self.xydata[:, 0])+.01],
                    [min(self.xydata[:, 1])-.01, max(self.xydata[:, 1])+.01]]
         surface_trm = self._gen_surface(self.get_zdata, rng=rng, granularity=granularity)
-        surface_cm = cm.CollisionModel(initializer=surface_trm, toggle_twosided=True)
+        surface_cm = cm.CollisionModel(initor=surface_trm, toggle_twosided=True)
         surface_cm.set_rgba(rgba)
         return surface_cm
 

@@ -7,7 +7,7 @@ import visualization.panda.world as wd
 import modeling.geometric_model as gm
 import modeling.collision_model as cm
 import modeling.model_collection as mc
-import robot_sim.kinematics.jlchain as jlc
+import robot_sim._kinematics.jlchain as jlc
 import robot_sim.manipulators.xarm7.xarm7 as rbt
 
 aluminium_rgba = [132 / 255, 135 / 255, 137 / 255, 1]
@@ -29,15 +29,15 @@ r_rotmat = rotmat.dot(rm.rotmat_from_axangle([0, 1, 0], -np.pi / 2))
 # pos = np.zeros(3)
 # rotmat = np.eye(3)
 
-cam_frame = cm.CollisionModel(initializer="objects/camera_frame.stl")
+cam_frame = cm.CollisionModel(initor="objects/camera_frame.stl")
 cam_frame.set_rgba(rgba=aluminium_rgba)
 cam_frame.set_pose(pos, r_rotmat)
 cam_frame.attach_to(base)
 
-cam_0 = cm.CollisionModel(initializer="objects/flircam.stl")
+cam_0 = cm.CollisionModel(initor="objects/flircam.stl")
 cam_1 = cam_0.copy()
 cam_2 = cam_0.copy()
-phoxi = cm.CollisionModel(initializer="objects/phoxi_m.stl")
+phoxi = cm.CollisionModel(initor="objects/phoxi_m.stl")
 
 cam_0.set_rgba(rgba=matt_red)
 cam_1.set_rgba(rgba=matt_blue)

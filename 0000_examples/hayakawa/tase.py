@@ -1087,8 +1087,8 @@ if __name__ == "__main__":
     robot_s = ur3ds.UR3Dual()
     robot_inik_solver = inik.IncrementalNIK(robot_s)
     ## 物体の読み込み
-    ropeobj = cm.CollisionModel(initializer="./research_box_mm.stl")
-    obj = cm.CollisionModel(initializer=objpath)
+    ropeobj = cm.CollisionModel(initor="./research_box_mm.stl")
+    obj = cm.CollisionModel(initor=objpath)
     ## 事前定義把持とハンド姿勢の呼び出し
     handpose = pose.PoseMaker()
     predefined_grasps_lft, handdirlist_lft = handpose.lftgrasppose()  # 予備の把持姿勢と把持方向

@@ -1689,7 +1689,7 @@ class XArmAPI(object):
 
     def get_inverse_kinematics(self, pose, input_is_radian=None, return_is_radian=None):
         """
-        Get inverse kinematics
+        Get inverse _kinematics
 
         :param pose: [x(mm), y(mm), z(mm), roll(rad or °), pitch(rad or °), yaw(rad or °)]
             Note: the roll/pitch/yaw unit is radian if input_is_radian is True, else °
@@ -1704,7 +1704,7 @@ class XArmAPI(object):
 
     def get_forward_kinematics(self, angles, input_is_radian=None, return_is_radian=None):
         """
-        Get forward kinematics
+        Get forward _kinematics
 
         :param angles: [angle-1, angle-2, ..., angle-n], n is the number of axes of the arm
         :param input_is_radian: the param angles value is in radians or not, default is self.default_is_radian

@@ -7,7 +7,7 @@ leaf_rgba = [45/255, 90/255, 39/255, 1]
 stem_rgba = [97/255, 138/255, 61/255, 1]
 
 base = wd.World(cam_pos=[1,1,.7])
-sb_leaf = gm.GeometricModel(initializer="objects/soybean_leaf.stl")
+sb_leaf = gm.GeometricModel(initor="objects/soybean_leaf.stl")
 sb_leaf.set_rgba(rgba=leaf_rgba)
 
 stem0_spos = np.array([0,0,0])

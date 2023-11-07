@@ -6,7 +6,7 @@ if __name__ == '__main__':
     base = wd.World(cam_pos=np.array([.7,.05,.3]), lookat_pos=np.zeros(3))
     # ウサギのモデルのファイルを用いてCollisionModelを初期化します
     # ウサギ1~5はこのCollisionModelのコピーとして定義します
-    object_ref = cm.CollisionModel(initializer="./objects/bunnysim.stl",
+    object_ref = cm.CollisionModel(initor="./objects/bunnysim.stl",
                                    cdprimitive_type="box",
                                    cdmesh_type="default")
     object_ref.set_rgba([.9, .75, .35, 1])

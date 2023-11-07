@@ -5,7 +5,7 @@ import numpy as np
 import basis.robot_math as rm
 import modeling.geometric_model as gm
 import modeling.model_collection as mc
-import robot_sim.kinematics.jlchain as jl
+import robot_sim._kinematics.jlchain as jl
 import robot_sim.end_effectors.gripper.gripper_interface as gp
 
 

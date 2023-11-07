@@ -9,7 +9,7 @@ import numpy as np
 import modeling.model_collection as mc
 import modeling.collision_model as cm
 from panda3d.core import CollisionNode, CollisionBox, Point3
-import robot_sim.kinematics.jlchain as jl
+import robot_sim._kinematics.jlchain as jl
 import basis.robot_math as rm
 import robot_sim.end_effectors.gripper.gripper_interface as gp
 

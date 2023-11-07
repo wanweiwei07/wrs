@@ -39,7 +39,7 @@ def update(pk_obj, pcd_list, ball_center_list, counter, task):
         if 0.3 < point_cloud_sub[0] < 3.3 and -1.3 < point_cloud_sub[1] < .3 and 0.5 < point_cloud_sub[2] < 2.5:
             ball.append(point_cloud_sub)
 
-    mypoint_cloud = gm.GeometricModel(initializer=point_cloud)
+    mypoint_cloud = gm.GeometricModel(initor=point_cloud)
     mypoint_cloud.attach_to(base)
     pcd_list.append(mypoint_cloud)
 

@@ -76,7 +76,7 @@ class YumiController:
 
     def fk(self, component_name: str, jnt_vals: np.ndarray, return_conf: bool = False) -> List[np.ndarray]:
         """
-        Forward kinematics of YUMI calculated by the RAPID commands in the real robot
+        Forward _kinematics of YUMI calculated by the RAPID commands in the real robot
         :param component_name
         :param jnt_vals: 1x7 np.array
         :param return_conf: If True, additionally return robot configuration

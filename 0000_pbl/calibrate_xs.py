@@ -113,7 +113,7 @@ sensor_handler = SensorHandler(pkx)
 from vision.depth_camera.calibrator import load_calibration_data
 
 affine_matrix, _, _ = load_calibration_data()
-gm.GeometricModel(initializer=rm.transform_points_by_homomat(
+gm.GeometricModel(initor=rm.transform_points_by_homomat(
     affine_matrix,
     sensor_handler.get_point_cloud()
 )).attach_to(base)

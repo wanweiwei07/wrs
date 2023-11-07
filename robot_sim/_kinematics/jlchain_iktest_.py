@@ -1,21 +1,16 @@
 import math
 import copy
 import numpy as np
-import time
+
+import basis.constant
 import basis.constant as bc
 import basis.robot_math as rm
 import modeling.collision_model as cm
-import robot_sim.kinematics.constant as rkc
-import robot_sim.kinematics.jl as rkjl
-import robot_sim.kinematics.ik_num as rkn
-import robot_sim.kinematics.ik_opt as rko
-import robot_sim.kinematics.ik_dd as rkd
-import robot_sim.kinematics.ik_trac as rkt
+import robot_sim._kinematics.constant as rkc
+import robot_sim._kinematics.jl as rkjl
+import robot_sim._kinematics.ik_num as rkn
+import robot_sim._kinematics.ik_opt as rko
 import basis.constant as cst
-
-# _Default_IKSolver = rko.OptIKSolver
-# _Default_IKSolver = rkt.TracIKSolver
-_Default_IKSolver = rkd.DDIKSolver
 
 
 class JLChain(object):
@@ -61,8 +56,8 @@ class JLChain(object):
         # mesh generator
         self.cdprimitive_type = cdprimitive_type
         self.cdmesh_type = cdmesh_type
-        # iksolver
-        self._ik_solver = None
+        self._nik_solver = rkn.NumIKSolver(self)
+        self._oik_solver = rko.OptIKSolver(self)
 
     @property
     def jnt_rngs(self):
@@ -90,7 +85,7 @@ class JLChain(object):
 
     def _get_jnt_rngs(self):
         """
-        get jnt ranges
+        get jntsrnage
         :return: [[jnt1min, jnt1max], [jnt2min, jnt2max], ...]
         date: 20180602, 20200704osaka
         author: weiwei
@@ -100,7 +95,7 @@ class JLChain(object):
             jnt_limits.append(self.jnts[i].motion_rng)
         return np.asarray(jnt_limits)
 
-    def forward_kinematics(self, jnt_vals, toggle_jac=True, update=False, toggle_dbg=False):
+    def forward_kinematics(self, jnt_vals=None, toggle_jac=True, update=False, toggle_dbg=False):
         """
         This function will update the global parameters
         :param jnt_vals: a 1xn ndarray where each element indicates the value of a joint (in radian or meter)
@@ -109,7 +104,7 @@ class JLChain(object):
         author: weiwei
         date: 20161202, 20201009osaka, 20230823
         """
-        if not update:
+        if not update and jnt_vals is not None:
             homomat = self.anchor.homomat
             j_pos = np.zeros((self.n_dof, 3))
             j_axis = np.zeros((self.n_dof, 3))
@@ -137,7 +132,7 @@ class JLChain(object):
                 return tcp_gl_pos, tcp_gl_rotmat, j_mat
             else:
                 return tcp_gl_pos, tcp_gl_rotmat
-        else:
+        if update and jnt_vals is not None:
             pos = self.anchor.pos
             rotmat = self.anchor.rotmat
             for i in range(self.n_dof):
@@ -145,23 +140,23 @@ class JLChain(object):
                 self.jnts[i].update_globals(pos=pos, rotmat=rotmat, motion_val=motion_value)
                 pos = self.jnts[i].gl_pos_q
                 rotmat = self.jnts[i].gl_rotmat_q
-            tcp_gl_pos, tcp_gl_rotmat = self.cvt_tcp_loc_to_gl()
-            if toggle_jac:
-                j_mat = np.zeros((6, self.n_dof))
-                for i in range(self.tcp_jnt_id + 1):
-                    if self.jnts[i].type == rkc.JointType.REVOLUTE:
-                        vec_jnt2tcp = tcp_gl_pos - self.jnts[i].gl_pos_q
-                        j_mat[:3, i] = np.cross(self.jnts[i].gl_motion_ax, vec_jnt2tcp)
-                        j_mat[3:6, i] = self.jnts[i].gl_motion_ax
-                        if toggle_dbg:
-                            gm.gen_arrow(spos=self.jnts[i].gl_pos_q,
-                                         epos=self.jnts[i].gl_pos_q + .3 * self.jnts[i].gl_motion_ax,
-                                         rgba=bc.black).attach_to(base)
-                    if self.jnts[i].type == rkc.JointType.PRISMATIC:
-                        j_mat[:3, i] = self.jnts[i].gl_motion_ax
-                return tcp_gl_pos, tcp_gl_rotmat, j_mat
-            else:
-                return tcp_gl_pos, tcp_gl_rotmat
+        tcp_gl_pos, tcp_gl_rotmat = self.cvt_tcp_loc_to_gl()
+        if toggle_jac:
+            j_mat = np.zeros((6, self.n_dof))
+            for i in range(self.tcp_jnt_id + 1):
+                if self.jnts[i].type == rkc.JointType.REVOLUTE:
+                    vec_jnt2tcp = tcp_gl_pos - self.jnts[i].gl_pos_q
+                    j_mat[:3, i] = np.cross(self.jnts[i].gl_motion_ax, vec_jnt2tcp)
+                    j_mat[3:6, i] = self.jnts[i].gl_motion_ax
+                    if toggle_dbg:
+                        gm.gen_arrow(spos=self.jnts[i].gl_pos_q,
+                                     epos=self.jnts[i].gl_pos_q + .3 * self.jnts[i].gl_motion_ax,
+                                     rgba=bc.black).attach_to(base)
+                if self.jnts[i].type == rkc.JointType.PRISMATIC:
+                    j_mat[:3, i] = self.jnts[i].gl_motion_ax
+            return tcp_gl_rotmat, tcp_gl_rotmat, j_mat
+        else:
+            return tcp_gl_rotmat, tcp_gl_rotmat
 
     def jacobian(self, joint_values=None):
         """
@@ -225,7 +220,7 @@ class JLChain(object):
         self.anchor.rotmat = rotmat
         return self.go_given_conf(joint_values=self.get_joint_values())
 
-    def finalize(self, ik_solver_class=None):
+    def reinitialize(self):
         """
         :return:
         author: weiwei
@@ -233,10 +228,8 @@ class JLChain(object):
         """
         self._jnt_rngs = self._get_jnt_rngs()
         self.go_home()
-        if ik_solver_class is None:
-            self._ik_solver = _Default_IKSolver(self)
-        else:
-            self._ik_solver = ik_solver_class(self)
+        self._nik_solver = rkn.NumIKSolver(self)
+        self._oik_solver = rko.OptIKSolver(self)
 
     def set_tcp(self, tcp_joint_id=None, tcp_loc_pos=None, tcp_loc_rotmat=None):
         if tcp_joint_id is not None:
@@ -245,10 +238,6 @@ class JLChain(object):
             self.tcp_loc_pos = tcp_loc_pos
         if tcp_loc_rotmat is not None:
             self.tcp_loc_rotmat = tcp_loc_rotmat
-
-    def get_gl_tcp(self):
-        tcp_gl_pos, tcp_gl_rotmat = self.cvt_tcp_loc_to_gl()
-        return tcp_gl_pos, tcp_gl_rotmat
 
     def cvt_tcp_loc_to_gl(self):
         gl_pos = self.jnts[self.tcp_jnt_id].gl_pos_q + self.jnts[self.tcp_jnt_id].gl_rotmat_q @ self.tcp_loc_pos
@@ -336,10 +325,10 @@ class JLChain(object):
         author: weiwei
         date: 20161205tsukuba
         """
-        jnt_values = np.zeros(self.n_dof)
+        jnt_vals = np.zeros(self.n_dof)
         for i in range(self.n_dof):
-            jnt_values[i] = self.jnts[i].motion_val
-        return jnt_values
+            jnt_vals[i] = self.jnts[i].motion_val
+        return jnt_vals
 
     def rand_conf(self):
         """
@@ -347,28 +336,83 @@ class JLChain(object):
         author: weiwei
         date: 20200326
         """
-        return np.random.rand(self.n_dof)*(self.jnt_rngs[:, 1] - self.jnt_rngs[:, 0]) + self.jnt_rngs[:, 0]
+        return np.multiply(np.random.rand(self.n_dof),
+                           (self.jnt_rngs[:, 1] - self.jnt_rngs[:, 0])) + self.jnt_rngs[:, 0]
 
     def ik(self,
            tgt_pos: np.ndarray,
            tgt_rotmat: np.ndarray,
            seed_jnt_vals=None,
-           max_n_iter=100,
+           max_n_iter=10000,
            toggle_dbg=False):
         """
-        trac ik solver runs num_ik and opt_ik in parallel, and return the faster result
+        Numerical IK by default
+        NOTE1: in the numik function of rotjntlinksik,
+        in case None is provided, the self.tcp_joint_id, self.tcp_loc_pos, self.tcp_loc_rotmat will be used
+        NOTE2: if list, len(tgtpos)=len(tgtrot) < len(tcp_joint_id)=len(tcp_loc_pos)=len(tcp_loc_rotmat)
         :param tgt_pos: 1x3 nparray, single value or list
         :param tgt_rotmat: 3x3 nparray, single value or list
         :param seed_jnt_vals: the starting configuration used in the numerical iteration
         :param max_n_iter
         :return:
         """
-        jnt_values = self._ik_solver.ik(tgt_pos=tgt_pos,
-                                        tgt_rotmat=tgt_rotmat,
-                                        seed_jnt_vals=seed_jnt_vals,
-                                        max_n_iter=max_n_iter,
-                                        toggle_dbg=toggle_dbg)
-        return jnt_values
+        # tic = time.time()
+        # jnt_vals = self._nik_solver.dls_rr(tgt_pos=tgt_pos,
+        #                                               tgt_rotmat=tgt_rotmat,
+        #                                               seed_jnt_vals=seed_jnt_vals,
+        #                                               max_n_iter=max_n_iter,
+        #                                               toggle_dbg=toggle_dbg)
+        # toc = time.time()
+        # print("DLS RR time ", toc - tic)
+        # tic = time.time()
+        # jnt_vals = self._nik_solver.cwln(tgt_pos=tgt_pos,
+        #                                             tgt_rotmat=tgt_rotmat,
+        #                                             seed_jnt_vals=seed_jnt_vals,
+        #                                             max_n_iter=max_n_iter,
+        #                                             toggle_dbg=toggle_dbg)
+        # toc = time.time()
+        # print("CWLN time ", toc - tic)
+        tic = time.time()
+        jnt_vals = self._nik_solver.pinv_wc(tgt_pos=tgt_pos,
+                                              tgt_rotmat=tgt_rotmat,
+                                              seed_jnt_vals=seed_jnt_vals,
+                                              max_n_iter=max_n_iter,
+                                              toggle_dbg=toggle_dbg)
+        toc = time.time()
+        print("PINV WC time ", toc - tic)
+        # tic = time.time()
+        # jnt_vals = self._nik_solver.pinv_rr(tgt_pos=tgt_pos,
+        #                                             tgt_rotmat=tgt_rotmat,
+        #                                             seed_jnt_vals=seed_jnt_vals,
+        #                                             max_n_iter=max_n_iter,
+        #                                             toggle_dbg=toggle_dbg)
+        # toc = time.time()
+        # print("PINV time ", toc - tic)
+        # tic = time.time()
+        # jnt_vals = self._nik_solver.jt_rr(tgt_pos=tgt_pos,
+        #                                             tgt_rotmat=tgt_rotmat,
+        #                                             seed_jnt_vals=seed_jnt_vals,
+        #                                             max_n_iter=max_n_iter,
+        #                                             toggle_dbg=toggle_dbg)
+        # toc = time.time()
+        # print("JT time ", toc - tic)
+        # tic = time.time()
+        # jnt_vals = self._oik_solver.sqpss(tgt_pos=tgt_pos,
+        #                                     tgt_rotmat=tgt_rotmat,
+        #                                     seed_jnt_vals=seed_jnt_vals,
+        #                                     max_n_iter=max_n_iter,
+        #                                     toggle_dbg=toggle_dbg)
+        # toc = time.time()
+        # print("SQP-SS time ", toc - tic)
+        # tic = time.time()
+        # jnt_vals = self._oik_solver.sqp(tgt_pos=tgt_pos,
+        #                                            tgt_rotmat=tgt_rotmat,
+        #                                            seed_jnt_vals=seed_jnt_vals,
+        #                                            max_n_iter=max_n_iter,
+        #                                            toggle_dbg=toggle_dbg)
+        # toc = time.time()
+        # print("SQP time ", toc - tic)
+        return jnt_vals
 
     def copy(self):
         return copy.deepcopy(self)
@@ -376,12 +420,11 @@ class JLChain(object):
 
 if __name__ == "__main__":
     import time
-    import pickle
-    from tqdm import tqdm
     import visualization.panda.world as wd
-    import robot_sim.kinematics.model_generator as rkmg
-    import robot_sim.kinematics.constant as rkc
+    import robot_sim._kinematics.model_generator as rkmg
+    import robot_sim._kinematics.constant as rkc
     import modeling.geometric_model as gm
+    from tqdm import tqdm
 
     base = wd.World(cam_pos=[1.25, .75, .75], lookat_pos=[0, 0, .3])
     gm.gen_frame().attach_to(base)
@@ -390,7 +433,6 @@ if __name__ == "__main__":
     jlc.jnts[0].loc_pos = np.array([0, 0, 0])
     jlc.jnts[0].loc_motion_axis = np.array([0, 0, 1])
     jlc.jnts[0].motion_rng = np.array([-np.pi / 2, np.pi / 2])
-    # jlc.jnts[1].change_type(rkc.JointType.PRISMATIC)
     jlc.jnts[1].loc_pos = np.array([0, 0, .05])
     jlc.jnts[1].loc_motion_axis = np.array([0, 1, 0])
     jlc.jnts[1].motion_rng = np.array([-np.pi / 2, np.pi / 2])
@@ -407,42 +449,28 @@ if __name__ == "__main__":
     jlc.jnts[5].loc_motion_axis = np.array([0, 0, 1])
     jlc.jnts[5].motion_rng = np.array([-np.pi / 2, np.pi / 2])
     jlc.tcp_loc_pos = np.array([0, 0, .01])
-    jlc.finalize()
-    # rkmg.gen_jlc_stick(jlc, stick_rgba=bc.navy_blue, toggle_tcp_frame=True,
-    #                    toggle_joint_frame=True).attach_to(base)
+    jlc.reinitialize()
     seed_jnt_vals = jlc.get_joint_values()
 
     success = 0
-    num_win = 0
-    opt_win = 0
     time_list = []
     tgt_list = []
     for i in tqdm(range(100), desc="ik"):
-        random_jnts = jlc.rand_conf()
-        tgt_pos, tgt_rotmat = jlc.forward_kinematics(jnt_vals=random_jnts, update=False, toggle_jac=False)
+        jnts = jlc.rand_conf()
+        tgt_pos, tgt_rotmat = jlc.forward_kinematics(jnt_vals=jnts, update=False, toggle_jac=False)
         tic = time.time()
         joint_values_with_dbg_info = jlc.ik(tgt_pos=tgt_pos,
                                             tgt_rotmat=tgt_rotmat,
                                             seed_jnt_vals=seed_jnt_vals,
-                                            max_n_iter=100,
-                                            toggle_dbg=True)
+                                            max_n_iter=30)
         toc = time.time()
-        time_list.append(toc - tic)
+        time_list.append(toc-tic)
         if joint_values_with_dbg_info is not None:
             success += 1
-            if joint_values_with_dbg_info[0] == 'o':
-                opt_win += 1
-            elif joint_values_with_dbg_info[0] == 'n':
-                num_win += 1
-                # gm.gen_frame(pos=tgt_pos, rotmat=tgt_rotmat).attach_to(base)
-                # jlc.forward_kinematics(jnt_vals=joint_values_with_dbg_info[1], update=True, toggle_jac=False)
-                # rkmg.gen_jlc_stick(jlc, stick_rgba=bc.navy_blue, toggle_tcp_frame=True,
-                #        toggle_joint_frame=True).attach_to(base)
-                # base.run()
         else:
+            print(repr(jnts), repr(tgt_pos), repr(tgt_rotmat))
             tgt_list.append((tgt_pos, tgt_rotmat))
     print(success)
-    print(f'num_win: {num_win}, opt_win: {opt_win}')
     print('average', np.mean(time_list))
     print('max', np.max(time_list))
     print('min', np.min(time_list))

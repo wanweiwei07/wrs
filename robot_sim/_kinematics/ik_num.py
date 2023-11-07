@@ -1,8 +1,8 @@
 import numpy as np
 import scipy
 import basis.robot_math as rm
-import robot_sim.kinematics.constant as rkc
-import robot_sim.kinematics.jl as lib_jl
+import robot_sim._kinematics.constant as rkc
+import robot_sim._kinematics.jl as lib_jl
 import warnings as wns
 
 
@@ -109,7 +109,7 @@ class NumIKSolver(object):
                 # random restart
                 iter_jnt_vals = self.jlc.rand_conf()
             if toggle_dbg:
-                import robot_sim.kinematics.model_generator as rkmg
+                import robot_sim._kinematics.model_generator as rkmg
                 joint_values = self.jlc.get_joint_values()
                 self.jlc.go_given_conf(joint_values=iter_jnt_vals)
                 rkmg.gen_jlc_stick(self.jlc, toggle_tcp_frame=True, toggle_joint_frame=True).attach_to(base)
@@ -149,7 +149,7 @@ class NumIKSolver(object):
                 # random restart
                 iter_jnt_vals = self.jlc.rand_conf()
             if toggle_dbg:
-                import robot_sim.kinematics.model_generator as rkmg
+                import robot_sim._kinematics.model_generator as rkmg
                 joint_values = self.jlc.get_joint_values()
                 self.jlc.go_given_conf(joint_values=iter_jnt_vals)
                 rkmg.gen_jlc_stick(self.jlc, toggle_tcp_frame=True, toggle_joint_frame=True).attach_to(base)
@@ -190,7 +190,7 @@ class NumIKSolver(object):
                 # random restart
                 iter_jnt_vals = self.jlc.rand_conf()
             if toggle_dbg:
-                import robot_sim.kinematics.model_generator as rkmg
+                import robot_sim._kinematics.model_generator as rkmg
                 joint_values = self.jlc.get_joint_values()
                 self.jlc.go_given_conf(joint_values=iter_jnt_vals)
                 rkmg.gen_jlc_stick(self.jlc, toggle_tcp_frame=True, toggle_joint_frame=True).attach_to(base)
@@ -243,7 +243,7 @@ class NumIKSolver(object):
                     clamped_err_vec - j_mat @ clamping)
             iter_jnt_vals = iter_jnt_vals + delta_jnt_values
             if toggle_dbg:
-                import robot_sim.kinematics.model_generator as rkmg
+                import robot_sim._kinematics.model_generator as rkmg
                 joint_values = self.jlc.get_joint_values()
                 self.jlc.go_given_conf(joint_values=iter_jnt_vals)
                 rkmg.gen_jlc_stick(self.jlc, toggle_tcp_frame=True, toggle_joint_frame=True).attach_to(base)
@@ -292,7 +292,7 @@ class NumIKSolver(object):
                 j_mat @ wln @ j_mat.T + lam * np.eye(j_mat.shape[1])) @ (clamped_err_vec - j_mat @ clamping)
             iter_jnt_vals = iter_jnt_vals + delta_jnt_values
             if toggle_dbg:
-                import robot_sim.kinematics.model_generator as rkmg
+                import robot_sim._kinematics.model_generator as rkmg
                 joint_values = self.jlc.get_joint_values()
                 self.jlc.go_given_conf(joint_values=iter_jnt_vals)
                 rkmg.gen_jlc_stick(self.jlc, toggle_tcp_frame=True, toggle_joint_frame=True).attach_to(base)

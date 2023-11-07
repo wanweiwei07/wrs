@@ -33,7 +33,7 @@ class CollisionModel(gm.GeometricModel):
     """
 
     def __init__(self,
-                 initializer,
+                 initor,
                  cdprimit_type='box',
                  cdmesh_type='triangles',
                  expand_radius=None,
@@ -42,7 +42,7 @@ class CollisionModel(gm.GeometricModel):
                  toggle_transparency=True,
                  toggle_twosided=False):
         """
-        :param initializer:
+        :param initor:
         :param toggle_transparency:
         :param cdprimit_type: box, ball, cylinder, point_cloud, user_defined
         :param cdmesh_type: aabb, obb, convex_hull, triangulation
@@ -54,16 +54,16 @@ class CollisionModel(gm.GeometricModel):
                                            may have multiple CollisionSolid
         date: 201290312, 20201212
         """
-        if isinstance(initializer, CollisionModel):
-            self._name = copy.deepcopy(initializer.name)
-            self._objpath = copy.deepcopy(initializer.file_path)
-            self._objtrm = copy.deepcopy(initializer.trm_mesh)
-            self._objpdnp = copy.deepcopy(initializer.pdndp)
-            self._localframe = copy.deepcopy(initializer.local_frame)
-            self._cdprimitive_type = copy.deepcopy(initializer.cdprimitive_type)
-            self._cdmesh_type = copy.deepcopy(initializer.cdmesh_type)
+        if isinstance(initor, CollisionModel):
+            self._name = copy.deepcopy(initor.name)
+            self._objpath = copy.deepcopy(initor.file_path)
+            self._objtrm = copy.deepcopy(initor.trm_mesh)
+            self._objpdnp = copy.deepcopy(initor.pdndp)
+            self._localframe = copy.deepcopy(initor.local_frame)
+            self._cdprimitive_type = copy.deepcopy(initor.cdprimitive_type)
+            self._cdmesh_type = copy.deepcopy(initor.cdmesh_type)
         else:
-            super().__init__(initializer=initializer, name=name, toggle_transparency=toggle_transparency, toggle_twosided=toggle_twosided)
+            super().__init__(initor=initor, name=name, toggle_transparency=toggle_transparency, toggle_twosided=toggle_twosided)
             self._cdprimitive_type, collision_node = self._update_cdprimit(cdprimit_type,
                                                                            expand_radius,
                                                                            userdefined_cdprimitive_fn)

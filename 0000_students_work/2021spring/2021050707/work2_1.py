@@ -10,9 +10,9 @@ if __name__ == '__main__':
     object_ref = cm.CollisionModel(initializer="./objects/bunnysim.stl", cdprimitive_type="box", cdmesh_type="triangles")
     object_ref.set_rgba([.9, .75, .35, 1])
     """
-    object_ref1 = cm.CollisionModel(initializer="./objects/Coffee_cup.stl", cdprimitive_type="box", cdmesh_type="triangles")
+    object_ref1 = cm.CollisionModel(initor="./objects/Coffee_cup.stl", cdprimitive_type="box", cdmesh_type="triangles")
     object_ref1.set_rgba([.9, .75, .35, 1])
-    object_ref2 = cm.CollisionModel(initializer="./objects/Glass.stl", cdprimitive_type="box", cdmesh_type="triangles")
+    object_ref2 = cm.CollisionModel(initor="./objects/Glass.stl", cdprimitive_type="box", cdmesh_type="triangles")
     object_ref2.set_rgba([.9, .75, .35, 1])
 
     """
