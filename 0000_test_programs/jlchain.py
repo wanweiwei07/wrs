@@ -59,7 +59,7 @@ if __name__ == '__main__':
                                         tgt_rotmat=tgt_rotmat,
                                         seed_jnt_vals=seed_jnt_vals,
                                         max_n_iter=100,
-                                        toggle_dbg_info=True)
+                                        toggle_dbg=True)
     toc = time.time()
     print(f"time cost is {toc - tic}")
     print(joint_values_with_dbg_info)

@@ -6,79 +6,118 @@ import numpy as np
 import pickle
 import basis.robot_math as rm
 import scipy.spatial
+from scipy.spatial.transform import Rotation
 from tqdm import tqdm
 import robot_sim.kinematics.ik_num as rkn
 import robot_sim.kinematics.ik_opt as rko
 import robot_sim.kinematics.ik_trac as rkt
 
 
-def data_builder(jlc, path='./'):
-    # gen sampled qs
-    sampled_jnts = []
-    n_intervals = np.linspace(8, 8, jlc.n_dof, endpoint=True)
-    for i in range(jlc.n_dof):
-        print(int(n_intervals[i]))
-        sampled_jnts.append(np.linspace(jlc.jnt_rngs[i][0], jlc.jnt_rngs[i][1], int(n_intervals[i]), endpoint=False))
-    grid = np.meshgrid(*sampled_jnts)
-    sampled_qs = np.vstack([x.ravel() for x in grid]).T
-    # gen sampled qs and their correspondent tcps
-    tcp_data = []
-    tcp_vecmat_data = []
-    jnt_data = []
-    for id in tqdm(range(len(sampled_qs))):
-        jnt_vals = sampled_qs[id]
-        tmp_tcp_pos, tmp_tcp_rotmat = jlc.forward_kinematics(jnt_vals=jnt_vals, toggle_jac=False)
-        tmp_tcp_w = rm.delta_w_between_rotmat(tmp_tcp_rotmat, np.eye(3))
-        tcp_data.append(np.concatenate((tmp_tcp_pos, tmp_tcp_w)))
-        tcp_vecmat_data.append((tmp_tcp_pos, tmp_tcp_rotmat))
-        jnt_data.append(jnt_vals)
-    querry_tree = scipy.spatial.cKDTree(tcp_data)
-    pickle.dump(querry_tree, open(path + 'ikdd_tree.pkl', 'wb'))
-    pickle.dump(jnt_data, open(path + 'jnt_data.pkl', 'wb'))
-    return querry_tree, tcp_data, jnt_data
-
-
 class DDIKSolver(object):
-    def __init__(self, jlc, path='./', rebuild=False):
+    def __init__(self, jlc, path='./', solver='n', rebuild=False):
+        """
+        :param jlc:
+        :param path:
+        :param solver: 'n': num ik; 'o': opt ik; 't': trac ik
+        :param rebuild:
+        """
         self.jlc = jlc
         if rebuild:
-            data_builder(jlc)
+            self._data_builder()
         else:
             try:
                 self.querry_tree = pickle.load(open(path + 'ikdd_tree.pkl', 'rb'))
                 self.jnt_data = pickle.load(open(path + 'jnt_data.pkl', 'rb'))
             except FileNotFoundError:
-                self.querry_tree, self.tcp_vecmat_data, self.jnt_data = data_builder(jlc)
-        self._nik_solver = rkn.NumIKSolver(self.jlc)
-        # self._oik_solver = rko.OptIKSolver(self.jlc)
-        # self.tik_solver = rkt.TracIKSolver(self.jlc)
+                self.querry_tree, self.jnt_data = self._data_builder()
+        if solver == 'n':
+            self._ik_solver = rkn.NumIKSolver(self.jlc)
+            self._ik_solver_fun = self._ik_solver.pinv_wc
+        elif solver == 'o':
+            self._ik_solver = rko.OptIKSolver(self.jlc)
+            self._ik_solver_fun = self._ik_solver.sqpss
+        elif solver == 't':
+            self._ik_solver = rkt.TracIKSolver(self.jlc)
+            self._ik_solver_fun = self._ik_solver.ik
 
-    def _custom_distance(self, tcp_vecmat1, tcp_vecmat2):
-        pos_err, rot_err, delta = rm.diff_between_posrot(tcp_vecmat1[0], tcp_vecmat1[1], tcp_vecmat2[0], tcp_vecmat2[1])
-        return pos_err + rot_err
+    def _rotmat_to_vec(self, rotmat, method='q'):
+        """
+        convert a rotmat to vectors
+        this will facilitate the Minkowski p-norm computation required by KDTree query
+        :param method: 'f': Frobenius; 'q': Quaternion; 'r': rpy; '-': same value
+        :return:
+        author: weiwei
+        date: 20231107
+        """
+        if method == 'f':
+            return rotmat.ravel()
+        if method == 'q':
+            return Rotation.from_matrix(rotmat).as_quat()
+        if method == 'r':
+            return rm.rotmat_to_euler(rotmat)
+        if method == '-':
+            return np.array([0])
+
+    def _data_builder(self, path='./'):
+        # gen sampled qs
+        sampled_jnts = []
+        n_intervals = np.linspace(8, 8, self.jlc.n_dof, endpoint=True)
+        for i in range(self.jlc.n_dof):
+            print(int(n_intervals[i]))
+            sampled_jnts.append(
+                np.linspace(jlc.jnt_rngs[i][0], self.jlc.jnt_rngs[i][1], int(n_intervals[i]), endpoint=False))
+        grid = np.meshgrid(*sampled_jnts)
+        sampled_qs = np.vstack([x.ravel() for x in grid]).T
+        # gen sampled qs and their correspondent tcps
+        tcp_data = []
+        jnt_data = []
+        for id in tqdm(range(len(sampled_qs))):
+            jnt_vals = sampled_qs[id]
+            tcp_pos, tcp_rotmat = self.jlc.forward_kinematics(jnt_vals=jnt_vals, toggle_jac=False)
+            tcp_rotvec = self._rotmat_to_vec(tcp_rotmat)
+            tcp_data.append(np.concatenate((tcp_pos, tcp_rotvec)))
+            jnt_data.append(jnt_vals)
+        querry_tree = scipy.spatial.cKDTree(tcp_data)
+        pickle.dump(querry_tree, open(path + 'ikdd_tree.pkl', 'wb'))
+        pickle.dump(jnt_data, open(path + 'jnt_data.pkl', 'wb'))
+        return querry_tree, jnt_data
 
     def ik(self,
            tgt_pos,
            tgt_rotmat,
            seed_jnt_vals=None,
-           max_n_iter=100,
-           toggle_dbg_info=False):
-        tmp_tcp_w = rm.delta_w_between_rotmat(tgt_rotmat, np.eye(3))
-        tgt_tcp = np.concatenate((tgt_pos, tmp_tcp_w))
-        dist_val, nn_indx = self.querry_tree.query(tgt_tcp, k=1)
-        seed_jnt_vals = self.jnt_data[nn_indx]
-        return self._nik_solver.pinv_rr(tgt_pos=tgt_pos,
-                                        tgt_rotmat=tgt_rotmat,
-                                        seed_jnt_vals=seed_jnt_vals,
-                                        max_n_iter=max_n_iter)
-        # return self._oik_solver.sqpss(tgt_pos=tgt_pos,
-        #                               tgt_rotmat=tgt_rotmat,
-        #                               seed_jnt_vals=seed_jnt_vals,
-        #                               max_n_iter=max_n_iter)
-        # return self.tik_solver.ik(tgt_pos=tgt_pos,
-        #                           tgt_rotmat=tgt_rotmat,
-        #                           seed_jnt_vals=seed_jnt_vals,
-        #                           max_n_iter=max_n_iter)
+           max_n_iter=10,
+           toggle_dbg=False):
+        """
+        :param tgt_pos:
+        :param tgt_rotmat:
+        :param seed_jnt_vals: ignored
+        :param max_n_iter:
+        :param toggle_dbg: ignored
+        :return:
+        author: weiwei
+        date: 20231107
+        """
+        tcp_rotvec = self._rotmat_to_vec(tgt_rotmat)
+        tgt_tcp = np.concatenate((tgt_pos, tcp_rotvec))
+        # dist_val, nn_indx = self.querry_tree.query(tgt_tcp, k=1, workers=-1)
+        # seed_jnt_vals = self.jnt_data[nn_indx]
+        # return self._ik_solver_fun(tgt_pos=tgt_pos,
+        #                            tgt_rotmat=tgt_rotmat,
+        #                            seed_jnt_vals=seed_jnt_vals,
+        #                            max_n_iter=max_n_iter)
+        dist_val_array, nn_indx_array = self.querry_tree.query(tgt_tcp, k=10, workers=-1)
+        for nn_indx in nn_indx_array:
+            seed_jnt_vals = self.jnt_data[nn_indx]
+            result = self._ik_solver_fun(tgt_pos=tgt_pos,
+                                         tgt_rotmat=tgt_rotmat,
+                                         seed_jnt_vals=seed_jnt_vals,
+                                         max_n_iter=max_n_iter)
+            if result is None:
+                continue
+            else:
+                return result
+        return None
 
 
 if __name__ == '__main__':
@@ -142,7 +181,7 @@ if __name__ == '__main__':
                                             tgt_rotmat=tgt_rotmat,
                                             seed_jnt_vals=seed_jnt_vals,
                                             max_n_iter=10,
-                                            toggle_dbg_info=True)
+                                            toggle_dbg=False)
         toc = time.time()
         time_list.append(toc - tic)
         if joint_values_with_dbg_info is not None:

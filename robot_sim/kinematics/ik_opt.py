@@ -37,14 +37,14 @@ class OptIKSolver(object):
               tgt_rotmat,
               seed_jnt_vals=None,
               max_n_iter=1000,
-              toggle_debug=False):  # ss = sum of square
+              toggle_dbg=False):  # ss = sum of square
         """
         sqpss is faster than sqp
         :param tgt_pos:
         :param tgt_rotmat:
         :param seed_jnt_vals:
         :param max_n_iter:
-        :param toggle_debug:
+        :param toggle_dbg:
         :return:
         author: weiwei
         date: 20231101
@@ -61,7 +61,7 @@ class OptIKSolver(object):
             return tcp_err_vec.T @ tcp_err_vec
 
         options = {'maxiter': max_n_iter,
-                   'disp': toggle_debug}
+                   'disp': toggle_dbg}
         for i in range(10):
             result = sopt.minimize(fun=_objective,
                                    args=(tgt_pos, tgt_rotmat),

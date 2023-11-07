@@ -347,15 +347,14 @@ class JLChain(object):
         author: weiwei
         date: 20200326
         """
-        return np.multiply(np.random.rand(self.n_dof),
-                           (self.jnt_rngs[:, 1] - self.jnt_rngs[:, 0])) + self.jnt_rngs[:, 0]
+        return np.random.rand(self.n_dof)*(self.jnt_rngs[:, 1] - self.jnt_rngs[:, 0]) + self.jnt_rngs[:, 0]
 
     def ik(self,
            tgt_pos: np.ndarray,
            tgt_rotmat: np.ndarray,
            seed_jnt_vals=None,
            max_n_iter=100,
-           toggle_dbg_info=False):
+           toggle_dbg=False):
         """
         trac ik solver runs num_ik and opt_ik in parallel, and return the faster result
         :param tgt_pos: 1x3 nparray, single value or list
@@ -368,7 +367,7 @@ class JLChain(object):
                                         tgt_rotmat=tgt_rotmat,
                                         seed_jnt_vals=seed_jnt_vals,
                                         max_n_iter=max_n_iter,
-                                        toggle_dbg_info=toggle_dbg_info)
+                                        toggle_dbg=toggle_dbg)
         return jnt_values
 
     def copy(self):
@@ -426,7 +425,7 @@ if __name__ == "__main__":
                                             tgt_rotmat=tgt_rotmat,
                                             seed_jnt_vals=seed_jnt_vals,
                                             max_n_iter=100,
-                                            toggle_dbg_info=True)
+                                            toggle_dbg=True)
         toc = time.time()
         time_list.append(toc - tic)
         if joint_values_with_dbg_info is not None:

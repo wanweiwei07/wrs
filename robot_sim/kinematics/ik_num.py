@@ -77,6 +77,7 @@ class NumIKSolver(object):
             return False
         if np.any(jnt_values > self.max_jnt_vals):
             return False
+        return True
 
     def pinv_rr(self,
                 tgt_pos,
@@ -157,7 +158,7 @@ class NumIKSolver(object):
                 gm.gen_arrow(spos=tcp_gl_pos, epos=tgt_pos).attach_to(base)
                 print("tcp_pos_err ", tcp_pos_err_val, " tcp_rot_err ", tcp_rot_err_val)
             if counter > max_n_iter:
-                raise Exception("No IK solution")
+                return None
             counter += 1
 
     def jt_rr(self,
@@ -198,7 +199,7 @@ class NumIKSolver(object):
                 gm.gen_arrow(spos=tcp_gl_pos, epos=tgt_pos).attach_to(base)
                 print("tcp_pos_err ", tcp_pos_err_val, " tcp_rot_err ", tcp_rot_err_val)
             if counter > max_n_iter:
-                raise Exception("No IK solution")
+                return None
             counter += 1
 
     def pinv_wc(self,
@@ -239,7 +240,7 @@ class NumIKSolver(object):
             clamping = -(np.identity(wln.shape[0]) - wln) @ phi_q
             # pinv with weighted clamping
             delta_jnt_values = clamping + wln_sqrt @ np.linalg.pinv(j_mat @ wln_sqrt, rcond=1e-4) @ (
-                        clamped_err_vec - j_mat @ clamping)
+                    clamped_err_vec - j_mat @ clamping)
             iter_jnt_vals = iter_jnt_vals + delta_jnt_values
             if toggle_dbg:
                 import robot_sim.kinematics.model_generator as rkmg
@@ -283,8 +284,9 @@ class NumIKSolver(object):
             phi_q = ((2 * iter_jnt_vals - self.jnt_rngs_mid) / self.jnt_rngs) * k_phi
             clamping = -(np.identity(wln.shape[0]) - wln) @ phi_q
             # lambda coefficient
-            min_svd_val = scipy.linalg.svdvals(wln_sqrt)[-1]
-            lam = 1e-9 if min_svd_val < 1e-4 else 0
+            # min_svd_val = scipy.linalg.svdvals(wln_sqrt)[-1]
+            # lam = 1e-9 if min_svd_val < 1e-4 else 0
+            lam = 1e-9
             # cwln
             delta_jnt_values = clamping + wln @ j_mat.T @ np.linalg.inv(
                 j_mat @ wln @ j_mat.T + lam * np.eye(j_mat.shape[1])) @ (clamped_err_vec - j_mat @ clamping)
@@ -299,283 +301,5 @@ class NumIKSolver(object):
                 gm.gen_arrow(spos=tcp_gl_pos, epos=tgt_pos).attach_to(base)
                 print("tcp_pos_err ", tcp_pos_err_val, " tcp_rot_err ", tcp_rot_err_val)
             if counter > max_n_iter:
-                raise Exception("No IK solution")
+                return None
             counter += 1
-
-    def num_ik(self,
-               tgt_pos,
-               tgt_rotmat,
-               tcp_jnt_id=None,
-               tcp_loc_pos=None,
-               tcp_loc_rotmat=None,
-               seed_jnt_values=None,
-               max_n_iter=100,
-               policy_for_local_minima="randomrestart",
-               toggle_dbg=False):
-        """
-        solveik numerically using the Levenberg-Marquardt Method
-        the details of this method can be found in: https://www.math.ucsd.edu/~sbuss/ResearchWeb/ikmethods/iksurvey.pdf
-        NOTE: if list, len(tgt_pos)=len(tgt_rotmat) <= len(tcp_joint_id)=len(tcp_loc_pos)=len(tcp_loc_rotmat)
-        :param tgt_pos: the position of the goal, 1-by-3 numpy ndarray
-        :param tgt_rotmat: the orientation of the goal, 3-by-3 numpyndarray
-        :param tcp_loc_pos: 1x3 nparray, decribed in the local frame of self.joints[tcp_joint_id], single value or list
-        :param tcp_loc_rotmat: 3x3 nparray, decribed in the local frame of self.joints[tcp_joint_id], single value or list
-        :param tcp_jnt_id: a joint ID in the self.tgtjnts
-        :param seed_jnt_values: the starting configuration used in the numerical iteration
-        :param max_n_iter: max number of numercial iternations
-        :param policy_for_local_minima: what to do at local minima: "accept", "randomrestart", "end_type"
-        :return: a 1xn numpy ndarray
-        author: weiwei
-        date: 20180203, 20200328
-        """
-        delta_pos = tgt_pos - self.jlc.jnts[0].gl_pos0
-        if np.linalg.norm(delta_pos) > self.max_rng:
-            print("The goal is outside maximum range!")
-            return None
-        iter_jnt_values = self.jlc.home if seed_jnt_values is None else seed_jnt_values
-        ws_wtdiagmat = np.diag(self.ws_wtlist)
-        if toggle_dbg:
-            if "lib_jlm" not in dir():
-                import robot_sim.kinematics.model_generator as jlm
-            if "plt" not in dir():
-                import matplotlib.pyplot as plt
-            dqbefore = []
-            dqcorrected = []
-            dqnull = []
-            ajpath = []
-        random_restart = False
-        prev_erronorm = 0.0
-        max_errornorm = 0.0
-        for i in range(max_n_iter):
-            j = self.jlc.jacobian(joint_values=iter_jnt_values,
-                                  tcp_joint_id=tcp_jnt_id,
-                                  tcp_loc_pos=tcp_loc_pos,
-                                  tcp_loc_rotmat=tcp_loc_rotmat,
-                                  update=False)
-            tcp_err_vec = self.tcp_error(tgt_pos, tgt_rotmat, tcp_jnt_id, tcp_loc_pos, tcp_loc_rotmat)
-            tcp_err_scalar = tcp_err_vec.T.dot(ws_wtdiagmat).dot(tcp_err_vec)
-            # err = .05 / errnorm * err if errnorm > .05 else err
-            if tcp_err_scalar > max_errornorm:
-                max_errornorm = tcp_err_scalar
-            if toggle_dbg:
-                print(tcp_err_scalar)
-                ajpath.append(iter_jnt_values)
-            if tcp_err_scalar < 1e-9:
-                if toggle_dbg:
-                    print(f"Number of IK iterations before finding a result: {i}")
-                    fig = plt.figure()
-                    axbefore = fig.add_subplot(411)
-                    axbefore.set_title('Original dq')
-                    axnull = fig.add_subplot(412)
-                    axnull.set_title('dqref on Null space')
-                    axcorrec = fig.add_subplot(413)
-                    axcorrec.set_title('Minimized dq')
-                    axaj = fig.add_subplot(414)
-                    axbefore.plot(dqbefore)
-                    axnull.plot(dqnull)
-                    axcorrec.plot(dqcorrected)
-                    axaj.plot(ajpath)
-                    plt.show()
-                return iter_jnt_values
-            else:
-                # judge local minima
-                if abs(tcp_err_scalar - prev_erronorm) < 1e-12:
-                    if toggle_dbg:
-                        fig = plt.figure()
-                        axbefore = fig.add_subplot(411)
-                        axbefore.set_title('Original dq')
-                        axnull = fig.add_subplot(412)
-                        axnull.set_title('dqref on Null space')
-                        axcorrec = fig.add_subplot(413)
-                        axcorrec.set_title('Minimized dq')
-                        axaj = fig.add_subplot(414)
-                        axbefore.plot(dqbefore)
-                        axnull.plot(dqnull)
-                        axcorrec.plot(dqcorrected)
-                        axaj.plot(ajpath)
-                        plt.show()
-                    if policy_for_local_minima == 'accept':
-                        print('Bypassing local minima! The return value is a local minima, not an exact IK result.')
-                        return iter_jnt_values
-                    elif policy_for_local_minima == 'randomrestart':
-                        print('Local Minima! Random restart at local minima!')
-                        jnt_values_iter = self.jlc.rand_conf()
-                        self.jlc.fk(jnt_values_iter)
-                        random_restart = True
-                        continue
-                    else:
-                        print('No feasible IK solution!')
-                        break
-                else:
-                    # -- notes --
-                    ## note1: do not use np.linalg.inv since it is not precise
-                    ## note2: use np.linalg.solve if the system is exactly determined, it is faster
-                    ## note3: use np.linalg.lstsq if there might be singularity (no regularization)
-                    ## see https://stackoverflow.com/questions/34170618/normal-equation-and-numpy-least-squares-solve-methods-difference-in-regress
-                    ## note4: null space https://www.slideserve.com/marietta/kinematic-redundancy
-                    ## note5: avoid joint limits; Paper Name: Clamping weighted least-norm method for the manipulator kinematic control: Avoiding joint limits
-                    ## note6: constant damper; Sugihara Paper: https://www.mi.ams.eng.osaka-u.ac.jp/member/sugihara/pub/jrsj_ik.pdf
-                    # strecthingcoeff = 1 / (1 + math.exp(1 / ((errnorm / self.max_rng) * 1000 + 1)))
-                    # strecthingcoeff = -2*math.pow(errnorm / errnormmax, 3)+3*math.pow(errnorm / errnormmax, 2)
-                    # print("stretching ", strecthingcoeff)
-                    # dampercoeff = (strecthingcoeff + .1) * 1e-6  # a non-zero regulation coefficient
-                    damper_coeff = 1e-3 * tcp_err_scalar + 1e-6  # a non-zero regulation coefficient
-                    # -- lft moore-penrose inverse --
-                    ## jtj = armjac.T.dot(armjac)
-                    ## regulator = regcoeff*np.identity(jtj.shape[0])
-                    ## jstar = np.linalg.inv(jtj+regulator).dot(armjac.T)
-                    ## dq = jstar.dot(err)
-                    # -- rgt moore-penrose inverse --
-                    # # jjt
-                    # jjt = j.dot(j.T)
-                    # damper = dampercoeff * np.identity(jjt.shape[0])
-                    # jsharp = j.T.dot(np.linalg.inv(jjt + damper))
-                    # weighted jjt
-                    qs_wtdiagmat = self._wln_weightmat(jnt_values_iter)
-                    # WLN
-                    w_jt = qs_wtdiagmat.dot(j.T)
-                    j_w_jt = j.dot(w_jt)
-                    damper = damper_coeff * np.identity(j_w_jt.shape[0])
-                    jsharp = w_jt.dot(np.linalg.inv(j_w_jt + damper))
-                    # Clamping (Paper Name: Clamping weighted least-norm method for the manipulator kinematic control)
-                    phi_q = ((2 * jnt_values_iter - self.jnt_rngs_mid) / self.jnt_rngs)
-                    clamping = -(np.identity(qs_wtdiagmat.shape[0]) - qs_wtdiagmat).dot(phi_q)
-                    # # if do not use WLN
-                    # j_jt = j.dot(j.T)
-                    # damper = dampercoeff * np.identity(j_jt.shape[0])
-                    # jsharp = j.T.dot(np.linalg.inv(j_jt + damper))
-                    # update dq
-                    dq = .1 * jsharp.dot(tcp_err_vec)
-                    if not random_restart:
-                        w_init = 0.1
-                    else:
-                        w_init = 0
-                    w_middle = 1
-                    ns_projmat = np.identity(jnt_values_iter.size) - jsharp.dot(j)
-                    dqref_init = (jnt_values_ref - jnt_values_iter)
-                    dqref_on_ns = ns_projmat.dot(w_init * dqref_init + w_middle * clamping)
-                    dq_minimized = dq + dqref_on_ns
-                    if toggle_dbg:
-                        dqbefore.append(dq)
-                        dqcorrected.append(dq_minimized)
-                        dqnull.append(dqref_on_ns)
-                jnt_values_iter += dq_minimized  # translation problem
-                # isdragged, jntvalues_iter = self.check_jntsrange_drag(jntvalues_iter)
-                # print(jnt_values_iter)
-                self.jlc.fk(joint_values=jnt_values_iter)
-                # if toggle_dbg:
-                #     self.jlc.gen_stickmodel(tcp_joint_id=tcp_joint_id, tcp_loc_pos=tcp_loc_pos,
-                #                                    tcp_loc_rotmat=tcp_loc_rotmat, toggle_joint_frame=True).attach_to(base)
-            prev_erronorm = tcp_err_scalar
-        if toggle_dbg:
-            fig = plt.figure()
-            axbefore = fig.add_subplot(411)
-            axbefore.set_title('Original dq')
-            axnull = fig.add_subplot(412)
-            axnull.set_title('dqref on Null space')
-            axcorrec = fig.add_subplot(413)
-            axcorrec.set_title('Minimized dq')
-            axaj = fig.add_subplot(414)
-            axbefore.plot(dqbefore)
-            axnull.plot(dqnull)
-            axcorrec.plot(dqcorrected)
-            axaj.plot(ajpath)
-            plt.show()
-            self.jlc.gen_stickmodel(tcp_jnt_id=tcp_jnt_id, tcp_loc_pos=tcp_loc_pos,
-                                    tcp_loc_rotmat=tcp_loc_rotmat, toggle_jntscs=True).attach_to(base)
-            # base.run()
-        self.jlc.fk(jnt_values_bk)
-        print('Failed to solve the IK, returning None.')
-        return None
-
-    def regulate_jnts(self):
-        """
-        check if the given joint_values is inside the oeprating range
-        The joint values out of range will be pulled back to their maxima
-        :return: Two parameters, one is true or false indicating if the joint values are inside the range or not
-                The other is the joint values after dragging.
-                If the joints were not dragged, the same joint values will be returned
-        author: weiwei
-        date: 20161205
-        """
-        counter = 0
-        for id in self.jlc.tgtjnts:
-            if self.jlc.jnts[id]["end_type"] == 'revolute':
-                if self.jlc.jnts[id]['motion_rng'][1] - self.jlc.jnts[id]['motion_rng'][0] >= math.pi * 2:
-                    rm.regulate_angle(self.jlc.jnts[id]['motion_rng'][0],
-                                      self.jlc.jnts[id]['motion_rng'][1],
-                                      self.jlc.jnts[id]["movement"])
-            counter += 1
-
-    def check_jntranges_drag(self, jnt_values):
-        """
-        check if the given joint_values is inside the oeprating range
-        The joint values out of range will be pulled back to their maxima
-        :param jnt_values: a 1xn numpy ndarray
-        :return: Two parameters, one is true or false indicating if the joint values are inside the range or not
-                The other is the joint values after dragging.
-                If the joints were not dragged, the same joint values will be returned
-        author: weiwei
-        date: 20161205
-        """
-        counter = 0
-        isdragged = np.zeros_like(jnt_values)
-        jntvaluesdragged = jnt_values.copy()
-        for id in self.jlc.tgtjnts:
-            if self.jlc.jnts[id]["end_type"] == 'revolute':
-                if self.jlc.jnts[id]['motion_rng'][1] - self.jlc.jnts[id]['motion_rng'][0] < math.pi * 2:
-                    # if joint_values[counter] < jlinstance.joints[id]['motion_rng'][0]:
-                    #     isdragged[counter] = 1
-                    #     jntvaluesdragged[counter] = jlinstance.joints[id]['motion_rng'][0]
-                    # elif joint_values[counter] > jlinstance.joints[id]['motion_rng'][1]:
-                    #     isdragged[counter] = 1
-                    #     jntvaluesdragged[counter] = jlinstance.joints[id]['motion_rng'][1]
-                    print("Drag revolute")
-                    if jnt_values[counter] < self.jlc.jnts[id]['motion_rng'][0] or jnt_values[counter] > \
-                            self.jlc.jnts[id]['motion_rng'][1]:
-                        isdragged[counter] = 1
-                        jntvaluesdragged[counter] = (self.jlc.jnts[id]['motion_rng'][1] +
-                                                     self.jlc.jnts[id][
-                                                         'motion_rng'][0]) / 2
-            elif self.jlc.jnts[id]["end_type"] == 'prismatic':  # prismatic
-                # if joint_values[counter] < jlinstance.joints[id]['motion_rng'][0]:
-                #     isdragged[counter] = 1
-                #     jntvaluesdragged[counter] = jlinstance.joints[id]['motion_rng'][0]
-                # elif joint_values[counter] > jlinstance.joints[id]['motion_rng'][1]:
-                #     isdragged[counter] = 1
-                #     jntvaluesdragged[counter] = jlinstance.joints[id]['motion_rng'][1]
-                print("Drag prismatic")
-                if jnt_values[counter] < self.jlc.jnts[id]['motion_rng'][0] or jnt_values[counter] > \
-                        self.jlc.jnts[id]['motion_rng'][1]:
-                    isdragged[counter] = 1
-                    jntvaluesdragged[counter] = (self.jlc.jnts[id]['motion_rng'][1] + self.jlc.jnts[id][
-                        "rngmin"]) / 2
-        return isdragged, jntvaluesdragged
-
-    def numik_rel(self, deltapos, deltarotmat, tcp_jnt_id=None, tcp_loc_pos=None, tcp_loc_rotmat=None):
-        """
-        add deltapos, deltarotmat to the current end_type
-        :param deltapos:
-        :param deltarotmat:
-        :param tcp_jnt_id: a joint ID in the self.tgtjnts
-        :param tcp_loc_pos: 1x3 nparray, decribed in the local frame of self.joints[tcp_joint_id], single value or list
-        :param tcp_loc_rotmat: 3x3 nparray, decribed in the local frame of self.joints[tcp_joint_id], single value or list
-        :return:
-        author: weiwei
-        date: 20170412, 20200331
-        """
-        tcp_gl_pos, tcp_gl_rotmat = self.get_gl_tcp(tcp_jnt_id, tcp_loc_pos, tcp_loc_rotmat)
-        if isinstance(tcp_jnt_id, list):
-            tgt_pos = []
-            tgt_rotmat = []
-            for i, jid in enumerate(tcp_jnt_id):
-                tgt_pos.append(tcp_gl_pos[i] + deltapos[i])
-                tgt_rotmat.append(np.dot(deltarotmat, tcp_gl_rotmat[i]))
-            start_conf = self.jlc.getjntvalues()
-            # return numik(rjlinstance, tgt_pos, tgt_rotmat, seed_jnt_vals=seed_jnt_vals, tcp_joint_id=tcp_joint_id, tcp_loc_pos=tcp_loc_pos, tcp_loc_rotmat=tcp_loc_rotmat)
-        else:
-            tgt_pos = tcp_gl_pos + deltapos
-            tgt_rotmat = np.dot(deltarotmat, tcp_gl_rotmat)
-            start_conf = self.jlc.getjntvalues()
-        return self.numik(tgt_pos, tgt_rotmat, start_conf=start_conf, tcp_jnt_id=tcp_jnt_id, tcp_loc_pos=tcp_loc_pos,
-                          tcp_loc_rotmat=tcp_loc_rotmat)
