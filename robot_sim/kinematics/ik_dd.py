@@ -1,5 +1,7 @@
 """
 Data driven ik solver
+author: weiwei
+date: 20231107
 """
 
 import numpy as np
@@ -61,7 +63,7 @@ class DDIKSolver(object):
     def _data_builder(self, path='./'):
         # gen sampled qs
         sampled_jnts = []
-        n_intervals = np.linspace(8, 8, self.jlc.n_dof, endpoint=True)
+        n_intervals = np.linspace(12, 8, self.jlc.n_dof, endpoint=True)
         for i in range(self.jlc.n_dof):
             print(int(n_intervals[i]))
             sampled_jnts.append(
