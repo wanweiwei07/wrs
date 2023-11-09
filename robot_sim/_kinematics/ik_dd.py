@@ -13,10 +13,14 @@ from tqdm import tqdm
 import robot_sim._kinematics.ik_num as rkn
 import robot_sim._kinematics.ik_opt as rko
 import robot_sim._kinematics.ik_trac as rkt
+# for debugging purpose
+import modeling.geometric_model as mgm
+import robot_sim._kinematics.model_generator as rkmg
+import basis.constant as bc
 
 
 class DDIKSolver(object):
-    def __init__(self, jlc, path='./', solver='n', rebuild=False):
+    def __init__(self, jlc, path='./', solver='n', rebuild=False, evolve=False):
         """
         :param jlc:
         :param path:
@@ -24,12 +28,14 @@ class DDIKSolver(object):
         :param rebuild:
         """
         self.jlc = jlc
+        self.path = path
+        self.evolve = evolve
         if rebuild:
             self._data_builder()
         else:
             try:
-                self.querry_tree = pickle.load(open(path + 'ikdd_tree.pkl', 'rb'))
-                self.jnt_data = pickle.load(open(path + 'jnt_data.pkl', 'rb'))
+                self.querry_tree = pickle.load(open(self.path + 'ikdd_tree.pkl', 'rb'))
+                self.jnt_data = pickle.load(open(self.path + 'jnt_data.pkl', 'rb'))
             except FileNotFoundError:
                 self.querry_tree, self.jnt_data = self._data_builder()
         if solver == 'n':
@@ -63,7 +69,7 @@ class DDIKSolver(object):
     def _data_builder(self, path='./'):
         # gen sampled qs
         sampled_jnts = []
-        n_intervals = np.linspace(12, 8, self.jlc.n_dof, endpoint=True)
+        n_intervals = np.linspace(8, 4, self.jlc.n_dof, endpoint=True)
         print(f"Buidling Data for DDIK using the following joint granularity: {n_intervals.astype(int)}...")
         for i in range(self.jlc.n_dof):
             sampled_jnts.append(
@@ -108,8 +114,8 @@ class DDIKSolver(object):
         else:
             tcp_rotvec = self._rotmat_to_vec(tgt_rotmat)
             tgt_tcp = np.concatenate((tgt_pos, tcp_rotvec))
-            dist_val_array, nn_indx_array = self.querry_tree.query(tgt_tcp, k=10, workers=-1)
-            for nn_indx in nn_indx_array:
+            dist_val_array, nn_indx_array = self.querry_tree.query(tgt_tcp, k=1000, workers=-1)
+            for nn_indx in nn_indx_array[:5]:
                 seed_jnt_vals = self.jnt_data[nn_indx]
                 result = self._ik_solver_fun(tgt_pos=tgt_pos,
                                              tgt_rotmat=tgt_rotmat,
@@ -119,7 +125,28 @@ class DDIKSolver(object):
                     continue
                 else:
                     return result
+            if self.evolve:
+                for nn_indx in nn_indx_array[5:]:
+                    seed_jnt_vals = self.jnt_data[nn_indx]
+                    result = self._ik_solver_fun(tgt_pos=tgt_pos,
+                                                 tgt_rotmat=tgt_rotmat,
+                                                 seed_jnt_vals=seed_jnt_vals,
+                                                 max_n_iter=max_n_iter)
+                    if result is None:
+                        continue
+                    else:
+                        # if solved
+                        tcp_data = np.vstack((self.querry_tree.data, tgt_tcp))
+                        self.jnt_data.append(result)
+                        self.querry_tree = scipy.spatial.cKDTree(tcp_data)
+                        print("evolving...")
+                        break
         return None
+
+    def persist_evolution(self):
+        pickle.dump(self.querry_tree, open(self.path + 'ikdd_tree.pkl', 'wb'))
+        pickle.dump(self.jnt_data, open(self.path + 'jnt_data.pkl', 'wb'))
+        print("file updated")
 
 
 if __name__ == '__main__':
@@ -181,7 +208,7 @@ if __name__ == '__main__':
         solved_jnt_vals = jlc.ik(tgt_pos=tgt_pos,
                                  tgt_rotmat=tgt_rotmat,
                                  # seed_jnt_vals=seed_jnt_vals,
-                                 max_n_iter=10,
+                                 max_n_iter=5,
                                  toggle_dbg=False)
         toc = time.time()
         time_list.append(toc - tic)
@@ -189,6 +216,7 @@ if __name__ == '__main__':
             success += 1
         else:
             tgt_list.append((tgt_pos, tgt_rotmat))
+    # jlc._ik_solver.persist_evolution()
     print(success)
     print('average', np.mean(time_list))
     print('max', np.max(time_list))
