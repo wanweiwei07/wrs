@@ -4,7 +4,8 @@ import numpy as np
 import time
 import basis.constant as bc
 import basis.robot_math as rm
-import modeling.collision_model as cm
+import modeling.constant as mc
+import modeling.collision_model as mcm
 import robot_sim._kinematics.constant as rkc
 import robot_sim._kinematics.jl as rkjl
 import robot_sim._kinematics.ik_num as rkn
@@ -12,11 +13,6 @@ import robot_sim._kinematics.ik_opt as rko
 import robot_sim._kinematics.ik_dd as rkd
 import robot_sim._kinematics.ik_trac as rkt
 import basis.constant as cst
-
-
-# _Default_IKSolver = rko.OptIKSolver
-# _Default_IKSolver = rkt.TracIKSolver
-_Default_IKSolver = rkd.DDIKSolver
 
 
 class JLChain(object):
@@ -33,8 +29,8 @@ class JLChain(object):
                  pos=np.zeros(3),
                  rotmat=np.eye(3),
                  n_dof=6,
-                 cdprimitive_type=cm.CDPrimitiveType.BOX,
-                 cdmesh_type=cm.CDMeshType.DEFAULT):
+                 cdprimitive_type=mc.CDPrimitiveType.BOX,
+                 cdmesh_type=mc.CDMeshType.DEFAULT):
         """
         conf -- configuration: target joint values
         :param name:
@@ -63,7 +59,7 @@ class JLChain(object):
         self.cdprimitive_type = cdprimitive_type
         self.cdmesh_type = cdmesh_type
         # iksolver
-        self._ik_solver = _Default_IKSolver(self)
+        self._ik_solver = None
 
     @property
     def jnt_rngs(self):
@@ -101,7 +97,7 @@ class JLChain(object):
             jnt_limits.append(self.jnts[i].motion_rng)
         return np.asarray(jnt_limits)
 
-    def forward_kinematics(self, jnt_vals, toggle_jac=True, update=False, toggle_dbg=False):
+    def forward_kinematics(self, jnt_vals, toggle_jac=True, update=False):
         """
         This function will update the global parameters
         :param jnt_vals: a 1xn ndarray where each element indicates the value of a joint (in radian or meter)
@@ -112,12 +108,12 @@ class JLChain(object):
         """
         if not update:
             homomat = self.anchor.homomat
-            j_pos = np.zeros((self.n_dof, 3))
-            j_axis = np.zeros((self.n_dof, 3))
+            jnt_pos = np.zeros((self.n_dof, 3))
+            jnt_motion_ax = np.zeros((self.n_dof, 3))
             for i in range(self.tcp_jnt_id + 1):
-                j_axis[i, :] = homomat[:3, :3] @ self.jnts[i].loc_motion_axis
+                jnt_motion_ax[i, :] = homomat[:3, :3] @ self.jnts[i].loc_motion_axis
                 if self.jnts[i].type == rkc.JointType.REVOLUTE:
-                    j_pos[i, :] = homomat[:3, 3] + homomat[:3, :3] @ self.jnts[i].loc_pos
+                    jnt_pos[i, :] = homomat[:3, 3] + homomat[:3, :3] @ self.jnts[i].loc_pos
                 homomat = homomat @ self.jnts[i].get_motion_homomat(motion_val=jnt_vals[i])
             tcp_gl_homomat = homomat @ self.tcp_loc_homomat
             tcp_gl_pos = tcp_gl_homomat[:3, 3]
@@ -126,15 +122,11 @@ class JLChain(object):
                 j_mat = np.zeros((6, self.n_dof))
                 for i in range(self.tcp_jnt_id + 1):
                     if self.jnts[i].type == rkc.JointType.REVOLUTE:
-                        vec_jnt2tcp = tcp_gl_pos - j_pos[i, :]
-                        j_mat[:3, i] = np.cross(j_axis[i, :], vec_jnt2tcp)
-                        j_mat[3:6, i] = j_axis[i, :]
-                        if toggle_dbg:
-                            gm.gen_arrow(spos=j_pos[i, :],
-                                         epos=j_pos[i, :] + .2 * j_axis[i, :],
-                                         rgba=bc.black).attach_to(base)
+                        vec_jnt2tcp = tcp_gl_pos - jnt_pos[i, :]
+                        j_mat[:3, i] = np.cross(jnt_motion_ax[i, :], vec_jnt2tcp)
+                        j_mat[3:6, i] = jnt_motion_ax[i, :]
                     if self.jnts[i].type == rkc.JointType.PRISMATIC:
-                        j_mat[:3, i] = j_axis[i, :]
+                        j_mat[:3, i] = jnt_motion_ax[i, :]
                 return tcp_gl_pos, tcp_gl_rotmat, j_mat
             else:
                 return tcp_gl_pos, tcp_gl_rotmat
@@ -154,10 +146,6 @@ class JLChain(object):
                         vec_jnt2tcp = tcp_gl_pos - self.jnts[i].gl_pos_q
                         j_mat[:3, i] = np.cross(self.jnts[i].gl_motion_ax, vec_jnt2tcp)
                         j_mat[3:6, i] = self.jnts[i].gl_motion_ax
-                        if toggle_dbg:
-                            gm.gen_arrow(spos=self.jnts[i].gl_pos_q,
-                                         epos=self.jnts[i].gl_pos_q + .3 * self.jnts[i].gl_motion_ax,
-                                         rgba=bc.black).attach_to(base)
                     if self.jnts[i].type == rkc.JointType.PRISMATIC:
                         j_mat[:3, i] = self.jnts[i].gl_motion_ax
                 return tcp_gl_pos, tcp_gl_rotmat, j_mat
@@ -226,7 +214,7 @@ class JLChain(object):
         self.anchor.rotmat = rotmat
         return self.go_given_conf(joint_values=self.get_joint_values())
 
-    def reinitialize(self, ik_solver_class=None):
+    def reinitialize(self):
         """
         :return:
         author: weiwei
@@ -234,10 +222,7 @@ class JLChain(object):
         """
         self._jnt_rngs = self._get_jnt_rngs()
         self.go_home()
-        if ik_solver_class is None:
-            self._ik_solver = _Default_IKSolver(self)
-        else:
-            self._ik_solver = ik_solver_class(self)
+        self._ik_solver = rkd.DDIKSolver(self)
 
     def set_tcp(self, tcp_joint_id=None, tcp_loc_pos=None, tcp_loc_rotmat=None):
         if tcp_joint_id is not None:

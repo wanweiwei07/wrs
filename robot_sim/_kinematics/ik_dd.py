@@ -64,10 +64,10 @@ class DDIKSolver(object):
         # gen sampled qs
         sampled_jnts = []
         n_intervals = np.linspace(12, 8, self.jlc.n_dof, endpoint=True)
+        print(f"Buidling Data for DDIK using the following joint granularity: {n_intervals.astype(int)}...")
         for i in range(self.jlc.n_dof):
-            print(int(n_intervals[i]))
             sampled_jnts.append(
-                np.linspace(jlc.jnt_rngs[i][0], self.jlc.jnt_rngs[i][1], int(n_intervals[i]), endpoint=False))
+                np.linspace(self.jlc.jnt_rngs[i][0], self.jlc.jnt_rngs[i][1], int(n_intervals[i]), endpoint=False))
         grid = np.meshgrid(*sampled_jnts)
         sampled_qs = np.vstack([x.ravel() for x in grid]).T
         # gen sampled qs and their correspondent tcps
@@ -100,25 +100,25 @@ class DDIKSolver(object):
         author: weiwei
         date: 20231107
         """
-        tcp_rotvec = self._rotmat_to_vec(tgt_rotmat)
-        tgt_tcp = np.concatenate((tgt_pos, tcp_rotvec))
-        # dist_val, nn_indx = self.querry_tree.query(tgt_tcp, k=1, workers=-1)
-        # seed_jnt_vals = self.jnt_data[nn_indx]
-        # return self._ik_solver_fun(tgt_pos=tgt_pos,
-        #                            tgt_rotmat=tgt_rotmat,
-        #                            seed_jnt_vals=seed_jnt_vals,
-        #                            max_n_iter=max_n_iter)
-        dist_val_array, nn_indx_array = self.querry_tree.query(tgt_tcp, k=10, workers=-1)
-        for nn_indx in nn_indx_array:
-            seed_jnt_vals = self.jnt_data[nn_indx]
-            result = self._ik_solver_fun(tgt_pos=tgt_pos,
-                                         tgt_rotmat=tgt_rotmat,
-                                         seed_jnt_vals=seed_jnt_vals,
-                                         max_n_iter=max_n_iter)
-            if result is None:
-                continue
-            else:
-                return result
+        if seed_jnt_vals is not None:
+            return self._ik_solver_fun(tgt_pos=tgt_pos,
+                                       tgt_rotmat=tgt_rotmat,
+                                       seed_jnt_vals=seed_jnt_vals,
+                                       max_n_iter=max_n_iter)
+        else:
+            tcp_rotvec = self._rotmat_to_vec(tgt_rotmat)
+            tgt_tcp = np.concatenate((tgt_pos, tcp_rotvec))
+            dist_val_array, nn_indx_array = self.querry_tree.query(tgt_tcp, k=10, workers=-1)
+            for nn_indx in nn_indx_array:
+                seed_jnt_vals = self.jnt_data[nn_indx]
+                result = self._ik_solver_fun(tgt_pos=tgt_pos,
+                                             tgt_rotmat=tgt_rotmat,
+                                             seed_jnt_vals=seed_jnt_vals,
+                                             max_n_iter=max_n_iter)
+                if result is None:
+                    continue
+                else:
+                    return result
         return None
 
 
@@ -154,18 +154,17 @@ if __name__ == '__main__':
     jlc.jnts[5].loc_motion_axis = np.array([0, 0, 1])
     jlc.jnts[5].motion_rng = np.array([-np.pi / 2, np.pi / 2])
     jlc.tcp_loc_pos = np.array([0, 0, .01])
-    jlc.reinitialize(ik_solver_class=DDIKSolver)
+    jlc.reinitialize()
     seed_jnt_vals = jlc.get_joint_values()
 
     # random_jnts = jlc.rand_conf()
     # tgt_pos, tgt_rotmat = jlc.forward_kinematics(jnt_vals=random_jnts, update=False, toggle_jac=False)
     # tic = time.time()
-    # jnt_vals = jlc.ik(tgt_pos=tgt_pos,
+    # solved_jnt_vals = jlc.ik(tgt_pos=tgt_pos,
     #                   tgt_rotmat=tgt_rotmat,
-    #                   seed_jnt_vals=seed_jnt_vals,
     #                   max_n_iter=100)
     # gm.gen_frame(pos=tgt_pos, rotmat=tgt_rotmat).attach_to(base)
-    # jlc.forward_kinematics(jnt_vals=jnt_vals, update=True, toggle_jac=False)
+    # jlc.forward_kinematics(jnt_vals=solved_jnt_vals, update=True, toggle_jac=False)
     # rkmg.gen_jlc_stick(jlc, stick_rgba=bc.navy_blue, toggle_tcp_frame=True,
     #                    toggle_joint_frame=True).attach_to(base)
     # base.run()
@@ -179,14 +178,14 @@ if __name__ == '__main__':
         random_jnts = jlc.rand_conf()
         tgt_pos, tgt_rotmat = jlc.forward_kinematics(jnt_vals=random_jnts, update=False, toggle_jac=False)
         tic = time.time()
-        joint_values_with_dbg_info = jlc.ik(tgt_pos=tgt_pos,
-                                            tgt_rotmat=tgt_rotmat,
-                                            seed_jnt_vals=seed_jnt_vals,
-                                            max_n_iter=10,
-                                            toggle_dbg=False)
+        solved_jnt_vals = jlc.ik(tgt_pos=tgt_pos,
+                                 tgt_rotmat=tgt_rotmat,
+                                 # seed_jnt_vals=seed_jnt_vals,
+                                 max_n_iter=10,
+                                 toggle_dbg=False)
         toc = time.time()
         time_list.append(toc - tic)
-        if joint_values_with_dbg_info is not None:
+        if solved_jnt_vals is not None:
             success += 1
         else:
             tgt_list.append((tgt_pos, tgt_rotmat))
