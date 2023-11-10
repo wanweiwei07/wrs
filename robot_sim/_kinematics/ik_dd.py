@@ -26,32 +26,31 @@ class DDIKSolver(object):
         :param path:
         :param solver: 'n': num ik; 'o': opt ik; 't': trac ik
         :param rebuild:
+        :param evolve:
+        author: weiwei
+        date: 20231111
         """
         self.jlc = jlc
         self.path = path
         self.evolve = evolve
         if rebuild:
-            self._data_builder()
+            y_or_n = input("Rebuilding the database needs new evolution and is cost. Do you want to continue?")
+            if y_or_n == 'y':
+                self._data_builder()
         else:
             try:
                 self.querry_tree = pickle.load(open(self.path + 'ikdd_tree.pkl', 'rb'))
                 self.jnt_data = pickle.load(open(self.path + 'jnt_data.pkl', 'rb'))
             except FileNotFoundError:
                 self.querry_tree, self.jnt_data = self._data_builder()
-        if solver == 'n':
-            self._ik_solver = rkn.NumIKSolver(self.jlc)
-            self._ik_solver_fun = self._ik_solver.pinv_wc
-        elif solver == 'o':
-            self._ik_solver = rko.OptIKSolver(self.jlc)
-            self._ik_solver_fun = self._ik_solver.sqpss
-        elif solver == 't':
-            self._ik_solver = rkt.TracIKSolver(self.jlc)
-            self._ik_solver_fun = self._ik_solver.ik
+        self._backbone_solver = rkn.NumIKSolver(self.jlc)
+        self._backbone_solver_func = self._backbone_solver.pinv_wc
 
     def _rotmat_to_vec(self, rotmat, method='q'):
         """
         convert a rotmat to vectors
-        this will facilitate the Minkowski p-norm computation required by KDTree query
+        this will be used for computing the Minkowski p-norm required by KDTree query
+        'f' or 'q' are recommended, they both have satisfying performance
         :param method: 'f': Frobenius; 'q': Quaternion; 'r': rpy; '-': same value
         :return:
         author: weiwei
@@ -146,7 +145,7 @@ class DDIKSolver(object):
     def persist_evolution(self):
         pickle.dump(self.querry_tree, open(self.path + 'ikdd_tree.pkl', 'wb'))
         pickle.dump(self.jnt_data, open(self.path + 'jnt_data.pkl', 'wb'))
-        print("file updated")
+        print("ddik data file evolved.")
 
 
 if __name__ == '__main__':
