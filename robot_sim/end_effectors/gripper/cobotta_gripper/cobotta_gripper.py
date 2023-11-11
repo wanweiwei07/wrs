@@ -38,7 +38,7 @@ class CobottaGripper(gp.GripperInterface):
         # jaw center
         self.jaw_center_pos = np.array([0,0,.05])
         # reinitialize
-        self.jlc.reinitialize()
+        self.jlc.finalize()
         # collision detection
         self.all_cdelements=[]
         self.enable_cc(toggle_cdprimit=enable_cc)

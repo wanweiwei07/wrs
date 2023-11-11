@@ -15,7 +15,7 @@ if __name__ == "__main__":
     jlinstance.jnts[4]['loc_motionax'] = np.array([1, 0, 0])
     jlinstance.jnts[4]['motion_val'] = .2
     jlinstance.jnts[4]['motion_rng'] = [-.5, .5]
-    jlinstance.reinitialize()
+    jlinstance.finalize()
     jlinstance.gen_stickmodel(toggle_jntscs=True, rgba=[1, 0, 0, .15]).attach_to(base)
     tgt_pos0 = np.array([.3, .1, 0])
     tgt_rotmat0 = np.eye(3)

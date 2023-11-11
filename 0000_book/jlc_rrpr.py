@@ -52,7 +52,7 @@ if __name__ == '__main__':
     jlc.jnts[4].loc_pos = np.array([0, 0, .1])
     jlc.jnts[4].loc_motion_axis = np.array([0, 0, 1])
     jlc.tcp_loc_pos = np.array([0, 0, .1])
-    jlc.reinitialize()
+    jlc.finalize()
     jnt_values = np.array([np.radians(0), np.radians(0), .03, np.radians(0)])
     tcp_pos_physical, tcp_rotmat_physical = jlc.fk(joint_values=jnt_values, update=True)
     lib_jlm.gen_stick_model(jlc, toggle_tcpcs=True, toggle_jntscs=False).attach_to(base)

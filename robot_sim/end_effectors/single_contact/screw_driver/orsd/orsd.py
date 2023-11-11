@@ -33,7 +33,7 @@ class ORSD(si.SCTInterface):
                                                                 # rgba=[.35, .35, .35, 1], rgb will be overwritten
                                                                 type='rect',
                                                                 n_sec=36)
-        self.coupling.reinitialize()
+        self.coupling.finalize()
         cpl_end_pos = self.coupling.jnts[-1]['gl_posq']
         cpl_end_rotmat = self.coupling.jnts[-1]['gl_rotmatq']
         # jlc
@@ -44,7 +44,7 @@ class ORSD(si.SCTInterface):
         self.jlc.lnks[0]['mesh_file'] = os.path.join(this_dir, "meshes", "or_screwdriver.stl")
         self.jlc.lnks[0]['rgba'] = [.55, .55, .55, 1]
         # reinitialize
-        self.jlc.reinitialize()
+        self.jlc.finalize()
         #  action center
         self.action_center_pos = self.coupling.jnts[-1]['gl_rotmat'] @ np.array([0.16855000, 0, 0.09509044]) + coupling_offset_pos
         self.action_center_rotmat = self.coupling.jnts[-1]['gl_rotmat']

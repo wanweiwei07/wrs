@@ -35,7 +35,7 @@ class SDA5F(ri.RobotInterface):
             cdprimitive_type="user_defined", expand_radius=.005,
             userdefined_cdprimitive_fn=self._torso_combined_cdnp)
         self.lft_body.lnks[1]['rgba'] = [.7, .7, .7, 1.0]
-        self.lft_body.reinitialize()
+        self.lft_body.finalize()
         lft_arm_homeconf = np.zeros(7)
         # lft_arm_homeconf[0] = math.pi / 3.0
         # lft_arm_homeconf[1] = -math.pi * 1.0 / 3.0
@@ -63,7 +63,7 @@ class SDA5F(ri.RobotInterface):
         self.rgt_body.lnks[1]['name'] = "sda5f_rgt_torso"
         self.rgt_body.lnks[1]['pos_in_loc_tcp'] = np.array([0, 0, 0])
         self.rgt_body.lnks[1]['mesh_file'] = None
-        self.rgt_body.reinitialize()
+        self.rgt_body.finalize()
         rgt_arm_homeconf = np.zeros(7)
         # rgt_arm_homeconf[0] = -math.pi * 1.0 / 3.0
         # rgt_arm_homeconf[1] = -math.pi * 2.0 / 3.0

@@ -34,7 +34,7 @@ if __name__ == '__main__':
     jlc.jnts[5].loc_motion_axis = np.array([0, 0, 1])
     jlc.jnts[5].motion_rng = np.array([-np.pi / 2, np.pi / 2])
     jlc.tcp_loc_pos = np.array([0, 0, .01])
-    jlc.reinitialize()
+    jlc.finalize()
     rkmg.gen_jlc_stick(jlc, stick_rgba=basis.constant.navy_blue, toggle_tcp_frame=True,
                        toggle_joint_frame=True).attach_to(base)
     seed_jnt_vals = jlc.get_joint_values()

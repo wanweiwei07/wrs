@@ -57,8 +57,8 @@ class SchunkRH918(gp.GripperInterface):
         # jaw center
         self.jaw_center_pos = np.array([0, 0, .145])
         # reinitialize
-        self.lft.reinitialize()
-        self.rgt.reinitialize()
+        self.lft.finalize()
+        self.rgt.finalize()
         # collision detection
         self.all_cdelements=[]
         self.enable_cc(toggle_cdprimit=enable_cc)

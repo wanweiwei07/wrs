@@ -214,15 +214,22 @@ class JLChain(object):
         self.anchor.rotmat = rotmat
         return self.go_given_conf(joint_values=self.get_joint_values())
 
-    def reinitialize(self):
+    def finalize(self, ik_solver='d'):
         """
+        ddik is both fast and has high success rate, but it required prebuilding a data file.
+        tracik is also fast and reliable, but it is a bit slower and energe-intensive.
+        pinv_wc is fast but has low success rate. it is used as a backbone for ddik.
+        sqpss has high success rate but is very slow.
+        :param ik_solver: 'd' for ddik; 'n' for numik.pinv_wc; 'o' for optik.sqpss; 't' for tracik
         :return:
         author: weiwei
-        date: 20201126
+        date: 20201126, 20231111
         """
         self._jnt_rngs = self._get_jnt_rngs()
         self.go_home()
-        self._ik_solver = rkd.DDIKSolver(self)
+        if ik_solver == 'd':
+            self._ik_solver = rkd.DDIKSolver(self)
+
 
     def set_tcp(self, tcp_joint_id=None, tcp_loc_pos=None, tcp_loc_rotmat=None):
         if tcp_joint_id is not None:
@@ -349,6 +356,8 @@ class JLChain(object):
         :param max_n_iter
         :return:
         """
+        if self._ik_solver is None:
+            raise Exception("IK solver undefined. Use JLChain.finalize to define it.")
         jnt_values = self._ik_solver.ik(tgt_pos=tgt_pos,
                                         tgt_rotmat=tgt_rotmat,
                                         seed_jnt_vals=seed_jnt_vals,
@@ -393,7 +402,7 @@ if __name__ == "__main__":
     jlc.jnts[5].loc_motion_axis = np.array([0, 0, 1])
     jlc.jnts[5].motion_rng = np.array([-np.pi / 2, np.pi / 2])
     jlc.tcp_loc_pos = np.array([0, 0, .01])
-    jlc.reinitialize()
+    jlc.finalize()
     # rkmg.gen_jlc_stick(jlc, stick_rgba=bc.navy_blue, toggle_tcp_frame=True,
     #                    toggle_joint_frame=True).attach_to(base)
     seed_jnt_vals = jlc.get_joint_values()

@@ -76,7 +76,7 @@ class CobottaPipette(gp.GripperInterface):
         self.jaw_center_pos = np.array([0.008, 0.14305, 0.06075])
         self.jaw_center_rotmat = rm.rotmat_from_axangle([1, 0, 0], -np.pi / 2)
         # reinitialize
-        self.jlc.reinitialize()
+        self.jlc.finalize()
         # collision detection
         self.all_cdelements = []
         self.enable_cc(toggle_cdprimit=enable_cc)

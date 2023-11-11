@@ -118,10 +118,10 @@ class Robotiq85(gp.GripperInterface):
         self.rgt_inner.lnks[1]['mesh_file'] = os.path.join(this_dir, "meshes", "robotiq_arg2f_85_inner_knuckle_cvt.stl")
         self.rgt_inner.lnks[1]['rgba'] = [.2, .2, .2, 1]
         # reinitialize
-        self.lft_outer.reinitialize()
-        self.lft_inner.reinitialize()
-        self.rgt_outer.reinitialize()
-        self.rgt_inner.reinitialize()
+        self.lft_outer.finalize()
+        self.lft_inner.finalize()
+        self.rgt_outer.finalize()
+        self.rgt_inner.finalize()
         # jaw width
         self.jaw_range = [0.0, .085]
         # jaw center

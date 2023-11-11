@@ -28,7 +28,7 @@ class UR3EDual(ri.RobotInterface):
             cdprimitive_type="user_defined", expand_radius=.005,
             userdefined_cdprimitive_fn=self._base_combined_cdnp)
         self.lft_body.lnks[0]['rgba'] = [.55, .55, .55, 1.0]
-        self.lft_body.reinitialize()
+        self.lft_body.finalize()
         lft_arm_homeconf = np.zeros(6)
         lft_arm_homeconf[0] = -math.pi * 2.0 / 3.0
         lft_arm_homeconf[1] = -math.pi * 2.0 / 3.0
@@ -52,7 +52,7 @@ class UR3EDual(ri.RobotInterface):
         self.rgt_body.lnks[0]['pos_in_loc_tcp'] = np.array([0, 0, 0])
         self.rgt_body.lnks[0]['mesh_file'] = None
         self.rgt_body.lnks[0]['rgba'] = [.3, .3, .3, 1.0]
-        self.rgt_body.reinitialize()
+        self.rgt_body.finalize()
         rgt_arm_homeconf = np.zeros(6)
         rgt_arm_homeconf[0] = math.pi * 2.0 / 3.0
         rgt_arm_homeconf[1] = -math.pi / 3.0

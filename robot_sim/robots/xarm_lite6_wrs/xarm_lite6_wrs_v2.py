@@ -24,7 +24,7 @@ class XArmLite6WRSGripper(ri.RobotInterface):
         self.body.lnks[0]['pos_in_loc_tcp'] = np.array([0, 0, 0])
         self.body.lnks[0]['rgba'] = [.55, .55, .55, 1.0]
         self.body.lnks[0]['mesh_file'] = os.path.join(this_dir, "meshes", "xarm_lite6_stand.stl")
-        self.body.reinitialize()
+        self.body.finalize()
         self.arm = XArmLite6(pos=self.body.jnts[-1]['gl_posq'],
                              rotmat=self.body.jnts[-1]['gl_rotmatq'],
                              enable_cc=False)

@@ -43,7 +43,7 @@ class Nova2WRS(ri.RobotInterface):
             os.path.join(this_dir, "meshes", "table.stl"),
             cdprimit_type="user_defined", expand_radius=.005,
             userdefined_cdprimitive_fn=self._table_cdnp)
-        self.body.reinitialize()
+        self.body.finalize()
 
         self.arm = Nova2(pos=self.body.jnts[-1]['gl_posq'],
                          rotmat=self.body.jnts[-1]['gl_rotmatq'],

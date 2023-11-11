@@ -74,7 +74,7 @@ class UR3(mi.ManipulatorInterface):
         self.jlc.lnks[6]['mass'] = 0.8
         self.jlc.lnks[6]['mesh_file'] = os.path.join(this_dir, "meshes", "wrist3.stl")
         self.jlc.lnks[6]['rgba'] = [.5,.5,.5, 1.0]
-        self.jlc.reinitialize()
+        self.jlc.finalize()
         # collision detection
         if enable_cc:
             self.enable_cc()

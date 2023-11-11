@@ -22,7 +22,7 @@ class Stem(object):
         for i in range(1, self.jlc.n_dof + 1):
             self.jlc.jnts[i]['pos_in_loc_tcp'] = np.array([0, 0, base_length / 5])
             self.jlc.jnts[i]['loc_motionax'] = np.array([1, 0, 0])
-        self.jlc.reinitialize()
+        self.jlc.finalize()
         for link_id in range(self.jlc.n_dof + 1):
             self.jlc.lnks[link_id]['collision_model'] = cm.gen_stick(spos=np.zeros(3),
                                                                      epos=rotmat.T.dot(

@@ -69,7 +69,7 @@ class VS060(mi.ManipulatorInterface):
         self.jlc.lnks[6]['mass'] = 0.8
         self.jlc.lnks[6]['mesh_file'] = os.path.join(this_dir, "meshes", "wrist3.dae")
         self.jlc.lnks[6]['rgba'] = [.5,.5,.5, 1.0]
-        self.jlc.reinitialize()
+        self.jlc.finalize()
         # collision checker
         if enable_cc:
             super().enable_cc()

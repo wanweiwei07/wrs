@@ -110,7 +110,7 @@ class XArmLite6(mi.ManipulatorInterface):
         # reinitialization
         # self.jlc.setinitvalues(np.array([-math.pi/2, math.pi/3, math.pi/6, 0, 0, 0, 0]))
         # self.jlc.setinitvalues(np.array([-math.pi/2, 0, math.pi/3, math.pi/10, 0, 0, 0]))
-        self.jlc.reinitialize()
+        self.jlc.finalize()
         # collision detection
         if enable_cc:
             self.enable_cc()

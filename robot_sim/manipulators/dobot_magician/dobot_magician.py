@@ -53,7 +53,7 @@ class DobotMagician(mi.ManipulatorInterface):
         self.jlc.lnks[4]['pos_in_loc_tcp'] = np.array([.0, .0, .0])
         self.jlc.lnks[4]['mesh_file'] = os.path.join(this_dir, "meshes", "link_6.stl")
         self.jlc.lnks[4]['rgba'] = [.35, .35, .35, 1.0]
-        self.jlc.reinitialize()
+        self.jlc.finalize()
         # prepare parameters for analytical ik
         upper_arm_vec = self.jlc.jnts[3]['gl_posq'] - np.array([0, 0, 0.138])
         lower_arm_vec = self.jlc.jnts[4]['gl_posq'] - self.jlc.jnts[3]['gl_posq']

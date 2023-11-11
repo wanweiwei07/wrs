@@ -36,7 +36,7 @@ class KHI_BLQC(ai.RobotInterface):
                                                                  # rgba=[.2, .2, .2, 1], rgb will be overwritten
                                                                  type='rect',
                                                                  n_sec=36)
-        self.tc_master.reinitialize()
+        self.tc_master.finalize()
         # tool
         self.end_effector = None
         # tool center point

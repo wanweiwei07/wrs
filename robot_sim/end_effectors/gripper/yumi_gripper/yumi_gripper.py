@@ -36,8 +36,8 @@ class YumiGripper(gp.GripperInterface):
         self.rgt.lnks[1]['mesh_file'] = os.path.join(this_dir, "meshes", "finger.stl")
         self.rgt.lnks[1]['rgba'] = [.2, .2, .2, 1]
         # reinitialize
-        self.lft.reinitialize(cdmesh_type=cdmesh_type)
-        self.rgt.reinitialize(cdmesh_type=cdmesh_type)
+        self.lft.finalize(cdmesh_type=cdmesh_type)
+        self.rgt.finalize(cdmesh_type=cdmesh_type)
         # jaw range
         self.jaw_range = [0.0, .05]
         # jaw center

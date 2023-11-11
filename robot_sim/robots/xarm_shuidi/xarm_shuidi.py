@@ -40,7 +40,7 @@ class XArmShuidi(ri.RobotInterface):
         self.agv.lnks[5]['mesh_file'] = os.path.join(this_dir, 'meshes', 'battery_fixture.stl')
         self.agv.lnks[5]['rgba'] = [.55, .55, .55, 1.0]
         self.agv.tgtjnts = [1, 2, 3]
-        self.agv.reinitialize()
+        self.agv.finalize()
         # arm
         arm_homeconf = np.zeros(7)
         arm_homeconf[1] = -math.pi / 3
@@ -60,7 +60,7 @@ class XArmShuidi(ri.RobotInterface):
         self.ft_sensor.lnks[0]['collision_model'] = cm.gen_stick(spos=self.ft_sensor.jnts[0]['pos_in_loc_tcp'],
                                                                  epos=self.ft_sensor.jnts[1]['pos_in_loc_tcp'],
                                                                  radius=.075, rgba=[.2, .3, .3, 1], n_sec=24)
-        self.ft_sensor.reinitialize()
+        self.ft_sensor.finalize()
         # gripper
         self.hnd = xag.XArmGripper(pos=self.ft_sensor.jnts[-1]['gl_posq'],
                                    rotmat=self.ft_sensor.jnts[-1]['gl_rotmatq'],

@@ -70,7 +70,7 @@ class Left_Manipulator(mi.ManipulatorInterface):
         self.jlc.lnks[7]['pos_in_loc_tcp'] = np.array([-0.047, 0, -0.09])
         self.jlc.lnks[7]['mesh_file'] = os.path.join(this_dir, "meshes", "larm_joint5_link_mesh.dae")
         self.jlc.lnks[7]['rgba'] = [.57, .57, .57, 1]
-        self.jlc.reinitialize()
+        self.jlc.finalize()
         self.toggle_waist(token=False)
 
     def toggle_waist(self, token=True):

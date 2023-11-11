@@ -40,8 +40,8 @@ class TBMGripper(gp.GripperInterface):
         self.rgt_fgr.lnks[1]['mesh_file'] = os.path.join(this_dir, "meshes", "finger2_r.stl")
         self.rgt_fgr.lnks[1]['rgba'] = [0.792156862745098, 0.819607843137255, 0.933333333333333, 1]
         # reinitialize
-        self.lft_fgr.reinitialize()
-        self.rgt_fgr.reinitialize()
+        self.lft_fgr.finalize()
+        self.rgt_fgr.finalize()
         # jaw range
         self.jaw_range = [0, .5]
         # jaw center

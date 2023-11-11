@@ -29,7 +29,7 @@ class OR2FG7(gp.GripperInterface):
                                                                 # rgba=[.2, .2, .2, 1], rgb will be overwritten
                                                                 type='rect',
                                                                 n_sec=36)
-        self.coupling.reinitialize()
+        self.coupling.finalize()
         cpl_end_pos = self.coupling.jnts[-1]['gl_posq']
         cpl_end_rotmat = self.coupling.jnts[-1]['gl_rotmatq']
         # - lft
@@ -60,8 +60,8 @@ class OR2FG7(gp.GripperInterface):
         # jaw range
         self.jaw_range = [0.0, 0.038]
         # reinitialize
-        self.lft.reinitialize()
-        self.rgt.reinitialize()
+        self.lft.finalize()
+        self.rgt.finalize()
         # collision detection
         self.all_cdelements = []
         self.enable_cc(toggle_cdprimit=enable_cc)

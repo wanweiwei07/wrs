@@ -99,7 +99,7 @@ class Nova2(mi.ManipulatorInterface):
         self.jlc.lnks[6]['mesh_file'] = os.path.join(this_dir, "meshes", "link6.stl")
         self.jlc.lnks[6]['rgba'] = [.57, .57, .57, 1.0]
         # reinitialization
-        self.jlc.reinitialize()
+        self.jlc.finalize()
         # collision detection
         if enable_cc:
             self.enable_cc()

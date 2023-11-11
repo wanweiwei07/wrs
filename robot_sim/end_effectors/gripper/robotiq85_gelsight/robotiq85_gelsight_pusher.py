@@ -125,11 +125,11 @@ class Robotiq85GelsightPusher(gp.GripperInterface):
         self.middle.lnks[1]['mesh_file'] = os.path.join(this_dir, "meshes", "pushing_stick.stl")
         self.middle.lnks[1]['rgba'] = [.2, .2, .2, 1]
         # reinitialize
-        self.lft_outer.reinitialize()
-        self.lft_inner.reinitialize()
-        self.rgt_outer.reinitialize()
-        self.rgt_inner.reinitialize()
-        self.middle.reinitialize()
+        self.lft_outer.finalize()
+        self.lft_inner.finalize()
+        self.rgt_outer.finalize()
+        self.rgt_inner.finalize()
+        self.middle.finalize()
         # jaw range
         self.jaw_range = [0.0, .085]
         # jaw center

@@ -51,8 +51,8 @@ class Lite6WRSGripper(gp.GripperInterface):
             userdefined_cdprimitive_fn=self._finger_cdnp, expand_radius=.000)
         self.rgt.lnks[1]['rgba'] = [.35, .35, .35, 1]
         # # reinitialize
-        self.lft.reinitialize(cdmesh_type=cdmesh_type)
-        self.rgt.reinitialize(cdmesh_type=cdmesh_type)
+        self.lft.finalize(cdmesh_type=cdmesh_type)
+        self.rgt.finalize(cdmesh_type=cdmesh_type)
         # jaw width range
         self.jaw_range = [0.0, .04]
         # jaw center

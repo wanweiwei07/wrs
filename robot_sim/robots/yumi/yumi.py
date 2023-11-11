@@ -64,7 +64,7 @@ class Yumi(ri.RobotInterface):
         self.lft_body.lnks[7]['pos_in_loc_tcp'] = np.array([.273, 0, 1.085])
         self.lft_body.lnks[7]['mesh_file'] = os.path.join(this_dir, "meshes", "yumi_column6060540.stl")
         self.lft_body.lnks[7]['rgba'] = [.35, .35, .35, 1.0]
-        self.lft_body.reinitialize()
+        self.lft_body.finalize()
         lft_arm_homeconf = np.radians(np.array([20, -90, 120, 30, 0, 40, 0]))
         self.lft_arm = ya.IRB14050(pos=self.lft_body.jnts[-1]['gl_posq'],
                                    rotmat=self.lft_body.jnts[-1]['gl_rotmatq'],
@@ -81,7 +81,7 @@ class Yumi(ri.RobotInterface):
         self.rgt_body.lnks[0]['name'] = "yumi_rgt_body"
         self.rgt_body.lnks[0]['pos_in_loc_tcp'] = np.array([0, 0, 0])
         self.rgt_body.lnks[0]['rgba'] = [.35, .35, .35, 1.0]
-        self.rgt_body.reinitialize()
+        self.rgt_body.finalize()
         rgt_arm_homeconf = np.radians(np.array([-20, -90, -120, 30, .0, 40, 0]))
         self.rgt_arm = self.lft_arm.copy()
         self.rgt_arm.fix_to(pos=self.rgt_body.jnts[-1]['gl_posq'], rotmat=self.rgt_body.jnts[-1]['gl_rotmatq'])

@@ -26,7 +26,7 @@ class RobotiqHE(gp.GripperInterface):
                                                                 self.coupling.jnts[1]['pos_in_loc_tcp'],
                                                                 radius=.07, rgba=[.2, .2, .2, 1],
                                                                 n_sec=24)
-        self.coupling.reinitialize()
+        self.coupling.finalize()
         cpl_end_pos = self.coupling.jnts[-1]['gl_posq']
         cpl_end_rotmat = self.coupling.jnts[-1]['gl_rotmatq']
         # - lft
@@ -55,8 +55,8 @@ class RobotiqHE(gp.GripperInterface):
         # jaw center
         self.jaw_center_pos = np.array([0, 0, .14]) + coupling_offset_pos
         # reinitialize
-        self.lft.reinitialize()
-        self.rgt.reinitialize()
+        self.lft.finalize()
+        self.rgt.finalize()
         # collision detection
         self.all_cdelements = []
         self.enable_cc(toggle_cdprimit=enable_cc)

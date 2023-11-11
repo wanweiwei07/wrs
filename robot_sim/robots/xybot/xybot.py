@@ -16,7 +16,7 @@ class XYBot(ri.RobotInterface):
         self.jlc.jnts[2]['loc_motionax'] = np.array([0, 1, 0])
         self.jlc.jnts[2]['pos_in_loc_tcp'] = np.zeros(3)
         self.jlc.jnts[2]['motion_rng'] = [-2.0, 15.0]
-        self.jlc.reinitialize()
+        self.jlc.finalize()
 
     def fk(self, jnt_values=np.zeros(2)):
         self.jlc.fk(jnt_values)
@@ -54,7 +54,7 @@ class XYTBot(ri.RobotInterface):
         self.jlc.jnts[3]['loc_motionax'] = np.array([0, 0, 1])
         self.jlc.jnts[3]['pos_in_loc_tcp'] = np.zeros(3)
         self.jlc.jnts[3]['motion_rng'] = [-math.pi, math.pi]
-        self.jlc.reinitialize()
+        self.jlc.finalize()
 
     def fk(self, component_name='all', jnt_values=np.zeros(3)):
         if component_name != 'all':

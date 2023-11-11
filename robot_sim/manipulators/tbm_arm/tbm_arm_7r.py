@@ -72,7 +72,7 @@ class TBMArm7R(mi.ManipulatorInterface):
         self.jlc.lnks[7]['mass'] = 0.03
         self.jlc.lnks[7]['mesh_file'] = None
         self.jlc.lnks[7]['rgba'] = [.5, .5, .5, 1.0]
-        self.jlc.reinitialize()
+        self.jlc.finalize()
         # collision detection
         if enable_cc:
             self.enable_cc()

@@ -35,7 +35,7 @@ class UR5EConveyorBelt(ri.RobotInterface):
         self.base_stand.lnks[2]['rgba'] = [.55, .55, .55, 1]
         self.base_stand.lnks[3]['mesh_file'] = os.path.join(this_dir, "meshes", "cameras.stl")
         self.base_stand.lnks[3]['rgba'] = [.55, .55, .55, 1]
-        self.base_stand.reinitialize()
+        self.base_stand.finalize()
         # arm
         arm_homeconf = np.zeros(6)
         # arm_homeconf[0] = math.pi / 2

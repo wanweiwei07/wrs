@@ -46,7 +46,7 @@ if __name__ == '__main__':
     jlc.jnts[2].loc_pos = np.array([0, 0, .1])
     jlc.jnts[2].loc_motion_axis = np.array([1, 0, 0])
     jlc.tcp_loc_pos = np.array([0, 0, .1])
-    jlc.reinitialize()
+    jlc.finalize()
 
     tcp_gl_pos, _ = jlc.fk(joint_values=np.radians([10, 20]), update=True)
     linear_ellipsoid_mat,_ = jlc.manipulability_mat()

@@ -22,7 +22,7 @@ class EEInterface(object):
         # toggle on the following part to assign an explicit mesh model to a coupling
         # self.coupling.jnts[0].link = rkjl.create_link(mesh_file=os.path.join(this_dir, "meshes", "xxx.stl"))
         # self.coupling.lnks[0].rgba = [.2, .2, .2, 1]
-        self.coupling.reinitialize()
+        self.coupling.finalize()
         # action center, acting point of the tool
         self.action_center_pos = np.zeros(3)
         self.action_center_rotmat = np.eye(3)

@@ -27,7 +27,7 @@ class TBM(object):
         self.head.lnks[1]['mesh_file'] = os.path.join(this_dir, 'meshes', 'tbm_cutter_head.stl')
         self.head.lnks[1]['rgba'] = [.7, .3, .3, 1]
         self.head.tgtjnts = [1]
-        self.head.reinitialize()
+        self.head.finalize()
         # cutter
         self.cutters = []
         self.cutter_pos_dict = {'0': [np.array([0.410, 0.0, 0.341 + 0.175]),
@@ -308,7 +308,7 @@ class TBM(object):
                 tmp_jlc.lnks[1]['mesh_file'] = os.path.join(this_dir, 'meshes', 'cutter.stl')
                 tmp_jlc.lnks[1]['rgba'] = [1, 1, .0, 1.0]
                 tmp_jlc.tgtjnts = [1]
-                tmp_jlc.reinitialize()
+                tmp_jlc.finalize()
                 self.cutters[k].append(tmp_jlc)
 
     def fix_to(self, pos, rotmat):

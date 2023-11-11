@@ -20,7 +20,7 @@ class MVFLN40(si.SCInterface):
         self.jlc.lnks[0]['mesh_file'] = os.path.join(this_dir, "meshes", "mvfln40.stl")
         self.jlc.lnks[0]['rgba'] = [.55, .55, .55, 1]
         # reinitialize
-        self.jlc.reinitialize()
+        self.jlc.finalize()
         # suction center
         self.suction_center_pos = np.array([0, 0, .068])
         # collision detection

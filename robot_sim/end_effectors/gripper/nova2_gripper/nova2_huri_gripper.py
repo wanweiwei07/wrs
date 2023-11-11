@@ -79,9 +79,9 @@ class Nova2HuriGripper(gp.GripperInterface):
         self.rgt.lnks[2]['rgba'] = [.65, .65, .65, 1]
 
         # # reinitialize
-        self.body.reinitialize(cdmesh_type=cdmesh_type)
-        self.lft.reinitialize(cdmesh_type=cdmesh_type)
-        self.rgt.reinitialize(cdmesh_type=cdmesh_type)
+        self.body.finalize(cdmesh_type=cdmesh_type)
+        self.lft.finalize(cdmesh_type=cdmesh_type)
+        self.rgt.finalize(cdmesh_type=cdmesh_type)
         # jaw width
         self.jawwidth_rng = [0.0, .198]
         # jaw center

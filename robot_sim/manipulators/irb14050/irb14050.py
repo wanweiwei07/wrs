@@ -60,7 +60,7 @@ class IRB14050(mi.ManipulatorInterface):
         # self.jlc.lnks[7]['mesh_file'] = os.path.join(this_dir, "meshes", "link_7.stl") # not really needed to visualize
         # self.jlc.lnks[7]['rgba'] = [.5,.5,.5,1]
         # reinitialization
-        self.jlc.reinitialize()
+        self.jlc.finalize()
         # collision detection
         if enable_cc:
             self.enable_cc()

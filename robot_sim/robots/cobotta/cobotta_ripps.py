@@ -23,7 +23,7 @@ class CobottaRIPPS(ri.RobotInterface):
         self.base_plate.jnts[1]['pos_in_loc_tcp'] = np.array([0, 0, 0.01])
         self.base_plate.lnks[0]['mesh_file'] = os.path.join(this_dir, "meshes", "base_plate_ripps.stl")
         self.base_plate.lnks[0]['rgba'] = [.55, .55, .55, 1]
-        self.base_plate.reinitialize()
+        self.base_plate.finalize()
         # arm
         arm_homeconf = np.zeros(6)
         arm_homeconf[1] = -math.pi / 6

@@ -70,7 +70,7 @@ class Nextage(ri.RobotInterface):
         self.central_body.lnks[3]['pos_in_loc_tcp'] = np.array([0, 0, 0])
         self.central_body.lnks[3]['mesh_file'] = os.path.join(this_dir, "meshes", "head_joint1_link_mesh.dae")
         self.central_body.lnks[3]['rgba'] = [.63, .63, .63, 1]
-        self.central_body.reinitialize()
+        self.central_body.finalize()
         # lft
         self.lft_arm = jl.JLChain(pos=self.central_body.jnts[1]['gl_posq'],
                                   rotmat=self.central_body.jnts[1]['gl_rotmatq'],
@@ -121,7 +121,7 @@ class Nextage(ri.RobotInterface):
         self.lft_arm.lnks[7]['pos_in_loc_tcp'] = np.array([-0.047, 0, -0.09])
         self.lft_arm.lnks[7]['mesh_file'] = os.path.join(this_dir, "meshes", "larm_joint5_link_mesh.dae")
         self.lft_arm.lnks[7]['rgba'] = [.57, .57, .57, 1]
-        self.lft_arm.reinitialize()
+        self.lft_arm.finalize()
         # rgt
         self.rgt_arm = jl.JLChain(pos=self.central_body.jnts[1]['gl_posq'],
                                   rotmat=self.central_body.jnts[1]['gl_rotmatq'],
@@ -172,7 +172,7 @@ class Nextage(ri.RobotInterface):
         self.rgt_arm.lnks[7]['pos_in_loc_tcp'] = np.array([-0.047, 0, -0.09])
         self.rgt_arm.lnks[7]['mesh_file'] = os.path.join(this_dir, "meshes", "rarm_joint5_link_mesh.dae")
         self.rgt_arm.lnks[7]['rgba'] = [.57, .57, .57, 1]
-        self.rgt_arm.reinitialize()
+        self.rgt_arm.finalize()
         # tool center point
         # lft
         self.lft_arm.tcp_jnt_id = -1
