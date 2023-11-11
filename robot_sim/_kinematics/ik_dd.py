@@ -8,12 +8,14 @@ import warnings
 import numpy as np
 import pickle
 import basis.robot_math as rm
+import basis.utils as bu
 import scipy.spatial
 from scipy.spatial.transform import Rotation
 from tqdm import tqdm
 import robot_sim._kinematics.ik_num as rkn
 import robot_sim._kinematics.ik_opt as rko
 import robot_sim._kinematics.ik_trac as rkt
+import time
 # for debugging purpose
 import modeling.geometric_model as mgm
 import robot_sim._kinematics.model_generator as rkmg
@@ -32,7 +34,8 @@ class DDIKSolver(object):
         """
         self.jlc = jlc
         self.path = path
-        self._k_val = 5  # number of nearest neighbours examined by the backbone sovler
+        self._k_bbs = 5  # number of nearest neighbours examined by the backbone sovler
+        self._k_max = 1000  # maximum nearest neighbours explored by the evolver
         self._max_n_iter = 5  # max_n_iter of the backbone solver
         if backbone_solver == 'n':
             self._backbone_solver = rkn.NumIKSolver(self.jlc)
@@ -44,19 +47,20 @@ class DDIKSolver(object):
             self._backbone_solver = rkt.TracIKSolver(self.jlc)
             self._backbone_solver_func = self._backbone_solver.ik
         if rebuild:
-            y_or_n = input("Rebuilding the database needs new evolution and is cost. Do you want to continue?")
+            print("Rebuilding the database. It starts a new evolution and is costly.")
+            y_or_n = bu.get_yesno()
             if y_or_n == 'y':
                 self.querry_tree, self.jnt_data = self._build_data()
-                self._evolve_data()
-                self._persist_data()
+                self._multiepoch_evolve()
+                self._persist_data(path=self.path)
         else:
             try:
                 self.querry_tree = pickle.load(open(self.path + 'ikdd_tree.pkl', 'rb'))
                 self.jnt_data = pickle.load(open(self.path + 'jnt_data.pkl', 'rb'))
             except FileNotFoundError:
                 self.querry_tree, self.jnt_data = self._build_data()
-                self._evolve_data()
-                self._persist_data()
+                self._multiepoch_evolve()
+                self._persist_data(path=self.path)
 
     def _rotmat_to_vec(self, rotmat, method='q'):
         """
@@ -99,15 +103,17 @@ class DDIKSolver(object):
         querry_tree = scipy.spatial.cKDTree(tcp_data)
         return querry_tree, jnt_data
 
-    def _evolve_data(self, n_times=100000):
-        for i in tqdm(range(n_times)):
+    def _evolve_data(self, n_times=100000, toggle_dbg=True):
+        evolved_nns = []
+        for i in range(n_times):
+            print(f"new goals: {i}/{n_times}...")
             random_jnts = self.jlc.rand_conf()
             tgt_pos, tgt_rotmat = self.jlc.forward_kinematics(jnt_vals=random_jnts, update=False, toggle_jac=False)
             tcp_rotvec = self._rotmat_to_vec(tgt_rotmat)
             tgt_tcp = np.concatenate((tgt_pos, tcp_rotvec))
-            dist_val_array, nn_indx_array = self.querry_tree.query(tgt_tcp, k=1000, workers=-1)
+            dist_val_array, nn_indx_array = self.querry_tree.query(tgt_tcp, k=self._k_max, workers=-1)
             is_solvable = False
-            for nn_indx in nn_indx_array[:self._k_val]:
+            for nn_indx in nn_indx_array[:self._k_bbs]:
                 seed_jnt_vals = self.jnt_data[nn_indx]
                 result = self._backbone_solver_func(tgt_pos=tgt_pos,
                                                     tgt_rotmat=tgt_rotmat,
@@ -120,7 +126,9 @@ class DDIKSolver(object):
                     break
             if not is_solvable:
                 # try solving the problem with additional nearest neighbours
-                for id, nn_indx in enumerate(nn_indx_array[self._k_val:]):
+                inner_progress_bar = tqdm(total=self._k_max - self._k_bbs, desc="     unvolsed. try extra nns:")
+                for id, nn_indx in enumerate(nn_indx_array[self._k_bbs:]):
+                    inner_progress_bar.update(1)
                     seed_jnt_vals = self.jnt_data[nn_indx]
                     result = self._backbone_solver_func(tgt_pos=tgt_pos,
                                                         tgt_rotmat=tgt_rotmat,
@@ -133,10 +141,35 @@ class DDIKSolver(object):
                         tcp_data = np.vstack((self.querry_tree.data, tgt_tcp))
                         self.jnt_data.append(result)
                         self.querry_tree = scipy.spatial.cKDTree(tcp_data)
-                        print(f"#### Previously unsolved ik solved using the {self._k_val+id}th nearest neighbour.")
+                        evolved_nns.append(self._k_bbs + id)
+                        # print(f"#### Previously unsolved ik solved using the {self._k_val + id}th nearest neighbour.")
                         break
+                inner_progress_bar.close()
+        if toggle_dbg:
+            print("Details of the data used for evolution.")
+            evolved_nns = np.asarray(evolved_nns)
+            print("Max nn id: ", evolved_nns.max())
+            print("Min nn id: ", evolved_nns.min())
+            print("Avg nn id: ", evolved_nns.mean())
+            print("Std nn id: ", evolved_nns.std())
         self.jlc._ik_solver.persist_evolution()
         print("Evolution is done.")
+
+    def _multiepoch_evolve(self, n_times_per_epoch=100000):
+        """
+        calls evolve_data repeated based on user feedback
+        :return:
+        author: weiwei
+        date: 20231111
+        """
+        print("Starting multi-epoch evolution.")
+        while True:
+            self._evolve_data(n_times=n_times_per_epoch)
+            self._test_success_rate()
+            print("An epoch is done. Do you want to continue?")
+            y_or_n = bu.get_yesno()
+            if y_or_n == 'n':
+                break
 
     def _test_success_rate(self, n_times=1000):
         success = 0
@@ -163,9 +196,9 @@ class DDIKSolver(object):
         print('std', np.std(time_list))
         return success / n_times
 
-    def _persist_data(self):
-        pickle.dump(self.querry_tree, open(self.path + 'ikdd_tree.pkl', 'wb'))
-        pickle.dump(self.jnt_data, open(self.path + 'jnt_data.pkl', 'wb'))
+    def _persist_data(self, path):
+        pickle.dump(self.querry_tree, open(path + 'ikdd_tree.pkl', 'wb'))
+        pickle.dump(self.jnt_data, open(path + 'jnt_data.pkl', 'wb'))
         print("ddik data file saved.")
 
     def ik(self,

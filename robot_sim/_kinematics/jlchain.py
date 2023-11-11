@@ -346,14 +346,12 @@ class JLChain(object):
            tgt_pos: np.ndarray,
            tgt_rotmat: np.ndarray,
            seed_jnt_vals=None,
-           max_n_iter=100,
            toggle_dbg=False):
         """
         trac ik solver runs num_ik and opt_ik in parallel, and return the faster result
         :param tgt_pos: 1x3 nparray, single value or list
         :param tgt_rotmat: 3x3 nparray, single value or list
         :param seed_jnt_vals: the starting configuration used in the numerical iteration
-        :param max_n_iter
         :return:
         """
         if self._ik_solver is None:
@@ -361,7 +359,6 @@ class JLChain(object):
         jnt_values = self._ik_solver.ik(tgt_pos=tgt_pos,
                                         tgt_rotmat=tgt_rotmat,
                                         seed_jnt_vals=seed_jnt_vals,
-                                        max_n_iter=max_n_iter,
                                         toggle_dbg=toggle_dbg)
         return jnt_values
 
