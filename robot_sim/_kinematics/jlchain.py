@@ -3,6 +3,7 @@ import copy
 import numpy as np
 import time
 import basis.constant as bc
+import basis.utils as bu
 import basis.robot_math as rm
 import modeling.constant as mc
 import modeling.collision_model as mcm
@@ -229,7 +230,6 @@ class JLChain(object):
         self.go_home()
         if ik_solver == 'd':
             self._ik_solver = rkd.DDIKSolver(self)
-
 
     def set_tcp(self, tcp_joint_id=None, tcp_loc_pos=None, tcp_loc_rotmat=None):
         if tcp_joint_id is not None:

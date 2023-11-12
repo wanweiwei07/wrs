@@ -35,7 +35,7 @@ class DDIKSolver(object):
         self.jlc = jlc
         self.path = path
         self._k_bbs = 5  # number of nearest neighbours examined by the backbone sovler
-        self._k_max = 1000  # maximum nearest neighbours explored by the evolver
+        self._k_max = 20  # maximum nearest neighbours explored by the evolver
         self._max_n_iter = 5  # max_n_iter of the backbone solver
         if backbone_solver == 'n':
             self._backbone_solver = rkn.NumIKSolver(self.jlc)
@@ -51,16 +51,14 @@ class DDIKSolver(object):
             y_or_n = bu.get_yesno()
             if y_or_n == 'y':
                 self.querry_tree, self.jnt_data = self._build_data()
-                self._multiepoch_evolve()
-                self._persist_data(path=self.path)
+                self.evolve_data(n_times=100000)
         else:
             try:
                 self.querry_tree = pickle.load(open(self.path + 'ikdd_tree.pkl', 'rb'))
                 self.jnt_data = pickle.load(open(self.path + 'jnt_data.pkl', 'rb'))
             except FileNotFoundError:
                 self.querry_tree, self.jnt_data = self._build_data()
-                self._multiepoch_evolve()
-                self._persist_data(path=self.path)
+                self.evolve_data(n_times=100000)
 
     def _rotmat_to_vec(self, rotmat, method='q'):
         """
@@ -101,12 +99,32 @@ class DDIKSolver(object):
             tcp_data.append(np.concatenate((tcp_pos, tcp_rotvec)))
             jnt_data.append(jnt_vals)
         querry_tree = scipy.spatial.cKDTree(tcp_data)
+        self.persist_data(path=self.path)
         return querry_tree, jnt_data
 
-    def _evolve_data(self, n_times=100000, toggle_dbg=True):
+    def multiepoch_evolve(self, n_times_per_epoch=10000, target_success_rate=.96):
+        """
+        calls evolve_data repeated based on user feedback
+        :return:
+        author: weiwei
+        date: 20231111
+        """
+        print("Starting multi-epoch evolution.")
+        current_success_rate = 0.0
+        while current_success_rate < target_success_rate:
+            self.evolve_data(n_times=n_times_per_epoch)
+            current_success_rate = self.test_success_rate()
+            # print("An epoch is done. Do you want to continue?")
+            # y_or_n = bu.get_yesno()
+            # if y_or_n == 'n':
+            #     break
+        self.persist_data(path=self.path)
+
+    def evolve_data(self, n_times=100000, toggle_dbg=True):
         evolved_nns = []
+        outer_progress_bar = tqdm(total=n_times, desc="new goals:", colour="red", position=0, leave=False)
         for i in range(n_times):
-            print(f"new goals: {i}/{n_times}...")
+            outer_progress_bar.update(1)
             random_jnts = self.jlc.rand_conf()
             tgt_pos, tgt_rotmat = self.jlc.forward_kinematics(jnt_vals=random_jnts, update=False, toggle_jac=False)
             tcp_rotvec = self._rotmat_to_vec(tgt_rotmat)
@@ -126,9 +144,13 @@ class DDIKSolver(object):
                     break
             if not is_solvable:
                 # try solving the problem with additional nearest neighbours
-                inner_progress_bar = tqdm(total=self._k_max - self._k_bbs, desc="     unvolsed. try extra nns:")
+                # inner_progress_bar = tqdm(total=self._k_max - self._k_bbs,
+                #                           desc="    unvolsed. try extra nns:",
+                #                           colour="green",
+                #                           position=1,
+                #                           leave=False)
                 for id, nn_indx in enumerate(nn_indx_array[self._k_bbs:]):
-                    inner_progress_bar.update(1)
+                    # inner_progress_bar.update(1)
                     seed_jnt_vals = self.jnt_data[nn_indx]
                     result = self._backbone_solver_func(tgt_pos=tgt_pos,
                                                         tgt_rotmat=tgt_rotmat,
@@ -142,61 +164,20 @@ class DDIKSolver(object):
                         self.jnt_data.append(result)
                         self.querry_tree = scipy.spatial.cKDTree(tcp_data)
                         evolved_nns.append(self._k_bbs + id)
-                        # print(f"#### Previously unsolved ik solved using the {self._k_val + id}th nearest neighbour.")
+                        print(f"#### Previously unsolved ik solved using the {self._k_bbs + id}th nearest neighbour.")
                         break
-                inner_progress_bar.close()
+                # inner_progress_bar.close()
+        outer_progress_bar.close()
         if toggle_dbg:
-            print("Details of the data used for evolution.")
+            print("+++++++++++++++++++evolution details+++++++++++++++++++")
             evolved_nns = np.asarray(evolved_nns)
             print("Max nn id: ", evolved_nns.max())
             print("Min nn id: ", evolved_nns.min())
             print("Avg nn id: ", evolved_nns.mean())
             print("Std nn id: ", evolved_nns.std())
-        self.jlc._ik_solver.persist_evolution()
-        print("Evolution is done.")
+        self.persist_data(path=self.path)
 
-    def _multiepoch_evolve(self, n_times_per_epoch=100000):
-        """
-        calls evolve_data repeated based on user feedback
-        :return:
-        author: weiwei
-        date: 20231111
-        """
-        print("Starting multi-epoch evolution.")
-        while True:
-            self._evolve_data(n_times=n_times_per_epoch)
-            self._test_success_rate()
-            print("An epoch is done. Do you want to continue?")
-            y_or_n = bu.get_yesno()
-            if y_or_n == 'n':
-                break
-
-    def _test_success_rate(self, n_times=1000):
-        success = 0
-        time_list = []
-        tgt_list = []
-        for i in tqdm(range(1000), desc="ik"):
-            random_jnts = self.jlc.rand_conf()
-            tgt_pos, tgt_rotmat = self.jlc.forward_kinematics(jnt_vals=random_jnts, update=False, toggle_jac=False)
-            tic = time.time()
-            solved_jnt_vals = self.jlc.ik(tgt_pos=tgt_pos,
-                                          tgt_rotmat=tgt_rotmat,
-                                          # seed_jnt_vals=seed_jnt_vals,
-                                          toggle_dbg=False)
-            toc = time.time()
-            time_list.append(toc - tic)
-            if solved_jnt_vals is not None:
-                success += 1
-            else:
-                tgt_list.append((tgt_pos, tgt_rotmat))
-        print(f"The current success rate is: f{success / n_times}")
-        print('average time cost', np.mean(time_list))
-        print('max', np.max(time_list))
-        print('min', np.min(time_list))
-        print('std', np.std(time_list))
-        return success / n_times
-
-    def _persist_data(self, path):
+    def persist_data(self, path):
         pickle.dump(self.querry_tree, open(path + 'ikdd_tree.pkl', 'wb'))
         pickle.dump(self.jnt_data, open(path + 'jnt_data.pkl', 'wb'))
         print("ddik data file saved.")
@@ -235,6 +216,32 @@ class DDIKSolver(object):
                 else:
                     return result
         return None
+
+    def test_success_rate(self, n_times=100):
+        success = 0
+        time_list = []
+        tgt_list = []
+        for i in tqdm(range(n_times), desc="ik"):
+            random_jnts = self.jlc.rand_conf()
+            tgt_pos, tgt_rotmat = self.jlc.forward_kinematics(jnt_vals=random_jnts, update=False, toggle_jac=False)
+            tic = time.time()
+            solved_jnt_vals = self.jlc.ik(tgt_pos=tgt_pos,
+                                          tgt_rotmat=tgt_rotmat,
+                                          # seed_jnt_vals=seed_jnt_vals,
+                                          toggle_dbg=False)
+            toc = time.time()
+            time_list.append(toc - tic)
+            if solved_jnt_vals is not None:
+                success += 1
+            else:
+                tgt_list.append((tgt_pos, tgt_rotmat))
+        print("------------------testing results------------------")
+        print(f"The current success rate is: {success / n_times * 100}%")
+        print('average time cost', np.mean(time_list))
+        print('max', np.max(time_list))
+        print('min', np.min(time_list))
+        print('std', np.std(time_list))
+        return success / n_times
 
 
 if __name__ == '__main__':
@@ -284,5 +291,7 @@ if __name__ == '__main__':
     #                    toggle_joint_frame=True).attach_to(base)
     # base.run()
 
-    jlc._ik_solver._test_success_rate()
+    # jlc._ik_solver._test_success_rate()
+    jlc._ik_solver.multiepoch_evolve(n_times_per_epoch=10000)
+    # jlc._ik_solver.test_success_rate()
     base.run()

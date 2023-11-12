@@ -65,7 +65,7 @@ class HandoverPlanner(object):
 
         self.identitygplist = []
         if rotmat is None:
-            self.fpsnpmat4 = self.rhx.rm.gen_icohomomats_flat(posvec=posvec, angles=[0,90,180,270])
+            self.fpsnpmat4 = self.rhx.rm.gen_icohomomats_flat(posvec=posvec, angles=[0, 90, 180, 270])
         else:
             self.fpsnpmat4 = [self.rhx.rm.homobuild(posvec, rotmat)]
         self.__genidentitygplist()
@@ -191,7 +191,7 @@ class HandoverPlanner(object):
                 fgrcenterrotmatnp = hndrotmat4[:3, :3]
                 handa = -hndrotmat4[:3, 2]
                 minusworldy = self.rhx.np.array([0,-1,0])
-                if self.rhx.rm.degree_betweenvector(handa,minusworldy) < 90:
+                if self.rhx.rm.degree_betweenvector(handa, minusworldy) < 90:
                     msc = self.rbt.numik(fgrcenternp, fgrcenterrotmatnp, armname)
                     if msc is not None:
                         fgrcenternp_handa = fgrcenternp + handa * self.retractdistance
@@ -213,7 +213,7 @@ class HandoverPlanner(object):
                 fgrcenterrotmatnp = hndrotmat4[:3, :3]
                 handa = -hndrotmat4[:3, 2]
                 plusworldy = self.rhx.np.array([0,1,0])
-                if self.rhx.rm.degree_betweenvector(handa,plusworldy) < 90:
+                if self.rhx.rm.degree_betweenvector(handa, plusworldy) < 90:
                     msc = self.rbt.numik(fgrcenternp, fgrcenterrotmatnp, armname)
                     if msc is not None:
                         fgrcenternp_handa = fgrcenternp + handa * self.retractdistance
