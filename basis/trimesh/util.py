@@ -10,6 +10,7 @@ import hashlib
 import base64
 from collections import defaultdict, deque
 from sys import version_info
+np.seterr(divide='ignore', invalid='ignore')
 
 if version_info.major >= 3:
     basestring = str
