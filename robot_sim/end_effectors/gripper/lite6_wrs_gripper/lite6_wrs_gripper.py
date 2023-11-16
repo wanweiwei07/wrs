@@ -136,7 +136,7 @@ class Lite6WRSGripper(gp.GripperInterface):
         else:
             raise ValueError("The motion_val parameter is out of range!")
 
-    def jaw_to(self, jaw_width):
+    def change_jaw_width(self, jaw_width):
         if jaw_width > self.jaw_range[1]:
             raise ValueError("The jaw_width parameter is out of range!")
         self.fk(motion_val=-jaw_width / 2.0)
@@ -170,7 +170,7 @@ class Lite6WRSGripper(gp.GripperInterface):
                                 toggle_connjnt=toggle_connjnt).attach_to(stickmodel)
         if toggle_tcpcs:
             jaw_center_gl_pos = self.rotmat.dot(self.jaw_center_pos) + self.pos
-            jaw_center_gl_rotmat = self.rotmat.dot(self.jaw_center_rotmat)
+            jaw_center_gl_rotmat = self.rotmat.dot(self.action_center_rotmat)
             gm.gen_dashed_stick(spos=self.pos,
                                 epos=jaw_center_gl_pos,
                                 radius=.0062,
@@ -207,7 +207,7 @@ class Lite6WRSGripper(gp.GripperInterface):
                                 rgba=rgba).attach_to(meshmodel)
         if toggle_tcpcs:
             jaw_center_gl_pos = self.rotmat.dot(self.jaw_center_pos) + self.pos
-            jaw_center_gl_rotmat = self.rotmat.dot(self.jaw_center_rotmat)
+            jaw_center_gl_rotmat = self.rotmat.dot(self.action_center_rotmat)
             gm.gen_dashed_stick(spos=self.pos,
                                 epos=jaw_center_gl_pos,
                                 radius=.0062,
@@ -224,7 +224,7 @@ if __name__ == '__main__':
     base = wd.World(cam_pos=[.5, .5, .5], lookat_pos=[0, 0, 0])
     gm.gen_frame().attach_to(base)
     grpr = Lite6WRSGripper(enable_cc=True)
-    grpr.jaw_to(.03)
+    grpr.change_jaw_width(.03)
     grpr.gen_meshmodel(toggle_tcpcs=True).attach_to(base)
     grpr.show_cdprimit()
     base.run()

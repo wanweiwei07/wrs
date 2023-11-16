@@ -151,7 +151,7 @@ class CobottaRIPPS(ri.RobotInterface):
             raise NotImplementedError
 
     def jaw_to(self, hnd_name: str = 'hnd', jaw_width: float = 0.0):
-        self.hnd.jaw_to(jaw_width)
+        self.hnd.change_jaw_width(jaw_width)
 
     def hold(self, hnd_name, objcm, jaw_width=None):
         """
@@ -164,7 +164,7 @@ class CobottaRIPPS(ri.RobotInterface):
         if hnd_name not in self.hnd_dict:
             raise ValueError("Hand name does not exist!")
         if jaw_width is not None:
-            self.hnd_dict[hnd_name].jaw_to(jaw_width)
+            self.hnd_dict[hnd_name].change_jaw_width(jaw_width)
         rel_pos, rel_rotmat = self.manipulator_dict[hnd_name].cvt_gl_to_loc_tcp(objcm.get_pos(), objcm.get_rotmat())
         into_list = [self.arm.lnks[0],
                      self.arm.lnks[1],
@@ -193,7 +193,7 @@ class CobottaRIPPS(ri.RobotInterface):
         if hnd_name not in self.hnd_dict:
             raise ValueError("Hand name does not exist!")
         if jawwidth is not None:
-            self.hnd_dict[hnd_name].jaw_to(jawwidth)
+            self.hnd_dict[hnd_name].change_jaw_width(jawwidth)
         for obj_info in self.oih_infos:
             if obj_info['collision_model'] is objcm:
                 self.cc.delete_cdobj(obj_info)

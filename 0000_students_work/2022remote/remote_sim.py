@@ -44,9 +44,9 @@ def agv_move(task):
 
     agv_direction = np.dot(np.array([1, 0, 0]), agv_loc_rotmat)
     # print(agv_direction)
-    # onscreen_agv.append(gm.gen_dasharrow(spos=np.array([agv_pos[0], agv_pos[1], 0]), epos=np.array([agv_pos[0], agv_pos[1], 0]))+np.array(agv_direction))
+    # onscreen_agv.append(mgm.gen_dasharrow(spos=np.array([agv_pos[0], agv_pos[1], 0]), epos=np.array([agv_pos[0], agv_pos[1], 0]))+np.array(agv_direction))
     onscreen_agv.append(gm.gen_arrow(epos=np.array([agv_direction[0], agv_direction[1], agv_direction[2]]), rgba=[1,0,1,1]))
-    # onscreen_agv.append(gm.gen_frame(pos=np.array([agv_pos[0], agv_pos[1], 0]), rotmat=agv_loc_rotmat, axis_length=3))
+    # onscreen_agv.append(mgm.gen_frame(pos=np.array([agv_pos[0], agv_pos[1], 0]), rotmat=agv_loc_rotmat, axis_length=3))
     onscreen_agv[-1].attach_to(base)
     # print(agv_pos)
 

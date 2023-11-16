@@ -189,7 +189,7 @@ class CollisionModel(gm.GeometricModel):
 
     def is_pcdwith(self, objcm):
         """
-        Is the primitives of this cm collide with the primitives of the given cm
+        Is the primitives of this mcm collide with the primitives of the given mcm
         :param objcm: one or a list of Collision Model object
         author: weiwei
         date: 20201116
@@ -221,7 +221,7 @@ class CollisionModel(gm.GeometricModel):
 
     def is_mcdwith(self, objcm_list, toggle_contacts=False):
         """
-        Is the mesh of the cm collide with the mesh of the given cm
+        Is the mesh of the mcm collide with the mesh of the given mcm
         :param objcm_list: one or a list of Collision Model object
         :param toggle_contacts: return a list of contact points if toggle_contacts is True
         author: weiwei

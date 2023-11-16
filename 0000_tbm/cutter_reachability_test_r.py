@@ -79,7 +79,7 @@ base.run()
 #         for i, cutter in enumerate(mcn_s.cutters[k]):
 #             tgt_pos = cutter.pos
 #             tgt_rotmat = rm.rotmat_from_euler(math.pi/2, 0, 0).dot(cutter.rotmat)
-#             gm.gen_frame(pos=tgt_pos, rotmat=tgt_rotmat, major_radius=.05, axis_length=1).attach_to(base)
+#             mgm.gen_frame(pos=tgt_pos, rotmat=tgt_rotmat, major_radius=.05, axis_length=1).attach_to(base)
 #             seed0 = np.zeros(6)
 #             seed0[2] = math.pi / 2
 #             seed0[3] = math.pi / 2
@@ -141,12 +141,12 @@ seed1[3] = -math.pi / 2
 #                 else:
 #                     joint_values = None
 #             if joint_values is not None:
-#                 # gm.gen_frame(pos=tgt_pos, rotmat=tgt_rotmat, major_radius=.02).attach_to(base)
+#                 # mgm.gen_frame(pos=tgt_pos, rotmat=tgt_rotmat, major_radius=.02).attach_to(base)
 #                 rbt_s.fk(joint_values=joint_values)
 #                 # rbt_s.gen_meshmodel().attach_to(base)
 #                 data.append([tgt_pos, tgt_rotmat, rbt_s.manipulability()])
 #             else:
-#                 # gm.gen_frame(pos=tgt_pos, rotmat=tgt_rotmat, major_radius=.02).attach_to(base)
+#                 # mgm.gen_frame(pos=tgt_pos, rotmat=tgt_rotmat, major_radius=.02).attach_to(base)
 #                 data.append([tgt_pos, tgt_rotmat, 0])
 # pickle.dump(data, open('manipulability.pickle', 'wb'))
 # base.run()
@@ -160,7 +160,7 @@ seed1[3] = -math.pi / 2
 # for item in data:
 #     tgt_pos, tgt_rotmat, manipulability = item
 #     if manipulability > 0:
-#         gm.gen_sphere(pos=tgt_pos, major_radius=.07, rgba=[1-manipulability / max_manipulability, 0, 0, .87]).attach_to(base)
+#         mgm.gen_sphere(pos=tgt_pos, major_radius=.07, rgba=[1-manipulability / max_manipulability, 0, 0, .87]).attach_to(base)
 # base.run()
 
 data = pickle.load(open('manipulability.pickle', 'rb'))

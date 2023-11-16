@@ -202,10 +202,10 @@ class TubePuzzle(object):
         # cm_ur[node.grid == 0] = -1
         # cm_bl[node.grid == 0] = -1
         # cm_br[node.grid == 0] = -1
-        # cm = (cm_ulbr==0)+(cm_urbl==0)+(cm_ulbr_flp==0)+(cm_urbl_flp==0)+(cm_ucbc==0)+(cm_crcl==0)
-        # cm = (cm_ulbr==0)+(cm_urbl==0)+(cm_ucbc==0)+(cm_crcl==0)
+        # mcm = (cm_ulbr==0)+(cm_urbl==0)+(cm_ulbr_flp==0)+(cm_urbl_flp==0)+(cm_ucbc==0)+(cm_crcl==0)
+        # mcm = (cm_ulbr==0)+(cm_urbl==0)+(cm_ucbc==0)+(cm_crcl==0)
         cm = (cm_ucbc == 0) + (cm_crcl == 0)
-        # cm = (cm_ucbc == 0) + (cm_crcl == 0) + (cm_ul == 0) + (cm_ur == 0) + (cm_bl == 0) + (cm_br == 0)
+        # mcm = (cm_ucbc == 0) + (cm_crcl == 0) + (cm_ul == 0) + (cm_ur == 0) + (cm_bl == 0) + (cm_br == 0)
         # movable 1
         movable_type1 = np.asarray(np.where(cm * (node.grid == 1) * (self.standpattern == 0))).T
         # movable 2

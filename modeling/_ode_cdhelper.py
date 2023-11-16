@@ -174,5 +174,5 @@ if __name__ == '__main__':
         gm.gen_arrow(hitpos, epos=hitpos + hitnormal * .03, stick_radius=.002, rgba=np.array([0, 1, 1, 1])).attach_to(
             base)
     gm.gen_stick(spos=pfrom, epos=pto, radius=.002).attach_to(base)
-    # gm.gen_arrow(spos=hitpos, epos=hitpos + hitnrml * .07, major_radius=.002, rgba=np.array([0, 1, 0, 1])).attach_to(base)
+    # mgm.gen_arrow(spos=hitpos, epos=hitpos + hitnrml * .07, major_radius=.002, rgba=np.array([0, 1, 0, 1])).attach_to(base)
     base.run()

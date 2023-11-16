@@ -211,7 +211,7 @@ class IncrementalNIK(object):
                                                                        end_tcp_rotmat,
                                                                        granularity=granularity)
         # for (pos, rotmat) in zip(pos_list, rotmat_list):
-        #     gm.gen_frame(pos, rotmat).attach_to(base)
+        #     mgm.gen_frame(pos, rotmat).attach_to(base)
         # base.run()
         jnt_values_list = []
         if seed_jnt_values is None:

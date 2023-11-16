@@ -2,7 +2,7 @@
 # import matplotlib.pyplot as plt
 # import visualization.panda.world as world
 # import robot_math as rm
-# import modeling.geometric_model as gm
+# import modeling.geometric_model as mgm
 #
 # sp2d = rm.gen_2d_spiral_points(max_radius=.2, radial_granularity=.001, tangential_granularity=.01)
 # plt.plot(sp2d[:,0], sp2d[:,1])
@@ -17,7 +17,7 @@
 # for id in range(len(sp) - 1):
 #     pnt0 = sp[id, :]
 #     pnt1 = sp[id + 1, :]
-#     gm.gen_stick(spos=pnt0, epos=pnt1, end_type="round").attach_to(base)
+#     mgm.gen_stick(spos=pnt0, epos=pnt1, end_type="round").attach_to(base)
 # base.run()
 
 import time

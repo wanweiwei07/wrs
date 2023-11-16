@@ -18,12 +18,12 @@ class CollisionChecker(object):
         self.np = NodePath(name)
         self.bitmask_list = [BitMask32(2 ** n) for n in range(31)]
         self._bitmask_ext = BitMask32(2 ** 31)  # 31 is prepared for cd with external non-active objects
-        self.all_cd_elements = []  # a list of cdlnks or cdobjs for quick accessing the cd elements (cdlnks/cdobjs)
+        self.all_cd_elements = []  # a list of cdlnks or cdobjs for quickly accessing the cd elements (cdlnks/cdobjs)
 
     def add_cdlnks(self, jlc, lnk_idlist):
         """
         The collision node of the given links will be attached to self.np, but their collision bitmask will be cleared
-        When the a robot_s is treated as an obstacle by another robot_s, the IntoCollideMask of its all_cd_elements will be
+        When a robot_s is treated as an obstacle by another robot_s, the IntoCollideMask of its all_cd_elements will be
         set to BitMask32(2**31), so that the other robot_s can compare its active_cdelements with the all_cd_elements.
         :param jlc:
         :param lnk_idlist:

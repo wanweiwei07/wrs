@@ -24,7 +24,7 @@ class PoseMaker(object):
         # self.lfthnd = self.hndfa.genHand()
         # self.robot_s = robot_s.Ur3DualRobot(self.rgthnd, self.lfthnd)
         # self.rbtmg = robotmesh.Ur3DualMesh()
-        # # self.obj = cm.CollisionModel(initializer="./objects/research_box.stl")
+        # # self.obj = mcm.CollisionModel(initializer="./objects/research_box.stl")
 
     def lftgrasppose(self):
         lftdirstart = 250
@@ -35,7 +35,7 @@ class PoseMaker(object):
         loc_z = np.array([0, -1, 0])
         rotmat = rm.rotmat_from_axangle(loc_z, math.radians(-90))
         predefined_grasps_lft.append(
-            self.rtq85.grip_at_with_jczy(np.array([.005, .005, .005]),
+            self.rtq85.grip_at_with_acao(np.array([.005, .005, .005]),
                                          loc_z,
                                          rotmat.dot(np.array([1, 0, 0])),
                                          jaw_width=self.rtq85.jaw_range[1]))
@@ -45,7 +45,7 @@ class PoseMaker(object):
                               math.sin(math.radians(lftdirstart + i * handrotrange)), -.2])
             rotmat = rm.rotmat_from_axangle(loc_z, math.radians(-90))
             predefined_grasps_lft.append(
-                self.rtq85.grip_at_with_jczy(np.array([.005, .005, .005]),
+                self.rtq85.grip_at_with_acao(np.array([.005, .005, .005]),
                                              loc_z,
                                              rotmat.dot(np.array([math.cos(math.radians(lftverticalstart + i * handrotrange)),
                                                         math.sin(math.radians(lftverticalstart + i * handrotrange)),
@@ -59,7 +59,7 @@ class PoseMaker(object):
                               math.sin(math.radians(lftdirstart + i * handrotrange)), 0])
             rotmat = rm.rotmat_from_axangle(loc_z, math.radians(-90))
             predefined_grasps_lft.append(
-                self.rtq85.grip_at_with_jczy(np.array([.005, .005, .005]),
+                self.rtq85.grip_at_with_acao(np.array([.005, .005, .005]),
                                              loc_z,
                                              rotmat.dot(np.array([math.cos(math.radians(lftverticalstart + i * handrotrange)),
                                                         math.sin(math.radians(lftverticalstart + i * handrotrange)),
@@ -73,7 +73,7 @@ class PoseMaker(object):
                               math.sin(math.radians(lftdirstart + i * handrotrange)), 0])
             rotmat = rm.rotmat_from_axangle(loc_z, math.radians(-90))
             predefined_grasps_lft.append(
-                self.rtq85.grip_at_with_jczy(np.array([.005, .005, .005]),
+                self.rtq85.grip_at_with_acao(np.array([.005, .005, .005]),
                                              loc_z,
                                              rotmat.dot(np.array([math.cos(math.radians(lftverticalstart + i * handrotrange)),
                                                         math.sin(math.radians(lftverticalstart + i * handrotrange)),
@@ -92,7 +92,7 @@ class PoseMaker(object):
         loc_z = np.array([0, 1, 0])
         rotmat = rm.rotmat_from_axangle(loc_z, math.radians(90))
         predefined_grasps_rgt.append(
-            self.rtq85.grip_at_with_jczy(np.array([.005, .005, .005]), loc_z, rotmat.dot(np.array([1, 0, 0])),
+            self.rtq85.grip_at_with_acao(np.array([.005, .005, .005]), loc_z, rotmat.dot(np.array([1, 0, 0])),
                                          jaw_width=self.rtq85.jaw_range[1]))
         handdirect_rgt.append([0, 1, 0])
         for i in range(4):
@@ -100,7 +100,7 @@ class PoseMaker(object):
                               math.sin(math.radians(rgtdirstart - i * handrotrange)), -.1])
             rotmat = rm.rotmat_from_axangle(loc_z, math.radians(90))
             predefined_grasps_rgt.append(
-                self.rtq85.grip_at_with_jczy(np.array([.005, .005, .005]),
+                self.rtq85.grip_at_with_acao(np.array([.005, .005, .005]),
                                              loc_z,
                                              rotmat.dot(np.array([math.cos(math.radians(rgtverticalstart - i * handrotrange)),
                                                         math.sin(math.radians(rgtverticalstart - i * handrotrange)),
@@ -113,7 +113,7 @@ class PoseMaker(object):
                               math.sin(math.radians(rgtdirstart - i * handrotrange)), 0])
             rotmat = rm.rotmat_from_axangle(loc_z, math.radians(90))
             predefined_grasps_rgt.append(
-                self.rtq85.grip_at_with_jczy(np.array([.005, .005, .005]),
+                self.rtq85.grip_at_with_acao(np.array([.005, .005, .005]),
                                              loc_z,
                                              rotmat.dot(np.array([math.cos(math.radians(rgtverticalstart - i * handrotrange)),
                                                         math.sin(math.radians(rgtverticalstart - i * handrotrange)),
@@ -127,7 +127,7 @@ class PoseMaker(object):
                                   math.sin(math.radians(rgtdirstart - i * handrotrange)), .1])
                 rotmat = rm.rotmat_from_axangle(loc_z, math.radians(90))
                 predefined_grasps_rgt.append(
-                    self.rtq85.grip_at_with_jczy(np.array([.005, .005, .005]),
+                    self.rtq85.grip_at_with_acao(np.array([.005, .005, .005]),
                                                  loc_z,
                                                  rotmat.dot(np.array([math.cos(math.radians(rgtverticalstart - i * handrotrange)),
                                                             math.sin(math.radians(rgtverticalstart - i * handrotrange)),
@@ -185,7 +185,7 @@ class PoseMaker(object):
                     handrotmat = np.dot(rm.rotmat_from_axangle(handrotmat[:, 2], - math.radians(handrotate * k)),
                                         handrotmat)
                     pushposelist.append(
-                        self.rtq85.grip_at_with_jczy(np.array([.005, .005, .005]),
+                        self.rtq85.grip_at_with_acao(np.array([.005, .005, .005]),
                                                      np.array([handrotmat[:, 2][0], handrotmat[:, 2][1], handrotmat[:, 2][2]]),
                                                      np.array([handrotmat[:, 0][0], handrotmat[:, 0][1], handrotmat[:, 0][2]]),
                                                      jaw_width=self.rtq85.jaw_range[0]))

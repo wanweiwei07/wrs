@@ -2,46 +2,57 @@ import warnings
 import numpy as np
 import basis.constant as bc
 import basis.robot_math as rm
-import modeling.collision_model as cm
-import modeling.geometric_model as gm
-import modeling.model_collection as mc
+import modeling.collision_model as mcm
+import modeling.geometric_model as mgm
+import modeling.constant as mc
 import robot_sim._kinematics.constant as rkc
 
 
-class Link(object):
+class Link(mcm.CollisionModel):
     """
     author: weiwei
     date: 20230822
     """
 
     def __init__(self,
-                 name="auto",
+                 initor,
                  loc_pos=np.zeros(3),
                  loc_rotmat=np.eye(3),
                  com=np.zeros(3),
                  inertia=np.eye(3),
                  mass=0,
-                 collision_model=None,
-                 rgba=bc.link_stick_rgba):
-        self.name = name
+                 rgba=bc.link_stick_rgba,
+                 cdprimitive_type=mc.CDPrimitiveType.BOX,
+                 cdmesh_type=mc.CDMeshType.DEFAULT,
+                 expand_radius=None,
+                 name="link",
+                 userdefined_cdprimitive_fn=None,
+                 toggle_transparency=True,
+                 toggle_twosided=False):
+        super().__init__(initor=initor,
+                         cdprimitive_type=cdprimitive_type,
+                         cdmesh_type=cdmesh_type,
+                         expand_radius=expand_radius,
+                         name=name,
+                         userdefined_cdprimitive_fn=userdefined_cdprimitive_fn,
+                         toggle_transparency=toggle_transparency,
+                         toggle_twosided=toggle_twosided)
         self.loc_pos = loc_pos
         self.loc_rotmat = loc_rotmat
         self.com = com
         self.inertia = inertia
         self.mass = mass
-        self.rgba = rgba
-        self.collision_model = collision_model
-        # the following values will be updated automatically
-        self._gl_pos = self.loc_pos
-        self._gl_rotmat = self.loc_rotmat
+        self.set_pos(loc_pos)
+        self.set_rotmat(loc_rotmat)
+        self.set_rgba(rgba)
 
     @property
     def gl_pos(self):
-        return self._gl_pos
+        return self.get_pos()
 
     @property
     def gl_rotmat(self):
-        return self._gl_rotmat
+        return self.get_rotmat()
 
     def update_globals(self, pos=np.zeros(3), rotmat=np.eye(3)):
         """
@@ -50,8 +61,10 @@ class Link(object):
         :param rotmat:
         :return:
         """
-        self._gl_pos = pos + rotmat @ self.loc_pos
-        self._gl_rotmat = rotmat @ self.loc_rotmat
+        homomat = np.eye(4)
+        homomat[:3, 3] = pos + rotmat @ self.loc_pos
+        homomat[:3, :3] = rotmat @ self.loc_rotmat
+        self.set_homomat(npmat4=homomat)
 
 
 class Anchor(object):
@@ -163,8 +176,8 @@ class Joint(object):
 
     def assert_motion_val(self, val):
         return
-        if val < self.motion_rng[0] or val > self.motion_rng[1]:
-            raise ValueError("Motion value is out of range!")
+        # if val < self.motion_rng[0] or val > self.motion_rng[1]:
+        #     raise ValueError("Motion value is out of range!")
 
     def set_motion_value(self, motion_value):
         self._motion_val = motion_value
@@ -200,23 +213,23 @@ class Joint(object):
             return self.loc_homomat @ rm.homomat_from_posrot(pos=pos_by_motion, rotmat=np.eye(3))
 
 
-def create_link(mesh_file: str,
-                name="auto",
-                loc_pos=np.zeros(3),
-                loc_rotmat=np.eye(3),
-                com=np.zeros(3),
-                inertia=np.eye(3),
-                mass=0,
-                rgba=bc.link_stick_rgba):
-    objcm = cm.CollisionModel(initor=mesh_file)
-    return Link(name=name,
-                loc_pos=loc_pos,
-                loc_rotmat=loc_rotmat,
-                com=com,
-                inertia=inertia,
-                mass=mass,
-                collision_model=objcm,
-                rgba=rgba)
+# def create_link(mesh_file: str,
+#                 name="auto",
+#                 loc_pos=np.zeros(3),
+#                 loc_rotmat=np.eye(3),
+#                 com=np.zeros(3),
+#                 inertia=np.eye(3),
+#                 mass=0,
+#                 rgba=bc.link_stick_rgba):
+#     objcm = mcm.CollisionModel(initor=mesh_file)
+#     return Link(name=name,
+#                 loc_pos=loc_pos,
+#                 loc_rotmat=loc_rotmat,
+#                 com=com,
+#                 inertia=inertia,
+#                 mass=mass,
+#                 collision_model=objcm,
+#                 rgba=rgba)
 
 
 def create_joint_with_link(joint_name="auto",
@@ -232,23 +245,23 @@ if __name__ == '__main__':
     import robot_sim._kinematics.model_generator as rkmg
 
     base = wd.World(cam_pos=[1, 1, 1], lookat_pos=[0, 0, 0])
-    gm.gen_frame().attach_to(base)
+    mgm.gen_frame().attach_to(base)
     jnt = Joint()
     #
     ref_pos = np.array([0, .1, 0])
     ref_rotmat = rm.rotmat_from_euler(np.pi / 6, np.pi / 3, np.pi / 4)
-    # gm.gen_dashed_frame(pos=pos, rotmat=rotmat).attach_to(base)
+    # mgm.gen_dashed_frame(pos=pos, rotmat=rotmat).attach_to(base)
     #
     jnt.update_globals(pos=ref_pos, rotmat=ref_rotmat, motion_val=np.pi / 2)
-    # gm.gen_frame(pos=joint.gl_pos_q, rotmat=joint.gl_rotmat_q).attach_to(base)
+    # mgm.gen_frame(pos=joint.gl_pos_q, rotmat=joint.gl_rotmat_q).attach_to(base)
     # print(joint.gl_pos_q, joint.gl_rotmat_q)
     #
     # pos = joint.get_transform_homomat(motion_value=np.pi / 2)
     # ref_homomat = rm.homomat_from_posrot(pos=pos, rotmat=rotmat)
     # result_homomat = ref_homomat @ pos
     # print(result_homomat)
-    # gm.gen_myc_frame(pos=result_homomat[:3, 3], rotmat=result_homomat[:3, :3]).attach_to(base)
+    # mgm.gen_myc_frame(pos=result_homomat[:3, 3], rotmat=result_homomat[:3, :3]).attach_to(base)
 
-    jnt.link = create_link("../../basis/objects/or2fg7_base.stl")
+    jnt.link = Link("../../basis/objects/or2fg7_base.stl")
     rkmg.gen_joint(jnt, toggle_link_mesh=True).attach_to(base)
     base.run()

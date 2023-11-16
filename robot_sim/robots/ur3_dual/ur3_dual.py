@@ -178,12 +178,12 @@ class UR3Dual(ri.RobotInterface):
         # tool center point
         # lft
         self.lft_arm.tcp_jnt_id = -1
-        self.lft_arm.tcp_loc_rotmat = self.lft_ft_sensor.jnts[-1]['gl_rotmat'].dot(self.lft_hnd.jaw_center_rotmat)
+        self.lft_arm.tcp_loc_rotmat = self.lft_ft_sensor.jnts[-1]['gl_rotmat'].dot(self.lft_hnd.action_center_rotmat)
         self.lft_arm.tcp_loc_pos = self.lft_ft_sensor.jnts[-1]['pos_in_loc_tcp'] + self.lft_arm.tcp_loc_rotmat.dot(
             self.lft_hnd.jaw_center_pos)
         # rgt
         self.rgt_arm.tcp_jnt_id = -1
-        self.rgt_arm.tcp_loc_rotmat = self.rgt_ft_sensor.jnts[-1]['gl_rotmat'].dot(self.rgt_hnd.jaw_center_rotmat)
+        self.rgt_arm.tcp_loc_rotmat = self.rgt_ft_sensor.jnts[-1]['gl_rotmat'].dot(self.rgt_hnd.action_center_rotmat)
         self.rgt_arm.tcp_loc_pos = self.rgt_ft_sensor.jnts[-1]['pos_in_loc_tcp'] + self.rgt_arm.tcp_loc_rotmat.dot(
             self.rgt_hnd.jaw_center_pos)
         # a list of detailed information about objects in hand, see CollisionChecker.add_objinhnd
@@ -427,7 +427,7 @@ class UR3Dual(ri.RobotInterface):
             raise ValueError("The given component name is not available!")
 
     def jaw_to(self, hnd_name, jaw_width):
-        self.hnd_dict[hnd_name].jaw_to(jaw_width=jaw_width)
+        self.hnd_dict[hnd_name].change_jaw_width(jaw_width=jaw_width)
         # update arm tcp
         self.lft_arm.tcp_loc_pos = self.lft_ft_sensor.jnts[-1]['pos_in_loc_tcp'] + self.lft_hnd.jaw_center_pos
         self.rgt_arm.tcp_loc_pos = self.rgt_ft_sensor.jnts[-1]['pos_in_loc_tcp'] + self.rgt_hnd.jaw_center_pos

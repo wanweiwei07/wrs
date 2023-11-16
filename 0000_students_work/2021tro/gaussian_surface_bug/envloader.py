@@ -109,22 +109,22 @@ class Env_wrs(object):
 #     base = pc.World(camp=camp, lookat_pos=lookat_pos)
 #     env = Env_wrs(boundingradius=7.0)
 #     env.reparentTo(base.render)
-#     # obstacle = cm.CollisionModel(objinit=Box(box_extents=[30, 298, 194]))
+#     # obstacle = mcm.CollisionModel(objinit=Box(box_extents=[30, 298, 194]))
 #     # env.addchangableobs(base.render, obstacle, [1080 + 30 / 2, -600 + 200 + 298 / 2 - 20, 780 + 97], np.eye(3))
-#     # obstacle = cm.CollisionModel(objinit=Box(box_extents=[60, 298, 15]))
+#     # obstacle = mcm.CollisionModel(objinit=Box(box_extents=[60, 298, 15]))
 #     # env.addchangableobs(base.render, obstacle, [1080, -600 + 200 + 298 / 2 - 20, 780 + 130], np.eye(3))
-#     # obstacle = cm.CollisionModel(objinit=Box(box_extents=[60, 40, 194]))
+#     # obstacle = mcm.CollisionModel(objinit=Box(box_extents=[60, 40, 194]))
 #     # env.addchangableobs(base.render, obstacle, [1080, -600 + 200 + 105 + 298 / 2, 780 + 97], np.eye(3))
 #     # phonix
-#     phoxicam = cm.CollisionModel(objinit=Box(box_extents=[550, 200, 100]))
+#     phoxicam = mcm.CollisionModel(objinit=Box(box_extents=[550, 200, 100]))
 #     phoxicam.setColor(.32, .32, .3, 1)
 #     env.addchangableobs(base.render, phoxicam, [650, 0, 1760], np.eye(3))
 #     # desk
-#     desk = cm.CollisionModel(objinit=Box(box_extents=[1080, 400, 760]))
+#     desk = mcm.CollisionModel(objinit=Box(box_extents=[1080, 400, 760]))
 #     desk.setColor(0.7, 0.7, 0.7, 1)
 #     env.addchangableobs(base.render, desk, [540, 800, 380], np.eye(3))
 #     # penframe
-#     # penframe = cm.CollisionModel(objinit=Box(box_extents=[200, 320, 100]))
+#     # penframe = mcm.CollisionModel(objinit=Box(box_extents=[200, 320, 100]))
 #     # penframe.setColor(0.7, 0.7, 0.7, 0.8)
 #     # env.addchangableobs(base.render, penframe, [1080 - 300 + 100, 600 - 175, 795], np.eye(3))
 #

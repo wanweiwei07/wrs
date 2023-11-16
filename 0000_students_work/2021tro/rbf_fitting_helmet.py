@@ -21,7 +21,7 @@ bowl_model.attach_to(base)
 # sampled_points = []
 # for id, p in enumerate(points.tolist()):
 #     if np.dot(np.array([1,0,0]), points_normals[id]) > .3 and p[0]>0:
-#         gm.gen_sphere(pos=p, major_radius=.001).attach_to(base)
+#         mgm.gen_sphere(pos=p, major_radius=.001).attach_to(base)
 #         sampled_points.append(p)
 
 # x - v

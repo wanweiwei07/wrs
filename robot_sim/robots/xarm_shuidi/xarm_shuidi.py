@@ -67,7 +67,7 @@ class XArmShuidi(ri.RobotInterface):
                                    name='hnd_s', enable_cc=False)
         # tool center point
         self.arm.jlc.tcp_jnt_id = -1
-        self.arm.jlc.tcp_loc_rotmat = self.ft_sensor.jnts[-1]['gl_rotmat'].dot(self.hnd.jaw_center_rotmat)
+        self.arm.jlc.tcp_loc_rotmat = self.ft_sensor.jnts[-1]['gl_rotmat'].dot(self.hnd.action_center_rotmat)
         self.arm.jlc.tcp_loc_pos = self.ft_sensor.jnts[-1]['pos_in_loc_tcp'] + self.arm.jlc.tcp_loc_rotmat.dot(
             self.hnd.jaw_center_pos)
         # a list of detailed information about objects in hand, see CollisionChecker.add_objinhnd
@@ -241,7 +241,7 @@ class XArmShuidi(ri.RobotInterface):
             raise NotImplementedError
 
     def jaw_to(self, hnd_name='hnd', jawwidth=0.0):
-        self.hnd_dict[hnd_name].jaw_to(jawwidth)
+        self.hnd_dict[hnd_name].change_jaw_width(jawwidth)
 
     def get_gl_tcp(self, manipulator_name="arm"):
         return super().get_gl_tcp(manipulator_name=manipulator_name)
@@ -278,7 +278,7 @@ class XArmShuidi(ri.RobotInterface):
         if hnd_name not in self.hnd_dict:
             raise ValueError("Hand name does not exist!")
         if jawwidth is not None:
-            self.hnd_dict[hnd_name].jaw_to(jawwidth)
+            self.hnd_dict[hnd_name].change_jaw_width(jawwidth)
         rel_pos, rel_rotmat = self.manipulator_dict[hnd_name].cvt_gl_to_loc_tcp(objcm.get_pos(), objcm.get_rotmat())
         intolist = [self.agv.lnks[3],
                     self.arm.lnks[0],
@@ -329,7 +329,7 @@ class XArmShuidi(ri.RobotInterface):
         if hnd_name not in self.hnd_dict:
             raise ValueError("Hand name does not exist!")
         if jawwidth is not None:
-            self.hnd_dict[hnd_name].jaw_to(jawwidth)
+            self.hnd_dict[hnd_name].change_jaw_width(jawwidth)
         for obj_info in self.oih_infos:
             if obj_info['collision_model'] is objcm:
                 self.cc.delete_cdobj(obj_info)

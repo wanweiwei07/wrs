@@ -13,7 +13,7 @@ def get_collisionfree_graspids(hnd, grasp_info_list, goal_info, obstacle_list):
         gl_hnd_pos = goal_rotmat.dot(loc_hnd_pos) + goal_pos
         gl_hnd_rotmat = goal_rotmat.dot(loc_hnd_rotmat)
         hnd.fix_to(gl_hnd_pos, gl_hnd_rotmat)
-        hnd.jaw_to(jaw_width)  # TODO detect a range?
+        hnd.change_jaw_width(jaw_width)  # TODO detect a range?
         if not hnd.is_mesh_collided(obstacle_list):
             available_graspids.append(graspid)
     return available_graspids
@@ -40,7 +40,7 @@ def get_common_collisionfree_graspids(hnd, grasp_info_list, goal_info_list, obst
             gl_hnd_pos = goal_rotmat.dot(loc_hnd_pos) + goal_pos
             gl_hnd_rotmat = goal_rotmat.dot(loc_hnd_rotmat)
             hnd.fix_to(gl_hnd_pos, gl_hnd_rotmat)
-            hnd.jaw_to(jaw_width)  # TODO detect a range?
+            hnd.change_jaw_width(jaw_width)  # TODO detect a range?
             if not hnd.is_mesh_collided(obstacle_list):
                 previously_available_graspids.append(graspid)
         intermediate_available_graspids.append(previously_available_graspids.copy())

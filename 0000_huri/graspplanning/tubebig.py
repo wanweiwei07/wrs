@@ -5,7 +5,7 @@ import numpy as np
 if __name__ == "__main__":
     rhx = yh.RobotHelper()
     hndfa = rhx.rgthndfa
-    objcm = rhx.cm.CollisionModel(objinit="../objects/" + "tubebig_capped.stl")
+    objcm = rhx.mcm.CollisionModel(objinit="../objects/" + "tubebig_capped.stl")
 
     predefinedgrasps = []
     c0nvec = rhx.np.array([0, -1, 0])

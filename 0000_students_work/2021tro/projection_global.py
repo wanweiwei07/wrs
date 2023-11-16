@@ -8,7 +8,7 @@ from scipy.spatial import cKDTree
 import vision.depth_camera.surface.rbf_surface as rbfs
 
 base = wd.World(cam_pos=np.array([-.3,-.7,.42]), lookat_pos=np.array([0,0,0]))
-# gm.gen_frame().attach_to(base)
+# mgm.gen_frame().attach_to(base)
 bowl_model = cm.CollisionModel(initor="./objects/bowl.stl")
 bowl_model.set_rgba([.3,.3,.3,.3])
 bowl_model.set_rotmat(rm.rotmat_from_euler(math.pi,0,0))
@@ -36,13 +36,13 @@ twod_plane.attach_to(base)
 circle_radius=.05
 line_segs = [[homomat[:3,3], homomat[:3,3]+pt_direction*.05], [homomat[:3,3]+pt_direction*.05, homomat[:3,3]+pt_direction*.05+tmp_direction*.05],
              [homomat[:3,3]+pt_direction*.05+tmp_direction*.05, homomat[:3,3]+tmp_direction*.05], [homomat[:3,3]+tmp_direction*.05, homomat[:3,3]]]
-# gm.gen_linesegs(line_segs).attach_to(base)
+# mgm.gen_linesegs(line_segs).attach_to(base)
 for sec in line_segs:
     gm.gen_stick(spos=sec[0], epos=sec[1], rgba=[0, 0, 0, 1], radius=.002, type='round').attach_to(base)
 epos = (line_segs[0][1]-line_segs[0][0])*.7+line_segs[0][0]
 gm.gen_arrow(spos=line_segs[0][0], epos=epos, stick_radius=0.004).attach_to(base)
 spt = homomat[:3,3]
-# gm.gen_stick(spt, spt + pn_direction * 10, rgba=[0,1,0,1]).attach_to(base)
+# mgm.gen_stick(spt, spt + pn_direction * 10, rgba=[0,1,0,1]).attach_to(base)
 # base.run()
 gm.gen_dashed_arrow(spt, spt - pn_direction * .07, stick_radius=.004).attach_to(base) # p0
 cpt, cnrml = bowl_model.ray_hit(spt, spt + pn_direction * 10000, option='closest')
@@ -63,7 +63,7 @@ new_line_segs = [[cpt, cpt+rotmat.dot(pt_direction)*.05],
                  [cpt+rotmat.dot(pt_direction)*.05, cpt+rotmat.dot(pt_direction)*.05+rotmat.dot(tmp_direction)*.05],
                  [cpt+rotmat.dot(pt_direction)*.05+rotmat.dot(tmp_direction)*.05, cpt+rotmat.dot(tmp_direction)*.05],
                  [cpt+rotmat.dot(tmp_direction)*.05, cpt]]
-# gm.gen_linesegs(new_line_segs).attach_to(base)
+# mgm.gen_linesegs(new_line_segs).attach_to(base)
 for sec in new_line_segs:
     gm.gen_stick(spos=sec[0], epos=sec[1], rgba=[0, 0, 0, 1], radius=.002, type='round').attach_to(base)
 epos = (new_line_segs[0][1]-new_line_segs[0][0])*.7+new_line_segs[0][0]
@@ -75,7 +75,7 @@ extended_len = 0
 n=30
 for tick in range(1, 2*n+1):
     t_npt = cpt+direction*.05/n
-    # gm.gen_arrow(cpt, t_npt, rgba=[1,1,0,1]).attach_to(base)
+    # mgm.gen_arrow(cpt, t_npt, rgba=[1,1,0,1]).attach_to(base)
     z_surface = surface.get_zdata(np.array([t_npt[:2]]))
     projected_point = np.array([t_npt[0], t_npt[1], z_surface[0]])
     domain_grid = np.meshgrid(np.linspace(-.005, .005, 100, endpoint=True),
@@ -88,7 +88,7 @@ for tick in range(1, 2*n+1):
     new_normal = plane_normal
     if pn_direction.dot(new_normal) > .1:
         new_normal = -new_normal
-    # gm.gen_arrow(spos=projected_point, epos=projected_point+plane_normal*.015).attach_to(base)
+    # mgm.gen_arrow(spos=projected_point, epos=projected_point+plane_normal*.015).attach_to(base)
     angle = rm.angle_between_vectors(last_normal, new_normal)
     vec = rm.unit_vector(np.cross(last_normal, new_normal))
     new_rotmat = rm.rotmat_from_axangle(vec, angle)
@@ -108,7 +108,7 @@ direction = new_rotmat.dot(tmp_direction)
 extended_len = 0
 for tick in range(1, 2*n+1):
     t_npt = cpt+direction*.05/n
-    # gm.gen_arrow(cpt, t_npt, rgba=[1,1,0,1]).attach_to(base)
+    # mgm.gen_arrow(cpt, t_npt, rgba=[1,1,0,1]).attach_to(base)
     z_surface = surface.get_zdata(np.array([t_npt[:2]]))
     projected_point = np.array([t_npt[0], t_npt[1], z_surface[0]])
     domain_grid = np.meshgrid(np.linspace(-.005, .005, 100, endpoint=True),
@@ -121,7 +121,7 @@ for tick in range(1, 2*n+1):
     new_normal = plane_normal
     if pn_direction.dot(new_normal) > .1:
         new_normal = -new_normal
-    # gm.gen_arrow(spos=projected_point, epos=projected_point+plane_normal*.015).attach_to(base)
+    # mgm.gen_arrow(spos=projected_point, epos=projected_point+plane_normal*.015).attach_to(base)
     angle = rm.angle_between_vectors(last_normal, new_normal)
     vec = rm.unit_vector(np.cross(last_normal, new_normal))
     new_rotmat = rm.rotmat_from_axangle(vec, angle)
@@ -139,7 +139,7 @@ direction = new_rotmat.dot(-pt_direction)
 extended_len = 0
 for tick in range(1, 2*n+1):
     t_npt = cpt+direction*.05/n
-    # gm.gen_arrow(cpt, t_npt, rgba=[1,1,0,1]).attach_to(base)
+    # mgm.gen_arrow(cpt, t_npt, rgba=[1,1,0,1]).attach_to(base)
     z_surface = surface.get_zdata(np.array([t_npt[:2]]))
     projected_point = np.array([t_npt[0], t_npt[1], z_surface[0]])
     domain_grid = np.meshgrid(np.linspace(-.005, .005, 100, endpoint=True),
@@ -152,7 +152,7 @@ for tick in range(1, 2*n+1):
     new_normal = plane_normal
     if pn_direction.dot(new_normal) > .1:
         new_normal = -new_normal
-    # gm.gen_arrow(spos=projected_point, epos=projected_point+plane_normal*.015).attach_to(base)
+    # mgm.gen_arrow(spos=projected_point, epos=projected_point+plane_normal*.015).attach_to(base)
     angle = rm.angle_between_vectors(last_normal, new_normal)
     vec = rm.unit_vector(np.cross(last_normal, new_normal))
     new_rotmat = rm.rotmat_from_axangle(vec, angle)
@@ -170,7 +170,7 @@ direction = new_rotmat.dot(-tmp_direction)
 extended_len = 0
 for tick in range(1, 2*n+1):
     t_npt = cpt+direction*.05/n
-    # gm.gen_arrow(cpt, t_npt, rgba=[1,1,0,1]).attach_to(base)
+    # mgm.gen_arrow(cpt, t_npt, rgba=[1,1,0,1]).attach_to(base)
     z_surface = surface.get_zdata(np.array([t_npt[:2]]))
     projected_point = np.array([t_npt[0], t_npt[1], z_surface[0]])
     domain_grid = np.meshgrid(np.linspace(-.005, .005, 100, endpoint=True),
@@ -183,7 +183,7 @@ for tick in range(1, 2*n+1):
     new_normal = plane_normal
     if pn_direction.dot(new_normal) > .1:
         new_normal = -new_normal
-    # gm.gen_arrow(spos=projected_point, epos=projected_point+plane_normal*.015).attach_to(base)
+    # mgm.gen_arrow(spos=projected_point, epos=projected_point+plane_normal*.015).attach_to(base)
     angle = rm.angle_between_vectors(last_normal, new_normal)
     vec = rm.unit_vector(np.cross(last_normal, new_normal))
     new_rotmat = rm.rotmat_from_axangle(vec, angle)

@@ -82,7 +82,7 @@ class KHI_OR2FG7(ai.RobotInterface):
         #     self.hold(objcm)
 
     def jaw_to(self, jawwidth=0.0):
-        self.end_effector.jaw_to(jawwidth)
+        self.end_effector.change_jaw_width(jawwidth)
 
     def hold(self, objcm, jawwidth=None):
         """
@@ -92,7 +92,7 @@ class KHI_OR2FG7(ai.RobotInterface):
         :return:
         """
         if jawwidth is not None:
-            self.end_effector.jaw_to(jawwidth)
+            self.end_effector.change_jaw_width(jawwidth)
         rel_pos, rel_rotmat = self.cvt_gl_to_loc_tcp(objcm.get_pos(), objcm.get_rotmat())
         intolist = [self.arm.lnks[0],
                     self.arm.lnks[1],

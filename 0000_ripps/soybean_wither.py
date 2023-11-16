@@ -199,7 +199,7 @@ for id, rotmat in enumerate(rotmat_list):
         jnt_pos = branch.jlc.jnts[-1]['gl_posq']
         sbl.set_pos(jnt_pos)
         sbl.set_rotmat(this_rotmat)
-        # gm.gen_frame(pos=jnt_pos, rotmat=this_rotmat).attach_to(base)
+        # mgm.gen_frame(pos=jnt_pos, rotmat=this_rotmat).attach_to(base)
         sbl.attach_to(base)
     else:
         branch = Stem(ndof=1, pos=branch_pos,
@@ -217,7 +217,7 @@ for id, rotmat in enumerate(rotmat_list):
         jnt_pos = branch.jlc.jnts[-1]['gl_posq']
         sbl.set_pos(jnt_pos)
         sbl.set_rotmat(rotmat)
-        # gm.gen_frame(pos=jnt_pos, rotmat=rotmat).attach_to(base)
+        # mgm.gen_frame(pos=jnt_pos, rotmat=rotmat).attach_to(base)
         sbl.attach_to(base)
 
 sbl_cup = Cup()

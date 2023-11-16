@@ -15,7 +15,7 @@ base = wd.World(cam_pos=np.array([1000, 0, 3000]), lookat_pos=np.array([0, 0, 0]
 # World
 # world = BulletWorld()
 # world.setGravity(Vec3(0, 0, -9810))
-# gm.gen_frame().attach_to(base)
+# mgm.gen_frame().attach_to(base)
 
 # Plane
 shape = BulletBoxShape(Vec3(500, 500, 100))

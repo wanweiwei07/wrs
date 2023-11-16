@@ -379,7 +379,7 @@ if __name__ == '__main__':
     # to collide with other objects.
     # wd.World(cam_pos=[1.0, 1, .0, 1.0], lookat_pos=[0, 0, 0])
     # objpath = os.path.join(basis.__path__[0], 'objects', 'yumifinger.stl')
-    # objcm1 = cm.CollisionModel(objpath, cdprimitive_type='polygons')
+    # objcm1 = mcm.CollisionModel(objpath, cdprimitive_type='polygons')
     # # pos = np.array([[-0.5, -0.82363909, 0.2676166, -0.00203699],
     # #                     [-0.86602539, 0.47552824, -0.1545085, 0.01272306],
     # #                     [0., -0.30901703, -0.95105648, 0.12604253],
@@ -392,7 +392,7 @@ if __name__ == '__main__':
     # objcm1.set_rgba([1, 1, .3, .2])
     #
     # objpath = os.path.join(basis.__path__[0], 'objects', 'tubebig.stl')
-    # objcm2 = cm.CollisionModel(objpath, cdprimitive_type='polygons')
+    # objcm2 = mcm.CollisionModel(objpath, cdprimitive_type='polygons')
     # objcm2.set_rgba([1, 1, .3, .2])
     # iscollided, contact_points = is_collided(objcm1, objcm2, toggle_contacts=True)
     # objcm1.show_cdmesh()
@@ -401,5 +401,5 @@ if __name__ == '__main__':
     # objcm2.attach_to(base)
     # print(iscollided)
     # for ct_pnt in contact_points:
-    #     gm.gen_sphere(ct_pnt, major_radius=.001).attach_to(base)
+    #     mgm.gen_sphere(ct_pnt, major_radius=.001).attach_to(base)
     # base.run()

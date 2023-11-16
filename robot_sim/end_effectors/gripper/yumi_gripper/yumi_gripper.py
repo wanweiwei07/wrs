@@ -88,7 +88,7 @@ class YumiGripper(gp.GripperInterface):
         else:
             raise ValueError("The motion_val parameter is out of range!")
 
-    def jaw_to(self, jawwidth):
+    def change_jaw_width(self, jawwidth):
         if jawwidth > .05:
             raise ValueError("The jaw_width parameter is out of range!")
         self.fk(motion_val=-jawwidth / 2.0)
@@ -158,7 +158,7 @@ if __name__ == '__main__':
     gm.gen_frame().attach_to(base)
     grpr = YumiGripper(enable_cc=True)
     grpr.fix_to(pos=np.array([0, .3, .2]), rotmat=rm.rotmat_from_euler(math.pi/3, math.pi/3, math.pi/3))
-    grpr.jaw_to(.02)
+    grpr.change_jaw_width(.02)
     print(grpr.get_jaw_width())
     grpr.gen_stickmodel().attach_to(base)
     grpr.gen_meshmodel(rgba=[0, .5, 0, .5]).attach_to(base)

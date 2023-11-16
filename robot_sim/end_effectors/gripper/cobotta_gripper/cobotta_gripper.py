@@ -73,7 +73,7 @@ class CobottaGripper(gp.GripperInterface):
         cpl_end_rotmat = self.coupling.jnts[-1]['gl_rotmatq']
         self.jlc.fix_to(cpl_end_pos, cpl_end_rotmat)
 
-    def jaw_to(self, jaw_width):
+    def change_jaw_width(self, jaw_width):
         if jaw_width > self.jaw_range[1]:
             raise ValueError("The jaw_width parameter is out of range!")
         side_jawwidth = jaw_width / 2.0
@@ -97,7 +97,7 @@ class CobottaGripper(gp.GripperInterface):
                                 toggle_connjnt=toggle_connjnt).attach_to(stickmodel)
         if toggle_tcpcs:
             jaw_center_gl_pos = self.rotmat.dot(self.jaw_center_pos)+self.pos
-            jaw_center_gl_rotmat = self.rotmat.dot(self.jaw_center_rotmat)
+            jaw_center_gl_rotmat = self.rotmat.dot(self.action_center_rotmat)
             gm.gen_dashed_stick(spos=self.pos,
                                 epos=jaw_center_gl_pos,
                                 radius=.0062,
@@ -120,7 +120,7 @@ class CobottaGripper(gp.GripperInterface):
                                 rgba=rgba).attach_to(meshmodel)
         if toggle_tcpcs:
             jaw_center_gl_pos = self.rotmat.dot(self.jaw_center_pos)+self.pos
-            jaw_center_gl_rotmat = self.rotmat.dot(self.jaw_center_rotmat)
+            jaw_center_gl_rotmat = self.rotmat.dot(self.action_center_rotmat)
             gm.gen_dashed_stick(spos=self.pos,
                                 epos=jaw_center_gl_pos,
                                 radius=.0062,
@@ -141,7 +141,7 @@ if __name__ == '__main__':
     #     grpr.fk(angle)
     #     grpr.gen_meshmodel().attach_to(base)
     grpr = CobottaGripper(enable_cc=True)
-    grpr.jaw_to(.013)
+    grpr.change_jaw_width(.013)
     grpr.gen_meshmodel(toggle_tcpcs=True).attach_to(base)
     # grpr.gen_stickmodel(toggle_joint_frame=False).attach_to(base)
     grpr.fix_to(pos=np.array([0, .3, .2]), rotmat=rm.rotmat_from_axangle([1, 0, 0], .05))

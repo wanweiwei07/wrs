@@ -62,7 +62,7 @@ def plan_grasps(hnd_s,
     :param max_samples:
     :param min_dist_between_sampled_contact_points:
     :param contact_offset: offset at the cotnact to avoid being closely in touch with object surfaces
-    :return: a list [[jaw_width, gl_jaw_center_pos, pos, rotmat], ...]
+    :return: a list [[jaw_width, gl_action_center_pos, pos, rotmat], ...]
     """
     contact_pairs = plan_contact_pairs(objcm,
                                        max_samples=max_samples,
@@ -76,7 +76,7 @@ def plan_grasps(hnd_s,
         contact_p1, contact_n1 = cp[1]
         contact_center = (contact_p0 + contact_p1) / 2
         jaw_width = np.linalg.norm(contact_p0 - contact_p1) + contact_offset * 2
-        if jaw_width > hnd_s.jaw_range[1]:
+        if jaw_width > hnd_s.jaw_rng[1]:
             continue
         if openning_direction == 'loc_x':
             jaw_center_x = contact_n0
@@ -129,7 +129,7 @@ if __name__ == '__main__':
         jaw_width, gl_jaw_center_pos, gl_jaw_center_rotmat, hnd_pos, hnd_rotmat = grasp_info
         gic = gripper_s.copy()
         gic.fix_to(hnd_pos, hnd_rotmat)
-        gic.jaw_to(jaw_width)
+        gic.change_jaw_width(jaw_width)
         print(hnd_pos, hnd_rotmat)
         gic.gen_mesh_model().attach_to(base)
     base.run()

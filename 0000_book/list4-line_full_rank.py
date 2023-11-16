@@ -28,6 +28,6 @@ if __name__ == '__main__':
     # lsq_x = np.linalg.inv(A) @ b
     # lsq_pos = np.zeros(3)
     # lsq_pos[0:2] = lsq_x
-    # gm.gen_sphere(lsq_pos, radius=.01, rgba=bc.deep_sky_blue).attach_to(base)
+    # mgm.gen_sphere(lsq_pos, radius=.01, rgba=bc.deep_sky_blue).attach_to(base)
 
     base.run()

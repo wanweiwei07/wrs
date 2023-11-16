@@ -164,6 +164,6 @@ if __name__ == '__main__':
     # print(toc - tic)
 
     # base = wd.World(cam_pos=[1, 1, 1], lookat_pos=[0,0,0])
-    # gm.GeometricModel("./meshes/base.dae").attach_to(base)
-    # gm.gen_frame().attach_to(base)
+    # mgm.GeometricModel("./meshes/base.dae").attach_to(base)
+    # mgm.gen_frame().attach_to(base)
     base.run()

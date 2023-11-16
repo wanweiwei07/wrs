@@ -565,7 +565,7 @@ class BH828X(object):
 
     def genrangecmlist(self, jawwidthstart, jawwidthend=None, discretizedegree=10.0):
         '''
-        generate a hand cm model for collision.
+        generate a hand mcm model for collision.
         The finger motion is discretized in range (jaw_width, jawopen)
         The generated model is an independent copy, the hand itsself is not modified
 

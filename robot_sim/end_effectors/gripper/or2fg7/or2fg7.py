@@ -111,7 +111,7 @@ class OR2FG7(gp.GripperInterface):
         else:
             raise ValueError("The motion_val parameter is out of range!")
 
-    def jaw_to(self, jaw_width):
+    def change_jaw_width(self, jaw_width):
         if jaw_width > self.jaw_range[1]:
             raise ValueError("The jawwidth parameter is out of range!")
         self.fk(motion_val=(self.jaw_range[1] - jaw_width) / 2.0)
@@ -135,7 +135,7 @@ class OR2FG7(gp.GripperInterface):
                                 toggle_connjnt=toggle_connjnt).attach_to(stickmodel)
         if toggle_tcpcs:
             jaw_center_gl_pos = self.rotmat.dot(self.jaw_center_pos) + self.pos
-            jaw_center_gl_rotmat = self.rotmat.dot(self.jaw_center_rotmat)
+            jaw_center_gl_rotmat = self.rotmat.dot(self.action_center_rotmat)
             gm.gen_dashed_stick(spos=self.pos,
                                 epos=jaw_center_gl_pos,
                                 radius=.0062,
@@ -161,7 +161,7 @@ class OR2FG7(gp.GripperInterface):
                                 rgba=rgba).attach_to(meshmodel)
         if toggle_tcpcs:
             jaw_center_gl_pos = self.rotmat.dot(self.jaw_center_pos) + self.pos
-            jaw_center_gl_rotmat = self.rotmat.dot(self.jaw_center_rotmat)
+            jaw_center_gl_rotmat = self.rotmat.dot(self.action_center_rotmat)
             gm.gen_dashed_stick(spos=self.pos,
                                 epos=jaw_center_gl_pos,
                                 radius=.0062,
@@ -183,7 +183,7 @@ if __name__ == '__main__':
     #     grpr.gen_meshmodel().attach_to(base)
     grpr = OR2FG7(coupling_offset_pos=np.array([0, 0, 0.0145]), enable_cc=True)
     if grpr:
-        grpr.jaw_to(.0)
+        grpr.change_jaw_width(.0)
         grpr.gen_meshmodel().attach_to(base)
         grpr.gen_stickmodel(toggle_tcpcs=True).attach_to(base)
         grpr.fix_to(pos=np.array([0, .3, .2]), rotmat=rm.rotmat_from_axangle([1, 0, 0], .05))

@@ -36,7 +36,7 @@ if __name__ == '__main__':
             rigidbodydata = rigidbody_dataframe.rigidbody_set_dict[1]
             rob_rotmat = rigidbodydata.get_rotmat()
             offset = np.array([0.16, 0.088, -0.461862])
-            # gm.gen_frame(pos=rigidbodydata.coord, rotmat=rob_rotmat, axis_length=1).attach_to(base)
+            # mgm.gen_frame(pos=rigidbodydata.coord, rotmat=rob_rotmat, axis_length=1).attach_to(base)
             xyz_pose = rigidbodydata.get_pos() + np.dot(rob_rotmat, offset)
             pose = np.zeros(3)
             pose[:2] = xyz_pose[:2]
@@ -50,7 +50,7 @@ if __name__ == '__main__':
             rigidbodydata = rigidbody_dataframe.rigidbody_set_dict[2]
             rob_rotmat = rigidbodydata.get_rotmat()
             offset = np.array([0.12, 0.108, -0.461862])
-            # gm.gen_frame(pos=rigidbodydata.coord, rotmat=rob_rotmat, axis_length=1).attach_to(base)
+            # mgm.gen_frame(pos=rigidbodydata.coord, rotmat=rob_rotmat, axis_length=1).attach_to(base)
             xyz_pose = rigidbodydata.get_pos() + np.dot(rob_rotmat, offset)
             pose = np.zeros(3)
             pose[:2] = xyz_pose[:2]

@@ -420,7 +420,7 @@ class PhxiLocator(object):
         #     result = copy.deepcopy(result)
         #     result[:3, 0] = np.array([1, 0, 0])
         #     result[:3, 1] = np.array([0, 1, 0])
-        print("---------------match pcd_helper&cm done---------------")
+        print("---------------match pcd_helper&mcm done---------------")
 
         if toggledebug:
             show_cm = copy.deepcopy(source_cm)

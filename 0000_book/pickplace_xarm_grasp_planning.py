@@ -16,6 +16,6 @@ gpa.write_pickle_file('box', grasp_info_list, './', 'xarm_long_box.pickle')
 for grasp_info in grasp_info_list:
     jaw_width, gl_jaw_center_pos, gl_jaw_center_rotmat, hnd_pos, hnd_rotmat = grasp_info
     gripper_s.fix_to(hnd_pos, hnd_rotmat)
-    gripper_s.jaw_to(jaw_width)
+    gripper_s.change_jaw_width(jaw_width)
     gripper_s.gen_meshmodel().attach_to(base)
 base.run()

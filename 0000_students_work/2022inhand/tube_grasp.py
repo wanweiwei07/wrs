@@ -21,7 +21,7 @@ print(len(grasp_info_list))
 for grasp_info in grasp_info_list:
     # print(grasp_info)
     jaw_width, gl_jaw_center, gl_jaw_rotmat, hnd_pos, hnd_rotmat = grasp_info
-    gripper_s.jaw_to(jaw_width)
+    gripper_s.change_jaw_width(jaw_width)
     gripper_s.fix_to(hnd_pos, hnd_rotmat)
     gripper_s.gen_meshmodel().attach_to(base)
 base.run()

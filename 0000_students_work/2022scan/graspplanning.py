@@ -19,7 +19,7 @@ grasp_info_list = gpa.plan_grasps(gripper_s, object_bunny, openning_direction = 
 for grasp_info in grasp_info_list:
     aw_width, gl_jaw_center, gl_jaw_rotmat, hnd_pos, hnd_rotmat = grasp_info
     gripper_s.fix_to(hnd_pos, hnd_rotmat)
-    gripper_s.jaw_to(aw_width)
+    gripper_s.change_jaw_width(aw_width)
     gripper_s.gen_meshmodel().attach_to(base)
     # break
 base.run()

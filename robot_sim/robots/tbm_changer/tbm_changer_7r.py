@@ -34,8 +34,8 @@ class TBMChanger7R(ri.RobotInterface):
                                     name='hnd', enable_cc=False)
         # tool center point
         self.arm.jlc.tcp_jnt_id = -1
-        self.arm.jlc.tcp_loc_pos = self.hnd.jaw_center_pos
-        self.arm.jlc.tcp_loc_rotmat = self.hnd.jaw_center_rotmat
+        self.arm.jlc.tcp_loc_pos = self.hnd.action_center_pos
+        self.arm.jlc.tcp_loc_rotmat = self.hnd.action_center_rotmat
         # a list of detailed information about objects in hand, see CollisionChecker.add_objinhnd
         self.oih_infos = []
         # collision detection
@@ -121,7 +121,7 @@ class TBMChanger7R(ri.RobotInterface):
             raise NotImplementedError
 
     def jaw_to(self, hnd_name='hnd_s', jawwidth=0.0):
-        self.hnd.jaw_to(jawwidth)
+        self.hnd.change_jaw_width(jawwidth)
 
     def hold(self, hnd_name, objcm, jawwidth=None):
         """
@@ -133,7 +133,7 @@ class TBMChanger7R(ri.RobotInterface):
         if hnd_name not in self.hnd_dict:
             raise ValueError("Hand name does not exist!")
         if jawwidth is not None:
-            self.hnd_dict[hnd_name].jaw_to(jawwidth)
+            self.hnd_dict[hnd_name].change_jaw_width(jawwidth)
         rel_pos, rel_rotmat = self.manipulator_dict[hnd_name].cvt_gl_to_loc_tcp(objcm.get_pos(), objcm.get_rotmat())
         intolist = [self.arm.lnks[0],
                     self.arm.lnks[1],
@@ -162,7 +162,7 @@ class TBMChanger7R(ri.RobotInterface):
         if hnd_name not in self.hnd_dict:
             raise ValueError("Hand name does not exist!")
         if jawwidth is not None:
-            self.hnd_dict[hnd_name].jaw_to(jawwidth)
+            self.hnd_dict[hnd_name].change_jaw_width(jawwidth)
         for obj_info in self.oih_infos:
             if obj_info['collision_model'] is objcm:
                 self.cc.delete_cdobj(obj_info)

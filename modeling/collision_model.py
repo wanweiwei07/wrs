@@ -33,7 +33,7 @@ class CollisionModel(mgm.GeometricModel):
                  cdprimitive_type=mc.CDPrimitiveType.BOX,
                  cdmesh_type=mc.CDMeshType.DEFAULT,
                  expand_radius=None,
-                 name="cm",
+                 name="collision_model",
                  userdefined_cdprimitive_fn=None,
                  toggle_transparency=True,
                  toggle_twosided=False):
@@ -166,7 +166,7 @@ class CollisionModel(mgm.GeometricModel):
 
     def copy_reference_cdmesh(self):
         """
-        return a copy of the cdmesh without updating to the current cm pose
+        return a copy of the cdmesh without updating to the current mcm pose
         "reference" means the returned cdmesh copy is not affected by tranformation
         :return:
         author: weiwei
@@ -177,7 +177,7 @@ class CollisionModel(mgm.GeometricModel):
 
     def copy_transformed_cdmesh(self):
         """
-        return a copy of the cdmesh without updating to the current cm pose
+        return a copy of the cdmesh without updating to the current mcm pose
         "reference" means the returned cdmesh copy is not affected by tranformation
         :return:
         author: weiwei
@@ -189,7 +189,7 @@ class CollisionModel(mgm.GeometricModel):
 
     def copy_reference_cdprimitive(self):
         """
-        return a copy of the cdprimitive without updating to the current cm pose
+        return a copy of the cdprimitive without updating to the current mcm pose
         "reference" means the returned cdprimitive copy is not affected by tranformation
         :return:
         author: weiwei
@@ -200,7 +200,7 @@ class CollisionModel(mgm.GeometricModel):
 
     def copy_transformed_cdprimitive(self):
         """
-        return a copy of the cdprimitive without updating to the current cm pose
+        return a copy of the cdprimitive without updating to the current mcm pose
         "reference" means the returned cdprimitive copy is not affected by tranformation
         :return:
         author: weiwei
@@ -237,7 +237,7 @@ class CollisionModel(mgm.GeometricModel):
 
     def is_pcdwith(self, objcm, toggle_contacts=False):
         """
-        Is the primitives of this cm collide with the primitives of the given cm
+        Is the primitives of this mcm collide with the primitives of the given mcm
         :param objcm: one or a list of Collision Model object
         :param toggle_contacts: return a list of contact points if toggle_contacts is True
         author: weiwei
@@ -283,7 +283,7 @@ class CollisionModel(mgm.GeometricModel):
 
     def is_mcdwith(self, objcm_list, toggle_contacts=False):
         """
-        Is the mesh of the cm collide with the mesh of the given cm
+        Is the mesh of the mcm collide with the mesh of the given mcm
         :param objcm_list: one or a list of Collision Model object
         :param toggle_contacts: return a list of contact points if toggle_contacts is True
         author: weiwei
@@ -407,9 +407,9 @@ if __name__ == "__main__":
     # bunnycmpoints = bunnycm.sample_surface()
     # bunnycm1points = bunnycm1.sample_surface()
     # bunnycm2points = bunnycm2.sample_surface()
-    # bpcm = gm.GeometricModel(bunnycmpoints)
-    # bpcm1 = gm.GeometricModel(bunnycm1points)
-    # bpcm2 = gm.GeometricModel(bunnycm2points)
+    # bpcm = mgm.GeometricModel(bunnycmpoints)
+    # bpcm1 = mgm.GeometricModel(bunnycm1points)
+    # bpcm2 = mgm.GeometricModel(bunnycm2points)
     # bpcm.attach_to(base)
     # bpcm1.attach_to(base)
     # bpcm2.attach_to(base)

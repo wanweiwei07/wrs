@@ -300,7 +300,7 @@ def decidegoalpose_onepoint(arm_name,
                           tgt_pos=eepos_final,
                           tgt_rotmat=eerot_final,
                           seed_jnt_values=fromjnt)
-        # gm.gen_frame(pos=eepos_final, rotmat=eerot_final).attach_to(base)
+        # mgm.gen_frame(pos=eepos_final, rotmat=eerot_final).attach_to(base)
         # robot_s.fk(arm_name, fromjnt)
         # robot_s.gen_meshmodel().attach_to(base)
         # base.run()
@@ -1094,8 +1094,8 @@ if __name__ == "__main__":
     predefined_grasps_lft, handdirlist_lft = handpose.lftgrasppose()  # 予備の把持姿勢と把持方向
     predefined_grasps_rgt, handdirlist_rgt = handpose.rgtgrasppose()
     # for grasp_pose in predefined_grasps_rgt:
-    #     jaw_width, gl_jaw_center_pos, hnd_pos, hnd_rotmat = grasp_pose
-    #     gm.gen_frame(hnd_pos, hnd_rotmat).attach_to(base)
+    #     jaw_width, gl_action_center_pos, hnd_pos, hnd_rotmat = grasp_pose
+    #     mgm.gen_frame(hnd_pos, hnd_rotmat).attach_to(base)
     # base.run()
     # objects
     test = copy.deepcopy(obj)
@@ -1146,7 +1146,7 @@ if __name__ == "__main__":
     #         break
     # ropelinesorted = ropelinesorted[::-1]
     # for rope_point in ropelinesorted:
-    #     gm.gen_sphere(rope_point).attach_to(base)
+    #     mgm.gen_sphere(rope_point).attach_to(base)
     # # base.run()
     # 
     # # 左手の引き動作
@@ -1215,7 +1215,7 @@ if __name__ == "__main__":
         objpos_finallist_rgt = create_candidate_points(arm_name=arm_name, initialhandpos=objpos_initial_rgt)
         np.save('finalposlist.npy', objpos_finallist_rgt)
         # for point in objpos_finallist_rgt:
-        #     gm.gen_sphere(pos=point).attach_to(base)
+        #     mgm.gen_sphere(pos=point).attach_to(base)
         # base.run()
         assessment_value_list_rgt, totalIKpossiblelist_startgoal_rgt, costlist_rgt = \
             getsuitablegoalpos_first(arm_name,

@@ -23,7 +23,7 @@ if __name__ == '__main__':
         jaw_width, gl_jaw_center, pos, rotmat = grasp_info
         gic = gripper_s.copy()
         gic.fix_to(pos, rotmat)
-        gic.jaw_to(jaw_width)
+        gic.change_jaw_width(jaw_width)
         print(pos, rotmat)
         gic.gen_mesh_model().attach_to(base)
     base.run()

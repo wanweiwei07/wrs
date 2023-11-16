@@ -47,19 +47,13 @@ def gen_link_mesh(link,
                   rgba=None,
                   toggle_frame=False):
     m_col = mc.ModelCollection()
-    if link.collision_model == None:
-        raise ValueError("Collision model is unavailable.")
-    else:
-        model = link.collision_model.copy()
-        model.set_homomat(rm.homomat_from_posrot(link.gl_pos, link.gl_rotmat))
-        if rgba is None:
-            model.set_rgba(link.rgba)
-        else:
-            model.set_rgba(rgba)
-        model.attach_to(m_col)
-        if toggle_frame:
-            gm.gen_frame(pos=link.gl_pos, rotmat=link.gl_rotmat).attach_to(m_col)
-        return m_col
+    model = link.copy()
+    if rgba is not None:
+        model.set_rgba(rgba)
+    model.attach_to(m_col)
+    if toggle_frame:
+        gm.gen_frame(pos=link.gl_pos, rotmat=link.gl_rotmat).attach_to(m_col)
+    return m_col
 
 
 def gen_anchor(anchor,
@@ -99,7 +93,7 @@ def gen_joint(joint,
                      radius=radius,
                      rgba=bc.joint_child_rgba).attach_to(m_col)
     elif joint.type == rkc.JointType.PRISMATIC:
-        # gm.gen_stick(spos=joint._gl_pos_0 - joint._gl_motion_axis * .01,
+        # mgm.gen_stick(spos=joint._gl_pos_0 - joint._gl_motion_axis * .01,
         #              epos=joint._gl_pos_0 + joint._gl_motion_axis * .01,
         gm.gen_stick(spos=spos,
                      epos=epos,

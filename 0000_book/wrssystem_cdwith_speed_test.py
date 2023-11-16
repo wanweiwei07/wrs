@@ -55,8 +55,8 @@ if __name__ == '__main__':
     print(mcd_result)
 
     # object_ref_c = cmc.CollisionModel(initializer="./objects/bunnysim.stl",
-    #                                   cdprimit_type=cm.CDPrimitiveType.BOX,
-    #                                   cdmesh_type=cm.CDMeshType.DEFAULT)
+    #                                   cdprimit_type=mcm.CDPrimitiveType.BOX,
+    #                                   cdmesh_type=mcm.CDMeshType.DEFAULT)
     # # object 3
     # object3 = object_ref_c.copy()
     # # object1.change_cdmesh_type(cdmesh_type="convex_hull")
@@ -75,7 +75,7 @@ if __name__ == '__main__':
     # toc = time.time()
     # print(f"old time: {toc-tic}s")
     # for pnt in cd_points:
-    #     gm.gen_sphere(pos=pnt, rgba=[1, 0, 0, 1], radius=.002).attach_to(base)
+    #     mgm.gen_sphere(pos=pnt, rgba=[1, 0, 0, 1], radius=.002).attach_to(base)
     # print(mcd_result)
 
 

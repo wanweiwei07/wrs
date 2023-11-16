@@ -29,7 +29,7 @@ if __name__ == '__main__':
         jaw_width, gl_jaw_center, pos, rotmat = grasp_info
         # gic = gripper_s.copy()
         gripper_instance.fix_to(pos, rotmat)
-        gripper_instance.jaw_to(jaw_width)
+        gripper_instance.change_jaw_width(jaw_width)
         gripper_instance.gen_meshmodel().attach_to(base)
     gutil.write_pickle_file(objcm_name='tubebig', grasp_info_list=grasp_info_list)
     base.run()

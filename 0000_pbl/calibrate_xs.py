@@ -97,8 +97,8 @@ sensor_handler = SensorHandler(pkx)
 # # print(marker_pos_in_hnd)
 # pos_arm_tcp, rot_arm_tcp = xss.arm.jlc.lnks[7]["gl_pos"], xss.arm.jlc.lnks[7]["gl_rotmat"]
 # pos_hnd_tcp, rot_hand_tcp = xss.get_gl_tcp(manipulator_name="arm")
-# # gm.gen_frame(pos_arm_tcp, rot_arm_tcp).attach_to(base)
-# # gm.gen_frame(pos_hnd_tcp, rot_hand_tcp).attach_to(base)
+# # mgm.gen_frame(pos_arm_tcp, rot_arm_tcp).attach_to(base)
+# # mgm.gen_frame(pos_hnd_tcp, rot_hand_tcp).attach_to(base)
 # marker_pos_in_hnd = np.array([-0.026, 0, 0.069]) - np.array([0, 0, pos_hnd_tcp[2] - pos_arm_tcp[2]])
 # # print("marker in hand", marker_pos_in_hnd)
 # calibration_r = dc.calibrate(component_name="arm",

@@ -256,7 +256,7 @@ class SystemInterface(object):
         return NotImplementedError
 
     def jaw_to(self, hnd_name, jaw_width):
-        self.hnd_dict[hnd_name].jaw_to(jaw_width=jaw_width)
+        self.hnd_dict[hnd_name].change_jaw_width(jaw_width=jaw_width)
 
     def get_jawwidth(self, hand_name):
         return self.hnd_dict[hand_name].get_jaw_width()

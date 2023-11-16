@@ -48,7 +48,7 @@ if __name__ == '__main__':
     #         pos, rotmat = tip_rack.get_rack_hole_pose(id_x=id_x, id_y=id_y)
     #         tip_new = tip.copy()
     #         tip_new.set_pose(pos, rotmat)
-    #         # gm.gen_frame(pos=pos, rotmat=rotmat).attach_to(base)
+    #         # mgm.gen_frame(pos=pos, rotmat=rotmat).attach_to(base)
     #         tip_new.attach_to(base)
     #         tip_cm_list.append(tip_new)
 
@@ -112,7 +112,7 @@ if __name__ == '__main__':
     tip_rack_rotated.set_pose(pos=np.array([tip_pos[0], tip_pos[1],.003])+rm.rotmat_from_axangle([0, 0, 1], np.pi/6).dot(np.array([.25, 0.0, .003])-np.array([tip_pos[0], tip_pos[1],.003])), rotmat=rm.rotmat_from_axangle([0, 0, 1], np.pi / 2+np.pi/6))
     tip_rack_rotated.attach_to(base)
     # gl_tcp_pos, gl_tcp_rotmat = rbt_s.get_gl_tcp(manipulator_name="arm")
-    # gm.gen_circarrow(axis=-gl_tcp_rotmat[:,2], center=gl_tcp_pos+gl_tcp_rotmat[:,2]*.05, rgba=[1,.5,0,1], major_radius=.11, portion=.9, major_radius=.007, n_sec_minor=64, n_sec_major=256, end_type='double', starting_vector=-gl_tcp_rotmat[:,0]).attach_to(base)
+    # mgm.gen_circarrow(axis=-gl_tcp_rotmat[:,2], center=gl_tcp_pos+gl_tcp_rotmat[:,2]*.05, rgba=[1,.5,0,1], major_radius=.11, portion=.9, major_radius=.007, n_sec_minor=64, n_sec_major=256, end_type='double', starting_vector=-gl_tcp_rotmat[:,0]).attach_to(base)
 
     tip_cm_list = []
     for id_x in range(8):
@@ -120,7 +120,7 @@ if __name__ == '__main__':
             pos, rotmat = tip_rack_rotated.get_rack_hole_pose(id_x=id_x, id_y=id_y)
             tip_new = tip.copy()
             tip_new.set_pose(pos, rotmat)
-            # gm.gen_frame(pos=pos, rotmat=rotmat).attach_to(base)
+            # mgm.gen_frame(pos=pos, rotmat=rotmat).attach_to(base)
             tip_new.attach_to(base)
             tip_cm_list.append(tip_new)
 

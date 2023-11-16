@@ -118,7 +118,7 @@ class CobottaPipette(gp.GripperInterface):
         cpl_end_rotmat = self.coupling.jnts[-1]['gl_rotmatq']
         self.jlc.fix_to(cpl_end_pos, cpl_end_rotmat)
 
-    def jaw_to(self, jaw_width):
+    def change_jaw_width(self, jaw_width):
         print(jaw_width)
         if self.jaw_range[1] < jaw_width or jaw_width < self.jaw_range[0]:
             raise ValueError("The jaw_width parameter is out of range!")
@@ -191,7 +191,7 @@ if __name__ == '__main__':
     #     grpr.fk(angle)
     #     grpr.gen_meshmodel().attach_to(base)
     grpr = CobottaPipette(enable_cc=True)
-    grpr.jaw_to(.0)
+    grpr.change_jaw_width(.0)
     grpr.gen_meshmodel(toggle_tcpcs=True).attach_to(base)
     grpr.gen_stickmodel().attach_to(base)
     # grpr.gen_stickmodel(toggle_joint_frame=False).attach_to(base)

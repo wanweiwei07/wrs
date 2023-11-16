@@ -49,7 +49,7 @@ if __name__ == '__main__':
             pos, rotmat = tip_rack.get_rack_hole_pose(id_x=id_x, id_y=id_y)
             tip_new = tip.copy()
             tip_new.set_pose(pos, rotmat)
-            # gm.gen_frame(pos=pos, rotmat=rotmat).attach_to(base)
+            # mgm.gen_frame(pos=pos, rotmat=rotmat).attach_to(base)
             tip_new.attach_to(base)
             tip_cm_list.append(tip_new)
 
@@ -94,9 +94,9 @@ if __name__ == '__main__':
     print(spiral_points)
     pre_point = None
     # for point in spiral_points:
-    #     gm.gen_sphere(point, major_radius=.00016).attach_to(base)
+    #     mgm.gen_sphere(point, major_radius=.00016).attach_to(base)
     #     if pre_point is not None:
-    #         gm.gen_stick(pre_point, point, major_radius=.00012).attach_to(base)
+    #         mgm.gen_stick(pre_point, point, major_radius=.00012).attach_to(base)
     #     pre_point = point
     granularity = np.pi/24
     for angle in np.arange(0, np.pi*2, granularity):
@@ -110,7 +110,7 @@ if __name__ == '__main__':
                 pos, rotmat = tip_rack_rotated.get_rack_hole_pose(id_x=id_x, id_y=id_y)
                 tip_new = tip.copy()
                 tip_new.set_pose(pos, rotmat)
-                # gm.gen_frame(pos=pos, rotmat=rotmat).attach_to(base)
+                # mgm.gen_frame(pos=pos, rotmat=rotmat).attach_to(base)
                 tip_new.attach_to(base)
                 tip_cm_list.append(tip_new)
 
@@ -129,5 +129,5 @@ if __name__ == '__main__':
         rbt_s.gen_meshmodel(rgba=[.7,.7,.7,.7], option='hand_only').attach_to(base)
         gl_tcp_pos, gl_tcp_rotmat = rbt_s.get_gl_tcp(manipulator_name="arm")
         gm.gen_circarrow(axis=-gl_tcp_rotmat[:,2], center=gl_tcp_pos+gl_tcp_rotmat[:,2]*.03, rgba=[1,.5,0,1], radius=.12, portion=.9, thickness=.007, sections=64, discretization=256, end='double', starting_vector=-gl_tcp_rotmat[:,0]).attach_to(base)
-        # gm.gen_circarrow(axis=-gl_tcp_rotmat[:,2], center=gl_tcp_pos-gl_tcp_rotmat[:,2]*.02, rgba=[1,.5,0,1], end_type='double').attach_to(base)
+        # mgm.gen_circarrow(axis=-gl_tcp_rotmat[:,2], center=gl_tcp_pos-gl_tcp_rotmat[:,2]*.02, rgba=[1,.5,0,1], end_type='double').attach_to(base)
     base.run()

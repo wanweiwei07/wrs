@@ -193,7 +193,7 @@ class Robotiq85Gelsight(gp.GripperInterface):
         else:
             raise ValueError("The angle parameter is out of range!")
 
-    def jaw_to(self, jaw_width):
+    def change_jaw_width(self, jaw_width):
         jaw_width = jaw_width + .028
         if jaw_width > 0.085:
             jaw_width = 0.085
@@ -232,7 +232,7 @@ class Robotiq85Gelsight(gp.GripperInterface):
                                       toggle_connjnt=toggle_connjnt).attach_to(sm_collection)
         if toggle_tcpcs:
             jaw_center_gl_pos = self.rotmat.dot(grpr.jaw_center_pos) + self.pos
-            jaw_center_gl_rotmat = self.rotmat.dot(grpr.jaw_center_rotmat)
+            jaw_center_gl_rotmat = self.rotmat.dot(grpr.action_center_rotmat)
             gm.gen_dashed_stick(spos=self.pos,
                                 epos=jaw_center_gl_pos,
                                 radius=.0062,
@@ -264,7 +264,7 @@ class Robotiq85Gelsight(gp.GripperInterface):
                                       rgba=rgba).attach_to(mm_collection)
         if toggle_tcpcs:
             jaw_center_gl_pos = self.rotmat.dot(self.jaw_center_pos) + self.pos
-            jaw_center_gl_rotmat = self.rotmat.dot(self.jaw_center_rotmat)
+            jaw_center_gl_rotmat = self.rotmat.dot(self.action_center_rotmat)
             gm.gen_dashed_stick(spos=self.pos,
                                 epos=jaw_center_gl_pos,
                                 radius=.0062,
@@ -283,7 +283,7 @@ if __name__ == '__main__':
     grpr = Robotiq85Gelsight(enable_cc=True)
     grpr.cdmesh_type = 'convexhull'
     # grpr.fk(.0)
-    grpr.jaw_to(.0)
+    grpr.change_jaw_width(.0)
     grpr.gen_meshmodel(toggle_tcpcs=True, rgba=[.3, .3, .0, .5]).attach_to(base)
     # grpr.gen_stickmodel(togglejntscs=False).attach_to(base)
     # grpr.fix_to(pos=np.array([0, .3, .2]), rotmat=rm.rotmat_from_axangle([1, 0, 0], math.pi / 6))
@@ -293,9 +293,9 @@ if __name__ == '__main__':
     base.run()
 
     # base = wd.World(cam_pos=[.5, .5, .5], lookat_pos=[0, 0, 0])
-    # model = cm.CollisionModel("./meshes/robotiq_arg2f_85_pad.dae")
+    # model = mcm.CollisionModel("./meshes/robotiq_arg2f_85_pad.dae")
     # model.set_scale([1e-3, 1e-3, 1e-3])
     # model.attach_to(base)
-    # # gm.gen_frame().attach_to(base)
+    # # mgm.gen_frame().attach_to(base)
     # model.show_cdmesh()
     # base.run()

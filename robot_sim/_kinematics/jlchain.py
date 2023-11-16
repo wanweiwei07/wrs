@@ -215,13 +215,14 @@ class JLChain(object):
         self.anchor.rotmat = rotmat
         return self.go_given_conf(joint_values=self.get_joint_values())
 
-    def finalize(self, ik_solver='d'):
+    def finalize(self, ik_solver='d', **kwargs):
         """
         ddik is both fast and has high success rate, but it required prebuilding a data file.
         tracik is also fast and reliable, but it is a bit slower and energe-intensive.
         pinv_wc is fast but has low success rate. it is used as a backbone for ddik.
         sqpss has high success rate but is very slow.
         :param ik_solver: 'd' for ddik; 'n' for numik.pinv_wc; 'o' for optik.sqpss; 't' for tracik
+        :**kwargs: path for DDIKSolver
         :return:
         author: weiwei
         date: 20201126, 20231111
@@ -229,7 +230,11 @@ class JLChain(object):
         self._jnt_rngs = self._get_jnt_rngs()
         self.go_home()
         if ik_solver == 'd':
-            self._ik_solver = rkd.DDIKSolver(self)
+            path = kwargs.get('path')
+            if path is not None:
+                self._ik_solver = rkd.DDIKSolver(self, path)
+            else:
+                raise KeyError("Path for saving the ddik data is not specified.")
 
     def set_tcp(self, tcp_joint_id=None, tcp_loc_pos=None, tcp_loc_rotmat=None):
         if tcp_joint_id is not None:
@@ -426,7 +431,7 @@ if __name__ == "__main__":
                 opt_win += 1
             elif joint_values_with_dbg_info[0] == 'n':
                 num_win += 1
-                # gm.gen_frame(pos=tgt_pos, rotmat=tgt_rotmat).attach_to(base)
+                # mgm.gen_frame(pos=tgt_pos, rotmat=tgt_rotmat).attach_to(base)
                 # jlc.forward_kinematics(jnt_vals=joint_values_with_dbg_info[1], update=True, toggle_jac=False)
                 # rkmg.gen_jlc_stick(jlc, stick_rgba=bc.navy_blue, toggle_tcp_frame=True,
                 #        toggle_joint_frame=True).attach_to(base)

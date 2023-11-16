@@ -91,7 +91,7 @@ class TBMGripper(gp.GripperInterface):
         else:
             raise ValueError("The angle parameter is out of range!")
 
-    def jaw_to(self, jaw_width):
+    def change_jaw_width(self, jaw_width):
         if jaw_width > self.jaw_range[1]:
             raise ValueError(f"Jawwidth must be {self.jaw_range[0]}mm~{self.jaw_range[1]}mm!")
         self.fk(jaw_width)
@@ -115,7 +115,7 @@ class TBMGripper(gp.GripperInterface):
                                     toggle_connjnt=toggle_connjnt).attach_to(sm_collection)
         if toggle_tcpcs:
             jaw_center_gl_pos = self.rotmat.dot(grpr.jaw_center_pos) + self.pos
-            jaw_center_gl_rotmat = self.rotmat.dot(grpr.jaw_center_rotmat)
+            jaw_center_gl_rotmat = self.rotmat.dot(grpr.action_center_rotmat)
             gm.gen_dashed_stick(spos=self.pos,
                                 epos=jaw_center_gl_pos,
                                 radius=.0062,
@@ -141,7 +141,7 @@ class TBMGripper(gp.GripperInterface):
                                     rgba=rgba).attach_to(mm_collection)
         if toggle_tcpcs:
             jaw_center_gl_pos = self.rotmat.dot(grpr.jaw_center_pos) + self.pos
-            jaw_center_gl_rotmat = self.rotmat.dot(grpr.jaw_center_rotmat)
+            jaw_center_gl_rotmat = self.rotmat.dot(grpr.action_center_rotmat)
             gm.gen_dashed_stick(spos=self.pos,
                                 epos=jaw_center_gl_pos,
                                 radius=.0062,
@@ -160,7 +160,7 @@ if __name__ == '__main__':
     grpr = TBMGripper(enable_cc=True)
     grpr.cdmesh_type = 'convexhull'
     # grpr.fk(.0)
-    grpr.jaw_to(0.5)
+    grpr.change_jaw_width(0.5)
     grpr.gen_meshmodel(toggle_tcpcs=True).attach_to(base)
     grpr.gen_stickmodel(toggle_jntscs=False).attach_to(base)
     # grpr.fix_to(pos=np.array([0, .3, .2]), rotmat=rm.rotmat_from_axangle([1, 0, 0], math.pi / 6))
@@ -170,9 +170,9 @@ if __name__ == '__main__':
     base.run()
 
     # base = wd.World(cam_pos=[.5, .5, .5], lookat_pos=[0, 0, 0])
-    # model = cm.CollisionModel("./meshes/robotiq_arg2f_85_pad.dae")
+    # model = mcm.CollisionModel("./meshes/robotiq_arg2f_85_pad.dae")
     # model.set_scale([1e-3, 1e-3, 1e-3])
     # model.attach_to(base)
-    # # gm.gen_frame().attach_to(base)
+    # # mgm.gen_frame().attach_to(base)
     # model.show_cdmesh()
     # base.run()

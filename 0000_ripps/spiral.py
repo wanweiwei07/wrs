@@ -48,7 +48,7 @@ if __name__ == '__main__':
             pos, rotmat = tip_rack.get_rack_hole_pose(id_x=id_x, id_y=id_y)
             tip_new = tip.copy()
             tip_new.set_pose(pos, rotmat)
-            # gm.gen_frame(pos=pos, rotmat=rotmat).attach_to(base)
+            # mgm.gen_frame(pos=pos, rotmat=rotmat).attach_to(base)
             tip_new.attach_to(base)
             tip_cm_list.append(tip_new)
 

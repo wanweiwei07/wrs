@@ -73,11 +73,11 @@ class ModelCollection(object):
         for gm in self._gm_list:
             gm.detach()
 
-    def show_cdprimitive(self):  # only work for cm
+    def show_cdprimitive(self):  # only work for mcm
         for cm in self._cm_list:
             cm.show_cdprimitive()
 
-    def unshow_cdprimitive(self):  # only work for cm
+    def unshow_cdprimitive(self):  # only work for mcm
         for cm in self._cm_list:
             cm.unshow_cdprimitive()
 

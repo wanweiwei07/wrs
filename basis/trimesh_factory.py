@@ -648,7 +648,7 @@ if __name__ == "__main__":
     import modeling.geometric_model as gm
 
     base = wd.World(cam_pos=[.5, .2, .3], lookat_pos=[0, 0, 0], auto_cam_rotate=False)
-    # objcm = gm.WireFrameModel(gen_torus())
+    # objcm = mgm.WireFrameModel(gen_torus())
     # objcm.set_rgba([1, 0, 0, 1])
     # objcm.attach_to(base)
     objcm = gm.StaticGeometricModel(gen_frame())
@@ -659,11 +659,11 @@ if __name__ == "__main__":
 
     # tic = time.time()
     # for i in range(100):
-    #     spe = gm.GeometricModel(gen_sphere(bottom_radius=.1))
+    #     spe = mgm.GeometricModel(gen_sphere(bottom_radius=.1))
     # toc = time.time()
     # spe.attach_to(base)
     # print("mine", toc - tic)
-    # objcm = gm.GeometricModel(gen_dashstick(len_solid=.005, len_interval=.005))
+    # objcm = mgm.GeometricModel(gen_dashstick(len_solid=.005, len_interval=.005))
     objcm = gm.GeometricModel(gen_dashtorus(portion=.5))
     objcm.set_rgba([1, 0, 0, 1])
     objcm.attach_to(base)

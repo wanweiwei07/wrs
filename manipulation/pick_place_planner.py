@@ -52,7 +52,7 @@ class PickPlacePlanner(adp.ADPlanner):
         """
         find the common collision free and IK feasible graspids
         :param hand_name: a component may have multiple hands
-        :param grasp_info_list: a list like [[jaw_width, gl_jaw_center_pos, pos, rotmat], ...]
+        :param grasp_info_list: a list like [[jaw_width, gl_action_center_pos, pos, rotmat], ...]
         :param goal_homomat_list: [pos, ...]
         :param obstacle_list
         :return: [final_available_graspids, intermediate_available_graspids]
@@ -343,9 +343,9 @@ class PickPlacePlanner(adp.ADPlanner):
         date: 20191122, 20200105
         """
         if approach_jawwidth is None:
-            approach_jawwidth = self.robot_s.hnd_dict[hnd_name].jaw_range[1]
+            approach_jawwidth = self.robot_s.hnd_dict[hnd_name].jaw_rng[1]
         if depart_jawwidth is None:
-            depart_jawwidth = self.robot_s.hnd_dict[hnd_name].jaw_range[1]
+            depart_jawwidth = self.robot_s.hnd_dict[hnd_name].jaw_rng[1]
         first_goal_pos = goal_homomat_list[0][:3, 3]
         first_goal_rotmat = goal_homomat_list[0][:3, :3]
         last_goal_pos = goal_homomat_list[-1][:3, 3]
@@ -533,7 +533,7 @@ if __name__ == '__main__':
             object_attached_list.clear()
         pose = robot_path[counter[0]]
         robot_s.fk(hand_name, pose)
-        robot_s.jaw_to(hand_name, jawwidth_path[counter[0]])
+        robot_s.change_jaw_width(hand_name, jawwidth_path[counter[0]])
         robot_meshmodel = robot_s.gen_mesh_model()
         robot_meshmodel.attach_to(base)
         robot_attached_list.append(robot_meshmodel)

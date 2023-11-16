@@ -217,7 +217,7 @@ if __name__ == '__main__':
 
     # tgt_pos = np.array([.5, 0, .3])
     # tgt_rotmat = rm.rotmat_from_euler(np.radians(30), np.radians(120), np.radians(130))
-    # gm.gen_frame(pos=tgt_pos, rotmat=tgt_rotmat).attach_to(base)
+    # mgm.gen_frame(pos=tgt_pos, rotmat=tgt_rotmat).attach_to(base)
     tic = time.time()
     # tcp_loc_pos = np.array([0, .1, 0.1])
     # tcp_loc_rotmat = rm.rotmat_from_euler(0, np.radians(30), 0)
@@ -237,6 +237,6 @@ if __name__ == '__main__':
     manipulator_instance.gen_meshmodel(tcp_loc_pos=tcp_loc_pos, tcp_loc_rotmat=tcp_loc_rotmat).attach_to(base)
 
     # base = wd.World(cam_pos=[1, 1, 1], lookat_pos=[0,0,0])
-    # gm.GeometricModel("./meshes/base.dae").attach_to(base)
-    # gm.gen_frame().attach_to(base)
+    # mgm.GeometricModel("./meshes/base.dae").attach_to(base)
+    # mgm.gen_frame().attach_to(base)
     base.run()

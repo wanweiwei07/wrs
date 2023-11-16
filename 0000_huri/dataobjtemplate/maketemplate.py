@@ -7,13 +7,13 @@ if __name__ == '__main__':
     yhx = robothelper.RobotHelperX(usereal=False)
 
     # tubestand
-    # tscm = cm.CollisionModel(os.path.join(yhx.root,  "objects",  "tubestand.stl"))
+    # tscm = mcm.CollisionModel(os.path.join(yhx.root,  "objects",  "tubestand.stl"))
     # tspcd, _ = tscm.samplesurface(major_radius=2)
     # tspcd = tspcd[tspcd[:,2]>55]
     #
     # pickle.dump(tspcd, open(os.path.join(yhx.root, "dataobjtemplate", "tubestandtemplatepcd.pkl"), "wb"))
     # base = yhx.startworld()
-    # pcdcm = cm.CollisionModel(tspcd)
+    # pcdcm = mcm.CollisionModel(tspcd)
     # pcdcm.reparentTo(base.render)
     # base.run()
 
@@ -39,25 +39,25 @@ if __name__ == '__main__':
     yhx.base.run()
 
     # handpalm
-    # tscm = cm.CollisionModel(os.path.join(yhx.root,  "objects", "handpalm.stl"))
+    # tscm = mcm.CollisionModel(os.path.join(yhx.root,  "objects", "handpalm.stl"))
     # tspcd, _ = tscm.samplesurface(major_radius=2)
     # tspcd = tspcd[tspcd[:,1]<-5]
     # tspcd = tspcd[tspcd[:,2]>5]
     #
     # pickle.dump(tspcd, open(os.path.join(yhx.root, "dataobjtemplate", "handpalmtemplatepcd.pkl"), "wb"))
     # base = yhx.startworld()
-    # pcdcm = cm.CollisionModel(tspcd)
+    # pcdcm = mcm.CollisionModel(tspcd)
     # pcdcm.reparentTo(base.render)
     # base.run()
 
     # handfinger
-    # tscm = cm.CollisionModel(os.path.join(yhx.root,  "objects", "handfinger.stl"))
+    # tscm = mcm.CollisionModel(os.path.join(yhx.root,  "objects", "handfinger.stl"))
     # tspcd, _ = tscm.samplesurface(major_radius=2)
     # tspcd = tspcd[tspcd[:,1]<-5]
     # tspcd = tspcd[tspcd[:,2]>5]
     #
     # pickle.dump(tspcd, open(os.path.join(yhx.root, "dataobjtemplate", "handfingertemplatepcd.pkl"), "wb"))
     # base = yhx.startworld()
-    # pcdcm = cm.CollisionModel(tspcd)
+    # pcdcm = mcm.CollisionModel(tspcd)
     # pcdcm.reparentTo(base.render)
     # base.run()

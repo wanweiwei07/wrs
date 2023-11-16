@@ -120,7 +120,7 @@ class MotionPlannerRT():
                     continue
             except:
                 # print(tgt_pose)
-                # gm.gen_frame(tgt_pose[:3]).attach_to(base)
+                # mgm.gen_frame(tgt_pose[:3]).attach_to(base)
                 self.robot_x.clear_error()
                 continue
             # print(f"mat:{sample_mat}")

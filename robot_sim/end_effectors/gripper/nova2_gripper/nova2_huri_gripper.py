@@ -34,7 +34,7 @@ class Nova2HuriGripper(gp.GripperInterface):
 
         # self.body.lnks[1]['name'] = "realsense_dual"
         # self.body.lnks[1]['loc_pos'] = np.zeros(3)
-        # self.body.lnks[1]['collision_model'] = cm.CollisionModel(os.path.join(this_dir, "meshes", "dual_realsense.stl"),
+        # self.body.lnks[1]['collision_model'] = mcm.CollisionModel(os.path.join(this_dir, "meshes", "dual_realsense.stl"),
         #                                                          expand_radius=.001)
         # self.body.lnks[1]['rgba'] = [.37, .37, .37, 1]
 
@@ -169,7 +169,7 @@ class Nova2HuriGripper(gp.GripperInterface):
         else:
             raise ValueError("The motion_val parameter is out of range!")
 
-    def jaw_to(self, jaw_width):
+    def change_jaw_width(self, jaw_width):
         if jaw_width > self.jawwidth_rng[1]:
             raise ValueError("The jaw_width parameter is out of range!")
         self.fk(motion_val=-jaw_width / 2.0)
@@ -209,7 +209,7 @@ class Nova2HuriGripper(gp.GripperInterface):
                                 toggle_connjnt=toggle_connjnt).attach_to(stickmodel)
         if toggle_tcpcs:
             jaw_center_gl_pos = self.rotmat.dot(self.jaw_center_pos) + self.pos
-            jaw_center_gl_rotmat = self.rotmat.dot(self.jaw_center_rotmat)
+            jaw_center_gl_rotmat = self.rotmat.dot(self.action_center_rotmat)
             gm.gen_dashstick(spos=self.pos,
                              epos=jaw_center_gl_pos,
                              thickness=.0062,
@@ -252,7 +252,7 @@ class Nova2HuriGripper(gp.GripperInterface):
                                rgba=rgba).attach_to(meshmodel)
         if toggle_tcpcs:
             jaw_center_gl_pos = self.rotmat.dot(self.jaw_center_pos) + self.pos
-            jaw_center_gl_rotmat = self.rotmat.dot(self.jaw_center_rotmat)
+            jaw_center_gl_rotmat = self.rotmat.dot(self.action_center_rotmat)
             gm.gen_dashstick(spos=self.pos,
                              epos=jaw_center_gl_pos,
                              thickness=.0062,
@@ -269,9 +269,9 @@ if __name__ == '__main__':
 
     base = wd.World(cam_pos=[.5, .5, .5], lookat_pos=[0, 0, 0], auto_cam_rotate=False)
     gm.gen_frame().attach_to(base)
-    # cm.CollisionModel("meshes/dual_realsense.stl", expand_radius=.001).attach_to(base)
+    # mcm.CollisionModel("meshes/dual_realsense.stl", expand_radius=.001).attach_to(base)
     grpr = Nova2HuriGripper(enable_cc=True)
-    grpr.jaw_to(.1)
+    grpr.change_jaw_width(.1)
     grpr.gen_meshmodel(toggle_tcpcs=True).attach_to(base)
     grpr.show_cdprimit()
     base.run()

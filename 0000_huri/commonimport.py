@@ -37,7 +37,7 @@ __all__ = [
     'loc',
     'locfixed',
     'cv2',
-    'cm',
+    'mcm',
     'p3dh',
     'o3dh',
     'pickle',

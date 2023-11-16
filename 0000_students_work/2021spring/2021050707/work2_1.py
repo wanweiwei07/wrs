@@ -7,7 +7,7 @@ if __name__ == '__main__':
     base = wd.World(cam_pos=np.array([.7, .05, .3]), lookat_pos=np.zeros(3))
     #衝突モデルの定義
     """
-    object_ref = cm.CollisionModel(initializer="./objects/bunnysim.stl", cdprimitive_type="box", cdmesh_type="triangles")
+    object_ref = mcm.CollisionModel(initializer="./objects/bunnysim.stl", cdprimitive_type="box", cdmesh_type="triangles")
     object_ref.set_rgba([.9, .75, .35, 1])
     """
     object_ref1 = cm.CollisionModel(initor="./objects/Coffee_cup.stl", cdprimitive_type="box", cdmesh_type="triangles")
@@ -48,7 +48,7 @@ if __name__ == '__main__':
     mcd_result, cd_points = object3.is_mcdwith(object4, toggle_contacts=True)
     #衝突点を表示
     for pnt in cd_points:
-        gm.gen_sphere(pos=pnt, rgba=[1, 0, 0, 1], major_radius=.002).attach_to(base)
+        mgm.gen_sphere(pos=pnt, rgba=[1, 0, 0, 1], major_radius=.002).attach_to(base)
     #衝突結果を表示
     print(mcd_result)
 

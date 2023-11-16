@@ -8,7 +8,7 @@ import robot_sim.robots.cobotta.cobotta as cbt
 
 
 # base = wd.World(cam_pos=[3, 1, 2], lookat_pos=[0, 0, 0])
-# gm.gen_frame().attach_to(base)
+# mgm.gen_frame().attach_to(base)
 # rbt_s = cbt.Cobotta()
 # rbt_s.gen_meshmodel().attach_to(base)
 #

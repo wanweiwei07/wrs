@@ -81,7 +81,7 @@ def update(robot_s,
         object_attached_list.clear()
     pose = robot_path[counter[0]]
     robot_s.fk(hnd_name, pose)
-    robot_s.jaw_to(hnd_name, jawwidth_path[counter[0]])
+    robot_s.change_jaw_width(hnd_name, jawwidth_path[counter[0]])
     robot_meshmodel = robot_s.gen_mesh_model()
     robot_meshmodel.attach_to(base)
     robot_attached_list.append(robot_meshmodel)

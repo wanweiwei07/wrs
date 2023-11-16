@@ -60,13 +60,13 @@ if __name__ == '__main__':
     # rbt_s.gen_meshmodel(toggle_tcp_frame=True, rgba=[.5,.5,.5,.3]).attach_to(base)
     # rbt_s.gen_stickmodel(toggle_tcp_frame=True).attach_to(base)
     #
-    # gm.gen_sphere(pos=rbt_s.manipulator_dict['arm'].joints[2]['gl_posq'],
+    # mgm.gen_sphere(pos=rbt_s.manipulator_dict['arm'].joints[2]['gl_posq'],
     #               major_radius=np.linalg.norm(rbt_s.manipulator_dict['arm'].joints[3]['pos_in_loc_tcp']),
     #               rgba=[.5,.5,.5,.2], sphere_ico_level=5).attach_to(base)
     # contraint_pos = rbt_s.manipulator_dict['arm'].joints[2]['gl_posq']
     # contraint_rotmat = rbt_s.manipulator_dict['arm'].joints[2]['gl_rotmatq']
-    # gm.gen_frame(pos=contraint_pos, rotmat=contraint_rotmat).attach_to(base)
-    # gm.gen_torus(rbt_s.manipulator_dict['arm'].joints[1]['gl_rotmatq'][:,2],
+    # mgm.gen_frame(pos=contraint_pos, rotmat=contraint_rotmat).attach_to(base)
+    # mgm.gen_torus(rbt_s.manipulator_dict['arm'].joints[1]['gl_rotmatq'][:,2],
     #              starting_vector=rbt_s.manipulator_dict['arm'].joints[1]['gl_rotmatq'][:,0],
     #              portion=1,
     #              center=contraint_pos,

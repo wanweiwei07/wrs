@@ -70,11 +70,11 @@ class UR3EDual(ri.RobotInterface):
         # lft
         self.lft_arm.tcp_jnt_id = -1
         self.lft_arm.tcp_loc_pos = self.lft_hnd.jaw_center_pos
-        self.lft_arm.tcp_loc_rotmat = self.lft_hnd.jaw_center_rotmat
+        self.lft_arm.tcp_loc_rotmat = self.lft_hnd.action_center_rotmat
         # rgt
         self.rgt_arm.tcp_jnt_id = -1
         self.rgt_arm.tcp_loc_pos = self.lft_hnd.jaw_center_pos
-        self.rgt_arm.tcp_loc_rotmat = self.lft_hnd.jaw_center_rotmat
+        self.rgt_arm.tcp_loc_rotmat = self.lft_hnd.action_center_rotmat
         # a list of detailed information about objects in hand, see CollisionChecker.add_objinhnd
         self.lft_oih_infos = []
         self.rgt_oih_infos = []

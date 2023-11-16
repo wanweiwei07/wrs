@@ -14,7 +14,7 @@ ground = gm.gen_box(np.array([2, 2, .001]))
 ground.set_rgba([1, 253 / 255, 219 / 255, 1])
 ground.attach_to(base)
 
-# box_0 = cm.gen_box(np.array([.3, .3, .04]))
+# box_0 = mcm.gen_box(np.array([.3, .3, .04]))
 # box_0.set_rgba([153 / 255, 183 / 255, 1, .3])
 # box_0.set_pos(np.array([0, 0, .02]))
 # box_0.attach_to(base)
@@ -26,7 +26,7 @@ ground.attach_to(base)
 # gl_rotmat_box = box_0.get_rotmat().dot(loc_rotmat_box)
 # suction_s.suction_to_with_scpose(gl_pos_box, gl_rotmat_box)
 # suction_s.gen_meshmodel(rgba=[.55, .55, .55, .3]).attach_to(base)
-# gm.gen_stick(
+# mgm.gen_stick(
 #     suction_s.pos,
 #     np.array([0,0,1]),rgba=[1,0,0,.3]).attach_to(base)
 
@@ -36,7 +36,7 @@ box.set_pos(np.array([0, 0, .02]))
 # box.set_rotmat(rm.rotmat_from_axangle([0, 1, 0], -math.pi / 12))
 box.attach_to(base)
 
-# box = cm.gen_box(np.array([.3, .3, .04]))
+# box = mcm.gen_box(np.array([.3, .3, .04]))
 # box.set_rgba([153 / 255, 183 / 255, 1, 1])
 # box.set_pos(np.array([0, 0, .32]))
 # box.set_rotmat(rm.rotmat_from_axangle([0, 1, 0], -math.pi / 12))
@@ -49,7 +49,7 @@ gl_pos_box = box.get_pos() + box.get_rotmat().dot(loc_pos_box)
 gl_rotmat_box = box.get_rotmat().dot(loc_rotmat_box)
 suction_s.attach_to_with_cpose(gl_pos_box, gl_rotmat_box)
 suction_s.gen_meshmodel().attach_to(base)
-# gm.gen_stick(
+# mgm.gen_stick(
 #     suction_s.pos,
 #     suction_s.pos - suction_s.rotmat[:,2]*10).attach_to(base)
 gm.gen_stick(

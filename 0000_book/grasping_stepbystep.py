@@ -21,7 +21,7 @@ object_bunny.attach_to(base)
 #                                                        angle_between_contact_normals=math.radians(160),
 #                                                        toggle_sampled_points=True)
 # for p in contact_points:
-#     gm.gen_sphere(p, major_radius=.002).attach_to(base)
+#     mgm.gen_sphere(p, major_radius=.002).attach_to(base)
 # base.run()
 # pickle.dump(contact_pairs, open( "save.p", "wb" ))
 contact_pairs = pickle.load(open( "save.p", "rb" ))
@@ -31,11 +31,11 @@ for i, cp in enumerate(contact_pairs):
     rgba = rm.get_rgba_from_cmap(i)
     gm.gen_sphere(contact_p0, radius=.002, rgba=rgba).attach_to(base)
     gm.gen_arrow(contact_p0, contact_p0 + contact_n0 * .01, stick_radius=.0012, rgba = rgba).attach_to(base)
-    # gm.gen_arrow(contact_p0, contact_p0-contact_n0*.1, major_radius=.0012, rgba = rgba).attach_to(base)
+    # mgm.gen_arrow(contact_p0, contact_p0-contact_n0*.1, major_radius=.0012, rgba = rgba).attach_to(base)
     gm.gen_sphere(contact_p1, radius=.002, rgba=rgba).attach_to(base)
-    # gm.gen_dashstick(contact_p0, contact_p1, major_radius=.0012, rgba=rgba).attach_to(base)
+    # mgm.gen_dashstick(contact_p0, contact_p1, major_radius=.0012, rgba=rgba).attach_to(base)
     gm.gen_arrow(contact_p1, contact_p1 + contact_n1 * .01, stick_radius=.0012, rgba=rgba).attach_to(base)
-    # gm.gen_dasharrow(contact_p1, contact_p1+contact_n1*.03, major_radius=.0012, rgba=rgba).attach_to(base)
+    # mgm.gen_dasharrow(contact_p1, contact_p1+contact_n1*.03, major_radius=.0012, rgba=rgba).attach_to(base)
 # base.run()
 gripper_s = rtq85.Robotiq85()
 contact_offset = .002
@@ -62,6 +62,6 @@ for i, cp in enumerate(contact_pairs):
 for grasp_info in grasp_info_list:
     aw_width, gl_jaw_center, hnd_pos, hnd_rotmat = grasp_info
     gripper_s.fix_to(hnd_pos, hnd_rotmat)
-    gripper_s.jaw_to(aw_width)
+    gripper_s.change_jaw_width(aw_width)
     gripper_s.gen_meshmodel().attach_to(base)
 base.run()

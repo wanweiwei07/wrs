@@ -48,7 +48,7 @@ if __name__ == '__main__':
             pos, rotmat = tip_rack.get_rack_hole_pose(id_x=id_x, id_y=id_y)
             tip_new = tip.copy()
             tip_new.set_pose(pos, rotmat)
-            # gm.gen_frame(pos=pos, rotmat=rotmat).attach_to(base)
+            # mgm.gen_frame(pos=pos, rotmat=rotmat).attach_to(base)
             tip_new.attach_to(base)
             tip_cm_list.append(tip_new)
 
@@ -114,7 +114,7 @@ if __name__ == '__main__':
                     rgba[-1] = .3
                     pos, rotmat = rbt_s.get_gl_tcp(manipulator_name=component_name)
                     # if previous_pos is not None:
-                    #     gm.gen_stick(previous_pos, pos, rgba=rgba).attach_to(base)
+                    #     mgm.gen_stick(previous_pos, pos, rgba=rgba).attach_to(base)
                     previous_pos = pos
                     # rbt_s.gen_meshmodel(rgba=rgba).attach_to(base)
                 # interpolated_confs = \
@@ -133,10 +133,10 @@ if __name__ == '__main__':
                 #     # rgb_mat[:, 0] = rgba[:3]
                 #     # rgb_mat[:, 1] = rgba[:3]
                 #     # rgb_mat[:, 2] = rgba[:3]
-                #     # gm.gen_frame(pos=pos, rotmat=rotmat, rgb_mat=rgb_mat, alpha=1, axis_length=.02, major_radius=.001).attach_to(base)
-                #     # gm.gen_sphere(pos=pos, major_radius=.005, rgba=rgba).attach_to(base)
+                #     # mgm.gen_frame(pos=pos, rotmat=rotmat, rgb_mat=rgb_mat, alpha=1, axis_length=.02, major_radius=.001).attach_to(base)
+                #     # mgm.gen_sphere(pos=pos, major_radius=.005, rgba=rgba).attach_to(base)
                 #     if previous_pos is not None:
-                #         gm.gen_stick(previous_pos, pos, rgba=rgba).attach_to(base)
+                #         mgm.gen_stick(previous_pos, pos, rgba=rgba).attach_to(base)
                 #     previous_pos = pos
                 #     # rbt_s.gen_meshmodel(rgba=rgba).attach_to(base)
                 # new_joint_values = utils.search_reachable_configuration(rbt_s=rbt_s,
@@ -147,7 +147,7 @@ if __name__ == '__main__':
                 #                                                         rotation_interval=np.radians(15),
                 #                                                         obstacle_list=[frame_bottom],
                 #                                                         seed_jnt_vals=np.zeros(6))
-                # # gm.gen_frame(pos=tip_pos, major_radius=.001).attach_to(base)
+                # # mgm.gen_frame(pos=tip_pos, major_radius=.001).attach_to(base)
                 # rbt_s.fk(component_name=component_name, joint_values=new_joint_values)
                 # # rbt_s.gen_meshmodel().attach_to(base)
                 # hnd_name = "hnd"
@@ -177,7 +177,7 @@ if __name__ == '__main__':
                     rgba[-1] = .3
                     pos, rotmat = rbt_s.get_gl_tcp(manipulator_name=component_name)
                     # if previous_pos is not None:
-                    #     gm.gen_stick(previous_pos, pos, rgba=rgba).attach_to(base)
+                    #     mgm.gen_stick(previous_pos, pos, rgba=rgba).attach_to(base)
                     previous_pos = pos
                     # rbt_s.gen_meshmodel(rgba=rgba).attach_to(base)
 
@@ -221,7 +221,7 @@ if __name__ == '__main__':
                     rgba[-1] = .3
                     pos, rotmat = rbt_s.get_gl_tcp(manipulator_name=component_name)
                     # if previous_pos is not None:
-                    #     gm.gen_stick(previous_pos, pos, rgba=rgba).attach_to(base)
+                    #     mgm.gen_stick(previous_pos, pos, rgba=rgba).attach_to(base)
                     previous_pos = pos
                     # rbt_s.gen_meshmodel(rgba=rgba).attach_to(base)
 
@@ -256,7 +256,7 @@ if __name__ == '__main__':
                     rgba[-1] = .3
                     pos, rotmat = rbt_s.get_gl_tcp(manipulator_name=component_name)
                     # if previous_pos is not None:
-                    #     gm.gen_stick(previous_pos, pos, rgba=rgba).attach_to(base)
+                    #     mgm.gen_stick(previous_pos, pos, rgba=rgba).attach_to(base)
                     previous_pos = pos
                     # rbt_s.gen_meshmodel(rgba=rgba).attach_to(base)
             # input("Press Enter to continue...")
@@ -275,7 +275,7 @@ if __name__ == '__main__':
     #         goal_joint_values = joint_values
     #         break
     #     else:
-    #         ee_s.grip_at_with_jcpose(gl_jaw_center_pos=pos + z_offset, gl_jaw_center_rotmat=rotmat, jaw_width=0)
+    #         ee_s.grip_at_with_jcpose(gl_action_center_pos=pos + z_offset, gl_jaw_center_rotmat=rotmat, jaw_width=0)
     #         ee_s.gen_meshmodel(rgba=[1, 0, 0, .3]).attach_to(base)
 
     # base.run()

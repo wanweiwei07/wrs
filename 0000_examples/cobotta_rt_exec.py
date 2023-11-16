@@ -27,7 +27,7 @@ if __name__ == '__main__':
         angle = random.uniform(math.pi/3, math.pi)
         # print(math.degrees(angle))
         tgt_rotmat = rm.rotmat_from_axangle([0,1,0], angle)
-        # gm.gen_frame(tgt_pos, tgt_rotmat).attach_to(base)
+        # mgm.gen_frame(tgt_pos, tgt_rotmat).attach_to(base)
         # robot_s.gen_meshmodel().attach_to(base)
         # base.run()
         jnt_values = robot_s.ik(tgt_pos=tgt_pos,tgt_rotmat=tgt_rotmat)

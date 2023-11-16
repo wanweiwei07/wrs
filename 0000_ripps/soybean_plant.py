@@ -105,7 +105,7 @@ for id, rotmat in enumerate(rotmat_list):
 # main_stem.gen_stickmodel().attach_to(base)
 base.run()
 # main = jlc.JLChain()
-# main.lnks[id]['collision_model'] = gm.gen_
+# main.lnks[id]['collision_model'] = mgm.gen_
 # main.gen_meshmodel()
 # def gen_random_leaf():
 #     rotmats = rm.gen_icorotmats(icolevel=2, rotation_interval=15, crop_angle=np.np.pi / 4,
@@ -118,18 +118,18 @@ base.run()
 # leaf_rgba = [45 / 255, 90 / 255, 39 / 255, 1]
 # stem_rgba = [97 / 255, 138 / 255, 61 / 255, 1]
 #
-# sb_leaf = gm.GeometricModel(initializer="objects/soybean_leaf.stl")
+# sb_leaf = mgm.GeometricModel(initializer="objects/soybean_leaf.stl")
 # sb_leaf.set_rgba(rgba=leaf_rgba)
 #
 # stem0_spos = np.array([0, 0, 0])
 # stem0_epos = np.array([0, 0, .05])
-# main_stem = gm.gen_stick(spos=stem0_spos, epos=stem0_epos, rgba=stem_rgba)
+# main_stem = mgm.gen_stick(spos=stem0_spos, epos=stem0_epos, rgba=stem_rgba)
 # main_stem.attach_to(base)
 #
 # sbl0 = sb_leaf.copy()
 # l0_stem_spos = stem0_epos
 # l0_stem_epos = stem0_epos + sbl0.get_rotmat()[:, 0] * .005
-# l0_stem = gm.gen_stick(spos=l0_stem_spos, epos=l0_stem_epos, rgba=stem_rgba)
+# l0_stem = mgm.gen_stick(spos=l0_stem_spos, epos=l0_stem_epos, rgba=stem_rgba)
 # l0_stem.attach_to(base)
 # sbl0.set_pos(l0_stem_epos)
 # sbl0.attach_to(base)

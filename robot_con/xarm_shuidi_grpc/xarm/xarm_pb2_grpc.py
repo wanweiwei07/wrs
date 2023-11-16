@@ -77,7 +77,7 @@ def add_XArmServicer_to_server(servicer, server):
                     response_serializer=xarm__pb2.JntValues.SerializeToString,
             ),
             'jaw_to': grpc.unary_unary_rpc_method_handler(
-                    servicer.jaw_to,
+                    servicer.change_jaw_width,
                     request_deserializer=xarm__pb2.GripperStatus.FromString,
                     response_serializer=xarm__pb2.Status.SerializeToString,
             ),

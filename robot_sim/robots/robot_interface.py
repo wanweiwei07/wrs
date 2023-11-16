@@ -165,7 +165,7 @@ class RobotInterface(object):
         :return:
         """
         if jawwidth is not None:
-            self.end_effector.jaw_to(jawwidth)
+            self.end_effector.change_jaw_width(jawwidth)
         for obj_info in self.oih_infos:
             if obj_info['collision_model'] is objcm:
                 self.cc.delete_cdobj(obj_info)

@@ -154,7 +154,7 @@ class XArmGripper(gi.GripperInterface):
         else:
             raise ValueError("The angle parameter is out of range!")
 
-    def jaw_to(self, jaw_width):
+    def change_jaw_width(self, jaw_width):
         if jaw_width > 0.085:
             raise ValueError("jaw_width must be 0mm~85mm!")
         angle = .85 - math.asin(jaw_width / 2.0 / 0.055)
@@ -206,7 +206,7 @@ class XArmGripper(gi.GripperInterface):
                                       rgba=rgba).attach_to(mm_collection)
         if toggle_tcpcs:
             jaw_center_gl_pos = self.rotmat.dot(self.jaw_center_pos) + self.pos
-            jaw_center_gl_rotmat = self.rotmat.dot(self.jaw_center_rotmat)
+            jaw_center_gl_rotmat = self.rotmat.dot(self.action_center_rotmat)
             gm.gen_dashed_stick(spos=self.pos,
                                 epos=jaw_center_gl_pos,
                                 radius=.0062,
@@ -227,7 +227,7 @@ if __name__ == '__main__':
     #     xag.fk(angle)
     #     xag.gen_meshmodel().attach_to(base)
     xag = XArmGripper(enable_cc=True)
-    xag.jaw_to(0.05)
+    xag.change_jaw_width(0.05)
     print(xag.get_jaw_width())
     model = xag.gen_meshmodel()
     model.attach_to(base)

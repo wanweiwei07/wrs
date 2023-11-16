@@ -8,7 +8,7 @@ frame_o = gm.gen_frame(axis_length=.2)
 frame_o.attach_to(base)
 # rotmat = rm.rotmat_from_axangle([1,1,1],math.pi/4)
 rotmat = rm.rotmat_from_euler(math.pi/3, -math.pi/6, math.pi/3)
-# frame_a = gm.gen_mycframe(axis_length=.2, rotmat=rotmat)
+# frame_a = mgm.gen_mycframe(axis_length=.2, rotmat=rotmat)
 frame_a = gm.gen_dashed_frame(axis_length=.2, rotmat=rotmat)
 frame_a.attach_to(base)
 

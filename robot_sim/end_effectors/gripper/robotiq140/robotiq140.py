@@ -206,13 +206,13 @@ class Robotiq140(gp.GripperInterface):
         private helper function to convert a command in meters to radians (joint value)
         """
         # return np.clip(
-        #   self.lft_outer.joints[1]['motion_rng'][1] - ((self.lft_outer.joints[1]['motion_rng'][1]/self.jaw_range[1]) * distance),
+        #   self.lft_outer.joints[1]['motion_rng'][1] - ((self.lft_outer.joints[1]['motion_rng'][1]/self.jaw_rng[1]) * distance),
         #   self.lft_outer.joints[1]['motion_rng'][0], self.lft_outer.joints[1]['motion_rng'][1]) # kiyokawa, commented out by weiwei
         return np.clip(self.lft_outer.jnts[1]['motion_rng'][1] - math.asin(
             (math.sin(self.lft_outer.jnts[1]['motion_rng'][1]) / self.jaw_range[1]) * distance),
                        self.lft_outer.jnts[1]['motion_rng'][0], self.lft_outer.jnts[1]['motion_rng'][1])
 
-    def jaw_to(self, jaw_width):
+    def change_jaw_width(self, jaw_width):
         if jaw_width > self.jaw_range[1]:
             raise ValueError(f"Jawwidth must be {self.jaw_range[0]}mm~{self.jaw_range[1]}mm!")
         motion_val = self._from_distance_to_radians(jaw_width)
@@ -246,7 +246,7 @@ class Robotiq140(gp.GripperInterface):
                                       toggle_connjnt=toggle_connjnt).attach_to(sm_collection)
         if toggle_tcpcs:
             jaw_center_gl_pos = self.rotmat.dot(grpr.jaw_center_pos) + self.pos
-            jaw_center_gl_rotmat = self.rotmat.dot(grpr.jaw_center_rotmat)
+            jaw_center_gl_rotmat = self.rotmat.dot(grpr.action_center_rotmat)
             gm.gen_dashed_stick(spos=self.pos,
                                 epos=jaw_center_gl_pos,
                                 radius=.0062,
@@ -278,7 +278,7 @@ class Robotiq140(gp.GripperInterface):
                                       rgba=rgba).attach_to(mm_collection)
         if toggle_tcpcs:
             jaw_center_gl_pos = self.rotmat.dot(self.jaw_center_pos) + self.pos
-            jaw_center_gl_rotmat = self.rotmat.dot(self.jaw_center_rotmat)
+            jaw_center_gl_rotmat = self.rotmat.dot(self.action_center_rotmat)
             gm.gen_dashed_stick(spos=self.pos,
                                 epos=jaw_center_gl_pos,
                                 radius=.0062,
@@ -295,6 +295,6 @@ if __name__ == '__main__':
     gm.gen_frame().attach_to(base)
     grpr = Robotiq140(enable_cc=True)
     # grpr.cdmesh_type='convexhull'
-    grpr.jaw_to(.1)
+    grpr.change_jaw_width(.1)
     grpr.gen_meshmodel(toggle_tcpcs=True, rgba=[.3, .3, .0, .5], toggle_jntscs=True).attach_to(base)
     base.run()

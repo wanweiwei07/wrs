@@ -228,7 +228,7 @@ if __name__ == '__main__':
     import modeling.geometric_model as gm
 
     # base = wd.World(cam_pos=[1, 1, .5], lookat_pos=[0, 0, .2])
-    # gm.gen_frame().attach_to(base)
+    # mgm.gen_frame().attach_to(base)
 
     # robot_s = cbt.CobottaRIPPS()
     robot_x = CobottaX()

@@ -121,10 +121,10 @@ if __name__ == '__main__':
     import basis.robot_math as rm
 
     # wd.World(cam_pos=[.2, -.1, .2], lookat_pos=[0, 0, 0.05])
-    # gm.gen_frame().attach_to(base)
+    # mgm.gen_frame().attach_to(base)
     # # objpath = os.path.join(basis.__path__[0], 'objects', 'yumifinger.stl')
-    # # objcm1 = cm.CollisionModel(objpath, cdmesh_type='triangles')
-    # objcm1 = cm.gen_stick(major_radius=.01)
+    # # objcm1 = mcm.CollisionModel(objpath, cdmesh_type='triangles')
+    # objcm1 = mcm.gen_stick(major_radius=.01)
     # pos = np.array([[-0.5, -0.82363909, 0.2676166, -0.00203699],
     #                     [-0.86602539, 0.47552824, -0.1545085, 0.01272306],
     #                     [0., -0.30901703, -0.95105648, 0.12604253],
@@ -136,8 +136,8 @@ if __name__ == '__main__':
     # objcm1.set_homomat(pos)
     # objcm1.set_rgba([1, 1, .3, .01])
     # # objpath = os.path.join(basis.__path__[0], 'objects', 'tubebig.stl')
-    # # objcm2 = cm.CollisionModel(objpath, cdmesh_type='triangles')
-    # objcm2 = cm.gen_stick(major_radius=.01)
+    # # objcm2 = mcm.CollisionModel(objpath, cdmesh_type='triangles')
+    # objcm2 = mcm.gen_stick(major_radius=.01)
     # objcm2.set_rgba([1,0,1,.2])
     # objcm2.set_pos(np.array([-.018,-.018,0]))
     # iscollided, contact_points = is_collided(objcm1, objcm2)
@@ -147,13 +147,13 @@ if __name__ == '__main__':
     # objcm2.attach_to(base)
     # print(iscollided)
     # for ct_pnt in contact_points:
-    #     gm.gen_sphere(ct_pnt, major_radius=.001).attach_to(base)
+    #     mgm.gen_sphere(ct_pnt, major_radius=.001).attach_to(base)
     # # spos = np.array([0, 0, 0]) + np.array([1.0, 1.0, 1.0])
     # # epos = np.array([0, 0, 0]) + np.array([-1.0, -1.0, -0.9])
     # # hitpos, hitnrml = rayhit_closet(spos=spos, epos=epos, objcm=objcm2)
-    # # gm.gen_sphere(hitpos, major_radius=.003, rgba=np.array([0, 1, 1, 1])).attach_to(base)
-    # # gm.gen_stick(spos=spos, epos=epos, major_radius=.002).attach_to(base)
-    # # gm.gen_arrow(spos=hitpos, epos=hitpos + hitnrml * .07, major_radius=.002, rgba=np.array([0, 1, 0, 1])).attach_to(base)
+    # # mgm.gen_sphere(hitpos, major_radius=.003, rgba=np.array([0, 1, 1, 1])).attach_to(base)
+    # # mgm.gen_stick(spos=spos, epos=epos, major_radius=.002).attach_to(base)
+    # # mgm.gen_arrow(spos=hitpos, epos=hitpos + hitnrml * .07, major_radius=.002, rgba=np.array([0, 1, 0, 1])).attach_to(base)
     # base.run()
 
     wd.World(cam_pos=[.3, -.3, .3], lookat_pos=[0, 0, 0])
@@ -165,7 +165,7 @@ if __name__ == '__main__':
     objcm1.set_homomat(homomat)
     objcm1.set_rgba([1, 1, .3, .2])
     objcm2 = cm.CollisionModel(objpath)
-    # objcm2= cm.gen_stick(major_radius=.07)
+    # objcm2= mcm.gen_stick(major_radius=.07)
     # objcm2.set_rgba([1, 0, 1, .1])
     objcm2.set_pos(objcm1.get_pos() + np.array([.0, .03, .0]))
     # objcm1.change_cdmesh_type('convex_hull')
@@ -185,7 +185,7 @@ if __name__ == '__main__':
     # objcm.attach_to(base)
     # objcm.show_cdmesh(end_type='box')
     # objcm.show_cdmesh(end_type='convex_hull')
-    # gm.gen_sphere(hitpos, major_radius=.003, rgba=np.array([0, 1, 1, 1])).attach_to(base)
-    # gm.gen_stick(spos=spos, epos=epos, major_radius=.002).attach_to(base)
-    # gm.gen_arrow(spos=hitpos, epos=hitpos + hitnrml * .07, major_radius=.002, rgba=np.array([0, 1, 0, 1])).attach_to(base)
+    # mgm.gen_sphere(hitpos, major_radius=.003, rgba=np.array([0, 1, 1, 1])).attach_to(base)
+    # mgm.gen_stick(spos=spos, epos=epos, major_radius=.002).attach_to(base)
+    # mgm.gen_arrow(spos=hitpos, epos=hitpos + hitnrml * .07, major_radius=.002, rgba=np.array([0, 1, 0, 1])).attach_to(base)
     base.run()

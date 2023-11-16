@@ -128,7 +128,7 @@ class DynamicModel(gm.GeometricModel):
         date: 20190627
         """
 
-        # if isinstance(pdndp, cm.CollisionModel):
+        # if isinstance(pdndp, mcm.CollisionModel):
         #     self.__objcm.pdndp.reparentTo(pdndp.pdndp)
         # elif isinstance(pdndp, NodePath):
         #     self.__objcm.pdndp.reparentTo(pdndp)

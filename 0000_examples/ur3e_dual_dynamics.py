@@ -37,7 +37,7 @@ if __name__ == '__main__':
     base = wd.World(cam_pos=[10, 0, 5], lookat_pos=[0, 0, 1])
     base.setFrameRateMeter(True)
     gm.gen_frame().attach_to(base)
-    # obj_box = cm.gen_box(xyz_lengths=[.2, 1, .3], rgba=[.3, 0, 0, 1])
+    # obj_box = mcm.gen_box(xyz_lengths=[.2, 1, .3], rgba=[.3, 0, 0, 1])
     obj_box = cm.gen_sphere(radius=.5, rgba=[.3, 0, 0, 1])
     obj_bd_box = bdm.BDModel(obj_box, mass=.3, type="convex")
     obj_bd_box.set_pos(np.array([.7, 0, 2.7]))

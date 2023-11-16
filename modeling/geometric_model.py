@@ -225,7 +225,7 @@ class GeometricModel(StaticGeometricModel):
 
     def __init__(self,
                  initor=None,
-                 name="gm",
+                 name="mgm",
                  toggle_transparency=True,
                  toggle_twosided=False):
         """

@@ -497,7 +497,7 @@ def __find_nxt_p_psfc(drawpath_p1, drawpath_p2, kdt_d3, p0, n0, max_nn=500, dire
     if pca_trans:
         knn_p0_tr, transmat = mu.trans_data_pcv(knn_p0, random_rot=False)
         # pcdu.show_pcd(knn_p0_tr, rgba=(1,0,0,1))
-        # gm.gen_frame().attach_to(base)
+        # mgm.gen_frame().attach_to(base)
         # base.run()
         surface = __surface(knn_p0_tr, mode)
     else:

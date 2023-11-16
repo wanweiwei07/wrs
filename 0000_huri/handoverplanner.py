@@ -23,7 +23,7 @@ class HandoverPlanner(object):
 
         if isinstance(obj, str):
             self.objname = obj
-        elif isinstance(obj, rhx.cm.CollisionModel):
+        elif isinstance(obj, rhx.mcm.CollisionModel):
             self.objname = obj.name
             self.objcm = obj
         self.rhx = rhx

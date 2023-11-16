@@ -30,11 +30,11 @@ gm.gen_circarrow(axis=sec2_rotaxis, center=sec2_rotaxis / 13+sec2_spos, starting
 # # sec2_rotmat2 = rm.rotmat_from_axangle([1,0,0], math.pi/6)
 # # sec2_epos2 = sec2_spos + sec2_rotmat.dot(np.array([.3, 0, 0]))
 # # rgba = [1, .4, 0, .3]
-# # gm.gen_stick(spos=sec1_spos, epos=sec1_epos, rgba=rgba, major_radius=.015).attach_to(base)
-# # gm.gen_dashframe(pos=sec2_spos).attach_to(base)
-# gm.gen_frame(pos=sec2_spos,rotmat=sec2_rotmat2, alpha=.2).attach_to(base)
-# gm.gen_stick(spos=sec2_spos, epos=sec2_epos, rgba=rgba, major_radius=.015).attach_to(base)
-# gm.gen_circarrow(axis=sec2_rotaxis2, center=sec2_rotaxis2 / 13+sec2_spos, starting_vector=np.array([0,0,-1]),major_radius=.025, portion=.6, major_radius=.003, rgba=[1,.4,0,1]).attach_to(base)
+# # mgm.gen_stick(spos=sec1_spos, epos=sec1_epos, rgba=rgba, major_radius=.015).attach_to(base)
+# # mgm.gen_dashframe(pos=sec2_spos).attach_to(base)
+# mgm.gen_frame(pos=sec2_spos,rotmat=sec2_rotmat2, alpha=.2).attach_to(base)
+# mgm.gen_stick(spos=sec2_spos, epos=sec2_epos, rgba=rgba, major_radius=.015).attach_to(base)
+# mgm.gen_circarrow(axis=sec2_rotaxis2, center=sec2_rotaxis2 / 13+sec2_spos, starting_vector=np.array([0,0,-1]),major_radius=.025, portion=.6, major_radius=.003, rgba=[1,.4,0,1]).attach_to(base)
 # #
 # sec2_rotaxis3 = np.array([0, 1, 0])
 # sec2_rotmat3 = rm.rotmat_from_axangle(sec2_rotaxis3, math.pi/3)
@@ -42,10 +42,10 @@ gm.gen_circarrow(axis=sec2_rotaxis, center=sec2_rotaxis / 13+sec2_spos, starting
 # # sec2_rotmat2 = rm.rotmat_from_axangle([1,0,0], math.pi/6)
 # # sec2_epos2 = sec2_spos + sec2_rotmat.dot(np.array([.3, 0, 0]))
 # rgba = [1, .4, 0, .3]
-# # gm.gen_stick(spos=sec1_spos, epos=sec1_epos, rgba=rgba, major_radius=.015).attach_to(base)
-# gm.gen_dashframe(pos=sec2_spos).attach_to(base)
-# gm.gen_frame(pos=sec2_spos,rotmat=sec2_rotmat3, alpha=.2).attach_to(base)
-# gm.gen_stick(spos=sec2_spos, epos=sec2_epos, rgba=rgba, major_radius=.015).attach_to(base)
-# gm.gen_circarrow(axis=sec2_rotaxis3, center=sec2_rotaxis3 / 13+sec2_spos, starting_vector=np.array([0,0,1]),major_radius=.025, portion=.55, major_radius=.003, rgba=[1,.4,0,1]).attach_to(base)
+# # mgm.gen_stick(spos=sec1_spos, epos=sec1_epos, rgba=rgba, major_radius=.015).attach_to(base)
+# mgm.gen_dashframe(pos=sec2_spos).attach_to(base)
+# mgm.gen_frame(pos=sec2_spos,rotmat=sec2_rotmat3, alpha=.2).attach_to(base)
+# mgm.gen_stick(spos=sec2_spos, epos=sec2_epos, rgba=rgba, major_radius=.015).attach_to(base)
+# mgm.gen_circarrow(axis=sec2_rotaxis3, center=sec2_rotaxis3 / 13+sec2_spos, starting_vector=np.array([0,0,1]),major_radius=.025, portion=.55, major_radius=.003, rgba=[1,.4,0,1]).attach_to(base)
 
 base.run()

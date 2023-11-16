@@ -11,12 +11,12 @@ import pandaplotutils.pandactrl as pc
 import pcd_utils as pcdu
 
 base = pc.World(camp=np.array([-300, -900, 300]), lookatpos=np.array([0, 0, 0]))
-# gm.gen_frame().attach_to(base)
+# mgm.gen_frame().attach_to(base)
 model_pcd = pickle.load(open("..\log\mapping\helmet_gaussian.pkl", "rb"))['objpcd']
 origin = np.mean(model_pcd, axis=0)
 bowl_samples = model_pcd - origin
 pcdu.show_pcd(bowl_samples,rgba=(.3, .3, .3, .3))
-# bowl_model = cm.CollisionModel(initializer=bowl_samples)
+# bowl_model = mcm.CollisionModel(initializer=bowl_samples)
 # bowl_model.set_rgba([.3, .3, .3, .3])
 # bowl_model.set_rotmat(rm.rotmat_from_euler(math.pi,0,0))
 # bowl_model.attach_to(base)
@@ -32,7 +32,7 @@ colors = np.tile(np.array([1, 0, 0,1]), (len(nearby_samples),1))
 print(nearby_samples.shape)
 print(colors.shape)
 # nearby_samples_withcolor = np.column_stack((nearby_samples, colors))
-# gm.GeometricModel(nearby_samples_withcolor).attach_to(base)
+# mgm.GeometricModel(nearby_samples_withcolor).attach_to(base)
 pcdu.show_pcd(nearby_samples,rgba=(1, 0, 0,1))
 
 plane_center, plane_normal = rm.fit_plane(nearby_samples)

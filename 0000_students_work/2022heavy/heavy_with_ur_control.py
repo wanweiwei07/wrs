@@ -29,7 +29,7 @@ box_0.attach_to(base)
 # gl_rotmat_box = box_0.get_rotmat().dot(loc_rotmat_box)
 # suction_s.suction_to_with_scpose(gl_pos_box, gl_rotmat_box)
 # suction_s.gen_meshmodel(rgba=[.55, .55, .55, .3]).attach_to(base)
-# gm.gen_stick(
+# mgm.gen_stick(
 #     suction_s.pos,
 #     np.array([0,0,1]),rgba=[1,0,0,.3]).attach_to(base)
 
@@ -48,7 +48,7 @@ gl_pos_box = box.get_pos() + box.get_rotmat().dot(loc_pos_box)
 gl_rotmat_box = box.get_rotmat().dot(loc_rotmat_box)
 suction_s.attach_to_with_cpose(gl_pos_box, gl_rotmat_box)
 suction_s.gen_meshmodel().attach_to(base)
-# gm.gen_stick(
+# mgm.gen_stick(
 #     suction_s.pos,
 #     suction_s.pos - suction_s.rotmat[:,2]*10).attach_to(base)
 gm.gen_stick(
@@ -77,7 +77,7 @@ box.set_rotmat(rm.rotmat_from_axangle([1, 0, 0], math.pi / 2))
 #
 # rtqgel_s = rtqgel.Robotiq85GelsightPusher()
 # print(rtqgel_s.jaw_center_pos)
-# rtqgel_s.grip_at_with_jcpose(gl_pos_box, gl_rotmat_box, jaw_width=rtqgel_s.jaw_range[1])
+# rtqgel_s.grip_at_with_jcpose(gl_pos_box, gl_rotmat_box, jaw_width=rtqgel_s.jaw_rng[1])
 # rtqgel_s.gen_meshmodel(toggle_tcp_frame=False).attach_to(base)
 
 box.set_rotmat(rm.rotmat_from_axangle([1, 0, 0], math.pi / 2))

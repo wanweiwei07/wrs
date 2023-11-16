@@ -51,7 +51,7 @@ if __name__ == '__main__':
         xa_ns = rm.null_space(xa_jacob[[0,1,2,3,4], :])
         cur_jnt_values = robot_s.get_jnt_values(component_name=component_name)
         cur_jnt_values -= np.ravel(xa_ns[:, 0]) * ratio
-        # gm.gen_frame(pos=gl_tcp[0], rotmat=gl_tcp[1]).attach_to(base)
+        # mgm.gen_frame(pos=gl_tcp[0], rotmat=gl_tcp[1]).attach_to(base)
         print(xa_ns)
         print(gl_tcp[1][:3,2])
         status = robot_s.fk(component_name=component_name, jnt_values=cur_jnt_values)
@@ -72,7 +72,7 @@ if __name__ == '__main__':
         xa_ns = rm.null_space(xa_jacob[[0,1,2,3,4], :])
         cur_jnt_values = robot_s.get_jnt_values(component_name=component_name)
         cur_jnt_values -= np.ravel(xa_ns[:, 0]) * ratio
-        # gm.gen_frame(pos=gl_tcp[0], rotmat=gl_tcp[1]).attach_to(base)
+        # mgm.gen_frame(pos=gl_tcp[0], rotmat=gl_tcp[1]).attach_to(base)
         print(xa_ns)
         print(gl_tcp[1][:3,2])
         status = robot_s.fk(component_name=component_name, jnt_values=cur_jnt_values)

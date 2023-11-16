@@ -9,7 +9,7 @@ import vision.depth_camera.surface.quadrantic_surface as qs
 import vision.depth_camera.surface.gaussian_surface as gs
 
 base = wd.World(cam_pos=np.array([-.2,-.7,.42]), lookat_pos=np.array([0,0,0]))
-# gm.gen_frame().attach_to(base)
+# mgm.gen_frame().attach_to(base)
 bowl_model = cm.CollisionModel(initor="./objects/bowl.stl")
 bowl_model.set_rgba([.3,.3,.3,.3])
 bowl_model.set_rotmat(rm.rotmat_from_euler(math.pi,0,0))
@@ -37,7 +37,7 @@ line_segs = [[homomat[:3,3], homomat[:3,3]+pt_direction*.05], [homomat[:3,3]+pt_
 gm.gen_linesegs(line_segs).attach_to(base)
 gm.gen_arrow(spos=line_segs[0][0], epos=line_segs[0][1], stick_radius=0.004).attach_to(base)
 spt = homomat[:3,3]
-# gm.gen_stick(spt, spt + pn_direction * 10, rgba=[0,1,0,1]).attach_to(base)
+# mgm.gen_stick(spt, spt + pn_direction * 10, rgba=[0,1,0,1]).attach_to(base)
 # base.run()
 gm.gen_dashed_arrow(spt, spt - pn_direction * .07, stick_radius=.004).attach_to(base) # p0
 cpt, cnrml = bowl_model.ray_hit(spt, spt + pn_direction * 10000, option='closest')
@@ -57,7 +57,7 @@ twod_plane.attach_to(base)
 new_line_segs = [[cpt, cpt+rotmat.dot(pt_direction)*.05],
                  [cpt+rotmat.dot(pt_direction)*.05, cpt+rotmat.dot(pt_direction)*.05+rotmat.dot(tmp_direction)*.05]]
 gm.gen_linesegs(new_line_segs).attach_to(base)
-# gm.gen_arrow(spos=new_line_segs[0][0], epos=new_line_segs[0][1], major_radius=0.004).attach_to(base)
+# mgm.gen_arrow(spos=new_line_segs[0][0], epos=new_line_segs[0][1], major_radius=0.004).attach_to(base)
 
 t_cpt = cpt
 last_normal = cnrml
