@@ -27,8 +27,8 @@ gm.gen_frame(pos=origin, rotmat=origin_rotmat, axis_length=1, axis_radius=.03).a
 # marker_center_list = []
 # def update(pk_obj, pcd_list, marker_center_list, task):
 #     if len(pcd_list) != 0:
-#         for pcd_helper in pcd_list:
-#             pcd_helper.detach()
+#         for mph in pcd_list:
+#             mph.detach()
 #         pcd_list.clear()
 #     if len(marker_center_list) != 0:
 #         for marker_center in marker_center_list:

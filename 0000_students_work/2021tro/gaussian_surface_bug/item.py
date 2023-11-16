@@ -22,9 +22,9 @@ class Item(object):
             self.__objcm = kwargs["objcm"]
             self.__pcd_std = pcdu.get_objpcd(kwargs["objcm"], objmat4=self.__objmat4)
             self.__w, self.__h = pcdu.get_pcd_w_h(self.__pcd_std)
-        if "pcd_helper" in list(kwargs.keys()):
-            self.__pcd = kwargs["pcd_helper"]
-            self.__nrmls = pcdu.get_nrmls(kwargs["pcd_helper"], camera_location=(.8, -.2, 1.8), toggledebug=TOGGLEDEBUG)
+        if "mph" in list(kwargs.keys()):
+            self.__pcd = kwargs["mph"]
+            self.__nrmls = pcdu.get_nrmls(kwargs["mph"], camera_location=(.8, -.2, 1.8), toggledebug=TOGGLEDEBUG)
             if self.__reconstruct:
                 self.__objcm = pcdu.reconstruct_surface(self.__pcd, radii=[.005])
         else:

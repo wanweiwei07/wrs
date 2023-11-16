@@ -153,9 +153,9 @@ def getpointcloudkinect(pointrange=[]):
 
 ## 2020_0722作成
 def getpointcloudkinectforrope_up(rbt, armname, initialpoint, pointrange):
-    # pcd_helper = client.getpcd()
-    # pcd2 = np.ones((len(pcd_helper), 4))
-    # pcd2[:, :3] = pcd_helper
+    # mph = client.getpcd()
+    # pcd2 = np.ones((len(mph), 4))
+    # pcd2[:, :3] = mph
     # newpcd = np.dot(calibration_matrix, pcd2.T).T[:, :3]
     newpcd = getpointcloudkinect(pointrange)
     finalpoint = rbt.get_gl_tcp(manipulator_name=armname)[0]
@@ -166,9 +166,9 @@ def getpointcloudkinectforrope_up(rbt, armname, initialpoint, pointrange):
 
 
 def getpointcloudkinectforrope_down(rbt, armname, pointrange=[]):
-    # pcd_helper = client.getpcd()
-    # pcd2 = np.ones((len(pcd_helper), 4))
-    # pcd2[:, :3] = pcd_helper
+    # mph = client.getpcd()
+    # pcd2 = np.ones((len(mph), 4))
+    # pcd2[:, :3] = mph
     # newpcd = np.dot(calibration_matrix, pcd2.T).T[:, :3]
     newpcd = getpointcloudkinect(pointrange)
     initialpoint = rbt.get_gl_tcp(manipulator_name=armname)[0]

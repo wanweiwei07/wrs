@@ -105,7 +105,7 @@ class XArmGripper(gi.GripperInterface):
                           self.rgt_outer.lnks[1],
                           self.rgt_outer.lnks[2]]
             self.cc.set_active_cdlnks(activelist)
-            self.all_cdelements = self.cc.all_cd_elements
+            self.all_cdelements = self.cc.cce_dict
         else:
             self.all_cdelements = [self.lft_outer.lnks[0],
                                    self.lft_outer.lnks[1],

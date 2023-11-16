@@ -117,7 +117,7 @@ class Lite6WRSGripper2(gp.GripperInterface):
                           self.lft.lnks[1],
                           self.rgt.lnks[1]]
             self.cc.set_active_cdlnks(activelist)
-            self.all_cdelements = self.cc.all_cd_elements
+            self.all_cdelements = self.cc.cce_dict
         else:
             self.all_cdelements = [self.body.lnks[0],
                                    self.body.lnks[1],

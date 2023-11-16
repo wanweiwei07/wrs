@@ -8,65 +8,6 @@ import modeling.constant as mc
 import robot_sim._kinematics.constant as rkc
 
 
-class Link(mcm.CollisionModel):
-    """
-    author: weiwei
-    date: 20230822
-    """
-
-    def __init__(self,
-                 initor,
-                 loc_pos=np.zeros(3),
-                 loc_rotmat=np.eye(3),
-                 com=np.zeros(3),
-                 inertia=np.eye(3),
-                 mass=0,
-                 rgba=bc.link_stick_rgba,
-                 cdprimitive_type=mc.CDPrimitiveType.BOX,
-                 cdmesh_type=mc.CDMeshType.DEFAULT,
-                 expand_radius=None,
-                 name="link",
-                 userdefined_cdprimitive_fn=None,
-                 toggle_transparency=True,
-                 toggle_twosided=False):
-        super().__init__(initor=initor,
-                         cdprimitive_type=cdprimitive_type,
-                         cdmesh_type=cdmesh_type,
-                         expand_radius=expand_radius,
-                         name=name,
-                         userdefined_cdprimitive_fn=userdefined_cdprimitive_fn,
-                         toggle_transparency=toggle_transparency,
-                         toggle_twosided=toggle_twosided)
-        self.loc_pos = loc_pos
-        self.loc_rotmat = loc_rotmat
-        self.com = com
-        self.inertia = inertia
-        self.mass = mass
-        self.set_pos(loc_pos)
-        self.set_rotmat(loc_rotmat)
-        self.set_rgba(rgba)
-
-    @property
-    def gl_pos(self):
-        return self.get_pos()
-
-    @property
-    def gl_rotmat(self):
-        return self.get_rotmat()
-
-    def update_globals(self, pos=np.zeros(3), rotmat=np.eye(3)):
-        """
-        update the global parameters against give reference pos, reference rotmat
-        :param pos:
-        :param rotmat:
-        :return:
-        """
-        homomat = np.eye(4)
-        homomat[:3, 3] = pos + rotmat @ self.loc_pos
-        homomat[:3, :3] = rotmat @ self.loc_rotmat
-        self.set_homomat(npmat4=homomat)
-
-
 class Anchor(object):
     """
     author: weiwei
@@ -236,7 +177,7 @@ def create_joint_with_link(joint_name="auto",
                            joint_type=rkc.JointType.REVOLUTE,
                            link_name="auto"):
     jnt = Joint(joint_name, type=joint_type)
-    jnt.link = Link(link_name)
+    jnt.link = mcm.CCModel(name=link_name)
     return jnt
 
 
@@ -262,6 +203,6 @@ if __name__ == '__main__':
     # print(result_homomat)
     # mgm.gen_myc_frame(pos=result_homomat[:3, 3], rotmat=result_homomat[:3, :3]).attach_to(base)
 
-    jnt.link = Link("../../basis/objects/or2fg7_base.stl")
+    jnt.link = mcm.CCModel("../../basis/objects/or2fg7_base.stl")
     rkmg.gen_joint(jnt, toggle_link_mesh=True).attach_to(base)
     base.run()

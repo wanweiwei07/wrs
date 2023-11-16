@@ -369,16 +369,16 @@ if __name__ == '__main__':
     #
     # amat = get_amat()
     # pxc.triggerframe()
-    # pcd_helper = pxc.getpcd()
-    # homopcd = np.ones((4, len(pcd_helper)))
-    # homopcd[:3, :] = pcd_helper.T
+    # mph = pxc.getpcd()
+    # homopcd = np.ones((4, len(mph)))
+    # homopcd[:3, :] = mph.T
     # realpcd = np.dot(amat, homopcd).T
     # pcdnp = yhx.p3dh.genpointcloudnodepath(realpcd)
     # pcdnp.reparentTo(base.render)
 
     base.run()
 
-    # def update(pcd_helper, task):
-    #     pcddnp = base.pg.genpointcloudnp(pcd_helper)
+    # def update(mph, task):
+    #     pcddnp = base.pg.genpointcloudnp(mph)
     #     pcddnp.reparentTo(base.render)
     #     return task.done

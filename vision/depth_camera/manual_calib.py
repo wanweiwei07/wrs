@@ -74,8 +74,8 @@ class ManualCalibrationBase(ABC):
 
         # add task
         taskMgr.doMethodLater(.05, self.sync_rbt, "sync rbt", )
-        taskMgr.doMethodLater(.02, self.adjust, "manual adjust the pcd_helper")
-        taskMgr.doMethodLater(.5, self.sync_pcd, "sync pcd_helper", )
+        taskMgr.doMethodLater(.02, self.adjust, "manual adjust the mph")
+        taskMgr.doMethodLater(.5, self.sync_pcd, "sync mph", )
 
     @abstractmethod
     def get_pcd(self) -> np.ndarray:
@@ -96,7 +96,7 @@ class ManualCalibrationBase(ABC):
     @abstractmethod
     def align_pcd(self, pcd) -> np.ndarray:
         """
-        Abstract method to align the pcd_helper according to the calibration matrix
+        Abstract method to align the mph according to the calibration matrix
         implement the Eye-in-hand or eye-to-hand transformation here
         https://support.zivid.com/en/latest/academy/applications/hand-eye/system-configurations.html
         :return: An Nx3 ndarray represents the aligned point cloud

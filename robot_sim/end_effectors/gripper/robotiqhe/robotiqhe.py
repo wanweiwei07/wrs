@@ -71,7 +71,7 @@ class RobotiqHE(gp.GripperInterface):
                           self.lft.lnks[1],
                           self.rgt.lnks[1]]
             self.cc.set_active_cdlnks(activelist)
-            self.all_cdelements = self.cc.all_cd_elements
+            self.all_cdelements = self.cc.cce_dict
         # cdmesh
         for cdelement in self.all_cdelements:
             cdmesh = cdelement['collision_model'].copy()

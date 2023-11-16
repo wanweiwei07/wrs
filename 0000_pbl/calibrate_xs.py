@@ -109,7 +109,7 @@ sensor_handler = SensorHandler(pkx)
 # print(calibration_r)
 # base.run()
 
-# validate pcd_helper
+# validate mph
 from vision.depth_camera.calibrator import load_calibration_data
 
 affine_matrix, _, _ = load_calibration_data()

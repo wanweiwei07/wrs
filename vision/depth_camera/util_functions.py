@@ -216,7 +216,7 @@ def _registration_icp_ptpt_o3d(src, tgt, inithomomat=np.eye(4), maxcorrdist=2, t
 
 def cluster_pcd(pcd_nparray, pcd_nparray_nrmls = None):
     """
-    segment pcd_helper into clusters using the DBSCAN method
+    segment mph into clusters using the DBSCAN method
     :param pcd_nparray:
     :return:
     author: weiwei

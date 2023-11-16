@@ -93,7 +93,7 @@ class CobottaPipette(gp.GripperInterface):
                            self.jlc.lnks[5],
                            self.jlc.lnks[7]]
             self.cc.set_active_cdlnks(active_list)
-            self.all_cdelements = self.cc.all_cd_elements
+            self.all_cdelements = self.cc.cce_dict
         # cdmesh
         for cdelement in self.all_cdelements:
             cdmesh = cdelement['collision_model'].copy()

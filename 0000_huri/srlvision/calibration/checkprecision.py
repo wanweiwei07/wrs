@@ -24,6 +24,6 @@ if __name__ == '__main__':
     # maxy = miny+140
     # minz = tcppos[2]
     # maxz = tcppos[2]+70
-    # pcd_helper = o3dh.cropnx3nparray(pcd_helper, [minx, maxx], [miny, maxy], [minz, maxz])
+    # mph = o3dh.cropnx3nparray(mph, [minx, maxx], [miny, maxy], [minz, maxz])
 
     yhx.show()

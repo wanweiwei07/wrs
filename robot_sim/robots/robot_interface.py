@@ -1,6 +1,6 @@
 import copy
 import numpy as np
-import robot_sim._kinematics.collision_checker as cc
+import robot_sim._kinematics.TBD_collision_checker as cc
 
 
 class RobotInterface(object):
@@ -225,7 +225,7 @@ class RobotInterface(object):
         clear pairs and pdndp
         :return:
         """
-        for cdelement in self.cc.all_cd_elements:
+        for cdelement in self.cc.cce_dict:
             cdelement['cdprimit_childid'] = -1
         self.cc = None
 

@@ -1,4 +1,5 @@
 from enum import Enum
+from panda3d.core import BitMask32
 
 
 class CDMeshType(Enum):

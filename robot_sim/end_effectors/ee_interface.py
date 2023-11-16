@@ -3,7 +3,7 @@ import numpy as np
 import modeling.model_collection as mmc
 import modeling.collision_model as mcm
 import robot_sim._kinematics.jlchain as rkjl
-import robot_sim._kinematics.collision_checker as cc
+import robot_sim._kinematics.TBD_collision_checker as cc
 import modeling.geometric_model as mgm
 import modeling.constant as mc
 
@@ -113,7 +113,7 @@ class EEInterface(object):
         self.cc.unshow_cdprimit()
 
     def show_cdmesh(self):
-        for i, cdelement in enumerate(self.cc.all_cd_elements):
+        for i, cdelement in enumerate(self.cc.cce_dict):
             pos = cdelement['gl_pos']
             rotmat = cdelement['gl_rotmat']
             self.cdmesh_collection.cm_list[i].set_pos(pos)
@@ -155,7 +155,7 @@ class EEInterface(object):
         clear pairs and pdndp
         :return:
         """
-        for cdelement in self.cc.all_cd_elements:
+        for cdelement in self.cc.cce_dict:
             cdelement['cdprimit_childid'] = -1
         self.cc = None
 

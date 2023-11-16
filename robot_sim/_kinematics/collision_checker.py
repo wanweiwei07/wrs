@@ -2,7 +2,32 @@ import copy
 
 import basis.data_adapter as da
 import modeling.model_collection as mc
+import modeling._panda_cdhelper as mph
 from panda3d.core import NodePath, CollisionTraverser, CollisionHandlerQueue, BitMask32
+
+
+class CCElement(object):
+    """
+    A collision detection element
+    It includes a pointer to the collision model and a pointer to the pdcndp attached to the traverse tree of
+    an collision checker instance
+    author: weiwei
+    date: 20231116
+    """
+
+    def __init__(self, objcm, trav_pdndp):
+        self.collision_model = objcm
+        # a transformed and attached copy of the reference cdprimitive (essentially pdcndp)
+        self.cc_cdprimitive = mph.copy_cdprimitive_attach_to(objcm, trav_pdndp, clear_mask=True)
+        # toggle on collision detection with external obstacles by default
+        mph.change_cdmask(self.cc_cdprimitive, mph.BITMASK_EXT, action="new", type="from")
+
+    def disable_cd_ext(self):
+        """
+        disable collision detection with external collision models
+        :return:
+        """
+        mph.change_cdmask(self.cc_cdprimitive, mph.BITMASK_EXT, action="remove", type="from")
 
 
 class CollisionChecker(object):
@@ -12,72 +37,100 @@ class CollisionChecker(object):
     date: 20201214osaka, 20230811toyonaka
     """
 
-    def __init__(self, name="auto"):
+    def __init__(self, name="cc"):
         self.cd_trav = CollisionTraverser()
         self.cd_handler = CollisionHandlerQueue()
-        self.np = NodePath(name)
-        self.bitmask_list = [BitMask32(2 ** n) for n in range(31)]
-        self._bitmask_ext = BitMask32(2 ** 31)  # 31 is prepared for cd with external non-active objects
-        self.all_cd_elements = []  # a list of cdlnks or cdobjs for quickly accessing the cd elements (cdlnks/cdobjs)
+        self.trav_pdndp = NodePath(name)  # traverse target of self.cd_trav
+        self.bitmask_pool = [BitMask32(2 ** n) for n in range(31)]
+        self.bitmask_ext = BitMask32(2 ** 31)  # 31 is prepared for cd with external non-active objects
+        self.cce_dict = {}  # a dict of cc elements
 
-    def add_cdlnks(self, jlc, lnk_idlist):
+    def add_cdelement(self, lomm):
         """
-        The collision node of the given links will be attached to self.np, but their collision bitmask will be cleared
-        When a robot_s is treated as an obstacle by another robot_s, the IntoCollideMask of its all_cd_elements will be
-        set to BitMask32(2**31), so that the other robot_s can compare its active_cdelements with the all_cd_elements.
-        :param jlc:
-        :param lnk_idlist:
+        add a lomm as a collision element
+        :param lomm: instance of Link or ManipModel
         :return:
         author: weiwei
-        date: 20201216toyonaka, 20230811toyonaka
+        date: 20231116
         """
-        for id in lnk_idlist:
-            if jlc.lnks[id]['cc_nodepath'] is None:
-                jlc.lnks[id]['cc_nodepath'] = jlc.lnks[id]['collision_model'].copy_cdnp_to(self.np, clearmask=True)
-                self.cd_trav.addCollider(collider=jlc.lnks[id]['cc_nodepath'], handler=self.cd_handler)
-                self.all_cd_elements.append(jlc.lnks[id])
-            else:
-                raise ValueError("The link is already added!")
-
-    def set_active_cdlnks(self, lnk_list):
-        """
-        The specified collision links will be used for collision detection with external obstacles
-        :param lnk_list: essentially a from list like [jlchain.lnk0, jlchain.lnk1...]
-                           the correspondent tolist will be set online in cd functions
-                           TODO use all elements in self.all_cdnlks if None
-        :return:
-        author: weiwei
-        date: 20201216toyonaka, 20230811toyonaka
-        """
-        for lnk in lnk_list:
-            if lnk['cc_nodepath'] is None:
-                raise ValueError("The link needs to be added to collider using the add_cdlnks function first!")
-            lnk['cc_nodepath'].node().setFromCollideMask(self._bitmask_ext)
+        cc_ele = CCElement(lomm, self.trav_pdndp)
+        self.cce_dict[lomm.uuid] = cc_ele
 
     def set_cdpair(self, from_list, into_list):
         """
-        The given collision pair will be used for self collision detection
-        :param from_list: each element is a dictionary including a least a [cc_nodepath] key-value pair
-        :param into_list:
+        The given two lists will be checked for collisions
+        :param from_list: instances of Link or OiEE
+        :param into_list: instances of Link or OiEE
         :return:
         author: weiwei
-        date: 20201215, 20230811toyonaka
+        date: 20201215, 20230811, 20231116
         """
-        if len(self.bitmask_list) == 0:
+        if len(self.bitmask_pool) == 0:
             raise ValueError("Too many collision pairs! Maximum: 29")
-        allocated_bitmask = self.bitmask_list.pop()
-        for cd_element in from_list:
-            if cd_element['cc_nodepath'] is None:
-                raise ValueError("The link needs to be added to collider using the addjlcobj function first!")
-            current_from_cdmask = cd_element['cc_nodepath'].node().getFromCollideMask()
-            new_from_cdmask = current_from_cdmask | allocated_bitmask
-            cd_element['cc_nodepath'].node().setFromCollideMask(new_from_cdmask)
-        for cd_element in into_list:
-            if cd_element['cc_nodepath'] is None:
-                raise ValueError("The link needs to be added to collider using the addjlcobj function first!")
-            current_into_cdmask = cd_element['cc_nodepath'].node().getIntoCollideMask()
-            new_into_cdmask = current_into_cdmask | allocated_bitmask
-            cd_element['cc_nodepath'].node().setIntoCollideMask(new_into_cdmask)
+        allocated_bitmask = self.bitmask_pool.pop()
+        for lomm_from in from_list:
+            mph.change_cdmask(self.cce_dict[lomm_from.uuid].cc_cdprimitive, allocated_bitmask, action="add", type="from")
+        for lomm_into in into_list:
+            mph.change_cdmask(self.cce_dict[lomm_into.uuid].cc_cdprimitive, allocated_bitmask, action="add", type="into")
+
+    # def add_cdlnks(self, jlc, lnk_idlist):
+    #     """
+    #     The collision node of the given links will be attached to self.np, but their collision bitmask will be cleared
+    #     When a robot_s is treated as an obstacle by another robot_s, the IntoCollideMask of its cce_dict will be
+    #     set to BitMask32(2**31), so that the other robot_s can compare its active_cdelements with the cce_dict.
+    #     :param jlc:
+    #     :param lnk_idlist:
+    #     :return:
+    #     author: weiwei
+    #     date: 20201216toyonaka, 20230811toyonaka
+    #     """
+    #     for id in lnk_idlist:
+    #         if jlc.lnks[id]['cc_nodepath'] is None:
+    #             jlc.lnks[id]['cc_nodepath'] = jlc.lnks[id]['collision_model'].copy_cdnp_to(self.np, clearmask=True)
+    #             self.cd_trav.addCollider(collider=jlc.lnks[id]['cc_nodepath'], handler=self.cd_handler)
+    #             self.cce_dict.append(jlc.lnks[id])
+    #         else:
+    #             raise ValueError("The link is already added!")
+
+    # def set_active_cdlnks(self, lnk_list):
+    #     """
+    #     The specified collision links will be used for collision detection with external obstacles
+    #     :param lnk_list: essentially a from list like [jlchain.lnk0, jlchain.lnk1...]
+    #                        the correspondent tolist will be set online in cd functions
+    #                        TODO use all elements in self.all_cdnlks if None
+    #     :return:
+    #     author: weiwei
+    #     date: 20201216toyonaka, 20230811toyonaka
+    #     """
+    #     for lnk in lnk_list:
+    #         if lnk['cc_nodepath'] is None:
+    #             raise ValueError("The link needs to be added to collider using the add_cdlnks function first!")
+    #         lnk['cc_nodepath'].node().setFromCollideMask(self.bitmask_ext)
+
+    # def set_cdpair(self, from_list, into_list):
+    #     """
+    #     The given collision pair will be used for self collision detection
+    #     :param from_list: each element is a dictionary including a least a [cc_nodepath] key-value pair
+    #     :param into_list:
+    #     :return:
+    #     author: weiwei
+    #     date: 20201215, 20230811toyonaka
+    #     """
+    #     if len(self.bitmask_pool) == 0:
+    #         raise ValueError("Too many collision pairs! Maximum: 29")
+    #     allocated_bitmask = self.bitmask_pool.pop()
+    #     for cd_element in from_list:
+    #         if cd_element['cc_nodepath'] is None:
+    #             raise ValueError("The link needs to be added to collider using the addjlcobj function first!")
+    #         current_from_cdmask = cd_element['cc_nodepath'].node().getFromCollideMask()
+    #         new_from_cdmask = current_from_cdmask | allocated_bitmask
+    #         cd_element['cc_nodepath'].node().setFromCollideMask(new_from_cdmask)
+    #     for cd_element in into_list:
+    #         if cd_element['cc_nodepath'] is None:
+    #             raise ValueError("The link needs to be added to collider using the addjlcobj function first!")
+    #         current_into_cdmask = cd_element['cc_nodepath'].node().getIntoCollideMask()
+    #         new_into_cdmask = current_into_cdmask | allocated_bitmask
+    #         cd_element['cc_nodepath'].node().setIntoCollideMask(new_into_cdmask)
 
     def add_cdobj(self, objcm, rel_pos, rel_rotmat, into_list):
         """
@@ -92,9 +145,9 @@ class CollisionChecker(object):
         cdobj_info['rel_rotmat'] = rel_rotmat
         cdobj_info['into_list'] = into_list
         cdobj_info['cc_nodepath'] = objcm.copy_cdnp_to(self.np, clearmask=True)
-        cdobj_info['cc_nodepath'].node().setFromCollideMask(self._bitmask_ext)  # set active
+        cdobj_info['cc_nodepath'].node().setFromCollideMask(self.bitmask_ext)  # set active
         self.cd_trav.addCollider(collider=cdobj_info['cc_nodepath'], handler=self.cd_handler)
-        self.all_cd_elements.append(cdobj_info)
+        self.cce_dict.append(cdobj_info)
         self.set_cdpair([cdobj_info], into_list)
         return cdobj_info
 
@@ -104,18 +157,18 @@ class CollisionChecker(object):
         :param objcm:
         :return:
         """
-        self.all_cd_elements.remove(cdobj_info)
+        self.cce_dict.remove(cdobj_info)
         cdnp_to_delete = self.np.getChild(cdobj_info['cdprimit_childid'])
         self.cd_trav.removeCollider(cdnp_to_delete)
         this_cdmask = cdnp_to_delete.node().getFromCollideMask()
-        this_cdmask_exclude_ext = this_cdmask & ~self._bitmask_ext
+        this_cdmask_exclude_ext = this_cdmask & ~self.bitmask_ext
         for cdlnk in cdobj_info['into_list']:
             cdnp = self.np.getChild(cdlnk['cdprimit_childid'])
             current_into_cdmask = cdnp.node().getIntoCollideMask()
             new_into_cdmask = current_into_cdmask & ~this_cdmask_exclude_ext
             cdnp.node().setIntoCollideMask(new_into_cdmask)
         cdnp_to_delete.detachNode()
-        self.bitmask_list.append(this_cdmask_exclude_ext)
+        self.bitmask_pool.append(this_cdmask_exclude_ext)
 
     def is_collided(self, obstacle_list=[], otherrobot_list=[], toggle_contacts=False):
         """
@@ -123,7 +176,7 @@ class CollisionChecker(object):
         :param otherrobot_list:
         :return:
         """
-        for cd_element in self.all_cd_elements:
+        for cd_element in self.cce_dict:
             pos = cd_element['gl_pos']
             rotmat = cd_element['gl_rotmat']
             cd_element['cc_nodepath'].setPosQuat(da.npvec3_to_pdvec3(pos), da.npmat3_to_pdquat(rotmat))
@@ -144,7 +197,7 @@ class CollisionChecker(object):
         for robot in otherrobot_list:
             for cdnp in robot.cc.np.getChildren():
                 current_into_cdmask = cdnp.node().getIntoCollideMask()
-                new_into_cdmask = current_into_cdmask | self._bitmask_ext
+                new_into_cdmask = current_into_cdmask | self.bitmask_ext
                 cdnp.node().setIntoCollideMask(new_into_cdmask)
             robot.cc.np.reparentTo(self.np)
         # collision check
@@ -156,7 +209,7 @@ class CollisionChecker(object):
         for robot in otherrobot_list:
             for cdnp in robot.cc.np.getChildren():
                 current_into_cdmask = cdnp.node().getIntoCollideMask()
-                new_into_cdmask = current_into_cdmask & ~self._bitmask_ext
+                new_into_cdmask = current_into_cdmask & ~self.bitmask_ext
                 cdnp.node().setIntoCollideMask(new_into_cdmask)
             robot.cc.np.detachNode()
         if self.cd_handler.getNumEntries() > 0:
@@ -180,7 +233,7 @@ class CollisionChecker(object):
         """
         # print("call show_cdprimit")
         snp_cpy = self.np.copyTo(base.render)
-        for cdelement in self.all_cd_elements:
+        for cdelement in self.cce_dict:
             pos = cdelement['gl_pos']
             rotmat = cdelement['gl_rotmat']
             cdnp = snp_cpy.getChild(cdelement['cdprimit_childid'])
@@ -192,9 +245,9 @@ class CollisionChecker(object):
         clear pairs and pdndp
         :return:
         """
-        for cdelement in self.all_cd_elements:
+        for cdelement in self.cce_dict:
             cdelement['cdprimit_childid'] = -1
-        self.all_cd_elements = []
+        self.cce_dict = []
         for child in self.np.getChildren():
             child.removeNode()
-        self.bitmask_list = list(range(31))
+        self.bitmask_pool = list(range(31))

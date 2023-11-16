@@ -97,7 +97,7 @@ def get_pcd_w_h(objpcd_std):
 
 def get_org_convexhull(pcd, color=(1, 1, 1), transparency=1, toggledebug=False):
     """
-    create CollisionModel by pcd_helper
+    create CollisionModel by mph
 
     :param pcd:
     :param color:
@@ -118,7 +118,7 @@ def get_org_convexhull(pcd, color=(1, 1, 1), transparency=1, toggledebug=False):
 
 def get_std_convexhull(pcd, origin="center", color=(1, 1, 1), transparency=1, toggledebug=False, toggleransac=True):
     """
-    create CollisionModel by pcd_helper, standardized rotation
+    create CollisionModel by mph, standardized rotation
 
     :param pcd:
     :param origin: "center" or "tip"
@@ -332,8 +332,8 @@ def get_objpcd_partial(objcm, objmat4=np.eye(4), sample_num=100000, toggledebug=
             objpcd_new.append([p[0], p[1], z_max])
     objpcd_new = np.array(objpcd_new)
 
-    print("Length of org pcd_helper", len(objpcd))
-    print("Length of partial pcd_helper", len(objpcd_new))
+    print("Length of org mph", len(objpcd))
+    print("Length of partial mph", len(objpcd_new))
 
     if toggledebug:
         objpcd = o3d_helper.nparray2o3dpcd(copy.deepcopy(objpcd))
@@ -391,8 +391,8 @@ def get_objpcd_partial_bycampos(objcm, objmat4=np.eye(4), sample_num=100000, cam
     objpcd_new = np.array(objpcd_new)
     objpcd_new = trans_pcd(objpcd_new, objmat4)
 
-    # print("Length of org pcd_helper", len(objpcd))
-    # print("Length of source pcd_helper", len(objpcd_new))
+    # print("Length of org mph", len(objpcd))
+    # print("Length of source mph", len(objpcd_new))
 
     if toggledebug:
         objpcd = o3d_helper.nparray2o3dpcd(copy.deepcopy(objpcd))
@@ -412,11 +412,11 @@ def get_objpcd_partial_bycampos(objcm, objmat4=np.eye(4), sample_num=100000, cam
 def get_nrmls(pcd, camera_location=(800, -200, 1800), toggledebug=False):
     pcd_o3d = o3d_helper.nparray2o3dpcd(pcd)
     pcd_o3d.estimate_normals(search_param=o3d.geometry.KDTreeSearchParamHybrid(radius=20, max_nn=1000))
-    # for n in np.asarray(pcd_helper.normals)[:10]:
+    # for n in np.asarray(mph.normals)[:10]:
     #     print(n)
     # print("----------------")
     o3d.geometry.PointCloud.orient_normals_towards_camera_location(pcd_o3d, camera_location=camera_location)
-    # for n in np.asarray(pcd_helper.normals)[:10]:
+    # for n in np.asarray(mph.normals)[:10]:
     #     print(n)
     pcd_nrmls = np.asarray(pcd_o3d.normals)
     pcd_nrmls = np.asarray([-n if np.dot(n, np.asarray([0, 0, 1])) < 0 else n for n in pcd_nrmls])
@@ -462,15 +462,15 @@ if __name__ == '__main__':
     #     open(el.root + "/graspplanner/graspmap/pentip_cover_objmat4_list.pkl", "rb"))[1070]
     #
     # get_normals(get_objpcd(objcm, sample_num=10000))
-    # pcd_helper, pcd_normals = get_objpcd_withnormals(objcm, sample_num=100000)
-    # for i, p in enumerate(pcd_helper):
+    # mph, pcd_normals = get_objpcd_withnormals(objcm, sample_num=100000)
+    # for i, p in enumerate(mph):
     #     base.pggen.plotArrow(base.render, spos=p, epos=p + 10 * pcd_normals[i])
     # base.run()
     get_objpcd_partial_bycampos(objcm, sample_num=10000, toggledebug=True)
 
-    # pcd_helper = pickle.load(open(el.root + "/dataset/pcd_helper/a_lft_0.pkl", "rb"))
+    # mph = pickle.load(open(el.root + "/dataset/mph/a_lft_0.pkl", "rb"))
     # amat = pickle.load(open(el.root + "/camcalib/data/phoxi_calibmat_0117.pkl", "rb"))
-    # pcd_helper = transform_pcd(remove_pcd_zeros(pcd_helper), amat)
-    # print(len(pcd_helper))
-    # obj = get_org_surface(pcd_helper)
+    # mph = transform_pcd(remove_pcd_zeros(mph), amat)
+    # print(len(mph))
+    # obj = get_org_surface(mph)
     # base.run()

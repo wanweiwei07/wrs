@@ -10,6 +10,8 @@ from panda3d.core import NodePath, CollisionNode, CollisionTraverser, CollisionH
 from panda3d.core import CollisionBox, CollisionSphere, CollisionCapsule, CollisionPolygon, GeomVertexReader
 from panda3d.core import LPoint3, TransformState, LineSegs, TransparencyAttrib
 
+BITMASK_EXT = BitMask32(2 ** 31)
+
 
 def copy_cdprimitive(objcm):
     return copy.deepcopy(objcm.cdprimitive)
@@ -27,22 +29,101 @@ def copy_cdprimitive_attach_to(objcm,
         return_pdcndp.setMat(da.npmat4_to_pdmat4(homomat))  # scale is reset to 1 1 1 after setMat to the given pos
         return_pdcndp.setScale(objcm.pdndp.getScale())
     if clear_mask:
-        update_collide_mask(return_pdcndp, BitMask32(0x00))
+        change_cdmask(return_pdcndp, BitMask32(0x00), action="new", type="both")
     return return_pdcndp
 
 
-def update_collide_mask(cdprimitive, collision_mask: BitMask32):
+# def change_cdmask(cdprimitive, collision_mask: BitMask32, type):
+#     """
+#     :param cdprimitive: NodePath of CollisionNode
+#     :param collision_mask:
+#     :param type: 'from', 'into', 'both'
+#     :return:
+#     """
+#     if type == "both":
+#         if cdprimitive.getName() == "cylinder":
+#             cdprimitive.getChild(0).node().setCollideMask(collision_mask)
+#             cdprimitive.getChild(1).node().setCollideMask(collision_mask)
+#             cdprimitive.getChild(2).node().setCollideMask(collision_mask)
+#         else:
+#             cdprimitive.node().setCollideMask(collision_mask)
+#     elif type == "from":
+#         if cdprimitive.getName() == "cylinder":
+#             cdprimitive.getChild(0).node().setFromCollideMask(collision_mask)
+#             cdprimitive.getChild(1).node().setFromCollideMask(collision_mask)
+#             cdprimitive.getChild(2).node().setFromCollideMask(collision_mask)
+#         else:
+#             cdprimitive.node().setFromCollideMask(collision_mask)
+#     elif type == "into":
+#         if cdprimitive.getName() == "cylinder":
+#             cdprimitive.getChild(0).node().getIntoCollideMask(collision_mask)
+#             cdprimitive.getChild(1).node().v(collision_mask)
+#             cdprimitive.getChild(2).node().getIntoCollideMask(collision_mask)
+#         else:
+#             cdprimitive.node().getIntoCollideMask(collision_mask)
+#     else:
+#         raise KeyError("Type should be from, into, or both.")
+
+
+def change_cdmask(cdprimitive, collision_mask: BitMask32, action="new", type="both"):
     """
     :param cdprimitive: NodePath of CollisionNode
+    :param action: "add", "remove", "new"
+    :param type: 'from', 'into', 'both'
     :param collision_mask:
     :return:
     """
-    if cdprimitive.getName() == "cylinder":
-        cdprimitive.getChild(0).node().setCollideMask(collision_mask)
-        cdprimitive.getChild(1).node().setCollideMask(collision_mask)
-        cdprimitive.getChild(2).node().setCollideMask(collision_mask)
+
+    def _change_cdmask(collision_mask, action, get_method_to_call, set_method_to_call):
+        """
+        internal function to reduce repeatition
+        :param collision_mask:
+        :param action:
+        :param get_method_to_call:
+        :param set_method_to_call:
+        :return:
+        """
+        if action == "new":
+            set_method_to_call(collision_mask)
+        elif action == "add":
+            current_cdmask = get_method_to_call()
+            new_cdmask = current_cdmask | collision_mask
+            set_method_to_call(new_cdmask)
+        elif action == "remove":
+            current_cdmask = get_method_to_call()
+            new_cdmask = current_cdmask & ~collision_mask
+            set_method_to_call(new_cdmask)
+        else:
+            raise KeyError("Action should be add, remove, or new.")
+
+    if type == "both":
+        get_method_name = "getCollideMask"
+        set_method_name = "setCollideMask"
+    elif type == "from":
+        get_method_name = "getFromCollideMask"
+        set_method_name = "setFromCollideMask"
+    elif type == "into":
+        get_method_name = "getIntoCollideMask"
+        set_method_name = "setIntoCollideMask"
     else:
-        cdprimitive.node().setCollideMask(collision_mask)
+        raise KeyError("Type should be from, into, or both.")
+    if cdprimitive.getName() == "cylinder":
+        # child 0
+        get_method_to_call = getattr(cdprimitive.getChild(0).node(), get_method_name, None)
+        set_method_to_call = getattr(cdprimitive.getChild(0).node(), set_method_name)
+        _change_cdmask(collision_mask, action, get_method_to_call, set_method_to_call)
+        # child 1
+        get_method_to_call = getattr(cdprimitive.getChild(1).node(), get_method_name, None)
+        set_method_to_call = getattr(cdprimitive.getChild(1).node(), set_method_name)
+        _change_cdmask(collision_mask, action, get_method_to_call, set_method_to_call)
+        # child 2
+        get_method_to_call = getattr(cdprimitive.getChild(2).node(), get_method_name, None)
+        set_method_to_call = getattr(cdprimitive.getChild(2).node(), set_method_name)
+        _change_cdmask(collision_mask, action, get_method_to_call, set_method_to_call)
+    else:
+        get_method_to_call = getattr(cdprimitive.node(), get_method_name, None)
+        set_method_to_call = getattr(cdprimitive.node(), set_method_name)
+        _change_cdmask(collision_mask, action, get_method_to_call, set_method_to_call)
 
 
 def update_pose(cdprimitive, objcm):

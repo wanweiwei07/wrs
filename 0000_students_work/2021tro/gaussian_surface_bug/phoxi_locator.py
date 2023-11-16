@@ -207,12 +207,12 @@ class PhxiLocator(object):
                                                           toggledebug=False)
             rmse, fitness = self.__get_icp_scores(tgt_narray, src_narray, show_icp=False)
             if use_rmse:
-                print("rmse:", rmse, "pcd_helper axis_length", len(tgt))
+                print("rmse:", rmse, "mph axis_length", len(tgt))
                 if 0.0 < rmse < min_rmse:
                     result_pcd = copy.deepcopy(tgt_narray)
                     min_rmse = rmse
             else:
-                print("fitness:", fitness, "pcd_helper axis_length", len(tgt))
+                print("fitness:", fitness, "mph axis_length", len(tgt))
                 if fitness != 0.0 and fitness > max_fitness:
                     result_pcd = copy.deepcopy(tgt_narray)
                     max_fitness = fitness
@@ -226,7 +226,7 @@ class PhxiLocator(object):
             if len(objpcd) > max_length:
                 max_length = len(objpcd)
                 result_pcd = objpcd
-        print("largest pcd_helper axis_length:", max_length)
+        print("largest mph axis_length:", max_length)
         return result_pcd
 
     def find_objdepth_list_by_size(self, sourcenparray_float32, expandingdelta=5, toggledebug=False,
@@ -341,7 +341,7 @@ class PhxiLocator(object):
             cv2.imshow("result", result)
             cv2.waitKey(0)
 
-            # pcdu.show_pcd(pcd_helper)
+            # pcdu.show_pcd(mph)
             base.pggen.plotSphere(base.render, tcppos, radius=10, rgba=(1, 0, 0, 1))
             base.pggen.plotSphere(base.render, tcp_pcd, radius=10, rgba=(0, 1, 0, 1))
             base.run()
@@ -388,7 +388,7 @@ class PhxiLocator(object):
         target_pcd_center = pcdu.get_pcd_center(target)
         if inithomomat is None:
             inithomomat = self.__match_pos(np.asarray(ts.sample_surface(source_cm.trimesh, count=10000)), target)
-        print("Length of target pcd_helper", len(target))
+        print("Length of target mph", len(target))
         source = pcdu.get_objpcd_partial_bycampos(source_cm, inithomomat, sample_num=len(target), toggledebug=False)
         # source = pcdu.get_objpcd(source_cm, objmat4=inithomomat, sample_num=len(target_pcd))
 
@@ -420,7 +420,7 @@ class PhxiLocator(object):
         #     result = copy.deepcopy(result)
         #     result[:3, 0] = np.array([1, 0, 0])
         #     result[:3, 1] = np.array([0, 1, 0])
-        print("---------------match pcd_helper&mcm done---------------")
+        print("---------------match mph&mcm done---------------")
 
         if toggledebug:
             show_cm = copy.deepcopy(source_cm)
