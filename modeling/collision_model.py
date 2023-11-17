@@ -53,8 +53,8 @@ class CollisionModel(mgm.GeometricModel):
         """
         if isinstance(initor, CollisionModel):
             self.uuid = uuid.uuid4()
-            self._refd_pos = copy.deepcopy(initor._refd_pos)
-            self._refd_rotmat = copy.deepcopy(initor._refd_rotmat)
+            self.refd_pos = copy.deepcopy(initor.refd_pos)
+            self.refd_rotmat = copy.deepcopy(initor.refd_rotmat)
             self._name = copy.deepcopy(initor.name)
             self._file_path = copy.deepcopy(initor.file_path)
             self._trm_mesh = copy.deepcopy(initor.trm_mesh)
@@ -71,8 +71,8 @@ class CollisionModel(mgm.GeometricModel):
                              toggle_transparency=toggle_transparency,
                              toggle_twosided=toggle_twosided)
             self.uuid = uuid.uuid4()
-            self._refd_pos = np.zeros(3)
-            self._refd_rotmat = np.eye(3)
+            self.refd_pos = np.zeros(3)
+            self.refd_rotmat = np.eye(3)
             # cd primitive
             self._cdprimitive = self._acquire_cdprimitive(cdprimitive_type,
                                                           expand_radius,
@@ -323,8 +323,8 @@ class CollisionModel(mgm.GeometricModel):
         :return:
         """
         homomat = np.eye(4)
-        homomat[:3, 3] = pos + rotmat @ self._refd_pos
-        homomat[:3, :3] = rotmat @ self._refd_rotmat
+        homomat[:3, 3] = pos + rotmat @ self.refd_pos
+        homomat[:3, :3] = rotmat @ self.refd_rotmat
         self.set_homomat(npmat4=homomat)
 
     def copy(self):
@@ -338,50 +338,50 @@ class CollisionModel(mgm.GeometricModel):
         return CollisionModel(self)
 
 
-class RefdCollisionModel(CollisionModel):
-    """
-    a varied collision model with additional data like uuid, local pos, and rotmat
-    author: weiwei
-    date: 20230822
-    """
-
-    def __init__(self,
-                 initor,
-                 refd_pos=np.zeros(3),
-                 refd_rotmat=np.eye(3),
-                 rgba=bc.link_stick_rgba,
-                 cdprimitive_type=mc.CDPrimitiveType.BOX,
-                 cdmesh_type=mc.CDMeshType.DEFAULT,
-                 expand_radius=None,
-                 name="ccmodel",
-                 userdefined_cdprimitive_fn=None,
-                 toggle_transparency=True,
-                 toggle_twosided=False):
-        super().__init__(initor=initor,
-                         cdprimitive_type=cdprimitive_type,
-                         cdmesh_type=cdmesh_type,
-                         expand_radius=expand_radius,
-                         name=name,
-                         userdefined_cdprimitive_fn=userdefined_cdprimitive_fn,
-                         toggle_transparency=toggle_transparency,
-                         toggle_twosided=toggle_twosided)
-        self.uuid = uuid.uuid4()  # uuid for storing this object in the cce_dict of collision checker
-        self.refd_pos = refd_pos
-        self.refd_rotmat = refd_rotmat
-        self.update_pose_considering_refd(self.refd_pos, self.refd_rotmat)
-        self.set_rgba(rgba)
-
-    def update_pose_considering_refd(self, pos=np.zeros(3), rotmat=np.eye(3)):
-        """
-        update the global parameters against give reference pos, reference rotmat
-        :param pos:
-        :param rotmat:
-        :return:
-        """
-        homomat = np.eye(4)
-        homomat[:3, 3] = pos + rotmat @ self.refd_pos
-        homomat[:3, :3] = rotmat @ self.refd_rotmat
-        self.set_homomat(npmat4=homomat)
+# class RefdCollisionModel(CollisionModel):
+#     """
+#     a varied collision model with additional data like uuid, local pos, and rotmat
+#     author: weiwei
+#     date: 20230822
+#     """
+#
+#     def __init__(self,
+#                  initor,
+#                  refd_pos=np.zeros(3),
+#                  refd_rotmat=np.eye(3),
+#                  rgba=bc.link_stick_rgba,
+#                  cdprimitive_type=mc.CDPrimitiveType.BOX,
+#                  cdmesh_type=mc.CDMeshType.DEFAULT,
+#                  expand_radius=None,
+#                  name="ccmodel",
+#                  userdefined_cdprimitive_fn=None,
+#                  toggle_transparency=True,
+#                  toggle_twosided=False):
+#         super().__init__(initor=initor,
+#                          cdprimitive_type=cdprimitive_type,
+#                          cdmesh_type=cdmesh_type,
+#                          expand_radius=expand_radius,
+#                          name=name,
+#                          userdefined_cdprimitive_fn=userdefined_cdprimitive_fn,
+#                          toggle_transparency=toggle_transparency,
+#                          toggle_twosided=toggle_twosided)
+#         self.uuid = uuid.uuid4()  # uuid for storing this object in the cce_dict of collision checker
+#         self.refd_pos = refd_pos
+#         self.refd_rotmat = refd_rotmat
+#         self.update_pose_considering_refd(self.refd_pos, self.refd_rotmat)
+#         self.set_rgba(rgba)
+#
+#     def update_pose_considering_refd(self, pos=np.zeros(3), rotmat=np.eye(3)):
+#         """
+#         update the global parameters against give reference pos, reference rotmat
+#         :param pos:
+#         :param rotmat:
+#         :return:
+#         """
+#         homomat = np.eye(4)
+#         homomat[:3, 3] = pos + rotmat @ self.refd_pos
+#         homomat[:3, :3] = rotmat @ self.refd_rotmat
+#         self.set_homomat(npmat4=homomat)
 
 
 def gen_box(extent=np.array([.1, .1, .1]), homomat=np.eye(4), rgba=np.array([1, 0, 0, 1])):

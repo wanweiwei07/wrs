@@ -47,16 +47,15 @@ class JLChain(object):
         self.n_dof = n_dof
         self.home = np.zeros(self.n_dof)  # self.n_dof+1 joints in total, the first joint is a anchor joint
         # create anchors
-
-        self.bgn_anchor = rkjl.Anchor(name, pos=pos, rotmat=rotmat)
-        self.end_anchor =
+        self.bgn_anchor = rkjl.Anchor(name, pos=bgn_anchor_pos, rotmat=bgn_anchor_rotmat)
+        self.end_anchor = rkjl.Anchor(name, pos=end_anchor_loc_pos, rotmat=end_anchor_loc_rotmat)
         # initialize joints and links
         self.jnts = [rkjl.Joint(joint_name=f"j{i}") for i in range(self.n_dof)]
         self._jnt_rngs = self._get_jnt_rngs()
         # default tcp
         self._tcp_jnt_id = self.n_dof - 1
-        self.tcp_loc_pos = np.zeros(3)
-        self.tcp_loc_rotmat = np.eye(3)
+        self.end_anchor_loc_pos = end_anchor_loc_pos
+        self.end_anchor_loc_rotmat = end_anchor_loc_rotmat
         # initialize
         self.go_home()
         # collision primitives
@@ -102,7 +101,13 @@ class JLChain(object):
             jnt_limits.append(self.jnts[i].motion_rng)
         return np.asarray(jnt_limits)
 
-    def forward_kinematics(self, jnt_vals=None, toggle_jac=True, update=False, toggle_dbg=False):
+    def forward_kinematics(self,
+                           jnt_vals=None,
+                           tcp_loc_pos=None,
+                           tcp_loc_rotmat=None,
+                           toggle_jac=True,
+                           update=False,
+                           toggle_dbg=False):
         """
         This function will update the global parameters
         :param jnt_vals: a 1xn ndarray where each element indicates the value of a joint (in radian or meter)
@@ -111,8 +116,9 @@ class JLChain(object):
         author: weiwei
         date: 20161202, 20201009osaka, 20230823
         """
+        tcp_loc_homomat = rm.homomat_from_posrot(pos=tcp_loc_pos, rotmat=tcp_loc_rotmat)
         if not update and jnt_vals is not None:
-            homomat = self.anchor.homomat
+            homomat = self.bgn_anchor.homomat
             j_pos = np.zeros((self.n_dof, 3))
             j_axis = np.zeros((self.n_dof, 3))
             for i in range(self.tcp_jnt_id + 1):
@@ -140,8 +146,8 @@ class JLChain(object):
             else:
                 return tcp_gl_pos, tcp_gl_rotmat
         if update and jnt_vals is not None:
-            pos = self.anchor.pos
-            rotmat = self.anchor.rotmat
+            pos = self.bgn_anchor.pos
+            rotmat = self.bgn_anchor.rotmat
             for i in range(self.n_dof):
                 motion_value = jnt_vals[i]
                 self.jnts[i].update_pose_considering_refd(pos=pos, rotmat=rotmat, motion_val=motion_value)

@@ -106,8 +106,8 @@ class CollisionChecker(object):
 
     def add_cdelement(self, refd_cm):
         """
-        add a RefdCollisionModel as a ccelement
-        :param refd_cm: instance of RefdCollisionModel
+        add a CollisionModel as a ccelement
+        :param refd_cm: instance of CollisionModel
         :return:
         author: weiwei
         date: 20231116
@@ -117,7 +117,7 @@ class CollisionChecker(object):
     def remove_cdelement(self, refd_cm):
         """
         remove a ccelement by using the uuid of a refd_cm
-        :param refd_cm: instance of RefdCollisionModel
+        :param refd_cm: instance of CollisionModel
         :return:
         author: weiwei
         date: 20231117
@@ -129,8 +129,8 @@ class CollisionChecker(object):
     def set_cdpair(self, rcm_from_list, rcm_into_list):
         """
         The given two lists will be checked for collisions
-        :param rcm_from_list: a list of RefdCollisionModel
-        :param rcm_into_list: a list of RefdCollisionModel
+        :param rcm_from_list: a list of CollisionModel
+        :param rcm_into_list: a list of CollisionModel
         :return:
         author: weiwei
         date: 20201215, 20230811, 20231116
