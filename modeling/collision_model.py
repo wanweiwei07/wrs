@@ -312,17 +312,18 @@ class CollisionModel(mgm.GeometricModel):
     def copy(self):
         return CollisionModel(self)
 
-class CCModel(CollisionModel):
+
+class RefdCollisionModel(CollisionModel):
     """
-    a varied collision model with additional data like local pos and rotmat
+    a varied collision model with additional data like uuid, local pos, and rotmat
     author: weiwei
     date: 20230822
     """
 
     def __init__(self,
                  initor,
-                 loc_pos=np.zeros(3),
-                 loc_rotmat=np.eye(3),
+                 refd_pos=np.zeros(3),
+                 refd_rotmat=np.eye(3),
                  rgba=bc.link_stick_rgba,
                  cdprimitive_type=mc.CDPrimitiveType.BOX,
                  cdmesh_type=mc.CDMeshType.DEFAULT,
@@ -339,22 +340,13 @@ class CCModel(CollisionModel):
                          userdefined_cdprimitive_fn=userdefined_cdprimitive_fn,
                          toggle_transparency=toggle_transparency,
                          toggle_twosided=toggle_twosided)
-        self.uuid = uuid.uuid4() # uuid for storing this object in the cce_dict of collision checker
-        self.loc_pos = loc_pos
-        self.loc_rotmat = loc_rotmat
-        self.set_pos(loc_pos)
-        self.set_rotmat(loc_rotmat)
+        self.uuid = uuid.uuid4()  # uuid for storing this object in the cce_dict of collision checker
+        self.refd_pos = refd_pos
+        self.refd_rotmat = refd_rotmat
+        self.update_pose_considering_refd(self.refd_pos, self.refd_rotmat)
         self.set_rgba(rgba)
 
-    @property
-    def gl_pos(self):
-        return self.get_pos()
-
-    @property
-    def gl_rotmat(self):
-        return self.get_rotmat()
-
-    def update_globals(self, pos=np.zeros(3), rotmat=np.eye(3)):
+    def update_pose_considering_refd(self, pos=np.zeros(3), rotmat=np.eye(3)):
         """
         update the global parameters against give reference pos, reference rotmat
         :param pos:
@@ -362,8 +354,8 @@ class CCModel(CollisionModel):
         :return:
         """
         homomat = np.eye(4)
-        homomat[:3, 3] = pos + rotmat @ self.loc_pos
-        homomat[:3, :3] = rotmat @ self.loc_rotmat
+        homomat[:3, 3] = pos + rotmat @ self.refd_pos
+        homomat[:3, :3] = rotmat @ self.refd_rotmat
         self.set_homomat(npmat4=homomat)
 
 

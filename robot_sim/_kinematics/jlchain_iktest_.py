@@ -137,7 +137,7 @@ class JLChain(object):
             rotmat = self.anchor.rotmat
             for i in range(self.n_dof):
                 motion_value = jnt_vals[i]
-                self.jnts[i].update_globals(pos=pos, rotmat=rotmat, motion_val=motion_value)
+                self.jnts[i].update_pose_considering_refd(pos=pos, rotmat=rotmat, motion_val=motion_value)
                 pos = self.jnts[i].gl_pos_q
                 rotmat = self.jnts[i].gl_rotmat_q
         tcp_gl_pos, tcp_gl_rotmat = self.cvt_tcp_loc_to_gl()

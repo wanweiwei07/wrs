@@ -104,7 +104,7 @@ class Joint(object):
     @link.setter
     def link(self, value):
         self._link = value
-        self._link.update_globals(self.gl_pos_q, self.gl_rotmat_q)
+        self._link.update_pose_considering_refd(self.gl_pos_q, self.gl_rotmat_q)
 
     def change_type(self, type: rkc.JointType, motion_rng: np.ndarray = None):
         if motion_rng is None:
@@ -142,7 +142,7 @@ class Joint(object):
         self._gl_motion_ax = self._gl_rotmat_0 @ self.loc_motion_axis
         self.set_motion_value(motion_value=motion_val)
         if self._link is not None:
-            self._link.update_globals(self.gl_pos_q, self.gl_rotmat_q)
+            self._link.update_pose_considering_refd(self.gl_pos_q, self.gl_rotmat_q)
 
     def get_motion_homomat(self, motion_val=0):
         self.assert_motion_val(val=motion_val)
@@ -177,7 +177,7 @@ def create_joint_with_link(joint_name="auto",
                            joint_type=rkc.JointType.REVOLUTE,
                            link_name="auto"):
     jnt = Joint(joint_name, type=joint_type)
-    jnt.link = mcm.CCModel(name=link_name)
+    jnt.link = mcm.RefdCollisionModel(name=link_name)
     return jnt
 
 
@@ -203,6 +203,6 @@ if __name__ == '__main__':
     # print(result_homomat)
     # mgm.gen_myc_frame(pos=result_homomat[:3, 3], rotmat=result_homomat[:3, :3]).attach_to(base)
 
-    jnt.link = mcm.CCModel("../../basis/objects/or2fg7_base.stl")
+    jnt.link = mcm.RefdCollisionModel("../../basis/objects/or2fg7_base.stl")
     rkmg.gen_joint(jnt, toggle_link_mesh=True).attach_to(base)
     base.run()

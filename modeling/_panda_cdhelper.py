@@ -27,7 +27,7 @@ def copy_cdprimitive_attach_to(objcm,
         return_pdcndp.setMat(objcm.pdndp.getMat())
     else:
         return_pdcndp.setMat(da.npmat4_to_pdmat4(homomat))  # scale is reset to 1 1 1 after setMat to the given pos
-        return_pdcndp.setScale(objcm.pdndp.getScale())
+        # return_pdcndp.setScale(objcm.pdndp.getScale()) # 20231117 scale is validated
     if clear_mask:
         change_cdmask(return_pdcndp, BitMask32(0x00), action="new", type="both")
     return return_pdcndp
