@@ -47,7 +47,7 @@ class JLChain(object):
         self.home = np.zeros(self.n_dof)  # self.n_dof+1 joints in total, the first joint is a anchor joint
         # initialize joints and links
         self.anchor = rkjl.Anchor(name, pos=pos, rotmat=rotmat)
-        self.jnts = [rkjl.create_joint_with_link(joint_name=f"j{i}", link_name=f"l{i}") for i in range(self.n_dof)]
+        self.jnts = [rkjl.Joint(joint_name=f"j{i}") for i in range(self.n_dof)]
         self._jnt_rngs = self._get_jnt_rngs()
         # default tcp
         self._tcp_jnt_id = self.n_dof - 1

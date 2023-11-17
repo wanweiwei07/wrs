@@ -52,6 +52,9 @@ class CollisionModel(mgm.GeometricModel):
         date: 20190312, 20201212, 20230814
         """
         if isinstance(initor, CollisionModel):
+            self.uuid = uuid.uuid4()
+            self._refd_pos = copy.deepcopy(initor._refd_pos)
+            self._refd_rotmat = copy.deepcopy(initor._refd_rotmat)
             self._name = copy.deepcopy(initor.name)
             self._file_path = copy.deepcopy(initor.file_path)
             self._trm_mesh = copy.deepcopy(initor.trm_mesh)
@@ -67,6 +70,9 @@ class CollisionModel(mgm.GeometricModel):
                              name=name,
                              toggle_transparency=toggle_transparency,
                              toggle_twosided=toggle_twosided)
+            self.uuid = uuid.uuid4()
+            self._refd_pos = np.zeros(3)
+            self._refd_rotmat = np.eye(3)
             # cd primitive
             self._cdprimitive = self._acquire_cdprimitive(cdprimitive_type,
                                                           expand_radius,
@@ -309,7 +315,26 @@ class CollisionModel(mgm.GeometricModel):
             contact_point, contact_normal = moh.rayhit_closet(spos, epos, self)
             return contact_point, contact_normal
 
+    def update_pose_considering_refd(self, pos=np.zeros(3), rotmat=np.eye(3)):
+        """
+        update the global parameters against give reference pos, reference rotmat
+        :param pos:
+        :param rotmat:
+        :return:
+        """
+        homomat = np.eye(4)
+        homomat[:3, 3] = pos + rotmat @ self._refd_pos
+        homomat[:3, :3] = rotmat @ self._refd_rotmat
+        self.set_homomat(npmat4=homomat)
+
     def copy(self):
+        return CollisionModel(self)
+
+    def __deepcopy__(self):
+        """
+        this function helps make sure the uuid is unique
+        :return:
+        """
         return CollisionModel(self)
 
 

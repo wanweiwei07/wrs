@@ -24,16 +24,20 @@ class JLChain(object):
 
     def __init__(self,
                  name="auto",
-                 pos=np.zeros(3),
-                 rotmat=np.eye(3),
+                 bgn_anchor_pos=np.zeros(3),
+                 bgn_anchor_rotmat=np.eye(3),
+                 end_anchor_loc_pos=np.zeros(3),
+                 end_anchor_loc_rotmat=np.eye(3),
                  n_dof=6,
                  cdprimitive_type=cm.CDPrimitiveType.BOX,
                  cdmesh_type=cm.CDMeshType.DEFAULT):
         """
         conf -- configuration: target joint values
         :param name:
-        :param pos:
-        :param rotmat:
+        :param bgn_anchor_pos:
+        :param bgn_anchor_rotmat:
+        :param end_anchor_pos:
+        :param
         :param home: number of joints
         :param cdprimitive_type:
         :param cdmesh_type:
@@ -42,9 +46,12 @@ class JLChain(object):
         self.name = name
         self.n_dof = n_dof
         self.home = np.zeros(self.n_dof)  # self.n_dof+1 joints in total, the first joint is a anchor joint
+        # create anchors
+
+        self.bgn_anchor = rkjl.Anchor(name, pos=pos, rotmat=rotmat)
+        self.end_anchor =
         # initialize joints and links
-        self.anchor = rkjl.Anchor(name, pos=pos, rotmat=rotmat)
-        self.jnts = [rkjl.create_joint_with_link(joint_name=f"j{i}", link_name=f"l{i}") for i in range(self.n_dof)]
+        self.jnts = [rkjl.Joint(joint_name=f"j{i}") for i in range(self.n_dof)]
         self._jnt_rngs = self._get_jnt_rngs()
         # default tcp
         self._tcp_jnt_id = self.n_dof - 1
@@ -374,10 +381,10 @@ class JLChain(object):
         # print("CWLN time ", toc - tic)
         tic = time.time()
         jnt_vals = self._nik_solver.pinv_wc(tgt_pos=tgt_pos,
-                                              tgt_rotmat=tgt_rotmat,
-                                              seed_jnt_vals=seed_jnt_vals,
-                                              max_n_iter=max_n_iter,
-                                              toggle_dbg=toggle_dbg)
+                                            tgt_rotmat=tgt_rotmat,
+                                            seed_jnt_vals=seed_jnt_vals,
+                                            max_n_iter=max_n_iter,
+                                            toggle_dbg=toggle_dbg)
         toc = time.time()
         print("PINV WC time ", toc - tic)
         # tic = time.time()
@@ -464,7 +471,7 @@ if __name__ == "__main__":
                                             seed_jnt_vals=seed_jnt_vals,
                                             max_n_iter=30)
         toc = time.time()
-        time_list.append(toc-tic)
+        time_list.append(toc - tic)
         if joint_values_with_dbg_info is not None:
             success += 1
         else:
