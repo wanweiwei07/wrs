@@ -145,14 +145,6 @@ class StaticGeometricModel(object):
         rgba = self._pdndp.getColor()
         self._pdndp.setColor(rgba[0], rgba[1], rgba[2], alpha)
 
-    def set_scale(self, scale=np.array([1, 1, 1])):
-        """
-        :param scale: 1x3 nparray, each element denotes the scale in x, y, and z dimensions
-        :return:
-        """
-        self._pdndp.setScale(*scale)
-        self._trm_mesh.apply_scale(scale)
-
     def set_point_size(self, size=.001):
         # only applicable to point clouds
         self.pdndp_core.setRenderModeThickness(size * da.M_TO_PIXEL)
@@ -162,9 +154,6 @@ class StaticGeometricModel(object):
 
     def clear_rgba(self):
         self._pdndp.clearColor()
-
-    def get_scale(self):
-        return da.pdvec3_to_npvec3(self._pdndp.getScale())
 
     def attach_to(self, target):
         if isinstance(target, ShowBase):

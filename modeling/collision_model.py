@@ -52,9 +52,6 @@ class CollisionModel(mgm.GeometricModel):
         date: 20190312, 20201212, 20230814
         """
         if isinstance(initor, CollisionModel):
-            self.uuid = uuid.uuid4()
-            self.loc_pos = copy.deepcopy(initor.loc_pos)
-            self.loc_rotmat = copy.deepcopy(initor.loc_rotmat)
             self._name = copy.deepcopy(initor.name)
             self._file_path = copy.deepcopy(initor.file_path)
             self._trm_mesh = copy.deepcopy(initor.trm_mesh)
@@ -70,9 +67,6 @@ class CollisionModel(mgm.GeometricModel):
                              name=name,
                              toggle_transparency=toggle_transparency,
                              toggle_twosided=toggle_twosided)
-            self.uuid = uuid.uuid4()
-            self.loc_pos = np.zeros(3)
-            self.loc_rotmat = np.eye(3)
             # cd primitive
             self._cdprimitive = self._acquire_cdprimitive(cdprimitive_type,
                                                           expand_radius,
@@ -217,21 +211,18 @@ class CollisionModel(mgm.GeometricModel):
         return_cdprimitive.setMat(self.pdndp.getMat())
         return return_cdprimitive
 
-    def _update_with_loc(self, pos=np.zeros(3), rotmat=np.eye(3)):
-        updated_pos = pos + rotmat @ self.loc_pos
-        updated_rotmat = rotmat @ self.loc_rotmat
-        return updated_pos, updated_rotmat
+    # def _update_with_loc(self, pos=np.zeros(3), rotmat=np.eye(3)):
+    #     updated_pos = pos + rotmat @ self.loc_pos
+    #     updated_rotmat = rotmat @ self.loc_rotmat
+    #     return updated_pos, updated_rotmat
 
     def set_pos(self, pos: np.ndarray = np.zeros(3)):
-        pos = self._update_with_loc(pos=pos)
         self._pdndp.setPos(pos[0], pos[1], pos[2])
 
     def set_rotmat(self, rotmat: np.ndarray = np.eye(3)):
-        _, rotmat = self._update_with_loc(rotmat=rotmat)
         self._pdndp.setQuat(da.npmat3_to_pdquat(rotmat))
 
     def set_pose(self, pos: np.ndarray = np.zeros(3), rotmat: np.ndarray = np.eye(3)):
-        pos, rotmat = self._update_with_loc(pos=pos, rotmat=rotmat)
         self._pdndp.setPosQuat(da.npvec3_to_pdvec3(pos), da.npmat3_to_pdquat(rotmat))
 
     def set_homomat(self, npmat4):
@@ -310,17 +301,8 @@ class CollisionModel(mgm.GeometricModel):
             contact_point, contact_normal = moh.rayhit_closet(spos, epos, self)
             return contact_point, contact_normal
 
-    def update_pose_considering_refd(self, pos=np.zeros(3), rotmat=np.eye(3)):
-        """
-        update the global parameters against give reference pos, reference rotmat
-        :param pos:
-        :param rotmat:
-        :return:
-        """
-        homomat = np.eye(4)
-        homomat[:3, 3] = pos + rotmat @ self.refd_pos
-        homomat[:3, :3] = rotmat @ self.refd_rotmat
-        self.set_homomat(npmat4=homomat)
+    def copy_geo_model(self):
+        return mgm.GeometricModel(self)
 
     def copy(self):
         return CollisionModel(self)
@@ -345,8 +327,8 @@ class CollisionModel(mgm.GeometricModel):
 #                  refd_pos=np.zeros(3),
 #                  refd_rotmat=np.eye(3),
 #                  rgba=bc.link_stick_rgba,
-#                  cdprimitive_type=mc.CDPrimitiveType.BOX,
-#                  cdmesh_type=mc.CDMeshType.DEFAULT,
+#                  cdprimitive_type=mmc.CDPrimitiveType.BOX,
+#                  cdmesh_type=mmc.CDMeshType.DEFAULT,
 #                  expand_radius=None,
 #                  name="ccmodel",
 #                  userdefined_cdprimitive_fn=None,

@@ -6,6 +6,70 @@ import modeling.collision_model as mcm
 import modeling.geometric_model as mgm
 import modeling.constant as mc
 import robot_sim._kinematics.constant as rkc
+import uuid
+
+
+class Link(object):
+    """
+    author: weiwei
+    date: 20230822
+    """
+
+    def __init__(self,
+                 name="auto",
+                 loc_pos=np.zeros(3),
+                 loc_rotmat=np.eye(3),
+                 com=np.zeros(3),
+                 inertia=np.eye(3),
+                 mass=0,
+                 col_model=None):
+        self.uuid = uuid.uuid4()
+        self.name = name
+        self._loc_pos = loc_pos
+        self._loc_rotmat = loc_rotmat
+        self.com = com
+        self.inertia = inertia
+        self.mass = mass
+        self.col_model = col_model
+        # the following values will be updated automatically
+        self._gl_pos = self.loc_pos
+        self._gl_rotmat = self.loc_rotmat
+
+    @property
+    def loc_pos(self):
+        return self._loc_pos
+
+    @loc_pos.setter
+    def loc_pos(self, value):
+        self._loc_pos = value
+        self.update_globals(pos=self.gl_pos, rotmat=self.gl_rotmat)
+
+    @property
+    def loc_rotmat(self):
+        return self._loc_rotmat
+
+    @loc_rotmat.setter
+    def loc_rotmat(self, value):
+        self._loc_rotmat = value
+        self.update_globals(pos=self.gl_pos, rotmat=self.gl_rotmat)
+
+    @property
+    def gl_pos(self):
+        return self._gl_pos
+
+    @property
+    def gl_rotmat(self):
+        return self._gl_rotmat
+
+    def update_globals(self, pos=np.zeros(3), rotmat=np.eye(3)):
+        """
+        update the global parameters against give reference pos, reference rotmat
+        :param pos:
+        :param rotmat:
+        :return:
+        """
+        self._gl_pos = pos + rotmat @ self.loc_pos
+        self._gl_rotmat = rotmat @ self.loc_rotmat
 
 
 class Anchor(object):
@@ -53,7 +117,7 @@ class Joint(object):
         self._gl_pos_q = self._gl_pos_0
         self._gl_rotmat_q = self._gl_rotmat_0
         # the following parameter has a setter function
-        self._link = None
+        self._link = Link()
         # the following parameter should not be changed
         self._type = type
 
@@ -104,7 +168,6 @@ class Joint(object):
     @link.setter
     def link(self, value):
         self._link = value
-        self._link.update_pose_considering_refd(self.gl_pos_q, self.gl_rotmat_q)
 
     def change_type(self, type: rkc.JointType, motion_rng: np.ndarray = None):
         if motion_rng is None:
@@ -142,7 +205,7 @@ class Joint(object):
         self._gl_motion_ax = self._gl_rotmat_0 @ self.loc_motion_axis
         self.set_motion_value(motion_value=motion_val)
         if self._link is not None:
-            self._link.update_pose_considering_refd(self.gl_pos_q, self.gl_rotmat_q)
+            self._link.update_globals(self.gl_pos_q, self.gl_rotmat_q)
 
     def get_motion_homomat(self, motion_val=0):
         self.assert_motion_val(val=motion_val)
@@ -177,7 +240,7 @@ def create_joint_with_link(joint_name="auto",
                            joint_type=rkc.JointType.REVOLUTE,
                            link_name="auto"):
     jnt = Joint(joint_name, type=joint_type)
-    jnt.link = mcm.RefdCollisionModel(name=link_name)
+    jnt.link = mcm.CollisionModel(name=link_name)
     return jnt
 
 
@@ -203,6 +266,6 @@ if __name__ == '__main__':
     # print(result_homomat)
     # mgm.gen_myc_frame(pos=result_homomat[:3, 3], rotmat=result_homomat[:3, :3]).attach_to(base)
 
-    jnt.link = mcm.RefdCollisionModel("../../basis/objects/or2fg7_base.stl")
+    jnt.link.col_model = mcm.CollisionModel("../../basis/objects/or2fg7_base.stl")
     rkmg.gen_joint(jnt, toggle_link_mesh=True).attach_to(base)
     base.run()
