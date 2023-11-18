@@ -53,8 +53,8 @@ class CollisionModel(mgm.GeometricModel):
         """
         if isinstance(initor, CollisionModel):
             self.uuid = uuid.uuid4()
-            self.refd_pos = copy.deepcopy(initor.refd_pos)
-            self.refd_rotmat = copy.deepcopy(initor.refd_rotmat)
+            self.loc_pos = copy.deepcopy(initor.loc_pos)
+            self.loc_rotmat = copy.deepcopy(initor.loc_rotmat)
             self._name = copy.deepcopy(initor.name)
             self._file_path = copy.deepcopy(initor.file_path)
             self._trm_mesh = copy.deepcopy(initor.trm_mesh)
@@ -71,8 +71,8 @@ class CollisionModel(mgm.GeometricModel):
                              toggle_transparency=toggle_transparency,
                              toggle_twosided=toggle_twosided)
             self.uuid = uuid.uuid4()
-            self.refd_pos = np.zeros(3)
-            self.refd_rotmat = np.eye(3)
+            self.loc_pos = np.zeros(3)
+            self.loc_rotmat = np.eye(3)
             # cd primitive
             self._cdprimitive = self._acquire_cdprimitive(cdprimitive_type,
                                                           expand_radius,
@@ -217,30 +217,25 @@ class CollisionModel(mgm.GeometricModel):
         return_cdprimitive.setMat(self.pdndp.getMat())
         return return_cdprimitive
 
+    def _update_with_loc(self, pos=np.zeros(3), rotmat=np.eye(3)):
+        updated_pos = pos + rotmat @ self.loc_pos
+        updated_rotmat = rotmat @ self.loc_rotmat
+        return updated_pos, updated_rotmat
+
     def set_pos(self, pos: np.ndarray = np.zeros(3)):
+        pos = self._update_with_loc(pos=pos)
         self._pdndp.setPos(pos[0], pos[1], pos[2])
 
     def set_rotmat(self, rotmat: np.ndarray = np.eye(3)):
+        _, rotmat = self._update_with_loc(rotmat=rotmat)
         self._pdndp.setQuat(da.npmat3_to_pdquat(rotmat))
 
     def set_pose(self, pos: np.ndarray = np.zeros(3), rotmat: np.ndarray = np.eye(3)):
+        pos, rotmat = self._update_with_loc(pos=pos, rotmat=rotmat)
         self._pdndp.setPosQuat(da.npvec3_to_pdvec3(pos), da.npmat3_to_pdquat(rotmat))
 
     def set_homomat(self, npmat4):
-        self._pdndp.setPosQuat(da.npvec3_to_pdvec3(npmat4[:3, 3]), da.npmat3_to_pdquat(npmat4[:3, :3]))
-
-    def set_rpy(self, roll, pitch, yaw):
-        """
-        set the pose of the object using rpy
-        :param roll: radian
-        :param pitch: radian
-        :param yaw: radian
-        :return:
-        author: weiwei
-        date: 20190513
-        """
-        npmat3 = rm.rotmat_from_euler(roll, pitch, yaw, axes="sxyz")
-        self.set_rotmat(npmat3)
+        self.set_pose(pos=npmat4[:3, 3], rotmat=npmat4[:3, :3])
 
     def is_pcdwith(self, objcm, toggle_contacts=False):
         """

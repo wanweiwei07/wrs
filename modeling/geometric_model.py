@@ -253,22 +253,6 @@ class GeometricModel(StaticGeometricModel):
     def set_homomat(self, npmat4):
         self._pdndp.setPosQuat(da.npvec3_to_pdvec3(npmat4[:3, 3]), da.npmat3_to_pdquat(npmat4[:3, :3]))
 
-    def set_rpy(self, roll, pitch, yaw):
-        """
-        set the pose of the object using rpy
-        :param roll: radian
-        :param pitch: radian
-        :param yaw: radian
-        :return:
-        author: weiwei
-        date: 20190513
-        """
-        npmat3 = rm.rotmat_from_euler(roll, pitch, yaw, axes="sxyz")
-        self.set_rotmat(npmat3)
-
-    def set_transparency(self, attribute):
-        return self._pdndp.setTransparency(attribute)
-
     def get_pos(self):
         return da.pdvec3_to_npvec3(self._pdndp.getPos())
 
@@ -280,15 +264,8 @@ class GeometricModel(StaticGeometricModel):
         npmat3 = da.pdquat_to_npmat3(self._pdndp.getQuat())
         return rm.homomat_from_posrot(npv3, npmat3)
 
-    def get_rpy(self):
-        """
-        get the pose of the object using rpy
-        :return: 1x3 nparray [r,p,y] in radian
-        author: weiwei
-        date: 20190513
-        """
-        npmat3 = self.get_rotmat()
-        return rm.rotmat_to_euler(npmat3, axes="sxyz")
+    def set_transparency(self, attribute):
+        return self._pdndp.setTransparency(attribute)
 
     def sample_surface(self, radius=0.005, n_samples=None, toggle_option=None):
         """
