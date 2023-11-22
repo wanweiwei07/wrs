@@ -70,7 +70,7 @@ def update(pk_obj, pcd_list, ball_center_list, counter, task):
                 orbit.append(np.array([f_x(t), f_y(t), f_z(t)]))
             for id in range(len(orbit)):
                 if id > 0:
-                    tmp_stick = gm.gen_stick(spos=orbit[id-1], epos=orbit[id], radius=.01, type="round")
+                    tmp_stick = gm.gen_stick(spos=orbit[id - 1], epos=orbit[id], radius=.01, type="round")
                     tmp_stick.attach_to(base)
                     para_list.append(tmp_stick)
             return task.done

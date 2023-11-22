@@ -1081,7 +1081,7 @@ def prj_drawpath_ss_on_pcd(obj_item, drawpath, mode='DI', direction=np.asarray((
     box_homomat[:3, 3] = np.array([obj_item.drawcenter[0], obj_item.drawcenter[1], .08])
     gm.gen_box(extent=[.12, .12, .001], homomat=box_homomat, rgba=[1,1,1.3])
     for p in drawpath:
-        gm.gen_sphere(pos=(p[0] + obj_item.drawcenter[0], p[1] + obj_item.drawcenter[1], .08), radius=.001, rbga=[1,0,0,1])
+        gm.gen_sphere(pos=(p[0] + obj_item.drawcenter[0], p[1] + obj_item.drawcenter[1], .08), radius=.001, rbga=[1, 0, 0, 1])
     print('--------------map single stroke on mph--------------')
     print('mph num:', len(obj_item.mph))
     print('draw path point num:', len(drawpath))
@@ -1451,8 +1451,8 @@ def get_connection_error(pos_nrml_list, size=(80, 80), step=1):
                     v_id = i * step
                 p1 = np.asarray(stroke_pos_list[i][h_id])
                 p2 = np.asarray(stroke_pos_list[j][v_id])
-                gm.gen_sphere(pos=p1, radius=.002, rgba=(1,0,0,1))
-                gm.gen_sphere(pos=p2, radius=.002, rgba=(0,1,0,1))
+                gm.gen_sphere(pos=p1, radius=.002, rgba=(1, 0, 0, 1))
+                gm.gen_sphere(pos=p2, radius=.002, rgba=(0, 1, 0, 1))
                 grid_points_dist.append(np.linalg.norm(p1 - p2))
                 # print(i, j, h_id, v_id, dist)
 

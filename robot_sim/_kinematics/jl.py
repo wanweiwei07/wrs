@@ -22,7 +22,7 @@ class Link(object):
                  com=np.zeros(3),
                  inertia=np.eye(3),
                  mass=0,
-                 col_model=None):
+                 collision_model=None):
         self.uuid = uuid.uuid4()
         self.name = name
         self._loc_pos = loc_pos
@@ -30,7 +30,7 @@ class Link(object):
         self.com = com
         self.inertia = inertia
         self.mass = mass
-        self.col_model = col_model
+        self.collision_model = collision_model
         # the following values will be updated automatically
         self._gl_pos = self.loc_pos
         self._gl_rotmat = self.loc_rotmat
@@ -219,7 +219,7 @@ class Joint(object):
 
 # def create_link(mesh_file: str,
 #                 name="auto",
-#                 loc_pos=np.zeros(3),
+#                 pos=np.zeros(3),
 #                 loc_rotmat=np.eye(3),
 #                 com=np.zeros(3),
 #                 inertia=np.eye(3),
@@ -227,7 +227,7 @@ class Joint(object):
 #                 rgba=bc.link_stick_rgba):
 #     objcm = mcm.CollisionModel(initor=mesh_file)
 #     return Link(name=name,
-#                 loc_pos=loc_pos,
+#                 pos=pos,
 #                 loc_rotmat=loc_rotmat,
 #                 com=com,
 #                 inertia=inertia,
@@ -266,6 +266,6 @@ if __name__ == '__main__':
     # print(result_homomat)
     # mgm.gen_myc_frame(pos=result_homomat[:3, 3], rotmat=result_homomat[:3, :3]).attach_to(base)
 
-    jnt.link.col_model = mcm.CollisionModel("../../basis/objects/or2fg7_base.stl")
+    jnt.link.collision_model = mcm.CollisionModel("../../basis/objects/or2fg7_base.stl")
     rkmg.gen_joint(jnt, toggle_link_mesh=True).attach_to(base)
     base.run()

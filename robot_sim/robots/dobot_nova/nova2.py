@@ -34,7 +34,7 @@ class Nova2WRS(ri.RobotInterface):
         # left side
         self.body = jl.JLChain(pos=pos, rotmat=rotmat, homeconf=np.zeros(0), name='lft_body_jl')
         self.body.lnks[0]['name'] = "frame"
-        self.body.lnks[0]['loc_pos'] = np.array([-.505, -.132, 0])
+        self.body.lnks[0]['pos'] = np.array([-.505, -.132, 0])
         self.body.lnks[0]['loc_rotmat'] = np.array([[0, 0, 1],
                                                     [0, -1, 0],
                                                     [1, 0, 0]])

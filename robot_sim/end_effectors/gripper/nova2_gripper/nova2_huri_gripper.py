@@ -23,9 +23,9 @@ class Nova2HuriGripper(gp.GripperInterface):
         cpl_end_rotmat = self.coupling.jnts[-1]['gl_rotmatq']
         # gripper base
         self.body = jl.JLChain(pos=cpl_end_pos, rotmat=cpl_end_rotmat, homeconf=np.zeros(1), name='base')
-        self.body.jnts[1]['loc_pos'] = np.array([0, 0, 0])
+        self.body.jnts[1]['pos'] = np.array([0, 0, 0])
         self.body.lnks[0]['name'] = "base"
-        self.body.lnks[0]['loc_pos'] = np.zeros(3)
+        self.body.lnks[0]['pos'] = np.zeros(3)
         self.body.lnks[0]['collision_model'] = cm.CollisionModel(os.path.join(this_dir, "meshes", "base.stl"),
                                                                  cdprimit_type="user_defined",
                                                                  userdefined_cdprimitive_fn=self._base_cdnp,
@@ -33,14 +33,14 @@ class Nova2HuriGripper(gp.GripperInterface):
         self.body.lnks[0]['rgba'] = [.57, .57, .57, 1]
 
         # self.body.lnks[1]['name'] = "realsense_dual"
-        # self.body.lnks[1]['loc_pos'] = np.zeros(3)
+        # self.body.lnks[1]['pos'] = np.zeros(3)
         # self.body.lnks[1]['collision_model'] = mcm.CollisionModel(os.path.join(this_dir, "meshes", "dual_realsense.stl"),
         #                                                          expand_radius=.001)
         # self.body.lnks[1]['rgba'] = [.37, .37, .37, 1]
 
         # lft finger
         self.lft = jl.JLChain(pos=cpl_end_pos, rotmat=cpl_end_rotmat, homeconf=np.zeros(2), name='lft_finger')
-        self.lft.jnts[1]['loc_pos'] = np.array([-0.02507, -0.0272, 0.018595])
+        self.lft.jnts[1]['pos'] = np.array([-0.02507, -0.0272, 0.018595])
         self.lft.jnts[1]['loc_rotmat'] = rm.rotmat_from_euler(0, 0, -math.pi)
         self.lft.jnts[1]['loc_motionax'] = np.array([0, -1, 0])
         self.lft.jnts[1]['motion_rng'] = [-math.pi, math.pi]
@@ -49,7 +49,7 @@ class Nova2HuriGripper(gp.GripperInterface):
             os.path.join(this_dir, "meshes", "connector.stl"), expand_radius=.001)
         self.lft.lnks[1]['rgba'] = [.65, .65, .65, 1]
 
-        self.lft.jnts[2]['loc_pos'] = np.array([-0.02507, -0.0272, 0.077905])
+        self.lft.jnts[2]['pos'] = np.array([-0.02507, -0.0272, 0.077905])
         self.lft.jnts[2]['type'] = 'prismatic'
         self.lft.jnts[2]['loc_motionax'] = np.array([-1, 0, 0])
         self.lft.jnts[2]['motion_rng'] = [.0, 0.099]
@@ -60,7 +60,7 @@ class Nova2HuriGripper(gp.GripperInterface):
         self.lft.lnks[2]['rgba'] = [.65, .65, .65, 1]
         # # rgt finger
         self.rgt = jl.JLChain(pos=cpl_end_pos, rotmat=cpl_end_rotmat, homeconf=np.zeros(2), name='rgt_finger')
-        self.rgt.jnts[1]['loc_pos'] = np.array([0.02507, 0.0272, 0.018595])
+        self.rgt.jnts[1]['pos'] = np.array([0.02507, 0.0272, 0.018595])
         self.rgt.jnts[1]['loc_motionax'] = np.array([0, 1, 0])
         self.rgt.jnts[1]['motion_rng'] = [-math.pi, math.pi]
         self.rgt.lnks[1]['name'] = "rgt_finger_connector"
@@ -68,7 +68,7 @@ class Nova2HuriGripper(gp.GripperInterface):
             os.path.join(this_dir, "meshes", "connector.stl"), expand_radius=.001)
         self.rgt.lnks[1]['rgba'] = [.65, .65, .65, 1]
 
-        self.rgt.jnts[2]['loc_pos'] = np.array([-0.02507, -0.0272, 0.077905])
+        self.rgt.jnts[2]['pos'] = np.array([-0.02507, -0.0272, 0.077905])
         self.rgt.jnts[2]['type'] = 'prismatic'
         self.rgt.jnts[2]['loc_motionax'] = np.array([-1, 0, 0])
         self.rgt.jnts[2]['motion_rng'] = [.0, 0.099]

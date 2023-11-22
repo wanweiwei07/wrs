@@ -83,7 +83,7 @@ gm.gen_dashed_stick(np.array([pos_o[0], 0, pos_o[2]]), np.array([0, 0, pos_o[2]]
 # mgm.gen_dashstick(pos_o, np.array([0, pos_o[1], pos_o[2]]), major_radius=.001, rgba=[0,0,0,.3], len_solid=.005, len_interval=.005).attach_to(base)
 gm.gen_dashed_stick(np.array([0, pos_o[1], pos_o[2]]), np.array([0, 0, pos_o[2]]), radius=.001, rgba=[0, 0, 0, .3], len_solid=.005, len_interval=.005).attach_to(base)
 # #
-gm.gen_sphere(pos=pos_o, radius=.005, rgba=[0,0,0,1]).attach_to(base)
+gm.gen_sphere(pos=pos_o, radius=.005, rgba=[0, 0, 0, 1]).attach_to(base)
 # mgm.gen_dashstick(np.zeros(3), pos_o, major_radius=.003, rgba=[.3, .3, .3, 1], len_solid=.01, len_interval=.01).attach_to(base)
 gm.gen_stick(np.zeros(3), pos_o, radius=.003, rgba=[.3, .3, .3, 1]).attach_to(base)
 

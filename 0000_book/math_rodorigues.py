@@ -17,11 +17,11 @@ gm.gen_frame(axis_length=.2).attach_to(base)
 
 # mgm.gen_dasharrow(epos=cross_vec*.3, rgba=[1,1,0,1], len_solid=.01, len_interval=.0077).attach_to(base)
 gm.gen_arrow(epos=cross_vec*.3, rgba=[1,1,0,1]).attach_to(base)
-gm.gen_sphere(radius=.005, pos=cross_vec*.3, rgba=[0,0,0,1]).attach_to(base)
+gm.gen_sphere(radius=.005, pos=cross_vec * .3, rgba=[0, 0, 0, 1]).attach_to(base)
 nxt_vec_uvw = rotmat2.dot(cross_vec)
 gm.gen_dashed_arrow(epos=nxt_vec_uvw * .3, rgba=[1, 1, 0, 1]).attach_to(base)
 # mgm.gen_arrow(epos=nxt_vec_uvw*.3, rgba=[1,1,0,1]).attach_to(base)
-gm.gen_sphere(radius=.005, pos=nxt_vec_uvw*.3, rgba=[0,0,0,1]).attach_to(base)
+gm.gen_sphere(radius=.005, pos=nxt_vec_uvw * .3, rgba=[0, 0, 0, 1]).attach_to(base)
 radius, _ = rm.unit_vector(cross_vec * .3 - cross_vec.dot(ax) * ax * .3, toggle_length=True)
 gm.gen_arrow(spos=cross_vec.dot(ax)*ax*.3, epos = cross_vec*.3, rgba=[1,.47,0,.5]).attach_to(base)
 gm.gen_dashed_arrow(spos=cross_vec.dot(ax) * ax * .3, epos =nxt_vec_uvw * .3, rgba=[1, .47, 0, .5]).attach_to(base)
@@ -37,21 +37,21 @@ gm.gen_arrow(epos=ax*math.sqrt(.3**2-radius**2), rgba=[0,0,0,1]).attach_to(base)
 
 # rectangle
 epos_vec = rm.unit_vector(cross_vec*.3-cross_vec.dot(ax)*ax*.3)
-gm.gen_stick(spos=cross_vec.dot(ax)*ax*.3-ax*.03,
-             epos =cross_vec.dot(ax)*ax*.3-ax*.03+epos_vec*.03,
+gm.gen_stick(spos=cross_vec.dot(ax) * ax * .3 - ax * .03,
+             epos=cross_vec.dot(ax) * ax * .3 - ax * .03 + epos_vec * .03,
              rgba=[0,0,0,1],
              radius=.001).attach_to(base)
-gm.gen_stick(spos=cross_vec.dot(ax)*ax*.3-ax*.03+epos_vec*.03,
-             epos=cross_vec.dot(ax)*ax*.3-ax*.03+epos_vec*.03+ax*.03-ax*.005,
+gm.gen_stick(spos=cross_vec.dot(ax) * ax * .3 - ax * .03 + epos_vec * .03,
+             epos=cross_vec.dot(ax) * ax * .3 - ax * .03 + epos_vec * .03 + ax * .03 - ax * .005,
              rgba=[0,0,0,1],
              radius=.001).attach_to(base)
 epos_vec = rm.unit_vector(nxt_vec_uvw*.3-nxt_vec_uvw.dot(ax)*ax*.3)
-gm.gen_stick(spos=nxt_vec_uvw.dot(ax)*ax*.3-ax*.03,
-             epos =nxt_vec_uvw.dot(ax)*ax*.3-ax*.03+epos_vec*.03,
+gm.gen_stick(spos=nxt_vec_uvw.dot(ax) * ax * .3 - ax * .03,
+             epos=nxt_vec_uvw.dot(ax) * ax * .3 - ax * .03 + epos_vec * .03,
              rgba=[0,0,0,1],
              radius=.001).attach_to(base)
-gm.gen_stick(spos=nxt_vec_uvw.dot(ax)*ax*.3-ax*.03+epos_vec*.03,
-             epos=nxt_vec_uvw.dot(ax)*ax*.3-ax*.03+epos_vec*.03+ax*.03-ax*.0045,
+gm.gen_stick(spos=nxt_vec_uvw.dot(ax) * ax * .3 - ax * .03 + epos_vec * .03,
+             epos=nxt_vec_uvw.dot(ax) * ax * .3 - ax * .03 + epos_vec * .03 + ax * .03 - ax * .0045,
              rgba=[0,0,0,1],
              radius=.001).attach_to(base)
 gm.gen_torus(ax,

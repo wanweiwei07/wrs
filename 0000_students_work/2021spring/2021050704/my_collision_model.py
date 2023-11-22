@@ -33,7 +33,7 @@ object2.set_pos(np.array([0,.08,0]))
 #衝突の判定
 mcd_result, cd_points = object1.is_mcdwith(object2, toggle_contacts=True)
 for pnt in cd_points:
-    gm.gen_sphere(pos=pnt, rgba=[1,0,0,1], radius=.002).attach_to(base)
+    gm.gen_sphere(pos=pnt, rgba=[1, 0, 0, 1], radius=.002).attach_to(base)
 print(mcd_result)
 
 #オブジェクトの表示

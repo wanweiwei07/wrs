@@ -93,7 +93,7 @@ for tick in range(1, 2*n+1):
     vec = rm.unit_vector(np.cross(last_normal, new_normal))
     new_rotmat = rm.rotmat_from_axangle(vec, angle)
     direction = new_rotmat.dot(direction)
-    gm.gen_stick(spos=cpt, epos=projected_point, rgba=[1,.6,0,1], radius=.002, type='round').attach_to(base)
+    gm.gen_stick(spos=cpt, epos=projected_point, rgba=[1, .6, 0, 1], radius=.002, type='round').attach_to(base)
     tmp_len = np.linalg.norm(projected_point-cpt)
     extended_len += tmp_len
     cpt=projected_point
@@ -126,7 +126,7 @@ for tick in range(1, 2*n+1):
     vec = rm.unit_vector(np.cross(last_normal, new_normal))
     new_rotmat = rm.rotmat_from_axangle(vec, angle)
     direction = new_rotmat.dot(tmp_direction)
-    gm.gen_stick(spos=cpt, epos=projected_point, rgba=[1,.6,0,1], radius=.002, type='round').attach_to(base)
+    gm.gen_stick(spos=cpt, epos=projected_point, rgba=[1, .6, 0, 1], radius=.002, type='round').attach_to(base)
     tmp_len = np.linalg.norm(projected_point-cpt)
     extended_len += tmp_len
     cpt=projected_point
@@ -157,7 +157,7 @@ for tick in range(1, 2*n+1):
     vec = rm.unit_vector(np.cross(last_normal, new_normal))
     new_rotmat = rm.rotmat_from_axangle(vec, angle)
     direction = new_rotmat.dot(-pt_direction)
-    gm.gen_stick(spos=cpt, epos=projected_point, rgba=[1,.6,0,1], radius=.002, type='round').attach_to(base)
+    gm.gen_stick(spos=cpt, epos=projected_point, rgba=[1, .6, 0, 1], radius=.002, type='round').attach_to(base)
     tmp_len = np.linalg.norm(projected_point-cpt)
     extended_len += tmp_len
     cpt=projected_point
@@ -188,7 +188,7 @@ for tick in range(1, 2*n+1):
     vec = rm.unit_vector(np.cross(last_normal, new_normal))
     new_rotmat = rm.rotmat_from_axangle(vec, angle)
     direction = new_rotmat.dot(-tmp_direction)
-    gm.gen_stick(spos=cpt, epos=projected_point, rgba=[1,.6,0,1], radius=.002, type='round').attach_to(base)
+    gm.gen_stick(spos=cpt, epos=projected_point, rgba=[1, .6, 0, 1], radius=.002, type='round').attach_to(base)
     tmp_len = np.linalg.norm(projected_point-cpt)
     extended_len += tmp_len
     cpt=projected_point

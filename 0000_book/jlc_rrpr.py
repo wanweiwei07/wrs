@@ -17,9 +17,9 @@ def gen_stand():
     """
     m_col = lib_mc.ModelCollection()
     hinge = (gm.gen_stick(spos=np.array([.015, 0, 0]),
-                         epos=np.array([-.015, 0, 0]),
-                         radius=.015,
-                         rgba=cst.steel_gray))
+                          epos=np.array([-.015, 0, 0]),
+                          radius=.015,
+                          rgba=cst.steel_gray))
     hinge.set_alpha(.5)
     hinge.attach_to(m_col)
     holder = gm.gen_box(xyz_lengths=np.array([.03, .03, .02]),

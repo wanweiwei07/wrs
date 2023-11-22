@@ -17,7 +17,7 @@ class EEInterface(object):
         self.cdmesh_type = cdmesh_type  # aabb, convexhull, or triangles
         # joints
         # -- coupling --
-        # no coupling by default, change the loc_pos if the coupling existed
+        # no coupling by default, change the pos if the coupling existed
         self.coupling = rkjl.JLChain(pos=self.pos, rotmat=self.rotmat, n_dof=1, name='coupling')
         self.coupling.jnts[0].loc_pos = np.zeros(3)
         self.coupling.jnts[0].loc_motion_axis = np.zeros(3)  # no motion
@@ -25,7 +25,7 @@ class EEInterface(object):
         self.coupling.anchor.name = 'coupling_anchor'
         # toggle on the following part to assign an explicit mesh model to a coupling
         # self.coupling.jnts[0].link = rkjl.create_link(mesh_file=os.path.join(this_dir, "meshes", "xxx.stl"))
-        # self.coupling.jnts[0].link = mcm.gen_stick(spos=self.coupling.anchor.pos, epos = self.coupling.jnts[0].loc_pos)
+        # self.coupling.jnts[0].link = mcm.gen_stick(spos=self.coupling.anchor.pos, epos = self.coupling.jnts[0].pos)
         # self.coupling.jnts[0].lnks.rgba = [.2, .2, .2, 1]
         self.coupling.finalize()
         # action center, acting point of the tool

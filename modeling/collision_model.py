@@ -2,6 +2,7 @@ import copy
 import math
 import numpy as np
 from visualization.panda.world import ShowBase
+from panda3d.core import NodePath, CollisionNode, CollisionTraverser, CollisionHandlerQueue, BitMask32
 import basis.data_adapter as da
 import basis.constant as bc
 import modeling.geometric_model as mgm
@@ -140,7 +141,12 @@ class CollisionModel(mgm.GeometricModel):
 
     @property
     def cdprimitive_type(self):
+        self._cdprimitive.setPosQuat(da.npvec3_to_pdvec3(self.pos), da.npmat3_to_pdquat(self.rotmat))
         return self._cdprimitive_type
+
+    @property
+    def cdprimitive(self):
+        return self._cdprimitive
 
     def change_cdmesh_type(self, cdmesh_type):
         self._cdmesh = self._acquire_cdmesh(cdmesh_type)
@@ -164,6 +170,19 @@ class CollisionModel(mgm.GeometricModel):
             self._cache_for_show["cdprimitive"] = self.copy_reference_cdprimitive()
             self._cache_for_show["cdprimitive"].reparentTo(self.pdndp)
             mph.toggle_show_collision_node(self._cache_for_show["cdprimitive"], toggle_value=True)
+
+    def attach_cdprimitive_to(self, target):
+        self._cdprimitive.setPosQuat(da.npvec3_to_pdvec3(self.pos), da.npmat3_to_pdquat(self.rotmat))
+        if isinstance(target, ShowBase):
+            # for rendering to base.render
+            self._cdprimitive.reparentTo(target.render)
+        elif isinstance(target, mgm.StaticGeometricModel):  # prepared for decorations like local frames
+            self._cdprimitive.reparentTo(target.pdndp)
+        elif isinstance(target, NodePath):
+            self._cdprimitive.reparentTo(target)
+        else:
+            raise ValueError("Acceptable: ShowBase, StaticGeometricModel, NodePath!")
+        return self._cdprimitive
 
     def copy_reference_cdmesh(self):
         """
@@ -197,6 +216,7 @@ class CollisionModel(mgm.GeometricModel):
         date: 20230815
         """
         return_cdprimitive = copy.deepcopy(self._cdprimitive)
+        return_cdprimitive.clearMat()
         return return_cdprimitive
 
     def copy_transformed_cdprimitive(self):
@@ -211,23 +231,6 @@ class CollisionModel(mgm.GeometricModel):
         return_cdprimitive.setMat(self.pdndp.getMat())
         return return_cdprimitive
 
-    # def _update_with_loc(self, pos=np.zeros(3), rotmat=np.eye(3)):
-    #     updated_pos = pos + rotmat @ self.loc_pos
-    #     updated_rotmat = rotmat @ self.loc_rotmat
-    #     return updated_pos, updated_rotmat
-
-    def set_pos(self, pos: np.ndarray = np.zeros(3)):
-        self._pdndp.setPos(pos[0], pos[1], pos[2])
-
-    def set_rotmat(self, rotmat: np.ndarray = np.eye(3)):
-        self._pdndp.setQuat(da.npmat3_to_pdquat(rotmat))
-
-    def set_pose(self, pos: np.ndarray = np.zeros(3), rotmat: np.ndarray = np.eye(3)):
-        self._pdndp.setPosQuat(da.npvec3_to_pdvec3(pos), da.npmat3_to_pdquat(rotmat))
-
-    def set_homomat(self, npmat4):
-        self.set_pose(pos=npmat4[:3, 3], rotmat=npmat4[:3, :3])
-
     def is_pcdwith(self, objcm, toggle_contacts=False):
         """
         Is the primitives of this mcm collide with the primitives of the given mcm
@@ -236,7 +239,21 @@ class CollisionModel(mgm.GeometricModel):
         author: weiwei
         date: 20201116
         """
-        return mph.is_collided(self, objcm, toggle_contacts=toggle_contacts)
+        cd_trav = CollisionTraverser()
+        cd_handler = CollisionHandlerQueue()
+        tgt_pdndp = NodePath("collision pdndp")
+        cd_trav.addCollider(collider=self.attach_cdprimitive_to(tgt_pdndp), handler=cd_handler)
+        objcm.attach_cdprimitive_to(tgt_pdndp)
+        cd_trav.traverse(tgt_pdndp)
+        if cd_handler.getNumEntries() > 0:
+            if toggle_contacts:
+                contact_points = np.asarray([da.pdvec3_to_npvec3(cd_entry.getSurfacePoint(base.render)) for cd_entry in
+                                             cd_handler.getEntries()])
+                return (True, contact_points)
+            else:
+                return True
+        else:
+            return (False, np.asarray([])) if toggle_contacts else False
 
     def attach_to(self, obj):
         if isinstance(obj, ShowBase):
@@ -440,8 +457,8 @@ if __name__ == "__main__":
     bunnycm1 = CollisionModel(objpath, cdprimitive_type=mc.CDPrimitiveType.CYLINDER)
     bunnycm1.set_rgba([0.7, 0, 0.7, 1.0])
     rotmat = rm.rotmat_from_euler(0, 0, math.radians(15))
-    bunnycm1.set_pos(np.array([0, .01, 0]))
-    bunnycm1.set_rotmat(rotmat)
+    bunnycm1.pos=np.array([0, .01, 0])
+    bunnycm1.rotmat = rotmat
     bunnycm1.attach_to(base)
     bunnycm1.show_cdprimitive()
 

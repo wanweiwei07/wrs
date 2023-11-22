@@ -47,7 +47,7 @@ def update(pk_obj, pcd_list, marker_center_list, task):
         # cv2.circle(color_image, tuple(image_xy), 10, (255, 0, 0), -1)
         # cv2.imshow("test", color_image)
         # cv2.waitKey(0)
-        marker_center = gm.gen_sphere(pos = pcd_pnt, radius=.1)
+        marker_center = gm.gen_sphere(pos= pcd_pnt, radius=.1)
         marker_center.attach_to(base)
         marker_center_list.append(marker_center)
         pk_obj.image_release(color_image_handle)

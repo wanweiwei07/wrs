@@ -398,6 +398,7 @@ def is_collided(objcm_list0, objcm_list1, toggle_contacts=False):
     cd_handler = CollisionHandlerQueue()
     tgt_pdndp = NodePath("collision pdndp")
     for objcm in objcm_list0:
+        objcm.attach_cdprimitive_to(tgt_pdndp)
         cd_trav.addCollider(collider=copy_cdprimitive_attach_to(objcm, tgt_pdndp), handler=cd_handler)
     for objcm in objcm_list1:
         copy_cdprimitive_attach_to(objcm, tgt_pdndp)

@@ -145,6 +145,14 @@ class StaticGeometricModel(object):
         rgba = self._pdndp.getColor()
         self._pdndp.setColor(rgba[0], rgba[1], rgba[2], alpha)
 
+    def set_scale(self, scale=np.array([1, 1, 1])):
+        """
+        :param scale: 1x3 nparray, each element denotes the scale in x, y, and z dimensions
+        :return:
+        """
+        self._pdndp.setScale(*scale)
+        self._trm_mesh.apply_scale(scale)
+
     def set_point_size(self, size=.001):
         # only applicable to point clouds
         self.pdndp_core.setRenderModeThickness(size * da.M_TO_PIXEL)
@@ -204,6 +212,21 @@ class WireFrameModel(StaticGeometricModel):
         wrn.warn("Right not the set_rgba fn for a WireFrame instance is not implemented!")
 
 
+def update_delay(argument):
+    """
+    :param argument: "geometry", "cdprimitive", or "cdmesh"
+    :return:
+    author: weiwei
+    date: 20231122
+    """
+    def update_delay_decorator(method):
+        def wrapper(self, *args, **kwargs):
+            if self.is_delayed[argument]:
+                self._pdndp.setPosQuat(da.npvec3_to_pdvec3(self.pos), da.npmat3_to_pdquat(self.rotmat))
+            return method(self, *args, **kwargs)
+        return wrapper
+
+
 class GeometricModel(StaticGeometricModel):
     """
     load an object as a geometric model
@@ -226,35 +249,88 @@ class GeometricModel(StaticGeometricModel):
             self._pdndp = copy.deepcopy(initor.pdndp)
             self._name = copy.deepcopy(initor.name)
             self._local_frame = copy.deepcopy(initor.local_frame)
+            self._pos = copy.deepcopy(initor._pos)
+            self._rotmat = copy.deepcopy(initor._rotmat)
+            self._is_delayed=copy.deepcopy(initor._is_delayed)
         else:
             super().__init__(initor=initor,
                              name=name,
                              toggle_transparency=toggle_transparency,
                              toggle_twosided=toggle_twosided)
+            self._pos = np.zeros(3)
+            self._rotmat = np.eye(3)
+            self._is_delayed = {"geometry": False}
         self.pdndp_core.setShaderAuto()
 
-    def set_pos(self, npvec3):
-        self._pdndp.setPos(*npvec3)
+    @property
+    def pos(self):
+        return self._pos
 
-    def set_rotmat(self, npmat3):
-        self._pdndp.setQuat(da.npmat3_to_pdquat(npmat3))
+    @pos.setter
+    def pos(self, val: np.ndarray):
+        self._pos = val
+        self._is_delayed = True
 
-    def set_homomat(self, npmat4):
-        self._pdndp.setPosQuat(da.npvec3_to_pdvec3(npmat4[:3, 3]), da.npmat3_to_pdquat(npmat4[:3, :3]))
+    @property
+    def rotmat(self):
+        return self._rotmat
 
-    def get_pos(self):
-        return da.pdvec3_to_npvec3(self._pdndp.getPos())
+    @rotmat.setter
+    def rotmat(self, val: np.ndarray):
+        self._rotmat = val
+        self._is_delayed = True
 
-    def get_rotmat(self):
-        return da.pdquat_to_npmat3(self._pdndp.getQuat())
+    @property
+    def homomat(self):
+        homomat = np.eye(4)
+        homomat[:3, :3] = self._rotmat
+        homomat[:3, 3] = self._pos
+        return homomat
 
-    def get_homomat(self):
-        npv3 = da.pdvec3_to_npvec3(self._pdndp.getPos())
-        npmat3 = da.pdquat_to_npmat3(self._pdndp.getQuat())
-        return rm.homomat_from_posrot(npv3, npmat3)
+    @homomat.setter
+    def homomat(self, val: np.ndarray):
+        self._pos = val[:3, 3]
+        self._rotmat = val[:3, :3]
+        self._is_delayed = True
+
+    @property
+    def is_delayed(self):
+        return self._is_delayed
+
+    # def set_pos(self, npvec3):
+    #     self._pdndp.setPos(*npvec3)
+    #
+    # def set_rotmat(self, npmat3):
+    #     self._pdndp.setQuat(da.npmat3_to_pdquat(npmat3))
+    #
+    # def set_homomat(self, npmat4):
+    #     self._pdndp.setPosQuat(da.npvec3_to_pdvec3(npmat4[:3, 3]), da.npmat3_to_pdquat(npmat4[:3, :3]))
+    #
+    # def get_pos(self):
+    #     return da.pdvec3_to_npvec3(self._pdndp.getPos())
+    #
+    # def get_rotmat(self):
+    #     return da.pdquat_to_npmat3(self._pdndp.getQuat())
+    #
+    # def get_homomat(self):
+    #     npv3 = da.pdvec3_to_npvec3(self._pdndp.getPos())
+    #     npmat3 = da.pdquat_to_npmat3(self._pdndp.getQuat())
+    #     return rm.homomat_from_posrot(npv3, npmat3)
 
     def set_transparency(self, attribute):
         return self._pdndp.setTransparency(attribute)
+
+    @update_geom_delay_decorator
+    def attach_to(self, target):
+        if isinstance(target, ShowBase):
+            # for rendering to base.render
+            self._pdndp.reparentTo(target.render)
+        elif isinstance(target, StaticGeometricModel):  # prepared for decorations like local frames
+            self._pdndp.reparentTo(target.pdndp)
+        elif isinstance(target, mc.ModelCollection):
+            target.add_gm(self)
+        else:
+            raise ValueError("Acceptable: ShowBase, StaticGeometricModel, ModelCollection!")
 
     def sample_surface(self, radius=0.005, n_samples=None, toggle_option=None):
         """
@@ -270,13 +346,13 @@ class GeometricModel(StaticGeometricModel):
             n_samples = int(round(self.trm_mesh.area / ((radius * 0.3) ** 2)))
         points, face_ids = self.trm_mesh.sample_surface(n_samples, radius=radius, toggle_faceid=True)
         # transform
-        points = rm.transform_points_by_homomat(self.get_homomat(), points)
+        points = rm.transform_points_by_homomat(self.homomat, points)
         if toggle_option is None:
             return np.array(points)
         elif toggle_option == 'face_ids':
             return np.array(points), np.array(face_ids)
         elif toggle_option == 'normals':
-            return np.array(points), rm.transform_points_by_homomat(self.get_homomat(),
+            return np.array(points), rm.transform_points_by_homomat(self.homomat,
                                                                     self.trm_mesh.face_normals[face_ids])
         else:
             print("The toggle_option parameter must be \"None\", \"point_face_ids\", or \"point_nromals\"!")
@@ -595,11 +671,11 @@ def gen_frame(pos=np.array([0, 0, 0]),
 
 
 def gen_2d_frame(pos=np.array([0, 0, 0]),
-              rotmat=np.eye(3),
-              axis_length=.1,
-              axis_radius=.0025,
-              rgb_mat=None,
-              alpha=None):
+                 rotmat=np.eye(3),
+                 axis_length=.1,
+                 axis_radius=.0025,
+                 rgb_mat=None,
+                 alpha=None):
     """
     gen an axis for attaching
     :param pos:
@@ -789,13 +865,13 @@ def gen_dashed_frame(pos=np.array([0, 0, 0]),
 
 
 def gen_2d_dashed_frame(pos=np.array([0, 0, 0]),
-                         rotmat=np.eye(3),
-                         axis_length=.1,
-                         axis_radius=.0025,
-                         len_solid=None,
-                         len_interval=None,
-                         rgb_mat=None,
-                         alpha=None):
+                        rotmat=np.eye(3),
+                        axis_length=.1,
+                        axis_radius=.0025,
+                        len_solid=None,
+                        len_interval=None,
+                        rgb_mat=None,
+                        alpha=None):
     """
     gen an axis for attaching
     :param pos:
@@ -841,6 +917,7 @@ def gen_2d_dashed_frame(pos=np.array([0, 0, 0]),
     arrowy_nodepath.reparentTo(frame_nodepath)
     frame_sgm = StaticGeometricModel(frame_nodepath)
     return frame_sgm
+
 
 def gen_torus(axis=np.array([1, 0, 0]),
               starting_vector=None,
@@ -1077,21 +1154,21 @@ if __name__ == "__main__":
     bunnygm.attach_to(base)
     bunnygm.show_local_frame()
     rotmat = rm.rotmat_from_axangle(np.array([1, 0, 0]), math.pi / 2.0)
-    bunnygm.set_rotmat(rotmat)
+    bunnygm.rotmat = rotmat
 
     bunnygm1 = bunnygm.copy()
     bunnygm1.set_rgba([0.7, 0, 0.7, 1.0])
     bunnygm1.attach_to(base)
     rotmat = rm.rotmat_from_euler(0, 0, math.radians(15))
-    bunnygm1.set_pos(np.array([0, .01, 0]))
-    bunnygm1.set_rotmat(rotmat)
+    bunnygm1.pos = np.array([0, .01, 0])
+    bunnygm1.rotmat = rotmat
 
     bunnygm2 = bunnygm1.copy()
     bunnygm2.set_rgba([0, 0.7, 0.7, 1.0])
     bunnygm2.attach_to(base)
     rotmat = rm.rotmat_from_axangle([1, 0, 0], -math.pi / 4.0)
-    bunnygm2.set_pos(np.array([0, .2, 0]))
-    bunnygm2.set_rotmat(rotmat)
+    bunnygm2.pos = np.array([0, .2, 0])
+    bunnygm2.rotmat = rotmat
     bunnygm2.set_scale([2, 1, 3])
 
     bunnygmpoints = bunnygm.sample_surface()

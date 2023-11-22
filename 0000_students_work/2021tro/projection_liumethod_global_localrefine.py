@@ -102,7 +102,7 @@ for tick in range(1, n+1):
     vec = rm.unit_vector(np.cross(-pn_direction, new_normal))
     new_rotmat = rm.rotmat_from_axangle(vec, angle)
     direction = new_rotmat.dot(direction)
-    gm.gen_stick(spos=cpt, epos=projected_point, rgba=[1,.6,0,1], radius=.002, type='round').attach_to(base)
+    gm.gen_stick(spos=cpt, epos=projected_point, rgba=[1, .6, 0, 1], radius=.002, type='round').attach_to(base)
     cpt=projected_point
     # last_normal = new_normal
 
@@ -137,7 +137,7 @@ for tick in range(1, n+1):
     vec = rm.unit_vector(np.cross(-pn_direction, new_normal))
     new_rotmat = rm.rotmat_from_axangle(vec, angle)
     direction = new_rotmat.dot(tmp_direction)
-    gm.gen_stick(spos=cpt, epos=projected_point, rgba=[1,.6,0,1], radius=.002, type='round').attach_to(base)
+    gm.gen_stick(spos=cpt, epos=projected_point, rgba=[1, .6, 0, 1], radius=.002, type='round').attach_to(base)
     cpt=projected_point
     # last_normal = new_normal
 
@@ -172,7 +172,7 @@ for tick in range(1, n+1):
     vec = rm.unit_vector(np.cross(-pn_direction, new_normal))
     new_rotmat = rm.rotmat_from_axangle(vec, angle)
     direction = new_rotmat.dot(-pt_direction)
-    gm.gen_stick(spos=cpt, epos=projected_point, rgba=[1,.6,0,1], radius=.002, type='round').attach_to(base)
+    gm.gen_stick(spos=cpt, epos=projected_point, rgba=[1, .6, 0, 1], radius=.002, type='round').attach_to(base)
     cpt=projected_point
     # last_normal = new_normal
 
@@ -207,7 +207,7 @@ for tick in range(1, n+1):
     vec = rm.unit_vector(np.cross(-pn_direction, new_normal))
     new_rotmat = rm.rotmat_from_axangle(vec, angle)
     direction = new_rotmat.dot(-tmp_direction)
-    gm.gen_stick(spos=cpt, epos=projected_point, rgba=[1,.6,0,1], radius=.002, type='round').attach_to(base)
+    gm.gen_stick(spos=cpt, epos=projected_point, rgba=[1, .6, 0, 1], radius=.002, type='round').attach_to(base)
     cpt=projected_point
     # last_normal = new_normal
 

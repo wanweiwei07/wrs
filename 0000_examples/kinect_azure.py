@@ -49,7 +49,7 @@ def update(pk_obj, pcd_list, marker_center_list, task):
         mypoint_cloud = gm.GeometricModel(initor=point_cloud)
         mypoint_cloud.attach_to(base)
         pcd_list.append(mypoint_cloud)
-        marker_center = gm.gen_sphere(pos = pcd_pnt, radius=.1)
+        marker_center = gm.gen_sphere(pos= pcd_pnt, radius=.1)
         marker_center.attach_to(base)
         marker_center_list.append(marker_center)
         pk_obj.image_release(color_image_handle)

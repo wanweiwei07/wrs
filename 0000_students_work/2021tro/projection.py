@@ -99,7 +99,7 @@ for tick in range(1, n+1):
     # new_line_segs = [[cpt, cpt+direction*(.07-tick*.07/n)],
     #                  [cpt+direction*(.07-tick*.07/n), cpt+direction*(.07-tick*.07/n)+tmp_direction*.07]]
     # mgm.gen_linesegs(new_line_segs).attach_to(base)
-    gm.gen_stick(spos=cpt, epos=projected_point, rgba=[1,.6,0,1], radius=.002, type='round').attach_to(base)
+    gm.gen_stick(spos=cpt, epos=projected_point, rgba=[1, .6, 0, 1], radius=.002, type='round').attach_to(base)
     cpt=projected_point
     last_normal = new_normal
     # break
@@ -135,7 +135,7 @@ for tick in range(1, n+1):
     # new_line_segs = [[cpt, cpt+direction*(.05-tick*.05/n)],
     #                  [cpt+direction*(.05-tick*.05/n), cpt+direction*(.05-tick*.05/n)+tmp_direction*.05]]
     # mgm.gen_linesegs(new_line_segs).attach_to(base)
-    gm.gen_stick(spos=cpt, epos=projected_point, rgba=[1,.6,0,1], radius=.002, type='round').attach_to(base)
+    gm.gen_stick(spos=cpt, epos=projected_point, rgba=[1, .6, 0, 1], radius=.002, type='round').attach_to(base)
     cpt=projected_point
     last_normal = new_normal
     # break
@@ -172,7 +172,7 @@ for tick in range(1, n+1):
     # new_line_segs = [[cpt, cpt+direction*(.05-tick*.05/n)],
     #                  [cpt+direction*(.05-tick*.05/n), cpt+direction*(.05-tick*.05/n)+tmp_direction*.05]]
     # mgm.gen_linesegs(new_line_segs).attach_to(base)
-    gm.gen_stick(spos=cpt, epos=projected_point, rgba=[1,.6,0,1], radius=.002, type='round').attach_to(base)
+    gm.gen_stick(spos=cpt, epos=projected_point, rgba=[1, .6, 0, 1], radius=.002, type='round').attach_to(base)
     cpt=projected_point
     last_normal = new_normal
     # if tick ==2:
@@ -208,7 +208,7 @@ for tick in range(1, n+1):
     # new_line_segs = [[cpt, cpt+direction*(.05-tick*.05/n)],
     #                  [cpt+direction*(.05-tick*.05/n), cpt+direction*(.05-tick*.05/n)+tmp_direction*.05]]
     # mgm.gen_linesegs(new_line_segs).attach_to(base)
-    gm.gen_stick(spos=cpt, epos=projected_point, rgba=[1,.6,0,1], radius=.002, type='round').attach_to(base)
+    gm.gen_stick(spos=cpt, epos=projected_point, rgba=[1, .6, 0, 1], radius=.002, type='round').attach_to(base)
     cpt=projected_point
     last_normal = new_normal
     # break
