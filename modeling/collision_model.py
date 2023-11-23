@@ -26,7 +26,7 @@ import uuid
 def delay_cdprimitive_decorator(method):
     def wrapper(self, *args, **kwargs):
         self._is_cdprimitive_delayed = True
-        return method(self, args, kwargs)
+        return method(self, *args, **kwargs)
 
     return wrapper
 
@@ -47,7 +47,7 @@ def update_cdprimitive_decorator(method):
 def delay_cdmesh_decorator(method):
     def wrapper(self, *args, **kwargs):
         self._is_cdmesh_delayed = True
-        return method(self, args, kwargs)
+        return method(self, *args, **kwargs)
 
     return wrapper
 
@@ -173,7 +173,7 @@ class CollisionModel(mgm.GeometricModel):
         elif cdprimitive_type == mc.CDPrimitiveType.CAPSULE:
             pdcndp = mph.gen_capsule_pdcndp(self.trm_mesh, ex_radius=thickness)
         elif cdprimitive_type == mc.CDPrimitiveType.CYLINDER:
-            pdcndp = mph.gen_cyl_pdcndp(self.trm_mesh, ex_radius=thickness)
+            pdcndp = mph.gen_cylinder_pdcndp(self.trm_mesh, ex_radius=thickness)
         elif cdprimitive_type == mc.CDPrimitiveType.SURFACE_BALLS:
             pdcndp = mph.gen_surfaceballs_pdcnd(self.trm_mesh, radius=thickness)
         elif cdprimitive_type == mc.CDPrimitiveType.POINT_CLOUD:
@@ -215,7 +215,7 @@ class CollisionModel(mgm.GeometricModel):
             _, cdmesh_trm_model = self._acquire_cdmesh(toggle_trm=True)
             self._cache_for_show["cdmesh"] = mph.gen_pdndp_wireframe(trm_model=cdmesh_trm_model)
             self._cache_for_show["cdmesh"].reparentTo(self.pdndp)
-            mph.toggle_show_collision_node(self._cache_for_show["cdmesh"], toggle_value=True)
+            mph.toggle_show_collision_node(self._cache_for_show["cdmesh"], toggle_on=True)
 
     @delay_cdprimitive_decorator
     def change_cdprimitive_type(self, cdprimitive_type, thickness=None, userdefined_cdprimitive_fn=None):
@@ -228,7 +228,7 @@ class CollisionModel(mgm.GeometricModel):
             self._cache_for_show["cdprimitive"].removeNode()
             self._cache_for_show["cdprimitive"] = self.copy_reference_cdprimitive()
             self._cache_for_show["cdprimitive"].reparentTo(self.pdndp)
-            mph.toggle_show_collision_node(self._cache_for_show["cdprimitive"], toggle_value=True)
+            mph.toggle_show_collision_node(self._cache_for_show["cdprimitive"], toggle_on=True)
 
     @update_cdprimitive_decorator
     def attach_cdprimitive_to(self, target):
@@ -293,36 +293,37 @@ class CollisionModel(mgm.GeometricModel):
         return_cdprimitive = copy.deepcopy(self._cdprimitive)
         return return_cdprimitive
 
-    def is_pcdwith(self, objcm, toggle_contacts=False):
+    def is_pcdwith(self, cmodel, toggle_contacts=False):
         """
         Is the primitives of this mcm collide with the primitives of the given mcm
-        :param objcm: one or a list of Collision Model object
+        :param cmodel: one or a list of Collision Model object
         :param toggle_contacts: return a list of contact points if toggle_contacts is True
         author: weiwei
         date: 20201116
         """
-        cd_trav = CollisionTraverser()
-        cd_handler = CollisionHandlerQueue()
-        tgt_pdndp = NodePath("collision pdndp")
-        cd_trav.addCollider(collider=self.attach_cdprimitive_to(tgt_pdndp), handler=cd_handler)
-        objcm.attach_cdprimitive_to(tgt_pdndp)
-        cd_trav.traverse(tgt_pdndp)
-        if cd_handler.getNumEntries() > 0:
-            if toggle_contacts:
-                contact_points = np.asarray([da.pdvec3_to_npvec3(cd_entry.getSurfacePoint(base.render)) for cd_entry in
-                                             cd_handler.getEntries()])
-                return (True, contact_points)
-            else:
-                return True
-        else:
-            return (False, np.asarray([])) if toggle_contacts else False
+        return mph.is_collided(self, cmodel, toggle_contacts=toggle_contacts)
+        # cd_trav = CollisionTraverser()
+        # cd_handler = CollisionHandlerQueue()
+        # tgt_pdndp = NodePath("collision pdndp")
+        # cd_trav.addCollider(collider=self.attach_cdprimitive_to(tgt_pdndp), handler=cd_handler)
+        # cmodel.attach_cdprimitive_to(tgt_pdndp)
+        # cd_trav.traverse(tgt_pdndp)
+        # if cd_handler.getNumEntries() > 0:
+        #     if toggle_contacts:
+        #         contact_points = np.asarray([da.pdvec3_to_npvec3(cd_entry.getSurfacePoint(base.render)) for cd_entry in
+        #                                      cd_handler.getEntries()])
+        #         return (True, contact_points)
+        #     else:
+        #         return True
+        # else:
+        #     return (False, np.asarray([])) if toggle_contacts else False
 
     def show_cdprimitive(self):
         if "cdprimitive" in self._cache_for_show:
             self._cache_for_show["cdprimitive"].removeNode()
         self._cache_for_show["cdprimitive"] = self.copy_reference_cdprimitive()
         self._cache_for_show["cdprimitive"].reparentTo(self.pdndp)
-        mph.toggle_show_collision_node(self._cache_for_show["cdprimitive"], toggle_value=True)
+        mph.toggle_show_collision_node(self._cache_for_show["cdprimitive"], toggle_on=True)
 
     def unshow_cdprimitive(self):
         if "cdprimitive" in self._cache_for_show:
@@ -334,21 +335,21 @@ class CollisionModel(mgm.GeometricModel):
         _, cdmesh_trm_model = self._acquire_cdmesh(toggle_trm=True)
         self._cache_for_show["cdmesh"] = mph.gen_pdndp_wireframe(trm_model=cdmesh_trm_model)
         self._cache_for_show["cdmesh"].reparentTo(self.pdndp)
-        mph.toggle_show_collision_node(self._cache_for_show["cdmesh"], toggle_value=True)
+        mph.toggle_show_collision_node(self._cache_for_show["cdmesh"], toggle_on=True)
 
     def unshow_cdmesh(self):
         if "cdmesh" in self._cache_for_show:
             self._cache_for_show["cdmesh"].removeNode()
 
-    def is_mcdwith(self, objcm_list, toggle_contacts=False):
+    def is_mcdwith(self, cmodel_list, toggle_contacts=False):
         """
         Is the mesh of the mcm collide with the mesh of the given mcm
-        :param objcm_list: one or a list of Collision Model object
+        :param cmodel_list: one or a list of Collision Model object
         :param toggle_contacts: return a list of contact points if toggle_contacts is True
         author: weiwei
         date: 20201116
         """
-        return moh.is_collided(self, objcm_list, toggle_contacts=toggle_contacts)
+        return moh.is_collided(self, cmodel_list, toggle_contacts=toggle_contacts)
 
     def ray_hit(self, spos, epos, option="all"):
         """
@@ -444,60 +445,25 @@ if __name__ == "__main__":
 
     objpath = os.path.join(basis.__path__[0], "objects", "bunnysim.stl")
     bunnycm = CollisionModel(objpath, cdprimitive_type=mc.CDPrimitiveType.CAPSULE)
-    bunnycm.set_rgba([0.7, 0.7, 0.0, .2])
+    bunnycm.rgba = np.array([0.7, 0.7, 0.0, .2])
     bunnycm.show_local_frame()
     bunnycm.attach_to(base)
     bunnycm.change_cdmesh_type(mc.CDMeshType.CYLINDER)
-    # bunnycm.show_cdmesh()
     bunnycm.show_cdprimitive()
-    # bunnycm2 = CollisionModel(bunnycm)
-    # rotmat = rm.rotmat_from_axangle(np.array([1, 0, 0]), math.pi / 2.0)
-    # bunnycm2.set_rotmat(rotmat)
-    # bunnycm2.unshow_cdprimitive()
-    # bunnycm2.change_cdmesh_type("cylinder")
-    # bunnycm2.show_cdmesh()
-    # bunnycm2.attach_to(base)
-    # base.run()
 
     bunnycm1 = CollisionModel(objpath, cdprimitive_type=mc.CDPrimitiveType.CYLINDER)
-    bunnycm1.set_rgba([0.7, 0, 0.7, 1.0])
+    bunnycm1.rgba = np.array([0.7, 0, 0.7, 1.0])
     rotmat = rm.rotmat_from_euler(0, 0, math.radians(15))
     bunnycm1.pos = np.array([0, .01, 0])
     bunnycm1.rotmat = rotmat
     bunnycm1.attach_to(base)
     bunnycm1.show_cdprimitive()
 
-    # bunnycm2 = bunnycm1.copy()
-    # bunnycm2.change_cdprimitive_type(cdprimitive_type="surface_balls")
-    # bunnycm2.set_rgba([0, 0.7, 0.7, 1.0])
-    # rotmat = rm.rotmat_from_axangle([1, 0, 0], -math.pi / 4.0)
-    # bunnycm2.set_pos(np.array([0, .2, 0]))
-    # bunnycm2.set_rotmat(rotmat)
-    # bunnycm2.attach_to(base)
-
-    # bunnycmpoints = bunnycm.sample_surface()
-    # bunnycm1points = bunnycm1.sample_surface()
-    # bunnycm2points = bunnycm2.sample_surface()
-    # bpcm = mgm.GeometricModel(bunnycmpoints)
-    # bpcm1 = mgm.GeometricModel(bunnycm1points)
-    # bpcm2 = mgm.GeometricModel(bunnycm2points)
-    # bpcm.attach_to(base)
-    # bpcm1.attach_to(base)
-    # bpcm2.attach_to(base)
-    # bunnycm2.show_cdmesh(end_type="box")
-    # bunnycm.show_cdmesh(end_type="box")
-    # bunnycm1.show_cdmesh(end_type="convexhull")
     tic = time.time()
     result, contacts = bunnycm.is_pcdwith(bunnycm1, toggle_contacts=True)
     toc = time.time()
     print("mesh cd cost: ", toc - tic)
     print(result)
-    ct_objcm = mgm.GeometricModel(contacts)
-    ct_objcm.attach_to(base)
-    # tic = time.time()
-    # bunnycm2.is_pcdwith([bunnycm, bunnycm1])
-    # toc = time.time()
-    # print("primitive cd cost: ", toc - tic)
-
-    # gen_box().attach_to(base)
+    ct_gmodel = mgm.GeometricModel(contacts)
+    ct_gmodel.attach_to(base)
     base.run()

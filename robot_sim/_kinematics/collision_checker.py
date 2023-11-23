@@ -19,7 +19,9 @@ class CCElement(object):
         self.host_cc = host_cc
         self.lnk = lnk
         # a transformed and attached copy of the reference cdprimitive (essentially pdcndp), tfd=transformed
-        self.tfd_cdprimitive = mph.copy_cdprimitive_attach_to(lnk, self.host_cc.cd_pdndp, clear_mask=True)
+        self.tfd_cdprimitive = mph.copy_cdprimitive_attach_to(lnk.collision_model,
+                                                              self.host_cc.cd_pdndp,
+                                                              clear_mask=True)
         self.host_cc.cd_trav.addCollider(collider=self.tfd_cdprimitive, handler=self.host_cc.cd_handler)
         # a dict with from_mask as keys and into_list (a lsit of cce) as values
         self.cce_into_dict = {}
@@ -168,11 +170,10 @@ class CollisionChecker(object):
         #     print("From", collider.node().getFromCollideMask())
         #     print("Into", collider.node().getIntoCollideMask())
         # attach obstacles
-        obstacle_parent_list = []
+        obstacle_cdprimitive_list = []
         for obstacle in obstacle_list:
-            # TODO change to cdprimitive
-            obstacle_parent_list.append(obstacle.pdndp.getParent())  # save
-            obstacle.pdndp.reparentTo(self.cd_pdndp)  # reparent
+            obstacle_cdprimitive_list.append(obstacle.copy_transformed_cdprimitive())
+            obstacle_cdprimitive_list[-1].reparentTo(self.cd_pdndp)
         # attach other robots
         for robot in otherrobot_list:
             for cce in robot.cc.cce_dict.values():
@@ -181,8 +182,8 @@ class CollisionChecker(object):
         # collision check
         self.cd_trav.traverse(self.cd_pdndp)
         # clear obstacles
-        for i, obstacle in enumerate(obstacle_list):
-            obstacle.pdndp.reparentTo(obstacle_parent_list[i])  # restore to saved values
+        for cdprimitive in enumerate(obstacle_cdprimitive_list):
+            cdprimitive.detachNode()
         # clear other robots
         for robot in otherrobot_list:
             for cce in robot.cc.cce_dict.values():
@@ -207,7 +208,7 @@ class CollisionChecker(object):
         date: 20220404
         """
         for cce in self.cce_dict.values():
-            tmp_tfd_cdprimitive = mph.copy_cdprimitive_attach_to(objcm=cce.lnk,
+            tmp_tfd_cdprimitive = mph.copy_cdprimitive_attach_to(cmodel=cce.lnk,
                                                                  tgt_pdndp=base.render,
                                                                  homomat=cce.lnk.get_homomat(),
                                                                  clear_mask=True)

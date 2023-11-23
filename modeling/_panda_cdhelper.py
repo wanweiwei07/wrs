@@ -13,56 +13,23 @@ from panda3d.core import LPoint3, TransformState, LineSegs, TransparencyAttrib
 BITMASK_EXT = BitMask32(2 ** 31)
 
 
-def copy_cdprimitive(objcm):
-    return copy.deepcopy(objcm.cdprimitive)
+def copy_cdprimitive(cmodel):
+    return copy.deepcopy(cmodel.cdprimitive)
 
 
-def copy_cdprimitive_attach_to(objcm,
+def copy_cdprimitive_attach_to(cmodel,
                                tgt_pdndp,
                                homomat=None,
                                clear_mask=False) -> NodePath:
-    return_pdcndp = objcm.copy_reference_cdprimitive()
+    return_pdcndp = cmodel.copy_reference_cdprimitive()
     return_pdcndp.reparentTo(tgt_pdndp)
-    if homomat is None:
-        return_pdcndp.setMat(objcm.pdndp.getMat())
-    else:
-        return_pdcndp.setMat(da.npmat4_to_pdmat4(homomat))  # scale is reset to 1 1 1 after setMat to the given pos
-        # return_pdcndp.setScale(objcm.pdndp.getScale()) # 20231117 scale is validated
+    if homomat is not None:
+        return_pdcndp.setMat(da.npmat4_to_pdmat4(homomat))
+    # if scale is not None
+    # return_pdcndp.setScale(da.npvec3_to_pdvec3(scale)) # 20231117 scale is not supported
     if clear_mask:
         change_cdmask(return_pdcndp, BitMask32(0x00), action="new", type="both")
     return return_pdcndp
-
-
-# def change_cdmask(cdprimitive, collision_mask: BitMask32, type):
-#     """
-#     :param cdprimitive: NodePath of CollisionNode
-#     :param collision_mask:
-#     :param type: 'from', 'into', 'both'
-#     :return:
-#     """
-#     if type == "both":
-#         if cdprimitive.getName() == "cylinder":
-#             cdprimitive.getChild(0).node().setCollideMask(collision_mask)
-#             cdprimitive.getChild(1).node().setCollideMask(collision_mask)
-#             cdprimitive.getChild(2).node().setCollideMask(collision_mask)
-#         else:
-#             cdprimitive.node().setCollideMask(collision_mask)
-#     elif type == "from":
-#         if cdprimitive.getName() == "cylinder":
-#             cdprimitive.getChild(0).node().setFromCollideMask(collision_mask)
-#             cdprimitive.getChild(1).node().setFromCollideMask(collision_mask)
-#             cdprimitive.getChild(2).node().setFromCollideMask(collision_mask)
-#         else:
-#             cdprimitive.node().setFromCollideMask(collision_mask)
-#     elif type == "into":
-#         if cdprimitive.getName() == "cylinder":
-#             cdprimitive.getChild(0).node().getIntoCollideMask(collision_mask)
-#             cdprimitive.getChild(1).node().v(collision_mask)
-#             cdprimitive.getChild(2).node().getIntoCollideMask(collision_mask)
-#         else:
-#             cdprimitive.node().getIntoCollideMask(collision_mask)
-#     else:
-#         raise KeyError("Type should be from, into, or both.")
 
 
 def change_cdmask(cdprimitive, collision_mask: BitMask32, action="new", type="both"):
@@ -126,26 +93,26 @@ def change_cdmask(cdprimitive, collision_mask: BitMask32, action="new", type="bo
         _change_cdmask(collision_mask, action, get_method_to_call, set_method_to_call)
 
 
-def update_pose(cdprimitive, objcm):
+def update_pose(cdprimitive, cmodel):
     """
     update panda3d collision nodepath using the pos and quat of objcm.pdndp
     :param cdprimitive:
-    :param objcm:
+    :param cmodel:
     :return:
     author: weiwei
     date: 20230815
     """
-    cdprimitive.setMat(objcm.pdndp.getMat())
+    cdprimitive.setMat(cmodel.pdndp.getMat())
 
 
-def toggle_show_collision_node(cdprimitive, toggle_value=True):
+def toggle_show_collision_node(cdprimitive, toggle_on=True):
     """
     :param cdprimitive:
     :param is_show:
     :return:
     """
     if cdprimitive.getName() == "cylinder":
-        if toggle_value:
+        if toggle_on:
             cdprimitive.getChild(0).show()
             cdprimitive.getChild(1).show()
             cdprimitive.getChild(2).show()
@@ -154,11 +121,15 @@ def toggle_show_collision_node(cdprimitive, toggle_value=True):
             cdprimitive.getChild(1).hide()
             cdprimitive.getChild(2).hide()
     else:
-        if toggle_value:
+        if toggle_on:
             cdprimitive.show()
         else:
             cdprimitive.hide()
 
+
+# ==================================
+# generate cdprimitives from trimesh
+# ==================================
 
 def gen_box_pdcndp(trm_model, ex_radius=0.01):
     """
@@ -198,7 +169,7 @@ def gen_capsule_pdcndp(trm_model, ex_radius=0.01):
     return cdprimitive
 
 
-def gen_cyl_pdcndp(trm_model, ex_radius=0.01):
+def gen_cylinder_pdcndp(trm_model, ex_radius=0.01):
     """
     approximate cylinder using 3 boxes (rotate around central cylinderical axis)
     :param trm_model:
@@ -257,12 +228,16 @@ def gen_pointcloud_pdcndp(trm_mesh, radius=0.02):
     date: 20191210
     """
     pdcnd = CollisionNode("auto")
-    for sglpnt in trm_mesh.vertices:
-        pdcnd.addSolid(CollisionSphere(cx=sglpnt[0], cy=sglpnt[1], cz=sglpnt[2], radius=radius))
+    for point in trm_mesh.vertices:
+        pdcnd.addSolid(CollisionSphere(cx=point[0], cy=point[1], cz=point[2], radius=radius))
     cdprimitive = NodePath(pdcnd)
     cdprimitive.setName("pointcloud")
     return cdprimitive
 
+
+# ========================================
+# generate wireframe NodePath from trimesh
+# ========================================
 
 def gen_pdndp_wireframe(trm_model,
                         thickness=0.0001,
@@ -289,6 +264,48 @@ def gen_pdndp_wireframe(trm_model,
     ls_pdndp.setLightOff()
     return ls_pdndp
 
+
+# ==========================
+# collision detection helper
+# ==========================
+
+def is_collided(cmodel_list0, cmodel_list1, toggle_contacts=False):
+    """
+    detect the collision between collision models
+    :param: cmodel_list0, a single collision model or a list of collision models
+    :param: cmodel_list1
+    :param toggle_contacts: True default
+    :return:
+    author: weiwei
+    date: 20190312osaka, 20201214osaka, 20231123
+    """
+    if not isinstance(cmodel_list0, list):
+        cmodel_list0 = [cmodel_list0]
+    if not isinstance(cmodel_list1, list):
+        cmodel_list1 = [cmodel_list1]
+    cd_trav = CollisionTraverser()
+    cd_handler = CollisionHandlerQueue()
+    tgt_pdndp = NodePath("collision pdndp")
+    for cmodel in cmodel_list0:
+        cd_trav.addCollider(collider=cmodel.attach_cdprimitive_to(tgt_pdndp), handler=cd_handler)
+    for cmodel in cmodel_list1:
+        cmodel.attach_cdprimitive_to(tgt_pdndp)
+    cd_trav.traverse(tgt_pdndp)
+    if cd_handler.getNumEntries() > 0:
+        if toggle_contacts:
+            contact_points = np.asarray([da.pdvec3_to_npvec3(cd_entry.getSurfacePoint(base.render)) for cd_entry in
+                                         cd_handler.getEntries()])
+            return (True, contact_points)
+        else:
+            return True
+    else:
+        return (False, np.asarray([])) if toggle_contacts else False
+
+
+# *** deprecated ***
+# ===================================
+# generate cdprimitives from NodePath
+# ===================================
 
 def gen_box_from_pdndp(pdndp, ex_radius=0.01):
     """
@@ -380,67 +397,35 @@ def gen_polygons_pdcnd_from_pdndp(pdndp):
     return pdcndp
 
 
-def is_collided(objcm_list0, objcm_list1, toggle_contacts=False):
-    """
-    detect the collision between collision models
-    :param: objcm_list0, a single collision model or a list of collision models
-    :param: objcm_list1
-    :param toggle_contactpoints: True default
-    :return:
-    author: weiwei
-    date: 20190312osaka, 20201214osaka
-    """
-    if not isinstance(objcm_list0, list):
-        objcm_list0 = [objcm_list0]
-    if not isinstance(objcm_list1, list):
-        objcm_list1 = [objcm_list1]
-    cd_trav = CollisionTraverser()
-    cd_handler = CollisionHandlerQueue()
-    tgt_pdndp = NodePath("collision pdndp")
-    for objcm in objcm_list0:
-        objcm.attach_cdprimitive_to(tgt_pdndp)
-        cd_trav.addCollider(collider=copy_cdprimitive_attach_to(objcm, tgt_pdndp), handler=cd_handler)
-    for objcm in objcm_list1:
-        copy_cdprimitive_attach_to(objcm, tgt_pdndp)
-    cd_trav.traverse(tgt_pdndp)
-    if cd_handler.getNumEntries() > 0:
-        if toggle_contacts:
-            contact_points = np.asarray([da.pdvec3_to_npvec3(cd_entry.getSurfacePoint(base.render)) for cd_entry in
-                                         cd_handler.getEntries()])
-            return (True, contact_points)
-        else:
-            return True
-    else:
-        return (False, np.asarray([])) if toggle_contacts else False
-
-
 if __name__ == '__main__':
     import os
     import time
     import basis
     import numpy as np
-    import modeling.collision_model as cm
-    import modeling.geometric_model as gm
+    import modeling.collision_model as mcm
+    import modeling.constant as mc
+    import modeling.geometric_model as mgm
     import visualization.panda.world as wd
 
     base = wd.World(cam_pos=[.7, .7, .7], lookat_pos=[0, 0, 0])
-    objpath = os.path.join(basis.__path__[0], 'objects', 'bunnysim.stl')
-    objcm = cm.CollisionModel(objpath, cdprimitive_type='polygons')
-    objcm.set_rgba(np.array([.2, .5, 0, 1]))
-    objcm.set_pos(np.array([.01, .01, .01]))
-    objcm.attach_to(base)
-    objcm.show_cdprimit()
-    objcmlist = []
+    file_path = os.path.join(basis.__path__[0], 'objects', 'bunnysim.stl')
+    cmodel = mcm.CollisionModel(file_path, cdprimitive_type=mc.CDPrimitiveType.CYLINDER)
+    cmodel.rgba = np.array([.2, .5, 0, 1])
+    cmodel.pos = np.array([.01, .01, .01])
+    cmodel.attach_to(base)
+    cmodel.show_cdprimitive()
+    cmodel_list = []
     for i in range(100):
-        objcmlist.append(
-            cm.CollisionModel(os.path.join(basis.__path__[0], 'objects', 'housing.stl'), cdprimitive_type='box'))
-        objcmlist[-1].set_pos(np.random.random_sample((3,)))
-        objcmlist[-1].set_rgba(np.array([1, .5, 0, 1]))
-        objcmlist[-1].attach_to(base)
-        objcmlist[-1].show_cdprimit()
+        cmodel_list.append(
+            mcm.CollisionModel(os.path.join(basis.__path__[0], 'objects', 'housing.stl'),
+                               cdprimitive_type=mc.CDPrimitiveType.BOX))
+        cmodel_list[-1].pos = np.random.random_sample((3,))
+        cmodel_list[-1].rgba = np.array([1, .5, 0, 1])
+        cmodel_list[-1].attach_to(base)
+        cmodel_list[-1].show_cdprimitive()
 
     tic = time.time()
-    result = is_collided(objcm, objcmlist)
+    result = is_collided(cmodel, cmodel_list)
     toc = time.time()
     time_cost = toc - tic
     print(time_cost)

@@ -142,12 +142,38 @@ class StaticGeometricModel(object):
             raise ValueError("Only applicable to models with a trimesh!")
         return self._trm_mesh.volume
 
-    def set_rgba(self, rgba):
-        self._pdndp.setColor(rgba[0], rgba[1], rgba[2], rgba[3])
+    @property
+    def rgba(self):
+        return da.pdvec4_to_npvec4(self._pdndp.getColor())
 
-    def set_alpha(self, alpha):
+    @rgba.setter
+    def rgba(self, rgba):
+        if rgba is None:
+            self._pdndp.clearColor()
+        else:
+            self._pdndp.setColor(rgba[0], rgba[1], rgba[2], rgba[3])
+
+    @property
+    def alpha(self):
+        return self._pdndp.getColor()[3]
+
+    @alpha.setter
+    def alpha(self, alpha):
         rgba = self._pdndp.getColor()
         self._pdndp.setColor(rgba[0], rgba[1], rgba[2], alpha)
+
+    # def set_rgba(self, rgba):
+    #     self._pdndp.setColor(rgba[0], rgba[1], rgba[2], rgba[3])
+    #
+    # def get_rgba(self):
+    #     return da.pdvec4_to_npvec4(self._pdndp.getColor())  # panda3d.core.LColor -> LBase4F
+
+    # def clear_rgba(self):
+    #     self._pdndp.clearColor()
+
+    # def set_alpha(self, alpha):
+    #     rgba = self._pdndp.getColor()
+    #     self._pdndp.setColor(rgba[0], rgba[1], rgba[2], alpha)
 
     def set_scale(self, scale=np.array([1, 1, 1])):
         """
@@ -160,12 +186,6 @@ class StaticGeometricModel(object):
     def set_point_size(self, size=.001):
         # only applicable to point clouds
         self.pdndp_core.setRenderModeThickness(size * da.M_TO_PIXEL)
-
-    def get_rgba(self):
-        return da.pdvec4_to_npvec4(self._pdndp.getColor())  # panda3d.core.LColor -> LBase4F
-
-    def clear_rgba(self):
-        self._pdndp.clearColor()
 
     def attach_to(self, target):
         if isinstance(target, ShowBase):
@@ -223,7 +243,7 @@ class WireFrameModel(StaticGeometricModel):
 def delay_geometry_decorator(method):
     def wrapper(self, *args, **kwargs):
         self._is_geometry_delayed = True
-        return method(self, args, kwargs)
+        return method(self, *args, **kwargs)
 
     return wrapper
 
@@ -277,13 +297,18 @@ class GeometricModel(StaticGeometricModel):
         self.pdndp_core.setShaderAuto()
 
     @property
+    @update_geometry_decorator
+    def pdndp(self):
+        return self._pdndp
+
+    @property
     def pos(self):
         return self._pos
 
     @pos.setter
     @delay_geometry_decorator
-    def pos(self, val: np.ndarray):
-        self._pos = val
+    def pos(self, pos: np.ndarray):
+        self._pos = pos
         self._is_geometry_delayed = True
 
     @property
@@ -292,8 +317,8 @@ class GeometricModel(StaticGeometricModel):
 
     @rotmat.setter
     @delay_geometry_decorator
-    def rotmat(self, val: np.ndarray):
-        self._rotmat = val
+    def rotmat(self, rotmat: np.ndarray):
+        self._rotmat = rotmat
         self._is_geometry_delayed = True
 
     @property
@@ -305,9 +330,9 @@ class GeometricModel(StaticGeometricModel):
 
     @homomat.setter
     @delay_geometry_decorator
-    def homomat(self, val: np.ndarray):
-        self._pos = val[:3, 3]
-        self._rotmat = val[:3, :3]
+    def homomat(self, homomat: np.ndarray):
+        self._pos = homomat[:3, 3]
+        self._rotmat = homomat[:3, :3]
         self._is_geometry_delayed = True
 
     @property
@@ -322,13 +347,13 @@ class GeometricModel(StaticGeometricModel):
 
     @pose.setter
     @delay_geometry_decorator
-    def pose(self, val):
+    def pose(self, pose):
         """
-        :param val: tuple or list containing an npvec3 and an npmat3
+        :param pose: tuple or list containing an npvec3 and an npmat3
         :return:
         """
-        self._pos = val[0]
-        self._rotmat = val[1]
+        self._pos = pose[0]
+        self._rotmat = pose[1]
 
     def set_transparency(self, attribute):
         return self._pdndp.setTransparency(attribute)
@@ -355,7 +380,7 @@ class GeometricModel(StaticGeometricModel):
         pdndp = copy.deepcopy(self._pdndp)
         pdndp.reparentTo(target)
 
-    def detach(self): #TODO detach from?
+    def detach(self):  # TODO detach from?
         self._pdndp.detachNode()
 
     def sample_surface(self, radius=0.005, n_samples=None, toggle_option=None):

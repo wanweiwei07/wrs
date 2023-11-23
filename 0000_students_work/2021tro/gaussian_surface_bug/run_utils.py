@@ -125,7 +125,7 @@ def get_pen_objmat4_list_by_drawpath(drawpath, paintingobj_item, method="msd", d
 
     if method == "rh":
         # rayhit
-        paintingobj_cm = copy.deepcopy(paintingobj_item.objcm)
+        paintingobj_cm = copy.deepcopy(paintingobj_item.cmodel)
         paintingobj_cm.sethomomat(paintingobj_objmat4)
         pos_nrml_list, error_list = pu.rayhitmesh_drawpath_ss(paintingobj_item, drawpath)
 
@@ -147,7 +147,7 @@ def get_pen_objmat4_list_by_drawpath_ms(drawpath_ms, paintingobj_item, drawrec_s
                                         mode="DI", direction=np.asarray((0, 0, 1))):
     drawpath_ms = pu.resize_drawpath_ms(drawpath_ms, drawrec_size[0], drawrec_size[1], space)
 
-    paintingobj_cm = copy.deepcopy(paintingobj_item.objcm)
+    paintingobj_cm = copy.deepcopy(paintingobj_item.cmodel)
     paintingobj_objmat4 = paintingobj_item.objmat4
 
     paintingobj_cm.sethomomat(paintingobj_objmat4)

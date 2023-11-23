@@ -20,18 +20,18 @@ def gen_stand():
                           epos=np.array([-.015, 0, 0]),
                           radius=.015,
                           rgba=cst.steel_gray))
-    hinge.set_alpha(.5)
+    hinge.alpha = .5
     hinge.attach_to(m_col)
     holder = gm.gen_box(xyz_lengths=np.array([.03, .03, .02]),
                         pos=np.array([0, 0, -.01]),
                         rgba=cst.steel_gray)
-    holder.set_alpha(.5)
+    holder.alpha = .5
     holder.attach_to(m_col)
     stand = gm.gen_stick(spos=np.array([0, 0, -0.02]),
                          epos=np.array([0, 0, -0.0225]),
                          radius=0.03,
                          rgba=cst.steel_gray)
-    stand.set_alpha(.5)
+    stand.alpha = .5
     stand.attach_to(m_col)
     return m_col
 
