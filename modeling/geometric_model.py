@@ -11,6 +11,10 @@ from visualization.panda.world import ShowBase
 import warnings as wrn
 
 
+# ==================================
+# definition of StaticGeometricModel
+# ==================================
+
 class StaticGeometricModel(object):
     """
     load an object as a static geometric model -> changing pos, rotmat, color, etc. are not allowed
@@ -212,20 +216,30 @@ class WireFrameModel(StaticGeometricModel):
         wrn.warn("Right not the set_rgba fn for a WireFrame instance is not implemented!")
 
 
-def update_delay(argument):
-    """
-    :param argument: "geometry", "cdprimitive", or "cdmesh"
-    :return:
-    author: weiwei
-    date: 20231122
-    """
-    def update_delay_decorator(method):
-        def wrapper(self, *args, **kwargs):
-            if self.is_delayed[argument]:
-                self._pdndp.setPosQuat(da.npvec3_to_pdvec3(self.pos), da.npmat3_to_pdquat(self.rotmat))
-            return method(self, *args, **kwargs)
-        return wrapper
+# ==============================================
+# delays for cdprimitive (Panda3D CollisionNode)
+# ==============================================
 
+def delay_geometry_decorator(method):
+    def wrapper(self, *args, **kwargs):
+        self._is_geometry_delayed = True
+        return method(self, args, kwargs)
+
+    return wrapper
+
+
+def update_geometry_decorator(method):
+    def wrapper(self, *args, **kwargs):
+        if self._is_geometry_delayed:
+            self._pdndp.setPosQuat(da.npvec3_to_pdvec3(self.pos), da.npmat3_to_pdquat(self.rotmat))
+        return method(self, *args, **kwargs)
+
+    return wrapper
+
+
+# ============================
+# definition of GeometricModel
+# ============================
 
 class GeometricModel(StaticGeometricModel):
     """
@@ -251,7 +265,7 @@ class GeometricModel(StaticGeometricModel):
             self._local_frame = copy.deepcopy(initor.local_frame)
             self._pos = copy.deepcopy(initor._pos)
             self._rotmat = copy.deepcopy(initor._rotmat)
-            self._is_delayed=copy.deepcopy(initor._is_delayed)
+            self._is_geometry_delayed = copy.deepcopy(initor._is_geometry_delayed)
         else:
             super().__init__(initor=initor,
                              name=name,
@@ -259,7 +273,7 @@ class GeometricModel(StaticGeometricModel):
                              toggle_twosided=toggle_twosided)
             self._pos = np.zeros(3)
             self._rotmat = np.eye(3)
-            self._is_delayed = {"geometry": False}
+            self._is_geometry_delayed = False
         self.pdndp_core.setShaderAuto()
 
     @property
@@ -267,18 +281,20 @@ class GeometricModel(StaticGeometricModel):
         return self._pos
 
     @pos.setter
+    @delay_geometry_decorator
     def pos(self, val: np.ndarray):
         self._pos = val
-        self._is_delayed = True
+        self._is_geometry_delayed = True
 
     @property
     def rotmat(self):
         return self._rotmat
 
     @rotmat.setter
+    @delay_geometry_decorator
     def rotmat(self, val: np.ndarray):
         self._rotmat = val
-        self._is_delayed = True
+        self._is_geometry_delayed = True
 
     @property
     def homomat(self):
@@ -288,39 +304,36 @@ class GeometricModel(StaticGeometricModel):
         return homomat
 
     @homomat.setter
+    @delay_geometry_decorator
     def homomat(self, val: np.ndarray):
         self._pos = val[:3, 3]
         self._rotmat = val[:3, :3]
-        self._is_delayed = True
+        self._is_geometry_delayed = True
 
     @property
-    def is_delayed(self):
-        return self._is_delayed
+    def pose(self):
+        """
+        a pose is defined as a tuple with the first element being npvec3, the second element beging npmat3
+        :return:
+        author: weiwei
+        date: 20231123
+        """
+        return (self._pos, self._rotmat)
 
-    # def set_pos(self, npvec3):
-    #     self._pdndp.setPos(*npvec3)
-    #
-    # def set_rotmat(self, npmat3):
-    #     self._pdndp.setQuat(da.npmat3_to_pdquat(npmat3))
-    #
-    # def set_homomat(self, npmat4):
-    #     self._pdndp.setPosQuat(da.npvec3_to_pdvec3(npmat4[:3, 3]), da.npmat3_to_pdquat(npmat4[:3, :3]))
-    #
-    # def get_pos(self):
-    #     return da.pdvec3_to_npvec3(self._pdndp.getPos())
-    #
-    # def get_rotmat(self):
-    #     return da.pdquat_to_npmat3(self._pdndp.getQuat())
-    #
-    # def get_homomat(self):
-    #     npv3 = da.pdvec3_to_npvec3(self._pdndp.getPos())
-    #     npmat3 = da.pdquat_to_npmat3(self._pdndp.getQuat())
-    #     return rm.homomat_from_posrot(npv3, npmat3)
+    @pose.setter
+    @delay_geometry_decorator
+    def pose(self, val):
+        """
+        :param val: tuple or list containing an npvec3 and an npmat3
+        :return:
+        """
+        self._pos = val[0]
+        self._rotmat = val[1]
 
     def set_transparency(self, attribute):
         return self._pdndp.setTransparency(attribute)
 
-    @update_geom_delay_decorator
+    @update_geometry_decorator
     def attach_to(self, target):
         if isinstance(target, ShowBase):
             # for rendering to base.render
@@ -331,6 +344,19 @@ class GeometricModel(StaticGeometricModel):
             target.add_gm(self)
         else:
             raise ValueError("Acceptable: ShowBase, StaticGeometricModel, ModelCollection!")
+
+    @update_geometry_decorator
+    def attach_copy_to(self, target):
+        """
+        attach a copy of pdndp to target
+        :param target:
+        :return:
+        """
+        pdndp = copy.deepcopy(self._pdndp)
+        pdndp.reparentTo(target)
+
+    def detach(self): #TODO detach from?
+        self._pdndp.detachNode()
 
     def sample_surface(self, radius=0.005, n_samples=None, toggle_option=None):
         """
@@ -360,6 +386,10 @@ class GeometricModel(StaticGeometricModel):
     def copy(self):
         return copy.deepcopy(self)
 
+
+# ======================================================
+# helper functions for creating various geometric models
+# ======================================================
 
 def gen_linesegs(linesegs,
                  thickness=0.001,
@@ -476,23 +506,6 @@ def gen_dashed_stick(spos=np.array([0, 0, 0]),
     dashstick_sgm = StaticGeometricModel(initor=dashstick_trm)
     dashstick_sgm.set_rgba(rgba=rgba)
     return dashstick_sgm
-
-
-# def gen_box(xyz_lengths=np.array([1, 1, 1]),
-#             pos=np.eye(4),
-#             rgba=np.array([1, 0, 0, 1])):
-#     """
-#     :param xyz_lengths:
-#     :param pos:
-#     :param rgba:
-#     :return:
-#     author: weiwei
-#     date: 20191229osaka
-#     """
-#     box_trm = trm_factory.gen_box(xyz_lengths=xyz_lengths, pos=pos)
-#     box_sgm = StaticGeometricModel(initializer=box_trm)
-#     box_sgm.set_rgba(rgba=rgba)
-#     return box_sgm
 
 
 def gen_box(xyz_lengths=np.array([1, 1, 1]),

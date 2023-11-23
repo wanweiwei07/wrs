@@ -6,6 +6,7 @@ import copy
 
 ode_util = OdeUtil()
 
+
 def copy_cdmesh(objcm):
     """
     deprecated 20230814
@@ -76,9 +77,7 @@ def is_collided(objcm_list0, objcm_list1, toggle_contacts=True):
         objcm_list1 = [objcm_list1]
     for objcm0 in objcm_list0:
         for objcm1 in objcm_list1:
-            pdotrmgeom0 = objcm0.copy_transformed_cdmesh()
-            pdotrmgeom1 = objcm1.copy_transformed_cdmesh()
-            contact_entry = ode_util.collide(pdotrmgeom0, pdotrmgeom1, 10)
+            contact_entry = ode_util.collide(objcm0.cdmesh, objcm1.cdmesh, 10)
             contact_points = np.asarray([da.pdvec3_to_npvec3(point) for point in contact_entry.getContactPoints()])
             if toggle_contacts:
                 return (True, contact_points) if len(contact_points) > 0 else (False, contact_points)
@@ -95,12 +94,11 @@ def rayhit_closet(spos, epos, objcm):
     author: weiwei
     date: 20190805
     """
-    pdotrmgeom = objcm.copy_transformed_cdmesh()
     ray = OdeRayGeom(length=1)
     length, dir = rm.unit_vector(epos - spos, toggle_length=True)
     ray.set(spos[0], spos[1], spos[2], dir[0], dir[1], dir[2])
     ray.setLength(length)
-    contact_entry = ode_util.collide(ray, pdotrmgeom, max_contacts=10)
+    contact_entry = ode_util.collide(ray, objcm.cdmesh, max_contacts=10)
     contact_points = [da.pdvec3_to_npvec3(point) for point in contact_entry.getContactPoints()]
     min_id = np.argmin(np.linalg.norm(spos - np.array(contact_points), axis=1))
     contact_normals = [da.pdvec3_to_npvec3(contact_entry.getContactGeom(i).getNormal()) for i in
@@ -117,12 +115,11 @@ def rayhit_all(spos, epos, objcm):
     author: weiwei
     date: 20190805
     """
-    pdotrmgeom = objcm.copy_transformed_cdmesh()
     ray = OdeRayGeom(length=1)
     length, dir = rm.unit_vector(epos - spos, toggle_length=True)
     ray.set(spos[0], spos[1], spos[2], dir[0], dir[1], dir[2])
     ray.setLength(length)
-    hit_entry = ode_util.collide(ray, pdotrmgeom)
+    hit_entry = ode_util.collide(ray, objcm.cdmesh)
     hit_points = [da.pdvec3_to_npvec3(point) for point in hit_entry.getContactPoints()]
     hit_normals = [da.pdvec3_to_npvec3(hit_entry.getContactGeom(i).getNormal()) for i in
                    range(hit_entry.getNumContacts())]

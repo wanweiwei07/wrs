@@ -19,6 +19,52 @@ import uuid
 # import modeling._gimpact_cdhelper as mgh
 # import modeling._bullet_cdhelper as mbh
 
+# ==============================================
+# delays for cdprimitive (Panda3D CollisionNode)
+# ==============================================
+
+def delay_cdprimitive_decorator(method):
+    def wrapper(self, *args, **kwargs):
+        self._is_cdprimitive_delayed = True
+        return method(self, args, kwargs)
+
+    return wrapper
+
+
+def update_cdprimitive_decorator(method):
+    def wrapper(self, *args, **kwargs):
+        if self._is_cdprimitive_delayed:
+            self._cdprimitive.setPosQuat(da.npvec3_to_pdvec3(self.pos), da.npmat3_to_pdquat(self.rotmat))
+        return method(self, *args, **kwargs)
+
+    return wrapper
+
+
+# ==================================
+# delays for cdmesh (OdeTriMeshGeom)
+# ==================================
+
+def delay_cdmesh_decorator(method):
+    def wrapper(self, *args, **kwargs):
+        self._is_cdmesh_delayed = True
+        return method(self, args, kwargs)
+
+    return wrapper
+
+
+def update_cdmesh_decorator(method):
+    def wrapper(self, *args, **kwargs):
+        if self._is_cdprimitive_delayed:
+            self._cdmesh.setPosition(da.npvec3_to_pdvec3(self.pos))
+            self._cdmesh.setQuaternion(da.npmat3_to_pdquat(self.rotmat))
+        return method(self, *args, **kwargs)
+
+    return wrapper
+
+
+# ============================
+# definition of CollisionModel
+# ============================
 
 class CollisionModel(mgm.GeometricModel):
     """
@@ -58,11 +104,14 @@ class CollisionModel(mgm.GeometricModel):
             self._trm_mesh = copy.deepcopy(initor.trm_mesh)
             self._pdndp = copy.deepcopy(initor.pdndp)
             self._cdmesh_type = copy.deepcopy(initor.cdmesh_type)
-            self._cdmesh = initor.copy_reference_cdmesh()
+            self._cdmesh = copy.deepcopy(initor.cdmesh)
             self._cdprimitive_type = copy.deepcopy(initor.cdprimitive_type)
-            self._cdprimitive = initor.copy_reference_cdprimitive()
+            self._cdprimitive = copy.deepcopy(initor.cdprimitive)
             self._cache_for_show = copy.deepcopy(initor._cache_for_show)
             self._local_frame = copy.deepcopy(initor.local_frame)
+            self._is_geometry_delayed = copy.deepcopy(initor._is_geometry_delayed)
+            self._is_cdprimitive_delayed = copy.deepcopy(initor._is_cdprimitive_delayed)
+            self._is_cdmesh_delayed = copy.deepcopy(initor._is_cdmesh_delayed)
         else:
             super().__init__(initor=initor,
                              name=name,
@@ -76,6 +125,9 @@ class CollisionModel(mgm.GeometricModel):
             # cd mesh
             self._cdmesh = self._acquire_cdmesh(cdmesh_type)
             self._cdmesh_type = cdmesh_type
+            # delays
+            self._is_cdprimitive_delayed = False
+            self._is_cdmesh_delayed = False
             # cache for show
             self._cache_for_show = {}
             # others
@@ -140,14 +192,20 @@ class CollisionModel(mgm.GeometricModel):
         return self._cdmesh_type
 
     @property
+    @update_cdmesh_decorator
+    def cdmesh(self):
+        return self._cdmesh
+
+    @property
     def cdprimitive_type(self):
-        self._cdprimitive.setPosQuat(da.npvec3_to_pdvec3(self.pos), da.npmat3_to_pdquat(self.rotmat))
         return self._cdprimitive_type
 
     @property
+    @update_cdprimitive_decorator
     def cdprimitive(self):
         return self._cdprimitive
 
+    @delay_cdmesh_decorator
     def change_cdmesh_type(self, cdmesh_type):
         self._cdmesh = self._acquire_cdmesh(cdmesh_type)
         self._cdmesh_type = cdmesh_type
@@ -159,6 +217,7 @@ class CollisionModel(mgm.GeometricModel):
             self._cache_for_show["cdmesh"].reparentTo(self.pdndp)
             mph.toggle_show_collision_node(self._cache_for_show["cdmesh"], toggle_value=True)
 
+    @delay_cdprimitive_decorator
     def change_cdprimitive_type(self, cdprimitive_type, thickness=None, userdefined_cdprimitive_fn=None):
         self._cdprimitive = self._acquire_cdprimitive(cdprimitive_type=cdprimitive_type,
                                                       thickness=thickness,
@@ -171,8 +230,8 @@ class CollisionModel(mgm.GeometricModel):
             self._cache_for_show["cdprimitive"].reparentTo(self.pdndp)
             mph.toggle_show_collision_node(self._cache_for_show["cdprimitive"], toggle_value=True)
 
+    @update_cdprimitive_decorator
     def attach_cdprimitive_to(self, target):
-        self._cdprimitive.setPosQuat(da.npvec3_to_pdvec3(self.pos), da.npmat3_to_pdquat(self.rotmat))
         if isinstance(target, ShowBase):
             # for rendering to base.render
             self._cdprimitive.reparentTo(target.render)
@@ -193,8 +252,12 @@ class CollisionModel(mgm.GeometricModel):
         date: 20211215, 20230815
         """
         return_cdmesh = copy.deepcopy(self._cdmesh)
+        # clear rotmat
+        return_cdmesh.setPosition(da.npvec3_to_pdvec3(np.zeros(3)))
+        return_cdmesh.setRotation(da.npmat3_to_pdmat3(np.eye(3)))
         return return_cdmesh
 
+    @update_cdmesh_decorator
     def copy_transformed_cdmesh(self):
         """
         return a copy of the cdmesh without updating to the current mcm pose
@@ -204,7 +267,6 @@ class CollisionModel(mgm.GeometricModel):
         date: 20211215, 20230815
         """
         return_cdmesh = copy.deepcopy(self._cdmesh)
-        moh.update_pose(return_cdmesh, self)
         return return_cdmesh
 
     def copy_reference_cdprimitive(self):
@@ -219,6 +281,7 @@ class CollisionModel(mgm.GeometricModel):
         return_cdprimitive.clearMat()
         return return_cdprimitive
 
+    @update_cdprimitive_decorator
     def copy_transformed_cdprimitive(self):
         """
         return a copy of the cdprimitive without updating to the current mcm pose
@@ -228,7 +291,6 @@ class CollisionModel(mgm.GeometricModel):
         date: 20230815
         """
         return_cdprimitive = copy.deepcopy(self._cdprimitive)
-        return_cdprimitive.setMat(self.pdndp.getMat())
         return return_cdprimitive
 
     def is_pcdwith(self, objcm, toggle_contacts=False):
@@ -254,19 +316,6 @@ class CollisionModel(mgm.GeometricModel):
                 return True
         else:
             return (False, np.asarray([])) if toggle_contacts else False
-
-    def attach_to(self, obj):
-        if isinstance(obj, ShowBase):
-            # for rendering to base.render
-            self._pdndp.reparentTo(obj.render)
-        elif isinstance(obj, mmc.ModelCollection):
-            obj.add_cm(self)
-        else:
-            print("Must be ShowBase, modeling.StaticGeometricModel, GeometricModel, CollisionModel, "
-                  "or CollisionModelCollection!")
-
-    def detach(self):
-        self._pdndp.detachNode()
 
     def show_cdprimitive(self):
         if "cdprimitive" in self._cache_for_show:
@@ -318,9 +367,6 @@ class CollisionModel(mgm.GeometricModel):
             contact_point, contact_normal = moh.rayhit_closet(spos, epos, self)
             return contact_point, contact_normal
 
-    def copy_geo_model(self):
-        return mgm.GeometricModel(self)
-
     def copy(self):
         return CollisionModel(self)
 
@@ -332,50 +378,9 @@ class CollisionModel(mgm.GeometricModel):
         return CollisionModel(self)
 
 
-# class RefdCollisionModel(CollisionModel):
-#     """
-#     a varied collision model with additional data like uuid, local pos, and rotmat
-#     author: weiwei
-#     date: 20230822
-#     """
-#
-#     def __init__(self,
-#                  initor,
-#                  refd_pos=np.zeros(3),
-#                  refd_rotmat=np.eye(3),
-#                  rgba=bc.link_stick_rgba,
-#                  cdprimitive_type=mmc.CDPrimitiveType.BOX,
-#                  cdmesh_type=mmc.CDMeshType.DEFAULT,
-#                  expand_radius=None,
-#                  name="ccmodel",
-#                  userdefined_cdprimitive_fn=None,
-#                  toggle_transparency=True,
-#                  toggle_twosided=False):
-#         super().__init__(initor=initor,
-#                          cdprimitive_type=cdprimitive_type,
-#                          cdmesh_type=cdmesh_type,
-#                          expand_radius=expand_radius,
-#                          name=name,
-#                          userdefined_cdprimitive_fn=userdefined_cdprimitive_fn,
-#                          toggle_transparency=toggle_transparency,
-#                          toggle_twosided=toggle_twosided)
-#         self.uuid = uuid.uuid4()  # uuid for storing this object in the cce_dict of collision checker
-#         self.refd_pos = refd_pos
-#         self.refd_rotmat = refd_rotmat
-#         self.update_pose_considering_refd(self.refd_pos, self.refd_rotmat)
-#         self.set_rgba(rgba)
-#
-#     def update_pose_considering_refd(self, pos=np.zeros(3), rotmat=np.eye(3)):
-#         """
-#         update the global parameters against give reference pos, reference rotmat
-#         :param pos:
-#         :param rotmat:
-#         :return:
-#         """
-#         homomat = np.eye(4)
-#         homomat[:3, 3] = pos + rotmat @ self.refd_pos
-#         homomat[:3, :3] = rotmat @ self.refd_rotmat
-#         self.set_homomat(npmat4=homomat)
+# ======================================================
+# helper functions for creating various collision models
+# ======================================================
 
 
 def gen_box(extent=np.array([.1, .1, .1]), homomat=np.eye(4), rgba=np.array([1, 0, 0, 1])):
@@ -457,7 +462,7 @@ if __name__ == "__main__":
     bunnycm1 = CollisionModel(objpath, cdprimitive_type=mc.CDPrimitiveType.CYLINDER)
     bunnycm1.set_rgba([0.7, 0, 0.7, 1.0])
     rotmat = rm.rotmat_from_euler(0, 0, math.radians(15))
-    bunnycm1.pos=np.array([0, .01, 0])
+    bunnycm1.pos = np.array([0, .01, 0])
     bunnycm1.rotmat = rotmat
     bunnycm1.attach_to(base)
     bunnycm1.show_cdprimitive()

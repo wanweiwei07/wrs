@@ -57,17 +57,15 @@ def is_collided(objcm0, objcm1, toggle_contacts=True):
     date: 20210117, 20211215
     """
     max_contacts=10
-    pdbrbd_nd0 = objcm0.copy_transformed_cdmesh()
-    pdbrbd_nd1 = objcm1.copy_transformed_cdmesh()
-    physicsworld.attach(pdbrbd_nd0)
-    physicsworld.attach(pdbrbd_nd1)
-    result = physicsworld.contactTestPair(pdbrbd_nd0, pdbrbd_nd1)
+    physicsworld.attach(objcm0.cdmesh)
+    physicsworld.attach(objcm1.cdmesh)
+    result = physicsworld.contactTestPair(objcm0.cdmesh, objcm1.cdmesh)
     contacts = result.getContacts()
     contact_points = [da.pdvec3_to_npvec3(ct.getManifoldPoint().getPositionWorldOnB()) for ct in contacts]
     contact_points += [da.pdvec3_to_npvec3(ct.getManifoldPoint().getPositionWorldOnA()) for ct in contacts]
     contact_points = contact_points[0:max_contacts]
-    physicsworld.remove(pdbrbd_nd0)
-    physicsworld.remove(pdbrbd_nd1)
+    physicsworld.remove(objcm0.cdmesh)
+    physicsworld.remove(objcm1.cdmesh)
     if toggle_contacts:
         return (True, np.asarray(contact_points)) if len(contact_points) > 0 else (False, np.asarray(contact_points))
     else:
@@ -83,10 +81,9 @@ def rayhit_closet(pfrom, pto, objcm):
     author: weiwei
     date: 20190805, 20210118
     """
-    pdbrbd_nd = objcm.copy_transformed_cdmesh()
-    physicsworld.attach(pdbrbd_nd)
+    physicsworld.attach(objcm.cdmesh)
     result = physicsworld.rayTestClosest(da.npvec3_to_pdvec3(pfrom), da.npvec3_to_pdvec3(pto))
-    physicsworld.remove(pdbrbd_nd)
+    physicsworld.remove(objcm.cdmesh)
     if result.hasHit():
         return [da.pdvec3_to_npvec3(result.getHitPos()), da.pdvec3_to_npvec3(result.getHitNormal())]
     else:
@@ -102,10 +99,9 @@ def rayhit_all(pfrom, pto, objcm):
     author: weiwei
     date: 20190805, 20210118
     """
-    pdbrbd_nd = objcm.copy_transformed_cdmesh()
-    physicsworld.attach(pdbrbd_nd)
+    physicsworld.attach(objcm.cdmesh)
     result = physicsworld.rayTestAll(da.npvec3_to_pdvec3(pfrom), da.npvec3_to_pdvec3(pto))
-    physicsworld.remove(pdbrbd_nd)
+    physicsworld.remove(objcm.cdmesh)
     if result.hasHits():
         return [[da.pdvec3_to_npvec3(hit.getHitPos()), da.pdvec3_to_npvec3(-hit.getHitNormal())] for hit in result.getHits()]
     else:
