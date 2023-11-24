@@ -27,8 +27,8 @@ class Lite6WRSGripper(gp.GripperInterface):
         self.lft.lnks[0]['name'] = "base"
         self.lft.lnks[0]['pos_in_loc_tcp'] = np.zeros(3)
         self.lft.lnks[0]['collision_model'] = cm.CollisionModel(os.path.join(this_dir, "meshes", "base.stl"),
-                                                                cdprimitive_type="user_defined", expand_radius=.001,
-                                                                userdefined_cdprimitive_fn=self._hnd_base_cdnp)
+                                                                cdp_type="user_defined", expand_radius=.001,
+                                                                userdef_cdp_fn=self._hnd_base_cdnp)
         self.lft.lnks[0]['rgba'] = [.77, .77, .77, 1]
         self.lft.jnts[1]['pos_in_loc_tcp'] = np.array([0, 0.0040, 0.089])
         self.lft.jnts[1]['gl_rotmat'] = rm.rotmat_from_euler(0, 0, math.pi)
@@ -37,8 +37,8 @@ class Lite6WRSGripper(gp.GripperInterface):
         self.lft.jnts[1]['loc_motionax'] = np.array([1, 0, 0])
         self.lft.lnks[1]['name'] = "finger1"
         self.lft.lnks[1]['mesh_file'] = cm.CollisionModel(
-            os.path.join(this_dir, "meshes", "finger.stl"), cdprimitive_type="user_defined",
-            userdefined_cdprimitive_fn=self._finger_cdnp, expand_radius=.001)
+            os.path.join(this_dir, "meshes", "finger.stl"), cdp_type="user_defined",
+            userdef_cdp_fn=self._finger_cdnp, expand_radius=.001)
         self.lft.lnks[1]['rgba'] = [.35, .35, .35, 1]
         # # rgt finger
         self.rgt = jl.JLChain(pos=cpl_end_pos, rotmat=cpl_end_rotmat, home_conf=np.zeros(1), name='rgt_finger')
@@ -47,8 +47,8 @@ class Lite6WRSGripper(gp.GripperInterface):
         self.rgt.jnts[1]['loc_motionax'] = np.array([1, 0, 0])
         self.rgt.lnks[1]['name'] = "finger2"
         self.rgt.lnks[1]['mesh_file'] = cm.CollisionModel(
-            os.path.join(this_dir, "meshes", "finger.stl"), cdprimitive_type="user_defined",
-            userdefined_cdprimitive_fn=self._finger_cdnp, expand_radius=.000)
+            os.path.join(this_dir, "meshes", "finger.stl"), cdp_type="user_defined",
+            userdef_cdp_fn=self._finger_cdnp, expand_radius=.000)
         self.rgt.lnks[1]['rgba'] = [.35, .35, .35, 1]
         # # reinitialize
         self.lft.finalize(cdmesh_type=cdmesh_type)

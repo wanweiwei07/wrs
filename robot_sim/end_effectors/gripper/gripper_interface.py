@@ -7,7 +7,7 @@ import robot_sim.end_effectors.ee_interface as ei
 
 class GripperInterface(ei.EEInterface):
 
-    def __init__(self, pos=np.zeros(3), rotmat=np.eye(3), cdmesh_type=mc.CDMeshType.AABB, name='gripper'):
+    def __init__(self, pos=np.zeros(3), rotmat=np.eye(3), cdmesh_type=mc.CDMType.AABB, name='gripper'):
         super().__init__(pos=pos, rotmat=rotmat, cdmesh_type=cdmesh_type, name=name)
         # jaw width
         self.jaw_rng = [0.0, 0.05]  # 0~0.05m by default

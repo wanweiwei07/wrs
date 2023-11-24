@@ -64,33 +64,21 @@ def change_cdmask(cdprimitive, collision_mask: BitMask32, action="new", type="bo
             raise KeyError("Action should be add, remove, or new.")
 
     if type == "both":
-        get_method_name = "getCollideMask"
-        set_method_name = "setCollideMask"
-    elif type == "from":
-        get_method_name = "getFromCollideMask"
-        set_method_name = "setFromCollideMask"
-    elif type == "into":
-        get_method_name = "getIntoCollideMask"
-        set_method_name = "setIntoCollideMask"
+        change_cdmask(cdprimitive=cdprimitive, collision_mask=collision_mask, action=action, type="from")
+        change_cdmask(cdprimitive=cdprimitive, collision_mask=collision_mask, action=action, type="into")
     else:
-        raise KeyError("Type should be from, into, or both.")
-    if cdprimitive.getName() == "cylinder":
-        # child 0
-        get_method_to_call = getattr(cdprimitive.getChild(0).node(), get_method_name, None)
-        set_method_to_call = getattr(cdprimitive.getChild(0).node(), set_method_name)
-        _change_cdmask(collision_mask, action, get_method_to_call, set_method_to_call)
-        # child 1
-        get_method_to_call = getattr(cdprimitive.getChild(1).node(), get_method_name, None)
-        set_method_to_call = getattr(cdprimitive.getChild(1).node(), set_method_name)
-        _change_cdmask(collision_mask, action, get_method_to_call, set_method_to_call)
-        # child 2
-        get_method_to_call = getattr(cdprimitive.getChild(2).node(), get_method_name, None)
-        set_method_to_call = getattr(cdprimitive.getChild(2).node(), set_method_name)
-        _change_cdmask(collision_mask, action, get_method_to_call, set_method_to_call)
-    else:
-        get_method_to_call = getattr(cdprimitive.node(), get_method_name, None)
-        set_method_to_call = getattr(cdprimitive.node(), set_method_name)
-        _change_cdmask(collision_mask, action, get_method_to_call, set_method_to_call)
+        if type == "from":
+            get_method_name = "getFromCollideMask"
+            set_method_name = "setFromCollideMask"
+        elif type == "into":
+            get_method_name = "getIntoCollideMask"
+            set_method_name = "setIntoCollideMask"
+        else:
+            raise KeyError("Type should be from, into, or both.")
+        for child_pdndp in cdprimitive.getChildren():
+            get_method_to_call = getattr(child_pdndp.node(), get_method_name)
+            set_method_to_call = getattr(child_pdndp.node(), set_method_name)
+            _change_cdmask(collision_mask, action, get_method_to_call, set_method_to_call)
 
 
 def update_pose(cdprimitive, cmodel):
@@ -105,26 +93,28 @@ def update_pose(cdprimitive, cmodel):
     cdprimitive.setMat(cmodel.pdndp.getMat())
 
 
-def toggle_show_collision_node(cdprimitive, toggle_on=True):
+def toggle_show_collision_node(cdprimitive, toggle_show_on=True):
     """
     :param cdprimitive:
     :param is_show:
     :return:
     """
-    if cdprimitive.getName() == "cylinder":
-        if toggle_on:
-            cdprimitive.getChild(0).show()
-            cdprimitive.getChild(1).show()
-            cdprimitive.getChild(2).show()
-        else:
-            cdprimitive.getChild(0).hide()
-            cdprimitive.getChild(1).hide()
-            cdprimitive.getChild(2).hide()
+    # if cdprimitive.getName() == "cylinder":
+    #     if toggle_show_on:
+    #         cdprimitive.getChild(0).show()
+    #         cdprimitive.getChild(1).show()
+    #         cdprimitive.getChild(2).show()
+    #     else:
+    #         cdprimitive.getChild(0).hide()
+    #         cdprimitive.getChild(1).hide()
+    #         cdprimitive.getChild(2).hide()
+    # else:
+    if toggle_show_on:
+        for child_pdndp in cdprimitive.getChildren():
+            child_pdndp.show()
     else:
-        if toggle_on:
-            cdprimitive.show()
-        else:
-            cdprimitive.hide()
+        for child_pdndp in cdprimitive.getChildren():
+            child_pdndp.hide()
 
 
 # ==================================
@@ -141,11 +131,11 @@ def gen_box_pdcndp(trm_model, ex_radius=0.01):
     obb = trm_model.obb_bound
     sides = obb.extents / 2.0 + ex_radius
     collision_primitive = CollisionBox(center=LPoint3(0, 0, 0), x=sides[0], y=sides[1], z=sides[2])
-    pdcnd = CollisionNode("auto")
+    pdcnd = CollisionNode("box_cnode")
     pdcnd.addSolid(collision_primitive)
     pdcnd.setTransform(TransformState.makeMat(da.npmat4_to_pdmat4(obb.homomat)))
-    cdprimitive = NodePath(pdcnd)
-    cdprimitive.setName("box")
+    cdprimitive = NodePath("box")
+    cdprimitive.attachNewNode(pdcnd)
     return cdprimitive
 
 
@@ -161,11 +151,11 @@ def gen_capsule_pdcndp(trm_model, ex_radius=0.01):
     collision_primitive = CollisionCapsule(a=LPoint3(0, 0, -cyl.height / 2),
                                            db=LPoint3(0, 0, cyl.height / 2),
                                            radius=cyl.radius + ex_radius)
-    pdcnd = CollisionNode("auto")
+    pdcnd = CollisionNode("capsule_cnode")
     pdcnd.addSolid(collision_primitive)
     pdcnd.setTransform(TransformState.makeMat(da.npmat4_to_pdmat4(cyl.homomat)))
-    cdprimitive = NodePath(pdcnd)
-    cdprimitive.setName("capsule")
+    cdprimitive = NodePath("capsule")
+    cdprimitive.attachNewNode(pdcnd)
     return cdprimitive
 
 
@@ -187,14 +177,14 @@ def gen_cylinder_pdcndp(trm_model, ex_radius=0.01):
                                        x=x_side,
                                        y=math.tan(angles[1] / 2) * x_side,
                                        z=cyl.height / 2.0)
-    pdcndp = NodePath("cylinder")
-    for angle in angles:
+    cdprimitive = NodePath("cylinder")
+    for i, angle in enumerate(angles):
         homomat = cyl.homomat @ rm.homomat_from_posrot(rotmat=rm.rotmat_from_axangle(np.array([0, 0, 1]), angle))
-        pdcnd = CollisionNode("auto")
+        pdcnd = CollisionNode("cylinder" + f"_cnode_{i}")
         pdcnd.addSolid(collision_primitive)
         pdcnd.setTransform(TransformState.makeMat(da.npmat4_to_pdmat4(homomat)))
-        pdcndp.attachNewNode(pdcnd)
-    return pdcndp
+        cdprimitive.attachNewNode(pdcnd)
+    return cdprimitive
 
 
 def gen_surfaceballs_pdcnd(trm_mesh, radius=0.01):
@@ -208,14 +198,14 @@ def gen_surfaceballs_pdcnd(trm_mesh, radius=0.01):
     n_sample = int(math.ceil(trm_mesh.area / (radius * 0.3) ** 2))
     n_sample = 120 if n_sample > 120 else n_sample  # threshhold
     sample_data = trm_mesh.sample_surface(n_sample)
-    pdcnd = CollisionNode("auto")
+    pdcnd = CollisionNode("surface_balls_cnode")
     for point in sample_data:
         pdcnd.addSolid(CollisionSphere(cx=point[0],
                                        cy=point[1],
                                        cz=point[2],
                                        radius=radius))
-    cdprimitive = NodePath(pdcnd)
-    cdprimitive.setName("surface_balls")
+    cdprimitive = NodePath("surface_balls")
+    cdprimitive.attachNewNode(pdcnd)
     return cdprimitive
 
 
@@ -227,11 +217,11 @@ def gen_pointcloud_pdcndp(trm_mesh, radius=0.02):
     author: weiwei
     date: 20191210
     """
-    pdcnd = CollisionNode("auto")
+    pdcnd = CollisionNode("pointcloud_cnode")
     for point in trm_mesh.vertices:
         pdcnd.addSolid(CollisionSphere(cx=point[0], cy=point[1], cz=point[2], radius=radius))
-    cdprimitive = NodePath(pdcnd)
-    cdprimitive.setName("pointcloud")
+    cdprimitive = NodePath("pointcloud")
+    cdprimitive.attachNewNode(pdcnd)
     return cdprimitive
 
 
@@ -287,19 +277,29 @@ def is_collided(cmodel_list0, cmodel_list1, toggle_contacts=False):
     cd_handler = CollisionHandlerQueue()
     tgt_pdndp = NodePath("collision pdndp")
     for cmodel in cmodel_list0:
-        cd_trav.addCollider(collider=cmodel.attach_cdprimitive_to(tgt_pdndp), handler=cd_handler)
+        # if not cmodel.cdprimitive.node().isCollisionNode():  # get into a deeper layer (e.g. cylinder)
+        cdprimitive = cmodel.attach_cdprimitive_to(tgt_pdndp)
+        for child_pdndp in cdprimitive.getChildren():
+            cd_trav.addCollider(collider=child_pdndp, handler=cd_handler)
+        # cd_trav.addCollider(collider=cmodel.attach_cdprimitive_to(tgt_pdndp), handler=cd_handler)
     for cmodel in cmodel_list1:
         cmodel.attach_cdprimitive_to(tgt_pdndp)
     cd_trav.traverse(tgt_pdndp)
+    # for cmodel in cmodel_list0:
+    #     for child_pdndp in cmodel.cdprimitive.getChildren():
+    #         cd_trav.removeCollider(child_pdndp)
+    # for cmodel in cmodel_list1:
+    #     for child_pdndp in cmodel.cdprimitive.getChildren():
+    #         cd_trav.removeCollider(child_pdndp)
     if cd_handler.getNumEntries() > 0:
         if toggle_contacts:
             contact_points = np.asarray([da.pdvec3_to_npvec3(cd_entry.getSurfacePoint(base.render)) for cd_entry in
                                          cd_handler.getEntries()])
-            return (True, contact_points)
+            return True, contact_points
         else:
             return True
     else:
-        return (False, np.asarray([])) if toggle_contacts else False
+        return False, np.asarray([]) if toggle_contacts else False
 
 
 # *** deprecated ***
@@ -409,27 +409,30 @@ if __name__ == '__main__':
 
     base = wd.World(cam_pos=[.7, .7, .7], lookat_pos=[0, 0, 0])
     file_path = os.path.join(basis.__path__[0], 'objects', 'bunnysim.stl')
-    cmodel = mcm.CollisionModel(file_path, cdprimitive_type=mc.CDPrimitiveType.CYLINDER)
+    cmodel = mcm.CollisionModel(file_path, cdp_type=mc.CDPType.CYLINDER)
     cmodel.rgba = np.array([.2, .5, 0, 1])
     cmodel.pos = np.array([.01, .01, .01])
     cmodel.attach_to(base)
     cmodel.show_cdprimitive()
+
     cmodel_list = []
     for i in range(100):
         cmodel_list.append(
             mcm.CollisionModel(os.path.join(basis.__path__[0], 'objects', 'housing.stl'),
-                               cdprimitive_type=mc.CDPrimitiveType.BOX))
+                               cdp_type=mc.CDPType.BOX))
         cmodel_list[-1].pos = np.random.random_sample((3,))
         cmodel_list[-1].rgba = np.array([1, .5, 0, 1])
         cmodel_list[-1].attach_to(base)
         cmodel_list[-1].show_cdprimitive()
 
     tic = time.time()
-    result = is_collided(cmodel, cmodel_list)
+    result, contacts = is_collided(cmodel, cmodel_list, toggle_contacts=True)
     toc = time.time()
     time_cost = toc - tic
     print(time_cost)
     print(result)
+    for cpoint in contacts:
+        mgm.gen_sphere(pos=cpoint, radius=.001).attach_to(base)
     # tic = time.time()
     # is_cmcmlist_collided2(objcm, objcmlist)
     # toc = time.time()
@@ -446,7 +449,7 @@ if __name__ == '__main__':
     # to collide with other objects.
     # wd.World(cam_pos=[1.0, 1, .0, 1.0], lookat_pos=[0, 0, 0])
     # objpath = os.path.join(basis.__path__[0], 'objects', 'yumifinger.stl')
-    # objcm1 = mcm.CollisionModel(objpath, cdprimitive_type='polygons')
+    # objcm1 = mcm.CollisionModel(objpath, cdp_type='polygons')
     # # pos = np.array([[-0.5, -0.82363909, 0.2676166, -0.00203699],
     # #                     [-0.86602539, 0.47552824, -0.1545085, 0.01272306],
     # #                     [0., -0.30901703, -0.95105648, 0.12604253],
@@ -459,7 +462,7 @@ if __name__ == '__main__':
     # objcm1.set_rgba([1, 1, .3, .2])
     #
     # objpath = os.path.join(basis.__path__[0], 'objects', 'tubebig.stl')
-    # objcm2 = mcm.CollisionModel(objpath, cdprimitive_type='polygons')
+    # objcm2 = mcm.CollisionModel(objpath, cdp_type='polygons')
     # objcm2.set_rgba([1, 1, .3, .2])
     # iscollided, contact_points = is_collided(objcm1, objcm2, toggle_contacts=True)
     # objcm1.show_cdmesh()

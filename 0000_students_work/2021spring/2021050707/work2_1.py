@@ -7,12 +7,12 @@ if __name__ == '__main__':
     base = wd.World(cam_pos=np.array([.7, .05, .3]), lookat_pos=np.zeros(3))
     #衝突モデルの定義
     """
-    object_ref = mcm.CollisionModel(initializer="./objects/bunnysim.stl", cdprimitive_type="box", cdmesh_type="triangles")
+    object_ref = mcm.CollisionModel(initializer="./objects/bunnysim.stl", cdp_type="box", cdm_type="triangles")
     object_ref.set_rgba([.9, .75, .35, 1])
     """
-    object_ref1 = cm.CollisionModel(initor="./objects/Coffee_cup.stl", cdprimitive_type="box", cdmesh_type="triangles")
+    object_ref1 = cm.CollisionModel(initor="./objects/Coffee_cup.stl", cdp_type="box", cdm_type="triangles")
     object_ref1.set_rgba([.9, .75, .35, 1])
-    object_ref2 = cm.CollisionModel(initor="./objects/Glass.stl", cdprimitive_type="box", cdmesh_type="triangles")
+    object_ref2 = cm.CollisionModel(initor="./objects/Glass.stl", cdp_type="box", cdm_type="triangles")
     object_ref2.set_rgba([.9, .75, .35, 1])
 
     """
@@ -22,7 +22,7 @@ if __name__ == '__main__':
     # ウサギ２
     object2 = object_ref.copy()
     object2.set_pos(np.array([0, -.05, 0]))
-    object2.change_cdprimitive_type(cdprimitive_type="surface_balls")
+    object2.change_cdprimitive_type(cdp_type="surface_balls")
 
     #ウサギ１とウサギ２の衝突を検出
     pcd_result = object1.is_pcdwith(object2)
@@ -39,7 +39,7 @@ if __name__ == '__main__':
     # ウサギ３
     object3 = object_ref.copy()
     object3.set_pos(np.array([0, .05, 0]))
-    object3.change_cdmesh_type(cdmesh_type="convex_hull")
+    object3.change_cdmesh_type(cdm_type="convex_hull")
     #ウサギ４
     object4 = object_ref.copy()
     object4.set_pos(np.array([0, .08, 0]))

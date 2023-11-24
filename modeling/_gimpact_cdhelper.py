@@ -18,7 +18,7 @@ def gen_cdmesh_vvnf(vertices, vertex_normals, faces):
 
 def is_collided(objcm0, objcm1):
     """
-    check if two objcm are collided after converting the specified cdmesh_type
+    check if two objcm are collided after converting the specified cdm_type
     :param objcm0:
     :param objcm1:
     :return:
@@ -94,7 +94,7 @@ if __name__ == '__main__':
 
     wd.World(cam_pos=[1.0, 1, .0, 1.0], lookat_pos=[0, 0, 0])
     objpath = os.path.join(basis.__path__[0], 'objects', 'yumifinger.stl')
-    objcm1= cm.CollisionModel(objpath, cdmesh_type='triangles')
+    objcm1= cm.CollisionModel(objpath, cdm_type='triangles')
     homomat = np.array([[ 5.00000060e-01,  7.00629234e-01,  5.09036899e-01, -3.43725011e-02],
                         [ 8.66025329e-01, -4.04508471e-01, -2.93892622e-01,  5.41121606e-03],
                         [-2.98023224e-08,  5.87785244e-01, -8.09016943e-01,  1.13636881e-01],
@@ -107,7 +107,7 @@ if __name__ == '__main__':
     objcm1.set_rgba([1,1,.3,.2])
 
     objpath = os.path.join(basis.__path__[0], 'objects', 'tubebig.stl')
-    objcm2= cm.CollisionModel(objpath, cdmesh_type='triangles')
+    objcm2= cm.CollisionModel(objpath, cdm_type='triangles')
     iscollided, contact_points = is_collided(objcm1, objcm2)
     # objcm1.show_cdmesh(end_type='box')
     # show_triangles_cdmesh(objcm1)

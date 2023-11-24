@@ -30,8 +30,8 @@ class JLChain(object):
                  pos=np.zeros(3),
                  rotmat=np.eye(3),
                  n_dof=6,
-                 cdprimitive_type=mc.CDPrimitiveType.BOX,
-                 cdmesh_type=mc.CDMeshType.DEFAULT):
+                 cdprimitive_type=mc.CDPType.BOX,
+                 cdmesh_type=mc.CDMType.DEFAULT):
         """
         conf -- configuration: target joint values
         :param name:

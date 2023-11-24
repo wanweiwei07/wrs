@@ -26,8 +26,8 @@ class UR5EConveyorBelt(ri.RobotInterface):
         self.base_stand.jnts[4]['pos_in_loc_tcp'] = np.array([-.9, .27, 0.06])
         self.base_stand.lnks[0]['collision_model'] = cm.CollisionModel(
             os.path.join(this_dir, "meshes", "ur5e_base.stl"),
-            cdprimitive_type="user_defined", expand_radius=.005,
-            userdefined_cdprimitive_fn=self._base_combined_cdnp)
+            cdp_type="user_defined", expand_radius=.005,
+            userdef_cdp_fn=self._base_combined_cdnp)
         self.base_stand.lnks[0]['rgba'] = [.35, .35, .35, 1]
         self.base_stand.lnks[1]['mesh_file'] = os.path.join(this_dir, "meshes", "conveyor.stl")
         self.base_stand.lnks[1]['rgba'] = [.35, .45, .35, 1]

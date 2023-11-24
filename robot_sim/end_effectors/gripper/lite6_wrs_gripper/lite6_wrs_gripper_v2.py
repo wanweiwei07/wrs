@@ -46,8 +46,8 @@ class Lite6WRSGripper2(gp.GripperInterface):
         self.lft.jnts[1]['loc_motionax'] = np.array([0, -1, 0])
         self.lft.lnks[1]['name'] = "finger1"
         self.lft.lnks[1]['mesh_file'] = cm.CollisionModel(
-            os.path.join(this_dir, "meshes", "finger_v2.stl"), cdprimitive_type="user_defined",
-            userdefined_cdprimitive_fn=self._finger_cdnp, expand_radius=.001)
+            os.path.join(this_dir, "meshes", "finger_v2.stl"), cdp_type="user_defined",
+            userdef_cdp_fn=self._finger_cdnp, expand_radius=.001)
         self.lft.lnks[1]['rgba'] = [.65, .65, .65, 1]
         # rgt finger
         self.rgt = jl.JLChain(pos=cpl_end_pos, rotmat=cpl_end_rotmat, home_conf=np.zeros(1), name='rgt_finger')
@@ -57,8 +57,8 @@ class Lite6WRSGripper2(gp.GripperInterface):
         self.rgt.jnts[1]['loc_motionax'] = np.array([0, -1, 0])
         self.rgt.lnks[1]['name'] = "finger2"
         self.rgt.lnks[1]['mesh_file'] = cm.CollisionModel(
-            os.path.join(this_dir, "meshes", "finger_v2.stl"), cdprimitive_type="user_defined",
-            userdefined_cdprimitive_fn=self._finger_cdnp, expand_radius=.001)
+            os.path.join(this_dir, "meshes", "finger_v2.stl"), cdp_type="user_defined",
+            userdef_cdp_fn=self._finger_cdnp, expand_radius=.001)
         self.rgt.lnks[1]['rgba'] = [.65, .65, .65, 1]
         # # reinitialize
         self.body.finalize(cdmesh_type=cdmesh_type)
@@ -251,7 +251,7 @@ if __name__ == '__main__':
 
     base = wd.World(cam_pos=[.5, .5, .5], lookat_pos=[0, 0, 0], auto_cam_rotate=False)
     gm.gen_frame().attach_to(base)
-    # mcm.CollisionModel("meshes/dual_realsense.stl", thickness=.001).attach_to(base)
+    # mcm.CollisionModel("meshes/dual_realsense.stl", expand_radius=.001).attach_to(base)
     grpr = Lite6WRSGripper2(enable_cc=True)
     grpr.change_jaw_width(.03)
     grpr.gen_meshmodel(toggle_tcpcs=True).attach_to(base)

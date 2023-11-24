@@ -25,7 +25,7 @@ import uuid
 
 def delay_cdprimitive_decorator(method):
     def wrapper(self, *args, **kwargs):
-        self._is_cdprimitive_delayed = True
+        self._is_cdp_delayed = True
         return method(self, *args, **kwargs)
 
     return wrapper
@@ -33,8 +33,10 @@ def delay_cdprimitive_decorator(method):
 
 def update_cdprimitive_decorator(method):
     def wrapper(self, *args, **kwargs):
-        if self._is_cdprimitive_delayed:
-            self._cdprimitive.setPosQuat(da.npvec3_to_pdvec3(self.pos), da.npmat3_to_pdquat(self.rotmat))
+        if self._is_cdp_delayed:
+            print("cdprimitive_delayed, update: ", self.pos, self.rotmat)
+            self._cdp.setPosQuat(da.npvec3_to_pdvec3(self.pos), da.npmat3_to_pdquat(self.rotmat))
+            self._is_cdp_delayed = False
         return method(self, *args, **kwargs)
 
     return wrapper
@@ -46,7 +48,7 @@ def update_cdprimitive_decorator(method):
 
 def delay_cdmesh_decorator(method):
     def wrapper(self, *args, **kwargs):
-        self._is_cdmesh_delayed = True
+        self._is_cdm_delayed = True
         return method(self, *args, **kwargs)
 
     return wrapper
@@ -54,9 +56,10 @@ def delay_cdmesh_decorator(method):
 
 def update_cdmesh_decorator(method):
     def wrapper(self, *args, **kwargs):
-        if self._is_cdprimitive_delayed:
-            self._cdmesh.setPosition(da.npvec3_to_pdvec3(self.pos))
-            self._cdmesh.setQuaternion(da.npmat3_to_pdquat(self.rotmat))
+        if self._is_cdp_delayed:
+            self._cdm.setPosition(da.npvec3_to_pdvec3(self.pos))
+            self._cdm.setQuaternion(da.npmat3_to_pdquat(self.rotmat))
+            self._is_cdp_delayed = False
         return method(self, *args, **kwargs)
 
     return wrapper
@@ -78,64 +81,65 @@ class CollisionModel(mgm.GeometricModel):
 
     def __init__(self,
                  initor,
-                 cdprimitive_type=mc.CDPrimitiveType.BOX,
-                 cdmesh_type=mc.CDMeshType.DEFAULT,
+                 cdp_type=mc.CDPType.BOX,
+                 cdm_type=mc.CDMType.DEFAULT,
                  expand_radius=None,
                  name="collision_model",
-                 userdefined_cdprimitive_fn=None,
+                 userdef_cdp_fn=None,
                  toggle_transparency=True,
                  toggle_twosided=False):
         """
         :param initor:
         :param toggle_transparency:
-        :param cdprimitive_type: box, ball, capsule, point_cloud, user_defined
-        :param cdmesh_type: aabb, obb, convex_hull, default(triangulation)
+        :param cdp_type: cdprimitive type, model_constant.CDPType
+        :param cdm_type: cdmesh_type, model_constant.CDMType
         :param expand_radius:
         :param name:
-        :param userdefined_cdprimitive_fn: the collision primitive will be defined in the provided function
-                                           if cdprimitive_type = external;
-                                           protocal for the callback function: return CollisionNode,
+        :param userdef_cdp_fn: the collision primitive will be defined in the provided function
+                                           if cdp_type = external;
+                                           protocal for the callback function: return NodePath (CollisionNode),
                                            may have multiple CollisionSolid
-        date: 20190312, 20201212, 20230814
+        date: 20190312, 20201212, 20230814, 20231124
         """
         if isinstance(initor, CollisionModel):
             self._name = copy.deepcopy(initor.name)
             self._file_path = copy.deepcopy(initor.file_path)
             self._trm_mesh = copy.deepcopy(initor.trm_mesh)
             self._pdndp = copy.deepcopy(initor.pdndp)
-            self._cdmesh_type = copy.deepcopy(initor.cdmesh_type)
-            self._cdmesh = copy.deepcopy(initor.cdmesh)
-            self._cdprimitive_type = copy.deepcopy(initor.cdprimitive_type)
-            self._cdprimitive = copy.deepcopy(initor.cdprimitive)
+            self._cdm_type = copy.deepcopy(initor.cdmesh_type)
+            self._cdm = copy.deepcopy(initor.cdmesh)
+            self._cdp_type = copy.deepcopy(initor.cdprimitive_type)
+            self._cdp = copy.deepcopy(initor.cdprimitive)
             self._cache_for_show = copy.deepcopy(initor._cache_for_show)
             self._local_frame = copy.deepcopy(initor.local_frame)
             self._is_geometry_delayed = copy.deepcopy(initor._is_geometry_delayed)
-            self._is_cdprimitive_delayed = copy.deepcopy(initor._is_cdprimitive_delayed)
-            self._is_cdmesh_delayed = copy.deepcopy(initor._is_cdmesh_delayed)
+            self._is_cdp_delayed = copy.deepcopy(initor._is_cdp_delayed)
+            self._is_cdm_delayed = copy.deepcopy(initor._is_cdm_delayed)
         else:
             super().__init__(initor=initor,
                              name=name,
                              toggle_transparency=toggle_transparency,
                              toggle_twosided=toggle_twosided)
+            self._exp_radius = expand_radius
             # cd primitive
-            self._cdprimitive = self._acquire_cdprimitive(cdprimitive_type,
-                                                          expand_radius,
-                                                          userdefined_cdprimitive_fn)
-            self._cdprimitive_type = cdprimitive_type
+            self._cdp_type = cdp_type
+            self._cdp = self._acquire_cdp(cdp_type,
+                                          expand_radius,
+                                          userdef_cdp_fn)
             # cd mesh
-            self._cdmesh = self._acquire_cdmesh(cdmesh_type)
-            self._cdmesh_type = cdmesh_type
+            self._cdm_type = cdm_type
+            self._cdm = self._acquire_cdm(cdm_type)
             # delays
-            self._is_cdprimitive_delayed = False
-            self._is_cdmesh_delayed = False
+            self._is_cdp_delayed = False
+            self._is_cdm_delayed = False
             # cache for show
             self._cache_for_show = {}
             # others
             self._local_frame = None
 
-    def _acquire_cdmesh(self, cdmesh_type=None, toggle_trm=False):
+    def _acquire_cdm(self, cdmesh_type=None, toggle_trm=False):
         """
-        step 1: extract vvnf following the specified cdmesh_type
+        step 1: extract vvnf following the specified cdm_type
         step 2: pack the vvnf to cdmesh
         :param cdmesh_type:
         :param toggle_trm: return the cdmesh's Trimesh format or not
@@ -145,15 +149,15 @@ class CollisionModel(mgm.GeometricModel):
         """
         if cdmesh_type is None:
             cdmesh_type = self.cdmesh_type
-        if cdmesh_type == mc.CDMeshType.AABB:
+        if cdmesh_type == mc.CDMType.AABB:
             trm_mesh = self.trm_mesh.aabb_bound
-        elif cdmesh_type == mc.CDMeshType.OBB:
+        elif cdmesh_type == mc.CDMType.OBB:
             trm_mesh = self.trm_mesh.obb_bound
-        elif cdmesh_type == mc.CDMeshType.CONVEX_HULL:
+        elif cdmesh_type == mc.CDMType.CONVEX_HULL:
             trm_mesh = self.trm_mesh.convex_hull
-        elif cdmesh_type == mc.CDMeshType.CYLINDER:
+        elif cdmesh_type == mc.CDMType.CYLINDER:
             trm_mesh = self.trm_mesh.cyl_bound
-        elif cdmesh_type == mc.CDMeshType.DEFAULT:
+        elif cdmesh_type == mc.CDMType.DEFAULT:
             trm_mesh = self.trm_mesh
         else:
             raise ValueError("Wrong mesh collision model end_type name!")
@@ -163,22 +167,22 @@ class CollisionModel(mgm.GeometricModel):
         else:
             return cdmesh
 
-    def _acquire_cdprimitive(self, cdprimitive_type=None, thickness=None, userdefined_cdprimitive_fn=None):
+    def _acquire_cdp(self, cdprimitive_type=None, thickness=None, userdefined_cdprimitive_fn=None):
         if cdprimitive_type is None:
             cdprimitive_type = self.cdprimitive_type
         if thickness is None:
             thickness = 0.002
-        if cdprimitive_type == mc.CDPrimitiveType.BOX:
+        if cdprimitive_type == mc.CDPType.BOX:
             pdcndp = mph.gen_box_pdcndp(self.trm_mesh, ex_radius=thickness)
-        elif cdprimitive_type == mc.CDPrimitiveType.CAPSULE:
+        elif cdprimitive_type == mc.CDPType.CAPSULE:
             pdcndp = mph.gen_capsule_pdcndp(self.trm_mesh, ex_radius=thickness)
-        elif cdprimitive_type == mc.CDPrimitiveType.CYLINDER:
+        elif cdprimitive_type == mc.CDPType.CYLINDER:
             pdcndp = mph.gen_cylinder_pdcndp(self.trm_mesh, ex_radius=thickness)
-        elif cdprimitive_type == mc.CDPrimitiveType.SURFACE_BALLS:
+        elif cdprimitive_type == mc.CDPType.SURFACE_BALLS:
             pdcndp = mph.gen_surfaceballs_pdcnd(self.trm_mesh, radius=thickness)
-        elif cdprimitive_type == mc.CDPrimitiveType.POINT_CLOUD:
+        elif cdprimitive_type == mc.CDPType.POINT_CLOUD:
             pdcndp = mph.gen_pointcloud_pdcndp(self.trm_mesh, radius=thickness)
-        elif cdprimitive_type == mc.CDPrimitiveType.USER_DEFINED:
+        elif cdprimitive_type == mc.CDPType.USER_DEFINED:
             if userdefined_cdprimitive_fn is None:
                 raise ValueError("User defined functions must provided for user_defined cdprimitive!")
             pdcndp = userdefined_cdprimitive_fn(ex_radius=thickness)
@@ -189,59 +193,61 @@ class CollisionModel(mgm.GeometricModel):
 
     @property
     def cdmesh_type(self):
-        return self._cdmesh_type
+        return self._cdm_type
 
     @property
     @update_cdmesh_decorator
     def cdmesh(self):
-        return self._cdmesh
+        return self._cdm
 
     @property
     def cdprimitive_type(self):
-        return self._cdprimitive_type
+        return self._cdp_type
 
     @property
     @update_cdprimitive_decorator
     def cdprimitive(self):
-        return self._cdprimitive
+        return self._cdp
 
     @delay_cdmesh_decorator
     def change_cdmesh_type(self, cdmesh_type):
-        self._cdmesh = self._acquire_cdmesh(cdmesh_type)
-        self._cdmesh_type = cdmesh_type
+        self._cdm = self._acquire_cdm(cdmesh_type)
+        self._cdm_type = cdmesh_type
         # update if show_cdmesh is toggled on
         if "cdmesh" in self._cache_for_show:
             self._cache_for_show["cdmesh"].removeNode()
-            _, cdmesh_trm_model = self._acquire_cdmesh(toggle_trm=True)
+            _, cdmesh_trm_model = self._acquire_cdm(toggle_trm=True)
             self._cache_for_show["cdmesh"] = mph.gen_pdndp_wireframe(trm_model=cdmesh_trm_model)
             self._cache_for_show["cdmesh"].reparentTo(self.pdndp)
-            mph.toggle_show_collision_node(self._cache_for_show["cdmesh"], toggle_on=True)
+            mph.toggle_show_collision_node(self._cache_for_show["cdmesh"], toggle_show_on=True)
 
     @delay_cdprimitive_decorator
-    def change_cdprimitive_type(self, cdprimitive_type, thickness=None, userdefined_cdprimitive_fn=None):
-        self._cdprimitive = self._acquire_cdprimitive(cdprimitive_type=cdprimitive_type,
-                                                      thickness=thickness,
-                                                      userdefined_cdprimitive_fn=userdefined_cdprimitive_fn)
-        self._cdprimitive_type = cdprimitive_type
+    def change_cdprimitive_type(self, cdprimitive_type, expand_radius=None, userdefined_cdprimitive_fn=None):
+        if expand_radius is not None:
+            self._exp_radius = expand_radius
+        self._cdp = self._acquire_cdp(cdprimitive_type=cdprimitive_type,
+                                      thickness=expand_radius,
+                                      userdefined_cdprimitive_fn=userdefined_cdprimitive_fn)
+        self._cdp_type = cdprimitive_type
         # update if show_primitive is toggled on
         if "cdprimitive" in self._cache_for_show:
             self._cache_for_show["cdprimitive"].removeNode()
             self._cache_for_show["cdprimitive"] = self.copy_reference_cdprimitive()
             self._cache_for_show["cdprimitive"].reparentTo(self.pdndp)
-            mph.toggle_show_collision_node(self._cache_for_show["cdprimitive"], toggle_on=True)
+            mph.toggle_show_collision_node(self._cache_for_show["cdprimitive"], toggle_show_on=True)
 
     @update_cdprimitive_decorator
     def attach_cdprimitive_to(self, target):
         if isinstance(target, ShowBase):
             # for rendering to base.render
-            self._cdprimitive.reparentTo(target.render)
+            self._cdp.reparentTo(target.render)
         elif isinstance(target, mgm.StaticGeometricModel):  # prepared for decorations like local frames
-            self._cdprimitive.reparentTo(target.pdndp)
+            self._cdp.reparentTo(target.pdndp)
         elif isinstance(target, NodePath):
-            self._cdprimitive.reparentTo(target)
+            self._cdp.reparentTo(target)
         else:
             raise ValueError("Acceptable: ShowBase, StaticGeometricModel, NodePath!")
-        return self._cdprimitive
+        return self._cdp
 
     def copy_reference_cdmesh(self):
         """
@@ -251,7 +257,7 @@ class CollisionModel(mgm.GeometricModel):
         author: weiwei
         date: 20211215, 20230815
         """
-        return_cdmesh = copy.deepcopy(self._cdmesh)
+        return_cdmesh = copy.deepcopy(self._cdm)
         # clear rotmat
         return_cdmesh.setPosition(da.npvec3_to_pdvec3(np.zeros(3)))
         return_cdmesh.setRotation(da.npmat3_to_pdmat3(np.eye(3)))
@@ -266,7 +272,7 @@ class CollisionModel(mgm.GeometricModel):
         author: weiwei
         date: 20211215, 20230815
         """
-        return_cdmesh = copy.deepcopy(self._cdmesh)
+        return_cdmesh = copy.deepcopy(self._cdm)
         return return_cdmesh
 
     def copy_reference_cdprimitive(self):
@@ -277,9 +283,11 @@ class CollisionModel(mgm.GeometricModel):
         author: weiwei
         date: 20230815
         """
-        return_cdprimitive = copy.deepcopy(self._cdprimitive)
-        return_cdprimitive.clearMat()
-        return return_cdprimitive
+        return_cdp = copy.deepcopy(self._cdp)
+        # print(return_cdprimitive.getPos(), return_cdprimitive.getMat())
+        # return_cdprimitive.setPosQuat(da.npvec3_to_pdvec3(np.zeros(3)), da.npmat3_to_pdquat(np.eye(3)))
+        return_cdp.clearMat()
+        return return_cdp
 
     @update_cdprimitive_decorator
     def copy_transformed_cdprimitive(self):
@@ -290,7 +298,7 @@ class CollisionModel(mgm.GeometricModel):
         author: weiwei
         date: 20230815
         """
-        return_cdprimitive = copy.deepcopy(self._cdprimitive)
+        return_cdprimitive = copy.deepcopy(self._cdp)
         return return_cdprimitive
 
     def is_pcdwith(self, cmodel, toggle_contacts=False):
@@ -302,28 +310,13 @@ class CollisionModel(mgm.GeometricModel):
         date: 20201116
         """
         return mph.is_collided(self, cmodel, toggle_contacts=toggle_contacts)
-        # cd_trav = CollisionTraverser()
-        # cd_handler = CollisionHandlerQueue()
-        # tgt_pdndp = NodePath("collision pdndp")
-        # cd_trav.addCollider(collider=self.attach_cdprimitive_to(tgt_pdndp), handler=cd_handler)
-        # cmodel.attach_cdprimitive_to(tgt_pdndp)
-        # cd_trav.traverse(tgt_pdndp)
-        # if cd_handler.getNumEntries() > 0:
-        #     if toggle_contacts:
-        #         contact_points = np.asarray([da.pdvec3_to_npvec3(cd_entry.getSurfacePoint(base.render)) for cd_entry in
-        #                                      cd_handler.getEntries()])
-        #         return (True, contact_points)
-        #     else:
-        #         return True
-        # else:
-        #     return (False, np.asarray([])) if toggle_contacts else False
 
     def show_cdprimitive(self):
         if "cdprimitive" in self._cache_for_show:
             self._cache_for_show["cdprimitive"].removeNode()
         self._cache_for_show["cdprimitive"] = self.copy_reference_cdprimitive()
         self._cache_for_show["cdprimitive"].reparentTo(self.pdndp)
-        mph.toggle_show_collision_node(self._cache_for_show["cdprimitive"], toggle_on=True)
+        mph.toggle_show_collision_node(self._cache_for_show["cdprimitive"], toggle_show_on=True)
 
     def unshow_cdprimitive(self):
         if "cdprimitive" in self._cache_for_show:
@@ -332,10 +325,10 @@ class CollisionModel(mgm.GeometricModel):
     def show_cdmesh(self):
         if "cdmesh" in self._cache_for_show:
             self._cache_for_show["cdmesh"].removeNode()
-        _, cdmesh_trm_model = self._acquire_cdmesh(toggle_trm=True)
+        _, cdmesh_trm_model = self._acquire_cdm(toggle_trm=True)
         self._cache_for_show["cdmesh"] = mph.gen_pdndp_wireframe(trm_model=cdmesh_trm_model)
         self._cache_for_show["cdmesh"].reparentTo(self.pdndp)
-        mph.toggle_show_collision_node(self._cache_for_show["cdmesh"], toggle_on=True)
+        mph.toggle_show_collision_node(self._cache_for_show["cdmesh"], toggle_show_on=True)
 
     def unshow_cdmesh(self):
         if "cdmesh" in self._cache_for_show:
@@ -444,14 +437,14 @@ if __name__ == "__main__":
     mgm.gen_frame().attach_to(base)
 
     objpath = os.path.join(basis.__path__[0], "objects", "bunnysim.stl")
-    bunnycm = CollisionModel(objpath, cdprimitive_type=mc.CDPrimitiveType.CAPSULE)
+    bunnycm = CollisionModel(objpath, cdp_type=mc.CDPType.CAPSULE)
     bunnycm.rgba = np.array([0.7, 0.7, 0.0, .2])
     bunnycm.show_local_frame()
     bunnycm.attach_to(base)
-    bunnycm.change_cdmesh_type(mc.CDMeshType.CYLINDER)
+    bunnycm.change_cdmesh_type(mc.CDMType.CYLINDER)
     bunnycm.show_cdprimitive()
 
-    bunnycm1 = CollisionModel(objpath, cdprimitive_type=mc.CDPrimitiveType.CYLINDER)
+    bunnycm1 = CollisionModel(objpath, cdp_type=mc.CDPType.CYLINDER)
     bunnycm1.rgba = np.array([0.7, 0, 0.7, 1.0])
     rotmat = rm.rotmat_from_euler(0, 0, math.radians(15))
     bunnycm1.pos = np.array([0, .01, 0])

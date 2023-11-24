@@ -20,7 +20,7 @@ class Env(object):
         # self.load_pipette()
 
     def load_pipette(self):
-        self.outside = cm.CollisionModel("./meshes/model_base.stl", cdprimitive_type="box")
+        self.outside = cm.CollisionModel("./meshes/model_base.stl", cdp_type="box")
         pipettemat4 = rm.homomat_from_posrot(self.pipette_pos, np.eye(3))
         eepos, eerot = self.rbt_s.get_gl_tcp(manipulator_name=self.armname)
         tcpmat4 = np.dot(rm.homomat_from_posrot(eepos, eerot), np.linalg.inv(pipettemat4))
@@ -28,7 +28,7 @@ class Env(object):
         self.outside.set_pos(tcpmat4[:3, 3])
         self.outside.set_rotmat(tcpmat4[:3, :3])
         self.rbt_s.hold(self.armname, self.outside)
-        self.pipette = cm.CollisionModel("./meshes/model_tip.stl", cdprimitive_type="box", expand_radius=0.01)
+        self.pipette = cm.CollisionModel("./meshes/model_tip.stl", cdp_type="box", expand_radius=0.01)
         pipettemat4 = rm.homomat_from_posrot(self.pipette_pos, np.eye(3))
         eepos, eerot = self.rbt_s.get_gl_tcp(manipulator_name=self.armname)
         tcpmat4 = np.dot(rm.homomat_from_posrot(eepos, eerot), np.linalg.inv(pipettemat4))
@@ -54,7 +54,7 @@ class Env(object):
         self.frame_bottom.set_rgba([.55, .55, .55, 1])
         self.frame_bottom.attach_to(base)
 
-        # box_tip = mcm.CollisionModel("./meshes/box_mbp.stl", thickness=0.005)  # 115*80
+        # box_tip = mcm.CollisionModel("./meshes/box_mbp.stl", expand_radius=0.005)  # 115*80
         self.tip_rack = utils.Base96("./meshes/box_mbp.stl")
         rack_pos = np.array([0.266, -0.0257, 0.00])
         # rack_pos = np.array([.0495, .0315, 0])
@@ -80,7 +80,7 @@ class Env(object):
         self.dispose_box_cm = cm.CollisionModel("./meshes/tip_rack_cover.stl", expand_radius=.007)
         self.dispose_box_cm.set_pos(pos=np.array([.16, 0.12, .015]))
 
-        # box_chemical = mcm.CollisionModel("./meshes/96_well.stl", thickness=0.)  # 128*85
+        # box_chemical = mcm.CollisionModel("./meshes/96_well.stl", expand_radius=0.)  # 128*85
         self.deep_plate = utils.Dish6("./meshes/96_well.stl")
         che_pos = np.array([0.2825, 0.08, 0.015])
         # che_pos = np.array([.0495, .0315, 0])

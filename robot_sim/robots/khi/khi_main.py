@@ -553,7 +553,7 @@ if __name__ == '__main__':
     obj_pos = np.array([-.1, .3, .3])
     obj_rotmat = rm.rotmat_from_axangle([0, 1, 0], math.pi / 2)
     objfile = os.path.join(basis.__path__[0], 'objects', 'tubebig.stl')
-    objcm = cm.CollisionModel(objfile, cdprimitive_type='cylinder')
+    objcm = cm.CollisionModel(objfile, cdp_type='cylinder')
     objcm.set_pos(obj_pos)
     objcm.set_rotmat(obj_rotmat)
     objcm.attach_to(base)

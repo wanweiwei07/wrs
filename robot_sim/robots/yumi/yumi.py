@@ -35,8 +35,8 @@ class Yumi(ri.RobotInterface):
         self.lft_body.lnks[1]['pos_in_loc_tcp'] = np.array([0, 0, 0])
         self.lft_body.lnks[1]['collision_model'] = cm.CollisionModel(
             os.path.join(this_dir, "meshes", "body.stl"),
-            cdprimitive_type="user_defined", expand_radius=.005,
-            userdefined_cdprimitive_fn=self._base_combined_cdnp)
+            cdp_type="user_defined", expand_radius=.005,
+            userdef_cdp_fn=self._base_combined_cdnp)
         self.lft_body.lnks[1]['rgba'] = [.7, .7, .7, 1]
         self.lft_body.lnks[2]['name'] = "yumi_lft_column"
         self.lft_body.lnks[2]['pos_in_loc_tcp'] = np.array([-.327, -.24, -1.015])
@@ -614,7 +614,7 @@ if __name__ == '__main__':
     obj_pos = np.array([-.1, .3, .3])
     obj_rotmat = rm.rotmat_from_axangle([0, 1, 0], math.pi / 2)
     objfile = os.path.join(basis.__path__[0], 'objects', 'tubebig.stl')
-    objcm = cm.CollisionModel(objfile, cdprimitive_type='cylinder')
+    objcm = cm.CollisionModel(objfile, cdp_type='cylinder')
     objcm.set_pos(obj_pos)
     objcm.set_rotmat(obj_rotmat)
     objcm.attach_to(base)
