@@ -297,7 +297,6 @@ class GeometricModel(StaticGeometricModel):
     @delay_geometry_decorator
     def pos(self, pos: np.ndarray):
         self._pos = pos
-        self._is_geometry_delayed = True
 
     @property
     def rotmat(self):
@@ -307,7 +306,6 @@ class GeometricModel(StaticGeometricModel):
     @delay_geometry_decorator
     def rotmat(self, rotmat: np.ndarray):
         self._rotmat = rotmat
-        self._is_geometry_delayed = True
 
     @property
     def homomat(self):

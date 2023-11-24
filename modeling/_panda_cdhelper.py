@@ -411,12 +411,12 @@ if __name__ == '__main__':
     file_path = os.path.join(basis.__path__[0], 'objects', 'bunnysim.stl')
     cmodel = mcm.CollisionModel(file_path, cdp_type=mc.CDPType.CYLINDER)
     cmodel.rgba = np.array([.2, .5, 0, 1])
-    cmodel.pos = np.array([.01, .01, .01])
+    cmodel.pos = np.array([.11, .01, .01])
     cmodel.attach_to(base)
     cmodel.show_cdprimitive()
 
     cmodel_list = []
-    for i in range(100):
+    for i in range(1):
         cmodel_list.append(
             mcm.CollisionModel(os.path.join(basis.__path__[0], 'objects', 'housing.stl'),
                                cdp_type=mc.CDPType.BOX))

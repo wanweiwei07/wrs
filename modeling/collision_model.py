@@ -34,7 +34,6 @@ def delay_cdprimitive_decorator(method):
 def update_cdprimitive_decorator(method):
     def wrapper(self, *args, **kwargs):
         if self._is_cdp_delayed:
-            print("cdprimitive_delayed, update: ", self.pos, self.rotmat)
             self._cdp.setPosQuat(da.npvec3_to_pdvec3(self.pos), da.npmat3_to_pdquat(self.rotmat))
             self._is_cdp_delayed = False
         return method(self, *args, **kwargs)
@@ -190,6 +189,40 @@ class CollisionModel(mgm.GeometricModel):
             raise ValueError("Wrong primitive collision model end_type name!")
         mph.change_cdmask(pdcndp, mph.BITMASK_EXT, action="new", type="both")
         return pdcndp
+
+    @mgm.GeometricModel.pos.setter
+    @mgm.delay_geometry_decorator
+    @delay_cdprimitive_decorator
+    @delay_cdmesh_decorator
+    def pos(self, pos: np.ndarray):
+        self._pos = pos
+
+    @mgm.GeometricModel.rotmat.setter
+    @mgm.delay_geometry_decorator
+    @delay_cdprimitive_decorator
+    @delay_cdmesh_decorator
+    def rotmat(self, rotmat: np.ndarray):
+        self._rotmat = rotmat
+
+    @mgm.GeometricModel.homomat.setter
+    @mgm.delay_geometry_decorator
+    @delay_cdprimitive_decorator
+    @delay_cdmesh_decorator
+    def homomat(self, homomat: np.ndarray):
+        self._pos = homomat[:3, 3]
+        self._rotmat = homomat[:3, :3]
+
+    @mgm.GeometricModel.pose.setter
+    @mgm.delay_geometry_decorator
+    @delay_cdprimitive_decorator
+    @delay_cdmesh_decorator
+    def pose(self, pose):
+        """
+        :param pose: tuple or list containing an npvec3 and an npmat3
+        :return:
+        """
+        self._pos = pose[0]
+        self._rotmat = pose[1]
 
     @property
     def cdmesh_type(self):
