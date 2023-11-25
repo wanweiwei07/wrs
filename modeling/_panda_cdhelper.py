@@ -158,7 +158,6 @@ def gen_capsule_pdcndp(trm_model, ex_radius=0.01):
     cdprimitive.attachNewNode(pdcnd)
     return cdprimitive
 
-
 def gen_cylinder_pdcndp(trm_model, ex_radius=0.01):
     """
     approximate cylinder using 3 boxes (rotate around central cylinderical axis)
@@ -279,13 +278,17 @@ def is_collided(cmodel_list0, cmodel_list1, toggle_contacts=False):
     for cmodel in cmodel_list0:
         # if not cmodel.cdprimitive.node().isCollisionNode():  # get into a deeper layer (e.g. cylinder)
         cdprimitive = cmodel.attach_cdprimitive_to(tgt_pdndp)
+        change_cdmask(cdprimitive, BITMASK_EXT, action="remove", type="into")
         for child_pdndp in cdprimitive.getChildren():
             cd_trav.addCollider(collider=child_pdndp, handler=cd_handler)
+            print(child_pdndp.getPos())
         # cd_trav.addCollider(collider=cmodel.attach_cdprimitive_to(tgt_pdndp), handler=cd_handler)
     for cmodel in cmodel_list1:
         cmodel.attach_cdprimitive_to(tgt_pdndp)
+        print(cmodel.cdprimitive.getPos())
     cd_trav.traverse(tgt_pdndp)
-    # for cmodel in cmodel_list0:
+    for cmodel in cmodel_list0:
+        change_cdmask(cmodel.cdprimitive, BITMASK_EXT, action="add", type="into")
     #     for child_pdndp in cmodel.cdprimitive.getChildren():
     #         cd_trav.removeCollider(child_pdndp)
     # for cmodel in cmodel_list1:
@@ -295,6 +298,7 @@ def is_collided(cmodel_list0, cmodel_list1, toggle_contacts=False):
         if toggle_contacts:
             contact_points = np.asarray([da.pdvec3_to_npvec3(cd_entry.getSurfacePoint(base.render)) for cd_entry in
                                          cd_handler.getEntries()])
+            print(contact_points)
             return True, contact_points
         else:
             return True
@@ -410,28 +414,33 @@ if __name__ == '__main__':
     base = wd.World(cam_pos=[.7, .7, .7], lookat_pos=[0, 0, 0])
     file_path = os.path.join(basis.__path__[0], 'objects', 'bunnysim.stl')
     cmodel = mcm.CollisionModel(file_path, cdp_type=mc.CDPType.CYLINDER)
-    cmodel.rgba = np.array([.2, .5, 0, 1])
-    cmodel.pos = np.array([.11, .01, .01])
+    cmodel.rgba = np.array([.2, .5, 0, .2])
+    cmodel.pos = np.array([.1, .01, .01])
     cmodel.attach_to(base)
     cmodel.show_cdprimitive()
 
-    cmodel_list = []
-    for i in range(1):
-        cmodel_list.append(
-            mcm.CollisionModel(os.path.join(basis.__path__[0], 'objects', 'housing.stl'),
-                               cdp_type=mc.CDPType.BOX))
-        cmodel_list[-1].pos = np.random.random_sample((3,))
-        cmodel_list[-1].rgba = np.array([1, .5, 0, 1])
-        cmodel_list[-1].attach_to(base)
-        cmodel_list[-1].show_cdprimitive()
+    cmodel1 = mcm.CollisionModel(os.path.join(basis.__path__[0], 'objects', 'housing.stl'), cdp_type=mc.CDPType.BOX)
+    cmodel1.attach_to(base)
+    cmodel1.show_cdprimitive()
+
+    # cmodel_list = []
+    # for i in range(100):
+    #     cmodel_list.append(
+    #         mcm.CollisionModel(os.path.join(basis.__path__[0], 'objects', 'housing.stl'),
+    #                            cdp_type=mc.CDPType.BOX))
+    #     cmodel_list[-1].pos = np.random.random_sample((3,))
+    #     cmodel_list[-1].rgba = np.array([1, .5, 0, 1])
+    #     cmodel_list[-1].attach_to(base)
+    #     cmodel_list[-1].show_cdprimitive()
 
     tic = time.time()
-    result, contacts = is_collided(cmodel, cmodel_list, toggle_contacts=True)
+    result, contacts = is_collided(cmodel, cmodel1, toggle_contacts=True)
     toc = time.time()
     time_cost = toc - tic
     print(time_cost)
     print(result)
     for cpoint in contacts:
+        print(cpoint)
         mgm.gen_sphere(pos=cpoint, radius=.001).attach_to(base)
     # tic = time.time()
     # is_cmcmlist_collided2(objcm, objcmlist)
