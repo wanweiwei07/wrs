@@ -158,6 +158,7 @@ def gen_capsule_pdcndp(trm_model, ex_radius=0.01):
     cdprimitive.attachNewNode(pdcnd)
     return cdprimitive
 
+
 def gen_cylinder_pdcndp(trm_model, ex_radius=0.01):
     """
     approximate cylinder using 3 boxes (rotate around central cylinderical axis)
@@ -275,25 +276,24 @@ def is_collided(cmodel_list0, cmodel_list1, toggle_contacts=False):
     cd_trav = CollisionTraverser()
     cd_handler = CollisionHandlerQueue()
     tgt_pdndp = NodePath("collision pdndp")
+    # attach to collision tree, change bitmasks, and add colliders
     for cmodel in cmodel_list0:
-        # if not cmodel.cdprimitive.node().isCollisionNode():  # get into a deeper layer (e.g. cylinder)
         cdprimitive = cmodel.attach_cdprimitive_to(tgt_pdndp)
         change_cdmask(cdprimitive, BITMASK_EXT, action="remove", type="into")
         for child_pdndp in cdprimitive.getChildren():
             cd_trav.addCollider(collider=child_pdndp, handler=cd_handler)
-            print(child_pdndp.getPos())
-        # cd_trav.addCollider(collider=cmodel.attach_cdprimitive_to(tgt_pdndp), handler=cd_handler)
     for cmodel in cmodel_list1:
         cmodel.attach_cdprimitive_to(tgt_pdndp)
-        print(cmodel.cdprimitive.getPos())
+    # perform collision detection
     cd_trav.traverse(tgt_pdndp)
+    # detach from collision tree, change bitmasks, and remove colliders
     for cmodel in cmodel_list0:
+        cmodel.detach_cdprimitive()
         change_cdmask(cmodel.cdprimitive, BITMASK_EXT, action="add", type="into")
-    #     for child_pdndp in cmodel.cdprimitive.getChildren():
-    #         cd_trav.removeCollider(child_pdndp)
-    # for cmodel in cmodel_list1:
-    #     for child_pdndp in cmodel.cdprimitive.getChildren():
-    #         cd_trav.removeCollider(child_pdndp)
+        for child_pdndp in cmodel.cdprimitive.getChildren():
+            cd_trav.removeCollider(child_pdndp)
+    for cmodel in cmodel_list1:
+        cmodel.detach_cdprimitive()
     if cd_handler.getNumEntries() > 0:
         if toggle_contacts:
             contact_points = np.asarray([da.pdvec3_to_npvec3(cd_entry.getSurfacePoint(base.render)) for cd_entry in
@@ -414,71 +414,27 @@ if __name__ == '__main__':
     base = wd.World(cam_pos=[.7, .7, .7], lookat_pos=[0, 0, 0])
     file_path = os.path.join(basis.__path__[0], 'objects', 'bunnysim.stl')
     cmodel = mcm.CollisionModel(file_path, cdp_type=mc.CDPType.CYLINDER)
-    cmodel.rgba = np.array([.2, .5, 0, .2])
+    cmodel.rgba = np.array([.2, .5, 0, 1])
     cmodel.pos = np.array([.1, .01, .01])
     cmodel.attach_to(base)
     cmodel.show_cdprimitive()
 
-    cmodel1 = mcm.CollisionModel(os.path.join(basis.__path__[0], 'objects', 'housing.stl'), cdp_type=mc.CDPType.BOX)
-    cmodel1.attach_to(base)
-    cmodel1.show_cdprimitive()
-
-    # cmodel_list = []
-    # for i in range(100):
-    #     cmodel_list.append(
-    #         mcm.CollisionModel(os.path.join(basis.__path__[0], 'objects', 'housing.stl'),
-    #                            cdp_type=mc.CDPType.BOX))
-    #     cmodel_list[-1].pos = np.random.random_sample((3,))
-    #     cmodel_list[-1].rgba = np.array([1, .5, 0, 1])
-    #     cmodel_list[-1].attach_to(base)
-    #     cmodel_list[-1].show_cdprimitive()
+    cmodel_list = []
+    for i in range(100):
+        cmodel_list.append(
+            mcm.CollisionModel(os.path.join(basis.__path__[0], 'objects', 'housing.stl'),
+                               cdp_type=mc.CDPType.BOX))
+        cmodel_list[-1].pos = np.random.random_sample((3,))
+        cmodel_list[-1].rgba = np.array([1, .5, 0, 1])
+        cmodel_list[-1].attach_to(base)
+        cmodel_list[-1].show_cdprimitive()
 
     tic = time.time()
-    result, contacts = is_collided(cmodel, cmodel1, toggle_contacts=True)
+    result, contacts = is_collided(cmodel, cmodel_list, toggle_contacts=True)
     toc = time.time()
     time_cost = toc - tic
     print(time_cost)
-    print(result)
     for cpoint in contacts:
-        print(cpoint)
         mgm.gen_sphere(pos=cpoint, radius=.001).attach_to(base)
-    # tic = time.time()
-    # is_cmcmlist_collided2(objcm, objcmlist)
-    # toc = time.time()
-    # time_cost = toc-tic
-    # print(time_cost)
-    base.run()
 
-    # NOTE 20210321, CollisionPolygon into CollisonPolygon detection is not available for 1.19
-    # :collide(error): Invalid attempt to detect collision from CollisionPolygon!
-    #
-    # This means that a CollisionPolygon object was added to a
-    # CollisionTraverser as if it were a colliding object.  However,
-    # no implementation for this kind of object has yet been defined
-    # to collide with other objects.
-    # wd.World(cam_pos=[1.0, 1, .0, 1.0], lookat_pos=[0, 0, 0])
-    # objpath = os.path.join(basis.__path__[0], 'objects', 'yumifinger.stl')
-    # objcm1 = mcm.CollisionModel(objpath, cdp_type='polygons')
-    # # pos = np.array([[-0.5, -0.82363909, 0.2676166, -0.00203699],
-    # #                     [-0.86602539, 0.47552824, -0.1545085, 0.01272306],
-    # #                     [0., -0.30901703, -0.95105648, 0.12604253],
-    # #                     [0., 0., 0., 1.]])
-    # pos = np.array([[ 1.00000000e+00,  2.38935501e-16,  3.78436685e-17, -7.49999983e-03],
-    #                     [ 2.38935501e-16, -9.51056600e-01, -3.09017003e-01,  2.04893537e-02],
-    #                     [-3.78436685e-17,  3.09017003e-01, -9.51056600e-01,  1.22025304e-01],
-    #                     [ 0.00000000e+00,  0.00000000e+00,  0.00000000e+00,  1.00000000e+00]])
-    # objcm1.set_homomat(pos)
-    # objcm1.set_rgba([1, 1, .3, .2])
-    #
-    # objpath = os.path.join(basis.__path__[0], 'objects', 'tubebig.stl')
-    # objcm2 = mcm.CollisionModel(objpath, cdp_type='polygons')
-    # objcm2.set_rgba([1, 1, .3, .2])
-    # iscollided, contact_points = is_collided(objcm1, objcm2, toggle_contacts=True)
-    # objcm1.show_cdmesh()
-    # objcm2.show_cdmesh()
-    # objcm1.attach_to(base)
-    # objcm2.attach_to(base)
-    # print(iscollided)
-    # for ct_pnt in contact_points:
-    #     mgm.gen_sphere(ct_pnt, major_radius=.001).attach_to(base)
-    # base.run()
+    base.run()

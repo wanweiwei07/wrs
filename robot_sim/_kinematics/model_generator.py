@@ -47,10 +47,10 @@ def gen_link_mesh(link,
                   rgba=None,
                   toggle_frame=False):
     m_col = mmc.ModelCollection()
-    if link.collision_model == None:
+    if link.cmodel == None:
         raise ValueError("Collision model is unavailable.")
     else:
-        model = link.collision_model.copy_geo_model()
+        model = link.cmodel.copy_geo_model()
         model.set_homomat(rm.homomat_from_posrot(link.gl_pos, link.gl_rotmat))
         if rgba is not None:
             model.set_rgba(rgba)

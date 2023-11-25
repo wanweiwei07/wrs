@@ -22,7 +22,7 @@ class Link(object):
                  com=np.zeros(3),
                  inertia=np.eye(3),
                  mass=0,
-                 collision_model=None):
+                 cmodel=None):
         self.uuid = uuid.uuid4()
         self.name = name
         self._loc_pos = loc_pos
@@ -30,10 +30,10 @@ class Link(object):
         self.com = com
         self.inertia = inertia
         self.mass = mass
-        self.collision_model = collision_model
+        self.cmodel = cmodel
         # the following values will be updated automatically
-        self._gl_pos = self.loc_pos
-        self._gl_rotmat = self.loc_rotmat
+        self.cmodel.pos = self._loc_pos
+        self.cmodel.rotmat = self._loc_rotmat
 
     @property
     def loc_pos(self):
@@ -55,11 +55,11 @@ class Link(object):
 
     @property
     def gl_pos(self):
-        return self._gl_pos
+        return self.cmodel.pos
 
     @property
     def gl_rotmat(self):
-        return self._gl_rotmat
+        return self.cmodel.rotmat
 
     def update_globals(self, pos=np.zeros(3), rotmat=np.eye(3)):
         """
@@ -68,8 +68,8 @@ class Link(object):
         :param rotmat:
         :return:
         """
-        self._gl_pos = pos + rotmat @ self.loc_pos
-        self._gl_rotmat = rotmat @ self.loc_rotmat
+        self.cmodel.pos = pos + rotmat @ self._loc_pos
+        self.cmodel.rotmat = rotmat @ self._loc_rotmat
 
 
 class Anchor(object):
@@ -266,6 +266,6 @@ if __name__ == '__main__':
     # print(result_homomat)
     # mgm.gen_myc_frame(pos=result_homomat[:3, 3], rotmat=result_homomat[:3, :3]).attach_to(base)
 
-    jnt.link.collision_model = mcm.CollisionModel("../../basis/objects/or2fg7_base.stl")
+    jnt.link.cmodel = mcm.CollisionModel("../../basis/objects/or2fg7_base.stl")
     rkmg.gen_joint(jnt, toggle_link_mesh=True).attach_to(base)
     base.run()

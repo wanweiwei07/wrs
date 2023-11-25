@@ -19,7 +19,7 @@ class CCElement(object):
         self.host_cc = host_cc
         self.lnk = lnk
         # a transformed and attached copy of the reference cdprimitive (essentially pdcndp), tfd=transformed
-        self.tfd_cdprimitive = mph.copy_cdprimitive_attach_to(lnk.collision_model,
+        self.tfd_cdprimitive = mph.copy_cdprimitive_attach_to(lnk.cmodel,
                                                               self.host_cc.cd_pdndp,
                                                               clear_mask=True)
         self.host_cc.cd_trav.addCollider(collider=self.tfd_cdprimitive, handler=self.host_cc.cd_handler)

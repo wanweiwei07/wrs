@@ -282,6 +282,9 @@ class CollisionModel(mgm.GeometricModel):
             raise ValueError("Acceptable: ShowBase, StaticGeometricModel, NodePath!")
         return self._cdp
 
+    def detach_cdprimitive(self):
+        self._cdp.detachNode()
+
     def copy_reference_cdmesh(self):
         """
         return a copy of the cdmesh without updating to the current mcm pose
