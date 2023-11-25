@@ -244,7 +244,7 @@ def rayhitmesh_drawpath_ss(obj_item, drawpath, direction=np.asarray((0, 0, 1)), 
         #         pos_pre = pos
         # except:
         #     continue
-        pos, nrml = rayhitmesh_p(obj_item.cmodel, obj_item.drawcenter, p, direction=direction)
+        pos, nrml = rayhitmesh_p(obj_item._cmodel, obj_item.drawcenter, p, direction=direction)
         pos_nrml_list.append([pos, nrml])
         if toggledebug:
             if i == 1:
@@ -292,7 +292,7 @@ def rayhitmesh_drawpath_ms(obj_item, drawpath_ms, direction=np.asarray((0, 0, 1)
         pos_nrml_list = []
         for point in drawpath:
             try:
-                pos, nrml = rayhitmesh_p(obj_item.cmodel, obj_item.drawcenter, point, direction=direction)
+                pos, nrml = rayhitmesh_p(obj_item._cmodel, obj_item.drawcenter, point, direction=direction)
                 pos_nrml_list.append([pos, nrml])
             except:
                 pos_nrml_list.append([None, None])
@@ -1103,7 +1103,7 @@ def prj_drawpath_ss_on_pcd(obj_item, drawpath, mode='DI', direction=np.asarray((
 
     kdt_d3, pcd_narray_d3 = get_kdt(obj_item.mph.tolist(), dimension=3)
     pos_nrml_list, error, error_list, time_cost = \
-        __prj_stroke(drawpath, obj_item.drawcenter, obj_item.mph, obj_item.nrmls, kdt_d3, objcm=obj_item.cmodel,
+        __prj_stroke(drawpath, obj_item.drawcenter, obj_item.mph, obj_item.nrmls, kdt_d3, objcm=obj_item._cmodel,
                      mode=mode, pcd_start_p=None, pcd_start_n=None, direction=direction, toggledebug=toggledebug,
                      error_method=error_method, surface=surface, transmat=transmat)
     print('avg error', np.mean(error_list))
@@ -1127,7 +1127,7 @@ def prj_drawpath_ss_loop(obj_item, drawpath, mode='DI', direction=np.asarray((0,
         kdt_d3, pcd_narray_d3 = get_kdt(obj_item.mph.tolist(), dimension=3)
         pos_nrml_list, error, error_list, time_cost = \
             __prj_stroke(drawpath_tmp, obj_item.drawcenter, obj_item.mph, obj_item.nrmls, kdt_d3,
-                         objcm=obj_item.cmodel, mode=mode, pcd_start_p=None, pcd_start_n=None, direction=direction,
+                         objcm=obj_item._cmodel, mode=mode, pcd_start_p=None, pcd_start_n=None, direction=direction,
                          toggledebug=toggledebug, error_method=error_method)
         loop_error_list.append(error)
         loop_pos_nrml_list.append(pos_nrml_list)
@@ -1150,7 +1150,7 @@ def prj_drawpath_ss_SI_loop(obj_item, drawpath, error_method='ED', toggledebug=F
         print('loop:', i)
         drawpath_tmp = drawpath[i:] + drawpath[:i]
         time_start = time.time()
-        uvs, vs, nrmls, faces, avg_scale = cu.lscm_objcm(obj_item.cmodel, toggledebug=toggledebug)
+        uvs, vs, nrmls, faces, avg_scale = cu.lscm_objcm(obj_item._cmodel, toggledebug=toggledebug)
         uv_center = cu.get_uv_center(uvs)
         pos_nrml_list, error, error_list, time_cost = \
             __prj_stroke_SI(drawpath_tmp, uv_center, uvs, vs, nrmls, faces, avg_scale, error_method=error_method)
@@ -1205,20 +1205,20 @@ def prj_drawpath_ms_on_pcd(obj_item, drawpath_ms, mode='DI', step=1.0, direction
             gotostart_stroke = mu.linear_interp_2d(drawpath_ms[i - 1][-1], stroke[0], step=step)
             gotostart_pos_nrml_list, _, _, time_cost = \
                 __prj_stroke(gotostart_stroke, obj_item.drawcenter, obj_item.mph, obj_item.nrmls, kdt_d3,
-                             objcm=obj_item.cmodel, mode=mode, direction=direction,
+                             objcm=obj_item._cmodel, mode=mode, direction=direction,
                              pcd_start_p=pos_nrml_list_ms[i - 1][-1][0], pcd_start_n=pos_nrml_list_ms[i - 1][-1][1],
                              toggledebug=toggledebug, surface=surface, transmat=transmat)
             time_cost_total += time_cost
             stroke_pos_nrml_list, error, error_list, time_cost = \
                 __prj_stroke(stroke, obj_item.drawcenter, obj_item.mph, obj_item.nrmls, kdt_d3,
-                             objcm=obj_item.cmodel, mode=mode, error_method=error_method, direction=direction,
+                             objcm=obj_item._cmodel, mode=mode, error_method=error_method, direction=direction,
                              pcd_start_p=gotostart_pos_nrml_list[-1][0], pcd_start_n=gotostart_pos_nrml_list[-1][1],
                              toggledebug=toggledebug, surface=surface, transmat=transmat)
             time_cost_total += time_cost
         else:
             stroke_pos_nrml_list, error, error_list, time_cost = \
                 __prj_stroke(stroke, obj_item.drawcenter, obj_item.mph, obj_item.nrmls, kdt_d3,
-                             objcm=obj_item.cmodel, mode=mode, direction=direction, error_method=error_method,
+                             objcm=obj_item._cmodel, mode=mode, direction=direction, error_method=error_method,
                              toggledebug=toggledebug, surface=surface, transmat=transmat)
             time_cost_total += time_cost
 
@@ -1303,7 +1303,7 @@ def __prj_stroke_SI(stroke, drawcenter, uv, vs, nrmls, faces, scale_list, error_
 
 
 def prj_drawpath_ss_SI(obj_item, drawpath, toggledebug=False):
-    uvs, vs, nrmls, faces, avg_scale = cu.lscm_objcm(obj_item.cmodel, toggledebug=toggledebug)
+    uvs, vs, nrmls, faces, avg_scale = cu.lscm_objcm(obj_item._cmodel, toggledebug=toggledebug)
     uv_center = cu.get_uv_center(uvs)
     pos_nrml_list, error, error_list, time_cost = __prj_stroke_SI(drawpath, uv_center, uvs, vs, nrmls, faces, avg_scale)
     print('avg error', error)
@@ -1313,7 +1313,7 @@ def prj_drawpath_ss_SI(obj_item, drawpath, toggledebug=False):
 
 def prj_drawpath_ms_SI(obj_item, drawpath_ms, toggledebug=False):
     time_cost_total = 0
-    uvs, vs, nrmls, faces, scale_list = cu.lscm_objcm(obj_item.cmodel, toggledebug=toggledebug)
+    uvs, vs, nrmls, faces, scale_list = cu.lscm_objcm(obj_item._cmodel, toggledebug=toggledebug)
     # uvs, vs, nrmls, faces, scale_list = cu.lscm_objcm(pcdu.reconstruct_surface(obj_item.mph), toggledebug=toggledebug)
     uv_center = cu.get_uv_center(uvs)
     error_ms = []
@@ -1367,7 +1367,7 @@ def prj_drawpath_ms_II(obj_item, drawpath_ms, toggledebug=False):
 def prj_drawpat_ms_II_temp(obj_item, drawpath_ms, sample_num=None, toggledebug=False):
     time_start = time.time()
     uvs, vs, nrmls, faces, scale_list = \
-        cu.lscm_parametrization_objcm_temp(obj_item.cmodel, toggledebug=toggledebug, sample_num=sample_num)
+        cu.lscm_parametrization_objcm_temp(obj_item._cmodel, toggledebug=toggledebug, sample_num=sample_num)
     uv_center = cu.get_uv_center(uvs)
 
     error_ms = []

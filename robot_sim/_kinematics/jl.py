@@ -30,18 +30,18 @@ class Link(object):
         self.com = com
         self.inertia = inertia
         self.mass = mass
-        self.cmodel = cmodel
+        self._cmodel = cmodel
         # the following values will be updated automatically
-        self.cmodel.pos = self._loc_pos
-        self.cmodel.rotmat = self._loc_rotmat
+        self._gl_pos = self._loc_pos
+        self._gl_rotmat = self._loc_rotmat
 
     @property
     def loc_pos(self):
         return self._loc_pos
 
     @loc_pos.setter
-    def loc_pos(self, value):
-        self._loc_pos = value
+    def loc_pos(self, pos):
+        self._loc_pos = pos
         self.update_globals(pos=self.gl_pos, rotmat=self.gl_rotmat)
 
     @property
@@ -49,17 +49,26 @@ class Link(object):
         return self._loc_rotmat
 
     @loc_rotmat.setter
-    def loc_rotmat(self, value):
-        self._loc_rotmat = value
+    def loc_rotmat(self, rotmat):
+        self._loc_rotmat = rotmat
         self.update_globals(pos=self.gl_pos, rotmat=self.gl_rotmat)
 
     @property
     def gl_pos(self):
-        return self.cmodel.pos
+        return self._gl_pos
 
     @property
     def gl_rotmat(self):
-        return self.cmodel.rotmat
+        return self._gl_rotmat
+
+    @property
+    def cmodel(self):
+        return self._cmodel
+
+    @cmodel.setter
+    def cmodel(self, cmodel):
+        self._cmodel = cmodel
+        self._cmodel.pose= (self._gl_pos, self._gl_rotmat)
 
     def update_globals(self, pos=np.zeros(3), rotmat=np.eye(3)):
         """
@@ -68,8 +77,10 @@ class Link(object):
         :param rotmat:
         :return:
         """
-        self.cmodel.pos = pos + rotmat @ self._loc_pos
-        self.cmodel.rotmat = rotmat @ self._loc_rotmat
+        self._gl_pos = pos + rotmat @ self._loc_pos
+        self._gl_rotmat = rotmat @ self._loc_rotmat
+        if self._cmodel is not None:
+            self._cmodel.pose= (self._gl_pos, self._gl_rotmat)
 
 
 class Anchor(object):
@@ -268,4 +279,5 @@ if __name__ == '__main__':
 
     jnt.link.cmodel = mcm.CollisionModel("../../basis/objects/or2fg7_base.stl")
     rkmg.gen_joint(jnt, toggle_link_mesh=True).attach_to(base)
+    jnt.link.cmodel.show_cdprimitive()
     base.run()

@@ -217,10 +217,6 @@ class WireFrameModel(StaticGeometricModel):
         # frames will be attached to pdndp and will not be influenced by changes made to pdndp_core
         self.pdndp_core.setRenderModeWireframe()
         self.pdndp_core.setLightOff()
-        # self.set_rgba(rgba=[0,0,0,1])
-
-    def set_rgba(self, rgba):
-        wrn.warn("Right not the set_rgba fn for a WireFrame instance is not implemented!")
 
 
 # ==============================================
@@ -237,6 +233,7 @@ def delay_geometry_decorator(method):
 
 def update_geometry_decorator(method):
     def wrapper(self, *args, **kwargs):
+        print(self._is_geometry_delayed)
         if self._is_geometry_delayed:
             self._pdndp.setPosQuat(da.npvec3_to_pdvec3(self.pos), da.npmat3_to_pdquat(self.rotmat))
             self._is_geometry_delayed = False
@@ -363,7 +360,15 @@ class GeometricModel(StaticGeometricModel):
         :return:
         """
         pdndp = copy.deepcopy(self._pdndp)
-        pdndp.reparentTo(target)
+        if isinstance(target, ShowBase):
+            pdndp.reparentTo(target.render)
+        elif isinstance(target, StaticGeometricModel):  # prepared for decorations like local frames
+            pdndp.reparentTo(target.pdndp)
+        elif isinstance(target, NodePath):
+            pdndp.reparentTo(target)
+        else:
+            raise ValueError("Acceptable: ShowBase, StaticGeometricModel, NodePath!")
+        return pdndp
 
     def detach(self):  # TODO detach from?
         self._pdndp.detachNode()

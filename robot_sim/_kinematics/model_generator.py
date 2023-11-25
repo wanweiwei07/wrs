@@ -46,18 +46,16 @@ def gen_tcp_frame(jlc,
 def gen_link_mesh(link,
                   rgba=None,
                   toggle_frame=False):
-    m_col = mmc.ModelCollection()
+    gmodel = mgm.GeometricModel()
     if link.cmodel == None:
         raise ValueError("Collision model is unavailable.")
     else:
-        model = link.cmodel.copy_geo_model()
-        model.set_homomat(rm.homomat_from_posrot(link.gl_pos, link.gl_rotmat))
+        link.cmodel.attach_copy_to(gmodel)
         if rgba is not None:
-            model.set_rgba(rgba)
-        model.attach_to(m_col)
+            gmodel.rgba=rgba
         if toggle_frame:
-            mgm.gen_frame(pos=link.gl_pos, rotmat=link.gl_rotmat).attach_to(m_col)
-        return m_col
+            mgm.gen_frame(pos=link.gl_pos, rotmat=link.gl_rotmat).attach_to(gmodel)
+        return gmodel
 
 
 def gen_anchor(anchor,
