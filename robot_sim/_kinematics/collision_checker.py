@@ -15,11 +15,12 @@ class CCElement(object):
     date: 20231116
     """
 
-    def __init__(self, lnk, host_cc):
+    def __init__(self, cmodel, host_cc):
         self.host_cc = host_cc
-        self.lnk = lnk
+        self.cmodel = cmodel
+        self.cmodel.attach_cdprimitive_to(self.host_cc.cd_pdndp)
         # a transformed and attached copy of the reference cdprimitive (essentially pdcndp), tfd=transformed
-        self.tfd_cdprimitive = mph.copy_cdprimitive_attach_to(lnk._cmodel,
+        self.tfd_cdprimitive = mph.copy_cdprimitive_attach_to(self.cmodel,
                                                               self.host_cc.cd_pdndp,
                                                               clear_mask=True)
         self.host_cc.cd_trav.addCollider(collider=self.tfd_cdprimitive, handler=self.host_cc.cd_handler)
@@ -172,8 +173,9 @@ class CollisionChecker(object):
         # attach obstacles
         obstacle_cdprimitive_list = []
         for obstacle in obstacle_list:
-            obstacle_cdprimitive_list.append(obstacle.copy_transformed_cdprimitive())
-            obstacle_cdprimitive_list[-1].reparentTo(self.cd_pdndp)
+            obstacle.attach_cdprimitive_to(self.cd_pdndp)
+            # obstacle_cdprimitive_list.append(obstacle.copy_transformed_cdprimitive())
+            # obstacle_cdprimitive_list[-1].reparentTo(self.cd_pdndp)
         # attach other robots
         for robot in otherrobot_list:
             for cce in robot.cc.cce_dict.values():
@@ -182,8 +184,10 @@ class CollisionChecker(object):
         # collision check
         self.cd_trav.traverse(self.cd_pdndp)
         # clear obstacles
-        for cdprimitive in enumerate(obstacle_cdprimitive_list):
-            cdprimitive.detachNode()
+        for obstacle in obstacle_list:
+            obstacle.detach_cdprimitive()
+        # for cdprimitive in enumerate(obstacle_cdprimitive_list):
+        #     cdprimitive.detachNode()
         # clear other robots
         for robot in otherrobot_list:
             for cce in robot.cc.cce_dict.values():

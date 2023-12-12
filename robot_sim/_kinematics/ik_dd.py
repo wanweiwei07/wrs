@@ -51,6 +51,7 @@ class DDIKSolver(object):
             y_or_n = bu.get_yesno()
             if y_or_n == 'y':
                 self.querry_tree, self.jnt_data = self._build_data()
+                self.persist_data(path=self.path)
                 self.evolve_data(n_times=100000)
         else:
             try:
@@ -58,6 +59,7 @@ class DDIKSolver(object):
                 self.jnt_data = pickle.load(open(self.path + 'jnt_data.pkl', 'rb'))
             except FileNotFoundError:
                 self.querry_tree, self.jnt_data = self._build_data()
+                self.persist_data(path=self.path)
                 self.evolve_data(n_times=100000)
 
     def _rotmat_to_vec(self, rotmat, method='q'):
@@ -99,7 +101,6 @@ class DDIKSolver(object):
             tcp_data.append(np.concatenate((tcp_pos, tcp_rotvec)))
             jnt_data.append(jnt_vals)
         querry_tree = scipy.spatial.cKDTree(tcp_data)
-        self.persist_data(path=self.path)
         return querry_tree, jnt_data
 
     def multiepoch_evolve(self, n_times_per_epoch=10000, target_success_rate=.96):

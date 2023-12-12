@@ -130,7 +130,7 @@ class RobotInterface(object):
 
     def cvt_conf_to_tcp(self, jnt_values):
         """
-        given joint_values, this function returns the correspondent global tcp_pos, and tcp_rotmat
+        given jnt_vals, this function returns the correspondent global tcp_pos, and tcp_rotmat
         :param jnt_values:
         :return:
         author: weiwei

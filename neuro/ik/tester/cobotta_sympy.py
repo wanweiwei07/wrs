@@ -171,16 +171,16 @@ resultant_pos4 = np.array(pos4.tolist()).ravel().astype(np.float64)
 gm.gen_sphere(pos=resultant_pos4).attach_to(base)
 base.run()
 
-# sympy_resultant_rotmat = sympy_rotmat1.subs([(q1, joint_values[0])])
+# sympy_resultant_rotmat = sympy_rotmat1.subs([(q1, jnt_vals[0])])
 # resultant_rotmat = np.array(sympy_resultant_rotmat.tolist()).astype(np.float64)
 # mgm.gen_mycframe(pos=rbt_s.manipulator_dict['arm'].joints[1]['gl_posq'], rotmat=resultant_rotmat).attach_to(base)
 #
-# sympy_resultant_rotmat = (sympy_rotmat2 * sympy_rotmat1).subs([(q1, joint_values[0]), (q2, joint_values[1])])
+# sympy_resultant_rotmat = (sympy_rotmat2 * sympy_rotmat1).subs([(q1, jnt_vals[0]), (q2, jnt_vals[1])])
 # resultant_rotmat = np.array(sympy_resultant_rotmat.tolist()).astype(np.float64)
 # mgm.gen_mycframe(pos=rbt_s.manipulator_dict['arm'].joints[2]['gl_posq'], rotmat=resultant_rotmat).attach_to(base)
 #
 # sympy_resultant_rotmat = (sympy_rotmat3 * sympy_rotmat2 * sympy_rotmat1).subs(
-#     [(q1, joint_values[0]), (q2, joint_values[1]), (q3, joint_values[3])])
+#     [(q1, jnt_vals[0]), (q2, jnt_vals[1]), (q3, jnt_vals[3])])
 # resultant_rotmat = np.array(sympy_resultant_rotmat.tolist()).astype(np.float64)
 # mgm.gen_mycframe(pos=rbt_s.manipulator_dict['arm'].joints[3]['gl_posq'], rotmat=resultant_rotmat).attach_to(base)
 # base.run()

@@ -50,13 +50,13 @@ if __name__ == '__main__':
                  portion=1,
                  center=contraint_pos-rbt_s.manipulator_dict['arm'].jnts[1]['gl_rotmatq'].dot(np.array([0, rbt_s.manipulator_dict['arm'].jnts[4]['pos_in_loc_tcp'][1], 0])),
                  radius=abs(rbt_s.manipulator_dict['arm'].jnts[6]['pos_in_loc_tcp'][1]) + abs(rbt_s.manipulator_dict['arm'].jnts[5]['pos_in_loc_tcp'][1])).attach_to(base)
-    # joint_values[3:]=0
-    # rbt_s.fk(joint_values=joint_values)
+    # jnt_vals[3:]=0
+    # rbt_s.fk(jnt_vals=jnt_vals)
     # rbt_s.gen_meshmodel(toggle_tcp_frame=True, rgba=[.5,.5,.5,.3]).attach_to(base)
     # rbt_s.gen_stickmodel(toggle_tcp_frame=True).attach_to(base)
     #
-    # joint_values[2:]=0
-    # rbt_s.fk(joint_values=joint_values)
+    # jnt_vals[2:]=0
+    # rbt_s.fk(jnt_vals=jnt_vals)
     # rbt_s.gen_meshmodel(toggle_tcp_frame=True, rgba=[.5,.5,.5,.3]).attach_to(base)
     # rbt_s.gen_stickmodel(toggle_tcp_frame=True).attach_to(base)
     #
@@ -77,8 +77,8 @@ if __name__ == '__main__':
     # model.load_state_dict(torch.load("cobotta_model.pth"))
     # tgt_rpy = rm.rotmat_to_euler(tgt_rotmat)
     # xyzrpy = torch.from_numpy(np.hstack((tgt_pos,tgt_rpy)))
-    # joint_values = model(xyzrpy.float()).to('cpu').detach().numpy()
-    # rbt_s.fk(joint_values=joint_values)
+    # jnt_vals = model(xyzrpy.float()).to('cpu').detach().numpy()
+    # rbt_s.fk(jnt_vals=jnt_vals)
     # rbt_s.gen_meshmodel(toggle_tcp_frame=True).attach_to(base)
 
     base.run()

@@ -238,8 +238,8 @@ if __name__ == '__main__':
                                                max_time=300)
     print(len(robot_path_attach_ee_g))
 
-    # for joint_values in robot_path:
-    #     robot_s.fk(joint_values)
+    # for jnt_vals in robot_path:
+    #     robot_s.fk(jnt_vals)
     #     robot_s.gen_meshmodel().attach_to(base)
     # base.run()
 

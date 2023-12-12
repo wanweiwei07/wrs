@@ -132,7 +132,7 @@ class SystemInterface(object):
 
     def cvt_conf_to_tcp(self, manipulator_name, jnt_values):
         """
-        given joint_values, this function returns the correspondent global tcp_pos, and tcp_rotmat
+        given jnt_vals, this function returns the correspondent global tcp_pos, and tcp_rotmat
         :param manipulator_name:
         :param jnt_values:
         :return:
@@ -316,7 +316,7 @@ class SystemInterface(object):
 
     def cvt_conf_to_tcp(self, manipulator_name, jnt_values):
         """
-        given joint_values, this function returns the correspondent global tcp_pos, and tcp_rotmat
+        given jnt_vals, this function returns the correspondent global tcp_pos, and tcp_rotmat
         :param manipulator_name:
         :param jnt_values:
         :return:

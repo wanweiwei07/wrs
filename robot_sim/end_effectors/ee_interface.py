@@ -3,7 +3,7 @@ import numpy as np
 import modeling.model_collection as mmc
 import modeling.collision_model as mcm
 import robot_sim._kinematics.jlchain as rkjl
-import robot_sim._kinematics.TBD_collision_checker as cc
+import robot_sim._kinematics.collision_checker as rkcc
 import modeling.geometric_model as mgm
 import modeling.constant as mc
 
@@ -18,10 +18,8 @@ class EEInterface(object):
         # joints
         # -- coupling --
         # no coupling by default, change the pos if the coupling existed
-        self.coupling = rkjl.JLChain(pos=self.pos, rotmat=self.rotmat, n_dof=1, name='coupling')
-        self.coupling.jnts[0].loc_pos = np.zeros(3)
-        self.coupling.jnts[0].loc_motion_axis = np.zeros(3)  # no motion
-        self.coupling.jnts[0].motion_rng = [0, 0]  # no motion
+        self.coupling = rkjl.JLChain(pos=self.pos, rotmat=self.rotmat, n_dof=0, name='coupling')
+        self.coupling.tcp_loc_pos = np.array([0, 0, 0])
         self.coupling.anchor.name = 'coupling_anchor'
         # toggle on the following part to assign an explicit mesh model to a coupling
         # self.coupling.jnts[0].link = rkjl.create_link(mesh_file=os.path.join(this_dir, "meshes", "xxx.stl"))

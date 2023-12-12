@@ -48,7 +48,7 @@ class RRT(object):
         author: weiwei
         date: 20220326
         """
-        # self.robot_s.fk(component_name=component_name, joint_values=conf)
+        # self.robot_s.fk(component_name=component_name, jnt_vals=conf)
         # return self.robot_s.is_collided(obstacle_list=obstacle_list, otherrobot_list=otherrobot_list)
         if self.robot_s.are_joint_values_in_ranges(component_name=component_name, joint_values=conf):
             self.robot_s.fk(component_name=component_name, joint_values=conf)

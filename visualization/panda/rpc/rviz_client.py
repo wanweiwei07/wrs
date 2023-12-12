@@ -95,7 +95,7 @@ class RVizClient(object):
 
     def update_remote(self, rmt_instance, loc_instance):
         if isinstance(loc_instance, ri.RobotInterface):
-            code = ("%s.fk(joint_values=np.array(%s), hnd_name='all')\n" %
+            code = ("%s.fk(jnt_vals=np.array(%s), hnd_name='all')\n" %
                     (rmt_instance, np.array2string(loc_instance.get_jntvalues(jlc_name='all'), separator=',')))
         elif isinstance(loc_instance, gm.GeometricModel):
             code = ("%s.set_pos(np.array(%s))\n" % (
@@ -238,7 +238,7 @@ class RVizClient(object):
         if given_rmt_robot_meshmodel_name is None:
             given_rmt_robot_meshmodel_name = self._gen_random_name(prefix='rmt_robot_meshmodel_')
         jnt_angles_str = np.array2string(loc_robot_s.get_joint_values(component_name='all'), separator=',')
-        code = ("%s.fk(hnd_name='all', joint_values=np.array(%s))\n" % (rmt_robot_s, jnt_angles_str) +
+        code = ("%s.fk(hnd_name='all', jnt_vals=np.array(%s))\n" % (rmt_robot_s, jnt_angles_str) +
                 "%s = %s.gen_meshmodel()\n" % (given_rmt_robot_meshmodel_name, rmt_robot_s) +
                 "base.attach_noupdate_model(%s)\n" % given_rmt_robot_meshmodel_name)
         self.run_code(code)

@@ -91,6 +91,6 @@ rtq_s.grip_at_with_jcpose(gl_pos_box, gl_rotmat_box, jaw_width=.04)
 # rtq_s.gen_meshmodel(toggle_tcp_frame=False).attach_to(base)
 # jnt_angles = ur3d_s.ik(component_name='rgt_arm', tgt_pos=gl_pos_box, tgt_rotmat=gl_rotmat_box)
 # if jnt_angles is not None:
-#     ur3d_s.fk(component_name='rgt_arm', joint_values=jnt_angles)
+#     ur3d_s.fk(component_name='rgt_arm', jnt_vals=jnt_angles)
 ur3d_s.gen_meshmodel().attach_to(base)
 base.run()

@@ -1,4 +1,5 @@
 import math
+import os
 import copy
 import numpy as np
 import time
@@ -44,10 +45,10 @@ class JLChain(object):
         """
         self.name = name
         self.n_dof = n_dof
-        self.home = np.zeros(self.n_dof)  # self.n_dof+1 joints in total, the first joint is a anchor joint
+        self.home = np.zeros(self.n_dof)  # self.n_dof joints plus one anchor
         # initialize joints and links
         self.anchor = rkjl.Anchor(name, pos=pos, rotmat=rotmat)
-        self.jnts = [rkjl.Joint(joint_name=f"j{i}") for i in range(self.n_dof)]
+        self.jnts = [rkjl.Joint(name=f"j{i}") for i in range(self.n_dof)]
         self._jnt_rngs = self._get_jnt_rngs()
         # default tcp
         self._tcp_jnt_id = self.n_dof - 1
@@ -136,7 +137,7 @@ class JLChain(object):
             rotmat = self.anchor.rotmat
             for i in range(self.n_dof):
                 motion_value = jnt_vals[i]
-                self.jnts[i].update_pose_considering_refd(pos=pos, rotmat=rotmat, motion_val=motion_value)
+                self.jnts[i].update_globals(pos=pos, rotmat=rotmat, motion_val=motion_value)
                 pos = self.jnts[i].gl_pos_q
                 rotmat = self.jnts[i].gl_rotmat_q
             tcp_gl_pos, tcp_gl_rotmat = self.cvt_tcp_loc_to_gl()
@@ -155,7 +156,7 @@ class JLChain(object):
 
     def jacobian(self, joint_values=None):
         """
-        compute the jacobian matrix; use internal values if joint_values is None
+        compute the jacobian matrix; use internal values if jnt_vals is None
         :param joint_values:
         :param update:
         :return:
@@ -213,7 +214,7 @@ class JLChain(object):
     def fix_to(self, pos, rotmat):
         self.anchor.pos = pos
         self.anchor.rotmat = rotmat
-        return self.go_given_conf(joint_values=self.get_joint_values())
+        return self.go_given_conf(jnt_vals=self.get_joint_values())
 
     def finalize(self, ik_solver='d', **kwargs):
         """
@@ -230,7 +231,7 @@ class JLChain(object):
         self._jnt_rngs = self._get_jnt_rngs()
         self.go_home()
         if ik_solver == 'd':
-            path = kwargs.get('path')
+            path = kwargs.get('path', os.getcwd())
             if path is not None:
                 self._ik_solver = rkd.DDIKSolver(self, path)
             else:
@@ -286,7 +287,7 @@ class JLChain(object):
 
     def are_joint_values_in_ranges(self, joint_values):
         """
-        check if the given joint_values
+        check if the given jnt_vals
         :param joint_values:
         :return:
         author: weiwei
@@ -300,14 +301,14 @@ class JLChain(object):
         else:
             return True
 
-    def go_given_conf(self, joint_values):
+    def go_given_conf(self, jnt_vals):
         """
         move the robot_s to the given pose
         :return: null
         author: weiwei
         date: 20230927osaka
         """
-        return self.forward_kinematics(jnt_vals=joint_values, toggle_jac=False, update=True)
+        return self.forward_kinematics(jnt_vals=jnt_vals, toggle_jac=False, update=True)
 
     def go_home(self):
         """
@@ -316,7 +317,7 @@ class JLChain(object):
         author: weiwei
         date: 20161211osaka
         """
-        return self.go_given_conf(joint_values=self.home)
+        return self.go_given_conf(jnt_vals=self.home)
 
     def go_zero(self):
         """
@@ -325,12 +326,12 @@ class JLChain(object):
         author: weiwei
         date: 20161211osaka
         """
-        return self.go_given_conf(joint_values=np.zeros(self.n_dof))
+        return self.go_given_conf(jnt_vals=np.zeros(self.n_dof))
 
     def get_joint_values(self):
         """
         get the current joint values
-        :return: joint_values: a 1xn ndarray
+        :return: jnt_vals: a 1xn ndarray
         author: weiwei
         date: 20161205tsukuba
         """
@@ -420,11 +421,10 @@ if __name__ == "__main__":
         tic = time.time()
         joint_values_with_dbg_info = jlc.ik(tgt_pos=tgt_pos,
                                             tgt_rotmat=tgt_rotmat,
-                                            seed_jnt_vals=seed_jnt_vals,
-                                            max_n_iter=100,
                                             toggle_dbg=True)
         toc = time.time()
         time_list.append(toc - tic)
+        print(time_list[-1])
         if joint_values_with_dbg_info is not None:
             success += 1
             if joint_values_with_dbg_info[0] == 'o':

@@ -408,7 +408,7 @@ if __name__ == '__main__':
 
     gm.gen_frame().attach_to(base)
     xav = XArmShuidi(enable_cc=True)
-    # xav.fk(component_name='all', joint_values=np.array([0, 0, 0, 0, 0, 0, math.pi, 0, math.pi / 6, 0, 0]))
+    # xav.fk(component_name='all', jnt_vals=np.array([0, 0, 0, 0, 0, 0, math.pi, 0, math.pi / 6, 0, 0]))
     xav.jaw_to(jawwidth=.08)
     xav_meshmodel = xav.gen_meshmodel(toggle_tcpcs=False)
     xav_meshmodel.attach_to(base)
@@ -424,7 +424,7 @@ if __name__ == '__main__':
                          max_niter=10000)
     print(jnt_values2)
     xav.fk(component_name='arm', jnt_values=jnt_values)
-    # xss.fk(component_name='agv', joint_values=np.array([.2, -.5, math.radians(30)]))
+    # xss.fk(component_name='agv', jnt_vals=np.array([.2, -.5, math.radians(30)]))
     # xss.show_cdprimit()
     xav.gen_stickmodel().attach_to(base)
     tic = time.time()

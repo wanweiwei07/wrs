@@ -142,7 +142,7 @@ if __name__ == '__main__':
                 else:
                     jnt_values = None
             if jnt_values is not None:
-                # last_jnt_values = joint_values
+                # last_jnt_values = jnt_vals
                 gm.gen_frame(pos=tgt_pos, rotmat=tgt_rotmat, axis_radius=.02).attach_to(base)
                 manipulator_instance.fk(jnt_values=jnt_values)
                 manipulator_instance.gen_meshmodel().attach_to(base)

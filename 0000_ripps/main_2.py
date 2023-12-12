@@ -120,8 +120,8 @@ if __name__ == '__main__':
         # n_path = len(interpolated_confs)
         # print(n_path)
         # previous_pos = None
-        # for id, joint_values in enumerate(interpolated_confs):
-        #     rbt_s.fk(component_name=component_name, joint_values=joint_values)
+        # for id, jnt_vals in enumerate(interpolated_confs):
+        #     rbt_s.fk(component_name=component_name, jnt_vals=jnt_vals)
         #     rgba = rm.get_rgba_from_cmap(int(id * 256 / n_path), cm_name='cool', step=256)
         #     # rgba[-1] = 1
         #     pos, rotmat = rbt_s.get_gl_tcp(manipulator_name=component_name)
@@ -247,14 +247,14 @@ if __name__ == '__main__':
     #
     # for angle in np.linspace(0, np.pi * 2, 25):
     #     rotmat = rm.rotmat_from_axangle([0, 0, 1], angle).dot(rotmat)
-    #     joint_values = rbt_s.ik(component_name=component_name, tgt_pos=well_pos + z_offset, tgt_rotmat=rotmat,
+    #     jnt_vals = rbt_s.ik(component_name=component_name, tgt_pos=well_pos + z_offset, tgt_rotmat=rotmat,
     #                           seed_jnt_vals=previous_jnt_values)
-    #     if joint_values is not None:
-    #         rbt_s.fk(joint_values=joint_values)
+    #     if jnt_vals is not None:
+    #         rbt_s.fk(jnt_vals=jnt_vals)
     #         rbt_s.gen_meshmodel().attach_to(base)
     #         rbt_s.hold(hnd_name=hnd_name, objcm=tip_cm_list[id_x * 12 + id_y])
-    #         previous_jnt_values = joint_values
-    #         goal_joint_values = joint_values
+    #         previous_jnt_values = jnt_vals
+    #         goal_joint_values = jnt_vals
     #         break
     #     else:
     #         ee_s.grip_at_with_jcpose(gl_action_center_pos=pos + z_offset, gl_jaw_center_rotmat=rotmat, jaw_width=0)

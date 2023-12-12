@@ -37,7 +37,7 @@ def gen_data(rbt_s, component_name='arm', granularity=math.pi / 8, save_name='co
         in_data_npy = np.vstack((in_data_npy, np.array(in_data)))
         out_data = data
         data_set.append([in_data, out_data])
-    # df = pd.DataFrame(data_set, columns=['xyzrpy', 'joint_values'])
+    # df = pd.DataFrame(data_set, columns=['xyzrpy', 'jnt_vals'])
     # df.to_csv(save_name)
     np.save(save_name+"_min_max", np.array([np.min(in_data_npy, 0), np.max(in_data_npy, 0)]))
     np.save(save_name, np.array(data_set))

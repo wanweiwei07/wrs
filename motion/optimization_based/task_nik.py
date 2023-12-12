@@ -157,7 +157,7 @@ class NIK(object):
 
     def regulate_jnts(self):
         """
-        check if the given joint_values is inside the oeprating range
+        check if the given jnt_vals is inside the oeprating range
         The joint values out of range will be pulled back to their maxima
         :return: Two parameters, one is true or false indicating if the joint values are inside the range or not
                 The other is the joint values after dragging.
@@ -175,7 +175,7 @@ class NIK(object):
 
     def check_jntranges_drag(self, jntvalues):
         """
-        check if the given joint_values is inside the oeprating range
+        check if the given jnt_vals is inside the oeprating range
         The joint values out of range will be pulled back to their maxima
         :param jntvalues: a 1xn numpy ndarray
         :return: Two parameters, one is true or false indicating if the joint values are inside the range or not

@@ -400,10 +400,10 @@ class Left_Manipulator(mi.ManipulatorInterface):
 #         # self.rgt_hnd.fix_to(pos=self.rgt_arm.joints[-1]['gl_posq'],
 #         #                     rotmat=self.rgt_arm.joints[-1]['gl_rotmatq'])
 #
-#     def fk(self, component_name, joint_values):
+#     def fk(self, component_name, jnt_vals):
 #         """
 #         waist angle is transmitted to arms
-#         :param joint_values: nparray 1x6 or 1x14 depending on component_names
+#         :param jnt_vals: nparray 1x6 or 1x14 depending on component_names
 #         :hnd_name 'lft_arm', 'rgt_arm', 'lft_arm_waist', 'rgt_arm_wasit', 'both_arm'
 #         :param component_name:
 #         :return:
@@ -422,8 +422,8 @@ class Left_Manipulator(mi.ManipulatorInterface):
 #                 obj_info['gl_pos'] = gl_pos
 #                 obj_info['gl_rotmat'] = gl_rotmat
 #
-#         def update_component(component_name, joint_values):
-#             status = self.manipulator_dict[component_name].fk(joint_values=joint_values)
+#         def update_component(component_name, jnt_vals):
+#             status = self.manipulator_dict[component_name].fk(jnt_vals=jnt_vals)
 #             hnd_on_manipulator = self.get_hnd_on_manipulator(component_name)
 #             if hnd_on_manipulator is not None:
 #                 hnd_on_manipulator.fix_to(pos=self.manipulator_dict[component_name].joints[-1]['gl_posq'],
@@ -433,18 +433,18 @@ class Left_Manipulator(mi.ManipulatorInterface):
 #
 #         # examine axis_length
 #         if component_name == 'lft_arm' or component_name == 'rgt_arm':
-#             if not isinstance(joint_values, np.ndarray) or joint_values.size != 6:
+#             if not isinstance(jnt_vals, np.ndarray) or jnt_vals.size != 6:
 #                 raise ValueError("An 1x6 npdarray must be specified to move a single arm!")
 #             waist_value = self.central_body.joints[1]['motion_val']
-#             return update_component(component_name, np.append(waist_value, joint_values))
+#             return update_component(component_name, np.append(waist_value, jnt_vals))
 #         elif component_name == 'lft_arm_waist' or component_name == 'rgt_arm_waist':
-#             if not isinstance(joint_values, np.ndarray) or joint_values.size != 7:
+#             if not isinstance(jnt_vals, np.ndarray) or jnt_vals.size != 7:
 #                 raise ValueError("An 1x7 npdarray must be specified to move a single arm plus the waist!")
-#             status = update_component(component_name, joint_values)
-#             self.central_body.joints[1]['motion_val'] = joint_values[0]
+#             status = update_component(component_name, jnt_vals)
+#             self.central_body.joints[1]['motion_val'] = jnt_vals[0]
 #             self.central_body.fk()
 #             the_other_manipulator_name = 'lft_arm' if component_name[:7] == 'rgt_arm' else 'rgt_arm'
-#             self.manipulator_dict[the_other_manipulator_name].joints[1]['motion_val'] = joint_values[0]
+#             self.manipulator_dict[the_other_manipulator_name].joints[1]['motion_val'] = jnt_vals[0]
 #             self.manipulator_dict[the_other_manipulator_name].fk()
 #             return status  # if waist is out of range, the first status will always be out of range
 #         elif component_name == 'both_arm':
@@ -512,15 +512,15 @@ class Left_Manipulator(mi.ManipulatorInterface):
 #         return self.manipulator_dict[component_name].get_jnt_values()
 #
 #     @_decorator_switch_tgt_jnts
-#     def is_jnt_values_in_ranges(self, component_name, joint_values):
+#     def is_jnt_values_in_ranges(self, component_name, jnt_vals):
 #         # if component_name == 'lft_arm' or component_name == 'rgt_arm':
 #         #     old_tgt_jnts = self.manipulator_dict[component_name].tgtjnts
 #         #     self.manipulator_dict[component_name].tgtjnts = range(2, self.manipulator_dict[component_name].n_dof + 1)
-#         #     result = self.manipulator_dict[component_name].is_jnt_values_in_ranges(joint_values)
+#         #     result = self.manipulator_dict[component_name].is_jnt_values_in_ranges(jnt_vals)
 #         #     self.manipulator_dict[component_name].tgtjnts = old_tgt_jnts
 #         #     return result
 #         # else:
-#         return self.manipulator_dict[component_name].is_jnt_values_in_ranges(joint_values)
+#         return self.manipulator_dict[component_name].is_jnt_values_in_ranges(jnt_vals)
 #
 #     def rand_conf(self, component_name):
 #         """

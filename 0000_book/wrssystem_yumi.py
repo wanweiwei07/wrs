@@ -21,7 +21,7 @@ if __name__ == "__main__":
     # tgt_rotmat2 = rm.rotmat_from_axangle([0, 1, 0], -math.pi/6).dot(tgt_rotmat1)
     gm.gen_frame(pos=tgt_pos, rotmat=tgt_rotmat).attach_to(base)
     tic = time.time()
-    # joint_values = robot_s.ik(hnd_name, tgt_pos, tgt_rotmat, seed_jnt_vals=np.array([.0,.0,.0,.0,.0,.0,.0]))
+    # jnt_vals = robot_s.ik(hnd_name, tgt_pos, tgt_rotmat, seed_jnt_vals=np.array([.0,.0,.0,.0,.0,.0,.0]))
     jnt_values = yumi_s.ik(manipulator_name, tgt_pos, tgt_rotmat)
     # jnt_values1 = robot_s.ik(hnd_name, tgt_pos1, tgt_rotmat1)
     # jnt_values2 = robot_s.ik(hnd_name, tgt_pos2, tgt_rotmat2)

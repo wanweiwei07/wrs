@@ -1133,7 +1133,7 @@ if __name__ == "__main__":
     # #     robot_s.fk(arm_name, conf)
     # #     robot_s.gen_meshmodel().attach_to(base)
     # # base.run()
-    # robot_s.fk(hnd_name=arm_name, joint_values=path[-1])
+    # robot_s.fk(hnd_name=arm_name, jnt_vals=path[-1])
     # # robot_s.gen_meshmodel().attach_to(base)
     # # base.run()
     # rgt_pos, rgt_rotmat = robot_s.get_gl_tcp(hnd_name=arm_name)

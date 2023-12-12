@@ -68,7 +68,7 @@ class Link(object):
     @cmodel.setter
     def cmodel(self, cmodel):
         self._cmodel = cmodel
-        self._cmodel.pose= (self._gl_pos, self._gl_rotmat)
+        self._cmodel.pose = (self._gl_pos, self._gl_rotmat)
 
     def update_globals(self, pos=np.zeros(3), rotmat=np.eye(3)):
         """
@@ -80,7 +80,7 @@ class Link(object):
         self._gl_pos = pos + rotmat @ self._loc_pos
         self._gl_rotmat = rotmat @ self._loc_rotmat
         if self._cmodel is not None:
-            self._cmodel.pose= (self._gl_pos, self._gl_rotmat)
+            self._cmodel.pose = (self._gl_pos, self._gl_rotmat)
 
 
 class Anchor(object):

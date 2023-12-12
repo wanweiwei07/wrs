@@ -398,6 +398,6 @@ if __name__ == '__main__':
 
     gm.gen_frame().attach_to(base)
     otherbot_s = TBM()
-    # otherbot_s.fk(joint_values=np.array([math.pi / 3]))
+    # otherbot_s.fk(jnt_vals=np.array([math.pi / 3]))
     otherbot_s.gen_meshmodel().attach_to(base)
     base.run()

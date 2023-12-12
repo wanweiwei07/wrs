@@ -71,7 +71,7 @@ box.set_rotmat(rm.rotmat_from_axangle([1, 0, 0], math.pi / 2))
 # gl_rotmat_box = box.get_rotmat().dot(loc_rotmat_box)
 # jnt_angles = ur3d_s.ik(component_name='lft_arm', tgt_pos=gl_pos_box, tgt_rotmat=gl_rotmat_box)
 # if jnt_angles is not None:
-#     ur3d_s.fk(component_name='lft_arm', joint_values=jnt_angles)
+#     ur3d_s.fk(component_name='lft_arm', jnt_vals=jnt_angles)
 #     # ur3d_s.gen_meshmodel().attach_to(base)
 # print(gl_pos_box)
 #

@@ -27,7 +27,7 @@ import robot_sim.robots.cobotta.cobotta as cbt
 # for c in result:
 #     cnter = cnter + 1
 #     print(cnter, "/", n_total, ",", cnter / n_total)
-#     rbt_s.fk(joint_values=np.asarray(c))
+#     rbt_s.fk(jnt_vals=np.asarray(c))
 #     tcp_gl_pos, tcp_gl_rotmat = rbt_s.get_gl_tcp()
 #     print(tcp_gl_pos, rm.quaternion_from_matrix(tcp_gl_rotmat))
 #
@@ -64,7 +64,7 @@ def gen_data(rbt_s,
         out_data = data
         data_set_tcp.append(in_data)
         data_set_jnts.append(out_data)
-    # df = pd.DataFrame(data_set, columns=['xyzrpy', 'joint_values'])
+    # df = pd.DataFrame(data_set, columns=['xyzrpy', 'jnt_vals'])
     # df.to_csv(save_name)
     # np.save(save_name + "_min_max", np.array([np.min(in_data_npy, 0), np.max(in_data_npy, 0)]))
     np.save(save_name+"_tcp", np.array(data_set_tcp))

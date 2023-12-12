@@ -54,7 +54,7 @@ for grasp_info in grasp_info_list:
             else:
                 if cnter == 6:
                     gripper_s.gen_meshmodel(rgba=[0,0,1,.3]).attach_to(base)
-                    # robot_s.fk(hnd_name, joint_values=joint_values)
+                    # robot_s.fk(hnd_name, jnt_vals=jnt_vals)
                     # robot_s.gen_meshmodel(rgba=[0,0,1,.3]).attach_to(base)
                     # robot_s.show_cdprimit()
                     # base.run()

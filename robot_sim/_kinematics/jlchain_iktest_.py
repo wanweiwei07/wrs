@@ -173,7 +173,7 @@ class JLChain(object):
 
     def jacobian(self, joint_values=None):
         """
-        compute the jacobian matrix; use internal values if joint_values is None
+        compute the jacobian matrix; use internal values if jnt_vals is None
         :param joint_values:
         :param update:
         :return:
@@ -290,7 +290,7 @@ class JLChain(object):
 
     def are_joint_values_in_ranges(self, joint_values):
         """
-        check if the given joint_values
+        check if the given jnt_vals
         :param joint_values:
         :return:
         author: weiwei
@@ -334,7 +334,7 @@ class JLChain(object):
     def get_joint_values(self):
         """
         get the current joint values
-        :return: joint_values: a 1xn ndarray
+        :return: jnt_vals: a 1xn ndarray
         author: weiwei
         date: 20161205tsukuba
         """

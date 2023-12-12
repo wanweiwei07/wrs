@@ -74,7 +74,7 @@ if __name__ == '__main__':
     # tgt_list = []
     # for i in tqdm(range(100), desc='ik'):
     #     jnts = jlc.rand_conf()
-    #     tgt_pos, tgt_rotmat = jlc.forward_kinematics(joint_values=jnts, update=False, toggle_jacobian=False)
+    #     tgt_pos, tgt_rotmat = jlc.forward_kinematics(jnt_vals=jnts, update=False, toggle_jacobian=False)
     #     a = time.time()
     #     joint_values_with_dbg_info = jlc.ik(tgt_pos=tgt_pos,
     #                                         tgt_rotmat=tgt_rotmat,

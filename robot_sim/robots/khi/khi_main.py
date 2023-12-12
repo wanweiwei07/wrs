@@ -219,7 +219,7 @@ class KHI_DUAL(ri.RobotInterface):
         # if component_name == 'lft_arm' or component_name == 'rgt_arm':
         #     old_tgt_jnts = self.manipulator_dict[component_name].tgtjnts
         #     self.manipulator_dict[component_name].tgtjnts = range(2, self.manipulator_dict[component_name].n_dof + 1)
-        #     result = self.manipulator_dict[component_name].is_jnt_values_in_ranges(joint_values)
+        #     result = self.manipulator_dict[component_name].is_jnt_values_in_ranges(jnt_vals)
         #     self.manipulator_dict[component_name].tgtjnts = old_tgt_jnts
         #     return result
         # else:

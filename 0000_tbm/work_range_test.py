@@ -27,7 +27,7 @@ seed1[3] = -math.pi / 2
 #                                    toggle_dbg=False,
 #                                    seed_jnt_vals=seed0)
 #             if jnt_values0 is not None:
-#                 joint_values = jnt_values0
+#                 jnt_vals = jnt_values0
 #             else:
 #                 jnt_values1 = rbt_s.ik(component_name='arm',
 #                                        tgt_pos=tgt_pos,
@@ -36,12 +36,12 @@ seed1[3] = -math.pi / 2
 #                                        toggle_dbg=False,
 #                                        seed_jnt_vals=seed1)
 #                 if jnt_values1 is not None:
-#                     joint_values = jnt_values1
+#                     jnt_vals = jnt_values1
 #                 else:
-#                     joint_values = None
-#             if joint_values is not None:
+#                     jnt_vals = None
+#             if jnt_vals is not None:
 #                 # mgm.gen_frame(pos=tgt_pos, rotmat=tgt_rotmat, major_radius=.02).attach_to(base)
-#                 rbt_s.fk(joint_values=joint_values)
+#                 rbt_s.fk(jnt_vals=jnt_vals)
 #                 # rbt_s.gen_meshmodel().attach_to(base)
 #                 data.append([tgt_pos, tgt_rotmat, rbt_s.manipulability()])
 #             else:
