@@ -94,9 +94,17 @@ class Anchor(object):
                  pos=np.zeros(3),
                  rotmat=np.eye(3)):
         self.name = name
-        self.pos = pos
-        self.rotmat = rotmat
+        self._pos = pos
+        self._rotmat = rotmat
         self._lnk = Link()
+
+    @property
+    def pos(self):
+        return self._pos
+
+    @property
+    def rotmat(self):
+        return self._rotmat
 
     @property
     def homomat(self):
@@ -109,6 +117,12 @@ class Anchor(object):
     @lnk.setter
     def lnk(self, value):
         self._lnk = value
+
+    def update_pose(self, pos, rotmat):
+        self._pos = pos
+        self._rotmat = rotmat
+        if self._lnk is not None:
+            self._lnk.update_globals(self._pos, self._rotmat)
 
 
 class Joint(object):

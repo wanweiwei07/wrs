@@ -212,8 +212,7 @@ class JLChain(object):
         return (linear_ellipsoid_mat, angular_ellipsoid_mat)
 
     def fix_to(self, pos, rotmat):
-        self.anchor.pos = pos
-        self.anchor.rotmat = rotmat
+        self.anchor.update_pose(pos, rotmat)
         return self.go_given_conf(jnt_vals=self.get_joint_values())
 
     def finalize(self, ik_solver=None, **kwargs):

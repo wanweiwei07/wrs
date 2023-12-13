@@ -70,7 +70,7 @@ def gen_anchor(anchor,
     m_col = mmc.ModelCollection()
     mgm.gen_sphere(pos=anchor.pos,
                    radius=radius,
-                   rgba=bc.joint_parent_rgba).attach_to(m_col)
+                   rgba=bc.jnt_parent_rgba).attach_to(m_col)
     if tgl_frame:
         mgm.gen_dashed_frame(pos=anchor.pos,
                              rotmat=anchor.rotmat,
@@ -152,25 +152,26 @@ def gen_jlc_stick(jlc,
     gen_anchor(jlc.anchor,
                radius=jnt_ratio * rfd_radius,
                tgl_frame=tgl_jnt_frame).attach_to(m_col)
-    mgm.gen_dashed_stick(spos=jlc.anchor.pos,
-                         epos=jlc.jnts[0].gl_pos_0,
-                         radius=link_ratio * rfd_radius,
-                         type="rect",
-                         rgba=stick_rgba).attach_to(m_col)
-    for i in range(jlc.n_dof - 1):
-        mgm.gen_stick(spos=jlc.jnts[i].gl_pos_q,
-                      epos=jlc.jnts[i + 1].gl_pos_0,
-                      radius=link_ratio * rfd_radius,
-                      type="rect",
-                      rgba=stick_rgba).attach_to(m_col)
-        gen_jnt(jlc.jnts[i],
+    if jlc.n_dof >= 1:
+        mgm.gen_dashed_stick(spos=jlc.anchor.pos,
+                             epos=jlc.jnts[0].gl_pos_0,
+                             radius=link_ratio * rfd_radius,
+                             type="rect",
+                             rgba=stick_rgba).attach_to(m_col)
+        for i in range(jlc.n_dof - 1):
+            mgm.gen_stick(spos=jlc.jnts[i].gl_pos_q,
+                          epos=jlc.jnts[i + 1].gl_pos_0,
+                          radius=link_ratio * rfd_radius,
+                          type="rect",
+                          rgba=stick_rgba).attach_to(m_col)
+            gen_jnt(jlc.jnts[i],
+                    radius=jnt_ratio * rfd_radius,
+                    tgl_frame_0=tgl_jnt_frame,
+                    tgl_frame_q=tgl_jnt_frame).attach_to(m_col)
+        gen_jnt(jlc.jnts[jlc.n_dof - 1],
                 radius=jnt_ratio * rfd_radius,
                 tgl_frame_0=tgl_jnt_frame,
                 tgl_frame_q=tgl_jnt_frame).attach_to(m_col)
-    gen_jnt(jlc.jnts[jlc.n_dof - 1],
-            radius=jnt_ratio * rfd_radius,
-            tgl_frame_0=tgl_jnt_frame,
-            tgl_frame_q=tgl_jnt_frame).attach_to(m_col)
     if tgl_tcp_frame:
         spos = jlc.jnts[jlc.tcp_jnt_id].gl_pos_q
         tcp_gl_pos, tcp_gl_rotmat = jlc.cvt_tcp_loc_to_gl()
@@ -185,28 +186,31 @@ def gen_jlc_mesh(jlc,
                  rgba=None):
     m_col = mmc.ModelCollection(name=name)
     gen_lnk_mesh(jlc.anchor.lnk, rgba=rgba).attach_to(m_col)
-    for i in range(jlc.n_dof):
-        if jlc.jnts[i].lnk is not None:
-            gen_lnk_mesh(jlc.jnts[i].lnk, rgba=rgba).attach_to(m_col)
+    if jlc.n_dof >= 1:
+        for i in range(jlc.n_dof):
+            if jlc.jnts[i].lnk is not None:
+                gen_lnk_mesh(jlc.jnts[i].lnk, rgba=rgba).attach_to(m_col)
     if tgl_tcp_frame:
-        spos = jlc.jnts[jlc.tcp_jnt_id].gl_pos_q
-        tcp_gl_pos, tcp_gl_rotmat = jlc.cvt_tcp_loc_to_gl()
-        gen_tcp_frame(spos=spos, tcp_gl_pos=tcp_gl_pos, tcp_gl_rotmat=tcp_gl_rotmat,
-                      tcp_frame_ax_length=rkc.FRAME_STICK_LENGTH_LONG).attach_to(m_col)
+        if jlc.n_dof >= 1:
+            spos = jlc.jnts[jlc.tcp_jnt_id].gl_pos_q
+            tcp_gl_pos, tcp_gl_rotmat = jlc.cvt_tcp_loc_to_gl()
+            gen_tcp_frame(spos=spos, tcp_gl_pos=tcp_gl_pos, tcp_gl_rotmat=tcp_gl_rotmat,
+                          tcp_frame_ax_length=rkc.FRAME_STICK_LENGTH_LONG).attach_to(m_col)
     if tgl_jnt_frame:
         # anchor
         gen_anchor(jlc.anchor,
                    frame_stick_radius=rkc.FRAME_STICK_RADIUS,
                    frame_stick_length=rkc.FRAME_STICK_LENGTH_LONG,
                    tgl_frame=tgl_jnt_frame).attach_to(m_col)
-        # 0 frame
-        mgm.gen_dashed_frame(pos=jlc.jnts[i]._gl_pos_0,
-                             rotmat=jlc.jnts[i]._gl_rotmat_0,
-                             ax_radius=rkc.FRAME_STICK_RADIUS,
-                             ax_length=rkc.FRAME_STICK_LENGTH_LONG).attach_to(m_col)
-        # q frame
-        mgm.gen_frame(pos=jlc.jnts[i]._gl_pos_q,
-                      rotmat=jlc.jnts[i]._gl_rotmat_q,
-                      ax_radius=rkc.FRAME_STICK_RADIUS,
-                      ax_length=rkc.FRAME_STICK_LENGTH_LONG).attach_to(m_col)
+        if jlc.n_dof >= 1:
+            # 0 frame
+            mgm.gen_dashed_frame(pos=jlc.jnts[i]._gl_pos_0,
+                                 rotmat=jlc.jnts[i]._gl_rotmat_0,
+                                 ax_radius=rkc.FRAME_STICK_RADIUS,
+                                 ax_length=rkc.FRAME_STICK_LENGTH_LONG).attach_to(m_col)
+            # q frame
+            mgm.gen_frame(pos=jlc.jnts[i]._gl_pos_q,
+                          rotmat=jlc.jnts[i]._gl_rotmat_q,
+                          ax_radius=rkc.FRAME_STICK_RADIUS,
+                          ax_length=rkc.FRAME_STICK_LENGTH_LONG).attach_to(m_col)
     return m_col
