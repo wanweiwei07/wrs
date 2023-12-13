@@ -1811,7 +1811,7 @@ _CameraSpacePoint._fields_ = [
 assert sizeof(_CameraSpacePoint) == 12, sizeof(_CameraSpacePoint)
 assert alignment(_CameraSpacePoint) == 4, alignment(_CameraSpacePoint)
 _Joint._fields_ = [
-    ('JointType', _JointType),
+    ('JntType', _JointType),
     ('Position', _CameraSpacePoint),
     ('TrackingState', _TrackingState),
 ]
@@ -1912,7 +1912,7 @@ _DepthSpacePoint._fields_ = [
 assert sizeof(_DepthSpacePoint) == 8, sizeof(_DepthSpacePoint)
 assert alignment(_DepthSpacePoint) == 4, alignment(_DepthSpacePoint)
 _JointOrientation._fields_ = [
-    ('JointType', _JointType),
+    ('JntType', _JointType),
     ('Orientation', _Vector4),
 ]
 assert sizeof(_JointOrientation) == 20, sizeof(_JointOrientation)

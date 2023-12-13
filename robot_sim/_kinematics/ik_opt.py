@@ -17,7 +17,7 @@ class OptIKSolver(object):
     def _get_max_link_length(self):
         max_len = 0
         for i in range(1, self.jlc.n_dof):
-            if self.jlc.jnts[i].type == rkc.JointType.REVOLUTE:
+            if self.jlc.jnts[i].type == rkc.JntType.REVOLUTE:
                 tmp_vec = self.jlc.jnts[i].gl_pos_q - self.jlc.jnts[i - 1].gl_pos_q
                 tmp_len = np.linalg.norm(tmp_vec)
                 if tmp_len > max_len:

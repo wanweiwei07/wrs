@@ -1,9 +1,14 @@
 import os
 import numpy as np
-import modeling.model_collection as mc
+import modeling.collision_model as mcm
+import modeling.geometric_model as mgm
+import modeling.model_collection as mmc
 import robot_sim._kinematics.jlchain as jl
 import basis.robot_math as rm
+import basis.constant as bc
 import robot_sim.end_effectors.gripper.gripper_interface as gp
+import robot_sim._kinematics.constant as rkc
+import robot_sim._kinematics.model_generator as rkmg
 
 
 class CobottaGripper(gp.GripperInterface):
@@ -11,123 +16,105 @@ class CobottaGripper(gp.GripperInterface):
     def __init__(self, pos=np.zeros(3), rotmat=np.eye(3), cdmesh_type='box', name='robotiqhe', enable_cc=True):
         super().__init__(pos=pos, rotmat=rotmat, cdmesh_type=cdmesh_type, name=name)
         this_dir, this_filename = os.path.split(__file__)
-        cpl_end_pos = self.coupling.jnts[-1]['gl_posq']
-        cpl_end_rotmat = self.coupling.jnts[-1]['gl_rotmatq']
-        self.jlc = jl.JLChain(pos=cpl_end_pos, rotmat=cpl_end_rotmat, home_conf=np.zeros(2), name='base_lft_finger')
-        self.jlc.jnts[1]['pos_in_loc_tcp'] = np.array([0, .0, .06])
-        self.jlc.jnts[1]['end_type'] = 'prismatic'
-        self.jlc.jnts[1]['motion_rng'] = [0, .015]
-        self.jlc.jnts[1]['loc_motionax'] = np.array([0, 1, 0])
-        self.jlc.jnts[2]['pos_in_loc_tcp'] = np.array([0, .0, .0])
-        self.jlc.jnts[2]['end_type'] = 'prismatic'
-        self.jlc.jnts[2]['loc_motionax'] = np.array([0, 1, 0])
-        self.jlc.lnks[0]['name'] = "base"
-        self.jlc.lnks[0]['pos_in_loc_tcp'] = np.zeros(3)
-        self.jlc.lnks[0]['mesh_file'] = os.path.join(this_dir, "meshes", "gripper_base.dae")
-        self.jlc.lnks[0]['rgba'] = [.35, .35, .35, 1]
-        self.jlc.lnks[1]['name'] = "finger1"
-        self.jlc.lnks[1]['pos_in_loc_tcp'] = np.array([0, 0, -.06])
-        self.jlc.lnks[1]['mesh_file'] = os.path.join(this_dir, "meshes", "left_finger.dae")
-        self.jlc.lnks[1]['rgba'] = [.5, .5, .5, 1]
-        self.jlc.lnks[2]['name'] = "finger2"
-        self.jlc.lnks[2]['pos_in_loc_tcp'] = np.array([0, 0, -.06])
-        self.jlc.lnks[2]['mesh_file'] = os.path.join(this_dir, "meshes", "right_finger.dae")
-        self.jlc.lnks[2]['rgba'] = [.5, .5, .5, 1]
+        cpl_end_pos, cpl_end_rotmat = self.coupling.get_gl_tcp()
         # jaw range
-        self.jaw_range = [0.0, .03]
-        # jaw center
-        self.jaw_center_pos = np.array([0,0,.05])
+        self.jaw_rng = np.array([0.0, .03])
+        # jlc
+        self.jlc = jl.JLChain(pos=cpl_end_pos, rotmat=cpl_end_rotmat, n_dof=2, name='base_lft_finger')
+        # anchor
+        self.jlc.anchor.pos = cpl_end_pos
+        self.jlc.anchor.rotmat = cpl_end_rotmat
+        self.jlc.anchor.lnk.cmodel = mcm.CollisionModel(os.path.join(this_dir, "meshes", "gripper_base.dae"))
+        self.jlc.anchor.lnk.cmodel.rgba = np.array([.35, .35, .35, 1])
+        # the 1st joint (left finger)
+        self.jlc.jnts[0].change_type(rkc.JntType.PRISMATIC, np.array([0, self.jaw_rng[1] / 2]))
+        self.jlc.jnts[0].loc_pos = np.array([0, .0, .06])
+        self.jlc.jnts[0].loc_motion_ax = bc.y_ax
+        self.jlc.jnts[0].lnk.cmodel = mcm.CollisionModel(os.path.join(this_dir, "meshes", "left_finger.dae"))
+        self.jlc.jnts[0].lnk.cmodel.rgba = np.array([.5, .5, .5, 1])
+        # the 2nd joint (right finger)
+        self.jlc.jnts[1].change_type(rkc.JntType.PRISMATIC, np.array([0, -self.jaw_rng[1]]))
+        self.jlc.jnts[1].loc_pos = np.array([0, .0, .0])
+        self.jlc.jnts[1].loc_motion_ax = bc.y_ax
+        self.jlc.jnts[1].lnk.cmodel = mcm.CollisionModel(os.path.join(this_dir, "meshes", "right_finger.dae"))
+        self.jlc.jnts[1].lnk.cmodel.rgba = np.array([.5, .5, .5, 1])
+        # action center
+        self.action_center_pos = np.array([0, 0, .05])
         # reinitialize
-        self.jlc.finalize()
+        self.jlc.finalize(ik_solver=None)
         # collision detection
-        self.all_cdelements=[]
-        self.enable_cc(toggle_cdprimit=enable_cc)
+        # self.all_cdelements = []
+        # self.enable_cc(toggle_cdprimit=enable_cc)
 
-    def enable_cc(self, toggle_cdprimit):
-        if toggle_cdprimit:
-            super().enable_cc()
-            # cdprimit
-            self.cc.add_cdlnks(self.jlc, [0, 1, 2])
-            activelist = [self.jlc.lnks[0],
-                          self.jlc.lnks[1],
-                          self.jlc.lnks[2]]
-            self.cc.set_active_cdlnks(activelist)
-            self.all_cdelements = self.cc.cce_dict
-        # cdmesh
-        for cdelement in self.all_cdelements:
-            cdmesh = cdelement['collision_model'].copy()
-            self.cdmesh_collection.add_cm(cdmesh)
+    # def enable_cc(self, toggle_cdprimit):
+    #     if toggle_cdprimit:
+    #         super().enable_cc()
+    #         # cdprimit
+    #         self.cc.add_cdlnks(self.jlc, [0, 1, 2])
+    #         activelist = [self.jlc.lnks[0],
+    #                       self.jlc.lnks[1],
+    #                       self.jlc.lnks[2]]
+    #         self.cc.set_active_cdlnks(activelist)
+    #         self.all_cdelements = self.cc.cce_dict
+    #     # cdmesh
+    #     for cdelement in self.all_cdelements:
+    #         cdmesh = cdelement['collision_model'].copy()
+    #         self.cdmesh_collection.add_cm(cdmesh)
 
     def fix_to(self, pos, rotmat, jaw_width=None):
         self.pos = pos
         self.rotmat = rotmat
         if jaw_width is not None:
             side_jawwidth = jaw_width / 2.0
-            if 0 <= side_jawwidth <= .015:
-                self.jlc.jnts[1]['motion_val'] = side_jawwidth
-                self.jlc.jnts[2]['motion_val'] = -jaw_width
+            if 0 <= side_jawwidth <= self.jaw_rng[1] / 2:
+                self.jlc.jnts[0].motion_val = side_jawwidth
+                self.jlc.jnts[1].motion_val = -jaw_width
             else:
                 raise ValueError("The angle parameter is out of range!")
         self.coupling.fix_to(self.pos, self.rotmat)
-        cpl_end_pos = self.coupling.jnts[-1]['gl_posq']
-        cpl_end_rotmat = self.coupling.jnts[-1]['gl_rotmatq']
+        cpl_end_pos, cpl_end_rotmat = self.coupling.get_gl_tcp()
         self.jlc.fix_to(cpl_end_pos, cpl_end_rotmat)
 
     def change_jaw_width(self, jaw_width):
-        if jaw_width > self.jaw_range[1]:
-            raise ValueError("The jaw_width parameter is out of range!")
         side_jawwidth = jaw_width / 2.0
-        self.jlc.jnts[1]['motion_val'] = side_jawwidth
-        self.jlc.jnts[2]['motion_val'] = -jaw_width
-        self.jlc.fk()
+        if 0 <= side_jawwidth <= self.jaw_rng[1] / 2:
+            self.jlc.go_given_conf(jnt_vals=[side_jawwidth, -jaw_width])
+        else:
+            raise ValueError("The angle parameter is out of range!")
 
     def get_jaw_width(self):
-        return -self.jlc.jnts[2]['motion_val']
+        return -self.jlc.jnts[1].motion_val
 
     def gen_stickmodel(self,
-                       toggle_tcpcs=False,
-                       toggle_jntscs=False,
-                       toggle_connjnt=False,
-                       name='xarm_gripper_stickmodel'):
-        stickmodel = mc.ModelCollection(name=name)
-        self.coupling.gen_stickmodel(toggle_tcpcs=False,
-                                     toggle_jntscs=toggle_jntscs).attach_to(stickmodel)
-        self.jlc.gen_stickmodel(toggle_tcpcs=False,
-                                toggle_jntscs=toggle_jntscs,
-                                toggle_connjnt=toggle_connjnt).attach_to(stickmodel)
-        if toggle_tcpcs:
-            jaw_center_gl_pos = self.rotmat.dot(self.jaw_center_pos)+self.pos
-            jaw_center_gl_rotmat = self.rotmat.dot(self.action_center_rotmat)
-            gm.gen_dashed_stick(spos=self.pos,
-                                epos=jaw_center_gl_pos,
-                                radius=.0062,
-                                rgba=[.5,0,1,1],
-                                type="round").attach_to(stickmodel)
-            gm.gen_myc_frame(pos=jaw_center_gl_pos, rotmat=jaw_center_gl_rotmat).attach_to(stickmodel)
-        return stickmodel
+                       tgl_tcp_frame=False,
+                       tgl_jnt_frame=False,
+                       name='stick_model'):
+        m_col = mmc.ModelCollection(name=name)
+        rkmg.gen_jlc_stick(self.coupling, tgl_jnt_frame=False, tgl_tcp_frame=False).attach_to(m_col)
+        rkmg.gen_jlc_stick(self.jlc, tgl_jnt_frame=tgl_jnt_frame, tgl_tcp_frame=False).attach_to(m_col)
+        if tgl_tcp_frame:
+            action_center_gl_pos = self.rotmat.dot(self.action_center_pos) + self.pos
+            action_center_gl_rotmat = self.rotmat.dot(self.action_center_rotmat)
+            rkmg.gen_tcp_frame(spos=self.pos,
+                               tcp_gl_pos=action_center_gl_pos,
+                               tcp_gl_rotmat=action_center_gl_rotmat).attach_to(m_col)
+        return m_col
 
     def gen_meshmodel(self,
-                      toggle_tcpcs=False,
-                      toggle_jntscs=False,
+                      tgl_tcp_frame=False,
+                      tgl_jnt_frame=False,
                       rgba=None,
-                      name='xarm_gripper_meshmodel'):
-        meshmodel = mc.ModelCollection(name=name)
-        self.coupling.gen_mesh_model(toggle_tcpcs=False,
-                                     toggle_jntscs=toggle_jntscs,
-                                     rgba=rgba).attach_to(meshmodel)
-        self.jlc.gen_mesh_model(toggle_tcpcs=False,
-                                toggle_jntscs=toggle_jntscs,
-                                rgba=rgba).attach_to(meshmodel)
-        if toggle_tcpcs:
-            jaw_center_gl_pos = self.rotmat.dot(self.jaw_center_pos)+self.pos
-            jaw_center_gl_rotmat = self.rotmat.dot(self.action_center_rotmat)
-            gm.gen_dashed_stick(spos=self.pos,
-                                epos=jaw_center_gl_pos,
-                                radius=.0062,
-                                rgba=[.5,0,1,1],
-                                type="round").attach_to(meshmodel)
-            gm.gen_myc_frame(pos=jaw_center_gl_pos, rotmat=jaw_center_gl_rotmat).attach_to(meshmodel)
-        return meshmodel
+                      name='mesh_model'):
+        m_col = mmc.ModelCollection(name=name)
+        rkmg.gen_jlc_mesh(self.coupling, tgl_tcp_frame=False, tgl_jnt_frame=False).attach_to(m_col)
+        rkmg.gen_jlc_mesh(self.jlc, tgl_tcp_frame=tgl_tcp_frame, tgl_jnt_frame=False).attach_to(m_col)
+        if tgl_tcp_frame:
+            action_center_gl_pos = self.rotmat.dot(self.action_center_pos) + self.pos
+            action_center_gl_rotmat = self.rotmat.dot(self.action_center_rotmat)
+            rkmg.gen_tcp_frame(spos=self.pos,
+                               tcp_gl_pos=action_center_gl_pos,
+                               tcp_gl_rotmat=action_center_gl_rotmat).attach_to(m_col)
+        return m_col
 
 
 if __name__ == '__main__':
@@ -142,10 +129,10 @@ if __name__ == '__main__':
     #     grpr.gen_meshmodel().attach_to(base)
     grpr = CobottaGripper(enable_cc=True)
     grpr.change_jaw_width(.013)
-    grpr.gen_meshmodel(toggle_tcpcs=True).attach_to(base)
+    grpr.gen_meshmodel(tgl_tcp_frame=True).attach_to(base)
     # grpr.gen_stickmodel(toggle_joint_frame=False).attach_to(base)
     grpr.fix_to(pos=np.array([0, .3, .2]), rotmat=rm.rotmat_from_axangle([1, 0, 0], .05))
     grpr.gen_meshmodel().attach_to(base)
-    grpr.show_cdmesh()
-    grpr.show_cdprimit()
+    # grpr.show_cdmesh()
+    # grpr.show_cdprimit()
     base.run()

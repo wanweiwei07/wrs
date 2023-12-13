@@ -17,21 +17,21 @@ class GripperInterface(ei.EEInterface):
         self.cdmesh_collection = mmc.ModelCollection()
 
     # jaw center pos and rotmat are defined for back compatibility reasons. to be replaced by action_xxx; 20230807
-    @property
-    def action_center_pos(self):
-        return self.action_center_pos
-
-    @action_center_pos.setter
-    def action_center_pos(self, pos: np.array):
-        self.action_center_pos = pos
-
-    @property
-    def action_center_rotmat(self):
-        return self.action_center_rotmat
-
-    @action_center_rotmat.setter
-    def action_center_rotmat(self, rotmat: np.array):
-        self.action_center_rotmat = rotmat
+    # @property
+    # def action_center_pos(self):
+    #     return self.action_center_pos
+    #
+    # @action_center_pos.setter
+    # def action_center_pos(self, pos: np.array):
+    #     self.action_center_pos = pos
+    #
+    # @property
+    # def action_center_rotmat(self):
+    #     return self.action_center_rotmat
+    #
+    # @action_center_rotmat.setter
+    # def action_center_rotmat(self, rotmat: np.array):
+    #     self.action_center_rotmat = rotmat
 
     def fk(self, motion_val):
         raise NotImplementedError

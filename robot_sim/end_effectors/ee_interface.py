@@ -25,7 +25,7 @@ class EEInterface(object):
         # self.coupling.jnts[0].link = rkjl.create_link(mesh_file=os.path.join(this_dir, "meshes", "xxx.stl"))
         # self.coupling.jnts[0].link = mcm.gen_stick(spos=self.coupling.anchor.pos, epos = self.coupling.jnts[0].pos)
         # self.coupling.jnts[0].lnks.rgba = [.2, .2, .2, 1]
-        self.coupling.finalize()
+        self.coupling.finalize(ik_solver=None)
         # action center, acting point of the tool
         self.action_center_pos = np.zeros(3)
         self.action_center_rotmat = np.eye(3)
@@ -34,7 +34,7 @@ class EEInterface(object):
         # cd mesh collection for precise collision checking
         self.cdmesh_collection = mmc.ModelCollection()
         # object grasped/held/attached to end-effector; oiee = object in end-effector
-        self.oiee_infos = []
+        self.oiee_list = []
 
     def update_oiee(self):
         """
@@ -42,8 +42,9 @@ class EEInterface(object):
         author: weiwei
         date: 20230807
         """
-        for obj_info in self.oiee_infos:
-            gl_pos, gl_rotmat = self.cvt_loc_tcp_to_gl(obj_info['rel_pos'], obj_info['rel_rotmat'])
+        for oiee in self.oiee_list:
+            oiee.update_globals()
+            gl_pos, gl_rotmat = self.cvt_loc_tcp_to_gl(oiee.loc_pos, )
             obj_info['gl_pos'] = gl_pos
             obj_info['gl_rotmat'] = gl_rotmat
 

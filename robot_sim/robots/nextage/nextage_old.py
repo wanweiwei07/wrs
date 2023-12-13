@@ -642,7 +642,7 @@ class Nextage(ri.RobotInterface):
                                     toggle_tcpcs=toggle_tcpcs,
                                     toggle_jntscs=toggle_jntscs,
                                     toggle_connjnt=toggle_connjnt).attach_to(stickmodel)
-        # self.lft_hnd.gen_stickmodel(toggle_tcp_frame=False,
+        # self.lft_hnd.gen_stickmodel(tgl_tcp_frame=False,
         #                             toggle_joint_frame=toggle_joint_frame,
         #                             toggle_connjnt=toggle_connjnt).attach_to(stickmodel)
         self.rgt_arm.gen_stickmodel(tcp_jnt_id=tcp_jnt_id,
@@ -651,7 +651,7 @@ class Nextage(ri.RobotInterface):
                                     toggle_tcpcs=toggle_tcpcs,
                                     toggle_jntscs=toggle_jntscs,
                                     toggle_connjnt=toggle_connjnt).attach_to(stickmodel)
-        # self.rgt_hnd.gen_stickmodel(toggle_tcp_frame=False,
+        # self.rgt_hnd.gen_stickmodel(tgl_tcp_frame=False,
         #                             toggle_joint_frame=toggle_joint_frame,
         #                             toggle_connjnt=toggle_connjnt).attach_to(stickmodel)
         return stickmodel
@@ -676,7 +676,7 @@ class Nextage(ri.RobotInterface):
                                     toggle_tcpcs=toggle_tcpcs,
                                     toggle_jntscs=toggle_jntscs,
                                     rgba=rgba).attach_to(meshmodel)
-        # self.lft_hnd.gen_meshmodel(toggle_tcp_frame=False,
+        # self.lft_hnd.gen_meshmodel(tgl_tcp_frame=False,
         #                            toggle_joint_frame=toggle_joint_frame,
         #                            rgba=rgba).attach_to(meshmodel)
         self.rgt_arm.gen_mesh_model(tcp_jnt_id=tcp_jnt_id,
@@ -685,7 +685,7 @@ class Nextage(ri.RobotInterface):
                                     toggle_tcpcs=toggle_tcpcs,
                                     toggle_jntscs=toggle_jntscs,
                                     rgba=rgba).attach_to(meshmodel)
-        # self.rgt_hnd.gen_meshmodel(toggle_tcp_frame=False,
+        # self.rgt_hnd.gen_meshmodel(tgl_tcp_frame=False,
         #                            toggle_joint_frame=toggle_joint_frame,
         #                            rgba=rgba).attach_to(meshmodel)
         for obj_info in self.lft_oih_infos:

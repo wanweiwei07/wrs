@@ -15,12 +15,11 @@ class CCElement(object):
     date: 20231116
     """
 
-    def __init__(self, cmodel, host_cc):
+    def __init__(self, lnk, host_cc):
         self.host_cc = host_cc
-        self.cmodel = cmodel
-        self.cmodel.attach_cdprimitive_to(self.host_cc.cd_pdndp)
+        self.lnk = lnk
         # a transformed and attached copy of the reference cdprimitive (essentially pdcndp), tfd=transformed
-        self.tfd_cdprimitive = mph.copy_cdprimitive_attach_to(self.cmodel,
+        self.tfd_cdprimitive = mph.copy_cdprimitive_attach_to(self.lnk.cmodel,
                                                               self.host_cc.cd_pdndp,
                                                               clear_mask=True)
         self.host_cc.cd_trav.addCollider(collider=self.tfd_cdprimitive, handler=self.host_cc.cd_handler)
@@ -63,6 +62,7 @@ class CCElement(object):
 
     def add_from_cdmask(self, allocated_bitmask, cce_into_list):
         """
+        Note: the bitmask of cce_into_list should be updated externally in advance
         :param allocated_bitmask:
         :param cce_into_list:
         :return:
@@ -147,12 +147,12 @@ class CollisionChecker(object):
                 self.cce_dict[lnk_into.uuid].add_into_cdmask(allocated_bitmask)
                 cce_into_list.append(self.cce_dict[lnk_into.uuid])
             else:
-                raise KeyError("Into rcms do not exist in the cce_dict.")
+                raise KeyError("Into lnks do not exist in the cce_dict.")
         for lnk_from in lnk_from_list:
             if lnk_from.uuid in self.cce_dict.keys():
                 self.cce_dict[lnk_from.uuid].add_from_cdmask(allocated_bitmask, cce_into_list)
             else:
-                raise KeyError("From rcms do not exist in the cce_dict.")
+                raise KeyError("From lnks do not exist in the cce_dict.")
 
     def is_collided(self, obstacle_list=[], otherrobot_list=[], toggle_contacts=False):
         """
@@ -161,7 +161,7 @@ class CollisionChecker(object):
         :return:
         """
         for cce in self.cce_dict.values():
-            cce.tfd_cdprimitive.setPosQuat(da.npvec3_to_pdvec3(cce.lnk.gl_pos), da.npmat3_to_pdquat(cce.lnk.gl_rotmat))
+            cce.tfd_cdprimitive.setPosQuat(da.npvec3_to_pdvec3(cce.cmodel.pos), da.npmat3_to_pdquat(cce.cmodel.rotmat))
             # print(da.npv3mat3_to_pdmat4(pos, rotmat))
             # print("From", cdnp.node().getFromCollideMask())
             # print("Into", cdnp.node().getIntoCollideMask())
@@ -174,8 +174,6 @@ class CollisionChecker(object):
         obstacle_cdprimitive_list = []
         for obstacle in obstacle_list:
             obstacle.attach_cdprimitive_to(self.cd_pdndp)
-            # obstacle_cdprimitive_list.append(obstacle.copy_transformed_cdprimitive())
-            # obstacle_cdprimitive_list[-1].reparentTo(self.cd_pdndp)
         # attach other robots
         for robot in otherrobot_list:
             for cce in robot.cc.cce_dict.values():
@@ -186,8 +184,6 @@ class CollisionChecker(object):
         # clear obstacles
         for obstacle in obstacle_list:
             obstacle.detach_cdprimitive()
-        # for cdprimitive in enumerate(obstacle_cdprimitive_list):
-        #     cdprimitive.detachNode()
         # clear other robots
         for robot in otherrobot_list:
             for cce in robot.cc.cce_dict.values():

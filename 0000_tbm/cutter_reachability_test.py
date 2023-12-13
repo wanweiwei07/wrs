@@ -12,7 +12,7 @@ base = wd.World(cam_pos=[15, 2.624-0.275+5, 15], lookat_pos=[-1.726-0.35, 2.624-
 mcn_s = mcn.TBM()
 # mcn_s.gen_meshmodel().attach_to(base)
 rbt_s = rbt.TBMChanger(pos=np.array([-1.726-0.35, 2.624-0.275, 5.323+.35]), rotmat=rm.rotmat_from_euler(-math.pi/2,0,0))
-# rbt_s.gen_meshmodel(toggle_tcp_frame=True).attach_to(base)
+# rbt_s.gen_meshmodel(tgl_tcp_frame=True).attach_to(base)
 ik_s = opt_ik.OptIK(rbt_s, component_name='arm', obstacle_list=[])
 # base.run()
 for col_key in mcn_s.cutters.keys():
@@ -56,7 +56,7 @@ for col_key in mcn_s.cutters.keys():
                 continue
             cutter.lnks[1]['rgba']=[0,1,0,1]
             # rbt_s.fk(component_name="arm", jnt_vals=jnt_vals)
-            # rbt_s.gen_meshmodel(toggle_tcp_frame=True).attach_to(base)
+            # rbt_s.gen_meshmodel(tgl_tcp_frame=True).attach_to(base)
 mcn_s.fk(np.array([0]))
 mcn_s.gen_meshmodel().attach_to(base)
 base.run()
@@ -95,7 +95,7 @@ base.run()
 #             if jnt_vals is None:
 #                 continue
 #             # rbt_s.fk(component_name="arm", jnt_vals=jnt_vals)
-#             # rbt_s.gen_meshmodel(toggle_tcp_frame=True).attach_to(base)
+#             # rbt_s.gen_meshmodel(tgl_tcp_frame=True).attach_to(base)
 #             # mcn_s.gen_meshmodel().attach_to(base)
 #             solvable.append([mcn_s.cutter_pos_dict[k][i], mcn_s.cutter_rotmat_dict[k][i], jnt_vals])
 # pickle.dump(solvable, open('manipulability.pickle', 'wb'))

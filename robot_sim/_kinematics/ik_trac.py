@@ -60,7 +60,7 @@ class NumIKSolverProc(mp.Process):
     def _get_max_link_length(self):
         max_len = 0
         for i in range(1, self.n_dof):
-            if self.joints[i].type == rkc.JointType.REVOLUTE:
+            if self.joints[i].type == rkc.JntType.REVOLUTE:
                 tmp_vec = self.joints[i].gl_pos_q - self.joints[i - 1].gl_pos_q
                 tmp_len = np.linalg.norm(tmp_vec)
                 if tmp_len > max_len:
@@ -108,8 +108,8 @@ class NumIKSolverProc(mp.Process):
             j_pos = np.zeros((n_dof, 3))
             j_axis = np.zeros((n_dof, 3))
             for i in range(tcp_joint_id + 1):
-                j_axis[i, :] = homomat[:3, :3] @ joints[i].loc_motion_axis
-                if joints[i].type == rkc.JointType.REVOLUTE:
+                j_axis[i, :] = homomat[:3, :3] @ joints[i].loc_motion_ax
+                if joints[i].type == rkc.JntType.REVOLUTE:
                     j_pos[i, :] = homomat[:3, 3] + homomat[:3, :3] @ joints[i].loc_pos
                 homomat = homomat @ joints[i].get_motion_homomat(motion_val=joint_values[i])
             tcp_gl_homomat = homomat @ tcp_loc_homomat
@@ -118,11 +118,11 @@ class NumIKSolverProc(mp.Process):
             if toggle_jacobian:
                 j_mat = np.zeros((6, n_dof))
                 for i in range(tcp_joint_id + 1):
-                    if joints[i].type == rkc.JointType.REVOLUTE:
+                    if joints[i].type == rkc.JntType.REVOLUTE:
                         vec_jnt2tcp = tcp_gl_pos - j_pos[i, :]
                         j_mat[:3, i] = np.cross(j_axis[i, :], vec_jnt2tcp)
                         j_mat[3:6, i] = j_axis[i, :]
-                    if joints[i].type == rkc.JointType.PRISMATIC:
+                    if joints[i].type == rkc.JntType.PRISMATIC:
                         j_mat[:3, i] = j_axis[i, :]
                 return tcp_gl_pos, tcp_gl_rotmat, j_mat
             else:
@@ -213,8 +213,8 @@ class OptIKSolverProc(mp.Process):
             j_pos = np.zeros((n_dof, 3))
             j_axis = np.zeros((n_dof, 3))
             for i in range(tcp_joint_id + 1):
-                j_axis[i, :] = homomat[:3, :3] @ joints[i].loc_motion_axis
-                if joints[i].type == rkc.JointType.REVOLUTE:
+                j_axis[i, :] = homomat[:3, :3] @ joints[i].loc_motion_ax
+                if joints[i].type == rkc.JntType.REVOLUTE:
                     j_pos[i, :] = homomat[:3, 3] + homomat[:3, :3] @ joints[i].loc_pos
                 homomat = homomat @ joints[i].get_motion_homomat(motion_val=joint_values[i])
             tcp_gl_homomat = homomat @ tcp_loc_homomat
@@ -223,11 +223,11 @@ class OptIKSolverProc(mp.Process):
             if toggle_jacobian:
                 j_mat = np.zeros((6, n_dof))
                 for i in range(tcp_joint_id + 1):
-                    if joints[i].type == rkc.JointType.REVOLUTE:
+                    if joints[i].type == rkc.JntType.REVOLUTE:
                         vec_jnt2tcp = tcp_gl_pos - j_pos[i, :]
                         j_mat[:3, i] = np.cross(j_axis[i, :], vec_jnt2tcp)
                         j_mat[3:6, i] = j_axis[i, :]
-                    if joints[i].type == rkc.JointType.PRISMATIC:
+                    if joints[i].type == rkc.JntType.PRISMATIC:
                         j_mat[:3, i] = j_axis[i, :]
                 return tcp_gl_pos, tcp_gl_rotmat, j_mat
             else:

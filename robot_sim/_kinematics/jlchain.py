@@ -113,8 +113,8 @@ class JLChain(object):
             jnt_pos = np.zeros((self.n_dof, 3))
             jnt_motion_ax = np.zeros((self.n_dof, 3))
             for i in range(self.tcp_jnt_id + 1):
-                jnt_motion_ax[i, :] = homomat[:3, :3] @ self.jnts[i].loc_motion_axis
-                if self.jnts[i].type == rkc.JointType.REVOLUTE:
+                jnt_motion_ax[i, :] = homomat[:3, :3] @ self.jnts[i].loc_motion_ax
+                if self.jnts[i].type == rkc.JntType.REVOLUTE:
                     jnt_pos[i, :] = homomat[:3, 3] + homomat[:3, :3] @ self.jnts[i].loc_pos
                 homomat = homomat @ self.jnts[i].get_motion_homomat(motion_val=jnt_vals[i])
             tcp_gl_homomat = homomat @ self.tcp_loc_homomat
@@ -123,11 +123,11 @@ class JLChain(object):
             if toggle_jac:
                 j_mat = np.zeros((6, self.n_dof))
                 for i in range(self.tcp_jnt_id + 1):
-                    if self.jnts[i].type == rkc.JointType.REVOLUTE:
+                    if self.jnts[i].type == rkc.JntType.REVOLUTE:
                         vec_jnt2tcp = tcp_gl_pos - jnt_pos[i, :]
                         j_mat[:3, i] = np.cross(jnt_motion_ax[i, :], vec_jnt2tcp)
                         j_mat[3:6, i] = jnt_motion_ax[i, :]
-                    if self.jnts[i].type == rkc.JointType.PRISMATIC:
+                    if self.jnts[i].type == rkc.JntType.PRISMATIC:
                         j_mat[:3, i] = jnt_motion_ax[i, :]
                 return tcp_gl_pos, tcp_gl_rotmat, j_mat
             else:
@@ -144,11 +144,11 @@ class JLChain(object):
             if toggle_jac:
                 j_mat = np.zeros((6, self.n_dof))
                 for i in range(self.tcp_jnt_id + 1):
-                    if self.jnts[i].type == rkc.JointType.REVOLUTE:
+                    if self.jnts[i].type == rkc.JntType.REVOLUTE:
                         vec_jnt2tcp = tcp_gl_pos - self.jnts[i].gl_pos_q
                         j_mat[:3, i] = np.cross(self.jnts[i].gl_motion_ax, vec_jnt2tcp)
                         j_mat[3:6, i] = self.jnts[i].gl_motion_ax
-                    if self.jnts[i].type == rkc.JointType.PRISMATIC:
+                    if self.jnts[i].type == rkc.JntType.PRISMATIC:
                         j_mat[:3, i] = self.jnts[i].gl_motion_ax
                 return tcp_gl_pos, tcp_gl_rotmat, j_mat
             else:
@@ -216,13 +216,13 @@ class JLChain(object):
         self.anchor.rotmat = rotmat
         return self.go_given_conf(jnt_vals=self.get_joint_values())
 
-    def finalize(self, ik_solver='d', **kwargs):
+    def finalize(self, ik_solver=None, **kwargs):
         """
         ddik is both fast and has high success rate, but it required prebuilding a data file.
         tracik is also fast and reliable, but it is a bit slower and energe-intensive.
         pinv_wc is fast but has low success rate. it is used as a backbone for ddik.
         sqpss has high success rate but is very slow.
-        :param ik_solver: 'd' for ddik; 'n' for numik.pinv_wc; 'o' for optik.sqpss; 't' for tracik
+        :param ik_solver: 'd' for ddik; 'n' for numik.pinv_wc; 'o' for optik.sqpss; 't' for tracik; default: None
         :**kwargs: path for DDIKSolver
         :return:
         author: weiwei
@@ -232,10 +232,7 @@ class JLChain(object):
         self.go_home()
         if ik_solver == 'd':
             path = kwargs.get('path', os.getcwd())
-            if path is not None:
-                self._ik_solver = rkd.DDIKSolver(self, path)
-            else:
-                raise KeyError("Path for saving the ddik data is not specified.")
+            self._ik_solver = rkd.DDIKSolver(self, path)
 
     def set_tcp(self, tcp_joint_id=None, tcp_loc_pos=None, tcp_loc_rotmat=None):
         if tcp_joint_id is not None:
@@ -250,8 +247,12 @@ class JLChain(object):
         return tcp_gl_pos, tcp_gl_rotmat
 
     def cvt_tcp_loc_to_gl(self):
-        gl_pos = self.jnts[self.tcp_jnt_id].gl_pos_q + self.jnts[self.tcp_jnt_id].gl_rotmat_q @ self.tcp_loc_pos
-        gl_rotmat = self.jnts[self.tcp_jnt_id].gl_rotmat_q @ self.tcp_loc_rotmat
+        if self.n_dof >= 1:
+            gl_pos = self.jnts[self.tcp_jnt_id].gl_pos_q + self.jnts[self.tcp_jnt_id].gl_rotmat_q @ self.tcp_loc_pos
+            gl_rotmat = self.jnts[self.tcp_jnt_id].gl_rotmat_q @ self.tcp_loc_rotmat
+        else:
+            gl_pos = self.anchor.pos + self.anchor.rotmat @ self.tcp_loc_pos
+            gl_rotmat = self.anchor.rotmat @ self.tcp_loc_rotmat
         return (gl_pos, gl_rotmat)
 
     def cvt_posrot_in_tcp_to_gl(self,
@@ -386,27 +387,27 @@ if __name__ == "__main__":
 
     jlc = JLChain(n_dof=6)
     jlc.jnts[0].loc_pos = np.array([0, 0, 0])
-    jlc.jnts[0].loc_motion_axis = np.array([0, 0, 1])
+    jlc.jnts[0].loc_motion_ax = np.array([0, 0, 1])
     jlc.jnts[0].motion_rng = np.array([-np.pi / 2, np.pi / 2])
-    # jlc.jnts[1].change_type(rkc.JointType.PRISMATIC)
+    # jlc.jnts[1].change_type(rkc.JntType.PRISMATIC)
     jlc.jnts[1].loc_pos = np.array([0, 0, .05])
-    jlc.jnts[1].loc_motion_axis = np.array([0, 1, 0])
+    jlc.jnts[1].loc_motion_ax = np.array([0, 1, 0])
     jlc.jnts[1].motion_rng = np.array([-np.pi / 2, np.pi / 2])
     jlc.jnts[2].loc_pos = np.array([0, 0, .2])
-    jlc.jnts[2].loc_motion_axis = np.array([0, 1, 0])
+    jlc.jnts[2].loc_motion_ax = np.array([0, 1, 0])
     jlc.jnts[2].motion_rng = np.array([-np.pi, np.pi])
     jlc.jnts[3].loc_pos = np.array([0, 0, .2])
-    jlc.jnts[3].loc_motion_axis = np.array([0, 0, 1])
+    jlc.jnts[3].loc_motion_ax = np.array([0, 0, 1])
     jlc.jnts[3].motion_rng = np.array([-np.pi / 2, np.pi / 2])
     jlc.jnts[4].loc_pos = np.array([0, 0, .1])
-    jlc.jnts[4].loc_motion_axis = np.array([0, 1, 0])
+    jlc.jnts[4].loc_motion_ax = np.array([0, 1, 0])
     jlc.jnts[4].motion_rng = np.array([-np.pi / 2, np.pi / 2])
     jlc.jnts[5].loc_pos = np.array([0, 0, .05])
-    jlc.jnts[5].loc_motion_axis = np.array([0, 0, 1])
+    jlc.jnts[5].loc_motion_ax = np.array([0, 0, 1])
     jlc.jnts[5].motion_rng = np.array([-np.pi / 2, np.pi / 2])
     jlc.tcp_loc_pos = np.array([0, 0, .01])
     jlc.finalize()
-    # rkmg.gen_jlc_stick(jlc, stick_rgba=bc.navy_blue, toggle_tcp_frame=True,
+    # rkmg.gen_jlc_stick(jlc, stick_rgba=bc.navy_blue, tgl_tcp_frame=True,
     #                    toggle_joint_frame=True).attach_to(base)
     seed_jnt_vals = jlc.get_joint_values()
 
@@ -433,7 +434,7 @@ if __name__ == "__main__":
                 num_win += 1
                 # mgm.gen_frame(pos=tgt_pos, rotmat=tgt_rotmat).attach_to(base)
                 # jlc.forward_kinematics(jnt_vals=joint_values_with_dbg_info[1], update=True, toggle_jac=False)
-                # rkmg.gen_jlc_stick(jlc, stick_rgba=bc.navy_blue, toggle_tcp_frame=True,
+                # rkmg.gen_jlc_stick(jlc, stick_rgba=bc.navy_blue, tgl_tcp_frame=True,
                 #        toggle_joint_frame=True).attach_to(base)
                 # base.run()
         else:

@@ -43,14 +43,18 @@ lime = np.array([0, 1, 0, 1])
 gold = np.array((1.0, 0.8431372549019608, 0.0, 1.0))
 yellow_green = np.array((0.6039215686274509, 0.803921568627451, 0.19607843137254902, 1.0))
 # default values
-joint_child_rgba = silver_gray
-joint_parent_rgba = steel_gray
+jnt_child_rgba = silver_gray
+jnt_parent_rgba = steel_gray
 link_stick_rgba = chocolate
 # default color mats
 rgb_mat = np.column_stack((red[:3], green[:3], blue[:3]))
 myc_mat = np.column_stack((magenta[:3], yellow[:3], cyan[:3]))
 tld_mat = np.column_stack((tomato[:3], lawn_green[:3], deep_sky_blue[:3]))  # carrot orange, olive, navy blue
 dyo_mat = np.column_stack((deep_pink[:3], yellow_green[:3], oriental_blue[:3]))  # carrot orange, olive, navy blue
+
+x_ax = np.array([1, 0, 0])
+y_ax = np.array([0, 1, 0])
+z_ax = np.array([0, 0, 1])
 
 if __name__ == '__main__':
     def convert_mcolor_to_rgba(mcolor_name):

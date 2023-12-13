@@ -504,8 +504,8 @@ def gen_dashed_stick(spos=np.array([0, 0, 0]),
     :param spos:
     :param epos:
     :param radius:
-    :param len_solid: axis_length of the solid section, 1*major_radius by default
-    :param len_interval: axis_length of the interval between two solids, 1.5*major_radius by default
+    :param len_solid: ax_length of the solid section, 1*major_radius by default
+    :param len_interval: ax_length of the interval between two solids, 1.5*major_radius by default
     :param rgba:
     :return:
     author: weiwei
@@ -621,8 +621,8 @@ def gen_dashed_arrow(spos=np.array([0, 0, 0]),
     :param spos:
     :param epos:
     :param stick_radius:
-    :param len_solid: axis_length of the solid section, 1*major_radius by default
-    :param len_interval: axis_length of the empty section, 1.5*major_radius by default
+    :param len_solid: ax_length of the solid section, 1*major_radius by default
+    :param len_interval: ax_length of the empty section, 1.5*major_radius by default
     :param rgba:
     :return:
     author: weiwei
@@ -641,25 +641,25 @@ def gen_dashed_arrow(spos=np.array([0, 0, 0]),
 
 def gen_frame(pos=np.array([0, 0, 0]),
               rotmat=np.eye(3),
-              axis_length=.1,
-              axis_radius=.0025,
+              ax_length=.1,
+              ax_radius=.0025,
               rgb_mat=None,
               alpha=None):
     """
     gen an axis for attaching
     :param pos:
     :param rotmat:
-    :param axis_length:
-    :param axis_radius:
+    :param ax_length:
+    :param ax_radius:
     :param rgb_mat: each column indicates the color of each base
     :param plotname:
     :return:
     author: weiwei
     date: 20161212tsukuba, 20191228osaka
     """
-    endx = pos + rotmat[:, 0] * axis_length
-    endy = pos + rotmat[:, 1] * axis_length
-    endz = pos + rotmat[:, 2] * axis_length
+    endx = pos + rotmat[:, 0] * ax_length
+    endy = pos + rotmat[:, 1] * ax_length
+    endz = pos + rotmat[:, 2] * ax_length
     if rgb_mat is None:
         rgbx = np.array([1, 0, 0])
         rgby = np.array([0, 1, 0])
@@ -679,15 +679,15 @@ def gen_frame(pos=np.array([0, 0, 0]),
     # - 20201202 change it to ModelCollection
     # + 20230813 changing to ModelCollection seems unnecessary
     frame_nodepath = NodePath("frame")
-    arrowx_trm = trm_factory.gen_arrow(spos=pos, epos=endx, stick_radius=axis_radius)
+    arrowx_trm = trm_factory.gen_arrow(spos=pos, epos=endx, stick_radius=ax_radius)
     arrowx_nodepath = da.trimesh_to_nodepath(arrowx_trm)
     arrowx_nodepath.setTransparency(TransparencyAttrib.MAlpha)
     arrowx_nodepath.setColor(rgbx[0], rgbx[1], rgbx[2], alphax)
-    arrowy_trm = trm_factory.gen_arrow(spos=pos, epos=endy, stick_radius=axis_radius)
+    arrowy_trm = trm_factory.gen_arrow(spos=pos, epos=endy, stick_radius=ax_radius)
     arrowy_nodepath = da.trimesh_to_nodepath(arrowy_trm)
     arrowy_nodepath.setTransparency(TransparencyAttrib.MAlpha)
     arrowy_nodepath.setColor(rgby[0], rgby[1], rgby[2], alphay)
-    arrowz_trm = trm_factory.gen_arrow(spos=pos, epos=endz, stick_radius=axis_radius)
+    arrowz_trm = trm_factory.gen_arrow(spos=pos, epos=endz, stick_radius=ax_radius)
     arrowz_nodepath = da.trimesh_to_nodepath(arrowz_trm)
     arrowz_nodepath.setTransparency(TransparencyAttrib.MAlpha)
     arrowz_nodepath.setColor(rgbz[0], rgbz[1], rgbz[2], alphaz)
@@ -700,24 +700,24 @@ def gen_frame(pos=np.array([0, 0, 0]),
 
 def gen_2d_frame(pos=np.array([0, 0, 0]),
                  rotmat=np.eye(3),
-                 axis_length=.1,
-                 axis_radius=.0025,
+                 ax_length=.1,
+                 ax_radius=.0025,
                  rgb_mat=None,
                  alpha=None):
     """
     gen an axis for attaching
     :param pos:
     :param rotmat:
-    :param axis_length:
-    :param axis_radius:
+    :param ax_length:
+    :param ax_radius:
     :param rgb_mat: each column indicates the color of each base
     :param plotname:
     :return:
     author: weiwei
     date: 20230913
     """
-    endx = pos + rotmat[:, 0] * axis_length
-    endy = pos + rotmat[:, 1] * axis_length
+    endx = pos + rotmat[:, 0] * ax_length
+    endy = pos + rotmat[:, 1] * ax_length
     if rgb_mat is None:
         rgbx = np.array([1, 0, 0])
         rgby = np.array([0, 1, 0])
@@ -734,11 +734,11 @@ def gen_2d_frame(pos=np.array([0, 0, 0]),
     # - 20201202 change it to ModelCollection
     # + 20230813 changing to ModelCollection seems unnecessary
     frame_nodepath = NodePath("frame")
-    arrowx_trm = trm_factory.gen_arrow(spos=pos, epos=endx, stick_radius=axis_radius)
+    arrowx_trm = trm_factory.gen_arrow(spos=pos, epos=endx, stick_radius=ax_radius)
     arrowx_nodepath = da.trimesh_to_nodepath(arrowx_trm)
     arrowx_nodepath.setTransparency(TransparencyAttrib.MAlpha)
     arrowx_nodepath.setColor(rgbx[0], rgbx[1], rgbx[2], alphax)
-    arrowy_trm = trm_factory.gen_arrow(spos=pos, epos=endy, stick_radius=axis_radius)
+    arrowy_trm = trm_factory.gen_arrow(spos=pos, epos=endy, stick_radius=ax_radius)
     arrowy_nodepath = da.trimesh_to_nodepath(arrowy_trm)
     arrowy_nodepath.setTransparency(TransparencyAttrib.MAlpha)
     arrowy_nodepath.setColor(rgby[0], rgby[1], rgby[2], alphay)
@@ -779,16 +779,16 @@ def gen_wireframe(vertices,
 
 def gen_rgb_frame(pos=np.array([0, 0, 0]),
                   rotmat=np.eye(3),
-                  axis_length=.1,
-                  axis_radius=.0025,
+                  ax_length=.1,
+                  ax_radius=.0025,
                   alpha=None):
     """
     gen an axis for attaching, use red for x, blue for y, green for z
     this is a helper function to gen_frame
     :param pos:
     :param rotmat:
-    :param axis_length:
-    :param axis_radius:
+    :param ax_length:
+    :param ax_radius:
     :param rgb_mat: each column indicates the color of each base
     :return:
     author: weiwei
@@ -796,24 +796,24 @@ def gen_rgb_frame(pos=np.array([0, 0, 0]),
     """
     return gen_frame(pos=pos,
                      rotmat=rotmat,
-                     axis_length=axis_length,
-                     axis_radius=axis_radius,
+                     ax_length=ax_length,
+                     ax_radius=ax_radius,
                      rgb_mat=cst.rgb_mat,
                      alpha=alpha)
 
 
 def gen_myc_frame(pos=np.array([0, 0, 0]),
                   rotmat=np.eye(3),
-                  axis_length=.1,
-                  axis_radius=.0025,
+                  ax_length=.1,
+                  ax_radius=.0025,
                   alpha=None):
     """
     gen an axis for attaching, use magne for x, yellow for y, cyan for z
     this is a helper function to gen_frame
     :param pos:
     :param rotmat:
-    :param axis_length:
-    :param axis_radius:
+    :param ax_length:
+    :param ax_radius:
     :param rgb_mat: each column indicates the color of each base
     :return:
     author: weiwei
@@ -821,16 +821,16 @@ def gen_myc_frame(pos=np.array([0, 0, 0]),
     """
     return gen_frame(pos=pos,
                      rotmat=rotmat,
-                     axis_length=axis_length,
-                     axis_radius=axis_radius,
+                     ax_length=ax_length,
+                     ax_radius=ax_radius,
                      rgb_mat=cst.myc_mat,
                      alpha=alpha)
 
 
 def gen_dashed_frame(pos=np.array([0, 0, 0]),
                      rotmat=np.eye(3),
-                     axis_length=.1,
-                     axis_radius=.0025,
+                     ax_length=.1,
+                     ax_radius=.0025,
                      len_solid=None,
                      len_interval=None,
                      rgb_mat=None,
@@ -839,18 +839,18 @@ def gen_dashed_frame(pos=np.array([0, 0, 0]),
     gen an axis for attaching
     :param pos:
     :param rotmat:
-    :param axis_length:
-    :param axis_radius:
-    :param len_solid: axis_length of the solid section, 1*major_radius by default
-    :param len_interval: axis_length of the empty section, 1.5*major_radius by default
+    :param ax_length:
+    :param ax_radius:
+    :param len_solid: ax_length of the solid section, 1*major_radius by default
+    :param len_interval: ax_length of the empty section, 1.5*major_radius by default
     :param rgb_mat: each column indicates the color of each base
     :return:
     author: weiwei
     date: 20200630osaka
     """
-    endx = pos + rotmat[:, 0] * axis_length
-    endy = pos + rotmat[:, 1] * axis_length
-    endz = pos + rotmat[:, 2] * axis_length
+    endx = pos + rotmat[:, 0] * ax_length
+    endy = pos + rotmat[:, 1] * ax_length
+    endz = pos + rotmat[:, 2] * ax_length
     if rgb_mat is None:
         rgbx = np.array([1, 0, 0])
         rgby = np.array([0, 1, 0])
@@ -870,17 +870,17 @@ def gen_dashed_frame(pos=np.array([0, 0, 0]),
     # - 20201202 change it toModelCollection
     # + 20230813 changing to ModelCollection seems unnecessary
     frame_nodepath = NodePath("dash_frame")
-    arrowx_trm = trm_factory.gen_dasharrow(spos=pos, epos=endx, stick_radius=axis_radius, len_solid=len_solid,
+    arrowx_trm = trm_factory.gen_dasharrow(spos=pos, epos=endx, stick_radius=ax_radius, len_solid=len_solid,
                                            len_interval=len_interval)
     arrowx_nodepath = da.trimesh_to_nodepath(arrowx_trm)
     arrowx_nodepath.setTransparency(TransparencyAttrib.MDual)
     arrowx_nodepath.setColor(rgbx[0], rgbx[1], rgbx[2], alphax)
-    arrowy_trm = trm_factory.gen_dasharrow(spos=pos, epos=endy, stick_radius=axis_radius, len_solid=len_solid,
+    arrowy_trm = trm_factory.gen_dasharrow(spos=pos, epos=endy, stick_radius=ax_radius, len_solid=len_solid,
                                            len_interval=len_interval)
     arrowy_nodepath = da.trimesh_to_nodepath(arrowy_trm)
     arrowy_nodepath.setTransparency(TransparencyAttrib.MDual)
     arrowy_nodepath.setColor(rgby[0], rgby[1], rgby[2], alphay)
-    arrowz_trm = trm_factory.gen_dasharrow(spos=pos, epos=endz, stick_radius=axis_radius, len_solid=len_solid,
+    arrowz_trm = trm_factory.gen_dasharrow(spos=pos, epos=endz, stick_radius=ax_radius, len_solid=len_solid,
                                            len_interval=len_interval)
     arrowz_nodepath = da.trimesh_to_nodepath(arrowz_trm)
     arrowz_nodepath.setTransparency(TransparencyAttrib.MDual)
@@ -894,8 +894,8 @@ def gen_dashed_frame(pos=np.array([0, 0, 0]),
 
 def gen_2d_dashed_frame(pos=np.array([0, 0, 0]),
                         rotmat=np.eye(3),
-                        axis_length=.1,
-                        axis_radius=.0025,
+                        ax_length=.1,
+                        ax_radius=.0025,
                         len_solid=None,
                         len_interval=None,
                         rgb_mat=None,
@@ -904,17 +904,17 @@ def gen_2d_dashed_frame(pos=np.array([0, 0, 0]),
     gen an axis for attaching
     :param pos:
     :param rotmat:
-    :param axis_length:
-    :param axis_radius:
-    :param len_solid: axis_length of the solid section, 1*major_radius by default
-    :param len_interval: axis_length of the empty section, 1.5*major_radius by default
+    :param ax_length:
+    :param ax_radius:
+    :param len_solid: ax_length of the solid section, 1*major_radius by default
+    :param len_interval: ax_length of the empty section, 1.5*major_radius by default
     :param rgb_mat: each column indicates the color of each base
     :return:
     author: weiwei
     date: 20200630osaka
     """
-    endx = pos + rotmat[:, 0] * axis_length
-    endy = pos + rotmat[:, 1] * axis_length
+    endx = pos + rotmat[:, 0] * ax_length
+    endy = pos + rotmat[:, 1] * ax_length
     if rgb_mat is None:
         rgbx = np.array([1, 0, 0])
         rgby = np.array([0, 1, 0])
@@ -931,12 +931,12 @@ def gen_2d_dashed_frame(pos=np.array([0, 0, 0]),
     # - 20201202 change it toModelCollection
     # + 20230813 changing to ModelCollection seems unnecessary
     frame_nodepath = NodePath("dash_frame")
-    arrowx_trm = trm_factory.gen_dasharrow(spos=pos, epos=endx, stick_radius=axis_radius, len_solid=len_solid,
+    arrowx_trm = trm_factory.gen_dasharrow(spos=pos, epos=endx, stick_radius=ax_radius, len_solid=len_solid,
                                            len_interval=len_interval)
     arrowx_nodepath = da.trimesh_to_nodepath(arrowx_trm)
     arrowx_nodepath.setTransparency(TransparencyAttrib.MDual)
     arrowx_nodepath.setColor(rgbx[0], rgbx[1], rgbx[2], alphax)
-    arrowy_trm = trm_factory.gen_dasharrow(spos=pos, epos=endy, stick_radius=axis_radius, len_solid=len_solid,
+    arrowy_trm = trm_factory.gen_dasharrow(spos=pos, epos=endy, stick_radius=ax_radius, len_solid=len_solid,
                                            len_interval=len_interval)
     arrowy_nodepath = da.trimesh_to_nodepath(arrowy_trm)
     arrowy_nodepath.setTransparency(TransparencyAttrib.MDual)

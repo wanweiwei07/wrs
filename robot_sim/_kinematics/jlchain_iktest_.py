@@ -122,8 +122,8 @@ class JLChain(object):
             j_pos = np.zeros((self.n_dof, 3))
             j_axis = np.zeros((self.n_dof, 3))
             for i in range(self.tcp_jnt_id + 1):
-                j_axis[i, :] = homomat[:3, :3] @ self.jnts[i].loc_motion_axis
-                if self.jnts[i].type == rkc.JointType.REVOLUTE:
+                j_axis[i, :] = homomat[:3, :3] @ self.jnts[i].loc_motion_ax
+                if self.jnts[i].type == rkc.JntType.REVOLUTE:
                     j_pos[i, :] = homomat[:3, 3] + homomat[:3, :3] @ self.jnts[i].loc_pos
                 homomat = homomat @ self.jnts[i].get_motion_homomat(motion_val=jnt_vals[i])
             tcp_gl_homomat = homomat @ self.tcp_loc_homomat
@@ -132,7 +132,7 @@ class JLChain(object):
             if toggle_jac:
                 j_mat = np.zeros((6, self.n_dof))
                 for i in range(self.tcp_jnt_id + 1):
-                    if self.jnts[i].type == rkc.JointType.REVOLUTE:
+                    if self.jnts[i].type == rkc.JntType.REVOLUTE:
                         vec_jnt2tcp = tcp_gl_pos - j_pos[i, :]
                         j_mat[:3, i] = np.cross(j_axis[i, :], vec_jnt2tcp)
                         j_mat[3:6, i] = j_axis[i, :]
@@ -140,7 +140,7 @@ class JLChain(object):
                             gm.gen_arrow(spos=j_pos[i, :],
                                          epos=j_pos[i, :] + .2 * j_axis[i, :],
                                          rgba=bc.black).attach_to(base)
-                    if self.jnts[i].type == rkc.JointType.PRISMATIC:
+                    if self.jnts[i].type == rkc.JntType.PRISMATIC:
                         j_mat[:3, i] = j_axis[i, :]
                 return tcp_gl_pos, tcp_gl_rotmat, j_mat
             else:
@@ -157,7 +157,7 @@ class JLChain(object):
         if toggle_jac:
             j_mat = np.zeros((6, self.n_dof))
             for i in range(self.tcp_jnt_id + 1):
-                if self.jnts[i].type == rkc.JointType.REVOLUTE:
+                if self.jnts[i].type == rkc.JntType.REVOLUTE:
                     vec_jnt2tcp = tcp_gl_pos - self.jnts[i].gl_pos_q
                     j_mat[:3, i] = np.cross(self.jnts[i].gl_motion_ax, vec_jnt2tcp)
                     j_mat[3:6, i] = self.jnts[i].gl_motion_ax
@@ -165,7 +165,7 @@ class JLChain(object):
                         gm.gen_arrow(spos=self.jnts[i].gl_pos_q,
                                      epos=self.jnts[i].gl_pos_q + .3 * self.jnts[i].gl_motion_ax,
                                      rgba=bc.black).attach_to(base)
-                if self.jnts[i].type == rkc.JointType.PRISMATIC:
+                if self.jnts[i].type == rkc.JntType.PRISMATIC:
                     j_mat[:3, i] = self.jnts[i].gl_motion_ax
             return tcp_gl_rotmat, tcp_gl_rotmat, j_mat
         else:
@@ -444,22 +444,22 @@ if __name__ == "__main__":
 
     jlc = JLChain(n_dof=6)
     jlc.jnts[0].loc_pos = np.array([0, 0, 0])
-    jlc.jnts[0].loc_motion_axis = np.array([0, 0, 1])
+    jlc.jnts[0].loc_motion_ax = np.array([0, 0, 1])
     jlc.jnts[0].motion_rng = np.array([-np.pi / 2, np.pi / 2])
     jlc.jnts[1].loc_pos = np.array([0, 0, .05])
-    jlc.jnts[1].loc_motion_axis = np.array([0, 1, 0])
+    jlc.jnts[1].loc_motion_ax = np.array([0, 1, 0])
     jlc.jnts[1].motion_rng = np.array([-np.pi / 2, np.pi / 2])
     jlc.jnts[2].loc_pos = np.array([0, 0, .2])
-    jlc.jnts[2].loc_motion_axis = np.array([0, 1, 0])
+    jlc.jnts[2].loc_motion_ax = np.array([0, 1, 0])
     jlc.jnts[2].motion_rng = np.array([-np.pi, np.pi])
     jlc.jnts[3].loc_pos = np.array([0, 0, .2])
-    jlc.jnts[3].loc_motion_axis = np.array([0, 0, 1])
+    jlc.jnts[3].loc_motion_ax = np.array([0, 0, 1])
     jlc.jnts[3].motion_rng = np.array([-np.pi / 2, np.pi / 2])
     jlc.jnts[4].loc_pos = np.array([0, 0, .1])
-    jlc.jnts[4].loc_motion_axis = np.array([0, 1, 0])
+    jlc.jnts[4].loc_motion_ax = np.array([0, 1, 0])
     jlc.jnts[4].motion_rng = np.array([-np.pi / 2, np.pi / 2])
     jlc.jnts[5].loc_pos = np.array([0, 0, .05])
-    jlc.jnts[5].loc_motion_axis = np.array([0, 0, 1])
+    jlc.jnts[5].loc_motion_ax = np.array([0, 0, 1])
     jlc.jnts[5].motion_rng = np.array([-np.pi / 2, np.pi / 2])
     jlc.tcp_loc_pos = np.array([0, 0, .01])
     jlc.reinitialize()

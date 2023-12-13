@@ -42,9 +42,9 @@ if __name__ == '__main__':
 
     jlc = lib_jlc.JLChain(n_dof=2)
     jlc.jnts[1].loc_pos = np.array([0, 0, 0])
-    jlc.jnts[1].loc_motion_axis = np.array([1, 0, 0])
+    jlc.jnts[1].loc_motion_ax = np.array([1, 0, 0])
     jlc.jnts[2].loc_pos = np.array([0, 0, .1])
-    jlc.jnts[2].loc_motion_axis = np.array([1, 0, 0])
+    jlc.jnts[2].loc_motion_ax = np.array([1, 0, 0])
     jlc.tcp_loc_pos = np.array([0, 0, .1])
     jlc.finalize()
 

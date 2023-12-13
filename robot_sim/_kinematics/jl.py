@@ -96,10 +96,19 @@ class Anchor(object):
         self.name = name
         self.pos = pos
         self.rotmat = rotmat
+        self._lnk = Link()
 
     @property
     def homomat(self):
         return rm.homomat_from_posrot(self.pos, self.rotmat)
+
+    @property
+    def lnk(self):
+        return self._lnk
+
+    @lnk.setter
+    def lnk(self, value):
+        self._lnk = value
 
 
 class Joint(object):
@@ -110,7 +119,7 @@ class Joint(object):
 
     def __init__(self,
                  name="auto",
-                 type=rkc.JointType.REVOLUTE,
+                 type=rkc.JntType.REVOLUTE,
                  loc_pos=np.zeros(3),
                  loc_rotmat=np.eye(3),
                  loc_motion_ax=np.array([0, 1, 0]),
@@ -118,17 +127,17 @@ class Joint(object):
         self.name = name
         self.loc_pos = loc_pos
         self.loc_rotmat = loc_rotmat
-        self.loc_motion_axis = loc_motion_ax
+        self.loc_motion_ax = loc_motion_ax
         self.motion_rng = motion_rng
         # the following parameters will be updated automatically
         self._motion_val = 0
         self._gl_pos_0 = self.loc_pos
         self._gl_rotmat_0 = self.loc_rotmat
-        self._gl_motion_ax = self.loc_motion_axis
+        self._gl_motion_ax = self.loc_motion_ax
         self._gl_pos_q = self._gl_pos_0
         self._gl_rotmat_q = self._gl_rotmat_0
         # the following parameter has a setter function
-        self._link = Link()
+        self._lnk = Link()
         # the following parameter should not be changed
         self._type = type
 
@@ -173,18 +182,18 @@ class Joint(object):
         return self._type
 
     @property
-    def link(self):
-        return self._link
+    def lnk(self):
+        return self._lnk
 
-    @link.setter
-    def link(self, value):
-        self._link = value
+    @lnk.setter
+    def lnk(self, value):
+        self._lnk = value
 
-    def change_type(self, type: rkc.JointType, motion_rng: np.ndarray = None):
+    def change_type(self, type: rkc.JntType, motion_rng: np.ndarray = None):
         if motion_rng is None:
-            if type == rkc.JointType.PRISMATIC:
+            if type == rkc.JntType.PRISMATIC:
                 motion_rng = np.array([-.1, .1])
-            elif type == rkc.JointType.REVOLUTE:
+            elif type == rkc.JntType.REVOLUTE:
                 motion_rng = np.array([-np.pi, np.pi])
         self._type = type
         self.motion_rng = motion_rng
@@ -196,10 +205,10 @@ class Joint(object):
 
     def set_motion_value(self, motion_value):
         self._motion_val = motion_value
-        if self.type == rkc.JointType.REVOLUTE:
+        if self.type == rkc.JntType.REVOLUTE:
             self._gl_pos_q = self._gl_pos_0
             self._gl_rotmat_q = rm.rotmat_from_axangle(self._gl_motion_ax, self._motion_val) @ self._gl_rotmat_0
-        elif self.type == rkc.JointType.PRISMATIC:
+        elif self.type == rkc.JntType.PRISMATIC:
             self._gl_pos_q = self._gl_pos_0 + self._gl_motion_ax * self._motion_val
             self._gl_rotmat_q = self._gl_rotmat_0
 
@@ -213,46 +222,19 @@ class Joint(object):
         """
         self._gl_pos_0 = pos + rotmat @ self.loc_pos
         self._gl_rotmat_0 = rotmat @ self.loc_rotmat
-        self._gl_motion_ax = self._gl_rotmat_0 @ self.loc_motion_axis
+        self._gl_motion_ax = self._gl_rotmat_0 @ self.loc_motion_ax
         self.set_motion_value(motion_value=motion_val)
-        if self._link is not None:
-            self._link.update_globals(self.gl_pos_q, self.gl_rotmat_q)
+        if self._lnk is not None:
+            self._lnk.update_globals(self.gl_pos_q, self.gl_rotmat_q)
 
     def get_motion_homomat(self, motion_val=0):
         self.assert_motion_val(val=motion_val)
-        if self.type == rkc.JointType.REVOLUTE:
-            rotmat_by_motion = rm.rotmat_from_axangle(self.loc_motion_axis, motion_val)
+        if self.type == rkc.JntType.REVOLUTE:
+            rotmat_by_motion = rm.rotmat_from_axangle(self.loc_motion_ax, motion_val)
             return self.loc_homomat @ rm.homomat_from_posrot(pos=np.zeros(3), rotmat=rotmat_by_motion)
-        elif self.type == rkc.JointType.PRISMATIC:
-            pos_by_motion = self.loc_motion_axis * motion_val
+        elif self.type == rkc.JntType.PRISMATIC:
+            pos_by_motion = self.loc_motion_ax * motion_val
             return self.loc_homomat @ rm.homomat_from_posrot(pos=pos_by_motion, rotmat=np.eye(3))
-
-
-# def create_link(mesh_file: str,
-#                 name="auto",
-#                 pos=np.zeros(3),
-#                 loc_rotmat=np.eye(3),
-#                 com=np.zeros(3),
-#                 inertia=np.eye(3),
-#                 mass=0,
-#                 rgba=bc.link_stick_rgba):
-#     objcm = mcm.CollisionModel(initor=mesh_file)
-#     return Link(name=name,
-#                 pos=pos,
-#                 loc_rotmat=loc_rotmat,
-#                 com=com,
-#                 inertia=inertia,
-#                 mass=mass,
-#                 collision_model=objcm,
-#                 rgba=rgba)
-
-
-def create_joint_with_link(joint_name="auto",
-                           joint_type=rkc.JointType.REVOLUTE,
-                           link_name="auto"):
-    jnt = Joint(joint_name, type=joint_type)
-    jnt.link = mcm.CollisionModel(name=link_name)
-    return jnt
 
 
 if __name__ == '__main__':
@@ -277,7 +259,7 @@ if __name__ == '__main__':
     # print(result_homomat)
     # mgm.gen_myc_frame(pos=result_homomat[:3, 3], rotmat=result_homomat[:3, :3]).attach_to(base)
 
-    jnt.link.cmodel = mcm.CollisionModel("../../basis/objects/or2fg7_base.stl")
-    rkmg.gen_joint(jnt, toggle_link_mesh=True).attach_to(base)
-    jnt.link.cmodel.show_cdprimitive()
+    jnt.lnk.cmodel = mcm.CollisionModel("../../basis/objects/or2fg7_base.stl")
+    rkmg.gen_jnt(jnt, tgl_lnk_mesh=True).attach_to(base)
+    jnt.lnk.cmodel.show_cdprimitive()
     base.run()
