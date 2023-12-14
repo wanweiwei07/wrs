@@ -61,26 +61,26 @@ def update_pose(pdotrmgeom, objcm):
 #     bulletplnode.addShape(bulletplshape)
 #     return bulletplnode
 
-def is_collided(objcm_list0, objcm_list1, toggle_contacts=True):
+def is_collided(cmodel_list0, cmodel_list1, toggle_contacts=True):
     """
     check if two objcm lists are collided
-    :param objcm_list0: an instance of OdeTriMeshGeom
-    :param objcm_list1: an instance of OdeTriMeshGeom
+    :param cmodel_list0: an instance of OdeTriMeshGeom
+    :param cmodel_list1: an instance of OdeTriMeshGeom
     :param toggle_contactpoints: True default
     :return:
     author: weiwei
     date: 20210118, 20211215, 20230814
     """
-    if not isinstance(objcm_list0, list):
-        objcm_list0 = [objcm_list0]
-    if not isinstance(objcm_list1, list):
-        objcm_list1 = [objcm_list1]
-    for objcm0 in objcm_list0:
-        for objcm1 in objcm_list1:
+    if not isinstance(cmodel_list0, list):
+        cmodel_list0 = [cmodel_list0]
+    if not isinstance(cmodel_list1, list):
+        cmodel_list1 = [cmodel_list1]
+    for objcm0 in cmodel_list0:
+        for objcm1 in cmodel_list1:
             contact_entry = ode_util.collide(objcm0.cdmesh, objcm1.cdmesh, 10)
             contact_points = np.asarray([da.pdvec3_to_npvec3(point) for point in contact_entry.getContactPoints()])
             if toggle_contacts:
-                return (True, contact_points) if len(contact_points) > 0 else (False, contact_points)
+                return True, contact_points if len(contact_points) > 0 else (False, contact_points)
             else:
                 return True if len(contact_points) > 0 else False
 

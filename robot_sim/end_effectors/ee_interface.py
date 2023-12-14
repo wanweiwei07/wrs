@@ -82,24 +82,20 @@ class EEInterface(object):
         return_val = self.cc.is_collided(obstacle_list=obstacle_list, otherrobot_list=otherrobot_list)
         return return_val
 
-    def is_mesh_collided(self, objcm_list=[], toggle_debug=False):
-        for i, cdelement in enumerate(self.all_cdelements):
-            pos = cdelement['gl_pos']
-            rotmat = cdelement['gl_rotmat']
-            self.cdmesh_collection.cm_list[i].set_pos(pos)
-            self.cdmesh_collection.cm_list[i].set_rotmat(rotmat)
-            iscollided, collided_points = self.cdmesh_collection.cm_list[i].is_mcdwith(objcm_list, True)
-            if iscollided:
-                if toggle_debug:
-                    print(self.cdmesh_collection.cm_list[i].get_homomat())
-                    self.cdmesh_collection.cm_list[i].show_cdmesh()
-                    for objcm in objcm_list:
-                        objcm.show_cdmesh()
-                    for point in collided_points:
-                        import modeling.geometric_model as gm
-                        gm.gen_sphere(point, radius=.001).attach_to(base)
-                    print("collided")
-                return True
+    def is_mesh_collided(self, cmodel_list=[], toggle_debug=False):
+        for i, cdme in enumerate(self.cdmesh_elements):
+            if cdme.cmodel is not None:
+                is_collided, collision_points = cdme.cmodel.is_mcdwith(cmodel_list, True)
+                if is_collided:
+                    if toggle_debug:
+                        cdme.show_cdmesh()
+                        for cmodel in cmodel_list:
+                            cmodel.show_cdmesh()
+                        for point in collision_points:
+                            import modeling.geometric_model as mgm
+                            mgm.gen_sphere(point, radius=.001).attach_to(base)
+                        print("mesh collided")
+                    return True
         return False
 
     def fix_to(self, pos, rotmat):
@@ -112,12 +108,15 @@ class EEInterface(object):
         self.cc.unshow_cdprimit()
 
     def show_cdmesh(self):
-        for i, cdelement in enumerate(self.cc.cce_dict):
-            pos = cdelement['gl_pos']
-            rotmat = cdelement['gl_rotmat']
-            self.cdmesh_collection.cm_list[i].set_pos(pos)
-            self.cdmesh_collection.cm_list[i].set_rotmat(rotmat)
-        self.cdmesh_collection.show_cdmesh()
+        for i, cdme in enumerate(self.cdmesh_elements):
+            cdme.cmodel.show_cdmesh()
+
+        # for i, cdelement in enumerate(self.cc.cce_dict):
+        #     pos = cdelement['gl_pos']
+        #     rotmat = cdelement['gl_rotmat']
+        #     self.cdmesh_collection.cm_list[i].set_pos(pos)
+        #     self.cdmesh_collection.cm_list[i].set_rotmat(rotmat)
+        # self.cdmesh_collection.show_cdmesh()
 
     def unshow_cdmesh(self):
         self.cdmesh_collection.unshow_cdmesh()

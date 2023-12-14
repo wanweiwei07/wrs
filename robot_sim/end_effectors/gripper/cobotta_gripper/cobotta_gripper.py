@@ -41,8 +41,9 @@ class CobottaGripper(gp.GripperInterface):
         self.action_center_pos = np.array([0, 0, .05])
         # reinitialize
         self.jlc.finalize(ik_solver=None)
-        # collision detection
-        # self.all_cdelements = []
+        self.cdmesh_elements = [self.jlc.anchor.lnk,
+                                self.jlc.jnts[0].lnk,
+                                self.jlc.jnts[1].lnk]
         # self.enable_cc(toggle_cdprimit=enable_cc)
 
     # def enable_cc(self, toggle_cdprimit):
@@ -133,6 +134,6 @@ if __name__ == '__main__':
     grpr.fix_to(pos=np.array([0, .3, .2]), rotmat=rm.rotmat_from_axangle([1, 0, 0], .7))
     grpr.gen_meshmodel().attach_to(base)
     # grpr.gen_stickmodel().attach_to(base)
-    # grpr.show_cdmesh()
+    grpr.show_cdmesh()
     # grpr.show_cdprimit()
     base.run()
