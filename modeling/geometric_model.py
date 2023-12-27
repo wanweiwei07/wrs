@@ -233,7 +233,7 @@ def delay_geometry_decorator(method):
 
 def update_geometry_decorator(method):
     def wrapper(self, *args, **kwargs):
-        print(self._is_geometry_delayed)
+        # print(self._is_geometry_delayed)
         if self._is_geometry_delayed:
             self._pdndp.setPosQuat(da.npvec3_to_pdvec3(self.pos), da.npmat3_to_pdquat(self.rotmat))
             self._is_geometry_delayed = False
