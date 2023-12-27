@@ -104,10 +104,20 @@ class CobottaGripper(gp.GripperInterface):
                       tgl_tcp_frame=False,
                       tgl_jnt_frame=False,
                       rgba=None,
+                      tgl_cdprimitive=False,
+                      tgl_cdmesh=False,
                       name='mesh_model'):
         m_col = mmc.ModelCollection(name=name)
-        rkmg.gen_jlc_mesh(self.coupling, tgl_tcp_frame=False, tgl_jnt_frame=False).attach_to(m_col)
-        rkmg.gen_jlc_mesh(self.jlc, tgl_tcp_frame=False, tgl_jnt_frame=tgl_jnt_frame).attach_to(m_col)
+        rkmg.gen_jlc_mesh(self.coupling,
+                          tgl_tcp_frame=False,
+                          tgl_jnt_frame=False,
+                          tgl_cdmesh=tgl_cdmesh,
+                          tgl_cdprimitive=tgl_cdprimitive).attach_to(m_col)
+        rkmg.gen_jlc_mesh(self.jlc,
+                          tgl_tcp_frame=False,
+                          tgl_jnt_frame=tgl_jnt_frame,
+                          tgl_cdmesh=tgl_cdmesh,
+                          tgl_cdprimitive=tgl_cdprimitive).attach_to(m_col)
         if tgl_tcp_frame:
             action_center_gl_pos = self.rotmat.dot(self.action_center_pos) + self.pos
             action_center_gl_rotmat = self.rotmat.dot(self.action_center_rotmat)
@@ -129,11 +139,11 @@ if __name__ == '__main__':
     #     grpr.gen_meshmodel().attach_to(base)
     grpr = CobottaGripper(enable_cc=True)
     grpr.change_jaw_width(.013)
-    grpr.gen_meshmodel(tgl_tcp_frame=True, tgl_jnt_frame=True).attach_to(base)
+    grpr.gen_meshmodel(tgl_tcp_frame=True, tgl_jnt_frame=True, tgl_cdprimitive=True).attach_to(base)
     # grpr.gen_stickmodel(tgl_jnt_frame=True).attach_to(base)
     grpr.fix_to(pos=np.array([0, .3, .2]), rotmat=rm.rotmat_from_axangle([1, 0, 0], .7))
     grpr.gen_meshmodel().attach_to(base)
     # grpr.gen_stickmodel().attach_to(base)
-    grpr.show_cdmesh()
+    # grpr.show_cdmesh()
     # grpr.show_cdprimit()
     base.run()

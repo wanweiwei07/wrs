@@ -46,18 +46,22 @@ def gen_tcp_frame(spos,
     return m_col
 
 
-def gen_lnk_mesh(lnk,
-                 rgba=None,
-                 toggle_frame=False):
+def gen_lnk_gmesh(lnk, rgba=None, tgl_cdprimitive=False, tgl_cdmesh=False, tgl_frame=False):
     gmodel = mgm.GeometricModel()
     # if lnk.cmodel == None:
     #     raise ValueError("Collision model is unavailable.")
     # else:
     if lnk.cmodel is not None:
+        if tgl_cdmesh:
+            lnk.cmodel.show_cdmesh()
+        if tgl_cdprimitive:
+            lnk.cmodel.show_cdprimitive()
         lnk.cmodel.attach_copy_to(gmodel)
+        lnk.cmodel.unshow_cdmesh()
+        lnk.cmodel.unshow_cdprimitive()
         if rgba is not None:
             gmodel.rgba = rgba
-        if toggle_frame:
+        if tgl_frame:
             mgm.gen_frame(pos=lnk.gl_pos, rotmat=lnk.gl_rotmat).attach_to(gmodel)
     return gmodel
 
@@ -124,7 +128,7 @@ def gen_jnt(jnt,
                       ax_radius=frame_stick_radius,
                       ax_length=frame_stick_length).attach_to(m_col)
     if tgl_lnk_mesh and jnt.lnk is not None:
-        gen_lnk_mesh(jnt.lnk).attach_to(m_col)
+        gen_lnk_gmesh(jnt.lnk).attach_to(m_col)
     return m_col
 
 
@@ -183,13 +187,21 @@ def gen_jlc_mesh(jlc,
                  tgl_tcp_frame=False,
                  tgl_jnt_frame=False,
                  name='jlc_mesh_model',
-                 rgba=None):
+                 rgba=None,
+                 tgl_cdprimitive=False,
+                 tgl_cdmesh=False):
     m_col = mmc.ModelCollection(name=name)
-    gen_lnk_mesh(jlc.anchor.lnk, rgba=rgba).attach_to(m_col)
+    gen_lnk_gmesh(jlc.anchor.lnk,
+                  rgba=rgba,
+                  tgl_cdmesh=tgl_cdmesh,
+                  tgl_cdprimitive=tgl_cdprimitive).attach_to(m_col)
     if jlc.n_dof >= 1:
         for i in range(jlc.n_dof):
             if jlc.jnts[i].lnk is not None:
-                gen_lnk_mesh(jlc.jnts[i].lnk, rgba=rgba).attach_to(m_col)
+                gen_lnk_gmesh(jlc.jnts[i].lnk,
+                              rgba=rgba,
+                              tgl_cdmesh=tgl_cdmesh,
+                              tgl_cdprimitive=tgl_cdprimitive).attach_to(m_col)
     if tgl_tcp_frame:
         if jlc.n_dof >= 1:
             spos = jlc.jnts[jlc.tcp_jnt_id].gl_pos_q
