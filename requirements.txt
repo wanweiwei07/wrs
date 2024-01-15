@@ -1,7 +1,7 @@
 panda3d>=1.10.7 # vital, visualization
 numpy<1.23.0,>=1.22.2 # vital, matrix computation
-opencv-python>=4.4.0.46 # optional, required by vision
-opencv-contrib-python>=4.4.0.46 # optional, required by vision
+#opencv-python>=4.4.0.46 # optional, required by vision
+#opencv-contrib-python>=4.4.0.46 # optional, required by vision
 scikit-learn>=0.23.2 # vital?
 grpcio>=1.34.0
 grpcio-tools>=1.34.0
