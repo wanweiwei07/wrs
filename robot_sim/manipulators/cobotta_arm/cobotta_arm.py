@@ -10,7 +10,6 @@ class CobottaArm(mi.ManipulatorInterface):
 
     def __init__(self, pos=np.zeros(3), rotmat=np.eye(3), homeconf=np.zeros(6), name='cobotta', enable_cc=True):
         super().__init__(pos=pos, rotmat=rotmat, name=name)
-        this_dir, this_filename = os.path.split(__file__)
         self.jlc = jl.JLChain(pos=pos, rotmat=rotmat, home_conf=homeconf, name=name)
         # six joints, n_jnts = 6+2 (tgt ranges from 1-6), nlinks = 6+1
         self.jlc.jnts[1]['pos_in_loc_tcp'] = np.array([0, 0, 0])
@@ -35,43 +34,43 @@ class CobottaArm(mi.ManipulatorInterface):
         self.jlc.lnks[0]['pos_in_loc_tcp'] = np.zeros(3)
         self.jlc.lnks[0]['mass'] = 1.4
         self.jlc.lnks[0]['com'] = np.array([-.02131, .000002, .044011])
-        self.jlc.lnks[0]['mesh_file'] = os.path.join(this_dir, "meshes", "base_link.dae")
+        self.jlc.lnks[0]['mesh_file'] = os.path.join(os.getcwd(), "meshes", "base_link.dae")
         self.jlc.lnks[0]['rgba'] = [.7,.7,.7, 1.0]
         self.jlc.lnks[1]['name'] = "j1"
         self.jlc.lnks[1]['pos_in_loc_tcp'] = np.zeros(3)
         self.jlc.lnks[1]['com'] = np.array([.0,.0,.15])
         self.jlc.lnks[1]['mass'] = 1.29
-        self.jlc.lnks[1]['mesh_file'] = os.path.join(this_dir, "meshes", "j1.dae")
+        self.jlc.lnks[1]['mesh_file'] = os.path.join(os.getcwd(), "meshes", "j1.dae")
         self.jlc.lnks[1]['rgba'] = [.7,.7,.7, 1.0]
         self.jlc.lnks[2]['name'] = "j2"
         self.jlc.lnks[2]['pos_in_loc_tcp'] = np.array([.0, .0, .0])
         self.jlc.lnks[2]['com'] = np.array([-.02, .1, .07])
         self.jlc.lnks[2]['mass'] = 0.39
-        self.jlc.lnks[2]['mesh_file'] = os.path.join(this_dir, "meshes", "j2.dae")
+        self.jlc.lnks[2]['mesh_file'] = os.path.join(os.getcwd(), "meshes", "j2.dae")
         self.jlc.lnks[2]['rgba'] = [.7,.7,.7, 1]
         self.jlc.lnks[3]['name'] = "j3"
         self.jlc.lnks[3]['pos_in_loc_tcp'] = np.array([.0, .0, .0])
         self.jlc.lnks[3]['com'] = np.array([-.01, .02, .03])
         self.jlc.lnks[3]['mass'] = .35
-        self.jlc.lnks[3]['mesh_file'] = os.path.join(this_dir, "meshes", "j3.dae")
+        self.jlc.lnks[3]['mesh_file'] = os.path.join(os.getcwd(), "meshes", "j3.dae")
         self.jlc.lnks[3]['rgba'] = [.7,.7,.7, 1.0]
         self.jlc.lnks[4]['name'] = "j4"
         self.jlc.lnks[4]['pos_in_loc_tcp'] = np.array([.0, .0, .0])
         self.jlc.lnks[4]['com'] = np.array([.0, .0, 0.055])
         self.jlc.lnks[4]['mass'] = 0.35
-        self.jlc.lnks[4]['mesh_file'] = os.path.join(this_dir, "meshes", "j4.dae")
+        self.jlc.lnks[4]['mesh_file'] = os.path.join(os.getcwd(), "meshes", "j4.dae")
         self.jlc.lnks[4]['rgba'] = [.7,.7,.7, 1.0]
         self.jlc.lnks[5]['name'] = "j5"
         self.jlc.lnks[5]['pos_in_loc_tcp'] = np.array([.0, .0, .0])
         self.jlc.lnks[5]['com'] = np.array([.0, -.04, .015])
         self.jlc.lnks[5]['mass'] = 0.19
-        self.jlc.lnks[5]['mesh_file'] = os.path.join(this_dir, "meshes", "j5.dae")
+        self.jlc.lnks[5]['mesh_file'] = os.path.join(os.getcwd(), "meshes", "j5.dae")
         self.jlc.lnks[5]['rgba'] = [.7, .7, .7, 1]
         self.jlc.lnks[6]['name'] = "j6"
         self.jlc.lnks[6]['pos_in_loc_tcp'] = np.array([.0, .0, .0])
         self.jlc.lnks[6]['com'] = np.array([.0, .0, 0])
         self.jlc.lnks[6]['mass'] = 0.03
-        self.jlc.lnks[6]['mesh_file'] = os.path.join(this_dir, "meshes", "j6.dae")
+        self.jlc.lnks[6]['mesh_file'] = os.path.join(os.getcwd(), "meshes", "j6.dae")
         self.jlc.lnks[6]['rgba'] = [.7,.7,.7, 1.0]
         self.jlc.finalize()
         # collision detection

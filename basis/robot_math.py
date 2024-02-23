@@ -440,10 +440,10 @@ def rel_pose(pos0, rotmat0, pos1, rotmat1):
     :param pos1:
     :return:
     author: weiwei
-    date: 20180811
+    date: 20180811, 20240223
     """
-    rel_pos = np.dot(rotmat0.T, (pos1 - pos0))
-    rel_rotmat = np.dot(rotmat0.T, rotmat1)
+    rel_pos = rotmat0.T @ (pos1 - pos0)
+    rel_rotmat = rotmat0.T @ rotmat1
     return (rel_pos, rel_rotmat)
 
 

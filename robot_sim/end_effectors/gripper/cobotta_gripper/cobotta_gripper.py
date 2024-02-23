@@ -9,18 +9,24 @@ import basis.constant as bc
 import robot_sim.end_effectors.gripper.gripper_interface as gp
 import robot_sim._kinematics.constant as rkc
 import robot_sim._kinematics.model_generator as rkmg
+import modeling.constant as mc
 
 
 class CobottaGripper(gp.GripperInterface):
 
-    def __init__(self, pos=np.zeros(3), rotmat=np.eye(3), cdmesh_type='box', name='robotiqhe', enable_cc=True):
+    def __init__(self,
+                 pos=np.zeros(3),
+                 rotmat=np.eye(3),
+                 cdmesh_type=mc.CDMType.DEFAULT,
+                 name="cobott_gripper",
+                 enable_cc=True):
         super().__init__(pos=pos, rotmat=rotmat, cdmesh_type=cdmesh_type, name=name)
         this_dir, this_filename = os.path.split(__file__)
         cpl_end_pos, cpl_end_rotmat = self.coupling.get_gl_tcp()
         # jaw range
         self.jaw_rng = np.array([0.0, .03])
         # jlc
-        self.jlc = jl.JLChain(pos=cpl_end_pos, rotmat=cpl_end_rotmat, n_dof=2, name='base_lft_finger')
+        self.jlc = jl.JLChain(pos=cpl_end_pos, rotmat=cpl_end_rotmat, n_dof=2, name=name)
         # anchor
         self.jlc.anchor.pos = cpl_end_pos
         self.jlc.anchor.rotmat = cpl_end_rotmat

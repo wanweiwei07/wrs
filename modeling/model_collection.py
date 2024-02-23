@@ -11,8 +11,7 @@ class ModelCollection(object):
     date: 201900825, 20201212
     """
 
-    def __init__(self,
-                 name='model_collection'):
+    def __init__(self, name="model_collection"):
         self._name = name
         self._gm_list = []
         self._cm_list = []

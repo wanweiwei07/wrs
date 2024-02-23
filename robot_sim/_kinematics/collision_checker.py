@@ -108,7 +108,7 @@ class CollisionChecker(object):
         self.bitmask_ext = BitMask32(2 ** 31)  # 31 is prepared for cd with external non-active objects
         self.cce_dict = {}  # a dict of CCElement
 
-    def add_cdelement(self, lnk):
+    def add_cce(self, lnk):
         """
         add a Link as a ccelement
         :param lnk: instance of jl.Link
@@ -118,7 +118,7 @@ class CollisionChecker(object):
         """
         self.cce_dict[lnk.uuid] = CCElement(lnk, self.cd_pdndp)
 
-    def remove_cdelement(self, lnk):
+    def remove_cce(self, lnk):
         """
         remove a ccelement by using the uuid of a lnk
         :param lnk: instance of CollisionModel

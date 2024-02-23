@@ -2,15 +2,17 @@ import copy
 import numpy as np
 import modeling.model_collection as mmc
 import modeling.collision_model as mcm
+import robot_sim._kinematics.jl as jl
 import robot_sim._kinematics.jlchain as rkjl
 import robot_sim._kinematics.collision_checker as rkcc
 import modeling.geometric_model as mgm
 import modeling.constant as mc
+import basis.robot_math as rm
 
 
 class EEInterface(object):
 
-    def __init__(self, pos=np.zeros(3), rotmat=np.eye(3), cdmesh_type=mc.CDMType.AABB, name='end_effector'):
+    def __init__(self, pos=np.zeros(3), rotmat=np.eye(3), cdmesh_type=mc.CDMType.AABB, name="end_effector"):
         self.name = name
         self.pos = pos
         self.rotmat = rotmat
@@ -18,9 +20,9 @@ class EEInterface(object):
         # joints
         # -- coupling --
         # no coupling by default, change the pos if the coupling existed
-        self.coupling = rkjl.JLChain(pos=self.pos, rotmat=self.rotmat, n_dof=0, name='coupling')
+        self.coupling = rkjl.JLChain(pos=self.pos, rotmat=self.rotmat, n_dof=0, name=name+"_coupling")
         self.coupling.tcp_loc_pos = np.array([0, 0, 0])
-        self.coupling.anchor.name = 'coupling_anchor'
+        self.coupling.anchor.name = "coupling_anchor"
         # toggle on the following part to assign an explicit mesh model to a coupling
         # self.coupling.jnts[0].link = rkjl.create_link(mesh_file=os.path.join(this_dir, "meshes", "xxx.stl"))
         # self.coupling.jnts[0].link = mcm.gen_stick(spos=self.coupling.anchor.pos, epos = self.coupling.jnts[0].pos)
@@ -48,27 +50,22 @@ class EEInterface(object):
             obj_info['gl_pos'] = gl_pos
             obj_info['gl_rotmat'] = gl_rotmat
 
-    def hold(self, objcm, **kwargs):
+    def hold(self, obj_cmodel, **kwargs):
         """
         the objcm is added as a part of the robot_s to the cd checker
         **kwargs is for polyphorism purpose
         :param jawwidth:
-        :param objcm:
+        :param obj_cmodel: a collision model
         :return:
         author: weiwei
         date: 20230811
         """
-        rel_pos, rel_rotmat = self.manipulator_dict[hnd_name].cvt_gl_to_loc_tcp(objcm.get_pos(), objcm.get_rotmat())
-        intolist = [self.agv.lnks[3],
-                    self.arm.lnks[0],
-                    self.arm.lnks[1],
-                    self.arm.lnks[2],
-                    self.arm.lnks[3],
-                    self.arm.lnks[4],
-                    self.arm.lnks[5],
-                    self.arm.lnks[6]]
-        self.oih_infos.append(self.cc.add_cdobj(objcm, rel_pos, rel_rotmat, intolist))
-        return rel_pos, rel_rotmat
+        obj_pos = obj_cmodel.pos
+        obj_rotmat = obj_cmodel.rotmat
+        action_center_gl_pos = self.rotmat.dot(self.action_center_pos) + self.pos
+        action_center_gl_rotmat = self.rotmat.dot(self.action_center_rotmat)
+        rel_pos, rel_rotmat = rm.rel_pose(obj_pos, obj_rotmat, action_center_gl_pos, action_center_gl_rotmat)
+        self.oiee_list.append(jl.Link(loc_pos = rel_pos, loc_rotmat=rel_rotmat, cmodel=obj_cmodel))
 
     def is_collided(self, obstacle_list=[], otherrobot_list=[]):
         """
