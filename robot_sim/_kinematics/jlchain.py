@@ -1,6 +1,8 @@
 import math
 import os
 import copy
+import random
+
 import numpy as np
 import time
 import basis.constant as bc
@@ -133,6 +135,7 @@ class JLChain(object):
             else:
                 return tcp_gl_pos, tcp_gl_rotmat
         else:
+            self.anchor.update_pose()
             pos = self.anchor.pos
             rotmat = self.anchor.rotmat
             for i in range(self.n_dof):
@@ -212,16 +215,18 @@ class JLChain(object):
         return (linear_ellipsoid_mat, angular_ellipsoid_mat)
 
     def fix_to(self, pos, rotmat):
-        self.anchor.update_pose(pos, rotmat)
+        self.anchor.pos = pos
+        self.ahcnor.rotmat = rotmat
         return self.go_given_conf(jnt_vals=self.get_joint_values())
 
-    def finalize(self, ik_solver=None, **kwargs):
+    def finalize(self, ik_solver=None, identifier_str=None, **kwargs):
         """
         ddik is both fast and has high success rate, but it required prebuilding a data file.
         tracik is also fast and reliable, but it is a bit slower and energe-intensive.
         pinv_wc is fast but has low success rate. it is used as a backbone for ddik.
         sqpss has high success rate but is very slow.
         :param ik_solver: 'd' for ddik; 'n' for numik.pinv_wc; 'o' for optik.sqpss; 't' for tracik; default: None
+        :param identifier_str: a string identifier for data (using a robot name is more preferred than the default)
         :**kwargs: path for DDIKSolver
         :return:
         author: weiwei
@@ -230,8 +235,7 @@ class JLChain(object):
         self._jnt_rngs = self._get_jnt_rngs()
         self.go_home()
         if ik_solver == 'd':
-            path = kwargs.get('path', os.getcwd())
-            self._ik_solver = rkd.DDIKSolver(self, path)
+            self._ik_solver = rkd.DDIKSolver(self, identifier_str=identifier_str)
 
     def set_tcp(self, tcp_joint_id=None, tcp_loc_pos=None, tcp_loc_rotmat=None):
         if tcp_joint_id is not None:
@@ -405,9 +409,10 @@ if __name__ == "__main__":
     jlc.jnts[5].loc_motion_ax = np.array([0, 0, 1])
     jlc.jnts[5].motion_rng = np.array([-np.pi / 2, np.pi / 2])
     jlc.tcp_loc_pos = np.array([0, 0, .01])
-    jlc.finalize()
+    jlc.finalize(ik_solver='d')
     # rkmg.gen_jlc_stick(jlc, stick_rgba=bc.navy_blue, tgl_tcp_frame=True,
-    #                    toggle_joint_frame=True).attach_to(base)
+    #                    tgl_jnt_frame=True).attach_to(base)
+    # base.run()
     seed_jnt_vals = jlc.get_joint_values()
 
     success = 0
@@ -421,7 +426,7 @@ if __name__ == "__main__":
         tic = time.time()
         joint_values_with_dbg_info = jlc.ik(tgt_pos=tgt_pos,
                                             tgt_rotmat=tgt_rotmat,
-                                            toggle_dbg=True)
+                                            toggle_dbg=False)
         toc = time.time()
         time_list.append(toc - tic)
         print(time_list[-1])
@@ -438,7 +443,7 @@ if __name__ == "__main__":
                 # base.run()
         else:
             tgt_list.append((tgt_pos, tgt_rotmat))
-    print(success)
+    print(f'success: {success}')
     print(f'num_win: {num_win}, opt_win: {opt_win}')
     print('average', np.mean(time_list))
     print('max', np.max(time_list))

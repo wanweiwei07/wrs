@@ -22,7 +22,8 @@ class CobottaGripper(gp.GripperInterface):
         # jlc
         self.jlc = jl.JLChain(pos=cpl_end_pos, rotmat=cpl_end_rotmat, n_dof=2, name='base_lft_finger')
         # anchor
-        self.jlc.anchor.update_pose(pos=cpl_end_pos, rotmat=cpl_end_rotmat)
+        self.jlc.anchor.pos = cpl_end_pos
+        self.jlc.anchor.rotmat = cpl_end_rotmat
         self.jlc.anchor.lnk.cmodel = mcm.CollisionModel(os.path.join(this_dir, "meshes", "gripper_base.dae"))
         self.jlc.anchor.lnk.cmodel.rgba = np.array([.35, .35, .35, 1])
         # the 1st joint (left finger)

@@ -54,14 +54,14 @@ class Trimesh(object):
         author: revised by weiwei
         date: 20201201
         """
-        # self._data stores information about the mesh which CANNOT be regenerated.
+        # self._data_files stores information about the mesh which CANNOT be regenerated.
         # in the base class all that is stored here is vertex and face information
         # any data put into the store is converted to a TrackedArray (np.ndarray subclass)
         # which provides an md5() method which can be used to detect changes in the array.
         self._data = util.DataStore()
         # self._cache stores information about the mesh which CAN be regenerated from
-        # self._data, but may be slow to calculate. In order to maintain consistency
-        # the cache is cleared when self._data.md5() changes
+        # self._data_files, but may be slow to calculate. In order to maintain consistency
+        # the cache is cleared when self._data_files.md5() changes
         self._cache = util.Cache(id_function=self._data.md5)
         # check for None only to avoid warning messages in subclasses
         if vertices is not None:
@@ -135,7 +135,7 @@ class Trimesh(object):
         """
         The faces of the mesh.
         This is regarded as core information which cannot be regenerated from cache,
-        and as such is stored in self._data, which tracks the array for changes
+        and as such is stored in self._data_files, which tracks the array for changes
         and clears cached values of the mesh if this is altered.
         :return faces: nx3 nparray, representing triangles which reference self.vertices
         author: Revised by weiwei
@@ -188,7 +188,7 @@ class Trimesh(object):
         """
         The vertices of the mesh.
         This is regarded as core information which cannot be regenerated from cache,
-        and as such is stored in self._data, which tracks the array for changes
+        and as such is stored in self._data_files, which tracks the array for changes
         and clears cached values of the mesh if this is altered.
         :return vertices: (n,3) float representing points in cartesian space
         author: Revised by weiwei

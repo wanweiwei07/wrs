@@ -72,7 +72,7 @@ class Link(object):
 
     def update_globals(self, pos=np.zeros(3), rotmat=np.eye(3)):
         """
-        update the global parameters against give reference pos, reference rotmat
+        update the global parameters with given reference pos, reference rotmat
         :param pos:
         :param rotmat:
         :return:
@@ -94,17 +94,9 @@ class Anchor(object):
                  pos=np.zeros(3),
                  rotmat=np.eye(3)):
         self.name = name
-        self._pos = pos
-        self._rotmat = rotmat
+        self.pos = pos
+        self.rotmat = rotmat
         self._lnk = Link()
-
-    @property
-    def pos(self):
-        return self._pos
-
-    @property
-    def rotmat(self):
-        return self._rotmat
 
     @property
     def homomat(self):
@@ -118,11 +110,13 @@ class Anchor(object):
     def lnk(self, value):
         self._lnk = value
 
-    def update_pose(self, pos, rotmat):
-        self._pos = pos
-        self._rotmat = rotmat
+    def update_pose(self, pos=None, rotmat=None):
+        if pos is not None:
+            self.pos = pos
+        if rotmat is not None:
+            self.rotmat = rotmat
         if self._lnk is not None:
-            self._lnk.update_globals(self._pos, self._rotmat)
+            self._lnk.update_globals(self.pos, self.rotmat)
 
 
 class Joint(object):
@@ -234,7 +228,7 @@ class Joint(object):
         :param motion_val:
         :return:
         """
-        self._gl_pos_0 = pos + rotmat @ self.loc_pos
+        self._gl_pos_0 = pos + rotmat @ self.loc_pos #TODO offset to loc
         self._gl_rotmat_0 = rotmat @ self.loc_rotmat
         self._gl_motion_ax = self._gl_rotmat_0 @ self.loc_motion_ax
         self.set_motion_value(motion_value=motion_val)
@@ -242,6 +236,11 @@ class Joint(object):
             self._lnk.update_globals(self.gl_pos_q, self.gl_rotmat_q)
 
     def get_motion_homomat(self, motion_val=0):
+        """
+        result of loc_homomat multiplied by motion transformation
+        :param motion_val:
+        :return:
+        """
         self.assert_motion_val(val=motion_val)
         if self.type == rkc.JntType.REVOLUTE:
             rotmat_by_motion = rm.rotmat_from_axangle(self.loc_motion_ax, motion_val)

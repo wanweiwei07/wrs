@@ -246,7 +246,7 @@ class NumIKSolver(object):
                 import robot_sim._kinematics.model_generator as rkmg
                 joint_values = self.jlc.get_joint_values()
                 self.jlc.go_given_conf(jnt_vals=iter_jnt_vals)
-                rkmg.gen_jlc_stick(self.jlc, toggle_tcp_frame=True, toggle_joint_frame=True).attach_to(base)
+                rkmg.gen_jlc_stick(self.jlc, tgl_tcp_frame=True, tgl_jnt_frame=True).attach_to(base)
                 self.jlc.go_given_conf(jnt_vals=joint_values)
                 import modeling.geometric_model as gm
                 gm.gen_arrow(spos=tcp_gl_pos, epos=tgt_pos).attach_to(base)

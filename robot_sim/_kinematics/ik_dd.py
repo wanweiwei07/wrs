@@ -4,7 +4,7 @@ author: weiwei
 date: 20231107
 """
 import warnings
-
+import os
 import numpy as np
 import pickle
 import basis.robot_math as rm
@@ -15,6 +15,7 @@ from tqdm import tqdm
 import robot_sim._kinematics.ik_num as rkn
 import robot_sim._kinematics.ik_opt as rko
 import robot_sim._kinematics.ik_trac as rkt
+import random
 import time
 # for debugging purpose
 import modeling.geometric_model as mgm
@@ -23,7 +24,7 @@ import basis.constant as bc10
 
 
 class DDIKSolver(object):
-    def __init__(self, jlc, path='./', backbone_solver='n', rebuild=False):
+    def __init__(self, jlc, path=None, identifier_str='test', backbone_solver='n', rebuild=False):
         """
         :param jlc:
         :param path:
@@ -33,7 +34,10 @@ class DDIKSolver(object):
         date: 20231111
         """
         self.jlc = jlc
-        self.path = path
+        if path is None:
+            path = os.path.join(os.path.dirname(os.getcwd()), "_data_files")
+        self._fname_tree = os.path.join(path, f"{identifier_str}_ikdd_tree.pkl")
+        self._fname_jnt = os.path.join(path, f"{identifier_str}_jnt_data.pkl")
         self._k_bbs = 5  # number of nearest neighbours examined by the backbone sovler
         self._k_max = 20  # maximum nearest neighbours explored by the evolver
         self._max_n_iter = 5  # max_n_iter of the backbone solver
@@ -51,16 +55,16 @@ class DDIKSolver(object):
             y_or_n = bu.get_yesno()
             if y_or_n == 'y':
                 self.querry_tree, self.jnt_data = self._build_data()
-                self.persist_data(path=self.path)
+                self.persist_data()
                 self.evolve_data(n_times=100000)
         else:
             try:
-                self.querry_tree = pickle.load(open(self.path + 'ikdd_tree.pkl', 'rb'))
-                self.jnt_data = pickle.load(open(self.path + 'jnt_data.pkl', 'rb'))
+                self.querry_tree = pickle.load(open(self._fname_tree, 'rb'))
+                self.jnt_data = pickle.load(open(self._fname_jnt, 'rb'))
             except FileNotFoundError:
                 self.querry_tree, self.jnt_data = self._build_data()
-                self.persist_data(path=self.path)
-                self.evolve_data(n_times=100000)
+                self.persist_data()
+                self.evolve_data(n_times=100)
 
     def _rotmat_to_vec(self, rotmat, method='q'):
         """
@@ -119,7 +123,7 @@ class DDIKSolver(object):
             # y_or_n = bu.get_yesno()
             # if y_or_n == 'n':
             #     break
-        self.persist_data(path=self.path)
+        self.persist_data()
 
     def evolve_data(self, n_times=100000, toggle_dbg=True):
         evolved_nns = []
@@ -171,16 +175,19 @@ class DDIKSolver(object):
         outer_progress_bar.close()
         if toggle_dbg:
             print("+++++++++++++++++++evolution details+++++++++++++++++++")
-            evolved_nns = np.asarray(evolved_nns)
-            print("Max nn id: ", evolved_nns.max())
-            print("Min nn id: ", evolved_nns.min())
-            print("Avg nn id: ", evolved_nns.mean())
-            print("Std nn id: ", evolved_nns.std())
-        self.persist_data(path=self.path)
+            if len(evolved_nns) > 0:
+                evolved_nns = np.asarray(evolved_nns)
+                print("Max nn id: ", evolved_nns.max())
+                print("Min nn id: ", evolved_nns.min())
+                print("Avg nn id: ", evolved_nns.mean())
+                print("Std nn id: ", evolved_nns.std())
+            else:
+                print("No successful evolution.")
+        self.persist_data()
 
-    def persist_data(self, path):
-        pickle.dump(self.querry_tree, open(path + 'ikdd_tree.pkl', 'wb'))
-        pickle.dump(self.jnt_data, open(path + 'jnt_data.pkl', 'wb'))
+    def persist_data(self):
+        pickle.dump(self.querry_tree, open(self._fname_tree, 'wb'))
+        pickle.dump(self.jnt_data, open(self._fname_jnt, 'wb'))
         print("ddik data file saved.")
 
     def ik(self,
@@ -201,7 +208,8 @@ class DDIKSolver(object):
             return self._backbone_solver_func(tgt_pos=tgt_pos,
                                               tgt_rotmat=tgt_rotmat,
                                               seed_jnt_vals=seed_jnt_vals,
-                                              max_n_iter=self._max_n_iter)
+                                              max_n_iter=self._max_n_iter,
+                                              toggle_dbg=toggle_dbg)
         else:
             tcp_rotvec = self._rotmat_to_vec(tgt_rotmat)
             tgt_tcp = np.concatenate((tgt_pos, tcp_rotvec))
@@ -211,7 +219,8 @@ class DDIKSolver(object):
                 result = self._backbone_solver_func(tgt_pos=tgt_pos,
                                                     tgt_rotmat=tgt_rotmat,
                                                     seed_jnt_vals=seed_jnt_vals,
-                                                    max_n_iter=self._max_n_iter)
+                                                    max_n_iter=self._max_n_iter,
+                                                    toggle_dbg=toggle_dbg)
                 if result is None:
                     continue
                 else:

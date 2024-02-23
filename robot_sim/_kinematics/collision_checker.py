@@ -9,7 +9,8 @@ from panda3d.core import NodePath, CollisionTraverser, CollisionHandlerQueue, Bi
 class CCElement(object):
     """
     A collision detection element
-    It includes a pointer to the collision model and a pointer to the pdcndp attached to the traverse tree of
+    It is initialized by a pointer to the collision model and
+    a pointer to the pdcndp attached to the traverse tree of
     an collision checker instance
     author: weiwei
     date: 20231116
