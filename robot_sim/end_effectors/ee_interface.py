@@ -45,16 +45,13 @@ class EEInterface(object):
         date: 20230807
         """
         for oiee in self.oiee_list:
-            oiee.update_globals()
             gl_pos, gl_rotmat = self.cvt_loc_tcp_to_gl(oiee.loc_pos, )
-            obj_info['gl_pos'] = gl_pos
-            obj_info['gl_rotmat'] = gl_rotmat
+            oiee.update_globals()
 
     def hold(self, obj_cmodel, **kwargs):
         """
-        the objcm is added as a part of the robot_s to the cd checker
+        the objcm is saved into an oiee_list, while considering its relative pose to the ee's pos and rotmat
         **kwargs is for polyphorism purpose
-        :param jawwidth:
         :param obj_cmodel: a collision model
         :return:
         author: weiwei
@@ -62,9 +59,7 @@ class EEInterface(object):
         """
         obj_pos = obj_cmodel.pos
         obj_rotmat = obj_cmodel.rotmat
-        action_center_gl_pos = self.rotmat.dot(self.action_center_pos) + self.pos
-        action_center_gl_rotmat = self.rotmat.dot(self.action_center_rotmat)
-        rel_pos, rel_rotmat = rm.rel_pose(obj_pos, obj_rotmat, action_center_gl_pos, action_center_gl_rotmat)
+        rel_pos, rel_rotmat = rm.rel_pose(obj_pos, obj_rotmat, self.pos, self.rotmat)
         self.oiee_list.append(jl.Link(loc_pos = rel_pos, loc_rotmat=rel_rotmat, cmodel=obj_cmodel))
 
     def is_collided(self, obstacle_list=[], otherrobot_list=[]):
