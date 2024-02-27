@@ -410,8 +410,8 @@ if __name__ == "__main__":
     jlc.jnts[5].motion_rng = np.array([-np.pi / 2, np.pi / 2])
     jlc.tcp_loc_pos = np.array([0, 0, .01])
     jlc.finalize(ik_solver='d')
-    # rkmg.gen_jlc_stick(jlc, stick_rgba=bc.navy_blue, tgl_tcp_frame=True,
-    #                    tgl_jnt_frame=True).attach_to(base)
+    # rkmg.gen_jlc_stick(jlc, stick_rgba=bc.navy_blue, toggle_tcp_frame=True,
+    #                    toggle_jnt_frames=True).attach_to(base)
     # base.run()
     seed_jnt_vals = jlc.get_joint_values()
 
@@ -438,7 +438,7 @@ if __name__ == "__main__":
                 num_win += 1
                 # mgm.gen_frame(pos=tgt_pos, rotmat=tgt_rotmat).attach_to(base)
                 # jlc.forward_kinematics(jnt_vals=joint_values_with_dbg_info[1], update=True, toggle_jac=False)
-                # rkmg.gen_jlc_stick(jlc, stick_rgba=bc.navy_blue, tgl_tcp_frame=True,
+                # rkmg.gen_jlc_stick(jlc, stick_rgba=bc.navy_blue, toggle_tcp_frame=True,
                 #        toggle_joint_frame=True).attach_to(base)
                 # base.run()
         else:

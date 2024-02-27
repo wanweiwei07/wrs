@@ -20,7 +20,7 @@ class EEInterface(object):
         # joints
         # -- coupling --
         # no coupling by default, change the pos if the coupling existed
-        self.coupling = rkjl.JLChain(pos=self.pos, rotmat=self.rotmat, n_dof=0, name=name+"_coupling")
+        self.coupling = rkjl.JLChain(pos=self.pos, rotmat=self.rotmat, n_dof=0, name=name + "_coupling")
         self.coupling.tcp_loc_pos = np.array([0, 0, 0])
         self.coupling.anchor.name = "coupling_anchor"
         # toggle on the following part to assign an explicit mesh model to a coupling
@@ -28,9 +28,9 @@ class EEInterface(object):
         # self.coupling.jnts[0].link = mcm.gen_stick(spos=self.coupling.anchor.pos, epos = self.coupling.jnts[0].pos)
         # self.coupling.jnts[0].lnks.rgba = [.2, .2, .2, 1]
         self.coupling.finalize(ik_solver=None)
-        # action center, acting point of the tool
-        self.action_center_pos = np.zeros(3)
-        self.action_center_rotmat = np.eye(3)
+        # acting center of the tool
+        self.acting_center_pos = np.zeros(3)
+        self.acting_center_rotmat = np.eye(3)
         # collision detection
         self.cc = None
         # cd mesh collection for precise collision checking
@@ -45,8 +45,7 @@ class EEInterface(object):
         date: 20230807
         """
         for oiee in self.oiee_list:
-            gl_pos, gl_rotmat = self.cvt_loc_tcp_to_gl(oiee.loc_pos, )
-            oiee.update_globals()
+            oiee.update_globals(pos=self.pos, rotmat=self.rotmat)
 
     def hold(self, obj_cmodel, **kwargs):
         """
@@ -60,7 +59,7 @@ class EEInterface(object):
         obj_pos = obj_cmodel.pos
         obj_rotmat = obj_cmodel.rotmat
         rel_pos, rel_rotmat = rm.rel_pose(obj_pos, obj_rotmat, self.pos, self.rotmat)
-        self.oiee_list.append(jl.Link(loc_pos = rel_pos, loc_rotmat=rel_rotmat, cmodel=obj_cmodel))
+        self.oiee_list.append(jl.Link(loc_pos=rel_pos, loc_rotmat=rel_rotmat, cmodel=obj_cmodel))
 
     def is_collided(self, obstacle_list=[], otherrobot_list=[]):
         """
@@ -74,12 +73,17 @@ class EEInterface(object):
         return_val = self.cc.is_collided(obstacle_list=obstacle_list, otherrobot_list=otherrobot_list)
         return return_val
 
-    def is_mesh_collided(self, cmodel_list=[], toggle_debug=False):
+    def is_mesh_collided(self, cmodel_list=[], toggle_dbg=False):
+        """
+        :param cmodel_list:
+        :param toggle_dbg: show cd mesh and draw colliding points in case of collision
+        :return:
+        """
         for i, cdme in enumerate(self.cdmesh_elements):
             if cdme.cmodel is not None:
                 is_collided, collision_points = cdme.cmodel.is_mcdwith(cmodel_list, True)
                 if is_collided:
-                    if toggle_debug:
+                    if toggle_dbg:
                         cdme.show_cdmesh()
                         for cmodel in cmodel_list:
                             cmodel.show_cdmesh()
@@ -92,6 +96,36 @@ class EEInterface(object):
 
     def fix_to(self, pos, rotmat):
         raise NotImplementedError
+
+    def align_acting_center_by_twovecs(self,
+                                       gl_acting_center_pos,
+                                       gl_approaching_vec,
+                                       gl_side_vec):
+        """
+        align acting center to a frame decided by two vectors
+        :param gl_acting_center_pos:
+        :param gl_approaching_vec:
+        :param gl_side_vec:
+        :return:
+        """
+        gl_acting_center_rotmat = np.eye(3)
+        gl_acting_center_rotmat[:, 2] = rm.unit_vector(gl_approaching_vec)
+        gl_acting_center_rotmat[:, 1] = rm.unit_vector(gl_side_vec)
+        gl_acting_center_rotmat[:, 0] = np.cross(gl_acting_center_rotmat[:3, 1], gl_acting_center_rotmat[:3, 2])
+        return self.align_acting_center_by_pose(gl_acting_center_pos=gl_acting_center_pos,
+                                                gl_acting_center_rotmat=gl_acting_center_rotmat)
+
+    def align_acting_center_by_pose(self, gl_acting_center_pos, gl_acting_center_rotmat):
+        """
+        align acting center to a frame decided by pos and rotmat
+        :param gl_acting_center_pos:
+        :param gl_acting_center_rotmat:
+        :return:
+        """
+        ee_root_rotmat = gl_acting_center_rotmat.dot(self.acting_center_rotmat.T)
+        ee_root_pos = gl_acting_center_pos - ee_root_rotmat.dot(self.acting_center_pos)
+        self.fix_to(ee_root_pos, ee_root_rotmat)
+        return [gl_acting_center_pos, gl_acting_center_rotmat, ee_root_pos, ee_root_rotmat]
 
     def show_cdprimit(self):
         self.cc.show_cdprimit()
@@ -113,23 +147,19 @@ class EEInterface(object):
     def unshow_cdmesh(self):
         self.cdmesh_collection.unshow_cdmesh()
 
-    def gen_stickmodel(self,
-                       toggle_tcpcs=False,
-                       toggle_jntscs=False,
-                       toggle_connjnt=False,
-                       name='ee_stickmodel'):
+    def gen_stickmodel(self, toggle_tcp_frame=False, toggle_jnt_frames=False, name='ee_stickmodel'):
         raise NotImplementedError
 
     def gen_meshmodel(self,
-                      toggle_tcpcs=False,
-                      toggle_jntscs=False,
+                      toggle_tcp_frame=False,
+                      toggle_jnt_frames=False,
                       rgba=None,
                       name='ee_meshmodel'):
         raise NotImplementedError
 
     def _toggle_tcpcs(self, parent):
-        action_center_gl_pos = self.rotmat.dot(self.action_center_pos) + self.pos
-        action_center_gl_rotmat = self.rotmat.dot(self.action_center_rotmat)
+        action_center_gl_pos = self.rotmat.dot(self.acting_center_pos) + self.pos
+        action_center_gl_rotmat = self.rotmat.dot(self.acting_center_rotmat)
         mgm.gen_dashed_stick(spos=self.pos,
                              epos=action_center_gl_pos,
                              radius=.0062,

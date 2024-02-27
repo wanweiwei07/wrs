@@ -38,10 +38,10 @@ for grasp_info in grasp_info_list:
     jaw_width, jaw_center_pos, jaw_center_rotmat, hnd_pos, hnd_rotmat = grasp_info
     gl_jaw_center_pos = object_box_gl_pos+object_box_gl_rotmat.dot(jaw_center_pos)
     gl_jaw_center_rotmat = object_box_gl_rotmat.dot(jaw_center_rotmat)
-    gripper_s.grip_at_with_jcpose(gl_jaw_center_pos, gl_jaw_center_rotmat, jaw_width)
+    gripper_s.grip_at_with_pose(gl_jaw_center_pos, gl_jaw_center_rotmat, jaw_width)
     if not gripper_s.is_mesh_collided([ground]):
         retracted_gl_jaw_center_pos=gl_jaw_center_pos-gl_jaw_center_rotmat[:,2]*.2
-        gripper_s.grip_at_with_jcpose(retracted_gl_jaw_center_pos, gl_jaw_center_rotmat, jaw_width)
+        gripper_s.grip_at_with_pose(retracted_gl_jaw_center_pos, gl_jaw_center_rotmat, jaw_width)
         if not gripper_s.is_mesh_collided([ground]):
             jnt_values =  robot_s.ik(component_name,
                                      tgt_pos=gl_jaw_center_pos,

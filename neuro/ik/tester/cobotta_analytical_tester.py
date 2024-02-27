@@ -52,13 +52,13 @@ if __name__ == '__main__':
                  radius=abs(rbt_s.manipulator_dict['arm'].jnts[6]['pos_in_loc_tcp'][1]) + abs(rbt_s.manipulator_dict['arm'].jnts[5]['pos_in_loc_tcp'][1])).attach_to(base)
     # jnt_vals[3:]=0
     # rbt_s.fk(jnt_vals=jnt_vals)
-    # rbt_s.gen_meshmodel(tgl_tcp_frame=True, rgba=[.5,.5,.5,.3]).attach_to(base)
-    # rbt_s.gen_stickmodel(tgl_tcp_frame=True).attach_to(base)
+    # rbt_s.gen_meshmodel(toggle_tcp_frame=True, rgba=[.5,.5,.5,.3]).attach_to(base)
+    # rbt_s.gen_stickmodel(toggle_tcp_frame=True).attach_to(base)
     #
     # jnt_vals[2:]=0
     # rbt_s.fk(jnt_vals=jnt_vals)
-    # rbt_s.gen_meshmodel(tgl_tcp_frame=True, rgba=[.5,.5,.5,.3]).attach_to(base)
-    # rbt_s.gen_stickmodel(tgl_tcp_frame=True).attach_to(base)
+    # rbt_s.gen_meshmodel(toggle_tcp_frame=True, rgba=[.5,.5,.5,.3]).attach_to(base)
+    # rbt_s.gen_stickmodel(toggle_tcp_frame=True).attach_to(base)
     #
     # mgm.gen_sphere(pos=rbt_s.manipulator_dict['arm'].joints[2]['gl_posq'],
     #               major_radius=np.linalg.norm(rbt_s.manipulator_dict['arm'].joints[3]['pos_in_loc_tcp']),
@@ -79,6 +79,6 @@ if __name__ == '__main__':
     # xyzrpy = torch.from_numpy(np.hstack((tgt_pos,tgt_rpy)))
     # jnt_vals = model(xyzrpy.float()).to('cpu').detach().numpy()
     # rbt_s.fk(jnt_vals=jnt_vals)
-    # rbt_s.gen_meshmodel(tgl_tcp_frame=True).attach_to(base)
+    # rbt_s.gen_meshmodel(toggle_tcp_frame=True).attach_to(base)
 
     base.run()

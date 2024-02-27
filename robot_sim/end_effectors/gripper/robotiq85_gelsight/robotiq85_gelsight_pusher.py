@@ -224,38 +224,31 @@ class Robotiq85GelsightPusher(gp.GripperInterface):
 
     def push_at(self, gl_push_pos, gl_push_rotmat):
         _, gl_tip_pos, gl_tip_rotmat, eef_root_pos, eef_root_rotmat = \
-            self.grip_at_with_jcpose(gl_push_pos, gl_push_rotmat, jaw_width=self.jaw_range[1])
+            self.grip_at_with_pose(gl_push_pos, gl_push_rotmat, jaw_width=self.jaw_range[1])
         return [gl_tip_pos, gl_tip_rotmat, eef_root_pos, eef_root_rotmat]
 
-    def gen_stickmodel(self,
-                       tcp_jntid=None,
-                       tcp_loc_pos=None,
-                       tcp_loc_rotmat=None,
-                       toggle_tcpcs=False,
-                       toggle_jntscs=False,
-                       toggle_connjnt=False,
-                       name='robotiq85_stickmodel'):
+    def gen_stickmodel(self, toggle_tcp_frame=False, toggle_jnt_frames=False, name='ee_stickmodel'):
         sm_collection = mc.ModelCollection(name=name)
-        self.coupling.gen_stickmodel(toggle_tcpcs=False,
-                                     toggle_jntscs=toggle_jntscs).attach_to(sm_collection)
-        self.lft_outer.gen_stickmodel(toggle_tcpcs=toggle_tcpcs,
-                                      toggle_jntscs=toggle_jntscs,
+        self.coupling.gen_stickmodel(toggle_tcp_frame=False,
+                                     toggle_jnt_frames=toggle_jnt_frames).attach_to(sm_collection)
+        self.lft_outer.gen_stickmodel(toggle_tcpcs=toggle_tcp_frame,
+                                      toggle_jntscs=toggle_jnt_frames,
                                       toggle_connjnt=toggle_connjnt).attach_to(sm_collection)
         self.lft_inner.gen_stickmodel(toggle_tcpcs=False,
-                                      toggle_jntscs=toggle_jntscs,
+                                      toggle_jntscs=toggle_jnt_frames,
                                       toggle_connjnt=toggle_connjnt).attach_to(sm_collection)
         self.rgt_outer.gen_stickmodel(toggle_tcpcs=False,
-                                      toggle_jntscs=toggle_jntscs,
+                                      toggle_jntscs=toggle_jnt_frames,
                                       toggle_connjnt=toggle_connjnt).attach_to(sm_collection)
         self.rgt_inner.gen_stickmodel(toggle_tcpcs=False,
-                                      toggle_jntscs=toggle_jntscs,
+                                      toggle_jntscs=toggle_jnt_frames,
                                       toggle_connjnt=toggle_connjnt).attach_to(sm_collection)
         self.middle.gen_stickmodel(toggle_tcpcs=False,
-                                   toggle_jntscs=toggle_jntscs,
+                                   toggle_jntscs=toggle_jnt_frames,
                                    toggle_connjnt=toggle_connjnt).attach_to(sm_collection)
-        if toggle_tcpcs:
+        if toggle_tcp_frame:
             jaw_center_gl_pos = self.rotmat.dot(grpr.jaw_center_pos) + self.pos
-            jaw_center_gl_rotmat = self.rotmat.dot(grpr.action_center_rotmat)
+            jaw_center_gl_rotmat = self.rotmat.dot(grpr.acting_center_rotmat)
             gm.gen_dashed_stick(spos=self.pos,
                                 epos=jaw_center_gl_pos,
                                 radius=.0062,
@@ -265,32 +258,32 @@ class Robotiq85GelsightPusher(gp.GripperInterface):
         return sm_collection
 
     def gen_meshmodel(self,
-                      toggle_tcpcs=False,
-                      toggle_jntscs=False,
+                      toggle_tcp_frame=False,
+                      toggle_jnt_frames=False,
                       rgba=None,
                       name='robotiq85_meshmodel'):
         mm_collection = mc.ModelCollection(name=name)
         self.coupling.gen_mesh_model(toggle_tcpcs=False,
-                                     toggle_jntscs=toggle_jntscs,
+                                     toggle_jntscs=toggle_jnt_frames,
                                      rgba=rgba).attach_to(mm_collection)
         self.lft_outer.gen_mesh_model(toggle_tcpcs=False,
-                                      toggle_jntscs=toggle_jntscs,
+                                      toggle_jntscs=toggle_jnt_frames,
                                       rgba=rgba).attach_to(mm_collection)
         self.lft_inner.gen_mesh_model(toggle_tcpcs=False,
-                                      toggle_jntscs=toggle_jntscs,
+                                      toggle_jntscs=toggle_jnt_frames,
                                       rgba=rgba).attach_to(mm_collection)
         self.rgt_outer.gen_mesh_model(toggle_tcpcs=False,
-                                      toggle_jntscs=toggle_jntscs,
+                                      toggle_jntscs=toggle_jnt_frames,
                                       rgba=rgba).attach_to(mm_collection)
         self.rgt_inner.gen_mesh_model(toggle_tcpcs=False,
-                                      toggle_jntscs=toggle_jntscs,
+                                      toggle_jntscs=toggle_jnt_frames,
                                       rgba=rgba).attach_to(mm_collection)
         self.middle.gen_mesh_model(toggle_tcpcs=False,
-                                   toggle_jntscs=toggle_jntscs,
+                                   toggle_jntscs=toggle_jnt_frames,
                                    rgba=rgba).attach_to(mm_collection)
-        if toggle_tcpcs:
+        if toggle_tcp_frame:
             jaw_center_gl_pos = self.rotmat.dot(self.jaw_center_pos) + self.pos
-            jaw_center_gl_rotmat = self.rotmat.dot(self.action_center_rotmat)
+            jaw_center_gl_rotmat = self.rotmat.dot(self.acting_center_rotmat)
             gm.gen_dashed_stick(spos=self.pos,
                                 epos=jaw_center_gl_pos,
                                 radius=.0062,
@@ -310,7 +303,7 @@ if __name__ == '__main__':
     grpr.cdmesh_type = 'convexhull'
     # grpr.fk(.0)
     # grpr.jaw_to(.0)
-    grpr.gen_meshmodel(toggle_tcpcs=True, rgba=[.3, .3, .0, .5]).attach_to(base)
+    grpr.gen_meshmodel(toggle_tcp_frame=True, rgba=[.3, .3, .0, .5]).attach_to(base)
     # grpr.gen_stickmodel(togglejntscs=False).attach_to(base)
     # grpr.fix_to(pos=np.array([0, .3, .2]), rotmat=rm.rotmat_from_axangle([1, 0, 0], math.pi / 6))
     # grpr.gen_meshmodel().attach_to(base)

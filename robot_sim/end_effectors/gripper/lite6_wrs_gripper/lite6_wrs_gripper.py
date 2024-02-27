@@ -28,7 +28,7 @@ class Lite6WRSGripper(gp.GripperInterface):
         self.lft.lnks[0]['pos_in_loc_tcp'] = np.zeros(3)
         self.lft.lnks[0]['collision_model'] = cm.CollisionModel(os.path.join(this_dir, "meshes", "base.stl"),
                                                                 cdp_type="user_defined", expand_radius=.001,
-                                                                userdef_cdp_fn=self._hnd_base_cdnp)
+                                                                userdef_cdprim_fn=self._hnd_base_cdnp)
         self.lft.lnks[0]['rgba'] = [.77, .77, .77, 1]
         self.lft.jnts[1]['pos_in_loc_tcp'] = np.array([0, 0.0040, 0.089])
         self.lft.jnts[1]['gl_rotmat'] = rm.rotmat_from_euler(0, 0, math.pi)
@@ -38,7 +38,7 @@ class Lite6WRSGripper(gp.GripperInterface):
         self.lft.lnks[1]['name'] = "finger1"
         self.lft.lnks[1]['mesh_file'] = cm.CollisionModel(
             os.path.join(this_dir, "meshes", "finger.stl"), cdp_type="user_defined",
-            userdef_cdp_fn=self._finger_cdnp, expand_radius=.001)
+            userdef_cdprim_fn=self._finger_cdnp, expand_radius=.001)
         self.lft.lnks[1]['rgba'] = [.35, .35, .35, 1]
         # # rgt finger
         self.rgt = jl.JLChain(pos=cpl_end_pos, rotmat=cpl_end_rotmat, home_conf=np.zeros(1), name='rgt_finger')
@@ -48,7 +48,7 @@ class Lite6WRSGripper(gp.GripperInterface):
         self.rgt.lnks[1]['name'] = "finger2"
         self.rgt.lnks[1]['mesh_file'] = cm.CollisionModel(
             os.path.join(this_dir, "meshes", "finger.stl"), cdp_type="user_defined",
-            userdef_cdp_fn=self._finger_cdnp, expand_radius=.000)
+            userdef_cdprim_fn=self._finger_cdnp, expand_radius=.000)
         self.rgt.lnks[1]['rgba'] = [.35, .35, .35, 1]
         # # reinitialize
         self.lft.finalize(cdmesh_type=cdmesh_type)
@@ -144,33 +144,23 @@ class Lite6WRSGripper(gp.GripperInterface):
     def get_jaw_width(self):
         return -self.lft.jnts[1]['motion_val'] * 2
 
-    def gen_stickmodel(self,
-                       tcp_jnt_id=None,
-                       tcp_loc_pos=None,
-                       tcp_loc_rotmat=None,
-                       toggle_tcpcs=False,
-                       toggle_jntscs=False,
-                       toggle_connjnt=False,
-                       name='lite6wrs_gripper_stickmodel'):
+    def gen_stickmodel(self, toggle_tcp_frame=False, toggle_jnt_frames=False, name='ee_stickmodel'):
         stickmodel = mc.ModelCollection(name=name)
-        self.coupling.gen_stickmodel(tcp_loc_pos=None,
-                                     tcp_loc_rotmat=None,
-                                     toggle_tcpcs=False,
-                                     toggle_jntscs=toggle_jntscs).attach_to(stickmodel)
+        self.coupling.gen_stickmodel(toggle_tcp_frame=False, toggle_jnt_frames=toggle_jnt_frames).attach_to(stickmodel)
         self.lft.gen_stickmodel(tcp_jnt_id=tcp_jnt_id,
                                 tcp_loc_pos=tcp_loc_pos,
                                 tcp_loc_rotmat=tcp_loc_rotmat,
                                 toggle_tcpcs=False,
-                                toggle_jntscs=toggle_jntscs,
+                                toggle_jntscs=toggle_jnt_frames,
                                 toggle_connjnt=toggle_connjnt).attach_to(stickmodel)
         self.rgt.gen_stickmodel(tcp_loc_pos=None,
                                 tcp_loc_rotmat=None,
                                 toggle_tcpcs=False,
-                                toggle_jntscs=toggle_jntscs,
+                                toggle_jntscs=toggle_jnt_frames,
                                 toggle_connjnt=toggle_connjnt).attach_to(stickmodel)
-        if toggle_tcpcs:
+        if toggle_tcp_frame:
             jaw_center_gl_pos = self.rotmat.dot(self.jaw_center_pos) + self.pos
-            jaw_center_gl_rotmat = self.rotmat.dot(self.action_center_rotmat)
+            jaw_center_gl_rotmat = self.rotmat.dot(self.acting_center_rotmat)
             gm.gen_dashed_stick(spos=self.pos,
                                 epos=jaw_center_gl_pos,
                                 radius=.0062,
@@ -184,30 +174,30 @@ class Lite6WRSGripper(gp.GripperInterface):
                       tcp_jnt_id=None,
                       tcp_loc_pos=None,
                       tcp_loc_rotmat=None,
-                      toggle_tcpcs=False,
-                      toggle_jntscs=False,
+                      toggle_tcp_frame=False,
+                      toggle_jnt_frames=False,
                       rgba=None,
                       name='lite6wrs_gripper_meshmodel'):
         meshmodel = mc.ModelCollection(name=name)
         self.coupling.gen_mesh_model(tcp_loc_pos=None,
                                      tcp_loc_rotmat=None,
                                      toggle_tcpcs=False,
-                                     toggle_jntscs=toggle_jntscs,
+                                     toggle_jntscs=toggle_jnt_frames,
                                      rgba=rgba).attach_to(meshmodel)
         self.lft.gen_mesh_model(tcp_jnt_id=tcp_jnt_id,
                                 tcp_loc_pos=tcp_loc_pos,
                                 tcp_loc_rotmat=tcp_loc_rotmat,
                                 toggle_tcpcs=False,
-                                toggle_jntscs=toggle_jntscs,
+                                toggle_jntscs=toggle_jnt_frames,
                                 rgba=rgba).attach_to(meshmodel)
         self.rgt.gen_mesh_model(tcp_loc_pos=None,
                                 tcp_loc_rotmat=None,
                                 toggle_tcpcs=False,
-                                toggle_jntscs=toggle_jntscs,
+                                toggle_jntscs=toggle_jnt_frames,
                                 rgba=rgba).attach_to(meshmodel)
-        if toggle_tcpcs:
+        if toggle_tcp_frame:
             jaw_center_gl_pos = self.rotmat.dot(self.jaw_center_pos) + self.pos
-            jaw_center_gl_rotmat = self.rotmat.dot(self.action_center_rotmat)
+            jaw_center_gl_rotmat = self.rotmat.dot(self.acting_center_rotmat)
             gm.gen_dashed_stick(spos=self.pos,
                                 epos=jaw_center_gl_pos,
                                 radius=.0062,
@@ -225,6 +215,6 @@ if __name__ == '__main__':
     gm.gen_frame().attach_to(base)
     grpr = Lite6WRSGripper(enable_cc=True)
     grpr.change_jaw_width(.03)
-    grpr.gen_meshmodel(toggle_tcpcs=True).attach_to(base)
+    grpr.gen_meshmodel(toggle_tcp_frame=True).attach_to(base)
     grpr.show_cdprimit()
     base.run()

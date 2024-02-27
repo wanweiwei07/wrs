@@ -221,32 +221,25 @@ class Robotiq140(gp.GripperInterface):
         # print(self.jaw_center_pos_rel)
         self.jaw_center_pos=np.array([0, 0, self.lft_outer.jnts[4]['gl_posq'][2] + self.jaw_center_pos_rel[2]])
 
-    def gen_stickmodel(self,
-                       tcp_jntid=None,
-                       tcp_loc_pos=None,
-                       tcp_loc_rotmat=None,
-                       toggle_tcpcs=False,
-                       toggle_jntscs=False,
-                       toggle_connjnt=False,
-                       name='robotiq140_stickmodel'):
+    def gen_stickmodel(self, toggle_tcp_frame=False, toggle_jnt_frames=False, name='ee_stickmodel'):
         sm_collection = mc.ModelCollection(name=name)
-        self.coupling.gen_stickmodel(toggle_tcpcs=False,
-                                     toggle_jntscs=toggle_jntscs).attach_to(sm_collection)
+        self.coupling.gen_stickmodel(toggle_tcp_frame=False,
+                                     toggle_jnt_frames=toggle_jnt_frames).attach_to(sm_collection)
         self.lft_outer.gen_stickmodel(toggle_tcpcs=False,
-                                      toggle_jntscs=toggle_jntscs,
+                                      toggle_jntscs=toggle_jnt_frames,
                                       toggle_connjnt=toggle_connjnt).attach_to(sm_collection)
         self.lft_inner.gen_stickmodel(toggle_tcpcs=False,
-                                      toggle_jntscs=toggle_jntscs,
+                                      toggle_jntscs=toggle_jnt_frames,
                                       toggle_connjnt=toggle_connjnt).attach_to(sm_collection)
         self.rgt_outer.gen_stickmodel(toggle_tcpcs=False,
-                                      toggle_jntscs=toggle_jntscs,
+                                      toggle_jntscs=toggle_jnt_frames,
                                       toggle_connjnt=toggle_connjnt).attach_to(sm_collection)
         self.rgt_inner.gen_stickmodel(toggle_tcpcs=False,
-                                      toggle_jntscs=toggle_jntscs,
+                                      toggle_jntscs=toggle_jnt_frames,
                                       toggle_connjnt=toggle_connjnt).attach_to(sm_collection)
-        if toggle_tcpcs:
+        if toggle_tcp_frame:
             jaw_center_gl_pos = self.rotmat.dot(grpr.jaw_center_pos) + self.pos
-            jaw_center_gl_rotmat = self.rotmat.dot(grpr.action_center_rotmat)
+            jaw_center_gl_rotmat = self.rotmat.dot(grpr.acting_center_rotmat)
             gm.gen_dashed_stick(spos=self.pos,
                                 epos=jaw_center_gl_pos,
                                 radius=.0062,
@@ -256,29 +249,29 @@ class Robotiq140(gp.GripperInterface):
         return sm_collection
 
     def gen_meshmodel(self,
-                      toggle_tcpcs=False,
-                      toggle_jntscs=False,
+                      toggle_tcp_frame=False,
+                      toggle_jnt_frames=False,
                       rgba=None,
                       name='robotiq140_meshmodel'):
         mm_collection = mc.ModelCollection(name=name)
         self.coupling.gen_mesh_model(toggle_tcpcs=False,
-                                     toggle_jntscs=toggle_jntscs,
+                                     toggle_jntscs=toggle_jnt_frames,
                                      rgba=rgba).attach_to(mm_collection)
         self.lft_outer.gen_mesh_model(toggle_tcpcs=False,
-                                      toggle_jntscs=toggle_jntscs,
+                                      toggle_jntscs=toggle_jnt_frames,
                                       rgba=rgba).attach_to(mm_collection)
         self.lft_inner.gen_mesh_model(toggle_tcpcs=False,
-                                      toggle_jntscs=toggle_jntscs,
+                                      toggle_jntscs=toggle_jnt_frames,
                                       rgba=rgba).attach_to(mm_collection)
         self.rgt_outer.gen_mesh_model(toggle_tcpcs=False,
-                                      toggle_jntscs=toggle_jntscs,
+                                      toggle_jntscs=toggle_jnt_frames,
                                       rgba=rgba).attach_to(mm_collection)
         self.rgt_inner.gen_mesh_model(toggle_tcpcs=False,
-                                      toggle_jntscs=toggle_jntscs,
+                                      toggle_jntscs=toggle_jnt_frames,
                                       rgba=rgba).attach_to(mm_collection)
-        if toggle_tcpcs:
+        if toggle_tcp_frame:
             jaw_center_gl_pos = self.rotmat.dot(self.jaw_center_pos) + self.pos
-            jaw_center_gl_rotmat = self.rotmat.dot(self.action_center_rotmat)
+            jaw_center_gl_rotmat = self.rotmat.dot(self.acting_center_rotmat)
             gm.gen_dashed_stick(spos=self.pos,
                                 epos=jaw_center_gl_pos,
                                 radius=.0062,
@@ -296,5 +289,5 @@ if __name__ == '__main__':
     grpr = Robotiq140(enable_cc=True)
     # grpr.cdm_type='convexhull'
     grpr.change_jaw_width(.1)
-    grpr.gen_meshmodel(toggle_tcpcs=True, rgba=[.3, .3, .0, .5], toggle_jntscs=True).attach_to(base)
+    grpr.gen_meshmodel(toggle_tcp_frame=True, rgba=[.3, .3, .0, .5], toggle_jnt_frames=True).attach_to(base)
     base.run()

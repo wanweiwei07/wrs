@@ -73,34 +73,29 @@ class ORSD(si.SCTInterface):
         cpl_end_rotmat = self.coupling.jnts[-1]['gl_rotmatq']
         self.jlc.fix_to(cpl_end_pos, cpl_end_rotmat)
 
-    def gen_stickmodel(self,
-                       toggle_tcpcs=False,
-                       toggle_jntscs=False,
-                       toggle_connjnt=False,
-                       name='suction_stickmodel'):
+    def gen_stickmodel(self, toggle_tcp_frame=False, toggle_jnt_frames=False, name='ee_stickmodel'):
         stick_model = mc.ModelCollection(name=name)
-        self.coupling.gen_stickmodel(toggle_tcpcs=False,
-                                     toggle_jntscs=toggle_jntscs).attach_to(stick_model)
+        self.coupling.gen_stickmodel(toggle_tcp_frame=False, toggle_jnt_frames=toggle_jnt_frames).attach_to(stick_model)
         self.jlc.gen_stickmodel(toggle_tcpcs=False,
-                                toggle_jntscs=toggle_jntscs,
+                                toggle_jntscs=toggle_jnt_frames,
                                 toggle_connjnt=toggle_connjnt).attach_to(stick_model)
-        if toggle_tcpcs:
+        if toggle_tcp_frame:
             self._toggle_tcpcs(stick_model)
         return stick_model
 
     def gen_meshmodel(self,
-                      toggle_tcpcs=False,
-                      toggle_jntscs=False,
+                      toggle_tcp_frame=False,
+                      toggle_jnt_frames=False,
                       rgba=None,
                       name='xarm_gripper_meshmodel'):
         mesh_model = mc.ModelCollection(name=name)
         self.coupling.gen_mesh_model(toggle_tcpcs=False,
-                                     toggle_jntscs=toggle_jntscs,
+                                     toggle_jntscs=toggle_jnt_frames,
                                      rgba=rgba).attach_to(mesh_model)
         self.jlc.gen_mesh_model(toggle_tcpcs=False,
-                                toggle_jntscs=toggle_jntscs,
+                                toggle_jntscs=toggle_jnt_frames,
                                 rgba=rgba).attach_to(mesh_model)
-        if toggle_tcpcs:
+        if toggle_tcp_frame:
             self._toggle_tcpcs(mesh_model)
         return mesh_model
 
@@ -116,8 +111,8 @@ if __name__ == '__main__':
     #     grpr.fk(angle)
     #     grpr.gen_meshmodel().attach_to(base)
     grpr = ORSD(coupling_offset_pos=np.array([0, 0, 0.0145]), enable_cc=True)
-    grpr.gen_meshmodel(toggle_tcpcs=True).attach_to(base)
-    grpr.gen_stickmodel(toggle_jntscs=True).attach_to(base)
+    grpr.gen_meshmodel(toggle_tcp_frame=True).attach_to(base)
+    grpr.gen_stickmodel(toggle_jnt_frames=True).attach_to(base)
     grpr.fix_to(pos=np.array([0, .3, .2]), rotmat=rm.rotmat_from_axangle([1, 0, 0], .05))
     grpr.gen_meshmodel().attach_to(base)
     grpr.show_cdmesh()

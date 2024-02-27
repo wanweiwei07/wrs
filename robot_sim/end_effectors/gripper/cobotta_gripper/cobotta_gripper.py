@@ -92,16 +92,13 @@ class CobottaGripper(gp.GripperInterface):
     def get_jaw_width(self):
         return -self.jlc.jnts[1].motion_val
 
-    def gen_stickmodel(self,
-                       tgl_tcp_frame=False,
-                       tgl_jnt_frame=False,
-                       name='stick_model'):
+    def gen_stickmodel(self, toggle_tcp_frame=False, toggle_jnt_frames=False:
         m_col = mmc.ModelCollection(name=name)
-        rkmg.gen_jlc_stick(self.coupling, tgl_tcp_frame=False, tgl_jnt_frame=False).attach_to(m_col)
-        rkmg.gen_jlc_stick(self.jlc, tgl_tcp_frame=False, tgl_jnt_frame=tgl_jnt_frame).attach_to(m_col)
+        rkmg.gen_jlc_stick(self.coupling, toggle_tcp_frame=False, toggle_jnt_frames=False).attach_to(m_col)
+        rkmg.gen_jlc_stick(self.jlc, toggle_tcp_frame=False, toggle_jnt_frames=tgl_jnt_frame).attach_to(m_col)
         if tgl_tcp_frame:
-            action_center_gl_pos = self.rotmat.dot(self.action_center_pos) + self.pos
-            action_center_gl_rotmat = self.rotmat.dot(self.action_center_rotmat)
+            action_center_gl_pos = self.rotmat.dot(self.acting_center_pos) + self.pos
+            action_center_gl_rotmat = self.rotmat.dot(self.acting_center_rotmat)
             rkmg.gen_tcp_frame(spos=self.pos,
                                tcp_gl_pos=action_center_gl_pos,
                                tcp_gl_rotmat=action_center_gl_rotmat).attach_to(m_col)
@@ -127,7 +124,7 @@ class CobottaGripper(gp.GripperInterface):
                           tgl_cdprimitive=tgl_cdprimitive).attach_to(m_col)
         if tgl_tcp_frame:
             action_center_gl_pos = self.rotmat.dot(self.action_center_pos) + self.pos
-            action_center_gl_rotmat = self.rotmat.dot(self.action_center_rotmat)
+            action_center_gl_rotmat = self.rotmat.dot(self.acting_center_rotmat)
             rkmg.gen_tcp_frame(spos=self.pos,
                                tcp_gl_pos=action_center_gl_pos,
                                tcp_gl_rotmat=action_center_gl_rotmat).attach_to(m_col)
@@ -147,7 +144,7 @@ if __name__ == '__main__':
     grpr = CobottaGripper(enable_cc=True)
     grpr.change_jaw_width(.013)
     grpr.gen_meshmodel(tgl_tcp_frame=True, tgl_jnt_frame=True, tgl_cdprimitive=True).attach_to(base)
-    # # grpr.gen_stickmodel(tgl_jnt_frame=True).attach_to(base)
+    # # grpr.gen_stickmodel(toggle_jnt_frames=True).attach_to(base)
     # grpr.fix_to(pos=np.array([0, .3, .2]), rotmat=rm.rotmat_from_axangle([1, 0, 0], .7))
     # grpr.gen_meshmodel().attach_to(base)
     # # grpr.gen_stickmodel().attach_to(base)

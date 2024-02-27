@@ -14,14 +14,14 @@ BITMASK_EXT = BitMask32(2 ** 31)
 
 
 def copy_cdprimitive(cmodel):
-    return copy.deepcopy(cmodel.cdprimitive)
+    return copy.deepcopy(cmodel.cdprim)
 
 
 def copy_cdprimitive_attach_to(cmodel,
                                tgt_pdndp,
                                homomat=None,
                                clear_mask=False) -> NodePath:
-    return_pdcndp = cmodel.copy_reference_cdprimitive()
+    return_pdcndp = cmodel.copy_reference_cdprim()
     return_pdcndp.reparentTo(tgt_pdndp)
     if homomat is not None:
         return_pdcndp.setMat(da.npmat4_to_pdmat4(homomat))
@@ -278,22 +278,22 @@ def is_collided(cmodel_list0, cmodel_list1, toggle_contacts=False):
     tgt_pdndp = NodePath("collision pdndp")
     # attach to collision tree, change bitmasks, and add colliders
     for cmodel in cmodel_list0:
-        cdprimitive = cmodel.attach_cdprimitive_to(tgt_pdndp)
+        cdprimitive = cmodel.attach_cdprim_to(tgt_pdndp)
         change_cdmask(cdprimitive, BITMASK_EXT, action="remove", type="into")
         for child_pdndp in cdprimitive.getChildren():
             cd_trav.addCollider(collider=child_pdndp, handler=cd_handler)
     for cmodel in cmodel_list1:
-        cmodel.attach_cdprimitive_to(tgt_pdndp)
+        cmodel.attach_cdprim_to(tgt_pdndp)
     # perform collision detection
     cd_trav.traverse(tgt_pdndp)
     # detach from collision tree, change bitmasks, and remove colliders
     for cmodel in cmodel_list0:
-        cmodel.detach_cdprimitive()
-        change_cdmask(cmodel.cdprimitive, BITMASK_EXT, action="add", type="into")
-        for child_pdndp in cmodel.cdprimitive.getChildren():
+        cmodel.detach_cdprim()
+        change_cdmask(cmodel.cdprim, BITMASK_EXT, action="add", type="into")
+        for child_pdndp in cmodel.cdprim.getChildren():
             cd_trav.removeCollider(child_pdndp)
     for cmodel in cmodel_list1:
-        cmodel.detach_cdprimitive()
+        cmodel.detach_cdprim()
     if cd_handler.getNumEntries() > 0:
         if toggle_contacts:
             contact_points = np.asarray([da.pdvec3_to_npvec3(cd_entry.getSurfacePoint(base.render)) for cd_entry in
@@ -417,7 +417,7 @@ if __name__ == '__main__':
     cmodel.rgba = np.array([.2, .5, 0, 1])
     cmodel.pos = np.array([.1, .01, .01])
     cmodel.attach_to(base)
-    cmodel.show_cdprimitive()
+    cmodel.show_cdprim()
 
     cmodel_list = []
     for i in range(100):
@@ -427,7 +427,7 @@ if __name__ == '__main__':
         cmodel_list[-1].pos = np.random.random_sample((3,))
         cmodel_list[-1].rgba = np.array([1, .5, 0, 1])
         cmodel_list[-1].attach_to(base)
-        cmodel_list[-1].show_cdprimitive()
+        cmodel_list[-1].show_cdprim()
 
     tic = time.time()
     result, contacts = is_collided(cmodel, cmodel_list, toggle_contacts=True)

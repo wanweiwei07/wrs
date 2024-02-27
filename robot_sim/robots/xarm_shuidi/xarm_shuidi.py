@@ -67,7 +67,7 @@ class XArmShuidi(ri.RobotInterface):
                                    name='hnd_s', enable_cc=False)
         # tool center point
         self.arm.jlc.tcp_jnt_id = -1
-        self.arm.jlc.tcp_loc_rotmat = self.ft_sensor.jnts[-1]['gl_rotmat'].dot(self.hnd.action_center_rotmat)
+        self.arm.jlc.tcp_loc_rotmat = self.ft_sensor.jnts[-1]['gl_rotmat'].dot(self.hnd.acting_center_rotmat)
         self.arm.jlc.tcp_loc_pos = self.ft_sensor.jnts[-1]['pos_in_loc_tcp'] + self.arm.jlc.tcp_loc_rotmat.dot(
             self.hnd.jaw_center_pos)
         # a list of detailed information about objects in hand, see CollisionChecker.add_objinhnd
@@ -357,8 +357,7 @@ class XArmShuidi(ri.RobotInterface):
                                 toggle_connjnt=toggle_connjnt).attach_to(stickmodel)
         self.ft_sensor.gen_stickmodel(tcp_loc_pos=tcp_loc_pos,
                                       tcp_loc_rotmat=tcp_loc_rotmat).attach_to(stickmodel)
-        self.hnd.gen_stickmodel(toggle_tcpcs=False,
-                                toggle_jntscs=toggle_jntscs).attach_to(stickmodel)
+        self.hnd.gen_stickmodel(toggle_tcp_frame=False, toggle_jnt_frames=toggle_jntscs).attach_to(stickmodel)
         return stickmodel
 
     def gen_meshmodel(self,
@@ -388,7 +387,7 @@ class XArmShuidi(ri.RobotInterface):
                                       rgba=rgba).attach_to(meshmodel)
         self.hnd.gen_meshmodel(tcp_loc_pos=None,
                                tcp_loc_rotmat=None,
-                               toggle_tcpcs=False,
+                               toggle_tcp_frame=False,
                                rgba=rgba).attach_to(meshmodel)
         for obj_info in self.oih_infos:
             objcm = obj_info['collision_model']

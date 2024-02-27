@@ -108,7 +108,7 @@ class KHI_BLQC(ai.RobotInterface):
         """
         if self.is_tool_attached:
             raise Exception("A tool has been attached!")
-        self.manipulator.tcp_loc_pos = self.tc_master.jnts[-1]['pos_in_loc_tcp'] + end_effector.action_center_pos
+        self.manipulator.tcp_loc_pos = self.tc_master.jnts[-1]['pos_in_loc_tcp'] + end_effector.acting_center_pos
         self.manipulator.tcp_loc_rotmat = self.tc_master.jnts[-1]['gl_rotmat']
         self.end_effector = end_effector
 
@@ -150,8 +150,8 @@ class KHI_BLQC(ai.RobotInterface):
         self.tc_master.gen_stickmodel(toggle_tcpcs=False,
                                       toggle_jntscs=toggle_jntscs).attach_to(stickmodel)
         if self.is_tool_attached:
-            self.end_effector.gen_stickmodel(toggle_tcpcs=False,
-                                             toggle_jntscs=toggle_jntscs).attach_to(stickmodel)
+            self.end_effector.gen_stickmodel(toggle_tcp_frame=False,
+                                             toggle_jnt_frames=toggle_jntscs).attach_to(stickmodel)
         return stickmodel
 
     def gen_meshmodel(self,

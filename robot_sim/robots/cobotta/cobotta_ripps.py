@@ -221,8 +221,7 @@ class CobottaRIPPS(ri.RobotInterface):
                                 toggle_tcpcs=toggle_tcpcs,
                                 toggle_jntscs=toggle_jntscs,
                                 toggle_connjnt=toggle_connjnt).attach_to(stickmodel)
-        self.hnd.gen_stickmodel(toggle_tcpcs=False,
-                                toggle_jntscs=toggle_jntscs).attach_to(stickmodel)
+        self.hnd.gen_stickmodel(toggle_tcp_frame=False, toggle_jnt_frames=toggle_jntscs).attach_to(stickmodel)
         return stickmodel
 
     def gen_meshmodel(self,
@@ -261,8 +260,8 @@ class CobottaRIPPS(ri.RobotInterface):
                                    toggle_jntscs=toggle_jntscs,
                                    rgba=rgba).attach_to(meshmodel)
         if option == 'full' or option == 'hand_only':
-            self.hnd.gen_meshmodel(toggle_tcpcs=False,
-                                   toggle_jntscs=toggle_jntscs,
+            self.hnd.gen_meshmodel(toggle_tcp_frame=False,
+                                   toggle_jnt_frames=toggle_jntscs,
                                    rgba=rgba).attach_to(meshmodel)
         if option == 'full':
             for obj_info in self.oih_infos:
@@ -286,9 +285,9 @@ if __name__ == '__main__':
     gm.gen_frame().attach_to(base)
     robot_s = CobottaRIPPS(enable_cc=True)
     # robot_s.jaw_to(.02)
-    # robot_s.gen_meshmodel(tgl_tcp_frame=True, toggle_joint_frame=True).attach_to(base)
+    # robot_s.gen_meshmodel(toggle_tcp_frame=True, toggle_joint_frame=True).attach_to(base)
     robot_s.gen_meshmodel(toggle_tcpcs=True, toggle_jntscs=False).attach_to(base)
-    # robot_s.gen_stickmodel(tgl_tcp_frame=True, toggle_joint_frame=True).attach_to(base)
+    # robot_s.gen_stickmodel(toggle_tcp_frame=True, toggle_joint_frame=True).attach_to(base)
     # robot_s.show_cdprimit()
     base.run()
     tgt_pos = np.array([.25, .2, .15])

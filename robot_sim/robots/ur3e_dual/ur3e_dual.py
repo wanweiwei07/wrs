@@ -26,7 +26,7 @@ class UR3EDual(ri.RobotInterface):
         self.lft_body.lnks[0]['collision_model'] = cm.CollisionModel(
             os.path.join(this_dir, "meshes", "ur3e_dual_base.stl"),
             cdp_type="user_defined", expand_radius=.005,
-            userdef_cdp_fn=self._base_combined_cdnp)
+            userdef_cdprim_fn=self._base_combined_cdnp)
         self.lft_body.lnks[0]['rgba'] = [.55, .55, .55, 1.0]
         self.lft_body.finalize()
         lft_arm_homeconf = np.zeros(6)
@@ -70,11 +70,11 @@ class UR3EDual(ri.RobotInterface):
         # lft
         self.lft_arm.tcp_jnt_id = -1
         self.lft_arm.tcp_loc_pos = self.lft_hnd.jaw_center_pos
-        self.lft_arm.tcp_loc_rotmat = self.lft_hnd.action_center_rotmat
+        self.lft_arm.tcp_loc_rotmat = self.lft_hnd.acting_center_rotmat
         # rgt
         self.rgt_arm.tcp_jnt_id = -1
         self.rgt_arm.tcp_loc_pos = self.lft_hnd.jaw_center_pos
-        self.rgt_arm.tcp_loc_rotmat = self.lft_hnd.action_center_rotmat
+        self.rgt_arm.tcp_loc_rotmat = self.lft_hnd.acting_center_rotmat
         # a list of detailed information about objects in hand, see CollisionChecker.add_objinhnd
         self.lft_oih_infos = []
         self.rgt_oih_infos = []
@@ -301,9 +301,7 @@ class UR3EDual(ri.RobotInterface):
                                     toggle_tcpcs=toggle_tcpcs,
                                     toggle_jntscs=toggle_jntscs,
                                     toggle_connjnt=toggle_connjnt).attach_to(stickmodel)
-        self.lft_hnd.gen_stickmodel(toggle_tcpcs=False,
-                                    toggle_jntscs=toggle_jntscs,
-                                    toggle_connjnt=toggle_connjnt).attach_to(stickmodel)
+        self.lft_hnd.gen_stickmodel(toggle_tcp_frame=False, toggle_jnt_frames=toggle_jntscs).attach_to(stickmodel)
         self.rgt_body.gen_stickmodel(tcp_loc_pos=None,
                                      tcp_loc_rotmat=None,
                                      toggle_tcpcs=False,
@@ -314,9 +312,7 @@ class UR3EDual(ri.RobotInterface):
                                     toggle_tcpcs=toggle_tcpcs,
                                     toggle_jntscs=toggle_jntscs,
                                     toggle_connjnt=toggle_connjnt).attach_to(stickmodel)
-        self.rgt_hnd.gen_stickmodel(toggle_tcpcs=False,
-                                    toggle_jntscs=toggle_jntscs,
-                                    toggle_connjnt=toggle_connjnt).attach_to(stickmodel)
+        self.rgt_hnd.gen_stickmodel(toggle_tcp_frame=False, toggle_jnt_frames=toggle_jntscs).attach_to(stickmodel)
         return stickmodel
 
     def gen_meshmodel(self,
@@ -339,8 +335,8 @@ class UR3EDual(ri.RobotInterface):
                                    toggle_tcpcs=toggle_tcpcs,
                                    toggle_jntscs=toggle_jntscs,
                                    rgba=rgba).attach_to(mm_collection)
-        self.lft_hnd.gen_meshmodel(toggle_tcpcs=False,
-                                   toggle_jntscs=toggle_jntscs,
+        self.lft_hnd.gen_meshmodel(toggle_tcp_frame=False,
+                                   toggle_jnt_frames=toggle_jntscs,
                                    rgba=rgba).attach_to(mm_collection)
         self.rgt_arm.gen_meshmodel(tcp_jnt_id=tcp_jnt_id,
                                    tcp_loc_pos=tcp_loc_pos,
@@ -348,8 +344,8 @@ class UR3EDual(ri.RobotInterface):
                                    toggle_tcpcs=toggle_tcpcs,
                                    toggle_jntscs=toggle_jntscs,
                                    rgba=rgba).attach_to(mm_collection)
-        self.rgt_hnd.gen_meshmodel(toggle_tcpcs=False,
-                                   toggle_jntscs=toggle_jntscs,
+        self.rgt_hnd.gen_meshmodel(toggle_tcp_frame=False,
+                                   toggle_jnt_frames=toggle_jntscs,
                                    rgba=rgba).attach_to(mm_collection)
         for obj_info in self.lft_oih_infos:
             objcm = obj_info['collision_model']

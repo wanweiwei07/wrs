@@ -482,6 +482,7 @@ def unit_vector(vector, toggle_length=False):
     """
     length = np.linalg.norm(vector)
     if math.isclose(length, 0):
+        raise ValueError("zero vector")
         if toggle_length:
             return 0.0, np.zeros_like(vector)
         else:

@@ -39,7 +39,7 @@ class Cobotta(ri.RobotInterface):
         # tool center point
         self.arm.jlc.tcp_jnt_id = -1
         self.arm.jlc.tcp_loc_pos = self.hnd.jaw_center_pos
-        self.arm.jlc.tcp_loc_rotmat = self.hnd.action_center_rotmat
+        self.arm.jlc.tcp_loc_rotmat = self.hnd.acting_center_rotmat
         # a list of detailed information about objects in hand, see CollisionChecker.add_objinhnd
         self.oih_infos = []
         # collision detection
@@ -212,8 +212,7 @@ class Cobotta(ri.RobotInterface):
                                 toggle_tcpcs=toggle_tcpcs,
                                 toggle_jntscs=toggle_jntscs,
                                 toggle_connjnt=toggle_connjnt).attach_to(stickmodel)
-        self.hnd.gen_stickmodel(toggle_tcpcs=False,
-                                toggle_jntscs=toggle_jntscs).attach_to(stickmodel)
+        self.hnd.gen_stickmodel().attach_to(stickmodel)
         return stickmodel
 
     def gen_meshmodel(self,
@@ -258,8 +257,8 @@ if __name__ == '__main__':
     gm.gen_frame().attach_to(base)
     robot_s = Cobotta(enable_cc=True)
     robot_s.jaw_to(.02)
-    # robot_s.gen_meshmodel(tgl_tcp_frame=True, toggle_joint_frame=True).attach_to(base)
-    # robot_s.gen_meshmodel(tgl_tcp_frame=False, toggle_joint_frame=False).attach_to(base)
+    # robot_s.gen_meshmodel(toggle_tcp_frame=True, toggle_joint_frame=True).attach_to(base)
+    # robot_s.gen_meshmodel(toggle_tcp_frame=False, toggle_joint_frame=False).attach_to(base)
     robot_s.gen_stickmodel(toggle_tcpcs=True, toggle_jntscs=True).attach_to(base)
     base.run()
     tgt_pos = np.array([.25, .2, .15])

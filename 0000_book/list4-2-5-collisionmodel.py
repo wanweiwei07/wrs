@@ -18,7 +18,7 @@ if __name__ == '__main__':
     object2.set_pos(np.array([0, -.095, 0]))
     # ウサギ3　衝突検出用のprimitiveを表面にサンプリングした球形状のsurface_ballsへ変更します
     object3 = object_ref.copy()
-    object3.change_cdprimitive_type(cdprimitive_type="surface_balls")
+    object3.change_cdprim_type(cdprim_type="surface_balls")
     object3.set_pos(np.array([0, .01, 0]))
     # ウサギ4
     object4 = object_ref.copy()
@@ -31,10 +31,10 @@ if __name__ == '__main__':
     object1.attach_to(base)
     # ウサギ2の画面表示．元のモデル上に，デフォルトのprimitive(box)も表示します
     object2.attach_to(base)
-    object2.show_cdprimitive()
+    object2.show_cdprim()
     # ウサギ3の画面表示．元のモデル上に，新たに設定したprimitive(surface_balls)も表示します
     object3.attach_to(base)
-    object3.show_cdprimitive()
+    object3.show_cdprim()
     # ウサギ4の画面表示．元のモデル上に，デフォルトのmeshも表示します
     object4.attach_to(base)
     object4.show_cdmesh()

@@ -162,14 +162,14 @@ class Left_Manipulator(mi.ManipulatorInterface):
 #         self.central_body.lnks[0]['collision_model'] = mcm.CollisionModel(
 #             os.path.join(this_dir, "meshes", "waist_link_mesh.dae"),
 #             cdp_type="user_defined", expand_radius=.005,
-#             userdef_cdp_fn=self._waist_combined_cdnp)
+#             userdef_cdprim_fn=self._waist_combined_cdnp)
 #         self.central_body.lnks[0]['rgba'] = [.77, .77, .77, 1.0]
 #         self.central_body.lnks[1]['name'] = "nextage_chest"
 #         self.central_body.lnks[1]['pos_in_loc_tcp'] = np.array([0, 0, 0])
 #         self.central_body.lnks[1]['collision_model'] = mcm.CollisionModel(
 #             os.path.join(this_dir, "meshes", "chest_joint0_link_mesh.dae"),
 #             cdp_type="user_defined", expand_radius=.005,
-#             userdef_cdp_fn=self._chest_combined_cdnp)
+#             userdef_cdprim_fn=self._chest_combined_cdnp)
 #         self.central_body.lnks[1]['rgba'] = [1, .65, .5, 1]
 #         self.central_body.lnks[2]['name'] = "head_joint0_link_mesh"
 #         self.central_body.lnks[2]['pos_in_loc_tcp'] = np.array([0, 0, 0.5695])
@@ -736,31 +736,31 @@ class Left_Manipulator(mi.ManipulatorInterface):
 #                        tcp_joint_id=None,
 #                        tcp_loc_pos=None,
 #                        tcp_loc_rotmat=None,
-#                        tgl_tcp_frame=False,
+#                        toggle_tcp_frame=False,
 #                        toggle_joint_frame=False,
 #                        toggle_connjnt=False,
 #                        name='yumi'):
 #         stickmodel = mmc.ModelCollection(name=name)
 #         self.central_body.gen_stickmodel(tcp_loc_pos=None,
 #                                          tcp_loc_rotmat=None,
-#                                          tgl_tcp_frame=False,
+#                                          toggle_tcp_frame=False,
 #                                          toggle_joint_frame=toggle_joint_frame).attach_to(stickmodel)
 #         self.lft_arm.gen_stickmodel(tcp_joint_id=tcp_joint_id,
 #                                     tcp_loc_pos=tcp_loc_pos,
 #                                     tcp_loc_rotmat=tcp_loc_rotmat,
-#                                     tgl_tcp_frame=tgl_tcp_frame,
+#                                     toggle_tcp_frame=toggle_tcp_frame,
 #                                     toggle_joint_frame=toggle_joint_frame,
 #                                     toggle_connjnt=toggle_connjnt).attach_to(stickmodel)
-#         # self.lft_hnd.gen_stickmodel(tgl_tcp_frame=False,
+#         # self.lft_hnd.gen_stickmodel(toggle_tcp_frame=False,
 #         #                             toggle_joint_frame=toggle_joint_frame,
 #         #                             toggle_connjnt=toggle_connjnt).attach_to(stickmodel)
 #         self.rgt_arm.gen_stickmodel(tcp_joint_id=tcp_joint_id,
 #                                     tcp_loc_pos=tcp_loc_pos,
 #                                     tcp_loc_rotmat=tcp_loc_rotmat,
-#                                     tgl_tcp_frame=tgl_tcp_frame,
+#                                     toggle_tcp_frame=toggle_tcp_frame,
 #                                     toggle_joint_frame=toggle_joint_frame,
 #                                     toggle_connjnt=toggle_connjnt).attach_to(stickmodel)
-#         # self.rgt_hnd.gen_stickmodel(tgl_tcp_frame=False,
+#         # self.rgt_hnd.gen_stickmodel(toggle_tcp_frame=False,
 #         #                             toggle_joint_frame=toggle_joint_frame,
 #         #                             toggle_connjnt=toggle_connjnt).attach_to(stickmodel)
 #         return stickmodel
@@ -769,32 +769,32 @@ class Left_Manipulator(mi.ManipulatorInterface):
 #                       tcp_joint_id=None,
 #                       tcp_loc_pos=None,
 #                       tcp_loc_rotmat=None,
-#                       tgl_tcp_frame=False,
+#                       toggle_tcp_frame=False,
 #                       toggle_joint_frame=False,
 #                       rgba=None,
 #                       name='xarm_gripper_meshmodel'):
 #         meshmodel = mmc.ModelCollection(name=name)
 #         self.central_body.gen_meshmodel(tcp_loc_pos=None,
 #                                         tcp_loc_rotmat=None,
-#                                         tgl_tcp_frame=False,
+#                                         toggle_tcp_frame=False,
 #                                         toggle_joint_frame=toggle_joint_frame,
 #                                         rgba=rgba).attach_to(meshmodel)
 #         self.lft_arm.gen_meshmodel(tcp_joint_id=tcp_joint_id,
 #                                    tcp_loc_pos=tcp_loc_pos,
 #                                    tcp_loc_rotmat=tcp_loc_rotmat,
-#                                    tgl_tcp_frame=tgl_tcp_frame,
+#                                    toggle_tcp_frame=toggle_tcp_frame,
 #                                    toggle_joint_frame=toggle_joint_frame,
 #                                    rgba=rgba).attach_to(meshmodel)
-#         # self.lft_hnd.gen_meshmodel(tgl_tcp_frame=False,
+#         # self.lft_hnd.gen_meshmodel(toggle_tcp_frame=False,
 #         #                            toggle_joint_frame=toggle_joint_frame,
 #         #                            rgba=rgba).attach_to(meshmodel)
 #         self.rgt_arm.gen_meshmodel(tcp_joint_id=tcp_joint_id,
 #                                    tcp_loc_pos=tcp_loc_pos,
 #                                    tcp_loc_rotmat=tcp_loc_rotmat,
-#                                    tgl_tcp_frame=tgl_tcp_frame,
+#                                    toggle_tcp_frame=toggle_tcp_frame,
 #                                    toggle_joint_frame=toggle_joint_frame,
 #                                    rgba=rgba).attach_to(meshmodel)
-#         # self.rgt_hnd.gen_meshmodel(tgl_tcp_frame=False,
+#         # self.rgt_hnd.gen_meshmodel(toggle_tcp_frame=False,
 #         #                            toggle_joint_frame=toggle_joint_frame,
 #         #                            rgba=rgba).attach_to(meshmodel)
 #         for obj_info in self.lft_oih_infos:

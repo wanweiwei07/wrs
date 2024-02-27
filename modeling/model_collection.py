@@ -74,11 +74,11 @@ class ModelCollection(object):
 
     def show_cdprimitive(self):  # only work for mcm
         for cm in self._cm_list:
-            cm.show_cdprimitive()
+            cm.show_cdprim()
 
     def unshow_cdprimitive(self):  # only work for mcm
         for cm in self._cm_list:
-            cm.unshow_cdprimitive()
+            cm.unshow_cdprim()
 
     def show_cdmesh(self):
         for objcm in self._cm_list:

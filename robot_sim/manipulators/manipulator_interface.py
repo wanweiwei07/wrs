@@ -231,17 +231,7 @@ class ManipulatorInterface(object):
                        toggle_jntscs=False,
                        toggle_connjnt=False,
                        name='jlcstick'):
-        return self.jlc._mt.gen_stickmodel(rgba=rgba,
-                                           thickness=thickness,
-                                           joint_ratio=joint_ratio,
-                                           link_ratio=link_ratio,
-                                           tcp_jnt_id=tcp_jnt_id,
-                                           tcp_loc_pos=tcp_loc_pos,
-                                           tcp_loc_rotmat=tcp_loc_rotmat,
-                                           toggle_tcpcs=toggle_tcpcs,
-                                           toggle_jntscs=toggle_jntscs,
-                                           toggle_connjnt=toggle_connjnt,
-                                           name=name)
+        return self.jlc._mt.gen_stickmodel(toggle_tcp_frame=toggle_tcpcs, toggle_jnt_frames=toggle_jntscs, name=name)
 
     def gen_endsphere(self):
         return self.jlc._mt.gen_endsphere()

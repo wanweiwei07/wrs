@@ -52,7 +52,7 @@ class PickPlacePlanner(adp.ADPlanner):
         """
         find the common collision free and IK feasible graspids
         :param hand_name: a component may have multiple hands
-        :param grasp_info_list: a list like [[jaw_width, gl_action_center_pos, pos, rotmat], ...]
+        :param grasp_info_list: a list like [[jaw_width, gl_jaw_center_pos, pos, rotmat], ...]
         :param goal_homomat_list: [pos, ...]
         :param obstacle_list
         :return: [final_available_graspids, intermediate_available_graspids]
@@ -77,7 +77,7 @@ class PickPlacePlanner(adp.ADPlanner):
                 jaw_width, jaw_center_pos, jaw_center_rotmat, hnd_pos, hnd_rotmat = grasp_info
                 goal_jaw_center_pos = goal_pos + goal_rotmat.dot(jaw_center_pos)
                 goal_jaw_center_rotmat = goal_rotmat.dot(jaw_center_rotmat)
-                hnd_instance.grip_at_with_jcpose(goal_jaw_center_pos, goal_jaw_center_rotmat, jaw_width)
+                hnd_instance.grip_at_with_pose(goal_jaw_center_pos, goal_jaw_center_rotmat, jaw_width)
                 if not hnd_instance.is_mesh_collided(obstacle_list):  # hnd_s cd
                     jnt_values = self.robot_s.ik(hand_name, goal_jaw_center_pos, goal_jaw_center_rotmat)
                     if jnt_values is not None:  # common graspid with robot_s ik

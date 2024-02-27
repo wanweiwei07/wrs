@@ -400,8 +400,7 @@ class NIK(object):
             axcorrec.plot(dqcorrected)
             axaj.plot(ajpath)
             plt.show()
-            self.jlc_object.gen_stickmodel(tcp_jnt_id=tcp_jnt_id, tcp_loc_pos=tcp_loc_pos,
-                                           tcp_loc_rotmat=tcp_loc_rotmat, toggle_jntscs=True).attach_to(base)
+            self.jlc_object.gen_stickmodel(toggle_jnt_frames=True).attach_to(base)
             base.run()
         self.jlc_object.fk(jntvalues_bk)
         wns.warn('Failed to solve the IK, returning None.')

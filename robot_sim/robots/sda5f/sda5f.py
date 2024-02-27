@@ -26,14 +26,14 @@ class SDA5F(ri.RobotInterface):
         self.lft_body.lnks[0]['collision_model'] = cm.CollisionModel(
             os.path.join(this_dir, "meshes", "base_link.stl"),
             cdp_type="user_defined", expand_radius=.005,
-            userdef_cdp_fn=self._base_combined_cdnp)
+            userdef_cdprim_fn=self._base_combined_cdnp)
         self.lft_body.lnks[0]['rgba'] = [.7, .7, .7, 1.0]
         self.lft_body.lnks[1]['name'] = "sda5f_lft_torso"
         self.lft_body.lnks[1]['pos_in_loc_tcp'] = np.array([0, 0, 0])
         self.lft_body.lnks[1]['collision_model'] = cm.CollisionModel(
             os.path.join(this_dir, "meshes", "torso_link.stl"),
             cdp_type="user_defined", expand_radius=.005,
-            userdef_cdp_fn=self._torso_combined_cdnp)
+            userdef_cdprim_fn=self._torso_combined_cdnp)
         self.lft_body.lnks[1]['rgba'] = [.7, .7, .7, 1.0]
         self.lft_body.finalize()
         lft_arm_homeconf = np.zeros(7)
@@ -217,11 +217,7 @@ class SDA5F(ri.RobotInterface):
                                     toggle_tcpcs=toggle_tcpcs,
                                     toggle_jntscs=toggle_jntscs,
                                     toggle_connjnt=toggle_connjnt).attach_to(stickmodel)
-        self.lft_hnd.gen_stickmodel(tcp_loc_pos=None,
-                                    tcp_loc_rotmat=None,
-                                    toggle_tcpcs=False,
-                                    toggle_jntscs=toggle_jntscs,
-                                    toggle_connjnt=toggle_connjnt).attach_to(stickmodel)
+        self.lft_hnd.gen_stickmodel(toggle_tcp_frame=False, toggle_jnt_frames=toggle_jntscs).attach_to(stickmodel)
         self.rgt_body.gen_stickmodel(tcp_loc_pos=None,
                                      tcp_loc_rotmat=None,
                                      toggle_tcpcs=False,
@@ -232,11 +228,7 @@ class SDA5F(ri.RobotInterface):
                                     toggle_tcpcs=toggle_tcpcs,
                                     toggle_jntscs=toggle_jntscs,
                                     toggle_connjnt=toggle_connjnt).attach_to(stickmodel)
-        self.rgt_hnd.gen_stickmodel(tcp_loc_pos=None,
-                                    tcp_loc_rotmat=None,
-                                    toggle_tcpcs=False,
-                                    toggle_jntscs=toggle_jntscs,
-                                    toggle_connjnt=toggle_connjnt).attach_to(stickmodel)
+        self.rgt_hnd.gen_stickmodel(toggle_tcp_frame=False, toggle_jnt_frames=toggle_jntscs).attach_to(stickmodel)
         return stickmodel
 
     def gen_meshmodel(self,
@@ -259,8 +251,8 @@ class SDA5F(ri.RobotInterface):
                                    toggle_tcpcs=toggle_tcpcs,
                                    toggle_jntscs=toggle_jntscs,
                                    rgba=rgba).attach_to(meshmodel)
-        self.lft_hnd.gen_meshmodel(toggle_tcpcs=False,
-                                   toggle_jntscs=toggle_jntscs,
+        self.lft_hnd.gen_meshmodel(toggle_tcp_frame=False,
+                                   toggle_jnt_frames=toggle_jntscs,
                                    rgba=rgba).attach_to(meshmodel)
         self.rgt_arm.gen_meshmodel(tcp_jnt_id=tcp_jnt_id,
                                    tcp_loc_pos=tcp_loc_pos,
@@ -268,8 +260,8 @@ class SDA5F(ri.RobotInterface):
                                    toggle_tcpcs=toggle_tcpcs,
                                    toggle_jntscs=toggle_jntscs,
                                    rgba=rgba).attach_to(meshmodel)
-        self.rgt_hnd.gen_meshmodel(toggle_tcpcs=False,
-                                   toggle_jntscs=toggle_jntscs,
+        self.rgt_hnd.gen_meshmodel(toggle_tcp_frame=False,
+                                   toggle_jnt_frames=toggle_jntscs,
                                    rgba=rgba).attach_to(meshmodel)
         for obj_info in self.lft_oih_infos:
             objcm = obj_info['collision_model']

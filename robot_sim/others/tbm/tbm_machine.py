@@ -358,10 +358,7 @@ class TBM(object):
                                  toggle_jntscs=toggle_jntscs).attach_to(stickmodel)
         for k in self.cutters.keys():
             for cutter in self.cutters[k]:
-                cutter.gen_stickmodel(tcp_loc_pos=None,
-                                      tcp_loc_rotmat=None,
-                                      toggle_tcpcs=False,
-                                      toggle_jntscs=toggle_jntscs).attach_to(stickmodel)
+                cutter.gen_stickmodel(toggle_tcp_frame=False, toggle_jnt_frames=toggle_jntscs).attach_to(stickmodel)
         return stickmodel
 
     def gen_meshmodel(self,

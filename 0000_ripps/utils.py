@@ -201,9 +201,9 @@ def search_reachable_configuration(rbt_s,
                     return jnt_values
         else:
             if toggle_debug:
-                ee_s.grip_at_with_jcpose(gl_jaw_center_pos=tgt_pos,
-                                         gl_jaw_center_rotmat=rotmat,
-                                         jaw_width=0)
+                ee_s.grip_at_with_pose(gl_jaw_center_pos=tgt_pos,
+                                       gl_jaw_center_rotmat=rotmat,
+                                       jaw_width=0)
                 ee_s.gen_mesh_model(rgba=[1, 0, 0, .3]).attach_to(base)
     rbt_s.fk(component_name=component_name, joint_values=jnt_values_bk)
     return None

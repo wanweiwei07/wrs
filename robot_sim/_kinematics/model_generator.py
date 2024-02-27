@@ -46,22 +46,26 @@ def gen_tcp_frame(spos,
     return m_col
 
 
-def gen_lnk_gmesh(lnk, rgba=None, tgl_cdprimitive=False, tgl_cdmesh=False, tgl_frame=False):
+def gen_lnk_gmesh(lnk,
+                  rgba=None,
+                  toggle_cdprim=False,
+                  toggle_cdmesh=False,
+                  toggel_frame=False):
     gmodel = mgm.GeometricModel()
     # if lnk.cmodel == None:
     #     raise ValueError("Collision model is unavailable.")
     # else:
     if lnk.cmodel is not None:
-        if tgl_cdmesh:
+        if toggle_cdmesh:
             lnk.cmodel.show_cdmesh()
-        if tgl_cdprimitive:
-            lnk.cmodel.show_cdprimitive()
+        if toggle_cdprim:
+            lnk.cmodel.show_cdprim()
         lnk.cmodel.attach_copy_to(gmodel)
         lnk.cmodel.unshow_cdmesh()
-        lnk.cmodel.unshow_cdprimitive()
+        lnk.cmodel.unshow_cdprim()
         if rgba is not None:
             gmodel.rgba = rgba
-        if tgl_frame:
+        if toggel_frame:
             mgm.gen_frame(pos=lnk.gl_pos, rotmat=lnk.gl_rotmat).attach_to(gmodel)
     return gmodel
 
@@ -70,12 +74,12 @@ def gen_anchor(anchor,
                radius=rkc.ANCHOR_BALL_RADIUS,
                frame_stick_radius=rkc.FRAME_STICK_RADIUS,
                frame_stick_length=rkc.FRAME_STICK_LENGTH_SHORT,
-               tgl_frame=True):
+               toggle_frame=True):
     m_col = mmc.ModelCollection()
     mgm.gen_sphere(pos=anchor.pos,
                    radius=radius,
                    rgba=bc.jnt_parent_rgba).attach_to(m_col)
-    if tgl_frame:
+    if toggle_frame:
         mgm.gen_dashed_frame(pos=anchor.pos,
                              rotmat=anchor.rotmat,
                              ax_radius=frame_stick_radius,
@@ -87,9 +91,9 @@ def gen_jnt(jnt,
             radius=rkc.JNT_RADIUS,
             frame_stick_radius=rkc.FRAME_STICK_RADIUS,
             frame_stick_length=rkc.FRAME_STICK_LENGTH_SHORT,
-            tgl_frame_0=True,
-            tgl_frame_q=True,
-            tgl_lnk_mesh=False):
+            toggle_frame_0=True,
+            toggle_frame_q=True,
+            toggle_lnk_mesh=False):
     m_col = mmc.ModelCollection()
     spos = jnt._gl_pos_0 - jnt.gl_motion_ax * radius
     epos = jnt._gl_pos_0 + jnt.gl_motion_ax * radius
@@ -117,17 +121,17 @@ def gen_jnt(jnt,
                       n_sec=6).attach_to(m_col)
     else:
         raise ValueError("Joint type is not available.")
-    if tgl_frame_0:
+    if toggle_frame_0:
         mgm.gen_dashed_frame(pos=jnt._gl_pos_0,
                              rotmat=jnt._gl_rotmat_0,
                              ax_radius=frame_stick_radius,
                              ax_length=frame_stick_length).attach_to(m_col)
-    if tgl_frame_q:
+    if toggle_frame_q:
         mgm.gen_frame(pos=jnt._gl_pos_q,
                       rotmat=jnt._gl_rotmat_q,
                       ax_radius=frame_stick_radius,
                       ax_length=frame_stick_length).attach_to(m_col)
-    if tgl_lnk_mesh and jnt.lnk is not None:
+    if toggle_lnk_mesh and jnt.lnk is not None:
         gen_lnk_gmesh(jnt.lnk).attach_to(m_col)
     return m_col
 
@@ -137,8 +141,8 @@ def gen_jlc_stick(jlc,
                   link_ratio=.72,
                   jnt_ratio=1,
                   stick_rgba=bc.link_stick_rgba,
-                  tgl_jnt_frame=False,
-                  tgl_tcp_frame=True,
+                  toggle_jnt_frames=False,
+                  toggle_tcp_frame=True,
                   name='jlc_stick_model'):
     """
 
@@ -147,15 +151,15 @@ def gen_jlc_stick(jlc,
     :param link_ratio:
     :param jnt_ratio:
     :param stick_rgba:
-    :param tgl_jnt_frame:
-    :param tgl_tcp_frame:
+    :param toggle_jnt_frames:
+    :param toggle_tcp_frame:
     :param name:
     :return:
     """
     m_col = mmc.ModelCollection(name=name)
     gen_anchor(jlc.anchor,
                radius=jnt_ratio * rfd_radius,
-               tgl_frame=tgl_jnt_frame).attach_to(m_col)
+               toggle_frame=toggle_jnt_frames).attach_to(m_col)
     if jlc.n_dof >= 1:
         mgm.gen_dashed_stick(spos=jlc.anchor.pos,
                              epos=jlc.jnts[0].gl_pos_0,
@@ -170,13 +174,13 @@ def gen_jlc_stick(jlc,
                           rgba=stick_rgba).attach_to(m_col)
             gen_jnt(jlc.jnts[i],
                     radius=jnt_ratio * rfd_radius,
-                    tgl_frame_0=tgl_jnt_frame,
-                    tgl_frame_q=tgl_jnt_frame).attach_to(m_col)
+                    toggle_frame_0=toggle_jnt_frames,
+                    toggle_frame_q=toggle_jnt_frames).attach_to(m_col)
         gen_jnt(jlc.jnts[jlc.n_dof - 1],
                 radius=jnt_ratio * rfd_radius,
-                tgl_frame_0=tgl_jnt_frame,
-                tgl_frame_q=tgl_jnt_frame).attach_to(m_col)
-    if tgl_tcp_frame:
+                toggle_frame_0=toggle_jnt_frames,
+                toggle_frame_q=toggle_jnt_frames).attach_to(m_col)
+    if toggle_tcp_frame:
         spos = jlc.jnts[jlc.tcp_jnt_id].gl_pos_q
         tcp_gl_pos, tcp_gl_rotmat = jlc.cvt_tcp_loc_to_gl()
         gen_tcp_frame(spos=spos, tcp_gl_pos=tcp_gl_pos, tcp_gl_rotmat=tcp_gl_rotmat).attach_to(m_col)
@@ -193,15 +197,15 @@ def gen_jlc_mesh(jlc,
     m_col = mmc.ModelCollection(name=name)
     gen_lnk_gmesh(jlc.anchor.lnk,
                   rgba=rgba,
-                  tgl_cdmesh=tgl_cdmesh,
-                  tgl_cdprimitive=tgl_cdprimitive).attach_to(m_col)
+                  toggle_cdmesh=tgl_cdmesh,
+                  toggle_cdprim=tgl_cdprimitive).attach_to(m_col)
     if jlc.n_dof >= 1:
         for i in range(jlc.n_dof):
             if jlc.jnts[i].lnk is not None:
                 gen_lnk_gmesh(jlc.jnts[i].lnk,
                               rgba=rgba,
-                              tgl_cdmesh=tgl_cdmesh,
-                              tgl_cdprimitive=tgl_cdprimitive).attach_to(m_col)
+                              toggle_cdmesh=tgl_cdmesh,
+                              toggle_cdprim=tgl_cdprimitive).attach_to(m_col)
     if tgl_tcp_frame:
         if jlc.n_dof >= 1:
             spos = jlc.jnts[jlc.tcp_jnt_id].gl_pos_q
@@ -213,7 +217,7 @@ def gen_jlc_mesh(jlc,
         gen_anchor(jlc.anchor,
                    frame_stick_radius=rkc.FRAME_STICK_RADIUS,
                    frame_stick_length=rkc.FRAME_STICK_LENGTH_LONG,
-                   tgl_frame=tgl_jnt_frame).attach_to(m_col)
+                   toggle_frame=tgl_jnt_frame).attach_to(m_col)
         if jlc.n_dof >= 1:
             # 0 frame
             mgm.gen_dashed_frame(pos=jlc.jnts[i]._gl_pos_0,

@@ -119,26 +119,18 @@ class SchunkRH918(gp.GripperInterface):
         motion_val = self.lft.jnts[1]['motion_val']
         return self.jaw_range[1] - motion_val*2.0
 
-    def gen_stickmodel(self,
-                       tcp_jntid=None,
-                       tcp_loc_pos=None,
-                       tcp_loc_rotmat=None,
-                       toggle_tcpcs=False,
-                       toggle_jntscs=False,
-                       toggle_connjnt=False,
-                       name='schunkrh918_stickmodel'):
+    def gen_stickmodel(self, toggle_tcp_frame=False, toggle_jnt_frames=False, name='ee_stickmodel'):
         stickmodel = mc.ModelCollection(name=name)
-        self.coupling.gen_stickmodel(toggle_tcpcs=False,
-                                     toggle_jntscs=toggle_jntscs).attach_to(stickmodel)
+        self.coupling.gen_stickmodel(toggle_tcp_frame=False, toggle_jnt_frames=toggle_jnt_frames).attach_to(stickmodel)
         self.lft.gen_stickmodel(toggle_tcpcs=False,
-                                toggle_jntscs=toggle_jntscs,
+                                toggle_jntscs=toggle_jnt_frames,
                                 toggle_connjnt=toggle_connjnt).attach_to(stickmodel)
         self.rgt.gen_stickmodel(toggle_tcpcs=False,
-                                toggle_jntscs=toggle_jntscs,
+                                toggle_jntscs=toggle_jnt_frames,
                                 toggle_connjnt=toggle_connjnt).attach_to(stickmodel)
-        if toggle_tcpcs:
+        if toggle_tcp_frame:
             jaw_center_gl_pos = self.rotmat.dot(self.jaw_center_pos)+self.pos
-            jaw_center_gl_rotmat = self.rotmat.dot(self.action_center_rotmat)
+            jaw_center_gl_rotmat = self.rotmat.dot(self.acting_center_rotmat)
             gm.gen_dashed_stick(spos=self.pos,
                                 epos=jaw_center_gl_pos,
                                 radius=.0062,
@@ -148,23 +140,23 @@ class SchunkRH918(gp.GripperInterface):
         return stickmodel
 
     def gen_meshmodel(self,
-                      toggle_tcpcs=False,
-                      toggle_jntscs=False,
+                      toggle_tcp_frame=False,
+                      toggle_jnt_frames=False,
                       rgba=None,
                       name='schunkrh918_meshmodel'):
         meshmodel = mc.ModelCollection(name=name)
         self.coupling.gen_mesh_model(toggle_tcpcs=False,
-                                     toggle_jntscs=toggle_jntscs,
+                                     toggle_jntscs=toggle_jnt_frames,
                                      rgba=rgba).attach_to(meshmodel)
         self.lft.gen_mesh_model(toggle_tcpcs=False,
-                                toggle_jntscs=toggle_jntscs,
+                                toggle_jntscs=toggle_jnt_frames,
                                 rgba=rgba).attach_to(meshmodel)
         self.rgt.gen_mesh_model(toggle_tcpcs=False,
-                                toggle_jntscs=toggle_jntscs,
+                                toggle_jntscs=toggle_jnt_frames,
                                 rgba=rgba).attach_to(meshmodel)
-        if toggle_tcpcs:
+        if toggle_tcp_frame:
             jaw_center_gl_pos = self.rotmat.dot(self.jaw_center_pos)+self.pos
-            jaw_center_gl_rotmat = self.rotmat.dot(self.action_center_rotmat)
+            jaw_center_gl_rotmat = self.rotmat.dot(self.acting_center_rotmat)
             gm.gen_dashed_stick(spos=self.pos,
                                 epos=jaw_center_gl_pos,
                                 radius=.0062,
@@ -189,7 +181,7 @@ if __name__ == '__main__':
     grpr.gen_meshmodel().attach_to(base)
     # grpr.gen_stickmodel().attach_to(base)
     grpr.fix_to(pos=np.array([0, .3, .2]), rotmat=rm.rotmat_from_axangle([1, 0, 0], .05))
-    grpr.gen_meshmodel(toggle_tcpcs=True).attach_to(base)
+    grpr.gen_meshmodel(toggle_tcp_frame=True).attach_to(base)
     grpr.show_cdmesh()
     grpr.show_cdprimit()
     base.run()

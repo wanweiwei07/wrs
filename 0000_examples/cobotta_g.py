@@ -28,6 +28,6 @@ gp.write_pickle_file(objcm_name="holder",
                      file_name="cobg_holder_grasps.pickle")
 for grasp_info in grasp_info_list:
     jaw_width, jaw_center_pos, jaw_center_rotmat, hnd_pos, hnd_rotmat = grasp_info
-    hnd_s.grip_at_with_jcpose(jaw_center_pos, jaw_center_rotmat, jaw_width)
+    hnd_s.grip_at_with_pose(jaw_center_pos, jaw_center_rotmat, jaw_width)
     hnd_s.gen_meshmodel().attach_to(base)
 base.run()

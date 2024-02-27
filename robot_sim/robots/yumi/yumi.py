@@ -36,7 +36,7 @@ class Yumi(ri.RobotInterface):
         self.lft_body.lnks[1]['collision_model'] = cm.CollisionModel(
             os.path.join(this_dir, "meshes", "body.stl"),
             cdp_type="user_defined", expand_radius=.005,
-            userdef_cdp_fn=self._base_combined_cdnp)
+            userdef_cdprim_fn=self._base_combined_cdnp)
         self.lft_body.lnks[1]['rgba'] = [.7, .7, .7, 1]
         self.lft_body.lnks[2]['name'] = "yumi_lft_column"
         self.lft_body.lnks[2]['pos_in_loc_tcp'] = np.array([-.327, -.24, -1.015])
@@ -94,11 +94,11 @@ class Yumi(ri.RobotInterface):
         # lft
         self.lft_arm.tcp_jnt_id = -1
         self.lft_arm.tcp_loc_pos = self.lft_hnd.jaw_center_pos
-        self.lft_arm.tcp_loc_rotmat = self.lft_hnd.action_center_rotmat
+        self.lft_arm.tcp_loc_rotmat = self.lft_hnd.acting_center_rotmat
         # rgt
         self.rgt_arm.tcp_jnt_id = -1
-        self.rgt_arm.tcp_loc_pos = self.rgt_hnd.action_center_pos
-        self.rgt_arm.tcp_loc_rotmat = self.rgt_hnd.action_center_rotmat
+        self.rgt_arm.tcp_loc_pos = self.rgt_hnd.acting_center_pos
+        self.rgt_arm.tcp_loc_rotmat = self.rgt_hnd.acting_center_rotmat
         # a list of detailed information about objects in hand, see CollisionChecker.add_objinhnd
         self.lft_oih_infos = []
         self.rgt_oih_infos = []
@@ -514,22 +514,14 @@ class Yumi(ri.RobotInterface):
                                     toggle_tcpcs=toggle_tcpcs,
                                     toggle_jntscs=toggle_jntscs,
                                     toggle_connjnt=toggle_connjnt).attach_to(stickmodel)
-        self.lft_hnd.gen_stickmodel(toggle_tcpcs=False,
-                                    toggle_jntscs=toggle_jntscs,
-                                    toggle_connjnt=toggle_connjnt).attach_to(stickmodel)
+        self.lft_hnd.gen_stickmodel(toggle_tcp_frame=False, toggle_jnt_frames=toggle_jntscs).attach_to(stickmodel)
         self.rgt_body.gen_stickmodel(tcp_loc_pos=None,
                                      tcp_loc_rotmat=None,
                                      toggle_tcpcs=False,
                                      toggle_jntscs=toggle_jntscs).attach_to(stickmodel)
-        self.rgt_arm.gen_stickmodel(tcp_jnt_id=tcp_jnt_id,
-                                    tcp_loc_pos=tcp_loc_pos,
-                                    tcp_loc_rotmat=tcp_loc_rotmat,
-                                    toggle_tcpcs=toggle_tcpcs,
-                                    toggle_jntscs=toggle_jntscs,
-                                    toggle_connjnt=toggle_connjnt).attach_to(stickmodel)
-        self.rgt_hnd.gen_stickmodel(toggle_tcpcs=False,
-                                    toggle_jntscs=toggle_jntscs,
-                                    toggle_connjnt=toggle_connjnt).attach_to(stickmodel)
+        self.rgt_arm.gen_stickmodel(toggle_tcp_frame=toggle_tcpcs,
+                                    toggle_jnt_frames=toggle_jntscs).attach_to(stickmodel)
+        self.rgt_hnd.gen_stickmodel(toggle_tcp_frame=False, toggle_jnt_frames=toggle_jntscs).attach_to(stickmodel)
         return stickmodel
 
     def gen_meshmodel(self,
@@ -552,8 +544,8 @@ class Yumi(ri.RobotInterface):
                                    toggle_tcpcs=toggle_tcpcs,
                                    toggle_jntscs=toggle_jntscs,
                                    rgba=rgba).attach_to(meshmodel)
-        self.lft_hnd.gen_meshmodel(toggle_tcpcs=False,
-                                   toggle_jntscs=toggle_jntscs,
+        self.lft_hnd.gen_meshmodel(toggle_tcp_frame=False,
+                                   toggle_jnt_frames=toggle_jntscs,
                                    rgba=rgba).attach_to(meshmodel)
         self.rgt_arm.gen_mesh_model(tcp_jnt_id=tcp_jnt_id,
                                     tcp_loc_pos=tcp_loc_pos,

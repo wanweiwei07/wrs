@@ -53,14 +53,14 @@ class Nextage(ri.RobotInterface):
         self.central_body.lnks[0]['collision_model'] = cm.CollisionModel(
             os.path.join(this_dir, "meshes", "waist_link_mesh.dae"),
             cdp_type="user_defined", expand_radius=.005,
-            userdef_cdp_fn=self._waist_combined_cdnp)
+            userdef_cdprim_fn=self._waist_combined_cdnp)
         self.central_body.lnks[0]['rgba'] = [.77, .77, .77, 1.0]
         self.central_body.lnks[1]['name'] = "nextage_chest"
         self.central_body.lnks[1]['pos_in_loc_tcp'] = np.array([0, 0, 0])
         self.central_body.lnks[1]['collision_model'] = cm.CollisionModel(
             os.path.join(this_dir, "meshes", "chest_joint0_link_mesh.dae"),
             cdp_type="user_defined", expand_radius=.005,
-            userdef_cdp_fn=self._chest_combined_cdnp)
+            userdef_cdprim_fn=self._chest_combined_cdnp)
         self.central_body.lnks[1]['rgba'] = [1, .65, .5, 1]
         self.central_body.lnks[2]['name'] = "head_joint0_link_mesh"
         self.central_body.lnks[2]['pos_in_loc_tcp'] = np.array([0, 0, 0.5695])
@@ -642,7 +642,7 @@ class Nextage(ri.RobotInterface):
                                     toggle_tcpcs=toggle_tcpcs,
                                     toggle_jntscs=toggle_jntscs,
                                     toggle_connjnt=toggle_connjnt).attach_to(stickmodel)
-        # self.lft_hnd.gen_stickmodel(tgl_tcp_frame=False,
+        # self.lft_hnd.gen_stickmodel(toggle_tcp_frame=False,
         #                             toggle_joint_frame=toggle_joint_frame,
         #                             toggle_connjnt=toggle_connjnt).attach_to(stickmodel)
         self.rgt_arm.gen_stickmodel(tcp_jnt_id=tcp_jnt_id,
@@ -651,7 +651,7 @@ class Nextage(ri.RobotInterface):
                                     toggle_tcpcs=toggle_tcpcs,
                                     toggle_jntscs=toggle_jntscs,
                                     toggle_connjnt=toggle_connjnt).attach_to(stickmodel)
-        # self.rgt_hnd.gen_stickmodel(tgl_tcp_frame=False,
+        # self.rgt_hnd.gen_stickmodel(toggle_tcp_frame=False,
         #                             toggle_joint_frame=toggle_joint_frame,
         #                             toggle_connjnt=toggle_connjnt).attach_to(stickmodel)
         return stickmodel
@@ -676,7 +676,7 @@ class Nextage(ri.RobotInterface):
                                     toggle_tcpcs=toggle_tcpcs,
                                     toggle_jntscs=toggle_jntscs,
                                     rgba=rgba).attach_to(meshmodel)
-        # self.lft_hnd.gen_meshmodel(tgl_tcp_frame=False,
+        # self.lft_hnd.gen_meshmodel(toggle_tcp_frame=False,
         #                            toggle_joint_frame=toggle_joint_frame,
         #                            rgba=rgba).attach_to(meshmodel)
         self.rgt_arm.gen_mesh_model(tcp_jnt_id=tcp_jnt_id,
@@ -685,7 +685,7 @@ class Nextage(ri.RobotInterface):
                                     toggle_tcpcs=toggle_tcpcs,
                                     toggle_jntscs=toggle_jntscs,
                                     rgba=rgba).attach_to(meshmodel)
-        # self.rgt_hnd.gen_meshmodel(tgl_tcp_frame=False,
+        # self.rgt_hnd.gen_meshmodel(toggle_tcp_frame=False,
         #                            toggle_joint_frame=toggle_joint_frame,
         #                            rgba=rgba).attach_to(meshmodel)
         for obj_info in self.lft_oih_infos:

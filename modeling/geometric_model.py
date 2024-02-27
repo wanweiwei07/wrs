@@ -225,7 +225,7 @@ class WireFrameModel(StaticGeometricModel):
 
 def delay_geometry_decorator(method):
     def wrapper(self, *args, **kwargs):
-        self._is_geometry_delayed = True
+        self._is_geom_delayed = True
         return method(self, *args, **kwargs)
 
     return wrapper
@@ -233,10 +233,10 @@ def delay_geometry_decorator(method):
 
 def update_geometry_decorator(method):
     def wrapper(self, *args, **kwargs):
-        # print(self._is_geometry_delayed)
-        if self._is_geometry_delayed:
+        # print(self._is_geom_delayed)
+        if self._is_geom_delayed:
             self._pdndp.setPosQuat(da.npvec3_to_pdvec3(self.pos), da.npmat3_to_pdquat(self.rotmat))
-            self._is_geometry_delayed = False
+            self._is_geom_delayed = False
         return method(self, *args, **kwargs)
 
     return wrapper
@@ -270,7 +270,7 @@ class GeometricModel(StaticGeometricModel):
             self._local_frame = copy.deepcopy(initor.local_frame)
             self._pos = copy.deepcopy(initor._pos)
             self._rotmat = copy.deepcopy(initor._rotmat)
-            self._is_geometry_delayed = copy.deepcopy(initor._is_geometry_delayed)
+            self._is_geom_delayed = copy.deepcopy(initor._is_geom_delayed)
         else:
             super().__init__(initor=initor,
                              name=name,
@@ -278,7 +278,7 @@ class GeometricModel(StaticGeometricModel):
                              toggle_twosided=toggle_twosided)
             self._pos = np.zeros(3)
             self._rotmat = np.eye(3)
-            self._is_geometry_delayed = False
+            self._is_geom_delayed = False
         self.pdndp_core.setShaderAuto()
 
     @property

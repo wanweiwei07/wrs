@@ -174,7 +174,7 @@ class CollisionChecker(object):
         # attach obstacles
         obstacle_cdprimitive_list = []
         for obstacle in obstacle_list:
-            obstacle.attach_cdprimitive_to(self.cd_pdndp)
+            obstacle.attach_cdprim_to(self.cd_pdndp)
         # attach other robots
         for robot in otherrobot_list:
             for cce in robot.cc.cce_dict.values():
@@ -184,7 +184,7 @@ class CollisionChecker(object):
         self.cd_trav.traverse(self.cd_pdndp)
         # clear obstacles
         for obstacle in obstacle_list:
-            obstacle.detach_cdprimitive()
+            obstacle.detach_cdprim()
         # clear other robots
         for robot in otherrobot_list:
             for cce in robot.cc.cce_dict.values():

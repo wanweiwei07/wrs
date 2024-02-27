@@ -134,18 +134,13 @@ class CobottaPipette(gp.GripperInterface):
     def get_jaw_width(self):
         return -self.jlc.jnts[2]['motion_val']
 
-    def gen_stickmodel(self,
-                       toggle_tcpcs=False,
-                       toggle_jntscs=False,
-                       toggle_connjnt=False,
-                       name='cbtp_stickmodel'):
+    def gen_stickmodel(self, toggle_tcp_frame=False, toggle_jnt_frames=False, name='ee_stickmodel'):
         stickmodel = mc.ModelCollection(name=name)
-        self.coupling.gen_stickmodel(toggle_tcpcs=False,
-                                     toggle_jntscs=toggle_jntscs).attach_to(stickmodel)
+        self.coupling.gen_stickmodel(toggle_tcp_frame=False, toggle_jnt_frames=toggle_jnt_frames).attach_to(stickmodel)
         self.jlc.gen_stickmodel(toggle_tcpcs=False,
-                                toggle_jntscs=toggle_jntscs,
+                                toggle_jntscs=toggle_jnt_frames,
                                 toggle_connjnt=toggle_connjnt).attach_to(stickmodel)
-        if toggle_tcpcs:
+        if toggle_tcp_frame:
             jaw_center_gl_pos = self.rotmat.dot(self.jaw_center_pos) + self.pos
             jaw_center_gl_rotmat = self.rotmat.dot(self.jaw_center_rotmat)
             gm.gen_dashed_stick(spos=self.pos,
@@ -157,18 +152,18 @@ class CobottaPipette(gp.GripperInterface):
         return stickmodel
 
     def gen_meshmodel(self,
-                      toggle_tcpcs=False,
-                      toggle_jntscs=False,
+                      toggle_tcp_frame=False,
+                      toggle_jnt_frames=False,
                       rgba=None,
                       name='cbtp_meshmodel'):
         meshmodel = mc.ModelCollection(name=name)
         self.coupling.gen_mesh_model(toggle_tcpcs=False,
-                                     toggle_jntscs=toggle_jntscs,
+                                     toggle_jntscs=toggle_jnt_frames,
                                      rgba=rgba).attach_to(meshmodel)
         self.jlc.gen_mesh_model(toggle_tcpcs=False,
-                                toggle_jntscs=toggle_jntscs,
+                                toggle_jntscs=toggle_jnt_frames,
                                 rgba=rgba).attach_to(meshmodel)
-        if toggle_tcpcs:
+        if toggle_tcp_frame:
             jaw_center_gl_pos = self.rotmat.dot(self.jaw_center_pos) + self.pos
             jaw_center_gl_rotmat = self.rotmat.dot(self.jaw_center_rotmat)
             gm.gen_dashed_stick(spos=self.pos,
@@ -192,7 +187,7 @@ if __name__ == '__main__':
     #     grpr.gen_meshmodel().attach_to(base)
     grpr = CobottaPipette(enable_cc=True)
     grpr.change_jaw_width(.0)
-    grpr.gen_meshmodel(toggle_tcpcs=True).attach_to(base)
+    grpr.gen_meshmodel(toggle_tcp_frame=True).attach_to(base)
     grpr.gen_stickmodel().attach_to(base)
     # grpr.gen_stickmodel(toggle_joint_frame=False).attach_to(base)
     grpr.fix_to(pos=np.array([0, .3, .2]), rotmat=rm.rotmat_from_axangle([1, 0, 0], .05))

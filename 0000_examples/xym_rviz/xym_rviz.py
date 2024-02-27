@@ -20,7 +20,7 @@ if __name__ == '__main__':
     robot_meshmodel_parameters = [None,  # tcp_jntid
                                   None,  # tcp_loc_pos
                                   None,  # tcp_loc_rotmat
-                                  False,  # tgl_tcp_frame
+                                  False,  # toggle_tcp_frame
                                   False,  # toggle_joint_frame
                                   [0, .7, 0, .3],  # rgba
                                   'auto']  # name

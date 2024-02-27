@@ -11,27 +11,6 @@ class GripperInterface(ei.EEInterface):
         super().__init__(pos=pos, rotmat=rotmat, cdmesh_type=cdmesh_type, name=name)
         # jaw width
         self.jaw_rng = [0.0, 0.05]  # 0~0.05m by default
-        # collision detection
-        self.cc = None
-        # cd mesh collection for precise collision checking
-        self.cdmesh_collection = mmc.ModelCollection()
-
-    # jaw center pos and rotmat are defined for back compatibility reasons. to be replaced by action_xxx; 20230807
-    # @property
-    # def action_center_pos(self):
-    #     return self.action_center_pos
-    #
-    # @action_center_pos.setter
-    # def action_center_pos(self, pos: np.array):
-    #     self.action_center_pos = pos
-    #
-    # @property
-    # def action_center_rotmat(self):
-    #     return self.action_center_rotmat
-    #
-    # @action_center_rotmat.setter
-    # def action_center_rotmat(self, rotmat: np.array):
-    #     self.action_center_rotmat = rotmat
 
     def fk(self, motion_val):
         raise NotImplementedError
@@ -42,30 +21,33 @@ class GripperInterface(ei.EEInterface):
     def get_jaw_width(self):
         raise NotImplementedError
 
-    def grip_at_with_acao(self, gl_action_center_pos, gl_approaching_direction, gl_opening_direction, jaw_width):
+    def grip_at_with_twovecs(self,
+                             gl_jaw_center_pos,
+                             gl_approaching_vec,
+                             gl_fgr1_opening_vec,
+                             jaw_width):
         """
-        specifying the gripping pose using ACAO, where AC=Acution Center, AO=Approaching and Opening directions
-        :param gl_action_center_pos:
-        :param gl_approaching_direction: jaw_center's approaching direction
-        :param gl_opening_direction: jaw_center's opening direction
-        :param jaw_width:
-        :return:
-        """
-        gl_action_center_rotmat = np.eye(3)
-        gl_action_center_rotmat[:, 2] = rm.unit_vector(gl_approaching_direction)
-        gl_action_center_rotmat[:, 1] = rm.unit_vector(gl_opening_direction)
-        gl_action_center_rotmat[:, 0] = np.cross(gl_action_center_rotmat[:3, 1], gl_action_center_rotmat[:3, 2])
-        return self.grip_at_with_jcpose(gl_action_center_pos, gl_action_center_rotmat, jaw_width)
-
-    def grip_at_with_jcpose(self, gl_jaw_center_pos, gl_jaw_center_rotmat, jaw_width):
-        """
+        specifying the gripping pose using two axes -- approaching vector and opening vector
         :param gl_jaw_center_pos:
-        :param gl_jaw_center_rotmat: jaw_center's rotmat
-        :param jaw_width:
+        :param gl_approaching_vec: jaw_center's approaching direction
+        :param gl_fgr1_opening_vec: jaw_center's opening direction
+        :param jaw_width: [jaw_width, gl_jaw_center_pos, gl_jaw_center_rotmat, eef_root_pos, eef_root_rotmat]
         :return:
         """
         self.change_jaw_width(jaw_width)
-        eef_root_rotmat = gl_jaw_center_rotmat.dot(self.action_center_rotmat.T)
-        eef_root_pos = gl_jaw_center_pos - eef_root_rotmat.dot(self.action_center_pos)
-        self.fix_to(eef_root_pos, eef_root_rotmat)
-        return [jaw_width, gl_jaw_center_pos, gl_jaw_center_rotmat, eef_root_pos, eef_root_rotmat]
+        param_list = self.align_acting_center_by_twovecs(gl_acting_center_pos=gl_jaw_center_pos,
+                                                         gl_approaching_vec=gl_approaching_vec,
+                                                         gl_side_vec=gl_fgr1_opening_vec)
+        return [jaw_width] + param_list
+
+    def grip_at_with_pose(self, gl_jaw_center_pos, gl_jaw_center_rotmat, jaw_width):
+        """
+        :param gl_jaw_center_pos:
+        :param gl_jaw_center_rotmat:
+        :param jaw_width:
+        :return: [jaw_width, gl_jaw_center_pos, gl_jaw_center_rotmat, eef_root_pos, eef_root_rotmat]
+        """
+        self.change_jaw_width(jaw_width)
+        param_list = self.align_acting_center_by_pose(gl_acting_center_pos=gl_jaw_center_pos,
+                                                      gl_acting_center_rotmat=gl_jaw_center_rotmat)
+        return [jaw_width] + param_list

@@ -28,7 +28,7 @@ class Nova2HuriGripper(gp.GripperInterface):
         self.body.lnks[0]['pos'] = np.zeros(3)
         self.body.lnks[0]['collision_model'] = cm.CollisionModel(os.path.join(this_dir, "meshes", "base.stl"),
                                                                  cdprimit_type="user_defined",
-                                                                 userdef_cdp_fn=self._base_cdnp,
+                                                                 userdef_cdprim_fn=self._base_cdnp,
                                                                  expand_radius=.001)
         self.body.lnks[0]['rgba'] = [.57, .57, .57, 1]
 
@@ -56,7 +56,7 @@ class Nova2HuriGripper(gp.GripperInterface):
         self.lft.lnks[2]['name'] = "lft_finger_link"
         self.lft.lnks[2]['collision_model'] = cm.CollisionModel(
             os.path.join(this_dir, "meshes", "finger.stl"), cdprimit_type="user_defined",
-            userdef_cdp_fn=self._finger_cdnp, expand_radius=.001)
+            userdef_cdprim_fn=self._finger_cdnp, expand_radius=.001)
         self.lft.lnks[2]['rgba'] = [.65, .65, .65, 1]
         # # rgt finger
         self.rgt = jl.JLChain(pos=cpl_end_pos, rotmat=cpl_end_rotmat, homeconf=np.zeros(2), name='rgt_finger')
@@ -75,7 +75,7 @@ class Nova2HuriGripper(gp.GripperInterface):
         self.rgt.lnks[2]['name'] = "rgt_finger_link"
         self.rgt.lnks[2]['collision_model'] = cm.CollisionModel(
             os.path.join(this_dir, "meshes", "finger.stl"), cdprimit_type="user_defined",
-            userdef_cdp_fn=self._finger_cdnp, expand_radius=.001)
+            userdef_cdprim_fn=self._finger_cdnp, expand_radius=.001)
         self.rgt.lnks[2]['rgba'] = [.65, .65, .65, 1]
 
         # # reinitialize
@@ -177,39 +177,29 @@ class Nova2HuriGripper(gp.GripperInterface):
     def get_jawwidth(self):
         return -self.lft.jnts[1]['motion_val'] * 2
 
-    def gen_stickmodel(self,
-                       tcp_jnt_id=None,
-                       tcp_loc_pos=None,
-                       tcp_loc_rotmat=None,
-                       toggle_tcpcs=False,
-                       toggle_jntscs=False,
-                       toggle_connjnt=False,
-                       name='lite6wrs_gripper_stickmodel'):
+    def gen_stickmodel(self, toggle_tcp_frame=False, toggle_jnt_frames=False, name='ee_stickmodel'):
         stickmodel = mc.ModelCollection(name=name)
-        self.coupling.gen_stickmodel(tcp_loc_pos=None,
-                                     tcp_loc_rotmat=None,
-                                     toggle_tcpcs=False,
-                                     toggle_jntscs=toggle_jntscs).attach_to(stickmodel)
+        self.coupling.gen_stickmodel(toggle_tcp_frame=False, toggle_jnt_frames=toggle_jnt_frames).attach_to(stickmodel)
         self.body.gen_stickmodel(tcp_jnt_id=tcp_jnt_id,
                                  tcp_loc_pos=tcp_loc_pos,
                                  tcp_loc_rotmat=tcp_loc_rotmat,
                                  toggle_tcpcs=False,
-                                 toggle_jntscs=toggle_jntscs,
+                                 toggle_jntscs=toggle_jnt_frames,
                                  toggle_connjnt=toggle_connjnt).attach_to(stickmodel)
         self.lft.gen_stickmodel(tcp_jnt_id=tcp_jnt_id,
                                 tcp_loc_pos=tcp_loc_pos,
                                 tcp_loc_rotmat=tcp_loc_rotmat,
                                 toggle_tcpcs=False,
-                                toggle_jntscs=toggle_jntscs,
+                                toggle_jntscs=toggle_jnt_frames,
                                 toggle_connjnt=toggle_connjnt).attach_to(stickmodel)
         self.rgt.gen_stickmodel(tcp_loc_pos=None,
                                 tcp_loc_rotmat=None,
                                 toggle_tcpcs=False,
-                                toggle_jntscs=toggle_jntscs,
+                                toggle_jntscs=toggle_jnt_frames,
                                 toggle_connjnt=toggle_connjnt).attach_to(stickmodel)
-        if toggle_tcpcs:
+        if toggle_tcp_frame:
             jaw_center_gl_pos = self.rotmat.dot(self.jaw_center_pos) + self.pos
-            jaw_center_gl_rotmat = self.rotmat.dot(self.action_center_rotmat)
+            jaw_center_gl_rotmat = self.rotmat.dot(self.acting_center_rotmat)
             gm.gen_dashstick(spos=self.pos,
                              epos=jaw_center_gl_pos,
                              thickness=.0062,
@@ -223,36 +213,36 @@ class Nova2HuriGripper(gp.GripperInterface):
                       tcp_jnt_id=None,
                       tcp_loc_pos=None,
                       tcp_loc_rotmat=None,
-                      toggle_tcpcs=False,
-                      toggle_jntscs=False,
+                      toggle_tcp_frame=False,
+                      toggle_jnt_frames=False,
                       rgba=None,
                       name='nova2huri_gripper_meshmodel'):
         meshmodel = mc.ModelCollection(name=name)
         self.coupling.gen_meshmodel(tcp_loc_pos=None,
                                     tcp_loc_rotmat=None,
-                                    toggle_tcpcs=False,
-                                    toggle_jntscs=toggle_jntscs,
+                                    toggle_tcp_frame=False,
+                                    toggle_jnt_frames=toggle_jnt_frames,
                                     rgba=rgba).attach_to(meshmodel)
         self.body.gen_meshmodel(tcp_jnt_id=tcp_jnt_id,
                                 tcp_loc_pos=tcp_loc_pos,
                                 tcp_loc_rotmat=tcp_loc_rotmat,
                                 toggle_tcpcs=False,
-                                toggle_jntscs=toggle_jntscs,
+                                toggle_jntscs=toggle_jnt_frames,
                                 rgba=rgba).attach_to(meshmodel)
         self.lft.gen_meshmodel(tcp_jnt_id=tcp_jnt_id,
                                tcp_loc_pos=tcp_loc_pos,
                                tcp_loc_rotmat=tcp_loc_rotmat,
                                toggle_tcpcs=False,
-                               toggle_jntscs=toggle_jntscs,
+                               toggle_jntscs=toggle_jnt_frames,
                                rgba=rgba).attach_to(meshmodel)
         self.rgt.gen_meshmodel(tcp_loc_pos=None,
                                tcp_loc_rotmat=None,
                                toggle_tcpcs=False,
-                               toggle_jntscs=toggle_jntscs,
+                               toggle_jntscs=toggle_jnt_frames,
                                rgba=rgba).attach_to(meshmodel)
-        if toggle_tcpcs:
+        if toggle_tcp_frame:
             jaw_center_gl_pos = self.rotmat.dot(self.jaw_center_pos) + self.pos
-            jaw_center_gl_rotmat = self.rotmat.dot(self.action_center_rotmat)
+            jaw_center_gl_rotmat = self.rotmat.dot(self.acting_center_rotmat)
             gm.gen_dashstick(spos=self.pos,
                              epos=jaw_center_gl_pos,
                              thickness=.0062,
@@ -272,6 +262,6 @@ if __name__ == '__main__':
     # mcm.CollisionModel("meshes/dual_realsense.stl", expand_radius=.001).attach_to(base)
     grpr = Nova2HuriGripper(enable_cc=True)
     grpr.change_jaw_width(.1)
-    grpr.gen_meshmodel(toggle_tcpcs=True).attach_to(base)
+    grpr.gen_meshmodel(toggle_tcp_frame=True).attach_to(base)
     grpr.show_cdprimit()
     base.run()

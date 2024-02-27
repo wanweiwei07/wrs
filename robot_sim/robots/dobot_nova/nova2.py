@@ -42,7 +42,7 @@ class Nova2WRS(ri.RobotInterface):
         self.body.lnks[0]['collision_model'] = cm.CollisionModel(
             os.path.join(this_dir, "meshes", "table.stl"),
             cdprimit_type="user_defined", expand_radius=.005,
-            userdef_cdp_fn=self._table_cdnp)
+            userdef_cdprim_fn=self._table_cdnp)
         self.body.finalize()
 
         self.arm = Nova2(pos=self.body.jnts[-1]['gl_posq'],
@@ -55,7 +55,7 @@ class Nova2WRS(ri.RobotInterface):
         # tool center point
         self.arm.jlc.tcp_jnt_id = -1
         self.arm.jlc.tcp_loc_pos = self.hnd.jaw_center_pos
-        self.arm.jlc.tcp_loc_rotmat = self.hnd.action_center_rotmat
+        self.arm.jlc.tcp_loc_rotmat = self.hnd.acting_center_rotmat
         # a list of detailed information about objects in hand, see CollisionChecker.add_objinhnd
         self.oih_infos = []
         # collision detection
@@ -208,9 +208,7 @@ class Nova2WRS(ri.RobotInterface):
                                 toggle_tcpcs=toggle_tcpcs,
                                 toggle_jntscs=toggle_jntscs,
                                 toggle_connjnt=toggle_connjnt).attach_to(stickmodel)
-        self.hnd.gen_stickmodel(toggle_tcpcs=False,
-                                toggle_jntscs=toggle_jntscs,
-                                toggle_connjnt=toggle_connjnt).attach_to(stickmodel)
+        self.hnd.gen_stickmodel(toggle_tcp_frame=False, toggle_jnt_frames=toggle_jntscs).attach_to(stickmodel)
         return stickmodel
 
     def gen_meshmodel(self,
@@ -233,8 +231,8 @@ class Nova2WRS(ri.RobotInterface):
                                toggle_tcpcs=toggle_tcpcs,
                                toggle_jntscs=toggle_jntscs,
                                rgba=rgba).attach_to(mm_collection)
-        self.hnd.gen_meshmodel(toggle_tcpcs=False,
-                               toggle_jntscs=toggle_jntscs,
+        self.hnd.gen_meshmodel(toggle_tcp_frame=False,
+                               toggle_jnt_frames=toggle_jntscs,
                                rgba=rgba).attach_to(mm_collection)
         for obj_info in self.oih_infos:
             objcm = obj_info['collision_model']

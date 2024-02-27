@@ -17,7 +17,7 @@ if __name__ == '__main__':
     object2.set_pos(np.array([0, -.09, 0]))
     # object 3
     object3 = object_ref.copy()
-    object3.change_cdprimitive_type(cdprimitive_type="surface_balls")
+    object3.change_cdprim_type(cdprim_type="surface_balls")
     object3.set_pos(np.array([0, .0, 0]))
     # object 4
     object4 = object_ref.copy()

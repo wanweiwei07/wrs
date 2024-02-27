@@ -166,47 +166,43 @@ class XArmGripper(gi.GripperInterface):
         angle = self.lft_outer.jnts[1]['motion_val']
         return math.sin(.85 - angle) * 0.055 * 2.0
 
-    def gen_stickmodel(self,
-                       toggle_tcpcs=False,
-                       toggle_jntscs=False,
-                       toggle_connjnt=False,
-                       name='xarm_gripper_stickmodel'):
+    def gen_stickmodel(self, toggle_tcp_frame=False, toggle_jnt_frames=False, name='ee_stickmodel'):
         mm_collection = mc.ModelCollection(name=name)
-        self.lft_outer.gen_stickmodel(toggle_tcpcs=toggle_tcpcs,
-                                      toggle_jntscs=toggle_jntscs,
+        self.lft_outer.gen_stickmodel(toggle_tcpcs=toggle_tcp_frame,
+                                      toggle_jntscs=toggle_jnt_frames,
                                       toggle_connjnt=toggle_connjnt).attach_to(mm_collection)
         self.lft_inner.gen_stickmodel(toggle_tcpcs=False,
-                                      toggle_jntscs=toggle_jntscs).attach_to(mm_collection)
+                                      toggle_jntscs=toggle_jnt_frames).attach_to(mm_collection)
         self.rgt_outer.gen_stickmodel(toggle_tcpcs=False,
-                                      toggle_jntscs=toggle_jntscs).attach_to(mm_collection)
+                                      toggle_jntscs=toggle_jnt_frames).attach_to(mm_collection)
         self.rgt_inner.gen_stickmodel(toggle_tcpcs=False,
-                                      toggle_jntscs=toggle_jntscs).attach_to(mm_collection)
+                                      toggle_jntscs=toggle_jnt_frames).attach_to(mm_collection)
         return mm_collection
 
     def gen_meshmodel(self,
                       tcp_jntid=None,
                       tcp_loc_pos=None,
                       tcp_loc_rotmat=None,
-                      toggle_tcpcs=False,
-                      toggle_jntscs=False,
+                      toggle_tcp_frame=False,
+                      toggle_jnt_frames=False,
                       rgba=None,
                       name='xarm_gripper_meshmodel'):
         mm_collection = mc.ModelCollection(name=name)
         self.lft_outer.gen_mesh_model(toggle_tcpcs=False,
-                                      toggle_jntscs=toggle_jntscs,
+                                      toggle_jntscs=toggle_jnt_frames,
                                       rgba=rgba).attach_to(mm_collection)
         self.lft_inner.gen_mesh_model(toggle_tcpcs=False,
-                                      toggle_jntscs=toggle_jntscs,
+                                      toggle_jntscs=toggle_jnt_frames,
                                       rgba=rgba).attach_to(mm_collection)
         self.rgt_outer.gen_mesh_model(toggle_tcpcs=False,
-                                      toggle_jntscs=toggle_jntscs,
+                                      toggle_jntscs=toggle_jnt_frames,
                                       rgba=rgba).attach_to(mm_collection)
         self.rgt_inner.gen_mesh_model(toggle_tcpcs=False,
-                                      toggle_jntscs=toggle_jntscs,
+                                      toggle_jntscs=toggle_jnt_frames,
                                       rgba=rgba).attach_to(mm_collection)
-        if toggle_tcpcs:
+        if toggle_tcp_frame:
             jaw_center_gl_pos = self.rotmat.dot(self.jaw_center_pos) + self.pos
-            jaw_center_gl_rotmat = self.rotmat.dot(self.action_center_rotmat)
+            jaw_center_gl_rotmat = self.rotmat.dot(self.acting_center_rotmat)
             gm.gen_dashed_stick(spos=self.pos,
                                 epos=jaw_center_gl_pos,
                                 radius=.0062,

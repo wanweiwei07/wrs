@@ -96,29 +96,19 @@ class YumiGripper(gp.GripperInterface):
     def get_jaw_width(self):
         return -self.lft.jnts[1]['motion_val']*2
 
-    def gen_stickmodel(self,
-                       tcp_jnt_id=None,
-                       tcp_loc_pos=None,
-                       tcp_loc_rotmat=None,
-                       toggle_tcpcs=False,
-                       toggle_jntscs=False,
-                       toggle_connjnt=False,
-                       name='yumi_gripper_stickmodel'):
+    def gen_stickmodel(self, toggle_tcp_frame=False, toggle_jnt_frames=False, name='ee_stickmodel'):
         stickmodel = mc.ModelCollection(name=name)
-        self.coupling.gen_stickmodel(tcp_loc_pos=None,
-                                     tcp_loc_rotmat=None,
-                                     toggle_tcpcs=False,
-                                     toggle_jntscs=toggle_jntscs).attach_to(stickmodel)
+        self.coupling.gen_stickmodel(toggle_tcp_frame=False, toggle_jnt_frames=toggle_jnt_frames).attach_to(stickmodel)
         self.lft.gen_stickmodel(tcp_jnt_id=tcp_jnt_id,
                                 tcp_loc_pos=tcp_loc_pos,
                                 tcp_loc_rotmat=tcp_loc_rotmat,
-                                toggle_tcpcs=toggle_tcpcs,
-                                toggle_jntscs=toggle_jntscs,
+                                toggle_tcpcs=toggle_tcp_frame,
+                                toggle_jntscs=toggle_jnt_frames,
                                 toggle_connjnt=toggle_connjnt).attach_to(stickmodel)
         self.rgt.gen_stickmodel(tcp_loc_pos=None,
                                 tcp_loc_rotmat=None,
                                 toggle_tcpcs=False,
-                                toggle_jntscs=toggle_jntscs,
+                                toggle_jntscs=toggle_jnt_frames,
                                 toggle_connjnt=toggle_connjnt).attach_to(stickmodel)
         return stickmodel
 
@@ -126,26 +116,26 @@ class YumiGripper(gp.GripperInterface):
                       tcp_jnt_id=None,
                       tcp_loc_pos=None,
                       tcp_loc_rotmat=None,
-                      toggle_tcpcs=False,
-                      toggle_jntscs=False,
+                      toggle_tcp_frame=False,
+                      toggle_jnt_frames=False,
                       rgba=None,
                       name='yumi_gripper_meshmodel'):
         meshmodel = mc.ModelCollection(name=name)
         self.coupling.gen_mesh_model(tcp_loc_pos=None,
                                      tcp_loc_rotmat=None,
                                      toggle_tcpcs=False,
-                                     toggle_jntscs=toggle_jntscs,
+                                     toggle_jntscs=toggle_jnt_frames,
                                      rgba=rgba).attach_to(meshmodel)
         self.lft.gen_mesh_model(tcp_jnt_id=tcp_jnt_id,
                                 tcp_loc_pos=tcp_loc_pos,
                                 tcp_loc_rotmat=tcp_loc_rotmat,
-                                toggle_tcpcs=toggle_tcpcs,
-                                toggle_jntscs=toggle_jntscs,
+                                toggle_tcpcs=toggle_tcp_frame,
+                                toggle_jntscs=toggle_jnt_frames,
                                 rgba=rgba).attach_to(meshmodel)
         self.rgt.gen_mesh_model(tcp_loc_pos=None,
                                 tcp_loc_rotmat=None,
                                 toggle_tcpcs=False,
-                                toggle_jntscs=toggle_jntscs,
+                                toggle_jntscs=toggle_jnt_frames,
                                 rgba=rgba).attach_to(meshmodel)
         return meshmodel
 

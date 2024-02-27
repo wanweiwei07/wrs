@@ -275,7 +275,7 @@ if __name__ == '__main__':
     #         goal_joint_values = jnt_vals
     #         break
     #     else:
-    #         ee_s.grip_at_with_jcpose(gl_action_center_pos=pos + z_offset, gl_jaw_center_rotmat=rotmat, jaw_width=0)
+    #         ee_s.grip_at_with_jcpose(gl_jaw_center_pos=pos + z_offset, gl_jaw_center_rotmat=rotmat, jaw_width=0)
     #         ee_s.gen_meshmodel(rgba=[1, 0, 0, .3]).attach_to(base)
 
     # base.run()

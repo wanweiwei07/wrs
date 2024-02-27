@@ -110,8 +110,7 @@ class KHI_ORSD(ai.RobotInterface):
                                         toggle_tcpcs=toggle_tcpcs,
                                         toggle_jntscs=toggle_jntscs,
                                         toggle_connjnt=toggle_connjnt).attach_to(stickmodel)
-        self.end_effector.gen_stickmodel(toggle_tcpcs=False,
-                                         toggle_jntscs=toggle_jntscs).attach_to(stickmodel)
+        self.end_effector.gen_stickmodel(toggle_tcp_frame=False, toggle_jnt_frames=toggle_jntscs).attach_to(stickmodel)
         return stickmodel
 
     def gen_meshmodel(self,
@@ -129,8 +128,8 @@ class KHI_ORSD(ai.RobotInterface):
                                        toggle_tcpcs=toggle_tcpcs,
                                        toggle_jntscs=toggle_jntscs,
                                        rgba=rgba).attach_to(meshmodel)
-        self.end_effector.gen_meshmodel(toggle_tcpcs=False,
-                                        toggle_jntscs=toggle_jntscs,
+        self.end_effector.gen_meshmodel(toggle_tcp_frame=False,
+                                        toggle_jnt_frames=toggle_jntscs,
                                         rgba=rgba).attach_to(meshmodel)
         for obj_info in self.oih_infos:
             objcm = obj_info['collision_model']
@@ -162,7 +161,7 @@ if __name__ == '__main__':
     robot_s = KHI_ORSD(enable_cc=True)
     # robot_s.jaw_to(.02)
     robot_s.gen_meshmodel(toggle_tcpcs=True, toggle_jntscs=True).attach_to(base)
-    # robot_s.gen_meshmodel(tgl_tcp_frame=False, toggle_joint_frame=False).attach_to(base)
+    # robot_s.gen_meshmodel(toggle_tcp_frame=False, toggle_joint_frame=False).attach_to(base)
     robot_s.gen_stickmodel(toggle_tcpcs=True, toggle_jntscs=True).attach_to(base)
     # base.run()
     tgt_pos = np.array([.25, .2, .15])

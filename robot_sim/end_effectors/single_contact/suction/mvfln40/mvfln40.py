@@ -54,8 +54,7 @@ class MVFLN40(si.SCInterface):
                        toggle_connjnt=False,
                        name='suction_stickmodel'):
         mm_collection = mc.ModelCollection(name=name)
-        self.coupling.gen_stickmodel(toggle_tcpcs=False,
-                                     toggle_jntscs=toggle_jntscs).attach_to(mm_collection)
+        self.coupling.gen_stickmodel(toggle_tcp_frame=False, toggle_jnt_frames=toggle_jntscs).attach_to(mm_collection)
         self.jlc.gen_stickmodel(toggle_tcpcs=False,
                                 toggle_jntscs=toggle_jntscs,
                                 toggle_connjnt=toggle_connjnt).attach_to(mm_collection)

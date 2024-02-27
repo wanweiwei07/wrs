@@ -17,7 +17,7 @@ if __name__ == '__main__':
     # object 2
     object2 = object_ref.copy()
     object2.set_pos(np.array([0, -.04, 0]))
-    object2.change_cdprimitive_type(cdprimitive_type="surface_balls")
+    object2.change_cdprim_type(cdprim_type="surface_balls")
     #
     object1.attach_to(base)
     object1.show_cdprimit()

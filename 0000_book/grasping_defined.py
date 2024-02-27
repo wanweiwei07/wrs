@@ -19,9 +19,9 @@ rtq85_s = rtq85.Robotiq85()
 # base.run()
 # gl_approaching_direction = rm.rotmat_from_axangle(np.array([0,1,0]), -math.pi/6).dot(np.array([-1,0,0]))
 # grasp_info_list = gu.define_grasp(rtq85_s, object_box,
-#                                   gl_action_center_pos=np.array([0,0,0]),
+#                                   gl_jaw_center_pos=np.array([0,0,0]),
 #                                   gl_approaching_direction=gl_approaching_direction,
-#                                   gl_opening_direction=np.array([0,1,0]),
+#                                   gl_fgr1_opening_direction=np.array([0,1,0]),
 #                                   jaw_width=.065,
 #                                   toggle_flip=True,
 #                                   toggle_dbg=True)
@@ -36,7 +36,7 @@ grasp_info_list = gu.define_grasp_with_rotation(rtq85_s, object_box,
                                                 toggle_flip=False,
                                                 toggle_debug=True)
 # for grasp_info in grasp_info_list:
-#     aw_width, gl_action_center_pos, gl_jaw_center_rotmat, hnd_pos, hnd_rotmat = grasp_info
+#     aw_width, gl_jaw_center_pos, gl_jaw_center_rotmat, hnd_pos, hnd_rotmat = grasp_info
 #     rtq85_s.fix_to(hnd_pos, hnd_rotmat)
 #     rtq85_s.jaw_to(aw_width)
 #     rtq85_s.gen_meshmodel().attach_to(base)
