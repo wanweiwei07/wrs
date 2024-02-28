@@ -21,6 +21,14 @@ class GripperInterface(ei.EEInterface):
     def get_jaw_width(self):
         raise NotImplementedError
 
+    def hold(self, obj_cmodel, jaw_width):
+        super().hold(obj_cmodel=obj_cmodel)
+        self.change_jaw_width(jaw_width=jaw_width)
+
+    def release(self, obj_cmodel, jaw_width):
+        super().release(obj_cmodel=obj_cmodel)
+        self.change_jaw_width(jaw_width=jaw_width)
+
     def grip_at_with_twovecs(self,
                              gl_jaw_center_pos,
                              gl_approaching_vec,

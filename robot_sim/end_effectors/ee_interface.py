@@ -61,6 +61,24 @@ class EEInterface(object):
         rel_pos, rel_rotmat = rm.rel_pose(obj_pos, obj_rotmat, self.pos, self.rotmat)
         self.oiee_list.append(jl.Link(loc_pos=rel_pos, loc_rotmat=rel_rotmat, cmodel=obj_cmodel))
 
+    def release(self, obj_cmodel, **kwargs):
+        """
+        the objcm is saved into an oiee_list, while considering its relative pose to the ee's pos and rotmat
+        **kwargs is for polyphorism purpose
+        :param obj_cmodel: a collision model
+        :return:
+        author: weiwei
+        date: 20240228
+        """
+        is_found = False
+        for oiee in self.oiee_list:
+            if oiee.cmodel is obj_cmodel:
+                is_found = True
+                self.oiee_list.remove(oiee)
+                break
+        if not is_found:
+            raise ValueError("The specified object is not held in the hand!")
+
     def is_collided(self, obstacle_list=[], otherrobot_list=[]):
         """
         Interface for "is cdprimit collided", must be implemented in child class

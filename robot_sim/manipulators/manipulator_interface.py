@@ -5,7 +5,7 @@ import robot_sim._kinematics.TBD_collision_checker as cc
 
 class ManipulatorInterface(object):
 
-    def __init__(self, pos=np.zeros(3), rotmat=np.eye(3), name='yumi_gripper'):
+    def __init__(self, pos=np.zeros(3), rotmat=np.eye(3), name='manipulator'):
         self.name = name
         self.pos = pos
         self.rotmat = rotmat
@@ -17,10 +17,6 @@ class ManipulatorInterface(object):
     @property
     def jnts(self):
         return self.jlc.jnts
-
-    @property
-    def lnks(self):
-        return self.jlc.lnks
 
     @property
     def tgtjnts(self):
