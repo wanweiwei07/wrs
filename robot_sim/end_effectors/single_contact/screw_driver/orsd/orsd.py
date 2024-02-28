@@ -80,7 +80,7 @@ class ORSD(si.SCTInterface):
                                 toggle_jntscs=toggle_jnt_frames,
                                 toggle_connjnt=toggle_connjnt).attach_to(stick_model)
         if toggle_tcp_frame:
-            self._toggle_tcpcs(stick_model)
+            self._toggle_tcp_frame(stick_model)
         return stick_model
 
     def gen_meshmodel(self,
@@ -96,7 +96,7 @@ class ORSD(si.SCTInterface):
                                 toggle_jntscs=toggle_jnt_frames,
                                 rgba=rgba).attach_to(mesh_model)
         if toggle_tcp_frame:
-            self._toggle_tcpcs(mesh_model)
+            self._toggle_tcp_frame(mesh_model)
         return mesh_model
 
 

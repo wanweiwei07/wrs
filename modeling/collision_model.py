@@ -352,7 +352,7 @@ class CollisionModel(mgm.GeometricModel):
             self._cache_for_show["cdprim"].removeNode()
         self._cache_for_show["cdprim"] = self.copy_reference_cdprim()
         self._cache_for_show["cdprim"].reparentTo(self.pdndp)
-        mph.toggle_show_collision_node(self._cache_for_show["cdprimitive"], toggle_show_on=True)
+        mph.toggle_show_collision_node(self._cache_for_show["cdprim"], toggle_show_on=True)
 
     def unshow_cdprim(self):
         if "cdprim" in self._cache_for_show:

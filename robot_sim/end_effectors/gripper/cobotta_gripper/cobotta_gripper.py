@@ -12,6 +12,20 @@ import robot_sim._kinematics.model_generator as rkmg
 import modeling.constant as mc
 
 
+# ==============================================
+# raise Exception if oiee is not empty
+# ==============================================
+
+def assert_oiee_decorator(method):
+    def wrapper(self, *args, **kwargs):
+        if len(self.oiee_list) > 0:
+            raise ValueError("The hand is holding objects!")
+        else:
+            return method(self, *args, **kwargs)
+
+    return wrapper
+
+
 class CobottaGripper(gp.GripperInterface):
 
     def __init__(self,
@@ -45,7 +59,7 @@ class CobottaGripper(gp.GripperInterface):
         self.jlc.jnts[1].lnk.cmodel = mcm.CollisionModel(os.path.join(this_dir, "meshes", "right_finger.dae"))
         self.jlc.jnts[1].lnk.cmodel.rgba = np.array([.5, .5, .5, 1])
         # action center
-        self.action_center_pos = np.array([0, 0, .05])
+        self.acting_center_pos = np.array([0, 0, .05])
         # reinitialize
         self.jlc.finalize(ik_solver=None)
         self.cdmesh_elements = [self.jlc.anchor.lnk,
@@ -68,6 +82,7 @@ class CobottaGripper(gp.GripperInterface):
     #         cdmesh = cdelement['collision_model'].copy()
     #         self.cdmesh_collection.add_cm(cdmesh)
 
+    @assert_oiee_decorator
     def fix_to(self, pos, rotmat, jaw_width=None):
         self.pos = pos
         self.rotmat = rotmat
@@ -82,6 +97,7 @@ class CobottaGripper(gp.GripperInterface):
         cpl_end_pos, cpl_end_rotmat = self.coupling.get_gl_tcp()
         self.jlc.fix_to(cpl_end_pos, cpl_end_rotmat)
 
+    @assert_oiee_decorator
     def change_jaw_width(self, jaw_width):
         side_jawwidth = jaw_width / 2.0
         if 0 <= side_jawwidth <= self.jaw_rng[1] / 2:
@@ -92,42 +108,34 @@ class CobottaGripper(gp.GripperInterface):
     def get_jaw_width(self):
         return -self.jlc.jnts[1].motion_val
 
-    def gen_stickmodel(self, toggle_tcp_frame=False, toggle_jnt_frames=False:
+    def gen_stickmodel(self, toggle_tcp_frame=False, toggle_jnt_frames=False, name='cobotta_gripper_stickmodel'):
         m_col = mmc.ModelCollection(name=name)
         rkmg.gen_jlc_stick(self.coupling, toggle_tcp_frame=False, toggle_jnt_frames=False).attach_to(m_col)
-        rkmg.gen_jlc_stick(self.jlc, toggle_tcp_frame=False, toggle_jnt_frames=tgl_jnt_frame).attach_to(m_col)
-        if tgl_tcp_frame:
-            action_center_gl_pos = self.rotmat.dot(self.acting_center_pos) + self.pos
-            action_center_gl_rotmat = self.rotmat.dot(self.acting_center_rotmat)
-            rkmg.gen_tcp_frame(spos=self.pos,
-                               tcp_gl_pos=action_center_gl_pos,
-                               tcp_gl_rotmat=action_center_gl_rotmat).attach_to(m_col)
+        rkmg.gen_jlc_stick(self.jlc, toggle_tcp_frame=False, toggle_jnt_frames=toggle_jnt_frames).attach_to(m_col)
+        if toggle_tcp_frame:
+            self._toggle_tcp_frame(m_col)
         return m_col
 
     def gen_meshmodel(self,
-                      tgl_tcp_frame=False,
-                      tgl_jnt_frame=False,
+                      toggle_tcp_frame=False,
+                      toggle_jnt_frames=False,
                       rgba=None,
-                      tgl_cdprimitive=False,
-                      tgl_cdmesh=False,
-                      name='mesh_model'):
+                      toggle_cdprim=False,
+                      toggle_cdmesh=False,
+                      name='cobotta_gripper_meshmodel'):
         m_col = mmc.ModelCollection(name=name)
         rkmg.gen_jlc_mesh(self.coupling,
-                          tgl_tcp_frame=False,
-                          tgl_jnt_frame=False,
-                          tgl_cdmesh=tgl_cdmesh,
-                          tgl_cdprimitive=tgl_cdprimitive).attach_to(m_col)
+                          toggle_tcp_frame=False,
+                          toggle_jnt_frames=False,
+                          toggle_cdmesh=toggle_cdmesh,
+                          toggle_cdprim=toggle_cdprim).attach_to(m_col)
         rkmg.gen_jlc_mesh(self.jlc,
-                          tgl_tcp_frame=False,
-                          tgl_jnt_frame=tgl_jnt_frame,
-                          tgl_cdmesh=tgl_cdmesh,
-                          tgl_cdprimitive=tgl_cdprimitive).attach_to(m_col)
-        if tgl_tcp_frame:
-            action_center_gl_pos = self.rotmat.dot(self.action_center_pos) + self.pos
-            action_center_gl_rotmat = self.rotmat.dot(self.acting_center_rotmat)
-            rkmg.gen_tcp_frame(spos=self.pos,
-                               tcp_gl_pos=action_center_gl_pos,
-                               tcp_gl_rotmat=action_center_gl_rotmat).attach_to(m_col)
+                          toggle_tcp_frame=False,
+                          toggle_jnt_frames=toggle_jnt_frames,
+                          toggle_cdmesh=toggle_cdmesh,
+                          toggle_cdprim=toggle_cdprim).attach_to(m_col)
+        if toggle_tcp_frame:
+            self._toggle_tcp_frame(m_col)
         return m_col
 
 
@@ -143,7 +151,7 @@ if __name__ == '__main__':
     #     grpr.gen_meshmodel().attach_to(base)
     grpr = CobottaGripper(enable_cc=True)
     grpr.change_jaw_width(.013)
-    grpr.gen_meshmodel(tgl_tcp_frame=True, tgl_jnt_frame=True, tgl_cdprimitive=True).attach_to(base)
+    grpr.gen_meshmodel(toggle_tcp_frame=True, toggle_jnt_frames=False, toggle_cdprim=True).attach_to(base)
     # # grpr.gen_stickmodel(toggle_jnt_frames=True).attach_to(base)
     # grpr.fix_to(pos=np.array([0, .3, .2]), rotmat=rm.rotmat_from_axangle([1, 0, 0], .7))
     # grpr.gen_meshmodel().attach_to(base)

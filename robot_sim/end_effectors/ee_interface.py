@@ -154,18 +154,22 @@ class EEInterface(object):
                       toggle_tcp_frame=False,
                       toggle_jnt_frames=False,
                       rgba=None,
+                      toggle_cdprim=False,
+                      toggle_cdmesh=False,
                       name='ee_meshmodel'):
         raise NotImplementedError
 
-    def _toggle_tcpcs(self, parent):
-        action_center_gl_pos = self.rotmat.dot(self.acting_center_pos) + self.pos
-        action_center_gl_rotmat = self.rotmat.dot(self.acting_center_rotmat)
+    def _toggle_tcp_frame(self, parent):
+        print(self.pos)
+        print(self.acting_center_pos)
+        gl_acting_center_pos = self.rotmat.dot(self.acting_center_pos) + self.pos
+        gl_acting_center_rotmat = self.rotmat.dot(self.acting_center_rotmat)
         mgm.gen_dashed_stick(spos=self.pos,
-                             epos=action_center_gl_pos,
-                             radius=.0062,
+                             epos=gl_acting_center_pos,
+                             radius=.0025,
                              rgba=[.5, 0, 1, 1],
                              type="round").attach_to(parent)
-        mgm.gen_myc_frame(pos=action_center_gl_pos, rotmat=action_center_gl_rotmat).attach_to(parent)
+        mgm.gen_myc_frame(pos=gl_acting_center_pos, rotmat=gl_acting_center_rotmat).attach_to(parent)
 
     def enable_cc(self):
         self.cc = cc.CollisionChecker("collision_checker")

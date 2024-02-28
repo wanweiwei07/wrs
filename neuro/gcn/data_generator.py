@@ -28,8 +28,8 @@ import robot_sim.robots.cobotta.cobotta as cbt
 #     cnter = cnter + 1
 #     print(cnter, "/", n_total, ",", cnter / n_total)
 #     rbt_s.fk(jnt_vals=np.asarray(c))
-#     tcp_gl_pos, tcp_gl_rotmat = rbt_s.get_gl_tcp()
-#     print(tcp_gl_pos, rm.quaternion_from_matrix(tcp_gl_rotmat))
+#     toggle_gl_pos, toggle_gl_rotmat = rbt_s.get_gl_tcp()
+#     print(toggle_gl_pos, rm.quaternion_from_matrix(toggle_gl_rotmat))
 #
 # base.run()
 
