@@ -19,7 +19,7 @@ class RRT(object):
         date: 20220404
         """
         def wrapper(self, component_name, *args, **kwargs):
-            jnt_values_bk = self.robot_s.get_joint_values(component_name)
+            jnt_values_bk = self.robot_s.get_jnt_values(component_name)
             result = foo(self, component_name, *args, **kwargs)
             self.robot_s.fk(component_name=component_name, joint_values=jnt_values_bk)
             return result
@@ -48,9 +48,9 @@ class RRT(object):
         author: weiwei
         date: 20220326
         """
-        # self.robot_s.fk(component_name=component_name, jnt_vals=conf)
+        # self.robot_s.fk(component_name=component_name, jnt_values=conf)
         # return self.robot_s.is_collided(obstacle_list=obstacle_list, otherrobot_list=otherrobot_list)
-        if self.robot_s.are_joint_values_in_ranges(component_name=component_name, joint_values=conf):
+        if self.robot_s.is_jnt_values_in_ranges(component_name=component_name, jnt_values=conf):
             self.robot_s.fk(component_name=component_name, joint_values=conf)
             return self.robot_s.is_collided(obstacle_list=obstacle_list, otherrobot_list=otherrobot_list)
         else:
@@ -214,7 +214,7 @@ class RRT(object):
         self.roadmap.clear()
         self.start_conf = start_conf
         self.goal_conf = goal_conf
-        # check seed_jnt_vals and end_conf
+        # check seed_jnt_values and end_conf
         if self._is_collided(component_name, start_conf, obstacle_list, otherrobot_list):
             print("The start robot_s configuration is in collision!")
             return None
@@ -300,7 +300,7 @@ class RRT(object):
         if shortcut is not None:
             plt.plot([conf[0] for conf in shortcut], [conf[1] for conf in shortcut], linewidth=4, linestyle='--',
                      color='r')
-        # plt.plot(planner.seed_jnt_vals[0], planner.seed_jnt_vals[1], "xr")
+        # plt.plot(planner.seed_jnt_values[0], planner.seed_jnt_values[1], "xr")
         # plt.plot(planner.end_conf[0], planner.end_conf[1], "xm")
         if not hasattr(RRT, 'img_counter'):
             RRT.img_counter = 0
@@ -330,7 +330,7 @@ class RRT_v2(object):
         date: 20220404
         """
         def wrapper(self, *args, **kwargs):
-            jnt_values_bk = self.robot_s.get_joint_values()
+            jnt_values_bk = self.robot_s.get_jnt_values()
             result = foo(self, *args, **kwargs)
             self.robot_s.fk(joint_values=jnt_values_bk)
             return result
@@ -357,7 +357,7 @@ class RRT_v2(object):
         author: weiwei
         date: 20220326
         """
-        if self.robot_s.are_joint_values_in_ranges(joint_values=conf):
+        if self.robot_s.is_jnt_values_in_ranges(jnt_values=conf):
             self.robot_s.fk(joint_values=conf)
             return self.robot_s.is_collided(obstacle_list=obstacle_list, otherrobot_list=otherrobot_list)
         else:
@@ -517,7 +517,7 @@ class RRT_v2(object):
         self.roadmap.clear()
         self.start_conf = start_conf
         self.goal_conf = goal_conf
-        # check seed_jnt_vals and end_conf
+        # check seed_jnt_values and end_conf
         if self._is_collided(start_conf, obstacle_list, otherrobot_list):
             print("The start robot_s configuration is in collision!")
             return None
@@ -601,7 +601,7 @@ class RRT_v2(object):
         if shortcut is not None:
             plt.plot([conf[0] for conf in shortcut], [conf[1] for conf in shortcut], linewidth=4, linestyle='--',
                      color='r')
-        # plt.plot(planner.seed_jnt_vals[0], planner.seed_jnt_vals[1], "xr")
+        # plt.plot(planner.seed_jnt_values[0], planner.seed_jnt_values[1], "xr")
         # plt.plot(planner.end_conf[0], planner.end_conf[1], "xm")
         if not hasattr(RRT, 'img_counter'):
             RRT.img_counter = 0

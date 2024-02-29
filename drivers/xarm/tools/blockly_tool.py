@@ -200,7 +200,7 @@ class BlocklyToolOld(object):
         self._insert_to_file(self.index, 'if hasattr(arm, \'register_count_changed_callback\'):')
         self._insert_to_file(self.index, '    def count_changed_callback(data):')
         self._insert_to_file(self.index, '        if not params[\'quit\']:')
-        self._insert_to_file(self.index, '            pprint(\'counter val: {}\'.format(data[\'n_sec_minor\']))')
+        self._insert_to_file(self.index, '            pprint(\'counter value: {}\'.format(data[\'n_sec_minor\']))')
         self._insert_to_file(self.index, '    arm.register_count_changed_callback(count_changed_callback)')
 
         self._insert_to_file(self.index, '\n\n# Register connect changed callback')
@@ -1402,9 +1402,9 @@ class BlocklyToolOld(object):
         field = self.get_node('field', block).text
         value = self.get_node('value', root=block)
         # shadow = self.get_node('shadow', root=value)
-        # val = self.get_node('field', root=shadow).text
+        # value = self.get_node('field', root=shadow).text
         val = self.__get_block_val(value)
-        # self._append_to_file('{}params[\'variables\'][\'{}\'] += {}'.format(prefix, field, val))
+        # self._append_to_file('{}params[\'variables\'][\'{}\'] += {}'.format(prefix, field, value))
 
         prefix = self.__check_is_quit(prefix)
         if arg_map and field in arg_map:
@@ -1412,9 +1412,9 @@ class BlocklyToolOld(object):
         else:
             self._append_to_file('{}params[\'variables\'][\'{}\'] += {}'.format(prefix, field, val))
         # self._append_to_file('{}if \'{}\' not in locals_keys and \'{}\' in locals():'.format(prefix, field, field))
-        # self._append_to_file('{}    {} += {}'.format(prefix, field, val))
+        # self._append_to_file('{}    {} += {}'.format(prefix, field, value))
         # self._append_to_file('{}else:'.format(prefix))
-        # self._append_to_file('{}    params[\'variables\'][\'{}\'] += {}'.format(prefix, field, val))
+        # self._append_to_file('{}    params[\'variables\'][\'{}\'] += {}'.format(prefix, field, value))
 
     def _handle_controls_repeat_ext(self, block, prefix='', arg_map=None):
         value = self.get_node('value', root=block)

@@ -76,7 +76,7 @@ sensor_handler = SensorHandler(pkx)
 #                                   [0, -1, 0],
 #                                   [0, 0, 1]]))
 # joints = xss.ik(component_name="arm", tgt_pos=pos_start, tgt_rotmat=rot_start, max_n_iter=1000)
-# xsx.move_jnts(component_name="arm", jnt_vals=joints, time_intervals=1)
+# xsx.move_jnts(component_name="arm", jnt_values=joints, time_intervals=1)
 # pos = [np.array([0, 0, .2]),
 #        np.array([0, 0, -.2]),
 #        np.array([0, 0.2, 0]),

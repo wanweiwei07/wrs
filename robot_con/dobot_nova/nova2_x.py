@@ -201,7 +201,7 @@ class Nova2X(object):
 
     def set_DO_digital_out(self, index: int, val: Literal[0, 1]):
         """
-        set digital output for the DO port. val is a {0,1}
+        set digital output for the DO port. value is a {0,1}
         :param index:
         :param val:
         :return:

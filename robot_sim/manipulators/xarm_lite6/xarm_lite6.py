@@ -29,27 +29,27 @@ class XArmLite6(mi.ManipulatorInterface):
         jnt_saferngmargin = math.pi / 18.0
         # joint 1
         self.jlc.jnts[1]['pos_in_loc_tcp'] = np.array([0., 0., .2433])
-        self.jlc.jnts[1]['motion_rng'] = [-2. * math.pi + jnt_saferngmargin, 2. * math.pi - jnt_saferngmargin]
+        self.jlc.jnts[1]['motion_range'] = [-2. * math.pi + jnt_saferngmargin, 2. * math.pi - jnt_saferngmargin]
         # joint 2
         self.jlc.jnts[2]['pos_in_loc_tcp'] = np.array([0., 0., 0.])
         self.jlc.jnts[2]['gl_rotmat'] = rm.rotmat_from_euler(1.5708, -1.5708, 3.1416)
-        self.jlc.jnts[2]['motion_rng'] = [-2.61799 + jnt_saferngmargin, 2.61799 - jnt_saferngmargin]
+        self.jlc.jnts[2]['motion_range'] = [-2.61799 + jnt_saferngmargin, 2.61799 - jnt_saferngmargin]
         # joint 3
         self.jlc.jnts[3]['pos_in_loc_tcp'] = np.array([.2, 0., 0.])
         self.jlc.jnts[3]['gl_rotmat'] = rm.rotmat_from_euler(-3.1416, 0., 1.5708)
-        self.jlc.jnts[3]['motion_rng'] = [-0.061087 + jnt_saferngmargin, 5.235988 - jnt_saferngmargin]
+        self.jlc.jnts[3]['motion_range'] = [-0.061087 + jnt_saferngmargin, 5.235988 - jnt_saferngmargin]
         # joint 4
         self.jlc.jnts[4]['pos_in_loc_tcp'] = np.array([.087, -.2276, 0.])
         self.jlc.jnts[4]['gl_rotmat'] = rm.rotmat_from_euler(1.5708, 0., 0.)
-        self.jlc.jnts[4]['motion_rng'] = [-2. * math.pi + jnt_saferngmargin, 2. * math.pi - jnt_saferngmargin]
+        self.jlc.jnts[4]['motion_range'] = [-2. * math.pi + jnt_saferngmargin, 2. * math.pi - jnt_saferngmargin]
         # joint 5
         self.jlc.jnts[5]['pos_in_loc_tcp'] = np.array([0., 0., 0.])
         self.jlc.jnts[5]['gl_rotmat'] = rm.rotmat_from_euler(1.5708, 0., 0.)
-        self.jlc.jnts[5]['motion_rng'] = [-2.1642 + jnt_saferngmargin, 2.1642 - jnt_saferngmargin]
+        self.jlc.jnts[5]['motion_range'] = [-2.1642 + jnt_saferngmargin, 2.1642 - jnt_saferngmargin]
         # joint 6
         self.jlc.jnts[6]['pos_in_loc_tcp'] = np.array([0., .0615, 0.])
         self.jlc.jnts[6]['gl_rotmat'] = rm.rotmat_from_euler(-1.5708, 0., 0.)
-        self.jlc.jnts[6]['motion_rng'] = [-2. * math.pi + jnt_saferngmargin, 2. * math.pi - jnt_saferngmargin]
+        self.jlc.jnts[6]['motion_range'] = [-2. * math.pi + jnt_saferngmargin, 2. * math.pi - jnt_saferngmargin]
         # links
         # link base
         self.jlc.lnks[0]['name'] = "link_base"

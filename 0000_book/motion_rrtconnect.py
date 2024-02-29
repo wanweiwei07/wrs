@@ -13,11 +13,11 @@ class XYBot(ri.RobotInterface):
         self.jlc.jnts[1]['end_type'] = 'prismatic'
         self.jlc.jnts[1]['loc_motionax'] = np.array([1, 0, 0])
         self.jlc.jnts[1]['pos_in_loc_tcp'] = np.zeros(3)
-        self.jlc.jnts[1]['motion_rng'] = [-2.0, 15.0]
+        self.jlc.jnts[1]['motion_range'] = [-2.0, 15.0]
         self.jlc.jnts[2]['end_type'] = 'prismatic'
         self.jlc.jnts[2]['loc_motionax'] = np.array([0, 1, 0])
         self.jlc.jnts[2]['pos_in_loc_tcp'] = np.zeros(3)
-        self.jlc.jnts[2]['motion_rng'] = [-2.0, 15.0]
+        self.jlc.jnts[2]['motion_range'] = [-2.0, 15.0]
         self.jlc.finalize()
 
     def fk(self, component_name='all', jnt_values=np.zeros(2)):
@@ -33,7 +33,7 @@ class XYBot(ri.RobotInterface):
     def get_jntvalues(self, component_name='all'):
         if component_name != 'all':
             raise ValueError("Only support hnd_name == 'all'!")
-        return self.jlc.get_joint_values()
+        return self.jlc.get_jnt_values()
 
     def is_collided(self, obstacle_list=[], otherrobot_list=[]):
         for (obpos, size) in obstacle_list:

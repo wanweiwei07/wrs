@@ -129,7 +129,7 @@ class XArmAPI(object):
     @property
     def count(self):
         """
-        Counter val
+        Counter value
         """
         return self._arm.count
 

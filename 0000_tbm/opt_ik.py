@@ -36,7 +36,7 @@ class OptIK(object):
         self.toggle_debug = toggle_debug
 
     def _get_bnds(self, jlc_name):
-        return self.rbt.get_jnt_ranges(jlc_name)
+        return self.rbt.get_jnt_rngs(jlc_name)
 
     def _constraint_zangle(self, jnt_values):
         self.rbt.fk(joint_values=jnt_values, component_name=self.jlc_name)
@@ -144,7 +144,7 @@ class OptIK(object):
         author: weiwei
         date: 20210125
         """
-        jnt_values_bk = self.rbt.get_joint_values(self.jlc_name)
+        jnt_values_bk = self.rbt.get_jnt_values(self.jlc_name)
         pos_list, rotmat_list = rm.interplate_pos_rotmat(start_info[0],
                                                          start_info[1],
                                                          goal_info[0],
@@ -196,9 +196,9 @@ if __name__ == '__main__':
     gm.gen_frame(pos=tgt_pos, rotmat=tgt_rotmat).attach_to(base)
     yumi_instance = ym.Yumi(enable_cc=True)
     oik = FKOptBasedIK(yumi_instance, component_name=component_name, toggle_debug=False)
-    # jnt_vals, _ = oik.solve(tgt_pos, tgt_rotmat, np.zeros(7), method='SLSQP')
-    # print(jnt_vals)
-    # robot_s.fk(hnd_name=hnd_name, jnt_vals=jnt_vals)
+    # jnt_values, _ = oik.solve(tgt_pos, tgt_rotmat, np.zeros(7), method='SLSQP')
+    # print(jnt_values)
+    # robot_s.fk(hnd_name=hnd_name, jnt_values=jnt_values)
     # yumi_meshmodel = robot_s.gen_meshmodel()
     # yumi_meshmodel.attach_to(base)
     start_pos = np.array([.5, -.3, .3])

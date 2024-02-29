@@ -131,14 +131,14 @@ class Joint(object):
                  loc_pos=np.zeros(3),
                  loc_rotmat=np.eye(3),
                  loc_motion_ax=np.array([0, 1, 0]),
-                 motion_rng=np.array([-np.pi, np.pi])):
+                 motion_range=np.array([-np.pi, np.pi])):
         self.name = name
         self.loc_pos = loc_pos
         self.loc_rotmat = loc_rotmat
         self.loc_motion_ax = loc_motion_ax
-        self.motion_rng = motion_rng
+        self.motion_range = motion_range
         # the following parameters will be updated automatically
-        self._motion_val = 0
+        self._motion_value = 0
         self._gl_pos_0 = self.loc_pos
         self._gl_rotmat_0 = self.loc_rotmat
         self._gl_motion_ax = self.loc_motion_ax
@@ -150,8 +150,8 @@ class Joint(object):
         self._type = type
 
     @property
-    def motion_val(self):
-        return self._motion_val
+    def motion_value(self):
+        return self._motion_value
 
     @property
     def loc_homomat(self):
@@ -197,56 +197,56 @@ class Joint(object):
     def lnk(self, value):
         self._lnk = value
 
-    def change_type(self, type: rkc.JntType, motion_rng: np.ndarray = None):
-        if motion_rng is None:
+    def change_type(self, type: rkc.JntType, motion_range: np.ndarray = None):
+        if motion_range is None:
             if type == rkc.JntType.PRISMATIC:
-                motion_rng = np.array([-.1, .1])
+                motion_range = np.array([-.1, .1])
             elif type == rkc.JntType.REVOLUTE:
-                motion_rng = np.array([-np.pi, np.pi])
+                motion_range = np.array([-np.pi, np.pi])
         self._type = type
-        self.motion_rng = motion_rng
+        self.motion_range = motion_range
 
-    def assert_motion_val(self, val):
+    def assert_motion_value(self, value):
         return
-        # if val < self.motion_rng[0] or val > self.motion_rng[1]:
+        # if value < self.motion_range[0] or value > self.motion_range[1]:
         #     raise ValueError("Motion value is out of range!")
 
     def set_motion_value(self, motion_value):
-        self._motion_val = motion_value
+        self._motion_value = motion_value
         if self.type == rkc.JntType.REVOLUTE:
             self._gl_pos_q = self._gl_pos_0
-            self._gl_rotmat_q = rm.rotmat_from_axangle(self._gl_motion_ax, self._motion_val) @ self._gl_rotmat_0
+            self._gl_rotmat_q = rm.rotmat_from_axangle(self._gl_motion_ax, self._motion_value) @ self._gl_rotmat_0
         elif self.type == rkc.JntType.PRISMATIC:
-            self._gl_pos_q = self._gl_pos_0 + self._gl_motion_ax * self._motion_val
+            self._gl_pos_q = self._gl_pos_0 + self._gl_motion_ax * self._motion_value
             self._gl_rotmat_q = self._gl_rotmat_0
 
-    def update_globals(self, pos=np.zeros(3), rotmat=np.eye(3), motion_val=0):
+    def update_globals(self, pos=np.zeros(3), rotmat=np.eye(3), motion_value=0):
         """
         update the global parameters against give reference pos, reference rotmat, and motion_value
         :param pos:
         :param rotmat:
-        :param motion_val:
+        :param motion_value:
         :return:
         """
         self._gl_pos_0 = pos + rotmat @ self.loc_pos #TODO offset to loc
         self._gl_rotmat_0 = rotmat @ self.loc_rotmat
         self._gl_motion_ax = self._gl_rotmat_0 @ self.loc_motion_ax
-        self.set_motion_value(motion_value=motion_val)
+        self.set_motion_value(motion_value=motion_value)
         if self._lnk is not None:
             self._lnk.update_globals(self.gl_pos_q, self.gl_rotmat_q)
 
-    def get_motion_homomat(self, motion_val=0):
+    def get_motion_homomat(self, motion_value=0):
         """
         result of loc_homomat multiplied by motion transformation
-        :param motion_val:
+        :param motion_value:
         :return:
         """
-        self.assert_motion_val(val=motion_val)
+        self.assert_motion_value(value=motion_value)
         if self.type == rkc.JntType.REVOLUTE:
-            rotmat_by_motion = rm.rotmat_from_axangle(self.loc_motion_ax, motion_val)
+            rotmat_by_motion = rm.rotmat_from_axangle(self.loc_motion_ax, motion_value)
             return self.loc_homomat @ rm.homomat_from_posrot(pos=np.zeros(3), rotmat=rotmat_by_motion)
         elif self.type == rkc.JntType.PRISMATIC:
-            pos_by_motion = self.loc_motion_ax * motion_val
+            pos_by_motion = self.loc_motion_ax * motion_value
             return self.loc_homomat @ rm.homomat_from_posrot(pos=pos_by_motion, rotmat=np.eye(3))
 
 
@@ -262,7 +262,7 @@ if __name__ == '__main__':
     ref_rotmat = rm.rotmat_from_euler(np.pi / 6, np.pi / 3, np.pi / 4)
     # mgm.gen_dashed_frame(pos=pos, rotmat=rotmat).attach_to(base)
     #
-    jnt.update_globals(pos=ref_pos, rotmat=ref_rotmat, motion_val=np.pi / 2)
+    jnt.update_globals(pos=ref_pos, rotmat=ref_rotmat, motion_value=np.pi / 2)
     # mgm.gen_frame(pos=joint.gl_pos_q, rotmat=joint.gl_rotmat_q).attach_to(base)
     # print(joint.gl_pos_q, joint.gl_rotmat_q)
     #

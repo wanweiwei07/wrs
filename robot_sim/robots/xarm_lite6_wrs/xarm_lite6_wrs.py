@@ -31,8 +31,8 @@ class XArmLite6WRSGripper(ri.RobotInterface):
 
         # tool center point
         self.arm.jlc.tcp_jnt_id = -1
-        self.arm.jlc.tcp_loc_pos = self.hnd.jaw_center_pos
-        self.arm.jlc.tcp_loc_rotmat = self.hnd.acting_center_rotmat
+        self.arm.jlc.loc_tcp_pos = self.hnd.jaw_center_pos
+        self.arm.jlc.loc_tcp_rotmat = self.hnd.acting_center_rotmat
         # a list of detailed information about objects in hand, see CollisionChecker.add_objinhnd
         self.oih_infos = []
         # collision detection
@@ -130,8 +130,8 @@ class XArmLite6WRSGripper(ri.RobotInterface):
         super().fk(component_name, jnt_values)
         # examine axis_length
         if component_name == 'arm':
-            if not isinstance(jnt_values, np.ndarray) or jnt_values.size != self.arm.ndof:
-                raise ValueError(f"An 1x{self.arm.ndof} npdarray must be specified to move a single arm!")
+            if not isinstance(jnt_values, np.ndarray) or jnt_values.size != self.arm.n_dof:
+                raise ValueError(f"An 1x{self.arm.n_dof} npdarray must be specified to move a single arm!")
             return update_component(component_name, jnt_values)
         else:
             raise ValueError("The given component name is not available!")

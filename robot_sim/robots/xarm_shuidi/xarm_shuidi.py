@@ -20,14 +20,14 @@ class XArmShuidi(ri.RobotInterface):
         self.agv.jnts[1]['pos_in_loc_tcp'] = np.zeros(3)
         self.agv.jnts[1]['end_type'] = 'prismatic'
         self.agv.jnts[1]['loc_motionax'] = np.array([1, 0, 0])
-        self.agv.jnts[1]['motion_rng'] = [0.0, 5.0]
+        self.agv.jnts[1]['motion_range'] = [0.0, 5.0]
         self.agv.jnts[2]['pos_in_loc_tcp'] = np.zeros(3)
         self.agv.jnts[2]['end_type'] = 'prismatic'
         self.agv.jnts[2]['loc_motionax'] = np.array([0, 1, 0])
-        self.agv.jnts[2]['motion_rng'] = [-3.0, 3.0]
+        self.agv.jnts[2]['motion_range'] = [-3.0, 3.0]
         self.agv.jnts[3]['pos_in_loc_tcp'] = np.zeros(3)
         self.agv.jnts[3]['loc_motionax'] = np.array([0, 0, 1])
-        self.agv.jnts[3]['motion_rng'] = [-math.pi, math.pi]
+        self.agv.jnts[3]['motion_range'] = [-math.pi, math.pi]
         self.agv.jnts[4]['pos_in_loc_tcp'] = np.array([0, .0, .277])  # dummy
         self.agv.jnts[5]['pos_in_loc_tcp'] = np.zeros(3)  # dummy
         self.agv.jnts[6]['pos_in_loc_tcp'] = np.array([0, .0, .168862])
@@ -67,8 +67,8 @@ class XArmShuidi(ri.RobotInterface):
                                    name='hnd_s', enable_cc=False)
         # tool center point
         self.arm.jlc.tcp_jnt_id = -1
-        self.arm.jlc.tcp_loc_rotmat = self.ft_sensor.jnts[-1]['gl_rotmat'].dot(self.hnd.acting_center_rotmat)
-        self.arm.jlc.tcp_loc_pos = self.ft_sensor.jnts[-1]['pos_in_loc_tcp'] + self.arm.jlc.tcp_loc_rotmat.dot(
+        self.arm.jlc.loc_tcp_rotmat = self.ft_sensor.jnts[-1]['gl_rotmat'].dot(self.hnd.acting_center_rotmat)
+        self.arm.jlc.loc_tcp_pos = self.ft_sensor.jnts[-1]['pos_in_loc_tcp'] + self.arm.jlc.loc_tcp_rotmat.dot(
             self.hnd.jaw_center_pos)
         # a list of detailed information about objects in hand, see CollisionChecker.add_objinhnd
         self.oih_infos = []
@@ -217,17 +217,17 @@ class XArmShuidi(ri.RobotInterface):
 
     def get_jnt_values(self, component_name="arm"):
         if component_name in self.manipulator_dict:
-            return self.manipulator_dict[component_name].get_joint_values()
+            return self.manipulator_dict[component_name].get_jnt_values()
         elif component_name == 'agv':
-            return self.agv.get_joint_values()
+            return self.agv.get_jnt_values()
         elif component_name == 'agv_arm':
             return_val = np.zeros(10)
-            return_val[:3] = self.agv.get_joint_values()
+            return_val[:3] = self.agv.get_jnt_values()
             return_val[3:10] = self.arm.get_jnt_values()
             return return_val
         elif component_name == 'all':
             return_val = np.zeros(11)
-            return_val[:3] = self.agv.get_joint_values()
+            return_val[:3] = self.agv.get_jnt_values()
             return_val[3:10] = self.arm.get_jnt_values()[:]
             return_val[10] = self.hnd.get_jaw_width()
             return return_val
@@ -260,7 +260,7 @@ class XArmShuidi(ri.RobotInterface):
         return super().ik(component_name=component_name,
                           tgt_pos=tgt_pos,
                           tgt_rotmat=tgt_rotmat,
-                          seed_jnt_vals=seed_jnt_values,
+                          seed_jnt_values=seed_jnt_values,
                           max_n_iter=100,
                           tcp_joint_id=tcp_jnt_id,
                           tcp_loc_pos=tcp_loc_pos,
@@ -407,7 +407,7 @@ if __name__ == '__main__':
 
     gm.gen_frame().attach_to(base)
     xav = XArmShuidi(enable_cc=True)
-    # xav.fk(component_name='all', jnt_vals=np.array([0, 0, 0, 0, 0, 0, math.pi, 0, math.pi / 6, 0, 0]))
+    # xav.fk(component_name='all', jnt_values=np.array([0, 0, 0, 0, 0, 0, math.pi, 0, math.pi / 6, 0, 0]))
     xav.jaw_to(jawwidth=.08)
     xav_meshmodel = xav.gen_meshmodel(toggle_tcpcs=False)
     xav_meshmodel.attach_to(base)
@@ -423,7 +423,7 @@ if __name__ == '__main__':
                          max_niter=10000)
     print(jnt_values2)
     xav.fk(component_name='arm', jnt_values=jnt_values)
-    # xss.fk(component_name='agv', jnt_vals=np.array([.2, -.5, math.radians(30)]))
+    # xss.fk(component_name='agv', jnt_values=np.array([.2, -.5, math.radians(30)]))
     # xss.show_cdprimit()
     xav.gen_stickmodel().attach_to(base)
     tic = time.time()

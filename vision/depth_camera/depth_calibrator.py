@@ -49,8 +49,8 @@ class DepthCaliberator(object):
         rot_range_y = [np.array([0, 1, 0]), [-30, -15, 15, 30]]
         rot_range_z = [np.array([0, 0, 1]), [-90, -60, -30, 30, 60]]
         range_axes = [rot_range_x, rot_range_y, rot_range_z]
-        last_jnt_values = self.robot_x.lft_arm_hnd.get_joint_values()
-        jnt_values_bk = self.robot_s.get_joint_values(component_name)
+        last_jnt_values = self.robot_x.lft_arm_hnd.get_jnt_values()
+        jnt_values_bk = self.robot_s.get_jnt_values(component_name)
         for axisid in range(3):
             axis = range_axes[axisid][0]
             for angle in range_axes[axisid][1]:
@@ -59,7 +59,7 @@ class DepthCaliberator(object):
                 jnt_values = self.robot_s.ik(component_name=component_name,
                                              tgt_pos=goal_pos,
                                              tgt_rotmat=goal_rotmat,
-                                             seed_jnt_vals=last_jnt_values)
+                                             seed_jnt_values=last_jnt_values)
                 self.robot_s.fk(component_name=component_name, joint_values=jnt_values)
                 if jnt_values is not None and not self.robot_s.is_collided():
                     last_jnt_values = jnt_values
@@ -98,13 +98,13 @@ class DepthCaliberator(object):
                                                                     action_pos=action_center_pos,
                                                                     action_rotmat=action_center_rotmat,
                                                                     aruco_info=aruco_info)
-        jnt_values_bk = self.robot_s.get_joint_values(component_name)
+        jnt_values_bk = self.robot_s.get_jnt_values(component_name)
         # move to action pos, action rotmat
-        last_jnt_values = self.robot_x.lft_arm_hnd.get_joint_values()
+        last_jnt_values = self.robot_x.lft_arm_hnd.get_jnt_values()
         jnt_values = self.robot_s.ik(component_name=component_name,
                                      tgt_pos=action_center_pos,
                                      tgt_rotmat=action_center_rotmat,
-                                     seed_jnt_vals=last_jnt_values)
+                                     seed_jnt_values=last_jnt_values)
         if jnt_values is not None and not self.robot_s.is_collided():
             self.robot_s.fk(component_name=component_name, joint_values=jnt_values)
             last_jnt_values = jnt_values
@@ -117,7 +117,7 @@ class DepthCaliberator(object):
         jnt_values = self.robot_s.ik(component_name=component_name,
                                      tgt_pos=action_center_dist_x,
                                      tgt_rotmat=action_center_rotmat,
-                                     seed_jnt_vals=last_jnt_values)
+                                     seed_jnt_values=last_jnt_values)
         if jnt_values is not None and not self.robot_s.is_collided():
             self.robot_s.fk(component_name=component_name, joint_values=jnt_values)
             last_jnt_values = jnt_values
@@ -130,7 +130,7 @@ class DepthCaliberator(object):
         jnt_values = self.robot_s.ik(component_name=component_name,
                                      tgt_pos=action_center_dist_y,
                                      tgt_rotmat=action_center_rotmat,
-                                     seed_jnt_vals=last_jnt_values)
+                                     seed_jnt_values=last_jnt_values)
         if jnt_values is not None and not self.robot_s.is_collided():
             self.robot_s.fk(component_name=component_name, joint_values=jnt_values)
             last_jnt_values = jnt_values
@@ -143,7 +143,7 @@ class DepthCaliberator(object):
         jnt_values = self.robot_s.ik(component_name=component_name,
                                      tgt_pos=action_center_dist_z,
                                      tgt_rotmat=action_center_rotmat,
-                                     seed_jnt_vals=last_jnt_values)
+                                     seed_jnt_values=last_jnt_values)
         if jnt_values is not None and not self.robot_s.is_collided():
             self.robot_s.fk(component_name=component_name, joint_values=jnt_values)
             self.robot_x.move_jnts(component_name, jnt_values)
@@ -184,13 +184,13 @@ class DepthCaliberator(object):
                                                                action_dist=)
         pos_in_real_list = []
         pos_in_sensor_list = []
-        jnt_values_bk = self.robot_s.get_joint_values(component_name)
-        last_jnt_values = self.robot_x.lft_arm_hnd.get_joint_values()
+        jnt_values_bk = self.robot_s.get_jnt_values(component_name)
+        last_jnt_values = self.robot_x.lft_arm_hnd.get_jnt_values()
         for i, action_pos in enumerate(action_pos_list):
             jnt_values = self.robot_s.ik(component_name=component_name,
                                          tgt_pos=action_pos,
                                          tgt_rotmat=action_rotmat_list[i],
-                                         seed_jnt_vals=last_jnt_values)
+                                         seed_jnt_values=last_jnt_values)
             if jnt_values is not None:
                 self.robot_s.fk(component_name=component_name, joint_values=jnt_values)
                 last_jnt_values = jnt_values

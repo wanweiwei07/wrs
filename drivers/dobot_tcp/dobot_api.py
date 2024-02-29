@@ -187,7 +187,7 @@ class DobotApiDashboard(DobotApi):
         """
         Set analog signal output (Queue instruction)
         index : Analog output index (Value range:1~2)
-        val : Voltage value (0~10)
+        value : Voltage value (0~10)
         """
         string = "AO({:d},{:f})".format(index, val)
         self.send_data(string)
@@ -217,7 +217,7 @@ class DobotApiDashboard(DobotApi):
         """
         Set analog signal output (Instructions immediately)
         index : Analog output index (Value range:1~2)
-        val : Voltage value (0~10)
+        value : Voltage value (0~10)
         """
         string = "AOExecute({:d},{:f})".format(index, val)
         self.send_data(string)

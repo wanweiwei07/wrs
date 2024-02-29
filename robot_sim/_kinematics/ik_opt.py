@@ -51,9 +51,9 @@ class OptIKSolver(object):
         """
 
         def _objective(x, tgt_pos, tgt_rotmat):
-            tcp_gl_pos, tcp_gl_rotmat, j_mat = self.jlc.forward_kinematics(jnt_vals=x,
-                                                                           toggle_jac=True,
-                                                                           update=False)
+            tcp_gl_pos, tcp_gl_rotmat, j_mat = self.jlc.fk(jnt_values=x,
+                                                           toggle_jacobian=True,
+                                                           update=False)
             tcp_pos_err_val, tcp_rot_err_val, tcp_err_vec = rm.diff_between_posrot(src_pos=tcp_gl_pos,
                                                                                    src_rotmat=tcp_gl_rotmat,
                                                                                    tgt_pos=tgt_pos,
@@ -67,7 +67,7 @@ class OptIKSolver(object):
                                    args=(tgt_pos, tgt_rotmat),
                                    x0=seed_jnt_vals,
                                    method='SLSQP',
-                                   bounds=self.jlc.jnt_rngs,
+                                   bounds=self.jlc.jnt_ranges,
                                    options=options)
             # print(result)
             # input("Press Enter to continue...")
@@ -89,9 +89,9 @@ class OptIKSolver(object):
             return q_diff.dot(q_diff)
 
         def _con_tcp(x):
-            tcp_gl_pos, tcp_gl_rotmat = self.jlc.forward_kinematics(jnt_vals=x,
-                                                                    toggle_jac=False,
-                                                                    update=False)
+            tcp_gl_pos, tcp_gl_rotmat = self.jlc.fk(jnt_values=x,
+                                                    toggle_jacobian=False,
+                                                    update=False)
             tcp_pos_err_val, tcp_rot_err_val, tcp_err_vec = rm.diff_between_posrot(src_pos=tcp_gl_pos,
                                                                                    src_rotmat=tcp_gl_rotmat,
                                                                                    tgt_pos=tgt_pos,
@@ -107,7 +107,7 @@ class OptIKSolver(object):
         result = sopt.minimize(fun=_objective,
                                x0=seed_jnt_vals,
                                method='SLSQP',
-                               bounds=self.jlc.jnt_rngs,
+                               bounds=self.jlc.jnt_ranges,
                                constraints=constraints,
                                options=options)
         print(result)

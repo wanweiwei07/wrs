@@ -341,7 +341,7 @@ class TBM(object):
                 cutter.fix_to(pos=new_pos, rotmat=new_rotmat)
 
     def get_jnt_values(self):
-        return self.head.get_joint_values()
+        return self.head.get_jnt_values()
 
     def gen_stickmodel(self,
                        tcp_jntid=None,
@@ -395,6 +395,6 @@ if __name__ == '__main__':
 
     gm.gen_frame().attach_to(base)
     otherbot_s = TBM()
-    # otherbot_s.fk(jnt_vals=np.array([math.pi / 3]))
+    # otherbot_s.fk(jnt_values=np.array([math.pi / 3]))
     otherbot_s.gen_meshmodel().attach_to(base)
     base.run()

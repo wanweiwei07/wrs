@@ -300,7 +300,7 @@ class BlocklyTool(_BlocklyHandler):
         self._append_main_init_code('    # Register n_sec_minor changed callback')
         self._append_main_init_code('    def _count_changed_callback(self, data):')
         self._append_main_init_code('        if self.is_alive:')
-        self._append_main_init_code('            self.pprint(\'counter val: {}\'.format(data[\'n_sec_minor\']))\n')
+        self._append_main_init_code('            self.pprint(\'counter value: {}\'.format(data[\'n_sec_minor\']))\n')
 
     def __define_pprint_func(self):
         self._append_main_init_code('    @staticmethod')

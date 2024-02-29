@@ -48,7 +48,7 @@ class NumIKSolverProc(mp.Process):
         # # extract min max for quick access
         jnt_limits = []
         for i in range(len(joints)):
-            jnt_limits.append(joints[i].motion_rng)
+            jnt_limits.append(joints[i].motion_range)
         self.joint_ranges = np.asarray(jnt_limits)
         self.min_jnt_vals = self.joint_ranges[:, 0]
         self.max_jnt_vals = self.joint_ranges[:, 1]
@@ -111,7 +111,7 @@ class NumIKSolverProc(mp.Process):
                 j_axis[i, :] = homomat[:3, :3] @ joints[i].loc_motion_ax
                 if joints[i].type == rkc.JntType.REVOLUTE:
                     j_pos[i, :] = homomat[:3, 3] + homomat[:3, :3] @ joints[i].loc_pos
-                homomat = homomat @ joints[i].get_motion_homomat(motion_val=joint_values[i])
+                homomat = homomat @ joints[i].get_motion_homomat(motion_value=joint_values[i])
             tcp_gl_homomat = homomat @ tcp_loc_homomat
             tcp_gl_pos = tcp_gl_homomat[:3, 3]
             tcp_gl_rotmat = tcp_gl_homomat[:3, :3]
@@ -180,7 +180,7 @@ class OptIKSolverProc(mp.Process):
         self.joints = joints
         jnt_limits = []
         for i in range(len(joints)):
-            jnt_limits.append(joints[i].motion_rng)
+            jnt_limits.append(joints[i].motion_range)
         self.joint_ranges = np.asarray(jnt_limits)
         self.tcp_joint_id = tcp_joint_id
         self.tcp_loc_homomat = tcp_loc_homomat
@@ -216,7 +216,7 @@ class OptIKSolverProc(mp.Process):
                 j_axis[i, :] = homomat[:3, :3] @ joints[i].loc_motion_ax
                 if joints[i].type == rkc.JntType.REVOLUTE:
                     j_pos[i, :] = homomat[:3, 3] + homomat[:3, :3] @ joints[i].loc_pos
-                homomat = homomat @ joints[i].get_motion_homomat(motion_val=joint_values[i])
+                homomat = homomat @ joints[i].get_motion_homomat(motion_value=joint_values[i])
             tcp_gl_homomat = homomat @ tcp_loc_homomat
             tcp_gl_pos = tcp_gl_homomat[:3, 3]
             tcp_gl_rotmat = tcp_gl_homomat[:3, :3]
@@ -296,7 +296,7 @@ class TracIKSolver(object):
 
     def __init__(self, jlc, wln_ratio=.05):
         self.jlc = jlc
-        self._default_seed_jnt_vals = self.jlc.get_joint_values()
+        self._default_seed_jnt_vals = self.jlc.get_jnt_values()
         self._nik_param_queue = mp.Queue()
         self._oik_param_queue = mp.Queue()
         self._nik_state_queue = mp.Queue()
@@ -305,7 +305,7 @@ class TracIKSolver(object):
         self.nik_solver_proc = NumIKSolverProc(self.jlc.anchor,
                                                self.jlc.jnts,
                                                self.jlc.tcp_jnt_id,
-                                               self.jlc.tcp_loc_homomat,
+                                               self.jlc.loc_tcp_homomat,
                                                wln_ratio,
                                                self._nik_param_queue,
                                                self._nik_state_queue,
@@ -313,7 +313,7 @@ class TracIKSolver(object):
         self.oik_solver_proc = OptIKSolverProc(self.jlc.anchor,
                                                self.jlc.jnts,
                                                self.jlc.tcp_jnt_id,
-                                               self.jlc.tcp_loc_homomat,
+                                               self.jlc.loc_tcp_homomat,
                                                self._oik_param_queue,
                                                self._oik_state_queue,
                                                self._result_queue)
@@ -336,7 +336,7 @@ class TracIKSolver(object):
         :param tgt_rotmat:
         :param seed_jnt_vals:
         :param max_n_iter:
-        :param toggle_debug: the function will return a tuple like (solver, jnt_vals); solver is 'o' (opt) or 'n' (num)
+        :param toggle_debug: the function will return a tuple like (solver, jnt_values); solver is 'o' (opt) or 'n' (num)
         :return:
         author: weiwei
         date: 20231107

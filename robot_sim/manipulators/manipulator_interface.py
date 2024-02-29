@@ -1,16 +1,18 @@
 import copy
 import numpy as np
+import robot_sim._kinematics.jlchain as jl
 import robot_sim._kinematics.TBD_collision_checker as cc
 
 
 class ManipulatorInterface(object):
 
-    def __init__(self, pos=np.zeros(3), rotmat=np.eye(3), name='manipulator'):
+    def __init__(self, pos=np.zeros(3), rotmat=np.eye(3), home_conf=np.zeros(6), name='manipulator'):
         self.name = name
         self.pos = pos
         self.rotmat = rotmat
         # jlc
-        self.jlc = None
+        self.jlc = jl.JLChain(pos=pos, rotmat=rotmat, n_dof=len(home_conf), name=name)
+        self.jlc.home = home_conf
         # collision detection
         self.cc = None
 
@@ -18,83 +20,75 @@ class ManipulatorInterface(object):
     def jnts(self):
         return self.jlc.jnts
 
-    @property
-    def tgtjnts(self):
-        return self.jlc.tgtjnts
+    # @property
+    # def tgtjnts(self):
+    #     return self.jlc.tgtjnts
 
     @property
-    def ndof(self):
+    def n_dof(self):
         return self.jlc.n_dof
 
     @property
-    def homeconf(self):
-        return self.jlc.homeconf
+    def home_conf(self):
+        return self.jlc.home
 
     @property
     def tcp_jnt_id(self):
         return self.jlc.tcp_jnt_id
 
     @property
-    def tcp_loc_pos(self):
-        return self.jlc.tcp_loc_pos
+    def loc_tcp_pos(self):
+        return self.jlc.loc_tcp_pos
 
     @property
-    def tcp_loc_rotmat(self):
-        return self.jlc.tcp_loc_rotmat
+    def loc_tcp_rotmat(self):
+        return self.jlc.loc_tcp_rotmat
+
+    @property
+    def jnt_ranges(self):
+        return self.jlc.jnt_ranges
 
     @tcp_jnt_id.setter
     def tcp_jnt_id(self, tcp_jnt_id):
         self.jlc.tcp_jnt_id = tcp_jnt_id
 
-    @tcp_loc_pos.setter
-    def tcp_loc_pos(self, tcp_loc_pos):
-        self.jlc.tcp_loc_pos = tcp_loc_pos
+    @loc_tcp_pos.setter
+    def loc_tcp_pos(self, loc_tcp_pos):
+        self.jlc.loc_tcp_pos = loc_tcp_pos
 
-    @tcp_loc_rotmat.setter
-    def tcp_loc_rotmat(self, tcp_loc_rotmat):
-        self.jlc.tcp_loc_rotmat = tcp_loc_rotmat
+    @loc_tcp_rotmat.setter
+    def loc_tcp_rotmat(self, loc_tcp_rotmat):
+        self.jlc.loc_tcp_rotmat = loc_tcp_rotmat
 
-    def set_homeconf(self, jnt_values):
-        self.jlc.set_home(jnt_values=jnt_values)
+    @home_conf.setter
+    def home_conf(self, home_conf):
+        self.jlc.home = home_conf
 
-    def set_tcp(self, tcp_jnt_id=None, tcp_loc_pos=None, tcp_loc_rotmat=None):
-        if tcp_jnt_id is not None:
-            self.jlc.tcp_jnt_id = tcp_jnt_id
-        if tcp_loc_pos is not None:
-            self.jlc.tcp_loc_pos = tcp_loc_pos
-        if tcp_loc_rotmat is not None:
-            self.jlc.tcp_loc_rotmat = tcp_loc_rotmat
+    def set_tcp(self, tcp_jnt_id=None, loc_tcp_pos=None, loc_tcp_rotmat=None):
+        self.jlc.set_tcp(tcp_jnt_id=tcp_jnt_id, loc_tcp_pos=loc_tcp_pos, loc_tcp_rotmat=loc_tcp_rotmat)
 
-    def get_gl_tcp(self,
-                   tcp_jnt_id=None,
-                   tcp_loc_pos=None,
-                   tcp_loc_rotmat=None):
-        return self.jlc.get_gl_tcp(tcp_jnt_id=tcp_jnt_id,
-                                   tcp_loc_pos=tcp_loc_pos,
-                                   tcp_loc_rotmat=tcp_loc_rotmat)
+    def get_gl_tcp(self):
+        return self.jlc.get_gl_tcp()
 
-    def get_jnt_ranges(self):
-        return self.jlc.jnt_rngs
+    def goto_home_conf(self):
+        self.jlc.go_home()
 
-    def goto_homeconf(self):
-        self.jlc.fk(joint_values=self.jlc.homeconf)
-
-    def goto_zeroconf(self):
-        self.jlc.fk(joint_values=self.jlc.zeroconf)
+    def goto_zero_conf(self):
+        self.jlc.go_zero()
 
     def fix_to(self, pos, rotmat, jnt_values=None):
         return self.jlc.fix_to(pos=pos, rotmat=rotmat, jnt_values=jnt_values)
 
     def is_jnt_values_in_ranges(self, jnt_values):
-        return self.jlc.are_joint_values_in_ranges(jnt_values)
+        return self.jlc.is_jnt_values_in_ranges(jnt_values)
 
     def fk(self, jnt_values):
         if jnt_values is None:
             raise Exception("Joint values are None!")
-        return self.jlc.fk(joint_values=jnt_values)
+        return self.jlc.fk(jnt_values=jnt_values)
 
     def get_jnt_values(self):
-        return self.jlc.get_joint_values()
+        return self.jlc.get_jnt_values()
 
     def rand_conf(self):
         return self.jlc.rand_conf()
@@ -128,7 +122,7 @@ class ManipulatorInterface(object):
                            tcp_loc_pos=tcp_loc_pos,
                            tcp_loc_rotmat=tcp_loc_rotmat,
                            tcp_joint_id=tcp_jnt_id,
-                           seed_jnt_vals=seed_jnt_values,
+                           seed_jnt_values=seed_jnt_values,
                            max_n_iter=max_niter,
                            local_minima=local_minima,
                            toggle_dbg=toggle_debug)

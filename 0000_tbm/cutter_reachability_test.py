@@ -34,9 +34,9 @@ for col_key in mcn_s.cutters.keys():
             seed1[2] = -math.pi / 2
             seed1[3] = -math.pi / 2
             seed1[4] = -math.pi / 2
-            # jnt_vals, _ = ik_s.solve(tgt_pos=tgt_pos, tgt_rotmat=tgt_rotmat, seed_jnt_vals= seed0)
-            # if jnt_vals is None:
-            #     jnt_vals, _ = ik_s.solve(tgt_pos=tgt_pos, tgt_rotmat=tgt_rotmat, seed_jnt_vals= seed1)
+            # jnt_values, _ = ik_s.solve(tgt_pos=tgt_pos, tgt_rotmat=tgt_rotmat, seed_jnt_values= seed0)
+            # if jnt_values is None:
+            #     jnt_values, _ = ik_s.solve(tgt_pos=tgt_pos, tgt_rotmat=tgt_rotmat, seed_jnt_values= seed1)
             jnt_values = rbt_s.ik(component_name='arm',
                                   tgt_pos=tgt_pos,
                                   tgt_rotmat=tgt_rotmat,
@@ -55,7 +55,7 @@ for col_key in mcn_s.cutters.keys():
             if jnt_values is None:
                 continue
             cutter.lnks[1]['rgba']=[0,1,0,1]
-            # rbt_s.fk(component_name="arm", jnt_vals=jnt_vals)
+            # rbt_s.fk(component_name="arm", jnt_values=jnt_values)
             # rbt_s.gen_meshmodel(toggle_tcp_frame=True).attach_to(base)
 mcn_s.fk(np.array([0]))
 mcn_s.gen_meshmodel().attach_to(base)
@@ -79,25 +79,25 @@ base.run()
 #             seed1[2] = -math.pi / 2
 #             seed1[3] = -math.pi / 2
 #             seed1[4] = -math.pi / 2
-#             jnt_vals = rbt_s.ik(component_name='arm',
+#             jnt_values = rbt_s.ik(component_name='arm',
 #                                   tgt_pos=tgt_pos,
 #                                   tgt_rotmat=tgt_rotmat,
 #                                   max_n_iter=1000,
 #                                   toggle_dbg=False,
-#                                   seed_jnt_vals=seed0)
-#             if jnt_vals is None:
-#                 jnt_vals = rbt_s.ik(component_name='arm',
+#                                   seed_jnt_values=seed0)
+#             if jnt_values is None:
+#                 jnt_values = rbt_s.ik(component_name='arm',
 #                                       tgt_pos=tgt_pos,
 #                                       tgt_rotmat=tgt_rotmat,
 #                                       max_n_iter=1000,
 #                                       toggle_dbg=False,
-#                                       seed_jnt_vals=seed1)
-#             if jnt_vals is None:
+#                                       seed_jnt_values=seed1)
+#             if jnt_values is None:
 #                 continue
-#             # rbt_s.fk(component_name="arm", jnt_vals=jnt_vals)
+#             # rbt_s.fk(component_name="arm", jnt_values=jnt_values)
 #             # rbt_s.gen_meshmodel(toggle_tcp_frame=True).attach_to(base)
 #             # mcn_s.gen_meshmodel().attach_to(base)
-#             solvable.append([mcn_s.cutter_pos_dict[k][i], mcn_s.cutter_rotmat_dict[k][i], jnt_vals])
+#             solvable.append([mcn_s.cutter_pos_dict[k][i], mcn_s.cutter_rotmat_dict[k][i], jnt_values])
 # pickle.dump(solvable, open('manipulability.pickle', 'wb'))
 # base.run()
 
@@ -117,23 +117,23 @@ seed1[3] = -math.pi / 2
 #                                    tgt_rotmat=tgt_rotmat,
 #                                    max_n_iter=100,
 #                                    toggle_dbg=False,
-#                                    seed_jnt_vals=seed0)
+#                                    seed_jnt_values=seed0)
 #             if jnt_values0 is not None:
-#                 jnt_vals = jnt_values0
+#                 jnt_values = jnt_values0
 #             else:
 #                 jnt_values1 = rbt_s.ik(component_name='arm',
 #                                        tgt_pos=tgt_pos,
 #                                        tgt_rotmat=tgt_rotmat,
 #                                        max_n_iter=100,
 #                                        toggle_dbg=False,
-#                                        seed_jnt_vals=seed1)
+#                                        seed_jnt_values=seed1)
 #                 if jnt_values1 is not None:
-#                     jnt_vals = jnt_values1
+#                     jnt_values = jnt_values1
 #                 else:
-#                     jnt_vals = None
-#             if jnt_vals is not None:
+#                     jnt_values = None
+#             if jnt_values is not None:
 #                 # mgm.gen_frame(pos=tgt_pos, rotmat=tgt_rotmat, major_radius=.02).attach_to(base)
-#                 rbt_s.fk(jnt_vals=jnt_vals)
+#                 rbt_s.fk(jnt_values=jnt_values)
 #                 # rbt_s.gen_meshmodel().attach_to(base)
 #                 data.append([tgt_pos, tgt_rotmat, rbt_s.manipulability()])
 #             else:

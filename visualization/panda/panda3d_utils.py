@@ -43,7 +43,7 @@ def letter_box(img, new_shape=(640, 640), color=(.45, .45, .45), auto=True, scal
 
     # Scale ratio (new / old)
     r = min(new_shape[0] / shape[0], new_shape[1] / shape[1])
-    if not scale_up:  # only scale down, do not scale up (for better val mAP)
+    if not scale_up:  # only scale down, do not scale up (for better value mAP)
         r = min(r, 1.0)
 
     # Compute padding

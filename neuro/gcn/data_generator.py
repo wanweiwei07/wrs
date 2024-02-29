@@ -27,7 +27,7 @@ import robot_sim.robots.cobotta.cobotta as cbt
 # for c in result:
 #     cnter = cnter + 1
 #     print(cnter, "/", n_total, ",", cnter / n_total)
-#     rbt_s.fk(jnt_vals=np.asarray(c))
+#     rbt_s.fk(jnt_values=np.asarray(c))
 #     toggle_gl_pos, toggle_gl_rotmat = rbt_s.get_gl_tcp()
 #     print(toggle_gl_pos, rm.quaternion_from_matrix(toggle_gl_rotmat))
 #
@@ -40,7 +40,7 @@ def gen_data(rbt_s,
     n_jnts = rbt_s.manipulator_dict[component_name].n_dof
     all_ranges = []
     for jnt_id in range(1, n_jnts + 1):
-        r0, r1 = rbt_s.manipulator_dict[component_name].jnts[jnt_id]['motion_rng']
+        r0, r1 = rbt_s.manipulator_dict[component_name].jnts[jnt_id]['motion_range']
         all_ranges.append(np.arange(r0, r1, granularity[jnt_id - 1]))
         # print(granularity, all_ranges[-1])
     all_data = itertools.product(*all_ranges)
@@ -64,7 +64,7 @@ def gen_data(rbt_s,
         out_data = data
         data_set_tcp.append(in_data)
         data_set_jnts.append(out_data)
-    # df = pd.DataFrame(data_set, columns=['xyzrpy', 'jnt_vals'])
+    # df = pd.DataFrame(data_set, columns=['xyzrpy', 'jnt_values'])
     # df.to_csv(save_name)
     # np.save(save_name + "_min_max", np.array([np.min(in_data_npy, 0), np.max(in_data_npy, 0)]))
     np.save(save_name+"_tcp", np.array(data_set_tcp))

@@ -16,29 +16,29 @@ if __name__ == '__main__':
     jlc = rskj.JLChain(n_dof=6)
     jlc.jnts[0].loc_pos = np.array([0, 0, 0])
     jlc.jnts[0].loc_motion_ax = np.array([0, 0, 1])
-    jlc.jnts[0].motion_rng = np.array([-np.pi / 2, np.pi / 2])
+    jlc.jnts[0].motion_range = np.array([-np.pi / 2, np.pi / 2])
     # jlc.joints[1].change_type(rkc.JntType.PRISMATIC)
     jlc.jnts[1].loc_pos = np.array([0, 0, .05])
     jlc.jnts[1].loc_motion_ax = np.array([0, 1, 0])
-    jlc.jnts[1].motion_rng = np.array([-np.pi / 2, np.pi / 2])
+    jlc.jnts[1].motion_range = np.array([-np.pi / 2, np.pi / 2])
     jlc.jnts[2].loc_pos = np.array([0, 0, .2])
     jlc.jnts[2].loc_motion_ax = np.array([0, 1, 0])
-    jlc.jnts[2].motion_rng = np.array([-np.pi, np.pi])
+    jlc.jnts[2].motion_range = np.array([-np.pi, np.pi])
     jlc.jnts[3].loc_pos = np.array([0, 0, .2])
     jlc.jnts[3].loc_motion_ax = np.array([0, 0, 1])
-    jlc.jnts[3].motion_rng = np.array([-np.pi / 2, np.pi / 2])
+    jlc.jnts[3].motion_range = np.array([-np.pi / 2, np.pi / 2])
     jlc.jnts[4].loc_pos = np.array([0, 0, .1])
     jlc.jnts[4].loc_motion_ax = np.array([0, 1, 0])
-    jlc.jnts[4].motion_rng = np.array([-np.pi / 2, np.pi / 2])
+    jlc.jnts[4].motion_range = np.array([-np.pi / 2, np.pi / 2])
     jlc.jnts[5].loc_pos = np.array([0, 0, .05])
     jlc.jnts[5].loc_motion_ax = np.array([0, 0, 1])
-    jlc.jnts[5].motion_rng = np.array([-np.pi / 2, np.pi / 2])
-    jlc.tcp_loc_pos = np.array([0, 0, .01])
+    jlc.jnts[5].motion_range = np.array([-np.pi / 2, np.pi / 2])
+    jlc.loc_tcp_pos = np.array([0, 0, .01])
     jlc.finalize()
     rkmg.gen_jlc_stick(jlc, stick_rgba=basis.constant.navy_blue, toggle_tcp_frame=True,
                        toggle_joint_frame=True).attach_to(base)
-    seed_jnt_vals = jlc.get_joint_values()
-    # seed_jnt_vals = np.array([0.69103164, -1.42838988, 1.1103724, 0.94371771, -0.64419981,
+    seed_jnt_vals = jlc.get_jnt_values()
+    # seed_jnt_values = np.array([0.69103164, -1.42838988, 1.1103724, 0.94371771, -0.64419981,
     #                           1.23253726])
     # tgt_pos = np.array([-0.04016656, -0.16026002, 0.05019466])
     # tgt_rotmat = np.array([[0.49100466, 0.6792442, 0.54547386],
@@ -57,13 +57,13 @@ if __name__ == '__main__':
     tic = time.time()
     joint_values_with_dbg_info = jlc.ik(tgt_pos=tgt_pos,
                                         tgt_rotmat=tgt_rotmat,
-                                        seed_jnt_vals=seed_jnt_vals,
+                                        seed_jnt_values=seed_jnt_vals,
                                         max_n_iter=100,
                                         toggle_dbg=True)
     toc = time.time()
     print(f"time cost is {toc - tic}")
     print(joint_values_with_dbg_info)
-    jlc.forward_kinematics(jnt_vals=joint_values_with_dbg_info[1], update=True)
+    jlc.fk(jnt_values=joint_values_with_dbg_info[1], update=True)
     rkmg.gen_jlc_stick(jlc, stick_rgba=basis.constant.navy_blue, toggle_tcp_frame=True,
                        toggle_joint_frame=True).attach_to(base)
     base.run()
@@ -74,11 +74,11 @@ if __name__ == '__main__':
     # tgt_list = []
     # for i in tqdm(range(100), desc='ik'):
     #     jnts = jlc.rand_conf()
-    #     tgt_pos, tgt_rotmat = jlc.forward_kinematics(jnt_vals=jnts, update=False, toggle_jacobian=False)
+    #     tgt_pos, tgt_rotmat = jlc.forward_kinematics(jnt_values=jnts, update=False, toggle_jacobian=False)
     #     a = time.time()
     #     joint_values_with_dbg_info = jlc.ik(tgt_pos=tgt_pos,
     #                                         tgt_rotmat=tgt_rotmat,
-    #                                         seed_jnt_vals=seed_jnt_vals,
+    #                                         seed_jnt_values=seed_jnt_values,
     #                                         max_n_iter=100,
     #                                         toggle_dbg_info=True)
     #     b = time.time()
@@ -113,7 +113,7 @@ if __name__ == '__main__':
     #     for id in tqdm(range(len(tgt_list)), desc="failed iks"):
     #         joint_values_with_dbg_info = jlc.ik(tgt_pos=tgt_list[id][0],
     #                                             tgt_rotmat=tgt_list[id][1],
-    #                                             seed_jnt_vals=seed_jnt_vals,
+    #                                             seed_jnt_values=seed_jnt_values,
     #                                             toggle_dbg_info=True)
     #         print("ik is done!")
     #         print(joint_values_with_dbg_info)

@@ -22,7 +22,7 @@ robot_s = ur3d.UR3Dual()
 
 rrtc_planner = rrtc.RRTConnect(robot_s)
 path = rrtc_planner.plan(component_name=component_name,
-                         start_conf=robot_s.lft_arm.homeconf,
+                         start_conf=robot_s.lft_arm.home_conf,
                          goal_conf=np.array([0, -math.pi / 2, -math.pi/3, -math.pi / 2, math.pi / 6, math.pi / 6]),
                          obstacle_list=[object],
                          ext_dist=.2,

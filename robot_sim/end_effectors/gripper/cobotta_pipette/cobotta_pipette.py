@@ -24,7 +24,7 @@ class CobottaPipette(gp.GripperInterface):
         self.jlc.jnts[4]['end_type'] = 'fixed'
         self.jlc.jnts[5]['pos_in_loc_tcp'] = np.array([0, -.007, .0])
         self.jlc.jnts[5]['end_type'] = 'prismatic'
-        self.jlc.jnts[5]['motion_rng'] = [0, .015]
+        self.jlc.jnts[5]['motion_range'] = [0, .015]
         self.jlc.jnts[5]['loc_motionax'] = np.array([0, 1, 0])
         self.jlc.jnts[6]['pos_in_loc_tcp'] = np.array([0, .0, .0])
         self.jlc.jnts[6]['end_type'] = 'fixed'
@@ -105,12 +105,12 @@ class CobottaPipette(gp.GripperInterface):
         if jaw_width is not None:
             side_jawwidth = jaw_width / 2.0
             if self.jaw_range[1] < jaw_width or jaw_width < self.jaw_range[0]:
-                self.jlc.jnts[5]['motion_val'] = side_jawwidth
-                self.jlc.jnts[7]['motion_val'] = -jaw_width
+                self.jlc.jnts[5]['motion_value'] = side_jawwidth
+                self.jlc.jnts[7]['motion_value'] = -jaw_width
                 if side_jawwidth <= .007:
-                    self.jlc.jnts[8]['motion_val'] = .0
+                    self.jlc.jnts[8]['motion_value'] = .0
                 else:
-                    self.jlc.jnts[8]['motion_val'] = (jaw_width - .014) / 2
+                    self.jlc.jnts[8]['motion_value'] = (jaw_width - .014) / 2
             else:
                 raise ValueError("The angle parameter is out of range!")
         self.coupling.fix_to(self.pos, self.rotmat)
@@ -123,16 +123,16 @@ class CobottaPipette(gp.GripperInterface):
         if self.jaw_range[1] < jaw_width or jaw_width < self.jaw_range[0]:
             raise ValueError("The jaw_width parameter is out of range!")
         side_jawwidth = jaw_width / 2.0
-        self.jlc.jnts[5]['motion_val'] = side_jawwidth
-        self.jlc.jnts[7]['motion_val'] = -jaw_width
+        self.jlc.jnts[5]['motion_value'] = side_jawwidth
+        self.jlc.jnts[7]['motion_value'] = -jaw_width
         if side_jawwidth <= .007:
-            self.jlc.jnts[8]['motion_val'] = .0
+            self.jlc.jnts[8]['motion_value'] = .0
         else:
-            self.jlc.jnts[8]['motion_val'] = (jaw_width - .014) / 2
+            self.jlc.jnts[8]['motion_value'] = (jaw_width - .014) / 2
         self.jlc.fk()
 
     def get_jaw_width(self):
-        return -self.jlc.jnts[2]['motion_val']
+        return -self.jlc.jnts[2]['motion_value']
 
     def gen_stickmodel(self, toggle_tcp_frame=False, toggle_jnt_frames=False, name='ee_stickmodel'):
         stickmodel = mc.ModelCollection(name=name)

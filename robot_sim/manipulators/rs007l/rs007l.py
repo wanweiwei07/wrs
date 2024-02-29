@@ -19,26 +19,26 @@ class RS007L(mi.ManipulatorInterface):
         # six joints, n_jnts = 6+2 (tgt ranges from 1-6), nlinks = 6+1
         self.jlc.jnts[1]['pos_in_loc_tcp'] = np.array([0, 0, 0.36])
         self.jlc.jnts[1]['loc_motionax'] = np.array([0, 0, -1])
-        self.jlc.jnts[1]['motion_rng'] = [-3.14159265359, 3.14159265359]  # -180, 180
+        self.jlc.jnts[1]['motion_range'] = [-3.14159265359, 3.14159265359]  # -180, 180
         self.jlc.jnts[2]['pos_in_loc_tcp'] = np.array([0, 0, 0.0])
         self.jlc.jnts[2]['gl_rotmat'] = rm.rotmat_from_euler(0, np.radians(-90), 0)
         self.jlc.jnts[2]['loc_motionax'] = np.array([0, 0, 1])
-        self.jlc.jnts[2]['motion_rng'] = [-2.35619449019, 2.35619449019]  # -135, 135
+        self.jlc.jnts[2]['motion_range'] = [-2.35619449019, 2.35619449019]  # -135, 135
         self.jlc.jnts[3]['pos_in_loc_tcp'] = np.array([0.455, 0, 0])
         self.jlc.jnts[3]['loc_motionax'] = np.array([0, 0, -1])
-        self.jlc.jnts[3]['motion_rng'] = [-2.74016692563, 2.74016692563]  # -157, 157
+        self.jlc.jnts[3]['motion_range'] = [-2.74016692563, 2.74016692563]  # -157, 157
         self.jlc.jnts[4]['pos_in_loc_tcp'] = np.array([0.0925, 0, 0])
         self.jlc.jnts[4]['gl_rotmat'] = rm.rotmat_from_euler(0, np.radians(90), 0)
         self.jlc.jnts[4]['loc_motionax'] = np.array([0, 0, 1])
-        self.jlc.jnts[4]['motion_rng'] = [-3.49065850399, 3.49065850399]  # -200, 200
+        self.jlc.jnts[4]['motion_range'] = [-3.49065850399, 3.49065850399]  # -200, 200
         self.jlc.jnts[5]['pos_in_loc_tcp'] = np.array([0, 0, 0.3825])
         self.jlc.jnts[5]['gl_rotmat'] = rm.rotmat_from_euler(0, np.radians(-90), 0)
         self.jlc.jnts[5]['loc_motionax'] = np.array([0, 0, -1])
-        self.jlc.jnts[5]['motion_rng'] = [-2.18166156499, 2.18166156499]  # -125, 125
+        self.jlc.jnts[5]['motion_range'] = [-2.18166156499, 2.18166156499]  # -125, 125
         self.jlc.jnts[6]['pos_in_loc_tcp'] = np.array([0.078, 0, 0])
         self.jlc.jnts[6]['gl_rotmat'] = rm.rotmat_from_euler(0, np.radians(90), 0)
         self.jlc.jnts[6]['loc_motionax'] = np.array([0, 0, 1])
-        self.jlc.jnts[6]['motion_rng'] = [-6.28318530718, 6.28318530718]  # -360, 360
+        self.jlc.jnts[6]['motion_range'] = [-6.28318530718, 6.28318530718]  # -360, 360
         # links
         self.jlc.lnks[0]['name'] = "base"
         self.jlc.lnks[0]['pos_in_loc_tcp'] = np.zeros(3)
@@ -126,9 +126,9 @@ class RS007L(mi.ManipulatorInterface):
         date: 20230728
         """
         if tcp_loc_pos is None:
-            tcp_loc_pos = self.jlc.tcp_loc_pos
+            tcp_loc_pos = self.jlc.loc_tcp_pos
         if tcp_loc_rotmat is None:
-            tcp_loc_rotmat = self.jlc.tcp_loc_rotmat
+            tcp_loc_rotmat = self.jlc.loc_tcp_rotmat
         flange_rotmat = tgt_rotmat @ tcp_loc_rotmat.T
         flange_pos = tgt_pos - flange_rotmat @ tcp_loc_pos
         rrr_pos = flange_pos - flange_rotmat[:, 2] * np.linalg.norm(self.jlc.jnts[6]['pos_in_loc_tcp'])
@@ -190,7 +190,7 @@ class RS007L(mi.ManipulatorInterface):
         author: weiwei
         date: 20230801
         """
-        if jnt_value < self.jlc.jnts[jnt_id]['motion_rng'][0] or jnt_value > self.jlc.jnts[jnt_id]['motion_rng'][1]:
+        if jnt_value < self.jlc.jnts[jnt_id]['motion_range'][0] or jnt_value > self.jlc.jnts[jnt_id]['motion_range'][1]:
             print(f"Error: Joint {jnt_id} is out of range!")
             return False
         else:
@@ -219,8 +219,8 @@ if __name__ == '__main__':
     # tgt_rotmat = rm.rotmat_from_euler(np.radians(30), np.radians(120), np.radians(130))
     # mgm.gen_frame(pos=tgt_pos, rotmat=tgt_rotmat).attach_to(base)
     tic = time.time()
-    # tcp_loc_pos = np.array([0, .1, 0.1])
-    # tcp_loc_rotmat = rm.rotmat_from_euler(0, np.radians(30), 0)
+    # loc_tcp_pos = np.array([0, .1, 0.1])
+    # loc_tcp_rotmat = rm.rotmat_from_euler(0, np.radians(30), 0)
     tgt_pos = np.array([.25, .2, .15])
     tgt_rotmat = rm.rotmat_from_euler(np.radians(130), np.radians(40), np.radians(180))
     gm.gen_frame(pos=tgt_pos, rotmat=tgt_rotmat).attach_to(base)

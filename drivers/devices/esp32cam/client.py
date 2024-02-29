@@ -24,7 +24,7 @@ def set_resolution(url: str, index: int=1, verbose: bool=False):
             print("available resolutions\n{}".format(resolutions))
 
         if index in [10, 9, 8, 7, 6, 5, 4, 3, 0]:
-            requests.get(url + "/control?var=framesize&val={}".format(index))
+            requests.get(url + "/control?var=framesize&value={}".format(index))
         else:
             print("Wrong index")
     except:
@@ -33,14 +33,14 @@ def set_resolution(url: str, index: int=1, verbose: bool=False):
 def set_quality(url: str, value: int=1, verbose: bool=False):
     try:
         if value >= 10 and value <=63:
-            requests.get(url + "/control?var=quality&val={}".format(value))
+            requests.get(url + "/control?var=quality&value={}".format(value))
     except:
         print("SET_QUALITY: something went wrong")
 
 def set_awb(url: str, awb: int=1):
     try:
         awb = not awb
-        requests.get(url + "/control?var=awb&val={}".format(1 if awb else 0))
+        requests.get(url + "/control?var=awb&value={}".format(1 if awb else 0))
     except:
         print("SET_QUALITY: something went wrong")
     return awb

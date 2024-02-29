@@ -92,7 +92,7 @@ class DDIKSolver(object):
         print(f"Buidling Data for DDIK using the following joint granularity: {n_intervals.astype(int)}...")
         for i in range(self.jlc.n_dof):
             sampled_jnts.append(
-                np.linspace(self.jlc.jnt_rngs[i][0], self.jlc.jnt_rngs[i][1], int(n_intervals[i]), endpoint=False))
+                np.linspace(self.jlc.jnt_ranges[i][0], self.jlc.jnt_ranges[i][1], int(n_intervals[i]), endpoint=False))
         grid = np.meshgrid(*sampled_jnts)
         sampled_qs = np.vstack([x.ravel() for x in grid]).T
         # gen sampled qs and their correspondent tcps
@@ -100,7 +100,7 @@ class DDIKSolver(object):
         jnt_data = []
         for id in tqdm(range(len(sampled_qs))):
             jnt_vals = sampled_qs[id]
-            tcp_pos, tcp_rotmat = self.jlc.forward_kinematics(jnt_vals=jnt_vals, toggle_jac=False)
+            tcp_pos, tcp_rotmat = self.jlc.fk(jnt_values=jnt_vals, toggle_jacobian=False)
             tcp_rotvec = self._rotmat_to_vec(tcp_rotmat)
             tcp_data.append(np.concatenate((tcp_pos, tcp_rotvec)))
             jnt_data.append(jnt_vals)
@@ -131,7 +131,7 @@ class DDIKSolver(object):
         for i in range(n_times):
             outer_progress_bar.update(1)
             random_jnts = self.jlc.rand_conf()
-            tgt_pos, tgt_rotmat = self.jlc.forward_kinematics(jnt_vals=random_jnts, update=False, toggle_jac=False)
+            tgt_pos, tgt_rotmat = self.jlc.fk(jnt_values=random_jnts, update=False, toggle_jacobian=False)
             tcp_rotvec = self._rotmat_to_vec(tgt_rotmat)
             tgt_tcp = np.concatenate((tgt_pos, tcp_rotvec))
             dist_val_array, nn_indx_array = self.querry_tree.query(tgt_tcp, k=self._k_max, workers=-1)
@@ -233,11 +233,11 @@ class DDIKSolver(object):
         tgt_list = []
         for i in tqdm(range(n_times), desc="ik"):
             random_jnts = self.jlc.rand_conf()
-            tgt_pos, tgt_rotmat = self.jlc.forward_kinematics(jnt_vals=random_jnts, update=False, toggle_jac=False)
+            tgt_pos, tgt_rotmat = self.jlc.fk(jnt_values=random_jnts, update=False, toggle_jacobian=False)
             tic = time.time()
             solved_jnt_vals = self.jlc.ik(tgt_pos=tgt_pos,
                                           tgt_rotmat=tgt_rotmat,
-                                          # seed_jnt_vals=seed_jnt_vals,
+                                          # seed_jnt_values=seed_jnt_values,
                                           toggle_dbg=False)
             toc = time.time()
             time_list.append(toc - tic)
@@ -268,35 +268,35 @@ if __name__ == '__main__':
     jlc = rskj.JLChain(n_dof=6)
     jlc.jnts[0].loc_pos = np.array([0, 0, 0])
     jlc.jnts[0].loc_motion_ax = np.array([0, 0, 1])
-    jlc.jnts[0].motion_rng = np.array([-np.pi / 2, np.pi / 2])
+    jlc.jnts[0].motion_range = np.array([-np.pi / 2, np.pi / 2])
     # jlc.joints[1].change_type(rkc.JntType.PRISMATIC)
     jlc.jnts[1].loc_pos = np.array([0, 0, .05])
     jlc.jnts[1].loc_motion_ax = np.array([0, 1, 0])
-    jlc.jnts[1].motion_rng = np.array([-np.pi / 2, np.pi / 2])
+    jlc.jnts[1].motion_range = np.array([-np.pi / 2, np.pi / 2])
     jlc.jnts[2].loc_pos = np.array([0, 0, .2])
     jlc.jnts[2].loc_motion_ax = np.array([0, 1, 0])
-    jlc.jnts[2].motion_rng = np.array([-np.pi, np.pi])
+    jlc.jnts[2].motion_range = np.array([-np.pi, np.pi])
     jlc.jnts[3].loc_pos = np.array([0, 0, .2])
     jlc.jnts[3].loc_motion_ax = np.array([0, 0, 1])
-    jlc.jnts[3].motion_rng = np.array([-np.pi / 2, np.pi / 2])
+    jlc.jnts[3].motion_range = np.array([-np.pi / 2, np.pi / 2])
     jlc.jnts[4].loc_pos = np.array([0, 0, .1])
     jlc.jnts[4].loc_motion_ax = np.array([0, 1, 0])
-    jlc.jnts[4].motion_rng = np.array([-np.pi / 2, np.pi / 2])
+    jlc.jnts[4].motion_range = np.array([-np.pi / 2, np.pi / 2])
     jlc.jnts[5].loc_pos = np.array([0, 0, .05])
     jlc.jnts[5].loc_motion_ax = np.array([0, 0, 1])
-    jlc.jnts[5].motion_rng = np.array([-np.pi / 2, np.pi / 2])
-    jlc.tcp_loc_pos = np.array([0, 0, .01])
+    jlc.jnts[5].motion_range = np.array([-np.pi / 2, np.pi / 2])
+    jlc.loc_tcp_pos = np.array([0, 0, .01])
     jlc.finalize()
-    seed_jnt_vals = jlc.get_joint_values()
+    seed_jnt_vals = jlc.get_jnt_values()
 
     # random_jnts = jlc.rand_conf()
-    # tgt_pos, tgt_rotmat = jlc.forward_kinematics(jnt_vals=random_jnts, update=False, toggle_jac=False)
+    # tgt_pos, tgt_rotmat = jlc.forward_kinematics(jnt_values=random_jnts, update=False, toggle_jacobian=False)
     # tic = time.time()
     # solved_jnt_vals = jlc.ik(tgt_pos=tgt_pos,
     #                   tgt_rotmat=tgt_rotmat,
     #                   max_n_iter=100)
     # mgm.gen_frame(pos=tgt_pos, rotmat=tgt_rotmat).attach_to(base)
-    # jlc.forward_kinematics(jnt_vals=solved_jnt_vals, update=True, toggle_jac=False)
+    # jlc.forward_kinematics(jnt_values=solved_jnt_vals, update=True, toggle_jacobian=False)
     # rkmg.gen_jlc_stick(jlc, stick_rgba=bc.navy_blue, toggle_tcp_frame=True,
     #                    toggle_joint_frame=True).attach_to(base)
     # base.run()

@@ -1133,7 +1133,7 @@ if __name__ == "__main__":
     # #     robot_s.fk(arm_name, conf)
     # #     robot_s.gen_meshmodel().attach_to(base)
     # # base.run()
-    # robot_s.fk(hnd_name=arm_name, jnt_vals=path[-1])
+    # robot_s.fk(hnd_name=arm_name, jnt_values=path[-1])
     # # robot_s.gen_meshmodel().attach_to(base)
     # # base.run()
     # rgt_pos, rgt_rotmat = robot_s.get_gl_tcp(hnd_name=arm_name)
@@ -1210,7 +1210,7 @@ if __name__ == "__main__":
         IKpossiblelist_start_rgt, objpos_initial_rgt, objrot_initial_rgt, startpointid = decidestartpose(arm_name,
                                                                                                          ropelinesorted,
                                                                                                          predefined_grasps_rgt,
-                                                                                                         robot_s.rgt_arm.homeconf,
+                                                                                                         robot_s.rgt_arm.home_conf,
                                                                                                          startpointid)
         objpos_finallist_rgt = create_candidate_points(arm_name=arm_name, initialhandpos=objpos_initial_rgt)
         np.save('finalposlist.npy', objpos_finallist_rgt)

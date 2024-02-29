@@ -21,6 +21,6 @@ grasp_info_list = gpa.plan_grasps(gripper_s, object_tube,
 gpa.write_pickle_file('tubebig', grasp_info_list, './', 'yumi_tube_big.pickle')
 for grasp_info in grasp_info_list:
     jaw_width, jaw_center_pos, jaw_center_rotmat, hnd_pos, hnd_rotmat = grasp_info
-    gripper_s.grip_at_with_pose(jaw_center_pos, jaw_center_rotmat, jaw_width)
+    gripper_s.grip_at_by_pose(jaw_center_pos, jaw_center_rotmat, jaw_width)
     gripper_s.gen_meshmodel().attach_to(base)
 base.run()

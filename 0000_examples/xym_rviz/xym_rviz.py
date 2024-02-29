@@ -18,8 +18,8 @@ if __name__ == '__main__':
     # define robot_s and robot_s anime info
     robot_s = xav.XArmShuidi()
     robot_meshmodel_parameters = [None,  # tcp_jntid
-                                  None,  # tcp_loc_pos
-                                  None,  # tcp_loc_rotmat
+                                  None,  # loc_tcp_pos
+                                  None,  # loc_tcp_rotmat
                                   False,  # toggle_tcp_frame
                                   False,  # toggle_joint_frame
                                   [0, .7, 0, .3],  # rgba
@@ -64,7 +64,7 @@ if __name__ == '__main__':
     # rmt_robot_s2 = rvc.copy_to_remote(robot_s)
     # while True:
     #     for pose in newpath:
-    #         robot_s.fk(hnd_name='arm', jnt_vals=pose)
+    #         robot_s.fk(hnd_name='arm', jnt_values=pose)
     #         # rmt_robot_mesh_list.append(rvc.showmodel_to_remote(robot_s.gen_meshmodel()))
     #         rmt_robot_mesh_list.append(rvc.add_stationary_robot(rmt_robot_s2, robot_s))
     #         time.sleep(.1)

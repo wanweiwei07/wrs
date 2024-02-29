@@ -22,8 +22,8 @@ def gen_tcp_frame(spos,
     :param toggle_gl_rotmat:
     :param attach_target: where to draw the frames to
     :param tcp_joint_id: single id or a list of ids
-    :param tcp_loc_pos:
-    :param tcp_loc_rotmat:
+    :param loc_tcp_pos:
+    :param loc_tcp_rotmat:
     :param tcp_indicator_rgba: color that used to render the tcp indicator
     :param tcp_indicator_ax_radius: major_radius the tcp indicator
     :param tcp_frame_ax_radius: major_radius the tcp coordinate frame
@@ -114,7 +114,7 @@ def gen_jnt(jnt,
                       type="round",
                       n_sec=6).attach_to(m_col)
         mgm.gen_stick(spos=jnt._gl_pos_0,
-                      epos=jnt._gl_pos_0 + jnt._gl_motion_ax * jnt.motion_val,
+                      epos=jnt._gl_pos_0 + jnt._gl_motion_ax * jnt.motion_value,
                       radius=radius,
                       rgba=bc.jnt_child_rgba,
                       type="round",

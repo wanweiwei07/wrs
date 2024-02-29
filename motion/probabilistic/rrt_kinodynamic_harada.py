@@ -291,7 +291,7 @@ class RRTKinodynamic(object):
         self.roadmap.clear()
         self.start_conf = start_state
         self.goal_conf = goal_conf
-        # check seed_jnt_vals and end_conf
+        # check seed_jnt_values and end_conf
         if self._is_collided(component_name, start_state, obstacle_list, otherrobot_list):
             print("The start robot_s configuration is in collision!")
             return None
@@ -416,7 +416,7 @@ class RRTKinodynamic(object):
         if shortcut is not None:
             plt.plot([conf[0] for conf in shortcut], [conf[1] for conf in shortcut], linewidth=4, linestyle='--',
                      color='r')
-        # plt.plot(planner.seed_jnt_vals[0], planner.seed_jnt_vals[1], "xr")
+        # plt.plot(planner.seed_jnt_values[0], planner.seed_jnt_values[1], "xr")
         # plt.plot(planner.end_conf[0], planner.end_conf[1], "xm")
         if not hasattr(RRTKinodynamic, 'img_counter'):
             RRTKinodynamic.img_counter = 0

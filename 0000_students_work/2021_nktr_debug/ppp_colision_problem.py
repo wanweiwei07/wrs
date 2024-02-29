@@ -142,9 +142,9 @@ print(jnt_values_initial, jnt_values)
 #         print("number", i)
 #         rotmat = rm.rotmat_from_axangle(axis=np.array([0, 0, 1]), angle=math.radians(180 * i / 10))
 #         pos = np.dot(rotmat, s_pos) + c_pos
-#         jnt_vals = pos.copy()
-#         jnt_vals[2] = math.pi
-#         robot_s.fk(component_name="agv", jnt_vals=jnt_vals)
+#         jnt_values = pos.copy()
+#         jnt_values[2] = math.pi
+#         robot_s.fk(component_name="agv", jnt_values=jnt_values)
 #         # check if the rbt_s is collided or not at the place
 #         if robot_s.is_collided(obstacle_list=obstacle_list):
 #             print("1")
@@ -158,11 +158,11 @@ print(jnt_values_initial, jnt_values)
 #                 first_jaw_center_rotmat = tool_initial_rotmat.dot(jaw_center_rotmat)
 #                 armjnts = robot_s.ik(component_name="arm", tgt_pos=first_jaw_center_pos, tgt_rotmat=first_jaw_center_rotmat)
 #                 if armjnts is not None:
-#                     robot_s.fk(component_name="arm", jnt_vals=armjnts)
+#                     robot_s.fk(component_name="arm", jnt_values=armjnts)
 #                     is_robot_collided = robot_s.is_collided(obstacle_list=obstacle_list)
 #                     # display only if armjnts is not None and rbt_s is not collided
 #                     if is_robot_collided is False and counter is 0:
-#                         dist_pos.append(jnt_vals)
+#                         dist_pos.append(jnt_values)
 #                         counter += 1
 #                         continue
 # print(dist_pos)
@@ -225,7 +225,7 @@ for dict_goal_pos in dist_pos:
     #             break
     #     ## gen object sliding motion
     #     inik_s = inik.IncrementalNIK(robot_s)
-    #     robot_s.fk(component_name="arm", jnt_vals=conf_list2[-1])
+    #     robot_s.fk(component_name="arm", jnt_values=conf_list2[-1])
     #     start_tcp_pos, start_tcp_rotmat = robot_s.get_gl_tcp(manipulator_name="arm")
     #     direction = [1, 0, 0]
     #     distance = .1
@@ -234,12 +234,12 @@ for dict_goal_pos in dist_pos:
     #     linear_conf_list = inik_s.gen_linear_motion(component_name="arm", start_tcp_pos=start_tcp_pos,
     #                                                 start_tcp_rotmat=start_tcp_rotmat,
     #                                                 goal_tcp_pos=goal_tcp_pos, goal_tcp_rotmat=goal_tcp_rotmat,
-    #                                                 granularity=0.01, seed_jnt_vals=conf_list2[-1])
+    #                                                 granularity=0.01, seed_jnt_values=conf_list2[-1])
     #     ## if fail to plan sliding with arm ? then use agv
     #     if linear_conf_list is None:
     #         print("--- 1 ----")
     #         temp_linear_conf = []
-    #         robot_s.fk(component_name="arm", jnt_vals=conf_list2[-1])
+    #         robot_s.fk(component_name="arm", jnt_values=conf_list2[-1])
     #         alljnts = robot_s.get_jnt_values(component_name="all")
     #         robot_pos = alljnts[0:3].tolist()
     #         for i in range(int(distance / 0.01)):
@@ -253,7 +253,7 @@ for dict_goal_pos in dist_pos:
     #         linear_jawwidth_list = []
     #         for i, armjnts in enumerate(linear_conf_list):
     #             temp_objpose = copy.deepcopy(objpose_list2[-1])
-    #             robot_s.fk(component_name="all", jnt_vals=armjnts)
+    #             robot_s.fk(component_name="all", jnt_values=armjnts)
     #             eepos, eerot = robot_s.get_gl_tcp(manipulator_name="arm")
     #             # pos = temp_objpose[:3, 3] + rm.unit_vector(direction) * i * 0.01
     #             linear_jawwidth_list.append(jawwidth_list2[-1])

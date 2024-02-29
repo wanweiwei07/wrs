@@ -13,18 +13,18 @@ if __name__ == "__main__":
     jlinstance = jlc.JLChain(home_conf=np.array([0, 0, 0, 0, 0]))
     jlinstance.jnts[4]['end_type'] = 'prismatic'
     jlinstance.jnts[4]['loc_motionax'] = np.array([1, 0, 0])
-    jlinstance.jnts[4]['motion_val'] = .2
-    jlinstance.jnts[4]['motion_rng'] = [-.5, .5]
+    jlinstance.jnts[4]['motion_value'] = .2
+    jlinstance.jnts[4]['motion_range'] = [-.5, .5]
     jlinstance.finalize()
     jlinstance.gen_stickmodel(toggle_jntscs=True, rgba=[1, 0, 0, .15]).attach_to(base)
     tgt_pos0 = np.array([.3, .1, 0])
     tgt_rotmat0 = np.eye(3)
     gm.gen_myc_frame(pos=tgt_pos0, rotmat=tgt_rotmat0, axis_length=.15, axis_radius=.01).attach_to(base)
-    jlinstance.set_tcp(tcp_jntid=4, tcp_loc_pos=np.array([.2, -.13, 0]), tcp_loc_rotmat=rm.rotmat_from_axangle(np.array([0,0,1]), math.pi/8))
+    jlinstance.set_tcp(tcp_jntid=4, loc_tcp_pos=np.array([.2, -.13, 0]), loc_tcp_rotmat=rm.rotmat_from_axangle(np.array([0, 0, 1]), math.pi / 8))
     tic = time.time()
     jnt_values = jlinstance.ik(tgt_pos0,
                                tgt_rotmat0,
-                               seed_jnt_vals=None,
+                               seed_jnt_values=None,
                                local_minima="accept",
                                toggle_debug=False)
     toc = time.time()

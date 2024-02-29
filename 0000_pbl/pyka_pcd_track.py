@@ -96,7 +96,7 @@ def update(pkx, rbtx, background_image, pcd_list, ball_center_list, counter, tas
                         continue
                     rbts.fk(component_name="arm", jnt_values=jnt_values)
                     rbts.gen_meshmodel().attach_to(base)
-                    rbtx.arm_move_jspace_path([rbtx.get_joint_values(), jnt_values], max_jntspeed=math.pi * 1.3)
+                    rbtx.arm_move_jspace_path([rbtx.get_jnt_values(), jnt_values], max_jntspeed=math.pi * 1.3)
                     break
             for id in range(len(orbit)):
                 if id > 0:

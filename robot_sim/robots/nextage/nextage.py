@@ -29,22 +29,22 @@ class Left_Manipulator(mi.ManipulatorInterface):
         self.jlc.jnts[2]['pos_in_loc_tcp'] = np.array([0, 0.145, 0.370296])
         self.jlc.jnts[2]['gl_rotmat'] = rm.rotmat_from_euler(-0.261799, 0, 0)
         self.jlc.jnts[2]['loc_motionax'] = np.array([0, 0, 1])
-        self.jlc.jnts[2]['motion_rng'] = [-1.53589, 1.53589]
+        self.jlc.jnts[2]['motion_range'] = [-1.53589, 1.53589]
         self.jlc.jnts[3]['pos_in_loc_tcp'] = np.array([0, 0, 0])
         self.jlc.jnts[3]['loc_motionax'] = np.array([0, 1, 0])
-        self.jlc.jnts[3]['motion_rng'] = [-2.44346, 1.0472]
+        self.jlc.jnts[3]['motion_range'] = [-2.44346, 1.0472]
         self.jlc.jnts[4]['pos_in_loc_tcp'] = np.array([0, 0.095, -0.25])
         self.jlc.jnts[4]['loc_motionax'] = np.array([0, 1, 0])
-        self.jlc.jnts[4]['motion_rng'] = [-2.75762, 0]
+        self.jlc.jnts[4]['motion_range'] = [-2.75762, 0]
         self.jlc.jnts[5]['pos_in_loc_tcp'] = np.array([-0.03, 0, 0])
         self.jlc.jnts[5]['loc_motionax'] = np.array([0, 0, 1])
-        self.jlc.jnts[5]['motion_rng'] = [-1.8326, 2.87979]
+        self.jlc.jnts[5]['motion_range'] = [-1.8326, 2.87979]
         self.jlc.jnts[6]['pos_in_loc_tcp'] = np.array([0, 0, -0.235])
         self.jlc.jnts[6]['loc_motionax'] = np.array([0, 1, 0])
-        self.jlc.jnts[6]['motion_rng'] = [-1.74533, 1.74533]
+        self.jlc.jnts[6]['motion_range'] = [-1.74533, 1.74533]
         self.jlc.jnts[7]['pos_in_loc_tcp'] = np.array([-0.047, 0, -0.09])
         self.jlc.jnts[7]['loc_motionax'] = np.array([1, 0, 0])
-        self.jlc.jnts[7]['motion_rng'] = [-2.84489, 2.84489]
+        self.jlc.jnts[7]['motion_range'] = [-2.84489, 2.84489]
         self.jlc.lnks[2]['name'] = "jlc_joint0"
         self.jlc.lnks[2]['pos_in_loc_tcp'] = np.array([0, 0.145, 0.370296])
         self.jlc.lnks[2]['gl_rotmat'] = rm.rotmat_from_euler(-0.261799, 0, 0)
@@ -91,7 +91,7 @@ class Left_Manipulator(mi.ManipulatorInterface):
            toggle_debug=False):
         self.jlc.ik(tgt_pos,
                     tgt_rotmat,
-                    seed_jnt_vals=seed_jnt_values,
+                    seed_jnt_values=seed_jnt_values,
                     tcp_joint_id=tcp_jnt_id,
                     tcp_loc_pos=tcp_loc_pos,
                     tcp_loc_rotmat=tcp_loc_rotmat,
@@ -150,13 +150,13 @@ class Left_Manipulator(mi.ManipulatorInterface):
 #         self.central_body = rkjl.JLChain(pos=pos, rotmat=rotmat, home=central_homeconf, name='centeral_body')
 #         self.central_body.joints[1]['pos_in_loc_tcp'] = np.array([0, 0, 0])
 #         self.central_body.joints[1]['loc_motionax'] = np.array([0, 0, 1])
-#         self.central_body.joints[1]['motion_rng'] = [-2.84489, 2.84489]
+#         self.central_body.joints[1]['motion_range'] = [-2.84489, 2.84489]
 #         self.central_body.joints[2]['pos_in_loc_tcp'] = np.array([0, 0, 0.5695])
 #         self.central_body.joints[2]['loc_motionax'] = np.array([0, 0, 1])
-#         self.central_body.joints[2]['motion_rng'] = [-1.22173, 1.22173]
+#         self.central_body.joints[2]['motion_range'] = [-1.22173, 1.22173]
 #         self.central_body.joints[3]['pos_in_loc_tcp'] = np.array([0, 0, 0])
 #         self.central_body.joints[3]['loc_motionax'] = np.array([0, 1, 0])
-#         self.central_body.joints[3]['motion_rng'] = [-0.349066, 1.22173]
+#         self.central_body.joints[3]['motion_range'] = [-0.349066, 1.22173]
 #         self.central_body.lnks[0]['name'] = "nextage_base"
 #         self.central_body.lnks[0]['pos_in_loc_tcp'] = np.array([0, 0, 0.97])
 #         self.central_body.lnks[0]['collision_model'] = mcm.CollisionModel(
@@ -189,22 +189,22 @@ class Left_Manipulator(mi.ManipulatorInterface):
 #         self.lft_arm.joints[2]['pos_in_loc_tcp'] = np.array([0, 0.145, 0.370296])
 #         self.lft_arm.joints[2]['gl_rotmat'] = rm.rotmat_from_euler(-0.261799, 0, 0)
 #         self.lft_arm.joints[2]['loc_motionax'] = np.array([0, 0, 1])
-#         self.lft_arm.joints[2]['motion_rng'] = [-1.53589, 1.53589]
+#         self.lft_arm.joints[2]['motion_range'] = [-1.53589, 1.53589]
 #         self.lft_arm.joints[3]['pos_in_loc_tcp'] = np.array([0, 0, 0])
 #         self.lft_arm.joints[3]['loc_motionax'] = np.array([0, 1, 0])
-#         self.lft_arm.joints[3]['motion_rng'] = [-2.44346, 1.0472]
+#         self.lft_arm.joints[3]['motion_range'] = [-2.44346, 1.0472]
 #         self.lft_arm.joints[4]['pos_in_loc_tcp'] = np.array([0, 0.095, -0.25])
 #         self.lft_arm.joints[4]['loc_motionax'] = np.array([0, 1, 0])
-#         self.lft_arm.joints[4]['motion_rng'] = [-2.75762, 0]
+#         self.lft_arm.joints[4]['motion_range'] = [-2.75762, 0]
 #         self.lft_arm.joints[5]['pos_in_loc_tcp'] = np.array([-0.03, 0, 0])
 #         self.lft_arm.joints[5]['loc_motionax'] = np.array([0, 0, 1])
-#         self.lft_arm.joints[5]['motion_rng'] = [-1.8326, 2.87979]
+#         self.lft_arm.joints[5]['motion_range'] = [-1.8326, 2.87979]
 #         self.lft_arm.joints[6]['pos_in_loc_tcp'] = np.array([0, 0, -0.235])
 #         self.lft_arm.joints[6]['loc_motionax'] = np.array([0, 1, 0])
-#         self.lft_arm.joints[6]['motion_rng'] = [-1.74533, 1.74533]
+#         self.lft_arm.joints[6]['motion_range'] = [-1.74533, 1.74533]
 #         self.lft_arm.joints[7]['pos_in_loc_tcp'] = np.array([-0.047, 0, -0.09])
 #         self.lft_arm.joints[7]['loc_motionax'] = np.array([1, 0, 0])
-#         self.lft_arm.joints[7]['motion_rng'] = [-2.84489, 2.84489]
+#         self.lft_arm.joints[7]['motion_range'] = [-2.84489, 2.84489]
 #         self.lft_arm.lnks[2]['name'] = "lft_arm_joint0"
 #         self.lft_arm.lnks[2]['pos_in_loc_tcp'] = np.array([0, 0.145, 0.370296])
 #         self.lft_arm.lnks[2]['gl_rotmat'] = rm.rotmat_from_euler(-0.261799, 0, 0)
@@ -240,22 +240,22 @@ class Left_Manipulator(mi.ManipulatorInterface):
 #         self.rgt_arm.joints[2]['pos_in_loc_tcp'] = np.array([0, -0.145, 0.370296])
 #         self.rgt_arm.joints[2]['gl_rotmat'] = rm.rotmat_from_euler(0.261799, 0, 0)
 #         self.rgt_arm.joints[2]['loc_motionax'] = np.array([0, 0, 1])
-#         self.rgt_arm.joints[2]['motion_rng'] = [-1.53589, 1.53589]
+#         self.rgt_arm.joints[2]['motion_range'] = [-1.53589, 1.53589]
 #         self.rgt_arm.joints[3]['pos_in_loc_tcp'] = np.array([0, 0, 0])
 #         self.rgt_arm.joints[3]['loc_motionax'] = np.array([0, 1, 0])
-#         self.rgt_arm.joints[3]['motion_rng'] = [-2.44346, 1.0472]
+#         self.rgt_arm.joints[3]['motion_range'] = [-2.44346, 1.0472]
 #         self.rgt_arm.joints[4]['pos_in_loc_tcp'] = np.array([0, -0.095, -0.25])
 #         self.rgt_arm.joints[4]['loc_motionax'] = np.array([0, 1, 0])
-#         self.rgt_arm.joints[4]['motion_rng'] = [-2.75762, 0]
+#         self.rgt_arm.joints[4]['motion_range'] = [-2.75762, 0]
 #         self.rgt_arm.joints[5]['pos_in_loc_tcp'] = np.array([-0.03, 0, 0])
 #         self.rgt_arm.joints[5]['loc_motionax'] = np.array([0, 0, 1])
-#         self.rgt_arm.joints[5]['motion_rng'] = [-1.8326, 2.87979]
+#         self.rgt_arm.joints[5]['motion_range'] = [-1.8326, 2.87979]
 #         self.rgt_arm.joints[6]['pos_in_loc_tcp'] = np.array([0, 0, -0.235])
 #         self.rgt_arm.joints[6]['loc_motionax'] = np.array([0, 1, 0])
-#         self.rgt_arm.joints[6]['motion_rng'] = [-1.74533, 1.74533]
+#         self.rgt_arm.joints[6]['motion_range'] = [-1.74533, 1.74533]
 #         self.rgt_arm.joints[7]['pos_in_loc_tcp'] = np.array([-0.047, 0, -0.09])
 #         self.rgt_arm.joints[7]['loc_motionax'] = np.array([1, 0, 0])
-#         self.rgt_arm.joints[7]['motion_rng'] = [-2.84489, 2.84489]
+#         self.rgt_arm.joints[7]['motion_range'] = [-2.84489, 2.84489]
 #         self.rgt_arm.lnks[2]['name'] = "rgt_arm_joint0"
 #         self.rgt_arm.lnks[2]['pos_in_loc_tcp'] = np.array([0, -0.145, 0.370296])
 #         self.rgt_arm.lnks[2]['gl_rotmat'] = rm.rotmat_from_euler(0.261799, 0, 0)
@@ -285,16 +285,16 @@ class Left_Manipulator(mi.ManipulatorInterface):
 #         # tool center point
 #         # lft
 #         self.lft_arm.tcp_joint_id = -1
-#         # self.lft_arm.tcp_loc_pos = self.lft_hnd.jaw_center_pos
-#         # self.lft_arm.tcp_loc_rotmat = self.lft_hnd.jaw_center_rotmat
-#         self.lft_arm.tcp_loc_pos = np.zeros(3)
-#         self.lft_arm.tcp_loc_rotmat = np.eye(3)
+#         # self.lft_arm.loc_tcp_pos = self.lft_hnd.jaw_center_pos
+#         # self.lft_arm.loc_tcp_rotmat = self.lft_hnd.jaw_center_rotmat
+#         self.lft_arm.loc_tcp_pos = np.zeros(3)
+#         self.lft_arm.loc_tcp_rotmat = np.eye(3)
 #         # rgt
 #         self.rgt_arm.tcp_joint_id = -1
-#         # self.rgt_arm.tcp_loc_pos = self.rgt_hnd.jaw_center_pos
-#         # self.rgt_arm.tcp_loc_rotmat = self.rgt_hnd.jaw_center_rotmat
-#         self.rgt_arm.tcp_loc_pos = np.zeros(3)
-#         self.rgt_arm.tcp_loc_rotmat = np.eye(3)
+#         # self.rgt_arm.loc_tcp_pos = self.rgt_hnd.jaw_center_pos
+#         # self.rgt_arm.loc_tcp_rotmat = self.rgt_hnd.jaw_center_rotmat
+#         self.rgt_arm.loc_tcp_pos = np.zeros(3)
+#         self.rgt_arm.loc_tcp_rotmat = np.eye(3)
 #         # a list of detailed information about objects in hand, see CollisionChecker.add_objinhnd
 #         self.lft_oih_infos = []
 #         self.rgt_oih_infos = []
@@ -400,10 +400,10 @@ class Left_Manipulator(mi.ManipulatorInterface):
 #         # self.rgt_hnd.fix_to(pos=self.rgt_arm.joints[-1]['gl_posq'],
 #         #                     rotmat=self.rgt_arm.joints[-1]['gl_rotmatq'])
 #
-#     def fk(self, component_name, jnt_vals):
+#     def fk(self, component_name, jnt_values):
 #         """
 #         waist angle is transmitted to arms
-#         :param jnt_vals: nparray 1x6 or 1x14 depending on component_names
+#         :param jnt_values: nparray 1x6 or 1x14 depending on component_names
 #         :hnd_name 'lft_arm', 'rgt_arm', 'lft_arm_waist', 'rgt_arm_wasit', 'both_arm'
 #         :param component_name:
 #         :return:
@@ -422,8 +422,8 @@ class Left_Manipulator(mi.ManipulatorInterface):
 #                 obj_info['gl_pos'] = gl_pos
 #                 obj_info['gl_rotmat'] = gl_rotmat
 #
-#         def update_component(component_name, jnt_vals):
-#             status = self.manipulator_dict[component_name].fk(jnt_vals=jnt_vals)
+#         def update_component(component_name, jnt_values):
+#             status = self.manipulator_dict[component_name].fk(jnt_values=jnt_values)
 #             hnd_on_manipulator = self.get_hnd_on_manipulator(component_name)
 #             if hnd_on_manipulator is not None:
 #                 hnd_on_manipulator.fix_to(pos=self.manipulator_dict[component_name].joints[-1]['gl_posq'],
@@ -433,18 +433,18 @@ class Left_Manipulator(mi.ManipulatorInterface):
 #
 #         # examine axis_length
 #         if component_name == 'lft_arm' or component_name == 'rgt_arm':
-#             if not isinstance(jnt_vals, np.ndarray) or jnt_vals.size != 6:
+#             if not isinstance(jnt_values, np.ndarray) or jnt_values.size != 6:
 #                 raise ValueError("An 1x6 npdarray must be specified to move a single arm!")
-#             waist_value = self.central_body.joints[1]['motion_val']
-#             return update_component(component_name, np.append(waist_value, jnt_vals))
+#             waist_value = self.central_body.joints[1]['motion_value']
+#             return update_component(component_name, np.append(waist_value, jnt_values))
 #         elif component_name == 'lft_arm_waist' or component_name == 'rgt_arm_waist':
-#             if not isinstance(jnt_vals, np.ndarray) or jnt_vals.size != 7:
+#             if not isinstance(jnt_values, np.ndarray) or jnt_values.size != 7:
 #                 raise ValueError("An 1x7 npdarray must be specified to move a single arm plus the waist!")
-#             status = update_component(component_name, jnt_vals)
-#             self.central_body.joints[1]['motion_val'] = jnt_vals[0]
+#             status = update_component(component_name, jnt_values)
+#             self.central_body.joints[1]['motion_value'] = jnt_values[0]
 #             self.central_body.fk()
 #             the_other_manipulator_name = 'lft_arm' if component_name[:7] == 'rgt_arm' else 'rgt_arm'
-#             self.manipulator_dict[the_other_manipulator_name].joints[1]['motion_val'] = jnt_vals[0]
+#             self.manipulator_dict[the_other_manipulator_name].joints[1]['motion_value'] = jnt_values[0]
 #             self.manipulator_dict[the_other_manipulator_name].fk()
 #             return status  # if waist is out of range, the first status will always be out of range
 #         elif component_name == 'both_arm':
@@ -459,10 +459,10 @@ class Left_Manipulator(mi.ManipulatorInterface):
 #            component_name,
 #            tgt_pos,
 #            tgt_rotmat,
-#            seed_jnt_vals=None,
+#            seed_jnt_values=None,
 #            tcp_joint_id=None,
-#            tcp_loc_pos=None,
-#            tcp_loc_rotmat=None,
+#            loc_tcp_pos=None,
+#            loc_tcp_rotmat=None,
 #            max_n_iter=100,
 #            policy_for_local_minima="accept",
 #            toggle_dbg=False):
@@ -471,10 +471,10 @@ class Left_Manipulator(mi.ManipulatorInterface):
 #         #     self.manipulator_dict[component_name].tgtjnts = range(2, self.manipulator_dict[component_name].n_dof + 1)
 #         #     ik_results = self.manipulator_dict[component_name].ik(tgt_pos,
 #         #                                                           tgt_rotmat,
-#         #                                                           seed_jnt_vals=seed_jnt_vals,
+#         #                                                           seed_jnt_values=seed_jnt_values,
 #         #                                                           tcp_joint_id=tcp_joint_id,
-#         #                                                           tcp_loc_pos=tcp_loc_pos,
-#         #                                                           tcp_loc_rotmat=tcp_loc_rotmat,
+#         #                                                           loc_tcp_pos=loc_tcp_pos,
+#         #                                                           loc_tcp_rotmat=loc_tcp_rotmat,
 #         #                                                           max_n_iter=max_n_iter,
 #         #                                                           policy_for_local_minima=policy_for_local_minima,
 #         #                                                           toggle_dbg=toggle_dbg)
@@ -483,20 +483,20 @@ class Left_Manipulator(mi.ManipulatorInterface):
 #         # elif component_name == 'lft_arm_waist' or component_name == 'rgt_arm_waist':
 #         #     return self.manipulator_dict[component_name].ik(tgt_pos,
 #         #                                                     tgt_rotmat,
-#         #                                                     seed_jnt_vals=seed_jnt_vals,
+#         #                                                     seed_jnt_values=seed_jnt_values,
 #         #                                                     tcp_joint_id=tcp_joint_id,
-#         #                                                     tcp_loc_pos=tcp_loc_pos,
-#         #                                                     tcp_loc_rotmat=tcp_loc_rotmat,
+#         #                                                     loc_tcp_pos=loc_tcp_pos,
+#         #                                                     loc_tcp_rotmat=loc_tcp_rotmat,
 #         #                                                     max_n_iter=max_n_iter,
 #         #                                                     policy_for_local_minima=policy_for_local_minima,
 #         #                                                     toggle_dbg=toggle_dbg)
 #         if component_name in ['lft_arm', 'rgt_arm', 'lft_arm_waist', 'rgt_arm_waist']:
 #             return self.manipulator_dict[component_name].ik(tgt_pos,
 #                                                             tgt_rotmat,
-#                                                             seed_jnt_vals=seed_jnt_vals,
+#                                                             seed_jnt_values=seed_jnt_values,
 #                                                             tcp_joint_id=tcp_joint_id,
-#                                                             tcp_loc_pos=tcp_loc_pos,
-#                                                             tcp_loc_rotmat=tcp_loc_rotmat,
+#                                                             loc_tcp_pos=loc_tcp_pos,
+#                                                             loc_tcp_rotmat=loc_tcp_rotmat,
 #                                                             max_n_iter=max_n_iter,
 #                                                             policy_for_local_minima=policy_for_local_minima,
 #                                                             toggle_dbg=toggle_dbg)
@@ -512,15 +512,15 @@ class Left_Manipulator(mi.ManipulatorInterface):
 #         return self.manipulator_dict[component_name].get_jnt_values()
 #
 #     @_decorator_switch_tgt_jnts
-#     def is_jnt_values_in_ranges(self, component_name, jnt_vals):
+#     def is_jnt_values_in_ranges(self, component_name, jnt_values):
 #         # if component_name == 'lft_arm' or component_name == 'rgt_arm':
 #         #     old_tgt_jnts = self.manipulator_dict[component_name].tgtjnts
 #         #     self.manipulator_dict[component_name].tgtjnts = range(2, self.manipulator_dict[component_name].n_dof + 1)
-#         #     result = self.manipulator_dict[component_name].is_jnt_values_in_ranges(jnt_vals)
+#         #     result = self.manipulator_dict[component_name].is_jnt_values_in_ranges(jnt_values)
 #         #     self.manipulator_dict[component_name].tgtjnts = old_tgt_jnts
 #         #     return result
 #         # else:
-#         return self.manipulator_dict[component_name].is_jnt_values_in_ranges(jnt_vals)
+#         return self.manipulator_dict[component_name].is_jnt_values_in_ranges(jnt_values)
 #
 #     def rand_conf(self, component_name):
 #         """
@@ -734,20 +734,20 @@ class Left_Manipulator(mi.ManipulatorInterface):
 #
 #     def gen_stickmodel(self,
 #                        tcp_joint_id=None,
-#                        tcp_loc_pos=None,
-#                        tcp_loc_rotmat=None,
+#                        loc_tcp_pos=None,
+#                        loc_tcp_rotmat=None,
 #                        toggle_tcp_frame=False,
 #                        toggle_joint_frame=False,
 #                        toggle_connjnt=False,
 #                        name='yumi'):
 #         stickmodel = mmc.ModelCollection(name=name)
-#         self.central_body.gen_stickmodel(tcp_loc_pos=None,
-#                                          tcp_loc_rotmat=None,
+#         self.central_body.gen_stickmodel(loc_tcp_pos=None,
+#                                          loc_tcp_rotmat=None,
 #                                          toggle_tcp_frame=False,
 #                                          toggle_joint_frame=toggle_joint_frame).attach_to(stickmodel)
 #         self.lft_arm.gen_stickmodel(tcp_joint_id=tcp_joint_id,
-#                                     tcp_loc_pos=tcp_loc_pos,
-#                                     tcp_loc_rotmat=tcp_loc_rotmat,
+#                                     loc_tcp_pos=loc_tcp_pos,
+#                                     loc_tcp_rotmat=loc_tcp_rotmat,
 #                                     toggle_tcp_frame=toggle_tcp_frame,
 #                                     toggle_joint_frame=toggle_joint_frame,
 #                                     toggle_connjnt=toggle_connjnt).attach_to(stickmodel)
@@ -755,8 +755,8 @@ class Left_Manipulator(mi.ManipulatorInterface):
 #         #                             toggle_joint_frame=toggle_joint_frame,
 #         #                             toggle_connjnt=toggle_connjnt).attach_to(stickmodel)
 #         self.rgt_arm.gen_stickmodel(tcp_joint_id=tcp_joint_id,
-#                                     tcp_loc_pos=tcp_loc_pos,
-#                                     tcp_loc_rotmat=tcp_loc_rotmat,
+#                                     loc_tcp_pos=loc_tcp_pos,
+#                                     loc_tcp_rotmat=loc_tcp_rotmat,
 #                                     toggle_tcp_frame=toggle_tcp_frame,
 #                                     toggle_joint_frame=toggle_joint_frame,
 #                                     toggle_connjnt=toggle_connjnt).attach_to(stickmodel)
@@ -767,21 +767,21 @@ class Left_Manipulator(mi.ManipulatorInterface):
 #
 #     def gen_meshmodel(self,
 #                       tcp_joint_id=None,
-#                       tcp_loc_pos=None,
-#                       tcp_loc_rotmat=None,
+#                       loc_tcp_pos=None,
+#                       loc_tcp_rotmat=None,
 #                       toggle_tcp_frame=False,
 #                       toggle_joint_frame=False,
 #                       rgba=None,
 #                       name='xarm_gripper_meshmodel'):
 #         meshmodel = mmc.ModelCollection(name=name)
-#         self.central_body.gen_meshmodel(tcp_loc_pos=None,
-#                                         tcp_loc_rotmat=None,
+#         self.central_body.gen_meshmodel(loc_tcp_pos=None,
+#                                         loc_tcp_rotmat=None,
 #                                         toggle_tcp_frame=False,
 #                                         toggle_joint_frame=toggle_joint_frame,
 #                                         rgba=rgba).attach_to(meshmodel)
 #         self.lft_arm.gen_meshmodel(tcp_joint_id=tcp_joint_id,
-#                                    tcp_loc_pos=tcp_loc_pos,
-#                                    tcp_loc_rotmat=tcp_loc_rotmat,
+#                                    loc_tcp_pos=loc_tcp_pos,
+#                                    loc_tcp_rotmat=loc_tcp_rotmat,
 #                                    toggle_tcp_frame=toggle_tcp_frame,
 #                                    toggle_joint_frame=toggle_joint_frame,
 #                                    rgba=rgba).attach_to(meshmodel)
@@ -789,8 +789,8 @@ class Left_Manipulator(mi.ManipulatorInterface):
 #         #                            toggle_joint_frame=toggle_joint_frame,
 #         #                            rgba=rgba).attach_to(meshmodel)
 #         self.rgt_arm.gen_meshmodel(tcp_joint_id=tcp_joint_id,
-#                                    tcp_loc_pos=tcp_loc_pos,
-#                                    tcp_loc_rotmat=tcp_loc_rotmat,
+#                                    loc_tcp_pos=loc_tcp_pos,
+#                                    loc_tcp_rotmat=loc_tcp_rotmat,
 #                                    toggle_tcp_frame=toggle_tcp_frame,
 #                                    toggle_joint_frame=toggle_joint_frame,
 #                                    rgba=rgba).attach_to(meshmodel)

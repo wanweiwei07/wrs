@@ -27,13 +27,13 @@ def define_grasp(hnd_s,
     """
     grasp_info_list = []
     collided_grasp_info_list = []
-    grasp_info = hnd_s.grip_at_with_twovecs(gl_jaw_center_pos, gl_jaw_center_z, gl_jaw_center_y, jaw_width)
+    grasp_info = hnd_s.grip_at_by_twovecs(gl_jaw_center_pos, gl_jaw_center_z, gl_jaw_center_y, jaw_width)
     if not hnd_s.is_mesh_collided([objcm]):
         grasp_info_list.append(grasp_info)
     else:
         collided_grasp_info_list.append(grasp_info)
     if toggle_flip:
-        grasp_info = hnd_s.grip_at_with_twovecs(gl_jaw_center_pos, gl_jaw_center_z, -gl_jaw_center_y, jaw_width)
+        grasp_info = hnd_s.grip_at_by_twovecs(gl_jaw_center_pos, gl_jaw_center_z, -gl_jaw_center_y, jaw_width)
         if not hnd_s.is_mesh_collided([objcm]):
             grasp_info_list.append(grasp_info)
         else:
@@ -83,8 +83,8 @@ def define_grasp_with_rotation(hnd_s,
         tmp_rotmat = rm.rotmat_from_axangle(gl_rotation_ax, rotate_angle)
         gl_jaw_center_z_rotated = np.dot(tmp_rotmat, gl_jaw_center_z)
         gl_jaw_center_y_rotated = np.dot(tmp_rotmat, gl_jaw_center_y)
-        grasp_info = hnd_s.grip_at_with_twovecs(gl_jaw_center_pos, gl_jaw_center_z_rotated, gl_jaw_center_y_rotated,
-                                                jaw_width)
+        grasp_info = hnd_s.grip_at_by_twovecs(gl_jaw_center_pos, gl_jaw_center_z_rotated, gl_jaw_center_y_rotated,
+                                              jaw_width)
         if not hnd_s.is_mesh_collided([objcm]):
             grasp_info_list.append(grasp_info)
         else:
@@ -94,8 +94,8 @@ def define_grasp_with_rotation(hnd_s,
             tmp_rotmat = rm.rotmat_from_axangle(gl_rotation_ax, rotate_angle)
             gl_jaw_center_z_rotated = np.dot(tmp_rotmat, gl_jaw_center_z)
             gl_jaw_center_y_rotated = np.dot(tmp_rotmat, -gl_jaw_center_y)
-            grasp_info = hnd_s.grip_at_with_twovecs(gl_jaw_center_pos, gl_jaw_center_z_rotated, gl_jaw_center_y_rotated,
-                                                    jaw_width)
+            grasp_info = hnd_s.grip_at_by_twovecs(gl_jaw_center_pos, gl_jaw_center_z_rotated, gl_jaw_center_y_rotated,
+                                                  jaw_width)
             if not hnd_s.is_mesh_collided([objcm]):
                 grasp_info_list.append(grasp_info)
             else:
@@ -236,6 +236,6 @@ if __name__ == '__main__':
     for grasp_info in grasp_info_list:
         jaw_width, jaw_center_pos, jaw_center_rotmat, hnd_pos, hnd_rotmat = grasp_info
         gic = gripper_s.copy()
-        gic.grip_at_with_pose(jaw_center_pos, jaw_center_rotmat, jaw_width)
+        gic.grip_at_by_pose(jaw_center_pos, jaw_center_rotmat, jaw_width)
         gic.gen_mesh_model().attach_to(base)
     base.run()

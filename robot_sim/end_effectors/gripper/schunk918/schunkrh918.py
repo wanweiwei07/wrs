@@ -19,7 +19,7 @@ class SchunkRH918(gp.GripperInterface):
         self.lft = jl.JLChain(pos=cpl_end_pos, rotmat=cpl_end_rotmat, home_conf=np.zeros(2), name='base_lft_slider_finger')
         self.lft.jnts[1]['pos_in_loc_tcp'] = np.array([-.01, .04, .073])
         self.lft.jnts[1]['end_type'] = 'prismatic'
-        self.lft.jnts[1]['motion_rng'] = [0, .025]
+        self.lft.jnts[1]['motion_range'] = [0, .025]
         self.lft.jnts[1]['loc_motionax'] = np.array([0, -1, 0])
         self.lft.lnks[0]['name'] = "base"
         self.lft.lnks[0]['pos_in_loc_tcp'] = np.zeros(3)
@@ -87,8 +87,8 @@ class SchunkRH918(gp.GripperInterface):
         if jawwidth is not None:
             side_jawwidth = (.05 - jawwidth) / 2.0
             if 0 <= side_jawwidth <= .025:
-                self.lft.jnts[1]['motion_val'] = side_jawwidth;
-                self.rgt.jnts[1]['motion_val'] = self.lft.jnts[1]['motion_val']
+                self.lft.jnts[1]['motion_value'] = side_jawwidth;
+                self.rgt.jnts[1]['motion_value'] = self.lft.jnts[1]['motion_value']
             else:
                 raise ValueError("The angle parameter is out of range!")
         self.coupling.fix_to(self.pos, self.rotmat)
@@ -102,13 +102,13 @@ class SchunkRH918(gp.GripperInterface):
         lft_outer is the only active joint, all others mimic this one
         :param: angle, radian
         """
-        if self.lft.jnts[1]['motion_rng'][0] <= motion_val <= self.lft.jnts[1]['motion_rng'][1]:
-            self.lft.jnts[1]['motion_val'] = motion_val
-            self.rgt.jnts[1]['motion_val'] = self.lft.jnts[1]['motion_val']
+        if self.lft.jnts[1]['motion_range'][0] <= motion_val <= self.lft.jnts[1]['motion_range'][1]:
+            self.lft.jnts[1]['motion_value'] = motion_val
+            self.rgt.jnts[1]['motion_value'] = self.lft.jnts[1]['motion_value']
             self.lft.fk()
             self.rgt.fk()
         else:
-            raise ValueError("The motion_val parameter is out of range!")
+            raise ValueError("The motion_value parameter is out of range!")
 
     def change_jaw_width(self, jawwidth):
         if jawwidth > .05:
@@ -116,7 +116,7 @@ class SchunkRH918(gp.GripperInterface):
         self.fk(motion_val=(0.05-jawwidth) / 2.0)
 
     def get_jaw_width(self):
-        motion_val = self.lft.jnts[1]['motion_val']
+        motion_val = self.lft.jnts[1]['motion_value']
         return self.jaw_range[1] - motion_val*2.0
 
     def gen_stickmodel(self, toggle_tcp_frame=False, toggle_jnt_frames=False, name='ee_stickmodel'):

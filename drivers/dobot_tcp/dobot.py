@@ -498,7 +498,7 @@ class Dobot(object):
 
     def set_analog_out(self, index: Literal[1, 2], val: float, immediate: bool = False):
         """
-        set analog output, val is a float
+        set analog output, value is a float
         """
         if immediate:
             self.dobot_db.AOExecute(index, val)
@@ -507,7 +507,7 @@ class Dobot(object):
 
     def set_digital_out(self, index: int, val: Literal[0, 1], immediate: bool = False):
         """
-        set digital output. val is a {0,1}
+        set digital output. value is a {0,1}
         """
         if immediate:
             self.dobot_db.DOExecute(index, val)

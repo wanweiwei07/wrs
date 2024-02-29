@@ -10,7 +10,7 @@ class GripperInterface(ei.EEInterface):
     def __init__(self, pos=np.zeros(3), rotmat=np.eye(3), cdmesh_type=mc.CDMType.AABB, name='gripper'):
         super().__init__(pos=pos, rotmat=rotmat, cdmesh_type=cdmesh_type, name=name)
         # jaw width
-        self.jaw_rng = [0.0, 0.05]  # 0~0.05m by default
+        self.jaw_range = [0.0, 0.05]  # 0~0.05m by default
 
     def fk(self, motion_val):
         raise NotImplementedError
@@ -29,11 +29,11 @@ class GripperInterface(ei.EEInterface):
         super().release(obj_cmodel=obj_cmodel)
         self.change_jaw_width(jaw_width=jaw_width)
 
-    def grip_at_with_twovecs(self,
-                             gl_jaw_center_pos,
-                             gl_approaching_vec,
-                             gl_fgr1_opening_vec,
-                             jaw_width):
+    def grip_at_by_twovecs(self,
+                           gl_jaw_center_pos,
+                           gl_approaching_vec,
+                           gl_fgr1_opening_vec,
+                           jaw_width):
         """
         specifying the gripping pose using two axes -- approaching vector and opening vector
         :param gl_jaw_center_pos:
@@ -48,7 +48,7 @@ class GripperInterface(ei.EEInterface):
                                                          gl_side_vec=gl_fgr1_opening_vec)
         return [jaw_width] + param_list
 
-    def grip_at_with_pose(self, gl_jaw_center_pos, gl_jaw_center_rotmat, jaw_width):
+    def grip_at_by_pose(self, gl_jaw_center_pos, gl_jaw_center_rotmat, jaw_width):
         """
         :param gl_jaw_center_pos:
         :param gl_jaw_center_rotmat:

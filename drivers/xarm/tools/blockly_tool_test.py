@@ -224,7 +224,7 @@ class BlocklyTool(object):
         # Register counter value changed callback
         if hasattr(arm, 'register_count_changed_callback'):
             def count_changed_callback(data):
-                print('counter val: {}'.format(data['n_sec_minor']))
+                print('counter value: {}'.format(data['n_sec_minor']))
             arm.register_count_changed_callback(count_changed_callback)
         """
         self._insert_codes_to_file(codes)
@@ -1254,7 +1254,7 @@ class BlocklyTool(object):
         value = self.get_node('value', root=block)
         shadow = self.get_node('shadow', root=value)
         val = self.get_node('field', root=shadow).text
-        # self._append_to_file('{}params[\'variables\'][\'{}\'] += {}'.format(prefix, field, val))
+        # self._append_to_file('{}params[\'variables\'][\'{}\'] += {}'.format(prefix, field, value))
 
         self._append_to_file('{}if \'{}\' in locals():'.format(prefix, field))
         self._append_to_file('{}    {} += {}'.format(prefix, field, val))

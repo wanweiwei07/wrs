@@ -17,7 +17,7 @@ class XArmGripper(gi.GripperInterface):
         # - lft_outer
         self.lft_outer = jl.JLChain(pos=cpl_end_pos, rotmat=cpl_end_rotmat, home_conf=np.zeros(2), name='jlc_lft_outer')
         self.lft_outer.jnts[1]['pos_in_loc_tcp'] = np.array([0, .035, .059098])
-        self.lft_outer.jnts[1]['motion_rng'] = [.0, .85]
+        self.lft_outer.jnts[1]['motion_range'] = [.0, .85]
         self.lft_outer.jnts[1]['loc_motionax'] = np.array([1, 0, 0])
         self.lft_outer.jnts[2]['pos_in_loc_tcp'] = np.array([0, .035465, .042039])  # passive
         self.lft_outer.jnts[2]['loc_motionax'] = np.array([-1, 0, 0])
@@ -119,12 +119,12 @@ class XArmGripper(gi.GripperInterface):
 
     def fix_to(self, pos, rotmat, motion_val=None):
         if motion_val is not None:
-            self.lft_outer.jnts[1]['motion_val'] = motion_val
-            self.lft_outer.jnts[2]['motion_val'] = self.lft_outer.jnts[1]['motion_val']
-            self.lft_inner.jnts[1]['motion_val'] = self.lft_outer.jnts[1]['motion_val']
-            self.rgt_outer.jnts[1]['motion_val'] = self.lft_outer.jnts[1]['motion_val']
-            self.rgt_outer.jnts[2]['motion_val'] = self.lft_outer.jnts[1]['motion_val']
-            self.rgt_inner.jnts[1]['motion_val'] = self.lft_outer.jnts[1]['motion_val']
+            self.lft_outer.jnts[1]['motion_value'] = motion_val
+            self.lft_outer.jnts[2]['motion_value'] = self.lft_outer.jnts[1]['motion_value']
+            self.lft_inner.jnts[1]['motion_value'] = self.lft_outer.jnts[1]['motion_value']
+            self.rgt_outer.jnts[1]['motion_value'] = self.lft_outer.jnts[1]['motion_value']
+            self.rgt_outer.jnts[2]['motion_value'] = self.lft_outer.jnts[1]['motion_value']
+            self.rgt_inner.jnts[1]['motion_value'] = self.lft_outer.jnts[1]['motion_value']
         self.pos = pos
         self.rotmat = rotmat
         self.coupling.fix_to(self.pos, self.rotmat)
@@ -138,15 +138,15 @@ class XArmGripper(gi.GripperInterface):
     def fk(self, motion_val):
         """
         lft_outer is the only active joint, all others mimic this one
-        :param: motion_val, radian
+        :param: motion_value, radian
         """
-        if self.lft_outer.jnts[1]['motion_rng'][0] <= motion_val <= self.lft_outer.jnts[1]['motion_rng'][1]:
-            self.lft_outer.jnts[1]['motion_val'] = motion_val
-            self.lft_outer.jnts[2]['motion_val'] = self.lft_outer.jnts[1]['motion_val']
-            self.lft_inner.jnts[1]['motion_val'] = self.lft_outer.jnts[1]['motion_val']
-            self.rgt_outer.jnts[1]['motion_val'] = self.lft_outer.jnts[1]['motion_val']
-            self.rgt_outer.jnts[2]['motion_val'] = self.lft_outer.jnts[1]['motion_val']
-            self.rgt_inner.jnts[1]['motion_val'] = self.lft_outer.jnts[1]['motion_val']
+        if self.lft_outer.jnts[1]['motion_range'][0] <= motion_val <= self.lft_outer.jnts[1]['motion_range'][1]:
+            self.lft_outer.jnts[1]['motion_value'] = motion_val
+            self.lft_outer.jnts[2]['motion_value'] = self.lft_outer.jnts[1]['motion_value']
+            self.lft_inner.jnts[1]['motion_value'] = self.lft_outer.jnts[1]['motion_value']
+            self.rgt_outer.jnts[1]['motion_value'] = self.lft_outer.jnts[1]['motion_value']
+            self.rgt_outer.jnts[2]['motion_value'] = self.lft_outer.jnts[1]['motion_value']
+            self.rgt_inner.jnts[1]['motion_value'] = self.lft_outer.jnts[1]['motion_value']
             self.lft_outer.fk()
             self.lft_inner.fk()
             self.rgt_outer.fk()
@@ -163,7 +163,7 @@ class XArmGripper(gi.GripperInterface):
         self.fk(angle)
 
     def get_jaw_width(self):
-        angle = self.lft_outer.jnts[1]['motion_val']
+        angle = self.lft_outer.jnts[1]['motion_value']
         return math.sin(.85 - angle) * 0.055 * 2.0
 
     def gen_stickmodel(self, toggle_tcp_frame=False, toggle_jnt_frames=False, name='ee_stickmodel'):

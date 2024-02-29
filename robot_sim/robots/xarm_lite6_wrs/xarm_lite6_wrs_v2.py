@@ -34,8 +34,8 @@ class XArmLite6WRSGripper(ri.RobotInterface):
 
         # tool center point
         self.arm.jlc.tcp_jnt_id = -1
-        self.arm.jlc.tcp_loc_pos = self.hnd.jaw_center_pos
-        self.arm.jlc.tcp_loc_rotmat = self.hnd.acting_center_rotmat
+        self.arm.jlc.loc_tcp_pos = self.hnd.jaw_center_pos
+        self.arm.jlc.loc_tcp_rotmat = self.hnd.acting_center_rotmat
         # a list of detailed information about objects in hand, see CollisionChecker.add_objinhnd
         self.oih_infos = []
         # collision detection
@@ -138,8 +138,8 @@ class XArmLite6WRSGripper(ri.RobotInterface):
         super().fk(component_name, jnt_values)
         # examine axis_length
         if component_name == 'arm':
-            if not isinstance(jnt_values, np.ndarray) or jnt_values.size != self.arm.ndof:
-                raise ValueError(f"An 1x{self.arm.ndof} npdarray must be specified to move a single arm!")
+            if not isinstance(jnt_values, np.ndarray) or jnt_values.size != self.arm.n_dof:
+                raise ValueError(f"An 1x{self.arm.n_dof} npdarray must be specified to move a single arm!")
             return update_component(component_name, jnt_values)
         else:
             raise ValueError("The given component name is not available!")
@@ -250,13 +250,13 @@ class XArmLite6WRSGripper(ri.RobotInterface):
         if theta3_list[1] < .0:
             theta3_list[1] = 2.*np.pi + theta3_list[1]
         jnt_values_list = [np.array([theta1, j2, j3, j4, j5, j6]) for j3, (j2, j4, j5, j6) in zip(theta3_list, theta2_4_5_6_list)]
-        if not ((self.arm.jnts[3]['motion_rng'][0] <= jnt_values_list[1][2] <= self.arm.jnts[3]['motion_rng'][1]) and
-                (self.arm.jnts[4]['motion_rng'][0] <= jnt_values_list[1][3] <= self.arm.jnts[4]['motion_rng'][1]) and
-                (self.arm.jnts[5]['motion_rng'][0] <= jnt_values_list[1][4] <= self.arm.jnts[5]['motion_rng'][1])):
+        if not ((self.arm.jnts[3]['motion_range'][0] <= jnt_values_list[1][2] <= self.arm.jnts[3]['motion_range'][1]) and
+                (self.arm.jnts[4]['motion_range'][0] <= jnt_values_list[1][3] <= self.arm.jnts[4]['motion_range'][1]) and
+                (self.arm.jnts[5]['motion_range'][0] <= jnt_values_list[1][4] <= self.arm.jnts[5]['motion_range'][1])):
             jnt_values_list.pop(1)
-        if not ((self.arm.jnts[3]['motion_rng'][0] <= jnt_values_list[0][2] <= self.arm.jnts[3]['motion_rng'][1]) and
-                (self.arm.jnts[4]['motion_rng'][0] <= jnt_values_list[0][3] <= self.arm.jnts[4]['motion_rng'][1]) and
-                (self.arm.jnts[5]['motion_rng'][0] <= jnt_values_list[0][4] <= self.arm.jnts[5]['motion_rng'][1])):
+        if not ((self.arm.jnts[3]['motion_range'][0] <= jnt_values_list[0][2] <= self.arm.jnts[3]['motion_range'][1]) and
+                (self.arm.jnts[4]['motion_range'][0] <= jnt_values_list[0][3] <= self.arm.jnts[4]['motion_range'][1]) and
+                (self.arm.jnts[5]['motion_range'][0] <= jnt_values_list[0][4] <= self.arm.jnts[5]['motion_range'][1])):
             jnt_values_list.pop(0)
         if len(jnt_values_list) == 0:
             return None
@@ -264,7 +264,7 @@ class XArmLite6WRSGripper(ri.RobotInterface):
             return jnt_values_list
         if len(jnt_values_list) == 1:
             return jnt_values_list[0]
-        # return joint values close to seed_jnt_vals
+        # return joint values close to seed_jnt_values
         seed_jnt_values = np.zeros(6) if seed_jnt_values is None else seed_jnt_values
         if np.linalg.norm(jnt_values_list[0] - seed_jnt_values) < np.linalg.norm(jnt_values_list[1] - seed_jnt_values):
             return jnt_values_list[0]

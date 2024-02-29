@@ -33,7 +33,7 @@ class Lite6WRSGripper(gp.GripperInterface):
         self.lft.jnts[1]['pos_in_loc_tcp'] = np.array([0, 0.0040, 0.089])
         self.lft.jnts[1]['gl_rotmat'] = rm.rotmat_from_euler(0, 0, math.pi)
         self.lft.jnts[1]['end_type'] = 'prismatic'
-        self.lft.jnts[1]['motion_rng'] = [.0, .025]
+        self.lft.jnts[1]['motion_range'] = [.0, .025]
         self.lft.jnts[1]['loc_motionax'] = np.array([1, 0, 0])
         self.lft.lnks[1]['name'] = "finger1"
         self.lft.lnks[1]['mesh_file'] = cm.CollisionModel(
@@ -126,15 +126,15 @@ class Lite6WRSGripper(gp.GripperInterface):
     def fk(self, motion_val):
         """
         lft_outer is the only active joint, all others mimic this one
-        :param: motion_val, meter or radian
+        :param: motion_value, meter or radian
         """
-        if self.lft.jnts[1]['motion_rng'][0] <= -motion_val <= self.lft.jnts[1]['motion_rng'][1]:
-            self.lft.jnts[1]['motion_val'] = motion_val
-            self.rgt.jnts[1]['motion_val'] = self.lft.jnts[1]['motion_val']
+        if self.lft.jnts[1]['motion_range'][0] <= -motion_val <= self.lft.jnts[1]['motion_range'][1]:
+            self.lft.jnts[1]['motion_value'] = motion_val
+            self.rgt.jnts[1]['motion_value'] = self.lft.jnts[1]['motion_value']
             self.lft.fk()
             self.rgt.fk()
         else:
-            raise ValueError("The motion_val parameter is out of range!")
+            raise ValueError("The motion_value parameter is out of range!")
 
     def change_jaw_width(self, jaw_width):
         if jaw_width > self.jaw_range[1]:
@@ -142,7 +142,7 @@ class Lite6WRSGripper(gp.GripperInterface):
         self.fk(motion_val=-jaw_width / 2.0)
 
     def get_jaw_width(self):
-        return -self.lft.jnts[1]['motion_val'] * 2
+        return -self.lft.jnts[1]['motion_value'] * 2
 
     def gen_stickmodel(self, toggle_tcp_frame=False, toggle_jnt_frames=False, name='ee_stickmodel'):
         stickmodel = mc.ModelCollection(name=name)

@@ -16,25 +16,25 @@ class TBMArmR(mi.ManipulatorInterface):
         # self.jlc.joints[1]['pos_in_loc_tcp'] = np.array([0.2, 0, 0])
         # self.jlc.joints[1]['end_type'] = 'prismatic'
         # self.jlc.joints[1]['loc_motionax'] = np.array([1, 0, 0])
-        # self.jlc.joints[1]['motion_rng'] = [-.1, 1.25]
+        # self.jlc.joints[1]['motion_range'] = [-.1, 1.25]
         self.jlc.jnts[1]['pos_in_loc_tcp'] = np.array([0, 0, 0.396])
         self.jlc.jnts[1]['loc_motionax'] = np.array([0, 0, 1])
-        self.jlc.jnts[1]['motion_rng'] = [-math.radians(30), math.radians(30)]
+        self.jlc.jnts[1]['motion_range'] = [-math.radians(30), math.radians(30)]
         self.jlc.jnts[2]['pos_in_loc_tcp'] = np.array([0.654, .0, .0])
         self.jlc.jnts[2]['loc_motionax'] = np.array([1, 0, 0])
-        # self.jlc.joints[2]['motion_rng'] = [-2*math.pi, 2*math.pi]
+        # self.jlc.joints[2]['motion_range'] = [-2*math.pi, 2*math.pi]
         self.jlc.jnts[3]['pos_in_loc_tcp'] = np.array([.625, .0, .0])
         self.jlc.jnts[3]['loc_motionax'] = np.array([0, 0, 1])
-        self.jlc.jnts[3]['motion_rng'] = [-math.radians(90), math.radians(90)]
+        self.jlc.jnts[3]['motion_range'] = [-math.radians(90), math.radians(90)]
         self.jlc.jnts[4]['pos_in_loc_tcp'] = np.array([0.687, .0, .0])
         self.jlc.jnts[4]['loc_motionax'] = np.array([1, 0, 0])
-        # self.jlc.joints[4]['motion_rng'] = [-2*math.pi, 2*math.pi]
+        # self.jlc.joints[4]['motion_range'] = [-2*math.pi, 2*math.pi]
         self.jlc.jnts[5]['pos_in_loc_tcp'] = np.array([.83, .0, .0])
         self.jlc.jnts[5]['loc_motionax'] = np.array([0, 1, 0])
-        self.jlc.jnts[5]['motion_rng'] = [-math.radians(115), math.radians(115)]
+        self.jlc.jnts[5]['motion_range'] = [-math.radians(115), math.radians(115)]
         self.jlc.jnts[6]['pos_in_loc_tcp'] = np.array([.223, .0, .0])
         self.jlc.jnts[6]['loc_motionax'] = np.array([1, 0, 0])
-        # self.jlc.joints[6]['motion_rng'] = [-2*math.pi, 2*math.pi]
+        # self.jlc.joints[6]['motion_range'] = [-2*math.pi, 2*math.pi]
         # links
         self.jlc.lnks[0]['name'] = "base"
         self.jlc.lnks[0]['pos_in_loc_tcp'] = np.zeros(3)
@@ -142,7 +142,7 @@ if __name__ == '__main__':
                 else:
                     jnt_values = None
             if jnt_values is not None:
-                # last_jnt_values = jnt_vals
+                # last_jnt_values = jnt_values
                 gm.gen_frame(pos=tgt_pos, rotmat=tgt_rotmat, axis_radius=.02).attach_to(base)
                 manipulator_instance.fk(jnt_values=jnt_values)
                 manipulator_instance.gen_meshmodel().attach_to(base)

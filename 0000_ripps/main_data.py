@@ -124,8 +124,8 @@ if __name__ == '__main__':
                 # n_path = len(interpolated_confs)
                 # print(n_path)
                 # previous_pos = None
-                # for id, jnt_vals in enumerate(interpolated_confs):
-                #     rbt_s.fk(component_name=component_name, jnt_vals=jnt_vals)
+                # for id, jnt_values in enumerate(interpolated_confs):
+                #     rbt_s.fk(component_name=component_name, jnt_values=jnt_values)
                 #     rgba = rm.get_rgba_from_cmap(int(id * 256 / n_path), cm_name='cool', step=256)
                 #     # rgba[-1] = 1
                 #     pos, rotmat = rbt_s.get_gl_tcp(manipulator_name=component_name)
@@ -146,9 +146,9 @@ if __name__ == '__main__':
                 #                                                         cone_axis=-tip_rotmat[:3, 2],
                 #                                                         rotation_interval=np.radians(15),
                 #                                                         obstacle_list=[frame_bottom],
-                #                                                         seed_jnt_vals=np.zeros(6))
+                #                                                         seed_jnt_values=np.zeros(6))
                 # # mgm.gen_frame(pos=tip_pos, major_radius=.001).attach_to(base)
-                # rbt_s.fk(component_name=component_name, jnt_vals=new_joint_values)
+                # rbt_s.fk(component_name=component_name, jnt_values=new_joint_values)
                 # # rbt_s.gen_meshmodel().attach_to(base)
                 # hnd_name = "hnd"
                 # rbt_s.hold(hnd_name=hnd_name, objcm=tip_cm_list[id_x * 12 + id_y])
@@ -265,14 +265,14 @@ if __name__ == '__main__':
     #
     # for angle in np.linspace(0, np.pi * 2, 25):
     #     rotmat = rm.rotmat_from_axangle([0, 0, 1], angle).dot(rotmat)
-    #     jnt_vals = rbt_s.ik(component_name=component_name, tgt_pos=well_pos + z_offset, tgt_rotmat=rotmat,
-    #                           seed_jnt_vals=previous_jnt_values)
-    #     if jnt_vals is not None:
-    #         rbt_s.fk(jnt_vals=jnt_vals)
+    #     jnt_values = rbt_s.ik(component_name=component_name, tgt_pos=well_pos + z_offset, tgt_rotmat=rotmat,
+    #                           seed_jnt_values=previous_jnt_values)
+    #     if jnt_values is not None:
+    #         rbt_s.fk(jnt_values=jnt_values)
     #         rbt_s.gen_meshmodel().attach_to(base)
     #         rbt_s.hold(hnd_name=hnd_name, objcm=tip_cm_list[id_x * 12 + id_y])
-    #         previous_jnt_values = jnt_vals
-    #         goal_joint_values = jnt_vals
+    #         previous_jnt_values = jnt_values
+    #         goal_joint_values = jnt_values
     #         break
     #     else:
     #         ee_s.grip_at_with_jcpose(gl_jaw_center_pos=pos + z_offset, gl_jaw_center_rotmat=rotmat, jaw_width=0)

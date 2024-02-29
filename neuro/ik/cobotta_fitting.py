@@ -22,7 +22,7 @@ class IKDataSet(Dataset):
         if torch.is_tensor(idx):
             idx = idx.tolist()
         # xyzrpy = eval(self.ik_frame.loc[idx, 'xyzrpy'])
-        # jnt_vals = eval(self.ik_frame.loc[idx, 'jnt_vals'])
+        # jnt_values = eval(self.ik_frame.loc[idx, 'jnt_values'])
         xyzrpy = self.ik_frame[idx][0]
         xyzrpy = (xyzrpy-self.min)/(self.max-self.min) #normalize
         jnt_values = self.ik_frame[idx][1]

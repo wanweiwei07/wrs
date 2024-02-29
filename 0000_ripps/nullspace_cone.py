@@ -61,7 +61,7 @@ if __name__ == '__main__':
             #     for t_ext in range(0, 200, 20):
             #         cur_jnt_values -= np.ravel(xa_y[:, 0]) * ratio
             #         # mgm.gen_frame(pos=gl_tcp[0], rotmat=gl_tcp[1]).attach_to(base)
-            #         status = robot_s.fk(component_name=component_name, jnt_vals=cur_jnt_values)
+            #         status = robot_s.fk(component_name=component_name, jnt_values=cur_jnt_values)
             #         # if status == "succ":
             status = robot_s.fk(component_name=component_name, jnt_values=cur_jnt_values_ext)
             if t % 20 == 0:
@@ -72,7 +72,7 @@ if __name__ == '__main__':
             robot_s.fk(component_name=component_name, jnt_values=cur_jnt_values)
     # path = path[::-1]
     # robot_s.fk(component_name=component_name,
-    #            jnt_vals=jnt_vals)
+    #            jnt_values=jnt_values)
     # ratio = -ratio
     # for t in range(0, 5000, 1):
     #     print("-------- timestep = ", t, " --------")
@@ -87,7 +87,7 @@ if __name__ == '__main__':
     #     # mgm.gen_frame(pos=gl_tcp[0], rotmat=gl_tcp[1]).attach_to(base)
     #     print(xa_ns)
     #     print(gl_tcp[1][:3,2])
-    #     status = robot_s.fk(component_name=component_name, jnt_vals=cur_jnt_values)
+    #     status = robot_s.fk(component_name=component_name, jnt_values=cur_jnt_values)
     #     # if status == "succ":
     #     if t % 20 == 0:
     #         path.append(cur_jnt_values)

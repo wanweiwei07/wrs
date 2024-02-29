@@ -70,7 +70,7 @@ if __name__ == '__main__':
     # cdchecker = cdck.CollisionChecker(robotmesh)
     cdchecker = cdck.CollisionCheckerBall(robotball)
 
-    start = ur3u.get_joint_values('rgt')
+    start = ur3u.get_jnt_values('rgt')
     goal = robot.initjnts[3:9]
     # start = [50.0,0.0,-143.0,0.0,0.0,0.0]
     # goal = [-15.0,0.0,-143.0,0.0,0.0,0.0]
@@ -122,7 +122,7 @@ if __name__ == '__main__':
         robotstick.reparentTo(base.render)
     ur3u.move_jnts(path[-1], armid='rgt')
 
-    start = ur3u.get_joint_values('lft')
+    start = ur3u.get_jnt_values('lft')
     goal = robot.initjnts[9:15]
     print(start, goal)
     jointlimits = [[robot.lftarm[1]['rngmin'], robot.lftarm[1]['rngmax']],

@@ -26,8 +26,8 @@ class NumIKSolver(object):
         # maximum reach
         self.max_rng = 10.0
         # # extract min max for quick access
-        self.min_jnt_vals = self.jlc.jnt_rngs[:, 0]
-        self.max_jnt_vals = self.jlc.jnt_rngs[:, 1]
+        self.min_jnt_vals = self.jlc.jnt_ranges[:, 0]
+        self.max_jnt_vals = self.jlc.jnt_ranges[:, 1]
         self.jnt_rngs = self.max_jnt_vals - self.min_jnt_vals
         self.jnt_rngs_mid = (self.max_jnt_vals + self.min_jnt_vals) / 2
         self.min_jnt_threshold = self.min_jnt_vals + self.jnt_rngs * self.jnt_wt_ratio
@@ -87,12 +87,12 @@ class NumIKSolver(object):
                 toggle_dbg=False):
         iter_jnt_vals = seed_jnt_vals
         if seed_jnt_vals is None:
-            iter_jnt_vals = self.jlc.get_joint_values()
+            iter_jnt_vals = self.jlc.get_jnt_values()
         counter = 0
         while True:
-            tcp_gl_pos, tcp_gl_rotmat, j_mat = self.jlc.forward_kinematics(jnt_vals=iter_jnt_vals,
-                                                                           toggle_jac=True,
-                                                                           update=False)
+            tcp_gl_pos, tcp_gl_rotmat, j_mat = self.jlc.fk(jnt_values=iter_jnt_vals,
+                                                           toggle_jacobian=True,
+                                                           update=False)
             tcp_pos_err_val, tcp_rot_err_val, tcp_err_vec = rm.diff_between_posrot(src_pos=tcp_gl_pos,
                                                                                    src_rotmat=tcp_gl_rotmat,
                                                                                    tgt_pos=tgt_pos,
@@ -110,10 +110,10 @@ class NumIKSolver(object):
                 iter_jnt_vals = self.jlc.rand_conf()
             if toggle_dbg:
                 import robot_sim._kinematics.model_generator as rkmg
-                joint_values = self.jlc.get_joint_values()
-                self.jlc.go_given_conf(jnt_vals=iter_jnt_vals)
+                joint_values = self.jlc.get_jnt_values()
+                self.jlc.go_given_conf(jnt_values=iter_jnt_vals)
                 rkmg.gen_jlc_stick(self.jlc, toggle_tcp_frame=True, toggle_joint_frame=True).attach_to(base)
-                self.jlc.go_given_conf(jnt_vals=joint_values)
+                self.jlc.go_given_conf(jnt_values=joint_values)
                 import modeling.geometric_model as gm
                 gm.gen_arrow(spos=tcp_gl_pos, epos=tcp_gl_pos + tcp_err_vec[:3] * .1).attach_to(base)
                 print("tcp_pos_err ", tcp_pos_err_val, " tcp_rot_err ", tcp_rot_err_val)
@@ -129,12 +129,12 @@ class NumIKSolver(object):
                toggle_dbg=False):
         iter_jnt_vals = seed_jnt_vals
         if seed_jnt_vals is None:
-            iter_jnt_vals = self.jlc.get_joint_values()
+            iter_jnt_vals = self.jlc.get_jnt_values()
         counter = 0
         while True:
-            tcp_gl_pos, tcp_gl_rotmat, j_mat = self.jlc.forward_kinematics(jnt_vals=iter_jnt_vals,
-                                                                           toggle_jac=True,
-                                                                           update=False)
+            tcp_gl_pos, tcp_gl_rotmat, j_mat = self.jlc.fk(jnt_values=iter_jnt_vals,
+                                                           toggle_jacobian=True,
+                                                           update=False)
             tcp_pos_err_val, tcp_rot_err_val, tcp_err_vec = rm.diff_between_posrot(src_pos=tcp_gl_pos,
                                                                                    src_rotmat=tcp_gl_rotmat,
                                                                                    tgt_pos=tgt_pos,
@@ -150,10 +150,10 @@ class NumIKSolver(object):
                 iter_jnt_vals = self.jlc.rand_conf()
             if toggle_dbg:
                 import robot_sim._kinematics.model_generator as rkmg
-                joint_values = self.jlc.get_joint_values()
-                self.jlc.go_given_conf(jnt_vals=iter_jnt_vals)
+                joint_values = self.jlc.get_jnt_values()
+                self.jlc.go_given_conf(jnt_values=iter_jnt_vals)
                 rkmg.gen_jlc_stick(self.jlc, toggle_tcp_frame=True, toggle_joint_frame=True).attach_to(base)
-                self.jlc.go_given_conf(jnt_vals=joint_values)
+                self.jlc.go_given_conf(jnt_values=joint_values)
                 import modeling.geometric_model as gm
                 gm.gen_arrow(spos=tcp_gl_pos, epos=tgt_pos).attach_to(base)
                 print("tcp_pos_err ", tcp_pos_err_val, " tcp_rot_err ", tcp_rot_err_val)
@@ -169,12 +169,12 @@ class NumIKSolver(object):
               toggle_dbg=False):
         iter_jnt_vals = seed_jnt_vals
         if seed_jnt_vals is None:
-            iter_jnt_vals = self.jlc.get_joint_values()
+            iter_jnt_vals = self.jlc.get_jnt_values()
         counter = 0
         while True:
-            tcp_gl_pos, tcp_gl_rotmat, j_mat = self.jlc.forward_kinematics(jnt_vals=iter_jnt_vals,
-                                                                           toggle_jac=True,
-                                                                           update=False)
+            tcp_gl_pos, tcp_gl_rotmat, j_mat = self.jlc.fk(jnt_values=iter_jnt_vals,
+                                                           toggle_jacobian=True,
+                                                           update=False)
             tcp_pos_err_val, tcp_rot_err_val, tcp_err_vec = rm.diff_between_posrot(src_pos=tcp_gl_pos,
                                                                                    src_rotmat=tcp_gl_rotmat,
                                                                                    tgt_pos=tgt_pos,
@@ -191,10 +191,10 @@ class NumIKSolver(object):
                 iter_jnt_vals = self.jlc.rand_conf()
             if toggle_dbg:
                 import robot_sim._kinematics.model_generator as rkmg
-                joint_values = self.jlc.get_joint_values()
-                self.jlc.go_given_conf(jnt_vals=iter_jnt_vals)
+                joint_values = self.jlc.get_jnt_values()
+                self.jlc.go_given_conf(jnt_values=iter_jnt_vals)
                 rkmg.gen_jlc_stick(self.jlc, toggle_tcp_frame=True, toggle_joint_frame=True).attach_to(base)
-                self.jlc.go_given_conf(jnt_vals=joint_values)
+                self.jlc.go_given_conf(jnt_values=joint_values)
                 import modeling.geometric_model as gm
                 gm.gen_arrow(spos=tcp_gl_pos, epos=tgt_pos).attach_to(base)
                 print("tcp_pos_err ", tcp_pos_err_val, " tcp_rot_err ", tcp_rot_err_val)
@@ -220,12 +220,12 @@ class NumIKSolver(object):
         """
         iter_jnt_vals = seed_jnt_vals
         if seed_jnt_vals is None:
-            iter_jnt_vals = self.jlc.get_joint_values()
+            iter_jnt_vals = self.jlc.get_jnt_values()
         counter = 0
         while True:
-            tcp_gl_pos, tcp_gl_rotmat, j_mat = self.jlc.forward_kinematics(jnt_vals=iter_jnt_vals,
-                                                                           toggle_jac=True,
-                                                                           update=False)
+            tcp_gl_pos, tcp_gl_rotmat, j_mat = self.jlc.fk(jnt_values=iter_jnt_vals,
+                                                           toggle_jacobian=True,
+                                                           update=False)
             tcp_pos_err_val, tcp_rot_err_val, tcp_err_vec = rm.diff_between_posrot(src_pos=tcp_gl_pos,
                                                                                    src_rotmat=tcp_gl_rotmat,
                                                                                    tgt_pos=tgt_pos,
@@ -244,10 +244,10 @@ class NumIKSolver(object):
             iter_jnt_vals = iter_jnt_vals + delta_jnt_values
             if toggle_dbg:
                 import robot_sim._kinematics.model_generator as rkmg
-                joint_values = self.jlc.get_joint_values()
-                self.jlc.go_given_conf(jnt_vals=iter_jnt_vals)
+                joint_values = self.jlc.get_jnt_values()
+                self.jlc.go_given_conf(jnt_values=iter_jnt_vals)
                 rkmg.gen_jlc_stick(self.jlc, toggle_tcp_frame=True, toggle_jnt_frames=True).attach_to(base)
-                self.jlc.go_given_conf(jnt_vals=joint_values)
+                self.jlc.go_given_conf(jnt_values=joint_values)
                 import modeling.geometric_model as gm
                 gm.gen_arrow(spos=tcp_gl_pos, epos=tgt_pos).attach_to(base)
                 print("tcp_pos_err ", tcp_pos_err_val, " tcp_rot_err ", tcp_rot_err_val)
@@ -265,12 +265,12 @@ class NumIKSolver(object):
         # Paper: Clamping weighted least-norm method for themanipulator kinematic control with constraints
         iter_jnt_vals = seed_jnt_vals
         if seed_jnt_vals is None:
-            iter_jnt_vals = self.jlc.get_joint_values()
+            iter_jnt_vals = self.jlc.get_jnt_values()
         counter = 0
         while True:
-            tcp_gl_pos, tcp_gl_rotmat, j_mat = self.jlc.forward_kinematics(jnt_vals=iter_jnt_vals,
-                                                                           toggle_jac=True,
-                                                                           update=False)
+            tcp_gl_pos, tcp_gl_rotmat, j_mat = self.jlc.fk(jnt_values=iter_jnt_vals,
+                                                           toggle_jacobian=True,
+                                                           update=False)
             tcp_pos_err_val, tcp_rot_err_val, tcp_err_vec = rm.diff_between_posrot(src_pos=tcp_gl_pos,
                                                                                    src_rotmat=tcp_gl_rotmat,
                                                                                    tgt_pos=tgt_pos,
@@ -293,10 +293,10 @@ class NumIKSolver(object):
             iter_jnt_vals = iter_jnt_vals + delta_jnt_values
             if toggle_dbg:
                 import robot_sim._kinematics.model_generator as rkmg
-                joint_values = self.jlc.get_joint_values()
-                self.jlc.go_given_conf(jnt_vals=iter_jnt_vals)
+                joint_values = self.jlc.get_jnt_values()
+                self.jlc.go_given_conf(jnt_values=iter_jnt_vals)
                 rkmg.gen_jlc_stick(self.jlc, toggle_tcp_frame=True, toggle_joint_frame=True).attach_to(base)
-                self.jlc.go_given_conf(jnt_vals=joint_values)
+                self.jlc.go_given_conf(jnt_values=joint_values)
                 import modeling.geometric_model as gm
                 gm.gen_arrow(spos=tcp_gl_pos, epos=tgt_pos).attach_to(base)
                 print("tcp_pos_err ", tcp_pos_err_val, " tcp_rot_err ", tcp_rot_err_val)

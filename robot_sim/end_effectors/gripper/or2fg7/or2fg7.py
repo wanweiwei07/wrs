@@ -37,7 +37,7 @@ class OR2FG7(gp.GripperInterface):
         # self.lft.joints[1]['pos_in_loc_tcp'] = np.array([0.032239, -0.029494, 0.12005])
         self.lft.jnts[1]['pos_in_loc_tcp'] = np.zeros(3)
         self.lft.jnts[1]['end_type'] = 'prismatic'
-        self.lft.jnts[1]['motion_rng'] = [0, .019]
+        self.lft.jnts[1]['motion_range'] = [0, .019]
         self.lft.jnts[1]['loc_motionax'] = np.array([-1, 0, 0])
         self.lft.lnks[0]['name'] = "base"
         self.lft.lnks[0]['pos_in_loc_tcp'] = np.zeros(3)
@@ -88,8 +88,8 @@ class OR2FG7(gp.GripperInterface):
         if jawwidth is not None:
             side_jawwidth = (self.jaw_range[1] - jawwidth) / 2.0
             if 0 <= side_jawwidth <= self.jaw_range[1]/2.0:
-                self.lft.jnts[1]['motion_val'] = side_jawwidth;
-                self.rgt.jnts[1]['motion_val'] = self.lft.jnts[1]['motion_val']  # right mimic left
+                self.lft.jnts[1]['motion_value'] = side_jawwidth;
+                self.rgt.jnts[1]['motion_value'] = self.lft.jnts[1]['motion_value']  # right mimic left
             else:
                 raise ValueError("The angle parameter is out of range!")
         self.coupling.fix_to(self.pos, self.rotmat)
@@ -103,13 +103,13 @@ class OR2FG7(gp.GripperInterface):
         lft_outer is the only active joint, all others mimic this one
         :param: angle, radian
         """
-        if self.lft.jnts[1]['motion_rng'][0] <= motion_val <= self.lft.jnts[1]['motion_rng'][1]:
-            self.lft.jnts[1]['motion_val'] = motion_val
-            self.rgt.jnts[1]['motion_val'] = self.lft.jnts[1]['motion_val']  # right mimic left
+        if self.lft.jnts[1]['motion_range'][0] <= motion_val <= self.lft.jnts[1]['motion_range'][1]:
+            self.lft.jnts[1]['motion_value'] = motion_val
+            self.rgt.jnts[1]['motion_value'] = self.lft.jnts[1]['motion_value']  # right mimic left
             self.lft.fk()
             self.rgt.fk()
         else:
-            raise ValueError("The motion_val parameter is out of range!")
+            raise ValueError("The motion_value parameter is out of range!")
 
     def change_jaw_width(self, jaw_width):
         if jaw_width > self.jaw_range[1]:

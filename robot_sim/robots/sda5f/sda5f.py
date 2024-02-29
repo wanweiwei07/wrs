@@ -83,12 +83,12 @@ class SDA5F(ri.RobotInterface):
         # tool center point
         # lft
         self.lft_arm.tcp_jnt_id = -1
-        self.lft_arm.tcp_loc_pos = np.array([0, 0, .145])
-        self.lft_arm.tcp_loc_rotmat = np.eye(3)
+        self.lft_arm.loc_tcp_pos = np.array([0, 0, .145])
+        self.lft_arm.loc_tcp_rotmat = np.eye(3)
         # rgt
         self.rgt_arm.tcp_jnt_id = -1
-        self.rgt_arm.tcp_loc_pos = np.array([0, 0, .145])
-        self.rgt_arm.tcp_loc_rotmat = np.eye(3)
+        self.rgt_arm.loc_tcp_pos = np.array([0, 0, .145])
+        self.rgt_arm.loc_tcp_rotmat = np.eye(3)
         # a list of detailed information about objects in hand, see CollisionChecker.add_objinhnd
         self.lft_oih_infos = []
         self.rgt_oih_infos = []

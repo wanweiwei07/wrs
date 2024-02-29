@@ -41,8 +41,8 @@ class KHI_BLQC(ai.RobotInterface):
         self.end_effector = None
         # tool center point
         self.manipulator.tcp_jnt_id = -1
-        self.manipulator.tcp_loc_pos = self.tc_master.jnts[-1]['pos_in_loc_tcp']
-        self.manipulator.tcp_loc_rotmat = self.tc_master.jnts[-1]['gl_rotmat']
+        self.manipulator.loc_tcp_pos = self.tc_master.jnts[-1]['pos_in_loc_tcp']
+        self.manipulator.loc_tcp_rotmat = self.tc_master.jnts[-1]['gl_rotmat']
         # a list of detailed information about objects in hand, see CollisionChecker.add_objinhnd
         self.oih_infos = []
         # collision detection
@@ -108,8 +108,8 @@ class KHI_BLQC(ai.RobotInterface):
         """
         if self.is_tool_attached:
             raise Exception("A tool has been attached!")
-        self.manipulator.tcp_loc_pos = self.tc_master.jnts[-1]['pos_in_loc_tcp'] + end_effector.acting_center_pos
-        self.manipulator.tcp_loc_rotmat = self.tc_master.jnts[-1]['gl_rotmat']
+        self.manipulator.loc_tcp_pos = self.tc_master.jnts[-1]['pos_in_loc_tcp'] + end_effector.acting_center_pos
+        self.manipulator.loc_tcp_rotmat = self.tc_master.jnts[-1]['gl_rotmat']
         self.end_effector = end_effector
 
     def detach_tool(self):
@@ -119,8 +119,8 @@ class KHI_BLQC(ai.RobotInterface):
         """
         if not self.is_tool_attached:
             raise Exception("Cannot detach a tool since nothing is attached!")
-        self.manipulator.tcp_loc_pos = self.tc_master.jnts[-1]['gl_posq']
-        self.manipulator.tcp_loc_rotmat = self.tc_master.jnts[-1]['gl_rotmatq']
+        self.manipulator.loc_tcp_pos = self.tc_master.jnts[-1]['gl_posq']
+        self.manipulator.loc_tcp_rotmat = self.tc_master.jnts[-1]['gl_rotmatq']
         self.end_effector = None
 
     def get_oih_list(self):
@@ -238,8 +238,8 @@ if __name__ == '__main__':
                                                max_time=300)
     print(len(robot_path_attach_ee_g))
 
-    # for jnt_vals in robot_path:
-    #     robot_s.fk(jnt_vals)
+    # for jnt_values in robot_path:
+    #     robot_s.fk(jnt_values)
     #     robot_s.gen_meshmodel().attach_to(base)
     # base.run()
 

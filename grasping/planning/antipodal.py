@@ -76,7 +76,7 @@ def plan_grasps(hnd_s,
         contact_p1, contact_n1 = cp[1]
         contact_center = (contact_p0 + contact_p1) / 2
         jaw_width = np.linalg.norm(contact_p0 - contact_p1) + contact_offset * 2
-        if jaw_width > hnd_s.jaw_rng[1]:
+        if jaw_width > hnd_s.jaw_range[1]:
             continue
         if openning_direction == 'loc_x':
             jaw_center_x = contact_n0

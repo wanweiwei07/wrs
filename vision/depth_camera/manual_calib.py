@@ -249,7 +249,7 @@ class XArmLite6ManualCalib(ManualCalibrationBase):
         return np.hstack((pcd, pcd_color))
 
     def get_rbt_jnt_val(self):
-        return self._rbt_x.get_joint_values()
+        return self._rbt_x.get_jnt_values()
 
     def align_pcd(self, pcd):
         r2cam_mat = self._init_calib_mat

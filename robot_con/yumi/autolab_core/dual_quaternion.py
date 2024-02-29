@@ -178,7 +178,7 @@ class DualQuaternion(object):
         Raises
         ------
         ValueError
-            If val is not a DualQuaternion or Number.
+            If value is not a DualQuaternion or Number.
         """
         if isinstance(val, DualQuaternion):
             new_qr_xyzw = quaternion_multiply(self._qr, val._qr)
@@ -212,7 +212,7 @@ class DualQuaternion(object):
         Raises
         ------
         ValueError
-            If val is not a DualQuaternion.
+            If value is not a DualQuaternion.
         """
         if not isinstance(val, DualQuaternion):
             raise ValueError('Cannot add dual quaternion with object of end_type {0}'.format(type(val)))

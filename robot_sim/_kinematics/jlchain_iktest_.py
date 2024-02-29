@@ -98,7 +98,7 @@ class JLChain(object):
         """
         jnt_limits = []
         for i in range(self.n_dof):
-            jnt_limits.append(self.jnts[i].motion_rng)
+            jnt_limits.append(self.jnts[i].motion_range)
         return np.asarray(jnt_limits)
 
     def forward_kinematics(self,
@@ -125,7 +125,7 @@ class JLChain(object):
                 j_axis[i, :] = homomat[:3, :3] @ self.jnts[i].loc_motion_ax
                 if self.jnts[i].type == rkc.JntType.REVOLUTE:
                     j_pos[i, :] = homomat[:3, 3] + homomat[:3, :3] @ self.jnts[i].loc_pos
-                homomat = homomat @ self.jnts[i].get_motion_homomat(motion_val=jnt_vals[i])
+                homomat = homomat @ self.jnts[i].get_motion_homomat(motion_value=jnt_vals[i])
             tcp_gl_homomat = homomat @ self.tcp_loc_homomat
             tcp_gl_pos = tcp_gl_homomat[:3, 3]
             tcp_gl_rotmat = tcp_gl_homomat[:3, :3]
@@ -173,7 +173,7 @@ class JLChain(object):
 
     def jacobian(self, joint_values=None):
         """
-        compute the jacobian matrix; use internal values if jnt_vals is None
+        compute the jacobian matrix; use internal values if jnt_values is None
         :param joint_values:
         :param update:
         :return:
@@ -194,8 +194,8 @@ class JLChain(object):
         """
         compute the yoshikawa manipulability
         :param tcp_joint_id:
-        :param tcp_loc_pos:
-        :param tcp_loc_rotmat:
+        :param loc_tcp_pos:
+        :param loc_tcp_rotmat:
         :return:
         author: weiwei
         date: 20200331
@@ -207,8 +207,8 @@ class JLChain(object):
         """
         compute the axes of the manipulability ellipsoid
         :param tcp_joint_id:
-        :param tcp_loc_pos:
-        :param tcp_loc_rotmat:
+        :param loc_tcp_pos:
+        :param loc_tcp_rotmat:
         :return: (linear ellipsoid matrix, angular ellipsoid matrix)
         """
         j_mat = self.jacobian(joint_values=joint_values)
@@ -290,7 +290,7 @@ class JLChain(object):
 
     def are_joint_values_in_ranges(self, joint_values):
         """
-        check if the given jnt_vals
+        check if the given jnt_values
         :param joint_values:
         :return:
         author: weiwei
@@ -334,13 +334,13 @@ class JLChain(object):
     def get_joint_values(self):
         """
         get the current joint values
-        :return: jnt_vals: a 1xn ndarray
+        :return: jnt_values: a 1xn ndarray
         author: weiwei
         date: 20161205tsukuba
         """
         jnt_vals = np.zeros(self.n_dof)
         for i in range(self.n_dof):
-            jnt_vals[i] = self.jnts[i].motion_val
+            jnt_vals[i] = self.jnts[i].motion_value
         return jnt_vals
 
     def rand_conf(self):
@@ -361,8 +361,8 @@ class JLChain(object):
         """
         Numerical IK by default
         NOTE1: in the numik function of rotjntlinksik,
-        in case None is provided, the self.tcp_joint_id, self.tcp_loc_pos, self.tcp_loc_rotmat will be used
-        NOTE2: if list, len(tgtpos)=len(tgtrot) < len(tcp_joint_id)=len(tcp_loc_pos)=len(tcp_loc_rotmat)
+        in case None is provided, the self.tcp_joint_id, self.loc_tcp_pos, self.loc_tcp_rotmat will be used
+        NOTE2: if list, len(tgtpos)=len(tgtrot) < len(tcp_joint_id)=len(loc_tcp_pos)=len(loc_tcp_rotmat)
         :param tgt_pos: 1x3 nparray, single value or list
         :param tgt_rotmat: 3x3 nparray, single value or list
         :param seed_jnt_vals: the starting configuration used in the numerical iteration
@@ -370,17 +370,17 @@ class JLChain(object):
         :return:
         """
         # tic = time.time()
-        # jnt_vals = self._nik_solver.dls_rr(tgt_pos=tgt_pos,
+        # jnt_values = self._nik_solver.dls_rr(tgt_pos=tgt_pos,
         #                                               tgt_rotmat=tgt_rotmat,
-        #                                               seed_jnt_vals=seed_jnt_vals,
+        #                                               seed_jnt_values=seed_jnt_values,
         #                                               max_n_iter=max_n_iter,
         #                                               toggle_dbg=toggle_dbg)
         # toc = time.time()
         # print("DLS RR time ", toc - tic)
         # tic = time.time()
-        # jnt_vals = self._nik_solver.cwln(tgt_pos=tgt_pos,
+        # jnt_values = self._nik_solver.cwln(tgt_pos=tgt_pos,
         #                                             tgt_rotmat=tgt_rotmat,
-        #                                             seed_jnt_vals=seed_jnt_vals,
+        #                                             seed_jnt_values=seed_jnt_values,
         #                                             max_n_iter=max_n_iter,
         #                                             toggle_dbg=toggle_dbg)
         # toc = time.time()
@@ -394,33 +394,33 @@ class JLChain(object):
         toc = time.time()
         print("PINV WC time ", toc - tic)
         # tic = time.time()
-        # jnt_vals = self._nik_solver.pinv_rr(tgt_pos=tgt_pos,
+        # jnt_values = self._nik_solver.pinv_rr(tgt_pos=tgt_pos,
         #                                             tgt_rotmat=tgt_rotmat,
-        #                                             seed_jnt_vals=seed_jnt_vals,
+        #                                             seed_jnt_values=seed_jnt_values,
         #                                             max_n_iter=max_n_iter,
         #                                             toggle_dbg=toggle_dbg)
         # toc = time.time()
         # print("PINV time ", toc - tic)
         # tic = time.time()
-        # jnt_vals = self._nik_solver.jt_rr(tgt_pos=tgt_pos,
+        # jnt_values = self._nik_solver.jt_rr(tgt_pos=tgt_pos,
         #                                             tgt_rotmat=tgt_rotmat,
-        #                                             seed_jnt_vals=seed_jnt_vals,
+        #                                             seed_jnt_values=seed_jnt_values,
         #                                             max_n_iter=max_n_iter,
         #                                             toggle_dbg=toggle_dbg)
         # toc = time.time()
         # print("JT time ", toc - tic)
         # tic = time.time()
-        # jnt_vals = self._oik_solver.sqpss(tgt_pos=tgt_pos,
+        # jnt_values = self._oik_solver.sqpss(tgt_pos=tgt_pos,
         #                                     tgt_rotmat=tgt_rotmat,
-        #                                     seed_jnt_vals=seed_jnt_vals,
+        #                                     seed_jnt_values=seed_jnt_values,
         #                                     max_n_iter=max_n_iter,
         #                                     toggle_dbg=toggle_dbg)
         # toc = time.time()
         # print("SQP-SS time ", toc - tic)
         # tic = time.time()
-        # jnt_vals = self._oik_solver.sqp(tgt_pos=tgt_pos,
+        # jnt_values = self._oik_solver.sqp(tgt_pos=tgt_pos,
         #                                            tgt_rotmat=tgt_rotmat,
-        #                                            seed_jnt_vals=seed_jnt_vals,
+        #                                            seed_jnt_values=seed_jnt_values,
         #                                            max_n_iter=max_n_iter,
         #                                            toggle_dbg=toggle_dbg)
         # toc = time.time()
@@ -445,22 +445,22 @@ if __name__ == "__main__":
     jlc = JLChain(n_dof=6)
     jlc.jnts[0].loc_pos = np.array([0, 0, 0])
     jlc.jnts[0].loc_motion_ax = np.array([0, 0, 1])
-    jlc.jnts[0].motion_rng = np.array([-np.pi / 2, np.pi / 2])
+    jlc.jnts[0].motion_range = np.array([-np.pi / 2, np.pi / 2])
     jlc.jnts[1].loc_pos = np.array([0, 0, .05])
     jlc.jnts[1].loc_motion_ax = np.array([0, 1, 0])
-    jlc.jnts[1].motion_rng = np.array([-np.pi / 2, np.pi / 2])
+    jlc.jnts[1].motion_range = np.array([-np.pi / 2, np.pi / 2])
     jlc.jnts[2].loc_pos = np.array([0, 0, .2])
     jlc.jnts[2].loc_motion_ax = np.array([0, 1, 0])
-    jlc.jnts[2].motion_rng = np.array([-np.pi, np.pi])
+    jlc.jnts[2].motion_range = np.array([-np.pi, np.pi])
     jlc.jnts[3].loc_pos = np.array([0, 0, .2])
     jlc.jnts[3].loc_motion_ax = np.array([0, 0, 1])
-    jlc.jnts[3].motion_rng = np.array([-np.pi / 2, np.pi / 2])
+    jlc.jnts[3].motion_range = np.array([-np.pi / 2, np.pi / 2])
     jlc.jnts[4].loc_pos = np.array([0, 0, .1])
     jlc.jnts[4].loc_motion_ax = np.array([0, 1, 0])
-    jlc.jnts[4].motion_rng = np.array([-np.pi / 2, np.pi / 2])
+    jlc.jnts[4].motion_range = np.array([-np.pi / 2, np.pi / 2])
     jlc.jnts[5].loc_pos = np.array([0, 0, .05])
     jlc.jnts[5].loc_motion_ax = np.array([0, 0, 1])
-    jlc.jnts[5].motion_rng = np.array([-np.pi / 2, np.pi / 2])
+    jlc.jnts[5].motion_range = np.array([-np.pi / 2, np.pi / 2])
     jlc.tcp_loc_pos = np.array([0, 0, .01])
     jlc.reinitialize()
     seed_jnt_vals = jlc.get_joint_values()

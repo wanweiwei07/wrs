@@ -141,16 +141,16 @@ class KHI_DUAL(ri.RobotInterface):
         if component_name == 'lft_arm' or component_name == 'rgt_arm':
             if not isinstance(jnt_values, np.ndarray) or jnt_values.size != 6:
                 raise ValueError("An 1x6 npdarray must be specified to move a single arm!")
-            waist_value = self.base_table.jnts[1]['motion_val']
+            waist_value = self.base_table.jnts[1]['motion_value']
             return update_component(component_name, np.append(waist_value, jnt_values))
         elif component_name == 'lft_arm_waist' or component_name == 'rgt_arm_waist':
             if not isinstance(jnt_values, np.ndarray) or jnt_values.size != 7:
                 raise ValueError("An 1x7 npdarray must be specified to move a single arm plus the waist!")
             status = update_component(component_name, jnt_values)
-            self.base_table.jnts[1]['motion_val'] = jnt_values[0]
+            self.base_table.jnts[1]['motion_value'] = jnt_values[0]
             self.base_table.fk()
             the_other_manipulator_name = 'lft_arm' if component_name[:7] == 'rgt_arm' else 'rgt_arm'
-            self.manipulator_dict[the_other_manipulator_name].jnts[1]['motion_val'] = jnt_values[0]
+            self.manipulator_dict[the_other_manipulator_name].jnts[1]['motion_value'] = jnt_values[0]
             self.manipulator_dict[the_other_manipulator_name].fk()
             return status  # if waist is out of range, the first status will always be out of range
         elif component_name == 'both_arm':
@@ -176,10 +176,10 @@ class KHI_DUAL(ri.RobotInterface):
         #     self.manipulator_dict[component_name].tgtjnts = range(2, self.manipulator_dict[component_name].n_dof + 1)
         #     ik_results = self.manipulator_dict[component_name].ik(tgt_pos,
         #                                                           tgt_rotmat,
-        #                                                           seed_jnt_vals=seed_jnt_vals,
+        #                                                           seed_jnt_values=seed_jnt_values,
         #                                                           tcp_joint_id=tcp_joint_id,
-        #                                                           tcp_loc_pos=tcp_loc_pos,
-        #                                                           tcp_loc_rotmat=tcp_loc_rotmat,
+        #                                                           loc_tcp_pos=loc_tcp_pos,
+        #                                                           loc_tcp_rotmat=loc_tcp_rotmat,
         #                                                           max_n_iter=max_n_iter,
         #                                                           policy_for_local_minima=policy_for_local_minima,
         #                                                           toggle_dbg=toggle_dbg)
@@ -188,17 +188,17 @@ class KHI_DUAL(ri.RobotInterface):
         # elif component_name == 'lft_arm_waist' or component_name == 'rgt_arm_waist':
         #     return self.manipulator_dict[component_name].ik(tgt_pos,
         #                                                     tgt_rotmat,
-        #                                                     seed_jnt_vals=seed_jnt_vals,
+        #                                                     seed_jnt_values=seed_jnt_values,
         #                                                     tcp_joint_id=tcp_joint_id,
-        #                                                     tcp_loc_pos=tcp_loc_pos,
-        #                                                     tcp_loc_rotmat=tcp_loc_rotmat,
+        #                                                     loc_tcp_pos=loc_tcp_pos,
+        #                                                     loc_tcp_rotmat=loc_tcp_rotmat,
         #                                                     max_n_iter=max_n_iter,
         #                                                     policy_for_local_minima=policy_for_local_minima,
         #                                                     toggle_dbg=toggle_dbg)
         if component_name in ['lft_arm', 'rgt_arm', 'lft_arm_waist', 'rgt_arm_waist']:
             return self.manipulator_dict[component_name].ik(tgt_pos,
                                                             tgt_rotmat,
-                                                            seed_jnt_vals=seed_jnt_values,
+                                                            seed_jnt_values=seed_jnt_values,
                                                             tcp_joint_id=tcp_jnt_id,
                                                             tcp_loc_pos=tcp_loc_pos,
                                                             tcp_loc_rotmat=tcp_loc_rotmat,
@@ -213,17 +213,17 @@ class KHI_DUAL(ri.RobotInterface):
             raise ValueError("The given component name is not available!")
 
     def get_jnt_values(self, component_name):
-        return self.manipulator_dict[component_name].get_joint_values()
+        return self.manipulator_dict[component_name].get_jnt_values()
 
     def is_jnt_values_in_ranges(self, component_name, jnt_values):
         # if component_name == 'lft_arm' or component_name == 'rgt_arm':
         #     old_tgt_jnts = self.manipulator_dict[component_name].tgtjnts
         #     self.manipulator_dict[component_name].tgtjnts = range(2, self.manipulator_dict[component_name].n_dof + 1)
-        #     result = self.manipulator_dict[component_name].is_jnt_values_in_ranges(jnt_vals)
+        #     result = self.manipulator_dict[component_name].is_jnt_values_in_ranges(jnt_values)
         #     self.manipulator_dict[component_name].tgtjnts = old_tgt_jnts
         #     return result
         # else:
-        return self.manipulator_dict[component_name].are_joint_values_in_ranges(jnt_values)
+        return self.manipulator_dict[component_name].is_jnt_values_in_ranges(jnt_values)
 
     def rand_conf(self, component_name):
         """

@@ -35,7 +35,7 @@ class InterplatedMotion(object):
         author: weiwei
         date: 20210125
         """
-        jnt_values_bk = self.robot_s.get_joint_values(component_name)
+        jnt_values_bk = self.robot_s.get_jnt_values(component_name)
         pos_list, rotmat_list = rm.interplate_pos_rotmat(start_tcp_pos,
                                                          start_tcp_rotmat,
                                                          goal_tcp_pos,
@@ -45,7 +45,7 @@ class InterplatedMotion(object):
         if seed_jnt_values is None:
             seed_jnt_values = jnt_values_bk
         for (pos, rotmat) in zip(pos_list, rotmat_list):
-            jnt_values = self.robot_s.ik(component_name, pos, rotmat, seed_jnt_vals=seed_jnt_values)
+            jnt_values = self.robot_s.ik(component_name, pos, rotmat, seed_jnt_values=seed_jnt_values)
             if jnt_values is None:
                 print("IK not solvable in gen_linear_motion!")
                 self.robot_s.fk(component_name, jnt_values_bk)
@@ -206,7 +206,7 @@ class InterplatedMotion(object):
         author: weiwei
         date: 20210501
         """
-        jnt_values_bk = self.robot_s.get_joint_values(component_name)
+        jnt_values_bk = self.robot_s.get_jnt_values(component_name)
         pos_list, rotmat_list = rm.interplate_pos_rotmat_around_circle(circle_center_pos,
                                                                        circle_ax,
                                                                        radius,
@@ -220,7 +220,7 @@ class InterplatedMotion(object):
         if seed_jnt_values is None:
             seed_jnt_values = jnt_values_bk
         for (pos, rotmat) in zip(pos_list, rotmat_list):
-            jnt_values = self.robot_s.ik(component_name, pos, rotmat, seed_jnt_vals=seed_jnt_values)
+            jnt_values = self.robot_s.ik(component_name, pos, rotmat, seed_jnt_values=seed_jnt_values)
             if jnt_values is None:
                 print("IK not solvable in gen_circular_motion!")
                 self.robot_s.fk(component_name, jnt_values_bk)

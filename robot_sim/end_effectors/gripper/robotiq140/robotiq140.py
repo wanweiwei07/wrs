@@ -24,7 +24,7 @@ class Robotiq140(gp.GripperInterface):
         # - lft_outer
         self.lft_outer = jl.JLChain(pos=cpl_end_pos, rotmat=cpl_end_rotmat, home_conf=np.zeros(4), name='lft_outer')
         self.lft_outer.jnts[1]['pos_in_loc_tcp'] = np.array([0, -.0306011, .054904])
-        self.lft_outer.jnts[1]['motion_rng'] = [.0, .7]
+        self.lft_outer.jnts[1]['motion_range'] = [.0, .7]
         self.lft_outer.jnts[1]['gl_rotmat'] = rm.rotmat_from_euler((math.pi / 2.0 + .725), 0, 0)
         self.lft_outer.jnts[1]['loc_motionax'] = np.array([-1, 0, 0])
         self.lft_outer.jnts[2]['pos_in_loc_tcp'] = np.array([0, 0.01821998610742, 0.0260018192872234])  # passive
@@ -168,12 +168,12 @@ class Robotiq140(gp.GripperInterface):
         self.pos = pos
         self.rotmat = rotmat
         if angle is not None:
-            self.lft_outer.jnts[1]['motion_val'] = angle
-            self.lft_outer.jnts[3]['motion_val'] = self.lft_outer.jnts[1]['motion_val']
-            self.lft_inner.jnts[1]['motion_val'] = -self.lft_outer.jnts[1]['motion_val']
-            self.rgt_outer.jnts[1]['motion_val'] = -self.lft_outer.jnts[1]['motion_val']
-            self.rgt_outer.jnts[3]['motion_val'] = self.lft_outer.jnts[1]['motion_val']
-            self.rgt_inner.jnts[1]['motion_val'] = -self.lft_outer.jnts[1]['motion_val']
+            self.lft_outer.jnts[1]['motion_value'] = angle
+            self.lft_outer.jnts[3]['motion_value'] = self.lft_outer.jnts[1]['motion_value']
+            self.lft_inner.jnts[1]['motion_value'] = -self.lft_outer.jnts[1]['motion_value']
+            self.rgt_outer.jnts[1]['motion_value'] = -self.lft_outer.jnts[1]['motion_value']
+            self.rgt_outer.jnts[3]['motion_value'] = self.lft_outer.jnts[1]['motion_value']
+            self.rgt_inner.jnts[1]['motion_value'] = -self.lft_outer.jnts[1]['motion_value']
         self.coupling.fix_to(self.pos, self.rotmat)
         cpl_end_pos = self.coupling.jnts[-1]['gl_posq']
         cpl_end_rotmat = self.coupling.jnts[-1]['gl_rotmatq']
@@ -187,13 +187,13 @@ class Robotiq140(gp.GripperInterface):
         lft_outer is the only active joint, all others mimic this one
         :param: angle, radian
         """
-        if self.lft_outer.jnts[1]['motion_rng'][0] <= motion_val <= self.lft_outer.jnts[1]['motion_rng'][1]:
-            self.lft_outer.jnts[1]['motion_val'] = motion_val
-            self.lft_outer.jnts[3]['motion_val'] = self.lft_outer.jnts[1]['motion_val']
-            self.lft_inner.jnts[1]['motion_val'] = -self.lft_outer.jnts[1]['motion_val']
-            self.rgt_outer.jnts[1]['motion_val'] = -self.lft_outer.jnts[1]['motion_val']
-            self.rgt_outer.jnts[3]['motion_val'] = self.lft_outer.jnts[1]['motion_val']
-            self.rgt_inner.jnts[1]['motion_val'] = -self.lft_outer.jnts[1]['motion_val']
+        if self.lft_outer.jnts[1]['motion_range'][0] <= motion_val <= self.lft_outer.jnts[1]['motion_range'][1]:
+            self.lft_outer.jnts[1]['motion_value'] = motion_val
+            self.lft_outer.jnts[3]['motion_value'] = self.lft_outer.jnts[1]['motion_value']
+            self.lft_inner.jnts[1]['motion_value'] = -self.lft_outer.jnts[1]['motion_value']
+            self.rgt_outer.jnts[1]['motion_value'] = -self.lft_outer.jnts[1]['motion_value']
+            self.rgt_outer.jnts[3]['motion_value'] = self.lft_outer.jnts[1]['motion_value']
+            self.rgt_inner.jnts[1]['motion_value'] = -self.lft_outer.jnts[1]['motion_value']
             self.lft_outer.fk()
             self.lft_inner.fk()
             self.rgt_outer.fk()
@@ -206,11 +206,11 @@ class Robotiq140(gp.GripperInterface):
         private helper function to convert a command in meters to radians (joint value)
         """
         # return np.clip(
-        #   self.lft_outer.joints[1]['motion_rng'][1] - ((self.lft_outer.joints[1]['motion_rng'][1]/self.jaw_rng[1]) * distance),
-        #   self.lft_outer.joints[1]['motion_rng'][0], self.lft_outer.joints[1]['motion_rng'][1]) # kiyokawa, commented out by weiwei
-        return np.clip(self.lft_outer.jnts[1]['motion_rng'][1] - math.asin(
-            (math.sin(self.lft_outer.jnts[1]['motion_rng'][1]) / self.jaw_range[1]) * distance),
-                       self.lft_outer.jnts[1]['motion_rng'][0], self.lft_outer.jnts[1]['motion_rng'][1])
+        #   self.lft_outer.joints[1]['motion_range'][1] - ((self.lft_outer.joints[1]['motion_range'][1]/self.jaw_range[1]) * distance),
+        #   self.lft_outer.joints[1]['motion_range'][0], self.lft_outer.joints[1]['motion_range'][1]) # kiyokawa, commented out by weiwei
+        return np.clip(self.lft_outer.jnts[1]['motion_range'][1] - math.asin(
+            (math.sin(self.lft_outer.jnts[1]['motion_range'][1]) / self.jaw_range[1]) * distance),
+                       self.lft_outer.jnts[1]['motion_range'][0], self.lft_outer.jnts[1]['motion_range'][1])
 
     def change_jaw_width(self, jaw_width):
         if jaw_width > self.jaw_range[1]:

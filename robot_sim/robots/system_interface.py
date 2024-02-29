@@ -57,18 +57,18 @@ class SystemInterface(object):
 
     @_decorator_get
     def get_jnt_ranges(self, target_configuration=None):
-        return self.robot_list[target_configuration].get_jnt_ranges()
+        return self.robot_list[target_configuration].get_jnt_rngs()
 
     @_decorator_get
     def get_jnt_values(self, target_configuration=None):
-        return self.robot_list[target_configuration].get_joint_values()
+        return self.robot_list[target_configuration].get_jnt_values()
 
     @_decorator_get
     def get_gl_tcp(self, target_configuration=None):
         return self.robot_list[target_configuration].get_gl_tcp()
 
     def is_jnt_values_in_ranges(self, jnt_values):
-        return self.robot_list[self.current_target_configuration].are_joint_values_in_ranges(jnt_values)
+        return self.robot_list[self.current_target_configuration].is_jnt_values_in_ranges(jnt_values)
 
     def fix_to(self, pos, rotmat):
         self.pos = pos
@@ -132,7 +132,7 @@ class SystemInterface(object):
 
     def cvt_conf_to_tcp(self, manipulator_name, jnt_values):
         """
-        given jnt_vals, this function returns the correspondent global tcp_pos, and tcp_rotmat
+        given jnt_values, this function returns the correspondent global tcp_pos, and tcp_rotmat
         :param manipulator_name:
         :param jnt_values:
         :return:
@@ -238,16 +238,16 @@ class SystemInterface(object):
         raise NotImplementedError
 
     def get_jnt_ranges(self, component_name):
-        return self.manipulator_dict[component_name].get_jnt_ranges()
+        return self.manipulator_dict[component_name].get_jnt_rngs()
 
     def get_jnt_values(self, component_name):
-        return self.manipulator_dict[component_name].get_joint_values()
+        return self.manipulator_dict[component_name].get_jnt_values()
 
     def get_gl_tcp(self, manipulator_name):
         return self.manipulator_dict[manipulator_name].get_gl_tcp()
 
     def is_jnt_values_in_ranges(self, component_name, jnt_values):
-        return self.manipulator_dict[component_name].are_joint_values_in_ranges(jnt_values)
+        return self.manipulator_dict[component_name].is_jnt_values_in_ranges(jnt_values)
 
     def fix_to(self, pos, rotmat):
         return NotImplementedError
@@ -274,7 +274,7 @@ class SystemInterface(object):
            toggle_debug=False):
         return self.manipulator_dict[component_name].ik(tgt_pos,
                                                         tgt_rotmat,
-                                                        seed_jnt_vals=seed_jnt_values,
+                                                        seed_jnt_values=seed_jnt_values,
                                                         max_n_iter=max_niter,
                                                         tcp_joint_id=tcp_jnt_id,
                                                         tcp_loc_pos=tcp_loc_pos,
@@ -316,7 +316,7 @@ class SystemInterface(object):
 
     def cvt_conf_to_tcp(self, manipulator_name, jnt_values):
         """
-        given jnt_vals, this function returns the correspondent global tcp_pos, and tcp_rotmat
+        given jnt_values, this function returns the correspondent global tcp_pos, and tcp_rotmat
         :param manipulator_name:
         :param jnt_values:
         :return:

@@ -33,7 +33,7 @@ class RobotiqHE(gp.GripperInterface):
         self.lft = jl.JLChain(pos=cpl_end_pos, rotmat=cpl_end_rotmat, home_conf=np.zeros(1), name='base_lft_finger')
         self.lft.jnts[1]['pos_in_loc_tcp'] = np.array([-.025, .0, .11])
         self.lft.jnts[1]['end_type'] = 'prismatic'
-        self.lft.jnts[1]['motion_rng'] = [0, .025]
+        self.lft.jnts[1]['motion_range'] = [0, .025]
         self.lft.jnts[1]['loc_motionax'] = np.array([1, 0, 0])
         self.lft.lnks[0]['name'] = "base"
         self.lft.lnks[0]['pos_in_loc_tcp'] = np.zeros(3)
@@ -83,8 +83,8 @@ class RobotiqHE(gp.GripperInterface):
         if jawwidth is not None:
             side_jawwidth = (self.jaw_range[1] - jawwidth) / 2.0
             if 0 <= side_jawwidth <= self.jaw_range[1]/2.0:
-                self.lft.jnts[1]['motion_val'] = side_jawwidth;
-                self.rgt.jnts[1]['motion_val'] = self.lft.jnts[1]['motion_val']
+                self.lft.jnts[1]['motion_value'] = side_jawwidth;
+                self.rgt.jnts[1]['motion_value'] = self.lft.jnts[1]['motion_value']
             else:
                 raise ValueError("The angle parameter is out of range!")
         self.coupling.fix_to(self.pos, self.rotmat)
@@ -98,13 +98,13 @@ class RobotiqHE(gp.GripperInterface):
         lft_outer is the only active joint, all others mimic this one
         :param: angle, radian
         """
-        if self.lft.jnts[1]['motion_rng'][0] <= motion_val <= self.lft.jnts[1]['motion_rng'][1]:
-            self.lft.jnts[1]['motion_val'] = motion_val
-            self.rgt.jnts[1]['motion_val'] = self.lft.jnts[1]['motion_val']
+        if self.lft.jnts[1]['motion_range'][0] <= motion_val <= self.lft.jnts[1]['motion_range'][1]:
+            self.lft.jnts[1]['motion_value'] = motion_val
+            self.rgt.jnts[1]['motion_value'] = self.lft.jnts[1]['motion_value']
             self.lft.fk()
             self.rgt.fk()
         else:
-            raise ValueError("The motion_val parameter is out of range!")
+            raise ValueError("The motion_value parameter is out of range!")
 
     def change_jaw_width(self, jaw_width):
         if jaw_width > self.jaw_range[1]:

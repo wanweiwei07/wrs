@@ -166,7 +166,7 @@ def search_reachable_configuration(rbt_s,
     author: weiwei
     date: 20220404
     """
-    jnt_values_bk = rbt_s.get_joint_values(component_name=component_name)
+    jnt_values_bk = rbt_s.get_jnt_values(component_name=component_name)
     if seed_jnt_values is None:
         seed_jnt_values = jnt_values_bk
     rotmat_list = []
@@ -185,7 +185,7 @@ def search_reachable_configuration(rbt_s,
         jnt_values = rbt_s.ik(component_name=component_name,
                               tgt_pos=tgt_pos,
                               tgt_rotmat=rotmat,
-                              seed_jnt_vals=seed_jnt_values)
+                              seed_jnt_values=seed_jnt_values)
         if jnt_values is not None:
             rbt_s.fk(joint_values=jnt_values)
             if rbt_s.is_collided(obstacle_list=obstacle_list):
@@ -201,9 +201,9 @@ def search_reachable_configuration(rbt_s,
                     return jnt_values
         else:
             if toggle_debug:
-                ee_s.grip_at_with_pose(gl_jaw_center_pos=tgt_pos,
-                                       gl_jaw_center_rotmat=rotmat,
-                                       jaw_width=0)
+                ee_s.grip_at_by_pose(gl_jaw_center_pos=tgt_pos,
+                                     gl_jaw_center_rotmat=rotmat,
+                                     jaw_width=0)
                 ee_s.gen_mesh_model(rgba=[1, 0, 0, .3]).attach_to(base)
     rbt_s.fk(component_name=component_name, joint_values=jnt_values_bk)
     return None

@@ -81,7 +81,7 @@ for id, rotmat in enumerate(rotmat_list):
     branch = Stem(ndof=1, pos=branch_pos,
                   rotmat=rotmat, base_length=.1 / math.sqrt(height), base_thickness=.002)
     branch.gen_meshmodel().attach_to(base)
-    # main_stem.fk(jnt_vals=[math.pi/36,math.pi/36, 0,-math.pi/36,-math.pi/36,0])
+    # main_stem.fk(jnt_values=[math.pi/36,math.pi/36, 0,-math.pi/36,-math.pi/36,0])
     # stem1.gen_meshmodel().attach_to(base)
 
     sb_leaf = gm.GeometricModel(initor="objects/soybean_leaf.stl")

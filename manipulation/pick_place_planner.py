@@ -33,7 +33,7 @@ class PickPlacePlanner(adp.ADPlanner):
             for _ in conf_list:
                 objpose_list.append(rm.homomat_from_posrot(obj_pos, obj_rotmat))
         elif type == 'relative':
-            jnt_values_bk = self.robot_s.get_joint_values(component_name)
+            jnt_values_bk = self.robot_s.get_jnt_values(component_name)
             for conf in conf_list:
                 self.robot_s.fk(component_name, conf)
                 gl_obj_pos, gl_obj_rotmat = self.robot_s.cvt_loc_tcp_to_gl(component_name, obj_pos, obj_rotmat)
@@ -66,7 +66,7 @@ class PickPlacePlanner(adp.ADPlanner):
         hndcollided_grasps_num = 0
         ikfailed_grasps_num = 0
         rbtcollided_grasps_num = 0
-        jnt_values_bk = self.robot_s.get_joint_values(hand_name)
+        jnt_values_bk = self.robot_s.get_jnt_values(hand_name)
         for goalid, goal_homomat in enumerate(goal_homomat_list):
             goal_pos = goal_homomat[:3, 3]
             goal_rotmat = goal_homomat[:3, :3]
@@ -77,7 +77,7 @@ class PickPlacePlanner(adp.ADPlanner):
                 jaw_width, jaw_center_pos, jaw_center_rotmat, hnd_pos, hnd_rotmat = grasp_info
                 goal_jaw_center_pos = goal_pos + goal_rotmat.dot(jaw_center_pos)
                 goal_jaw_center_rotmat = goal_rotmat.dot(jaw_center_rotmat)
-                hnd_instance.grip_at_with_pose(goal_jaw_center_pos, goal_jaw_center_rotmat, jaw_width)
+                hnd_instance.grip_at_by_pose(goal_jaw_center_pos, goal_jaw_center_rotmat, jaw_width)
                 if not hnd_instance.is_mesh_collided(obstacle_list):  # hnd_s cd
                     jnt_values = self.robot_s.ik(hand_name, goal_jaw_center_pos, goal_jaw_center_rotmat)
                     if jnt_values is not None:  # common graspid with robot_s ik
@@ -149,7 +149,7 @@ class PickPlacePlanner(adp.ADPlanner):
         :param seed_jnt_values:
         :return:
         """
-        jnt_values_bk = self.robot_s.get_joint_values(hand_name)
+        jnt_values_bk = self.robot_s.get_jnt_values(hand_name)
         jawwidth_bk = self.robot_s.get_jaw_width(hand_name)
         # final
         conf_list = []
@@ -164,7 +164,7 @@ class PickPlacePlanner(adp.ADPlanner):
         first_conf = self.robot_s.ik(hand_name,
                                      first_jaw_center_pos,
                                      first_jaw_center_rotmat,
-                                     seed_jnt_vals=seed_jnt_values)
+                                     seed_jnt_values=seed_jnt_values)
         if first_conf is None:
             print("Cannot solve the ik at the first grasping pose!")
             return None, None, None
@@ -343,9 +343,9 @@ class PickPlacePlanner(adp.ADPlanner):
         date: 20191122, 20200105
         """
         if approach_jawwidth is None:
-            approach_jawwidth = self.robot_s.hnd_dict[hnd_name].jaw_rng[1]
+            approach_jawwidth = self.robot_s.hnd_dict[hnd_name].jaw_range[1]
         if depart_jawwidth is None:
-            depart_jawwidth = self.robot_s.hnd_dict[hnd_name].jaw_rng[1]
+            depart_jawwidth = self.robot_s.hnd_dict[hnd_name].jaw_range[1]
         first_goal_pos = goal_homomat_list[0][:3, 3]
         first_goal_rotmat = goal_homomat_list[0][:3, :3]
         last_goal_pos = goal_homomat_list[-1][:3, 3]
@@ -501,7 +501,7 @@ if __name__ == '__main__':
     #                                       ad_granularity=.003,
     #                                       use_rrt=True,
     #                                       obstacle_list=[],
-    #                                       seed_jnt_vals=start_conf)
+    #                                       seed_jnt_values=start_conf)
     #     print(robot_s.rgt_oih_infos, robot_s.lft_oih_infos)
     #     if conf_list is not None:
     #         break

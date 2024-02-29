@@ -131,7 +131,7 @@ class URRobot(object):
 
     def set_digital_out(self, output, val):
         """
-        set digital output. val is a bool
+        set digital output. value is a bool
         """
         if val in (True, 1):
             val = "True"
@@ -177,14 +177,14 @@ class URRobot(object):
 
     def set_analog_out(self, output, val):
         """
-        set analog output, val is a float
+        set analog output, value is a float
         """
         prog = "set_analog_out(%s, %s)" % (output, val)
         self.send_program(prog)
 
     def set_tool_voltage(self, val):
         """
-        set voltage to be delivered to the tool, val is 0, 12 or 24
+        set voltage to be delivered to the tool, value is 0, 12 or 24
         """
         prog = "set_tool_voltage(%s)" % (val)
         self.send_program(prog)

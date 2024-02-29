@@ -178,13 +178,13 @@ class UR3Dual(ri.RobotInterface):
         # tool center point
         # lft
         self.lft_arm.tcp_jnt_id = -1
-        self.lft_arm.tcp_loc_rotmat = self.lft_ft_sensor.jnts[-1]['gl_rotmat'].dot(self.lft_hnd.acting_center_rotmat)
-        self.lft_arm.tcp_loc_pos = self.lft_ft_sensor.jnts[-1]['pos_in_loc_tcp'] + self.lft_arm.tcp_loc_rotmat.dot(
+        self.lft_arm.loc_tcp_rotmat = self.lft_ft_sensor.jnts[-1]['gl_rotmat'].dot(self.lft_hnd.acting_center_rotmat)
+        self.lft_arm.loc_tcp_pos = self.lft_ft_sensor.jnts[-1]['pos_in_loc_tcp'] + self.lft_arm.loc_tcp_rotmat.dot(
             self.lft_hnd.jaw_center_pos)
         # rgt
         self.rgt_arm.tcp_jnt_id = -1
-        self.rgt_arm.tcp_loc_rotmat = self.rgt_ft_sensor.jnts[-1]['gl_rotmat'].dot(self.rgt_hnd.acting_center_rotmat)
-        self.rgt_arm.tcp_loc_pos = self.rgt_ft_sensor.jnts[-1]['pos_in_loc_tcp'] + self.rgt_arm.tcp_loc_rotmat.dot(
+        self.rgt_arm.loc_tcp_rotmat = self.rgt_ft_sensor.jnts[-1]['gl_rotmat'].dot(self.rgt_hnd.acting_center_rotmat)
+        self.rgt_arm.loc_tcp_pos = self.rgt_ft_sensor.jnts[-1]['pos_in_loc_tcp'] + self.rgt_arm.loc_tcp_rotmat.dot(
             self.rgt_hnd.jaw_center_pos)
         # a list of detailed information about objects in hand, see CollisionChecker.add_objinhnd
         self.lft_oih_infos = []
@@ -429,8 +429,8 @@ class UR3Dual(ri.RobotInterface):
     def jaw_to(self, hnd_name, jaw_width):
         self.hnd_dict[hnd_name].change_jaw_width(jaw_width=jaw_width)
         # update arm tcp
-        self.lft_arm.tcp_loc_pos = self.lft_ft_sensor.jnts[-1]['pos_in_loc_tcp'] + self.lft_hnd.jaw_center_pos
-        self.rgt_arm.tcp_loc_pos = self.rgt_ft_sensor.jnts[-1]['pos_in_loc_tcp'] + self.rgt_hnd.jaw_center_pos
+        self.lft_arm.loc_tcp_pos = self.lft_ft_sensor.jnts[-1]['pos_in_loc_tcp'] + self.lft_hnd.jaw_center_pos
+        self.rgt_arm.loc_tcp_pos = self.rgt_ft_sensor.jnts[-1]['pos_in_loc_tcp'] + self.rgt_hnd.jaw_center_pos
 
     def rand_conf(self, component_name):
         """

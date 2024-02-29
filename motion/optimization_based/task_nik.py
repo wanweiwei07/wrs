@@ -18,7 +18,7 @@ class NIK(object):
         wt_agl = 1 / (math.pi * math.pi)  # pi->1 == 0.01->0.18degree
         self.ws_wtlist = [wt_pos, wt_pos, wt_pos, wt_agl, wt_agl, wt_agl]
         # maximum reach
-        self.jnt_bounds = np.array(self.rbt.get_jnt_ranges(component_name))
+        self.jnt_bounds = np.array(self.rbt.get_jnt_rngs(component_name))
         # extract min max for quick access
         self.jmvmin = self.jnt_bounds[:,0]
         self.jmvmax = self.jnt_bounds[:,1]
@@ -28,7 +28,7 @@ class NIK(object):
 
     def set_jlc(self, jlc_name):
         self.component_name=jlc_name
-        self.jnt_bounds = np.array(self.rbt.get_jnt_ranges(jlc_name))
+        self.jnt_bounds = np.array(self.rbt.get_jnt_rngs(jlc_name))
         # extract min max for quick access
         self.jmvmin = self.jnt_bounds[:,0]
         self.jmvmax = self.jnt_bounds[:,1]
@@ -113,10 +113,10 @@ class NIK(object):
 
     def get_gl_tcp(self, tcp_jnt_id, tcp_loc_pos, tcp_loc_rotmat):
         """
-        Get the global tool center pose given tcp_joint_id, tcp_loc_pos, tcp_loc_rotmat
-        tcp_joint_id, tcp_loc_pos, tcp_loc_rotmat are the tool center pose parameters. They are
+        Get the global tool center pose given tcp_joint_id, loc_tcp_pos, loc_tcp_rotmat
+        tcp_joint_id, loc_tcp_pos, loc_tcp_rotmat are the tool center pose parameters. They are
         used for temporary computation, the self.tcp_xxx parameters will not be changed
-        in case None is provided, the self.tcp_joint_id, self.tcp_loc_pos, self.tcp_loc_rotmat will be used
+        in case None is provided, the self.tcp_joint_id, self.loc_tcp_pos, self.loc_tcp_rotmat will be used
         :param tcp_jnt_id: a joint ID in the self.tgtjnts
         :param tcp_loc_pos: 1x3 nparray, decribed in the local frame of self.joints[tcp_joint_id], single value or list
         :param tcp_loc_rotmat: 3x3 nparray, decribed in the local frame of self.joints[tcp_joint_id], single value or list
@@ -127,9 +127,9 @@ class NIK(object):
         if tcp_jnt_id is None:
             tcp_jnt_id = self.jlc_object.tcp_jnt_id
         if tcp_loc_pos is None:
-            tcp_loc_pos = self.jlc_object.tcp_loc_pos
+            tcp_loc_pos = self.jlc_object.loc_tcp_pos
         if tcp_loc_rotmat is None:
-            tcp_loc_rotmat = self.jlc_object.tcp_loc_rotmat
+            tcp_loc_rotmat = self.jlc_object.loc_tcp_rotmat
         tcp_gl_pos = np.dot(self.jlc_object.jnts[tcp_jnt_id]["gl_rotmatq"], tcp_loc_pos) + \
                      self.jlc_object.jnts[tcp_jnt_id]["gl_posq"]
         tcp_gl_rotmat = np.dot(self.jlc_object.jnts[tcp_jnt_id]["gl_rotmatq"], tcp_loc_rotmat)
@@ -138,7 +138,7 @@ class NIK(object):
     def tcp_error(self, tgt_pos, tgt_rot, tcp_jnt_id, tcp_loc_pos, tcp_loc_rotmat):
         """
         compute the error between the rjlinstance's end_type and tgt_pos, tgt_rotmat
-        NOTE: if list, len(tgt_pos)=len(tgt_rotmat) <= len(tcp_joint_id)=len(tcp_loc_pos)=len(tcp_loc_rotmat)
+        NOTE: if list, len(tgt_pos)=len(tgt_rotmat) <= len(tcp_joint_id)=len(loc_tcp_pos)=len(loc_tcp_rotmat)
         :param tgt_pos: the position vector of the goal (could be a single value or a list of jntid)
         :param tgt_rot: the rotation matrix of the goal (could be a single value or a list of jntid)
         :param tcp_jnt_id: a joint ID in the self.tgtjnts
@@ -157,7 +157,7 @@ class NIK(object):
 
     def regulate_jnts(self):
         """
-        check if the given jnt_vals is inside the oeprating range
+        check if the given jnt_values is inside the oeprating range
         The joint values out of range will be pulled back to their maxima
         :return: Two parameters, one is true or false indicating if the joint values are inside the range or not
                 The other is the joint values after dragging.
@@ -168,14 +168,14 @@ class NIK(object):
         counter = 0
         for id in self.jlc_object.tgtjnts:
             if self.jlc_object.jnts[id]["end_type"] == 'revolute':
-                if self.jlc_object.jnts[id]['motion_rng'][1] - self.jlc_object.jnts[id]['motion_rng'][0] >= math.pi * 2:
-                    rm.regulate_angle(self.jlc_object.jnts[id]['motion_rng'][0], self.jlc_object.jnts[id]['motion_rng'][1],
+                if self.jlc_object.jnts[id]['motion_range'][1] - self.jlc_object.jnts[id]['motion_range'][0] >= math.pi * 2:
+                    rm.regulate_angle(self.jlc_object.jnts[id]['motion_range'][0], self.jlc_object.jnts[id]['motion_range'][1],
                                       self.jlc_object.jnts[id]["movement"])
             counter += 1
 
     def check_jntranges_drag(self, jntvalues):
         """
-        check if the given jnt_vals is inside the oeprating range
+        check if the given jnt_values is inside the oeprating range
         The joint values out of range will be pulled back to their maxima
         :param jntvalues: a 1xn numpy ndarray
         :return: Two parameters, one is true or false indicating if the joint values are inside the range or not
@@ -189,19 +189,19 @@ class NIK(object):
         jntvaluesdragged = jntvalues.copy()
         for id in self.jlc_object.tgtjnts:
             if self.jlc_object.jnts[id]["end_type"] == 'revolute':
-                if self.jlc_object.jnts[id]['motion_rng'][1] - self.jlc_object.jnts[id]['motion_rng'][0] < math.pi * 2:
+                if self.jlc_object.jnts[id]['motion_range'][1] - self.jlc_object.jnts[id]['motion_range'][0] < math.pi * 2:
                     print("Drag revolute")
-                    if jntvalues[counter] < self.jlc_object.jnts[id]['motion_rng'][0] or jntvalues[counter] > \
-                            self.jlc_object.jnts[id]['motion_rng'][1]:
+                    if jntvalues[counter] < self.jlc_object.jnts[id]['motion_range'][0] or jntvalues[counter] > \
+                            self.jlc_object.jnts[id]['motion_range'][1]:
                         isdragged[counter] = 1
-                        jntvaluesdragged[counter] = (self.jlc_object.jnts[id]['motion_rng'][1] + self.jlc_object.jnts[id][
-                            'motion_rng'][0]) / 2
+                        jntvaluesdragged[counter] = (self.jlc_object.jnts[id]['motion_range'][1] + self.jlc_object.jnts[id][
+                            'motion_range'][0]) / 2
             elif self.jlc_object.jnts[id]["end_type"] == 'prismatic':  # prismatic
                 print("Drag prismatic")
-                if jntvalues[counter] < self.jlc_object.jnts[id]['motion_rng'][0] or jntvalues[counter] > \
-                        self.jlc_object.jnts[id]['motion_rng'][1]:
+                if jntvalues[counter] < self.jlc_object.jnts[id]['motion_range'][0] or jntvalues[counter] > \
+                        self.jlc_object.jnts[id]['motion_range'][1]:
                     isdragged[counter] = 1
-                    jntvaluesdragged[counter] = (self.jlc_object.jnts[id]['motion_rng'][1] + self.jlc_object.jnts[id][
+                    jntvaluesdragged[counter] = (self.jlc_object.jnts[id]['motion_range'][1] + self.jlc_object.jnts[id][
                         "rngmin"]) / 2
         return isdragged, jntvaluesdragged
 
@@ -217,7 +217,7 @@ class NIK(object):
         """
         solveik numerically using the Levenberg-Marquardt Method
         the details of this method can be found in: https://www.math.ucsd.edu/~sbuss/ResearchWeb/ikmethods/iksurvey.pdf
-        NOTE: if list, len(tgt_pos)=len(tgt_rotmat) <= len(tcp_joint_id)=len(tcp_loc_pos)=len(tcp_loc_rotmat)
+        NOTE: if list, len(tgt_pos)=len(tgt_rotmat) <= len(tcp_joint_id)=len(loc_tcp_pos)=len(loc_tcp_rotmat)
         :param tgt_pos: the position of the goal, 1-by-3 numpy ndarray
         :param tgt_rot: the orientation of the goal, 3-by-3 numpyndarray
         :param seed_jnt_values: the starting configuration used in the numerical iteration
@@ -236,12 +236,12 @@ class NIK(object):
         if tcp_jnt_id is None:
             tcp_jnt_id = self.jlc_object.tcp_jnt_id
         if tcp_loc_pos is None:
-            tcp_loc_pos = self.jlc_object.tcp_loc_pos
-            print(self.jlc_object.tcp_loc_pos)
+            tcp_loc_pos = self.jlc_object.loc_tcp_pos
+            print(self.jlc_object.loc_tcp_pos)
         if tcp_loc_rotmat is None:
-            tcp_loc_rotmat = self.jlc_object.tcp_loc_rotmat
-        jntvalues_bk = self.jlc_object.get_joint_values()
-        jntvalues_iter = self.jlc_object.homeconf if seed_jnt_values is None else seed_jnt_values.copy()
+            tcp_loc_rotmat = self.jlc_object.loc_tcp_rotmat
+        jntvalues_bk = self.jlc_object.get_jnt_values()
+        jntvalues_iter = self.jlc_object.home_conf if seed_jnt_values is None else seed_jnt_values.copy()
         self.jlc_object.fk(joint_values=jntvalues_iter)
         jntvalues_ref = jntvalues_iter.copy()
         ws_wtdiagmat = np.diag(self.ws_wtlist)
@@ -275,7 +275,7 @@ class NIK(object):
                 errnormmax = errnorm
             if toggle_debug:
                 print(errnorm_pos, errnorm_rot, errnorm)
-                ajpath.append(self.jlc_object.get_joint_values())
+                ajpath.append(self.jlc_object.get_jnt_values())
             if errnorm_pos < 1e-6 and errnorm_rot < math.pi/6:
                 if toggle_debug:
                     fig = plt.figure()
@@ -292,7 +292,7 @@ class NIK(object):
                     axaj.plot(ajpath)
                     plt.show()
                 # self.regulate_jnts()
-                jntvalues_return = self.jlc_object.get_joint_values()
+                jntvalues_return = self.jlc_object.get_jnt_values()
                 self.jlc_object.fk(joint_values=jntvalues_bk)
                 return jntvalues_return
             else:
@@ -315,7 +315,7 @@ class NIK(object):
                     if local_minima == 'accept':
                         wns.warn(
                             'Bypassing local minima! The return value is a local minima, rather than the exact IK result.')
-                        jntvalues_return = self.jlc_object.get_joint_values()
+                        jntvalues_return = self.jlc_object.get_jnt_values()
                         self.jlc_object.fk(jntvalues_bk)
                         return jntvalues_return
                     elif local_minima == 'randomrestart':
@@ -383,8 +383,8 @@ class NIK(object):
                 # print(jntvalues_iter)
                 self.jlc_object.fk(joint_values=jntvalues_iter)
                 # if toggle_dbg:
-                #     jlmgen.gensnp(jlinstance, tcp_joint_id=tcp_joint_id, tcp_loc_pos=tcp_loc_pos,
-                #                   tcp_loc_rotmat=tcp_loc_rotmat, togglejntscs=True).reparentTo(base.render)
+                #     jlmgen.gensnp(jlinstance, tcp_joint_id=tcp_joint_id, loc_tcp_pos=loc_tcp_pos,
+                #                   loc_tcp_rotmat=loc_tcp_rotmat, togglejntscs=True).reparentTo(base.render)
             errnormlast = errnorm
         if toggle_debug:
             fig = plt.figure()

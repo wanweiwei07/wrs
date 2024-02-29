@@ -48,16 +48,16 @@ class RobotInterface(object):
         self.name = name
 
     def get_jnt_ranges(self):
-        return self.manipulator.get_jnt_ranges()
+        return self.manipulator.get_jnt_rngs()
 
     def get_jnt_values(self):
-        return self.manipulator.get_joint_values()
+        return self.manipulator.get_jnt_values()
 
     def get_gl_tcp(self):
         return self.manipulator.get_gl_tcp()
 
     def is_jnt_values_in_ranges(self, jnt_values):
-        return self.manipulator.are_joint_values_in_ranges(jnt_values)
+        return self.manipulator.is_jnt_values_in_ranges(jnt_values)
 
     def fix_to(self, pos, rotmat):
         self.pos = pos
@@ -91,7 +91,7 @@ class RobotInterface(object):
            toggle_debug=False):
         return self.manipulator.ik(tgt_pos,
                                    tgt_rotmat,
-                                   seed_jnt_vals=seed_jnt_values,
+                                   seed_jnt_values=seed_jnt_values,
                                    max_n_iter=max_niter,
                                    tcp_joint_id=tcp_jnt_id,
                                    tcp_loc_pos=tcp_loc_pos,
@@ -130,7 +130,7 @@ class RobotInterface(object):
 
     def cvt_conf_to_tcp(self, jnt_values):
         """
-        given jnt_vals, this function returns the correspondent global tcp_pos, and tcp_rotmat
+        given jnt_values, this function returns the correspondent global tcp_pos, and tcp_rotmat
         :param jnt_values:
         :return:
         author: weiwei

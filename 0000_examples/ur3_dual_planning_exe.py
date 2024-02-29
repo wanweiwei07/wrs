@@ -20,7 +20,7 @@ robot_instance = ur3d.UR3Dual()
 # init_lft_arm_jnt_values = robot_s.lft_arm.get_jnt_values()
 # init_rgt_arm_jnt_values = robot_s.rgt_arm.get_jnt_values()
 # full_jnt_values = np.hstack((init_lft_arm_jnt_values, init_rgt_arm_jnt_values))
-full_jnt_values = np.hstack((robot_instance.lft_arm.homeconf, robot_instance.rgt_arm.homeconf))
+full_jnt_values = np.hstack((robot_instance.lft_arm.home_conf, robot_instance.rgt_arm.home_conf))
 goal_lft_arm_jnt_values = np.array([0, -math.pi / 2, -math.pi/3, -math.pi / 2, math.pi / 6, math.pi / 6])
 goal_rgt_arm_jnt_values = np.array([0, -math.pi/4, 0, math.pi/2, math.pi/2, math.pi / 6])
 

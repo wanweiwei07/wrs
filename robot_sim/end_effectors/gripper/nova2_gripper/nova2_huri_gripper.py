@@ -43,7 +43,7 @@ class Nova2HuriGripper(gp.GripperInterface):
         self.lft.jnts[1]['pos'] = np.array([-0.02507, -0.0272, 0.018595])
         self.lft.jnts[1]['loc_rotmat'] = rm.rotmat_from_euler(0, 0, -math.pi)
         self.lft.jnts[1]['loc_motionax'] = np.array([0, -1, 0])
-        self.lft.jnts[1]['motion_rng'] = [-math.pi, math.pi]
+        self.lft.jnts[1]['motion_range'] = [-math.pi, math.pi]
         self.lft.lnks[1]['name'] = "lft_finger_connector"
         self.lft.lnks[1]['collision_model'] = cm.CollisionModel(
             os.path.join(this_dir, "meshes", "connector.stl"), expand_radius=.001)
@@ -52,7 +52,7 @@ class Nova2HuriGripper(gp.GripperInterface):
         self.lft.jnts[2]['pos'] = np.array([-0.02507, -0.0272, 0.077905])
         self.lft.jnts[2]['type'] = 'prismatic'
         self.lft.jnts[2]['loc_motionax'] = np.array([-1, 0, 0])
-        self.lft.jnts[2]['motion_rng'] = [.0, 0.099]
+        self.lft.jnts[2]['motion_range'] = [.0, 0.099]
         self.lft.lnks[2]['name'] = "lft_finger_link"
         self.lft.lnks[2]['collision_model'] = cm.CollisionModel(
             os.path.join(this_dir, "meshes", "finger.stl"), cdprimit_type="user_defined",
@@ -62,7 +62,7 @@ class Nova2HuriGripper(gp.GripperInterface):
         self.rgt = jl.JLChain(pos=cpl_end_pos, rotmat=cpl_end_rotmat, homeconf=np.zeros(2), name='rgt_finger')
         self.rgt.jnts[1]['pos'] = np.array([0.02507, 0.0272, 0.018595])
         self.rgt.jnts[1]['loc_motionax'] = np.array([0, 1, 0])
-        self.rgt.jnts[1]['motion_rng'] = [-math.pi, math.pi]
+        self.rgt.jnts[1]['motion_range'] = [-math.pi, math.pi]
         self.rgt.lnks[1]['name'] = "rgt_finger_connector"
         self.rgt.lnks[1]['collision_model'] = cm.CollisionModel(
             os.path.join(this_dir, "meshes", "connector.stl"), expand_radius=.001)
@@ -71,7 +71,7 @@ class Nova2HuriGripper(gp.GripperInterface):
         self.rgt.jnts[2]['pos'] = np.array([-0.02507, -0.0272, 0.077905])
         self.rgt.jnts[2]['type'] = 'prismatic'
         self.rgt.jnts[2]['loc_motionax'] = np.array([-1, 0, 0])
-        self.rgt.jnts[2]['motion_rng'] = [.0, 0.099]
+        self.rgt.jnts[2]['motion_range'] = [.0, 0.099]
         self.rgt.lnks[2]['name'] = "rgt_finger_link"
         self.rgt.lnks[2]['collision_model'] = cm.CollisionModel(
             os.path.join(this_dir, "meshes", "finger.stl"), cdprimit_type="user_defined",
@@ -159,15 +159,15 @@ class Nova2HuriGripper(gp.GripperInterface):
     def fk(self, motion_val):
         """
         lft_outer is the only active joint, all others mimic this one
-        :param: motion_val, meter or radian
+        :param: motion_value, meter or radian
         """
-        if self.lft.jnts[2]['motion_rng'][0] <= -motion_val <= self.lft.jnts[2]['motion_rng'][1]:
-            self.lft.jnts[2]['motion_val'] = motion_val
-            self.rgt.jnts[2]['motion_val'] = self.lft.jnts[2]['motion_val']
+        if self.lft.jnts[2]['motion_range'][0] <= -motion_val <= self.lft.jnts[2]['motion_range'][1]:
+            self.lft.jnts[2]['motion_value'] = motion_val
+            self.rgt.jnts[2]['motion_value'] = self.lft.jnts[2]['motion_value']
             self.lft.fk()
             self.rgt.fk()
         else:
-            raise ValueError("The motion_val parameter is out of range!")
+            raise ValueError("The motion_value parameter is out of range!")
 
     def change_jaw_width(self, jaw_width):
         if jaw_width > self.jawwidth_rng[1]:
@@ -175,7 +175,7 @@ class Nova2HuriGripper(gp.GripperInterface):
         self.fk(motion_val=-jaw_width / 2.0)
 
     def get_jawwidth(self):
-        return -self.lft.jnts[1]['motion_val'] * 2
+        return -self.lft.jnts[1]['motion_value'] * 2
 
     def gen_stickmodel(self, toggle_tcp_frame=False, toggle_jnt_frames=False, name='ee_stickmodel'):
         stickmodel = mc.ModelCollection(name=name)

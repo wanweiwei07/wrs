@@ -53,8 +53,8 @@ class UR5EConveyorBelt(ri.RobotInterface):
                                   name='hnd_s', enable_cc=False)
         # tool center point
         self.arm.jlc.tcp_jnt_id = -1
-        self.arm.jlc.tcp_loc_pos = self.hnd.jaw_center_pos
-        self.arm.jlc.tcp_loc_rotmat = self.hnd.acting_center_rotmat
+        self.arm.jlc.loc_tcp_pos = self.hnd.jaw_center_pos
+        self.arm.jlc.loc_tcp_rotmat = self.hnd.acting_center_rotmat
         # a list of detailed information about objects in hand, see CollisionChecker.add_objinhnd
         self.oih_infos = []
         # collision detection
@@ -167,7 +167,7 @@ class UR5EConveyorBelt(ri.RobotInterface):
 
     def get_jnt_values(self, component_name):
         if component_name in self.manipulator_dict:
-            return self.manipulator_dict[component_name].get_joint_values()
+            return self.manipulator_dict[component_name].get_jnt_values()
         else:
             raise ValueError("The given component name is not supported!")
 

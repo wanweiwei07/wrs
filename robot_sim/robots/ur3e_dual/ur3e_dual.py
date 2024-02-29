@@ -69,12 +69,12 @@ class UR3EDual(ri.RobotInterface):
         # tool center point
         # lft
         self.lft_arm.tcp_jnt_id = -1
-        self.lft_arm.tcp_loc_pos = self.lft_hnd.jaw_center_pos
-        self.lft_arm.tcp_loc_rotmat = self.lft_hnd.acting_center_rotmat
+        self.lft_arm.loc_tcp_pos = self.lft_hnd.jaw_center_pos
+        self.lft_arm.loc_tcp_rotmat = self.lft_hnd.acting_center_rotmat
         # rgt
         self.rgt_arm.tcp_jnt_id = -1
-        self.rgt_arm.tcp_loc_pos = self.lft_hnd.jaw_center_pos
-        self.rgt_arm.tcp_loc_rotmat = self.lft_hnd.acting_center_rotmat
+        self.rgt_arm.loc_tcp_pos = self.lft_hnd.jaw_center_pos
+        self.rgt_arm.loc_tcp_rotmat = self.lft_hnd.acting_center_rotmat
         # a list of detailed information about objects in hand, see CollisionChecker.add_objinhnd
         self.lft_oih_infos = []
         self.rgt_oih_infos = []

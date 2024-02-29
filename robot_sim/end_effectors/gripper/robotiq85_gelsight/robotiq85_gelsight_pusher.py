@@ -18,7 +18,7 @@ class Robotiq85GelsightPusher(gp.GripperInterface):
         # - lft_outer
         self.lft_outer = jl.JLChain(pos=cpl_end_pos, rotmat=cpl_end_rotmat, home_conf=np.zeros(4), name='lft_outer')
         self.lft_outer.jnts[1]['pos_in_loc_tcp'] = np.array([0, -.0306011, .054904])
-        self.lft_outer.jnts[1]['motion_rng'] = [.0, .8]
+        self.lft_outer.jnts[1]['motion_range'] = [.0, .8]
         self.lft_outer.jnts[1]['gl_rotmat'] = rm.rotmat_from_euler(0, 0, math.pi)
         self.lft_outer.jnts[1]['loc_motionax'] = np.array([1, 0, 0])
         self.lft_outer.jnts[2]['pos_in_loc_tcp'] = np.array([0, .0315, -.0041])  # passive
@@ -168,12 +168,12 @@ class Robotiq85GelsightPusher(gp.GripperInterface):
         self.pos = pos
         self.rotmat = rotmat
         if angle is not None:
-            self.lft_outer.jnts[1]['motion_val'] = angle
-            self.lft_outer.jnts[3]['motion_val'] = -self.lft_outer.jnts[1]['motion_val']
-            self.lft_inner.jnts[1]['motion_val'] = self.lft_outer.jnts[1]['motion_val']
-            self.rgt_outer.jnts[1]['motion_val'] = self.lft_outer.jnts[1]['motion_val']
-            self.rgt_outer.jnts[3]['motion_val'] = -self.lft_outer.jnts[1]['motion_val']
-            self.rgt_inner.jnts[1]['motion_val'] = self.lft_outer.jnts[1]['motion_val']
+            self.lft_outer.jnts[1]['motion_value'] = angle
+            self.lft_outer.jnts[3]['motion_value'] = -self.lft_outer.jnts[1]['motion_value']
+            self.lft_inner.jnts[1]['motion_value'] = self.lft_outer.jnts[1]['motion_value']
+            self.rgt_outer.jnts[1]['motion_value'] = self.lft_outer.jnts[1]['motion_value']
+            self.rgt_outer.jnts[3]['motion_value'] = -self.lft_outer.jnts[1]['motion_value']
+            self.rgt_inner.jnts[1]['motion_value'] = self.lft_outer.jnts[1]['motion_value']
         self.coupling.fix_to(self.pos, self.rotmat)
         cpl_end_pos = self.coupling.jnts[-1]['gl_posq']
         cpl_end_rotmat = self.coupling.jnts[-1]['gl_rotmatq']
@@ -188,13 +188,13 @@ class Robotiq85GelsightPusher(gp.GripperInterface):
         lft_outer is the only active joint, all others mimic this one
         :param: angle, radian
         """
-        if self.lft_outer.jnts[1]['motion_rng'][0] <= motion_val <= self.lft_outer.jnts[1]['motion_rng'][1]:
-            self.lft_outer.jnts[1]['motion_val'] = motion_val
-            self.lft_outer.jnts[3]['motion_val'] = -self.lft_outer.jnts[1]['motion_val']
-            self.lft_inner.jnts[1]['motion_val'] = self.lft_outer.jnts[1]['motion_val']
-            self.rgt_outer.jnts[1]['motion_val'] = self.lft_outer.jnts[1]['motion_val']
-            self.rgt_outer.jnts[3]['motion_val'] = -self.lft_outer.jnts[1]['motion_val']
-            self.rgt_inner.jnts[1]['motion_val'] = self.lft_outer.jnts[1]['motion_val']
+        if self.lft_outer.jnts[1]['motion_range'][0] <= motion_val <= self.lft_outer.jnts[1]['motion_range'][1]:
+            self.lft_outer.jnts[1]['motion_value'] = motion_val
+            self.lft_outer.jnts[3]['motion_value'] = -self.lft_outer.jnts[1]['motion_value']
+            self.lft_inner.jnts[1]['motion_value'] = self.lft_outer.jnts[1]['motion_value']
+            self.rgt_outer.jnts[1]['motion_value'] = self.lft_outer.jnts[1]['motion_value']
+            self.rgt_outer.jnts[3]['motion_value'] = -self.lft_outer.jnts[1]['motion_value']
+            self.rgt_inner.jnts[1]['motion_value'] = self.lft_outer.jnts[1]['motion_value']
             self.lft_outer.fk()
             self.lft_inner.fk()
             self.rgt_outer.fk()
@@ -212,11 +212,11 @@ class Robotiq85GelsightPusher(gp.GripperInterface):
     #     jaw_width = jaw_width + .028
     #     if jaw_width > 0.085:
     #         jaw_width = 0.085
-    #     if jaw_width > self.jaw_rng[1]:
-    #         raise ValueError(f"Jawwidth must be {self.jaw_rng[0]}mm~{self.jaw_rng[1]}mm!")
-    #     motion_val = math.asin((self.jaw_rng[1] / 2.0 + .0064 - .0306011) / 0.055) - math.asin(
+    #     if jaw_width > self.jaw_range[1]:
+    #         raise ValueError(f"Jawwidth must be {self.jaw_range[0]}mm~{self.jaw_range[1]}mm!")
+    #     motion_value = math.asin((self.jaw_range[1] / 2.0 + .0064 - .0306011) / 0.055) - math.asin(
     #         (jaw_width / 2.0 + .0064 - .0306011) / 0.055)
-    #     self.fk(motion_val)
+    #     self.fk(motion_value)
     #     # 20220113 matsuoka
     #     rotmat = math.asin(math.asin(((jaw_width / 2.0 + 0.0064) - 0.0127) / 0.05715))
         # self.jaw_center_pos = np.array([0.0, 0.0, 0.06142]) + np.array([0.0, 0.0, math.cos(rotmat) * 0.05715]) + np.array(
@@ -224,7 +224,7 @@ class Robotiq85GelsightPusher(gp.GripperInterface):
 
     def push_at(self, gl_push_pos, gl_push_rotmat):
         _, gl_tip_pos, gl_tip_rotmat, eef_root_pos, eef_root_rotmat = \
-            self.grip_at_with_pose(gl_push_pos, gl_push_rotmat, jaw_width=self.jaw_range[1])
+            self.grip_at_by_pose(gl_push_pos, gl_push_rotmat, jaw_width=self.jaw_range[1])
         return [gl_tip_pos, gl_tip_rotmat, eef_root_pos, eef_root_rotmat]
 
     def gen_stickmodel(self, toggle_tcp_frame=False, toggle_jnt_frames=False, name='ee_stickmodel'):

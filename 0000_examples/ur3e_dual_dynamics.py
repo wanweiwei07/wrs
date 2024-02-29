@@ -55,8 +55,8 @@ if __name__ == '__main__':
 
     def update(robot_s, bd_lnk_list, task):
         if base.inputmgr.keymap['space'] is True:
-            la_jnt_values = robot_s.get_joint_values("lft_arm")
-            ra_jnt_values = robot_s.get_joint_values("rgt_arm")
+            la_jnt_values = robot_s.get_jnt_values("lft_arm")
+            ra_jnt_values = robot_s.get_jnt_values("rgt_arm")
             rand_la = np.random.rand(6)*.01
             rand_ra = np.random.rand(6)*.01
             la_jnt_values=la_jnt_values+rand_la

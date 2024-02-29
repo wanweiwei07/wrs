@@ -37,7 +37,7 @@ for z in np.linspace(.1, .6, 5):
     gm.gen_frame(goal_pos, goal_rot).attach_to(base)
 
     jnt_values = robot_s.ik(tgt_pos=goal_pos, tgt_rotmat=goal_rot, seed_jnt_values=seed_jnt_values)
-    # print(jnt_vals)
+    # print(jnt_values)
     if jnt_values is not None:
         robot_s.fk(jnt_values=jnt_values)
         seed_jnt_values = jnt_values
