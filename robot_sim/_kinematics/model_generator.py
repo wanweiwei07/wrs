@@ -50,24 +50,22 @@ def gen_lnk_gmesh(lnk,
                   rgba=None,
                   toggle_cdprim=False,
                   toggle_cdmesh=False,
-                  toggel_frame=False):
-    gmodel = mgm.GeometricModel()
-    # if lnk.cmodel == None:
-    #     raise ValueError("Collision model is unavailable.")
-    # else:
+                  toggle_frame=False):
     if lnk.cmodel is not None:
         if toggle_cdmesh:
             lnk.cmodel.show_cdmesh()
         if toggle_cdprim:
             lnk.cmodel.show_cdprim()
-        lnk.cmodel.attach_copy_to(gmodel)
+        gmodel = mgm.GeometricModel(lnk.cmodel)
         lnk.cmodel.unshow_cdmesh()
         lnk.cmodel.unshow_cdprim()
         if rgba is not None:
             gmodel.rgba = rgba
-        if toggel_frame:
+        if toggle_frame:
             mgm.gen_frame(pos=lnk.gl_pos, rotmat=lnk.gl_rotmat).attach_to(gmodel)
-    return gmodel
+        return gmodel
+    else:
+        return mgm.GeometricModel()
 
 
 def gen_anchor(anchor,
