@@ -125,7 +125,7 @@ if __name__ == '__main__':
         rbt_s.fk(component_name=component_name, jnt_values=goal_joint_values_attachment)
         arm_s.fk(jnt_values=goal_joint_values_attachment)
         rbt_s.gen_meshmodel(option='body_only', toggle_tcpcs=True).attach_to(base)
-        arm_s.gen_meshmodel(toggle_tcpcs=True, rgba=[1,1,1,0]).attach_to(base)
+        arm_s.gen_meshmodel(toggle_tcp_frame=True, rgba=[1, 1, 1, 0]).attach_to(base)
         rbt_s.gen_meshmodel(rgba=[.7,.7,.7,.7], option='hand_only').attach_to(base)
         gl_tcp_pos, gl_tcp_rotmat = rbt_s.get_gl_tcp(manipulator_name="arm")
         gm.gen_circarrow(axis=-gl_tcp_rotmat[:,2], center=gl_tcp_pos+gl_tcp_rotmat[:,2]*.03, rgba=[1,.5,0,1], radius=.12, portion=.9, thickness=.007, sections=64, discretization=256, end='double', starting_vector=-gl_tcp_rotmat[:,0]).attach_to(base)

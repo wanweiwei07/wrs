@@ -68,7 +68,7 @@ class SystemInterface(object):
         return self.robot_list[target_configuration].get_gl_tcp()
 
     def is_jnt_values_in_ranges(self, jnt_values):
-        return self.robot_list[self.current_target_configuration].is_jnt_values_in_ranges(jnt_values)
+        return self.robot_list[self.current_target_configuration].are_jnts_in_ranges(jnt_values)
 
     def fix_to(self, pos, rotmat):
         self.pos = pos
@@ -104,7 +104,7 @@ class SystemInterface(object):
                        tcp_loc_rotmat=None,
                        target_robot_name=None):
         return self.robot_list[self.current_target_configuration].manipulability(tcp_jnt_id=tcp_jnt_id,
-                                                                                 tcp_loc_pos=tcp_loc_pos,
+                                                                                 loc_tcp_pos=tcp_loc_pos,
                                                                                  tcp_loc_rotmat=tcp_loc_rotmat)
 
     def manipulability_axmat(self,
@@ -171,7 +171,7 @@ class SystemInterface(object):
         return collision_info
 
     def show_cdprimit(self):
-        self.cc.show_cdprimit()
+        self.cc.show_cdprim()
 
     def unshow_cdprimit(self):
         self.cc.unshow_cdprimit()
@@ -247,7 +247,7 @@ class SystemInterface(object):
         return self.manipulator_dict[manipulator_name].get_gl_tcp()
 
     def is_jnt_values_in_ranges(self, component_name, jnt_values):
-        return self.manipulator_dict[component_name].is_jnt_values_in_ranges(jnt_values)
+        return self.manipulator_dict[component_name].are_jnts_in_ranges(jnt_values)
 
     def fix_to(self, pos, rotmat):
         return NotImplementedError
@@ -288,7 +288,7 @@ class SystemInterface(object):
                        tcp_loc_rotmat=None,
                        component_name='arm'):
         return self.manipulator_dict[component_name].manipulability(tcp_jnt_id=tcp_jnt_id,
-                                                                    tcp_loc_pos=tcp_loc_pos,
+                                                                    loc_tcp_pos=tcp_loc_pos,
                                                                     tcp_loc_rotmat=tcp_loc_rotmat)
 
     def manipulability_axmat(self,
@@ -355,7 +355,7 @@ class SystemInterface(object):
         return collision_info
 
     def show_cdprimit(self):
-        self.cc.show_cdprimit()
+        self.cc.show_cdprim()
 
     def unshow_cdprimit(self):
         self.cc.unshow_cdprimit()

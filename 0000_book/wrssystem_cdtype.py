@@ -30,10 +30,10 @@ if __name__ == '__main__':
     object1.attach_to(base)
     # object 2 show
     object2.attach_to(base)
-    object2.show_cdprimit()
+    object2.show_cdprim()
     # object 3 show
     object3.attach_to(base)
-    object3.show_cdprimit()
+    object3.show_cdprim()
     # object 4 show
     object4.attach_to(base)
     object4.show_cdmesh()

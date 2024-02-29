@@ -11,7 +11,7 @@ from abc import ABC, abstractmethod
 
 import numpy as np
 
-from robot_sim.robots.system_interface import RobotInterface
+from robot_sim.system.system_interface import RobotInterface
 
 
 def py2json_data_formatter(data):

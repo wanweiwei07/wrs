@@ -218,11 +218,7 @@ class Nova2HuriGripper(gp.GripperInterface):
                       rgba=None,
                       name='nova2huri_gripper_meshmodel'):
         meshmodel = mc.ModelCollection(name=name)
-        self.coupling.gen_meshmodel(tcp_loc_pos=None,
-                                    tcp_loc_rotmat=None,
-                                    toggle_tcp_frame=False,
-                                    toggle_jnt_frames=toggle_jnt_frames,
-                                    rgba=rgba).attach_to(meshmodel)
+        self.coupling.gen_meshmodel(rgba=rgba).attach_to(meshmodel)
         self.body.gen_meshmodel(tcp_jnt_id=tcp_jnt_id,
                                 tcp_loc_pos=tcp_loc_pos,
                                 tcp_loc_rotmat=tcp_loc_rotmat,

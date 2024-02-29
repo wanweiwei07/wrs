@@ -1,11 +1,9 @@
-import os
 import math
 import numpy as np
 import modeling.collision_model as cm
 import modeling.model_collection as mc
 import robot_sim._kinematics.jlchain as jl
 import robot_sim.manipulators.rs007l.rs007l as manip
-import robot_sim.robots.system_interface as ri
 import robot_sim.robots.robot_interface as ai
 
 
@@ -163,11 +161,7 @@ class KHI_BLQC(ai.RobotInterface):
                       rgba=None,
                       name='khi_g_meshmodel'):
         meshmodel = mc.ModelCollection(name=name)
-        self.manipulator.gen_meshmodel(tcp_jnt_id=tcp_jnt_id,
-                                       tcp_loc_pos=tcp_loc_pos,
-                                       tcp_loc_rotmat=tcp_loc_rotmat,
-                                       toggle_tcpcs=toggle_tcpcs,
-                                       toggle_jntscs=toggle_jntscs,
+        self.manipulator.gen_meshmodel(toggle_tcp_frame=toggle_tcpcs, toggle_jnt_frames=toggle_jntscs,
                                        rgba=rgba).attach_to(meshmodel)
         self.tc_master.gen_mesh_model(toggle_tcpcs=False,
                                       toggle_jntscs=toggle_jntscs,
@@ -195,7 +189,6 @@ class KHI_BLQC(ai.RobotInterface):
 
 
 if __name__ == '__main__':
-    import time
     import basis.robot_math as rm
     import visualization.panda.world as wd
     import modeling.geometric_model as gm

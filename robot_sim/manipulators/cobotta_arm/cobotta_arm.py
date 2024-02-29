@@ -12,40 +12,40 @@ class CobottaArm(mi.ManipulatorInterface):
                  pos=np.zeros(3),
                  rotmat=np.eye(3),
                  home_conf=np.zeros(6),
-                 name='cobotta_arm',
+                 name="cobotta_arm",
                  enable_cc=True):
         super().__init__(pos=pos, rotmat=rotmat, home_conf=home_conf, name=name)
         # anchor
-        self.jlc.anchor.lnk.cmodel = mcm.CollisionModel(os.path.join(os.getcwd(), "meshes", "gripper_base.dae"))
+        self.jlc.anchor.lnk.cmodel = mcm.CollisionModel(os.path.join(os.getcwd(), "meshes", "base_link.dae"))
         self.jlc.anchor.lnk.cmodel.rgba = np.array([.7, .7, .7, 1.0])
         # first joint and link
-        self.jlc.jnts[0].motion_range = np.array([0, 0, 0])
-        self.jlc.jnts[0].loc_rotmat = np.array([-2.617994, 2.617994])
+        self.jlc.jnts[0].loc_pos = np.array([0, 0, 0])
+        self.jlc.jnts[0].motion_range = np.array([-2.617994, 2.617994])
         self.jlc.jnts[0].lnk.cmodel = mcm.CollisionModel(os.path.join(os.getcwd(), "meshes", "j1.dae"))
         self.jlc.jnts[0].lnk.cmodel.rgba = np.array([.7, .7, .7, 1.0])
         # second joint and link
-        self.jlc.jnts[1].motion_range = np.array([0, 0, 0.18])
-        self.jlc.jnts[1].loc_rotmat = np.array([-1.047198, 1.745329])
+        self.jlc.jnts[1].loc_pos = np.array([0, 0, 0.18])
+        self.jlc.jnts[1].motion_range = np.array([-1.047198, 1.745329])
         self.jlc.jnts[1].lnk.cmodel = mcm.CollisionModel(os.path.join(os.getcwd(), "meshes", "j2.dae"))
         self.jlc.jnts[1].lnk.cmodel.rgba = np.array([.7, .7, .7, 1.0])
         # third joint and link
-        self.jlc.jnts[2].loc_rotmat = np.array([-1.047198, 1.745329])
+        self.jlc.jnts[2].loc_pos = np.array([0, 0, 0.165])
+        self.jlc.jnts[2].motion_range = np.array([-1.047198, 1.745329])
         self.jlc.jnts[2].lnk.cmodel = mcm.CollisionModel(os.path.join(os.getcwd(), "meshes", "j3.dae"))
         self.jlc.jnts[2].lnk.cmodel.rgba = np.array([.7, .7, .7, 1.0])
-        self.jlc.jnts[2].motion_range = np.array([0, 0, 0.165])
         # fourth joint and link
-        self.jlc.jnts[3].motion_range = np.array([-0.012, 0.02, 0.088])
-        self.jlc.jnts[3].loc_rotmat = np.array([-1.047198, 1.745329])
+        self.jlc.jnts[3].loc_pos = np.array([-0.012, 0.02, 0.088])
+        self.jlc.jnts[3].motion_range = np.array([-1.047198, 1.745329])
         self.jlc.jnts[3].lnk.cmodel = mcm.CollisionModel(os.path.join(os.getcwd(), "meshes", "j4.dae"))
         self.jlc.jnts[3].lnk.cmodel.rgba = np.array([.7, .7, .7, 1.0])
         # fifth joint and link
-        self.jlc.jnts[4].motion_range = np.array([0, -.02, .0895])
-        self.jlc.jnts[4].loc_rotmat = np.array([-1.047198, 1.745329])
+        self.jlc.jnts[4].loc_pos = np.array([0, -.02, .0895])
+        self.jlc.jnts[4].motion_range = np.array([-1.047198, 1.745329])
         self.jlc.jnts[4].lnk.cmodel = mcm.CollisionModel(os.path.join(os.getcwd(), "meshes", "j5.dae"))
         self.jlc.jnts[4].lnk.cmodel.rgba = np.array([.7, .7, .7, 1.0])
         # sixth joint and link
-        self.jlc.jnts[5].motion_range = np.array([0, -.0445, 0.042])
-        self.jlc.jnts[5].loc_rotmat = np.array([-1.047198, 1.745329])
+        self.jlc.jnts[5].loc_pos = np.array([0, -.0445, 0.042])
+        self.jlc.jnts[5].motion_range = np.array([-1.047198, 1.745329])
         self.jlc.jnts[5].lnk.cmodel = mcm.CollisionModel(os.path.join(os.getcwd(), "meshes", "j6.dae"))
         self.jlc.jnts[5].lnk.cmodel.rgba = np.array([.7, .7, .7, 1.0])
         self.jlc.finalize()
@@ -87,10 +87,9 @@ if __name__ == '__main__':
 
     base = wd.World(cam_pos=[2, 0, 1], lookat_pos=[0, 0, .3])
     gm.gen_frame().attach_to(base)
-    tmp_arm = CobottaArm(enable_cc=True)
-    tmp_arm_mesh = tmp_arm.gen_meshmodel()
+    tmp_arm = CobottaArm(enable_cc=False)
+    tmp_arm_mesh = tmp_arm.gen_meshmodel(toggle_cdmesh=True, toggle_cdprim=True)
     tmp_arm_mesh.attach_to(base)
-    tmp_arm_mesh.show_cdprimit()
     # manipulator_instance.gen_stickmodel(toggle_joint_frame=True).attach_to(base)
     # tic = time.time()
     # print(manipulator_instance.is_collided())

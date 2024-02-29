@@ -122,7 +122,7 @@ if __name__ == '__main__':
     seed1 = np.zeros(6)
     seed1[3] = -math.pi / 2
     manipulator_instance = TBMArm(enable_cc=True)
-    manipulator_meshmodel = manipulator_instance.gen_meshmodel(toggle_jntscs=True)
+    manipulator_meshmodel = manipulator_instance.gen_meshmodel(toggle_jnt_frames=True)
     manipulator_meshmodel.attach_to(base)
     manipulator_instance.gen_stickmodel(toggle_tcpcs=True, toggle_jntscs=True).attach_to(base)
     # base.run()
@@ -132,12 +132,12 @@ if __name__ == '__main__':
             print(x)
             tgt_pos = np.array([x, y, 0])
             tgt_rotmat = np.eye(3)
-            jnt_values0 = manipulator_instance.ik(tgt_pos, tgt_rotmat, max_niter=100, toggle_debug=False,
-                                                 seed_jnt_values=seed0)
+            jnt_values0 = manipulator_instance.ik(tgt_pos, tgt_rotmat, max_niter=100, toggle_dbg=False,
+                                                  seed_jnt_values=seed0)
             if jnt_values0 is not None:
                 jnt_values = jnt_values0
             else:
-                jnt_values1 = manipulator_instance.ik(tgt_pos, tgt_rotmat, max_niter=100, toggle_debug=False,
+                jnt_values1 = manipulator_instance.ik(tgt_pos, tgt_rotmat, max_niter=100, toggle_dbg=False,
                                                       seed_jnt_values=seed1)
                 if jnt_values1 is not None:
                     jnt_values = jnt_values1
@@ -156,7 +156,7 @@ if __name__ == '__main__':
     manipulator_instance.fk(jnt_values=jnt_values)
     manipulator_meshmodel = manipulator_instance.gen_meshmodel()
     manipulator_meshmodel.attach_to(base)
-    manipulator_meshmodel.show_cdprimit()
+    manipulator_meshmodel.show_cdprim()
     manipulator_instance.gen_stickmodel(toggle_jntscs=True).attach_to(base)
     # tic = time.time()
     # print(manipulator_instance.is_collided())

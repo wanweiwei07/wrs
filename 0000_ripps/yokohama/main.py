@@ -115,7 +115,7 @@ class MotionPlannerRT():
                 tgt_pose = self.get_rbt_pose_from_pipette(tgt_pos, angle, dist)
             try:
                 tgt_jnts = self.robot_x.P2J(tgt_pose)
-                if not self.robot_s.is_jnt_values_in_ranges("arm", tgt_jnts):
+                if not self.robot_s.are_jnts_in_ranges("arm", tgt_jnts):
                     print("out of range")
                     continue
             except:

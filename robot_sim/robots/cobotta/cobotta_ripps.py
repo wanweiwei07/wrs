@@ -1,13 +1,11 @@
 import os
 import math
 import numpy as np
-import basis.robot_math as rm
-import modeling.collision_model as cm
 import modeling.model_collection as mc
 import robot_sim._kinematics.jlchain as jl
 import robot_sim.manipulators.cobotta_arm.cobotta_arm as cbta
 import robot_sim.end_effectors.gripper.cobotta_pipette.cobotta_pipette as cbtp
-import robot_sim.robots.system_interface as ri
+import robot_sim.system.system_interface as ri
 
 
 class CobottaRIPPS(ri.RobotInterface):
@@ -253,11 +251,7 @@ class CobottaRIPPS(ri.RobotInterface):
                                            toggle_tcpcs=False,
                                            toggle_jntscs=toggle_jntscs,
                                            rgba=rgba).attach_to(meshmodel)
-            self.arm.gen_meshmodel(tcp_jnt_id=tcp_jnt_id,
-                                   tcp_loc_pos=tcp_loc_pos,
-                                   tcp_loc_rotmat=tcp_loc_rotmat,
-                                   toggle_tcpcs=toggle_tcpcs,
-                                   toggle_jntscs=toggle_jntscs,
+            self.arm.gen_meshmodel(toggle_tcp_frame=toggle_tcpcs, toggle_jnt_frames=toggle_jntscs,
                                    rgba=rgba).attach_to(meshmodel)
         if option == 'full' or option == 'hand_only':
             self.hnd.gen_meshmodel(toggle_tcp_frame=False,

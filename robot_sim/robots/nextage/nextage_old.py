@@ -1,5 +1,4 @@
 import os
-import copy
 import math
 import numpy as np
 import basis.robot_math as rm
@@ -7,7 +6,7 @@ import modeling.model_collection as mc
 import modeling.collision_model as cm
 import robot_sim._kinematics.jlchain as jl
 from panda3d.core import CollisionNode, CollisionBox, Point3
-import robot_sim.robots.system_interface as ri
+import robot_sim.system.system_interface as ri
 
 
 class Nextage(ri.RobotInterface):
@@ -411,7 +410,7 @@ class Nextage(ri.RobotInterface):
         #     self.manipulator_dict[component_name].tgtjnts = old_tgt_jnts
         #     return result
         # else:
-        return self.manipulator_dict[component_name].is_jnt_values_in_ranges(jnt_values)
+        return self.manipulator_dict[component_name].are_jnts_in_ranges(jnt_values)
 
     def rand_conf(self, component_name):
         """

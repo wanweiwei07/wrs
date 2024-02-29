@@ -8,8 +8,8 @@ import robot_sim._kinematics.constant as rkc
 
 
 def gen_tcp_frame(spos,
-                  toggle_gl_pos,
-                  toggle_gl_rotmat,
+                  gl_tcp_pos,
+                  gl_tcp_rotmat,
                   tcp_indicator_rgba=bc.magenta,
                   tcp_indicator_ax_radius=rkc.TCP_INDICATOR_STICK_RADIUS,
                   tcp_frame_rgb_mat=bc.myc_mat,
@@ -18,8 +18,8 @@ def gen_tcp_frame(spos,
                   tcp_frame_ax_length=rkc.FRAME_STICK_LENGTH_SHORT):
     """
     :param spos:
-    :param toggle_gl_pos:
-    :param toggle_gl_rotmat:
+    :param gl_tcp_pos:
+    :param gl_tcp_rotmat:
     :param attach_target: where to draw the frames to
     :param tcp_joint_id: single id or a list of ids
     :param loc_tcp_pos:
@@ -33,12 +33,12 @@ def gen_tcp_frame(spos,
     """
     m_col = mmc.ModelCollection(name="tcp_frame")
     mgm.gen_dashed_stick(spos=spos,
-                         epos=toggle_gl_pos,
+                         epos=gl_tcp_pos,
                          radius=tcp_indicator_ax_radius,
                          rgba=tcp_indicator_rgba,
                          type="round").attach_to(m_col)
-    mgm.gen_frame(pos=toggle_gl_pos,
-                  rotmat=toggle_gl_rotmat,
+    mgm.gen_frame(pos=gl_tcp_pos,
+                  rotmat=gl_tcp_rotmat,
                   ax_length=tcp_frame_ax_length,
                   ax_radius=tcp_frame_ax_radius,
                   rgb_mat=tcp_frame_rgb_mat,
@@ -182,8 +182,8 @@ def gen_jlc_stick(jlc,
                 toggle_frame_q=toggle_jnt_frames).attach_to(m_col)
     if toggle_tcp_frame:
         spos = jlc.jnts[jlc.tcp_jnt_id].gl_pos_q
-        tcp_gl_pos, tcp_gl_rotmat = jlc.cvt_tcp_loc_to_gl()
-        gen_tcp_frame(spos=spos, toggle_gl_pos=tcp_gl_pos, toggle_gl_rotmat=tcp_gl_rotmat).attach_to(m_col)
+        gl_tcp_pos, gl_tcp_rotmat = jlc.cvt_loc_tcp_to_gl()
+        gen_tcp_frame(spos=spos, gl_tcp_pos=gl_tcp_pos, gl_tcp_rotmat=gl_tcp_rotmat).attach_to(m_col)
     return m_col
 
 
@@ -209,8 +209,8 @@ def gen_jlc_mesh(jlc,
     if toggle_tcp_frame:
         if jlc.n_dof >= 1:
             spos = jlc.jnts[jlc.tcp_jnt_id].gl_pos_q
-            tcp_gl_pos, tcp_gl_rotmat = jlc.cvt_tcp_loc_to_gl()
-            gen_tcp_frame(spos=spos, toggle_gl_pos=tcp_gl_pos, toggle_gl_rotmat=tcp_gl_rotmat,
+            gl_tcp_pos, gl_tcp_rotmat = jlc.cvt_loc_tcp_to_gl()
+            gen_tcp_frame(spos=spos, gl_tcp_pos=gl_tcp_pos, gl_tcp_rotmat=gl_tcp_rotmat,
                           tcp_frame_ax_length=rkc.FRAME_STICK_LENGTH_LONG).attach_to(m_col)
     if toggle_jnt_frames:
         # anchor

@@ -1,7 +1,7 @@
 import math
 import numpy as np
 import robot_sim._kinematics.jlchain as jl
-import robot_sim.robots.system_interface as ri
+import robot_sim.system.system_interface as ri
 
 class XYBot(ri.RobotInterface):
 
@@ -28,7 +28,7 @@ class XYBot(ri.RobotInterface):
         return self.jlc.get_jnt_values()
 
     def is_jnt_values_in_ranges(self, jnt_values):
-        return self.jlc.is_jnt_values_in_ranges(jnt_values)
+        return self.jlc.are_jnts_in_ranges(jnt_values)
 
     def is_collided(self, obstacle_list=[], otherrobot_list=[]):
         for (obpos, size) in obstacle_list:
@@ -74,7 +74,7 @@ class XYTBot(ri.RobotInterface):
     def is_jnt_values_in_ranges(self, component_name, jnt_values):
         if component_name != 'all':
             raise ValueError("Only support hnd_name == 'all'!")
-        return self.jlc.is_jnt_values_in_ranges(jnt_values)
+        return self.jlc.are_jnts_in_ranges(jnt_values)
 
     def is_collided(self, obstacle_list=[], otherrobot_list=[]):
         for (obpos, size) in obstacle_list:

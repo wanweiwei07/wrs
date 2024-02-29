@@ -10,7 +10,7 @@ import modeling.model_collection as mc
 import robot_sim._kinematics.jlchain as jl
 from robot_sim.manipulators.xarm_lite6 import XArmLite6
 from robot_sim.end_effectors.gripper.lite6_wrs_gripper.lite6_wrs_gripper_v2 import Lite6WRSGripper2
-import robot_sim.robots.system_interface as ri
+import robot_sim.system.system_interface as ri
 
 
 class XArmLite6WRSGripper(ri.RobotInterface):
@@ -359,11 +359,7 @@ class XArmLite6WRSGripper(ri.RobotInterface):
                                  toggle_tcpcs=False,
                                  toggle_jntscs=toggle_jntscs,
                                  rgba=rgba).attach_to(mm_collection)
-        self.arm.gen_meshmodel(tcp_jnt_id=tcp_jnt_id,
-                               tcp_loc_pos=tcp_loc_pos,
-                               tcp_loc_rotmat=tcp_loc_rotmat,
-                               toggle_tcpcs=toggle_tcpcs,
-                               toggle_jntscs=toggle_jntscs,
+        self.arm.gen_meshmodel(toggle_tcp_frame=toggle_tcpcs, toggle_jnt_frames=toggle_jntscs,
                                rgba=rgba).attach_to(mm_collection)
         self.hnd.gen_meshmodel(toggle_tcp_frame=False,
                                toggle_jnt_frames=toggle_jntscs,

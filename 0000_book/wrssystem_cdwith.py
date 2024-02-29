@@ -20,9 +20,9 @@ if __name__ == '__main__':
     object2.change_cdprim_type(cdprim_type="surface_balls")
     #
     object1.attach_to(base)
-    object1.show_cdprimit()
+    object1.show_cdprim()
     object2.attach_to(base)
-    object2.show_cdprimit()
+    object2.show_cdprim()
     pcd_result = object1.is_pcdwith(object2)
     print(pcd_result)
 

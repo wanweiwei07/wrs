@@ -1,4 +1,3 @@
-import re
 import pickle
 import grpc
 import random
@@ -6,8 +5,7 @@ import numpy as np
 import visualization.panda.rpc.rviz_pb2 as rv_msg
 import visualization.panda.rpc.rviz_pb2_grpc as rv_rpc
 import modeling.geometric_model as gm
-import modeling.model_collection as mc
-import robot_sim.robots.system_interface as ri
+import robot_sim.system.system_interface as ri
 
 
 class RVizClient(object):

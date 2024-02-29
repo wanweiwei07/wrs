@@ -110,7 +110,7 @@ if __name__ == '__main__':
                       manipulator_instance.jnts[5]['motion_range'][1], 0, 0])
     manipulator_meshmodel2 = manipulator_instance2.gen_mesh_model()
     manipulator_meshmodel2.attach_to(base)
-    manipulator_instance2.show_cdprimit()
+    manipulator_instance2.show_cdprim()
     tic = time.time()
     print(manipulator_instance2.is_collided())
     toc = time.time()

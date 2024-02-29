@@ -1,28 +1,30 @@
 import os
 import math
 import numpy as np
-import modeling.collision_model as cm
 import modeling.model_collection as mc
 import robot_sim._kinematics.jlchain as jl
 import robot_sim.manipulators.cobotta_arm.cobotta_arm as cbta
 import robot_sim.end_effectors.gripper.cobotta_gripper.cobotta_gripper as cbtg
-import robot_sim.robots.system_interface as ri
+import robot_sim.system.system_interface as ri
 
 
 class Cobotta(ri.RobotInterface):
 
     def __init__(self, pos=np.zeros(3), rotmat=np.eye(3), name="cobotta", enable_cc=True):
         super().__init__(pos=pos, rotmat=rotmat, name=name)
-        this_dir, this_filename = os.path.split(__file__)
-        # base plate
-        self.base_plate = jl.JLChain(pos=pos,
-                                     rotmat=rotmat,
-                                     home_conf=np.zeros(0),
-                                     name='base_plate')
-        self.base_plate.jnts[1]['pos_in_loc_tcp'] = np.array([0, 0, 0.035])
-        self.base_plate.lnks[0]['mesh_file'] = os.path.join(this_dir, "meshes", "base_plate.stl")
-        self.base_plate.lnks[0]['rgba'] = [.35,.35,.35,1]
-        self.base_plate.finalize()
+        self.manipulator = cbta.CobottaArm(pos=self.pos, rotmat=self.rotmat, home_conf=np.zeros(6), name="cobotta_arm", enable_cc=False)
+        ee_fix_pos, ee_fix_rotmat = self.manipulator.get_gl_flange()
+        self.end_effector = cbtg.CobottaGripper(pos = ee_fix_pos, rotmat = ee_fix_rotmat, name="cobotta_hnd", enable_cc=False)
+
+        # # base plate
+        # self.base_plate = jl.JLChain(pos=pos,
+        #                              rotmat=rotmat,
+        #                              home_conf=np.zeros(0),
+        #                              name='base_plate')
+        # self.base_plate.jnts[1]['pos_in_loc_tcp'] = np.array([0, 0, 0.035])
+        # self.base_plate.lnks[0]['mesh_file'] = os.path.join(this_dir, "meshes", "base_plate.stl")
+        # self.base_plate.lnks[0]['rgba'] = [.35, .35, .35, 1]
+        # self.base_plate.finalize()
         # arm
         arm_homeconf = np.zeros(6)
         arm_homeconf[1] = -math.pi / 6
@@ -229,11 +231,7 @@ class Cobotta(ri.RobotInterface):
                                        tcp_loc_rotmat=tcp_loc_rotmat,
                                        toggle_tcpcs=False,
                                        toggle_jntscs=toggle_jntscs).attach_to(meshmodel)
-        self.arm.gen_meshmodel(tcp_jnt_id=tcp_jnt_id,
-                               tcp_loc_pos=tcp_loc_pos,
-                               tcp_loc_rotmat=tcp_loc_rotmat,
-                               toggle_tcpcs=toggle_tcpcs,
-                               toggle_jntscs=toggle_jntscs,
+        self.arm.gen_meshmodel(toggle_tcp_frame=toggle_tcpcs, toggle_jnt_frames=toggle_jntscs,
                                rgba=rgba).attach_to(meshmodel)
         self.hnd.gen_meshmodel(toggle_tcpcs=False,
                                toggle_jntscs=toggle_jntscs,
@@ -262,7 +260,7 @@ if __name__ == '__main__':
     robot_s.gen_stickmodel(toggle_tcpcs=True, toggle_jntscs=True).attach_to(base)
     base.run()
     tgt_pos = np.array([.25, .2, .15])
-    tgt_rotmat = rm.rotmat_from_axangle([0, 1, 0], math.pi * 2/ 3)
+    tgt_rotmat = rm.rotmat_from_axangle([0, 1, 0], math.pi * 2 / 3)
     gm.gen_frame(pos=tgt_pos, rotmat=tgt_rotmat).attach_to(base)
     # base.run()
     component_name = 'arm'

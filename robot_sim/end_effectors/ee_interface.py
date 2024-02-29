@@ -6,6 +6,7 @@ import robot_sim._kinematics.jl as jl
 import robot_sim._kinematics.jlchain as rkjl
 import robot_sim._kinematics.collision_checker as rkcc
 import modeling.geometric_model as mgm
+import robot_sim._kinematics.model_generator as rkmg
 import modeling.constant as mc
 import basis.robot_math as rm
 
@@ -146,7 +147,7 @@ class EEInterface(object):
         return [gl_acting_center_pos, gl_acting_center_rotmat, ee_root_pos, ee_root_rotmat]
 
     def show_cdprimit(self):
-        self.cc.show_cdprimit()
+        self.cc.show_cdprim()
 
     def unshow_cdprimit(self):
         self.cc.unshow_cdprimit()
@@ -178,16 +179,11 @@ class EEInterface(object):
         raise NotImplementedError
 
     def _toggle_tcp_frame(self, parent):
-        print(self.pos)
-        print(self.acting_center_pos)
         gl_acting_center_pos = self.rotmat.dot(self.acting_center_pos) + self.pos
         gl_acting_center_rotmat = self.rotmat.dot(self.acting_center_rotmat)
-        mgm.gen_dashed_stick(spos=self.pos,
-                             epos=gl_acting_center_pos,
-                             radius=.0025,
-                             rgba=[.5, 0, 1, 1],
-                             type="round").attach_to(parent)
-        mgm.gen_myc_frame(pos=gl_acting_center_pos, rotmat=gl_acting_center_rotmat).attach_to(parent)
+        rkmg.gen_tcp_frame(spos=self.pos,
+                           gl_tcp_pos=gl_acting_center_pos,
+                           gl_tcp_rotmat=gl_acting_center_rotmat).attach_to(parent)
 
     def enable_cc(self):
         self.cc = cc.CollisionChecker("collision_checker")

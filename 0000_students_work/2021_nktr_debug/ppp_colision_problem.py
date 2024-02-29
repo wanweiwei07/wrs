@@ -94,7 +94,7 @@ tool_table.attach_to(base)
 obstacle_list = [tool_table, table2_top, table2_bottom, table2_bottom2, table2_leg1, table2_leg2, table2_leg3, table2_leg4,
                 table_plate, table_leg1, table_leg2, table_leg3, table_leg4, object_box1, object_box2, object_box3, object_box4]
 for i in obstacle_list:
-    i.show_cdprimit()
+    i.show_cdprim()
 # base.run()
 ## show tool
 tool = cm.gen_box(extent=[.05, .2, .05])

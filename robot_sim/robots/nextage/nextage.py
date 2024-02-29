@@ -1,14 +1,9 @@
 import os
-import copy
 import math
 import numpy as np
 import basis.robot_math as rm
-import modeling.model_collection as mc
 import modeling.collision_model as cm
 import robot_sim.manipulators.manipulator_interface as mi
-import robot_sim.robots.robot_interface as ai
-from panda3d.core import CollisionNode, CollisionBox, Point3
-import robot_sim.robots.system_interface as ri
 import robot_sim._kinematics.jlchain as jl
 
 
@@ -88,7 +83,7 @@ class Left_Manipulator(mi.ManipulatorInterface):
            tcp_loc_pos=None,
            tcp_loc_rotmat=None,
            local_minima="accept",
-           toggle_debug=False):
+           toggle_dbg=False):
         self.jlc.ik(tgt_pos,
                     tgt_rotmat,
                     seed_jnt_values=seed_jnt_values,
@@ -97,7 +92,7 @@ class Left_Manipulator(mi.ManipulatorInterface):
                     tcp_loc_rotmat=tcp_loc_rotmat,
                     max_niter=max_niter,
                     local_minima=local_minima,
-                    toggle_debug=toggle_debug)
+                    toggle_debug=toggle_dbg)
 #
 #
 # class Body_Manipulator(mi.ManipulatorInterface):
@@ -819,7 +814,7 @@ if __name__ == '__main__':
     base = wd.World(cam_pos=[3, 1, 2], lookat_pos=[0, 0, 0])
     gm.gen_frame().attach_to(base)
     nxt_instance = Left_Manipulator()
-    nxt_meshmodel = nxt_instance.gen_meshmodel(toggle_tcpcs=True)
+    nxt_meshmodel = nxt_instance.gen_meshmodel(toggle_tcp_frame=True)
     nxt_meshmodel.attach_to(base)
     # nxt_instance.show_cdprimit()
     base.run()
@@ -833,7 +828,7 @@ if __name__ == '__main__':
     # tgt_rotmat = np.eye(3)
     gm.gen_frame(pos=tgt_pos, rotmat=tgt_rotmat).attach_to(base)
     tic = time.time()
-    jnt_values = nxt_instance.ik(component_name, tgt_pos, tgt_rotmat, toggle_debug=True)
+    jnt_values = nxt_instance.ik(component_name, tgt_pos, tgt_rotmat, toggle_dbg=True)
     toc = time.time()
     print(toc - tic)
     nxt_instance.fk(component_name, jnt_values)

@@ -143,7 +143,7 @@ class JLChain(object):
                 self.jnts[i].update_globals(pos=pos, rotmat=rotmat, motion_value=motion_value)
                 pos = self.jnts[i].gl_pos_q
                 rotmat = self.jnts[i].gl_rotmat_q
-            gl_tcp_pos, gl_tcp_rotmat = self.cvt_tcp_loc_to_gl()
+            gl_tcp_pos, gl_tcp_rotmat = self.cvt_loc_tcp_to_gl()
             if toggle_jacobian:
                 j_mat = np.zeros((6, self.n_dof))
                 for i in range(self.tcp_jnt_id + 1):
@@ -176,7 +176,7 @@ class JLChain(object):
                                   update=False)
         return j_mat
 
-    def manipulability_val(self, joint_values=None):
+    def manipulability_val(self, jnt_values=None):
         """
         compute the yoshikawa manipulability
         :param tcp_joint_id:
@@ -186,7 +186,7 @@ class JLChain(object):
         author: weiwei
         date: 20200331
         """
-        j_mat = self.jacobian(joint_values=joint_values)
+        j_mat = self.jacobian(joint_values=jnt_values)
         return np.sqrt(np.linalg.det(j_mat @ j_mat.T))
 
     def manipulability_mat(self, joint_values=None):
@@ -249,10 +249,10 @@ class JLChain(object):
             self.loc_tcp_rotmat = loc_tcp_rotmat
 
     def get_gl_tcp(self):
-        gl_tcp_pos, gl_tcp_rotmat = self.cvt_tcp_loc_to_gl()
+        gl_tcp_pos, gl_tcp_rotmat = self.cvt_loc_tcp_to_gl()
         return gl_tcp_pos, gl_tcp_rotmat
 
-    def cvt_tcp_loc_to_gl(self):
+    def cvt_loc_tcp_to_gl(self):
         if self.n_dof >= 1:
             gl_pos = self.jnts[self.tcp_jnt_id].gl_pos_q + self.jnts[self.tcp_jnt_id].gl_rotmat_q @ self.loc_tcp_pos
             gl_rotmat = self.jnts[self.tcp_jnt_id].gl_rotmat_q @ self.loc_tcp_rotmat
@@ -274,12 +274,12 @@ class JLChain(object):
         author: weiwei
         date: 20190312, 20210609
         """
-        gl_tcp_pos, gl_tcp_rotmat = self.cvt_tcp_loc_to_gl()
+        gl_tcp_pos, gl_tcp_rotmat = self.cvt_loc_tcp_to_gl()
         tmp_gl_pos = gl_tcp_pos + gl_tcp_rotmat.dot(pos_in_loc_tcp)
         tmp_gl_rotmat = gl_tcp_rotmat.dot(rotmat_in_loc_tcp)
         return (tmp_gl_pos, tmp_gl_rotmat)
 
-    def cvt_gl_posrot_to_tcp(self, gl_pos, gl_rotmat):
+    def cvt_gl_to_loc_tcp(self, gl_pos, gl_rotmat):
         """
         given a world pos and world rotmat
         get the relative pos and relative rotmat with respective to the ith jntlnk
@@ -289,10 +289,10 @@ class JLChain(object):
         author: weiwei
         date: 20190312
         """
-        gl_tcp_pos, gl_tcp_rotmat = self.cvt_tcp_loc_to_gl()
+        gl_tcp_pos, gl_tcp_rotmat = self.cvt_loc_tcp_to_gl()
         return rm.rel_pose(gl_tcp_pos, gl_tcp_rotmat, gl_pos, gl_rotmat)
 
-    def is_jnt_values_in_ranges(self, jnt_values):
+    def are_jnts_in_ranges(self, jnt_values):
         """
         check if the given jnt_values
         :param jnt_values:

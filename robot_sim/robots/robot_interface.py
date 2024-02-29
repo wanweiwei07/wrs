@@ -19,52 +19,34 @@ class RobotInterface(object):
         # component map for quick access
         self.manipulator = None
         self.end_effector = None
-        # a list of detailed information about objects in hand, see CollisionChecker.add_objinhnd
-        self.oih_infos = []  # object in hand
 
-    def _update_oih(self):
-        """
-        oih = object in hand
-        :return:
-        author: weiwei
-        date: 20230807
-        """
-        for obj_info in self.oih_infos:
-            gl_pos, gl_rotmat = self.cvt_loc_tcp_to_gl(obj_info['rel_pos'], obj_info['rel_rotmat'])
-            obj_info['gl_pos'] = gl_pos
-            obj_info['gl_rotmat'] = gl_rotmat
-
-    def _update_oof(self):
-        """
-        oof = object on flange
-        this function is to be implemented by subclasses for updating ft-sensors, tool changers, end_type-effectors, etc.
-        :return:
-        author: weiwei
-        date: 20230807
-        """
-        raise NotImplementedError
+    # def _update_oih(self):
+    #     """
+    #     oih = object in hand
+    #     :return:
+    #     author: weiwei
+    #     date: 20230807
+    #     """
+    #     for obj_info in self.oih_infos:
+    #         gl_pos, gl_rotmat = self.cvt_loc_tcp_to_gl(obj_info['rel_pos'], obj_info['rel_rotmat'])
+    #         obj_info['gl_pos'] = gl_pos
+    #         obj_info['gl_rotmat'] = gl_rotmat
+    #
+    # def _update_oof(self):
+    #     """
+    #     oof = object on flange
+    #     this function is to be implemented by subclasses for updating ft-sensors, tool changers, end_type-effectors, etc.
+    #     :return:
+    #     author: weiwei
+    #     date: 20230807
+    #     """
+    #     raise NotImplementedError
 
     def change_name(self, name):
         self.name = name
 
-    def get_jnt_ranges(self):
-        return self.manipulator.get_jnt_rngs()
-
-    def get_jnt_values(self):
-        return self.manipulator.get_jnt_values()
-
-    def get_gl_tcp(self):
-        return self.manipulator.get_gl_tcp()
-
-    def is_jnt_values_in_ranges(self, jnt_values):
-        return self.manipulator.is_jnt_values_in_ranges(jnt_values)
-
     def fix_to(self, pos, rotmat):
-        self.pos = pos
-        self.rotmat = rotmat
-        self.manipulator.fix_to(pos=pos, rotmat=rotmat)
-        self._update_oof()
-        self._update_oih()
+        raise NotImplementedError
 
     def fk(self, jnt_values=np.zeros(6)):
         """
@@ -104,7 +86,7 @@ class RobotInterface(object):
                        tcp_loc_pos=None,
                        tcp_loc_rotmat=None):
         return self.manipulator.manipulability(tcp_jnt_id=tcp_jnt_id,
-                                               tcp_loc_pos=tcp_loc_pos,
+                                               loc_tcp_pos=tcp_loc_pos,
                                                tcp_loc_rotmat=tcp_loc_rotmat)
 
     def manipulability_axmat(self,
@@ -191,8 +173,8 @@ class RobotInterface(object):
                                              toggle_contacts=toggle_contact_points)
         return collision_info
 
-    def show_cdprimit(self):
-        self.cc.show_cdprimit()
+    def show_cdprim(self):
+        self.cc.show_cdprim()
 
     def unshow_cdprimit(self):
         self.cc.unshow_cdprimit()

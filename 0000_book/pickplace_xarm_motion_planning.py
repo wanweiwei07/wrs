@@ -22,7 +22,7 @@ object_box.set_pos(object_box_gl_pos)
 object_box.set_rotmat(object_box_gl_rotmat)
 gm.gen_frame().attach_to(object_box)
 object_box.attach_to(base)
-object_box.show_cdprimit()
+object_box.show_cdprim()
 
 robot_s = xsm.XArmShuidi()
 robot_s.gen_meshmodel().attach_to(base)

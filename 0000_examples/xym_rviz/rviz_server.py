@@ -1,13 +1,6 @@
 import grpc
-import time
-import pickle
 from concurrent import futures
-import numpy as np
-import basis.trimesh as trm # for creating obj
-import modeling.geometric_model as gm
-import modeling.model_collection as mc
 import visualization.panda.world as wd
-import robot_sim.robots.system_interface as ri
 import visualization.panda.rpc.rviz_server as rs
 import visualization.panda.rpc.rviz_pb2_grpc as rv_rpc
 

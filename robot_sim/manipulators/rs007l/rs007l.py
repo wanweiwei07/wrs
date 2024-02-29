@@ -234,7 +234,7 @@ if __name__ == '__main__':
     print("ik cost: ", toc - tic)
     manipulator_instance.fk(jnt_values=j_values)
     manipulator_instance.gen_stickmodel(toggle_tcpcs=True, toggle_jntscs=True).attach_to(base)
-    manipulator_instance.gen_meshmodel(tcp_loc_pos=tcp_loc_pos, tcp_loc_rotmat=tcp_loc_rotmat).attach_to(base)
+    manipulator_instance.gen_meshmodel().attach_to(base)
 
     # base = wd.World(cam_pos=[1, 1, 1], lookat_pos=[0,0,0])
     # mgm.GeometricModel("./meshes/base.dae").attach_to(base)

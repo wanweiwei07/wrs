@@ -10,7 +10,7 @@ import robot_sim.end_effectors.gripper.robotiq85.robotiq85 as rtq
 import robot_sim.end_effectors.gripper.robotiq85_gelsight.robotiq85_gelsight as rtq_gs
 # import robot_sim.end_effectors.gripper.robotiq85_gelsight.robotiq85_gelsight_pusher as rtq_gs
 from panda3d.core import CollisionNode, CollisionBox, Point3
-import robot_sim.robots.system_interface as ri
+import robot_sim.system.system_interface as ri
 
 
 class UR3Dual(ri.RobotInterface):
@@ -719,20 +719,12 @@ class UR3Dual(ri.RobotInterface):
                                      toggle_tcpcs=False,
                                      toggle_jntscs=toggle_jntscs,
                                      rgba=rgba).attach_to(meshmodel)
-        self.lft_arm.gen_meshmodel(tcp_jnt_id=tcp_jnt_id,
-                                   tcp_loc_pos=tcp_loc_pos,
-                                   tcp_loc_rotmat=tcp_loc_rotmat,
-                                   toggle_tcpcs=toggle_tcpcs,
-                                   toggle_jntscs=toggle_jntscs,
+        self.lft_arm.gen_meshmodel(toggle_tcp_frame=toggle_tcpcs, toggle_jnt_frames=toggle_jntscs,
                                    rgba=rgba).attach_to(meshmodel)
         self.lft_hnd.gen_meshmodel(toggle_tcp_frame=False,
                                    toggle_jnt_frames=toggle_jntscs,
                                    rgba=rgba).attach_to(meshmodel)
-        self.rgt_arm.gen_meshmodel(tcp_jnt_id=tcp_jnt_id,
-                                   tcp_loc_pos=tcp_loc_pos,
-                                   tcp_loc_rotmat=tcp_loc_rotmat,
-                                   toggle_tcpcs=toggle_tcpcs,
-                                   toggle_jntscs=toggle_jntscs,
+        self.rgt_arm.gen_meshmodel(toggle_tcp_frame=toggle_tcpcs, toggle_jnt_frames=toggle_jntscs,
                                    rgba=rgba).attach_to(meshmodel)
         self.rgt_hnd.gen_meshmodel(toggle_tcp_frame=False,
                                    toggle_jnt_frames=toggle_jntscs,

@@ -6,7 +6,7 @@ import modeling.model_collection as mc
 import robot_sim._kinematics.jlchain as jl
 import robot_sim.manipulators.ur5e.ur5e as rbt
 import robot_sim.end_effectors.gripper.robotiq140.robotiq140 as hnd
-import robot_sim.robots.system_interface as ri
+import robot_sim.system.system_interface as ri
 from panda3d.core import CollisionNode, CollisionBox, Point3
 
 
@@ -264,11 +264,7 @@ class UR5EConveyorBelt(ri.RobotInterface):
                                        tcp_loc_rotmat=tcp_loc_rotmat,
                                        toggle_tcpcs=False,
                                        toggle_jntscs=toggle_jntscs).attach_to(meshmodel)
-        self.arm.gen_meshmodel(tcp_jnt_id=tcp_jnt_id,
-                               tcp_loc_pos=tcp_loc_pos,
-                               tcp_loc_rotmat=tcp_loc_rotmat,
-                               toggle_tcpcs=toggle_tcpcs,
-                               toggle_jntscs=toggle_jntscs,
+        self.arm.gen_meshmodel(toggle_tcp_frame=toggle_tcpcs, toggle_jnt_frames=toggle_jntscs,
                                rgba=rgba).attach_to(meshmodel)
         self.hnd.gen_meshmodel(toggle_tcp_frame=False,
                                toggle_jnt_frames=toggle_jntscs,

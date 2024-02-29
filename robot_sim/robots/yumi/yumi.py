@@ -8,7 +8,7 @@ import robot_sim._kinematics.jlchain as jl
 import robot_sim.manipulators.irb14050.irb14050 as ya
 import robot_sim.end_effectors.gripper.yumi_gripper.yumi_gripper as yg
 from panda3d.core import CollisionNode, CollisionBox, Point3
-import robot_sim.robots.system_interface as ri
+import robot_sim.system.system_interface as ri
 
 
 class Yumi(ri.RobotInterface):
@@ -538,11 +538,7 @@ class Yumi(ri.RobotInterface):
                                      toggle_tcpcs=False,
                                      toggle_jntscs=toggle_jntscs,
                                      rgba=rgba).attach_to(meshmodel)
-        self.lft_arm.gen_meshmodel(tcp_jnt_id=tcp_jnt_id,
-                                   tcp_loc_pos=tcp_loc_pos,
-                                   tcp_loc_rotmat=tcp_loc_rotmat,
-                                   toggle_tcpcs=toggle_tcpcs,
-                                   toggle_jntscs=toggle_jntscs,
+        self.lft_arm.gen_meshmodel(toggle_tcp_frame=toggle_tcpcs, toggle_jnt_frames=toggle_jntscs,
                                    rgba=rgba).attach_to(meshmodel)
         self.lft_hnd.gen_meshmodel(toggle_tcp_frame=False,
                                    toggle_jnt_frames=toggle_jntscs,

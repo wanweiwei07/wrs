@@ -142,7 +142,7 @@ if jnt_values is not None:
 else:
     base.run()
 # mgm.gen_frame(pos=goal_pos, rotmat = goal_rotmat).attach_to(base)
-rbt_model = rbt_s.gen_meshmodel(toggle_tcpcs=False)
+rbt_model = rbt_s.gen_meshmodel(toggle_tcp_frame=False)
 rbt_model.attach_to(base)
 # base.run()
 
@@ -205,7 +205,7 @@ if jnt_values is not None:
     rbt_s.fk(jnt_values=jnt_values)
 else:
     base.run()
-rbt_model = rbt_s.gen_meshmodel(toggle_tcpcs=False)
+rbt_model = rbt_s.gen_meshmodel(toggle_tcp_frame=False)
 rbt_model.attach_to(base)
 
 pos, rotmat = rbt_s.get_gl_tcp()

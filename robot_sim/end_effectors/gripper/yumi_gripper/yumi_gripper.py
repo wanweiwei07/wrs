@@ -161,6 +161,6 @@ if __name__ == '__main__':
     grpr2.fix_to(pos=np.array([.3, .3, .2]), rotmat=rm.rotmat_from_axangle([0, 1, 0], .01))
     model = grpr2.gen_mesh_model(rgba=[0.5, .5, 0, .5])
     model.attach_to(base)
-    grpr2.show_cdprimit()
+    grpr2.show_cdprim()
     grpr2.show_cdmesh()
     base.run()

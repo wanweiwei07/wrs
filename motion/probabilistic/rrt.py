@@ -50,7 +50,7 @@ class RRT(object):
         """
         # self.robot_s.fk(component_name=component_name, jnt_values=conf)
         # return self.robot_s.is_collided(obstacle_list=obstacle_list, otherrobot_list=otherrobot_list)
-        if self.robot_s.is_jnt_values_in_ranges(component_name=component_name, jnt_values=conf):
+        if self.robot_s.are_jnts_in_ranges(component_name=component_name, jnt_values=conf):
             self.robot_s.fk(component_name=component_name, joint_values=conf)
             return self.robot_s.is_collided(obstacle_list=obstacle_list, otherrobot_list=otherrobot_list)
         else:
@@ -357,7 +357,7 @@ class RRT_v2(object):
         author: weiwei
         date: 20220326
         """
-        if self.robot_s.is_jnt_values_in_ranges(jnt_values=conf):
+        if self.robot_s.are_jnts_in_ranges(jnt_values=conf):
             self.robot_s.fk(joint_values=conf)
             return self.robot_s.is_collided(obstacle_list=obstacle_list, otherrobot_list=otherrobot_list)
         else:

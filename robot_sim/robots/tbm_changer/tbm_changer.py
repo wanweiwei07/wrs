@@ -1,12 +1,11 @@
 import os
 import math
 import numpy as np
-import modeling.collision_model as cm
 import modeling.model_collection as mc
 import robot_sim._kinematics.jlchain as jl
 import robot_sim.manipulators.tbm_arm.tbm_arm as tbma
 import robot_sim.end_effectors.gripper.tbm_gripper.tbm_gripper as tbmg
-import robot_sim.robots.system_interface as ri
+import robot_sim.system.system_interface as ri
 
 
 class TBMChanger(ri.RobotInterface):
@@ -206,11 +205,7 @@ class TBMChanger(ri.RobotInterface):
                                        tcp_loc_rotmat=tcp_loc_rotmat,
                                        toggle_tcpcs=False,
                                        toggle_jntscs=toggle_jntscs).attach_to(meshmodel)
-        self.arm.gen_meshmodel(tcp_jnt_id=tcp_jnt_id,
-                               tcp_loc_pos=tcp_loc_pos,
-                               tcp_loc_rotmat=tcp_loc_rotmat,
-                               toggle_tcpcs=toggle_tcpcs,
-                               toggle_jntscs=toggle_jntscs,
+        self.arm.gen_meshmodel(toggle_tcp_frame=toggle_tcpcs, toggle_jnt_frames=toggle_jntscs,
                                rgba=rgba).attach_to(meshmodel)
         self.hnd.gen_meshmodel(toggle_tcp_frame=False,
                                toggle_jnt_frames=toggle_jntscs,

@@ -1,10 +1,8 @@
 import os
 import math
 import numpy as np
-import basis.robot_math as rm
 import modeling.model_collection as mc
 import robot_sim._kinematics.jlchain as jl
-import robot_sim.robots.system_interface as ri
 
 
 class TBM(object):
@@ -386,7 +384,6 @@ class TBM(object):
 
 
 if __name__ == '__main__':
-    import time
     import basis.robot_math as rm
     import visualization.panda.world as wd
     import modeling.geometric_model as gm
