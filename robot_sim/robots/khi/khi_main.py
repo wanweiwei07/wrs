@@ -24,12 +24,12 @@ class KHI_DUAL(ri.RobotInterface):
         # base
         self.base_table = jl.JLChain(pos=pos, rotmat=rotmat, home_conf=np.zeros(0), name='base_table')
         self.base_table.lnks[0]['name'] = "base_table"
-        self.base_table.jnts[-1]['pos_in_loc_tcp'] = np.array([0, -.4, .726])
+        self.base_table.jnts[-1]['pos_in_tcp'] = np.array([0, -.4, .726])
         self.base_table.lnks[0]['collision_model'] = cm.CollisionModel(
             os.path.join(this_dir, "meshes", "base_table.stl"))
         # pre-comptue coordinates
         lr_rotmat = rm.rotmat_from_euler(0, 0, np.radians(-90))
-        lft_pos = self.base_table.jnts[-1]['pos_in_loc_tcp']
+        lft_pos = self.base_table.jnts[-1]['pos_in_tcp']
         rgt_pos = lft_pos + np.array([0, .8, 0])
         # lft
         self.lft_arm = kg.KHI_OR2FG7(pos=lft_pos, rotmat=lr_rotmat, enable_cc=False)

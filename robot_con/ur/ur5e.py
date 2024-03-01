@@ -34,7 +34,7 @@ class Ur3EUrx():
 
         logging.basicConfig()
         self.__arm = urrobot.URRobot(ip, use_rt=True)
-        self.__arm.set_tcp((0, 0, 0, 0, 0, 0))
+        self.__arm.set_tcp()
         self.__arm.set_payload(1.28)
 
         self.__hand = Robotiq_Two_Finger_Gripper(type=50)

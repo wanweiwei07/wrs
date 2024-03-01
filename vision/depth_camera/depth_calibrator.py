@@ -31,7 +31,7 @@ class DepthCaliberator(object):
         """
         find the robot_s tcp's pos and rotmat in the sensor coordinate system
         :param component_name:
-        :param acting_center_pos, action_rotmat:
+        :param loc_acting_center_pos, action_rotmat:
         :param marker_callback:
         :return: [estiamted tcp center in sensor, major_radius of the sphere formed by markers]
         author: weiwei

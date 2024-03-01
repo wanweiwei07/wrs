@@ -199,7 +199,7 @@ class Nova2HuriGripper(gp.GripperInterface):
                                 toggle_connjnt=toggle_connjnt).attach_to(stickmodel)
         if toggle_tcp_frame:
             jaw_center_gl_pos = self.rotmat.dot(self.jaw_center_pos) + self.pos
-            jaw_center_gl_rotmat = self.rotmat.dot(self.acting_center_rotmat)
+            jaw_center_gl_rotmat = self.rotmat.dot(self.loc_acting_center_rotmat)
             gm.gen_dashstick(spos=self.pos,
                              epos=jaw_center_gl_pos,
                              thickness=.0062,
@@ -238,7 +238,7 @@ class Nova2HuriGripper(gp.GripperInterface):
                                rgba=rgba).attach_to(meshmodel)
         if toggle_tcp_frame:
             jaw_center_gl_pos = self.rotmat.dot(self.jaw_center_pos) + self.pos
-            jaw_center_gl_rotmat = self.rotmat.dot(self.acting_center_rotmat)
+            jaw_center_gl_rotmat = self.rotmat.dot(self.loc_acting_center_rotmat)
             gm.gen_dashstick(spos=self.pos,
                              epos=jaw_center_gl_pos,
                              thickness=.0062,

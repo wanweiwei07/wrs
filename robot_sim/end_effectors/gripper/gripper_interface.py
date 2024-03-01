@@ -30,32 +30,32 @@ class GripperInterface(ei.EEInterface):
         self.change_jaw_width(jaw_width=jaw_width)
 
     def grip_at_by_twovecs(self,
-                           gl_jaw_center_pos,
-                           gl_approaching_vec,
-                           gl_fgr1_opening_vec,
+                           jaw_center_pos,
+                           approaching_vec,
+                           finger1_opening_vec,
                            jaw_width):
         """
         specifying the gripping pose using two axes -- approaching vector and opening vector
-        :param gl_jaw_center_pos:
-        :param gl_approaching_vec: jaw_center's approaching direction
-        :param gl_fgr1_opening_vec: jaw_center's opening direction
-        :param jaw_width: [jaw_width, gl_jaw_center_pos, gl_jaw_center_rotmat, eef_root_pos, eef_root_rotmat]
+        :param jaw_center_pos:
+        :param approaching_vec: jaw_center's approaching direction
+        :param finger1_opening_vec: jaw_center's opening direction
+        :param jaw_width: [jaw_width, jaw_center_pos, jaw_center_rotmat, eef_root_pos, eef_root_rotmat]
         :return:
         """
         self.change_jaw_width(jaw_width)
-        param_list = self.align_acting_center_by_twovecs(gl_acting_center_pos=gl_jaw_center_pos,
-                                                         gl_approaching_vec=gl_approaching_vec,
-                                                         gl_side_vec=gl_fgr1_opening_vec)
+        param_list = self.align_acting_center_by_twovecs(acting_center_pos=jaw_center_pos,
+                                                         approaching_vec=approaching_vec,
+                                                         side_vec=finger1_opening_vec)
         return [jaw_width] + param_list
 
-    def grip_at_by_pose(self, gl_jaw_center_pos, gl_jaw_center_rotmat, jaw_width):
+    def grip_at_by_pose(self, jaw_center_pos, jaw_center_rotmat, jaw_width):
         """
-        :param gl_jaw_center_pos:
-        :param gl_jaw_center_rotmat:
+        :param jaw_center_pos:
+        :param jaw_center_rotmat:
         :param jaw_width:
-        :return: [jaw_width, gl_jaw_center_pos, gl_jaw_center_rotmat, eef_root_pos, eef_root_rotmat]
+        :return: [jaw_width, jaw_center_pos, gl_jaw_center_rotmat, eef_root_pos, eef_root_rotmat]
         """
         self.change_jaw_width(jaw_width)
-        param_list = self.align_acting_center_by_pose(gl_acting_center_pos=gl_jaw_center_pos,
-                                                      gl_acting_center_rotmat=gl_jaw_center_rotmat)
+        param_list = self.align_acting_center_by_pose(acting_center_pos=jaw_center_pos,
+                                                      acting_center_rotmat=jaw_center_rotmat)
         return [jaw_width] + param_list

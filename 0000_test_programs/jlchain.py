@@ -35,8 +35,7 @@ if __name__ == '__main__':
     jlc.jnts[5].motion_range = np.array([-np.pi / 2, np.pi / 2])
     jlc.loc_tcp_pos = np.array([0, 0, .01])
     jlc.finalize()
-    rkmg.gen_jlc_stick(jlc, stick_rgba=basis.constant.navy_blue, toggle_tcp_frame=True,
-                       toggle_joint_frame=True).attach_to(base)
+    rkmg.gen_jlc_stick(jlc, stick_rgba=basis.constant.navy_blue, toggle_tcp_frame=True).attach_to(base)
     seed_jnt_vals = jlc.get_jnt_values()
     # seed_jnt_values = np.array([0.69103164, -1.42838988, 1.1103724, 0.94371771, -0.64419981,
     #                           1.23253726])
@@ -64,8 +63,7 @@ if __name__ == '__main__':
     print(f"time cost is {toc - tic}")
     print(joint_values_with_dbg_info)
     jlc.fk(jnt_values=joint_values_with_dbg_info[1], update=True)
-    rkmg.gen_jlc_stick(jlc, stick_rgba=basis.constant.navy_blue, toggle_tcp_frame=True,
-                       toggle_joint_frame=True).attach_to(base)
+    rkmg.gen_jlc_stick(jlc, stick_rgba=basis.constant.navy_blue, toggle_tcp_frame=True).attach_to(base)
     base.run()
     # success = 0
     # num_win = 0

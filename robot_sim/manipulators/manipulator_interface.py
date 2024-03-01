@@ -40,7 +40,7 @@ class ManipulatorInterface(object):
 
     @property
     def tcp_jnt_id(self):
-        return self.jlc.tcp_jnt_id
+        return self.jlc.functional_jnt_id
 
     @property
     def loc_tcp_pos(self):
@@ -56,7 +56,7 @@ class ManipulatorInterface(object):
 
     @tcp_jnt_id.setter
     def tcp_jnt_id(self, tcp_jnt_id):
-        self.jlc.tcp_jnt_id = tcp_jnt_id
+        self.jlc.functional_jnt_id = tcp_jnt_id
 
     @loc_tcp_pos.setter
     def loc_tcp_pos(self, loc_tcp_pos):
@@ -71,7 +71,7 @@ class ManipulatorInterface(object):
         self.jlc.home = home_conf
 
     def set_tcp(self, tcp_jnt_id=None, loc_tcp_pos=None, loc_tcp_rotmat=None):
-        self.jlc.set_tcp(tcp_jnt_id=tcp_jnt_id, loc_tcp_pos=loc_tcp_pos, loc_tcp_rotmat=loc_tcp_rotmat)
+        self.jlc.set_tcp(loc_tcp_pos=loc_tcp_pos, loc_tcp_rotmat=loc_tcp_rotmat)
 
     def get_gl_tcp(self):
         return self.jlc.get_gl_tcp()
@@ -134,8 +134,8 @@ class ManipulatorInterface(object):
         return self.jlc.cvt_loc_tcp_to_gl()
 
     def cvt_gl_to_loc_tcp(self, gl_pos, gl_rotmat):
-        return self.jlc.cvt_gl_to_loc_tcp(gl_pos=gl_pos,
-                                          gl_rotmat=gl_rotmat)
+        return self.jlc.cvt_gl_pose_to_tcp(gl_pos=gl_pos,
+                                           gl_rotmat=gl_rotmat)
 
     def is_collided(self, obstacle_list=[], otherrobot_list=[]):
         """
@@ -174,9 +174,7 @@ class ManipulatorInterface(object):
                        toggle_tcp_frame=False,
                        toggle_jnt_frames=False,
                        name="manipulator_stickmodel"):
-        return rkmg.gen_jlc_stick(self.jlc,
-                                  toggle_tcp_frame=toggle_tcp_frame,
-                                  toggle_jnt_frames=toggle_jnt_frames,
+        return rkmg.gen_jlc_stick(self.jlc, toggle_jnt_frames=toggle_jnt_frames, toggle_tcp_frame=toggle_tcp_frame,
                                   name=name)
 
     def gen_endsphere(self):

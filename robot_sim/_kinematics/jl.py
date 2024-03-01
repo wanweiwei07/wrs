@@ -39,19 +39,22 @@ class Link(object):
     def loc_pos(self):
         return self._loc_pos
 
-    @loc_pos.setter
-    def loc_pos(self, pos):
-        self._loc_pos = pos
-        self.update_globals(pos=self.gl_pos, rotmat=self.gl_rotmat)
-
     @property
     def loc_rotmat(self):
         return self._loc_rotmat
 
-    @loc_rotmat.setter
-    def loc_rotmat(self, rotmat):
-        self._loc_rotmat = rotmat
-        self.update_globals(pos=self.gl_pos, rotmat=self.gl_rotmat)
+    @property
+    def loc_homomat(self):
+        return rm.homomat_from_posrot(self._loc_pos, self._loc_rotmat)
+
+    # @property
+    # def loc_pose(self):
+    #     return (self._loc_pos, self._loc_rotmat)
+    #
+    # @loc_pose.setter
+    # def loc_pose(self, pose):
+    #     self._loc_pos = pose[0]
+    #     self._loc_rotmat = pose[1]
 
     @property
     def gl_pos(self):
@@ -83,6 +86,30 @@ class Link(object):
             self._cmodel.pose = (self._gl_pos, self._gl_rotmat)
 
 
+
+# ==============================================
+# delays for anchor gl_flange
+# ==============================================
+
+def delay_gl_flange_decorator(method):
+    def wrapper(self, *args, **kwargs):
+        self._is_gl_flange_delayed = True
+        return method(self, *args, **kwargs)
+
+    return wrapper
+
+
+def update_gl_flange_decorator(method):
+    def wrapper(self, *args, **kwargs):
+        # print(self._is_geom_delayed)
+        if self._is_gl_flange_delayed:
+            self._gl_flange_pos, self._gl_flange_rotmat = self._update_gl_flange()
+            self._is_gl_flange_delayed = False
+        return method(self, *args, **kwargs)
+
+    return wrapper
+
+
 class Anchor(object):
     """
     author: weiwei
@@ -92,11 +119,42 @@ class Anchor(object):
     def __init__(self,
                  name="auto",
                  pos=np.zeros(3),
-                 rotmat=np.eye(3)):
+                 rotmat=np.eye(3),
+                 loc_flange_pos=np.zeros(3),
+                 loc_flange_rotmat=np.eye(3)):
+        """
+        :param name:
+        :param pos: pos for parent
+        :param rotmat: rotmat for parent
+        :param loc_flange_pos: pos for mounting (local in the pos/rotmat frame)
+        :param loc_flange_rotmat: rotmat for mounting (local in the pos/rotmat frame)
+        """
         self.name = name
-        self.pos = pos
-        self.rotmat = rotmat
+        self._pos = pos
+        self._rotmat = rotmat
+        self._loc_flange_pos = loc_flange_pos
+        self._loc_flange_rotmat = loc_flange_rotmat
+        self._gl_flange_pos, self._gl_flange_rotmat = self._update_gl_flange()
+        self._is_gl_flange_delayed = False
         self._lnk = Link()
+
+    @property
+    def pos(self):
+        return self._pos
+
+    @pos.setter
+    @delay_gl_flange_decorator
+    def pos(self, pos):
+        self._pos = pos
+
+    @property
+    def rotmat(self):
+        return self._rotmat
+
+    @rotmat.setter
+    @delay_gl_flange_decorator
+    def rotmat(self, rotmat):
+        self._rotmat = rotmat
 
     @property
     def homomat(self):
@@ -110,11 +168,49 @@ class Anchor(object):
     def lnk(self, value):
         self._lnk = value
 
+    @property
+    @update_gl_flange_decorator
+    def gl_flange_pos(self):
+        return self._gl_flange_pos
+
+    @property
+    @update_gl_flange_decorator
+    def gl_flange_rotmat(self):
+        return self._gl_flange_rotmat
+
+    @property
+    def gl_flange_homomat(self):
+        return rm.homomat_from_posrot(self._gl_flange_pos, self._gl_flange_rotmat)
+
+    @property
+    def loc_flange_pos(self):
+        return self._loc_flange_pos
+
+    @loc_flange_pos.setter
+    @delay_gl_flange_decorator
+    def loc_flange_pos(self, loc_flange_pos):
+        self._loc_flange_pos = loc_flange_pos
+
+    @property
+    def loc_flange_rotmat(self):
+        return self._loc_flange_rotmat
+
+    @loc_flange_pos.setter
+    @delay_gl_flange_decorator
+    def loc_flange_rotmat(self, loc_flange_rotmat):
+        self._loc_flange_rotmat = loc_flange_rotmat
+
+    def _update_gl_flange(self):
+        gl_flange_pos = self._pos + self.rotmat @ self._loc_flange_pos
+        gl_flange_rotmat = self._rotmat @ self._loc_flange_rotmat
+        return (gl_flange_pos, gl_flange_rotmat)
+
     def update_pose(self, pos=None, rotmat=None):
-        if pos is not None:
-            self.pos = pos
-        if rotmat is not None:
-            self.rotmat = rotmat
+        if (pos is not None) or (rotmat is not None):
+            if pos is not None:
+                self.pos = pos
+            if rotmat is not None:
+                self.rotmat = rotmat
         if self._lnk is not None:
             self._lnk.update_globals(self.pos, self.rotmat)
 
@@ -228,7 +324,7 @@ class Joint(object):
         :param motion_value:
         :return:
         """
-        self._gl_pos_0 = pos + rotmat @ self.loc_pos #TODO offset to loc
+        self._gl_pos_0 = pos + rotmat @ self.loc_pos  # TODO offset to loc
         self._gl_rotmat_0 = rotmat @ self.loc_rotmat
         self._gl_motion_ax = self._gl_rotmat_0 @ self.loc_motion_ax
         self.set_motion_value(motion_value=motion_value)

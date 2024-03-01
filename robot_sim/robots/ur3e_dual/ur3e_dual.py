@@ -18,11 +18,11 @@ class UR3EDual(ri.RobotInterface):
         this_dir, this_filename = os.path.split(__file__)
         # left side
         self.lft_body = jl.JLChain(pos=pos, rotmat=rotmat, home_conf=np.zeros(0), name='lft_body_jl')
-        self.lft_body.jnts[1]['pos_in_loc_tcp'] = np.array([.365, .345, 1.33])  # left from robot_s view
+        self.lft_body.jnts[1]['pos_in_tcp'] = np.array([.365, .345, 1.33])  # left from robot_s view
         self.lft_body.jnts[1]['gl_rotmat'] = rm.rotmat_from_euler(math.pi / 2.0, 0,
                                                                   math.pi / 2.0)  # left from robot_s view
         self.lft_body.lnks[0]['name'] = "ur3e_dual_base"
-        self.lft_body.lnks[0]['pos_in_loc_tcp'] = np.array([0, 0, 0])
+        self.lft_body.lnks[0]['pos_in_tcp'] = np.array([0, 0, 0])
         self.lft_body.lnks[0]['collision_model'] = cm.CollisionModel(
             os.path.join(this_dir, "meshes", "ur3e_dual_base.stl"),
             cdp_type="user_defined", expand_radius=.005,
@@ -45,11 +45,11 @@ class UR3EDual(ri.RobotInterface):
                                      enable_cc=False)
         # rigth side
         self.rgt_body = jl.JLChain(pos=pos, rotmat=rotmat, home_conf=np.zeros(0), name='rgt_body_jl')
-        self.rgt_body.jnts[1]['pos_in_loc_tcp'] = np.array([.365, -.345, 1.33])  # right from robot_s view
+        self.rgt_body.jnts[1]['pos_in_tcp'] = np.array([.365, -.345, 1.33])  # right from robot_s view
         self.rgt_body.jnts[1]['gl_rotmat'] = rm.rotmat_from_euler(math.pi / 2.0, 0,
                                                                   math.pi / 2.0)  # left from robot_s view
         self.rgt_body.lnks[0]['name'] = "ur3e_dual_base"
-        self.rgt_body.lnks[0]['pos_in_loc_tcp'] = np.array([0, 0, 0])
+        self.rgt_body.lnks[0]['pos_in_tcp'] = np.array([0, 0, 0])
         self.rgt_body.lnks[0]['mesh_file'] = None
         self.rgt_body.lnks[0]['rgba'] = [.3, .3, .3, 1.0]
         self.rgt_body.finalize()
@@ -70,11 +70,11 @@ class UR3EDual(ri.RobotInterface):
         # lft
         self.lft_arm.tcp_jnt_id = -1
         self.lft_arm.loc_tcp_pos = self.lft_hnd.jaw_center_pos
-        self.lft_arm.loc_tcp_rotmat = self.lft_hnd.acting_center_rotmat
+        self.lft_arm.loc_tcp_rotmat = self.lft_hnd.loc_acting_center_rotmat
         # rgt
         self.rgt_arm.tcp_jnt_id = -1
         self.rgt_arm.loc_tcp_pos = self.lft_hnd.jaw_center_pos
-        self.rgt_arm.loc_tcp_rotmat = self.lft_hnd.acting_center_rotmat
+        self.rgt_arm.loc_tcp_rotmat = self.lft_hnd.loc_acting_center_rotmat
         # a list of detailed information about objects in hand, see CollisionChecker.add_objinhnd
         self.lft_oih_infos = []
         self.rgt_oih_infos = []

@@ -15,26 +15,26 @@ class IRB14050(mi.ManipulatorInterface):
         self.jlc = jl.JLChain(pos=pos, rotmat=rotmat, home_conf=homeconf, name=name)
         # seven joints, n_jnts = 7+2 (tgt ranges from 1-7), nlinks = 7+1
         jnt_safemargin = math.pi / 18.0
-        # self.jlc.joints[1]['pos_in_loc_tcp'] = np.array([0.05355, -0.0725, 0.41492])
+        # self.jlc.joints[1]['pos_in_tcp'] = np.array([0.05355, -0.0725, 0.41492])
         # self.jlc.joints[1]['gl_rotmat'] = rm.rotmat_from_euler(-0.9795, -0.5682, -2.3155)
-        self.jlc.jnts[1]['pos_in_loc_tcp'] = np.array([0., 0., 0.])
+        self.jlc.jnts[1]['pos_in_tcp'] = np.array([0., 0., 0.])
         self.jlc.jnts[1]['motion_range'] = [-2.94087978961 + jnt_safemargin, 2.94087978961 - jnt_safemargin]
-        self.jlc.jnts[2]['pos_in_loc_tcp'] = np.array([0.03, 0.0, 0.1])
+        self.jlc.jnts[2]['pos_in_tcp'] = np.array([0.03, 0.0, 0.1])
         self.jlc.jnts[2]['gl_rotmat'] = rm.rotmat_from_euler(1.57079632679, 0.0, 0.0)
         self.jlc.jnts[2]['motion_range'] = [-2.50454747661 + jnt_safemargin, 0.759218224618 - jnt_safemargin]
-        self.jlc.jnts[3]['pos_in_loc_tcp'] = np.array([-0.03, 0.17283, 0.0])
+        self.jlc.jnts[3]['pos_in_tcp'] = np.array([-0.03, 0.17283, 0.0])
         self.jlc.jnts[3]['gl_rotmat'] = rm.rotmat_from_euler(-1.57079632679, 0.0, 0.0)
         self.jlc.jnts[3]['motion_range'] = [-2.94087978961 + jnt_safemargin, 2.94087978961 - jnt_safemargin]
-        self.jlc.jnts[4]['pos_in_loc_tcp'] = np.array([-0.04188, 0.0, 0.07873])
+        self.jlc.jnts[4]['pos_in_tcp'] = np.array([-0.04188, 0.0, 0.07873])
         self.jlc.jnts[4]['gl_rotmat'] = rm.rotmat_from_euler(1.57079632679, -1.57079632679, 0.0)
         self.jlc.jnts[4]['motion_range'] = [-2.15548162621 + jnt_safemargin, 1.3962634016 - jnt_safemargin]
-        self.jlc.jnts[5]['pos_in_loc_tcp'] = np.array([0.0405, 0.16461, 0.0])
+        self.jlc.jnts[5]['pos_in_tcp'] = np.array([0.0405, 0.16461, 0.0])
         self.jlc.jnts[5]['gl_rotmat'] = rm.rotmat_from_euler(-1.57079632679, 0.0, 0.0)
         self.jlc.jnts[5]['motion_range'] = [-5.06145483078 + jnt_safemargin, 5.06145483078 - jnt_safemargin]
-        self.jlc.jnts[6]['pos_in_loc_tcp'] = np.array([-0.027, 0, 0.10039])
+        self.jlc.jnts[6]['pos_in_tcp'] = np.array([-0.027, 0, 0.10039])
         self.jlc.jnts[6]['gl_rotmat'] = rm.rotmat_from_euler(1.57079632679, 0.0, 0.0)
         self.jlc.jnts[6]['motion_range'] = [-1.53588974176 + jnt_safemargin, 2.40855436775 - jnt_safemargin]
-        self.jlc.jnts[7]['pos_in_loc_tcp'] = np.array([0.027, 0.029, 0.0])
+        self.jlc.jnts[7]['pos_in_tcp'] = np.array([0.027, 0.029, 0.0])
         self.jlc.jnts[7]['gl_rotmat'] = rm.rotmat_from_euler(-1.57079632679, 0.0, 0.0)
         self.jlc.jnts[7]['motion_range'] = [-3.99680398707 + jnt_safemargin, 3.99680398707 - jnt_safemargin]
         # links

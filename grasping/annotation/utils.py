@@ -21,7 +21,7 @@ def define_grasp(hnd_s,
     :param jaw_width:
     :param objcm:
     :param toggle_flip:
-    :return: a list like [[jaw_width, gl_jaw_center_pos, pos, rotmat], ...]
+    :return: a list like [[jaw_width, jaw_center_pos, pos, rotmat], ...]
     author: chenhao, revised by weiwei
     date: 20200104
     """
@@ -73,7 +73,7 @@ def define_grasp_with_rotation(hnd_s,
     :param rotation_interval: 
     :param rotation_range: 
     :param toggle_flip: 
-    :return: a list [[jaw_width, gl_jaw_center_pos, pos, rotmat], ...]
+    :return: a list [[jaw_width, jaw_center_pos, pos, rotmat], ...]
     author: chenhao, revised by weiwei
     date: 20200104
     """

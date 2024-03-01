@@ -193,21 +193,21 @@ class DDIKSolver(object):
     def ik(self,
            tgt_pos,
            tgt_rotmat,
-           seed_jnt_vals=None,
+           seed_jnt_values=None,
            toggle_dbg=False):
         """
         :param tgt_pos:
         :param tgt_rotmat:
-        :param seed_jnt_vals: ignored
+        :param seed_jnt_values: ignored
         :param toggle_dbg: ignored
         :return:
         author: weiwei
         date: 20231107
         """
-        if seed_jnt_vals is not None:
+        if seed_jnt_values is not None:
             return self._backbone_solver_func(tgt_pos=tgt_pos,
                                               tgt_rotmat=tgt_rotmat,
-                                              seed_jnt_vals=seed_jnt_vals,
+                                              seed_jnt_vals=seed_jnt_values,
                                               max_n_iter=self._max_n_iter,
                                               toggle_dbg=toggle_dbg)
         else:
@@ -215,10 +215,10 @@ class DDIKSolver(object):
             tgt_tcp = np.concatenate((tgt_pos, tcp_rotvec))
             dist_val_array, nn_indx_array = self.querry_tree.query(tgt_tcp, k=1000, workers=-1)
             for nn_indx in nn_indx_array[:5]:
-                seed_jnt_vals = self.jnt_data[nn_indx]
+                seed_jnt_values = self.jnt_data[nn_indx]
                 result = self._backbone_solver_func(tgt_pos=tgt_pos,
                                                     tgt_rotmat=tgt_rotmat,
-                                                    seed_jnt_vals=seed_jnt_vals,
+                                                    seed_jnt_vals=seed_jnt_values,
                                                     max_n_iter=self._max_n_iter,
                                                     toggle_dbg=toggle_dbg)
                 if result is None:

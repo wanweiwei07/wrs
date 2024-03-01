@@ -31,25 +31,25 @@ if __name__ == '__main__':
     rbt_s.gen_stickmodel(toggle_tcpcs=True).attach_to(base)
     contraint_pos = rbt_s.manipulator_dict['arm'].jnts[5]['gl_posq']
     contraint_rotmat = rbt_s.manipulator_dict['arm'].jnts[5]['gl_rotmatq']
-    contraint_pos += rbt_s.manipulator_dict['arm'].jnts[6]['pos_in_loc_tcp'][1] * contraint_rotmat[:, 1]
+    contraint_pos += rbt_s.manipulator_dict['arm'].jnts[6]['pos_in_tcp'][1] * contraint_rotmat[:, 1]
     gm.gen_frame(pos=contraint_pos, rotmat=contraint_rotmat).attach_to(base)
     gm.gen_torus(contraint_rotmat[:, 2],
                  starting_vector=contraint_rotmat[:, 1],
                  portion=1,
                  center=contraint_pos,
-                 radius=abs(rbt_s.manipulator_dict['arm'].jnts[6]['pos_in_loc_tcp'][1])).attach_to(base)
+                 radius=abs(rbt_s.manipulator_dict['arm'].jnts[6]['pos_in_tcp'][1])).attach_to(base)
 
     gm.gen_torus(contraint_rotmat[:, 2],
                  starting_vector=contraint_rotmat[:, 1],
                  portion=1,
                  center=contraint_pos,
-                 radius=abs(rbt_s.manipulator_dict['arm'].jnts[6]['pos_in_loc_tcp'][1]) + abs(rbt_s.manipulator_dict['arm'].jnts[5]['pos_in_loc_tcp'][1])).attach_to(base)
+                 radius=abs(rbt_s.manipulator_dict['arm'].jnts[6]['pos_in_tcp'][1]) + abs(rbt_s.manipulator_dict['arm'].jnts[5]['pos_in_tcp'][1])).attach_to(base)
 
     gm.gen_torus(contraint_rotmat[:, 2],
                  starting_vector=contraint_rotmat[:, 1],
                  portion=1,
-                 center=contraint_pos-rbt_s.manipulator_dict['arm'].jnts[1]['gl_rotmatq'].dot(np.array([0, rbt_s.manipulator_dict['arm'].jnts[4]['pos_in_loc_tcp'][1], 0])),
-                 radius=abs(rbt_s.manipulator_dict['arm'].jnts[6]['pos_in_loc_tcp'][1]) + abs(rbt_s.manipulator_dict['arm'].jnts[5]['pos_in_loc_tcp'][1])).attach_to(base)
+                 center=contraint_pos-rbt_s.manipulator_dict['arm'].jnts[1]['gl_rotmatq'].dot(np.array([0, rbt_s.manipulator_dict['arm'].jnts[4]['pos_in_tcp'][1], 0])),
+                 radius=abs(rbt_s.manipulator_dict['arm'].jnts[6]['pos_in_tcp'][1]) + abs(rbt_s.manipulator_dict['arm'].jnts[5]['pos_in_tcp'][1])).attach_to(base)
     # jnt_values[3:]=0
     # rbt_s.fk(jnt_values=jnt_values)
     # rbt_s.gen_meshmodel(toggle_tcp_frame=True, rgba=[.5,.5,.5,.3]).attach_to(base)
@@ -61,7 +61,7 @@ if __name__ == '__main__':
     # rbt_s.gen_stickmodel(toggle_tcp_frame=True).attach_to(base)
     #
     # mgm.gen_sphere(pos=rbt_s.manipulator_dict['arm'].joints[2]['gl_posq'],
-    #               major_radius=np.linalg.norm(rbt_s.manipulator_dict['arm'].joints[3]['pos_in_loc_tcp']),
+    #               major_radius=np.linalg.norm(rbt_s.manipulator_dict['arm'].joints[3]['pos_in_tcp']),
     #               rgba=[.5,.5,.5,.2], sphere_ico_level=5).attach_to(base)
     # contraint_pos = rbt_s.manipulator_dict['arm'].joints[2]['gl_posq']
     # contraint_rotmat = rbt_s.manipulator_dict['arm'].joints[2]['gl_rotmatq']
@@ -70,8 +70,8 @@ if __name__ == '__main__':
     #              starting_vector=rbt_s.manipulator_dict['arm'].joints[1]['gl_rotmatq'][:,0],
     #              portion=1,
     #              center=contraint_pos,
-    #              major_radius=abs(rbt_s.manipulator_dict['arm'].joints[3]['pos_in_loc_tcp'][1]) + abs(
-    #                  rbt_s.manipulator_dict['arm'].joints[6]['pos_in_loc_tcp'][1])).attach_to(base)
+    #              major_radius=abs(rbt_s.manipulator_dict['arm'].joints[3]['pos_in_tcp'][1]) + abs(
+    #                  rbt_s.manipulator_dict['arm'].joints[6]['pos_in_tcp'][1])).attach_to(base)
     # # neural ik
     # model = cbf.Net(n_hidden=100, n_jnts=6)
     # model.load_state_dict(torch.load("cobotta_model.pth"))

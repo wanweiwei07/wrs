@@ -23,102 +23,102 @@ class Robotiq140(gp.GripperInterface):
         cpl_end_rotmat = self.coupling.jnts[-1]['gl_rotmatq']
         # - lft_outer
         self.lft_outer = jl.JLChain(pos=cpl_end_pos, rotmat=cpl_end_rotmat, home_conf=np.zeros(4), name='lft_outer')
-        self.lft_outer.jnts[1]['pos_in_loc_tcp'] = np.array([0, -.0306011, .054904])
+        self.lft_outer.jnts[1]['pos_in_tcp'] = np.array([0, -.0306011, .054904])
         self.lft_outer.jnts[1]['motion_range'] = [.0, .7]
         self.lft_outer.jnts[1]['gl_rotmat'] = rm.rotmat_from_euler((math.pi / 2.0 + .725), 0, 0)
         self.lft_outer.jnts[1]['loc_motionax'] = np.array([-1, 0, 0])
-        self.lft_outer.jnts[2]['pos_in_loc_tcp'] = np.array([0, 0.01821998610742, 0.0260018192872234])  # passive
+        self.lft_outer.jnts[2]['pos_in_tcp'] = np.array([0, 0.01821998610742, 0.0260018192872234])  # passive
         self.lft_outer.jnts[2]['loc_motionax'] = np.array([1, 0, 0])
-        self.lft_outer.jnts[3]['pos_in_loc_tcp'] = np.array([0, 0.0817554015893473, -0.0282203446692936])
+        self.lft_outer.jnts[3]['pos_in_tcp'] = np.array([0, 0.0817554015893473, -0.0282203446692936])
         self.lft_outer.jnts[3]['gl_rotmat'] = rm.rotmat_from_euler(-0.725, 0, 0)
         self.lft_outer.jnts[3]['loc_motionax'] = np.array([1, 0, 0])
-        self.lft_outer.jnts[4]['pos_in_loc_tcp'] = np.array([0, 0.0420203446692936, -.03242])
+        self.lft_outer.jnts[4]['pos_in_tcp'] = np.array([0, 0.0420203446692936, -.03242])
         # - lft_inner
         self.lft_inner = jl.JLChain(pos=cpl_end_pos, rotmat=cpl_end_rotmat, home_conf=np.zeros(1), name='lft_inner')
-        self.lft_inner.jnts[1]['pos_in_loc_tcp'] = np.array([0, -.0127, .06142])
+        self.lft_inner.jnts[1]['pos_in_tcp'] = np.array([0, -.0127, .06142])
         self.lft_inner.jnts[1]['gl_rotmat'] = rm.rotmat_from_euler((math.pi / 2.0 + .725), 0, 0)
         self.lft_inner.jnts[1]['loc_motionax'] = np.array([1, 0, 0])
         # - rgt_outer
         self.rgt_outer = jl.JLChain(pos=cpl_end_pos, rotmat=cpl_end_rotmat, home_conf=np.zeros(4), name='rgt_outer')
-        self.rgt_outer.jnts[1]['pos_in_loc_tcp'] = np.array([0, .0306011, .054904])
+        self.rgt_outer.jnts[1]['pos_in_tcp'] = np.array([0, .0306011, .054904])
         self.rgt_outer.jnts[1]['gl_rotmat'] = rm.rotmat_from_euler((math.pi / 2.0 + .725), 0, math.pi)
         self.rgt_outer.jnts[1]['loc_motionax'] = np.array([1, 0, 0])
-        self.rgt_outer.jnts[2]['pos_in_loc_tcp'] = np.array([0, 0.01821998610742, 0.0260018192872234])  # passive
+        self.rgt_outer.jnts[2]['pos_in_tcp'] = np.array([0, 0.01821998610742, 0.0260018192872234])  # passive
         self.rgt_outer.jnts[2]['loc_motionax'] = np.array([1, 0, 0])
-        self.rgt_outer.jnts[3]['pos_in_loc_tcp'] = np.array([0, 0.0817554015893473, -0.0282203446692936])
+        self.rgt_outer.jnts[3]['pos_in_tcp'] = np.array([0, 0.0817554015893473, -0.0282203446692936])
         self.rgt_outer.jnts[3]['gl_rotmat'] = rm.rotmat_from_euler(-0.725, 0, 0)
         self.rgt_outer.jnts[3]['loc_motionax'] = np.array([1, 0, 0])
-        self.rgt_outer.jnts[4]['pos_in_loc_tcp'] = np.array([0, 0.0420203446692936, -.03242])
+        self.rgt_outer.jnts[4]['pos_in_tcp'] = np.array([0, 0.0420203446692936, -.03242])
         # - rgt_inner
         self.rgt_inner = jl.JLChain(pos=cpl_end_pos, rotmat=cpl_end_rotmat, home_conf=np.zeros(1), name='rgt_inner')
-        self.rgt_inner.jnts[1]['pos_in_loc_tcp'] = np.array([0, 0.0127, 0.06142])
+        self.rgt_inner.jnts[1]['pos_in_tcp'] = np.array([0, 0.0127, 0.06142])
         self.rgt_inner.jnts[1]['gl_rotmat'] = rm.rotmat_from_euler((math.pi / 2.0 + .725), 0, math.pi)
         self.rgt_inner.jnts[1]['loc_motionax'] = np.array([1, 0, 0])
         # links
         # - lft_outer
         self.lft_outer.lnks[0]['name'] = "robotiq140_gripper_base"
-        self.lft_outer.lnks[0]['pos_in_loc_tcp'] = np.zeros(3)
+        self.lft_outer.lnks[0]['pos_in_tcp'] = np.zeros(3)
         self.lft_outer.lnks[0]['com'] = np.array([8.625e-08, -4.6583e-06, 0.03145])
         self.lft_outer.lnks[0]['mass'] = 0.22652
         self.lft_outer.lnks[0]['mesh_file'] = os.path.join(this_dir, "meshes", "robotiq_arg2f_base_link.stl")
         self.lft_outer.lnks[0]['rgba'] = [.2, .2, .2, 1]
         self.lft_outer.lnks[1]['name'] = "left_outer_knuckle"
-        self.lft_outer.lnks[1]['pos_in_loc_tcp'] = np.zeros(3)
+        self.lft_outer.lnks[1]['pos_in_tcp'] = np.zeros(3)
         self.lft_outer.lnks[1]['com'] = np.array([-0.000200000000003065, 0.0199435877845359, 0.0292245259211331])
         self.lft_outer.lnks[1]['mass'] = 0.00853198276973456
         self.lft_outer.lnks[1]['mesh_file'] = os.path.join(this_dir, "meshes", "robotiq_arg2f_140_outer_knuckle.stl")
         self.lft_outer.lnks[1]['rgba'] = [0.792156862745098, 0.819607843137255, 0.933333333333333, 1]
         self.lft_outer.lnks[2]['name'] = "left_outer_finger"
-        self.lft_outer.lnks[2]['pos_in_loc_tcp'] = np.zeros(3)
+        self.lft_outer.lnks[2]['pos_in_tcp'] = np.zeros(3)
         self.lft_outer.lnks[2]['com'] = np.array([0.00030115855001899, 0.0373907951953854, -0.0208027427000385])
         self.lft_outer.lnks[2]['mass'] = 0.022614240507152
         self.lft_outer.lnks[2]['mesh_file'] = os.path.join(this_dir, "meshes", "robotiq_arg2f_140_outer_finger.stl")
         self.lft_outer.lnks[2]['rgba'] = [.2, .2, .2, 1]
         self.lft_outer.lnks[3]['name'] = "left_inner_finger"
-        self.lft_outer.lnks[3]['pos_in_loc_tcp'] = np.zeros(3)
+        self.lft_outer.lnks[3]['pos_in_tcp'] = np.zeros(3)
         self.lft_outer.lnks[3]['com'] = np.array([0.000299999999999317, 0.0160078233491243, -0.0136945669206257])
         self.lft_outer.lnks[3]['mass'] = 0.0104003125914103
         self.lft_outer.lnks[3]['mesh_file'] = os.path.join(this_dir, "meshes", "robotiq_arg2f_140_inner_finger.stl")
         self.lft_outer.lnks[3]['rgba'] = [.2, .2, .2, 1]
         self.lft_outer.lnks[4]['name'] = "left_inner_finger_pad"
-        self.lft_outer.lnks[4]['pos_in_loc_tcp'] = np.zeros(3)
+        self.lft_outer.lnks[4]['pos_in_tcp'] = np.zeros(3)
         self.lft_outer.lnks[4]['mesh_file'] = os.path.join(this_dir, "meshes", "robotiq_arg2f_140_pad.stl")
         self.lft_outer.lnks[4]['scale'] = [1e-3, 1e-3, 1e-3]
         self.lft_outer.lnks[4]['rgba'] = [0.792156862745098, 0.819607843137255, 0.933333333333333, 1]
         # - lft_inner
         self.lft_inner.lnks[1]['name'] = "left_inner_knuckle"
-        self.lft_inner.lnks[1]['pos_in_loc_tcp'] = np.zeros(3)
+        self.lft_inner.lnks[1]['pos_in_tcp'] = np.zeros(3)
         self.lft_inner.lnks[1]['com'] = np.array([0.000123011831763771, 0.0507850843201817, 0.00103968640075166])
         self.lft_inner.lnks[1]['mass'] = 0.0271177346495152
         self.lft_inner.lnks[1]['mesh_file'] = os.path.join(this_dir, "meshes", "robotiq_arg2f_140_inner_knuckle.stl")
         self.lft_inner.lnks[1]['rgba'] = [.2, .2, .2, 1]
         # - rgt_outer
         self.rgt_outer.lnks[1]['name'] = "right_outer_knuckle"
-        self.rgt_outer.lnks[1]['pos_in_loc_tcp'] = np.zeros(3)
+        self.rgt_outer.lnks[1]['pos_in_tcp'] = np.zeros(3)
         self.rgt_outer.lnks[1]['com'] = np.array([-0.000200000000003065, 0.0199435877845359, 0.0292245259211331])
         self.rgt_outer.lnks[1]['mass'] = 0.00853198276973456
         self.rgt_outer.lnks[1]['mesh_file'] = os.path.join(this_dir, "meshes", "robotiq_arg2f_140_outer_knuckle.stl")
         self.rgt_outer.lnks[1]['rgba'] = [0.792156862745098, 0.819607843137255, 0.933333333333333, 1]
         self.rgt_outer.lnks[2]['name'] = "right_outer_finger"
-        self.rgt_outer.lnks[2]['pos_in_loc_tcp'] = np.zeros(3)
+        self.rgt_outer.lnks[2]['pos_in_tcp'] = np.zeros(3)
         self.rgt_outer.lnks[2]['com'] = np.array([0.00030115855001899, 0.0373907951953854, -0.0208027427000385])
         self.rgt_outer.lnks[2]['mass'] = 0.022614240507152
         self.rgt_outer.lnks[2]['mesh_file'] = os.path.join(this_dir, "meshes", "robotiq_arg2f_140_outer_finger.stl")
         self.rgt_outer.lnks[2]['rgba'] = [.2, .2, .2, 1]
         self.rgt_outer.lnks[3]['name'] = "right_inner_finger"
-        self.rgt_outer.lnks[3]['pos_in_loc_tcp'] = np.zeros(3)
+        self.rgt_outer.lnks[3]['pos_in_tcp'] = np.zeros(3)
         self.rgt_outer.lnks[3]['com'] = np.array([0.000299999999999317, 0.0160078233491243, -0.0136945669206257])
         self.rgt_outer.lnks[3]['mass'] = 0.0104003125914103
         self.rgt_outer.lnks[3]['mesh_file'] = os.path.join(this_dir, "meshes", "robotiq_arg2f_140_inner_finger.stl")
         self.rgt_outer.lnks[3]['rgba'] = [.2, .2, .2, 1]
         self.rgt_outer.lnks[4]['name'] = "right_inner_finger_pad"
-        self.rgt_outer.lnks[4]['pos_in_loc_tcp'] = np.zeros(3)
+        self.rgt_outer.lnks[4]['pos_in_tcp'] = np.zeros(3)
         self.rgt_outer.lnks[4]['mesh_file'] = os.path.join(this_dir, "meshes", "robotiq_arg2f_140_pad.stl")
         self.rgt_outer.lnks[4]['scale'] = [1e-3, 1e-3, 1e-3]
         self.rgt_outer.lnks[4]['rgba'] = [0.792156862745098, 0.819607843137255, 0.933333333333333, 1]
         # - rgt_inner
         self.rgt_inner.lnks[1]['name'] = "right_inner_knuckle"
-        self.rgt_inner.lnks[1]['pos_in_loc_tcp'] = np.zeros(3)
+        self.rgt_inner.lnks[1]['pos_in_tcp'] = np.zeros(3)
         self.rgt_inner.lnks[1]['com'] = np.array([0.000123011831763771, 0.0507850843201817, 0.00103968640075166])
         self.rgt_inner.lnks[1]['mass'] = 0.0271177346495152
         self.rgt_inner.lnks[1]['mesh_file'] = os.path.join(this_dir, "meshes", "robotiq_arg2f_140_inner_knuckle.stl")
@@ -239,7 +239,7 @@ class Robotiq140(gp.GripperInterface):
                                       toggle_connjnt=toggle_connjnt).attach_to(sm_collection)
         if toggle_tcp_frame:
             jaw_center_gl_pos = self.rotmat.dot(grpr.jaw_center_pos) + self.pos
-            jaw_center_gl_rotmat = self.rotmat.dot(grpr.acting_center_rotmat)
+            jaw_center_gl_rotmat = self.rotmat.dot(grpr.loc_acting_center_rotmat)
             gm.gen_dashed_stick(spos=self.pos,
                                 epos=jaw_center_gl_pos,
                                 radius=.0062,
@@ -271,7 +271,7 @@ class Robotiq140(gp.GripperInterface):
                                       rgba=rgba).attach_to(mm_collection)
         if toggle_tcp_frame:
             jaw_center_gl_pos = self.rotmat.dot(self.jaw_center_pos) + self.pos
-            jaw_center_gl_rotmat = self.rotmat.dot(self.acting_center_rotmat)
+            jaw_center_gl_rotmat = self.rotmat.dot(self.loc_acting_center_rotmat)
             gm.gen_dashed_stick(spos=self.pos,
                                 epos=jaw_center_gl_pos,
                                 radius=.0062,

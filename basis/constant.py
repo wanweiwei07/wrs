@@ -45,7 +45,7 @@ yellow_green = np.array((0.6039215686274509, 0.803921568627451, 0.19607843137254
 # default values
 jnt_child_rgba = silver_gray
 jnt_parent_rgba = steel_gray
-link_stick_rgba = chocolate
+lnk_stick_rgba = chocolate
 # default color mats
 rgb_mat = np.column_stack((red[:3], green[:3], blue[:3]))
 myc_mat = np.column_stack((magenta[:3], yellow[:3], cyan[:3]))

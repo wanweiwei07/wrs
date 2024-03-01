@@ -146,7 +146,7 @@ class SystemInterface(object):
         return gl_tcp_pos, gl_tcp_rotmat
 
     def cvt_gl_to_loc_tcp(self, manipulator_name, gl_obj_pos, gl_obj_rotmat):
-        return self.manipulator_dict[manipulator_name].cvt_gl_to_loc_tcp(gl_obj_pos, gl_obj_rotmat)
+        return self.manipulator_dict[manipulator_name].cvt_gl_pose_to_tcp(gl_obj_pos, gl_obj_rotmat)
 
     def cvt_loc_tcp_to_gl(self, manipulator_name, rel_obj_pos, rel_obj_rotmat):
         return self.manipulator_dict[manipulator_name].cvt_loc_tcp_to_gl(rel_obj_pos, rel_obj_rotmat)
@@ -330,7 +330,7 @@ class SystemInterface(object):
         return gl_tcp_pos, gl_tcp_rotmat
 
     def cvt_gl_to_loc_tcp(self, manipulator_name, gl_obj_pos, gl_obj_rotmat):
-        return self.manipulator_dict[manipulator_name].cvt_gl_to_loc_tcp(gl_obj_pos, gl_obj_rotmat)
+        return self.manipulator_dict[manipulator_name].cvt_gl_pose_to_tcp(gl_obj_pos, gl_obj_rotmat)
 
     def cvt_loc_tcp_to_gl(self, manipulator_name, rel_obj_pos, rel_obj_rotmat):
         return self.manipulator_dict[manipulator_name].cvt_loc_tcp_to_gl(rel_obj_pos, rel_obj_rotmat)

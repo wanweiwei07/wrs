@@ -19,8 +19,8 @@ class SCTInterface(eei.EEInterface):
         :param jaw_width:
         :return:
         """
-        sct_root_rotmat = gl_action_center_rotmat.dot(self.acting_center_rotmat.T)
-        sct_root_pos = gl_action_center_pos - sct_root_rotmat.dot(self.acting_center_pos)
+        sct_root_rotmat = gl_action_center_rotmat.dot(self.loc_acting_center_rotmat.T)
+        sct_root_pos = gl_action_center_pos - sct_root_rotmat.dot(self.loc_acting_center_pos)
         self.fix_to(sct_root_pos, sct_root_rotmat)
         return [gl_action_center_pos, gl_action_center_rotmat, sct_root_pos, sct_root_rotmat]
 

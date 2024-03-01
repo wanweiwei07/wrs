@@ -125,7 +125,7 @@ class RobotInterface(object):
         return gl_tcp_pos, gl_tcp_rotmat
 
     def cvt_gl_to_loc_tcp(self, gl_obj_pos, gl_obj_rotmat):
-        return self.manipulator.cvt_gl_to_loc_tcp(gl_obj_pos, gl_obj_rotmat)
+        return self.manipulator.cvt_gl_pose_to_tcp(gl_obj_pos, gl_obj_rotmat)
 
     def cvt_loc_tcp_to_gl(self, rel_obj_pos, rel_obj_rotmat):
         return self.manipulator.cvt_loc_tcp_to_gl(rel_obj_pos, rel_obj_rotmat)

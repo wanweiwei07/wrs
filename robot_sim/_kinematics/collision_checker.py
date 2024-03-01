@@ -111,7 +111,7 @@ class CollisionChecker(object):
     def add_cce(self, lnk):
         """
         add a Link as a ccelement
-        :param lnk: instance of jl.Link
+        :param lnk: instance of rkjlc.Link
         :return:
         author: weiwei
         date: 20231116
@@ -133,8 +133,8 @@ class CollisionChecker(object):
     def set_cdpair(self, lnk_from_list, lnk_into_list):
         """
         The given two lists will be checked for collisions
-        :param lnk_from_list: a list of jl.Link
-        :param lnk_into_list: a list of jl.Link
+        :param lnk_from_list: a list of rkjlc.Link
+        :param lnk_into_list: a list of rkjlc.Link
         :return:
         author: weiwei
         date: 20201215, 20230811, 20231116

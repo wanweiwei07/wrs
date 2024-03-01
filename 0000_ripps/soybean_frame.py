@@ -71,7 +71,7 @@ class Stem(object):
     def __init__(self, pos=np.zeros(3), rotmat=np.eye(3), ndof=5, base_thickness=.005, base_length=.3, name='stem'):
         self.jlc = jlc.JLChain(pos=pos, rotmat=rotmat, home_conf=np.zeros(ndof), name=name + "jlchain")
         for i in range(1, self.jlc.n_dof + 1):
-            self.jlc.jnts[i]['pos_in_loc_tcp'] = np.array([0, 0, base_length / ndof])
+            self.jlc.jnts[i]['pos_in_tcp'] = np.array([0, 0, base_length / ndof])
             self.jlc.jnts[i]['loc_motionax'] = np.array([1, 0, 0])
         self.jlc.finalize()
         for link_id in range(self.jlc.n_dof + 1):

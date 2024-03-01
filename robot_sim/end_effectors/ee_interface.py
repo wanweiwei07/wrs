@@ -2,8 +2,8 @@ import copy
 import numpy as np
 import modeling.model_collection as mmc
 import modeling.collision_model as mcm
-import robot_sim._kinematics.jl as jl
-import robot_sim._kinematics.jlchain as rkjl
+import robot_sim._kinematics.jl as rkjl
+import robot_sim._kinematics.jlchain as rkjlc
 import robot_sim._kinematics.collision_checker as rkcc
 import modeling.geometric_model as mgm
 import robot_sim._kinematics.model_generator as rkmg
@@ -21,17 +21,14 @@ class EEInterface(object):
         # joints
         # -- coupling --
         # no coupling by default, change the pos if the coupling existed
-        self.coupling = rkjl.JLChain(pos=self.pos, rotmat=self.rotmat, n_dof=0, name=name + "_coupling")
-        self.coupling.loc_tcp_pos = np.array([0, 0, 0])
-        self.coupling.anchor.name = "coupling_anchor"
+        self.coupling = rkjlc.JLChain(name=name + "_coupling", pos=self.pos, rotmat=self.rotmat)
         # toggle on the following part to assign an explicit mesh model to a coupling
-        # self.coupling.jnts[0].link = rkjl.create_link(mesh_file=os.path.join(this_dir, "meshes", "xxx.stl"))
+        # self.coupling.jnts[0].link = .create_link(mesh_file=os.path.join(this_dir, "meshes", "xxx.stl"))
         # self.coupling.jnts[0].link = mcm.gen_stick(spos=self.coupling.anchor.pos, epos = self.coupling.jnts[0].pos)
         # self.coupling.jnts[0].lnks.rgba = [.2, .2, .2, 1]
-        self.coupling.finalize(ik_solver=None)
         # acting center of the tool
-        self.acting_center_pos = np.zeros(3)
-        self.acting_center_rotmat = np.eye(3)
+        self.loc_acting_center_pos = np.zeros(3)
+        self.loc_acting_center_rotmat = np.eye(3)
         # collision detection
         self.cc = None
         # cd mesh collection for precise collision checking
@@ -117,34 +114,34 @@ class EEInterface(object):
         raise NotImplementedError
 
     def align_acting_center_by_twovecs(self,
-                                       gl_acting_center_pos,
-                                       gl_approaching_vec,
-                                       gl_side_vec):
+                                       acting_center_pos,
+                                       approaching_vec,
+                                       side_vec):
         """
         align acting center to a frame decided by two vectors
-        :param gl_acting_center_pos:
-        :param gl_approaching_vec:
-        :param gl_side_vec:
+        :param acting_center_pos:
+        :param approaching_vec:
+        :param side_vec:
         :return:
         """
-        gl_acting_center_rotmat = np.eye(3)
-        gl_acting_center_rotmat[:, 2] = rm.unit_vector(gl_approaching_vec)
-        gl_acting_center_rotmat[:, 1] = rm.unit_vector(gl_side_vec)
-        gl_acting_center_rotmat[:, 0] = np.cross(gl_acting_center_rotmat[:3, 1], gl_acting_center_rotmat[:3, 2])
-        return self.align_acting_center_by_pose(gl_acting_center_pos=gl_acting_center_pos,
-                                                gl_acting_center_rotmat=gl_acting_center_rotmat)
+        acting_center_rotmat = np.eye(3)
+        acting_center_rotmat[:, 2] = rm.unit_vector(approaching_vec)
+        acting_center_rotmat[:, 1] = rm.unit_vector(side_vec)
+        acting_center_rotmat[:, 0] = np.cross(acting_center_rotmat[:3, 1], acting_center_rotmat[:3, 2])
+        return self.align_acting_center_by_pose(acting_center_pos=acting_center_pos,
+                                                acting_center_rotmat=acting_center_rotmat)
 
-    def align_acting_center_by_pose(self, gl_acting_center_pos, gl_acting_center_rotmat):
+    def align_acting_center_by_pose(self, acting_center_pos, acting_center_rotmat):
         """
         align acting center to a frame decided by pos and rotmat
-        :param gl_acting_center_pos:
-        :param gl_acting_center_rotmat:
+        :param acting_center_pos:
+        :param acting_center_rotmat:
         :return:
         """
-        ee_root_rotmat = gl_acting_center_rotmat.dot(self.acting_center_rotmat.T)
-        ee_root_pos = gl_acting_center_pos - ee_root_rotmat.dot(self.acting_center_pos)
+        ee_root_rotmat = acting_center_rotmat.dot(self.loc_acting_center_rotmat.T)
+        ee_root_pos = acting_center_pos - ee_root_rotmat.dot(self.loc_acting_center_pos)
         self.fix_to(ee_root_pos, ee_root_rotmat)
-        return [gl_acting_center_pos, gl_acting_center_rotmat, ee_root_pos, ee_root_rotmat]
+        return [acting_center_pos, acting_center_rotmat, ee_root_pos, ee_root_rotmat]
 
     def show_cdprimit(self):
         self.cc.show_cdprim()
@@ -179,11 +176,11 @@ class EEInterface(object):
         raise NotImplementedError
 
     def _toggle_tcp_frame(self, parent):
-        gl_acting_center_pos = self.rotmat.dot(self.acting_center_pos) + self.pos
-        gl_acting_center_rotmat = self.rotmat.dot(self.acting_center_rotmat)
-        rkmg.gen_tcp_frame(spos=self.pos,
-                           gl_tcp_pos=gl_acting_center_pos,
-                           gl_tcp_rotmat=gl_acting_center_rotmat).attach_to(parent)
+        gl_acting_center_pos = self.rotmat.dot(self.loc_acting_center_pos) + self.pos
+        gl_acting_center_rotmat = self.rotmat.dot(self.loc_acting_center_rotmat)
+        rkmg.gen_indicated_frame(spos=self.pos,
+                                 gl_pos=gl_acting_center_pos,
+                                 gl_rotmat=gl_acting_center_rotmat).attach_to(parent)
 
     def enable_cc(self):
         self.cc = cc.CollisionChecker("collision_checker")

@@ -112,7 +112,7 @@ class NumIKSolver(object):
                 import robot_sim._kinematics.model_generator as rkmg
                 joint_values = self.jlc.get_jnt_values()
                 self.jlc.go_given_conf(jnt_values=iter_jnt_vals)
-                rkmg.gen_jlc_stick(self.jlc, toggle_tcp_frame=True, toggle_joint_frame=True).attach_to(base)
+                rkmg.gen_jlc_stick(self.jlc, toggle_tcp_frame=True).attach_to(base)
                 self.jlc.go_given_conf(jnt_values=joint_values)
                 import modeling.geometric_model as gm
                 gm.gen_arrow(spos=tcp_gl_pos, epos=tcp_gl_pos + tcp_err_vec[:3] * .1).attach_to(base)
@@ -152,7 +152,7 @@ class NumIKSolver(object):
                 import robot_sim._kinematics.model_generator as rkmg
                 joint_values = self.jlc.get_jnt_values()
                 self.jlc.go_given_conf(jnt_values=iter_jnt_vals)
-                rkmg.gen_jlc_stick(self.jlc, toggle_tcp_frame=True, toggle_joint_frame=True).attach_to(base)
+                rkmg.gen_jlc_stick(self.jlc, toggle_tcp_frame=True).attach_to(base)
                 self.jlc.go_given_conf(jnt_values=joint_values)
                 import modeling.geometric_model as gm
                 gm.gen_arrow(spos=tcp_gl_pos, epos=tgt_pos).attach_to(base)
@@ -193,7 +193,7 @@ class NumIKSolver(object):
                 import robot_sim._kinematics.model_generator as rkmg
                 joint_values = self.jlc.get_jnt_values()
                 self.jlc.go_given_conf(jnt_values=iter_jnt_vals)
-                rkmg.gen_jlc_stick(self.jlc, toggle_tcp_frame=True, toggle_joint_frame=True).attach_to(base)
+                rkmg.gen_jlc_stick(self.jlc, toggle_tcp_frame=True).attach_to(base)
                 self.jlc.go_given_conf(jnt_values=joint_values)
                 import modeling.geometric_model as gm
                 gm.gen_arrow(spos=tcp_gl_pos, epos=tgt_pos).attach_to(base)
@@ -246,7 +246,7 @@ class NumIKSolver(object):
                 import robot_sim._kinematics.model_generator as rkmg
                 joint_values = self.jlc.get_jnt_values()
                 self.jlc.go_given_conf(jnt_values=iter_jnt_vals)
-                rkmg.gen_jlc_stick(self.jlc, toggle_tcp_frame=True, toggle_jnt_frames=True).attach_to(base)
+                rkmg.gen_jlc_stick(self.jlc, toggle_jnt_frames=True, toggle_tcp_frame=True).attach_to(base)
                 self.jlc.go_given_conf(jnt_values=joint_values)
                 import modeling.geometric_model as gm
                 gm.gen_arrow(spos=tcp_gl_pos, epos=tgt_pos).attach_to(base)
@@ -295,7 +295,7 @@ class NumIKSolver(object):
                 import robot_sim._kinematics.model_generator as rkmg
                 joint_values = self.jlc.get_jnt_values()
                 self.jlc.go_given_conf(jnt_values=iter_jnt_vals)
-                rkmg.gen_jlc_stick(self.jlc, toggle_tcp_frame=True, toggle_joint_frame=True).attach_to(base)
+                rkmg.gen_jlc_stick(self.jlc, toggle_tcp_frame=True).attach_to(base)
                 self.jlc.go_given_conf(jnt_values=joint_values)
                 import modeling.geometric_model as gm
                 gm.gen_arrow(spos=tcp_gl_pos, epos=tgt_pos).attach_to(base)

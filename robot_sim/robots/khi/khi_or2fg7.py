@@ -29,8 +29,8 @@ class KHI_OR2FG7(ai.RobotInterface):
                                                 name='or2fg7', enable_cc=False)
         # tool center point
         self.manipulator.tcp_jnt_id = -1
-        self.manipulator.loc_tcp_pos = self.end_effector.acting_center_pos
-        self.manipulator.loc_tcp_rotmat = self.end_effector.acting_center_rotmat
+        self.manipulator.loc_tcp_pos = self.end_effector.loc_acting_center_pos
+        self.manipulator.loc_tcp_rotmat = self.end_effector.loc_acting_center_rotmat
         # collision detection
         if enable_cc:
             self.enable_cc()

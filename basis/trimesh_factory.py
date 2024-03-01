@@ -1,7 +1,6 @@
 """
 Generate a bunch of trimesh objects, in meter radian
 """
-
 import numpy as np
 import basis.trimesh.primitives as trm_primit
 import basis.trimesh.geometry as trm_geom

@@ -125,7 +125,7 @@ class NIK(object):
         date: 20200706
         """
         if tcp_jnt_id is None:
-            tcp_jnt_id = self.jlc_object.tcp_jnt_id
+            tcp_jnt_id = self.jlc_object.functional_jnt_id
         if tcp_loc_pos is None:
             tcp_loc_pos = self.jlc_object.loc_tcp_pos
         if tcp_loc_rotmat is None:
@@ -234,7 +234,7 @@ class NIK(object):
             wns.WarningMessage("The goal is outside maximum range!")
             return None
         if tcp_jnt_id is None:
-            tcp_jnt_id = self.jlc_object.tcp_jnt_id
+            tcp_jnt_id = self.jlc_object.functional_jnt_id
         if tcp_loc_pos is None:
             tcp_loc_pos = self.jlc_object.loc_tcp_pos
             print(self.jlc_object.loc_tcp_pos)

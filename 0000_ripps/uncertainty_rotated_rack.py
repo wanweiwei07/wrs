@@ -129,5 +129,5 @@ if __name__ == '__main__':
         rbt_s.gen_meshmodel(rgba=[.7,.7,.7,.7], option='hand_only').attach_to(base)
         gl_tcp_pos, gl_tcp_rotmat = rbt_s.get_gl_tcp(manipulator_name="arm")
         gm.gen_circarrow(axis=-gl_tcp_rotmat[:,2], center=gl_tcp_pos+gl_tcp_rotmat[:,2]*.03, rgba=[1,.5,0,1], radius=.12, portion=.9, thickness=.007, sections=64, discretization=256, end='double', starting_vector=-gl_tcp_rotmat[:,0]).attach_to(base)
-        # mgm.gen_circarrow(axis=-gl_tcp_rotmat[:,2], center=gl_tcp_pos-gl_tcp_rotmat[:,2]*.02, rgba=[1,.5,0,1], end_type='double').attach_to(base)
+        # mgm.gen_circarrow(axis=-gl_rotmat[:,2], center=gl_pos-gl_rotmat[:,2]*.02, rgba=[1,.5,0,1], end_type='double').attach_to(base)
     base.run()

@@ -14,14 +14,14 @@ class TBM(object):
         this_dir, this_filename = os.path.split(__file__)
         # head
         self.head = jl.JLChain(pos=pos, rotmat=rotmat, home_conf=np.zeros(1), name='head')
-        self.head.jnts[1]['pos_in_loc_tcp'] = np.zeros(3)
+        self.head.jnts[1]['pos_in_tcp'] = np.zeros(3)
         self.head.jnts[1]['loc_motionax'] = np.array([1, 0, 0])
         self.head.lnks[0]['name'] = 'tbm_front_shield'
-        self.head.lnks[0]['pos_in_loc_tcp'] = np.array([0, 0, 0])
+        self.head.lnks[0]['pos_in_tcp'] = np.array([0, 0, 0])
         self.head.lnks[0]['mesh_file'] = os.path.join(this_dir, 'meshes', 'tbm_front_shield.stl')
         self.head.lnks[0]['rgba'] = [.7, .7, .7, .3]
         self.head.lnks[1]['name'] = 'tbm_cutter_head'
-        self.head.lnks[1]['pos_in_loc_tcp'] = np.array([0, 0, 0])
+        self.head.lnks[1]['pos_in_tcp'] = np.array([0, 0, 0])
         self.head.lnks[1]['mesh_file'] = os.path.join(this_dir, 'meshes', 'tbm_cutter_head.stl')
         self.head.lnks[1]['rgba'] = [.7, .3, .3, 1]
         self.head.tgtjnts = [1]
@@ -299,10 +299,10 @@ class TBM(object):
                                      rotmat=self.cutter_rotmat_dict[k][i],
                                      home_conf=np.zeros(1),
                                      name='cutter_' + str(k) + '_' + str(i))
-                tmp_jlc.jnts[1]['pos_in_loc_tcp'] = np.zeros(3)
+                tmp_jlc.jnts[1]['pos_in_tcp'] = np.zeros(3)
                 tmp_jlc.jnts[1]['loc_motionax'] = np.array([0, 0, 1])
                 tmp_jlc.lnks[1]['name'] = 'cutter'
-                tmp_jlc.lnks[1]['pos_in_loc_tcp'] = np.array([0, 0, 0])
+                tmp_jlc.lnks[1]['pos_in_tcp'] = np.array([0, 0, 0])
                 tmp_jlc.lnks[1]['mesh_file'] = os.path.join(this_dir, 'meshes', 'cutter.stl')
                 tmp_jlc.lnks[1]['rgba'] = [1, 1, .0, 1.0]
                 tmp_jlc.tgtjnts = [1]

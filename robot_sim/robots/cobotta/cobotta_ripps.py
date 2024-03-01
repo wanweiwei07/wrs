@@ -18,7 +18,7 @@ class CobottaRIPPS(ri.RobotInterface):
                                      rotmat=rotmat,
                                      home_conf=np.zeros(0),
                                      name='base_plate_ripps')
-        self.base_plate.jnts[1]['pos_in_loc_tcp'] = np.array([0, 0, 0.01])
+        self.base_plate.jnts[1]['pos_in_tcp'] = np.array([0, 0, 0.01])
         self.base_plate.lnks[0]['mesh_file'] = os.path.join(this_dir, "meshes", "base_plate_ripps.stl")
         self.base_plate.lnks[0]['rgba'] = [.55, .55, .55, 1]
         self.base_plate.finalize()
@@ -37,7 +37,7 @@ class CobottaRIPPS(ri.RobotInterface):
                                        rotmat=self.arm.jnts[-1]['gl_rotmatq'].dot(self.gripper_loc_rotmat),
                                        name='hnd_s', enable_cc=False)
         # tool center point
-        self.arm.jlc.tcp_jnt_id = -1
+        self.arm.jlc.functional_jnt_id = -1
         self.arm.jlc.loc_tcp_pos = self.gripper_loc_rotmat.dot(self.hnd.jaw_center_pos)
         self.arm.jlc.loc_tcp_rotmat = self.gripper_loc_rotmat.dot(self.hnd.jaw_center_rotmat)
         # a list of detailed information about objects in hand, see CollisionChecker.add_objinhnd
@@ -163,7 +163,7 @@ class CobottaRIPPS(ri.RobotInterface):
             raise ValueError("Hand name does not exist!")
         if jaw_width is not None:
             self.hnd_dict[hnd_name].change_jaw_width(jaw_width)
-        rel_pos, rel_rotmat = self.manipulator_dict[hnd_name].cvt_gl_to_loc_tcp(objcm.get_pos(), objcm.get_rotmat())
+        rel_pos, rel_rotmat = self.manipulator_dict[hnd_name].cvt_gl_pose_to_tcp(objcm.get_pos(), objcm.get_rotmat())
         into_list = [self.arm.lnks[0],
                      self.arm.lnks[1],
                      self.arm.lnks[2],

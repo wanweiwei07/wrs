@@ -12,11 +12,11 @@ class XYBot(ri.RobotInterface):
         self.jlc = jl.JLChain(home_conf=np.zeros(2), name='XYBot')
         self.jlc.jnts[1]['end_type'] = 'prismatic'
         self.jlc.jnts[1]['loc_motionax'] = np.array([1, 0, 0])
-        self.jlc.jnts[1]['pos_in_loc_tcp'] = np.zeros(3)
+        self.jlc.jnts[1]['pos_in_tcp'] = np.zeros(3)
         self.jlc.jnts[1]['motion_range'] = [-2.0, 15.0]
         self.jlc.jnts[2]['end_type'] = 'prismatic'
         self.jlc.jnts[2]['loc_motionax'] = np.array([0, 1, 0])
-        self.jlc.jnts[2]['pos_in_loc_tcp'] = np.zeros(3)
+        self.jlc.jnts[2]['pos_in_tcp'] = np.zeros(3)
         self.jlc.jnts[2]['motion_range'] = [-2.0, 15.0]
         self.jlc.finalize()
 

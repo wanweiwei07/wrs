@@ -16,27 +16,27 @@ class TBMGripper(gp.GripperInterface):
         cpl_end_rotmat = self.coupling.jnts[-1]['gl_rotmatq']
         # left finger
         self.lft_fgr = jl.JLChain(pos=cpl_end_pos, rotmat=cpl_end_rotmat, home_conf=np.zeros(1), name='lft_outer')
-        self.lft_fgr.jnts[1]['pos_in_loc_tcp'] = np.array([0.113, 0, -.058])
+        self.lft_fgr.jnts[1]['pos_in_tcp'] = np.array([0.113, 0, -.058])
         self.lft_fgr.jnts[1]['motion_range'] = [-.8, .8]
         self.lft_fgr.jnts[1]['loc_motionax'] = np.array([0, 1, 0])
         # right finger
         self.rgt_fgr = jl.JLChain(pos=cpl_end_pos, rotmat=cpl_end_rotmat, home_conf=np.zeros(1), name='lft_outer')
-        self.rgt_fgr.jnts[1]['pos_in_loc_tcp'] = np.array([0.113, 0, 0.058])
+        self.rgt_fgr.jnts[1]['pos_in_tcp'] = np.array([0.113, 0, 0.058])
         self.rgt_fgr.jnts[1]['motion_range'] = [-.8, .8]
         self.rgt_fgr.jnts[1]['loc_motionax'] = np.array([0, 1, 0])
         # links
         # palm and left finger
         self.lft_fgr.lnks[0]['name'] = "palm"
-        self.lft_fgr.lnks[0]['pos_in_loc_tcp'] = np.zeros(3)
+        self.lft_fgr.lnks[0]['pos_in_tcp'] = np.zeros(3)
         self.lft_fgr.lnks[0]['mesh_file'] = os.path.join(this_dir, "meshes", "palm_r.stl")
         self.lft_fgr.lnks[0]['rgba'] = [.5, .5, .5, 1]
         self.lft_fgr.lnks[1]['name'] = "finger1"
-        self.lft_fgr.lnks[1]['pos_in_loc_tcp'] = np.zeros(3)
+        self.lft_fgr.lnks[1]['pos_in_tcp'] = np.zeros(3)
         self.lft_fgr.lnks[1]['mesh_file'] = os.path.join(this_dir, "meshes", "finger1_r.stl")
         self.lft_fgr.lnks[1]['rgba'] = [0.792156862745098, 0.819607843137255, 0.933333333333333, 1]
         # right finger
         self.rgt_fgr.lnks[1]['name'] = "finger2"
-        self.rgt_fgr.lnks[1]['pos_in_loc_tcp'] = np.zeros(3)
+        self.rgt_fgr.lnks[1]['pos_in_tcp'] = np.zeros(3)
         self.rgt_fgr.lnks[1]['mesh_file'] = os.path.join(this_dir, "meshes", "finger2_r.stl")
         self.rgt_fgr.lnks[1]['rgba'] = [0.792156862745098, 0.819607843137255, 0.933333333333333, 1]
         # reinitialize
@@ -108,7 +108,7 @@ class TBMGripper(gp.GripperInterface):
                                     toggle_connjnt=toggle_connjnt).attach_to(sm_collection)
         if toggle_tcp_frame:
             jaw_center_gl_pos = self.rotmat.dot(grpr.jaw_center_pos) + self.pos
-            jaw_center_gl_rotmat = self.rotmat.dot(grpr.acting_center_rotmat)
+            jaw_center_gl_rotmat = self.rotmat.dot(grpr.loc_acting_center_rotmat)
             gm.gen_dashed_stick(spos=self.pos,
                                 epos=jaw_center_gl_pos,
                                 radius=.0062,
@@ -134,7 +134,7 @@ class TBMGripper(gp.GripperInterface):
                                     rgba=rgba).attach_to(mm_collection)
         if toggle_tcp_frame:
             jaw_center_gl_pos = self.rotmat.dot(grpr.jaw_center_pos) + self.pos
-            jaw_center_gl_rotmat = self.rotmat.dot(grpr.acting_center_rotmat)
+            jaw_center_gl_rotmat = self.rotmat.dot(grpr.loc_acting_center_rotmat)
             gm.gen_dashed_stick(spos=self.pos,
                                 epos=jaw_center_gl_pos,
                                 radius=.0062,

@@ -24,22 +24,22 @@ class Lite6WRSGripper2(gp.GripperInterface):
         cpl_end_rotmat = self.coupling.jnts[-1]['gl_rotmatq']
         # gripper base
         self.body = jl.JLChain(pos=cpl_end_pos, rotmat=cpl_end_rotmat, home_conf=np.zeros(1), name='base')
-        self.body.jnts[1]['pos_in_loc_tcp'] = np.array([0, 0, 0])
+        self.body.jnts[1]['pos_in_tcp'] = np.array([0, 0, 0])
         self.body.lnks[0]['name'] = "base"
-        self.body.lnks[0]['pos_in_loc_tcp'] = np.zeros(3)
+        self.body.lnks[0]['pos_in_tcp'] = np.zeros(3)
         self.body.lnks[0]['collision_model'] = cm.CollisionModel(os.path.join(this_dir, "meshes", "base_v2.stl"),
                                                                  expand_radius=.001)
         self.body.lnks[0]['rgba'] = [.57, .57, .57, 1]
 
         self.body.lnks[1]['name'] = "realsense_dual"
-        self.body.lnks[1]['pos_in_loc_tcp'] = np.zeros(3)
+        self.body.lnks[1]['pos_in_tcp'] = np.zeros(3)
         self.body.lnks[1]['collision_model'] = cm.CollisionModel(os.path.join(this_dir, "meshes", "dual_realsense.stl"),
                                                                  expand_radius=.001)
         self.body.lnks[1]['rgba'] = [.37, .37, .37, 1]
 
         # lft finger
         self.lft = jl.JLChain(pos=cpl_end_pos, rotmat=cpl_end_rotmat, home_conf=np.zeros(1), name='lft_finger')
-        self.lft.jnts[1]['pos_in_loc_tcp'] = np.array([0.01492498, 0.005, .05])
+        self.lft.jnts[1]['pos_in_tcp'] = np.array([0.01492498, 0.005, .05])
         self.lft.jnts[1]['gl_rotmat'] = rm.rotmat_from_euler(0, 0, -math.pi)
         self.lft.jnts[1]['end_type'] = 'prismatic'
         self.lft.jnts[1]['motion_range'] = [.0, .025]
@@ -51,7 +51,7 @@ class Lite6WRSGripper2(gp.GripperInterface):
         self.lft.lnks[1]['rgba'] = [.65, .65, .65, 1]
         # rgt finger
         self.rgt = jl.JLChain(pos=cpl_end_pos, rotmat=cpl_end_rotmat, home_conf=np.zeros(1), name='rgt_finger')
-        self.rgt.jnts[1]['pos_in_loc_tcp'] = np.array([-0.01492498, -0.005, .05])
+        self.rgt.jnts[1]['pos_in_tcp'] = np.array([-0.01492498, -0.005, .05])
         # self.rgt.joints[1]['gl_rotmat'] = rm.rotmat_from_euler(0, 0, math.pi / 2)
         self.rgt.jnts[1]['end_type'] = 'prismatic'
         self.rgt.jnts[1]['loc_motionax'] = np.array([0, -1, 0])
@@ -181,7 +181,7 @@ class Lite6WRSGripper2(gp.GripperInterface):
                                 toggle_connjnt=toggle_connjnt).attach_to(stickmodel)
         if toggle_tcp_frame:
             jaw_center_gl_pos = self.rotmat.dot(self.jaw_center_pos) + self.pos
-            jaw_center_gl_rotmat = self.rotmat.dot(self.acting_center_rotmat)
+            jaw_center_gl_rotmat = self.rotmat.dot(self.loc_acting_center_rotmat)
             gm.gen_dashed_stick(spos=self.pos,
                                 epos=jaw_center_gl_pos,
                                 radius=.0062,
@@ -224,7 +224,7 @@ class Lite6WRSGripper2(gp.GripperInterface):
                                 rgba=rgba).attach_to(meshmodel)
         if toggle_tcp_frame:
             jaw_center_gl_pos = self.rotmat.dot(self.jaw_center_pos) + self.pos
-            jaw_center_gl_rotmat = self.rotmat.dot(self.acting_center_rotmat)
+            jaw_center_gl_rotmat = self.rotmat.dot(self.loc_acting_center_rotmat)
             gm.gen_dashed_stick(spos=self.pos,
                                 epos=jaw_center_gl_pos,
                                 radius=.0062,

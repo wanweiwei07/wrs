@@ -18,18 +18,18 @@ class SDA5F(ri.RobotInterface):
         this_dir, this_filename = os.path.split(__file__)
         # left side
         self.lft_body = jl.JLChain(pos=pos, rotmat=rotmat, home_conf=np.zeros(1), name='lft_body_jl')
-        self.lft_body.jnts[1]['pos_in_loc_tcp'] = np.array([0.045, 0, 0.7296])
-        self.lft_body.jnts[2]['pos_in_loc_tcp'] = np.array([0.15, 0.101, 0.1704])
+        self.lft_body.jnts[1]['pos_in_tcp'] = np.array([0.045, 0, 0.7296])
+        self.lft_body.jnts[2]['pos_in_tcp'] = np.array([0.15, 0.101, 0.1704])
         self.lft_body.jnts[2]['gl_rotmat'] = rm.rotmat_from_euler(-math.pi / 2.0, -math.pi / 2.0, 0)
         self.lft_body.lnks[0]['name'] = "sda5f_lft_body"
-        self.lft_body.lnks[0]['pos_in_loc_tcp'] = np.array([0, 0, 0])
+        self.lft_body.lnks[0]['pos_in_tcp'] = np.array([0, 0, 0])
         self.lft_body.lnks[0]['collision_model'] = cm.CollisionModel(
             os.path.join(this_dir, "meshes", "base_link.stl"),
             cdp_type="user_defined", expand_radius=.005,
             userdef_cdprim_fn=self._base_combined_cdnp)
         self.lft_body.lnks[0]['rgba'] = [.7, .7, .7, 1.0]
         self.lft_body.lnks[1]['name'] = "sda5f_lft_torso"
-        self.lft_body.lnks[1]['pos_in_loc_tcp'] = np.array([0, 0, 0])
+        self.lft_body.lnks[1]['pos_in_tcp'] = np.array([0, 0, 0])
         self.lft_body.lnks[1]['collision_model'] = cm.CollisionModel(
             os.path.join(this_dir, "meshes", "torso_link.stl"),
             cdp_type="user_defined", expand_radius=.005,
@@ -54,14 +54,14 @@ class SDA5F(ri.RobotInterface):
                                      enable_cc=False)
         # right side
         self.rgt_body = jl.JLChain(pos=pos, rotmat=rotmat, home_conf=np.zeros(1), name='rgt_body_jl')
-        self.rgt_body.jnts[1]['pos_in_loc_tcp'] = np.array([0.045, 0, 0.7296])  # right from robot_s view
-        self.rgt_body.jnts[2]['pos_in_loc_tcp'] = np.array([0.15, -0.101, 0.1704])
+        self.rgt_body.jnts[1]['pos_in_tcp'] = np.array([0.045, 0, 0.7296])  # right from robot_s view
+        self.rgt_body.jnts[2]['pos_in_tcp'] = np.array([0.15, -0.101, 0.1704])
         self.rgt_body.jnts[2]['gl_rotmat'] = rm.rotmat_from_euler(math.pi / 2.0, -math.pi / 2.0, 0)
         self.rgt_body.lnks[0]['name'] = "sda5f_rgt_body"
-        self.rgt_body.lnks[0]['pos_in_loc_tcp'] = np.array([0, 0, 0])
+        self.rgt_body.lnks[0]['pos_in_tcp'] = np.array([0, 0, 0])
         self.rgt_body.lnks[0]['mesh_file'] = None
         self.rgt_body.lnks[1]['name'] = "sda5f_rgt_torso"
-        self.rgt_body.lnks[1]['pos_in_loc_tcp'] = np.array([0, 0, 0])
+        self.rgt_body.lnks[1]['pos_in_tcp'] = np.array([0, 0, 0])
         self.rgt_body.lnks[1]['mesh_file'] = None
         self.rgt_body.finalize()
         rgt_arm_homeconf = np.zeros(7)

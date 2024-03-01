@@ -52,10 +52,14 @@ class JLChain(object):
         self.anchor = rkjl.Anchor(name, pos=pos, rotmat=rotmat)
         self.jnts = [rkjl.Joint(name=f"j{i}") for i in range(self.n_dof)]
         self._jnt_ranges = self._get_jnt_ranges()
-        # default tcp
-        self._tcp_jnt_id = self.n_dof - 1
+        # default functional joint id, loc_xxx are considered described in it
+        self._functional_jnt_id = self.n_dof - 1
+        # default tcp for inverse kinematics
         self.loc_tcp_pos = np.zeros(3)
         self.loc_tcp_rotmat = np.eye(3)
+        # default flange for cascade connection
+        self.loc_flange_pos = np.zeros(3)
+        self.loc_flange_rotmat = np.eye(3)
         # initialize
         self.go_home()
         # collision primitives
@@ -70,12 +74,12 @@ class JLChain(object):
         return self._jnt_ranges
 
     @property
-    def tcp_jnt_id(self):
-        return self._tcp_jnt_id
+    def functional_jnt_id(self):
+        return self._functional_jnt_id
 
-    @tcp_jnt_id.setter
-    def tcp_jnt_id(self, value):
-        self._tcp_jnt_id = value
+    @functional_jnt_id.setter
+    def functional_jnt_id(self, value):
+        self._functional_jnt_id = value
 
     @property
     def loc_tcp_homomat(self):
@@ -111,10 +115,10 @@ class JLChain(object):
         date: 20161202, 20201009osaka, 20230823
         """
         if not update:
-            homomat = self.anchor.homomat
+            homomat = self.anchor.gl_flange_homomat
             jnt_pos = np.zeros((self.n_dof, 3))
             jnt_motion_ax = np.zeros((self.n_dof, 3))
-            for i in range(self.tcp_jnt_id + 1):
+            for i in range(self.functional_jnt_id + 1):
                 jnt_motion_ax[i, :] = homomat[:3, :3] @ self.jnts[i].loc_motion_ax
                 if self.jnts[i].type == rkc.JntType.REVOLUTE:
                     jnt_pos[i, :] = homomat[:3, 3] + homomat[:3, :3] @ self.jnts[i].loc_pos
@@ -124,7 +128,7 @@ class JLChain(object):
             gl_tcp_rotmat = gl_tcp_homomat[:3, :3]
             if toggle_jacobian:
                 j_mat = np.zeros((6, self.n_dof))
-                for i in range(self.tcp_jnt_id + 1):
+                for i in range(self.functional_jnt_id + 1):
                     if self.jnts[i].type == rkc.JntType.REVOLUTE:
                         vec_jnt2tcp = gl_tcp_pos - jnt_pos[i, :]
                         j_mat[:3, i] = np.cross(jnt_motion_ax[i, :], vec_jnt2tcp)
@@ -136,17 +140,17 @@ class JLChain(object):
                 return gl_tcp_pos, gl_tcp_rotmat
         else:
             self.anchor.update_pose()
-            pos = self.anchor.pos
-            rotmat = self.anchor.rotmat
+            pos = self.anchor.gl_flange_pos
+            rotmat = self.anchor.gl_flange_rotmat
             for i in range(self.n_dof):
                 motion_value = jnt_values[i]
                 self.jnts[i].update_globals(pos=pos, rotmat=rotmat, motion_value=motion_value)
                 pos = self.jnts[i].gl_pos_q
                 rotmat = self.jnts[i].gl_rotmat_q
-            gl_tcp_pos, gl_tcp_rotmat = self.cvt_loc_tcp_to_gl()
+            gl_tcp_pos, gl_tcp_rotmat = self.get_gl_tcp()
             if toggle_jacobian:
                 j_mat = np.zeros((6, self.n_dof))
-                for i in range(self.tcp_jnt_id + 1):
+                for i in range(self.functional_jnt_id + 1):
                     if self.jnts[i].type == rkc.JntType.REVOLUTE:
                         vec_jnt2tcp = gl_tcp_pos - self.jnts[i].gl_pos_q
                         j_mat[:3, i] = np.cross(self.jnts[i].gl_motion_ax, vec_jnt2tcp)
@@ -157,21 +161,21 @@ class JLChain(object):
             else:
                 return gl_tcp_pos, gl_tcp_rotmat
 
-    def jacobian(self, joint_values=None):
+    def jacobian(self, jnt_values=None):
         """
         compute the jacobian matrix; use internal values if jnt_values is None
-        :param joint_values:
+        :param jnt_values:
         :param update:
         :return:
         author :weiwei
         date: 20230829
         """
-        if joint_values is None:  # use internal, ignore update
+        if jnt_values is None:  # use internal, ignore update
             _, _, j_mat = self.fk(jnt_values=self.get_jnt_values(),
                                   toggle_jacobian=True,
                                   update=False)
         else:
-            _, _, j_mat = self.fk(jnt_values=joint_values,
+            _, _, j_mat = self.fk(jnt_values=jnt_values,
                                   toggle_jacobian=True,
                                   update=False)
         return j_mat
@@ -186,10 +190,10 @@ class JLChain(object):
         author: weiwei
         date: 20200331
         """
-        j_mat = self.jacobian(joint_values=jnt_values)
+        j_mat = self.jacobian(jnt_values=jnt_values)
         return np.sqrt(np.linalg.det(j_mat @ j_mat.T))
 
-    def manipulability_mat(self, joint_values=None):
+    def manipulability_mat(self, jnt_values=None):
         """
         compute the axes of the manipulability ellipsoid
         :param tcp_joint_id:
@@ -197,7 +201,7 @@ class JLChain(object):
         :param loc_tcp_rotmat:
         :return: (linear ellipsoid matrix, angular ellipsoid matrix)
         """
-        j_mat = self.jacobian(joint_values=joint_values)
+        j_mat = self.jacobian(jnt_values=jnt_values)
         # linear ellipsoid
         linear_j_dot_jt = j_mat[:3, :] @ j_mat[:3, :].T
         eig_values, eig_vecs = np.linalg.eig(linear_j_dot_jt)
@@ -216,13 +220,13 @@ class JLChain(object):
 
     def fix_to(self, pos, rotmat, jnt_values=None):
         self.anchor.pos = pos
-        self.ahcnor.rotmat = rotmat
+        self.anchor.rotmat= rotmat
         if jnt_values is None:
             return self.go_given_conf(jnt_values=self.get_jnt_values())
         else:
-            return self.go_given_conf(jnt_values = jnt_values)
+            return self.go_given_conf(jnt_values=jnt_values)
 
-    def finalize(self, ik_solver=None, identifier_str=None, **kwargs):
+    def finalize(self, ik_solver=None, identifier_str="test", **kwargs):
         """
         ddik is both fast and has high success rate, but it required prebuilding a data file.
         tracik is also fast and reliable, but it is a bit slower and energe-intensive.
@@ -240,57 +244,90 @@ class JLChain(object):
         if ik_solver == 'd':
             self._ik_solver = rkd.DDIKSolver(self, identifier_str=identifier_str)
 
-    def set_tcp(self, tcp_joint_id=None, loc_tcp_pos=None, loc_tcp_rotmat=None):
-        if tcp_joint_id is not None:
-            self.tcp_jnt_id = tcp_joint_id
+    def set_tcp(self, loc_tcp_pos=None, loc_tcp_rotmat=None):
         if loc_tcp_pos is not None:
             self.loc_tcp_pos = loc_tcp_pos
         if loc_tcp_rotmat is not None:
             self.loc_tcp_rotmat = loc_tcp_rotmat
 
-    def get_gl_tcp(self):
-        gl_tcp_pos, gl_tcp_rotmat = self.cvt_loc_tcp_to_gl()
-        return gl_tcp_pos, gl_tcp_rotmat
-
-    def cvt_loc_tcp_to_gl(self):
+    def cvt_loc_to_gl(self, loc_pos, loc_rotmat):
         if self.n_dof >= 1:
-            gl_pos = self.jnts[self.tcp_jnt_id].gl_pos_q + self.jnts[self.tcp_jnt_id].gl_rotmat_q @ self.loc_tcp_pos
-            gl_rotmat = self.jnts[self.tcp_jnt_id].gl_rotmat_q @ self.loc_tcp_rotmat
+            gl_pos = self.jnts[self.functional_jnt_id].gl_pos_q + self.jnts[
+                self.functional_jnt_id].gl_rotmat_q @ loc_pos
+            gl_rotmat = self.jnts[self.functional_jnt_id].gl_rotmat_q @ loc_rotmat
         else:
-            gl_pos = self.anchor.pos + self.anchor.rotmat @ self.loc_tcp_pos
-            gl_rotmat = self.anchor.rotmat @ self.loc_tcp_rotmat
+            gl_pos = self.anchor.gl_flange_pos + self.anchor.gl_flange_rotmat @ loc_pos
+            gl_rotmat = self.anchor.gl_flange_rotmat @ self.loc_rotmat
         return (gl_pos, gl_rotmat)
 
-    def cvt_posrot_in_tcp_to_gl(self,
-                                pos_in_loc_tcp=np.zeros(3),
-                                rotmat_in_loc_tcp=np.eye(3)):
+    def get_gl_tcp(self):
+        gl_tcp_pos, gl_tcp_rotmat = self.cvt_loc_to_gl(loc_pos=self.loc_tcp_pos, loc_rotmat=self.loc_tcp_rotmat)
+        return (gl_tcp_pos, gl_tcp_rotmat)
+
+    def cvt_pose_in_tcp_to_gl(self,
+                              pos_in_tcp=np.zeros(3),
+                              rotmat_in_tcp=np.eye(3)):
         """
-        given a loc pos and rotmat in loc_tcp, convert it to global frame
-        if the last three parameters are given, the code will use them as loc_tcp instead of the internal member vars.
-        :param pos_in_loc_tcp: nparray 1x3 in the frame defined by loc_tcp_pos, loc_tcp_rotmat
-        :param rotmat_in_loc_tcp: nparray 3x3 in the frame defined by loc_tcp_pos, loc_tcp_rotmat
+        given a loc pos and rotmat in tcp, convert it to global frame
+        :param pos_in_tcp: nparray 1x3 in the frame defined by loc_tcp_pos, loc_tcp_rotmat
+        :param rotmat_in_tcp: nparray 3x3 in the frame defined by loc_tcp_pos, loc_tcp_rotmat
         :param
         :return:
         author: weiwei
         date: 20190312, 20210609
         """
-        gl_tcp_pos, gl_tcp_rotmat = self.cvt_loc_tcp_to_gl()
-        tmp_gl_pos = gl_tcp_pos + gl_tcp_rotmat.dot(pos_in_loc_tcp)
-        tmp_gl_rotmat = gl_tcp_rotmat.dot(rotmat_in_loc_tcp)
+        gl_tcp_pos, gl_tcp_rotmat = self.get_gl_tcp()
+        tmp_gl_pos = gl_tcp_pos + gl_tcp_rotmat.dot(pos_in_tcp)
+        tmp_gl_rotmat = gl_tcp_rotmat.dot(rotmat_in_tcp)
         return (tmp_gl_pos, tmp_gl_rotmat)
 
-    def cvt_gl_to_loc_tcp(self, gl_pos, gl_rotmat):
+    def cvt_gl_pose_to_tcp(self, gl_pos, gl_rotmat):
         """
         given a world pos and world rotmat
-        get the relative pos and relative rotmat with respective to the ith jntlnk
+        get the relative pos and relative rotmat with respective to the tcp
         :param gl_pos: 1x3 nparray
         :param gl_rotmat: 3x3 nparray
         :return:
         author: weiwei
         date: 20190312
         """
-        gl_tcp_pos, gl_tcp_rotmat = self.cvt_loc_tcp_to_gl()
+        gl_tcp_pos, gl_tcp_rotmat = self.get_gl_tcp()
         return rm.rel_pose(gl_tcp_pos, gl_tcp_rotmat, gl_pos, gl_rotmat)
+
+    def get_gl_flange(self):
+        gl_flange_pos, gl_flange_rotmat = self.cvt_loc_to_gl(loc_pos=self.loc_flange_pos,
+                                                             loc_rotmat=self.loc_flange_rotmat)
+        return (gl_flange_pos, gl_flange_rotmat)
+
+    def cvt_pose_in_flange_to_gl(self,
+                                 pos_in_flange=np.zeros(3),
+                                 rotmat_in_flange=np.eye(3)):
+        """
+        given a loc pos and rotmat in flange, convert it to global frame
+        :param pos_in_flange: nparray 1x3 in the frame defined by loc_flange_pos, loc_flange_rotmat
+        :param rotmat_in_flange: nparray 3x3 in the frame defined by loc_flange_pos, loc_flange_rotmat
+        :param
+        :return:
+        author: weiwei
+        date: 20240301
+        """
+        gl_flange_pos, gl_flange_rotmat = self.get_gl_flange()
+        tmp_gl_pos = gl_flange_pos + gl_flange_rotmat.dot(pos_in_flange)
+        tmp_gl_rotmat = gl_flange_rotmat.dot(rotmat_in_flange)
+        return (tmp_gl_pos, tmp_gl_rotmat)
+
+    def cvt_gl_pose_to_flange(self, gl_pos, gl_rotmat):
+        """
+        given a world pos and world rotmat
+        get the relative pos and relative rotmat with respective to the flange
+        :param gl_pos: 1x3 nparray
+        :param gl_rotmat: 3x3 nparray
+        :return:
+        author: weiwei
+        date: 20190312
+        """
+        gl_flange_pos, gl_flange_rotmat = self.get_flange_tcp()
+        return rm.rel_pose(gl_flange_pos, gl_flange_rotmat, gl_pos, gl_rotmat)
 
     def are_jnts_in_ranges(self, jnt_values):
         """
@@ -386,12 +423,14 @@ if __name__ == "__main__":
     import visualization.panda.world as wd
     import robot_sim._kinematics.model_generator as rkmg
     import robot_sim._kinematics.constant as rkc
-    import modeling.geometric_model as gm
+    import modeling.geometric_model as mgm
 
     base = wd.World(cam_pos=[1.25, .75, .75], lookat_pos=[0, 0, .3])
-    gm.gen_frame().attach_to(base)
+    mgm.gen_frame().attach_to(base)
 
     jlc = JLChain(n_dof=6)
+    jlc.anchor.loc_flange_pos = np.array([0, .1, .1])
+    jlc.anchor.loc_flange_rotmat = rm.rotmat_from_axangle(np.array([1, 0, 0]), np.pi / 4)
     jlc.jnts[0].loc_pos = np.array([0, 0, 0])
     jlc.jnts[0].loc_motion_ax = np.array([0, 0, 1])
     jlc.jnts[0].motion_range = np.array([-np.pi / 2, np.pi / 2])
@@ -412,9 +451,10 @@ if __name__ == "__main__":
     jlc.jnts[5].loc_motion_ax = np.array([0, 0, 1])
     jlc.jnts[5].motion_range = np.array([-np.pi / 2, np.pi / 2])
     jlc.loc_tcp_pos = np.array([0, 0, .01])
+    jlc.loc_flange_pos=np.array([0.1,0.1,0.1])
+    # jlc.finalize(ik_solver=None)
     jlc.finalize(ik_solver='d')
-    # rkmg.gen_jlc_stick(jlc, stick_rgba=bc.navy_blue, toggle_tcp_frame=True,
-    #                    toggle_jnt_frames=True).attach_to(base)
+    # rkmg.gen_jlc_stick(jlc, stick_rgba=bc.navy_blue, toggle_jnt_frames=True, toggle_tcp_frame=True).attach_to(base)
     # base.run()
     seed_jnt_values = jlc.get_jnt_values()
 
@@ -439,11 +479,11 @@ if __name__ == "__main__":
                 opt_win += 1
             elif joint_values_with_dbg_info[0] == 'n':
                 num_win += 1
-                # mgm.gen_frame(pos=tgt_pos, rotmat=tgt_rotmat).attach_to(base)
-                # jlc.forward_kinematics(jnt_values=joint_values_with_dbg_info[1], update=True, toggle_jacobian=False)
-                # rkmg.gen_jlc_stick(jlc, stick_rgba=bc.navy_blue, toggle_tcp_frame=True,
-                #        toggle_joint_frame=True).attach_to(base)
-                # base.run()
+            mgm.gen_frame(pos=tgt_pos, rotmat=tgt_rotmat).attach_to(base)
+            jlc.fk(jnt_values=joint_values_with_dbg_info, update=True, toggle_jacobian=False)
+            rkmg.gen_jlc_stick(jlc, stick_rgba=bc.navy_blue, toggle_tcp_frame=True,
+                               toggle_jnt_frames=True, toggle_flange_frame=True).attach_to(base)
+            base.run()
         else:
             tgt_list.append((tgt_pos, tgt_rotmat))
     print(f'success: {success}')

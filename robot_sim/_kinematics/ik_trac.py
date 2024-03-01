@@ -304,7 +304,7 @@ class TracIKSolver(object):
         self._result_queue = mp.Queue()
         self.nik_solver_proc = NumIKSolverProc(self.jlc.anchor,
                                                self.jlc.jnts,
-                                               self.jlc.tcp_jnt_id,
+                                               self.jlc.functional_jnt_id,
                                                self.jlc.loc_tcp_homomat,
                                                wln_ratio,
                                                self._nik_param_queue,
@@ -312,7 +312,7 @@ class TracIKSolver(object):
                                                self._result_queue)
         self.oik_solver_proc = OptIKSolverProc(self.jlc.anchor,
                                                self.jlc.jnts,
-                                               self.jlc.tcp_jnt_id,
+                                               self.jlc.functional_jnt_id,
                                                self.jlc.loc_tcp_homomat,
                                                self._oik_param_queue,
                                                self._oik_state_queue,
