@@ -29,7 +29,7 @@ edge_index = torch.tensor(np.array(list(p)).T.tolist(), dtype=torch.long)
 print(edge_index)
 
 robot_s = cbt.Cobotta()
-robot_s.gen_meshmodel(toggle_tcpcs=True).attach_to(base)
+robot_s.gen_meshmodel(toggle_tcp_frame=True).attach_to(base)
 seed_jnt_values = None
 for z in np.linspace(.1, .6, 5):
     goal_pos = np.array([.25, -.1, z])
@@ -41,7 +41,7 @@ for z in np.linspace(.1, .6, 5):
     if jnt_values is not None:
         robot_s.fk(jnt_values=jnt_values)
         seed_jnt_values = jnt_values
-    robot_s.gen_meshmodel(toggle_tcpcs=True).attach_to(base)
+    robot_s.gen_meshmodel(toggle_tcp_frame=True).attach_to(base)
     tcp_input = torch.Tensor(goal_pos.tolist() + rm.rotmat_to_euler(goal_rot).tolist())
     print(tcp_input.shape)
     print(tcp_input)
@@ -50,6 +50,6 @@ for z in np.linspace(.1, .6, 5):
     print(jnt_values)
     robot_s.fk(jnt_values=jnt_values)
     seed_jnt_values = jnt_values
-    robot_s.gen_meshmodel(toggle_tcpcs=True).attach_to(base)
+    robot_s.gen_meshmodel(toggle_tcp_frame=True).attach_to(base)
 
 base.run()

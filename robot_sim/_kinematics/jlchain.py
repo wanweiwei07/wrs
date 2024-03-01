@@ -220,7 +220,7 @@ class JLChain(object):
 
     def fix_to(self, pos, rotmat, jnt_values=None):
         self.anchor.pos = pos
-        self.anchor.rotmat= rotmat
+        self.anchor.rotmat = rotmat
         if jnt_values is None:
             return self.go_given_conf(jnt_values=self.get_jnt_values())
         else:
@@ -293,6 +293,19 @@ class JLChain(object):
         """
         gl_tcp_pos, gl_tcp_rotmat = self.get_gl_tcp()
         return rm.rel_pose(gl_tcp_pos, gl_tcp_rotmat, gl_pos, gl_rotmat)
+
+    def cvt_pose_in_flange_to_functional(self, pos_in_flange, rotmat_in_flange):
+        """
+        convert a pose in the flange frame to the functional joint frame
+        :param pos_in_flange:
+        :param rotmat_in_flange:
+        :return:
+        author: weiwei
+        date: 20240301
+        """
+        tmp_loc_pos = self.loc_flange_pos + self.loc_flange_rotmat @ pos_in_flange
+        tmp_loc_rotmat = self.loc_flange_rotmat @ rotmat_in_flange
+        return (tmp_loc_pos, tmp_loc_rotmat)
 
     def get_gl_flange(self):
         gl_flange_pos, gl_flange_rotmat = self.cvt_loc_to_gl(loc_pos=self.loc_flange_pos,
@@ -451,7 +464,7 @@ if __name__ == "__main__":
     jlc.jnts[5].loc_motion_ax = np.array([0, 0, 1])
     jlc.jnts[5].motion_range = np.array([-np.pi / 2, np.pi / 2])
     jlc.loc_tcp_pos = np.array([0, 0, .01])
-    jlc.loc_flange_pos=np.array([0.1,0.1,0.1])
+    jlc.loc_flange_pos = np.array([0.1, 0.1, 0.1])
     # jlc.finalize(ik_solver=None)
     jlc.finalize(ik_solver='d')
     # rkmg.gen_jlc_stick(jlc, stick_rgba=bc.navy_blue, toggle_jnt_frames=True, toggle_tcp_frame=True).attach_to(base)

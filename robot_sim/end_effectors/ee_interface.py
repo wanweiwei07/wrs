@@ -147,7 +147,7 @@ class EEInterface(object):
         self.cc.show_cdprim()
 
     def unshow_cdprimit(self):
-        self.cc.unshow_cdprimit()
+        self.cc.unshow_cdprim()
 
     def show_cdmesh(self):
         for i, cdme in enumerate(self.cdmesh_elements):

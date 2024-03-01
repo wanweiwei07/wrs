@@ -21,7 +21,7 @@ if __name__ == '__main__':
                                   None,  # loc_tcp_pos
                                   None,  # loc_tcp_rotmat
                                   False,  # toggle_tcp_frame
-                                  False,  # toggle_joint_frame
+                                  False,  # toggle_jnt_frames
                                   [0, .7, 0, .3],  # rgba
                                   'auto']  # name
     # define object and object anime info

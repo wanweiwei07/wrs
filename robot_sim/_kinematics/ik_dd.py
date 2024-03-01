@@ -298,7 +298,7 @@ if __name__ == '__main__':
     # mgm.gen_frame(pos=tgt_pos, rotmat=tgt_rotmat).attach_to(base)
     # jlc.forward_kinematics(jnt_values=solved_jnt_vals, update=True, toggle_jacobian=False)
     # rkmg.gen_jlc_stick(jlc, stick_rgba=bc.navy_blue, toggle_tcp_frame=True,
-    #                    toggle_joint_frame=True).attach_to(base)
+    #                    toggle_jnt_frames=True).attach_to(base)
     # base.run()
 
     # jlc._ik_solver._test_success_rate()

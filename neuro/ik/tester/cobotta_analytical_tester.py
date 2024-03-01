@@ -14,8 +14,8 @@ if __name__ == '__main__':
     gm.gen_frame().attach_to(base)
     rbt_s = cbt_s.Cobotta()
     rbt_s.fk(jnt_values=np.zeros(6))
-    rbt_s.gen_meshmodel(toggle_tcpcs=True, rgba=[.5,.5,.5,.3]).attach_to(base)
-    rbt_s.gen_stickmodel(toggle_tcpcs=True).attach_to(base)
+    rbt_s.gen_meshmodel(toggle_tcp_frame=True, rgba=[.5, .5, .5, .3]).attach_to(base)
+    rbt_s.gen_stickmodel(toggle_tcp_frame=True).attach_to(base)
     tgt_pos = np.array([.25, .2, .2])
     tgt_rotmat = rm.rotmat_from_axangle([0, 1, 0], math.pi * 3 / 3)
     gm.gen_frame(pos=tgt_pos, rotmat=tgt_rotmat).attach_to(base)
@@ -27,8 +27,8 @@ if __name__ == '__main__':
     # numerical ik
     jnt_values = rbt_s.ik(tgt_pos=tgt_pos, tgt_rotmat=tgt_rotmat)
     rbt_s.fk(jnt_values=jnt_values)
-    rbt_s.gen_meshmodel(toggle_tcpcs=True, rgba=[.5,.5,.5,.3]).attach_to(base)
-    rbt_s.gen_stickmodel(toggle_tcpcs=True).attach_to(base)
+    rbt_s.gen_meshmodel(toggle_tcp_frame=True, rgba=[.5, .5, .5, .3]).attach_to(base)
+    rbt_s.gen_stickmodel(toggle_tcp_frame=True).attach_to(base)
     contraint_pos = rbt_s.manipulator_dict['arm'].jnts[5]['gl_posq']
     contraint_rotmat = rbt_s.manipulator_dict['arm'].jnts[5]['gl_rotmatq']
     contraint_pos += rbt_s.manipulator_dict['arm'].jnts[6]['pos_in_tcp'][1] * contraint_rotmat[:, 1]

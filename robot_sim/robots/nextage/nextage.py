@@ -98,7 +98,7 @@ class Left_Manipulator(mi.ManipulatorInterface):
 # class Body_Manipulator(mi.ManipulatorInterface):
 #
 #
-# class Nextage_WSA(ai.RobotInterface):
+# class Nextage_WSA(ai.SglArmRbtInterface):
 #     """
 #     7 DoF half robot, WSA = waist + single arm
 #     author: weiwei
@@ -112,7 +112,7 @@ class Left_Manipulator(mi.ManipulatorInterface):
 #                                       home=lft_arm_homeconf, name='lft_arm')
 #
 #
-# class Nextage(ri.RobotInterface):
+# class Nextage(ri.SglArmRbtInterface):
 #
 #     def _decorator_switch_tgt_jnts(foo):
 #         """
@@ -732,32 +732,32 @@ class Left_Manipulator(mi.ManipulatorInterface):
 #                        loc_tcp_pos=None,
 #                        loc_tcp_rotmat=None,
 #                        toggle_tcp_frame=False,
-#                        toggle_joint_frame=False,
-#                        toggle_connjnt=False,
+#                        toggle_jnt_frames=False,
+#                        toggle_flange_frame=False,
 #                        name='yumi'):
 #         stickmodel = mmc.ModelCollection(name=name)
 #         self.central_body.gen_stickmodel(loc_tcp_pos=None,
 #                                          loc_tcp_rotmat=None,
 #                                          toggle_tcp_frame=False,
-#                                          toggle_joint_frame=toggle_joint_frame).attach_to(stickmodel)
+#                                          toggle_jnt_frames=toggle_jnt_frames).attach_to(stickmodel)
 #         self.lft_arm.gen_stickmodel(tcp_joint_id=tcp_joint_id,
 #                                     loc_tcp_pos=loc_tcp_pos,
 #                                     loc_tcp_rotmat=loc_tcp_rotmat,
 #                                     toggle_tcp_frame=toggle_tcp_frame,
-#                                     toggle_joint_frame=toggle_joint_frame,
-#                                     toggle_connjnt=toggle_connjnt).attach_to(stickmodel)
+#                                     toggle_jnt_frames=toggle_jnt_frames,
+#                                     toggle_flange_frame=toggle_flange_frame).attach_to(stickmodel)
 #         # self.lft_hnd.gen_stickmodel(toggle_tcp_frame=False,
-#         #                             toggle_joint_frame=toggle_joint_frame,
-#         #                             toggle_connjnt=toggle_connjnt).attach_to(stickmodel)
+#         #                             toggle_jnt_frames=toggle_jnt_frames,
+#         #                             toggle_flange_frame=toggle_flange_frame).attach_to(stickmodel)
 #         self.rgt_arm.gen_stickmodel(tcp_joint_id=tcp_joint_id,
 #                                     loc_tcp_pos=loc_tcp_pos,
 #                                     loc_tcp_rotmat=loc_tcp_rotmat,
 #                                     toggle_tcp_frame=toggle_tcp_frame,
-#                                     toggle_joint_frame=toggle_joint_frame,
-#                                     toggle_connjnt=toggle_connjnt).attach_to(stickmodel)
+#                                     toggle_jnt_frames=toggle_jnt_frames,
+#                                     toggle_flange_frame=toggle_flange_frame).attach_to(stickmodel)
 #         # self.rgt_hnd.gen_stickmodel(toggle_tcp_frame=False,
-#         #                             toggle_joint_frame=toggle_joint_frame,
-#         #                             toggle_connjnt=toggle_connjnt).attach_to(stickmodel)
+#         #                             toggle_jnt_frames=toggle_jnt_frames,
+#         #                             toggle_flange_frame=toggle_flange_frame).attach_to(stickmodel)
 #         return stickmodel
 #
 #     def gen_meshmodel(self,
@@ -765,32 +765,32 @@ class Left_Manipulator(mi.ManipulatorInterface):
 #                       loc_tcp_pos=None,
 #                       loc_tcp_rotmat=None,
 #                       toggle_tcp_frame=False,
-#                       toggle_joint_frame=False,
+#                       toggle_jnt_frames=False,
 #                       rgba=None,
 #                       name='xarm_gripper_meshmodel'):
 #         meshmodel = mmc.ModelCollection(name=name)
 #         self.central_body.gen_meshmodel(loc_tcp_pos=None,
 #                                         loc_tcp_rotmat=None,
 #                                         toggle_tcp_frame=False,
-#                                         toggle_joint_frame=toggle_joint_frame,
+#                                         toggle_jnt_frames=toggle_jnt_frames,
 #                                         rgba=rgba).attach_to(meshmodel)
 #         self.lft_arm.gen_meshmodel(tcp_joint_id=tcp_joint_id,
 #                                    loc_tcp_pos=loc_tcp_pos,
 #                                    loc_tcp_rotmat=loc_tcp_rotmat,
 #                                    toggle_tcp_frame=toggle_tcp_frame,
-#                                    toggle_joint_frame=toggle_joint_frame,
+#                                    toggle_jnt_frames=toggle_jnt_frames,
 #                                    rgba=rgba).attach_to(meshmodel)
 #         # self.lft_hnd.gen_meshmodel(toggle_tcp_frame=False,
-#         #                            toggle_joint_frame=toggle_joint_frame,
+#         #                            toggle_jnt_frames=toggle_jnt_frames,
 #         #                            rgba=rgba).attach_to(meshmodel)
 #         self.rgt_arm.gen_meshmodel(tcp_joint_id=tcp_joint_id,
 #                                    loc_tcp_pos=loc_tcp_pos,
 #                                    loc_tcp_rotmat=loc_tcp_rotmat,
 #                                    toggle_tcp_frame=toggle_tcp_frame,
-#                                    toggle_joint_frame=toggle_joint_frame,
+#                                    toggle_jnt_frames=toggle_jnt_frames,
 #                                    rgba=rgba).attach_to(meshmodel)
 #         # self.rgt_hnd.gen_meshmodel(toggle_tcp_frame=False,
-#         #                            toggle_joint_frame=toggle_joint_frame,
+#         #                            toggle_jnt_frames=toggle_jnt_frames,
 #         #                            rgba=rgba).attach_to(meshmodel)
 #         for obj_info in self.lft_oih_infos:
 #             objcm = obj_info['collision_model']

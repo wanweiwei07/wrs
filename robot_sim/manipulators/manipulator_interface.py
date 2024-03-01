@@ -70,22 +70,26 @@ class ManipulatorInterface(object):
     def home_conf(self, home_conf):
         self.jlc.home = home_conf
 
-    def set_tcp(self, tcp_jnt_id=None, loc_tcp_pos=None, loc_tcp_rotmat=None):
+    def set_tcp(self, loc_tcp_pos=None, loc_tcp_rotmat=None):
         self.jlc.set_tcp(loc_tcp_pos=loc_tcp_pos, loc_tcp_rotmat=loc_tcp_rotmat)
 
     def get_gl_tcp(self):
         return self.jlc.get_gl_tcp()
 
     def get_gl_flange(self):
-        gl_flange_pos = self.jnts[self.tcp_jnt_id].gl_pos_q + self.jnts[self.tcp_jnt_id].gl_rotmat_q @ self.loc_flange_pos
+        gl_flange_pos = self.jnts[self.tcp_jnt_id].gl_pos_q + self.jnts[
+            self.tcp_jnt_id].gl_rotmat_q @ self.loc_flange_pos
         gl_flange_rotmat = self.jnts[self.tcp_jnt_id].gl_rotmat_q @ self.loc_flange_rotmat
         return gl_flange_pos, gl_flange_rotmat
 
+    def goto_given_conf(self, jnt_values):
+        return self.jlc.go_given_conf(jnt_values=jnt_values)
+
     def goto_home_conf(self):
-        self.jlc.go_home()
+        return self.jlc.go_home()
 
     def goto_zero_conf(self):
-        self.jlc.go_zero()
+        return self.jlc.go_zero()
 
     def fix_to(self, pos, rotmat, jnt_values=None):
         return self.jlc.fix_to(pos=pos, rotmat=rotmat, jnt_values=jnt_values)
@@ -133,7 +137,7 @@ class ManipulatorInterface(object):
     def cvt_loc_tcp_to_gl(self):
         return self.jlc.cvt_loc_tcp_to_gl()
 
-    def cvt_gl_to_loc_tcp(self, gl_pos, gl_rotmat):
+    def cvt_gl_pose_to_tcp(self, gl_pos, gl_rotmat):
         return self.jlc.cvt_gl_pose_to_tcp(gl_pos=gl_pos,
                                            gl_rotmat=gl_rotmat)
 
@@ -153,19 +157,23 @@ class ManipulatorInterface(object):
         self.cc.show_cdprim()
 
     def unshow_cdprimit(self):
-        self.cc.unshow_cdprimit()
+        self.cc.unshow_cdprim()
 
-    def gen_meshmodel(self, #TODO toggle flange frame
+    def gen_meshmodel(self,
+                      rgb=None,
+                      alpha=None,
                       toggle_tcp_frame=True,
                       toggle_jnt_frames=False,
-                      rgba=None,
+                      toggle_flange_frame=False,
                       toggle_cdprim=False,
                       toggle_cdmesh=False,
                       name="manipulator_mesh"):
         return rkmg.gen_jlc_mesh(self.jlc,
+                                 rgb=rgb,
+                                 alpha=alpha,
                                  toggle_tcp_frame=toggle_tcp_frame,
                                  toggle_jnt_frames=toggle_jnt_frames,
-                                 rgba=rgba,
+                                 toggle_flange_frame=toggle_flange_frame,
                                  toggle_cdprim=toggle_cdprim,
                                  toggle_cdmesh=toggle_cdmesh,
                                  name=name)
@@ -173,8 +181,12 @@ class ManipulatorInterface(object):
     def gen_stickmodel(self,
                        toggle_tcp_frame=False,
                        toggle_jnt_frames=False,
+                       toggle_flange_frame=False,
                        name="manipulator_stickmodel"):
-        return rkmg.gen_jlc_stick(self.jlc, toggle_jnt_frames=toggle_jnt_frames, toggle_tcp_frame=toggle_tcp_frame,
+        return rkmg.gen_jlc_stick(self.jlc,
+                                  toggle_jnt_frames=toggle_jnt_frames,
+                                  toggle_tcp_frame=toggle_tcp_frame,
+                                  toggle_flange_frame=toggle_flange_frame,
                                   name=name)
 
     def gen_endsphere(self):

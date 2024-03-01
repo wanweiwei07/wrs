@@ -128,7 +128,7 @@ if __name__ == '__main__':
     # manipulator_meshmodel = robot_s.gen_meshmodel()
     # manipulator_meshmodel.attach_to(base)
     # manipulator_meshmodel.show_cdprimit()
-    # robot_s.gen_stickmodel(toggle_joint_frame=True).attach_to(base)
+    # robot_s.gen_stickmodel(toggle_jnt_frames=True).attach_to(base)
     goal_pos = np.array([.1,-.1,.15])
     goal_theta = .1
     goal_rotmat = rm.rotmat_from_axangle([0,0,1], goal_theta)
@@ -136,7 +136,7 @@ if __name__ == '__main__':
     gm.gen_frame(pos=goal_pos, rotmat=goal_rotmat).attach_to(base)
     robot_s.fk(jnt_values=solved_jnt_values)
     print(solved_jnt_values)
-    # robot_s.gen_stickmodel(toggle_joint_frame=True).attach_to(base)
+    # robot_s.gen_stickmodel(toggle_jnt_frames=True).attach_to(base)
     manipulator_meshmodel = robot_s.gen_meshmodel()
     manipulator_meshmodel.attach_to(base)
     # tic = time.time()

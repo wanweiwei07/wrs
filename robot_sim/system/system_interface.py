@@ -174,7 +174,7 @@ class SystemInterface(object):
         self.cc.show_cdprim()
 
     def unshow_cdprimit(self):
-        self.cc.unshow_cdprimit()
+        self.cc.unshow_cdprim()
 
     def gen_stickmodel(self,
                        tcp_jnt_id=None,
@@ -358,7 +358,7 @@ class SystemInterface(object):
         self.cc.show_cdprim()
 
     def unshow_cdprimit(self):
-        self.cc.unshow_cdprimit()
+        self.cc.unshow_cdprim()
 
     def gen_stickmodel(self,
                        tcp_jnt_id=None,

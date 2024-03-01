@@ -6,10 +6,10 @@ import modeling.model_collection as mc
 import robot_sim._kinematics.jlchain as jl
 import robot_sim.manipulators.rs007l.rs007l as manipulator
 import robot_sim.end_effectors.gripper.or2fg7.or2fg7 as end_effector
-import robot_sim.robots.robot_interface as ai
+import robot_sim.robots.single_arm_robot_interface as ai
 
 
-class KHI_OR2FG7(ai.RobotInterface):
+class KHI_OR2FG7(ai.SglArmRbtInterface):
 
     def __init__(self,
                  pos=np.zeros(3),
@@ -106,33 +106,33 @@ class KHI_OR2FG7(ai.RobotInterface):
                        tcp_jnt_id=None,
                        tcp_loc_pos=None,
                        tcp_loc_rotmat=None,
-                       toggle_tcpcs=False,
-                       toggle_jntscs=False,
-                       toggle_connjnt=False,
+                       toggle_tcp_frame=False,
+                       toggle_jnt_frames=False,
+                       toggle_flange_frame=False,
                        name='khi_g_stickmodel'):
         stickmodel = mc.ModelCollection(name=name)
         self.manipulator.gen_stickmodel(tcp_jnt_id=tcp_jnt_id,
                                         tcp_loc_pos=tcp_loc_pos,
                                         tcp_loc_rotmat=tcp_loc_rotmat,
-                                        toggle_tcpcs=toggle_tcpcs,
-                                        toggle_jntscs=toggle_jntscs,
-                                        toggle_connjnt=toggle_connjnt).attach_to(stickmodel)
-        self.end_effector.gen_stickmodel(toggle_tcp_frame=False, toggle_jnt_frames=toggle_jntscs).attach_to(stickmodel)
+                                        toggle_tcpcs=toggle_tcp_frame,
+                                        toggle_jntscs=toggle_jnt_frames,
+                                        toggle_connjnt=toggle_flange_frame).attach_to(stickmodel)
+        self.end_effector.gen_stickmodel(toggle_tcp_frame=False, toggle_jnt_frames=toggle_jnt_frames).attach_to(stickmodel)
         return stickmodel
 
     def gen_meshmodel(self,
                       tcp_jnt_id=None,
                       tcp_loc_pos=None,
                       tcp_loc_rotmat=None,
-                      toggle_tcpcs=False,
-                      toggle_jntscs=False,
+                      toggle_tcp_frame=False,
+                      toggle_jnt_frames=False,
                       rgba=None,
                       name='khi_g_meshmodel'):
         meshmodel = mc.ModelCollection(name=name)
-        self.manipulator.gen_meshmodel(toggle_tcp_frame=toggle_tcpcs, toggle_jnt_frames=toggle_jntscs,
+        self.manipulator.gen_meshmodel(toggle_tcp_frame=toggle_tcp_frame, toggle_jnt_frames=toggle_jnt_frames,
                                        rgba=rgba).attach_to(meshmodel)
         self.end_effector.gen_meshmodel(toggle_tcp_frame=False,
-                                        toggle_jnt_frames=toggle_jntscs,
+                                        toggle_jnt_frames=toggle_jnt_frames,
                                         rgba=rgba).attach_to(meshmodel)
         for obj_info in self.oih_infos:
             objcm = obj_info['collision_model']
@@ -163,9 +163,9 @@ if __name__ == '__main__':
     gm.gen_frame().attach_to(base)
     robot_s = KHI_OR2FG7(enable_cc=True)
     robot_s.jaw_to(.02)
-    robot_s.gen_meshmodel(toggle_tcpcs=True, toggle_jntscs=True).attach_to(base)
-    # robot_s.gen_meshmodel(toggle_tcp_frame=False, toggle_joint_frame=False).attach_to(base)
-    robot_s.gen_stickmodel(toggle_tcpcs=True, toggle_jntscs=True).attach_to(base)
+    robot_s.gen_meshmodel(toggle_tcp_frame=True, toggle_jnt_frames=True).attach_to(base)
+    # robot_s.gen_meshmodel(toggle_tcp_frame=False, toggle_jnt_frames=False).attach_to(base)
+    robot_s.gen_stickmodel(toggle_tcp_frame=True, toggle_jnt_frames=True).attach_to(base)
     # base.run()
     tgt_pos = np.array([.25, .2, .15])
     tgt_rotmat = rm.rotmat_from_axangle([0, 1, 0], math.pi * 2 / 3)
@@ -173,7 +173,7 @@ if __name__ == '__main__':
     # base.run()
     jnt_values = robot_s.ik(tgt_pos, tgt_rotmat)
     robot_s.fk(jnt_values=jnt_values)
-    robot_s_meshmodel = robot_s.gen_meshmodel(toggle_tcpcs=True)
+    robot_s_meshmodel = robot_s.gen_meshmodel(toggle_tcp_frame=True)
     robot_s_meshmodel.attach_to(base)
     # robot_s.show_cdprimit()
     robot_s.gen_stickmodel().attach_to(base)

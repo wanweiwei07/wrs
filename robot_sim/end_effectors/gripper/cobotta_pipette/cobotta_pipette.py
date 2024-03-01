@@ -189,7 +189,7 @@ if __name__ == '__main__':
     grpr.change_jaw_width(.0)
     grpr.gen_meshmodel(toggle_tcp_frame=True).attach_to(base)
     grpr.gen_stickmodel().attach_to(base)
-    # grpr.gen_stickmodel(toggle_joint_frame=False).attach_to(base)
+    # grpr.gen_stickmodel(toggle_jnt_frames=False).attach_to(base)
     grpr.fix_to(pos=np.array([0, .3, .2]), rotmat=rm.rotmat_from_axangle([1, 0, 0], .05))
     grpr.gen_meshmodel().attach_to(base)
     grpr.show_cdmesh()

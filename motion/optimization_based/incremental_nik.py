@@ -134,7 +134,7 @@ class IncrementalNIK(object):
         author: weiwei
         date: 20210114
         """
-        goal_tcp_pos, goal_tcp_rotmat = self.robot_s.cvt_conf_to_tcp(component_name, goal_jnt_values)
+        goal_tcp_pos, goal_tcp_rotmat = self.robot_s.fk(component_name, goal_jnt_values)
         if type == 'sink':
             start_tcp_pos = goal_tcp_pos - rm.unit_vector(direction) * distance
             start_tcp_rotmat = goal_tcp_rotmat

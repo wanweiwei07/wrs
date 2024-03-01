@@ -47,7 +47,7 @@ if __name__ == '__main__':
     base = world.World(cam_pos=np.array([1.5, 1, .7]))
     gm.gen_frame().attach_to(base)
     rbt_s = cbt_s.Cobotta()
-    rbt_s.gen_meshmodel(toggle_tcpcs=True).attach_to(base)
+    rbt_s.gen_meshmodel(toggle_tcp_frame=True).attach_to(base)
     gen_data(rbt_s, granularity=math.pi / 4, save_name='cobotta_ik')
     gen_data(rbt_s, granularity=math.pi / 4, save_name='cobotta_ik_test')
     base.run()

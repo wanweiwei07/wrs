@@ -47,7 +47,8 @@ def gen_indicated_frame(spos,
 
 
 def gen_lnk_mesh(lnk,
-                 rgba=None,
+                 rgb=None,
+                 alpha=None,
                  toggle_cdprim=False,
                  toggle_cdmesh=False,
                  toggle_frame=False):
@@ -59,8 +60,10 @@ def gen_lnk_mesh(lnk,
         gmodel = mgm.GeometricModel(lnk.cmodel)
         lnk.cmodel.unshow_cdmesh()
         lnk.cmodel.unshow_cdprim()
-        if rgba is not None:
-            gmodel.rgba = rgba
+        if rgb is not None:
+            gmodel.rgb = rgb
+        if alpha is not None:
+            gmodel.alpha = alpha
         if toggle_frame:
             mgm.gen_frame(pos=lnk.gl_pos, rotmat=lnk.gl_rotmat).attach_to(gmodel)
         return gmodel
@@ -193,30 +196,33 @@ def gen_jlc_stick(jlc,
         spos = jlc.jnts[jlc.functional_jnt_id].gl_pos_q
         gl_flange_pos, gl_flange_rotmat = jlc.get_gl_flange()
         gen_indicated_frame(spos=spos, gl_pos=gl_flange_pos, gl_rotmat=gl_flange_rotmat, indicator_rgba=bc.spring_green,
-                            frame_rgb_mat=bc.dyo_mat,
-                            frame_ax_length=rkc.FRAME_STICK_LENGTH_SHORT).attach_to(m_col)
+                            frame_alpha=.3,
+                            frame_ax_length=rkc.FRAME_STICK_LENGTH_MEDIUM).attach_to(m_col)
 
     return m_col
 
 
 def gen_jlc_mesh(jlc,
+                 rgb=None,
+                 alpha=None,
                  toggle_tcp_frame=False,
                  toggle_flange_frame=False,
                  toggle_jnt_frames=False,
-                 rgba=None,
                  toggle_cdprim=False,
                  toggle_cdmesh=False,
                  name='jlc_mesh_model'):
     m_col = mmc.ModelCollection(name=name)
     gen_lnk_mesh(jlc.anchor.lnk,
-                 rgba=rgba,
+                 rgb=rgb,
+                 alpha=alpha,
                  toggle_cdmesh=toggle_cdmesh,
                  toggle_cdprim=toggle_cdprim).attach_to(m_col)
     if jlc.n_dof >= 1:
         for i in range(jlc.n_dof):
             if jlc.jnts[i].lnk is not None:
                 gen_lnk_mesh(jlc.jnts[i].lnk,
-                             rgba=rgba,
+                             rgb=rgb,
+                             alpha=alpha,
                              toggle_cdmesh=toggle_cdmesh,
                              toggle_cdprim=toggle_cdprim).attach_to(m_col)
     if toggle_tcp_frame:

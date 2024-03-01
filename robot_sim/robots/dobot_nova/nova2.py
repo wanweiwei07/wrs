@@ -10,10 +10,10 @@ import modeling.model_collection as mc
 import robot_sim._kinematics.jlchain as jl
 from robot_sim.manipulators.dobot_nova2 import Nova2
 from robot_sim.end_effectors.gripper.nova2_gripper import Nova2HuriGripper
-import robot_sim.robots.robot_interface as ri
+import robot_sim.robots.single_arm_robot_interface as ri
 
 
-class Nova2WRS(ri.RobotInterface):
+class Nova2WRS(ri.SglArmRbtInterface):
     @staticmethod
     def _table_cdnp(name, radius):
         collision_node = CollisionNode(name)
@@ -193,42 +193,42 @@ class Nova2WRS(ri.RobotInterface):
                        tcp_jnt_id=None,
                        tcp_loc_pos=None,
                        tcp_loc_rotmat=None,
-                       toggle_tcpcs=False,
-                       toggle_jntscs=False,
-                       toggle_connjnt=False,
+                       toggle_tcp_frame=False,
+                       toggle_jnt_frames=False,
+                       toggle_flange_frame=False,
                        name='nova2_stickmodel'):
         stickmodel = mc.ModelCollection(name=name)
         self.body.gen_stickmodel(tcp_loc_pos=None,
                                  tcp_loc_rotmat=None,
                                  toggle_tcpcs=False,
-                                 toggle_jntscs=toggle_jntscs).attach_to(stickmodel)
+                                 toggle_jntscs=toggle_jnt_frames).attach_to(stickmodel)
         self.arm.gen_stickmodel(tcp_jnt_id=tcp_jnt_id,
                                 tcp_loc_pos=tcp_loc_pos,
                                 tcp_loc_rotmat=tcp_loc_rotmat,
-                                toggle_tcpcs=toggle_tcpcs,
-                                toggle_jntscs=toggle_jntscs,
-                                toggle_connjnt=toggle_connjnt).attach_to(stickmodel)
-        self.hnd.gen_stickmodel(toggle_tcp_frame=False, toggle_jnt_frames=toggle_jntscs).attach_to(stickmodel)
+                                toggle_tcpcs=toggle_tcp_frame,
+                                toggle_jntscs=toggle_jnt_frames,
+                                toggle_connjnt=toggle_flange_frame).attach_to(stickmodel)
+        self.hnd.gen_stickmodel(toggle_tcp_frame=False, toggle_jnt_frames=toggle_jnt_frames).attach_to(stickmodel)
         return stickmodel
 
     def gen_meshmodel(self,
                       tcp_jnt_id=None,
                       tcp_loc_pos=None,
                       tcp_loc_rotmat=None,
-                      toggle_tcpcs=False,
-                      toggle_jntscs=False,
+                      toggle_tcp_frame=False,
+                      toggle_jnt_frames=False,
                       rgba=None,
                       name='nova2_meshmodel'):
         mm_collection = mc.ModelCollection(name=name)
         self.body.gen_meshmodel(tcp_loc_pos=None,
                                 tcp_loc_rotmat=None,
                                 toggle_tcpcs=False,
-                                toggle_jntscs=toggle_jntscs,
+                                toggle_jntscs=toggle_jnt_frames,
                                 rgba=rgba).attach_to(mm_collection)
-        self.arm.gen_meshmodel(toggle_tcp_frame=toggle_tcpcs, toggle_jnt_frames=toggle_jntscs,
+        self.arm.gen_meshmodel(toggle_tcp_frame=toggle_tcp_frame, toggle_jnt_frames=toggle_jnt_frames,
                                rgba=rgba).attach_to(mm_collection)
         self.hnd.gen_meshmodel(toggle_tcp_frame=False,
-                               toggle_jnt_frames=toggle_jntscs,
+                               toggle_jnt_frames=toggle_jnt_frames,
                                rgba=rgba).attach_to(mm_collection)
         for obj_info in self.oih_infos:
             objcm = obj_info['collision_model']
@@ -272,7 +272,7 @@ if __name__ == '__main__':
     xarm = Nova2WRS(enable_cc=True)
     rand_conf = xarm.rand_conf(component_name='arm')
     xarm.fk('arm', rand_conf)
-    xarm_meshmodel = xarm.gen_meshmodel(toggle_tcpcs=False)
+    xarm_meshmodel = xarm.gen_meshmodel(toggle_tcp_frame=False)
     xarm_meshmodel.attach_to(base)
     xarm_meshmodel.show_cdprimit()
     gm.gen_frame(length=.2).attach_to(base)

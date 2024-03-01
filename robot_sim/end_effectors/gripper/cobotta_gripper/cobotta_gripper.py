@@ -35,6 +35,7 @@ class CobottaGripper(gp.GripperInterface):
                  name="cobotta_gripper",
                  enable_cc=True):
         super().__init__(pos=pos, rotmat=rotmat, cdmesh_type=cdmesh_type, name=name)
+        file_dir = os.path.dirname(__file__)
         self.coupling.loc_flange_pos=np.array([-0.1,0.1,0.1])
         self.coupling.finalize()
         cpl_end_pos, cpl_end_rotmat = self.coupling.get_gl_flange()
@@ -43,21 +44,21 @@ class CobottaGripper(gp.GripperInterface):
         # jlc
         self.jlc = rkjlc.JLChain(pos=cpl_end_pos, rotmat=cpl_end_rotmat, n_dof=2, name=name)
         # anchor
-        self.jlc.anchor.lnk.cmodel = mcm.CollisionModel(os.path.join(os.getcwd(), "meshes", "gripper_base.dae"))
+        self.jlc.anchor.lnk.cmodel = mcm.CollisionModel(os.path.join(file_dir, "meshes", "gripper_base.dae"))
         self.jlc.anchor.lnk.cmodel.rgba = np.array([.35, .35, .35, 1])
         # the 1st joint (left finger)
         self.jlc.jnts[0].change_type(rkc.JntType.PRISMATIC, np.array([0, self.jaw_range[1] / 2]))
         self.jlc.jnts[0].loc_pos = np.array([0, .0, .0])
         self.jlc.jnts[0].loc_motion_ax = bc.y_ax
-        self.jlc.jnts[0].lnk.cmodel = mcm.CollisionModel(os.path.join(os.getcwd(), "meshes", "left_finger.dae"))
+        self.jlc.jnts[0].lnk.cmodel = mcm.CollisionModel(os.path.join(file_dir, "meshes", "left_finger.dae"))
         self.jlc.jnts[0].lnk.cmodel.rgba = np.array([.5, .5, .5, 1])
         # the 2nd joint (right finger)
         self.jlc.jnts[1].change_type(rkc.JntType.PRISMATIC, np.array([0, -self.jaw_range[1]]))
         self.jlc.jnts[1].loc_pos = np.array([0, .0, .0])
         self.jlc.jnts[1].loc_motion_ax = bc.y_ax
-        self.jlc.jnts[1].lnk.cmodel = mcm.CollisionModel(os.path.join(os.getcwd(), "meshes", "right_finger.dae"))
+        self.jlc.jnts[1].lnk.cmodel = mcm.CollisionModel(os.path.join(file_dir, "meshes", "right_finger.dae"))
         self.jlc.jnts[1].lnk.cmodel.rgba = np.array([.5, .5, .5, 1])
-        # action center
+        # acting center
         self.loc_acting_center_pos = np.array([-0.1,0.1,0.15])
         # reinitialize
         self.jlc.finalize()
@@ -83,6 +84,7 @@ class CobottaGripper(gp.GripperInterface):
 
     @assert_oiee_decorator
     def fix_to(self, pos, rotmat, jaw_width=None):
+        # TODO update oiee
         self.pos = pos
         self.rotmat = rotmat
         if jaw_width is not None:
@@ -116,19 +118,24 @@ class CobottaGripper(gp.GripperInterface):
         return m_col
 
     def gen_meshmodel(self,
+                      rgb=None,
+                      alpha=None,
                       toggle_tcp_frame=False,
                       toggle_jnt_frames=False,
-                      rgba=None,
                       toggle_cdprim=False,
                       toggle_cdmesh=False,
                       name='cobotta_gripper_meshmodel'):
         m_col = mmc.ModelCollection(name=name)
         rkmg.gen_jlc_mesh(self.coupling,
+                          rgb=rgb,
+                          alpha=alpha,
                           toggle_tcp_frame=False,
                           toggle_jnt_frames=False,
                           toggle_cdmesh=toggle_cdmesh,
                           toggle_cdprim=toggle_cdprim).attach_to(m_col)
         rkmg.gen_jlc_mesh(self.jlc,
+                          rgb=rgb,
+                          alpha=alpha,
                           toggle_tcp_frame=False,
                           toggle_jnt_frames=toggle_jnt_frames,
                           toggle_cdmesh=toggle_cdmesh,
@@ -144,15 +151,11 @@ if __name__ == '__main__':
 
     base = wd.World(cam_pos=[.5, .5, .5], lookat_pos=[0, 0, 0])
     gm.gen_frame().attach_to(base)
-    # for angle in np.linspace(0, .85, 8):
-    #     grpr = Robotiq85()
-    #     grpr.fk(angle)
-    #     grpr.gen_meshmodel().attach_to(base)
     grpr = CobottaGripper(enable_cc=True)
     grpr.fix_to(pos=np.array([0, .1, .1]), rotmat=rm.rotmat_from_axangle([1, 0, 0], .7))
-    # grpr.grip_at_by_twovecs(jaw_center_pos=np.array([0, .1, .1]), approaching_vec=np.array([0, -1, 0]),
-    #                         finger1_opening_vec=np.array([1, 0, 0]), jaw_width=.01)
-    grpr.change_jaw_width(.013)
+    print(grpr.grip_at_by_twovecs(jaw_center_pos=np.array([0, .1, .1]), approaching_vec=np.array([0, -1, 0]),
+                            finger1_opening_vec=np.array([1, 0, 0]), jaw_width=.01))
+    # grpr.change_jaw_width(.013)
     grpr.gen_meshmodel(toggle_tcp_frame=True, toggle_jnt_frames=False, toggle_cdprim=True).attach_to(base)
     # # grpr.gen_stickmodel(toggle_jnt_frames=True).attach_to(base)
     # grpr.gen_meshmodel().attach_to(base)

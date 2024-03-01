@@ -150,7 +150,7 @@ print(resultant_pos, resultant_rotmat)
 gm.gen_frame(pos=resultant_pos, rotmat=resultant_rotmat).attach_to(base)
 gm.gen_myc_frame(pos=actual_pos, rotmat=actual_rotmat).attach_to(base)
 
-rbt_s.gen_meshmodel(toggle_tcpcs=True, toggle_jntscs=True, rgba=[.3, .3, .3, .3]).attach_to(base)
+rbt_s.gen_meshmodel(toggle_tcp_frame=True, toggle_jnt_frames=True, rgba=[.3, .3, .3, .3]).attach_to(base)
 
 pos2 = pos2.subs([(q1, jnt_values[0]),
                   (q2, jnt_values[1])])

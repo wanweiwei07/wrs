@@ -154,6 +154,14 @@ class StaticGeometricModel(object):
             self._pdndp.setColor(rgba[0], rgba[1], rgba[2], rgba[3])
 
     @property
+    def rgb(self):
+        return self.rgba[:3]
+
+    @rgb.setter
+    def rgb(self, rgb):
+        self._pdndp.setColor(rgb[0], rgb[1], rgb[2], self.alpha)
+
+    @property
     def alpha(self):
         return self._pdndp.getColor()[3]
 
@@ -448,7 +456,7 @@ def gen_sphere(pos=np.array([0, 0, 0]),
     """
     sphere_trm = trm_factory.gen_sphere(pos=pos, radius=radius, ico_level=ico_level)
     sphere_sgm = StaticGeometricModel(initor=sphere_trm)
-    sphere_sgm.rgba=rgba
+    sphere_sgm.rgba = rgba
     return sphere_sgm
 
 
@@ -488,7 +496,7 @@ def gen_stick(spos=np.array([0, 0, 0]),
     """
     stick_trm = trm_factory.gen_stick(spos=spos, epos=epos, radius=radius, type=type, n_sec=n_sec)
     stick_sgm = StaticGeometricModel(initor=stick_trm)
-    stick_sgm.rgba=rgba
+    stick_sgm.rgba = rgba
     return stick_sgm
 
 
@@ -519,7 +527,7 @@ def gen_dashed_stick(spos=np.array([0, 0, 0]),
                                               type=type,
                                               n_sec=n_sec)
     dashstick_sgm = StaticGeometricModel(initor=dashstick_trm)
-    dashstick_sgm.rgba=rgba
+    dashstick_sgm.rgba = rgba
     return dashstick_sgm
 
 
@@ -538,7 +546,7 @@ def gen_box(xyz_lengths=np.array([1, 1, 1]),
     """
     box_trm = trm_factory.gen_box(xyz_lengths=xyz_lengths, pos=pos, rotmat=rotmat)
     box_sgm = StaticGeometricModel(initor=box_trm)
-    box_sgm.rgba=rgba
+    box_sgm.rgba = rgba
     return box_sgm
 
 
@@ -566,7 +574,7 @@ def gen_dumbbell(spos=np.array([0, 0, 0]),
                                             sphere_radius=sphere_radius,
                                             sphere_ico_level=sphere_ico_level)
     dumbbell_sgm = StaticGeometricModel(dumbbell_trm)
-    dumbbell_sgm.rgba=rgba
+    dumbbell_sgm.rgba = rgba
     return dumbbell_sgm
 
 
@@ -586,7 +594,7 @@ def gen_cone(spos=np.array([0, 0, 0]),
     """
     cone_trm = trm_factory.gen_cone(spos=spos, epos=epos, bottom_radius=bottom_radius, n_sec=n_sec)
     cone_sgm = GeometricModel(cone_trm)
-    cone_sgm.rgba=rgba
+    cone_sgm.rgba = rgba
     return cone_sgm
 
 
@@ -606,7 +614,7 @@ def gen_arrow(spos=np.array([0, 0, 0]),
     """
     arrow_trm = trm_factory.gen_arrow(spos=spos, epos=epos, stick_radius=stick_radius, stick_type=stick_type)
     arrow_sgm = StaticGeometricModel(arrow_trm)
-    arrow_sgm.rgba=rgba
+    arrow_sgm.rgba = rgba
     return arrow_sgm
 
 
@@ -635,7 +643,7 @@ def gen_dashed_arrow(spos=np.array([0, 0, 0]),
                                               stick_radius=stick_radius,
                                               stick_type=type)
     dasharrow_sgm = StaticGeometricModel(dasharrow_trm)
-    dasharrow_sgm.rgba=rgba
+    dasharrow_sgm.rgba = rgba
     return dasharrow_sgm
 
 
@@ -973,7 +981,7 @@ def gen_torus(axis=np.array([1, 0, 0]),
                                       n_sec_major=n_sec_major,
                                       n_sec_minor=n_sec_minor)
     torus_sgm = StaticGeometricModel(torus_trm)
-    torus_sgm.rgba=rgba
+    torus_sgm.rgba = rgba
     return torus_sgm
 
 
@@ -1005,7 +1013,7 @@ def gen_dashtorus(axis=np.array([1, 0, 0]),
                                           n_sec_major=n_sec_major,
                                           n_sec_minor=n_sec_minor)
     torus_sgm = StaticGeometricModel(torus_trm)
-    torus_sgm.rgba=rgba
+    torus_sgm.rgba = rgba
     return torus_sgm
 
 
@@ -1038,7 +1046,7 @@ def gen_circarrow(axis=np.array([1, 0, 0]),
                                               n_sec_minor=n_sec_minor,
                                               end_type=end_type)
     circarrow_sgm = StaticGeometricModel(circarrow_trm)
-    circarrow_sgm.rgba=rgba
+    circarrow_sgm.rgba = rgba
     return circarrow_sgm
 
 
@@ -1080,7 +1088,7 @@ def gen_submesh(vertices, faces, rgba=np.array([1, 0, 0, 1])):
         vertex_normals[i, :] = vertex_normals[i, :] / np.linalg.norm(vertex_normals[i, :])
     trm_mesh = trm_factory.trm_from_vvnf(vertices, vertex_normals, faces)
     submesh_sgm = StaticGeometricModel(trm_mesh)
-    submesh_sgm.rgba=rgba
+    submesh_sgm.rgba = rgba
     # geom = da.pdgeom_from_vvnf(vertices, vertex_normals, faces)
     # node = GeomNode('surface')
     # node.addGeom(geom)

@@ -450,21 +450,21 @@ class KHI_DUAL(ri.RobotInterface):
         self.lft_arm.gen_stickmodel(tcp_jnt_id=tcp_jnt_id,
                                     tcp_loc_pos=tcp_loc_pos,
                                     tcp_loc_rotmat=tcp_loc_rotmat,
-                                    toggle_tcpcs=toggle_tcpcs,
-                                    toggle_jntscs=toggle_jntscs,
-                                    toggle_connjnt=toggle_connjnt).attach_to(stickmodel)
+                                    toggle_tcp_frame=toggle_tcpcs,
+                                    toggle_jnt_frames=toggle_jntscs,
+                                    toggle_flange_frame=toggle_connjnt).attach_to(stickmodel)
         # self.lft_hnd.gen_stickmodel(toggle_tcp_frame=False,
-        #                             toggle_joint_frame=toggle_joint_frame,
-        #                             toggle_connjnt=toggle_connjnt).attach_to(stickmodel)
+        #                             toggle_jnt_frames=toggle_jnt_frames,
+        #                             toggle_flange_frame=toggle_flange_frame).attach_to(stickmodel)
         self.rgt_arm.gen_stickmodel(tcp_jnt_id=tcp_jnt_id,
                                     tcp_loc_pos=tcp_loc_pos,
                                     tcp_loc_rotmat=tcp_loc_rotmat,
-                                    toggle_tcpcs=toggle_tcpcs,
-                                    toggle_jntscs=toggle_jntscs,
-                                    toggle_connjnt=toggle_connjnt).attach_to(stickmodel)
+                                    toggle_tcp_frame=toggle_tcpcs,
+                                    toggle_jnt_frames=toggle_jntscs,
+                                    toggle_flange_frame=toggle_connjnt).attach_to(stickmodel)
         # self.rgt_hnd.gen_stickmodel(toggle_tcp_frame=False,
-        #                             toggle_joint_frame=toggle_joint_frame,
-        #                             toggle_connjnt=toggle_connjnt).attach_to(stickmodel)
+        #                             toggle_jnt_frames=toggle_jnt_frames,
+        #                             toggle_flange_frame=toggle_flange_frame).attach_to(stickmodel)
         return stickmodel
 
     def gen_meshmodel(self,
@@ -484,20 +484,20 @@ class KHI_DUAL(ri.RobotInterface):
         self.lft_arm.gen_meshmodel(tcp_jnt_id=tcp_jnt_id,
                                    tcp_loc_pos=tcp_loc_pos,
                                    tcp_loc_rotmat=tcp_loc_rotmat,
-                                   toggle_tcpcs=toggle_tcpcs,
-                                   toggle_jntscs=toggle_jntscs,
+                                   toggle_tcp_frame=toggle_tcpcs,
+                                   toggle_jnt_frames=toggle_jntscs,
                                    rgba=rgba).attach_to(meshmodel)
         # self.lft_hnd.gen_meshmodel(toggle_tcp_frame=False,
-        #                            toggle_joint_frame=toggle_joint_frame,
+        #                            toggle_jnt_frames=toggle_jnt_frames,
         #                            rgba=rgba).attach_to(meshmodel)
         self.rgt_arm.gen_meshmodel(tcp_jnt_id=tcp_jnt_id,
                                    tcp_loc_pos=tcp_loc_pos,
                                    tcp_loc_rotmat=tcp_loc_rotmat,
-                                   toggle_tcpcs=toggle_tcpcs,
-                                   toggle_jntscs=toggle_jntscs,
+                                   toggle_tcp_frame=toggle_tcpcs,
+                                   toggle_jnt_frames=toggle_jntscs,
                                    rgba=rgba).attach_to(meshmodel)
         # self.rgt_hnd.gen_meshmodel(toggle_tcp_frame=False,
-        #                            toggle_joint_frame=toggle_joint_frame,
+        #                            toggle_jnt_frames=toggle_jnt_frames,
         #                            rgba=rgba).attach_to(meshmodel)
         for obj_info in self.lft_arm.oih_infos:
             objcm = obj_info['collision_model']

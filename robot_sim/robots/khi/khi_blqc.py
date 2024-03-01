@@ -4,10 +4,10 @@ import modeling.collision_model as cm
 import modeling.model_collection as mc
 import robot_sim._kinematics.jlchain as jl
 import robot_sim.manipulators.rs007l.rs007l as manip
-import robot_sim.robots.robot_interface as ai
+import robot_sim.robots.single_arm_robot_interface as ai
 
 
-class KHI_BLQC(ai.RobotInterface):
+class KHI_BLQC(ai.SglArmRbtInterface):
     """
     author: weiwei
     date: 20230826toyonaka
@@ -134,41 +134,41 @@ class KHI_BLQC(ai.RobotInterface):
                        tcp_jnt_id=None,
                        tcp_loc_pos=None,
                        tcp_loc_rotmat=None,
-                       toggle_tcpcs=False,
-                       toggle_jntscs=False,
-                       toggle_connjnt=False,
+                       toggle_tcp_frame=False,
+                       toggle_jnt_frames=False,
+                       toggle_flange_frame=False,
                        name='khi_g_stickmodel'):
         stickmodel = mc.ModelCollection(name=name)
         self.manipulator.gen_stickmodel(tcp_jnt_id=tcp_jnt_id,
                                         tcp_loc_pos=tcp_loc_pos,
                                         tcp_loc_rotmat=tcp_loc_rotmat,
-                                        toggle_tcpcs=toggle_tcpcs,
-                                        toggle_jntscs=toggle_jntscs,
-                                        toggle_connjnt=toggle_connjnt).attach_to(stickmodel)
+                                        toggle_tcpcs=toggle_tcp_frame,
+                                        toggle_jntscs=toggle_jnt_frames,
+                                        toggle_connjnt=toggle_flange_frame).attach_to(stickmodel)
         self.tc_master.gen_stickmodel(toggle_tcpcs=False,
-                                      toggle_jntscs=toggle_jntscs).attach_to(stickmodel)
+                                      toggle_jntscs=toggle_jnt_frames).attach_to(stickmodel)
         if self.is_tool_attached:
             self.end_effector.gen_stickmodel(toggle_tcp_frame=False,
-                                             toggle_jnt_frames=toggle_jntscs).attach_to(stickmodel)
+                                             toggle_jnt_frames=toggle_jnt_frames).attach_to(stickmodel)
         return stickmodel
 
     def gen_meshmodel(self,
                       tcp_jnt_id=None,
                       tcp_loc_pos=None,
                       tcp_loc_rotmat=None,
-                      toggle_tcpcs=False,
-                      toggle_jntscs=False,
+                      toggle_tcp_frame=False,
+                      toggle_jnt_frames=False,
                       rgba=None,
                       name='khi_g_meshmodel'):
         meshmodel = mc.ModelCollection(name=name)
-        self.manipulator.gen_meshmodel(toggle_tcp_frame=toggle_tcpcs, toggle_jnt_frames=toggle_jntscs,
+        self.manipulator.gen_meshmodel(toggle_tcp_frame=toggle_tcp_frame, toggle_jnt_frames=toggle_jnt_frames,
                                        rgba=rgba).attach_to(meshmodel)
         self.tc_master.gen_mesh_model(toggle_tcpcs=False,
-                                      toggle_jntscs=toggle_jntscs,
+                                      toggle_jntscs=toggle_jnt_frames,
                                       rgba=rgba).attach_to(meshmodel)
         if self.is_tool_attached:
             self.end_effector.gen_mesh_model(toggle_tcpcs=False,
-                                             toggle_jntscs=toggle_jntscs,
+                                             toggle_jntscs=toggle_jnt_frames,
                                              rgba=rgba).attach_to(meshmodel)
             for obj_info in self.oih_infos:
                 objcm = obj_info['collision_model']
@@ -270,7 +270,7 @@ if __name__ == '__main__':
     base.run()
 
     robot_s = KHI_BLQC(enable_cc=True)
-    robot_s.gen_meshmodel(toggle_tcpcs=True, toggle_jntscs=True).attach_to(base)
+    robot_s.gen_meshmodel(toggle_tcp_frame=True, toggle_jnt_frames=True).attach_to(base)
 
     ee_g_pos = np.array([0, .8, .19])
     ee_g_rotmat = rm.rotmat_from_euler(0, np.radians(180), 0)
@@ -289,7 +289,7 @@ if __name__ == '__main__':
 
     jnt_values = robot_s.ik(ee_g_pos, ee_g_rotmat)
     robot_s.fk(jnt_values=jnt_values)
-    robot_s_meshmodel = robot_s.gen_meshmodel(toggle_tcpcs=True)
+    robot_s_meshmodel = robot_s.gen_meshmodel(toggle_tcp_frame=True)
     robot_s_meshmodel.attach_to(base)
 
     robot_s.attach_tool(ee_g)
@@ -297,7 +297,7 @@ if __name__ == '__main__':
     goal_rotmat = rm.rotmat_from_euler(0, np.radians(90), 0)
     jnt_values = robot_s.ik(tgt_pos=goal_pos, tgt_rotmat=goal_rotmat)
     robot_s.fk(jnt_values=jnt_values)
-    robot_s_meshmodel = robot_s.gen_meshmodel(toggle_tcpcs=True)
+    robot_s_meshmodel = robot_s.gen_meshmodel(toggle_tcp_frame=True)
     robot_s_meshmodel.attach_to(base)
     base.run()
 
@@ -308,7 +308,7 @@ if __name__ == '__main__':
     component_name = 'arm'
     jnt_values = robot_s.ik(component_name, tgt_pos, tgt_rotmat)
     robot_s.fk(component_name, jnt_values=jnt_values)
-    robot_s_meshmodel = robot_s.gen_meshmodel(toggle_tcpcs=True)
+    robot_s_meshmodel = robot_s.gen_meshmodel(toggle_tcp_frame=True)
     robot_s_meshmodel.attach_to(base)
     # robot_s.show_cdprimit()
     robot_s.gen_stickmodel().attach_to(base)
