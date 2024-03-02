@@ -48,8 +48,13 @@ class SglArmRbtInterface(object):
     def fix_to(self, pos, rotmat):
         raise NotImplementedError
 
+    def _update_end_effector(self):
+        self.end_effector.fix_to(pos=self.manipulator.gl_flange_pos, rotmat=self.manipulator.gl_flange_rotmat)
+
     def goto_given_conf(self, jnt_values):
-        return self.manipulator.goto_given_conf(jnt_values=jnt_values)
+        result = self.manipulator.goto_given_conf(jnt_values=jnt_values)
+        self._update_end_effector()
+        return result
 
     def ik(self,
            tgt_pos: np.ndarray,

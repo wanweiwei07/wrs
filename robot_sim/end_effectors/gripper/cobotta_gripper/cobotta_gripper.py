@@ -36,7 +36,6 @@ class CobottaGripper(gp.GripperInterface):
                  enable_cc=True):
         super().__init__(pos=pos, rotmat=rotmat, cdmesh_type=cdmesh_type, name=name)
         current_file_dir = os.path.dirname(__file__)
-        self.coupling._loc_flange_pos = np.array([-0.1, 0.1, 0.1])
         self.coupling.finalize()
         cpl_end_pos = self.coupling.gl_flange_pos
         cpl_end_rotmat = self.coupling.gl_flange_rotmat
@@ -60,7 +59,7 @@ class CobottaGripper(gp.GripperInterface):
         self.jlc.jnts[1].lnk.cmodel = mcm.CollisionModel(os.path.join(current_file_dir, "meshes", "right_finger.dae"))
         self.jlc.jnts[1].lnk.cmodel.rgba = np.array([.5, .5, .5, 1])
         # acting center
-        self.loc_acting_center_pos = np.array([-0.1, 0.1, 0.15])
+        self.loc_acting_center_pos = np.array([0, 0, 0.05])
         # reinitialize
         self.jlc.finalize()
         self.cdmesh_elements = [self.jlc.anchor.lnk,
@@ -113,8 +112,8 @@ class CobottaGripper(gp.GripperInterface):
 
     def gen_stickmodel(self, toggle_tcp_frame=False, toggle_jnt_frames=False, name='cobotta_gripper_stickmodel'):
         m_col = mmc.ModelCollection(name=name)
-        rkmg.gen_jlc_stick(self.coupling, toggle_jnt_frames=False, toggle_tcp_frame=False).attach_to(m_col)
-        rkmg.gen_jlc_stick(self.jlc, toggle_jnt_frames=toggle_jnt_frames, toggle_tcp_frame=False).attach_to(m_col)
+        rkmg.gen_jlc_stick(self.coupling, toggle_jnt_frames=False, toggle_flange_frame=False).attach_to(m_col)
+        rkmg.gen_jlc_stick(self.jlc, toggle_jnt_frames=toggle_jnt_frames, toggle_flange_frame=False).attach_to(m_col)
         if toggle_tcp_frame:
             self._toggle_tcp_frame(m_col)
         return m_col

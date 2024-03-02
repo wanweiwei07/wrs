@@ -90,6 +90,14 @@ class ManipulatorInterface(object):
         return self._gl_tcp_rotmat
 
     @property
+    def gl_flange_pos(self):
+        return self.jlc.gl_flange_pos
+
+    @property
+    def gl_flange_rotmat(self):
+        return self.jlc.gl_flange_rotmat
+
+    @property
     def jnt_ranges(self):
         return self.jlc.jnt_ranges
 
@@ -272,8 +280,8 @@ class ManipulatorInterface(object):
                                    toggle_flange_frame=toggle_flange_frame,
                                    name=name)
         if toggle_tcp_frame:
-            rkmg.gen_indicated_frame(spos=self.jlc.gl_flange_pos, gl_pos=self._gl_tcp_pos,
-                                     gl_rotmat=self._gl_tcp_rotmat).attach_to(m_col)
+            rkmg.gen_indicated_frame(spos=self.jlc.gl_flange_pos, gl_pos=self.gl_tcp_pos,
+                                     gl_rotmat=self.gl_tcp_rotmat).attach_to(m_col)
         return m_col
 
     def gen_endsphere(self):

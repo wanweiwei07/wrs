@@ -57,8 +57,8 @@ class CobottaArm(mi.ManipulatorInterface):
         self.jlc.jnts[5].lnk.cmodel.rgba = np.array([.7, .7, .7, 1.0])
         self.jlc.finalize(ik_solver='d', identifier_str=name)
         # tcp
-        self.loc_tcp_pos = np.array([0, 0, .05])
-        self.loc_tcp_rotmat = rm.rotmat_from_axangle(np.array([0, 1, 0]), np.pi / 12)
+        self.loc_tcp_pos = np.array([0, 0, 0])
+        self.loc_tcp_rotmat = np.eye(3)
         # collision detection
         # if enable_cc:
         #     self.enable_cc()

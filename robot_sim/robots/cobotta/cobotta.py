@@ -19,12 +19,12 @@ class Cobotta(ri.SglArmRbtInterface):
         home_conf[4] = math.pi / 6
         self.manipulator = cbta.CobottaArm(pos=self.pos, rotmat=self.rotmat, home_conf=home_conf, name="cobotta_arm",
                                            enable_cc=False)
-        ee_fix_pos, ee_fix_rotmat = self.manipulator.get_gl_flange()
-        self.end_effector = cbtg.CobottaGripper(pos=ee_fix_pos, rotmat=ee_fix_rotmat, name="cobotta_hnd",
+        self.end_effector = cbtg.CobottaGripper(pos=self.manipulator.gl_flange_pos,
+                                                rotmat=self.manipulator.gl_flange_rotmat, name="cobotta_hnd",
                                                 enable_cc=False)
         # tool center point
-        self.manipulator.jlc._loc_flange_pos, self.manipulator.jlc._loc_flange_rotmat = self.manipulator.jlc.cvt_pose_in_flange_to_functional(
-            self.end_effector.loc_acting_center_pos, self.end_effector.loc_acting_center_rotmat)
+        self.manipulator.loc_tcp_pos = self.end_effector.loc_acting_center_pos
+        self.manipulator.loc_tcp_rotmat = self.end_effector.loc_acting_center_rotmat
         # collision detection
         if enable_cc:
             self.enable_cc()
@@ -67,8 +67,8 @@ class Cobotta(ri.SglArmRbtInterface):
         self.pos = pos
         self.rotmat = rotmat
         self.manipulator.fix_to(pos=pos, rotmat=rotmat)
-        ee_fix_pos, ee_fix_rotmat = self.manipulator.get_gl_flange()
-        self.end_effector.fix_to(pos=ee_fix_pos, rotmat=ee_fix_rotmat)
+        self._update_end_effector()
+        # self.end_effector.fix_to(pos=self.manipulator.gl_flange_pos, rotmat=self.manipulator.gl_flange_rotmat)
 
     # def hold(self, hnd_name, objcm, jawwidth=None):
     #     """
@@ -166,19 +166,17 @@ if __name__ == '__main__':
     gm.gen_frame().attach_to(base)
     robot_s = Cobotta(enable_cc=False)
     # robot_s.jaw_to(.02)
-    # robot_s.gen_meshmodel(toggle_flange_frame=True, toggle_jnt_frames=True).attach_to(base)
     robot_s.gen_meshmodel(alpha=.5, toggle_tcp_frame=False, toggle_jnt_frames=False).attach_to(base)
     robot_s.gen_stickmodel(toggle_tcp_frame=True, toggle_jnt_frames=True).attach_to(base)
-    base.run()
-    tgt_pos = np.array([.25, .2, .15])
+    # base.run()
+    tgt_pos = np.array([.3, .1, .3])
     tgt_rotmat = rm.rotmat_from_axangle([0, 1, 0], math.pi * 2 / 3)
     gm.gen_frame(pos=tgt_pos, rotmat=tgt_rotmat).attach_to(base)
-    # base.run()
-    component_name = 'arm'
-    jnt_values = robot_s.ik(component_name, tgt_pos, tgt_rotmat)
-    robot_s.fk(component_name, jnt_values=jnt_values)
-    robot_s_meshmodel = robot_s.gen_meshmodel(toggle_tcp_frame=True)
-    robot_s_meshmodel.attach_to(base)
+    jnt_values = robot_s.ik(tgt_pos=tgt_pos, tgt_rotmat=tgt_rotmat)
+    if jnt_values is not None:
+        robot_s.goto_given_conf(jnt_values=jnt_values)
+        robot_s.gen_meshmodel(toggle_tcp_frame=True).attach_to(base)
+    base.run()
     # robot_s.show_cdprimit()
     robot_s.gen_stickmodel().attach_to(base)
     tic = time.time()
