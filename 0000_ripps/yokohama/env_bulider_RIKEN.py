@@ -20,7 +20,7 @@ class Env(object):
         # self.load_pipette()
 
     def load_pipette(self):
-        self.outside = cm.CollisionModel("./meshes/model_base.stl", cdp_type="box")
+        self.outside = cm.CollisionModel("./meshes/model_base.stl", cdprimit_type="box")
         pipettemat4 = rm.homomat_from_posrot(self.pipette_pos, np.eye(3))
         eepos, eerot = self.rbt_s.get_gl_tcp(manipulator_name=self.armname)
         tcpmat4 = np.dot(rm.homomat_from_posrot(eepos, eerot), np.linalg.inv(pipettemat4))
@@ -28,7 +28,7 @@ class Env(object):
         self.outside.set_pos(tcpmat4[:3, 3])
         self.outside.set_rotmat(tcpmat4[:3, :3])
         self.rbt_s.hold(self.armname, self.outside)
-        self.pipette = cm.CollisionModel("./meshes/model_tip.stl", cdp_type="box", expand_radius=0.01)
+        self.pipette = cm.CollisionModel("./meshes/model_tip.stl", cdprimit_type="box", expand_radius=0.01)
         pipettemat4 = rm.homomat_from_posrot(self.pipette_pos, np.eye(3))
         eepos, eerot = self.rbt_s.get_gl_tcp(manipulator_name=self.armname)
         tcpmat4 = np.dot(rm.homomat_from_posrot(eepos, eerot), np.linalg.inv(pipettemat4))

@@ -6,11 +6,11 @@ import modeling.collision_model as cm
 if __name__ == '__main__':
     base = wd.World(cam_pos=np.array([.07, .05, .1]), lookat_pos=np.zeros(3))
 
-    object1 = cm.CollisionModel(initor="./part_studio_1.stl", cdp_type="box", cdm_type="convex_hull")
+    object1 = cm.CollisionModel(initor="./part_studio_1.stl", cdprimit_type="box", cdmesh_type="convex_hull")
     object1.set_rgba([.9, .75, .35, 1])
     object1.set_pos(np.array([0, -.08, 0]))
 
-    object2 = cm.CollisionModel(initor="./part_studio_2.stl", cdp_type="box", cdm_type="convex_hull")
+    object2 = cm.CollisionModel(initor="./part_studio_2.stl", cdprimit_type="box", cdmesh_type="convex_hull")
     object2.set_rgba([.3, .9, .6, 1])
     object2.set_pos(np.array([0, -.05, 0]))
 

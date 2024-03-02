@@ -431,7 +431,7 @@ class Path2D(Path):
 
     def split(self):
         '''
-        If the current Path2D consists of n 'root' curves,
+        If the current Path2D consists of n 'path' curves,
         split them into a list of n Path2D objects
         '''
         if self.root is None or len(self.root) == 0:
@@ -459,7 +459,7 @@ class Path2D(Path):
                                       vertices = deepcopy(self.vertices))
                     split[i]._cache.update({'paths'          : np.array(new_paths),
                                             'polygons_closed': self.polygons_closed[connected],
-                                            'root'           : new_root})
+                                            'path'           : new_root})
         [i._cache.id_set() for i in split]
         self._cache.id_set()
         return np.array(split)
@@ -563,12 +563,12 @@ class Path2D(Path):
 
     @property
     def root(self):
-        if 'root' in self._cache:
-            return self._cache.get('root')
+        if 'path' in self._cache:
+            return self._cache.get('path')
         with self._cache:
             root, enclosure = polygons_enclosure_tree(self.polygons_closed)
         self._cache.set('enclosure_directed', enclosure)
-        return self._cache.set('root', root)
+        return self._cache.set('path', root)
 
     @property
     def enclosure(self):
@@ -584,5 +584,5 @@ class Path2D(Path):
             return self._cache.get('enclosure_directed')
         with self._cache:
             root, enclosure = polygons_enclosure_tree(self.polygons_closed)
-        self._cache.set('root', root)
+        self._cache.set('path', root)
         return self._cache.set('enclosure_directed', enclosure)

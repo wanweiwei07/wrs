@@ -30,10 +30,10 @@ class HandoverPlanner(object):
         self.rbt = rhx.robot_s
         self.retractdistance = retractdistance
         self.bcdchecker = bch.MCMchecker(toggledebug=False)
-        with open(os.path.join(rhx.root, "grasp" + rhx.rgthndfa.name, "predefinedgrasps.pickle"), "rb") as file:
+        with open(os.path.join(rhx.path, "grasp" + rhx.rgthndfa.name, "predefinedgrasps.pickle"), "rb") as file:
             graspdata = pickle.load(file)
             self.identityglist_rgt = graspdata[self.objname]
-        with open(os.path.join(rhx.root, "grasp" + rhx.lfthndfa.name, "predefinedgrasps.pickle"), "rb") as file:
+        with open(os.path.join(rhx.path, "grasp" + rhx.lfthndfa.name, "predefinedgrasps.pickle"), "rb") as file:
             graspdata = pickle.load(file)
             self.identityglist_lft = graspdata[self.objname]
         self.rgthndfa = rhx.rgthndfa

@@ -33,7 +33,7 @@ class ExperimentLogger:
         Parameters
         ----------
         experiment_root_path : :obj:`str`
-            The root directory in which to save experiment files.
+            The path directory in which to save experiment files.
         experiment_tag : :obj:`str`
             The tag to use when prefixing new experiments
         log_to_file : bool, optional

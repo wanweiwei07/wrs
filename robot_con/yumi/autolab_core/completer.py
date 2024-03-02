@@ -22,7 +22,7 @@ class Completer(object):
         self.words = []
 
     def _listdir(self, root):
-        "List directory 'root' appending the path separator to subdirs."
+        "List directory 'path' appending the path separator to subdirs."
         res = []
         for name in os.listdir(root):
             path = os.path.join(root, name)

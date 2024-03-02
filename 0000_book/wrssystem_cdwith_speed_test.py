@@ -11,12 +11,12 @@ if __name__ == '__main__':
     base = wd.World(cam_pos=np.array([.7, .05, .3]), lookat_pos=np.zeros(3))
     # object
     object_ref = cm.CollisionModel(initor="./objects/bunnysim.stl",
-                                   cdp_type=cm.CDPrimitiveType.BOX,
-                                   cdm_type=cm.CDMeshType.OBB)
+                                   cdprimit_type=cm.CDPrimitiveType.BOX,
+                                   cdmesh_type=cm.CDMeshType.OBB)
 
     # object 1
     object1 = object_ref.copy()
-    # object1.change_cdmesh_type(cdm_type="convex_hull")
+    # object1.change_cdmesh_type(cdmesh_type="convex_hull")
     object1.set_pos(np.array([0, .04, 0]))
     # object 2
     object2 = object_ref.copy()
@@ -56,10 +56,10 @@ if __name__ == '__main__':
 
     # object_ref_c = cmc.CollisionModel(initializer="./objects/bunnysim.stl",
     #                                   cdprimit_type=mcm.CDPType.BOX,
-    #                                   cdm_type=mcm.CDMType.DEFAULT)
+    #                                   cdmesh_type=mcm.CDMType.DEFAULT)
     # # object 3
     # object3 = object_ref_c.copy()
-    # # object1.change_cdmesh_type(cdm_type="convex_hull")
+    # # object1.change_cdmesh_type(cdmesh_type="convex_hull")
     # object3.set_pos(np.array([0, .14, 0]))
     # # object 4
     # object4 = object_ref.copy()

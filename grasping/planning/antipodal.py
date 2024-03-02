@@ -1,8 +1,10 @@
+import os
 import math
 import numpy as np
 import basis.robot_math as rm
-import grasping.annotation.utils as gu
+import grasping.annotation.utils as gau
 from scipy.spatial import cKDTree
+import modeling.geometric_model as mgm
 
 
 def plan_contact_pairs(cmodel,
@@ -51,7 +53,8 @@ def plan_gripper_grasps(gripper,
                         rotation_interval=math.radians(22.5),
                         max_samples=100,
                         min_dist_between_sampled_contact_points=.005,
-                        contact_offset=.002):
+                        contact_offset=.002,
+                        toggle_dbg=False):
     """
     :param gripper:
     :param cmodel:
@@ -60,12 +63,23 @@ def plan_gripper_grasps(gripper,
     :param max_samples:
     :param min_dist_between_sampled_contact_points:
     :param contact_offset: offset at the cotnact to avoid being closely in touch with object surfaces
-    :return: a list [[jaw_width, jaw_center_pos, pos, rotmat], ...]
+    :return: a list [[jaw_width, jaw_center_pos, gripper_root_pos, gripper_root_rotmat], ...]
     """
     contact_pairs = plan_contact_pairs(cmodel,
                                        max_samples=max_samples,
                                        min_dist_between_sampled_contact_points=min_dist_between_sampled_contact_points,
                                        angle_between_contact_normals=angle_between_contact_normals)
+    if toggle_dbg:
+        print(len(contact_pairs))
+        for i, cp in enumerate(contact_pairs):
+            contact_p0, contact_n0 = cp[0]
+            contact_p1, contact_n1 = cp[1]
+            mgm.gen_sphere(pos=contact_p0, rgba=np.array([1, 0, 0, 1])).attach_to(base)
+            mgm.gen_arrow(spos=contact_p0, epos=contact_p0 + contact_n0 * .01, stick_radius=.00057,
+                          rgba=np.array([1, 0, 0, 1])).attach_to(base)
+            mgm.gen_sphere(pos=contact_p1, rgba=np.array([0, 0, 1, 1])).attach_to(base)
+            mgm.gen_arrow(spos=contact_p1, epos=contact_p1 + contact_n1 * .01, stick_radius=.00057,
+                          rgba=np.array([0, 0, 1, 1])).attach_to(base)
     grasp_info_list = []
     for i, cp in enumerate(contact_pairs):
         print(f"{i} of {len(contact_pairs)} done!")
@@ -75,23 +89,24 @@ def plan_gripper_grasps(gripper,
         jaw_width = np.linalg.norm(contact_p0 - contact_p1) + contact_offset * 2
         if jaw_width > gripper.jaw_range[1]:
             continue
-        grasp_info_list += gu.define_gripper_grasps_with_rotation(gripper, cmodel, gl_jaw_center_pos=contact_center,
-                                                                  gl_approaching_vec=rm.orthogonal_vector(contact_n0),
-                                                                  gl_fgr0_opening_vec=contact_n0, jaw_width=jaw_width,
-                                                                  rotation_interval=rotation_interval, toggle_flip=True)
+        grasp_info_list += gau.define_gripper_grasps_with_rotation(gripper, cmodel, gl_jaw_center_pos=contact_center,
+                                                                   gl_approaching_vec=rm.orthogonal_vector(contact_n0),
+                                                                   gl_fgr0_opening_vec=contact_n0, jaw_width=jaw_width,
+                                                                   rotation_interval=rotation_interval,
+                                                                   toggle_flip=True, toggle_dbg=toggle_dbg)
     return grasp_info_list
 
 
-def write_pickle_file(objcm_name, grasp_info_list, root=None, file_name='preannotated_grasps.pickle', append=False):
-    if root is None:
-        root = './'
-    gu.write_pickle_file(objcm_name, grasp_info_list, root=root, file_name=file_name, append=append)
+def write_pickle_file(cmodel_name, grasp_info_list, path=None, file_name='preannotated_grasps.pickle', append=False):
+    if path is None:
+        path = os.getcwd()
+    gau.write_pickle_file(cmodel_name, grasp_info_list, path=path, file_name=file_name, append=append)
 
 
 def load_pickle_file(objcm_name, root=None, file_name='preannotated_grasps.pickle'):
     if root is None:
         root = './'
-    return gu.load_pickle_file(objcm_name, root=root, file_name=file_name)
+    return gau.load_pickle_file(objcm_name, path=root, file_name=file_name)
 
 
 if __name__ == '__main__':

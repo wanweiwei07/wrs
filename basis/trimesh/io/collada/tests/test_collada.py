@@ -370,7 +370,7 @@ class TestCollada(unittest.TestCase):
             mesh = collada.Collada(file_name, validate_output=True)
             # scene should have 8 geometries
             self.assertEqual(len(mesh.geometries), 8)
-            # scene should have one root node
+            # scene should have one path node
             self.assertEqual(len(mesh.scene.nodes), 1)
 
 if __name__ == '__main__':

@@ -109,7 +109,7 @@ def export_svg(drawing):
                   'Arc'   : svg_arc}
     path_str = ''
     for path_index, path in enumerate(drawing.paths):
-        reverse   = not (path_index in drawing.root)
+        reverse   = not (path_index in drawing.path)
         path_str += convert_path(path, reverse)
     return path_str
 

@@ -855,7 +855,7 @@ def loadNode( collada, node, localscope ):
 
 
 class Scene(DaeObject):
-    """The root object for a scene, as defined in a collada <scene> tag"""
+    """The path object for a scene, as defined in a collada <scene> tag"""
 
     def __init__(self, id, nodes, xmlnode=None, collada=None):
         """Create a scene

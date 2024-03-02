@@ -5,12 +5,12 @@ if __name__ == '__main__':
 
     yhx.pxc.triggerframe()
     realpcd = yhx.pxc.getpcd()
-    sensorhomomat = pickle.load(open(os.path.join(yhx.root, "datacalibration", "calibmat.pkl"), "rb"))
+    sensorhomomat = pickle.load(open(os.path.join(yhx.path, "datacalibration", "calibmat.pkl"), "rb"))
     pcd = rm.homotransformpointarray(sensorhomomat, realpcd)
     pcdnp = yhx.p3dh.genpointcloudnodepath(pcd)
     pcdnp.reparentTo(yhx.base.render)
 
-    # refinedsensorhomomat = pickle.load(open(os.path.join(yhx.root, "datacalibration", "refinedcalibmat.pkl"), "rb"))
+    # refinedsensorhomomat = pickle.load(open(os.path.join(yhx.path, "datacalibration", "refinedcalibmat.pkl"), "rb"))
     # refinedpcd = rm.homotransformpointarray(refinedsensorhomomat, realpcd)
     # refinedpcdnp = yhx.p3dh.genpointcloudnodepath(refinedpcd, colors=[.5,1,.5,1])
     # refinedpcdnp.reparentTo(yhx.base.render)

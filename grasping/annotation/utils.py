@@ -1,23 +1,24 @@
+import os
 import math
 import pickle
 import numpy as np
 import basis.robot_math as rm
 
 
-def define_grasp(hnd_s,
-                 objcm,
-                 gl_jaw_center_pos,
-                 gl_jaw_center_z,
-                 gl_jaw_center_y,
-                 jaw_width,
-                 toggle_flip=True,
-                 toggle_debug=False):
+def define_gripper_grasps(gripper,
+                          cmodel,
+                          gl_jaw_center_pos,
+                          gl_approaching_vec,
+                          gl_fgr0_opening_vec,
+                          jaw_width,
+                          toggle_flip=True,
+                          toggle_debug=False):
     """
-    :param hnd_s:
-    :param objcm:
+    :param gripper:
+    :param cmodel:
     :param gl_jaw_center_pos:
-    :param gl_jaw_center_z: hand approaching direction
-    :param gl_jaw_center_y: normal direction of thumb's contact surface
+    :param gl_approaching_vec: hand approaching direction
+    :param gl_fgr0_opening_vec: normal direction of thumb's contact surface
     :param jaw_width:
     :param cmodel:
     :param toggle_flip:
@@ -27,35 +28,35 @@ def define_grasp(hnd_s,
     """
     grasp_info_list = []
     collided_grasp_info_list = []
-    grasp_info = hnd_s.grip_at_by_twovecs(gl_jaw_center_pos, gl_jaw_center_z, gl_jaw_center_y, jaw_width)
-    if not hnd_s.is_mesh_collided([objcm]):
+    grasp_info = gripper.grip_at_by_twovecs(gl_jaw_center_pos, gl_approaching_vec, gl_fgr0_opening_vec, jaw_width)
+    if not gripper.is_mesh_collided([cmodel]):
         grasp_info_list.append(grasp_info)
     else:
         collided_grasp_info_list.append(grasp_info)
     if toggle_flip:
-        grasp_info = hnd_s.grip_at_by_twovecs(gl_jaw_center_pos, gl_jaw_center_z, -gl_jaw_center_y, jaw_width)
-        if not hnd_s.is_mesh_collided([objcm]):
+        grasp_info = gripper.grip_at_by_twovecs(gl_jaw_center_pos, gl_approaching_vec, -gl_fgr0_opening_vec, jaw_width)
+        if not gripper.is_mesh_collided([cmodel]):
             grasp_info_list.append(grasp_info)
         else:
             collided_grasp_info_list.append(grasp_info)
     if toggle_debug:
         for grasp_info in collided_grasp_info_list:
             jaw_width, gl_jaw_center_pos, gl_jaw_center_rotmat, hnd_pos, hnd_rotmat = grasp_info
-            hnd_s.fix_to(hnd_pos, hnd_rotmat)
-            hnd_s.change_jaw_width(jaw_width)
-            hnd_s.gen_mesh_model(rgba=[1, 0, 0, .3]).attach_to(base)
+            gripper.fix_to(hnd_pos, hnd_rotmat)
+            gripper.change_jaw_width(jaw_width)
+            gripper.gen_mesh_model(rgba=[1, 0, 0, .3]).attach_to(base)
         for grasp_info in grasp_info_list:
             jaw_width, gl_jaw_center_pos, gl_jaw_center_rotmat, hnd_pos, hnd_rotmat = grasp_info
-            hnd_s.fix_to(hnd_pos, hnd_rotmat)
-            hnd_s.change_jaw_width(jaw_width)
-            hnd_s.gen_mesh_model(rgba=[0, 1, 0, .3]).attach_to(base)
+            gripper.fix_to(hnd_pos, hnd_rotmat)
+            gripper.change_jaw_width(jaw_width)
+            gripper.gen_mesh_model(rgba=[0, 1, 0, .3]).attach_to(base)
     return grasp_info_list
 
 
 def define_gripper_grasps_with_rotation(gripper, cmodel, gl_jaw_center_pos, gl_approaching_vec, gl_fgr0_opening_vec,
                                         jaw_width, rotation_interval=math.radians(60),
                                         rotation_range=(math.radians(-180), math.radians(180)), toggle_flip=True,
-                                        toggle_debug=False):
+                                        toggle_debug=False, toggle_dbg = False):
     """
     :param gripper:
     :param cmodel: 
@@ -78,7 +79,11 @@ def define_gripper_grasps_with_rotation(gripper, cmodel, gl_jaw_center_pos, gl_a
         tmp_fgr0_opening_vec = np.dot(tmp_rotmat, gl_fgr0_opening_vec)
         grasp_info = gripper.grip_at_by_twovecs(gl_jaw_center_pos, tmp_approaching_vec, tmp_fgr0_opening_vec,
                                                 jaw_width)
-        if not gripper.is_mesh_collided([cmodel]):
+        if toggle_dbg:
+            gripper.grip_at_by_pose(grasp_info[1], grasp_info[2], grasp_info[0])
+            gripper.gen_meshmodel(alpha=.3).attach_to(base)
+            base.run()
+        if not gripper.is_mesh_collided([cmodel], toggle_dbg=toggle_dbg):
             grasp_info_list.append(grasp_info)
         else:
             collided_grasp_info_list.append(grasp_info)
@@ -153,54 +158,50 @@ def define_pushing(hnd_s,
     return push_info_list
 
 
-def write_pickle_file(objcm_name, grasp_info_list, root=None, file_name='preannotated_grasps.pickle', append=False):
+def write_pickle_file(cmodel_name, grasp_info_list, path=None, file_name='preannotated_grasps.pickle', append=False):
     """
     if model_name was saved, replace the old grasp info.
     if model_name was never saved, additionally save it.
-    :param objcm_name:
+    :param cmodel_name:
     :param grasp_info_list:
-    :param root:
+    :param path:
     :param file_name:
     :return:
     author: chenhao, revised by weiwei
     date: 20200104
     """
-    if root is None:
-        directory = "./"
-    else:
-        directory = root + "/"
+    if path is None:
+        path = os.getcwd()
     try:
-        data = pickle.load(open(directory + file_name, 'rb'))
+        data = pickle.load(open(os.path.join(path, file_name), 'rb'))
     except:
         print("load failed, create new data.")
         data = {}
     if append:
-        data[objcm_name].extend(grasp_info_list)
+        data[cmodel_name].extend(grasp_info_list)
     else:
-        data[objcm_name] = grasp_info_list
+        data[cmodel_name] = grasp_info_list
     for k, v in data.items():
         print(k, len(v))
-    pickle.dump(data, open(directory + file_name, 'wb'))
+    pickle.dump(data, open(os.path.join(path, file_name), 'wb'))
 
 
-def load_pickle_file(objcm_name, root=None, file_name='preannotated_grasps.pickle'):
+def load_pickle_file(cmodel_name, path=None, file_name='preannotated_grasps.pickle'):
     """
-    :param objcm_name:
-    :param root:
+    :param cmodel_name:
+    :param path:
     :param file_name:
     :return:
     author: chenhao, revised by weiwei
     date: 20200105
     """
-    if root is None:
-        directory = "./"
-    else:
-        directory = root + "/"
+    if path is None:
+        path = os.getcwd()
     try:
-        data = pickle.load(open(directory + file_name, 'rb'))
+        data = pickle.load(open(os.path.join(path, file_name), 'rb'))
         for k, v in data.items():
             print(k, len(v))
-        grasp_info_list = data[objcm_name]
+        grasp_info_list = data[cmodel_name]
         return grasp_info_list
     except:
         raise ValueError("File or data not found!")

@@ -207,9 +207,9 @@ def phoxi_calibbyestinee(yhx, pxc, armname, parameters, aruco_dict):
     print(phxposarr)
     print(realposarr)
     amat = rm.affine_matrix_from_points(phxposarr.T, realposarr.T)
-    pickle.dump(realposarr, open(os.path.join(yhx.root, "datacalibration", "realpos.pkl"), "wb"))
-    pickle.dump(phxposarr, open(os.path.join(yhx.root, "datacalibration", "ampos.pkl"), "wb"))
-    pickle.dump(amat, open(os.path.join(yhx.root, "datacalibration", "calibmat.pkl"), "wb"))
+    pickle.dump(realposarr, open(os.path.join(yhx.path, "datacalibration", "realpos.pkl"), "wb"))
+    pickle.dump(phxposarr, open(os.path.join(yhx.path, "datacalibration", "ampos.pkl"), "wb"))
+    pickle.dump(amat, open(os.path.join(yhx.path, "datacalibration", "calibmat.pkl"), "wb"))
     print(amat)
     return amat
 
@@ -250,9 +250,9 @@ def phoxi_calib(yhx, pxc, armname, relpos, parameters, aruco_dict):
     realposarr = np.array(realposlist)
     phxposarr = np.array(phxposlist)
     amat = rm.affine_matrix_from_points(phxposarr.T, realposarr.T)
-    pickle.dump(realposarr, open(os.path.join(yhx.root, "datacalibration", "realpos.pkl"), "wb"))
-    pickle.dump(phxposarr, open(os.path.join(yhx.root, "datacalibration", "ampos.pkl"), "wb"))
-    pickle.dump(amat, open(os.path.join(yhx.root, "datacalibration", "calibmat.pkl"), "wb"))
+    pickle.dump(realposarr, open(os.path.join(yhx.path, "datacalibration", "realpos.pkl"), "wb"))
+    pickle.dump(phxposarr, open(os.path.join(yhx.path, "datacalibration", "ampos.pkl"), "wb"))
+    pickle.dump(amat, open(os.path.join(yhx.path, "datacalibration", "calibmat.pkl"), "wb"))
     print(amat)
     return amat
 
@@ -270,7 +270,7 @@ def phoxi_calib_refinewithmodel(yhx, pxc, rawamat, armname):
     date: 20191228
     """
 
-    handpalmtemplate = pickle.load(open(os.path.join(yhx.root, "dataobjtemplate", "handpalmtemplatepcd.pkl"), "rb"))
+    handpalmtemplate = pickle.load(open(os.path.join(yhx.path, "dataobjtemplate", "handpalmtemplatepcd.pkl"), "rb"))
 
     newhomomatlist = []
 
@@ -315,7 +315,7 @@ def phoxi_calib_refinewithmodel(yhx, pxc, rawamat, armname):
                     newhomomatlist.append(rm.homoinverse(newhomomat))
     newhomomat = rm.homomat_average(newhomomatlist, denoise=False)
     refinedamat = np.dot(newhomomat, rawamat)
-    pickle.dump(refinedamat, open(os.path.join(yhx.root, "datacalibration", "refinedcalibmat.pkl"), "wb"))
+    pickle.dump(refinedamat, open(os.path.join(yhx.path, "datacalibration", "refinedcalibmat.pkl"), "wb"))
     print(rawamat)
     print(refinedamat)
     return refinedamat
@@ -360,7 +360,7 @@ if __name__ == '__main__':
     # phoxi_calibbyestinee(yhx, pxc, arm_name, parameters, aruco_dict)
     relpos = np.array([-12.03709376, 1.22814887, 37.36035265])
     phoxi_calib(yhx, pxc, armname, relpos, parameters, aruco_dict)
-    # rawamat = pickle.load(open(os.path.join(yhx.root, "datacalibration", "calibmat.pkl"), "rb"))
+    # rawamat = pickle.load(open(os.path.join(yhx.path, "datacalibration", "calibmat.pkl"), "rb"))
     # phoxi_calib_refine(yhx, pxc, rawamat, arm_name="rgt")
     # yhx.robot_s.movearmfk(yhx.getarmjntsx("rgt"), arm_name="rgt")
     # yhx.robot_s.movearmfk(yhx.getarmjntsx("lft"), arm_name="lft")

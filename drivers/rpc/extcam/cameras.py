@@ -25,9 +25,9 @@ if __name__ == "__main__":
     import time
     ec = ExtCam()
     while True:
-        # ifnpa = pickle.loads(rkint.root.getifarray())
-        # clnpa = pickle.loads(rkint.root.getclarray())
-        # dnpa = pickle.loads(rkint.root.getrcimg())
+        # ifnpa = pickle.loads(rkint.path.getifarray())
+        # clnpa = pickle.loads(rkint.path.getclarray())
+        # dnpa = pickle.loads(rkint.path.getrcimg())
         dnpa = ec.getimg()
         cv2.imshow("Depth", dnpa)
         cv2.waitKey(100)

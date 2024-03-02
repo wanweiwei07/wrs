@@ -41,7 +41,7 @@ class UR3Dual(ri.RobotInterface):
         self.lft_body.lnks[0]['loc_pos'] = np.array([0, 0, 0])
         self.lft_body.lnks[0]['collision_model'] = cm.CollisionModel(
             os.path.join(this_dir, "meshes", "ur3_dual_base.stl"),
-            cdp_type="user_defined", expand_radius=.005,
+            cdprimit_type="user_defined", expand_radius=.005,
             userdef_cdprim_fn=self._base_combined_cdnp)
         self.lft_body.lnks[0]['rgba'] = [.3, .3, .3, 1.0]
         # columns

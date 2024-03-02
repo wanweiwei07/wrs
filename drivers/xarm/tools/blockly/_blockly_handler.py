@@ -772,8 +772,8 @@ class _BlocklyHandler(_BlocklyBase):
     def _handle_math_change(self, block, indent=0, arg_map=None):
         field = self._get_node('field', block).text
         value = self._get_node('value', root=block)
-        # shadow = self._get_node('shadow', root=value)
-        # value = self._get_node('field', root=shadow).text
+        # shadow = self._get_node('shadow', path=value)
+        # value = self._get_node('field', path=shadow).text
         val = self._get_block_val(value)
         if arg_map and field in arg_map:
             self._append_main_code('{} += {}'.format(arg_map[field], val), indent=indent+2)

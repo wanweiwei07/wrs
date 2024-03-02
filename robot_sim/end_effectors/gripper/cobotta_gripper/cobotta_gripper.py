@@ -27,19 +27,22 @@ class CobottaGripper(gp.GripperInterface):
         self.jlc = rkjlc.JLChain(pos=self.coupling.gl_flange_pos, rotmat=self.coupling.gl_flange_rotmat, n_dof=2,
                                  name=name)
         # anchor
-        self.jlc.anchor.lnk.cmodel = mcm.CollisionModel(os.path.join(current_file_dir, "meshes", "gripper_base.dae"))
+        self.jlc.anchor.lnk.cmodel = mcm.CollisionModel(os.path.join(current_file_dir, "meshes", "gripper_base.dae"),
+                                                        cdmesh_type=self.cdmesh_type)
         self.jlc.anchor.lnk.cmodel.rgba = np.array([.35, .35, .35, 1])
         # the 1st joint (left finger)
         self.jlc.jnts[0].change_type(rkc.JntType.PRISMATIC, np.array([0, self.jaw_range[1] / 2]))
         self.jlc.jnts[0].loc_pos = np.array([0, .0, .0])
         self.jlc.jnts[0].loc_motion_ax = bc.y_ax
-        self.jlc.jnts[0].lnk.cmodel = mcm.CollisionModel(os.path.join(current_file_dir, "meshes", "left_finger.dae"))
+        self.jlc.jnts[0].lnk.cmodel = mcm.CollisionModel(os.path.join(current_file_dir, "meshes", "left_finger.dae"),
+                                                         cdmesh_type=self.cdmesh_type)
         self.jlc.jnts[0].lnk.cmodel.rgba = np.array([.5, .5, .5, 1])
         # the 2nd joint (right finger)
         self.jlc.jnts[1].change_type(rkc.JntType.PRISMATIC, np.array([0, -self.jaw_range[1]]))
         self.jlc.jnts[1].loc_pos = np.array([0, .0, .0])
         self.jlc.jnts[1].loc_motion_ax = bc.y_ax
-        self.jlc.jnts[1].lnk.cmodel = mcm.CollisionModel(os.path.join(current_file_dir, "meshes", "right_finger.dae"))
+        self.jlc.jnts[1].lnk.cmodel = mcm.CollisionModel(os.path.join(current_file_dir, "meshes", "right_finger.dae"),
+                                                         cdmesh_type=self.cdmesh_type)
         self.jlc.jnts[1].lnk.cmodel.rgba = np.array([.5, .5, .5, 1])
         # acting center
         self.loc_acting_center_pos = np.array([0, 0, 0.05])
@@ -138,15 +141,15 @@ if __name__ == '__main__':
 
     base = wd.World(cam_pos=[.5, .5, .5], lookat_pos=[0, 0, 0])
     gm.gen_frame().attach_to(base)
-    grpr = CobottaGripper(enable_cc=True)
+    grpr = CobottaGripper(cdmesh_type=mc.CDMType.OBB, enable_cc=True)
     grpr.fix_to(pos=np.array([0, .1, .1]), rotmat=rm.rotmat_from_axangle([1, 0, 0], .7))
     print(grpr.grip_at_by_twovecs(jaw_center_pos=np.array([0, .1, .1]), approaching_vec=np.array([0, -1, 0]),
                                   fgr0_opening_vec=np.array([1, 0, 0]), jaw_width=.01))
     # grpr.change_jaw_width(.013)
-    grpr.gen_meshmodel(toggle_tcp_frame=True, toggle_jnt_frames=False, toggle_cdprim=True).attach_to(base)
+    grpr.gen_meshmodel(toggle_tcp_frame=True, toggle_jnt_frames=False, toggle_cdprim=False).attach_to(base)
     # # grpr.gen_stickmodel(toggle_jnt_frames=True).attach_to(base)
     # grpr.gen_meshmodel().attach_to(base)
     # # grpr.gen_stickmodel().attach_to(base)
-    # # grpr.show_cdmesh()
-    # # grpr.show_cdprimit()
+    # grpr.show_cdmesh()
+    # grpr.show_cdprimit()
     base.run()

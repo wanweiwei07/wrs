@@ -201,10 +201,10 @@ if __name__ == '__main__':
     import environment.collisionmodel as cm
 
     yhx = robothelper.RobotHelperX(usereal=False, startworld=True)
-    cf = CalibrateFixture(directory=yhx.root)
+    cf = CalibrateFixture(directory=yhx.path)
 
-    bgdepth = pickle.load(open(yhx.root+"/databackground/bgdepth.pkl", "rb"))
-    bgpcd = pickle.load(open(yhx.root+"/databackground/bgpcd.pkl", "rb"))
+    bgdepth = pickle.load(open(yhx.path + "/databackground/bgdepth.pkl", "rb"))
+    bgpcd = pickle.load(open(yhx.path + "/databackground/bgpcd.pkl", "rb"))
 
     objpcd = cf.capturecorrectedpcd(yhx.pxc, ncapturetimes=1)
     pcdnp = p3dh.genpointcloudnodepath(objpcd, pntsize=5)
@@ -214,7 +214,7 @@ if __name__ == '__main__':
     homomat = cf.findtubestand_matchonobb(objpcd, toggledebug=False)
     tbscm = cf.gentubestand(homomat=homomat)
     print(homomat)
-    pickle.dump(homomat, open(os.path.join(yhx.root, "datafixture", "rightfixture_light_homomat1.pkl"), "wb"))
+    pickle.dump(homomat, open(os.path.join(yhx.path, "datafixture", "rightfixture_light_homomat1.pkl"), "wb"))
     tbscm.reparentTo(yhx.base.render)
 
     yhx.base.run()

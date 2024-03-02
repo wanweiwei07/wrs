@@ -30,7 +30,7 @@ class PickPlacePlanner(object):
         with open(os.path.join("./predefinedgrasps.pickle"), "rb") as file:
             graspdata = pickle.load(file)
             self.identityglist_rgt = graspdata[self.objname]
-        with open(os.path.join(rhx.root, "grasp" + rhx.lfthndfa.name, "predefinedgrasps.pickle"), "rb") as file:
+        with open(os.path.join(rhx.path, "grasp" + rhx.lfthndfa.name, "predefinedgrasps.pickle"), "rb") as file:
             graspdata = pickle.load(file)
             self.identityglist_lft = graspdata[self.objname]
 

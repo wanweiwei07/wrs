@@ -99,16 +99,6 @@ def toggle_show_collision_node(cdprimitive, toggle_show_on=True):
     :param is_show:
     :return:
     """
-    # if cdprimitive.getName() == "cylinder":
-    #     if toggle_show_on:
-    #         cdprimitive.getChild(0).show()
-    #         cdprimitive.getChild(1).show()
-    #         cdprimitive.getChild(2).show()
-    #     else:
-    #         cdprimitive.getChild(0).hide()
-    #         cdprimitive.getChild(1).hide()
-    #         cdprimitive.getChild(2).hide()
-    # else:
     if toggle_show_on:
         for child_pdndp in cdprimitive.getChildren():
             child_pdndp.show()
@@ -413,7 +403,7 @@ if __name__ == '__main__':
 
     base = wd.World(cam_pos=[.7, .7, .7], lookat_pos=[0, 0, 0])
     file_path = os.path.join(basis.__path__[0], 'objects', 'bunnysim.stl')
-    cmodel = mcm.CollisionModel(file_path, cdp_type=mc.CDPType.CYLINDER)
+    cmodel = mcm.CollisionModel(file_path, cdprimit_type=mc.CDPType.CYLINDER)
     cmodel.rgba = np.array([.2, .5, 0, 1])
     cmodel.pos = np.array([.1, .01, .01])
     cmodel.attach_to(base)
@@ -423,7 +413,7 @@ if __name__ == '__main__':
     for i in range(100):
         cmodel_list.append(
             mcm.CollisionModel(os.path.join(basis.__path__[0], 'objects', 'housing.stl'),
-                               cdp_type=mc.CDPType.BOX))
+                               cdprimit_type=mc.CDPType.BOX))
         cmodel_list[-1].pos = np.random.random_sample((3,))
         cmodel_list[-1].rgba = np.array([1, .5, 0, 1])
         cmodel_list[-1].attach_to(base)

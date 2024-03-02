@@ -58,7 +58,7 @@ class XArmLite6(mi.ManipulatorInterface):
         self.jlc.lnks[0]['mass'] = 2.11
         self.jlc.lnks[0]['collision_model'] = cm.CollisionModel(
             os.path.join(this_dir, "meshes", "base.stl"),
-            cdp_type="user_defined",
+            cdprimit_type="user_defined",
             userdef_cdprim_fn=self._base_cdnp)
         self.jlc.lnks[0]['rgba'] = [.7, .7, .7, 1.0]
         # link1
@@ -73,7 +73,7 @@ class XArmLite6(mi.ManipulatorInterface):
         self.jlc.lnks[2]['com'] = np.array([0.179, .0, .0584])
         self.jlc.lnks[2]['mass'] = 1.34
         self.jlc.lnks[2]['mesh_file'] = cm.CollisionModel(os.path.join(this_dir, "meshes", "link2.stl"),
-                                                          cdp_type="user_defined",
+                                                          cdprimit_type="user_defined",
                                                           userdef_cdprim_fn=self._link2_cdnp)
         # os.path.join(this_dir, "meshes", "link2.stl")
         self.jlc.lnks[2]['rgba'] = [.7, .7, .7, 1.0]
@@ -90,7 +90,7 @@ class XArmLite6(mi.ManipulatorInterface):
         self.jlc.lnks[4]['mass'] = 1.284
         self.jlc.lnks[4]['collision_model'] = cm.CollisionModel(
             os.path.join(this_dir, "meshes", "link4.stl"),
-            cdp_type="user_defined",
+            cdprimit_type="user_defined",
             userdef_cdprim_fn=self._link4_cdnp)
         self.jlc.lnks[4]['rgba'] = [.7, .7, .7, 1.0]
         # link 5

@@ -49,7 +49,7 @@ class CollisionModel(gm.GeometricModel):
         :param expand_radius:
         :param name:
         :param userdefined_cdprimitive_fn: the collision primitive will be defined in the provided function
-                                           if cdp_type = external;
+                                           if cdprimit_type = external;
                                            protocal for the callback function: return CollisionNode,
                                            may have multiple CollisionSolid
         date: 201290312, 20201212
@@ -144,7 +144,7 @@ class CollisionModel(gm.GeometricModel):
         """
         :param cdprimitive_type:
         :param expand_radius:
-        :param userdefined_cdprimitive_fn: None, only used when cdp_type == 'userdefined'
+        :param userdefined_cdprimitive_fn: None, only used when cdprimit_type == 'userdefined'
         :return:
         author: weiwei
         date: 20210116

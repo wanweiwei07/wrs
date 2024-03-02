@@ -60,7 +60,7 @@ class Nova2(mi.ManipulatorInterface):
         self.jlc.lnks[0]['mass'] = 2.11
         self.jlc.lnks[0]['collision_model'] = cm.CollisionModel(
             os.path.join(this_dir, "meshes", "base.stl"),
-            cdp_type="user_defined",
+            cdprimit_type="user_defined",
             userdef_cdprim_fn=self._base_cdnp)
         self.jlc.lnks[0]['rgba'] = [.7, .7, .7, 1.0]
         # # link1

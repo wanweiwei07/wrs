@@ -94,8 +94,8 @@ def load_step(file_obj, file_type=None):
                                      dtype=np.float).reshape((4, 4)).T
                 g.add_edge(shape_id, child_id, transform=transform)
 
-        # which product ID has the root shape
-        prod_root = t.getroot().get('root')
+        # which product ID has the path shape
+        prod_root = t.getroot().get('path')
         shape_root = None
         for prod in t.findall('product'):
             prod_id = prod.get('id')

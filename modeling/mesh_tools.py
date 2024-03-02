@@ -68,11 +68,11 @@ def convert_to_stl(obj, save_name, pos=np.zeros(3), rotmat=np.eye(3)):
 if __name__ == '__main__':
     # The following contents are commented out to avoid mis-exec.
     pass
-    # root = "./objects/"
-    # for subdir, dirs, files in os.walk(root):
+    # path = "./objects/"
+    # for subdir, dirs, files in os.walk(path):
     #     for file in files:
-    #         print(root+file)
-    #         scale_and_save(root+file, .001, file)
+    #         print(path+file)
+    #         scale_and_save(path+file, .001, file)
     # scale_and_save("./objects/block.meshes", .001, "block.meshes")
     # scale_and_save("./objects/bowlblock.meshes", .001, "bowlblock.meshes")
     convert_to_stl("base.dae", "base.meshes")

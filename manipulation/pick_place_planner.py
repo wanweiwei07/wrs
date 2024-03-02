@@ -464,7 +464,7 @@ if __name__ == '__main__':
         tmp_objcm.set_rgba([1, 0, 0, .3])
         tmp_objcm.set_homomat(rm.homomat_from_posrot(goal_pos, goal_rotmat))
         tmp_objcm.attach_to(base)
-    grasp_info_list = gutil.load_pickle_file(objcm_name='tubebig', file_name='yumi_tube_big.pickle')
+    grasp_info_list = gutil.load_pickle_file(cmodel_name='tubebig', file_name='yumi_tube_big.pickle')
     grasp_info = grasp_info_list[0]
     pp_planner = PickPlacePlanner(robot_s=robot_s)
     conf_list, jawwidth_list, objpose_list = \

@@ -16,8 +16,8 @@ from .traversal   import resample_path
 
 def polygons_enclosure_tree(polygons):
     '''
-    Given a list of shapely polygons, which are the root (aka outermost)
-    polygons, and which represent the holes which penetrate the root
+    Given a list of shapely polygons, which are the path (aka outermost)
+    polygons, and which represent the holes which penetrate the path
     curve. We do this by creating an R-tree for rough collision detection,
     and then do polygon queries for a final result
     '''

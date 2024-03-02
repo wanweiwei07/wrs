@@ -46,7 +46,7 @@ class Lite6WRSGripper2(gp.GripperInterface):
         self.lft.jnts[1]['loc_motionax'] = np.array([0, -1, 0])
         self.lft.lnks[1]['name'] = "finger1"
         self.lft.lnks[1]['mesh_file'] = cm.CollisionModel(
-            os.path.join(this_dir, "meshes", "finger_v2.stl"), cdp_type="user_defined",
+            os.path.join(this_dir, "meshes", "finger_v2.stl"), cdprimit_type="user_defined",
             userdef_cdprim_fn=self._finger_cdnp, expand_radius=.001)
         self.lft.lnks[1]['rgba'] = [.65, .65, .65, 1]
         # rgt finger
@@ -57,7 +57,7 @@ class Lite6WRSGripper2(gp.GripperInterface):
         self.rgt.jnts[1]['loc_motionax'] = np.array([0, -1, 0])
         self.rgt.lnks[1]['name'] = "finger2"
         self.rgt.lnks[1]['mesh_file'] = cm.CollisionModel(
-            os.path.join(this_dir, "meshes", "finger_v2.stl"), cdp_type="user_defined",
+            os.path.join(this_dir, "meshes", "finger_v2.stl"), cdprimit_type="user_defined",
             userdef_cdprim_fn=self._finger_cdnp, expand_radius=.001)
         self.rgt.lnks[1]['rgba'] = [.65, .65, .65, 1]
         # # reinitialize

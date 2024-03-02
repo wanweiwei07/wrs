@@ -48,7 +48,7 @@ def gen_plane_cdmesh(updirection=np.array([0, 0, 1]), offset=0, name='autogen'):
 
 def is_collided(objcm0, objcm1, toggle_contacts=True):
     """
-    check if two cmodel are collided after converting the specified cdm_type
+    check if two cmodel are collided after converting the specified cdmesh_type
     :param objcm0:
     :param objcm1:
     :param toggle_contactpoints: True default
@@ -119,7 +119,7 @@ if __name__ == '__main__':
     # wd.World(cam_pos=[.2, -.1, .2], lookat_pos=[0, 0, 0.05])
     # mgm.gen_frame().attach_to(base)
     # # objpath = os.path.join(basis.__path__[0], 'objects', 'yumifinger.stl')
-    # # objcm1 = mcm.CollisionModel(objpath, cdm_type='triangles')
+    # # objcm1 = mcm.CollisionModel(objpath, cdmesh_type='triangles')
     # objcm1 = mcm.gen_stick(major_radius=.01)
     # pos = np.array([[-0.5, -0.82363909, 0.2676166, -0.00203699],
     #                     [-0.86602539, 0.47552824, -0.1545085, 0.01272306],
@@ -132,7 +132,7 @@ if __name__ == '__main__':
     # objcm1.set_homomat(pos)
     # objcm1.set_rgba([1, 1, .3, .01])
     # # objpath = os.path.join(basis.__path__[0], 'objects', 'tubebig.stl')
-    # # objcm2 = mcm.CollisionModel(objpath, cdm_type='triangles')
+    # # objcm2 = mcm.CollisionModel(objpath, cdmesh_type='triangles')
     # objcm2 = mcm.gen_stick(major_radius=.01)
     # objcm2.set_rgba([1,0,1,.2])
     # objcm2.set_pos(np.array([-.018,-.018,0]))

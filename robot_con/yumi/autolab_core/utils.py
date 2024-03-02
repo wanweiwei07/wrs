@@ -301,7 +301,7 @@ def keyboard_input(message, yesno=False):
     return human_input
 
 def sqrt_ceil(n):
-    """ Computes the square root of an number rounded up to the nearest integer. Very useful for plotting.
+    """ Computes the square path of an number rounded up to the nearest integer. Very useful for plotting.
 
     Parameters
     ----------

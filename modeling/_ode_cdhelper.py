@@ -80,7 +80,7 @@ def is_collided(cmodel_list0, cmodel_list1, toggle_contacts=True):
             contact_entry = ode_util.collide(objcm0.cdmesh, objcm1.cdmesh, 10)
             contact_points = np.asarray([da.pdvec3_to_npvec3(point) for point in contact_entry.getContactPoints()])
             if toggle_contacts:
-                return True, contact_points if len(contact_points) > 0 else (False, contact_points)
+                return (True, contact_points) if len(contact_points) > 0 else (False, contact_points)
             else:
                 return True if len(contact_points) > 0 else False
 

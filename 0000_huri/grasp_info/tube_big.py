@@ -11,7 +11,7 @@ if __name__ == '__main__':
 
     base = wd.World(cam_pos=[.5, .5, .3], lookat_pos=[0, 0, 0])
     gripper_instance = yg.YumiGripper(enable_cc=True, cdmesh_type='aabb')
-    objcm = cm.CollisionModel('../objects/tubebig.stl', cdm_type='convex_hull')
+    objcm = cm.CollisionModel('../objects/tubebig.stl', cdmesh_type='convex_hull')
     objcm.attach_to(base)
     objcm.show_local_frame()
     grasp_info_list = []
@@ -28,5 +28,5 @@ if __name__ == '__main__':
         gripper_instance.fix_to(pos, rotmat)
         gripper_instance.change_jaw_width(jaw_width)
         gripper_instance.gen_meshmodel().attach_to(base)
-    gutil.write_pickle_file(objcm_name='tubebig', grasp_info_list=grasp_info_list)
+    gutil.write_pickle_file(cmodel_name='tubebig', grasp_info_list=grasp_info_list)
     base.run()

@@ -50,9 +50,9 @@ if __name__ == "__main__":
     import time
     hdc = HndCam()
     while True:
-        # ifnpa = pickle.loads(rkint.root.getifarray())
-        # clnpa = pickle.loads(rkint.root.getclarray())
-        # dnpa = pickle.loads(rkint.root.getrcimg())
+        # ifnpa = pickle.loads(rkint.path.getifarray())
+        # clnpa = pickle.loads(rkint.path.getclarray())
+        # dnpa = pickle.loads(rkint.path.getrcimg())
         dnpa = hdc.getrc0img()
         cv2.imshow("Depth", dnpa)
         cv2.waitKey(100)

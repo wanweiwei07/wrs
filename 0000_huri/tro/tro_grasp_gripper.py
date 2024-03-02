@@ -70,7 +70,7 @@ if __name__ == "__main__":
         for anglei in range(0, 360, 15):
         # for anglej in [240, 270]:
             newav = rhx.np.dot(rhx.rm.rodrigues(c0nvec, anglei), approachvec)
-            predefinedgrasps+=gu.define_grasp(hndfa,rhx.np.array([x,0,z]),c0nvec, newav,jawwidth=30, objcm=objcm, toggleflip=False)
+            predefinedgrasps+=gu.define_gripper_grasps(hndfa, rhx.np.array([x, 0, z]), c0nvec, newav, jawwidth=30, cmodel=objcm, toggleflip=False)
     c0nvec = rhx.np.array([0, 1, 0])
     approachvec = rhx.np.array([1, 0, 0])
     for z in [90+random.randint(0,20), 130+random.randint(-10,20), 170+random.randint(-10,10), 210+random.randint(-10,20)]:
@@ -78,7 +78,7 @@ if __name__ == "__main__":
         for anglei in range(0, 360, 15):
         # for anglej in [240, 270]:
             newav = rhx.np.dot(rhx.rm.rodrigues(c0nvec, anglei), approachvec)
-            predefinedgrasps+=gu.define_grasp(hndfa,rhx.np.array([x,0,z]),c0nvec, newav,jawwidth=30, objcm=objcm, toggleflip=False)
+            predefinedgrasps+=gu.define_gripper_grasps(hndfa, rhx.np.array([x, 0, z]), c0nvec, newav, jawwidth=30, cmodel=objcm, toggleflip=False)
 
     write_pickle_file(objcm.name, predefinedgrasps)
 

@@ -43,7 +43,7 @@ class EEInterface(object):
         # collision detection
         self.cc = None
         # cd mesh collection for precise collision checking
-        self.cdmesh_collection = mmc.ModelCollection()
+        self.cdmesh_elements = []
         # object grasped/held/attached to end-effector; oiee = object in end-effector
         self.oiee_list = []
 
@@ -112,11 +112,13 @@ class EEInterface(object):
                 is_collided, collision_points = cdme.cmodel.is_mcdwith(cmodel_list, True)
                 if is_collided:
                     if toggle_dbg:
-                        cdme.show_cdmesh()
+                        import modeling.geometric_model as mgm
+                        cdme.cmodel.show_cdmesh()
+                        mgm.GeometricModel(cdme.cmodel).attach_to(base)
                         for cmodel in cmodel_list:
                             cmodel.show_cdmesh()
+                        print(collision_points)
                         for point in collision_points:
-                            import modeling.geometric_model as mgm
                             mgm.gen_sphere(point, radius=.001).attach_to(base)
                         print("mesh collided")
                     return True
@@ -163,19 +165,12 @@ class EEInterface(object):
     def unshow_cdprimit(self):
         self.cc.unshow_cdprim()
 
-    def show_cdmesh(self):
-        for i, cdme in enumerate(self.cdmesh_elements):
-            cdme.cmodel.show_cdmesh()
-
         # for i, cdelement in enumerate(self.cc.cce_dict):
         #     pos = cdelement['gl_pos']
         #     rotmat = cdelement['gl_rotmat']
         #     self.cdmesh_collection.cm_list[i].set_pos(pos)
         #     self.cdmesh_collection.cm_list[i].set_rotmat(rotmat)
         # self.cdmesh_collection.show_cdmesh()
-
-    def unshow_cdmesh(self):
-        self.cdmesh_collection.unshow_cdmesh()
 
     def gen_stickmodel(self, toggle_tcp_frame=False, toggle_jnt_frames=False, name='ee_stickmodel'):
         raise NotImplementedError

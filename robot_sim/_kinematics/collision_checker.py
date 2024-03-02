@@ -103,7 +103,7 @@ class CollisionChecker(object):
     def __init__(self, name="cc"):
         self.cd_trav = CollisionTraverser()
         self.cd_handler = CollisionHandlerQueue()
-        self.cd_pdndp = NodePath(name)  # root of the traverse tree
+        self.cd_pdndp = NodePath(name)  # path of the traverse tree
         self.bitmask_pool = [BitMask32(2 ** n) for n in range(31)]
         self.bitmask_ext = BitMask32(2 ** 31)  # 31 is prepared for cd with external non-active objects
         self.cce_dict = {}  # a dict of CCElement

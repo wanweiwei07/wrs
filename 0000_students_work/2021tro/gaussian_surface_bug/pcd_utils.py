@@ -459,7 +459,7 @@ if __name__ == '__main__':
     # get_objpcd_partial(cmodel, sample_num=10000, toggledebug=True)
 
     # inithomomat = pickle.load(
-    #     open(el.root + "/graspplanner/graspmap/pentip_cover_objmat4_list.pkl", "rb"))[1070]
+    #     open(el.path + "/graspplanner/graspmap/pentip_cover_objmat4_list.pkl", "rb"))[1070]
     #
     # get_normals(get_objpcd(cmodel, sample_num=10000))
     # mph, pcd_normals = get_objpcd_withnormals(cmodel, sample_num=100000)
@@ -468,8 +468,8 @@ if __name__ == '__main__':
     # base.run()
     get_objpcd_partial_bycampos(objcm, sample_num=10000, toggledebug=True)
 
-    # mph = pickle.load(open(el.root + "/dataset/mph/a_lft_0.pkl", "rb"))
-    # amat = pickle.load(open(el.root + "/camcalib/data/phoxi_calibmat_0117.pkl", "rb"))
+    # mph = pickle.load(open(el.path + "/dataset/mph/a_lft_0.pkl", "rb"))
+    # amat = pickle.load(open(el.path + "/camcalib/data/phoxi_calibmat_0117.pkl", "rb"))
     # mph = transform_pcd(remove_pcd_zeros(mph), amat)
     # print(len(mph))
     # obj = get_org_surface(mph)

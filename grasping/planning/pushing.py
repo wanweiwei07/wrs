@@ -53,7 +53,7 @@ def write_pickle_file(objcm_name, push_info_list, root=None, file_name='preannot
 def load_pickle_file(objcm_name, root=None, file_name='preannotated_push.pickle'):
     if root is None:
         root = './'
-    return gu.load_pickle_file(objcm_name, root=root, file_name=file_name)
+    return gu.load_pickle_file(objcm_name, path=root, file_name=file_name)
 
 
 if __name__ == '__main__':

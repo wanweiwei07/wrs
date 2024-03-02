@@ -120,7 +120,7 @@ def pack_paths(paths, show=False):
         else:
             paths_full.append(path.copy())
 
-    polygons   = [i.polygons_closed[i.root[0]] for i in paths_full]
+    polygons   = [i.polygons_closed[i.path[0]] for i in paths_full]
     inserted, transforms = multipack(np.array(polygons))
     for path, transform in zip(paths_full, transforms):
         path.transform(transform)

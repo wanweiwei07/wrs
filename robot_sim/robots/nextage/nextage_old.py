@@ -51,14 +51,14 @@ class Nextage(ri.RobotInterface):
         self.central_body.lnks[0]['loc_pos'] = np.array([0, 0, 0.97])
         self.central_body.lnks[0]['collision_model'] = cm.CollisionModel(
             os.path.join(this_dir, "meshes", "waist_link_mesh.dae"),
-            cdp_type="user_defined", expand_radius=.005,
+            cdprimit_type="user_defined", expand_radius=.005,
             userdef_cdprim_fn=self._waist_combined_cdnp)
         self.central_body.lnks[0]['rgba'] = [.77, .77, .77, 1.0]
         self.central_body.lnks[1]['name'] = "nextage_chest"
         self.central_body.lnks[1]['loc_pos'] = np.array([0, 0, 0])
         self.central_body.lnks[1]['collision_model'] = cm.CollisionModel(
             os.path.join(this_dir, "meshes", "chest_joint0_link_mesh.dae"),
-            cdp_type="user_defined", expand_radius=.005,
+            cdprimit_type="user_defined", expand_radius=.005,
             userdef_cdprim_fn=self._chest_combined_cdnp)
         self.central_body.lnks[1]['rgba'] = [1, .65, .5, 1]
         self.central_body.lnks[2]['name'] = "head_joint0_link_mesh"
@@ -741,7 +741,7 @@ if __name__ == '__main__':
     obj_pos = np.array([-.1, .3, .3])
     obj_rotmat = rm.rotmat_from_axangle([0, 1, 0], math.pi / 2)
     objfile = os.path.join(basis.__path__[0], 'objects', 'tubebig.stl')
-    objcm = cm.CollisionModel(objfile, cdp_type='cylinder')
+    objcm = cm.CollisionModel(objfile, cdprimit_type='cylinder')
     objcm.set_pos(obj_pos)
     objcm.set_rotmat(obj_rotmat)
     objcm.attach_to(base)

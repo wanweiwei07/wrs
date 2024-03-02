@@ -287,7 +287,7 @@ if __name__ == '__main__':
     base = wd.World(cam_pos=[1, 1, 1], lookat_pos=[0, 0, 0])
     gm.gen_frame().attach_to(base)
     grpr = Robotiq140(enable_cc=True)
-    # grpr.cdm_type='convexhull'
+    # grpr.cdmesh_type='convexhull'
     grpr.change_jaw_width(.1)
     grpr.gen_meshmodel(toggle_tcp_frame=True, rgba=[.3, .3, .0, .5], toggle_jnt_frames=True).attach_to(base)
     base.run()

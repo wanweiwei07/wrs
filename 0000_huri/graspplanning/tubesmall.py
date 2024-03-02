@@ -17,12 +17,12 @@ if __name__ == "__main__":
             # for anglej in [240,250,260,270]:
             for anglej in [260]:
                 newav = rhx.np.dot(rhx.rm.rodrigues(newcv, anglej), tempav)
-                predefinedgrasps+=gu.define_grasp(hndfa,rhx.np.array([0,0,z]),newcv,newav,jawwidth=14, objcm=objcm)
+                predefinedgrasps+=gu.define_gripper_grasps(hndfa, rhx.np.array([0, 0, z]), newcv, newav, jawwidth=14, cmodel=objcm)
 
-    gu.write_pickle_file(objcm.name, predefinedgrasps, root=rhx.root+"/grasp"+hndfa.name)
+    gu.write_pickle_file(objcm.name, predefinedgrasps, path=rhx.path + "/grasp" + hndfa.name)
 
     # show
-    predefinedgrasps = gu.load_pickle_file(objcm.name, root=rhx.root+"/grasp"+hndfa.name)
+    predefinedgrasps = gu.load_pickle_file(objcm.name, path=rhx.path + "/grasp" + hndfa.name)
     for eachgrasp in predefinedgrasps:
         print(eachgrasp)
         jawwidth, finger_center, hand_homomat = eachgrasp

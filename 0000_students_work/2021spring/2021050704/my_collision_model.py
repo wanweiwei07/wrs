@@ -9,11 +9,11 @@ base = wd.World(cam_pos=np.array([.7, .05, .3]), lookat_pos=np.zeros(3))
 
 #オブジェクトの読み込み
 object1_ref = cm.CollisionModel(initor="./my_objects/hand_spinner.stl",
-                                cdp_type="box",
-                                cdm_type="triangles")
+                                cdprimit_type="box",
+                                cdmesh_type="triangles")
 object2_ref = cm.CollisionModel(initor="./my_objects/LEGO.stl",
-                                cdp_type="box",
-                                cdm_type="triangles")
+                                cdprimit_type="box",
+                                cdmesh_type="triangles")
 
 #色の定義
 object1_ref.set_rgba([0,1,0,1])

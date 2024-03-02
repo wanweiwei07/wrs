@@ -7,8 +7,8 @@ if __name__ == '__main__':
     # ウサギのモデルのファイルを用いてCollisionModelを初期化します
     # ウサギ1~5はこのCollisionModelのコピーとして定義します
     object_ref = cm.CollisionModel(initor="./objects/bunnysim.stl",
-                                   cdp_type="box",
-                                   cdm_type="default")
+                                   cdprimit_type="box",
+                                   cdmesh_type="default")
     object_ref.set_rgba([.9, .75, .35, 1])
     # ウサギ1
     object1 = object_ref.copy()

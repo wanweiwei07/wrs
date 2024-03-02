@@ -317,7 +317,7 @@ if __name__ == '__main__':
     import environment.collisionmodel as cm
 
     yhx = robothelper.RobotHelperX(usereal=False, startworld=True)
-    loc = LocatorFixed(directory=yhx.root)
+    loc = LocatorFixed(directory=yhx.path)
 
     standpcd_origin = p3dh.genpointcloudnodepath(loc.tubestandcm.samplesurface()[0], pntsize=5)
     standpcd_origin.reparentTo(yhx.base.render)

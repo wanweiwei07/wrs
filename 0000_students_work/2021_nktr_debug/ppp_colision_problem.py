@@ -153,7 +153,7 @@ print(jnt_values_initial, jnt_values)
 #             print("2")
 #             counter = 0
 #             for grasp_info in grasp_info_list_tool:
-#                 jaw_width, jaw_center_pos, jaw_center_rotmat, hnd_pos, hnd_rotmat = grasp_info
+#                 jaw_width, jaw_center_pos, jaw_center_rotmat, gripper_root_pos, gripper_root_rotmat = grasp_info
 #                 first_jaw_center_pos = tool_initial_rotmat.dot(jaw_center_pos) + tool_initial_pos
 #                 first_jaw_center_rotmat = tool_initial_rotmat.dot(jaw_center_rotmat)
 #                 armjnts = robot_s.ik(component_name="arm", tgt_pos=first_jaw_center_pos, tgt_rotmat=first_jaw_center_rotmat)

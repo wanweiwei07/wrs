@@ -331,7 +331,7 @@ if __name__ == '__main__':
 
     # pos = loc.findtubestand_matchonobb(objpcd, toggle_dbg=False)
     # import registration.pattern as ptn
-    # epos = ptn.Pattern(root=".")
+    # epos = ptn.Pattern(path=".")
     # epos.setpattern(np.array([[0,0,0,0,0,0,0,0,0,0],
     #                           [0,0,2,3,3,0,0,0,0,0],
     #                           [0,0,0,0,3,0,1,0,0,0],

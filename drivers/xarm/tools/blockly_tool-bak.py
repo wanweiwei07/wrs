@@ -229,13 +229,13 @@ class BlocklyTool(object):
                     else:
                         self._succeed = False
                         print('block {} can\'t convert to python code'.format(block.attrib['end_type']))
-        # block = self.get_node('block', root=root)
+        # block = self.get_node('block', path=path)
         # while block is not None:
         #     if not is_statement:
-        #         block = self.get_node('next', root=block)
+        #         block = self.get_node('next', path=block)
         #         if not block:
         #             break
-        #         block = self.get_node('block', root=block)
+        #         block = self.get_node('block', path=block)
         #     else:
         #         is_statement = False
         #     if block.attrib.get('disabled', False):
@@ -283,12 +283,12 @@ class BlocklyTool(object):
         self._append_to_file('{}params[\'angle_acc\'] = {}'.format(prefix, value))
 
     def _handle_set_counter_increase(self, block, prefix=''):
-        # field = self.get_node('field', root=block)
+        # field = self.get_node('field', path=block)
         # if field is not None:
         #     value = field.text
         # else:
-        #     value = self.get_node('value', root=block)
-        #     value = self.get_nodes('field', root=value, descendant=True)[0].text
+        #     value = self.get_node('value', path=block)
+        #     value = self.get_nodes('field', path=value, descendant=True)[0].text
         if self._show_comment:
             self._append_to_file('{}# set counter increase'.format(prefix))
         self._append_to_file('{}arm.set_counter_increase()'.format(prefix))
@@ -564,8 +564,8 @@ class BlocklyTool(object):
         value = 0 if fields[1].text == 'LOW' else 1
         delay_sec = fields[2].text if len(fields) > 2 else 0
         # io = self.get_node('field', block).text
-        # value = self.get_node('value', root=block)
-        # value = self.get_nodes('field', root=value, descendant=True)[0].text
+        # value = self.get_node('value', path=block)
+        # value = self.get_nodes('field', path=value, descendant=True)[0].text
         if self._show_comment:
             self._append_to_file('{}# set tgpio-{} digital'.format(prefix, io))
         self._append_to_file('{}if not params[\'quit\']:'.format(prefix))
@@ -582,8 +582,8 @@ class BlocklyTool(object):
         io = fields[4].text
         value = 0 if fields[5].text == 'LOW' else 1
         # io = self.get_node('field', block).text
-        # value = self.get_node('value', root=block)
-        # value = self.get_nodes('field', root=value, descendant=True)[0].text
+        # value = self.get_node('value', path=block)
+        # value = self.get_nodes('field', path=value, descendant=True)[0].text
         if self._show_comment:
             self._append_to_file('{}# set tgpio-{} digital with pos {}'.format(prefix, io, xyz))
         self._append_to_file('{}if not params[\'quit\']:'.format(prefix))
@@ -617,8 +617,8 @@ class BlocklyTool(object):
         delay_sec = fields[0].text if len(fields) > 0 else 0
 
         # io = self.get_node('field', block).text
-        # value = self.get_node('value', root=block)
-        # value = self.get_nodes('field', root=value, descendant=True)[0].text
+        # value = self.get_node('value', path=block)
+        # value = self.get_nodes('field', path=value, descendant=True)[0].text
         if self._show_comment:
             self._append_to_file('{}# set_suction_cup({}, wait={}, delay_sec={})'.format(prefix, on, wait, delay_sec))
         self._append_to_file('{}if not params[\'quit\']:'.format(prefix))
@@ -646,8 +646,8 @@ class BlocklyTool(object):
         value = 0 if fields[1].text == 'LOW' else 1
         delay_sec = fields[2].text if len(fields) > 2 else 0
         # io = self.get_node('field', block).text
-        # value = self.get_node('value', root=block)
-        # value = self.get_nodes('field', root=value, descendant=True)[0].text
+        # value = self.get_node('value', path=block)
+        # value = self.get_nodes('field', path=value, descendant=True)[0].text
         if self._show_comment:
             self._append_to_file('{}# set cgpio-{} digital'.format(prefix, io))
         self._append_to_file('{}if not params[\'quit\']:'.format(prefix))
@@ -664,8 +664,8 @@ class BlocklyTool(object):
         io = fields[4].text
         value = 0 if fields[5].text == 'LOW' else 1
         # io = self.get_node('field', block).text
-        # value = self.get_node('value', root=block)
-        # value = self.get_nodes('field', root=value, descendant=True)[0].text
+        # value = self.get_node('value', path=block)
+        # value = self.get_nodes('field', path=value, descendant=True)[0].text
         if self._show_comment:
             self._append_to_file('{}# set cgpio-{} digital with pos {}'.format(prefix, io, xyz))
         self._append_to_file('{}if not params[\'quit\']:'.format(prefix))
@@ -704,11 +704,11 @@ class BlocklyTool(object):
         self._append_to_file('{}    arm.set_tcp_load({}, [{}, {}, {}])'.format(prefix, weight, x, y, z))
         self._append_to_file('{}    arm.set_state(0)'.format(prefix))
 
-        # values = self.get_nodes('value', root=block)
-        # weight = self.get_nodes('field', root=values[0], descendant=True)[0].text
-        # x = self.get_nodes('field', root=values[1], descendant=True)[0].text
-        # y = self.get_nodes('field', root=values[2], descendant=True)[0].text
-        # z = self.get_nodes('field', root=values[3], descendant=True)[0].text
+        # values = self.get_nodes('value', path=block)
+        # weight = self.get_nodes('field', path=values[0], descendant=True)[0].text
+        # x = self.get_nodes('field', path=values[1], descendant=True)[0].text
+        # y = self.get_nodes('field', path=values[2], descendant=True)[0].text
+        # z = self.get_nodes('field', path=values[3], descendant=True)[0].text
         # self._append_to_file('{}arm.set_tcp_load({}, [{}, {}, {}])'.format(prefix, weight, x, y, z))
         # self._append_to_file('{}arm.set_state(0)'.format(prefix))
 
@@ -732,13 +732,13 @@ class BlocklyTool(object):
         self._append_to_file('{}    arm.set_tcp_offset([{}, {}, {}, {}, {}, {}])'.format(prefix, x, y, z, roll, pitch, yaw))
         self._append_to_file('{}    arm.set_state(0)'.format(prefix))
 
-        # values = self.get_nodes('value', root=block)
-        # x = self.get_nodes('field', root=values[0], descendant=True)[0].text
-        # y = self.get_nodes('field', root=values[1], descendant=True)[0].text
-        # z = self.get_nodes('field', root=values[2], descendant=True)[0].text
-        # roll = self.get_nodes('field', root=values[3], descendant=True)[0].text
-        # pitch = self.get_nodes('field', root=values[4], descendant=True)[0].text
-        # yaw = self.get_nodes('field', root=values[5], descendant=True)[0].text
+        # values = self.get_nodes('value', path=block)
+        # x = self.get_nodes('field', path=values[0], descendant=True)[0].text
+        # y = self.get_nodes('field', path=values[1], descendant=True)[0].text
+        # z = self.get_nodes('field', path=values[2], descendant=True)[0].text
+        # roll = self.get_nodes('field', path=values[3], descendant=True)[0].text
+        # pitch = self.get_nodes('field', path=values[4], descendant=True)[0].text
+        # yaw = self.get_nodes('field', path=values[5], descendant=True)[0].text
         # self._append_to_file('{}arm.set_tcp_offset([{}, {}, {}, {}, {}, {}])'.format(prefix, x, y, z, roll, pitch, yaw))
         # self._append_to_file('{}arm.set_state(0)'.format(prefix))
 
@@ -979,7 +979,7 @@ class BlocklyTool(object):
         self.__handle_gpio_event('cgpio_analog', block, prefix)
 
     # def _handle_event_gpio_digital(self, block, prefix=''):
-    #     fields = self.get_nodes('field', root=block)
+    #     fields = self.get_nodes('field', path=block)
     #     io = fields[0].text
     #     trigger = fields[1].text
     #
@@ -992,7 +992,7 @@ class BlocklyTool(object):
     #     self._append_to_file('{}def {}():'.format(prefix, name))
     #     old_prefix = prefix
     #     prefix = '    ' + prefix
-    #     statement = self.get_node('statement', root=block)
+    #     statement = self.get_node('statement', path=block)
     #     if statement:
     #         self.parse(statement, prefix)
     #     else:
@@ -1217,7 +1217,7 @@ class BlocklyTool(object):
                 self.parse(statement_else[0], prefix)
         else:
             self._append_to_file('{}pass'.format(prefix))
-        # statement = self.get_node('statement', root=block)
+        # statement = self.get_node('statement', path=block)
         # if statement:
         #     self.parse(statement, prefix)
         # else:
