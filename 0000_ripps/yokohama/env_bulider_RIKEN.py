@@ -14,8 +14,8 @@ class Env(object):
     def __init__(self, rbt_s, armname="arm"):
         self.rbt_s = rbt_s
         self.armname = armname
-        self.pipette_pos = self.rbt_s.arm.jlc.loc_tcp_pos - np.array([-0.008, -0.14085, 0.06075])
-        self.tcp_loc_pos = self.rbt_s.arm.jlc.loc_tcp_pos
+        self.pipette_pos = self.rbt_s.arm.jlc._loc_flange_pos - np.array([-0.008, -0.14085, 0.06075])
+        self.tcp_loc_pos = self.rbt_s.arm.jlc._loc_flange_pos
         self.env_build()
         # self.load_pipette()
 

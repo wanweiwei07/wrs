@@ -194,8 +194,8 @@ class JLChain(object):
         """
         compute the yoshikawa manipulability
         :param tcp_joint_id:
-        :param loc_tcp_pos:
-        :param loc_tcp_rotmat:
+        :param _loc_flange_pos:
+        :param _loc_flange_rotmat:
         :return:
         author: weiwei
         date: 20200331
@@ -207,8 +207,8 @@ class JLChain(object):
         """
         compute the axes of the manipulability ellipsoid
         :param tcp_joint_id:
-        :param loc_tcp_pos:
-        :param loc_tcp_rotmat:
+        :param _loc_flange_pos:
+        :param _loc_flange_rotmat:
         :return: (linear ellipsoid matrix, angular ellipsoid matrix)
         """
         j_mat = self.jacobian(joint_values=joint_values)
@@ -361,8 +361,8 @@ class JLChain(object):
         """
         Numerical IK by default
         NOTE1: in the numik function of rotjntlinksik,
-        in case None is provided, the self.tcp_joint_id, self.loc_tcp_pos, self.loc_tcp_rotmat will be used
-        NOTE2: if list, len(tgtpos)=len(tgtrot) < len(tcp_joint_id)=len(loc_tcp_pos)=len(loc_tcp_rotmat)
+        in case None is provided, the self.tcp_joint_id, self._loc_flange_pos, self._loc_flange_rotmat will be used
+        NOTE2: if list, len(tgtpos)=len(tgtrot) < len(tcp_joint_id)=len(_loc_flange_pos)=len(_loc_flange_rotmat)
         :param tgt_pos: 1x3 nparray, single value or list
         :param tgt_rotmat: 3x3 nparray, single value or list
         :param seed_jnt_vals: the starting configuration used in the numerical iteration

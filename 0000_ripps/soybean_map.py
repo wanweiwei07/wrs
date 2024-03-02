@@ -20,7 +20,7 @@ class Stem(object):
         self.rotmat = rotmat
         self.jlc = jlc.JLChain(pos=pos, rotmat=rotmat, home_conf=np.zeros(ndof), name=name + "jlchain")
         for i in range(1, self.jlc.n_dof + 1):
-            self.jlc.jnts[i]['pos_in_tcp'] = np.array([0, 0, base_length / 5])
+            self.jlc.jnts[i]['loc_pos'] = np.array([0, 0, base_length / 5])
             self.jlc.jnts[i]['loc_motionax'] = np.array([1, 0, 0])
         self.jlc.finalize()
         for link_id in range(self.jlc.n_dof + 1):

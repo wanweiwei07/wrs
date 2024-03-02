@@ -17,40 +17,40 @@ class SchunkRH918(gp.GripperInterface):
         cpl_end_rotmat = self.coupling.jnts[-1]['gl_rotmatq']
         # - lft
         self.lft = jl.JLChain(pos=cpl_end_pos, rotmat=cpl_end_rotmat, home_conf=np.zeros(2), name='base_lft_slider_finger')
-        self.lft.jnts[1]['pos_in_tcp'] = np.array([-.01, .04, .073])
+        self.lft.jnts[1]['loc_pos'] = np.array([-.01, .04, .073])
         self.lft.jnts[1]['end_type'] = 'prismatic'
         self.lft.jnts[1]['motion_range'] = [0, .025]
         self.lft.jnts[1]['loc_motionax'] = np.array([0, -1, 0])
         self.lft.lnks[0]['name'] = "base"
-        self.lft.lnks[0]['pos_in_tcp'] = np.zeros(3)
+        self.lft.lnks[0]['loc_pos'] = np.zeros(3)
         self.lft.lnks[0]['mesh_file'] = os.path.join(this_dir, "meshes", "base.stl")
         self.lft.lnks[0]['rgba'] = [.2, .2, .2, 1]
         self.lft.lnks[1]['name'] = "slider1"
         self.lft.lnks[1]['mesh_file'] = os.path.join(this_dir, "meshes", "slider.stl")
         self.lft.lnks[1]['rgba'] = [.5, .5, .5, 1]
-        self.lft.lnks[1]['pos_in_tcp'] = np.zeros(3)
+        self.lft.lnks[1]['loc_pos'] = np.zeros(3)
         self.lft.lnks[1]['gl_rotmat'] = rm.rotmat_from_euler(0, 0, -math.pi/2)
-        self.lft.jnts[2]['pos_in_tcp'] = np.array([.02, .008, 0])
+        self.lft.jnts[2]['loc_pos'] = np.array([.02, .008, 0])
         self.lft.lnks[2]['name'] = "finger1"
         self.lft.lnks[2]['mesh_file'] = os.path.join(this_dir, "meshes", "finger.stl")
         self.lft.lnks[2]['rgba'] = [.8, .8, .8, 1]
-        self.lft.lnks[2]['pos_in_tcp'] = np.zeros(3)
+        self.lft.lnks[2]['loc_pos'] = np.zeros(3)
         self.lft.lnks[2]['gl_rotmat'] = rm.rotmat_from_euler(0, math.pi, math.pi/2)
         # - rgt
         self.rgt = jl.JLChain(pos=cpl_end_pos, rotmat=cpl_end_rotmat, home_conf=np.zeros(2), name='rgt_finger')
-        self.rgt.jnts[1]['pos_in_tcp'] = np.array([.01, -.04, .073])
+        self.rgt.jnts[1]['loc_pos'] = np.array([.01, -.04, .073])
         self.rgt.jnts[1]['end_type'] = 'prismatic'
         self.rgt.jnts[1]['loc_motionax'] = np.array([0, 1, 0])
         self.rgt.lnks[1]['name'] = "slider2"
         self.rgt.lnks[1]['mesh_file'] = os.path.join(this_dir, "meshes", "slider.stl")
         self.rgt.lnks[1]['rgba'] = [.5, .5, .5, 1]
-        self.rgt.lnks[1]['pos_in_tcp'] = np.zeros(3)
+        self.rgt.lnks[1]['loc_pos'] = np.zeros(3)
         self.rgt.lnks[1]['gl_rotmat'] = rm.rotmat_from_euler(0, 0, math.pi / 2)
-        self.rgt.jnts[2]['pos_in_tcp'] = np.array([-.02, -.008, 0])
+        self.rgt.jnts[2]['loc_pos'] = np.array([-.02, -.008, 0])
         self.rgt.lnks[2]['name'] = "finger2"
         self.rgt.lnks[2]['mesh_file'] = os.path.join(this_dir, "meshes", "finger.stl")
         self.rgt.lnks[2]['rgba'] = [.8, .8, .8, 1]
-        self.rgt.lnks[2]['pos_in_tcp'] = np.zeros(3)
+        self.rgt.lnks[2]['loc_pos'] = np.zeros(3)
         self.rgt.lnks[2]['gl_rotmat'] = rm.rotmat_from_euler(0, math.pi, -math.pi / 2)
         # jaw range
         self.jaw_range = [0.0, .05]

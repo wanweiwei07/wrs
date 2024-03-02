@@ -18,7 +18,7 @@ class CobottaRIPPS(ri.RobotInterface):
                                      rotmat=rotmat,
                                      home_conf=np.zeros(0),
                                      name='base_plate_ripps')
-        self.base_plate.jnts[1]['pos_in_tcp'] = np.array([0, 0, 0.01])
+        self.base_plate.jnts[1]['loc_pos'] = np.array([0, 0, 0.01])
         self.base_plate.lnks[0]['mesh_file'] = os.path.join(this_dir, "meshes", "base_plate_ripps.stl")
         self.base_plate.lnks[0]['rgba'] = [.55, .55, .55, 1]
         self.base_plate.finalize()
@@ -37,9 +37,9 @@ class CobottaRIPPS(ri.RobotInterface):
                                        rotmat=self.arm.jnts[-1]['gl_rotmatq'].dot(self.gripper_loc_rotmat),
                                        name='hnd_s', enable_cc=False)
         # tool center point
-        self.arm.jlc.functional_jnt_id = -1
-        self.arm.jlc.loc_tcp_pos = self.gripper_loc_rotmat.dot(self.hnd.jaw_center_pos)
-        self.arm.jlc.loc_tcp_rotmat = self.gripper_loc_rotmat.dot(self.hnd.jaw_center_rotmat)
+        self.arm.jlc.flange_jnt_id = -1
+        self.arm.jlc._loc_flange_pos = self.gripper_loc_rotmat.dot(self.hnd.jaw_center_pos)
+        self.arm.jlc._loc_flange_rotmat = self.gripper_loc_rotmat.dot(self.hnd.jaw_center_rotmat)
         # a list of detailed information about objects in hand, see CollisionChecker.add_objinhnd
         self.oih_infos = []
         # collision detection
@@ -279,9 +279,9 @@ if __name__ == '__main__':
     gm.gen_frame().attach_to(base)
     robot_s = CobottaRIPPS(enable_cc=True)
     # robot_s.jaw_to(.02)
-    # robot_s.gen_meshmodel(toggle_tcp_frame=True, toggle_jnt_frames=True).attach_to(base)
+    # robot_s.gen_meshmodel(toggle_flange_frame=True, toggle_jnt_frames=True).attach_to(base)
     robot_s.gen_meshmodel(toggle_tcpcs=True, toggle_jntscs=False).attach_to(base)
-    # robot_s.gen_stickmodel(toggle_tcp_frame=True, toggle_jnt_frames=True).attach_to(base)
+    # robot_s.gen_stickmodel(toggle_flange_frame=True, toggle_jnt_frames=True).attach_to(base)
     # robot_s.show_cdprimit()
     base.run()
     tgt_pos = np.array([.25, .2, .15])

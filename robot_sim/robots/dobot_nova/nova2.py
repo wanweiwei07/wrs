@@ -53,9 +53,9 @@ class Nova2WRS(ri.SglArmRbtInterface):
                                     enable_cc=False)
 
         # tool center point
-        self.arm.jlc.functional_jnt_id = -1
-        self.arm.jlc.loc_tcp_pos = self.hnd.jaw_center_pos
-        self.arm.jlc.loc_tcp_rotmat = self.hnd.loc_acting_center_rotmat
+        self.arm.jlc.flange_jnt_id = -1
+        self.arm.jlc._loc_flange_pos = self.hnd.jaw_center_pos
+        self.arm.jlc._loc_flange_rotmat = self.hnd.loc_acting_center_rotmat
         # a list of detailed information about objects in hand, see CollisionChecker.add_objinhnd
         self.oih_infos = []
         # collision detection

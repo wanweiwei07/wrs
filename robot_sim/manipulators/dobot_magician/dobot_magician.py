@@ -15,42 +15,42 @@ class DobotMagician(mi.ManipulatorInterface):
         new_homeconf = self._mimic_jnt_values(homeconf)
         self.jlc = jl.JLChain(pos=pos, rotmat=rotmat, home_conf=new_homeconf, name=name)
         # six joints, n_jnts = 6+2 (tgt ranges from 1-6), nlinks = 6+1
-        self.jlc.jnts[1]['pos_in_tcp'] = np.array([0, 0, 0.024])
+        self.jlc.jnts[1]['loc_pos'] = np.array([0, 0, 0.024])
         self.jlc.jnts[1]['gl_rotmat'] = rm.rotmat_from_euler(0, 0, -1.570796325)
         self.jlc.jnts[1]['loc_motionax'] = np.array([0, 0, 1])
         self.jlc.jnts[1]['motion_range'] = [-3.14159265, 3.14159265]
-        self.jlc.jnts[2]['pos_in_tcp'] = np.array([-0.01175, 0, 0.114])
+        self.jlc.jnts[2]['loc_pos'] = np.array([-0.01175, 0, 0.114])
         self.jlc.jnts[2]['gl_rotmat'] = rm.rotmat_from_euler(1.570796325, -0.20128231967888244, -1.570796325)
         self.jlc.jnts[2]['loc_motionax'] = np.array([0, 0, 1])
         self.jlc.jnts[2]['motion_range'] = [0, 1.570796325]
-        self.jlc.jnts[3]['pos_in_tcp'] = np.array([0.02699, 0.13228, -0.01175])
+        self.jlc.jnts[3]['loc_pos'] = np.array([0.02699, 0.13228, -0.01175])
         self.jlc.jnts[3]['gl_rotmat'] = rm.rotmat_from_euler(0, 3.14159265, -1.24211575528)
         self.jlc.jnts[3]['loc_motionax'] = np.array([0, 0, -1])
         self.jlc.jnts[3]['motion_range'] = [0, 1.570796325]
-        self.jlc.jnts[4]['pos_in_tcp'] = np.array([0.07431, -0.12684, 0.0])
+        self.jlc.jnts[4]['loc_pos'] = np.array([0.07431, -0.12684, 0.0])
         self.jlc.jnts[4]['gl_rotmat'] = rm.rotmat_from_euler(0, 3.14159265, 0)
         self.jlc.jnts[4]['loc_motionax'] = np.array([0, 0, 1])
-        # self.jlc.joints[5]['pos_in_tcp'] = np.array([-0.0328, 0.02871, 0])
+        # self.jlc.joints[5]['loc_pos'] = np.array([-0.0328, 0.02871, 0])
         self.jlc.jnts[5]['gl_rotmat'] = rm.rotmat_from_euler(0, 0, 3.14159265)
         # links
         self.jlc.lnks[0]['name'] = "base"
-        self.jlc.lnks[0]['pos_in_tcp'] = np.zeros(3)
+        self.jlc.lnks[0]['loc_pos'] = np.zeros(3)
         self.jlc.lnks[0]['mesh_file'] = os.path.join(this_dir, "meshes", "base_link.stl")
         self.jlc.lnks[0]['rgba'] = [.5, .5, .5, 1.0]
         self.jlc.lnks[1]['name'] = "link1"
-        self.jlc.lnks[1]['pos_in_tcp'] = np.zeros(3)
+        self.jlc.lnks[1]['loc_pos'] = np.zeros(3)
         self.jlc.lnks[1]['mesh_file'] = os.path.join(this_dir, "meshes", "link_1.stl")
         self.jlc.lnks[1]['rgba'] = [.55, .55, .55, 1.0]
         self.jlc.lnks[2]['name'] = "link2"
-        self.jlc.lnks[2]['pos_in_tcp'] = np.zeros(3)
+        self.jlc.lnks[2]['loc_pos'] = np.zeros(3)
         self.jlc.lnks[2]['mesh_file'] = os.path.join(this_dir, "meshes", "link_2.stl")
         self.jlc.lnks[2]['rgba'] = [.15, .15, .15, 1]
         self.jlc.lnks[3]['name'] = "link3"
-        self.jlc.lnks[3]['pos_in_tcp'] = np.array([.0, .0, .0])
+        self.jlc.lnks[3]['loc_pos'] = np.array([.0, .0, .0])
         self.jlc.lnks[3]['mesh_file'] = os.path.join(this_dir, "meshes", "link_5.stl")
         self.jlc.lnks[3]['rgba'] = [.55, .55, .55, 1]
         self.jlc.lnks[4]['name'] = "link4"
-        self.jlc.lnks[4]['pos_in_tcp'] = np.array([.0, .0, .0])
+        self.jlc.lnks[4]['loc_pos'] = np.array([.0, .0, .0])
         self.jlc.lnks[4]['mesh_file'] = os.path.join(this_dir, "meshes", "link_6.stl")
         self.jlc.lnks[4]['rgba'] = [.35, .35, .35, 1.0]
         self.jlc.finalize()

@@ -13,7 +13,7 @@ if __name__ == '__main__':
     gm.gen_frame().attach_to(base)
 
     rbt_s = cbtr.CobottaRIPPS()
-    # rbt_s.gen_meshmodel(toggle_tcp_frame=True).attach_to(base)
+    # rbt_s.gen_meshmodel(toggle_flange_frame=True).attach_to(base)
     rbt_s.jaw_to(jaw_width=0.03)
 
     tgt_pos = np.array([.25, .0, .1])

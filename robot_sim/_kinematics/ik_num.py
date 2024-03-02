@@ -64,13 +64,13 @@ class NumIKSolver(object):
         jnt_wt[jnt_values <= self.min_jnt_vals] = 0
         return np.diag(jnt_wt), np.diag(np.sqrt(jnt_wt))
 
-    def _clamp_tcp_err(self, tcp_pos_err_val, tcp_rot_err_val, tcp_err_vec):
-        clamped_tcp_vec = np.copy(tcp_err_vec)
-        if tcp_pos_err_val >= self.clamp_pos_err:
-            clamped_tcp_vec[:3] = self.clamp_pos_err * tcp_err_vec[:3] / tcp_pos_err_val
-        if tcp_rot_err_val >= self.clamp_rot_err:
-            clamped_tcp_vec[3:6] = self.clamp_rot_err * tcp_err_vec[3:6] / tcp_rot_err_val
-        return clamped_tcp_vec
+    def _clamp_tgt_err(self, f2t_pos_err, f2t_rot_err, f2t_err_vec):
+        clamped_vec = np.copy(f2t_err_vec)
+        if f2t_pos_err >= self.clamp_pos_err:
+            clamped_vec[:3] = self.clamp_pos_err * f2t_err_vec[:3] / f2t_pos_err
+        if f2t_rot_err >= self.clamp_rot_err:
+            clamped_vec[3:6] = self.clamp_rot_err * f2t_err_vec[3:6] / f2t_rot_err
+        return clamped_vec
 
     def are_jnts_in_range(self, jnt_values):
         if np.any(jnt_values < self.min_jnt_vals):
@@ -90,17 +90,17 @@ class NumIKSolver(object):
             iter_jnt_vals = self.jlc.get_jnt_values()
         counter = 0
         while True:
-            tcp_gl_pos, tcp_gl_rotmat, j_mat = self.jlc.fk(jnt_values=iter_jnt_vals,
+            flange_pos, flange_rotmat, j_mat = self.jlc.fk(jnt_values=iter_jnt_vals,
                                                            toggle_jacobian=True,
                                                            update=False)
-            tcp_pos_err_val, tcp_rot_err_val, tcp_err_vec = rm.diff_between_posrot(src_pos=tcp_gl_pos,
-                                                                                   src_rotmat=tcp_gl_rotmat,
+            f2t_pos_err, f2t_rot_err, f2t_err_vec = rm.diff_between_posrot(src_pos=flange_pos,
+                                                                                   src_rotmat=flange_rotmat,
                                                                                    tgt_pos=tgt_pos,
                                                                                    tgt_rotmat=tgt_rotmat)
-            if tcp_pos_err_val < 1e-4 and tcp_rot_err_val < 1e-3:
+            if f2t_pos_err < 1e-4 and f2t_rot_err < 1e-3:
                 return iter_jnt_vals
-            clamped_tcp_err_vec = self._clamp_tcp_err(tcp_pos_err_val, tcp_rot_err_val, tcp_err_vec)
-            delta_jnt_values = np.linalg.pinv(j_mat, rcond=1e-4) @ clamped_tcp_err_vec
+            clamped_tgt_err = self._clamp_tgt_err(f2t_pos_err, f2t_rot_err, f2t_err_vec)
+            delta_jnt_values = np.linalg.pinv(j_mat, rcond=1e-4) @ clamped_tgt_err
             if abs(np.sum(delta_jnt_values)) < 1e-8:
                 # local minimia
                 pass
@@ -112,11 +112,11 @@ class NumIKSolver(object):
                 import robot_sim._kinematics.model_generator as rkmg
                 joint_values = self.jlc.get_jnt_values()
                 self.jlc.go_given_conf(jnt_values=iter_jnt_vals)
-                rkmg.gen_jlc_stick(self.jlc, toggle_tcp_frame=True).attach_to(base)
+                rkmg.gen_jlc_stick(self.jlc, toggle_flange_frame=True).attach_to(base)
                 self.jlc.go_given_conf(jnt_values=joint_values)
                 import modeling.geometric_model as gm
-                gm.gen_arrow(spos=tcp_gl_pos, epos=tcp_gl_pos + tcp_err_vec[:3] * .1).attach_to(base)
-                print("tcp_pos_err ", tcp_pos_err_val, " tcp_rot_err ", tcp_rot_err_val)
+                gm.gen_arrow(spos=flange_pos, epos=flange_pos + f2t_err_vec[:3] * .1).attach_to(base)
+                print("f2t_pos_err ", f2t_pos_err, " f2t_rot_err ", f2t_rot_err)
             if counter > max_n_iter:
                 return None
             counter += 1
@@ -132,16 +132,16 @@ class NumIKSolver(object):
             iter_jnt_vals = self.jlc.get_jnt_values()
         counter = 0
         while True:
-            tcp_gl_pos, tcp_gl_rotmat, j_mat = self.jlc.fk(jnt_values=iter_jnt_vals,
+            flange_pos, flange_rotmat, j_mat = self.jlc.fk(jnt_values=iter_jnt_vals,
                                                            toggle_jacobian=True,
                                                            update=False)
-            tcp_pos_err_val, tcp_rot_err_val, tcp_err_vec = rm.diff_between_posrot(src_pos=tcp_gl_pos,
-                                                                                   src_rotmat=tcp_gl_rotmat,
+            f2t_pos_err, f2t_rot_err, f2t_err_vec = rm.diff_between_posrot(src_pos=flange_pos,
+                                                                                   src_rotmat=flange_rotmat,
                                                                                    tgt_pos=tgt_pos,
                                                                                    tgt_rotmat=tgt_rotmat)
-            if tcp_pos_err_val < 1e-4 and tcp_rot_err_val < 1e-3:
+            if f2t_pos_err < 1e-4 and f2t_rot_err < 1e-3:
                 return iter_jnt_vals
-            clamped_err_vec = self._clamp_tcp_err(tcp_pos_err_val, tcp_rot_err_val, tcp_err_vec)
+            clamped_err_vec = self._clamp_tgt_err(f2t_pos_err, f2t_rot_err, f2t_err_vec)
             delta_jnt_values = (np.linalg.inv(j_mat.T @ j_mat + 1e-4 * np.eye(j_mat.shape[1])) @
                                 j_mat.T @ clamped_err_vec)
             iter_jnt_vals = iter_jnt_vals + delta_jnt_values
@@ -152,11 +152,11 @@ class NumIKSolver(object):
                 import robot_sim._kinematics.model_generator as rkmg
                 joint_values = self.jlc.get_jnt_values()
                 self.jlc.go_given_conf(jnt_values=iter_jnt_vals)
-                rkmg.gen_jlc_stick(self.jlc, toggle_tcp_frame=True).attach_to(base)
+                rkmg.gen_jlc_stick(self.jlc, toggle_flange_frame=True).attach_to(base)
                 self.jlc.go_given_conf(jnt_values=joint_values)
                 import modeling.geometric_model as gm
-                gm.gen_arrow(spos=tcp_gl_pos, epos=tgt_pos).attach_to(base)
-                print("tcp_pos_err ", tcp_pos_err_val, " tcp_rot_err ", tcp_rot_err_val)
+                gm.gen_arrow(spos=flange_pos, epos=tgt_pos).attach_to(base)
+                print("f2t_pos_err ", f2t_pos_err, " f2t_rot_err ", f2t_rot_err)
             if counter > max_n_iter:
                 return None
             counter += 1
@@ -172,19 +172,19 @@ class NumIKSolver(object):
             iter_jnt_vals = self.jlc.get_jnt_values()
         counter = 0
         while True:
-            tcp_gl_pos, tcp_gl_rotmat, j_mat = self.jlc.fk(jnt_values=iter_jnt_vals,
-                                                           toggle_jacobian=True,
-                                                           update=False)
-            tcp_pos_err_val, tcp_rot_err_val, tcp_err_vec = rm.diff_between_posrot(src_pos=tcp_gl_pos,
-                                                                                   src_rotmat=tcp_gl_rotmat,
-                                                                                   tgt_pos=tgt_pos,
-                                                                                   tgt_rotmat=tgt_rotmat)
-            if tcp_pos_err_val < 1e-4 and tcp_rot_err_val < 1e-3:
+            flange_pos, flange_rotmat, j_mat = self.jlc.fk(jnt_values=iter_jnt_vals,
+                                                                 toggle_jacobian=True,
+                                                                 update=False)
+            f2t_pos_err, f2t_rot_err, f2t_err_vec = rm.diff_between_posrot(src_pos=flange_pos,
+                                                                           src_rotmat=flange_rotmat,
+                                                                           tgt_pos=tgt_pos,
+                                                                           tgt_rotmat=tgt_rotmat)
+            if f2t_pos_err < 1e-4 and f2t_rot_err < 1e-3:
                 return iter_jnt_vals
             jjt = j_mat @ j_mat.T
-            jjt_dot_e = jjt @ tcp_err_vec
-            weight = np.dot(tcp_err_vec, jjt_dot_e) / np.dot(jjt_dot_e, jjt_dot_e)
-            delta_jnt_values = weight * (j_mat.T @ tcp_err_vec)
+            jjt_dot_e = jjt @ f2t_err_vec
+            weight = np.dot(f2t_err_vec, jjt_dot_e) / np.dot(jjt_dot_e, jjt_dot_e)
+            delta_jnt_values = weight * (j_mat.T @ f2t_err_vec)
             iter_jnt_vals = iter_jnt_vals + delta_jnt_values
             if not self.are_jnts_in_range(iter_jnt_vals):
                 # random restart
@@ -193,11 +193,11 @@ class NumIKSolver(object):
                 import robot_sim._kinematics.model_generator as rkmg
                 joint_values = self.jlc.get_jnt_values()
                 self.jlc.go_given_conf(jnt_values=iter_jnt_vals)
-                rkmg.gen_jlc_stick(self.jlc, toggle_tcp_frame=True).attach_to(base)
+                rkmg.gen_jlc_stick(self.jlc, toggle_flange_frame=True).attach_to(base)
                 self.jlc.go_given_conf(jnt_values=joint_values)
                 import modeling.geometric_model as gm
-                gm.gen_arrow(spos=tcp_gl_pos, epos=tgt_pos).attach_to(base)
-                print("tcp_pos_err ", tcp_pos_err_val, " tcp_rot_err ", tcp_rot_err_val)
+                gm.gen_arrow(spos=flange_pos, epos=tgt_pos).attach_to(base)
+                print("f2t_pos_err ", f2t_pos_err, "f2t_rot_err ", f2t_rot_err)
             if counter > max_n_iter:
                 return None
             counter += 1
@@ -223,16 +223,16 @@ class NumIKSolver(object):
             iter_jnt_vals = self.jlc.get_jnt_values()
         counter = 0
         while True:
-            tcp_gl_pos, tcp_gl_rotmat, j_mat = self.jlc.fk(jnt_values=iter_jnt_vals,
-                                                           toggle_jacobian=True,
-                                                           update=False)
-            tcp_pos_err_val, tcp_rot_err_val, tcp_err_vec = rm.diff_between_posrot(src_pos=tcp_gl_pos,
-                                                                                   src_rotmat=tcp_gl_rotmat,
-                                                                                   tgt_pos=tgt_pos,
-                                                                                   tgt_rotmat=tgt_rotmat)
-            if tcp_pos_err_val < 1e-4 and tcp_rot_err_val < 1e-3:
+            flange_pos, flange_rotmat, j_mat = self.jlc.fk(jnt_values=iter_jnt_vals,
+                                                                 toggle_jacobian=True,
+                                                                 update=False)
+            f2t_pos_err, f2t_rot_err, f2t_err_vec = rm.diff_between_posrot(src_pos=flange_pos,
+                                                                           src_rotmat=flange_rotmat,
+                                                                           tgt_pos=tgt_pos,
+                                                                           tgt_rotmat=tgt_rotmat)
+            if f2t_pos_err < 1e-4 and f2t_rot_err < 1e-3:
                 return iter_jnt_vals
-            clamped_err_vec = self._clamp_tcp_err(tcp_pos_err_val, tcp_rot_err_val, tcp_err_vec)
+            clamped_err_vec = self._clamp_tgt_err(f2t_pos_err, f2t_rot_err, f2t_err_vec)
             wln, wln_sqrt = self._jnt_wt_mat(iter_jnt_vals)
             # weighted clamping
             k_phi = 0.1
@@ -246,11 +246,11 @@ class NumIKSolver(object):
                 import robot_sim._kinematics.model_generator as rkmg
                 joint_values = self.jlc.get_jnt_values()
                 self.jlc.go_given_conf(jnt_values=iter_jnt_vals)
-                rkmg.gen_jlc_stick(self.jlc, toggle_jnt_frames=True, toggle_tcp_frame=True).attach_to(base)
+                rkmg.gen_jlc_stick(self.jlc, toggle_jnt_frames=True, toggle_flange_frame=True).attach_to(base)
                 self.jlc.go_given_conf(jnt_values=joint_values)
                 import modeling.geometric_model as gm
-                gm.gen_arrow(spos=tcp_gl_pos, epos=tgt_pos).attach_to(base)
-                print("tcp_pos_err ", tcp_pos_err_val, " tcp_rot_err ", tcp_rot_err_val)
+                gm.gen_arrow(spos=flange_pos, epos=tgt_pos).attach_to(base)
+                print("f2t_pos_err ", f2t_pos_err, " f2t_rot_err ", f2t_rot_err)
             if counter > max_n_iter:
                 return None
                 # raise Exception("No IK solution")
@@ -268,16 +268,16 @@ class NumIKSolver(object):
             iter_jnt_vals = self.jlc.get_jnt_values()
         counter = 0
         while True:
-            tcp_gl_pos, tcp_gl_rotmat, j_mat = self.jlc.fk(jnt_values=iter_jnt_vals,
-                                                           toggle_jacobian=True,
-                                                           update=False)
-            tcp_pos_err_val, tcp_rot_err_val, tcp_err_vec = rm.diff_between_posrot(src_pos=tcp_gl_pos,
-                                                                                   src_rotmat=tcp_gl_rotmat,
-                                                                                   tgt_pos=tgt_pos,
-                                                                                   tgt_rotmat=tgt_rotmat)
-            if tcp_pos_err_val < 1e-4 and tcp_rot_err_val < 1e-3:
+            flange_pos, flange_rotmat, j_mat = self.jlc.fk(jnt_values=iter_jnt_vals,
+                                                                 toggle_jacobian=True,
+                                                                 update=False)
+            f2t_pos_err, f2t_rot_err, f2t_err_vec = rm.diff_between_posrot(src_pos=flange_pos,
+                                                                           src_rotmat=flange_rotmat,
+                                                                           tgt_pos=tgt_pos,
+                                                                           tgt_rotmat=tgt_rotmat)
+            if f2t_pos_err < 1e-4 and f2t_rot_err < 1e-3:
                 return iter_jnt_vals
-            clamped_err_vec = self._clamp_tcp_err(tcp_pos_err_val, tcp_rot_err_val, tcp_err_vec)
+            clamped_err_vec = self._clamp_tgt_err(f2t_pos_err, f2t_rot_err, f2t_err_vec)
             wln, wln_sqrt = self._jnt_wt_mat(iter_jnt_vals)
             # weighted clamping
             k_phi = 0.1
@@ -295,11 +295,11 @@ class NumIKSolver(object):
                 import robot_sim._kinematics.model_generator as rkmg
                 joint_values = self.jlc.get_jnt_values()
                 self.jlc.go_given_conf(jnt_values=iter_jnt_vals)
-                rkmg.gen_jlc_stick(self.jlc, toggle_tcp_frame=True).attach_to(base)
+                rkmg.gen_jlc_stick(self.jlc, toggle_flange_frame=True).attach_to(base)
                 self.jlc.go_given_conf(jnt_values=joint_values)
                 import modeling.geometric_model as gm
-                gm.gen_arrow(spos=tcp_gl_pos, epos=tgt_pos).attach_to(base)
-                print("tcp_pos_err ", tcp_pos_err_val, " tcp_rot_err ", tcp_rot_err_val)
+                gm.gen_arrow(spos=flange_pos, epos=tgt_pos).attach_to(base)
+                print("f2t_pos_err ", f2t_pos_err, "f2t_rot_err ", f2t_rot_err)
             if counter > max_n_iter:
                 return None
             counter += 1

@@ -21,7 +21,7 @@ class XArmLite6WRSGripper(ri.RobotInterface):
         # left side
         self.body = jl.JLChain(pos=pos, rotmat=rotmat, home_conf=np.zeros(0), name='body_jl')
         self.body.lnks[0]['name'] = "xarm_stand"
-        self.body.lnks[0]['pos_in_tcp'] = np.array([0, 0, 0])
+        self.body.lnks[0]['loc_pos'] = np.array([0, 0, 0])
         self.body.lnks[0]['rgba'] = [.55, .55, .55, 1.0]
         self.body.lnks[0]['mesh_file'] = os.path.join(this_dir, "meshes", "xarm_lite6_stand.stl")
         self.body.finalize()
@@ -33,9 +33,9 @@ class XArmLite6WRSGripper(ri.RobotInterface):
                                     enable_cc=False)
 
         # tool center point
-        self.arm.jlc.functional_jnt_id = -1
-        self.arm.jlc.loc_tcp_pos = self.hnd.jaw_center_pos
-        self.arm.jlc.loc_tcp_rotmat = self.hnd.loc_acting_center_rotmat
+        self.arm.jlc.flange_jnt_id = -1
+        self.arm.jlc._loc_flange_pos = self.hnd.jaw_center_pos
+        self.arm.jlc._loc_flange_rotmat = self.hnd.loc_acting_center_rotmat
         # a list of detailed information about objects in hand, see CollisionChecker.add_objinhnd
         self.oih_infos = []
         # collision detection

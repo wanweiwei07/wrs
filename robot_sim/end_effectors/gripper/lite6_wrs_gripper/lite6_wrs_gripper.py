@@ -25,12 +25,12 @@ class Lite6WRSGripper(gp.GripperInterface):
         # lft finger and base
         self.lft = jl.JLChain(pos=cpl_end_pos, rotmat=cpl_end_rotmat, home_conf=np.zeros(1), name='base_lft_finger')
         self.lft.lnks[0]['name'] = "base"
-        self.lft.lnks[0]['pos_in_tcp'] = np.zeros(3)
+        self.lft.lnks[0]['loc_pos'] = np.zeros(3)
         self.lft.lnks[0]['collision_model'] = cm.CollisionModel(os.path.join(this_dir, "meshes", "base.stl"),
                                                                 cdp_type="user_defined", expand_radius=.001,
                                                                 userdef_cdprim_fn=self._hnd_base_cdnp)
         self.lft.lnks[0]['rgba'] = [.77, .77, .77, 1]
-        self.lft.jnts[1]['pos_in_tcp'] = np.array([0, 0.0040, 0.089])
+        self.lft.jnts[1]['loc_pos'] = np.array([0, 0.0040, 0.089])
         self.lft.jnts[1]['gl_rotmat'] = rm.rotmat_from_euler(0, 0, math.pi)
         self.lft.jnts[1]['end_type'] = 'prismatic'
         self.lft.jnts[1]['motion_range'] = [.0, .025]
@@ -42,7 +42,7 @@ class Lite6WRSGripper(gp.GripperInterface):
         self.lft.lnks[1]['rgba'] = [.35, .35, .35, 1]
         # # rgt finger
         self.rgt = jl.JLChain(pos=cpl_end_pos, rotmat=cpl_end_rotmat, home_conf=np.zeros(1), name='rgt_finger')
-        self.rgt.jnts[1]['pos_in_tcp'] = np.array([0, -0.0040, 0.089])
+        self.rgt.jnts[1]['loc_pos'] = np.array([0, -0.0040, 0.089])
         self.rgt.jnts[1]['end_type'] = 'prismatic'
         self.rgt.jnts[1]['loc_motionax'] = np.array([1, 0, 0])
         self.rgt.lnks[1]['name'] = "finger2"

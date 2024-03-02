@@ -164,7 +164,7 @@ if __name__ == '__main__':
     robot_s = KHI_OR2FG7(enable_cc=True)
     robot_s.jaw_to(.02)
     robot_s.gen_meshmodel(toggle_tcp_frame=True, toggle_jnt_frames=True).attach_to(base)
-    # robot_s.gen_meshmodel(toggle_tcp_frame=False, toggle_jnt_frames=False).attach_to(base)
+    # robot_s.gen_meshmodel(toggle_flange_frame=False, toggle_jnt_frames=False).attach_to(base)
     robot_s.gen_stickmodel(toggle_tcp_frame=True, toggle_jnt_frames=True).attach_to(base)
     # base.run()
     tgt_pos = np.array([.25, .2, .15])

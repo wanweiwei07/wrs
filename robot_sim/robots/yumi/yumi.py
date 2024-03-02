@@ -18,50 +18,50 @@ class Yumi(ri.RobotInterface):
         this_dir, this_filename = os.path.split(__file__)
         # lft
         self.lft_body = jl.JLChain(pos=pos, rotmat=rotmat, home_conf=np.zeros(7), name='lft_body')
-        self.lft_body.jnts[1]['pos_in_tcp'] = np.array([0, 0, 0])
-        self.lft_body.jnts[2]['pos_in_tcp'] = np.array([0, 0, 0])
-        self.lft_body.jnts[3]['pos_in_tcp'] = np.array([0, 0, 0])
-        self.lft_body.jnts[4]['pos_in_tcp'] = np.array([0, 0, 0])
-        self.lft_body.jnts[5]['pos_in_tcp'] = np.array([0, 0, 0])
-        self.lft_body.jnts[6]['pos_in_tcp'] = np.array([0, 0, 0])
-        self.lft_body.jnts[7]['pos_in_tcp'] = np.array([0, 0, 0])
-        self.lft_body.jnts[8]['pos_in_tcp'] = np.array([0.05355, 0.07250, 0.41492])
+        self.lft_body.jnts[1]['loc_pos'] = np.array([0, 0, 0])
+        self.lft_body.jnts[2]['loc_pos'] = np.array([0, 0, 0])
+        self.lft_body.jnts[3]['loc_pos'] = np.array([0, 0, 0])
+        self.lft_body.jnts[4]['loc_pos'] = np.array([0, 0, 0])
+        self.lft_body.jnts[5]['loc_pos'] = np.array([0, 0, 0])
+        self.lft_body.jnts[6]['loc_pos'] = np.array([0, 0, 0])
+        self.lft_body.jnts[7]['loc_pos'] = np.array([0, 0, 0])
+        self.lft_body.jnts[8]['loc_pos'] = np.array([0.05355, 0.07250, 0.41492])
         self.lft_body.jnts[8]['gl_rotmat'] = rm.rotmat_from_euler(0.9781, -0.5716, 2.3180)  # left from robot_s view
         self.lft_body.lnks[0]['name'] = "yumi_lft_stand"
-        self.lft_body.lnks[0]['pos_in_tcp'] = np.array([0, 0, 0])
+        self.lft_body.lnks[0]['loc_pos'] = np.array([0, 0, 0])
         self.lft_body.lnks[0]['mesh_file'] = os.path.join(this_dir, "meshes", "yumi_tablenotop.stl")
         self.lft_body.lnks[0]['rgba'] = [.55, .55, .55, 1.0]
         self.lft_body.lnks[1]['name'] = "yumi_lft_body"
-        self.lft_body.lnks[1]['pos_in_tcp'] = np.array([0, 0, 0])
+        self.lft_body.lnks[1]['loc_pos'] = np.array([0, 0, 0])
         self.lft_body.lnks[1]['collision_model'] = cm.CollisionModel(
             os.path.join(this_dir, "meshes", "body.stl"),
             cdp_type="user_defined", expand_radius=.005,
             userdef_cdprim_fn=self._base_combined_cdnp)
         self.lft_body.lnks[1]['rgba'] = [.7, .7, .7, 1]
         self.lft_body.lnks[2]['name'] = "yumi_lft_column"
-        self.lft_body.lnks[2]['pos_in_tcp'] = np.array([-.327, -.24, -1.015])
+        self.lft_body.lnks[2]['loc_pos'] = np.array([-.327, -.24, -1.015])
         self.lft_body.lnks[2]['mesh_file'] = os.path.join(this_dir, "meshes", "yumi_column60602100.stl")
         self.lft_body.lnks[2]['rgba'] = [.35, .35, .35, 1.0]
         self.lft_body.lnks[3]['name'] = "yumi_lft_column"
-        self.lft_body.lnks[3]['pos_in_tcp'] = np.array([-.327, .24, -1.015])
+        self.lft_body.lnks[3]['loc_pos'] = np.array([-.327, .24, -1.015])
         self.lft_body.lnks[3]['mesh_file'] = os.path.join(this_dir, "meshes", "yumi_column60602100.stl")
         self.lft_body.lnks[3]['rgba'] = [.35, .35, .35, 1.0]
         self.lft_body.lnks[4]['name'] = "yumi_top_back"
-        self.lft_body.lnks[4]['pos_in_tcp'] = np.array([-.327, 0, 1.085])
+        self.lft_body.lnks[4]['loc_pos'] = np.array([-.327, 0, 1.085])
         self.lft_body.lnks[4]['mesh_file'] = os.path.join(this_dir, "meshes", "yumi_column6060540.stl")
         self.lft_body.lnks[4]['rgba'] = [.35, .35, .35, 1.0]
         self.lft_body.lnks[5]['name'] = "yumi_top_lft"
-        self.lft_body.lnks[5]['pos_in_tcp'] = np.array([-.027, -.24, 1.085])
+        self.lft_body.lnks[5]['loc_pos'] = np.array([-.027, -.24, 1.085])
         self.lft_body.lnks[5]['gl_rotmat'] = rm.rotmat_from_axangle([0, 0, 1], -math.pi / 2)
         self.lft_body.lnks[5]['mesh_file'] = os.path.join(this_dir, "meshes", "yumi_column6060540.stl")
         self.lft_body.lnks[5]['rgba'] = [.35, .35, .35, 1.0]
         self.lft_body.lnks[6]['name'] = "yumi_top_lft"
-        self.lft_body.lnks[6]['pos_in_tcp'] = np.array([-.027, .24, 1.085])
+        self.lft_body.lnks[6]['loc_pos'] = np.array([-.027, .24, 1.085])
         self.lft_body.lnks[6]['gl_rotmat'] = rm.rotmat_from_axangle([0, 0, 1], -math.pi / 2)
         self.lft_body.lnks[6]['mesh_file'] = os.path.join(this_dir, "meshes", "yumi_column6060540.stl")
         self.lft_body.lnks[6]['rgba'] = [.35, .35, .35, 1.0]
         self.lft_body.lnks[7]['name'] = "yumi_top_front"
-        self.lft_body.lnks[7]['pos_in_tcp'] = np.array([.273, 0, 1.085])
+        self.lft_body.lnks[7]['loc_pos'] = np.array([.273, 0, 1.085])
         self.lft_body.lnks[7]['mesh_file'] = os.path.join(this_dir, "meshes", "yumi_column6060540.stl")
         self.lft_body.lnks[7]['rgba'] = [.35, .35, .35, 1.0]
         self.lft_body.finalize()
@@ -76,10 +76,10 @@ class Yumi(ri.RobotInterface):
         self.lft_hnd.fix_to(pos=self.lft_arm.jnts[-1]['gl_posq'], rotmat=self.lft_arm.jnts[-1]['gl_rotmatq'])
         # rgt
         self.rgt_body = jl.JLChain(pos=pos, rotmat=rotmat, home_conf=np.zeros(0), name='rgt_body')
-        self.rgt_body.jnts[1]['pos_in_tcp'] = np.array([0.05355, -0.0725, 0.41492])
+        self.rgt_body.jnts[1]['loc_pos'] = np.array([0.05355, -0.0725, 0.41492])
         self.rgt_body.jnts[1]['gl_rotmat'] = rm.rotmat_from_euler(-0.9795, -0.5682, -2.3155)  # left from robot_s view
         self.rgt_body.lnks[0]['name'] = "yumi_rgt_body"
-        self.rgt_body.lnks[0]['pos_in_tcp'] = np.array([0, 0, 0])
+        self.rgt_body.lnks[0]['loc_pos'] = np.array([0, 0, 0])
         self.rgt_body.lnks[0]['rgba'] = [.35, .35, .35, 1.0]
         self.rgt_body.finalize()
         rgt_arm_homeconf = np.radians(np.array([-20, -90, -120, 30, .0, 40, 0]))
@@ -96,9 +96,9 @@ class Yumi(ri.RobotInterface):
         self.lft_arm.loc_tcp_pos = self.lft_hnd.jaw_center_pos
         self.lft_arm.loc_tcp_rotmat = self.lft_hnd.loc_acting_center_rotmat
         # rgt
-        self.rgt_arm.functional_jnt_id = -1
-        self.rgt_arm.loc_tcp_pos = self.rgt_hnd.loc_acting_center_pos
-        self.rgt_arm.loc_tcp_rotmat = self.rgt_hnd.loc_acting_center_rotmat
+        self.rgt_arm.flange_jnt_id = -1
+        self.rgt_arm._loc_flange_pos = self.rgt_hnd.loc_acting_center_pos
+        self.rgt_arm._loc_flange_rotmat = self.rgt_hnd.loc_acting_center_rotmat
         # a list of detailed information about objects in hand, see CollisionChecker.add_objinhnd
         self.lft_oih_infos = []
         self.rgt_oih_infos = []

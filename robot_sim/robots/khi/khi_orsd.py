@@ -24,9 +24,9 @@ class KHI_ORSD(ai.SglArmRbtInterface):
                                               coupling_offset_pos=np.array([0, 0, 0.0639]),
                                               name='orsd', enable_cc=False)
         # tool center point
-        self.manipulator.jlc.functional_jnt_id = -1
-        self.manipulator.jlc.loc_tcp_pos = self.end_effector.action_center_pos
-        self.manipulator.jlc.loc_tcp_rotmat = self.end_effector.action_center_rotmat
+        self.manipulator.jlc.flange_jnt_id = -1
+        self.manipulator.jlc._loc_flange_pos = self.end_effector.action_center_pos
+        self.manipulator.jlc._loc_flange_rotmat = self.end_effector.action_center_rotmat
         # collision detection
         if enable_cc:
             self.enable_cc()
@@ -157,7 +157,7 @@ if __name__ == '__main__':
     robot_s = KHI_ORSD(enable_cc=True)
     # robot_s.jaw_to(.02)
     robot_s.gen_meshmodel(toggle_tcp_frame=True, toggle_jnt_frames=True).attach_to(base)
-    # robot_s.gen_meshmodel(toggle_tcp_frame=False, toggle_jnt_frames=False).attach_to(base)
+    # robot_s.gen_meshmodel(toggle_flange_frame=False, toggle_jnt_frames=False).attach_to(base)
     robot_s.gen_stickmodel(toggle_tcp_frame=True, toggle_jnt_frames=True).attach_to(base)
     # base.run()
     tgt_pos = np.array([.25, .2, .15])

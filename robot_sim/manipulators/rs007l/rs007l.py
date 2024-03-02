@@ -17,69 +17,69 @@ class RS007L(mi.ManipulatorInterface):
         this_dir, this_filename = os.path.split(__file__)
         self.jlc = jl.JLChain(pos=pos, rotmat=rotmat, home_conf=homeconf, name=name)
         # six joints, n_jnts = 6+2 (tgt ranges from 1-6), nlinks = 6+1
-        self.jlc.jnts[1]['pos_in_tcp'] = np.array([0, 0, 0.36])
+        self.jlc.jnts[1]['loc_pos'] = np.array([0, 0, 0.36])
         self.jlc.jnts[1]['loc_motionax'] = np.array([0, 0, -1])
         self.jlc.jnts[1]['motion_range'] = [-3.14159265359, 3.14159265359]  # -180, 180
-        self.jlc.jnts[2]['pos_in_tcp'] = np.array([0, 0, 0.0])
+        self.jlc.jnts[2]['loc_pos'] = np.array([0, 0, 0.0])
         self.jlc.jnts[2]['gl_rotmat'] = rm.rotmat_from_euler(0, np.radians(-90), 0)
         self.jlc.jnts[2]['loc_motionax'] = np.array([0, 0, 1])
         self.jlc.jnts[2]['motion_range'] = [-2.35619449019, 2.35619449019]  # -135, 135
-        self.jlc.jnts[3]['pos_in_tcp'] = np.array([0.455, 0, 0])
+        self.jlc.jnts[3]['loc_pos'] = np.array([0.455, 0, 0])
         self.jlc.jnts[3]['loc_motionax'] = np.array([0, 0, -1])
         self.jlc.jnts[3]['motion_range'] = [-2.74016692563, 2.74016692563]  # -157, 157
-        self.jlc.jnts[4]['pos_in_tcp'] = np.array([0.0925, 0, 0])
+        self.jlc.jnts[4]['loc_pos'] = np.array([0.0925, 0, 0])
         self.jlc.jnts[4]['gl_rotmat'] = rm.rotmat_from_euler(0, np.radians(90), 0)
         self.jlc.jnts[4]['loc_motionax'] = np.array([0, 0, 1])
         self.jlc.jnts[4]['motion_range'] = [-3.49065850399, 3.49065850399]  # -200, 200
-        self.jlc.jnts[5]['pos_in_tcp'] = np.array([0, 0, 0.3825])
+        self.jlc.jnts[5]['loc_pos'] = np.array([0, 0, 0.3825])
         self.jlc.jnts[5]['gl_rotmat'] = rm.rotmat_from_euler(0, np.radians(-90), 0)
         self.jlc.jnts[5]['loc_motionax'] = np.array([0, 0, -1])
         self.jlc.jnts[5]['motion_range'] = [-2.18166156499, 2.18166156499]  # -125, 125
-        self.jlc.jnts[6]['pos_in_tcp'] = np.array([0.078, 0, 0])
+        self.jlc.jnts[6]['loc_pos'] = np.array([0.078, 0, 0])
         self.jlc.jnts[6]['gl_rotmat'] = rm.rotmat_from_euler(0, np.radians(90), 0)
         self.jlc.jnts[6]['loc_motionax'] = np.array([0, 0, 1])
         self.jlc.jnts[6]['motion_range'] = [-6.28318530718, 6.28318530718]  # -360, 360
         # links
         self.jlc.lnks[0]['name'] = "base"
-        self.jlc.lnks[0]['pos_in_tcp'] = np.zeros(3)
+        self.jlc.lnks[0]['loc_pos'] = np.zeros(3)
         self.jlc.lnks[0]['mass'] = 11
         self.jlc.lnks[0]['com'] = np.array([0, 0, 0])
         self.jlc.lnks[0]['mesh_file'] = os.path.join(this_dir, "meshes", "joint0.stl")
         self.jlc.lnks[0]['rgba'] = [.7, .7, .7, 1.0]
         self.jlc.lnks[1]['name'] = "l1"
-        self.jlc.lnks[1]['pos_in_tcp'] = np.zeros(3)
+        self.jlc.lnks[1]['loc_pos'] = np.zeros(3)
         self.jlc.lnks[1]['com'] = np.array([0, 0, 0])
         self.jlc.lnks[1]['mass'] = 8.188
         self.jlc.lnks[1]['mesh_file'] = os.path.join(this_dir, "meshes", "joint1.stl")
         self.jlc.lnks[1]['rgba'] = [.7, .7, .7, 1.0]
         self.jlc.lnks[2]['name'] = "l2"
-        self.jlc.lnks[2]['pos_in_tcp'] = np.array([0, 0, 0])
+        self.jlc.lnks[2]['loc_pos'] = np.array([0, 0, 0])
         self.jlc.lnks[2]['gl_rotmat'] = rm.rotmat_from_euler(0, np.radians(90), 0)
         self.jlc.lnks[2]['com'] = np.array([0, 0, 0])
         self.jlc.lnks[2]['mass'] = 6.826
         self.jlc.lnks[2]['mesh_file'] = os.path.join(this_dir, "meshes", "joint2.stl")
         self.jlc.lnks[2]['rgba'] = [.7, .7, .7, 1]
         self.jlc.lnks[3]['name'] = "l3"
-        self.jlc.lnks[3]['pos_in_tcp'] = np.array([0, 0, 0])
+        self.jlc.lnks[3]['loc_pos'] = np.array([0, 0, 0])
         self.jlc.lnks[3]['gl_rotmat'] = rm.rotmat_from_euler(0, np.radians(90), 0)
         self.jlc.lnks[3]['com'] = np.array([0, 0, 0])
         self.jlc.lnks[3]['mass'] = 5.236
         self.jlc.lnks[3]['mesh_file'] = os.path.join(this_dir, "meshes", "joint3.stl")
         self.jlc.lnks[4]['name'] = "l4"
-        self.jlc.lnks[4]['pos_in_tcp'] = np.array([0, 0, 0.3825])
+        self.jlc.lnks[4]['loc_pos'] = np.array([0, 0, 0.3825])
         self.jlc.lnks[4]['com'] = np.array([0, 0, 0])
         self.jlc.lnks[4]['mass'] = 5.066
         self.jlc.lnks[4]['mesh_file'] = os.path.join(this_dir, "meshes", "joint4.stl")
         self.jlc.lnks[4]['rgba'] = [.7, .7, .7, 1.0]
         self.jlc.lnks[5]['name'] = "l5"
-        self.jlc.lnks[5]['pos_in_tcp'] = np.array([0, 0, 0])
+        self.jlc.lnks[5]['loc_pos'] = np.array([0, 0, 0])
         self.jlc.lnks[5]['gl_rotmat'] = rm.rotmat_from_euler(0, np.radians(90), 0)
         self.jlc.lnks[5]['com'] = np.array([0, 0, 0])
         self.jlc.lnks[5]['mass'] = 1.625
         self.jlc.lnks[5]['mesh_file'] = os.path.join(this_dir, "meshes", "joint5.stl")
         self.jlc.lnks[5]['rgba'] = [.7, .7, .7, 1]
         self.jlc.lnks[6]['name'] = "l6"
-        self.jlc.lnks[6]['pos_in_tcp'] = np.array([0, 0, 0])
+        self.jlc.lnks[6]['loc_pos'] = np.array([0, 0, 0])
         self.jlc.lnks[6]['com'] = np.array([.0, .0, 0])
         self.jlc.lnks[6]['mass'] = 0.625
         self.jlc.lnks[6]['mesh_file'] = os.path.join(this_dir, "meshes", "joint6.stl")
@@ -126,20 +126,20 @@ class RS007L(mi.ManipulatorInterface):
         date: 20230728
         """
         if tcp_loc_pos is None:
-            tcp_loc_pos = self.jlc.loc_tcp_pos
+            tcp_loc_pos = self.jlc._loc_flange_pos
         if tcp_loc_rotmat is None:
-            tcp_loc_rotmat = self.jlc.loc_tcp_rotmat
+            tcp_loc_rotmat = self.jlc._loc_flange_rotmat
         flange_rotmat = tgt_rotmat @ tcp_loc_rotmat.T
         flange_pos = tgt_pos - flange_rotmat @ tcp_loc_pos
-        rrr_pos = flange_pos - flange_rotmat[:, 2] * np.linalg.norm(self.jlc.jnts[6]['pos_in_tcp'])
+        rrr_pos = flange_pos - flange_rotmat[:, 2] * np.linalg.norm(self.jlc.jnts[6]['loc_pos'])
         rrr_x, rrr_y, rrr_z = ((rrr_pos - self.jlc.pos) @ self.rotmat).tolist()
         j1_value = math.atan2(rrr_x, rrr_y)
         if not self._is_jnt_in_range(1, jnt_value=j1_value):
             return None
         # assume a, b, c are the axis_length of shoulders and bottom of the big triangle formed by the robot arm
-        c = math.sqrt(rrr_x ** 2 + rrr_y ** 2 + (rrr_z - self.jlc.jnts[1]['pos_in_tcp'][2]) ** 2)
-        a = self.jlc.jnts[3]['pos_in_tcp'][0]
-        b = self.jlc.jnts[4]['pos_in_tcp'][0] + self.jlc.jnts[5]['pos_in_tcp'][2]
+        c = math.sqrt(rrr_x ** 2 + rrr_y ** 2 + (rrr_z - self.jlc.jnts[1]['loc_pos'][2]) ** 2)
+        a = self.jlc.jnts[3]['loc_pos'][0]
+        b = self.jlc.jnts[4]['loc_pos'][0] + self.jlc.jnts[5]['loc_pos'][2]
         tmp_acos_target = (a ** 2 + b ** 2 - c ** 2) / (2 * a * b)
         if tmp_acos_target > 1 or tmp_acos_target < -1:
             print("The triangle formed by the robot arm is violated!")
@@ -153,7 +153,7 @@ class RS007L(mi.ManipulatorInterface):
             return None
         j2_value_upper = math.acos(tmp_acos_target)
         # assume d, c, e are the edges of the lower triangle formed with the ground
-        d = self.jlc.jnts[1]['pos_in_tcp'][2]
+        d = self.jlc.jnts[1]['loc_pos'][2]
         e = math.sqrt(rrr_x ** 2 + rrr_y ** 2 + rrr_z ** 2)
         tmp_acos_target = (d ** 2 + c ** 2 - e ** 2) / (2 * d * c)
         if tmp_acos_target > 1 or tmp_acos_target < -1:
@@ -219,8 +219,8 @@ if __name__ == '__main__':
     # tgt_rotmat = rm.rotmat_from_euler(np.radians(30), np.radians(120), np.radians(130))
     # mgm.gen_frame(pos=tgt_pos, rotmat=tgt_rotmat).attach_to(base)
     tic = time.time()
-    # loc_tcp_pos = np.array([0, .1, 0.1])
-    # loc_tcp_rotmat = rm.rotmat_from_euler(0, np.radians(30), 0)
+    # _loc_flange_pos = np.array([0, .1, 0.1])
+    # _loc_flange_rotmat = rm.rotmat_from_euler(0, np.radians(30), 0)
     tgt_pos = np.array([.25, .2, .15])
     tgt_rotmat = rm.rotmat_from_euler(np.radians(130), np.radians(40), np.radians(180))
     gm.gen_frame(pos=tgt_pos, rotmat=tgt_rotmat).attach_to(base)

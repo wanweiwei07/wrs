@@ -18,9 +18,9 @@ if __name__ == '__main__':
     # define robot_s and robot_s anime info
     robot_s = xav.XArmShuidi()
     robot_meshmodel_parameters = [None,  # tcp_jntid
-                                  None,  # loc_tcp_pos
-                                  None,  # loc_tcp_rotmat
-                                  False,  # toggle_tcp_frame
+                                  None,  # _loc_flange_pos
+                                  None,  # _loc_flange_rotmat
+                                  False,  # toggle_flange_frame
                                   False,  # toggle_jnt_frames
                                   [0, .7, 0, .3],  # rgba
                                   'auto']  # name

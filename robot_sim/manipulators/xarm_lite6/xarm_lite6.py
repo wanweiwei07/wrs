@@ -28,32 +28,32 @@ class XArmLite6(mi.ManipulatorInterface):
         # six joints
         jnt_saferngmargin = math.pi / 18.0
         # joint 1
-        self.jlc.jnts[1]['pos_in_tcp'] = np.array([0., 0., .2433])
+        self.jlc.jnts[1]['loc_pos'] = np.array([0., 0., .2433])
         self.jlc.jnts[1]['motion_range'] = [-2. * math.pi + jnt_saferngmargin, 2. * math.pi - jnt_saferngmargin]
         # joint 2
-        self.jlc.jnts[2]['pos_in_tcp'] = np.array([0., 0., 0.])
+        self.jlc.jnts[2]['loc_pos'] = np.array([0., 0., 0.])
         self.jlc.jnts[2]['gl_rotmat'] = rm.rotmat_from_euler(1.5708, -1.5708, 3.1416)
         self.jlc.jnts[2]['motion_range'] = [-2.61799 + jnt_saferngmargin, 2.61799 - jnt_saferngmargin]
         # joint 3
-        self.jlc.jnts[3]['pos_in_tcp'] = np.array([.2, 0., 0.])
+        self.jlc.jnts[3]['loc_pos'] = np.array([.2, 0., 0.])
         self.jlc.jnts[3]['gl_rotmat'] = rm.rotmat_from_euler(-3.1416, 0., 1.5708)
         self.jlc.jnts[3]['motion_range'] = [-0.061087 + jnt_saferngmargin, 5.235988 - jnt_saferngmargin]
         # joint 4
-        self.jlc.jnts[4]['pos_in_tcp'] = np.array([.087, -.2276, 0.])
+        self.jlc.jnts[4]['loc_pos'] = np.array([.087, -.2276, 0.])
         self.jlc.jnts[4]['gl_rotmat'] = rm.rotmat_from_euler(1.5708, 0., 0.)
         self.jlc.jnts[4]['motion_range'] = [-2. * math.pi + jnt_saferngmargin, 2. * math.pi - jnt_saferngmargin]
         # joint 5
-        self.jlc.jnts[5]['pos_in_tcp'] = np.array([0., 0., 0.])
+        self.jlc.jnts[5]['loc_pos'] = np.array([0., 0., 0.])
         self.jlc.jnts[5]['gl_rotmat'] = rm.rotmat_from_euler(1.5708, 0., 0.)
         self.jlc.jnts[5]['motion_range'] = [-2.1642 + jnt_saferngmargin, 2.1642 - jnt_saferngmargin]
         # joint 6
-        self.jlc.jnts[6]['pos_in_tcp'] = np.array([0., .0615, 0.])
+        self.jlc.jnts[6]['loc_pos'] = np.array([0., .0615, 0.])
         self.jlc.jnts[6]['gl_rotmat'] = rm.rotmat_from_euler(-1.5708, 0., 0.)
         self.jlc.jnts[6]['motion_range'] = [-2. * math.pi + jnt_saferngmargin, 2. * math.pi - jnt_saferngmargin]
         # links
         # link base
         self.jlc.lnks[0]['name'] = "link_base"
-        self.jlc.lnks[0]['pos_in_tcp'] = np.zeros(3)
+        self.jlc.lnks[0]['loc_pos'] = np.zeros(3)
         self.jlc.lnks[0]['com'] = np.array([-0.00829544579053192, 3.26357432323433e-05, 0.0631194584987089])
         self.jlc.lnks[0]['mass'] = 2.11
         self.jlc.lnks[0]['collision_model'] = cm.CollisionModel(
@@ -63,13 +63,13 @@ class XArmLite6(mi.ManipulatorInterface):
         self.jlc.lnks[0]['rgba'] = [.7, .7, .7, 1.0]
         # link1
         self.jlc.lnks[1]['name'] = "link1"
-        self.jlc.lnks[1]['pos_in_tcp'] = np.zeros(3)
+        self.jlc.lnks[1]['loc_pos'] = np.zeros(3)
         self.jlc.lnks[1]['com'] = np.array([-.00036, .042, -.0025])
         self.jlc.lnks[1]['mass'] = 1.411
         self.jlc.lnks[1]['mesh_file'] = os.path.join(this_dir, "meshes", "link1.stl")
         # link2
         self.jlc.lnks[2]['name'] = "link2"
-        self.jlc.lnks[2]['pos_in_tcp'] = np.zeros(3)
+        self.jlc.lnks[2]['loc_pos'] = np.zeros(3)
         self.jlc.lnks[2]['com'] = np.array([0.179, .0, .0584])
         self.jlc.lnks[2]['mass'] = 1.34
         self.jlc.lnks[2]['mesh_file'] = cm.CollisionModel(os.path.join(this_dir, "meshes", "link2.stl"),
@@ -79,13 +79,13 @@ class XArmLite6(mi.ManipulatorInterface):
         self.jlc.lnks[2]['rgba'] = [.7, .7, .7, 1.0]
         # link 3
         self.jlc.lnks[3]['name'] = "link3"
-        self.jlc.lnks[3]['pos_in_tcp'] = np.zeros(3)
+        self.jlc.lnks[3]['loc_pos'] = np.zeros(3)
         self.jlc.lnks[3]['com'] = np.array([0.072, -0.036, -0.001])
         self.jlc.lnks[3]['mass'] = 0.953
         self.jlc.lnks[3]['mesh_file'] = os.path.join(this_dir, "meshes", "link3.stl")
         # link 4
         self.jlc.lnks[4]['name'] = "link4"
-        self.jlc.lnks[4]['pos_in_tcp'] = np.zeros(3)
+        self.jlc.lnks[4]['loc_pos'] = np.zeros(3)
         self.jlc.lnks[4]['com'] = np.array([-0.002, -0.0285, -0.0813])
         self.jlc.lnks[4]['mass'] = 1.284
         self.jlc.lnks[4]['collision_model'] = cm.CollisionModel(
@@ -95,14 +95,14 @@ class XArmLite6(mi.ManipulatorInterface):
         self.jlc.lnks[4]['rgba'] = [.7, .7, .7, 1.0]
         # link 5
         self.jlc.lnks[5]['name'] = "link5"
-        self.jlc.lnks[5]['pos_in_tcp'] = np.zeros(3)
+        self.jlc.lnks[5]['loc_pos'] = np.zeros(3)
         self.jlc.lnks[5]['com'] = np.array([0.0, 0.010, 0.0019])
         self.jlc.lnks[5]['mass'] = 0.804
         self.jlc.lnks[5]['mesh_file'] = os.path.join(this_dir, "meshes", "link5.stl")
         self.jlc.lnks[5]['rgba'] = [.7, .7, .7, 1.0]
         # link 6
         self.jlc.lnks[6]['name'] = "link6"
-        self.jlc.lnks[6]['pos_in_tcp'] = np.zeros(3)
+        self.jlc.lnks[6]['loc_pos'] = np.zeros(3)
         self.jlc.lnks[6]['com'] = np.array([0.0, -0.00194, -0.0102])
         self.jlc.lnks[6]['mass'] = 0.180
         self.jlc.lnks[6]['mesh_file'] = os.path.join(this_dir, "meshes", "link6.stl")

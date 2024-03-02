@@ -34,8 +34,9 @@ class DDIKSolver(object):
         date: 20231111
         """
         self.jlc = jlc
+        current_file_dir = os.path.dirname(__file__)
         if path is None:
-            path = os.path.join(os.path.dirname(os.getcwd()), "_data_files")
+            path = os.path.join(os.path.dirname(current_file_dir), "_data_files")
         self._fname_tree = os.path.join(path, f"{identifier_str}_ikdd_tree.pkl")
         self._fname_jnt = os.path.join(path, f"{identifier_str}_jnt_data.pkl")
         self._k_bbs = 5  # number of nearest neighbours examined by the backbone sovler
@@ -95,16 +96,16 @@ class DDIKSolver(object):
                 np.linspace(self.jlc.jnt_ranges[i][0], self.jlc.jnt_ranges[i][1], int(n_intervals[i]), endpoint=False))
         grid = np.meshgrid(*sampled_jnts)
         sampled_qs = np.vstack([x.ravel() for x in grid]).T
-        # gen sampled qs and their correspondent tcps
-        tcp_data = []
+        # gen sampled qs and their correspondent flange poses
+        flange_data = []
         jnt_data = []
         for id in tqdm(range(len(sampled_qs))):
             jnt_vals = sampled_qs[id]
-            tcp_pos, tcp_rotmat = self.jlc.fk(jnt_values=jnt_vals, toggle_jacobian=False)
-            tcp_rotvec = self._rotmat_to_vec(tcp_rotmat)
-            tcp_data.append(np.concatenate((tcp_pos, tcp_rotvec)))
+            flange_pos, flange_rotmat = self.jlc.fk(jnt_values=jnt_vals, toggle_jacobian=False)
+            flange_rotvec = self._rotmat_to_vec(flange_rotmat)
+            flange_data.append(np.concatenate((flange_pos, flange_rotvec)))
             jnt_data.append(jnt_vals)
-        querry_tree = scipy.spatial.cKDTree(tcp_data)
+        querry_tree = scipy.spatial.cKDTree(flange_data)
         return querry_tree, jnt_data
 
     def multiepoch_evolve(self, n_times_per_epoch=10000, target_success_rate=.96):
@@ -131,15 +132,15 @@ class DDIKSolver(object):
         for i in range(n_times):
             outer_progress_bar.update(1)
             random_jnts = self.jlc.rand_conf()
-            tgt_pos, tgt_rotmat = self.jlc.fk(jnt_values=random_jnts, update=False, toggle_jacobian=False)
-            tcp_rotvec = self._rotmat_to_vec(tgt_rotmat)
-            tgt_tcp = np.concatenate((tgt_pos, tcp_rotvec))
-            dist_val_array, nn_indx_array = self.querry_tree.query(tgt_tcp, k=self._k_max, workers=-1)
+            flange_pos, flange_rotmat = self.jlc.fk(jnt_values=random_jnts, update=False, toggle_jacobian=False)
+            flange_rotvec = self._rotmat_to_vec(flange_rotmat)
+            query_flange = np.concatenate((flange_pos, flange_rotvec))
+            dist_val_array, nn_indx_array = self.querry_tree.query(query_flange, k=self._k_max, workers=-1)
             is_solvable = False
             for nn_indx in nn_indx_array[:self._k_bbs]:
                 seed_jnt_vals = self.jnt_data[nn_indx]
-                result = self._backbone_solver_func(tgt_pos=tgt_pos,
-                                                    tgt_rotmat=tgt_rotmat,
+                result = self._backbone_solver_func(tgt_pos=flange_pos,
+                                                    tgt_rotmat=flange_rotmat,
                                                     seed_jnt_vals=seed_jnt_vals,
                                                     max_n_iter=self._max_n_iter)
                 if result is None:
@@ -157,17 +158,17 @@ class DDIKSolver(object):
                 for id, nn_indx in enumerate(nn_indx_array[self._k_bbs:]):
                     # inner_progress_bar.update(1)
                     seed_jnt_vals = self.jnt_data[nn_indx]
-                    result = self._backbone_solver_func(tgt_pos=tgt_pos,
-                                                        tgt_rotmat=tgt_rotmat,
+                    result = self._backbone_solver_func(tgt_pos=flange_pos,
+                                                        tgt_rotmat=flange_rotmat,
                                                         seed_jnt_vals=seed_jnt_vals,
                                                         max_n_iter=self._max_n_iter)
                     if result is None:
                         continue
                     else:
                         # if solved, add the new jnts to the data and update the kd tree
-                        tcp_data = np.vstack((self.querry_tree.data, tgt_tcp))
+                        flange_data = np.vstack((self.querry_tree.data, query_flange))
                         self.jnt_data.append(result)
-                        self.querry_tree = scipy.spatial.cKDTree(tcp_data)
+                        self.querry_tree = scipy.spatial.cKDTree(flange_data)
                         evolved_nns.append(self._k_bbs + id)
                         print(f"#### Previously unsolved ik solved using the {self._k_bbs + id}th nearest neighbour.")
                         break
@@ -211,9 +212,9 @@ class DDIKSolver(object):
                                               max_n_iter=self._max_n_iter,
                                               toggle_dbg=toggle_dbg)
         else:
-            tcp_rotvec = self._rotmat_to_vec(tgt_rotmat)
-            tgt_tcp = np.concatenate((tgt_pos, tcp_rotvec))
-            dist_val_array, nn_indx_array = self.querry_tree.query(tgt_tcp, k=1000, workers=-1)
+            tgt_rotvec = self._rotmat_to_vec(tgt_rotmat)
+            query_tgt = np.concatenate((tgt_pos, tgt_rotvec))
+            dist_val_array, nn_indx_array = self.querry_tree.query(query_tgt, k=1000, workers=-1)
             for nn_indx in nn_indx_array[:5]:
                 seed_jnt_values = self.jnt_data[nn_indx]
                 result = self._backbone_solver_func(tgt_pos=tgt_pos,
@@ -233,10 +234,10 @@ class DDIKSolver(object):
         tgt_list = []
         for i in tqdm(range(n_times), desc="ik"):
             random_jnts = self.jlc.rand_conf()
-            tgt_pos, tgt_rotmat = self.jlc.fk(jnt_values=random_jnts, update=False, toggle_jacobian=False)
+            flange_pos, flange_rotmat = self.jlc.fk(jnt_values=random_jnts, update=False, toggle_jacobian=False)
             tic = time.time()
-            solved_jnt_vals = self.jlc.ik(tgt_pos=tgt_pos,
-                                          tgt_rotmat=tgt_rotmat,
+            solved_jnt_vals = self.jlc.ik(tgt_pos=flange_pos,
+                                          tgt_rotmat=flange_rotmat,
                                           # seed_jnt_values=seed_jnt_values,
                                           toggle_dbg=False)
             toc = time.time()
@@ -244,7 +245,7 @@ class DDIKSolver(object):
             if solved_jnt_vals is not None:
                 success += 1
             else:
-                tgt_list.append((tgt_pos, tgt_rotmat))
+                tgt_list.append((flange_pos, flange_rotmat))
         print("------------------testing results------------------")
         print(f"The current success rate is: {success / n_times * 100}%")
         print('average time cost', np.mean(time_list))
@@ -285,7 +286,7 @@ if __name__ == '__main__':
     jlc.jnts[5].loc_pos = np.array([0, 0, .05])
     jlc.jnts[5].loc_motion_ax = np.array([0, 0, 1])
     jlc.jnts[5].motion_range = np.array([-np.pi / 2, np.pi / 2])
-    jlc.loc_tcp_pos = np.array([0, 0, .01])
+    jlc._loc_flange_pos = np.array([0, 0, .01])
     jlc.finalize()
     seed_jnt_vals = jlc.get_jnt_values()
 
@@ -297,7 +298,7 @@ if __name__ == '__main__':
     #                   max_n_iter=100)
     # mgm.gen_frame(pos=tgt_pos, rotmat=tgt_rotmat).attach_to(base)
     # jlc.forward_kinematics(jnt_values=solved_jnt_vals, update=True, toggle_jacobian=False)
-    # rkmg.gen_jlc_stick(jlc, stick_rgba=bc.navy_blue, toggle_tcp_frame=True,
+    # rkmg.gen_jlc_stick(jlc, stick_rgba=bc.navy_blue, toggle_flange_frame=True,
     #                    toggle_jnt_frames=True).attach_to(base)
     # base.run()
 

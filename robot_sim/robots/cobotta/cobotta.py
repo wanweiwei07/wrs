@@ -23,7 +23,7 @@ class Cobotta(ri.SglArmRbtInterface):
         self.end_effector = cbtg.CobottaGripper(pos=ee_fix_pos, rotmat=ee_fix_rotmat, name="cobotta_hnd",
                                                 enable_cc=False)
         # tool center point
-        self.manipulator.jlc.loc_tcp_pos, self.manipulator.jlc.loc_tcp_rotmat = self.manipulator.jlc.cvt_pose_in_flange_to_functional(
+        self.manipulator.jlc._loc_flange_pos, self.manipulator.jlc._loc_flange_rotmat = self.manipulator.jlc.cvt_pose_in_flange_to_functional(
             self.end_effector.loc_acting_center_pos, self.end_effector.loc_acting_center_rotmat)
         # collision detection
         if enable_cc:
@@ -166,7 +166,7 @@ if __name__ == '__main__':
     gm.gen_frame().attach_to(base)
     robot_s = Cobotta(enable_cc=False)
     # robot_s.jaw_to(.02)
-    # robot_s.gen_meshmodel(toggle_tcp_frame=True, toggle_jnt_frames=True).attach_to(base)
+    # robot_s.gen_meshmodel(toggle_flange_frame=True, toggle_jnt_frames=True).attach_to(base)
     robot_s.gen_meshmodel(alpha=.5, toggle_tcp_frame=False, toggle_jnt_frames=False).attach_to(base)
     robot_s.gen_stickmodel(toggle_tcp_frame=True, toggle_jnt_frames=True).attach_to(base)
     base.run()

@@ -20,11 +20,11 @@ class OR2FG7(gp.GripperInterface):
                  enable_cc=True):
         super().__init__(pos=pos, rotmat=rotmat, cdmesh_type=cdmesh_type, name=name)
         this_dir, this_filename = os.path.split(__file__)
-        self.coupling.jnts[-1]['pos_in_tcp'] = coupling_offset_pos
+        self.coupling.jnts[-1]['loc_pos'] = coupling_offset_pos
         self.coupling.jnts[-1]['gl_rotmat'] = coupling_offset_rotmat
         self.coupling.lnks[0]['rgba'] = np.array([.35, .35, .35, 1])
-        self.coupling.lnks[0]['collision_model'] = cm.gen_stick(self.coupling.jnts[0]['pos_in_tcp'],
-                                                                self.coupling.jnts[-1]['pos_in_tcp'],
+        self.coupling.lnks[0]['collision_model'] = cm.gen_stick(self.coupling.jnts[0]['loc_pos'],
+                                                                self.coupling.jnts[-1]['loc_pos'],
                                                                 radius=0.07,
                                                                 # rgba=[.2, .2, .2, 1], rgb will be overwritten
                                                                 type='rect',
@@ -34,13 +34,13 @@ class OR2FG7(gp.GripperInterface):
         cpl_end_rotmat = self.coupling.jnts[-1]['gl_rotmatq']
         # - lft
         self.lft = jl.JLChain(pos=cpl_end_pos, rotmat=cpl_end_rotmat, home_conf=np.zeros(1), name='base_lft_finger')
-        # self.lft.joints[1]['pos_in_tcp'] = np.array([0.032239, -0.029494, 0.12005])
-        self.lft.jnts[1]['pos_in_tcp'] = np.zeros(3)
+        # self.lft.joints[1]['loc_pos'] = np.array([0.032239, -0.029494, 0.12005])
+        self.lft.jnts[1]['loc_pos'] = np.zeros(3)
         self.lft.jnts[1]['end_type'] = 'prismatic'
         self.lft.jnts[1]['motion_range'] = [0, .019]
         self.lft.jnts[1]['loc_motionax'] = np.array([-1, 0, 0])
         self.lft.lnks[0]['name'] = "base"
-        self.lft.lnks[0]['pos_in_tcp'] = np.zeros(3)
+        self.lft.lnks[0]['loc_pos'] = np.zeros(3)
         self.lft.lnks[0]['mesh_file'] = os.path.join(this_dir, "meshes", "base_link.stl")
         self.lft.lnks[0]['rgba'] = [.5, .5, .5, 1]
         self.lft.lnks[1]['name'] = "left_finger"
@@ -48,8 +48,8 @@ class OR2FG7(gp.GripperInterface):
         self.lft.lnks[1]['rgba'] = [.7, .7, .7, 1]
         # - rgt
         self.rgt = jl.JLChain(pos=cpl_end_pos, rotmat=cpl_end_rotmat, home_conf=np.zeros(1), name='rgt_finger')
-        # self.rgt.joints[1]['pos_in_tcp'] = np.array([-0.054361, -0.029494, 0.12005])
-        self.rgt.jnts[1]['pos_in_tcp'] = np.zeros(3)
+        # self.rgt.joints[1]['loc_pos'] = np.array([-0.054361, -0.029494, 0.12005])
+        self.rgt.jnts[1]['loc_pos'] = np.zeros(3)
         self.rgt.jnts[1]['end_type'] = 'prismatic'
         self.rgt.jnts[1]['loc_motionax'] = np.array([1, 0, 0])
         self.rgt.lnks[1]['name'] = "right_finger"

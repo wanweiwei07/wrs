@@ -20,8 +20,8 @@ if __name__ == "__main__":
     tgt_pos0 = np.array([.3, .1, 0])
     tgt_rotmat0 = np.eye(3)
     gm.gen_myc_frame(pos=tgt_pos0, rotmat=tgt_rotmat0, axis_length=.15, axis_radius=.01).attach_to(base)
-    jlinstance.set_tcp(loc_tcp_pos=np.array([.2, -.13, 0]),
-                       loc_tcp_rotmat=rm.rotmat_from_axangle(np.array([0, 0, 1]), math.pi / 8))
+    jlinstance.set_flange(loc_flange_pos=np.array([.2, -.13, 0]),
+                          loc_flange_rotmat=rm.rotmat_from_axangle(np.array([0, 0, 1]), math.pi / 8))
     tic = time.time()
     jnt_values = jlinstance.ik(tgt_pos0,
                                tgt_rotmat0,

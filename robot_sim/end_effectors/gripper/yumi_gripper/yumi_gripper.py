@@ -15,13 +15,13 @@ class YumiGripper(gp.GripperInterface):
         cpl_end_rotmat = self.coupling.jnts[-1]['gl_rotmatq']
         # - lft
         self.lft = jl.JLChain(pos=cpl_end_pos, rotmat=cpl_end_rotmat, home_conf=np.zeros(1), name='base_lft_finger')
-        self.lft.jnts[1]['pos_in_tcp'] = np.array([0, 0.0065, 0.0837])
+        self.lft.jnts[1]['loc_pos'] = np.array([0, 0.0065, 0.0837])
         self.lft.jnts[1]['gl_rotmat'] = rm.rotmat_from_euler(0, 0, math.pi)
         self.lft.jnts[1]['end_type'] = 'prismatic'
         self.lft.jnts[1]['motion_range'] = [.0, .025]
         self.lft.jnts[1]['loc_motionax'] = np.array([1, 0, 0])
         self.lft.lnks[0]['name'] = "base"
-        self.lft.lnks[0]['pos_in_tcp'] = np.zeros(3)
+        self.lft.lnks[0]['loc_pos'] = np.zeros(3)
         self.lft.lnks[0]['mesh_file'] = os.path.join(this_dir, "meshes", "base.stl")
         self.lft.lnks[0]['rgba'] = [.5, .5, .5, 1]
         self.lft.lnks[1]['name'] = "finger1"
@@ -29,7 +29,7 @@ class YumiGripper(gp.GripperInterface):
         self.lft.lnks[1]['rgba'] = [.2, .2, .2, 1]
         # - rgt
         self.rgt = jl.JLChain(pos=cpl_end_pos, rotmat=cpl_end_rotmat, home_conf=np.zeros(1), name='rgt_finger')
-        self.rgt.jnts[1]['pos_in_tcp'] = np.array([0, -0.0065, 0.0837])
+        self.rgt.jnts[1]['loc_pos'] = np.array([0, -0.0065, 0.0837])
         self.rgt.jnts[1]['end_type'] = 'prismatic'
         self.rgt.jnts[1]['loc_motionax'] = np.array([1, 0, 0])
         self.rgt.lnks[1]['name'] = "finger2"

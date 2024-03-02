@@ -24,11 +24,11 @@ class ORSD(si.SCTInterface):
                  enable_cc=True):
         super().__init__(pos=pos, rotmat=rotmat, cdmesh_type=cdmesh_type, name=name)
         this_dir, this_filename = os.path.split(__file__)
-        self.coupling.jnts[-1]['pos_in_tcp'] = coupling_offset_pos
+        self.coupling.jnts[-1]['loc_pos'] = coupling_offset_pos
         self.coupling.jnts[-1]['gl_rotmat'] = coupling_offset_rotmat
         self.coupling.lnks[0]['rgba'] = np.array([.35, .35, .35, 1])
-        self.coupling.lnks[0]['collision_model'] = cm.gen_stick(self.coupling.jnts[0]['pos_in_tcp'],
-                                                                self.coupling.jnts[-1]['pos_in_tcp'],
+        self.coupling.lnks[0]['collision_model'] = cm.gen_stick(self.coupling.jnts[0]['loc_pos'],
+                                                                self.coupling.jnts[-1]['loc_pos'],
                                                                 radius=0.07,
                                                                 # rgba=[.35, .35, .35, 1], rgb will be overwritten
                                                                 type='rect',
@@ -38,9 +38,9 @@ class ORSD(si.SCTInterface):
         cpl_end_rotmat = self.coupling.jnts[-1]['gl_rotmatq']
         # jlc
         self.jlc = jl.JLChain(pos=cpl_end_pos, rotmat=cpl_end_rotmat, home_conf=np.zeros(0), name='orsd_jlc')
-        self.jlc.jnts[1]['pos_in_tcp'] = np.array([0.16855000, 0, 0.09509044])
+        self.jlc.jnts[1]['loc_pos'] = np.array([0.16855000, 0, 0.09509044])
         self.jlc.lnks[0]['name'] = "orsd"
-        self.jlc.lnks[0]['pos_in_tcp'] = np.zeros(3)
+        self.jlc.lnks[0]['loc_pos'] = np.zeros(3)
         self.jlc.lnks[0]['mesh_file'] = os.path.join(this_dir, "meshes", "or_screwdriver.stl")
         self.jlc.lnks[0]['rgba'] = [.55, .55, .55, 1]
         # reinitialize

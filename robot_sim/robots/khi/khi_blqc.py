@@ -26,10 +26,10 @@ class KHI_BLQC(ai.SglArmRbtInterface):
                                     home_conf=np.zeros(0),
                                     name='tc_master')
         self.tc_master.lnks[0]['name'] = "tc_master"
-        self.tc_master.jnts[-1]['pos_in_tcp'] = np.array([0, 0, .0315])
-        self.tc_master.lnks[0]['collision_model'] = cm.gen_stick(self.tc_master.jnts[0]['pos_in_tcp'],
+        self.tc_master.jnts[-1]['loc_pos'] = np.array([0, 0, .0315])
+        self.tc_master.lnks[0]['collision_model'] = cm.gen_stick(self.tc_master.jnts[0]['loc_pos'],
                                                                  # TODO: change to combined model, 20230806
-                                                                 self.tc_master.jnts[-1]['pos_in_tcp'],
+                                                                 self.tc_master.jnts[-1]['loc_pos'],
                                                                  radius=0.05,
                                                                  # rgba=[.2, .2, .2, 1], rgb will be overwritten
                                                                  type='rect',
@@ -39,7 +39,7 @@ class KHI_BLQC(ai.SglArmRbtInterface):
         self.end_effector = None
         # tool center point
         self.manipulator.tcp_jnt_id = -1
-        self.manipulator.loc_tcp_pos = self.tc_master.jnts[-1]['pos_in_tcp']
+        self.manipulator.loc_tcp_pos = self.tc_master.jnts[-1]['loc_pos']
         self.manipulator.loc_tcp_rotmat = self.tc_master.jnts[-1]['gl_rotmat']
         # a list of detailed information about objects in hand, see CollisionChecker.add_objinhnd
         self.oih_infos = []
@@ -106,7 +106,7 @@ class KHI_BLQC(ai.SglArmRbtInterface):
         """
         if self.is_tool_attached:
             raise Exception("A tool has been attached!")
-        self.manipulator.loc_tcp_pos = self.tc_master.jnts[-1]['pos_in_tcp'] + end_effector.loc_acting_center_pos
+        self.manipulator.loc_tcp_pos = self.tc_master.jnts[-1]['loc_pos'] + end_effector.loc_acting_center_pos
         self.manipulator.loc_tcp_rotmat = self.tc_master.jnts[-1]['gl_rotmat']
         self.end_effector = end_effector
 

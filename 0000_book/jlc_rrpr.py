@@ -51,7 +51,7 @@ if __name__ == '__main__':
     jlc.jnts[3].loc_motion_ax = np.array([0, 0, 1])
     jlc.jnts[4].loc_pos = np.array([0, 0, .1])
     jlc.jnts[4].loc_motion_ax = np.array([0, 0, 1])
-    jlc.loc_tcp_pos = np.array([0, 0, .1])
+    jlc._loc_flange_pos = np.array([0, 0, .1])
     jlc.finalize()
     jnt_values = np.array([np.radians(0), np.radians(0), .03, np.radians(0)])
     tcp_pos_physical, tcp_rotmat_physical = jlc.fk(joint_values=jnt_values, update=True)

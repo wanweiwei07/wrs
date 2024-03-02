@@ -19,6 +19,20 @@ import robot_sim._kinematics.ik_trac as rkt
 import basis.constant as cst
 
 
+# ==============================================
+# assert finalization
+# ==============================================
+
+def assert_finalize_decorator(method):
+    def wrapper(self, *args, **kwargs):
+        if self._is_finalized:
+            return method(self, *args, **kwargs)
+        else:
+            raise ValueError("JLChain is not finalized.")
+
+    return wrapper
+
+
 class JLChain(object):
     """
     Joint Link Chain, no branches allowed
@@ -33,7 +47,7 @@ class JLChain(object):
                  pos=np.zeros(3),
                  rotmat=np.eye(3),
                  n_dof=6,
-                 cdprimitive_type=mc.CDPType.BOX,
+                 cdprim_type=mc.CDPType.BOX,
                  cdmesh_type=mc.CDMType.DEFAULT):
         """
         conf -- configuration: target joint values
@@ -41,7 +55,7 @@ class JLChain(object):
         :param pos:
         :param rotmat:
         :param home: number of joints
-        :param cdprimitive_type:
+        :param cdprim_type:
         :param cdmesh_type:
         :param name:
         """
@@ -52,19 +66,18 @@ class JLChain(object):
         self.anchor = rkjl.Anchor(name, pos=pos, rotmat=rotmat)
         self.jnts = [rkjl.Joint(name=f"j{i}") for i in range(self.n_dof)]
         self._jnt_ranges = self._get_jnt_ranges()
-        # default functional joint id, loc_xxx are considered described in it
-        self._functional_jnt_id = self.n_dof - 1
-        # default tcp for inverse kinematics
-        self.loc_tcp_pos = np.zeros(3)
-        self.loc_tcp_rotmat = np.eye(3)
+        # default flange joint id, loc_xxx are considered described in it
+        self._flange_jnt_id = self.n_dof - 1
         # default flange for cascade connection
-        self.loc_flange_pos = np.zeros(3)
-        self.loc_flange_rotmat = np.eye(3)
-        # initialize
-        self.go_home()
+        self._loc_flange_pos = np.zeros(3)
+        self._loc_flange_rotmat = np.eye(3)
+        self._gl_flange_pos = self._loc_flange_pos
+        self._gl_flange_rotmat = self._loc_flange_rotmat
+        # finalizing tag
+        self._is_finalized = False
         # collision primitives
         # mesh generator
-        self.cdprimitive_type = cdprimitive_type
+        self.cdprim_type = cdprim_type
         self.cdmesh_type = cdmesh_type
         # iksolver
         self._ik_solver = None
@@ -74,16 +87,34 @@ class JLChain(object):
         return self._jnt_ranges
 
     @property
-    def functional_jnt_id(self):
-        return self._functional_jnt_id
+    def flange_jnt_id(self):
+        return self._flange_jnt_id
 
-    @functional_jnt_id.setter
-    def functional_jnt_id(self, value):
-        self._functional_jnt_id = value
+    @flange_jnt_id.setter
+    def flange_jnt_id(self, value):
+        self._flange_jnt_id = value
 
     @property
-    def loc_tcp_homomat(self):
-        return rm.homomat_from_posrot(pos=self.loc_tcp_pos, rotmat=self.loc_tcp_rotmat)
+    def loc_flange_pos(self):
+        return self._loc_flange_pos
+
+    @property
+    def loc_flange_rotmat(self):
+        return self._loc_flange_rotmat
+
+    @property
+    def loc_flange_homomat(self):
+        return rm.homomat_from_posrot(pos=self._loc_flange_pos, rotmat=self._loc_flange_rotmat)
+
+    @property
+    @assert_finalize_decorator
+    def gl_flange_pos(self):
+        return self._gl_flange_pos
+
+    @property
+    @assert_finalize_decorator
+    def gl_flange_rotmat(self):
+        return self._gl_flange_rotmat
 
     @property
     def pos(self):
@@ -105,7 +136,7 @@ class JLChain(object):
             jnt_limits.append(self.jnts[i].motion_range)
         return np.asarray(jnt_limits)
 
-    def fk(self, jnt_values, toggle_jacobian=True, update=False):
+    def fk(self, jnt_values, toggle_jacobian=False, update=False):
         """
         :param jnt_values: a 1xn ndarray where each element indicates the value of a joint (in radian or meter)
         :param toggle_jacobian: return jacobian matrix if true
@@ -118,26 +149,26 @@ class JLChain(object):
             homomat = self.anchor.gl_flange_homomat
             jnt_pos = np.zeros((self.n_dof, 3))
             jnt_motion_ax = np.zeros((self.n_dof, 3))
-            for i in range(self.functional_jnt_id + 1):
+            for i in range(self.flange_jnt_id + 1):
                 jnt_motion_ax[i, :] = homomat[:3, :3] @ self.jnts[i].loc_motion_ax
                 if self.jnts[i].type == rkc.JntType.REVOLUTE:
                     jnt_pos[i, :] = homomat[:3, 3] + homomat[:3, :3] @ self.jnts[i].loc_pos
                 homomat = homomat @ self.jnts[i].get_motion_homomat(motion_value=jnt_values[i])
-            gl_tcp_homomat = homomat @ self.loc_tcp_homomat
-            gl_tcp_pos = gl_tcp_homomat[:3, 3]
-            gl_tcp_rotmat = gl_tcp_homomat[:3, :3]
+            gl_flange_homomat = homomat @ self.loc_flange_homomat
+            gl_flange_pos = gl_flange_homomat[:3, 3]
+            gl_flange_rotmat = gl_flange_homomat[:3, :3]
             if toggle_jacobian:
                 j_mat = np.zeros((6, self.n_dof))
-                for i in range(self.functional_jnt_id + 1):
+                for i in range(self.flange_jnt_id + 1):
                     if self.jnts[i].type == rkc.JntType.REVOLUTE:
-                        vec_jnt2tcp = gl_tcp_pos - jnt_pos[i, :]
-                        j_mat[:3, i] = np.cross(jnt_motion_ax[i, :], vec_jnt2tcp)
+                        j2t_vec = gl_flange_pos - jnt_pos[i, :]
+                        j_mat[:3, i] = np.cross(jnt_motion_ax[i, :], j2t_vec)
                         j_mat[3:6, i] = jnt_motion_ax[i, :]
                     if self.jnts[i].type == rkc.JntType.PRISMATIC:
                         j_mat[:3, i] = jnt_motion_ax[i, :]
-                return gl_tcp_pos, gl_tcp_rotmat, j_mat
+                return gl_flange_pos, gl_flange_rotmat, j_mat
             else:
-                return gl_tcp_pos, gl_tcp_rotmat
+                return gl_flange_pos, gl_flange_rotmat
         else:
             self.anchor.update_pose()
             pos = self.anchor.gl_flange_pos
@@ -147,33 +178,37 @@ class JLChain(object):
                 self.jnts[i].update_globals(pos=pos, rotmat=rotmat, motion_value=motion_value)
                 pos = self.jnts[i].gl_pos_q
                 rotmat = self.jnts[i].gl_rotmat_q
-            gl_tcp_pos, gl_tcp_rotmat = self.get_gl_tcp()
+            self._gl_flange_pos, self._gl_flange_rotmat = self._compute_gl_flange()
             if toggle_jacobian:
                 j_mat = np.zeros((6, self.n_dof))
-                for i in range(self.functional_jnt_id + 1):
+                for i in range(self.flange_jnt_id + 1):
                     if self.jnts[i].type == rkc.JntType.REVOLUTE:
-                        vec_jnt2tcp = gl_tcp_pos - self.jnts[i].gl_pos_q
-                        j_mat[:3, i] = np.cross(self.jnts[i].gl_motion_ax, vec_jnt2tcp)
+                        j2t_vec = self._gl_flange_pos - self.jnts[i].gl_pos_q
+                        j_mat[:3, i] = np.cross(self.jnts[i].gl_motion_ax, j2t_vec)
                         j_mat[3:6, i] = self.jnts[i].gl_motion_ax
                     if self.jnts[i].type == rkc.JntType.PRISMATIC:
                         j_mat[:3, i] = self.jnts[i].gl_motion_ax
-                return gl_tcp_pos, gl_tcp_rotmat, j_mat
+                return self._gl_flange_pos, self._gl_flange_rotmat, j_mat
             else:
-                return gl_tcp_pos, gl_tcp_rotmat
+                return self._gl_flange_pos, self._gl_flange_rotmat
 
     def jacobian(self, jnt_values=None):
         """
         compute the jacobian matrix; use internal values if jnt_values is None
         :param jnt_values:
-        :param update:
         :return:
         author :weiwei
         date: 20230829
         """
         if jnt_values is None:  # use internal, ignore update
-            _, _, j_mat = self.fk(jnt_values=self.get_jnt_values(),
-                                  toggle_jacobian=True,
-                                  update=False)
+            j_mat = np.zeros((6, self.n_dof))
+            for i in range(self.flange_jnt_id + 1):
+                if self.jnts[i].type == rkc.JntType.REVOLUTE:
+                    j2t_vec = self._gl_flange_pos - self.jnts[i].gl_pos_q
+                    j_mat[:3, i] = np.cross(self.jnts[i].gl_motion_ax, j2t_vec)
+                    j_mat[3:6, i] = self.jnts[i].gl_motion_ax
+                if self.jnts[i].type == rkc.JntType.PRISMATIC:
+                    j_mat[:3, i] = self.jnts[i].gl_motion_ax
         else:
             _, _, j_mat = self.fk(jnt_values=jnt_values,
                                   toggle_jacobian=True,
@@ -183,9 +218,7 @@ class JLChain(object):
     def manipulability_val(self, jnt_values=None):
         """
         compute the yoshikawa manipulability
-        :param tcp_joint_id:
-        :param loc_tcp_pos:
-        :param loc_tcp_rotmat:
+        :param jnt_values:
         :return:
         author: weiwei
         date: 20200331
@@ -196,9 +229,7 @@ class JLChain(object):
     def manipulability_mat(self, jnt_values=None):
         """
         compute the axes of the manipulability ellipsoid
-        :param tcp_joint_id:
-        :param loc_tcp_pos:
-        :param loc_tcp_rotmat:
+        :param jnt_values:
         :return: (linear ellipsoid matrix, angular ellipsoid matrix)
         """
         j_mat = self.jacobian(jnt_values=jnt_values)
@@ -243,56 +274,51 @@ class JLChain(object):
         self.go_home()
         if ik_solver == 'd':
             self._ik_solver = rkd.DDIKSolver(self, identifier_str=identifier_str)
+        self._is_finalized = True
 
-    def set_tcp(self, loc_tcp_pos=None, loc_tcp_rotmat=None):
-        if loc_tcp_pos is not None:
-            self.loc_tcp_pos = loc_tcp_pos
-        if loc_tcp_rotmat is not None:
-            self.loc_tcp_rotmat = loc_tcp_rotmat
+    def set_flange(self, loc_flange_pos=None, loc_flange_rotmat=None):
+        if loc_flange_pos is not None:
+            self._loc_flange_pos = loc_flange_pos
+        if loc_flange_rotmat is not None:
+            self._loc_flange_rotmat = loc_flange_rotmat
+        self._is_finalized = False
 
-    def cvt_loc_to_gl(self, loc_pos, loc_rotmat):
+    def _compute_gl_flange(self):
         if self.n_dof >= 1:
-            gl_pos = self.jnts[self.functional_jnt_id].gl_pos_q + self.jnts[
-                self.functional_jnt_id].gl_rotmat_q @ loc_pos
-            gl_rotmat = self.jnts[self.functional_jnt_id].gl_rotmat_q @ loc_rotmat
+            gl_pos = self.jnts[self.flange_jnt_id].gl_pos_q + self.jnts[
+                self.flange_jnt_id].gl_rotmat_q @ self._loc_flange_pos
+            gl_rotmat = self.jnts[self.flange_jnt_id].gl_rotmat_q @ self._loc_flange_rotmat
         else:
-            gl_pos = self.anchor.gl_flange_pos + self.anchor.gl_flange_rotmat @ loc_pos
-            gl_rotmat = self.anchor.gl_flange_rotmat @ self.loc_rotmat
+            gl_pos = self.anchor.gl_flange_pos + self.anchor.gl_flange_rotmat @ self._loc_flange_pos
+            gl_rotmat = self.anchor.gl_flange_rotmat @ self._loc_flange_rotmat
         return (gl_pos, gl_rotmat)
 
-    def get_gl_tcp(self):
-        gl_tcp_pos, gl_tcp_rotmat = self.cvt_loc_to_gl(loc_pos=self.loc_tcp_pos, loc_rotmat=self.loc_tcp_rotmat)
-        return (gl_tcp_pos, gl_tcp_rotmat)
-
-    def cvt_pose_in_tcp_to_gl(self,
-                              pos_in_tcp=np.zeros(3),
-                              rotmat_in_tcp=np.eye(3)):
+    @assert_finalize_decorator
+    def cvt_pose_in_flange_to_gl(self, loc_pos=np.zeros(3), loc_rotmat=np.eye(3)):
         """
-        given a loc pos and rotmat in tcp, convert it to global frame
-        :param pos_in_tcp: nparray 1x3 in the frame defined by loc_tcp_pos, loc_tcp_rotmat
-        :param rotmat_in_tcp: nparray 3x3 in the frame defined by loc_tcp_pos, loc_tcp_rotmat
+        given a loc pos and rotmat in the flange frame, convert it to global frame
+        :param loc_pos: nparray 1x3 in the flange frame
+        :param loc_rotmat: nparray 3x3 in the flange frame
         :param
         :return:
         author: weiwei
-        date: 20190312, 20210609
+        date: 202403032
         """
-        gl_tcp_pos, gl_tcp_rotmat = self.get_gl_tcp()
-        tmp_gl_pos = gl_tcp_pos + gl_tcp_rotmat.dot(pos_in_tcp)
-        tmp_gl_rotmat = gl_tcp_rotmat.dot(rotmat_in_tcp)
+        tmp_gl_pos = self._gl_flange_pos + self._gl_flange_rotmat.dot(loc_pos)
+        tmp_gl_rotmat = self._gl_flange_rotmat.dot(loc_rotmat)
         return (tmp_gl_pos, tmp_gl_rotmat)
 
-    def cvt_gl_pose_to_tcp(self, gl_pos, gl_rotmat):
+    @assert_finalize_decorator
+    def cvt_gl_to_flange(self, gl_pos, gl_rotmat):
         """
-        given a world pos and world rotmat
-        get the relative pos and relative rotmat with respective to the tcp
+        given a global pos and rotmat, get its relative pos and rotmat to the flange frame
         :param gl_pos: 1x3 nparray
         :param gl_rotmat: 3x3 nparray
         :return:
         author: weiwei
         date: 20190312
         """
-        gl_tcp_pos, gl_tcp_rotmat = self.get_gl_tcp()
-        return rm.rel_pose(gl_tcp_pos, gl_tcp_rotmat, gl_pos, gl_rotmat)
+        return rm.rel_pose(self.gl_flange_pos, self.gl_flange_rotmat, gl_pos, gl_rotmat)
 
     def cvt_pose_in_flange_to_functional(self, pos_in_flange, rotmat_in_flange):
         """
@@ -303,48 +329,13 @@ class JLChain(object):
         author: weiwei
         date: 20240301
         """
-        tmp_loc_pos = self.loc_flange_pos + self.loc_flange_rotmat @ pos_in_flange
-        tmp_loc_rotmat = self.loc_flange_rotmat @ rotmat_in_flange
+        tmp_loc_pos = self._loc_flange_pos + self._loc_flange_rotmat @ pos_in_flange
+        tmp_loc_rotmat = self._loc_flange_rotmat @ rotmat_in_flange
         return (tmp_loc_pos, tmp_loc_rotmat)
-
-    def get_gl_flange(self):
-        gl_flange_pos, gl_flange_rotmat = self.cvt_loc_to_gl(loc_pos=self.loc_flange_pos,
-                                                             loc_rotmat=self.loc_flange_rotmat)
-        return (gl_flange_pos, gl_flange_rotmat)
-
-    def cvt_pose_in_flange_to_gl(self,
-                                 pos_in_flange=np.zeros(3),
-                                 rotmat_in_flange=np.eye(3)):
-        """
-        given a loc pos and rotmat in flange, convert it to global frame
-        :param pos_in_flange: nparray 1x3 in the frame defined by loc_flange_pos, loc_flange_rotmat
-        :param rotmat_in_flange: nparray 3x3 in the frame defined by loc_flange_pos, loc_flange_rotmat
-        :param
-        :return:
-        author: weiwei
-        date: 20240301
-        """
-        gl_flange_pos, gl_flange_rotmat = self.get_gl_flange()
-        tmp_gl_pos = gl_flange_pos + gl_flange_rotmat.dot(pos_in_flange)
-        tmp_gl_rotmat = gl_flange_rotmat.dot(rotmat_in_flange)
-        return (tmp_gl_pos, tmp_gl_rotmat)
-
-    def cvt_gl_pose_to_flange(self, gl_pos, gl_rotmat):
-        """
-        given a world pos and world rotmat
-        get the relative pos and relative rotmat with respective to the flange
-        :param gl_pos: 1x3 nparray
-        :param gl_rotmat: 3x3 nparray
-        :return:
-        author: weiwei
-        date: 20190312
-        """
-        gl_flange_pos, gl_flange_rotmat = self.get_flange_tcp()
-        return rm.rel_pose(gl_flange_pos, gl_flange_rotmat, gl_pos, gl_rotmat)
 
     def are_jnts_in_ranges(self, jnt_values):
         """
-        check if the given jnt_values
+        check if the given jnt_values are in range
         :param jnt_values:
         :return:
         author: weiwei
@@ -360,7 +351,8 @@ class JLChain(object):
 
     def go_given_conf(self, jnt_values):
         """
-        move the robot_s to the given pose
+        move to the given configuration
+        :param jnt_values
         :return: null
         author: weiwei
         date: 20230927osaka
@@ -369,7 +361,7 @@ class JLChain(object):
 
     def go_home(self):
         """
-        move the robot_s to initial pose
+        move to home configuration
         :return: null
         author: weiwei
         date: 20161211osaka
@@ -378,7 +370,7 @@ class JLChain(object):
 
     def go_zero(self):
         """
-        move the robot_s to initial pose
+        move to zero configuration
         :return: null
         author: weiwei
         date: 20161211osaka
@@ -405,13 +397,13 @@ class JLChain(object):
         """
         return np.random.rand(self.n_dof) * (self.jnt_ranges[:, 1] - self.jnt_ranges[:, 0]) + self.jnt_ranges[:, 0]
 
+    @assert_finalize_decorator
     def ik(self,
            tgt_pos: np.ndarray,
            tgt_rotmat: np.ndarray,
            seed_jnt_values=None,
            toggle_dbg=False):
         """
-        trac ik solver runs num_ik and opt_ik in parallel, and return the faster result
         :param tgt_pos: 1x3 nparray, single value or list
         :param tgt_rotmat: 3x3 nparray, single value or list
         :param seed_jnt_values: the starting configuration used in the numerical iteration
@@ -463,11 +455,11 @@ if __name__ == "__main__":
     jlc.jnts[5].loc_pos = np.array([0, 0, .05])
     jlc.jnts[5].loc_motion_ax = np.array([0, 0, 1])
     jlc.jnts[5].motion_range = np.array([-np.pi / 2, np.pi / 2])
-    jlc.loc_tcp_pos = np.array([0, 0, .01])
-    jlc.loc_flange_pos = np.array([0.1, 0.1, 0.1])
+    jlc._loc_flange_pos = np.array([0, 0, .01])
+    jlc._loc_flange_pos = np.array([0.1, 0.1, 0.1])
     # jlc.finalize(ik_solver=None)
     jlc.finalize(ik_solver='d')
-    # rkmg.gen_jlc_stick(jlc, stick_rgba=bc.navy_blue, toggle_jnt_frames=True, toggle_tcp_frame=True).attach_to(base)
+    # rkmg.gen_jlc_stick(jlc, stick_rgba=bc.navy_blue, toggle_jnt_frames=True, toggle_flange_frame=True).attach_to(base)
     # base.run()
     seed_jnt_values = jlc.get_jnt_values()
 
@@ -494,8 +486,8 @@ if __name__ == "__main__":
                 num_win += 1
             mgm.gen_frame(pos=tgt_pos, rotmat=tgt_rotmat).attach_to(base)
             jlc.fk(jnt_values=joint_values_with_dbg_info, update=True, toggle_jacobian=False)
-            rkmg.gen_jlc_stick(jlc, stick_rgba=bc.navy_blue, toggle_tcp_frame=True,
-                               toggle_jnt_frames=True, toggle_flange_frame=True).attach_to(base)
+            rkmg.gen_jlc_stick(jlc, stick_rgba=bc.navy_blue, toggle_flange_frame=True,
+                               toggle_jnt_frames=True).attach_to(base)
             base.run()
         else:
             tgt_list.append((tgt_pos, tgt_rotmat))

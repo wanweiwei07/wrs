@@ -113,10 +113,10 @@ class NIK(object):
 
     def get_gl_tcp(self, tcp_jnt_id, tcp_loc_pos, tcp_loc_rotmat):
         """
-        Get the global tool center pose given tcp_joint_id, loc_tcp_pos, loc_tcp_rotmat
-        tcp_joint_id, loc_tcp_pos, loc_tcp_rotmat are the tool center pose parameters. They are
+        Get the global tool center pose given tcp_joint_id, _loc_flange_pos, _loc_flange_rotmat
+        tcp_joint_id, _loc_flange_pos, _loc_flange_rotmat are the tool center pose parameters. They are
         used for temporary computation, the self.tcp_xxx parameters will not be changed
-        in case None is provided, the self.tcp_joint_id, self.loc_tcp_pos, self.loc_tcp_rotmat will be used
+        in case None is provided, the self.tcp_joint_id, self._loc_flange_pos, self._loc_flange_rotmat will be used
         :param tcp_jnt_id: a joint ID in the self.tgtjnts
         :param tcp_loc_pos: 1x3 nparray, decribed in the local frame of self.joints[tcp_joint_id], single value or list
         :param tcp_loc_rotmat: 3x3 nparray, decribed in the local frame of self.joints[tcp_joint_id], single value or list
@@ -125,11 +125,11 @@ class NIK(object):
         date: 20200706
         """
         if tcp_jnt_id is None:
-            tcp_jnt_id = self.jlc_object.functional_jnt_id
+            tcp_jnt_id = self.jlc_object.flange_jnt_id
         if tcp_loc_pos is None:
-            tcp_loc_pos = self.jlc_object.loc_tcp_pos
+            tcp_loc_pos = self.jlc_object._loc_flange_pos
         if tcp_loc_rotmat is None:
-            tcp_loc_rotmat = self.jlc_object.loc_tcp_rotmat
+            tcp_loc_rotmat = self.jlc_object._loc_flange_rotmat
         tcp_gl_pos = np.dot(self.jlc_object.jnts[tcp_jnt_id]["gl_rotmatq"], tcp_loc_pos) + \
                      self.jlc_object.jnts[tcp_jnt_id]["gl_posq"]
         tcp_gl_rotmat = np.dot(self.jlc_object.jnts[tcp_jnt_id]["gl_rotmatq"], tcp_loc_rotmat)
@@ -138,7 +138,7 @@ class NIK(object):
     def tcp_error(self, tgt_pos, tgt_rot, tcp_jnt_id, tcp_loc_pos, tcp_loc_rotmat):
         """
         compute the error between the rjlinstance's end_type and tgt_pos, tgt_rotmat
-        NOTE: if list, len(tgt_pos)=len(tgt_rotmat) <= len(tcp_joint_id)=len(loc_tcp_pos)=len(loc_tcp_rotmat)
+        NOTE: if list, len(tgt_pos)=len(tgt_rotmat) <= len(tcp_joint_id)=len(_loc_flange_pos)=len(_loc_flange_rotmat)
         :param tgt_pos: the position vector of the goal (could be a single value or a list of jntid)
         :param tgt_rot: the rotation matrix of the goal (could be a single value or a list of jntid)
         :param tcp_jnt_id: a joint ID in the self.tgtjnts
@@ -217,7 +217,7 @@ class NIK(object):
         """
         solveik numerically using the Levenberg-Marquardt Method
         the details of this method can be found in: https://www.math.ucsd.edu/~sbuss/ResearchWeb/ikmethods/iksurvey.pdf
-        NOTE: if list, len(tgt_pos)=len(tgt_rotmat) <= len(tcp_joint_id)=len(loc_tcp_pos)=len(loc_tcp_rotmat)
+        NOTE: if list, len(tgt_pos)=len(tgt_rotmat) <= len(tcp_joint_id)=len(_loc_flange_pos)=len(_loc_flange_rotmat)
         :param tgt_pos: the position of the goal, 1-by-3 numpy ndarray
         :param tgt_rot: the orientation of the goal, 3-by-3 numpyndarray
         :param seed_jnt_values: the starting configuration used in the numerical iteration
@@ -234,12 +234,12 @@ class NIK(object):
             wns.WarningMessage("The goal is outside maximum range!")
             return None
         if tcp_jnt_id is None:
-            tcp_jnt_id = self.jlc_object.functional_jnt_id
+            tcp_jnt_id = self.jlc_object.flange_jnt_id
         if tcp_loc_pos is None:
-            tcp_loc_pos = self.jlc_object.loc_tcp_pos
-            print(self.jlc_object.loc_tcp_pos)
+            tcp_loc_pos = self.jlc_object._loc_flange_pos
+            print(self.jlc_object._loc_flange_pos)
         if tcp_loc_rotmat is None:
-            tcp_loc_rotmat = self.jlc_object.loc_tcp_rotmat
+            tcp_loc_rotmat = self.jlc_object._loc_flange_rotmat
         jntvalues_bk = self.jlc_object.get_jnt_values()
         jntvalues_iter = self.jlc_object.home_conf if seed_jnt_values is None else seed_jnt_values.copy()
         self.jlc_object.fk(joint_values=jntvalues_iter)
@@ -383,8 +383,8 @@ class NIK(object):
                 # print(jntvalues_iter)
                 self.jlc_object.fk(joint_values=jntvalues_iter)
                 # if toggle_dbg:
-                #     jlmgen.gensnp(jlinstance, tcp_joint_id=tcp_joint_id, loc_tcp_pos=loc_tcp_pos,
-                #                   loc_tcp_rotmat=loc_tcp_rotmat, togglejntscs=True).reparentTo(base.render)
+                #     jlmgen.gensnp(jlinstance, tcp_joint_id=tcp_joint_id, _loc_flange_pos=_loc_flange_pos,
+                #                   _loc_flange_rotmat=_loc_flange_rotmat, togglejntscs=True).reparentTo(base.render)
             errnormlast = errnorm
         if toggle_debug:
             fig = plt.figure()

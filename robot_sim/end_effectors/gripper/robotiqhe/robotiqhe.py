@@ -20,10 +20,10 @@ class RobotiqHE(gp.GripperInterface):
                  enable_cc=True):
         super().__init__(pos=pos, rotmat=rotmat, cdmesh_type=cdmesh_type, name=name)
         this_dir, this_filename = os.path.split(__file__)
-        self.coupling.jnts[1]['pos_in_tcp'] = coupling_offset_pos
+        self.coupling.jnts[1]['loc_pos'] = coupling_offset_pos
         self.coupling.jnts[1]['gl_rotmat'] = coupling_offset_rotmat
-        self.coupling.lnks[0]['collision_model'] = cm.gen_stick(self.coupling.jnts[0]['pos_in_tcp'],
-                                                                self.coupling.jnts[1]['pos_in_tcp'],
+        self.coupling.lnks[0]['collision_model'] = cm.gen_stick(self.coupling.jnts[0]['loc_pos'],
+                                                                self.coupling.jnts[1]['loc_pos'],
                                                                 radius=.07, rgba=[.2, .2, .2, 1],
                                                                 n_sec=24)
         self.coupling.finalize()
@@ -31,12 +31,12 @@ class RobotiqHE(gp.GripperInterface):
         cpl_end_rotmat = self.coupling.jnts[-1]['gl_rotmatq']
         # - lft
         self.lft = jl.JLChain(pos=cpl_end_pos, rotmat=cpl_end_rotmat, home_conf=np.zeros(1), name='base_lft_finger')
-        self.lft.jnts[1]['pos_in_tcp'] = np.array([-.025, .0, .11])
+        self.lft.jnts[1]['loc_pos'] = np.array([-.025, .0, .11])
         self.lft.jnts[1]['end_type'] = 'prismatic'
         self.lft.jnts[1]['motion_range'] = [0, .025]
         self.lft.jnts[1]['loc_motionax'] = np.array([1, 0, 0])
         self.lft.lnks[0]['name'] = "base"
-        self.lft.lnks[0]['pos_in_tcp'] = np.zeros(3)
+        self.lft.lnks[0]['loc_pos'] = np.zeros(3)
         self.lft.lnks[0]['mesh_file'] = os.path.join(this_dir, "meshes", "base_cvt.stl")
         self.lft.lnks[0]['rgba'] = [.2, .2, .2, 1]
         self.lft.lnks[1]['name'] = "finger1"
@@ -44,7 +44,7 @@ class RobotiqHE(gp.GripperInterface):
         self.lft.lnks[1]['rgba'] = [.5, .5, .5, 1]
         # - rgt
         self.rgt = jl.JLChain(pos=cpl_end_pos, rotmat=cpl_end_rotmat, home_conf=np.zeros(1), name='rgt_finger')
-        self.rgt.jnts[1]['pos_in_tcp'] = np.array([.025, .0, .11])
+        self.rgt.jnts[1]['loc_pos'] = np.array([.025, .0, .11])
         self.rgt.jnts[1]['end_type'] = 'prismatic'
         self.rgt.jnts[1]['loc_motionax'] = np.array([-1, 0, 0])
         self.rgt.lnks[1]['name'] = "finger2"

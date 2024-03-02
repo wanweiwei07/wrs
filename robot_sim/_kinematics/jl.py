@@ -103,7 +103,7 @@ def update_gl_flange_decorator(method):
     def wrapper(self, *args, **kwargs):
         # print(self._is_geom_delayed)
         if self._is_gl_flange_delayed:
-            self._gl_flange_pos, self._gl_flange_rotmat = self._update_gl_flange()
+            self._gl_flange_pos, self._gl_flange_rotmat = self.compute_gl_flange()
             self._is_gl_flange_delayed = False
         return method(self, *args, **kwargs)
 
@@ -134,7 +134,7 @@ class Anchor(object):
         self._rotmat = rotmat
         self._loc_flange_pos = loc_flange_pos
         self._loc_flange_rotmat = loc_flange_rotmat
-        self._gl_flange_pos, self._gl_flange_rotmat = self._update_gl_flange()
+        self._gl_flange_pos, self._gl_flange_rotmat = self.compute_gl_flange()
         self._is_gl_flange_delayed = False
         self._lnk = Link()
 
@@ -200,7 +200,7 @@ class Anchor(object):
     def loc_flange_rotmat(self, loc_flange_rotmat):
         self._loc_flange_rotmat = loc_flange_rotmat
 
-    def _update_gl_flange(self):
+    def compute_gl_flange(self):
         gl_flange_pos = self._pos + self.rotmat @ self._loc_flange_pos
         gl_flange_rotmat = self._rotmat @ self._loc_flange_rotmat
         return (gl_flange_pos, gl_flange_rotmat)

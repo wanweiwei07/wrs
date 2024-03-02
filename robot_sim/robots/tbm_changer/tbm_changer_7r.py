@@ -19,7 +19,7 @@ class TBMChanger7R(ri.RobotInterface):
                                      rotmat=rotmat,
                                      home_conf=np.zeros(0),
                                      name='base_plate')
-        # self.base_plate.joints[1]['pos_in_tcp'] = np.array([0, 0, 0.035])
+        # self.base_plate.joints[1]['loc_pos'] = np.array([0, 0, 0.035])
         # self.base_plate.lnks[0]['mesh_file'] = os.path.join(this_dir, "meshes", "base_plate.stl")
         # self.base_plate.lnks[0]['rgba'] = [.35,.35,.35,1]
         # self.base_plate.reinitialize()
@@ -32,9 +32,9 @@ class TBMChanger7R(ri.RobotInterface):
                                     rotmat=self.arm.jnts[-1]['gl_rotmatq'],
                                     name='hnd', enable_cc=False)
         # tool center point
-        self.arm.jlc.functional_jnt_id = -1
-        self.arm.jlc.loc_tcp_pos = self.hnd.loc_acting_center_pos
-        self.arm.jlc.loc_tcp_rotmat = self.hnd.loc_acting_center_rotmat
+        self.arm.jlc.flange_jnt_id = -1
+        self.arm.jlc._loc_flange_pos = self.hnd.loc_acting_center_pos
+        self.arm.jlc._loc_flange_rotmat = self.hnd.loc_acting_center_rotmat
         # a list of detailed information about objects in hand, see CollisionChecker.add_objinhnd
         self.oih_infos = []
         # collision detection
