@@ -150,8 +150,8 @@ class ManipulatorInterface(object):
         :param toggle_dbg:
         :return:
         """
-        tgt_pos = tgt_pos + self.loc_tcp_rotmat @ self.loc_tcp_pos
-        tgt_rotmat = self.loc_tcp_rotmat @ tgt_rotmat
+        tgt_rotmat = tgt_rotmat @ self.loc_tcp_rotmat.T
+        tgt_pos = tgt_pos - tgt_rotmat @ self.loc_tcp_pos
         mgm.gen_frame(pos=tgt_pos, rotmat=tgt_rotmat, alpha=.3).attach_to(base)
         return self.jlc.ik(tgt_pos=tgt_pos,
                            tgt_rotmat=tgt_rotmat,
