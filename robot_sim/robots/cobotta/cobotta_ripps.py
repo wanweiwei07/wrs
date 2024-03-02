@@ -35,7 +35,7 @@ class CobottaRIPPS(ri.RobotInterface):
         self.gripper_loc_rotmat = rm.rotmat_from_axangle([0,0,1], np.pi) # 20220607 rotate the pipetting end_type with 180^o.
         self.hnd = cbtp.CobottaPipette(pos=self.arm.jnts[-1]['gl_posq'],
                                        rotmat=self.arm.jnts[-1]['gl_rotmatq'].dot(self.gripper_loc_rotmat),
-                                       name='hnd_s', enable_cc=False)
+                                       name='gripper', enable_cc=False)
         # tool center point
         self.arm.jlc.flange_jnt_id = -1
         self.arm.jlc._loc_flange_pos = self.gripper_loc_rotmat.dot(self.hnd.jaw_center_pos)
@@ -153,7 +153,7 @@ class CobottaRIPPS(ri.RobotInterface):
 
     def hold(self, hnd_name, objcm, jaw_width=None):
         """
-        the objcm is added as a part of the robot_s to the cd checker
+        the cmodel is added as a part of the robot_s to the cd checker
         :param hnd_name:
         :param jaw_width:
         :param objcm:
@@ -183,7 +183,7 @@ class CobottaRIPPS(ri.RobotInterface):
 
     def release(self, hnd_name, objcm, jawwidth=None):
         """
-        the objcm is added as a part of the robot_s to the cd checker
+        the cmodel is added as a part of the robot_s to the cd checker
         :param jawwidth:
         :param objcm:
         :return:

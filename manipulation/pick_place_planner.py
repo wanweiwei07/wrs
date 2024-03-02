@@ -78,7 +78,7 @@ class PickPlacePlanner(adp.ADPlanner):
                 goal_jaw_center_pos = goal_pos + goal_rotmat.dot(jaw_center_pos)
                 goal_jaw_center_rotmat = goal_rotmat.dot(jaw_center_rotmat)
                 hnd_instance.grip_at_by_pose(goal_jaw_center_pos, goal_jaw_center_rotmat, jaw_width)
-                if not hnd_instance.is_mesh_collided(obstacle_list):  # hnd_s cd
+                if not hnd_instance.is_mesh_collided(obstacle_list):  # gripper cd
                     jnt_values = self.robot_s.ik(hand_name, goal_jaw_center_pos, goal_jaw_center_rotmat)
                     if jnt_values is not None:  # common graspid with robot_s ik
                         if toggle_debug:
@@ -92,16 +92,16 @@ class PickPlacePlanner(adp.ADPlanner):
                             if toggle_debug:
                                 self.robot_s.gen_mesh_model(rgba=[0, 1, 0, .5]).attach_to(base)
                             previously_available_graspids.append(graspid)
-                        elif (not is_obj_collided):  # hnd_s cdfree, robot_s ikfeasible, robot_s collided
+                        elif (not is_obj_collided):  # gripper cdfree, robot_s ikfeasible, robot_s collided
                             rbtcollided_grasps_num += 1
                             if toggle_debug:
                                 self.robot_s.gen_mesh_model(rgba=[1, 0, 1, .5]).attach_to(base)
-                    else:  # hnd_s cdfree, robot_s ik infeasible
+                    else:  # gripper cdfree, robot_s ik infeasible
                         ikfailed_grasps_num += 1
                         if toggle_debug:
                             hnd_tmp = hnd_instance.copy()
                             hnd_tmp.gen_mesh_model(rgba=[1, .6, 0, .2]).attach_to(base)
-                else:  # hnd_s collided
+                else:  # gripper collided
                     hndcollided_grasps_num += 1
                     if toggle_debug:
                         hnd_tmp = hnd_instance.copy()
@@ -365,7 +365,7 @@ class PickPlacePlanner(adp.ADPlanner):
             # approach
             first_jaw_center_pos = first_goal_rotmat.dot(jaw_center_pos) + first_goal_pos
             first_jaw_center_rotmat = first_goal_rotmat.dot(jaw_center_rotmat)
-            # objcm as an obstacle
+            # cmodel as an obstacle
             objcm_copy = objcm.copy()
             objcm_copy.set_pos(first_goal_pos)
             objcm_copy.set_rotmat(first_goal_rotmat)
@@ -403,7 +403,7 @@ class PickPlacePlanner(adp.ADPlanner):
             # departure
             last_jaw_center_pos = last_goal_rotmat.dot(jaw_center_pos) + last_goal_pos
             last_jaw_center_rotmat = last_goal_rotmat.dot(jaw_center_rotmat)
-            # objcm as an obstacle
+            # cmodel as an obstacle
             objcm_copy.set_pos(last_goal_pos)
             objcm_copy.set_rotmat(last_goal_rotmat)
             conf_list_depart, jawwidthlist_depart = \
@@ -489,7 +489,7 @@ if __name__ == '__main__':
     # for grasp_info in grasp_info_list:
     #     conf_list, jawwidth_list, objpose_list = \
     #         pp_planner.gen_holding_moveto(hnd_name=hnd_name,
-    #                                       objcm=objcm,
+    #                                       cmodel=cmodel,
     #                                       grasp_info=grasp_info,
     #                                       obj_pose_list=goal_homomat_list,
     #                                       depart_direction_list=[np.array([0, 0, 1])] * len(goal_homomat_list),

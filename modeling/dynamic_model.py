@@ -29,8 +29,8 @@ class DynamicModel(gm.GeometricModel):
         :param name:
         """
         # if isinstance(initializer, BDModel):
-        #     super().__init__(initializer.objcm, )
-        #     self.__objcm = copy.deepcopy(initializer.objcm)
+        #     super().__init__(initializer.cmodel, )
+        #     self.__objcm = copy.deepcopy(initializer.cmodel)
         #     self.__objbdb = initializer.objbdb.copy()
         #     base.physicsworld.attach(self.__objbdb)
         # else:

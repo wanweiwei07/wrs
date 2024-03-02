@@ -265,17 +265,17 @@ for dict_goal_pos in dist_pos:
     #         tool.set_homomat(objpose_list2[-1])
     #         # gen linear_objpose_list
     #         objcm_copy = tool.copy()
-    #         rel_obj_pos, rel_obj_rotmat = robot_s.hold(hnd_name=hnd_name, objcm=objcm_copy)
-    #         robot_s.release(hnd_name=hnd_name, objcm=objcm_copy)
+    #         rel_obj_pos, rel_obj_rotmat = robot_s.hold(hnd_name=hnd_name, cmodel=objcm_copy)
+    #         robot_s.release(hnd_name=hnd_name, cmodel=objcm_copy)
     #         linear_objpose_list = ppp_s.gen_object_motion(component_name="arm", conf_list=temp_linear_conf, obj_pos=rel_obj_pos,
     #                                                       obj_rotmat=rel_obj_rotmat, end_type='relative')
     #         # gen linear_objpose_list_box
     #         objcm_copy = target_obj.copy()
-    #         rel_obj_pos, rel_obj_rotmat = robot_s.hold(hnd_name=hnd_name, objcm=objcm_copy)
+    #         rel_obj_pos, rel_obj_rotmat = robot_s.hold(hnd_name=hnd_name, cmodel=objcm_copy)
     #         linear_objpose_list_box = ppp_s.gen_object_motion(component_name="arm", conf_list=temp_linear_conf,
     #                                                           obj_pos=rel_obj_pos, obj_rotmat=rel_obj_rotmat,
     #                                                           end_type='relative')
-    #         robot_s.release(hnd_name=hnd_name, objcm=objcm_copy)
+    #         robot_s.release(hnd_name=hnd_name, cmodel=objcm_copy)
     #         linear_conf_list = robot_s.cvt_to_alljnts(conf_list_arm=temp_linear_conf, hnd_name=hnd_name)
     #         linear_jawwidth_list = []
     #         for i, armjnts in enumerate(linear_conf_list):

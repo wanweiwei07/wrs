@@ -83,7 +83,7 @@ def change_cdmask(cdprimitive, collision_mask: BitMask32, action="new", type="bo
 
 def update_pose(cdprimitive, cmodel):
     """
-    update panda3d collision nodepath using the pos and quat of objcm.pdndp
+    update panda3d collision nodepath using the pos and quat of cmodel.pdndp
     :param cdprimitive:
     :param cmodel:
     :return:

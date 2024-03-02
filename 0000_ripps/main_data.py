@@ -151,7 +151,7 @@ if __name__ == '__main__':
                 # rbt_s.fk(component_name=component_name, jnt_values=new_joint_values)
                 # # rbt_s.gen_meshmodel().attach_to(base)
                 # hnd_name = "hnd"
-                # rbt_s.hold(hnd_name=hnd_name, objcm=tip_cm_list[id_x * 12 + id_y])
+                # rbt_s.hold(hnd_name=hnd_name, cmodel=tip_cm_list[id_x * 12 + id_y])
             well_pos, well_rotmat = microplate96.get_rack_hole_pose(id_x=id_x, id_y=id_y)
             z_offset = np.array([0, 0, .05])
             goal_joint_values_aspiration = utils.search_reachable_configuration(rbt_s=rbt_s,
@@ -270,7 +270,7 @@ if __name__ == '__main__':
     #     if jnt_values is not None:
     #         rbt_s.fk(jnt_values=jnt_values)
     #         rbt_s.gen_meshmodel().attach_to(base)
-    #         rbt_s.hold(hnd_name=hnd_name, objcm=tip_cm_list[id_x * 12 + id_y])
+    #         rbt_s.hold(hnd_name=hnd_name, cmodel=tip_cm_list[id_x * 12 + id_y])
     #         previous_jnt_values = jnt_values
     #         goal_joint_values = jnt_values
     #         break

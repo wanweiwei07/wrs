@@ -23,8 +23,6 @@ class CobottaGripper(gp.GripperInterface):
         super().__init__(pos=pos, rotmat=rotmat, cdmesh_type=cdmesh_type, name=name)
         current_file_dir = os.path.dirname(__file__)
         self.coupling.finalize()
-        # jaw range
-        self.jaw_range = np.array([0.0, .03])
         # jlc
         self.jlc = rkjlc.JLChain(pos=self.coupling.gl_flange_pos, rotmat=self.coupling.gl_flange_rotmat, n_dof=2,
                                  name=name)
@@ -47,6 +45,9 @@ class CobottaGripper(gp.GripperInterface):
         self.loc_acting_center_pos = np.array([0, 0, 0.05])
         # reinitialize
         self.jlc.finalize()
+        # jaw range
+        self.jaw_range = np.array([0.0, .03])
+        # collisions
         self.cdmesh_elements = [self.jlc.anchor.lnk,
                                 self.jlc.jnts[0].lnk,
                                 self.jlc.jnts[1].lnk]
@@ -140,7 +141,7 @@ if __name__ == '__main__':
     grpr = CobottaGripper(enable_cc=True)
     grpr.fix_to(pos=np.array([0, .1, .1]), rotmat=rm.rotmat_from_axangle([1, 0, 0], .7))
     print(grpr.grip_at_by_twovecs(jaw_center_pos=np.array([0, .1, .1]), approaching_vec=np.array([0, -1, 0]),
-                                  finger1_opening_vec=np.array([1, 0, 0]), jaw_width=.01))
+                                  fgr0_opening_vec=np.array([1, 0, 0]), jaw_width=.01))
     # grpr.change_jaw_width(.013)
     grpr.gen_meshmodel(toggle_tcp_frame=True, toggle_jnt_frames=False, toggle_cdprim=True).attach_to(base)
     # # grpr.gen_stickmodel(toggle_jnt_frames=True).attach_to(base)

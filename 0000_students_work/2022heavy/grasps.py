@@ -36,7 +36,7 @@ box = cm.gen_box(np.array([.3, .3, .04]))
 box.set_rgba([153 / 255, 183 / 255, 1, 1])
 box.set_pos(np.array([0, 0, .02]))
 # box.set_rotmat(rm.rotmat_from_axangle([0, 1, 0], -math.pi / 12))
-grasp_info_list = gpa.plan_grasps(rtq_s, box, angle_between_contact_normals=math.radians(175), openning_direction='loc_y')
+grasp_info_list = gpa.plan_gripper_grasps(rtq_s, box, angle_between_contact_normals=math.radians(175), openning_direction='loc_y')
 # for grasp_info in grasp_info_list:
 #     jaw_width, jaw_center_pos, jaw_center_rotmat, hnd_pos, hnd_rotmat = grasp_info
 #     rtq_s.fix_to(hnd_pos, hnd_rotmat)

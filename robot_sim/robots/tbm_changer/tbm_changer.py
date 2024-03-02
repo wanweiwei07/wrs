@@ -118,12 +118,12 @@ class TBMChanger(ri.RobotInterface):
         else:
             raise NotImplementedError
 
-    def jaw_to(self, hnd_name='hnd_s', jawwidth=0.0):
+    def jaw_to(self, hnd_name='gripper', jawwidth=0.0):
         self.hnd.change_jaw_width(jawwidth)
 
     def hold(self, hnd_name, objcm, jawwidth=None):
         """
-        the objcm is added as a part of the robot_s to the cd checker
+        the cmodel is added as a part of the robot_s to the cd checker
         :param jawwidth:
         :param objcm:
         :return:
@@ -152,7 +152,7 @@ class TBMChanger(ri.RobotInterface):
 
     def release(self, hnd_name, objcm, jawwidth=None):
         """
-        the objcm is added as a part of the robot_s to the cd checker
+        the cmodel is added as a part of the robot_s to the cd checker
         :param jawwidth:
         :param objcm:
         :return:

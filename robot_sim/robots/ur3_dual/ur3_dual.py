@@ -449,7 +449,7 @@ class UR3Dual(ri.RobotInterface):
 
     def hold(self, objcm, jaw_width=None, hnd_name='lft_hnd'):
         """
-        the objcm is added as a part of the robot_s to the cd checker
+        the cmodel is added as a part of the robot_s to the cd checker
         :param jaw_width:
         :param objcm:
         :return:
@@ -625,7 +625,7 @@ class UR3Dual(ri.RobotInterface):
 
     def release(self, hnd_name, objcm, jaw_width=None):
         """
-        the objcm is added as a part of the robot_s to the cd checker
+        the cmodel is added as a part of the robot_s to the cd checker
         :param jaw_width:
         :param objcm:
         :param hnd_name:

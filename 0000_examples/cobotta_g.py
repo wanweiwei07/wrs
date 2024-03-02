@@ -13,16 +13,16 @@ objcm.attach_to(base)
 # base.run()
 
 hnd_s = cg.CobottaGripper()
-# hnd_s.gen_meshmodel().attach_to(base)
+# gripper.gen_meshmodel().attach_to(base)
 # base.run()
-grasp_info_list = gp.plan_grasps(hnd_s,
-                                 objcm,
-                                 angle_between_contact_normals=math.radians(175),
-                                 openning_direction='loc_y',
-                                 rotation_interval=math.radians(15),
-                                 max_samples=20,
-                                 min_dist_between_sampled_contact_points=.001,
-                                 contact_offset=.001)
+grasp_info_list = gp.plan_gripper_grasps(hnd_s,
+                                         objcm,
+                                         angle_between_contact_normals=math.radians(175),
+                                         openning_direction='loc_y',
+                                         rotation_interval=math.radians(15),
+                                         max_samples=20,
+                                         min_dist_between_sampled_contact_points=.001,
+                                         contact_offset=.001)
 gp.write_pickle_file(objcm_name="holder",
                      grasp_info_list=grasp_info_list,
                      file_name="cobg_holder_grasps.pickle")

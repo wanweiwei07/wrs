@@ -82,7 +82,7 @@ def over_segmentation(objcm, max_normal_bias_angle=rm.math.pi / 12,
                       toggle_face_id_pair_for_curvature=False):
     """ TODO replace np.arccos with math.cos
     compute the clusters using mesh oversegmentation
-    :param objcm: objcm
+    :param objcm: cmodel
     :param max_normal_bias_angle: the angle between two adjacent faces that are taken as coplanar
     :param seg_angle: the angle between two adjacent segmentations that are taken as coplanar
     :return:
@@ -132,7 +132,7 @@ def over_segmentation(objcm, max_normal_bias_angle=rm.math.pi / 12,
 
 def edge_points(objcm, radius=.005, max_normal_bias_angle=rm.math.pi / 12):
     """
-    get a bunch of points on the edges of a objcm
+    get a bunch of points on the edges of a cmodel
     :param radius:
     :return:
     author: weiwei

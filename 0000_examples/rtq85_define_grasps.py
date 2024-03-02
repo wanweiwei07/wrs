@@ -12,13 +12,9 @@ if __name__ == '__main__':
     objcm.set_pos(np.array([.5,-.3,1.2]))
     objcm.attach_to(base)
     objcm.show_local_frame()
-    grasp_info_list = gau.define_grasp_with_rotation(gripper_s,
-                                                     objcm,
-                                                     gl_jaw_center_pos=np.array([0, 0, 0]),
-                                                     gl_jaw_center_z=np.array([1, 0, 0]),
-                                                     gl_hndx=np.array([0, 1, 0]),
-                                                     jaw_width=.04,
-                                                     gl_rotation_ax=np.array([0, 0, 1]))
+    grasp_info_list = gau.define_gripper_grasps_with_rotation(gripper_s, objcm, gl_jaw_center_pos=np.array([0, 0, 0]),
+                                                              gl_approaching_vec=np.array([1, 0, 0]),
+                                                              gl_fgr0_opening_vec=, jaw_width=.04)
     for grasp_info in grasp_info_list:
         jaw_width, gl_jaw_center, pos, rotmat = grasp_info
         gic = gripper_s.copy()

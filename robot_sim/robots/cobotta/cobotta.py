@@ -60,8 +60,8 @@ class Cobotta(ri.SglArmRbtInterface):
     #     self.cc.set_cdpair(fromlist, intolist)
     #     # TODO is the following update needed?
     #     for oih_info in self.oih_infos:
-    #         objcm = oih_info['collision_model']
-    #         self.hold(objcm)
+    #         cmodel = oih_info['collision_model']
+    #         self.hold(cmodel)
 
     def fix_to(self, pos, rotmat):
         self.pos = pos
@@ -70,40 +70,40 @@ class Cobotta(ri.SglArmRbtInterface):
         self._update_end_effector()
         # self.end_effector.fix_to(pos=self.manipulator.gl_flange_pos, rotmat=self.manipulator.gl_flange_rotmat)
 
-    # def hold(self, hnd_name, objcm, jawwidth=None):
+    # def hold(self, hnd_name, cmodel, jawwidth=None):
     #     """
-    #     the objcm is added as a part of the robot_s to the cd checker
+    #     the cmodel is added as a part of the robot_s to the cd checker
     #     :param jawwidth:
-    #     :param objcm:
+    #     :param cmodel:
     #     :return:
     #     """
     #     if hnd_name not in self.hnd_dict:
     #         raise ValueError("Hand name does not exist!")
     #     if jawwidth is not None:
     #         self.hnd_dict[hnd_name].change_jaw_width(jawwidth)
-    #     rel_pos, rel_rotmat = self.manipulator_dict[hnd_name].cvt_gl_pose_to_tcp(objcm.get_pos(), objcm.get_rotmat())
+    #     rel_pos, rel_rotmat = self.manipulator_dict[hnd_name].cvt_gl_pose_to_tcp(cmodel.get_pos(), cmodel.get_rotmat())
     #     intolist = [self.arm.lnks[0],
     #                 self.arm.lnks[1],
     #                 self.arm.lnks[2],
     #                 self.arm.lnks[3],
     #                 self.arm.lnks[4]]
-    #     self.oih_infos.append(self.cc.add_cdobj(objcm, rel_pos, rel_rotmat, intolist))
+    #     self.oih_infos.append(self.cc.add_cdobj(cmodel, rel_pos, rel_rotmat, intolist))
     #     return rel_pos, rel_rotmat
 
     # def get_oih_list(self):
     #     return_list = []
     #     for obj_info in self.oih_infos:
-    #         objcm = obj_info['collision_model']
-    #         objcm.set_pos(obj_info['gl_pos'])
-    #         objcm.set_rotmat(obj_info['gl_rotmat'])
-    #         return_list.append(objcm)
+    #         cmodel = obj_info['collision_model']
+    #         cmodel.set_pos(obj_info['gl_pos'])
+    #         cmodel.set_rotmat(obj_info['gl_rotmat'])
+    #         return_list.append(cmodel)
     #     return return_list
     #
-    # def release(self, hnd_name, objcm, jawwidth=None):
+    # def release(self, hnd_name, cmodel, jawwidth=None):
     #     """
-    #     the objcm is added as a part of the robot_s to the cd checker
+    #     the cmodel is added as a part of the robot_s to the cd checker
     #     :param jawwidth:
-    #     :param objcm:
+    #     :param cmodel:
     #     :return:
     #     """
     #     if hnd_name not in self.hnd_dict:
@@ -111,7 +111,7 @@ class Cobotta(ri.SglArmRbtInterface):
     #     if jawwidth is not None:
     #         self.hnd_dict[hnd_name].change_jaw_width(jawwidth)
     #     for obj_info in self.oih_infos:
-    #         if obj_info['collision_model'] is objcm:
+    #         if obj_info['collision_model'] is cmodel:
     #             self.cc.delete_cdobj(obj_info)
     #             self.oih_infos.remove(obj_info)
     #             break

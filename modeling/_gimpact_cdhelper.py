@@ -18,7 +18,7 @@ def gen_cdmesh_vvnf(vertices, vertex_normals, faces):
 
 def is_collided(objcm0, objcm1):
     """
-    check if two objcm are collided after converting the specified cdm_type
+    check if two cmodel are collided after converting the specified cdm_type
     :param objcm0:
     :param objcm1:
     :return:
@@ -83,10 +83,10 @@ if __name__ == '__main__':
     #     mgm.gen_sphere(ct.point, major_radius=.001).attach_to(base)
     # # spos = np.array([0, 0, 0]) + np.array([1.0, 1.0, 1.0])
     # # epos = np.array([0, 0, 0]) + np.array([-1.0, -1.0, -0.9])
-    # # hitpos, hitnrml = rayhit_triangles_closet(spos=spos, epos=epos, objcm=objcm)
-    # # objcm.attach_to(base)
-    # # objcm.show_cdmesh(end_type='box')
-    # # objcm.show_cdmesh(end_type='convex_hull')
+    # # hitpos, hitnrml = rayhit_triangles_closet(spos=spos, epos=epos, cmodel=cmodel)
+    # # cmodel.attach_to(base)
+    # # cmodel.show_cdmesh(end_type='box')
+    # # cmodel.show_cdmesh(end_type='convex_hull')
     # # mgm.gen_sphere(hitpos, major_radius=.003, rgba=np.array([0, 1, 1, 1])).attach_to(base)
     # # mgm.gen_stick(spos=spos, epos=epos, major_radius=.002).attach_to(base)
     # # mgm.gen_arrow(spos=hitpos, epos=hitpos + hitnrml * .07, major_radius=.002, rgba=np.array([0, 1, 0, 1])).attach_to(base)
@@ -123,10 +123,10 @@ if __name__ == '__main__':
         gm.gen_sphere(ctpt, radius=.001).attach_to(base)
     # spos = np.array([0, 0, 0]) + np.array([1.0, 1.0, 1.0])
     # epos = np.array([0, 0, 0]) + np.array([-1.0, -1.0, -0.9])
-    # hitpos, hitnrml = rayhit_triangles_closet(spos=spos, epos=epos, objcm=objcm)
-    # objcm.attach_to(base)
-    # objcm.show_cdmesh(end_type='box')
-    # objcm.show_cdmesh(end_type='convex_hull')
+    # hitpos, hitnrml = rayhit_triangles_closet(spos=spos, epos=epos, cmodel=cmodel)
+    # cmodel.attach_to(base)
+    # cmodel.show_cdmesh(end_type='box')
+    # cmodel.show_cdmesh(end_type='convex_hull')
     # mgm.gen_sphere(hitpos, major_radius=.003, rgba=np.array([0, 1, 1, 1])).attach_to(base)
     # mgm.gen_stick(spos=spos, epos=epos, major_radius=.002).attach_to(base)
     # mgm.gen_arrow(spos=hitpos, epos=hitpos + hitnrml * .07, major_radius=.002, rgba=np.array([0, 1, 0, 1])).attach_to(base)

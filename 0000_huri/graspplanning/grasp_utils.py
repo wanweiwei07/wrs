@@ -48,7 +48,7 @@ def define_grasp(hndfa, finger_center, finger_normal, hand_normal, jawwidth, obj
     grasp = hnd.approachat(finger_center[0], finger_center[1], finger_center[2],
                            finger_normal[0], finger_normal[1], finger_normal[2],
                            hand_normal[0], hand_normal[1], hand_normal[2], jawwidth=jawwidth)
-    # if not ishndobjcollided(hndfa, grasp[0], grasp[2], objcm):
+    # if not ishndobjcollided(hndfa, grasp[0], grasp[2], cmodel):
     effect_grasp.append(grasp)
     if toggleflip:
         grasp_flipped = hnd.approachat(finger_center[0], finger_center[1], finger_center[2],
@@ -84,7 +84,7 @@ def define_grasp_with_rotation(hndfa, grasp_center, finger_normal, hand_normal, 
         grasp = hnd.approachat(grasp_center[0], grasp_center[1], grasp_center[2],
                                finger_normal[0], finger_normal[1], finger_normal[2],
                                hand_normal_rotated[0], hand_normal_rotated[1], hand_normal_rotated[2], jawwidth=jawwidth)
-        # if not ishndobjcollided(hndfa, grasp[0], grasp[2], objcm) == False:
+        # if not ishndobjcollided(hndfa, grasp[0], grasp[2], cmodel) == False:
         effect_grasp.append(grasp)
         if toggleflip:
             grasp_flipped = hnd.approachat(grasp_center[0], grasp_center[1], grasp_center[2],

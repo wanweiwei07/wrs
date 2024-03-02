@@ -304,7 +304,7 @@ class Yumi(ri.RobotInterface):
 
     def hold(self, hnd_name, objcm, jaw_width=None):
         """
-        the objcm is added as a part of the robot_s to the cd checker
+        the cmodel is added as a part of the robot_s to the cd checker
         :param jaw_width:
         :param objcm:
         :return:
@@ -454,7 +454,7 @@ class Yumi(ri.RobotInterface):
 
     def release(self, hnd_name, objcm, jaw_width=None):
         """
-        the objcm is added as a part of the robot_s to the cd checker
+        the cmodel is added as a part of the robot_s to the cd checker
         :param jaw_width:
         :param objcm:
         :param hnd_name:

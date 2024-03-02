@@ -50,7 +50,7 @@ class UR5EConveyorBelt(ri.RobotInterface):
         # gripper
         self.hnd = hnd.Robotiq140(pos=self.arm.jnts[-1]['gl_posq'],
                                   rotmat=self.arm.jnts[-1]['gl_rotmatq'],
-                                  name='hnd_s', enable_cc=False)
+                                  name='gripper', enable_cc=False)
         # tool center point
         self.arm.jlc.flange_jnt_id = -1
         self.arm.jlc._loc_flange_pos = self.hnd.jaw_center_pos
@@ -177,12 +177,12 @@ class UR5EConveyorBelt(ri.RobotInterface):
         else:
             raise NotImplementedError
 
-    def jaw_to(self, hnd_name='hnd_s', jawwidth=0.0):
+    def jaw_to(self, hnd_name='gripper', jawwidth=0.0):
         self.hnd.change_jaw_width(jawwidth)
 
     def hold(self, hnd_name, objcm, jawwidth=None):
         """
-        the objcm is added as a part of the robot_s to the cd checker
+        the cmodel is added as a part of the robot_s to the cd checker
         :param jawwidth:
         :param objcm:
         :return:
@@ -211,7 +211,7 @@ class UR5EConveyorBelt(ri.RobotInterface):
 
     def release(self, hnd_name, objcm, jawwidth=None):
         """
-        the objcm is added as a part of the robot_s to the cd checker
+        the cmodel is added as a part of the robot_s to the cd checker
         :param jawwidth:
         :param objcm:
         :return:

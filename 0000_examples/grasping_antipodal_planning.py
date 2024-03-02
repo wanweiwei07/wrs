@@ -11,13 +11,13 @@ gm.gen_frame().attach_to(base)
 object_tube = cm.CollisionModel("objects/tubebig.stl")
 object_tube.set_rgba([.9, .75, .35, .3])
 object_tube.attach_to(base)
-# hnd_s
+# gripper
 gripper_s = yg.YumiGripper()
-grasp_info_list = gpa.plan_grasps(gripper_s, object_tube,
-                                  angle_between_contact_normals=math.radians(177),
-                                  openning_direction='loc_x',
-                                  max_samples=15, min_dist_between_sampled_contact_points=.005,
-                                  contact_offset=.005)
+grasp_info_list = gpa.plan_gripper_grasps(gripper_s, object_tube,
+                                          angle_between_contact_normals=math.radians(177),
+                                          openning_direction='loc_x',
+                                          max_samples=15, min_dist_between_sampled_contact_points=.005,
+                                          contact_offset=.005)
 gpa.write_pickle_file('tubebig', grasp_info_list, './', 'yumi_tube_big.pickle')
 for grasp_info in grasp_info_list:
     jaw_width, jaw_center_pos, jaw_center_rotmat, hnd_pos, hnd_rotmat = grasp_info

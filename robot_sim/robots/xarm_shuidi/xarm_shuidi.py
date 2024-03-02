@@ -63,7 +63,7 @@ class XArmShuidi(ri.RobotInterface):
         # gripper
         self.hnd = xag.XArmGripper(pos=self.ft_sensor.jnts[-1]['gl_posq'],
                                    rotmat=self.ft_sensor.jnts[-1]['gl_rotmatq'],
-                                   name='hnd_s', enable_cc=False)
+                                   name='gripper', enable_cc=False)
         # tool center point
         self.arm.jlc.flange_jnt_id = -1
         self.arm.jlc._loc_flange_rotmat = self.ft_sensor.jnts[-1]['gl_rotmat'].dot(self.hnd.loc_acting_center_rotmat)
@@ -269,7 +269,7 @@ class XArmShuidi(ri.RobotInterface):
 
     def hold(self, hnd_name, objcm, jawwidth=None):
         """
-        the objcm is added as a part of the robot_s to the cd checker
+        the cmodel is added as a part of the robot_s to the cd checker
         :param jawwidth:
         :param objcm:
         :return:
@@ -320,7 +320,7 @@ class XArmShuidi(ri.RobotInterface):
 
     def release(self, hnd_name, objcm, jawwidth=None):
         """
-        the objcm is added as a part of the robot_s to the cd checker
+        the cmodel is added as a part of the robot_s to the cd checker
         :param jawwidth:
         :param objcm:
         :return:

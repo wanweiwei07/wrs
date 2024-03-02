@@ -59,7 +59,7 @@ class EEInterface(object):
     @assert_oiee_decorator
     def hold(self, obj_cmodel, **kwargs):
         """
-        the objcm is saved into an oiee_list, while considering its relative pose to the ee's pos and rotmat
+        the cmodel is saved into an oiee_list, while considering its relative pose to the ee's pos and rotmat
         **kwargs is for polyphorism purpose
         :param obj_cmodel: a collision model
         :return:
@@ -73,7 +73,7 @@ class EEInterface(object):
 
     def release(self, obj_cmodel, **kwargs):
         """
-        the objcm is saved into an oiee_list, while considering its relative pose to the ee's pos and rotmat
+        the cmodel is saved into an oiee_list, while considering its relative pose to the ee's pos and rotmat
         **kwargs is for polyphorism purpose
         :param obj_cmodel: a collision model
         :return:

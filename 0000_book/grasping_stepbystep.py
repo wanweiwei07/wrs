@@ -14,7 +14,7 @@ gm.gen_frame(axis_length=.05, axis_radius=.0021).attach_to(base)
 object_bunny = cm.CollisionModel("objects/bunnysim.stl")
 object_bunny.set_rgba([.9, .75, .35, .3])
 object_bunny.attach_to(base)
-# hnd_s
+# gripper
 # contact_pairs, contact_points = gpa.plan_contact_pairs(object_bunny,
 #                                                        max_samples=10000,
 #                                                        min_dist_between_sampled_contact_points=.014,
@@ -50,15 +50,10 @@ for i, cp in enumerate(contact_pairs):
         continue
     hndy = contact_n0
     hndz = rm.orthogonal_vector(contact_n0)
-    grasp_info_list += gu.define_grasp_with_rotation(gripper_s,
-                                                     object_bunny,
-                                                     gl_jaw_center_pos=contact_center,
-                                                     gl_jaw_center_z=hndz,
-                                                     gl_jaw_center_y=hndy,
-                                                     jaw_width=jaw_width,
-                                                     gl_rotation_ax=hndy,
-                                                     rotation_interval=math.radians(30),
-                                                     toggle_flip=True)
+    grasp_info_list += gu.define_gripper_grasps_with_rotation(gripper_s, object_bunny, gl_jaw_center_pos=contact_center,
+                                                              gl_approaching_vec=hndz, gl_fgr0_opening_vec=hndy,
+                                                              jaw_width=jaw_width, rotation_interval=math.radians(30),
+                                                              toggle_flip=True)
 for grasp_info in grasp_info_list:
     aw_width, gl_jaw_center, hnd_pos, hnd_rotmat = grasp_info
     gripper_s.fix_to(hnd_pos, hnd_rotmat)
