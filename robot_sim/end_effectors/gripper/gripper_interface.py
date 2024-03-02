@@ -5,6 +5,7 @@ import basis.robot_math as rm
 import robot_sim.end_effectors.ee_interface as ei
 
 
+
 class GripperInterface(ei.EEInterface):
 
     def __init__(self, pos=np.zeros(3), rotmat=np.eye(3), cdmesh_type=mc.CDMType.AABB, name='gripper'):

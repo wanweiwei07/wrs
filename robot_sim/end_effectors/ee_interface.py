@@ -11,6 +11,20 @@ import modeling.constant as mc
 import basis.robot_math as rm
 
 
+# ==============================================
+# raise Exception if oiee is not empty
+# ==============================================
+
+def assert_oiee_decorator(method):
+    def wrapper(self, *args, **kwargs):
+        if len(self.oiee_list) > 0:
+            raise ValueError("The hand is holding objects!")
+        else:
+            return method(self, *args, **kwargs)
+
+    return wrapper
+
+
 class EEInterface(object):
 
     def __init__(self, pos=np.zeros(3), rotmat=np.eye(3), cdmesh_type=mc.CDMType.AABB, name="end_effector"):
@@ -21,11 +35,8 @@ class EEInterface(object):
         # joints
         # -- coupling --
         # no coupling by default, change the pos if the coupling existed
+        # use loc flange create non-straight couplings
         self.coupling = rkjlc.JLChain(name=name + "_coupling", pos=self.pos, rotmat=self.rotmat)
-        # toggle on the following part to assign an explicit mesh model to a coupling
-        # self.coupling.jnts[0].link = .create_link(mesh_file=os.path.join(this_dir, "meshes", "xxx.stl"))
-        # self.coupling.jnts[0].link = mcm.gen_stick(spos=self.coupling.anchor.pos, epos = self.coupling.jnts[0].pos)
-        # self.coupling.jnts[0].lnks.rgba = [.2, .2, .2, 1]
         # acting center of the tool
         self.loc_acting_center_pos = np.zeros(3)
         self.loc_acting_center_rotmat = np.eye(3)
@@ -45,6 +56,7 @@ class EEInterface(object):
         for oiee in self.oiee_list:
             oiee.update_globals(pos=self.pos, rotmat=self.rotmat)
 
+    @assert_oiee_decorator
     def hold(self, obj_cmodel, **kwargs):
         """
         the objcm is saved into an oiee_list, while considering its relative pose to the ee's pos and rotmat
@@ -57,7 +69,7 @@ class EEInterface(object):
         obj_pos = obj_cmodel.pos
         obj_rotmat = obj_cmodel.rotmat
         rel_pos, rel_rotmat = rm.rel_pose(obj_pos, obj_rotmat, self.pos, self.rotmat)
-        self.oiee_list.append(jl.Link(loc_pos=rel_pos, loc_rotmat=rel_rotmat, cmodel=obj_cmodel))
+        self.oiee_list.append(rkjl.Link(loc_pos=rel_pos, loc_rotmat=rel_rotmat, cmodel=obj_cmodel))
 
     def release(self, obj_cmodel, **kwargs):
         """
@@ -113,6 +125,7 @@ class EEInterface(object):
     def fix_to(self, pos, rotmat):
         raise NotImplementedError
 
+    @assert_oiee_decorator
     def align_acting_center_by_twovecs(self,
                                        acting_center_pos,
                                        approaching_vec,
@@ -131,6 +144,7 @@ class EEInterface(object):
         return self.align_acting_center_by_pose(acting_center_pos=acting_center_pos,
                                                 acting_center_rotmat=acting_center_rotmat)
 
+    @assert_oiee_decorator
     def align_acting_center_by_pose(self, acting_center_pos, acting_center_rotmat):
         """
         align acting center to a frame decided by pos and rotmat
@@ -167,13 +181,31 @@ class EEInterface(object):
         raise NotImplementedError
 
     def gen_meshmodel(self,
+                      rgb=None,
+                      alpha=None,
                       toggle_tcp_frame=False,
                       toggle_jnt_frames=False,
-                      rgba=None,
                       toggle_cdprim=False,
                       toggle_cdmesh=False,
                       name='ee_meshmodel'):
         raise NotImplementedError
+
+    def gen_oiee_meshmodel(self,
+                           m_col,
+                           rgb=None,
+                           alpha=None,
+                           toggle_cdprim=False,
+                           toggle_cdmesh=False,
+                           toggle_frame=False):
+        """
+        :return:
+        author: weiwei
+        date: 20230807
+        """
+        for oiee in self.oiee_list:
+            rkmg.gen_lnk_mesh(lnk=oiee, rgb=rgb, alpha=alpha, toggle_cdprim=toggle_cdprim, toggle_cdmesh=toggle_cdmesh,
+                              toggle_frame=toggle_frame).attach_to(m_col)
+            oiee.update_globals(pos=self.pos, rotmat=self.rotmat)
 
     def _toggle_tcp_frame(self, parent):
         gl_acting_center_pos = self.rotmat.dot(self.loc_acting_center_pos) + self.pos

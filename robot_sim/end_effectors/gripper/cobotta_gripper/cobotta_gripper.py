@@ -12,20 +12,6 @@ import robot_sim._kinematics.model_generator as rkmg
 import modeling.constant as mc
 
 
-# ==============================================
-# raise Exception if oiee is not empty
-# ==============================================
-
-def assert_oiee_decorator(method):
-    def wrapper(self, *args, **kwargs):
-        if len(self.oiee_list) > 0:
-            raise ValueError("The hand is holding objects!")
-        else:
-            return method(self, *args, **kwargs)
-
-    return wrapper
-
-
 class CobottaGripper(gp.GripperInterface):
 
     def __init__(self,
@@ -37,12 +23,11 @@ class CobottaGripper(gp.GripperInterface):
         super().__init__(pos=pos, rotmat=rotmat, cdmesh_type=cdmesh_type, name=name)
         current_file_dir = os.path.dirname(__file__)
         self.coupling.finalize()
-        cpl_end_pos = self.coupling.gl_flange_pos
-        cpl_end_rotmat = self.coupling.gl_flange_rotmat
         # jaw range
         self.jaw_range = np.array([0.0, .03])
         # jlc
-        self.jlc = rkjlc.JLChain(pos=cpl_end_pos, rotmat=cpl_end_rotmat, n_dof=2, name=name)
+        self.jlc = rkjlc.JLChain(pos=self.coupling.gl_flange_pos, rotmat=self.coupling.gl_flange_rotmat, n_dof=2,
+                                 name=name)
         # anchor
         self.jlc.anchor.lnk.cmodel = mcm.CollisionModel(os.path.join(current_file_dir, "meshes", "gripper_base.dae"))
         self.jlc.anchor.lnk.cmodel.rgba = np.array([.35, .35, .35, 1])
@@ -82,9 +67,7 @@ class CobottaGripper(gp.GripperInterface):
     #         cdmesh = cdelement['collision_model'].copy()
     #         self.cdmesh_collection.add_cm(cdmesh)
 
-    @assert_oiee_decorator
     def fix_to(self, pos, rotmat, jaw_width=None):
-        # TODO update oiee
         self.pos = pos
         self.rotmat = rotmat
         if jaw_width is not None:
@@ -95,11 +78,10 @@ class CobottaGripper(gp.GripperInterface):
             else:
                 raise ValueError("The angle parameter is out of range!")
         self.coupling.fix_to(self.pos, self.rotmat)
-        cpl_end_pos = self.coupling.gl_flange_pos
-        cpl_end_rotmat = self.coupling.gl_flange_rotmat
-        self.jlc.fix_to(cpl_end_pos, cpl_end_rotmat)
+        self.jlc.fix_to(self.coupling.gl_flange_pos, self.coupling.gl_flange_rotmat)
+        self.update_oiee()
 
-    @assert_oiee_decorator
+    @gp.ei.assert_oiee_decorator
     def change_jaw_width(self, jaw_width):
         side_jawwidth = jaw_width / 2.0
         if 0 <= side_jawwidth <= self.jaw_range[1] / 2:
@@ -143,6 +125,9 @@ class CobottaGripper(gp.GripperInterface):
                           toggle_cdprim=toggle_cdprim).attach_to(m_col)
         if toggle_tcp_frame:
             self._toggle_tcp_frame(m_col)
+        # oiee
+        self.gen_oiee_meshmodel(m_col, rgb=rgb, alpha=alpha, toggle_cdprim=toggle_cdprim,
+                                toggle_cdmesh=toggle_cdmesh, toggle_frame=toggle_jnt_frames)
         return m_col
 
 
