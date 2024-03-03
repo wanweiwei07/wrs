@@ -6,7 +6,7 @@ import robot_sim.end_effectors.gripper.xarm_gripper.xarm_gripper as xag
 
 base = wd.World(cam_pos=[1, 1, 1], lookat_pos=[0, 0, 0])
 gm.gen_frame().attach_to(base)
-object_box = cm.gen_box(extent=[.02, .06, .7])
+object_box = cm.gen_box(xyz_lengths=[.02, .06, .7])
 object_box.set_rgba([.7, .5, .3, .7])
 object_box.attach_to(base)
 # gripper

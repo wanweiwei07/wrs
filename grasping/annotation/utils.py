@@ -20,7 +20,7 @@ def define_gripper_grasps(gripper,
     :param gl_approaching_vec: hand approaching direction
     :param gl_fgr0_opening_vec: normal direction of thumb's contact surface
     :param jaw_width:
-    :param cmodel:
+    :param obj_cmodel:
     :param toggle_flip:
     :return: a list like [[jaw_width, jaw_center_pos, pos, rotmat], ...]
     author: chenhao, revised by weiwei

@@ -78,15 +78,15 @@ class KHI_OR2FG7(ai.SglArmRbtInterface):
         # self.cc.set_cdpair(fromlist, intolist)
         # # TODO is the following update needed?
         # for oih_info in self.oih_infos:
-        #     cmodel = oih_info['collision_model']
-        #     self.hold(cmodel)
+        #     obj_cmodel = oih_info['collision_model']
+        #     self.hold(obj_cmodel)
 
     def jaw_to(self, jawwidth=0.0):
         self.end_effector.change_jaw_width(jawwidth)
 
     def hold(self, objcm, jawwidth=None):
         """
-        the cmodel is added as a part of the robot_s to the cd checker
+        the obj_cmodel is added as a part of the robot_s to the cd checker
         :param jawwidth:
         :param objcm:
         :return:

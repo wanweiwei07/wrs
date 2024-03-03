@@ -28,7 +28,7 @@ space.setAutoCollideWorld(world)
 contactgroup = OdeJointGroup()
 space.setAutoCollideJointGroup(contactgroup)
 
-box = cm.gen_box(extent=[.3,.3,.3])
+box = cm.gen_box(xyz_lengths=[.3, .3, .3])
 
 # Add a random amount of boxes
 boxes = []
@@ -55,7 +55,7 @@ for i in range(randint(5, 10)):
     boxes.append((new_box, boxBody))
 
 # Add a plane to collide with
-ground = cm.gen_box(extent=[20,20,1], rgba=[.3,.3,.3,1])
+ground = cm.gen_box(xyz_lengths=[20, 20, 1], rgba=[.3, .3, .3, 1])
 ground.set_pos(np.array([0, 0, -1.5]))
 ground.attach_to(base)
 # groundGeom = OdeTriMeshGeom(space, OdeTriMeshData(ground.objpdnp, True))

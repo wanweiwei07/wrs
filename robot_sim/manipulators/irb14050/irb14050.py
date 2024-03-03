@@ -96,7 +96,7 @@ if __name__ == '__main__':
     manipulator_meshmodel = manipulator_instance.gen_meshmodel()
     manipulator_meshmodel.attach_to(base)
     manipulator_instance.gen_stickmodel().attach_to(base)
-    manipulator_instance.show_cdprimit()
+    manipulator_instance.show_cdprim()
     tic = time.time()
     print(manipulator_instance.is_collided())
     toc = time.time()

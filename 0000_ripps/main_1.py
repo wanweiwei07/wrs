@@ -22,7 +22,7 @@ if __name__ == '__main__':
     frame_bottom.set_rgba([.55, .55, .55, 1])
     frame_bottom.attach_to(base)
 
-    table_plate = cm.gen_box(extent=[.405, .26, .003])
+    table_plate = cm.gen_box(xyz_lengths=[.405, .26, .003])
     table_plate.set_pos([0.07 + 0.2025, .055, .0015])
     table_plate.set_rgba([.87, .87, .87, 1])
     table_plate.attach_to(base)
@@ -252,7 +252,7 @@ if __name__ == '__main__':
     #     if jnt_values is not None:
     #         rbt_s.fk(jnt_values=jnt_values)
     #         rbt_s.gen_meshmodel().attach_to(base)
-    #         rbt_s.hold(hnd_name=hnd_name, cmodel=tip_cm_list[id_x * 12 + id_y])
+    #         rbt_s.hold(hnd_name=hnd_name, obj_cmodel=tip_cm_list[id_x * 12 + id_y])
     #         previous_jnt_values = jnt_values
     #         goal_joint_values = jnt_values
     #         break

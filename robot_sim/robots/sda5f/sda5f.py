@@ -25,14 +25,14 @@ class SDA5F(ri.RobotInterface):
         self.lft_body.lnks[0]['loc_pos'] = np.array([0, 0, 0])
         self.lft_body.lnks[0]['collision_model'] = cm.CollisionModel(
             os.path.join(this_dir, "meshes", "base_link.stl"),
-            cdprimit_type="user_defined", expand_radius=.005,
+            cdprim_type="user_defined", expand_radius=.005,
             userdef_cdprim_fn=self._base_combined_cdnp)
         self.lft_body.lnks[0]['rgba'] = [.7, .7, .7, 1.0]
         self.lft_body.lnks[1]['name'] = "sda5f_lft_torso"
         self.lft_body.lnks[1]['loc_pos'] = np.array([0, 0, 0])
         self.lft_body.lnks[1]['collision_model'] = cm.CollisionModel(
             os.path.join(this_dir, "meshes", "torso_link.stl"),
-            cdprimit_type="user_defined", expand_radius=.005,
+            cdprim_type="user_defined", expand_radius=.005,
             userdef_cdprim_fn=self._torso_combined_cdnp)
         self.lft_body.lnks[1]['rgba'] = [.7, .7, .7, 1.0]
         self.lft_body.finalize()

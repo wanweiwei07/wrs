@@ -49,11 +49,11 @@ frame = gm.GeometricModel(initor="meshes/frame.stl")
 frame.set_rgba(rgba=aluminium_rgba)
 frame.attach_to(base)
 
-bottom_box = cm.gen_box(extent=[.88, 1.68, .45], rgba=board_rgba)
+bottom_box = cm.gen_box(xyz_lengths=[.88, 1.68, .45], rgba=board_rgba)
 bottom_box.set_pos(pos=np.array([0, 0, .22]))
 bottom_box.attach_to(base)
 
-top_box = cm.gen_box(extent=[.88, 1.68, .3], rgba=board_rgba)
+top_box = cm.gen_box(xyz_lengths=[.88, 1.68, .3], rgba=board_rgba)
 top_box.set_pos(pos=np.array([0, 0, 1.65]))
 top_box.attach_to(base)
 

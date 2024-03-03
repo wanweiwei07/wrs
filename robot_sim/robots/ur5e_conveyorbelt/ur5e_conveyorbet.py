@@ -26,7 +26,7 @@ class UR5EConveyorBelt(ri.RobotInterface):
         self.base_stand.jnts[4]['loc_pos'] = np.array([-.9, .27, 0.06])
         self.base_stand.lnks[0]['collision_model'] = cm.CollisionModel(
             os.path.join(this_dir, "meshes", "ur5e_base.stl"),
-            cdprimit_type="user_defined", expand_radius=.005,
+            cdprim_type="user_defined", expand_radius=.005,
             userdef_cdprim_fn=self._base_combined_cdnp)
         self.base_stand.lnks[0]['rgba'] = [.35, .35, .35, 1]
         self.base_stand.lnks[1]['mesh_file'] = os.path.join(this_dir, "meshes", "conveyor.stl")
@@ -182,7 +182,7 @@ class UR5EConveyorBelt(ri.RobotInterface):
 
     def hold(self, hnd_name, objcm, jawwidth=None):
         """
-        the cmodel is added as a part of the robot_s to the cd checker
+        the obj_cmodel is added as a part of the robot_s to the cd checker
         :param jawwidth:
         :param objcm:
         :return:
@@ -211,7 +211,7 @@ class UR5EConveyorBelt(ri.RobotInterface):
 
     def release(self, hnd_name, objcm, jawwidth=None):
         """
-        the cmodel is added as a part of the robot_s to the cd checker
+        the obj_cmodel is added as a part of the robot_s to the cd checker
         :param jawwidth:
         :param objcm:
         :return:

@@ -13,7 +13,7 @@ base = wd.World(cam_pos=np.array([2, 0, 2]), lookat_pos=np.array([0, 0, 0]), tog
 # PlaneD
 homomat = np.eye(4)
 homomat[:3, 3] = np.array([0, 0, -.05])
-planecm = cm.gen_box(extent=[1, 1, .1], homomat=homomat)
+planecm = cm.gen_box(xyz_lengths=[1, 1, .1], homomat=homomat)
 # planenode = bch.genBulletCDMesh(planecm)
 planenode = bbd.BDBody(planecm, cdtype='convex', dynamic=False)
 planemat = np.eye(4)

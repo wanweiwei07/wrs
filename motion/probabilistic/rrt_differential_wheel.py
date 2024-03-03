@@ -22,7 +22,7 @@ class RRTDW(object):
                      obstacle_list=[],
                      otherrobot_list=[]):
         self.robot_s.fk(component_name=component_name, joint_values=conf)
-        return self.robot_s.is_collided(obstacle_list=obstacle_list, otherrobot_list=otherrobot_list)
+        return self.robot_s.is_collided(obstacle_list=obstacle_list, other_robot_list=otherrobot_list)
 
     def _sample_conf(self, component_name, rand_rate, default_conf):
         if random.randint(0, 99) < rand_rate:

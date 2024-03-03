@@ -1082,7 +1082,7 @@ if __name__ == "__main__":
 
     base = wd.World(cam_pos=[7, 0, 2.2], lookat_pos=[0, 0, .7])
     gm.gen_frame().attach_to(base)
-    board = cm.gen_box(extent=[.4, .5, .01])  # RANSAC用
+    board = cm.gen_box(xyz_lengths=[.4, .5, .01])  # RANSAC用
     rtq85_s = rtq85.Robotiq85()
     robot_s = ur3ds.UR3Dual()
     robot_inik_solver = inik.IncrementalNIK(robot_s)

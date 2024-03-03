@@ -8,14 +8,14 @@ import math
 
 base = wd.World(cam_pos=np.array([.5, .5, .5]), lookat_pos=np.array([0, 0, 0]))
 # mgm.gen_frame().attach_to(base)
-cmodel = mcm.CollisionModel("objects/holder.stl")
-cmodel.attach_to(base)
+obj_cmodel = mcm.CollisionModel("objects/holder.stl")
+obj_cmodel.attach_to(base)
 
 gripper = cg.CobottaGripper()
 # gripper.gen_meshmodel().attach_to(base)
 # base.run()
 grasp_info_list = gpa.plan_gripper_grasps(gripper,
-                                          cmodel,
+                                          obj_cmodel,
                                           angle_between_contact_normals=math.radians(175),
                                           rotation_interval=math.radians(15),
                                           max_samples=20,
@@ -23,7 +23,7 @@ grasp_info_list = gpa.plan_gripper_grasps(gripper,
                                           contact_offset=.001,
                                           toggle_dbg=False)
 print(grasp_info_list)
-gpa.write_pickle_file(cmodel_name="holder",
+gpa.write_pickle_file(obj_name="holder",
                       grasp_info_list=grasp_info_list,
                       file_name="cobotta_gripper_grasps.pickle")
 for grasp_info in grasp_info_list:

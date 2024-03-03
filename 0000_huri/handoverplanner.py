@@ -13,7 +13,7 @@ class HandoverPlanner(object):
     def __init__(self, obj, rhx, retractdistance=100):
         """
 
-        :param obj: obj name (str) or cmodel, cmodel is for debug purpose
+        :param obj: obj name (str) or obj_cmodel, obj_cmodel is for debug purpose
         :param rhx: see helper.py
         :param retractdistance: retraction distance
 

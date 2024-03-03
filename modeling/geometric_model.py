@@ -228,7 +228,7 @@ class WireFrameModel(StaticGeometricModel):
 
 
 # ==============================================
-# delays for cdprimitive (Panda3D CollisionNode)
+# delays for cdprim (Panda3D CollisionNode)
 # ==============================================
 
 def delay_geometry_decorator(method):

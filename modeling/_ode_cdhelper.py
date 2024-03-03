@@ -34,7 +34,7 @@ def gen_cdmesh(trm_model):
 
 def update_pose(pdotrmgeom, objcm):
     """
-    update obj_ode_trimesh using the transformation matrix of cmodel.pdndp
+    update obj_ode_trimesh using the transformation matrix of obj_cmodel.pdndp
     :param pdotrmgeom:
     :param pdndp:
     :return:
@@ -63,7 +63,7 @@ def update_pose(pdotrmgeom, objcm):
 
 def is_collided(cmodel_list0, cmodel_list1, toggle_contacts=True):
     """
-    check if two cmodel lists are collided
+    check if two obj_cmodel lists are collided
     :param cmodel_list0: an instance of OdeTriMeshGeom
     :param cmodel_list1: an instance of OdeTriMeshGeom
     :param toggle_contactpoints: True default
@@ -160,11 +160,11 @@ if __name__ == '__main__':
     pto = np.array([0, 0, 0]) + np.array([0.02, 0.02, 0.02])
     # spos = np.array([0, 0, 0]) + np.array([0.0, 0.0, 1.0])
     # epos = np.array([0, 0, 0]) + np.array([0.0, 0.0, -1.0])
-    # hit_point, hit_normal = rayhit_closet(spos=spos, epos=epos, cmodel=objcm1)
+    # hit_point, hit_normal = rayhit_closet(spos=spos, epos=epos, obj_cmodel=objcm1)
     hit_points, hit_normals = rayhit_all(spos=pfrom, epos=pto, objcm=objcm2)
-    # cmodel.attach_to(base)
-    # cmodel.show_cdmesh(end_type='box')
-    # cmodel.show_cdmesh(end_type='convex_hull')
+    # obj_cmodel.attach_to(base)
+    # obj_cmodel.show_cdmesh(end_type='box')
+    # obj_cmodel.show_cdmesh(end_type='convex_hull')
     # for hitpos, hitnormal in zip([hit_point], [hit_normal]):
     for hitpos, hitnormal in zip(hit_points, hit_normals):
         gm.gen_sphere(hitpos, radius=.003, rgba=np.array([0, 1, 1, 1])).attach_to(base)

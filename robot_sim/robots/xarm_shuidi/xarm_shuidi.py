@@ -269,7 +269,7 @@ class XArmShuidi(ri.RobotInterface):
 
     def hold(self, hnd_name, objcm, jawwidth=None):
         """
-        the cmodel is added as a part of the robot_s to the cd checker
+        the obj_cmodel is added as a part of the robot_s to the cd checker
         :param jawwidth:
         :param objcm:
         :return:
@@ -320,7 +320,7 @@ class XArmShuidi(ri.RobotInterface):
 
     def release(self, hnd_name, objcm, jawwidth=None):
         """
-        the cmodel is added as a part of the robot_s to the cd checker
+        the obj_cmodel is added as a part of the robot_s to the cd checker
         :param jawwidth:
         :param objcm:
         :return:
@@ -432,7 +432,7 @@ if __name__ == '__main__':
     # xav_meshmodel.attach_to(base)
     # xav_cpy.show_cdprimit()
     # tic = time.time()
-    # result = xav_cpy.is_collided(otherrobot_list=[xss])
+    # result = xav_cpy.is_collided(other_robot_list=[xss])
     # toc = time.time()
     # print(result, toc - tic)
     base.run()

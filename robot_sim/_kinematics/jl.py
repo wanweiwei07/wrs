@@ -47,14 +47,14 @@ class Link(object):
     def loc_homomat(self):
         return rm.homomat_from_posrot(self._loc_pos, self._loc_rotmat)
 
-    # @property
-    # def loc_pose(self):
-    #     return (self._loc_pos, self._loc_rotmat)
-    #
-    # @loc_pose.setter
-    # def loc_pose(self, pose):
-    #     self._loc_pos = pose[0]
-    #     self._loc_rotmat = pose[1]
+    @property
+    def loc_pose(self):
+        return (self._loc_pos, self._loc_rotmat)
+
+    @loc_pose.setter
+    def loc_pose(self, pose):
+        self._loc_pos = pose[0]
+        self._loc_rotmat = pose[1]
 
     @property
     def gl_pos(self):
@@ -63,6 +63,10 @@ class Link(object):
     @property
     def gl_rotmat(self):
         return self._gl_rotmat
+
+    @property
+    def gl_homomat(self):
+        return rm.homomat_from_posrot(self._gl_pos, self._gl_rotmat)
 
     @property
     def cmodel(self):
@@ -195,7 +199,7 @@ class Anchor(object):
     def loc_flange_rotmat(self):
         return self._loc_flange_rotmat
 
-    @loc_flange_pos.setter
+    @loc_flange_rotmat.setter
     @delay_gl_flange_decorator
     def loc_flange_rotmat(self, loc_flange_rotmat):
         self._loc_flange_rotmat = loc_flange_rotmat

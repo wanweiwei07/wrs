@@ -41,7 +41,7 @@ class UR3Dual(ri.RobotInterface):
         self.lft_body.lnks[0]['loc_pos'] = np.array([0, 0, 0])
         self.lft_body.lnks[0]['collision_model'] = cm.CollisionModel(
             os.path.join(this_dir, "meshes", "ur3_dual_base.stl"),
-            cdprimit_type="user_defined", expand_radius=.005,
+            cdprim_type="user_defined", expand_radius=.005,
             userdef_cdprim_fn=self._base_combined_cdnp)
         self.lft_body.lnks[0]['rgba'] = [.3, .3, .3, 1.0]
         # columns
@@ -449,7 +449,7 @@ class UR3Dual(ri.RobotInterface):
 
     def hold(self, objcm, jaw_width=None, hnd_name='lft_hnd'):
         """
-        the cmodel is added as a part of the robot_s to the cd checker
+        the obj_cmodel is added as a part of the robot_s to the cd checker
         :param jaw_width:
         :param objcm:
         :return:
@@ -625,7 +625,7 @@ class UR3Dual(ri.RobotInterface):
 
     def release(self, hnd_name, objcm, jaw_width=None):
         """
-        the cmodel is added as a part of the robot_s to the cd checker
+        the obj_cmodel is added as a part of the robot_s to the cd checker
         :param jaw_width:
         :param objcm:
         :param hnd_name:

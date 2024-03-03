@@ -1,7 +1,5 @@
 import numpy as np
-import modeling.model_collection as mmc
 import modeling.constant as mc
-import basis.robot_math as rm
 import robot_sim.end_effectors.ee_interface as ei
 
 
@@ -14,11 +12,9 @@ class GripperInterface(ei.EEInterface):
         # fgr0 opening vec
         self.loc_fgr0_opening_vec = np.array([0, 1, 0]) # y as opening vec by default
 
-    def fk(self, motion_val):
-        raise NotImplementedError
-
+    @ei.assert_oiee_decorator
     def change_jaw_width(self, jaw_width):
-        raise NotImplementedError
+        pass
 
     def get_jaw_width(self):
         raise NotImplementedError

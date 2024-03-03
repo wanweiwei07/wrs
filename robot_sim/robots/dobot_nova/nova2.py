@@ -41,7 +41,7 @@ class Nova2WRS(ri.SglArmRbtInterface):
         self.body.lnks[0]['rgba'] = [.55, .55, .55, 1.0]
         self.body.lnks[0]['collision_model'] = cm.CollisionModel(
             os.path.join(this_dir, "meshes", "table.stl"),
-            cdprimit_type="user_defined", expand_radius=.005,
+            cdprim_type="user_defined", expand_radius=.005,
             userdef_cdprim_fn=self._table_cdnp)
         self.body.finalize()
 
@@ -237,17 +237,17 @@ class Nova2WRS(ri.SglArmRbtInterface):
             objcm.copy().attach_to(mm_collection)
         return mm_collection
 
-    # def is_collided(self, obstacle_list=None, otherrobot_list=None, toggle_contact_points=False):
+    # def is_collided(self, obstacle_list=None, other_robot_list=None, toggle_contacts=False):
     #     """
     #     Interface for "is cdprimit collided", must be implemented in child class
     #     :param obstacle_list:
-    #     :param otherrobot_list:
-    #     :param toggle_contact_points: debug
+    #     :param other_robot_list:
+    #     :param toggle_contacts: debug
     #     :return: see CollisionChecker is_collided for details
     #     author: weiwei
     #     date: 20201223
     #     """
-    #     is_collided = super().is_collided(obstacle_list, otherrobot_list, toggle_contact_points)
+    #     is_collided = super().is_collided(obstacle_list, other_robot_list, toggle_contacts)
     #     # if len(self.oih_infos) < 1:
     #     #     return is_collided
     #     tcp_constraints = False
@@ -257,7 +257,7 @@ class Nova2WRS(ri.SglArmRbtInterface):
     #         # print(tcp_rot[:3, 2])
     #         # print(tcp_rot[:3, 2].dot(np.array([0, 0, 1])))
     #         tcp_constraints = True
-    #     if not toggle_contact_points:
+    #     if not toggle_contacts:
     #         return is_collided or tcp_constraints
     #     else:
     #         return (is_collided[0] or tcp_constraints, is_collided[1])

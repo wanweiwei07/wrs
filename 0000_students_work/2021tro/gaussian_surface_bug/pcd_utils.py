@@ -298,9 +298,9 @@ def get_objpcd_withnrmls(objcm, objmat4=np.eye(4), sample_num=100000, toggledebu
         # objpcd.paint_uniform_color([1, 0.706, 0])
         # o3d.visualization.draw_geometries([objpcd])
 
-        # cmodel.sethomomat(objmat4)
-        # cmodel.set_rgba(1, 1, 1, 0.7)
-        # cmodel.reparentTo(base.render)
+        # obj_cmodel.sethomomat(objmat4)
+        # obj_cmodel.set_rgba(1, 1, 1, 0.7)
+        # obj_cmodel.reparentTo(base.render)
         # show_pcd(objpcd, rgba=(1, 0, 0, 1))
         for i, n in enumerate(objpcd_nrmls):
             import random
@@ -451,18 +451,18 @@ if __name__ == '__main__':
     base, env = el.loadEnv_wrs()
     objcm = el.loadObj("pentip.stl")
 
-    # source_pcd = np.asarray(ts.sample_surface(cmodel.trimesh, n_sec_minor=10000))
+    # source_pcd = np.asarray(ts.sample_surface(obj_cmodel.trimesh, n_sec_minor=10000))
     source = o3d_helper.nparray2o3dpcd(source_pcd[source_pcd[:, 2] > 5])
     # source.paint_uniform_color([0, 0.706, 1])
     # o3d.visualization.draw_geometries([source])
 
-    # get_objpcd_partial(cmodel, sample_num=10000, toggledebug=True)
+    # get_objpcd_partial(obj_cmodel, sample_num=10000, toggledebug=True)
 
     # inithomomat = pickle.load(
     #     open(el.path + "/graspplanner/graspmap/pentip_cover_objmat4_list.pkl", "rb"))[1070]
     #
-    # get_normals(get_objpcd(cmodel, sample_num=10000))
-    # mph, pcd_normals = get_objpcd_withnormals(cmodel, sample_num=100000)
+    # get_normals(get_objpcd(obj_cmodel, sample_num=10000))
+    # mph, pcd_normals = get_objpcd_withnormals(obj_cmodel, sample_num=100000)
     # for i, p in enumerate(mph):
     #     base.pggen.plotArrow(base.render, spos=p, epos=p + 10 * pcd_normals[i])
     # base.run()

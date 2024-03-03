@@ -18,9 +18,9 @@ class Item(object):
             self.__objmat4 = kwargs["objmat4"]
         else:
             self.__objmat4 = np.eye(4)
-        if "cmodel" in list(kwargs.keys()):
-            self.__objcm = kwargs["cmodel"]
-            self.__pcd_std = pcdu.get_objpcd(kwargs["cmodel"], objmat4=self.__objmat4)
+        if "obj_cmodel" in list(kwargs.keys()):
+            self.__objcm = kwargs["obj_cmodel"]
+            self.__pcd_std = pcdu.get_objpcd(kwargs["obj_cmodel"], objmat4=self.__objmat4)
             self.__w, self.__h = pcdu.get_pcd_w_h(self.__pcd_std)
         if "mph" in list(kwargs.keys()):
             self.__pcd = kwargs["mph"]

@@ -10,7 +10,7 @@ import motion.probabilistic.rrt_connect as rrtc
 base = wd.World(cam_pos=[4, -1, 2], lookat_pos=[0, 0, 0])
 gm.gen_frame().attach_to(base)
 # object
-object_box = cm.gen_box(extent=[.15,.15,.15])
+object_box = cm.gen_box(xyz_lengths=[.15, .15, .15])
 object_box.set_pos(np.array([.4, .3, .4]))
 object_box.set_rgba([.5, .7, .3, 1])
 object_box.attach_to(base)

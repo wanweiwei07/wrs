@@ -27,7 +27,7 @@ class Nova2HuriGripper(gp.GripperInterface):
         self.body.lnks[0]['name'] = "base"
         self.body.lnks[0]['pos'] = np.zeros(3)
         self.body.lnks[0]['collision_model'] = cm.CollisionModel(os.path.join(this_dir, "meshes", "base.stl"),
-                                                                 cdprimit_type="user_defined",
+                                                                 cdprim_type="user_defined",
                                                                  userdef_cdprim_fn=self._base_cdnp,
                                                                  expand_radius=.001)
         self.body.lnks[0]['rgba'] = [.57, .57, .57, 1]
@@ -55,7 +55,7 @@ class Nova2HuriGripper(gp.GripperInterface):
         self.lft.jnts[2]['motion_range'] = [.0, 0.099]
         self.lft.lnks[2]['name'] = "lft_finger_link"
         self.lft.lnks[2]['collision_model'] = cm.CollisionModel(
-            os.path.join(this_dir, "meshes", "finger.stl"), cdprimit_type="user_defined",
+            os.path.join(this_dir, "meshes", "finger.stl"), cdprim_type="user_defined",
             userdef_cdprim_fn=self._finger_cdnp, expand_radius=.001)
         self.lft.lnks[2]['rgba'] = [.65, .65, .65, 1]
         # # rgt finger
@@ -74,7 +74,7 @@ class Nova2HuriGripper(gp.GripperInterface):
         self.rgt.jnts[2]['motion_range'] = [.0, 0.099]
         self.rgt.lnks[2]['name'] = "rgt_finger_link"
         self.rgt.lnks[2]['collision_model'] = cm.CollisionModel(
-            os.path.join(this_dir, "meshes", "finger.stl"), cdprimit_type="user_defined",
+            os.path.join(this_dir, "meshes", "finger.stl"), cdprim_type="user_defined",
             userdef_cdprim_fn=self._finger_cdnp, expand_radius=.001)
         self.rgt.lnks[2]['rgba'] = [.65, .65, .65, 1]
 

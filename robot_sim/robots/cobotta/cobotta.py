@@ -11,8 +11,7 @@ import robot_sim.robots.single_arm_robot_interface as ri
 class Cobotta(ri.SglArmRbtInterface):
 
     def __init__(self, pos=np.zeros(3), rotmat=np.eye(3), name="cobotta", enable_cc=True):
-        super().__init__(pos=pos, rotmat=rotmat, name=name)
-
+        super().__init__(pos=pos, rotmat=rotmat, name=name, enable_cc=enable_cc)
         home_conf = np.zeros(6)
         home_conf[1] = -math.pi / 6
         home_conf[2] = math.pi / 2
@@ -20,90 +19,72 @@ class Cobotta(ri.SglArmRbtInterface):
         self.manipulator = cbta.CobottaArm(pos=self.pos, rotmat=self.rotmat, home_conf=home_conf, name="cobotta_arm",
                                            enable_cc=False)
         self.end_effector = cbtg.CobottaGripper(pos=self.manipulator.gl_flange_pos,
-                                                rotmat=self.manipulator.gl_flange_rotmat, name="cobotta_hnd",
-                                                enable_cc=False)
+                                                rotmat=self.manipulator.gl_flange_rotmat, name="cobotta_hnd")
         # tool center point
         self.manipulator.loc_tcp_pos = self.end_effector.loc_acting_center_pos
         self.manipulator.loc_tcp_rotmat = self.end_effector.loc_acting_center_rotmat
-        # collision detection
-        if enable_cc:
-            self.enable_cc()
+        if self.cc is not None:
+            self.setup_cc()
 
-    # def enable_cc(self):
-    #     # TODO when pose is changed, oih info goes wrong
-    #     super().enable_cc()
-    #     self.cc.add_cdlnks(self.base_plate, [0])
-    #     self.cc.add_cdlnks(self.arm, [0, 1, 2, 3, 4, 5, 6])
-    #     self.cc.add_cdlnks(self.hnd.jlc, [0, 1, 2])
-    #     activelist = [self.base_plate.lnks[0],
-    #                   self.arm.lnks[0],
-    #                   self.arm.lnks[1],
-    #                   self.arm.lnks[2],
-    #                   self.arm.lnks[3],
-    #                   self.arm.lnks[4],
-    #                   self.arm.lnks[5],
-    #                   self.arm.lnks[6],
-    #                   self.hnd.jlc.lnks[0],
-    #                   self.hnd.jlc.lnks[1],
-    #                   self.hnd.jlc.lnks[2]]
-    #     self.cc.set_active_cdlnks(activelist)
-    #     fromlist = [self.base_plate.lnks[0],
-    #                 self.arm.lnks[0],
-    #                 self.arm.lnks[1]]
-    #     intolist = [self.arm.lnks[3]]
-    #     self.cc.set_cdpair(fromlist, intolist)
-    #     fromlist = [self.base_plate.lnks[0],
-    #                 self.arm.lnks[1]]
-    #     intolist = [self.hnd.jlc.lnks[0],
-    #                 self.hnd.jlc.lnks[1],
-    #                 self.hnd.jlc.lnks[2]]
-    #     self.cc.set_cdpair(fromlist, intolist)
-    #     # TODO is the following update needed?
-    #     for oih_info in self.oih_infos:
-    #         cmodel = oih_info['collision_model']
-    #         self.hold(cmodel)
+    def setup_cc(self):
+        # TODO when pose is changed, oih info goes wrong
+        # ee
+        elb = self.cc.add_cce(self.end_effector.jlc.anchor.lnk)
+        el0 = self.cc.add_cce(self.end_effector.jlc.jnts[0].lnk)
+        el1 = self.cc.add_cce(self.end_effector.jlc.jnts[1].lnk)
+        # manipulator
+        mlb = self.cc.add_cce(self.manipulator.jlc.anchor.lnk)
+        ml0 = self.cc.add_cce(self.manipulator.jlc.jnts[0].lnk)
+        ml1 = self.cc.add_cce(self.manipulator.jlc.jnts[1].lnk)
+        ml2 = self.cc.add_cce(self.manipulator.jlc.jnts[2].lnk)
+        ml3 = self.cc.add_cce(self.manipulator.jlc.jnts[3].lnk)
+        ml4 = self.cc.add_cce(self.manipulator.jlc.jnts[4].lnk)
+        ml5 = self.cc.add_cce(self.manipulator.jlc.jnts[5].lnk)
+        from_list = [elb, el0, el1, ml3, ml4, ml5]
+        into_list = [mlb, ml0]
+        self.cc.set_cdpair_by_ids(from_list, into_list)
+        # TODO oiee?
 
     def fix_to(self, pos, rotmat):
         self.pos = pos
         self.rotmat = rotmat
         self.manipulator.fix_to(pos=pos, rotmat=rotmat)
         self._update_end_effector()
-        # self.end_effector.fix_to(pos=self.manipulator.gl_flange_pos, rotmat=self.manipulator.gl_flange_rotmat)
 
-    # def hold(self, hnd_name, cmodel, jawwidth=None):
+    # def hold(self, hnd_name, obj_cmodel, jawwidth=None):
     #     """
-    #     the cmodel is added as a part of the robot_s to the cd checker
+    #     the obj_cmodel is added as a part of the robot_s to the cd checker
     #     :param jawwidth:
-    #     :param cmodel:
+    #     :param obj_cmodel:
     #     :return:
     #     """
     #     if hnd_name not in self.hnd_dict:
     #         raise ValueError("Hand name does not exist!")
     #     if jawwidth is not None:
     #         self.hnd_dict[hnd_name].change_jaw_width(jawwidth)
-    #     rel_pos, rel_rotmat = self.manipulator_dict[hnd_name].cvt_gl_pose_to_tcp(cmodel.get_pos(), cmodel.get_rotmat())
+    #     rel_pos, rel_rotmat = self.manipulator_dict[hnd_name].cvt_gl_pose_to_tcp(obj_cmodel.get_pos(), obj_cmodel.get_rotmat())
     #     intolist = [self.arm.lnks[0],
     #                 self.arm.lnks[1],
     #                 self.arm.lnks[2],
     #                 self.arm.lnks[3],
     #                 self.arm.lnks[4]]
-    #     self.oih_infos.append(self.cc.add_cdobj(cmodel, rel_pos, rel_rotmat, intolist))
+    #     self.oih_infos.append(self.cc.add_cdobj(obj_cmodel, rel_pos, rel_rotmat, intolist))
     #     return rel_pos, rel_rotmat
 
     # def get_oih_list(self):
     #     return_list = []
     #     for obj_info in self.oih_infos:
-    #         cmodel = obj_info['collision_model']
-    #         cmodel.set_pos(obj_info['gl_pos'])
-    #         cmodel.set_rotmat(obj_info['gl_rotmat'])
-    #         return_list.append(cmodel)
+    #         obj_cmodel = obj_info['collision_model']
+    #         obj_cmodel.set_pos(obj_info['gl_pos'])
+    #         obj_cmodel.set_rotmat(obj_info['gl_rotmat'])
+    #         return_list.append(obj_cmodel)
     #     return return_list
     #
-    # def release(self, hnd_name, cmodel, jawwidth=None):
+    # def release(self, hnd_name, obj_cmodel, jawwidth=None):
     #     """
-    #     the cmodel is added as a part of the robot_s to the cd checker
+    #     the obj_cmodel is added as a part of the robot_s to the cd checker
     #     :param jawwidth:
-    #     :param cmodel:
+    #     :param obj_cmodel:
     #     :return:
     #     """
     #     if hnd_name not in self.hnd_dict:
@@ -111,7 +92,7 @@ class Cobotta(ri.SglArmRbtInterface):
     #     if jawwidth is not None:
     #         self.hnd_dict[hnd_name].change_jaw_width(jawwidth)
     #     for obj_info in self.oih_infos:
-    #         if obj_info['collision_model'] is cmodel:
+    #         if obj_info['collision_model'] is obj_cmodel:
     #             self.cc.delete_cdobj(obj_info)
     #             self.oih_infos.remove(obj_info)
     #             break
@@ -164,7 +145,7 @@ if __name__ == '__main__':
     base = wd.World(cam_pos=[1.7, 1.7, 1.7], lookat_pos=[0, 0, .3])
 
     gm.gen_frame().attach_to(base)
-    robot_s = Cobotta(enable_cc=False)
+    robot_s = Cobotta(enable_cc=True)
     # robot_s.jaw_to(.02)
     robot_s.gen_meshmodel(alpha=.5, toggle_tcp_frame=False, toggle_jnt_frames=False).attach_to(base)
     robot_s.gen_stickmodel(toggle_tcp_frame=True, toggle_jnt_frames=True).attach_to(base)
@@ -176,6 +157,7 @@ if __name__ == '__main__':
     if jnt_values is not None:
         robot_s.goto_given_conf(jnt_values=jnt_values)
         robot_s.gen_meshmodel(toggle_tcp_frame=True).attach_to(base)
+    robot_s.show_cdprim()
     base.run()
     # robot_s.show_cdprimit()
     robot_s.gen_stickmodel().attach_to(base)

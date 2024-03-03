@@ -11,11 +11,11 @@ import motion.optimization_based.incremental_nik as inik
 base = wd.World(cam_pos=[1.5, -.5, 2], lookat_pos=[.3, -.03,.05])
 gm.gen_frame().attach_to(base)
 
-ground = cm.gen_box(extent=[5, 5, 1], rgba=[.57, .57, .5, .7])
+ground = cm.gen_box(xyz_lengths=[5, 5, 1], rgba=[.57, .57, .5, .7])
 ground.set_pos(np.array([0,0,-.5]))
 ground.attach_to(base)
 
-object_box = cm.gen_box(extent=[.02, .06, .2], rgba=[.7, .5, .3, .7])
+object_box = cm.gen_box(xyz_lengths=[.02, .06, .2], rgba=[.7, .5, .3, .7])
 object_box_gl_pos = np.array([.5,-.3,.1])
 object_box_gl_rotmat = np.eye(3)
 object_box.set_pos(object_box_gl_pos)

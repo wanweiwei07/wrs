@@ -166,7 +166,7 @@ class SystemInterface(object):
         if otherrobot_list is None:
             otherrobot_list = []
         collision_info = self.cc.is_collided(obstacle_list=obstacle_list,
-                                             otherrobot_list=otherrobot_list,
+                                             other_robot_list=otherrobot_list,
                                              toggle_contacts=toggle_contact_points)
         return collision_info
 
@@ -350,7 +350,7 @@ class SystemInterface(object):
         if otherrobot_list is None:
             otherrobot_list = []
         collision_info = self.cc.is_collided(obstacle_list=obstacle_list,
-                                             otherrobot_list=otherrobot_list,
+                                             other_robot_list=otherrobot_list,
                                              toggle_contacts=toggle_contact_points)
         return collision_info
 

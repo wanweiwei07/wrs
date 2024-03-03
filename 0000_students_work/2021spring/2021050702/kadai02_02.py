@@ -31,10 +31,10 @@ if __name__ == "__main__":
     goal_conf = yumi_s.ik(component_name, goal_pos, goal_rotmat)
 
     # 障害物を配置します
-    glass1 = cm.CollisionModel(initor="objects/glass1.stl", cdprimit_type="surface_balls", cdmesh_type="convex_hull")
+    glass1 = cm.CollisionModel(initor="objects/glass1.stl", cdprim_type="surface_balls", cdmesh_type="convex_hull")
     glass1.set_rgba([.9, .75, .35, 1])  # 黄色に変更
     glass1.set_pos(np.array([.25, -.3, .2]))
-    star1 = cm.CollisionModel(initor="objects/star2.stl", cdprimit_type="surface_balls", cdmesh_type="convex_hull")
+    star1 = cm.CollisionModel(initor="objects/star2.stl", cdprim_type="surface_balls", cdmesh_type="convex_hull")
     star1.set_rgba([.9, .75, .35, 1])  # 黄色に変更
     star1.set_pos(np.array([.25, -0.05, .15]))
     star1.set_rotmat(rm.rotmat_from_axangle(axis=[0, 0, 1], angle=math.pi / 2.))

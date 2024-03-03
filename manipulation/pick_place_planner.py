@@ -365,7 +365,7 @@ class PickPlacePlanner(adp.ADPlanner):
             # approach
             first_jaw_center_pos = first_goal_rotmat.dot(jaw_center_pos) + first_goal_pos
             first_jaw_center_rotmat = first_goal_rotmat.dot(jaw_center_rotmat)
-            # cmodel as an obstacle
+            # obj_cmodel as an obstacle
             objcm_copy = objcm.copy()
             objcm_copy.set_pos(first_goal_pos)
             objcm_copy.set_rotmat(first_goal_rotmat)
@@ -403,7 +403,7 @@ class PickPlacePlanner(adp.ADPlanner):
             # departure
             last_jaw_center_pos = last_goal_rotmat.dot(jaw_center_pos) + last_goal_pos
             last_jaw_center_rotmat = last_goal_rotmat.dot(jaw_center_rotmat)
-            # cmodel as an obstacle
+            # obj_cmodel as an obstacle
             objcm_copy.set_pos(last_goal_pos)
             objcm_copy.set_rotmat(last_goal_rotmat)
             conf_list_depart, jawwidthlist_depart = \
@@ -489,7 +489,7 @@ if __name__ == '__main__':
     # for grasp_info in grasp_info_list:
     #     conf_list, jawwidth_list, objpose_list = \
     #         pp_planner.gen_holding_moveto(hnd_name=hnd_name,
-    #                                       cmodel=cmodel,
+    #                                       obj_cmodel=obj_cmodel,
     #                                       grasp_info=grasp_info,
     #                                       obj_pose_list=goal_homomat_list,
     #                                       depart_direction_list=[np.array([0, 0, 1])] * len(goal_homomat_list),

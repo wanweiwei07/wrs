@@ -35,7 +35,7 @@ class Yumi(ri.RobotInterface):
         self.lft_body.lnks[1]['loc_pos'] = np.array([0, 0, 0])
         self.lft_body.lnks[1]['collision_model'] = cm.CollisionModel(
             os.path.join(this_dir, "meshes", "body.stl"),
-            cdprimit_type="user_defined", expand_radius=.005,
+            cdprim_type="user_defined", expand_radius=.005,
             userdef_cdprim_fn=self._base_combined_cdnp)
         self.lft_body.lnks[1]['rgba'] = [.7, .7, .7, 1]
         self.lft_body.lnks[2]['name'] = "yumi_lft_column"
@@ -304,7 +304,7 @@ class Yumi(ri.RobotInterface):
 
     def hold(self, hnd_name, objcm, jaw_width=None):
         """
-        the cmodel is added as a part of the robot_s to the cd checker
+        the obj_cmodel is added as a part of the robot_s to the cd checker
         :param jaw_width:
         :param objcm:
         :return:
@@ -454,7 +454,7 @@ class Yumi(ri.RobotInterface):
 
     def release(self, hnd_name, objcm, jaw_width=None):
         """
-        the cmodel is added as a part of the robot_s to the cd checker
+        the obj_cmodel is added as a part of the robot_s to the cd checker
         :param jaw_width:
         :param objcm:
         :param hnd_name:
@@ -602,7 +602,7 @@ if __name__ == '__main__':
     obj_pos = np.array([-.1, .3, .3])
     obj_rotmat = rm.rotmat_from_axangle([0, 1, 0], math.pi / 2)
     objfile = os.path.join(basis.__path__[0], 'objects', 'tubebig.stl')
-    objcm = cm.CollisionModel(objfile, cdprimit_type='cylinder')
+    objcm = cm.CollisionModel(objfile, cdprim_type='cylinder')
     objcm.set_pos(obj_pos)
     objcm.set_rotmat(obj_rotmat)
     objcm.attach_to(base)

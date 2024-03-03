@@ -13,7 +13,7 @@ import motion.probabilistic.rrt_differential_wheel_connect as rrtdwc
 
 base = wd.World(cam_pos=[2, -2, 2], lookat_pos=[.0, 0, .3])
 gm.gen_frame().attach_to(base)
-ground = cm.gen_box(extent=[5, 5, 1], rgba=[.57, .57, .5, .7])
+ground = cm.gen_box(xyz_lengths=[5, 5, 1], rgba=[.57, .57, .5, .7])
 ground.set_pos(np.array([0, 0, -.5]))
 ground.attach_to(base)
 ## show human
@@ -27,7 +27,7 @@ gm.gen_arrow(spos=np.array([0, -1.5, 1]),
 human.gen_stickmodel().attach_to(base)
 ## show table2
 table2_center = np.array([-1.3, .6, .483])
-table2_bottom = cm.gen_box(extent=[1.08, .42, .06], rgba=[150/255, 154/255, 152/255, 1])
+table2_bottom = cm.gen_box(xyz_lengths=[1.08, .42, .06], rgba=[150 / 255, 154 / 255, 152 / 255, 1])
 rotmat = rm.rotmat_from_axangle([0, 0, 1], math.pi/2)
 table2_bottom.set_rotmat(rotmat)
 table2_bottom.set_pos(table2_center - np.array([0, 0, .03]))
@@ -38,55 +38,55 @@ table2_bottom2.attach_to(base)
 table2_top = table2_bottom.copy()
 table2_top.set_pos(table2_center + np.array([0, 0, -.483 + 1 - .03]))
 table2_top.attach_to(base)
-table2_leg1 = cm.gen_box(extent=[0.06, 0.06, 1], rgba=[150/255, 154/255, 152/255, 1])
+table2_leg1 = cm.gen_box(xyz_lengths=[0.06, 0.06, 1], rgba=[150 / 255, 154 / 255, 152 / 255, 1])
 table2_leg1.set_pos(table2_center + np.array([-.21 + .03, .54 - .03, -.483 + .5]))
 table2_leg1.attach_to(base)
-table2_leg2 = cm.gen_box(extent=[0.06, 0.06, 1], rgba=[150/255, 154/255, 152/255, 1])
+table2_leg2 = cm.gen_box(xyz_lengths=[0.06, 0.06, 1], rgba=[150 / 255, 154 / 255, 152 / 255, 1])
 table2_leg2.set_pos(table2_center + np.array([.21 - .03, .54 - .03, -.483 + .5]))
 table2_leg2.attach_to(base)
-table2_leg3 = cm.gen_box(extent=[0.06, 0.06, 1], rgba=[150/255, 154/255, 152/255, 1])
+table2_leg3 = cm.gen_box(xyz_lengths=[0.06, 0.06, 1], rgba=[150 / 255, 154 / 255, 152 / 255, 1])
 table2_leg3.set_pos(table2_center + np.array([-.21 + .03, -.54 + .03, -.483 + .5]))
 table2_leg3.attach_to(base)
-table2_leg4 = cm.gen_box(extent=[0.06, 0.06, 1], rgba=[150/255, 154/255, 152/255, 1])
+table2_leg4 = cm.gen_box(xyz_lengths=[0.06, 0.06, 1], rgba=[150 / 255, 154 / 255, 152 / 255, 1])
 table2_leg4.set_pos(table2_center + np.array([.21 - .03, -.54 + .03, -.483 + .5]))
 table2_leg4.attach_to(base)
 ## show worktable
 table_center = np.array([0, -1, 0.8])
-table_plate = cm.gen_box(extent=[1.82, .8, .05], rgba=[.7, .5, .3, 1])
+table_plate = cm.gen_box(xyz_lengths=[1.82, .8, .05], rgba=[.7, .5, .3, 1])
 table_plate.set_pos(table_center - np.array([0, 0, .025]))
 table_plate.attach_to(base)
-table_leg1 = cm.gen_box(extent=[0.03, 0.03, .8], rgba=[150/255, 154/255, 152/255, 1])
+table_leg1 = cm.gen_box(xyz_lengths=[0.03, 0.03, .8], rgba=[150 / 255, 154 / 255, 152 / 255, 1])
 table_leg1.set_pos(table_center + np.array([.91 - .015, -.4 - .015, -.4]))
 table_leg1.attach_to(base)
-table_leg2 = cm.gen_box(extent=[0.03, 0.03, .8], rgba=[150/255, 154/255, 152/255, 1])
+table_leg2 = cm.gen_box(xyz_lengths=[0.03, 0.03, .8], rgba=[150 / 255, 154 / 255, 152 / 255, 1])
 table_leg2.set_pos(table_center + np.array([.91 - .015, .4 + .015, -.4]))
 table_leg2.attach_to(base)
-table_leg3 = cm.gen_box(extent=[0.03, 0.03, .8], rgba=[150/255, 154/255, 152/255, 1])
+table_leg3 = cm.gen_box(xyz_lengths=[0.03, 0.03, .8], rgba=[150 / 255, 154 / 255, 152 / 255, 1])
 table_leg3.set_pos(table_center + np.array([-.91 + .015, -.4 - .015, -.4]))
 table_leg3.attach_to(base)
-table_leg4 = cm.gen_box(extent=[0.03, 0.03, .8], rgba=[150/255, 154/255, 152/255, 1])
+table_leg4 = cm.gen_box(xyz_lengths=[0.03, 0.03, .8], rgba=[150 / 255, 154 / 255, 152 / 255, 1])
 table_leg4.set_pos(table_center + np.array([-.91 + .015, .4 + .015, -.4]))
 table_leg4.attach_to(base)
 ## show object
 height = .018/2
-object_box1 = cm.gen_box(extent=[.296, .92, .018], rgba=[.7, .5, .3, 1])   # no.3
+object_box1 = cm.gen_box(xyz_lengths=[.296, .92, .018], rgba=[.7, .5, .3, 1])   # no.3
 object_box1.set_pos(table2_center + np.array([0, 0, height]))
 object_box1.attach_to(base)
 height += .018
-object_box2 = cm.gen_box(extent=[.296, .92, .017], rgba=[.7, .5, .3, 1])   # no.4
+object_box2 = cm.gen_box(xyz_lengths=[.296, .92, .017], rgba=[.7, .5, .3, 1])   # no.4
 object_box2.set_pos(table2_center + np.array([0, 0, height]))
 object_box2.attach_to(base)
 height += .017
-object_box3 = cm.gen_box(extent=[.296, .88, .018], rgba=[.7, .5, .3, 1])   # no.2
+object_box3 = cm.gen_box(xyz_lengths=[.296, .88, .018], rgba=[.7, .5, .3, 1])   # no.2
 object_box3.set_pos(table2_center + np.array([0, 0, height]))
 object_box3.attach_to(base)
 object_box3.show_local_frame()
 pre_homo = object_box3.get_homomat()
 height += .018
-object_box4 = cm.gen_box(extent=[.296, .88, .018], rgba=[.7, .5, .3, .5])   # no.1
+object_box4 = cm.gen_box(xyz_lengths=[.296, .88, .018], rgba=[.7, .5, .3, .5])   # no.1
 object_box4.set_pos(table2_center + np.array([0, 0, height]))
 ## show tool table
-tool_table = cm.gen_box(extent=[.3, .2, .3], rgba=[150/255, 154/255, 152/255, 1])
+tool_table = cm.gen_box(xyz_lengths=[.3, .2, .3], rgba=[150 / 255, 154 / 255, 152 / 255, 1])
 tool_table_pos = np.array([table2_leg2.get_pos()[0] + .15 + .03, table2_leg2.get_pos()[1] - .1 + .03, .15])
 tool_table.set_pos(tool_table_pos)
 tool_table.attach_to(base)
@@ -97,7 +97,7 @@ for i in obstacle_list:
     i.show_cdprim()
 # base.run()
 ## show tool
-tool = cm.gen_box(extent=[.05, .2, .05])
+tool = cm.gen_box(xyz_lengths=[.05, .2, .05])
 tool_initial = tool.copy()
 tool_final = tool.copy()
 tool_initial.set_rgba([0, 0, 1, 1])
@@ -265,17 +265,17 @@ for dict_goal_pos in dist_pos:
     #         tool.set_homomat(objpose_list2[-1])
     #         # gen linear_objpose_list
     #         objcm_copy = tool.copy()
-    #         rel_obj_pos, rel_obj_rotmat = robot_s.hold(hnd_name=hnd_name, cmodel=objcm_copy)
-    #         robot_s.release(hnd_name=hnd_name, cmodel=objcm_copy)
+    #         rel_obj_pos, rel_obj_rotmat = robot_s.hold(hnd_name=hnd_name, obj_cmodel=objcm_copy)
+    #         robot_s.release(hnd_name=hnd_name, obj_cmodel=objcm_copy)
     #         linear_objpose_list = ppp_s.gen_object_motion(component_name="arm", conf_list=temp_linear_conf, obj_pos=rel_obj_pos,
     #                                                       obj_rotmat=rel_obj_rotmat, end_type='relative')
     #         # gen linear_objpose_list_box
     #         objcm_copy = target_obj.copy()
-    #         rel_obj_pos, rel_obj_rotmat = robot_s.hold(hnd_name=hnd_name, cmodel=objcm_copy)
+    #         rel_obj_pos, rel_obj_rotmat = robot_s.hold(hnd_name=hnd_name, obj_cmodel=objcm_copy)
     #         linear_objpose_list_box = ppp_s.gen_object_motion(component_name="arm", conf_list=temp_linear_conf,
     #                                                           obj_pos=rel_obj_pos, obj_rotmat=rel_obj_rotmat,
     #                                                           end_type='relative')
-    #         robot_s.release(hnd_name=hnd_name, cmodel=objcm_copy)
+    #         robot_s.release(hnd_name=hnd_name, obj_cmodel=objcm_copy)
     #         linear_conf_list = robot_s.cvt_to_alljnts(conf_list_arm=temp_linear_conf, hnd_name=hnd_name)
     #         linear_jawwidth_list = []
     #         for i, armjnts in enumerate(linear_conf_list):
@@ -286,7 +286,7 @@ for dict_goal_pos in dist_pos:
     #                                      start_conf=jnt_values_initial[:3],
     #                                      goal_conf=dict_goal_pos,
     #                                      obstacle_list=[],
-    #                                      otherrobot_list=[],
+    #                                      other_robot_list=[],
     #                                      ext_dist=.05,
     #                                      max_iter=300,
     #                                      max_time=15.0,

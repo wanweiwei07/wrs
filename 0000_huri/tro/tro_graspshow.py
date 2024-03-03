@@ -107,6 +107,6 @@ if __name__ == '__main__':
         print(iscollided)
         counter[0]+=1
         return task.again
-    # cmodel.reparentTo(base.render)
+    # obj_cmodel.reparentTo(base.render)
     taskMgr.doMethodLater(.1, update, "update", extraArgs=[predefinedgrasps, counter, hndnps, bmc, objcm], appendTask = True)
     base.run()

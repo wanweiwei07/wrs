@@ -1,10 +1,9 @@
 import copy
 import numpy as np
 import basis.robot_math as rm
-import modeling.model_collection as mmc
 import modeling.geometric_model as mgm
 import robot_sim._kinematics.jlchain as jl
-import robot_sim._kinematics.TBD_collision_checker as cc
+import robot_sim._kinematics.collision_checker as cc
 import robot_sim._kinematics.model_generator as rkmg
 
 
@@ -22,7 +21,6 @@ def delay_gl_tcp_decorator(method):
 
 def update_gl_tcp_decorator(method):
     def wrapper(self, *args, **kwargs):
-        # print(self._is_geom_delayed)
         if self._is_gl_tcp_delayed:
             self._gl_tcp_pos, self._gl_tcp_rotmat = self.compute_gl_tcp()
             self._is_gl_tcp_delayed = False
@@ -33,7 +31,7 @@ def update_gl_tcp_decorator(method):
 
 class ManipulatorInterface(object):
 
-    def __init__(self, pos=np.zeros(3), rotmat=np.eye(3), home_conf=np.zeros(6), name='manipulator'):
+    def __init__(self, pos=np.zeros(3), rotmat=np.eye(3), home_conf=np.zeros(6), name='manipulator', enable_cc=False):
         self.name = name
         self.pos = pos
         self.rotmat = rotmat
@@ -46,8 +44,12 @@ class ManipulatorInterface(object):
         self._is_gl_tcp_delayed = True
         self._gl_tcp_pos = np.zeros(3)
         self._gl_tcp_rotmat = np.eye(3)
+        # TODO self.ooflange = []
         # collision detection
-        self.cc = None
+        if enable_cc:
+            self.cc = cc.CollisionChecker("collision_checker")
+        else:
+            self.cc = None
 
     @property
     def jnts(self):
@@ -227,26 +229,8 @@ class ManipulatorInterface(object):
         gl_rotmat = self.gl_tcp_rotmat.dot(loc_rotmat)
         return (gl_pos, gl_rotmat)
 
-    def cvt_gl_to_tcp(self, gl_pos, gl_rotmat):
+    def cvt_gl_pose_to_tcp(self, gl_pos, gl_rotmat):
         return rm.rel_pose(self.gl_tcp_pos, self.gl_tcp_rotmat, gl_pos, gl_rotmat)
-
-    def is_collided(self, obstacle_list=[], otherrobot_list=[]):
-        """
-        Interface for "is cdprimit collided", must be implemented in child class
-        :param obstacle_list:
-        :param otherrobot_list:
-        :return:
-        author: weiwei
-        date: 20201223
-        """
-        return self.cc.is_collided(obstacle_list=obstacle_list,
-                                   otherrobot_list=otherrobot_list)
-
-    def show_cdprimit(self):
-        self.cc.show_cdprim()
-
-    def unshow_cdprimit(self):
-        self.cc.unshow_cdprim()
 
     def gen_meshmodel(self,
                       rgb=None,
@@ -287,26 +271,33 @@ class ManipulatorInterface(object):
     def gen_endsphere(self):
         return mgm.gen_sphere(pos=self.gl_tcp_pos)
 
-    def enable_cc(self):
-        self.cc = cc.CollisionChecker("collision_checker")
+    ## member functions for cdprimit collisions
 
-    def disable_cc(self):
+    def is_collided(self, obstacle_list=[], otherrobot_list=[], toggle_contacts=False):
         """
-        clear pairs and pdndp
+        Interface for "is cdprimit collided", must be implemented in child class
+        :param obstacle_list:
+        :param otherrobot_list:
+        :param toggle_contacts: if True, returns collision_result, contact_points; if False, only collision_reuls
+        :return:
+        author: weiwei
+        date: 20201223
+        """
+        if self.cc is None: # TODO assertion decorator
+            raise ValueError("Collision checker is not enabled!")
+        return self.cc.is_collided(obstacle_list=obstacle_list,
+                                   other_robot_list=otherrobot_list, toggle_contacts=toggle_contacts)
+
+    def show_cdprim(self):
+        """
+        draw cdprim to base, you can use this function to double check if tf was correct
         :return:
         """
-        for cdelement in self.cc.cce_dict:
-            cdelement['cdprimit_childid'] = -1
-        self.cc = None
-        # self.cc.cce_dict = []
-        # for child in self.cc.np.getChildren():
-        #     child.removeNode()
-        # self.cc.nbitmask = 0
+        if self.cc is None:
+            raise ValueError("Collision checker is not enabled!")
+        self.cc.show_cdprim()
 
-    def copy(self):
-        self_copy = copy.deepcopy(self)
-        # deepcopying colliders are problematic, I have to update it manually
-        if self.cc is not None:
-            for child in self_copy.cc.np.getChildren():  # empty NodePathCollection if the np does not have a child
-                self_copy.cc.cd_trav.addCollider(child, self_copy.cc.cd_handler)
-        return self_copy
+    def unshow_cdprim(self):
+        if self.cc is None:
+            raise ValueError("Collision checker is not enabled!")
+        self.cc.unshow_cdprim()

@@ -242,7 +242,7 @@ def rayhitmesh_drawpath_ss(obj_item, drawpath, direction=np.asarray((0, 0, 1)), 
     pos_pre = []
     for i, p in enumerate(drawpath):
         # try:
-        #     pos, nrml = rayhitmesh_point(obj_item.cmodel, obj_item.drawcenter, p)
+        #     pos, nrml = rayhitmesh_point(obj_item.obj_cmodel, obj_item.drawcenter, p)
         #     if list(pos) != list(pos_pre):
         #         pos_nrml_list.append([pos, nrml])
         #         pos_pre = pos

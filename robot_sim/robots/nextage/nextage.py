@@ -156,14 +156,14 @@ class Left_Manipulator(mi.ManipulatorInterface):
 #         self.central_body.lnks[0]['loc_pos'] = np.array([0, 0, 0.97])
 #         self.central_body.lnks[0]['collision_model'] = mcm.CollisionModel(
 #             os.path.join(this_dir, "meshes", "waist_link_mesh.dae"),
-#             cdprimit_type="user_defined", expand_radius=.005,
+#             cdprim_type="user_defined", expand_radius=.005,
 #             userdef_cdprim_fn=self._waist_combined_cdnp)
 #         self.central_body.lnks[0]['rgba'] = [.77, .77, .77, 1.0]
 #         self.central_body.lnks[1]['name'] = "nextage_chest"
 #         self.central_body.lnks[1]['loc_pos'] = np.array([0, 0, 0])
 #         self.central_body.lnks[1]['collision_model'] = mcm.CollisionModel(
 #             os.path.join(this_dir, "meshes", "chest_joint0_link_mesh.dae"),
-#             cdprimit_type="user_defined", expand_radius=.005,
+#             cdprim_type="user_defined", expand_radius=.005,
 #             userdef_cdprim_fn=self._chest_combined_cdnp)
 #         self.central_body.lnks[1]['rgba'] = [1, .65, .5, 1]
 #         self.central_body.lnks[2]['name'] = "head_joint0_link_mesh"
@@ -534,15 +534,15 @@ class Left_Manipulator(mi.ManipulatorInterface):
 #         else:
 #             raise NotImplementedError
 #
-#     def hold(self, cmodel, jaw_width=None, hnd_name='lft_hnd'):
+#     def hold(self, obj_cmodel, jaw_width=None, hnd_name='lft_hnd'):
 #         """
-#         the cmodel is added as a part of the robot_s to the cd checker
+#         the obj_cmodel is added as a part of the robot_s to the cd checker
 #         :param jaw_width:
-#         :param cmodel:
+#         :param obj_cmodel:
 #         :return:
 #         """
 #         # if hnd_name == 'lft_hnd':
-#         #     rel_pos, rel_rotmat = self.lft_arm.cvt_gl_to_loc_tcp(cmodel.get_pos(), cmodel.get_rotmat())
+#         #     rel_pos, rel_rotmat = self.lft_arm.cvt_gl_to_loc_tcp(obj_cmodel.get_pos(), obj_cmodel.get_rotmat())
 #         #     into_list = [self.lft_body.lnks[0],
 #         #                 self.lft_body.lnks[1],
 #         #                 self.lft_arm.lnks[1],
@@ -558,9 +558,9 @@ class Left_Manipulator(mi.ManipulatorInterface):
 #         #                 self.rgt_hnd.lft.lnks[0],
 #         #                 self.rgt_hnd.lft.lnks[1],
 #         #                 self.rgt_hnd.rgt.lnks[1]]
-#         #     self.lft_oih_infos.append(self.cc.add_cdobj(cmodel, rel_pos, rel_rotmat, into_list))
+#         #     self.lft_oih_infos.append(self.cc.add_cdobj(obj_cmodel, rel_pos, rel_rotmat, into_list))
 #         # elif hnd_name == 'rgt_hnd':
-#         #     rel_pos, rel_rotmat = self.rgt_arm.cvt_gl_to_loc_tcp(cmodel.get_pos(), cmodel.get_rotmat())
+#         #     rel_pos, rel_rotmat = self.rgt_arm.cvt_gl_to_loc_tcp(obj_cmodel.get_pos(), obj_cmodel.get_rotmat())
 #         #     into_list = [self.lft_body.lnks[0],
 #         #                 self.lft_body.lnks[1],
 #         #                 self.rgt_arm.lnks[1],
@@ -576,7 +576,7 @@ class Left_Manipulator(mi.ManipulatorInterface):
 #         #                 self.lft_hnd.lft.lnks[0],
 #         #                 self.lft_hnd.lft.lnks[1],
 #         #                 self.lft_hnd.rgt.lnks[1]]
-#         #     self.rgt_oih_infos.append(self.cc.add_cdobj(cmodel, rel_pos, rel_rotmat, into_list))
+#         #     self.rgt_oih_infos.append(self.cc.add_cdobj(obj_cmodel, rel_pos, rel_rotmat, into_list))
 #         # else:
 #         #     raise ValueError("hnd_name must be lft_hnd or rgt_hnd!")
 #         # if jaw_width is not None:
@@ -639,10 +639,10 @@ class Left_Manipulator(mi.ManipulatorInterface):
 #             raise ValueError("hnd_name must be lft_hnd or rgt_hnd!")
 #         return_list = []
 #         for obj_info in oih_infos:
-#             cmodel = obj_info['collision_model']
-#             cmodel.set_pos(obj_info['gl_pos'])
-#             cmodel.set_rotmat(obj_info['gl_rotmat'])
-#             return_list.append(cmodel)
+#             obj_cmodel = obj_info['collision_model']
+#             obj_cmodel.set_pos(obj_info['gl_pos'])
+#             obj_cmodel.set_rotmat(obj_info['gl_rotmat'])
+#             return_list.append(obj_cmodel)
 #         return return_list
 #
 #     def get_oih_glhomomat_list(self, hnd_name='lft_hnd'):
@@ -664,11 +664,11 @@ class Left_Manipulator(mi.ManipulatorInterface):
 #             return_list.append(rm.homomat_from_posrot(obj_info['gl_pos']), obj_info['gl_rotmat'])
 #         return return_list
 #
-#     def get_oih_relhomomat(self, cmodel, hnd_name='lft_hnd'):
+#     def get_oih_relhomomat(self, obj_cmodel, hnd_name='lft_hnd'):
 #         """
 #         TODO: useless? 20210320
 #         oih = object in hand list
-#         :param cmodel
+#         :param obj_cmodel
 #         :param hnd_name:
 #         :return:
 #         author: weiwei
@@ -681,14 +681,14 @@ class Left_Manipulator(mi.ManipulatorInterface):
 #         else:
 #             raise ValueError("hnd_name must be lft_hnd or rgt_hnd!")
 #         for obj_info in oih_info_list:
-#             if obj_info['collision_model'] is cmodel:
+#             if obj_info['collision_model'] is obj_cmodel:
 #                 return rm.homomat_from_posrot(obj_info['rel_pos']), obj_info['rel_rotmat']
 #
-#     def release(self, hnd_name, cmodel, jaw_width=None):
+#     def release(self, hnd_name, obj_cmodel, jaw_width=None):
 #         """
-#         the cmodel is added as a part of the robot_s to the cd checker
+#         the obj_cmodel is added as a part of the robot_s to the cd checker
 #         :param jaw_width:
-#         :param cmodel:
+#         :param obj_cmodel:
 #         :param hnd_name:
 #         :return:
 #         """
@@ -701,7 +701,7 @@ class Left_Manipulator(mi.ManipulatorInterface):
 #         if jaw_width is not None:
 #             self.jaw_to(hnd_name, jaw_width)
 #         for obj_info in oih_infos:
-#             if obj_info['collision_model'] is cmodel:
+#             if obj_info['collision_model'] is obj_cmodel:
 #                 self.cc.delete_cdobj(obj_info)
 #                 oih_infos.remove(obj_info)
 #                 break
@@ -793,15 +793,15 @@ class Left_Manipulator(mi.ManipulatorInterface):
 #         #                            toggle_jnt_frames=toggle_jnt_frames,
 #         #                            rgba=rgba).attach_to(meshmodel)
 #         for obj_info in self.lft_oih_infos:
-#             cmodel = obj_info['collision_model']
-#             cmodel.set_pos(obj_info['gl_pos'])
-#             cmodel.set_rotmat(obj_info['gl_rotmat'])
-#             cmodel.copy().attach_to(meshmodel)
+#             obj_cmodel = obj_info['collision_model']
+#             obj_cmodel.set_pos(obj_info['gl_pos'])
+#             obj_cmodel.set_rotmat(obj_info['gl_rotmat'])
+#             obj_cmodel.copy().attach_to(meshmodel)
 #         for obj_info in self.rgt_oih_infos:
-#             cmodel = obj_info['collision_model']
-#             cmodel.set_pos(obj_info['gl_pos'])
-#             cmodel.set_rotmat(obj_info['gl_rotmat'])
-#             cmodel.copy().attach_to(meshmodel)
+#             obj_cmodel = obj_info['collision_model']
+#             obj_cmodel.set_pos(obj_info['gl_pos'])
+#             obj_cmodel.set_rotmat(obj_info['gl_rotmat'])
+#             obj_cmodel.copy().attach_to(meshmodel)
 #         return meshmodel
 
 
@@ -846,7 +846,7 @@ if __name__ == '__main__':
     obj_pos = np.array([-.1, .3, .3])
     obj_rotmat = rm.rotmat_from_axangle([0, 1, 0], math.pi / 2)
     objfile = os.path.join(basis.__path__[0], 'objects', 'tubebig.stl')
-    objcm = cm.CollisionModel(objfile, cdprimit_type='cylinder')
+    objcm = cm.CollisionModel(objfile, cdprim_type='cylinder')
     objcm.set_pos(obj_pos)
     objcm.set_rotmat(obj_rotmat)
     objcm.attach_to(base)

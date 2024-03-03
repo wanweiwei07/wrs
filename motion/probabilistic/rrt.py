@@ -49,10 +49,10 @@ class RRT(object):
         date: 20220326
         """
         # self.robot_s.fk(component_name=component_name, jnt_values=conf)
-        # return self.robot_s.is_collided(obstacle_list=obstacle_list, otherrobot_list=otherrobot_list)
+        # return self.robot_s.is_collided(obstacle_list=obstacle_list, other_robot_list=other_robot_list)
         if self.robot_s.are_jnts_in_ranges(component_name=component_name, jnt_values=conf):
             self.robot_s.fk(component_name=component_name, joint_values=conf)
-            return self.robot_s.is_collided(obstacle_list=obstacle_list, otherrobot_list=otherrobot_list)
+            return self.robot_s.is_collided(obstacle_list=obstacle_list, other_robot_list=otherrobot_list)
         else:
             print("The given joint angles are out of joint limits.")
             return True
@@ -180,7 +180,7 @@ class RRT(object):
             # if (len(shortcut) <= (j - i)) and all(not self._is_collided(component_name=component_name,
             #                                                            conf=conf,
             #                                                            obstacle_list=obstacle_list,
-            #                                                            otherrobot_list=otherrobot_list)
+            #                                                            other_robot_list=other_robot_list)
             #                                      for conf in shortcut):
             if all(not self._is_collided(component_name=component_name,
                                          conf=conf,
@@ -359,7 +359,7 @@ class RRT_v2(object):
         """
         if self.robot_s.are_jnts_in_ranges(jnt_values=conf):
             self.robot_s.fk(joint_values=conf)
-            return self.robot_s.is_collided(obstacle_list=obstacle_list, otherrobot_list=otherrobot_list)
+            return self.robot_s.is_collided(obstacle_list=obstacle_list, other_robot_list=otherrobot_list)
         else:
             print("The given joint angles are out of joint limits.")
             return True
@@ -485,7 +485,7 @@ class RRT_v2(object):
             # if (len(shortcut) <= (j - i)) and all(not self._is_collided(component_name=component_name,
             #                                                            conf=conf,
             #                                                            obstacle_list=obstacle_list,
-            #                                                            otherrobot_list=otherrobot_list)
+            #                                                            other_robot_list=other_robot_list)
             #                                      for conf in shortcut):
             if all(not self._is_collided(conf=conf,
                                          obstacle_list=obstacle_list,

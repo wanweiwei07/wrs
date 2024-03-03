@@ -153,7 +153,7 @@ class CobottaRIPPS(ri.RobotInterface):
 
     def hold(self, hnd_name, objcm, jaw_width=None):
         """
-        the cmodel is added as a part of the robot_s to the cd checker
+        the obj_cmodel is added as a part of the robot_s to the cd checker
         :param hnd_name:
         :param jaw_width:
         :param objcm:
@@ -183,7 +183,7 @@ class CobottaRIPPS(ri.RobotInterface):
 
     def release(self, hnd_name, objcm, jawwidth=None):
         """
-        the cmodel is added as a part of the robot_s to the cd checker
+        the obj_cmodel is added as a part of the robot_s to the cd checker
         :param jawwidth:
         :param objcm:
         :return:

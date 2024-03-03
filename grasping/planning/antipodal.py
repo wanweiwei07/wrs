@@ -7,7 +7,7 @@ from scipy.spatial import cKDTree
 import modeling.geometric_model as mgm
 
 
-def plan_contact_pairs(cmodel,
+def plan_contact_pairs(obj_cmodel,
                        angle_between_contact_normals=math.radians(160),
                        max_samples=100,
                        min_dist_between_sampled_contact_points=.005,
@@ -21,9 +21,9 @@ def plan_contact_pairs(cmodel,
     author: weiwei
     date: 20190805, 20210504
     """
-    contact_points, contact_normals = cmodel.sample_surface(n_samples=max_samples,
-                                                            radius=min_dist_between_sampled_contact_points / 2,
-                                                            toggle_option='normals')
+    contact_points, contact_normals = obj_cmodel.sample_surface(n_samples=max_samples,
+                                                                radius=min_dist_between_sampled_contact_points / 2,
+                                                                toggle_option='normals')
     contact_pairs = []
     tree = cKDTree(contact_points)
     near_history = np.array([0] * len(contact_points), dtype=bool)
@@ -32,7 +32,7 @@ def plan_contact_pairs(cmodel,
         if near_history[i]:  # if the point was previous near to some points, ignore
             continue
         contact_n0 = contact_normals[i]
-        hit_points, hit_normals = cmodel.ray_hit(contact_p0 - contact_n0 * .001, contact_p0 - contact_n0 * 100)
+        hit_points, hit_normals = obj_cmodel.ray_hit(contact_p0 - contact_n0 * .001, contact_p0 - contact_n0 * 100)
         if len(hit_points) > 0:
             for contact_p1, contact_n1 in zip(hit_points, hit_normals):
                 if np.dot(contact_n0, contact_n1) < dot_thresh:
@@ -48,7 +48,7 @@ def plan_contact_pairs(cmodel,
 
 
 def plan_gripper_grasps(gripper,
-                        cmodel,
+                        obj_cmodel,
                         angle_between_contact_normals=math.radians(160),
                         rotation_interval=math.radians(22.5),
                         max_samples=100,
@@ -57,7 +57,7 @@ def plan_gripper_grasps(gripper,
                         toggle_dbg=False):
     """
     :param gripper:
-    :param cmodel:
+    :param obj_cmodel:
     :param angle_between_contact_normals:
     :param rotation_granularity:
     :param max_samples:
@@ -65,7 +65,7 @@ def plan_gripper_grasps(gripper,
     :param contact_offset: offset at the cotnact to avoid being closely in touch with object surfaces
     :return: a list [[jaw_width, jaw_center_pos, gripper_root_pos, gripper_root_rotmat], ...]
     """
-    contact_pairs = plan_contact_pairs(cmodel,
+    contact_pairs = plan_contact_pairs(obj_cmodel,
                                        max_samples=max_samples,
                                        min_dist_between_sampled_contact_points=min_dist_between_sampled_contact_points,
                                        angle_between_contact_normals=angle_between_contact_normals)
@@ -89,7 +89,7 @@ def plan_gripper_grasps(gripper,
         jaw_width = np.linalg.norm(contact_p0 - contact_p1) + contact_offset * 2
         if jaw_width > gripper.jaw_range[1]:
             continue
-        grasp_info_list += gau.define_gripper_grasps_with_rotation(gripper, cmodel, gl_jaw_center_pos=contact_center,
+        grasp_info_list += gau.define_gripper_grasps_with_rotation(gripper, obj_cmodel, gl_jaw_center_pos=contact_center,
                                                                    gl_approaching_vec=rm.orthogonal_vector(contact_n0),
                                                                    gl_fgr0_opening_vec=contact_n0, jaw_width=jaw_width,
                                                                    rotation_interval=rotation_interval,
@@ -97,16 +97,16 @@ def plan_gripper_grasps(gripper,
     return grasp_info_list
 
 
-def write_pickle_file(cmodel_name, grasp_info_list, path=None, file_name='preannotated_grasps.pickle', append=False):
+def write_pickle_file(obj_name, grasp_info_list, path=None, file_name='preannotated_grasps.pickle', append=False):
     if path is None:
         path = os.getcwd()
-    gau.write_pickle_file(cmodel_name, grasp_info_list, path=path, file_name=file_name, append=append)
+    gau.write_pickle_file(obj_name, grasp_info_list, path=path, file_name=file_name, append=append)
 
 
-def load_pickle_file(objcm_name, root=None, file_name='preannotated_grasps.pickle'):
-    if root is None:
-        root = './'
-    return gau.load_pickle_file(objcm_name, path=root, file_name=file_name)
+def load_pickle_file(obj_name, path=None, file_name='preannotated_grasps.pickle'):
+    if path is None:
+        path = os.getcwd()
+    return gau.load_pickle_file(obj_name, path=path, file_name=file_name)
 
 
 if __name__ == '__main__':

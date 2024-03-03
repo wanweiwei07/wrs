@@ -1,11 +1,7 @@
 import copy
 import numpy as np
-import modeling.model_collection as mmc
-import modeling.collision_model as mcm
 import robot_sim._kinematics.jl as rkjl
 import robot_sim._kinematics.jlchain as rkjlc
-import robot_sim._kinematics.collision_checker as rkcc
-import modeling.geometric_model as mgm
 import robot_sim._kinematics.model_generator as rkmg
 import modeling.constant as mc
 import basis.robot_math as rm
@@ -40,8 +36,6 @@ class EEInterface(object):
         # acting center of the tool
         self.loc_acting_center_pos = np.zeros(3)
         self.loc_acting_center_rotmat = np.eye(3)
-        # collision detection
-        self.cc = None
         # cd mesh collection for precise collision checking
         self.cdmesh_elements = []
         # object grasped/held/attached to end-effector; oiee = object in end-effector
@@ -59,7 +53,7 @@ class EEInterface(object):
     @assert_oiee_decorator
     def hold(self, obj_cmodel, **kwargs):
         """
-        the cmodel is saved into an oiee_list, while considering its relative pose to the ee's pos and rotmat
+        the obj_cmodel is saved into an oiee_list, while considering its relative pose to the ee's pos and rotmat
         **kwargs is for polyphorism purpose
         :param obj_cmodel: a collision model
         :return:
@@ -73,7 +67,7 @@ class EEInterface(object):
 
     def release(self, obj_cmodel, **kwargs):
         """
-        the cmodel is saved into an oiee_list, while considering its relative pose to the ee's pos and rotmat
+        the obj_cmodel is saved into an oiee_list, while considering its relative pose to the ee's pos and rotmat
         **kwargs is for polyphorism purpose
         :param obj_cmodel: a collision model
         :return:
@@ -82,39 +76,28 @@ class EEInterface(object):
         """
         is_found = False
         for oiee in self.oiee_list:
-            if oiee.cmodel is obj_cmodel:
+            if oiee.obj_cmodel is obj_cmodel:
                 is_found = True
                 self.oiee_list.remove(oiee)
                 break
         if not is_found:
             raise ValueError("The specified object is not held in the hand!")
 
-    def is_collided(self, obstacle_list=[], otherrobot_list=[]):
-        """
-        Interface for "is cdprimit collided", must be implemented in child class
-        :param obstacle_list:
-        :param otherrobot_list:
-        :return:
-        author: weiwei
-        date: 20201223
-        """
-        return_val = self.cc.is_collided(obstacle_list=obstacle_list, otherrobot_list=otherrobot_list)
-        return return_val
-
     def is_mesh_collided(self, cmodel_list=[], toggle_dbg=False):
         """
+        check collision of cd meshes
         :param cmodel_list:
         :param toggle_dbg: show cd mesh and draw colliding points in case of collision
         :return:
         """
         for i, cdme in enumerate(self.cdmesh_elements):
-            if cdme.cmodel is not None:
-                is_collided, collision_points = cdme.cmodel.is_mcdwith(cmodel_list, True)
+            if cdme.obj_cmodel is not None:
+                is_collided, collision_points = cdme.obj_cmodel.is_mcdwith(cmodel_list, True)
                 if is_collided:
                     if toggle_dbg:
                         import modeling.geometric_model as mgm
-                        cdme.cmodel.show_cdmesh()
-                        mgm.GeometricModel(cdme.cmodel).attach_to(base)
+                        cdme.obj_cmodel.show_cdmesh()
+                        mgm.GeometricModel(cdme.obj_cmodel).attach_to(base)
                         for cmodel in cmodel_list:
                             cmodel.show_cdmesh()
                         print(collision_points)
@@ -159,19 +142,6 @@ class EEInterface(object):
         self.fix_to(ee_root_pos, ee_root_rotmat)
         return [acting_center_pos, acting_center_rotmat, ee_root_pos, ee_root_rotmat]
 
-    def show_cdprimit(self):
-        self.cc.show_cdprim()
-
-    def unshow_cdprimit(self):
-        self.cc.unshow_cdprim()
-
-        # for i, cdelement in enumerate(self.cc.cce_dict):
-        #     pos = cdelement['gl_pos']
-        #     rotmat = cdelement['gl_rotmat']
-        #     self.cdmesh_collection.cm_list[i].set_pos(pos)
-        #     self.cdmesh_collection.cm_list[i].set_rotmat(rotmat)
-        # self.cdmesh_collection.show_cdmesh()
-
     def gen_stickmodel(self, toggle_tcp_frame=False, toggle_jnt_frames=False, name='ee_stickmodel'):
         raise NotImplementedError
 
@@ -208,23 +178,3 @@ class EEInterface(object):
         rkmg.gen_indicated_frame(spos=self.pos,
                                  gl_pos=gl_acting_center_pos,
                                  gl_rotmat=gl_acting_center_rotmat).attach_to(parent)
-
-    def enable_cc(self):
-        self.cc = cc.CollisionChecker("collision_checker")
-
-    def disable_cc(self):
-        """
-        clear pairs and pdndp
-        :return:
-        """
-        for cdelement in self.cc.cce_dict:
-            cdelement['cdprimit_childid'] = -1
-        self.cc = None
-
-    def copy(self):
-        self_copy = copy.deepcopy(self)
-        # deepcopying colliders are problematic, I have to update it manually
-        if self.cc is not None:
-            for child in self_copy.cc.np.getChildren():
-                self_copy.cc.cd_trav.addCollider(child, self_copy.cc.cd_handler)
-        return self_copy

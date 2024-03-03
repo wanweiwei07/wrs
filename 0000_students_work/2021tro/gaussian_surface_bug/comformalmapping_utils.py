@@ -93,8 +93,8 @@ def lscm_pcd(objpcd, objnrmls, downsampling_ratio=0.99, downsampling_step=None, 
     # TODO: fix normal index error
     objcm = pcdu.reconstruct_surface(objpcd)
     time_start = time.time()
-    # cmodel = remove_edge(cmodel, edge=5)
-    # cmodel = remove_edge(cmodel, edge=20)
+    # obj_cmodel = remove_edge(obj_cmodel, edge=5)
+    # obj_cmodel = remove_edge(obj_cmodel, edge=20)
     objcm.trimesh.remove_unreferenced_vertices()
     objcm.trimesh.remove_degenerate_faces()
 
@@ -130,9 +130,9 @@ def lscm_pcd(objpcd, objnrmls, downsampling_ratio=0.99, downsampling_step=None, 
     print("average parametrization scale", np.mean(scale_list))
     print("lscm parametrization time cost", time.time() - time_start)
 
-    # cmodel = pcdu.reconstruct_surface(vertices)
-    # cmodel.setColor(0.5, 0.3, 0.5, 1)
-    # cmodel.reparentTo(base.render)
+    # obj_cmodel = pcdu.reconstruct_surface(vertices)
+    # obj_cmodel.setColor(0.5, 0.3, 0.5, 1)
+    # obj_cmodel.reparentTo(base.render)
 
     if toggledebug:
         # kdt = KDTree(np.asarray(uv), leaf_size=100, metric='euclidean')
@@ -166,7 +166,7 @@ def lscm_objcm(objcm, toggledebug=False, downsampling_ratio=0.99, downsampling_s
     :return:
     """
     time_start = time.time()
-    # cmodel = remove_edge(cmodel, edge=5)
+    # obj_cmodel = remove_edge(obj_cmodel, edge=5)
     objcm.trimesh.remove_unreferenced_vertices()
     objcm.trimesh.remove_degenerate_faces()
 
@@ -191,9 +191,9 @@ def lscm_objcm(objcm, toggledebug=False, downsampling_ratio=0.99, downsampling_s
     print("average parametrization scale", np.mean(scale_list))
     print("lscm parametrization time cost", time.time() - time_start)
 
-    # cmodel = pcdu.reconstruct_surface(vertices)
-    # cmodel.setColor(0.5, 0.3, 0.5, 1)
-    # cmodel.reparentTo(base.render)
+    # obj_cmodel = pcdu.reconstruct_surface(vertices)
+    # obj_cmodel.setColor(0.5, 0.3, 0.5, 1)
+    # obj_cmodel.reparentTo(base.render)
 
     if toggledebug:
         # kdt = KDTree(np.asarray(uv), leaf_size=100, metric='euclidean')
@@ -226,8 +226,8 @@ def lscm_objcm(objcm, toggledebug=False, downsampling_ratio=0.99, downsampling_s
         plt.show()
 
     # if True:
-    #     cmodel.setColor(1, 1, 1, 0.7)
-    #     cmodel.reparentTo(base.render)
+    #     obj_cmodel.setColor(1, 1, 1, 0.7)
+    #     obj_cmodel.reparentTo(base.render)
     #     for i, n in enumerate(normals):
     #         import random
     #         v = random.choice(range(0, 10))
@@ -279,9 +279,9 @@ def lscm_parametrization_objcm_temp(objcm, toggledebug=True, sample_num=50000):
                 new_nrmls.append(nrmls[face_id])
                 break
 
-    # cmodel = pcdu.reconstruct_surface(np.asarray(new_vs))
-    # vs = cmodel.trimesh.vertices
-    # faces = cmodel.trimesh.faces
+    # obj_cmodel = pcdu.reconstruct_surface(np.asarray(new_vs))
+    # vs = obj_cmodel.trimesh.vertices
+    # faces = obj_cmodel.trimesh.faces
     # nrmls = []
     # new_uv_sort = []
     # for i, p_i in enumerate(vs):
@@ -298,8 +298,8 @@ def lscm_parametrization_objcm_temp(objcm, toggledebug=True, sample_num=50000):
     #             break
     # print(len(vs), len(new_uv), len(new_uv_sort))
 
-    # cmodel.setColor(0.5, 0.3, 0.5, 1)
-    # cmodel.reparentTo(base.render)
+    # obj_cmodel.setColor(0.5, 0.3, 0.5, 1)
+    # obj_cmodel.reparentTo(base.render)
     # base.run()
 
     if toggledebug:
@@ -361,7 +361,7 @@ if __name__ == '__main__':
     # el.loadObj("cylinder.stl", transparency=1).reparentTo(base.render)
 
     drawpath_ms = du.gen_grid(side_len=80)
-    # objpcd, objnormals = pcdu.get_objpcd_withnormals(cmodel, objmat4=np.eye(4), sample_num=sample_num, toggledebug=False)
+    # objpcd, objnormals = pcdu.get_objpcd_withnormals(obj_cmodel, objmat4=np.eye(4), sample_num=sample_num, toggledebug=False)
     # uvs, vs, normals, avg_scale = lscm_pcd(objpcd, objnormals, toggledebug=True)
     uvs, vs, normals, faces, avg_scale = lscm_objcm(objcm, toggledebug=True)
     uv_center = get_uv_center(uvs)

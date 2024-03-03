@@ -13,14 +13,14 @@ from panda3d.core import LPoint3, TransformState, LineSegs, TransparencyAttrib
 BITMASK_EXT = BitMask32(2 ** 31)
 
 
-def copy_cdprimitive(cmodel):
+def copy_cdprim(cmodel):
     return copy.deepcopy(cmodel.cdprim)
 
 
-def copy_cdprimitive_attach_to(cmodel,
-                               tgt_pdndp,
-                               homomat=None,
-                               clear_mask=False) -> NodePath:
+def copy_cdprim_attach_to(cmodel,
+                          tgt_pdndp,
+                          homomat=None,
+                          clear_mask=False) -> NodePath:
     return_pdcndp = cmodel.copy_reference_cdprim()
     return_pdcndp.reparentTo(tgt_pdndp)
     if homomat is not None:
@@ -32,9 +32,9 @@ def copy_cdprimitive_attach_to(cmodel,
     return return_pdcndp
 
 
-def change_cdmask(cdprimitive, collision_mask: BitMask32, action="new", type="both"):
+def change_cdmask(cdprim, collision_mask: BitMask32, action="new", type="both"):
     """
-    :param cdprimitive: NodePath of CollisionNode
+    :param cdprim: NodePath of CollisionNode
     :param action: "add", "remove", "new"
     :param type: 'from', 'into', 'both'
     :param collision_mask:
@@ -64,8 +64,8 @@ def change_cdmask(cdprimitive, collision_mask: BitMask32, action="new", type="bo
             raise KeyError("Action should be add, remove, or new.")
 
     if type == "both":
-        change_cdmask(cdprimitive=cdprimitive, collision_mask=collision_mask, action=action, type="from")
-        change_cdmask(cdprimitive=cdprimitive, collision_mask=collision_mask, action=action, type="into")
+        change_cdmask(cdprim=cdprim, collision_mask=collision_mask, action=action, type="from")
+        change_cdmask(cdprim=cdprim, collision_mask=collision_mask, action=action, type="into")
     else:
         if type == "from":
             get_method_name = "getFromCollideMask"
@@ -75,7 +75,7 @@ def change_cdmask(cdprimitive, collision_mask: BitMask32, action="new", type="bo
             set_method_name = "setIntoCollideMask"
         else:
             raise KeyError("Type should be from, into, or both.")
-        for child_pdndp in cdprimitive.getChildren():
+        for child_pdndp in cdprim.getChildren():
             get_method_to_call = getattr(child_pdndp.node(), get_method_name)
             set_method_to_call = getattr(child_pdndp.node(), set_method_name)
             _change_cdmask(collision_mask, action, get_method_to_call, set_method_to_call)
@@ -83,7 +83,7 @@ def change_cdmask(cdprimitive, collision_mask: BitMask32, action="new", type="bo
 
 def update_pose(cdprimitive, cmodel):
     """
-    update panda3d collision nodepath using the pos and quat of cmodel.pdndp
+    update panda3d collision nodepath using the pos and quat of obj_cmodel.pdndp
     :param cdprimitive:
     :param cmodel:
     :return:
@@ -403,7 +403,7 @@ if __name__ == '__main__':
 
     base = wd.World(cam_pos=[.7, .7, .7], lookat_pos=[0, 0, 0])
     file_path = os.path.join(basis.__path__[0], 'objects', 'bunnysim.stl')
-    cmodel = mcm.CollisionModel(file_path, cdprimit_type=mc.CDPType.CYLINDER)
+    cmodel = mcm.CollisionModel(file_path, cdprim_type=mc.CDPType.CYLINDER)
     cmodel.rgba = np.array([.2, .5, 0, 1])
     cmodel.pos = np.array([.1, .01, .01])
     cmodel.attach_to(base)
@@ -413,7 +413,7 @@ if __name__ == '__main__':
     for i in range(100):
         cmodel_list.append(
             mcm.CollisionModel(os.path.join(basis.__path__[0], 'objects', 'housing.stl'),
-                               cdprimit_type=mc.CDPType.BOX))
+                               cdprim_type=mc.CDPType.BOX))
         cmodel_list[-1].pos = np.random.random_sample((3,))
         cmodel_list[-1].rgba = np.array([1, .5, 0, 1])
         cmodel_list[-1].attach_to(base)
