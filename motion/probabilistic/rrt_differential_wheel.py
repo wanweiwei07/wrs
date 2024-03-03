@@ -308,7 +308,7 @@ if __name__ == '__main__':
         ((10, 5), 3)
     ]  # [x,y,size]
     # Set Initial parameters
-    robot = xyb.XYTBot()
+    robot = xyb.XYWBot()
     rrtdw = RRTDW(robot)
     path = rrtdw.plan(start_conf=np.array([0, 0, 0]), goal_conf=np.array([6, 9, 0]), obstacle_list=obstacle_list,
                       ext_dist=1, rand_rate=70, max_time=300, component_name='all', animation=True)

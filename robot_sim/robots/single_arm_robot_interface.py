@@ -1,9 +1,8 @@
-import copy
 import numpy as np
 import robot_sim._kinematics.collision_checker as cc
+import robot_sim.robots.robot_interface as ri
 
-
-class SglArmRbtInterface(object):
+class SglArmRobotInterface(ri.RobotInterface):
     """
     a robot is a combination of a manipulator and an end_type-effector
     author: weiwei
@@ -11,16 +10,9 @@ class SglArmRbtInterface(object):
     """
 
     def __init__(self, pos=np.zeros(3), rotmat=np.eye(3), name='robot_interface', enable_cc=False):
-        self.name = name
-        self.pos = pos
-        self.rotmat = rotmat
-        # component map for quick access
+        super().__init__(pos=pos, rotmat=rotmat, name=name, enable_cc=enable_cc)
         self.manipulator = None
         self.end_effector = None
-        if enable_cc:
-            self.cc = cc.CollisionChecker("collision_checker")
-        else:
-            self.cc = None
 
     @property
     def gl_tcp_pos(self):
@@ -29,12 +21,6 @@ class SglArmRbtInterface(object):
     @property
     def gl_tcp_rotmat(self):
         return self.manipulator.gl_tcp_rotmat
-
-    def change_name(self, name):
-        self.name = name
-
-    def fix_to(self, pos, rotmat):
-        raise NotImplementedError
 
     def _update_end_effector(self):
         self.end_effector.fix_to(pos=self.manipulator.gl_flange_pos, rotmat=self.manipulator.gl_flange_rotmat)
@@ -108,53 +94,3 @@ class SglArmRbtInterface(object):
     #             self.cc.delete_cdobj(obj_info)
     #             self.oih_infos.remove(obj_info)
     #             break
-
-    def gen_stickmodel(self,
-                       toggle_tcp_frame=False,
-                       toggle_jnt_frames=False,
-                       toggle_flange_frame=False,
-                       name='single_arm_robot_interface_stickmodel'):
-        raise NotImplementedError
-
-    def gen_meshmodel(self,
-                      rgb=None,
-                      alpha=None,
-                      toggle_tcp_frame=False,
-                      toggle_jnt_frames=False,
-                      toggle_flange_frame=False,
-                      toggle_cdprim=False,
-                      toggle_cdmesh=False,
-                      name='single_arm_robot_interface_meshmodel'):
-        raise NotImplementedError
-
-    def is_collided(self, obstacle_list=None, other_robot_list=None, toggle_contacts=False):
-        """
-        Interface for "is cdprimit collided", must be implemented in child class
-        :param obstacle_list:
-        :param other_robot_list:
-        :param toggle_contacts: debug
-        :return: see CollisionChecker is_collided for details
-        author: weiwei
-        date: 20201223
-        """
-        #TODO cc assertion decorator
-        if obstacle_list is None:
-            obstacle_list = []
-        if other_robot_list is None:
-            other_robot_list = []
-        collision_info = self.cc.is_collided(obstacle_list=obstacle_list,
-                                             other_robot_list=other_robot_list,
-                                             toggle_contacts=toggle_contacts)
-        return collision_info
-
-    def show_cdprim(self):
-        """
-        draw cdprim to base, you can use this function to double check if tf was correct
-        :return:
-        """
-        #TODO cc assertion decorator
-        self.cc.show_cdprim()
-
-    def unshow_cdprim(self):
-        #TODO cc assertion decorator
-        self.cc.unshow_cdprim()

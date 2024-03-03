@@ -240,7 +240,7 @@ class PickPlacePlanner(adp.ADPlanner):
                                                           start_conf=conf_list_depart[-1],
                                                           goal_conf=conf_list_approach[0],
                                                           obstacle_list=obstacle_list,
-                                                          otherrobot_list=[],
+                                                          other_robot_list=[],
                                                           ext_dist=.07,
                                                           max_iter=300)
                 if conf_list_middle is None:

@@ -189,7 +189,7 @@ if __name__ == '__main__':
         ((-2, 8), 3)
     ]  # [x,y,size]
     # Set Initial parameters
-    robot = xyb.XYTBot()
+    robot = xyb.XYWBot()
     rrtdwc = RRTDWConnect(robot)
     path = rrtdwc.plan(component_name='all', start_conf=np.array([0, 0, 0]), goal_conf=np.array([5, 10, 0]),
                        obstacle_list=obstacle_list,

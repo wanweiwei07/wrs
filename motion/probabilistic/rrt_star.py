@@ -99,7 +99,7 @@ class RRTStar(rrt.RRT):
                                      obstacle_list, [roadmap.nodes[nearest_nid]['conf'], conf],
                                      new_conf, '^c')
                 # check goal
-                if self._goal_test(conf=roadmap.nodes[new_nid]['conf'], goal_conf=goal_conf, threshold=ext_dist):
+                if self._is_goal_reached(conf=roadmap.nodes[new_nid]['conf'], goal_conf=goal_conf, threshold=ext_dist):
                     roadmap.add_node('connection', conf=goal_conf)  # TODO current name -> connection
                     roadmap.add_edge(new_nid, 'connection')
                     return 'connection'
@@ -110,7 +110,7 @@ class RRTStar(rrt.RRT):
              start_conf,
              goal_conf,
              obstacle_list=[],
-             otherrobot_list=[],
+             other_robot_list=[],
              ext_dist=2,
              rand_rate=70,
              max_iter=1000,
@@ -126,13 +126,13 @@ class RRTStar(rrt.RRT):
         self.start_conf = start_conf
         self.goal_conf = goal_conf
         # check seed_jnt_values and end_conf
-        if self._is_collided(component_name, start_conf, obstacle_list, otherrobot_list):
+        if self._is_collided(component_name, start_conf, obstacle_list, other_robot_list):
             print("The start robot_s configuration is in collision!")
             return None
-        if self._is_collided(component_name, goal_conf, obstacle_list, otherrobot_list):
+        if self._is_collided(component_name, goal_conf, obstacle_list, other_robot_list):
             print("The goal robot_s configuration is in collision!")
             return None
-        if self._goal_test(conf=start_conf, goal_conf=goal_conf, threshold=ext_dist):
+        if self._is_goal_reached(conf=start_conf, goal_conf=goal_conf, threshold=ext_dist):
             return [[start_conf, goal_conf], None]
         self.roadmap.add_node('start', conf=start_conf, cost=0)
         tic = time.time()
@@ -152,7 +152,7 @@ class RRTStar(rrt.RRT):
                                             ext_dist=ext_dist,
                                             goal_conf=goal_conf,
                                             obstacle_list=obstacle_list,
-                                            otherrobot_list=otherrobot_list,
+                                            otherrobot_list=other_robot_list,
                                             animation=animation)
             if last_nid == 'connection' and n > 1000:
                 mapping = {'connection': 'goal'}
@@ -161,7 +161,7 @@ class RRTStar(rrt.RRT):
                 smoothed_path = self._smooth_path(component_name=component_name,
                                                   path=path,
                                                   obstacle_list=obstacle_list,
-                                                  otherrobot_list=otherrobot_list,
+                                                  other_robot_list=other_robot_list,
                                                   granularity=ext_dist,
                                                   iterations=smoothing_iterations,
                                                   animation=animation)

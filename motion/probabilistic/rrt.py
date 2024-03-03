@@ -8,34 +8,39 @@ import matplotlib.pyplot as plt
 from operator import itemgetter
 
 
+# ==============================================
+# keep jnt values decorator
+# ==============================================
+
+def keep_jnt_values_decorator(method):
+    """
+    decorator function for save and restore robot's joint values
+    :return:
+    author: weiwei
+    date: 20220404
+    """
+
+    def wrapper(self, *args, **kwargs):
+        jnt_values_bk = self.robot.get_jnt_values()
+        result = method(self, *args, **kwargs)
+        self.robot.goto_given_conf(joint_values=jnt_values_bk)
+        return result
+
+    return wrapper
+
+
 class RRT(object):
 
-    @staticmethod
-    def _decorator_keep_jnt_values(foo):
-        """
-        decorator function for save and restore robot_s's joint values
-        :return:
-        author: weiwei
-        date: 20220404
-        """
-        def wrapper(self, component_name, *args, **kwargs):
-            jnt_values_bk = self.robot_s.get_jnt_values(component_name)
-            result = foo(self, component_name, *args, **kwargs)
-            self.robot_s.fk(component_name=component_name, joint_values=jnt_values_bk)
-            return result
-        return wrapper
-
-    def __init__(self, robot_s):
-        self.robot_s = robot_s
+    def __init__(self, robot):
+        self.robot = robot
         self.roadmap = nx.Graph()
         self.start_conf = None
         self.goal_conf = None
 
     def _is_collided(self,
-                     component_name,
                      conf,
                      obstacle_list=[],
-                     otherrobot_list=[]):
+                     other_robot_list=[]):
         """
         The function first examines if joint values of the given conf are in ranges.
         It will promptly return False if any joint value is out of range.
@@ -43,23 +48,21 @@ class RRT(object):
         :param component_name:
         :param conf:
         :param obstacle_list:
-        :param otherrobot_list:
+        :param other_robot_list:
         :return:
         author: weiwei
         date: 20220326
         """
-        # self.robot_s.fk(component_name=component_name, jnt_values=conf)
-        # return self.robot_s.is_collided(obstacle_list=obstacle_list, other_robot_list=other_robot_list)
-        if self.robot_s.are_jnts_in_ranges(component_name=component_name, jnt_values=conf):
-            self.robot_s.fk(component_name=component_name, joint_values=conf)
-            return self.robot_s.is_collided(obstacle_list=obstacle_list, other_robot_list=otherrobot_list)
+        if self.robot.are_jnts_in_ranges(jnt_values=conf):
+            self.robot.goto_given_conf(joint_values=conf)
+            return self.robot.is_collided(obstacle_list=obstacle_list, other_robot_list=other_robot_list)
         else:
             print("The given joint angles are out of joint limits.")
             return True
 
-    def _sample_conf(self, component_name, rand_rate, default_conf):
+    def _sample_conf(self, rand_rate, default_conf):
         if random.randint(0, 99) < rand_rate:
-            return self.robot_s.rand_conf(component_name=component_name)
+            return self.robot.rand_conf()
         else:
             return default_conf
 
@@ -74,7 +77,7 @@ class RRT(object):
         """
         nodes_dict = dict(roadmap.nodes(data='conf'))
         nodes_key_list = list(nodes_dict.keys())
-        nodes_value_list = list(nodes_dict.values()) # attention, correspondence is not guanranteed in python
+        nodes_value_list = list(nodes_dict.values())  # attention, correspondence is not guanranteed in python
         # use the following alternative if correspondence is bad (a bit slower), 20210523, weiwei
         # # nodes_value_list = list(nodes_dict.values())
         # nodes_value_list = itemgetter(*nodes_key_list)(nodes_dict)
@@ -98,11 +101,11 @@ class RRT(object):
         # switch to the following code for ful extensions
         if not exact_end:
             nval = math.ceil(len / ext_dist)
-            nval = 1 if nval == 0  else nval # at least include itself
+            nval = 1 if nval == 0 else nval  # at least include itself
             conf_array = np.linspace(conf1, conf1 + nval * ext_dist * vec, nval)
         else:
             nval = math.floor(len / ext_dist)
-            nval = 1 if nval == 0  else nval # at least include itself
+            nval = 1 if nval == 0 else nval  # at least include itself
             conf_array = np.linspace(conf1, conf1 + nval * ext_dist * vec, nval)
             conf_array = np.vstack((conf_array, conf2))
         return list(conf_array)
@@ -114,7 +117,7 @@ class RRT(object):
                         ext_dist,
                         goal_conf,
                         obstacle_list=[],
-                        otherrobot_list=[],
+                        other_robot_list=[],
                         animation=False):
         """
         find the nearest point between the given roadmap and the conf and then extend towards the conf
@@ -125,7 +128,7 @@ class RRT(object):
         nearest_nid = self._get_nearest_nid(roadmap, conf)
         new_conf_list = self._extend_conf(roadmap.nodes[nearest_nid]['conf'], conf, ext_dist)[1:]
         for new_conf in new_conf_list:
-            if self._is_collided(component_name, new_conf, obstacle_list, otherrobot_list):
+            if self._is_collided(component_name, new_conf, obstacle_list, other_robot_list):
                 return nearest_nid
             else:
                 new_nid = random.randint(0, 1e16)
@@ -138,14 +141,14 @@ class RRT(object):
                                      obstacle_list, [roadmap.nodes[nearest_nid]['conf'], conf],
                                      new_conf, '^c')
                 # check goal
-                if self._goal_test(conf=roadmap.nodes[new_nid]['conf'], goal_conf=goal_conf, threshold=ext_dist):
+                if self._is_goal_reached(conf=roadmap.nodes[new_nid]['conf'], goal_conf=goal_conf, threshold=ext_dist):
                     roadmap.add_node('connection', conf=goal_conf)  # TODO current name -> connection
                     roadmap.add_edge(new_nid, 'connection')
                     return 'connection'
         else:
             return nearest_nid
 
-    def _goal_test(self, conf, goal_conf, threshold):
+    def _is_goal_reached(self, conf, goal_conf, threshold):
         dist = np.linalg.norm(conf - goal_conf)
         if dist <= threshold:
             # print("Goal reached!")
@@ -154,14 +157,14 @@ class RRT(object):
             return False
 
     def _path_from_roadmap(self):
-        nid_path = nx.shortest_path(self.roadmap, 'start', 'goal')
-        return list(itemgetter(*nid_path)(self.roadmap.nodes(data='conf')))
+        nid_path = nx.shortest_path(self.roadmap, "start", "goal")
+        return list(itemgetter(*nid_path)(self.roadmap.nodes(data="conf")))
 
     def _smooth_path(self,
                      component_name,
                      path,
                      obstacle_list=[],
-                     otherrobot_list=[],
+                     other_robot_list=[],
                      granularity=2,
                      iterations=50,
                      animation=False):
@@ -185,21 +188,21 @@ class RRT(object):
             if all(not self._is_collided(component_name=component_name,
                                          conf=conf,
                                          obstacle_list=obstacle_list,
-                                         otherrobot_list=otherrobot_list)
-                                                 for conf in shortcut):
+                                         other_robot_list=other_robot_list)
+                   for conf in shortcut):
                 smoothed_path = smoothed_path[:i] + shortcut + smoothed_path[j + 1:]
             if animation:
                 self.draw_wspace([self.roadmap], self.start_conf, self.goal_conf,
                                  obstacle_list, shortcut=shortcut, smoothed_path=smoothed_path)
         return smoothed_path
 
-    @_decorator_keep_jnt_values
+    @keep_jnt_values_decorator
     def plan(self,
              component_name,
              start_conf,
              goal_conf,
              obstacle_list=[],
-             otherrobot_list=[],
+             other_robot_list=[],
              ext_dist=2,
              rand_rate=70,
              max_iter=1000,
@@ -215,13 +218,13 @@ class RRT(object):
         self.start_conf = start_conf
         self.goal_conf = goal_conf
         # check seed_jnt_values and end_conf
-        if self._is_collided(component_name, start_conf, obstacle_list, otherrobot_list):
-            print("The start robot_s configuration is in collision!")
+        if self._is_collided(start_conf, obstacle_list, other_robot_list):
+            print("The start robot configuration is in collision!")
             return None
-        if self._is_collided(component_name, goal_conf, obstacle_list, otherrobot_list):
-            print("The goal robot_s configuration is in collision!")
+        if self._is_collided(goal_conf, obstacle_list, other_robot_list):
+            print("The goal robot configuration is in collision!")
             return None
-        if self._goal_test(conf=start_conf, goal_conf=goal_conf, threshold=ext_dist):
+        if self._is_goal_reached(conf=start_conf, goal_conf=goal_conf, threshold=ext_dist):
             return [[start_conf, goal_conf], None]
         self.roadmap.add_node('start', conf=start_conf)
         tic = time.time()
@@ -239,16 +242,16 @@ class RRT(object):
                                             ext_dist=ext_dist,
                                             goal_conf=goal_conf,
                                             obstacle_list=obstacle_list,
-                                            otherrobot_list=otherrobot_list,
+                                            other_robot_list=other_robot_list,
                                             animation=animation)
-            if last_nid == 'connection':
-                mapping = {'connection': 'goal'}
+            if last_nid == "connection":
+                mapping = {"connection": "goal"}
                 self.roadmap = nx.relabel_nodes(self.roadmap, mapping)
                 path = self._path_from_roadmap()
                 smoothed_path = self._smooth_path(component_name=component_name,
                                                   path=path,
                                                   obstacle_list=obstacle_list,
-                                                  otherrobot_list=otherrobot_list,
+                                                  other_robot_list=other_robot_list,
                                                   granularity=ext_dist,
                                                   iterations=smoothing_iterations,
                                                   animation=animation)
@@ -273,7 +276,7 @@ class RRT(object):
         """
         plt.clf()
         ax = plt.gca()
-        ax.set_aspect('equal', 'box')
+        ax.set_aspect("equal", "box")
         plt.grid(True)
         plt.xlim(-4.0, 17.0)
         plt.ylim(-4.0, 17.0)
@@ -281,13 +284,13 @@ class RRT(object):
         ax.add_patch(plt.Circle((goal_conf[0], goal_conf[1]), .5, color='g'))
         for (point, size) in obstacle_list:
             ax.add_patch(plt.Circle((point[0], point[1]), size / 2.0, color='k'))
-        colors = 'bgrcmykw'
+        colors = "bgrcmykw"
         for i, roadmap in enumerate(roadmap_list):
             for (u, v) in roadmap.edges:
-                plt.plot(roadmap.nodes[u]['conf'][0], roadmap.nodes[u]['conf'][1], 'o' + colors[i])
-                plt.plot(roadmap.nodes[v]['conf'][0], roadmap.nodes[v]['conf'][1], 'o' + colors[i])
-                plt.plot([roadmap.nodes[u]['conf'][0], roadmap.nodes[v]['conf'][0]],
-                         [roadmap.nodes[u]['conf'][1], roadmap.nodes[v]['conf'][1]], '-' + colors[i])
+                plt.plot(roadmap.nodes[u]["conf"][0], roadmap.nodes[u]["conf"][1], 'o' + colors[i])
+                plt.plot(roadmap.nodes[v]["conf"][0], roadmap.nodes[v]["conf"][1], 'o' + colors[i])
+                plt.plot([roadmap.nodes[u]["conf"][0], roadmap.nodes[v]["conf"][0]],
+                         [roadmap.nodes[u]["conf"][1], roadmap.nodes[v]["conf"][1]], '-' + colors[i])
         if near_rand_conf_pair is not None:
             plt.plot([near_rand_conf_pair[0][0], near_rand_conf_pair[1][0]],
                      [near_rand_conf_pair[0][1], near_rand_conf_pair[1][1]], "--k")
@@ -312,7 +315,6 @@ class RRT(object):
         # plt.waitforbuttonpress()
 
 
-
 class RRT_v2(object):
     """
     this version does not involve a component name;
@@ -324,20 +326,22 @@ class RRT_v2(object):
     @staticmethod
     def _decorator_keep_jnt_values(foo):
         """
-        decorator function for save and restore robot_s's joint values
+        decorator function for save and restore robot's joint values
         :return:
         author: weiwei
         date: 20220404
         """
+
         def wrapper(self, *args, **kwargs):
-            jnt_values_bk = self.robot_s.get_jnt_values()
+            jnt_values_bk = self.robot.get_jnt_values()
             result = foo(self, *args, **kwargs)
-            self.robot_s.fk(joint_values=jnt_values_bk)
+            self.robot.fk(joint_values=jnt_values_bk)
             return result
+
         return wrapper
 
-    def __init__(self, robot_s):
-        self.robot_s = robot_s
+    def __init__(self, robot):
+        self.robot = robot
         self.roadmap = nx.Graph()
         self.start_conf = None
         self.goal_conf = None
@@ -345,28 +349,28 @@ class RRT_v2(object):
     def _is_collided(self,
                      conf,
                      obstacle_list=[],
-                     otherrobot_list=[]):
+                     other_robot_list=[]):
         """
         The function first examines if joint values of the given conf are in ranges.
         It will promptly return False if any joint value is out of range.
         Or else, it will compute fk and carry out collision checking.
         :param conf:
         :param obstacle_list:
-        :param otherrobot_list:
+        :param other_robot_list:
         :return:
         author: weiwei
         date: 20220326
         """
-        if self.robot_s.are_jnts_in_ranges(jnt_values=conf):
-            self.robot_s.fk(joint_values=conf)
-            return self.robot_s.is_collided(obstacle_list=obstacle_list, other_robot_list=otherrobot_list)
+        if self.robot.are_jnts_in_ranges(jnt_values=conf):
+            self.robot.goto_given_conf(joint_values=conf)
+            return self.robot.is_collided(obstacle_list=obstacle_list, other_robot_list=other_robot_list)
         else:
             print("The given joint angles are out of joint limits.")
             return True
 
     def _sample_conf(self, rand_rate, default_conf):
         if random.randint(0, 99) < rand_rate:
-            return self.robot_s.rand_conf()
+            return self.robot.rand_conf()
         else:
             return default_conf
 
@@ -379,9 +383,9 @@ class RRT_v2(object):
         author: weiwei
         date: 20210523
         """
-        nodes_dict = dict(roadmap.nodes(data='conf'))
+        nodes_dict = dict(roadmap.nodes(data="conf"))
         nodes_key_list = list(nodes_dict.keys())
-        nodes_value_list = list(nodes_dict.values()) # attention, correspondence is not guanranteed in python
+        nodes_value_list = list(nodes_dict.values())  # attention, correspondence is not guanranteed in python
         # use the following alternative if correspondence is bad (a bit slower), 20210523, weiwei
         # # nodes_value_list = list(nodes_dict.values())
         # nodes_value_list = itemgetter(*nodes_key_list)(nodes_dict)
@@ -405,11 +409,11 @@ class RRT_v2(object):
         # switch to the following code for ful extensions
         if not exact_end:
             nval = math.ceil(len / ext_dist)
-            nval = 1 if nval == 0  else nval # at least include itself
+            nval = 1 if nval == 0 else nval  # at least include itself
             conf_array = np.linspace(conf1, conf1 + nval * ext_dist * vec, nval)
         else:
             nval = math.floor(len / ext_dist)
-            nval = 1 if nval == 0  else nval # at least include itself
+            nval = 1 if nval == 0 else nval  # at least include itself
             conf_array = np.linspace(conf1, conf1 + nval * ext_dist * vec, nval)
             conf_array = np.vstack((conf_array, conf2))
         return list(conf_array)
@@ -420,7 +424,7 @@ class RRT_v2(object):
                         ext_dist,
                         goal_conf,
                         obstacle_list=[],
-                        otherrobot_list=[],
+                        other_robot_list=[],
                         animation=False):
         """
         find the nearest point between the given roadmap and the conf and then extend towards the conf
@@ -429,9 +433,9 @@ class RRT_v2(object):
         date: 20201228
         """
         nearest_nid = self._get_nearest_nid(roadmap, conf)
-        new_conf_list = self._extend_conf(roadmap.nodes[nearest_nid]['conf'], conf, ext_dist)[1:]
+        new_conf_list = self._extend_conf(roadmap.nodes[nearest_nid]["conf"], conf, ext_dist)[1:]
         for new_conf in new_conf_list:
-            if self._is_collided(new_conf, obstacle_list, otherrobot_list):
+            if self._is_collided(new_conf, obstacle_list, other_robot_list):
                 return nearest_nid
             else:
                 new_nid = random.randint(0, 1e16)
@@ -441,10 +445,10 @@ class RRT_v2(object):
                 # all_sampled_confs.append([new_node.point, False])
                 if animation:
                     self.draw_wspace([roadmap], self.start_conf, self.goal_conf,
-                                     obstacle_list, [roadmap.nodes[nearest_nid]['conf'], conf],
+                                     obstacle_list, [roadmap.nodes[nearest_nid]["conf"], conf],
                                      new_conf, '^c')
                 # check goal
-                if self._goal_test(conf=roadmap.nodes[new_nid]['conf'], goal_conf=goal_conf, threshold=ext_dist):
+                if self._goal_test(conf=roadmap.nodes[new_nid]["conf"], goal_conf=goal_conf, threshold=ext_dist):
                     roadmap.add_node('connection', conf=goal_conf)  # TODO current name -> connection
                     roadmap.add_edge(new_nid, 'connection')
                     return 'connection'
@@ -461,12 +465,12 @@ class RRT_v2(object):
 
     def _path_from_roadmap(self):
         nid_path = nx.shortest_path(self.roadmap, 'start', 'goal')
-        return list(itemgetter(*nid_path)(self.roadmap.nodes(data='conf')))
+        return list(itemgetter(*nid_path)(self.roadmap.nodes(data="conf")))
 
     def _smooth_path(self,
                      path,
                      obstacle_list=[],
-                     otherrobot_list=[],
+                     other_robot_list=[],
                      granularity=2,
                      iterations=50,
                      animation=False):
@@ -489,8 +493,8 @@ class RRT_v2(object):
             #                                      for conf in shortcut):
             if all(not self._is_collided(conf=conf,
                                          obstacle_list=obstacle_list,
-                                         otherrobot_list=otherrobot_list)
-                                                 for conf in shortcut):
+                                         other_robot_list=other_robot_list)
+                   for conf in shortcut):
                 smoothed_path = smoothed_path[:i] + shortcut + smoothed_path[j + 1:]
             if animation:
                 self.draw_wspace([self.roadmap], self.start_conf, self.goal_conf,
@@ -502,7 +506,7 @@ class RRT_v2(object):
              start_conf,
              goal_conf,
              obstacle_list=[],
-             otherrobot_list=[],
+             other_robot_list=[],
              ext_dist=2,
              rand_rate=70,
              max_iter=1000,
@@ -518,11 +522,11 @@ class RRT_v2(object):
         self.start_conf = start_conf
         self.goal_conf = goal_conf
         # check seed_jnt_values and end_conf
-        if self._is_collided(start_conf, obstacle_list, otherrobot_list):
-            print("The start robot_s configuration is in collision!")
+        if self._is_collided(start_conf, obstacle_list, other_robot_list):
+            print("The start robot configuration is in collision!")
             return None
-        if self._is_collided(goal_conf, obstacle_list, otherrobot_list):
-            print("The goal robot_s configuration is in collision!")
+        if self._is_collided(goal_conf, obstacle_list, other_robot_list):
+            print("The goal robot configuration is in collision!")
             return None
         if self._goal_test(conf=start_conf, goal_conf=goal_conf, threshold=ext_dist):
             return [[start_conf, goal_conf], None]
@@ -541,7 +545,7 @@ class RRT_v2(object):
                                             ext_dist=ext_dist,
                                             goal_conf=goal_conf,
                                             obstacle_list=obstacle_list,
-                                            otherrobot_list=otherrobot_list,
+                                            other_robot_list=other_robot_list,
                                             animation=animation)
             if last_nid == 'connection':
                 mapping = {'connection': 'goal'}
@@ -549,7 +553,7 @@ class RRT_v2(object):
                 path = self._path_from_roadmap()
                 smoothed_path = self._smooth_path(path=path,
                                                   obstacle_list=obstacle_list,
-                                                  otherrobot_list=otherrobot_list,
+                                                  other_robot_list=other_robot_list,
                                                   granularity=ext_dist,
                                                   iterations=smoothing_iterations,
                                                   animation=animation)
@@ -574,7 +578,7 @@ class RRT_v2(object):
         """
         plt.clf()
         ax = plt.gca()
-        ax.set_aspect('equal', 'box')
+        ax.set_aspect("equal", "box")
         plt.grid(True)
         plt.xlim(-4.0, 17.0)
         plt.ylim(-4.0, 17.0)
@@ -582,13 +586,13 @@ class RRT_v2(object):
         ax.add_patch(plt.Circle((goal_conf[0], goal_conf[1]), .5, color='g'))
         for (point, size) in obstacle_list:
             ax.add_patch(plt.Circle((point[0], point[1]), size / 2.0, color='k'))
-        colors = 'bgrcmykw'
+        colors = "bgrcmykw"
         for i, roadmap in enumerate(roadmap_list):
             for (u, v) in roadmap.edges:
-                plt.plot(roadmap.nodes[u]['conf'][0], roadmap.nodes[u]['conf'][1], 'o' + colors[i])
-                plt.plot(roadmap.nodes[v]['conf'][0], roadmap.nodes[v]['conf'][1], 'o' + colors[i])
-                plt.plot([roadmap.nodes[u]['conf'][0], roadmap.nodes[v]['conf'][0]],
-                         [roadmap.nodes[u]['conf'][1], roadmap.nodes[v]['conf'][1]], '-' + colors[i])
+                plt.plot(roadmap.nodes[u]["conf"][0], roadmap.nodes[u]["conf"][1], 'o' + colors[i])
+                plt.plot(roadmap.nodes[v]["conf"][0], roadmap.nodes[v]["conf"][1], 'o' + colors[i])
+                plt.plot([roadmap.nodes[u]["conf"][0], roadmap.nodes[v]["conf"][0]],
+                         [roadmap.nodes[u]["conf"][1], roadmap.nodes[v]["conf"][1]], '-' + colors[i])
         if near_rand_conf_pair is not None:
             plt.plot([near_rand_conf_pair[0][0], near_rand_conf_pair[1][0]],
                      [near_rand_conf_pair[0][1], near_rand_conf_pair[1][1]], "--k")
@@ -603,7 +607,7 @@ class RRT_v2(object):
                      color='r')
         # plt.plot(planner.seed_jnt_values[0], planner.seed_jnt_values[1], "xr")
         # plt.plot(planner.end_conf[0], planner.end_conf[1], "xm")
-        if not hasattr(RRT, 'img_counter'):
+        if not hasattr(RRT, "img_counter"):
             RRT.img_counter = 0
         else:
             RRT.img_counter += 1
@@ -613,7 +617,7 @@ class RRT_v2(object):
         # plt.waitforbuttonpress()
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     import robot_sim.robots.xybot.xybot as xyb
 
     # ====Search Path with RRT====

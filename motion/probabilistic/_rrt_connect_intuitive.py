@@ -41,7 +41,7 @@ class RRTConnect(rrt.RRT):
                     self.draw_wspace([self.roadmap_start, self.roadmap_goal], self.start_conf, self.goal_conf,
                                      obstacle_list, [roadmap.nodes[nearest_nid]['conf'], conf], new_conf, '^c')
                 # check goal
-                if self._goal_test(conf=roadmap.nodes[new_nid]['conf'], goal_conf=goal_conf, threshold=ext_dist):
+                if self._is_goal_reached(conf=roadmap.nodes[new_nid]['conf'], goal_conf=goal_conf, threshold=ext_dist):
                     roadmap.add_node('connection', conf=goal_conf) # TODO current name -> connection
                     roadmap.add_edge(new_nid, 'connection')
                     return 'connection'
@@ -52,7 +52,7 @@ class RRTConnect(rrt.RRT):
                      component_name,
                      path,
                      obstacle_list=[],
-                     otherrobot_list=[],
+                     other_robot_list=[],
                      granularity=2,
                      iterations=50,
                      animation=False):
@@ -70,7 +70,7 @@ class RRTConnect(rrt.RRT):
             if (len(shortcut) <= (j - i) + 1) and all(not self._is_collided(component_name=component_name,
                                                                             conf=conf,
                                                                             obstacle_list=obstacle_list,
-                                                                            otherrobot_list=otherrobot_list)
+                                                                            otherrobot_list=other_robot_list)
                                                       for conf in shortcut):
                 smoothed_path = smoothed_path[:i] + shortcut + smoothed_path[j + 1:]
             if animation:
@@ -83,7 +83,7 @@ class RRTConnect(rrt.RRT):
              start_conf,
              goal_conf,
              obstacle_list=[],
-             otherrobot_list=[],
+             other_robot_list=[],
              ext_dist=2,
              rand_rate=70,
              max_iter=1000,
@@ -96,13 +96,13 @@ class RRTConnect(rrt.RRT):
         self.start_conf = start_conf
         self.goal_conf = goal_conf
         # check start and goal
-        if self._is_collided(component_name, start_conf, obstacle_list, otherrobot_list):
+        if self._is_collided(component_name, start_conf, obstacle_list, other_robot_list):
             print("The start robot_s configuration is in collision!")
             return [None, None]
-        if self._is_collided(component_name, goal_conf, obstacle_list, otherrobot_list):
+        if self._is_collided(component_name, goal_conf, obstacle_list, other_robot_list):
             print("The goal robot_s configuration is in collision!")
             return [None, None]
-        if self._goal_test(conf=start_conf, goal_conf=goal_conf, threshold=ext_dist):
+        if self._is_goal_reached(conf=start_conf, goal_conf=goal_conf, threshold=ext_dist):
             return [[start_conf, goal_conf], None]
         self.roadmap_start.add_node('start', conf=start_conf)
         self.roadmap_goal.add_node('goal', conf=goal_conf)
@@ -124,7 +124,7 @@ class RRTConnect(rrt.RRT):
                                             component_name=component_name,
                                             goal_conf=goal_conf,
                                             obstacle_list=obstacle_list,
-                                            otherrobot_list=otherrobot_list,
+                                            otherrobot_list=other_robot_list,
                                             animation=animation)
             if last_nid == 'connection':
                 self.roadmap = nx.compose(self.roadmap_start, self.roadmap_goal)
@@ -140,7 +140,7 @@ class RRTConnect(rrt.RRT):
                                                 component_name=component_name,
                                                 goal_conf=goal_conf,
                                                 obstacle_list=obstacle_list,
-                                                otherrobot_list=otherrobot_list,
+                                                otherrobot_list=other_robot_list,
                                                 animation=animation)
                 if last_nid == 'connection':
                     self.roadmap = nx.compose(self.roadmap_start, self.roadmap_goal)
@@ -154,7 +154,7 @@ class RRTConnect(rrt.RRT):
         smoothed_path = self._smooth_path(component_name=component_name,
                                           path=path,
                                           obstacle_list=obstacle_list,
-                                          otherrobot_list=otherrobot_list,
+                                          other_robot_list=other_robot_list,
                                           granularity=ext_dist,
                                           iterations=smoothing_iterations)
         return smoothed_path

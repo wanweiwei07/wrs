@@ -46,7 +46,7 @@ class UR3DualHelper(object):
                                      start_conf=start_conf,
                                      goal_conf=goal_conf,
                                      obstacle_list=obstacle_list,
-                                     otherrobot_list=otherrobot_list,
+                                     other_robot_list=otherrobot_list,
                                      ext_dist=ext_dist,
                                      max_iter=maxiter,
                                      max_time=maxtime,

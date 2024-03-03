@@ -13,7 +13,7 @@ from robot_sim.end_effectors.gripper.nova2_gripper import Nova2HuriGripper
 import robot_sim.robots.single_arm_robot_interface as ri
 
 
-class Nova2WRS(ri.SglArmRbtInterface):
+class Nova2WRS(ri.SglArmRobotInterface):
     @staticmethod
     def _table_cdnp(name, radius):
         collision_node = CollisionNode(name)

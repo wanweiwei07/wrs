@@ -94,7 +94,7 @@ class RVizClient(object):
     def update_remote(self, rmt_instance, loc_instance):
         if isinstance(loc_instance, ri.RobotInterface):
             code = ("%s.fk(jnt_values=np.array(%s), hnd_name='all')\n" %
-                    (rmt_instance, np.array2string(loc_instance.get_jntvalues(jlc_name='all'), separator=',')))
+                    (rmt_instance, np.array2string(loc_instance.get_jnt_values(), separator=',')))
         elif isinstance(loc_instance, gm.GeometricModel):
             code = ("%s.set_pos(np.array(%s))\n" % (
             rmt_instance, np.array2string(loc_instance.get_pos(), separator=',')) +

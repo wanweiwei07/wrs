@@ -9,7 +9,7 @@ import robot_sim.end_effectors.gripper.or2fg7.or2fg7 as end_effector
 import robot_sim.robots.single_arm_robot_interface as ai
 
 
-class KHI_OR2FG7(ai.SglArmRbtInterface):
+class KHI_OR2FG7(ai.SglArmRobotInterface):
 
     def __init__(self,
                  pos=np.zeros(3),

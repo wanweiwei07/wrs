@@ -9,7 +9,7 @@ import robot_sim.end_effectors.single_contact.screw_driver.orsd.orsd as end_effe
 import robot_sim.robots.single_arm_robot_interface as ai
 
 
-class KHI_ORSD(ai.SglArmRbtInterface):
+class KHI_ORSD(ai.SglArmRobotInterface):
 
     def __init__(self, pos=np.zeros(3), rotmat=np.eye(3), name="khi_g", enable_cc=True):
         super().__init__(pos=pos, rotmat=rotmat, name=name)

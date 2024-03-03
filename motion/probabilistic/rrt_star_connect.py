@@ -93,7 +93,7 @@ class RRTStarConnect(rrtst.RRTStar):
                     self.draw_wspace([self.roadmap_start, self.roadmap_goal], self.start_conf, self.goal_conf,
                                      obstacle_list, [roadmap.nodes[nearest_nid]['conf'], conf], new_conf, '^c')
                 # check goal
-                if self._goal_test(conf=roadmap.nodes[new_nid]['conf'], goal_conf=goal_conf, threshold=ext_dist):
+                if self._is_goal_reached(conf=roadmap.nodes[new_nid]['conf'], goal_conf=goal_conf, threshold=ext_dist):
                     roadmap.add_node('connection', conf=goal_conf)  # TODO current name -> connection
                     roadmap.add_edge(new_nid, 'connection')
                     return 'connection'
@@ -105,7 +105,7 @@ class RRTStarConnect(rrtst.RRTStar):
              start_conf,
              goal_conf,
              obstacle_list=[],
-             otherrobot_list=[],
+             other_robot_list=[],
              ext_dist=2,
              rand_rate=70,
              max_iter=1000,
@@ -123,13 +123,13 @@ class RRTStarConnect(rrtst.RRTStar):
         self.start_conf = start_conf
         self.goal_conf = goal_conf
         # check seed_jnt_values and end_conf
-        if self._is_collided(component_name, start_conf, obstacle_list, otherrobot_list):
+        if self._is_collided(component_name, start_conf, obstacle_list, other_robot_list):
             print("The start robot_s configuration is in collision!")
             return None
-        if self._is_collided(component_name, goal_conf, obstacle_list, otherrobot_list):
+        if self._is_collided(component_name, goal_conf, obstacle_list, other_robot_list):
             print("The goal robot_s configuration is in collision!")
             return None
-        if self._goal_test(conf=start_conf, goal_conf=goal_conf, threshold=ext_dist):
+        if self._is_goal_reached(conf=start_conf, goal_conf=goal_conf, threshold=ext_dist):
             return [[start_conf, goal_conf], None]
         self.roadmap_start.add_node('start', conf=start_conf, cost=0)
         self.roadmap_goal.add_node('goal', conf=goal_conf, cost=0)
@@ -154,7 +154,7 @@ class RRTStarConnect(rrtst.RRTStar):
                                             ext_dist=ext_dist,
                                             goal_conf=tree_a_goal_conf,
                                             obstacle_list=obstacle_list,
-                                            otherrobot_list=otherrobot_list,
+                                            otherrobot_list=other_robot_list,
                                             animation=animation)
             if last_nid != -1:  # not trapped:
                 goal_nid = last_nid
@@ -165,7 +165,7 @@ class RRTStarConnect(rrtst.RRTStar):
                                                 ext_dist=ext_dist,
                                                 goal_conf=tree_b_goal_conf,
                                                 obstacle_list=obstacle_list,
-                                                otherrobot_list=otherrobot_list,
+                                                otherrobot_list=other_robot_list,
                                                 animation=animation)
                 if last_nid == 'connection':
                     self.roadmap = nx.compose(tree_a, tree_b)
@@ -184,7 +184,7 @@ class RRTStarConnect(rrtst.RRTStar):
         smoothed_path = self._smooth_path(component_name=component_name,
                                           path=path,
                                           obstacle_list=obstacle_list,
-                                          otherrobot_list=otherrobot_list,
+                                          other_robot_list=other_robot_list,
                                           granularity=ext_dist,
                                           iterations=smoothing_iterations,
                                           animation=animation)

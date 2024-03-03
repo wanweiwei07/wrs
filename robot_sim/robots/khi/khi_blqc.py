@@ -7,7 +7,7 @@ import robot_sim.manipulators.rs007l.rs007l as manip
 import robot_sim.robots.single_arm_robot_interface as ai
 
 
-class KHI_BLQC(ai.SglArmRbtInterface):
+class KHI_BLQC(ai.SglArmRobotInterface):
     """
     author: weiwei
     date: 20230826toyonaka

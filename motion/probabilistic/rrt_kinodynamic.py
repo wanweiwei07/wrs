@@ -380,7 +380,7 @@ if __name__ == '__main__':
         ((10, 5), 3)
     ]  # [x,y,size]
     # Set Initial parameters
-    robot_s = xyb.XYTBot()
+    robot_s = xyb.XYWBot()
     kds = Kinodynamics(time_interval=.5)
     rrtkino_s = RRTKinodynamic(robot_s, kds)
     path = rrtkino_s.plan(start_state=np.array([.0, .0, .0, .0, .0, .0]),

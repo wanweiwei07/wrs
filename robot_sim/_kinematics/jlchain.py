@@ -145,6 +145,8 @@ class JLChain(object):
         author: weiwei
         date: 20161202, 20201009osaka, 20230823
         """
+        if not self.are_jnts_in_ranges(jnt_values):
+            raise ValueError("Given jnt_values are out of range!")
         if not update:
             homomat = self.anchor.gl_flange_homomat
             jnt_pos = np.zeros((self.n_dof, 3))
@@ -341,7 +343,7 @@ class JLChain(object):
         author: weiwei
         date: 20220326toyonaka
         """
-        if len(jnt_values) == self.n_dof:
+        if len(jnt_values) != self.n_dof:
             raise ValueError('The given joint values do not match n_dof')
         jnt_values = np.asarray(jnt_values)
         if np.any(jnt_values < self.jnt_ranges[:, 0]) or np.any(jnt_values > self.jnt_ranges[:, 1]):

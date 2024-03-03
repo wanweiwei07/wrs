@@ -295,7 +295,7 @@ if __name__ == '__main__':
         ((10, 5), 3)
     ]  # [x,y,size]
     # Set Initial parameters
-    robot_s = xyb.XYTBot()
+    robot_s = xyb.XYWBot()
     kds = Kinodynamics(time_interval=1)
     rrtkino_s = RRTConnectKinodynamic(robot_s, kds)
     path = rrtkino_s.plan(start_conf=np.array([0, 0, 0, 0, 0, 0]), goal_conf=np.array([6, 9, 0, 0, 0, 0]),

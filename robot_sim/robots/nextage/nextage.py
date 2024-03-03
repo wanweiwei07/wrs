@@ -98,7 +98,7 @@ class Left_Manipulator(mi.ManipulatorInterface):
 # class Body_Manipulator(mi.ManipulatorInterface):
 #
 #
-# class Nextage_WSA(ai.SglArmRbtInterface):
+# class Nextage_WSA(ai.SglArmRobotInterface):
 #     """
 #     7 DoF half robot, WSA = waist + single arm
 #     author: weiwei
@@ -112,7 +112,7 @@ class Left_Manipulator(mi.ManipulatorInterface):
 #                                       home=lft_arm_homeconf, name='lft_arm')
 #
 #
-# class Nextage(ri.SglArmRbtInterface):
+# class Nextage(ri.SglArmRobotInterface):
 #
 #     def _decorator_switch_tgt_jnts(foo):
 #         """
