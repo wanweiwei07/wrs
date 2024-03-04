@@ -33,6 +33,7 @@ class CobottaGripper(gpi.GripperInterface):
         self.jlc.jnts[0].change_type(rkc.JntType.PRISMATIC, np.array([0, self.jaw_range[1] / 2]))
         self.jlc.jnts[0].loc_pos = np.array([0, .0, .0])
         self.jlc.jnts[0].loc_motion_ax = bc.y_ax
+        self.jlc.jnts[0].motion_range=np.array([0.0, 0.015])
         self.jlc.jnts[0].lnk.cmodel = mcm.CollisionModel(
             os.path.join(current_file_dir, "meshes", "left_finger.dae"),
             cdmesh_type=self.cdmesh_type)
@@ -41,6 +42,7 @@ class CobottaGripper(gpi.GripperInterface):
         self.jlc.jnts[1].change_type(rkc.JntType.PRISMATIC, np.array([0, -self.jaw_range[1]]))
         self.jlc.jnts[1].loc_pos = np.array([0, .0, .0])
         self.jlc.jnts[1].loc_motion_ax = bc.y_ax
+        self.jlc.jnts[1].motion_range=np.array([-0.015, 0.0])
         self.jlc.jnts[1].lnk.cmodel = mcm.CollisionModel(
             os.path.join(current_file_dir, "meshes", "right_finger.dae"),
             cdmesh_type=self.cdmesh_type)

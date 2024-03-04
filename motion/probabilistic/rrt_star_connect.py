@@ -4,9 +4,10 @@ import numpy as np
 import basis.robot_math as rm
 import networkx as nx
 import matplotlib.pyplot as plt
-import rrt_star as rrtst
+import motion.probabilistic.rrt_star as rrtst
 from operator import itemgetter
 import uuid
+import warnings
 
 
 class RRTStarConnect(rrtst.RRTStar):

@@ -467,8 +467,8 @@ def img2polygon(png_f_name, json_f_name, root=config.ROOT + "/drawpath/"):
 
     ret, binary = cv2.threshold(gray, 75, 255, cv2.THRESH_BINARY)
     # kernel = np.ones((5, 5), np.uint8)
-    # dilation = cv2.dilate(binary, kernel, n_iter=1)
-    # erosion = cv2.erode(dilation,kernel,n_iter=1)
+    # dilation = cv2.dilate(binary, kernel, iterations=1)
+    # erosion = cv2.erode(dilation,kernel,iterations=1)
     contours, hierarchy = cv2.findContours(binary, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
 
     result = {}

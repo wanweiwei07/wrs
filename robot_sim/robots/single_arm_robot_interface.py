@@ -66,6 +66,9 @@ class SglArmRobotInterface(ri.RobotInterface):
     def get_jnt_values(self):
         return self.manipulator.get_jnt_values()
 
+    def are_jnts_in_ranges(self, jnt_values):
+        return self.manipulator.are_jnts_in_ranges(jnt_values=jnt_values)
+
     def cvt_gl_pose_to_tcp(self, gl_pos, gl_rotmat):
         return self.manipulator.cvt_gl_pose_to_tcp(gl_pos=gl_pos, gl_rotmat=gl_rotmat)
 

@@ -145,8 +145,6 @@ class JLChain(object):
         author: weiwei
         date: 20161202, 20201009osaka, 20230823
         """
-        if not self.are_jnts_in_ranges(jnt_values):
-            raise ValueError("Given jnt_values are out of range!")
         if not update:
             homomat = self.anchor.gl_flange_homomat
             jnt_pos = np.zeros((self.n_dof, 3))

@@ -8,7 +8,7 @@ import basis.robot_math as rm
 import networkx as nx
 import matplotlib.pyplot as plt
 import uuid
-import rrt
+import motion.probabilistic.rrt as rrt
 import scipy
 from operator import itemgetter
 

@@ -12,14 +12,14 @@ import robot_sim.robots.cobotta.cobotta as cbt
 # rbt_s = cbt.Cobotta()
 # rbt_s.gen_meshmodel().attach_to(base)
 #
-# jnt_rngs = rbt_s.get_jnt_ranges(component_name='arm')
+# jnt_ranges = rbt_s.get_jnt_ranges(component_name='arm')
 # jnb = [90, 90, 60, 30, 30, 10]
-# j1_bins = np.linspace(jnt_rngs[0][0], jnt_rngs[0][1], jnb[0])
-# j2_bins = np.linspace(jnt_rngs[0][0], jnt_rngs[0][1], jnb[1])
-# j3_bins = np.linspace(jnt_rngs[0][0], jnt_rngs[0][1], jnb[2])
-# j4_bins = np.linspace(jnt_rngs[0][0], jnt_rngs[0][1], jnb[3])
-# j5_bins = np.linspace(jnt_rngs[0][0], jnt_rngs[0][1], jnb[4])
-# j6_bins = np.linspace(jnt_rngs[0][0], jnt_rngs[0][1], jnb[5])
+# j1_bins = np.linspace(jnt_ranges[0][0], jnt_ranges[0][1], jnb[0])
+# j2_bins = np.linspace(jnt_ranges[0][0], jnt_ranges[0][1], jnb[1])
+# j3_bins = np.linspace(jnt_ranges[0][0], jnt_ranges[0][1], jnb[2])
+# j4_bins = np.linspace(jnt_ranges[0][0], jnt_ranges[0][1], jnb[3])
+# j5_bins = np.linspace(jnt_ranges[0][0], jnt_ranges[0][1], jnb[4])
+# j6_bins = np.linspace(jnt_ranges[0][0], jnt_ranges[0][1], jnb[5])
 #
 # n_total = np.prod(jnb)
 # result = itertools.product(j1_bins, j2_bins, j3_bins, j4_bins, j5_bins, j6_bins)

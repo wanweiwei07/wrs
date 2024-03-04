@@ -115,6 +115,7 @@ if __name__ == '__main__':
     tgt_rotmat = rm.rotmat_from_axangle([0, 1, 0], math.pi * 2 / 3)
     mgm.gen_frame(pos=tgt_pos, rotmat=tgt_rotmat).attach_to(base)
     jnt_values = robot.ik(tgt_pos=tgt_pos, tgt_rotmat=tgt_rotmat)
+    print(jnt_values)
     if jnt_values is not None:
         robot.goto_given_conf(jnt_values=jnt_values)
         robot.gen_meshmodel(toggle_tcp_frame=True).attach_to(base)

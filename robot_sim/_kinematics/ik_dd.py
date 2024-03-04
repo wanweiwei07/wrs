@@ -214,7 +214,7 @@ class DDIKSolver(object):
         else:
             tgt_rotvec = self._rotmat_to_vec(tgt_rotmat)
             query_tgt = np.concatenate((tgt_pos, tgt_rotvec))
-            dist_val_array, nn_indx_array = self.querry_tree.query(query_tgt, k=1000, workers=-1)
+            dist_value_array, nn_indx_array = self.querry_tree.query(query_tgt, k=1000, workers=-1)
             for nn_indx in nn_indx_array[:5]:
                 seed_jnt_values = self.jnt_data[nn_indx]
                 result = self._backbone_solver_func(tgt_pos=tgt_pos,
