@@ -156,7 +156,7 @@ class RRTConnect(rrt.RRT):
                                           obstacle_list=obstacle_list,
                                           other_robot_list=other_robot_list,
                                           granularity=ext_dist,
-                                          iterations=smoothing_iterations)
+                                          n_iter=smoothing_iterations)
         return smoothed_path
 
 

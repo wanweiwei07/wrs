@@ -288,9 +288,9 @@ for dict_goal_pos in dist_pos:
     #                                      obstacle_list=[],
     #                                      other_robot_list=[],
     #                                      ext_dist=.05,
-    #                                      max_iter=300,
+    #                                      max_n_iter=300,
     #                                      max_time=15.0,
-    #                                      smoothing_iterations=50,
+    #                                      smoothing_n_iter=50,
     #                                      animation=False)
     #     print("path", path)
     #     if path is None:

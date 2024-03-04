@@ -242,7 +242,7 @@ class PickPlacePlanner(adp.ADPlanner):
                                                           obstacle_list=obstacle_list,
                                                           other_robot_list=[],
                                                           ext_dist=.07,
-                                                          max_iter=300)
+                                                          max_n_iter=300)
                 if conf_list_middle is None:
                     print(f"Cannot generate the rrtc part of the {i}th holding approach motion!")
                     self.robot_s.release(hand_name, objcm_copy, jawwidth_bk)

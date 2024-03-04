@@ -138,7 +138,7 @@ def multipack(polygons,
               plot           = False,
               return_all     = False):
     '''
-    Run multiple iterations of rectangle packing, by randomly permutating the insertion order
+    Run multiple n_iter of rectangle packing, by randomly permutating the insertion order
 
     If sheet size isn't specified, it creates a large sheet that can fit all of the polygons
     '''
@@ -168,7 +168,7 @@ def multipack(polygons,
             if density > density_escape: break
             
     toc = time_function()       
-    log.info('Packing finished %i iterations in %f seconds', i+1, toc-tic)
+    log.info('Packing finished %i n_iter in %f seconds', i+1, toc-tic)
     log.info('%i/%i parts were packed successfully', np.sum(overall_inserted), len(polygons))
     log.info('Final rectangular density is %f.', overall_density)
     

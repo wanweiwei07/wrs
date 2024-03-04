@@ -138,9 +138,9 @@ class MotionPlannerRT():
             #                                   start_conf=current_jnts,
             #                                   goal_conf=tgt_jnts,
             #                                   ext_dist=0.2,
-            #                                   max_iter=1000,
+            #                                   max_n_iter=1000,
             #                                   obstacle_list=self.obstacle_list,
-            #                                   smoothing_iterations=100)
+            #                                   smoothing_n_iter=100)
             #     # angle_output.append(angle)
             #     # robot_s.gen_meshmodel().attach_to(base)
             #     # base.run()

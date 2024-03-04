@@ -1,6 +1,7 @@
 import numpy as np
 import robot_sim._kinematics.collision_checker as cc
 import robot_sim.robots.robot_interface as ri
+import modeling.model_collection as mmc
 
 class SglArmRobotInterface(ri.RobotInterface):
     """
@@ -71,9 +72,46 @@ class SglArmRobotInterface(ri.RobotInterface):
     def cvt_pose_in_tcp_to_gl(self, loc_pos=np.zeros(3), loc_rotmat=np.eye(3)):
         return self.manipulator.cvt_pose_in_tcp_to_gl(loc_pos=loc_pos, loc_rotmat=loc_rotmat)
 
+    def gen_stickmodel(self,
+                       toggle_tcp_frame=False,
+                       toggle_jnt_frames=False,
+                       toggle_flange_frame=False,
+                       name='single_arm_robot_interface_stickmodel'):
+        m_col = mmc.ModelCollection(name=name)
+        self.manipulator.gen_stickmodel(toggle_tcp_frame=toggle_tcp_frame,
+                                        toggle_jnt_frames=toggle_jnt_frames,
+                                        toggle_flange_frame=toggle_flange_frame).attach_to(m_col)
+        self.end_effector.gen_stickmodel(toggle_tcp_frame=toggle_tcp_frame,
+                                         toggle_jnt_frames=toggle_jnt_frames).attach_to(m_col)
+        return m_col
+
+    def gen_meshmodel(self,
+                      rgb=None,
+                      alpha=None,
+                      toggle_tcp_frame=False,
+                      toggle_jnt_frames=False,
+                      toggle_flange_frame=False,
+                      toggle_cdprim=False,
+                      toggle_cdmesh=False,
+                      name='single_arm_robot_interface_meshmodel'):
+        m_col = mmc.ModelCollection(name=name)
+        self.manipulator.gen_meshmodel(rgb=rgb,
+                                       alpha=alpha,
+                                       toggle_tcp_frame=toggle_tcp_frame,
+                                       toggle_jnt_frames=toggle_jnt_frames,
+                                       toggle_flange_frame=toggle_flange_frame,
+                                       toggle_cdprim=toggle_cdprim,
+                                       toggle_cdmesh=toggle_cdmesh).attach_to(m_col)
+        self.end_effector.gen_meshmodel(rgb=rgb,
+                                        alpha=alpha,
+                                        toggle_tcp_frame=toggle_tcp_frame,
+                                        toggle_jnt_frames=toggle_jnt_frames,
+                                        toggle_cdprim=toggle_cdprim,
+                                        toggle_cdmesh=toggle_cdmesh).attach_to(m_col)
+        return m_col
+
     # def get_oih_list(self):
     #     return_list = []
-    #     for obj_info in self.oih_infos:
     #         obj_cmodel = obj_info['collision_model']
     #         obj_cmodel.set_pos(obj_info['gl_pos'])
     #         obj_cmodel.set_rotmat(obj_info['gl_rotmat'])

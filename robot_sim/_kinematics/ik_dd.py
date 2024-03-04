@@ -135,7 +135,7 @@ class DDIKSolver(object):
             flange_pos, flange_rotmat = self.jlc.fk(jnt_values=random_jnts, update=False, toggle_jacobian=False)
             flange_rotvec = self._rotmat_to_vec(flange_rotmat)
             query_flange = np.concatenate((flange_pos, flange_rotvec))
-            dist_val_array, nn_indx_array = self.querry_tree.query(query_flange, k=self._k_max, workers=-1)
+            dist_value_array, nn_indx_array = self.querry_tree.query(query_flange, k=self._k_max, workers=-1)
             is_solvable = False
             for nn_indx in nn_indx_array[:self._k_bbs]:
                 seed_jnt_vals = self.jnt_data[nn_indx]

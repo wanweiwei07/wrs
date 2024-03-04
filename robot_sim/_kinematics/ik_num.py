@@ -12,7 +12,7 @@ class NumIKSolver(object):
     CWLN is from: Clamping Weighted Least-Norm Method for the Manipulator Kinematic Control with Constraints
     PINV_WC is developed by Weiwei and is the most recommended method
     Notes 20231101:
-    1. Sovlers with random restart never worked within 10000 iterations.
+    1. Sovlers with random restart never worked within 10000 n_iter.
     2. PINV_WC (pseudo inverse with weighted clamping) is inspired by CWLN (clamping weighted least norm)
     3. CWLN is 1ms slower than PINV_WC as it needs to solve both svd and damped least squares
     """

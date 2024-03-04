@@ -1,7 +1,6 @@
 import os
 import math
 import numpy as np
-import modeling.model_collection as mc
 import robot_sim._kinematics.jlchain as jl
 import robot_sim.manipulators.cobotta_arm.cobotta_arm as cbta
 import robot_sim.end_effectors.gripper.cobotta_gripper.cobotta_gripper as cbtg
@@ -96,44 +95,6 @@ class Cobotta(ri.SglArmRobotInterface):
     #             self.cc.delete_cdobj(obj_info)
     #             self.oih_infos.remove(obj_info)
     #             break
-
-    def gen_stickmodel(self,
-                       toggle_tcp_frame=False,
-                       toggle_jnt_frames=False,
-                       toggle_flange_frame=False,
-                       name='single_arm_robot_interface_stickmodel'):
-        m_col = mc.ModelCollection(name=name)
-        self.manipulator.gen_stickmodel(toggle_tcp_frame=toggle_tcp_frame,
-                                        toggle_jnt_frames=toggle_jnt_frames,
-                                        toggle_flange_frame=toggle_flange_frame).attach_to(m_col)
-        self.end_effector.gen_stickmodel(toggle_tcp_frame=toggle_tcp_frame,
-                                         toggle_jnt_frames=toggle_jnt_frames).attach_to(m_col)
-        return m_col
-
-    def gen_meshmodel(self,
-                      rgb=None,
-                      alpha=None,
-                      toggle_tcp_frame=False,
-                      toggle_jnt_frames=False,
-                      toggle_flange_frame=False,
-                      toggle_cdprim=False,
-                      toggle_cdmesh=False,
-                      name='single_arm_robot_interface_meshmodel'):
-        m_col = mc.ModelCollection(name=name)
-        self.manipulator.gen_meshmodel(rgb=rgb,
-                                       alpha=alpha,
-                                       toggle_tcp_frame=toggle_tcp_frame,
-                                       toggle_jnt_frames=toggle_jnt_frames,
-                                       toggle_flange_frame=toggle_flange_frame,
-                                       toggle_cdprim=toggle_cdprim,
-                                       toggle_cdmesh=toggle_cdmesh).attach_to(m_col)
-        self.end_effector.gen_meshmodel(rgb=rgb,
-                                        alpha=alpha,
-                                        toggle_tcp_frame=toggle_tcp_frame,
-                                        toggle_jnt_frames=toggle_jnt_frames,
-                                        toggle_cdprim=toggle_cdprim,
-                                        toggle_cdmesh=toggle_cdmesh).attach_to(m_col)
-        return m_col
 
 
 if __name__ == '__main__':
