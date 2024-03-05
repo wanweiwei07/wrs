@@ -67,7 +67,7 @@ def ray_triangles(triangles,
     edge0 = vert1 - vert0
     edge1 = vert2 - vert0
 
-    # P is a vector perpendicular to the ray direction and one
+    # P is a vector perpendicular to the ray motion_vec and one
     # triangle edge. 
     P = np.cross(ray_direction, edge1)
 

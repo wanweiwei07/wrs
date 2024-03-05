@@ -39,9 +39,18 @@ class Link(object):
     def loc_pos(self):
         return self._loc_pos
 
+    @loc_pos.setter
+    def loc_pos(self, pos):
+        self._loc_pos = pos
+
+
     @property
     def loc_rotmat(self):
         return self._loc_rotmat
+
+    @loc_rotmat.setter
+    def loc_rotmat(self, rotmat):
+        self._loc_rotmat = rotmat
 
     @property
     def loc_homomat(self):

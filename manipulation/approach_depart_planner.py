@@ -11,56 +11,54 @@ import motion.probabilistic.rrt_connect as rrtc
 
 class ADPlanner(object):  # AD = Approach_Depart
 
-    def __init__(self, robot_s):
+    def __init__(self, robot):
         """
         :param robot_s:
         author: weiwei, hao
         date: 20191122, 20210113
         """
-        self.robot_s = robot_s
-        self.inik_slvr = inik.IncrementalNIK(self.robot_s)
-        self.rrtc_planner = rrtc.RRTConnect(self.robot_s)
+        self.robot = robot
+        self.rrtc_planner = rrtc.RRTConnect(self.robot)
 
-    def gen_jawwidth_motion(self, conf_list, jawwidth):
+    def gen_jaw_width_motion(self, conf_list, jawwidth):
         jawwidth_list = []
         for _ in conf_list:
             jawwidth_list.append(jawwidth)
         return jawwidth_list
 
     def gen_approach_linear(self,
-                            component_name,
                             goal_tcp_pos,
                             goal_tcp_rotmat,
-                            approach_direction=None,  # np.array([0, 0, -1])
-                            approach_distance=.1,
-                            approach_jawwidth=.05,
+                            approaching_vec=None,
+                            approaching_dist=.1,
+                            approaching_jaw_width=.05,
                             granularity=0.03,
                             obstacle_list=[],
                             seed_jnt_values=None,
-                            toggle_end_grasp=False,
-                            end_jawwidth=.0):
+                            toggle_end=False,
+                            end_jaw_width=.0):
         """
-
-        :param component_name:
         :param goal_tcp_pos:
         :param goal_tcp_rotmat:
-        :param approach_direction:
-        :param approach_distance:
-        :param approach_jawwidth:
+        :param approaching_vec: use the loc_z of goal_tcp_rotmat if None
+        :param approaching_dist:
+        :param approaching_jaw_width:
         :param granularity:
-        :param toggle_end_grasp:
-        :param end_jawwidth: only used when toggle_end_grasp is True
+        :param obstacle_list:
+        :param seed_jnt_values
+        :param toggle_end:
+        :param end_jaw_width: only used when toggle_end_grasp is True
         :return:
         author: weiwei
         date: 20210125
         """
-        if approach_direction is None:
-            approach_direction = goal_tcp_rotmat[:, 2]
+        if approaching_vec is None:
+            approaching_vec = goal_tcp_rotmat[:, 2]
         conf_list = self.inik_slvr.gen_rel_linear_motion(component_name,
                                                          goal_tcp_pos,
                                                          goal_tcp_rotmat,
-                                                         approach_direction,
-                                                         approach_distance,
+                                                         approaching_vec,
+                                                         approaching_dist,
                                                          obstacle_list=obstacle_list,
                                                          granularity=granularity,
                                                          type='sink',
@@ -69,13 +67,13 @@ class ADPlanner(object):  # AD = Approach_Depart
             print('Cannot perform approach linear!')
             return None, None
         else:
-            if toggle_end_grasp:
-                jawwidth_list = self.gen_jawwidth_motion(conf_list, approach_jawwidth)
+            if toggle_end:
+                jawwidth_list = self.gen_jaw_width_motion(conf_list, approaching_jaw_width)
                 conf_list += [conf_list[-1]]
-                jawwidth_list += [end_jawwidth]
+                jawwidth_list += [end_jaw_width]
                 return conf_list, jawwidth_list
             else:
-                return conf_list, self.gen_jawwidth_motion(conf_list, approach_jawwidth)
+                return conf_list, self.gen_jaw_width_motion(conf_list, approaching_jaw_width)
 
     def gen_depart_linear(self,
                           component_name,
@@ -100,7 +98,7 @@ class ADPlanner(object):  # AD = Approach_Depart
         :param granularity:
         :param seed_jnt_values:
         :param toggle_begin_grasp:
-        :param begin_jawwidth: only used when toggle_end_grasp is True
+        :param begin_jawwidth: only used when toggle_end is True
         :return: conf_list, jawwidth_list, objhomomat_list_list
         author: weiwei
         date: 20210125
@@ -121,12 +119,12 @@ class ADPlanner(object):  # AD = Approach_Depart
             return None, None
         else:
             if toggle_begin_grasp:
-                jawwidth_list = self.gen_jawwidth_motion(conf_list, depart_jawwidth)
+                jawwidth_list = self.gen_jaw_width_motion(conf_list, depart_jawwidth)
                 conf_list = [conf_list[0]] + conf_list
                 jawwidth_list = [begin_jawwidth] + jawwidth_list
                 return conf_list, jawwidth_list
             else:
-                return conf_list, self.gen_jawwidth_motion(conf_list, depart_jawwidth)
+                return conf_list, self.gen_jaw_width_motion(conf_list, depart_jawwidth)
 
     def gen_approach_and_depart_linear(self,
                                        component_name,
@@ -185,8 +183,8 @@ class ADPlanner(object):  # AD = Approach_Depart
             if depart_distance != 0 and len(depart_conf_list) == 0:
                 print('Cannot perform depart action!')
             else:
-                approach_jawwidth_list = self.gen_jawwidth_motion(approach_conf_list, approach_jawwidth)
-                depart_jawwidth_list = self.gen_jawwidth_motion(depart_conf_list, depart_jawwidth)
+                approach_jawwidth_list = self.gen_jaw_width_motion(approach_conf_list, approach_jawwidth)
+                depart_jawwidth_list = self.gen_jaw_width_motion(depart_conf_list, depart_jawwidth)
                 return approach_conf_list + depart_conf_list, approach_jawwidth_list + depart_jawwidth_list
         return [], []
 
@@ -232,7 +230,7 @@ class ADPlanner(object):  # AD = Approach_Depart
             if start2approach_conf_list is None:
                 print("ADPlanner: Cannot plan approach motion!")
                 return None, None
-            start2approach_jawwidth_list = self.gen_jawwidth_motion(start2approach_conf_list, approach_jawwidth)
+            start2approach_jawwidth_list = self.gen_jaw_width_motion(start2approach_conf_list, approach_jawwidth)
         return start2approach_conf_list + conf_list, start2approach_jawwidth_list + jawwidth_list
 
     def gen_depart_motion(self,
@@ -277,7 +275,7 @@ class ADPlanner(object):  # AD = Approach_Depart
             if depart2goal_conf_list is None:
                 print("ADPlanner: Cannot plan depart motion!")
                 return None, None
-            depart2goal_jawwidth_list = self.gen_jawwidth_motion(depart2goal_conf_list, depart_jawwidth)
+            depart2goal_jawwidth_list = self.gen_jaw_width_motion(depart2goal_conf_list, depart_jawwidth)
         else:
             depart2goal_conf_list = []
             depart2goal_jawwidth_list = []
@@ -351,7 +349,7 @@ class ADPlanner(object):  # AD = Approach_Depart
             if start2approach_conf_list is None:
                 print("ADPlanner: Cannot plan approach motion!")
                 return None, None
-            start2approach_jawwidth_list = self.gen_jawwidth_motion(start2approach_conf_list, approach_jawwidth)
+            start2approach_jawwidth_list = self.gen_jaw_width_motion(start2approach_conf_list, approach_jawwidth)
         if goal_conf is not None:
             depart2goal_conf_list = self.rrtc_planner.plan(component_name=component_name,
                                                            start_conf=ad_conf_list[-1],
@@ -363,7 +361,7 @@ class ADPlanner(object):  # AD = Approach_Depart
             if depart2goal_conf_list is None:
                 print("ADPlanner: Cannot plan depart motion!")
                 return None, None
-            depart2goal_jawwidth_list = self.gen_jawwidth_motion(depart2goal_conf_list, depart_jawwidth)
+            depart2goal_jawwidth_list = self.gen_jaw_width_motion(depart2goal_conf_list, depart_jawwidth)
         return start2approach_conf_list + ad_conf_list + depart2goal_conf_list, \
                start2approach_jawwidth_list + ad_jawwidth_list + depart2goal_jawwidth_list
 
@@ -394,8 +392,8 @@ if __name__ == '__main__':
     # conf_list, jawwidth_list = adp.gen_ad_primitive(hnd_name,
     #                                                 goal_pos,
     #                                                 goal_rotmat,
-    #                                                 approach_direction=np.array([0, 0, -1]),
-    #                                                 approach_distance=.1,
+    #                                                 approaching_vec=np.array([0, 0, -1]),
+    #                                                 approaching_dist=.1,
     #                                                 depart_direction=np.array([0, 1, 0]),
     #                                                 depart_distance=.0,
     #                                                 depart_jawwidth=0)
@@ -415,8 +413,8 @@ if __name__ == '__main__':
     #                                                    goal_pos,
     #                                                    goal_rotmat,
     #                                                    seed_jnt_values=robot_s.get_jnt_values(hnd_name),
-    #                                                    approach_direction=np.array([0, 0, -1]),
-    #                                                    approach_distance=.1)
+    #                                                    approaching_vec=np.array([0, 0, -1]),
+    #                                                    approaching_dist=.1)
     # conf_list, jawwidth_list = adp.gen_depart_motion(hnd_name,
     #                                                  goal_pos,
     #                                                  goal_rotmat,

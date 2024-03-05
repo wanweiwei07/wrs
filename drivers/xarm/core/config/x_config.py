@@ -462,7 +462,7 @@ class XCONF(object):
 
         USE_PRIMITIVES = 20  # just for judgement, threshold.
         CYLINDER = 21  # major_radius, height
-        BOX = 22  # x, y, z in tool coordinate direction
+        BOX = 22  # x, y, z in tool coordinate motion_vec
 
 
 

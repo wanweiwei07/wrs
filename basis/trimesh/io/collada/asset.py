@@ -26,11 +26,11 @@ from .xmlutil import etree as ElementTree
 class UP_AXIS:
     """The up-axis of the collada document."""
     X_UP = 'X_UP'
-    """Indicates X direction is up"""
+    """Indicates X motion_vec is up"""
     Y_UP = 'Y_UP'
-    """Indicates Y direction is up"""
+    """Indicates Y motion_vec is up"""
     Z_UP = 'Z_UP'
-    """Indicates Z direction is up"""
+    """Indicates Z motion_vec is up"""
 
 class Contributor(DaeObject):
     """Defines authoring information for asset management"""

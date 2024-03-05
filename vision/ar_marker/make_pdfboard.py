@@ -18,7 +18,7 @@ def make_aruco_board(nrow,
                      dpi=600):
     """
     create aruco board
-    the paper is in portrait orientation, nrow means the number of markers in the vertical direction
+    the paper is in portrait orientation, nrow means the number of markers in the vertical motion_vec
     :param nrow:
     :param ncolumn:
     :param start_id: the starting id of the marker
@@ -87,7 +87,7 @@ def make_charuco_board(nrow,
                        dpi=600):
     """
     create charuco board
-    the paper is in portrait orientation, nrow means the number of markers in the vertical direction
+    the paper is in portrait orientation, nrow means the number of markers in the vertical motion_vec
     :param nrow:
     :param ncolumn:
     :param marker_dict:
@@ -153,7 +153,7 @@ def make_dual_marker(marker_dict=aruco.DICT_4X4_250,
                      dpi=600):
     """
     create aruco board
-    the paper is in portrait orientation, nrow means the number of markers in the vertical direction
+    the paper is in portrait orientation, nrow means the number of markers in the vertical motion_vec
     :param nrow:
     :param ncolumn:
     :param start_id: the starting id of the marker
@@ -222,8 +222,8 @@ def make_multi_marker(marker_dict=aruco.DICT_4X4_250,
                       dpi=600):
     """
     create aruco board
-    the paper is in portrait orientation, nrow means the number of markers in the vertical direction
-    0,0 is the center of a paper, x point to the right, y points to the up direction
+    the paper is in portrait orientation, nrow means the number of markers in the vertical motion_vec
+    0,0 is the center of a paper, x point to the right, y points to the up motion_vec
     :param nrow:
     :param ncolumn:
     :param start_id: the starting id of the marker
@@ -287,7 +287,7 @@ def make_chess_board(nrow,
                      dpi=600):
     """
     create checss board
-    the paper is in portrait orientation, nrow means the number of markers in the vertical direction
+    the paper is in portrait orientation, nrow means the number of markers in the vertical motion_vec
     :param nrow:
     :param ncolumn:
     :param savepath:
@@ -358,7 +358,7 @@ def make_chess_and_charuco_board(nrow_chess=3,
                                  dpi=600):
     """
     create half-chess and half-charuco board
-    the paper is in portrait orientation, nrow means the number of markers in the vertical direction
+    the paper is in portrait orientation, nrow means the number of markers in the vertical motion_vec
     :param nrow:
     :param ncolumn:
     :param square_size: mm

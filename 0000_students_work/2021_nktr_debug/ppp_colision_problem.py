@@ -227,9 +227,9 @@ for dict_goal_pos in dist_pos:
     #     inik_s = inik.IncrementalNIK(robot_s)
     #     robot_s.fk(component_name="arm", jnt_values=conf_list2[-1])
     #     start_tcp_pos, start_tcp_rotmat = robot_s.get_gl_tcp(manipulator_name="arm")
-    #     direction = [1, 0, 0]
+    #     motion_vec = [1, 0, 0]
     #     distance = .1
-    #     goal_tcp_pos = start_tcp_pos + rm.unit_vector(direction) * distance
+    #     goal_tcp_pos = start_tcp_pos + rm.unit_vector(motion_vec) * distance
     #     goal_tcp_rotmat = start_tcp_rotmat
     #     linear_conf_list = inik_s.gen_linear_motion(component_name="arm", start_tcp_pos=start_tcp_pos,
     #                                                 start_tcp_rotmat=start_tcp_rotmat,
@@ -243,7 +243,7 @@ for dict_goal_pos in dist_pos:
     #         alljnts = robot_s.get_jnt_values(component_name="all")
     #         robot_pos = alljnts[0:3].tolist()
     #         for i in range(int(distance / 0.01)):
-    #             pos1 = robot_pos + rm.unit_vector(direction) * i * 0.01
+    #             pos1 = robot_pos + rm.unit_vector(motion_vec) * i * 0.01
     #             alljnts[0] = pos1[0]
     #             alljnts[1] = pos1[1]
     #             temp_linear_conf.append(np.array(alljnts))
@@ -255,7 +255,7 @@ for dict_goal_pos in dist_pos:
     #             temp_objpose = copy.deepcopy(objpose_list2[-1])
     #             robot_s.fk(component_name="all", jnt_values=armjnts)
     #             eepos, eerot = robot_s.get_gl_tcp(manipulator_name="arm")
-    #             # pos = temp_objpose[:3, 3] + rm.unit_vector(direction) * i * 0.01
+    #             # pos = temp_objpose[:3, 3] + rm.unit_vector(motion_vec) * i * 0.01
     #             linear_jawwidth_list.append(jawwidth_list2[-1])
     #             temp_objpose[:3, 3] = copy.deepcopy(eepos)
     #             linear_objpose_list.append(temp_objpose)

@@ -53,7 +53,7 @@ class SglArmRobotInterface(ri.RobotInterface):
     def rand_conf(self):
         return self.manipulator.rand_conf()
 
-    def fk(self, jnt_values, toggle_jacobian=True):
+    def fk(self, jnt_values, toggle_jacobian=False):
         """
         no update
         :param jnt_values:

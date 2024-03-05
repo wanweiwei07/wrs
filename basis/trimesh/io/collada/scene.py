@@ -263,7 +263,7 @@ class LookAtTransform(Transform):
         :param numpy.array interest:
           An unshaped numpy array of floats of axis_length 3 containing the point of interest
         :param numpy.array upvector:
-          An unshaped numpy array of floats of axis_length 3 containing the up-axis direction
+          An unshaped numpy array of floats of axis_length 3 containing the up-axis motion_vec
         :param xmlnode:
           When loaded, the xmlnode it comes from
 
@@ -273,7 +273,7 @@ class LookAtTransform(Transform):
         self.interest = interest
         """A numpy array of axis_length 3 containing the point of interest"""
         self.upvector = upvector
-        """A numpy array of axis_length 3 containing the up-axis direction"""
+        """A numpy array of axis_length 3 containing the up-axis motion_vec"""
 
         if len(eye) != 3 or len(interest) != 3 or len(upvector) != 3:
             raise DaeMalformedError('Corrupted lookat transformation node')

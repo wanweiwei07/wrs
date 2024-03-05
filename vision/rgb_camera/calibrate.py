@@ -13,8 +13,8 @@ def calibrate_chessboard(ncrossrow,
                          imgspath='./',
                          savename='mycam_data.yaml'):
     """
-    :param ncrossrow: the number of cross in row direction
-    :param ncrosscolumn: the number of cross in column direction
+    :param ncrossrow: the number of cross in row motion_vec
+    :param ncrosscolumn: the number of cross in column motion_vec
     :param markersize: mm
     :param imgspath:
     :param savename:

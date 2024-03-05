@@ -11,9 +11,10 @@ class CDMType(Enum):
 
 
 class CDPType(Enum):
-    BOX = 1
-    CAPSULE = 2
-    CYLINDER = 3
-    SURFACE_BALLS = 4
-    POINT_CLOUD = 5
-    USER_DEFINED = 6
+    AABB = 1
+    OBB = 2
+    CAPSULE = 3
+    CYLINDER = 4
+    SURFACE_BALLS = 5
+    POINT_CLOUD = 6
+    USER_DEFINED = 7

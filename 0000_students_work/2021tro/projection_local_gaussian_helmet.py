@@ -148,8 +148,8 @@ for tick in range(1, n + 1):
     new_rotmat = rm.rotmat_from_axangle(vec, angle)
     direction = new_rotmat.dot(direction)
     tmp_direction = new_rotmat.dot(tmp_direction)
-    # new_line_segs = [[cpt, cpt+direction*(.05-tick*.05/n)],
-    #                  [cpt+direction*(.05-tick*.05/n), cpt+direction*(.05-tick*.05/n)+tmp_direction*.05]]
+    # new_line_segs = [[cpt, cpt+motion_vec*(.05-tick*.05/n)],
+    #                  [cpt+motion_vec*(.05-tick*.05/n), cpt+motion_vec*(.05-tick*.05/n)+tmp_direction*.05]]
     # mgm.gen_linesegs(new_line_segs).attach_to(base)
     gm.gen_stick(spos=cpt, epos=projected_point, rgba=[1, .6, 0, 1], radius=.002, type='round').attach_to(base)
     cpt = projected_point
@@ -192,10 +192,10 @@ for tick in range(1, n + 1):
     angle = rm.angle_between_vectors(last_normal, new_normal)
     vec = rm.unit_vector(np.cross(last_normal, new_normal))
     new_rotmat = rm.rotmat_from_axangle(vec, angle)
-    # direction = new_rotmat.dot(direction)
+    # motion_vec = new_rotmat.dot(motion_vec)
     direction = new_rotmat.dot(tmp_direction)
-    # new_line_segs = [[cpt, cpt+direction*(.05-tick*.05/n)],
-    #                  [cpt+direction*(.05-tick*.05/n), cpt+direction*(.05-tick*.05/n)+tmp_direction*.05]]
+    # new_line_segs = [[cpt, cpt+motion_vec*(.05-tick*.05/n)],
+    #                  [cpt+motion_vec*(.05-tick*.05/n), cpt+motion_vec*(.05-tick*.05/n)+tmp_direction*.05]]
     # mgm.gen_linesegs(new_line_segs).attach_to(base)
     gm.gen_stick(spos=cpt, epos=projected_point, rgba=[1, .6, 0, 1], radius=.002, type='round').attach_to(base)
     cpt = projected_point
@@ -203,9 +203,9 @@ for tick in range(1, n + 1):
     # break
 #
 # t_cpt = cpt
-# direction = new_rotmat.dot(-pt_direction)
+# motion_vec = new_rotmat.dot(-pt_direction)
 # for tick in range(1, n+1):
-#     t_npt = cpt+direction*.05/n
+#     t_npt = cpt+motion_vec*.05/n
 #     # mgm.gen_arrow(spos=cpt, epos=t_npt, major_radius=0.001, rgba=[0,1,1,1]).attach_to(base)
 #     # mgm.gen_arrow(spos=t_npt, epos=t_npt+last_normal*.015, major_radius=0.001, rgba=[1,1,0,1]).attach_to(base)
 #     nearby_sample_ids = tree.query_ball_point(t_npt, .0015)
@@ -228,10 +228,10 @@ for tick in range(1, n + 1):
 #     angle = rm.angle_between_vectors(last_normal, new_normal)
 #     vec = rm.unit_vector(np.cross(last_normal, new_normal))
 #     new_rotmat = rm.rotmat_from_axangle(vec, angle)
-#     # direction = new_rotmat.dot(direction)
-#     direction = new_rotmat.dot(-pt_direction)
-#     # new_line_segs = [[cpt, cpt+direction*(.05-tick*.05/n)],
-#     #                  [cpt+direction*(.05-tick*.05/n), cpt+direction*(.05-tick*.05/n)+tmp_direction*.05]]
+#     # motion_vec = new_rotmat.dot(motion_vec)
+#     motion_vec = new_rotmat.dot(-pt_direction)
+#     # new_line_segs = [[cpt, cpt+motion_vec*(.05-tick*.05/n)],
+#     #                  [cpt+motion_vec*(.05-tick*.05/n), cpt+motion_vec*(.05-tick*.05/n)+tmp_direction*.05]]
 #     # mgm.gen_linesegs(new_line_segs).attach_to(base)
 #     mgm.gen_stick(spos=cpt, epos=projected_point, rgba=[1,.6,0,1], major_radius=.002, end_type='round').attach_to(base)
 #     cpt=projected_point
@@ -240,9 +240,9 @@ for tick in range(1, n + 1):
 #     #     break
 #
 # t_cpt = cpt
-# direction = new_rotmat.dot(-tmp_direction)
+# motion_vec = new_rotmat.dot(-tmp_direction)
 # for tick in range(1, n+1):
-#     t_npt = cpt+direction*.05/n
+#     t_npt = cpt+motion_vec*.05/n
 #     # mgm.gen_arrow(spos=t_npt, epos=t_npt+last_normal*.015, major_radius=0.001, rgba=[1, 1, 0, 1]).attach_to(base)
 #     nearby_sample_ids = tree.query_ball_point(t_npt, .0015)
 #     nearby_samples = bowl_samples[nearby_sample_ids]
@@ -264,10 +264,10 @@ for tick in range(1, n + 1):
 #     angle = rm.angle_between_vectors(last_normal, new_normal)
 #     vec = rm.unit_vector(np.cross(last_normal, new_normal))
 #     new_rotmat = rm.rotmat_from_axangle(vec, angle)
-#     # direction = new_rotmat.dot(direction)
-#     direction = new_rotmat.dot(-tmp_direction)
-#     # new_line_segs = [[cpt, cpt+direction*(.05-tick*.05/n)],
-#     #                  [cpt+direction*(.05-tick*.05/n), cpt+direction*(.05-tick*.05/n)+tmp_direction*.05]]
+#     # motion_vec = new_rotmat.dot(motion_vec)
+#     motion_vec = new_rotmat.dot(-tmp_direction)
+#     # new_line_segs = [[cpt, cpt+motion_vec*(.05-tick*.05/n)],
+#     #                  [cpt+motion_vec*(.05-tick*.05/n), cpt+motion_vec*(.05-tick*.05/n)+tmp_direction*.05]]
 #     # mgm.gen_linesegs(new_line_segs).attach_to(base)
 #     mgm.gen_stick(spos=cpt, epos=projected_point, rgba=[1,.6,0,1], major_radius=.002, end_type='round').attach_to(base)
 #     cpt=projected_point

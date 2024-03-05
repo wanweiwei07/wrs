@@ -1,6 +1,6 @@
 import visualization.panda.world as wd
-import modeling.geometric_model as gm
-import modeling.collision_model as cm
+import modeling.geometric_model as mgm
+import modeling.collision_model as mcm
 import grasping.planning.antipodal as gpa
 import math
 import numpy as np
@@ -10,40 +10,38 @@ import manipulation.pick_place_planner as ppp
 import motion.probabilistic.rrt_connect as rrtc
 
 base = wd.World(cam_pos=[1.2, .7, 1], lookat_pos=[.0, 0, .15])
-gm.gen_frame().attach_to(base)
+mgm.gen_frame().attach_to(base)
 # ground
-ground = cm.gen_box(xyz_lengths=[5, 5, 1], rgba=[.7, .7, .7, .7])
-ground.set_pos(np.array([0, 0, -.51]))
+ground = mcm.gen_box(xyz_lengths=[5, 5, 1], rgba=[.7, .7, .7, .7])
+ground.pos = np.array([0, 0, -.51])
 ground.attach_to(base)
 # object holder
-object_holder = cm.CollisionModel("objects/holder.stl")
-object_holder.set_rgba([.5,.5,.5,1])
-object_holder_gl_pos = np.array([-.15, -.3, .0])
-object_holder_gl_rotmat = np.eye(3)
-obgl_start_homomat = rm.homomat_from_posrot(object_holder_gl_pos, object_holder_gl_rotmat)
-object_holder.set_pos(object_holder_gl_pos)
-object_holder.set_rotmat(object_holder_gl_rotmat)
-gm.gen_frame().attach_to(object_holder)
-object_holder_copy = object_holder.copy()
-object_holder_copy.attach_to(base)
+holder_1 = mcm.CollisionModel("objects/holder.stl")
+holder_1.rgba= np.array([.5,.5,.5,1])
+h1_gl_pos = np.array([-.15, -.3, .0])
+h1_gl_rotmat = np.eye(3)
+holder_1.pos = h1_gl_pos
+holder_1.rotmat = h1_gl_rotmat
+mgm.gen_frame().attach_to(holder_1)
+h1_copy = holder_1.copy()
+h1_copy.attach_to(base)
 # object holder goal
-object_holder_gl_goal_pos = np.array([.25, -.05, .05])
-object_holder_gl_goal_rotmat = rm.rotmat_from_euler(0, 0, -math.pi / 2)
-obgl_goal_homomat = rm.homomat_from_posrot(object_holder_gl_goal_pos, object_holder_gl_goal_rotmat)
-object_holder_goal_copy = object_holder.copy()
-object_holder_goal_copy.set_homomat(obgl_goal_homomat)
-object_holder_goal_copy.attach_to(base)
+holder_2 = mcm.CollisionModel("objects/holder.stl")
+h2_gl_pos = np.array([.25, -.05, .05])
+h2_gl_rotmat = rm.rotmat_from_euler(0, 0, -math.pi / 2)
+holder_2.pos = h2_gl_pos
+holder_2.rotmat = h2_gl_rotmat
+h2_copy = holder_2.copy()
 
-robot_s = cbt.Cobotta()
-# robot_s.gen_meshmodel().attach_to(base)
+robot = cbt.Cobotta()
+robot.gen_meshmodel().attach_to(base)
 # base.run()
-rrtc_s = rrtc.RRTConnect(robot_s)
-ppp_s = ppp.PickPlacePlanner(robot_s)
 
-original_grasp_info_list = gpa.load_pickle_file('holder', './', 'cobg_holder_grasps.pickle')
-manipulator_name = "arm"
-hand_name = "hnd"
-start_conf = robot_s.get_jnt_values(manipulator_name)
+rrtc = rrtc.RRTConnect(robot)
+ppp = ppp.PickPlacePlanner(robot)
+
+original_grasp_info_list = gpa.load_pickle_file(obj_name='holder', path='./', file_name='cobg_holder_grasps.pickle')
+start_conf = robot.get_jnt_values()
 conf_list, jawwidth_list, objpose_list = \
     ppp_s.gen_pick_and_place_motion(hnd_name=hand_name,
                                     objcm=object_holder,

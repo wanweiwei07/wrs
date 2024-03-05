@@ -17,8 +17,8 @@ def define_gripper_grasps(gripper,
     :param gripper:
     :param cmodel:
     :param gl_jaw_center_pos:
-    :param gl_approaching_vec: hand approaching direction
-    :param gl_fgr0_opening_vec: normal direction of thumb's contact surface
+    :param gl_approaching_vec: hand approaching motion_vec
+    :param gl_fgr0_opening_vec: normal motion_vec of thumb's contact surface
     :param jaw_width:
     :param obj_cmodel:
     :param toggle_flip:
@@ -61,8 +61,8 @@ def define_gripper_grasps_with_rotation(gripper, cmodel, gl_jaw_center_pos, gl_a
     :param gripper:
     :param cmodel: 
     :param gl_jaw_center_pos:
-    :param gl_approaching_vec: hand approaching direction
-    :param gl_fgr0_opening_vec: normal direction of thumb's contact surface
+    :param gl_approaching_vec: hand approaching motion_vec
+    :param gl_fgr0_opening_vec: normal motion_vec of thumb's contact surface
     :param jaw_width: 
     :param rotation_interval: 
     :param rotation_range: 

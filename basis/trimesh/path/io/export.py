@@ -61,7 +61,7 @@ def export_svg(drawing):
         '''
         arc string: (rx ry x-axis-rotation large-arc-flag sweep-flag x y)+
         large-arc-flag: greater than 180 degrees
-        sweep flag: direction (cw/ccw)
+        sweep flag: motion_vec (cw/ccw)
         '''
         vertices = points[arc.points[::((reverse*-2) + 1)]]        
         vertex_start, vertex_mid, vertex_end = vertices

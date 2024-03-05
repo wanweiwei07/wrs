@@ -61,7 +61,7 @@ def fix_normals_direction(mesh):
     '''
     # force face normals to be regenerated according to the right-hand rule
     mesh.face_normals = None
-    # which direction should our test rays go
+    # which motion_vec should our test rays go
     direction = mesh.face_normals[0]
     # test point
     origin = mesh.triangles[0].mean(axis=0)
@@ -79,7 +79,7 @@ def fix_normals_direction(mesh):
 
 def fix_normals(mesh):
     '''
-    Fix the winding and direction of a mesh face and face normals in-place
+    Fix the winding and motion_vec of a mesh face and face normals in-place
 
     Really only meaningful on watertight meshes, but will orient all 
     faces and winding in a uniform way for non-watertight face patches as well.

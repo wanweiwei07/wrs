@@ -11,6 +11,7 @@ import uuid
 import motion.probabilistic.rrt as rrt
 import scipy
 from operator import itemgetter
+import motion.utils as utils
 
 
 class RRTStar(rrt.RRT):
@@ -139,6 +140,7 @@ class RRTStar(rrt.RRT):
                     return 'goal'
                 return new_nid
 
+    @utils.keep_jnt_values_decorator
     def plan(self,
              start_conf,
              goal_conf,

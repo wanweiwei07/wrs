@@ -326,7 +326,7 @@ def rayhitmesh_p(obj, center, p, direction=np.asarray((0, 0, 1))):
         pfrom = np.asarray((p[0] + center[0], p[1] + center[1], center[2])) + 50 * direction
         pto = np.asarray((p[0] + center[0], p[1] + center[1], center[2])) - 50 * direction
     else:
-        print('Wrong input direction!')
+        print('Wrong input motion_vec!')
         return None, None
     base.pggen.plotArrow(base.render, spos=pfrom, epos=pto, length=100, rgba=(0, 1, 0, 1))
     # base.run()
@@ -407,7 +407,7 @@ def __find_nxt_p_pca(drawpath_p1, drawpath_p2, kdt_d3, p0, n0, max_nn=150, direc
     elif abs(direction[2]) == 1:
         v_draw = (v_draw[0], v_draw[1], 0)
     else:
-        print('Wrong input direction!')
+        print('Wrong input motion_vec!')
         return None
     rotmat = rm.rotmat_betweenvector(direction, n0)
     v_draw = np.dot(rotmat, v_draw)
@@ -492,7 +492,7 @@ def __find_nxt_p_psfc(drawpath_p1, drawpath_p2, kdt_d3, p0, n0, max_nn=150, dire
     elif abs(direction[2]) == 1:
         v_draw = (v_draw[0], v_draw[1], 0)
     else:
-        print('Wrong input direction!')
+        print('Wrong input motion_vec!')
         return None
 
     def __surface(pts, mode):
@@ -602,7 +602,7 @@ def __find_nxt_p_rbf_g(drawpath_p1, drawpath_p2, surface, transmat, kdt_d3, p0, 
     elif abs(direction[2]) == 1:
         v_draw = (v_draw[0], v_draw[1], 0)
     else:
-        print('Wrong input direction!')
+        print('Wrong input motion_vec!')
         return None
 
     rotmat = rm.rotmat_betweenvector(direction, n0)
@@ -683,7 +683,7 @@ def __find_nxt_p_bp(drawpath_p1, drawpath_p2, kdt_d3, p0, n0, objcm, pcd, max_nn
     elif abs(direction[2]) == 1:
         v_draw = (v_draw[0], v_draw[1], 0)
     else:
-        print('Wrong input direction!')
+        print('Wrong input motion_vec!')
         return None
 
     if objcm is None:
@@ -750,7 +750,7 @@ def __find_nxt_p(drawpath_p1, drawpath_p2, kdt_d3, pcd_start_p, pcd_start_n, dir
     elif abs(direction[2]) == 1:
         v_draw = (v_draw[0], v_draw[1], 0)
     else:
-        print('Wrong input direction!')
+        print('Wrong input motion_vec!')
         return None
     rotmat = rm.rotmat_betweenvector(direction, pcd_start_n)
     pt = pcd_start_p + np.dot(rotmat, v_draw)
@@ -773,7 +773,7 @@ def __find_nxt_p_intg(drawpath_p1, drawpath_p2, kdt_d3, p0, n0, direction=np.arr
     elif abs(direction[2]) == 1:
         v_draw = (v_draw[0], v_draw[1], 0)
     else:
-        print('Wrong input direction!')
+        print('Wrong input motion_vec!')
         return None
     rotmat = rm.rotmat_betweenvector(direction, np.asarray(n0))
     v_draw = np.dot(rotmat, v_draw)
@@ -1573,7 +1573,7 @@ if __name__ == '__main__':
         objrot = (0, 0, 0)
         tgt_item = el.loadObjitem(stl_f_name, pos=objpos, rot=objrot, sample_num=SAMPLE_NUM)
     direction = np.asarray((0, 0, 1))
-    # direction = np.asarray((0, -1, 0))
+    # motion_vec = np.asarray((0, -1, 0))
     if dump_f_name == 'cube':
         tgt_item.set_drawcenter((0, -25, 0))  # cube
     if dump_f_name == 'cylinder_pcd':

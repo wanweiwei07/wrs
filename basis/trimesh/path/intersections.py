@@ -15,7 +15,7 @@ def line_line(origins, directions):
     Arguments
     ---------
     origins:    (2,d) list of points on lines (d in [2,3])
-    directions: (2,d) list of direction vectors
+    directions: (2,d) list of motion_vec vectors
 
     Returns
     ---------
@@ -38,13 +38,13 @@ def line_line(origins, directions):
     v,   u   = directions
     w        = p_0 - q_0
     
-    # the normal of the plane given by the two direction vectors
+    # the normal of the plane given by the two motion_vec vectors
     plane_normal  = unitize(np.cross(u, v))
     # vectors perpendicular to the two lines
     v_perp = unitize(np.cross(v, plane_normal))
  
     # if the vector from origin to origin is on the plane given by
-    # the direction vector, the dot product with the plane normal
+    # the motion_vec vector, the dot product with the plane normal
     # should be within floating point error of zero
     coplanar = abs(np.dot(plane_normal, w)) < tol.zero
     if not coplanar:

@@ -122,7 +122,7 @@ def oriented_bounds_2d(points, qhull_options='QbB'):
     hull_edges = convex.points[convex.simplices]
     # (n,2) points on the convex hull
     hull_points = convex.points[convex.vertices]
-    # unit vector direction of the edges of the hull polygon filter out zero- magnitude edges via check_valid
+    # unit vector motion_vec of the edges of the hull polygon filter out zero- magnitude edges via check_valid
     edge_vectors = hull_edges[:, 1] - hull_edges[:, 0]
     edge_norm = np.sqrt(np.dot(a=edge_vectors ** 2, b=[1, 1]))
     edge_nonzero = edge_norm > 1e-10
@@ -258,8 +258,8 @@ def oriented_bounds(obj,
     min_volume = np.inf
     # we now need to loop through all the possible candidate directions for aligning our oriented bounding box.
     for normal, to_2d in zip(normals, matrices):
-        # we could compute the hull in 2D for every direction but since we know we're dealing with a convex blob we can
-        # do back-face culling and then take the boundary start by picking the normal direction with fewer edges
+        # we could compute the hull in 2D for every motion_vec but since we know we're dealing with a convex blob we can
+        # do back-face culling and then take the boundary start by picking the normal motion_vec with fewer edges
         side = np.dot(hull_normals, normal) > -1e-10
         # for coplanar points this could be empty
         if not side.any():

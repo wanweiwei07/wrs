@@ -57,7 +57,7 @@ def vertex_to_entity_path(vertex_path, graph, entities, vertices=None):
         elif a[1] == b[1]:
             return 1, -1
         else: 
-            raise ValueError('Can\'t determine direction, edges aren\'t connected!')
+            raise ValueError('Can\'t determine motion_vec, edges aren\'t connected!')
 
     if vertices is None:
         ccw_direction = 1
@@ -151,7 +151,7 @@ class PathSample:
     def __init__(self, points):
         # make sure input array is numpy
         self._points = np.array(points)
-        # find the direction of each segment
+        # find the motion_vec of each segment
         self._vectors = np.diff(self._points, axis=0)
         # find the axis_length of each segment
         self._norms = np.linalg.norm(self._vectors, axis=1)

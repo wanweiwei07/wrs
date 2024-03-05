@@ -10,27 +10,6 @@ import matplotlib.pyplot as plt
 from operator import itemgetter
 
 
-# ==============================================
-# keep jnt values decorator
-# ==============================================
-
-def keep_jnt_values_decorator(method):
-    """
-    decorator function for save and restore robot's joint values
-    :return:
-    author: weiwei
-    date: 20220404
-    """
-
-    def wrapper(self, *args, **kwargs):
-        jnt_values_bk = self.robot.get_jnt_values()
-        result = method(self, *args, **kwargs)
-        self.robot.goto_given_conf(jnt_values=jnt_values_bk)
-        return result
-
-    return wrapper
-
-
 class RRT(object):
     """
     author: weiwei
@@ -201,7 +180,7 @@ class RRT(object):
                 break
         return smoothed_path
 
-    @keep_jnt_values_decorator
+    @utils.keep_jnt_values_decorator
     def plan(self,
              start_conf,
              goal_conf,

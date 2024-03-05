@@ -573,7 +573,7 @@ class XArmAPI(object):
     @property
     def gravity_direction(self):
         """
-        gravity direction, only available in socket way and enable_report is True and report_type is 'rich'
+        gravity motion_vec, only available in socket way and enable_report is True and report_type is 'rich'
         :return:
         """
         return self._arm.gravity_direction
@@ -1632,7 +1632,7 @@ class XArmAPI(object):
 
     def set_gravity_direction(self, direction):
         """
-        Set the direction of gravity
+        Set the motion_vec of gravity
 
         Note:
             1. Do not use if not required
@@ -1640,7 +1640,7 @@ class XArmAPI(object):
             3. The save_conf interface can record the current settings and will not be lost after the restart.
             4. The clean_conf interface can restore system default settings
 
-        :param direction: direction of gravity, such as [x(mm), y(mm), z(mm)]
+        :param direction: motion_vec of gravity, such as [x(mm), y(mm), z(mm)]
         :return: code
             code: See the [API Code Documentation](./xarm_api_code.md#api-code) for details.
         """
@@ -1648,7 +1648,7 @@ class XArmAPI(object):
 
     def set_mount_direction(self, base_tilt_deg, rotation_deg, is_radian=None):
         """
-        Set the mount direction
+        Set the mount motion_vec
 
         Note:
             1. Do not use if not required
@@ -2885,9 +2885,9 @@ class XArmAPI(object):
                 :param height: the height of cylinder, (unit: mm)
             22: Cuboid, need additional parameters x, y, z
                 self.set_collision_tool_model(22, x=234, y=323, z=23)
-                :param x: the axis_length of the cuboid in the x coordinate direction, (unit: mm)
-                :param y: the axis_length of the cuboid in the y coordinate direction, (unit: mm)
-                :param z: the axis_length of the cuboid in the z coordinate direction, (unit: mm)
+                :param x: the axis_length of the cuboid in the x coordinate motion_vec, (unit: mm)
+                :param y: the axis_length of the cuboid in the y coordinate motion_vec, (unit: mm)
+                :param z: the axis_length of the cuboid in the z coordinate motion_vec, (unit: mm)
         :param args: additional parameters
         :param kwargs: additional parameters
         :return: code
@@ -2982,8 +2982,8 @@ class XArmAPI(object):
         Note:
             First determine a point in the working space, move along the desired coordinate system x+ to determine the second point,
             and then move along the desired coordinate system y+ to determine the third point. 
-            Note that the x+ direction is as accurate as possible. 
-            If the y+ direction is not completely perpendicular to x+, it will be corrected in the calculation process.
+            Note that the x+ motion_vec is as accurate as possible.
+            If the y+ motion_vec is not completely perpendicular to x+, it will be corrected in the calculation process.
 
         :param three_points: a list of teaching TCP coordinate positions [x, y, z, roll, pitch, yaw]
         :param input_is_radian: the roll/pitch/yaw value of the each point in radians or not, default is self.default_is_radian

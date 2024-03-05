@@ -8,6 +8,7 @@ import motion.probabilistic.rrt_star as rrtst
 from operator import itemgetter
 import uuid
 import warnings
+import motion.utils as utils
 
 
 class RRTStarConnect(rrtst.RRTStar):
@@ -92,6 +93,7 @@ class RRTStarConnect(rrtst.RRTStar):
                 return new_nid
         return nearest_nid
 
+    @utils.keep_jnt_values_decorator
     def plan(self,
              start_conf,
              goal_conf,

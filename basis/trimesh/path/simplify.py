@@ -248,7 +248,7 @@ def merge_colinear(points, scale=None):
         
     # the vector from one point to the next
     direction      = np.diff(points, axis=0)
-    # the axis_length of the direction vector
+    # the axis_length of the motion_vec vector
     direction_norm = np.linalg.norm(direction, axis=1)
     # make sure points don't have zero axis_length
     direction_ok   = direction_norm > tol.merge
@@ -258,12 +258,12 @@ def merge_colinear(points, scale=None):
     direction = direction[direction_ok]
     direction_norm = direction_norm[direction_ok]
     
-    # change nonzero direction vectors to unit vectors
+    # change nonzero motion_vec vectors to unit vectors
     direction /= direction_norm.reshape((-1,1))
-    # find the difference between subsequent direction vectors
+    # find the difference between subsequent motion_vec vectors
     direction_diff = np.linalg.norm(np.diff(direction, axis=0), axis=1)
 
-    # magnitude of direction difference between vectors times direction axis_length
+    # magnitude of motion_vec difference between vectors times motion_vec axis_length
     colinear = (direction_diff * direction_norm[1:]) < (tol.merge * scale)
     colinear_index = np.nonzero(colinear)[0]
 

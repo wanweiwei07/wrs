@@ -891,7 +891,7 @@ class XArm(Gripper, Servo, Record, RobotIQ, BaseBoard, Track, FtSensor):
     @xarm_is_connected(_type='set')
     def set_gravity_direction(self, direction):
         ret = self.arm_cmd.set_gravity_dir(direction[:3])
-        self.log_api_info('API -> set_gravity_direction -> code={}, direction={}'.format(ret[0], direction), code=ret[0])
+        self.log_api_info('API -> set_gravity_direction -> code={}, motion_vec={}'.format(ret[0], direction), code=ret[0])
         return ret[0]
 
     @xarm_wait_until_not_pause
@@ -925,7 +925,7 @@ class XArm(Gripper, Servo, Record, RobotIQ, BaseBoard, Track, FtSensor):
             g_new[i] = Rot[i * 3 + 0] * G_normal[0] + Rot[i * 3 + 1] * G_normal[1] + Rot[i * 3 + 2] * G_normal[2]
 
         ret = self.arm_cmd.set_gravity_dir(g_new)
-        self.log_api_info('API -> set_mount_direction -> code={}, tilt={}, rotation={}, direction={}'.format(ret[0], base_tilt_deg, rotation_deg, g_new), code=ret[0])
+        self.log_api_info('API -> set_mount_direction -> code={}, tilt={}, rotation={}, motion_vec={}'.format(ret[0], base_tilt_deg, rotation_deg, g_new), code=ret[0])
         return ret[0]
 
     @xarm_is_connected(_type='set')

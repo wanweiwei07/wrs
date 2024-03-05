@@ -422,7 +422,7 @@ class Direction(BagOfVectors):
             raise ValueError('Direction data must have norm=1.0')
 
     def orthogonal_basis(self):
-        """Return an orthogonal basis to this direction.
+        """Return an orthogonal basis to this motion_vec.
 
         Note
         ----
@@ -432,7 +432,7 @@ class Direction(BagOfVectors):
         -------
         :obj:`tuple` of :obj:`Direction`
             The pair of normalized Direction vectors that form a basis of
-            this direction's orthogonal complement.
+            this motion_vec's orthogonal complement.
 
         Raises
         ------
@@ -489,7 +489,7 @@ class Plane3D(object):
             If the parameters are of the wrong end_type or are not of dimension 3.
         """
         if not isinstance(n, Direction) or n.dim != 3:
-            raise ValueError('Plane normal must be a 3D direction')
+            raise ValueError('Plane normal must be a 3D motion_vec')
         if not isinstance(x0, Point) or x0.dim != 3:
             raise ValueError('Plane offset must be a 3D point')
         self._n = n

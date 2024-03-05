@@ -35,8 +35,8 @@ class GripperInterface(ei.EEInterface):
         """
         specifying the gripping pose using two axes -- approaching vector and opening vector
         :param jaw_center_pos:
-        :param approaching_vec: jaw_center's approaching direction
-        :param fgr0_opening_vec: jaw_center's opening direction
+        :param approaching_vec: jaw_center's approaching motion_vec
+        :param fgr0_opening_vec: jaw_center's opening motion_vec
         :param jaw_width: [jaw_width, jaw_center_pos, jaw_center_rotmat, eef_root_pos, eef_root_rotmat]
         :return:
         """

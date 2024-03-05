@@ -106,8 +106,8 @@ class ManualCalibrationBase(ABC):
     def move_adjust(self, dir, dir_global, key_name=None):
         """
         The abstract method to revise the calibration matrix by moving
-        :param dir: The local move direction based on the calibration matrix coordinate
-        :param dir_global: The global move direction based on the world coordinate
+        :param dir: The local move motion_vec based on the calibration matrix coordinate
+        :param dir_global: The global move motion_vec based on the world coordinate
         :return:
         """
         self._init_calib_mat[:3, 3] = self._init_calib_mat[:3, 3] + dir_global * self.move_resolution
@@ -115,8 +115,8 @@ class ManualCalibrationBase(ABC):
     def rotate_adjust(self, dir, dir_global, key_name=None):
         """
         The abstract method to revise the calibration matrix by rotating
-        :param dir: The local direction of the calibration matrix
-        :param dir_global: The global direction
+        :param dir: The local motion_vec of the calibration matrix
+        :param dir_global: The global motion_vec
         :return:
         """
         self._init_calib_mat[:3, :3] = np.dot(rm.rotmat_from_axangle(dir_global, np.radians(self.rotation_resolution)),

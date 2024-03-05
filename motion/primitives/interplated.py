@@ -2,6 +2,7 @@ import math
 import numpy as np
 import basis.robot_math as rm
 import modeling.geometric_model as gm
+import motion.utils as utils
 
 
 class InterplatedMotion(object):
@@ -10,9 +11,10 @@ class InterplatedMotion(object):
     date: 20230809
     """
 
-    def __init__(self, robot_s):
-        self.robot_s = robot_s
+    def __init__(self, robot):
+        self.robot = robot
 
+    @utils.keep_jnt_values_decorator
     def gen_linear_motion(self,
                           start_tcp_pos,
                           start_tcp_rotmat,
@@ -21,168 +23,144 @@ class InterplatedMotion(object):
                           obstacle_list=[],
                           granularity=0.03,
                           seed_jnt_values=None,
-                          toggle_debug=False):
+                          toggle_dbg=False):
         """
-        :param component_name:
         :param start_tcp_pos:
         :param start_tcp_rotmat:
         :param goal_tcp_pos:
         :param goal_tcp_rotmat:
-        :param goal_info:
         :param obstacle_list:
-        :param granularity:
+        :param granularity: resolution of steps in workspace
+        :param seed_jnt_values
+        :param toggle_dbg
         :return:
         author: weiwei
         date: 20210125
         """
-        jnt_values_bk = self.robot_s.get_jnt_values(component_name)
-        pos_list, rotmat_list = rm.interplate_pos_rotmat(start_tcp_pos,
-                                                         start_tcp_rotmat,
-                                                         goal_tcp_pos,
-                                                         goal_tcp_rotmat,
-                                                         granularity=granularity)
+        pose_list = rm.interplate_pos_rotmat(start_tcp_pos,
+                                             start_tcp_rotmat,
+                                             goal_tcp_pos,
+                                             goal_tcp_rotmat,
+                                             granularity=granularity)
         jnt_values_list = []
-        if seed_jnt_values is None:
-            seed_jnt_values = jnt_values_bk
-        for (pos, rotmat) in zip(pos_list, rotmat_list):
-            jnt_values = self.robot_s.ik(component_name, pos, rotmat, seed_jnt_values=seed_jnt_values)
+        for pos, rotmat in pose_list:
+            jnt_values = self.robot.ik(pos, rotmat, seed_jnt_values=seed_jnt_values)
             if jnt_values is None:
                 print("IK not solvable in gen_linear_motion!")
-                self.robot_s.fk(component_name, jnt_values_bk)
                 return None
             else:
-                self.robot_s.fk(component_name, jnt_values)
-                cd_result, ct_points = self.robot_s.is_collided(obstacle_list, toggle_contacts=True)
-                if cd_result:
-                    if toggle_debug:
-                        for ct_pnt in ct_points:
-                            gm.gen_sphere(ct_pnt).attach_to(base)
-                    print("Intermediate pose collided in gen_linear_motion!")
-                    self.robot_s.fk(component_name, jnt_values_bk)
+                self.robot.goto_given_conf(jnt_values)
+                result, contacts = self.robot.is_collided(obstacle_list, toggle_contacts=True)
+                if result:
+                    if toggle_dbg:
+                        for pnt in contacts:
+                            gm.gen_sphere(pnt).attach_to(base)
+                    print("Intermediated pose collided in gen_linear_motion!")
                     return None
             jnt_values_list.append(jnt_values)
             seed_jnt_values = jnt_values
-        self.robot_s.fk(component_name, jnt_values_bk)
         return jnt_values_list
 
+    @utils.keep_jnt_values_decorator
     def gen_rel_linear_motion(self,
-                              component_name,
                               goal_tcp_pos,
                               goal_tcp_rotmat,
-                              direction,
-                              distance,
+                              motion_vec,
+                              motion_dist,
                               obstacle_list=[],
                               granularity=0.03,
                               seed_jnt_values=None,
                               type='sink',
-                              toggle_debug=False):
+                              toggle_dbg=False):
         """
-        :param goal_info:
-        :param direction:
-        :param distance:
+        generate relative linear motion considering a given goal
+        :param goal_tcp_pos:
+        :param goal_tcp_rotmat:
+        :param motion_vec:
+        :param motion_dist:
         :param obstacle_list:
-        :param granularity:
-        :param type: 'sink', or 'source'
+        :param granularity: resolution of steps in workspace
+        :param seed_jnt_values:
+        :param type: 'sink', or 'source', motion will be ending at goal if "sink", and starting at goal if "source"
+        :param toggle_dbg:
         :return:
         author: weiwei
         date: 20210114
         """
         if type == 'sink':
-            start_tcp_pos = goal_tcp_pos - rm.unit_vector(direction) * distance
+            start_tcp_pos = goal_tcp_pos - rm.unit_vector(motion_vec) * motion_dist
             start_tcp_rotmat = goal_tcp_rotmat
-            return self.gen_linear_motion(component_name,
-                                          start_tcp_pos,
+            return self.gen_linear_motion(start_tcp_pos,
                                           start_tcp_rotmat,
                                           goal_tcp_pos,
                                           goal_tcp_rotmat,
                                           obstacle_list,
                                           granularity,
                                           seed_jnt_values,
-                                          toggle_debug=toggle_debug)
+                                          toggle_dbg)
         elif type == 'source':
             start_tcp_pos = goal_tcp_pos
             start_tcp_rotmat = goal_tcp_rotmat
-            goal_tcp_pos = goal_tcp_pos + direction * distance
+            goal_tcp_pos = goal_tcp_pos + motion_vec * motion_dist
             goal_tcp_rotmat = goal_tcp_rotmat
-            return self.gen_linear_motion(component_name,
-                                          start_tcp_pos,
+            return self.gen_linear_motion(start_tcp_pos,
                                           start_tcp_rotmat,
                                           goal_tcp_pos,
                                           goal_tcp_rotmat,
                                           obstacle_list,
                                           granularity,
                                           seed_jnt_values,
-                                          toggle_debug=toggle_debug)
+                                          toggle_dbg)
         else:
             raise ValueError("Type must be sink or source!")
 
     def gen_rel_linear_motion_with_given_conf(self,
-                                              component_name,
                                               goal_jnt_values,
-                                              direction,
-                                              distance,
+                                              motion_vec,
+                                              motion_dist,
                                               obstacle_list=[],
                                               granularity=0.03,
                                               seed_jnt_values=None,
                                               type='sink',
-                                              toggle_debug=False):
+                                              toggle_dbg=False):
         """
-        :param goal_info:
-        :param direction:
-        :param distance:
+        :param goal_jnt_values:
+        :param motion_vec:
+        :param motion_dist:
         :param obstacle_list:
-        :param granularity:
-        :param type: 'sink', or 'source'
+        :param granularity: resolution of steps in workspace
+        :param seed_jnt_values:
+        :param type: 'sink', or 'source', motion will be ending at goal if "sink", and starting at goal if "source"
+        :param toggle_dbg:
         :return:
         author: weiwei
         date: 20210114
         """
-        goal_tcp_pos, goal_tcp_rotmat = self.robot_s.fk(component_name, goal_jnt_values)
-        if type == 'sink':
-            start_tcp_pos = goal_tcp_pos - rm.unit_vector(direction) * distance
-            start_tcp_rotmat = goal_tcp_rotmat
-            return self.gen_linear_motion(component_name,
-                                          start_tcp_pos,
-                                          start_tcp_rotmat,
-                                          goal_tcp_pos,
+        goal_tcp_pos, goal_tcp_rotmat = self.robot.fk(goal_jnt_values)
+        return self.gen_rel_linear_motion(goal_tcp_pos,
                                           goal_tcp_rotmat,
+                                          motion_vec,
+                                          motion_dist,
                                           obstacle_list,
                                           granularity,
                                           seed_jnt_values,
-                                          toggle_debug=toggle_debug)
-        elif type == 'source':
-            start_tcp_pos = goal_tcp_pos
-            start_tcp_rotmat = goal_tcp_rotmat
-            goal_tcp_pos = goal_tcp_pos + direction * distance
-            goal_tcp_rotmat = goal_tcp_rotmat
-            return self.gen_linear_motion(component_name,
-                                          start_tcp_pos,
-                                          start_tcp_rotmat,
-                                          goal_tcp_pos,
-                                          goal_tcp_rotmat,
-                                          obstacle_list,
-                                          granularity,
-                                          seed_jnt_values,
-                                          toggle_debug=toggle_debug)
-        else:
-            raise ValueError("Type must be sink or source!")
+                                          type,
+                                          toggle_dbg)
 
     def get_rotational_motion(self,
-                              component_name,
                               start_tcp_pos,
                               start_tcp_rotmat,
                               goal_tcp_pos,
                               goal_tcp_rotmat,
-                              obstacle_list=[],
+                              obstacle_list,
                               rot_center=np.zeros(3),
                               rot_axis=np.array([1, 0, 0]),
                               granularity=0.03,
                               seed_jnt_values=None):
-        # TODO
-        pass
+        raise NotImplementedError
 
+    @utils.keep_jnt_values_decorator
     def gen_circular_motion(self,
-                            component_name,
                             circle_center_pos,
                             circle_ax,
                             start_tcp_rotmat,
@@ -192,7 +170,7 @@ class InterplatedMotion(object):
                             granularity=0.03,
                             seed_jnt_values=None,
                             toggle_tcp_list=False,
-                            toggle_debug=False):
+                            toggle_dbg=False):
         """
         :param component_name:
         :param start_tcp_pos:
@@ -201,52 +179,43 @@ class InterplatedMotion(object):
         :param goal_tcp_rotmat:
         :param goal_info:
         :param obstacle_list:
-        :param granularity:
+        :param granularity: resolution of steps in workspace
         :return:
         author: weiwei
         date: 20210501
         """
-        jnt_values_bk = self.robot_s.get_jnt_values(component_name)
-        pos_list, rotmat_list = rm.interplate_pos_rotmat_around_circle(circle_center_pos,
-                                                                       circle_ax,
-                                                                       radius,
-                                                                       start_tcp_rotmat,
-                                                                       end_tcp_rotmat,
-                                                                       granularity=granularity)
-        # for (pos, rotmat) in zip(pos_list, rotmat_list):
-        #     mgm.gen_frame(pos, rotmat).attach_to(base)
-        # base.run()
+        pose_list = rm.interplate_pos_rotmat_around_circle(circle_center_pos,
+                                                           circle_ax,
+                                                           radius,
+                                                           start_tcp_rotmat,
+                                                           end_tcp_rotmat,
+                                                           granularity)
         jnt_values_list = []
-        if seed_jnt_values is None:
-            seed_jnt_values = jnt_values_bk
-        for (pos, rotmat) in zip(pos_list, rotmat_list):
-            jnt_values = self.robot_s.ik(component_name, pos, rotmat, seed_jnt_values=seed_jnt_values)
+        for pos, rotmat in pose_list:
+            jnt_values = self.robot.ik(pos, rotmat, seed_jnt_values=seed_jnt_values)
             if jnt_values is None:
                 print("IK not solvable in gen_circular_motion!")
-                self.robot_s.fk(component_name, jnt_values_bk)
-                return []
+                return None
             else:
-                self.robot_s.fk(component_name, jnt_values)
-                cd_result, ct_points = self.robot_s.is_collided(obstacle_list, toggle_contacts=True)
-                if cd_result:
-                    if toggle_debug:
-                        for ct_pnt in ct_points:
-                            gm.gen_sphere(ct_pnt).attach_to(base)
+                self.robot.goto_given_conf(jnt_values)
+                result, contacts = self.robot.is_collided(obstacle_list, toggle_contacts=True)
+                if result:
+                    if toggle_dbg:
+                        for pnt in contacts:
+                            gm.gen_sphere(pnt).attach_to(base)
                     print("Intermediate pose collided in gen_linear_motion!")
-                    self.robot_s.fk(component_name, jnt_values_bk)
-                    return []
+                    return None
             jnt_values_list.append(jnt_values)
             seed_jnt_values = jnt_values
-        self.robot_s.fk(component_name, jnt_values_bk)
         if toggle_tcp_list:
-            return jnt_values_list,[[pos_list[i], rotmat_list[i]] for i in range(len(pos_list))]
+            return jnt_values_list, pose_list
         else:
             return jnt_values_list
 
 
 if __name__ == '__main__':
     import time
-    import robot_sim.robots.yumi.yumi as ym
+    import robot_sim.robot.yumi.yumi as ym
     import visualization.panda.world as wd
     import modeling.geometric_model as gm
 

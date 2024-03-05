@@ -117,7 +117,7 @@ class URRobot(object):
 
     def set_gravity(self, vector):
         """
-        set direction of gravity
+        set motion_vec of gravity
         """
         prog = "set_gravity(%s)" % list(vector)
         self.send_program(prog)

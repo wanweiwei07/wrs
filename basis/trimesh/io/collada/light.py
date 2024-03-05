@@ -61,8 +61,8 @@ class DirectionalLight(Light):
         self.id = id
         """The unique string identifier for the light"""
         self.direction = numpy.array( [0, 0, -1], dtype=numpy.float32 )
-        #Not documenting this because it doesn't make sense to set the direction
-        # of an unbound light. The direction isn't set until binding in a scene.
+        #Not documenting this because it doesn't make sense to set the motion_vec
+        # of an unbound light. The motion_vec isn't set until binding in a scene.
         self.color = color
         """Either a tuple of size 3 containing the RGB color value
           of the light or a tuple of size 4 containing the RGBA
@@ -534,7 +534,7 @@ class BoundDirectionalLight(BoundLight):
 
     def __init__(self, dlight, matrix):
         self.direction = numpy.dot( matrix[:3,:3], dlight.direction )
-        """Numpy array of axis_length 3 representing the direction of the light in the scene"""
+        """Numpy array of axis_length 3 representing the motion_vec of the light in the scene"""
         self.color = dlight.color
         """Either a tuple of size 3 containing the RGB color value
           of the light or a tuple of size 4 containing the RGBA

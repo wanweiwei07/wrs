@@ -1126,7 +1126,7 @@ if __name__ == "__main__":
     # path = inik_solver.gen_rel_linear_motion(hnd_name=arm_name,
     #                                                goal_tcp_pos=rgt_pos,
     #                                                goal_tcp_rotmat=rgt_rotmat,
-    #                                                direction=-dir,
+    #                                                motion_vec=-dir,
     #                                                distance=.15,
     #                                                end_type='source')
     # # for conf in path:

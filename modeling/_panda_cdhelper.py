@@ -111,20 +111,37 @@ def toggle_show_collision_node(cdprimitive, toggle_show_on=True):
 # generate cdprimitives from trimesh
 # ==================================
 
-def gen_box_pdcndp(trm_model, ex_radius=0.01):
+def gen_aabb_box_pdcndp(trm_model, ex_radius=0.01):
     """
     :param obstacle:
     :return:
     author: weiwei
-    date: 20180811
+    date: 20180811, 20240305
+    """
+    aabb = trm_model.aabb_bound
+    sides = aabb.extents / 2.0 + ex_radius
+    collision_primitive = CollisionBox(center=LPoint3(0, 0, 0), x=sides[0], y=sides[1], z=sides[2])
+    pdcnd = CollisionNode("aabb_box_cnode")
+    pdcnd.addSolid(collision_primitive)
+    pdcnd.setTransform(TransformState.makeMat(da.npmat4_to_pdmat4(aabb.homomat)))
+    cdprimitive = NodePath("aabb_box")
+    cdprimitive.attachNewNode(pdcnd)
+    return cdprimitive
+
+def gen_obb_box_pdcndp(trm_model, ex_radius=0.01):
+    """
+    :param obstacle:
+    :return:
+    author: weiwei
+    date: 20180811, 20240305
     """
     obb = trm_model.obb_bound
     sides = obb.extents / 2.0 + ex_radius
     collision_primitive = CollisionBox(center=LPoint3(0, 0, 0), x=sides[0], y=sides[1], z=sides[2])
-    pdcnd = CollisionNode("box_cnode")
+    pdcnd = CollisionNode("obb_box_cnode")
     pdcnd.addSolid(collision_primitive)
     pdcnd.setTransform(TransformState.makeMat(da.npmat4_to_pdmat4(obb.homomat)))
-    cdprimitive = NodePath("box")
+    cdprimitive = NodePath("obb_box")
     cdprimitive.attachNewNode(pdcnd)
     return cdprimitive
 

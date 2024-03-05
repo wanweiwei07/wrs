@@ -1213,7 +1213,7 @@ FtSensorErrorCodeMap = {
     },
     66: {
         'en': {
-            'title': 'Six-axis Force Torque Sensor X-direction Torque Exceeds Limit',
+            'title': 'Six-axis Force Torque Sensor X-motion_vec Torque Exceeds Limit',
             'desc': '',
         },
         'cn': {
@@ -1223,7 +1223,7 @@ FtSensorErrorCodeMap = {
     },
     67: {
         'en': {
-            'title': 'Six-axis Force Torque Sensor Y-direction Torque Exceeds Limit',
+            'title': 'Six-axis Force Torque Sensor Y-motion_vec Torque Exceeds Limit',
             'desc': '',
         },
         'cn': {
@@ -1233,7 +1233,7 @@ FtSensorErrorCodeMap = {
     },
     68: {
         'en': {
-            'title': 'Six-axis Force Torque Sensor Z-direction Torque Exceeds Limitrection',
+            'title': 'Six-axis Force Torque Sensor Z-motion_vec Torque Exceeds Limitrection',
             'desc': '',
         },
         'cn': {
@@ -1253,7 +1253,7 @@ FtSensorErrorCodeMap = {
     },
     70: {
         'en': {
-            'title': 'Six-axis Force Torque Sensor Ty direction Torque Exceeds Limit',
+            'title': 'Six-axis Force Torque Sensor Ty motion_vec Torque Exceeds Limit',
             'desc': '',
         },
         'cn': {
@@ -1263,7 +1263,7 @@ FtSensorErrorCodeMap = {
     },
     71: {
         'en': {
-            'title': 'Six-axis Force Torque Sensor Tz direction Torque Exceeds Limit',
+            'title': 'Six-axis Force Torque Sensor Tz motion_vec Torque Exceeds Limit',
             'desc': '',
         },
         'cn': {

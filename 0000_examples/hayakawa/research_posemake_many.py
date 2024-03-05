@@ -76,8 +76,8 @@ class PoseMaker(object):
         return predefined_grasps_lft, handdirect_lft
 
     def rgtgrasppose(self):
-        rgtdirstart = 90  # hand approach direction
-        rgtverticalstart = rgtdirstart - 90  # thumb direction
+        rgtdirstart = 90  # hand approach motion_vec
+        rgtverticalstart = rgtdirstart - 90  # thumb motion_vec
         handrotrange = 5
         predefined_grasps_rgt = []
         handdirect_rgt = []

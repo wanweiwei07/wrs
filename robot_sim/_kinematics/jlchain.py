@@ -46,17 +46,13 @@ class JLChain(object):
                  name="auto",
                  pos=np.zeros(3),
                  rotmat=np.eye(3),
-                 n_dof=6,
-                 cdprim_type=mc.CDPType.BOX,
-                 cdmesh_type=mc.CDMType.DEFAULT):
+                 n_dof=6):
         """
         conf -- configuration: target joint values
         :param name:
         :param pos:
         :param rotmat:
         :param home: number of joints
-        :param cdprim_type:
-        :param cdmesh_type:
         :param name:
         """
         self.name = name
@@ -75,10 +71,6 @@ class JLChain(object):
         self._gl_flange_rotmat = self._loc_flange_rotmat
         # finalizing tag
         self._is_finalized = False
-        # collision primitives
-        # mesh generator
-        self.cdprim_type = cdprim_type
-        self.cdmesh_type = cdmesh_type
         # iksolver
         self._ik_solver = None
 

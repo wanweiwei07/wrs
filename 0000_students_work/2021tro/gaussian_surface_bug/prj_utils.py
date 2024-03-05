@@ -322,7 +322,7 @@ def rayhitmesh_p(obj, center, p, direction=np.asarray((0, 0, 1))):
         pfrom = np.asarray((p[0] + center[0], p[1] + center[1], center[2])) + .05 * direction
         pto = np.asarray((p[0] + center[0], p[1] + center[1], center[2])) - .05 * direction
     else:
-        print('Wrong input direction!')
+        print('Wrong input motion_vec!')
         return None, None
     gm.gen_arrow(spos=pfrom, epos=pto, rgba=(0, 1, 0, 1)).attach_to(base)
     # base.run()
@@ -402,7 +402,7 @@ def __find_nxt_p_pca(drawpath_p1, drawpath_p2, kdt_d3, p0, n0, max_nn=150, direc
     elif abs(direction[2]) == 1:
         v_draw = (v_draw[0], v_draw[1], 0)
     else:
-        print('Wrong input direction!')
+        print('Wrong input motion_vec!')
         return None
     rotmat = rm.rotmat_between_vectors(direction, n0)
     v_draw = np.dot(rotmat, v_draw)
@@ -478,7 +478,7 @@ def __find_nxt_p_psfc(drawpath_p1, drawpath_p2, kdt_d3, p0, n0, max_nn=500, dire
     elif abs(direction[2]) == 1:
         v_draw = (v_draw[0], v_draw[1], 0)
     else:
-        print('Wrong input direction!')
+        print('Wrong input motion_vec!')
         return None
     def __surface(pts, mode):
         if mode == 'rbf':
@@ -579,7 +579,7 @@ def __find_nxt_p_rbf_g(drawpath_p1, drawpath_p2, surface, transmat, kdt_d3, p0, 
     elif abs(direction[2]) == 1:
         v_draw = (v_draw[0], v_draw[1], 0)
     else:
-        print('Wrong input direction!')
+        print('Wrong input motion_vec!')
         return None
     rotmat = rm.rotmat_between_vectors(direction, n0)
     v_draw = np.dot(rotmat, v_draw)
@@ -657,7 +657,7 @@ def __find_nxt_p_bp(drawpath_p1, drawpath_p2, kdt_d3, p0, n0, objcm, pcd, max_nn
     elif abs(direction[2]) == 1:
         v_draw = (v_draw[0], v_draw[1], 0)
     else:
-        print('Wrong input direction!')
+        print('Wrong input motion_vec!')
         return None
 
     if objcm is None:
@@ -717,7 +717,7 @@ def __find_nxt_p(drawpath_p1, drawpath_p2, kdt_d3, pcd_start_p, pcd_start_n, dir
     elif abs(direction[2]) == 1:
         v_draw = (v_draw[0], v_draw[1], 0)
     else:
-        print('Wrong input direction!')
+        print('Wrong input motion_vec!')
         return None
     rotmat = rm.rotmat_between_vectors(direction, pcd_start_n)
     pt = pcd_start_p + np.dot(rotmat, v_draw)
@@ -740,7 +740,7 @@ def __find_nxt_p_intg(drawpath_p1, drawpath_p2, kdt_d3, p0, n0, direction=np.arr
     elif abs(direction[2]) == 1:
         v_draw = (v_draw[0], v_draw[1], 0)
     else:
-        print('Wrong input direction!')
+        print('Wrong input motion_vec!')
         return None
     rotmat = rm.rotmat_between_vectors(direction, np.asarray(n0))
     v_draw = np.dot(rotmat, v_draw)
@@ -1535,7 +1535,7 @@ if __name__ == '__main__':
         objrot = (0, 0, 0)
         tgt_item = el.loadObjitem(stl_f_name, pos=objpos, rot=objrot, sample_num=SAMPLE_NUM)
     direction = np.asarray((0, 0, 1))
-    # direction = np.asarray((0, -1, 0))
+    # motion_vec = np.asarray((0, -1, 0))
     if dump_f_name == 'cube':
         tgt_item.set_drawcenter((0, -.025, 0))  # cube
     if dump_f_name == 'cylinder_pcd':
@@ -1566,13 +1566,13 @@ if __name__ == '__main__':
 
     # metrology based method
     # pos_nrml_list, error_list_msd, time_cost = \
-    #     prj_drawpath_ss_on_pcd(tgt_item, drawpath, mode='EI', direction=direction, toggledebug=False)
+    #     prj_drawpath_ss_on_pcd(tgt_item, drawpath, mode='EI', motion_vec=motion_vec, toggledebug=False)
     # show_drawpath(pos_nrml_list, color=(0, 0, 1), show_nrmls=True)
     # base.run()
 
     # rbf
     # pos_nrml_list, error_list_rbf, time_cost = \
-    #     prj_drawpath_ss_on_pcd(tgt_item, drawpath, mode='rbf', direction=direction, toggledebug=False)
+    #     prj_drawpath_ss_on_pcd(tgt_item, drawpath, mode='rbf', motion_vec=motion_vec, toggledebug=False)
     # show_drawpath(pos_nrml_list, color=(0, 1, 0))
     # base.run()
 
@@ -1598,7 +1598,7 @@ if __name__ == '__main__':
 
     # mode = 'QI'
     # loop_pos_nrml_list, loop_error_list, loop_time_cost = \
-    #     prj_drawpath_ss_loop(tgt_item, drawpath, mode=mode, direction=direction, toggledebug=False, step=40)
+    #     prj_drawpath_ss_loop(tgt_item, drawpath, mode=mode, motion_vec=motion_vec, toggledebug=False, step=40)
     # dump_mapping_res(f'{dump_f_name}_square_{mode}.pkl', tgt_item, drawpath, loop_pos_nrml_list, loop_time_cost)
     # plt.plot(loop_error_list)
     # plt.show()

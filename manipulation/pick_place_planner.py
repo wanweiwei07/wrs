@@ -9,7 +9,7 @@ import manipulation.approach_depart_planner as adp
 
 class PickPlacePlanner(adp.ADPlanner):
 
-    def __init__(self, robot_s):
+    def __init__(self, robot):
         """
         :param object:
         :param robot_helper:
@@ -202,7 +202,7 @@ class PickPlacePlanner(adp.ADPlanner):
             conf_list_depart = self.inik_slvr.gen_rel_linear_motion(component_name=hand_name,
                                                                     goal_tcp_pos=start_jaw_center_pos,
                                                                     goal_tcp_rotmat=start_jaw_center_rotmat,
-                                                                    direction=depart_direction,
+                                                                    motion_vec=depart_direction,
                                                                     distance=depart_distance,
                                                                     obstacle_list=obstacle_list,
                                                                     granularity=ad_granularity,
@@ -213,7 +213,7 @@ class PickPlacePlanner(adp.ADPlanner):
                 self.robot_s.release(hand_name, objcm_copy, jawwidth_bk)
                 self.robot_s.fk(component_name=hand_name, joint_values=jnt_values_bk)
                 return None, None, None
-            jawwidthlist_depart = self.gen_jawwidth_motion(conf_list_depart, jaw_width)
+            jawwidthlist_depart = self.gen_jaw_width_motion(conf_list_depart, jaw_width)
             objpose_list_depart = self.gen_object_motion(component_name=hand_name,
                                                          conf_list=conf_list_depart,
                                                          obj_pos=rel_obj_pos,
@@ -225,7 +225,7 @@ class PickPlacePlanner(adp.ADPlanner):
                 conf_list_approach = self.inik_slvr.gen_rel_linear_motion(component_name=hand_name,
                                                                           goal_tcp_pos=goal_jaw_center_pos,
                                                                           goal_tcp_rotmat=goal_jaw_center_rotmat,
-                                                                          direction=approach_direction,
+                                                                          motion_vec=approach_direction,
                                                                           distance=approach_distance,
                                                                           obstacle_list=obstacle_list,
                                                                           granularity=ad_granularity,
@@ -272,7 +272,7 @@ class PickPlacePlanner(adp.ADPlanner):
                 conf_list_approach = self.inik_slvr.gen_rel_linear_motion(component_name=hand_name,
                                                                           goal_tcp_pos=goal_jaw_center_pos,
                                                                           goal_tcp_rotmat=goal_jaw_center_rotmat,
-                                                                          direction=approach_direction,
+                                                                          motion_vec=approach_direction,
                                                                           distance=approach_distance,
                                                                           obstacle_list=obstacle_list,
                                                                           granularity=ad_granularity,
@@ -283,13 +283,13 @@ class PickPlacePlanner(adp.ADPlanner):
                     self.robot_s.release(hand_name, objcm_copy, jawwidth_bk)
                     self.robot_s.fk(component_name=hand_name, joint_values=jnt_values_bk)
                     return None, None, None
-            jawwidthlist_approach = self.gen_jawwidth_motion(conf_list_approach, jaw_width)
+            jawwidthlist_approach = self.gen_jaw_width_motion(conf_list_approach, jaw_width)
             objpose_list_approach = self.gen_object_motion(component_name=hand_name,
                                                            conf_list=conf_list_approach,
                                                            obj_pos=rel_obj_pos,
                                                            obj_rotmat=rel_obj_rotmat,
                                                            type='relative')
-            jawwidthlist_middle = self.gen_jawwidth_motion(conf_list_middle, jaw_width)
+            jawwidthlist_middle = self.gen_jaw_width_motion(conf_list_middle, jaw_width)
             objpose_list_middle = self.gen_object_motion(component_name=hand_name,
                                                          conf_list=conf_list_middle,
                                                          obj_pos=rel_obj_pos,
@@ -328,10 +328,10 @@ class PickPlacePlanner(adp.ADPlanner):
         :param goal_homomat_list:
         :param start_conf: RRT motion between start_state and pre_approach; No RRT motion if None
         :param end_conf: RRT motion between post_depart and end_conf; Noe RRT motion if None
-        :param approach_direction_list: the first element will be the pick approach direction
-        :param approach_distance_list: the first element will be the pick approach direction
-        :param depart_direction_list: the last element will be the release depart direction
-        :param depart_distance_list: the last element will be the release depart direction
+        :param approach_direction_list: the first element will be the pick approach motion_vec
+        :param approach_distance_list: the first element will be the pick approach motion_vec
+        :param depart_direction_list: the last element will be the release depart motion_vec
+        :param depart_distance_list: the last element will be the release depart motion_vec
         :param approach_jawwidth:
         :param depart_jawwidth:
         :param ad_granularity:

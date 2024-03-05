@@ -2,24 +2,24 @@ import numpy as np
 import basis.trimesh as trm
 import basis.robot_math as rm
 
-# def scale(obj, scale_ratio):
-#     """
-#     DEPRECATED: scale is no long supported 20230821
-#     :param obj: trimesh or file path
-#     :param scale_ratio: float, scale all axis equally
-#     :return:
-#     author: weiwei
-#     date: 20201116
-#     """
-#     if isinstance(obj, trm.Trimesh):
-#         tmpmesh = obj.copy()
-#         tmpmesh.apply_scale(scale_ratio)
-#         return tmpmesh
-#     elif isinstance(obj, str):
-#         originalmesh = trm.load(obj)
-#         tmpmesh = originalmesh.copy()
-#         tmpmesh.apply_scale(scale_ratio)
-#         return tmpmesh
+def scale(obj, scale_ratio):
+    """
+    :param obj: trimesh or file path
+    :param scale_ratio: float, scale all axis equally
+    :return:
+    author: weiwei
+    date: 20201116
+    """
+    scale_ratio_array = np.asarray([scale_ratio, scale_ratio, scale_ratio])
+    if isinstance(obj, trm.Trimesh):
+        tmp_mesh = obj.copy()
+        tmp_mesh.apply_scale(scale_ratio_array)
+        return tmp_mesh
+    elif isinstance(obj, str):
+        original_mesh = trm.load(obj)
+        tmp_mesh = original_mesh.copy()
+        tmp_mesh.apply_scale(scale_ratio_array)
+        return tmp_mesh
 #
 #
 # def scale_and_save(obj, scale_ratio, save_name):
@@ -52,7 +52,7 @@ import basis.robot_math as rm
 #     tmptrimesh.apply_transform(pos)
 #     tmptrimesh.export(save_name)
 
-def convert_to_stl(obj, save_name, pos=np.zeros(3), rotmat=np.eye(3)):
+def convert_to_stl(obj, save_name, pos=np.zeros(3), rotmat=np.eye(3), scale_ratio=1.0):
     """
     :param obj: trimesh or file path
     :param save_name:
@@ -63,6 +63,7 @@ def convert_to_stl(obj, save_name, pos=np.zeros(3), rotmat=np.eye(3)):
     trm_model = trm.load(obj)
     homomat = rm.homomat_from_posrot(pos, rotmat)
     trm_model.apply_transform(homomat)
+    trm_model = scale(trm_model, scale_ratio=scale_ratio)
     trm_model.export(save_name)
 
 if __name__ == '__main__':

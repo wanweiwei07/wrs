@@ -1,17 +1,13 @@
 import copy
-import math
 import numpy as np
 from visualization.panda.world import ShowBase
 from panda3d.core import NodePath, CollisionNode, CollisionTraverser, CollisionHandlerQueue, BitMask32
 import basis.data_adapter as da
-import basis.constant as bc
 import modeling.geometric_model as mgm
 import modeling.model_collection as mmc
 import modeling._panda_cdhelper as mph
 import modeling._ode_cdhelper as moh
-# import modeling._bullet_cdhelper as mbh
 import modeling.constant as mc
-import uuid
 
 
 # the following two helpers cannot correcty find collision positions, 20211216
@@ -80,7 +76,7 @@ class CollisionModel(mgm.GeometricModel):
 
     def __init__(self,
                  initor,
-                 cdprim_type=mc.CDPType.BOX,
+                 cdprim_type=mc.CDPType.AABB,
                  cdmesh_type=mc.CDMType.DEFAULT,
                  expand_radius=None,
                  name="collision_model",
@@ -171,8 +167,10 @@ class CollisionModel(mgm.GeometricModel):
             cdprim_type = self.cdprim_type
         if thickness is None:
             thickness = 0.002
-        if cdprim_type == mc.CDPType.BOX:
-            pdcndp = mph.gen_box_pdcndp(self.trm_mesh, ex_radius=thickness)
+        if cdprim_type == mc.CDPType.AABB:
+            pdcndp = mph.gen_aabb_box_pdcndp(self.trm_mesh, ex_radius=thickness)
+        elif cdprim_type == mc.CDPType.OBB:
+            pdcndp = mph.gen_obb_box_pdcndp(self.trm_mesh, ex_radius=thickness)
         elif cdprim_type == mc.CDPType.CAPSULE:
             pdcndp = mph.gen_capsule_pdcndp(self.trm_mesh, ex_radius=thickness)
         elif cdprim_type == mc.CDPType.CYLINDER:

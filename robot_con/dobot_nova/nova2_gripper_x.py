@@ -123,7 +123,7 @@ class Nova2GripperX(object):
     def calibrate(self, close_gripper_direction: Literal[-1, 1] = 1, speed: int = 100):
         """
         Calibrate the gripper. The gripper will be closed and opened to get the motor position.
-        :param close_gripper_direction: The direction of the gripper when closing the gripper
+        :param close_gripper_direction: The motion_vec of the gripper when closing the gripper
         :param speed: The speed of the gripper
         """
         assert close_gripper_direction in [-1, 1], "The close_gripper_direction should be -1 or 1."

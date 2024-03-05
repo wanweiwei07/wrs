@@ -4,9 +4,7 @@ import modeling.collision_model as mcm
 import modeling.model_collection as mmc
 import robot_sim._kinematics.jlchain as rkjlc
 import basis.robot_math as rm
-import basis.constant as bc
 import robot_sim.end_effectors.gripper.gripper_interface as gpi
-import robot_sim._kinematics.constant as rkc
 import robot_sim._kinematics.model_generator as rkmg
 import modeling.constant as mc
 
@@ -20,6 +18,9 @@ class CobottaGripper(gpi.GripperInterface):
                  name="cobotta_gripper"):
         super().__init__(pos=pos, rotmat=rotmat, cdmesh_type=cdmesh_type, name=name)
         current_file_dir = os.path.dirname(__file__)
+        # jaw range
+        self.jaw_range = np.array([0.0, .03])
+        # coupling
         self.coupling.finalize()
         # jlc
         self.jlc = rkjlc.JLChain(pos=self.coupling.gl_flange_pos, rotmat=self.coupling.gl_flange_rotmat, n_dof=2,
@@ -30,33 +31,29 @@ class CobottaGripper(gpi.GripperInterface):
             cdmesh_type=self.cdmesh_type)
         self.jlc.anchor.lnk.cmodel.rgba = np.array([.35, .35, .35, 1])
         # the 1st joint (left finger)
-        self.jlc.jnts[0].change_type(rkc.JntType.PRISMATIC, np.array([0, self.jaw_range[1] / 2]))
+        self.jlc.jnts[0].change_type(rkjlc.rkc.JntType.PRISMATIC, np.array([0, self.jaw_range[1] / 2]))
         self.jlc.jnts[0].loc_pos = np.array([0, .0, .0])
-        self.jlc.jnts[0].loc_motion_ax = bc.y_ax
-        self.jlc.jnts[0].motion_range=np.array([0.0, 0.015])
-        self.jlc.jnts[0].lnk.cmodel = mcm.CollisionModel(
-            os.path.join(current_file_dir, "meshes", "left_finger.dae"),
-            cdmesh_type=self.cdmesh_type)
+        self.jlc.jnts[0].loc_motion_ax = rm.bc.y_ax
+        self.jlc.jnts[0].motion_range = np.array([0.0, 0.015])
+        self.jlc.jnts[0].lnk.cmodel = mcm.CollisionModel(os.path.join(current_file_dir, "meshes", "left_finger.dae"),
+                                                         cdmesh_type=self.cdmesh_type)
         self.jlc.jnts[0].lnk.cmodel.rgba = np.array([.5, .5, .5, 1])
         # the 2nd joint (right finger)
-        self.jlc.jnts[1].change_type(rkc.JntType.PRISMATIC, np.array([0, -self.jaw_range[1]]))
+        self.jlc.jnts[1].change_type(rkjlc.rkc.JntType.PRISMATIC, np.array([0, -self.jaw_range[1]]))
         self.jlc.jnts[1].loc_pos = np.array([0, .0, .0])
-        self.jlc.jnts[1].loc_motion_ax = bc.y_ax
-        self.jlc.jnts[1].motion_range=np.array([-0.015, 0.0])
-        self.jlc.jnts[1].lnk.cmodel = mcm.CollisionModel(
-            os.path.join(current_file_dir, "meshes", "right_finger.dae"),
-            cdmesh_type=self.cdmesh_type)
+        self.jlc.jnts[1].loc_motion_ax = rm.bc.y_ax
+        self.jlc.jnts[1].motion_range = np.array([-self.jaw_range[1], 0.0])
+        self.jlc.jnts[1].lnk.cmodel = mcm.CollisionModel(os.path.join(current_file_dir, "meshes", "right_finger.dae"),
+                                                         cdmesh_type=self.cdmesh_type)
         self.jlc.jnts[1].lnk.cmodel.rgba = np.array([.5, .5, .5, 1])
-        # acting center
-        self.loc_acting_center_pos = np.array([0, 0, 0.05])
         # reinitialize
         self.jlc.finalize()
-        # jaw range
-        self.jaw_range = np.array([0.0, .03])
+        # acting center
+        self.loc_acting_center_pos = np.array([0, 0, 0.05])
         # collisions
-        self.cdmesh_elements = [self.jlc.anchor.lnk,
+        self.cdmesh_elements = (self.jlc.anchor.lnk,
                                 self.jlc.jnts[0].lnk,
-                                self.jlc.jnts[1].lnk]
+                                self.jlc.jnts[1].lnk)
 
     def fix_to(self, pos, rotmat, jaw_width=None):
         self.pos = pos
@@ -73,7 +70,7 @@ class CobottaGripper(gpi.GripperInterface):
         self.update_oiee()
 
     def change_jaw_width(self, jaw_width):
-        super().change_jaw_width(jaw_width=jaw_width) # assert oiee
+        super().change_jaw_width(jaw_width=jaw_width)  # assert oiee
         side_jawwidth = jaw_width / 2.0
         if 0 <= side_jawwidth <= self.jaw_range[1] / 2:
             self.jlc.go_given_conf(jnt_values=[side_jawwidth, -jaw_width])

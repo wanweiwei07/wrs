@@ -513,7 +513,7 @@ class BH828X(object):
         author: weiwei
         """
 
-        # x is the opening direction of the hand, _org means the value when rotangle=0
+        # x is the opening motion_vec of the hand, _org means the value when rotangle=0
         standardx_org = np.array([1, 0, 0])
         newx_org = np.array([c0nx, c0ny, c0nz])
         rotangle_org = rm.degree_betweenvector(newx_org, standardx_org)
@@ -545,7 +545,7 @@ class BH828X(object):
         author: weiwei
         """
 
-        # x is the opening direction of the hand, _org means the value when rotangle=0
+        # x is the opening motion_vec of the hand, _org means the value when rotangle=0
         nphndmat3 = np.eye(3)
         nphndmat3[:3, 0] = rm.unit_vector(np.array([c0nx, c0ny, c0nz]))
         nphndmat3[:3, 2] = rm.unit_vector(np.array([apx, apy, apz]))

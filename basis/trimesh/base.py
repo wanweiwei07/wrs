@@ -706,7 +706,7 @@ class Trimesh(object):
         '''
         Does the mesh have consistent winding or not. 
         A mesh with consistent winding has each shared edge 
-        going in an opposite direction from the other in the pair.
+        going in an opposite motion_vec from the other in the pair.
         
         Returns
         --------
@@ -860,9 +860,9 @@ class Trimesh(object):
     @_log_time
     def fix_normals(self):
         """
-        Find and fix problems with self.face_normals and self.faces winding direction.
+        Find and fix problems with self.face_normals and self.faces winding motion_vec.
         For face normals ensure that vectors are consistently pointed outwards,
-        and that self.faces is wound in the correct direction for all connected components.
+        and that self.faces is wound in the correct motion_vec for all connected components.
         """
         repair.fix_normals(self)
 

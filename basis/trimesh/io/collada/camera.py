@@ -359,7 +359,7 @@ class BoundPerspectiveCamera(BoundCamera):
         self.position = matrix[:3,3]
         """The position of the camera"""
         self.direction = -matrix[:3,2]
-        """The direction the camera is facing"""
+        """The motion_vec the camera is facing"""
         self.up = matrix[:3,1]
         """The up vector of the camera"""
         self.original = cam
@@ -391,7 +391,7 @@ class BoundOrthographicCamera(BoundCamera):
         self.position = matrix[:3,3]
         """The position of the camera"""
         self.direction = -matrix[:3,2]
-        """The direction the camera is facing"""
+        """The motion_vec the camera is facing"""
         self.up = matrix[:3,1]
         """The up vector of the camera"""
         self.original = cam

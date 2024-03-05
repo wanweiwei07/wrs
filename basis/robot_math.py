@@ -213,7 +213,7 @@ def homomat_from_pos_axanglevec(pos=np.zeros(3), axangle=np.ones(3)):
     """
     build a 4x4 nparray homogeneous matrix
     :param pos: nparray 1x3
-    :param axanglevec: nparray 1x3, correspondent unit vector is rotation direction; axis_length is radian rotation angle
+    :param axanglevec: nparray 1x3, correspondent unit vector is rotation motion_vec; axis_length is radian rotation angle
     :return:
     author: weiwei
     date: 20200408
@@ -305,12 +305,12 @@ def interplate_pos_rotmat(start_pos,
     :return: a list of 1xn nparray
     """
     len, vec = unit_vector(start_pos - goal_pos, toggle_length=True)
-    nval = math.ceil(len / granularity)
-    if nval == 0:
-        nval = 1
-    pos_list = np.linspace(start_pos, goal_pos, nval)
-    rotmat_list = rotmat_slerp(start_rotmat, goal_rotmat, nval)
-    return pos_list, rotmat_list
+    n_steps = math.ceil(len / granularity)
+    if n_steps == 0:
+        n_steps = 1
+    pos_list = np.linspace(start_pos, goal_pos, n_steps)
+    rotmat_list = rotmat_slerp(start_rotmat, goal_rotmat, n_steps)
+    return zip(pos_list, rotmat_list)
 
 
 def interplate_pos_rotmat_around_circle(circle_center_pos,
@@ -323,17 +323,17 @@ def interplate_pos_rotmat_around_circle(circle_center_pos,
     :param circle_center_pos:
     :param start_rotmat:
     :param end_rotmat:
-    :param granularity: mm between two key points in the workspace
+    :param granularity: meter between two key points in the workspace
     :return:
     """
     vec = orthogonal_vector(circle_ax)
-    granularity_radius = granularity / radius
-    nval = math.ceil(np.pi * 2 / granularity_radius)
-    rotmat_list = rotmat_slerp(start_rotmat, end_rotmat, nval)
+    angular_step_length = granularity / radius
+    n_angular_steps = math.ceil(np.pi * 2 / angular_step_length)
+    rotmat_list = rotmat_slerp(start_rotmat, end_rotmat, n_angular_steps)
     pos_list = []
-    for angle in np.linspace(0, np.pi * 2, nval).tolist():
+    for angle in np.linspace(0, np.pi * 2, n_angular_steps).tolist():
         pos_list.append(np.dot(rotmat_from_axangle(circle_ax, angle), vec * radius) + circle_center_pos)
-    return pos_list, rotmat_list
+    return zip(pos_list, rotmat_list)
 
 
 # quaternion
@@ -1215,7 +1215,7 @@ def reflection_from_matrix(matrix):
 
 
 def rotation_matrix(angle, direction, point=None):
-    """Return matrix to rotate about axis defined by point and direction.
+    """Return matrix to rotate about axis defined by point and motion_vec.
 
     >>> R = rotation_matrix(np.pi/2, [0, 0, 1], [1, 0, 0])
     >>> np.allclose(np.dot(R, [0, 0, 0, 1]), [1, -1, 0, 1])
@@ -1273,7 +1273,7 @@ def rotation_from_matrix(matrix):
     """
     R = np.array(matrix, dtype=np.float64, copy=False)
     R33 = R[:3, :3]
-    # direction: unit eigenvector of R33 corresponding to eigenvalue of 1
+    # motion_vec: unit eigenvector of R33 corresponding to eigenvalue of 1
     w, W = np.linalg.eig(R33.T)
     i = np.where(abs(np.real(w) - 1.0) < 1e-8)[0]
     if not len(i):
@@ -1285,7 +1285,7 @@ def rotation_from_matrix(matrix):
     if not len(i):
         raise ValueError("no unit eigenvector corresponding to eigenvalue 1")
     point = np.real(Q[:, i[-1]]).squeeze()
-    # rotation angle depending on direction
+    # rotation angle depending on motion_vec
     cosa = (np.trace(R33) - 1.0) / 2.0
     if abs(direction[2]) > 1e-8:
         sina = (R[1, 0] + (cosa - 1.0) * direction[0] * direction[1]) / direction[2]
@@ -1298,7 +1298,7 @@ def rotation_from_matrix(matrix):
 
 
 def scale_matrix(factor, origin=None, direction=None):
-    """Return matrix to scale by factor around origin in direction.
+    """Return matrix to scale by factor around origin in motion_vec.
 
     Use factor -1 for point symmetry.
 
@@ -1332,19 +1332,19 @@ def scale_matrix(factor, origin=None, direction=None):
 
 
 def scale_from_matrix(matrix):
-    """Return scaling factor, origin and direction from scaling matrix.
+    """Return scaling factor, origin and motion_vec from scaling matrix.
 
     >>> factor = random.random() * 10 - 5
     >>> origin = np.random.random(3) - 0.5
     >>> direct = np.random.random(3) - 0.5
     >>> S0 = scale_matrix(factor, origin)
-    >>> factor, origin, direction = scale_from_matrix(S0)
-    >>> S1 = scale_matrix(factor, origin, direction)
+    >>> factor, origin, motion_vec = scale_from_matrix(S0)
+    >>> S1 = scale_matrix(factor, origin, motion_vec)
     >>> is_same_transform(S0, S1)
     True
     >>> S0 = scale_matrix(factor, origin, direct)
-    >>> factor, origin, direction = scale_from_matrix(S0)
-    >>> S1 = scale_matrix(factor, origin, direction)
+    >>> factor, origin, motion_vec = scale_from_matrix(S0)
+    >>> S1 = scale_matrix(factor, origin, motion_vec)
     >>> is_same_transform(S0, S1)
     True
 
@@ -1353,7 +1353,7 @@ def scale_from_matrix(matrix):
     M33 = M[:3, :3]
     factor = np.trace(M33) - 2.0
     try:
-        # direction: unit eigenvector corresponding to eigenvalue factor
+        # motion_vec: unit eigenvector corresponding to eigenvalue factor
         w, V = np.linalg.eig(M33)
         i = np.where(abs(np.real(w) - factor) < 1e-8)[0][0]
         direction = np.real(V[:, i]).squeeze()
@@ -1376,7 +1376,7 @@ def projection_matrix(point, normal, direction=None,
                       perspective=None, pseudo=False):
     """Return matrix to project onto plane defined by point and normal.
 
-    Using either perspective point, projection direction, or none of both.
+    Using either perspective point, projection motion_vec, or none of both.
 
     If pseudo is True, perspective projections will preserve relative depth
     such that Perspective = dot(Orthogonal, PseudoPerspective).
@@ -1389,7 +1389,7 @@ def projection_matrix(point, normal, direction=None,
     >>> direct = np.random.random(3) - 0.5
     >>> persp = np.random.random(3) - 0.5
     >>> P0 = projection_matrix(point, normal)
-    >>> P1 = projection_matrix(point, normal, direction=direct)
+    >>> P1 = projection_matrix(point, normal, motion_vec=direct)
     >>> P2 = projection_matrix(point, normal, perspective=persp)
     >>> P3 = projection_matrix(point, normal, perspective=persp, pseudo=True)
     >>> is_same_transform(P2, np.dot(P0, P3))
@@ -1438,7 +1438,7 @@ def projection_from_matrix(matrix, pseudo=False):
     """Return projection plane and perspective point from projection matrix.
 
     Return values are same as arguments for projection_matrix function:
-    point, normal, direction, perspective, and pseudo.
+    point, normal, motion_vec, perspective, and pseudo.
 
     >>> point = np.random.random(3) - 0.5
     >>> normal = np.random.random(3) - 0.5
@@ -1474,7 +1474,7 @@ def projection_from_matrix(matrix, pseudo=False):
         # point: any eigenvector corresponding to eigenvalue 1
         point = np.real(V[:, i[-1]]).squeeze()
         point /= point[3]
-        # direction: unit eigenvector corresponding to eigenvalue 0
+        # motion_vec: unit eigenvector corresponding to eigenvalue 0
         w, V = np.linalg.eig(M33)
         i = np.where(abs(np.real(w)) < 1e-8)[0]
         if not len(i):
@@ -1490,7 +1490,7 @@ def projection_from_matrix(matrix, pseudo=False):
             normal /= vector_norm(normal)
             return point, normal, direction, None, False
         else:
-            # orthogonal projection, where normal equals direction vector
+            # orthogonal projection, where normal equals motion_vec vector
             return point, direction, None, None, False
     else:
         # perspective projection
@@ -1517,7 +1517,7 @@ def clip_matrix(left, right, bottom, top, near, far, perspective=False):
     inside the frustum.
 
     If perspective is True the frustum is a truncated pyramid with the
-    perspective point at origin and direction along z axis, otherwise an
+    perspective point at origin and motion_vec along z axis, otherwise an
     orthographic canonical view volume (a box).
 
     Homogeneous coordinates transformed by the perspective clip matrix
@@ -1560,13 +1560,13 @@ def clip_matrix(left, right, bottom, top, near, far, perspective=False):
 
 
 def shear_matrix(angle, direction, point, normal):
-    """Return matrix to shear by angle along direction vector on shear plane.
+    """Return matrix to shear by angle along motion_vec vector on shear plane.
 
-    The shear plane is defined by a point and normal vector. The direction
+    The shear plane is defined by a point and normal vector. The motion_vec
     vector must be orthogonal to the plane's normal vector.
 
     A point P is transformed by the shear matrix into P" such that
-    the vector P-P" is parallel to the direction vector and its xyz_lengths is
+    the vector P-P" is parallel to the motion_vec vector and its xyz_lengths is
     given by the angle of P-P'-P", where P' is the orthogonal projection
     of P onto the shear plane.
 
@@ -1582,7 +1582,7 @@ def shear_matrix(angle, direction, point, normal):
     normal = _unit_vector(normal[:3])
     direction = _unit_vector(direction[:3])
     if abs(np.dot(normal, direction)) > 1e-6:
-        raise ValueError("direction and normal vectors are not orthogonal")
+        raise ValueError("motion_vec and normal vectors are not orthogonal")
     angle = math.tan(angle)
     M = np.identity(4)
     M[:3, :3] += angle * np.outer(direction, normal)
@@ -1591,7 +1591,7 @@ def shear_matrix(angle, direction, point, normal):
 
 
 def shear_from_matrix(matrix):
-    """Return shear angle, direction and plane from shear matrix.
+    """Return shear angle, motion_vec and plane from shear matrix.
 
     >>> angle = (random.random() - 0.5) * 4*np.pi
     >>> direct = np.random.random(3) - 0.5
@@ -1620,7 +1620,7 @@ def shear_from_matrix(matrix):
             lenorm = w
             normal = n
     normal /= lenorm
-    # direction and angle
+    # motion_vec and angle
     direction = np.dot(M33 - np.identity(3), normal)
     angle = vector_norm(direction)
     direction /= angle
@@ -2504,7 +2504,7 @@ class Arcball(object):
             self._qnow = quaternion_multiply(q, self._qdown)
 
     def next(self, acceleration=0.0):
-        """Continue rotation in direction of last drag."""
+        """Continue rotation in motion_vec of last drag."""
         q = quaternion_slerp(self._qpre, self._qnow, 2.0 + acceleration, False)
         self._qpre, self._qnow = self._qnow, q
 

@@ -27,8 +27,8 @@ class SCTInterface(eei.EEInterface):
     def act_to_with_czy(self, gl_action_center_pos, gl_action_center_z, gl_action_center_y):
         """
         :param gl_action_center_pos:
-        :param gl_action_center_z: jaw_center's approaching direction
-        :param gl_action_center_y: jaw_center's opening direction
+        :param gl_action_center_z: jaw_center's approaching motion_vec
+        :param gl_action_center_y: jaw_center's opening motion_vec
         :param jaw_width:
         :return:
         author: weiwei

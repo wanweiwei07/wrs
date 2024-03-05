@@ -145,7 +145,7 @@ def plane_lines(plane_origin,
     plane_normal = unitize(np.asanyarray(plane_normal).reshape(3))
     t = np.dot(plane_normal, (plane_origin - endpoints[0]).T)
     b = np.dot(plane_normal, line_dir.T)
-    # If the plane normal and line direction are perpendicular, it means
+    # If the plane normal and line motion_vec are perpendicular, it means
     # the vector is 'on plane', and there isn't a valid intersection.
     # We discard on-plane vectors by checking that the dot product is nonzero
     valid = np.abs(b) > tol.zero

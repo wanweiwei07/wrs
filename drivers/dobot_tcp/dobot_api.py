@@ -289,8 +289,8 @@ class DobotApiDashboard(DobotApi):
     def SetArmOrientation(self, r, d, n, cfg):
         """
         Set the hand command
-        r : Mechanical arm direction, forward/backward (1:forward -1:backward)
-        d : Mechanical arm direction, up elbow/down elbow (1:up elbow -1:down elbow)
+        r : Mechanical arm motion_vec, forward/backward (1:forward -1:backward)
+        d : Mechanical arm motion_vec, up elbow/down elbow (1:up elbow -1:down elbow)
         n : Whether the wrist of the mechanical arm is flipped (1:The wrist does not flip -1:The wrist flip)
         cfg :Sixth axis Angle identification
             (1, - 2... : Axis 6 Angle is [0,-90] is -1; [90, 180] - 2; And so on
@@ -391,7 +391,7 @@ class DobotApiDashboard(DobotApi):
     def PositiveSolution(self, j1: float, j2: float, j3: float, j4: float, j5: float, j6: float, user: int, tool: int):
         """
         Description:
-            Positive solution. Calculate the spatial position of the end_type of the robot based on the given angle of each joint of the robot. The arm direction of the robot is required to be known by SetArmOrientation
+            Positive solution. Calculate the spatial position of the end_type of the robot based on the given angle of each joint of the robot. The arm motion_vec of the robot is required to be known by SetArmOrientation
         Parameters:
             Parameter	Type	Description
             J1	double	Position of axis J1 in degrees
@@ -691,9 +691,9 @@ class DobotApiMove(DobotApi):
     def RelMovJTool(self, offset_x, offset_y, offset_z, offset_rx, offset_ry, offset_rz, tool, *dynParams):
         """
         The relative motion command is carried out along the tool coordinate system, and the end_type motion mode is joint motion
-        offset_x: X-axis direction offset
-        offset_y: Y-axis direction offset
-        offset_z: Z-axis direction offset
+        offset_x: X-axis motion_vec offset
+        offset_y: Y-axis motion_vec offset
+        offset_z: Z-axis motion_vec offset
         offset_rx: Rx axis position
         offset_ry: Ry axis position
         offset_rz: Rz axis position
@@ -716,9 +716,9 @@ class DobotApiMove(DobotApi):
     def RelMovLTool(self, offset_x, offset_y, offset_z, offset_rx, offset_ry, offset_rz, tool, *dynParams):
         """
         Carry out relative motion command along the tool coordinate system, and the end_type motion mode is linear motion
-        offset_x: X-axis direction offset
-        offset_y: Y-axis direction offset
-        offset_z: Z-axis direction offset
+        offset_x: X-axis motion_vec offset
+        offset_y: Y-axis motion_vec offset
+        offset_z: Z-axis motion_vec offset
         offset_rx: Rx axis position
         offset_ry: Ry axis position
         offset_rz: Rz axis position
@@ -741,9 +741,9 @@ class DobotApiMove(DobotApi):
     def RelMovJUser(self, offset_x, offset_y, offset_z, offset_rx, offset_ry, offset_rz, user, *dynParams):
         """
         The relative motion command is carried out along the user coordinate system, and the end_type motion mode is joint motion
-        offset_x: X-axis direction offset
-        offset_y: Y-axis direction offset
-        offset_z: Z-axis direction offset
+        offset_x: X-axis motion_vec offset
+        offset_y: Y-axis motion_vec offset
+        offset_z: Z-axis motion_vec offset
         offset_rx: Rx axis position
         offset_ry: Ry axis position
         offset_rz: Rz axis position
@@ -766,9 +766,9 @@ class DobotApiMove(DobotApi):
     def RelMovLUser(self, offset_x, offset_y, offset_z, offset_rx, offset_ry, offset_rz, user, *dynParams):
         """
         The relative motion command is carried out along the user coordinate system, and the end_type motion mode is linear motion
-        offset_x: X-axis direction offset
-        offset_y: Y-axis direction offset
-        offset_z: Z-axis direction offset
+        offset_x: X-axis motion_vec offset
+        offset_y: Y-axis motion_vec offset
+        offset_z: Z-axis motion_vec offset
         offset_rx: Rx axis position
         offset_ry: Ry axis position
         offset_rz: Rz axis position

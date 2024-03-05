@@ -98,8 +98,8 @@ for tick in range(1, n+1):
     # mgm.gen_stick(spos=cpt, epos=t_npt, rgba=[1,0,1,1], major_radius=.002, end_type='round').attach_to(base)
     gm.gen_stick(spos=cpt, epos=projected_point, rgba=[1, .6, 0, 1], radius=.002, type='round').attach_to(base)
     cpt=projected_point
-    # new_line_segs = [[cpt, cpt+direction*(.05-tick*.05/n)],
-    #                  [cpt+direction*(.05-tick*.05/n), cpt+direction*(.05-tick*.05/n)+new_tmp_direction*.05]]
+    # new_line_segs = [[cpt, cpt+motion_vec*(.05-tick*.05/n)],
+    #                  [cpt+motion_vec*(.05-tick*.05/n), cpt+motion_vec*(.05-tick*.05/n)+new_tmp_direction*.05]]
     last_normal = new_normal
 
 direction = new_rotmat.dot(tmp_direction)
@@ -134,8 +134,8 @@ for tick in range(1, n+1):
     # mgm.gen_stick(spos=cpt, epos=cpt+tmp_direction*.05/n, rgba=[1,0,1,1], major_radius=.002, end_type='round').attach_to(base)
     gm.gen_stick(spos=cpt, epos=projected_point, rgba=[1, .6, 0, 1], radius=.002, type='round').attach_to(base)
     cpt=projected_point
-    # new_line_segs = [[cpt, cpt+direction*(.05-tick*.05/n)],
-    #                  [cpt+direction*(.05-tick*.05/n), cpt+direction*(.05-tick*.05/n)+new_tmp_direction*.05]]
+    # new_line_segs = [[cpt, cpt+motion_vec*(.05-tick*.05/n)],
+    #                  [cpt+motion_vec*(.05-tick*.05/n), cpt+motion_vec*(.05-tick*.05/n)+new_tmp_direction*.05]]
     last_normal = new_normal
     # break
 
@@ -171,8 +171,8 @@ for tick in range(1, n+1):
     # mgm.gen_stick(spos=cpt, epos=cpt+tmp_direction*.05/n, rgba=[1,0,1,1], major_radius=.002, end_type='round').attach_to(base)
     gm.gen_stick(spos=cpt, epos=projected_point, rgba=[1, .6, 0, 1], radius=.002, type='round').attach_to(base)
     cpt=projected_point
-    # new_line_segs = [[cpt, cpt+direction*(.05-tick*.05/n)],
-    #                  [cpt+direction*(.05-tick*.05/n), cpt+direction*(.05-tick*.05/n)+new_tmp_direction*.05]]
+    # new_line_segs = [[cpt, cpt+motion_vec*(.05-tick*.05/n)],
+    #                  [cpt+motion_vec*(.05-tick*.05/n), cpt+motion_vec*(.05-tick*.05/n)+new_tmp_direction*.05]]
     last_normal = new_normal
     # break
 
@@ -208,8 +208,8 @@ for tick in range(1, n + 1):
     # mgm.gen_stick(spos=cpt, epos=cpt+tmp_direction*.05/n, rgba=[1,0,1,1], major_radius=.002, end_type='round').attach_to(base)
     gm.gen_stick(spos=cpt, epos=projected_point, rgba=[1, .6, 0, 1], radius=.002, type='round').attach_to(base)
     cpt = projected_point
-    # new_line_segs = [[cpt, cpt+direction*(.05-tick*.05/n)],
-    #                  [cpt+direction*(.05-tick*.05/n), cpt+direction*(.05-tick*.05/n)+new_tmp_direction*.05]]
+    # new_line_segs = [[cpt, cpt+motion_vec*(.05-tick*.05/n)],
+    #                  [cpt+motion_vec*(.05-tick*.05/n), cpt+motion_vec*(.05-tick*.05/n)+new_tmp_direction*.05]]
     last_normal = new_normal
     # break
 

@@ -55,7 +55,7 @@ def trans_projection(ps, plane_n, view_p, view_plane_dist):
 
     Args:
         ps (numpy.ndarray): 3D points in world coordinate
-        plane_n (numpy.ndarray): normal direction of the target plane
+        plane_n (numpy.ndarray): normal motion_vec of the target plane
         view_p (numpy.ndarray): view point location
         view_plane_dist (float): distance from view point to the target plane
 

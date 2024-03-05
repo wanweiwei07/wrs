@@ -1,10 +1,8 @@
 from enum import Enum
 
-
 class JntType(Enum):
     REVOLUTE = 1
     PRISMATIC = 2
-
 
 # declare constants
 TCP_INDICATOR_STICK_RADIUS = .0025

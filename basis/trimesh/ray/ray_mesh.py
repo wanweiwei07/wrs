@@ -137,7 +137,7 @@ def ray_bounds(rays, bounds, buffer_dist=1e-5):
     ray_bounding: (n) set of AABB of rays passing through volume
     '''
     # separate out the (n, 2, 3) rays array into (n, 3) 
-    # origin/direction arrays
+    # origin/motion_vec arrays
     ray_ori = rays[:, 0, :]
     ray_dir = unitize(rays[:, 1, :])
 
@@ -151,7 +151,7 @@ def ray_bounds(rays, bounds, buffer_dist=1e-5):
     axis_dir = np.array([ray_dir[i][a] for i, a in enumerate(axis)]).reshape((-1, 1))
 
     # parametric equation of a line
-    # point = direction*t + origin
+    # point = motion_vec*t + origin
     # p = dt + o
     # t = (p-o)/d
     t = (axis_bound - axis_ori) / axis_dir
@@ -192,7 +192,7 @@ def ray_triangle_locations(triangles,
     Arguments
     ----------
     triangles:     (n, 3, 3) set of triangle vertices
-    rays:          (m, 2, 3) set of ray origins/ray direction pairs
+    rays:          (m, 2, 3) set of ray origins/ray motion_vec pairs
     intersections: (m) sequence of intersection indidices which triangles
                     each ray hits. 
 

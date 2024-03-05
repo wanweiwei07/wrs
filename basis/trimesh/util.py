@@ -186,7 +186,7 @@ def vector_hemisphere(vectors, return_sign=False):
     # vectors as numpy array
     vectors = np.asanyarray(vectors, dtype=np.float64)
     if is_shape(vectors, (-1, 2)):
-        # 2D vector case check the Y value and reverse vector direction if negative.
+        # 2D vector case check the Y value and reverse vector motion_vec if negative.
         negative = vectors < -TOL_ZERO
         zero = np.logical_not(np.logical_or(negative, vectors > TOL_ZERO))
         signs = np.ones(len(vectors), dtype=np.float64)

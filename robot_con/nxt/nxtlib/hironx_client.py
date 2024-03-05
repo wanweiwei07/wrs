@@ -521,7 +521,7 @@ class HIRONX(HrpsysConfigurator2):
             for h in self.HandGroups.keys():
                 self.setHandJointAngles(h, self.hand_width2angles(width), tm)
 
-    def moveHand(self, hand, av, tm=1):  # direction av: + for open, - for close
+    def moveHand(self, hand, av, tm=1):  # motion_vec av: + for open, - for close
         """
         Negate the angle value for {2, 3, 6, 7}th element in av.
 
@@ -780,7 +780,7 @@ class HIRONX(HrpsysConfigurator2):
     def checkEncoders(self, jname='all', option=''):
         """
         Run the encoder checking sequence for specified joints,
-        run goActual to adjust the direction values, and then turn servos on.
+        run goActual to adjust the motion_vec values, and then turn servos on.
 
         @end_type jname: str
         @param jname: The value 'all' works iteratively for all servos.
