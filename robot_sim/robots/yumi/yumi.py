@@ -68,7 +68,7 @@ class Yumi(ri.RobotInterface):
         lft_arm_homeconf = np.radians(np.array([20, -90, 120, 30, 0, 40, 0]))
         self.lft_arm = ya.IRB14050(pos=self.lft_body.jnts[-1]['gl_posq'],
                                    rotmat=self.lft_body.jnts[-1]['gl_rotmatq'],
-                                   homeconf=lft_arm_homeconf, enable_cc=False)
+                                   home_conf=lft_arm_homeconf, enable_cc=False)
         self.lft_arm.fix_to(pos=self.lft_body.jnts[-1]['gl_posq'], rotmat=self.lft_body.jnts[-1]['gl_rotmatq'])
         self.lft_hnd = yg.YumiGripper(pos=self.lft_arm.jnts[-1]['gl_posq'],
                                       rotmat=self.lft_arm.jnts[-1]['gl_rotmatq'],

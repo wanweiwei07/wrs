@@ -208,10 +208,10 @@ if __name__ == '__main__':
                                   rotmat=rm.rotmat_from_euler(np.radians(30), np.radians(-30), 0), enable_cc=True)
     manipulator_meshmodel = manipulator_instance.gen_meshmodel()
     manipulator_meshmodel.attach_to(base)
-    # manipulator_meshmodel.show_cdprimit()
-    # manipulator_instance.gen_stickmodel(toggle_jnt_frames=True).attach_to(base)
+    # arm_mesh.show_cdprimit()
+    # arm.gen_stickmodel(toggle_jnt_frames=True).attach_to(base)
     # tic = time.time()
-    # print(manipulator_instance.is_collided())
+    # print(arm.is_collided())
     # toc = time.time()
     # print(toc - tic)
 

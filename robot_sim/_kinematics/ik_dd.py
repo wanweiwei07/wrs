@@ -257,50 +257,59 @@ class DDIKSolver(object):
 
 if __name__ == '__main__':
     import modeling.geometric_model as gm
-    import robot_sim._kinematics.jlchain as rskj
+    import robot_sim._kinematics.jlchain as rkjlc
     import time
-    import basis.constant as bc
+    import math
     import robot_sim._kinematics.model_generator as rkmg
     import visualization.panda.world as wd
 
     base = wd.World(cam_pos=[1.25, .75, .75], lookat_pos=[0, 0, .3])
     gm.gen_frame().attach_to(base)
 
-    jlc = rskj.JLChain(n_dof=6)
-    jlc.jnts[0].loc_pos = np.array([0, 0, 0])
+    _jnt_safemargin = math.pi / 18.0
+    jlc = rkjlc.JLChain(n_dof=7)
+    jlc.jnts[0].loc_pos = np.array([.0, .0, .0])
+    jlc.jnts[0].loc_rotmat = rm.rotmat_from_euler(0.0, 0.0, np.pi)
     jlc.jnts[0].loc_motion_ax = np.array([0, 0, 1])
-    jlc.jnts[0].motion_range = np.array([-np.pi / 2, np.pi / 2])
-    # jlc.joints[1].change_type(rkc.JntType.PRISMATIC)
-    jlc.jnts[1].loc_pos = np.array([0, 0, .05])
-    jlc.jnts[1].loc_motion_ax = np.array([0, 1, 0])
-    jlc.jnts[1].motion_range = np.array([-np.pi / 2, np.pi / 2])
-    jlc.jnts[2].loc_pos = np.array([0, 0, .2])
-    jlc.jnts[2].loc_motion_ax = np.array([0, 1, 0])
-    jlc.jnts[2].motion_range = np.array([-np.pi, np.pi])
-    jlc.jnts[3].loc_pos = np.array([0, 0, .2])
+    jlc.jnts[0].motion_range = np.array([-2.94087978961 + _jnt_safemargin, 2.94087978961 - _jnt_safemargin])
+    jlc.jnts[1].loc_pos = np.array([0.03, .0, .1])
+    jlc.jnts[1].loc_rotmat = rm.rotmat_from_euler(np.pi / 2, 0.0, 0.0)
+    jlc.jnts[1].loc_motion_ax = np.array([0, 0, 1])
+    jlc.jnts[1].motion_range = np.array([-2.50454747661 + _jnt_safemargin, 0.759218224618 - _jnt_safemargin])
+    jlc.jnts[2].loc_pos = np.array([-0.03, 0.17283, 0.0])
+    jlc.jnts[2].loc_rotmat = rm.rotmat_from_euler(-np.pi / 2, 0.0, 0.0)
+    jlc.jnts[2].loc_motion_ax = np.array([0, 0, 1])
+    jlc.jnts[2].motion_range = np.array([-2.94087978961 + _jnt_safemargin, 2.94087978961 - _jnt_safemargin])
+    jlc.jnts[3].loc_pos = np.array([-0.04188, 0.0, 0.07873])
+    jlc.jnts[3].loc_rotmat = rm.rotmat_from_euler(np.pi / 2, -np.pi / 2, 0.0)
     jlc.jnts[3].loc_motion_ax = np.array([0, 0, 1])
-    jlc.jnts[3].motion_range = np.array([-np.pi / 2, np.pi / 2])
-    jlc.jnts[4].loc_pos = np.array([0, 0, .1])
-    jlc.jnts[4].loc_motion_ax = np.array([0, 1, 0])
-    jlc.jnts[4].motion_range = np.array([-np.pi / 2, np.pi / 2])
-    jlc.jnts[5].loc_pos = np.array([0, 0, .05])
+    jlc.jnts[4].loc_pos = np.array([0.0405, 0.16461, 0.0])
+    jlc.jnts[4].loc_rotmat = rm.rotmat_from_euler(-np.pi / 2, 0.0, 0.0)
+    jlc.jnts[4].loc_motion_ax = np.array([0, 0, 1])
+    jlc.jnts[4].motion_range = np.array([-5.06145483078 + _jnt_safemargin, 5.06145483078 - _jnt_safemargin])
+    jlc.jnts[5].loc_pos = np.array([-0.027, 0, 0.10039])
+    jlc.jnts[5].loc_rotmat = rm.rotmat_from_euler(np.pi / 2, 0.0, 0.0)
     jlc.jnts[5].loc_motion_ax = np.array([0, 0, 1])
-    jlc.jnts[5].motion_range = np.array([-np.pi / 2, np.pi / 2])
-    jlc._loc_flange_pos = np.array([0, 0, .01])
-    jlc.finalize()
-    seed_jnt_vals = jlc.get_jnt_values()
+    jlc.jnts[5].motion_range = np.array([-1.53588974176 + _jnt_safemargin, 2.40855436775 - _jnt_safemargin])
+    jlc.jnts[6].loc_pos = np.array([0.027, 0.029, 0.0])
+    jlc.jnts[6].loc_rotmat = rm.rotmat_from_euler(-np.pi / 2, 0.0, 0.0)
+    jlc.jnts[6].loc_motion_ax = np.array([0, 0, 1])
+    jlc.jnts[6].motion_range = np.array([-3.99680398707 + _jnt_safemargin, 3.99680398707 - _jnt_safemargin])
+    jlc._loc_flange_pos = np.array([0, 0, .007])
+    jlc.finalize(ik_solver='d', identifier_str="ikdd_loc_test")
+    jlc.get_jnt_values()
 
-    # random_jnts = jlc.rand_conf()
-    # tgt_pos, tgt_rotmat = jlc.forward_kinematics(jnt_values=random_jnts, update=False, toggle_jacobian=False)
-    # tic = time.time()
-    # solved_jnt_vals = jlc.ik(tgt_pos=tgt_pos,
-    #                   tgt_rotmat=tgt_rotmat,
-    #                   max_n_iter=100)
-    # mgm.gen_frame(pos=tgt_pos, rotmat=tgt_rotmat).attach_to(base)
-    # jlc.forward_kinematics(jnt_values=solved_jnt_vals, update=True, toggle_jacobian=False)
-    # rkmg.gen_jlc_stick(jlc, stick_rgba=bc.navy_blue, toggle_flange_frame=True,
-    #                    toggle_jnt_frames=True).attach_to(base)
-    # base.run()
+    tgt_pos, tgt_rotmat = jlc.fk(jnt_values=jlc.rand_conf())
+    tic = time.time()
+    jnt_values = jlc.ik(tgt_pos=tgt_pos,
+                      tgt_rotmat=tgt_rotmat,
+                      max_n_iter=100)
+    mgm.gen_frame(pos=tgt_pos, rotmat=tgt_rotmat).attach_to(base)
+    if jnt_values is not None:
+        jlc.fk(jnt_values=jnt_values)
+        rkmg.gen_jlc_stick(jlc, stick_rgba=bc.navy_blue, toggle_flange_frame=True,
+                           toggle_jnt_frames=True).attach_to(base)
+        base.run()
 
     # jlc._ik_solver._test_success_rate()
     jlc._ik_solver.multiepoch_evolve(n_times_per_epoch=10000)

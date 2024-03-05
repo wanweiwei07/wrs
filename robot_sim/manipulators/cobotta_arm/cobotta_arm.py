@@ -84,8 +84,8 @@ if __name__ == '__main__':
     base = wd.World(cam_pos=[2, 0, 1], lookat_pos=[0, 0, .3])
     mgm.gen_frame().attach_to(base)
     arm = CobottaArm(enable_cc=True)
-    # tmp_arm_mesh = arm.gen_meshmodel(alpha=.3)
-    # tmp_arm_mesh.attach_to(base)
+    # arm_mesh = arm.gen_meshmodel(alpha=.3)
+    # arm_mesh.attach_to(base)
     # tmp_arm_stick = arm.gen_stickmodel(toggle_flange_frame=True)
     # tmp_arm_stick.attach_to(base)
     # base.run()
@@ -99,8 +99,8 @@ if __name__ == '__main__':
     print(toc - tic)
     if jnt_values is not None:
         arm.goto_given_conf(jnt_values=jnt_values)
-    # tmp_arm_mesh = arm.gen_meshmodel(alpha=.3)
-    # tmp_arm_mesh.attach_to(base)
+    # arm_mesh = arm.gen_meshmodel(alpha=.3)
+    # arm_mesh.attach_to(base)
     # tmp_arm_stick = arm.gen_stickmodel(toggle_flange_frame=True)
     # tmp_arm_stick.attach_to(base)
     # base.run()
@@ -108,8 +108,8 @@ if __name__ == '__main__':
     arm.goto_given_conf(jnt_values=np.array([0, np.pi / 2, np.pi * 3 / 4, 0, np.pi / 2, 0]))
     arm.show_cdprim()
 
-    tmp_arm_mesh = arm.gen_meshmodel(alpha=.3)
-    tmp_arm_mesh.attach_to(base)
+    arm_mesh = arm.gen_meshmodel(alpha=.3)
+    arm_mesh.attach_to(base)
     tmp_arm_stick = arm.gen_stickmodel(toggle_flange_frame=True)
     tmp_arm_stick.attach_to(base)
 

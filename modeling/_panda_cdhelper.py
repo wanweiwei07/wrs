@@ -145,7 +145,6 @@ def gen_obb_box_pdcndp(trm_model, ex_radius=0.01):
     cdprimitive.attachNewNode(pdcnd)
     return cdprimitive
 
-
 def gen_capsule_pdcndp(trm_model, ex_radius=0.01):
     """
     :param trm_model:

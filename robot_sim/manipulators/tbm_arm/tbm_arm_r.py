@@ -157,7 +157,7 @@ if __name__ == '__main__':
     manipulator_meshmodel.show_cdprim()
     manipulator_instance.gen_stickmodel(toggle_jntscs=True).attach_to(base)
     # tic = time.time()
-    # print(manipulator_instance.is_collided())
+    # print(arm.is_collided())
     # toc = time.time()
     # print(toc - tic)
 

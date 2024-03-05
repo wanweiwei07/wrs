@@ -125,9 +125,9 @@ if __name__ == '__main__':
     gm.gen_frame().attach_to(base)
     robot_s = DobotMagician(enable_cc=True)
     robot_s.fk(jnt_values=np.array([math.radians(0), math.radians(0), math.radians(0)]))
-    # manipulator_meshmodel = robot_s.gen_meshmodel()
-    # manipulator_meshmodel.attach_to(base)
-    # manipulator_meshmodel.show_cdprimit()
+    # arm_mesh = robot_s.gen_meshmodel()
+    # arm_mesh.attach_to(base)
+    # arm_mesh.show_cdprimit()
     # robot_s.gen_stickmodel(toggle_jnt_frames=True).attach_to(base)
     goal_pos = np.array([.1,-.1,.15])
     goal_theta = .1
@@ -140,7 +140,7 @@ if __name__ == '__main__':
     manipulator_meshmodel = robot_s.gen_meshmodel()
     manipulator_meshmodel.attach_to(base)
     # tic = time.time()
-    # print(manipulator_instance.is_collided())
+    # print(arm.is_collided())
     # toc = time.time()
     # print(toc - tic)
 
