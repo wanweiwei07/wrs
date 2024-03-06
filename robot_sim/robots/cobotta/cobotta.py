@@ -1,7 +1,5 @@
-import os
 import math
 import numpy as np
-import robot_sim._kinematics.jlchain as jl
 import robot_sim.manipulators.cobotta_arm.cobotta_arm as cbta
 import robot_sim.end_effectors.gripper.cobotta_gripper.cobotta_gripper as cbtg
 import robot_sim.robots.single_arm_robot_interface as ri
@@ -15,7 +13,7 @@ class Cobotta(ri.SglArmRobotInterface):
         home_conf[1] = -math.pi / 6
         home_conf[2] = math.pi / 2
         home_conf[4] = math.pi / 6
-        self.manipulator = cbta.CobottaArm(pos=self.pos, rotmat=self.rotmat, home_conf=home_conf, name="cobotta_arm",
+        self.manipulator = cbta.CobottaArm(pos=self.pos, rotmat=self.rotmat, home_conf=home_conf, name="cobotta_arm_",
                                            enable_cc=False)
         self.end_effector = cbtg.CobottaGripper(pos=self.manipulator.gl_flange_pos,
                                                 rotmat=self.manipulator.gl_flange_rotmat, name="cobotta_hnd")
@@ -114,7 +112,7 @@ if __name__ == '__main__':
     tgt_pos = np.array([.3, .1, .3])
     tgt_rotmat = rm.rotmat_from_axangle([0, 1, 0], math.pi * 2 / 3)
     mgm.gen_frame(pos=tgt_pos, rotmat=tgt_rotmat).attach_to(base)
-    jnt_values = robot.ik(tgt_pos=tgt_pos, tgt_rotmat=tgt_rotmat, toggle_dbg=True)
+    jnt_values = robot.ik(tgt_pos=tgt_pos, tgt_rotmat=tgt_rotmat, toggle_dbg=False)
     print(jnt_values)
     if jnt_values is not None:
         robot.goto_given_conf(jnt_values=jnt_values)

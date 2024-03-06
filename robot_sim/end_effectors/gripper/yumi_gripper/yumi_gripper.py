@@ -23,7 +23,7 @@ class YumiGripper(gpi.GripperInterface):
         # coupling
         self.coupling.finalize()
         # jlc
-        self.jlc = rkjl.JLChain(pos=self.coupling.gl_flange_pos, rotmat=self.coupling.gl_flange_pos, n_dof=2, name=name)
+        self.jlc = rkjl.JLChain(pos=self.coupling.gl_flange_pos, rotmat=self.coupling.gl_flange_rotmat, n_dof=2, name=name)
         # anchor
         self.jlc.anchor.lnk.cmodel = mcm.CollisionModel(os.path.join(current_file_dir, "meshes", "base.stl"),
                                                         cdmesh_type=self.cdmesh_type)

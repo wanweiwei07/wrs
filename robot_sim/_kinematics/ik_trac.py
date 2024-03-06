@@ -108,10 +108,9 @@ class NumIKSolverProc(mp.Process):
             j_pos = np.zeros((n_dof, 3))
             j_axis = np.zeros((n_dof, 3))
             for i in range(tcp_joint_id + 1):
-                j_axis[i, :] = homomat[:3, :3] @ joints[i].loc_motion_ax
-                if joints[i].type == rkc.JntType.REVOLUTE:
-                    j_pos[i, :] = homomat[:3, 3] + homomat[:3, :3] @ joints[i].loc_pos
+                j_pos[i, :] = homomat[:3, 3] + homomat[:3, :3] @ joints[i].loc_pos
                 homomat = homomat @ joints[i].get_motion_homomat(motion_value=joint_values[i])
+                j_axis[i, :] = homomat[:3, :3] @ joints[i].loc_motion_ax
             tcp_gl_homomat = homomat @ tcp_loc_homomat
             tcp_gl_pos = tcp_gl_homomat[:3, 3]
             tcp_gl_rotmat = tcp_gl_homomat[:3, :3]
@@ -213,10 +212,9 @@ class OptIKSolverProc(mp.Process):
             j_pos = np.zeros((n_dof, 3))
             j_axis = np.zeros((n_dof, 3))
             for i in range(tcp_joint_id + 1):
-                j_axis[i, :] = homomat[:3, :3] @ joints[i].loc_motion_ax
-                if joints[i].type == rkc.JntType.REVOLUTE:
-                    j_pos[i, :] = homomat[:3, 3] + homomat[:3, :3] @ joints[i].loc_pos
+                j_pos[i, :] = homomat[:3, 3] + homomat[:3, :3] @ joints[i].loc_pos
                 homomat = homomat @ joints[i].get_motion_homomat(motion_value=joint_values[i])
+                j_axis[i, :] = homomat[:3, :3] @ joints[i].loc_motion_ax
             tcp_gl_homomat = homomat @ tcp_loc_homomat
             tcp_gl_pos = tcp_gl_homomat[:3, 3]
             tcp_gl_rotmat = tcp_gl_homomat[:3, :3]

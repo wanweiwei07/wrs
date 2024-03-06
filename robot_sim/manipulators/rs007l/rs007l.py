@@ -12,10 +12,10 @@ class RS007L(mi.ManipulatorInterface):
     date: 20230728
     """
 
-    def __init__(self, pos=np.zeros(3), rotmat=np.eye(3), homeconf=np.zeros(6), name='khi_rs007l', enable_cc=True):
+    def __init__(self, pos=np.zeros(3), rotmat=np.eye(3), home_conf=np.zeros(6), name='khi_rs007l', enable_cc=True):
         super().__init__(pos=pos, rotmat=rotmat, name=name)
         this_dir, this_filename = os.path.split(__file__)
-        self.jlc = jl.JLChain(pos=pos, rotmat=rotmat, home_conf=homeconf, name=name)
+        self.jlc = jl.JLChain(pos=pos, rotmat=rotmat, home_conf=home_conf, name=name)
         # six joints, n_jnts = 6+2 (tgt ranges from 1-6), nlinks = 6+1
         self.jlc.jnts[1]['loc_pos'] = np.array([0, 0, 0.36])
         self.jlc.jnts[1]['loc_motionax'] = np.array([0, 0, -1])

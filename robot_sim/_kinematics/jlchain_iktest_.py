@@ -122,10 +122,9 @@ class JLChain(object):
             j_pos = np.zeros((self.n_dof, 3))
             j_axis = np.zeros((self.n_dof, 3))
             for i in range(self.tcp_jnt_id + 1):
-                j_axis[i, :] = homomat[:3, :3] @ self.jnts[i].loc_motion_ax
-                if self.jnts[i].type == rkc.JntType.REVOLUTE:
-                    j_pos[i, :] = homomat[:3, 3] + homomat[:3, :3] @ self.jnts[i].loc_pos
+                j_pos[i, :] = homomat[:3, 3] + homomat[:3, :3] @ self.jnts[i].loc_pos
                 homomat = homomat @ self.jnts[i].get_motion_homomat(motion_value=jnt_vals[i])
+                j_axis[i, :] = homomat[:3, :3] @ self.jnts[i].loc_motion_ax
             tcp_gl_homomat = homomat @ self.tcp_loc_homomat
             tcp_gl_pos = tcp_gl_homomat[:3, 3]
             tcp_gl_rotmat = tcp_gl_homomat[:3, :3]
@@ -386,11 +385,11 @@ class JLChain(object):
         # toc = time.time()
         # print("CWLN time ", toc - tic)
         tic = time.time()
-        jnt_vals = self._nik_solver.pinv_cwln(tgt_pos=tgt_pos,
-                                              tgt_rotmat=tgt_rotmat,
-                                              seed_jnt_vals=seed_jnt_vals,
-                                              max_n_iter=max_n_iter,
-                                              toggle_dbg=toggle_dbg)
+        jnt_vals = self._nik_solver.pinv_cw(tgt_pos=tgt_pos,
+                                            tgt_rotmat=tgt_rotmat,
+                                            seed_jnt_vals=seed_jnt_vals,
+                                            max_n_iter=max_n_iter,
+                                            toggle_dbg=toggle_dbg)
         toc = time.time()
         print("PINV WC time ", toc - tic)
         # tic = time.time()

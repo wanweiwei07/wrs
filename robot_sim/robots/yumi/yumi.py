@@ -14,6 +14,8 @@ import robot_sim.system.system_interface as ri
 class Yumi(ri.RobotInterface):
 
     def __init__(self, pos=np.zeros(3), rotmat=np.eye(3), name='yumi', enable_cc=True):
+        super().__init__(pos=pos, rotmat=rotmat, name=name, enable_cc=enable_cc)
+
         super().__init__(pos=pos, rotmat=rotmat, name=name)
         this_dir, this_filename = os.path.split(__file__)
         # lft

@@ -142,10 +142,9 @@ class JLChain(object):
             jnt_pos = np.zeros((self.n_dof, 3))
             jnt_motion_ax = np.zeros((self.n_dof, 3))
             for i in range(self.flange_jnt_id + 1):
-                jnt_motion_ax[i, :] = homomat[:3, :3] @ self.jnts[i].loc_motion_ax
-                if self.jnts[i].type == rkc.JntType.REVOLUTE:
-                    jnt_pos[i, :] = homomat[:3, 3] + homomat[:3, :3] @ self.jnts[i].loc_pos
+                jnt_pos[i, :] = homomat[:3, 3] + homomat[:3, :3] @ self.jnts[i].loc_pos
                 homomat = homomat @ self.jnts[i].get_motion_homomat(motion_value=jnt_values[i])
+                jnt_motion_ax[i, :] = homomat[:3, :3] @ self.jnts[i].loc_motion_ax
             gl_flange_homomat = homomat @ self.loc_flange_homomat
             gl_flange_pos = gl_flange_homomat[:3, 3]
             gl_flange_rotmat = gl_flange_homomat[:3, :3]

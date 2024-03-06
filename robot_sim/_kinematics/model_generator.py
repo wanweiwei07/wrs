@@ -121,12 +121,13 @@ def gen_jnt(jnt,
                       epos=epos,
                       radius=radius,
                       rgba=bc.jnt_child_rgba).attach_to(m_col)
-        mgm.gen_arrow(spos=jnt._gl_pos_0, epos=jnt._gl_pos_0 + jnt.gl_motion_ax * rkc.FRAME_STICK_LENGTH_LONG,
-                      rgba=bc.black).attach_to(m_col)
-        mgm.gen_circarrow(axis=jnt.gl_motion_ax,
-                          portion=(jnt.motion_range[1]-jnt.motion_range[0])/(2*np.pi),
-                          center=jnt._gl_pos_0 + jnt.gl_motion_ax * rkc.FRAME_STICK_LENGTH_LONG / 3,
-                          rgba=bc.black).attach_to(m_col)
+        # # toggle the following code to show/unshow motion axes and rotation arrows
+        # mgm.gen_arrow(spos=jnt._gl_pos_0, epos=jnt._gl_pos_0 + jnt.gl_motion_ax * rkc.FRAME_STICK_LENGTH_LONG,
+        #               rgba=bc.black).attach_to(m_col)
+        # mgm.gen_circarrow(axis=jnt.gl_motion_ax,
+        #                   portion=(jnt.motion_range[1]-jnt.motion_range[0])/(2*np.pi),
+        #                   center=jnt._gl_pos_0 + jnt.gl_motion_ax * rkc.FRAME_STICK_LENGTH_LONG / 3,
+        #                   rgba=bc.red).attach_to(m_col)
     elif jnt.type == rkc.JntType.PRISMATIC:
         mgm.gen_stick(spos=spos,
                       epos=epos,
