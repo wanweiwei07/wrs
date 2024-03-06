@@ -44,7 +44,8 @@ class DDIKSolver(object):
         self._max_n_iter = 5  # max_n_iter of the backbone solver
         if backbone_solver == 'n':
             self._backbone_solver = rkn.NumIKSolver(self.jlc)
-            self._backbone_solver_func = self._backbone_solver.pinv_wc
+            # self._backbone_solver_func = self._backbone_solver.pinv_cwln
+            self._backbone_solver_func = self._backbone_solver.pinv_gpm
         elif backbone_solver == 'o':
             self._backbone_solver = rko.OptIKSolver(self.jlc)
             self._backbone_solver_func = self._backbone_solver.sqpss
@@ -138,10 +139,10 @@ class DDIKSolver(object):
             dist_value_array, nn_indx_array = self.querry_tree.query(query_flange, k=self._k_max, workers=-1)
             is_solvable = False
             for nn_indx in nn_indx_array[:self._k_bbs]:
-                seed_jnt_vals = self.jnt_data[nn_indx]
+                seed_jnt_values = self.jnt_data[nn_indx]
                 result = self._backbone_solver_func(tgt_pos=flange_pos,
                                                     tgt_rotmat=flange_rotmat,
-                                                    seed_jnt_vals=seed_jnt_vals,
+                                                    seed_jnt_vals=seed_jnt_values,
                                                     max_n_iter=self._max_n_iter)
                 if result is None:
                     continue
@@ -214,13 +215,16 @@ class DDIKSolver(object):
         else:
             tgt_rotvec = self._rotmat_to_vec(tgt_rotmat)
             query_tgt = np.concatenate((tgt_pos, tgt_rotvec))
-            dist_value_array, nn_indx_array = self.querry_tree.query(query_tgt, k=1000, workers=-1)
-            for nn_indx in nn_indx_array[:5]:
+            dist_value_array, nn_indx_array = self.querry_tree.query(query_tgt, k=self._k_bbs, workers=-1)
+            for nn_indx in nn_indx_array:
                 seed_jnt_values = self.jnt_data[nn_indx]
+                if toggle_dbg:
+                    rkmg.gen_jlc_stick_by_jnt_values(self.jlc, jnt_values=seed_jnt_values,
+                                                     stick_rgba=rm.bc.red).attach_to(base)
                 result = self._backbone_solver_func(tgt_pos=tgt_pos,
                                                     tgt_rotmat=tgt_rotmat,
                                                     seed_jnt_vals=seed_jnt_values,
-                                                    max_n_iter=self._max_n_iter,
+                                                    max_n_iter=self._max_n_iter*5,
                                                     toggle_dbg=toggle_dbg)
                 if result is None:
                     continue
@@ -271,44 +275,51 @@ if __name__ == '__main__':
     jlc.jnts[0].loc_pos = np.array([.0, .0, .0])
     jlc.jnts[0].loc_rotmat = rm.rotmat_from_euler(0.0, 0.0, np.pi)
     jlc.jnts[0].loc_motion_ax = np.array([0, 0, 1])
-    jlc.jnts[0].motion_range = np.array([-2.94087978961 + _jnt_safemargin, 2.94087978961 - _jnt_safemargin])
+    # jlc.jnts[0].motion_range = np.array([-2.94087978961 + _jnt_safemargin, 2.94087978961 - _jnt_safemargin])
     jlc.jnts[1].loc_pos = np.array([0.03, .0, .1])
     jlc.jnts[1].loc_rotmat = rm.rotmat_from_euler(np.pi / 2, 0.0, 0.0)
     jlc.jnts[1].loc_motion_ax = np.array([0, 0, 1])
-    jlc.jnts[1].motion_range = np.array([-2.50454747661 + _jnt_safemargin, 0.759218224618 - _jnt_safemargin])
+    # jlc.jnts[1].motion_range = np.array([-2.50454747661 + _jnt_safemargin, 0.759218224618 - _jnt_safemargin])
     jlc.jnts[2].loc_pos = np.array([-0.03, 0.17283, 0.0])
     jlc.jnts[2].loc_rotmat = rm.rotmat_from_euler(-np.pi / 2, 0.0, 0.0)
     jlc.jnts[2].loc_motion_ax = np.array([0, 0, 1])
-    jlc.jnts[2].motion_range = np.array([-2.94087978961 + _jnt_safemargin, 2.94087978961 - _jnt_safemargin])
+    # jlc.jnts[2].motion_range = np.array([-2.94087978961 + _jnt_safemargin, 2.94087978961 - _jnt_safemargin])
     jlc.jnts[3].loc_pos = np.array([-0.04188, 0.0, 0.07873])
     jlc.jnts[3].loc_rotmat = rm.rotmat_from_euler(np.pi / 2, -np.pi / 2, 0.0)
     jlc.jnts[3].loc_motion_ax = np.array([0, 0, 1])
+    # jlc.jnts[3].motion_range = np.array([-2.15548162621 + _jnt_safemargin, 1.3962634016 - _jnt_safemargin])
     jlc.jnts[4].loc_pos = np.array([0.0405, 0.16461, 0.0])
     jlc.jnts[4].loc_rotmat = rm.rotmat_from_euler(-np.pi / 2, 0.0, 0.0)
     jlc.jnts[4].loc_motion_ax = np.array([0, 0, 1])
-    jlc.jnts[4].motion_range = np.array([-5.06145483078 + _jnt_safemargin, 5.06145483078 - _jnt_safemargin])
+    # jlc.jnts[4].motion_range = np.array([-5.06145483078 + _jnt_safemargin, 5.06145483078 - _jnt_safemargin])
     jlc.jnts[5].loc_pos = np.array([-0.027, 0, 0.10039])
     jlc.jnts[5].loc_rotmat = rm.rotmat_from_euler(np.pi / 2, 0.0, 0.0)
     jlc.jnts[5].loc_motion_ax = np.array([0, 0, 1])
-    jlc.jnts[5].motion_range = np.array([-1.53588974176 + _jnt_safemargin, 2.40855436775 - _jnt_safemargin])
+    # jlc.jnts[5].motion_range = np.array([-1.53588974176 + _jnt_safemargin, 2.40855436775 - _jnt_safemargin])
     jlc.jnts[6].loc_pos = np.array([0.027, 0.029, 0.0])
     jlc.jnts[6].loc_rotmat = rm.rotmat_from_euler(-np.pi / 2, 0.0, 0.0)
     jlc.jnts[6].loc_motion_ax = np.array([0, 0, 1])
-    jlc.jnts[6].motion_range = np.array([-3.99680398707 + _jnt_safemargin, 3.99680398707 - _jnt_safemargin])
+    # jlc.jnts[6].motion_range = np.array([-3.99680398707 + _jnt_safemargin, 3.99680398707 - _jnt_safemargin])
     jlc._loc_flange_pos = np.array([0, 0, .007])
-    jlc.finalize(ik_solver='d', identifier_str="ikdd_loc_test")
-    jlc.get_jnt_values()
+    jlc.finalize(ik_solver='d', identifier_str="test")
 
-    tgt_pos, tgt_rotmat = jlc.fk(jnt_values=jlc.rand_conf())
+    goal_jnt_values = jlc.rand_conf()
+    rkmg.gen_jlc_stick_by_jnt_values(jlc, jnt_values=goal_jnt_values, stick_rgba=rm.bc.blue).attach_to(base)
+
+    tgt_pos, tgt_rotmat = jlc.fk(jnt_values=goal_jnt_values)
     tic = time.time()
+
     jnt_values = jlc.ik(tgt_pos=tgt_pos,
-                      tgt_rotmat=tgt_rotmat,
-                      max_n_iter=100)
+                        tgt_rotmat=tgt_rotmat,
+                        toggle_dbg=True)
+    toc = time.time()
     mgm.gen_frame(pos=tgt_pos, rotmat=tgt_rotmat).attach_to(base)
+    print(toc - tic, jnt_values)
+    base.run()
     if jnt_values is not None:
-        jlc.fk(jnt_values=jnt_values)
-        rkmg.gen_jlc_stick(jlc, stick_rgba=bc.navy_blue, toggle_flange_frame=True,
-                           toggle_jnt_frames=True).attach_to(base)
+        jlc.go_given_conf(jnt_values=jnt_values)
+        rkmg.gen_jlc_stick(jlc, stick_rgba=rm.bc.navy_blue, toggle_flange_frame=True,
+                           toggle_jnt_frames=False).attach_to(base)
         base.run()
 
     # jlc._ik_solver._test_success_rate()

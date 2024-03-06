@@ -83,7 +83,7 @@ class OptIKSolver(object):
             tgt_rotmat,
             seed_jnt_vals=None,
             max_n_iter=100,
-            toggle_debug=False):
+            toggle_dbg=False):
         def _objective(x):
             q_diff = seed_jnt_vals - x
             return q_diff.dot(q_diff)
@@ -103,7 +103,7 @@ class OptIKSolver(object):
         options = {'ftol': 1e-6,
                    'eps': 1e-12,
                    'maxiter': max_n_iter,
-                   'disp': toggle_debug}
+                   'disp': toggle_dbg}
         result = sopt.minimize(fun=_objective,
                                x0=seed_jnt_vals,
                                method='SLSQP',

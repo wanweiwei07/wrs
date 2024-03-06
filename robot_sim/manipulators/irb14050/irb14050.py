@@ -97,17 +97,18 @@ if __name__ == '__main__':
     import visualization.panda.world as wd
     import modeling.geometric_model as mgm
 
-    base = wd.World(cam_pos=[1, 0, 1], lookat_pos=[0, 0, .5])
+    base = wd.World(cam_pos=[1.5, 0, 1.5], lookat_pos=[0, 0, .2])
     mgm.gen_frame().attach_to(base)
     arm = IRB14050(enable_cc=True)
-    # arm.goto_given_conf(jnt_values=[0, 0, arm.jnts[3].motion_range[1] / 2, arm.jnts[4].motion_range[1], 0, 0, 0])
-    arm.gen_meshmodel(toggle_flange_frame=True).attach_to(base)
+    arm.goto_given_conf(jnt_values=[0.5, 0.5, 0.5, 0, 0.5, 0.5, 0.5])
+    arm.gen_stickmodel().attach_to(base)
+    arm.gen_meshmodel(alpha=1, toggle_flange_frame=True).attach_to(base)
     arm.show_cdprim()
     tic = time.time()
     print(arm.is_collided())
     toc = time.time()
     print(toc - tic)
-    # base.run()
+    base.run()
 
     while True:
         tgt_pos, tgt_rotmat = arm.fk(jnt_values=arm.rand_conf())

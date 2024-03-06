@@ -330,13 +330,13 @@ class TracIKSolver(object):
            tgt_rotmat,
            seed_jnt_vals=None,
            max_n_iter=100,
-           toggle_debug=False):
+           toggle_dbg=False):
         """
         :param tgt_pos:
         :param tgt_rotmat:
         :param seed_jnt_vals:
         :param max_n_iter:
-        :param toggle_debug: the function will return a tuple like (solver, jnt_values); solver is 'o' (opt) or 'n' (num)
+        :param toggle_dbg: the function will return a tuple like (solver, jnt_values); solver is 'o' (opt) or 'n' (num)
         :return:
         author: weiwei
         date: 20231107
@@ -347,7 +347,7 @@ class TracIKSolver(object):
         self._oik_param_queue.put((tgt_pos, tgt_rotmat, seed_jnt_vals, max_n_iter))
         if self._nik_state_queue.get() and self._oik_state_queue.get():
             result = self._result_queue.get()
-            if toggle_debug:
+            if toggle_dbg:
                 return result
             else:
                 if result is None:

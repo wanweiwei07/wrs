@@ -386,11 +386,11 @@ class JLChain(object):
         # toc = time.time()
         # print("CWLN time ", toc - tic)
         tic = time.time()
-        jnt_vals = self._nik_solver.pinv_wc(tgt_pos=tgt_pos,
-                                            tgt_rotmat=tgt_rotmat,
-                                            seed_jnt_vals=seed_jnt_vals,
-                                            max_n_iter=max_n_iter,
-                                            toggle_dbg=toggle_dbg)
+        jnt_vals = self._nik_solver.pinv_cwln(tgt_pos=tgt_pos,
+                                              tgt_rotmat=tgt_rotmat,
+                                              seed_jnt_vals=seed_jnt_vals,
+                                              max_n_iter=max_n_iter,
+                                              toggle_dbg=toggle_dbg)
         toc = time.time()
         print("PINV WC time ", toc - tic)
         # tic = time.time()

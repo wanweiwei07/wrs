@@ -264,9 +264,9 @@ class JLChain(object):
         """
         self._jnt_ranges = self._get_jnt_ranges()
         self.go_home()
+        self._is_finalized = True
         if ik_solver == 'd':
             self._ik_solver = rkd.DDIKSolver(self, identifier_str=identifier_str)
-        self._is_finalized = True
 
     def set_flange(self, loc_flange_pos=None, loc_flange_rotmat=None):
         if loc_flange_pos is not None:
@@ -337,6 +337,7 @@ class JLChain(object):
             raise ValueError('The given joint values do not match n_dof')
         jnt_values = np.asarray(jnt_values)
         if np.any(jnt_values < self.jnt_ranges[:, 0]) or np.any(jnt_values > self.jnt_ranges[:, 1]):
+            print("Joints are out of ranges!")
             return False
         else:
             return True
