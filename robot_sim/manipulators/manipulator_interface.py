@@ -2,9 +2,8 @@ import copy
 import numpy as np
 import basis.robot_math as rm
 import modeling.geometric_model as mgm
-import robot_sim._kinematics.jlchain as jl
+import robot_sim._kinematics.jlchain as rkjlc
 import robot_sim._kinematics.collision_checker as cc
-import robot_sim._kinematics.model_generator as rkmg
 
 
 # ==============================================
@@ -36,7 +35,7 @@ class ManipulatorInterface(object):
         self.pos = pos
         self.rotmat = rotmat
         # jlc
-        self.jlc = jl.JLChain(pos=pos, rotmat=rotmat, n_dof=len(home_conf), name=name)
+        self.jlc = rkjlc.JLChain(pos=pos, rotmat=rotmat, n_dof=len(home_conf), name=name)
         self.jlc.home = home_conf
         # tcp is defined locally in flange
         self._loc_tcp_pos = np.zeros(3)
@@ -244,8 +243,7 @@ class ManipulatorInterface(object):
                       toggle_cdprim=False,
                       toggle_cdmesh=False,
                       name="manipulator_mesh"):
-        m_col = rkmg.gen_jlc_mesh(self.jlc,
-                                  rgb=rgb,
+        m_col = self.jlc.gen_mesh(rgb=rgb,
                                   alpha=alpha,
                                   toggle_jnt_frames=toggle_jnt_frames,
                                   toggle_flange_frame=toggle_flange_frame,
@@ -253,8 +251,8 @@ class ManipulatorInterface(object):
                                   toggle_cdmesh=toggle_cdmesh,
                                   name=name)
         if toggle_tcp_frame:
-            rkmg.gen_indicated_frame(spos=self.jlc.gl_flange_pos, gl_pos=self.gl_tcp_pos,
-                                     gl_rotmat=self.gl_tcp_rotmat).attach_to(m_col)
+            rkjlc.rkmg.gen_indicated_frame(spos=self.jlc.gl_flange_pos, gl_pos=self.gl_tcp_pos,
+                                           gl_rotmat=self.gl_tcp_rotmat).attach_to(m_col)
         return m_col
 
     def gen_stickmodel(self,
@@ -262,13 +260,12 @@ class ManipulatorInterface(object):
                        toggle_jnt_frames=False,
                        toggle_flange_frame=False,
                        name="manipulator_stickmodel"):
-        m_col = rkmg.gen_jlc_stick(self.jlc,
-                                   toggle_jnt_frames=toggle_jnt_frames,
+        m_col = self.jlc.gen_stick(toggle_jnt_frames=toggle_jnt_frames,
                                    toggle_flange_frame=toggle_flange_frame,
                                    name=name)
         if toggle_tcp_frame:
-            rkmg.gen_indicated_frame(spos=self.jlc.gl_flange_pos, gl_pos=self.gl_tcp_pos,
-                                     gl_rotmat=self.gl_tcp_rotmat).attach_to(m_col)
+            rkjlc.rkmg.gen_indicated_frame(spos=self.jlc.gl_flange_pos, gl_pos=self.gl_tcp_pos,
+                                           gl_rotmat=self.gl_tcp_rotmat).attach_to(m_col)
         return m_col
 
     def gen_endsphere(self):

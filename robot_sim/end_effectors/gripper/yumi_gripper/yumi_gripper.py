@@ -6,7 +6,6 @@ import modeling.collision_model as mcm
 import robot_sim._kinematics.jlchain as rkjl
 import basis.robot_math as rm
 import robot_sim.end_effectors.gripper.gripper_interface as gpi
-import robot_sim._kinematics.model_generator as rkmg
 
 
 class YumiGripper(gpi.GripperInterface):
@@ -23,7 +22,8 @@ class YumiGripper(gpi.GripperInterface):
         # coupling
         self.coupling.finalize()
         # jlc
-        self.jlc = rkjl.JLChain(pos=self.coupling.gl_flange_pos, rotmat=self.coupling.gl_flange_rotmat, n_dof=2, name=name)
+        self.jlc = rkjl.JLChain(pos=self.coupling.gl_flange_pos, rotmat=self.coupling.gl_flange_rotmat, n_dof=2,
+                                name=name)
         # anchor
         self.jlc.anchor.lnk.cmodel = mcm.CollisionModel(os.path.join(current_file_dir, "meshes", "base.stl"),
                                                         cdmesh_type=self.cdmesh_type)
@@ -83,8 +83,8 @@ class YumiGripper(gpi.GripperInterface):
 
     def gen_stickmodel(self, toggle_tcp_frame=False, toggle_jnt_frames=False, name='yumi_gripper_stickmodel'):
         m_col = mmc.ModelCollection(name=name)
-        rkmg.gen_jlc_stick(self.coupling, toggle_jnt_frames=False, toggle_flange_frame=False).attach_to(m_col)
-        rkmg.gen_jlc_stick(self.jlc, toggle_jnt_frames=toggle_jnt_frames, toggle_flange_frame=False).attach_to(m_col)
+        self.coupling.gen_stick(toggle_jnt_frames=False, toggle_flange_frame=False).attach_to(m_col)
+        self.jlc.gen_stick(toggle_jnt_frames=toggle_jnt_frames, toggle_flange_frame=False).attach_to(m_col)
         if toggle_tcp_frame:
             self._toggle_tcp_frame(m_col)
         return m_col
@@ -98,15 +98,13 @@ class YumiGripper(gpi.GripperInterface):
                       toggle_cdmesh=False,
                       name='yumi_gripper_meshmodel'):
         m_col = mmc.ModelCollection(name=name)
-        rkmg.gen_jlc_mesh(self.coupling,
-                          rgb=rgb,
-                          alpha=alpha,
-                          toggle_flange_frame=False,
-                          toggle_jnt_frames=False,
-                          toggle_cdmesh=toggle_cdmesh,
-                          toggle_cdprim=toggle_cdprim).attach_to(m_col)
-        rkmg.gen_jlc_mesh(self.jlc,
-                          rgb=rgb,
+        self.coupling.gen_mesh(rgb=rgb,
+                               alpha=alpha,
+                               toggle_flange_frame=False,
+                               toggle_jnt_frames=False,
+                               toggle_cdmesh=toggle_cdmesh,
+                               toggle_cdprim=toggle_cdprim).attach_to(m_col)
+        self.jlc.gen_mesh(rgb=rgb,
                           alpha=alpha,
                           toggle_flange_frame=False,
                           toggle_jnt_frames=toggle_jnt_frames,

@@ -5,7 +5,6 @@ import modeling.model_collection as mmc
 import robot_sim._kinematics.jlchain as rkjlc
 import basis.robot_math as rm
 import robot_sim.end_effectors.gripper.gripper_interface as gpi
-import robot_sim._kinematics.model_generator as rkmg
 import modeling.constant as mc
 
 
@@ -82,8 +81,8 @@ class CobottaGripper(gpi.GripperInterface):
 
     def gen_stickmodel(self, toggle_tcp_frame=False, toggle_jnt_frames=False, name='cobotta_gripper_stickmodel'):
         m_col = mmc.ModelCollection(name=name)
-        rkmg.gen_jlc_stick(self.coupling, toggle_jnt_frames=False, toggle_flange_frame=False).attach_to(m_col)
-        rkmg.gen_jlc_stick(self.jlc, toggle_jnt_frames=toggle_jnt_frames, toggle_flange_frame=False).attach_to(m_col)
+        self.coupling.gen_stick(toggle_jnt_frames=False, toggle_flange_frame=False).attach_to(m_col)
+        self.jlc.gen_stick(toggle_jnt_frames=toggle_jnt_frames, toggle_flange_frame=False).attach_to(m_col)
         if toggle_tcp_frame:
             self._toggle_tcp_frame(m_col)
         return m_col
@@ -97,15 +96,13 @@ class CobottaGripper(gpi.GripperInterface):
                       toggle_cdmesh=False,
                       name='cobotta_gripper_meshmodel'):
         m_col = mmc.ModelCollection(name=name)
-        rkmg.gen_jlc_mesh(self.coupling,
-                          rgb=rgb,
-                          alpha=alpha,
-                          toggle_flange_frame=False,
-                          toggle_jnt_frames=False,
-                          toggle_cdmesh=toggle_cdmesh,
-                          toggle_cdprim=toggle_cdprim).attach_to(m_col)
-        rkmg.gen_jlc_mesh(self.jlc,
-                          rgb=rgb,
+        self.coupling.gen_mesh(rgb=rgb,
+                               alpha=alpha,
+                               toggle_flange_frame=False,
+                               toggle_jnt_frames=False,
+                               toggle_cdmesh=toggle_cdmesh,
+                               toggle_cdprim=toggle_cdprim).attach_to(m_col)
+        self.jlc.gen_mesh(rgb=rgb,
                           alpha=alpha,
                           toggle_flange_frame=False,
                           toggle_jnt_frames=toggle_jnt_frames,
