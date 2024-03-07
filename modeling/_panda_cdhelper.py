@@ -81,29 +81,29 @@ def change_cdmask(cdprim, collision_mask: BitMask32, action="new", type="both"):
             _change_cdmask(collision_mask, action, get_method_to_call, set_method_to_call)
 
 
-def update_pose(cdprimitive, cmodel):
+def update_pose(cdprim, cmodel):
     """
     update panda3d collision nodepath using the pos and quat of obj_cmodel.pdndp
-    :param cdprimitive:
+    :param cdprim:
     :param cmodel:
     :return:
     author: weiwei
     date: 20230815
     """
-    cdprimitive.setMat(cmodel.pdndp.getMat())
+    cdprim.setMat(cmodel.pdndp.getMat())
 
 
-def toggle_show_collision_node(cdprimitive, toggle_show_on=True):
+def toggle_show_collision_node(cdprim, toggle_show_on=True):
     """
-    :param cdprimitive:
+    :param cdprim:
     :param is_show:
     :return:
     """
     if toggle_show_on:
-        for child_pdndp in cdprimitive.getChildren():
+        for child_pdndp in cdprim.getChildren():
             child_pdndp.show()
     else:
-        for child_pdndp in cdprimitive.getChildren():
+        for child_pdndp in cdprim.getChildren():
             child_pdndp.hide()
 
 
@@ -124,9 +124,9 @@ def gen_aabb_box_pdcndp(trm_model, ex_radius=0.01):
     pdcnd = CollisionNode("aabb_box_cnode")
     pdcnd.addSolid(collision_primitive)
     pdcnd.setTransform(TransformState.makeMat(da.npmat4_to_pdmat4(aabb.homomat)))
-    cdprimitive = NodePath("aabb_box")
-    cdprimitive.attachNewNode(pdcnd)
-    return cdprimitive
+    cdprim = NodePath("aabb_box")
+    cdprim.attachNewNode(pdcnd)
+    return cdprim
 
 def gen_obb_box_pdcndp(trm_model, ex_radius=0.01):
     """
@@ -141,9 +141,9 @@ def gen_obb_box_pdcndp(trm_model, ex_radius=0.01):
     pdcnd = CollisionNode("obb_box_cnode")
     pdcnd.addSolid(collision_primitive)
     pdcnd.setTransform(TransformState.makeMat(da.npmat4_to_pdmat4(obb.homomat)))
-    cdprimitive = NodePath("obb_box")
-    cdprimitive.attachNewNode(pdcnd)
-    return cdprimitive
+    cdprim = NodePath("obb_box")
+    cdprim.attachNewNode(pdcnd)
+    return cdprim
 
 def gen_capsule_pdcndp(trm_model, ex_radius=0.01):
     """
@@ -160,9 +160,9 @@ def gen_capsule_pdcndp(trm_model, ex_radius=0.01):
     pdcnd = CollisionNode("capsule_cnode")
     pdcnd.addSolid(collision_primitive)
     pdcnd.setTransform(TransformState.makeMat(da.npmat4_to_pdmat4(cyl.homomat)))
-    cdprimitive = NodePath("capsule")
-    cdprimitive.attachNewNode(pdcnd)
-    return cdprimitive
+    cdprim = NodePath("capsule")
+    cdprim.attachNewNode(pdcnd)
+    return cdprim
 
 
 def gen_cylinder_pdcndp(trm_model, ex_radius=0.01):
@@ -183,14 +183,14 @@ def gen_cylinder_pdcndp(trm_model, ex_radius=0.01):
                                        x=x_side,
                                        y=math.tan(angles[1] / 2) * x_side,
                                        z=cyl.height / 2.0)
-    cdprimitive = NodePath("cylinder")
+    cdprim = NodePath("cylinder")
     for i, angle in enumerate(angles):
         homomat = cyl.homomat @ rm.homomat_from_posrot(rotmat=rm.rotmat_from_axangle(np.array([0, 0, 1]), angle))
         pdcnd = CollisionNode("cylinder" + f"_cnode_{i}")
         pdcnd.addSolid(collision_primitive)
         pdcnd.setTransform(TransformState.makeMat(da.npmat4_to_pdmat4(homomat)))
-        cdprimitive.attachNewNode(pdcnd)
-    return cdprimitive
+        cdprim.attachNewNode(pdcnd)
+    return cdprim
 
 
 def gen_surfaceballs_pdcnd(trm_mesh, radius=0.01):
@@ -210,9 +210,9 @@ def gen_surfaceballs_pdcnd(trm_mesh, radius=0.01):
                                        cy=point[1],
                                        cz=point[2],
                                        radius=radius))
-    cdprimitive = NodePath("surface_balls")
-    cdprimitive.attachNewNode(pdcnd)
-    return cdprimitive
+    cdprim = NodePath("surface_balls")
+    cdprim.attachNewNode(pdcnd)
+    return cdprim
 
 
 def gen_pointcloud_pdcndp(trm_mesh, radius=0.02):
@@ -226,9 +226,9 @@ def gen_pointcloud_pdcndp(trm_mesh, radius=0.02):
     pdcnd = CollisionNode("pointcloud_cnode")
     for point in trm_mesh.vertices:
         pdcnd.addSolid(CollisionSphere(cx=point[0], cy=point[1], cz=point[2], radius=radius))
-    cdprimitive = NodePath("pointcloud")
-    cdprimitive.attachNewNode(pdcnd)
-    return cdprimitive
+    cdprim = NodePath("pointcloud")
+    cdprim.attachNewNode(pdcnd)
+    return cdprim
 
 
 # ========================================
@@ -284,9 +284,9 @@ def is_collided(cmodel_list0, cmodel_list1, toggle_contacts=False):
     tgt_pdndp = NodePath("collision pdndp")
     # attach to collision tree, change bitmasks, and add colliders
     for cmodel in cmodel_list0:
-        cdprimitive = cmodel.attach_cdprim_to(tgt_pdndp)
-        change_cdmask(cdprimitive, BITMASK_EXT, action="remove", type="into")
-        for child_pdndp in cdprimitive.getChildren():
+        cdprim = cmodel.attach_cdprim_to(tgt_pdndp)
+        change_cdmask(cdprim, BITMASK_EXT, action="remove", type="into")
+        for child_pdndp in cdprim.getChildren():
             cd_trav.addCollider(collider=child_pdndp, handler=cd_handler)
     for cmodel in cmodel_list1:
         cmodel.attach_cdprim_to(tgt_pdndp)

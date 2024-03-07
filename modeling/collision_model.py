@@ -4,7 +4,6 @@ from visualization.panda.world import ShowBase
 from panda3d.core import NodePath, CollisionNode, CollisionTraverser, CollisionHandlerQueue, BitMask32
 import basis.data_adapter as da
 import modeling.geometric_model as mgm
-import modeling.model_collection as mmc
 import modeling._panda_cdhelper as mph
 import modeling._ode_cdhelper as moh
 import modeling.constant as mc
@@ -182,7 +181,7 @@ class CollisionModel(mgm.GeometricModel):
         elif cdprim_type == mc.CDPType.USER_DEFINED:
             if userdefined_cdprim_fn is None:
                 raise ValueError("User defined functions must provided for user_defined cdprim!")
-            pdcndp = userdefined_cdprim_fn(expand_radius=thickness)
+            pdcndp = userdefined_cdprim_fn(ex_radius=thickness)
         else:
             raise ValueError("Wrong primitive collision model end_type name!")
         mph.change_cdmask(pdcndp, mph.BITMASK_EXT, action="new", type="both")

@@ -35,7 +35,7 @@ class Nova2HuriGripper(gp.GripperInterface):
         # self.body.lnks[1]['name'] = "realsense_dual"
         # self.body.lnks[1]['pos'] = np.zeros(3)
         # self.body.lnks[1]['collision_model'] = mcm.CollisionModel(os.path.join(this_dir, "meshes", "dual_realsense.stl"),
-        #                                                          expand_radius=.001)
+        #                                                          ex_radius=.001)
         # self.body.lnks[1]['rgba'] = [.37, .37, .37, 1]
 
         # lft finger
@@ -255,7 +255,7 @@ if __name__ == '__main__':
 
     base = wd.World(cam_pos=[.5, .5, .5], lookat_pos=[0, 0, 0], auto_cam_rotate=False)
     gm.gen_frame().attach_to(base)
-    # mcm.CollisionModel("meshes/dual_realsense.stl", expand_radius=.001).attach_to(base)
+    # mcm.CollisionModel("meshes/dual_realsense.stl", ex_radius=.001).attach_to(base)
     grpr = Nova2HuriGripper(enable_cc=True)
     grpr.change_jaw_width(.1)
     grpr.gen_meshmodel(toggle_tcp_frame=True).attach_to(base)

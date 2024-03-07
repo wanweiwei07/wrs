@@ -50,8 +50,8 @@ class JLChain(object):
         self.n_dof = n_dof
         self.home = np.zeros(self.n_dof)  # self.n_dof joints plus one anchor
         # initialize joints and links
-        self.anchor = rkjl.Anchor(name, pos=pos, rotmat=rotmat)
-        self.jnts = [rkjl.Joint(name=f"j{i}") for i in range(self.n_dof)]
+        self.anchor = rkjl.Anchor(name=f"{name}_anchor", pos=pos, rotmat=rotmat)
+        self.jnts = [rkjl.Joint(name=f"{name}_j{i}") for i in range(self.n_dof)]
         self._jnt_ranges = self._get_jnt_ranges()
         # default flange joint id, loc_xxx are considered described in it
         self._flange_jnt_id = self.n_dof - 1

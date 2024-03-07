@@ -19,6 +19,7 @@ class Yumi(ri.RobotInterface):
         self.body.anchor.lnk.cmodel = mcm.CollisionModel(initor=os.path.join(current_file_dir, "meshes", "body.stl"),
                                                          cdprim_type=mcm.mc.CDPType.USER_DEFINED,
                                                          userdef_cdprim_fn=self._base_combined_cdnp)
+        self.body.anchor.lnk.cmodel.rgba = rm.bc.hug_gray
         self.body.finalize(ik_solver=None)
         # left arm
         self._loc_lft_arm_pos = np.array([0.05355, 0.07250, 0.41492])
@@ -35,7 +36,7 @@ class Yumi(ri.RobotInterface):
                                     rm.rotmat_from_euler(0.0, 0.0, -np.pi))
         self.rgt_arm = ysa.YumiSglArm(pos=self.pos + self.rotmat @ self._loc_rgt_arm_pos,
                                       rotmat=self.rotmat @ self._loc_rgt_arm_rotmat,
-                                      name='yumi_lft_arm', enable_cc=True)
+                                      name='yumi_rgt_arm', enable_cc=True)
         self.rgt_arm.home_conf = np.radians(np.array([-20, -90, -120, 30, .0, 40, 0]))
         self.rgt_arm.userdef_is_collided_fn = self._rgt_arm_is_collided
         if enable_cc:
@@ -43,22 +44,22 @@ class Yumi(ri.RobotInterface):
         # go home
         self.goto_home_conf()
 
-    def _base_combined_cdnp(self, name="auto", expand_radius=None):
+    def _base_combined_cdnp(self, name="auto", ex_radius=None):
         pdcnd = CollisionNode(name)
         collision_primitive_c0 = CollisionBox(Point3(-.2, 0, 0.04),
-                                              x=.16 + expand_radius, y=.2 + expand_radius, z=.04 + expand_radius)
+                                              x=.16 + ex_radius, y=.2 + ex_radius, z=.04 + ex_radius)
         pdcnd.addSolid(collision_primitive_c0)
         collision_primitive_c1 = CollisionBox(Point3(-.24, 0, 0.24),
-                                              x=.12 + expand_radius, y=.125 + expand_radius, z=.24 + expand_radius)
+                                              x=.12 + ex_radius, y=.125 + ex_radius, z=.24 + ex_radius)
         pdcnd.addSolid(collision_primitive_c1)
         collision_primitive_c2 = CollisionBox(Point3(-.07, 0, 0.4),
-                                              x=.075 + expand_radius, y=.125 + expand_radius, z=.06 + expand_radius)
+                                              x=.075 + ex_radius, y=.125 + ex_radius, z=.06 + ex_radius)
         pdcnd.addSolid(collision_primitive_c2)
         collision_primitive_l0 = CollisionBox(Point3(0, 0.145, 0.03),
-                                              x=.135 + expand_radius, y=.055 + expand_radius, z=.03 + expand_radius)
+                                              x=.135 + ex_radius, y=.055 + ex_radius, z=.03 + ex_radius)
         pdcnd.addSolid(collision_primitive_l0)
         collision_primitive_r0 = CollisionBox(Point3(0, -0.145, 0.03),
-                                              x=.135 + expand_radius, y=.055 + expand_radius, z=.03 + expand_radius)
+                                              x=.135 + ex_radius, y=.055 + ex_radius, z=.03 + ex_radius)
         pdcnd.addSolid(collision_primitive_r0)
         cdprim = NodePath("user_defined")
         cdprim.attachNewNode(pdcnd)
@@ -75,6 +76,7 @@ class Yumi(ri.RobotInterface):
                        toggle_contacts=toggle_contacts)
 
     def setup_cc(self):
+        # body
         body_l0 = self.cc.add_cce(self.body.anchor.lnk)
         # left ee
         lft_elb = self.cc.add_cce(self.lft_arm.end_effector.jlc.anchor.lnk)
@@ -153,10 +155,6 @@ class Yumi(ri.RobotInterface):
             jnt_values=jnt_values[:self.lft_arm.manipulator.n_dof]) and self.rgt_arm.are_jnts_in_ranges(
             jnt_values=jnt_values[self.rgt_arm.manipulator.n_dof:])
 
-    def show_cdprim(self):
-        self.lft_arm.show_cdprim()
-        self.rgt_arm.show_cdprim()
-
     def is_collided(self, obstacle_list=[], other_robot_list=[], toggle_contacts=False):
         """
         Interface for "is cdprimit collided", must be implemented in child class
@@ -233,26 +231,27 @@ if __name__ == '__main__':
     gm.gen_frame().attach_to(base)
     robot = Yumi(enable_cc=True)
     robot.gen_meshmodel().attach_to(base)
-    robot.show_cdprim()
-    base.run()
+    # robot.show_cdprim()
+    # base.run()
 
     # ik test
-    component_name = 'rgt_arm'
     tgt_pos = np.array([.4, -.4, .3])
     tgt_rotmat = rm.rotmat_from_axangle([0, 1, 0], math.pi / 2)
     gm.gen_frame(pos=tgt_pos, rotmat=tgt_rotmat).attach_to(base)
+    # base.run()
+
     tic = time.time()
-    jnt_values = yumi_instance.ik(component_name, tgt_pos, tgt_rotmat)
+    jnt_values = robot.rgt_arm.ik(tgt_pos, tgt_rotmat)
     toc = time.time()
     print(toc - tic)
-    yumi_instance.fk(component_name, jnt_values)
-    yumi_meshmodel = yumi_instance.gen_meshmodel()
-    yumi_meshmodel.attach_to(base)
-    yumi_instance.gen_stickmodel().attach_to(base)
+    if jnt_values is not None:
+        robot.rgt_arm.goto_given_conf(jnt_values=jnt_values)
+        robot.gen_meshmodel().attach_to(base)
     tic = time.time()
-    result = yumi_instance.is_collided()
+    result = robot.is_collided()
     toc = time.time()
     print(result, toc - tic)
+    base.run()
 
     # hold test
     component_name = 'lft_arm'

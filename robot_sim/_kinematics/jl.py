@@ -160,7 +160,7 @@ class Anchor(object):
         self._loc_flange_rotmat = loc_flange_rotmat
         self._gl_flange_pos, self._gl_flange_rotmat = self.compute_gl_flange()
         self._is_gl_flange_delayed = False
-        self._lnk = Link()
+        self._lnk = Link(name=name)
 
     @property
     def pos(self):
@@ -278,7 +278,7 @@ class Joint(object):
         self._gl_pos_q = self._gl_pos_0
         self._gl_rotmat_q = self._gl_rotmat_0
         # the following parameter has a setter function
-        self._lnk = Link()
+        self._lnk = Link(name=name)
         # the following parameter should not be changed
         self._type = type
 

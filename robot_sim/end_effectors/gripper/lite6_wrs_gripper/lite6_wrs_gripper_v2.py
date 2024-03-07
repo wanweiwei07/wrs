@@ -241,7 +241,7 @@ if __name__ == '__main__':
 
     base = wd.World(cam_pos=[.5, .5, .5], lookat_pos=[0, 0, 0], auto_cam_rotate=False)
     gm.gen_frame().attach_to(base)
-    # mcm.CollisionModel("meshes/dual_realsense.stl", expand_radius=.001).attach_to(base)
+    # mcm.CollisionModel("meshes/dual_realsense.stl", ex_radius=.001).attach_to(base)
     grpr = Lite6WRSGripper2(enable_cc=True)
     grpr.change_jaw_width(.03)
     grpr.gen_meshmodel(toggle_tcp_frame=True).attach_to(base)

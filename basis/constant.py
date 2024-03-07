@@ -25,8 +25,10 @@ moon_gray = np.array([0.8314, 0.8510, 0.8627, 1])  # 212, 217, 220
 china_clay = np.array([0.8314, 0.8627, 0.8275, 1])  # 212, 220, 211
 silver_gray = np.array([0.6863, 0.6863, 0.6902, 1])  # 175, 175, 176
 steel_gray = np.array([0.4510, 0.4275, 0.4431, 1])  # 115, 109, 113
+hug_gray = np.array([0.58, 0.56, 0.57, 1.0])
 navy_blue = np.array([0.1255, 0.1843, 0.3333, 1])  # 32, 47, 85
 oriental_blue = np.array([0.1490, 0.2863, 0.6157, 1])  # 38, 73, 157
+hug_blue = np.array([.107, .3, .59, 1])
 # css color (see the css_color_table_picture)
 light_coral = np.array((0.9411764705882353, 0.5019607843137255, 0.5019607843137255, 1.0))
 orange_red = np.array((1.0, 0.27058823529411763, 0.0, 1.0))
@@ -57,8 +59,31 @@ y_ax = np.array([0, 1, 0])
 z_ax = np.array([0, 0, 1])
 
 if __name__ == '__main__':
-    def convert_mcolor_to_rgba(mcolor_name):
-        print(f"np.array({mcolors.to_rgba(mcolor_name)})")
+    # def convert_mcolor_to_rgba(mcolor_name):
+    #     print(f"np.array({mcolors.to_rgba(mcolor_name)})")
+    #
+    #
+    # convert_mcolor_to_rgba("yellowgreen")
 
+    # plot colors
 
-    convert_mcolor_to_rgba("yellowgreen")
+    import matplotlib.pyplot as plt
+    # Create a figure and axis
+    fig, ax = plt.subplots()
+
+    colors = {"red": red}
+    # Plot each color as a rectangle
+    for i, (name, color) in enumerate(colors.items()):
+        ax.add_patch(plt.Rectangle((i, 0), 1, 1, color=color))
+    # Set the x-axis tick labels
+    plt.xticks(range(len(colors)), list(colors.keys()), rotation=90)
+
+    # Set the limits of the plot
+    ax.set_xlim(0, len(colors))
+    ax.set_ylim(0, 1)
+
+    # Hide the axes
+    ax.axis('off')
+
+    # Show the plot
+    plt.show()
