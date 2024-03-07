@@ -32,7 +32,7 @@ class EEInterface(object):
         # -- coupling --
         # no coupling by default, change the pos if the coupling existed
         # use loc flange create non-straight couplings
-        self.coupling = rkjlc.JLChain(name=name + "_coupling", pos=self.pos, rotmat=self.rotmat)
+        self.coupling = rkjlc.JLChain(name=name + "_coupling", pos=self.pos, rotmat=self.rotmat, n_dof=0)
         # acting center of the tool
         self.loc_acting_center_pos = np.zeros(3)
         self.loc_acting_center_rotmat = np.eye(3)

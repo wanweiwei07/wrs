@@ -60,7 +60,7 @@ if __name__ == '__main__':
     robot.change_jaw_width(.05)
     robot.gen_meshmodel(alpha=1, toggle_tcp_frame=False, toggle_jnt_frames=False).attach_to(base)
     robot.gen_stickmodel(toggle_tcp_frame=True, toggle_jnt_frames=True).attach_to(base)
-    base.run()
+
     tgt_pos = np.array([.3, .1, .3])
     tgt_rotmat = rm.rotmat_from_axangle([0, 1, 0], math.pi * 2 / 3)
     mgm.gen_frame(pos=tgt_pos, rotmat=tgt_rotmat).attach_to(base)
@@ -71,7 +71,7 @@ if __name__ == '__main__':
         robot.gen_meshmodel(alpha=.3, toggle_tcp_frame=True).attach_to(base)
     robot.show_cdprim()
     robot.unshow_cdprim()
-    # base.run()
+    base.run()
 
     robot.goto_given_conf(jnt_values=np.array([0, np.pi / 2, np.pi * 11 / 20, 0, np.pi / 2, 0]))
     robot.show_cdprim()

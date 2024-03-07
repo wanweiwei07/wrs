@@ -1,22 +1,13 @@
-import math
-import os
-import copy
-import random
-
 import numpy as np
-import time
 import basis.constant as bc
-import basis.utils as bu
 import basis.robot_math as rm
-import modeling.constant as mc
-import modeling.collision_model as mcm
 import robot_sim._kinematics.constant as rkc
 import robot_sim._kinematics.jl as rkjl
 import robot_sim._kinematics.ik_num as rkn
 import robot_sim._kinematics.ik_opt as rko
-import robot_sim._kinematics.ik_dd as rkd
 import robot_sim._kinematics.ik_trac as rkt
-import basis.constant as cst
+import robot_sim._kinematics.ik_dd as rkd
+import robot_sim._kinematics.model_generator as rkmg
 
 
 # ==============================================
@@ -333,7 +324,7 @@ class JLChain(object):
         date: 20220326toyonaka
         """
         if len(jnt_values) != self.n_dof:
-            raise ValueError('The given joint values do not match n_dof')
+            raise ValueError("The given joint values do not match n_dof")
         jnt_values = np.asarray(jnt_values)
         if np.any(jnt_values < self.jnt_ranges[:, 0]) or np.any(jnt_values > self.jnt_ranges[:, 1]):
             print("Joints are out of ranges!")
@@ -409,16 +400,43 @@ class JLChain(object):
                                         toggle_dbg=toggle_dbg)
         return jnt_values
 
-    def copy(self):
-        return copy.deepcopy(self)
+    def gen_stick(self,
+                  stick_rgba=bc.lnk_stick_rgba,
+                  toggle_jnt_frames=False,
+                  toggle_flange_frame=True,
+                  name='jlc_stick_model',
+                  jnt_radius=rkc.JNT_RADIUS,
+                  lnk_radius=rkc.LNK_STICK_RADIUS):
+        return rkmg.gen_jlc_stick(jlc=self,
+                                  stick_rgba=stick_rgba,
+                                  toggle_jnt_frames=toggle_jnt_frames,
+                                  toggle_flange_frame=toggle_flange_frame,
+                                  name=name,
+                                  jnt_radius=jnt_radius,
+                                  lnk_radius=lnk_radius)
+
+    def gen_mesh(self,
+                 rgb=None,
+                 alpha=None,
+                 toggle_flange_frame=False,
+                 toggle_jnt_frames=False,
+                 toggle_cdprim=False,
+                 toggle_cdmesh=False,
+                 name='jlc_mesh_model'):
+        return rkmg.gen_jlc_mesh(jlc=self,
+                                 rgb=rgb,
+                                 alpha=alpha,
+                                 toggle_flange_frame=toggle_flange_frame,
+                                 toggle_jnt_frames=toggle_jnt_frames,
+                                 toggle_cdprim=toggle_cdprim,
+                                 toggle_cdmesh=toggle_cdmesh,
+                                 name=name)
 
 
 if __name__ == "__main__":
     import time
-    import pickle
     from tqdm import tqdm
     import visualization.panda.world as wd
-    import robot_sim._kinematics.model_generator as rkmg
     import robot_sim._kinematics.constant as rkc
     import modeling.geometric_model as mgm
 
@@ -451,8 +469,8 @@ if __name__ == "__main__":
     jlc._loc_flange_pos = np.array([0.1, 0.1, 0.1])
     # jlc.finalize(ik_solver=None)
     jlc.finalize(ik_solver='d')
-    # rkmg.gen_jlc_stick(jlc, stick_rgba=bc.navy_blue, toggle_jnt_frames=True, toggle_flange_frame=True).attach_to(base)
-    # base.run()
+    jlc.gen_stick(stick_rgba=bc.navy_blue, toggle_jnt_frames=True, toggle_flange_frame=True).attach_to(base)
+    base.run()
     seed_jnt_values = jlc.get_jnt_values()
 
     success = 0
@@ -478,8 +496,8 @@ if __name__ == "__main__":
                 num_win += 1
             mgm.gen_frame(pos=tgt_pos, rotmat=tgt_rotmat).attach_to(base)
             jlc.fk(jnt_values=joint_values_with_dbg_info, update=True, toggle_jacobian=False)
-            rkmg.gen_jlc_stick(jlc, stick_rgba=bc.navy_blue, toggle_flange_frame=True,
-                               toggle_jnt_frames=True).attach_to(base)
+            jlc.gen_stick(stick_rgba=bc.navy_blue, toggle_flange_frame=True,
+                          toggle_jnt_frames=True).attach_to(base)
             base.run()
         else:
             tgt_list.append((tgt_pos, tgt_rotmat))

@@ -63,6 +63,10 @@ class ManipulatorInterface(object):
     def home_conf(self):
         return self.jlc.home
 
+    @home_conf.setter
+    def home_conf(self, conf):
+        self.jlc.home = conf
+
     @property
     def loc_tcp_pos(self):
         return self._loc_tcp_pos
@@ -282,7 +286,7 @@ class ManipulatorInterface(object):
         author: weiwei
         date: 20201223
         """
-        if self.cc is None: # TODO assertion decorator
+        if self.cc is None:  # TODO assertion decorator
             raise ValueError("Collision checker is not enabled!")
         return self.cc.is_collided(obstacle_list=obstacle_list,
                                    other_robot_list=otherrobot_list, toggle_contacts=toggle_contacts)

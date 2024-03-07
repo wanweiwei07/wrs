@@ -10,7 +10,7 @@ class GripperInterface(ei.EEInterface):
         # jaw width
         self.jaw_range = np.array([0.0, 0.05])  # 0~0.05m by default
         # fgr0 opening vec
-        self.loc_fgr0_opening_vec = np.array([0, 1, 0]) # y as opening vec by default
+        self.loc_fgr0_opening_vec = np.array([0, 1, 0])  # y as opening vec by default
 
     @ei.assert_oiee_decorator
     def change_jaw_width(self, jaw_width):
@@ -19,12 +19,16 @@ class GripperInterface(ei.EEInterface):
     def get_jaw_width(self):
         raise NotImplementedError
 
-    def hold(self, obj_cmodel, jaw_width):
+    def hold(self, obj_cmodel, jaw_width=None):
         super().hold(obj_cmodel=obj_cmodel)
+        if jaw_width is None:
+            jaw_width = self.jaw_range[0]
         self.change_jaw_width(jaw_width=jaw_width)
 
-    def release(self, obj_cmodel, jaw_width):
+    def release(self, obj_cmodel, jaw_width=None):
         super().release(obj_cmodel=obj_cmodel)
+        if jaw_width is None:
+            jaw_width = self.jaw_range[1]
         self.change_jaw_width(jaw_width=jaw_width)
 
     def grip_at_by_twovecs(self,

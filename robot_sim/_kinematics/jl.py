@@ -4,8 +4,8 @@ import basis.constant as bc
 import basis.robot_math as rm
 import modeling.collision_model as mcm
 import modeling.geometric_model as mgm
-import modeling.constant as mc
 import robot_sim._kinematics.constant as rkc
+import robot_sim._kinematics.model_generator as rkmg
 import uuid
 
 
@@ -42,7 +42,6 @@ class Link(object):
     @loc_pos.setter
     def loc_pos(self, pos):
         self._loc_pos = pos
-
 
     @property
     def loc_rotmat(self):
@@ -98,6 +97,18 @@ class Link(object):
         if self._cmodel is not None:
             self._cmodel.pose = (self._gl_pos, self._gl_rotmat)
 
+    def gen_meshmodel(self,
+                      rgb=None,
+                      alpha=None,
+                      toggle_cdprim=False,
+                      toggle_cdmesh=False,
+                      toggle_frame=False):
+        return rkmg.gen_lnk_mesh(lnk=self,
+                                 rgb=rgb,
+                                 alpha=alpha,
+                                 toggle_cdprim=toggle_cdprim,
+                                 toggle_cdmesh=toggle_cdmesh,
+                                 toggle_frame=toggle_frame)
 
 
 # ==============================================
@@ -226,6 +237,19 @@ class Anchor(object):
                 self.rotmat = rotmat
         if self._lnk is not None:
             self._lnk.update_globals(self.pos, self.rotmat)
+
+    def gen_model(self,
+                  toggle_base_frame=True,
+                  toggle_flange_frame=True,
+                  radius=rkc.JNT_RADIUS,
+                  frame_stick_radius=rkc.FRAME_STICK_RADIUS,
+                  frame_stick_length=rkc.FRAME_STICK_LENGTH_MEDIUM):
+        return rkmg.gen_anchor(anchor=self,
+                               toggle_base_frame=toggle_base_frame,
+                               toggle_flange_frame=toggle_flange_frame,
+                               radius=radius,
+                               frame_stick_radius=frame_stick_radius,
+                               frame_stick_length=frame_stick_length)
 
 
 class Joint(object):
@@ -358,6 +382,21 @@ class Joint(object):
             pos_by_motion = self.loc_motion_ax * motion_value
             return self.loc_homomat @ rm.homomat_from_posrot(pos=pos_by_motion, rotmat=np.eye(3))
 
+    def gen_model(self,
+                  toggle_frame_0=True,
+                  toggle_frame_q=True,
+                  toggle_lnk_mesh=False,
+                  radius=rkc.JNT_RADIUS,
+                  frame_stick_radius=rkc.FRAME_STICK_RADIUS,
+                  frame_stick_length=rkc.FRAME_STICK_LENGTH_MEDIUM):
+        return rkmg.gen_jnt(jnt=self,
+                            toggle_frame_0=toggle_frame_0,
+                            toggle_frame_q=toggle_frame_q,
+                            toggle_lnk_mesh=toggle_lnk_mesh,
+                            radius=radius,
+                            frame_stick_radius=frame_stick_radius,
+                            frame_stick_length=frame_stick_length)
+
 
 if __name__ == '__main__':
     import visualization.panda.world as wd
@@ -365,7 +404,7 @@ if __name__ == '__main__':
 
     base = wd.World(cam_pos=[1, 1, 1], lookat_pos=[0, 0, 0])
     mgm.gen_frame().attach_to(base)
-    jnt = Joint()
+    jnt = Joint(loc_motion_ax=np.array([0, 0, 1]))
     #
     ref_pos = np.array([0, .1, 0])
     ref_rotmat = rm.rotmat_from_euler(np.pi / 6, np.pi / 3, np.pi / 4)
@@ -382,6 +421,6 @@ if __name__ == '__main__':
     # mgm.gen_myc_frame(pos=result_homomat[:3, 3], rotmat=result_homomat[:3, :3]).attach_to(base)
 
     jnt.lnk.cmodel = mcm.CollisionModel("../../basis/objects/or2fg7_base.stl")
-    rkmg.gen_jnt(jnt, toggle_lnk_mesh=True).attach_to(base)
+    jnt.gen_model(toggle_lnk_mesh=True).attach_to(base)
     jnt.lnk.cmodel.show_cdprim()
     base.run()

@@ -3,6 +3,7 @@ import robot_sim._kinematics.collision_checker as cc
 import robot_sim.robots.robot_interface as ri
 import modeling.model_collection as mmc
 
+
 class SglArmRobotInterface(ri.RobotInterface):
     """
     a robot is a combination of a manipulator and an end_type-effector
@@ -14,6 +15,14 @@ class SglArmRobotInterface(ri.RobotInterface):
         super().__init__(pos=pos, rotmat=rotmat, name=name, enable_cc=enable_cc)
         self.manipulator = None
         self.end_effector = None
+
+    @property
+    def home_conf(self):
+        return self.manipulator.home_conf
+
+    @home_conf.setter
+    def home_conf(self, conf):
+        self.manipulator.home_conf = conf
 
     @property
     def gl_tcp_pos(self):
