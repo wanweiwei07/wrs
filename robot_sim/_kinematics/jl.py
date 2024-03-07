@@ -127,7 +127,7 @@ def update_gl_flange_decorator(method):
     def wrapper(self, *args, **kwargs):
         # print(self._is_geom_delayed)
         if self._is_gl_flange_delayed:
-            self._gl_flange_pos, self._gl_flange_rotmat = self.compute_gl_flange()
+            self._gl_flange_list = self.compute_gl_flange()
             self._is_gl_flange_delayed = False
         return method(self, *args, **kwargs)
 
@@ -156,9 +156,8 @@ class Anchor(object):
         self.name = name
         self._pos = pos
         self._rotmat = rotmat
-        self._loc_flange_pos = loc_flange_pos
-        self._loc_flange_rotmat = loc_flange_rotmat
-        self._gl_flange_pos, self._gl_flange_rotmat = self.compute_gl_flange()
+        self._loc_flange_list = []
+        self._gl_flange_list = []
         self._is_gl_flange_delayed = False
         self._lnk = Link(name=name)
 
@@ -194,40 +193,30 @@ class Anchor(object):
 
     @property
     @update_gl_flange_decorator
-    def gl_flange_pos(self):
-        return self._gl_flange_pos
+    def gl_flange_list(self):
+        return self._gl_flange_list
 
     @property
-    @update_gl_flange_decorator
-    def gl_flange_rotmat(self):
-        return self._gl_flange_rotmat
+    def loc_flange_list(self):
+        return (self._loc_flange_list)
 
-    @property
-    def gl_flange_homomat(self):
-        return rm.homomat_from_posrot(self._gl_flange_pos, self._gl_flange_rotmat)
-
-    @property
-    def loc_flange_pos(self):
-        return self._loc_flange_pos
-
-    @loc_flange_pos.setter
     @delay_gl_flange_decorator
-    def loc_flange_pos(self, loc_flange_pos):
-        self._loc_flange_pos = loc_flange_pos
+    def append_to_loc_flange_list(self, pos, rotmat):
+        self._loc_flange_list.append([pos, rotmat])
 
-    @property
-    def loc_flange_rotmat(self):
-        return self._loc_flange_rotmat
-
-    @loc_flange_rotmat.setter
     @delay_gl_flange_decorator
-    def loc_flange_rotmat(self, loc_flange_rotmat):
-        self._loc_flange_rotmat = loc_flange_rotmat
+    def set_loc_flange_list(self, list):
+        self._loc_flange_list = list
 
     def compute_gl_flange(self):
-        gl_flange_pos = self._pos + self.rotmat @ self._loc_flange_pos
-        gl_flange_rotmat = self._rotmat @ self._loc_flange_rotmat
-        return (gl_flange_pos, gl_flange_rotmat)
+        for i, (loc_flange_pos, loc_flange_rotmat) in enumerate(self.loc_flange_list):
+            gl_flange_pos = self.pos + self.rotmat @ loc_flange_pos
+            gl_flange_rotmat = self.rotmat @ loc_flange_rotmat
+            if i < len(self._gl_flange_list):
+                self._gl_flange_list[i] = (gl_flange_pos, gl_flange_rotmat)
+            else:
+                self._gl_flange_list.append((gl_flange_pos, gl_flange_rotmat))
+        return self._gl_flange_list
 
     def update_pose(self, pos=None, rotmat=None):
         if (pos is not None) or (rotmat is not None):

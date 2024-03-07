@@ -129,7 +129,7 @@ class JLChain(object):
         date: 20161202, 20201009osaka, 20230823
         """
         if not update:
-            homomat = self.anchor.gl_flange_homomat
+            homomat = self.anchor.homomat
             jnt_pos = np.zeros((self.n_dof, 3))
             jnt_motion_ax = np.zeros((self.n_dof, 3))
             for i in range(self.flange_jnt_id + 1):
@@ -153,8 +153,8 @@ class JLChain(object):
                 return gl_flange_pos, gl_flange_rotmat
         else:
             self.anchor.update_pose()
-            pos = self.anchor.gl_flange_pos
-            rotmat = self.anchor.gl_flange_rotmat
+            pos = self.anchor.pos
+            rotmat = self.anchor.rotmat
             for i in range(self.n_dof):
                 motion_value = jnt_values[i]
                 self.jnts[i].update_globals(pos=pos, rotmat=rotmat, motion_value=motion_value)
@@ -271,8 +271,8 @@ class JLChain(object):
                 self.flange_jnt_id].gl_rotmat_q @ self._loc_flange_pos
             gl_rotmat = self.jnts[self.flange_jnt_id].gl_rotmat_q @ self._loc_flange_rotmat
         else:
-            gl_pos = self.anchor.gl_flange_pos + self.anchor.gl_flange_rotmat @ self._loc_flange_pos
-            gl_rotmat = self.anchor.gl_flange_rotmat @ self._loc_flange_rotmat
+            gl_pos = self.anchor.pos + self.anchor.rotmat @ self._loc_flange_pos
+            gl_rotmat = self.anchor.rotmat @ self._loc_flange_rotmat
         return (gl_pos, gl_rotmat)
 
     @assert_finalize_decorator
@@ -444,8 +444,9 @@ if __name__ == "__main__":
     mgm.gen_frame().attach_to(base)
 
     jlc = JLChain(n_dof=6)
-    jlc.anchor.loc_flange_pos = np.array([0, .1, .1])
-    jlc.anchor.loc_flange_rotmat = rm.rotmat_from_axangle(np.array([1, 0, 0]), np.pi / 4)
+    jlc.anchor.set_loc_flange_list([
+        [np.array([0, .1, .1]), rm.rotmat_from_axangle(np.array([1, 0, 0]), np.pi / 4)],
+        [np.array([.1, 0, .1]), rm.rotmat_from_axangle(np.array([1, 0, 0]), np.pi / 2)]])
     jlc.jnts[0].loc_pos = np.array([0, 0, 0])
     jlc.jnts[0].loc_motion_ax = np.array([0, 0, 1])
     jlc.jnts[0].motion_range = np.array([-np.pi / 2, np.pi / 2])

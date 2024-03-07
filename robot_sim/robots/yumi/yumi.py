@@ -15,6 +15,7 @@ class Yumi(ri.RobotInterface):
     def __init__(self, pos=np.zeros(3), rotmat=np.eye(3), name='yumi', enable_cc=True):
         super().__init__(pos=pos, rotmat=rotmat, name=name, enable_cc=enable_cc)
         current_file_dir = os.path.dirname(__file__)
+        #
         self.body = rkjlc.JLChain(name="yumi_body", pos=self.pos, rotmat=self.rotmat, n_dof=0)
         self.body.anchor.lnk.cmodel = mcm.CollisionModel(initor=os.path.join(current_file_dir, "meshes", "body.stl"),
                                                          cdprim_type=mcm.mc.CDPType.USER_DEFINED,
@@ -114,10 +115,9 @@ class Yumi(ri.RobotInterface):
         self.cc.set_cdpair_by_ids(from_list, into_list)
 
     def fix_to(self, pos, rotmat):
-        self.body.fix_to(pos, rotmat)
         self.pos = pos
         self.rotmat = rotmat
-        self.lft_body.fix_to(self.pos, self.rotmat)
+        self.body.fix_to(self.pos, self.rotmat)
         self.lft_arm.fix_to(pos=self.pos + self.rotmat @ self._loc_lft_arm_pos,
                             rotmat=self.rotmat @ self._loc_lft_arm_rotmat)
         self.rgt_arm.fix_to(pos=self.pos + self.rotmat @ self._loc_rgt_arm_pos,

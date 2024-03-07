@@ -82,13 +82,14 @@ def gen_anchor(anchor,
     mgm.gen_sphere(pos=anchor.pos,
                    radius=radius,
                    rgba=bc.jnt_parent_rgba).attach_to(m_col)
-    mgm.gen_sphere(pos=anchor.gl_flange_pos,
-                   radius=radius,
-                   rgba=bc.jnt_parent_rgba).attach_to(m_col)
-    mgm.gen_dashed_stick(spos=anchor.pos,
-                         epos=anchor.gl_flange_pos,
-                         radius=frame_stick_radius,
-                         rgba=bc.jnt_parent_rgba).attach_to(m_col)
+    for gl_flange_pos, gl_flange_rotmat in anchor.gl_flange_list:
+        mgm.gen_sphere(pos=gl_flange_pos,
+                       radius=radius,
+                       rgba=bc.jnt_parent_rgba).attach_to(m_col)
+        mgm.gen_dashed_stick(spos=anchor.pos,
+                             epos=gl_flange_pos,
+                             radius=frame_stick_radius,
+                             rgba=bc.jnt_parent_rgba).attach_to(m_col)
     if toggle_base_frame:
         mgm.gen_frame(pos=anchor.pos,
                       rotmat=anchor.rotmat,
@@ -96,9 +97,9 @@ def gen_anchor(anchor,
                       ax_length=frame_stick_length,
                       alpha=.3).attach_to(m_col)
     if toggle_flange_frame:
-        gen_indicated_frame(spos=anchor.pos, gl_pos=anchor.gl_flange_pos, gl_rotmat=anchor.gl_flange_rotmat,
-                            indicator_rgba=bc.cyan,
-                            frame_alpha=.3).attach_to(m_col)
+        for gl_flange_pos, gl_flange_rotmat in anchor.gl_flange_list:
+            gen_indicated_frame(spos=anchor.pos, gl_pos=gl_flange_pos, gl_rotmat=gl_flange_rotmat,
+                                indicator_rgba=bc.cyan, frame_alpha=.3).attach_to(m_col)
     return m_col
 
 
@@ -182,7 +183,7 @@ def gen_jlc_stick(jlc,
                toggle_base_frame=toggle_jnt_frames).attach_to(m_col)
     # jlc
     if jlc.n_dof >= 1:
-        mgm.gen_dashed_stick(spos=jlc.anchor.gl_flange_pos,
+        mgm.gen_dashed_stick(spos=jlc.anchor.pos,
                              epos=jlc.jnts[0].gl_pos_0,
                              radius=lnk_radius,
                              type="rect",
