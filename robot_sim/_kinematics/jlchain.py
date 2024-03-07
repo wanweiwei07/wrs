@@ -400,13 +400,13 @@ class JLChain(object):
                                         toggle_dbg=toggle_dbg)
         return jnt_values
 
-    def gen_stick(self,
-                  stick_rgba=bc.lnk_stick_rgba,
-                  toggle_jnt_frames=False,
-                  toggle_flange_frame=True,
-                  name='jlc_stick_model',
-                  jnt_radius=rkc.JNT_RADIUS,
-                  lnk_radius=rkc.LNK_STICK_RADIUS):
+    def gen_stickmodel(self,
+                       stick_rgba=bc.lnk_stick_rgba,
+                       toggle_jnt_frames=False,
+                       toggle_flange_frame=True,
+                       name='jlc_stick_model',
+                       jnt_radius=rkc.JNT_RADIUS,
+                       lnk_radius=rkc.LNK_STICK_RADIUS):
         return rkmg.gen_jlc_stick(jlc=self,
                                   stick_rgba=stick_rgba,
                                   toggle_jnt_frames=toggle_jnt_frames,
@@ -415,14 +415,14 @@ class JLChain(object):
                                   jnt_radius=jnt_radius,
                                   lnk_radius=lnk_radius)
 
-    def gen_mesh(self,
-                 rgb=None,
-                 alpha=None,
-                 toggle_flange_frame=False,
-                 toggle_jnt_frames=False,
-                 toggle_cdprim=False,
-                 toggle_cdmesh=False,
-                 name='jlc_mesh_model'):
+    def gen_meshmodel(self,
+                      rgb=None,
+                      alpha=None,
+                      toggle_flange_frame=False,
+                      toggle_jnt_frames=False,
+                      toggle_cdprim=False,
+                      toggle_cdmesh=False,
+                      name='jlc_mesh_model'):
         return rkmg.gen_jlc_mesh(jlc=self,
                                  rgb=rgb,
                                  alpha=alpha,
@@ -469,7 +469,7 @@ if __name__ == "__main__":
     jlc._loc_flange_pos = np.array([0.1, 0.1, 0.1])
     # jlc.finalize(ik_solver=None)
     jlc.finalize(ik_solver='d')
-    jlc.gen_stick(stick_rgba=bc.navy_blue, toggle_jnt_frames=True, toggle_flange_frame=True).attach_to(base)
+    jlc.gen_stickmodel(stick_rgba=bc.navy_blue, toggle_jnt_frames=True, toggle_flange_frame=True).attach_to(base)
     base.run()
     seed_jnt_values = jlc.get_jnt_values()
 
@@ -496,8 +496,8 @@ if __name__ == "__main__":
                 num_win += 1
             mgm.gen_frame(pos=tgt_pos, rotmat=tgt_rotmat).attach_to(base)
             jlc.fk(jnt_values=joint_values_with_dbg_info, update=True, toggle_jacobian=False)
-            jlc.gen_stick(stick_rgba=bc.navy_blue, toggle_flange_frame=True,
-                          toggle_jnt_frames=True).attach_to(base)
+            jlc.gen_stickmodel(stick_rgba=bc.navy_blue, toggle_flange_frame=True,
+                               toggle_jnt_frames=True).attach_to(base)
             base.run()
         else:
             tgt_list.append((tgt_pos, tgt_rotmat))

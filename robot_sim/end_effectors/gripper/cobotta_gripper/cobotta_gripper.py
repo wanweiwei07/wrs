@@ -81,8 +81,8 @@ class CobottaGripper(gpi.GripperInterface):
 
     def gen_stickmodel(self, toggle_tcp_frame=False, toggle_jnt_frames=False, name='cobotta_gripper_stickmodel'):
         m_col = mmc.ModelCollection(name=name)
-        self.coupling.gen_stick(toggle_jnt_frames=False, toggle_flange_frame=False).attach_to(m_col)
-        self.jlc.gen_stick(toggle_jnt_frames=toggle_jnt_frames, toggle_flange_frame=False).attach_to(m_col)
+        self.coupling.gen_stickmodel(toggle_jnt_frames=False, toggle_flange_frame=False).attach_to(m_col)
+        self.jlc.gen_stickmodel(toggle_jnt_frames=toggle_jnt_frames, toggle_flange_frame=False).attach_to(m_col)
         if toggle_tcp_frame:
             self._toggle_tcp_frame(m_col)
         return m_col
@@ -96,18 +96,18 @@ class CobottaGripper(gpi.GripperInterface):
                       toggle_cdmesh=False,
                       name='cobotta_gripper_meshmodel'):
         m_col = mmc.ModelCollection(name=name)
-        self.coupling.gen_mesh(rgb=rgb,
+        self.coupling.gen_meshmodel(rgb=rgb,
+                                    alpha=alpha,
+                                    toggle_flange_frame=False,
+                                    toggle_jnt_frames=False,
+                                    toggle_cdmesh=toggle_cdmesh,
+                                    toggle_cdprim=toggle_cdprim).attach_to(m_col)
+        self.jlc.gen_meshmodel(rgb=rgb,
                                alpha=alpha,
                                toggle_flange_frame=False,
-                               toggle_jnt_frames=False,
+                               toggle_jnt_frames=toggle_jnt_frames,
                                toggle_cdmesh=toggle_cdmesh,
                                toggle_cdprim=toggle_cdprim).attach_to(m_col)
-        self.jlc.gen_mesh(rgb=rgb,
-                          alpha=alpha,
-                          toggle_flange_frame=False,
-                          toggle_jnt_frames=toggle_jnt_frames,
-                          toggle_cdmesh=toggle_cdmesh,
-                          toggle_cdprim=toggle_cdprim).attach_to(m_col)
         if toggle_tcp_frame:
             self._toggle_tcp_frame(m_col)
         # oiee

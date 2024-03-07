@@ -20,10 +20,10 @@ class ADPlanner(object):  # AD = Approach_Depart
         self.robot = robot
         self.rrtc_planner = rrtc.RRTConnect(self.robot)
 
-    def gen_jaw_width_motion(self, conf_list, jawwidth):
+    def gen_jaw_width_motion(self, conf_list, jaw_width):
         jawwidth_list = []
         for _ in conf_list:
-            jawwidth_list.append(jawwidth)
+            jawwidth_list.append(jaw_width)
         return jawwidth_list
 
     def gen_approach_linear(self,

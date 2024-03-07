@@ -243,13 +243,13 @@ class ManipulatorInterface(object):
                       toggle_cdprim=False,
                       toggle_cdmesh=False,
                       name="manipulator_mesh"):
-        m_col = self.jlc.gen_mesh(rgb=rgb,
-                                  alpha=alpha,
-                                  toggle_jnt_frames=toggle_jnt_frames,
-                                  toggle_flange_frame=toggle_flange_frame,
-                                  toggle_cdprim=toggle_cdprim,
-                                  toggle_cdmesh=toggle_cdmesh,
-                                  name=name)
+        m_col = self.jlc.gen_meshmodel(rgb=rgb,
+                                       alpha=alpha,
+                                       toggle_jnt_frames=toggle_jnt_frames,
+                                       toggle_flange_frame=toggle_flange_frame,
+                                       toggle_cdprim=toggle_cdprim,
+                                       toggle_cdmesh=toggle_cdmesh,
+                                       name=name)
         if toggle_tcp_frame:
             rkjlc.rkmg.gen_indicated_frame(spos=self.jlc.gl_flange_pos, gl_pos=self.gl_tcp_pos,
                                            gl_rotmat=self.gl_tcp_rotmat).attach_to(m_col)
@@ -260,9 +260,9 @@ class ManipulatorInterface(object):
                        toggle_jnt_frames=False,
                        toggle_flange_frame=False,
                        name="manipulator_stickmodel"):
-        m_col = self.jlc.gen_stick(toggle_jnt_frames=toggle_jnt_frames,
-                                   toggle_flange_frame=toggle_flange_frame,
-                                   name=name)
+        m_col = self.jlc.gen_stickmodel(toggle_jnt_frames=toggle_jnt_frames,
+                                        toggle_flange_frame=toggle_flange_frame,
+                                        name=name)
         if toggle_tcp_frame:
             rkjlc.rkmg.gen_indicated_frame(spos=self.jlc.gl_flange_pos, gl_pos=self.gl_tcp_pos,
                                            gl_rotmat=self.gl_tcp_rotmat).attach_to(m_col)

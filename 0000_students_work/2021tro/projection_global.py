@@ -38,7 +38,7 @@ line_segs = [[homomat[:3,3], homomat[:3,3]+pt_direction*.05], [homomat[:3,3]+pt_
              [homomat[:3,3]+pt_direction*.05+tmp_direction*.05, homomat[:3,3]+tmp_direction*.05], [homomat[:3,3]+tmp_direction*.05, homomat[:3,3]]]
 # mgm.gen_linesegs(line_segs).attach_to(base)
 for sec in line_segs:
-    gm.gen_stick(spos=sec[0], epos=sec[1], rgba=[0, 0, 0, 1], radius=.002, type='round').attach_to(base)
+    gm.gen_stickmodel(spos=sec[0], epos=sec[1], rgba=[0, 0, 0, 1], radius=.002, type='round').attach_to(base)
 epos = (line_segs[0][1]-line_segs[0][0])*.7+line_segs[0][0]
 gm.gen_arrow(spos=line_segs[0][0], epos=epos, stick_radius=0.004).attach_to(base)
 spt = homomat[:3,3]
@@ -65,7 +65,7 @@ new_line_segs = [[cpt, cpt+rotmat.dot(pt_direction)*.05],
                  [cpt+rotmat.dot(tmp_direction)*.05, cpt]]
 # mgm.gen_linesegs(new_line_segs).attach_to(base)
 for sec in new_line_segs:
-    gm.gen_stick(spos=sec[0], epos=sec[1], rgba=[0, 0, 0, 1], radius=.002, type='round').attach_to(base)
+    gm.gen_stickmodel(spos=sec[0], epos=sec[1], rgba=[0, 0, 0, 1], radius=.002, type='round').attach_to(base)
 epos = (new_line_segs[0][1]-new_line_segs[0][0])*.7+new_line_segs[0][0]
 gm.gen_arrow(spos=new_line_segs[0][0], epos=epos, stick_radius=0.004).attach_to(base)
 
@@ -93,7 +93,7 @@ for tick in range(1, 2*n+1):
     vec = rm.unit_vector(np.cross(last_normal, new_normal))
     new_rotmat = rm.rotmat_from_axangle(vec, angle)
     direction = new_rotmat.dot(direction)
-    gm.gen_stick(spos=cpt, epos=projected_point, rgba=[1, .6, 0, 1], radius=.002, type='round').attach_to(base)
+    gm.gen_stickmodel(spos=cpt, epos=projected_point, rgba=[1, .6, 0, 1], radius=.002, type='round').attach_to(base)
     tmp_len = np.linalg.norm(projected_point-cpt)
     extended_len += tmp_len
     cpt=projected_point
@@ -126,7 +126,7 @@ for tick in range(1, 2*n+1):
     vec = rm.unit_vector(np.cross(last_normal, new_normal))
     new_rotmat = rm.rotmat_from_axangle(vec, angle)
     direction = new_rotmat.dot(tmp_direction)
-    gm.gen_stick(spos=cpt, epos=projected_point, rgba=[1, .6, 0, 1], radius=.002, type='round').attach_to(base)
+    gm.gen_stickmodel(spos=cpt, epos=projected_point, rgba=[1, .6, 0, 1], radius=.002, type='round').attach_to(base)
     tmp_len = np.linalg.norm(projected_point-cpt)
     extended_len += tmp_len
     cpt=projected_point
@@ -157,7 +157,7 @@ for tick in range(1, 2*n+1):
     vec = rm.unit_vector(np.cross(last_normal, new_normal))
     new_rotmat = rm.rotmat_from_axangle(vec, angle)
     direction = new_rotmat.dot(-pt_direction)
-    gm.gen_stick(spos=cpt, epos=projected_point, rgba=[1, .6, 0, 1], radius=.002, type='round').attach_to(base)
+    gm.gen_stickmodel(spos=cpt, epos=projected_point, rgba=[1, .6, 0, 1], radius=.002, type='round').attach_to(base)
     tmp_len = np.linalg.norm(projected_point-cpt)
     extended_len += tmp_len
     cpt=projected_point
@@ -188,7 +188,7 @@ for tick in range(1, 2*n+1):
     vec = rm.unit_vector(np.cross(last_normal, new_normal))
     new_rotmat = rm.rotmat_from_axangle(vec, angle)
     direction = new_rotmat.dot(-tmp_direction)
-    gm.gen_stick(spos=cpt, epos=projected_point, rgba=[1, .6, 0, 1], radius=.002, type='round').attach_to(base)
+    gm.gen_stickmodel(spos=cpt, epos=projected_point, rgba=[1, .6, 0, 1], radius=.002, type='round').attach_to(base)
     tmp_len = np.linalg.norm(projected_point-cpt)
     extended_len += tmp_len
     cpt=projected_point

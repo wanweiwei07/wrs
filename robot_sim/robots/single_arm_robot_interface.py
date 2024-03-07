@@ -40,6 +40,10 @@ class SglArmRobotInterface(ri.RobotInterface):
         self._update_end_effector()
         return result
 
+    def goto_home_conf(self):
+        self.manipulator.goto_home_conf()
+        self._update_end_effector()
+
     def ik(self,
            tgt_pos: np.ndarray,
            tgt_rotmat: np.ndarray,
@@ -130,15 +134,15 @@ class SglArmRobotInterface(ri.RobotInterface):
     #         return_list.append(obj_cmodel)
     #     return return_list
 
-    # def release(self, obj_cmodel, jawwidth=None):
+    # def release(self, obj_cmodel, jaw_width=None):
     #     """
     #     the obj_cmodel is added as a part of the robot_s to the cd checker
-    #     :param jawwidth:
+    #     :param jaw_width:
     #     :param obj_cmodel:
     #     :return:
     #     """
-    #     if jawwidth is not None:
-    #         self.end_effector.change_jaw_width(jawwidth)
+    #     if jaw_width is not None:
+    #         self.end_effector.change_jaw_width(jaw_width)
     #     for obj_info in self.oih_infos:
     #         if obj_info['collision_model'] is obj_cmodel:
     #             self.cc.delete_cdobj(obj_info)

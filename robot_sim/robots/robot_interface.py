@@ -14,6 +14,8 @@ class RobotInterface(object):
         self.name = name
         self.pos = pos
         self.rotmat = rotmat
+        # for dynamic callback in case of multiple arms
+        self.userdef_is_collided_fn = None
         if enable_cc:
             self.cc = cc.CollisionChecker("collision_checker")
         else:
@@ -21,6 +23,12 @@ class RobotInterface(object):
 
     def change_name(self, name):
         self.name = name
+
+    def goto_given_conf(self, jnt_values):
+        raise NotImplementedError
+
+    def goto_home_conf(self):
+        raise NotImplementedError
 
     def fix_to(self, pos, rotmat):
         raise NotImplementedError
@@ -53,20 +61,24 @@ class RobotInterface(object):
         author: weiwei
         date: 20201223
         """
-        #TODO cc assertion decorator
-        collision_info = self.cc.is_collided(obstacle_list=obstacle_list,
-                                             other_robot_list=other_robot_list,
-                                             toggle_contacts=toggle_contacts)
-        return collision_info
+        # TODO cc assertion decorator
+        if self.userdef_is_collided_fn is None:
+            return self.cc.is_collided(obstacle_list=obstacle_list,
+                                       other_robot_list=other_robot_list,
+                                       toggle_contacts=toggle_contacts)
+        else:
+            return self.userdef_is_collided_fn(self.cc, obstacle_list=obstacle_list,
+                                               other_robot_list=other_robot_list,
+                                               toggle_contacts=toggle_contacts)
 
     def show_cdprim(self):
         """
         draw cdprim to base, you can use this function to double check if tf was correct
         :return:
         """
-        #TODO cc assertion decorator
+        # TODO cc assertion decorator
         self.cc.show_cdprim()
 
     def unshow_cdprim(self):
-        #TODO cc assertion decorator
+        # TODO cc assertion decorator
         self.cc.unshow_cdprim()
