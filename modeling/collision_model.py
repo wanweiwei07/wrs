@@ -14,50 +14,6 @@ import modeling.constant as mc
 # import modeling._gimpact_cdhelper as mgh
 # import modeling._bullet_cdhelper as mbh
 
-# ==============================================
-# delays for cdprim (Panda3D CollisionNode)
-# ==============================================
-
-def delay_cdprim_decorator(method):
-    def wrapper(self, *args, **kwargs):
-        self._is_cdp_delayed = True
-        return method(self, *args, **kwargs)
-
-    return wrapper
-
-
-def update_cdprim_decorator(method):
-    def wrapper(self, *args, **kwargs):
-        if self._is_cdp_delayed:
-            self._cdprim.setPosQuat(da.npvec3_to_pdvec3(self.pos), da.npmat3_to_pdquat(self.rotmat))
-            self._is_cdp_delayed = False
-        return method(self, *args, **kwargs)
-
-    return wrapper
-
-
-# ==================================
-# delays for cdmesh (OdeTriMeshGeom)
-# ==================================
-
-def delay_cdmesh_decorator(method):
-    def wrapper(self, *args, **kwargs):
-        self._is_cdm_delayed = True
-        return method(self, *args, **kwargs)
-
-    return wrapper
-
-
-def update_cdmesh_decorator(method):
-    def wrapper(self, *args, **kwargs):
-        if self._is_cdp_delayed:
-            self._cdmesh.setPosition(da.npvec3_to_pdvec3(self.pos))
-            self._cdmesh.setQuaternion(da.npmat3_to_pdquat(self.rotmat))
-            self._is_cdp_delayed = False
-        return method(self, *args, **kwargs)
-
-    return wrapper
-
 
 # ============================
 # definition of CollisionModel
@@ -107,8 +63,8 @@ class CollisionModel(mgm.GeometricModel):
             self._cache_for_show = copy.deepcopy(initor._cache_for_show)
             self._local_frame = copy.deepcopy(initor.local_frame)
             self._is_geom_delayed = copy.deepcopy(initor._is_geom_delayed)
-            self._is_cdp_delayed = copy.deepcopy(initor._is_cdp_delayed)
-            self._is_cdm_delayed = copy.deepcopy(initor._is_cdm_delayed)
+            self._is_cdprim_delayed = copy.deepcopy(initor._is_cdprim_delayed)
+            self._is_cdmesh_delayed = copy.deepcopy(initor._is_cdmesh_delayed)
         else:
             super().__init__(initor=initor,
                              name=name,
@@ -124,12 +80,51 @@ class CollisionModel(mgm.GeometricModel):
             self._cdmesh_type = cdmesh_type
             self._cdmesh = self._acquire_cdmesh(cdmesh_type)
             # delays
-            self._is_cdp_delayed = False
-            self._is_cdm_delayed = False
+            self._is_cdprim_delayed = False
+            self._is_cdmesh_delayed = False
             # cache for show
             self._cache_for_show = {}
             # others
             self._local_frame = None
+
+    # delays for cdprim (Panda3D CollisionNode)
+    @staticmethod
+    def delay_cdprim_decorator(method):
+        def wrapper(self, *args, **kwargs):
+            self._is_cdprim_delayed = True
+            return method(self, *args, **kwargs)
+
+        return wrapper
+
+    @staticmethod
+    def update_cdprim_decorator(method):
+        def wrapper(self, *args, **kwargs):
+            if self._is_cdprim_delayed:
+                self._cdprim.setPosQuat(da.npvec3_to_pdvec3(self.pos), da.npmat3_to_pdquat(self.rotmat))
+                self._is_cdprim_delayed = False
+            return method(self, *args, **kwargs)
+
+        return wrapper
+
+    # delays for cdmesh (OdeTriMeshGeom)
+    @staticmethod
+    def delay_cdmesh_decorator(method):
+        def wrapper(self, *args, **kwargs):
+            self._is_cdmesh_delayed = True
+            return method(self, *args, **kwargs)
+
+        return wrapper
+
+    @staticmethod
+    def update_cdmesh_decorator(method):
+        def wrapper(self, *args, **kwargs):
+            if self._is_cdprim_delayed:
+                self._cdmesh.setPosition(da.npvec3_to_pdvec3(self.pos))
+                self._cdmesh.setQuaternion(da.npmat3_to_pdquat(self.rotmat))
+                self._is_cdprim_delayed = False
+            return method(self, *args, **kwargs)
+
+        return wrapper
 
     def _acquire_cdmesh(self, cdmesh_type=None, toggle_trm=False):
         """

@@ -22,7 +22,7 @@ class YumiSglArm(ri.SglArmRobotInterface):
     def setup_cc(self):
         # TODO when pose is changed, oih info goes wrong
         # ee
-        elb = self.cc.add_cce(self.end_effector.jlc.anchor.lnk)
+        elb = self.cc.add_cce(self.end_effector.jlc.anchor.lnk_list[0])
         el0 = self.cc.add_cce(self.end_effector.jlc.jnts[0].lnk)
         el1 = self.cc.add_cce(self.end_effector.jlc.jnts[1].lnk)
         # manipulator

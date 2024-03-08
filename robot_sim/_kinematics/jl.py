@@ -111,29 +111,6 @@ class Link(object):
                                  toggle_frame=toggle_frame)
 
 
-# ==============================================
-# delays for anchor gl_flange
-# ==============================================
-
-def delay_gl_flange_decorator(method):
-    def wrapper(self, *args, **kwargs):
-        self._is_gl_flange_delayed = True
-        return method(self, *args, **kwargs)
-
-    return wrapper
-
-
-def update_gl_flange_decorator(method):
-    def wrapper(self, *args, **kwargs):
-        # print(self._is_geom_delayed)
-        if self._is_gl_flange_delayed:
-            self._gl_flange_list = self.compute_gl_flange()
-            self._is_gl_flange_delayed = False
-        return method(self, *args, **kwargs)
-
-    return wrapper
-
-
 class Anchor(object):
     """
     author: weiwei
@@ -144,8 +121,8 @@ class Anchor(object):
                  name="auto",
                  pos=np.zeros(3),
                  rotmat=np.eye(3),
-                 loc_flange_pos=np.zeros(3),
-                 loc_flange_rotmat=np.eye(3)):
+                 n_flange=1,
+                 n_lnk=1):
         """
         :param name:
         :param pos: pos for parent
@@ -156,17 +133,55 @@ class Anchor(object):
         self.name = name
         self._pos = pos
         self._rotmat = rotmat
-        self._loc_flange_list = []
-        self._gl_flange_list = []
+        self._loc_flange_pose_list = []
+        self._n_flange = n_flange
+        for i in range(self._n_flange):
+            self._loc_flange_pose_list.append([np.zeros(3), np.eye(3)])
+        self._lnk_list = []
+        self._n_lnk = n_lnk
+        for i in range(self._n_lnk):
+            self._lnk_list.append(Link(name=name))
+        self._gl_flange_pose_list = self.compute_gl_flange()
         self._is_gl_flange_delayed = False
-        self._lnk = Link(name=name)
+        self._is_lnk_delayed = False
+
+    # decorator for delayed update of gl_flanges and lnk
+    @staticmethod
+    def delay_decorator(method):
+        def wrapper(self, *args, **kwargs):
+            self._is_gl_flange_delayed = True
+            self._is_lnk_delayed = True
+            return method(self, *args, **kwargs)
+
+        return wrapper
+
+    @staticmethod
+    def update_gl_flange_decorator(method):
+        def wrapper(self, *args, **kwargs):
+            if self._is_gl_flange_delayed:
+                self._gl_flange_pose_list = self.compute_gl_flange()
+                self._is_gl_flange_delayed = False
+            return method(self, *args, **kwargs)
+
+        return wrapper
+
+    @staticmethod
+    def update_lnk_decorator(method):
+        def wrapper(self, *args, **kwargs):
+            if self._is_lnk_delayed:
+                for lnk in self._lnk_list:
+                    lnk.update_globals(self.pos, self.rotmat)
+                self._is_lnk_delayed = False
+            return method(self, *args, **kwargs)
+
+        return wrapper
 
     @property
     def pos(self):
         return self._pos
 
     @pos.setter
-    @delay_gl_flange_decorator
+    @delay_decorator
     def pos(self, pos):
         self._pos = pos
 
@@ -175,7 +190,7 @@ class Anchor(object):
         return self._rotmat
 
     @rotmat.setter
-    @delay_gl_flange_decorator
+    @delay_decorator
     def rotmat(self, rotmat):
         self._rotmat = rotmat
 
@@ -184,61 +199,61 @@ class Anchor(object):
         return rm.homomat_from_posrot(self.pos, self.rotmat)
 
     @property
-    def lnk(self):
-        return self._lnk
-
-    @lnk.setter
-    def lnk(self, value):
-        self._lnk = value
+    @update_gl_flange_decorator
+    def gl_flange_pose_list(self):
+        return self._gl_flange_pose_list
 
     @property
     @update_gl_flange_decorator
-    def gl_flange_list(self):
-        return self._gl_flange_list
+    def gl_flange_homomat_list(self):
+        return [rm.homomat_from_posrot(gl_flange_pose[0], gl_flange_pose[1]) for gl_flange_pose in
+                self._gl_flange_pose_list]
 
     @property
-    def loc_flange_list(self):
-        return (self._loc_flange_list)
+    def loc_flange_pose_list(self):
+        return tuple(self._loc_flange_pose_list)
 
-    @delay_gl_flange_decorator
-    def append_to_loc_flange_list(self, pos, rotmat):
-        self._loc_flange_list.append([pos, rotmat])
-
-    @delay_gl_flange_decorator
-    def set_loc_flange_list(self, list):
-        self._loc_flange_list = list
+    @property
+    @update_lnk_decorator
+    def lnk_list(self):
+        return tuple(self._lnk_list)
 
     def compute_gl_flange(self):
-        for i, (loc_flange_pos, loc_flange_rotmat) in enumerate(self.loc_flange_list):
-            gl_flange_pos = self.pos + self.rotmat @ loc_flange_pos
-            gl_flange_rotmat = self.rotmat @ loc_flange_rotmat
-            if i < len(self._gl_flange_list):
-                self._gl_flange_list[i] = (gl_flange_pos, gl_flange_rotmat)
-            else:
-                self._gl_flange_list.append((gl_flange_pos, gl_flange_rotmat))
-        return self._gl_flange_list
+        gl_flange_list = []
+        for loc_flange_pos, loc_flange_rotmat in self.loc_flange_pose_list:
+            gl_flange_list.append([self.pos + self.rotmat @ loc_flange_pos, self.rotmat @ loc_flange_rotmat])
+        return gl_flange_list
 
-    def update_pose(self, pos=None, rotmat=None):
-        if (pos is not None) or (rotmat is not None):
-            if pos is not None:
-                self.pos = pos
-            if rotmat is not None:
-                self.rotmat = rotmat
-        if self._lnk is not None:
-            self._lnk.update_globals(self.pos, self.rotmat)
-
-    def gen_model(self,
-                  toggle_base_frame=True,
-                  toggle_flange_frame=True,
-                  radius=rkc.JNT_RADIUS,
-                  frame_stick_radius=rkc.FRAME_STICK_RADIUS,
-                  frame_stick_length=rkc.FRAME_STICK_LENGTH_MEDIUM):
+    def gen_stickmodel(self,
+                       toggle_root_frame=True,
+                       toggle_flange_frame=True,
+                       radius=rkc.JNT_RADIUS,
+                       frame_stick_radius=rkc.FRAME_STICK_RADIUS,
+                       frame_stick_length=rkc.FRAME_STICK_LENGTH_MEDIUM):
         return rkmg.gen_anchor(anchor=self,
-                               toggle_base_frame=toggle_base_frame,
+                               toggle_root_frame=toggle_root_frame,
                                toggle_flange_frame=toggle_flange_frame,
                                radius=radius,
                                frame_stick_radius=frame_stick_radius,
                                frame_stick_length=frame_stick_length)
+
+    def gen_meshmodel(self, name="anchor_lnk_mesh", rgb=None,
+                      alpha=None, toggle_cdmesh=False, toggle_cdprim=False,
+                      toggle_root_frame=False, toggle_flange_frame=False,
+                      frame_stick_radius=rkc.FRAME_STICK_RADIUS,
+                      frame_stick_length=rkc.FRAME_STICK_LENGTH_MEDIUM):
+        m_col = rkmg.mmc.ModelCollection(name=name)
+        for lnk in self.lnk_list:
+            rkmg.gen_lnk_mesh(lnk, rgb=rgb, alpha=alpha, toggle_cdmesh=toggle_cdmesh,
+                              toggle_cdprim=toggle_cdprim).attach_to(m_col)
+        if toggle_root_frame:
+            mgm.gen_frame(pos=self.pos, rotmat=self.rotmat, ax_radius=frame_stick_radius,
+                          ax_length=frame_stick_length, alpha=alpha).attach_to(m_col)
+        if toggle_flange_frame:
+            for gl_flange_pos, gl_flange_rotmat in self.gl_flange_pose_list:
+                rkmg.gen_indicated_frame(spos=self.pos, gl_pos=gl_flange_pos, gl_rotmat=gl_flange_rotmat,
+                                         indicator_rgba=bc.cyan, frame_alpha=alpha).attach_to(m_col)
+        return m_col
 
 
 class Joint(object):

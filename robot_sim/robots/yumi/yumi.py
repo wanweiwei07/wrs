@@ -16,12 +16,14 @@ class Yumi(ri.RobotInterface):
         super().__init__(pos=pos, rotmat=rotmat, name=name, enable_cc=enable_cc)
         current_file_dir = os.path.dirname(__file__)
         #
-        self.body = rkjlc.JLChain(name="yumi_body", pos=self.pos, rotmat=self.rotmat, n_dof=0)
-        self.body.anchor.lnk.cmodel = mcm.CollisionModel(initor=os.path.join(current_file_dir, "meshes", "body.stl"),
-                                                         cdprim_type=mcm.mc.CDPType.USER_DEFINED,
-                                                         userdef_cdprim_fn=self._base_combined_cdnp)
-        self.body.anchor.lnk.cmodel.rgba = rm.bc.hug_gray
-        self.body.finalize(ik_solver=None)
+        self.body = rkjlc.rkjl.Anchor(name="yumi_body", pos=self.pos, rotmat=self.rotmat, n_flange=2, n_lnk=2)
+        self.body.lnk_list[0].cmodel = mcm.CollisionModel(initor=os.path.join(current_file_dir, "meshes", "body.stl"),
+                                                          cdprim_type=mcm.mc.CDPType.USER_DEFINED,
+                                                          userdef_cdprim_fn=self._base_combined_cdnp)
+        self.body.lnk_list[1].cmodel = mcm.CollisionModel(
+            initor=os.path.join(current_file_dir, "meshes", "yumi_tablenotop.stl"))
+        self.body.lnk_list[0].cmodel.rgba = rm.bc.hug_gray
+        self.body.lnk_list[1].cmodel.rgba = rm.bc.steel_gray
         # left arm
         self._loc_lft_arm_pos = np.array([0.05355, 0.07250, 0.41492])
         self._loc_lft_arm_rotmat = (rm.rotmat_from_euler(0.9781, -0.5716, 2.3180) @
@@ -78,9 +80,10 @@ class Yumi(ri.RobotInterface):
 
     def setup_cc(self):
         # body
-        body_l0 = self.cc.add_cce(self.body.anchor.lnk)
+        bd = self.cc.add_cce(self.body.lnk_list[0])
+        wb = self.cc.add_cce(self.body.lnk_list[1])
         # left ee
-        lft_elb = self.cc.add_cce(self.lft_arm.end_effector.jlc.anchor.lnk)
+        lft_elb = self.cc.add_cce(self.lft_arm.end_effector.jlc.anchor.lnk_list[0])
         lft_el0 = self.cc.add_cce(self.lft_arm.end_effector.jlc.jnts[0].lnk)
         lft_el1 = self.cc.add_cce(self.lft_arm.end_effector.jlc.jnts[1].lnk)
         # left manipulator
@@ -91,7 +94,7 @@ class Yumi(ri.RobotInterface):
         lft_ml4 = self.cc.add_cce(self.lft_arm.manipulator.jlc.jnts[4].lnk)
         lft_ml5 = self.cc.add_cce(self.lft_arm.manipulator.jlc.jnts[5].lnk)
         # right ee
-        rgt_elb = self.cc.add_cce(self.rgt_arm.end_effector.jlc.anchor.lnk)
+        rgt_elb = self.cc.add_cce(self.rgt_arm.end_effector.jlc.anchor.lnk_list[0])
         rgt_el0 = self.cc.add_cce(self.rgt_arm.end_effector.jlc.jnts[0].lnk)
         rgt_el1 = self.cc.add_cce(self.rgt_arm.end_effector.jlc.jnts[1].lnk)
         # right manipulator
@@ -102,7 +105,7 @@ class Yumi(ri.RobotInterface):
         rgt_ml4 = self.cc.add_cce(self.rgt_arm.manipulator.jlc.jnts[4].lnk)
         rgt_ml5 = self.cc.add_cce(self.rgt_arm.manipulator.jlc.jnts[5].lnk)
         # first pairs
-        from_list = [body_l0, lft_ml0, lft_ml0]
+        from_list = [bd, lft_ml0, lft_ml0]
         into_list = [lft_ml4, lft_ml5, lft_elb, lft_el0, lft_el1, rgt_ml4, rgt_ml5, rgt_elb, rgt_el0, rgt_el1]
         self.cc.set_cdpair_by_ids(from_list, into_list)
         # second pairs
@@ -117,7 +120,8 @@ class Yumi(ri.RobotInterface):
     def fix_to(self, pos, rotmat):
         self.pos = pos
         self.rotmat = rotmat
-        self.body.fix_to(self.pos, self.rotmat)
+        self.body.pos = self.pos
+        self.body.rotmat = self.rotmat
         self.lft_arm.fix_to(pos=self.pos + self.rotmat @ self._loc_lft_arm_pos,
                             rotmat=self.rotmat @ self._loc_lft_arm_rotmat)
         self.rgt_arm.fix_to(pos=self.pos + self.rotmat @ self._loc_rgt_arm_pos,
@@ -176,7 +180,7 @@ class Yumi(ri.RobotInterface):
                        toggle_flange_frame=False,
                        name='yumi_stickmodel'):
         m_col = mmc.ModelCollection(name=name)
-        self.body.gen_stickmodel(toggle_jnt_frames=toggle_jnt_frames,
+        self.body.gen_stickmodel(toggle_root_frame=toggle_jnt_frames,
                                  toggle_flange_frame=toggle_flange_frame,
                                  name=name + "_body").attach_to(m_col)
         self.lft_arm.gen_stickmodel(toggle_tcp_frame=toggle_tcp_frame,
@@ -200,7 +204,7 @@ class Yumi(ri.RobotInterface):
                       name='yumi_meshmodel'):
         m_col = mmc.ModelCollection(name=name)
         self.body.gen_meshmodel(rgb=rgb, alpha=alpha, toggle_flange_frame=toggle_flange_frame,
-                                toggle_jnt_frames=toggle_jnt_frames, toggle_cdprim=toggle_cdprim,
+                                toggle_root_frame=toggle_jnt_frames, toggle_cdprim=toggle_cdprim,
                                 toggle_cdmesh=toggle_cdmesh, name=name + "_body").attach_to(m_col)
         self.lft_arm.gen_meshmodel(rgb=rgb,
                                    alpha=alpha,
@@ -251,6 +255,7 @@ if __name__ == '__main__':
     result = robot.is_collided()
     toc = time.time()
     print(result, toc - tic)
+    robot.show_cdprim()
     base.run()
 
     # hold test
