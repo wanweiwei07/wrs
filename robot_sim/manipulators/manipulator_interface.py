@@ -6,28 +6,6 @@ import robot_sim._kinematics.jlchain as rkjlc
 import robot_sim._kinematics.collision_checker as cc
 
 
-# ==============================================
-# delays for gl_tcp
-# ==============================================
-
-def delay_gl_tcp_decorator(method):
-    def wrapper(self, *args, **kwargs):
-        self._is_gl_tcp_delayed = True
-        return method(self, *args, **kwargs)
-
-    return wrapper
-
-
-def update_gl_tcp_decorator(method):
-    def wrapper(self, *args, **kwargs):
-        if self._is_gl_tcp_delayed:
-            self._gl_tcp_pos, self._gl_tcp_rotmat = self.compute_gl_tcp()
-            self._is_gl_tcp_delayed = False
-        return method(self, *args, **kwargs)
-
-    return wrapper
-
-
 class ManipulatorInterface(object):
 
     def __init__(self, pos=np.zeros(3), rotmat=np.eye(3), home_conf=np.zeros(6), name='manipulator', enable_cc=False):
@@ -49,6 +27,25 @@ class ManipulatorInterface(object):
             self.cc = cc.CollisionChecker("collision_checker")
         else:
             self.cc = None
+
+    # delays
+    @staticmethod
+    def delay_gl_tcp_decorator(method):
+        def wrapper(self, *args, **kwargs):
+            self._is_gl_tcp_delayed = True
+            return method(self, *args, **kwargs)
+
+        return wrapper
+
+    @staticmethod
+    def update_gl_tcp_decorator(method):
+        def wrapper(self, *args, **kwargs):
+            if self._is_gl_tcp_delayed:
+                self._gl_tcp_pos, self._gl_tcp_rotmat = self.compute_gl_tcp()
+                self._is_gl_tcp_delayed = False
+            return method(self, *args, **kwargs)
+
+        return wrapper
 
     @property
     def jnts(self):
@@ -109,6 +106,13 @@ class ManipulatorInterface(object):
     @home_conf.setter
     def home_conf(self, home_conf):
         self.jlc.home = home_conf
+
+    def clear_cc(self):
+        if self.cc is None:
+            print("The cc is currently unavailable. Nothing to clear.")
+        else:
+            # create a new cc and delete the original one
+            self.cc = cc.CollisionChecker("collision_checker")
 
     def compute_gl_tcp(self):
         gl_tcp_pos = self.jlc.gl_flange_pos + self.jlc.gl_flange_rotmat @ self._loc_tcp_pos

@@ -50,11 +50,15 @@ class InterplatedMotion(object):
                 return None
             else:
                 self.robot.goto_given_conf(jnt_values)
-                result, contacts = self.robot.is_collided(obstacle_list, toggle_contacts=True)
+                result, contacts = self.robot.is_collided(obstacle_list=obstacle_list, toggle_contacts=True)
                 if result:
                     if toggle_dbg:
                         for pnt in contacts:
-                            gm.gen_sphere(pnt).attach_to(base)
+                            gm.gen_sphere(pnt, radius=.005).attach_to(base)
+                        print(jnt_values)
+                        self.robot.goto_given_conf(jnt_values)
+                        self.robot.gen_meshmodel(alpha=.3).attach_to(base)
+                        base.run()
                     print("Intermediated pose collided in gen_linear_motion!")
                     return None
             jnt_values_list.append(jnt_values)
@@ -202,7 +206,7 @@ class InterplatedMotion(object):
                 if result:
                     if toggle_dbg:
                         for pnt in contacts:
-                            gm.gen_sphere(pnt).attach_to(base)
+                            gm.gen_sphere(pnt, radius=.005).attach_to(base)
                     print("Intermediate pose collided in gen_linear_motion!")
                     return None
             jnt_values_list.append(jnt_values)
@@ -215,28 +219,36 @@ class InterplatedMotion(object):
 
 if __name__ == '__main__':
     import time
-    import robot_sim.robot.yumi.yumi as ym
+    import robot_sim.robots.yumi.yumi as ym
     import visualization.panda.world as wd
     import modeling.geometric_model as gm
 
-    base = wd.World(cam_pos=[1.5, 0, 3], lookat_pos=[0, 0, .5])
+    base = wd.World(cam_pos=[3, 2, 2], lookat_pos=[0, 0, 0.2])
     gm.gen_frame().attach_to(base)
-    yumi_instance = ym.Yumi(enable_cc=True)
-    component_name = 'rgt_arm'
+    robot = ym.Yumi(enable_cc=True)
+    robot.cc.show_cdprim()
+    base.run()
+    # robot.gen_meshmodel(alpha=.1).attach_to(base)
+    # base.run()
     start_pos = np.array([.5, -.3, .3])
     start_rotmat = rm.rotmat_from_axangle([0, 1, 0], math.pi / 2)
     goal_pos = np.array([.55, .3, .5])
     goal_rotmat = rm.rotmat_from_axangle([0, 1, 0], math.pi / 2)
+    # jnt_values = robot.rgt_arm.ik(tgt_pos=start_pos, tgt_rotmat=start_rotmat)
+    # if jnt_values is not None:
+    #     robot.rgt_arm.goto_given_conf(jnt_values)
+    #     robot.gen_meshmodel(alpha=.3).attach_to(base)
+    # base.run()
     gm.gen_frame(pos=start_pos, rotmat=start_rotmat).attach_to(base)
     gm.gen_frame(pos=goal_pos, rotmat=goal_rotmat).attach_to(base)
-    inik = IncrementalNIK(yumi_instance)
+    interplator = InterplatedMotion(robot.rgt_arm)
     tic = time.time()
-    jnt_values_list = inik.gen_linear_motion(component_name, start_tcp_pos=start_pos, start_tcp_rotmat=start_rotmat,
-                                             goal_tcp_pos=goal_pos, goal_tcp_rotmat=goal_rotmat)
+    jnt_values_list = interplator.gen_linear_motion(start_tcp_pos=start_pos, start_tcp_rotmat=start_rotmat,
+                                                    goal_tcp_pos=goal_pos, goal_tcp_rotmat=goal_rotmat,
+                                                    toggle_dbg=True)
     toc = time.time()
     print(toc - tic)
     for jnt_values in jnt_values_list:
-        yumi_instance.fk(component_name, jnt_values)
-        yumi_meshmodel = yumi_instance.gen_meshmodel()
-        yumi_meshmodel.attach_to(base)
+        robot.rgt_arm.goto_given_conf(jnt_values)
+        robot.gen_meshmodel(alpha=.3).attach_to(base)
     base.run()

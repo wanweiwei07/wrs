@@ -23,7 +23,6 @@ class CCElement(object):
         # print(self.tfd_cdprim.node().is_collision_node())
         for child_pdndp in self.tfd_cdprim.getChildren():
             self.host_cc.cd_trav.addCollider(collider=child_pdndp, handler=self.host_cc.cd_handler)
-        # self.host_cc.cd_trav.addCollider(collider=self.tfd_cdprim, handler=self.host_cc.cd_handler)
         # a dict with from_mask as keys and into_list (a lsit of cce) as values
         self.cce_into_dict = {}
         # toggle on collision detection with external obstacles by default
@@ -48,17 +47,24 @@ class CCElement(object):
         isolate this cce from collision traversers and return the bitmasks
         from mask is not changed as it will no longer be used
         :return:
+        author: weiwei
+        date: 20240309
         """
-        # detach from pdcndp tree
-        self.tfd_cdprim.detachNode()
         # remove from collision traverser
-        self.host_cc.cd_trav.removeCollider(collider=self.tfd_cdprim)
+        for child_pdndp in self.tfd_cdprim.getChildren():
+            self.host_cc.cd_trav.removeCollider(collider=child_pdndp)
+        # remove from pdcndp tree
+        self.tfd_cdprim.removeNode()
+        # set self.tfd_cdprim to None for delayed feletion from other cce's into list (see 63)
+        self.tfd_cdprim = None
         # remove the into bitmask of all cces in the cce_into_dict
         bitmask_list_to_return = []
         for allocated_bitmask, cce_into_list in self.cce_into_dict:
+            bitmask_list_to_return.append(allocated_bitmask)
+            # delayed udpate
+            cce_into_list[:] = [cce_into for cce_into in cce_into_list if cce_into.tfd_cdprim is not None]
             for cce_into in cce_into_list:
                 cce_into.remove_into_cdmask(allocated_bitmask)
-                bitmask_list_to_return.append(allocated_bitmask)
         return bitmask_list_to_return
 
     def add_from_cdmask(self, allocated_bitmask, cce_into_list):
@@ -213,7 +219,6 @@ class CollisionChecker(object):
         #     print("From", collider.node().getFromCollideMask())
         #     print("Into", collider.node().getIntoCollideMask())
         # attach obstacles
-        obstacle_cdprimitive_list = []
         for obstacle in obstacle_list:
             obstacle.attach_cdprim_to(self.cd_pdndp)
         # attach other robots
@@ -238,7 +243,7 @@ class CollisionChecker(object):
         if toggle_contacts:
             contact_points = [da.pdvec3_to_npvec3(cd_entry.getSurfacePoint(base.render)) for cd_entry in
                               self.cd_handler.getEntries()]
-            return collision_result, contact_points
+            return (collision_result, contact_points)
         else:
             return collision_result
 

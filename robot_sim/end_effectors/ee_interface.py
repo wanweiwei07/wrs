@@ -48,7 +48,7 @@ class EEInterface(object):
         date: 20230807
         """
         for oiee in self.oiee_list:
-            oiee.update_globals(pos=self.pos, rotmat=self.rotmat)
+            oiee.graft_to(pos=self.pos, rotmat=self.rotmat)
 
     @assert_oiee_decorator
     def hold(self, obj_cmodel, **kwargs):
@@ -170,7 +170,7 @@ class EEInterface(object):
         for oiee in self.oiee_list:
             rkmg.gen_lnk_mesh(lnk=oiee, rgb=rgb, alpha=alpha, toggle_cdprim=toggle_cdprim, toggle_cdmesh=toggle_cdmesh,
                               toggle_frame=toggle_frame).attach_to(m_col)
-            oiee.update_globals(pos=self.pos, rotmat=self.rotmat)
+            oiee.graft_to(pos=self.pos, rotmat=self.rotmat)
 
     def _toggle_tcp_frame(self, parent):
         gl_acting_center_pos = self.rotmat.dot(self.loc_acting_center_pos) + self.pos

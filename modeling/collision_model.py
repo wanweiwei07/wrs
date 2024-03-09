@@ -73,9 +73,7 @@ class CollisionModel(mgm.GeometricModel):
             self._exp_radius = expand_radius
             # cd primitive
             self._cdprim_type = cdprim_type
-            self._cdprim = self._acquire_cdprim(cdprim_type,
-                                                expand_radius,
-                                                userdef_cdprim_fn)
+            self._cdprim = self._acquire_cdprim(cdprim_type, expand_radius, userdef_cdprim_fn)
             # cd mesh
             self._cdmesh_type = cdmesh_type
             self._cdmesh = self._acquire_cdmesh(cdmesh_type)

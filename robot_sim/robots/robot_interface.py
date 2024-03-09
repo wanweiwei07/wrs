@@ -21,6 +21,13 @@ class RobotInterface(object):
         else:
             self.cc = None
 
+    def clear_cc(self):
+        if self.cc is None:
+            print("The cc is currently unavailable. Nothing to clear.")
+        else:
+            # create a new cc and delete the original one
+            self.cc = cc.CollisionChecker("collision_checker")
+
     def change_name(self, name):
         self.name = name
 

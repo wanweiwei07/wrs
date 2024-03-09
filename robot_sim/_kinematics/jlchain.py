@@ -10,7 +10,8 @@ import robot_sim._kinematics.ik_dd as rkd
 import robot_sim._kinematics.model_generator as rkmg
 
 
-#TODO delay finalize
+# TODO delay finalize
+# TODO joint gl -> flange
 
 class JLChain(object):
     """

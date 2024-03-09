@@ -34,12 +34,37 @@ class Link(object):
         # the following values will be updated automatically
         self._gl_pos = self._loc_pos
         self._gl_rotmat = self._loc_rotmat
+        # grafting target
+        self._graft_tgt_pos = np.zeros(3)
+        self._graft_tgt_rotmat = np.eye(3)
+        # delay
+        self._is_gl_pose_delayed = False
+
+    @staticmethod
+    def delay_decorator(method):
+        def wrapper(self, *args, **kwargs):
+            self._is_gl_pose_delayed = True
+            return method(self, *args, **kwargs)
+
+        return wrapper
+
+    @staticmethod
+    def update_gl_pose_decorator(method):
+        def wrapper(self, *args, **kwargs):
+            if self._is_gl_pose_delayed:
+                self._gl_pos = self._graft_tgt_pos + self._graft_tgt_rotmat @ self._loc_pos
+                self._gl_rotmat = self._graft_tgt_rotmat @ self._loc_rotmat
+                self._is_gl_pose_delayed = False
+            return method(self, *args, **kwargs)
+
+        return wrapper
 
     @property
     def loc_pos(self):
         return self._loc_pos
 
     @loc_pos.setter
+    @delay_decorator
     def loc_pos(self, pos):
         self._loc_pos = pos
 
@@ -48,6 +73,7 @@ class Link(object):
         return self._loc_rotmat
 
     @loc_rotmat.setter
+    @delay_decorator
     def loc_rotmat(self, rotmat):
         self._loc_rotmat = rotmat
 
@@ -60,6 +86,7 @@ class Link(object):
         return (self._loc_pos, self._loc_rotmat)
 
     @loc_pose.setter
+    @delay_decorator
     def loc_pose(self, pose):
         self._loc_pos = pose[0]
         self._loc_rotmat = pose[1]
@@ -77,7 +104,10 @@ class Link(object):
         return rm.homomat_from_posrot(self._gl_pos, self._gl_rotmat)
 
     @property
+    @update_gl_pose_decorator
     def cmodel(self):
+        if self._cmodel is not None:
+            self._cmodel.pose = (self._gl_pos, self._gl_rotmat)
         return self._cmodel
 
     @cmodel.setter
@@ -85,15 +115,17 @@ class Link(object):
         self._cmodel = cmodel
         self._cmodel.pose = (self._gl_pos, self._gl_rotmat)
 
-    def update_globals(self, pos=np.zeros(3), rotmat=np.eye(3)):
+    def graft_to(self, pos=np.zeros(3), rotmat=np.eye(3)):
         """
         update the global parameters with given reference pos, reference rotmat
         :param pos:
         :param rotmat:
         :return:
         """
-        self._gl_pos = pos + rotmat @ self._loc_pos
-        self._gl_rotmat = rotmat @ self._loc_rotmat
+        self._graft_tgt_pos = pos
+        self._graft_tgt_rotmat = rotmat
+        self._gl_pos = self._graft_tgt_pos + self._graft_tgt_rotmat @ self._loc_pos
+        self._gl_rotmat = self._graft_tgt_rotmat @ self._loc_rotmat
         if self._cmodel is not None:
             self._cmodel.pose = (self._gl_pos, self._gl_rotmat)
 
@@ -170,7 +202,7 @@ class Anchor(object):
         def wrapper(self, *args, **kwargs):
             if self._is_lnk_delayed:
                 for lnk in self._lnk_list:
-                    lnk.update_globals(self.pos, self.rotmat)
+                    lnk.graft_to(self.pos, self.rotmat)
                 self._is_lnk_delayed = False
             return method(self, *args, **kwargs)
 
@@ -210,13 +242,14 @@ class Anchor(object):
                 self._gl_flange_pose_list]
 
     @property
-    def loc_flange_pose_list(self):
-        return tuple(self._loc_flange_pose_list)
+    @delay_decorator
+    def loc_flange_pose_list(self):  # warning, violating encapsulation
+        return self._loc_flange_pose_list
 
     @property
     @update_lnk_decorator
-    def lnk_list(self):
-        return tuple(self._lnk_list)
+    def lnk_list(self):  # warning, violating encapsulation
+        return self._lnk_list
 
     def compute_gl_flange(self):
         gl_flange_list = []
@@ -370,7 +403,7 @@ class Joint(object):
         self._gl_motion_ax = self._gl_rotmat_0 @ self.loc_motion_ax
         self.set_motion_value(motion_value=motion_value)
         if self._lnk is not None:
-            self._lnk.update_globals(self.gl_pos_q, self.gl_rotmat_q)
+            self._lnk.graft_to(self.gl_pos_q, self.gl_rotmat_q)
 
     def get_motion_homomat(self, motion_value=0):
         """
