@@ -15,7 +15,7 @@ class RobotInterface(object):
         self.pos = pos
         self.rotmat = rotmat
         # for dynamic callback in case of multiple arms
-        self.userdef_is_collided_fn = None
+        self.userdef_is_collided_fn = None # deprecated 20240309 (originally designed for reusing cc, inflexible)
         if enable_cc:
             self.cc = cc.CollisionChecker("collision_checker")
         else:

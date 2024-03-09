@@ -86,13 +86,11 @@ class Yumi(ri.RobotInterface):
                                       rotmat=self.body.gl_flange_pose_list[0][1],
                                       name='yumi_lft_arm', enable_cc=True)
         self.lft_arm.home_conf = np.radians(np.array([20, -90, 120, 30, 0, 40, 0]))
-        # self.lft_arm.userdef_is_collided_fn = self._lft_arm_is_collided
         # right arm
         self.rgt_arm = ysa.YumiSglArm(pos=self.body.gl_flange_pose_list[1][0],
                                       rotmat=self.body.gl_flange_pose_list[1][1],
                                       name='yumi_rgt_arm', enable_cc=True)
         self.rgt_arm.home_conf = np.radians(np.array([-20, -90, -120, 30, .0, 40, 0]))
-        # self.rgt_arm.userdef_is_collided_fn = self._rgt_arm_is_collided
         if enable_cc:
             self.setup_cc()
         # go home
@@ -118,22 +116,6 @@ class Yumi(ri.RobotInterface):
         cdprim = NodePath("user_defined")
         cdprim.attachNewNode(pdcnd)
         return cdprim
-
-    # def _lft_arm_is_collided(self, cc, obstacle_list=[], other_robot_list=[], toggle_contacts=False):
-    #     body_obstacle_list = []
-    #     for lnk in self.body.lnk_list:
-    #         body_obstacle_list.append(lnk.cmodel)
-    #     return cc.is_collided(obstacle_list=obstacle_list + body_obstacle_list,
-    #                           other_robot_list=other_robot_list + [self.rgt_arm],
-    #                           toggle_contacts=toggle_contacts)
-
-    # def _rgt_arm_is_collided(self, cc, obstacle_list=[], other_robot_list=[], toggle_contacts=False):
-    #     body_obstacle_list = []
-    #     for lnk in self.body.lnk_list:
-    #         body_obstacle_list.append(lnk.cmodel)
-    #     return cc.is_collided(obstacle_list=obstacle_list + body_obstacle_list,
-    #                           other_robot_list=other_robot_list + [self.lft_arm],
-    #                           toggle_contacts=toggle_contacts)
 
     def setup_cc(self):
         """
@@ -251,7 +233,7 @@ class Yumi(ri.RobotInterface):
         self.rgt_arm.goto_home_conf()
 
     def get_jnt_values(self):
-        return self.lft_arm.get_jnt_values() + self.rgt_arm.get_jnt_values()
+        return np.concatenate((self.lft_arm.get_jnt_values(), self.rgt_arm.get_jnt_values()))
 
     def rand_conf(self):
         """
@@ -259,7 +241,7 @@ class Yumi(ri.RobotInterface):
         author: weiwei
         date: 20210406
         """
-        return self.lft_arm.rand_conf() + self.rgt_arm.rand_conf()
+        return np.concatenate((self.lft_arm.rand_conf(), self.rgt_arm.rand_conf()))
 
     def are_jnts_in_ranges(self, jnt_values):
         return self.lft_arm.are_jnts_in_ranges(

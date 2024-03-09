@@ -1,7 +1,6 @@
 import time
 import uuid
 import networkx as nx
-import motion.utils as utils
 from motion.probabilistic import rrt
 
 
@@ -48,7 +47,7 @@ class RRTConnect(rrt.RRT):
                     return "connection"
         return nearest_nid
 
-    @utils.keep_jnt_values_decorator
+    @rrt.utils.keep_jnt_values_decorator
     def plan(self,
              start_conf,
              goal_conf,

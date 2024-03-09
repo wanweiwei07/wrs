@@ -6,6 +6,7 @@ import scipy
 import numpy as np
 import basis.robot_math as rm
 import networkx as nx
+import motion.utils as utils
 import matplotlib.pyplot as plt
 from operator import itemgetter
 

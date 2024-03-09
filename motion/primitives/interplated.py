@@ -1,7 +1,6 @@
 import math
 import numpy as np
 import basis.robot_math as rm
-import modeling.geometric_model as gm
 import motion.utils as utils
 
 
@@ -232,19 +231,10 @@ if __name__ == '__main__':
     base = wd.World(cam_pos=[3, 2, 2], lookat_pos=[0, 0, 0.2])
     gm.gen_frame().attach_to(base)
     robot = ym.Yumi(enable_cc=True)
-    # robot.cc.show_cdprim()
-    # base.run()
-    # robot.gen_meshmodel(alpha=.1).attach_to(base)
-    # base.run()
     start_pos = np.array([.5, -.3, .3])
     start_rotmat = rm.rotmat_from_axangle([0, 1, 0], math.pi / 2)
     goal_pos = np.array([.55, -.2, .6])
     goal_rotmat = rm.rotmat_from_axangle([0, 1, 0], math.pi / 2)
-    # jnt_values = robot.rgt_arm.ik(tgt_pos=start_pos, tgt_rotmat=start_rotmat)
-    # if jnt_values is not None:
-    #     robot.rgt_arm.goto_given_conf(jnt_values)
-    #     robot.gen_meshmodel(alpha=.3).attach_to(base)
-    # base.run()
     gm.gen_frame(pos=start_pos, rotmat=start_rotmat).attach_to(base)
     gm.gen_frame(pos=goal_pos, rotmat=goal_rotmat).attach_to(base)
     interplator = InterplatedMotion(robot.rgt_arm)
