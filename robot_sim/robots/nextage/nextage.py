@@ -107,7 +107,7 @@ class Left_Manipulator(mi.ManipulatorInterface):
 #
 #     def __init__(self, pos=np.zeros(3), rotmat=np.eye(3), name='nextage_waist_arm', enable_cc=False):
 #         super().__init__(pos=pos, rotmat=rotmat, name=name)
-#         self.manipulator = rkjl.JLChain(pos=self.central_body.joints[1]['gl_posq'],
+#         self.manipulator = rkjlc.JLChain(pos=self.central_body.joints[1]['gl_posq'],
 #                                       rotmat=self.central_body.joints[1]['gl_rotmatq'],
 #                                       home=lft_arm_homeconf, name='lft_arm')
 #
@@ -142,7 +142,7 @@ class Left_Manipulator(mi.ManipulatorInterface):
 #         lft_arm_homeconf = np.radians(np.array([central_homeconf[0], 15, 0, -143, 0, 0, 0]))
 #         rgt_arm_homeconf = np.radians(np.array([central_homeconf[0], -15, 0, -143, 0, 0, 0]))
 #         # central
-#         self.central_body = rkjl.JLChain(pos=pos, rotmat=rotmat, home=central_homeconf, name='centeral_body')
+#         self.central_body = rkjlc.JLChain(pos=pos, rotmat=rotmat, home=central_homeconf, name='centeral_body')
 #         self.central_body.joints[1]['loc_pos'] = np.array([0, 0, 0])
 #         self.central_body.joints[1]['loc_motionax'] = np.array([0, 0, 1])
 #         self.central_body.joints[1]['motion_range'] = [-2.84489, 2.84489]
@@ -176,7 +176,7 @@ class Left_Manipulator(mi.ManipulatorInterface):
 #         self.central_body.lnks[3]['rgba'] = [.63, .63, .63, 1]
 #         self.central_body.reinitialize()
 #         # lft
-#         self.lft_arm = rkjl.JLChain(pos=self.central_body.joints[1]['gl_posq'],
+#         self.lft_arm = rkjlc.JLChain(pos=self.central_body.joints[1]['gl_posq'],
 #                                   rotmat=self.central_body.joints[1]['gl_rotmatq'],
 #                                   home=lft_arm_homeconf, name='lft_arm')
 #         self.lft_arm.joints[1]['loc_pos'] = np.array([0, 0, 0])
@@ -227,7 +227,7 @@ class Left_Manipulator(mi.ManipulatorInterface):
 #         self.lft_arm.lnks[7]['rgba'] = [.57, .57, .57, 1]
 #         self.lft_arm.reinitialize()
 #         # rgt
-#         self.rgt_arm = rkjl.JLChain(pos=self.central_body.joints[1]['gl_posq'],
+#         self.rgt_arm = rkjlc.JLChain(pos=self.central_body.joints[1]['gl_posq'],
 #                                   rotmat=self.central_body.joints[1]['gl_rotmatq'],
 #                                   home=rgt_arm_homeconf, name='rgt_arm')
 #         self.rgt_arm.joints[1]['loc_pos'] = np.array([0, 0, 0])

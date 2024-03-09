@@ -58,6 +58,10 @@ if __name__ == '__main__':
     mgm.gen_frame().attach_to(base)
     robot = YumiSglArm(enable_cc=True)
     robot.change_jaw_width(.05)
+    # robot.cc.show_cdprim()
+    robot.goto_given_conf(jnt_values=np.radians(np.array([20, -90, 120, 30, 0, 40, 0])))
+    robot.cc.show_cdprim()
+    base.run()
     robot.gen_meshmodel(alpha=1, toggle_tcp_frame=False, toggle_jnt_frames=False).attach_to(base)
     robot.gen_stickmodel(toggle_tcp_frame=True, toggle_jnt_frames=True).attach_to(base)
 

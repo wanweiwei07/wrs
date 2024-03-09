@@ -6,7 +6,6 @@ import modeling.collision_model as mcm
 import modeling.geometric_model as mgm
 import robot_sim._kinematics.constant as rkc
 import robot_sim._kinematics.model_generator as rkmg
-import uuid
 
 
 class Link(object):
@@ -23,7 +22,6 @@ class Link(object):
                  inertia=np.eye(3),
                  mass=0,
                  cmodel=None):
-        self.uuid = uuid.uuid4()
         self.name = name
         self._loc_pos = loc_pos
         self._loc_rotmat = loc_rotmat
@@ -35,8 +33,8 @@ class Link(object):
         self._gl_pos = self._loc_pos
         self._gl_rotmat = self._loc_rotmat
         # grafting target
-        self._graft_tgt_pos = np.zeros(3)
-        self._graft_tgt_rotmat = np.eye(3)
+        self._root_pos = np.zeros(3)
+        self._root_rotmat = np.eye(3)
         # delay
         self._is_gl_pose_delayed = False
 
@@ -52,12 +50,19 @@ class Link(object):
     def update_gl_pose_decorator(method):
         def wrapper(self, *args, **kwargs):
             if self._is_gl_pose_delayed:
-                self._gl_pos = self._graft_tgt_pos + self._graft_tgt_rotmat @ self._loc_pos
-                self._gl_rotmat = self._graft_tgt_rotmat @ self._loc_rotmat
+                self._gl_pos = self._root_pos + self._root_rotmat @ self._loc_pos
+                self._gl_rotmat = self._root_rotmat @ self._loc_rotmat
                 self._is_gl_pose_delayed = False
             return method(self, *args, **kwargs)
 
         return wrapper
+
+    @property
+    def uuid(self):
+        if self.cmodel is not None:
+            return self.cmodel.uuid
+        else:
+            raise ValueError("uuid will not be available until cmodel is assigned.")
 
     @property
     def loc_pos(self):
@@ -115,17 +120,17 @@ class Link(object):
         self._cmodel = cmodel
         self._cmodel.pose = (self._gl_pos, self._gl_rotmat)
 
-    def graft_to(self, pos=np.zeros(3), rotmat=np.eye(3)):
+    def install_onto(self, pos=np.zeros(3), rotmat=np.eye(3)):
         """
         update the global parameters with given reference pos, reference rotmat
         :param pos:
         :param rotmat:
         :return:
         """
-        self._graft_tgt_pos = pos
-        self._graft_tgt_rotmat = rotmat
-        self._gl_pos = self._graft_tgt_pos + self._graft_tgt_rotmat @ self._loc_pos
-        self._gl_rotmat = self._graft_tgt_rotmat @ self._loc_rotmat
+        self._root_pos = pos
+        self._root_rotmat = rotmat
+        self._gl_pos = self._root_pos + self._root_rotmat @ self._loc_pos
+        self._gl_rotmat = self._root_rotmat @ self._loc_rotmat
         if self._cmodel is not None:
             self._cmodel.pose = (self._gl_pos, self._gl_rotmat)
 
@@ -152,9 +157,7 @@ class Anchor(object):
     def __init__(self,
                  name="auto",
                  pos=np.zeros(3),
-                 rotmat=np.eye(3),
-                 n_flange=1,
-                 n_lnk=1):
+                 rotmat=np.eye(3)):
         """
         :param name:
         :param pos: pos for parent
@@ -166,23 +169,16 @@ class Anchor(object):
         self._pos = pos
         self._rotmat = rotmat
         self._loc_flange_pose_list = []
-        self._n_flange = n_flange
-        for i in range(self._n_flange):
-            self._loc_flange_pose_list.append([np.zeros(3), np.eye(3)])
         self._lnk_list = []
-        self._n_lnk = n_lnk
-        for i in range(self._n_lnk):
-            self._lnk_list.append(Link(name=name))
         self._gl_flange_pose_list = self.compute_gl_flange()
         self._is_gl_flange_delayed = False
         self._is_lnk_delayed = False
 
     # decorator for delayed update of gl_flanges and lnk
     @staticmethod
-    def delay_decorator(method):
+    def delay_gl_flange_decorator(method):
         def wrapper(self, *args, **kwargs):
             self._is_gl_flange_delayed = True
-            self._is_lnk_delayed = True
             return method(self, *args, **kwargs)
 
         return wrapper
@@ -198,11 +194,19 @@ class Anchor(object):
         return wrapper
 
     @staticmethod
-    def update_lnk_decorator(method):
+    def delay_gl_lnk_decorator(method):
+        def wrapper(self, *args, **kwargs):
+            self._is_lnk_delayed = True
+            return method(self, *args, **kwargs)
+
+        return wrapper
+
+    @staticmethod
+    def update_gl_lnk_decorator(method):
         def wrapper(self, *args, **kwargs):
             if self._is_lnk_delayed:
                 for lnk in self._lnk_list:
-                    lnk.graft_to(self.pos, self.rotmat)
+                    lnk.install_onto(self.pos, self.rotmat)
                 self._is_lnk_delayed = False
             return method(self, *args, **kwargs)
 
@@ -213,7 +217,8 @@ class Anchor(object):
         return self._pos
 
     @pos.setter
-    @delay_decorator
+    @delay_gl_flange_decorator
+    @delay_gl_lnk_decorator
     def pos(self, pos):
         self._pos = pos
 
@@ -222,7 +227,8 @@ class Anchor(object):
         return self._rotmat
 
     @rotmat.setter
-    @delay_decorator
+    @delay_gl_flange_decorator
+    @delay_gl_lnk_decorator
     def rotmat(self, rotmat):
         self._rotmat = rotmat
 
@@ -232,28 +238,39 @@ class Anchor(object):
 
     @property
     @update_gl_flange_decorator
+    @update_gl_lnk_decorator
     def gl_flange_pose_list(self):
         return self._gl_flange_pose_list
 
     @property
     @update_gl_flange_decorator
+    @update_gl_lnk_decorator
     def gl_flange_homomat_list(self):
         return [rm.homomat_from_posrot(gl_flange_pose[0], gl_flange_pose[1]) for gl_flange_pose in
                 self._gl_flange_pose_list]
 
     @property
-    @delay_decorator
-    def loc_flange_pose_list(self):  # warning, violating encapsulation
-        return self._loc_flange_pose_list
+    def loc_flange_pose_list(self):  # do not allow read to avoid violating encapsulation
+        raise AttributeError("This property cannot be read")
+
+    @loc_flange_pose_list.setter
+    @delay_gl_flange_decorator
+    def loc_flange_pose_list(self, list):
+        self._loc_flange_pose_list = list
 
     @property
-    @update_lnk_decorator
+    @update_gl_lnk_decorator
     def lnk_list(self):  # warning, violating encapsulation
         return self._lnk_list
 
+    @lnk_list.setter
+    @delay_gl_lnk_decorator
+    def lnk_list(self, list):
+        self._lnk_list = list
+
     def compute_gl_flange(self):
         gl_flange_list = []
-        for loc_flange_pos, loc_flange_rotmat in self.loc_flange_pose_list:
+        for loc_flange_pos, loc_flange_rotmat in self._loc_flange_pose_list:
             gl_flange_list.append([self.pos + self.rotmat @ loc_flange_pos, self.rotmat @ loc_flange_rotmat])
         return gl_flange_list
 
@@ -291,6 +308,7 @@ class Anchor(object):
 
 class Joint(object):
     """
+    TODO: loc pos / rotmat identical to zero pos / rotmat? 20240309
     author: weiwei
     date: 20230822
     """
@@ -403,7 +421,7 @@ class Joint(object):
         self._gl_motion_ax = self._gl_rotmat_0 @ self.loc_motion_ax
         self.set_motion_value(motion_value=motion_value)
         if self._lnk is not None:
-            self._lnk.graft_to(self.gl_pos_q, self.gl_rotmat_q)
+            self._lnk.install_onto(self.gl_pos_q, self.gl_rotmat_q)
 
     def get_motion_homomat(self, motion_value=0):
         """

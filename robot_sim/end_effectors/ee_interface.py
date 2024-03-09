@@ -1,24 +1,9 @@
 import copy
 import numpy as np
 import robot_sim._kinematics.jl as rkjl
-import robot_sim._kinematics.jlchain as rkjlc
 import robot_sim._kinematics.model_generator as rkmg
 import modeling.constant as mc
 import basis.robot_math as rm
-
-
-# ==============================================
-# raise Exception if oiee is not empty
-# ==============================================
-
-def assert_oiee_decorator(method):
-    def wrapper(self, *args, **kwargs):
-        if len(self.oiee_list) > 0:
-            raise ValueError("The hand is holding objects!")
-        else:
-            return method(self, *args, **kwargs)
-
-    return wrapper
 
 
 class EEInterface(object):
@@ -32,7 +17,7 @@ class EEInterface(object):
         # -- coupling --
         # no coupling by default, change the pos if the coupling existed
         # use loc flange create non-straight couplings
-        self.coupling = rkjlc.JLChain(name=name + "_coupling", pos=self.pos, rotmat=self.rotmat, n_dof=0)
+        self.coupling = rkjl.Anchor(name=name + "_coupling", pos=self.pos, rotmat=self.rotmat)
         # acting center of the tool
         self.loc_acting_center_pos = np.zeros(3)
         self.loc_acting_center_rotmat = np.eye(3)
@@ -41,6 +26,16 @@ class EEInterface(object):
         # object grasped/held/attached to end-effector; oiee = object in end-effector
         self.oiee_list = []
 
+    @staticmethod
+    def assert_oiee_decorator(method):
+        def wrapper(self, *args, **kwargs):
+            if len(self.oiee_list) > 0:
+                raise ValueError("The hand is holding objects!")
+            else:
+                return method(self, *args, **kwargs)
+
+        return wrapper
+
     def update_oiee(self):
         """
         :return:
@@ -48,7 +43,7 @@ class EEInterface(object):
         date: 20230807
         """
         for oiee in self.oiee_list:
-            oiee.graft_to(pos=self.pos, rotmat=self.rotmat)
+            oiee.install_onto(pos=self.pos, rotmat=self.rotmat)
 
     @assert_oiee_decorator
     def hold(self, obj_cmodel, **kwargs):
@@ -170,7 +165,7 @@ class EEInterface(object):
         for oiee in self.oiee_list:
             rkmg.gen_lnk_mesh(lnk=oiee, rgb=rgb, alpha=alpha, toggle_cdprim=toggle_cdprim, toggle_cdmesh=toggle_cdmesh,
                               toggle_frame=toggle_frame).attach_to(m_col)
-            oiee.graft_to(pos=self.pos, rotmat=self.rotmat)
+            oiee.install_onto(pos=self.pos, rotmat=self.rotmat)
 
     def _toggle_tcp_frame(self, parent):
         gl_acting_center_pos = self.rotmat.dot(self.loc_acting_center_pos) + self.pos

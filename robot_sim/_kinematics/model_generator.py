@@ -69,7 +69,7 @@ def gen_lnk_mesh(lnk,
             mgm.gen_frame(pos=lnk.gl_pos, rotmat=lnk.gl_rotmat).attach_to(gmodel)
         return gmodel
     else:
-        return mgm.GeometricModel()
+        return mgm.GeometricModel(name="empty_lnk_mesh")
 
 
 def gen_anchor(anchor,

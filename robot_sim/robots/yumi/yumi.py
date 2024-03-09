@@ -16,67 +16,71 @@ class Yumi(ri.RobotInterface):
         super().__init__(pos=pos, rotmat=rotmat, name=name, enable_cc=enable_cc)
         current_file_dir = os.path.dirname(__file__)
         # the body anchor
-        self.body = rkjlc.rkjl.Anchor(name="yumi_body", pos=self.pos, rotmat=self.rotmat, n_flange=2, n_lnk=9)
-        self.body.loc_flange_pose_list[0] = [np.array([0.05355, 0.07250, 0.41492]),
-                                             (rm.rotmat_from_euler(0.9781, -0.5716, 2.3180) @
-                                              rm.rotmat_from_euler(0.0, 0.0, -np.pi))]
-        self.body.loc_flange_pose_list[1] = [np.array([0.05355, -0.07250, 0.41492]),
-                                             (rm.rotmat_from_euler(-0.9781, -0.5682, -2.3155) @
-                                              rm.rotmat_from_euler(0.0, 0.0, -np.pi))]
-        self.body.lnk_list[0].name = "yumi_body_main"
-        self.body.lnk_list[0].cmodel = mcm.CollisionModel(initor=os.path.join(current_file_dir, "meshes", "body.stl"),
-                                                          cdprim_type=mcm.mc.CDPType.USER_DEFINED,
-                                                          userdef_cdprim_fn=self._base_combined_cdnp)
-        self.body.lnk_list[0].cmodel.rgba = rm.bc.hug_gray
+        self.body = rkjlc.rkjl.Anchor(name="yumi_body", pos=self.pos, rotmat=self.rotmat)
+        lft_arm_anchor_pose = [np.array([0.05355, 0.07250, 0.41492]),
+                               (rm.rotmat_from_euler(0.9781, -0.5716, 2.3180) @
+                                rm.rotmat_from_euler(0.0, 0.0, -np.pi))]
+        rgt_arm_anchor_pose = [np.array([0.05355, -0.07250, 0.41492]),
+                               (rm.rotmat_from_euler(-0.9781, -0.5682, -2.3155) @
+                                rm.rotmat_from_euler(0.0, 0.0, -np.pi))]
+        self.body.loc_flange_pose_list = [lft_arm_anchor_pose, rgt_arm_anchor_pose]
+        lnk_list = []
+        for i in range(9):
+            lnk_list.append(rkjlc.rkjl.Link())
+        lnk_list[0].name = "yumi_body_main"
+        lnk_list[0].cmodel = mcm.CollisionModel(initor=os.path.join(current_file_dir, "meshes", "body.stl"),
+                                                cdprim_type=mcm.mc.CDPType.USER_DEFINED,
+                                                userdef_cdprim_fn=self._base_combined_cdnp)
+        lnk_list[0].cmodel.rgba = rm.bc.hug_gray
         # table
-        self.body.lnk_list[1].name = "yumi_body_table_top"
-        self.body.lnk_list[1].cmodel = mcm.CollisionModel(
-            initor=os.path.join(current_file_dir, "meshes", "yumi_tablenotop.stl"))
-        self.body.lnk_list[1].cmodel.rgba = rm.bc.steel_gray
+        lnk_list[1].name = "yumi_body_table_top"
+        lnk_list[1].cmodel = mcm.CollisionModel(initor=os.path.join(current_file_dir, "meshes", "yumi_tablenotop.stl"))
+        lnk_list[1].cmodel.rgba = rm.bc.steel_gray
         # lft column
-        self.body.lnk_list[2].name = "yumi_body_lft_column"
-        self.body.lnk_list[2].loc_pos = np.array([-.327, -.24, -1.015])
-        self.body.lnk_list[2].cmodel = mcm.CollisionModel(
+        lnk_list[2].name = "yumi_body_lft_column"
+        lnk_list[2].loc_pos = np.array([-.327, -.24, -1.015])
+        lnk_list[2].cmodel = mcm.CollisionModel(
             initor=os.path.join(current_file_dir, "meshes", "yumi_column60602100.stl"))
-        self.body.lnk_list[2].cmodel.rgba = rm.bc.steel_gray
+        lnk_list[2].cmodel.rgba = rm.bc.steel_gray
         # rgt column
-        self.body.lnk_list[3].name = "yumi_body_rgt_column"
-        self.body.lnk_list[3].loc_pos = np.array([-.327, .24, -1.015])
-        self.body.lnk_list[3].cmodel = mcm.CollisionModel(
+        lnk_list[3].name = "yumi_body_rgt_column"
+        lnk_list[3].loc_pos = np.array([-.327, .24, -1.015])
+        lnk_list[3].cmodel = mcm.CollisionModel(
             initor=os.path.join(current_file_dir, "meshes", "yumi_column60602100.stl"))
-        self.body.lnk_list[3].cmodel.rgba = rm.bc.steel_gray
+        lnk_list[3].cmodel.rgba = rm.bc.steel_gray
         # top back column
-        self.body.lnk_list[4].name = "yumi_body_top_back_column"
-        self.body.lnk_list[4].loc_pos = np.array([-.327, 0, 1.085])
-        self.body.lnk_list[4].cmodel = mcm.CollisionModel(
+        lnk_list[4].name = "yumi_body_top_back_column"
+        lnk_list[4].loc_pos = np.array([-.327, 0, 1.085])
+        lnk_list[4].cmodel = mcm.CollisionModel(
             initor=os.path.join(current_file_dir, "meshes", "yumi_column6060540.stl"))
-        self.body.lnk_list[4].cmodel.rgba = rm.bc.steel_gray
+        lnk_list[4].cmodel.rgba = rm.bc.steel_gray
         # top lft column
-        self.body.lnk_list[5].name = "yumi_body_top_lft_column"
-        self.body.lnk_list[5].loc_pos = np.array([-.027, -.24, 1.085])
-        self.body.lnk_list[5].loc_rotmat = rm.rotmat_from_axangle([0, 0, 1], -math.pi / 2)
-        self.body.lnk_list[5].cmodel = mcm.CollisionModel(
+        lnk_list[5].name = "yumi_body_top_lft_column"
+        lnk_list[5].loc_pos = np.array([-.027, -.24, 1.085])
+        lnk_list[5].loc_rotmat = rm.rotmat_from_axangle([0, 0, 1], -math.pi / 2)
+        lnk_list[5].cmodel = mcm.CollisionModel(
             initor=os.path.join(current_file_dir, "meshes", "yumi_column6060540.stl"))
-        self.body.lnk_list[5].cmodel.rgba = rm.bc.steel_gray
+        lnk_list[5].cmodel.rgba = rm.bc.steel_gray
         # top rgt column
-        self.body.lnk_list[6].name = "yumi_body_top_lft_column"
-        self.body.lnk_list[6].loc_pos = np.array([-.027, .24, 1.085])
-        self.body.lnk_list[6].loc_rotmat = rm.rotmat_from_axangle([0, 0, 1], -math.pi / 2)
-        self.body.lnk_list[6].cmodel = mcm.CollisionModel(
+        lnk_list[6].name = "yumi_body_top_lft_column"
+        lnk_list[6].loc_pos = np.array([-.027, .24, 1.085])
+        lnk_list[6].loc_rotmat = rm.rotmat_from_axangle([0, 0, 1], -math.pi / 2)
+        lnk_list[6].cmodel = mcm.CollisionModel(
             initor=os.path.join(current_file_dir, "meshes", "yumi_column6060540.stl"))
-        self.body.lnk_list[6].cmodel.rgba = rm.bc.steel_gray
+        lnk_list[6].cmodel.rgba = rm.bc.steel_gray
         # top front column
-        self.body.lnk_list[7].name = "yumi_body_top_lft_column"
-        self.body.lnk_list[7].loc_pos = np.array([.273, 0, 1.085])
-        self.body.lnk_list[7].cmodel = mcm.CollisionModel(
+        lnk_list[7].name = "yumi_body_top_lft_column"
+        lnk_list[7].loc_pos = np.array([.273, 0, 1.085])
+        lnk_list[7].cmodel = mcm.CollisionModel(
             initor=os.path.join(current_file_dir, "meshes", "yumi_column6060540.stl"))
-        self.body.lnk_list[7].cmodel.rgba = rm.bc.steel_gray
+        lnk_list[7].cmodel.rgba = rm.bc.steel_gray
         # phoxi
-        self.body.lnk_list[8].name = "phoxi"
-        self.body.lnk_list[8].loc_pos = np.array([.273, 0, 1.085])
-        self.body.lnk_list[8].cmodel = mcm.CollisionModel(
-            initor=os.path.join(current_file_dir, "meshes", "phoxi_m.stl"))
-        self.body.lnk_list[8].cmodel.rgba = rm.bc.black
+        lnk_list[8].name = "phoxi"
+        lnk_list[8].loc_pos = np.array([.273, 0, 1.085])
+        lnk_list[8].cmodel = mcm.CollisionModel(initor=os.path.join(current_file_dir, "meshes", "phoxi_m.stl"))
+        lnk_list[8].cmodel.rgba = rm.bc.black
+        # set values
+        self.body.lnk_list = lnk_list
         # left arm
         self.lft_arm = ysa.YumiSglArm(pos=self.body.gl_flange_pose_list[0][0],
                                       rotmat=self.body.gl_flange_pose_list[0][1],
@@ -338,8 +342,8 @@ if __name__ == '__main__':
     gm.gen_frame().attach_to(base)
     robot = Yumi(enable_cc=True)
     robot.gen_meshmodel().attach_to(base)
-    # robot.show_cdprim()
-    # base.run()
+    robot.show_cdprim()
+    base.run()
 
     # ik test
     tgt_pos = np.array([.4, -.4, .3])

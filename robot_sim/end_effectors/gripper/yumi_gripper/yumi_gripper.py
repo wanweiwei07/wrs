@@ -3,7 +3,7 @@ import math
 import numpy as np
 import modeling.model_collection as mmc
 import modeling.collision_model as mcm
-import robot_sim._kinematics.jlchain as rkjl
+import robot_sim._kinematics.jlchain as rkjlc
 import basis.robot_math as rm
 import robot_sim.end_effectors.gripper.gripper_interface as gpi
 
@@ -17,19 +17,20 @@ class YumiGripper(gpi.GripperInterface):
                  name='yumi_gripper'):
         super().__init__(pos=pos, rotmat=rotmat, cdmesh_type=cdmesh_type, name=name)
         current_file_dir = os.path.dirname(__file__)
+        # flange
+        self.coupling.loc_flange_pose_list = [[np.zeros(3), np.eye(3)]]
         # jaw range
         self.jaw_range = np.array([.0, .05])
-        # coupling
-        self.coupling.finalize()
         # jlc
-        self.jlc = rkjl.JLChain(pos=self.coupling.gl_flange_pos, rotmat=self.coupling.gl_flange_rotmat, n_dof=2,
-                                name=name)
+        self.jlc = rkjlc.JLChain(pos=self.coupling.gl_flange_pose_list[0][0],
+                                 rotmat=self.coupling.gl_flange_pose_list[0][1], n_dof=2, name=name)
         # anchor
-        self.jlc.anchor.lnk_list[0].cmodel = mcm.CollisionModel(os.path.join(current_file_dir, "meshes", "base.stl"),
-                                                        cdmesh_type=self.cdmesh_type)
-        self.jlc.anchor.lnk_list[0].cmodel.rgba = np.array([.75, .75, .75, 1])
+        lnk_list = [rkjlc.rkjl.Link()]
+        lnk_list[0].cmodel = mcm.CollisionModel(os.path.join(current_file_dir, "meshes", "base.stl"), cdmesh_type=self.cdmesh_type)
+        lnk_list[0].cmodel.rgba = np.array([.75, .75, .75, 1])
+        self.jlc.anchor.lnk_list = lnk_list
         # the 1st joint (left finger)
-        self.jlc.jnts[0].change_type(rkjl.rkc.JntType.PRISMATIC, np.array([0, self.jaw_range[1] / 2]))
+        self.jlc.jnts[0].change_type(rkjlc.rkc.JntType.PRISMATIC, np.array([0, self.jaw_range[1] / 2]))
         self.jlc.jnts[0].loc_pos = np.array([-0.0065, 0, 0.0837])
         self.jlc.jnts[0].loc_motion_ax = rm.bc.y_ax
         self.jlc.jnts[0].motion_range = np.array([0.0, 0.025])
@@ -38,7 +39,7 @@ class YumiGripper(gpi.GripperInterface):
             cdmesh_type=self.cdmesh_type)
         self.jlc.jnts[0].lnk.cmodel.rgba = np.array([.5, .5, .5, 1])
         # the 2nd joint (right finger)
-        self.jlc.jnts[1].change_type(rkjl.rkc.JntType.PRISMATIC, np.array([0, -self.jaw_range[1]]))
+        self.jlc.jnts[1].change_type(rkjlc.rkc.JntType.PRISMATIC, np.array([0, -self.jaw_range[1]]))
         self.jlc.jnts[1].loc_pos = np.array([0.013, 0, 0])
         self.jlc.jnts[1].loc_rotmat = rm.rotmat_from_euler(0, 0, np.pi)
         self.jlc.jnts[1].loc_motion_ax = rm.bc.y_ax
@@ -66,8 +67,9 @@ class YumiGripper(gpi.GripperInterface):
                 self.jlc.jnts[1].motion_value = -jaw_width
             else:
                 raise ValueError("The angle parameter is out of range!")
-        self.coupling.fix_to(self.pos, self.rotmat)
-        self.jlc.fix_to(self.coupling.gl_flange_pos, self.coupling.gl_flange_rotmat)
+        self.coupling.pos = self.pos
+        self.coupling.rotmat = self.rotmat
+        self.jlc.fix_to(self.coupling.gl_flange_pose_list[0][0], self.coupling.gl_flange_pose_list[0][1])
         self.update_oiee()
 
     def change_jaw_width(self, jaw_width):
@@ -83,7 +85,7 @@ class YumiGripper(gpi.GripperInterface):
 
     def gen_stickmodel(self, toggle_tcp_frame=False, toggle_jnt_frames=False, name='yumi_gripper_stickmodel'):
         m_col = mmc.ModelCollection(name=name)
-        self.coupling.gen_stickmodel(toggle_jnt_frames=False, toggle_flange_frame=False).attach_to(m_col)
+        self.coupling.gen_stickmodel(toggle_root_frame=False, toggle_flange_frame=False).attach_to(m_col)
         self.jlc.gen_stickmodel(toggle_jnt_frames=toggle_jnt_frames, toggle_flange_frame=False).attach_to(m_col)
         if toggle_tcp_frame:
             self._toggle_tcp_frame(m_col)
@@ -100,8 +102,8 @@ class YumiGripper(gpi.GripperInterface):
         m_col = mmc.ModelCollection(name=name)
         self.coupling.gen_meshmodel(rgb=rgb,
                                     alpha=alpha,
+                                    toggle_root_frame=False,
                                     toggle_flange_frame=False,
-                                    toggle_jnt_frames=False,
                                     toggle_cdmesh=toggle_cdmesh,
                                     toggle_cdprim=toggle_cdprim).attach_to(m_col)
         self.jlc.gen_meshmodel(rgb=rgb,

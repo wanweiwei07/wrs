@@ -12,7 +12,7 @@ class GripperInterface(ei.EEInterface):
         # fgr0 opening vec
         self.loc_fgr0_opening_vec = np.array([0, 1, 0])  # y as opening vec by default
 
-    @ei.assert_oiee_decorator
+    @ei.EEInterface.assert_oiee_decorator
     def change_jaw_width(self, jaw_width):
         pass
 

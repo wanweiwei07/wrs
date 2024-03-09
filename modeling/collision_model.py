@@ -7,6 +7,7 @@ import modeling.geometric_model as mgm
 import modeling._panda_cdhelper as mph
 import modeling._ode_cdhelper as moh
 import modeling.constant as mc
+import uuid
 
 
 # the following two helpers cannot correcty find collision positions, 20211216
@@ -52,6 +53,7 @@ class CollisionModel(mgm.GeometricModel):
         date: 20190312, 20201212, 20230814, 20231124
         """
         if isinstance(initor, CollisionModel):
+            self.uuid = uuid.uuid4()
             self._name = copy.deepcopy(initor.name)
             self._file_path = copy.deepcopy(initor.file_path)
             self._trm_mesh = copy.deepcopy(initor.trm_mesh)
@@ -70,7 +72,8 @@ class CollisionModel(mgm.GeometricModel):
                              name=name,
                              toggle_transparency=toggle_transparency,
                              toggle_twosided=toggle_twosided)
-            self._exp_radius = expand_radius
+            self.uuid = uuid.uuid4()
+            self._ex_radius = expand_radius
             # cd primitive
             self._cdprim_type = cdprim_type
             self._cdprim = self._acquire_cdprim(cdprim_type, expand_radius, userdef_cdprim_fn)
@@ -247,7 +250,7 @@ class CollisionModel(mgm.GeometricModel):
     @delay_cdprim_decorator
     def change_cdprim_type(self, cdprim_type, expand_radius=None, userdefined_cdprim_fn=None):
         if expand_radius is not None:
-            self._exp_radius = expand_radius
+            self._ex_radius = expand_radius
         self._cdprim = self._acquire_cdprim(cdprim_type=cdprim_type,
                                             thickness=expand_radius,
                                             userdefined_cdprim_fn=userdefined_cdprim_fn)

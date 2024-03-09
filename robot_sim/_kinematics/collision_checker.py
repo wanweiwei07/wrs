@@ -179,8 +179,8 @@ class CollisionChecker(object):
     def set_cdpair_by_ids(self, uuid_from_list, uuid_into_list):
         """
         The given two lists will be checked for collisions
-        :param uuid_from_list: a list of rkjl.Link.uuid
-        :param uuid_into_list: a list of rkjl.Link.uuid
+        :param uuid_from_list: a list of rkjlc.Link.uuid
+        :param uuid_into_list: a list of rkjlc.Link.uuid
         :return:
         author: weiwei
         date: 20240303
