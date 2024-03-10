@@ -1,3 +1,5 @@
+import random
+
 if __name__ == '__main__':
     import math
     import numpy as np
@@ -9,7 +11,7 @@ if __name__ == '__main__':
     import modeling.geometric_model as mgm
     import basis.constant as bc
 
-    base = wd.World(cam_pos=[3, 3, 1], lookat_pos=[0, 0, .2])
+    base = wd.World(cam_pos=[3, 3, 1.5], lookat_pos=[0, 0, .35])
     mgm.gen_frame().attach_to(base)
 
     robot = ybt.Yumi(enable_cc=True)
@@ -36,14 +38,21 @@ if __name__ == '__main__':
             animation_data.path = []
             animation_data.counter = 0
         if animation_data.counter == 0:
+            value = random.choice([1,2,3])
+            if value == 1:
+                robot.use_both()
+            elif value == 2:
+                robot.use_lft()
+            else:
+                robot.use_rgt()
             while True:
                 # plan
                 start_conf = robot.get_jnt_values()
                 robot.goto_given_conf(jnt_values=start_conf)
-                start_robot_meshmodel = robot.gen_meshmodel(rgb=bc.red, alpha=.3)
+                start_robot_meshmodel = robot.gen_meshmodel(rgb=bc.red, alpha=1, toggle_cdprim=True)
                 goal_conf = robot.rand_conf()
                 robot.goto_given_conf(jnt_values=goal_conf)
-                goal_robot_meshmodel = robot.gen_meshmodel(rgb=bc.blue, alpha=.3)
+                goal_robot_meshmodel = robot.gen_meshmodel(rgb=bc.blue, alpha=1, toggle_cdprim=True)
                 path = rrtsc_planner.plan(start_conf=start_conf,
                                                          goal_conf=goal_conf,
                                                          ext_dist=.1,
@@ -65,7 +74,7 @@ if __name__ == '__main__':
                 robot_attached.detach()
         conf = animation_data.path[animation_data.counter]
         robot.goto_given_conf(jnt_values=conf)
-        robot_meshmodel = robot.gen_meshmodel(alpha=.3)
+        robot_meshmodel = robot.gen_meshmodel(alpha=1, toggle_cdprim=True)
         robot_meshmodel.attach_to(base)
         animation_data.robot_attached_list.append(robot_meshmodel)
         animation_data.counter += 1

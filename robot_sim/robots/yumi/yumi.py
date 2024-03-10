@@ -84,17 +84,22 @@ class Yumi(ri.RobotInterface):
         # left arm
         self.lft_arm = ysa.YumiSglArm(pos=self.body.gl_flange_pose_list[0][0],
                                       rotmat=self.body.gl_flange_pose_list[0][1],
-                                      name='yumi_lft_arm', enable_cc=True)
+                                      name='yumi_lft_arm', enable_cc=False)
         self.lft_arm.home_conf = np.radians(np.array([20, -90, 120, 30, 0, 40, 0]))
         # right arm
         self.rgt_arm = ysa.YumiSglArm(pos=self.body.gl_flange_pose_list[1][0],
                                       rotmat=self.body.gl_flange_pose_list[1][1],
-                                      name='yumi_rgt_arm', enable_cc=True)
+                                      name='yumi_rgt_arm', enable_cc=False)
         self.rgt_arm.home_conf = np.radians(np.array([-20, -90, -120, 30, .0, 40, 0]))
         if enable_cc:
             self.setup_cc()
         # go home
         self.goto_home_conf()
+        # back up main method functions
+        self.get_jnt_values_bk = self.get_jnt_values
+        self.rand_conf_bk = self.rand_conf
+        self.goto_given_conf_bk = self.goto_given_conf
+        self.are_jnts_in_ranges_bk = self.are_jnts_in_ranges
 
     def _base_combined_cdnp(self, name="auto", ex_radius=None):
         pdcnd = CollisionNode(name)
@@ -119,10 +124,6 @@ class Yumi(ri.RobotInterface):
 
     def setup_cc(self):
         """
-        There are two ways to set up a cc with nested robots.
-        1. Reuse the cc of the nested robots by adding new cces to it.
-        You must obtain the uuids of each previously added lnks manually in this case.
-        2. Clear the cc of the nested robots and create new ones respectively.
         author: weiwei
         date: 20240309
         """
@@ -171,40 +172,27 @@ class Yumi(ri.RobotInterface):
         from_list = [lft_ml1, lft_ml2, lft_ml3, lft_ml4, lft_ml5, lft_elb, lft_el0, lft_el1]
         into_list = [rgt_ml1, rgt_ml2, rgt_ml3, rgt_ml4, rgt_ml5, rgt_elb, rgt_el0, rgt_el1]
         self.cc.set_cdpair_by_ids(from_list, into_list)
-        # low level cc
-        # for respective arms
-        for tgt, ext in [[self.lft_arm, self.rgt_arm], [self.rgt_arm, self.lft_arm]]:
-            bd = tgt.cc.add_cce(self.body.lnk_list[0])
-            wb = tgt.cc.add_cce(self.body.lnk_list[1])
-            lc = tgt.cc.add_cce(self.body.lnk_list[2])
-            rc = tgt.cc.add_cce(self.body.lnk_list[3])
-            tbc = tgt.cc.add_cce(self.body.lnk_list[4])
-            tlc = tgt.cc.add_cce(self.body.lnk_list[5])
-            trc = tgt.cc.add_cce(self.body.lnk_list[6])
-            tfc = tgt.cc.add_cce(self.body.lnk_list[7])
-            phx = tgt.cc.add_cce(self.body.lnk_list[8])
-            tgt_elb = tgt.end_effector.jlc.anchor.lnk_list[0].uuid
-            tgt_el0 = tgt.end_effector.jlc.jnts[0].lnk.uuid
-            tgt_el1 = tgt.end_effector.jlc.jnts[1].lnk.uuid
-            tgt_ml0 = tgt.manipulator.jlc.jnts[0].lnk.uuid
-            tgt_ml1 = tgt.manipulator.jlc.jnts[1].lnk.uuid
-            tgt_ml2 = tgt.manipulator.jlc.jnts[2].lnk.uuid
-            tgt_ml3 = tgt.manipulator.jlc.jnts[3].lnk.uuid
-            tgt_ml4 = tgt.manipulator.jlc.jnts[4].lnk.uuid
-            tgt_ml5 = tgt.manipulator.jlc.jnts[5].lnk.uuid
-            ext_elb = tgt.cc.add_cce(ext.end_effector.jlc.anchor.lnk_list[0])
-            ext_el0 = tgt.cc.add_cce(ext.end_effector.jlc.jnts[0].lnk)
-            ext_el1 = tgt.cc.add_cce(ext.end_effector.jlc.jnts[1].lnk)
-            ext_ml0 = tgt.cc.add_cce(ext.manipulator.jlc.jnts[0].lnk)
-            ext_ml1 = tgt.cc.add_cce(ext.manipulator.jlc.jnts[1].lnk)
-            ext_ml2 = tgt.cc.add_cce(ext.manipulator.jlc.jnts[2].lnk)
-            ext_ml3 = tgt.cc.add_cce(ext.manipulator.jlc.jnts[3].lnk)
-            ext_ml4 = tgt.cc.add_cce(ext.manipulator.jlc.jnts[4].lnk)
-            ext_ml5 = tgt.cc.add_cce(ext.manipulator.jlc.jnts[5].lnk)
-            from_list = [tgt_ml4, tgt_ml5, tgt_elb, tgt_el0, tgt_el1]
-            into_list = [bd, wb, lc, rc, tbc, tlc, trc, tfc, phx, tgt_ml0, ext_ml0, ext_ml4, ext_ml5, ext_elb, ext_el0,
-                         ext_el1]
-            tgt.cc.set_cdpair_by_ids(from_list, into_list)
+        # point low-level cc to the high-level one
+        self.lft_arm.cc=self.cc
+        self.rgt_arm.cc=self.cc
+
+    def use_both(self):
+        self.get_jnt_values = self.get_jnt_values_bk
+        self.rand_conf = self.rand_conf_bk
+        self.goto_given_conf = self.goto_given_conf_bk
+        self.are_jnts_in_ranges = self.are_jnts_in_ranges_bk
+
+    def use_lft(self):
+        self.get_jnt_values = self.lft_arm.get_jnt_values
+        self.rand_conf = self.lft_arm.rand_conf
+        self.goto_given_conf = self.lft_arm.goto_given_conf
+        self.are_jnts_in_ranges = self.lft_arm.are_jnts_in_ranges
+
+    def use_rgt(self):
+        self.get_jnt_values = self.rgt_arm.get_jnt_values
+        self.rand_conf = self.rgt_arm.rand_conf
+        self.goto_given_conf = self.rgt_arm.goto_given_conf
+        self.are_jnts_in_ranges = self.rgt_arm.are_jnts_in_ranges
 
     def fix_to(self, pos, rotmat):
         self.pos = pos
