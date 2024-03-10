@@ -81,11 +81,6 @@ class StaticGeometricModel(object):
                                                 face_normals=initor.triangle_normals)
                 pdndp_core = da.trimesh_to_nodepath(self._trm_mesh, name='pdndp_core')
                 pdndp_core.reparentTo(self._pdndp)
-            elif isinstance(initor, NodePath):  # TODO: deprecate 20230815
-                self._file_path = None
-                self._trm_mesh = None
-                pdndp_core = initor
-                pdndp_core.reparentTo(self._pdndp)
             else:  # empty model
                 self._file_path = None
                 self._trm_mesh = None
@@ -170,6 +165,12 @@ class StaticGeometricModel(object):
         rgba = self._pdndp.getColor()
         self._pdndp.setColor(rgba[0], rgba[1], rgba[2], alpha)
 
+    def is_empty(self):
+        if self._trm_mesh is None:
+            return True
+        else:
+            return False
+
     def set_scale(self, scale=np.array([1, 1, 1])):
         """
         :param scale: 1x3 nparray, each element denotes the scale in x, y, and z dimensions
@@ -227,29 +228,6 @@ class WireFrameModel(StaticGeometricModel):
         self.pdndp_core.setLightOff()
 
 
-# ==============================================
-# delays for cdprim (Panda3D CollisionNode)
-# ==============================================
-
-def delay_geometry_decorator(method):
-    def wrapper(self, *args, **kwargs):
-        self._is_geom_delayed = True
-        return method(self, *args, **kwargs)
-
-    return wrapper
-
-
-def update_geometry_decorator(method):
-    def wrapper(self, *args, **kwargs):
-        # print(self._is_geom_delayed)
-        if self._is_geom_delayed:
-            self._pdndp.setPosQuat(da.npvec3_to_pdvec3(self.pos), da.npmat3_to_pdquat(self.rotmat))
-            self._is_geom_delayed = False
-        return method(self, *args, **kwargs)
-
-    return wrapper
-
-
 # ============================
 # definition of GeometricModel
 # ============================
@@ -278,7 +256,7 @@ class GeometricModel(StaticGeometricModel):
             self._local_frame = copy.deepcopy(initor.local_frame)
             self._pos = copy.deepcopy(initor._pos)
             self._rotmat = copy.deepcopy(initor._rotmat)
-            self._is_geom_delayed = copy.deepcopy(initor._is_geom_delayed)
+            self._is_pdndp_pose_delayed = copy.deepcopy(initor._is_pdndp_pose_delayed)
         else:
             super().__init__(initor=initor,
                              name=name,
@@ -286,11 +264,30 @@ class GeometricModel(StaticGeometricModel):
                              toggle_twosided=toggle_twosided)
             self._pos = np.zeros(3)
             self._rotmat = np.eye(3)
-            self._is_geom_delayed = False
+            self._is_pdndp_pose_delayed = False
         self.pdndp_core.setShaderAuto()
 
+    @staticmethod
+    def delay_pdndp_pose_decorator(method):
+        def wrapper(self, *args, **kwargs):
+            self._is_pdndp_pose_delayed = True
+            return method(self, *args, **kwargs)
+
+        return wrapper
+
+    @staticmethod
+    def update_pdndp_pose_decorator(method):
+        def wrapper(self, *args, **kwargs):
+            # print(self._is_pdndp_pose_delayed)
+            if self._is_pdndp_pose_delayed:
+                self._pdndp.setPosQuat(da.npvec3_to_pdvec3(self._pos), da.npmat3_to_pdquat(self._rotmat))
+                self._is_pdndp_pose_delayed = False
+            return method(self, *args, **kwargs)
+
+        return wrapper
+
     @property
-    @update_geometry_decorator
+    @update_pdndp_pose_decorator
     def pdndp(self):
         return self._pdndp
 
@@ -299,7 +296,7 @@ class GeometricModel(StaticGeometricModel):
         return self._pos
 
     @pos.setter
-    @delay_geometry_decorator
+    @delay_pdndp_pose_decorator
     def pos(self, pos: np.ndarray):
         self._pos = pos
 
@@ -308,7 +305,7 @@ class GeometricModel(StaticGeometricModel):
         return self._rotmat
 
     @rotmat.setter
-    @delay_geometry_decorator
+    @delay_pdndp_pose_decorator
     def rotmat(self, rotmat: np.ndarray):
         self._rotmat = rotmat
 
@@ -320,7 +317,7 @@ class GeometricModel(StaticGeometricModel):
         return homomat
 
     @homomat.setter
-    @delay_geometry_decorator
+    @delay_pdndp_pose_decorator
     def homomat(self, homomat: np.ndarray):
         self._pos = homomat[:3, 3]
         self._rotmat = homomat[:3, :3]
@@ -336,7 +333,7 @@ class GeometricModel(StaticGeometricModel):
         return (self._pos, self._rotmat)
 
     @pose.setter
-    @delay_geometry_decorator
+    @delay_pdndp_pose_decorator
     def pose(self, pose):
         """
         :param pose: tuple or list containing an npvec3 and an npmat3
@@ -348,7 +345,7 @@ class GeometricModel(StaticGeometricModel):
     def set_transparency(self, attribute):
         return self._pdndp.setTransparency(attribute)
 
-    @update_geometry_decorator
+    @update_pdndp_pose_decorator
     def attach_to(self, target):
         if isinstance(target, ShowBase):
             # for rendering to base.render
@@ -360,7 +357,7 @@ class GeometricModel(StaticGeometricModel):
         else:
             raise ValueError("Acceptable: ShowBase, StaticGeometricModel, ModelCollection!")
 
-    @update_geometry_decorator
+    @update_pdndp_pose_decorator
     def attach_copy_to(self, target):
         """
         attach a copy of pdndp to target

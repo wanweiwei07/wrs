@@ -31,11 +31,11 @@ class CollisionModel(mgm.GeometricModel):
     """
 
     def __init__(self,
-                 initor,
+                 initor=None,
+                 name="collision_model",
                  cdprim_type=mc.CDPType.AABB,
                  cdmesh_type=mc.CDMType.DEFAULT,
                  expand_radius=None,
-                 name="collision_model",
                  userdef_cdprim_fn=None,
                  toggle_transparency=True,
                  toggle_twosided=False):
@@ -64,7 +64,7 @@ class CollisionModel(mgm.GeometricModel):
             self._cdprim = copy.deepcopy(initor.cdprim)
             self._cache_for_show = copy.deepcopy(initor._cache_for_show)
             self._local_frame = copy.deepcopy(initor.local_frame)
-            self._is_geom_delayed = copy.deepcopy(initor._is_geom_delayed)
+            self._is_geom_delayed = copy.deepcopy(initor._is_pdndp_pose_delayed)
             self._is_cdprim_delayed = copy.deepcopy(initor._is_cdprim_delayed)
             self._is_cdmesh_delayed = copy.deepcopy(initor._is_cdmesh_delayed)
         else:
@@ -137,18 +137,20 @@ class CollisionModel(mgm.GeometricModel):
         author: weiwei
         date: 20211215, 20230814
         """
+        if self._trm_mesh is None:
+            return None
         if cdmesh_type is None:
             cdmesh_type = self.cdmesh_type
         if cdmesh_type == mc.CDMType.AABB:
-            trm_mesh = self.trm_mesh.aabb_bound
+            trm_mesh = self._trm_mesh.aabb_bound
         elif cdmesh_type == mc.CDMType.OBB:
-            trm_mesh = self.trm_mesh.obb_bound
+            trm_mesh = self._trm_mesh.obb_bound
         elif cdmesh_type == mc.CDMType.CONVEX_HULL:
-            trm_mesh = self.trm_mesh.convex_hull
+            trm_mesh = self._trm_mesh.convex_hull
         elif cdmesh_type == mc.CDMType.CYLINDER:
-            trm_mesh = self.trm_mesh.cyl_bound
+            trm_mesh = self._trm_mesh.cyl_bound
         elif cdmesh_type == mc.CDMType.DEFAULT:
-            trm_mesh = self.trm_mesh
+            trm_mesh = self._trm_mesh
         else:
             raise ValueError("Wrong mesh collision model end_type name!")
         cdmesh = moh.gen_cdmesh(trm_mesh)
@@ -158,22 +160,24 @@ class CollisionModel(mgm.GeometricModel):
             return cdmesh
 
     def _acquire_cdprim(self, cdprim_type=None, thickness=None, userdefined_cdprim_fn=None):
+        if self._trm_mesh is None:
+            return None
         if cdprim_type is None:
             cdprim_type = self.cdprim_type
         if thickness is None:
             thickness = 0.002
         if cdprim_type == mc.CDPType.AABB:
-            pdcndp = mph.gen_aabb_box_pdcndp(self.trm_mesh, ex_radius=thickness)
+            pdcndp = mph.gen_aabb_box_pdcndp(self._trm_mesh, ex_radius=thickness)
         elif cdprim_type == mc.CDPType.OBB:
-            pdcndp = mph.gen_obb_box_pdcndp(self.trm_mesh, ex_radius=thickness)
+            pdcndp = mph.gen_obb_box_pdcndp(self._trm_mesh, ex_radius=thickness)
         elif cdprim_type == mc.CDPType.CAPSULE:
-            pdcndp = mph.gen_capsule_pdcndp(self.trm_mesh, ex_radius=thickness)
+            pdcndp = mph.gen_capsule_pdcndp(self._trm_mesh, ex_radius=thickness)
         elif cdprim_type == mc.CDPType.CYLINDER:
-            pdcndp = mph.gen_cylinder_pdcndp(self.trm_mesh, ex_radius=thickness)
+            pdcndp = mph.gen_cylinder_pdcndp(self._trm_mesh, ex_radius=thickness)
         elif cdprim_type == mc.CDPType.SURFACE_BALLS:
-            pdcndp = mph.gen_surfaceballs_pdcnd(self.trm_mesh, radius=thickness)
+            pdcndp = mph.gen_surfaceballs_pdcnd(self._trm_mesh, radius=thickness)
         elif cdprim_type == mc.CDPType.POINT_CLOUD:
-            pdcndp = mph.gen_pointcloud_pdcndp(self.trm_mesh, radius=thickness)
+            pdcndp = mph.gen_pointcloud_pdcndp(self._trm_mesh, radius=thickness)
         elif cdprim_type == mc.CDPType.USER_DEFINED:
             if userdefined_cdprim_fn is None:
                 raise ValueError("User defined functions must provided for user_defined cdprim!")
@@ -184,21 +188,21 @@ class CollisionModel(mgm.GeometricModel):
         return pdcndp
 
     @mgm.GeometricModel.pos.setter
-    @mgm.delay_geometry_decorator
+    @mgm.GeometricModel.delay_pdndp_pose_decorator
     @delay_cdprim_decorator
     @delay_cdmesh_decorator
     def pos(self, pos: np.ndarray):
         self._pos = pos
 
     @mgm.GeometricModel.rotmat.setter
-    @mgm.delay_geometry_decorator
+    @mgm.GeometricModel.delay_pdndp_pose_decorator
     @delay_cdprim_decorator
     @delay_cdmesh_decorator
     def rotmat(self, rotmat: np.ndarray):
         self._rotmat = rotmat
 
     @mgm.GeometricModel.homomat.setter
-    @mgm.delay_geometry_decorator
+    @mgm.GeometricModel.delay_pdndp_pose_decorator
     @delay_cdprim_decorator
     @delay_cdmesh_decorator
     def homomat(self, homomat: np.ndarray):
@@ -206,7 +210,7 @@ class CollisionModel(mgm.GeometricModel):
         self._rotmat = homomat[:3, :3]
 
     @mgm.GeometricModel.pose.setter
-    @mgm.delay_geometry_decorator
+    @mgm.GeometricModel.delay_pdndp_pose_decorator
     @delay_cdprim_decorator
     @delay_cdmesh_decorator
     def pose(self, pose):
@@ -344,7 +348,8 @@ class CollisionModel(mgm.GeometricModel):
         if "cdprim" in self._cache_for_show:
             self._cache_for_show["cdprim"].removeNode()
         self._cache_for_show["cdprim"] = self.copy_reference_cdprim()
-        self._cache_for_show["cdprim"].reparentTo(self.pdndp)
+        self._cache_for_show["cdprim"].setMat(da.npmat4_to_pdmat4(self.homomat))
+        self._cache_for_show["cdprim"].reparentTo(base.render)
         mph.toggle_show_collision_node(self._cache_for_show["cdprim"], toggle_show_on=True)
 
     def unshow_cdprim(self):

@@ -475,7 +475,7 @@ if __name__ == '__main__':
     # print(result_homomat)
     # mgm.gen_myc_frame(pos=result_homomat[:3, 3], rotmat=result_homomat[:3, :3]).attach_to(base)
 
-    jnt.lnk.cmodel = mcm.CollisionModel("../../basis/objects/or2fg7_base.stl")
+    jnt.lnk.cmodel = mcm.CollisionModel(initor="../../basis/objects/or2fg7_base.stl")
     jnt.gen_model(toggle_lnk_mesh=True).attach_to(base)
     jnt.lnk.cmodel.show_cdprim()
     base.run()

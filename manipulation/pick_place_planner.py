@@ -449,7 +449,7 @@ if __name__ == '__main__':
 
     base = wd.World(cam_pos=[2, 0, 1.5], lookat_pos=[0, 0, .2])
     gm.gen_frame().attach_to(base)
-    objcm = cm.CollisionModel('tubebig.stl')
+    objcm = cm.CollisionModel(initor='tubebig.stl')
     robot_s = ym.Yumi(enable_cc=True)
     manipulator_name = 'rgt_arm'
     hand_name = 'rgt_hnd'
