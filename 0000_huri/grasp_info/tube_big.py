@@ -24,7 +24,7 @@ if __name__ == '__main__':
                                                                          gl_fgr0_opening_vec=, jaw_width=.025)
     for grasp_info in grasp_info_list:
         jaw_width, gl_jaw_center, pos, rotmat = grasp_info
-        # gic = gripper_s.copy()
+        # gic = grpr.copy()
         gripper_instance.fix_to(pos, rotmat)
         gripper_instance.change_jaw_width(jaw_width)
         gripper_instance.gen_meshmodel().attach_to(base)

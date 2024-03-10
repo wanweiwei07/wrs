@@ -71,7 +71,7 @@ class EEInterface(object):
         """
         is_found = False
         for oiee in self.oiee_list:
-            if oiee.obj_cmodel is obj_cmodel:
+            if oiee.cmodel is obj_cmodel:
                 is_found = True
                 self.oiee_list.remove(oiee)
                 break
@@ -86,13 +86,13 @@ class EEInterface(object):
         :return:
         """
         for i, cdme in enumerate(self.cdmesh_elements):
-            if cdme.obj_cmodel is not None:
-                is_collided, collision_points = cdme.obj_cmodel.is_mcdwith(cmodel_list, True)
+            if cdme.cmodel is not None:
+                is_collided, collision_points = cdme.cmodel.is_mcdwith(cmodel_list, True)
                 if is_collided:
                     if toggle_dbg:
                         import modeling.geometric_model as mgm
-                        cdme.obj_cmodel.show_cdmesh()
-                        mgm.GeometricModel(cdme.obj_cmodel).attach_to(base)
+                        cdme.cmodel.show_cdmesh()
+                        mgm.GeometricModel(cdme.cmodel).attach_to(base)
                         for cmodel in cmodel_list:
                             cmodel.show_cdmesh()
                         print(collision_points)

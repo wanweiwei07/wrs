@@ -13,7 +13,7 @@ object_bunny.attach_to(base)
 # gripper
 gripper_s = rtq85.Robotiq85()
 # base.run()
-# gripper_s.gen_meshmodel(toggle_jnt_frames=True, toggle_flange_frame=True).attach_to(base)
+# grpr.gen_meshmodel(toggle_jnt_frames=True, toggle_flange_frame=True).attach_to(base)
 # base.run()
 grasp_info_list = gpa.plan_gripper_grasps(gripper_s, object_bunny, openning_direction ='loc_y', max_samples=100, min_dist_between_sampled_contact_points=.01)
 for grasp_info in grasp_info_list:
