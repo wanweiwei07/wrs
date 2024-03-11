@@ -39,7 +39,7 @@ class Link(object):
         self._is_gl_pose_delayed = False
 
     @staticmethod
-    def delay_decorator(method):
+    def delay_gl_pose_decorator(method):
         def wrapper(self, *args, **kwargs):
             self._is_gl_pose_delayed = True
             return method(self, *args, **kwargs)
@@ -65,11 +65,21 @@ class Link(object):
             raise ValueError("uuid will not be available until cmodel is assigned.")
 
     @property
+    def root_pose(self):
+        return (self._root_pos, self._root_rotmat)
+
+    @root_pose.setter
+    @delay_gl_pose_decorator
+    def root_pose(self, pose):
+        self._root_pos = pose[0]
+        self._root_rotmat = pose[1]
+
+    @property
     def loc_pos(self):
         return self._loc_pos
 
     @loc_pos.setter
-    @delay_decorator
+    @delay_gl_pose_decorator
     def loc_pos(self, pos):
         self._loc_pos = pos
 
@@ -78,7 +88,7 @@ class Link(object):
         return self._loc_rotmat
 
     @loc_rotmat.setter
-    @delay_decorator
+    @delay_gl_pose_decorator
     def loc_rotmat(self, rotmat):
         self._loc_rotmat = rotmat
 
@@ -91,7 +101,7 @@ class Link(object):
         return (self._loc_pos, self._loc_rotmat)
 
     @loc_pose.setter
-    @delay_decorator
+    @delay_gl_pose_decorator
     def loc_pose(self, pose):
         self._loc_pos = pose[0]
         self._loc_rotmat = pose[1]
@@ -157,7 +167,9 @@ class Anchor(object):
     def __init__(self,
                  name="auto",
                  pos=np.zeros(3),
-                 rotmat=np.eye(3)):
+                 rotmat=np.eye(3),
+                 n_flange=1,
+                 n_lnk=1):
         """
         :param name:
         :param pos: pos for parent
@@ -168,11 +180,12 @@ class Anchor(object):
         self.name = name
         self._pos = pos
         self._rotmat = rotmat
-        self._loc_flange_pose_list = []
-        self._lnk_list = []
-        self._gl_flange_pose_list = self.compute_gl_flange()
-        self._is_gl_flange_delayed = False
-        self._is_lnk_delayed = False
+        self._n_flange = n_flange
+        self._n_lnk = n_lnk
+        self._loc_flange_pose_list = [[np.zeros(3), np.eye(3)] for _ in range(self._n_flange)]
+        self._lnk_list = [Link(name=name) for _ in range(self._n_lnk)]
+        self._is_gl_flange_delayed = True
+        self._is_lnk_delayed = True
 
     # decorator for delayed update of gl_flanges and lnk
     @staticmethod
@@ -213,6 +226,14 @@ class Anchor(object):
         return wrapper
 
     @property
+    def n_flange(self):
+        return self._n_flange
+
+    @property
+    def n_lnk(self):
+        return self._n_lnk
+
+    @property
     def pos(self):
         return self._pos
 
@@ -250,23 +271,26 @@ class Anchor(object):
                 self._gl_flange_pose_list]
 
     @property
-    def loc_flange_pose_list(self):  # do not allow read to avoid violating encapsulation
-        raise AttributeError("This property cannot be read")
+    @delay_gl_flange_decorator  # for reassigning individual ones
+    def loc_flange_pose_list(self):
+        return self._loc_flange_pose_list
 
     @loc_flange_pose_list.setter
     @delay_gl_flange_decorator
     def loc_flange_pose_list(self, list):
         self._loc_flange_pose_list = list
+        self._n_flange = len(self._loc_flange_pose_list)
 
     @property
     @update_gl_lnk_decorator
-    def lnk_list(self):  # warning, violating encapsulation
+    def lnk_list(self):
         return self._lnk_list
 
     @lnk_list.setter
     @delay_gl_lnk_decorator
     def lnk_list(self, list):
         self._lnk_list = list
+        self._n_lnk = len(self._lnk_list)
 
     def compute_gl_flange(self):
         gl_flange_list = []
@@ -293,8 +317,8 @@ class Anchor(object):
                       frame_stick_radius=rkc.FRAME_STICK_RADIUS,
                       frame_stick_length=rkc.FRAME_STICK_LENGTH_MEDIUM):
         m_col = rkmg.mmc.ModelCollection(name=name)
-        for lnk in self.lnk_list:
-            rkmg.gen_lnk_mesh(lnk, rgb=rgb, alpha=alpha, toggle_cdmesh=toggle_cdmesh,
+        for i in range(self._n_lnk):
+            rkmg.gen_lnk_mesh(self.lnk_list[i], rgb=rgb, alpha=alpha, toggle_cdmesh=toggle_cdmesh,
                               toggle_cdprim=toggle_cdprim).attach_to(m_col)
         if toggle_root_frame:
             mgm.gen_frame(pos=self.pos, rotmat=self.rotmat, ax_radius=frame_stick_radius,
@@ -477,5 +501,4 @@ if __name__ == '__main__':
 
     jnt.lnk.cmodel = mcm.CollisionModel(initor="../../basis/objects/or2fg7_base.stl")
     jnt.gen_model(toggle_lnk_mesh=True).attach_to(base)
-    jnt.lnk.cmodel.show_cdprim()
     base.run()

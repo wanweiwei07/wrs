@@ -35,6 +35,12 @@ class SglArmRobotInterface(ri.RobotInterface):
     def _update_end_effector(self):
         self.end_effector.fix_to(pos=self.manipulator.gl_flange_pos, rotmat=self.manipulator.gl_flange_rotmat)
 
+    def hold(self, obj_cmodel, **kwargs):
+        self.end_effector.hold(obj_cmodel, **kwargs)
+
+    def release(self, obj_cmodel, **kwargs):
+        self.end_effector.release(obj_cmodel, **kwargs)
+
     def goto_given_conf(self, jnt_values):
         result = self.manipulator.goto_given_conf(jnt_values=jnt_values)
         self._update_end_effector()

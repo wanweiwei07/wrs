@@ -1,5 +1,5 @@
 import numpy as np
-import matplotlib.colors as mcolors
+import matplotlib.pyplot as plt
 
 eps = 1e-6
 
@@ -25,10 +25,8 @@ moon_gray = np.array([0.8314, 0.8510, 0.8627, 1])  # 212, 217, 220
 china_clay = np.array([0.8314, 0.8627, 0.8275, 1])  # 212, 220, 211
 silver_gray = np.array([0.6863, 0.6863, 0.6902, 1])  # 175, 175, 176
 steel_gray = np.array([0.4510, 0.4275, 0.4431, 1])  # 115, 109, 113
-hug_gray = np.array([0.58, 0.56, 0.57, 1.0])
 navy_blue = np.array([0.1255, 0.1843, 0.3333, 1])  # 32, 47, 85
 oriental_blue = np.array([0.1490, 0.2863, 0.6157, 1])  # 38, 73, 157
-hug_blue = np.array([.107, .3, .59, 1])
 # css color (see the css_color_table_picture)
 light_coral = np.array((0.9411764705882353, 0.5019607843137255, 0.5019607843137255, 1.0))
 orange_red = np.array((1.0, 0.27058823529411763, 0.0, 1.0))
@@ -57,6 +55,22 @@ dyo_mat = np.column_stack((deep_pink[:3], yellow_green[:3], oriental_blue[:3])) 
 x_ax = np.array([1, 0, 0])
 y_ax = np.array([0, 1, 0])
 z_ax = np.array([0, 0, 1])
+
+# matplotlib colors
+plasma_map = plt.get_cmap("plasma")
+cividis_map = plt.get_cmap("cividis")
+jet_map = plt.get_cmap("jet")
+winter_map = plt.get_cmap("winter")
+summer_map = plt.get_cmap("summer")
+cool_map = plt.get_cmap("cool")
+wistia_map = plt.get_cmap("Wistia")
+spring_map = plt.get_cmap("spring")
+copper_map = plt.get_cmap("copper")
+
+tab20_list = [(r,g,b,1.0) for r,g,b in plt.get_cmap("tab20").colors]
+hug_blue = tab20_list[0]
+hug_gray = tab20_list[15]
+# rgb_mat = np.column_stack((tab20_list[6][:3], tab20_list[4][:3], tab20_list[0][:3]))
 
 if __name__ == '__main__':
     # def convert_mcolor_to_rgba(mcolor_name):

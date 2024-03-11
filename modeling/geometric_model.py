@@ -81,6 +81,11 @@ class StaticGeometricModel(object):
                                                 face_normals=initor.triangle_normals)
                 pdndp_core = da.trimesh_to_nodepath(self._trm_mesh, name='pdndp_core')
                 pdndp_core.reparentTo(self._pdndp)
+            elif isinstance(initor, NodePath):  # keeping this one to allow efficient frame representations, 20240311
+                self._file_path = None
+                self._trm_mesh = None
+                pdndp_core = initor
+                pdndp_core.reparentTo(self._pdndp)
             else:  # empty model
                 self._file_path = None
                 self._trm_mesh = None
@@ -278,7 +283,6 @@ class GeometricModel(StaticGeometricModel):
     @staticmethod
     def update_pdndp_pose_decorator(method):
         def wrapper(self, *args, **kwargs):
-            # print(self._is_pdndp_pose_delayed)
             if self._is_pdndp_pose_delayed:
                 self._pdndp.setPosQuat(da.npvec3_to_pdvec3(self._pos), da.npmat3_to_pdquat(self._rotmat))
                 self._is_pdndp_pose_delayed = False
@@ -662,40 +666,26 @@ def gen_frame(pos=np.array([0, 0, 0]),
     author: weiwei
     date: 20161212tsukuba, 20191228osaka
     """
-    endx = pos + rotmat[:, 0] * ax_length
-    endy = pos + rotmat[:, 1] * ax_length
-    endz = pos + rotmat[:, 2] * ax_length
+    end_pos = (pos + rotmat.T * ax_length).T
     if rgb_mat is None:
-        rgbx = np.array([1, 0, 0])
-        rgby = np.array([0, 1, 0])
-        rgbz = np.array([0, 0, 1])
-    else:
-        rgbx = rgb_mat[:, 0]
-        rgby = rgb_mat[:, 1]
-        rgbz = rgb_mat[:, 2]
+        rgb_mat = rm.bc.rgb_mat
     if alpha is None:
-        alphax = alphay = alphaz = 1
-    elif isinstance(alpha, np.ndarray):
-        alphax = alpha[0]
-        alphay = alpha[1]
-        alphaz = alpha[2]
-    else:
-        alphax = alphay = alphaz = alpha
-    # - 20201202 change it to ModelCollection
-    # + 20230813 changing to ModelCollection seems unnecessary
+        alpha = [1]*3
+    elif not isinstance(alpha, np.ndarray):
+        alpha = [alpha]*3
     frame_nodepath = NodePath("frame")
-    arrowx_trm = trm_factory.gen_arrow(spos=pos, epos=endx, stick_radius=ax_radius)
+    arrowx_trm = trm_factory.gen_arrow(spos=pos, epos=end_pos[:, 0], stick_radius=ax_radius)
     arrowx_nodepath = da.trimesh_to_nodepath(arrowx_trm)
     arrowx_nodepath.setTransparency(TransparencyAttrib.MAlpha)
-    arrowx_nodepath.setColor(rgbx[0], rgbx[1], rgbx[2], alphax)
-    arrowy_trm = trm_factory.gen_arrow(spos=pos, epos=endy, stick_radius=ax_radius)
+    arrowx_nodepath.setColor(rgb_mat[:, 0][0], rgb_mat[:, 0][1], rgb_mat[:, 0][2], alpha[0])
+    arrowy_trm = trm_factory.gen_arrow(spos=pos, epos=end_pos[:, 1], stick_radius=ax_radius)
     arrowy_nodepath = da.trimesh_to_nodepath(arrowy_trm)
     arrowy_nodepath.setTransparency(TransparencyAttrib.MAlpha)
-    arrowy_nodepath.setColor(rgby[0], rgby[1], rgby[2], alphay)
-    arrowz_trm = trm_factory.gen_arrow(spos=pos, epos=endz, stick_radius=ax_radius)
+    arrowy_nodepath.setColor(rgb_mat[:, 1][0], rgb_mat[:, 1][1], rgb_mat[:, 1][2], alpha[1])
+    arrowz_trm = trm_factory.gen_arrow(spos=pos, epos=end_pos[:, 2], stick_radius=ax_radius)
     arrowz_nodepath = da.trimesh_to_nodepath(arrowz_trm)
     arrowz_nodepath.setTransparency(TransparencyAttrib.MAlpha)
-    arrowz_nodepath.setColor(rgbz[0], rgbz[1], rgbz[2], alphaz)
+    arrowz_nodepath.setColor(rgb_mat[:, 2][0], rgb_mat[:, 2][1], rgb_mat[:, 2][2], alpha[2])
     arrowx_nodepath.reparentTo(frame_nodepath)
     arrowy_nodepath.reparentTo(frame_nodepath)
     arrowz_nodepath.reparentTo(frame_nodepath)
@@ -1183,11 +1173,13 @@ if __name__ == "__main__":
     base = wd.World(cam_pos=[1, 1, 1], lookat_pos=[0, 0, 0])
     objpath = os.path.join(basis.__path__[0], 'objects', 'bunnysim.stl')
     bunnygm = GeometricModel(objpath)
-    bunnygm.set_rgba([0.7, 0.7, 0.0, 1.0])
+    bunnygm.rgba = np.array([0.7, 0.7, 0.0, 1.0])
     bunnygm.attach_to(base)
     bunnygm.show_local_frame()
     rotmat = rm.rotmat_from_axangle(np.array([1, 0, 0]), math.pi / 2.0)
     bunnygm.rotmat = rotmat
+    gen_frame().attach_to(base)
+    base.run()
 
     bunnygm1 = bunnygm.copy()
     bunnygm1.set_rgba([0.7, 0, 0.7, 1.0])

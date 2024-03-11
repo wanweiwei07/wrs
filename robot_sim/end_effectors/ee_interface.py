@@ -43,7 +43,8 @@ class EEInterface(object):
         date: 20230807
         """
         for oiee in self.oiee_list:
-            oiee.install_onto(pos=self.pos, rotmat=self.rotmat)
+            # oiee.install_onto(pos=self.pos, rotmat=self.rotmat)
+            oiee.root_pose = (self.pos, self.rotmat)
 
     @assert_oiee_decorator
     def hold(self, obj_cmodel, **kwargs):
@@ -55,10 +56,7 @@ class EEInterface(object):
         author: weiwei
         date: 20230811
         """
-        obj_pos = obj_cmodel.pos
-        obj_rotmat = obj_cmodel.rotmat
-        rel_pos, rel_rotmat = rm.rel_pose(obj_pos, obj_rotmat, self.pos, self.rotmat)
-        self.oiee_list.append(rkjl.Link(loc_pos=rel_pos, loc_rotmat=rel_rotmat, cmodel=obj_cmodel))
+        self.oiee_list.append(rkjl.Link(loc_pos=obj_cmodel.pos, loc_rotmat=obj_cmodel.rotmat, cmodel=obj_cmodel))
 
     def release(self, obj_cmodel, **kwargs):
         """
@@ -104,6 +102,7 @@ class EEInterface(object):
 
     def fix_to(self, pos, rotmat):
         raise NotImplementedError
+
 
     @assert_oiee_decorator
     def align_acting_center_by_twovecs(self,
@@ -165,7 +164,6 @@ class EEInterface(object):
         for oiee in self.oiee_list:
             rkmg.gen_lnk_mesh(lnk=oiee, rgb=rgb, alpha=alpha, toggle_cdprim=toggle_cdprim, toggle_cdmesh=toggle_cdmesh,
                               toggle_frame=toggle_frame).attach_to(m_col)
-            oiee.install_onto(pos=self.pos, rotmat=self.rotmat)
 
     def _toggle_tcp_frame(self, parent):
         gl_acting_center_pos = self.rotmat.dot(self.loc_acting_center_pos) + self.pos

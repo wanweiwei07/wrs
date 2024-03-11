@@ -26,11 +26,11 @@ class Cobotta(ri.SglArmRobotInterface):
     def setup_cc(self):
         # TODO when pose is changed, oih info goes wrong
         # ee
-        elb = self.cc.add_cce(self.end_effector.jlc.anchor.lnk)
+        elb = self.cc.add_cce(self.end_effector.jlc.anchor.lnk_list[0])
         el0 = self.cc.add_cce(self.end_effector.jlc.jnts[0].lnk)
         el1 = self.cc.add_cce(self.end_effector.jlc.jnts[1].lnk)
         # manipulator
-        mlb = self.cc.add_cce(self.manipulator.jlc.anchor.lnk)
+        mlb = self.cc.add_cce(self.manipulator.jlc.anchor.lnk_list[0])
         ml0 = self.cc.add_cce(self.manipulator.jlc.jnts[0].lnk)
         ml1 = self.cc.add_cce(self.manipulator.jlc.jnts[1].lnk)
         ml2 = self.cc.add_cce(self.manipulator.jlc.jnts[2].lnk)
@@ -108,7 +108,7 @@ if __name__ == '__main__':
     # robot.jaw_to(.02)
     robot.gen_meshmodel(alpha=.5, toggle_tcp_frame=False, toggle_jnt_frames=False).attach_to(base)
     robot.gen_stickmodel(toggle_tcp_frame=True, toggle_jnt_frames=True).attach_to(base)
-    # base.run()
+    base.run()
     tgt_pos = np.array([.3, .1, .3])
     tgt_rotmat = rm.rotmat_from_axangle([0, 1, 0], math.pi * 2 / 3)
     mgm.gen_frame(pos=tgt_pos, rotmat=tgt_rotmat).attach_to(base)

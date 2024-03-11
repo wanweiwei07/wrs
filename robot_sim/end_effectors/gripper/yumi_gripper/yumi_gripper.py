@@ -18,17 +18,16 @@ class YumiGripper(gpi.GripperInterface):
         super().__init__(pos=pos, rotmat=rotmat, cdmesh_type=cdmesh_type, name=name)
         current_file_dir = os.path.dirname(__file__)
         # flange
-        self.coupling.loc_flange_pose_list = [[np.zeros(3), np.eye(3)]]
+        self.coupling.loc_flange_pose_list[0] = [np.zeros(3), np.eye(3)]
         # jaw range
         self.jaw_range = np.array([.0, .05])
         # jlc
         self.jlc = rkjlc.JLChain(pos=self.coupling.gl_flange_pose_list[0][0],
                                  rotmat=self.coupling.gl_flange_pose_list[0][1], n_dof=2, name=name)
         # anchor
-        lnk_list = [rkjlc.rkjl.Link()]
-        lnk_list[0].cmodel = mcm.CollisionModel(os.path.join(current_file_dir, "meshes", "base.stl"), cdmesh_type=self.cdmesh_type)
-        lnk_list[0].cmodel.rgba = np.array([.75, .75, .75, 1])
-        self.jlc.anchor.lnk_list = lnk_list
+        self.jlc.anchor.lnk_list[0].cmodel = mcm.CollisionModel(
+            os.path.join(current_file_dir, "meshes", "base.stl"), cdmesh_type=self.cdmesh_type)
+        self.jlc.anchor.lnk_list[0].cmodel.rgba = np.array([.75, .75, .75, 1])
         # the 1st joint (left finger)
         self.jlc.jnts[0].change_type(rkjlc.rkc.JntType.PRISMATIC, np.array([0, self.jaw_range[1] / 2]))
         self.jlc.jnts[0].loc_pos = np.array([-0.0065, 0, 0.0837])

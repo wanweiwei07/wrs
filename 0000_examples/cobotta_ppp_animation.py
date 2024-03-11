@@ -34,8 +34,14 @@ holder_2.rotmat = h2_gl_rotmat
 h2_copy = holder_2.copy()
 
 robot = cbt.Cobotta()
-robot.gen_meshmodel().attach_to(base)
-# base.run()
+robot.gen_meshmodel(rgb=rm.bc.jet_map(0.0)).attach_to(base)
+robot.end_effector.hold(holder_1)
+robot.goto_given_conf(jnt_values=np.array([np.pi/3,np.pi/2,np.pi/2,np.pi,np.pi,np.pi]))
+robot.gen_meshmodel(rgb=rm.bc.jet_map(.2)).attach_to(base)
+robot.goto_given_conf(jnt_values=np.array([0,np.pi/2,np.pi/2,np.pi,np.pi,np.pi]))
+robot.end_effector.release(holder_1)
+robot.gen_meshmodel(rgb=rm.bc.jet_map(.4)).attach_to(base)
+base.run()
 
 rrtc = rrtc.RRTConnect(robot)
 ppp = ppp.PickPlacePlanner(robot)

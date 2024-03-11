@@ -54,16 +54,19 @@ class CollisionModel(mgm.GeometricModel):
         """
         if isinstance(initor, CollisionModel):
             self.uuid = uuid.uuid4()
-            self._name = copy.deepcopy(initor.name)
-            self._file_path = copy.deepcopy(initor.file_path)
-            self._trm_mesh = copy.deepcopy(initor.trm_mesh)
+            self._name = copy.deepcopy(initor._name)
+            self._file_path = copy.deepcopy(initor._file_path)
+            self._trm_mesh = copy.deepcopy(initor._trm_mesh)
             self._pdndp = copy.deepcopy(initor.pdndp)
-            self._cdmesh_type = copy.deepcopy(initor.cdmesh_type)
+            self._local_frame = copy.deepcopy(initor._local_frame)
+            self._pos = copy.deepcopy(initor._pos)
+            self._rotmat = copy.deepcopy(initor._rotmat)
+            self._is_pdndp_pose_delayed = copy.deepcopy(initor._is_pdndp_pose_delayed)
+            self._cdmesh_type = copy.deepcopy(initor._cdmesh_type)
             self._cdmesh = copy.deepcopy(initor.cdmesh)
-            self._cdprim_type = copy.deepcopy(initor.cdprim_type)
+            self._cdprim_type = copy.deepcopy(initor._cdprim_type)
             self._cdprim = copy.deepcopy(initor.cdprim)
             self._cache_for_show = copy.deepcopy(initor._cache_for_show)
-            self._local_frame = copy.deepcopy(initor.local_frame)
             self._is_geom_delayed = copy.deepcopy(initor._is_pdndp_pose_delayed)
             self._is_cdprim_delayed = copy.deepcopy(initor._is_cdprim_delayed)
             self._is_cdmesh_delayed = copy.deepcopy(initor._is_cdmesh_delayed)
@@ -100,7 +103,9 @@ class CollisionModel(mgm.GeometricModel):
     @staticmethod
     def update_cdprim_decorator(method):
         def wrapper(self, *args, **kwargs):
+            print(self._is_cdprim_delayed)
             if self._is_cdprim_delayed:
+                print(self._cdprim.getPos())
                 self._cdprim.setPosQuat(da.npvec3_to_pdvec3(self.pos), da.npmat3_to_pdquat(self.rotmat))
                 self._is_cdprim_delayed = False
             return method(self, *args, **kwargs)
@@ -274,6 +279,7 @@ class CollisionModel(mgm.GeometricModel):
         elif isinstance(target, mgm.StaticGeometricModel):  # prepared for decorations like local frames
             self._cdprim.reparentTo(target.pdndp)
         elif isinstance(target, NodePath):
+            # print(self._cdprim.getPos(), self._cdprim.getMat())
             self._cdprim.reparentTo(target)
         else:
             raise ValueError("Acceptable: ShowBase, StaticGeometricModel, NodePath!")
@@ -317,8 +323,6 @@ class CollisionModel(mgm.GeometricModel):
         date: 20230815
         """
         return_cdprim = copy.deepcopy(self._cdprim)
-        # print(return_cdprimitive.getPos(), return_cdprimitive.getMat())
-        # return_cdprimitive.setPosQuat(da.npvec3_to_pdvec3(np.zeros(3)), da.npmat3_to_pdquat(np.eye(3)))
         return_cdprim.clearMat()
         return return_cdprim
 
@@ -348,8 +352,7 @@ class CollisionModel(mgm.GeometricModel):
         if "cdprim" in self._cache_for_show:
             self._cache_for_show["cdprim"].removeNode()
         self._cache_for_show["cdprim"] = self.copy_reference_cdprim()
-        self._cache_for_show["cdprim"].setMat(da.npmat4_to_pdmat4(self.homomat))
-        self._cache_for_show["cdprim"].reparentTo(base.render)
+        self._cache_for_show["cdprim"].reparentTo(self.pdndp)
         mph.toggle_show_collision_node(self._cache_for_show["cdprim"], toggle_show_on=True)
 
     def unshow_cdprim(self):

@@ -17,8 +17,9 @@ class CobottaArm(mi.ManipulatorInterface):
         super().__init__(pos=pos, rotmat=rotmat, home_conf=home_conf, name=name, enable_cc=enable_cc)
         current_file_dir = os.path.dirname(__file__)
         # anchor
-        self.jlc.anchor.lnk.cmodel = mcm.CollisionModel(os.path.join(current_file_dir, "meshes", "base_link.dae"))
-        self.jlc.anchor.lnk.cmodel.rgba = np.array([.7, .7, .7, 1.0])
+        self.jlc.anchor.lnk_list[0].cmodel = mcm.CollisionModel(
+            os.path.join(current_file_dir, "meshes", "base_link.dae"))
+        self.jlc.anchor.lnk_list[0].cmodel.rgba = np.array([.7, .7, .7, 1.0])
         # first joint and link
         self.jlc.jnts[0].loc_pos = np.array([0, 0, 0])
         self.jlc.jnts[0].loc_motion_ax = np.array([0, 0, 1])
@@ -113,12 +114,12 @@ if __name__ == '__main__':
     tmp_arm_stick = arm.gen_stickmodel(toggle_flange_frame=True)
     tmp_arm_stick.attach_to(base)
 
-    box = mcm.gen_box(xyz_lengths=np.array([0.1,.1,.1]),pos=tgt_pos, rgba=np.array([1,0,1,.3]))
+    box = mcm.gen_box(xyz_lengths=np.array([0.1, .1, .1]), pos=tgt_pos, rgba=np.array([1, 0, 1, .3]))
     box.attach_to(base)
-    tic=time.time()
+    tic = time.time()
     result, contacts = arm.is_collided(obstacle_list=[box], toggle_contacts=True)
-    toc=time.time()
-    print(toc-tic)
+    toc = time.time()
+    print(toc - tic)
     for pnt in contacts:
         mgm.gen_sphere(pnt).attach_to(base)
     base.run()

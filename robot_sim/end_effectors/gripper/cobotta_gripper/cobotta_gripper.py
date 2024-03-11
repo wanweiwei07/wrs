@@ -19,16 +19,14 @@ class CobottaGripper(gpi.GripperInterface):
         current_file_dir = os.path.dirname(__file__)
         # jaw range
         self.jaw_range = np.array([0.0, .03])
-        # coupling
-        self.coupling.finalize()
         # jlc
-        self.jlc = rkjlc.JLChain(pos=self.coupling.gl_flange_pos, rotmat=self.coupling.gl_flange_rotmat, n_dof=2,
-                                 name=name)
+        self.jlc = rkjlc.JLChain(pos=self.coupling.gl_flange_pose_list[0][0],
+                                 rotmat=self.coupling.gl_flange_pose_list[0][1], n_dof=2, name=name)
         # anchor
-        self.jlc.anchor.lnk.cmodel = mcm.CollisionModel(
+        self.jlc.anchor.lnk_list[0].cmodel = mcm.CollisionModel(
             os.path.join(current_file_dir, "meshes", "gripper_base.dae"),
             cdmesh_type=self.cdmesh_type)
-        self.jlc.anchor.lnk.cmodel.rgba = np.array([.35, .35, .35, 1])
+        self.jlc.anchor.lnk_list[0].cmodel.rgba = np.array([.35, .35, .35, 1])
         # the 1st joint (left finger)
         self.jlc.jnts[0].change_type(rkjlc.rkc.JntType.PRISMATIC, np.array([0, self.jaw_range[1] / 2]))
         self.jlc.jnts[0].loc_pos = np.array([0, .0, .0])
@@ -50,7 +48,7 @@ class CobottaGripper(gpi.GripperInterface):
         # acting center
         self.loc_acting_center_pos = np.array([0, 0, 0.05])
         # collisions
-        self.cdmesh_elements = (self.jlc.anchor.lnk,
+        self.cdmesh_elements = (self.jlc.anchor.lnk_list[0],
                                 self.jlc.jnts[0].lnk,
                                 self.jlc.jnts[1].lnk)
 
@@ -64,8 +62,9 @@ class CobottaGripper(gpi.GripperInterface):
                 self.jlc.jnts[1].motion_value = -jaw_width
             else:
                 raise ValueError("The angle parameter is out of range!")
-        self.coupling.fix_to(self.pos, self.rotmat)
-        self.jlc.fix_to(self.coupling.gl_flange_pos, self.coupling.gl_flange_rotmat)
+        self.coupling.pos = self.pos
+        self.coupling.rotmat = self.rotmat
+        self.jlc.fix_to(self.coupling.gl_flange_pose_list[0][0], self.coupling.gl_flange_pose_list[0][1])
         self.update_oiee()
 
     def change_jaw_width(self, jaw_width):
@@ -81,7 +80,7 @@ class CobottaGripper(gpi.GripperInterface):
 
     def gen_stickmodel(self, toggle_tcp_frame=False, toggle_jnt_frames=False, name='cobotta_gripper_stickmodel'):
         m_col = mmc.ModelCollection(name=name)
-        self.coupling.gen_stickmodel(toggle_jnt_frames=False, toggle_flange_frame=False).attach_to(m_col)
+        self.coupling.gen_stickmodel(toggle_root_frame=False, toggle_flange_frame=False).attach_to(m_col)
         self.jlc.gen_stickmodel(toggle_jnt_frames=toggle_jnt_frames, toggle_flange_frame=False).attach_to(m_col)
         if toggle_tcp_frame:
             self._toggle_tcp_frame(m_col)
@@ -99,7 +98,7 @@ class CobottaGripper(gpi.GripperInterface):
         self.coupling.gen_meshmodel(rgb=rgb,
                                     alpha=alpha,
                                     toggle_flange_frame=False,
-                                    toggle_jnt_frames=False,
+                                    toggle_root_frame=False,
                                     toggle_cdmesh=toggle_cdmesh,
                                     toggle_cdprim=toggle_cdprim).attach_to(m_col)
         self.jlc.gen_meshmodel(rgb=rgb,
@@ -122,6 +121,7 @@ if __name__ == '__main__':
 
     base = wd.World(cam_pos=[.5, .5, .5], lookat_pos=[0, 0, 0])
     gm.gen_frame().attach_to(base)
+    base.run()
     grpr = CobottaGripper(cdmesh_type=mc.CDMType.OBB)
     grpr.fix_to(pos=np.array([0, .1, .1]), rotmat=rm.rotmat_from_axangle([1, 0, 0], .7))
     print(grpr.grip_at_by_twovecs(jaw_center_pos=np.array([0, .1, .1]), approaching_vec=np.array([0, -1, 0]),

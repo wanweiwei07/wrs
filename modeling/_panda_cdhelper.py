@@ -31,6 +31,8 @@ def copy_cdprim_attach_to(cmodel,
         change_cdmask(return_pdcndp, BitMask32(0x00), action="new", type="both")
     return return_pdcndp
 
+def detach_cdprim(cdprim):
+    cdprim.removeNode()
 
 def change_cdmask(cdprim, collision_mask: BitMask32, action="new", type="both"):
     """
@@ -265,6 +267,53 @@ def gen_pdndp_wireframe(trm_model,
 # collision detection helper
 # ==========================
 
+# def is_collided(cmodel_list0, cmodel_list1, toggle_contacts=False):
+#     """
+#     detect the collision between collision models
+#     :param: cmodel_list0, a single collision model or a list of collision models
+#     :param: cmodel_list1
+#     :param toggle_contacts: True default
+#     :return:
+#     author: weiwei
+#     date: 20190312osaka, 20201214osaka, 20231123
+#     """
+#     if not isinstance(cmodel_list0, list):
+#         cmodel_list0 = [cmodel_list0]
+#     if not isinstance(cmodel_list1, list):
+#         cmodel_list1 = [cmodel_list1]
+#     cd_trav = CollisionTraverser()
+#     cd_handler = CollisionHandlerQueue()
+#     tgt_pdndp = NodePath("collision pdndp")
+#     # attach to collision tree, change bitmasks, and add colliders
+#     cprim_list0=[]
+#     for cmodel in cmodel_list0:
+#         cprim_list0.append(copy_cdprim_attach_to(cmodel, tgt_pdndp, homomat=cmodel.homomat, clear_mask=True))
+#         change_cdmask(cprim_list0[-1], BITMASK_EXT, action="remove", type="into")
+#         for child_pdcnd in cprim_list0[-1].getChildren():
+#             cd_trav.addCollider(collider=child_pdcnd, handler=cd_handler)
+#     cprim_list1=[]
+#     for cmodel in cmodel_list1:
+#         cprim_list1.append(copy_cdprim_attach_to(cmodel, tgt_pdndp, homomat=cmodel.homomat, clear_mask=True))
+#     # perform collision detection
+#     cd_trav.traverse(tgt_pdndp)
+#     # detach from collision tree, change bitmasks, and remove colliders
+#     for cdprim in cprim_list0:
+#         for child_pdcnd in cdprim.getChildren():
+#             cd_trav.removeCollider(child_pdcnd)
+#         detach_cdprim(cdprim)
+#     for cdprim in cprim_list1:
+#         detach_cdprim(cdprim)
+#     if cd_handler.getNumEntries() > 0:
+#         if toggle_contacts:
+#             contact_points = np.asarray([da.pdvec3_to_npvec3(cd_entry.getSurfacePoint(base.render)) for cd_entry in
+#                                          cd_handler.getEntries()])
+#             print(contact_points)
+#             return True, contact_points
+#         else:
+#             return True
+#     else:
+#         return False, np.asarray([]) if toggle_contacts else False
+
 def is_collided(cmodel_list0, cmodel_list1, toggle_contacts=False):
     """
     detect the collision between collision models
@@ -285,6 +334,7 @@ def is_collided(cmodel_list0, cmodel_list1, toggle_contacts=False):
     # attach to collision tree, change bitmasks, and add colliders
     for cmodel in cmodel_list0:
         cdprim = cmodel.attach_cdprim_to(tgt_pdndp)
+        print(cdprim.getPos(), cdprim.getMat())
         change_cdmask(cdprim, BITMASK_EXT, action="remove", type="into")
         for child_pdndp in cdprim.getChildren():
             cd_trav.addCollider(collider=child_pdndp, handler=cd_handler)
@@ -429,7 +479,7 @@ if __name__ == '__main__':
     for i in range(100):
         cmodel_list.append(
             mcm.CollisionModel(os.path.join(basis.__path__[0], 'objects', 'housing.stl'),
-                               cdprim_type=mc.CDPType.BOX))
+                               cdprim_type=mc.CDPType.AABB))
         cmodel_list[-1].pos = np.random.random_sample((3,))
         cmodel_list[-1].rgba = np.array([1, .5, 0, 1])
         cmodel_list[-1].attach_to(base)
