@@ -70,39 +70,14 @@ class Lite6WRSGripper2(gp.GripperInterface):
         self.jaw_center_pos = np.array([0, 0, .175])
         # collision detection
         self.all_cdelements = []
-        # self.enable_cc(toggle_cdprimit=enable_cc)
+        self.enable_cc(toggle_cdprimit=enable_cc)
 
     @staticmethod
     def _finger_cdnp(name, radius):
         collision_node = CollisionNode(name)
-        collision_primitive_c0 = CollisionBox(Point3(-.0035, 0.004, .025 + .003),
-                                              x=.0035 + radius, y=0.0032 + radius, z=.025 + .003 + radius)
+        collision_primitive_c0 = CollisionBox(Point3(.015, .01, .078),
+                                              x=.005 + radius, y=.005 + radius, z=.055 + radius)
         collision_node.addSolid(collision_primitive_c0)
-        collision_primitive_c1 = CollisionBox(Point3(.008, 0.028 - .002, -.011),
-                                              x=.018 + radius, y=0.008 + radius, z=.011 + radius)
-        collision_node.addSolid(collision_primitive_c1)
-        collision_primitive_c2 = CollisionBox(Point3(-.005, 0.012 - .002, -.002 + .0025),
-                                              x=.005 + radius, y=0.008 + radius, z=.002 + .0025 + radius)
-        collision_node.addSolid(collision_primitive_c2)
-        return collision_node
-
-    @staticmethod
-    def _hnd_base_cdnp(name, radius):
-        collision_node = CollisionNode(name)
-        collision_primitive_c0 = CollisionBox(Point3(0, 0, .031),
-                                              x=.036 + radius, y=0.038 + radius, z=.031 + radius)
-        collision_node.addSolid(collision_primitive_c0)  # 0.62
-        collision_primitive_c1 = CollisionBox(Point3(0, 0, .067),
-                                              x=.036 + radius, y=0.027 + radius, z=.003 + radius)
-        collision_node.addSolid(collision_primitive_c1)  # 0.06700000
-        #
-        collision_primitive_c2 = CollisionBox(Point3(.006, .049, .0485),
-                                              x=.02 + radius, y=.02 + radius, z=.015 + radius)
-        collision_node.addSolid(collision_primitive_c2)
-        collision_primitive_c3 = CollisionBox(Point3(0, 0, .08),
-                                              x=.013 + radius, y=0.013 + radius, z=.005 + radius)
-        collision_node.addSolid(collision_primitive_c3)
-
         return collision_node
 
     def enable_cc(self, toggle_cdprimit):
