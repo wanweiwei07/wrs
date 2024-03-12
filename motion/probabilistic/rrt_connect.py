@@ -52,7 +52,7 @@ class RRTConnect(rrt.RRT):
              start_conf,
              goal_conf,
              obstacle_list=[],
-             otherrobot_list=[],
+             other_robot_list=[],
              ext_dist=2,
              max_n_iter=300,
              max_time=15.0,
@@ -64,10 +64,10 @@ class RRTConnect(rrt.RRT):
         self.start_conf = start_conf
         self.goal_conf = goal_conf
         # check start and goal
-        if self._is_collided(start_conf, obstacle_list, otherrobot_list):
+        if self._is_collided(start_conf, obstacle_list, other_robot_list):
             print("The start robot configuration is in collision!")
             return None
-        if self._is_collided(goal_conf, obstacle_list, otherrobot_list):
+        if self._is_collided(goal_conf, obstacle_list, other_robot_list):
             print("The goal robot configuration is in collision!")
             return None
         if self._is_goal_reached(conf=start_conf, goal_conf=goal_conf, threshold=ext_dist):
@@ -93,7 +93,7 @@ class RRTConnect(rrt.RRT):
                                             ext_dist=ext_dist,
                                             goal_conf=tree_a_goal_conf,
                                             obstacle_list=obstacle_list,
-                                            other_robot_list=otherrobot_list,
+                                            other_robot_list=other_robot_list,
                                             animation=animation)
             if last_nid != -1:  # not trapped:
                 goal_nid = last_nid
@@ -103,7 +103,7 @@ class RRTConnect(rrt.RRT):
                                                 ext_dist=ext_dist,
                                                 goal_conf=tree_b_goal_conf,
                                                 obstacle_list=obstacle_list,
-                                                other_robot_list=otherrobot_list,
+                                                other_robot_list=other_robot_list,
                                                 animation=animation)
                 if last_nid == "connection":
                     self.roadmap = nx.compose(tree_a, tree_b)
@@ -121,7 +121,7 @@ class RRTConnect(rrt.RRT):
         path = self._path_from_roadmap()
         smoothed_path = self._smooth_path(path=path,
                                           obstacle_list=obstacle_list,
-                                          other_robot_list=otherrobot_list,
+                                          other_robot_list=other_robot_list,
                                           granularity=ext_dist,
                                           n_iter=smoothing_n_iter,
                                           animation=animation)

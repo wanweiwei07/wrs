@@ -103,7 +103,6 @@ class EEInterface(object):
     def fix_to(self, pos, rotmat):
         raise NotImplementedError
 
-
     @assert_oiee_decorator
     def align_acting_center_by_twovecs(self,
                                        acting_center_pos,
@@ -162,8 +161,10 @@ class EEInterface(object):
         date: 20230807
         """
         for oiee in self.oiee_list:
-            rkmg.gen_lnk_mesh(lnk=oiee, rgb=rgb, alpha=alpha, toggle_cdprim=toggle_cdprim, toggle_cdmesh=toggle_cdmesh,
-                              toggle_frame=toggle_frame).attach_to(m_col)
+            if toggle_frame:
+                oiee.cmodel.show_local_frame()
+            rkmg.gen_lnk_mesh(lnk=oiee, rgb=rgb, alpha=alpha, toggle_cdprim=toggle_cdprim,
+                              toggle_cdmesh=toggle_cdmesh).attach_to(m_col)
 
     def _toggle_tcp_frame(self, parent):
         gl_acting_center_pos = self.rotmat.dot(self.loc_acting_center_pos) + self.pos

@@ -223,10 +223,11 @@ class CollisionChecker(object):
         # base.run()
         obstacle_cdprim_list = []
         for obstacle_cmodel in obstacle_list:
-            obstacle_cdprim_list.append(mph.copy_cdprim_attach_to(obstacle_cmodel,
-                                                                  self.cd_pdndp,
-                                                                  homomat=obstacle_cmodel.homomat,
-                                                                  clear_mask=True))
+            obstacle_cmodel.attach_cdprim_to(self.cd_pdndp)
+            # obstacle_cdprim_list.append(mph.copy_cdprim_attach_to(obstacle_cmodel,
+            #                                                       self.cd_pdndp,
+            #                                                       homomat=obstacle_cmodel.homomat,
+            #                                                       clear_mask=True))
             ## show all cdprims for debug purpose
             # self.cd_pdndp.reparentTo(base.render)
             # for cdprim in self.cd_pdndp.getChildren():
@@ -239,8 +240,10 @@ class CollisionChecker(object):
         # collision check
         self.cd_trav.traverse(self.cd_pdndp)
         # clear obstacles
-        for obstacle_cdprim in obstacle_cdprim_list:
-            obstacle_cdprim.removeNode()
+        for obstacle_cmodel in obstacle_list:
+            obstacle_cmodel.detach_cdprim()
+        # for obstacle_cdprim in obstacle_cdprim_list:
+        #     obstacle_cdprim.removeNode()
         # clear other robots
         for robot in other_robot_list:
             for cce in robot.cc.cce_dict.values():

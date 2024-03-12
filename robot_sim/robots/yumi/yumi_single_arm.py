@@ -35,6 +35,7 @@ class YumiSglArm(ri.SglArmRobotInterface):
         from_list = [elb, el0, el1, ml4, ml5]
         into_list = [ml0, ml1]
         self.cc.set_cdpair_by_ids(from_list, into_list)
+        oiee_into_list = []
         # TODO oiee?
 
     def fix_to(self, pos, rotmat):
@@ -42,6 +43,9 @@ class YumiSglArm(ri.SglArmRobotInterface):
         self.rotmat = rotmat
         self.manipulator.fix_to(pos=pos, rotmat=rotmat)
         self._update_end_effector()
+
+    def get_jaw_width(self):
+        return self.end_effector.get_jaw_width()
 
     def change_jaw_width(self, jaw_width):
         self.end_effector.change_jaw_width(jaw_width=jaw_width)

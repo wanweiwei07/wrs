@@ -1,5 +1,5 @@
 import copy
-import numpy as np
+import basis.robot_math as rm
 from visualization.panda.world import ShowBase
 from panda3d.core import NodePath, CollisionNode, CollisionTraverser, CollisionHandlerQueue, BitMask32
 import basis.data_adapter as da
@@ -38,7 +38,9 @@ class CollisionModel(mgm.GeometricModel):
                  expand_radius=None,
                  userdef_cdprim_fn=None,
                  toggle_transparency=True,
-                 toggle_twosided=False):
+                 toggle_twosided=False,
+                 rgb=rm.bc.tab20_list[0],
+                 alpha=1):
         """
         :param initor:
         :param toggle_transparency:
@@ -52,29 +54,46 @@ class CollisionModel(mgm.GeometricModel):
                                            may have multiple CollisionSolid
         date: 20190312, 20201212, 20230814, 20231124
         """
+
         if isinstance(initor, CollisionModel):
+            if initor.trm_mesh is not None:
+                super().__init__(initor=initor.trm_mesh,
+                                 name=name,
+                                 toggle_transparency=initor.pdndp.getTransparency(),
+                                 toggle_twosided=initor.pdndp.getTwoSided())
+            else:
+                super().__init__(initor=initor.pdndp,
+                                 name=name,
+                                 toggle_transparency=initor.pdndp.getTransparency(),
+                                 toggle_twosided=initor.pdndp.getTwoSided())
+            self._pos = initor.pos
+            self._rotmat = initor.rotmat
+            self._is_pdndp_pose_delayed = True
+            self.pdndp.setColor(initor.pdndp.getColor())
+            self.pdndp_core.setShaderAuto()
+            # collision model
             self.uuid = uuid.uuid4()
-            self._name = copy.deepcopy(initor._name)
-            self._file_path = copy.deepcopy(initor._file_path)
-            self._trm_mesh = copy.deepcopy(initor._trm_mesh)
-            self._pdndp = copy.deepcopy(initor.pdndp)
-            self._local_frame = copy.deepcopy(initor._local_frame)
-            self._pos = copy.deepcopy(initor._pos)
-            self._rotmat = copy.deepcopy(initor._rotmat)
-            self._is_pdndp_pose_delayed = copy.deepcopy(initor._is_pdndp_pose_delayed)
-            self._cdmesh_type = copy.deepcopy(initor._cdmesh_type)
-            self._cdmesh = copy.deepcopy(initor.cdmesh)
-            self._cdprim_type = copy.deepcopy(initor._cdprim_type)
+            self._ex_radius=initor._ex_radius
+            # cd primitive
+            self._cdprim_type = initor.cdprim_type
             self._cdprim = copy.deepcopy(initor.cdprim)
-            self._cache_for_show = copy.deepcopy(initor._cache_for_show)
-            self._is_geom_delayed = copy.deepcopy(initor._is_pdndp_pose_delayed)
-            self._is_cdprim_delayed = copy.deepcopy(initor._is_cdprim_delayed)
-            self._is_cdmesh_delayed = copy.deepcopy(initor._is_cdmesh_delayed)
+            # cd mesh
+            self._cdmesh_type = initor.cdmesh_type
+            self._cdmesh = copy.deepcopy(initor.cdprim)
+            # delays
+            self._is_cdprim_delayed = True
+            self._is_cdmesh_delayed = True
+            # cache for show
+            self._cache_for_show = {}
+            # others
+            self._local_frame = None
         else:
             super().__init__(initor=initor,
                              name=name,
                              toggle_transparency=toggle_transparency,
-                             toggle_twosided=toggle_twosided)
+                             toggle_twosided=toggle_twosided,
+                             rgb=rgb,
+                             alpha=alpha)
             self.uuid = uuid.uuid4()
             self._ex_radius = expand_radius
             # cd primitive
@@ -84,8 +103,8 @@ class CollisionModel(mgm.GeometricModel):
             self._cdmesh_type = cdmesh_type
             self._cdmesh = self._acquire_cdmesh(cdmesh_type)
             # delays
-            self._is_cdprim_delayed = False
-            self._is_cdmesh_delayed = False
+            self._is_cdprim_delayed = True
+            self._is_cdmesh_delayed = True
             # cache for show
             self._cache_for_show = {}
             # others
@@ -103,9 +122,7 @@ class CollisionModel(mgm.GeometricModel):
     @staticmethod
     def update_cdprim_decorator(method):
         def wrapper(self, *args, **kwargs):
-            print(self._is_cdprim_delayed)
             if self._is_cdprim_delayed:
-                print(self._cdprim.getPos())
                 self._cdprim.setPosQuat(da.npvec3_to_pdvec3(self.pos), da.npmat3_to_pdquat(self.rotmat))
                 self._is_cdprim_delayed = False
             return method(self, *args, **kwargs)
@@ -164,7 +181,7 @@ class CollisionModel(mgm.GeometricModel):
         else:
             return cdmesh
 
-    def _acquire_cdprim(self, cdprim_type=None, thickness=None, userdefined_cdprim_fn=None):
+    def _acquire_cdprim(self, cdprim_type=None, thickness=None, userdef_cdprim_fn=None):
         if self._trm_mesh is None:
             return None
         if cdprim_type is None:
@@ -184,11 +201,12 @@ class CollisionModel(mgm.GeometricModel):
         elif cdprim_type == mc.CDPType.POINT_CLOUD:
             pdcndp = mph.gen_pointcloud_pdcndp(self._trm_mesh, radius=thickness)
         elif cdprim_type == mc.CDPType.USER_DEFINED:
-            if userdefined_cdprim_fn is None:
+            if userdef_cdprim_fn is None:
                 raise ValueError("User defined functions must provided for user_defined cdprim!")
-            pdcndp = userdefined_cdprim_fn(ex_radius=thickness)
+            pdcndp = userdef_cdprim_fn(ex_radius=thickness)
         else:
-            raise ValueError("Wrong primitive collision model end_type name!")
+            print(cdprim_type)
+            raise ValueError("Wrong primitive collision model cdprim_type name!")
         mph.change_cdmask(pdcndp, mph.BITMASK_EXT, action="new", type="both")
         return pdcndp
 
@@ -196,21 +214,21 @@ class CollisionModel(mgm.GeometricModel):
     @mgm.GeometricModel.delay_pdndp_pose_decorator
     @delay_cdprim_decorator
     @delay_cdmesh_decorator
-    def pos(self, pos: np.ndarray):
+    def pos(self, pos: rm.np.ndarray):
         self._pos = pos
 
     @mgm.GeometricModel.rotmat.setter
     @mgm.GeometricModel.delay_pdndp_pose_decorator
     @delay_cdprim_decorator
     @delay_cdmesh_decorator
-    def rotmat(self, rotmat: np.ndarray):
+    def rotmat(self, rotmat: rm.np.ndarray):
         self._rotmat = rotmat
 
     @mgm.GeometricModel.homomat.setter
     @mgm.GeometricModel.delay_pdndp_pose_decorator
     @delay_cdprim_decorator
     @delay_cdmesh_decorator
-    def homomat(self, homomat: np.ndarray):
+    def homomat(self, homomat: rm.np.ndarray):
         self._pos = homomat[:3, 3]
         self._rotmat = homomat[:3, :3]
 
@@ -257,12 +275,12 @@ class CollisionModel(mgm.GeometricModel):
             mph.toggle_show_collision_node(self._cache_for_show["cdmesh"], toggle_show_on=True)
 
     @delay_cdprim_decorator
-    def change_cdprim_type(self, cdprim_type, expand_radius=None, userdefined_cdprim_fn=None):
+    def change_cdprim_type(self, cdprim_type, expand_radius=None, userdef_cdprim_fn=None):
         if expand_radius is not None:
             self._ex_radius = expand_radius
         self._cdprim = self._acquire_cdprim(cdprim_type=cdprim_type,
                                             thickness=expand_radius,
-                                            userdefined_cdprim_fn=userdefined_cdprim_fn)
+                                            userdef_cdprim_fn=userdef_cdprim_fn)
         self._cdprim_type = cdprim_type
         # update if show_primitive is toggled on
         if "cdprim" in self._cache_for_show:
@@ -298,8 +316,8 @@ class CollisionModel(mgm.GeometricModel):
         """
         return_cdmesh = copy.deepcopy(self._cdmesh)
         # clear rotmat
-        return_cdmesh.setPosition(da.npvec3_to_pdvec3(np.zeros(3)))
-        return_cdmesh.setRotation(da.npmat3_to_pdmat3(np.eye(3)))
+        return_cdmesh.setPosition(da.npvec3_to_pdvec3(rm.np.zeros(3)))
+        return_cdmesh.setRotation(da.npmat3_to_pdmat3(rm.np.eye(3)))
         return return_cdmesh
 
     @update_cdmesh_decorator
@@ -399,14 +417,12 @@ class CollisionModel(mgm.GeometricModel):
             return contact_point, contact_normal
 
     def copy(self):
-        return CollisionModel(self)
-
-    def __deepcopy__(self):
-        """
-        this function helps make sure the uuid is unique
-        :return:
-        """
-        return CollisionModel(self)
+        cmodel = CollisionModel(self)
+        cmodel.pos = self.pos
+        cmodel.rotmat = self.rotmat
+        cmodel.change_cdmesh_type(cdmesh_type=self.cdmesh_type)
+        cmodel.change_cdprim_type(cdprim_type=self.cdprim_type, expand_radius=self._ex_radius)  # TODO user_defined_fn
+        return cmodel
 
 
 # ======================================================
@@ -414,7 +430,8 @@ class CollisionModel(mgm.GeometricModel):
 # ======================================================
 
 
-def gen_box(xyz_lengths=np.array([.1, .1, .1]), pos=np.zeros(3), rotmat=np.eye(3), rgba=np.array([1, 0, 0, 1])):
+def gen_box(xyz_lengths=rm.np.array([.1, .1, .1]), pos=rm.np.zeros(3), rotmat=rm.np.eye(3),
+            rgba=rm.np.array([1, 0, 0, 1])):
     """
     :param xyz_lengths:
     :param pos:
@@ -428,7 +445,7 @@ def gen_box(xyz_lengths=np.array([.1, .1, .1]), pos=np.zeros(3), rotmat=np.eye(3
     return box_cm
 
 
-def gen_sphere(pos=np.array([0, 0, 0]), radius=0.01, rgba=np.array([1, 0, 0, 1])):
+def gen_sphere(pos=rm.np.array([0, 0, 0]), radius=0.01, rgba=rm.np.array([1, 0, 0, 1])):
     """
     :param pos:
     :param radius:
@@ -442,11 +459,11 @@ def gen_sphere(pos=np.array([0, 0, 0]), radius=0.01, rgba=np.array([1, 0, 0, 1])
     return sphere_cm
 
 
-def gen_stick(spos=np.array([.0, .0, .0]),
-              epos=np.array([.0, .0, .1]),
+def gen_stick(spos=rm.np.array([.0, .0, .0]),
+              epos=rm.np.array([.0, .0, .1]),
               radius=.0025,
               type="round",
-              rgba=np.array([1, 0, 0, 1]),
+              rgba=rm.np.array([1, 0, 0, 1]),
               n_sec=8):
     """
     :param spos:
@@ -476,16 +493,16 @@ if __name__ == "__main__":
 
     objpath = os.path.join(basis.__path__[0], "objects", "bunnysim.stl")
     bunnycm = CollisionModel(objpath, cdprim_type=mc.CDPType.CAPSULE)
-    bunnycm.rgba = np.array([0.7, 0.7, 0.0, .2])
+    bunnycm.rgba = rm.np.array([0.7, 0.7, 0.0, .2])
     bunnycm.show_local_frame()
     bunnycm.attach_to(base)
     bunnycm.change_cdmesh_type(cdmesh_type=mc.CDMType.CYLINDER)
     bunnycm.show_cdprim()
 
     bunnycm1 = CollisionModel(objpath, cdprim_type=mc.CDPType.CYLINDER)
-    bunnycm1.rgba = np.array([0.7, 0, 0.7, 1.0])
+    bunnycm1.rgba = rm.np.array([0.7, 0, 0.7, 1.0])
     rotmat = rm.rotmat_from_euler(0, 0, math.radians(15))
-    bunnycm1.pos = np.array([0, .01, 0])
+    bunnycm1.pos = rm.np.array([0, .01, 0])
     bunnycm1.rotmat = rotmat
     bunnycm1.attach_to(base)
     bunnycm1.show_cdprim()

@@ -111,7 +111,7 @@ class CobottaGripper(gpi.GripperInterface):
             self._toggle_tcp_frame(m_col)
         # oiee
         self.gen_oiee_meshmodel(m_col, rgb=rgb, alpha=alpha, toggle_cdprim=toggle_cdprim,
-                                toggle_cdmesh=toggle_cdmesh, toggle_frame=toggle_jnt_frames)
+                                toggle_cdmesh=toggle_cdmesh)
         return m_col
 
 

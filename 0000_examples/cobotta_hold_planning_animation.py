@@ -23,7 +23,8 @@ if __name__ == '__main__':
     # obj_cmodel.show_cdprim()
 
     obj_cmodel2 = obj_cmodel.copy()
-    obj_cmodel2.pos = np.array([.2, .2, .2])
+    # obj_cmodel2 = mcm.CollisionModel("objects/holder.stl")
+    obj_cmodel2.pos = np.array([.05, .1, .2])
     obj_cmodel2.attach_to(base)
     robot.hold(obj_cmodel2)
 
@@ -43,9 +44,7 @@ if __name__ == '__main__':
             self.planner = rrtc_planner
             self.obstacle_list = [obj_cmodel]
 
-
     animation_data = Data()
-
 
     def update(animation_data, task):
         if animation_data.counter >= len(animation_data.path):
@@ -87,13 +86,13 @@ if __name__ == '__main__':
         animation_data.robot.goto_given_conf(jnt_values=conf)
         # robot_meshmodel = animation_data.robot.gen_meshmodel(rgb=rm.bc.jet_map(animation_data.counter / len(animation_data.path)),
         #                                       alpha=1)
-        robot_meshmodel = animation_data.robot.gen_meshmodel(alpha=.3)
+        robot_meshmodel = animation_data.robot.gen_meshmodel(toggle_cdprim=True, alpha=.3)
         robot_meshmodel.attach_to(base)
         animation_data.robot_attached_list.append(robot_meshmodel)
         animation_data.counter += 1
         print(animation_data.counter)
-        if animation_data.counter > 30 and len(animation_data.robot.end_effector.oiee_list)>0:
-            animation_data.robot.release(obj_cmodel2)
+        # if animation_data.counter > 30 and len(animation_data.robot.end_effector.oiee_list)>0:
+        #     animation_data.robot.release(obj_cmodel2)
         return task.again
 
 

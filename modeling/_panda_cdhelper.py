@@ -334,10 +334,9 @@ def is_collided(cmodel_list0, cmodel_list1, toggle_contacts=False):
     # attach to collision tree, change bitmasks, and add colliders
     for cmodel in cmodel_list0:
         cdprim = cmodel.attach_cdprim_to(tgt_pdndp)
-        print(cdprim.getPos(), cdprim.getMat())
         change_cdmask(cdprim, BITMASK_EXT, action="remove", type="into")
-        for child_pdndp in cdprim.getChildren():
-            cd_trav.addCollider(collider=child_pdndp, handler=cd_handler)
+        for child_pdcnd in cdprim.getChildren():
+            cd_trav.addCollider(collider=child_pdcnd, handler=cd_handler)
     for cmodel in cmodel_list1:
         cmodel.attach_cdprim_to(tgt_pdndp)
     # perform collision detection
@@ -346,8 +345,8 @@ def is_collided(cmodel_list0, cmodel_list1, toggle_contacts=False):
     for cmodel in cmodel_list0:
         cmodel.detach_cdprim()
         change_cdmask(cmodel.cdprim, BITMASK_EXT, action="add", type="into")
-        for child_pdndp in cmodel.cdprim.getChildren():
-            cd_trav.removeCollider(child_pdndp)
+        for child_pdcnd in cmodel.cdprim.getChildren():
+            cd_trav.removeCollider(child_pdcnd)
     for cmodel in cmodel_list1:
         cmodel.detach_cdprim()
     if cd_handler.getNumEntries() > 0:

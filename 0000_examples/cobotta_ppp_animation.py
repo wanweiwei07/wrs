@@ -48,8 +48,10 @@ ppp = ppp.PickPlacePlanner(robot)
 
 original_grasp_info_list = gpa.load_pickle_file(obj_name='holder', path='./', file_name='cobg_holder_grasps.pickle')
 start_conf = robot.get_jnt_values()
+
+
 conf_list, jawwidth_list, objpose_list = \
-    ppp_s.gen_pick_and_place_motion(hnd_name=hand_name,
+    ppp.gen_pick_and_place_motion(hnd_name=hand_name,
                                     objcm=object_holder,
                                     grasp_info_list=original_grasp_info_list,
                                     start_conf=start_conf,

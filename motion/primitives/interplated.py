@@ -2,16 +2,20 @@ import math
 import numpy as np
 import basis.robot_math as rm
 import motion.utils as utils
+import robot_sim.robots.single_arm_robot_interface as sari
 
 
 class InterplatedMotion(object):
     """
+    NOTE: only accept sgl_arm_robot as initiator
     author: weiwei
     date: 20230809
     """
 
-    def __init__(self, robot):
-        self.robot = robot
+    def __init__(self, sgl_arm_robot):
+        if not isinstance(sgl_arm_robot, sari.SglArmRobotInterface):
+            raise ValueError("Only single arm robot can be used to initiate an InterplateMotion instance!")
+        self.robot = sgl_arm_robot
 
     @utils.keep_jnt_values_decorator
     def gen_linear_motion(self,
@@ -46,7 +50,6 @@ class InterplatedMotion(object):
             jnt_values = self.robot.ik(pos, rotmat, seed_jnt_values=seed_jnt_values)
             if jnt_values is None:
                 if toggle_dbg:
-                    print(jnt_values_list)
                     for jnt_values in jnt_values_list:
                         self.robot.goto_given_conf(jnt_values)
                         self.robot.gen_meshmodel(alpha=.3).attach_to(base)
@@ -70,7 +73,6 @@ class InterplatedMotion(object):
             seed_jnt_values = jnt_values
         return jnt_values_list
 
-    @utils.keep_jnt_values_decorator
     def gen_rel_linear_motion(self,
                               goal_tcp_pos,
                               goal_tcp_rotmat,
@@ -231,9 +233,13 @@ if __name__ == '__main__':
     base = wd.World(cam_pos=[3, 2, 2], lookat_pos=[0, 0, 0.2])
     gm.gen_frame().attach_to(base)
     robot = ym.Yumi(enable_cc=True)
-    start_pos = np.array([.5, -.3, .3])
+    # start_pos = np.array([.5, -.3, .3])
+    # start_rotmat = rm.rotmat_from_axangle([0, 1, 0], math.pi / 2)
+    # goal_pos = np.array([.55, -.2, .6])
+    # goal_rotmat = rm.rotmat_from_axangle([0, 1, 0], math.pi / 2)
+    start_pos = np.array([.55, -.1, .4])
     start_rotmat = rm.rotmat_from_axangle([0, 1, 0], math.pi / 2)
-    goal_pos = np.array([.55, -.2, .6])
+    goal_pos = np.array([.55, -.1, .3])
     goal_rotmat = rm.rotmat_from_axangle([0, 1, 0], math.pi / 2)
     gm.gen_frame(pos=start_pos, rotmat=start_rotmat).attach_to(base)
     gm.gen_frame(pos=goal_pos, rotmat=goal_rotmat).attach_to(base)

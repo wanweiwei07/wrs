@@ -51,23 +51,18 @@ def gen_lnk_mesh(lnk,
                  rgb=None,
                  alpha=None,
                  toggle_cdprim=False,
-                 toggle_cdmesh=False,
-                 toggle_frame=False):
+                 toggle_cdmesh=False):
     if lnk.cmodel is not None:
+        cmodel = mcm.CollisionModel(lnk.cmodel)
         if toggle_cdmesh:
-            lnk.cmodel.show_cdmesh()
+            cmodel.show_cdmesh()
         if toggle_cdprim:
-            lnk.cmodel.show_cdprim()
-        gmodel = mgm.GeometricModel(lnk.cmodel)
-        lnk.cmodel.unshow_cdmesh()
-        lnk.cmodel.unshow_cdprim()
+            cmodel.show_cdprim()
         if rgb is not None:
-            gmodel.rgb = rgb
+            cmodel.rgb = rgb
         if alpha is not None:
-            gmodel.alpha = alpha
-        if toggle_frame:
-            mgm.gen_frame(pos=lnk.gl_pos, rotmat=lnk.gl_rotmat).attach_to(gmodel)
-        return gmodel
+            cmodel.alpha = alpha
+        return cmodel
     else:
         return mgm.GeometricModel(name="empty_lnk_mesh")
 

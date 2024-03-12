@@ -27,18 +27,27 @@ class StaticGeometricModel(object):
                  initor=None,
                  name="sgm",
                  toggle_transparency=True,
-                 toggle_twosided=False):
+                 toggle_twosided=False,
+                 rgb=rm.bc.tab20_list[0],
+                 alpha=1):
         """
         :param initor: path end_type defined by os.path or trimesh or pdndp
         :param toggle_transparency
         :param name
         """
         if isinstance(initor, StaticGeometricModel):
-            self._file_path = copy.deepcopy(initor.file_path)
-            self._trm_mesh = copy.deepcopy(initor.trm_mesh)
-            self._pdndp = copy.deepcopy(initor.pdndp)
-            self._name = copy.deepcopy(initor.name)
-            self._local_frame = copy.deepcopy(initor.local_frame)
+            if initor.trm_mesh is not None:
+                self.__init__(initor=initor.trm_mesh, name=initor.name,
+                              toggle_transparency=initor.pdndp.getTransparency(),
+                              toggle_twosided=initor.pdndp.getTwoSided(),
+                              rgb=initor.rgb,
+                              alpha=initor.alpha)
+            else:
+                self.__init__(initor=initor.pdndp, name=initor.name,
+                              toggle_transparency=initor.pdndp.getTransparency(),
+                              toggle_twosided=initor.pdndp.getTwoSided(),
+                              rgb=initor.rgb,
+                              alpha=initor.alpha)
         else:
             # make a grandma pdndp to separate decorations (-autoshader) and raw pdndp (+autoshader)
             self._name = name
@@ -95,6 +104,7 @@ class StaticGeometricModel(object):
                 self._pdndp.setTransparency(TransparencyAttrib.MDual)
             if toggle_twosided:
                 self._pdndp.getChild(0).setTwoSided(True)
+                self._pdndp.setColor(rgb[0], rgb[1], rgb[2], alpha)
             self._local_frame = None
 
     @property
@@ -249,28 +259,39 @@ class GeometricModel(StaticGeometricModel):
                  initor=None,
                  name="mgm",
                  toggle_transparency=True,
-                 toggle_twosided=False):
+                 toggle_twosided=False,
+                 rgb=rm.bc.tab20_list[0],
+                 alpha=1):
         """
         :param initor: path end_type defined by os.path or trimesh or pdndp
         """
         if isinstance(initor, GeometricModel):
-            self._file_path = copy.deepcopy(initor.file_path)
-            self._trm_mesh = copy.deepcopy(initor.trm_mesh)
-            self._pdndp = copy.deepcopy(initor.pdndp)
-            self._name = copy.deepcopy(initor.name)
-            self._local_frame = copy.deepcopy(initor.local_frame)
-            self._pos = copy.deepcopy(initor._pos)
-            self._rotmat = copy.deepcopy(initor._rotmat)
-            self._is_pdndp_pose_delayed = copy.deepcopy(initor._is_pdndp_pose_delayed)
+            if initor.trm_mesh is not None:
+                super().__init__(initor=initor.trm_mesh,
+                                 name=name,
+                                 toggle_transparency=initor.pdndp.getTransparency(),
+                                 toggle_twosided=initor.pdndp.getTwoSided())
+            else:
+                super().__init__(initor=initor.pdndp,
+                                 name=name,
+                                 toggle_transparency=initor.pdndp.getTransparency(),
+                                 toggle_twosided=initor.pdndp.getTwoSided())
+            self._pos = initor.pos
+            self._rotmat = initor.rotmat
+            self._is_pdndp_pose_delayed = True
+            self.pdndp.setColor(initor.pdndp.getColor())
+            self.pdndp_core.setShaderAuto()
         else:
             super().__init__(initor=initor,
                              name=name,
                              toggle_transparency=toggle_transparency,
-                             toggle_twosided=toggle_twosided)
+                             toggle_twosided=toggle_twosided,
+                             rgb=rgb,
+                             alpha=alpha)
             self._pos = np.zeros(3)
             self._rotmat = np.eye(3)
-            self._is_pdndp_pose_delayed = False
-        self.pdndp_core.setShaderAuto()
+            self._is_pdndp_pose_delayed = True
+            self.pdndp_core.setShaderAuto()
 
     @staticmethod
     def delay_pdndp_pose_decorator(method):
@@ -408,7 +429,9 @@ class GeometricModel(StaticGeometricModel):
             print("The toggle_option parameter must be \"None\", \"point_face_ids\", or \"point_nromals\"!")
 
     def copy(self):
-        return copy.deepcopy(self)
+        gmodel = GeometricModel(self)
+        gmodel.pos = self.pos
+        gmodel.rotmat = self.rotmat
 
 
 # ======================================================
@@ -670,9 +693,9 @@ def gen_frame(pos=np.array([0, 0, 0]),
     if rgb_mat is None:
         rgb_mat = rm.bc.rgb_mat
     if alpha is None:
-        alpha = [1]*3
+        alpha = [1] * 3
     elif not isinstance(alpha, np.ndarray):
-        alpha = [alpha]*3
+        alpha = [alpha] * 3
     frame_nodepath = NodePath("frame")
     arrowx_trm = trm_factory.gen_arrow(spos=pos, epos=end_pos[:, 0], stick_radius=ax_radius)
     arrowx_nodepath = da.trimesh_to_nodepath(arrowx_trm)
