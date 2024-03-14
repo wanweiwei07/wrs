@@ -57,7 +57,7 @@ class ForceRecorder(object):
                     # print(len(self.__force))
                     force = [l[:3] for l in self.__force]
                     torque = [l[3:] for l in self.__force]
-                    # distance = [np.linalg.norm(self.fixgoal - np.array(dis[1])) for dis in self.__tcp]
+                    # linear_distance = [np.linalg.norm(self.fixgoal - np.array(dis[1])) for dis in self.__tcp]
 
                     x = [0.02 * i for i in range(len(force))]
                     plt.xlim((0, max(x)))

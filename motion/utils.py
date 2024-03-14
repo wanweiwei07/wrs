@@ -2,7 +2,7 @@
 # keep jnt values decorator
 # ==============================================
 
-def keep_jnt_values_decorator(method):
+def keep_jnts_decorator(method):
     """
     decorator function for save and restore robot's joint values
     applicable to both single or multi-arm robots
@@ -19,7 +19,7 @@ def keep_jnt_values_decorator(method):
 
     return wrapper
 
-def keep_jnt_jaw_values_decorator(method):
+def keep_jnts_jaw_decorator(method):
     """
     decorator function for save and restore robot's joints and jaw values
     only applicable to single-arm robot
@@ -38,7 +38,7 @@ def keep_jnt_jaw_values_decorator(method):
 
     return wrapper
 
-def keep_jnt_jaw_objpose_values_decorator(method):
+def keep_jnts_jaw_objpose_decorator(method):
     """
     decorator function for save and restore robot's joints and jaw values
     only applicable to single-arm robot
@@ -53,7 +53,6 @@ def keep_jnt_jaw_objpose_values_decorator(method):
         obj_pose_bk = kwargs["obj_cmodel"].pose
         result = method(self, *args, **kwargs)
         self.robot.goto_given_conf(jnt_values=jnt_values_bk)
-        self.robot.release(kwargs["obj_cmodel"])
         self.robot.change_jaw_width(jaw_width=jaw_width_bk)
         kwargs["obj_cmodel"].pose=obj_pose_bk
         return result

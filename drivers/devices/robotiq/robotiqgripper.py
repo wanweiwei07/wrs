@@ -49,7 +49,7 @@ class Robotiq_Two_Finger_Gripper(object):
         """
 
         if fingerdistance > self.__type:
-            print("The given opening distance is larger than maximum distance: " + str(self.__type) +".")
+            print("The given opening linear_distance is larger than maximum linear_distance: " + str(self.__type) +".")
             raise ValueError()
 
         if speedpercentange > 100 or forcepercentage > 100:

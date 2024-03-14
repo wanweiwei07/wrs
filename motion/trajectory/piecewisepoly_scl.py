@@ -301,16 +301,16 @@ class PiecewisePolyScl(object):
 
 # TODO
 """
-function trapezoidInterpolate(distance,v0,v3,vmax,a,t) {
+function trapezoidInterpolate(linear_distance,v0,v3,vmax,a,t) {
 // assumes t0=0
 t1 = (vmax-v0) / a; // time from v0 to vmax (time to reach full speed)
 t4 = (max-v3) / a; // time from vmax to v3 (time to brake)
- d1 = v0*t1 + 0.5*a*t1*t1; // distance t0-t1
-d2 = v3*t4 + 0.5*a*t4*t4; // distance t2-t3
+ d1 = v0*t1 + 0.5*a*t1*t1; // linear_distance t0-t1
+d2 = v3*t4 + 0.5*a*t4*t4; // linear_distance t2-t3
 
-if( d1+d2 < distance ) {
+if( d1+d2 < linear_distance ) {
 // plateau at vmax in the middle
-tplateau = ( distance – d1 – d2 ) / vmax;
+tplateau = ( linear_distance – d1 – d2 ) / vmax;
 t2 = t1 + tplateau;
 t3 = t2 + t4;
 } else {
@@ -318,7 +318,7 @@ t3 = t2 + t4;
 // http://wikipedia.org/wiki/Classical_mechanics#1-Dimensional_Kinematics
 t1 = ( sqrt( 2.0*a*brake_distance + v0*v0 ) – v0 ) / a;
 t2 = t1;
-t3 = t2 + ( sqrt( 2.0*a*(distance-brake_distance) + v3*v3 ) – v3 ) / a;
+t3 = t2 + ( sqrt( 2.0*a*(linear_distance-brake_distance) + v3*v3 ) – v3 ) / a;
 }
 
 if(t<t1) {
@@ -337,6 +337,6 @@ v2 = accel * t1;
 down = v2*t4 + 0.5*a*t4*t4;
 return up+plateau+down;
 }
-return distance;
+return linear_distance;
 }
 """

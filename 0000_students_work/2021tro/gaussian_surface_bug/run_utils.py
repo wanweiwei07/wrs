@@ -130,7 +130,7 @@ def get_pen_objmat4_list_by_drawpath(drawpath, paintingobj_item, method="msd", d
         pos_nrml_list, error_list = pu.rayhitmesh_drawpath_ss(paintingobj_item, drawpath)
 
     elif method == "msd":
-        # move same distance
+        # move same linear_distance
         pos_nrml_list, error_list, time_cost = \
             pu.prj_drawpath_ss_on_pcd(paintingobj_item, drawpath, mode=mode, direction=direction)
     else:
@@ -152,7 +152,7 @@ def get_pen_objmat4_list_by_drawpath_ms(drawpath_ms, paintingobj_item, drawrec_s
 
     paintingobj_cm.sethomomat(paintingobj_objmat4)
 
-    # move same distance
+    # move same linear_distance
     pos_normal_list_ms, error_list, time_cost = \
         pu.prj_drawpath_ms_on_pcd(paintingobj_item, drawpath_ms, mode=mode, direction=direction)
     objmat4_draw_list_ms = []

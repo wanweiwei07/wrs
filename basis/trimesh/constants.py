@@ -10,7 +10,7 @@ class NumericalToleranceMesh(object):
     tol.merge: when merging vertices, consider vertices closer than this
                to be the same vertex. Here we use the same value (1e-8)
                as SolidWorks uses, according to their documentation.
-    tol.planar: the maximum distance from a plane a point can be and
+    tol.planar: the maximum linear_distance from a plane a point can be and
                 still be considered to be on the plane
     tol.facet_rsq: the minimum major_radius squared that an arc drawn from the
                    center of a face to the center of an adjacent face can
@@ -41,7 +41,7 @@ class NumericalToleranceMesh(object):
 
 class NumericalResolutionMesh(object):
     '''
-    res.mesh: when meshing solids, what distance to use
+    res.mesh: when meshing solids, what linear_distance to use
     '''
 
     def __init__(self, **kwargs):
@@ -60,7 +60,7 @@ class NumericalTolerancePath(object):
     tol.zero: consider floating point numbers less than this zero
     tol.merge: when merging vertices, consider vertices closer than this
                to be the same vertex
-    tol.planar: the maximum distance from a plane a point can be and
+    tol.planar: the maximum linear_distance from a plane a point can be and
                 still be considered to be on the plane
     tol.seg_frac: when simplifying line segments what percentage of the drawing
                   scale can a segment be and have a curve fitted

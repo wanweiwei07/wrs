@@ -667,7 +667,7 @@ def execute_global_registration(source_down, target_down, source_fpfh, target_fp
     distance_threshold = 30
     print(":: RANSAC registration on downsampled point clouds.")
     print("   Since the downsampling voxel size is %.3f," % voxel_size)
-    print("   we use a liberal distance threshold %.3f." % distance_threshold)
+    print("   we use a liberal linear_distance threshold %.3f." % distance_threshold)
     result = o3d.registration.registration_ransac_based_on_feature_matching(
         source_down, target_down, source_fpfh, target_fpfh, distance_threshold,
         o3d.registration.TransformationEstimationPointToPoint(False), 4, [
@@ -681,7 +681,7 @@ def refine_registration(source, target, result_ransac):
     distance_threshold = 30
     print(":: Point-to-plane ICP registration is applied on original point")
     print("   clouds to refine the alignment. This time we use a strict")
-    print("   distance threshold %.3f." % distance_threshold)
+    print("   linear_distance threshold %.3f." % distance_threshold)
     result = o3d.registration.registration_icp(
         source, target, distance_threshold, result_ransac.transformation,
         o3d.registration.TransformationEstimationPointToPlane())
@@ -1127,7 +1127,7 @@ if __name__ == "__main__":
     #                                                goal_tcp_pos=rgt_pos,
     #                                                goal_tcp_rotmat=rgt_rotmat,
     #                                                motion_vec=-dir,
-    #                                                distance=.15,
+    #                                                linear_distance=.15,
     #                                                end_type='source')
     # # for conf in path:
     # #     robot_s.fk(arm_name, conf)

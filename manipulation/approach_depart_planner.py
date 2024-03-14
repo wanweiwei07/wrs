@@ -10,6 +10,23 @@ import motion.probabilistic.rrt_connect as rrtc
 import robot_sim.robots.single_arm_robot_interface as sari
 
 
+class ADData(object):
+    def __init__(self):
+        self.jaw_width_list = None
+        self.conf_list = None
+
+    def __add__(self, other):
+        self.jaw_width_list += other.jaw_width_list
+        self.conf_list += other.conf_list
+        return self
+
+    def __len__(self):
+        return len(self.conf_list)
+
+    def is_available(self):
+        return (not (self.conf_list is None))
+
+
 class ADPlanner(object):
     """
     AD = Approach_Depart
@@ -28,117 +45,96 @@ class ADPlanner(object):
         self.rrtc_planner = rrtc.RRTConnect(self.robot)
         self.im_planner = mpi.InterplatedMotion(self.robot)
 
-    def gen_jaw_width_list(self, conf_list, jaw_width):
-        jaw_width_list = [jaw_width]*len(conf_list)
-        return jaw_width_list
-
-    def gen_approach_linear(self,
+    def gen_linear_approach(self,
                             goal_tcp_pos,
                             goal_tcp_rotmat,
-                            approaching_vec=None,
-                            approaching_dist=.1,
-                            approaching_jaw_width=.05,
+                            direction=None,
+                            distance=.1,
+                            jaw_width=.05,
                             granularity=0.03,
-                            obstacle_list=[],
-                            seed_jnt_values=None,
-                            toggle_end_jaw_motion=False,
-                            end_jaw_width=.0):
+                            obstacle_list=[]):
         """
         :param goal_tcp_pos:
         :param goal_tcp_rotmat:
-        :param approaching_vec: use the loc_z of goal_tcp_rotmat if None
-        :param approaching_dist:
-        :param approaching_jaw_width:
+        :param direction: use the loc_z of goal_tcp_rotmat if None
+        :param distance:
+        :param jaw_width:
         :param granularity:
         :param obstacle_list:
         :param seed_jnt_values
-        :param toggle_end_jaw_motion:
-        :param end_jaw_width: only used when toggle_end_jaw_motion is True
         :return:
         author: weiwei
         date: 20210125
         """
-        if approaching_vec is None:
-            approaching_vec = goal_tcp_rotmat[:, 2]
+        result_data = ADData()
+        if direction is None:
+            direction = goal_tcp_rotmat[:, 2]
         conf_list = self.im_planner.gen_rel_linear_motion(goal_tcp_pos,
                                                           goal_tcp_rotmat,
-                                                          approaching_vec,
-                                                          approaching_dist,
+                                                          direction,
+                                                          distance,
                                                           obstacle_list=obstacle_list,
                                                           granularity=granularity,
-                                                          type='sink',
-                                                          seed_jnt_values=seed_jnt_values)
+                                                          type='sink')
         if conf_list is None:
             print('Cannot perform approach linear!')
-            return None, None
+            return result_data
         else:
-            if toggle_end_jaw_motion:
-                jawwidth_list = self.gen_jaw_width_list(conf_list, approaching_jaw_width)
-                conf_list += [conf_list[-1]]
-                jawwidth_list += [end_jaw_width]
-                return conf_list, jawwidth_list
-            else:
-                return conf_list, self.gen_jaw_width_list(conf_list, approaching_jaw_width)
+            result_data.conf_list = conf_list
+            result_data.jaw_width_list = [None] * len(conf_list)
+            result_data.jaw_width_list[0] = jaw_width
+            return result_data
 
-    def gen_depart_linear(self,
+    def gen_linear_depart(self,
                           start_tcp_pos,
                           start_tcp_rotmat,
-                          depart_direction=None,  # np.array([0, 0, 1])
-                          depart_distance=.1,
-                          depart_jaw_width=.05,
+                          direction=None,  # np.array([0, 0, 1])
+                          distance=.1,
+                          jaw_width=.05,
                           granularity=0.03,
-                          obstacle_list=[],
-                          seed_jnt_values=None,
-                          toggle_start_jaw_motion=False,
-                          start_jaw_width=.0):
+                          obstacle_list=[]):
         """
         :param goal_tcp_pos:
         :param goal_tcp_rotmat:
-        :param depart_direction:
-        :param depart_distance:
-        :param depart_jaw_width:
+        :param direction:
+        :param distance:
+        :param jaw_width:
         :param granularity:
         :param seed_jnt_values:
-        :param toggle_start_jaw_motion:
-        :param start_jaw_width: only used when toggle_end_jaw_motion is True
         :return: conf_list, jaw_width_list, objhomomat_list_list
         author: weiwei
         date: 20210125
         """
-        if depart_direction is None:
-            depart_direction = -start_tcp_rotmat[:, 2]
+        result_data = ADData()
+        if direction is None:
+            direction = -start_tcp_rotmat[:, 2]
         conf_list = self.im_planner.gen_rel_linear_motion(start_tcp_pos,
                                                           start_tcp_rotmat,
-                                                          depart_direction,
-                                                          depart_distance,
+                                                          direction,
+                                                          distance,
                                                           obstacle_list=obstacle_list,
                                                           granularity=granularity,
-                                                          type='source',
-                                                          seed_jnt_values=seed_jnt_values)
+                                                          type='source')
         if conf_list is None:
             print('Cannot perform depart action!')
-            return None, None
+            return result_data
         else:
-            if toggle_start_jaw_motion:
-                jaw_width_list = self.gen_jaw_width_list(conf_list, depart_jaw_width)
-                conf_list = [conf_list[0]] + conf_list
-                jaw_width_list = [start_jaw_width] + jaw_width_list
-                return conf_list, jaw_width_list
-            else:
-                return conf_list, self.gen_jaw_width_list(conf_list, depart_jaw_width)
+            result_data.conf_list = conf_list
+            result_data.jaw_width_list = [None] * len(conf_list)
+            result_data.jaw_width_list[0] = jaw_width
+            return result_data
 
-    def gen_approach_and_depart_linear(self,
-                                       goal_tcp_pos,
-                                       goal_tcp_rotmat,
-                                       approach_direction=None,  # np.array([0, 0, -1])
-                                       approach_distance=.1,
-                                       approach_jaw_width=.05,
-                                       depart_direction=None,  # np.array([0, 0, 1])
-                                       depart_distance=.1,
-                                       depart_jawwidth=0,
-                                       granularity=.03,
-                                       obstacle_list=[],
-                                       seed_jnt_values=None):
+    def gen_linear_approach_depart(self,
+                                   goal_tcp_pos,
+                                   goal_tcp_rotmat,
+                                   approach_direction=None,  # np.array([0, 0, -1])
+                                   approach_distance=.1,
+                                   approach_jaw_width=.05,
+                                   depart_direction=None,  # np.array([0, 0, 1])
+                                   depart_distance=.1,
+                                   depart_jaw_width=0,
+                                   granularity=.03,
+                                   obstacle_list=[]):
         """
         :param goal_tcp_pos:
         :param goal_tcp_rotmat:
@@ -148,14 +144,14 @@ class ADPlanner(object):
         :param approach_jaw_width:
         :param depart_direction:
         :param depart_distance:
-        :param depart_jawwidth:
+        :param depart_jaw_width:
         :param granularity:
         :param obstacle_list:
-        :param seed_jnt_values
         :return: approach_conf_list, depart_jaw_width_list
         author: weiwei, hao
         date: 20191122, 20200105, 20210113, 20210125
         """
+        result_data = ADData()
         if approach_direction is None:
             approach_direction = goal_tcp_rotmat[:, 2]
         approach_conf_list = self.im_planner.gen_rel_linear_motion(goal_tcp_pos,
@@ -164,13 +160,10 @@ class ADPlanner(object):
                                                                    approach_distance,
                                                                    obstacle_list=obstacle_list,
                                                                    granularity=granularity,
-                                                                   type='sink',
-                                                                   seed_jnt_values=seed_jnt_values)
+                                                                   type='sink')
         if approach_conf_list is None:
             print("ADPlanner: Cannot gen approach linear!")
-            return None, None
-        if approach_distance != 0 and len(approach_conf_list) == 0:
-            print('Cannot perform approach action!')
+            return result_data
         else:
             if depart_direction is None:
                 depart_direction = goal_tcp_rotmat[:, 2]
@@ -180,127 +173,83 @@ class ADPlanner(object):
                                                                      depart_distance,
                                                                      obstacle_list=obstacle_list,
                                                                      granularity=granularity,
-                                                                     type='source',
-                                                                     seed_jnt_values=approach_conf_list[-1])
+                                                                     type='source')
             if depart_conf_list is None:
                 print("ADPlanner: Cannot gen depart linear!")
-                return None, None
-            if depart_distance != 0 and len(depart_conf_list) == 0:
-                print('Cannot perform depart action!')
+                return result_data
             else:
-                approach_jaw_width_list = self.gen_jaw_width_list(approach_conf_list, approach_jaw_width)
-                depart_jaw_width_list = self.gen_jaw_width_list(depart_conf_list, depart_jawwidth)
-                return approach_conf_list + depart_conf_list, approach_jaw_width_list + depart_jaw_width_list
-        return [], []
+                result_data.conf_list = approach_conf_list + depart_conf_list
+                result_data.jaw_width_list = [None] * (result_data.conf_list)
+                result_data.jaw_width_list[0] = approach_jaw_width
+                result_data.jaw_width_list[len(approach_conf_list)] = depart_jaw_width
+                return result_data
 
-    def gen_approach_motion(self,
-                            goal_tcp_pos,
-                            goal_tcp_rotmat,
-                            start_conf=None,
-                            approach_direction=None,
-                            approach_distance=.1,
-                            approach_jaw_width=.05,
-                            granularity=.03,
-                            obstacle_list=[],  # obstacles, will be checked by both rrt and linear
-                            object_list=[],  # target objects, will be checked by rrt, but not by linear
-                            seed_jnt_values=None,
-                            toggle_end_jaw_motion=False,
-                            end_jaw_width=.0):
-        if seed_jnt_values is None:
-            seed_jnt_values = start_conf
-        if approach_direction is None:
-            approach_direction = goal_tcp_rotmat[:, 2]
-        conf_list, jaw_width_list = self.gen_approach_linear(goal_tcp_pos,
-                                                             goal_tcp_rotmat,
-                                                             approach_direction,
-                                                             approach_distance,
-                                                             approach_jaw_width,
-                                                             granularity,
-                                                             obstacle_list,
-                                                             seed_jnt_values,
-                                                             toggle_end_jaw_motion,
-                                                             end_jaw_width)
+    def gen_linear_approach_with_given_conf(self,
+                                            goal_conf,
+                                            direction=None,
+                                            distance=.1,
+                                            jaw_width=.05,
+                                            granularity=0.03,
+                                            obstacle_list=[]):
+        result_data = ADData()
+        goal_tcp_pos, goal_tcp_rotmat = self.robot.fk(goal_conf)
+        if direction is None:
+            direction = goal_tcp_rotmat[:, 2]
+        conf_list = self.im_planner.gen_rel_linear_motion_with_given_conf(goal_conf=goal_conf,
+                                                                          direction=direction,
+                                                                          distance=distance,
+                                                                          obstacle_list=obstacle_list,
+                                                                          granularity=granularity,
+                                                                          type="sink")
         if conf_list is None:
-            print("ADPlanner: Cannot gen approach linear!")
-            return None, None
-        if start_conf is not None:
-            start2approach_conf_list = self.rrtc_planner.plan(start_conf=start_conf,
-                                                              goal_conf=conf_list[0],
-                                                              obstacle_list=obstacle_list + object_list,
-                                                              ext_dist=.05,
-                                                              max_time=100)
-            if start2approach_conf_list is None:
-                print("ADPlanner: Cannot plan the motion from start_conf to the beginning of approach!")
-                return None, None
-            start2approach_jaw_width_list = self.gen_jaw_width_list(start2approach_conf_list, approach_jaw_width)
-        return start2approach_conf_list + conf_list, start2approach_jaw_width_list + jaw_width_list
-
-    def gen_depart_motion(self,
-                          start_tcp_pos,
-                          start_tcp_rotmat,
-                          end_conf=None,
-                          depart_direction=None,
-                          depart_distance=.1,
-                          depart_jaw_width=.05,
-                          granularity=.03,
-                          obstacle_list=[],  # obstacles, will be checked by both rrt and linear
-                          object_list=[],  # target objects, will be checked by rrt, but not by linear
-                          seed_jnt_values=None,
-                          toggle_start_jaw_motion=False,
-                          begin_jaw_width=.0):
-        if seed_jnt_values is None:
-            seed_jnt_values = end_conf
-        if depart_direction is None:
-            depart_direction = start_tcp_rotmat[:, 2]
-        conf_list, jaw_width_list = self.gen_depart_linear(start_tcp_pos,
-                                                           start_tcp_rotmat,
-                                                           depart_direction,
-                                                           depart_distance,
-                                                           depart_jaw_width,
-                                                           granularity,
-                                                           obstacle_list,
-                                                           seed_jnt_values,
-                                                           toggle_start_jaw_motion,
-                                                           begin_jaw_width)
-        if conf_list is None:
-            print("ADPlanner: Cannot gen depart linear!")
-            return None, None
-        if end_conf is not None:
-            depart2goal_conf_list = self.rrtc_planner.plan(start_conf=conf_list[-1],
-                                                           goal_conf=end_conf,
-                                                           obstacle_list=obstacle_list + object_list,
-                                                           ext_dist=.05,
-                                                           max_time=100)
-            if depart2goal_conf_list is None:
-                print("ADPlanner: Cannot plan depart motion!")
-                return None, None
-            depart2goal_jaw_width_list = self.gen_jaw_width_list(depart2goal_conf_list, depart_jaw_width)
+            print('Cannot perform approach linear with given conf!')
+            return result_data
         else:
-            depart2goal_conf_list = []
-            depart2goal_jaw_width_list = []
-        return conf_list + depart2goal_conf_list, jaw_width_list + depart2goal_jaw_width_list
+            result_data.conf_list = conf_list
+            result_data.jaw_width_list = [None] * len(conf_list)
+            result_data.jaw_width_list[0] = jaw_width
+            return result_data
 
-    def gen_approach_and_depart_motion(self,
-                                       goal_tcp_pos,
-                                       goal_tcp_rotmat,
-                                       start_conf=None,
-                                       goal_conf=None,
-                                       approach_direction=None,  # np.array([0, 0, -1])
-                                       approach_distance=.2,
-                                       approach_jaw_width=.05,
-                                       depart_direction=None,  # np.array([0, 0, 1])
-                                       depart_distance=.2,
-                                       depart_jaw_width=0,
-                                       granularity=.03,
-                                       obstacle_list=[],  # obstacles, will be checked by both rrt and linear
-                                       object_list=[]):  # target objects, will be checked by rrt, but not by linear)
+    def gen_linear_depart_with_given_conf(self,
+                                          start_conf,
+                                          direction=None,
+                                          distance=.1,
+                                          jaw_width=.05,
+                                          granularity=0.03,
+                                          obstacle_list=[]):
+        result_data = ADData()
+        start_tcp_pos, start_tcp_rotmat = self.robot.fk(start_conf)
+        if direction is None:
+            direction = -start_tcp_rotmat[:, 2]
+        conf_list = self.im_planner.gen_rel_linear_motion_with_given_conf(goal_conf=start_conf,
+                                                                          direction=direction,
+                                                                          distance=distance,
+                                                                          obstacle_list=obstacle_list,
+                                                                          granularity=granularity,
+                                                                          type="source")
+        if conf_list is None:
+            print('Cannot perform approach linear with given conf!')
+            return result_data
+        else:
+            result_data.conf_list = conf_list
+            result_data.jaw_width_list = [None] * len(conf_list)
+            result_data.jaw_width_list[0] = jaw_width
+            return result_data
+
+    def gen_linear_approach_depart_with_given_conf(self,
+                                                   goal_conf,
+                                                   approach_direction=None,  # np.array([0, 0, -1])
+                                                   approach_distance=.1,
+                                                   approach_jaw_width=.05,
+                                                   depart_direction=None,  # np.array([0, 0, 1])
+                                                   depart_distance=.1,
+                                                   depart_jaw_width=0,
+                                                   granularity=.03,
+                                                   obstacle_list=[]):
         """
-        degenerate into gen_ad_primitive if both seed_jnt_values and end_conf are None
-        :param component_name:
         :param goal_tcp_pos:
         :param goal_tcp_rotmat:
-        :param start_conf:
-        :param goal_conf:
+        :param hnd_name:
         :param approach_direction:
         :param approach_distance:
         :param approach_jaw_width:
@@ -308,51 +257,223 @@ class ADPlanner(object):
         :param depart_distance:
         :param depart_jaw_width:
         :param granularity:
-        :param seed_jnt_values:
+        :param obstacle_list:
+        :return: approach_conf_list, depart_jaw_width_list
+        author: weiwei, hao
+        date: 20191122, 20200105, 20210113, 20210125
+        """
+        approach_data = self.gen_linear_approach_with_given_conf(goal_conf=goal_conf,
+                                                                 direction=approach_direction,
+                                                                 distance=approach_distance,
+                                                                 jaw_width=approach_jaw_width,
+                                                                 granularity=granularity,
+                                                                 obstacle_list=obstacle_list)
+        if approach_data.is_available():
+            depart_data = self.gen_linear_depart_with_given_conf(start_conf=goal_conf,
+                                                                 direction=depart_direction,
+                                                                 distance=depart_distance,
+                                                                 jaw_width=depart_jaw_width,
+                                                                 granularity=granularity,
+                                                                 obstacle_list=obstacle_list)
+            if depart_data.is_available():
+                return approach_data + depart_data
+        return ADData()
+
+    def gen_approach_motion(self,
+                            goal_tcp_pos,
+                            goal_tcp_rotmat,
+                            start_conf=None,
+                            linear_direction=None,
+                            linear_distance=.1,
+                            jaw_width=.05,
+                            granularity=.03,
+                            obstacle_list=[],  # obstacles, will be checked by both rrt and linear
+                            object_list=[]):  # target objects, will be checked by rrt, but not by linear
+        result_data = ADData()
+        if linear_direction is None:
+            linear_direction = goal_tcp_rotmat[:, 2]
+        linear_approach_data = self.gen_linear_approach(goal_tcp_pos,
+                                                        goal_tcp_rotmat,
+                                                        linear_direction,
+                                                        linear_distance,
+                                                        jaw_width,
+                                                        granularity,
+                                                        obstacle_list)
+        if linear_approach_data.is_available():
+            if start_conf is not None:
+                start2approach_conf_list = self.rrtc_planner.plan(start_conf=start_conf,
+                                                                  goal_conf=linear_approach_data.conf_list[0],
+                                                                  obstacle_list=obstacle_list + object_list,
+                                                                  ext_dist=.1,
+                                                                  max_time=100)
+                if start2approach_conf_list is None:
+                    print("ADPlanner: Cannot plan the motion from start_conf to the beginning of approach!")
+                    return result_data
+                result_data.conf_list = start2approach_conf_list
+                result_data.jaw_width_list = [None] * len(result_data.conf_list)
+                result_data.jaw_width_list[0] = jaw_width
+                linear_approach_data.jaw_width_list[0] = None  # avoid repeated jaw change
+                return result_data + linear_approach_data
+        else:
+            print("ADPlanner: Cannot gen approach linear!")
+            return result_data
+
+    def gen_depart_motion(self,
+                          start_tcp_pos,
+                          start_tcp_rotmat,
+                          end_conf=None,
+                          linear_direction=None,
+                          linear_distance=.1,
+                          jaw_width=.05,
+                          granularity=.03,
+                          obstacle_list=[],  # obstacles, will be checked by both rrt and linear
+                          object_list=[]):  # target objects, will be checked by rrt, but not by linear
+        result_data = ADData()
+        if linear_direction is None:
+            linear_direction = start_tcp_rotmat[:, 2]
+        linear_depart_data = self.gen_linear_depart(start_tcp_pos,
+                                                    start_tcp_rotmat,
+                                                    linear_direction,
+                                                    linear_distance,
+                                                    jaw_width,
+                                                    granularity,
+                                                    obstacle_list)
+        if linear_depart_data.is_available():
+            if end_conf is not None:
+                depart2end_conf_list = self.rrtc_planner.plan(start_conf=linear_depart_data.conf_list[-1],
+                                                              goal_conf=end_conf,
+                                                              obstacle_list=obstacle_list + object_list,
+                                                              ext_dist=.1,
+                                                              max_time=100)
+                if depart2end_conf_list is None:
+                    print("ADPlanner: Cannot plan depart motion!")
+                    return result_data
+                result_data.conf_list = depart2end_conf_list
+                result_data.jaw_width_list = [None] * len(result_data.conf_list)
+                return linear_depart_data + result_data
+        else:
+            print("ADPlanner: Cannot gen depart linear!")
+            return result_data
+
+    def gen_approach_motion_with_given_conf(self,
+                                            goal_conf,
+                                            start_conf=None,
+                                            linear_direction=None,
+                                            linear_distance=.1,
+                                            jaw_width=.05,
+                                            granularity=.03,
+                                            obstacle_list=[],  # obstacles, will be checked by both rrt and linear
+                                            object_list=[]):  # target objects, will be checked by rrt, but not by linear
+        result_data = ADData()
+        linear_approach_data = self.gen_linear_approach_with_given_conf(goal_conf=goal_conf,
+                                                                        direction=linear_direction,
+                                                                        distance=linear_distance,
+                                                                        jaw_width=jaw_width,
+                                                                        granularity=granularity,
+                                                                        obstacle_list=obstacle_list)
+        if linear_approach_data.is_available():
+            if start_conf is not None:
+                depart2end_conf_list = self.rrtc_planner.plan(start_conf=start_conf,
+                                                              goal_conf=linear_approach_data.conf_list[0],
+                                                              obstacle_list=obstacle_list + object_list,
+                                                              ext_dist=.1,
+                                                              max_time=100)
+                if depart2end_conf_list is None:
+                    print("ADPlanner: Cannot plan depart motion!")
+                    return result_data
+            result_data.conf_list = depart2end_conf_list
+            result_data.jaw_width_list = [None] * len(result_data.conf_list)
+            linear_approach_data.jaw_width_list[0] = None
+            return result_data + linear_approach_data
+        else:
+            print("ADPlanner: Cannot gen depart linear!")
+            return result_data
+
+    def gen_depart_motion_with_given_conf(self,
+                                          start_conf,
+                                          end_conf=None,
+                                          linear_direction=None,
+                                          linear_distance=.1,
+                                          jaw_width=.05,
+                                          granularity=.03,
+                                          obstacle_list=[],  # obstacles, will be checked by both rrt and linear
+                                          object_list=[]):  # target objects, will be checked by rrt, but not by linear
+        result_data = ADData()
+        linear_depart_data = self.gen_linear_depart_with_given_conf(start_conf=start_conf,
+                                                                    direction=linear_direction,
+                                                                    distance=linear_distance,
+                                                                    jaw_width=jaw_width,
+                                                                    granularity=granularity,
+                                                                    obstacle_list=obstacle_list)
+        if linear_depart_data.is_available():
+            if end_conf is not None:
+                depart2end_conf_list = self.rrtc_planner.plan(start_conf=linear_depart_data.conf_list[-1],
+                                                              goal_conf=end_conf,
+                                                              obstacle_list=obstacle_list + object_list,
+                                                              ext_dist=.1,
+                                                              max_time=100)
+                if depart2end_conf_list is None:
+                    print("ADPlanner: Cannot plan depart motion!")
+                    return result_data
+                result_data.conf_list = depart2end_conf_list
+                result_data.jaw_width_list = [None] * len(result_data.conf_list)
+                return linear_depart_data + result_data
+        else:
+            print("ADPlanner: Cannot gen depart linear!")
+            return result_data
+
+    def gen_approach_depart_motion(self,
+                                   goal_tcp_pos,
+                                   goal_tcp_rotmat,
+                                   start_conf=None,
+                                   end_conf=None,
+                                   approach_direction=None,  # np.array([0, 0, -1])
+                                   approach_distance=.1,
+                                   approach_jaw_width=.05,
+                                   depart_direction=None,  # np.array([0, 0, 1])
+                                   depart_distance=.1,
+                                   depart_jaw_width=0,
+                                   granularity=.03,
+                                   obstacle_list=[],  # obstacles, will be checked by both rrt and linear
+                                   object_list=[]):  # target objects, will be checked by rrt, but not by linear
+        """
+        :param goal_tcp_pos:
+        :param goal_tcp_rotmat:
+        :param start_conf:
+        :param end_conf:
+        :param approach_direction:
+        :param approach_distance:
+        :param approach_jaw_width:
+        :param depart_direction:
+        :param depart_distance:
+        :param depart_jaw_width:
+        :param granularity:
         :param obstacle_list:
         :return:
         author: weiwei
         date: 20210113, 20210125
         """
-        if approach_direction is None:
-            approach_direction = goal_tcp_rotmat[:, 2]
-        if depart_direction is None:
-            approach_direction = -goal_tcp_rotmat[:, 2]
-        ad_conf_list, ad_jaw_width_list = self.gen_approach_and_depart_linear(goal_tcp_pos,
-                                                                              goal_tcp_rotmat,
-                                                                              approach_direction,
-                                                                              approach_distance,
-                                                                              approach_jaw_width,
-                                                                              depart_direction,
-                                                                              depart_distance,
-                                                                              depart_jaw_width,
-                                                                              granularity,
-                                                                              obstacle_list)
-        if ad_conf_list is None:
-            print("ADPlanner: Cannot gen ad linear!")
-            return None, None
-        if start_conf is not None:
-            start2approach_conf_list = self.rrtc_planner.plan(start_conf=start_conf,
-                                                              goal_conf=ad_conf_list[0],
-                                                              obstacle_list=obstacle_list,
-                                                              ext_dist=.05,
-                                                              max_time=300)
-            if start2approach_conf_list is None:
-                print("ADPlanner: Cannot plan approach motion!")
-                return None, None
-            start2approach_jaw_width_list = self.gen_jaw_width_list(start2approach_conf_list, approach_jaw_width)
-        if goal_conf is not None:
-            depart2goal_conf_list = self.rrtc_planner.plan(start_conf=ad_conf_list[-1],
-                                                           goal_conf=goal_conf,
-                                                           obstacle_list=obstacle_list + object_list,
-                                                           ext_dist=.05,
-                                                           max_time=300)
-            if depart2goal_conf_list is None:
-                print("ADPlanner: Cannot plan depart motion!")
-                return None, None
-            depart2goal_jaw_width_list = self.gen_jaw_width_list(depart2goal_conf_list, depart_jaw_width)
-        return (start2approach_conf_list + ad_conf_list + depart2goal_conf_list,
-                start2approach_jaw_width_list + ad_jaw_width_list + depart2goal_jaw_width_list)
+        approach_data = self.gen_approach_motion(goal_tcp_pos=goal_tcp_pos,
+                                                 goal_tcp_rotmat=goal_tcp_rotmat,
+                                                 start_conf=start_conf,
+                                                 linear_direction=approach_direction,
+                                                 linear_distance=approach_distance,
+                                                 jaw_width=approach_jaw_width,
+                                                 granularity=granularity,
+                                                 obstacle_list=obstacle_list,
+                                                 object_list=object_list)
+        if approach_data.is_available():
+            depart_data = self.gen_depart_motion_with_given_conf(start_conf=approach_data.conf_list[-1],
+                                                                 end_conf=end_conf,
+                                                                 linear_direction=depart_direction,
+                                                                 linear_distance=depart_distance,
+                                                                 jaw_width=depart_jaw_width,
+                                                                 granularity=granularity,
+                                                                 obstacle_list=obstacle_list,
+                                                                 object_list=object_list)
+            if depart_data.is_available():
+                return approach_data + depart_data
+        return ADData()
 
     def gen_depart_and_approach_linear(self):
         pass
@@ -382,27 +503,86 @@ if __name__ == '__main__':
     sgl_arm = robot.rgt_arm
     adp = ADPlanner(sgl_arm)
     tic = time.time()
-    conf_list, jaw_width_list = adp.gen_approach_and_depart_motion(goal_pos,
-                                                                   goal_rotmat,
-                                                                   start_conf=sgl_arm.get_jnt_values(),
-                                                                   goal_conf=sgl_arm.get_jnt_values(),
-                                                                   approach_direction=np.array([0, 0, -1]),
-                                                                   approach_distance=.1,
-                                                                   depart_direction=np.array([0, -1, 0]),
-                                                                   depart_distance=.1,
-                                                                   depart_jaw_width=0)
+    # approach_motion_data = adp.gen_approach_motion(goal_pos,
+    #                                                goal_rotmat,
+    #                                                start_conf=sgl_arm.get_jnt_values(),
+    #                                                linear_direction=np.array([0, 0, -1]),
+    #                                                linear_distance=.1)
+    # depart_motion_data = adp.gen_depart_motion(goal_pos,
+    #                                            goal_rotmat,
+    #                                            end_conf=sgl_arm.get_jnt_values(),
+    #                                            linear_direction=np.array([0, 0, -1]),
+    #                                            linear_distance=.1)
+    ad_motion_data = adp.gen_approach_depart_motion(goal_tcp_pos=goal_pos,
+                                                    goal_tcp_rotmat=goal_rotmat,
+                                                    start_conf=sgl_arm.get_jnt_values(),
+                                                    end_conf=sgl_arm.get_jnt_values())
+
+
+    class Data(object):
+        def __init__(self):
+            self.robot_attached_list = []
+            self.counter = 0
+            # self.motion_data = approach_motion_data + depart_motion_data
+            self.motion_data = ad_motion_data
+            self.robot = robot
+            self.sgl_arm = robot.rgt_arm
+
+
+    anime_data = Data()
+
+
+    def update(anime_data, task):
+        if anime_data.counter >= len(anime_data.motion_data):
+            if len(anime_data.robot_attached_list) != 0:
+                for robot_attached in anime_data.robot_attached_list:
+                    robot_attached.detach()
+            anime_data.robot_attached_list.clear()
+            anime_data.counter = 0
+        if len(anime_data.robot_attached_list) > 1:
+            for robot_attached in anime_data.robot_attached_list:
+                robot_attached.detach()
+        conf = anime_data.motion_data.conf_list[anime_data.counter]
+        jaw_width = anime_data.motion_data.jaw_width_list[anime_data.counter]
+        anime_data.sgl_arm.goto_given_conf(jnt_values=conf)
+        if jaw_width is not None:
+            anime_data.sgl_arm.change_jaw_width(jaw_width=jaw_width)
+        robot_meshmodel = anime_data.robot.gen_meshmodel(toggle_cdprim=False, alpha=1)
+        robot_meshmodel.attach_to(base)
+        anime_data.robot_attached_list.append(robot_meshmodel)
+        anime_data.counter += 1
+        return task.again
+
+
+    taskMgr.doMethodLater(0.01, update, "update",
+                          extraArgs=[anime_data],
+                          appendTask=True)
+    base.run()
+
+    sgl_arm = robot.rgt_arm
+    adp = ADPlanner(sgl_arm)
+    tic = time.time()
+    conf_list, jaw_width_list = adp.gen_approach_depart_motion(goal_pos,
+                                                               goal_rotmat,
+                                                               start_conf=sgl_arm.get_jnt_values(),
+                                                               end_conf=sgl_arm.get_jnt_values(),
+                                                               approach_direction=np.array([0, 0, -1]),
+                                                               approach_distance=.1,
+                                                               depart_direction=np.array([0, -1, 0]),
+                                                               depart_distance=.1,
+                                                               depart_jaw_width=0)
     # conf_list, jaw_width_list = adp.gen_approach_motion(hnd_name,
     #                                                    goal_pos,
     #                                                    goal_rotmat,
     #                                                    seed_jnt_values=robot_s.get_jnt_values(hnd_name),
-    #                                                    approaching_vec=np.array([0, 0, -1]),
-    #                                                    approaching_dist=.1)
+    #                                                    linear_direction=np.array([0, 0, -1]),
+    #                                                    linear_distance=.1)
     # conf_list, jaw_width_list = adp.gen_depart_motion(hnd_name,
     #                                                  goal_pos,
     #                                                  goal_rotmat,
     #                                                  end_conf=robot_s.get_jnt_values(hnd_name),
-    #                                                  depart_direction=np.array([0, 0, 1]),
-    #                                                  depart_distance=.1)
+    #                                                  linear_direction=np.array([0, 0, 1]),
+    #                                                  linear_distance=.1)
     toc = time.time()
     print(toc - tic)
 
@@ -411,12 +591,14 @@ if __name__ == '__main__':
         def __init__(self):
             self.robot_attached_list = []
             self.counter = 0
-            self.conf_list =conf_list
+            self.conf_list = conf_list
             self.jaw_width_list = jaw_width_list
             self.robot = robot
             self.sgl_arm = robot.rgt_arm
 
-    animation_data = Data()
+
+    anime_data = Data()
+
 
     def update(animation_data, task):
         if animation_data.counter >= len(animation_data.conf_list):
@@ -440,10 +622,9 @@ if __name__ == '__main__':
 
 
     taskMgr.doMethodLater(0.01, update, "update",
-                          extraArgs=[animation_data],
+                          extraArgs=[anime_data],
                           appendTask=True)
     base.run()
-
 
     # for i, jnt_values in enumerate(conf_list):
     #     sgl_arm.goto_given_conf(jnt_values)

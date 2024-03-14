@@ -342,7 +342,7 @@ def capsule(height=1.0, radius=1.0, count=[8, 8], homomat=None):
     """
     Create a mesh of a capsule, or a cylinder with hemispheric ends.
     :param radius: float, major_radius of the cylinder and hemispheres
-    :param height: float, center to center distance of two spheres
+    :param height: float, center to center linear_distance of two spheres
     :param count: int, number of n_sec_minor on latitude and longitude
     :param homomat: 4x4 transformation matrix
     :return: cylinder: Trimesh, resulting mesh

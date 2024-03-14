@@ -39,8 +39,8 @@ for grasp_info in grasp_info_list:
                                                    gl_jaw_center_pos,
                                                    gl_jaw_center_rotmat,
                                                    start_conf=robot_s.get_jnt_values(component_name),
-                                                   approach_direction=gl_jaw_center_rotmat[:,2],
-                                                   approach_distance=.2)
+                                                   linear_direction=gl_jaw_center_rotmat[:, 2],
+                                                   linear_distance=.2)
     if conf_path is None:
         continue
     else:

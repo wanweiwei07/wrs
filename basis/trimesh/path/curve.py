@@ -30,7 +30,7 @@ def discretize_bezier(points, count=None, scale=1.0):
     points  = np.array(points)
 
     if count is None:
-        # how much distance does a small percentage of the curve take
+        # how much linear_distance does a small percentage of the curve take
         # this is so we can figure out how finely we have to sample t   
         norm  = np.linalg.norm(np.diff(points, axis=0), axis=1).sum()
         count = np.ceil(norm / (res.seg_frac * scale))

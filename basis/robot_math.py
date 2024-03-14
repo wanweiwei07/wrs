@@ -314,7 +314,7 @@ def interplate_pos_rotmat(start_pos,
 
 
 def interplate_pos_rotmat_around_circle(circle_center_pos,
-                                        circle_ax,
+                                        circle_normal_ax,
                                         radius,
                                         start_rotmat,
                                         end_rotmat,
@@ -326,13 +326,13 @@ def interplate_pos_rotmat_around_circle(circle_center_pos,
     :param granularity: meter between two key points in the workspace
     :return:
     """
-    vec = orthogonal_vector(circle_ax)
+    vec = orthogonal_vector(circle_normal_ax)
     angular_step_length = granularity / radius
     n_angular_steps = math.ceil(np.pi * 2 / angular_step_length)
     rotmat_list = rotmat_slerp(start_rotmat, end_rotmat, n_angular_steps)
     pos_list = []
     for angle in np.linspace(0, np.pi * 2, n_angular_steps).tolist():
-        pos_list.append(np.dot(rotmat_from_axangle(circle_ax, angle), vec * radius) + circle_center_pos)
+        pos_list.append(np.dot(rotmat_from_axangle(circle_normal_ax, angle), vec * radius) + circle_center_pos)
     return zip(pos_list, rotmat_list)
 
 

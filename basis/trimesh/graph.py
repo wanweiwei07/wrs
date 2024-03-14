@@ -176,7 +176,7 @@ def facets(mesh):
     parallel = normal_dot < tol.zero
     non_parallel = np.logical_not(parallel)
     # saying that two faces are *not* parallel is susceptible to error
-    # so we add a major_radius check which computes the distance between face
+    # so we add a major_radius check which computes the linear_distance between face
     # centroids and divides it by the dot product of the normals
     # this means that small angles between big faces will have a large
     # major_radius which we can filter out easily.

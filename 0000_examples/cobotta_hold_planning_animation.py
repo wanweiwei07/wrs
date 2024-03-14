@@ -35,7 +35,7 @@ if __name__ == '__main__':
     rrtc_planner = rrtc.RRTConnect(robot)
     # rrtsc_planner = rrtsc.RRTStarConnect(robot)
 
-    class Data(object):
+    class AnimeData(object):
         def __init__(self):
             self.robot_attached_list = []
             self.counter = 0
@@ -44,7 +44,7 @@ if __name__ == '__main__':
             self.planner = rrtc_planner
             self.obstacle_list = [obj_cmodel]
 
-    animation_data = Data()
+    anime_data = AnimeData()
 
     def update(animation_data, task):
         if animation_data.counter >= len(animation_data.path):
@@ -69,7 +69,7 @@ if __name__ == '__main__':
                                                    max_time=300,
                                                    smoothing_n_iter=30)
                 if path is not None:
-                    # print(animation_data.path)
+                    # print(anime_data.path)
                     animation_data.path = path
                     # input()
                     start_robot_meshmodel.attach_to(base)
@@ -79,24 +79,24 @@ if __name__ == '__main__':
                     break
                 else:
                     continue
-        # if len(animation_data.robot_attached_list) > 2:
-        #     for robot_attached in animation_data.robot_attached_list[2:]:
+        # if len(anime_data.robot_attached_list) > 2:
+        #     for robot_attached in anime_data.robot_attached_list[2:]:
         #         robot_attached.detach()
         conf = animation_data.path[animation_data.counter]
         animation_data.robot.goto_given_conf(jnt_values=conf)
-        # robot_meshmodel = animation_data.robot.gen_meshmodel(rgb=rm.bc.jet_map(animation_data.counter / len(animation_data.path)),
+        # robot_meshmodel = anime_data.robot.gen_meshmodel(rgb=rm.bc.jet_map(anime_data.counter / len(anime_data.path)),
         #                                       alpha=1)
         robot_meshmodel = animation_data.robot.gen_meshmodel(toggle_cdprim=True, alpha=.3)
         robot_meshmodel.attach_to(base)
         animation_data.robot_attached_list.append(robot_meshmodel)
         animation_data.counter += 1
         print(animation_data.counter)
-        # if animation_data.counter > 30 and len(animation_data.robot.end_effector.oiee_list)>0:
-        #     animation_data.robot.release(obj_cmodel2)
+        # if anime_data.counter > 30 and len(anime_data.robot.end_effector.oiee_list)>0:
+        #     anime_data.robot.release(obj_cmodel2)
         return task.again
 
 
     taskMgr.doMethodLater(0.01, update, "update",
-                          extraArgs=[animation_data],
+                          extraArgs=[anime_data],
                           appendTask=True)
     base.run()

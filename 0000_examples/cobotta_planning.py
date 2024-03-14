@@ -26,7 +26,7 @@ if __name__ == '__main__':
                              max_time=300)
     # rrtsc_planner = rrtsc.RRTStarConnect(robot)
     # path = rrtsc_planner.plan(start_conf=start_conf,
-    #                           goal_conf=goal_conf,
+    #                           end_conf=end_conf,
     #                           ext_dist=.1,
     #                           max_time=300,
     #                           smoothing_n_iter=100)

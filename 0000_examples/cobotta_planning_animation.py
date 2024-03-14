@@ -49,7 +49,7 @@ if __name__ == '__main__':
                                           max_time=300,
                                           smoothing_n_iter=100)
                 if path is not None:
-                    # print(animation_data.path)
+                    # print(anime_data.path)
                     animation_data.path = path
                     # input()
                     start_robot_meshmodel.attach_to(base)
@@ -59,12 +59,12 @@ if __name__ == '__main__':
                     break
                 else:
                     continue
-        # if len(animation_data.robot_attached_list) > 2:
-        #     for robot_attached in animation_data.robot_attached_list[2:]:
+        # if len(anime_data.robot_attached_list) > 2:
+        #     for robot_attached in anime_data.robot_attached_list[2:]:
         #         robot_attached.detach()
         conf = animation_data.path[animation_data.counter]
         robot.goto_given_conf(jnt_values=conf)
-        # robot_meshmodel = robot.gen_meshmodel(rgb=rm.bc.jet_map(animation_data.counter / len(animation_data.path)),
+        # robot_meshmodel = robot.gen_meshmodel(rgb=rm.bc.jet_map(anime_data.counter / len(anime_data.path)),
         #                                       alpha=1)
         robot_meshmodel = robot.gen_meshmodel(alpha=.3)
         robot_meshmodel.attach_to(base)

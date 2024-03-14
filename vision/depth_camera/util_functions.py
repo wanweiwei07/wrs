@@ -46,7 +46,7 @@ def registration_ptpt(src, tgt, downsampling_voxelsize=.003, toggledebug = False
     if toggledebug:
         print(":: RANSAC registration on downsampled point clouds.")
         print("   Since the downsampling voxel size is %.3f," % downsampling_voxelsize)
-        print("   we use a liberal distance threshold %.3f." % distance_threshold)
+        print("   we use a liberal linear_distance threshold %.3f." % distance_threshold)
     # result_global = o3d.pipelines.registration.registration_fass_based_on_feature_matching(
     #     source_down, target_down, source_fpfh, target_fpfh, distance_threshold,
     #     o3d.pipelines.registration.TransformationEstimationPointToPoint(False), 4, [
@@ -63,7 +63,7 @@ def registration_ptpt(src, tgt, downsampling_voxelsize=.003, toggledebug = False
     if toggledebug:
         print(":: Point-to-point ICP registration is applied on original point")
         print("   clouds to refine the alignment. This time we use a strict")
-        print("   distance threshold %.3f." % distance_threshold)
+        print("   linear_distance threshold %.3f." % distance_threshold)
     return _registration_icp_ptpt_o3d(src_o3d, tgt_o3d, result_global.transformation, toggledebug=toggledebug)
 
     # def _registration_icp_ptpt_o3d(src, tgt, inithomomat=np.eye(4), maxcorrdist=2, toggledebug=False):
@@ -129,7 +129,7 @@ def registration_ptpln(src, tgt, downsampling_voxelsize=2, toggledebug = False):
     if toggledebug:
         print(":: RANSAC registration on downsampled point clouds.")
         print("   Since the downsampling voxel size is %.3f," % downsampling_voxelsize)
-        print("   we use a liberal distance threshold %.3f." % distance_threshold)
+        print("   we use a liberal linear_distance threshold %.3f." % distance_threshold)
     result_global = o3d.pipelines.registration.registration_ransac_based_on_feature_matching(
         source_down, target_down, source_fpfh, target_fpfh, distance_threshold,
         o3d.pipelines.registration.TransformationEstimationPointToPoint(False), 4, [
@@ -142,7 +142,7 @@ def registration_ptpln(src, tgt, downsampling_voxelsize=2, toggledebug = False):
     if toggledebug:
         print(":: Point-to-plane ICP registration is applied on original point")
         print("   clouds to refine the alignment. This time we use a strict")
-        print("   distance threshold %.3f." % distance_threshold)
+        print("   linear_distance threshold %.3f." % distance_threshold)
     result_icp = o3d.pipelines.registration.registration_icp(
         src_o3d, tgt_o3d, distance_threshold, result_global.transformation,
         o3d.pipelines.registration.TransformationEstimationPointToPlane())

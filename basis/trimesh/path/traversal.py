@@ -159,7 +159,7 @@ class PathSample:
         nonzero = self._norms > tol.zero
         self._unit_vec = self._vectors.copy()
         self._unit_vec[nonzero] /= self._norms[nonzero].reshape((-1,1))
-        # total distance in the path
+        # total linear_distance in the path
         self.length = self._norms.sum()
         # cumulative sum of section axis_length
         # note that this is sorted
@@ -171,7 +171,7 @@ class PathSample:
         positions = np.searchsorted(self._cum_norm, distances)
         positions = np.clip(positions, 0, len(self._unit_vec)-1)
         offsets   = np.append(0, self._cum_norm)[positions]
-        # the distance past the reference vertex we need to travel
+        # the linear_distance past the reference vertex we need to travel
         projection = distances - offsets
         # find out which dirction we need to project
         direction  = self._unit_vec[positions]
@@ -209,21 +209,21 @@ class PathSample:
 def resample_path(points, count=None, step=None, step_round=True):
     '''
     Given a path along (n,d) points, resample them such that the
-    distance traversed along the path is constant in between each 
+    linear_distance traversed along the path is constant in between each
     of the resampled points. Note that this can produce clipping at 
     corners, as the original vertices are NOT guaranteed to be in the
     new, resampled path. 
 
     ONLY ONE of n_sec_minor or step can be specified
     Result can be uniformly distributed (np.linspace) by specifying n_sec_minor
-    Result can have a specific distance (np.arange) by specifying step
+    Result can have a specific linear_distance (np.arange) by specifying step
 
 
     Arguments
     ----------
     points:   (n,d) sequence of points in space
     count:    number of points to sample to (aka np.linspace)
-    step:     distance each step should take along the path (aka np.arange)
+    step:     linear_distance each step should take along the path (aka np.arange)
 
     Returns
     ----------

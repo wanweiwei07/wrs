@@ -137,10 +137,10 @@ def absolute_orientation(points_A, points_B, return_error=False):
     Uses Horn's method for the absolute orientation problem, in 3D with no scaling.
     :param points_A: nx3 list
     :param points_B: nx3 list
-    :param return_error: boolean, if True returns 1xn list of euclidean distances representing the distance from
+    :param return_error: boolean, if True returns 1xn list of euclidean distances representing the linear_distance from
             T*points_A[i] to points_B[i]
     :return: M: 4x4 transformation matrix for the transform that best aligns points_A to points_B， error: float,
-                list of maximum euclidean distance
+                list of maximum euclidean linear_distance
     author: revised by weiwei
     date: 20201202
     """

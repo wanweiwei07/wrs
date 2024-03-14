@@ -93,7 +93,7 @@ class RRTStarConnect(rrtst.RRTStar):
                 return new_nid
         return nearest_nid
 
-    @utils.keep_jnt_values_decorator
+    @utils.keep_jnts_decorator
     def plan(self,
              start_conf,
              goal_conf,

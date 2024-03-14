@@ -206,7 +206,7 @@ class Robotiq140(gp.GripperInterface):
         private helper function to convert a command in meters to radians (joint value)
         """
         # return np.clip(
-        #   self.lft_outer.joints[1]['motion_range'][1] - ((self.lft_outer.joints[1]['motion_range'][1]/self.jaw_range[1]) * distance),
+        #   self.lft_outer.joints[1]['motion_range'][1] - ((self.lft_outer.joints[1]['motion_range'][1]/self.jaw_range[1]) * linear_distance),
         #   self.lft_outer.joints[1]['motion_range'][0], self.lft_outer.joints[1]['motion_range'][1]) # kiyokawa, commented out by weiwei
         return np.clip(self.lft_outer.jnts[1]['motion_range'][1] - math.asin(
             (math.sin(self.lft_outer.jnts[1]['motion_range'][1]) / self.jaw_range[1]) * distance),

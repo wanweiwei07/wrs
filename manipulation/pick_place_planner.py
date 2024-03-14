@@ -8,6 +8,13 @@ import manipulation.approach_depart_planner as adp
 import motion.utils as mu
 
 
+class PPPData(object):
+    def __init__(self):
+        self.action = None
+        self.jaw_width = None
+        self.conf_list = None
+
+
 class PickPlacePlanner(adp.ADPlanner):
 
     def __init__(self, sgl_arm_robot):
@@ -44,7 +51,7 @@ class PickPlacePlanner(adp.ADPlanner):
             raise ValueError('Type must be absolute or relative!')
         return objpose_list
 
-    @mu.keep_jnt_values_decorator
+    @mu.keep_jnts_decorator
     def find_common_gids(self,
                          grasp_info_list,
                          goal_homomat_list,
@@ -111,7 +118,7 @@ class PickPlacePlanner(adp.ADPlanner):
         final_available_gids = previously_available_gids
         return final_available_gids, intermediate_available_gids
 
-    @mu.keep_jnt_jaw_objpose_values_decorator
+    @mu.keep_jnts_jaw_objpose_decorator
     def gen_pick_and_move_motion(self,
                                  obj_cmodel,
                                  grasp_info,
@@ -256,6 +263,7 @@ class PickPlacePlanner(adp.ADPlanner):
             conf_list = conf_list + depart_conf_list + mid_conf_list + approach_conf_list
             jaw_width_list = jaw_width_list + depart_jaw_width_list + mid_jaw_width_list + approach_jaw_width_list
             seed_conf = conf_list[-1]
+        self.robot.release(obj_cmodel)
         return conf_list, jaw_width_list
 
     def gen_pick_and_place_motion(self,
@@ -329,8 +337,8 @@ class PickPlacePlanner(adp.ADPlanner):
                                          goal_tcp_pos=first_jaw_center_pos,
                                          goal_tcp_rotmat=first_jaw_center_rotmat,
                                          start_conf=start_conf,
-                                         approach_direction=approach_direction_list[0],
-                                         approach_distance=approach_distance_list[0],
+                                         linear_direction=approach_direction_list[0],
+                                         linear_distance=approach_distance_list[0],
                                          approach_jawwidth=approach_jawwidth,
                                          granularity=ad_granularity,
                                          obstacle_list=obstacle_list,
@@ -366,9 +374,9 @@ class PickPlacePlanner(adp.ADPlanner):
                                        start_tcp_pos=last_jaw_center_pos,
                                        start_tcp_rotmat=last_jaw_center_rotmat,
                                        end_conf=end_conf,
-                                       depart_direction=depart_direction_list[0],
-                                       depart_distance=depart_distance_list[0],
-                                       depart_jaw_width=depart_jawwidth,
+                                       linear_direction=depart_direction_list[0],
+                                       linear_distance=depart_distance_list[0],
+                                       jaw_width=depart_jawwidth,
                                        granularity=ad_granularity,
                                        obstacle_list=obstacle_list,
                                        object_list=[objcm_copy],
@@ -434,7 +442,7 @@ if __name__ == '__main__':
     #                                          depart_distance_list=[.2] * len(goal_homomat_list),
     #                                          approach_distance_list=[.2] * len(goal_homomat_list),
     #                                          approach_jawwidth=None,
-    #                                          depart_jawwidth=None,
+    #                                          jaw_width=None,
     #                                          ad_granularity=.003,
     #                                          use_rrt=True,
     #                                          obstacle_list=[],

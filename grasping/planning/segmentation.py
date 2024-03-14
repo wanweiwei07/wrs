@@ -63,7 +63,7 @@ def expand_adj(vertices, faces, face_normals, seed_face_id, rgt_ele_mat, sel_mat
     adj_face_normal_array = face_normals[adj_face_id_list]
     angle_array = np.arccos(np.clip(adj_face_normal_array.dot(adj_face_normal_array.T), -1.0, 1.0))
     max_angle = np.amax(angle_array)
-    # surface distance
+    # surface linear_distance
     adj_id_pair_for_curvature = np.unravel_index(angle_array.argmax(), angle_array.shape)
     face_id_pair_for_curvature = (
         adj_face_id_list[adj_id_pair_for_curvature[0]], adj_face_id_list[adj_id_pair_for_curvature[1]])

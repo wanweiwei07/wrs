@@ -394,7 +394,7 @@ class Path2D(Path):
 
         Arguments
         ----------
-        resolution: target distance between each sample on the polygon boundary
+        resolution: target linear_distance between each sample on the polygon boundary
         clip:       [minimum number of samples, maximum number of samples]
                     specifying a very fine resolution can cause the sample n_sec_minor to
                     explode, so clip specifies a minimum and maximum number of samples

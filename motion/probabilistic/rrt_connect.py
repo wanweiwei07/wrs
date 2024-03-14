@@ -47,7 +47,7 @@ class RRTConnect(rrt.RRT):
                     return "connection"
         return nearest_nid
 
-    @rrt.utils.keep_jnt_values_decorator
+    @rrt.utils.keep_jnts_decorator
     def plan(self,
              start_conf,
              goal_conf,

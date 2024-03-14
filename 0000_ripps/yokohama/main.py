@@ -136,7 +136,7 @@ class MotionPlannerRT():
             #     # print(tgt_jnts)
             #     path = self.rrtc_planner.plan(component_name=self.component_name,
             #                                   start_conf=current_jnts,
-            #                                   goal_conf=tgt_jnts,
+            #                                   end_conf=tgt_jnts,
             #                                   ext_dist=0.2,
             #                                   max_n_iter=1000,
             #                                   obstacle_list=self.obstacle_list,

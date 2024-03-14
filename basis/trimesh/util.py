@@ -80,7 +80,7 @@ def transformation_2D(offset=[0.0, 0.0], theta=0.0):
 
 def euclidean(a, b):
     '''
-    Euclidean distance between vectors a and b
+    Euclidean linear_distance between vectors a and b
     '''
     return np.sum((np.array(a) - b) ** 2) ** .5
 

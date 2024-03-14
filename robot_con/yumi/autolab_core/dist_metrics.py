@@ -1,5 +1,5 @@
 """
-Custom distance metrics.
+Custom linear_distance metrics.
 Author: Jeff Mahler
 """
 import numpy as np
@@ -17,12 +17,12 @@ def abs_angle_diff(v_i, v_j):
     v_j : :obj:`numpy.ndarray`
         the second 3D array
     """
-    # compute angle distance
+    # compute angle linear_distance
     dot_prod = min(max(v_i.dot(v_j), -1), 1)
     angle_diff = np.arccos(dot_prod)
     return np.abs(angle_diff)
 
-# dictionary of distance functions
+# dictionary of linear_distance functions
 DistMetrics = {
     'abs_angle_diff': abs_angle_diff
 }

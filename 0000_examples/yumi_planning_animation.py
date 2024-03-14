@@ -59,7 +59,7 @@ if __name__ == '__main__':
                                                          max_time=300,
                                                          smoothing_n_iter=100)
                 if path is not None:
-                    # print(animation_data.path)
+                    # print(anime_data.path)
                     animation_data.path=path
                     # input()
                     start_robot_meshmodel.attach_to(base)

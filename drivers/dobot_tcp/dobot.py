@@ -300,7 +300,7 @@ class Dobot(object):
                     return
                 raise Exception("Robot stopped")
             dist = self._get_dist(target, joints)
-            self.logger.debug("distance to target is: %s, target dist is %s", dist, threshold)
+            self.logger.debug("linear_distance to target is: %s, target dist is %s", dist, threshold)
             if not self.dobot_mon.running:
                 if dist < threshold:
                     self.logger.debug("we are threshold(%s) close to target, move has ended", threshold)

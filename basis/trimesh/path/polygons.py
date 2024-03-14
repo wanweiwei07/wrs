@@ -213,7 +213,7 @@ def medial_axis(polygon, resolution=.01, clip=None):
     Arguments
     ----------
     polygon:    a shapely.geometry.Polygon 
-    resolution: target distance between each sample on the polygon boundary
+    resolution: target linear_distance between each sample on the polygon boundary
     clip:       [minimum number of samples, maximum number of samples]
                 specifying a very fine resolution can cause the sample n_sec_minor to
                 explode, so clip specifies a minimum and maximum number of samples
@@ -240,7 +240,7 @@ class InversePolygon:
     Create an inverse polygon. 
 
     The primary use case is that given a point inside a polygon,
-    you want to find the minimum distance to the boundary of the polygon.
+    you want to find the minimum linear_distance to the boundary of the polygon.
     '''
     def __init__(self, polygon):
         _DIST_BUFFER = .05    
@@ -278,7 +278,7 @@ class InversePolygon:
 
     def distance(self, point):
         '''
-        Find the minimum distance from a point to the boundary of the polygon. 
+        Find the minimum linear_distance from a point to the boundary of the polygon.
 
         Arguments
         ---------
@@ -286,7 +286,7 @@ class InversePolygon:
 
         Returns
         ---------
-        distance: float
+        linear_distance: float
         '''
         distance = np.min(self.distances(point))
         return distance

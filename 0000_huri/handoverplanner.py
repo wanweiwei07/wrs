@@ -15,7 +15,7 @@ class HandoverPlanner(object):
 
         :param obj: obj name (str) or obj_cmodel, obj_cmodel is for debug purpose
         :param rhx: see helper.py
-        :param retractdistance: retraction distance
+        :param retractdistance: retraction linear_distance
 
         author: hao, refactored by weiwei
         date: 20191206, 20200104osaka

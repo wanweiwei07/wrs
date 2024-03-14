@@ -23,7 +23,7 @@ if __name__ == '__main__':
         # rrtc_planner = rrtc.RRTConnect(robot_s)
         # path = rrtc_planner.plan(component_name="arm",
         #                          start_conf=start_conf,
-        #                          goal_conf=jnt_values,
+        #                          end_conf=jnt_values,
         #                          ext_dist=.1,
         #                          max_time=300)
         current_conf = robot_s.get_jnt_values(component_name="arm")

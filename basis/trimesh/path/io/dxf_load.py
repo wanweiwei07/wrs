@@ -85,7 +85,7 @@ def load_dxf(file_obj):
         e      = multi_dict(e_data)
         points = np.column_stack((e['10'], e['20'])).astype(np.float)
         knots  = np.array(e['40']).astype(float)
-        # check euclidean distance to see if closed
+        # check euclidean linear_distance to see if closed
         closed = np.linalg.norm(points[0] - points[-1]) < tol.merge
         # if it is closed, make sure it is CCW for later polygon happiness
         if closed and (not is_ccw(np.vstack((points, points[0])))):

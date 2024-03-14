@@ -24,7 +24,7 @@ init_jnt_angles = robot_x.arm_get_jnt_values()
 print(init_jnt_angles)
 rrtc_planner = rrtc.RRTConnect(robot_s)
 path = rrtc_planner.plan(start_conf=init_jnt_angles,
-                         # goal_conf=np.array([math.pi/3, math.pi * 1 / 3, 0, math.pi/2, 0, math.pi / 6, 0]),
+                         # end_conf=np.array([math.pi/3, math.pi * 1 / 3, 0, math.pi/2, 0, math.pi / 6, 0]),
                          goal_conf = robot_s.manipulator_dict['arm'].home_conf,
                          obstacle_list=[object],
                          ext_dist= .1,

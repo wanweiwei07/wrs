@@ -130,7 +130,7 @@ def ray_bounds(rays, bounds, buffer_dist=1e-5):
     ---------
     rays: (n,2,3) array of ray origins and directions
     bounds: (2,3) bounding box (min, max)
-    buffer_dist: float, distance to pad zero width bounding boxes
+    buffer_dist: float, linear_distance to pad zero width bounding boxes
 
     Returns
     ---------

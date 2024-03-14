@@ -143,7 +143,7 @@ class EMotorS(Structure):
         ("index", c_byte), 
         ("isEnabled", c_byte), 
         ("speed", c_int32), 
-        ("distance", c_uint32)
+        ("linear_distance", c_uint32)
         ]
         
 ##################  Arm orientation定义   ##################

@@ -181,7 +181,7 @@ class RRT(object):
                 break
         return smoothed_path
 
-    @utils.keep_jnt_values_decorator
+    @utils.keep_jnts_decorator
     def plan(self,
              start_conf,
              goal_conf,
@@ -201,7 +201,7 @@ class RRT(object):
         self.roadmap.clear()
         self.start_conf = start_conf
         self.goal_conf = goal_conf
-        # check start_conf and goal_conf
+        # check start_conf and end_conf
         if self._is_collided(start_conf, obstacle_list, other_robot_list):
             print("The start robot configuration is in collision!")
             return None

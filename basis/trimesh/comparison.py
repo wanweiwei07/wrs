@@ -13,7 +13,7 @@ def rotationally_invariant_identifier(mesh, length=6, as_json=False, json_digits
     Given an input mesh, return a vector or string that has the following properties:
     * invariant to rotation of the mesh
     * robust to different tesselation of the surfaces
-    * meshes that are similar but not identical return values that are close in euclidean distance
+    * meshes that are similar but not identical return values that are close in euclidean linear_distance
 
     Does this by computing the area- weighted distribution of the major_radius (from the center of mass).
 

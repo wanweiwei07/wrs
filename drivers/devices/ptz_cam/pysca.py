@@ -1136,9 +1136,9 @@ def set_focus(device, focus, zoom=None, blocking=False):
 
 def set_near_limit(device, limit, blocking=False):
     """
-    Set the camera's focus "near limit", i.e. the shortest distance an object can get the focus from the camera.
-    The second parameter is a four-byte integer that indicates the near-limit distance.
-    Please check the camera manual to see the valid values and their distance equivalence.
+    Set the camera's focus "near limit", i.e. the shortest linear_distance an object can get the focus from the camera.
+    The second parameter is a four-byte integer that indicates the near-limit linear_distance.
+    Please check the camera manual to see the valid values and their linear_distance equivalence.
     """
     __cmd_cam(device, VISCA_FOCUS_NEAR_LIMIT, Packet.int_to_bytes(limit, 4), blocking=blocking)
 

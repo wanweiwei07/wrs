@@ -125,9 +125,9 @@ class Asset(DaeObject):
         :param str keywords:
           A list of words used for search criteria for the asset
         :param str unitname:
-          The name of the unit of distance for this asset
+          The name of the unit of linear_distance for this asset
         :param float unitmeter:
-          How many real-world meters are in one distance unit
+          How many real-world meters are in one linear_distance unit
         :param `collada.asset.UP_AXIS` upaxis:
           The up-axis of the asset. If None, this will be set to Y_UP
         :param list contributors:
@@ -156,9 +156,9 @@ class Asset(DaeObject):
         self.keywords = keywords
         """String containing a list of words used for search criteria for the asset"""
         self.unitname = unitname
-        """String containing the name of the unit of distance for this asset"""
+        """String containing the name of the unit of linear_distance for this asset"""
         self.unitmeter = unitmeter
-        """Float containing how many real-world meters are in one distance unit"""
+        """Float containing how many real-world meters are in one linear_distance unit"""
 
         if upaxis is None:
             upaxis = UP_AXIS.Y_UP

@@ -252,7 +252,7 @@ def get_pcdidx_by_pos(pcd, realpos, diff=10, dim=3):
         point = pcd[i]
         if realpos[0] - diff < point[0] < realpos[0] + diff and realpos[1] - diff < point[1] < realpos[1] + diff:
             temp_distance = np.linalg.norm(realpos[:dim] - point[:dim])
-            # print(i, point, temp_distance, distance)
+            # print(i, point, temp_distance, linear_distance)
             if temp_distance < distance:
                 distance = temp_distance
                 idx = i

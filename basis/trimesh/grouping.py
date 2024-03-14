@@ -24,7 +24,7 @@ def merge_vertices_hash(mesh):
 def merge_vertices_kdtree(mesh, angle=None):
     '''
     Merges vertices which are identical, AKA within
-    Cartesian distance TOL_MERGE of each other.  
+    Cartesian linear_distance TOL_MERGE of each other.
     Then replaces references in mesh.faces
     
     If max_angle == None, vertex normals won't be looked at. 
@@ -367,7 +367,7 @@ def group_vectors(vectors,
     
     This is very similar to a group_rows(stack_negative(rows))
     The main difference is that max_angle can be much looser, as we
-    are doing actual distance queries. 
+    are doing actual linear_distance queries.
     '''
     dist_max = np.tan(angle)
     unit_vectors, valid = unitize(vectors, check_valid=True)
@@ -401,7 +401,7 @@ def group_vectors_spherical(vectors,
     
     This is very similar to a group_rows(stack_negative(rows))
     The main difference is that max_angle can be much looser, as we
-    are doing actual distance queries. 
+    are doing actual linear_distance queries.
     '''
     spherical = vector_to_spherical(vectors)
     angles, groups = group_distance(spherical, angle)
@@ -449,7 +449,7 @@ def clusters(points, radius):
     """
     Find clusters of points which have neighbours closer than major_radius
     :param points: nxd points
-    :param radius: max distance between points in a cluster
+    :param radius: max linear_distance between points in a cluster
     :return: [point_list, ...]
     author: reviserd by weiwei
     date: 20210120

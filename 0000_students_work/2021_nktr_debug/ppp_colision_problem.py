@@ -228,8 +228,8 @@ for dict_goal_pos in dist_pos:
     #     robot_s.fk(component_name="arm", jnt_values=conf_list2[-1])
     #     start_tcp_pos, start_tcp_rotmat = robot_s.get_gl_tcp(manipulator_name="arm")
     #     motion_vec = [1, 0, 0]
-    #     distance = .1
-    #     goal_tcp_pos = start_tcp_pos + rm.unit_vector(motion_vec) * distance
+    #     linear_distance = .1
+    #     goal_tcp_pos = start_tcp_pos + rm.unit_vector(motion_vec) * linear_distance
     #     goal_tcp_rotmat = start_tcp_rotmat
     #     linear_conf_list = inik_s.gen_linear_motion(component_name="arm", start_tcp_pos=start_tcp_pos,
     #                                                 start_tcp_rotmat=start_tcp_rotmat,
@@ -242,7 +242,7 @@ for dict_goal_pos in dist_pos:
     #         robot_s.fk(component_name="arm", jnt_values=conf_list2[-1])
     #         alljnts = robot_s.get_jnt_values(component_name="all")
     #         robot_pos = alljnts[0:3].tolist()
-    #         for i in range(int(distance / 0.01)):
+    #         for i in range(int(linear_distance / 0.01)):
     #             pos1 = robot_pos + rm.unit_vector(motion_vec) * i * 0.01
     #             alljnts[0] = pos1[0]
     #             alljnts[1] = pos1[1]
@@ -284,7 +284,7 @@ for dict_goal_pos in dist_pos:
     #     ## plan rrt to the dist_pos
     #     path = rrtc_planner.plan(component_name="agv",
     #                                      start_conf=jnt_values_initial[:3],
-    #                                      goal_conf=dict_goal_pos,
+    #                                      end_conf=dict_goal_pos,
     #                                      obstacle_list=[],
     #                                      other_robot_list=[],
     #                                      ext_dist=.05,

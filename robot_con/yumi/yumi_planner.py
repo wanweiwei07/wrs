@@ -101,7 +101,7 @@ class YuMiMotionPlanner:
         traj_len : int
             number of waypoints to use in motion
         eef_delta : float
-            distance for interpolation of the final planner path in cartesian space
+            linear_distance for interpolation of the final planner path in cartesian space
         jump_thresh : float
             the threshold for jumping between poses 
 

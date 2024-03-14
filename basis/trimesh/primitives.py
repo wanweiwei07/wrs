@@ -239,8 +239,8 @@ class Cylinder(Primitive):
     def buffer(self, distance):
         """
         Return a cylinder primitive which covers the source cylinder
-        by distance: major_radius is inflated by distance, height by twice
-        the distance.
+        by linear_distance: major_radius is inflated by linear_distance, height by twice
+        the linear_distance.
         Parameters
         ------------
         distance : float
@@ -248,7 +248,7 @@ class Cylinder(Primitive):
         Returns
         -------------
         buffered : Cylinder
-         Cylinder primitive inflated by distance
+         Cylinder primitive inflated by linear_distance
         """
         distance = float(distance)
         buffered = Cylinder(height=self.height + distance * 2, radius=self.radius + distance, n_sec=self.n_sec,
@@ -390,11 +390,11 @@ class Cone(Primitive):
 
     def buffer(self, distance):
         """
-        Return a cylinder primitive which covers the source cone by distance:
-        major_radius is inflated by distance, height by twice the distance.
+        Return a cylinder primitive which covers the source cone by linear_distance:
+        major_radius is inflated by linear_distance, height by twice the linear_distance.
 
-        :param distance: float, distance to inflate cylinder major_radius and height
-        :return buffered: cone primitive inflated by distance
+        :param distance: float, linear_distance to inflate cylinder major_radius and height
+        :return buffered: cone primitive inflated by linear_distance
 
         author: weiwei
         date: 20191228osaka
@@ -461,10 +461,10 @@ class Capsule(Primitive):
 
     def buffer(self, distance):
         """
-        Return a capsule primitive which covers the source capsule by distance:
+        Return a capsule primitive which covers the source capsule by linear_distance:
 
-        :param distance: float, distance to inflate cylinder major_radius and height
-        :return buffered: cone primitive inflated by distance
+        :param distance: float, linear_distance to inflate cylinder major_radius and height
+        :return buffered: cone primitive inflated by linear_distance
 
         author: weiwei
         date: 20191228osaka

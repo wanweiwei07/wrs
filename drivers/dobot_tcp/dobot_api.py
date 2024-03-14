@@ -526,9 +526,9 @@ class DobotApiMove(DobotApi):
         b: A number in the Cartesian coordinate system b
         c: a number in the Cartesian coordinate system c
         *dynParams :Parameter Settings（Mode、Distance、Index、Status）
-                    Mode :Set Distance mode (0: Distance percentage; 1: distance from starting point or target point)
-                    Distance :Runs the specified distance（If Mode is 0, the value ranges from 0 to 100；When Mode is 1, if the value is positive,
-                             it indicates the distance from the starting point. If the value of Distance is negative, it represents the Distance from the target point）
+                    Mode :Set Distance mode (0: Distance percentage; 1: linear_distance from starting point or target point)
+                    Distance :Runs the specified linear_distance（If Mode is 0, the value ranges from 0 to 100；When Mode is 1, if the value is positive,
+                             it indicates the linear_distance from the starting point. If the value of Distance is negative, it represents the Distance from the target point）
                     Index ：Digital output index （Value range：1~24）
                     Status ：Digital output state（Value range：0/1）
         """
@@ -554,9 +554,9 @@ class DobotApiMove(DobotApi):
         b: A number in the Cartesian coordinate system b
         c: a number in the Cartesian coordinate system c
         *dynParams :Parameter Settings（Mode、Distance、Index、Status）
-                    Mode :Set Distance mode (0: Distance percentage; 1: distance from starting point or target point)
-                    Distance :Runs the specified distance（If Mode is 0, the value ranges from 0 to 100；When Mode is 1, if the value is positive,
-                             it indicates the distance from the starting point. If the value of Distance is negative, it represents the Distance from the target point）
+                    Mode :Set Distance mode (0: Distance percentage; 1: linear_distance from starting point or target point)
+                    Distance :Runs the specified linear_distance（If Mode is 0, the value ranges from 0 to 100；When Mode is 1, if the value is positive,
+                             it indicates the linear_distance from the starting point. If the value of Distance is negative, it represents the Distance from the target point）
                     Index ：Digital output index （Value range：1~24）
                     Status ：Digital output state（Value range：0/1）
         """
