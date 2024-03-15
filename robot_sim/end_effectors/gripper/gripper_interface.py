@@ -11,6 +11,27 @@ class GripperInterface(ei.EEInterface):
         self.jaw_range = np.array([0.0, 0.05])  # 0~0.05m by default
         # fgr0 opening vec
         self.loc_fgr0_opening_vec = np.array([0, 1, 0])  # y as opening vec by default
+        # backup
+        self.jaw_width_bk = []
+        self.oiee_list_bk = []
+        self.oiee_pose_list_bk = []
+
+    def backup_state(self):
+        self.oiee_list_bk.append(self.oiee_list.copy())
+        self.oiee_pose_list_bk.append([oiee.loc_pose for oiee in self.oiee_list])
+        print("backup ", self.oiee_list_bk, self.oiee_pose_list_bk)
+        self.jaw_width_bk.append(self.get_jaw_width())
+
+    def restore_state(self):
+        print("restore ", self.oiee_list_bk, self.oiee_pose_list_bk)
+        self.oiee_list = self.oiee_list_bk.pop()
+        oiee_pose_list = self.oiee_pose_list_bk.pop()
+        print(self.oiee_list, oiee_pose_list)
+        for i, oiee in enumerate(self.oiee_list):
+            oiee.loc_pose = oiee_pose_list[i]
+        jaw_width = self.jaw_width_bk.pop()
+        if jaw_width != self.get_jaw_width():
+            self.change_jaw_width(jaw_width=jaw_width)
 
     @ei.EEInterface.assert_oiee_decorator
     def change_jaw_width(self, jaw_width):

@@ -157,6 +157,17 @@ class Link(object):
                                  toggle_cdmesh=toggle_cdmesh,
                                  toggle_frame=toggle_frame)
 
+    def copy(self):
+        lnk_copy = Link(name=self.name,
+                        loc_pos=self.loc_pos,
+                        loc_rotmat=self.loc_rotmat,
+                        com=self.com,
+                        inertia=self.inertia,
+                        mass=self.mass,
+                        cmodel=self.cmodel.copy())
+        lnk_copy.install_onto(pos=self.root_pose[0], rotmat=self.root_pose[1])
+        return lnk_copy
+
 
 class Anchor(object):
     """

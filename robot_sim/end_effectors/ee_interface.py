@@ -56,7 +56,8 @@ class EEInterface(object):
         author: weiwei
         date: 20230811
         """
-        self.oiee_list.append(rkjl.Link(loc_pos=obj_cmodel.pos, loc_rotmat=obj_cmodel.rotmat, cmodel=obj_cmodel))
+        loc_pos, loc_rotmat = rm.rel_pose(self.pos, self.rotmat, obj_cmodel.pos, obj_cmodel.rotmat)
+        self.oiee_list.append(rkjl.Link(loc_pos=loc_pos, loc_rotmat=loc_rotmat, cmodel=obj_cmodel))
 
     def release(self, obj_cmodel, **kwargs):
         """
@@ -75,6 +76,16 @@ class EEInterface(object):
                 break
         if not is_found:
             raise ValueError("The specified object is not held in the hand!")
+
+    def release_all(self):
+        """
+        release all objects held in ee
+        :return:
+        author: weiwei
+        date: 20240314
+        """
+        self.oiee_list=[]
+
 
     def is_mesh_collided(self, cmodel_list=[], toggle_dbg=False):
         """

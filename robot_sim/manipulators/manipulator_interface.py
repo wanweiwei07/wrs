@@ -169,7 +169,6 @@ class ManipulatorInterface(object):
         """
         tgt_rotmat = tgt_rotmat @ self.loc_tcp_rotmat.T
         tgt_pos = tgt_pos - tgt_rotmat @ self.loc_tcp_pos
-        mgm.gen_frame(pos=tgt_pos, rotmat=tgt_rotmat, alpha=.3).attach_to(base)
         return self.jlc.ik(tgt_pos=tgt_pos,
                            tgt_rotmat=tgt_rotmat,
                            seed_jnt_values=seed_jnt_values,

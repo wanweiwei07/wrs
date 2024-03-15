@@ -47,7 +47,7 @@ class RRTConnect(rrt.RRT):
                     return "connection"
         return nearest_nid
 
-    @rrt.utils.keep_jnts_decorator
+    @rrt.RRT.keep_states_decorator
     def plan(self,
              start_conf,
              goal_conf,
@@ -64,11 +64,11 @@ class RRTConnect(rrt.RRT):
         self.start_conf = start_conf
         self.goal_conf = goal_conf
         # check start and goal
-        if self._is_collided(start_conf, obstacle_list, other_robot_list):
-            print("The start robot configuration is in collision!")
+        if self._is_collided(start_conf, obstacle_list, other_robot_list, toggle_contacts=True):
+            print("RRT: The start robot configuration is in collision!")
             return None
         if self._is_collided(goal_conf, obstacle_list, other_robot_list):
-            print("The goal robot configuration is in collision!")
+            print("RRT: The goal robot configuration is in collision!")
             return None
         if self._is_goal_reached(conf=start_conf, goal_conf=goal_conf, threshold=ext_dist):
             return [start_conf, goal_conf]
@@ -125,6 +125,11 @@ class RRTConnect(rrt.RRT):
                                           granularity=ext_dist,
                                           n_iter=smoothing_n_iter,
                                           animation=animation)
+        # mesh_list = []
+        # for conf in smoothed_path:
+        #     self.robot.goto_given_conf(conf)
+        #     mesh_list.append(self.robot.gen_meshmodel())
+        # print("no model")
         return smoothed_path
 
 

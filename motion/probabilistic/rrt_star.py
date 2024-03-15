@@ -140,7 +140,7 @@ class RRTStar(rrt.RRT):
                     return 'goal'
                 return new_nid
 
-    @utils.keep_jnts_decorator
+    @rrt.RRT.keep_states_decorator
     def plan(self,
              start_conf,
              goal_conf,

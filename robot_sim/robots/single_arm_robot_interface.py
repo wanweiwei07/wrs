@@ -15,6 +15,7 @@ class SglArmRobotInterface(ri.RobotInterface):
         super().__init__(pos=pos, rotmat=rotmat, name=name, enable_cc=enable_cc)
         self.manipulator = None
         self.end_effector = None
+        self.jnt_values_bk = []
 
     @property
     def home_conf(self):
@@ -34,6 +35,14 @@ class SglArmRobotInterface(ri.RobotInterface):
 
     def _update_end_effector(self):
         self.end_effector.fix_to(pos=self.manipulator.gl_flange_pos, rotmat=self.manipulator.gl_flange_rotmat)
+
+    def backup_state(self):
+        self.jnt_values_bk.append(self.manipulator.get_jnt_values())
+        self.end_effector.backup_state()
+
+    def restore_state(self):
+        self.manipulator.goto_given_conf(jnt_values=self.jnt_values_bk.pop())
+        self.end_effector.restore_state()
 
     def hold(self, obj_cmodel, **kwargs):
         self.end_effector.hold(obj_cmodel, **kwargs)

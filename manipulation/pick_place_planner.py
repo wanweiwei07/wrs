@@ -5,14 +5,6 @@ import basis.data_adapter as da
 import motion.optimization_based.incremental_nik as inik
 import motion.probabilistic.rrt_connect as rrtc
 import manipulation.approach_depart_planner as adp
-import motion.utils as mu
-
-
-class PPPData(object):
-    def __init__(self):
-        self.action = None
-        self.jaw_width = None
-        self.conf_list = None
 
 
 class PickPlacePlanner(adp.ADPlanner):
@@ -26,32 +18,7 @@ class PickPlacePlanner(adp.ADPlanner):
         """
         super().__init__(sgl_arm_robot)
 
-    def gen_object_motion(self, conf_list, obj_pos, obj_rotmat, type='absolute'):
-        """
-        :param conf_list:
-        :param obj_pos:
-        :param obj_rotmat:
-        :param type: 'absolute' or 'relative'
-        :return:
-        author: weiwei
-        date: 20210125
-        """
-        objpose_list = []
-        if type == 'absolute':
-            for _ in conf_list:
-                objpose_list.append(rm.homomat_from_posrot(obj_pos, obj_rotmat))
-        elif type == 'relative':
-            jnt_values_bk = self.robot_s.get_jnt_values(component_name)
-            for conf in conf_list:
-                self.robot_s.fk(component_name, conf)
-                gl_obj_pos, gl_obj_rotmat = self.robot_s.cvt_loc_tcp_to_gl(component_name, obj_pos, obj_rotmat)
-                objpose_list.append(rm.homomat_from_posrot(gl_obj_pos, gl_obj_rotmat))
-            self.robot_s.fk(component_name, jnt_values_bk)
-        else:
-            raise ValueError('Type must be absolute or relative!')
-        return objpose_list
-
-    @mu.keep_jnts_decorator
+    @adp.mpi.InterplatedMotion.keep_states_decorator
     def find_common_gids(self,
                          grasp_info_list,
                          goal_homomat_list,
@@ -83,32 +50,32 @@ class PickPlacePlanner(adp.ADPlanner):
                 jaw_width, jaw_center_pos, jaw_center_rotmat, hnd_pos, hnd_rotmat = ginfo
                 goal_jaw_center_pos = goal_pos + goal_rotmat.dot(jaw_center_pos)
                 goal_jaw_center_rotmat = goal_rotmat.dot(jaw_center_rotmat)
-                self.robot.end_effector.grip_at_by_pose(goal_jaw_center_pos, goal_jaw_center_rotmat, jaw_width)
-                if not self.robot.end_effector.is_mesh_collided(obstacle_list):  # gripper cd
-                    jnt_values = self.robot.ik(goal_jaw_center_pos, goal_jaw_center_rotmat)
+                self.sgl_arm_robot.end_effector.grip_at_by_pose(goal_jaw_center_pos, goal_jaw_center_rotmat, jaw_width)
+                if not self.sgl_arm_robot.end_effector.is_mesh_collided(obstacle_list):  # gripper cd
+                    jnt_values = self.sgl_arm_robot.ik(goal_jaw_center_pos, goal_jaw_center_rotmat)
                     if jnt_values is not None:  # common graspid with robot_s ik
                         # if toggle_dbg:
-                        #     sgl_arm_robot.end_effector.gen_meshmodel(rgb=rm.bc.green, alhpa=.3).attach_to(base)
-                        self.robot.goto_given_conf(jnt_values=jnt_values)
-                        is_rbt_collided = self.robot.is_collided(obstacle_list=obstacle_list)  # robot cd
+                        #     robot.end_effector.gen_meshmodel(rgb=rm.bc.green, alhpa=.3).attach_to(base)
+                        self.sgl_arm_robot.goto_given_conf(jnt_values=jnt_values)
+                        is_rbt_collided = self.sgl_arm_robot.is_collided(obstacle_list=obstacle_list)  # robot cd
                         # TODO is_obj_collided
                         is_obj_collided = False  # obj cd
                         if (not is_rbt_collided) and (not is_obj_collided):  # gripper cdf, rbt ikf/cdf, obj cdf
                             if toggle_dbg:
-                                self.robot.end_effector.gen_mesh_model(rgb=rm.bc.green, alpha=.3).attach_to(base)
+                                self.sgl_arm_robot.end_effector.gen_mesh_model(rgb=rm.bc.green, alpha=.3).attach_to(base)
                             previously_available_gids.append(gid)
                         elif (not is_obj_collided):  # gripper cdf, rbt ikf, rbt collided
                             rbt_collided_grasps_num += 1
                             if toggle_dbg:
-                                self.robot.end_effector.gen_mesh_model(rgb=rm.bc.yellow, alpha=.3).attach_to(base)
+                                self.sgl_arm_robot.end_effector.gen_mesh_model(rgb=rm.bc.yellow, alpha=.3).attach_to(base)
                     else:  # gripper cdf, ik infeasible
                         ik_failed_grasps_num += 1
                         if toggle_dbg:
-                            self.robot.end_effector.gen_mesh_model(rgba=rm.bc.orange, alpha=.3).attach_to(base)
+                            self.sgl_arm_robot.end_effector.gen_mesh_model(rgba=rm.bc.orange, alpha=.3).attach_to(base)
                 else:  # gripper collided
                     eef_collided_grasps_num += 1
                     if toggle_dbg:
-                        self.robot.end_effector.gen_mesh_model(rgba=rm.bc.magenta, alpha=.3).attach_to(base)
+                        self.sgl_arm_robot.end_effector.gen_mesh_model(rgba=rm.bc.magenta, alpha=.3).attach_to(base)
             intermediate_available_gids.append(previously_available_gids.copy())
             print('-----start-----')
             print('Number of collided grasps at goal-' + str(goal_id) + ': ', eef_collided_grasps_num)
@@ -118,153 +85,102 @@ class PickPlacePlanner(adp.ADPlanner):
         final_available_gids = previously_available_gids
         return final_available_gids, intermediate_available_gids
 
-    @mu.keep_jnts_jaw_objpose_decorator
+    @adp.mpi.InterplatedMotion.keep_states_decorator
     def gen_pick_and_move_motion(self,
                                  obj_cmodel,
                                  grasp_info,
-                                 obj_pose_list,
-                                 depart_vec_list,
-                                 depart_dist_list,
-                                 approach_vec_list,
-                                 approach_dist_list,
-                                 ad_granularity=.007,
+                                 goal_pose_list,
+                                 approach_direction_list,
+                                 approach_distance_list,
+                                 depart_direction_list,
+                                 depart_distance_list,
+                                 pick_approach_direction=None,
+                                 pick_approach_distance=None,
+                                 pick_depart_direction=None,
+                                 pick_depart_distance=None,
+                                 linear_granularity=.007,
                                  use_rrt=True,
                                  obstacle_list=[]):
         """
         pick and move an object to multiple poses
         :param obj_cmodel:
         :param grasp_info:
-        :param obj_pose_list:
-        :param depart_vec_list: the last element will be ignored
-        :param depart_dist_list: the last element will be ignored
-        :param approach_vec_list: the first element will be ignored
-        :param approach_dist_list: the first element will be ignored
-        :param ad_granularity:
+        :param goal_pose_list: [[pos, rotmat], [pos, rotmat], ...]
+        :param approach_direction_list: the first element will be ignored
+        :param approach_distance_list: the first element will be ignored
+        :param depart_direction_list: the last element will be ignored
+        :param depart_distance_list: the last element will be ignored
+        :param pick_approach_direction
+        :param pick_approach_distance
+        :param pick_depart_direction
+        :param pick_depart_distance
+        :param linear_granularity:
         :param obstacle_list:
         :param seed_jnt_values:
         :return:
         """
-        # final
-        conf_list = []
-        jaw_width_list = []
-        # hold object
+        # pick up object
         jaw_width, jaw_center_pos, jaw_center_rotmat, hnd_pos, hnd_rotmat = grasp_info
-        first_obj_pos = obj_pose_list[0][:3, 3]
-        first_obj_rotmat = obj_pose_list[0][:3, :3]
-        first_jaw_center_pos = first_obj_rotmat.dot(jaw_center_pos) + first_obj_pos
-        first_jaw_center_rotmat = first_obj_rotmat.dot(jaw_center_rotmat)
-        first_conf = self.robot.ik(first_jaw_center_pos,
-                                   first_jaw_center_rotmat)
-        if first_conf is None:
-            print("Cannot solve the ik at the first grasping pose!")
-            return None, None
-        self.robot.goto_given_conf(jnt_values=first_conf)
-        self.robot.hold(obj_cmodel, jaw_width=jaw_width)
-        # # set a copy of the object to the start pose, hold the object, and move it to goal object pose
-        # objcm_copy = obj_cmodel.copy()
-        # objcm_copy.set_pos(first_obj_pos)
-        # objcm_copy.set_rotmat(first_obj_rotmat)
-        # rel_obj_pos, rel_obj_rotmat = self.robot_s.hold(hand_name, objcm_copy, jaw_width)
-        seed_conf = first_conf
-        for i in range(len(obj_pose_list) - 1):
-            # get start and goal object poses
-            start_obj_pos = obj_pose_list[i][:3, 3]
-            start_obj_rotmat = obj_pose_list[i][:3, :3]
-            goal_obj_pos = obj_pose_list[i + 1][:3, 3]
-            goal_obj_rotmat = obj_pose_list[i + 1][:3, :3]
-            # transform grasps
-            start_jaw_center_pos = start_obj_rotmat.dot(jaw_center_pos) + start_obj_pos
-            start_jaw_center_rotmat = start_obj_rotmat.dot(jaw_center_rotmat)
-            goal_jaw_center_pos = goal_obj_rotmat.dot(jaw_center_pos) + goal_obj_pos
-            goal_jaw_center_rotmat = goal_obj_rotmat.dot(jaw_center_rotmat)
-            depart_vec = depart_vec_list[i]
-            if depart_vec is None:
-                depart_vec = -start_jaw_center_rotmat[:, 2]
-            depart_dist = depart_dist_list[i]
-            if depart_dist is None:
-                depart_dist = 0
-            approach_vec = approach_vec_list[i + 1]
-            if approach_vec is None:
-                approach_vec = goal_jaw_center_rotmat[:, 2]
-            approach_dist = approach_dist_list[i + 1]
-            if approach_dist is None:
-                approach_dist = 0
-            # depart linear
-            depart_conf_list = self.im_planner.gen_rel_linear_motion(goal_tcp_pos=start_jaw_center_pos,
-                                                                     goal_tcp_rotmat=start_jaw_center_rotmat,
-                                                                     motion_vec=depart_vec,
-                                                                     motion_dist=depart_dist,
-                                                                     obstacle_list=obstacle_list,
-                                                                     granularity=ad_granularity,
-                                                                     seed_jnt_values=seed_conf,
-                                                                     type='source')
-            if depart_conf_list is None:
-                print(f"Cannot generate the linear part of the {i}th holding depart motion!")
-                self.robot.release(obj_cmodel)
-                return None, None
-            depart_jaw_width_list = self.gen_jaw_width_list(depart_conf_list, jaw_width)
-            if use_rrt:  # if use rrt, we shall find start and goal conf first and then perform rrt
-                # approach linear
-                seed_conf = depart_conf_list[-1]
-                approach_conf_list = self.im_planner.gen_rel_linear_motion(goal_tcp_pos=goal_jaw_center_pos,
-                                                                           goal_tcp_rotmat=goal_jaw_center_rotmat,
-                                                                           motion_vec=approach_vec,
-                                                                           motion_dist=approach_dist,
-                                                                           obstacle_list=obstacle_list,
-                                                                           granularity=ad_granularity,
-                                                                           seed_jnt_values=seed_conf,
-                                                                           type='sink')
-                if approach_conf_list is None:
-                    print(f"Cannot generate the linear part of the {i}th holding approach motion!")
-                    self.robot.release(obj_cmodel)
-                    return None, None
-                mid_conf_list = self.rrtc_planner.plan(start_conf=depart_conf_list[-1],
-                                                       goal_conf=approach_conf_list[0],
-                                                       obstacle_list=obstacle_list,
-                                                       other_robot_list=[],
-                                                       ext_dist=.07,
-                                                       max_n_iter=300)
-                if mid_conf_list is None:
-                    print(f"Cannot generate the rrtc part of the {i}th holding approach motion!")
-                    self.robot.release(obj_cmodel)
-                    return None, None
+        pick_tcp_pos = obj_cmodel.rotmat.dot(jaw_center_pos) + obj_cmodel.pos
+        pick_tcp_rotmat = obj_cmodel.rotmat.dot(jaw_center_rotmat)
+        pick_motion = self.gen_approach_motion(goal_tcp_pos=pick_tcp_pos,
+                                               goal_tcp_rotmat=pick_tcp_rotmat,
+                                               start_conf=self.sgl_arm_robot.get_jnt_values(),
+                                               linear_direction=pick_approach_direction,
+                                               linear_distance=pick_approach_distance,
+                                               jaw_width=self.sgl_arm_robot.end_effector.jaw_range[1],
+                                               granularity=linear_granularity,
+                                               obstacle_list=obstacle_list,
+                                               object_list=[obj_cmodel])
+        if pick_motion is None:
+            print("PPPlanner: Error encountered when generating pick approach motion!")
+            return None
+        else:
+            self.sgl_arm_robot.goto_given_conf(pick_motion.conf_list[-1])
+            self.sgl_arm_robot.hold(obj_cmodel, jaw_width=jaw_width)
+            pick_motion.extend([pick_motion.conf_list[-1]])
+            pick_motion.jaw_width_list[-1] = jaw_width
+            pick_motion.hold_list[-1] = obj_cmodel
+            start_conf = self.sgl_arm_robot.get_jnt_values()
+            print(self.sgl_arm_robot.end_effector.oiee_list_bk)
+            pick_depart = self.gen_linear_depart_with_given_conf(start_conf=start_conf,
+                                                                 direction=pick_depart_direction,
+                                                                 distance=pick_depart_distance,
+                                                                 jaw_width=None,
+                                                                 granularity=linear_granularity,
+                                                                 obstacle_list=obstacle_list)
+            if pick_depart is None:
+                print("PPPlanner: Error encountered when generating pick depart motion!")
+                self.sgl_arm_robot.release(obj_cmodel)
+                return None
             else:
-                # if do not use rrt, we start from depart end to approach start, and then approach to the goal
-                mid_start_tcp_pos, mid_start_tcp_rotmat = self.robot.fk(jnt_values=depart_conf_list[-1])
-                mid_goal_tcp_pos = goal_jaw_center_pos - approach_vec * approach_dist
-                mid_goal_tcp_rotmat = goal_jaw_center_rotmat
-                mid_conf_list = self.im_planner.gen_linear_motion(start_tcp_pos=mid_start_tcp_pos,
-                                                                  start_tcp_rotmat=mid_start_tcp_rotmat,
-                                                                  goal_tcp_pos=mid_goal_tcp_pos,
-                                                                  goal_tcp_rotmat=mid_goal_tcp_rotmat,
-                                                                  obstacle_list=obstacle_list,
-                                                                  granularity=ad_granularity,
-                                                                  seed_jnt_values=seed_conf)
-                if mid_conf_list is None:
-                    print(f"Cannot generate the {i}th holding switching motion!")
-                    self.robot.release(obj_cmodel)
-                    return None, None
-                # approach linear
-                seed_conf = mid_conf_list[-1]
-                approach_conf_list = self.im_planner.gen_rel_linear_motion(goal_tcp_pos=goal_jaw_center_pos,
-                                                                           goal_tcp_rotmat=goal_jaw_center_rotmat,
-                                                                           motion_vec=approach_vec,
-                                                                           motion_dist=approach_dist,
-                                                                           obstacle_list=obstacle_list,
-                                                                           granularity=ad_granularity,
-                                                                           seed_jnt_values=seed_conf,
-                                                                           type='sink')
-                if approach_conf_list is None:
-                    print(f"Cannot generate the linear part of the {i}th holding approach motion!")
-                    self.robot.release(obj_cmodel)
-                    return None, None
-            approach_jaw_width_list = self.gen_jaw_width_list(approach_conf_list, jaw_width)
-            mid_jaw_width_list = self.gen_jaw_width_list(mid_conf_list, jaw_width)
-            conf_list = conf_list + depart_conf_list + mid_conf_list + approach_conf_list
-            jaw_width_list = jaw_width_list + depart_jaw_width_list + mid_jaw_width_list + approach_jaw_width_list
-            seed_conf = conf_list[-1]
-        self.robot.release(obj_cmodel)
-        return conf_list, jaw_width_list
+                moveto_motion = adp.mpu.ManipulationData(sgl_arm_robot=self.sgl_arm_robot)
+                # move to goals
+                adm_start_conf = pick_depart.conf_list[-1]
+                for i, goal_pose in enumerate(goal_pose_list):
+                    goal_tcp_pos = goal_pose[1].dot(jaw_center_pos) + goal_pose[0]
+                    goal_tcp_rotmat = goal_pose[1].dot(jaw_center_rotmat)
+                    moveto_ap = self.gen_approach_depart_motion(goal_tcp_pos=goal_tcp_pos,
+                                                                goal_tcp_rotmat=goal_tcp_rotmat,
+                                                                start_conf=adm_start_conf,
+                                                                approach_direction=approach_direction_list[i],
+                                                                approach_distance=approach_distance_list[i],
+                                                                approach_jaw_width=None,
+                                                                depart_direction=depart_direction_list[i],
+                                                                depart_distance=depart_distance_list[i],
+                                                                depart_jaw_width=None,  # do not change jaw width
+                                                                granularity=linear_granularity,
+                                                                obstacle_list=obstacle_list,
+                                                                object_list=[])
+                    if moveto_ap is None:
+                        print(f"Error encountered when generating motion to the {i}th goal!")
+                        self.sgl_arm_robot.release(obj_cmodel)
+                        return None
+                    else:
+                        moveto_motion += moveto_ap
+                        adm_start_conf = moveto_motion.conf_list[-1]
+                self.sgl_arm_robot.release(obj_cmodel)
+                return pick_motion + pick_depart + moveto_motion
 
     def gen_pick_and_place_motion(self,
                                   hnd_name,
@@ -352,11 +268,11 @@ class PickPlacePlanner(adp.ADPlanner):
                 self.gen_pick_and_move_motion(hand_name=hnd_name,
                                               objcm=objcm,
                                               grasp_info=grasp_info,
-                                              obj_pose_list=goal_homomat_list,
-                                              depart_vec_list=depart_direction_list,
-                                              approach_vec_list=approach_direction_list,
-                                              depart_dist_list=depart_distance_list,
-                                              approach_dist_list=approach_distance_list,
+                                              goal_pose_list=goal_homomat_list,
+                                              depart_direction_list=depart_direction_list,
+                                              approach_direction_list=approach_direction_list,
+                                              depart_distance_list=depart_distance_list,
+                                              approach_distance_list=approach_distance_list,
                                               ad_granularity=.003,
                                               use_rrt=use_rrt,
                                               obstacle_list=obstacle_list,
@@ -401,7 +317,6 @@ class PickPlacePlanner(adp.ADPlanner):
 
 
 if __name__ == '__main__':
-    import time
     import robot_sim.robots.yumi.yumi as ym
     import visualization.panda.world as wd
     import modeling.geometric_model as gm
@@ -413,58 +328,101 @@ if __name__ == '__main__':
     base = wd.World(cam_pos=[2, 0, 1.5], lookat_pos=[0, 0, .2])
     gm.gen_frame().attach_to(base)
     obj_cmodel = cm.CollisionModel(initor='tubebig.stl')
+    obj_cmodel.pos = np.array([.55, -.1, .3])
+    obj_cmodel.rotmat = np.eye(3)
+    obj_cmodel.copy().attach_to(base)
     robot = ym.Yumi(enable_cc=True)
-    start_conf = robot.rgt_arm.get_jnt_values()
-    goal_homomat_list = []
-    for i in range(3):
-        goal_pos = np.array([.55, -.1, .3]) - np.array([i * .1, i * .1, 0])
-        # goal_rotmat = rm.rotmat_from_axangle([0, 1, 0], math.pi / 2)
+    arm = robot.rgt_arm
+    start_conf = arm.get_jnt_values()
+    n_goal = 2
+    goal_pose_list = []
+    for i in range(n_goal):
+        goal_pos = np.array([.45, -.2, .3]) - np.array([i * .1, i * .1, 0])
         goal_rotmat = np.eye(3)
-        goal_homomat_list.append(rm.homomat_from_posrot(goal_pos, goal_rotmat))
+        goal_pose_list.append((goal_pos, goal_rotmat))
         tmp_objcm = obj_cmodel.copy()
         tmp_objcm.rgba = np.array([1, 0, 0, .3])
         tmp_objcm.homomat = rm.homomat_from_posrot(goal_pos, goal_rotmat)
         tmp_objcm.attach_to(base)
     grasp_info_list = gutil.load_pickle_file(cmodel_name='tubebig', file_name='yumi_tube_big.pickle')
     grasp_info = grasp_info_list[0]
-    pp_planner = PickPlacePlanner(sgl_arm_robot=robot.rgt_arm)
-    # conf_list, jawwidth_list, objpose_list = \
-    #     pp_planner.gen_pick_and_place_motion(hnd_name=hand_name,
-    #                                          obj_cmodel=obj_cmodel,
-    #                                          grasp_info_list=grasp_info_list,
-    #                                          goal_homomat_list=goal_homomat_list,
-    #                                          start_conf=robot_s.get_jnt_values(hand_name),
-    #                                          end_conf=robot_s.get_jnt_values(hand_name),
-    #                                          depart_direction_list=[np.array([0, 0, 1])] * len(goal_homomat_list),
-    #                                          approach_direction_list=[np.array([0, 0, -1])] * len(goal_homomat_list),
-    #                                          # depart_dist_list=[None] * len(goal_homomat_list),
-    #                                          # approach_dist_list=[None] * len(goal_homomat_list),
-    #                                          depart_distance_list=[.2] * len(goal_homomat_list),
-    #                                          approach_distance_list=[.2] * len(goal_homomat_list),
-    #                                          approach_jawwidth=None,
-    #                                          jaw_width=None,
-    #                                          ad_granularity=.003,
-    #                                          use_rrt=True,
-    #                                          obstacle_list=[],
-    #                                          use_incremental=False)
+    pp_planner = PickPlacePlanner(sgl_arm_robot=arm)
+    # robot.gen_meshmodel().attach_to(base)
+    # base.run()
     for grasp_info in grasp_info_list:
-        conf_list, jaw_width_list = \
-            pp_planner.gen_pick_and_move_motion(obj_cmodel=obj_cmodel,
-                                                grasp_info=grasp_info,
-                                                obj_pose_list=goal_homomat_list,
-                                                depart_vec_list=[np.array([0, 0, 1])] * len(goal_homomat_list),
-                                                approach_vec_list=[np.array([0, 0, -1])] * len(goal_homomat_list),
-                                                # depart_dist_list=[None] * len(goal_homomat_list),
-                                                # approach_dist_list=[None] * len(goal_homomat_list),
-                                                depart_dist_list=[.2] * len(goal_homomat_list),
-                                                approach_dist_list=[.2] * len(goal_homomat_list),
-                                                ad_granularity=.003,
-                                                use_rrt=True,
-                                                obstacle_list=[])
-        if conf_list is not None:
+        motion_data = pp_planner.gen_pick_and_move_motion(obj_cmodel=obj_cmodel,
+                                                          grasp_info=grasp_info,
+                                                          goal_pose_list=goal_pose_list,
+                                                          approach_direction_list=[np.array([0, 0, -1])] * n_goal,
+                                                          approach_distance_list=[.07] * n_goal,
+                                                          depart_direction_list=[np.array([0, 0, 1])] * n_goal,
+                                                          depart_distance_list=[.07] * n_goal,
+                                                          pick_approach_direction=None,
+                                                          pick_approach_distance=None,
+                                                          pick_depart_direction=None,
+                                                          pick_depart_distance=None,
+                                                          linear_granularity=.003,
+                                                          use_rrt=True,
+                                                          obstacle_list=[])
+        if motion_data.is_available():
             break
 
-    robot.rgt_arm.goto_given_conf(jnt_values=conf_list[0])
+    print(motion_data)
+    print(obj_cmodel.pose)
+
+    class Data(object):
+        def __init__(self, robot, arm, motion_data):
+            self.robot_attached_list = []
+            self.counter = 0
+            # self.motion_data = approach_motion_data + depart_motion_data
+            self.motion_data = motion_data
+            self.robot = robot
+            self.arm = arm
+
+
+    anime_data = Data(robot, arm, motion_data)
+
+    def update(anime_data, task):
+        if anime_data.counter == 0:
+            anime_data.arm.backup_state()
+        if anime_data.counter >= len(anime_data.motion_data):
+            anime_data.arm.restore_state()
+            if len(anime_data.robot_attached_list) != 0:
+                for robot_attached in anime_data.robot_attached_list:
+                    robot_attached.detach()
+            anime_data.robot_attached_list.clear()
+            anime_data.counter = 0
+            anime_data.arm.backup_state()
+        if len(anime_data.robot_attached_list) > 1:
+            for robot_attached in anime_data.robot_attached_list:
+                robot_attached.detach()
+        conf = anime_data.motion_data.conf_list[anime_data.counter]
+        jaw_width = anime_data.motion_data.jaw_width_list[anime_data.counter]
+        anime_data.arm.goto_given_conf(jnt_values=conf)
+        if jaw_width is not None:
+            if anime_data.motion_data.hold_list[anime_data.counter] is not None:
+                obj_cmodel = anime_data.motion_data.hold_list[anime_data.counter]
+                anime_data.arm.hold(obj_cmodel, jaw_width=jaw_width)
+            elif anime_data.motion_data.release_list[anime_data.counter] is not None:
+                obj_cmodel = anime_data.motion_data.release_list[anime_data.counter]
+                anime_data.arm.release(obj_cmodel, jaw_width=jaw_width)
+            else:
+                anime_data.arm.change_jaw_width(jaw_width=jaw_width)
+        robot_meshmodel = anime_data.robot.gen_meshmodel(toggle_cdprim=False, alpha=1)
+        robot_meshmodel.attach_to(base)
+        anime_data.robot_attached_list.append(robot_meshmodel)
+        # if base.inputmgr.keymap['space']:
+        anime_data.counter += 1
+
+        return task.again
+
+
+    taskMgr.doMethodLater(0.01, update, "update",
+                          extraArgs=[anime_data],
+                          appendTask=True)
+    base.run()
+
+    robot.rgt_arm.goto_given_conf(jnt_values=motion_data.conf_list[0])
     robot.rgt_arm.hold(obj_cmodel)
     for i, conf in enumerate(conf_list[1:]):
         robot.rgt_arm.goto_given_conf(jnt_values=conf)

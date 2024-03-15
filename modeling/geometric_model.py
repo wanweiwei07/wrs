@@ -104,7 +104,7 @@ class StaticGeometricModel(object):
                 self._pdndp.setTransparency(TransparencyAttrib.MDual)
             if toggle_twosided:
                 self._pdndp.getChild(0).setTwoSided(True)
-                self._pdndp.setColor(rgb[0], rgb[1], rgb[2], alpha)
+            self._pdndp.setColor(rgb[0], rgb[1], rgb[2], alpha)
             self._local_frame = None
 
     @property

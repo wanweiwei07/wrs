@@ -5,8 +5,8 @@ import random
 import scipy
 import numpy as np
 import basis.robot_math as rm
+import
 import networkx as nx
-import motion.utils as utils
 import matplotlib.pyplot as plt
 from operator import itemgetter
 
@@ -23,10 +23,29 @@ class RRT(object):
         self.start_conf = None
         self.goal_conf = None
 
+    @staticmethod
+    def keep_states_decorator(method):
+        """
+        decorator function for save and restore robot's joint values
+        applicable to both single or multi-arm sgl_arm_robots
+        :return:
+        author: weiwei
+        date: 20220404
+        """
+
+        def wrapper(self, *args, **kwargs):
+            self.robot.backup_state()
+            result = method(self, *args, **kwargs)
+            self.robot.restore_state()
+            return result
+
+        return wrapper
+
     def _is_collided(self,
                      conf,
                      obstacle_list=[],
-                     other_robot_list=[]):
+                     other_robot_list=[],
+                     toggle_contacts=False):
         """
         The function first examines if joint values of the given conf are in ranges.
         It will promptly return False if any joint value is out of range.
@@ -34,13 +53,26 @@ class RRT(object):
         :param conf:
         :param obstacle_list:
         :param other_robot_list:
+        :param toggle_contacts: for debugging collisions at start/goal
         :return:
         author: weiwei
-        date: 20220326
+        date: 20220326, 20240314
         """
         if self.robot.are_jnts_in_ranges(jnt_values=conf):
             self.robot.goto_given_conf(jnt_values=conf)
-            return self.robot.is_collided(obstacle_list=obstacle_list, other_robot_list=other_robot_list)
+            collision_info = self.robot.is_collided(obstacle_list=obstacle_list, other_robot_list=other_robot_list,
+                                                    toggle_contacts=toggle_contacts)
+            if toggle_contacts:
+                if collision_info[0]:
+                    import modeling.geometric_model as mgm
+                    for pnt in collision_info[1]:
+                        print(pnt)
+                        mgm.gen_sphere(pos=pnt, radius=.01).attach_to(base)
+                    self.robot.gen_meshmodel().attach_to(base)
+                    base.run()
+                return collision_info[0]
+            else:
+                return collision_info
         else:
             print("The given joint angles are out of joint limits.")
             return True
@@ -61,7 +93,7 @@ class RRT(object):
         date: 20210523
         """
         nodes_dict = dict(roadmap.nodes(data="conf"))
-        nodes_key_list = list(nodes_dict.keys()) # use python > 3.7, or else there is no guarantee on the order
+        nodes_key_list = list(nodes_dict.keys())  # use python > 3.7, or else there is no guarantee on the order
         nodes_value_list = list(nodes_dict.values())  # attention, correspondence is not guanranteed in python
         # ===============
         # the following code computes euclidean distances. it is decprecated and replaced using cdtree
@@ -181,7 +213,7 @@ class RRT(object):
                 break
         return smoothed_path
 
-    @utils.keep_jnts_decorator
+    @keep_states_decorator
     def plan(self,
              start_conf,
              goal_conf,
@@ -235,6 +267,10 @@ class RRT(object):
                                                   granularity=ext_dist,
                                                   n_iter=smoothing_n_iter,
                                                   animation=animation)
+                # mesh_list = []
+                # for conf in smoothed_path:
+                #     self.robot.goto_given_conf(conf)
+                #     mesh_list.append(self.robot.gen_meshmodel())
                 return smoothed_path
         else:
             print("Failed to find a path with the given max_n_ter!")

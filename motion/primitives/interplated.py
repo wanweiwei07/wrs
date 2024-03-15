@@ -1,13 +1,12 @@
 import math
 import numpy as np
 import basis.robot_math as rm
-import motion.utils as utils
 import robot_sim.robots.single_arm_robot_interface as sari
 
 
 class InterplatedMotion(object):
     """
-    NOTE: only accept sgl_arm_robot as initiator
+    NOTE: only accept robot as initiator
     author: weiwei
     date: 20230809
     """
@@ -15,9 +14,27 @@ class InterplatedMotion(object):
     def __init__(self, sgl_arm_robot):
         if not isinstance(sgl_arm_robot, sari.SglArmRobotInterface):
             raise ValueError("Only single arm robot can be used to initiate an InterplateMotion instance!")
-        self.robot = sgl_arm_robot
+        self.sgl_arm_robot = sgl_arm_robot
 
-    @utils.keep_jnts_decorator
+    @staticmethod
+    def keep_states_decorator(method):
+        """
+        decorator function for save and restore robot's joint values
+        applicable to both single or multi-arm sgl_arm_robots
+        :return:
+        author: weiwei
+        date: 20220404
+        """
+
+        def wrapper(self, *args, **kwargs):
+            self.sgl_arm_robot.backup_state()
+            result = method(self, *args, **kwargs)
+            self.sgl_arm_robot.restore_state()
+            return result
+
+        return wrapper
+
+    @keep_states_decorator
     def gen_linear_motion(self,
                           start_tcp_pos,
                           start_tcp_rotmat,
@@ -46,25 +63,25 @@ class InterplatedMotion(object):
         conf_list = []
         seed_jnt_values = None
         for pos, rotmat in pose_list:
-            jnt_values = self.robot.ik(pos, rotmat, seed_jnt_values=seed_jnt_values)
+            jnt_values = self.sgl_arm_robot.ik(pos, rotmat, seed_jnt_values=seed_jnt_values)
             if jnt_values is None:
                 if toggle_dbg:
                     for jnt_values in conf_list:
-                        self.robot.goto_given_conf(jnt_values)
-                        self.robot.gen_meshmodel(alpha=.3).attach_to(base)
+                        self.sgl_arm_robot.goto_given_conf(jnt_values)
+                        self.sgl_arm_robot.gen_meshmodel(alpha=.3).attach_to(base)
                     base.run()
                 print("IK not solvable in gen_linear_motion!")
                 return None
             else:
-                self.robot.goto_given_conf(jnt_values)
-                result, contacts = self.robot.is_collided(obstacle_list=obstacle_list, toggle_contacts=True)
+                self.sgl_arm_robot.goto_given_conf(jnt_values)
+                result, contacts = self.sgl_arm_robot.is_collided(obstacle_list=obstacle_list, toggle_contacts=True)
                 if result:
                     if toggle_dbg:
                         for pnt in contacts:
                             gm.gen_sphere(pnt, radius=.005).attach_to(base)
                         print(jnt_values)
-                        self.robot.goto_given_conf(jnt_values)
-                        self.robot.gen_meshmodel(alpha=.3).attach_to(base)
+                        self.sgl_arm_robot.goto_given_conf(jnt_values)
+                        self.sgl_arm_robot.gen_meshmodel(alpha=.3).attach_to(base)
                         base.run()
                     print("Intermediated pose collided in gen_linear_motion!")
                     return None
@@ -120,7 +137,7 @@ class InterplatedMotion(object):
         else:
             raise ValueError("Type must be sink or source!")
 
-    @utils.keep_jnts_decorator
+    @keep_states_decorator
     def gen_rel_linear_motion_with_given_conf(self,
                                               goal_conf,
                                               direction,
@@ -141,7 +158,7 @@ class InterplatedMotion(object):
         author: weiwei
         date: 20210114
         """
-        goal_tcp_pos, goal_tcp_rotmat = self.robot.fk(goal_conf)
+        goal_tcp_pos, goal_tcp_rotmat = self.sgl_arm_robot.fk(goal_conf)
         if type == "sink":
             start_tcp_pos = goal_tcp_pos - rm.unit_vector(direction) * distance
             start_tcp_rotmat = goal_tcp_rotmat
@@ -150,33 +167,35 @@ class InterplatedMotion(object):
             start_tcp_rotmat = goal_tcp_rotmat
             goal_tcp_pos = goal_tcp_pos + rm.unit_vector(direction) * distance
             goal_tcp_rotmat = goal_tcp_rotmat
-        pose_list = rm.interplate_pos_rotmat(start_tcp_pos,
-                                             start_tcp_rotmat,
-                                             goal_tcp_pos,
-                                             goal_tcp_rotmat,
+        else:
+            raise ValueError("Type must be sink or source!")
+        pose_list = rm.interplate_pos_rotmat(start_pos=start_tcp_pos,
+                                             start_rotmat=start_tcp_rotmat,
+                                             goal_pos=goal_tcp_pos,
+                                             goal_rotmat=goal_tcp_rotmat,
                                              granularity=granularity)
         conf_list = []
         seed_jnt_values = goal_conf
         for pos, rotmat in pose_list:
-            jnt_values = self.robot.ik(pos, rotmat, seed_jnt_values=seed_jnt_values)
+            jnt_values = self.sgl_arm_robot.ik(pos, rotmat, seed_jnt_values=seed_jnt_values)
             if jnt_values is None:
                 if toggle_dbg:
                     for jnt_values in conf_list:
-                        self.robot.goto_given_conf(jnt_values)
-                        self.robot.gen_meshmodel(alpha=.3).attach_to(base)
+                        self.sgl_arm_robot.goto_given_conf(jnt_values)
+                        self.sgl_arm_robot.gen_meshmodel(alpha=.3).attach_to(base)
                     base.run()
                 print("IK not solvable in gen_linear_motion!")
                 return None
             else:
-                self.robot.goto_given_conf(jnt_values)
-                result, contacts = self.robot.is_collided(obstacle_list=obstacle_list, toggle_contacts=True)
+                self.sgl_arm_robot.goto_given_conf(jnt_values)
+                result, contacts = self.sgl_arm_robot.is_collided(obstacle_list=obstacle_list, toggle_contacts=True)
                 if result:
                     if toggle_dbg:
                         for pnt in contacts:
                             gm.gen_sphere(pnt, radius=.005).attach_to(base)
                         print(jnt_values)
-                        self.robot.goto_given_conf(jnt_values)
-                        self.robot.gen_meshmodel(alpha=.3).attach_to(base)
+                        self.sgl_arm_robot.goto_given_conf(jnt_values)
+                        self.sgl_arm_robot.gen_meshmodel(alpha=.3).attach_to(base)
                         base.run()
                     print("Intermediated pose collided in gen_linear_motion!")
                     return None
@@ -184,7 +203,7 @@ class InterplatedMotion(object):
             seed_jnt_values = jnt_values
         return conf_list
 
-    @utils.keep_jnts_decorator
+    @keep_states_decorator
     def gen_circular_motion(self,
                             circle_center_pos,
                             circle_normal_ax,
@@ -214,13 +233,13 @@ class InterplatedMotion(object):
         conf_list = []
         seed_jnt_values = None
         for pos, rotmat in pose_list:
-            jnt_values = self.robot.ik(pos, rotmat, seed_jnt_values=seed_jnt_values)
+            jnt_values = self.sgl_arm_robot.ik(pos, rotmat, seed_jnt_values=seed_jnt_values)
             if jnt_values is None:
                 print("IK not solvable in gen_circular_motion!")
                 return None
             else:
-                self.robot.goto_given_conf(jnt_values)
-                result, contacts = self.robot.is_collided(obstacle_list, toggle_contacts=True)
+                self.sgl_arm_robot.goto_given_conf(jnt_values)
+                result, contacts = self.sgl_arm_robot.is_collided(obstacle_list, toggle_contacts=True)
                 if result:
                     if toggle_dbg:
                         for pnt in contacts:
@@ -259,7 +278,7 @@ if __name__ == '__main__':
     # toc = time.time()
     # print(toc - tic)
     # for jnt_values in conf_list:
-    #     sgl_arm.goto_given_conf(jnt_values)
+    #     robot.goto_given_conf(jnt_values)
     #     robot.gen_meshmodel(alpha=.3).attach_to(base)
     # base.run()
 

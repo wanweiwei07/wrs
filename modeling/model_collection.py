@@ -28,17 +28,38 @@ class ModelCollection(object):
     def gm_list(self):
         return self._gm_list
 
-    def set_rgba(self, rgba):
-        for cm in self._cm_list:
-            cm.set_rgba(rgba)
-        for gm in self._gm_list:
-            gm.set_rgba(rgba)
+    @property
+    def rgba(self):
+        raise AttributeError("This attribute is not available.")
 
-    def set_alpha(self, alpha):
+    @rgba.setter
+    def rgba(self, rgba):
         for cm in self._cm_list:
-            cm.set_alpha(alpha)
+            cm.rgba = rgba
         for gm in self._gm_list:
-            gm.set_alpha(alpha)
+            gm.rgba = rgba
+
+    @property
+    def rgb(self):
+        raise AttributeError("This attribute is not available.")
+
+    @rgba.setter
+    def rgb(self, rgb):
+        for cm in self._cm_list:
+            cm.rgb = rgb
+        for gm in self._gm_list:
+            gm.rgb = rgb
+
+    @property
+    def alpha(self):
+        raise AttributeError("This attribute is not available.")
+
+    @alpha.setter
+    def alpha(self, alpha):
+        for cm in self._cm_list:
+            cm.alpha = alpha
+        for gm in self._gm_list:
+            gm.alpha = alpha
 
     def add_cm(self, objcm):
         self._cm_list.append(objcm)
