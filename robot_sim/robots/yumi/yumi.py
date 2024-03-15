@@ -18,19 +18,20 @@ class Yumi(ri.RobotInterface):
         # the body anchor
         self.body = rkjlc.rkjl.Anchor(name="yumi_body", pos=self.pos, rotmat=self.rotmat, n_flange=2, n_lnk=9)
         self.body.loc_flange_pose_list[0] = [np.array([0.05355, 0.07250, 0.41492]),
-                               (rm.rotmat_from_euler(0.9781, -0.5716, 2.3180) @
-                                rm.rotmat_from_euler(0.0, 0.0, -np.pi))]
+                                             (rm.rotmat_from_euler(0.9781, -0.5716, 2.3180) @
+                                              rm.rotmat_from_euler(0.0, 0.0, -np.pi))]
         self.body.loc_flange_pose_list[1] = [np.array([0.05355, -0.07250, 0.41492]),
-                               (rm.rotmat_from_euler(-0.9781, -0.5682, -2.3155) @
-                                rm.rotmat_from_euler(0.0, 0.0, -np.pi))]
+                                             (rm.rotmat_from_euler(-0.9781, -0.5682, -2.3155) @
+                                              rm.rotmat_from_euler(0.0, 0.0, -np.pi))]
         self.body.lnk_list[0].name = "yumi_body_main"
         self.body.lnk_list[0].cmodel = mcm.CollisionModel(initor=os.path.join(current_file_dir, "meshes", "body.stl"),
-                                                cdprim_type=mcm.mc.CDPType.USER_DEFINED,
-                                                userdef_cdprim_fn=self._base_combined_cdnp)
+                                                          cdprim_type=mcm.mc.CDPType.USER_DEFINED,
+                                                          userdef_cdprim_fn=self._base_combined_cdnp)
         self.body.lnk_list[0].cmodel.rgba = rm.bc.hug_gray
         # table
         self.body.lnk_list[1].name = "yumi_body_table_top"
-        self.body.lnk_list[1].cmodel = mcm.CollisionModel(initor=os.path.join(current_file_dir, "meshes", "yumi_tablenotop.stl"))
+        self.body.lnk_list[1].cmodel = mcm.CollisionModel(
+            initor=os.path.join(current_file_dir, "meshes", "yumi_tablenotop.stl"))
         self.body.lnk_list[1].cmodel.rgba = rm.bc.steel_gray
         # lft column
         self.body.lnk_list[2].name = "yumi_body_lft_column"
@@ -73,7 +74,8 @@ class Yumi(ri.RobotInterface):
         # phoxi
         self.body.lnk_list[8].name = "phoxi"
         self.body.lnk_list[8].loc_pos = np.array([.273, 0, 1.085])
-        self.body.lnk_list[8].cmodel = mcm.CollisionModel(initor=os.path.join(current_file_dir, "meshes", "phoxi_m.stl"))
+        self.body.lnk_list[8].cmodel = mcm.CollisionModel(
+            initor=os.path.join(current_file_dir, "meshes", "phoxi_m.stl"))
         self.body.lnk_list[8].cmodel.rgba = rm.bc.black
         # left arm
         self.lft_arm = ysa.YumiSglArm(pos=self.body.gl_flange_pose_list[0][0],
@@ -87,13 +89,10 @@ class Yumi(ri.RobotInterface):
         self.rgt_arm.home_conf = np.radians(np.array([-20, -90, -120, 30, .0, 40, 0]))
         if enable_cc:
             self.setup_cc()
+        # subject
+        self.subject = self
         # go home
         self.goto_home_conf()
-        # back up main method functions
-        self.get_jnt_values_bk = self.get_jnt_values
-        self.rand_conf_bk = self.rand_conf
-        self.goto_given_conf_bk = self.goto_given_conf
-        self.are_jnts_in_ranges_bk = self.are_jnts_in_ranges
 
     def _base_combined_cdnp(self, name="auto", ex_radius=None):
         pdcnd = CollisionNode(name)
@@ -167,36 +166,54 @@ class Yumi(ri.RobotInterface):
         into_list = [rgt_ml1, rgt_ml2, rgt_ml3, rgt_ml4, rgt_ml5, rgt_elb, rgt_el0, rgt_el1]
         self.cc.set_cdpair_by_ids(from_list, into_list)
         # point low-level cc to the high-level one
-        self.lft_arm.cc=self.cc
-        self.rgt_arm.cc=self.cc
+        self.lft_arm.cc = self.cc
+        self.rgt_arm.cc = self.cc
 
     def use_both(self):
-        self.get_jnt_values = self.get_jnt_values_bk
-        self.rand_conf = self.rand_conf_bk
-        self.goto_given_conf = self.goto_given_conf_bk
-        self.are_jnts_in_ranges = self.are_jnts_in_ranges_bk
+        self.subject = self
 
     def use_lft(self):
-        self.get_jnt_values = self.lft_arm.get_jnt_values
-        self.rand_conf = self.lft_arm.rand_conf
-        self.goto_given_conf = self.lft_arm.goto_given_conf
-        self.are_jnts_in_ranges = self.lft_arm.are_jnts_in_ranges
+        self.subject = self.lft_arm
 
     def use_rgt(self):
-        self.get_jnt_values = self.rgt_arm.get_jnt_values
-        self.rand_conf = self.rgt_arm.rand_conf
-        self.goto_given_conf = self.rgt_arm.goto_given_conf
-        self.are_jnts_in_ranges = self.rgt_arm.are_jnts_in_ranges
+        self.subject = self.rgt_arm
+
+    def backup_state(self):
+        if self.subject is self:
+            self.rgt_arm.backup_state()
+            self.lft_arm.backup_state()
+        else:
+            self.subject.backup_state()
+
+    def restore_state(self):
+        if self.subject is self:
+            self.rgt_arm.restore_state()
+            self.lft_arm.restore_state()
+        else:
+            self.subject.restore_state()
 
     def fix_to(self, pos, rotmat):
         self.pos = pos
         self.rotmat = rotmat
         self.body.pos = self.pos
         self.body.rotmat = self.rotmat
-        self.lft_arm.fix_to(pos=self.pos + self.rotmat @ self._loc_lft_arm_pos,
-                            rotmat=self.rotmat @ self._loc_lft_arm_rotmat)
-        self.rgt_arm.fix_to(pos=self.pos + self.rotmat @ self._loc_rgt_arm_pos,
-                            rotmat=self.rotmat @ self._loc_rgt_arm_rotmat)
+        self.lft_arm.fix_to(pos=self.body.gl_flange_pose_list[0][0],
+                            rotmat=self.body.gl_flange_pose_list[0][1])
+        self.rgt_arm.fix_to(pos=self.body.gl_flange_pose_list[1][0],
+                            rotmat=self.body.gl_flange_pose_list[1][1])
+
+    def ik(self, tgt_pos, tgt_rotmat, seed_jnt_values=None, toggle_dbg=False):
+        if self.subject is self:
+            raise AttributeError("IK is not available for multi-arm robots.")
+        else:
+            return self.subject.ik(tgt_pos=tgt_pos, tgt_rotmat=tgt_rotmat, seed_jnt_values=seed_jnt_values,
+                                   toggle_dbg=toggle_dbg)
+
+    def fk(self, jnt_values, toggle_jacobian=False):
+        if self.subject is self:
+            raise AttributeError("FK is not available for multi-arm mode.")
+        else:
+            return self.subject.fk(jnt_values=jnt_values, toggle_jacobian=toggle_jacobian)
 
     def goto_given_conf(self, jnt_values):
         """
@@ -205,17 +222,26 @@ class Yumi(ri.RobotInterface):
         author: weiwei
         date: 20240307
         """
-        if len(jnt_values) != self.lft_arm.manipulator.n_dof + self.rgt_arm.manipulator.n_dof:
-            raise ValueError("The given joint values do not match total n_dof")
-        self.lft_arm.goto_given_conf(jnt_values=jnt_values[:self.lft_arm.manipulator.n_dof])
-        self.rgt_arm.goto_given_conf(jnt_values=jnt_values[self.rgt_arm.manipulator.n_dof:])
+        if self.subject is self:
+            if len(jnt_values) != self.lft_arm.manipulator.n_dof + self.rgt_arm.manipulator.n_dof:
+                raise ValueError("The given joint values do not match total n_dof")
+            self.lft_arm.goto_given_conf(jnt_values=jnt_values[:self.lft_arm.manipulator.n_dof])
+            self.rgt_arm.goto_given_conf(jnt_values=jnt_values[self.rgt_arm.manipulator.n_dof:])
+        else:
+            self.subject.goto_given_conf(jnt_values=jnt_values)
 
     def goto_home_conf(self):
-        self.lft_arm.goto_home_conf()
-        self.rgt_arm.goto_home_conf()
+        if self.subject is self:
+            self.lft_arm.goto_home_conf()
+            self.rgt_arm.goto_home_conf()
+        else:
+            self.subject.goto_home_conf()
 
     def get_jnt_values(self):
-        return np.concatenate((self.lft_arm.get_jnt_values(), self.rgt_arm.get_jnt_values()))
+        if self.subject is self:
+            return np.concatenate((self.lft_arm.get_jnt_values(), self.rgt_arm.get_jnt_values()))
+        else:
+            return self.subject.get_jnt_values()
 
     def rand_conf(self):
         """
@@ -223,12 +249,18 @@ class Yumi(ri.RobotInterface):
         author: weiwei
         date: 20210406
         """
-        return np.concatenate((self.lft_arm.rand_conf(), self.rgt_arm.rand_conf()))
+        if self.subject is self:
+            return np.concatenate((self.lft_arm.rand_conf(), self.rgt_arm.rand_conf()))
+        else:
+            return self.subject.rand_conf()
 
     def are_jnts_in_ranges(self, jnt_values):
-        return self.lft_arm.are_jnts_in_ranges(
-            jnt_values=jnt_values[:self.lft_arm.manipulator.n_dof]) and self.rgt_arm.are_jnts_in_ranges(
-            jnt_values=jnt_values[self.rgt_arm.manipulator.n_dof:])
+        if self.subject is self:
+            return self.lft_arm.are_jnts_in_ranges(
+                jnt_values=jnt_values[:self.lft_arm.manipulator.n_dof]) and self.rgt_arm.are_jnts_in_ranges(
+                jnt_values=jnt_values[self.rgt_arm.manipulator.n_dof:])
+        else:
+            return self.subject.are_jnts_in_ranges(jnt_values=jnt_values)
 
     def is_collided(self, obstacle_list=[], other_robot_list=[], toggle_contacts=False):
         """

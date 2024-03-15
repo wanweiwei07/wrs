@@ -33,9 +33,16 @@ class XYBot(ri.RobotInterface):
         self.jlc.finalize()
         if self.cc is not None:
             self.setup_cc()
+        self.jnt_values_bk = []
 
     def setup_cc(self):
         body = self.cc.add_cce(self.jlc.jnts[1].lnk)
+
+    def backup_state(self):
+        self.jnt_values_bk.append(self.jlc.get_jnt_values())
+
+    def restore_state(self):
+        self.jlc.go_given_conf(jnt_values=self.jnt_values_bk.pop())
 
     def goto_given_conf(self, jnt_values=np.zeros(2)):
         self.jlc.go_given_conf(jnt_values=jnt_values)

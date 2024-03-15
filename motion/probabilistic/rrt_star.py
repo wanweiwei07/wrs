@@ -1,6 +1,4 @@
 import time
-import math
-import random
 import warnings
 
 import numpy as np
@@ -9,9 +7,7 @@ import networkx as nx
 import matplotlib.pyplot as plt
 import uuid
 import motion.probabilistic.rrt as rrt
-import scipy
 from operator import itemgetter
-import motion.utils as utils
 
 
 class RRTStar(rrt.RRT):
@@ -198,7 +194,9 @@ class RRTStar(rrt.RRT):
                                                   granularity=ext_dist,
                                                   n_iter=smoothing_n_iter,
                                                   animation=animation)
-                return smoothed_path
+                mdata = rrt.mutil.MotionData(self.robot)
+                mdata.extend(conf_list=smoothed_path)
+                return mdata
         else:
             print("Failed to find a path with the given max_n_ter!")
             return None

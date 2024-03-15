@@ -1,14 +1,9 @@
 import time
-import random
-import numpy as np
-import basis.robot_math as rm
 import networkx as nx
-import matplotlib.pyplot as plt
 import motion.probabilistic.rrt_star as rrtst
 from operator import itemgetter
 import uuid
 import warnings
-import motion.utils as utils
 
 
 class RRTStarConnect(rrtst.RRTStar):
@@ -179,7 +174,9 @@ class RRTStarConnect(rrtst.RRTStar):
                                           granularity=ext_dist,
                                           n_iter=smoothing_n_iter,
                                           animation=animation)
-        return smoothed_path
+        mdata = rrtst.rrt.mutil.MotionData(self.robot)
+        mdata.extend(conf_list=smoothed_path)
+        return mdata
 
 
 if __name__ == '__main__':

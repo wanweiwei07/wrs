@@ -64,7 +64,7 @@ class RRTConnect(rrt.RRT):
         self.start_conf = start_conf
         self.goal_conf = goal_conf
         # check start and goal
-        if self._is_collided(start_conf, obstacle_list, other_robot_list, toggle_contacts=True):
+        if self._is_collided(start_conf, obstacle_list, other_robot_list):
             print("RRT: The start robot configuration is in collision!")
             return None
         if self._is_collided(goal_conf, obstacle_list, other_robot_list):
@@ -125,12 +125,9 @@ class RRTConnect(rrt.RRT):
                                           granularity=ext_dist,
                                           n_iter=smoothing_n_iter,
                                           animation=animation)
-        # mesh_list = []
-        # for conf in smoothed_path:
-        #     self.robot.goto_given_conf(conf)
-        #     mesh_list.append(self.robot.gen_meshmodel())
-        # print("no model")
-        return smoothed_path
+        mdata = rrt.mutil.MotionData(self.robot)
+        mdata.extend(conf_list=smoothed_path)
+        return mdata
 
 
 if __name__ == '__main__':

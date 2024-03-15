@@ -107,6 +107,12 @@ class ManipulatorInterface(object):
     def home_conf(self, home_conf):
         self.jlc.home = home_conf
 
+    def backup_state(self):
+        raise NotImplementedError
+
+    def restore_state(self):
+        raise NotImplementedError
+
     def clear_cc(self):
         if self.cc is None:
             print("The cc is currently unavailable. Nothing to clear.")

@@ -5,7 +5,7 @@ import random
 import scipy
 import numpy as np
 import basis.robot_math as rm
-import
+import motion.utils as m_util
 import networkx as nx
 import matplotlib.pyplot as plt
 from operator import itemgetter
@@ -267,11 +267,9 @@ class RRT(object):
                                                   granularity=ext_dist,
                                                   n_iter=smoothing_n_iter,
                                                   animation=animation)
-                # mesh_list = []
-                # for conf in smoothed_path:
-                #     self.robot.goto_given_conf(conf)
-                #     mesh_list.append(self.robot.gen_meshmodel())
-                return smoothed_path
+                mdata = m_util.MotionData(self.robot)
+                mdata.extend(conf_list=smoothed_path)
+                return mdata
         else:
             print("Failed to find a path with the given max_n_ter!")
             return None

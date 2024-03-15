@@ -21,6 +21,12 @@ class RobotInterface(object):
         else:
             self.cc = None
 
+    def backup_state(self):
+        raise NotImplementedError
+
+    def restore_state(self):
+        raise NotImplementedError
+
     def clear_cc(self):
         if self.cc is None:
             print("The cc is currently unavailable. Nothing to clear.")

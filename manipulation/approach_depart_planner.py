@@ -631,7 +631,7 @@ if __name__ == '__main__':
     #                                                 goal_tcp_rotmat=goal_rotmat,
     #                                                 start_conf=robot.get_jnt_values(),
     #                                                 end_conf=robot.get_jnt_values())
-    ad_motion_data = adp.gen_depart_approach_motion_with_given_conf(start_conf=jnt_values,
+    ad_data = adp.gen_depart_approach_motion_with_given_conf(start_conf=jnt_values,
                                                                     goal_conf=jnt_values)
 
 
