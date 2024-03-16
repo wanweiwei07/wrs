@@ -121,7 +121,7 @@ class CobottaPipette(gp.GripperInterface):
     def change_jaw_width(self, jaw_width):
         print(jaw_width)
         if self.jaw_range[1] < jaw_width or jaw_width < self.jaw_range[0]:
-            raise ValueError("The jaw_width parameter is out of range!")
+            raise ValueError("The ee_values parameter is out of range!")
         side_jawwidth = jaw_width / 2.0
         self.jlc.jnts[5]['motion_value'] = side_jawwidth
         self.jlc.jnts[7]['motion_value'] = -jaw_width

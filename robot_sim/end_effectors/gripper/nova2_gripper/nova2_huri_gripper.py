@@ -171,7 +171,7 @@ class Nova2HuriGripper(gp.GripperInterface):
 
     def change_jaw_width(self, jaw_width):
         if jaw_width > self.jawwidth_rng[1]:
-            raise ValueError("The jaw_width parameter is out of range!")
+            raise ValueError("The ee_values parameter is out of range!")
         self.fk(motion_val=-jaw_width / 2.0)
 
     def get_jawwidth(self):

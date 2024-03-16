@@ -15,11 +15,11 @@ class BH828X(object):
 
     def __init__(self, *args, **kwargs):
         """
-        load the robotiq85 model, set jaw_width
+        load the robotiq85 model, set ee_values
 
         :param args:
         :param kwargs:
-            'jaw_width' 0-85
+            'ee_values' 0-85
             'ftsensoroffset' the offset for forcesensor
             'toggleframes' True, False
 
@@ -35,8 +35,8 @@ class BH828X(object):
             self.__jawwidthclose = kwargs['jawwidthclose']
         else:
             self.__jawwidthclose = 0
-        if 'jaw_width' in kwargs:
-            self.__jawwidth = kwargs['jaw_width']
+        if 'ee_values' in kwargs:
+            self.__jawwidth = kwargs['ee_values']
         else:
             self.__jawwidth = self.__jawwidthopen
         if 'ftsensoroffset' in kwargs:
@@ -369,7 +369,7 @@ class BH828X(object):
 
     def setjawwidth(self, jawwidth=None):
         """
-        set the jaw_width of the hand
+        set the ee_values of the hand
 
         :param jawwidth: mm
         :return:
@@ -507,7 +507,7 @@ class BH828X(object):
         set the hand to grip at fcx, fcy, fcz, fc = finger center
         the normal of the sglfgr contact is set to be c0nx, c0ny, c0nz
         the rotation around the normal is set to rotangle
-        the jaw_width is set to jaw_width
+        the ee_values is set to ee_values
 
         date: 20170322
         author: weiwei
@@ -539,7 +539,7 @@ class BH828X(object):
         set the hand to grip at fcx, fcy, fcz, fc = finger center
         the normal of the sglfgr contact is set to be c0nx, c0ny, c0nz
         the approach vector of the hand is set to apx, apy, apz
-        the jaw_width is set to jaw_width
+        the ee_values is set to ee_values
 
         date: 20190528
         author: weiwei
@@ -566,11 +566,11 @@ class BH828X(object):
     def genrangecmlist(self, jawwidthstart, jawwidthend=None, discretizedegree=10.0):
         '''
         generate a hand mcm model for collision.
-        The finger motion is discretized in range (jaw_width, jawopen)
+        The finger motion is discretized in range (ee_values, jawopen)
         The generated model is an independent copy, the hand itsself is not modified
 
         ## input
-        jaw_width:
+        ee_values:
             the width of the jaw
 
         author: weiwei

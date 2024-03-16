@@ -169,6 +169,13 @@ class Yumi(ri.RobotInterface):
         self.lft_arm.cc = self.cc
         self.rgt_arm.cc = self.cc
 
+    @property
+    def end_effector(self):
+        if self.delegator is None:
+            raise AttributeError("End effector is not avialable in multi-arm mode.")
+        else:
+            return self.delegator.end_effector
+
     def use_both(self):
         self.delegator = None
 
@@ -191,6 +198,12 @@ class Yumi(ri.RobotInterface):
             self.lft_arm.restore_state()
         else:
             self.delegator.restore_state()
+
+    def hold(self, obj_cmodel, **kwargs):
+        self.end_effector.hold(obj_cmodel, **kwargs)
+
+    def release(self, obj_cmodel, **kwargs):
+        self.end_effector.release(obj_cmodel, **kwargs)
 
     def fix_to(self, pos, rotmat):
         self.pos = pos

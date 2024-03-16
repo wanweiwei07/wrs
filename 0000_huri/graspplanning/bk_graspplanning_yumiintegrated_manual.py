@@ -51,7 +51,7 @@ if __name__=="__main__":
     #             base.pggen.plotAxis(newyihand.hndnp, axis_length=15, major_radius=2)
     #             pregrasps.append(
     #                 newyihand.approachAt(0, 0, z, newcv[0], newcv[1], newcv[2], newav[0], newav[1],
-    #                                      newav[2], jaw_width=17))
+    #                                      newav[2], ee_values=17))
 
     # # toggle this part for manually defined plans
     fgplanner = freegrip.Freegrip(objpath, yihnd)

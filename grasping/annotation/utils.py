@@ -22,7 +22,7 @@ def define_gripper_grasps(gripper,
     :param jaw_width:
     :param obj_cmodel:
     :param toggle_flip:
-    :return: a list like [[jaw_width, jaw_center_pos, pos, rotmat], ...]
+    :return: a list like [[ee_values, jaw_center_pos, pos, rotmat], ...]
     author: chenhao, revised by weiwei
     date: 20200104
     """
@@ -67,7 +67,7 @@ def define_gripper_grasps_with_rotation(gripper, cmodel, gl_jaw_center_pos, gl_a
     :param rotation_interval: 
     :param rotation_range: 
     :param toggle_flip: 
-    :return: a list [[jaw_width, jaw_center_pos, pos, rotmat], ...]
+    :return: a list [[ee_values, jaw_center_pos, pos, rotmat], ...]
     author: chenhao, revised by weiwei
     date: 20200104
     """

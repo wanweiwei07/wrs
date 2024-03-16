@@ -1094,7 +1094,7 @@ if __name__ == "__main__":
     predefined_grasps_lft, handdirlist_lft = handpose.lftgrasppose()  # 予備の把持姿勢と把持方向
     predefined_grasps_rgt, handdirlist_rgt = handpose.rgtgrasppose()
     # for grasp_pose in predefined_grasps_rgt:
-    #     jaw_width, jaw_center_pos, gripper_root_pos, gripper_root_rotmat = grasp_pose
+    #     ee_values, jaw_center_pos, gripper_root_pos, gripper_root_rotmat = grasp_pose
     #     mgm.gen_frame(gripper_root_pos, gripper_root_rotmat).attach_to(base)
     # base.run()
     # objects

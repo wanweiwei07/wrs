@@ -54,17 +54,17 @@ class Cobotta(ri.SglArmRobotInterface):
     def get_jaw_width(self):
         return self.get_ee_values()
 
-    # def hold(self, hnd_name, obj_cmodel, jaw_width=None):
+    # def hold(self, hnd_name, obj_cmodel, ee_values=None):
     #     """
     #     the obj_cmodel is added as a part of the robot_s to the cd checker
-    #     :param jaw_width:
+    #     :param ee_values:
     #     :param obj_cmodel:
     #     :return:
     #     """
     #     if hnd_name not in self.hnd_dict:
     #         raise ValueError("Hand name does not exist!")
-    #     if jaw_width is not None:
-    #         self.hnd_dict[hnd_name].change_jaw_width(jaw_width)
+    #     if ee_values is not None:
+    #         self.hnd_dict[hnd_name].change_jaw_width(ee_values)
     #     rel_pos, rel_rotmat = self.manipulator_dict[hnd_name].cvt_gl_pose_to_tcp(obj_cmodel.get_pos(), obj_cmodel.get_rotmat())
     #     intolist = [self.arm.lnks[0],
     #                 self.arm.lnks[1],
@@ -83,17 +83,17 @@ class Cobotta(ri.SglArmRobotInterface):
     #         return_list.append(obj_cmodel)
     #     return return_list
     #
-    # def release(self, hnd_name, obj_cmodel, jaw_width=None):
+    # def release(self, hnd_name, obj_cmodel, ee_values=None):
     #     """
     #     the obj_cmodel is added as a part of the robot_s to the cd checker
-    #     :param jaw_width:
+    #     :param ee_values:
     #     :param obj_cmodel:
     #     :return:
     #     """
     #     if hnd_name not in self.hnd_dict:
     #         raise ValueError("Hand name does not exist!")
-    #     if jaw_width is not None:
-    #         self.hnd_dict[hnd_name].change_jaw_width(jaw_width)
+    #     if ee_values is not None:
+    #         self.hnd_dict[hnd_name].change_jaw_width(ee_values)
     #     for obj_info in self.oih_infos:
     #         if obj_info['collision_model'] is obj_cmodel:
     #             self.cc.delete_cdobj(obj_info)

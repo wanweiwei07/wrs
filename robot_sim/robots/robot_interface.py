@@ -15,7 +15,7 @@ class RobotInterface(object):
         self.pos = pos
         self.rotmat = rotmat
         # for dynamic callback in case of multiple arms
-        self.userdef_is_collided_fn = None # deprecated 20240309 (originally designed for reusing cc, inflexible)
+        self.userdef_is_collided_fn = None  # deprecated 20240309 (originally designed for reusing cc, inflexible)
         if enable_cc:
             self.cc = cc.CollisionChecker("collision_checker")
         else:
@@ -38,10 +38,10 @@ class RobotInterface(object):
         self.name = name
 
     def get_ee_values(self):
-        raise NotImplementedError
+        return None
 
     def change_ee_values(self, ee_values):
-        raise NotImplementedError
+        return None
 
     def goto_given_conf(self, jnt_values):
         raise NotImplementedError

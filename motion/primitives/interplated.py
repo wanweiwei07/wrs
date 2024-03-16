@@ -73,20 +73,20 @@ class InterplatedMotion(object):
             if jnt_values is None:
                 if toggle_dbg:
                     for jnt_values in jv_list:
-                        self.robot.goto_given_conf(jnt_values, ee_values=ee_values)
+                        self.robot.goto_given_conf(jnt_values=jnt_values, ee_values=ee_values)
                         self.robot.gen_meshmodel(alpha=.3).attach_to(base)
                     base.run()
                 print("IK not solvable in gen_linear_motion!")
                 return None
             else:
-                self.robot.goto_given_conf(jnt_values, ee_values=ee_values)
+                self.robot.goto_given_conf(jnt_values=jnt_values, ee_values=ee_values)
                 result, contacts = self.robot.is_collided(obstacle_list=obstacle_list, toggle_contacts=True)
                 if result:
                     if toggle_dbg:
                         for pnt in contacts:
                             gm.gen_sphere(pnt, radius=.005).attach_to(base)
                         print(jnt_values)
-                        self.robot.goto_given_conf(jnt_values)
+                        self.robot.goto_given_conf(jnt_values=jnt_values)
                         if ee_values is not None:
                             self.robot.change_jaw_width(jaw_width=ee_values)
                         self.robot.gen_meshmodel(alpha=.3).attach_to(base)
@@ -155,7 +155,7 @@ class InterplatedMotion(object):
 
     @keep_states_decorator
     def gen_rel_linear_motion_with_given_conf(self,
-                                              goal_conf,
+                                              goal_jnt_values,
                                               direction,
                                               distance,
                                               obstacle_list=[],
@@ -164,7 +164,7 @@ class InterplatedMotion(object):
                                               ee_values=None,
                                               toggle_dbg=False):
         """
-        :param goal_conf:
+        :param goal_jnt_values:
         :param direction:
         :param distance:
         :param obstacle_list:
@@ -176,7 +176,7 @@ class InterplatedMotion(object):
         author: weiwei
         date: 20210114
         """
-        goal_tcp_pos, goal_tcp_rotmat = self.robot.fk(goal_conf)
+        goal_tcp_pos, goal_tcp_rotmat = self.robot.fk(jnt_values=goal_jnt_values)
         if type == "sink":
             start_tcp_pos = goal_tcp_pos - rm.unit_vector(direction) * distance
             start_tcp_rotmat = goal_tcp_rotmat
@@ -195,7 +195,7 @@ class InterplatedMotion(object):
         jv_list = []
         ev_list = []
         mesh_list = []
-        seed_jnt_values = goal_conf
+        seed_jnt_values = goal_jnt_values
         for pos, rotmat in pose_list:
             jnt_values = self.robot.ik(pos, rotmat, seed_jnt_values=seed_jnt_values)
             if jnt_values is None:

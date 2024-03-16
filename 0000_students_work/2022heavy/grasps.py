@@ -38,9 +38,9 @@ box.set_pos(np.array([0, 0, .02]))
 # box.set_rotmat(rm.rotmat_from_axangle([0, 1, 0], -math.pi / 12))
 grasp_info_list = gpa.plan_gripper_grasps(rtq_s, box, angle_between_contact_normals=math.radians(175), openning_direction='loc_y')
 # for grasp_info in grasp_info_list:
-#     jaw_width, jaw_center_pos, jaw_center_rotmat, gripper_root_pos, gripper_root_rotmat = grasp_info
+#     ee_values, jaw_center_pos, jaw_center_rotmat, gripper_root_pos, gripper_root_rotmat = grasp_info
 #     rtq_s.fix_to(gripper_root_pos, gripper_root_rotmat)
-#     rtq_s.jaw_to(jaw_width)
+#     rtq_s.jaw_to(ee_values)
 #     rtq_s.gen_meshmodel().attach_to(base)
 grasp_info=grasp_info_list[11]
 jaw_width, gl_jaw_center_pos, gl_jaw_center_rotmat, hnd_pos, hnd_rotmat = grasp_info

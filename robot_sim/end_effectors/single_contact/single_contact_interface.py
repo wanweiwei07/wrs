@@ -16,7 +16,7 @@ class SCTInterface(eei.EEInterface):
         """
         :param gl_action_center_posm:
         :param gl_action_center_rotmat: jaw_center's rotmat
-        :param jaw_width:
+        :param ee_values:
         :return:
         """
         sct_root_rotmat = gl_action_center_rotmat.dot(self.loc_acting_center_rotmat.T)
@@ -29,7 +29,7 @@ class SCTInterface(eei.EEInterface):
         :param gl_action_center_pos:
         :param gl_action_center_z: jaw_center's approaching motion_vec
         :param gl_action_center_y: jaw_center's opening motion_vec
-        :param jaw_width:
+        :param ee_values:
         :return:
         author: weiwei
         date: 20220127

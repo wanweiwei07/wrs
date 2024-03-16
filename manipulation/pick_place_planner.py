@@ -1,22 +1,16 @@
-import math
-import numpy as np
-import basis.robot_math as rm
-import basis.data_adapter as da
-import motion.optimization_based.incremental_nik as inik
-import motion.probabilistic.rrt_connect as rrtc
-import manipulation.approach_depart_planner as adp
+import motion.primitives.approach_depart_planner as adp
 
 
 class PickPlacePlanner(adp.ADPlanner):
 
-    def __init__(self, sgl_arm_robot):
+    def __init__(self, robot):
         """
         :param object:
-        :param robot_helper:
+        :param robot: must be an instance of SglArmRobotInterface
         author: weiwei, hao
-        date: 20191122, 20210113
+        date: 20191122, 20210113, 20240316
         """
-        super().__init__(sgl_arm_robot)
+        super().__init__(robot)
 
     @adp.mpi.InterplatedMotion.keep_states_decorator
     def find_common_gids(self,
@@ -27,7 +21,7 @@ class PickPlacePlanner(adp.ADPlanner):
         """
         find the common collision free and IK feasible gids
         :param eef: an end effector instance
-        :param grasp_info_list: a list like [[jaw_width, jaw_center_pos, jaw_center_rotmat, pos, rotmat], ...]
+        :param grasp_info_list: a list like [[ee_values, jaw_center_pos, jaw_center_rotmat, pos, rotmat], ...]
         :param goal_homomat_list: [homomat0, homomat1,, ...]
         :param obstacle_list
         :return: [final_available_graspids, intermediate_available_graspids]
@@ -62,12 +56,14 @@ class PickPlacePlanner(adp.ADPlanner):
                         is_obj_collided = False  # obj cd
                         if (not is_rbt_collided) and (not is_obj_collided):  # gripper cdf, rbt ikf/cdf, obj cdf
                             if toggle_dbg:
-                                self.sgl_arm_robot.end_effector.gen_mesh_model(rgb=rm.bc.green, alpha=.3).attach_to(base)
+                                self.sgl_arm_robot.end_effector.gen_mesh_model(rgb=rm.bc.green, alpha=.3).attach_to(
+                                    base)
                             previously_available_gids.append(gid)
                         elif (not is_obj_collided):  # gripper cdf, rbt ikf, rbt collided
                             rbt_collided_grasps_num += 1
                             if toggle_dbg:
-                                self.sgl_arm_robot.end_effector.gen_mesh_model(rgb=rm.bc.yellow, alpha=.3).attach_to(base)
+                                self.sgl_arm_robot.end_effector.gen_mesh_model(rgb=rm.bc.yellow, alpha=.3).attach_to(
+                                    base)
                     else:  # gripper cdf, ik infeasible
                         ik_failed_grasps_num += 1
                         if toggle_dbg:
@@ -86,21 +82,21 @@ class PickPlacePlanner(adp.ADPlanner):
         return final_available_gids, intermediate_available_gids
 
     @adp.mpi.InterplatedMotion.keep_states_decorator
-    def gen_pick_and_move_motion(self,
-                                 obj_cmodel,
-                                 grasp_info,
-                                 goal_pose_list,
-                                 approach_direction_list,
-                                 approach_distance_list,
-                                 depart_direction_list,
-                                 depart_distance_list,
-                                 pick_approach_direction=None,
-                                 pick_approach_distance=None,
-                                 pick_depart_direction=None,
-                                 pick_depart_distance=None,
-                                 linear_granularity=.007,
-                                 use_rrt=True,
-                                 obstacle_list=[]):
+    def gen_pick_and_moveto(self,
+                            obj_cmodel,
+                            grasp_info,
+                            goal_pose_list,
+                            approach_direction_list,
+                            approach_distance_list,
+                            depart_direction_list,
+                            depart_distance_list,
+                            pick_approach_direction=None,
+                            pick_approach_distance=None,
+                            pick_depart_direction=None,
+                            pick_depart_distance=None,
+                            linear_granularity=.01,
+                            use_rrt=True,
+                            obstacle_list=[]):
         """
         pick and move an object to multiple poses
         :param obj_cmodel:
@@ -125,10 +121,10 @@ class PickPlacePlanner(adp.ADPlanner):
         pick_tcp_rotmat = obj_cmodel.rotmat.dot(jaw_center_rotmat)
         pick_motion = self.gen_approach(goal_tcp_pos=pick_tcp_pos,
                                         goal_tcp_rotmat=pick_tcp_rotmat,
-                                        start_conf=self.sgl_arm_robot.get_jnt_values(),
+                                        start_jnt_values=self.robot.get_jnt_values(),
                                         linear_direction=pick_approach_direction,
                                         linear_distance=pick_approach_distance,
-                                        jaw_width=self.sgl_arm_robot.end_effector.jaw_range[1],
+                                        ee_values=self.robot.end_effector.jaw_range[1],
                                         granularity=linear_granularity,
                                         obstacle_list=obstacle_list,
                                         object_list=[obj_cmodel])
@@ -136,50 +132,43 @@ class PickPlacePlanner(adp.ADPlanner):
             print("PPPlanner: Error encountered when generating pick approach motion!")
             return None
         else:
-            self.sgl_arm_robot.goto_given_conf(pick_motion.conf_list[-1])
-            self.sgl_arm_robot.hold(obj_cmodel, jaw_width=jaw_width)
-            pick_motion.extend([pick_motion.conf_list[-1]])
-            pick_motion.jaw_width_list[-1] = jaw_width
-            pick_motion.hold_list[-1] = obj_cmodel
-            start_conf = self.sgl_arm_robot.get_jnt_values()
-            print(self.sgl_arm_robot.end_effector.oiee_list_bk)
-            pick_depart = self.gen_linear_depart_with_given_conf(start_conf=start_conf,
+            self.robot.goto_given_conf(pick_motion.jv_list[-1])
+            self.robot.hold(obj_cmodel, jaw_width=jaw_width)
+            pick_motion.extend([pick_motion.jv_list[-1]], [jaw_width], [self.robot.gen_meshmodel()])
+            pick_depart = self.gen_linear_depart_with_given_conf(start_jnt_values=pick_motion.jv_list[-1],
                                                                  direction=pick_depart_direction,
                                                                  distance=pick_depart_distance,
-                                                                 jaw_width=None,
+                                                                 ee_values=None,
                                                                  granularity=linear_granularity,
                                                                  obstacle_list=obstacle_list)
             if pick_depart is None:
                 print("PPPlanner: Error encountered when generating pick depart motion!")
-                self.sgl_arm_robot.release(obj_cmodel)
                 return None
             else:
-                moveto_motion = adp.mpu.ManipulationData(sgl_arm_robot=self.sgl_arm_robot)
+                moveto_motion = adp.mpi.motu.MotionData(robot=self.robot)
                 # move to goals
-                adm_start_conf = pick_depart.conf_list[-1]
+                moveto_start_jnt_values = pick_depart.jv_list[-1]
                 for i, goal_pose in enumerate(goal_pose_list):
                     goal_tcp_pos = goal_pose[1].dot(jaw_center_pos) + goal_pose[0]
                     goal_tcp_rotmat = goal_pose[1].dot(jaw_center_rotmat)
                     moveto_ap = self.gen_approach_depart(goal_tcp_pos=goal_tcp_pos,
                                                          goal_tcp_rotmat=goal_tcp_rotmat,
-                                                         start_conf=adm_start_conf,
+                                                         start_jnt_values=moveto_start_jnt_values,
                                                          approach_direction=approach_direction_list[i],
                                                          approach_distance=approach_distance_list[i],
-                                                         approach_jaw_width=None,
+                                                         approach_ee_values=None,
                                                          depart_direction=depart_direction_list[i],
                                                          depart_distance=depart_distance_list[i],
-                                                         depart_jaw_width=None,  # do not change jaw width
+                                                         depart_ee_values=None,  # do not change jaw width
                                                          granularity=linear_granularity,
                                                          obstacle_list=obstacle_list,
                                                          object_list=[])
                     if moveto_ap is None:
                         print(f"Error encountered when generating motion to the {i}th goal!")
-                        self.sgl_arm_robot.release(obj_cmodel)
                         return None
                     else:
                         moveto_motion += moveto_ap
-                        adm_start_conf = moveto_motion.conf_list[-1]
-                self.sgl_arm_robot.release(obj_cmodel)
+                        moveto_start_jnt_values = moveto_motion.jv_list[-1]
                 return pick_motion + pick_depart + moveto_motion
 
     def gen_pick_and_place_motion(self,
@@ -265,18 +254,18 @@ class PickPlacePlanner(adp.ADPlanner):
                 continue
             # middle
             conf_list_middle, jawwidthlist_middle, objpose_list_middle = \
-                self.gen_pick_and_move_motion(hand_name=hnd_name,
-                                              objcm=objcm,
-                                              grasp_info=grasp_info,
-                                              goal_pose_list=goal_homomat_list,
-                                              depart_direction_list=depart_direction_list,
-                                              approach_direction_list=approach_direction_list,
-                                              depart_distance_list=depart_distance_list,
-                                              approach_distance_list=approach_distance_list,
-                                              ad_granularity=.003,
-                                              use_rrt=use_rrt,
-                                              obstacle_list=obstacle_list,
-                                              seed_jnt_values=conf_list_approach[-1])
+                self.gen_pick_and_moveto(hand_name=hnd_name,
+                                         objcm=objcm,
+                                         grasp_info=grasp_info,
+                                         goal_pose_list=goal_homomat_list,
+                                         depart_direction_list=depart_direction_list,
+                                         approach_direction_list=approach_direction_list,
+                                         depart_distance_list=depart_distance_list,
+                                         approach_distance_list=approach_distance_list,
+                                         ad_granularity=.003,
+                                         use_rrt=use_rrt,
+                                         obstacle_list=obstacle_list,
+                                         seed_jnt_values=conf_list_approach[-1])
             if conf_list_middle is None:
                 continue
             # departure
@@ -292,7 +281,7 @@ class PickPlacePlanner(adp.ADPlanner):
                                 end_conf=end_conf,
                                 linear_direction=depart_direction_list[0],
                                 linear_distance=depart_distance_list[0],
-                                jaw_width=depart_jawwidth,
+                                ee_values=depart_jawwidth,
                                 granularity=ad_granularity,
                                 obstacle_list=obstacle_list,
                                 object_list=[objcm_copy],
@@ -332,8 +321,8 @@ if __name__ == '__main__':
     obj_cmodel.rotmat = np.eye(3)
     obj_cmodel.copy().attach_to(base)
     robot = ym.Yumi(enable_cc=True)
-    arm = robot.rgt_arm
-    start_conf = arm.get_jnt_values()
+    robot.use_rgt()
+    start_conf = robot.get_jnt_values()
     n_goal = 2
     goal_pose_list = []
     for i in range(n_goal):
@@ -344,31 +333,59 @@ if __name__ == '__main__':
         tmp_objcm.rgba = np.array([1, 0, 0, .3])
         tmp_objcm.homomat = rm.homomat_from_posrot(goal_pos, goal_rotmat)
         tmp_objcm.attach_to(base)
-    grasp_info_list = gutil.load_pickle_file(cmodel_name='tubebig', file_name='yumi_tube_big.pickle')
+    grasp_info_list = gutil.load_pickle_file(cmodel_name='tubebig', file_name='yumi_gripper_tube_big.pickle')
     grasp_info = grasp_info_list[0]
-    pp_planner = PickPlacePlanner(sgl_arm_robot=arm)
+    pp_planner = PickPlacePlanner(robot=robot)
     # robot.gen_meshmodel().attach_to(base)
     # base.run()
     for grasp_info in grasp_info_list:
-        motion_data = pp_planner.gen_pick_and_move_motion(obj_cmodel=obj_cmodel,
-                                                          grasp_info=grasp_info,
-                                                          goal_pose_list=goal_pose_list,
-                                                          approach_direction_list=[np.array([0, 0, -1])] * n_goal,
-                                                          approach_distance_list=[.07] * n_goal,
-                                                          depart_direction_list=[np.array([0, 0, 1])] * n_goal,
-                                                          depart_distance_list=[.07] * n_goal,
-                                                          pick_approach_direction=None,
-                                                          pick_approach_distance=None,
-                                                          pick_depart_direction=None,
-                                                          pick_depart_distance=None,
-                                                          linear_granularity=.003,
-                                                          use_rrt=True,
-                                                          obstacle_list=[])
-        if motion_data.is_available():
+        mot_data = pp_planner.gen_pick_and_moveto(obj_cmodel=obj_cmodel,
+                                                  grasp_info=grasp_info,
+                                                  goal_pose_list=goal_pose_list,
+                                                  approach_direction_list=[np.array([0, 0, -1])] * n_goal,
+                                                  approach_distance_list=[.07] * n_goal,
+                                                  depart_direction_list=[np.array([0, 0, 1])] * n_goal,
+                                                  depart_distance_list=[.07] * n_goal,
+                                                  pick_approach_direction=None,
+                                                  pick_approach_distance=None,
+                                                  pick_depart_direction=None,
+                                                  pick_depart_distance=None,
+                                                  linear_granularity=.003,
+                                                  use_rrt=True,
+                                                  obstacle_list=[])
+        if mot_data is not None:
             break
 
-    print(motion_data)
-    print(obj_cmodel.pose)
+    print(mot_data)
+
+
+    class Data(object):
+        def __init__(self, mot_data):
+            self.counter = 0
+            self.mot_data = mot_data
+
+
+    anime_data = Data(mot_data)
+
+
+    def update(anime_data, task):
+        if anime_data.counter > 0:
+            anime_data.mot_data.mesh_list[anime_data.counter - 1].detach()
+        if anime_data.counter >= len(anime_data.mot_data):
+            # for mesh_model in anime_data.mot_data.mesh_list:
+            #     mesh_model.detach()
+            anime_data.counter = 0
+        mesh_model = anime_data.mot_data.mesh_list[anime_data.counter]
+        mesh_model.attach_to(base)
+        anime_data.counter += 1
+        return task.again
+
+    taskMgr.doMethodLater(0.01, update, "update",
+                          extraArgs=[anime_data],
+                          appendTask=True)
+
+    base.run()
+
 
     class Data(object):
         def __init__(self, robot, arm, motion_data):
@@ -381,6 +398,7 @@ if __name__ == '__main__':
 
 
     anime_data = Data(robot, arm, motion_data)
+
 
     def update(anime_data, task):
         if anime_data.counter == 0:

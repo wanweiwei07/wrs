@@ -209,16 +209,16 @@ class Robotiq85GelsightPusher(gp.GripperInterface):
         :return:
         """
         pass
-    #     jaw_width = jaw_width + .028
-    #     if jaw_width > 0.085:
-    #         jaw_width = 0.085
-    #     if jaw_width > self.jaw_range[1]:
+    #     ee_values = ee_values + .028
+    #     if ee_values > 0.085:
+    #         ee_values = 0.085
+    #     if ee_values > self.jaw_range[1]:
     #         raise ValueError(f"Jawwidth must be {self.jaw_range[0]}mm~{self.jaw_range[1]}mm!")
     #     motion_value = math.asin((self.jaw_range[1] / 2.0 + .0064 - .0306011) / 0.055) - math.asin(
-    #         (jaw_width / 2.0 + .0064 - .0306011) / 0.055)
+    #         (ee_values / 2.0 + .0064 - .0306011) / 0.055)
     #     self.fk(motion_value)
     #     # 20220113 matsuoka
-    #     rotmat = math.asin(math.asin(((jaw_width / 2.0 + 0.0064) - 0.0127) / 0.05715))
+    #     rotmat = math.asin(math.asin(((ee_values / 2.0 + 0.0064) - 0.0127) / 0.05715))
         # self.jaw_center_pos = np.array([0.0, 0.0, 0.06142]) + np.array([0.0, 0.0, math.cos(rotmat) * 0.05715]) + np.array(
         #     [0.0, 0.0, 0.06325144]) + self.coupling.joints[-1]['loc_pos']
 

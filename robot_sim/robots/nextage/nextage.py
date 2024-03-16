@@ -534,10 +534,10 @@ class Left_Manipulator(mi.ManipulatorInterface):
 #         else:
 #             raise NotImplementedError
 #
-#     def hold(self, obj_cmodel, jaw_width=None, hnd_name='lft_hnd'):
+#     def hold(self, obj_cmodel, ee_values=None, hnd_name='lft_hnd'):
 #         """
 #         the obj_cmodel is added as a part of the robot_s to the cd checker
-#         :param jaw_width:
+#         :param ee_values:
 #         :param obj_cmodel:
 #         :return:
 #         """
@@ -579,8 +579,8 @@ class Left_Manipulator(mi.ManipulatorInterface):
 #         #     self.rgt_oih_infos.append(self.cc.add_cdobj(obj_cmodel, rel_pos, rel_rotmat, into_list))
 #         # else:
 #         #     raise ValueError("hnd_name must be lft_hnd or rgt_hnd!")
-#         # if jaw_width is not None:
-#         #     self.jaw_to(hnd_name, jaw_width)
+#         # if ee_values is not None:
+#         #     self.jaw_to(hnd_name, ee_values)
 #         # return rel_pos, rel_rotmat
 #
 #     def get_loc_pose_from_hio(self, hio_pos, hio_rotmat, component_name='lft_arm'):
@@ -684,10 +684,10 @@ class Left_Manipulator(mi.ManipulatorInterface):
 #             if obj_info['collision_model'] is obj_cmodel:
 #                 return rm.homomat_from_posrot(obj_info['rel_pos']), obj_info['rel_rotmat']
 #
-#     def release(self, hnd_name, obj_cmodel, jaw_width=None):
+#     def release(self, hnd_name, obj_cmodel, ee_values=None):
 #         """
 #         the obj_cmodel is added as a part of the robot_s to the cd checker
-#         :param jaw_width:
+#         :param ee_values:
 #         :param obj_cmodel:
 #         :param hnd_name:
 #         :return:
@@ -698,18 +698,18 @@ class Left_Manipulator(mi.ManipulatorInterface):
 #             oih_infos = self.rgt_oih_infos
 #         else:
 #             raise ValueError("hnd_name must be lft_hnd or rgt_hnd!")
-#         if jaw_width is not None:
-#             self.jaw_to(hnd_name, jaw_width)
+#         if ee_values is not None:
+#             self.jaw_to(hnd_name, ee_values)
 #         for obj_info in oih_infos:
 #             if obj_info['collision_model'] is obj_cmodel:
 #                 self.cc.delete_cdobj(obj_info)
 #                 oih_infos.remove(obj_info)
 #                 break
 #
-#     def release_all(self, jaw_width=None, hnd_name='lft_hnd'):
+#     def release_all(self, ee_values=None, hnd_name='lft_hnd'):
 #         """
 #         release all objects from the specified hand
-#         :param jaw_width:
+#         :param ee_values:
 #         :param hnd_name:
 #         :return:
 #         author: weiwei
@@ -721,8 +721,8 @@ class Left_Manipulator(mi.ManipulatorInterface):
 #             oih_infos = self.rgt_oih_infos
 #         else:
 #             raise ValueError("hnd_name must be lft_hnd or rgt_hnd!")
-#         if jaw_width is not None:
-#             self.jaw_to(hnd_name, jaw_width)
+#         if ee_values is not None:
+#             self.jaw_to(hnd_name, ee_values)
 #         for obj_info in oih_infos:
 #             self.cc.delete_cdobj(obj_info)
 #         oih_infos.clear()

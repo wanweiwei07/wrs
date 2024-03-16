@@ -153,7 +153,7 @@ class Lite6WRSGripper2(gp.GripperInterface):
 
     def change_jaw_width(self, jaw_width):
         if jaw_width > self.jaw_range[1]:
-            raise ValueError("The jaw_width parameter is out of range!")
+            raise ValueError("The ee_values parameter is out of range!")
         self.fk(motion_val=-jaw_width / 2.0)
 
     def get_jaw_width(self):

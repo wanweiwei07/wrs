@@ -108,7 +108,7 @@ class RobotiqHE(gp.GripperInterface):
 
     def change_jaw_width(self, jaw_width):
         if jaw_width > self.jaw_range[1]:
-            raise ValueError("The jaw_width parameter is out of range!")
+            raise ValueError("The ee_values parameter is out of range!")
         self.fk(motion_val=(self.jaw_range[1] - jaw_width) / 2.0)
 
     def gen_stickmodel(self, toggle_tcp_frame=False, toggle_jnt_frames=False, name='ee_stickmodel'):

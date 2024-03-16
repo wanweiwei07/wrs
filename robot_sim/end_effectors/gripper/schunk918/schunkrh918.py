@@ -112,7 +112,7 @@ class SchunkRH918(gp.GripperInterface):
 
     def change_jaw_width(self, jawwidth):
         if jawwidth > .05:
-            raise ValueError("The jaw_width parameter is out of range!")
+            raise ValueError("The ee_values parameter is out of range!")
         self.fk(motion_val=(0.05-jawwidth) / 2.0)
 
     def get_jaw_width(self):
@@ -177,7 +177,7 @@ if __name__ == '__main__':
     #     grpr.gen_meshmodel().attach_to(base)
     grpr = SchunkRH918(enable_cc=True)
     grpr.change_jaw_width(.03)
-    print("jaw_width = ", grpr.get_jaw_width())
+    print("ee_values = ", grpr.get_jaw_width())
     grpr.gen_meshmodel().attach_to(base)
     # grpr.gen_stickmodel().attach_to(base)
     grpr.fix_to(pos=np.array([0, .3, .2]), rotmat=rm.rotmat_from_axangle([1, 0, 0], .05))

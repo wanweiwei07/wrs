@@ -286,8 +286,8 @@ class KHI_DUAL(ri.RobotInterface):
         #     self.rgt_oih_infos.append(self.cc.add_cdobj(obj_cmodel, rel_pos, rel_rotmat, into_list))
         # else:
         #     raise ValueError("hnd_name must be lft_hnd or rgt_hnd!")
-        # if jaw_width is not None:
-        #     self.jaw_to(hnd_name, jaw_width)
+        # if ee_values is not None:
+        #     self.jaw_to(hnd_name, ee_values)
         # return rel_pos, rel_rotmat
 
     def get_loc_pose_from_hio(self, hio_pos, hio_rotmat, component_name='lft_arm'):

@@ -22,7 +22,7 @@ rtq85_s = rtq85.Robotiq85()
 #                                   jaw_center_pos=np.array([0,0,0]),
 #                                   gl_approaching_direction=gl_approaching_direction,
 #                                   gl_fgr1_opening_direction=np.array([0,1,0]),
-#                                   jaw_width=.065,
+#                                   ee_values=.065,
 #                                   toggle_flip=True,
 #                                   toggle_dbg=True)
 grasp_info_list = gu.define_gripper_grasps_with_rotation(rtq85_s, object_box, gl_jaw_center_pos=np.array([0, 0, 0]),

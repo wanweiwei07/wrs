@@ -74,7 +74,7 @@ class GripperInterface(ei.EEInterface):
         :param jaw_center_pos:
         :param approaching_vec: jaw_center's approaching motion_vec
         :param fgr0_opening_vec: jaw_center's opening motion_vec
-        :param jaw_width: [jaw_width, jaw_center_pos, jaw_center_rotmat, eef_root_pos, eef_root_rotmat]
+        :param jaw_width: [ee_values, jaw_center_pos, jaw_center_rotmat, eef_root_pos, eef_root_rotmat]
         :return:
         """
         self.change_jaw_width(jaw_width)
@@ -88,7 +88,7 @@ class GripperInterface(ei.EEInterface):
         :param jaw_center_pos:
         :param jaw_center_rotmat:
         :param jaw_width:
-        :return: [jaw_width, jaw_center_pos, gl_jaw_center_rotmat, eef_root_pos, eef_root_rotmat]
+        :return: [ee_values, jaw_center_pos, gl_jaw_center_rotmat, eef_root_pos, eef_root_rotmat]
         """
         self.change_jaw_width(jaw_width)
         param_list = self.align_acting_center_by_pose(acting_center_pos=jaw_center_pos,
