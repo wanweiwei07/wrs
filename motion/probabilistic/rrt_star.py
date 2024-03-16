@@ -81,7 +81,6 @@ class RRTStar(rrt.RRT):
         nearby_nid_list = list(nodes_conf_key_array[candidate_mask])
         return nearby_nid_list
 
-
     def _extend_roadmap(self,
                         roadmap,
                         conf,
@@ -166,7 +165,9 @@ class RRTStar(rrt.RRT):
             print("The goal robot configuration is in collision!")
             return None
         if self._is_goal_reached(conf=start_conf, goal_conf=goal_conf, threshold=ext_dist):
-            return [[start_conf, goal_conf], None]
+            mot_data = rrt.m_util.MotionData(self.robot)
+            mot_data.extend(conf_list=[start_conf, goal_conf])
+            return mot_data
         self.roadmap.add_node('start', conf=start_conf, cost=0)
         tic = time.time()
         n = 0
@@ -194,9 +195,9 @@ class RRTStar(rrt.RRT):
                                                   granularity=ext_dist,
                                                   n_iter=smoothing_n_iter,
                                                   animation=animation)
-                mdata = rrt.mutil.MotionData(self.robot)
-                mdata.extend(conf_list=smoothed_path)
-                return mdata
+                mot_data = rrt.m_util.MotionData(self.robot)
+                mot_data.extend(conf_list=smoothed_path)
+                return mot_data
         else:
             print("Failed to find a path with the given max_n_ter!")
             return None
@@ -219,7 +220,7 @@ if __name__ == '__main__':
     robot = xyb.XYBot()
     rrts = RRTStar(robot)
     path = rrts.plan(start_conf=np.array([0, 0]), goal_conf=np.array([.6, .9]), obstacle_list=obstacle_list,
-                         ext_dist=.1, rand_rate=70, max_time=300, animation=True)
+                     ext_dist=.1, rand_rate=70, max_time=300, animation=True)
     # Draw final path
     print(path)
     rrts.draw_wspace([rrts.roadmap], rrts.start_conf, rrts.goal_conf, obstacle_list)

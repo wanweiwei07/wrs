@@ -241,7 +241,9 @@ class RRT(object):
             print("The goal robot configuration is in collision!")
             return None
         if self._is_goal_reached(conf=start_conf, goal_conf=goal_conf, threshold=ext_dist):
-            return [[start_conf, goal_conf], None]
+            mot_data = m_util.MotionData(self.robot)
+            mot_data.extend(conf_list=[start_conf, goal_conf])
+            return mot_data
         self.roadmap.add_node("start", conf=start_conf)
         tic = time.time()
         for _ in range(max_n_iter):
@@ -267,9 +269,9 @@ class RRT(object):
                                                   granularity=ext_dist,
                                                   n_iter=smoothing_n_iter,
                                                   animation=animation)
-                mdata = m_util.MotionData(self.robot)
-                mdata.extend(conf_list=smoothed_path)
-                return mdata
+                mot_data = m_util.MotionData(self.robot)
+                mot_data.extend(conf_list=smoothed_path)
+                return mot_data
         else:
             print("Failed to find a path with the given max_n_ter!")
             return None

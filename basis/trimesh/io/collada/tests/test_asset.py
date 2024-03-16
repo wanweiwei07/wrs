@@ -47,7 +47,7 @@ class TestAsset(unittest.TestCase):
         asset = collada.asset.Asset()
 
         self.assertIsNone(asset.title)
-        self.assertIsNone(asset.subject)
+        self.assertIsNone(asset.delegator)
         self.assertIsNone(asset.revision)
         self.assertIsNone(asset.keywords)
         self.assertIsNone(asset.unitname)
@@ -61,7 +61,7 @@ class TestAsset(unittest.TestCase):
         asset = collada.asset.Asset.load(self.dummy, {}, fromstring(tostring(asset.xmlnode)))
 
         self.assertIsNone(asset.title)
-        self.assertIsNone(asset.subject)
+        self.assertIsNone(asset.delegator)
         self.assertIsNone(asset.revision)
         self.assertIsNone(asset.keywords)
         self.assertIsNone(asset.unitname)
@@ -72,7 +72,7 @@ class TestAsset(unittest.TestCase):
         self.assertIsInstance(asset.modified, datetime.datetime)
 
         asset.title = 'title1'
-        asset.subject = 'subject2'
+        asset.delegator = 'subject2'
         asset.revision = 'revision3'
         asset.keywords = 'keywords4'
         asset.unitname = 'feet'
@@ -89,7 +89,7 @@ class TestAsset(unittest.TestCase):
         asset.save()
         asset = collada.asset.Asset.load(self.dummy, {}, fromstring(tostring(asset.xmlnode)))
         self.assertEqual(asset.title, 'title1')
-        self.assertEqual(asset.subject, 'subject2')
+        self.assertEqual(asset.delegator, 'subject2')
         self.assertEqual(asset.revision, 'revision3')
         self.assertEqual(asset.keywords, 'keywords4')
         self.assertEqual(asset.unitname, 'feet')

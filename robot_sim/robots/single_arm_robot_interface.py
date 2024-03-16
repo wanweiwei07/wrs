@@ -33,7 +33,9 @@ class SglArmRobotInterface(ri.RobotInterface):
     def gl_tcp_rotmat(self):
         return self.manipulator.gl_tcp_rotmat
 
-    def _update_end_effector(self):
+    def _update_end_effector(self, ee_values=None):
+        if ee_values is not None:
+            self.end_effector.change_ee_values(ee_values)
         self.end_effector.fix_to(pos=self.manipulator.gl_flange_pos, rotmat=self.manipulator.gl_flange_rotmat)
 
     def backup_state(self):
@@ -50,9 +52,9 @@ class SglArmRobotInterface(ri.RobotInterface):
     def release(self, obj_cmodel, **kwargs):
         self.end_effector.release(obj_cmodel, **kwargs)
 
-    def goto_given_conf(self, jnt_values):
+    def goto_given_conf(self, jnt_values, ee_values=None):
         result = self.manipulator.goto_given_conf(jnt_values=jnt_values)
-        self._update_end_effector()
+        self._update_end_effector(ee_values=ee_values)
         return result
 
     def goto_home_conf(self):

@@ -1,10 +1,16 @@
-import motion.utils as m_util
+import robot_sim.robots.robot_interface as ri
+import motion.utils as motu
 
 
-class ManipulationData(m_util.MotionData):
-    def __init__(self, robot):
-        super().__init__(robot=robot)
-        self._jaw_width_list = []
+class ManipulationData(motu.MotionData):
+    def __init__(self, initor):
+        if isinstance(initor, ri.RobotInterface):
+            super().__init__(robot=initor)
+            self._jaw_width_list = []
+        elif isinstance(initor, motu.MotionData):
+            super().__init__(robot=initor.robot)
+            self._jaw_width_list = []
+            self.__add__(initor)
 
     @property
     def sgl_arm_robot(self):
@@ -22,9 +28,23 @@ class ManipulationData(m_util.MotionData):
         super().extend(conf_list=conf_list, mesh_list=mesh_list)
         self._jaw_width_list += [None] * len(conf_list)
 
+    def update_jaw_width(self, idx, jaw_width):
+        if idx > len(self._jaw_width_list) or idx <= -len(self._jaw_width_list):
+            raise ValueError("Index out of range for update_jaw_width!")
+        else:
+            self.jaw_width_list[idx] = jaw_width
+            self.robot.backup_state()
+            self.robot.goto_given_conf(jnt_values=self.conf_list[idx])
+            self.robot.change_jaw_width(jaw_width=jaw_width)
+            self._mesh_list[idx] = self.robot.gen_meshmodel()
+            self.robot.restore_state()
+
     def __add__(self, other):
         super().__add__(other=other)
-        self._jaw_width_list += other.jaw_width_list
+        if isinstance(other, motu.MotionData):
+            self._jaw_width_list += [None] * len(other.conf_list)
+        else:
+            self._jaw_width_list += other.jaw_width_list
         return self
 
     def __str__(self):

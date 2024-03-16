@@ -119,7 +119,7 @@ class Asset(DaeObject):
         :param str title:
           The title of the asset
         :param str subject:
-          The description of the topical subject of the asset
+          The description of the topical delegator of the asset
         :param str revision:
           Revision information about the asset
         :param str keywords:
@@ -150,7 +150,7 @@ class Asset(DaeObject):
         self.title = title
         """String containing the title of the asset"""
         self.subject = subject
-        """String containing the description of the topical subject of the asset"""
+        """String containing the description of the topical delegator of the asset"""
         self.revision = revision
         """String containing revision information about the asset"""
         self.keywords = keywords
@@ -187,7 +187,7 @@ class Asset(DaeObject):
         if self.revision is not None:
             self.xmlnode.append(E.revision(self.revision))
         if self.subject is not None:
-            self.xmlnode.append(E.subject(self.subject))
+            self.xmlnode.append(E.delegator(self.subject))
         if self.title is not None:
             self.xmlnode.append(E.title(self.title))
         if self.unitmeter is not None and self.unitname is not None:
@@ -221,7 +221,7 @@ class Asset(DaeObject):
         revision = node.find(collada.tag('revision') )
         if revision is not None: revision = revision.text
 
-        subject = node.find(collada.tag('subject') )
+        subject = node.find(collada.tag('delegator') )
         if subject is not None: subject = subject.text
 
         title = node.find(collada.tag('title') )

@@ -120,7 +120,9 @@ class RRTStarConnect(rrtst.RRTStar):
             print("The goal robot_s configuration is in collision!")
             return None
         if self._is_goal_reached(conf=start_conf, goal_conf=goal_conf, threshold=ext_dist):
-            return [[start_conf, goal_conf], None]
+            mot_data = rrtst.rrt.m_util.MotionData(self.robot)
+            mot_data.extend(conf_list=[start_conf, goal_conf])
+            return mot_data
         self.roadmap_start.add_node('start', conf=start_conf, cost=0)
         self.roadmap_goal.add_node('goal', conf=goal_conf, cost=0)
         tic = time.time()
@@ -174,9 +176,9 @@ class RRTStarConnect(rrtst.RRTStar):
                                           granularity=ext_dist,
                                           n_iter=smoothing_n_iter,
                                           animation=animation)
-        mdata = rrtst.rrt.mutil.MotionData(self.robot)
-        mdata.extend(conf_list=smoothed_path)
-        return mdata
+        mot_data = rrtst.rrt.m_util.MotionData(self.robot)
+        mot_data.extend(conf_list=smoothed_path)
+        return mot_data
 
 
 if __name__ == '__main__':

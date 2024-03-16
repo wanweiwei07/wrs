@@ -38,7 +38,7 @@ class World(ShowBase, object):
         :param w: width of window
         :param h: height of window
         author: weiwei
-        date: 2015?, 20201115
+        date: 20150520, 20201115
         """
         # the taskMgr, loader, render2d, etc. are added to builtin after initializing the showbase parental class
         super().__init__()

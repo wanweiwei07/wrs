@@ -89,8 +89,8 @@ class Yumi(ri.RobotInterface):
         self.rgt_arm.home_conf = np.radians(np.array([-20, -90, -120, 30, .0, 40, 0]))
         if enable_cc:
             self.setup_cc()
-        # subject
-        self.subject = self
+        # delegator
+        self.delegator = None # use self.xxx in case of None
         # go home
         self.goto_home_conf()
 
@@ -170,27 +170,27 @@ class Yumi(ri.RobotInterface):
         self.rgt_arm.cc = self.cc
 
     def use_both(self):
-        self.subject = self
+        self.delegator = None
 
     def use_lft(self):
-        self.subject = self.lft_arm
+        self.delegator = self.lft_arm
 
     def use_rgt(self):
-        self.subject = self.rgt_arm
+        self.delegator = self.rgt_arm
 
     def backup_state(self):
-        if self.subject is self:
+        if self.delegator is None:
             self.rgt_arm.backup_state()
             self.lft_arm.backup_state()
         else:
-            self.subject.backup_state()
+            self.delegator.backup_state()
 
     def restore_state(self):
-        if self.subject is self:
+        if self.delegator is None:
             self.rgt_arm.restore_state()
             self.lft_arm.restore_state()
         else:
-            self.subject.restore_state()
+            self.delegator.restore_state()
 
     def fix_to(self, pos, rotmat):
         self.pos = pos
@@ -203,45 +203,45 @@ class Yumi(ri.RobotInterface):
                             rotmat=self.body.gl_flange_pose_list[1][1])
 
     def ik(self, tgt_pos, tgt_rotmat, seed_jnt_values=None, toggle_dbg=False):
-        if self.subject is self:
+        if self.delegator is None:
             raise AttributeError("IK is not available for multi-arm robots.")
         else:
-            return self.subject.ik(tgt_pos=tgt_pos, tgt_rotmat=tgt_rotmat, seed_jnt_values=seed_jnt_values,
-                                   toggle_dbg=toggle_dbg)
+            return self.delegator.ik(tgt_pos=tgt_pos, tgt_rotmat=tgt_rotmat, seed_jnt_values=seed_jnt_values,
+                                     toggle_dbg=toggle_dbg)
 
     def fk(self, jnt_values, toggle_jacobian=False):
-        if self.subject is self:
+        if self.delegator is None:
             raise AttributeError("FK is not available for multi-arm mode.")
         else:
-            return self.subject.fk(jnt_values=jnt_values, toggle_jacobian=toggle_jacobian)
+            return self.delegator.fk(jnt_values=jnt_values, toggle_jacobian=toggle_jacobian)
 
-    def goto_given_conf(self, jnt_values):
+    def goto_given_conf(self, jnt_values, ee_values=None):
         """
         :param jnt_values: nparray 1x14, 0:7lft, 7:14rgt
         :return:
         author: weiwei
         date: 20240307
         """
-        if self.subject is self:
+        if self.delegator is None:
             if len(jnt_values) != self.lft_arm.manipulator.n_dof + self.rgt_arm.manipulator.n_dof:
                 raise ValueError("The given joint values do not match total n_dof")
             self.lft_arm.goto_given_conf(jnt_values=jnt_values[:self.lft_arm.manipulator.n_dof])
-            self.rgt_arm.goto_given_conf(jnt_values=jnt_values[self.rgt_arm.manipulator.n_dof:])
+            self.rgt_arm.goto_given_conf(jnt_values=jnt_values[self.rgt_arm.manipulator.n_dof:]) # TODO
         else:
-            self.subject.goto_given_conf(jnt_values=jnt_values)
+            self.delegator.goto_given_conf(jnt_values=jnt_values, ee_values=ee_values)
 
     def goto_home_conf(self):
-        if self.subject is self:
+        if self.delegator is None:
             self.lft_arm.goto_home_conf()
             self.rgt_arm.goto_home_conf()
         else:
-            self.subject.goto_home_conf()
+            self.delegator.goto_home_conf()
 
     def get_jnt_values(self):
-        if self.subject is self:
+        if self.delegator is None:
             return np.concatenate((self.lft_arm.get_jnt_values(), self.rgt_arm.get_jnt_values()))
         else:
-            return self.subject.get_jnt_values()
+            return self.delegator.get_jnt_values()
 
     def rand_conf(self):
         """
@@ -249,18 +249,30 @@ class Yumi(ri.RobotInterface):
         author: weiwei
         date: 20210406
         """
-        if self.subject is self:
+        if self.delegator is None:
             return np.concatenate((self.lft_arm.rand_conf(), self.rgt_arm.rand_conf()))
         else:
-            return self.subject.rand_conf()
+            return self.delegator.rand_conf()
 
     def are_jnts_in_ranges(self, jnt_values):
-        if self.subject is self:
+        if self.delegator is None:
             return self.lft_arm.are_jnts_in_ranges(
                 jnt_values=jnt_values[:self.lft_arm.manipulator.n_dof]) and self.rgt_arm.are_jnts_in_ranges(
                 jnt_values=jnt_values[self.rgt_arm.manipulator.n_dof:])
         else:
-            return self.subject.are_jnts_in_ranges(jnt_values=jnt_values)
+            return self.delegator.are_jnts_in_ranges(jnt_values=jnt_values)
+
+    def get_jaw_width(self):
+        if self.delegator is None:
+            raise AttributeError("Get jaw width is not available for multi-arm mode.")
+        else:
+            return self.delegator.get_jaw_width()
+
+    def change_jaw_width(self, jaw_width):
+        if self.delegator is None:
+            raise AttributeError("Change jaw width is not available for multi-arm mode.")
+        else:
+            self.delegator.change_jaw_width(jaw_width=jaw_width)
 
     def is_collided(self, obstacle_list=[], other_robot_list=[], toggle_contacts=False):
         """

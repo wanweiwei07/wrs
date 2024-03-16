@@ -84,8 +84,10 @@ class EEInterface(object):
         author: weiwei
         date: 20240314
         """
-        self.oiee_list=[]
+        self.oiee_list = []
 
+    def change_ee_values(self, ee_values):
+        raise NotImplementedError
 
     def is_mesh_collided(self, cmodel_list=[], toggle_dbg=False):
         """

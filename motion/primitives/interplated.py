@@ -1,7 +1,7 @@
 import math
 import numpy as np
 import basis.robot_math as rm
-import manipulation.utils as mp_util
+import motion.utils as motu
 import robot_sim.robots.single_arm_robot_interface as sari
 
 
@@ -13,8 +13,9 @@ class InterplatedMotion(object):
     """
 
     def __init__(self, robot):
-        if not isinstance(robot.subject, sari.SglArmRobotInterface):
-            raise ValueError("Only single arm robot can be used to initiate an InterplateMotion instance!")
+        if not isinstance(robot, sari.SglArmRobotInterface):
+            if not hasattr(robot, "delegator") or not isinstance(robot.delegator, sari.SglArmRobotInterface):
+                raise ValueError("Only single arm robot can be used to initiate an InterplateMotion instance!")
         self.robot = robot
 
     @staticmethod
@@ -43,6 +44,7 @@ class InterplatedMotion(object):
                           goal_tcp_rotmat,
                           obstacle_list=[],
                           granularity=0.03,
+                          ee_values=None,
                           toggle_dbg=False):
         """
         :param start_tcp_pos:
@@ -51,6 +53,7 @@ class InterplatedMotion(object):
         :param goal_tcp_rotmat:
         :param obstacle_list:
         :param granularity: resolution of steps in workspace
+        :param ee_values: end_effector values
         :param toggle_dbg
         :return:
         author: weiwei
@@ -61,21 +64,22 @@ class InterplatedMotion(object):
                                              goal_tcp_pos,
                                              goal_tcp_rotmat,
                                              granularity=granularity)
-        conf_list = []
+        jv_list = []
+        ev_list = []
         mesh_list = []
         seed_jnt_values = None
         for pos, rotmat in pose_list:
             jnt_values = self.robot.ik(pos, rotmat, seed_jnt_values=seed_jnt_values)
             if jnt_values is None:
                 if toggle_dbg:
-                    for jnt_values in conf_list:
-                        self.robot.goto_given_conf(jnt_values)
+                    for jnt_values in jv_list:
+                        self.robot.goto_given_conf(jnt_values, ee_values=ee_values)
                         self.robot.gen_meshmodel(alpha=.3).attach_to(base)
                     base.run()
                 print("IK not solvable in gen_linear_motion!")
                 return None
             else:
-                self.robot.goto_given_conf(jnt_values)
+                self.robot.goto_given_conf(jnt_values, ee_values=ee_values)
                 result, contacts = self.robot.is_collided(obstacle_list=obstacle_list, toggle_contacts=True)
                 if result:
                     if toggle_dbg:
@@ -83,16 +87,19 @@ class InterplatedMotion(object):
                             gm.gen_sphere(pnt, radius=.005).attach_to(base)
                         print(jnt_values)
                         self.robot.goto_given_conf(jnt_values)
+                        if ee_values is not None:
+                            self.robot.change_jaw_width(jaw_width=ee_values)
                         self.robot.gen_meshmodel(alpha=.3).attach_to(base)
                         base.run()
                     print("Intermediated pose collided in gen_linear_motion!")
                     return None
-            conf_list.append(jnt_values)
+            jv_list.append(jnt_values)
+            ev_list.append(ee_values)
             mesh_list.append(self.robot.gen_meshmodel())
             seed_jnt_values = jnt_values
-        mani_data = mp_util.ManipulationData(robot=self.robot)
-        mani_data.extend(conf_list=conf_list, mesh_list=mesh_list)
-        return mani_data
+        mot_data = motu.MotionData(robot=self.robot)
+        mot_data.extend(jv_list=jv_list, ev_list=ev_list, mesh_list=mesh_list)
+        return mot_data
 
     def gen_rel_linear_motion(self,
                               goal_tcp_pos,
@@ -102,6 +109,7 @@ class InterplatedMotion(object):
                               obstacle_list=[],
                               granularity=0.03,
                               type="sink",
+                              ee_values=None,
                               toggle_dbg=False):
         """
         generate relative linear motion considering a given goal
@@ -112,6 +120,7 @@ class InterplatedMotion(object):
         :param obstacle_list:
         :param granularity: resolution of steps in workspace
         :param type: "sink"", or "source", motion will be ending at goal if "sink", and starting at goal if "source"
+        :param ee_values: end_effector values
         :param toggle_dbg:
         :return: conf_list
         author: weiwei
@@ -120,25 +129,27 @@ class InterplatedMotion(object):
         if type == "sink":
             start_tcp_pos = goal_tcp_pos - rm.unit_vector(direction) * distance
             start_tcp_rotmat = goal_tcp_rotmat
-            return self.gen_linear_motion(start_tcp_pos,
-                                          start_tcp_rotmat,
-                                          goal_tcp_pos,
-                                          goal_tcp_rotmat,
-                                          obstacle_list,
-                                          granularity,
-                                          toggle_dbg)
+            return self.gen_linear_motion(start_tcp_pos=start_tcp_pos,
+                                          start_tcp_rotmat=start_tcp_rotmat,
+                                          goal_tcp_pos=goal_tcp_pos,
+                                          goal_tcp_rotmat=goal_tcp_rotmat,
+                                          obstacle_list=obstacle_list,
+                                          granularity=granularity,
+                                          ee_values=ee_values,
+                                          toggle_dbg=toggle_dbg)
         elif type == "source":
             start_tcp_pos = goal_tcp_pos
             start_tcp_rotmat = goal_tcp_rotmat
             goal_tcp_pos = goal_tcp_pos + direction * distance
             goal_tcp_rotmat = goal_tcp_rotmat
-            return self.gen_linear_motion(start_tcp_pos,
-                                          start_tcp_rotmat,
-                                          goal_tcp_pos,
-                                          goal_tcp_rotmat,
-                                          obstacle_list,
-                                          granularity,
-                                          toggle_dbg)
+            return self.gen_linear_motion(start_tcp_pos=start_tcp_pos,
+                                          start_tcp_rotmat=start_tcp_rotmat,
+                                          goal_tcp_pos=goal_tcp_pos,
+                                          goal_tcp_rotmat=goal_tcp_rotmat,
+                                          obstacle_list=obstacle_list,
+                                          granularity=granularity,
+                                          ee_values=ee_values,
+                                          toggle_dbg=toggle_dbg)
         else:
             raise ValueError("Type must be sink or source!")
 
@@ -150,6 +161,7 @@ class InterplatedMotion(object):
                                               obstacle_list=[],
                                               granularity=0.03,
                                               type="sink",
+                                              ee_values=None,
                                               toggle_dbg=False):
         """
         :param goal_conf:
@@ -158,6 +170,7 @@ class InterplatedMotion(object):
         :param obstacle_list:
         :param granularity: resolution of steps in workspace
         :param type: "sink", or "source", motion will be ending at goal if "sink", and starting at goal if "source"
+        :param ee_values: end_effector values
         :param toggle_dbg:
         :return:
         author: weiwei
@@ -179,21 +192,22 @@ class InterplatedMotion(object):
                                              goal_pos=goal_tcp_pos,
                                              goal_rotmat=goal_tcp_rotmat,
                                              granularity=granularity)
-        conf_list = []
+        jv_list = []
+        ev_list = []
         mesh_list = []
         seed_jnt_values = goal_conf
         for pos, rotmat in pose_list:
             jnt_values = self.robot.ik(pos, rotmat, seed_jnt_values=seed_jnt_values)
             if jnt_values is None:
                 if toggle_dbg:
-                    for jnt_values in conf_list:
-                        self.robot.goto_given_conf(jnt_values)
+                    for jnt_values in jv_list:
+                        self.robot.goto_given_conf(jnt_values, ee_values=ee_values)
                         self.robot.gen_meshmodel(alpha=.3).attach_to(base)
                     base.run()
                 print("IK not solvable in gen_linear_motion!")
                 return None
             else:
-                self.robot.goto_given_conf(jnt_values)
+                self.robot.goto_given_conf(jnt_values, ee_values=ee_values)
                 result, contacts = self.robot.is_collided(obstacle_list=obstacle_list, toggle_contacts=True)
                 if result:
                     if toggle_dbg:
@@ -201,16 +215,19 @@ class InterplatedMotion(object):
                             gm.gen_sphere(pnt, radius=.005).attach_to(base)
                         print(jnt_values)
                         self.robot.goto_given_conf(jnt_values)
+                        if ee_values is not None:
+                            self.robot.change_jaw_width(jaw_width=ee_values)
                         self.robot.gen_meshmodel(alpha=.3).attach_to(base)
                         base.run()
                     print("Intermediated pose collided in gen_linear_motion!")
                     return None
-            conf_list.append(jnt_values)
+            jv_list.append(jnt_values)
+            ev_list.append(ee_values)
             mesh_list.append(self.robot.gen_meshmodel())
             seed_jnt_values = jnt_values
-        mani_data = mp_util.ManipulationData(robot=self.robot)
-        mani_data.extend(conf_list=conf_list, mesh_list=mesh_list)
-        return mani_data
+        mot_data = motu.MotionData(robot=self.robot)
+        mot_data.extend(jv_list=jv_list, ev_list=ev_list, mesh_list=mesh_list)
+        return mot_data
 
     @keep_states_decorator
     def gen_circular_motion(self,
@@ -221,6 +238,7 @@ class InterplatedMotion(object):
                             radius=.02,
                             obstacle_list=[],
                             granularity=0.03,
+                            ee_values=None,
                             toggle_dbg=False):
         """
         :param circle_center_pos
@@ -232,13 +250,14 @@ class InterplatedMotion(object):
         :param goal_info:
         :param obstacle_list:
         :param granularity: resolution of steps in workspace
+        :param ee_values: end_effector values
         :return:
         author: weiwei
         date: 20210501
         """
         pose_list = rm.interplate_pos_rotmat_around_circle(circle_center_pos, circle_normal_ax, radius,
                                                            start_tcp_rotmat, end_tcp_rotmat, granularity)
-        conf_list = []
+        jv_list = []
         mesh_list = []
         seed_jnt_values = None
         for pos, rotmat in pose_list:
@@ -247,7 +266,7 @@ class InterplatedMotion(object):
                 print("IK not solvable in gen_circular_motion!")
                 return None
             else:
-                self.robot.goto_given_conf(jnt_values)
+                self.robot.goto_given_conf(jnt_values, ee_values=ee_values)
                 result, contacts = self.robot.is_collided(obstacle_list, toggle_contacts=True)
                 if result:
                     if toggle_dbg:
@@ -255,12 +274,12 @@ class InterplatedMotion(object):
                             gm.gen_sphere(pnt, radius=.005).attach_to(base)
                     print("Intermediate pose collided in gen_linear_motion!")
                     return None
-            conf_list.append(jnt_values)
+            jv_list.append(jnt_values)
             mesh_list.append(self.robot.gen_meshmodel())
             seed_jnt_values = jnt_values
-        mani_data = mp_util.ManipulationData(robot=self.robot)
-        mani_data.extend(conf_list=conf_list, mesh_list=mesh_list)
-        return mani_data
+        mot_data = motu.MotionData(robot=self.robot)
+        mot_data.extend(jv_list=jv_list, ev_list=ee_values, mesh_list=mesh_list)
+        return mot_data
 
 
 if __name__ == '__main__':
@@ -293,19 +312,20 @@ if __name__ == '__main__':
 
     tic = time.time()
     start_conf = robot.ik(tgt_pos=start_pos, tgt_rotmat=start_rotmat)
-    mani_data = interplator.gen_rel_linear_motion_with_given_conf(start_conf,
-                                                                  direction=goal_pos - start_pos,
-                                                                  distance=.1,
-                                                                  obstacle_list=[],
-                                                                  granularity=0.03,
-                                                                  type="source",
-                                                                  toggle_dbg=False)
-    print(mani_data)
+    mot_data = interplator.gen_rel_linear_motion_with_given_conf(start_conf,
+                                                                 direction=goal_pos - start_pos,
+                                                                 distance=.1,
+                                                                 obstacle_list=[],
+                                                                 granularity=0.03,
+                                                                 type="source",
+                                                                 ee_values=.02,
+                                                                 toggle_dbg=False)
+    print(mot_data)
     toc = time.time()
     print(toc - tic)
-    for i, jnt_values in enumerate(mani_data):
-        mesh_model = mani_data.mesh_list[i]
-        mesh_model.rgb = rm.bc.cool_map(i / len(mani_data))
+    for i, jnt_values in enumerate(mot_data):
+        mesh_model = mot_data.mesh_list[i]
+        mesh_model.rgb = rm.bc.cool_map(i / len(mot_data))
         mesh_model.alpha = .3
         mesh_model.attach_to(base)
     base.run()

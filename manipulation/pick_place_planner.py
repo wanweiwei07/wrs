@@ -123,15 +123,15 @@ class PickPlacePlanner(adp.ADPlanner):
         jaw_width, jaw_center_pos, jaw_center_rotmat, hnd_pos, hnd_rotmat = grasp_info
         pick_tcp_pos = obj_cmodel.rotmat.dot(jaw_center_pos) + obj_cmodel.pos
         pick_tcp_rotmat = obj_cmodel.rotmat.dot(jaw_center_rotmat)
-        pick_motion = self.gen_approach_motion(goal_tcp_pos=pick_tcp_pos,
-                                               goal_tcp_rotmat=pick_tcp_rotmat,
-                                               start_conf=self.sgl_arm_robot.get_jnt_values(),
-                                               linear_direction=pick_approach_direction,
-                                               linear_distance=pick_approach_distance,
-                                               jaw_width=self.sgl_arm_robot.end_effector.jaw_range[1],
-                                               granularity=linear_granularity,
-                                               obstacle_list=obstacle_list,
-                                               object_list=[obj_cmodel])
+        pick_motion = self.gen_approach(goal_tcp_pos=pick_tcp_pos,
+                                        goal_tcp_rotmat=pick_tcp_rotmat,
+                                        start_conf=self.sgl_arm_robot.get_jnt_values(),
+                                        linear_direction=pick_approach_direction,
+                                        linear_distance=pick_approach_distance,
+                                        jaw_width=self.sgl_arm_robot.end_effector.jaw_range[1],
+                                        granularity=linear_granularity,
+                                        obstacle_list=obstacle_list,
+                                        object_list=[obj_cmodel])
         if pick_motion is None:
             print("PPPlanner: Error encountered when generating pick approach motion!")
             return None
@@ -160,18 +160,18 @@ class PickPlacePlanner(adp.ADPlanner):
                 for i, goal_pose in enumerate(goal_pose_list):
                     goal_tcp_pos = goal_pose[1].dot(jaw_center_pos) + goal_pose[0]
                     goal_tcp_rotmat = goal_pose[1].dot(jaw_center_rotmat)
-                    moveto_ap = self.gen_approach_depart_motion(goal_tcp_pos=goal_tcp_pos,
-                                                                goal_tcp_rotmat=goal_tcp_rotmat,
-                                                                start_conf=adm_start_conf,
-                                                                approach_direction=approach_direction_list[i],
-                                                                approach_distance=approach_distance_list[i],
-                                                                approach_jaw_width=None,
-                                                                depart_direction=depart_direction_list[i],
-                                                                depart_distance=depart_distance_list[i],
-                                                                depart_jaw_width=None,  # do not change jaw width
-                                                                granularity=linear_granularity,
-                                                                obstacle_list=obstacle_list,
-                                                                object_list=[])
+                    moveto_ap = self.gen_approach_depart(goal_tcp_pos=goal_tcp_pos,
+                                                         goal_tcp_rotmat=goal_tcp_rotmat,
+                                                         start_conf=adm_start_conf,
+                                                         approach_direction=approach_direction_list[i],
+                                                         approach_distance=approach_distance_list[i],
+                                                         approach_jaw_width=None,
+                                                         depart_direction=depart_direction_list[i],
+                                                         depart_distance=depart_distance_list[i],
+                                                         depart_jaw_width=None,  # do not change jaw width
+                                                         granularity=linear_granularity,
+                                                         obstacle_list=obstacle_list,
+                                                         object_list=[])
                     if moveto_ap is None:
                         print(f"Error encountered when generating motion to the {i}th goal!")
                         self.sgl_arm_robot.release(obj_cmodel)
@@ -249,17 +249,17 @@ class PickPlacePlanner(adp.ADPlanner):
             objcm_copy.set_pos(first_goal_pos)
             objcm_copy.set_rotmat(first_goal_rotmat)
             conf_list_approach, jawwidthlist_approach = \
-                self.gen_approach_motion(component_name=hnd_name,
-                                         goal_tcp_pos=first_jaw_center_pos,
-                                         goal_tcp_rotmat=first_jaw_center_rotmat,
-                                         start_conf=start_conf,
-                                         linear_direction=approach_direction_list[0],
-                                         linear_distance=approach_distance_list[0],
-                                         approach_jawwidth=approach_jawwidth,
-                                         granularity=ad_granularity,
-                                         obstacle_list=obstacle_list,
-                                         object_list=[objcm_copy],
-                                         seed_jnt_values=start_conf)
+                self.gen_approach(component_name=hnd_name,
+                                  goal_tcp_pos=first_jaw_center_pos,
+                                  goal_tcp_rotmat=first_jaw_center_rotmat,
+                                  start_conf=start_conf,
+                                  linear_direction=approach_direction_list[0],
+                                  linear_distance=approach_distance_list[0],
+                                  approach_jawwidth=approach_jawwidth,
+                                  granularity=ad_granularity,
+                                  obstacle_list=obstacle_list,
+                                  object_list=[objcm_copy],
+                                  seed_jnt_values=start_conf)
             if conf_list_approach is None:
                 print("Cannot generate the pick motion!")
                 continue
@@ -286,17 +286,17 @@ class PickPlacePlanner(adp.ADPlanner):
             objcm_copy.set_pos(last_goal_pos)
             objcm_copy.set_rotmat(last_goal_rotmat)
             conf_list_depart, jawwidthlist_depart = \
-                self.gen_depart_motion(component_name=hnd_name,
-                                       start_tcp_pos=last_jaw_center_pos,
-                                       start_tcp_rotmat=last_jaw_center_rotmat,
-                                       end_conf=end_conf,
-                                       linear_direction=depart_direction_list[0],
-                                       linear_distance=depart_distance_list[0],
-                                       jaw_width=depart_jawwidth,
-                                       granularity=ad_granularity,
-                                       obstacle_list=obstacle_list,
-                                       object_list=[objcm_copy],
-                                       seed_jnt_values=conf_list_middle[-1])
+                self.gen_depart(component_name=hnd_name,
+                                start_tcp_pos=last_jaw_center_pos,
+                                start_tcp_rotmat=last_jaw_center_rotmat,
+                                end_conf=end_conf,
+                                linear_direction=depart_direction_list[0],
+                                linear_distance=depart_distance_list[0],
+                                jaw_width=depart_jawwidth,
+                                granularity=ad_granularity,
+                                obstacle_list=obstacle_list,
+                                object_list=[objcm_copy],
+                                seed_jnt_values=conf_list_middle[-1])
             if conf_list_depart is None:
                 print("Cannot generate the release motion!")
                 continue

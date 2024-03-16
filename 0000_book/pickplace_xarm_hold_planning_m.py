@@ -36,12 +36,12 @@ for grasp_info in grasp_info_list:
     jaw_width, jaw_center_pos, jaw_center_rotmat, hnd_pos, hnd_rotmat = grasp_info
     gl_jaw_center_pos = object_box_gl_pos+object_box_gl_rotmat.dot(jaw_center_pos)
     gl_jaw_center_rotmat = object_box_gl_rotmat.dot(jaw_center_rotmat)
-    conf_path, jw_path = adp_s.gen_approach_motion(component_name,
-                                                   gl_jaw_center_pos,
-                                                   gl_jaw_center_rotmat,
-                                                   start_conf=robot_s.get_jnt_values(component_name),
-                                                   linear_direction=gl_jaw_center_rotmat[:, 2],
-                                                   linear_distance=.2)
+    conf_path, jw_path = adp_s.gen_approach(component_name,
+                                            gl_jaw_center_pos,
+                                            gl_jaw_center_rotmat,
+                                            start_conf=robot_s.get_jnt_values(component_name),
+                                            linear_direction=gl_jaw_center_rotmat[:, 2],
+                                            linear_distance=.2)
     if conf_path is None:
         continue
     else:

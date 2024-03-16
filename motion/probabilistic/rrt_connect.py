@@ -71,7 +71,9 @@ class RRTConnect(rrt.RRT):
             print("RRT: The goal robot configuration is in collision!")
             return None
         if self._is_goal_reached(conf=start_conf, goal_conf=goal_conf, threshold=ext_dist):
-            return [start_conf, goal_conf]
+            mot_data = rrt.m_util.MotionData(self.robot)
+            mot_data.extend(conf_list=[start_conf, goal_conf])
+            return mot_data
         self.roadmap_start.add_node("start", conf=start_conf)
         self.roadmap_goal.add_node("goal", conf=goal_conf)
         tic = time.time()
@@ -112,7 +114,7 @@ class RRTConnect(rrt.RRT):
                 elif last_nid != -1:
                     goal_nid = last_nid
                     tree_a_goal_conf = tree_b.nodes[goal_nid]["conf"]
-            if tree_a.number_of_nodes() > tree_b.number_of_nodes(): # always extend the smaller tree
+            if tree_a.number_of_nodes() > tree_b.number_of_nodes():  # always extend the smaller tree
                 tree_a, tree_b = tree_b, tree_a
                 tree_a_goal_conf, tree_b_goal_conf = tree_b_goal_conf, tree_a_goal_conf
         else:
@@ -125,9 +127,9 @@ class RRTConnect(rrt.RRT):
                                           granularity=ext_dist,
                                           n_iter=smoothing_n_iter,
                                           animation=animation)
-        mdata = rrt.mutil.MotionData(self.robot)
-        mdata.extend(conf_list=smoothed_path)
-        return mdata
+        mot_data = rrt.m_util.MotionData(self.robot)
+        mot_data.extend(conf_list=smoothed_path)
+        return mot_data
 
 
 if __name__ == '__main__':

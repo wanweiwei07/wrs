@@ -37,6 +37,15 @@ class GripperInterface(ei.EEInterface):
     def change_jaw_width(self, jaw_width):
         pass
 
+    @ei.EEInterface.assert_oiee_decorator
+    def change_ee_values(self, ee_values):
+        """
+        interface
+        :param ee_values:
+        :return:
+        """
+        self.change_jaw_width(jaw_width=ee_values)
+
     def get_jaw_width(self):
         raise NotImplementedError
 
