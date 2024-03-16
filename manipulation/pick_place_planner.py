@@ -12,6 +12,24 @@ class PickPlacePlanner(adp.ADPlanner):
         """
         super().__init__(robot)
 
+    @staticmethod
+    def keep_obj_decorator(method):
+        """
+        decorator function for save and restore objects
+        applicable to both single or multi-arm sgl_arm_robots
+        :return:
+        author: weiwei
+        date: 20220404
+        """
+
+        def wrapper(self, obj_cmodel, **kwargs):
+            obj_pose_bk = obj_cmodel.pose
+            result = method(self, obj_cmodel, **kwargs)
+            obj_cmodel.pose=obj_pose_bk
+            return result
+
+        return wrapper
+
     @adp.mpi.InterplatedMotion.keep_states_decorator
     def find_common_gids(self,
                          grasp_info_list,
@@ -81,6 +99,7 @@ class PickPlacePlanner(adp.ADPlanner):
         final_available_gids = previously_available_gids
         return final_available_gids, intermediate_available_gids
 
+    @keep_obj_decorator
     @adp.mpi.InterplatedMotion.keep_states_decorator
     def gen_pick_and_moveto(self,
                             obj_cmodel,
@@ -133,7 +152,10 @@ class PickPlacePlanner(adp.ADPlanner):
             return None
         else:
             self.robot.goto_given_conf(pick_motion.jv_list[-1])
-            self.robot.hold(obj_cmodel, jaw_width=jaw_width)
+            # self.robot.gen_meshmodel().attach_to(base)
+            self.robot.hold(obj_cmodel=obj_cmodel, jaw_width=jaw_width)
+            # self.robot.gen_meshmodel().attach_to(base)
+            # print("before back up")
             pick_motion.extend([pick_motion.jv_list[-1]], [jaw_width], [self.robot.gen_meshmodel()])
             pick_depart = self.gen_linear_depart_with_given_conf(start_jnt_values=pick_motion.jv_list[-1],
                                                                  direction=pick_depart_direction,
@@ -141,6 +163,8 @@ class PickPlacePlanner(adp.ADPlanner):
                                                                  ee_values=None,
                                                                  granularity=linear_granularity,
                                                                  obstacle_list=obstacle_list)
+            # self.robot.gen_meshmodel().attach_to(base)
+            # base.run()
             if pick_depart is None:
                 print("PPPlanner: Error encountered when generating pick depart motion!")
                 return None
@@ -317,7 +341,7 @@ if __name__ == '__main__':
     base = wd.World(cam_pos=[2, 0, 1.5], lookat_pos=[0, 0, .2])
     gm.gen_frame().attach_to(base)
     obj_cmodel = cm.CollisionModel(initor='tubebig.stl')
-    obj_cmodel.pos = np.array([.55, -.1, .3])
+    obj_cmodel.pos = np.array([.55, -.1, .1])
     obj_cmodel.rotmat = np.eye(3)
     obj_cmodel.copy().attach_to(base)
     robot = ym.Yumi(enable_cc=True)
@@ -326,7 +350,7 @@ if __name__ == '__main__':
     n_goal = 2
     goal_pose_list = []
     for i in range(n_goal):
-        goal_pos = np.array([.45, -.2, .3]) - np.array([i * .1, i * .1, 0])
+        goal_pos = np.array([.45, -.2, 0]) - np.array([0, i * .1, 0])
         goal_rotmat = np.eye(3)
         goal_pose_list.append((goal_pos, goal_rotmat))
         tmp_objcm = obj_cmodel.copy()
@@ -337,6 +361,13 @@ if __name__ == '__main__':
     grasp_info = grasp_info_list[0]
     pp_planner = PickPlacePlanner(robot=robot)
     # robot.gen_meshmodel().attach_to(base)
+    # print(obj_cmodel.pose)
+    # robot.hold(obj_cmodel)
+    # print(obj_cmodel.pose)
+    # robot.gen_meshmodel(rgb=rm.bc.tab20_list[3], alpha=1).attach_to(base)
+    # robot.goto_given_conf(robot.get_jnt_values())
+    # print(obj_cmodel.pose)
+    # robot.gen_meshmodel(rgb=rm.bc.tab20_list[6], alpha=.5).attach_to(base)
     # base.run()
     for grasp_info in grasp_info_list:
         mot_data = pp_planner.gen_pick_and_moveto(obj_cmodel=obj_cmodel,
@@ -350,7 +381,7 @@ if __name__ == '__main__':
                                                   pick_approach_distance=None,
                                                   pick_depart_direction=None,
                                                   pick_depart_distance=None,
-                                                  linear_granularity=.003,
+                                                  linear_granularity=.01,
                                                   use_rrt=True,
                                                   obstacle_list=[])
         if mot_data is not None:
@@ -377,8 +408,10 @@ if __name__ == '__main__':
             anime_data.counter = 0
         mesh_model = anime_data.mot_data.mesh_list[anime_data.counter]
         mesh_model.attach_to(base)
-        anime_data.counter += 1
+        if base.inputmgr.keymap['space']:
+            anime_data.counter += 1
         return task.again
+
 
     taskMgr.doMethodLater(0.01, update, "update",
                           extraArgs=[anime_data],
@@ -429,8 +462,8 @@ if __name__ == '__main__':
         robot_meshmodel = anime_data.robot.gen_meshmodel(toggle_cdprim=False, alpha=1)
         robot_meshmodel.attach_to(base)
         anime_data.robot_attached_list.append(robot_meshmodel)
-        # if base.inputmgr.keymap['space']:
-        anime_data.counter += 1
+        if base.inputmgr.keymap['space']:
+            anime_data.counter += 1
 
         return task.again
 

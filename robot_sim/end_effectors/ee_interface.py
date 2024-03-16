@@ -58,6 +58,7 @@ class EEInterface(object):
         """
         loc_pos, loc_rotmat = rm.rel_pose(self.pos, self.rotmat, obj_cmodel.pos, obj_cmodel.rotmat)
         self.oiee_list.append(rkjl.Link(loc_pos=loc_pos, loc_rotmat=loc_rotmat, cmodel=obj_cmodel))
+        self.update_oiee()
 
     def release(self, obj_cmodel, **kwargs):
         """
@@ -90,7 +91,7 @@ class EEInterface(object):
         raise NotImplementedError
 
     def get_ee_values(self):
-        raise NotImplementedError
+        return None
 
     def is_mesh_collided(self, cmodel_list=[], toggle_dbg=False):
         """

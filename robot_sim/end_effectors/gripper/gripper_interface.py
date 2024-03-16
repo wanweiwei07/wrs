@@ -17,25 +17,37 @@ class GripperInterface(ei.EEInterface):
         self.oiee_pose_list_bk = []
 
     def backup_state(self):
+        print("before backup ", self.oiee_list_bk, self.oiee_pose_list_bk)
         self.oiee_list_bk.append(self.oiee_list.copy())
         self.oiee_pose_list_bk.append([oiee.loc_pose for oiee in self.oiee_list])
-        print("backup ", self.oiee_list_bk, self.oiee_pose_list_bk)
+        print("after backup ", self.oiee_list_bk, self.oiee_pose_list_bk)
+        for i, oiee in enumerate(self.oiee_list_bk[-1]):
+            print(oiee.gl_pos)
         self.jaw_width_bk.append(self.get_jaw_width())
 
     def restore_state(self):
-        print("restore ", self.oiee_list_bk, self.oiee_pose_list_bk)
+        print("before restore ", self.oiee_list_bk, self.oiee_pose_list_bk)
         self.oiee_list = self.oiee_list_bk.pop()
         oiee_pose_list = self.oiee_pose_list_bk.pop()
-        print(self.oiee_list, oiee_pose_list)
+        print("the following oiee are restored ", self.oiee_list, oiee_pose_list)
         for i, oiee in enumerate(self.oiee_list):
             oiee.loc_pose = oiee_pose_list[i]
+        self.update_oiee()
+        for i, oiee in enumerate(self.oiee_list):
+            print(oiee.gl_pos)
         jaw_width = self.jaw_width_bk.pop()
         if jaw_width != self.get_jaw_width():
             self.change_jaw_width(jaw_width=jaw_width)
 
+    def get_jaw_width(self):
+        raise NotImplementedError
+
     @ei.EEInterface.assert_oiee_decorator
     def change_jaw_width(self, jaw_width):
-        pass
+        raise NotImplementedError
+
+    def get_ee_values(self):
+        return self.get_jaw_width()
 
     @ei.EEInterface.assert_oiee_decorator
     def change_ee_values(self, ee_values):
@@ -45,12 +57,6 @@ class GripperInterface(ei.EEInterface):
         :return:
         """
         self.change_jaw_width(jaw_width=ee_values)
-
-    def get_jaw_width(self):
-        raise NotImplementedError
-
-    def get_ee_values(self):
-        return self.get_jaw_width()
 
     def hold(self, obj_cmodel, jaw_width=None):
         if jaw_width is None:

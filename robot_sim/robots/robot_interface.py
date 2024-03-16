@@ -41,7 +41,7 @@ class RobotInterface(object):
         return None
 
     def change_ee_values(self, ee_values):
-        return None
+        raise NotImplementedError
 
     def goto_given_conf(self, jnt_values):
         raise NotImplementedError

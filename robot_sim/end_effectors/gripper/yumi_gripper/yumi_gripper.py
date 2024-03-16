@@ -56,31 +56,24 @@ class YumiGripper(gpi.GripperInterface):
                                 self.jlc.jnts[0].lnk,
                                 self.jlc.jnts[1].lnk)
 
-    def fix_to(self, pos, rotmat, jaw_width=None):
+    def fix_to(self, pos, rotmat):
         self.pos = pos
         self.rotmat = rotmat
-        if jaw_width is not None:
-            side_jawwidth = jaw_width / 2.0
-            if 0 <= side_jawwidth <= self.jaw_range[1] / 2:
-                self.jlc.jnts[0].motion_value = side_jawwidth
-                self.jlc.jnts[1].motion_value = -jaw_width
-            else:
-                raise ValueError("The angle parameter is out of range!")
         self.coupling.pos = self.pos
         self.coupling.rotmat = self.rotmat
         self.jlc.fix_to(self.coupling.gl_flange_pose_list[0][0], self.coupling.gl_flange_pose_list[0][1])
         self.update_oiee()
 
+    def get_jaw_width(self):
+        return -self.jlc.jnts[1].motion_value
+
+    @gpi.ei.EEInterface.assert_oiee_decorator
     def change_jaw_width(self, jaw_width):
-        super().change_jaw_width(jaw_width=jaw_width)  # assert oiee
         side_jawwidth = jaw_width / 2.0
         if 0 <= side_jawwidth <= self.jaw_range[1] / 2:
             self.jlc.go_given_conf(jnt_values=[side_jawwidth, jaw_width])
         else:
             raise ValueError("The angle parameter is out of range!")
-
-    def get_jaw_width(self):
-        return -self.jlc.jnts[1].motion_value
 
     def gen_stickmodel(self, toggle_tcp_frame=False, toggle_jnt_frames=False, name='yumi_gripper_stickmodel'):
         m_col = mmc.ModelCollection(name=name)

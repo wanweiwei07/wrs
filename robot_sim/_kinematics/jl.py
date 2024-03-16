@@ -107,10 +107,12 @@ class Link(object):
         self._loc_rotmat = pose[1]
 
     @property
+    @update_gl_pose_decorator
     def gl_pos(self):
         return self._gl_pos
 
     @property
+    @update_gl_pose_decorator
     def gl_rotmat(self):
         return self._gl_rotmat
 
