@@ -89,6 +89,9 @@ class EEInterface(object):
     def change_ee_values(self, ee_values):
         raise NotImplementedError
 
+    def get_ee_values(self):
+        raise NotImplementedError
+
     def is_mesh_collided(self, cmodel_list=[], toggle_dbg=False):
         """
         check collision of cd meshes

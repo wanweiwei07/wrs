@@ -94,7 +94,7 @@ class InterplatedMotion(object):
                     print("Intermediated pose collided in gen_linear_motion!")
                     return None
             jv_list.append(jnt_values)
-            ev_list.append(ee_values)
+            ev_list.append(self.robot.get_ee_values())
             mesh_list.append(self.robot.gen_meshmodel())
             seed_jnt_values = jnt_values
         mot_data = motu.MotionData(robot=self.robot)
@@ -222,7 +222,7 @@ class InterplatedMotion(object):
                     print("Intermediated pose collided in gen_linear_motion!")
                     return None
             jv_list.append(jnt_values)
-            ev_list.append(ee_values)
+            ev_list.append(self.robot.get_ee_values())
             mesh_list.append(self.robot.gen_meshmodel())
             seed_jnt_values = jnt_values
         mot_data = motu.MotionData(robot=self.robot)
@@ -258,6 +258,7 @@ class InterplatedMotion(object):
         pose_list = rm.interplate_pos_rotmat_around_circle(circle_center_pos, circle_normal_ax, radius,
                                                            start_tcp_rotmat, end_tcp_rotmat, granularity)
         jv_list = []
+        ev_list = []
         mesh_list = []
         seed_jnt_values = None
         for pos, rotmat in pose_list:
@@ -275,6 +276,7 @@ class InterplatedMotion(object):
                     print("Intermediate pose collided in gen_linear_motion!")
                     return None
             jv_list.append(jnt_values)
+            ev_list.append(self.robot.get_ee_values())
             mesh_list.append(self.robot.gen_meshmodel())
             seed_jnt_values = jnt_values
         mot_data = motu.MotionData(robot=self.robot)
@@ -318,7 +320,6 @@ if __name__ == '__main__':
                                                                  obstacle_list=[],
                                                                  granularity=0.03,
                                                                  type="source",
-                                                                 ee_values=.02,
                                                                  toggle_dbg=False)
     print(mot_data)
     toc = time.time()

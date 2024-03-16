@@ -48,6 +48,12 @@ class Cobotta(ri.SglArmRobotInterface):
         self.manipulator.fix_to(pos=pos, rotmat=rotmat)
         self._update_end_effector()
 
+    def change_jaw_width(self, jaw_width):
+        return self.change_ee_values(ee_values=jaw_width)
+
+    def get_jaw_width(self):
+        return self.get_ee_values()
+
     # def hold(self, hnd_name, obj_cmodel, jaw_width=None):
     #     """
     #     the obj_cmodel is added as a part of the robot_s to the cd checker

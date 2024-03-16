@@ -37,6 +37,12 @@ class RobotInterface(object):
     def change_name(self, name):
         self.name = name
 
+    def get_ee_values(self):
+        raise NotImplementedError
+
+    def change_ee_values(self, ee_values):
+        raise NotImplementedError
+
     def goto_given_conf(self, jnt_values):
         raise NotImplementedError
 

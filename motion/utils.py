@@ -23,12 +23,15 @@ class MotionData(object):
         if ev_list is not None:
             self._ev_list += ev_list
         else:
-            self._ev_list += [None] * len(jv_list)
+            self._ev_list += [self.robot.get_ee_values()] * len(jv_list)
         if mesh_list is None:
             tmp_mesh_list = []
             self.robot.backup_state()
             for i, jnt_values in enumerate(jv_list):
-                self.robot.goto_given_conf(jnt_values=jnt_values, ee_values=ev_list[i])
+                if ev_list is None:
+                    self.robot.goto_given_conf(jnt_values=jnt_values, ee_values=None)
+                else:
+                    self.robot.goto_given_conf(jnt_values=jnt_values, ee_values=ev_list[i])
                 tmp_mesh_list.append(self.robot.gen_meshmodel())
             self.robot.restore_state()
             self._mesh_list += tmp_mesh_list

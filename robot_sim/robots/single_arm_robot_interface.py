@@ -46,6 +46,12 @@ class SglArmRobotInterface(ri.RobotInterface):
         self.manipulator.goto_given_conf(jnt_values=self.jnt_values_bk.pop())
         self.end_effector.restore_state()
 
+    def get_ee_values(self):
+        return self.end_effector.get_ee_values()
+
+    def change_ee_values(self, ee_values):
+        self.end_effector.change_ee_values(ee_values=ee_values)
+
     def hold(self, obj_cmodel, **kwargs):
         self.end_effector.hold(obj_cmodel, **kwargs)
 

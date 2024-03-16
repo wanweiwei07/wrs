@@ -49,6 +49,9 @@ class GripperInterface(ei.EEInterface):
     def get_jaw_width(self):
         raise NotImplementedError
 
+    def get_ee_values(self):
+        return self.get_jaw_width()
+
     def hold(self, obj_cmodel, jaw_width=None):
         if jaw_width is None:
             jaw_width = self.jaw_range[0]

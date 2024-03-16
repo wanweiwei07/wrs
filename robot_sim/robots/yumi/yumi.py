@@ -274,6 +274,12 @@ class Yumi(ri.RobotInterface):
         else:
             self.delegator.change_jaw_width(jaw_width=jaw_width)
 
+    def get_ee_values(self):
+        return self.get_jaw_width()
+
+    def change_ee_values(self, ee_values):
+        self.change_jaw_width(jaw_width=ee_values)
+
     def is_collided(self, obstacle_list=[], other_robot_list=[], toggle_contacts=False):
         """
         Interface for "is cdprimit collided", must be implemented in child class

@@ -242,7 +242,7 @@ class RRT(object):
             return None
         if self._is_goal_reached(conf=start_conf, goal_conf=goal_conf, threshold=ext_dist):
             mot_data = m_util.MotionData(self.robot)
-            mot_data.extend(conf_list=[start_conf, goal_conf])
+            mot_data.extend(jv_list=[start_conf, goal_conf])
             return mot_data
         self.roadmap.add_node("start", conf=start_conf)
         tic = time.time()
@@ -270,7 +270,7 @@ class RRT(object):
                                                   n_iter=smoothing_n_iter,
                                                   animation=animation)
                 mot_data = m_util.MotionData(self.robot)
-                mot_data.extend(conf_list=smoothed_path)
+                mot_data.extend(jv_list=smoothed_path)
                 return mot_data
         else:
             print("Failed to find a path with the given max_n_ter!")
