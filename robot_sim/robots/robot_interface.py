@@ -70,7 +70,7 @@ class RobotInterface(object):
                       name='single_arm_robot_interface_meshmodel'):
         raise NotImplementedError
 
-    def is_collided(self, obstacle_list=[], other_robot_list=[], toggle_contacts=False):
+    def is_collided(self, obstacle_list=None, other_robot_list=None, toggle_contacts=False):
         """
         Interface for "is cdprimit collided", must be implemented in child class
         :param obstacle_list:

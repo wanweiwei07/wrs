@@ -11,6 +11,7 @@ import basis.constant as bc
 import matplotlib.pyplot as plt
 from scipy.spatial.transform import Slerp
 from scipy.spatial.transform import Rotation as R
+from scipy.interpolate import interp1d
 
 # epsilon for testing whether a number is close to zero
 _EPS = np.finfo(float).eps * 4.0
@@ -334,6 +335,21 @@ def interplate_pos_rotmat_around_circle(circle_center_pos,
     for angle in np.linspace(0, np.pi * 2, n_angular_steps).tolist():
         pos_list.append(np.dot(rotmat_from_axangle(circle_normal_ax, angle), vec * radius) + circle_center_pos)
     return zip(pos_list, rotmat_list)
+
+
+def interpolate_vectors(start_vector, end_vector, granularity):
+    """
+    :param start_vector:
+    :param end_vector:
+    :param num_points:
+    :param include_ends:
+    :return:
+    """
+    max_diff = np.max(np.abs(end_vector - start_vector))
+    num_intervals = np.ceil(max_diff / granularity).astype(int)
+    num_points = num_intervals + 1
+    interpolated_vectors = np.linspace(start_vector, end_vector, num_points)
+    return interpolated_vectors
 
 
 # quaternion

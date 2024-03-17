@@ -157,7 +157,7 @@ class PickPlacePlanner(adp.ADPlanner):
             # self.robot.gen_meshmodel().attach_to(base)
             # print("before back up")
             pick_motion.extend([pick_motion.jv_list[-1]], [jaw_width], [self.robot.gen_meshmodel()])
-            pick_depart = self.gen_linear_depart_with_given_conf(start_jnt_values=pick_motion.jv_list[-1],
+            pick_depart = self.gen_linear_depart_from_given_conf(start_jnt_values=pick_motion.jv_list[-1],
                                                                  direction=pick_depart_direction,
                                                                  distance=pick_depart_distance,
                                                                  ee_values=None,
@@ -195,9 +195,10 @@ class PickPlacePlanner(adp.ADPlanner):
                         moveto_start_jnt_values = moveto_motion.jv_list[-1]
                 return pick_motion + pick_depart + moveto_motion
 
+    @keep_obj_decorator
+    @adp.mpi.InterplatedMotion.keep_states_decorator
     def gen_pick_and_place_motion(self,
-                                  hnd_name,
-                                  objcm,
+                                  obj_cmodel,
                                   start_conf,
                                   end_conf,
                                   grasp_info_list,
@@ -213,9 +214,7 @@ class PickPlacePlanner(adp.ADPlanner):
                                   obstacle_list=[],
                                   use_incremental=False):
         """
-
-        :param hnd_name:
-        :param objcm:
+        :param obj_cmodel:
         :param grasp_info_list:
         :param goal_homomat_list:
         :param start_conf: RRT motion between start_state and pre_approach; No RRT motion if None

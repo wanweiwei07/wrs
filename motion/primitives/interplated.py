@@ -42,7 +42,7 @@ class InterplatedMotion(object):
                           start_tcp_rotmat,
                           goal_tcp_pos,
                           goal_tcp_rotmat,
-                          obstacle_list=[],
+                          obstacle_list=None,
                           granularity=0.03,
                           ee_values=None,
                           toggle_dbg=False):
@@ -101,12 +101,40 @@ class InterplatedMotion(object):
         mot_data.extend(jv_list=jv_list, ev_list=ev_list, mesh_list=mesh_list)
         return mot_data
 
+    @keep_states_decorator
+    def gen_interplated_between_given_conf(self,
+                                           start_jnt_values,
+                                           end_jnt_values,
+                                           obstacle_list=None,
+                                           granularity=0.03,
+                                           ee_values=None):
+        interpolated_jnt_values = rm.interpolate_vectors(start_vector=start_jnt_values,
+                                                         end_vector=end_jnt_values,
+                                                         granularity=granularity)
+        clipped_interplation = np.clip(interpolated_jnt_values, self.robot.jnt_ranges[:, 0],
+                                       self.robot.jnt_ranges[:, 1])
+        jv_list = []
+        ev_list = []
+        mesh_list = []
+        for jnt_values in clipped_interplation:
+            self.robot.goto_given_conf(jnt_values=jnt_values, ee_values=ee_values)
+            result, contacts = self.robot.is_collided(obstacle_list=obstacle_list, toggle_contacts=True)
+            if result:
+                print("Intermediated conf collided in gen_interpolated_motion!")
+                return None
+            jv_list.append(jnt_values)
+            ev_list.append(self.robot.get_ee_values())
+            mesh_list.append(self.robot.gen_meshmodel())
+        mot_data = motu.MotionData(robot=self.robot)
+        mot_data.extend(jv_list=jv_list, ev_list=ev_list, mesh_list=mesh_list)
+        return mot_data
+
     def gen_rel_linear_motion(self,
                               goal_tcp_pos,
                               goal_tcp_rotmat,
-                              direction,
-                              distance,
-                              obstacle_list=[],
+                              direction=None,
+                              distance=.07,
+                              obstacle_list=None,
                               granularity=0.03,
                               type="sink",
                               ee_values=None,
@@ -126,6 +154,8 @@ class InterplatedMotion(object):
         author: weiwei
         date: 20210114
         """
+        if direction is None:
+            direction = goal_tcp_rotmat[:, 2]
         if type == "sink":
             start_tcp_pos = goal_tcp_pos - rm.unit_vector(direction) * distance
             start_tcp_rotmat = goal_tcp_rotmat
@@ -153,13 +183,12 @@ class InterplatedMotion(object):
         else:
             raise ValueError("Type must be sink or source!")
 
-    @keep_states_decorator
     def gen_rel_linear_motion_with_given_conf(self,
                                               goal_jnt_values,
-                                              direction,
-                                              distance,
-                                              obstacle_list=[],
-                                              granularity=0.03,
+                                              direction=None,
+                                              distance=.07,
+                                              obstacle_list=None,
+                                              granularity=0.02,
                                               type="sink",
                                               ee_values=None,
                                               toggle_dbg=False):
@@ -177,6 +206,8 @@ class InterplatedMotion(object):
         date: 20210114
         """
         goal_tcp_pos, goal_tcp_rotmat = self.robot.fk(jnt_values=goal_jnt_values)
+        if direction is None:
+            direction = goal_tcp_rotmat[:, 2]
         if type == "sink":
             start_tcp_pos = goal_tcp_pos - rm.unit_vector(direction) * distance
             start_tcp_rotmat = goal_tcp_rotmat
@@ -236,7 +267,7 @@ class InterplatedMotion(object):
                             start_tcp_rotmat,
                             end_tcp_rotmat,
                             radius=.02,
-                            obstacle_list=[],
+                            obstacle_list=None,
                             granularity=0.03,
                             ee_values=None,
                             toggle_dbg=False):
@@ -317,7 +348,7 @@ if __name__ == '__main__':
     mot_data = interplator.gen_rel_linear_motion_with_given_conf(start_conf,
                                                                  direction=goal_pos - start_pos,
                                                                  distance=.1,
-                                                                 obstacle_list=[],
+                                                                 obstacle_list=None,
                                                                  granularity=0.03,
                                                                  type="source",
                                                                  toggle_dbg=False)

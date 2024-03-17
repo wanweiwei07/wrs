@@ -28,10 +28,10 @@ class ADPlanner(object):
                             goal_tcp_pos,
                             goal_tcp_rotmat,
                             direction=None,
-                            distance=.1,
+                            distance=.07,
                             ee_values=None,
-                            granularity=0.03,
-                            obstacle_list=[]):
+                            granularity=0.02,
+                            obstacle_list=None):
         """
         :param goal_tcp_pos:
         :param goal_tcp_rotmat:
@@ -45,10 +45,6 @@ class ADPlanner(object):
         author: weiwei
         date: 20210125
         """
-        if direction is None:
-            direction = goal_tcp_rotmat[:, 2]
-        if distance is None:
-            distance = .1
         mot_data = self.im_planner.gen_rel_linear_motion(goal_tcp_pos=goal_tcp_pos,
                                                          goal_tcp_rotmat=goal_tcp_rotmat,
                                                          direction=direction,
@@ -67,10 +63,10 @@ class ADPlanner(object):
                           start_tcp_pos,
                           start_tcp_rotmat,
                           direction=None,  # np.array([0, 0, 1])
-                          distance=.1,
+                          distance=.07,
                           ee_values=None,
                           granularity=0.03,
-                          obstacle_list=[]):
+                          obstacle_list=None):
         """
         :param goal_tcp_pos:
         :param goal_tcp_rotmat:
@@ -83,10 +79,6 @@ class ADPlanner(object):
         author: weiwei
         date: 20210125
         """
-        if direction is None:
-            direction = -start_tcp_rotmat[:, 2]
-        if distance is None:
-            distance = .1
         mot_data = self.im_planner.gen_rel_linear_motion(goal_tcp_pos=start_tcp_pos,
                                                          goal_tcp_rotmat=start_tcp_rotmat,
                                                          direction=direction,
@@ -105,13 +97,13 @@ class ADPlanner(object):
                                    goal_tcp_pos,
                                    goal_tcp_rotmat,
                                    approach_direction=None,  # np.array([0, 0, -1])
-                                   approach_distance=.1,
+                                   approach_distance=.07,
                                    approach_ee_values=None,
                                    depart_direction=None,  # np.array([0, 0, 1])
-                                   depart_distance=.1,
+                                   depart_distance=.07,
                                    depart_ee_values=None,
-                                   granularity=.03,
-                                   obstacle_list=[]):
+                                   granularity=.02,
+                                   obstacle_list=None):
         """
         :param goal_tcp_pos:
         :param goal_tcp_rotmat:
@@ -128,10 +120,6 @@ class ADPlanner(object):
         author: weiwei, hao
         date: 20191122, 20200105, 20210113, 20210125
         """
-        if approach_direction is None:
-            approach_direction = goal_tcp_rotmat[:, 2]
-        if approach_distance is None:
-            approach_distance = .1
         app_mot_data = self.im_planner.gen_rel_linear_motion(goal_tcp_pos=goal_tcp_pos,
                                                              goal_tcp_rotmat=goal_tcp_rotmat,
                                                              direction=approach_direction,
@@ -144,10 +132,6 @@ class ADPlanner(object):
             print("ADPlanner: Cannot generate the approach section of linear approach-depart!")
             return None
         else:
-            if depart_direction is None:
-                depart_direction = goal_tcp_rotmat[:, 2]
-            if depart_distance is None:
-                depart_distance = .1
             dep_mot_data = self.im_planner.gen_rel_linear_motion(goal_tcp_pos=goal_tcp_pos,
                                                                  goal_tcp_rotmat=goal_tcp_rotmat,
                                                                  direction=depart_direction,
@@ -162,18 +146,13 @@ class ADPlanner(object):
             else:
                 return app_mot_data + dep_mot_data
 
-    def gen_linear_approach_with_given_conf(self,
-                                            goal_jnt_values,
-                                            direction=None,
-                                            distance=.1,
-                                            ee_values=None,
-                                            granularity=0.03,
-                                            obstacle_list=[]):
-        goal_tcp_pos, goal_tcp_rotmat = self.robot.fk(jnt_values=goal_jnt_values)
-        if direction is None:
-            direction = goal_tcp_rotmat[:, 2]
-        if distance is None:
-            distance = .1
+    def gen_linear_approach_to_given_conf(self,
+                                          goal_jnt_values,
+                                          direction=None,
+                                          distance=.07,
+                                          ee_values=None,
+                                          granularity=0.02,
+                                          obstacle_list=None):
         mot_data = self.im_planner.gen_rel_linear_motion_with_given_conf(goal_jnt_values=goal_jnt_values,
                                                                          direction=direction,
                                                                          distance=distance,
@@ -187,18 +166,13 @@ class ADPlanner(object):
         else:
             return mot_data
 
-    def gen_linear_depart_with_given_conf(self,
+    def gen_linear_depart_from_given_conf(self,
                                           start_jnt_values,
                                           direction=None,
-                                          distance=.1,
+                                          distance=.07,
                                           ee_values=None,
-                                          granularity=0.03,
-                                          obstacle_list=[]):
-        start_tcp_pos, start_tcp_rotmat = self.robot.fk(jnt_values=start_jnt_values)
-        if direction is None:
-            direction = -start_tcp_rotmat[:, 2]
-        if distance is None:
-            distance = .1
+                                          granularity=0.02,
+                                          obstacle_list=None):
         mot_data = self.im_planner.gen_rel_linear_motion_with_given_conf(goal_jnt_values=start_jnt_values,
                                                                          direction=direction,
                                                                          distance=distance,
@@ -215,13 +189,13 @@ class ADPlanner(object):
     def gen_linear_approach_depart_with_given_conf(self,
                                                    goal_jnt_values,
                                                    approach_direction=None,  # np.array([0, 0, -1])
-                                                   approach_distance=.1,
+                                                   approach_distance=.07,
                                                    approach_ee_values=None,
                                                    depart_direction=None,  # np.array([0, 0, 1])
-                                                   depart_distance=.1,
+                                                   depart_distance=.07,
                                                    depart_ee_values=None,
-                                                   granularity=.03,
-                                                   obstacle_list=[]):
+                                                   granularity=.02,
+                                                   obstacle_list=None):
         """
         :param goal_tcp_pos:
         :param goal_tcp_rotmat:
@@ -237,17 +211,17 @@ class ADPlanner(object):
         author: weiwei, hao
         date: 20191122, 20200105, 20210113, 20210125
         """
-        app_mot_data = self.gen_linear_approach_with_given_conf(goal_jnt_values=goal_jnt_values,
-                                                                direction=approach_direction,
-                                                                distance=approach_distance,
-                                                                ee_values=approach_ee_values,
-                                                                granularity=granularity,
-                                                                obstacle_list=obstacle_list)
+        app_mot_data = self.gen_linear_approach_to_given_conf(goal_jnt_values=goal_jnt_values,
+                                                              direction=approach_direction,
+                                                              distance=approach_distance,
+                                                              ee_values=approach_ee_values,
+                                                              granularity=granularity,
+                                                              obstacle_list=obstacle_list)
         if app_mot_data is None:
             print("ADPlanner: Cannot generate the approach section of linear approach-depart with given conf!")
             return None
         else:
-            dep_mot_data = self.gen_linear_depart_with_given_conf(start_jnt_values=goal_jnt_values,
+            dep_mot_data = self.gen_linear_depart_from_given_conf(start_jnt_values=goal_jnt_values,
                                                                   direction=depart_direction,
                                                                   distance=depart_distance,
                                                                   ee_values=depart_ee_values,
@@ -264,104 +238,155 @@ class ADPlanner(object):
                      goal_tcp_rotmat,
                      start_jnt_values=None,
                      linear_direction=None,
-                     linear_distance=.1,
+                     linear_distance=.07,
                      ee_values=None,
-                     granularity=.03,
-                     obstacle_list=[],  # obstacles, will be checked by both rrt and linear
-                     object_list=[]):  # target objects, will be checked by rrt, but not by linear
-        linear_app_mot_data = self.gen_linear_approach(goal_tcp_pos=goal_tcp_pos,
-                                                       goal_tcp_rotmat=goal_tcp_rotmat,
-                                                       direction=linear_direction,
-                                                       distance=linear_distance,
-                                                       ee_values=ee_values,  # do not change jaw width
-                                                       granularity=granularity,
-                                                       obstacle_list=obstacle_list)
-        if linear_app_mot_data is None:
+                     granularity=.02,
+                     obstacle_list=None,  #
+                     object_list=None,  #
+                     use_rrt=True):
+        """
+        :param goal_tcp_pos:
+        :param goal_tcp_rotmat:
+        :param start_jnt_values:
+        :param linear_direction:
+        :param linear_distance:
+        :param ee_values:
+        :param granularity:
+        :param obstacle_list: obstacles, will be checked by both rrt and linear
+        :param object_list: target objects, will be checked by rrt, but not by linear
+        :param use_rrt:
+        :return:
+        """
+        if obstacle_list is None:
+            obstacle_list = []
+        if object_list is None:
+            object_list = []
+        linear_app = self.gen_linear_approach(goal_tcp_pos=goal_tcp_pos,
+                                              goal_tcp_rotmat=goal_tcp_rotmat,
+                                              direction=linear_direction,
+                                              distance=linear_distance,
+                                              ee_values=ee_values,  # do not change jaw width
+                                              granularity=granularity,
+                                              obstacle_list=obstacle_list)
+        if linear_app is None:
             print("ADPlanner: Cannot gen approach linear!")
             return None
         if start_jnt_values is None:
-            return linear_app_mot_data
-        ee_values_bk = None
-        if ee_values is not None:
-            ee_values_bk = self.robot.get_ee_values()
-            self.robot.change_ee_values(ee_values=ee_values)
-        start2app_mot_data = self.rrtc_planner.plan(start_conf=start_jnt_values,
-                                                    goal_conf=linear_app_mot_data.jv_list[0],
-                                                    obstacle_list=obstacle_list + object_list,
-                                                    ext_dist=.1,
-                                                    max_time=100)
-        if ee_values is not None:
-            self.robot.change_ee_values(ee_values=ee_values_bk)
-        if start2app_mot_data is None:
+            return linear_app
+        if use_rrt:
+            ee_values_bk = None
+            if ee_values is not None:
+                ee_values_bk = self.robot.get_ee_values()
+                self.robot.change_ee_values(ee_values=ee_values)
+            start2app = self.rrtc_planner.plan(start_conf=start_jnt_values,
+                                               goal_conf=linear_app.jv_list[0],
+                                               obstacle_list=obstacle_list + object_list,
+                                               ext_dist=.1,
+                                               max_time=100)
+            if ee_values is not None:
+                self.robot.change_ee_values(ee_values=ee_values_bk)
+        else:
+            start2app = self.im_planner.gen_interplated_between_given_conf(start_jnt_values=start_jnt_values,
+                                                                           end_jnt_values=linear_app.jv_list[0],
+                                                                           obstacle_list=obstacle_list + object_list,
+                                                                           ee_values=ee_values)
+        if start2app is None:
             print("ADPlanner: Cannot plan the motion from start_jnt_values to the beginning of approach!")
             return None
-        return start2app_mot_data + linear_app_mot_data
+        return start2app + linear_app
 
     def gen_depart(self,
                    start_tcp_pos,
                    start_tcp_rotmat,
                    end_jnt_values=None,
                    linear_direction=None,
-                   linear_distance=.1,
+                   linear_distance=.07,
                    ee_values=None,
-                   granularity=.03,
-                   obstacle_list=[],  # obstacles, will be checked by both rrt and linear
-                   object_list=[]):  # target objects, will be checked by rrt, but not by linear
-        linear_dep_mot_data = self.gen_linear_depart(start_tcp_pos,
-                                                     start_tcp_rotmat,
-                                                     linear_direction,
-                                                     linear_distance,
-                                                     ee_values,
-                                                     granularity,
-                                                     obstacle_list)
-        if linear_dep_mot_data is None:
+                   granularity=.02,
+                   obstacle_list=None,  #
+                   object_list=None,
+                   use_rrt=True):  #
+        """
+        :param start_tcp_pos:
+        :param start_tcp_rotmat:
+        :param end_jnt_values:
+        :param linear_direction:
+        :param linear_distance:
+        :param ee_values:
+        :param granularity:
+        :param obstacle_list: obstacles, will be checked by both rrt and linear
+        :param object_list: target objects, will be checked by rrt, but not by linear
+        :param use_rrt:
+        :return:
+        """
+        if obstacle_list is None:
+            obstacle_list = []
+        if object_list is None:
+            object_list = []
+        linear_dep = self.gen_linear_depart(start_tcp_pos=start_tcp_pos,
+                                            start_tcp_rotmat=start_tcp_rotmat,
+                                            direction=linear_direction,
+                                            distance=linear_distance,
+                                            ee_values=ee_values,
+                                            granularity=granularity,
+                                            obstacle_list=obstacle_list)
+        if linear_dep is None:
             print("ADPlanner: Cannot gen depart linear!")
             return None
         if end_jnt_values is None:
-            return linear_dep_mot_data
-        ee_values_bk = None
-        if ee_values is not None:
-            ee_values_bk = self.robot.get_ee_values()
-            self.robot.change_ee_values(ee_values=ee_values)
-        dep2end_mot_data = self.rrtc_planner.plan(start_conf=linear_dep_mot_data.jv_list[-1],
-                                                  goal_conf=end_jnt_values,
-                                                  obstacle_list=obstacle_list + object_list,
-                                                  ext_dist=.1,
-                                                  max_time=100)
-        if ee_values is not None:
-            self.robot.change_ee_values(ee_values=ee_values_bk)
-        if dep2end_mot_data is None:
+            return linear_dep
+        if use_rrt:
+            ee_values_bk = None
+            if ee_values is not None:
+                ee_values_bk = self.robot.get_ee_values()
+                self.robot.change_ee_values(ee_values=ee_values)
+            dep2end = self.rrtc_planner.plan(start_conf=linear_dep.jv_list[-1],
+                                             goal_conf=end_jnt_values,
+                                             obstacle_list=obstacle_list + object_list,
+                                             ext_dist=.1,
+                                             max_time=100)
+            if ee_values is not None:
+                self.robot.change_ee_values(ee_values=ee_values_bk)
+        else:
+            dep2end = self.im_planner.gen_interplated_between_given_conf(start_jnt_values=linear_dep.jv_list[-1],
+                                                                         end_jnt_values=end_jnt_values,
+                                                                         obstacle_list=obstacle_list + object_list,
+                                                                         ee_values=ee_values)
+        if dep2end is None:
             print("ADPlanner: Cannot plan depart motion!")
             return None
-        return linear_dep_mot_data + dep2end_mot_data
+        return linear_dep + dep2end
 
     def gen_approach_depart(self,
                             goal_tcp_pos,
                             goal_tcp_rotmat,
                             start_jnt_values=None,
                             end_jnt_values=None,
-                            approach_direction=None,  # np.array([0, 0, -1])
+                            approach_direction=None,
                             approach_distance=.1,
                             approach_ee_values=None,
-                            depart_direction=None,  # np.array([0, 0, 1])
+                            depart_direction=None,
                             depart_distance=.1,
                             depart_ee_values=None,
                             granularity=.03,
-                            obstacle_list=[],  # obstacles, will be checked by both rrt and linear
-                            object_list=[]):  # target objects, will be checked by rrt, but not by linear
+                            obstacle_list=None,
+                            object_list=None,
+                            use_rrt=True):
         """
         :param goal_tcp_pos:
         :param goal_tcp_rotmat:
         :param start_jnt_values:
         :param end_jnt_values:
-        :param approach_direction:
+        :param approach_direction: last column of rotmat by default
         :param approach_distance:
         :param approach_ee_values:
         :param depart_direction:
         :param depart_distance:
         :param depart_ee_values:
-        :param granularity:
-        :param obstacle_list:
+        :param granularity: obstacles, will be checked by both rrt and linear
+        :param obstacle_list: target objects, will be checked by rrt, but not by linear
+        :param object_list:
+        :param use_rrt
         :return:
         author: weiwei
         date: 20210113, 20210125
@@ -374,19 +399,21 @@ class ADPlanner(object):
                                          ee_values=approach_ee_values,
                                          granularity=granularity,
                                          obstacle_list=obstacle_list,
-                                         object_list=object_list)
+                                         object_list=object_list,
+                                         use_rrt=use_rrt)
         if app_mot_data is None:
             print("ADPlanner: Cannot plan the approach section of approach-depart motion!")
             return None
         else:
-            dep_mot_data = self.gen_depart_with_given_conf(start_jnt_values=app_mot_data.jv_list[-1],
+            dep_mot_data = self.gen_depart_from_given_conf(start_jnt_values=app_mot_data.jv_list[-1],
                                                            end_jnt_values=end_jnt_values,
                                                            linear_direction=depart_direction,
                                                            linear_distance=depart_distance,
                                                            ee_values=depart_ee_values,
                                                            granularity=granularity,
                                                            obstacle_list=obstacle_list,
-                                                           object_list=object_list)
+                                                           object_list=object_list,
+                                                           use_rrt=use_rrt)
             if dep_mot_data is None:
                 print("ADPlanner: Cannot plan the depart section of approach-depart motion!")
                 return None
@@ -396,18 +423,194 @@ class ADPlanner(object):
     def gen_depart_approach_with_given_conf(self,
                                             start_jnt_values=None,
                                             end_jnt_values=None,
-                                            depart_direction=None,  # np.array([0, 0, 1])
+                                            depart_direction=None,
                                             depart_distance=.1,
                                             depart_ee_values=None,
-                                            approach_direction=None,  # np.array([0, 0, -1])
+                                            approach_direction=None,
                                             approach_distance=.1,
                                             approach_ee_values=None,
                                             granularity=.03,
-                                            obstacle_list=[],
-                                            object_list=[]):
+                                            obstacle_list=None,
+                                            object_list=None,
+                                            use_rrt=True):
         """
         :param goal_tcp_pos:
         :param goal_tcp_rotmat:
+        :param start_jnt_values:
+        :param end_jnt_values:
+        :param approach_direction:
+        :param approach_distance:
+        :param approach_ee_values:
+        :param depart_direction:
+        :param depart_distance:
+        :param depart_ee_values:
+        :param granularity:
+        :param obstacle_list: obstacles, will be checked by both rrt and linear
+        :param object_list: target objects, will be checked by rrt, but not by linear
+        :param use_rrt
+        :return:
+        author: weiwei
+        date: 20210113, 20210125
+        """
+        linear_dep_mot_data = self.gen_linear_depart_from_given_conf(start_jnt_values=start_jnt_values,
+                                                                     direction=depart_direction,
+                                                                     distance=depart_distance,
+                                                                     ee_values=depart_ee_values,
+                                                                     granularity=granularity,
+                                                                     obstacle_list=obstacle_list)
+        if linear_dep_mot_data is None:
+            print("ADPlanner: Cannot plan the linear depart section of depart-approach motion with given conf!")
+            return None
+        else:
+            app_mot_data = self.gen_approach_to_given_conf(goal_jnt_values=end_jnt_values,
+                                                           start_jnt_values=linear_dep_mot_data.jv_list[-1],
+                                                           linear_direction=approach_direction,
+                                                           linear_distance=approach_distance,
+                                                           ee_values=approach_ee_values,
+                                                           granularity=granularity,
+                                                           obstacle_list=obstacle_list,
+                                                           object_list=object_list,
+                                                           use_rrt=use_rrt)
+            if app_mot_data is None:
+                print("ADPlanner: Cannot plan the approach section of depart-approach motion given conf!")
+                return None
+            else:
+                return linear_dep_mot_data + app_mot_data
+
+    def gen_approach_to_given_conf(self,
+                                   goal_jnt_values,
+                                   start_jnt_values=None,
+                                   linear_direction=None,
+                                   linear_distance=.1,
+                                   ee_values=None,
+                                   granularity=.03,
+                                   obstacle_list=None,
+                                   object_list=None,
+                                   use_rrt=True):
+        """
+        :param goal_jnt_values:
+        :param start_jnt_values:
+        :param linear_direction:
+        :param linear_distance:
+        :param ee_values:
+        :param granularity:
+        :param obstacle_list: obstacles, will be checked by both rrt and linear
+        :param object_list: target objects, will be checked by rrt, but not by linear
+        :param use_rrt
+        :return:
+        """
+        if obstacle_list is None:
+            obstacle_list = []
+        if object_list is None:
+            object_list = []
+        linear_app = self.gen_linear_approach_to_given_conf(goal_jnt_values=goal_jnt_values,
+                                                            direction=linear_direction,
+                                                            distance=linear_distance,
+                                                            ee_values=ee_values,
+                                                            granularity=granularity,
+                                                            obstacle_list=obstacle_list)
+        if linear_app is None:
+            print("ADPlanner: Cannot plan the linear approach section of approach with given conf!")
+            return None
+        if start_jnt_values is None:
+            return linear_app
+        if use_rrt:
+            ee_values_bk = None
+            if ee_values is not None:
+                ee_values_bk = self.robot.get_ee_values()
+                self.robot.change_ee_values(ee_values=ee_values)
+            start2app = self.rrtc_planner.plan(start_conf=start_jnt_values,
+                                               goal_conf=linear_app.jv_list[0],
+                                               obstacle_list=obstacle_list + object_list,
+                                               ext_dist=.1,
+                                               max_time=100)
+            if ee_values is not None:
+                self.robot.change_ee_values(ee_values=ee_values_bk)
+        else:
+            start2app = self.im_planner.gen_interplated_between_given_conf(start_jnt_values=start_jnt_values,
+                                                                           end_jnt_values=linear_app.jv_list[0],
+                                                                           obstacle_list=obstacle_list + object_list,
+                                                                           ee_values=ee_values)
+        if start2app is None:
+            print("ADPlanner: Cannot plan the approach rrt motion section of approach with given conf!")
+            return None
+        return start2app + linear_app
+
+    def gen_depart_from_given_conf(self,
+                                   start_jnt_values,
+                                   end_jnt_values=None,
+                                   linear_direction=None,
+                                   linear_distance=.1,
+                                   ee_values=None,
+                                   granularity=.03,
+                                   obstacle_list=None,
+                                   object_list=None,
+                                   use_rrt=True):
+        """
+        :param start_jnt_values:
+        :param end_jnt_values:
+        :param linear_direction:
+        :param linear_distance:
+        :param ee_values:
+        :param granularity:
+        :param obstacle_list: obstacles, will be checked by both rrt and linear
+        :param object_list: target objects, will be checked by rrt, but not by linear
+        :param use_rrt
+        :return:
+        """
+        if obstacle_list is None:
+            obstacle_list = []
+        if object_list is None:
+            object_list = []
+        linear_dep = self.gen_linear_depart_from_given_conf(start_jnt_values=start_jnt_values,
+                                                            direction=linear_direction,
+                                                            distance=linear_distance,
+                                                            ee_values=ee_values,
+                                                            granularity=granularity,
+                                                            obstacle_list=obstacle_list)
+        if linear_dep is None:
+            print("ADPlanner: Cannot plan the linear depart section of depart with given conf!")
+            return None
+        if end_jnt_values is None:
+            return linear_dep
+        if use_rrt:
+            ee_values_bk = None
+            if ee_values is not None:
+                ee_values_bk = self.robot.get_ee_values()
+                self.robot.change_ee_values(ee_values=ee_values)
+            dep2end = self.rrtc_planner.plan(start_conf=linear_dep.jv_list[-1],
+                                             goal_conf=end_jnt_values,
+                                             obstacle_list=obstacle_list + object_list,
+                                             ext_dist=.1,
+                                             max_time=100)
+            if ee_values is not None:
+                self.robot.change_ee_values(ee_values=ee_values_bk)
+        else:
+            dep2end = self.im_planner.gen_interplated_between_given_conf(start_jnt_values=linear_dep.jv_list[-1],
+                                                                         end_jnt_values=end_jnt_values,
+                                                                         obstacle_list=obstacle_list + object_list,
+                                                                         ee_values=ee_values)
+        if dep2end is None:
+            print("ADPlanner: Cannot plan the depart rrt motion section of depart with given conf!")
+            return None
+        return linear_dep + dep2end
+
+    def gen_approach_depart_with_given_conf(self,
+                                            goal_jnt_values,
+                                            start_jnt_values=None,
+                                            end_jnt_values=None,
+                                            approach_direction=None,  # np.array([0, 0, -1])
+                                            approach_distance=.1,
+                                            approach_ee_values=None,
+                                            depart_direction=None,  # np.array([0, 0, 1])
+                                            depart_distance=.1,
+                                            depart_ee_values=None,
+                                            granularity=.03,
+                                            obstacle_list=None,  #
+                                            object_list=None,
+                                            use_rrt=True):  #
+        """
+        :param goal_jnt_values
         :param start_jnt_values:
         :param end_jnt_values:
         :param approach_direction:
@@ -423,151 +626,28 @@ class ADPlanner(object):
         author: weiwei
         date: 20210113, 20210125
         """
-        linear_dep_mot_data = self.gen_linear_depart_with_given_conf(start_jnt_values=start_jnt_values,
-                                                                     direction=depart_direction,
-                                                                     distance=depart_distance,
-                                                                     ee_values=depart_ee_values,
-                                                                     granularity=granularity,
-                                                                     obstacle_list=obstacle_list)
-        if linear_dep_mot_data is None:
-            print("ADPlanner: Cannot plan the linear depart section of depart-approach motion with given conf!")
-            return None
-        else:
-            app_mot_data = self.gen_approach_with_given_conf(goal_jnt_values=end_jnt_values,
-                                                             start_jnt_values=linear_dep_mot_data.jv_list[-1],
-                                                             linear_direction=approach_direction,
-                                                             linear_distance=approach_distance,
-                                                             ee_values=approach_ee_values,
-                                                             granularity=granularity,
-                                                             obstacle_list=obstacle_list,
-                                                             object_list=object_list)
-            if app_mot_data is None:
-                print("ADPlanner: Cannot plan the approach section of depart-approach motion given conf!")
-                return None
-            else:
-                return linear_dep_mot_data + app_mot_data
-
-    def gen_approach_with_given_conf(self,
-                                     goal_jnt_values,
-                                     start_jnt_values=None,
-                                     linear_direction=None,
-                                     linear_distance=.1,
-                                     ee_values=None,
-                                     granularity=.03,
-                                     obstacle_list=[],  # obstacles, will be checked by both rrt and linear
-                                     object_list=[]):  # target objects, will be checked by rrt, but not by linear
-        linear_app_mot_data = self.gen_linear_approach_with_given_conf(goal_jnt_values=goal_jnt_values,
-                                                                       direction=linear_direction,
-                                                                       distance=linear_distance,
-                                                                       ee_values=ee_values,
-                                                                       granularity=granularity,
-                                                                       obstacle_list=obstacle_list)
-        if linear_app_mot_data is None:
-            print("ADPlanner: Cannot plan the linear approach section of approach with given conf!")
-            return None
-        if start_jnt_values is None:
-            return linear_app_mot_data
-        ee_values_bk = None
-        if ee_values is not None:
-            ee_values_bk = self.robot.get_ee_values()
-            self.robot.change_ee_values(ee_values=ee_values)
-        start2app_mot_data = self.rrtc_planner.plan(start_conf=start_jnt_values,
-                                                    goal_conf=linear_app_mot_data.jv_list[0],
-                                                    obstacle_list=obstacle_list + object_list,
-                                                    ext_dist=.1,
-                                                    max_time=100)
-        if ee_values is not None:
-            self.robot.change_ee_values(ee_values=ee_values_bk)
-        if start2app_mot_data is None:
-            print("ADPlanner: Cannot plan the approach rrt motion section of approach with given conf!")
-            return None
-        return start2app_mot_data + linear_app_mot_data
-
-    def gen_depart_with_given_conf(self,
-                                   start_jnt_values,
-                                   end_jnt_values=None,
-                                   linear_direction=None,
-                                   linear_distance=.1,
-                                   ee_values=None,
-                                   granularity=.03,
-                                   obstacle_list=[],  # obstacles, will be checked by both rrt and linear
-                                   object_list=[]):  # target objects, will be checked by rrt, but not by linear
-        linear_dep_mot_data = self.gen_linear_depart_with_given_conf(start_jnt_values=start_jnt_values,
-                                                                     direction=linear_direction,
-                                                                     distance=linear_distance,
-                                                                     ee_values=ee_values,
-                                                                     granularity=granularity,
-                                                                     obstacle_list=obstacle_list)
-        if linear_dep_mot_data is None:
-            print("ADPlanner: Cannot plan the linear depart section of depart with given conf!")
-            return None
-        if end_jnt_values is None:
-            return linear_dep_mot_data
-        ee_values_bk = None
-        if ee_values is not None:
-            ee_values_bk = self.robot.get_ee_values()
-            self.robot.change_ee_values(ee_values=ee_values)
-        dep2end_mot_data = self.rrtc_planner.plan(start_conf=linear_dep_mot_data.jv_list[-1],
-                                                  goal_conf=end_jnt_values,
-                                                  obstacle_list=obstacle_list + object_list,
-                                                  ext_dist=.1,
-                                                  max_time=100)
-        if ee_values is not None:
-            self.robot.change_ee_values(ee_values=ee_values_bk)
-        if dep2end_mot_data is None:
-            print("ADPlanner: Cannot plan the depart rrt motion section of depart with given conf!")
-            return None
-        return linear_dep_mot_data + dep2end_mot_data
-
-    def gen_approach_depart_with_given_conf(self,
-                                            goal_jnt_values,
-                                            start_jnt_values=None,
-                                            end_jnt_values=None,
-                                            approach_direction=None,  # np.array([0, 0, -1])
-                                            approach_distance=.1,
-                                            approach_ee_values=None,
-                                            depart_direction=None,  # np.array([0, 0, 1])
-                                            depart_distance=.1,
-                                            depart_ee_values=None,
-                                            granularity=.03,
-                                            obstacle_list=[],  # obstacles, will be checked by both rrt and linear
-                                            object_list=[]):  # target objects, will be checked by rrt, but not by linear
-        """
-        :param goal_jnt_values
-        :param start_jnt_values:
-        :param end_jnt_values:
-        :param approach_direction:
-        :param approach_distance:
-        :param approach_ee_values:
-        :param depart_direction:
-        :param depart_distance:
-        :param depart_ee_values:
-        :param granularity:
-        :param obstacle_list:
-        :return:
-        author: weiwei
-        date: 20210113, 20210125
-        """
-        app_mot_data = self.gen_approach_with_given_conf(goal_jnt_values=goal_jnt_values,
-                                                         start_jnt_values=start_jnt_values,
-                                                         linear_direction=approach_direction,
-                                                         linear_distance=approach_distance,
-                                                         ee_values=approach_ee_values,
-                                                         granularity=granularity,
-                                                         obstacle_list=obstacle_list,
-                                                         object_list=object_list)
+        app_mot_data = self.gen_approach_to_given_conf(goal_jnt_values=goal_jnt_values,
+                                                       start_jnt_values=start_jnt_values,
+                                                       linear_direction=approach_direction,
+                                                       linear_distance=approach_distance,
+                                                       ee_values=approach_ee_values,
+                                                       granularity=granularity,
+                                                       obstacle_list=obstacle_list,
+                                                       object_list=object_list,
+                                                       use_rrt=use_rrt)
         if app_mot_data is None:
             print("ADPlanner: Cannot plan the approach section of approach-depart motion with given conf!")
             return None
         else:
-            dep_mot_data = self.gen_depart_with_given_conf(start_jnt_values=app_mot_data.jv_list[-1],
+            dep_mot_data = self.gen_depart_from_given_conf(start_jnt_values=app_mot_data.jv_list[-1],
                                                            end_jnt_values=end_jnt_values,
                                                            linear_direction=depart_direction,
                                                            linear_distance=depart_distance,
                                                            ee_values=depart_ee_values,
                                                            granularity=granularity,
                                                            obstacle_list=obstacle_list,
-                                                           object_list=object_list)
+                                                           object_list=object_list,
+                                                           use_rrt=use_rrt)
             if dep_mot_data is None:
                 print("ADPlanner: Cannot plan the depart section of approach-depart motion with given conf!")
                 return None
@@ -597,7 +677,7 @@ if __name__ == '__main__':
     adp = ADPlanner(robot)
     tic = time.time()
     mot_data = adp.gen_approach(goal_pos, goal_rotmat, start_jnt_values=robot.get_jnt_values(),
-                                linear_direction=np.array([0, 0, -1]), linear_distance=.1)
+                                linear_direction=np.array([0, 0, -1]), linear_distance=.1, use_rrt=False)
 
 
     # mot_data = adp.gen_depart(goal_pos, goal_rotmat, end_jnt_values=robot.get_jnt_values(),
