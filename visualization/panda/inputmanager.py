@@ -11,9 +11,9 @@ class InputManager(DirectObject):
         self.base = base
         self.originallookatpos = lookatpos  # for backup
         self.lookatpos_pdv3 = Vec3(lookatpos[0], lookatpos[1], lookatpos[2])
-        self.camdist = (self.base.cam.getPos() - self.lookatpos_pdv3).length()
+        self.cam2lookatpos_dist = (self.base.cam.getPos() - self.lookatpos_pdv3).length()
         self.initviewdist = (self.base.cam.getPos() - self.lookatpos_pdv3).length()
-        self.lastm1pos = None
+        self.last_m1_pos = None
         self.lastm2pos = None
         # toggle on the following part to explicitly show the rotation center
         self.togglerotcenter = togglerotcenter
@@ -84,7 +84,7 @@ class InputManager(DirectObject):
         # its bitmask is set to 8, and it will be the only collidable object at bit 8
         self.trackball_cn = CollisionNode("trackball")
         self.trackball_cn.addSolid(
-            CollisionSphere(self.lookatpos_pdv3[0], self.lookatpos_pdv3[1], self.lookatpos_pdv3[2], self.camdist))
+            CollisionSphere(self.lookatpos_pdv3[0], self.lookatpos_pdv3[1], self.lookatpos_pdv3[2], self.cam2lookatpos_dist))
         self.trackball_cn.setFromCollideMask(BitMask32.allOff())
         self.trackball_cn.setIntoCollideMask(BitMask32.bit(8))
         self.trackball_np = self.base.render.attachNewNode(self.trackball_cn)
@@ -115,8 +115,8 @@ class InputManager(DirectObject):
         self.ctrav.addCollider(self.picker_np, self.chandler)
 
     def update_trackballsphere(self, center=np.array([0, 0, 0])):
-        self.camdist = (self.base.cam.getPos() - self.lookatpos_pdv3).length()
-        self.trackball_cn.setSolid(0, CollisionSphere(center[0], center[1], center[2], self.camdist))
+        self.cam2lookatpos_dist = (self.base.cam.getPos() - self.lookatpos_pdv3).length()
+        self.trackball_cn.setSolid(0, CollisionSphere(center[0], center[1], center[2], self.cam2lookatpos_dist))
 
     def update_trackplane(self):
         self.trackplane_cn.setSolid(0, CollisionPlane(
@@ -153,31 +153,31 @@ class InputManager(DirectObject):
         author: weiwei
         date: 20200315
         """
-        curm1pos = self.get_world_mouse1()
-        if curm1pos is None:
-            if self.lastm1pos is not None:
-                self.lastm1pos = None
+        cur_m1_pos = self.get_world_mouse1()
+        if cur_m1_pos is None:
+            if self.last_m1_pos is not None:
+                self.last_m1_pos = None
             return
-        if self.lastm1pos is None:
+        if self.last_m1_pos is None:
             # first time click
-            self.lastm1pos = curm1pos
+            self.last_m1_pos = cur_m1_pos
             return
-        curm1vec = Vec3(curm1pos - self.lookatpos_pdv3)
-        lastm1vec = Vec3(self.lastm1pos - self.lookatpos_pdv3)
-        curm1vec.normalize()
-        lastm1vec.normalize()
-        rotatevec = curm1vec.cross(lastm1vec)
-        if rotatevec.length() > 1e-9:  # avoid zero axis_length
-            rotateangle = curm1vec.signedAngleDeg(lastm1vec, rotatevec)
-            rotateangle = rotateangle * self.camdist * 5000
-            if rotateangle > .02 or rotateangle < -.02:
+        cur_m1_vec = Vec3(cur_m1_pos - self.lookatpos_pdv3)
+        last_m1_vec = Vec3(self.last_m1_pos - self.lookatpos_pdv3)
+        cur_m1_vec.normalize()
+        last_m1_vec.normalize()
+        rotate_ax = cur_m1_vec.cross(last_m1_vec)
+        if rotate_ax.length() > 1e-9:  # avoid zero axis_length
+            rotate_angle = cur_m1_vec.signedAngleDeg(last_m1_vec, rotate_ax)
+            rotate_angle = rotate_angle * self.cam2lookatpos_dist * 5000
+            if rotate_angle > .02 or rotate_angle < -.02:
                 rotmat = Mat4(self.base.cam.getMat())
                 posvec = Vec3(self.base.cam.getPos())
                 rotmat.setRow(3, Vec3(0, 0, 0))
-                self.base.cam.setMat(rotmat * Mat4.rotateMat(rotateangle, rotatevec))
-                self.base.cam.setPos(Mat3.rotateMat(rotateangle, rotatevec). \
+                self.base.cam.setMat(rotmat * Mat4.rotateMat(rotate_angle, rotate_ax))
+                self.base.cam.setPos(Mat3.rotateMat(rotate_angle, rotate_ax). \
                                      xform(posvec - self.lookatpos_pdv3) + self.lookatpos_pdv3)
-                self.lastm1pos = self.get_world_mouse1()
+                self.last_m1_pos = self.get_world_mouse1()
                 self.update_trackplane()
 
     def get_world_mouse2(self):
@@ -255,7 +255,7 @@ class InputManager(DirectObject):
         date: 2015?, 20200313
         :return:
         """
-        self.camdist = (self.base.cam.getPos() - self.lookatpos_pdv3).length()
+        self.cam2lookatpos_dist = (self.base.cam.getPos() - self.lookatpos_pdv3).length()
         if self.keymap["wheel_up"] is True:
             self.keymap["wheel_up"] = False
             backward = self.base.cam.getPos() - self.lookatpos_pdv3

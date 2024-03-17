@@ -89,8 +89,6 @@ class Yumi(ri.RobotInterface):
         self.rgt_arm.home_conf = np.radians(np.array([-20, -90, -120, 30, .0, 40, 0]))
         if enable_cc:
             self.setup_cc()
-        # delegator
-        self.delegator = None # use self.xxx in case of None
         # go home
         self.goto_home_conf()
 
@@ -169,35 +167,6 @@ class Yumi(ri.RobotInterface):
         self.lft_arm.cc = self.cc
         self.rgt_arm.cc = self.cc
 
-    @property
-    def n_dof(self):
-        if self.delegator is None:
-            return self.lft_arm.n_dof+self.rgt_arm.n_dof
-        else:
-            return self.delegator.n_dof
-
-
-    @property
-    def end_effector(self):
-        if self.delegator is None:
-            raise AttributeError("End effector is not avialable in multi-arm mode.")
-        else:
-            return self.delegator.end_effector
-
-    @property
-    def jnt_ranges(self):
-        if self.delegator is None:
-            raise AttributeError("Jnt ranges is not avialable in multi-arm mode.")
-        else:
-            return self.delegator.jnt_ranges
-
-    @property
-    def oiee_list(self):
-        if self.delegator is None:
-            raise AttributeError("Oiee list is not avialable in multi-arm mode.")
-        else:
-            return self.delegator.oiee_list
-
     def use_both(self):
         self.delegator = None
 
@@ -221,12 +190,6 @@ class Yumi(ri.RobotInterface):
         else:
             self.delegator.restore_state()
 
-    def hold(self, obj_cmodel, **kwargs):
-        self.end_effector.hold(obj_cmodel, **kwargs)
-
-    def release(self, obj_cmodel, **kwargs):
-        self.end_effector.release(obj_cmodel, **kwargs)
-
     def fix_to(self, pos, rotmat):
         self.pos = pos
         self.rotmat = rotmat
@@ -236,13 +199,6 @@ class Yumi(ri.RobotInterface):
                             rotmat=self.body.gl_flange_pose_list[0][1])
         self.rgt_arm.fix_to(pos=self.body.gl_flange_pose_list[1][0],
                             rotmat=self.body.gl_flange_pose_list[1][1])
-
-    def ik(self, tgt_pos, tgt_rotmat, seed_jnt_values=None, toggle_dbg=False):
-        if self.delegator is None:
-            raise AttributeError("IK is not available for multi-arm robots.")
-        else:
-            return self.delegator.ik(tgt_pos=tgt_pos, tgt_rotmat=tgt_rotmat, seed_jnt_values=seed_jnt_values,
-                                     toggle_dbg=toggle_dbg)
 
     def fk(self, jnt_values, toggle_jacobian=False):
         if self.delegator is None:
@@ -298,22 +254,10 @@ class Yumi(ri.RobotInterface):
             return self.delegator.are_jnts_in_ranges(jnt_values=jnt_values)
 
     def get_jaw_width(self):
-        if self.delegator is None:
-            raise AttributeError("Get jaw width is not available for multi-arm mode.")
-        else:
-            return self.delegator.get_jaw_width()
+        return self.get_ee_values()
 
     def change_jaw_width(self, jaw_width):
-        if self.delegator is None:
-            raise AttributeError("Change jaw width is not available for multi-arm mode.")
-        else:
-            self.delegator.change_jaw_width(jaw_width=jaw_width)
-
-    def get_ee_values(self):
-        return self.get_jaw_width()
-
-    def change_ee_values(self, ee_values):
-        self.change_jaw_width(jaw_width=ee_values)
+        self.change_ee_values(ee_values=jaw_width)
 
     def is_collided(self, obstacle_list=[], other_robot_list=[], toggle_contacts=False):
         """

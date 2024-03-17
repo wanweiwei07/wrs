@@ -99,7 +99,7 @@ class World(ShowBase, object):
         props = WindowProperties()
         props.setSize(w, h)
         self.win.requestProperties(props)
-        # outline edge shader
+        # # outline edge shader
         # self.set_outlineshader()
         # set up cartoon effect
         self._separation = 1

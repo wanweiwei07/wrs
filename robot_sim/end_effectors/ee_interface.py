@@ -93,13 +93,15 @@ class EEInterface(object):
     def get_ee_values(self):
         return None
 
-    def is_mesh_collided(self, cmodel_list=[], toggle_dbg=False):
+    def is_mesh_collided(self, cmodel_list=None, toggle_dbg=False):
         """
         check collision of cd meshes
         :param cmodel_list:
         :param toggle_dbg: show cd mesh and draw colliding points in case of collision
         :return:
         """
+        if cmodel_list is None:
+            return False
         for i, cdme in enumerate(self.cdmesh_elements):
             if cdme.cmodel is not None:
                 is_collided, collision_points = cdme.cmodel.is_mcdwith(cmodel_list, True)

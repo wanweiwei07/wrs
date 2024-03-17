@@ -185,6 +185,7 @@ class InterplatedMotion(object):
         else:
             raise ValueError("Type must be sink or source!")
 
+    @keep_states_decorator
     def gen_rel_linear_motion_with_given_conf(self,
                                               goal_jnt_values,
                                               direction=None,

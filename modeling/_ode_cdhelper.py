@@ -1,8 +1,8 @@
 import numpy as np
+import modeling.collision_model as mcm
 import basis.robot_math as rm
 import basis.data_adapter as da
 from panda3d.ode import OdeTriMeshData, OdeTriMeshGeom, OdeUtil, OdeRayGeom
-import copy
 
 ode_util = OdeUtil()
 
@@ -71,9 +71,9 @@ def is_collided(cmodel_list0, cmodel_list1, toggle_contacts=True):
     author: weiwei
     date: 20210118, 20211215, 20230814
     """
-    if not isinstance(cmodel_list0, list):
+    if isinstance(cmodel_list0, mcm.CollisionModel):
         cmodel_list0 = [cmodel_list0]
-    if not isinstance(cmodel_list1, list):
+    if isinstance(cmodel_list1,  mcm.CollisionModel):
         cmodel_list1 = [cmodel_list1]
     for objcm0 in cmodel_list0:
         for objcm1 in cmodel_list1:
@@ -83,6 +83,7 @@ def is_collided(cmodel_list0, cmodel_list1, toggle_contacts=True):
                 return (True, contact_points) if len(contact_points) > 0 else (False, contact_points)
             else:
                 return True if len(contact_points) > 0 else False
+    return False, np.asarray([])
 
 
 def rayhit_closet(spos, epos, objcm):

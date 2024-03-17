@@ -60,7 +60,7 @@ class RRT(object):
         """
         if self.robot.are_jnts_in_ranges(jnt_values=conf):
             self.robot.goto_given_conf(jnt_values=conf)
-            ## toggle off the following code to consider object pose constraints
+            # # toggle off the following code to consider object pose constraints
             # if len(self.robot.oiee_list)>0:
             #     angle = rm.angle_between_vectors(self.robot.oiee_list[-1].gl_rotmat[:,2], np.array([0,0,1]))
             #     if angle > np.radians(10):
@@ -73,7 +73,11 @@ class RRT(object):
                     for pnt in collision_info[1]:
                         print(pnt)
                         mgm.gen_sphere(pos=pnt, radius=.01).attach_to(base)
-                    self.robot.gen_meshmodel().attach_to(base)
+                    self.robot.gen_meshmodel(toggle_cdprim=True).attach_to(base)
+                    for obs in obstacle_list:
+                        obs.rgb=np.array([1,1,1])
+                        obs.show_cdprim()
+                        obs.attach_to(base)
                     base.run()
                 return collision_info[0]
             else:
