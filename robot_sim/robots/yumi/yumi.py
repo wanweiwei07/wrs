@@ -170,11 +170,33 @@ class Yumi(ri.RobotInterface):
         self.rgt_arm.cc = self.cc
 
     @property
+    def n_dof(self):
+        if self.delegator is None:
+            return self.lft_arm.n_dof+self.rgt_arm.n_dof
+        else:
+            return self.delegator.n_dof
+
+
+    @property
     def end_effector(self):
         if self.delegator is None:
             raise AttributeError("End effector is not avialable in multi-arm mode.")
         else:
             return self.delegator.end_effector
+
+    @property
+    def jnt_ranges(self):
+        if self.delegator is None:
+            raise AttributeError("Jnt ranges is not avialable in multi-arm mode.")
+        else:
+            return self.delegator.jnt_ranges
+
+    @property
+    def oiee_list(self):
+        if self.delegator is None:
+            raise AttributeError("Oiee list is not avialable in multi-arm mode.")
+        else:
+            return self.delegator.oiee_list
 
     def use_both(self):
         self.delegator = None

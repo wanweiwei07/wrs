@@ -18,6 +18,14 @@ class SglArmRobotInterface(ri.RobotInterface):
         self.jnt_values_bk = []
 
     @property
+    def n_dof(self):
+        return self.manipulator.n_dof
+
+    @property
+    def jnt_ranges(self):
+        return self.manipulator.jnt_ranges
+
+    @property
     def home_conf(self):
         return self.manipulator.home_conf
 
@@ -32,6 +40,10 @@ class SglArmRobotInterface(ri.RobotInterface):
     @property
     def gl_tcp_rotmat(self):
         return self.manipulator.gl_tcp_rotmat
+
+    @property
+    def oiee_list(self):
+        return self.end_effector.oiee_list
 
     def _update_end_effector(self, ee_values=None):
         if ee_values is not None:

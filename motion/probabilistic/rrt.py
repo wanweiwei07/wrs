@@ -60,6 +60,11 @@ class RRT(object):
         """
         if self.robot.are_jnts_in_ranges(jnt_values=conf):
             self.robot.goto_given_conf(jnt_values=conf)
+            ## toggle off the following code to consider object pose constraints
+            # if len(self.robot.oiee_list)>0:
+            #     angle = rm.angle_between_vectors(self.robot.oiee_list[-1].gl_rotmat[:,2], np.array([0,0,1]))
+            #     if angle > np.radians(10):
+            #         return True
             collision_info = self.robot.is_collided(obstacle_list=obstacle_list, other_robot_list=other_robot_list,
                                                     toggle_contacts=toggle_contacts)
             if toggle_contacts:

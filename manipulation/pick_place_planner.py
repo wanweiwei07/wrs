@@ -25,7 +25,7 @@ class PickPlacePlanner(adp.ADPlanner):
         def wrapper(self, obj_cmodel, **kwargs):
             obj_pose_bk = obj_cmodel.pose
             result = method(self, obj_cmodel, **kwargs)
-            obj_cmodel.pose=obj_pose_bk
+            obj_cmodel.pose = obj_pose_bk
             return result
 
         return wrapper
@@ -110,12 +110,12 @@ class PickPlacePlanner(adp.ADPlanner):
                             depart_direction_list,
                             depart_distance_list,
                             pick_approach_direction=None,
-                            pick_approach_distance=None,
+                            pick_approach_distance=.07,
                             pick_depart_direction=None,
-                            pick_depart_distance=None,
-                            linear_granularity=.01,
-                            use_rrt=True,
-                            obstacle_list=[]):
+                            pick_depart_distance=.07,
+                            linear_granularity=.02,
+                            obstacle_list=[],
+                            use_rrt=True):
         """
         pick and move an object to multiple poses
         :param obj_cmodel:
@@ -146,7 +146,8 @@ class PickPlacePlanner(adp.ADPlanner):
                                         ee_values=self.robot.end_effector.jaw_range[1],
                                         granularity=linear_granularity,
                                         obstacle_list=obstacle_list,
-                                        object_list=[obj_cmodel])
+                                        object_list=[obj_cmodel],
+                                        use_rrt=use_rrt)
         if pick_motion is None:
             print("PPPlanner: Error encountered when generating pick approach motion!")
             return None
@@ -186,7 +187,8 @@ class PickPlacePlanner(adp.ADPlanner):
                                                          depart_ee_values=None,  # do not change jaw width
                                                          granularity=linear_granularity,
                                                          obstacle_list=obstacle_list,
-                                                         object_list=[])
+                                                         object_list=[],
+                                                         use_rrt=use_rrt)
                     if moveto_ap is None:
                         print(f"Error encountered when generating motion to the {i}th goal!")
                         return None
@@ -340,7 +342,7 @@ if __name__ == '__main__':
     base = wd.World(cam_pos=[2, 0, 1.5], lookat_pos=[0, 0, .2])
     gm.gen_frame().attach_to(base)
     obj_cmodel = cm.CollisionModel(initor='tubebig.stl')
-    obj_cmodel.pos = np.array([.55, -.1, .1])
+    obj_cmodel.pos = np.array([.55, -.15, .2])
     obj_cmodel.rotmat = np.eye(3)
     obj_cmodel.copy().attach_to(base)
     robot = ym.Yumi(enable_cc=True)
@@ -377,17 +379,16 @@ if __name__ == '__main__':
                                                   depart_direction_list=[np.array([0, 0, 1])] * n_goal,
                                                   depart_distance_list=[.07] * n_goal,
                                                   pick_approach_direction=None,
-                                                  pick_approach_distance=None,
+                                                  pick_approach_distance=.07,
                                                   pick_depart_direction=None,
-                                                  pick_depart_distance=None,
-                                                  linear_granularity=.01,
-                                                  use_rrt=True,
-                                                  obstacle_list=[])
+                                                  pick_depart_distance=.07,
+                                                  linear_granularity=.02,
+                                                  obstacle_list=[],
+                                                  use_rrt=True)
         if mot_data is not None:
             break
 
     print(mot_data)
-
 
     class Data(object):
         def __init__(self, mot_data):

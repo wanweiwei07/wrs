@@ -54,9 +54,9 @@ class RRTConnect(rrt.RRT):
              obstacle_list=[],
              other_robot_list=[],
              ext_dist=2,
-             max_n_iter=300,
+             max_n_iter=10000,
              max_time=15.0,
-             smoothing_n_iter=50,
+             smoothing_n_iter=500,
              animation=False):
         self.roadmap.clear()
         self.roadmap_start.clear()

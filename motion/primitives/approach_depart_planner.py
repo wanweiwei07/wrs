@@ -269,7 +269,7 @@ class ADPlanner(object):
                                               granularity=granularity,
                                               obstacle_list=obstacle_list)
         if linear_app is None:
-            print("ADPlanner: Cannot gen approach linear!")
+            print("ADPlanner: Cannot generate the linear approach section of gen_approach!")
             return None
         if start_jnt_values is None:
             return linear_app
@@ -285,14 +285,17 @@ class ADPlanner(object):
                                                max_time=100)
             if ee_values is not None:
                 self.robot.change_ee_values(ee_values=ee_values_bk)
+            if start2app is None:
+                print("ADPlanner: Cannot plan the rrt motion from start_jnt_values to the beginning of approach!")
+                return None
         else:
             start2app = self.im_planner.gen_interplated_between_given_conf(start_jnt_values=start_jnt_values,
                                                                            end_jnt_values=linear_app.jv_list[0],
                                                                            obstacle_list=obstacle_list + object_list,
                                                                            ee_values=ee_values)
-        if start2app is None:
-            print("ADPlanner: Cannot plan the motion from start_jnt_values to the beginning of approach!")
-            return None
+            if start2app is None:
+                print("ADPlanner: Cannot interpolate the motion from start_jnt_values to the beginning of approach!")
+                return None
         return start2app + linear_app
 
     def gen_depart(self,
@@ -585,14 +588,17 @@ class ADPlanner(object):
                                              max_time=100)
             if ee_values is not None:
                 self.robot.change_ee_values(ee_values=ee_values_bk)
+            if dep2end is None:
+                print("ADPlanner: Cannot plan the depart rrt motion section of depart with given conf!")
+                return None
         else:
             dep2end = self.im_planner.gen_interplated_between_given_conf(start_jnt_values=linear_dep.jv_list[-1],
                                                                          end_jnt_values=end_jnt_values,
                                                                          obstacle_list=obstacle_list + object_list,
                                                                          ee_values=ee_values)
-        if dep2end is None:
-            print("ADPlanner: Cannot plan the depart rrt motion section of depart with given conf!")
-            return None
+            if dep2end is None:
+                print("ADPlanner: Cannot interpolate the depart motion section of depart with given conf!")
+                return None
         return linear_dep + dep2end
 
     def gen_approach_depart_with_given_conf(self,
@@ -666,34 +672,47 @@ if __name__ == '__main__':
     gm.gen_frame().attach_to(base)
     robot = ym.Yumi(enable_cc=True)
     robot.use_rgt()
-    goal_pos = np.array([.65, -.1, .3])
+    goal_pos = np.array([.4, -.3, .2])
+    goal_rotmat = np.eye(3)
     goal_rotmat = rm.rotmat_from_axangle([0, 1, 0], math.pi / 2)
     gm.gen_frame(pos=goal_pos, rotmat=goal_rotmat).attach_to(base)
     jnt_values = robot.ik(tgt_pos=goal_pos, tgt_rotmat=goal_rotmat)
+    goal_pos2 = np.array([.4, -.1, .2])
+    goal_rotmat2 = rm.rotmat_from_axangle([0, 1, 0], math.pi / 2)
+    gm.gen_frame(pos=goal_pos2, rotmat=goal_rotmat2).attach_to(base)
+    jnt_values2 = robot.ik(tgt_pos=goal_pos2, tgt_rotmat=goal_rotmat2)
     # robot.rgt_arm.goto_given_conf(jnt_values=jnt_values)
     # robot.gen_meshmodel().attach_to(base)
     # base.run()
 
     adp = ADPlanner(robot)
     tic = time.time()
-    mot_data = adp.gen_approach(goal_pos, goal_rotmat, start_jnt_values=robot.get_jnt_values(),
-                                linear_direction=np.array([0, 0, -1]), linear_distance=.1, use_rrt=False)
-
-
+    # mot_data = adp.gen_approach(goal_pos, goal_rotmat, start_jnt_values=robot.get_jnt_values(),
+    #                             linear_direction=np.array([0, 0, -1]), linear_distance=.5, use_rrt=False)
     # mot_data = adp.gen_depart(goal_pos, goal_rotmat, end_jnt_values=robot.get_jnt_values(),
     #                           linear_direction=np.array([0, 0, -1]), linear_distance=.1, ee_values=.05)
     # mot_data = adp.gen_approach_depart(goal_tcp_pos=goal_pos, goal_tcp_rotmat=goal_rotmat,
     #                                       start_jnt_values=robot.get_jnt_values(),
     #                                       end_jnt_values=robot.get_jnt_values(),
     #                                       approach_ee_values=.05, depart_ee_values=.01)
-    # mot_data = adp.gen_depart_approach_with_given_conf(start_jnt_values=jnt_values, end_jnt_values=jnt_values,
-    #                                                        depart_ee_values=.03, approach_ee_values=.01)
+    mot_data = adp.gen_depart_approach_with_given_conf(start_jnt_values=jnt_values, end_jnt_values=jnt_values2,
+                                                       depart_ee_values=.03, approach_ee_values=.01, use_rrt=False)
+
 
     class Data(object):
         def __init__(self, mot_data):
             self.counter = 0
             self.mot_data = mot_data
 
+
+    import matplotlib.pyplot as plt
+
+    fig, ax = plt.subplots()
+
+    # Plot each column as a separate curve
+    for i in range(robot.n_dof):
+        ax.plot(np.asarray(mot_data.jv_list)[:, i], label=f'Column {i + 1}')
+    plt.show()
 
     anime_data = Data(mot_data)
 
@@ -707,11 +726,12 @@ if __name__ == '__main__':
             anime_data.counter = 0
         mesh_model = anime_data.mot_data.mesh_list[anime_data.counter]
         mesh_model.attach_to(base)
-        anime_data.counter += 1
+        if base.inputmgr.keymap["space"]:
+            anime_data.counter += 1
         return task.again
 
 
-    taskMgr.doMethodLater(0.05, update, "update",
+    taskMgr.doMethodLater(0.03, update, "update",
                           extraArgs=[anime_data],
                           appendTask=True)
     base.run()

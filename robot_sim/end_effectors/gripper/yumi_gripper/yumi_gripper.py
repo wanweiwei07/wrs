@@ -65,7 +65,7 @@ class YumiGripper(gpi.GripperInterface):
         self.update_oiee()
 
     def get_jaw_width(self):
-        return -self.jlc.jnts[1].motion_value
+        return self.jlc.jnts[1].motion_value
 
     @gpi.ei.EEInterface.assert_oiee_decorator
     def change_jaw_width(self, jaw_width):

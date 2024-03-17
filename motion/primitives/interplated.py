@@ -154,9 +154,9 @@ class InterplatedMotion(object):
         author: weiwei
         date: 20210114
         """
-        if direction is None:
-            direction = goal_tcp_rotmat[:, 2]
         if type == "sink":
+            if direction is None:
+                direction = goal_tcp_rotmat[:, 2]
             start_tcp_pos = goal_tcp_pos - rm.unit_vector(direction) * distance
             start_tcp_rotmat = goal_tcp_rotmat
             return self.gen_linear_motion(start_tcp_pos=start_tcp_pos,
@@ -168,10 +168,12 @@ class InterplatedMotion(object):
                                           ee_values=ee_values,
                                           toggle_dbg=toggle_dbg)
         elif type == "source":
+            if direction is None:
+                direction = -goal_tcp_rotmat[:, 2]
             start_tcp_pos = goal_tcp_pos
             start_tcp_rotmat = goal_tcp_rotmat
-            goal_tcp_pos = goal_tcp_pos + direction * distance
-            goal_tcp_rotmat = goal_tcp_rotmat
+            goal_tcp_pos = start_tcp_pos + rm.unit_vector(direction) * distance
+            goal_tcp_rotmat = start_tcp_rotmat
             return self.gen_linear_motion(start_tcp_pos=start_tcp_pos,
                                           start_tcp_rotmat=start_tcp_rotmat,
                                           goal_tcp_pos=goal_tcp_pos,
@@ -206,15 +208,17 @@ class InterplatedMotion(object):
         date: 20210114
         """
         goal_tcp_pos, goal_tcp_rotmat = self.robot.fk(jnt_values=goal_jnt_values)
-        if direction is None:
-            direction = goal_tcp_rotmat[:, 2]
         if type == "sink":
+            if direction is None:
+                direction = goal_tcp_rotmat[:, 2]
             start_tcp_pos = goal_tcp_pos - rm.unit_vector(direction) * distance
             start_tcp_rotmat = goal_tcp_rotmat
         elif type == "source":
+            if direction is None:
+                direction = -goal_tcp_rotmat[:, 2]
             start_tcp_pos = goal_tcp_pos
             start_tcp_rotmat = goal_tcp_rotmat
-            goal_tcp_pos = goal_tcp_pos + rm.unit_vector(direction) * distance
+            goal_tcp_pos = start_tcp_pos + rm.unit_vector(direction) * distance
             goal_tcp_rotmat = goal_tcp_rotmat
         else:
             raise ValueError("Type must be sink or source!")
