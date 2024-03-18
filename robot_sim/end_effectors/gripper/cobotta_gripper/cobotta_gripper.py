@@ -27,7 +27,7 @@ class CobottaGripper(gpi.GripperInterface):
             os.path.join(current_file_dir, "meshes", "gripper_base.dae"),
             cdmesh_type=self.cdmesh_type)
         self.jlc.anchor.lnk_list[0].cmodel.rgba = np.array([.35, .35, .35, 1])
-        # the 1st joint (left finger)
+        # the 1st joint (left finger, +y direction)
         self.jlc.jnts[0].change_type(rkjlc.rkc.JntType.PRISMATIC, motion_range=np.array([0, self.jaw_range[1] / 2]))
         self.jlc.jnts[0].loc_pos = np.array([0, .0, .0])
         self.jlc.jnts[0].loc_motion_ax = rm.bc.y_ax
@@ -35,10 +35,10 @@ class CobottaGripper(gpi.GripperInterface):
         self.jlc.jnts[0].lnk.cmodel = mcm.CollisionModel(os.path.join(current_file_dir, "meshes", "left_finger.dae"),
                                                          cdmesh_type=self.cdmesh_type)
         self.jlc.jnts[0].lnk.cmodel.rgba = np.array([.5, .5, .5, 1])
-        # the 2nd joint (right finger)
-        self.jlc.jnts[1].change_type(rkjlc.rkc.JntType.PRISMATIC, motion_range=np.array([-self.jaw_range[1], 0.0]))
+        # the 2nd joint (right finger, -y direction)
+        self.jlc.jnts[1].change_type(rkjlc.rkc.JntType.PRISMATIC, motion_range=np.array([0.0, self.jaw_range[1]]))
         self.jlc.jnts[1].loc_pos = np.array([0, .0, .0])
-        self.jlc.jnts[1].loc_motion_ax = rm.bc.y_ax
+        self.jlc.jnts[1].loc_motion_ax = -rm.bc.y_ax
         self.jlc.jnts[1].lnk.cmodel = mcm.CollisionModel(os.path.join(current_file_dir, "meshes", "right_finger.dae"),
                                                          cdmesh_type=self.cdmesh_type)
         self.jlc.jnts[1].lnk.cmodel.rgba = np.array([.5, .5, .5, 1])
@@ -67,13 +67,13 @@ class CobottaGripper(gpi.GripperInterface):
         self.update_oiee()
 
     def get_jaw_width(self):
-        return -self.jlc.jnts[1].motion_value
+        return self.jlc.jnts[1].motion_value
 
     @gpi.ei.EEInterface.assert_oiee_decorator
     def change_jaw_width(self, jaw_width):
         side_jawwidth = jaw_width / 2.0
         if 0 <= side_jawwidth <= self.jaw_range[1] / 2:
-            self.jlc.go_given_conf(jnt_values=[side_jawwidth, -jaw_width])
+            self.jlc.go_given_conf(jnt_values=[side_jawwidth, jaw_width])
         else:
             raise ValueError("The angle parameter is out of range!")
 

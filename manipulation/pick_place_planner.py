@@ -232,7 +232,7 @@ class PickPlacePlanner(adp.ADPlanner):
             depart_distance_list = [.07] * len(goal_pose_list)
         if reason_grasps:
             common_gid_list = self.reason_common_gids(grasp_info_list=grasp_info_list,
-                                                      goal_pose_list=goal_pose_list,
+                                                      goal_pose_list=[obj_cmodel.pose]+goal_pose_list,
                                                       obstacle_list=obstacle_list,
                                                       toggle_dbg=False)
         else:

@@ -2,10 +2,10 @@ import math
 import numpy as np
 import robot_sim.manipulators.cobotta_arm.cobotta_arm as cbta
 import robot_sim.end_effectors.gripper.cobotta_gripper.cobotta_gripper as cbtg
-import robot_sim.robots.single_arm_robot_interface as ri
+import robot_sim.robots.single_arm_robot_interface as rsi
 
 
-class Cobotta(ri.SglArmRobotInterface):
+class Cobotta(rsi.SglArmRobotInterface):
 
     def __init__(self, pos=np.zeros(3), rotmat=np.eye(3), name="cobotta", enable_cc=True):
         super().__init__(pos=pos, rotmat=rotmat, name=name, enable_cc=enable_cc)
@@ -13,7 +13,7 @@ class Cobotta(ri.SglArmRobotInterface):
         home_conf[1] = -math.pi / 6
         home_conf[2] = math.pi / 2
         home_conf[4] = math.pi / 6
-        self.manipulator = cbta.CobottaArm(pos=self.pos, rotmat=self.rotmat, home_conf=home_conf, name="cobotta_arm_",
+        self.manipulator = cbta.CobottaArm(pos=self.pos, rotmat=self.rotmat, home_conf=home_conf, name="cobotta_arm",
                                            enable_cc=False)
         self.end_effector = cbtg.CobottaGripper(pos=self.manipulator.gl_flange_pos,
                                                 rotmat=self.manipulator.gl_flange_rotmat, name="cobotta_hnd")
@@ -24,7 +24,6 @@ class Cobotta(ri.SglArmRobotInterface):
             self.setup_cc()
 
     def setup_cc(self):
-        # TODO when pose is changed, oih info goes wrong
         # ee
         elb = self.cc.add_cce(self.end_effector.jlc.anchor.lnk_list[0])
         el0 = self.cc.add_cce(self.end_effector.jlc.jnts[0].lnk)
@@ -53,52 +52,6 @@ class Cobotta(ri.SglArmRobotInterface):
 
     def get_jaw_width(self):
         return self.get_ee_values()
-
-    # def hold(self, hnd_name, obj_cmodel, ee_values=None):
-    #     """
-    #     the obj_cmodel is added as a part of the robot_s to the cd checker
-    #     :param ee_values:
-    #     :param obj_cmodel:
-    #     :return:
-    #     """
-    #     if hnd_name not in self.hnd_dict:
-    #         raise ValueError("Hand name does not exist!")
-    #     if ee_values is not None:
-    #         self.hnd_dict[hnd_name].change_jaw_width(ee_values)
-    #     rel_pos, rel_rotmat = self.manipulator_dict[hnd_name].cvt_gl_pose_to_tcp(obj_cmodel.get_pos(), obj_cmodel.get_rotmat())
-    #     intolist = [self.arm.lnks[0],
-    #                 self.arm.lnks[1],
-    #                 self.arm.lnks[2],
-    #                 self.arm.lnks[3],
-    #                 self.arm.lnks[4]]
-    #     self.oih_infos.append(self.cc.add_cdobj(obj_cmodel, rel_pos, rel_rotmat, intolist))
-    #     return rel_pos, rel_rotmat
-
-    # def get_oih_list(self):
-    #     return_list = []
-    #     for obj_info in self.oih_infos:
-    #         obj_cmodel = obj_info['collision_model']
-    #         obj_cmodel.set_pos(obj_info['gl_pos'])
-    #         obj_cmodel.set_rotmat(obj_info['gl_rotmat'])
-    #         return_list.append(obj_cmodel)
-    #     return return_list
-    #
-    # def release(self, hnd_name, obj_cmodel, ee_values=None):
-    #     """
-    #     the obj_cmodel is added as a part of the robot_s to the cd checker
-    #     :param ee_values:
-    #     :param obj_cmodel:
-    #     :return:
-    #     """
-    #     if hnd_name not in self.hnd_dict:
-    #         raise ValueError("Hand name does not exist!")
-    #     if ee_values is not None:
-    #         self.hnd_dict[hnd_name].change_jaw_width(ee_values)
-    #     for obj_info in self.oih_infos:
-    #         if obj_info['collision_model'] is obj_cmodel:
-    #             self.cc.delete_cdobj(obj_info)
-    #             self.oih_infos.remove(obj_info)
-    #             break
 
 
 if __name__ == '__main__':

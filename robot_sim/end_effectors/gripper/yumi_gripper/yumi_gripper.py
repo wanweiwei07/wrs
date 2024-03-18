@@ -28,7 +28,7 @@ class YumiGripper(gpi.GripperInterface):
         self.jlc.anchor.lnk_list[0].cmodel = mcm.CollisionModel(
             os.path.join(current_file_dir, "meshes", "base.stl"), cdmesh_type=self.cdmesh_type)
         self.jlc.anchor.lnk_list[0].cmodel.rgba = np.array([.75, .75, .75, 1])
-        # the 1st joint (left finger)
+        # the 1st joint (left finger, +y direction)
         self.jlc.jnts[0].change_type(rkjlc.rkc.JntType.PRISMATIC, np.array([0, self.jaw_range[1] / 2]))
         self.jlc.jnts[0].loc_pos = np.array([-0.0065, 0, 0.0837])
         self.jlc.jnts[0].loc_motion_ax = rm.bc.y_ax
@@ -37,7 +37,7 @@ class YumiGripper(gpi.GripperInterface):
             os.path.join(current_file_dir, "meshes", "finger_sheet_metal.stl"),
             cdmesh_type=self.cdmesh_type)
         self.jlc.jnts[0].lnk.cmodel.rgba = np.array([.5, .5, .5, 1])
-        # the 2nd joint (right finger)
+        # the 2nd joint (right finger, -y direction)
         self.jlc.jnts[1].change_type(rkjlc.rkc.JntType.PRISMATIC, np.array([0, self.jaw_range[1]]))
         self.jlc.jnts[1].loc_pos = np.array([0.013, 0, 0])
         self.jlc.jnts[1].loc_rotmat = rm.rotmat_from_euler(0, 0, np.pi)

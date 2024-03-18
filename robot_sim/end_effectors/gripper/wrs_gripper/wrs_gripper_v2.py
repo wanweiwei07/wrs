@@ -9,39 +9,47 @@ import basis.robot_math as rm
 import robot_sim.end_effectors.gripper.gripper_interface as gpi
 
 
-class Lite6WRSGripper2(gpi.GripperInterface):
+class WRSGripper2(gpi.GripperInterface):
+    """
+    This class is the second version of the Lite6 WRS gripper. It is designed to be used with the xArm Lite 6 robot.
+    Hao developed the original code for this gripper.
+    Weiwei kept it updated.
+    author: hao, weiwei
+    date: 20240318
+    """
 
     def __init__(self, pos=np.zeros(3), rotmat=np.eye(3),
                  cdmesh_type=mcm.mc.CDMType.DEFAULT, name="wrs_gripper2"):
         super().__init__(pos=pos, rotmat=rotmat, cdmesh_type=cdmesh_type, name=name)
         current_file_dir = os.path.dirname(__file__)
         # jaw range
-        self.jaw_range = np.array([0.0, .1])
+        self.jaw_range = np.array([0.0, .08])
         # jlc
         self.jlc = rkjlc.JLChain(pos=self.coupling.gl_flange_pose_list[0][0],
                                  rotmat=self.coupling.gl_flange_pose_list[0][1], n_dof=2, name=name)
         # anchor
         self.jlc.anchor.lnk_list[0].cmodel = mcm.CollisionModel(os.path.join(current_file_dir, "meshes", "base_v2.stl"),
                                                                 cdmesh_type=self.cdmesh_type)
-        self.jlc.anchor.lnk_list[0].cmodel.rgba = np.array([.75, .75, .75, 1])
-        # the 1st joint (left finger)
+        self.jlc.anchor.lnk_list[0].cmodel.rgba = rm.bc.tab20_list[14]
+        # the 1st joint (left finger, +y direction)
         self.jlc.jnts[0].change_type(rkjlc.rkc.JntType.PRISMATIC, motion_range=np.array([0, self.jaw_range[1] / 2]))
-        self.jlc.jnts[0].loc_pos = np.array([-0.01492498, 0.005, .05])
+        self.jlc.jnts[0].loc_pos = np.array([-0.01492498,- 0.005, .05])
         self.jlc.jnts[0].loc_motion_ax = rm.bc.y_ax
         self.jlc.jnts[0].lnk.cmodel = mcm.CollisionModel(os.path.join(current_file_dir, "meshes", "finger_v2.stl"),
                                                          cdmesh_type=self.cdmesh_type,
                                                          cdprim_type=mcm.mc.CDPType.USER_DEFINED,
-                                                         userdef_cdprim_fn=self._finger_cdprim, ex_radius=.001)
-        self.jlc.jnts[0].lnk.cmodel.rgba = np.array([.65, .65, .65, 1])
-        # the 2nd joint (right finger)
-        self.jlc.jnts[1].change_type(rkjlc.rkc.JntType.PRISMATIC, motion_range=np.array([-self.jaw_range[1], 0.0]))
-        self.jlc.jnts[1].loc_pos = np.array([-1, -0.01, .0])
+                                                         userdef_cdprim_fn=self._finger_cdprim, ex_radius=.005)
+        self.jlc.jnts[0].lnk.cmodel.rgba = rm.bc.tab20_list[14]
+        # the 2nd joint (right finger, -y direction)
+        self.jlc.jnts[1].change_type(rkjlc.rkc.JntType.PRISMATIC, motion_range=np.array([0.0, self.jaw_range[1]]))
+        self.jlc.jnts[1].loc_pos = np.array([0.02984996, 0.01, .0])
         self.jlc.jnts[1].loc_motion_ax = rm.bc.y_ax
+        self.jlc.jnts[1].loc_rotmat = rm.rotmat_from_euler(0, 0, np.pi)
         self.jlc.jnts[1].lnk.cmodel = mcm.CollisionModel(os.path.join(current_file_dir, "meshes", "finger_v2.stl"),
                                                          cdmesh_type=self.cdmesh_type,
                                                          cdprim_type=mcm.mc.CDPType.USER_DEFINED,
-                                                         userdef_cdprim_fn=self._finger_cdprim, ex_radius=.001)
-        self.jlc.jnts[1].lnk.cmodel.rgba = np.array([.65, .65, .65, 1])
+                                                         userdef_cdprim_fn=self._finger_cdprim, ex_radius=.005)
+        self.jlc.jnts[1].lnk.cmodel.rgba = rm.bc.tab20_list[14]
         # reinitialize
         self.jlc.finalize()
         # acting center
@@ -55,20 +63,17 @@ class Lite6WRSGripper2(gpi.GripperInterface):
     @staticmethod
     def _finger_cdprim(ex_radius):
         pdcnd = CollisionNode("finger")
-        collision_primitive_c0 = CollisionBox(Point3(-.0035, 0.004, .025 + .003),
-                                              x=.0035 + ex_radius, y=0.0032 + ex_radius, z=.025 + .003 + ex_radius)
+        collision_primitive_c0 = CollisionBox(Point3(.015,.012,.08),
+                                              x=.0035 + ex_radius, y=0.0032 + ex_radius, z=.05 + ex_radius)
         pdcnd.addSolid(collision_primitive_c0)
-        collision_primitive_c1 = CollisionBox(Point3(.008, 0.028 - .002, -.011),
-                                              x=.018 + ex_radius, y=0.008 + ex_radius, z=.011 + ex_radius)
+        collision_primitive_c1 = CollisionBox(Point3(.008, .0, .008),
+                                              x=.018 + ex_radius, y=0.011 + ex_radius, z=.011 + ex_radius)
         pdcnd.addSolid(collision_primitive_c1)
-        collision_primitive_c2 = CollisionBox(Point3(-.005, 0.012 - .002, -.002 + .0025),
-                                              x=.005 + ex_radius, y=0.008 + ex_radius, z=.002 + .0025 + ex_radius)
-        pdcnd.addSolid(collision_primitive_c2)
         cdprim = NodePath("user_defined")
         cdprim.attachNewNode(pdcnd)
         return cdprim
 
-    @staticmethod
+    # @staticmethod
     # def _hnd_base_cdnp(name, radius):
     #     collision_node = CollisionNode(name)
     #     collision_primitive_c0 = CollisionBox(Point3(0, 0, .031),
@@ -103,13 +108,13 @@ class Lite6WRSGripper2(gpi.GripperInterface):
         self.update_oiee()
 
     def get_jaw_width(self):
-        return -self.jlc.jnts[1].motion_value
+        return self.jlc.jnts[1].motion_value
 
     @gpi.ei.EEInterface.assert_oiee_decorator
     def change_jaw_width(self, jaw_width):
         side_jawwidth = jaw_width / 2.0
         if 0 <= side_jawwidth <= self.jaw_range[1] / 2:
-            self.jlc.go_given_conf(jnt_values=[side_jawwidth, -jaw_width])
+            self.jlc.go_given_conf(jnt_values=[side_jawwidth, jaw_width])
         else:
             raise ValueError("The angle parameter is out of range!")
 
@@ -150,9 +155,9 @@ if __name__ == '__main__':
 
     base = wd.World(cam_pos=[.5, .5, .5], lookat_pos=[0, 0, 0], auto_cam_rotate=False)
     mgm.gen_frame().attach_to(base)
-    gripper = Lite6WRSGripper2()
-    gripper.change_jaw_width(.0)
-    gripper.gen_meshmodel(toggle_tcp_frame=True).attach_to(base)
+    gripper = WRSGripper2()
+    gripper.change_jaw_width(.04)
+    gripper.gen_meshmodel(toggle_tcp_frame=True, toggle_cdprim=True).attach_to(base)
     # gripper.show_cdprimit()
     base.run()
 

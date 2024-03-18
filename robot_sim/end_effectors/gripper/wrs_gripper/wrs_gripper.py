@@ -16,7 +16,7 @@ import robot_sim.end_effectors.gripper.gripper_interface as gp
 
 class Lite6WRSGripper(gp.GripperInterface):
 
-    def __init__(self, pos=np.zeros(3), rotmat=np.eye(3), cdmesh_type='convex_hull', name='lite6_wrs_gripper',
+    def __init__(self, pos=np.zeros(3), rotmat=np.eye(3), cdmesh_type='convex_hull', name='wrs_gripper',
                  enable_cc=True):
         super().__init__(pos=pos, rotmat=rotmat, cdmesh_type=cdmesh_type, name=name)
         this_dir, this_filename = os.path.split(__file__)
