@@ -41,7 +41,7 @@ class Nova2WRS(ri.SglArmRobotInterface):
         self.body.lnks[0]['rgba'] = [.55, .55, .55, 1.0]
         self.body.lnks[0]['collision_model'] = cm.CollisionModel(
             os.path.join(this_dir, "meshes", "table.stl"),
-            cdprim_type="user_defined", expand_radius=.005,
+            cdprim_type="user_defined", ex_radius=.005,
             userdef_cdprim_fn=self._table_cdnp)
         self.body.finalize()
 

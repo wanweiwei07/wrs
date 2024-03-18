@@ -14,16 +14,16 @@ class Locator(object):
             self.sensorhomomat = pickle.load(open("../datacalibration/calibmat.pkl", "rb"))
             self.tstpcdnp = pickle.load(open("../dataobjtemplate/tubestandtemplatepcd.pkl", "rb"))# tstpcd, tube stand template
             self.tubestandcm = cm.CollisionModel("../objects/tubestand.stl")
-            self.tubebigcm = cm.CollisionModel("../objects/tubebig_capped.stl", type="cylinder", expand_radius=0)
-            self.tubesmallcm = cm.CollisionModel("../objects/tubesmall_capped.stl", type="cylinder", expand_radius=0)
+            self.tubebigcm = cm.CollisionModel("../objects/tubebig_capped.stl", type="cylinder", ex_radius=0)
+            self.tubesmallcm = cm.CollisionModel("../objects/tubesmall_capped.stl", type="cylinder", ex_radius=0)
         else:
             self.bgdepth = pickle.load(open(directory+"/databackground/bgdepth.pkl", "rb"))
             self.bgpcd = pickle.load(open(directory+"/databackground/bgpcd.pkl", "rb"))
             self.sensorhomomat = pickle.load(open(directory+"/datacalibration/calibmat.pkl", "rb"))
             self.tstpcdnp = pickle.load(open(directory+"/dataobjtemplate/tubestandtemplatepcd.pkl", "rb"))# tstpcd, tube stand template
             self.tubestandcm = cm.CollisionModel(directory+"/objects/tubestand.stl")
-            self.tubebigcm = cm.CollisionModel(directory +"/objects/tubebig_capped.stl", type="cylinder", expand_radius=0)
-            self.tubesmallcm = cm.CollisionModel(directory +"/objects/tubesmall_capped.stl", type="cylinder", expand_radius=0)
+            self.tubebigcm = cm.CollisionModel(directory +"/objects/tubebig_capped.stl", type="cylinder", ex_radius=0)
+            self.tubesmallcm = cm.CollisionModel(directory +"/objects/tubesmall_capped.stl", type="cylinder", ex_radius=0)
 
         self.tstpcdo3d = o3dh.nparray_to_o3dpcd(self.tstpcdnp)
         # down x, right y

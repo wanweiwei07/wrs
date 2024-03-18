@@ -196,7 +196,10 @@ class RRTStar(rrt.RRT):
                                                   n_iter=smoothing_n_iter,
                                                   animation=animation)
                 mot_data = rrt.motu.MotionData(self.robot)
-                mot_data.extend(jv_list=smoothed_path)
+                if getattr(base, "toggle_mesh", True):
+                    mot_data.extend(jv_list=smoothed_path)
+                else:
+                    mot_data.extend(jv_list=smoothed_path, mesh_list=[])
                 return mot_data
         else:
             print("Failed to find a path with the given max_n_ter!")

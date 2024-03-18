@@ -35,7 +35,7 @@ class Env_wrs(object):
 
         # table
         self.__tablepath = os.path.join(self.__this_dir, "../obstacles", "ur3edtable.stl")
-        self.__tablecm = cm.CollisionModel(self.__tablepath, expand_radius=boundingradius, betransparency=betransparent)
+        self.__tablecm = cm.CollisionModel(self.__tablepath, ex_radius=boundingradius, betransparency=betransparent)
         self.__tablecm.setPos(180, 0, 0)
         self.__tablecm.setColor(.32, .32, .3, 1.0)
 

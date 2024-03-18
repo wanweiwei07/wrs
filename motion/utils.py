@@ -19,6 +19,12 @@ class MotionData(object):
         return self._mesh_list
 
     def extend(self, jv_list, ev_list=None, mesh_list=None):
+        """
+        :param jv_list:
+        :param ev_list:
+        :param mesh_list: auto gen if None, fill with None if [], assign other wise
+        :return:
+        """
         self._jv_list += jv_list
         if ev_list is not None:
             self._ev_list += ev_list
@@ -38,6 +44,8 @@ class MotionData(object):
                 tmp_mesh_list.append(self.robot.gen_meshmodel())
             self.robot.restore_state()
             self._mesh_list += tmp_mesh_list
+        elif len(mesh_list) == 0:
+            self._mesh_list += [None] * len(jv_list)
         else:
             self._mesh_list += mesh_list
 

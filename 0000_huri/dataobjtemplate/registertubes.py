@@ -14,16 +14,16 @@ class LocatorFixed(object):
             self.bgpcd = pickle.load(open("./databackground/bgpcd.pkl", "rb"))
             self.sensorhomomat = pickle.load(open("./datacalibration/calibmat.pkl", "rb"))
             self.tubestandcm = cm.CollisionModel("./objects/tubestand_light.stl")
-            self.tubebigcm = cm.CollisionModel("./objects/tubebig_capped.stl", type="cylinder", expand_radius=0)
-            self.tubesmallcm = cm.CollisionModel("./objects/tubesmall_capped.stl", type="cylinder", expand_radius=0)
+            self.tubebigcm = cm.CollisionModel("./objects/tubebig_capped.stl", type="cylinder", ex_radius=0)
+            self.tubesmallcm = cm.CollisionModel("./objects/tubesmall_capped.stl", type="cylinder", ex_radius=0)
             self.tubestandhomomat = pickle.load(open("./datafixture/rightfixturerotmat4.pkl", "rb"))
         else:
             self.bgdepth = pickle.load(open(directory+"/databackground/bgdepth.pkl", "rb"))
             self.bgpcd = pickle.load(open(directory+"/databackground/bgpcd.pkl", "rb"))
             self.sensorhomomat = pickle.load(open(directory + "/datacalibration/calibmat.pkl", "rb"))
             self.tubestandcm = cm.CollisionModel(directory + "/objects/tubestand_light.stl")
-            self.tubebigcm = cm.CollisionModel(directory + "/objects/tubebig_capped.stl", type="cylinder", expand_radius=0)
-            self.tubesmallcm = cm.CollisionModel(directory + "/objects/tubesmall_capped.stl", type="cylinder", expand_radius=0)
+            self.tubebigcm = cm.CollisionModel(directory + "/objects/tubebig_capped.stl", type="cylinder", ex_radius=0)
+            self.tubesmallcm = cm.CollisionModel(directory + "/objects/tubesmall_capped.stl", type="cylinder", ex_radius=0)
             self.tubestandhomomat = pickle.load(open(directory+"/datafixture/rightfixturerotmat4.pkl", "rb"))
 
         # down x, right y

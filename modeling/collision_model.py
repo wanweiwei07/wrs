@@ -35,7 +35,7 @@ class CollisionModel(mgm.GeometricModel):
                  name="collision_model",
                  cdprim_type=mc.CDPType.AABB,
                  cdmesh_type=mc.CDMType.DEFAULT,
-                 expand_radius=None,
+                 ex_radius=None,
                  userdef_cdprim_fn=None,
                  toggle_transparency=True,
                  toggle_twosided=False,
@@ -46,7 +46,7 @@ class CollisionModel(mgm.GeometricModel):
         :param toggle_transparency:
         :param cdprim_type: cdprim type, model_constant.CDPType
         :param cdmesh_type: cdmesh_type, model_constant.CDMType
-        :param expand_radius:
+        :param ex_radius:
         :param name:
         :param userdef_cdprim_fn: the collision primitive will be defined in the provided function
                                            if cdp_type = external;
@@ -73,7 +73,7 @@ class CollisionModel(mgm.GeometricModel):
             self.pdndp_core.setShaderAuto()
             # collision model
             self.uuid = uuid.uuid4()
-            self._ex_radius=initor._ex_radius
+            self._ex_radius = initor._ex_radius
             # cd primitive
             self._cdprim_type = initor.cdprim_type
             self._cdprim = copy.deepcopy(initor.cdprim)
@@ -95,10 +95,10 @@ class CollisionModel(mgm.GeometricModel):
                              rgb=rgb,
                              alpha=alpha)
             self.uuid = uuid.uuid4()
-            self._ex_radius = expand_radius
+            self._ex_radius = ex_radius
             # cd primitive
             self._cdprim_type = cdprim_type
-            self._cdprim = self._acquire_cdprim(cdprim_type, expand_radius, userdef_cdprim_fn)
+            self._cdprim = self._acquire_cdprim(cdprim_type, ex_radius, userdef_cdprim_fn)
             # cd mesh
             self._cdmesh_type = cdmesh_type
             self._cdmesh = self._acquire_cdmesh(cdmesh_type)

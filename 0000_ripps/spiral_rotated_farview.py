@@ -28,7 +28,7 @@ if __name__ == '__main__':
     table_plate.attach_to(base)
 
     file_dispose_box = os.path.join(this_dir, "objects", "tip_rack_cover.stl")
-    dispose_box = cm.CollisionModel(file_dispose_box, expand_radius=.007)
+    dispose_box = cm.CollisionModel(file_dispose_box, ex_radius=.007)
     dispose_box.set_rgba([140 / 255, 110 / 255, 170 / 255, 1])
     dispose_box.set_pos(pos=np.array([.14, 0.07, .003]))
     # dispose_box.attach_to(base)

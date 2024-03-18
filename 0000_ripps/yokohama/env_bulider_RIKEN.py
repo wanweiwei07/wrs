@@ -28,7 +28,7 @@ class Env(object):
         self.outside.set_pos(tcpmat4[:3, 3])
         self.outside.set_rotmat(tcpmat4[:3, :3])
         self.rbt_s.hold(self.armname, self.outside)
-        self.pipette = cm.CollisionModel("./meshes/model_tip.stl", cdprim_type="box", expand_radius=0.01)
+        self.pipette = cm.CollisionModel("./meshes/model_tip.stl", cdprim_type="box", ex_radius=0.01)
         pipettemat4 = rm.homomat_from_posrot(self.pipette_pos, np.eye(3))
         eepos, eerot = self.rbt_s.get_gl_tcp(manipulator_name=self.armname)
         tcpmat4 = np.dot(rm.homomat_from_posrot(eepos, eerot), np.linalg.inv(pipettemat4))
@@ -72,12 +72,12 @@ class Env(object):
         # self.tip_cm.set_rotmat(rm.rotmat_from_axangle(np.array([0, 0, 1]), math.pi / 2))
         # self.tip_cm.attach_to(base)
 
-        dispose_box = cm.CollisionModel("./meshes/tip_rack_cover.stl", expand_radius=.007)
+        dispose_box = cm.CollisionModel("./meshes/tip_rack_cover.stl", ex_radius=.007)
         dispose_box.set_rgba([140 / 255, 110 / 255, 170 / 255, 1])
         dispose_box.set_pos(pos=np.array([.12, 0.12, .003]))
         dispose_box.attach_to(base)
 
-        self.dispose_box_cm = cm.CollisionModel("./meshes/tip_rack_cover.stl", expand_radius=.007)
+        self.dispose_box_cm = cm.CollisionModel("./meshes/tip_rack_cover.stl", ex_radius=.007)
         self.dispose_box_cm.set_pos(pos=np.array([.16, 0.12, .015]))
 
         # box_chemical = mcm.CollisionModel("./meshes/96_well.stl", ex_radius=0.)  # 128*85

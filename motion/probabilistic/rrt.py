@@ -22,6 +22,8 @@ class RRT(object):
         self.roadmap = nx.Graph()
         self.start_conf = None
         self.goal_conf = None
+        # define data type
+        self.toggle_keep = True
 
     @staticmethod
     def keep_states_decorator(method):
@@ -34,10 +36,14 @@ class RRT(object):
         """
 
         def wrapper(self, *args, **kwargs):
-            self.robot.backup_state()
-            result = method(self, *args, **kwargs)
-            self.robot.restore_state()
-            return result
+            if self.toggle_keep:
+                self.robot.backup_state()
+                result = method(self, *args, **kwargs)
+                self.robot.restore_state()
+                return result
+            else:
+                result = method(self, *args, **kwargs)
+                return result
 
         return wrapper
 
@@ -279,7 +285,10 @@ class RRT(object):
                                                   n_iter=smoothing_n_iter,
                                                   animation=animation)
                 mot_data = motu.MotionData(self.robot)
-                mot_data.extend(jv_list=smoothed_path)
+                if getattr(base, "toggle_mesh", True):
+                    mot_data.extend(jv_list=smoothed_path)
+                else:
+                    mot_data.extend(jv_list=smoothed_path, mesh_list=[])
                 return mot_data
         else:
             print("Failed to find a path with the given max_n_ter!")

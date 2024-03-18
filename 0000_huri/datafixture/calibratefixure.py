@@ -17,8 +17,8 @@ class CalibrateFixture(object):
             self.tstpcdnp = pickle.load(
                 open("./dataobjtemplate/tubestandtemplatepcd.pkl", "rb"))  # tstpcd, tube stand template
             self.tubestandcm = cm.CollisionModel("./objects/tubestand.stl")
-            self.tubebigcm = cm.CollisionModel("./objects/tubebig_capped.stl", type="cylinder", expand_radius=0)
-            self.tubesmallcm = cm.CollisionModel("./objects/tubesmall_capped.stl", type="cylinder", expand_radius=0)
+            self.tubebigcm = cm.CollisionModel("./objects/tubebig_capped.stl", type="cylinder", ex_radius=0)
+            self.tubesmallcm = cm.CollisionModel("./objects/tubesmall_capped.stl", type="cylinder", ex_radius=0)
         else:
             self.bgdepth = pickle.load(open(directory + "/databackground/bgdepth.pkl", "rb"))
             self.bgpcd = pickle.load(open(directory + "/databackground/bgpcd.pkl", "rb"))
@@ -26,8 +26,8 @@ class CalibrateFixture(object):
             self.tstpcdnp = pickle.load(
                 open(directory + "/dataobjtemplate/tubestandtemplatepcd.pkl", "rb"))  # tstpcd, tube stand template
             self.tubestandcm = cm.CollisionModel(directory + "/objects/tubestand.stl")
-            self.tubebigcm = cm.CollisionModel(directory + "/objects/tubebig_capped.stl", type="cylinder", expand_radius=0)
-            self.tubesmallcm = cm.CollisionModel(directory + "/objects/tubesmall_capped.stl", type="cylinder", expand_radius=0)
+            self.tubebigcm = cm.CollisionModel(directory + "/objects/tubebig_capped.stl", type="cylinder", ex_radius=0)
+            self.tubesmallcm = cm.CollisionModel(directory + "/objects/tubesmall_capped.stl", type="cylinder", ex_radius=0)
 
     def findtubestand_matchonobb(self, tgtpcdnp, toggledebug=False):
         """

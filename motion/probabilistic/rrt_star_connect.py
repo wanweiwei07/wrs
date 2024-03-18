@@ -177,7 +177,10 @@ class RRTStarConnect(rrtst.RRTStar):
                                           n_iter=smoothing_n_iter,
                                           animation=animation)
         mot_data = rrtst.rrt.motu.MotionData(self.robot)
-        mot_data.extend(jv_list=smoothed_path)
+        if getattr(base, "toggle_mesh", True):
+            mot_data.extend(jv_list=smoothed_path)
+        else:
+            mot_data.extend(jv_list=smoothed_path, mesh_list=[])
         return mot_data
 
 

@@ -38,11 +38,10 @@ class YumiGripper(gpi.GripperInterface):
             cdmesh_type=self.cdmesh_type)
         self.jlc.jnts[0].lnk.cmodel.rgba = np.array([.5, .5, .5, 1])
         # the 2nd joint (right finger)
-        self.jlc.jnts[1].change_type(rkjlc.rkc.JntType.PRISMATIC, np.array([0, -self.jaw_range[1]]))
+        self.jlc.jnts[1].change_type(rkjlc.rkc.JntType.PRISMATIC, np.array([0, self.jaw_range[1]]))
         self.jlc.jnts[1].loc_pos = np.array([0.013, 0, 0])
         self.jlc.jnts[1].loc_rotmat = rm.rotmat_from_euler(0, 0, np.pi)
         self.jlc.jnts[1].loc_motion_ax = rm.bc.y_ax
-        self.jlc.jnts[1].motion_range = np.array([self.jaw_range[1], 0.0])
         self.jlc.jnts[1].lnk.cmodel = mcm.CollisionModel(
             os.path.join(current_file_dir, "meshes", "finger_sheet_metal.stl"),
             cdmesh_type=self.cdmesh_type)

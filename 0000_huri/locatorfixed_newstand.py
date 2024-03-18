@@ -15,8 +15,8 @@ class LocatorFixed(object):
             self.bgpcd = pickle.load(open("./databackground/bgpcd.pkl", "rb"))
             self.sensorhomomat = pickle.load(open("./datacalibration/calibmat.pkl", "rb"))
             self.tubestandcm = cm.CollisionModel("./objects/tubestand_light.stl")
-            self.tubebigcm = cm.CollisionModel("./objects/tubebig_capped.stl", type="cylinder", expand_radius=2)
-            self.tubesmallcm = cm.CollisionModel("./objects/tubesmall_capped.stl", type="cylinder", expand_radius=2)
+            self.tubebigcm = cm.CollisionModel("./objects/tubebig_capped.stl", type="cylinder", ex_radius=2)
+            self.tubesmallcm = cm.CollisionModel("./objects/tubesmall_capped.stl", type="cylinder", ex_radius=2)
             self.tubestandhomomat_start = pickle.load(open("./datafixture/"+homomatfilename_start+".pkl", "rb"))
             self.tubestandhomomat_goal = pickle.load(open("./datafixture/"+homomatfilename_goal+".pkl", "rb"))
         else:
@@ -24,8 +24,8 @@ class LocatorFixed(object):
             self.bgpcd = pickle.load(open(directory+"/databackground/bgpcd.pkl", "rb"))
             self.sensorhomomat = pickle.load(open(directory + "/datacalibration/calibmat.pkl", "rb"))
             self.tubestandcm = cm.CollisionModel(directory + "/objects/tubestand_light.stl")
-            self.tubebigcm = cm.CollisionModel(directory + "/objects/tubebig_capped.stl", type="cylinder", expand_radius=2)
-            self.tubesmallcm = cm.CollisionModel(directory + "/objects/tubesmall_capped.stl", type="cylinder", expand_radius=2)
+            self.tubebigcm = cm.CollisionModel(directory + "/objects/tubebig_capped.stl", type="cylinder", ex_radius=2)
+            self.tubesmallcm = cm.CollisionModel(directory + "/objects/tubesmall_capped.stl", type="cylinder", ex_radius=2)
             self.tubestandhomomat_start = pickle.load(open("./datafixture/"+homomatfilename_start+".pkl", "rb"))
             self.tubestandhomomat_goal = pickle.load(open("./datafixture/"+homomatfilename_goal+".pkl", "rb"))
 

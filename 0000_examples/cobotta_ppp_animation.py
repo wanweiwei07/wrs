@@ -17,94 +17,69 @@ ground.pos = np.array([0, 0, -.51])
 ground.attach_to(base)
 # object holder
 holder_1 = mcm.CollisionModel("objects/holder.stl")
-holder_1.rgba= np.array([.5,.5,.5,1])
+holder_1.rgba = np.array([.5, .5, .5, 1])
 h1_gl_pos = np.array([-.15, -.3, .0])
-h1_gl_rotmat = np.eye(3)
+h1_gl_rotmat = rm.rotmat_from_euler(0, 0, math.pi / 2)
 holder_1.pos = h1_gl_pos
 holder_1.rotmat = h1_gl_rotmat
+
 mgm.gen_frame().attach_to(holder_1)
 h1_copy = holder_1.copy()
 h1_copy.attach_to(base)
+
 # object holder goal
 holder_2 = mcm.CollisionModel("objects/holder.stl")
-h2_gl_pos = np.array([.25, -.05, .05])
-h2_gl_rotmat = rm.rotmat_from_euler(0, 0, -math.pi / 2)
+h2_gl_pos = np.array([.3, -.15, .05])
+h2_gl_rotmat = rm.rotmat_from_euler(0, 0, 2*math.pi / 3)
 holder_2.pos = h2_gl_pos
 holder_2.rotmat = h2_gl_rotmat
+
 h2_copy = holder_2.copy()
+h2_copy.rgb = rm.bc.tab20_list[0]
+h2_copy.alpha = .3
+h2_copy.attach_to(base)
 
 robot = cbt.Cobotta()
-robot.gen_meshmodel(rgb=rm.bc.jet_map(0.0)).attach_to(base)
-robot.end_effector.hold(holder_1)
-robot.goto_given_conf(jnt_values=np.array([np.pi/3,np.pi/2,np.pi/2,np.pi,np.pi,np.pi]))
-robot.gen_meshmodel(rgb=rm.bc.jet_map(.2)).attach_to(base)
-robot.goto_given_conf(jnt_values=np.array([0,np.pi/2,np.pi/2,np.pi,np.pi,np.pi]))
-robot.end_effector.release(holder_1)
-robot.gen_meshmodel(rgb=rm.bc.jet_map(.4)).attach_to(base)
-base.run()
+robot.gen_meshmodel().attach_to(base)
 
 rrtc = rrtc.RRTConnect(robot)
 ppp = ppp.PickPlacePlanner(robot)
 
 original_grasp_info_list = gpa.load_pickle_file(obj_name='holder', path='./', file_name='cobg_holder_grasps.pickle')
 start_conf = robot.get_jnt_values()
+print(original_grasp_info_list)
+
+mot_data = ppp.gen_pick_and_place(obj_cmodel=holder_1,
+                                  grasp_info_list=original_grasp_info_list,
+                                  end_jnt_values=start_conf,
+                                  goal_pose_list=[(h2_gl_pos, h2_gl_rotmat)])
 
 
-conf_list, jawwidth_list, objpose_list = \
-    ppp.gen_pick_and_place_motion(hnd_name=hand_name,
-                                    objcm=object_holder,
-                                    grasp_info_list=original_grasp_info_list,
-                                    start_conf=start_conf,
-                                    end_conf=start_conf,
-                                    goal_homomat_list=[obgl_start_homomat, obgl_goal_homomat],
-                                    approach_direction_list=[None, np.array([0, 0, -1])],
-                                    approach_distance_list=[.2] * 2,
-                                    depart_direction_list=[np.array([0, 0, 1]), None],
-                                    depart_distance_list=[.2] * 2)
-robot_attached_list = []
-object_attached_list = []
-counter = [0]
-def update(robot_s,
-           object_box,
-           robot_path,
-           jawwidth_path,
-           obj_path,
-           robot_attached_list,
-           object_attached_list,
-           counter,
-           task):
-    if counter[0] >= len(robot_path):
-        counter[0] = 0
-    if len(robot_attached_list) != 0:
-        for robot_attached in robot_attached_list:
-            robot_attached.detach()
-        for object_attached in object_attached_list:
-            object_attached.detach()
-        robot_attached_list.clear()
-        object_attached_list.clear()
-    pose = robot_path[counter[0]]
-    robot_s.fk(manipulator_name, pose)
-    robot_s.change_jaw_width(hand_name, jawwidth_path[counter[0]])
-    robot_meshmodel = robot_s.gen_mesh_model()
-    robot_meshmodel.attach_to(base)
-    robot_attached_list.append(robot_meshmodel)
-    obj_pose = obj_path[counter[0]]
-    objb_copy = object_box.copy()
-    objb_copy.set_rgba([1,0,0,1])
-    objb_copy.set_homomat(obj_pose)
-    objb_copy.attach_to(base)
-    object_attached_list.append(objb_copy)
-    counter[0] += 1
+class Data(object):
+    def __init__(self, mot_data):
+        self.counter = 0
+        self.mot_data = mot_data
+
+
+anime_data = Data(mot_data)
+
+
+def update(anime_data, task):
+    if anime_data.counter > 0:
+        anime_data.mot_data.mesh_list[anime_data.counter - 1].detach()
+    if anime_data.counter >= len(anime_data.mot_data):
+        # for mesh_model in anime_data.mot_data.mesh_list:
+        #     mesh_model.detach()
+        anime_data.counter = 0
+    mesh_model = anime_data.mot_data.mesh_list[anime_data.counter]
+    mesh_model.attach_to(base)
+    if base.inputmgr.keymap['space']:
+        anime_data.counter += 1
     return task.again
 
+
 taskMgr.doMethodLater(0.01, update, "update",
-                      extraArgs=[robot_s,
-                                 object_holder,
-                                 conf_list,
-                                 jawwidth_list,
-                                 objpose_list,
-                                 robot_attached_list,
-                                 object_attached_list,
-                                 counter],
+                      extraArgs=[anime_data],
                       appendTask=True)
+
 base.run()

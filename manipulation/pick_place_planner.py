@@ -1,3 +1,4 @@
+import basis.robot_math as rm
 import motion.primitives.approach_depart_planner as adp
 
 
@@ -11,24 +12,6 @@ class PickPlacePlanner(adp.ADPlanner):
         date: 20191122, 20210113, 20240316
         """
         super().__init__(robot)
-
-    @staticmethod
-    def keep_obj_decorator(method):
-        """
-        decorator function for save and restore objects
-        applicable to both single or multi-arm sgl_arm_robots
-        :return:
-        author: weiwei
-        date: 20220404
-        """
-
-        def wrapper(self, obj_cmodel, **kwargs):
-            obj_pose_bk = obj_cmodel.pose
-            result = method(self, obj_cmodel, **kwargs)
-            obj_cmodel.pose = obj_pose_bk
-            return result
-
-        return wrapper
 
     @adp.mpi.InterplatedMotion.keep_states_decorator
     def reason_common_gids(self,
@@ -69,7 +52,7 @@ class PickPlacePlanner(adp.ADPlanner):
                         if not self.robot.end_effector.is_mesh_collided(cmodel_list=obstacle_list):
                             previous_available_gids.append(gid)
                             if toggle_dbg:
-                                self.robot.end_effector.gen_meshmodel(rgb=rm.bc.green, alpha=.3).attach_to(base)
+                                self.robot.end_effector.gen_meshmodel(rgb=rm.bc.green, alpha=1).attach_to(base)
                         else:  # ee collided
                             eef_collided_grasps_num += 1
                             if toggle_dbg:
@@ -77,11 +60,14 @@ class PickPlacePlanner(adp.ADPlanner):
                     else:  # robot collided
                         rbt_collided_grasps_num += 1
                         if toggle_dbg:
-                            self.robot.end_effector.gen_meshmodel(rgb=rm.bc.magenta, alpha=.3).attach_to(base)
+                            self.robot.end_effector.gen_meshmodel(rgb=rm.bc.orange, alpha=.3).attach_to(base)
                 else:  # ik failure
                     ik_failed_grasps_num += 1
                     if toggle_dbg:
-                        self.robot.end_effector.gen_meshmodel(rgb=rm.bc.orange, alpha=.3).attach_to(base)
+                        self.robot.end_effector.grip_at_by_pose(jaw_center_pos=goal_jaw_center_pos,
+                                                                jaw_center_rotmat=goal_jaw_center_rotmat,
+                                                                jaw_width=jaw_width)
+                        self.robot.end_effector.gen_meshmodel(rgb=rm.bc.magenta, alpha=.3).attach_to(base)
             intermediate_available_gids.append(previous_available_gids.copy())
             if toggle_dbg:
                 print('-----start-----')
@@ -93,7 +79,6 @@ class PickPlacePlanner(adp.ADPlanner):
                 base.run()
         return previous_available_gids
 
-    @keep_obj_decorator
     @adp.mpi.InterplatedMotion.keep_states_decorator
     def gen_pick_and_moveto(self,
                             obj_cmodel,
@@ -149,9 +134,10 @@ class PickPlacePlanner(adp.ADPlanner):
             print("PPPlanner: Error encountered when generating pick approach motion!")
             return None
         else:
+            obj_cmodel_copy = obj_cmodel.copy()
             self.robot.goto_given_conf(pick_motion.jv_list[-1])
             # self.robot.gen_meshmodel().attach_to(base)
-            self.robot.hold(obj_cmodel=obj_cmodel, jaw_width=jaw_width)
+            self.robot.hold(obj_cmodel=obj_cmodel_copy, jaw_width=jaw_width)
             # self.robot.gen_meshmodel().attach_to(base)
             # print("before back up")
             pick_motion.extend([pick_motion.jv_list[-1]], [jaw_width], [self.robot.gen_meshmodel()])
@@ -184,7 +170,6 @@ class PickPlacePlanner(adp.ADPlanner):
                                                          depart_ee_values=None,  # do not change jaw width
                                                          granularity=linear_granularity,
                                                          obstacle_list=obstacle_list,
-                                                         object_list=[],
                                                          use_rrt=use_rrt)
                     if moveto_ap is None:
                         print(f"Error encountered when generating motion to the {i}th goal!")
@@ -194,17 +179,16 @@ class PickPlacePlanner(adp.ADPlanner):
                         moveto_start_jnt_values = moveto_motion.jv_list[-1]
                 return pick_motion + pick_depart + moveto_motion
 
-    @keep_obj_decorator
     @adp.mpi.InterplatedMotion.keep_states_decorator
     def gen_pick_and_place(self,
                            obj_cmodel,
                            end_jnt_values,
                            grasp_info_list,
                            goal_pose_list,
-                           approach_direction_list,
-                           approach_distance_list,
-                           depart_direction_list,
-                           depart_distance_list,
+                           approach_direction_list=None,
+                           approach_distance_list=None,
+                           depart_direction_list=None,
+                           depart_distance_list=None,
                            depart_jaw_width=None,
                            pick_jaw_width=None,
                            pick_approach_direction=None,
@@ -238,6 +222,14 @@ class PickPlacePlanner(adp.ADPlanner):
             pick_jaw_width = self.robot.end_effector.jaw_range[1]
         if depart_jaw_width is None:
             depart_jaw_width = self.robot.end_effector.jaw_range[1]
+        if approach_direction_list is None:
+            approach_direction_list = [rm.np.array([0, 0, -1])] * len(goal_pose_list)
+        if approach_distance_list is None:
+            approach_distance_list = [.07] * len(goal_pose_list)
+        if depart_direction_list is None:
+            depart_direction_list = [rm.np.array([0, 0, 1])] * len(goal_pose_list)
+        if depart_distance_list is None:
+            depart_distance_list = [.07] * len(goal_pose_list)
         if reason_grasps:
             common_gid_list = self.reason_common_gids(grasp_info_list=grasp_info_list,
                                                       goal_pose_list=goal_pose_list,
@@ -245,12 +237,12 @@ class PickPlacePlanner(adp.ADPlanner):
                                                       toggle_dbg=False)
         else:
             common_gid_list = range(len(grasp_info_list))
-        print(common_gid_list)
         if len(common_gid_list) == 0:
-            print("No common grasp id at the given goal homomats!")
+            print("No common grasp id at the given goal poses!")
             return None
         for gid in common_gid_list:
-            pm_mot = self.gen_pick_and_moveto(obj_cmodel=obj_cmodel,
+            obj_cmodel_copy = obj_cmodel.copy()
+            pm_mot = self.gen_pick_and_moveto(obj_cmodel=obj_cmodel_copy,
                                               grasp_info=grasp_info_list[gid],
                                               goal_pose_list=goal_pose_list,
                                               approach_direction_list=approach_direction_list,
@@ -271,12 +263,7 @@ class PickPlacePlanner(adp.ADPlanner):
             # place
             last_goal_pos = goal_pose_list[-1][0]
             last_goal_rotmat = goal_pose_list[-1][1]
-            # obj_cmodel as an obstacle
-            pose_bk = obj_cmodel.pose
-            obj_cmodel.pose = (last_goal_pos, last_goal_rotmat)
-            # obj_cmodel.attach_to(base)
-            # self.robot.gen_meshmodel().attach_to(base)
-            # print("======================")
+            obj_cmodel_copy.pose = (last_goal_pos, last_goal_rotmat)
             dep_mot = self.gen_depart_from_given_conf(start_jnt_values=pm_mot.jv_list[-1],
                                                       end_jnt_values=end_jnt_values,
                                                       linear_direction=depart_direction_list[-1],
@@ -284,9 +271,8 @@ class PickPlacePlanner(adp.ADPlanner):
                                                       ee_values=depart_jaw_width,
                                                       granularity=linear_granularity,
                                                       obstacle_list=obstacle_list,
-                                                      object_list=[obj_cmodel],
+                                                      object_list=[obj_cmodel_copy],
                                                       use_rrt=use_rrt)
-            obj_cmodel.pose = pose_bk
             if dep_mot is None:
                 print("Cannot generate the release motion!")
                 continue
@@ -302,6 +288,7 @@ if __name__ == '__main__':
     import modeling.collision_model as cm
     import grasping.annotation.utils as gutil
     import numpy as np
+    import time
     import basis.robot_math as rm
 
     base = wd.World(cam_pos=[2, 0, 1.5], lookat_pos=[0, 0, .2])
@@ -310,7 +297,7 @@ if __name__ == '__main__':
     obj_cmodel.pos = np.array([.45, -.2, .2])
     obj_cmodel.rotmat = np.eye(3)
     obj_cmodel_copy = obj_cmodel.copy()
-    obj_cmodel_copy.rgb=rm.bc.orange
+    obj_cmodel_copy.rgb = rm.bc.orange
     obj_cmodel_copy.attach_to(base)
     robot = ym.Yumi(enable_cc=True)
     robot.use_rgt()
@@ -354,7 +341,8 @@ if __name__ == '__main__':
     #                                               use_rrt=True)
     #     if mot_data is not None:
     #         break
-
+    # base.toggle_mesh=False
+    tic = time.time()
     mot_data = pp_planner.gen_pick_and_place(obj_cmodel=obj_cmodel,
                                              end_jnt_values=robot.get_jnt_values(),
                                              grasp_info_list=grasp_info_list,
@@ -370,7 +358,8 @@ if __name__ == '__main__':
                                              linear_granularity=.02,
                                              obstacle_list=[],
                                              use_rrt=True)
-
+    toc = time.time()
+    print(toc - tic)
     print(mot_data)
 
 

@@ -26,7 +26,7 @@ class Yumi(ri.RobotInterface):
         self.body.lnk_list[0].name = "yumi_body_main"
         self.body.lnk_list[0].cmodel = mcm.CollisionModel(initor=os.path.join(current_file_dir, "meshes", "body.stl"),
                                                           cdprim_type=mcm.mc.CDPType.USER_DEFINED,
-                                                          userdef_cdprim_fn=self._base_combined_cdnp)
+                                                          userdef_cdprim_fn=self._base_cdprim)
         self.body.lnk_list[0].cmodel.rgba = rm.bc.hug_gray
         # table
         self.body.lnk_list[1].name = "yumi_body_table_top"
@@ -92,8 +92,9 @@ class Yumi(ri.RobotInterface):
         # go home
         self.goto_home_conf()
 
-    def _base_combined_cdnp(self, name="auto", ex_radius=None):
-        pdcnd = CollisionNode(name)
+    @staticmethod
+    def _base_cdprim(ex_radius=None):
+        pdcnd = CollisionNode("yumi_body")
         collision_primitive_c0 = CollisionBox(Point3(-.2, 0, 0.04),
                                               x=.16 + ex_radius, y=.2 + ex_radius, z=.04 + ex_radius)
         pdcnd.addSolid(collision_primitive_c0)

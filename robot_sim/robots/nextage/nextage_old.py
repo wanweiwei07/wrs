@@ -51,14 +51,14 @@ class Nextage(ri.RobotInterface):
         self.central_body.lnks[0]['loc_pos'] = np.array([0, 0, 0.97])
         self.central_body.lnks[0]['collision_model'] = cm.CollisionModel(
             os.path.join(this_dir, "meshes", "waist_link_mesh.dae"),
-            cdprim_type="user_defined", expand_radius=.005,
+            cdprim_type="user_defined", ex_radius=.005,
             userdef_cdprim_fn=self._waist_combined_cdnp)
         self.central_body.lnks[0]['rgba'] = [.77, .77, .77, 1.0]
         self.central_body.lnks[1]['name'] = "nextage_chest"
         self.central_body.lnks[1]['loc_pos'] = np.array([0, 0, 0])
         self.central_body.lnks[1]['collision_model'] = cm.CollisionModel(
             os.path.join(this_dir, "meshes", "chest_joint0_link_mesh.dae"),
-            cdprim_type="user_defined", expand_radius=.005,
+            cdprim_type="user_defined", ex_radius=.005,
             userdef_cdprim_fn=self._chest_combined_cdnp)
         self.central_body.lnks[1]['rgba'] = [1, .65, .5, 1]
         self.central_body.lnks[2]['name'] = "head_joint0_link_mesh"

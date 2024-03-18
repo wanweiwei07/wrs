@@ -17,22 +17,27 @@ class InterplatedMotion(object):
             if not hasattr(robot, "delegator") or not isinstance(robot.delegator, sari.SglArmRobotInterface):
                 raise ValueError("Only single arm robot can be used to initiate an InterplateMotion instance!")
         self.robot = robot
+        # define data type
+        self.toggle_keep = True
 
     @staticmethod
     def keep_states_decorator(method):
         """
-        decorator function for save and restore robot's joint values
-        applicable to both single or multi-arm sgl_arm_robots
+        decorator function for save and restore robot states
         :return:
         author: weiwei
         date: 20220404
         """
 
         def wrapper(self, *args, **kwargs):
-            self.robot.backup_state()
-            result = method(self, *args, **kwargs)
-            self.robot.restore_state()
-            return result
+            if getattr(self, "toggle_keep", True):
+                self.robot.backup_state()
+                result = method(self, *args, **kwargs)
+                self.robot.restore_state()
+                return result
+            else:
+                result = method(self, *args, **kwargs)
+                return result
 
         return wrapper
 
@@ -95,7 +100,8 @@ class InterplatedMotion(object):
                     return None
             jv_list.append(jnt_values)
             ev_list.append(self.robot.get_ee_values())
-            mesh_list.append(self.robot.gen_meshmodel())
+            if getattr(base, "toggle_mesh", True):
+                mesh_list.append(self.robot.gen_meshmodel())
             seed_jnt_values = jnt_values
         mot_data = motu.MotionData(robot=self.robot)
         mot_data.extend(jv_list=jv_list, ev_list=ev_list, mesh_list=mesh_list)
@@ -124,7 +130,8 @@ class InterplatedMotion(object):
                 return None
             jv_list.append(jnt_values)
             ev_list.append(self.robot.get_ee_values())
-            mesh_list.append(self.robot.gen_meshmodel())
+            if getattr(base, "toggle_mesh", True):
+                mesh_list.append(self.robot.gen_meshmodel())
         mot_data = motu.MotionData(robot=self.robot)
         mot_data.extend(jv_list=jv_list, ev_list=ev_list, mesh_list=mesh_list)
         return mot_data
@@ -259,7 +266,8 @@ class InterplatedMotion(object):
                     return None
             jv_list.append(jnt_values)
             ev_list.append(self.robot.get_ee_values())
-            mesh_list.append(self.robot.gen_meshmodel())
+            if getattr(base, "toggle_mesh", True):
+                mesh_list.append(self.robot.gen_meshmodel())
             seed_jnt_values = jnt_values
         mot_data = motu.MotionData(robot=self.robot)
         mot_data.extend(jv_list=jv_list, ev_list=ev_list, mesh_list=mesh_list)
@@ -313,7 +321,8 @@ class InterplatedMotion(object):
                     return None
             jv_list.append(jnt_values)
             ev_list.append(self.robot.get_ee_values())
-            mesh_list.append(self.robot.gen_meshmodel())
+            if getattr(base, "toggle_mesh", True):
+                mesh_list.append(self.robot.gen_meshmodel())
             seed_jnt_values = jnt_values
         mot_data = motu.MotionData(robot=self.robot)
         mot_data.extend(jv_list=jv_list, ev_list=ee_values, mesh_list=mesh_list)
