@@ -11,7 +11,7 @@ class Grasp(object):
         self.ac_rotmat = ac_rotmat
 
     def __str__(self):
-        return "Grasp at " + repr(self.ac_pos) + "\n\t\t"+ repr(self.ac_rotmat) + " with " + str(self.ee_values)
+        return "Grasp at " + repr(self.ac_pos) + "\n\t\t" + repr(self.ac_rotmat) + " with " + str(self.ee_values)
 
 
 class GraspCollection(object):
@@ -19,6 +19,8 @@ class GraspCollection(object):
         self.end_effector = end_effector
         if grasp_list is None:
             self._grasp_list = []
+        else:
+            self._grasp_list = grasp_list
 
     @classmethod
     def from_file(cls, path=None, file_name='preannotated_grasps.pickle'):
@@ -58,7 +60,7 @@ class GraspCollection(object):
             raise ValueError("End effectors are not the same.")
 
     def __str__(self):
-        out_str = "GraspCollection of end effector: " + self.end_effector.name + "\n"
+        out_str = "GraspCollection of: " + self.end_effector.name if self.end_effector is not None else "" + "\n"
         if len(self._grasp_list) == 0:
             out_str += "  No grasps in the collection.\n"
             return out_str

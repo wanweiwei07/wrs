@@ -1,3 +1,4 @@
+import grasping.grasp
 import visualization.panda.world as wd
 import modeling.geometric_model as mgm
 import modeling.collision_model as mcm
@@ -45,12 +46,12 @@ robot = x6g2.XArmLite6G2()
 rrtc = rrtc.RRTConnect(robot)
 ppp = ppp.PickPlacePlanner(robot)
 
-original_grasp_info_list = gpa.load_pickle_file(obj_name='tubebig', path='./', file_name='wrs_gripper2_grasps.pickle')
+grasp_collection = grasping.grasp.GraspCollection.from_file(file_name='wrs_gripper2_grasps.pickle')
 start_conf = robot.get_jnt_values()
-print(original_grasp_info_list)
+print(grasp_collection)
 
 mot_data = ppp.gen_pick_and_place(obj_cmodel=tube1,
-                                  grasp_info_list=original_grasp_info_list,
+                                  grasp_collection=grasp_collection,
                                   end_jnt_values=start_conf,
                                   goal_pose_list=[(gl_pos2, gl_rotmat2)],
                                   obstacle_list=[ground])

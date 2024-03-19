@@ -15,14 +15,14 @@ class PickPlacePlanner(adp.ADPlanner):
 
     @adp.mpi.InterplatedMotion.keep_states_decorator
     def reason_common_gids(self,
-                           grasp_info_list,
+                           grasp_collection,
                            goal_pose_list,
                            obstacle_list=None,
                            toggle_dbg=False):
         """
         find the common collision free and IK feasible gids
         :param eef: an end effector instance
-        :param grasp_info_list: a list like [[ee_values, jaw_center_pos, jaw_center_rotmat, pos, rotmat], ...]
+        :param grasp_collection: grasping.grasp.GraspCollection
         :param goal_pose_list: [[pos0, rotmat0]], [pos1, rotmat1], ...]
         :param obstacle_list
         :return: common grasp poses
@@ -30,7 +30,7 @@ class PickPlacePlanner(adp.ADPlanner):
         date: 20210113, 20210125
         """
         # start reasoning
-        previous_available_gids = range(len(grasp_info_list))
+        previous_available_gids = range(len(grasp_collection))
         intermediate_available_gids = []
         eef_collided_grasps_num = 0
         ik_failed_grasps_num = 0
@@ -38,13 +38,12 @@ class PickPlacePlanner(adp.ADPlanner):
         for goal_id, goal_pose in enumerate(goal_pose_list):
             goal_pos = goal_pose[0]
             goal_rotmat = goal_pose[1]
-            gidinfo_list = zip(previous_available_gids,  # need .copy()?
-                               [grasp_info_list[i] for i in previous_available_gids])
+            grasp_with_gid = zip(previous_available_gids,  # need .copy()?
+                               [grasp_collection[i] for i in previous_available_gids])
             previous_available_gids = []
-            for gid, ginfo in gidinfo_list:
-                jaw_width, jaw_center_pos, jaw_center_rotmat, hnd_pos, hnd_rotmat = ginfo
-                goal_jaw_center_pos = goal_pos + goal_rotmat.dot(jaw_center_pos)
-                goal_jaw_center_rotmat = goal_rotmat.dot(jaw_center_rotmat)
+            for gid, grasp in grasp_with_gid:
+                goal_jaw_center_pos = goal_pos + goal_rotmat.dot(grasp.ac_pos)
+                goal_jaw_center_rotmat = goal_rotmat.dot(grasp.ac_rotmat)
                 jnt_values = self.robot.ik(tgt_pos=goal_jaw_center_pos, tgt_rotmat=goal_jaw_center_rotmat)
                 if jnt_values is not None:
                     self.robot.goto_given_conf(jnt_values=jnt_values)
@@ -66,7 +65,7 @@ class PickPlacePlanner(adp.ADPlanner):
                     if toggle_dbg:
                         self.robot.end_effector.grip_at_by_pose(jaw_center_pos=goal_jaw_center_pos,
                                                                 jaw_center_rotmat=goal_jaw_center_rotmat,
-                                                                jaw_width=jaw_width)
+                                                                jaw_width=grasp.ee_values)
                         self.robot.end_effector.gen_meshmodel(rgb=rm.bc.magenta, alpha=.3).attach_to(base)
             intermediate_available_gids.append(previous_available_gids.copy())
             if toggle_dbg:
@@ -82,7 +81,7 @@ class PickPlacePlanner(adp.ADPlanner):
     @adp.mpi.InterplatedMotion.keep_states_decorator
     def gen_pick_and_moveto(self,
                             obj_cmodel,
-                            grasp_info,
+                            grasp,
                             goal_pose_list,
                             approach_direction_list,
                             approach_distance_list,
@@ -99,7 +98,7 @@ class PickPlacePlanner(adp.ADPlanner):
         """
         pick and move an object to multiple poses
         :param obj_cmodel:
-        :param grasp_info:
+        :param grasp:
         :param goal_pose_list: [[pos, rotmat], [pos, rotmat], ...]
         :param approach_direction_list: the first element will be ignored
         :param approach_distance_list: the first element will be ignored
@@ -115,9 +114,8 @@ class PickPlacePlanner(adp.ADPlanner):
         :return:
         """
         # pick up object
-        jaw_width, jaw_center_pos, jaw_center_rotmat, hnd_pos, hnd_rotmat = grasp_info
-        pick_tcp_pos = obj_cmodel.rotmat.dot(jaw_center_pos) + obj_cmodel.pos
-        pick_tcp_rotmat = obj_cmodel.rotmat.dot(jaw_center_rotmat)
+        pick_tcp_pos = obj_cmodel.rotmat.dot(grasp.ac_pos) + obj_cmodel.pos
+        pick_tcp_rotmat = obj_cmodel.rotmat.dot(grasp.ac_rotmat)
         if pick_jaw_width is None:
             pick_jaw_width = self.robot.end_effector.jaw_range[1]
         pick_motion = self.gen_approach(goal_tcp_pos=pick_tcp_pos,
@@ -137,10 +135,10 @@ class PickPlacePlanner(adp.ADPlanner):
             obj_cmodel_copy = obj_cmodel.copy()
             self.robot.goto_given_conf(pick_motion.jv_list[-1])
             # self.robot.gen_meshmodel().attach_to(base)
-            self.robot.hold(obj_cmodel=obj_cmodel_copy, jaw_width=jaw_width)
+            self.robot.hold(obj_cmodel=obj_cmodel_copy, jaw_width=grasp.ee_values)
             # self.robot.gen_meshmodel().attach_to(base)
             # print("before back up")
-            pick_motion.extend([pick_motion.jv_list[-1]], [jaw_width], [self.robot.gen_meshmodel()])
+            pick_motion.extend([pick_motion.jv_list[-1]], [grasp.ee_values], [self.robot.gen_meshmodel()])
             pick_depart = self.gen_linear_depart_from_given_conf(start_jnt_values=pick_motion.jv_list[-1],
                                                                  direction=pick_depart_direction,
                                                                  distance=pick_depart_distance,
@@ -157,8 +155,8 @@ class PickPlacePlanner(adp.ADPlanner):
                 # move to goals
                 moveto_start_jnt_values = pick_depart.jv_list[-1]
                 for i, goal_pose in enumerate(goal_pose_list):
-                    goal_tcp_pos = goal_pose[1].dot(jaw_center_pos) + goal_pose[0]
-                    goal_tcp_rotmat = goal_pose[1].dot(jaw_center_rotmat)
+                    goal_tcp_pos = goal_pose[1].dot(grasp.ac_pos) + goal_pose[0]
+                    goal_tcp_rotmat = goal_pose[1].dot(grasp.ac_rotmat)
                     moveto_ap = self.gen_approach_depart(goal_tcp_pos=goal_tcp_pos,
                                                          goal_tcp_rotmat=goal_tcp_rotmat,
                                                          start_jnt_values=moveto_start_jnt_values,
@@ -183,7 +181,7 @@ class PickPlacePlanner(adp.ADPlanner):
     def gen_pick_and_place(self,
                            obj_cmodel,
                            end_jnt_values,
-                           grasp_info_list,
+                           grasp_collection,
                            goal_pose_list,
                            approach_direction_list=None,
                            approach_distance_list=None,
@@ -202,7 +200,7 @@ class PickPlacePlanner(adp.ADPlanner):
         """
         :param obj_cmodel:
         :param end_jnt_values:
-        :param grasp_info_list:
+        :param grasp_collection: grasping.grasp.GraspCollection
         :param goal_pose_list:
         :param approach_direction_list:
         :param approach_distance_list:
@@ -230,20 +228,22 @@ class PickPlacePlanner(adp.ADPlanner):
             depart_direction_list = [rm.np.array([0, 0, 1])] * len(goal_pose_list)
         if depart_distance_list is None:
             depart_distance_list = [.07] * len(goal_pose_list)
+            if len(goal_pose_list) > 0:
+                depart_distance_list[-1]=.0
         if reason_grasps:
-            common_gid_list = self.reason_common_gids(grasp_info_list=grasp_info_list,
+            common_gid_list = self.reason_common_gids(grasp_collection=grasp_collection,
                                                       goal_pose_list=[obj_cmodel.pose]+goal_pose_list,
                                                       obstacle_list=obstacle_list,
                                                       toggle_dbg=False)
         else:
-            common_gid_list = range(len(grasp_info_list))
+            common_gid_list = range(len(grasp_collection))
         if len(common_gid_list) == 0:
             print("No common grasp id at the given goal poses!")
             return None
         for gid in common_gid_list:
             obj_cmodel_copy = obj_cmodel.copy()
             pm_mot = self.gen_pick_and_moveto(obj_cmodel=obj_cmodel_copy,
-                                              grasp_info=grasp_info_list[gid],
+                                              grasp=grasp_collection[gid],
                                               goal_pose_list=goal_pose_list,
                                               approach_direction_list=approach_direction_list,
                                               approach_distance_list=approach_distance_list,
@@ -312,7 +312,7 @@ if __name__ == '__main__':
         tmp_objcm.rgba = np.array([1, 0, 0, .3])
         tmp_objcm.homomat = rm.homomat_from_posrot(goal_pos, goal_rotmat)
         tmp_objcm.attach_to(base)
-    grasp_info_list = gutil.load_pickle_file(cmodel_name='tubebig', file_name='yumi_gripper_tube_big.pickle')
+    grasp_info_list = gutil.load_pickle_file(file_name='yumi_gripper_tube_big.pickle')
     grasp_info = grasp_info_list[0]
     pp_planner = PickPlacePlanner(robot=robot)
     # robot.gen_meshmodel().attach_to(base)
