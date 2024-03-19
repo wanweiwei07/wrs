@@ -42,10 +42,10 @@ class XYBot(ri.RobotInterface):
         self.jnt_values_bk.append(self.jlc.get_jnt_values())
 
     def restore_state(self):
-        self.jlc.go_given_conf(jnt_values=self.jnt_values_bk.pop())
+        self.jlc.goto_given_conf(jnt_values=self.jnt_values_bk.pop())
 
     def goto_given_conf(self, jnt_values=np.zeros(2)):
-        self.jlc.go_given_conf(jnt_values=jnt_values)
+        self.jlc.goto_given_conf(jnt_values=jnt_values)
 
     def rand_conf(self):
         return self.jlc.rand_conf()
@@ -106,7 +106,7 @@ class XYWBot(ri.RobotInterface):
         self.cc.add_cce(self.jlc.jnts[1].lnk)
 
     def goto_given_conf(self, jnt_values=np.zeros(3)):
-        self.jlc.go_given_conf(jnt_values=jnt_values)
+        self.jlc.goto_given_conf(jnt_values=jnt_values)
 
     def rand_conf(self):
         return self.jlc.rand_conf()

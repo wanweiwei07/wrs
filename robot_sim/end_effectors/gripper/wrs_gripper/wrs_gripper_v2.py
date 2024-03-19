@@ -114,7 +114,7 @@ class WRSGripper2(gpi.GripperInterface):
     def change_jaw_width(self, jaw_width):
         side_jawwidth = jaw_width / 2.0
         if 0 <= side_jawwidth <= self.jaw_range[1] / 2:
-            self.jlc.go_given_conf(jnt_values=[side_jawwidth, jaw_width])
+            self.jlc.goto_given_conf(jnt_values=[side_jawwidth, jaw_width])
         else:
             raise ValueError("The angle parameter is out of range!")
 
@@ -144,8 +144,8 @@ class WRSGripper2(gpi.GripperInterface):
         if toggle_tcp_frame:
             self._toggle_tcp_frame(m_col)
         # oiee
-        self.gen_oiee_meshmodel(m_col, rgb=rgb, alpha=alpha, toggle_cdprim=toggle_cdprim,
-                                toggle_cdmesh=toggle_cdmesh)
+        self._gen_oiee_meshmodel(m_col, rgb=rgb, alpha=alpha, toggle_cdprim=toggle_cdprim,
+                                 toggle_cdmesh=toggle_cdmesh)
         return m_col
 
 

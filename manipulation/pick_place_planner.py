@@ -286,7 +286,7 @@ if __name__ == '__main__':
     import visualization.panda.world as wd
     import modeling.geometric_model as gm
     import modeling.collision_model as cm
-    import grasping.annotation.utils as gutil
+    import grasping.annotation.gripping as gutil
     import numpy as np
     import time
     import basis.robot_math as rm

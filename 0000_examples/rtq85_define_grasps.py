@@ -1,4 +1,4 @@
-import grasping.annotation.utils as gau
+import grasping.annotation.gripping as gau
 
 if __name__ == '__main__':
     import numpy as np
@@ -12,9 +12,9 @@ if __name__ == '__main__':
     objcm.set_pos(np.array([.5,-.3,1.2]))
     objcm.attach_to(base)
     objcm.show_local_frame()
-    grasp_info_list = gau.define_gripper_grasps_with_rotation(gripper_s, objcm, gl_jaw_center_pos=np.array([0, 0, 0]),
-                                                              gl_approaching_vec=np.array([1, 0, 0]),
-                                                              gl_fgr0_opening_vec=, jaw_width=.04)
+    grasp_info_list = gau.define_gripper_grasps_with_rotation(gripper_s, objcm, jaw_center_pos=np.array([0, 0, 0]),
+                                                              approaching_direction=np.array([1, 0, 0]),
+                                                              thumb_opening_direction=, jaw_width=.04)
     for grasp_info in grasp_info_list:
         jaw_width, gl_jaw_center, pos, rotmat = grasp_info
         gic = gripper_s.copy()

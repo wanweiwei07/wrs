@@ -5,7 +5,7 @@ import random
 import scipy
 import numpy as np
 import basis.robot_math as rm
-import motion.utils as motu
+import motion.motion_data as motu
 import networkx as nx
 import matplotlib.pyplot as plt
 from operator import itemgetter

@@ -1,7 +1,7 @@
 import math
 import numpy as np
 import basis.robot_math as rm
-import grasping.annotation.utils as gu
+import grasping.annotation.gripping as gu
 from scipy.spatial import cKDTree
 
 

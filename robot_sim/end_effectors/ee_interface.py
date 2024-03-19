@@ -2,6 +2,7 @@ import copy
 import numpy as np
 import robot_sim._kinematics.jl as rkjl
 import robot_sim._kinematics.model_generator as rkmg
+import modeling.collision_model as mcm
 import modeling.constant as mc
 import basis.robot_math as rm
 
@@ -102,6 +103,8 @@ class EEInterface(object):
         """
         if cmodel_list is None:
             return False
+        if isinstance(cmodel_list, mcm.CollisionModel):
+            cmodel_list = [cmodel_list]
         for i, cdme in enumerate(self.cdmesh_elements):
             if cdme.cmodel is not None:
                 is_collided, collision_points = cdme.cmodel.is_mcdwith(cmodel_list, True)
@@ -167,13 +170,13 @@ class EEInterface(object):
                       name='ee_meshmodel'):
         raise NotImplementedError
 
-    def gen_oiee_meshmodel(self,
-                           m_col,
-                           rgb=None,
-                           alpha=None,
-                           toggle_cdprim=False,
-                           toggle_cdmesh=False,
-                           toggle_frame=False):
+    def _gen_oiee_meshmodel(self,
+                            m_col,
+                            rgb=None,
+                            alpha=None,
+                            toggle_cdprim=False,
+                            toggle_cdmesh=False,
+                            toggle_frame=False):
         """
         :return:
         author: weiwei
@@ -185,9 +188,9 @@ class EEInterface(object):
             rkmg.gen_lnk_mesh(lnk=oiee, rgb=rgb, alpha=alpha, toggle_cdprim=toggle_cdprim,
                               toggle_cdmesh=toggle_cdmesh).attach_to(m_col)
 
-    def _toggle_tcp_frame(self, parent):
+    def _toggle_tcp_frame(self, m_col):
         gl_acting_center_pos = self.rotmat.dot(self.loc_acting_center_pos) + self.pos
         gl_acting_center_rotmat = self.rotmat.dot(self.loc_acting_center_rotmat)
         rkmg.gen_indicated_frame(spos=self.pos,
                                  gl_pos=gl_acting_center_pos,
-                                 gl_rotmat=gl_acting_center_rotmat).attach_to(parent)
+                                 gl_rotmat=gl_acting_center_rotmat).attach_to(m_col)

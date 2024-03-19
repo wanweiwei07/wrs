@@ -1,7 +1,7 @@
 import math
 import numpy as np
 import basis.robot_math as rm
-import grasping.annotation.utils as gutil
+import grasping.annotation.gripping as gutil
 
 if __name__ == '__main__':
 
@@ -19,9 +19,9 @@ if __name__ == '__main__':
         for roll_angle in [math.pi*.1, math.pi*.2]:
             gl_hndz = rm.rotmat_from_axangle(np.array([1,0,0]), roll_angle).dot(np.array([0,0,-1]))
             grasp_info_list += gutil.define_gripper_grasps_with_rotation(gripper_instance, objcm,
-                                                                         gl_jaw_center_pos=np.array([0, 0, height]),
-                                                                         gl_approaching_vec=gl_hndz,
-                                                                         gl_fgr0_opening_vec=, jaw_width=.025)
+                                                                         jaw_center_pos=np.array([0, 0, height]),
+                                                                         approaching_direction=gl_hndz,
+                                                                         thumb_opening_direction=, jaw_width=.025)
     for grasp_info in grasp_info_list:
         jaw_width, gl_jaw_center, pos, rotmat = grasp_info
         # gic = grpr.copy()

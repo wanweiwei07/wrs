@@ -18,7 +18,7 @@ ground.attach_to(base)
 # object
 tube1 = mcm.CollisionModel("objects/tubebig.stl")
 tube1.rgba = np.array([.5, .5, .5, 1])
-gl_pos1 = np.array([-.15, -.3, .0])
+gl_pos1 = np.array([.3, -.05, .0])
 gl_rotmat1 = rm.rotmat_from_euler(0, 0, math.pi / 2)
 tube1.pos = gl_pos1
 tube1.rotmat = gl_rotmat1
@@ -29,7 +29,7 @@ t1_copy.attach_to(base)
 
 # object holder goal
 tube2 = mcm.CollisionModel("objects/tubebig.stl")
-gl_pos2 = np.array([.3, -.15, .05])
+gl_pos2 = np.array([.3, .05, .0])
 gl_rotmat2 = rm.rotmat_from_euler(0, 0, 2*math.pi / 3)
 tube2.pos = gl_pos2
 tube2.rotmat = gl_rotmat2
@@ -52,7 +52,8 @@ print(original_grasp_info_list)
 mot_data = ppp.gen_pick_and_place(obj_cmodel=tube1,
                                   grasp_info_list=original_grasp_info_list,
                                   end_jnt_values=start_conf,
-                                  goal_pose_list=[(gl_pos2, gl_rotmat2)])
+                                  goal_pose_list=[(gl_pos2, gl_rotmat2)],
+                                  obstacle_list=[ground])
 
 class Data(object):
     def __init__(self, mot_data):

@@ -317,7 +317,7 @@ if __name__ == '__main__':
     print(toc - tic, jnt_values)
     base.run()
     if jnt_values is not None:
-        jlc.go_given_conf(jnt_values=jnt_values)
+        jlc.goto_given_conf(jnt_values=jnt_values)
         rkmg.gen_jlc_stick(jlc, stick_rgba=rm.bc.navy_blue, toggle_flange_frame=True,
                            toggle_jnt_frames=False).attach_to(base)
         base.run()

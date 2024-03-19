@@ -2,7 +2,8 @@ import os
 import math
 import numpy as np
 import basis.robot_math as rm
-import grasping.annotation.utils as gau
+import grasping.grasp as gg
+import grasping.annotation.gripping as gau
 from scipy.spatial import cKDTree
 import modeling.geometric_model as mgm
 
@@ -63,7 +64,7 @@ def plan_gripper_grasps(gripper,
     :param max_samples:
     :param min_dist_between_sampled_contact_points:
     :param contact_offset: offset at the cotnact to avoid being closely in touch with object surfaces
-    :return: a list [[ee_values, jaw_center_pos, gripper_root_pos, gripper_root_rotmat], ...]
+    :return: grasping.grasp.GraspCollection
     """
     contact_pairs = plan_contact_pairs(obj_cmodel,
                                        max_samples=max_samples,
@@ -80,7 +81,7 @@ def plan_gripper_grasps(gripper,
             mgm.gen_sphere(pos=contact_p1, rgba=np.array([0, 0, 1, 1])).attach_to(base)
             mgm.gen_arrow(spos=contact_p1, epos=contact_p1 + contact_n1 * .01, stick_radius=.00057,
                           rgba=np.array([0, 0, 1, 1])).attach_to(base)
-    grasp_info_list = []
+    grasp_collection = gg.GraspCollection(end_effector=gripper)
     for i, cp in enumerate(contact_pairs):
         print(f"{i} of {len(contact_pairs)} done!")
         contact_p0, contact_n0 = cp[0]
@@ -89,24 +90,16 @@ def plan_gripper_grasps(gripper,
         jaw_width = np.linalg.norm(contact_p0 - contact_p1) + contact_offset * 2
         if jaw_width > gripper.jaw_range[1]:
             continue
-        grasp_info_list += gau.define_gripper_grasps_with_rotation(gripper, obj_cmodel, gl_jaw_center_pos=contact_center,
-                                                                   gl_approaching_vec=rm.orthogonal_vector(contact_n0),
-                                                                   gl_fgr0_opening_vec=contact_n0, jaw_width=jaw_width,
-                                                                   rotation_interval=rotation_interval,
-                                                                   toggle_flip=True, toggle_dbg=toggle_dbg)
-    return grasp_info_list
-
-
-def write_pickle_file(obj_name, grasp_info_list, path=None, file_name='preannotated_grasps.pickle', append=False):
-    if path is None:
-        path = os.getcwd()
-    gau.write_pickle_file(obj_name, grasp_info_list, path=path, file_name=file_name, append=append)
-
-
-def load_pickle_file(obj_name, path=None, file_name='preannotated_grasps.pickle'):
-    if path is None:
-        path = os.getcwd()
-    return gau.load_pickle_file(obj_name, path=path, file_name=file_name)
+        approaching_direction = rm.orthogonal_vector(contact_n0)
+        grasp_collection += gau.define_gripper_grasps_with_rotation(gripper, obj_cmodel,
+                                                                    jaw_center_pos=contact_center,
+                                                                    approaching_direction=approaching_direction,
+                                                                    thumb_opening_direction=contact_n0,
+                                                                    jaw_width=jaw_width,
+                                                                    rotation_interval=rotation_interval,
+                                                                    toggle_flip=True,
+                                                                    toggle_dbg=toggle_dbg)
+    return grasp_collection
 
 
 if __name__ == '__main__':
@@ -117,17 +110,15 @@ if __name__ == '__main__':
     import visualization.panda.world as wd
 
     base = wd.World(cam_pos=[.5, .5, .3], lookat_pos=[0, 0, 0])
-    gripper_s = xag.XArmGripper(enable_cc=True)
+    gripper = xag.XArmGripper()
     objpath = os.path.join(basis.__path__[0], 'objects', 'block.stl')
-    objcm = cm.CollisionModel(objpath)
-    objcm.attach_to(base)
-    objcm.show_local_frame()
-    grasp_info_list = plan_gripper_grasps(gripper_s, objcm, min_dist_between_sampled_contact_points=.02)
-    for grasp_info in grasp_info_list:
-        jaw_width, gl_jaw_center_pos, gl_jaw_center_rotmat, hnd_pos, hnd_rotmat = grasp_info
-        gic = gripper_s.copy()
-        gic.fix_to(hnd_pos, hnd_rotmat)
-        gic.change_jaw_width(jaw_width)
-        print(hnd_pos, hnd_rotmat)
-        gic.gen_mesh_model().attach_to(base)
+    obj_cmodel = cm.CollisionModel(objpath)
+    obj_cmodel.attach_to(base)
+    obj_cmodel.show_local_frame()
+    grasp_collection = plan_gripper_grasps(gripper, obj_cmodel, min_dist_between_sampled_contact_points=.02)
+    for grasp in grasp_collection:
+        gripper.grip_at_by_pose(jaw_center_pos=grasp.ac_pos,
+                                jaw_center_rotmat=grasp.ac_rotmat,
+                                jaw_width=grasp.ee_values)
+        gripper.gen_mesh_model().attach_to(base)
     base.run()

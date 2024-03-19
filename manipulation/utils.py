@@ -1,5 +1,5 @@
 import robot_sim.robots.robot_interface as ri
-import motion.utils as motu
+import motion.motion_data as motu
 
 
 class ManipulationData(motu.MotionData):

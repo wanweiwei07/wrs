@@ -5,7 +5,7 @@ import visualization.panda.world as wd
 import modeling.geometric_model as gm
 import modeling.collision_model as cm
 import robot_sim.end_effectors.gripper.robotiq85.robotiq85 as rtq85
-import grasping.annotation.utils as gu
+import grasping.annotation.gripping as gu
 import pickle
 
 base = wd.World(cam_pos=[.3, .3, .3], lookat_pos=[0, 0, 0])
@@ -50,8 +50,8 @@ for i, cp in enumerate(contact_pairs):
         continue
     hndy = contact_n0
     hndz = rm.orthogonal_vector(contact_n0)
-    grasp_info_list += gu.define_gripper_grasps_with_rotation(gripper_s, object_bunny, gl_jaw_center_pos=contact_center,
-                                                              gl_approaching_vec=hndz, gl_fgr0_opening_vec=hndy,
+    grasp_info_list += gu.define_gripper_grasps_with_rotation(gripper_s, object_bunny, jaw_center_pos=contact_center,
+                                                              approaching_direction=hndz, thumb_opening_direction=hndy,
                                                               jaw_width=jaw_width, rotation_interval=math.radians(30),
                                                               toggle_flip=True)
 for grasp_info in grasp_info_list:

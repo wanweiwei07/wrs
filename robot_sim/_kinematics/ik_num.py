@@ -110,9 +110,9 @@ class NumIKSolver(object):
             if toggle_dbg:
                 import robot_sim._kinematics.model_generator as rkmg
                 jnt_values = self.jlc.get_jnt_values()
-                self.jlc.go_given_conf(jnt_values=iter_jnt_values)
+                self.jlc.goto_given_conf(jnt_values=iter_jnt_values)
                 rkmg.gen_jlc_stick(self.jlc, toggle_flange_frame=True).attach_to(base)
-                self.jlc.go_given_conf(jnt_values=jnt_values)
+                self.jlc.goto_given_conf(jnt_values=jnt_values)
                 import modeling.geometric_model as gm
                 gm.gen_arrow(spos=flange_pos, epos=flange_pos + f2t_err_vec[:3] * .1).attach_to(base)
                 print("f2t_pos_err ", f2t_pos_err, " f2t_rot_err ", f2t_rot_err)
@@ -150,9 +150,9 @@ class NumIKSolver(object):
             if toggle_dbg:
                 import robot_sim._kinematics.model_generator as rkmg
                 jnt_values = self.jlc.get_jnt_values()
-                self.jlc.go_given_conf(jnt_values=iter_jnt_values)
+                self.jlc.goto_given_conf(jnt_values=iter_jnt_values)
                 rkmg.gen_jlc_stick(self.jlc, toggle_flange_frame=True).attach_to(base)
-                self.jlc.go_given_conf(jnt_values=jnt_values)
+                self.jlc.goto_given_conf(jnt_values=jnt_values)
                 import modeling.geometric_model as gm
                 gm.gen_arrow(spos=flange_pos, epos=tgt_pos).attach_to(base)
                 print("f2t_pos_err ", f2t_pos_err, " f2t_rot_err ", f2t_rot_err)
@@ -202,9 +202,9 @@ class NumIKSolver(object):
             if toggle_dbg:
                 import robot_sim._kinematics.model_generator as rkmg
                 jnt_values = self.jlc.get_jnt_values()
-                self.jlc.go_given_conf(jnt_values=iter_jnt_vals)
+                self.jlc.goto_given_conf(jnt_values=iter_jnt_vals)
                 rkmg.gen_jlc_stick(self.jlc, toggle_flange_frame=True).attach_to(base)
-                self.jlc.go_given_conf(jnt_values=jnt_values)
+                self.jlc.goto_given_conf(jnt_values=jnt_values)
                 import modeling.geometric_model as gm
                 gm.gen_arrow(spos=flange_pos, epos=tgt_pos).attach_to(base)
                 print("f2t_pos_err ", f2t_pos_err, "f2t_rot_err ", f2t_rot_err)
@@ -257,12 +257,12 @@ class NumIKSolver(object):
             if toggle_dbg:
                 import robot_sim._kinematics.model_generator as rkmg
                 jnt_values = self.jlc.get_jnt_values()
-                self.jlc.go_given_conf(jnt_values=iter_jnt_values)
+                self.jlc.goto_given_conf(jnt_values=iter_jnt_values)
                 stick_rgba = rm.bc.lnk_stick_rgba
                 stick_rgba[3] = .5
                 rkmg.gen_jlc_stick(self.jlc, stick_rgba=stick_rgba, toggle_jnt_frames=True,
                                    toggle_flange_frame=True).attach_to(base)
-                self.jlc.go_given_conf(jnt_values=jnt_values)
+                self.jlc.goto_given_conf(jnt_values=jnt_values)
                 import modeling.geometric_model as gm
                 gm.gen_arrow(spos=flange_pos, epos=tgt_pos).attach_to(base)
                 print("f2t_pos_err ", f2t_pos_err, " f2t_rot_err ", f2t_rot_err)
@@ -312,7 +312,7 @@ class NumIKSolver(object):
                 import modeling.geometric_model as mgm
                 import robot_sim._kinematics.model_generator as rkmg
                 mgm.gen_arrow(spos=flange_pos, epos=flange_pos + clamped_err_vec[:3]).attach_to(base)
-                self.jlc.go_given_conf(jnt_values=iter_jnt_values)
+                self.jlc.goto_given_conf(jnt_values=iter_jnt_values)
                 stick_rgba = rm.bc.lnk_stick_rgba
                 stick_rgba[3] = .5
                 rkmg.gen_jlc_stick(self.jlc, stick_rgba=stick_rgba, toggle_jnt_frames=True,
@@ -366,9 +366,9 @@ class NumIKSolver(object):
             if toggle_dbg:
                 import robot_sim._kinematics.model_generator as rkmg
                 jnt_values = self.jlc.get_jnt_values()
-                self.jlc.go_given_conf(jnt_values=iter_jnt_vals)
+                self.jlc.goto_given_conf(jnt_values=iter_jnt_vals)
                 rkmg.gen_jlc_stick(self.jlc, toggle_flange_frame=True).attach_to(base)
-                self.jlc.go_given_conf(jnt_values=jnt_values)
+                self.jlc.goto_given_conf(jnt_values=jnt_values)
                 import modeling.geometric_model as gm
                 gm.gen_arrow(spos=flange_pos, epos=tgt_pos).attach_to(base)
                 print("f2t_pos_err ", f2t_pos_err, "f2t_rot_err ", f2t_rot_err)

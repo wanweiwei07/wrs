@@ -235,9 +235,9 @@ class JLChain(object):
         self.anchor.pos = pos
         self.anchor.rotmat = rotmat
         if jnt_values is None:
-            return self.go_given_conf(jnt_values=self.get_jnt_values())
+            return self.goto_given_conf(jnt_values=self.get_jnt_values())
         else:
-            return self.go_given_conf(jnt_values=jnt_values)
+            return self.goto_given_conf(jnt_values=jnt_values)
 
     def finalize(self, ik_solver=None, identifier_str="test", **kwargs):
         """
@@ -334,7 +334,7 @@ class JLChain(object):
         else:
             return True
 
-    def go_given_conf(self, jnt_values):
+    def goto_given_conf(self, jnt_values):
         """
         move to the given configuration
         :param jnt_values
@@ -351,7 +351,7 @@ class JLChain(object):
         author: weiwei
         date: 20161211osaka
         """
-        return self.go_given_conf(jnt_values=self.home)
+        return self.goto_given_conf(jnt_values=self.home)
 
     def go_zero(self):
         """
@@ -360,7 +360,7 @@ class JLChain(object):
         author: weiwei
         date: 20161211osaka
         """
-        return self.go_given_conf(jnt_values=np.zeros(self.n_dof))
+        return self.goto_given_conf(jnt_values=np.zeros(self.n_dof))
 
     def get_jnt_values(self):
         """

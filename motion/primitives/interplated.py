@@ -1,7 +1,7 @@
 import math
 import numpy as np
 import basis.robot_math as rm
-import motion.utils as motu
+import motion.motion_data as motu
 import robot_sim.robots.single_arm_robot_interface as sari
 
 

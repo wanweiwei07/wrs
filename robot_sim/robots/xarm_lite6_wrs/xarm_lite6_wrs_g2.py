@@ -36,7 +36,7 @@ class XArmLite6G2(rsi.SglArmRobotInterface):
         ml3 = self.cc.add_cce(self.manipulator.jlc.jnts[3].lnk)
         ml4 = self.cc.add_cce(self.manipulator.jlc.jnts[4].lnk)
         ml5 = self.cc.add_cce(self.manipulator.jlc.jnts[5].lnk)
-        from_list = [elb, el0, el1, ml4, ml5]
+        from_list = [elb, el0, el1, ml3, ml4, ml5]
         into_list = [mlb, ml0, ml1]
         self.cc.set_cdpair_by_ids(from_list, into_list)
         # TODO oiee?

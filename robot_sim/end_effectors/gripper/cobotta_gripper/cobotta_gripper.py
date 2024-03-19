@@ -55,12 +55,7 @@ class CobottaGripper(gpi.GripperInterface):
         self.pos = pos
         self.rotmat = rotmat
         if jaw_width is not None:
-            side_jawwidth = jaw_width / 2.0
-            if 0 <= side_jawwidth <= self.jaw_range[1] / 2:
-                self.jlc.jnts[0].motion_value = side_jawwidth
-                self.jlc.jnts[1].motion_value = -jaw_width
-            else:
-                raise ValueError("The angle parameter is out of range!")
+            self.change_jaw_width(jaw_width=jaw_width)
         self.coupling.pos = self.pos
         self.coupling.rotmat = self.rotmat
         self.jlc.fix_to(self.coupling.gl_flange_pose_list[0][0], self.coupling.gl_flange_pose_list[0][1])
@@ -73,7 +68,7 @@ class CobottaGripper(gpi.GripperInterface):
     def change_jaw_width(self, jaw_width):
         side_jawwidth = jaw_width / 2.0
         if 0 <= side_jawwidth <= self.jaw_range[1] / 2:
-            self.jlc.go_given_conf(jnt_values=[side_jawwidth, jaw_width])
+            self.jlc.goto_given_conf(jnt_values=[side_jawwidth, jaw_width])
         else:
             raise ValueError("The angle parameter is out of range!")
 
@@ -109,8 +104,8 @@ class CobottaGripper(gpi.GripperInterface):
         if toggle_tcp_frame:
             self._toggle_tcp_frame(m_col)
         # oiee
-        self.gen_oiee_meshmodel(m_col, rgb=rgb, alpha=alpha, toggle_cdprim=toggle_cdprim,
-                                toggle_cdmesh=toggle_cdmesh)
+        self._gen_oiee_meshmodel(m_col, rgb=rgb, alpha=alpha, toggle_cdprim=toggle_cdprim,
+                                 toggle_cdmesh=toggle_cdmesh)
         return m_col
 
 
@@ -123,8 +118,8 @@ if __name__ == '__main__':
     # base.run()
     grpr = CobottaGripper(cdmesh_type=mc.CDMType.OBB)
     grpr.fix_to(pos=np.array([0, .1, .1]), rotmat=rm.rotmat_from_axangle([1, 0, 0], .7))
-    print(grpr.grip_at_by_twovecs(jaw_center_pos=np.array([0, .1, .1]), approaching_vec=np.array([0, -1, 0]),
-                                  fgr0_opening_vec=np.array([1, 0, 0]), jaw_width=.01))
+    print(grpr.grip_at_by_twovecs(jaw_center_pos=np.array([0, .1, .1]), approaching_direction=np.array([0, -1, 0]),
+                                  thumb_opening_direction=np.array([1, 0, 0]), jaw_width=.01))
     # grpr.change_jaw_width(.013)
     grpr.gen_meshmodel(toggle_tcp_frame=True, toggle_jnt_frames=False, toggle_cdprim=False).attach_to(base)
     # # grpr.gen_stickmodel(toggle_jnt_frames=True).attach_to(base)

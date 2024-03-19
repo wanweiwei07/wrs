@@ -1,6 +1,7 @@
 import numpy as np
 import modeling.constant as mc
 import robot_sim.end_effectors.ee_interface as ei
+import grasping.grasp as gg
 
 
 class GripperInterface(ei.EEInterface):
@@ -64,22 +65,23 @@ class GripperInterface(ei.EEInterface):
 
     def grip_at_by_twovecs(self,
                            jaw_center_pos,
-                           approaching_vec,
-                           fgr0_opening_vec,
+                           approaching_direction,
+                           thumb_opening_direction,
                            jaw_width):
         """
         specifying the gripping pose using two axes -- approaching vector and opening vector
+        the thumb is the finger at the y+ direction
         :param jaw_center_pos:
-        :param approaching_vec: jaw_center's approaching motion_vec
-        :param fgr0_opening_vec: jaw_center's opening motion_vec
+        :param approaching_direction: jaw_center's approaching motion_vec
+        :param thumb_opening_direction: jaw_center's opening motion_vec (thumb is the left finger, or finger 0)
         :param jaw_width: [ee_values, jaw_center_pos, jaw_center_rotmat, eef_root_pos, eef_root_rotmat]
         :return:
         """
         self.change_jaw_width(jaw_width)
         param_list = self.align_acting_center_by_twovecs(acting_center_pos=jaw_center_pos,
-                                                         approaching_vec=approaching_vec,
-                                                         side_vec=fgr0_opening_vec)
-        return [jaw_width] + param_list
+                                                         approaching_vec=approaching_direction,
+                                                         side_vec=thumb_opening_direction)
+        return gg.Grasp(ee_values=jaw_width, ac_pos=param_list[0], ac_rotmat=param_list[1])
 
     def grip_at_by_pose(self, jaw_center_pos, jaw_center_rotmat, jaw_width):
         """
@@ -91,4 +93,4 @@ class GripperInterface(ei.EEInterface):
         self.change_jaw_width(jaw_width)
         param_list = self.align_acting_center_by_pose(acting_center_pos=jaw_center_pos,
                                                       acting_center_rotmat=jaw_center_rotmat)
-        return [jaw_width] + param_list
+        return gg.Grasp(ee_values=jaw_width, ac_pos=param_list[0], ac_rotmat=param_list[1])

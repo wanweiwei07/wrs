@@ -129,7 +129,7 @@ class XArmLite6(mi.ManipulatorInterface):
         l3 = self.cc.add_cce(self.jlc.jnts[3].lnk)
         l4 = self.cc.add_cce(self.jlc.jnts[4].lnk)
         l5 = self.cc.add_cce(self.jlc.jnts[5].lnk)
-        from_list = [l4, l5]
+        from_list = [l3, l4, l5]
         into_list = [lb, l0, l1]
         self.cc.set_cdpair_by_ids(from_list, into_list)
 

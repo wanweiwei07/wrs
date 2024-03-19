@@ -5,7 +5,7 @@ import modeling.collision_model as mcm
 import modeling.model_collection as mmc
 import basis.robot_math as rm
 import robot_sim._kinematics.constant as rkc
-import motion.utils as utils
+import motion.motion_data as utils
 
 
 def gen_indicated_frame(spos,
@@ -219,9 +219,9 @@ def gen_jlc_stick_by_jnt_values(jlc,
                                 jnt_radius=rkc.JNT_RADIUS,
                                 lnk_radius=rkc.LNK_STICK_RADIUS):
     jnt_values_bk = jlc.get_jnt_values()
-    jlc.go_given_conf(jnt_values=jnt_values)
+    jlc.goto_given_conf(jnt_values=jnt_values)
     m_col = gen_jlc_stick(jlc, stick_rgba, toggle_jnt_frames, toggle_flange_frame, name, jnt_radius, lnk_radius)
-    jlc.go_given_conf(jnt_values=jnt_values_bk)
+    jlc.goto_given_conf(jnt_values=jnt_values_bk)
     return m_col
 
 
