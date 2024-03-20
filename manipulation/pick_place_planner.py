@@ -460,7 +460,7 @@ if __name__ == '__main__':
     #
     # def update(robot_s,
     #            hand_name,
-    #            objcm,
+    #            obj_cmodel,
     #            robot_path,
     #            jawwidth_path,
     #            obj_path,
@@ -484,7 +484,7 @@ if __name__ == '__main__':
     #     robot_meshmodel.attach_to(base)
     #     robot_attached_list.append(robot_meshmodel)
     #     obj_pose = obj_path[counter[0]]
-    #     objb_copy = objcm.copy()
+    #     objb_copy = obj_cmodel.copy()
     #     objb_copy.set_homomat(obj_pose)
     #     objb_copy.attach_to(base)
     #     object_attached_list.append(objb_copy)

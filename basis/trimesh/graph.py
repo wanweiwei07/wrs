@@ -73,26 +73,16 @@ def face_adjacency(faces, return_edges=False):
 
 
 def adjacency_angle(mesh, angle, direction=np.less, return_edges=False):
-    '''
-    Return the adjacent faces of a mesh only if the faces
-    are at less than a specified angle.
-
-    Arguments
-    ----------
-    mesh:         Trimesh object
-    angle:        float, angle in radians by default faces at angles LARGER than 
-                   this will be considered NOT adjacenct
-    direction:    function, used to test face angle against angle kwarg
-                   by default set to np.less
-    return_edges: bool, return edges affiliated with adjacency or not
-
-    Returns
-    ----------
-    adjacency: (n,2) int list of face indices in mesh
+    """
+    return the adjacent faces of a mesh only if the faces are at less than a specified angle.
+    :param mesh: trimesh
+    :param angle: float, radians; faces at angles LARGER than this will be considered NOT adjacenct
+    :param direction: function, used to test face angle against angle kwarg by default set to np.less
+    :param return_edges: bool, return edges affiliated with adjacency or not
+    :return: adjacency: (n,2) int list of face indices in mesh
     if return_edges:
         edges: (n,2) int list of vertex indices in mesh (edges)
-    '''
-
+    """
     # use the cached adjacency if possible (n,2)
     adjacency = mesh.face_adjacency
     # normal vectors for adjacent faces (n, 2, 3)

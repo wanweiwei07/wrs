@@ -262,38 +262,30 @@ def unique_value_in_row(data, unique=None):
 
 
 def group_rows(data, require_count=None, digits=None):
-    '''
-    Returns index groups of duplicate rows, for example:
+    """
+    returns index groups of duplicate rows, for example:
     [[1,2], [3,4], [1,2]] will return [[0,2], [1]]
-    
-    Arguments
-    ----------
-    data:          (n,m) array
-    require_count: only returns groups of a specified axis_length, eg:
-                   require_count =  2
-                   [[1,2], [3,4], [1,2]] will return [[0,2]]
-    
-                   Note that using require_count allows numpy advanced indexing
-                   to be used in place of looping and checking hashes, and as a
-                   consequence is ~10x faster. 
-                   
-    digits:        If data is floating point, how many decimals to look at.
+    :param data: (n,m) array
+    :param require_count: only returns groups of a specified axis_length, eg:
+                          require_count =  2
+                          [[1,2], [3,4], [1,2]] will return [[0,2]]
+            
+                          Note that using require_count allows numpy advanced indexing
+                          to be used in place of looping and checking hashes, and as a
+                          consequence is ~10x faster. 
+    :param digits: If data is floating point, how many decimals to look at.
                    If this is None, the value in TOL_MERGE will be turned into a 
                    digit n_sec_minor and used.
-
-    Returns
-    ----------
-    groups:        List or sequence of indices from data indicating identical rows.
-                   If require_count != None, shape will be (j, require_count)
-                   If require_count is None, shape will be irregular (AKA a sequence)
-    '''
-
+    :return: groups:
+                List or sequence of indices from data indicating identical rows.
+                If require_count is None, shape will be irregular (AKA a sequence)
+                If require_count != None, shape will be (j, require_count)
+    """
     def group_dict():
-        '''
-        Simple hash table based grouping. 
-        The loop and appends make this rather slow on very large arrays,
+        """
+        Simple hash table based grouping. The loop and appends make this rather slow on very large arrays,
         but it works on irregular groups.
-        '''
+        """
         observed = dict()
         hashable = hashable_rows(data, digits=digits)
         for index, key in enumerate(hashable):

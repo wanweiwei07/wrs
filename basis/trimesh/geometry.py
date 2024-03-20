@@ -100,9 +100,12 @@ def align_vectors(npvec3_start, npvec3_end, return_angle=False):
 
 
 def faces_to_edges(faces, return_index=False):
-    '''
-    Given a list of faces (n,3), return a list of edges (n*3,2)
-    '''
+    """
+    given a list of faces (n,3), return a list of edges (n*3,2)
+    :param faces:
+    :param return_index:
+    :return:
+    """
     faces = np.asanyarray(faces)
     edges = np.column_stack((faces[:, (0, 1)],
                              faces[:, (1, 2)],
