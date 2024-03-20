@@ -1,5 +1,4 @@
 import numpy as np
-import basis.constant as bc
 import basis.robot_math as rm
 import robot_sim._kinematics.constant as rkc
 import robot_sim._kinematics.jl as rkjl
@@ -403,7 +402,7 @@ class JLChain(object):
         return jnt_values
 
     def gen_stickmodel(self,
-                       stick_rgba=bc.lnk_stick_rgba,
+                       stick_rgba=rm.bc.lnk_stick_rgba,
                        toggle_jnt_frames=False,
                        toggle_flange_frame=True,
                        name='jlc_stick_model',
@@ -469,7 +468,7 @@ if __name__ == "__main__":
     jlc._loc_flange_pos = np.array([0.1, 0.1, 0.1])
     # jlc.finalize(ik_solver=None)
     jlc.finalize(ik_solver='d')
-    jlc.gen_stickmodel(stick_rgba=bc.navy_blue, toggle_jnt_frames=True, toggle_flange_frame=True).attach_to(base)
+    jlc.gen_stickmodel(stick_rgba=rm.bc.navy_blue, toggle_jnt_frames=True, toggle_flange_frame=True).attach_to(base)
     base.run()
     seed_jnt_values = jlc.get_jnt_values()
 
@@ -496,7 +495,7 @@ if __name__ == "__main__":
                 num_win += 1
             mgm.gen_frame(pos=tgt_pos, rotmat=tgt_rotmat).attach_to(base)
             jlc.fk(jnt_values=joint_values_with_dbg_info, update=True, toggle_jacobian=False)
-            jlc.gen_stickmodel(stick_rgba=bc.navy_blue, toggle_flange_frame=True,
+            jlc.gen_stickmodel(stick_rgba=rm.bc.navy_blue, toggle_flange_frame=True,
                                toggle_jnt_frames=True).attach_to(base)
             base.run()
         else:

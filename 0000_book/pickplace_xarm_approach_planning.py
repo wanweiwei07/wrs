@@ -3,7 +3,7 @@ import modeling.geometric_model as gm
 import modeling.collision_model as cm
 import grasping.planning.antipodal as gpa
 import numpy as np
-import robot_sim.robots.xarm_shuidi.xarm_shuidi as xsm
+import robot_sim.robots.xarm7_xg_shuidi.xarm7_xg_shuidi as xsm
 import robot_sim.end_effectors.gripper.xarm_gripper.xarm_gripper as xag
 import motion.primitives.approach_depart_planner as adp
 

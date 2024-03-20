@@ -320,6 +320,7 @@ class Anchor(object):
         return rkmg.gen_anchor(anchor=self,
                                toggle_root_frame=toggle_root_frame,
                                toggle_flange_frame=toggle_flange_frame,
+                               toggle_lnk_mesh=False,
                                radius=radius,
                                frame_stick_radius=frame_stick_radius,
                                frame_stick_length=frame_stick_length)

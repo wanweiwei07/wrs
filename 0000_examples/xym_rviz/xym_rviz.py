@@ -5,7 +5,7 @@ import basis
 import numpy as np
 import modeling.geometric_model as gm
 import modeling.collision_model as cm
-import robot_sim.robots.xarm_shuidi.xarm_shuidi as xav
+import robot_sim.robots.xarm7_xg_shuidi.xarm7_xg_shuidi as xav
 
 
 if __name__ == '__main__':

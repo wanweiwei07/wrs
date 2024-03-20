@@ -37,8 +37,8 @@ class XArmGripper(gi.GripperInterface):
             cdmesh_type=self.cdmesh_type)
         self.palm.lnk_list[0].cmodel.rgba = rm.bc.tab20_list[15]
         # left finger outer
-        self.lft_outer_jlc = rkjlc.JLChain(pos=self.palm.loc_flange_pose_list[0][0],
-                                            rotmat=self.palm.loc_flange_pose_list[0][1],
+        self.lft_outer_jlc = rkjlc.JLChain(pos=self.palm.gl_flange_pose_list[0][0],
+                                            rotmat=self.palm.gl_flange_pose_list[0][1],
                                             n_dof=2, name=name + "_left_outer")
         # left finger outer (joint 0 / knuckle)
         self.lft_outer_jlc.jnts[0].loc_pos = np.zeros(3)
@@ -54,8 +54,8 @@ class XArmGripper(gi.GripperInterface):
             os.path.join(current_file_dir, "meshes", "left_finger.stl"), cdmesh_type=self.cdmesh_type)
         self.lft_outer_jlc.jnts[1].lnk.cmodel.rgba = rm.bc.tab20_list[14]
         # left finger inner
-        self.lft_inner_jlc = rkjlc.JLChain(pos=self.palm.loc_flange_pose_list[1][0],
-                                           rotmat=self.palm.loc_flange_pose_list[1][1],
+        self.lft_inner_jlc = rkjlc.JLChain(pos=self.palm.gl_flange_pose_list[1][0],
+                                           rotmat=self.palm.gl_flange_pose_list[1][1],
                                            n_dof=1, name=name + "_left_inner")
         self.lft_inner_jlc.jnts[0].loc_pos = np.zeros(3)
         self.lft_inner_jlc.jnts[0].loc_motion_ax = np.array([1, 0, 0])
@@ -63,8 +63,8 @@ class XArmGripper(gi.GripperInterface):
             os.path.join(current_file_dir, "meshes", "left_inner_knuckle.stl"), cdmesh_type=self.cdmesh_type)
         self.lft_inner_jlc.jnts[0].lnk.cmodel.rgba = rm.bc.tab20_list[14]
         # right finger outer
-        self.rgt_outer_jlc = rkjlc.JLChain(pos=self.palm.loc_flange_pose_list[2][0],
-                                           rotmat=self.palm.loc_flange_pose_list[2][1],
+        self.rgt_outer_jlc = rkjlc.JLChain(pos=self.palm.gl_flange_pose_list[2][0],
+                                           rotmat=self.palm.gl_flange_pose_list[2][1],
                                            n_dof=2, name=name + "_right_outer")
         # right finger outer (joint 0 / knuckle)
         self.rgt_outer_jlc.jnts[0].loc_pos = np.zeros(3)
@@ -79,8 +79,8 @@ class XArmGripper(gi.GripperInterface):
             os.path.join(current_file_dir, "meshes", "right_finger.stl"), cdmesh_type=self.cdmesh_type)
         self.rgt_outer_jlc.jnts[1].lnk.cmodel.rgba = rm.bc.tab20_list[14]
         # right finger inner
-        self.rgt_inner_jlc = rkjlc.JLChain(pos=self.palm.loc_flange_pose_list[3][0],
-                                           rotmat=self.palm.loc_flange_pose_list[3][1],
+        self.rgt_inner_jlc = rkjlc.JLChain(pos=self.palm.gl_flange_pose_list[3][0],
+                                           rotmat=self.palm.gl_flange_pose_list[3][1],
                                            n_dof=1, name=name + "_right_inner")
         self.rgt_inner_jlc.jnts[0].loc_pos = np.zeros(3)
         self.rgt_inner_jlc.jnts[0].loc_motion_ax = np.array([-1, 0, 0])

@@ -3,7 +3,7 @@ import numpy as np
 if __name__ == "__main__":
     import modeling.geometric_model as gm
     import visualization.panda.world as wd
-    from robot_sim.robots.xarm_lite6_wrs import XArmLite6WRSGripper
+    from robot_sim.robots.xarmlite6_wg import XArmLite6WRSGripper
     import motion.probabilistic.rrt_connect as rrtc
     import math
 

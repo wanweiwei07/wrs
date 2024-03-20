@@ -1,5 +1,4 @@
 import numpy as np
-import basis.constant as bc
 import modeling.geometric_model as mgm
 import modeling.collision_model as mcm
 import modeling.model_collection as mmc
@@ -11,10 +10,10 @@ import motion.motion_data as utils
 def gen_indicated_frame(spos,
                         gl_pos,
                         gl_rotmat,
-                        indicator_rgba=bc.magenta,
+                        indicator_rgba=rm.bc.magenta,
                         indicator_ax_radius=rkc.TCP_INDICATOR_STICK_RADIUS,
-                        frame_rgb_mat=bc.myc_mat,
-                        frame_alpha=1,
+                        frame_rgb_mat=rm.bc.myc_mat,
+                        frame_alpha=1.0,
                         frame_ax_radius=rkc.FRAME_STICK_RADIUS,
                         frame_ax_length=rkc.FRAME_STICK_LENGTH_MEDIUM,
                         name="indicated_frame"):
@@ -77,15 +76,15 @@ def gen_anchor(anchor,
     m_col = mmc.ModelCollection()
     mgm.gen_sphere(pos=anchor.pos,
                    radius=radius,
-                   rgba=bc.jnt_parent_rgba).attach_to(m_col)
+                   rgba=rm.bc.jnt_parent_rgba).attach_to(m_col)
     for gl_flange_pos, gl_flange_rotmat in anchor.gl_flange_pose_list:
         mgm.gen_sphere(pos=gl_flange_pos,
                        radius=radius,
-                       rgba=bc.jnt_parent_rgba).attach_to(m_col)
+                       rgba=rm.bc.jnt_parent_rgba).attach_to(m_col)
         mgm.gen_dashed_stick(spos=anchor.pos,
                              epos=gl_flange_pos,
                              radius=frame_stick_radius,
-                             rgba=bc.jnt_parent_rgba).attach_to(m_col)
+                             rgba=rm.bc.jnt_parent_rgba).attach_to(m_col)
     if toggle_root_frame:
         mgm.gen_frame(pos=anchor.pos,
                       rotmat=anchor.rotmat,
@@ -95,7 +94,7 @@ def gen_anchor(anchor,
     if toggle_flange_frame:
         for gl_flange_pos, gl_flange_rotmat in anchor.gl_flange_pose_list:
             gen_indicated_frame(spos=anchor.pos, gl_pos=gl_flange_pos, gl_rotmat=gl_flange_rotmat,
-                                indicator_rgba=bc.cyan, frame_alpha=.3).attach_to(m_col)
+                                indicator_rgba=rm.bc.cyan, frame_alpha=.3).attach_to(m_col)
     if toggle_lnk_mesh:
         for lnk in anchor.lnk_list:
             gen_lnk_mesh(lnk, alpha=.5).attach_to(m_col)
@@ -106,6 +105,7 @@ def gen_jnt(jnt,
             toggle_frame_0=True,
             toggle_frame_q=True,
             toggle_lnk_mesh=False,
+            toggle_actuation=False,
             radius=rkc.JNT_RADIUS,
             frame_stick_radius=rkc.FRAME_STICK_RADIUS,
             frame_stick_length=rkc.FRAME_STICK_LENGTH_MEDIUM):
@@ -116,29 +116,35 @@ def gen_jnt(jnt,
         mgm.gen_stick(spos=spos,
                       epos=jnt._gl_pos_0,
                       radius=radius,
-                      rgba=bc.jnt_parent_rgba).attach_to(m_col)
+                      rgba=rm.bc.jnt_parent_rgba).attach_to(m_col)
         mgm.gen_stick(spos=jnt._gl_pos_0,
                       epos=epos,
                       radius=radius,
-                      rgba=bc.jnt_child_rgba).attach_to(m_col)
-        # # toggle the following code to show/unshow motion axes and rotation arrows
-        # mgm.gen_arrow(spos=jnt._gl_pos_0, epos=jnt._gl_pos_0 + jnt.gl_motion_ax * rkc.FRAME_STICK_LENGTH_LONG,
-        #               rgba=bc.black).attach_to(m_col)
-        # mgm.gen_circarrow(axis=jnt.gl_motion_ax,
-        #                   portion=(jnt.motion_range[1]-jnt.motion_range[0])/(2*np.pi),
-        #                   center=jnt._gl_pos_0 + jnt.gl_motion_ax * rkc.FRAME_STICK_LENGTH_LONG / 3,
-        #                   rgba=bc.red).attach_to(m_col)
+                      rgba=rm.bc.jnt_child_rgba).attach_to(m_col)
+        if toggle_actuation:
+            if jnt.type == rkc.JntType.REVOLUTE:
+                mgm.gen_arrow(spos=jnt._gl_pos_0, epos=jnt._gl_pos_0 + jnt.gl_motion_ax * rkc.FRAME_STICK_LENGTH_LONG,
+                              rgba=rm.bc.black).attach_to(m_col)
+                mgm.gen_circarrow(axis=jnt.gl_motion_ax,
+                                  portion=(jnt.motion_range[1] - jnt.motion_range[0]) / (2 * np.pi),
+                                  center=jnt._gl_pos_0 + jnt.gl_motion_ax * rkc.FRAME_STICK_LENGTH_LONG / 3,
+                                  rgba=rm.bc.red).attach_to(m_col)
+            if jnt.type == rkc.JntType.PRISMATIC:
+                offset = 1.5 * rm.orthogonal_vector(jnt.gl_motion_ax)
+                mgm.gen_arrow(spos=jnt._gl_pos_0 + offset,
+                              epos=jnt._gl_pos_0 + offset + jnt.gl_motion_ax * rkc.FRAME_STICK_LENGTH_LONG,
+                              rgba=rm.bc.black).attach_to(m_col)
     elif jnt.type == rkc.JntType.PRISMATIC:
         mgm.gen_stick(spos=spos,
                       epos=epos,
                       radius=radius * rkc.PRISMATIC_RATIO,
-                      rgba=bc.jnt_parent_rgba,
+                      rgba=rm.bc.jnt_parent_rgba,
                       type="round",
                       n_sec=6).attach_to(m_col)
         mgm.gen_stick(spos=jnt._gl_pos_0,
                       epos=jnt._gl_pos_0 + jnt._gl_motion_ax * jnt.motion_value,
                       radius=radius,
-                      rgba=bc.jnt_child_rgba,
+                      rgba=rm.bc.jnt_child_rgba,
                       type="round",
                       n_sec=6).attach_to(m_col)
     else:
@@ -159,7 +165,7 @@ def gen_jnt(jnt,
 
 
 def gen_jlc_stick(jlc,
-                  stick_rgba=bc.lnk_stick_rgba,
+                  stick_rgba=rm.bc.lnk_stick_rgba,
                   toggle_jnt_frames=False,
                   toggle_flange_frame=True,
                   name='jlc_stick_model',
@@ -206,13 +212,13 @@ def gen_jlc_stick(jlc,
     if toggle_flange_frame:
         spos = jlc.jnts[jlc.flange_jnt_id].gl_pos_q
         gen_indicated_frame(spos=spos, gl_pos=jlc.gl_flange_pos, gl_rotmat=jlc.gl_flange_rotmat,
-                            indicator_rgba=bc.spring_green, frame_alpha=.3).attach_to(m_col)
+                            indicator_rgba=rm.bc.spring_green, frame_alpha=.3).attach_to(m_col)
     return m_col
 
 
 def gen_jlc_stick_by_jnt_values(jlc,
                                 jnt_values,
-                                stick_rgba=bc.lnk_stick_rgba,
+                                stick_rgba=rm.bc.lnk_stick_rgba,
                                 toggle_jnt_frames=False,
                                 toggle_flange_frame=True,
                                 name='jlc_stick_model',
@@ -248,7 +254,7 @@ def gen_jlc_mesh(jlc,
     if toggle_flange_frame:
         spos = jlc.jnts[jlc.flange_jnt_id].gl_pos_q
         gen_indicated_frame(spos=spos, gl_pos=jlc.gl_flange_pos, gl_rotmat=jlc.gl_flange_rotmat,
-                            indicator_rgba=bc.spring_green, frame_alpha=.3,
+                            indicator_rgba=rm.bc.spring_green, frame_alpha=.3,
                             frame_ax_length=rkc.FRAME_STICK_LENGTH_MEDIUM).attach_to(m_col)
     if toggle_jnt_frames:
         # anchor

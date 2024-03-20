@@ -110,7 +110,7 @@ if __name__ == "__main__":
     import keyboard
     import basis.robot_math as rm
     import visualization.panda.world as wd
-    import robot_sim.robots.xarm_shuidi.xarm_shuidi as rbt
+    import robot_sim.robots.xarm7_xg_shuidi.xarm7_xg_shuidi as rbt
 
     base = wd.World(cam_pos=[3, 1, 1.5], lookat_pos=[0, 0, 0.7])
     rbt_s = rbt.XArmShuidi()

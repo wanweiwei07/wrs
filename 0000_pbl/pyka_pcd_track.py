@@ -5,7 +5,7 @@ import visualization.panda.world as wd
 import modeling.geometric_model as gm
 from vision.depth_camera.calibrator import load_calibration_data
 import basis.robot_math as rm
-import robot_sim.robots.xarm_shuidi.xarm_shuidi as xsm
+import robot_sim.robots.xarm7_xg_shuidi.xarm7_xg_shuidi as xsm
 import robot_con.xarm_shuidi_grpc.xarm_shuidi_client as xsc
 
 affine_matrix, _, _ = load_calibration_data()

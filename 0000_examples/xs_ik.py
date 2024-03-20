@@ -5,7 +5,7 @@ from basis import robot_math as rm
 import visualization.panda.world as wd
 import modeling.geometric_model as gm
 import modeling.collision_model as cm
-import robot_sim.robots.xarm_shuidi.xarm_shuidi as xss
+import robot_sim.robots.xarm7_xg_shuidi.xarm7_xg_shuidi as xss
 
 base = wd.World(cam_pos=[3, 1, 2], lookat_pos=[0, 0, 0])
 gm.gen_frame().attach_to(base)

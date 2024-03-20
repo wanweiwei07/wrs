@@ -5,9 +5,7 @@ import basis.robot_math as rm
 import modeling.collision_model as mcm
 import modeling.model_collection as mmc
 import robot_sim._kinematics.jlchain as rkjlc
-import robot_sim._kinematics.model_generator as rkmg
 import robot_sim.robots.robot_interface as ri
-import robot_sim._kinematics.collision_checker as cc
 
 
 class Shuidi(ri.RobotInterface):
@@ -26,7 +24,7 @@ class Shuidi(ri.RobotInterface):
         self.jlc = rkjlc.JLChain(n_dof=3, name=name)
         self.jlc.home = np.zeros(3)
         self.jlc.jnts[0].change_type(type=rkjlc.rkc.JntType.PRISMATIC)
-        self.jlc.jnts[0].loc_motion_ax = np.array([0, 0, 0])
+        self.jlc.jnts[0].loc_motion_ax = np.array([1, 0, 0])
         self.jlc.jnts[0].loc_pos = np.zeros(3)
         self.jlc.jnts[0].motion_range = np.array([-15.0, 15.0])
         self.jlc.jnts[1].change_type(type=rkjlc.rkc.JntType.PRISMATIC)
@@ -44,7 +42,7 @@ class Shuidi(ri.RobotInterface):
         self.anchor = rkjlc.rkjl.Anchor(name=name + "_anchor", pos=self.jlc.gl_flange_pos,
                                         rotmat=self.jlc.gl_flange_rotmat, n_flange=1, n_lnk=2)
         # anchor flange
-        self.anchor.loc_flange_pose_list[0] = [np.array([.0,.0,.445862]), np.eye(3)]
+        self.anchor.loc_flange_pose_list[0] = [np.array([.0, .0, .445862]), np.eye(3)]
         # anchor battery
         self.anchor.lnk_list[0].name = name + "_battery"
         self.anchor.lnk_list[0].loc_pos = np.array([.0, .0, .277])
@@ -61,6 +59,14 @@ class Shuidi(ri.RobotInterface):
             self.setup_cc()
         # backup
         self.jnt_values_bk = []
+
+    @property
+    def n_dof(self):
+        return self.jlc.n_dof
+
+    @property
+    def gl_flange_pose_list(self):
+        return self.anchor.gl_flange_pose_list
 
     def setup_cc(self):
         self.cc.add_cce(self.jlc.jnts[2].lnk)
@@ -89,16 +95,21 @@ class Shuidi(ri.RobotInterface):
     def are_jnts_in_ranges(self, jnt_values):
         return self.jlc.are_jnts_in_ranges(jnt_values)
 
-    def is_collided(self, obstacle_list=[], other_robot_list=[], toggle_contacts=False):
-        if self.cc is None:
-            for (pos, diameter) in obstacle_list:
-                dist = np.linalg.norm(np.asarray(pos) - self.get_jnt_values())
-                if dist <= diameter / 2.0:
-                    return True  # collision
-            return False  # safe
-        else:
-            return super().is_collided(obstacle_list=obstacle_list, other_robot_list=other_robot_list,
-                                       toggle_contacts=toggle_contacts)
+    def is_collided(self, obstacle_list=None, other_robot_list=None, toggle_contacts=False):
+        collision_info = self.cc.is_collided(obstacle_list=obstacle_list, other_robot_list=other_robot_list,
+                                             toggle_contacts=toggle_contacts)
+        return collision_info
+
+    def gen_stickmodel(self,
+                       toggle_tcp_frame=False,
+                       toggle_jnt_frames=False,
+                       toggle_flange_frame=False,
+                       name='shuidi_stickmodel'):
+        m_col = mmc.ModelCollection(name=name)
+        self.jlc.gen_stickmodel(toggle_jnt_frames=toggle_jnt_frames,
+                                toggle_flange_frame=toggle_flange_frame).attach_to(m_col)
+        self.anchor.gen_stickmodel(toggle_root_frame=False, toggle_flange_frame=toggle_flange_frame).attach_to(m_col)
+        return m_col
 
     def gen_meshmodel(self,
                       rgb=None,
@@ -116,7 +127,8 @@ class Shuidi(ri.RobotInterface):
                                toggle_cdprim=toggle_cdprim).attach_to(m_col)
         self.anchor.gen_meshmodel(name + "_anchor", rgb=rgb,
                                   alpha=alpha, toggle_cdmesh=toggle_cdmesh, toggle_cdprim=toggle_cdprim,
-                                  toggle_root_frame=toggle_jnt_frames).attach_to(m_col)
+                                  toggle_root_frame=toggle_jnt_frames,
+                                  toggle_flange_frame=toggle_flange_frame).attach_to(m_col)
         return m_col
 
 
@@ -128,5 +140,7 @@ if __name__ == "__main__":
     base = wd.World(cam_pos=[1.7, 1.7, 1.7], lookat_pos=[0, 0, .3])
     mgm.gen_frame().attach_to(base)
     robot = Shuidi(enable_cc=True)
-    robot.gen_meshmodel().attach_to(base)
+    robot.goto_given_conf(jnt_values=np.array([1, 1, math.pi / 3]))
+    robot.gen_stickmodel().attach_to(base)
+    # robot.gen_meshmodel(alpha=.3, toggle_cdprim=True, toggle_flange_frame=True).attach_to(base)
     base.run()

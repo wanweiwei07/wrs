@@ -4,7 +4,7 @@ import robot_sim.end_effectors.gripper.wrs_gripper.wrs_gripper_v2 as wg2
 import robot_sim.robots.single_arm_robot_interface as rsi
 
 
-class XArmLite6G2(rsi.SglArmRobotInterface):
+class XArmLite6WG2(rsi.SglArmRobotInterface):
     """
     Simulation for the XArm Lite 6 With the WRS gripper
     Author: Chen Hao (chen960216@gmail.com), Updated by Weiwe
@@ -60,7 +60,7 @@ if __name__ == '__main__':
 
     base = wd.World(cam_pos=[2, 0, 1.5], lookat_pos=[0, 0, .2])
     gm.gen_frame().attach_to(base)
-    xarm = XArmLite6G2(enable_cc=True)
+    xarm = XArmLite6WG2(enable_cc=True)
     xarm.gen_meshmodel().attach_to(base)
     print("Is self collided?", xarm.is_collided())
     base.run()

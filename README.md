@@ -6,7 +6,7 @@
 
 WARNING: Python 3.9; Numpy 1.22 +
 
-This is a brief guide to the WRS Robot Planning & Control System. For detailed technical descriptions and usage, go to
+This is a brief guide to the WRS Robot Planning & Learning Data Preparation System. For detailed technical descriptions and usage, go to
 the [document pages](https://wanweiwei07.github.io/wrs/) hosted at [my homepage](https://wanweiwei07.github.io/).
 
 ## Code Inspired by the System

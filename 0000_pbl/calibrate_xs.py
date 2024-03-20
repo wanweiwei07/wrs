@@ -1,6 +1,6 @@
 import visualization.panda.world as wd
 import modeling.geometric_model as gm
-import robot_sim.robots.xarm_shuidi.xarm_shuidi as xsm
+import robot_sim.robots.xarm7_xg_shuidi.xarm7_xg_shuidi as xsm
 import robot_con.xarm_shuidi_grpc.xarm_shuidi_client as xsc
 import drivers.devices.kinect_azure.pykinectazure as pk
 import cv2

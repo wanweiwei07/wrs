@@ -5,7 +5,7 @@ import modeling.collision_model as mcm
 import math
 import numpy as np
 import basis.robot_math as rm
-import robot_sim.robots.xarm_lite6_wrs.xarm_lite6_wrs_g2 as x6g2
+import robot_sim.robots.xarmlite6_wg.xarmlit6_wg2 as x6g2
 import manipulation.pick_place_planner as ppp
 import motion.probabilistic.rrt_connect as rrtc
 

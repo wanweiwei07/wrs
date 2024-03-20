@@ -24,13 +24,6 @@ class RobotInterface(object):
         self.delegator = None  # use self.xxx in case of None
 
     @property
-    def n_dof(self):
-        if self.delegator is None:
-            return self.lft_arm.n_dof + self.rgt_arm.n_dof
-        else:
-            return self.delegator.n_dof
-
-    @property
     def jnt_ranges(self):
         if self.delegator is None:
             raise AttributeError("Jnt ranges is not avialable.")

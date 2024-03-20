@@ -1,6 +1,6 @@
 import numpy as np
 import basis.robot_math as rm
-import robot_sim.robots.xarm_shuidi.xarm_shuidi as xa
+import robot_sim.robots.xarm7_xg_shuidi.xarm7_xg_shuidi as xa
 import visualization.panda.world as wd
 import modeling.geometric_model as gm
 from drivers.nokov.nokov_client import NokovClient

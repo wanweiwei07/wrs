@@ -6,7 +6,7 @@ import threading
 import basis.robot_math as rm
 import visualization.panda.world as wd
 import modeling.geometric_model as gm
-import robot_sim.robots.xarm_shuidi.xarm_shuidi as rbs
+import robot_sim.robots.xarm7_xg_shuidi.xarm7_xg_shuidi as rbs
 # import robot_con.xarm_shuidi_grpc.xarm_shuidi_client as rbx
 
 from direct.task.TaskManagerGlobal import taskMgr

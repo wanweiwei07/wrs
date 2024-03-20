@@ -4,7 +4,7 @@ import keyboard
 import numpy as np
 import basis.robot_math as rm
 import visualization.panda.world as wd
-import robot_sim.robots.xarm_shuidi.xarm_shuidi as rbs
+import robot_sim.robots.xarm7_xg_shuidi.xarm7_xg_shuidi as rbs
 import robot_con.xarm_shuidi.xarm_shuidi_x as rbx
 
 base = wd.World(cam_pos=[3, 1, 1.5], lookat_pos=[0, 0, 0.7])

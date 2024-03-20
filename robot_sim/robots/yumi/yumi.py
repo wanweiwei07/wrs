@@ -114,6 +114,13 @@ class Yumi(ri.RobotInterface):
         cdprim.attachNewNode(pdcnd)
         return cdprim
 
+    @property
+    def n_dof(self):
+        if self.delegator is None:
+            return self.lft_arm.n_dof + self.rgt_arm.n_dof
+        else:
+            return self.delegator.n_dof
+
     def setup_cc(self):
         """
         author: weiwei
@@ -203,7 +210,7 @@ class Yumi(ri.RobotInterface):
 
     def fk(self, jnt_values, toggle_jacobian=False):
         if self.delegator is None:
-            raise AttributeError("FK is not available for multi-arm mode.")
+            raise AttributeError("FK is not available in multi-arm mode.")
         else:
             return self.delegator.fk(jnt_values=jnt_values, toggle_jacobian=toggle_jacobian)
 
@@ -260,7 +267,7 @@ class Yumi(ri.RobotInterface):
     def change_jaw_width(self, jaw_width):
         self.change_ee_values(ee_values=jaw_width)
 
-    def is_collided(self, obstacle_list=[], other_robot_list=[], toggle_contacts=False):
+    def is_collided(self, obstacle_list=None, other_robot_list=None, toggle_contacts=False):
         """
         Interface for "is cdprimit collided", must be implemented in child class
         :param obstacle_list:
@@ -282,13 +289,12 @@ class Yumi(ri.RobotInterface):
                        name='yumi_stickmodel'):
         m_col = mmc.ModelCollection(name=name)
         self.body.gen_stickmodel(toggle_root_frame=toggle_jnt_frames,
-                                 toggle_flange_frame=toggle_flange_frame,
-                                 name=name + "_body").attach_to(m_col)
+                                 toggle_flange_frame=toggle_flange_frame).attach_to(m_col)
         self.lft_arm.gen_stickmodel(toggle_tcp_frame=toggle_tcp_frame,
                                     toggle_jnt_frames=toggle_jnt_frames,
                                     toggle_flange_frame=toggle_flange_frame,
                                     name=name + "_lft_arm").attach_to(m_col)
-        self.rtt_arm.gen_stickmodel(toggle_tcp_frame=toggle_tcp_frame,
+        self.rgt_arm.gen_stickmodel(toggle_tcp_frame=toggle_tcp_frame,
                                     toggle_jnt_frames=toggle_jnt_frames,
                                     toggle_flange_frame=toggle_flange_frame,
                                     name=name + "_rgt_arm").attach_to(m_col)
@@ -335,7 +341,8 @@ if __name__ == '__main__':
     base = wd.World(cam_pos=[3, 1, 1], lookat_pos=[0, 0, 0.5])
     gm.gen_frame().attach_to(base)
     robot = Yumi(enable_cc=True)
-    robot.gen_meshmodel().attach_to(base)
+    # robot.gen_meshmodel().attach_to(base)
+    robot.gen_stickmodel().attach_to(base)
     robot.show_cdprim()
     base.run()
 
@@ -358,25 +365,4 @@ if __name__ == '__main__':
     print(result, toc - tic)
     robot.show_cdprim()
     # robot.lft_arm.show_cdprim()
-    base.run()
-
-    # hold test
-    component_name = 'lft_arm'
-    obj_pos = np.array([-.1, .3, .3])
-    obj_rotmat = rm.rotmat_from_axangle([0, 1, 0], math.pi / 2)
-    objfile = os.path.join(basis.__path__[0], 'objects', 'tubebig.stl')
-    objcm = cm.CollisionModel(objfile, cdprim_type='cylinder')
-    objcm.set_pos(obj_pos)
-    objcm.set_rotmat(obj_rotmat)
-    objcm.attach_to(base)
-    objcm_copy = objcm.copy()
-    yumi_instance.hold(objcm=objcm_copy, jaw_width=0.03, hnd_name='lft_hnd')
-    tgt_pos = np.array([.4, .5, .4])
-    tgt_rotmat = rm.rotmat_from_axangle([0, 1, 0], math.pi / 3)
-    jnt_values = yumi_instance.ik(component_name, tgt_pos, tgt_rotmat)
-    yumi_instance.fk(component_name, jnt_values)
-    yumi_instance.show_cdprimit()
-    yumi_meshmodel = yumi_instance.gen_meshmodel()
-    yumi_meshmodel.attach_to(base)
-
     base.run()
