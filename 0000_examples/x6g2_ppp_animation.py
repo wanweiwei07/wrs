@@ -2,7 +2,6 @@ import grasping.grasp
 import visualization.panda.world as wd
 import modeling.geometric_model as mgm
 import modeling.collision_model as mcm
-import grasping.planning.antipodal as gpa
 import math
 import numpy as np
 import basis.robot_math as rm

@@ -229,7 +229,7 @@ class PickPlacePlanner(adp.ADPlanner):
         if depart_distance_list is None:
             depart_distance_list = [.07] * len(goal_pose_list)
             if len(goal_pose_list) > 0:
-                depart_distance_list[-1]=.0
+                depart_distance_list[-1]=.0 # avoid departing at the last goal pose
         if reason_grasps:
             common_gid_list = self.reason_common_gids(grasp_collection=grasp_collection,
                                                       goal_pose_list=[obj_cmodel.pose]+goal_pose_list,

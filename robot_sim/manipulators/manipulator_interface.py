@@ -27,6 +27,8 @@ class ManipulatorInterface(object):
             self.cc = cc.CollisionChecker("collision_checker")
         else:
             self.cc = None
+        # backup
+        self.jnt_values_bk = []
 
     # delays
     @staticmethod
@@ -108,10 +110,10 @@ class ManipulatorInterface(object):
         self.jlc.home = home_conf
 
     def backup_state(self):
-        raise NotImplementedError
+        self.jnt_values_bk.append(self.jlc.get_jnt_values())
 
     def restore_state(self):
-        raise NotImplementedError
+        self.goto_given_conf(jnt_values=self.jnt_values_bk.pop())
 
     def clear_cc(self):
         if self.cc is None:

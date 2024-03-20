@@ -11,8 +11,8 @@ import robot_sim.system.system_interface as ri
 
 class XArmShuidi(ri.RobotInterface):
 
-    def __init__(self, pos=np.zeros(3), rotmat=np.eye(3), name="xarm7_shuidi_mobile", enable_cc=True):
-        super().__init__(pos=pos, rotmat=rotmat, name=name)
+    def __init__(self, pos=np.zeros(3), rotmat=np.eye(3), name="xarm7_shuidi", enable_cc=True):
+        super().__init__(pos=pos, rotmat=rotmat, name=name, enable_cc=enable_cc)
         this_dir, this_filename = os.path.split(__file__)
         # agv
         self.agv = jl.JLChain(pos=pos, rotmat=rotmat, home_conf=np.zeros(5), name='agv')  # 1-3 x,y,theta; 4-5 dummy
@@ -32,11 +32,11 @@ class XArmShuidi(ri.RobotInterface):
         self.agv.jnts[6]['loc_pos'] = np.array([0, .0, .168862])
         self.agv.lnks[3]['name'] = 'agv'
         self.agv.lnks[3]['loc_pos'] = np.array([0, 0, 0])
-        self.agv.lnks[3]['mesh_file'] = os.path.join(this_dir, 'meshes', 'shuidi_agv.stl')
+        self.agv.lnks[3]['mesh_file'] = os.path.join(this_dir, '../shuidi/meshes', 'shuidi_agv.stl')
         self.agv.lnks[3]['rgba'] = [.7, .7, .7, 1.0]
-        self.agv.lnks[4]['mesh_file'] = os.path.join(this_dir, 'meshes', 'battery.stl')
+        self.agv.lnks[4]['mesh_file'] = os.path.join(this_dir, '../shuidi/meshes', 'battery.stl')
         self.agv.lnks[4]['rgba'] = [.35, .35, .35, 1.0]
-        self.agv.lnks[5]['mesh_file'] = os.path.join(this_dir, 'meshes', 'battery_fixture.stl')
+        self.agv.lnks[5]['mesh_file'] = os.path.join(this_dir, '../shuidi/meshes', 'battery_fixture.stl')
         self.agv.lnks[5]['rgba'] = [.55, .55, .55, 1.0]
         self.agv.tgtjnts = [1, 2, 3]
         self.agv.finalize()
