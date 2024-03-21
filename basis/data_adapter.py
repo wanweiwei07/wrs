@@ -390,7 +390,7 @@ def loadfile_vvnf(file_path: str) -> NodePath:
     """
     load meshes objects into panda pdndp
     use vertex normals to pack
-    :param objpath:
+    :param obj_path:
     :return:
     author: weiwei
     date: 20170221

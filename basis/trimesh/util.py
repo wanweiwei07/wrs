@@ -29,39 +29,56 @@ TOL_ZERO = np.finfo(np.float64).resolution * 100
 TOL_MERGE = 1e-8
 
 
-def unitize(points, check_valid=False):
-    '''
-    Turn a list of vectors into a list of unit vectors.
-    
-    Arguments
-    ---------
-    points:       (n,m) or (j) input array of vectors. 
-                  For 1D arrays, points is treated as a single vector
-                  For 2D arrays, each row is treated as a vector
-    check_valid:  boolean, if True enables valid output and checking
+def unitize(vectors, check_valid=False, threshold=None):
+    """
+    Unitize a vector or an array or row-vectors.
+
+    Parameters
+    ------------
+    vectors : (n,m) or (j) float
+       Vector or vectors to be unitized
+    check_valid :  bool
+       If set, will return mask of nonzero vectors
+    threshold : float
+       Cutoff for a value to be considered zero.
 
     Returns
     ---------
-    unit_vectors: (n,m) or (j) axis_length array of unit vectors
-
-    valid:        (n) boolean array, output only if check_valid.
-                   True for all valid (nonzero axis_length) vectors, thus m=sum(valid)
-    '''
-    points = np.asanyarray(points)
-    axis = len(points.shape) - 1
-    length = np.sum(points ** 2, axis=axis) ** .5
-    if check_valid:
-        valid = np.greater(length, TOL_ZERO)
-        if axis == 1:
-            unit_vectors = (points[valid].T / length[valid]).T
-        elif len(points.shape) == 1 and valid:
-            unit_vectors = points / length
+    unit :  (n,m) or (j) float
+       Input vectors but unitized
+    valid : (n,) bool or bool
+        Mask of nonzero vectors returned if `check_valid`
+    """
+    # make sure we have a numpy array
+    vectors = np.asanyarray(vectors)
+    # allow user to set zero threshold
+    if threshold is None:
+        threshold = TOL_ZERO
+    if len(vectors.shape) == 2:
+        # for (m, d) arrays take the per-row unit vector
+        # using sqrt and avoiding exponents is slightly faster
+        # also dot with ones is faser than .sum(axis=1)
+        norm = np.sqrt(np.dot(vectors * vectors, [1.0] * vectors.shape[1]))
+        # non-zero norms
+        valid = norm > threshold
+        # in-place reciprocal of nonzero norms
+        norm[valid] **= -1
+        # multiply by reciprocal of norm
+        unit = vectors * norm.reshape((-1, 1))
+    elif len(vectors.shape) == 1:
+        # treat 1D arrays as a single vector
+        norm = np.sqrt(np.dot(vectors, vectors))
+        valid = norm > threshold
+        if valid:
+            unit = vectors / norm
         else:
-            unit_vectors = np.array([])
-        return unit_vectors, valid
+            unit = vectors.copy()
     else:
-        unit_vectors = (points.T / length).T
-    return unit_vectors
+        raise ValueError("vectors must be (n, ) or (n, d)!")
+    if check_valid:
+        return unit[valid], valid
+    return unit
+
 
 
 def transformation_2D(offset=[0.0, 0.0], theta=0.0):

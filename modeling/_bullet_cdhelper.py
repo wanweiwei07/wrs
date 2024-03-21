@@ -118,8 +118,8 @@ if __name__ == '__main__':
 
     # wd.World(cam_pos=[.2, -.1, .2], lookat_pos=[0, 0, 0.05])
     # mgm.gen_frame().attach_to(base)
-    # # objpath = os.path.join(basis.__path__[0], 'objects', 'yumifinger.stl')
-    # # objcm1 = mcm.CollisionModel(objpath, cdmesh_type='triangles')
+    # # obj_path = os.path.join(basis.__path__[0], 'objects', 'yumifinger.stl')
+    # # objcm1 = mcm.CollisionModel(obj_path, cdmesh_type='triangles')
     # objcm1 = mcm.gen_stick(major_radius=.01)
     # pos = np.array([[-0.5, -0.82363909, 0.2676166, -0.00203699],
     #                     [-0.86602539, 0.47552824, -0.1545085, 0.01272306],
@@ -131,8 +131,8 @@ if __name__ == '__main__':
     # #                     [ 0.00000000e+00,  0.00000000e+00,  0.00000000e+00,  1.00000000e+00]])
     # objcm1.set_homomat(pos)
     # objcm1.set_rgba([1, 1, .3, .01])
-    # # objpath = os.path.join(basis.__path__[0], 'objects', 'tubebig.stl')
-    # # objcm2 = mcm.CollisionModel(objpath, cdmesh_type='triangles')
+    # # obj_path = os.path.join(basis.__path__[0], 'objects', 'tubebig.stl')
+    # # objcm2 = mcm.CollisionModel(obj_path, cdmesh_type='triangles')
     # objcm2 = mcm.gen_stick(major_radius=.01)
     # objcm2.set_rgba([1,0,1,.2])
     # objcm2.set_pos(np.array([-.018,-.018,0]))

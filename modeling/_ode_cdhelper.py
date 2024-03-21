@@ -86,11 +86,11 @@ def is_collided(cmodel_list0, cmodel_list1, toggle_contacts=True):
     return False, np.asarray([])
 
 
-def rayhit_closet(spos, epos, objcm):
+def rayhit_closet(spos, epos, target_cmodel):
     """
     :param spos:
     :param epos:
-    :param objcm:
+    :param target_cmodel:
     :return:
     author: weiwei
     date: 20190805
@@ -99,19 +99,21 @@ def rayhit_closet(spos, epos, objcm):
     length, dir = rm.unit_vector(epos - spos, toggle_length=True)
     ray.set(spos[0], spos[1], spos[2], dir[0], dir[1], dir[2])
     ray.setLength(length)
-    contact_entry = ode_util.collide(ray, objcm.cdmesh, max_contacts=10)
+    contact_entry = ode_util.collide(ray, target_cmodel.cdmesh, max_contacts=10)
     contact_points = [da.pdvec3_to_npvec3(point) for point in contact_entry.getContactPoints()]
+    if len(contact_points) == 0:
+        return None, None
     min_id = np.argmin(np.linalg.norm(spos - np.array(contact_points), axis=1))
     contact_normals = [da.pdvec3_to_npvec3(contact_entry.getContactGeom(i).getNormal()) for i in
                        range(contact_entry.getNumContacts())]
     return contact_points[min_id], contact_normals[min_id]
 
 
-def rayhit_all(spos, epos, objcm):
+def rayhit_all(spos, epos, target_cmodel):
     """
     :param spos:
     :param epos:
-    :param objcm:
+    :param target_cmodel:
     :return:
     author: weiwei
     date: 20190805
@@ -120,8 +122,10 @@ def rayhit_all(spos, epos, objcm):
     length, dir = rm.unit_vector(epos - spos, toggle_length=True)
     ray.set(spos[0], spos[1], spos[2], dir[0], dir[1], dir[2])
     ray.setLength(length)
-    hit_entry = ode_util.collide(ray, objcm.cdmesh)
+    hit_entry = ode_util.collide(ray, target_cmodel.cdmesh)
     hit_points = [da.pdvec3_to_npvec3(point) for point in hit_entry.getContactPoints()]
+    if len(hit_points) == 0:
+        return None, None
     hit_normals = [da.pdvec3_to_npvec3(hit_entry.getContactGeom(i).getNormal()) for i in
                    range(hit_entry.getNumContacts())]
     return hit_points, hit_normals

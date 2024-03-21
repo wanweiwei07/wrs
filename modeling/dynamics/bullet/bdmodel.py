@@ -128,7 +128,7 @@ if __name__ == "__main__":
     base = wd.World(cam_pos=[.3, .3, 1], lookat_pos=[0, 0, 0], toggle_debug=False)
     base.setFrameRateMeter(True)
     objpath = os.path.join(basis.__path__[0], "objects", "bunnysim.stl")
-    # objpath = os.path.join(basis.__path__[0], "objects", "block.stl")
+    # obj_path = os.path.join(basis.__path__[0], "objects", "block.stl")
     bunnycm = BDModel(objpath, mass=1, type="box")
 
     objpath2 = os.path.join(basis.__path__[0], "objects", "bowlblock.stl")

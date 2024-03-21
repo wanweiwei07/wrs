@@ -91,8 +91,8 @@ if __name__ == '__main__':
     # import pandaplotutils.pandageom as pg
     # obsrotmat4 = Mat4(1.0,0.0,0.0,0.0,0.0,1.0,0.0,0.0,0.0,0.0,1.0,0.0,355.252044678,-150.073120117,200.0000038147,1.0)
     # this_dir, this_filename = os.path.split(__file__)
-    # objpath = os.path.join(os.path.split(this_dir)[0], "manipulation/grip", "objects", "tool.stl")
-    # objmnp = pg.genObjmnp(objpath, color=Vec4(.7, .7, 0, 1))
+    # obj_path = os.path.join(os.path.split(this_dir)[0], "manipulation/grip", "objects", "tool.stl")
+    # objmnp = pg.genObjmnp(obj_path, color=Vec4(.7, .7, 0, 1))
     # objmnp.setMat(obsrotmat4)
     # objmnp.reparentTo(base.render)
 

@@ -432,6 +432,7 @@ class GeometricModel(StaticGeometricModel):
         gmodel = GeometricModel(self)
         gmodel.pos = self.pos
         gmodel.rotmat = self.rotmat
+        return gmodel
 
 
 # ======================================================
@@ -1114,7 +1115,7 @@ def gen_submesh(vertices, faces, rgba=np.array([1, 0, 0, 1])):
 def gen_polygon(verts, thickness=0.002, rgba=np.array([0, 0, 0, .7])):
     """
     gen objmnp
-    :param objpath:
+    :param obj_path:
     :return:a
     author: weiwei
     date: 20201115
