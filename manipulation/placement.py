@@ -26,15 +26,25 @@ def tabletop_placements(obj_cmodel, toggle_support_facets=False):
         seed_face_x = np.cross(seed_face_y, seed_face_z)
         seed_face_rotmat = np.column_stack((seed_face_x, seed_face_y, seed_face_z))
         seed_face_pos = np.mean(convex_trm.vertices[convex_trm.faces[seg_face_id]], axis=0)
-        placement_pos, placement_rotmat = rm.rel_pose(seed_face_pos, seed_face_rotmat, obj_cmodel.pos,
+        placement_pos, placement_rotmat = rm.rel_pose(seed_face_pos,
+                                                      seed_face_rotmat,
+                                                      obj_cmodel.pos,
                                                       obj_cmodel.rotmat)
         normals = seg_normal_list[id]
         faces = convex_trm.faces[seg_nested_face_id_list[id]]
         facet = mcm.CollisionModel(initor=trm.Trimesh(vertices=convex_trm.vertices, faces=faces, face_normals=normals),
                                    toggle_twosided=True, rgb=rm.bc.tab20_list[0], alpha=.5)
+        # show edge
+        for edge in seg_nested_edge_list[id]:
+            mgm.gen_stick(spos=edge[0], epos=edge[1], type="round").attach_to(facet)
         com = obj_cmodel.trm_mesh.center_mass
-        contact_point, contact_normal = moh.rayhit_closet(spos=com, epos=seed_face_pos, target_cmodel=facet)
+        contact_point, contact_normal = moh.rayhit_closet(spos=com, epos=com + seed_face_normal, target_cmodel=facet)
         if contact_point is not None:
+            min_contact_distance = np.linalg.norm(contact_point - com)
+            min_edge_distance, min_edge_projection = rm.min_distance_point_edge_list(contact_point,
+                                                                                     seg_nested_edge_list[id])
+            # show contact point to edge projection
+            mgm.gen_stick(spos=contact_point, epos=min_edge_projection, type="round").attach_to(facet)
             placement_pose_list.append((placement_pos, placement_rotmat))
             mgm.gen_arrow(spos=com, epos=contact_point).attach_to(facet)
             support_facet_list.append(facet)
@@ -75,23 +85,23 @@ if __name__ == '__main__':
 
 
     def update(animation_data, task):
-        if animation_data.counter >= len(animation_data.placement_pose_list):
+        if animation_data.counter > len(animation_data.placement_pose_list):
             animation_data.counter = 0
         if base.inputmgr.keymap["space"] is True:
             time.sleep(.1)
-            animation_data.counter += 1
             print(animation_data.counter)
             animation_data.gmodel.pose = animation_data.placement_pose_list[animation_data.counter]
             animation_data.gmodel.detach()
-            animation_data.gmodel.rgb=rm.bc.tab20_list[1]
-            animation_data.gmodel.alpha=.3
+            animation_data.gmodel.rgb = rm.bc.tab20_list[1]
+            animation_data.gmodel.alpha = .3
             animation_data.gmodel.attach_to(base)
             if (animation_data.support_facets is not None):
-                if animation_data.counter > 1:
+                if animation_data.counter > 0:
                     animation_data.support_facets[animation_data.counter - 1].detach()
                 animation_data.support_facets[animation_data.counter].pose = animation_data.placement_pose_list[
                     animation_data.counter]
                 animation_data.support_facets[animation_data.counter].attach_to(base)
+            animation_data.counter += 1
         return task.cont
 
 

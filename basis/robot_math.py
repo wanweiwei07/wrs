@@ -6,7 +6,7 @@ import functools
 import numpy as np
 import numpy.typing as npt
 from sklearn import cluster
-import basis.trimesh as trm
+import basis.trimesh.creation as trm_cr
 import basis.constant as bc
 import matplotlib.pyplot as plt
 from scipy.spatial.transform import Slerp
@@ -653,7 +653,7 @@ def gen_icorotmats(icolevel=1,
     date: 20191015osaka
     """
     return_list = []
-    icos = trm.creation.icosphere(icolevel)
+    icos = trm_cr.icosphere(icolevel)
     for vert in icos.vertices:
         if crop_angle < np.pi:
             if angle_between_vectors(vert, crop_normal) > crop_angle:
@@ -687,7 +687,7 @@ def gen_icohomomats(icolevel=1,
     """
     rot_angles = np.linspace(0, 2 * np.pi, np.pi * 2 / rotation_interval, endpoint=False)
     returnlist = []
-    icos = trm.creation.icosphere(icolevel)
+    icos = trm_cr.icosphere(icolevel)
     for vert in icos.vertices:
         z = -vert
         x = orthogonal_vector(z)
@@ -862,6 +862,42 @@ def project_point_to_plane(point, plane_center, plane_normal):
 
 def project_vector_to_vector(vector1, vector2):
     return (vector1 @ vector2) * vector2 / (vector2 @ vector2)
+
+
+def distance_point_to_edge(point, edge_start, edge_end):
+    """
+    compute the minimum distance from a point to a line segment.
+    :param point: ndarray of the point coordinates.
+    :param edge_start: ndarray of the starting point of the segment.
+    :param edge_end: ndarray of the end point of the segment.
+    :return: minimum distance from the point to the line segment, and the projection point
+    """
+    edge_vector = edge_end - edge_start
+    point_vector = point - edge_start
+    segment_length_squared = np.dot(edge_vector, edge_vector)
+    if segment_length_squared == 0:
+        return np.linalg.norm(point_vector)
+    t = max(0, min(1, np.dot(point_vector, edge_vector) / segment_length_squared))
+    projection = edge_start + t * edge_vector
+    return np.linalg.norm(point - projection), projection
+
+
+def min_distance_point_edge_list(contact_point, edge_list):
+    """
+    compute the minimum distance between a point and a list of nested edge lists.
+    :param contact_point: (n,3)
+    :param edge_list: [[edge0_v0, edge0_v1], [edge1_v0, edge1_v1], ...]
+    :return: the minimum distance and projection point
+    """
+    min_distance = float('inf')
+    min_projetion = np.zeros(3)
+    for edge in edge_list:
+        edge_start, edge_end = edge[0], edge[1]  # Assuming edge is a tuple/list of two vertices
+        distance, projection = distance_point_to_edge(contact_point, edge_start, edge_end)
+        if distance < min_distance:
+            min_distance = distance
+            min_projetion = projection
+    return min_distance, min_projetion
 
 
 def points_obb(pointsarray, toggledebug=False):

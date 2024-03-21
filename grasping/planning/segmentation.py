@@ -22,7 +22,7 @@ def extract_boundary(vertices, facet):
     return vertices[edges_boundary].reshape(-1, 2, 3)
 
 
-def expand_adj(vertices, faces, face_normals, seed_face_id, adjacency_mat, max_normal_bias_angle):
+def expand_adj(seed_face_id, trm_mesh, angle_limited_adjacency_mat, max_normal_bias_angle):
     """
     find the adjacency of a face
     the normal of the newly added face should be coherent with the normal of the seed_face
@@ -35,6 +35,9 @@ def expand_adj(vertices, faces, face_normals, seed_face_id, adjacency_mat, max_n
     author: weiwei
     date: 20161213, 20210119, 20240321
     """
+    vertices = trm_mesh.vertices
+    faces = trm_mesh.faces
+    face_normals = trm_mesh.face_normals
     seed_face_normal = face_normals[seed_face_id]
     # find all angle-limited faces connected to seed_face_id
     open_set = {seed_face_id}
@@ -44,7 +47,7 @@ def expand_adj(vertices, faces, face_normals, seed_face_id, adjacency_mat, max_n
         if len(open_set) == 0:
             break
         face_id = list(open_set)[0]
-        next_adj_list = adjacency_mat[adjacency_mat[:, 0] == face_id, 1]
+        next_adj_list = angle_limited_adjacency_mat[angle_limited_adjacency_mat[:, 0] == face_id, 1]
         next_adj_set = set(next_adj_list).difference(open_set, close_set)
         next_adj_list = list(next_adj_set)
         angle_array = np.arccos(face_normals[next_adj_list].dot(seed_face_normal.T))  # it seems clipping is not needed
@@ -96,7 +99,7 @@ def overlapped_segmentation(model, max_normal_bias_angle=np.pi / 12, toggle_face
     n_faces = len(faces)
     ## angle-limited adjacency -> selection matrix
     angle_limited_adjacency = graph.adjacency_angle(trm_mesh, max_normal_bias_angle)
-    adjacency_mat = np.vstack((angle_limited_adjacency, np.fliplr(angle_limited_adjacency)))
+    angle_limited_adjacency_mat = np.vstack((angle_limited_adjacency, np.fliplr(angle_limited_adjacency)))
     # prepare return values
     seg_nested_face_id_list = []
     seg_nested_edge_list = []
@@ -111,8 +114,10 @@ def overlapped_segmentation(model, max_normal_bias_angle=np.pi / 12, toggle_face
             break
         # random.shuffle(face_ids) # costly!
         current_face_id = face_ids[0]
-        adj_face_id_list, edge_list, curvature, face_id_pair_for_curvature = \
-            expand_adj(vertices, faces, face_normals, current_face_id, adjacency_mat, max_normal_bias_angle)
+        adj_face_id_list, edge_list, curvature, face_id_pair_for_curvature = expand_adj(current_face_id,
+                                                                                        trm_mesh,
+                                                                                        angle_limited_adjacency_mat,
+                                                                                        max_normal_bias_angle)
         seg_nested_face_id_list.append(adj_face_id_list)
         seg_nested_edge_list.append(edge_list)
         seg_seed_face_id_list.append(current_face_id)
