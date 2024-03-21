@@ -7,15 +7,17 @@ import grasping.planning.segmentation as seg
 import modeling._ode_cdhelper as moh
 
 
-def tabletop_placements(obj_cmodel, toggle_support_facets=False):
+def tabletop_placements(obj_cmodel, stability_threshhold=.1, toggle_support_facets=False):
     """
     find all placements on a table (z axis is the plane normal; no consideration on symmetry)
     :param obj_cmodel:
+    :param stability_threshhold: the ratio of (com_projection to support boundary)/(com to com_projection)
     :return:
     author: weiwei
+    date: 20161213, 20240321osaka
     """
     convex_trm = obj_cmodel.trm_mesh.convex_hull
-    seg_result = seg.overlapped_segmentation(model=convex_trm, max_normal_bias_angle=np.pi / 32)
+    seg_result = seg.overlapped_segmentation(model=convex_trm, max_normal_bias_angle=np.pi / 64)
     seg_nested_face_id_list, seg_nested_edge_list, seg_seed_face_id_list, seg_normal_list, _ = seg_result
     placement_pose_list = []
     support_facet_list = []
@@ -43,6 +45,8 @@ def tabletop_placements(obj_cmodel, toggle_support_facets=False):
             min_contact_distance = np.linalg.norm(contact_point - com)
             min_edge_distance, min_edge_projection = rm.min_distance_point_edge_list(contact_point,
                                                                                      seg_nested_edge_list[id])
+            if min_edge_distance / min_contact_distance < stability_threshhold:
+                continue
             # show contact point to edge projection
             mgm.gen_stick(spos=contact_point, epos=min_edge_projection, type="round").attach_to(facet)
             placement_pose_list.append((placement_pos, placement_rotmat))
@@ -51,6 +55,15 @@ def tabletop_placements(obj_cmodel, toggle_support_facets=False):
     if toggle_support_facets:
         return placement_pose_list, support_facet_list
     return placement_pose_list
+
+
+def tabletop_placements_and_grasps(obj_cmodel, end_effector, grasp_collection, stability_threshhold=.1, toggle_dbg=False):
+    placement_pose_list, support_facet_list = tabletop_placements(obj_cmodel=obj_cmodel,
+                                                                  stability_threshhold=stability_threshhold,
+                                                                  toggle_support_facets=True)
+    for placement_pose in placement_pose_list:
+        for grasp in grasp_collection:
+
 
 
 if __name__ == '__main__':
@@ -83,25 +96,29 @@ if __name__ == '__main__':
 
     anime_data = AnimeData(placement_pose_list, support_facets)
 
+    print(len(anime_data.placement_pose_list))
 
-    def update(animation_data, task):
-        if animation_data.counter > len(animation_data.placement_pose_list):
-            animation_data.counter = 0
+
+    def update(anime_data, task):
+        if anime_data.counter >= len(anime_data.placement_pose_list):
+            anime_data.gmodel.detach()
+            anime_data.support_facets[anime_data.counter - 1].detach()
+            anime_data.counter = 0
         if base.inputmgr.keymap["space"] is True:
             time.sleep(.1)
-            print(animation_data.counter)
-            animation_data.gmodel.pose = animation_data.placement_pose_list[animation_data.counter]
-            animation_data.gmodel.detach()
-            animation_data.gmodel.rgb = rm.bc.tab20_list[1]
-            animation_data.gmodel.alpha = .3
-            animation_data.gmodel.attach_to(base)
-            if (animation_data.support_facets is not None):
-                if animation_data.counter > 0:
-                    animation_data.support_facets[animation_data.counter - 1].detach()
-                animation_data.support_facets[animation_data.counter].pose = animation_data.placement_pose_list[
-                    animation_data.counter]
-                animation_data.support_facets[animation_data.counter].attach_to(base)
-            animation_data.counter += 1
+            print(anime_data.counter)
+            anime_data.gmodel.pose = anime_data.placement_pose_list[anime_data.counter]
+            anime_data.gmodel.detach()
+            anime_data.gmodel.rgb = rm.bc.tab20_list[1]
+            anime_data.gmodel.alpha = .3
+            anime_data.gmodel.attach_to(base)
+            if (anime_data.support_facets is not None):
+                if anime_data.counter > 0:
+                    anime_data.support_facets[anime_data.counter - 1].detach()
+                anime_data.support_facets[anime_data.counter].pose = anime_data.placement_pose_list[
+                    anime_data.counter]
+                anime_data.support_facets[anime_data.counter].attach_to(base)
+            anime_data.counter += 1
         return task.cont
 
 

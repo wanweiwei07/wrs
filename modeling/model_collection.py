@@ -115,6 +115,5 @@ class ModelCollection(object):
         print(self._gm_list)
         print(self._cm_list)
         for objcm in self._cm_list:
-            print(objcm.trm_mesh.vertices)
             result += objcm.trm_mesh
         return result
