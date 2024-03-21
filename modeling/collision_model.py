@@ -4,6 +4,7 @@ from visualization.panda.world import ShowBase
 from panda3d.core import NodePath, CollisionNode, CollisionTraverser, CollisionHandlerQueue, BitMask32
 import basis.data_adapter as da
 import modeling.geometric_model as mgm
+import modeling.model_collection as mmc
 import modeling._panda_cdhelper as mph
 import modeling._ode_cdhelper as moh
 import modeling.constant as mc
@@ -366,6 +367,16 @@ class CollisionModel(mgm.GeometricModel):
         """
         return mph.is_collided(self, cmodel, toggle_contacts=toggle_contacts)
 
+    def attach_to(self, target):
+        if isinstance(target, ShowBase):
+            # for rendering to base.render
+            self._pdndp.reparentTo(target.render)
+        elif isinstance(target, mgm.StaticGeometricModel):  # prepared for decorations like local frames
+            self._pdndp.reparentTo(target.pdndp)
+        elif isinstance(target, mmc.ModelCollection):
+            target.add_cm(self)
+        else:
+            raise ValueError("Acceptable: ShowBase, StaticGeometricModel, ModelCollection!")
     def show_cdprim(self):
         if "cdprim" in self._cache_for_show:
             self._cache_for_show["cdprim"].removeNode()

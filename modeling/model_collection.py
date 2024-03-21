@@ -1,3 +1,4 @@
+import basis.trimesh as trm
 import numpy as np
 import basis.robot_math as rm
 from visualization.panda.world import ShowBase
@@ -108,3 +109,12 @@ class ModelCollection(object):
     def unshow_cdmesh(self):
         for objcm in self._cm_list:
             objcm.unshow_cdmesh()
+
+    def acquire_cm_trm(self):
+        result = trm.Trimesh()
+        print(self._gm_list)
+        print(self._cm_list)
+        for objcm in self._cm_list:
+            print(objcm.trm_mesh.vertices)
+            result += objcm.trm_mesh
+        return result
