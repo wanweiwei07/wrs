@@ -12,7 +12,9 @@ import motion.probabilistic.rrt_connect as rrtc
 base = wd.World(cam_pos=[1.2, .7, 1], lookat_pos=[.0, 0, .15])
 mgm.gen_frame().attach_to(base)
 # ground
-ground = mcm.gen_box(xyz_lengths=[5, 5, 1], rgba=[.7, .7, .7, .7])
+ground = mcm.gen_box(xyz_lengths=[5, 5, 0.1],
+                     pos=np.array([0, 0, -0.1]),
+                     rgba=[.7, .7, .7, .7])
 ground.pos = np.array([0, 0, -.51])
 ground.attach_to(base)
 # object
@@ -30,7 +32,7 @@ t1_copy.attach_to(base)
 # object holder goal
 tube2 = mcm.CollisionModel("objects/tubebig.stl")
 gl_pos2 = np.array([.3, .05, .0])
-gl_rotmat2 = rm.rotmat_from_euler(0, 0, 2*math.pi / 3)
+gl_rotmat2 = rm.rotmat_from_euler(0, 0, 2 * math.pi / 3)
 tube2.pos = gl_pos2
 tube2.rotmat = gl_rotmat2
 
@@ -39,7 +41,7 @@ t2_copy.rgb = rm.bc.tab20_list[0]
 t2_copy.alpha = .3
 t2_copy.attach_to(base)
 
-robot = x6g2.XArmLite6G2()
+robot = x6g2.XArmLite6WG2()
 # robot.gen_meshmodel().attach_to(base)
 
 rrtc = rrtc.RRTConnect(robot)
@@ -54,6 +56,7 @@ mot_data = ppp.gen_pick_and_place(obj_cmodel=tube1,
                                   end_jnt_values=start_conf,
                                   goal_pose_list=[(gl_pos2, gl_rotmat2)],
                                   obstacle_list=[ground])
+
 
 class Data(object):
     def __init__(self, mot_data):
