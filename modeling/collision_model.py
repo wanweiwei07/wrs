@@ -367,6 +367,7 @@ class CollisionModel(mgm.GeometricModel):
         """
         return mph.is_collided(self, cmodel, toggle_contacts=toggle_contacts)
 
+    @mgm.GeometricModel.update_pdndp_pose_decorator
     def attach_to(self, target):
         if isinstance(target, ShowBase):
             # for rendering to base.render
@@ -377,6 +378,7 @@ class CollisionModel(mgm.GeometricModel):
             target.add_cm(self)
         else:
             raise ValueError("Acceptable: ShowBase, StaticGeometricModel, ModelCollection!")
+
     def show_cdprim(self):
         if "cdprim" in self._cache_for_show:
             self._cache_for_show["cdprim"].removeNode()

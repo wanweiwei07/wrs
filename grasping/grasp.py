@@ -23,7 +23,7 @@ class GraspCollection(object):
             self._grasp_list = grasp_list
 
     @classmethod
-    def from_file(cls, path=None, file_name='preannotated_grasps.pickle'):
+    def load_from_disk(cls, file_name="preannotated_grasps.pickle", path=None):
         if path is None:
             path = os.getcwd()
         with open(os.path.join(path, file_name), 'rb') as file:

@@ -3,8 +3,10 @@ import basis.robot_math as rm
 import basis.trimesh.base as trm
 import modeling.geometric_model as mgm
 import modeling.collision_model as mcm
+import modeling.model_collection as mmc
 import grasping.planning.segmentation as seg
 import modeling._ode_cdhelper as moh
+import grasping.reasoner as gr
 
 
 def tabletop_placements(obj_cmodel, stability_threshhold=.1, toggle_support_facets=False):
@@ -30,8 +32,8 @@ def tabletop_placements(obj_cmodel, stability_threshhold=.1, toggle_support_face
         seed_face_pos = np.mean(convex_trm.vertices[convex_trm.faces[seg_face_id]], axis=0)
         placement_pos, placement_rotmat = rm.rel_pose(seed_face_pos,
                                                       seed_face_rotmat,
-                                                      obj_cmodel.pos,
-                                                      obj_cmodel.rotmat)
+                                                      np.zeros(3),
+                                                      np.eye(3))
         normals = seg_normal_list[id]
         faces = convex_trm.faces[seg_nested_face_id_list[id]]
         facet = mcm.CollisionModel(initor=trm.Trimesh(vertices=convex_trm.vertices, faces=faces, face_normals=normals),
@@ -57,13 +59,41 @@ def tabletop_placements(obj_cmodel, stability_threshhold=.1, toggle_support_face
     return placement_pose_list
 
 
-def tabletop_placements_and_grasps(obj_cmodel, end_effector, grasp_collection, stability_threshhold=.1, toggle_dbg=False):
+def tabletop_placements_and_grasps(tabletop_xy,
+                                   obj_cmodel,
+                                   robot,
+                                   grasp_collection,
+                                   stability_threshhold=.1,
+                                   toggle_dbg=False):
     placement_pose_list, support_facet_list = tabletop_placements(obj_cmodel=obj_cmodel,
                                                                   stability_threshhold=stability_threshhold,
                                                                   toggle_support_facets=True)
+    grasp_reasoner = gr.GraspReasoner(robot=robot)
     for placement_pose in placement_pose_list:
-        for grasp in grasp_collection:
-
+        pos = placement_pose[0] + np.array([tabletop_xy[0], tabletop_xy[1], 0])
+        rotmat = placement_pose[1]
+        feasible_gids = grasp_reasoner.find_feasible_gids(grasp_collection=grasp_collection,
+                                                          obstacle_list=[mcm.gen_box(xyz_lengths=[5, 5, 0.1],
+                                                                                     pos=np.array([0, 0, -0.1]),
+                                                                                     rgba=[.7, .7, .7, .7])],
+                                                          goal_pose=(pos, rotmat),
+                                                          toggle_keep=True,
+                                                          toggle_dbg=False)
+        print(feasible_gids)
+        if toggle_dbg:
+            for f_gid in feasible_gids:
+                print(f_gid)
+                grasp = grasp_collection[f_gid]
+                robot.end_effector.grip_at_by_pose(jaw_center_pos=pos + rotmat @ grasp.ac_pos,
+                                                   jaw_center_rotmat=rotmat @ grasp.ac_rotmat,
+                                                   jaw_width=grasp.ee_values)
+                m_col = mmc.ModelCollection()
+                obj_cmodel_copy = obj_cmodel.copy()
+                obj_cmodel_copy.pose = (pos, rotmat)
+                robot.end_effector.gen_meshmodel(rgb=rm.bc.green, alpha=.3).attach_to(m_col)
+                obj_cmodel_copy.attach_to(m_col)
+                m_col.attach_to(base)
+                base.run()
 
 
 if __name__ == '__main__':
@@ -76,8 +106,8 @@ if __name__ == '__main__':
     obj_path = os.path.join(basis.__path__[0], 'objects', 'bunnysim.stl')
     ground = mcm.gen_box(xyz_lengths=[.5, .5, .01], pos=np.array([0, 0, -0.01]), rgba=[.3, .3, .3, 1])
     ground.attach_to(base)
-    bunny_gmodel = mcm.CollisionModel(obj_path)
-    placement_pose_list, support_facets = tabletop_placements(bunny_gmodel, toggle_support_facets=True)
+    bunny = mcm.CollisionModel(obj_path)
+    placement_pose_list, support_facets = tabletop_placements(bunny, toggle_support_facets=True)
 
 
     # for id, placement_pose in enumerate(placement_pose_list):
@@ -89,7 +119,7 @@ if __name__ == '__main__':
     class AnimeData(object):
         def __init__(self, placement_pose_list, support_facets=None):
             self.counter = 0
-            self.gmodel = bunny_gmodel
+            self.model = bunny
             self.placement_pose_list = placement_pose_list
             self.support_facets = support_facets
 
@@ -101,17 +131,17 @@ if __name__ == '__main__':
 
     def update(anime_data, task):
         if anime_data.counter >= len(anime_data.placement_pose_list):
-            anime_data.gmodel.detach()
+            anime_data.model.detach()
             anime_data.support_facets[anime_data.counter - 1].detach()
             anime_data.counter = 0
         if base.inputmgr.keymap["space"] is True:
             time.sleep(.1)
-            print(anime_data.counter)
-            anime_data.gmodel.pose = anime_data.placement_pose_list[anime_data.counter]
-            anime_data.gmodel.detach()
-            anime_data.gmodel.rgb = rm.bc.tab20_list[1]
-            anime_data.gmodel.alpha = .3
-            anime_data.gmodel.attach_to(base)
+            anime_data.model.detach()
+            print(anime_data.placement_pose_list[anime_data.counter])
+            anime_data.model.pose = anime_data.placement_pose_list[anime_data.counter]
+            anime_data.model.rgb = rm.bc.tab20_list[1]
+            anime_data.model.alpha = .3
+            anime_data.model.attach_to(base)
             if (anime_data.support_facets is not None):
                 if anime_data.counter > 0:
                     anime_data.support_facets[anime_data.counter - 1].detach()
