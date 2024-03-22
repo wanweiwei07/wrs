@@ -23,10 +23,8 @@ class GraspCollection(object):
             self._grasp_list = grasp_list
 
     @classmethod
-    def load_from_disk(cls, file_name="preannotated_grasps.pickle", path=None):
-        if path is None:
-            path = os.getcwd()
-        with open(os.path.join(path, file_name), 'rb') as file:
+    def load_from_disk(cls, file_name="grasp_collection.pickle"):
+        with open(file_name, 'rb') as file:
             obj = pickle.load(file)
             if not isinstance(obj, cls):
                 raise TypeError(f"Object in {file_name} is not an instance of {cls.__name__}")
@@ -68,16 +66,13 @@ class GraspCollection(object):
             out_str += "  " + str(grasp) + "\n"
         return out_str
 
-    def save_to_disk(self, path=None, file_name='preannotated_grasps.pickle'):
+    def save_to_disk(self, file_name='grasp_collection.pickle'):
         """
         :param grasp_collection:
-        :param path:
         :param file_name:
         :return:
         author: haochen, weiwei
         date: 20200104, 20240319
         """
-        if path is None:
-            path = os.getcwd()
-        with open(os.path.join(path, file_name), 'wb') as file:
+        with open(file_name, 'wb') as file:
             pickle.dump(GraspCollection(grasp_list=self._grasp_list), file)

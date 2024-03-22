@@ -1,12 +1,108 @@
 import numpy as np
+import pickle
 import basis.robot_math as rm
 import basis.trimesh.base as trm
 import modeling.geometric_model as mgm
 import modeling.collision_model as mcm
-import modeling.model_collection as mmc
 import grasping.planning.segmentation as seg
 import modeling._ode_cdhelper as moh
 import grasping.reasoner as gr
+
+
+class TTPG(object):
+    """
+    Tabletop Placement and its Associated Grasps
+    """
+
+    def __init__(self, tabletop_pos=None, tabletop_rotz=None, placement_pose_id=None, feasible_gids=None):
+        self._tabletop_pos = tabletop_pos
+        self._tabletop_rotz = tabletop_rotz
+        self._placement_pose_id = placement_pose_id
+        self._feasible_gids = feasible_gids
+
+    @property
+    def tabletop_pos(self):
+        return self._tabletop_pos
+
+    @property
+    def tabletop_rotz(self):
+        return self._tabletop_rotz
+
+    @property
+    def placement_pose_id(self):
+        return self._placement_pose_id
+
+    @property
+    def feasible_gids(self):
+        return self._feasible_gids
+
+    def __str__(self):
+        out_str = f"Tabletop Placement at {repr(self._tabletop_pos)}, with theta={repr(self._tabletop_rotz)}\n"
+        out_str += f"   Placement id = {repr(self._placement_pose_id)}, with gids= {repr(self._feasible_gids)}"
+        return out_str
+
+
+class TTPGCollection(object):
+    def __init__(self, placement_pose_list, grasp_collection):
+        """I am learning users to ensure placements and grasps are defined for the same objecd"""
+        self.reference_placement_poses = placement_pose_list
+        self.reference_grasp_collection = grasp_collection
+        self._ttpg_list = []
+
+    @classmethod
+    def load_from_disk(cls, file_name="ttpg_collection.pickle"):
+        with open(file_name, 'rb') as file:
+            obj = pickle.load(file)
+            if not isinstance(obj, cls):
+                raise TypeError(f"Object in {file_name} is not an instance of {cls.__name__}")
+            return obj
+
+    def append(self, ttpg):
+        self._ttpg_list.append(ttpg)
+
+    def get_placement_pose_by_ttpg(self, ttpg):
+        return self.reference_placement_poses[ttpg._placement_pose_id]
+
+    def get_grasp_list(self, ttpg):
+        return self.reference_grasp_collection[ttpg._feasible_gids]
+
+    def __getitem__(self, index):
+        return self._ttpg_list[index]
+
+    def __setitem__(self, index, ttpg):
+        self._ttpg_list[index] = ttpg
+
+    def __len__(self):
+        return len(self._ttpg_list)
+
+    def __iter__(self):
+        return iter(self._ttpg_list)
+
+    def __add__(self, other):
+        """
+        leave it to the user to ensure the two collections share the same reference placements and grasps
+        :param other:
+        :return:
+        """
+        self._ttpg_list += other._ttpg_list
+        return self
+
+    def __str__(self):
+        out_str = f"TTPGCollection of {len(self._ttpg_list)} TTPGs\n"
+        for ttpg in self._ttpg_list:
+            out_str += str(ttpg) + "\n"
+        return out_str
+
+    def save_to_disk(self, file_name='ttpg_collection.pickle'):
+        """
+        :param grasp_collection:
+        :param file_name
+        :return:
+        """
+        with open(file_name, 'wb') as file:
+            pickle.dump(self, file)
+
+
 
 def flat_placements(obj_cmodel, stability_threshhold=.1, toggle_support_facets=False):
     """
@@ -58,18 +154,19 @@ def flat_placements(obj_cmodel, stability_threshhold=.1, toggle_support_facets=F
     return placement_pose_list
 
 
-def tabletop_placements_and_grasps(obj_cmodel,
-                                   robot,
-                                   grasp_collection,
+def tabletop_placements_and_grasps(robot,
                                    placement_pose_list,
-                                   placement_xyz,
+                                   grasp_collection,
+                                   tabletop_xyz,
+                                   tabletop_rotz=0,
                                    tabletop_z=.0,
                                    consider_robot=True,
                                    toggle_dbg=False):
+    ttpg_collection = TTPGCollection(placement_pose_list, grasp_collection)
     grasp_reasoner = gr.GraspReasoner(robot=robot)
     table_obstacle = mcm.gen_surface_barrier(tabletop_z)
-    for placement_pose in placement_pose_list:
-        pos = placement_pose[0] + placement_xyz
+    for pid, placement_pose in enumerate(placement_pose_list):
+        pos = placement_pose[0] + tabletop_xyz
         rotmat = placement_pose[1]
         feasible_gids = grasp_reasoner.find_feasible_gids(grasp_collection=grasp_collection,
                                                           obstacle_list=[table_obstacle],
@@ -77,7 +174,11 @@ def tabletop_placements_and_grasps(obj_cmodel,
                                                           consider_robot=consider_robot,
                                                           toggle_keep=True,
                                                           toggle_dbg=False)
-        print(feasible_gids)
+        if feasible_gids is not None:
+            ttpg_collection.append(TTPG(tabletop_pos=pos,
+                                        tabletop_rotz=tabletop_rotz,
+                                        placement_pose_id=pid,
+                                        feasible_gids=feasible_gids))
         if toggle_dbg:
             for f_gid in feasible_gids:
                 print(f_gid)
@@ -85,13 +186,9 @@ def tabletop_placements_and_grasps(obj_cmodel,
                 jnt_values = robot.ik(tgt_pos=pos + rotmat @ grasp.ac_pos, tgt_rotmat=rotmat @ grasp.ac_rotmat)
                 if jnt_values is not None:
                     robot.goto_given_conf(jnt_values=jnt_values, ee_values=grasp.ee_values)
-                m_col = mmc.ModelCollection()
-                obj_cmodel_copy = obj_cmodel.copy()
-                obj_cmodel_copy.pose = (pos, rotmat)
-                robot.gen_meshmodel().attach_to(m_col)
-                obj_cmodel_copy.attach_to(m_col)
-                m_col.attach_to(base)
+                robot.gen_meshmodel().attach_to(base)
             base.run()
+    return ttpg_collection
 
 
 if __name__ == '__main__':
@@ -102,7 +199,7 @@ if __name__ == '__main__':
 
     base = wd.World(cam_pos=[1, 1, 1], lookat_pos=[0, 0, 0])
     obj_path = os.path.join(basis.__path__[0], 'objects', 'bunnysim.stl')
-    ground = mcm.gen_box(xyz_lengths=[.5, .5, .01], pos=np.array([0, 0, -0.01]), rgba=[.3, .3, .3, 1])
+    ground = mcm.gen_box(xyz_lengths=[.5, .5, .01], pos=np.array([0, 0, -0.01]))
     ground.attach_to(base)
     bunny = mcm.CollisionModel(obj_path)
     placement_pose_list, support_facets = flat_placements(bunny, toggle_support_facets=True)

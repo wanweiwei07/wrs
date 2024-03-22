@@ -192,6 +192,8 @@ class GraspReasoner(object):
                 print(f"Number of collided robots at goal-{str(goal_id)}: {rbt_collided_grasps_num}")
                 print("------end_type------")
                 base.run()
+        if len(previous_available_gids)==0:
+            return None
         return previous_available_gids
 
     # @keep_states_decorator
@@ -203,42 +205,14 @@ class GraspReasoner(object):
                            toggle_keep=True,
                            toggle_dbg=False):
         """
-        find
-        the
-        common
-        collision
-        free and IK
-        feasible
-        gids
-        :param
-        eef: an
-        end
-        effector
-        instance
-        :param
-        grasp_collection
-        grasping.grasp.GraspCollection
-        :param
-        goal_pose_list[[pos0, rotmat0]], [pos1, rotmat1], ...]
-        :param
-        obstacle_list
-        : param
-        consider_robot
-        whether
-        to
-        consider
-        robot
-        ik and collision
-        : param
-        toggle_keep: keep
-        robot
-        states or not
-        : param
-        toggle_dbg
-        :
-        return: common
-        grasp
-        poses
+        find the common collision free and IK feasible gids
+        :param grasp_collection grasping.grasp.GraspCollection
+        :param goal_pose_list[[pos0, rotmat0]], [pos1, rotmat1], ...]
+        :param obstacle_list
+        :param consider_robot whether to consider robot ik and collision
+        :param toggle_keep: keep robot states or not
+        :param toggle_dbg
+        :return: common grasp poses
         author: weiwei
         date: 20210113, 20210125
         """
@@ -260,14 +234,12 @@ class GraspReasoner(object):
                            toggle_keep=True,
                            toggle_dbg=False):
         """
-        :param
-        grasp_collection:
-        :param
-        goal_pose_list:
-        :param
-        obstacle_list:
-        :param
-        toggle_keep:
+        :param grasp_collection:
+        :param goal_pose:
+        :param obstacle_list:
+        :param consider_robot:
+        :param toggle_keep:
+        :param toggle_dbg:
         :return:
         """
         return self.reason_common_gids(grasp_collection=grasp_collection,

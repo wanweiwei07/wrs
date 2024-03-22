@@ -25,14 +25,16 @@ grasp_collection = gg.GraspCollection.load_from_disk(file_name="grasps_wg2_bunny
 placement_pose_list, support_facet_list = mpl.flat_placements(obj_cmodel=bunny,
                                                               stability_threshhold=.1,
                                                               toggle_support_facets=True)
-mpl.tabletop_placements_and_grasps(obj_cmodel=bunny,
-                                   robot=x6g2.XArmLite6WG2(),
-                                   grasp_collection=grasp_collection,
-                                   placement_pose_list=placement_pose_list,
-                                   tabletop_z = tabletop_z,
-                                   placement_xyz=np.array([.4, -.05, 0]),
-                                   consider_robot=True,
-                                   toggle_dbg=True)
+ttpg_col = mpl.TTPGCollection(placement_pose_list=placement_pose_list, grasp_collection=grasp_collection)
+ttpg_col += mpl.tabletop_placements_and_grasps(robot=x6g2.XArmLite6WG2(),
+                                               grasp_collection=grasp_collection,
+                                               placement_pose_list=placement_pose_list,
+                                               tabletop_z=tabletop_z,
+                                               tabletop_xyz=np.array([.4, -.05, 0]),
+                                               consider_robot=True,
+                                               toggle_dbg=False)
+ttpg_col.save_to_disk("x6wg2_bunny_ttpg_col.pickle")
+print(ttpg_col)
 base.run()
 
 
