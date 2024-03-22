@@ -13,6 +13,7 @@ magenta = np.array([1, 0, 1, 1])
 yellow = np.array([1, 1, 0, 1])
 black = np.array([0, 0, 0, 1])
 orange = np.array([1,0.65,0,1])
+white = np.array([1, 1, 1, 1])
 chinese_red = np.array([0.9294, 0.4275, 0.2745, 1])  # 237, 109, 70
 carrot_orange = np.array([0.9294, 0.4275, 0.2078, 1])  # 237, 109, 53
 chocolate = np.array([0.4235, 0.2078, 0.1412, 1])  # 108, 53, 36

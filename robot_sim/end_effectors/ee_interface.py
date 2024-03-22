@@ -111,13 +111,10 @@ class EEInterface(object):
                 if is_collided:
                     if toggle_dbg:
                         import modeling.geometric_model as mgm
-                        cdme.cmodel.show_cdmesh()
                         mgm.GeometricModel(cdme.cmodel).attach_to(base)
-                        for cmodel in cmodel_list:
-                            cmodel.show_cdmesh()
                         print(collision_points)
                         for point in collision_points:
-                            mgm.gen_sphere(point, radius=.001).attach_to(base)
+                            mgm.gen_sphere(point, radius=.01).attach_to(base)
                         print("mesh collided")
                     return True
         return False

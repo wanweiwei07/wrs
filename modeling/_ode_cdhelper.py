@@ -84,7 +84,9 @@ def is_collided(cmodel_list0, cmodel_list1, toggle_contacts=True):
                     return (True, contact_points)
                 else:
                     return True
-    return False, np.asarray([])
+    if toggle_contacts:
+        return (False, np.asarray([]))
+    return False
 
 
 def rayhit_closet(spos, epos, target_cmodel):

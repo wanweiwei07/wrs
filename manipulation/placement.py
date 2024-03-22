@@ -63,20 +63,19 @@ def tabletop_placements_and_grasps(tabletop_xy,
                                    obj_cmodel,
                                    robot,
                                    grasp_collection,
-                                   stability_threshhold=.1,
+                                   placement_pose_list,
+                                   consider_robot = True,
                                    toggle_dbg=False):
-    placement_pose_list, support_facet_list = tabletop_placements(obj_cmodel=obj_cmodel,
-                                                                  stability_threshhold=stability_threshhold,
-                                                                  toggle_support_facets=True)
     grasp_reasoner = gr.GraspReasoner(robot=robot)
     for placement_pose in placement_pose_list:
         pos = placement_pose[0] + np.array([tabletop_xy[0], tabletop_xy[1], 0])
         rotmat = placement_pose[1]
         feasible_gids = grasp_reasoner.find_feasible_gids(grasp_collection=grasp_collection,
                                                           obstacle_list=[mcm.gen_box(xyz_lengths=[5, 5, 0.1],
-                                                                                     pos=np.array([0, 0, -0.1]),
-                                                                                     rgba=[.7, .7, .7, .7])],
+                                                                                     pos=np.array([0, 0, -0.05]),
+                                                                                     rgba=np.array([.7, .7, .7, .7]))],
                                                           goal_pose=(pos, rotmat),
+                                                          consider_robot=consider_robot,
                                                           toggle_keep=True,
                                                           toggle_dbg=False)
         print(feasible_gids)
