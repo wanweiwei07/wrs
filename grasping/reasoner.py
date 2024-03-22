@@ -1,3 +1,4 @@
+import grasping.grasp as g
 import basis.robot_math as rm
 
 
@@ -25,6 +26,18 @@ class GraspReasoner(object):
                 return result
 
         return wrapper
+
+    def transform_grasp(self, goal_pos, goal_rotmat, grasp):
+        """
+        transform a grasp to the goal pose
+        :param goal_pos:
+        :param goal_rotmat:
+        :param grasp:
+        :return:
+        """
+        return g.Grasp(ee_values=grasp.ee_values,
+                       ac_pos=goal_pos + goal_rotmat.dot(grasp.ac_pos),
+                       ac_rotmat=goal_rotmat.dot(grasp.ac_rotmat))
 
     ## The following code examines robot IK first. In contrast, the code blow this one examines EE collisions first.
     ## The code below this more is slight more efficient and is thus adopted.
@@ -120,6 +133,10 @@ class GraspReasoner(object):
         eef_collided_grasps_num = 0
         ik_failed_grasps_num = 0
         rbt_collided_grasps_num = 0
+        if toggle_dbg:
+            for obstacle in obstacle_list:
+                obstacle.attach_to(base)
+                obstacle.show_cdprim()
         for goal_id, goal_pose in enumerate(goal_pose_list):
             goal_pos = goal_pose[0]
             goal_rotmat = goal_pose[1]
@@ -127,11 +144,10 @@ class GraspReasoner(object):
                                  [grasp_collection[i] for i in previous_available_gids])
             previous_available_gids = []
             for gid, grasp in grasp_with_gid:
-                goal_jaw_center_pos = goal_pos + goal_rotmat.dot(grasp.ac_pos)
-                goal_jaw_center_rotmat = goal_rotmat.dot(grasp.ac_rotmat)
-                self.robot.end_effector.grip_at_by_pose(jaw_center_pos=goal_jaw_center_pos,
-                                                        jaw_center_rotmat=goal_jaw_center_rotmat,
-                                                        jaw_width=grasp.ee_values)
+                goal_grasp = self.transform_grasp(goal_pos, goal_rotmat, grasp)
+                self.robot.end_effector.grip_at_by_pose(jaw_center_pos=goal_grasp.ac_pos,
+                                                        jaw_center_rotmat=goal_grasp.ac_rotmat,
+                                                        jaw_width=goal_grasp.ee_values)
                 if self.robot.end_effector.is_mesh_collided(cmodel_list=obstacle_list):
                     # ee collided
                     eef_collided_grasps_num += 1
@@ -139,14 +155,14 @@ class GraspReasoner(object):
                         self.robot.end_effector.gen_meshmodel(rgb=rm.bc.white, alpha=1).attach_to(base)
                 else:
                     if consider_robot:
-                        jnt_values = self.robot.ik(tgt_pos=goal_jaw_center_pos, tgt_rotmat=goal_jaw_center_rotmat)
+                        jnt_values = self.robot.ik(tgt_pos=goal_grasp.ac_pos, tgt_rotmat=goal_grasp.ac_rotmat)
                         if jnt_values is None:
                             # ik failure
                             ik_failed_grasps_num += 1
                             if toggle_dbg:
-                                self.robot.end_effector.grip_at_by_pose(jaw_center_pos=goal_jaw_center_pos,
-                                                                        jaw_center_rotmat=goal_jaw_center_rotmat,
-                                                                        jaw_width=grasp.ee_values)
+                                self.robot.end_effector.grip_at_by_pose(jaw_center_pos=goal_grasp.ac_pos,
+                                                                        jaw_center_rotmat=goal_grasp.ac_rotmat,
+                                                                        jaw_width=goal_grasp.ee_values)
                                 self.robot.end_effector.gen_meshmodel(rgb=rm.bc.magenta, alpha=1).attach_to(base)
                         else:
                             self.robot.goto_given_conf(jnt_values=jnt_values)
@@ -187,15 +203,42 @@ class GraspReasoner(object):
                            toggle_keep=True,
                            toggle_dbg=False):
         """
-        find the common collision free and IK feasible gids
-        :param eef: an end effector instance
-        :param grasp_collection grasping.grasp.GraspCollection
-        :param goal_pose_list [[pos0, rotmat0]], [pos1, rotmat1], ...]
-        :param obstacle_list
-        :param consider_robot whether to consider robot ik and collision
-        :param toggle_keep: keep robot states or not
-        :param toggle_dbg
-        :return: common grasp poses
+        find
+        the
+        common
+        collision
+        free and IK
+        feasible
+        gids
+        :param
+        eef: an
+        end
+        effector
+        instance
+        :param
+        grasp_collection
+        grasping.grasp.GraspCollection
+        :param
+        goal_pose_list[[pos0, rotmat0]], [pos1, rotmat1], ...]
+        :param
+        obstacle_list
+        : param
+        consider_robot
+        whether
+        to
+        consider
+        robot
+        ik and collision
+        : param
+        toggle_keep: keep
+        robot
+        states or not
+        : param
+        toggle_dbg
+        :
+        return: common
+        grasp
+        poses
         author: weiwei
         date: 20210113, 20210125
         """
@@ -217,10 +260,14 @@ class GraspReasoner(object):
                            toggle_keep=True,
                            toggle_dbg=False):
         """
-        :param grasp_collection:
-        :param goal_pose_list:
-        :param obstacle_list:
-        :param toggle_keep:
+        :param
+        grasp_collection:
+        :param
+        goal_pose_list:
+        :param
+        obstacle_list:
+        :param
+        toggle_keep:
         :return:
         """
         return self.reason_common_gids(grasp_collection=grasp_collection,

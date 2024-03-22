@@ -432,7 +432,6 @@ class GeometricModel(StaticGeometricModel):
         gmodel = GeometricModel(self)
         gmodel.pos = self.pos
         gmodel.rotmat = self.rotmat
-        return gmodel
 
 
 # ======================================================

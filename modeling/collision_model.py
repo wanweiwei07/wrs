@@ -443,31 +443,41 @@ class CollisionModel(mgm.GeometricModel):
 # ======================================================
 
 
-def gen_box(xyz_lengths=rm.np.array([.1, .1, .1]), pos=rm.np.zeros(3), rotmat=rm.np.eye(3),
-            rgba=rm.np.array([1, 0, 0, 1])):
+def gen_surface_barrier(pos_z=.0, rgb=rm.bc.tab20_list[14], alpha=1):
+    return gen_box(rm.np.array([5, 5, 1]), rm.np.array([.0, .0, -.5 + pos_z]), rgb=rgb, alpha=alpha)
+
+
+def gen_box(xyz_lengths=rm.np.array([.1, .1, .1]),
+            pos=rm.np.zeros(3),
+            rotmat=rm.np.eye(3),
+            rgb=rm.bc.tab20_list[0],
+            alpha=1):
     """
     :param xyz_lengths:
     :param pos:
     :param rotmat:
+    :param rgb:
+    :param alpha:
     :return:
     author: weiwei
     date: 20201202, 20240303
     """
-    box_sgm = mgm.gen_box(xyz_lengths=xyz_lengths, pos=pos, rotmat=rotmat, rgba=rgba)
+    box_sgm = mgm.gen_box(xyz_lengths=xyz_lengths, pos=pos, rotmat=rotmat, rgba=rm.np.append(rgb, alpha))
     box_cm = CollisionModel(box_sgm)
     return box_cm
 
 
-def gen_sphere(pos=rm.np.array([0, 0, 0]), radius=0.01, rgba=rm.np.array([1, 0, 0, 1])):
+def gen_sphere(pos=rm.np.array([0, 0, 0]), radius=0.01, rgb=rm.bc.tab20_list[10], alpha=1):
     """
     :param pos:
     :param radius:
-    :param rgba:
+    :param rgb:
+    :param alpha:
     :return:
     author: weiwei
     date: 20161212tsukuba, 20191228osaka
     """
-    sphere_sgm = mgm.gen_sphere(pos=pos, radius=radius, rgba=rgba)
+    sphere_sgm = mgm.gen_sphere(pos=pos, radius=radius, rgba=rm.np.append(rgb, alpha))
     sphere_cm = CollisionModel(sphere_sgm)
     return sphere_cm
 
@@ -476,7 +486,8 @@ def gen_stick(spos=rm.np.array([.0, .0, .0]),
               epos=rm.np.array([.0, .0, .1]),
               radius=.0025,
               type="round",
-              rgba=rm.np.array([1, 0, 0, 1]),
+              rgb=rm.bc.tab20_list[10],
+              alpha=1,
               n_sec=8):
     """
     :param spos:
@@ -487,7 +498,7 @@ def gen_stick(spos=rm.np.array([.0, .0, .0]),
     author: weiwei
     date: 20210328
     """
-    stick_sgm = mgm.gen_stick(spos=spos, epos=epos, radius=radius, type=type, rgba=rgba, n_sec=n_sec)
+    stick_sgm = mgm.gen_stick(spos=spos, epos=epos, radius=radius, type=type, rgba=np.append(rgb, alpha), n_sec=n_sec)
     stick_cm = CollisionModel(stick_sgm)
     return stick_cm
 

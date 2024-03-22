@@ -8,8 +8,7 @@ import grasping.planning.segmentation as seg
 import modeling._ode_cdhelper as moh
 import grasping.reasoner as gr
 
-
-def tabletop_placements(obj_cmodel, stability_threshhold=.1, toggle_support_facets=False):
+def flat_placements(obj_cmodel, stability_threshhold=.1, toggle_support_facets=False):
     """
     find all placements on a table (z axis is the plane normal; no consideration on symmetry)
     :param obj_cmodel:
@@ -59,21 +58,21 @@ def tabletop_placements(obj_cmodel, stability_threshhold=.1, toggle_support_face
     return placement_pose_list
 
 
-def tabletop_placements_and_grasps(tabletop_xy,
-                                   obj_cmodel,
+def tabletop_placements_and_grasps(obj_cmodel,
                                    robot,
                                    grasp_collection,
                                    placement_pose_list,
-                                   consider_robot = True,
+                                   placement_xyz,
+                                   tabletop_z=.0,
+                                   consider_robot=True,
                                    toggle_dbg=False):
     grasp_reasoner = gr.GraspReasoner(robot=robot)
+    table_obstacle = mcm.gen_surface_barrier(tabletop_z)
     for placement_pose in placement_pose_list:
-        pos = placement_pose[0] + np.array([tabletop_xy[0], tabletop_xy[1], 0])
+        pos = placement_pose[0] + placement_xyz
         rotmat = placement_pose[1]
         feasible_gids = grasp_reasoner.find_feasible_gids(grasp_collection=grasp_collection,
-                                                          obstacle_list=[mcm.gen_box(xyz_lengths=[5, 5, 0.1],
-                                                                                     pos=np.array([0, 0, -0.05]),
-                                                                                     rgba=np.array([.7, .7, .7, .7]))],
+                                                          obstacle_list=[table_obstacle],
                                                           goal_pose=(pos, rotmat),
                                                           consider_robot=consider_robot,
                                                           toggle_keep=True,
@@ -83,16 +82,16 @@ def tabletop_placements_and_grasps(tabletop_xy,
             for f_gid in feasible_gids:
                 print(f_gid)
                 grasp = grasp_collection[f_gid]
-                robot.end_effector.grip_at_by_pose(jaw_center_pos=pos + rotmat @ grasp.ac_pos,
-                                                   jaw_center_rotmat=rotmat @ grasp.ac_rotmat,
-                                                   jaw_width=grasp.ee_values)
+                jnt_values = robot.ik(tgt_pos=pos + rotmat @ grasp.ac_pos, tgt_rotmat=rotmat @ grasp.ac_rotmat)
+                if jnt_values is not None:
+                    robot.goto_given_conf(jnt_values=jnt_values, ee_values=grasp.ee_values)
                 m_col = mmc.ModelCollection()
                 obj_cmodel_copy = obj_cmodel.copy()
                 obj_cmodel_copy.pose = (pos, rotmat)
-                robot.end_effector.gen_meshmodel(rgb=rm.bc.green, alpha=.3).attach_to(m_col)
+                robot.gen_meshmodel().attach_to(m_col)
                 obj_cmodel_copy.attach_to(m_col)
                 m_col.attach_to(base)
-                base.run()
+            base.run()
 
 
 if __name__ == '__main__':
@@ -106,7 +105,7 @@ if __name__ == '__main__':
     ground = mcm.gen_box(xyz_lengths=[.5, .5, .01], pos=np.array([0, 0, -0.01]), rgba=[.3, .3, .3, 1])
     ground.attach_to(base)
     bunny = mcm.CollisionModel(obj_path)
-    placement_pose_list, support_facets = tabletop_placements(bunny, toggle_support_facets=True)
+    placement_pose_list, support_facets = flat_placements(bunny, toggle_support_facets=True)
 
 
     # for id, placement_pose in enumerate(placement_pose_list):

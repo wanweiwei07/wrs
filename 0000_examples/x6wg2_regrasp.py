@@ -13,29 +13,28 @@ import manipulation.placement as mpl
 
 base = wd.World(cam_pos=[1, .0, 1], lookat_pos=[.0, 0, .15])
 mgm.gen_frame().attach_to(base)
-# ground
-ground = mcm.gen_box(xyz_lengths=[5, 5, 0.1],
-                     pos=np.array([0, 0, -0.05]),
-                     rgba=[.7, .7, .7, .9])
-ground.attach_to(base)
+# table
+tabletop_z = -.01
+table_obstacle = mcm.gen_surface_barrier(tabletop_z)
+table_obstacle.attach_to(base)
 # object
 bunny = mcm.CollisionModel("objects/bunnysim.stl")
 # bunny.pos = np.array([.3, .3, .15])
 grasp_collection = gg.GraspCollection.load_from_disk(file_name="grasps_wg2_bunny.pickle")
 
-placement_pose_list, support_facet_list = mpl.tabletop_placements(obj_cmodel=bunny,
-                                                                  stability_threshhold=.1,
-                                                                  toggle_support_facets=True)
-
-mpl.tabletop_placements_and_grasps(tabletop_xy=np.array([.4, -.05]),
-                                   obj_cmodel=bunny,
+placement_pose_list, support_facet_list = mpl.flat_placements(obj_cmodel=bunny,
+                                                              stability_threshhold=.1,
+                                                              toggle_support_facets=True)
+mpl.tabletop_placements_and_grasps(obj_cmodel=bunny,
                                    robot=x6g2.XArmLite6WG2(),
                                    grasp_collection=grasp_collection,
                                    placement_pose_list=placement_pose_list,
+                                   tabletop_z = tabletop_z,
+                                   placement_xyz=np.array([.4, -.05, 0]),
                                    consider_robot=True,
                                    toggle_dbg=True)
-
 base.run()
+
 
 class Data(object):
     def __init__(self, mot_data):
