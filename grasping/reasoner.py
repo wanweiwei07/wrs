@@ -47,7 +47,7 @@ class GraspReasoner(object):
     # @keep_states_decorator
     # def reason_incremental_common_gids(self,
     #                                    previous_available_gids,
-    #                                    grasp_collection,
+    #                                    reference_grasp_collection,
     #                                    goal_pose_list,
     #                                    obstacle_list=None,
     #                                    consider_robot=True,
@@ -62,7 +62,7 @@ class GraspReasoner(object):
     #         goal_pos = goal_pose[0]
     #         goal_rotmat = goal_pose[1]
     #         grasp_with_gid = zip(previous_available_gids,  # need .copy()?
-    #                              [grasp_collection[i] for i in previous_available_gids])
+    #                              [reference_grasp_collection[i] for i in previous_available_gids])
     #         previous_available_gids = []
     #         for gid, grasp in grasp_with_gid:
     #             goal_jaw_center_pos = goal_pos + goal_rotmat.dot(grasp.ac_pos)
@@ -122,7 +122,7 @@ class GraspReasoner(object):
     @keep_states_decorator
     def reason_incremental_common_gids(self,
                                        previous_available_gids,
-                                       grasp_collection,
+                                       reference_grasp_collection,
                                        goal_pose_list,
                                        obstacle_list=None,
                                        consider_robot=True,
@@ -141,7 +141,7 @@ class GraspReasoner(object):
             goal_pos = goal_pose[0]
             goal_rotmat = goal_pose[1]
             grasp_with_gid = zip(previous_available_gids,  # need .copy()?
-                                 [grasp_collection[i] for i in previous_available_gids])
+                                 [reference_grasp_collection[i] for i in previous_available_gids])
             previous_available_gids = []
             for gid, grasp in grasp_with_gid:
                 goal_grasp = self.transform_grasp(goal_pos, goal_rotmat, grasp)
@@ -198,7 +198,7 @@ class GraspReasoner(object):
 
     # @keep_states_decorator
     def reason_common_gids(self,
-                           grasp_collection,
+                           reference_grasp_collection,
                            goal_pose_list,
                            obstacle_list=None,
                            consider_robot=True,
@@ -206,7 +206,7 @@ class GraspReasoner(object):
                            toggle_dbg=False):
         """
         find the common collision free and IK feasible gids
-        :param grasp_collection grasping.grasp.GraspCollection
+        :param reference_grasp_collection grasping.grasp.GraspCollection
         :param goal_pose_list[[pos0, rotmat0]], [pos1, rotmat1], ...]
         :param obstacle_list
         :param consider_robot whether to consider robot ik and collision
@@ -217,9 +217,9 @@ class GraspReasoner(object):
         date: 20210113, 20210125
         """
         # start reasoning
-        previous_available_gids = range(len(grasp_collection))
+        previous_available_gids = range(len(reference_grasp_collection))
         return self.reason_incremental_common_gids(previous_available_gids=previous_available_gids,
-                                                   grasp_collection=grasp_collection,
+                                                   reference_grasp_collection=reference_grasp_collection,
                                                    goal_pose_list=goal_pose_list,
                                                    obstacle_list=obstacle_list,
                                                    consider_robot=consider_robot,
@@ -227,14 +227,14 @@ class GraspReasoner(object):
                                                    toggle_dbg=toggle_dbg)
 
     def find_feasible_gids(self,
-                           grasp_collection,
+                           reference_grasp_collection,
                            goal_pose,
                            obstacle_list=None,
                            consider_robot=True,
                            toggle_keep=True,
                            toggle_dbg=False):
         """
-        :param grasp_collection:
+        :param reference_grasp_collection:
         :param goal_pose:
         :param obstacle_list:
         :param consider_robot:
@@ -242,7 +242,7 @@ class GraspReasoner(object):
         :param toggle_dbg:
         :return:
         """
-        return self.reason_common_gids(grasp_collection=grasp_collection,
+        return self.reason_common_gids(reference_grasp_collection=reference_grasp_collection,
                                        goal_pose_list=[goal_pose],
                                        obstacle_list=obstacle_list,
                                        consider_robot=consider_robot,

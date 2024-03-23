@@ -23,7 +23,7 @@ class GraspCollection(object):
             self._grasp_list = grasp_list
 
     @classmethod
-    def load_from_disk(cls, file_name="grasp_collection.pickle"):
+    def load_from_disk(cls, file_name="reference_grasp_collection.pickle"):
         with open(file_name, 'rb') as file:
             obj = pickle.load(file)
             if not isinstance(obj, cls):
@@ -66,9 +66,9 @@ class GraspCollection(object):
             out_str += "  " + str(grasp) + "\n"
         return out_str
 
-    def save_to_disk(self, file_name='grasp_collection.pickle'):
+    def save_to_disk(self, file_name='reference_grasp_collection.pickle'):
         """
-        :param grasp_collection:
+        :param reference_grasp_collection:
         :param file_name:
         :return:
         author: haochen, weiwei

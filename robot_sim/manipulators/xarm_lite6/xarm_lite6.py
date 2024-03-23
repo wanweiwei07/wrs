@@ -122,7 +122,7 @@ class XArmLite6(mi.ManipulatorInterface):
         return cdprim
 
     def setup_cc(self):
-        lb = self.cc.add_cce(self.jlc.anchor.lnk)
+        lb = self.cc.add_cce(self.jlc.anchor.lnk_list[0])
         l0 = self.cc.add_cce(self.jlc.jnts[0].lnk)
         l1 = self.cc.add_cce(self.jlc.jnts[1].lnk)
         l2 = self.cc.add_cce(self.jlc.jnts[2].lnk)

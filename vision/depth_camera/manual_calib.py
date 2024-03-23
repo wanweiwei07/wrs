@@ -266,7 +266,7 @@ if __name__ == "__main__":
     from drivers.devices.realsense.realsense_d400s import RealSenseD405
     import basis.robot_math as rm
     from robot_con.xarm_lite6.xarm_lite6_x import XArmLite6X
-    from robot_sim.robots.xarmlite6_wg.xarmlite6_wg import XArmLite6WRSGripper
+    from robot_sim.robots.xarmlite6_wg.x6wg import XArmLite6WRSGripper
 
     base = wd.World(cam_pos=[2, 0, 1.5], lookat_pos=[0, 0, 0])
     rs_pipe = RealSenseD405()
