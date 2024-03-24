@@ -17,11 +17,11 @@ class FSRegraspPlanner(object):
         :return:
         """
         global_nodes_by_gid = [[] for _ in range(len(fspg_col.reference_grasp_collection))]
-        for ttpg in fspg_col:
+        for id_fspg, fspg in enumerate(fspg_col):
             local_nodes = []
-            placement_pose = fspg_col.get_placement_pose_by_ttpg(ttpg)
-            print(len(ttpg.feasible_gids))
-            for gid in ttpg.feasible_gids:
+            placement_pose = fspg_col.get_placement_pose(id_fspg)
+            print(len(fspg.feasible_gids))
+            for gid in fspg.feasible_gids:
                 grasp = fspg_col.reference_grasp_collection[gid]
                 local_nodes.append(uuid.uuid4())
                 self.fsreg_graph.add_node(local_nodes[-1],
@@ -40,8 +40,7 @@ class FSRegraspPlanner(object):
     def gen_regrasp_motion(robot, path_on_ttreg_graph):
         """
         """
-        for node in path_on_ttreg_graph:
-            if node.
+        pass
 
     if __name__ == '__main__':
         import robot_sim.robots.xarmlite6_wg.x6wg2 as x6wg2

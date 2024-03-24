@@ -45,7 +45,7 @@ class Cobotta(rsi.SglArmRobotInterface):
         self.pos = pos
         self.rotmat = rotmat
         self.manipulator.fix_to(pos=pos, rotmat=rotmat)
-        self._update_end_effector()
+        self.update_end_effector()
 
     def change_jaw_width(self, jaw_width):
         return self.change_ee_values(ee_values=jaw_width)

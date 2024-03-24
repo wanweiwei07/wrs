@@ -39,7 +39,12 @@ class GraspCollection(object):
         return self._grasp_list.pop(index)
 
     def __getitem__(self, index):
-        return self._grasp_list[index]
+        if isinstance(index, int):
+            return self._grasp_list[index]
+        elif isinstance(index, list):
+            return [self._grasp_list[i] for i in index]
+        else:
+            raise Exception("Index type not supported.")
 
     def __setitem__(self, index, grasp):
         self._grasp_list[index] = grasp

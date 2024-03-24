@@ -60,7 +60,7 @@ class SglArmRobotInterface(ri.RobotInterface):
     def oiee_list(self):
         return self.end_effector.oiee_list
 
-    def _update_end_effector(self, ee_values=None):
+    def update_end_effector(self, ee_values=None):
         if ee_values is not None:
             self.end_effector.change_ee_values(ee_values=ee_values)
         self.end_effector.fix_to(pos=self._manipulator.gl_flange_pos, rotmat=self._manipulator.gl_flange_rotmat)
@@ -72,6 +72,7 @@ class SglArmRobotInterface(ri.RobotInterface):
     def restore_state(self):
         self._manipulator.restore_state()
         self._end_effector.restore_state()
+        self.update_end_effector()
 
     def get_ee_values(self):
         return self.end_effector.get_ee_values()
@@ -87,12 +88,12 @@ class SglArmRobotInterface(ri.RobotInterface):
 
     def goto_given_conf(self, jnt_values, ee_values=None):
         result = self._manipulator.goto_given_conf(jnt_values=jnt_values)
-        self._update_end_effector(ee_values=ee_values)
+        self.update_end_effector(ee_values=ee_values)
         return result
 
     def goto_home_conf(self):
         self._manipulator.goto_home_conf()
-        self._update_end_effector(ee_values=0)
+        self.update_end_effector(ee_values=0)
 
     def ik(self,
            tgt_pos: np.ndarray,

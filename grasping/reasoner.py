@@ -130,6 +130,8 @@ class GraspReasoner(object):
                                        toggle_dbg=False):
         # start reasoning
         intermediate_available_gids = []
+        intermediate_available_grasps = []
+        intermediate_available_jv_list = []
         eef_collided_grasps_num = 0
         ik_failed_grasps_num = 0
         rbt_collided_grasps_num = 0
@@ -143,6 +145,8 @@ class GraspReasoner(object):
             grasp_with_gid = zip(previous_available_gids,  # need .copy()?
                                  [reference_grasp_collection[i] for i in previous_available_gids])
             previous_available_gids = []
+            previous_availalbe_grasps = []
+            previous_available_jv_list = []
             for gid, grasp in grasp_with_gid:
                 goal_grasp = self.transform_grasp(goal_pos, goal_rotmat, grasp)
                 self.robot.end_effector.grip_at_by_pose(jaw_center_pos=goal_grasp.ac_pos,
@@ -168,6 +172,8 @@ class GraspReasoner(object):
                             self.robot.goto_given_conf(jnt_values=jnt_values)
                             if not self.robot.is_collided(obstacle_list=obstacle_list):
                                 previous_available_gids.append(gid)
+                                previous_availalbe_grasps.append(goal_grasp)
+                                previous_available_jv_list.append(jnt_values)
                                 if toggle_dbg:
                                     self.robot.end_effector.gen_meshmodel(rgb=rm.bc.green, alpha=1).attach_to(base)
                             else:  # robot collided
@@ -178,9 +184,12 @@ class GraspReasoner(object):
                         ik_failed_grasps_num = '-'
                         rbt_collided_grasps_num = '-'
                         previous_available_gids.append(gid)
+                        previous_availalbe_grasps.append(goal_grasp)
                         if toggle_dbg:
                             self.robot.end_effector.gen_meshmodel(rgb=rm.bc.green, alpha=1).attach_to(base)
             intermediate_available_gids.append(previous_available_gids.copy())
+            intermediate_available_grasps.append(previous_availalbe_grasps.copy())
+            intermediate_available_jv_list.append(previous_available_jv_list.copy())
             if toggle_dbg:
                 for obstacle in obstacle_list:
                     obstacle.attach_to(base)
@@ -192,9 +201,14 @@ class GraspReasoner(object):
                 print(f"Number of collided robots at goal-{str(goal_id)}: {rbt_collided_grasps_num}")
                 print("------end_type------")
                 base.run()
-        if len(previous_available_gids)==0:
-            return None
-        return previous_available_gids
+        if consider_robot:
+            if len(previous_available_gids) == 0:
+                return None, None, None
+            return previous_available_gids, previous_availalbe_grasps, previous_available_jv_list
+        else:
+            if len(previous_available_gids) == 0:
+                return None, None
+            return previous_available_gids, previous_availalbe_grasps
 
     # @keep_states_decorator
     def reason_common_gids(self,
