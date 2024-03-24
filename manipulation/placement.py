@@ -17,28 +17,16 @@ class FSPG(object):
     """
 
     def __init__(self,
-                 tgt_pos=None,
-                 tgt_rotz=None,
                  fsp_pose_id=None,
                  obj_pose=None,
                  feasible_gids=None,
                  feasible_grasps=None,
                  feasible_jv_list=None):
-        self._tgt_pos = tgt_pos
-        self._tgt_rotz = tgt_rotz
         self._fsp_pose_id = fsp_pose_id
         self._obj_pose = obj_pose
         self._feasible_gids = feasible_gids
         self._feasible_grasps = feasible_grasps
         self._feasible_jv_list = feasible_jv_list
-
-    @property
-    def tgt_pos(self):
-        return self._tgt_pos
-
-    @property
-    def tgt_rotz(self):
-        return self._tgt_rotz
 
     @property
     def obj_pose(self):
@@ -61,17 +49,30 @@ class FSPG(object):
         return self._feasible_jv_list
 
     def __str__(self):
-        out_str = f"Flat Surface Placement at {repr(self._tgt_pos)}, with theta={repr(self._tgt_rotz)}\n"
-        out_str += f"   pose id = {repr(self._fsp_pose_id)}, with gids= {repr(self._feasible_gids)}"
-        return out_str
+        return f"pose id = {repr(self._fsp_pose_id)}, with gids= {repr(self._feasible_gids)}"
 
 
-class FSPGCollection(object):
-    def __init__(self, reference_fsp_pose_list, reference_grasp_collection):
-        """I am learning users to ensure placements and grasps are defined for the same objecd"""
+class FSRegraspSpot(object):
+    def __init__(self, spot_pos=None, spot_rotz=None):
+        self.spot_pos = spot_pos
+        self.spot_rotz = spot_rotz
+        self._fspg_list = []
+
+    @property
+    def fspg_lsit(self):
+        return self._fspg_list
+
+    def add_fspg(self, fspg):
+        self._fspg_list.append(fspg)
+
+
+class FSRegraspSpotCollection(object):
+    def __init__(self, robot, reference_fsp_pose_list, reference_grasp_collection):
+        self.robot = robot
+        self.grasp_reasoner = gr.GraspReasoner(robot)
         self.reference_fsp_pose_list = reference_fsp_pose_list
         self.reference_grasp_collection = reference_grasp_collection
-        self._fspg_list = []  # list of FSPG
+        self._fsregspot_list = []  # list of FSRegraspSpot
 
     @classmethod
     def load_from_disk(cls, file_name="fspg_collection.pickle"):
@@ -81,47 +82,55 @@ class FSPGCollection(object):
                 raise TypeError(f"Object in {file_name} is not an instance of {cls.__name__}")
             return obj
 
-    def append(self, fspg):
-        self._fspg_list.append(fspg)
+    def add_new_spot(self, spot_pos, spot_rotz, barrier_z_offset=-.01, consider_robot=True, toggle_dbg=False):
+        fs_regspot = FSRegraspSpot(spot_pos, spot_rotz)
+        barrier_obstacle = mcm.gen_surface_barrier(spot_pos[2] + barrier_z_offset)
+        for fsp_pose_id, reference_fsp_pose in enumerate(self.reference_fsp_pose_list):
+            pos = reference_fsp_pose[0] + spot_pos
+            rotmat = rm.rotmat_from_euler(0, 0, spot_rotz) @ reference_fsp_pose[1]
+            feasible_gids, feasible_grasps, feasible_jv_list = self.grasp_reasoner.find_feasible_gids(
+                reference_grasp_collection=self.reference_grasp_collection,
+                obstacle_list=[barrier_obstacle],
+                goal_pose=(pos, rotmat),
+                consider_robot=consider_robot,
+                toggle_keep=True,
+                toggle_dbg=False)
+            if feasible_gids is not None:
+                fs_regspot.add_fspg(FSPG(fsp_pose_id=fsp_pose_id,
+                                         obj_pose=(pos, rotmat),
+                                         feasible_gids=feasible_gids,
+                                         feasible_grasps=feasible_grasps,
+                                         feasible_jv_list=feasible_jv_list))
+            if toggle_dbg:
+                for grasp, jnt_values in zip(feasible_grasps, feasible_jv_list):
+                    self.robot.goto_given_conf(jnt_values=jnt_values, ee_values=grasp.ee_values)
+                    self.robot.gen_meshmodel().attach_to(base)
+                base.run()
+        self._fsregspot_list.append(fs_regspot)
 
     def __getitem__(self, index):
-        return self._fspg_list[index]
-
-    def __setitem__(self, index, fspg):
-        self._fspg_list[index] = fspg
+        return self._fsregspot_list[index]
 
     def __len__(self):
-        return len(self._fspg_list)
+        return len(self._fsregspot_list)
 
     def __iter__(self):
-        return iter(self._fspg_list)
+        return iter(self._fsregspot_list)
 
-    def __add__(self, other):
-        """
-        leave it to the user to ensure the two collections share the same reference placements and grasps
-        :param other:
-        :return:
-        """
-        if isinstance(other, FSPGCollection):
-            self._fspg_list += other._fspg_list
-            return self
-        else:
-            raise ValueError("The other object is not an instance of FSPGCollection.")
+    # def __str__(self):
+    #     out_str = f"FSPGCollection of {len(self._fspg_list)} FSPGIdx\n"
+    #     for fspgi in self._fspg_list:
+    #         out_str += str(fspgi) + "\n"
+    #     return out_str
 
-    def __str__(self):
-        out_str = f"FSPGCollection of {len(self._fspg_list)} FSPGIdx\n"
-        for fspgi in self._fspg_list:
-            out_str += str(fspgi) + "\n"
-        return out_str
-
-    def save_to_disk(self, file_name='fspg_collection.pickle'):
+    def save_to_disk(self, file_name='FSRegraspSpotCollection.pickle'):
         """
         :param reference_grasp_collection:
         :param file_name
         :return:
         """
         with open(file_name, 'wb') as file:
-            pickle.dump(self, file)
+            pickle.dump([self.reference_fsp_pose_list, self.reference_grasp_collection, self._fsregspot_list], file)
 
 
 def get_reference_fsp_pose_list(obj_cmodel, stability_threshhold=.1, toggle_support_facets=False):
