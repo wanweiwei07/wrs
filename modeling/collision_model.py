@@ -423,11 +423,9 @@ class CollisionModel(mgm.GeometricModel):
         date: 20210504
         """
         if option == "all":
-            contact_points, contact_normals = moh.rayhit_all(spos, epos, self)
-            return contact_points, contact_normals
+            return moh.rayhit_all(spos, epos, self)
         elif option == "closest":
-            contact_point, contact_normal = moh.rayhit_closet(spos, epos, self)
-            return contact_point, contact_normal
+            return moh.rayhit_closet(spos, epos, self)
 
     def copy(self):
         cmodel = CollisionModel(self)
@@ -450,7 +448,7 @@ def gen_surface_barrier(pos_z=.0, rgb=rm.bc.tab20_list[14], alpha=1):
 def gen_box(xyz_lengths=rm.np.array([.1, .1, .1]),
             pos=rm.np.zeros(3),
             rotmat=rm.np.eye(3),
-            rgb=rm.bc.tab20_list[0],
+            rgb=rm.bc.tab20_list[14],
             alpha=1):
     """
     :param xyz_lengths:

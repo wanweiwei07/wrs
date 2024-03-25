@@ -105,7 +105,7 @@ def rayhit_closet(spos, epos, target_cmodel):
     contact_entry = ode_util.collide(ray, target_cmodel.cdmesh, max_contacts=10)
     contact_points = [da.pdvec3_to_npvec3(point) for point in contact_entry.getContactPoints()]
     if len(contact_points) == 0:
-        return None, None
+        return None
     min_id = np.argmin(np.linalg.norm(spos - np.array(contact_points), axis=1))
     contact_normals = [da.pdvec3_to_npvec3(contact_entry.getContactGeom(i).getNormal()) for i in
                        range(contact_entry.getNumContacts())]
@@ -128,7 +128,7 @@ def rayhit_all(spos, epos, target_cmodel):
     hit_entry = ode_util.collide(ray, target_cmodel.cdmesh)
     hit_points = [da.pdvec3_to_npvec3(point) for point in hit_entry.getContactPoints()]
     if len(hit_points) == 0:
-        return None, None
+        return None
     hit_normals = [da.pdvec3_to_npvec3(hit_entry.getContactGeom(i).getNormal()) for i in
                    range(hit_entry.getNumContacts())]
     return hit_points, hit_normals

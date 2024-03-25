@@ -33,8 +33,9 @@ def plan_contact_pairs(obj_cmodel,
         if near_history[i]:  # if the point was previous near to some points, ignore
             continue
         contact_n0 = contact_normals[i]
-        hit_points, hit_normals = obj_cmodel.ray_hit(contact_p0 - contact_n0 * .001, contact_p0 - contact_n0 * 100)
-        if len(hit_points) > 0:
+        result = obj_cmodel.ray_hit(contact_p0 - contact_n0 * .001, contact_p0 - contact_n0 * 100)
+        if result is not None:
+            hit_points, hit_normals = result
             for contact_p1, contact_n1 in zip(hit_points, hit_normals):
                 if np.dot(contact_n0, contact_n1) < dot_thresh:
                     near_points_indices = tree.query_ball_point(contact_p1, min_dist_between_sampled_contact_points)
