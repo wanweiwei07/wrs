@@ -4,7 +4,7 @@ import basis.robot_math as rm
 import numpy as np
 import visualization.panda.world as wd
 import modeling.collision_model as mcm
-import manipulation.placement as mpl
+import manipulation.placement.flat_surface_placement as mpfsp
 
 if __name__ == '__main__':
 
@@ -14,7 +14,7 @@ if __name__ == '__main__':
     ground.attach_to(base)
     bunny = mcm.CollisionModel(obj_path)
 
-    reference_fsp_poses = mpl.ReferenceFSPPoses(obj_cmodel=bunny)
+    reference_fsp_poses = mpfsp.ReferenceFSPPoses(obj_cmodel=bunny)
     reference_fsp_poses.save_to_disk("reference_fsp_poses_bunny.pickle")
 
 

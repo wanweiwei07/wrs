@@ -4,8 +4,7 @@ import basis.robot_math as rm
 import numpy as np
 import visualization.panda.world as wd
 import modeling.collision_model as mcm
-import manipulation.placement as mpl
-import grasping.grasp as g
+import manipulation.regrasp as reg
 import robot_sim.robots.xarmlite6_wg.x6wg2 as x6wg2
 
 if __name__ == '__main__':
@@ -17,22 +16,22 @@ if __name__ == '__main__':
     bunny = mcm.CollisionModel(obj_path)
     robot = x6wg2.XArmLite6WG2()
 
-    reference_fsp_poses = mpl.ReferenceFSPPoses.load_from_disk(file_name="reference_fsp_poses_bunny.pickle")
-    reference_grasps = g.GraspCollection.load_from_disk(file_name="reference_wg2_bunny_grasps.pickle")
-    fspgspots_col = mpl.SpotFSPGsCollection(robot=robot,
-                                            obj_cmodel=bunny,
-                                            reference_fsp_poses=reference_fsp_poses,
-                                            reference_grasp_collection=reference_grasps)
-    # fspgspots_col.add_new_spot(spot_pos=np.array([.4,0,0]), spot_rotz=0)
-    # fspgspots_col.save_to_disk("spotfspgs_col_x6wg2_bunny.pickle")
-    fspgspots_col.load_from_disk("spotfspgs_col_x6wg2_bunny.pickle")
-    fspgspots_col.add_new_spot(spot_pos=np.array([.4,.2,0]), spot_rotz=0)
-    fspgspots_col.save_to_disk("spotfspgs_col_x6wg2_bunny.pickle")
-    mesh_model_list = fspgspots_col.gen_meshmodels()
-    for fsregspot in fspgspots_col:
-        mcm.mgm.gen_frame(pos=fsregspot.spot_pos,
-                          rotmat=rm.rotmat_from_euler(0, 0, fsregspot.spot_rotz)).attach_to(base)
-
+    reference_fsp_poses = reg.mpfsp.ReferenceFSPPoses.load_from_disk(file_name="reference_fsp_poses_bunny.pickle")
+    reference_grasps = reg.gr.g.GraspCollection.load_from_disk(file_name="reference_wg2_bunny_grasps.pickle")
+    fs_regspot_col = reg.RegraspSpotCollection(robot=robot,
+                                               obj_cmodel=bunny,
+                                               reference_fsp_poses=reference_fsp_poses,
+                                               reference_grasp_collection=reference_grasps)
+    fs_regspot_col.add_new_fs_regspot(spot_pos=np.array([.4,0,0]), spot_rotz=0)
+    fs_regspot_col.save_to_disk("spotfspgs_col_x6wg2_bunny.pickle")
+    # fs_regspot_col.load_from_disk("spotfspgs_col_x6wg2_bunny.pickle")
+    # fs_regspot_col.add_new_fs_regspot(spot_pos=np.array([.4, .2, 0]), spot_rotz=0)
+    # fs_regspot_col.add_new_fs_regspot(spot_pos=np.array([.4, -.2, 0]), spot_rotz=0)
+    # fs_regspot_col.save_to_disk("spotfspgs_col_x6wg2_bunny.pickle")
+    mesh_model_list = fs_regspot_col.gen_meshmodels()
+    for fs_regspot in fs_regspot_col:
+        mcm.mgm.gen_frame(pos=fs_regspot.spot_pos,
+                          rotmat=rm.rotmat_from_euler(0, 0, fs_regspot.spot_rotz)).attach_to(base)
 
     class Data(object):
         def __init__(self, mesh_model_list):
