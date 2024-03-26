@@ -22,12 +22,12 @@ if __name__ == '__main__':
                                                obj_cmodel=bunny,
                                                reference_fsp_poses=reference_fsp_poses,
                                                reference_grasp_collection=reference_grasps)
-    fs_regspot_col.add_new_fs_regspot(spot_pos=np.array([.4,0,0]), spot_rotz=0)
-    fs_regspot_col.save_to_disk("spotfspgs_col_x6wg2_bunny.pickle")
-    # fs_regspot_col.load_from_disk("spotfspgs_col_x6wg2_bunny.pickle")
+    # fs_regspot_col.add_new_fs_regspot(spot_pos=np.array([.4,0,0]), spot_rotz=0)
+    # fs_regspot_col.save_to_disk("regspot_col_x6wg2_bunny.pickle")
+    # fs_regspot_col.load_from_disk("regspot_col_x6wg2_bunny.pickle")
     # fs_regspot_col.add_new_fs_regspot(spot_pos=np.array([.4, .2, 0]), spot_rotz=0)
     # fs_regspot_col.add_new_fs_regspot(spot_pos=np.array([.4, -.2, 0]), spot_rotz=0)
-    # fs_regspot_col.save_to_disk("spotfspgs_col_x6wg2_bunny.pickle")
+    fs_regspot_col.save_to_disk("regspot_col_x6wg2_bunny.pickle")
     mesh_model_list = fs_regspot_col.gen_meshmodels()
     for fs_regspot in fs_regspot_col:
         mcm.mgm.gen_frame(pos=fs_regspot.spot_pos,

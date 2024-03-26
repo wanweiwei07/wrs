@@ -53,7 +53,7 @@ class RRTConnect(rrt.RRT):
              goal_conf,
              obstacle_list=[],
              other_robot_list=[],
-             ext_dist=2,
+             ext_dist=.2,
              max_n_iter=10000,
              max_time=15.0,
              smoothing_n_iter=500,

@@ -32,7 +32,7 @@ class PG(object):
         return self._feasible_jv_list
 
     @staticmethod
-    def create_from_arbitrary_pose(robot, reference_grasp_collection, obj_pose, consider_robot=True, toggle_dbg=False):
+    def create_from_arbitrary_pose(robot, reference_grasp_collection, obj_pose, consider_robot=True):
         pos = obj_pose[0]
         rotmat = obj_pose[1]
         grasp_reasoner = gr.GraspReasoner(robot)
