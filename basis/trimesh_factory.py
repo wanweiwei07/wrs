@@ -438,7 +438,7 @@ def gen_dashtorus(axis=np.array([1, 0, 0]),
     # print(min_n_sec_major)
     if n_sec_major < min_n_sec_major:
         n_sec_major = min_n_sec_major
-    n_sec_major_portion = np.floor(portion * 2 * np.pi * major_radius / (len_solid + len_interval))
+    n_sec_major_portion = np.floor(portion * 2 * np.pi * major_radius / (len_solid + len_interval)).astype(int)
     vertices = np.empty((0, 3))
     faces = np.empty((0, 3))
     for i in range(0, n_sec_major_portion):
