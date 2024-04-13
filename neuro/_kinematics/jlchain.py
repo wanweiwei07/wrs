@@ -401,20 +401,20 @@ if __name__ == "__main__":
             base)
     base.run()
 
-    optimizer = Adam([jnt_values], lr=.1)
-    for i in range(100):
-        cur_pose = jlc.goto_given_conf(jnt_values)
-        loss = nkm.diff_between_posrot(*(cur_pose + tgt_pose))
-        optimizer.zero_grad()
-        loss.backward()
-        optimizer.step()
-        print(loss)
-        if i % 20 == 0:
-            with torch.no_grad():
-                mgm.gen_frame(pos=cur_pose[0], rotmat=cur_pose[1]).attach_to(base)
-                jlc.gen_stickmodel(stick_rgba=bc.cool_map(i/100), toggle_jnt_frames=True, toggle_flange_frame=True).attach_to(
-                    base)
-    base.run()
+    # optimizer = Adam([jnt_values], lr=.1)
+    # for i in range(100):
+    #     cur_pose = jlc.goto_given_conf(jnt_values)
+    #     loss = nkm.diff_between_posrot(*(cur_pose + tgt_pose))
+    #     optimizer.zero_grad()
+    #     loss.backward()
+    #     optimizer.step()
+    #     print(loss)
+    #     if i % 20 == 0:
+    #         with torch.no_grad():
+    #             mgm.gen_frame(pos=cur_pose[0], rotmat=cur_pose[1]).attach_to(base)
+    #             jlc.gen_stickmodel(stick_rgba=bc.cool_map(i/100), toggle_jnt_frames=True, toggle_flange_frame=True).attach_to(
+    #                 base)
+    # base.run()
 
     seed_jnt_values = jlc.get_jnt_values()
 
