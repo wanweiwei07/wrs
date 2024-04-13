@@ -70,7 +70,6 @@ def gen_rectstick(spos=np.array([0, 0, 0]), epos=np.array([0.1, 0, 0]), radius=.
     author: weiwei
     date: 20191228osaka
     """
-    pos = spos
     height = np.linalg.norm(epos - spos)
     if np.allclose(height, 0):
         rotmat = np.eye(3)

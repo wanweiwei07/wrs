@@ -47,6 +47,8 @@ def rotmat_from_axangle(axis, angle):
     date: 20161220
     """
     axis = unit_vector(axis)
+    if np.allclose(axis, np.zeros(3)):
+        return np.eye(3)
     a = math.cos(angle / 2.0)
     b, c, d = -axis * math.sin(angle / 2.0)
     aa, bb, cc, dd = a * a, b * b, c * c, d * d
@@ -204,7 +206,7 @@ def homomat_from_posrot(pos=np.zeros(3), rotmat=np.eye(3)):
     author: weiwei
     date: 20190313
     """
-    homomat = np.eye(4, 4)
+    homomat = np.eye(4)
     homomat[:3, :3] = rotmat
     homomat[:3, 3] = pos
     return homomat

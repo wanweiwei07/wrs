@@ -1,11 +1,8 @@
-import numpy as np
-import basis.robot_math as rm
+import torch
+import neuro._kinematics.math_utils as nkm
+import neuro._kinematics.jl as nkjl
+import basis.constant as bc
 import robot_sim._kinematics.constant as rkc
-import robot_sim._kinematics.jl as rkjl
-import robot_sim._kinematics.ik_num as rkn
-import robot_sim._kinematics.ik_opt as rko
-import robot_sim._kinematics.ik_trac as rkt
-import robot_sim._kinematics.ik_dd as rkd
 import robot_sim._kinematics.model_generator as rkmg
 
 
@@ -23,8 +20,8 @@ class JLChain(object):
 
     def __init__(self,
                  name="auto",
-                 pos=np.zeros(3),
-                 rotmat=np.eye(3),
+                 pos=torch.zeros(3),
+                 rotmat=torch.eye(3),
                  n_dof=6):
         """
         conf -- configuration: target joint values
@@ -36,17 +33,17 @@ class JLChain(object):
         """
         self.name = name
         self.n_dof = n_dof
-        self.home = np.zeros(self.n_dof)  # self.n_dof joints plus one anchor
+        self.home = torch.zeros(self.n_dof, dtype=torch.float32)  # self.n_dof joints plus one anchor
         # initialize anchor
-        self.anchor = rkjl.Anchor(name=f"{name}_anchor", pos=pos, rotmat=rotmat)
+        self.anchor = nkjl.Anchor(name=f"{name}_anchor", pos=pos, rotmat=rotmat)
         # initialize joints and links
-        self.jnts = [rkjl.Joint(name=f"{name}_j{i}") for i in range(self.n_dof)]
+        self.jnts = [nkjl.Joint(name=f"{name}_j{i}") for i in range(self.n_dof)]
         self._jnt_ranges = self._get_jnt_ranges()
         # default flange joint id, loc_xxx are considered described in it
         self._flange_jnt_id = self.n_dof - 1
         # default flange for cascade connection
-        self._loc_flange_pos = np.zeros(3)
-        self._loc_flange_rotmat = np.eye(3)
+        self._loc_flange_pos = torch.zeros(3)
+        self._loc_flange_rotmat = torch.eye(3)
         self._gl_flange_pos = self._loc_flange_pos
         self._gl_flange_rotmat = self._loc_flange_rotmat
         # finalizing tag
@@ -86,7 +83,7 @@ class JLChain(object):
 
     @property
     def loc_flange_homomat(self):
-        return rm.homomat_from_posrot(pos=self._loc_flange_pos, rotmat=self._loc_flange_rotmat)
+        return nkm.homomat_from_posrot(pos=self._loc_flange_pos, rotmat=self._loc_flange_rotmat)
 
     @property
     @assert_finalize_decorator
@@ -109,19 +106,18 @@ class JLChain(object):
     def _get_jnt_ranges(self):
         """
         get jnt ranges
-        :return: [[jnt1min, jnt1max], [jnt2min, jnt2max], ...]
+        :return: tensor with shape (n_dof, 2)
         date: 20180602, 20200704osaka
         author: weiwei
         """
         jnt_limits = []
         for i in range(self.n_dof):
             jnt_limits.append(self.jnts[i].motion_range)
-        return np.asarray(jnt_limits)
+        return torch.stack(jnt_limits)
 
-    def fk(self, jnt_values, toggle_jacobian=False, update=False):
+    def fk(self, jnt_values, update=False):
         """
         :param jnt_values: a 1xn ndarray where each element indicates the value of a joint (in radian or meter)
-        :param toggle_jacobian: return jacobian matrix if true
         :param update if True, update internal values
         :return: True (succ), False (failure)
         author: weiwei
@@ -129,8 +125,8 @@ class JLChain(object):
         """
         if not update:
             homomat = self.anchor.gl_flange_homomat_list[0]
-            jnt_pos = np.zeros((self.n_dof, 3))
-            jnt_motion_ax = np.zeros((self.n_dof, 3))
+            jnt_pos = torch.zeros((self.n_dof, 3))
+            jnt_motion_ax = torch.zeros((self.n_dof, 3))
             for i in range(self.flange_jnt_id + 1):
                 jnt_pos[i, :] = homomat[:3, 3] + homomat[:3, :3] @ self.jnts[i].loc_pos
                 homomat = homomat @ self.jnts[i].get_motion_homomat(motion_value=jnt_values[i])
@@ -138,97 +134,17 @@ class JLChain(object):
             gl_flange_homomat = homomat @ self.loc_flange_homomat
             gl_flange_pos = gl_flange_homomat[:3, 3]
             gl_flange_rotmat = gl_flange_homomat[:3, :3]
-            if toggle_jacobian:
-                j_mat = np.zeros((6, self.n_dof))
-                for i in range(self.flange_jnt_id + 1):
-                    if self.jnts[i].type == rkc.JntType.REVOLUTE:
-                        j2t_vec = gl_flange_pos - jnt_pos[i, :]
-                        j_mat[:3, i] = np.cross(jnt_motion_ax[i, :], j2t_vec)
-                        j_mat[3:6, i] = jnt_motion_ax[i, :]
-                    if self.jnts[i].type == rkc.JntType.PRISMATIC:
-                        j_mat[:3, i] = jnt_motion_ax[i, :]
-                return gl_flange_pos, gl_flange_rotmat, j_mat
-            else:
-                return gl_flange_pos, gl_flange_rotmat
+            return (gl_flange_pos, gl_flange_rotmat)
         else:
             # self.anchor.update_pose()
             pos = self.anchor.gl_flange_pose_list[0][0]
             rotmat = self.anchor.gl_flange_pose_list[0][1]
             for i in range(self.n_dof):
-                motion_value = jnt_values[i]
-                self.jnts[i].update_globals(pos=pos, rotmat=rotmat, motion_value=motion_value)
+                self.jnts[i].update_globals(pos=pos, rotmat=rotmat, motion_value=jnt_values[i])
                 pos = self.jnts[i].gl_pos_q
                 rotmat = self.jnts[i].gl_rotmat_q
             self._gl_flange_pos, self._gl_flange_rotmat = self._compute_gl_flange()
-            if toggle_jacobian:
-                j_mat = np.zeros((6, self.n_dof))
-                for i in range(self.flange_jnt_id + 1):
-                    if self.jnts[i].type == rkc.JntType.REVOLUTE:
-                        j2t_vec = self._gl_flange_pos - self.jnts[i].gl_pos_q
-                        j_mat[:3, i] = np.cross(self.jnts[i].gl_motion_ax, j2t_vec)
-                        j_mat[3:6, i] = self.jnts[i].gl_motion_ax
-                    if self.jnts[i].type == rkc.JntType.PRISMATIC:
-                        j_mat[:3, i] = self.jnts[i].gl_motion_ax
-                return self._gl_flange_pos, self._gl_flange_rotmat, j_mat
-            else:
-                return self._gl_flange_pos, self._gl_flange_rotmat
-
-    def jacobian(self, jnt_values=None):
-        """
-        compute the jacobian matrix; use internal values if jnt_values is None
-        :param jnt_values:
-        :return:
-        author :weiwei
-        date: 20230829
-        """
-        if jnt_values is None:  # use internal, ignore update
-            j_mat = np.zeros((6, self.n_dof))
-            for i in range(self.flange_jnt_id + 1):
-                if self.jnts[i].type == rkc.JntType.REVOLUTE:
-                    j2t_vec = self._gl_flange_pos - self.jnts[i].gl_pos_q
-                    j_mat[:3, i] = np.cross(self.jnts[i].gl_motion_ax, j2t_vec)
-                    j_mat[3:6, i] = self.jnts[i].gl_motion_ax
-                if self.jnts[i].type == rkc.JntType.PRISMATIC:
-                    j_mat[:3, i] = self.jnts[i].gl_motion_ax
-        else:
-            _, _, j_mat = self.fk(jnt_values=jnt_values,
-                                  toggle_jacobian=True,
-                                  update=False)
-        return j_mat
-
-    def manipulability_val(self, jnt_values=None):
-        """
-        compute the yoshikawa manipulability
-        :param jnt_values:
-        :return:
-        author: weiwei
-        date: 20200331
-        """
-        j_mat = self.jacobian(jnt_values=jnt_values)
-        return np.sqrt(np.linalg.det(j_mat @ j_mat.T))
-
-    def manipulability_mat(self, jnt_values=None):
-        """
-        compute the axes of the manipulability ellipsoid
-        :param jnt_values:
-        :return: (linear ellipsoid matrix, angular ellipsoid matrix)
-        """
-        j_mat = self.jacobian(jnt_values=jnt_values)
-        # linear ellipsoid
-        linear_j_dot_jt = j_mat[:3, :] @ j_mat[:3, :].T
-        eig_values, eig_vecs = np.linalg.eig(linear_j_dot_jt)
-        linear_ellipsoid_mat = np.eye(3)
-        linear_ellipsoid_mat[:, 0] = np.sqrt(eig_values[0]) * eig_vecs[:, 0]
-        linear_ellipsoid_mat[:, 1] = np.sqrt(eig_values[1]) * eig_vecs[:, 1]
-        linear_ellipsoid_mat[:, 2] = np.sqrt(eig_values[2]) * eig_vecs[:, 2]
-        # angular ellipsoid
-        angular_j_dot_jt = j_mat[3:, :] @ j_mat[3:, :].T
-        eig_values, eig_vecs = np.linalg.eig(angular_j_dot_jt)
-        angular_ellipsoid_mat = np.eye(3)
-        angular_ellipsoid_mat[:, 0] = np.sqrt(eig_values[0]) * eig_vecs[:, 0]
-        angular_ellipsoid_mat[:, 1] = np.sqrt(eig_values[1]) * eig_vecs[:, 1]
-        angular_ellipsoid_mat[:, 2] = np.sqrt(eig_values[2]) * eig_vecs[:, 2]
-        return (linear_ellipsoid_mat, angular_ellipsoid_mat)
+            return (self._gl_flange_pos, self._gl_flange_rotmat)
 
     def fix_to(self, pos, rotmat, jnt_values=None):
         self.anchor.pos = pos
@@ -238,24 +154,16 @@ class JLChain(object):
         else:
             return self.goto_given_conf(jnt_values=jnt_values)
 
-    def finalize(self, ik_solver=None, identifier_str="test", **kwargs):
+    def finalize(self):
         """
-        ddik is both fast and has high success rate, but it required prebuilding a data file.
-        tracik is also fast and reliable, but it is a bit slower and energe-intensive.
-        pinv_wc is fast but has low success rate. it is used as a backbone for ddik.
-        sqpss has high success rate but is very slow.
-        :param ik_solver: 'd' for ddik; 'n' for numik.pinv_wc; 'o' for optik.sqpss; 't' for tracik; default: None
-        :param identifier_str: a string identifier for data (using a robot name is more preferred than the default)
-        :**kwargs: path for DDIKSolver
-        :return:
+        :return: (pos, rotmat)
         author: weiwei
         date: 20201126, 20231111
         """
         self._jnt_ranges = self._get_jnt_ranges()
-        self.go_home()
+        gl_flange_pose = self.go_home()
         self._is_finalized = True
-        if ik_solver == 'd':
-            self._ik_solver = rkd.DDIKSolver(self, identifier_str=identifier_str)
+        return gl_flange_pose
 
     def set_flange(self, loc_flange_pos=None, loc_flange_rotmat=None):
         if loc_flange_pos is not None:
@@ -277,11 +185,11 @@ class JLChain(object):
         return (gl_pos, gl_rotmat)
 
     @assert_finalize_decorator
-    def cvt_pose_in_flange_to_gl(self, loc_pos=np.zeros(3), loc_rotmat=np.eye(3)):
+    def cvt_pose_in_flange_to_gl(self, loc_pos=torch.zeros(3), loc_rotmat=torch.eye(3)):
         """
         given a loc pos and rotmat in the flange frame, convert it to global frame
-        :param loc_pos: nparray 1x3 in the flange frame
-        :param loc_rotmat: nparray 3x3 in the flange frame
+        :param loc_pos: 1x3 tensor in the flange frame
+        :param loc_rotmat: 3x3 tensor in the flange frame
         :param
         :return:
         author: weiwei
@@ -295,13 +203,13 @@ class JLChain(object):
     def cvt_gl_to_flange(self, gl_pos, gl_rotmat):
         """
         given a global pos and rotmat, get its relative pos and rotmat to the flange frame
-        :param gl_pos: 1x3 nparray
-        :param gl_rotmat: 3x3 nparray
+        :param gl_pos: 1x3 tensor
+        :param gl_rotmat: 3x3 tensor
         :return:
         author: weiwei
         date: 20190312
         """
-        return rm.rel_pose(self.gl_flange_pos, self.gl_flange_rotmat, gl_pos, gl_rotmat)
+        return nkm.rel_pose(self.gl_flange_pos, self.gl_flange_rotmat, gl_pos, gl_rotmat)
 
     def cvt_pose_in_flange_to_functional(self, pos_in_flange, rotmat_in_flange):
         """
@@ -319,15 +227,16 @@ class JLChain(object):
     def are_jnts_in_ranges(self, jnt_values):
         """
         check if the given jnt_values are in range
-        :param jnt_values:
+        :param jnt_values: tensor
         :return:
         author: weiwei
         date: 20220326toyonaka
         """
         if len(jnt_values) != self.n_dof:
             raise ValueError(f"The given joint values do not match n_dof: {len(jnt_values)} vs. {self.n_dof}")
-        jnt_values = np.asarray(jnt_values)
-        if np.any(jnt_values < self.jnt_ranges[:, 0]) or np.any(jnt_values > self.jnt_ranges[:, 1]):
+        below_lower_bound = jnt_values < self.jnt_ranges[:, 0]
+        above_upper_bound = jnt_values > self.jnt_ranges[:, 1]
+        if torch.any(below_lower_bound) or torch.any(above_upper_bound):
             print("Joints are out of ranges!")
             return False
         else:
@@ -336,12 +245,12 @@ class JLChain(object):
     def goto_given_conf(self, jnt_values):
         """
         move to the given configuration
-        :param jnt_values
+        :param jnt_values: tensor
         :return: null
         author: weiwei
         date: 20230927osaka
         """
-        return self.fk(jnt_values=jnt_values, toggle_jacobian=False, update=True)
+        return self.fk(jnt_values=jnt_values, update=True)
 
     def go_home(self):
         """
@@ -359,7 +268,7 @@ class JLChain(object):
         author: weiwei
         date: 20161211osaka
         """
-        return self.goto_given_conf(jnt_values=np.zeros(self.n_dof))
+        return self.goto_given_conf(jnt_values=torch.zeros(self.n_dof, dtype=torch.float32))
 
     def get_jnt_values(self):
         """
@@ -368,7 +277,7 @@ class JLChain(object):
         author: weiwei
         date: 20161205tsukuba
         """
-        jnt_values = np.zeros(self.n_dof)
+        jnt_values = torch.zeros(self.n_dof)
         for i in range(self.n_dof):
             jnt_values[i] = self.jnts[i].motion_value
         return jnt_values
@@ -379,7 +288,7 @@ class JLChain(object):
         author: weiwei
         date: 20200326
         """
-        return np.random.rand(self.n_dof) * (self.jnt_ranges[:, 1] - self.jnt_ranges[:, 0]) + self.jnt_ranges[:, 0]
+        return torch.rand(self.n_dof) * (self.jnt_ranges[:, 1] - self.jnt_ranges[:, 0]) + self.jnt_ranges[:, 0]
 
     @assert_finalize_decorator
     def ik(self,
@@ -388,33 +297,29 @@ class JLChain(object):
            seed_jnt_values=None,
            toggle_dbg=False):
         """
-        :param tgt_pos: 1x3 nparray
-        :param tgt_rotmat: 3x3 nparray
+        :param tgt_pos: 1x3 tensor
+        :param tgt_rotmat: 3x3 tensor
         :param seed_jnt_values: the starting configuration used in the numerical iteration
         :return:
         """
-        if self._ik_solver is None:
-            raise Exception("IK solver undefined. Use JLChain.finalize to define it.")
-        jnt_values = self._ik_solver.ik(tgt_pos=tgt_pos,
-                                        tgt_rotmat=tgt_rotmat,
-                                        seed_jnt_values=seed_jnt_values,
-                                        toggle_dbg=toggle_dbg)
-        return jnt_values
+        raise NotImplementedError
 
     def gen_stickmodel(self,
-                       stick_rgba=rm.bc.lnk_stick_rgba,
+                       stick_rgba=bc.lnk_stick_rgba,
                        toggle_jnt_frames=False,
                        toggle_flange_frame=True,
                        name='jlc_stick_model',
                        jnt_radius=rkc.JNT_RADIUS,
                        lnk_radius=rkc.LNK_STICK_RADIUS):
-        return rkmg.gen_jlc_stick(jlc=self,
-                                  stick_rgba=stick_rgba,
-                                  toggle_jnt_frames=toggle_jnt_frames,
-                                  toggle_flange_frame=toggle_flange_frame,
-                                  name=name,
-                                  jnt_radius=jnt_radius,
-                                  lnk_radius=lnk_radius)
+        with torch.no_grad():
+            m_col = rkmg.gen_jlc_stick(jlc=self,
+                                       stick_rgba=stick_rgba,
+                                       toggle_jnt_frames=toggle_jnt_frames,
+                                       toggle_flange_frame=toggle_flange_frame,
+                                       name=name,
+                                       jnt_radius=jnt_radius,
+                                       lnk_radius=lnk_radius)
+        return m_col
 
     def gen_meshmodel(self,
                       rgb=None,
@@ -424,14 +329,16 @@ class JLChain(object):
                       toggle_cdprim=False,
                       toggle_cdmesh=False,
                       name='jlc_mesh_model'):
-        return rkmg.gen_jlc_mesh(jlc=self,
-                                 rgb=rgb,
-                                 alpha=alpha,
-                                 toggle_flange_frame=toggle_flange_frame,
-                                 toggle_jnt_frames=toggle_jnt_frames,
-                                 toggle_cdprim=toggle_cdprim,
-                                 toggle_cdmesh=toggle_cdmesh,
-                                 name=name)
+        with torch.no_grad():
+            m_col = rkmg.gen_jlc_mesh(jlc=self,
+                                      rgb=rgb,
+                                      alpha=alpha,
+                                      toggle_flange_frame=toggle_flange_frame,
+                                      toggle_jnt_frames=toggle_jnt_frames,
+                                      toggle_cdprim=toggle_cdprim,
+                                      toggle_cdmesh=toggle_cdmesh,
+                                      name=name)
+        return m_col
 
 
 if __name__ == "__main__":
@@ -440,36 +347,75 @@ if __name__ == "__main__":
     import visualization.panda.world as wd
     import robot_sim._kinematics.constant as rkc
     import modeling.geometric_model as mgm
+    from torch.optim import LBFGS
+    from torch.optim import Adam
 
     base = wd.World(cam_pos=[1.25, .75, .75], lookat_pos=[0, 0, .3])
     mgm.gen_frame().attach_to(base)
 
     jlc = JLChain(n_dof=6)
-    jlc.jnts[0].loc_pos = np.array([0, 0, 0])
-    jlc.jnts[0].loc_motion_ax = np.array([0, 0, 1])
-    jlc.jnts[0].motion_range = np.array([-np.pi / 2, np.pi / 2])
+    jlc.jnts[0].loc_pos = torch.tensor([0.0, 0.0, 0.0])
+    jlc.jnts[0].loc_motion_ax = torch.tensor([0.0, 0.0, 1.0])
+    jlc.jnts[0].motion_range = torch.tensor([-torch.pi / 2.0, torch.pi / 2.0])
     # jlc.jnts[1].change_type(rkc.JntType.PRISMATIC)
-    jlc.jnts[1].loc_pos = np.array([0, 0, .05])
-    jlc.jnts[1].loc_motion_ax = np.array([0, 1, 0])
-    jlc.jnts[1].motion_range = np.array([-np.pi / 2, np.pi / 2])
-    jlc.jnts[2].loc_pos = np.array([0, 0, .2])
-    jlc.jnts[2].loc_motion_ax = np.array([0, 1, 0])
-    jlc.jnts[2].motion_range = np.array([-np.pi, np.pi])
-    jlc.jnts[3].loc_pos = np.array([0, 0, .2])
-    jlc.jnts[3].loc_motion_ax = np.array([0, 0, 1])
-    jlc.jnts[3].motion_range = np.array([-np.pi / 2, np.pi / 2])
-    jlc.jnts[4].loc_pos = np.array([0, 0, .1])
-    jlc.jnts[4].loc_motion_ax = np.array([0, 1, 0])
-    jlc.jnts[4].motion_range = np.array([-np.pi / 2, np.pi / 2])
-    jlc.jnts[5].loc_pos = np.array([0, 0, .05])
-    jlc.jnts[5].loc_motion_ax = np.array([0, 0, 1])
-    jlc.jnts[5].motion_range = np.array([-np.pi / 2, np.pi / 2])
-    jlc._loc_flange_pos = np.array([0, 0, .01])
-    jlc._loc_flange_pos = np.array([0.1, 0.1, 0.1])
+    jlc.jnts[1].loc_pos = torch.tensor([0.0, 0.0, .05])
+    jlc.jnts[1].loc_motion_ax = torch.tensor([0.0, 1.0, 0.0])
+    jlc.jnts[1].motion_range = torch.tensor([-torch.pi / 2.0, torch.pi / 2.0])
+    jlc.jnts[2].loc_pos = torch.tensor([0.0, 0.0, 0.2])
+    jlc.jnts[2].loc_motion_ax = torch.tensor([0.0, 1.0, 0.0])
+    jlc.jnts[2].motion_range = torch.tensor([-torch.pi, torch.pi])
+    jlc.jnts[3].loc_pos = torch.tensor([0.0, 0.0, 0.2])
+    jlc.jnts[3].loc_motion_ax = torch.tensor([0.0, 0.0, 1.0])
+    jlc.jnts[3].motion_range = torch.tensor([-torch.pi / 2.0, torch.pi / 2.0])
+    jlc.jnts[4].loc_pos = torch.tensor([0.0, 0.0, 0.1])
+    jlc.jnts[4].loc_motion_ax = torch.tensor([0.0, 1.0, 0.0])
+    jlc.jnts[4].motion_range = torch.tensor([-torch.pi / 2.0, torch.pi / 2.0])
+    jlc.jnts[5].loc_pos = torch.tensor([0.0, 0.0, 0.05])
+    jlc.jnts[5].loc_motion_ax = torch.tensor([0.0, 0.0, 1.0])
+    jlc.jnts[5].motion_range = torch.tensor([-torch.pi / 2.0, torch.pi / 2.0])
+    jlc._loc_flange_pos = torch.tensor([0.0, 0.0, 0.01])
+    jlc._loc_flange_pos = torch.tensor([0.1, 0.1, 0.1])
     # jlc.finalize(ik_solver=None)
-    jlc.finalize(ik_solver='d')
-    jlc.gen_stickmodel(stick_rgba=rm.bc.navy_blue, toggle_jnt_frames=True, toggle_flange_frame=True).attach_to(base)
+    result = jlc.finalize()
+    jlc.gen_stickmodel(stick_rgba=bc.navy_blue, toggle_jnt_frames=True, toggle_flange_frame=True).attach_to(base)
+    # rand feasible goal
+    random_jnts = jlc.rand_conf()
+    tgt_pose = jlc.fk(jnt_values=random_jnts, update=False)
+    with torch.no_grad():
+        mgm.gen_frame(pos=tgt_pose[0], rotmat=tgt_pose[1], ax_length=.2).attach_to(base)
+    #
+    jnt_values = torch.zeros(6, requires_grad=True)
+    optimizer = LBFGS([jnt_values], lr=1)
+    def closure():
+        optimizer.zero_grad()
+        cur_pose = jlc.goto_given_conf(jnt_values)
+        loss = nkm.diff_between_posrot(*(cur_pose + tgt_pose))
+        loss.backward()
+        return loss
+    for i in range(5):
+        optimizer.step(closure)
+    final_loss = closure()
+    print("Final loss:", final_loss.item())
+    with torch.no_grad():
+        jlc.gen_stickmodel(stick_rgba=bc.cool_map(i/100), toggle_jnt_frames=True, toggle_flange_frame=True).attach_to(
+            base)
     base.run()
+
+    optimizer = Adam([jnt_values], lr=.1)
+    for i in range(100):
+        cur_pose = jlc.goto_given_conf(jnt_values)
+        loss = nkm.diff_between_posrot(*(cur_pose + tgt_pose))
+        optimizer.zero_grad()
+        loss.backward()
+        optimizer.step()
+        print(loss)
+        if i % 20 == 0:
+            with torch.no_grad():
+                mgm.gen_frame(pos=cur_pose[0], rotmat=cur_pose[1]).attach_to(base)
+                jlc.gen_stickmodel(stick_rgba=bc.cool_map(i/100), toggle_jnt_frames=True, toggle_flange_frame=True).attach_to(
+                    base)
+    base.run()
+
     seed_jnt_values = jlc.get_jnt_values()
 
     success = 0

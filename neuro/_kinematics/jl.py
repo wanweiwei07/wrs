@@ -1,7 +1,7 @@
 import warnings
-import numpy as np
+import torch
 import basis.constant as bc
-import basis.robot_math as rm
+import neuro._kinematics.math_utils as nkm
 import modeling.collision_model as mcm
 import modeling.geometric_model as mgm
 import robot_sim._kinematics.constant as rkc
@@ -16,10 +16,10 @@ class Link(object):
 
     def __init__(self,
                  name="auto",
-                 loc_pos=np.zeros(3),
-                 loc_rotmat=np.eye(3),
-                 com=np.zeros(3),
-                 inertia=np.eye(3),
+                 loc_pos=torch.zeros(3),
+                 loc_rotmat=torch.eye(3),
+                 com=torch.zeros(3),
+                 inertia=torch.eye(3),
                  mass=0,
                  cmodel=None):
         self.name = name
@@ -33,8 +33,8 @@ class Link(object):
         self._gl_pos = self._loc_pos
         self._gl_rotmat = self._loc_rotmat
         # grafting target
-        self._root_pos = np.zeros(3)
-        self._root_rotmat = np.eye(3)
+        self._root_pos = torch.zeros(3)
+        self._root_rotmat = torch.eye(3)
         # delay
         self._is_gl_pose_delayed = False
 
@@ -92,9 +92,14 @@ class Link(object):
     def loc_rotmat(self, rotmat):
         self._loc_rotmat = rotmat
 
+    @loc_rotmat.setter
+    @delay_gl_pose_decorator
+    def loc_rotmat(self, rotmat):
+        self._loc_rotmat = rotmat
+
     @property
     def loc_homomat(self):
-        return rm.homomat_from_posrot(self._loc_pos, self._loc_rotmat)
+        return nkm.homomat_from_posrot(self._loc_pos, self._loc_rotmat)
 
     @property
     def loc_pose(self):
@@ -118,7 +123,7 @@ class Link(object):
 
     @property
     def gl_homomat(self):
-        return rm.homomat_from_posrot(self._gl_pos, self._gl_rotmat)
+        return nkm.homomat_from_posrot(self._gl_pos, self._gl_rotmat)
 
     @property
     @update_gl_pose_decorator
@@ -132,7 +137,7 @@ class Link(object):
         self._cmodel = cmodel
         self._cmodel.pose = (self._gl_pos, self._gl_rotmat)
 
-    def install_onto(self, pos=np.zeros(3), rotmat=np.eye(3)):
+    def install_onto(self, pos=torch.zeros(3), rotmat=torch.eye(3)):
         """
         update the global parameters with given reference pos, reference rotmat
         :param pos:
@@ -177,8 +182,8 @@ class Anchor(object):
 
     def __init__(self,
                  name="auto",
-                 pos=np.zeros(3),
-                 rotmat=np.eye(3),
+                 pos=torch.zeros(3),
+                 rotmat=torch.eye(3),
                  n_flange=1,
                  n_lnk=1):
         """
@@ -193,7 +198,7 @@ class Anchor(object):
         self._rotmat = rotmat
         self._n_flange = n_flange
         self._n_lnk = n_lnk
-        self._loc_flange_pose_list = [[np.zeros(3), np.eye(3)] for _ in range(self._n_flange)]
+        self._loc_flange_pose_list = [[torch.zeros(3), torch.eye(3)] for _ in range(self._n_flange)]
         self._gl_flange_pose_list = self.compute_gl_flange()
         self._lnk_list = [Link(name=name) for _ in range(self._n_lnk)]
         self._is_gl_flange_delayed = True
@@ -267,7 +272,7 @@ class Anchor(object):
 
     @property
     def homomat(self):
-        return rm.homomat_from_posrot(self.pos, self.rotmat)
+        return nkm.homomat_from_posrot(self.pos, self.rotmat)
 
     @property
     @update_gl_flange_decorator
@@ -279,7 +284,7 @@ class Anchor(object):
     @update_gl_flange_decorator
     @update_gl_lnk_decorator
     def gl_flange_homomat_list(self):
-        return [rm.homomat_from_posrot(gl_flange_pose[0], gl_flange_pose[1]) for gl_flange_pose in
+        return [nkm.homomat_from_posrot(gl_flange_pose[0], gl_flange_pose[1]) for gl_flange_pose in
                 self._gl_flange_pose_list]
 
     @property
@@ -353,17 +358,17 @@ class Joint(object):
     def __init__(self,
                  name="auto",
                  type=rkc.JntType.REVOLUTE,
-                 loc_pos=np.zeros(3),
-                 loc_rotmat=np.eye(3),
-                 loc_motion_ax=np.array([0, 1, 0]),
-                 motion_range=np.array([-np.pi, np.pi])):
+                 loc_pos=torch.zeros(3),
+                 loc_rotmat=torch.eye(3),
+                 loc_motion_ax=torch.tensor([.0, 1.0, .0]),
+                 motion_range=torch.tensor([-torch.pi, torch.pi])):
         self.name = name
         self.loc_pos = loc_pos
         self.loc_rotmat = loc_rotmat
         self.loc_motion_ax = loc_motion_ax
         self.motion_range = motion_range
         # the following parameters will be updated automatically
-        self._motion_value = 0
+        self._motion_value = torch.tensor(.0, requires_grad=True)
         self._gl_pos_0 = self.loc_pos
         self._gl_rotmat_0 = self.loc_rotmat
         self._gl_motion_ax = self.loc_motion_ax
@@ -380,7 +385,7 @@ class Joint(object):
 
     @property
     def loc_homomat(self):
-        return rm.homomat_from_posrot(pos=self.loc_pos, rotmat=self.loc_rotmat)
+        return nkm.homomat_from_posrot(pos=self.loc_pos, rotmat=self.loc_rotmat)
 
     @property
     def gl_pos_0(self):
@@ -389,10 +394,6 @@ class Joint(object):
     @property
     def gl_rotmat_0(self):
         return self._gl_rotmat_0
-
-    @property
-    def gl_homomat_0(self):
-        return rm.homomat_from_posrot(pos=self._gl_pos_0, rotmat=self._gl_rotmat_0)
 
     @property
     def gl_motion_ax(self):
@@ -408,7 +409,7 @@ class Joint(object):
 
     @property
     def gl_homomat_q(self):
-        return rm.homomat_from_posrot(pos=self._gl_pos_q, rotmat=self._gl_rotmat_q)
+        return nkm.homomat_from_posrot(pos=self._gl_pos_q, rotmat=self._gl_rotmat_q)
 
     @property
     def type(self):
@@ -422,12 +423,12 @@ class Joint(object):
     def lnk(self, value):
         self._lnk = value
 
-    def change_type(self, type: rkc.JntType, motion_range: np.ndarray = None):
+    def change_type(self, type, motion_range):
         if motion_range is None:
             if type == rkc.JntType.PRISMATIC:
-                motion_range = np.array([-.1, .1])
+                motion_range = torch.tensor([-.1, .1])
             elif type == rkc.JntType.REVOLUTE:
-                motion_range = np.array([-np.pi, np.pi])
+                motion_range = torch.tensor([-torch.pi, torch.pi])
         self._type = type
         self.motion_range = motion_range
 
@@ -440,12 +441,13 @@ class Joint(object):
         self._motion_value = motion_value
         if self.type == rkc.JntType.REVOLUTE:
             self._gl_pos_q = self._gl_pos_0
-            self._gl_rotmat_q = rm.rotmat_from_axangle(self._gl_motion_ax, self._motion_value) @ self._gl_rotmat_0
+            self._gl_rotmat_q = nkm.rotmat_from_axangle(self._gl_motion_ax, self._motion_value) @ self._gl_rotmat_0
         elif self.type == rkc.JntType.PRISMATIC:
             self._gl_pos_q = self._gl_pos_0 + self._gl_motion_ax * self._motion_value
             self._gl_rotmat_q = self._gl_rotmat_0
 
-    def update_globals(self, pos=np.zeros(3), rotmat=np.eye(3), motion_value=0):
+    def update_globals(self, pos=torch.zeros(3), rotmat=torch.eye(3),
+                       motion_value=torch.tensor(.0, requires_grad=True)):
         """
         update the global parameters against give reference pos, reference rotmat, and motion_value
         :param pos:
@@ -468,11 +470,11 @@ class Joint(object):
         """
         self.assert_motion_value(value=motion_value)
         if self.type == rkc.JntType.REVOLUTE:
-            rotmat_by_motion = rm.rotmat_from_axangle(self.loc_motion_ax, motion_value)
-            return self.loc_homomat @ rm.homomat_from_posrot(pos=np.zeros(3), rotmat=rotmat_by_motion)
+            rotmat_by_motion = nkm.rotmat_from_axangle(self.loc_motion_ax, motion_value)
+            return self.loc_homomat @ nkm.homomat_from_posrot(pos=torch.zeros(3), rotmat=rotmat_by_motion)
         elif self.type == rkc.JntType.PRISMATIC:
             pos_by_motion = self.loc_motion_ax * motion_value
-            return self.loc_homomat @ rm.homomat_from_posrot(pos=pos_by_motion, rotmat=np.eye(3))
+            return self.loc_homomat @ nkm.homomat_from_posrot(pos=pos_by_motion, rotmat=torch.eye(3))
 
     def gen_model(self,
                   toggle_frame_0=True,
@@ -481,37 +483,57 @@ class Joint(object):
                   radius=rkc.JNT_RADIUS,
                   frame_stick_radius=rkc.FRAME_STICK_RADIUS,
                   frame_stick_length=rkc.FRAME_STICK_LENGTH_MEDIUM):
-        return rkmg.gen_jnt(jnt=self,
-                            toggle_frame_0=toggle_frame_0,
-                            toggle_frame_q=toggle_frame_q,
-                            toggle_lnk_mesh=toggle_lnk_mesh,
-                            radius=radius,
-                            frame_stick_radius=frame_stick_radius,
-                            frame_stick_length=frame_stick_length)
+        with torch.no_grad():
+            m_col = rkmg.gen_jnt(jnt=self,
+                                 toggle_frame_0=toggle_frame_0,
+                                 toggle_frame_q=toggle_frame_q,
+                                 toggle_lnk_mesh=toggle_lnk_mesh,
+                                 radius=radius,
+                                 frame_stick_radius=frame_stick_radius,
+                                 frame_stick_length=frame_stick_length)
+        return m_col
 
 
 if __name__ == '__main__':
+    from torchviz import make_dot
     import visualization.panda.world as wd
     import robot_sim._kinematics.model_generator as rkmg
+    from torch.optim import Adam
 
-    base = wd.World(cam_pos=[1, 1, 1], lookat_pos=[0, 0, 0])
+    base = wd.World(cam_pos=[1., 1., 1.], lookat_pos=[.0, .0, .0])
     mgm.gen_frame().attach_to(base)
-    jnt = Joint(loc_motion_ax=np.array([0, 0, 1]))
-    #
-    ref_pos = np.array([0, .1, 0])
-    ref_rotmat = rm.rotmat_from_euler(np.pi / 6, np.pi / 3, np.pi / 4)
-    # mgm.gen_dashed_frame(pos=pos, rotmat=rotmat).attach_to(base)
-    #
-    jnt.update_globals(pos=ref_pos, rotmat=ref_rotmat, motion_value=np.pi / 2)
-    # mgm.gen_frame(pos=joint.gl_pos_q, rotmat=joint.gl_rotmat_q).attach_to(base)
-    # print(joint.gl_pos_q, joint.gl_rotmat_q)
-    #
-    # pos = joint.get_transform_homomat(motion_value=np.pi / 2)
-    # ref_homomat = rm.homomat_from_posrot(pos=pos, rotmat=rotmat)
-    # result_homomat = ref_homomat @ pos
-    # print(result_homomat)
-    # mgm.gen_myc_frame(pos=result_homomat[:3, 3], rotmat=result_homomat[:3, :3]).attach_to(base)
-
+    jnt = Joint(loc_motion_ax=torch.tensor([.0, .0, 1.]))
     jnt.lnk.cmodel = mcm.CollisionModel(initor="../../basis/objects/or2fg7_base.stl")
+    #
+    ref_pos = torch.tensor([.0, .1, .0])
+    ref_rotmat = nkm.rotmat_from_euler(torch.pi / 6, torch.pi / 3, torch.pi / 4)
+    motion_value = torch.tensor(torch.pi / 2, requires_grad=True, dtype=torch.float)
+    jnt.update_globals(pos=ref_pos, rotmat=ref_rotmat, motion_value=motion_value)
+    init_model = jnt.gen_model(toggle_lnk_mesh=True)
+    init_model.rgb=bc.red
+    init_model.attach_to(base)
+    # base.run()
+    #
+    optimizer = Adam([motion_value], lr=0.01)
+    for i in range(300):
+        jnt.update_globals(pos=ref_pos, rotmat=ref_rotmat, motion_value=motion_value)
+        deltap = (jnt.gl_pos_q**2).sum()
+        deltaw = (nkm.delta_w_between_rotmat(jnt.gl_rotmat_q, torch.eye(3))**2).sum()
+        loss = deltap+deltaw
+        optimizer.zero_grad()
+        loss.backward()
+        optimizer.step()
+        if i % 50 == 0:
+            print(f'Iteration {i}, Loss: {loss.item()}, Params: {motion_value.data.numpy()}')
     jnt.gen_model(toggle_lnk_mesh=True).attach_to(base)
+
+    #
+    # print(jnt.gl_pos_q)
+    # deltaw = nkm.delta_w_between_rotmat(torch.eye(3), jnt.gl_rotmat_q)
+    # deltap = jnt.gl_pos_q.sum()
+    # delta = torch.norm(deltap) + torch.norm(deltaw)
+    # make_dot(deltap, params={'motion_value': motion_value}).render("jnt_graph", format="png")
+    #
+    # print(jnt.motion_value.grad)
+    #
     base.run()

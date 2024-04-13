@@ -2,6 +2,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 eps = 1e-6
+pi = 3.14159265359
 
 # color
 # see correspondence at: https://www.colordic.org/w
