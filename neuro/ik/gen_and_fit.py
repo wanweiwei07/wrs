@@ -4,16 +4,30 @@ import torch.nn as nn
 import torch
 from torch.utils.data import Dataset
 from torch.utils.tensorboard import SummaryWriter
+from scipy.transform import Rotation
+
+
+def gen_data(robot, granularity, save_name='ik_data.csv'):
+    data_set = []
+    start = np.floor(robot.jnt_ranges[:, 0] / granularity)
+    end = np.ceil(robot.jnt_ranges[:, 1] / granularity)
+    n_data_vec = (end-start+1).astype(int)
+    n_data = np.prod(n_data_vec)
+    in_data_npy = np.empty((0, robot.n_dof))
+    out_data_npy = np.empty((0, 6))
+    for i in range(n_data):
+        jnt_values = robot.rand_conf()
+        tgt_pos, tgt_rotmat = robot.fk(jnt_values=jnt_values, toggle_jacobian=False, update=False)
+        tgt_wvec = Rotation.from_matrix(tgt_rotmat).as_rotvec()
+        in_data_npy = np.vstack((in_data_npy, jnt_values))
+        out_data_npy = np.vstack((out_data_npy, np.hstack((tgt_pos, tgt_wvec))))
+        data_set.append([in_data_npy, out_data_npy])
+    np.save(save_name, np.array(data_set))
 
 
 class IKDataSet(Dataset):
-    def __init__(self, file, transform=None):
-        # self.ik_frame = pd.read_csv(file)
+    def __init__(self, file):
         self.ik_frame = np.load(file + ".npy")
-        self.transform = transform
-        _min_max = np.load(file + "_min_max.npy")
-        self.min = _min_max[0]
-        self.max = _min_max[1]
 
     def __len__(self):
         return len(self.ik_frame)
@@ -21,12 +35,9 @@ class IKDataSet(Dataset):
     def __getitem__(self, idx):
         if torch.is_tensor(idx):
             idx = idx.tolist()
-        # xyzrpy = eval(self.ik_frame.loc[idx, 'xyzrpy'])
-        # jnt_values = eval(self.ik_frame.loc[idx, 'jnt_values'])
-        xyzrpy = self.ik_frame[idx][0]
-        xyzrpy = (xyzrpy - self.min) / (self.max - self.min)  # normalize
+        xyzwvec = self.ik_frame[idx][0]
         jnt_values = self.ik_frame[idx][1]
-        return torch.Tensor(xyzrpy), torch.Tensor(jnt_values)
+        return torch.Tensor(xyzwvec), torch.Tensor(jnt_values)
 
 
 class Net(nn.Module):
@@ -75,6 +86,7 @@ def test_loop(dataloader, model, loss_fn):
 
 if __name__ == '__main__':
     from torch.utils.data import DataLoader
+
     # import os
     #
     # os.system('tensorboard --logdir=runs &')

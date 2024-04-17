@@ -12,9 +12,10 @@ import matplotlib.pyplot as plt
 from scipy.spatial.transform import Slerp
 from scipy.spatial.transform import Rotation as R
 from scipy.interpolate import interp1d
+from scipy.spatial.transform import Rotation
 
 # epsilon for testing whether a number is close to zero
-_EPS = np.finfo(float).eps * 4.0
+_EPS = np.finfo(np.float32).eps
 # axis sequences for Euler angles
 _NEXT_AXIS = [1, 2, 0, 1]
 # map axes strings to/from tuples of inner axis, parity, repetition, frame
@@ -537,6 +538,31 @@ def angle_between_2d_vecs(v1, v2):
     return math.atan2(v2[1] * v1[0] - v2[0] * v1[1], v2[0] * v1[0] + v2[1] * v1[1])
 
 
+# def delta_w_between_rotmat(src_rotmat, tgt_rotmat):
+#     """
+#     compute angle*ax from src_rotmat to tgt_rotmat
+#     the following relation holds for the returned delta_w
+#     rotmat_from_axangle(np.linalg.norm(deltaw), unit_vec(deltaw)).dot(src_rotmat) = tgt_rotmat
+#     :param src_rotmat: 3x3 nparray
+#     :param tgt_rotmat: 3x3 nparray
+#     :return:
+#     author: weiwei
+#     date: 20200326
+#     """
+#     delta_rotmat = tgt_rotmat @ src_rotmat.T
+#     tmp_vec = np.array([delta_rotmat[2, 1] - delta_rotmat[1, 2],
+#                         delta_rotmat[0, 2] - delta_rotmat[2, 0],
+#                         delta_rotmat[1, 0] - delta_rotmat[0, 1]])
+#     tmp_vec_norm = np.linalg.norm(tmp_vec)
+#     if tmp_vec_norm > _EPS:
+#         delta_w = np.arctan2(tmp_vec_norm, np.trace(delta_rotmat) - 1.0) / tmp_vec_norm * tmp_vec
+#     elif delta_rotmat[0, 0] > 0 and delta_rotmat[1, 1] > 0 and delta_rotmat[2, 2] > 0:
+#         delta_w = np.array([0, 0, 0])
+#     else:
+#         delta_w = np.pi / 2.0 * (np.diag(delta_rotmat) + 1)
+#     return delta_w
+
+
 def delta_w_between_rotmat(src_rotmat, tgt_rotmat):
     """
     compute angle*ax from src_rotmat to tgt_rotmat
@@ -546,26 +572,50 @@ def delta_w_between_rotmat(src_rotmat, tgt_rotmat):
     :param tgt_rotmat: 3x3 nparray
     :return:
     author: weiwei
-    date: 20200326
+    date: 20240416
     """
     delta_rotmat = tgt_rotmat @ src_rotmat.T
-    tmp_vec = np.array([delta_rotmat[2, 1] - delta_rotmat[1, 2],
-                        delta_rotmat[0, 2] - delta_rotmat[2, 0],
-                        delta_rotmat[1, 0] - delta_rotmat[0, 1]])
-    tmp_vec_norm = np.linalg.norm(tmp_vec)
-    if tmp_vec_norm > 1e-6:
-        delta_w = math.atan2(tmp_vec_norm, np.trace(delta_rotmat) - 1.0) / tmp_vec_norm * tmp_vec
-    elif delta_rotmat[0, 0] > 0 and delta_rotmat[1, 1] > 0 and delta_rotmat[2, 2] > 0:
-        delta_w = np.array([0, 0, 0])
-    else:
-        delta_w = np.pi / 2 * (np.diag(delta_rotmat) + 1)
-    return delta_w
+    return Rotation.from_matrix(delta_rotmat).as_rotvec()
+    # tmp_vec = np.array([delta_rotmat[2, 1] - delta_rotmat[1, 2],
+    #                     delta_rotmat[0, 2] - delta_rotmat[2, 0],
+    #                     delta_rotmat[1, 0] - delta_rotmat[0, 1]])
+    # tmp_vec_norm = np.linalg.norm(tmp_vec)
+    # tmp_trace_minus_one = np.trace(delta_rotmat) - 1.0
+    # if np.isclose(tmp_vec_norm, 0.0):
+    #     return np.zeros(3)
+    # elif np.isclose(tmp_trace_minus_one, 0.0):
+    #     return np.pi / 2.0 * np.diag(delta_rotmat)
+    # else:
+    #     return np.arctan2(tmp_vec_norm, tmp_trace_minus_one) / tmp_vec_norm * tmp_vec
 
 
-def diff_between_posrot(src_pos,
-                        src_rotmat,
-                        tgt_pos,
-                        tgt_rotmat):
+# def delta_w_between_rotmat(src_rotmat, tgt_rotmat):
+#     """
+#     compute angle*ax from src_rotmat to tgt_rotmat
+#     the following relation holds for the returned delta_w
+#     rotmat_from_axangle(np.linalg.norm(deltaw), unit_vec(deltaw)).dot(src_rotmat) = tgt_rotmat
+#     :param src_rotmat: 3x3
+#     :param tgt_rotmat: 3x3
+#     :return:
+#     author: weiwei
+#     date: 20200326
+#     """
+#     delta_rotmat = tgt_rotmat @ src_rotmat.T
+#     clipped_trace = np.clip((np.trace(delta_rotmat) - 1) / 2.0, -1.0, 1.0)
+#     angle = np.arccos(clipped_trace)
+#     if np.isclose(angle, 0.0):
+#         return np.zeros(3)
+#     else:
+#         axis = np.array([delta_rotmat[2, 1] - delta_rotmat[1, 2],
+#                          delta_rotmat[0, 2] - delta_rotmat[2, 0],
+#                          delta_rotmat[1, 0] - delta_rotmat[0, 1]]) / (2 * np.sin(angle))
+#         return angle * axis
+
+
+def diff_between_poses(src_pos,
+                       src_rotmat,
+                       tgt_pos,
+                       tgt_rotmat):
     """
     compute the error between the given tcp and tgt_tcp
     :param src_pos:

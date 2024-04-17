@@ -37,8 +37,8 @@ if __name__ == '__main__':
             path = nx.shortest_path(fsreg_planner.fsreg_graph, source=start, target=goal)
             min_path = path if min_path is None else path if len(path) < len(min_path) else min_path
 
-    # fsreg_planner.draw_fsreg_graph()
-    # fsreg_planner.draw_path(min_path)
+    print(min_path)
+    fsreg_planner.show_graph_with_path(min_path)
 
     mesh_model_list = fsreg_planner.gen_regrasp_motion(path=min_path)
 
@@ -67,7 +67,7 @@ if __name__ == '__main__':
         return task.again
 
 
-    taskMgr.doMethodLater(0.01, update, "update",
+    taskMgr.doMethodLater(0.1, update, "update",
                           extraArgs=[anime_data],
                           appendTask=True)
 

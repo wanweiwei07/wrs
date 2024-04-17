@@ -17,11 +17,11 @@ class NumIKSolver(object):
     3. CWLN is 1ms slower than PINV_WC as it needs to solve both svd and damped least squares
     """
 
-    def __init__(self, jlc, wln_ratio=.05):
+    def __init__(self, jlc, wln_ratio=.02):
         self.jlc = jlc
         self.max_link_length = self._get_max_link_length()
-        self.clamp_pos_err = 2 * self.max_link_length
-        self.clamp_rot_err = np.pi / 3
+        self.clamp_pos_err = 2.0 * self.max_link_length
+        self.clamp_rot_err = np.pi / 3.0
         self.jnt_wt_ratio = wln_ratio
         # maximum reach
         self.max_rng = 10.0
@@ -31,6 +31,18 @@ class NumIKSolver(object):
         self.jnt_range_values = self.max_jnt_values - self.min_jnt_values
         self.min_jnt_value_thresholds = self.min_jnt_values + self.jnt_range_values * self.jnt_wt_ratio
         self.max_jnt_value_thresholds = self.max_jnt_values - self.jnt_range_values * self.jnt_wt_ratio
+
+    def __call__(self,
+                 tgt_pos,
+                 tgt_rotmat,
+                 seed_jnt_values=None,
+                 max_n_iter=100,
+                 toggle_dbg=False):
+        return self.pinv_cw(tgt_pos=tgt_pos,
+                            tgt_rotmat=tgt_rotmat,
+                            seed_jnt_values=seed_jnt_values,
+                            max_n_iter=max_n_iter,
+                            toggle_dbg=toggle_dbg)
 
     def _get_max_link_length(self):
         max_len = 0
@@ -52,15 +64,19 @@ class NumIKSolver(object):
         """
         jnt_wt = np.ones(self.jlc.n_dof)
         # min damping interval
-        selection = jnt_values < self.min_jnt_value_thresholds
+        damping_selection = jnt_values < self.min_jnt_value_thresholds
         normalized_diff = (jnt_values - self.min_jnt_values) / (self.min_jnt_value_thresholds - self.min_jnt_values)
-        jnt_wt[selection] = -2 * np.power(normalized_diff[selection], 3) + 3 * np.power(normalized_diff[selection], 2)
+        damping_diff = normalized_diff[damping_selection]
+        jnt_wt[damping_selection] = -2 * np.power(damping_diff, 3) + 3 * np.power(damping_diff, 2)
+        cutting_selection = jnt_values <= self.min_jnt_values
+        jnt_wt[cutting_selection] = 0.0
         # max damping interval
-        selection = jnt_values > self.max_jnt_value_thresholds
+        damping_selection = jnt_values > self.max_jnt_value_thresholds
         normalized_diff = (self.max_jnt_values - jnt_values) / (self.max_jnt_values - self.max_jnt_value_thresholds)
-        jnt_wt[selection] = -2 * np.power(normalized_diff[selection], 3) + 3 * np.power(normalized_diff[selection], 2)
-        jnt_wt[jnt_values >= self.max_jnt_values] = 0
-        jnt_wt[jnt_values <= self.min_jnt_values] = 0
+        damping_diff = normalized_diff[damping_selection]
+        jnt_wt[damping_selection] = -2 * np.power(damping_diff, 3) + 3 * np.power(damping_diff, 2)
+        cutting_selection = jnt_values >= self.max_jnt_values
+        jnt_wt[cutting_selection] = 0.0
         return np.diag(jnt_wt), np.diag(np.sqrt(jnt_wt))
 
     def _clamp_tgt_err(self, f2t_pos_err, f2t_rot_err, f2t_err_vec):
@@ -81,31 +97,35 @@ class NumIKSolver(object):
     def pinv_rr(self,
                 tgt_pos,
                 tgt_rotmat,
-                seed_jnt_vals=None,
+                seed_jnt_values=None,
                 max_n_iter=100,
                 toggle_dbg=False):
-        iter_jnt_values = seed_jnt_vals
-        if seed_jnt_vals is None:
+        iter_jnt_values = seed_jnt_values
+        if seed_jnt_values is None:
             iter_jnt_values = self.jlc.get_jnt_values()
         counter = 0
         while True:
             flange_pos, flange_rotmat, j_mat = self.jlc.fk(jnt_values=iter_jnt_values,
                                                            toggle_jacobian=True,
                                                            update=False)
-            f2t_pos_err, f2t_rot_err, f2t_err_vec = rm.diff_between_posrot(src_pos=flange_pos,
-                                                                           src_rotmat=flange_rotmat,
-                                                                           tgt_pos=tgt_pos,
-                                                                           tgt_rotmat=tgt_rotmat)
+            f2t_pos_err, f2t_rot_err, f2t_err_vec = rm.diff_between_poses(src_pos=flange_pos,
+                                                                          src_rotmat=flange_rotmat,
+                                                                          tgt_pos=tgt_pos,
+                                                                          tgt_rotmat=tgt_rotmat)
             if f2t_pos_err < 1e-4 and f2t_rot_err < 1e-3 and self.jlc.are_jnts_in_ranges(iter_jnt_values):
                 return iter_jnt_values
-            clamped_tgt_err = self._clamp_tgt_err(f2t_pos_err, f2t_rot_err, f2t_err_vec)
-            delta_jnt_vals = np.linalg.pinv(j_mat, rcond=1e-4) @ clamped_tgt_err
-            if abs(np.sum(delta_jnt_vals)) < 1e-8:
+            clamped_err_vec = self._clamp_tgt_err(f2t_pos_err, f2t_rot_err, f2t_err_vec)
+            delta_jnt_values = np.linalg.pinv(j_mat, rcond=1e-4) @ clamped_err_vec
+            if abs(np.sum(delta_jnt_values)) < 1e-8:
+                # print("local minima")
                 # local minimia
                 pass
-            iter_jnt_values = iter_jnt_values + delta_jnt_vals
+            iter_jnt_values = iter_jnt_values + delta_jnt_values
+            iter_jnt_values = np.mod(iter_jnt_values, 2 * np.pi)
+            iter_jnt_values = np.where(iter_jnt_values > np.pi, iter_jnt_values - 2 * np.pi, iter_jnt_values)
             if not self.are_jnts_in_range(iter_jnt_values):
                 # random restart
+                # print("random restart")
                 iter_jnt_values = self.jlc.rand_conf()
             if toggle_dbg:
                 import robot_sim._kinematics.model_generator as rkmg
@@ -113,9 +133,11 @@ class NumIKSolver(object):
                 self.jlc.goto_given_conf(jnt_values=iter_jnt_values)
                 rkmg.gen_jlc_stick(self.jlc, toggle_flange_frame=True).attach_to(base)
                 self.jlc.goto_given_conf(jnt_values=jnt_values)
-                import modeling.geometric_model as gm
-                gm.gen_arrow(spos=flange_pos, epos=flange_pos + f2t_err_vec[:3] * .1).attach_to(base)
+                # import modeling.geometric_model as gm
+                # gm.gen_arrow(spos=flange_pos, epos=flange_pos + f2t_err_vec[:3] * 1).attach_to(base)
                 print("f2t_pos_err ", f2t_pos_err, " f2t_rot_err ", f2t_rot_err)
+                print("clamped_tgt_err ", clamped_err_vec)
+                print(counter, max_n_iter)
             if counter > max_n_iter:
                 return None
             counter += 1
@@ -123,27 +145,27 @@ class NumIKSolver(object):
     def dls_rr(self,
                tgt_pos,
                tgt_rotmat,
-               seed_jnt_vals=None,
+               seed_jnt_values=None,
                max_n_iter=100,
                toggle_dbg=False):
-        iter_jnt_values = seed_jnt_vals
-        if seed_jnt_vals is None:
+        iter_jnt_values = seed_jnt_values
+        if seed_jnt_values is None:
             iter_jnt_values = self.jlc.get_jnt_values()
         counter = 0
         while True:
             flange_pos, flange_rotmat, j_mat = self.jlc.fk(jnt_values=iter_jnt_values,
                                                            toggle_jacobian=True,
                                                            update=False)
-            f2t_pos_err, f2t_rot_err, f2t_err_vec = rm.diff_between_posrot(src_pos=flange_pos,
-                                                                           src_rotmat=flange_rotmat,
-                                                                           tgt_pos=tgt_pos,
-                                                                           tgt_rotmat=tgt_rotmat)
+            f2t_pos_err, f2t_rot_err, f2t_err_vec = rm.diff_between_poses(src_pos=flange_pos,
+                                                                          src_rotmat=flange_rotmat,
+                                                                          tgt_pos=tgt_pos,
+                                                                          tgt_rotmat=tgt_rotmat)
             if f2t_pos_err < 1e-4 and f2t_rot_err < 1e-3 and self.jlc.are_jnts_in_ranges(iter_jnt_values):
                 return iter_jnt_values
             clamped_err_vec = self._clamp_tgt_err(f2t_pos_err, f2t_rot_err, f2t_err_vec)
-            delta_jnt_vals = (np.linalg.inv(j_mat.T @ j_mat + 1e-4 * np.eye(j_mat.shape[1])) @
-                              j_mat.T @ clamped_err_vec)
-            iter_jnt_values = iter_jnt_values + delta_jnt_vals
+            delta_jnt_values = (np.linalg.inv(j_mat.T @ j_mat + 1e-4 * np.eye(j_mat.shape[1])) @
+                                j_mat.T @ clamped_err_vec)
+            iter_jnt_values = iter_jnt_values + delta_jnt_values
             if not self.are_jnts_in_range(iter_jnt_values):
                 # random restart
                 iter_jnt_values = self.jlc.rand_conf()
@@ -163,7 +185,7 @@ class NumIKSolver(object):
     def jt_rr(self,
               tgt_pos,
               tgt_rotmat,
-              seed_jnt_vals=None,
+              seed_jnt_values=None,
               max_n_iter=100,
               toggle_dbg=False):
         """
@@ -172,37 +194,37 @@ class NumIKSolver(object):
         Pseudoinverse and Damped Least Squares methods
         :param tgt_pos:
         :param tgt_rotmat:
-        :param seed_jnt_vals:
+        :param seed_jnt_values:
         :param max_n_iter:
         :param toggle_dbg:
         :return:
         """
-        iter_jnt_vals = seed_jnt_vals
-        if seed_jnt_vals is None:
-            iter_jnt_vals = self.jlc.get_jnt_values()
+        iter_jnt_values = seed_jnt_values
+        if seed_jnt_values is None:
+            iter_jnt_values = self.jlc.get_jnt_values()
         counter = 0
         while True:
-            flange_pos, flange_rotmat, j_mat = self.jlc.fk(jnt_values=iter_jnt_vals,
+            flange_pos, flange_rotmat, j_mat = self.jlc.fk(jnt_values=iter_jnt_values,
                                                            toggle_jacobian=True,
                                                            update=False)
-            f2t_pos_err, f2t_rot_err, f2t_err_vec = rm.diff_between_posrot(src_pos=flange_pos,
-                                                                           src_rotmat=flange_rotmat,
-                                                                           tgt_pos=tgt_pos,
-                                                                           tgt_rotmat=tgt_rotmat)
+            f2t_pos_err, f2t_rot_err, f2t_err_vec = rm.diff_between_poses(src_pos=flange_pos,
+                                                                          src_rotmat=flange_rotmat,
+                                                                          tgt_pos=tgt_pos,
+                                                                          tgt_rotmat=tgt_rotmat)
             if f2t_pos_err < 1e-4 and f2t_rot_err < 1e-3:
-                return iter_jnt_vals
+                return iter_jnt_values
             jjt = j_mat @ j_mat.T
             jjt_dot_e = jjt @ f2t_err_vec
             weight = np.dot(f2t_err_vec, jjt_dot_e) / np.dot(jjt_dot_e, jjt_dot_e)
-            delta_jnt_vals = weight * (j_mat.T @ f2t_err_vec)
-            iter_jnt_vals = iter_jnt_vals + delta_jnt_vals
-            if not self.are_jnts_in_range(iter_jnt_vals):
+            delta_jnt_values = weight * (j_mat.T @ f2t_err_vec)
+            iter_jnt_values = iter_jnt_values + delta_jnt_values
+            if not self.are_jnts_in_range(iter_jnt_values):
                 # random restart
-                iter_jnt_vals = self.jlc.rand_conf()
+                iter_jnt_values = self.jlc.rand_conf()
             if toggle_dbg:
                 import robot_sim._kinematics.model_generator as rkmg
                 jnt_values = self.jlc.get_jnt_values()
-                self.jlc.goto_given_conf(jnt_values=iter_jnt_vals)
+                self.jlc.goto_given_conf(jnt_values=iter_jnt_values)
                 rkmg.gen_jlc_stick(self.jlc, toggle_flange_frame=True).attach_to(base)
                 self.jlc.goto_given_conf(jnt_values=jnt_values)
                 import modeling.geometric_model as gm
@@ -215,58 +237,69 @@ class NumIKSolver(object):
     def pinv_cw(self,
                 tgt_pos,
                 tgt_rotmat,
-                seed_jnt_vals=None,
+                seed_jnt_values=None,
                 max_n_iter=100,
                 toggle_dbg=False):
         """
         improved cwln method (replaced the least damping in cwln with moore-penrose inverse)
         :param tgt_pos:
         :param tgt_rotmat:
-        :param seed_jnt_vals:
+        :param seed_jnt_values:
         :param max_n_iter:
         :param toggle_dbg:
         :return:
         author: weiwei
         date: 20231101
         """
-        iter_jnt_values = seed_jnt_vals
-        if seed_jnt_vals is None:
+        iter_jnt_values = seed_jnt_values
+        if iter_jnt_values is None:
             iter_jnt_values = self.jlc.get_jnt_values()
         counter = 0
         while True:
             flange_pos, flange_rotmat, j_mat = self.jlc.fk(jnt_values=iter_jnt_values,
                                                            toggle_jacobian=True,
                                                            update=False)
-            f2t_pos_err, f2t_rot_err, f2t_err_vec = rm.diff_between_posrot(src_pos=flange_pos,
-                                                                           src_rotmat=flange_rotmat,
-                                                                           tgt_pos=tgt_pos,
-                                                                           tgt_rotmat=tgt_rotmat)
+            f2t_pos_err, f2t_rot_err, f2t_err_vec = rm.diff_between_poses(src_pos=flange_pos,
+                                                                          src_rotmat=flange_rotmat,
+                                                                          tgt_pos=tgt_pos,
+                                                                          tgt_rotmat=tgt_rotmat)
             if f2t_pos_err < 1e-4 and f2t_rot_err < 1e-3 and self.jlc.are_jnts_in_ranges(iter_jnt_values):
                 return iter_jnt_values
             clamped_err_vec = self._clamp_tgt_err(f2t_pos_err, f2t_rot_err, f2t_err_vec)
             wln, wln_sqrt = self._jnt_wt_mat(iter_jnt_values)
             # weighted clamping
-            k_phi = 0.1
+            k_phi = .5
             tmp_mm_jnt_values = self.max_jnt_values + self.min_jnt_values
             phi_q = ((2 * iter_jnt_values - tmp_mm_jnt_values) / self.jnt_range_values) * k_phi
             clamping = -(np.identity(wln.shape[0]) - wln) @ phi_q
             # pinv with weighted clamping
-            delta_jnt_vals = clamping + wln_sqrt @ np.linalg.pinv(j_mat @ wln_sqrt, rcond=1e-4) @ (
+            delta_jnt_values = clamping + wln_sqrt @ np.linalg.pinv(j_mat @ wln_sqrt, rcond=1e-4) @ (
                     clamped_err_vec - j_mat @ clamping)
-            iter_jnt_values = iter_jnt_values + delta_jnt_vals
+            if toggle_dbg:
+                print("previous iter joint values ", np.degrees(iter_jnt_values))
+            iter_jnt_values = iter_jnt_values + delta_jnt_values
+            iter_jnt_values = np.mod(iter_jnt_values, 2 * np.pi)
+            iter_jnt_values = np.where(iter_jnt_values > np.pi, iter_jnt_values - 2 * np.pi, iter_jnt_values)
             if toggle_dbg:
                 import robot_sim._kinematics.model_generator as rkmg
                 jnt_values = self.jlc.get_jnt_values()
                 self.jlc.goto_given_conf(jnt_values=iter_jnt_values)
-                stick_rgba = rm.bc.lnk_stick_rgba
-                stick_rgba[3] = .5
+                stick_rgba = rm.bc.cool_map(counter / max_n_iter)
                 rkmg.gen_jlc_stick(self.jlc, stick_rgba=stick_rgba, toggle_jnt_frames=True,
                                    toggle_flange_frame=True).attach_to(base)
                 self.jlc.goto_given_conf(jnt_values=jnt_values)
                 import modeling.geometric_model as gm
                 gm.gen_arrow(spos=flange_pos, epos=tgt_pos).attach_to(base)
                 print("f2t_pos_err ", f2t_pos_err, " f2t_rot_err ", f2t_rot_err)
+                print("phi_q ", phi_q)
+                print("clamping ", clamping)
+                print("jnt weight ", np.diag(wln))
+                print("delta_jnt_values ", np.degrees(delta_jnt_values))
+                print("current iter joint values ", np.degrees(iter_jnt_values))
+                # print("clamped_tgt_err ", clamped_err_vec)
+                print(counter, max_n_iter)
             if counter > max_n_iter:
+                # base.run()
                 return None
                 # raise Exception("No IK solution")
             counter += 1
@@ -274,32 +307,32 @@ class NumIKSolver(object):
     def pinv_gpm(self,
                  tgt_pos,
                  tgt_rotmat,
-                 seed_jnt_vals=None,
+                 seed_jnt_values=None,
                  max_n_iter=100,
                  toggle_dbg=False):
         """
         gradient projection method, only applicabled to redundant manipulators, slower than cwln
         :param tgt_pos:
         :param tgt_rotmat:
-        :param seed_jnt_vals:
+        :param seed_jnt_values:
         :param max_n_iter:
         :param toggle_dbg:
         :return:
         author: weiwei
         date: 20231101
         """
-        iter_jnt_values = seed_jnt_vals
-        if seed_jnt_vals is None:
+        iter_jnt_values = seed_jnt_values
+        if seed_jnt_values is None:
             iter_jnt_values = self.jlc.get_jnt_values()
         counter = 0
         while True:
             flange_pos, flange_rotmat, j_mat = self.jlc.fk(jnt_values=iter_jnt_values,
                                                            toggle_jacobian=True,
                                                            update=False)
-            f2t_pos_err, f2t_rot_err, f2t_err_vec = rm.diff_between_posrot(src_pos=flange_pos,
-                                                                           src_rotmat=flange_rotmat,
-                                                                           tgt_pos=tgt_pos,
-                                                                           tgt_rotmat=tgt_rotmat)
+            f2t_pos_err, f2t_rot_err, f2t_err_vec = rm.diff_between_poses(src_pos=flange_pos,
+                                                                          src_rotmat=flange_rotmat,
+                                                                          tgt_pos=tgt_pos,
+                                                                          tgt_rotmat=tgt_rotmat)
             if f2t_pos_err < 1e-4 and f2t_rot_err < 1e-3 and self.jlc.are_jnts_in_ranges(iter_jnt_values):
                 return iter_jnt_values
             clamped_err_vec = self._clamp_tgt_err(f2t_pos_err, f2t_rot_err, f2t_err_vec)
@@ -328,32 +361,32 @@ class NumIKSolver(object):
     def cwln(self,
              tgt_pos,
              tgt_rotmat,
-             seed_jnt_vals=None,
+             seed_jnt_values=None,
              max_n_iter=100,
              toggle_dbg=False):
         # original method from the following paper:
         # paper: Huang, clamping weighted least-norm method for themanipulator kinematic control with constraints
         # does not work on redundant jlcs
-        iter_jnt_vals = seed_jnt_vals
-        if seed_jnt_vals is None:
-            iter_jnt_vals = self.jlc.get_jnt_values()
+        iter_jnt_values = seed_jnt_values
+        if iter_jnt_values is None:
+            iter_jnt_values = self.jlc.get_jnt_values()
         counter = 0
         while True:
-            flange_pos, flange_rotmat, j_mat = self.jlc.fk(jnt_values=iter_jnt_vals,
+            flange_pos, flange_rotmat, j_mat = self.jlc.fk(jnt_values=iter_jnt_values,
                                                            toggle_jacobian=True,
                                                            update=False)
-            f2t_pos_err, f2t_rot_err, f2t_err_vec = rm.diff_between_posrot(src_pos=flange_pos,
-                                                                           src_rotmat=flange_rotmat,
-                                                                           tgt_pos=tgt_pos,
-                                                                           tgt_rotmat=tgt_rotmat)
+            f2t_pos_err, f2t_rot_err, f2t_err_vec = rm.diff_between_poses(src_pos=flange_pos,
+                                                                          src_rotmat=flange_rotmat,
+                                                                          tgt_pos=tgt_pos,
+                                                                          tgt_rotmat=tgt_rotmat)
             if f2t_pos_err < 1e-4 and f2t_rot_err < 1e-3:
-                return iter_jnt_vals
+                return iter_jnt_values
             clamped_err_vec = self._clamp_tgt_err(f2t_pos_err, f2t_rot_err, f2t_err_vec)
-            wln, wln_sqrt = self._jnt_wt_mat(iter_jnt_vals)
+            wln, wln_sqrt = self._jnt_wt_mat(iter_jnt_values)
             # weighted clamping
             k_phi = 0.1
             tmp_mm_jnt_values = self.max_jnt_values + self.min_jnt_values
-            phi_q = ((2 * iter_jnt_vals - tmp_mm_jnt_values) / self.jnt_range_values) * k_phi
+            phi_q = ((2 * iter_jnt_values - tmp_mm_jnt_values) / self.jnt_range_values) * k_phi
             clamping = -(np.identity(wln.shape[0]) - wln) @ phi_q
             # lambda coefficient
             # min_svd_val = scipy.linalg.svdvals(wln_sqrt)[-1]
@@ -362,11 +395,13 @@ class NumIKSolver(object):
             # cwln
             delta_jnt_values = clamping + wln @ j_mat.T @ np.linalg.inv(
                 j_mat @ wln @ j_mat.T + lam * np.eye(j_mat.shape[1])) @ (clamped_err_vec - j_mat @ clamping)
-            iter_jnt_vals = iter_jnt_vals + delta_jnt_values
+            iter_jnt_values = iter_jnt_values + delta_jnt_values
+            iter_jnt_values = np.mod(iter_jnt_values, 2 * np.pi)
+            iter_jnt_values = np.where(iter_jnt_values > np.pi, iter_jnt_values - 2 * np.pi, iter_jnt_values)
             if toggle_dbg:
                 import robot_sim._kinematics.model_generator as rkmg
                 jnt_values = self.jlc.get_jnt_values()
-                self.jlc.goto_given_conf(jnt_values=iter_jnt_vals)
+                self.jlc.goto_given_conf(jnt_values=iter_jnt_values)
                 rkmg.gen_jlc_stick(self.jlc, toggle_flange_frame=True).attach_to(base)
                 self.jlc.goto_given_conf(jnt_values=jnt_values)
                 import modeling.geometric_model as gm

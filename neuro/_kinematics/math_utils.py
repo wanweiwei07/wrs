@@ -132,19 +132,53 @@ def delta_w_between_rotmat(src_rotmat, tgt_rotmat):
     date: 20200326
     """
     delta_rotmat = tgt_rotmat @ src_rotmat.T
-    tmp_vec = torch.zeros(3, dtype=src_rotmat.dtype, device=src_rotmat.device)
-    tmp_vec[0] = delta_rotmat[2, 1] - delta_rotmat[1, 2]
-    tmp_vec[1] = delta_rotmat[0, 2] - delta_rotmat[2, 0]
-    tmp_vec[2] = delta_rotmat[1, 0] - delta_rotmat[0, 1]
+    tmp_vec = torch.stack([delta_rotmat[2, 1] - delta_rotmat[1, 2],
+                           delta_rotmat[0, 2] - delta_rotmat[2, 0],
+                           delta_rotmat[1, 0] - delta_rotmat[0, 1]])
     tmp_vec_norm = torch.norm(tmp_vec)
-    if tmp_vec_norm > 1e-6:
-        trace = torch.trace(delta_rotmat)
-        delta_w = torch.atan2(tmp_vec_norm, trace - 1.0) / tmp_vec_norm * tmp_vec
-    elif delta_rotmat[0, 0] > 0 and delta_rotmat[1, 1] > 0 and delta_rotmat[2, 2] > 0:
-        delta_w = torch.tensor([0, 0, 0], dtype=src_rotmat.dtype, device=src_rotmat.device)
+    if torch.isclose(tmp_vec_norm, torch.tensor(0.0)):
+        return torch.zeros(3, dtype=src_rotmat.dtype, device=src_rotmat.device)
     else:
-        delta_w = torch.pi / 2 * (torch.diag(delta_rotmat) + 1)
-    return delta_w
+        trace = torch.trace(delta_rotmat)
+        return torch.atan2(tmp_vec_norm, (trace - 1.0)) / tmp_vec_norm * tmp_vec
+
+    # if tmp_vec_norm > _EPS:
+    #     trace = torch.trace(delta_rotmat)
+    #     delta_w = torch.atan2(tmp_vec_norm, (trace - 1.0)) / tmp_vec_norm * tmp_vec
+    # else:
+    #     trace = torch.trace(delta_rotmat)
+    #     if trace > 2.9999:
+    #         delta_w = torch.tensor([0, 0, 0], dtype=src_rotmat.dtype, device=src_rotmat.device)
+    #     else:
+    #         axis=torch.diag
+    # elif delta_rotmat[0, 0] > 0 and delta_rotmat[1, 1] > 0 and delta_rotmat[2, 2] > 0:
+    #     delta_w = torch.tensor([0, 0, 0], dtype=src_rotmat.dtype, device=src_rotmat.device)
+    # else:
+    #     delta_w = torch.pi / 2 * (torch.diag(delta_rotmat) + 1)
+    # return delta_w
+
+
+# def delta_w_between_rotmat(src_rotmat, tgt_rotmat):
+#     """
+#     compute angle*ax from src_rotmat to tgt_rotmat
+#     the following relation holds for the returned delta_w
+#     rotmat_from_axangle(np.linalg.norm(deltaw), unit_vec(deltaw)).dot(src_rotmat) = tgt_rotmat
+#     :param src_rotmat: 3x3
+#     :param tgt_rotmat: 3x3
+#     :return:
+#     author: weiwei
+#     date: 20200326
+#     """
+#     delta_rotmat = tgt_rotmat @ src_rotmat.T
+#     clipped_trace = torch.clip((torch.trace(delta_rotmat) - 1) / 2.0, -1.0, 1.0)
+#     angle = torch.acos(clipped_trace)
+#     if torch.isclose(angle, torch.tensor(0.0)):
+#         return torch.zeros(3, dtype=src_rotmat.dtype, device=src_rotmat.device)
+#     else:
+#         axis = torch.stack([delta_rotmat[2, 1] - delta_rotmat[1, 2],
+#                             delta_rotmat[0, 2] - delta_rotmat[2, 0],
+#                             delta_rotmat[1, 0] - delta_rotmat[0, 1]]) / (2 * torch.sin(angle))
+#         return angle * axis
 
 
 def rel_pose(pos0, rotmat0, pos1, rotmat1):
@@ -178,6 +212,4 @@ def diff_between_posrot(src_pos, src_rotmat, tgt_pos, tgt_rotmat):
     delta = torch.zeros(6)
     delta[0:3] = (tgt_pos - src_pos)
     delta[3:6] = delta_w_between_rotmat(src_rotmat, tgt_rotmat)
-    pos_err = (delta[:3]) ** 2
-    rot_err = (delta[3:6]) ** 2
-    return (pos_err + rot_err).sum()
+    return delta.t() @ delta

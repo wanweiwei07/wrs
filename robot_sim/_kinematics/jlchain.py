@@ -256,6 +256,10 @@ class JLChain(object):
         self._is_finalized = True
         if ik_solver == 'd':
             self._ik_solver = rkd.DDIKSolver(self, identifier_str=identifier_str)
+        elif ik_solver == 'n':
+            self._ik_solver = rkn.NumIKSolver(self)
+        elif ik_solver == 'o':
+            self._ik_solver = rko.OptIKSolver(self)
 
     def set_flange(self, loc_flange_pos=None, loc_flange_rotmat=None):
         if loc_flange_pos is not None:
@@ -395,10 +399,10 @@ class JLChain(object):
         """
         if self._ik_solver is None:
             raise Exception("IK solver undefined. Use JLChain.finalize to define it.")
-        jnt_values = self._ik_solver.ik(tgt_pos=tgt_pos,
-                                        tgt_rotmat=tgt_rotmat,
-                                        seed_jnt_values=seed_jnt_values,
-                                        toggle_dbg=toggle_dbg)
+        jnt_values = self._ik_solver(tgt_pos=tgt_pos,
+                                     tgt_rotmat=tgt_rotmat,
+                                     seed_jnt_values=seed_jnt_values,
+                                     toggle_dbg=toggle_dbg)
         return jnt_values
 
     def gen_stickmodel(self,
@@ -469,8 +473,8 @@ if __name__ == "__main__":
     # jlc.finalize(ik_solver=None)
     jlc.finalize(ik_solver='d')
     jlc.gen_stickmodel(stick_rgba=rm.bc.navy_blue, toggle_jnt_frames=True, toggle_flange_frame=True).attach_to(base)
-    base.run()
-    seed_jnt_values = jlc.get_jnt_values()
+    # seed_jnt_values = jlc.get_jnt_values()
+    seed_jnt_values = None
 
     success = 0
     num_win = 0
@@ -480,10 +484,14 @@ if __name__ == "__main__":
     for i in tqdm(range(100), desc="ik"):
         random_jnts = jlc.rand_conf()
         tgt_pos, tgt_rotmat = jlc.fk(jnt_values=random_jnts, update=False, toggle_jacobian=False)
+        mgm.gen_frame(pos=tgt_pos, rotmat=tgt_rotmat, ax_length=.2).attach_to(base)
         tic = time.time()
         joint_values_with_dbg_info = jlc.ik(tgt_pos=tgt_pos,
                                             tgt_rotmat=tgt_rotmat,
+                                            seed_jnt_values=seed_jnt_values,
                                             toggle_dbg=False)
+        # print("success!")
+        # base.run()
         toc = time.time()
         time_list.append(toc - tic)
         print(time_list[-1])
@@ -493,11 +501,11 @@ if __name__ == "__main__":
                 opt_win += 1
             elif joint_values_with_dbg_info[0] == 'n':
                 num_win += 1
-            mgm.gen_frame(pos=tgt_pos, rotmat=tgt_rotmat).attach_to(base)
+            mgm.gen_frame(pos=tgt_pos, rotmat=tgt_rotmat, ax_length=.2).attach_to(base)
             jlc.fk(jnt_values=joint_values_with_dbg_info, update=True, toggle_jacobian=False)
             jlc.gen_stickmodel(stick_rgba=rm.bc.navy_blue, toggle_flange_frame=True,
                                toggle_jnt_frames=True).attach_to(base)
-            base.run()
+            # base.run()
         else:
             tgt_list.append((tgt_pos, tgt_rotmat))
     print(f'success: {success}')

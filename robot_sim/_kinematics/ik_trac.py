@@ -138,10 +138,10 @@ class NumIKSolverProc(mp.Process):
                                                        self.tcp_loc_homomat,
                                                        joint_values=iter_jnt_vals,
                                                        toggle_jacobian=True)
-                tcp_pos_err_val, tcp_rot_err_val, tcp_err_vec = rm.diff_between_posrot(src_pos=tcp_gl_pos,
-                                                                                       src_rotmat=tcp_gl_rotmat,
-                                                                                       tgt_pos=tgt_pos,
-                                                                                       tgt_rotmat=tgt_rotmat)
+                tcp_pos_err_val, tcp_rot_err_val, tcp_err_vec = rm.diff_between_poses(src_pos=tcp_gl_pos,
+                                                                                      src_rotmat=tcp_gl_rotmat,
+                                                                                      tgt_pos=tgt_pos,
+                                                                                      tgt_rotmat=tgt_rotmat)
                 if tcp_pos_err_val < 1e-4 and tcp_rot_err_val < 1e-3:
                     self._result_queue.put(('n', iter_jnt_vals))
                     break
@@ -238,10 +238,10 @@ class OptIKSolverProc(mp.Process):
                                             self.tcp_loc_homomat,
                                             joint_values=x,
                                             toggle_jacobian=False)
-            tcp_pos_err_val, tcp_rot_err_val, tcp_err_vec = rm.diff_between_posrot(src_pos=tcp_gl_pos,
-                                                                                   src_rotmat=tcp_gl_rotmat,
-                                                                                   tgt_pos=tgt_pos,
-                                                                                   tgt_rotmat=tgt_rotmat)
+            tcp_pos_err_val, tcp_rot_err_val, tcp_err_vec = rm.diff_between_poses(src_pos=tcp_gl_pos,
+                                                                                  src_rotmat=tcp_gl_rotmat,
+                                                                                  tgt_pos=tgt_pos,
+                                                                                  tgt_rotmat=tgt_rotmat)
             return tcp_err_vec.dot(tcp_err_vec)
 
         def _call_back(x):
@@ -322,6 +322,18 @@ class TracIKSolver(object):
         self._oik_param_queue.put((self._tcp_gl_pos, self._tcp_gl_rotmat, self._default_seed_jnt_vals, 10))
         self._oik_state_queue.get()
         self._result_queue.get()
+
+    def __call__(self,
+                 tgt_pos,
+                 tgt_rotmat,
+                 seed_jnt_vals=None,
+                 max_n_iter=100,
+                 toggle_dbg=False):
+        return self.ik(tgt_pos=tgt_pos,
+                       tgt_rotmat=tgt_rotmat,
+                       seed_jnt_vals=seed_jnt_vals,
+                       max_n_iter=max_n_iter,
+                       toggle_dbg=toggle_dbg)
 
     def ik(self,
            tgt_pos,

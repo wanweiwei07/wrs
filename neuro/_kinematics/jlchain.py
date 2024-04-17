@@ -379,26 +379,43 @@ if __name__ == "__main__":
     result = jlc.finalize()
     jlc.gen_stickmodel(stick_rgba=bc.navy_blue, toggle_jnt_frames=True, toggle_flange_frame=True).attach_to(base)
     # rand feasible goal
-    random_jnts = jlc.rand_conf()
-    tgt_pose = jlc.fk(jnt_values=random_jnts, update=False)
+    # random_jnts = jlc.rand_conf()
+    # tgt_pose = jlc.fk(jnt_values=random_jnts, update=False)
+    # with torch.no_grad():
+    #     mgm.gen_frame(pos=tgt_pose[0], rotmat=tgt_pose[1], ax_length=.2).attach_to(base)
+    #
+    success = 0
+    total_time = 10
+    time_list = []
+    for i in tqdm(range(total_time)):
+        jnt_values = torch.zeros(6, requires_grad=True)
+        optimizer = LBFGS([jnt_values], lr=1)
+        random_jnts = jlc.rand_conf()
+        tgt_pose = jlc.fk(jnt_values=random_jnts, update=False)
+        def closure():
+            optimizer.zero_grad()
+            cur_pose = jlc.fk(jnt_values=jnt_values, update=False)
+            loss = nkm.diff_between_posrot(*(cur_pose + tgt_pose))
+            loss.backward()
+            return loss
+        tic=time.time()
+        for i in range(5):
+            loss = optimizer.step(closure)
+            if loss < 1e-6:
+                toc=time.time()
+                print("time cost is: ",  toc-tic)
+                print(f"iteration stoped after {i} iterations")
+                print(f"loss is: {loss}")
+                success += 1
+                time_list.append(toc-tic)
+                break
     with torch.no_grad():
         mgm.gen_frame(pos=tgt_pose[0], rotmat=tgt_pose[1], ax_length=.2).attach_to(base)
-    #
-    jnt_values = torch.zeros(6, requires_grad=True)
-    optimizer = LBFGS([jnt_values], lr=1)
-    def closure():
-        optimizer.zero_grad()
-        cur_pose = jlc.goto_given_conf(jnt_values)
-        loss = nkm.diff_between_posrot(*(cur_pose + tgt_pose))
-        loss.backward()
-        return loss
-    for i in range(5):
-        optimizer.step(closure)
-    final_loss = closure()
-    print("Final loss:", final_loss.item())
-    with torch.no_grad():
-        jlc.gen_stickmodel(stick_rgba=bc.cool_map(i/100), toggle_jnt_frames=True, toggle_flange_frame=True).attach_to(
-            base)
+        jlc.fk(jnt_values=jnt_values, update=True)
+        jlc.gen_stickmodel(stick_rgba=bc.navy_blue, toggle_flange_frame=True,
+                           toggle_jnt_frames=True).attach_to(base)
+    print("success rate is: ", success/total_time)
+    print("average time cost is: ", sum(time_list)/len(time_list))
     base.run()
 
     # optimizer = Adam([jnt_values], lr=.1)
