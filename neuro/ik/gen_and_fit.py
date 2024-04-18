@@ -1,28 +1,25 @@
 import numpy as np
-import pandas as pd
 import torch.nn as nn
 import torch
+from tqdm import tqdm
 from torch.utils.data import Dataset
-from torch.utils.tensorboard import SummaryWriter
-from scipy.transform import Rotation
+from scipy.spatial.transform import Rotation
 
 
 def gen_data(robot, granularity, save_name='ik_data.csv'):
     data_set = []
     start = np.floor(robot.jnt_ranges[:, 0] / granularity)
     end = np.ceil(robot.jnt_ranges[:, 1] / granularity)
-    n_data_vec = (end-start+1).astype(int)
+    n_data_vec = (end-start).astype(int)
     n_data = np.prod(n_data_vec)
-    in_data_npy = np.empty((0, robot.n_dof))
-    out_data_npy = np.empty((0, 6))
-    for i in range(n_data):
-        jnt_values = robot.rand_conf()
-        tgt_pos, tgt_rotmat = robot.fk(jnt_values=jnt_values, toggle_jacobian=False, update=False)
+    print(robot.jnt_ranges, n_data_vec)
+    for i in tqdm(range(n_data)):
+        jv_data = robot.rand_conf()
+        tgt_pos, tgt_rotmat = robot.fk(jnt_values=jv_data, toggle_jacobian=False, update=False)
         tgt_wvec = Rotation.from_matrix(tgt_rotmat).as_rotvec()
-        in_data_npy = np.vstack((in_data_npy, jnt_values))
-        out_data_npy = np.vstack((out_data_npy, np.hstack((tgt_pos, tgt_wvec))))
-        data_set.append([in_data_npy, out_data_npy])
-    np.save(save_name, np.array(data_set))
+        tcp_data = np.hstack((tgt_pos, tgt_wvec))
+        data_set.append([jv_data, tcp_data])
+    np.save(save_name, np.asarray(data_set))
 
 
 class IKDataSet(Dataset):
@@ -85,36 +82,61 @@ def test_loop(dataloader, model, loss_fn):
 
 
 if __name__ == '__main__':
+    import os
+    from datetime import datetime
     from torch.utils.data import DataLoader
+    import robot_sim.robots.cobotta.cobotta as rrcc
+    from torch.utils.tensorboard import SummaryWriter
+    import subprocess
+    import webbrowser
 
-    # import os
-    #
-    # os.system('tensorboard --logdir=runs &')
+    tb_command = "tensorboard --logdir=runs"
+    proc = subprocess.Popen(tb_command, shell=True)
+    webbrowser.open_new("http://localhost:6006/")
 
+    robot = rrcc.Cobotta()
+    granularity = np.pi*.3
+
+    folder_path = robot.name+"_folder"
+    if not os.path.exists(folder_path):
+        os.makedirs(folder_path)
+        print(f"Folder created: {folder_path}")
+    else:
+        print(f"Folder already exists: {folder_path}")
     device = torch.device('cpu')
-    # device = (torch.device('cuda') if torch.cuda.is_available() else torch.device('cpu'))
-    # torch.set_default_tensor_type('torch.cuda.FloatTensor')
-
-    model = Net(n_hidden=1000, n_jnts=6).to(device=device)
+    model = Net(n_hidden=128, n_jnts=6).to(device=device)
+    # check existance
+    model_file = os.path.join(folder_path, "model.pth")
+    if os.path.exists(model_file):
+        print("Model exists, continued...")
+        # Open and read the file
+        with open(model_file, 'r') as file:
+            model.load_state_dict(torch.load(model_file, map_location=device))
     learning_rate = 1e-3
     batch_size = 64
-    epochs = 200
+    epochs = 40
     loss_fn = nn.MSELoss()
     optimizer = torch.optim.Adam(model.parameters(), lr=learning_rate)
 
-    train_data = IKDataSet('data_gen/cobotta_ik')
-    test_data = IKDataSet('data_gen/cobotta_ik_test')
-    train_dataloader = DataLoader(train_data, batch_size=batch_size, shuffle=True)
-    test_dataloader = DataLoader(test_data, batch_size=batch_size, shuffle=True)
-
     writer = SummaryWriter()
     global_step = [0]
-    for t in range(epochs):
-        print(f"Epoch {t + 1}\n-------------------------------")
-        train_loop(train_dataloader, model, loss_fn, optimizer, writer, global_step)
-    model_path = 'tester/cobotta_model.pth'
-    torch.save(model.state_dict(), model_path)
-    print("Done!")
+    while True:
+        file_name = datetime.now().strftime("%y%m%d%H%M%S")+"ik_data.csv"
+        # Generate data
+        gen_data(robot, granularity, save_name=os.path.join(folder_path, file_name))
+        # Create dataloader
+        train_dataloader = DataLoader(IKDataSet(os.path.join(folder_path, file_name)), batch_size=batch_size, shuffle=True)
+        for t in range(epochs):
+            for inputs, targets in train_dataloader:
+                # Compute prediction and loss
+                pred = model(inputs)
+                loss = loss_fn(pred, targets)
+                # Backpropagation
+                optimizer.zero_grad()
+                loss.backward()
+                optimizer.step()
+                writer.add_scalar('loss', loss.item(), global_step[0])
+                global_step[0] += 1
+                print(f"Epoch {t + 1}, Loss: {loss.item()}")
+        torch.save(model.state_dict(), model_file)
     writer.close()
-
-    test_loop(test_dataloader, model, loss_fn)

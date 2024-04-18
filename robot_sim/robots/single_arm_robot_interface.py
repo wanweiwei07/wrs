@@ -117,7 +117,7 @@ class SglArmRobotInterface(ri.RobotInterface):
     def rand_conf(self):
         return self._manipulator.rand_conf()
 
-    def fk(self, jnt_values, toggle_jacobian=False):
+    def fk(self, jnt_values, toggle_jacobian=False, update=False):
         """
         no update
         :param jnt_values:
@@ -125,7 +125,7 @@ class SglArmRobotInterface(ri.RobotInterface):
         author: weiwei
         date: 20210417
         """
-        return self._manipulator.fk(jnt_values=jnt_values, toggle_jacobian=toggle_jacobian)
+        return self._manipulator.fk(jnt_values=jnt_values, toggle_jacobian=toggle_jacobian, update=update)
 
     def get_jnt_values(self):
         return self._manipulator.get_jnt_values()

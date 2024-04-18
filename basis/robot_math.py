@@ -81,7 +81,15 @@ def rotmat_to_quaternion(rotmat):
     :param rotmat:
     :return:
     """
-    pass
+    return Rotation.from_matrix(rotmat).as_quat()
+
+def rotmat_to_wvec(rotmat):
+    """
+    convert a rotmat to angle*ax form
+    :param rotmat:
+    :return:
+    """
+    return Rotation.from_matrix(rotmat).as_rotvec()
 
 
 def rotmat_from_normal(surfacenormal):
