@@ -154,5 +154,5 @@ if __name__ == '__main__':
     for grasp in grasp_collection:
         gripper.grip_at_by_pose(jaw_center_pos=grasp.ac_pos, jaw_center_rotmat=grasp.ac_rotmat,
                                 jaw_width=grasp.ee_values)
-        gripper.gen_meshmodel().attach_to(base)
+        gripper.gen_meshmodel(alpha=.3).attach_to(base)
     base.run()

@@ -122,7 +122,7 @@ if __name__ == '__main__':
                                   thumb_opening_direction=np.array([1, 0, 0]), jaw_width=.01))
     # grpr.change_jaw_width(.013)
     grpr.gen_meshmodel(toggle_tcp_frame=True, toggle_jnt_frames=False, toggle_cdprim=False).attach_to(base)
-    # # grpr.gen_stickmodel(toggle_jnt_frames=True).attach_to(base)
+    # grpr.gen_stickmodel(toggle_jnt_frames=True).attach_to(base)
     # grpr.gen_meshmodel().attach_to(base)
     # # grpr.gen_stickmodel().attach_to(base)
     # grpr.show_cdmesh()

@@ -17,6 +17,29 @@ try:
 except ImportError:
     log.warning('shapely unavilable', exc_info=True)
 
+_data = {"box": {
+    "vertices": [[0.0, 0.0, 0.0], [0.0, 0.0, 1.0], [0.0, 1.0, 0.0], [0.0, 1.0, 1.0], [1.0, 0.0, 0.0], [1.0, 0.0, 1.0],
+                 [1.0, 1.0, 0.0], [1.0, 1.0, 1.0]],
+    "faces": [[1, 3, 0], [4, 1, 0], [0, 3, 2], [2, 4, 0], [1, 7, 3], [5, 1, 4], [5, 7, 1], [3, 7, 2], [6, 4, 2],
+              [2, 7, 6], [6, 5, 4], [7, 5, 6]],
+    "face_normals": [[-1, 0, 0], [0, -1, 0], [-1, 0, 0], [0, 0, -1], [0, 0, 1], [0, -1, 0], [0, 0, 1], [0, 1, 0],
+                     [0, 0, -1], [0, 1, 0], [1, 0, 0], [1, 0, 0]]},
+    "icosahedron": {"vertices": [[-0.5257311121191336, 0.85065080835204, 0.0],
+                                 [0.5257311121191336, 0.85065080835204, 0.0],
+                                 [-0.5257311121191336, -0.85065080835204, 0.0],
+                                 [0.5257311121191336, -0.85065080835204, 0.0],
+                                 [0.0, -0.5257311121191336, 0.85065080835204],
+                                 [0.0, 0.5257311121191336, 0.85065080835204],
+                                 [0.0, -0.5257311121191336, -0.85065080835204],
+                                 [0.0, 0.5257311121191336, -0.85065080835204],
+                                 [0.85065080835204, 0.0, -0.5257311121191336],
+                                 [0.85065080835204, 0.0, 0.5257311121191336],
+                                 [-0.85065080835204, 0.0, -0.5257311121191336],
+                                 [-0.85065080835204, 0.0, 0.5257311121191336]],
+                    "faces": [[0, 11, 5], [0, 5, 1], [0, 1, 7], [0, 7, 10], [0, 10, 11], [1, 5, 9], [5, 11, 4],
+                              [11, 10, 2], [10, 7, 6], [7, 1, 8], [3, 9, 4], [3, 4, 2], [3, 2, 6], [3, 6, 8],
+                              [3, 8, 9], [4, 9, 5], [2, 4, 11], [6, 2, 10], [8, 6, 7], [9, 8, 1]]}}
+
 
 def validate_polygon(obj):
     if util.is_instance_named(obj, 'Polygon'):
@@ -197,23 +220,45 @@ def triangulate_polygon(polygon, **kwargs):
     return mesh_vertices, mesh_faces
 
 
-def box():
+def box(extents=None, transform=None, bounds=None, **kwargs):
     """
-    Return a unit cube, centered at the origin with edges of axis_length 1.0
-    :return:
+    Return a cuboid
+    :param extents: (3,) Edge lengths
+    :param transform: (4, 4) Transformation matrix
+    :param bounds: None or (2, 3) Corners of AABB, overrides extents and transform
+    :param kwargs: passed to Trimesh to create box
+    :return: geometry: trimesh.Trimesh Mesh of a cuboid
     """
-    vertices = [0, 0, 0, 0, 0, 1, 0, 1, 0, 0, 1, 1, 1, 0, 0, 1, 0, 1, 1, 1, 0, 1, 1, 1]
-    vertices = np.array(vertices, dtype=np.float64).reshape((-1, 3))
-    vertices -= 0.5
-    faces = [1, 3, 0, 4, 1, 0, 0, 3, 2, 2, 4, 0, 1, 7, 3, 5, 1, 4,
-             5, 7, 1, 3, 7, 2, 6, 4, 2, 2, 7, 6, 6, 5, 4, 7, 5, 6]
-    faces = np.array(faces, dtype=int).reshape((-1, 3))
-    face_normals = [-1, 0, 0, 0, -1, 0, -1, 0, 0, 0, 0, -1, 0, 0, 1, 0, -1,
-                    0, 0, 0, 1, 0, 1, 0, 0, 0, -1, 0, 1, 0, 1, 0, 0, 1, 0, 0]
-    face_normals = np.array(face_normals, dtype=np.float64).reshape(-1, 3)
-    box = Trimesh(vertices=vertices,
-                  faces=faces,
-                  face_normals=face_normals)
+    # vertices of the cube from reference
+    vertices = np.array(_data["box"]["vertices"], order="C", dtype=np.float64)
+    faces = np.array(_data["box"]["faces"], order="C", dtype=np.int64)
+    face_normals = np.array(_data["box"]["face_normals"], order="C", dtype=np.float64)
+    # resize cube based on passed extents
+    if bounds is not None:
+        if transform is not None or extents is not None:
+            raise ValueError("`bounds` overrides `extents`/`transform`!")
+        bounds = np.array(bounds, dtype=np.float64)
+        if bounds.shape != (2, 3):
+            raise ValueError("`bounds` must be (2, 3) float!")
+        extents = bounds.ptp(axis=0)
+        vertices *= extents
+        vertices += bounds[0]
+    elif extents is not None:
+        extents = np.asanyarray(extents, dtype=np.float64)
+        if extents.shape != (3,):
+            raise ValueError("Extents must be (3,)!")
+        vertices -= 0.5
+        vertices *= extents
+    else:
+        vertices -= 0.5
+        extents = np.asarray((1.0, 1.0, 1.0), dtype=np.float64)
+    if "metadata" not in kwargs:
+        kwargs["metadata"] = {}
+    kwargs["metadata"].update({"shape": "box", "extents": extents})
+    box = Trimesh(vertices=vertices, faces=faces, face_normals=face_normals, process=False, **kwargs)
+    # do the transform here to preserve face normals
+    if transform is not None:
+        box.apply_transform(transform)
     return box
 
 
@@ -241,12 +286,14 @@ def icosphere(subdivisions=3):
     :param subdivisions:
     :return:
     """
+
     def refine_spherical():
         vectors = ico.vertices
         scalar = (vectors ** 2).sum(axis=1) ** .5
         unit = vectors / scalar.reshape((-1, 1))
         offset = 1.0 - scalar
         ico.vertices += unit * offset.reshape((-1, 1))
+
     ico = icosahedron()
     ico._validate = False
     for j in range(subdivisions):
@@ -323,7 +370,7 @@ def cylinder(height, radius, n_sec=8, homomat=None):
     author: weiwei
     date: 20191228
     """
-    theta = np.linspace(0, np.pi * 2, n_sec+1)
+    theta = np.linspace(0, np.pi * 2, n_sec + 1)
     vertices = np.column_stack((np.sin(theta), np.cos(theta))) * radius
     vertices[0] = [0, 0]
     index = np.arange(1, len(vertices) + 1).reshape((-1, 1))
@@ -332,7 +379,7 @@ def cylinder(height, radius, n_sec=8, homomat=None):
     faces = np.column_stack((np.zeros(len(faces), dtype=int), faces))
     cylinder = extrude_triangulation(vertices=vertices, faces=faces, height=height)
     # center at the origin
-    cylinder.vertices[:,2] -= height * .5
+    cylinder.vertices[:, 2] -= height * .5
     if homomat is not None:
         cylinder.apply_transform(homomat)
     return cylinder

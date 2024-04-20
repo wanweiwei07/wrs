@@ -4,7 +4,6 @@ import robot_sim.manipulators.cobotta_arm.cobotta_arm as cbta
 import robot_sim.end_effectors.gripper.cobotta_gripper.cobotta_gripper as cbtg
 import robot_sim.robots.single_arm_robot_interface as rsi
 
-
 class Cobotta(rsi.SglArmRobotInterface):
 
     def __init__(self, pos=np.zeros(3), rotmat=np.eye(3), name="cobotta", enable_cc=True):

@@ -147,10 +147,7 @@ class ManipulatorInterface(object):
         if update:
             self._gl_tcp_pos = gl_tcp_pos
             self._gl_tcp_rotmat = gl_tcp_rotmat
-        result = list(jlc_result)
-        result[0] = gl_tcp_pos
-        result[1] = gl_tcp_rotmat
-        return tuple(result)
+        return (gl_tcp_pos, gl_tcp_rotmat)
 
     def are_jnts_in_ranges(self, jnt_values):
         return self.jlc.are_jnts_in_ranges(jnt_values)

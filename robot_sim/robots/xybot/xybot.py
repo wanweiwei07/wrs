@@ -29,7 +29,7 @@ class XYBot(ri.RobotInterface):
         self.jlc.jnts[1].loc_motion_ax = np.array([0, 1, 0])
         self.jlc.jnts[1].loc_pos = np.zeros(3)
         self.jlc.jnts[1].motion_range = np.array([-.2, 1.5])
-        self.jlc.jnts[1].lnk.cmodel = mcm.gen_box(xyz_lengths=np.array([.2, .2, .2]), rgba=np.array([0, .5, .7, 1]))
+        self.jlc.jnts[1].lnk.cmodel = mcm.gen_box(xyz_lengths=np.array([.2, .2, .2]), rgb=np.array([0, .5, .7]), alpha=1)
         self.jlc.finalize()
         if self.cc is not None:
             self.setup_cc()

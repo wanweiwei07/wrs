@@ -1,17 +1,15 @@
 import numpy as np
 import torch.nn as nn
 import torch
+import itertools
 from tqdm import tqdm
 from torch.utils.data import Dataset
 from scipy.spatial.transform import Rotation
 
-
 def gen_data(robot, granularity, save_name='ik_data.csv'):
     data_set = []
-    start = np.floor(robot.jnt_ranges[:, 0] / granularity)
-    end = np.ceil(robot.jnt_ranges[:, 1] / granularity)
-    n_data_vec = (end-start).astype(int)
-    n_data = np.prod(n_data_vec)
+    n_data_vec = np.ceil((robot.jnt_ranges[:, 1]-robot.jnt_ranges[:, 0])/granularity)
+    n_data = np.prod(n_data_vec).astype(int)
     print(robot.jnt_ranges, n_data_vec)
     for i in tqdm(range(n_data)):
         jv_data = robot.rand_conf()
@@ -34,7 +32,7 @@ class IKDataSet(Dataset):
             idx = idx.tolist()
         xyzwvec = self.ik_frame[idx][0]
         jnt_values = self.ik_frame[idx][1]
-        return torch.Tensor(xyzwvec), torch.Tensor(jnt_values)
+        return xyzwvec, jnt_values
 
 
 class Net(nn.Module):
@@ -80,6 +78,17 @@ def test_loop(dataloader, model, loss_fn):
     correct /= size
     print(f"Test Error: \n Accuracy: {(100 * correct):>0.1f}%, Avg loss: {test_loss:>8f} \n")
 
+def my_collate_fn(batch):
+    # Assume each element of 'batch' is a tuple (xyzwvec, jnt_values)
+    # Unzip the batch
+    xyzwvec_list, jnt_values_list = zip(*batch)
+
+    # Convert lists to tensors
+    xyzwvec_batch = torch.stack([torch.tensor(x, dtype=torch.float32) for x in xyzwvec_list])
+    jnt_values_batch = torch.stack([torch.tensor(j, dtype=torch.float32) for j in jnt_values_list])
+
+    return xyzwvec_batch, jnt_values_batch
+
 
 if __name__ == '__main__':
     import os
@@ -114,7 +123,7 @@ if __name__ == '__main__':
             model.load_state_dict(torch.load(model_file, map_location=device))
     learning_rate = 1e-3
     batch_size = 64
-    epochs = 40
+    epochs = 10
     loss_fn = nn.MSELoss()
     optimizer = torch.optim.Adam(model.parameters(), lr=learning_rate)
 
@@ -125,12 +134,17 @@ if __name__ == '__main__':
         # Generate data
         gen_data(robot, granularity, save_name=os.path.join(folder_path, file_name))
         # Create dataloader
-        train_dataloader = DataLoader(IKDataSet(os.path.join(folder_path, file_name)), batch_size=batch_size, shuffle=True)
+        train_dataloader = DataLoader(IKDataSet(os.path.join(folder_path, file_name)),
+                                      batch_size=batch_size, shuffle=True,
+                                      collate_fn=my_collate_fn)
         for t in range(epochs):
             for inputs, targets in train_dataloader:
                 # Compute prediction and loss
                 pred = model(inputs)
                 loss = loss_fn(pred, targets)
+                result_jv = pred.data.numpy()[0]
+                random_jv = targets.data.numpy()[0]
+                print("jnt difference ", random_jv, result_jv, (result_jv-random_jv).T@(result_jv-random_jv), np.mean((result_jv-random_jv)**2))
                 # Backpropagation
                 optimizer.zero_grad()
                 loss.backward()

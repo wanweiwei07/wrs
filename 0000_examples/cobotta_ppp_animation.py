@@ -12,7 +12,7 @@ import motion.probabilistic.rrt_connect as rrtc
 base = wd.World(cam_pos=[1.2, .7, 1], lookat_pos=[.0, 0, .15])
 mgm.gen_frame().attach_to(base)
 # ground
-ground = mcm.gen_box(xyz_lengths=[5, 5, 1], rgba=[.7, .7, .7, .7])
+ground = mcm.gen_box(xyz_lengths=np.array([5, 5, 1]), rgb=np.array([.7, .7, .7]), alpha=1)
 ground.pos = np.array([0, 0, -.51])
 ground.attach_to(base)
 # object holder

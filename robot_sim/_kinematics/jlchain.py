@@ -475,6 +475,7 @@ if __name__ == "__main__":
     jlc.gen_stickmodel(stick_rgba=rm.bc.navy_blue, toggle_jnt_frames=True, toggle_flange_frame=True).attach_to(base)
     # seed_jnt_values = jlc.get_jnt_values()
     seed_jnt_values = None
+    # base.run()
 
     success = 0
     num_win = 0
@@ -505,7 +506,7 @@ if __name__ == "__main__":
             jlc.fk(jnt_values=joint_values_with_dbg_info, update=True, toggle_jacobian=False)
             jlc.gen_stickmodel(stick_rgba=rm.bc.navy_blue, toggle_flange_frame=True,
                                toggle_jnt_frames=True).attach_to(base)
-            # base.run()
+            base.run()
         else:
             tgt_list.append((tgt_pos, tgt_rotmat))
     print(f'success: {success}')

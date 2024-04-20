@@ -60,7 +60,7 @@ class CobottaArm(mi.ManipulatorInterface):
             self.setup_cc()
 
     def setup_cc(self):
-        lb = self.cc.add_cce(self.jlc.anchor.lnk)
+        lb = self.cc.add_cce(self.jlc.anchor.lnk_list[0])
         l0 = self.cc.add_cce(self.jlc.jnts[0].lnk)
         l1 = self.cc.add_cce(self.jlc.jnts[1].lnk)
         l2 = self.cc.add_cce(self.jlc.jnts[2].lnk)
@@ -109,7 +109,7 @@ if __name__ == '__main__':
     tmp_arm_stick = arm.gen_stickmodel(toggle_flange_frame=True)
     tmp_arm_stick.attach_to(base)
 
-    box = mcm.gen_box(xyz_lengths=np.array([0.1, .1, .1]), pos=tgt_pos, rgba=np.array([1, 0, 1, .3]))
+    box = mcm.gen_box(xyz_lengths=np.array([0.1, .1, .1]), pos=tgt_pos)
     box.attach_to(base)
     tic = time.time()
     result, contacts = arm.is_collided(obstacle_list=[box], toggle_contacts=True)
