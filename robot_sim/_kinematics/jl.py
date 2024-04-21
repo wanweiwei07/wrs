@@ -278,6 +278,18 @@ class Anchor(object):
     @property
     @update_gl_flange_decorator
     @update_gl_lnk_decorator
+    def gl_flange_pose(self):
+        """
+        return the first flange pose if gl_flange_pose is accesssed
+        :return:
+        author: weiwei
+        date: 20240422
+        """
+        return self._gl_flange_pose_list[0]
+
+    @property
+    @update_gl_flange_decorator
+    @update_gl_lnk_decorator
     def gl_flange_homomat_list(self):
         return [rm.homomat_from_posrot(gl_flange_pose[0], gl_flange_pose[1]) for gl_flange_pose in
                 self._gl_flange_pose_list]
@@ -303,6 +315,20 @@ class Anchor(object):
     def lnk_list(self, list):
         self._lnk_list = list
         self._n_lnk = len(self._lnk_list)
+
+    @delay_gl_flange_decorator
+    @delay_gl_lnk_decorator
+    def fix_to(self, pos, rotmat):
+        """
+        fix the anchor to a given pos and rotmat
+        :param pos:
+        :param rotmat:
+        :return:
+        author: weiwei
+        date: 20240421, for uniform interface
+        """
+        self._pos = pos
+        self._rotmat = rotmat
 
     def compute_gl_flange(self):
         gl_flange_list = []

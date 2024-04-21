@@ -99,6 +99,11 @@ class JLChain(object):
         return self._gl_flange_rotmat
 
     @property
+    @assert_finalize_decorator
+    def gl_flange_pose(self):
+        return (self._gl_flange_pos, self._gl_flange_rotmat)
+
+    @property
     def pos(self):
         return self.anchor.pos
 
@@ -231,8 +236,7 @@ class JLChain(object):
         return (linear_ellipsoid_mat, angular_ellipsoid_mat)
 
     def fix_to(self, pos, rotmat, jnt_values=None):
-        self.anchor.pos = pos
-        self.anchor.rotmat = rotmat
+        self.anchor.fix_to(pos, rotmat)
         if jnt_values is None:
             return self.goto_given_conf(jnt_values=self.get_jnt_values())
         else:
