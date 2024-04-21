@@ -1,12 +1,24 @@
 import numpy as np
 import trimesh
-from robot_sim._kinematics.urdf_parser import URDF
+import matplotlib.pyplot as plt
+from robot_sim.urdf.urdf_parser import URDF
 
 # from urdfpy import URDF, Link, Joint, Transmission, Material
 
 if __name__ == '__main__':
     u = URDF.load('robot.urdf')
-    print(u.jonts)
+    jlg_components = u.segment(toggle_debug=True)
+
+    # for j in u.joints:
+    #     print(j.name, j.joint_type, )
+    # # Draw the graph
+    # pos = nx.spring_layout(u._G)
+    # nx.draw(u._G, pos, with_labels=False, node_color='lightblue', font_weight='bold', node_size=700)
+    # node_labels = nx.get_node_attributes(u._G, 'name')
+    # nx.draw_networkx_labels(u._G, pos, labels=node_labels)
+
+    # Show plot
+    plt.show()
     exit()
 
 def test_urdfpy(tmpdir):

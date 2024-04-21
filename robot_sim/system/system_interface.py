@@ -1,6 +1,5 @@
 import copy
 import numpy as np
-import robot_sim._kinematics.TBD_collision_checker as cc
 
 
 class SystemInterface(object):

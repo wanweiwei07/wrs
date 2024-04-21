@@ -8,7 +8,6 @@ import networkx as nx
 import numpy as np
 import PIL
 import basis.trimesh as trm
-import six
 import basis.robot_math as rm
 
 
@@ -42,6 +41,7 @@ def unparse_origin(homomat):
     node.attrib['rpy'] = '{} {} {}'.format(*rm.rotmat_to_euler(homomat[:3, :3]))
     return node
 
+
 def get_filename(base_path, file_path, makedirs=False):
     """
     Formats a file path correctly for URDF loading.
@@ -59,6 +59,7 @@ def get_filename(base_path, file_path, makedirs=False):
         if not os.path.exists(d):
             os.makedirs(d)
     return fn
+
 
 def load_meshes(filename):
     """
@@ -84,6 +85,7 @@ def load_meshes(filename):
         raise ValueError('Unable to load mesh from file')
     return meshes
 
+
 def configure_origin(value):
     """
     convert a value into a 4x4 transform matrix.
@@ -97,7 +99,7 @@ def configure_origin(value):
         if value.shape == (6,):
             rotmat = rm.rotmat_from_euler(*value[3:])
             value = rm.homomat_from_posrot(value[:3], rotmat)
-        elif value.shape != (4,4):
+        elif value.shape != (4, 4):
             raise ValueError('Origin must be specified as a 4x4 '
                              'homogenous transformation matrix')
     else:
@@ -517,7 +519,7 @@ class Mesh(URDFType):
 
     @meshes.setter
     def meshes(self, value):
-        if isinstance(value, six.string_types):
+        if isinstance(value, str):
             value = load_meshes(value)
         elif isinstance(value, (list, tuple, set, np.ndarray)):
             value = list(value)
@@ -539,6 +541,9 @@ class Mesh(URDFType):
         # Load the mesh, combining collision geometry meshes but keeping
         # visual ones separate to preserve colors and textures
         fn = get_filename(path, kwargs['filename'])
+        if not os.path.exists(fn):
+            print(f"Warning: mesh file {fn} does not exist")
+            return Mesh(fn, meshes=trm.Trimesh())  # create an empty mesh
         combine = node.getparent().getparent().tag == Collision._TAG
         meshes = load_meshes(fn)
         if combine:
@@ -830,7 +835,7 @@ class Material(URDFType):
     @texture.setter
     def texture(self, value):
         if value is not None:
-            if isinstance(value, six.string_types):
+            if isinstance(value, str):
                 image = PIL.Image.open(value)
                 value = Texture(filename=value, image=image)
             elif not isinstance(value, Texture):
@@ -2418,7 +2423,7 @@ class URDF(URDFType):
         self._G = nx.DiGraph()
         # Add all links
         for link in self.links:
-            self._G.add_node(link)
+            self._G.add_node(link, name=link.name)
         # Add all edges from CHILDREN TO PARENTS, with joints as their object
         for joint in self.joints:
             parent = self._link_map[joint.parent]
@@ -2427,9 +2432,7 @@ class URDF(URDFType):
         # Validate the graph and get the base and end links
         self._base_link, self._end_links = self._validate_graph()
         # Cache the paths to the base link
-        self._paths_to_base = nx.shortest_path(
-            self._G, target=self._base_link
-        )
+        self._paths_to_base = nx.shortest_path(self._G, target=self._base_link)
         self._actuated_joints = self._sort_joints(actuated_joints)
         # Cache the reverse topological order (useful for speeding up FK,
         # as we want to start at the base and work outward to cache
@@ -2613,6 +2616,99 @@ class URDF(URDFType):
             limits.append(limit)
         return np.array(limits)
 
+    def segment(self, toggle_debug=True):
+        """
+        segment the graph into connected components considering the fixed joints
+        :param toggle_debug: draw pyplot if true
+        :return:
+        aurthor: weiwei
+        date: 20240421
+        """
+        fixed_lnks = set()
+        for j in self.joints:
+            if j.joint_type == 'fixed':
+                fixed_lnks.add(self._link_map[j.parent])
+        jlg_segments = []
+        for lnk in fixed_lnks:
+            jlg = nx.DiGraph()
+            path = self._paths_to_base[lnk]
+            for i in range(len(path) - 1):
+                child = path[i]
+                parent = path[i + 1]
+                joint = self._G.get_edge_data(child, parent)['joint']
+                if joint.joint_type == 'fixed':
+                    print(f"encountering fixed, number of nodes: {jlg.number_of_nodes()}")
+                    if jlg.number_of_edges() == 0:
+                        jlg.add_node(child, name=child.name)
+                        jlg.add_node(parent, name=parent.name)
+                        jlg.add_edge(parent, child, joint=joint)
+                        if len(path) == 2:
+                            jlg_segments.append(jlg)
+                            break
+                    else:
+                        if jlg.number_of_edges() > 1:
+                            jlg.add_node(child, name=child.name)
+                            jlg.add_node(parent, name=parent.name)
+                            jlg.add_edge(parent, child, joint=joint)
+                        jlg_segments.append(jlg)
+                        break
+                else:
+                    if jlg.number_of_edges() > 0:
+                        jlg.add_node(child, name=child.name)
+                        jlg.add_node(parent, name=parent.name)
+                        jlg.add_edge(parent, child, joint=joint)
+            node_list = list(jlg.nodes())
+            if jlg.number_of_edges() == 1:
+                jlg_name = node_list[0]['name'].split("_", 1)[0] + "-" + node_list[-1]['name'].split("_", 1)[0]
+            else:
+                jlg_name = node_list[0]['name'].split("_", 1)[0]
+            jlg.graph['name'] = jlg_name
+        if toggle_debug:
+            import matplotlib.pyplot as plt
+            num_rows = 3
+            num_cols = len(jlg_segments) // 3 + (len(jlg_segments) % 3 > 0)
+            fig, axes = plt.subplots(nrows=num_rows, ncols=num_cols, constrained_layout=True)
+            axes = axes.flatten() if num_rows > 1 and num_cols > 1 else axes  # Flatten if necessary, handle 1D axes array
+            for ax in axes:
+                ax.margins(x=0.3, y=0.1)
+            for i, jlg in enumerate(jlg_segments):
+                pos = nx.spring_layout(jlg)
+                ax = axes[i]  # Get the appropriate subplot axis using flattened indexing
+                nx.draw(jlg, ax=ax, pos=pos, with_labels=False, node_color='lightblue', font_weight='bold',
+                        node_size=30, arrowsize=20)
+                node_labels = nx.get_node_attributes(jlg, 'name')
+                nx.draw_networkx_labels(jlg, pos, labels=node_labels, ax=ax)
+            # Hide any unused subplots if there are any
+            for j in range(i + 1, len(axes)):
+                axes[j].axis('off')
+        return jlg_segments
+
+        # # find the fixed joints
+        # fixedjoints = []
+        # for joint in self.joints:
+        #     if joint.joint_type == 'fixed':
+        #         fixedjoints.append(joint)
+        # # find the connected components
+        # G = nx.Graph()
+        # for joint in self.joints:
+        #     if joint.joint_type != 'fixed':
+        #         G.add_edge(joint.parent, joint.child)
+        # components = list(nx.connected_components(G))
+        # # find the largest component
+        # maxcomponent = []
+        # for component in components:
+        #     if len(component) > len(maxcomponent):
+        #         maxcomponent = component
+        # # find the arm and the gripper
+        # arm = []
+        # gripper = []
+        # for joint in self.joints:
+        #     if joint.parent in maxcomponent and joint.child in maxcomponent:
+        #         arm.append(joint)
+        #     else:
+        #         gripper.append(joint)
+        # return arm, gripper
+
     def link_fk(self, cfg=None, link=None, links=None, use_names=False):
         """
         Computes the poses of the URDF's links via forward kinematics.
@@ -2631,19 +2727,18 @@ class URDF(URDFType):
         # Process link set
         link_set = set()
         if link is not None:
-            if isinstance(link, six.string_types):
+            if isinstance(link, str):
                 link_set.add(self._link_map[link])
             elif isinstance(link, Link):
                 link_set.add(link)
         elif links is not None:
             for lnk in links:
-                if isinstance(lnk, six.string_types):
+                if isinstance(lnk, str):
                     link_set.add(self._link_map[lnk])
                 elif isinstance(lnk, Link):
                     link_set.add(lnk)
                 else:
-                    raise TypeError('Got object of type {} in links list'
-                                    .format(type(lnk)))
+                    raise TypeError('Got object of type {} in links list'.format(type(lnk)))
         else:
             link_set = self.links
         # Compute forward kinematics in reverse topological order
@@ -2657,7 +2752,6 @@ class URDF(URDFType):
                 child = path[i]
                 parent = path[i + 1]
                 joint = self._G.get_edge_data(child, parent)['joint']
-
                 cfg = None
                 if joint.mimic is not None:
                     mimic_joint = self._joint_map[joint.mimic.joint]
@@ -2667,14 +2761,13 @@ class URDF(URDFType):
                 elif joint in joint_cfg:
                     cfg = joint_cfg[joint]
                 pose = joint.get_child_pose(cfg).dot(pose)
-
                 # Check existing FK to see if we can exit early
                 if parent in fk:
                     pose = fk[parent].dot(pose)
                     break
             fk[lnk] = pose
         if link:
-            if isinstance(link, six.string_types):
+            if isinstance(link, str):
                 return fk[self._link_map[link]]
             else:
                 return fk[link]
@@ -2698,13 +2791,13 @@ class URDF(URDFType):
         # Process link set
         link_set = set()
         if link is not None:
-            if isinstance(link, six.string_types):
+            if isinstance(link, str):
                 link_set.add(self._link_map[link])
             elif isinstance(link, Link):
                 link_set.add(link)
         elif links is not None:
             for lnk in links:
-                if isinstance(lnk, six.string_types):
+                if isinstance(lnk, str):
                     link_set.add(self._link_map[lnk])
                 elif isinstance(lnk, Link):
                     link_set.add(lnk)
@@ -2739,7 +2832,7 @@ class URDF(URDFType):
                     break
             fk[lnk] = poses
         if link:
-            if isinstance(link, six.string_types):
+            if isinstance(link, str):
                 return fk[self._link_map[link]]
             else:
                 return fk[link]
@@ -3054,18 +3147,16 @@ class URDF(URDFType):
             the visual geometry.
         """
         import pyrender  # Save pyrender import for here for CI
-
         if use_collision:
             fk = self.collision_trimesh_fk(cfg=cfg)
         else:
             fk = self.visual_trimesh_fk(cfg=cfg)
-
         scene = pyrender.Scene()
         for tm in fk:
             pose = fk[tm]
             mesh = pyrender.Mesh.from_trimesh(tm, smooth=False)
             scene.add(mesh, pose=pose)
-        pyrender.Viewer(scene, use_raymond_lighting=True)
+        pyrender.Viewer(scene)
 
     def copy(self, name=None, prefix='', scale=None, collision_only=False):
         """
@@ -3086,7 +3177,7 @@ class URDF(URDFType):
         )
 
     def save(self, file_obj):
-        if isinstance(file_obj, six.string_types):
+        if isinstance(file_obj, str):
             path, _ = os.path.split(file_obj)
         else:
             path, _ = os.path.split(os.path.realpath(file_obj.name))
@@ -3157,7 +3248,7 @@ class URDF(URDFType):
                             file instead of as ROS resources.
         :return:
         """
-        if isinstance(file_obj, six.string_types):
+        if isinstance(file_obj, str):
             if os.path.isfile(file_obj):
                 parser = ET.XMLParser(remove_comments=True,
                                       remove_blank_text=True)
@@ -3184,28 +3275,19 @@ class URDF(URDFType):
         actuated_joints = []
         for joint in self.joints:
             if joint.parent not in self._link_map:
-                raise ValueError('Joint {} has invalid parent link name {}'
-                                 .format(joint.name, joint.parent))
+                raise ValueError('Joint {} has invalid parent link name {}'.format(joint.name, joint.parent))
             if joint.child not in self._link_map:
-                raise ValueError('Joint {} has invalid child link name {}'
-                                 .format(joint.name, joint.child))
+                raise ValueError('Joint {} has invalid child link name {}'.format(joint.name, joint.child))
             if joint.child == joint.parent:
-                raise ValueError('Joint {} has matching parent and child'
-                                 .format(joint.name))
+                raise ValueError('Joint {} has matching parent and child'.format(joint.name))
             if joint.mimic is not None:
                 if joint.mimic.joint not in self._joint_map:
-                    raise ValueError(
-                        'Joint {} has an invalid mimic joint name {}'
-                        .format(joint.name, joint.mimic.joint)
-                    )
+                    raise ValueError('Joint {} has an invalid mimic joint name {}'
+                                     .format(joint.name, joint.mimic.joint))
                 if joint.mimic.joint == joint.name:
-                    raise ValueError(
-                        'Joint {} set up to mimic itself'
-                        .format(joint.mimic.joint)
-                    )
+                    raise ValueError('Joint {} set up to mimic itself'.format(joint.mimic.joint))
             elif joint.joint_type != 'fixed':
                 actuated_joints.append(joint)
-
         # Do a depth-first search
         return actuated_joints
 
@@ -3232,8 +3314,7 @@ class URDF(URDFType):
         for t in self.transmissions:
             for joint in t.joints:
                 if joint.name not in self._joint_map:
-                    raise ValueError('Transmission {} has invalid joint name '
-                                     '{}'.format(t.name, joint.name))
+                    raise ValueError('Transmission {} has invalid joint name {}'.format(t.name, joint.name))
 
     def _validate_graph(self):
         """Raise an exception if the link-joint structure is invalid. Checks for the following:
@@ -3251,8 +3332,7 @@ class URDF(URDFType):
                 for n in cc:
                     cluster.append(n.name)
                 link_clusters.append(cluster)
-            message = ('Links are not all connected. '
-                       'Connected components are:')
+            message = ('Links are not all connected. Connected components are:')
             for lc in link_clusters:
                 message += '\n\t'
                 for n in lc:
@@ -3269,8 +3349,7 @@ class URDF(URDFType):
                 if base_link is None:
                     base_link = n
                 else:
-                    raise ValueError('Links {} and {} are both base links!'
-                                     .format(n.name, base_link.name))
+                    raise ValueError('Links {} and {} are both base links!'.format(n.name, base_link.name))
             if len(nx.ancestors(self._G, n)) == 0:
                 end_links.append(n)
         return base_link, end_links
@@ -3284,14 +3363,13 @@ class URDF(URDFType):
             return joint_cfg
         if isinstance(cfg, dict):
             for joint in cfg:
-                if isinstance(joint, six.string_types):
+                if isinstance(joint, str):
                     joint_cfg[self._joint_map[joint]] = cfg[joint]
                 elif isinstance(joint, Joint):
                     joint_cfg[joint] = cfg[joint]
         elif isinstance(cfg, (list, tuple, np.ndarray)):
             if len(cfg) != len(self.actuated_joints):
-                raise ValueError('Cfg must have same length as actuated joints '
-                                 'if specified as a numerical array')
+                raise ValueError('Cfg must have same length as actuated joints if specified as a numerical array')
             for joint, value in zip(self.actuated_joints, cfg):
                 joint_cfg[joint] = value
         else:
@@ -3306,7 +3384,7 @@ class URDF(URDFType):
         n_cfgs = None
         if isinstance(cfgs, dict):
             for joint in cfgs:
-                if isinstance(joint, six.string_types):
+                if isinstance(joint, str):
                     joint_cfg[self._joint_map[joint]] = cfgs[joint]
                 else:
                     joint_cfg[joint] = cfgs[joint]
@@ -3317,7 +3395,7 @@ class URDF(URDFType):
             if isinstance(cfgs[0], dict):
                 for cfg in cfgs:
                     for joint in cfg:
-                        if isinstance(joint, six.string_types):
+                        if isinstance(joint, str):
                             joint_cfg[self._joint_map[joint]].append(cfg[joint])
                         else:
                             joint_cfg[joint].append(cfg[joint])
