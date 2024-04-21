@@ -39,6 +39,7 @@ class CVRB0609(object):
                 jlc.set_flange(loc_flange_pos=end_fixed.origin[:3, 3], loc_flange_rotmat=end_fixed.origin[:3, :3])
                 jlc.finalize(iksolver=None)
                 self.components[jlg.graph['name']] = jlc
+        print(len(self.components))
 
     def gen_stickmodel(self):
         m_col = mmc.ModelCollection()
