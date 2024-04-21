@@ -2,13 +2,13 @@ from collections import OrderedDict
 import copy
 import os
 import time
-
 from lxml import etree as ET
 import networkx as nx
 import numpy as np
 import PIL
 import basis.trimesh as trm
 import basis.robot_math as rm
+import basis.trimesh_factory as btf
 
 
 def parse_origin(node):
@@ -69,9 +69,9 @@ def load_meshes(filename):
     """
     meshes = trm.load(filename)
     # If we got a scene, dump the meshes
-    if isinstance(meshes, trm.Scene):
-        meshes = list(meshes.dump())
-        meshes = [g for g in meshes if isinstance(g, trm.Trimesh)]
+    # if isinstance(meshes, trm.Scene):
+    #     meshes = list(meshes.dump())
+    #     meshes = [g for g in meshes if isinstance(g, trm.Trimesh)]
     if isinstance(meshes, (list, tuple, set)):
         meshes = list(meshes)
         if len(meshes) == 0:
@@ -540,15 +540,16 @@ class Mesh(URDFType):
         kwargs = cls._parse(node, path)
         # Load the mesh, combining collision geometry meshes but keeping
         # visual ones separate to preserve colors and textures
-        fn = get_filename(path, kwargs['filename'])
-        if not os.path.exists(fn):
-            print(f"Warning: mesh file {fn} does not exist")
-            return Mesh(fn, meshes=trm.Trimesh())  # create an empty mesh
-        combine = node.getparent().getparent().tag == Collision._TAG
-        meshes = load_meshes(fn)
-        if combine:
-            meshes = [meshes[0] + meshes[1:]]
-        kwargs['meshes'] = meshes
+        file_name = get_filename(path, kwargs['filename'])
+        if not os.path.exists(file_name):
+            print(f"Warning: mesh file {file_name} does not exist")
+            return Mesh(filename=file_name,
+                        meshes=btf.gen_sphere(radius=.05, pos=np.zeros(3)))
+            combine = node.getparent().getparent().tag == Collision._TAG
+            meshes = load_meshes(fn)
+            if combine:
+                meshes = [meshes[0] + meshes[1:]]
+            kwargs['meshes'] = meshes
         return Mesh(**kwargs)
 
     def _to_xml(self, parent, path):
@@ -2632,6 +2633,8 @@ class URDF(URDFType):
         for lnk in fixed_lnks:
             jlg = nx.DiGraph()
             path = self._paths_to_base[lnk]
+            if len(path) <= 1:
+                continue
             for i in range(len(path) - 1):
                 child = path[i]
                 parent = path[i + 1]
@@ -2659,9 +2662,9 @@ class URDF(URDFType):
                         jlg.add_edge(parent, child, joint=joint)
             node_list = list(jlg.nodes())
             if jlg.number_of_edges() == 1:
-                jlg_name = node_list[0]['name'].split("_", 1)[0] + "-" + node_list[-1]['name'].split("_", 1)[0]
+                jlg_name = node_list[0].name.split("_", 1)[0] + "-" + node_list[-1].name.split("_", 1)[0]
             else:
-                jlg_name = node_list[0]['name'].split("_", 1)[0]
+                jlg_name = node_list[0].name.split("_", 1)[0]
             jlg.graph['name'] = jlg_name
         if toggle_debug:
             import matplotlib.pyplot as plt

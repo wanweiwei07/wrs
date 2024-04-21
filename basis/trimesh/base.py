@@ -1021,9 +1021,13 @@ class Trimesh(object):
         author: weiwei
         date: 20210414
         """
+        if self.vertices is None:
+            return self
         matrix = np.asanyarray(matrix)
         if matrix.shape != (4, 4):
             raise ValueError('Transformation matrix must be (4,4)!')
+        elif np.allclose(matrix, np.eye(4)):
+            return self
         new_vertices = transform_points(self.vertices, matrix)
         new_normals = None
         if self.faces is not None:
