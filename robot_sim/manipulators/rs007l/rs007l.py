@@ -48,7 +48,7 @@ class RS007L(mi.ManipulatorInterface):
         self.jlc.jnts[3].motion_range = np.array([-3.49065850399, 3.49065850399])  # -200, 200
         self.jlc.jnts[3].lnk.cmodel = mcm.CollisionModel(os.path.join(current_file_dir, "meshes", "joint4.stl"))
         self.jlc.jnts[3].lnk.cmodel.rgba = np.array([.7, .7, .7, 1.0])
-        self.jlc.jnts[3].lnk.loc_pos = np.array([0.0, 0.0, 0.3825])
+        self.jlc.jnts[3].lnk.loc_pos = np.array([0.0, 0.0, 0.3852])
         # fifth joint and link
         self.jlc.jnts[4].loc_pos = np.array([0, 0, 0.3825])
         self.jlc.jnts[4].loc_motion_ax = np.array([0, 0, -1])
@@ -64,7 +64,7 @@ class RS007L(mi.ManipulatorInterface):
         self.jlc.jnts[5].motion_range = np.array([-6.28318530718, 6.28318530718])  # -360, 360
         self.jlc.jnts[5].lnk.cmodel = mcm.CollisionModel(os.path.join(current_file_dir, "meshes", "joint6.stl"))
         self.jlc.jnts[5].lnk.cmodel.rgba = np.array([.7, .7, .7, 1.0])
-        self.jlc.finalize(ik_solver='d', identifier_str=name)
+        self.jlc.finalize(ik_solver=None, identifier_str=name)
         # tcp
         self.loc_tcp_pos = np.array([0, 0, 0])
         self.loc_tcp_rotmat = np.eye(3)
@@ -86,11 +86,9 @@ class RS007L(mi.ManipulatorInterface):
 
     def ik(self,
            tgt_pos: np.ndarray,
-           tgt_rotmat: np.ndarray,
-           seed_jnt_values=None,
-           toggle_dbg=False):
+           tgt_rotmat: np.ndarray):
         """
-        analytical ik sovler,
+        analytical ik sovler, slover than ddik
         the parameters in kwargs will be ignored
         :param tgt_pos:
         :param tgt_rotmat:
@@ -103,7 +101,7 @@ class RS007L(mi.ManipulatorInterface):
         flange_rotmat = tgt_rotmat @ tcp_loc_rotmat.T
         flange_pos = tgt_pos - flange_rotmat @ tcp_loc_pos
         rrr_pos = flange_pos - flange_rotmat[:, 2] * np.linalg.norm(self.jlc.jnts[5].loc_pos)
-        rrr_x, rrr_y, rrr_z = ((rrr_pos - self.jlc.pos) @ self.rotmat).tolist()  # in base coordinate system
+        rrr_x, rrr_y, rrr_z = ((rrr_pos - self.pos) @ self.rotmat).tolist()  # in base coordinate system
         j0_value = math.atan2(rrr_x, rrr_y)
         if not self._is_jnt_in_range(jnt_id=0, jnt_value=j0_value):
             return None
@@ -135,15 +133,15 @@ class RS007L(mi.ManipulatorInterface):
         if not self._is_jnt_in_range(jnt_id=1, jnt_value=j1_value):
             return None
         # RRR
-        anchor_gl_rotmatq = self.jlc.rotmat
-        j0_gl_rotmat0 = anchor_gl_rotmatq @ self.jlc.jnts[0].gl_rotmat_0
+        anchor_gl_rotmatq = self.rotmat
+        j0_gl_rotmat0 = anchor_gl_rotmatq @ self.jlc.jnts[0].loc_rotmat
         j0_gl_rotmatq = j0_gl_rotmat0 @ rm.rotmat_from_axangle(self.jlc.jnts[0].loc_motion_ax, j0_value)
-        j1_gl_rotmat0 = j0_gl_rotmatq @ self.jlc.jnts[1].gl_rotmat_0
+        j1_gl_rotmat0 = j0_gl_rotmatq @ self.jlc.jnts[1].loc_rotmat
         j1_gl_rotmatq = j1_gl_rotmat0 @ rm.rotmat_from_axangle(self.jlc.jnts[1].loc_motion_ax, j1_value)
-        j2_gl_rotmat0 = j1_gl_rotmatq @ self.jlc.jnts[2].gl_rotmat_0
+        j2_gl_rotmat0 = j1_gl_rotmatq @ self.jlc.jnts[2].loc_rotmat
         j2_gl_rotmatq = j2_gl_rotmat0 @ rm.rotmat_from_axangle(self.jlc.jnts[2].loc_motion_ax, j2_value)
-        rrr_g_rotmat = (j2_gl_rotmatq @ self.jlc.jnts[3].gl_rotmat_0 @
-                        self.jlc.jnts[4].gl_rotmat_0 @ self.jlc.jnts[5].gl_rotmat_0)
+        rrr_g_rotmat = (j2_gl_rotmatq @ self.jlc.jnts[3].loc_rotmat @
+                        self.jlc.jnts[4].loc_rotmat @ self.jlc.jnts[5].loc_rotmat)
         j3_value, j4_value, j5_value = rm.rotmat_to_euler(rrr_g_rotmat.T @ flange_rotmat, axes='rzxz').tolist()
         if not (self._is_jnt_in_range(jnt_id=3, jnt_value=j3_value) and
                 self._is_jnt_in_range(jnt_id=4, jnt_value=j4_value) and
@@ -178,22 +176,10 @@ if __name__ == '__main__':
                  rotmat=rm.rotmat_from_euler(np.radians(30), np.radians(-30), 0), enable_cc=True)
     arm_mesh = arm.gen_meshmodel()
     arm_mesh.attach_to(base)
-    # arm_mesh.show_cdprimit()
-    # arm.gen_stickmodel(toggle_jnt_frames=True).attach_to(base)
-    # tic = time.time()
-    # print(arm.is_collided())
-    # toc = time.time()
-    # print(toc - tic)
-
-    # tgt_pos = np.array([.5, 0, .3])
-    # tgt_rotmat = rm.rotmat_from_euler(np.radians(30), np.radians(120), np.radians(130))
-    # mgm.gen_frame(pos=tgt_pos, rotmat=tgt_rotmat).attach_to(base)
-    tic = time.time()
-    # _loc_flange_pos = np.array([0, .1, 0.1])
-    # _loc_flange_rotmat = rm.rotmat_from_euler(0, np.radians(30), 0)
-    tgt_pos = np.array([.35, .4, .75])
+    tgt_pos = np.array([.35, .3, 1])
     tgt_rotmat = rm.rotmat_from_euler(np.radians(130), np.radians(40), np.radians(180))
     gm.gen_frame(pos=tgt_pos, rotmat=tgt_rotmat).attach_to(base)
+    tic = time.time()
     j_values = arm.ik(tgt_pos=tgt_pos,
                       tgt_rotmat=tgt_rotmat)
     toc = time.time()
@@ -202,8 +188,4 @@ if __name__ == '__main__':
     arm.goto_given_conf(jnt_values=j_values)
     arm.gen_stickmodel(toggle_tcp_frame=True, toggle_jnt_frames=True).attach_to(base)
     arm.gen_meshmodel().attach_to(base)
-
-    # base = wd.World(cam_pos=[1, 1, 1], lookat_pos=[0,0,0])
-    # mgm.GeometricModel("./meshes/base.dae").attach_to(base)
-    # mgm.gen_frame().attach_to(base)
     base.run()
