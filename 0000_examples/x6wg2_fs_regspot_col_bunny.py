@@ -22,11 +22,9 @@ if __name__ == '__main__':
                                                obj_cmodel=bunny,
                                                reference_fsp_poses=reference_fsp_poses,
                                                reference_grasp_collection=reference_grasps)
-    # fs_regspot_col.add_new_fs_regspot(spot_pos=np.array([.4,0,0]), spot_rotz=0)
-    # fs_regspot_col.save_to_disk("regspot_col_x6wg2_bunny.pickle")
-    # fs_regspot_col.load_from_disk("regspot_col_x6wg2_bunny.pickle")
-    # fs_regspot_col.add_new_fs_regspot(spot_pos=np.array([.4, .2, 0]), spot_rotz=0)
-    # fs_regspot_col.add_new_fs_regspot(spot_pos=np.array([.4, -.2, 0]), spot_rotz=0)
+    fs_regspot_col.add_new_fs_regspot(spot_pos=np.array([.4,0,0]), spot_rotz=0)
+    fs_regspot_col.add_new_fs_regspot(spot_pos=np.array([.4, .2, 0]), spot_rotz=0)
+    fs_regspot_col.add_new_fs_regspot(spot_pos=np.array([.4, -.2, 0]), spot_rotz=0)
     fs_regspot_col.save_to_disk("regspot_col_x6wg2_bunny.pickle")
     mesh_model_list = fs_regspot_col.gen_meshmodels()
     for fs_regspot in fs_regspot_col:
@@ -46,8 +44,6 @@ if __name__ == '__main__':
         if anime_data.counter > 0:
             anime_data.mesh_model_list[anime_data.counter - 1].detach()
         if anime_data.counter >= len(anime_data.mesh_model_list):
-            # for mesh_model in anime_data.mot_data.mesh_list:
-            #     mesh_model.detach()
             anime_data.counter = 0
         anime_data.mesh_model_list[anime_data.counter].attach_to(base)
         if base.inputmgr.keymap['space']:
