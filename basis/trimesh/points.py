@@ -2,7 +2,6 @@
 Functions dealing with (n,d) points
 '''
 import numpy as np
-
 from .constants import log, tol
 from .geometry import plane_transform
 
@@ -12,18 +11,28 @@ def transform_points(points, matrix, translate=True):
     If points is (n,2), matrix must be (3,3)
     if points is (n,3), matrix must be (4,4)
     :param points: nx2 or nx3 set of points
-    :param matrix: 3x3 or 4x4 pos
+    :param matrix: 3x3 or 4x4
     :param translate: apply translation from matrix or not
     :return:
     author: revised by weiwei
     date: 20201202
     """
-    points = np.asanyarray(points)
-    dimension = points.shape[1]
-    column = np.zeros(len(points)) + int(bool(translate))
-    stacked = np.column_stack((points, column))
-    transformed = np.dot(matrix, stacked.T).T[:, 0:dimension]
-    return transformed
+    points = np.asanyarray(points, dtype=np.float64)
+    if len(points) == 0 or matrix is None:
+        return points.copy()
+    # check the matrix against the points
+    matrix = np.asanyarray(matrix, dtype=np.float64)
+    # shorthand the shape
+    count, dim = points.shape
+    # quickly check to see if we've been passed an identity matrix
+    if np.abs(matrix - np.eye(4)[:dim+1, :dim+1]).max() < 1e-8:
+        return np.ascontiguousarray(points.copy())
+    if translate:
+        # apply translation and rotation
+        stack = np.column_stack((points, np.ones(count)))
+        return np.dot(matrix, stack.T).T[:, :dim]
+    # only apply the rotation
+    return np.dot(matrix[:dim, :dim], points.T).T
 
 
 def point_plane_distance(points, plane_normal, plane_origin=[0, 0, 0]):

@@ -10,8 +10,6 @@ class ManipulatorInterface(object):
 
     def __init__(self, pos=np.zeros(3), rotmat=np.eye(3), home_conf=np.zeros(6), name='manipulator', enable_cc=False):
         self.name = name
-        self.pos = pos
-        self.rotmat = rotmat
         # jlc
         self.jlc = rkjlc.JLChain(pos=pos, rotmat=rotmat, n_dof=len(home_conf), name=name)
         self.jlc.home = home_conf
@@ -48,6 +46,14 @@ class ManipulatorInterface(object):
             return method(self, *args, **kwargs)
 
         return wrapper
+
+    @property
+    def pos(self):
+        return self.jlc.pos
+
+    @property
+    def rotmat(self):
+        return self.jlc.rotmat
 
     @property
     def jnts(self):

@@ -2,13 +2,13 @@ from collections import OrderedDict
 import copy
 import os
 import time
-
 from lxml import etree as ET
 import networkx as nx
 import numpy as np
 import PIL
 import basis.trimesh as trm
 import basis.robot_math as rm
+import basis.trimesh_factory as btf
 
 
 def parse_origin(node):
@@ -69,9 +69,9 @@ def load_meshes(filename):
     """
     meshes = trm.load(filename)
     # If we got a scene, dump the meshes
-    if isinstance(meshes, trm.Scene):
-        meshes = list(meshes.dump())
-        meshes = [g for g in meshes if isinstance(g, trm.Trimesh)]
+    # if isinstance(meshes, trm.Scene):
+    #     meshes = list(meshes.dump())
+    #     meshes = [g for g in meshes if isinstance(g, trm.Trimesh)]
     if isinstance(meshes, (list, tuple, set)):
         meshes = list(meshes)
         if len(meshes) == 0:
@@ -540,15 +540,16 @@ class Mesh(URDFType):
         kwargs = cls._parse(node, path)
         # Load the mesh, combining collision geometry meshes but keeping
         # visual ones separate to preserve colors and textures
-        fn = get_filename(path, kwargs['filename'])
-        if not os.path.exists(fn):
-            print(f"Warning: mesh file {fn} does not exist")
-            return Mesh(fn, meshes=trm.Trimesh())  # create an empty mesh
-        combine = node.getparent().getparent().tag == Collision._TAG
-        meshes = load_meshes(fn)
-        if combine:
-            meshes = [meshes[0] + meshes[1:]]
-        kwargs['meshes'] = meshes
+        file_name = get_filename(path, kwargs['filename'])
+        if not os.path.exists(file_name):
+            print(f"Warning: mesh file {file_name} does not exist")
+            return Mesh(filename=file_name,
+                        meshes=btf.gen_sphere(radius=.05, pos=np.zeros(3)))
+            combine = node.getparent().getparent().tag == Collision._TAG
+            meshes = load_meshes(fn)
+            if combine:
+                meshes = [meshes[0] + meshes[1:]]
+            kwargs['meshes'] = meshes
         return Mesh(**kwargs)
 
     def _to_xml(self, parent, path):
@@ -2624,20 +2625,21 @@ class URDF(URDFType):
         aurthor: weiwei
         date: 20240421
         """
-        fixed_lnks = set()
-        for j in self.joints:
+        fixed_lnks = []
+        for j in self._sort_joints(self.joints):
             if j.joint_type == 'fixed':
-                fixed_lnks.add(self._link_map[j.parent])
+                fixed_lnks.append(self._link_map[j.parent])
         jlg_segments = []
         for lnk in fixed_lnks:
             jlg = nx.DiGraph()
             path = self._paths_to_base[lnk]
+            if len(path) <= 1:
+                continue
             for i in range(len(path) - 1):
                 child = path[i]
                 parent = path[i + 1]
                 joint = self._G.get_edge_data(child, parent)['joint']
                 if joint.joint_type == 'fixed':
-                    print(f"encountering fixed, number of nodes: {jlg.number_of_nodes()}")
                     if jlg.number_of_edges() == 0:
                         jlg.add_node(child, name=child.name)
                         jlg.add_node(parent, name=parent.name)
@@ -2657,16 +2659,27 @@ class URDF(URDFType):
                         jlg.add_node(child, name=child.name)
                         jlg.add_node(parent, name=parent.name)
                         jlg.add_edge(parent, child, joint=joint)
-            node_list = list(jlg.nodes())
-            if jlg.number_of_edges() == 1:
-                jlg_name = node_list[0]['name'].split("_", 1)[0] + "-" + node_list[-1]['name'].split("_", 1)[0]
+            tpo_node_list = list(nx.topological_sort(jlg_segments[-1]))
+            if jlg_segments[-1].number_of_edges() == 1:
+                jlg_name = tpo_node_list[0].name.split("_", 1)[0] + "-" + tpo_node_list[-1].name.split("_", 1)[0]
             else:
-                jlg_name = node_list[0]['name'].split("_", 1)[0]
-            jlg.graph['name'] = jlg_name
+                jlg_name = tpo_node_list[0].name.split("_", 1)[0]
+            jlg_segments[-1].graph['name'] = jlg_name
+            jlg_segments[-1].graph['start_node'] = tpo_node_list[0]
+            jlg_segments[-1].graph['end_node'] = tpo_node_list[-1]
+            # keep track of segment relations
+            for prev_jlg in jlg_segments[:-1]:
+                if jlg_segments[-1].graph['start_node'] is prev_jlg.graph['end_node']:
+                    jlg_segments[-1].graph['priority'] = prev_jlg.graph['priority'] + 1
+                    jlg_segments[-1].graph['previous'] = prev_jlg
+            if not 'priority' in jlg_segments[-1].graph:
+                jlg_segments[-1].graph['priority'] = 0
+                jlg_segments[-1].graph['previous'] = None
         if toggle_debug:
             import matplotlib.pyplot as plt
-            num_rows = 3
-            num_cols = len(jlg_segments) // 3 + (len(jlg_segments) % 3 > 0)
+            import matplotlib.patches as patches
+            num_rows = 4
+            num_cols = len(jlg_segments) // num_rows + (len(jlg_segments) % num_rows > 0)
             fig, axes = plt.subplots(nrows=num_rows, ncols=num_cols, constrained_layout=True)
             axes = axes.flatten() if num_rows > 1 and num_cols > 1 else axes  # Flatten if necessary, handle 1D axes array
             for ax in axes:
@@ -2678,6 +2691,14 @@ class URDF(URDFType):
                         node_size=30, arrowsize=20)
                 node_labels = nx.get_node_attributes(jlg, 'name')
                 nx.draw_networkx_labels(jlg, pos, labels=node_labels, ax=ax)
+                title_str = jlg.graph['name']
+                # If 'previous' graph exists, add its name to the x-label
+                if jlg.graph['previous'] is not None:
+                    title_str += f", prev: {jlg.graph['previous'].graph['name']}"
+                ax.set_title(title_str)
+                rect = patches.Rectangle((0, 0), 1, 1, linewidth=1, edgecolor='black', facecolor='none',
+                                         transform=ax.transAxes)
+                ax.add_patch(rect)
             # Hide any unused subplots if there are any
             for j in range(i + 1, len(axes)):
                 axes[j].axis('off')
