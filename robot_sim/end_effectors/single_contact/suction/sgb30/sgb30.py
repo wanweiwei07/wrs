@@ -181,20 +181,21 @@ if __name__ == '__main__':
     # first hand
     sgb = SGB30()
     sgb.reparentTo(base.render)
-    handbullnp = cd.genCollisionMeshNp(sgb.handnp)
-    base.taskMgr.step()
-    time.sleep(2)
+    start = time.time()
+    while time.time() <= start + 1:
+        base.taskMgr.step()
 
     # second hand
     sgb1 = SGB30()
     sgb1.attachTo(0, 0, 0, 0, 0, 0, 0)
     sgb1.reparentTo(base.render)
-    hand1bullnp = cd.genCollisionMeshNp(sgb1.handnp)
-    base.taskMgr.step()
-    time.sleep(2)
+    start = time.time()
+    while time.time() <= start + 1:
+        base.taskMgr.step()
 
     pg.plotAxisSelf(base.render, Vec3(0, 0, 0))
-    base.taskMgr.step()
-    time.sleep(2)
+    start = time.time()
+    while time.time() <= start + 1:
+        base.taskMgr.step()
 
     base.run()
