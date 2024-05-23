@@ -1,10 +1,10 @@
 import os
 import numpy as np
-import modeling.model_collection as mc
 import robot_sim._kinematics.jlchain as jl
 import basis.robot_math as rm
 import robot_sim.end_effectors.single_contact.single_contact_interface as si
-import modeling.collision_model as cm
+import modeling.collision_model as mcm
+import modeling.model_collection as mmc
 
 
 class ORSD(si.SCTInterface):
@@ -19,85 +19,77 @@ class ORSD(si.SCTInterface):
                  rotmat=np.eye(3),
                  coupling_offset_pos=np.zeros(3),
                  coupling_offset_rotmat=np.eye(3),
-                 cdmesh_type='box',
+                 cdmesh_type=mcm.mc.CDMType.DEFAULT,
                  name='onrobot_screwdriver',
                  enable_cc=True):
         super().__init__(pos=pos, rotmat=rotmat, cdmesh_type=cdmesh_type, name=name)
-        this_dir, this_filename = os.path.split(__file__)
-        self.coupling.jnts[-1]['loc_pos'] = coupling_offset_pos
-        self.coupling.jnts[-1]['gl_rotmat'] = coupling_offset_rotmat
-        self.coupling.lnks[0]['rgba'] = np.array([.35, .35, .35, 1])
-        self.coupling.lnks[0]['collision_model'] = cm.gen_stick(self.coupling.jnts[0]['loc_pos'],
-                                                                self.coupling.jnts[-1]['loc_pos'],
-                                                                radius=0.07,
-                                                                # rgba=[.35, .35, .35, 1], rgb will be overwritten
-                                                                type='rect',
-                                                                n_sec=36)
-        self.coupling.finalize()
-        cpl_end_pos = self.coupling.jnts[-1]['gl_posq']
-        cpl_end_rotmat = self.coupling.jnts[-1]['gl_rotmatq']
+        current_file_dir = os.path.dirname(__file__)
+        self.coupling.loc_flange_pose_list[0] = (coupling_offset_pos, coupling_offset_rotmat)
+        self.coupling.lnk_list[0].cmodel = mcm.gen_stick(spos=pos,
+                                                         epos=self.coupling.gl_flange_pose_list[0][0],
+                                                         type="rect",
+                                                         radius=0.035,
+                                                         rgb=np.array([.35, .35, .35]),
+                                                         alpha=1,
+                                                         n_sec=24)
         # jlc
-        self.jlc = jl.JLChain(pos=cpl_end_pos, rotmat=cpl_end_rotmat, home_conf=np.zeros(0), name='orsd_jlc')
-        self.jlc.jnts[1]['loc_pos'] = np.array([0.16855000, 0, 0.09509044])
-        self.jlc.lnks[0]['name'] = "orsd"
-        self.jlc.lnks[0]['loc_pos'] = np.zeros(3)
-        self.jlc.lnks[0]['mesh_file'] = os.path.join(this_dir, "meshes", "or_screwdriver.stl")
-        self.jlc.lnks[0]['rgba'] = [.55, .55, .55, 1]
+        self.jlc = jl.JLChain(pos=self.coupling.gl_flange_pose_list[0][0],
+                              rotmat=self.coupling.gl_flange_pose_list[0][1],
+                              n_dof=1, name='orsd_jlc')
+        self.jlc.jnts[0].loc_pos = np.array([0.16855000, 0, 0.09509044])
+        self.jlc.jnts[0].lnk.cmodel = mcm.CollisionModel(
+            initor=os.path.join(current_file_dir, "meshes", "or_screwdriver.stl"),
+            cdmesh_type=self.cdmesh_type)
+        self.jlc.jnts[0].lnk.cmodel.rgba = np.array([.55, .55, .55, 1])
         # reinitialize
         self.jlc.finalize()
         #  action center
-        self.action_center_pos = self.coupling.jnts[-1]['gl_rotmat'] @ np.array([0.16855000, 0, 0.09509044]) + coupling_offset_pos
-        self.action_center_rotmat = self.coupling.jnts[-1]['gl_rotmat']
+        self.loc_acting_center_pos = self.coupling.gl_flange_pose_list[0][1] @ np.array(
+            [0.16855000, 0, 0.09509044]) + coupling_offset_pos
+        self.action_center_rotmat = self.coupling.gl_flange_pose_list[0][1]
         # collision detection
-        self.all_cdelements = []
-        self.enable_cc(toggle_cdprimit=enable_cc)
+        self.cdmesh_elements = (self.jlc.anchor.lnk_list[0],
+                                self.jlc.jnts[0].lnk)
 
-    def enable_cc(self, toggle_cdprimit):
-        if toggle_cdprimit:
-            super().enable_cc()
-            # cdprimit
-            self.cc.add_cdlnks(self.jlc, [0])
-            activelist = [self.jlc.lnks[0]]
-            self.cc.set_active_cdlnks(activelist)
-            self.all_cdelements = self.cc.cce_dict
-        # cdmesh
-        for cdelement in self.all_cdelements:
-            cdmesh = cdelement['collision_model'].copy()
-            self.cdmesh_collection.add_cm(cdmesh)
-
-    def fix_to(self, pos, rotmat):
+    def fix_to(self, pos, rotmat, jaw_width=None):
         self.pos = pos
         self.rotmat = rotmat
-        self.coupling.fix_to(self.pos, self.rotmat)
-        cpl_end_pos = self.coupling.jnts[-1]['gl_posq']
-        cpl_end_rotmat = self.coupling.jnts[-1]['gl_rotmatq']
-        self.jlc.fix_to(cpl_end_pos, cpl_end_rotmat)
+        if jaw_width is not None:
+            self.change_jaw_width(jaw_width=jaw_width)
+        self.coupling.pos = self.pos
+        self.coupling.rotmat = self.rotmat
+        self.jlc.fix_to(self.coupling.gl_flange_pose_list[0][0], self.coupling.gl_flange_pose_list[0][1])
+        self.update_oiee()
 
-    def gen_stickmodel(self, toggle_tcp_frame=False, toggle_jnt_frames=False, name='ee_stickmodel'):
-        stick_model = mc.ModelCollection(name=name)
-        self.coupling.gen_stickmodel(toggle_tcp_frame=False, toggle_jnt_frames=toggle_jnt_frames).attach_to(stick_model)
-        self.jlc.gen_stickmodel(toggle_tcpcs=False,
-                                toggle_jntscs=toggle_jnt_frames,
-                                toggle_connjnt=toggle_connjnt).attach_to(stick_model)
+    def gen_stickmodel(self, toggle_tcp_frame=False, toggle_jnt_frames=False, name='or2fg7_stickmodel'):
+        m_col = mmc.ModelCollection(name=name)
+        self.coupling.gen_stickmodel(toggle_root_frame=False, toggle_flange_frame=False).attach_to(m_col)
+        self.jlc.gen_stickmodel(toggle_jnt_frames=toggle_jnt_frames, toggle_flange_frame=False).attach_to(m_col)
         if toggle_tcp_frame:
-            self._toggle_tcp_frame(stick_model)
-        return stick_model
+            self._toggle_tcp_frame(m_col)
+        return m_col
 
-    def gen_meshmodel(self,
-                      toggle_tcp_frame=False,
-                      toggle_jnt_frames=False,
-                      rgba=None,
-                      name='xarm_gripper_meshmodel'):
-        mesh_model = mc.ModelCollection(name=name)
-        self.coupling.gen_mesh_model(toggle_tcpcs=False,
-                                     toggle_jntscs=toggle_jnt_frames,
-                                     rgba=rgba).attach_to(mesh_model)
-        self.jlc.gen_mesh_model(toggle_tcpcs=False,
-                                toggle_jntscs=toggle_jnt_frames,
-                                rgba=rgba).attach_to(mesh_model)
+    def gen_meshmodel(self, rgb=None, alpha=None, toggle_tcp_frame=False, toggle_jnt_frames=False,
+                      toggle_cdprim=False, toggle_cdmesh=False, name='lite6_wrs_gripper_v2_meshmodel'):
+        m_col = mmc.ModelCollection(name=name)
+        self.coupling.gen_meshmodel(rgb=rgb,
+                                    alpha=alpha,
+                                    toggle_flange_frame=False,
+                                    toggle_root_frame=False,
+                                    toggle_cdmesh=toggle_cdmesh,
+                                    toggle_cdprim=toggle_cdprim).attach_to(m_col)
+        self.jlc.gen_meshmodel(rgb=rgb,
+                               alpha=alpha,
+                               toggle_flange_frame=False,
+                               toggle_jnt_frames=toggle_jnt_frames,
+                               toggle_cdmesh=toggle_cdmesh,
+                               toggle_cdprim=toggle_cdprim).attach_to(m_col)
         if toggle_tcp_frame:
-            self._toggle_tcp_frame(mesh_model)
-        return mesh_model
+            self._toggle_tcp_frame(m_col)
+        # oiee
+        self._gen_oiee_meshmodel(m_col, rgb=rgb, alpha=alpha, toggle_cdprim=toggle_cdprim,
+                                 toggle_cdmesh=toggle_cdmesh)
+        return m_col
 
 
 if __name__ == '__main__':
@@ -115,6 +107,4 @@ if __name__ == '__main__':
     grpr.gen_stickmodel(toggle_jnt_frames=True).attach_to(base)
     grpr.fix_to(pos=np.array([0, .3, .2]), rotmat=rm.rotmat_from_axangle([1, 0, 0], .05))
     grpr.gen_meshmodel().attach_to(base)
-    grpr.show_cdmesh()
-    grpr.show_cdprimit()
     base.run()
