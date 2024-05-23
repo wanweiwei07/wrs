@@ -86,7 +86,8 @@ class RS007L(mi.ManipulatorInterface):
 
     def ik(self,
            tgt_pos: np.ndarray,
-           tgt_rotmat: np.ndarray):
+           tgt_rotmat: np.ndarray,
+           **kwargs):
         """
         analytical ik sovler, slover than ddik
         the parameters in kwargs will be ignored
@@ -96,8 +97,8 @@ class RS007L(mi.ManipulatorInterface):
         author: weiwei
         date: 20230728
         """
-        tcp_loc_pos = self.jlc._loc_flange_pos
-        tcp_loc_rotmat = self.jlc._loc_flange_rotmat
+        tcp_loc_pos = self.loc_tcp_pos
+        tcp_loc_rotmat = self.loc_tcp_rotmat
         flange_rotmat = tgt_rotmat @ tcp_loc_rotmat.T
         flange_pos = tgt_pos - flange_rotmat @ tcp_loc_pos
         rrr_pos = flange_pos - flange_rotmat[:, 2] * np.linalg.norm(self.jlc.jnts[5].loc_pos)

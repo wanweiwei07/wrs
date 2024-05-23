@@ -96,12 +96,7 @@ class WRSGripper2(gpi.GripperInterface):
         self.pos = pos
         self.rotmat = rotmat
         if jaw_width is not None:
-            side_jawwidth = jaw_width / 2.0
-            if 0 <= side_jawwidth <= self.jaw_range[1] / 2:
-                self.jlc.jnts[0].motion_value = side_jawwidth
-                self.jlc.jnts[1].motion_value = -jaw_width
-            else:
-                raise ValueError("The angle parameter is out of range!")
+            self.change_jaw_width(jaw_width=jaw_width)
         self.coupling.pos = self.pos
         self.coupling.rotmat = self.rotmat
         self.jlc.fix_to(self.coupling.gl_flange_pose_list[0][0], self.coupling.gl_flange_pose_list[0][1])
@@ -113,7 +108,7 @@ class WRSGripper2(gpi.GripperInterface):
     @gpi.ei.EEInterface.assert_oiee_decorator
     def change_jaw_width(self, jaw_width):
         side_jawwidth = jaw_width / 2.0
-        if 0 <= side_jawwidth <= self.jaw_range[1] / 2:
+        if self.jaw_range[0] / 2 <= side_jawwidth <= self.jaw_range[1] / 2:
             self.jlc.goto_given_conf(jnt_values=[side_jawwidth, jaw_width])
         else:
             raise ValueError("The angle parameter is out of range!")
@@ -159,17 +154,4 @@ if __name__ == '__main__':
     gripper.change_jaw_width(.04)
     gripper.gen_meshmodel(toggle_tcp_frame=True, toggle_cdprim=True).attach_to(base)
     # gripper.show_cdprimit()
-    base.run()
-
-    gp1_i = gp1.Lite6WRSGripper(pos=np.array([0, .1, 0]))
-    gp1_i.change_jaw_width(0.03)
-    gp1_i.gen_meshmodel().attach_to(base)
-
-    base.run()
-    gripper.change_jaw_width(0.03)
-
-    gripper.show_cdprimit()
-
-    gm.gen_sphere(np.array([.006, 0.049, .062]), radius=.002).attach_to(base)
-
     base.run()

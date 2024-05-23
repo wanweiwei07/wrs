@@ -4,7 +4,7 @@ import numpy as np
 import basis.robot_math as rm
 import modeling.model_collection as mmc
 import modeling.collision_model as mcm
-import modeling.geometric_model as gm
+import modeling.geometric_model as mgm
 import robot_sim._kinematics.jlchain as rkjlc
 import robot_sim.end_effectors.gripper.gripper_interface as gi
 

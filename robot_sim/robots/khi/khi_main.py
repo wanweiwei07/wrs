@@ -2,8 +2,8 @@ import os
 import math
 import numpy as np
 import basis.robot_math as rm
-import modeling.model_collection as mc
-import modeling.collision_model as cm
+import modeling.model_collection as mmc
+import modeling.collision_model as mcm
 import robot_sim._kinematics.jlchain as jl
 import robot_sim.system.system_interface as ri
 import robot_sim.robots.khi.khi_or2fg7 as kg
@@ -25,7 +25,7 @@ class KHI_DUAL(ri.RobotInterface):
         self.base_table = jl.JLChain(pos=pos, rotmat=rotmat, home_conf=np.zeros(0), name='base_table')
         self.base_table.lnks[0]['name'] = "base_table"
         self.base_table.jnts[-1]['loc_pos'] = np.array([0, -.4, .726])
-        self.base_table.lnks[0]['collision_model'] = cm.CollisionModel(
+        self.base_table.lnks[0]['collision_model'] = mcm.CollisionModel(
             os.path.join(this_dir, "meshes", "base_table.stl"))
         # pre-comptue coordinates
         lr_rotmat = rm.rotmat_from_euler(0, 0, np.radians(-90))
@@ -442,7 +442,7 @@ class KHI_DUAL(ri.RobotInterface):
                        toggle_jntscs=False,
                        toggle_connjnt=False,
                        name='yumi'):
-        stickmodel = mc.ModelCollection(name=name)
+        stickmodel = mmc.ModelCollection(name=name)
         self.base_table.gen_stickmodel(tcp_loc_pos=None,
                                          tcp_loc_rotmat=None,
                                          toggle_tcpcs=False,
@@ -475,7 +475,7 @@ class KHI_DUAL(ri.RobotInterface):
                       toggle_jntscs=False,
                       rgba=None,
                       name='xarm_gripper_meshmodel'):
-        meshmodel = mc.ModelCollection(name=name)
+        meshmodel = mmc.ModelCollection(name=name)
         self.base_table.gen_mesh_model(tcp_loc_pos=None,
                                        tcp_loc_rotmat=None,
                                        toggle_tcpcs=False,
@@ -552,7 +552,7 @@ if __name__ == '__main__':
     obj_pos = np.array([-.1, .3, .3])
     obj_rotmat = rm.rotmat_from_axangle([0, 1, 0], math.pi / 2)
     objfile = os.path.join(basis.__path__[0], 'objects', 'tubebig.stl')
-    objcm = cm.CollisionModel(objfile, cdprim_type='cylinder')
+    objcm = mcm.CollisionModel(objfile, cdprim_type='cylinder')
     objcm.set_pos(obj_pos)
     objcm.set_rotmat(obj_rotmat)
     objcm.attach_to(base)

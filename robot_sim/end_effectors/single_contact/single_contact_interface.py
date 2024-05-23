@@ -1,9 +1,10 @@
 import numpy as np
 import basis.robot_math as rm
-import robot_sim.end_effectors.ee_interface as eei
+import robot_sim.end_effectors.ee_interface as ei
+import grasping.grasp as gg
 
 
-class SCTInterface(eei.EEInterface):
+class SCTInterface(ei.EEInterface):
     """
     single contact tool interface
     examples: screwdriver, suction cup, etc.
@@ -12,30 +13,29 @@ class SCTInterface(eei.EEInterface):
     def __init__(self, pos=np.zeros(3), rotmat=np.eye(3), cdmesh_type='aabb', name='suction'):
         super().__init__(pos=pos, rotmat=rotmat, cdmesh_type=cdmesh_type, name=name)
 
-    def act_to_with_cpose(self, gl_action_center_pos, gl_action_center_rotmat):
+    def act_to_by_pose(self, acting_center_pos, acting_center_rotmat, ee_values=None):
         """
-        :param gl_action_center_posm:
-        :param gl_action_center_rotmat: jaw_center's rotmat
-        :param ee_values:
+        :param acting_center_pos:
+        :param acting_center_rotmat:
         :return:
         """
-        sct_root_rotmat = gl_action_center_rotmat.dot(self.loc_acting_center_rotmat.T)
-        sct_root_pos = gl_action_center_pos - sct_root_rotmat.dot(self.loc_acting_center_pos)
+        sct_root_rotmat = acting_center_rotmat.dot(self.loc_acting_center_rotmat.T)
+        sct_root_pos = acting_center_pos - sct_root_rotmat.dot(self.loc_acting_center_pos)
         self.fix_to(sct_root_pos, sct_root_rotmat)
-        return [gl_action_center_pos, gl_action_center_rotmat, sct_root_pos, sct_root_rotmat]
+        return gg.Grasp(ee_values=ee_values, ac_pos=acting_center_pos, ac_rotmat=acting_center_rotmat)
 
-    def act_to_with_czy(self, gl_action_center_pos, gl_action_center_z, gl_action_center_y):
+    def act_to_by_twovecs(self, action_center_pos, approaching_direction, heading_direction, ee_values=None):
         """
-        :param gl_action_center_pos:
-        :param gl_action_center_z: jaw_center's approaching motion_vec
-        :param gl_action_center_y: jaw_center's opening motion_vec
+        :param action_center_pos:
+        :param approaching_direction:
+        :param heading_direction: arbitrary if the tool is symmetric
         :param ee_values:
         :return:
         author: weiwei
         date: 20220127
         """
-        gl_action_center_rotmat = np.eye(3)
-        gl_action_center_rotmat[:, 2] = rm.unit_vector(gl_action_center_z)
-        gl_action_center_rotmat[:, 1] = rm.unit_vector(gl_action_center_y)
-        gl_action_center_rotmat[:, 0] = np.cross(gl_action_center_rotmat[:3, 1], gl_action_center_rotmat[:3, 2])
-        return self.act_to_with_cpose(gl_action_center_pos, gl_action_center_rotmat)
+        action_center_rotmat = np.eye(3)
+        action_center_rotmat[:, 2] = rm.unit_vector(approaching_direction)
+        action_center_rotmat[:, 1] = rm.unit_vector(heading_direction)
+        action_center_rotmat[:, 0] = np.cross(action_center_rotmat[:3, 1], action_center_rotmat[:3, 2])
+        return self.act_to_by_pose(action_center_pos, action_center_rotmat, ee_values)

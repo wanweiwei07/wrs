@@ -491,12 +491,13 @@ def gen_stick(spos=rm.np.array([.0, .0, .0]),
     :param spos:
     :param epos:
     :param radius:
-    :param rgba:
-    :return:
-    author: weiwei
-    date: 20210328
+    :param type: "rect"
+    :param rgb:
+    :param alpha:
+    :param n_sec:
+    :return: 20210328
     """
-    stick_sgm = mgm.gen_stick(spos=spos, epos=epos, radius=radius, type=type, rgba=np.append(rgb, alpha), n_sec=n_sec)
+    stick_sgm = mgm.gen_stick(spos=spos, epos=epos, radius=radius, type=type, rgba=rm.np.append(rgb, alpha), n_sec=n_sec)
     stick_cm = CollisionModel(stick_sgm)
     return stick_cm
 
