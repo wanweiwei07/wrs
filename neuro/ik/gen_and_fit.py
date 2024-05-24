@@ -124,7 +124,7 @@ if __name__ == '__main__':
     learning_rate = 1e-3
     batch_size = 64
     epochs = 10
-    loss_fn = nn.MSELoss()
+    loss_fn = nn.MSELoss(reduction='sum')
     optimizer = torch.optim.Adam(model.parameters(), lr=learning_rate)
 
     writer = SummaryWriter()
@@ -142,9 +142,10 @@ if __name__ == '__main__':
                 # Compute prediction and loss
                 pred = model(inputs)
                 loss = loss_fn(pred, targets)
+                # print(loss.item())
                 result_jv = pred.data.numpy()[0]
                 random_jv = targets.data.numpy()[0]
-                print("jnt difference ", random_jv, result_jv, (result_jv-random_jv).T@(result_jv-random_jv), np.mean((result_jv-random_jv)**2))
+                # print("jnt difference ", random_jv, result_jv, result_jv-random_jv, (result_jv-random_jv).T@(result_jv-random_jv), np.mean((result_jv-random_jv)**2))
                 # Backpropagation
                 optimizer.zero_grad()
                 loss.backward()
