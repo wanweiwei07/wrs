@@ -87,7 +87,7 @@ class Yumi(ri.RobotInterface):
                                       rotmat=self.body.gl_flange_pose_list[1][1],
                                       name='yumi_rgt_arm', enable_cc=False)
         self.rgt_arm.home_conf = np.radians(np.array([-20, -90, -120, 30, .0, 40, 0]))
-        if enable_cc:
+        if self.cc is not None:
             self.setup_cc()
         # go home
         self.goto_home_conf()
@@ -161,7 +161,7 @@ class Yumi(ri.RobotInterface):
         rgt_ml5 = self.cc.add_cce(self.rgt_arm.manipulator.jlc.jnts[5].lnk)
         # first pairs
         from_list = [lft_ml4, lft_ml5, lft_elb, lft_el0, lft_el1, rgt_ml4, rgt_ml5, rgt_elb, rgt_el0, rgt_el1]
-        into_list = [bd, wb, lc, rc, tbc, tlc, trc, tfc, phx, lft_ml0, lft_ml0]
+        into_list = [bd, wb, lc, rc, tbc, tlc, trc, tfc, phx, lft_ml0, rgt_ml0]
         self.cc.set_cdpair_by_ids(from_list, into_list)
         # second pairs
         from_list = [lft_ml0, lft_ml1, rgt_ml0, rgt_ml1]

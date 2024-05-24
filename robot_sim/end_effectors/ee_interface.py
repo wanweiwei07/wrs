@@ -186,8 +186,9 @@ class EEInterface(object):
                               toggle_cdmesh=toggle_cdmesh).attach_to(m_col)
 
     def _toggle_tcp_frame(self, m_col):
-        gl_acting_center_pos = self.rotmat.dot(self.loc_acting_center_pos) + self.pos
-        gl_acting_center_rotmat = self.rotmat.dot(self.loc_acting_center_rotmat)
+        gl_acting_center_pos = self.rotmat @ self.loc_acting_center_pos + self.pos
+        gl_acting_center_rotmat = self.rotmat @ self.loc_acting_center_rotmat
+        print(gl_acting_center_rotmat)
         rkmg.gen_indicated_frame(spos=self.pos,
                                  gl_pos=gl_acting_center_pos,
                                  gl_rotmat=gl_acting_center_rotmat).attach_to(m_col)

@@ -35,9 +35,8 @@ class KHI_BLQC(ai.SglArmRobotInterface):
         # tool
         self.end_effector = None
         # tool center point
-        self.manipulator.tcp_jnt_id = -1
-        self.manipulator.loc_tcp_pos = self.tool_changer.gl_flange_pose_list[0][0]
-        self.manipulator.loc_tcp_rotmat = self.tool_changer.gl_flange_pose_list[0][1]
+        self.manipulator.loc_tcp_pos = self.tool_changer.loc_flange_pose_list[0][0]
+        self.manipulator.loc_tcp_rotmat = self.tool_changer.loc_flange_pose_list[0][1]
         # collision detection
         if self.cc is not None:
             self.setup_cc()
@@ -69,6 +68,42 @@ class KHI_BLQC(ai.SglArmRobotInterface):
     def get_jaw_width(self):
         return self.get_ee_values()
 
+    def gen_stickmodel(self,
+                       toggle_tcp_frame=False,
+                       toggle_jnt_frames=False,
+                       toggle_flange_frame=False,
+                       name='khi_blqc_stickmodel'):
+        m_col = super().gen_stickmodel(toggle_tcp_frame=toggle_tcp_frame,
+                                       toggle_jnt_frames=toggle_jnt_frames,
+                                       toggle_flange_frame=toggle_flange_frame,
+                                       name=name)
+        if self.tool_changer is not None:
+            self.tool_changer.gen_stickmodel(toggle_root_frame=toggle_tcp_frame,
+                                             toggle_flange_frame=toggle_flange_frame).attach_to(m_col)
+        return m_col
+
+    def gen_meshmodel(self,
+                      rgb=None,
+                      alpha=None,
+                      toggle_tcp_frame=False,
+                      toggle_jnt_frames=False,
+                      toggle_flange_frame=False,
+                      toggle_cdprim=False,
+                      toggle_cdmesh=False,
+                      name='khi_blqc_meshmodel'):
+        m_col = super().gen_meshmodel(rgb=rgb,
+                                      alpha=alpha,
+                                      toggle_tcp_frame=toggle_tcp_frame,
+                                      toggle_jnt_frames=toggle_jnt_frames,
+                                      toggle_flange_frame=toggle_flange_frame,
+                                      toggle_cdprim=toggle_cdprim,
+                                      toggle_cdmesh=toggle_cdmesh,
+                                      name=name)
+        if self.tool_changer is not None:
+            self.tool_changer.gen_meshmodel(rgb=rgb, alpha=alpha, toggle_cdprim=toggle_cdprim,
+                                            toggle_cdmesh=toggle_cdmesh).attach_to(m_col)
+        return m_col
+
 
 if __name__ == '__main__':
     import basis.robot_math as rm
@@ -83,28 +118,36 @@ if __name__ == '__main__':
     robot = KHI_BLQC(enable_cc=True)
     rrtc_planner = rrtc.RRTConnect(robot)
 
-    ee_g_pos = np.array([0, .8, .19])
+    ee_g_pos = np.array([-.4, .4, .19])
     ee_g_rotmat = rm.rotmat_from_euler(0, np.radians(180), 0)
     ee_g = org.OR2FG7(pos=ee_g_pos,
                       rotmat=ee_g_rotmat,
                       coupling_offset_pos=np.array([0, 0, 0.0314]))
-    ee_g_meshmodel = ee_g.gen_meshmodel()
+    ee_g_meshmodel = ee_g.gen_meshmodel(toggle_jnt_frames=True, toggle_tcp_frame=True)
     ee_g_meshmodel.attach_to(base)
     jv_attach_eeg = robot.ik(ee_g_pos, ee_g_rotmat)
+    robot.goto_given_conf(jv_attach_eeg)
+    robot.gen_meshmodel().attach_to(base)
+    print(jv_attach_eeg)
 
-    ee_sd_pos = np.array([.15, .8, .19])
-    ee_sd_rotmat = rm.rotmat_from_euler(0, np.radians(180), np.radians(-90))
+    ee_sd_pos = np.array([-.4, .6, .19])
+    ee_sd_rotmat = rm.rotmat_from_euler(0, np.radians(180), np.radians(180))
     ee_sd = ors.ORSD(pos=ee_sd_pos,
                      rotmat=ee_sd_rotmat,
-                     coupling_offset_pos=np.array([0, 0, 0.0314]),
-                     enable_cc=True)
-    ee_sd_meshmodel = ee_g.gen_meshmodel()
+                     coupling_offset_pos=np.array([0, 0, 0.0314]))
+    ee_sd_meshmodel = ee_sd.gen_meshmodel(toggle_jnt_frames=True, toggle_tcp_frame=True)
     ee_sd_meshmodel.attach_to(base)
-    jv_attach_eesd = robot.ik(ee_g_pos, ee_g_rotmat)
+    jv_attach_eesd = robot.ik(ee_sd_pos, ee_sd_rotmat)
+    robot.goto_given_conf(jv_attach_eesd)
+    robot.gen_meshmodel().attach_to(base)
+    print(jv_attach_eesd)
 
-    goal_pos = np.array([.3, -.8, .19])
+    goal_pos = np.array([.3, -.5, .19])
     goal_rotmat = rm.rotmat_from_euler(0, np.radians(90), 0)
     jv_goal = robot.ik(tgt_pos=goal_pos, tgt_rotmat=goal_rotmat)
+    robot.goto_given_conf(jv_goal)
+    robot.gen_meshmodel().attach_to(base)
+    print(jv_goal)
 
     base.run()
 
@@ -167,8 +210,7 @@ if __name__ == '__main__':
     ee_sd_rotmat = rm.rotmat_from_euler(0, np.radians(180), np.radians(-90))
     ee_sd = ors.ORSD(pos=ee_sd_pos,
                      rotmat=ee_sd_rotmat,
-                     coupling_offset_pos=np.array([0, 0, 0.0314]),
-                     enable_cc=True)
+                     coupling_offset_pos=np.array([0, 0, 0.0314]))
     ee_sd.gen_meshmodel().attach_to(base)
 
     jnt_values = robot_s.ik(ee_g_pos, ee_g_rotmat)

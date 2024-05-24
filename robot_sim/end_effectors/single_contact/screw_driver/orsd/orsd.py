@@ -20,42 +20,39 @@ class ORSD(si.SCTInterface):
                  coupling_offset_pos=np.zeros(3),
                  coupling_offset_rotmat=np.eye(3),
                  cdmesh_type=mcm.mc.CDMType.DEFAULT,
-                 name='onrobot_screwdriver',
-                 enable_cc=True):
+                 name='onrobot_screwdriver'):
         super().__init__(pos=pos, rotmat=rotmat, cdmesh_type=cdmesh_type, name=name)
         current_file_dir = os.path.dirname(__file__)
         self.coupling.loc_flange_pose_list[0] = (coupling_offset_pos, coupling_offset_rotmat)
-        self.coupling.lnk_list[0].cmodel = mcm.gen_stick(spos=pos,
-                                                         epos=self.coupling.gl_flange_pose_list[0][0],
+        self.coupling.lnk_list[0].cmodel = mcm.gen_stick(spos=np.zeros(3),
+                                                         epos=self.coupling.loc_flange_pose_list[0][0],
                                                          type="rect",
                                                          radius=0.035,
                                                          rgb=np.array([.35, .35, .35]),
                                                          alpha=1,
                                                          n_sec=24)
-        # jlc
+        # jlc (essentially an anchor since there is no joint)
         self.jlc = jl.JLChain(pos=self.coupling.gl_flange_pose_list[0][0],
                               rotmat=self.coupling.gl_flange_pose_list[0][1],
-                              n_dof=1, name='orsd_jlc')
-        self.jlc.jnts[0].loc_pos = np.array([0.16855000, 0, 0.09509044])
-        self.jlc.jnts[0].lnk.cmodel = mcm.CollisionModel(
+                              n_dof=0, name='orsd_jlc')
+        self.jlc.anchor.loc_flange_pose_list[0][0] = np.array([0.16855000, 0, 0.09509044])
+        self.jlc.anchor.lnk_list[0].cmodel = mcm.CollisionModel(
             initor=os.path.join(current_file_dir, "meshes", "or_screwdriver.stl"),
             cdmesh_type=self.cdmesh_type)
-        self.jlc.jnts[0].lnk.cmodel.rgba = np.array([.55, .55, .55, 1])
+        self.jlc.anchor.lnk_list[0].cmodel.rgba = np.array([.55, .55, .55, 1])
         # reinitialize
         self.jlc.finalize()
         #  action center
-        self.loc_acting_center_pos = self.coupling.gl_flange_pose_list[0][1] @ np.array(
-            [0.16855000, 0, 0.09509044]) + coupling_offset_pos
-        self.action_center_rotmat = self.coupling.gl_flange_pose_list[0][1]
+        self.loc_acting_center_pos = self.coupling.loc_flange_pose_list[0][1] @ np.array(
+            [0.16855000, 0, 0.09509044]) + self.coupling.loc_flange_pose_list[0][0]
+        self.loc_acting_center_rotmat = rm.rotmat_from_axangle(self.coupling.loc_flange_pose_list[0][1][:3, 1],
+                                                               np.pi / 2) @ self.coupling.loc_flange_pose_list[0][1]
         # collision detection
-        self.cdmesh_elements = (self.jlc.anchor.lnk_list[0],
-                                self.jlc.jnts[0].lnk)
+        self.cdmesh_elements = (self.jlc.anchor.lnk_list[0])
 
-    def fix_to(self, pos, rotmat, jaw_width=None):
+    def fix_to(self, pos, rotmat):
         self.pos = pos
         self.rotmat = rotmat
-        if jaw_width is not None:
-            self.change_jaw_width(jaw_width=jaw_width)
         self.coupling.pos = self.pos
         self.coupling.rotmat = self.rotmat
         self.jlc.fix_to(self.coupling.gl_flange_pose_list[0][0], self.coupling.gl_flange_pose_list[0][1])
@@ -102,7 +99,9 @@ if __name__ == '__main__':
     #     grpr = Robotiq85()
     #     grpr.fk(angle)
     #     grpr.gen_meshmodel().attach_to(base)
-    grpr = ORSD(coupling_offset_pos=np.array([0, 0, 0.0145]), enable_cc=True)
+    grpr = ORSD(pos=np.array([-.3, .3, .19]), rotmat=rm.rotmat_from_euler(0, 0, np.pi / 2),
+                coupling_offset_pos=np.array([0, 0, 0.0145]))
+    # grpr.act_to_by_pose(acting_center_pos=np.zeros(3), acting_center_rotmat=np.eye(3))
     grpr.gen_meshmodel(toggle_tcp_frame=True).attach_to(base)
     grpr.gen_stickmodel(toggle_jnt_frames=True).attach_to(base)
     grpr.fix_to(pos=np.array([0, .3, .2]), rotmat=rm.rotmat_from_axangle([1, 0, 0], .05))

@@ -61,9 +61,10 @@ class SglArmRobotInterface(ri.RobotInterface):
         return self.end_effector.oiee_list
 
     def update_end_effector(self, ee_values=None):
-        if ee_values is not None:
-            self.end_effector.change_ee_values(ee_values=ee_values)
-        self.end_effector.fix_to(pos=self._manipulator.gl_flange_pos, rotmat=self._manipulator.gl_flange_rotmat)
+        if self.end_effector is not None:
+            if ee_values is not None:
+                self.end_effector.change_ee_values(ee_values=ee_values)
+            self.end_effector.fix_to(pos=self._manipulator.gl_flange_pos, rotmat=self._manipulator.gl_flange_rotmat)
 
     def backup_state(self):
         self._manipulator.backup_state()
@@ -145,11 +146,13 @@ class SglArmRobotInterface(ri.RobotInterface):
                        toggle_flange_frame=False,
                        name='single_arm_robot_interface_stickmodel'):
         m_col = mmc.ModelCollection(name=name)
-        self._manipulator.gen_stickmodel(toggle_tcp_frame=toggle_tcp_frame,
-                                         toggle_jnt_frames=toggle_jnt_frames,
-                                         toggle_flange_frame=toggle_flange_frame).attach_to(m_col)
-        self.end_effector.gen_stickmodel(toggle_tcp_frame=toggle_tcp_frame,
-                                         toggle_jnt_frames=toggle_jnt_frames).attach_to(m_col)
+        if self._manipulator is not None:
+            self._manipulator.gen_stickmodel(toggle_tcp_frame=toggle_tcp_frame,
+                                             toggle_jnt_frames=toggle_jnt_frames,
+                                             toggle_flange_frame=toggle_flange_frame).attach_to(m_col)
+        if self.end_effector is not None:
+            self.end_effector.gen_stickmodel(toggle_tcp_frame=toggle_tcp_frame,
+                                             toggle_jnt_frames=toggle_jnt_frames).attach_to(m_col)
         return m_col
 
     def gen_meshmodel(self,
@@ -162,17 +165,19 @@ class SglArmRobotInterface(ri.RobotInterface):
                       toggle_cdmesh=False,
                       name='single_arm_robot_interface_meshmodel'):
         m_col = mmc.ModelCollection(name=name)
-        self._manipulator.gen_meshmodel(rgb=rgb,
-                                        alpha=alpha,
-                                        toggle_tcp_frame=toggle_tcp_frame,
-                                        toggle_jnt_frames=toggle_jnt_frames,
-                                        toggle_flange_frame=toggle_flange_frame,
-                                        toggle_cdprim=toggle_cdprim,
-                                        toggle_cdmesh=toggle_cdmesh).attach_to(m_col)
-        self.end_effector.gen_meshmodel(rgb=rgb,
-                                        alpha=alpha,
-                                        toggle_tcp_frame=toggle_tcp_frame,
-                                        toggle_jnt_frames=toggle_jnt_frames,
-                                        toggle_cdprim=toggle_cdprim,
-                                        toggle_cdmesh=toggle_cdmesh).attach_to(m_col)
+        if self._manipulator is not None:
+            self._manipulator.gen_meshmodel(rgb=rgb,
+                                            alpha=alpha,
+                                            toggle_tcp_frame=toggle_tcp_frame,
+                                            toggle_jnt_frames=toggle_jnt_frames,
+                                            toggle_flange_frame=toggle_flange_frame,
+                                            toggle_cdprim=toggle_cdprim,
+                                            toggle_cdmesh=toggle_cdmesh).attach_to(m_col)
+        if self.end_effector is not None:
+            self.end_effector.gen_meshmodel(rgb=rgb,
+                                            alpha=alpha,
+                                            toggle_tcp_frame=toggle_tcp_frame,
+                                            toggle_jnt_frames=toggle_jnt_frames,
+                                            toggle_cdprim=toggle_cdprim,
+                                            toggle_cdmesh=toggle_cdmesh).attach_to(m_col)
         return m_col

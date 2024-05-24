@@ -35,7 +35,10 @@ class SCTInterface(ei.EEInterface):
         date: 20220127
         """
         action_center_rotmat = np.eye(3)
-        action_center_rotmat[:, 2] = rm.unit_vector(approaching_direction)
-        action_center_rotmat[:, 1] = rm.unit_vector(heading_direction)
-        action_center_rotmat[:, 0] = np.cross(action_center_rotmat[:3, 1], action_center_rotmat[:3, 2])
+        action_center_rotmat[:3, 2] = rm.unit_vector(approaching_direction)
+        action_center_rotmat[:3, 1] = rm.unit_vector(heading_direction)
+        action_center_rotmat[:3, 0] = np.cross(action_center_rotmat[:3, 1], action_center_rotmat[:3, 2])
         return self.act_to_by_pose(action_center_pos, action_center_rotmat, ee_values)
+
+    def change_ee_values(self, ee_values):
+        pass

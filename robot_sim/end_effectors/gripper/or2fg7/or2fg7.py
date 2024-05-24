@@ -21,15 +21,15 @@ class OR2FG7(gpi.GripperInterface):
         super().__init__(pos=pos, rotmat=rotmat, cdmesh_type=cdmesh_type, name=name)
         current_file_dir = os.path.dirname(__file__)
         self.coupling.loc_flange_pose_list[0] = (coupling_offset_pos, coupling_offset_rotmat)
-        self.coupling.lnk_list[0].cmodel = mcm.gen_stick(spos=pos,
-                                                         epos=self.coupling.gl_flange_pose_list[0][0],
+        self.coupling.lnk_list[0].cmodel = mcm.gen_stick(spos=np.zeros(3),
+                                                         epos=self.coupling.loc_flange_pose_list[0][0],
                                                          type="rect",
                                                          radius=0.035,
                                                          rgb=np.array([.35, .35, .35]),
                                                          alpha=1,
                                                          n_sec=24)
         # jaw range
-        self.jaw_range = np.array([.001, .039])
+        self.jaw_range = np.array([.0, .038])
         # jlc
         self.jlc = rkjlc.JLChain(pos=self.coupling.gl_flange_pose_list[0][0],
                                  rotmat=self.coupling.gl_flange_pose_list[0][1], n_dof=2, name=name)
