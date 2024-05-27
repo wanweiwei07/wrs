@@ -1,0 +1,11 @@
+<?xml version="1.0" ?>
+<mujoco model="free_falling_sphere">
+    <compiler angle="degree"/>
+    <option gravity="0 0 -9.81"/>
+    <worldbody>
+        <!-- Free-falling sphere -->
+        <body name="sphere" pos="0 0 2">
+            <geom name="sphere_geom" pos="0 0 2" type="sphere" size="0.1" density="500"/>
+        </body>
+    </worldbody>
+</mujoco>

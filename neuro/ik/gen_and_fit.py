@@ -121,7 +121,7 @@ if __name__ == '__main__':
         # Open and read the file
         with open(model_file, 'r') as file:
             model.load_state_dict(torch.load(model_file, map_location=device))
-    learning_rate = 1e-3
+    learning_rate = 1e-2
     batch_size = 64
     epochs = 10
     loss_fn = nn.MSELoss(reduction='sum')

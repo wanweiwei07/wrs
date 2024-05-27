@@ -1,19 +1,23 @@
 from panda3d.core import PerspectiveLens, OrthographicLens, AmbientLight, PointLight, Vec4, Vec3, Point3, \
-    WindowProperties, Filename, NodePath, Shader, GraphicsPipe, FrameBufferProperties, GraphicsOutput
+    WindowProperties, Filename, NodePath, Shader
 from direct.showbase.ShowBase import ShowBase
 import visualization.panda.inputmanager as im
 import visualization.panda.filter as flt
-from panda3d.bullet import BulletWorld
-from panda3d.bullet import BulletDebugNode
 import os
 import math
-import time
 from basis import data_adapter as p3dh
 # from vision.pointcloud import o3dhelper as o3dh
 import basis.robot_math as rm
 import numpy as np
 from enum import Enum
-import visualization.panda.anime_info as ani
+import mujoco
+
+mj_xml = """
+<mujoco model="dynamic_loading_example">
+    <worldbody>
+        <!-- Placeholder for dynamic bodies -->
+    </worldbody>
+</mujoco>"""
 
 class LensType(Enum):
     PERSPECTIVE = 1
@@ -38,7 +42,7 @@ class World(ShowBase, object):
         :param w: width of window
         :param h: height of window
         author: weiwei
-        date: 20150520, 20201115
+        date: 20150520, 20201115, 20240527
         """
         # the taskMgr, loader, render2d, etc. are added to builtin after initializing the showbase parental class
         super().__init__()
@@ -105,28 +109,34 @@ class World(ShowBase, object):
         self._separation = 1
         self.filter = flt.Filter(self.win, self.cam)
         self.filter.setCartoonInk(separation=self._separation)
+        # mujoco dynamics
+        self.mj_model = mujoco.MjModel.from_xml_string(mj_xml)
+        self.mj_data = mujoco.MjData(self.mj_model)
+        self.mj_duration = 5
+        self.mj_framerate = 24
         # self.filter.setViewGlow()
-        # set up physics world
-        self.physics_scale=1e3
-        self.physicsworld = BulletWorld()
-        self.physicsworld.setGravity(Vec3(0, 0, -9.81*self.physics_scale))
-        taskMgr.add(self._physics_update, "physics", appendTask=True)
-        globalbprrender = base.render.attachNewNode("globalbpcollider")
-        debugNode = BulletDebugNode('Debug')
-        debugNode.showWireframe(True)
-        debugNode.showConstraints(True)
-        debugNode.showBoundingBoxes(False)
-        debugNode.showNormals(True)
-        self._debugNP = globalbprrender.attachNewNode(debugNode)
-        self._debugNP.show()
-        self.toggledebug = toggle_debug
-        if toggle_debug:
-            self.physicsworld.setDebugNode(self._debugNP.node())
-        self.physicsbodylist = []
-        # set up render update (TODO, only for dynamics?)
-        self._internal_update_obj_list = []  # the pdndp, collision model, or bullet dynamics model to be drawn
-        self._internal_update_robot_list = []
-        taskMgr.add(self._internal_update, "internal_update", appendTask=True)
+        # # set up physics world
+        # self.physics_scale=1e3
+        # self.physicsworld = BulletWorld()
+        # self.physicsworld.setGravity(Vec3(0, 0, -9.81*self.physics_scale))
+        # taskMgr.add(self._physics_update, "physics", appendTask=True)
+        # globalbprrender = base.render.attachNewNode("globalbpcollider")
+        # debugNode = BulletDebugNode('Debug')
+        # debugNode.showWireframe(True)
+        # debugNode.showConstraints(True)
+        # debugNode.showBoundingBoxes(False)
+        # debugNode.showNormals(True)
+        # self._debugNP = globalbprrender.attachNewNode(debugNode)
+        # self._debugNP.show()
+        # self.toggledebug = toggle_debug
+        # if toggle_debug:
+        #     self.physicsworld.setDebugNode(self._debugNP.node())
+        # self.physicsbodylist = []
+        # # set up render update (TODO, only for dynamics?)
+        # self._internal_update_obj_list = []  # the pdndp, collision model, or bullet dynamics model to be drawn
+        # self._internal_update_robot_list = []
+        # taskMgr.add(self._internal_update, "internal_update", appendTask=True)
+
         # for remote visualization
         self._external_update_objinfo_list = []  # see anime_info.py
         self._external_update_robotinfo_list = []
@@ -146,17 +156,22 @@ class World(ShowBase, object):
         return task.cont
 
     def _physics_update(self, task):
-        self.physicsworld.doPhysics(globalClock.getDt(), 20, 1/120)
+        while self.mj_data.time * self.mj_framerate < i:
+            tic = time.time()
+            mujoco.mj_step(model, data)
+            n_steps += 1
+        tic = time.time()
+
         return task.cont
 
-    def _internal_update(self, task):
-        for robot in self._internal_update_robot_list:
-            robot.detach()  # TODO gen mesh model?
-            robot.attach_to(self)
-        for obj in self._internal_update_obj_list:
-            obj.detach()
-            obj.attach_to(self)
-        return task.cont
+    # def _internal_update(self, task):
+    #     for robot in self._internal_update_robot_list:
+    #         robot.detach()  # TODO gen mesh model?
+    #         robot.attach_to(self)
+    #     for obj in self._internal_update_obj_list:
+    #         obj.detach()
+    #         obj.attach_to(self)
+    #     return task.cont
 
     def _rotatecam_update(self, task):
         campos = self.cam.getPos()
@@ -212,44 +227,44 @@ class World(ShowBase, object):
                 _external_update_objinfo.obj_path_counter = 0
         return task.cont
 
-    def change_debug_status(self, toggledebug):
-        if self.toggledebug == toggledebug:
-            return
-        elif toggledebug:
-            self.physicsworld.setDebugNode(self._debugNP.node())
-        else:
-            self.physicsworld.clearDebugNode()
-        self.toggledebug = toggledebug
+    # def change_debug_status(self, toggledebug):
+    #     if self.toggledebug == toggledebug:
+    #         return
+    #     elif toggledebug:
+    #         self.physicsworld.setDebugNode(self._debugNP.node())
+    #     else:
+    #         self.physicsworld.clearDebugNode()
+    #     self.toggledebug = toggledebug
 
-    def attach_internal_update_obj(self, obj):
-        """
-        :param obj: CollisionModel or (Static)GeometricModel
-        :return:
-        """
-        self._internal_update_obj_list.append(obj)
+    # def attach_internal_update_obj(self, obj):
+    #     """
+    #     :param obj: CollisionModel or (Static)GeometricModel
+    #     :return:
+    #     """
+    #     self._internal_update_obj_list.append(obj)
 
-    def detach_internal_update_obj(self, obj):
-        self._internal_update_obj_list.remove(obj)
-        obj.detach()
+    # def detach_internal_update_obj(self, obj):
+    #     self._internal_update_obj_list.remove(obj)
+    #     obj.detach()
 
-    def clear_internal_update_obj(self):
-        tmp_internal_update_obj_list = self._internal_update_obj_list.copy()
-        self._internal_update_obj_list = []
-        for obj in tmp_internal_update_obj_list:
-            obj.detach()
+    # def clear_internal_update_obj(self):
+    #     tmp_internal_update_obj_list = self._internal_update_obj_list.copy()
+    #     self._internal_update_obj_list = []
+    #     for obj in tmp_internal_update_obj_list:
+    #         obj.detach()
 
-    def attach_internal_update_robot(self, robot_meshmodel):  # TODO robot_meshmodel or robot_s?
-        self._internal_update_robot_list.append(robot_meshmodel)
-
-    def detach_internal_update_robot(self, robot_meshmodel):
-        tmp_internal_update_robot_list = self._internal_update_robot_list.copy()
-        self._internal_update_robot_list = []
-        for robot in tmp_internal_update_robot_list:
-            robot.detach()
-
-    def clear_internal_update_robot(self):
-        for robot in self._internal_update_robot_list:
-            self.detach_internal_update_robot(robot)
+    # def attach_internal_update_robot(self, robot_meshmodel):  # TODO robot_meshmodel or robot_s?
+    #     self._internal_update_robot_list.append(robot_meshmodel)
+    #
+    # def detach_internal_update_robot(self, robot_meshmodel):
+    #     tmp_internal_update_robot_list = self._internal_update_robot_list.copy()
+    #     self._internal_update_robot_list = []
+    #     for robot in tmp_internal_update_robot_list:
+    #         robot.detach()
+    #
+    # def clear_internal_update_robot(self):
+    #     for robot in self._internal_update_robot_list:
+    #         self.detach_internal_update_robot(robot)
 
     def attach_external_update_obj(self, objinfo):
         """

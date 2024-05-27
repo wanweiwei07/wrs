@@ -1,46 +1,53 @@
-import copy
 import math
-import modeling.geometric_model as gm
+import modeling.geometric_model as mgm
 import modeling.dynamics.bullet.bdbody as bdb
 
 
-class DynamicModel(gm.GeometricModel):
+class DynamicModel(mgm.GeometricModel):
     """
     load an object as a bullet dynamics model
     author: weiwei
     date: 20190627
     """
 
-    def __init__(self, initor, mass=None, betransparency=True, cm_cdtype="box", cm_expradius=None,
-                 restitution=0, allowdeactivation=False, allowccd=True, friction=.2, dynamic=False,
-                 dyn_cdtype="convex", name="bdm"):
+    def __init__(self,
+                 initor,
+                 mass=None,
+                 com_pos=None,
+                 inertia=None,
+                 toggle_transparency=True):
         """
+
         :param initor:
         :param mass:
-        :param betransparency:
-        :param cm_cdtype:
-        :param cm_expradius:
-        :param restitution:
-        :param allowdeactivation:
-        :param allowccd:
-        :param friction:
-        :param dynamic:
-        :param dyn_cdtype: "convex", "triangle", etc.
-        :param name:
+        :param com_pos:
+        :param inertia:
+        :param toggle_transparency:
         """
-        # if isinstance(initializer, BDModel):
-        #     super().__init__(initializer.obj_cmodel, )
-        #     self.__objcm = copy.deepcopy(initializer.obj_cmodel)
-        #     self.__objbdb = initializer.objbdb.copy()
-        #     base.physicsworld.attach(self.__objbdb)
-        # else:
-        super().__init__(initor._cmodel, toggle_transparency=betransparency, type=cm_cdtype, cm_expradius=None,
+        super().__init__(initor._cmodel, toggle_transparency=toggle_transparency, type=cm_cdtype, cm_expradius=None,
                          name="defaultname")
         if mass is None:
             mass = 0
         self._bdb = bdb.BDBody(self.objcm, type=dyn_cdtype, mass=mass, restitution=restitution,
                                allow_deactivation=allowdeactivation, allow_ccd=allowccd, friction=friction, name="bdm")
         base.physicsworld.attach(self.__objbdb)
+
+    def _add_body_to_model(model_xml, body_name, body_pos, mass, inertia):
+        body_xml = f"""
+        <body name="{body_name}" pos="{body_pos[0]} {body_pos[1]} {body_pos[2]}" mass="{mass}" inertia="{inertia[0]} {inertia[1]} {inertia[2]}>
+            <joint type="free"/>
+            <geom type="sphere" size="0.02" rgba="0.7 0.7 0.7 1"/>
+        </body>
+        """
+        insert_pos = model_xml.find('</worldbody>')
+        new_model_xml = model_xml[:insert_pos] + body_xml + model_xml[insert_pos:]
+        return new_model_xml
+
+    def attach_to(self, target):
+        if not isinstance(target, ShowBase):
+            raise ValueError("Acceptable: ShowBas!")
+        super().attach_to(target)
+        self._add_body_to_model(target.mj_xml, self.name, self.pos, mass, inertia)
 
     @property
     def bdb(self):
