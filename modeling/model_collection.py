@@ -44,7 +44,7 @@ class ModelCollection(object):
     def rgb(self):
         raise AttributeError("This attribute is not available.")
 
-    @rgba.setter
+    @rgb.setter
     def rgb(self, rgb):
         for cm in self._cm_list:
             cm.rgb = rgb

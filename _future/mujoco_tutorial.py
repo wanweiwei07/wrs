@@ -23,28 +23,28 @@ xml = """
         <geom name="floor" type="plane" pos="0 0 0" size="10 10 0.1" rgba="0.8 0.9 0.8 1"/>
 
         <!-- Base -->
-        <body name="base" pos="0 0 0" >
-            <geom type="box" size="0.1 0.1 0.1" rgba="0.5 0.5 0.5 1" mass="0"/>
+        <body name="base" pos="0 0 0">
+            <geom type="box" size="0.1 0.1 0.1" rgba="0.5 0.5 0.5 1"/>
             
             <!-- Link 1 -->
             <body name="link1" pos="0 0 0.1">
                 <joint name="joint1" type="hinge" axis="0 0 1" range="-180 180"/>
-                <geom type="capsule" fromto="0 0 0 0 0 0.2" size="0.05" mass="0"/>
+                <geom type="capsule" fromto="0 0 0 0 0 0.2" size="0.05"/>
                 
                 <!-- Link 2 -->
                 <body name="link2" pos="0 0 0.2">
                     <joint name="joint2" type="hinge" axis="0 1 0" range="-90 90"/>
-                    <geom type="capsule" fromto="0 0 0 0 0 0.2" size="0.05" mass="0"/>
+                    <geom type="capsule" fromto="0 0 0 0 0 0.2" size="0.05"/>
                     
                     <!-- Link 3 -->
                     <body name="link3" pos="0 0 0.2">
                         <joint name="joint3" type="hinge" axis="1 0 0" range="-180 180"/>
-                        <geom type="capsule" fromto="0 0 0 0 0 0.2" size="0.05" mass="0"/>
+                        <geom type="capsule" fromto="0 0 0 0 0 0.2" size="0.05"/>
                         
                         <!-- Link 4 -->
                         <body name="link4" pos="0 0 0.2">
                             <joint name="joint4" type="hinge" axis="0 1 0" range="-180 180"/>
-                            <geom type="capsule" fromto="0 0 0 0 0 0.2" size="0.05" mass="0"/>
+                            <geom type="capsule" fromto="0 0 0 0 0 0.2" size="0.05"/>
                             
                             <!-- Link 5 -->
                             <body name="link5" pos="0 0 0.2">
@@ -132,5 +132,7 @@ for i in range(n_frames):
     render()
     glfw.swap_buffers(window)
     render_time += time.time() - tic
+    for geom_id in range(model.ngeom):
+        print(data.geom_xpos[geom_id])
 
 glfw.terminate()

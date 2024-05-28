@@ -12,16 +12,11 @@ import numpy as np
 from enum import Enum
 import mujoco
 
-mj_xml = """
-<mujoco model="dynamic_loading_example">
-    <worldbody>
-        <!-- Placeholder for dynamic bodies -->
-    </worldbody>
-</mujoco>"""
 
 class LensType(Enum):
     PERSPECTIVE = 1
     ORTHOGRAPHIC = 2
+
 
 class World(ShowBase, object):
 
@@ -109,11 +104,6 @@ class World(ShowBase, object):
         self._separation = 1
         self.filter = flt.Filter(self.win, self.cam)
         self.filter.setCartoonInk(separation=self._separation)
-        # mujoco dynamics
-        self.mj_model = mujoco.MjModel.from_xml_string(mj_xml)
-        self.mj_data = mujoco.MjData(self.mj_model)
-        self.mj_duration = 5
-        self.mj_framerate = 24
         # self.filter.setViewGlow()
         # # set up physics world
         # self.physics_scale=1e3
@@ -155,13 +145,26 @@ class World(ShowBase, object):
         self.inputmgr.check_resetcamera()
         return task.cont
 
-    def _physics_update(self, task):
-        while self.mj_data.time * self.mj_framerate < i:
-            tic = time.time()
-            mujoco.mj_step(model, data)
-            n_steps += 1
-        tic = time.time()
-
+    def _mj_physics_update(self, mj_model, duration, task):
+        elapsed_time = task.time
+        if elapsed_time > duration:
+            # for geom_dict in mj_model.body_geom_dict.values():
+            #   for geom in geom_dict.values():
+            #       geom.attach_to(self)
+            return task.done
+        time_since_last_update = globalClock.getDt()
+        mj_start_time = mj_model.data.time
+        while mj_model.data.time - mj_start_time < time_since_last_update:
+            mujoco.mj_step(mj_model.model, mj_model.data)
+        # update
+        for geom_dict in mj_model.body_geom_dict.values():
+            for key, geom in geom_dict.items():
+                geom.detach()
+                pos = mj_model.data.geom_xpos[key]
+                rotmat = mj_model.data.geom_xmat[key].reshape(3, 3)
+                geom.pose = [pos, rotmat]
+                # print(pos)
+                geom.attach_to(self)
         return task.cont
 
     # def _internal_update(self, task):
@@ -265,6 +268,16 @@ class World(ShowBase, object):
     # def clear_internal_update_robot(self):
     #     for robot in self._internal_update_robot_list:
     #         self.detach_internal_update_robot(robot)
+
+    def run_mj_physics(self, mj_model, duration):
+        mj_model.data.qvel[3:6] = 2*np.random.randn(3)
+        for geom_dict in mj_model.body_geom_dict.values():
+            for geom in geom_dict.values():
+                geom.attach_to(self)
+        self.taskMgr.add(self._mj_physics_update, extraArgs=[mj_model, duration], name="mj_physics", appendTask=True)
+        # for geom_dict in mj_model.body_geom_dict.values():
+        #     for geom in geom_dict.values():
+        #         geom.detach()
 
     def attach_external_update_obj(self, objinfo):
         """

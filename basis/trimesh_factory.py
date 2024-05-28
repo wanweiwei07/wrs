@@ -101,7 +101,7 @@ def gen_roundstick(spos=np.array([0, 0, 0]),
     homomat = rm.homomat_from_posrot(pos, rotmat)
     return trm_primit.Capsule(height=height,
                               radius=radius,
-                              count=[n_sec / 2, n_sec],
+                              count=[n_sec, n_sec],
                               homomat=homomat)
 
 
