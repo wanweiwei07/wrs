@@ -133,6 +133,7 @@ for i in range(n_frames):
     glfw.swap_buffers(window)
     render_time += time.time() - tic
     for geom_id in range(model.ngeom):
-        print(data.geom_xpos[geom_id])
+        print("geom ", data.geom_xpos[geom_id])
+        print("body ", data.xpos[model.geom_bodyid[geom_id]])
 
 glfw.terminate()

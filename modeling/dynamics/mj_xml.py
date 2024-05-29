@@ -6,7 +6,7 @@ import numpy as np
 import basis.robot_math as rm
 
 
-def cvt_geom(model, data, geom_id):
+def cvt_geom(model, geom_id):
     """
     Convert the geom of the MuJoCo model to a geometric model.
     :param model: MjModel: The MuJoCo model.
@@ -16,13 +16,27 @@ def cvt_geom(model, data, geom_id):
     date: 20240528
     """
     geom_type = model.geom_type[geom_id]
+    geom_name = mujoco.mj_id2name(model, mujoco.mjtObj.mjOBJ_GEOM, geom_id)
     if geom_type == mujoco.mjtGeom.mjGEOM_MESH:
-        geom_name = mujoco.mj_id2name(model, mujoco.mjtObj.mjOBJ_GEOM, geom_id)
-        mesh = model.mesh[model.geom_dataid[geom_id]]
-        vertices = mesh.vert.reshape(-1, 3)
-        faces = mesh.face.reshape(-1, 3)
+        print(model.geom_rgba[geom_id])
+        mesh_id = model.geom_dataid[geom_id]
+        vert_start = model.mesh_vertadr[mesh_id]
+        vert_count = model.mesh_vertnum[mesh_id]
+        face_start = model.mesh_faceadr[mesh_id]
+        face_count = model.mesh_facenum[mesh_id]
+        vertices = model.mesh_vert[vert_start:(vert_start + vert_count)]
+        faces = model.mesh_face[face_start:(face_start + face_count)]
+        # face_normals = model.mesh_facenormal[face_start:(face_start + face_count)]
+        if len(faces) == 0:
+            return mcm.gen_box()
+        if vert_count-1 != max(faces.flatten()):
+            print("Warning: the vertices and faces are not consistent!")
+            return mcm.gen_box()
+        name_start = model.name_meshadr[mesh_id]
+        name_end = model.names.find(b'\x00', name_start)
+        mesh_name = model.names[name_start:name_end].decode('utf-8')
         return mcm.CollisionModel(initor=trm.Trimesh(vertices=vertices, faces=faces),
-                                  name=geom_name,
+                                  name=mesh_name,
                                   rgb=model.geom_rgba[geom_id][:3],
                                   alpha=model.geom_rgba[geom_id][3])
     elif geom_type == mujoco.mjtGeom.mjGEOM_BOX:
@@ -32,25 +46,8 @@ def cvt_geom(model, data, geom_id):
     elif geom_type == mujoco.mjtGeom.mjGEOM_CAPSULE:
         capsule_radius = model.geom_size[geom_id][0]
         capsule_half_length = model.geom_size[geom_id][1]
-        capsule_pos = model.geom_pos[geom_id]
-        capsule_quat = model.geom_quat[geom_id]
-        # local_from = np.array([0, 0, -capsule_half_length])
-        # from_point = np.empty(3, np.float64)
-        # mujoco.mju_rotVecQuat(from_point, local_from, capsule_quat)
-        # from_point += capsule_pos
-        # local_to = np.array([0, 0, capsule_half_length])
-        # to_point = np.empty(3, np.float64)
-        # mujoco.mju_rotVecQuat(to_point, local_to, capsule_quat)
-        # to_point += capsule_pos
-        # return mcm.gen_stick(spos=from_point,
-        #                      epos=to_point,
-        #                      radius=capsule_radius,
-        #                      type="round",
-        #                      rgb=model.geom_rgba[geom_id][:3],
-        #                      alpha=model.geom_rgba[geom_id][3],
-        #                      n_sec=12)
-        return mcm.gen_stick(spos=np.array([capsule_pos[0], capsule_pos[1], capsule_pos[2] - capsule_half_length]),
-                             epos=np.array([capsule_pos[0], capsule_pos[1], capsule_pos[2] + capsule_half_length]),
+        return mcm.gen_stick(spos=np.array([0, 0, -capsule_half_length]),
+                             epos=np.array([0, 0, capsule_half_length]),
                              radius=capsule_radius,
                              type="round",
                              rgb=model.geom_rgba[geom_id][:3],
@@ -59,30 +56,14 @@ def cvt_geom(model, data, geom_id):
     elif geom_type == mujoco.mjtGeom.mjGEOM_CYLINDER:
         cylinder_radius = model.geom_size[geom_id][0]
         cylinder_half_length = model.geom_size[geom_id][1]
-        capsule_pos = model.geom_pos[geom_id]
-        capsule_quat = model.geom_quat[geom_id]
-        local_from = np.array([0, 0, cylinder_half_length])
-        from_point = np.empty(3, np.float64)
-        mujoco.mju_rotVecQuat(from_point, local_from, capsule_quat)
-        from_point += capsule_pos
-        local_to = np.array([0, 0, -cylinder_half_length])
-        to_point = np.empty(3, np.float64)
-        mujoco.mju_rotVecQuat(to_point, local_to, capsule_quat)
-        to_point += capsule_pos
-        return mcm.gen_stick(spos=from_point,
-                             epos=to_point,
+        return mcm.gen_stick(spos=np.array([0, 0, -cylinder_half_length]),
+                             epos=np.array([0, 0, cylinder_half_length]),
                              radius=cylinder_radius,
                              rgb=model.geom_rgba[geom_id][:3],
                              alpha=model.geom_rgba[geom_id][3])
     elif geom_type == mujoco.mjtGeom.mjGEOM_PLANE:
-        geom_mat = rm.rotmat_from_quaternion(model.geom_quat[geom_id])
-        plane_normal = geom_mat[:, 2]
-        plane_size = model.geom_size[geom_id]
-        angle = np.arccos(np.dot(np.array([0, 0, 1]), plane_normal))
-        axis = np.cross(np.array([0, 0, 1]), plane_normal)
-        rotmat = rm.rotmat_from_axangle(axis=axis, angle=angle)
-        return mcm.gen_box(xyz_lengths=np.array([plane_size[0] * 2, plane_size[1] * 2, 0.001]),
-                           rotmat=rotmat,
+        return mcm.gen_box(xyz_lengths=np.array([100, 100, 0.001]),
+                           rotmat=np.eye(3),
                            rgb=model.geom_rgba[geom_id][:3],
                            alpha=model.geom_rgba[geom_id][3])
     elif geom_type == mujoco.mjtGeom.mjGEOM_SPHERE:
@@ -102,11 +83,10 @@ def cvt_geom(model, data, geom_id):
     #     return mcm.gen_pointcloud(points=[point_position], rgba=model.geom_rgba[geom_id])
 
 
-def cvt_bodies(model, data):
+def cvt_bodies(model):
     """
     Convert the bodies of the MuJoCo model to a list of dictionaries.
     :param model: MjModel: The MuJoCo model.
-    :param data: MjData: The MuJoCo data.
     :return: list: The list of dictionaries.
     """
     body_geom_dict = {}
@@ -115,8 +95,9 @@ def cvt_bodies(model, data):
         body_geom_ids = [i for i in range(model.ngeom) if model.geom_bodyid[i] == body_id]
         geom_dict = {}
         for geom_id in body_geom_ids:
-            geom_dict[geom_id] = cvt_geom(model, data, geom_id)
-            mgm.gen_frame(ax_length=1).attach_to(geom_dict[geom_id])
+            result = cvt_geom(model, geom_id)
+            if result is not None:
+                geom_dict[geom_id] = result
         body_geom_dict[body_id] = geom_dict
     return body_geom_dict
 
@@ -133,7 +114,7 @@ class MJModel(object):
         else:
             self.model = self._load_from_file(input_string)
         self.data = mujoco.MjData(self.model)
-        self.body_geom_dict = cvt_bodies(self.model, self.data)
+        self.body_geom_dict = cvt_bodies(self.model)
 
     def _load_from_file(self, file_name):
         """
@@ -160,80 +141,20 @@ class MJModel(object):
 
 
 if __name__ == '__main__':
-    xml = """
-    <mujoco model="denso_cobotta">
-        <compiler angle="degree" coordinate="local"/>
-        <option timestep="0.01" gravity="0 0 -1" iterations="50" integrator="Euler"/>
-
-        <default>
-            <joint limited="true" damping="1"/>
-            <geom type="capsule" size="0.05" rgba="0.8 0.6 0.4 1"/>
-        </default>
-
-        <worldbody>
-            <light diffuse="1 1 1" specular="0.1 0.1 0.1" pos="0 0 3"/>
-            <geom name="floor" type="plane" pos="0 0 0" size="10 10 0.1" rgba="0.8 0.9 0.8 1"/>
-
-            <!-- Base -->
-            <body name="base" pos="0 0 0">
-                <geom type="box" size="0.1 0.1 0.1" rgba="0.5 0.5 0.5 1"/>
-
-                <!-- Link 1 -->
-                <body name="link1" pos="0 0 0.1">
-                    <joint name="joint1" type="hinge" axis="0 0 1" range="-180 180"/>
-                    <geom type="capsule" fromto="0 0 0 0 0 0.2" size="0.05"/>
-
-                    <!-- Link 2 -->
-                    <body name="link2" pos="0 0 0.2">
-                        <joint name="joint2" type="hinge" axis="0 1 0" range="-90 90"/>
-                        <geom type="capsule" fromto="0 0 0 0 0 0.2" size="0.05"/>
-
-                        <!-- Link 3 -->
-                        <body name="link3" pos="0 0 0.2">
-                            <joint name="joint3" type="hinge" axis="1 0 0" range="-180 180"/>
-                            <geom type="capsule" fromto="0 0 0 0 0 0.2" size="0.05"/>
-
-                            <!-- Link 4 -->
-                            <body name="link4" pos="0 0 0.2">
-                                <joint name="joint4" type="hinge" axis="0 1 0" range="-180 180"/>
-                                <geom type="capsule" fromto="0 0 0 0 0 0.2" size="0.05"/>
-
-                                <!-- Link 5 -->
-                                <body name="link5" pos="0 0 0.2">
-                                    <joint name="joint5" type="hinge" axis="1 0 0" range="-180 180"/>
-                                    <geom type="capsule" fromto="0 0 0 0 0 0.2" size="0.05"/>
-
-                                    <!-- Link 6 -->
-                                    <body name="link6" pos="0 0 0.2">
-                                        <joint name="joint6" type="hinge" axis="0 1 0" range="-180 180"/>
-                                        <geom type="capsule" fromto="0 0 0 0 0 0.2" size="0.05"/>
-
-                                        <!-- End Effector -->
-                                        <body name="end_effector" pos="0 0 0.2">
-                                            <geom type="sphere" size="0.05" rgba="1 0 0 1"/>
-                                        </body>
-                                    </body>
-                                </body>
-                            </body>
-                        </body>
-                    </body>
-                </body>
-            </body>
-        </worldbody>
-    </mujoco>
-    """
-
     import visualization.panda.world as wd
     import modeling.geometric_model as gm
 
-    base = wd.World(cam_pos=[3, 3, 3], lookat_pos=[0, 0, 1])
+    base = wd.World(cam_pos=[3, 3, 3], lookat_pos=[0, 0, .7])
     gm.gen_frame().attach_to(base)
 
-    mj_model = MJModel(xml)
-    base.run_mj_physics(mj_model, 7)
-
+    mj_model = MJModel("humanoid.xml")
+    base.run_mj_physics(mj_model, 10)
+    # mujoco.mj_forward(mj_model.model, mj_model.data)
     # for geom_dict in mj_model.body_geom_dict.values():
-    #     for values in geom_dict.values():
-    #         values.attach_to(base)
+    #     for key, geom in geom_dict.items():
+    #         pos = mj_model.data.geom_xpos[key]
+    #         rotmat = mj_model.data.geom_xmat[key].reshape(3, 3)
+    #         geom.pose = [pos, rotmat]
+    #         geom.attach_to(base)
 
     base.run()

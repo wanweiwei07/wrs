@@ -152,11 +152,12 @@ class World(ShowBase, object):
             #   for geom in geom_dict.values():
             #       geom.attach_to(self)
             return task.done
-        time_since_last_update = globalClock.getDt()
-        mj_start_time = mj_model.data.time
-        while mj_model.data.time - mj_start_time < time_since_last_update:
-            mujoco.mj_step(mj_model.model, mj_model.data)
+        # time_since_last_update = globalClock.getDt()
+        # mj_start_time = mj_model.data.time
+        # while mj_model.data.time - mj_start_time < time_since_last_update:
+        #     mujoco.mj_step(mj_model.model, mj_model.data)
         # update
+        mujoco.mj_step(mj_model.model, mj_model.data)
         for geom_dict in mj_model.body_geom_dict.values():
             for key, geom in geom_dict.items():
                 geom.detach()
