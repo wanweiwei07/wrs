@@ -16,9 +16,7 @@ def cvt_geom(model, geom_id):
     date: 20240528
     """
     geom_type = model.geom_type[geom_id]
-    geom_name = mujoco.mj_id2name(model, mujoco.mjtObj.mjOBJ_GEOM, geom_id)
     if geom_type == mujoco.mjtGeom.mjGEOM_MESH:
-        print(model.geom_rgba[geom_id])
         mesh_id = model.geom_dataid[geom_id]
         vert_start = model.mesh_vertadr[mesh_id]
         vert_count = model.mesh_vertnum[mesh_id]
@@ -101,6 +99,27 @@ def cvt_bodies(model):
         body_geom_dict[body_id] = geom_dict
     return body_geom_dict
 
+def get_joint_link_chains(model, data):
+    chains = []
+
+    def traverse_body(body_id, chain):
+        for i in range(model.nbody):
+            if model.body_parentid[i] == body_id:
+                joint_id = model.body_dofadr[i]
+                if joint_id != -1:
+                    joint_name = model.id2name(joint_id, mujoco.mjtObj.mjOBJ_JOINT)
+                    chain.append(joint_name)
+                traverse_body(i, chain.copy())
+        body_name = model.id2name(body_id, mujoco.mjtObj.mjOBJ_BODY)
+        chains.append((body_name, chain))
+
+    world_body_id = model.body_name2id('world')
+    for i in range(model.nbody):
+        if model.body_parentid[i] == world_body_id:
+            traverse_body(i, [])
+
+    return chains
+
 
 class MJModel(object):
 
@@ -115,6 +134,7 @@ class MJModel(object):
             self.model = self._load_from_file(input_string)
         self.data = mujoco.MjData(self.model)
         self.body_geom_dict = cvt_bodies(self.model)
+        self.chains = get_joint_link_chains(self.model, self.data)
 
     def _load_from_file(self, file_name):
         """
@@ -148,6 +168,7 @@ if __name__ == '__main__':
     gm.gen_frame().attach_to(base)
 
     mj_model = MJModel("humanoid.xml")
+    print(mj_model.chains)
     base.run_mj_physics(mj_model, 10)
     # mujoco.mj_forward(mj_model.model, mj_model.data)
     # for geom_dict in mj_model.body_geom_dict.values():
