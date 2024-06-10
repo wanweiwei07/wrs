@@ -3,7 +3,6 @@ import numpy as np
 import modeling.model_collection as mmc
 from panda3d.core import CollisionNode, CollisionBox, Point3, NodePath
 import basis.robot_math as rm
-import modeling.geometric_model as mgm
 import modeling.collision_model as mcm
 import robot_sim._kinematics.jlchain as rkjlc
 import robot_sim.end_effectors.gripper.gripper_interface as gpi
@@ -49,7 +48,7 @@ class OR2FG7(gpi.GripperInterface):
             cdprim_type=mcm.mc.CDPType.USER_DEFINED,
             userdef_cdprim_fn=self._finger_cdprim, ex_radius=.005)
         self.jlc.jnts[0].lnk.loc_rotmat = rm.rotmat_from_euler(0, 0, np.pi / 2)
-        self.jlc.jnts[0].lnk.cmodel.rgba = rm.bc.tab20_list[14]
+        self.jlc.jnts[0].lnk.cmodel.rgba = np.array([.5, .5, 1, 1])
         # the 2nd joint (right finger, -y direction)
         self.jlc.jnts[1].change_type(rkjlc.rkc.JntType.PRISMATIC, motion_range=np.array([0.0, self.jaw_range[1]]))
         self.jlc.jnts[1].loc_pos = np.array([0.0, 0.038, 0.0])
@@ -60,7 +59,7 @@ class OR2FG7(gpi.GripperInterface):
             cdprim_type=mcm.mc.CDPType.USER_DEFINED,
             userdef_cdprim_fn=self._finger_cdprim, ex_radius=.005)
         self.jlc.jnts[1].lnk.loc_rotmat = rm.rotmat_from_euler(0, 0, np.pi / 2)
-        self.jlc.jnts[1].lnk.cmodel.rgba = rm.bc.tab20_list[14]
+        self.jlc.jnts[1].lnk.cmodel.rgba = np.array([1, .5, .5, 1])
         # reinitialize
         self.jlc.finalize()
         # acting center
@@ -138,13 +137,14 @@ class OR2FG7(gpi.GripperInterface):
 
 if __name__ == '__main__':
     import visualization.panda.world as wd
+    import modeling.geometric_model as mgm
 
     base = wd.World(cam_pos=[.5, .5, .5], lookat_pos=[0, 0, 0])
     mgm.gen_frame().attach_to(base)
     gripper = OR2FG7(coupling_offset_pos=np.array([0, 0, 0.0145]))
-    gripper.change_jaw_width(.039)
+    gripper.change_jaw_width(.038)
     gripper.gen_meshmodel(toggle_tcp_frame=True, toggle_cdprim=True, toggle_jnt_frames=True).attach_to(base)
-    # gripper.gen_stickmodel(toggle_tcp_frame=True, toggle_jnt_frames=True).attach_to(base)
+    gripper.gen_stickmodel(toggle_tcp_frame=True, toggle_jnt_frames=True).attach_to(base)
     gripper2 = OR2FG7(pos=np.array([0.0, .5, 0.0]))
     gripper2.change_jaw_width(.001)
     gripper2.gen_meshmodel(toggle_tcp_frame=True, toggle_cdprim=True, toggle_jnt_frames=True).attach_to(base)

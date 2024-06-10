@@ -34,14 +34,14 @@ class CobottaGripper(gpi.GripperInterface):
         self.jlc.jnts[0].motion_range = np.array([0.0, 0.015])
         self.jlc.jnts[0].lnk.cmodel = mcm.CollisionModel(os.path.join(current_file_dir, "meshes", "left_finger.dae"),
                                                          cdmesh_type=self.cdmesh_type)
-        self.jlc.jnts[0].lnk.cmodel.rgba = np.array([.5, .5, .5, 1])
+        self.jlc.jnts[0].lnk.cmodel.rgba = np.array([.5, .5, 1, 1])
         # the 2nd joint (right finger, -y direction)
         self.jlc.jnts[1].change_type(rkjlc.rkc.JntType.PRISMATIC, motion_range=np.array([0.0, self.jaw_range[1]]))
         self.jlc.jnts[1].loc_pos = np.array([0, .0, .0])
         self.jlc.jnts[1].loc_motion_ax = -rm.bc.y_ax
         self.jlc.jnts[1].lnk.cmodel = mcm.CollisionModel(os.path.join(current_file_dir, "meshes", "right_finger.dae"),
                                                          cdmesh_type=self.cdmesh_type)
-        self.jlc.jnts[1].lnk.cmodel.rgba = np.array([.5, .5, .5, 1])
+        self.jlc.jnts[1].lnk.cmodel.rgba = np.array([1, .5, .5, 1])
         # reinitialize
         self.jlc.finalize()
         # acting center
