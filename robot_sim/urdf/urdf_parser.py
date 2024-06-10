@@ -821,7 +821,7 @@ class Material(URDFType):
     @color.setter
     def color(self, value):
         if value is not None:
-            value = np.asanyarray(value).astype(np.float)
+            value = np.asanyarray(value).astype(np.float64)
             value = np.clip(value, 0.0, 1.0)
             if value.shape != (4,):
                 raise ValueError('Color must be a (4,) float')
@@ -2655,11 +2655,15 @@ class URDF(URDFType):
                         jlg_segments.append(jlg)
                         break
                 else:
-                    if jlg.number_of_edges() > 0:
-                        jlg.add_node(child, name=child.name)
-                        jlg.add_node(parent, name=parent.name)
-                        jlg.add_edge(parent, child, joint=joint)
+                    # if jlg.number_of_edges() > 0:
+                    jlg.add_node(child, name=child.name)
+                    jlg.add_node(parent, name=parent.name)
+                    jlg.add_edge(parent, child, joint=joint)
+                    if i + 1 == len(path) - 1:
+                        jlg_segments.append(jlg)
+                        break
             tpo_node_list = list(nx.topological_sort(jlg_segments[-1]))
+            print(tpo_node_list)
             if jlg_segments[-1].number_of_edges() == 1:
                 jlg_name = tpo_node_list[0].name.split("_", 1)[0] + "-" + tpo_node_list[-1].name.split("_", 1)[0]
             else:
@@ -2703,7 +2707,6 @@ class URDF(URDFType):
             for j in range(i + 1, len(axes)):
                 axes[j].axis('off')
         return jlg_segments
-
         # # find the fixed joints
         # fixedjoints = []
         # for joint in self.joints:
@@ -2838,7 +2841,6 @@ class URDF(URDFType):
                 child = path[i]
                 parent = path[i + 1]
                 joint = self._G.get_edge_data(child, parent)['joint']
-
                 cfg_vals = None
                 if joint.mimic is not None:
                     mimic_joint = self._joint_map[joint.mimic.joint]
@@ -3261,27 +3263,25 @@ class URDF(URDFType):
                     self._material_map[v.material.name] = v.material
 
     @staticmethod
-    def load(file_obj):
+    def load(input_string):
         """
-        Load a URDF from a file.
-        :param file_obj: str or file-like object, The file to load the URDF from. Should be the path to the ``.urdf``
+        Load a URDF from a file or an xml string
+        :param input_string: str or file-like object, The file to load the URDF from. Should be the path to the ``.urdf``
                             XML file. Any paths in the URDF should be specified as relative paths to the ``.urdf``
                             file instead of as ROS resources.
         :return:
         """
-        if isinstance(file_obj, str):
-            if os.path.isfile(file_obj):
-                parser = ET.XMLParser(remove_comments=True,
-                                      remove_blank_text=True)
-                tree = ET.parse(file_obj, parser=parser)
-                path, _ = os.path.split(file_obj)
-            else:
-                raise ValueError('{} is not a file'.format(file_obj))
+        parser = ET.XMLParser(remove_comments=True,
+                              remove_blank_text=True)
+        if os.path.isfile(input_string):
+            tree = ET.parse(input_string, parser=parser)
+            node = tree.getroot()
+            path, _ = os.path.split(input_string)
+        elif input_string.strip().startswith('<'):
+            node = ET.fromstring(input_string, parser=parser)
+            path = ""
         else:
-            parser = ET.XMLParser(remove_comments=True, remove_blank_text=True)
-            tree = ET.parse(file_obj, parser=parser)
-            path, _ = os.path.split(file_obj.name)
-        node = tree.getroot()
+            raise ValueError('The given parameter is neither a file nor an xml string.')
         return URDF._from_xml(node, path)
 
     def _validate_joints(self):

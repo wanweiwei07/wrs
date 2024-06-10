@@ -11,9 +11,9 @@ from collections import OrderedDict
 
 class CVRB0609(object):
 
-    def __init__(self, urdf_file="cvrb0609.urdf"):
-        self._urdf_file = urdf_file
-        self._urdf = URDF.load(urdf_file)
+    def __init__(self, urdf_string="cvrb0609.urdf"):
+        self._urdf_string = urdf_string
+        self._urdf = URDF.load(urdf_string)
         self._jlg_segments = self._urdf.segment(toggle_debug=True)
         self.components = {}
         self.anchors = {}
