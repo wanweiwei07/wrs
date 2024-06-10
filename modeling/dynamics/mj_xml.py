@@ -16,27 +16,19 @@ def cvt_geom(model, geom_id):
     date: 20240528
     """
     geom_type = model.geom_type[geom_id]
-    geom_name = mujoco.mj_id2name(model, mujoco.mjtObj.mjOBJ_GEOM, geom_id)
     if geom_type == mujoco.mjtGeom.mjGEOM_MESH:
-        print(model.geom_rgba[geom_id])
         mesh_id = model.geom_dataid[geom_id]
-        vert_start = model.mesh_vertadr[mesh_id]
-        vert_count = model.mesh_vertnum[mesh_id]
-        face_start = model.mesh_faceadr[mesh_id]
-        face_count = model.mesh_facenum[mesh_id]
-        vertices = model.mesh_vert[vert_start:(vert_start + vert_count)]
-        faces = model.mesh_face[face_start:(face_start + face_count)]
-        # face_normals = model.mesh_facenormal[face_start:(face_start + face_count)]
-        if len(faces) == 0:
-            return mcm.gen_box()
-        if vert_count-1 != max(faces.flatten()):
-            print("Warning: the vertices and faces are not consistent!")
-            return mcm.gen_box()
-        name_start = model.name_meshadr[mesh_id]
-        name_end = model.names.find(b'\x00', name_start)
-        mesh_name = model.names[name_start:name_end].decode('utf-8')
+        print(model.mesh(mesh_id).name)
+        vertadr_list = model.mesh(mesh_id).vertadr
+        vertnum_list = model.mesh(mesh_id).vertnum
+        faceadr_list = model.mesh(mesh_id).faceadr
+        facenum_list = model.mesh(mesh_id).facenum
+        for vertadr, vertnum in zip(vertadr_list, vertnum_list):
+            vertices = model.mesh_vert[vertadr:(vertadr + vertnum)]
+        for faceadr, facenum in zip(faceadr_list, facenum_list):
+            faces = model.mesh_face[faceadr:(faceadr + facenum)]
         return mcm.CollisionModel(initor=trm.Trimesh(vertices=vertices, faces=faces),
-                                  name=mesh_name,
+                                  name=model.mesh(mesh_id).name,
                                   rgb=model.geom_rgba[geom_id][:3],
                                   alpha=model.geom_rgba[geom_id][3])
     elif geom_type == mujoco.mjtGeom.mjGEOM_BOX:
@@ -115,6 +107,8 @@ class MJModel(object):
             self.model = self._load_from_file(input_string)
         self.data = mujoco.MjData(self.model)
         self.body_geom_dict = cvt_bodies(self.model)
+        self.control_callback = None
+        self.desired_aj_pos = [0]*self.model.nu
 
     def _load_from_file(self, file_name):
         """
@@ -147,9 +141,74 @@ if __name__ == '__main__':
     base = wd.World(cam_pos=[3, 3, 3], lookat_pos=[0, 0, .7])
     gm.gen_frame().attach_to(base)
 
-    mj_model = MJModel("humanoid.xml")
-    base.run_mj_physics(mj_model, 10)
-    # mujoco.mj_forward(mj_model.model, mj_model.data)
+
+    class PIDController:
+        def __init__(self, kp, ki, kd, setpoint):
+            self.kp = kp
+            self.ki = ki
+            self.kd = kd
+            self.setpoint = setpoint
+            self.integral = np.zeros_like(setpoint)
+            self.previous_error = np.zeros_like(setpoint)
+
+        def compute(self, measurement, dt):
+            error = self.setpoint - measurement
+            self.integral += error * dt
+            derivative = (error - self.previous_error) / dt
+            self.previous_error = error
+            return self.kp * error + self.ki * self.integral + self.kd * derivative
+
+
+    kp = 10.0  # Proportional gain
+    ki = 0.5  # Integral gain
+    kd = 2.0  # Derivative gain
+
+
+
+    def control_callback(mj_model):
+        kp = 1.5  # Proportional gain
+        ki = 0.5  # Integral gain
+        kd = 0.3  # Derivative gain
+
+        class PIDController:
+            def __init__(self, kp, ki, kd, setpoint):
+                self.kp = kp
+                self.ki = ki
+                self.kd = kd
+                self.setpoint = setpoint
+                self.integral = np.zeros_like(setpoint)
+                self.previous_error = np.zeros_like(setpoint)
+
+            def compute(self, measurement, dt):
+                error = self.setpoint - measurement
+                self.integral += error * dt
+                derivative = (error - self.previous_error) / dt
+                self.previous_error = error
+                return self.kp * error + self.ki * self.integral + self.kd * derivative
+
+        for aid in range(mj_model.model.nu):
+            jid = mj_model.model.actuator(aid).trnid[0]
+            print(mj_model.model.joint(jid).name)
+            current_position = mj_model.data.qpos[jid]
+            position_error = mj_model.desired_aj_pos[aid] - current_position
+            velocity_error = -mj_model.data.qvel[jid]
+            mj_model.data.ctrl[aid] = kp * position_error + kd * velocity_error
+
+            # Compute control input
+            # control_input = PIDController(kp, ki, kd, mj_model.desired_aj_pos[aid]).compute(current_position, mj_model.model.opt.timestep)
+            # mj_model.data.ctrl[aid] = control_input
+            # mj_model.data.qpos[jid] = mj_model.desired_aj_pos[aid]
+        print(mj_model.data.qpos)
+
+
+    mj_model = MJModel("g1.xml")
+    mj_model.control_callback = control_callback
+    mujoco.mj_forward(mj_model.model, mj_model.data)
+
+    for aid in range(mj_model.model.nu):
+        jid = mj_model.model.actuator(aid).trnid[0]
+        mj_model.desired_aj_pos[aid]=mj_model.data.qpos[jid]
+    base.run_mj_physics(mj_model, 100)
     # for geom_dict in mj_model.body_geom_dict.values():
     #     for key, geom in geom_dict.items():
     #         pos = mj_model.data.geom_xpos[key]

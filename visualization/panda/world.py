@@ -158,6 +158,8 @@ class World(ShowBase, object):
         #     mujoco.mj_step(mj_model.model, mj_model.data)
         # update
         mujoco.mj_step(mj_model.model, mj_model.data)
+        if mj_model.control_callback is not None:
+            mj_model.control_callback(mj_model)
         for geom_dict in mj_model.body_geom_dict.values():
             for key, geom in geom_dict.items():
                 geom.detach()
