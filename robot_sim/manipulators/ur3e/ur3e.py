@@ -5,7 +5,7 @@ import basis.robot_math as rm
 import robot_sim.manipulators.manipulator_interface as mi
 
 
-class UR3E(mi.ManipulatorInterface):
+class UR3e(mi.ManipulatorInterface):
 
     def __init__(self, pos=np.zeros(3), rotmat=np.eye(3), home_conf=np.zeros(6), name='ur3e', enable_cc=False):
         super().__init__(pos=pos, rotmat=rotmat, home_conf=home_conf, name=name, enable_cc=enable_cc)
@@ -92,7 +92,7 @@ if __name__ == '__main__':
 
     base = wd.World(cam_pos=[2, 0, 1], lookat_pos=[0, 0, 0])
     mgm.gen_frame().attach_to(base)
-    arm = UR3E(enable_cc=True)
+    arm = UR3e(enable_cc=True)
     arm_mesh = arm.gen_meshmodel()
     arm_mesh.attach_to(base)
     tmp_arm_stick = arm.gen_stickmodel(toggle_flange_frame=True)

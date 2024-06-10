@@ -1,367 +1,313 @@
 import os
-import math
 import numpy as np
 import basis.robot_math as rm
-import modeling.model_collection as mc
-import modeling.collision_model as cm
-import robot_sim._kinematics.jlchain as jl
-import robot_sim.manipulators.ur3e.ur3e as ur
+import modeling.model_collection as mmc
+import modeling.collision_model as mcm
+import robot_sim._kinematics.jlchain as rkjlc
+import robot_sim.robots.ur3e_dual.ur3e_rtqhe as u3ehe
 import robot_sim.end_effectors.gripper.robotiqhe.robotiqhe as rtq
-from panda3d.core import CollisionNode, CollisionBox, Point3
-import robot_sim.system.system_interface as ri
+from panda3d.core import NodePath, CollisionNode, CollisionBox, Point3
+import robot_sim.robots.robot_interface as ri
 
 
-class UR3EDual(ri.RobotInterface):
+class UR3e_Dual(ri.RobotInterface):
 
-    def __init__(self, pos=np.zeros(3), rotmat=np.eye(3), name='ur3edual', enable_cc=True):
-        super().__init__(pos=pos, rotmat=rotmat, name=name)
-        this_dir, this_filename = os.path.split(__file__)
-        # left side
-        self.lft_body = jl.JLChain(pos=pos, rotmat=rotmat, home_conf=np.zeros(0), name='lft_body_jl')
-        self.lft_body.jnts[1]['loc_pos'] = np.array([.365, .345, 1.33])  # left from robot_s view
-        self.lft_body.jnts[1]['gl_rotmat'] = rm.rotmat_from_euler(math.pi / 2.0, 0,
-                                                                  math.pi / 2.0)  # left from robot_s view
-        self.lft_body.lnks[0]['name'] = "ur3e_dual_base"
-        self.lft_body.lnks[0]['loc_pos'] = np.array([0, 0, 0])
-        self.lft_body.lnks[0]['collision_model'] = cm.CollisionModel(
-            os.path.join(this_dir, "meshes", "ur3e_dual_base.stl"),
-            cdprim_type="user_defined", ex_radius=.005,
-            userdef_cdprim_fn=self._base_combined_cdnp)
-        self.lft_body.lnks[0]['rgba'] = [.55, .55, .55, 1.0]
-        self.lft_body.finalize()
-        lft_arm_homeconf = np.zeros(6)
-        lft_arm_homeconf[0] = -math.pi * 2.0 / 3.0
-        lft_arm_homeconf[1] = -math.pi * 2.0 / 3.0
-        lft_arm_homeconf[2] = math.pi / 2.0
-        lft_arm_homeconf[3] = math.pi
-        lft_arm_homeconf[4] = -math.pi / 2.0
-        self.lft_arm = ur.UR3E(pos=self.lft_body.jnts[-1]['gl_posq'],
-                               rotmat=self.lft_body.jnts[-1]['gl_rotmatq'],
-                               homeconf=lft_arm_homeconf,
-                               enable_cc=False)
-        self.lft_hnd = rtq.RobotiqHE(pos=self.lft_arm.jnts[-1]['gl_posq'],
-                                     rotmat=self.lft_arm.jnts[-1]['gl_rotmatq'],
-                                     coupling_offset_pos=np.array([0.0, 0.0, 0.0331]),
-                                     enable_cc=False)
+    def __init__(self, pos=np.zeros(3), rotmat=np.eye(3), name='ur3e_dual', enable_cc=True):
+        super().__init__(pos=pos, rotmat=rotmat, name=name, enable_cc=enable_cc)
+        current_file_dir = os.path.dirname(__file__)
+        # the body anchor
+        self.body = rkjlc.rkjl.Anchor(name="ur3e_dual_base", pos=self.pos, rotmat=self.rotmat, n_flange=2, n_lnk=9)
+        self.body.loc_flange_pose_list[0] = [np.array([.365, .345, 1.33]),
+                                             rm.rotmat_from_euler(np.pi / 2.0, 0, np.pi / 2.0)]
+        self.body.loc_flange_pose_list[1] = [np.array([.365, -.345, 1.33]),
+                                             rm.rotmat_from_euler(np.pi / 2.0, 0, np.pi / 2.0)]
+        self.body.lnk_list[0].name = "ur3e_dual_base_link"
+        self.body.lnk_list[0].cmodel = mcm.CollisionModel(
+            initor=os.path.join(current_file_dir, "meshes", "ur3e_dual_base.stl"),
+            cdprim_type=mcm.mc.CDPType.USER_DEFINED,
+            userdef_cdprim_fn=self._base_cdprim)
+        self.body.lnk_list[0].cmodel.rgba = rm.bc.hug_gray
+        # left arm
+        self.lft_arm = u3ehe.UR3e_RtqHE(pos=self.body.gl_flange_pose_list[0][0],
+                                        rotmat=self.body.gl_flange_pose_list[0][1])
+        self.lft_arm.home_conf = np.radians(np.array([-np.pi * 2 / 3, -np.pi * 2 / 3, np.pi / 2, np.pi, -np.pi / 2, 0]))
         # rigth side
-        self.rgt_body = jl.JLChain(pos=pos, rotmat=rotmat, home_conf=np.zeros(0), name='rgt_body_jl')
-        self.rgt_body.jnts[1]['loc_pos'] = np.array([.365, -.345, 1.33])  # right from robot_s view
-        self.rgt_body.jnts[1]['gl_rotmat'] = rm.rotmat_from_euler(math.pi / 2.0, 0,
-                                                                  math.pi / 2.0)  # left from robot_s view
-        self.rgt_body.lnks[0]['name'] = "ur3e_dual_base"
-        self.rgt_body.lnks[0]['loc_pos'] = np.array([0, 0, 0])
-        self.rgt_body.lnks[0]['mesh_file'] = None
-        self.rgt_body.lnks[0]['rgba'] = [.3, .3, .3, 1.0]
-        self.rgt_body.finalize()
-        rgt_arm_homeconf = np.zeros(6)
-        rgt_arm_homeconf[0] = math.pi * 2.0 / 3.0
-        rgt_arm_homeconf[1] = -math.pi / 3.0
-        rgt_arm_homeconf[2] = -math.pi / 2.0
-        rgt_arm_homeconf[4] = math.pi / 2.0
-        self.rgt_arm = ur.UR3E(pos=self.rgt_body.jnts[-1]['gl_posq'],
-                               rotmat=self.rgt_body.jnts[-1]['gl_rotmatq'],
-                               homeconf=rgt_arm_homeconf,
-                               enable_cc=False)
-        self.rgt_hnd = rtq.RobotiqHE(pos=self.rgt_arm.jnts[-1]['gl_posq'],
-                                     rotmat=self.rgt_arm.jnts[-1]['gl_rotmatq'],
-                                     coupling_offset_pos=np.array([0.0, 0.0, 0.0331]),
-                                     enable_cc=False)
-        # tool center point
-        # lft
-        self.lft_arm.tcp_jnt_id = -1
-        self.lft_arm.loc_tcp_pos = self.lft_hnd.jaw_center_pos
-        self.lft_arm.loc_tcp_rotmat = self.lft_hnd.loc_acting_center_rotmat
-        # rgt
-        self.rgt_arm.tcp_jnt_id = -1
-        self.rgt_arm.loc_tcp_pos = self.lft_hnd.jaw_center_pos
-        self.rgt_arm.loc_tcp_rotmat = self.lft_hnd.loc_acting_center_rotmat
-        # a list of detailed information about objects in hand, see CollisionChecker.add_objinhnd
-        self.lft_oih_infos = []
-        self.rgt_oih_infos = []
-        # collision detection
-        if enable_cc:
-            self.enable_cc()
-        # component map
-        self.manipulator_dict['rgt_arm'] = self.rgt_arm
-        self.manipulator_dict['lft_arm'] = self.lft_arm
-        self.manipulator_dict['rgt_hnd'] = self.rgt_arm  # specify which hand is a gripper installed to
-        self.manipulator_dict['lft_hnd'] = self.lft_arm  # specify which hand is a gripper installed to
-        self.hnd_dict['rgt_hnd'] = self.rgt_hnd
-        self.hnd_dict['lft_hnd'] = self.lft_hnd
-        self.hnd_dict['rgt_arm'] = self.rgt_hnd
-        self.hnd_dict['lft_arm'] = self.lft_hnd
+        self.rgt_arm = u3ehe.UR3e_RtqHE(pos=self.body.gl_flange_pose_list[1][0],
+                                        rotmat=self.body.gl_flange_pose_list[1][1])
+        self.rgt_arm.home_conf = np.radians(np.array([np.pi * 2 / 3, -np.pi / 3, -np.pi / 2, np.pi/2, 0, 0]))
+        if self.cc is not None:
+            self.setup_cc()
+        # go home
+        self.goto_home_conf()
 
     @staticmethod
-    def _base_combined_cdnp(name, radius):
-        collision_node = CollisionNode(name)
+    def _base_cdprim(ex_radius=None):
+        pdcnd = CollisionNode("ur3e_dual_base")
         collision_primitive_c0 = CollisionBox(Point3(0.54, 0.0, 0.39),
-                                              x=.54 + radius, y=.6 + radius, z=.39 + radius)
-        collision_node.addSolid(collision_primitive_c0)
+                                              x=.54 + ex_radius, y=.6 + ex_radius, z=.39 + ex_radius)
+        pdcnd.addSolid(collision_primitive_c0)
         collision_primitive_c1 = CollisionBox(Point3(0.06, 0.0, 0.9),
-                                              x=.06 + radius, y=.375 + radius, z=.9 + radius)
-        collision_node.addSolid(collision_primitive_c1)
+                                              x=.06 + ex_radius, y=.375 + ex_radius, z=.9 + ex_radius)
+        pdcnd.addSolid(collision_primitive_c1)
         collision_primitive_c2 = CollisionBox(Point3(0.18, 0.0, 1.77),
-                                              x=.18 + radius, y=.21 + radius, z=.03 + radius)
-        collision_node.addSolid(collision_primitive_c2)
+                                              x=.18 + ex_radius, y=.21 + ex_radius, z=.03 + ex_radius)
+        pdcnd.addSolid(collision_primitive_c2)
         collision_primitive_l0 = CollisionBox(Point3(0.2425, 0.345, 1.33),
-                                              x=.1225 + radius, y=.06 + radius, z=.06 + radius)
-        collision_node.addSolid(collision_primitive_l0)
+                                              x=.1225 + ex_radius, y=.06 + ex_radius, z=.06 + ex_radius)
+        pdcnd.addSolid(collision_primitive_l0)
         collision_primitive_r0 = CollisionBox(Point3(0.2425, -0.345, 1.33),
-                                              x=.1225 + radius, y=.06 + radius, z=.06 + radius)
-        collision_node.addSolid(collision_primitive_r0)
+                                              x=.1225 + ex_radius, y=.06 + ex_radius, z=.06 + ex_radius)
+        pdcnd.addSolid(collision_primitive_r0)
         collision_primitive_l1 = CollisionBox(Point3(0.21, 0.405, 1.07),
-                                              x=.03 + radius, y=.06 + radius, z=.29 + radius)
-        collision_node.addSolid(collision_primitive_l1)
+                                              x=.03 + ex_radius, y=.06 + ex_radius, z=.29 + ex_radius)
+        pdcnd.addSolid(collision_primitive_l1)
         collision_primitive_r1 = CollisionBox(Point3(0.21, -0.405, 1.07),
-                                              x=.03 + radius, y=.06 + radius, z=.29 + radius)
-        collision_node.addSolid(collision_primitive_r1)
-        return collision_node
+                                              x=.03 + ex_radius, y=.06 + ex_radius, z=.29 + ex_radius)
+        pdcnd.addSolid(collision_primitive_r1)
+        cdprim = NodePath("user_defined")
+        cdprim.attachNewNode(pdcnd)
+        return cdprim
 
-    def enable_cc(self):
-        super().enable_cc()
-        # raise NotImplementedError
-        self.cc.add_cdlnks(self.lft_body, [0])
-        self.cc.add_cdlnks(self.lft_arm, [1, 2, 3, 4, 5, 6])
-        self.cc.add_cdlnks(self.lft_hnd.lft, [0, 1])
-        self.cc.add_cdlnks(self.lft_hnd.rgt, [1])
-        self.cc.add_cdlnks(self.rgt_arm, [1, 2, 3, 4, 5, 6])
-        self.cc.add_cdlnks(self.rgt_hnd.lft, [0, 1])
-        self.cc.add_cdlnks(self.rgt_hnd.rgt, [1])
-        # lnks used for cd with external stationary objects
-        activelist = [self.lft_arm.lnks[2],
-                      self.lft_arm.lnks[3],
-                      self.lft_arm.lnks[4],
-                      self.lft_arm.lnks[5],
-                      self.lft_arm.lnks[6],
-                      self.lft_hnd.lft.lnks[0],
-                      self.lft_hnd.lft.lnks[1],
-                      self.lft_hnd.rgt.lnks[1],
-                      self.rgt_arm.lnks[2],
-                      self.rgt_arm.lnks[3],
-                      self.rgt_arm.lnks[4],
-                      self.rgt_arm.lnks[5],
-                      self.rgt_arm.lnks[6],
-                      self.rgt_hnd.lft.lnks[0],
-                      self.rgt_hnd.lft.lnks[1],
-                      self.rgt_hnd.rgt.lnks[1]]
-        self.cc.set_active_cdlnks(activelist)
-        # lnks used for arm-body collision detection
-        fromlist = [self.lft_body.lnks[0],
-                    self.lft_arm.lnks[1],
-                    self.rgt_arm.lnks[1]]
-        intolist = [self.lft_arm.lnks[3],
-                    self.lft_arm.lnks[4],
-                    self.lft_arm.lnks[5],
-                    self.lft_arm.lnks[6],
-                    self.lft_hnd.lft.lnks[0],
-                    self.lft_hnd.lft.lnks[1],
-                    self.lft_hnd.rgt.lnks[1],
-                    self.rgt_arm.lnks[3],
-                    self.rgt_arm.lnks[4],
-                    self.rgt_arm.lnks[5],
-                    self.rgt_arm.lnks[6],
-                    self.rgt_hnd.lft.lnks[0],
-                    self.rgt_hnd.lft.lnks[1],
-                    self.rgt_hnd.rgt.lnks[1]]
-        self.cc.set_cdpair(fromlist, intolist)
-        # lnks used for arm-body collision detection -- extra
-        fromlist = [self.lft_body.lnks[0]]  # body
-        intolist = [self.lft_arm.lnks[2],
-                    self.rgt_arm.lnks[2]]
-        self.cc.set_cdpair(fromlist, intolist)
-        # lnks used for in-arm collision detection
-        fromlist = [self.lft_arm.lnks[2]]
-        intolist = [self.lft_arm.lnks[4],
-                    self.lft_arm.lnks[5],
-                    self.lft_hnd.lft.lnks[0],
-                    self.lft_hnd.lft.lnks[1],
-                    self.lft_hnd.rgt.lnks[1]]
-        self.cc.set_cdpair(fromlist, intolist)
-        fromlist = [self.rgt_arm.lnks[2]]
-        intolist = [self.rgt_arm.lnks[4],
-                    self.rgt_arm.lnks[5],
-                    self.rgt_hnd.lft.lnks[0],
-                    self.rgt_hnd.lft.lnks[1],
-                    self.rgt_hnd.rgt.lnks[1]]
-        self.cc.set_cdpair(fromlist, intolist)
-        # arm-arm collision
-        fromlist = [self.lft_arm.lnks[3],
-                    self.lft_arm.lnks[4],
-                    self.lft_arm.lnks[5],
-                    self.lft_arm.lnks[6],
-                    self.lft_hnd.lft.lnks[0],
-                    self.lft_hnd.lft.lnks[1],
-                    self.lft_hnd.rgt.lnks[1]]
-        intolist = [self.rgt_arm.lnks[3],
-                    self.rgt_arm.lnks[4],
-                    self.rgt_arm.lnks[5],
-                    self.rgt_arm.lnks[6],
-                    self.rgt_hnd.lft.lnks[0],
-                    self.rgt_hnd.lft.lnks[1],
-                    self.rgt_hnd.rgt.lnks[1]]
-        self.cc.set_cdpair(fromlist, intolist)
+    @property
+    def n_dof(self):
+        if self.delegator is None:
+            return self.lft_arm.n_dof + self.rgt_arm.n_dof
+        else:
+            return self.delegator.n_dof
 
-    def move_to(self, pos, rotmat):
+    def setup_cc(self):
+        """
+        author: weiwei
+        date: 20240309
+        """
+        # dual arm
+        # body
+        bd = self.cc.add_cce(self.body.lnk_list[0])
+        # left ee
+        lft_elb = self.cc.add_cce(self.lft_arm.end_effector.jlc.anchor.lnk_list[0])
+        lft_el0 = self.cc.add_cce(self.lft_arm.end_effector.jlc.jnts[0].lnk)
+        lft_el1 = self.cc.add_cce(self.lft_arm.end_effector.jlc.jnts[1].lnk)
+        # left manipulator
+        lft_ml0 = self.cc.add_cce(self.lft_arm.manipulator.jlc.jnts[0].lnk)
+        lft_ml1 = self.cc.add_cce(self.lft_arm.manipulator.jlc.jnts[1].lnk)
+        lft_ml2 = self.cc.add_cce(self.lft_arm.manipulator.jlc.jnts[2].lnk)
+        lft_ml3 = self.cc.add_cce(self.lft_arm.manipulator.jlc.jnts[3].lnk)
+        lft_ml4 = self.cc.add_cce(self.lft_arm.manipulator.jlc.jnts[4].lnk)
+        lft_ml5 = self.cc.add_cce(self.lft_arm.manipulator.jlc.jnts[5].lnk)
+        # right ee
+        rgt_elb = self.cc.add_cce(self.rgt_arm.end_effector.jlc.anchor.lnk_list[0])
+        rgt_el0 = self.cc.add_cce(self.rgt_arm.end_effector.jlc.jnts[0].lnk)
+        rgt_el1 = self.cc.add_cce(self.rgt_arm.end_effector.jlc.jnts[1].lnk)
+        # right manipulator
+        rgt_ml0 = self.cc.add_cce(self.rgt_arm.manipulator.jlc.jnts[0].lnk)
+        rgt_ml1 = self.cc.add_cce(self.rgt_arm.manipulator.jlc.jnts[1].lnk)
+        rgt_ml2 = self.cc.add_cce(self.rgt_arm.manipulator.jlc.jnts[2].lnk)
+        rgt_ml3 = self.cc.add_cce(self.rgt_arm.manipulator.jlc.jnts[3].lnk)
+        rgt_ml4 = self.cc.add_cce(self.rgt_arm.manipulator.jlc.jnts[4].lnk)
+        rgt_ml5 = self.cc.add_cce(self.rgt_arm.manipulator.jlc.jnts[5].lnk)
+        # first pairs
+        from_list = [lft_ml4, lft_ml5, lft_elb, lft_el0, lft_el1, rgt_ml4, rgt_ml5, rgt_elb, rgt_el0, rgt_el1]
+        into_list = [bd, lft_ml0, rgt_ml0]
+        self.cc.set_cdpair_by_ids(from_list, into_list)
+        # second pairs
+        from_list = [lft_ml0, lft_ml1, rgt_ml0, rgt_ml1]
+        into_list = [lft_elb, lft_el0, lft_el1, rgt_elb, rgt_el0, rgt_el1]
+        self.cc.set_cdpair_by_ids(from_list, into_list)
+        # third pairs
+        from_list = [lft_ml1, lft_ml2, lft_ml3, lft_ml4, lft_ml5, lft_elb, lft_el0, lft_el1]
+        into_list = [rgt_ml1, rgt_ml2, rgt_ml3, rgt_ml4, rgt_ml5, rgt_elb, rgt_el0, rgt_el1]
+        self.cc.set_cdpair_by_ids(from_list, into_list)
+        # point low-level cc to the high-level one
+        self.lft_arm.cc = self.cc
+        self.rgt_arm.cc = self.cc
+
+    def use_both(self):
+        self.delegator = None
+
+    def use_lft(self):
+        self.delegator = self.lft_arm
+
+    def use_rgt(self):
+        self.delegator = self.rgt_arm
+
+    def backup_state(self):
+        if self.delegator is None:
+            self.rgt_arm.backup_state()
+            self.lft_arm.backup_state()
+        else:
+            self.delegator.backup_state()
+
+    def restore_state(self):
+        if self.delegator is None:
+            self.rgt_arm.restore_state()
+            self.lft_arm.restore_state()
+        else:
+            self.delegator.restore_state()
+
+    def fix_to(self, pos, rotmat):
         self.pos = pos
         self.rotmat = rotmat
-        self.lft_body.fix_to(self.pos, self.rotmat)
-        self.lft_arm.fix_to(pos=self.lft_body.jnts[-1]['gl_posq'], rotmat=self.lft_body.jnts[-1]['gl_rotmatq'])
-        lft_hnd_pos, lft_hnd_rotmat = self.lft_arm.get_worldpose(relpos=self.rgt_hnd_offset)
-        self.lft_hnd.fix_to(pos=lft_hnd_pos, rotmat=lft_hnd_rotmat)
-        self.rgt_body.fix_to(self.pos, self.rotmat)
-        self.rgt_arm.fix_to(pos=self.rgt_body.jnts[-1]['gl_posq'], rotmat=self.rgt_body.jnts[-1]['gl_rotmatq'])
-        rgt_hnd_pos, rgt_hnd_rotmat = self.rgt_arm.get_worldpose(relpos=self.rgt_hnd_offset)
-        self.rgt_hnd.fix_to(pos=rgt_hnd_pos, rotmat=rgt_hnd_rotmat)
+        self.body.pos = self.pos
+        self.body.rotmat = self.rotmat
+        self.lft_arm.fix_to(pos=self.body.gl_flange_pose_list[0][0],
+                            rotmat=self.body.gl_flange_pose_list[0][1])
+        self.rgt_arm.fix_to(pos=self.body.gl_flange_pose_list[1][0],
+                            rotmat=self.body.gl_flange_pose_list[1][1])
 
-    def get_hnd_on_manipulator(self, manipulator_name):
-        if manipulator_name == 'rgt_arm':
-            return self.rgt_hnd
-        elif manipulator_name == 'lft_arm':
-            return self.lft_hnd
+    def fk(self, jnt_values, toggle_jacobian=False):
+        if self.delegator is None:
+            raise AttributeError("FK is not available in multi-arm mode.")
         else:
-            raise ValueError("The given jlc does not have a hand!")
+            return self.delegator.fk(jnt_values=jnt_values, toggle_jacobian=toggle_jacobian)
 
-    def fk(self, component_name, jnt_values):
+    def goto_given_conf(self, jnt_values, ee_values=None):
         """
-        :param jnt_values: 1x6 or 1x12 nparray
-        :hnd_name 'lft_arm', 'rgt_arm', 'both_arm'
-        :param component_name:
+        :param jnt_values: nparray 1x14, 0:7lft, 7:14rgt
         :return:
         author: weiwei
-        date: 20201208toyonaka
+        date: 20240307
         """
-
-        def update_oih(component_name='rgt_arm'):
-            # inline function for update objects in hand
-            if component_name == 'rgt_arm':
-                oih_info_list = self.rgt_oih_infos
-            elif component_name == 'lft_arm':
-                oih_info_list = self.lft_oih_infos
-            for obj_info in oih_info_list:
-                gl_pos, gl_rotmat = self.cvt_loc_tcp_to_gl(component_name, obj_info['rel_pos'], obj_info['rel_rotmat'])
-                obj_info['gl_pos'] = gl_pos
-                obj_info['gl_rotmat'] = gl_rotmat
-
-        def update_component(component_name, jnt_values):
-            status = self.manipulator_dict[component_name].fk(joint_values=jnt_values)
-            self.get_hnd_on_manipulator(component_name).fix_to(
-                pos=self.manipulator_dict[component_name].jnts[-1]['gl_posq'],
-                rotmat=self.manipulator_dict[component_name].jnts[-1]['gl_rotmatq'])
-            update_oih(component_name=component_name)
-            return status
-
-        super().fk(component_name, jnt_values)
-        # examine axis_length
-        if component_name == 'lft_arm' or component_name == 'rgt_arm':
-            if not isinstance(jnt_values, np.ndarray) or jnt_values.size != 6:
-                raise ValueError("An 1x6 npdarray must be specified to move a single arm!")
-            return update_component(component_name, jnt_values)
-        elif component_name == 'both_arm':
-            if (jnt_values.size != 12):
-                raise ValueError("A 1x12 npdarrays must be specified to move both arm!")
-            status_lft = update_component('lft_arm', jnt_values[0:6])
-            status_rgt = update_component('rgt_arm', jnt_values[6:12])
-            return "succ" if status_lft == "succ" and status_rgt == "succ" else "out_of_rng"
-        elif component_name == 'all':
-            raise NotImplementedError
+        if self.delegator is None:
+            if len(jnt_values) != self.lft_arm.manipulator.n_dof + self.rgt_arm.manipulator.n_dof:
+                raise ValueError("The given joint values do not match total n_dof")
+            self.lft_arm.goto_given_conf(jnt_values=jnt_values[:self.lft_arm.manipulator.n_dof])
+            self.rgt_arm.goto_given_conf(jnt_values=jnt_values[self.rgt_arm.manipulator.n_dof:])  # TODO
         else:
-            raise ValueError("The given component name is not available!")
+            self.delegator.goto_given_conf(jnt_values=jnt_values, ee_values=ee_values)
 
-    def rand_conf(self, component_name):
+    def goto_home_conf(self):
+        if self.delegator is None:
+            self.lft_arm.goto_home_conf()
+            self.rgt_arm.goto_home_conf()
+        else:
+            self.delegator.goto_home_conf()
+
+    def get_jnt_values(self):
+        if self.delegator is None:
+            return np.concatenate((self.lft_arm.get_jnt_values(), self.rgt_arm.get_jnt_values()))
+        else:
+            return self.delegator.get_jnt_values()
+
+    def rand_conf(self):
         """
-        override robot_interface.rand_conf
-        :param component_name:
         :return:
         author: weiwei
         date: 20210406
         """
-        if component_name == 'lft_arm' or component_name == 'rgt_arm':
-            return super().rand_conf(component_name)
-        elif component_name == 'both_arm':
-            return np.hstack((super().rand_conf('lft_arm'), super().rand_conf('rgt_arm')))
+        if self.delegator is None:
+            return np.concatenate((self.lft_arm.rand_conf(), self.rgt_arm.rand_conf()))
         else:
-            raise NotImplementedError
+            return self.delegator.rand_conf()
+
+    def are_jnts_in_ranges(self, jnt_values):
+        if self.delegator is None:
+            return self.lft_arm.are_jnts_in_ranges(
+                jnt_values=jnt_values[:self.lft_arm.manipulator.n_dof]) and self.rgt_arm.are_jnts_in_ranges(
+                jnt_values=jnt_values[self.rgt_arm.manipulator.n_dof:])
+        else:
+            return self.delegator.are_jnts_in_ranges(jnt_values=jnt_values)
+
+    def get_jaw_width(self):
+        return self.get_ee_values()
+
+    def change_jaw_width(self, jaw_width):
+        self.change_ee_values(ee_values=jaw_width)
+
+    def is_collided(self, obstacle_list=None, other_robot_list=None, toggle_contacts=False):
+        """
+        Interface for "is cdprimit collided", must be implemented in child class
+        :param obstacle_list:
+        :param other_robot_list:
+        :param toggle_contacts: debug
+        :return: see CollisionChecker is_collided for details
+        author: weiwei
+        date: 20240307
+        """
+        collision_info = self.cc.is_collided(obstacle_list=obstacle_list,
+                                             other_robot_list=other_robot_list,
+                                             toggle_contacts=toggle_contacts)
+        return collision_info
 
     def gen_stickmodel(self,
-                       tcp_jnt_id=None,
-                       tcp_loc_pos=None,
-                       tcp_loc_rotmat=None,
-                       toggle_tcpcs=False,
-                       toggle_jntscs=False,
-                       toggle_connjnt=False,
-                       name='ur3e_dual_stickmodel'):
-        stickmodel = mc.ModelCollection(name=name)
-        self.lft_body.gen_stickmodel(tcp_loc_pos=None,
-                                     tcp_loc_rotmat=None,
-                                     toggle_tcpcs=False,
-                                     toggle_jntscs=toggle_jntscs).attach_to(stickmodel)
-        self.lft_arm.gen_stickmodel(tcp_jnt_id=tcp_jnt_id,
-                                    tcp_loc_pos=tcp_loc_pos,
-                                    tcp_loc_rotmat=tcp_loc_rotmat,
-                                    toggle_tcpcs=toggle_tcpcs,
-                                    toggle_jntscs=toggle_jntscs,
-                                    toggle_connjnt=toggle_connjnt).attach_to(stickmodel)
-        self.lft_hnd.gen_stickmodel(toggle_tcp_frame=False, toggle_jnt_frames=toggle_jntscs).attach_to(stickmodel)
-        self.rgt_body.gen_stickmodel(tcp_loc_pos=None,
-                                     tcp_loc_rotmat=None,
-                                     toggle_tcpcs=False,
-                                     toggle_jntscs=toggle_jntscs).attach_to(stickmodel)
-        self.rgt_arm.gen_stickmodel(tcp_jnt_id=tcp_jnt_id,
-                                    tcp_loc_pos=tcp_loc_pos,
-                                    tcp_loc_rotmat=tcp_loc_rotmat,
-                                    toggle_tcpcs=toggle_tcpcs,
-                                    toggle_jntscs=toggle_jntscs,
-                                    toggle_connjnt=toggle_connjnt).attach_to(stickmodel)
-        self.rgt_hnd.gen_stickmodel(toggle_tcp_frame=False, toggle_jnt_frames=toggle_jntscs).attach_to(stickmodel)
-        return stickmodel
+                       toggle_tcp_frame=False,
+                       toggle_jnt_frames=False,
+                       toggle_flange_frame=False,
+                       name='yumi_stickmodel'):
+        m_col = mmc.ModelCollection(name=name)
+        self.body.gen_stickmodel(toggle_root_frame=toggle_jnt_frames,
+                                 toggle_flange_frame=toggle_flange_frame).attach_to(m_col)
+        self.lft_arm.gen_stickmodel(toggle_tcp_frame=toggle_tcp_frame,
+                                    toggle_jnt_frames=toggle_jnt_frames,
+                                    toggle_flange_frame=toggle_flange_frame,
+                                    name=name + "_lft_arm").attach_to(m_col)
+        self.rgt_arm.gen_stickmodel(toggle_tcp_frame=toggle_tcp_frame,
+                                    toggle_jnt_frames=toggle_jnt_frames,
+                                    toggle_flange_frame=toggle_flange_frame,
+                                    name=name + "_rgt_arm").attach_to(m_col)
+        return m_col
 
     def gen_meshmodel(self,
-                      tcp_jnt_id=None,
-                      tcp_loc_pos=None,
-                      tcp_loc_rotmat=None,
-                      toggle_tcpcs=False,
-                      toggle_jntscs=False,
-                      rgba=None,
-                      name='ur3e_dual_meshmodel'):
-        mm_collection = mc.ModelCollection(name=name)
-        self.lft_body.gen_mesh_model(tcp_loc_pos=None,
-                                     tcp_loc_rotmat=None,
-                                     toggle_tcpcs=False,
-                                     toggle_jntscs=toggle_jntscs,
-                                     rgba=rgba).attach_to(mm_collection)
-        self.lft_arm.gen_meshmodel(toggle_tcp_frame=toggle_tcpcs, toggle_jnt_frames=toggle_jntscs,
-                                   rgba=rgba).attach_to(mm_collection)
-        self.lft_hnd.gen_meshmodel(toggle_tcp_frame=False,
-                                   toggle_jnt_frames=toggle_jntscs,
-                                   rgba=rgba).attach_to(mm_collection)
-        self.rgt_arm.gen_meshmodel(toggle_tcp_frame=toggle_tcpcs, toggle_jnt_frames=toggle_jntscs,
-                                   rgba=rgba).attach_to(mm_collection)
-        self.rgt_hnd.gen_meshmodel(toggle_tcp_frame=False,
-                                   toggle_jnt_frames=toggle_jntscs,
-                                   rgba=rgba).attach_to(mm_collection)
-        for obj_info in self.lft_oih_infos:
-            objcm = obj_info['collision_model']
-            objcm.set_pos(obj_info['gl_pos'])
-            objcm.set_rotmat(obj_info['gl_rotmat'])
-            objcm.copy().attach_to(mm_collection)
-        for obj_info in self.rgt_oih_infos:
-            objcm = obj_info['collision_model']
-            objcm.set_pos(obj_info['gl_pos'])
-            objcm.set_rotmat(obj_info['gl_rotmat'])
-            objcm.copy().attach_to(mm_collection)
-        return mm_collection
-
+                      rgb=None,
+                      alpha=None,
+                      toggle_tcp_frame=False,
+                      toggle_jnt_frames=False,
+                      toggle_flange_frame=False,
+                      toggle_cdprim=False,
+                      toggle_cdmesh=False,
+                      name='yumi_meshmodel'):
+        m_col = mmc.ModelCollection(name=name)
+        self.body.gen_meshmodel(rgb=rgb, alpha=alpha, toggle_flange_frame=toggle_flange_frame,
+                                toggle_root_frame=toggle_jnt_frames, toggle_cdprim=toggle_cdprim,
+                                toggle_cdmesh=toggle_cdmesh, name=name + "_body").attach_to(m_col)
+        self.lft_arm.gen_meshmodel(rgb=rgb,
+                                   alpha=alpha,
+                                   toggle_tcp_frame=toggle_tcp_frame,
+                                   toggle_jnt_frames=toggle_jnt_frames,
+                                   toggle_flange_frame=toggle_flange_frame,
+                                   toggle_cdprim=toggle_cdprim,
+                                   toggle_cdmesh=toggle_cdmesh,
+                                   name=name + "_lft_arm").attach_to(m_col)
+        self.rgt_arm.gen_meshmodel(rgb=rgb,
+                                   alpha=alpha,
+                                   toggle_tcp_frame=toggle_tcp_frame,
+                                   toggle_jnt_frames=toggle_jnt_frames,
+                                   toggle_flange_frame=toggle_flange_frame,
+                                   toggle_cdprim=toggle_cdprim,
+                                   toggle_cdmesh=toggle_cdmesh,
+                                   name=name + "_rgt_arm").attach_to(m_col)
+        return m_col
 
 if __name__ == '__main__':
+    import time
     import visualization.panda.world as wd
     import modeling.geometric_model as gm
+    import basis
 
-    base = wd.World(cam_pos=[5, 0, 3], lookat_pos=[0, 0, 1])
+    base = wd.World(cam_pos=[3, 1, 1], lookat_pos=[0, 0, 0.5])
     gm.gen_frame().attach_to(base)
-    u3ed = UR3EDual()
-    # u3ed.fk(.85)
-    u3ed_meshmodel = u3ed.gen_meshmodel(toggle_tcpcs=True)
-    u3ed_meshmodel.attach_to(base)
-    # u3ed_meshmodel.show_cdprimit()
-    # u3ed.gen_stickmodel().attach_to(base)
+    robot = UR3e_Dual(enable_cc=True)
+    robot.gen_meshmodel().attach_to(base)
+    robot.gen_stickmodel().attach_to(base)
+    robot.show_cdprim()
+    base.run()
+
+    # ik test
+    tgt_pos = np.array([.4, -.4, .3])
+    tgt_rotmat = rm.rotmat_from_axangle([0, 1, 0], math.pi / 2)
+    gm.gen_frame(pos=tgt_pos, rotmat=tgt_rotmat).attach_to(base)
+    # base.run()
+
+    tic = time.time()
+    jnt_values = robot.rgt_arm.ik(tgt_pos, tgt_rotmat)
+    toc = time.time()
+    print(toc - tic)
+    if jnt_values is not None:
+        robot.rgt_arm.goto_given_conf(jnt_values=jnt_values)
+        robot.gen_meshmodel().attach_to(base)
+    tic = time.time()
+    result = robot.is_collided()
+    toc = time.time()
+    print(result, toc - tic)
+    robot.show_cdprim()
+    # robot.lft_arm.show_cdprim()
     base.run()

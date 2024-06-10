@@ -5,11 +5,11 @@ import robot_sim.end_effectors.gripper.robotiqhe.robotiqhe as rtqhe
 import robot_sim.robots.single_arm_robot_interface as ri
 
 
-class UR3E_RTQHE(ri.SglArmRobotInterface):
+class UR3e_RtqHE(ri.SglArmRobotInterface):
 
     def __init__(self, pos=np.zeros(3), rotmat=np.eye(3), name="ur3e_rtqhe", enable_cc=True):
         super().__init__(pos=pos, rotmat=rotmat, name=name, enable_cc=enable_cc)
-        self.manipulator = ur3e.UR3E(pos=self.pos, rotmat=self.rotmat, home_conf=np.zeros(6),
+        self.manipulator = ur3e.UR3e(pos=self.pos, rotmat=self.rotmat, home_conf=np.zeros(6),
                                      name=name + "_manipulator", enable_cc=False)
         self.end_effector = rtqhe.RobotiqHE(pos=self.manipulator.gl_flange_pos,
                                             rotmat=self.manipulator.gl_flange_rotmat, name=name + "_eef")
@@ -56,11 +56,10 @@ if __name__ == '__main__':
     import basis.robot_math as rm
     import visualization.panda.world as wd
     import modeling.geometric_model as mgm
-    import modeling.collision_model as mcm
 
     base = wd.World(cam_pos=[1.7, 1.7, 1.7], lookat_pos=[0, 0, .3])
     mgm.gen_frame().attach_to(base)
-    robot = UR3E_RTQHE(enable_cc=True)
+    robot = UR3e_RtqHE(enable_cc=True)
     robot.change_jaw_width(.05)
     # robot.cc.show_cdprim()
     robot.goto_given_conf(jnt_values=np.radians(np.array([20, -90, 120, 30, 0, 40, 0])))
@@ -79,19 +78,4 @@ if __name__ == '__main__':
         robot.gen_stickmodel(toggle_tcp_frame=True, toggle_jnt_frames=True).attach_to(base)
     robot.show_cdprim()
     robot.unshow_cdprim()
-    base.run()
-
-    robot.goto_given_conf(jnt_values=np.array([0, np.pi / 2, np.pi * 11 / 20, 0, np.pi / 2, 0]))
-    robot.show_cdprim()
-
-    box = mcm.gen_box(xyz_lengths=np.array([0.1, .1, .1]), pos=tgt_pos, rgba=np.array([1, 1, 0, .3]))
-    box.attach_to(base)
-    tic = time.time()
-    result, contacts = robot.is_collided(obstacle_list=[box], toggle_contacts=True)
-    print(result)
-    toc = time.time()
-    print(toc - tic)
-    for pnt in contacts:
-        mgm.gen_sphere(pnt).attach_to(base)
-
     base.run()
