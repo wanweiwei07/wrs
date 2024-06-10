@@ -273,7 +273,6 @@ class World(ShowBase, object):
     #         self.detach_internal_update_robot(robot)
 
     def run_mj_physics(self, mj_model, duration):
-        mj_model.data.qvel[3:6] = 2*np.random.randn(3)
         for geom_dict in mj_model.body_geom_dict.values():
             for geom in geom_dict.values():
                 geom.attach_to(self)

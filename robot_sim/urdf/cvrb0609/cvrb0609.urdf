@@ -151,13 +151,13 @@
     <visual>
       <origin rpy="0 0 0" xyz="0 0 0"/>
       <geometry>
-        <mesh filename="base_link.dae" scale="1 1 1"/>
+        <mesh filename="base_link.stl" scale="1 1 1"/>
       </geometry>
     </visual>
     <collision>
       <origin rpy="0 0 0" xyz="0 0 0"/>
       <geometry>
-        <mesh filename="base_link.dae" scale="1 1 1"/>
+        <mesh filename="base_link.stl" scale="1 1 1"/>
       </geometry>
     </collision>
     <inertial>
@@ -170,13 +170,13 @@
     <visual>
       <origin rpy="0 0 0" xyz="0 0 0"/>
       <geometry>
-        <mesh filename="J1.dae" scale="1 1 1"/>
+        <mesh filename="J1.stl" scale="1 1 1"/>
       </geometry>
     </visual>
     <collision>
       <origin rpy="0 0 0" xyz="0 0 0"/>
       <geometry>
-        <mesh filename="J1.dae" scale="1 1 1"/>
+        <mesh filename="J1.stl" scale="1 1 1"/>
       </geometry>
     </collision>
     <inertial>
@@ -197,13 +197,13 @@
     <visual>
       <origin rpy="0 0 0" xyz="0 0 0"/>
       <geometry>
-        <mesh filename="J2.dae" scale="1 1 1"/>
+        <mesh filename="J2.stl" scale="1 1 1"/>
       </geometry>
     </visual>
     <collision>
       <origin rpy="0 0 0" xyz="0 0 0"/>
       <geometry>
-        <mesh filename="J2.dae" scale="1 1 1"/>
+        <mesh filename="J2.stl" scale="1 1 1"/>
       </geometry>
     </collision>
     <inertial>
@@ -224,13 +224,13 @@
     <visual>
       <origin rpy="0 0 0" xyz="0 0 0"/>
       <geometry>
-        <mesh filename="J3.dae" scale="1 1 1"/>
+        <mesh filename="J3.stl" scale="1 1 1"/>
       </geometry>
     </visual>
     <collision>
       <origin rpy="0 0 0" xyz="0 0 0"/>
       <geometry>
-        <mesh filename="J3.dae" scale="1 1 1"/>
+        <mesh filename="J3.stl" scale="1 1 1"/>
       </geometry>
     </collision>
     <inertial>
@@ -251,13 +251,13 @@
     <visual>
       <origin rpy="0 0 0" xyz="0 0 0"/>
       <geometry>
-        <mesh filename="J4.dae" scale="1 1 1"/>
+        <mesh filename="J4.stl" scale="1 1 1"/>
       </geometry>
     </visual>
     <collision>
       <origin rpy="0 0 0" xyz="0 0 0"/>
       <geometry>
-        <mesh filename="J4.dae" scale="1 1 1"/>
+        <mesh filename="J4.stl" scale="1 1 1"/>
       </geometry>
     </collision>
     <inertial>
@@ -278,13 +278,13 @@
     <visual>
       <origin rpy="0 0 0" xyz="0 0 0"/>
       <geometry>
-        <mesh filename="J5.dae" scale="1 1 1"/>
+        <mesh filename="J5.stl" scale="1 1 1"/>
       </geometry>
     </visual>
     <collision>
       <origin rpy="0 0 0" xyz="0 0 0"/>
       <geometry>
-        <mesh filename="J5.dae" scale="1 1 1"/>
+        <mesh filename="J5.stl" scale="1 1 1"/>
       </geometry>
     </collision>
     <inertial>
@@ -305,13 +305,13 @@
     <visual>
       <origin rpy="0 0 0" xyz="0 0 0"/>
       <geometry>
-        <mesh filename="J6.dae" scale="1 1 1"/>
+        <mesh filename="J6.stl" scale="1 1 1"/>
       </geometry>
     </visual>
     <collision>
       <origin rpy="0 0 0" xyz="0 0 0"/>
       <geometry>
-        <mesh filename="J6.dae" scale="1 1 1"/>
+        <mesh filename="J6.stl" scale="1 1 1"/>
       </geometry>
     </collision>
     <inertial>
@@ -390,12 +390,12 @@
   <link name="hand1_robotiq_85_base_link">
     <visual>
       <geometry>
-        <mesh filename="file:///home/mouri/workspace/install/hand_driver_robotiq_description/share/hand_driver_robotiq_description/meshes/2f_85/visual/robotiq_2f_85_base.dae"/>
+        <mesh filename="robotiq_arg2f_85_base_link.stl"/>
       </geometry>
     </visual>
     <collision>
       <geometry>
-        <mesh filename="file:///home/mouri/workspace/install/hand_driver_robotiq_description/share/hand_driver_robotiq_description/meshes/2f_85/collision/robotiq_2f_85_base.stl"/>
+        <mesh filename="robotiq_arg2f_85_base_link.stl"/>
       </geometry>
     </collision>
     <inertial>
@@ -407,12 +407,12 @@
   <link name="hand1_robotiq_85_left_knuckle_link">
     <visual>
       <geometry>
-        <mesh filename="file:///home/mouri/workspace/install/hand_driver_robotiq_description/share/hand_driver_robotiq_description/meshes/2f_85/visual/robotiq_2f_85_left_knuckle.dae"/>
+        <mesh filename="robotiq_arg2f_85_outer_knuckle.stl"/>
       </geometry>
     </visual>
     <collision>
       <geometry>
-        <mesh filename="file:///home/mouri/workspace/install/hand_driver_robotiq_description/share/hand_driver_robotiq_description/meshes/2f_85/collision/robotiq_2f_85_left_knuckle.stl"/>
+        <mesh filename="robotiq_arg2f_85_outer_knuckle.stl"/>
       </geometry>
     </collision>
     <inertial>
@@ -424,12 +424,12 @@
   <link name="hand1_robotiq_85_right_knuckle_link">
     <visual>
       <geometry>
-        <mesh filename="file:///home/mouri/workspace/install/hand_driver_robotiq_description/share/hand_driver_robotiq_description/meshes/2f_85/visual/robotiq_2f_85_right_knuckle.dae"/>
+        <mesh filename="robotiq_arg2f_85_outer_knuckle.stl"/>
       </geometry>
     </visual>
     <collision>
       <geometry>
-        <mesh filename="file:///home/mouri/workspace/install/hand_driver_robotiq_description/share/hand_driver_robotiq_description/meshes/2f_85/collision/robotiq_2f_85_right_knuckle.stl"/>
+        <mesh filename="robotiq_arg2f_85_outer_knuckle.stl"/>
       </geometry>
     </collision>
     <inertial>
@@ -441,12 +441,12 @@
   <link name="hand1_robotiq_85_left_finger_link">
     <visual>
       <geometry>
-        <mesh filename="file:///home/mouri/workspace/install/hand_driver_robotiq_description/share/hand_driver_robotiq_description/meshes/2f_85/visual/robotiq_2f_85_left_finger.dae"/>
+        <mesh filename="robotiq_arg2f_85_outer_finger.stl"/>
       </geometry>
     </visual>
     <collision>
       <geometry>
-        <mesh filename="file:///home/mouri/workspace/install/hand_driver_robotiq_description/share/hand_driver_robotiq_description/meshes/2f_85/collision/robotiq_2f_85_left_finger.stl"/>
+        <mesh filename="robotiq_arg2f_85_outer_finger.stl"/>
       </geometry>
     </collision>
     <inertial>
@@ -458,12 +458,12 @@
   <link name="hand1_robotiq_85_right_finger_link">
     <visual>
       <geometry>
-        <mesh filename="file:///home/mouri/workspace/install/hand_driver_robotiq_description/share/hand_driver_robotiq_description/meshes/2f_85/visual/robotiq_2f_85_right_finger.dae"/>
+        <mesh filename="robotiq_arg2f_85_outer_finger.stl"/>
       </geometry>
     </visual>
     <collision>
       <geometry>
-        <mesh filename="file:///home/mouri/workspace/install/hand_driver_robotiq_description/share/hand_driver_robotiq_description/meshes/2f_85/collision/robotiq_2f_85_right_finger.stl"/>
+        <mesh filename="robotiq_arg2f_85_outer_finger.stl"/>
       </geometry>
     </collision>
     <inertial>
@@ -475,12 +475,12 @@
   <link name="hand1_robotiq_85_left_inner_knuckle_link">
     <visual>
       <geometry>
-        <mesh filename="file:///home/mouri/workspace/install/hand_driver_robotiq_description/share/hand_driver_robotiq_description/meshes/2f_85/visual/robotiq_2f_85_left_inner_knuckle.dae"/>
+        <mesh filename="robotiq_arg2f_85_inner_knuckle.stl"/>
       </geometry>
     </visual>
     <collision>
       <geometry>
-        <mesh filename="file:///home/mouri/workspace/install/hand_driver_robotiq_description/share/hand_driver_robotiq_description/meshes/2f_85/collision/robotiq_2f_85_left_inner_knuckle.stl"/>
+        <mesh filename="robotiq_arg2f_85_inner_knuckle.stl"/>
       </geometry>
     </collision>
     <inertial>
@@ -492,12 +492,12 @@
   <link name="hand1_robotiq_85_right_inner_knuckle_link">
     <visual>
       <geometry>
-        <mesh filename="file:///home/mouri/workspace/install/hand_driver_robotiq_description/share/hand_driver_robotiq_description/meshes/2f_85/visual/robotiq_2f_85_right_inner_knuckle.dae"/>
+        <mesh filename="robotiq_arg2f_85_inner_knuckle.stl"/>
       </geometry>
     </visual>
     <collision>
       <geometry>
-        <mesh filename="file:///home/mouri/workspace/install/hand_driver_robotiq_description/share/hand_driver_robotiq_description/meshes/2f_85/collision/robotiq_2f_85_right_inner_knuckle.stl"/>
+        <mesh filename="robotiq_arg2f_85_inner_knuckle.stl"/>
       </geometry>
     </collision>
     <inertial>
@@ -509,12 +509,12 @@
   <link name="hand1_robotiq_85_left_finger_tip_link">
     <visual>
       <geometry>
-        <mesh filename="file:///home/mouri/workspace/install/hand_driver_robotiq_description/share/hand_driver_robotiq_description/meshes/2f_85/visual/robotiq_2f_85_left_finger_tip.dae"/>
+        <mesh filename="robotiq_arg2f_85_inner_finger.stl"/>
       </geometry>
     </visual>
     <collision>
       <geometry>
-        <mesh filename="file:///home/mouri/workspace/install/hand_driver_robotiq_description/share/hand_driver_robotiq_description/meshes/2f_85/collision/robotiq_2f_85_left_finger_tip.stl"/>
+        <mesh filename="robotiq_arg2f_85_inner_finger.stl"/>
       </geometry>
       <surface>
         <friction>
@@ -544,12 +544,12 @@
   <link name="hand1_robotiq_85_right_finger_tip_link">
     <visual>
       <geometry>
-        <mesh filename="file:///home/mouri/workspace/install/hand_driver_robotiq_description/share/hand_driver_robotiq_description/meshes/2f_85/visual/robotiq_2f_85_right_finger_tip.dae"/>
+        <mesh filename="robotiq_arg2f_85_inner_finger.stl"/>
       </geometry>
     </visual>
     <collision>
       <geometry>
-        <mesh filename="file:///home/mouri/workspace/install/hand_driver_robotiq_description/share/hand_driver_robotiq_description/meshes/2f_85/collision/robotiq_2f_85_right_finger_tip.stl"/>
+        <mesh filename="robotiq_arg2f_85_inner_finger.stl"/>
       </geometry>
       <surface>
         <friction>
@@ -836,12 +836,12 @@
   <link name="robotstand_base_link">
     <visual>
       <geometry>
-        <mesh filename="file:///home/mouri/workspace/install/lifter_description/share/lifter_description/mesh/Lifter-Body.stl" scale="0.001 0.001 0.001"/>
+        <box size=".1 .1 .1" />
       </geometry>
     </visual>
     <collision>
       <geometry>
-        <mesh filename="file:///home/mouri/workspace/install/lifter_description/share/lifter_description/mesh/Lifter-Body.stl" scale="0.001 0.001 0.001"/>
+        <box size=".1 .1 .1" />
       </geometry>
     </collision>
     <inertial>
@@ -870,12 +870,12 @@
   <link name="robotstand_stage_link">
     <visual>
       <geometry>
-        <mesh filename="file:///home/mouri/workspace/install/lifter_description/share/lifter_description/mesh/Stage-Body.stl" scale="0.001 0.001 0.001"/>
+        <box size=".1 .1 .1" />
       </geometry>
     </visual>
     <collision>
       <geometry>
-        <mesh filename="file:///home/mouri/workspace/install/lifter_description/share/lifter_description/mesh/Stage-Body.stl" scale="0.001 0.001 0.001"/>
+        <box size=".1 .1 .1" />
       </geometry>
     </collision>
     <inertial>
@@ -942,12 +942,12 @@
   <link name="handcover_base_link">
     <visual>
       <geometry>
-        <mesh filename="package://ign_ros2_robot2world_sample/mesh/object/attachment/handcover/handcover/handcover.stl" scale="1.0 1.0 1.0"/>
+        <box size=".1 .1 .1" />
       </geometry>
     </visual>
     <collision>
       <geometry>
-        <mesh filename="package://ign_ros2_robot2world_sample/mesh/object/attachment/handcover/handcover/handcover.stl" scale="1.0 1.0 1.0"/>
+        <box size=".1 .1 .1" />
       </geometry>
     </collision>
     <inertial>
