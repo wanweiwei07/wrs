@@ -18,9 +18,9 @@ class UR3e_Dual(ri.RobotInterface):
         # the body anchor
         self.body = rkjlc.rkjl.Anchor(name="ur3e_dual_base", pos=self.pos, rotmat=self.rotmat, n_flange=2, n_lnk=9)
         self.body.loc_flange_pose_list[0] = [np.array([.365, .345, 1.33]),
-                                             rm.rotmat_from_euler(np.pi / 2.0, 0, np.pi / 2.0)]
+                                             rm.rotmat_from_euler(-np.pi / 2.0, 0, -np.pi / 2.0)]
         self.body.loc_flange_pose_list[1] = [np.array([.365, -.345, 1.33]),
-                                             rm.rotmat_from_euler(np.pi / 2.0, 0, np.pi / 2.0)]
+                                             rm.rotmat_from_euler(-np.pi / 2.0, 0, -np.pi / 2.0)]
         self.body.lnk_list[0].name = "ur3e_dual_base_link"
         self.body.lnk_list[0].cmodel = mcm.CollisionModel(
             initor=os.path.join(current_file_dir, "meshes", "ur3e_dual_base.stl"),
@@ -29,12 +29,28 @@ class UR3e_Dual(ri.RobotInterface):
         self.body.lnk_list[0].cmodel.rgba = rm.bc.hug_gray
         # left arm
         self.lft_arm = u3ehe.UR3e_RtqHE(pos=self.body.gl_flange_pose_list[0][0],
-                                        rotmat=self.body.gl_flange_pose_list[0][1])
-        self.lft_arm.home_conf = np.radians(np.array([-np.pi * 2 / 3, -np.pi * 2 / 3, np.pi / 2, np.pi, -np.pi / 2, 0]))
+                                        rotmat=self.body.gl_flange_pose_list[0][1],
+                                        ik_solver=None)
+        self.lft_arm.home_conf = np.array([-np.pi * 2 / 3, -np.pi * 2 / 3, np.pi * 2 / 3, np.pi, -np.pi / 2, 0])
+        self.lft_arm.manipulator.jnts[0].motion_range = np.array([-np.pi * 5 / 3, -np.pi / 3])
+        self.lft_arm.manipulator.jnts[1].motion_range = np.array([-np.pi, 0])
+        self.lft_arm.manipulator.jnts[2].motion_range = np.array([0, np.pi])
+        self.lft_arm.manipulator.jnts[3].motion_range = np.array([np.pi / 6, np.pi * 7 / 6])
+        self.lft_arm.manipulator.jnts[4].motion_range = np.array([-np.pi, np.pi])
+        self.lft_arm.manipulator.jnts[5].motion_range = np.array([-np.pi, np.pi])
+        self.lft_arm.manipulator.jlc.finalize(ik_solver='d', identifier_str=self.lft_arm.name + "_dual_lft")
         # rigth side
         self.rgt_arm = u3ehe.UR3e_RtqHE(pos=self.body.gl_flange_pose_list[1][0],
-                                        rotmat=self.body.gl_flange_pose_list[1][1])
-        self.rgt_arm.home_conf = np.radians(np.array([np.pi * 2 / 3, -np.pi / 3, -np.pi / 2, np.pi/2, 0, 0]))
+                                        rotmat=self.body.gl_flange_pose_list[1][1],
+                                        ik_solver=None)
+        self.rgt_arm.home_conf = np.array([np.pi * 2 / 3, -np.pi / 3, -np.pi * 2 / 3, 0, np.pi / 2, 0])
+        self.rgt_arm.manipulator.jnts[0].motion_range = np.array([np.pi / 3, np.pi * 5 / 3])
+        self.rgt_arm.manipulator.jnts[1].motion_range = np.array([-np.pi, 0])
+        self.rgt_arm.manipulator.jnts[2].motion_range = np.array([-np.pi, 0])
+        self.rgt_arm.manipulator.jnts[3].motion_range = np.array([-np.pi * 5 / 6, np.pi / 6])
+        self.rgt_arm.manipulator.jnts[4].motion_range = np.array([-np.pi, np.pi])
+        self.rgt_arm.manipulator.jnts[5].motion_range = np.array([-np.pi, np.pi])
+        self.rgt_arm.manipulator.jlc.finalize(ik_solver='d', identifier_str=self.rgt_arm.name + "_dual_rgt")
         if self.cc is not None:
             self.setup_cc()
         # go home
@@ -106,16 +122,16 @@ class UR3e_Dual(ri.RobotInterface):
         rgt_ml4 = self.cc.add_cce(self.rgt_arm.manipulator.jlc.jnts[4].lnk)
         rgt_ml5 = self.cc.add_cce(self.rgt_arm.manipulator.jlc.jnts[5].lnk)
         # first pairs
-        from_list = [lft_ml4, lft_ml5, lft_elb, lft_el0, lft_el1, rgt_ml4, rgt_ml5, rgt_elb, rgt_el0, rgt_el1]
-        into_list = [bd, lft_ml0, rgt_ml0]
+        from_list = [lft_ml4, lft_elb, lft_el0, lft_el1, rgt_ml4, rgt_elb, rgt_el0, rgt_el1]
+        into_list = [bd, lft_ml0, lft_ml1, lft_ml2, rgt_ml0, rgt_ml1, rgt_ml2]
         self.cc.set_cdpair_by_ids(from_list, into_list)
         # second pairs
-        from_list = [lft_ml0, lft_ml1, rgt_ml0, rgt_ml1]
-        into_list = [lft_elb, lft_el0, lft_el1, rgt_elb, rgt_el0, rgt_el1]
+        from_list = [lft_ml2, rgt_ml2]
+        into_list = [bd, lft_ml0, rgt_ml0]
         self.cc.set_cdpair_by_ids(from_list, into_list)
         # third pairs
-        from_list = [lft_ml1, lft_ml2, lft_ml3, lft_ml4, lft_ml5, lft_elb, lft_el0, lft_el1]
-        into_list = [rgt_ml1, rgt_ml2, rgt_ml3, rgt_ml4, rgt_ml5, rgt_elb, rgt_el0, rgt_el1]
+        from_list = [lft_ml2, lft_ml3, lft_ml4, lft_ml5, lft_elb, lft_el0, lft_el1]
+        into_list = [rgt_ml2, rgt_ml3, rgt_ml4, rgt_ml5, rgt_elb, rgt_el0, rgt_el1]
         self.cc.set_cdpair_by_ids(from_list, into_list)
         # point low-level cc to the high-level one
         self.lft_arm.cc = self.cc
@@ -277,37 +293,46 @@ class UR3e_Dual(ri.RobotInterface):
                                    name=name + "_rgt_arm").attach_to(m_col)
         return m_col
 
+
 if __name__ == '__main__':
     import time
     import visualization.panda.world as wd
     import modeling.geometric_model as gm
     import basis
+    from tqdm import tqdm
 
-    base = wd.World(cam_pos=[3, 1, 1], lookat_pos=[0, 0, 0.5])
+    base = wd.World(cam_pos=[3, 3, 3], lookat_pos=[0, 0, 1])
     gm.gen_frame().attach_to(base)
     robot = UR3e_Dual(enable_cc=True)
-    robot.gen_meshmodel().attach_to(base)
+    robot.gen_meshmodel(alpha=.5).attach_to(base)
     robot.gen_stickmodel().attach_to(base)
-    robot.show_cdprim()
-    base.run()
-
-    # ik test
-    tgt_pos = np.array([.4, -.4, .3])
-    tgt_rotmat = rm.rotmat_from_axangle([0, 1, 0], math.pi / 2)
-    gm.gen_frame(pos=tgt_pos, rotmat=tgt_rotmat).attach_to(base)
+    robot.use_rgt()
+    # robot.delegator.manipulator.jlc._ik_solver.test_success_rate()
     # base.run()
 
-    tic = time.time()
-    jnt_values = robot.rgt_arm.ik(tgt_pos, tgt_rotmat)
-    toc = time.time()
-    print(toc - tic)
-    if jnt_values is not None:
-        robot.rgt_arm.goto_given_conf(jnt_values=jnt_values)
-        robot.gen_meshmodel().attach_to(base)
-    tic = time.time()
-    result = robot.is_collided()
-    toc = time.time()
-    print(result, toc - tic)
-    robot.show_cdprim()
-    # robot.lft_arm.show_cdprim()
+    count = 0
+    # ik test
+    for i in tqdm(range(100)):
+        rand_conf = robot.rand_conf()
+        print(rand_conf, robot.delegator.manipulator.jnt_ranges)
+        tgt_pos, tgt_rotmat = robot.fk(jnt_values=rand_conf)
+        # tgt_pos = np.array([.8, -.1, .9])
+        # tgt_rotmat = rm.rotmat_from_axangle([0, 1, 0], np.pi)
+        gm.gen_frame(pos=tgt_pos, rotmat=tgt_rotmat, ax_length=.3).attach_to(base)
+
+        tic = time.time()
+        jnt_values = robot.rgt_arm.ik(tgt_pos, tgt_rotmat,toggle_dbg=False)
+        print(jnt_values)
+        toc = time.time()
+        if jnt_values is not None:
+            count += 1
+            robot.rgt_arm.goto_given_conf(jnt_values=jnt_values)
+            robot.gen_meshmodel().attach_to(base)
+            base.run()
+        # tic = time.time()
+        # result = robot.is_collided()
+        # toc = time.time()
+        # print(result, toc - tic)
+        # robot.show_cdprim()
+        print(count)
     base.run()

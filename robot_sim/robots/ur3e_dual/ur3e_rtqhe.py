@@ -7,10 +7,10 @@ import robot_sim.robots.single_arm_robot_interface as ri
 
 class UR3e_RtqHE(ri.SglArmRobotInterface):
 
-    def __init__(self, pos=np.zeros(3), rotmat=np.eye(3), name="ur3e_rtqhe", enable_cc=True):
+    def __init__(self, pos=np.zeros(3), rotmat=np.eye(3), ik_solver='d', name="ur3e_rtqhe", enable_cc=True):
         super().__init__(pos=pos, rotmat=rotmat, name=name, enable_cc=enable_cc)
         self.manipulator = ur3e.UR3e(pos=self.pos, rotmat=self.rotmat, home_conf=np.zeros(6),
-                                     name=name + "_manipulator", enable_cc=False)
+                                     ik_solver=ik_solver, name=name + "_manipulator", enable_cc=False)
         self.end_effector = rtqhe.RobotiqHE(pos=self.manipulator.gl_flange_pos,
                                             rotmat=self.manipulator.gl_flange_rotmat, name=name + "_eef")
         # tool center point

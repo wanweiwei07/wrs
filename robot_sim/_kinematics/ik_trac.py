@@ -128,8 +128,8 @@ class NumIKSolverProc(mp.Process):
                 return tcp_gl_pos, tcp_gl_rotmat
 
         while True:
-            tgt_pos, tgt_rotmat, seed_jnt_vals, max_n_iter = self._param_queue.get()
-            iter_jnt_vals = seed_jnt_vals.copy()
+            tgt_pos, tgt_rotmat, seed_jnt_values, max_n_iter = self._param_queue.get()
+            iter_jnt_vals = seed_jnt_values.copy()
             counter = 0
             while self._result_queue.empty():  # check if other solver succeeded in the beginning
                 tcp_gl_pos, tcp_gl_rotmat, j_mat = _fk(self.anchor,
@@ -256,7 +256,7 @@ class OptIKSolverProc(mp.Process):
 
         # sqpss with random restart
         while True:
-            tgt_pos, tgt_rotmat, seed_jnt_vals, max_n_iter = self._param_queue.get()
+            tgt_pos, tgt_rotmat, seed_jnt_values, max_n_iter = self._param_queue.get()
             options = {'maxiter': max_n_iter}
             counter = 0
             while True:
@@ -264,7 +264,7 @@ class OptIKSolverProc(mp.Process):
                 try:
                     result = sopt.minimize(fun=_objective,
                                            args=(tgt_pos, tgt_rotmat),
-                                           x0=seed_jnt_vals,
+                                           x0=seed_jnt_values,
                                            method='SLSQP',
                                            bounds=self.joint_ranges,
                                            options=options,
@@ -280,7 +280,7 @@ class OptIKSolverProc(mp.Process):
                             self._result_queue.put(None)
                             break
                         else:
-                            seed_jnt_vals = self._rand_conf()
+                            seed_jnt_values = self._rand_conf()
                             continue
                 break
             self._state_queue.put(1)
@@ -294,7 +294,7 @@ class TracIKSolver(object):
 
     def __init__(self, jlc, wln_ratio=.05):
         self.jlc = jlc
-        self._default_seed_jnt_vals = self.jlc.get_jnt_values()
+        self._default_seed_jnt_values = self.jlc.get_jnt_values()
         self._nik_param_queue = mp.Queue()
         self._oik_param_queue = mp.Queue()
         self._nik_state_queue = mp.Queue()
@@ -319,42 +319,42 @@ class TracIKSolver(object):
         self.oik_solver_proc.start()
         self._tcp_gl_pos, self._tcp_gl_rotmat = self.jlc.get_gl_tcp()
         # run once to avoid long waiting time in the beginning
-        self._oik_param_queue.put((self._tcp_gl_pos, self._tcp_gl_rotmat, self._default_seed_jnt_vals, 10))
+        self._oik_param_queue.put((self._tcp_gl_pos, self._tcp_gl_rotmat, self._default_seed_jnt_values, 10))
         self._oik_state_queue.get()
         self._result_queue.get()
 
     def __call__(self,
                  tgt_pos,
                  tgt_rotmat,
-                 seed_jnt_vals=None,
+                 seed_jnt_values=None,
                  max_n_iter=100,
                  toggle_dbg=False):
         return self.ik(tgt_pos=tgt_pos,
                        tgt_rotmat=tgt_rotmat,
-                       seed_jnt_vals=seed_jnt_vals,
+                       seed_jnt_values=seed_jnt_values,
                        max_n_iter=max_n_iter,
                        toggle_dbg=toggle_dbg)
 
     def ik(self,
            tgt_pos,
            tgt_rotmat,
-           seed_jnt_vals=None,
+           seed_jnt_values=None,
            max_n_iter=100,
            toggle_dbg=False):
         """
         :param tgt_pos:
         :param tgt_rotmat:
-        :param seed_jnt_vals:
+        :param seed_jnt_values:
         :param max_n_iter:
         :param toggle_dbg: the function will return a tuple like (solver, jnt_values); solver is 'o' (opt) or 'n' (num)
         :return:
         author: weiwei
         date: 20231107
         """
-        if seed_jnt_vals is None:
-            seed_jnt_vals = self._default_seed_jnt_vals
-        self._nik_param_queue.put((tgt_pos, tgt_rotmat, seed_jnt_vals, max_n_iter))
-        self._oik_param_queue.put((tgt_pos, tgt_rotmat, seed_jnt_vals, max_n_iter))
+        if seed_jnt_values is None:
+            seed_jnt_values = self._default_seed_jnt_values
+        self._nik_param_queue.put((tgt_pos, tgt_rotmat, seed_jnt_values, max_n_iter))
+        self._oik_param_queue.put((tgt_pos, tgt_rotmat, seed_jnt_values, max_n_iter))
         if self._nik_state_queue.get() and self._oik_state_queue.get():
             result = self._result_queue.get()
             if toggle_dbg:

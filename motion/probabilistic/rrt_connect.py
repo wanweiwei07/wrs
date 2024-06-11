@@ -1,6 +1,7 @@
 import time
 import uuid
 import networkx as nx
+import numpy as np
 from motion.probabilistic import rrt
 
 

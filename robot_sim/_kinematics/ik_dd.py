@@ -39,9 +39,9 @@ class DDIKSolver(object):
             path = os.path.join(os.path.dirname(current_file_dir), "_data_files")
         self._fname_tree = os.path.join(path, f"{identifier_str}_ikdd_tree.pkl")
         self._fname_jnt = os.path.join(path, f"{identifier_str}_jnt_data.pkl")
-        self._k_bbs = 2  # number of nearest neighbours examined by the backbone sovler
+        self._k_bbs = 20  # number of nearest neighbours examined by the backbone solver
         self._k_max = 20  # maximum nearest neighbours explored by the evolver
-        self._max_n_iter = 7  # max_n_iter of the backbone solver
+        self._max_n_iter = 5  # max_n_iter of the backbone solver
         if backbone_solver == 'n':
             self._backbone_solver = rkn.NumIKSolver(self.jlc)
         elif backbone_solver == 'o':
@@ -52,15 +52,15 @@ class DDIKSolver(object):
             print("Rebuilding the database. It starts a new evolution and is costly.")
             y_or_n = bu.get_yesno()
             if y_or_n == 'y':
-                self.querry_tree, self.jnt_data = self._build_data()
+                self.query_tree, self.jnt_data = self._build_data()
                 self.persist_data()
                 self.evolve_data(n_times=100000)
         else:
             try:
-                self.querry_tree = pickle.load(open(self._fname_tree, 'rb'))
+                self.query_tree = pickle.load(open(self._fname_tree, 'rb'))
                 self.jnt_data = pickle.load(open(self._fname_jnt, 'rb'))
             except FileNotFoundError:
-                self.querry_tree, self.jnt_data = self._build_data()
+                self.query_tree, self.jnt_data = self._build_data()
                 self.persist_data()
                 self.evolve_data(n_times=100)
 
@@ -87,12 +87,12 @@ class DDIKSolver(object):
                        toggle_evolve=toggle_evolve,
                        toggle_dbg=toggle_dbg)
 
-    def _rotmat_to_vec(self, rotmat, method='q'):
+    def _rotmat_to_vec(self, rotmat, method='v'):
         """
         convert a rotmat to vectors
         this will be used for computing the Minkowski p-norm required by KDTree query
         'f' or 'q' are recommended, they both have satisfying performance
-        :param method: 'f': Frobenius; 'q': Quaternion; 'r': rpy; '-': same value
+        :param method: 'f': Frobenius; 'q': Quaternion; 'r': rpy; 'v': rotvec; '-': same value
         :return:
         author: weiwei
         date: 20231107
@@ -103,6 +103,8 @@ class DDIKSolver(object):
             return Rotation.from_matrix(rotmat).as_quat()
         if method == 'r':
             return rm.rotmat_to_euler(rotmat)
+        if method == 'v':
+            return Rotation.from_matrix(rotmat).as_rotvec()
         if method == '-':
             return np.array([0])
 
@@ -117,16 +119,18 @@ class DDIKSolver(object):
         grid = np.meshgrid(*sampled_jnts)
         sampled_qs = np.vstack([x.ravel() for x in grid]).T
         # gen sampled qs and their correspondent flange poses
-        flange_data = []
+        query_data = []
         jnt_data = []
         for id in tqdm(range(len(sampled_qs))):
             jnt_values = sampled_qs[id]
             flange_pos, flange_rotmat = self.jlc.fk(jnt_values=jnt_values, toggle_jacobian=False)
-            flange_rotvec = self._rotmat_to_vec(flange_rotmat)
-            flange_data.append(np.concatenate((flange_pos, flange_rotvec)))
+            # relative to base
+            rel_pos, rel_rotmat = rm.rel_pose(self.jlc.pos, self.jlc.rotmat, flange_pos, flange_rotmat)
+            rel_rotvec = self._rotmat_to_vec(rel_rotmat)
+            query_data.append(np.concatenate((rel_pos, rel_rotvec)))
             jnt_data.append(jnt_values)
-        querry_tree = scipy.spatial.cKDTree(flange_data)
-        return querry_tree, jnt_data
+        query_tree = scipy.spatial.cKDTree(query_data)
+        return query_tree, jnt_data
 
     def multiepoch_evolve(self, n_times_per_epoch=10000, target_success_rate=.96):
         """
@@ -153,9 +157,11 @@ class DDIKSolver(object):
             outer_progress_bar.update(1)
             random_jnts = self.jlc.rand_conf()
             flange_pos, flange_rotmat = self.jlc.fk(jnt_values=random_jnts, update=False, toggle_jacobian=False)
-            flange_wvec = self._rotmat_to_vec(flange_rotmat)
-            query_point = np.concatenate((flange_pos, flange_wvec))
-            dist_value_array, nn_indx_array = self.querry_tree.query(query_point, k=self._k_max, workers=-1)
+            # relative to base
+            rel_pos, rel_rotmat = rm.rel_pose(self.jlc.pos, self.jlc.rotmat, flange_pos, flange_rotmat)
+            rel_rotvec = self._rotmat_to_vec(rel_rotmat)
+            query_point = np.concatenate((rel_pos, rel_rotvec))
+            dist_value_array, nn_indx_array = self.query_tree.query(query_point, k=self._k_max, workers=-1)
             is_solvable = False
             for nn_indx in nn_indx_array[:self._k_bbs]:
                 seed_jnt_values = self.jnt_data[nn_indx]
@@ -186,9 +192,9 @@ class DDIKSolver(object):
                         continue
                     else:
                         # if solved, add the new jnts to the data and update the kd tree
-                        tree_data = np.vstack((self.querry_tree.data, query_point))
+                        tree_data = np.vstack((self.query_tree.data, query_point))
                         self.jnt_data.append(result)
-                        self.querry_tree = scipy.spatial.cKDTree(tree_data)
+                        self.query_tree = scipy.spatial.cKDTree(tree_data)
                         evolved_nns.append(self._k_bbs + id)
                         print(f"#### Previously unsolved ik solved using the {self._k_bbs + id}th nearest neighbour.")
                         break
@@ -207,7 +213,7 @@ class DDIKSolver(object):
         self.persist_data()
 
     def persist_data(self):
-        pickle.dump(self.querry_tree, open(self._fname_tree, 'wb'))
+        pickle.dump(self.query_tree, open(self._fname_tree, 'wb'))
         pickle.dump(self.jnt_data, open(self._fname_jnt, 'wb'))
         print("ddik data file saved.")
 
@@ -235,9 +241,11 @@ class DDIKSolver(object):
                                          max_n_iter=max_n_iter,
                                          toggle_dbg=toggle_dbg)
         else:
-            tgt_wvec = self._rotmat_to_vec(tgt_rotmat)
-            query_point = np.concatenate((tgt_pos, tgt_wvec))
-            dist_value_array, nn_indx_array = self.querry_tree.query(query_point, k=self._k_max, workers=-1)
+            # relative to base
+            rel_pos, rel_rotmat = rm.rel_pose(self.jlc.pos, self.jlc.rotmat, tgt_pos, tgt_rotmat)
+            rel_rotvec = self._rotmat_to_vec(rel_rotmat)
+            query_point = np.concatenate((rel_pos, rel_rotvec))
+            dist_value_array, nn_indx_array = self.query_tree.query(query_point, k=self._k_max, workers=-1)
             for id, nn_indx in enumerate(nn_indx_array):
                 seed_jnt_values = self.jnt_data[nn_indx]
                 if toggle_dbg:
@@ -259,9 +267,9 @@ class DDIKSolver(object):
                         return None
                 else:
                     if id > self._k_bbs:
-                        tree_data = np.vstack((self.querry_tree.data, query_point))
+                        tree_data = np.vstack((self.query_tree.data, query_point))
                         self.jnt_data.append(result)
-                        self.querry_tree = scipy.spatial.cKDTree(tree_data)
+                        self.query_tree = scipy.spatial.cKDTree(tree_data)
                         print(f"Updating query tree, {id} explored...")
                         self.persist_data()
                         break
@@ -309,6 +317,8 @@ if __name__ == '__main__':
 
     _jnt_safemargin = math.pi / 18.0
     jlc = rkjlc.JLChain(n_dof=7)
+    jlc.anchor.pos=np.array([.0, .0, .3])
+    jlc.anchor.rotmat=rm.rotmat_from_euler(np.pi/3, 0,0)
     jlc.jnts[0].loc_pos = np.array([.0, .0, .0])
     jlc.jnts[0].loc_rotmat = rm.rotmat_from_euler(0.0, 0.0, np.pi)
     jlc.jnts[0].loc_motion_ax = np.array([0, 0, 1])
@@ -339,6 +349,7 @@ if __name__ == '__main__':
     jlc.jnts[6].motion_range = np.array([-3.99680398707 + _jnt_safemargin, 3.99680398707 - _jnt_safemargin])
     jlc._loc_flange_pos = np.array([0, 0, .007])
     jlc.finalize(ik_solver='d', identifier_str="test")
+    jlc._ik_solver.test_success_rate()
 
     goal_jnt_values = jlc.rand_conf()
     rkmg.gen_jlc_stick_by_jnt_values(jlc, jnt_values=goal_jnt_values, stick_rgba=rm.bc.blue).attach_to(base)

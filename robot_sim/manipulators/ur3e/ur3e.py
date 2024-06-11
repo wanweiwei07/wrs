@@ -7,7 +7,7 @@ import robot_sim.manipulators.manipulator_interface as mi
 
 class UR3e(mi.ManipulatorInterface):
 
-    def __init__(self, pos=np.zeros(3), rotmat=np.eye(3), home_conf=np.zeros(6), name='ur3e', enable_cc=False):
+    def __init__(self, pos=np.zeros(3), rotmat=np.eye(3), home_conf=np.zeros(6), ik_solver='d', name='ur3e', enable_cc=False):
         super().__init__(pos=pos, rotmat=rotmat, home_conf=home_conf, name=name, enable_cc=enable_cc)
         current_file_dir = os.path.dirname(__file__)
         # anchor
@@ -64,7 +64,7 @@ class UR3e(mi.ManipulatorInterface):
         self.jlc.jnts[5].lnk.loc_pos = np.array([.0, .0, -0.0921])
         self.jlc.jnts[5].lnk.loc_rotmat = rm.rotmat_from_euler(np.pi / 2, .0, .0)
         self.jlc.jnts[5].lnk.cmodel.rgba = np.array([.5, .5, .5, 1.0])
-        self.jlc.finalize(ik_solver='d', identifier_str=name)
+        self.jlc.finalize(ik_solver=ik_solver, identifier_str=name)
         # tcp
         self.loc_tcp_pos = np.array([0, 0, 0])
         self.loc_tcp_rotmat = np.eye(3)

@@ -6,6 +6,7 @@ import basis.robot_math as rm
 import robot_sim.end_effectors.gripper.gripper_interface as gpi
 import modeling.collision_model as mcm
 import modeling.model_collection as mmc
+from panda3d.core import NodePath, CollisionNode, CollisionBox, Point3
 
 
 class RobotiqHE(gpi.GripperInterface):
@@ -36,7 +37,9 @@ class RobotiqHE(gpi.GripperInterface):
         self.jlc.anchor.lnk_list[0].loc_rotmat = rm.rotmat_from_euler(0, 0, np.pi / 2)
         self.jlc.anchor.lnk_list[0].cmodel = mcm.CollisionModel(
             os.path.join(current_file_dir, "meshes", "base.stl"),
-            cdmesh_type=self.cdmesh_type)
+            cdmesh_type=self.cdmesh_type,
+            cdprim_type=mcm.mc.CDPType.USER_DEFINED,
+            userdef_cdprim_fn=self._base_cdprim)
         self.jlc.anchor.lnk_list[0].cmodel.rgba = np.array([.2, .2, .2, 1])
         # the 1st joint (left finger, +y direction)
         self.jlc.jnts[0].change_type(rkjlc.rkc.JntType.PRISMATIC, motion_range=np.array([0, self.jaw_range[1] / 2]))
@@ -71,6 +74,18 @@ class RobotiqHE(gpi.GripperInterface):
                                 self.jlc.jnts[0].lnk,
                                 self.jlc.jnts[1].lnk)
 
+    @staticmethod
+    def _base_cdprim(ex_radius=None):
+        pdcnd = CollisionNode("rtq_he_base")
+        collision_primitive_c0 = CollisionBox(Point3(0.0, 0.0, 0.1),
+                                              x=.032 + ex_radius, y=.029 + ex_radius, z=.01 + ex_radius)
+        pdcnd.addSolid(collision_primitive_c0)
+        collision_primitive_c1 = CollisionBox(Point3(0.0, 0.0, 0.05),
+                                              x=.02 + ex_radius, y=.02 + ex_radius, z=.03 + ex_radius)
+        pdcnd.addSolid(collision_primitive_c1)
+        cdprim = NodePath("user_defined")
+        cdprim.attachNewNode(pdcnd)
+        return cdprim
 
     def fix_to(self, pos, rotmat, jaw_width=None):
         self.pos = pos
@@ -123,6 +138,7 @@ class RobotiqHE(gpi.GripperInterface):
                                  toggle_cdmesh=toggle_cdmesh)
         return m_col
 
+
 if __name__ == '__main__':
     import visualization.panda.world as wd
     import modeling.geometric_model as mgm
@@ -138,5 +154,7 @@ if __name__ == '__main__':
     gripper.gen_stickmodel(toggle_jnt_frames=True).attach_to(base)
     gripper.fix_to(pos=np.array([0, .3, .2]), rotmat=rm.rotmat_from_axangle([1, 0, 0], .05))
     gripper.change_jaw_width(.0)
-    gripper.gen_meshmodel().attach_to(base)
+    mesh_model = gripper.gen_meshmodel()
+    mesh_model.attach_to(base)
+    mesh_model.show_cdprimit()
     base.run()

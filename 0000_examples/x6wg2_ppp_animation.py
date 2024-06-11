@@ -50,7 +50,6 @@ ppp = ppp.PickPlacePlanner(robot)
 grasp_collection = grasping.grasp.GraspCollection.from_file(file_name='wrs_gripper2_grasps.pickle')
 start_conf = robot.get_jnt_values()
 print(grasp_collection)
-
 mot_data = ppp.gen_pick_and_place(obj_cmodel=tube1,
                                   grasp_collection=grasp_collection,
                                   end_jnt_values=start_conf,
