@@ -8,8 +8,8 @@ import robot_sim.manipulators.manipulator_interface as mi
 
 class CobottaArm(mi.ManipulatorInterface):
 
-    def __init__(self, pos=np.zeros(3), rotmat=np.eye(3), home_conf=np.zeros(6), name="cobotta_arm", enable_cc=False):
-        super().__init__(pos=pos, rotmat=rotmat, home_conf=home_conf, name=name, enable_cc=enable_cc)
+    def __init__(self, pos=np.zeros(3), rotmat=np.eye(3), ik_solver='d', name="cobotta_arm", enable_cc=False):
+        super().__init__(pos=pos, rotmat=rotmat, home_conf=np.zeros(6), name=name, enable_cc=enable_cc)
         current_file_dir = os.path.dirname(__file__)
         # anchor
         self.jlc.anchor.lnk_list[0].cmodel = mcm.CollisionModel(
@@ -51,7 +51,7 @@ class CobottaArm(mi.ManipulatorInterface):
         self.jlc.jnts[5].motion_range = np.array([-2.96706, 2.96706])
         self.jlc.jnts[5].lnk.cmodel = mcm.CollisionModel(os.path.join(current_file_dir, "meshes", "j6.dae"))
         self.jlc.jnts[5].lnk.cmodel.rgba = np.array([.7, .7, .7, 1.0])
-        self.jlc.finalize(ik_solver='d', identifier_str=name)
+        self.jlc.finalize(ik_solver=ik_solver, identifier_str=name)
         # tcp
         self.loc_tcp_pos = np.array([0, 0, 0])
         self.loc_tcp_rotmat = np.eye(3)
