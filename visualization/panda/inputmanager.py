@@ -7,14 +7,14 @@ import math
 
 class InputManager(DirectObject):
 
-    def __init__(self, base, lookatpos, togglerotcenter=False):
+    def __init__(self, base, lookat_pos, togglerotcenter=False):
         self.base = base
-        self.originallookatpos = lookatpos  # for backup
-        self.lookatpos_pdv3 = Vec3(lookatpos[0], lookatpos[1], lookatpos[2])
+        self.originallookatpos = lookat_pos  # for backup
+        self.lookatpos_pdv3 = Vec3(lookat_pos[0], lookat_pos[1], lookat_pos[2])
         self.cam2lookatpos_dist = (self.base.cam.getPos() - self.lookatpos_pdv3).length()
         self.initviewdist = (self.base.cam.getPos() - self.lookatpos_pdv3).length()
         self.last_m1_pos = None
-        self.lastm2pos = None
+        self.last_m2_pos = None
         # toggle on the following part to explicitly show the rotation center
         self.togglerotcenter = togglerotcenter
         if self.togglerotcenter:
@@ -133,9 +133,9 @@ class InputManager(DirectObject):
         if self.base.mouseWatcherNode.hasMouse():
             if self.keymap['mouse1']:
                 # get the mouse position in the window
-                mpos = self.base.mouseWatcherNode.getMouse()
+                mouse_pos = self.base.mouseWatcherNode.getMouse()
                 # sets the ray's origin at the camera and directs it to shoot through the mouse cursor
-                self.tracker_ray.setFromLens(self.base.cam.node(), mpos.getX(), mpos.getY())
+                self.tracker_ray.setFromLens(self.base.cam.node(), mouse_pos.getX(), mouse_pos.getY())
                 # performs the collision checking pass
                 self.ctrav.traverse(self.trackball_np)
                 if (self.chandler.getNumEntries() > 0):
@@ -153,16 +153,16 @@ class InputManager(DirectObject):
         author: weiwei
         date: 20200315
         """
-        cur_m1_pos = self.get_world_mouse1()
-        if cur_m1_pos is None:
+        current_m1_pos = self.get_world_mouse1()
+        if current_m1_pos is None:
             if self.last_m1_pos is not None:
                 self.last_m1_pos = None
             return
         if self.last_m1_pos is None:
             # first time click
-            self.last_m1_pos = cur_m1_pos
+            self.last_m1_pos = current_m1_pos
             return
-        cur_m1_vec = Vec3(cur_m1_pos - self.lookatpos_pdv3)
+        cur_m1_vec = Vec3(current_m1_pos - self.lookatpos_pdv3)
         last_m1_vec = Vec3(self.last_m1_pos - self.lookatpos_pdv3)
         cur_m1_vec.normalize()
         last_m1_vec.normalize()
@@ -183,8 +183,8 @@ class InputManager(DirectObject):
     def get_world_mouse2(self):
         if self.base.mouseWatcherNode.hasMouse():
             if self.keymap['mouse2']:
-                mpos = self.base.mouseWatcherNode.getMouse()
-                self.tracker_ray.setFromLens(self.base.cam.node(), mpos.getX(), mpos.getY())
+                mouse_pos = self.base.mouseWatcherNode.getMouse()
+                self.tracker_ray.setFromLens(self.base.cam.node(), mouse_pos.getX(), mouse_pos.getY())
                 self.ctrav.traverse(self.trackplane_np)
                 self.chandler.sortEntries()
                 if (self.chandler.getNumEntries() > 0):
@@ -199,26 +199,26 @@ class InputManager(DirectObject):
         author: weiwei
         date: 20200313
         """
-        curm2pos = self.get_world_mouse2()
-        if curm2pos is None:
-            if self.lastm2pos is not None:
-                self.lastm2pos = None
+        current_m2_pos = self.get_world_mouse2()
+        if current_m2_pos is None:
+            if self.last_m2_pos is not None:
+                self.last_m2_pos = None
             return
-        if self.lastm2pos is None:
+        if self.last_m2_pos is None:
             # first time click
-            self.lastm2pos = curm2pos
+            self.last_m2_pos = current_m2_pos
             return
-        relm2vec = curm2pos - self.lastm2pos
-        if relm2vec.length() > 0.001:
-            self.base.cam.setPos(self.base.cam.getPos() - relm2vec)
-            self.lookatpos_pdv3 = Vec3(self.lookatpos_pdv3 - relm2vec)
+        rel_m2_vec = current_m2_pos - self.last_m2_pos
+        if rel_m2_vec.length() > 0.001:
+            self.base.cam.setPos(self.base.cam.getPos() - rel_m2_vec)
+            self.lookatpos_pdv3 = Vec3(self.lookatpos_pdv3 - rel_m2_vec)
             newlookatpos = self.base.p3dh.pdvec3_to_npvec3(self.lookatpos_pdv3)
             if self.togglerotcenter:
                 self.rotatecenternp.detachNode()
                 self.rotatecenternp = self.base.p3dh.gensphere(pos=newlookatpos, radius=0.005, rgba=np.array([1, 1, 0, 1]))
                 self.rotatecenternp.reparentTo(self.base.render)
             self.update_trackballsphere(self.lookatpos_pdv3)
-            self.last2mpos = curm2pos
+            self.last2mpos = current_m2_pos
 
     def get_world_mouse3(self):
         """
@@ -229,8 +229,8 @@ class InputManager(DirectObject):
         """
         if self.base.mouseWatcherNode.hasMouse():
             if self.keymap['mouse3']:
-                mpos = self.base.mouseWatcherNode.getMouse()
-                self.picker_ray.setFromLens(self.base.cam.node(), mpos.getX(), mpos.getY())
+                mouse_pos = self.base.mouseWatcherNode.getMouse()
+                self.picker_ray.setFromLens(self.base.cam.node(), mouse_pos.getX(), mouse_pos.getY())
                 self.ctrav.traverse(self.base.render)
                 if (self.chandler.getNumEntries() > 0):
                     self.chandler.sortEntries()
@@ -245,8 +245,8 @@ class InputManager(DirectObject):
         author: weiwei
         date: 20200316
         """
-        curm3pos = self.get_world_mouse3()
-        return None if curm3pos is None else print(curm3pos)
+        current_m3_pos = self.get_world_mouse3()
+        return None if current_m3_pos is None else print(current_m3_pos)
 
     def check_mousewheel(self):
         """

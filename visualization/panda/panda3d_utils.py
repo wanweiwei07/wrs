@@ -78,6 +78,7 @@ class ImgOnscreen(object):
         """
         :param size: (width, height)
         :param parent_np: Should be ShowBase or ExtraWindow
+        author: chenhao
         """
         self._size = size
         self.tx = Texture("video")
@@ -134,17 +135,16 @@ class ExtraWindow(object):
         self.render2d = NodePath("extra_win_render2d")
         self.render2d.setDepthTest(0)
         self.render2d.setDepthWrite(0)
-
+        # setup window
         self.win = base.openWindow(props=WindowProperties(base.win.getProperties()),
                                    makeCamera=False,
                                    scene=self.render,
                                    requireWindow=True, )
-
         # set window background to white
         base.setBackgroundColor(r=1, g=1, b=1, win=self.win)
         # set window title and window's dimension
         self.set_win_props(title=window_title,
-                           size=(w, h), )
+                           size=(w, h))
         # set len for the camera and set the camera for the new window
         lens = PerspectiveLens()
         lens.setFov(fov)
@@ -164,14 +164,12 @@ class ExtraWindow(object):
         self._separation = 1
         self.filter = flt.Filter(self.win, self.cam)
         self.filter.setCartoonInk(separation=self._separation)
-
         # camera in camera 2d
         self.cam2d = base.makeCamera2d(self.win, )
         self.cam2d.reparentTo(self.render2d)
         # attach GPTop to the render2d to make sure the DirectGui can be used
         self.aspect2d = self.render2d.attachNewNode(PGTop("aspect2d"))
         # self.aspect2d.setScale(1.0 / aspect_ratio, 1.0, 1.0)
-
         # setup mouse for the new window
         # name of mouse watcher is to adapt to the name in the input manager
         self.mouse_thrower = base.setupMouse(self.win, fMultiWin=True)
@@ -179,15 +177,12 @@ class ExtraWindow(object):
         self.mouseWatcherNode = self.mouseWatcher.node()
         self.aspect2d.node().setMouseWatcher(self.mouseWatcherNode)
         # self.mouseWatcherNode.addRegion(PGMouseWatcherBackground())
-
         # setup input manager
-        self.inputmgr = im.InputManager(self, lookatpos=lookat_pos)
-
+        self.inputmgr = im.InputManager(self, lookat_pos=lookat_pos)
         # copy attributes and functions from base
         ## change the bound function to a function, and bind to `self` to become a unbound function
         self._interaction_update = functools.partial(base._interaction_update.__func__, self)
         self.p3dh = base.p3dh
-
         base.taskMgr.add(self._interaction_update, "interaction_extra_window", appendTask=True)
 
     @property
@@ -225,19 +220,19 @@ if __name__ == "__main__":
     import modeling.geometric_model as gm
 
     base = wd.World(cam_pos=[2, 0, 1.5], lookat_pos=[0, 0, .2])
-    gm.gen_frame(axis_length=.2).attach_to(base)
+    gm.gen_frame(ax_length=.2).attach_to(base)
 
     # extra window 1
-    ew = ExtraWindow(base, cam_pos=[2, 0, 1.5], lookat_pos=[0, 0, .2])
-    ew.set_origin((0, 40))
+    ew = ExtraWindow(base, cam_pos=np.array([2, 0, 1.5]), lookat_pos=np.array([0, 0, .2]))
+    ew.set_origin((np.array([0, 40])))
     # ImgOnscreen()
     img = cv2.imread("img.png")
     on_screen_img = ImgOnscreen(img.shape[:2][::-1], parent_np=ew)
     on_screen_img.update_img(img)
 
     # extra window 2
-    ew2 = ExtraWindow(base, cam_pos=[2, 0, 1.5], lookat_pos=[0, 0, .2])
-    ew2.set_origin((0, ew.size[1]))
-    gm.gen_frame(axis_length=.2).pdndp.reparentTo(ew2.render)
+    ew2 = ExtraWindow(base, cam_pos=np.array([2, 0, 1.5]), lookat_pos=np.array([0, 0, .2]))
+    ew2.set_origin(np.array([0, ew.size[1]]))
+    gm.gen_frame(ax_length=.2).pdndp.reparentTo(ew2.render)
 
     base.run()

@@ -98,7 +98,7 @@ class UR3e_Dual(ri.RobotInterface):
         """
         # dual arm
         # body
-        bd = self.cc.add_cce(self.body.lnk_list[0])
+        bd = self.cc.add_cce(self.body.lnk_list[0], toggle_collider=False)
         # left ee
         lft_elb = self.cc.add_cce(self.lft_arm.end_effector.jlc.anchor.lnk_list[0])
         lft_el0 = self.cc.add_cce(self.lft_arm.end_effector.jlc.jnts[0].lnk)

@@ -13,7 +13,8 @@ class CCElement(object):
     date: 20231116
     """
 
-    def __init__(self, lnk, host_cc):
+    def __init__(self, lnk, host_cc, toggle_collider=True):
+        self._toggle_collider = toggle_collider
         self.host_cc = host_cc
         self.lnk = lnk
         # a transformed and attached copy of the reference cdprim (essentially pdcndp), tfd=transformed
@@ -21,12 +22,13 @@ class CCElement(object):
                                                     self.host_cc.cd_pdndp,
                                                     clear_mask=True)
         # print(self.tfd_cdprim.node().is_collision_node())
-        for child_pdndp in self.tfd_cdprim.getChildren():
-            self.host_cc.cd_trav.addCollider(collider=child_pdndp, handler=self.host_cc.cd_handler)
-        # a dict with from_mask as keys and into_list (a lsit of cce) as values
-        self.cce_into_dict = {}
-        # toggle on collision detection with external obstacles by default
-        self.enable_cd_ext(type="from")
+        if self._toggle_collider:
+            for child_pdndp in self.tfd_cdprim.getChildren():
+                self.host_cc.cd_trav.addCollider(collider=child_pdndp, handler=self.host_cc.cd_handler)
+            # a dict with from_mask as keys and into_list (a lsit of cce) as values
+            self.cce_into_dict = {}
+            # toggle on collision detection with external obstacles by default
+            self.enable_cd_ext(type="from")
 
     def enable_cd_ext(self, type="from"):
         """
@@ -74,6 +76,7 @@ class CCElement(object):
         :param cce_into_list:
         :return:
         """
+        assert self._toggle_collider, "Collider is not toggled on!"
         mph.change_cdmask(self.tfd_cdprim, allocated_bitmask, action="add", type="from")
         self.cce_into_dict[allocated_bitmask] = cce_into_list
 
@@ -116,7 +119,7 @@ class CollisionChecker(object):
         # temporary parameter for toggling on/off show_cdprimit
         self._cdprim_list = []
 
-    def add_cce(self, lnk):
+    def add_cce(self, lnk, toggle_collider=True):
         """
         add a Link as a ccelement
         :param lnk: instance of rkjlc.Link
@@ -124,7 +127,7 @@ class CollisionChecker(object):
         author: weiwei
         date: 20231116
         """
-        self.cce_dict[lnk.uuid] = CCElement(lnk, self)
+        self.cce_dict[lnk.uuid] = CCElement(lnk, self, toggle_collider=toggle_collider)
         return lnk.uuid
 
     def remove_cce(self, lnk):

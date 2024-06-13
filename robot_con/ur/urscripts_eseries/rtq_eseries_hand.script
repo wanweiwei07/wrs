@@ -1,6 +1,5 @@
 def EGripper():
     rq_obj_detect = 0
-
     set_safety_mode_transition_hardness(1)
     set_gravity([0.0, -9.82, 6.013015783813504E-16])
     set_tcp(p[0.0,0.0,0.0,0.0,0.0,0.0])
@@ -30,7 +29,6 @@ def EGripper():
     #################################################
     # Vacuum Grip Check
     #################################################
-
     vacuumGripCheckThread1 = 0
     vacuumGripCheckThread2 = 0
     vacuumGripCheckThread3 = 0
@@ -340,9 +338,9 @@ def EGripper():
             rq_set_var(ACT, 1, gripper_socket)
         end
     end
-      #################################################
-      # End - Vacuum general functions
-      #################################################
+    #################################################
+    # End - Vacuum general functions
+    #################################################
 
     vacuumGripCheckWarningTitle = "Vacuum grip check"
     vacuumGripCheckWarningMessage = "Vacuum gripper object lost"
@@ -1524,7 +1522,6 @@ def EGripper():
         return scale(value, range, range)
     end
 
-
     rq_obj_detect = 0
     set_tool_voltage(24)
     set_tool_communication(True, 115200, 0, 1, 1.5, 3.5)
@@ -1538,19 +1535,19 @@ def EGripper():
     set_closed_norm(100.0, 1)
     set_open_norm(0.0, 1)
     set_closed_mm(0.0, 1)
-    set_open_mm(pogram_replace_open_limit, 1)
+    set_open_mm(program_replace_open_limit, 1)
     set_closed_norm(100.0, 2)
     set_open_norm(0.0, 2)
     set_closed_mm(0.0, 2)
-    set_open_mm(pogram_replace_open_limit, 2)
+    set_open_mm(program_replace_open_limit, 2)
     set_closed_norm(100.0, 3)
     set_open_norm(0.0, 3)
     set_closed_mm(0.0, 3)
-    set_open_mm(pogram_replace_open_limit, 3)
+    set_open_mm(program_replace_open_limit, 3)
     set_closed_norm(100.0, 4)
     set_open_norm(0.0, 4)
     set_closed_mm(0.0, 4)
-    set_open_mm(pogram_replace_open_limit, 4)
+    set_open_mm(program_replace_open_limit, 4)
 
     rq_activate_all_grippers(False)
 

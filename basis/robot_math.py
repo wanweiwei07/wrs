@@ -156,6 +156,7 @@ def rotmat_to_euler(rotmat, axes='sxyz'):
 
 def rotmat_between_vectors(v1, v2):
     """
+    from v1 to v2?
     :param v1: 1-by-3 nparray
     :param v2: 1-by-3 nparray
     :return:

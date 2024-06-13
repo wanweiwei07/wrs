@@ -5,10 +5,14 @@ import basis.robot_math as rm
 import basis.constant as cst
 import modeling.model_collection as mc
 import numpy as np
-import open3d as o3d
 from panda3d.core import NodePath, LineSegs, GeomNode, TransparencyAttrib, RenderModeAttrib
 from visualization.panda.world import ShowBase
 import warnings as wrn
+
+try:
+    import open3d as o3d
+except:
+    o3d = None
 
 
 # ==================================
@@ -62,11 +66,6 @@ class StaticGeometricModel(object):
                 self._trm_mesh = initor
                 pdndp_core = da.trimesh_to_nodepath(self._trm_mesh)
                 pdndp_core.reparentTo(self._pdndp)
-            elif isinstance(initor, o3d.geometry.PointCloud):  # TODO should pointcloud be pdndp or pdnp_raw
-                self._file_path = None
-                self._trm_mesh = da.trm.Trimesh(np.asarray(initor.points))
-                pdndp_core = da.pdgeomndp_from_v(self._trm_mesh.vertices, name='pdndp_core')
-                pdndp_core.reparentTo(self._pdndp)
             elif isinstance(initor, np.ndarray):  # TODO should pointcloud be pdndp or pdnp_raw
                 self._file_path = None
                 if initor.ndim == 2:
@@ -84,16 +83,26 @@ class StaticGeometricModel(object):
                 else:
                     raise NotImplementedError
                 pdndp_core.reparentTo(self._pdndp)
+            elif isinstance(initor, NodePath):  # keeping this one to allow efficient frame representations, 20240311
+                self._file_path = None
+                self._trm_mesh = None
+                pdndp_core = initor
+                pdndp_core.reparentTo(self._pdndp)
+            elif initor is None:  # empty model elevated to here to allow not installing open3d
+                self._file_path = None
+                self._trm_mesh = None
+                pdndp_core = NodePath("pdndp_core")
+                pdndp_core.reparentTo(self._pdndp)
+            elif isinstance(initor, o3d.geometry.PointCloud):  # TODO should pointcloud be pdndp or pdnp_raw
+                self._file_path = None
+                self._trm_mesh = da.trm.Trimesh(np.asarray(initor.points))
+                pdndp_core = da.pdgeomndp_from_v(self._trm_mesh.vertices, name='pdndp_core')
+                pdndp_core.reparentTo(self._pdndp)
             elif isinstance(initor, o3d.geometry.TriangleMesh):
                 self._file_path = None
                 self._trm_mesh = da.trm.Trimesh(vertices=initor.vertices, faces=initor.triangles,
                                                 face_normals=initor.triangle_normals)
                 pdndp_core = da.trimesh_to_nodepath(self._trm_mesh, name='pdndp_core')
-                pdndp_core.reparentTo(self._pdndp)
-            elif isinstance(initor, NodePath):  # keeping this one to allow efficient frame representations, 20240311
-                self._file_path = None
-                self._trm_mesh = None
-                pdndp_core = initor
                 pdndp_core.reparentTo(self._pdndp)
             else:  # empty model
                 self._file_path = None
@@ -1132,45 +1141,153 @@ def gen_polygon(verts, thickness=0.002, rgba=np.array([0, 0, 0, .7])):
     return polygon_sgm
 
 
-def gen_frame_box(extent=np.array([.02, .02, .02]),
-                  homomat=np.eye(4),
+def gen_frame_box(xyz_lengths=np.array([.02, .02, .02]),
+                  pos=np.zeros(3),
+                  rotmat=np.eye(3),
                   rgba=np.array([0, 0, 0, 1]),
                   thickness=.001):
     """
-    draw a 3D box, only show edges
-    :param extent:
-    :param homomat:
+    draw a 3d frame box
+    :param xyz_lengths:
+    :param pos:
+    :param rotmat:
+    :param rgba:
+    :param thickness:
     :return:
     """
     # Create a set of line segments
     ls = LineSegs()
     ls.setThickness(thickness * da.M_TO_PIXEL)
     ls.setColor(rgba[0], rgba[1], rgba[2], rgba[3])
-    center_pos = homomat[:3, 3]
-    x_axis = homomat[:3, 0]
-    y_axis = homomat[:3, 1]
-    z_axis = homomat[:3, 2]
-    x_min, x_max = -x_axis * extent[0] / 2, x_axis * extent[0] / 2
-    y_min, y_max = -y_axis * extent[1] / 2, y_axis * extent[1] / 2
-    z_min, z_max = -z_axis * extent[2] / 2, z_axis * extent[2] / 2
+    center_pos = pos
+    x_axis = rotmat[:, 0]
+    y_axis = rotmat[:, 1]
+    z_axis = rotmat[:, 2]
+    x_min, x_max = -x_axis * xyz_lengths[0] / 2, x_axis * xyz_lengths[0] / 2
+    y_min, y_max = -y_axis * xyz_lengths[1] / 2, y_axis * xyz_lengths[1] / 2
+    z_min, z_max = -z_axis * xyz_lengths[2] / 2, z_axis * xyz_lengths[2] / 2
     # max, max, max
     print(center_pos + np.array([x_max, y_max, z_max]))
-    ls.moveTo(da.npvec3_to_pdvec3(center_pos + x_max + y_max + z_max))
-    ls.drawTo(da.npvec3_to_pdvec3(center_pos + x_max + y_max + z_min))
-    ls.drawTo(da.npvec3_to_pdvec3(center_pos + x_max + y_min + z_min))
-    ls.drawTo(da.npvec3_to_pdvec3(center_pos + x_max + y_min + z_max))
-    ls.drawTo(da.npvec3_to_pdvec3(center_pos + x_max + y_max + z_max))
-    ls.drawTo(da.npvec3_to_pdvec3(center_pos + x_min + y_max + z_max))
-    ls.drawTo(da.npvec3_to_pdvec3(center_pos + x_min + y_min + z_max))
-    ls.drawTo(da.npvec3_to_pdvec3(center_pos + x_min + y_min + z_min))
-    ls.drawTo(da.npvec3_to_pdvec3(center_pos + x_min + y_max + z_min))
-    ls.drawTo(da.npvec3_to_pdvec3(center_pos + x_min + y_max + z_max))
-    ls.moveTo(da.npvec3_to_pdvec3(center_pos + x_max + y_max + z_min))
-    ls.drawTo(da.npvec3_to_pdvec3(center_pos + x_min + y_max + z_min))
-    ls.moveTo(da.npvec3_to_pdvec3(center_pos + x_max + y_min + z_min))
-    ls.drawTo(da.npvec3_to_pdvec3(center_pos + x_min + y_min + z_min))
-    ls.moveTo(da.npvec3_to_pdvec3(center_pos + x_max + y_min + z_max))
-    ls.drawTo(da.npvec3_to_pdvec3(center_pos + x_min + y_min + z_max))
+    ls.moveTo(*(center_pos + x_max + y_max + z_max))
+    ls.drawTo(*(center_pos + x_max + y_max + z_min))
+    ls.drawTo(*(center_pos + x_max + y_min + z_min))
+    ls.drawTo(*(center_pos + x_max + y_min + z_max))
+    ls.drawTo(*(center_pos + x_max + y_max + z_max))
+    ls.drawTo(*(center_pos + x_min + y_max + z_max))
+    ls.drawTo(*(center_pos + x_min + y_min + z_max))
+    ls.drawTo(*(center_pos + x_min + y_min + z_min))
+    ls.drawTo(*(center_pos + x_min + y_max + z_min))
+    ls.drawTo(*(center_pos + x_min + y_max + z_max))
+    ls.moveTo(*(center_pos + x_max + y_max + z_min))
+    ls.drawTo(*(center_pos + x_min + y_max + z_min))
+    ls.moveTo(*(center_pos + x_max + y_min + z_min))
+    ls.drawTo(*(center_pos + x_min + y_min + z_min))
+    ls.moveTo(*(center_pos + x_max + y_min + z_max))
+    ls.drawTo(*(center_pos + x_min + y_min + z_max))
+    # Create and return a node with the segments
+    lsnp = NodePath(ls.create())
+    lsnp.setTransparency(TransparencyAttrib.MDual)
+    lsnp.setLightOff()
+    ls_sgm = StaticGeometricModel(lsnp)
+    return ls_sgm
+
+
+def gen_frame_cylinder(radius=0.02, height=0.01, num_sides=8, pos=np.zeros(3), rotmat=np.eye(3),
+                       rgba=np.array([0, 0, 0, 1]),
+                       thickness=.001):
+    """
+    Draw a 3D cylinder using LineSegs
+    :param radius: Radius of the cylinder
+    :param height: Height of the cylinder
+    :param num_sides: Number of sides for the cylindrical approximation
+    :param pos: Position of the cylinder center
+    :param rotmat: Rotation matrix for the cylinder orientation
+    :param rgba: Color of the cylinder
+    :param thickness: Thickness of the lines
+    :return: A NodePath with the cylinder geometry
+    """
+    ls = LineSegs()
+    ls.setThickness(thickness * da.M_TO_PIXEL)
+    ls.setColor(rgba[0], rgba[1], rgba[2], rgba[3])
+    angle_step = 2 * np.pi / num_sides
+    half_height = height / 2
+    top_circle = []
+    bottom_circle = []
+    for i in range(num_sides + 1):
+        angle = i * angle_step
+        x = radius * np.cos(angle)
+        y = radius * np.sin(angle)
+        top_vertex = np.dot(rotmat, [x, y, half_height]) + pos
+        bottom_vertex = np.dot(rotmat, [x, y, -half_height]) + pos
+        top_circle.append(top_vertex)
+        bottom_circle.append(bottom_vertex)
+        # Draw the vertical lines
+        if i > 0:
+            ls.moveTo(*top_circle[i - 1])
+            ls.drawTo(*top_circle[i])
+            ls.moveTo(*bottom_circle[i - 1])
+            ls.drawTo(*bottom_circle[i])
+            ls.moveTo(*top_circle[i - 1])
+            ls.drawTo(*bottom_circle[i - 1])
+    # Draw the last set of vertical lines to close the cylinder
+    ls.moveTo(*top_circle[-1])
+    ls.drawTo(*top_circle[0])
+    ls.moveTo(*bottom_circle[-1])
+    ls.drawTo(*bottom_circle[0])
+    ls.moveTo(*top_circle[-1])
+    ls.drawTo(*bottom_circle[-1])
+    # Create and return a node with the segments
+    lsnp = NodePath(ls.create())
+    lsnp.setTransparency(TransparencyAttrib.MDual)
+    lsnp.setLightOff()
+    ls_sgm = StaticGeometricModel(lsnp)
+    return ls_sgm
+
+
+def gen_frame_frustum(bottom_xy_lengths=np.array([0.02, 0.02]), top_xy_lengths=np.array([0.04, 0.04]),
+                      height=0.01, pos=np.zeros(3), rotmat=np.eye(3), rgba=np.array([0, 0, 0, 1]), thickness=0.001):
+    """
+    Draw a 3D frustum using LineSegs
+    :param bottom_xy_lengths: XYZ lengths of the bottom rectangle
+    :param top_xy_lengths: XYZ lengths of the top rectangle
+    :param height: Height of the frustum
+    :param pos: Position of the frustum center
+    :param rotmat: Rotation matrix for the frustum orientation
+    :param rgba: Color of the frustum
+    :param thickness: Thickness of the lines
+    :return: A NodePath with the frustum geometry
+    """
+    ls = LineSegs()
+    ls.setThickness(thickness * da.M_TO_PIXEL)
+    ls.setColor(rgba[0], rgba[1], rgba[2], rgba[3])
+    half_height = height / 2
+    # Calculate vertices for the bottom and top rectangles
+    bottom_offsets = [
+        [-bottom_xy_lengths[0] / 2, -bottom_xy_lengths[1] / 2, -half_height],
+        [bottom_xy_lengths[0] / 2, -bottom_xy_lengths[1] / 2, -half_height],
+        [bottom_xy_lengths[0] / 2, bottom_xy_lengths[1] / 2, -half_height],
+        [-bottom_xy_lengths[0] / 2, bottom_xy_lengths[1] / 2, -half_height]
+    ]
+    top_offsets = [
+        [-top_xy_lengths[0] / 2, -top_xy_lengths[1] / 2, half_height],
+        [top_xy_lengths[0] / 2, -top_xy_lengths[1] / 2, half_height],
+        [top_xy_lengths[0] / 2, top_xy_lengths[1] / 2, half_height],
+        [-top_xy_lengths[0] / 2, top_xy_lengths[1] / 2, half_height]
+    ]
+    bottom_vertices = [np.dot(rotmat, offset) + pos for offset in bottom_offsets]
+    top_vertices = [np.dot(rotmat, offset) + pos for offset in top_offsets]
+    # Draw bottom rectangle
+    for i in range(len(bottom_vertices)):
+        ls.moveTo(*bottom_vertices[i])
+        ls.drawTo(*bottom_vertices[(i + 1) % len(bottom_vertices)])
+    # Draw top rectangle
+    for i in range(len(top_vertices)):
+        ls.moveTo(*top_vertices[i])
+        ls.drawTo(*top_vertices[(i + 1) % len(top_vertices)])
+    # Draw sides
+    for i in range(len(bottom_vertices)):
+        ls.moveTo(*bottom_vertices[i])
+        ls.drawTo(*top_vertices[i])
     # Create and return a node with the segments
     lsnp = NodePath(ls.create())
     lsnp.setTransparency(TransparencyAttrib.MDual)

@@ -10,7 +10,10 @@ from basis import data_adapter as p3dh
 import basis.robot_math as rm
 import numpy as np
 from enum import Enum
-import mujoco
+try:
+    import mujoco
+except:
+    mujoco = None
 
 
 class LensType(Enum):
@@ -88,8 +91,8 @@ class World(ShowBase, object):
         # self.o3dh = o3dh
         self.rbtmath = rm
         # set up inputmanager
-        self.lookatpos = lookat_pos
-        self.inputmgr = im.InputManager(self, self.lookatpos)
+        self.lookat_pos = lookat_pos
+        self.inputmgr = im.InputManager(self, self.lookat_pos)
         taskMgr.add(self._interaction_update, "interaction", appendTask=True)
         # set up rotational cam
         if auto_cam_rotate:
@@ -181,7 +184,7 @@ class World(ShowBase, object):
 
     def _rotatecam_update(self, task):
         campos = self.cam.getPos()
-        camangle = math.atan2(campos[1] - self.lookatpos[1], campos[0] - self.lookatpos[0])
+        camangle = math.atan2(campos[1] - self.lookat_pos[1], campos[0] - self.lookat_pos[0])
         # print camangle
         if camangle < 0:
             camangle += math.pi * 2
@@ -189,11 +192,11 @@ class World(ShowBase, object):
             camangle = 0
         else:
             camangle += math.pi / 360
-        camradius = math.sqrt((campos[0] - self.lookatpos[0]) ** 2 + (campos[1] - self.lookatpos[1]) ** 2)
+        camradius = math.sqrt((campos[0] - self.lookat_pos[0]) ** 2 + (campos[1] - self.lookat_pos[1]) ** 2)
         camx = camradius * math.cos(camangle)
         camy = camradius * math.sin(camangle)
-        self.cam.setPos(self.lookatpos[0] + camx, self.lookatpos[1] + camy, campos[2])
-        self.cam.lookAt(self.lookatpos[0], self.lookatpos[1], self.lookatpos[2])
+        self.cam.setPos(self.lookat_pos[0] + camx, self.lookat_pos[1] + camy, campos[2])
+        self.cam.lookAt(self.lookat_pos[0], self.lookat_pos[1], self.lookat_pos[2])
         return task.cont
 
     def _external_update(self, task):
@@ -326,7 +329,7 @@ class World(ShowBase, object):
 
     def change_campos(self, campos):
         self.cam.setPos(campos[0], campos[1], campos[2])
-        self.inputmgr = im.InputManager(self, self.lookatpos)
+        self.inputmgr = im.InputManager(self, self.lookat_pos)
 
     def change_lookatpos(self, lookatpos):
         """
@@ -338,14 +341,14 @@ class World(ShowBase, object):
         date: 20180606
         """
         self.cam.lookAt(lookatpos[0], lookatpos[1], lookatpos[2])
-        self.lookatpos = lookatpos
-        self.inputmgr = im.InputManager(self, self.lookatpos)
+        self.lookat_pos = lookatpos
+        self.inputmgr = im.InputManager(self, self.lookat_pos)
 
     def change_campos_and_lookat_pos(self, cam_pos, lookat_pos):
         self.cam.setPos(cam_pos[0], cam_pos[1], cam_pos[2])
         self.cam.lookAt(lookat_pos[0], lookat_pos[1], lookat_pos[2])
-        self.lookatpos = lookat_pos
-        self.inputmgr = im.InputManager(self, self.lookatpos)
+        self.lookat_pos = lookat_pos
+        self.inputmgr = im.InputManager(self, self.lookat_pos)
 
     def set_cartoonshader(self, switchtoon=False):
         """

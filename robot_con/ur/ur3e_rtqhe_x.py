@@ -9,7 +9,7 @@ import threading
 import socket
 import struct
 import os
-import motion.trajectory.piecewisepoly_scl as pwp
+import motion.trajectory.piecewisepoly_toppra as pwp
 
 
 class UR3ERtqHE():
@@ -17,6 +17,7 @@ class UR3ERtqHE():
     author: weiwei
     date: 20180131, 20210401osaka
     """
+
     def __init__(self, robot_ip='10.2.0.50', pc_ip='10.2.0.91'):
         """
         :param robot_ip:
@@ -28,10 +29,10 @@ class UR3ERtqHE():
         self._arm.set_payload(1.0)
         # setup hand
         self._hand = r2f.RobotiqETwoFinger(type='hande')
-        # setup ftsensor
-        self._ftsensor = rft.RobotiqFT300()
-        self._ftsensor_socket_addr = (robot_ip, 63351)
-        self._ftsensor_urscript = self._ftsensor.get_program_to_run()
+        # # setup ftsensor
+        # self._ftsensor = rft.RobotiqFT300()
+        # self._ftsensor_socket_addr = (robot_ip, 63351)
+        # self._ftsensor_urscript = self._ftsensor.get_program_to_run()
         # setup pc server
         self._pc_server_socket_addr = (pc_ip, 0)  # 0: the system finds an available port
         self._pc_server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -42,7 +43,7 @@ class UR3ERtqHE():
         self._jointscaler = 1e6
         self._pb = pb.ProgramBuilder()
         script_dir = os.path.dirname(__file__)
-        self._pb.load_prog(os.path.join(script_dir, "urscripts_cbseries/moderndriver_eseries.script"))
+        self._pb.load_prog(os.path.join(script_dir, "urscripts_eseries/moderndriver_eseries.script"))
         self._pc_server_urscript = self._pb.get_program_to_run()
         self._pc_server_urscript = self._pc_server_urscript.replace("parameter_ip", self._pc_server_socket_addr[0])
         self._pc_server_urscript = self._pc_server_urscript.replace("parameter_port",
@@ -51,7 +52,7 @@ class UR3ERtqHE():
                                                                     str(self._jointscaler))
         self._ftsensor_thread = None
         self._ftsensor_values = []
-        self.trajt = pwp.PiecewisePoly(method='quintic')
+        self.tpply = pwp.PiecewisePolyTOPPRA()
 
     @property
     def arm(self):
@@ -144,21 +145,24 @@ class UR3ERtqHE():
         regulated_jnt_values = rm.regulate_angle(-math.pi, math.pi, jnt_values)
         self.move_jnts(regulated_jnt_values)
 
-    def move_jntspace_path(self, path, control_frequency=.005, interval_time=1.0, interpolation_method=None):
+    def move_jntspace_path(self, path, control_frequency=.005):
         """
         move robot_s arm following a given jointspace path
         :param path:
         :param control_frequency: the program will sample time_intervals/control_frequency confs, see motion.trajectory
         :param interval_time: equals to expandis/speed, speed = degree/second
                               by default, the value is 1.0 and the speed is expandis/second
-        :param interpolation_method
         :return:
         author: weiwei
         date: 20210331
         """
-        if interpolation_method:
-            self.trajt.change_method(interpolation_method)
-        interpolated_confs, _, _, _ = self.trajt.interpolate_by_time_interval(path, control_frequency, interval_time)
+        max_jnt_vels = np.array([np.pi, np.pi, np.pi, np.pi * 2, np.pi * 2, np.pi * 2])
+        max_jnt_accs = np.array([np.pi, np.pi, np.pi, np.pi * 2, np.pi * 2, np.pi * 2])
+        interpolated_confs = self.tpply.interpolate_by_max_spdacc(path=path,
+                                                                  control_frequency=control_frequency,
+                                                                  max_vels=max_jnt_vels,
+                                                                  max_accs=max_jnt_accs,
+                                                                  toggle_debug=False)
         # upload a urscript to connect to the pc server started by this class
         self._arm.send_program(self._pc_server_urscript)
         # accept arm socket
@@ -191,6 +195,6 @@ if __name__ == '__main__':
     import visualization.panda.world as wd
 
     base = wd.World(cam_pos=[3, 1, 2], lookat_pos=[0, 0, 0])
-    u3erhe_x = UR3ERtqHE(robot_ip='10.0.2.2', pc_ip='10.2.0.91')
-    u3erhe_x.opengripper()
+    u3erhe_x = UR3ERtqHE(robot_ip='10.0.2.2', pc_ip='10.0.2.11')
+    u3erhe_x.open_gripper()
     base.run()
