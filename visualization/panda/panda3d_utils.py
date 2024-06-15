@@ -6,6 +6,8 @@ import functools
 
 import numpy as np
 import cv2
+import basis.robot_math as rm
+import basis.data_adapter as da
 from panda3d.core import (Texture,
                           NodePath,
                           WindowProperties,
@@ -14,12 +16,73 @@ from panda3d.core import (Texture,
                           PerspectiveLens,
                           OrthographicLens,
                           PGTop,
-                          PGMouseWatcherBackground)
+                          PGMouseWatcherBackground,
+                          FrameBufferProperties,
+                          CardMaker)
 from direct.gui.OnscreenImage import OnscreenImage
 
 import visualization.panda.filter as flt
 import visualization.panda.inputmanager as im
 import visualization.panda.world as wd
+import modeling.geometric_model as mgm
+import modeling.model_collection as mmc
+
+
+class VirtualCamera(object):
+
+    def __init__(self, cam_pos, lookat_pos, resolution=np.array((512, 512))):
+        self._cam_pos = cam_pos
+        self._lookat_pos = lookat_pos
+        self._tex = Texture()
+        self._tex.setWrapU(Texture.WMClamp)
+        self._tex.setWrapV(Texture.WMClamp)
+        self._tex.setMinfilter(Texture.FTLinear)
+        self._tex.setMagfilter(Texture.FTLinear)
+        self._buffer = base.win.makeTextureBuffer("virtual_cam_buffer", resolution[0], resolution[1], self._tex, True)
+        self._buffer.setClearColor((1, 1, 1, 1))
+        self._pdnp = base.makeCamera(self._buffer, camName="virtual_cam")
+        self._pdnp.setPos(*cam_pos)
+        self._pdnp.lookAt(*lookat_pos)  # cam look at 0,1,0 by default in panda3d
+
+    @property
+    def cam_pos(self):
+        return np.array([*self._pdnp.getPos()], copy=False)
+
+    @property
+    def cam_rotmat(self):
+        return da.pdmat3_to_npmat3(self._pdnp.getMat().getUpper3())
+
+    def gen_framemodel(self, name="virtual_cam_frame_model", cam_length=0.04):
+        m_col = mmc.ModelCollection(name=name)
+        cam_width = cam_length * 0.5
+        cam_lens_length = cam_length / 4
+        mgm.gen_frame_box(xyz_lengths=np.array([cam_width, cam_length, cam_width]),
+                          pos=self.cam_pos - (cam_length + cam_lens_length) * self.cam_rotmat[:, 1],
+                          rotmat=self.cam_rotmat).attach_to(m_col)
+        mgm.gen_frame_frustum(
+            bottom_xy_lengths=np.array([cam_width - cam_lens_length, cam_width - cam_lens_length]) * .8,
+            top_xy_lengths=np.array([cam_width, cam_width]) * 0.8,
+            height=cam_lens_length * 2,
+            pos=self.cam_pos - (cam_lens_length) * self.cam_rotmat[:, 1],
+            rotmat=self.cam_rotmat).attach_to(m_col)
+        return m_col
+
+def attach_to(self, parent):
+    self._pdnp.reparentTo(parent)
+
+
+class Display(object):
+
+    def __init__(self, name, width, height, pos=np.zeros(3), rotmat=np.eye(3)):
+        self._pdcm = CardMaker(name)
+        self._pdcm.setFrame(-width / 2, width / 2, -height / 2, height / 2)
+        self._pdnp = NodePath(self._pdcm.generate())
+        self._pdnp.setTwoSided(True)
+        self._pdnp.setPos(*pos)
+        self._pdnp.setMat(da.npv3mat3_to_pdmat4(pos, rm.rotmat_from_axangle(rotmat[:, 0], np.pi / 2) @ rotmat))
+
+    def attach_to(self, parent):
+        self._pdnp.reparentTo(parent)
 
 
 def img_to_n_channel(img, channel=3):

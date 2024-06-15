@@ -4,6 +4,7 @@ import basis.data_adapter as da
 import modeling.geometric_model as mgm
 import visualization.panda.world as wd
 from panda3d.core import CardMaker, NodePath, Texture, FrameBufferProperties, AmbientLight, PointLight, LMatrix4f
+import visualization.panda.panda3d_utils as pdu
 
 if __name__ == '__main__':
     # cam
@@ -17,37 +18,20 @@ if __name__ == '__main__':
     # draw the frame
     frame_model = mgm.gen_frame()
     frame_model.attach_to(base)
+    v_cam = pdu.VirtualCamera(cam_pos, lookat_pos)
+    v_cam.gen_framemodel().attach_to(base)
+    base.run()
+
     # texture
     tex = Texture()
     tex.setWrapU(Texture.WMClamp)
     tex.setWrapV(Texture.WMClamp)
     tex.setMinfilter(Texture.FTLinear)
     tex.setMagfilter(Texture.FTLinear)
-    fb_props = FrameBufferProperties()
-    fb_props.setRgbColor(True)
-    fb_props.setAlphaBits(1)
-    fb_props.setDepthBits(1)
     buffer = base.win.makeTextureBuffer("virtual_cam_buffer", 512, 512, tex, True)
     if buffer is None:
         raise Exception("Failed to create offscreen buffer")
     buffer.setClearColor((1, 1, 1, 1))
-    # # buffer
-    # fb_props = FrameBufferProperties()
-    # fb_props.setRgbColor(True)
-    # fb_props.setDepthBits(1)
-    # # rendering goal
-    # window_props = WindowProperties.size(512, 512)
-    # buffer = base.graphicsEngine.makeOutput(
-    #     base.pipe, "virtual_cam_buffer", -2,
-    #     fb_props, window_props,
-    #     GraphicsOutput.RTMCopyRam | GraphicsOutput.RTMCopyTexture,
-    #     base.win.getGsg(), base.win
-    # )
-    # if buffer is None:
-    #     raise Exception("Failed to create offscreen buffer")
-    # buffer.addRenderTexture(tex, GraphicsOutput.RTMCopyRam)
-    # virtual cam view
-    base.virtual_cam_np = base.camera.attachNewNode("virtual_cam")
     base.virtual_cam = base.makeCamera(buffer, camName="virtual_cam")
     base.virtual_cam.setPos(*cam_pos)
     base.virtual_cam.lookAt(*lookat_pos)
@@ -71,14 +55,21 @@ if __name__ == '__main__':
                           pos=cam_pos - cam_frustrum_half_length * cam_rotmat[:, 2],
                           rotmat=cam_rotmat).attach_to(base)
     # mgm.gen_frame(pos=cam_pos, rotmat=cam_rotmat).attach_to(base)
-    # region cardmaker
-    cm = CardMaker("virtual_cam_display")
-    cm.setFrame(-top_xy_lengths[0]/2, top_xy_lengths[0]/2, -top_xy_lengths[1]/2, top_xy_lengths[1]/2)
-    card = NodePath(cm.generate())
-    card.setTexture(tex)
-    card.setTwoSided(True)
-    card.setPos(*cam_pos)
-    card.setHpr(*np.degrees(rm.rotmat_to_euler(cam_rotmat)))
-    card.setMat(da.npv3mat3_to_pdmat4(cam_pos, rm.rotmat_from_axangle(cam_rotmat[:, 0], np.pi / 2) @ cam_rotmat))
-    card.reparentTo(base.render)
+    # # region cardmaker
+    # cm = CardMaker("virtual_cam_display")
+    # cm.setFrame(-top_xy_lengths[0] / 2, top_xy_lengths[0] / 2, -top_xy_lengths[1] / 2, top_xy_lengths[1] / 2)
+    # card = NodePath(cm.generate())
+    # card.setTexture(tex)
+    # card.setTwoSided(True)
+    # card.setPos(*cam_pos)
+    # card.setHpr(*np.degrees(rm.rotmat_to_euler(cam_rotmat)))
+    # card.setMat(da.npv3mat3_to_pdmat4(cam_pos, rm.rotmat_from_axangle(cam_rotmat[:, 0], np.pi / 2) @ cam_rotmat))
+    # card.reparentTo(base.render)
+
+    disp = pdu.Display("virtual_cam_display",
+                      top_xy_lengths[0],
+                      top_xy_lengths[1],
+                      pos=cam_pos,
+                      rotmat=cam_rotmat)
+    disp.attach_to(base.render)
     base.run()

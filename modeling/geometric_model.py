@@ -1247,7 +1247,7 @@ def gen_frame_cylinder(radius=0.02, height=0.01, num_sides=8, pos=np.zeros(3), r
 def gen_frame_frustum(bottom_xy_lengths=np.array([0.02, 0.02]), top_xy_lengths=np.array([0.04, 0.04]),
                       height=0.01, pos=np.zeros(3), rotmat=np.eye(3), rgba=np.array([0, 0, 0, 1]), thickness=0.001):
     """
-    Draw a 3D frustum using LineSegs
+    Draw a 3D frustum using LineSegs TODO rewrite 20240615
     :param bottom_xy_lengths: XYZ lengths of the bottom rectangle
     :param top_xy_lengths: XYZ lengths of the top rectangle
     :param height: Height of the frustum

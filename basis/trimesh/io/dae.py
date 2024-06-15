@@ -7,7 +7,7 @@ from .. import transform_points
 
 # try:
     # pip install pycollada
-import collada
+from . import collada
 # except BaseException:
 #     collada = None
 try:
