@@ -128,10 +128,10 @@ def gen_dashstick(spos=np.array([0, 0, 0]),
     if len_interval is None:
         len_interval = radius * 2.14
     length, direction = rm.unit_vector(epos - spos, toggle_length=True)
-    n_solid = round(length / (len_solid + len_interval))
+    n_solid = round(length / (len_solid + len_interval)+0.5)
     vertices = np.empty((0, 3))
     faces = np.empty((0, 3))
-    for i in range(0, n_solid):
+    for i in range(0, n_solid-1):
         tmp_spos = spos + (len_solid * direction + len_interval * direction) * i
         tmp_stick = gen_stick(spos=tmp_spos,
                               epos=tmp_spos + len_solid * direction,
@@ -142,7 +142,7 @@ def gen_dashstick(spos=np.array([0, 0, 0]),
         vertices = np.vstack((vertices, tmp_stick.vertices))
         faces = np.vstack((faces, tmp_stick_faces))
     # wrap up the last segment
-    tmp_spos = spos + (len_solid * direction + len_interval * direction) * n_solid
+    tmp_spos = spos + (len_solid * direction + len_interval * direction) * (n_solid-1)
     tmp_epos = tmp_spos + len_solid * direction
     final_length, _ = rm.unit_vector(tmp_epos - spos, toggle_length=True)
     if final_length > length:
@@ -292,8 +292,8 @@ def gen_dasharrow(spos=np.array([0, 0, 0]),
                    epos=epos,
                    bottom_radius=stick_radius * ARROW_CR_SR,
                    n_sec=n_sec)
-    dash_stick = gen_dashstick(spos=spos,
-                               epos=epos - direction * stick_radius * ARROW_CH_SR,
+    dash_stick = gen_dashstick(spos=epos - direction * stick_radius * ARROW_CH_SR,
+                               epos=spos, # make sure the section near the arrow head is even and solid
                                radius=stick_radius,
                                len_solid=len_solid,
                                len_interval=len_interval,
