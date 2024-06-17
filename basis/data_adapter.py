@@ -60,6 +60,9 @@ def pdmat3_to_npmat3(pdmat3: Mat3) -> np.ndarray:
     row0 = pdmat3.getRow(0)
     row1 = pdmat3.getRow(1)
     row2 = pdmat3.getRow(2)
+    print(row0)
+    print(row1)
+    print(row2)
     return np.array([[row0[0], row1[0], row2[0]], [row0[1], row1[1], row2[1]], [row0[2], row1[2], row2[2]]])
 
 

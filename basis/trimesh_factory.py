@@ -38,6 +38,42 @@ def gen_box(xyz_lengths=np.array([1, 1, 1]),
     """
     return trm_primit.Box(extents=xyz_lengths, homomat=rm.homomat_from_posrot(pos=pos, rotmat=rotmat))
 
+
+def gen_frustrum(bottom_xy_lengths=np.array([0.02, 0.02]), top_xy_lengths=np.array([0.04, 0.04]), height=0.01,
+                 pos=np.zeros(3), rotmat=np.eye(3)):
+    """
+    Draw a 3D frustum
+    :param bottom_xy_lengths: XYZ lengths of the bottom rectangle
+    :param top_xy_lengths: XYZ lengths of the top rectangle
+    :param height: Height of the frustum
+    :param pos: Position of the frustum center
+    :param rotmat: Rotation matrix for the frustum orientation
+    :return: A NodePath with the frustum geometry
+    """
+    vertices = np.array([
+        [-bottom_xy_lengths[0] / 2, -bottom_xy_lengths[1] / 2, 0],
+        [bottom_xy_lengths[0] / 2, -bottom_xy_lengths[1] / 2, 0],
+        [bottom_xy_lengths[0] / 2, bottom_xy_lengths[1] / 2, 0],
+        [-bottom_xy_lengths[0] / 2, bottom_xy_lengths[1] / 2, 0],
+        [-top_xy_lengths[0] / 2, -top_xy_lengths[1] / 2, height],
+        [top_xy_lengths[0] / 2, -top_xy_lengths[1] / 2, height],
+        [top_xy_lengths[0] / 2, top_xy_lengths[1] / 2, height],
+        [-top_xy_lengths[0] / 2, top_xy_lengths[1] / 2, height]
+    ])
+    # Define the faces of the frustum
+    faces = np.array([
+        [0, 1, 2], [2, 3, 0],  # Bottom face
+        [4, 5, 6], [6, 7, 4],  # Top face
+        [0, 1, 5], [5, 4, 0],  # Side face 1
+        [1, 2, 6], [6, 5, 1],  # Side face 2
+        [2, 3, 7], [7, 6, 2],  # Side face 3
+        [3, 0, 4], [4, 7, 3]  # Side face 4
+    ])
+    frustum_mesh = trm.Trimesh(vertices=vertices, faces=faces)
+    frustum_mesh.apply_transform(rm.homomat_from_posrot(pos, rotmat))
+    return frustum_mesh
+
+
 def gen_stick(spos=np.array([0, 0, 0]),
               epos=np.array([0.1, 0, 0]),
               radius=0.0025,

@@ -187,7 +187,7 @@ class StaticGeometricModel(object):
     @alpha.setter
     def alpha(self, alpha):
         rgba = self._pdndp.getColor()
-        self._pdndp.setColor(rgba[0], rgba[1], rgba[2], alpha)
+        self._pdndp.setColor(*rgba[:3], alpha)
 
     def is_empty(self):
         if self._trm_mesh is None:
@@ -441,6 +441,7 @@ class GeometricModel(StaticGeometricModel):
         gmodel = GeometricModel(self)
         gmodel.pos = self.pos
         gmodel.rotmat = self.rotmat
+        return gmodel
 
 
 # ======================================================
@@ -449,11 +450,13 @@ class GeometricModel(StaticGeometricModel):
 
 def gen_linesegs(linesegs,
                  thickness=0.001,
-                 rgba=np.array([0, 0, 0, 1])):
+                 rgb=np.array([0, 0, 0]),
+                 alpha=1):
     """
     gen linsegs -- non-continuous segs are allowed
     :param linesegs: nx2x3 nparray, defined in local 0 frame
-    :param rgba:
+    :param rgb:
+    :param alpha:
     :param thickness:
     :param refpos, refrot: the local coordinate frame where the pnti in the linsegs are defined
     :return: a geomtric model
@@ -463,7 +466,7 @@ def gen_linesegs(linesegs,
     # Create a set of line segments
     ls = LineSegs()
     ls.setThickness(thickness * da.M_TO_PIXEL)
-    ls.setColor(*rgba)
+    ls.setColor(*rgb, alpha)
     for p0_p1_tuple in linesegs:
         ls.moveTo(*p0_p1_tuple[0])
         ls.drawTo(*p0_p1_tuple[1])
@@ -477,50 +480,54 @@ def gen_linesegs(linesegs,
 
 def gen_sphere(pos=np.array([0, 0, 0]),
                radius=0.0015,
-               rgba=np.array([1, 0, 0, 1]),
+               rgb=np.array([1, 0, 0]),
+               alpha=1,
                ico_level=2):
     """
     :param pos:
     :param radius:
-    :param rgba:
+    :param rgb:
     :return:
     author: weiwei
     date: 20161212tsukuba, 20191228osaka
     """
     sphere_trm = trm_factory.gen_sphere(pos=pos, radius=radius, ico_level=ico_level)
     sphere_sgm = StaticGeometricModel(initor=sphere_trm)
-    sphere_sgm.rgba = rgba
+    sphere_sgm.rgba = np.asarray([*rgb, alpha])
     return sphere_sgm
 
 
 def gen_ellipsoid(pos=np.array([0, 0, 0]),
                   axes_mat=np.eye(3),
-                  rgba=np.array([1, 1, 0, .3])):
+                  rgb=np.array([1, 1, 0]),
+                  alpha=.3):
     """
     :param pos:
     :param axes_mat: 3x3 mat, each column is an axis of the ellipse
-    :param rgba:
+    :param rgb:
+    :param alpha
     :return:
     author: weiwei
     date: 20200701osaka
     """
     ellipsoid_trm = trm_factory.gen_ellipsoid(pos=pos, axmat=axes_mat)
     ellipsoid_sgm = StaticGeometricModel(initor=ellipsoid_trm)
-    ellipsoid_sgm.rgba = rgba
+    ellipsoid_sgm.rgba = np.asarray([*rgb, alpha])
     return ellipsoid_sgm
 
 
 def gen_stick(spos=np.array([0, 0, 0]),
               epos=np.array([.1, 0, 0]),
               radius=.0025,
-              rgba=np.array([1, 0, 0, 1]),
+              rgb=np.array([1, 0, 0]),
+              alpha=1,
               type="rect",
               n_sec=18):
     """
     :param spos:
     :param epos:
     :param radius:
-    :param rgba:
+    :param rgb:
     :param type: rect or round
     :param n_sec:
     :return:
@@ -529,14 +536,15 @@ def gen_stick(spos=np.array([0, 0, 0]),
     """
     stick_trm = trm_factory.gen_stick(spos=spos, epos=epos, radius=radius, type=type, n_sec=n_sec)
     stick_sgm = StaticGeometricModel(initor=stick_trm)
-    stick_sgm.rgba = rgba
+    stick_sgm.rgba = np.asarray([*rgb, alpha])
     return stick_sgm
 
 
 def gen_dashed_stick(spos=np.array([0, 0, 0]),
                      epos=np.array([.1, 0, 0]),
                      radius=.0025,
-                     rgba=np.array([1, 0, 0, 1]),
+                     rgb=np.array([1, 0, 0]),
+                     alpha=1,
                      len_solid=None,
                      len_interval=None,
                      type="rect",
@@ -547,7 +555,7 @@ def gen_dashed_stick(spos=np.array([0, 0, 0]),
     :param radius:
     :param len_solid: ax_length of the solid section, 1*major_radius by default
     :param len_interval: ax_length of the interval between two solids, 1.5*major_radius by default
-    :param rgba:
+    :param rgb:
     :return:
     author: weiwei
     date: 20200625osaka
@@ -560,32 +568,55 @@ def gen_dashed_stick(spos=np.array([0, 0, 0]),
                                               type=type,
                                               n_sec=n_sec)
     dashstick_sgm = StaticGeometricModel(initor=dashstick_trm)
-    dashstick_sgm.rgba = rgba
+    dashstick_sgm.rgba = np.asarray([*rgb, alpha])
     return dashstick_sgm
 
 
 def gen_box(xyz_lengths=np.array([1, 1, 1]),
             pos=np.zeros(3),
             rotmat=np.eye(3),
-            rgba=np.array([1, 0, 0, 1])):
+            rgb=np.array([1, 0, 0]),
+            alpha=1):
     """
     :param xyz_lengths:
     :param pos:
     :param rotmat:
-    :param rgba:
+    :param rgb:
+    :param alpha:
     :return:
     author: weiwei
-    date: 20191229osaka, 20230830
+    date: 20191229osaka, 20230830, 20240616osaka
     """
     box_trm = trm_factory.gen_box(xyz_lengths=xyz_lengths, pos=pos, rotmat=rotmat)
     box_sgm = StaticGeometricModel(initor=box_trm)
-    box_sgm.rgba = rgba
+    box_sgm.rgba = np.asarray([*rgb, alpha])
     return box_sgm
+
+
+def gen_frustrum(bottom_xy_lengths=np.array([0.02, 0.02]), top_xy_lengths=np.array([0.04, 0.04]),
+                 height=0.01, pos=np.zeros(3), rotmat=np.eye(3), rgb=np.array([1, 0, 0]), alpha=1):
+    """
+    Draw a 3D frustum
+    :param bottom_xy_lengths: XYZ lengths of the bottom rectangle
+    :param top_xy_lengths: XYZ lengths of the top rectangle
+    :param height: Height of the frustum
+    :param pos: Position of the frustum center
+    :param rotmat: Rotation matrix for the frustum orientation
+    :param rgb: Color of the frustum
+    :param alpha:
+    :return: A NodePath with the frustum geometry
+    """
+    frustrum_trm = trm_factory.gen_frustrum(bottom_xy_lengths=bottom_xy_lengths,
+                                            top_xy_lengths=top_xy_lengths,
+                                            height=height, pos=pos, rotmat=rotmat)
+    ls_sgm = StaticGeometricModel(initor=frustrum_trm, rgb=rgb, alpha=alpha)
+    return ls_sgm
 
 
 def gen_dumbbell(spos=np.array([0, 0, 0]),
                  epos=np.array([.1, 0, 0]),
-                 rgba=np.array([1, 0, 0, 1]),
+                 rgb=np.array([1, 0, 0]),
+                 alpha=1,
                  stick_radius=.0025,
                  n_sec=18,
                  sphere_radius=None,
@@ -595,7 +626,8 @@ def gen_dumbbell(spos=np.array([0, 0, 0]),
     :param spos:
     :param epos:
     :param stick_radius:
-    :param rgba:
+    :param rgb:
+    :param alpha
     :return:
     author: weiwei
     date: 20161212tsukuba, 20191228osaka
@@ -607,13 +639,14 @@ def gen_dumbbell(spos=np.array([0, 0, 0]),
                                             sphere_radius=sphere_radius,
                                             sphere_ico_level=sphere_ico_level)
     dumbbell_sgm = StaticGeometricModel(dumbbell_trm)
-    dumbbell_sgm.rgba = rgba
+    dumbbell_sgm.rgba = np.asarray([*rgb, alpha])
     return dumbbell_sgm
 
 
 def gen_cone(spos=np.array([0, 0, 0]),
              epos=np.array([0.1, 0, 0]),
-             rgba=np.array([.7, .7, .7, .3]),
+             rgb=np.array([.7, .7, .7]),
+             alpha=1,
              bottom_radius=0.005,
              n_sec=8):
     """
@@ -627,33 +660,36 @@ def gen_cone(spos=np.array([0, 0, 0]),
     """
     cone_trm = trm_factory.gen_cone(spos=spos, epos=epos, bottom_radius=bottom_radius, n_sec=n_sec)
     cone_sgm = GeometricModel(cone_trm)
-    cone_sgm.rgba = rgba
+    cone_sgm.rgba = np.asarray([*rgb, alpha])
     return cone_sgm
 
 
 def gen_arrow(spos=np.array([0, 0, 0]),
               epos=np.array([.1, 0, 0]),
-              rgba=np.array([1, 0, 0, 1]),
+              rgb=np.array([1, 0, 0]),
+              alpha=1,
               stick_radius=.0025,
               stick_type="rect"):
     """
     :param spos:
     :param epos:
     :param stick_radius:
-    :param rgba:
+    :param rgb:
+    :param alpha
     :return:
     author: weiwei
     date: 20200115osaka
     """
     arrow_trm = trm_factory.gen_arrow(spos=spos, epos=epos, stick_radius=stick_radius, stick_type=stick_type)
     arrow_sgm = StaticGeometricModel(arrow_trm)
-    arrow_sgm.rgba = rgba
+    arrow_sgm.rgb = np.asarray([*rgb, alpha])
     return arrow_sgm
 
 
 def gen_dashed_arrow(spos=np.array([0, 0, 0]),
                      epos=np.array([.1, 0, 0]),
-                     rgba=np.array([1, 0, 0, 1]),
+                     rgb=np.array([1, 0, 0]),
+                     alpha=1,
                      stick_radius=.0025,
                      len_solid=None,
                      len_interval=None,
@@ -664,7 +700,8 @@ def gen_dashed_arrow(spos=np.array([0, 0, 0]),
     :param stick_radius:
     :param len_solid: ax_length of the solid section, 1*major_radius by default
     :param len_interval: ax_length of the empty section, 1.5*major_radius by default
-    :param rgba:
+    :param rgb:
+    :param alpha
     :return:
     author: weiwei
     date: 20200625osaka
@@ -676,7 +713,7 @@ def gen_dashed_arrow(spos=np.array([0, 0, 0]),
                                               stick_radius=stick_radius,
                                               stick_type=type)
     dasharrow_sgm = StaticGeometricModel(dasharrow_trm)
-    dasharrow_sgm.rgba = rgba
+    dasharrow_sgm.rgb = np.asarray([*rgb, alpha])
     return dasharrow_sgm
 
 
@@ -758,8 +795,6 @@ def gen_2d_frame(pos=np.array([0, 0, 0]),
         alphay = alpha[1]
     else:
         alphax = alphay = alpha
-    # - 20201202 change it to ModelCollection
-    # + 20230813 changing to ModelCollection seems unnecessary
     frame_nodepath = NodePath("frame")
     arrowx_trm = trm_factory.gen_arrow(spos=pos, epos=endx, stick_radius=ax_radius)
     arrowx_nodepath = da.trimesh_to_nodepath(arrowx_trm)
@@ -778,13 +813,15 @@ def gen_2d_frame(pos=np.array([0, 0, 0]),
 def gen_wireframe(vertices,
                   edges,
                   thickness=0.001,
-                  rgba=np.array([0, 0, 0, 1])):
+                  rgb=np.array([0, 0, 0]),
+                  alpha=1):
     """
     gen wireframe
     :param vertices: (n,3)
     :param edges: (n,2) indices to vertices
     :param thickness:
-    :param rgba:
+    :param rgb:
+    :param alpha:
     :return: a geomtric model
     author: weiwei
     date: 20230815
@@ -792,7 +829,7 @@ def gen_wireframe(vertices,
     # Create a set of line segments
     ls = LineSegs()
     ls.setThickness(thickness * da.M_TO_PIXEL)
-    ls.setColor(*rgba)
+    ls.setColor(*rgb, alpha)
     for line_seg in edges:
         ls.moveTo(*vertices(line_seg[0]))
         ls.drawTo(*vertices(line_seg[1]))
@@ -980,7 +1017,8 @@ def gen_torus(axis=np.array([1, 0, 0]),
               center=np.array([0, 0, 0]),
               major_radius=.005,
               minor_radius=.00075,
-              rgba=np.array([1, 0, 0, 1]),
+              rgb=np.array([1, 0, 0]),
+              alpha=1,
               n_sec_major=24,
               n_sec_minor=8):
     """
@@ -1000,7 +1038,7 @@ def gen_torus(axis=np.array([1, 0, 0]),
                                       n_sec_major=n_sec_major,
                                       n_sec_minor=n_sec_minor)
     torus_sgm = StaticGeometricModel(torus_trm)
-    torus_sgm.rgba = rgba
+    torus_sgm.rgb = np.asarray([*rgb, alpha])
     return torus_sgm
 
 
@@ -1009,7 +1047,8 @@ def gen_dashtorus(axis=np.array([1, 0, 0]),
                   center=np.array([0, 0, 0]),
                   major_radius=0.1,
                   minor_radius=0.0025,
-                  rgba=np.array([1, 0, 0, 1]),
+                  rgb=np.array([1, 0, 0]),
+                  alpha=1,
                   len_solid=None,
                   len_interval=None,
                   n_sec_major=24,
@@ -1032,7 +1071,7 @@ def gen_dashtorus(axis=np.array([1, 0, 0]),
                                           n_sec_major=n_sec_major,
                                           n_sec_minor=n_sec_minor)
     torus_sgm = StaticGeometricModel(torus_trm)
-    torus_sgm.rgba = rgba
+    torus_sgm.rgb = np.asarray([*rgb, alpha])
     return torus_sgm
 
 
@@ -1042,7 +1081,8 @@ def gen_circarrow(axis=np.array([1, 0, 0]),
                   center=np.array([0, 0, 0]),
                   major_radius=.05,
                   minor_radius=.0025,
-                  rgba=np.array([1, 0, 0, 1]),
+                  rgb=np.array([1, 0, 0]),
+                  alpha=1,
                   n_sec_major=24,
                   n_sec_minor=8,
                   end_type='single'):
@@ -1065,7 +1105,7 @@ def gen_circarrow(axis=np.array([1, 0, 0]),
                                               n_sec_minor=n_sec_minor,
                                               end_type=end_type)
     circarrow_sgm = StaticGeometricModel(circarrow_trm)
-    circarrow_sgm.rgba = rgba
+    circarrow_sgm.rgb = np.asarray([*rgb, alpha])
     return circarrow_sgm
 
 
@@ -1084,11 +1124,12 @@ def gen_pointcloud(points, rgba=np.array([0, 0, 0, .7]), point_size=.001):
     return pointcloud_sgm
 
 
-def gen_submesh(vertices, faces, rgba=np.array([1, 0, 0, 1])):
+def gen_submesh(vertices, faces, rgb=np.array([1, 0, 0]), alpha=1):
     """
     :param vertices: np.array([[v00, v01, v02], [v10, v11, v12], ...]
     :param faces: np.array([[ti00, ti01, ti02], [ti10, ti11, ti12], ...]
-    :param color: rgba
+    :param color: rgb
+    :param alpha
     :return:
     author: weiwei
     date: 20171219
@@ -1099,28 +1140,19 @@ def gen_submesh(vertices, faces, rgba=np.array([1, 0, 0, 1])):
         vert0 = vertices[fc[0], :]
         vert1 = vertices[fc[1], :]
         vert2 = vertices[fc[2], :]
-        facenormal = np.cross(vert2 - vert1, vert0 - vert1)
-        vertex_normals[fc[0], :] = vertex_normals[fc[0]] + facenormal
-        vertex_normals[fc[1], :] = vertex_normals[fc[1]] + facenormal
-        vertex_normals[fc[2], :] = vertex_normals[fc[2]] + facenormal
+        face_normal = np.cross(vert2 - vert1, vert0 - vert1)
+        vertex_normals[fc[0], :] = vertex_normals[fc[0]] + face_normal
+        vertex_normals[fc[1], :] = vertex_normals[fc[1]] + face_normal
+        vertex_normals[fc[2], :] = vertex_normals[fc[2]] + face_normal
     for i in range(0, len(vertex_normals)):
         vertex_normals[i, :] = vertex_normals[i, :] / np.linalg.norm(vertex_normals[i, :])
     trm_mesh = trm_factory.trm_from_vvnf(vertices, vertex_normals, faces)
     submesh_sgm = StaticGeometricModel(trm_mesh)
-    submesh_sgm.rgba = rgba
-    # geom = da.pdgeom_from_vvnf(vertices, vertex_normals, faces)
-    # node = GeomNode('surface')
-    # node.addGeom(geom)
-    # surface_nodepath = NodePath('surface')
-    # surface_nodepath.attachNewNode(node)
-    # surface_nodepath.setColor(rgba[0], rgba[1], rgba[2], rgba[3])
-    # surface_nodepath.setTransparency(TransparencyAttrib.MDual)
-    # surface_nodepath.setTwoSided(True)
-    # surface_sgm = StaticGeometricModel(surface_nodepath)
+    submesh_sgm.rgb = np.asarray([*rgb, alpha])
     return submesh_sgm
 
 
-def gen_polygon(verts, thickness=0.002, rgba=np.array([0, 0, 0, .7])):
+def gen_polygon(verts, thickness=0.002, rgb=np.array([0, 0, 0]), alpha=.7):
     """
     gen objmnp
     :param obj_path:
@@ -1130,7 +1162,7 @@ def gen_polygon(verts, thickness=0.002, rgba=np.array([0, 0, 0, .7])):
     """
     segs = LineSegs()
     segs.setThickness(thickness)
-    segs.setColor(rgba[0], rgba[1], rgba[2], rgba[3])
+    segs.setColor(*rgb, alpha)
     for i in range(len(verts) - 1):
         segs.moveTo(verts[i][0], verts[i][1], verts[i][2])
         segs.drawTo(verts[i + 1][0], verts[i + 1][1], verts[i + 1][2])
@@ -1144,21 +1176,23 @@ def gen_polygon(verts, thickness=0.002, rgba=np.array([0, 0, 0, .7])):
 def gen_frame_box(xyz_lengths=np.array([.02, .02, .02]),
                   pos=np.zeros(3),
                   rotmat=np.eye(3),
-                  rgba=np.array([0, 0, 0, 1]),
+                  rgb=np.array([0, 0, 0]),
+                  alpha=1,
                   thickness=.001):
     """
     draw a 3d frame box
     :param xyz_lengths:
     :param pos:
     :param rotmat:
-    :param rgba:
+    :param rgb:
+    :param alpha:
     :param thickness:
     :return:
     """
     # Create a set of line segments
     ls = LineSegs()
     ls.setThickness(thickness * da.M_TO_PIXEL)
-    ls.setColor(rgba[0], rgba[1], rgba[2], rgba[3])
+    ls.setColor(*rgb, alpha)
     center_pos = pos
     x_axis = rotmat[:, 0]
     y_axis = rotmat[:, 1]
@@ -1193,8 +1227,7 @@ def gen_frame_box(xyz_lengths=np.array([.02, .02, .02]),
 
 
 def gen_frame_cylinder(radius=0.02, height=0.01, num_sides=8, pos=np.zeros(3), rotmat=np.eye(3),
-                       rgba=np.array([0, 0, 0, 1]),
-                       thickness=.001):
+                       rgb=np.array([0, 0, 0]), alpha=1, thickness=.001):
     """
     Draw a 3D cylinder using LineSegs
     :param radius: Radius of the cylinder
@@ -1202,13 +1235,14 @@ def gen_frame_cylinder(radius=0.02, height=0.01, num_sides=8, pos=np.zeros(3), r
     :param num_sides: Number of sides for the cylindrical approximation
     :param pos: Position of the cylinder center
     :param rotmat: Rotation matrix for the cylinder orientation
-    :param rgba: Color of the cylinder
+    :param rgb: Color of the cylinder
+    :param alpha
     :param thickness: Thickness of the lines
     :return: A NodePath with the cylinder geometry
     """
     ls = LineSegs()
     ls.setThickness(thickness * da.M_TO_PIXEL)
-    ls.setColor(rgba[0], rgba[1], rgba[2], rgba[3])
+    ls.setColor(*rgb, alpha)
     angle_step = 2 * np.pi / num_sides
     half_height = height / 2
     top_circle = []
@@ -1245,34 +1279,35 @@ def gen_frame_cylinder(radius=0.02, height=0.01, num_sides=8, pos=np.zeros(3), r
 
 
 def gen_frame_frustum(bottom_xy_lengths=np.array([0.02, 0.02]), top_xy_lengths=np.array([0.04, 0.04]),
-                      height=0.01, pos=np.zeros(3), rotmat=np.eye(3), rgba=np.array([0, 0, 0, 1]), thickness=0.001):
+                      height=0.01, pos=np.zeros(3), rotmat=np.eye(3), rgb=np.array([0, 0, 0]),
+                      alpha=1, thickness=0.001):
     """
-    Draw a 3D frustum using LineSegs TODO rewrite 20240615
+    Draw a 3D frustum using LineSegs
     :param bottom_xy_lengths: XYZ lengths of the bottom rectangle
     :param top_xy_lengths: XYZ lengths of the top rectangle
     :param height: Height of the frustum
     :param pos: Position of the frustum center
     :param rotmat: Rotation matrix for the frustum orientation
-    :param rgba: Color of the frustum
+    :param rgb: Color of the frustum
+    :param alpha
     :param thickness: Thickness of the lines
     :return: A NodePath with the frustum geometry
     """
     ls = LineSegs()
     ls.setThickness(thickness * da.M_TO_PIXEL)
-    ls.setColor(rgba[0], rgba[1], rgba[2], rgba[3])
-    half_height = height / 2
+    ls.setColor(*rgb, alpha)
     # Calculate vertices for the bottom and top rectangles
     bottom_offsets = [
-        [-bottom_xy_lengths[0] / 2, -bottom_xy_lengths[1] / 2, -half_height],
-        [bottom_xy_lengths[0] / 2, -bottom_xy_lengths[1] / 2, -half_height],
-        [bottom_xy_lengths[0] / 2, bottom_xy_lengths[1] / 2, -half_height],
-        [-bottom_xy_lengths[0] / 2, bottom_xy_lengths[1] / 2, -half_height]
+        [-bottom_xy_lengths[0] / 2, -bottom_xy_lengths[1] / 2, 0],
+        [bottom_xy_lengths[0] / 2, -bottom_xy_lengths[1] / 2, 0],
+        [bottom_xy_lengths[0] / 2, bottom_xy_lengths[1] / 2, 0],
+        [-bottom_xy_lengths[0] / 2, bottom_xy_lengths[1] / 2, 0]
     ]
     top_offsets = [
-        [-top_xy_lengths[0] / 2, -top_xy_lengths[1] / 2, half_height],
-        [top_xy_lengths[0] / 2, -top_xy_lengths[1] / 2, half_height],
-        [top_xy_lengths[0] / 2, top_xy_lengths[1] / 2, half_height],
-        [-top_xy_lengths[0] / 2, top_xy_lengths[1] / 2, half_height]
+        [-top_xy_lengths[0] / 2, -top_xy_lengths[1] / 2, height],
+        [top_xy_lengths[0] / 2, -top_xy_lengths[1] / 2, height],
+        [top_xy_lengths[0] / 2, top_xy_lengths[1] / 2, height],
+        [-top_xy_lengths[0] / 2, top_xy_lengths[1] / 2, height]
     ]
     bottom_vertices = [np.dot(rotmat, offset) + pos for offset in bottom_offsets]
     top_vertices = [np.dot(rotmat, offset) + pos for offset in top_offsets]
@@ -1319,17 +1354,16 @@ if __name__ == "__main__":
     rotmat = rm.rotmat_from_axangle(np.array([1, 0, 0]), math.pi / 2.0)
     bunnygm.rotmat = rotmat
     gen_frame().attach_to(base)
-    base.run()
 
     bunnygm1 = bunnygm.copy()
-    bunnygm1.set_rgba([0.7, 0, 0.7, 1.0])
+    bunnygm1.rgba = np.array([0.7, 0, 0.7, 1.0])
     bunnygm1.attach_to(base)
     rotmat = rm.rotmat_from_euler(0, 0, math.radians(15))
     bunnygm1.pos = np.array([0, .01, 0])
     bunnygm1.rotmat = rotmat
 
     bunnygm2 = bunnygm1.copy()
-    bunnygm2.set_rgba([0, 0.7, 0.7, 1.0])
+    bunnygm2.rgba=np.array([0, 0.7, 0.7, 1.0])
     bunnygm2.attach_to(base)
     rotmat = rm.rotmat_from_axangle([1, 0, 0], -math.pi / 4.0)
     bunnygm2.pos = np.array([0, .2, 0])
@@ -1339,14 +1373,6 @@ if __name__ == "__main__":
     bunnygmpoints = bunnygm.sample_surface()
     bunnygm1points = bunnygm1.sample_surface()
     bunnygm2points = bunnygm2.sample_surface()
-    # bpgm = GeometricModel(bunnygmpoints)
-    # bpgm1 = GeometricModel(bunnygm1points)
-    # bpgm2 = GeometricModel(bunnygm2points)
-    # bpgm.attach_to(base)
-    # bpgm.set_scale([2, 1, 3])
-    # bpgm.set_point_size(.01)
-    # bpgm1.attach_to(base)
-    # bpgm2.attach_to(base)
     bgm_pcd = gen_pointcloud(bunnygmpoints)
     bgm_pcd.attach_to(base)
 
@@ -1368,7 +1394,6 @@ if __name__ == "__main__":
 
     pos = np.array([.3, 0, 0])
     rotmat = rm.rotmat_from_euler(math.pi / 6, 0, 0)
-    homomat = rm.homomat_from_posrot(pos, rotmat)
-    gen_frame_box([.1, .2, .3], homomat).attach_to(base)
+    gen_frame_box(xyz_lengths=np.array([.1, .2, .3]), pos=pos, rotmat=rotmat).attach_to(base)
 
     base.run()
