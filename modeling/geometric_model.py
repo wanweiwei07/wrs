@@ -170,7 +170,7 @@ class StaticGeometricModel(object):
         if rgba is None:
             self._pdndp.clearColor()
         else:
-            self._pdndp.setColor(rgba[0], rgba[1], rgba[2], rgba[3])
+            self._pdndp.setColor(*rgba)
 
     @property
     def rgb(self):
@@ -493,7 +493,7 @@ def gen_sphere(pos=np.array([0, 0, 0]),
     """
     sphere_trm = trm_factory.gen_sphere(pos=pos, radius=radius, ico_level=ico_level)
     sphere_sgm = StaticGeometricModel(initor=sphere_trm)
-    sphere_sgm.rgba = np.asarray([*rgb, alpha])
+    sphere_sgm.rgba = np.asarray([rgb[0], rgb[1], rgb[2], alpha])
     return sphere_sgm
 
 
@@ -512,7 +512,7 @@ def gen_ellipsoid(pos=np.array([0, 0, 0]),
     """
     ellipsoid_trm = trm_factory.gen_ellipsoid(pos=pos, axmat=axes_mat)
     ellipsoid_sgm = StaticGeometricModel(initor=ellipsoid_trm)
-    ellipsoid_sgm.rgba = np.asarray([*rgb, alpha])
+    ellipsoid_sgm.rgba = np.asarray([rgb[0], rgb[1], rgb[2], alpha])
     return ellipsoid_sgm
 
 
@@ -536,7 +536,7 @@ def gen_stick(spos=np.array([0, 0, 0]),
     """
     stick_trm = trm_factory.gen_stick(spos=spos, epos=epos, radius=radius, type=type, n_sec=n_sec)
     stick_sgm = StaticGeometricModel(initor=stick_trm)
-    stick_sgm.rgba = np.asarray([*rgb, alpha])
+    stick_sgm.rgba = np.asarray([rgb[0], rgb[1], rgb[2], alpha])
     return stick_sgm
 
 
@@ -568,7 +568,7 @@ def gen_dashed_stick(spos=np.array([0, 0, 0]),
                                               type=type,
                                               n_sec=n_sec)
     dashstick_sgm = StaticGeometricModel(initor=dashstick_trm)
-    dashstick_sgm.rgba = np.asarray([*rgb, alpha])
+    dashstick_sgm.rgba = np.asarray([rgb[0], rgb[1], rgb[2], alpha])
     return dashstick_sgm
 
 
@@ -589,7 +589,7 @@ def gen_box(xyz_lengths=np.array([1, 1, 1]),
     """
     box_trm = trm_factory.gen_box(xyz_lengths=xyz_lengths, pos=pos, rotmat=rotmat)
     box_sgm = StaticGeometricModel(initor=box_trm)
-    box_sgm.rgba = np.asarray([*rgb, alpha])
+    box_sgm.rgba = np.asarray([rgb[0], rgb[1], rgb[2], alpha])
     return box_sgm
 
 
@@ -639,7 +639,7 @@ def gen_dumbbell(spos=np.array([0, 0, 0]),
                                             sphere_radius=sphere_radius,
                                             sphere_ico_level=sphere_ico_level)
     dumbbell_sgm = StaticGeometricModel(dumbbell_trm)
-    dumbbell_sgm.rgba = np.asarray([*rgb, alpha])
+    dumbbell_sgm.rgba = np.asarray([rgb[0], rgb[1], rgb[2], alpha])
     return dumbbell_sgm
 
 
@@ -660,7 +660,7 @@ def gen_cone(spos=np.array([0, 0, 0]),
     """
     cone_trm = trm_factory.gen_cone(spos=spos, epos=epos, bottom_radius=bottom_radius, n_sec=n_sec)
     cone_sgm = GeometricModel(cone_trm)
-    cone_sgm.rgba = np.asarray([*rgb, alpha])
+    cone_sgm.rgba = np.asarray([rgb[0], rgb[1], rgb[2], alpha])
     return cone_sgm
 
 
@@ -682,7 +682,7 @@ def gen_arrow(spos=np.array([0, 0, 0]),
     """
     arrow_trm = trm_factory.gen_arrow(spos=spos, epos=epos, stick_radius=stick_radius, stick_type=stick_type)
     arrow_sgm = StaticGeometricModel(arrow_trm)
-    arrow_sgm.rgb = np.asarray([*rgb, alpha])
+    arrow_sgm.rgba = np.asarray([rgb[0], rgb[1], rgb[2], alpha])
     return arrow_sgm
 
 
@@ -713,7 +713,7 @@ def gen_dashed_arrow(spos=np.array([0, 0, 0]),
                                               stick_radius=stick_radius,
                                               stick_type=type)
     dasharrow_sgm = StaticGeometricModel(dasharrow_trm)
-    dasharrow_sgm.rgb = np.asarray([*rgb, alpha])
+    dasharrow_sgm.rgba = np.asarray([rgb[0], rgb[1], rgb[2], alpha])
     return dasharrow_sgm
 
 
@@ -1013,7 +1013,7 @@ def gen_2d_dashed_frame(pos=np.array([0, 0, 0]),
 
 def gen_torus(axis=np.array([1, 0, 0]),
               starting_vector=None,
-              portion=.5,
+              portion=1,
               center=np.array([0, 0, 0]),
               major_radius=.005,
               minor_radius=.00075,
@@ -1038,21 +1038,21 @@ def gen_torus(axis=np.array([1, 0, 0]),
                                       n_sec_major=n_sec_major,
                                       n_sec_minor=n_sec_minor)
     torus_sgm = StaticGeometricModel(torus_trm)
-    torus_sgm.rgb = np.asarray([*rgb, alpha])
+    torus_sgm.rgba = np.asarray([rgb[0], rgb[1], rgb[2], alpha])
     return torus_sgm
 
 
-def gen_dashtorus(axis=np.array([1, 0, 0]),
-                  portion=.5,
-                  center=np.array([0, 0, 0]),
-                  major_radius=0.1,
-                  minor_radius=0.0025,
-                  rgb=np.array([1, 0, 0]),
-                  alpha=1,
-                  len_solid=None,
-                  len_interval=None,
-                  n_sec_major=24,
-                  n_sec_minor=8):
+def gen_dashed_torus(axis=np.array([1, 0, 0]),
+                     portion=1,
+                     center=np.array([0, 0, 0]),
+                     major_radius=0.1,
+                     minor_radius=0.0025,
+                     rgb=np.array([1, 0, 0]),
+                     alpha=1,
+                     len_solid=None,
+                     len_interval=None,
+                     n_sec_major=64,
+                     n_sec_minor=8):
     """
     :param axis: the circ arrow will rotate around this axis 1x3 nparray
     :param portion: 0.0~1.0
@@ -1071,7 +1071,7 @@ def gen_dashtorus(axis=np.array([1, 0, 0]),
                                           n_sec_major=n_sec_major,
                                           n_sec_minor=n_sec_minor)
     torus_sgm = StaticGeometricModel(torus_trm)
-    torus_sgm.rgb = np.asarray([*rgb, alpha])
+    torus_sgm.rgba = np.asarray([rgb[0], rgb[1], rgb[2], alpha])
     return torus_sgm
 
 
@@ -1105,7 +1105,7 @@ def gen_circarrow(axis=np.array([1, 0, 0]),
                                               n_sec_minor=n_sec_minor,
                                               end_type=end_type)
     circarrow_sgm = StaticGeometricModel(circarrow_trm)
-    circarrow_sgm.rgb = np.asarray([*rgb, alpha])
+    circarrow_sgm.rgba = np.asarray([rgb[0], rgb[1], rgb[2], alpha])
     return circarrow_sgm
 
 
@@ -1148,7 +1148,7 @@ def gen_submesh(vertices, faces, rgb=np.array([1, 0, 0]), alpha=1):
         vertex_normals[i, :] = vertex_normals[i, :] / np.linalg.norm(vertex_normals[i, :])
     trm_mesh = trm_factory.trm_from_vvnf(vertices, vertex_normals, faces)
     submesh_sgm = StaticGeometricModel(trm_mesh)
-    submesh_sgm.rgb = np.asarray([*rgb, alpha])
+    submesh_sgm.rgba = np.asarray([rgb[0], rgb[1], rgb[2], alpha])
     return submesh_sgm
 
 
@@ -1363,7 +1363,7 @@ if __name__ == "__main__":
     bunnygm1.rotmat = rotmat
 
     bunnygm2 = bunnygm1.copy()
-    bunnygm2.rgba=np.array([0, 0.7, 0.7, 1.0])
+    bunnygm2.rgba = np.array([0, 0.7, 0.7, 1.0])
     bunnygm2.attach_to(base)
     rotmat = rm.rotmat_from_axangle([1, 0, 0], -math.pi / 4.0)
     bunnygm2.pos = np.array([0, .2, 0])

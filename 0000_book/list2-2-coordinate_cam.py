@@ -13,7 +13,7 @@ if __name__ == '__main__':
     # setup world
     base = wd.World(cam_pos=cam_pos_for_rendering, lookat_pos=lookat_pos_for_rendering)
     # draw the frame
-    frame_model = mgm.gen_frame()
+    frame_model = mgm.gen_frame(ax_length=.2)
     frame_model.attach_to(base)
     # virtual cam
     cam_res = np.array([1920, 1080])
