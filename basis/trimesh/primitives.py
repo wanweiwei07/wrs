@@ -76,15 +76,15 @@ class Sphere(Primitive):
         subdivisions: int, number of sphere_ico_level for icosphere. Default is 3
         '''
         super(Sphere, self).__init__(*args, **kwargs)
-        if 'sphere_radius' in kwargs:
-            self.sphere_radius = kwargs['sphere_radius']
-        if 'sphere_center' in kwargs:
-            self.sphere_center = kwargs['sphere_center']
-        if 'sphere_ico_level' in kwargs:
-            self._data['sphere_ico_level'] = int(kwargs['sphere_ico_level'])
+        if 'radius' in kwargs:
+            self.sphere_radius = kwargs['radius']
+        if 'center' in kwargs:
+            self.sphere_center = kwargs['center']
+        if 'ico_level' in kwargs:
+            self._data['ico_level'] = int(kwargs['ico_level'])
         else:
-            self._data['sphere_ico_level'] = 3
-        self._unit_sphere = creation.icosphere(subdivisions=self._data['sphere_ico_level'][0])
+            self._data['ico_level'] = 3
+        self._unit_sphere = creation.icosphere(subdivisions=self._data['ico_level'][0])
 
     @property
     def sphere_center(self):
@@ -99,14 +99,14 @@ class Sphere(Primitive):
 
     @property
     def sphere_radius(self):
-        stored = self._data['major_radius']
+        stored = self._data['radius']
         if stored is None:
             return 1.0
         return stored
 
     @sphere_radius.setter
     def sphere_radius(self, value):
-        self._data['major_radius'] = float(value)
+        self._data['radius'] = float(value)
 
     def _create_mesh(self):
         ico = self._unit_sphere

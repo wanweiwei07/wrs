@@ -26,12 +26,12 @@ def draw_rot_arrows(rotmat, axis, column_id, rgb, portion):
                          portion=1).attach_to(base)
 
 
-option = 'xyz'
+option = 'x'
 base = wd.World(cam_pos=[1, 1, 1], lookat_pos=[0, 0, 0], toggle_debug=True)
 if option == 'x':
-    mgm.gen_frame(ax_length=.2, alpha=np.array([.1, .1, .1])).attach_to(base)
-    rotmat = rm.rotmat_from_euler(np.pi / 3, 0, 0)
-    mgm.gen_dashed_frame(ax_length=.2, rotmat=rotmat, len_solid=.06, len_interval=.01).attach_to(base)
+    mgm.gen_frame(ax_length=.2).attach_to(base)
+    rotmat_oa = rm.rotmat_from_euler(np.pi / 3, 0, 0)
+    mgm.gen_dashed_frame(ax_length=.2, rotmat=rotmat_oa, len_solid=.06, len_interval=.01).attach_to(base)
     mgm.gen_circarrow(axis=np.array([1, 0, 0]),
                       portion=.9,
                       center=np.array([.1, 0, 0]),

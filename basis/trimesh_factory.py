@@ -203,7 +203,7 @@ def gen_sphere(pos=np.array([0, 0, 0]), radius=0.02, ico_level=2):
     author: weiwei
     date: 20191228osaka
     """
-    return trm_primit.Sphere(sphere_radius=radius, sphere_center=pos, subdivisions=ico_level)
+    return trm_primit.Sphere(radius=radius, center=pos, ico_level=ico_level)
 
 
 def gen_ellipsoid(pos=np.array([0, 0, 0]), axmat=np.eye(3), subdivisions=5):
