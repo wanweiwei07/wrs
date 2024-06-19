@@ -413,6 +413,7 @@ class JLChain(object):
                        stick_rgba=rm.bc.lnk_stick_rgba,
                        toggle_jnt_frames=False,
                        toggle_flange_frame=True,
+                       toggle_actuation=False,
                        name='jlc_stick_model',
                        jnt_radius=rkc.JNT_RADIUS,
                        lnk_radius=rkc.LNK_STICK_RADIUS):
@@ -420,6 +421,7 @@ class JLChain(object):
                                   stick_rgba=stick_rgba,
                                   toggle_jnt_frames=toggle_jnt_frames,
                                   toggle_flange_frame=toggle_flange_frame,
+                                  toggle_actuation=toggle_actuation,
                                   name=name,
                                   jnt_radius=jnt_radius,
                                   lnk_radius=lnk_radius)

@@ -164,10 +164,10 @@ def gen_dashstick(spos=np.array([0, 0, 0]),
     if len_interval is None:
         len_interval = radius * 2.14
     length, direction = rm.unit_vector(epos - spos, toggle_length=True)
-    n_solid = round(length / (len_solid + len_interval)+0.5)
+    n_solid = round(length / (len_solid + len_interval) + 0.5)
     vertices = np.empty((0, 3))
     faces = np.empty((0, 3))
-    for i in range(0, n_solid-1):
+    for i in range(0, n_solid - 1):
         tmp_spos = spos + (len_solid * direction + len_interval * direction) * i
         tmp_stick = gen_stick(spos=tmp_spos,
                               epos=tmp_spos + len_solid * direction,
@@ -178,7 +178,7 @@ def gen_dashstick(spos=np.array([0, 0, 0]),
         vertices = np.vstack((vertices, tmp_stick.vertices))
         faces = np.vstack((faces, tmp_stick_faces))
     # wrap up the last segment
-    tmp_spos = spos + (len_solid * direction + len_interval * direction) * (n_solid-1)
+    tmp_spos = spos + (len_solid * direction + len_interval * direction) * (n_solid - 1)
     tmp_epos = tmp_spos + len_solid * direction
     final_length, _ = rm.unit_vector(tmp_epos - spos, toggle_length=True)
     if final_length > length:
@@ -304,13 +304,13 @@ def gen_arrow(spos=np.array([0, 0, 0]), epos=np.array([0.1, 0, 0]), stick_radius
     return trm.Trimesh(vertices=vertices, faces=faces)
 
 
-def gen_dasharrow(spos=np.array([0, 0, 0]),
-                  epos=np.array([0.1, 0, 0]),
-                  stick_radius=0.0025,
-                  len_solid=None,
-                  len_interval=None,
-                  n_sec=8,
-                  stick_type="rect"):
+def gen_dashed_arrow(spos=np.array([0, 0, 0]),
+                     epos=np.array([0.1, 0, 0]),
+                     stick_radius=0.0025,
+                     len_solid=None,
+                     len_interval=None,
+                     n_sec=8,
+                     stick_type="rect"):
     """
     :param spos: 1x3 nparray
     :param epos: 1x3 nparray
@@ -329,7 +329,7 @@ def gen_dasharrow(spos=np.array([0, 0, 0]),
                    bottom_radius=stick_radius * ARROW_CR_SR,
                    n_sec=n_sec)
     dash_stick = gen_dashstick(spos=epos - direction * stick_radius * ARROW_CH_SR,
-                               epos=spos, # make sure the section near the arrow head is even and solid
+                               epos=spos,  # make sure the section near the arrow head is even and solid
                                radius=stick_radius,
                                len_solid=len_solid,
                                len_interval=len_interval,
@@ -417,7 +417,7 @@ def gen_torus(axis=np.array([1, 0, 0]),
     if n_div > 0:
         prev_pos = center + np.dot(rm.rotmat_from_axangle(unit_axis, (n_div - 1) * major_sec_angle),
                                    starting_vector) * major_radius
-        nxt_pos = center + np.dot(rm.rotmat_from_axangle(unit_axis, n_div * major_sec_angle),
+        nxt_pos = center + np.dot(rm.rotmat_from_axangle(unit_axis, portion * 2 * np.pi),
                                   starting_vector) * major_radius
         stick = gen_stick(spos=prev_pos, epos=nxt_pos, radius=minor_radius, n_sec=n_sec_minor, type="round")
         vertices = stick.vertices
@@ -521,13 +521,14 @@ def gen_circarrow(axis=np.array([1, 0, 0]),
         starting_vector = rm.unit_vector(starting_vector)
     starting_pos = starting_vector * major_radius + center
     major_sec_angle = 2 * np.pi / n_sec_major
-    n_div = int(portion * n_sec_major+.5)
+    n_div = int(portion * n_sec_major + .5)
     # step 1: gen the last arrow first
     # step 2: gen the remaining torus
     if n_div > 0:
-        arrow_ticks = round(minor_radius * ARROW_CH_SR / (major_sec_angle * major_radius)+.5)
-        prev_pos = center + np.dot(rm.rotmat_from_axangle(unit_axis, portion * 2 * np.pi - arrow_ticks * major_sec_angle),
-                                   starting_vector) * major_radius
+        arrow_ticks = round(minor_radius * ARROW_CH_SR / (major_sec_angle * major_radius) + .5)
+        prev_pos = center + np.dot(
+            rm.rotmat_from_axangle(unit_axis, portion * 2 * np.pi - arrow_ticks * major_sec_angle),
+            starting_vector) * major_radius
         nxt_pos = center + np.dot(rm.rotmat_from_axangle(unit_axis, portion * 2 * np.pi),
                                   starting_vector) * major_radius
         arrow = gen_arrow(spos=prev_pos, epos=nxt_pos, stick_radius=minor_radius, n_sec=n_sec_minor, stick_type="round")
@@ -547,9 +548,10 @@ def gen_circarrow(axis=np.array([1, 0, 0]),
             vertices = np.vstack((vertices, arrow.vertices))
             faces = np.vstack((faces, arrow_faces))
         for i in range(id_start, n_div - arrow_ticks + 2, 1):
-            if i == n_div-arrow_ticks+1:
-                nxt_pos = center + np.dot(rm.rotmat_from_axangle(unit_axis, portion * 2 * np.pi- arrow_ticks * major_sec_angle),
-                                          starting_vector) * major_radius
+            if i == n_div - arrow_ticks + 1:
+                nxt_pos = center + np.dot(
+                    rm.rotmat_from_axangle(unit_axis, portion * 2 * np.pi - arrow_ticks * major_sec_angle),
+                    starting_vector) * major_radius
             else:
                 nxt_pos = center + np.dot(rm.rotmat_from_axangle(unit_axis, i * major_sec_angle),
                                           starting_vector) * major_radius

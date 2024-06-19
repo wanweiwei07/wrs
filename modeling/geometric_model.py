@@ -706,12 +706,12 @@ def gen_dashed_arrow(spos=np.array([0, 0, 0]),
     author: weiwei
     date: 20200625osaka
     """
-    dasharrow_trm = trm_factory.gen_dasharrow(spos=spos,
-                                              epos=epos,
-                                              len_solid=len_solid,
-                                              len_interval=len_interval,
-                                              stick_radius=stick_radius,
-                                              stick_type=type)
+    dasharrow_trm = trm_factory.gen_dashed_arrow(spos=spos,
+                                                 epos=epos,
+                                                 len_solid=len_solid,
+                                                 len_interval=len_interval,
+                                                 stick_radius=stick_radius,
+                                                 stick_type=type)
     dasharrow_sgm = StaticGeometricModel(dasharrow_trm)
     dasharrow_sgm.rgba = np.asarray([rgb[0], rgb[1], rgb[2], alpha])
     return dasharrow_sgm
@@ -934,18 +934,18 @@ def gen_dashed_frame(pos=np.array([0, 0, 0]),
     # - 20201202 change it toModelCollection
     # + 20230813 changing to ModelCollection seems unnecessary
     frame_nodepath = NodePath("dash_frame")
-    arrowx_trm = trm_factory.gen_dasharrow(spos=pos, epos=endx, stick_radius=ax_radius, len_solid=len_solid,
-                                           len_interval=len_interval)
+    arrowx_trm = trm_factory.gen_dashed_arrow(spos=pos, epos=endx, stick_radius=ax_radius, len_solid=len_solid,
+                                              len_interval=len_interval)
     arrowx_nodepath = da.trimesh_to_nodepath(arrowx_trm)
     arrowx_nodepath.setTransparency(TransparencyAttrib.MDual)
     arrowx_nodepath.setColor(*rgbx, alphax)
-    arrowy_trm = trm_factory.gen_dasharrow(spos=pos, epos=endy, stick_radius=ax_radius, len_solid=len_solid,
-                                           len_interval=len_interval)
+    arrowy_trm = trm_factory.gen_dashed_arrow(spos=pos, epos=endy, stick_radius=ax_radius, len_solid=len_solid,
+                                              len_interval=len_interval)
     arrowy_nodepath = da.trimesh_to_nodepath(arrowy_trm)
     arrowy_nodepath.setTransparency(TransparencyAttrib.MDual)
     arrowy_nodepath.setColor(*rgby, alphay)
-    arrowz_trm = trm_factory.gen_dasharrow(spos=pos, epos=endz, stick_radius=ax_radius, len_solid=len_solid,
-                                           len_interval=len_interval)
+    arrowz_trm = trm_factory.gen_dashed_arrow(spos=pos, epos=endz, stick_radius=ax_radius, len_solid=len_solid,
+                                              len_interval=len_interval)
     arrowz_nodepath = da.trimesh_to_nodepath(arrowz_trm)
     arrowz_nodepath.setTransparency(TransparencyAttrib.MDual)
     arrowz_nodepath.setColor(*rgbz, alphaz)
@@ -995,13 +995,13 @@ def gen_2d_dashed_frame(pos=np.array([0, 0, 0]),
     # - 20201202 change it toModelCollection
     # + 20230813 changing to ModelCollection seems unnecessary
     frame_nodepath = NodePath("dash_frame")
-    arrowx_trm = trm_factory.gen_dasharrow(spos=pos, epos=endx, stick_radius=ax_radius, len_solid=len_solid,
-                                           len_interval=len_interval)
+    arrowx_trm = trm_factory.gen_dashed_arrow(spos=pos, epos=endx, stick_radius=ax_radius, len_solid=len_solid,
+                                              len_interval=len_interval)
     arrowx_nodepath = da.trimesh_to_nodepath(arrowx_trm)
     arrowx_nodepath.setTransparency(TransparencyAttrib.MDual)
     arrowx_nodepath.setColor(rgbx[0], rgbx[1], rgbx[2], alphax)
-    arrowy_trm = trm_factory.gen_dasharrow(spos=pos, epos=endy, stick_radius=ax_radius, len_solid=len_solid,
-                                           len_interval=len_interval)
+    arrowy_trm = trm_factory.gen_dashed_arrow(spos=pos, epos=endy, stick_radius=ax_radius, len_solid=len_solid,
+                                              len_interval=len_interval)
     arrowy_nodepath = da.trimesh_to_nodepath(arrowy_trm)
     arrowy_nodepath.setTransparency(TransparencyAttrib.MDual)
     arrowy_nodepath.setColor(rgby[0], rgby[1], rgby[2], alphay)
@@ -1015,8 +1015,8 @@ def gen_torus(axis=np.array([1, 0, 0]),
               starting_vector=None,
               portion=1,
               center=np.array([0, 0, 0]),
-              major_radius=.005,
-              minor_radius=.00075,
+              major_radius=.2,
+              minor_radius=.0015,
               rgb=np.array([1, 0, 0]),
               alpha=1,
               n_sec_major=24,

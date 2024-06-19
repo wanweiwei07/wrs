@@ -460,7 +460,7 @@ def gen_box(xyz_lengths=rm.np.array([.1, .1, .1]),
     author: weiwei
     date: 20201202, 20240303
     """
-    box_sgm = mgm.gen_box(xyz_lengths=xyz_lengths, pos=pos, rotmat=rotmat, rgba=rm.np.append(rgb, alpha))
+    box_sgm = mgm.gen_box(xyz_lengths=xyz_lengths, pos=pos, rotmat=rotmat, rgb=rgb, alpha=alpha)
     box_cm = CollisionModel(box_sgm)
     return box_cm
 
@@ -475,7 +475,7 @@ def gen_sphere(pos=rm.np.array([0, 0, 0]), radius=0.01, rgb=rm.bc.tab20_list[10]
     author: weiwei
     date: 20161212tsukuba, 20191228osaka
     """
-    sphere_sgm = mgm.gen_sphere(pos=pos, radius=radius, rgba=rm.np.append(rgb, alpha))
+    sphere_sgm = mgm.gen_sphere(pos=pos, radius=radius, rgb=rgb, alpha=alpha)
     sphere_cm = CollisionModel(sphere_sgm)
     return sphere_cm
 
@@ -497,7 +497,7 @@ def gen_stick(spos=rm.np.array([.0, .0, .0]),
     :param n_sec:
     :return: 20210328
     """
-    stick_sgm = mgm.gen_stick(spos=spos, epos=epos, radius=radius, type=type, rgba=rm.np.append(rgb, alpha), n_sec=n_sec)
+    stick_sgm = mgm.gen_stick(spos=spos, epos=epos, radius=radius, type=type, rgb=rgb, alpha=alpha, n_sec=n_sec)
     stick_cm = CollisionModel(stick_sgm)
     return stick_cm
 

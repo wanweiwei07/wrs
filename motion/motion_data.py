@@ -1,3 +1,5 @@
+from functools import cached_property
+
 class MotionData(object):
 
     def __init__(self, robot):
@@ -17,6 +19,10 @@ class MotionData(object):
     @property
     def mesh_list(self):
         return self._mesh_list
+
+    @cached_property
+    def tcp_list(self):
+        return [self.robot.fk(jv) for jv in self._jv_list]
 
     def extend(self, jv_list, ev_list=None, mesh_list=None):
         """
