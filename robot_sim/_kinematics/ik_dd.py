@@ -40,7 +40,7 @@ class DDIKSolver(object):
         self._fname_tree = os.path.join(path, f"{identifier_str}_ikdd_tree.pkl")
         self._fname_jnt = os.path.join(path, f"{identifier_str}_jnt_data.pkl")
         self._k_bbs = 20  # number of nearest neighbours examined by the backbone solver
-        self._k_max = 20  # maximum nearest neighbours explored by the evolver
+        self._k_max = 50  # maximum nearest neighbours explored by the evolver
         self._max_n_iter = 5  # max_n_iter of the backbone solver
         if backbone_solver == 'n':
             self._backbone_solver = rkn.NumIKSolver(self.jlc)
@@ -258,8 +258,13 @@ class DDIKSolver(object):
                                                max_n_iter=max_n_iter,
                                                toggle_dbg=toggle_dbg)
                 if result is None:
+                    # mgm.gen_frame(pos=tgt_pos, rotmat=tgt_rotmat).attach_to(base)
+                    # rkmg.gen_jlc_stick_by_jnt_values(self.jlc,
+                    #                                  jnt_values=seed_jnt_values,
+                    #                                  stick_rgba=rm.bc.red).attach_to(base)
                     # print(result)
-                    # base.run()
+                    # if id == self._k_max-1:
+                    #     base.run()
                     # continue
                     if toggle_evolve:
                         continue

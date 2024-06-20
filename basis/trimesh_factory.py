@@ -62,7 +62,7 @@ def gen_frustrum(bottom_xy_lengths=np.array([0.02, 0.02]), top_xy_lengths=np.arr
     ])
     # Define the faces of the frustum
     faces = np.array([
-        [0, 1, 2], [2, 3, 0],  # Bottom face
+        [0, 2, 1], [2, 0, 3],  # Bottom face
         [4, 5, 6], [6, 7, 4],  # Top face
         [0, 1, 5], [5, 4, 0],  # Side face 1
         [1, 2, 6], [6, 5, 1],  # Side face 2

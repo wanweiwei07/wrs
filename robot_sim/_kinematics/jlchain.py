@@ -416,7 +416,8 @@ class JLChain(object):
                        toggle_actuation=False,
                        name='jlc_stick_model',
                        jnt_radius=rkc.JNT_RADIUS,
-                       lnk_radius=rkc.LNK_STICK_RADIUS):
+                       lnk_radius=rkc.LNK_STICK_RADIUS,
+                       alpha=1):
         return rkmg.gen_jlc_stick(jlc=self,
                                   stick_rgba=stick_rgba,
                                   toggle_jnt_frames=toggle_jnt_frames,
@@ -424,7 +425,8 @@ class JLChain(object):
                                   toggle_actuation=toggle_actuation,
                                   name=name,
                                   jnt_radius=jnt_radius,
-                                  lnk_radius=lnk_radius)
+                                  lnk_radius=lnk_radius,
+                                  alpha=alpha)
 
     def gen_meshmodel(self,
                       rgb=None,

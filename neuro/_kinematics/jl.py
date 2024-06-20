@@ -360,7 +360,7 @@ class Joint(object):
                  type=rkc.JntType.REVOLUTE,
                  loc_pos=torch.zeros(3),
                  loc_rotmat=torch.eye(3),
-                 loc_motion_ax=torch.tensor([.0, 1.0, .0]),
+                 loc_motion_ax=torch.tensor([0, 1, 0]),
                  motion_range=torch.tensor([-torch.pi, torch.pi])):
         self.name = name
         self.loc_pos = loc_pos
