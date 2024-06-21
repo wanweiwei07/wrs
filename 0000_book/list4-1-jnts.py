@@ -6,6 +6,9 @@ import basis.robot_math as rm
 import visualization.panda.world as wd
 import modeling.geometric_model as mgm
 
+
+
+
 option = 'c'
 if option == 'a':
     jnt = rkjl.Joint()

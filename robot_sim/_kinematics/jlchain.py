@@ -478,12 +478,12 @@ if __name__ == "__main__":
     jlc.jnts[5].motion_range = np.array([-np.pi / 2, np.pi / 2])
     jlc._loc_flange_pos = np.array([0, 0, .01])
     jlc._loc_flange_pos = np.array([0.1, 0.1, 0.1])
-    # jlc.finalize(ik_solver=None)
-    jlc.finalize(ik_solver='d')
-    jlc.gen_stickmodel(stick_rgba=rm.bc.navy_blue, toggle_jnt_frames=True, toggle_flange_frame=True).attach_to(base)
+    jlc.finalize(ik_solver=None)
+    # jlc.finalize(ik_solver='d')
+    jlc.gen_stickmodel(toggle_jnt_frames=True, toggle_flange_frame=True).attach_to(base)
     # seed_jnt_values = jlc.get_jnt_values()
     seed_jnt_values = None
-    # base.run()
+    base.run()
 
     success = 0
     num_win = 0

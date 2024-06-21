@@ -187,7 +187,7 @@ class StaticGeometricModel(object):
     @alpha.setter
     def alpha(self, alpha):
         rgba = self._pdndp.getColor()
-        self._pdndp.setColor(*rgba[:3], alpha)
+        self._pdndp.setColor(rgba[0], rgba[1], rgba[2], alpha)
 
     def is_empty(self):
         if self._trm_mesh is None:
