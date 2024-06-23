@@ -4,7 +4,7 @@ import robot_sim._kinematics.model_generator as rkmg
 import robot_sim._kinematics.jlchain as rkjlc
 import visualization.panda.world as wd
 
-option = 'a'
+option = 'b'
 if option == 'a':
     jlc = rkjlc.JLChain(n_dof=6)
     # root

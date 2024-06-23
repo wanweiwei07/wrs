@@ -36,7 +36,7 @@ class JLChain(object):
         """
         self.name = name
         self.n_dof = n_dof
-        self.home = np.zeros(self.n_dof)  # self.n_dof joints plus one anchor
+        self.home = np.zeros(self.n_dof)
         # initialize anchor
         self.anchor = rkjl.Anchor(name=f"{name}_anchor", pos=pos, rotmat=rotmat)
         # initialize joints and links

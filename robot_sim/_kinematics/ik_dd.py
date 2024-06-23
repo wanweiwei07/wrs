@@ -39,9 +39,9 @@ class DDIKSolver(object):
             path = os.path.join(os.path.dirname(current_file_dir), "_data_files")
         self._fname_tree = os.path.join(path, f"{identifier_str}_ikdd_tree.pkl")
         self._fname_jnt = os.path.join(path, f"{identifier_str}_jnt_data.pkl")
-        self._k_bbs = 20  # number of nearest neighbours examined by the backbone solver
-        self._k_max = 50  # maximum nearest neighbours explored by the evolver
-        self._max_n_iter = 5  # max_n_iter of the backbone solver
+        self._k_bbs = 100  # number of nearest neighbours examined by the backbone solver
+        self._k_max = 200  # maximum nearest neighbours explored by the evolver
+        self._max_n_iter = 7  # max_n_iter of the backbone solver
         if backbone_solver == 'n':
             self._backbone_solver = rkn.NumIKSolver(self.jlc)
         elif backbone_solver == 'o':
@@ -57,8 +57,10 @@ class DDIKSolver(object):
                 self.evolve_data(n_times=100000)
         else:
             try:
-                self.query_tree = pickle.load(open(self._fname_tree, 'rb'))
-                self.jnt_data = pickle.load(open(self._fname_jnt, 'rb'))
+                with open(self._fname_tree, 'rb') as f_tree:
+                    self.query_tree = pickle.load(f_tree)
+                with open(self._fname_jnt, 'rb') as f_jnt:
+                    self.jnt_data = pickle.load(f_jnt)
             except FileNotFoundError:
                 self.query_tree, self.jnt_data = self._build_data()
                 self.persist_data()
@@ -111,11 +113,11 @@ class DDIKSolver(object):
     def _build_data(self):
         # gen sampled qs
         sampled_jnts = []
-        n_intervals = np.linspace(8, 4, self.jlc.n_dof, endpoint=True)
+        n_intervals = np.linspace(8, 4, self.jlc.n_dof, endpoint=False)
         print(f"Buidling Data for DDIK using the following joint granularity: {n_intervals.astype(int)}...")
         for i in range(self.jlc.n_dof):
             sampled_jnts.append(
-                np.linspace(self.jlc.jnt_ranges[i][0], self.jlc.jnt_ranges[i][1], int(n_intervals[i]), endpoint=False))
+                np.linspace(self.jlc.jnt_ranges[i][0], self.jlc.jnt_ranges[i][1], int(n_intervals[i]+2))[1:-1])
         grid = np.meshgrid(*sampled_jnts)
         sampled_qs = np.vstack([x.ravel() for x in grid]).T
         # gen sampled qs and their correspondent flange poses
@@ -213,8 +215,10 @@ class DDIKSolver(object):
         self.persist_data()
 
     def persist_data(self):
-        pickle.dump(self.query_tree, open(self._fname_tree, 'wb'))
-        pickle.dump(self.jnt_data, open(self._fname_jnt, 'wb'))
+        with open(self._fname_tree, 'wb') as f_tree:
+            pickle.dump(self.query_tree, f_tree)
+        with open(self._fname_jnt, 'wb') as f_jnt:
+            pickle.dump(self.jnt_data, f_jnt)
         print("ddik data file saved.")
 
     def ik(self,
@@ -322,8 +326,8 @@ if __name__ == '__main__':
 
     _jnt_safemargin = math.pi / 18.0
     jlc = rkjlc.JLChain(n_dof=7)
-    jlc.anchor.pos=np.array([.0, .0, .3])
-    jlc.anchor.rotmat=rm.rotmat_from_euler(np.pi/3, 0,0)
+    jlc.anchor.pos = np.array([.0, .0, .3])
+    jlc.anchor.rotmat = rm.rotmat_from_euler(np.pi / 3, 0, 0)
     jlc.jnts[0].loc_pos = np.array([.0, .0, .0])
     jlc.jnts[0].loc_rotmat = rm.rotmat_from_euler(0.0, 0.0, np.pi)
     jlc.jnts[0].loc_motion_ax = np.array([0, 0, 1])

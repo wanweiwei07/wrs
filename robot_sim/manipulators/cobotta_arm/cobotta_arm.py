@@ -80,11 +80,12 @@ if __name__ == '__main__':
     base = wd.World(cam_pos=[2, 0, 1], lookat_pos=[0, 0, .3])
     mgm.gen_frame().attach_to(base)
     arm = CobottaArm(enable_cc=True)
+    arm.jlc._ik_solver.test_success_rate()
     # arm_mesh = arm.gen_meshmodel(alpha=.3)
     # arm_mesh.attach_to(base)
     # tmp_arm_stick = arm.gen_stickmodel(toggle_flange_frame=True)
     # tmp_arm_stick.attach_to(base)
-    # base.run()
+    base.run()
 
     tgt_pos = np.array([.25, .1, .1])
     tgt_rotmat = rm.rotmat_from_euler(0, np.pi, 0)

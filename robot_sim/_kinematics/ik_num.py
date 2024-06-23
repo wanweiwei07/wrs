@@ -17,11 +17,13 @@ class NumIKSolver(object):
     3. CWLN is 1ms slower than PINV_WC as it needs to solve both svd and damped least squares
     """
 
-    def __init__(self, jlc, wln_ratio=.01):
+    def __init__(self, jlc, wln_ratio=.1):
         self.jlc = jlc
         self.max_link_length = self._get_max_link_length()
-        self.clamp_pos_err = 2.0 * self.max_link_length
-        self.clamp_rot_err = np.pi / 3.0
+        # self.clamp_pos_err = self.max_link_length
+        # self.clamp_rot_err = np.pi / 6.0
+        self.clamp_pos_err = .1
+        self.clamp_rot_err = np.pi / 10.0
         self.jnt_wt_ratio = wln_ratio
         # maximum reach
         self.max_rng = 10.0
@@ -38,11 +40,11 @@ class NumIKSolver(object):
                  seed_jnt_values=None,
                  max_n_iter=100,
                  toggle_dbg=False):
-        return self.pinv_cw(tgt_pos=tgt_pos,
-                            tgt_rotmat=tgt_rotmat,
-                            seed_jnt_values=seed_jnt_values,
-                            max_n_iter=max_n_iter,
-                            toggle_dbg=toggle_dbg)
+        return self.pinv(tgt_pos=tgt_pos,
+                         tgt_rotmat=tgt_rotmat,
+                         seed_jnt_values=seed_jnt_values,
+                         max_n_iter=max_n_iter,
+                         toggle_dbg=toggle_dbg)
 
     def _get_max_link_length(self):
         max_len = 0
@@ -93,6 +95,35 @@ class NumIKSolver(object):
         if np.any(jnt_values > self.max_jnt_values):
             return False
         return True
+
+    def pinv(self,
+             tgt_pos,
+             tgt_rotmat,
+             seed_jnt_values=None,
+             max_n_iter=100,
+             toggle_dbg=False):
+        iter_jnt_values = seed_jnt_values
+        if seed_jnt_values is None:
+            iter_jnt_values = self.jlc.get_jnt_values()
+        counter = 0
+        while True:
+            flange_pos, flange_rotmat, j_mat = self.jlc.fk(jnt_values=iter_jnt_values,
+                                                           toggle_jacobian=True,
+                                                           update=False)
+            f2t_pos_err, f2t_rot_err, f2t_err_vec = rm.diff_between_poses(src_pos=flange_pos,
+                                                                          src_rotmat=flange_rotmat,
+                                                                          tgt_pos=tgt_pos,
+                                                                          tgt_rotmat=tgt_rotmat)
+            if f2t_pos_err < 1e-4 and f2t_rot_err < 1e-3:
+                return iter_jnt_values
+            clamped_err_vec = self._clamp_tgt_err(f2t_pos_err, f2t_rot_err, f2t_err_vec)
+            delta_jnt_values = np.linalg.pinv(j_mat, rcond=1e-4) @ clamped_err_vec
+            if abs(np.sum(delta_jnt_values)) < 1e-6:
+                return None
+            iter_jnt_values = iter_jnt_values + delta_jnt_values
+            if not self.are_jnts_in_range(iter_jnt_values) or counter > max_n_iter:
+                return None
+            counter += 1
 
     def pinv_rr(self,
                 tgt_pos,
@@ -266,6 +297,7 @@ class NumIKSolver(object):
             if f2t_pos_err < 1e-4 and f2t_rot_err < 1e-3 and self.jlc.are_jnts_in_ranges(iter_jnt_values):
                 return iter_jnt_values
             clamped_err_vec = self._clamp_tgt_err(f2t_pos_err, f2t_rot_err, f2t_err_vec)
+            # clamped_err_vec = f2t_err_vec * .01
             wln, wln_sqrt = self._jnt_wt_mat(iter_jnt_values)
             # weighted clamping
             k_phi = .1
@@ -277,8 +309,9 @@ class NumIKSolver(object):
                     clamped_err_vec - j_mat @ clamping)
             if toggle_dbg:
                 print("previous iter joint values ", np.degrees(iter_jnt_values))
+            # print(max(abs(clamped_err_vec)), max(abs(np.degrees(delta_jnt_values))))
             iter_jnt_values = iter_jnt_values + delta_jnt_values
-            # iter_jnt_values = np.mod(iter_jnt_values, 2 * np.pi)
+            # iter_jnt_values = np.mod(iter_jnt_values, 4 * np.pi) - 2 * np.pi
             # iter_jnt_values = np.where(iter_jnt_values > 2 * np.pi, iter_jnt_values - 2 * np.pi, iter_jnt_values)
             if toggle_dbg:
                 import robot_sim._kinematics.model_generator as rkmg

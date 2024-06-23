@@ -126,7 +126,8 @@ def gen_jnt(jnt,
             toggle_actuation=False,
             radius=rkc.JNT_RADIUS,
             frame_stick_radius=rkc.FRAME_STICK_RADIUS,
-            frame_stick_length=rkc.FRAME_STICK_LENGTH_MEDIUM):
+            frame_stick_length=rkc.FRAME_STICK_LENGTH_MEDIUM,
+            alpha=1):
     m_col = mmc.ModelCollection()
     spos = jnt._gl_pos_0 - jnt.gl_motion_ax * radius
     epos = jnt._gl_pos_0 + jnt.gl_motion_ax * radius
@@ -135,44 +136,44 @@ def gen_jnt(jnt,
                       epos=jnt._gl_pos_0,
                       radius=radius,
                       rgb=rm.bc.jnt_parent_rgba[:3],
-                      alpha=rm.bc.jnt_parent_rgba[3]).attach_to(m_col)
+                      alpha=alpha).attach_to(m_col)
         mgm.gen_stick(spos=jnt._gl_pos_0,
                       epos=epos,
                       radius=radius,
                       rgb=rm.bc.jnt_child_rgba[:3],
-                      alpha=rm.bc.jnt_child_rgba[3]).attach_to(m_col)
+                      alpha=alpha).attach_to(m_col)
         if toggle_actuation:
             if jnt.type == rkc.JntType.REVOLUTE:
                 mid_motion_range = (jnt.motion_range[1] - jnt.motion_range[0]) / 2
                 starting_vec_reference = jnt.gl_rotmat_0[:, 0] if np.abs(
                     jnt.gl_motion_ax @ jnt.gl_rotmat_0[:, 0]) < .99 else jnt.gl_rotmat_0[:, 1]
                 mgm.gen_arrow(spos=jnt._gl_pos_0, epos=jnt._gl_pos_0 + jnt.gl_motion_ax * rkc.ROTAX_STICK_LENGTH,
-                              stick_radius=.0015, rgb=rm.bc.black, alpha=1).attach_to(m_col)
+                              stick_radius=rkc.FRAME_STICK_RADIUS, rgb=rm.bc.black, alpha=alpha).attach_to(m_col)
                 mgm.gen_circarrow(axis=jnt.gl_motion_ax,
                                   starting_vector=rm.rotmat_from_axangle(jnt.gl_motion_ax,
                                                                          -mid_motion_range) @ starting_vec_reference,
                                   portion=mid_motion_range / np.pi,
                                   center=jnt._gl_pos_0 + jnt.gl_motion_ax * rkc.ROTAX_STICK_LENGTH * .2,
-                                  rgb=rm.bc.black, alpha=1, major_radius=.03, minor_radius=.0015,
+                                  rgb=rm.bc.black, alpha=alpha, major_radius=.03, minor_radius=rkc.FRAME_STICK_RADIUS,
                                   end_type='double').attach_to(m_col)
             if jnt.type == rkc.JntType.PRISMATIC:
                 offset = 1.5 * rm.orthogonal_vector(jnt.gl_motion_ax)
                 mgm.gen_arrow(spos=jnt._gl_pos_0 + offset,
                               epos=jnt._gl_pos_0 + offset + jnt.gl_motion_ax * rkc.FRAME_STICK_LENGTH_LONG,
-                              rgb=rm.bc.black, alpha=1).attach_to(m_col)
+                              rgb=rm.bc.black, alpha=alpha).attach_to(m_col)
     elif jnt.type == rkc.JntType.PRISMATIC:
         mgm.gen_stick(spos=spos,
                       epos=epos,
                       radius=radius * rkc.PRISMATIC_RATIO,
                       rgb=rm.bc.jnt_parent_rgba[:3],
-                      alpha=rm.bc.jnt_parent_rgba[3],
+                      alpha=alpha,
                       type="round",
                       n_sec=6).attach_to(m_col)
         mgm.gen_stick(spos=jnt._gl_pos_0,
                       epos=jnt._gl_pos_0 + jnt._gl_motion_ax * jnt.motion_value,
                       radius=radius,
                       rgb=rm.bc.jnt_child_rgba[:3],
-                      alpha=rm.bc.jnt_child_rgba[3],
+                      alpha=alpha,
                       type="round",
                       n_sec=6).attach_to(m_col)
     else:
@@ -181,14 +182,16 @@ def gen_jnt(jnt,
         mgm.gen_frame(pos=jnt._gl_pos_0,
                       rotmat=jnt._gl_rotmat_0,
                       ax_radius=frame_stick_radius,
-                      ax_length=frame_stick_length).attach_to(m_col)
+                      ax_length=frame_stick_length,
+                      alpha=alpha).attach_to(m_col)
     if toggle_frame_q:
         mgm.gen_dashed_frame(pos=jnt._gl_pos_q,
                              rotmat=jnt._gl_rotmat_q,
                              ax_radius=frame_stick_radius,
-                             ax_length=frame_stick_length).attach_to(m_col)
+                             ax_length=frame_stick_length,
+                             alpha=alpha).attach_to(m_col)
     if toggle_lnk_mesh and jnt.lnk is not None:
-        gen_lnk_mesh(jnt.lnk, alpha=.5).attach_to(m_col)
+        gen_lnk_mesh(jnt.lnk, alpha=alpha).attach_to(m_col)
     return m_col
 
 

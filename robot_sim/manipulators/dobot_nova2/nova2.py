@@ -102,7 +102,9 @@ if __name__ == '__main__':
     base = wd.World(cam_pos=[2, 0, 1], lookat_pos=[0, 0, 0])
     gm.gen_frame().attach_to(base)
     arm = Nova2(enable_cc=True)
-    # arm.jlc._ik_solver.test_success_rate()
+    arm.jlc._ik_solver.test_success_rate()
+    base.run()
+
     random_conf = arm.rand_conf()
     arm.fk(random_conf)
     print(arm.gl_flange_pos, arm.gl_flange_rotmat)
