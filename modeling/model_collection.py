@@ -111,9 +111,10 @@ class ModelCollection(object):
             objcm.unshow_cdmesh()
 
     def acquire_cm_trm(self):
-        result = trm.Trimesh()
-        print(self._gm_list)
-        print(self._cm_list)
+        result = None
         for objcm in self._cm_list:
-            result += objcm.trm_mesh
+            if result is None:
+                result = objcm.trm_mesh
+            else:
+                result += objcm.trm_mesh
         return result

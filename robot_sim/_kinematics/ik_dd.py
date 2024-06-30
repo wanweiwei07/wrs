@@ -23,7 +23,7 @@ import basis.constant as bc10
 
 
 class DDIKSolver(object):
-    def __init__(self, jlc, path=None, identifier_str='test', backbone_solver='d', rebuild=False):
+    def __init__(self, jlc, path=None, identifier_str='test', backbone_solver='n', rebuild=False):
         """
         :param jlc:
         :param path:

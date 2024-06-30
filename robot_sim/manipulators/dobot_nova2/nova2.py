@@ -101,9 +101,9 @@ if __name__ == '__main__':
 
     base = wd.World(cam_pos=[2, 0, 1], lookat_pos=[0, 0, 0])
     gm.gen_frame().attach_to(base)
-    arm = Nova2(ik_solver='o', enable_cc=True)
-    arm.jlc.test_ik_success_rate()
-    base.run()
+    arm = Nova2(ik_solver='d', enable_cc=True)
+    # arm.jlc.test_ik_success_rate()
+    # base.run()
 
     random_conf = arm.rand_conf()
     arm.fk(random_conf)
