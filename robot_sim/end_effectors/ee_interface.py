@@ -58,8 +58,10 @@ class EEInterface(object):
         date: 20230811
         """
         loc_pos, loc_rotmat = rm.rel_pose(self.pos, self.rotmat, obj_cmodel.pos, obj_cmodel.rotmat)
-        self.oiee_list.append(rkjl.Link(loc_pos=loc_pos, loc_rotmat=loc_rotmat, cmodel=obj_cmodel))
+        obj_lnk = rkjl.Link(loc_pos=loc_pos, loc_rotmat=loc_rotmat, cmodel=obj_cmodel)
+        self.oiee_list.append(obj_lnk)
         self.update_oiee()
+        return obj_lnk
 
     def release(self, obj_cmodel, **kwargs):
         """
@@ -71,13 +73,14 @@ class EEInterface(object):
         date: 20240228
         """
         is_found = False
-        for oiee in self.oiee_list:
-            if oiee.cmodel is obj_cmodel:
+        for obj_lnk in self.oiee_list:
+            if obj_lnk.cmodel is obj_cmodel:
                 is_found = True
-                self.oiee_list.remove(oiee)
+                self.oiee_list.remove(obj_lnk)
                 break
         if not is_found:
             raise ValueError("The specified object is not held in the hand!")
+        return obj_lnk
 
     def release_all(self):
         """

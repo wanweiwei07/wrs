@@ -114,6 +114,8 @@ class StaticGeometricModel(object):
             if toggle_twosided:
                 self._pdndp.getChild(0).setTwoSided(True)
             self._pdndp.setColor(rgb[0], rgb[1], rgb[2], alpha)
+            self._pdndp.setMaterialOff()
+            self._pdndp.setShaderAuto()
             self._local_frame = None
 
     @property
@@ -289,7 +291,7 @@ class GeometricModel(StaticGeometricModel):
             self._rotmat = initor.rotmat
             self._is_pdndp_pose_delayed = True
             self.pdndp.setColor(initor.pdndp.getColor())
-            self.pdndp_core.setShaderAuto()
+            # self.pdndp_core.setShaderAuto()
         else:
             super().__init__(initor=initor,
                              name=name,
@@ -300,7 +302,7 @@ class GeometricModel(StaticGeometricModel):
             self._pos = np.zeros(3)
             self._rotmat = np.eye(3)
             self._is_pdndp_pose_delayed = True
-            self.pdndp_core.setShaderAuto()
+            # self.pdndp_core.setShaderAuto()
 
     @staticmethod
     def delay_pdndp_pose_decorator(method):

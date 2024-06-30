@@ -55,7 +55,7 @@ class GripperInterface(ei.EEInterface):
         if jaw_width is None:
             jaw_width = self.jaw_range[0]
         self.change_jaw_width(jaw_width=jaw_width)
-        super().hold(obj_cmodel=obj_cmodel)
+        return super().hold(obj_cmodel=obj_cmodel)
 
     def release(self, obj_cmodel, jaw_width=None):
         super().release(obj_cmodel=obj_cmodel)

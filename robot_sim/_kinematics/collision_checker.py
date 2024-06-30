@@ -30,6 +30,20 @@ class CCElement(object):
             # toggle on collision detection with external obstacles by default
             self.enable_cd_ext(type="from")
 
+    def _close_bitmask(self, allocated_bitmask):
+        """
+        return the allocated bitmask to the host cc
+        :param allocated_bitmask:
+        :return:
+        author: weiwei
+        date: 20240630
+        """
+        cce_into_list = self.cce_into_dict[allocated_bitmask]
+        for cce_into in cce_into_list:
+            cce_into.remove_into_cdmask(allocated_bitmask)
+        self.host_cc.bitmask_pool.append(allocated_bitmask)
+
+
     def enable_cd_ext(self, type="from"):
         """
         enable collision detection with external collision models
@@ -62,11 +76,10 @@ class CCElement(object):
         # remove the into bitmask of all cces in the cce_into_dict
         bitmask_list_to_return = []
         for allocated_bitmask, cce_into_list in self.cce_into_dict:
-            bitmask_list_to_return.append(allocated_bitmask)
-            # delayed udpate
-            cce_into_list[:] = [cce_into for cce_into in cce_into_list if cce_into.tfd_cdprim is not None]
-            for cce_into in cce_into_list:
-                cce_into.remove_into_cdmask(allocated_bitmask)
+            self.host_cc.bitmask_users_dict[allocated_bitmask].remove(self.lnk.uuid)
+            if len(self.host_cc.bitmask_users_dict[allocated_bitmask]) == 0:
+                self._close_bitmask(allocated_bitmask)
+                bitmask_list_to_return.append(allocated_bitmask)
         return bitmask_list_to_return
 
     def add_from_cdmask(self, allocated_bitmask, cce_into_list):
@@ -79,6 +92,7 @@ class CCElement(object):
         assert self._toggle_collider, "Collider is not toggled on!"
         mph.change_cdmask(self.tfd_cdprim, allocated_bitmask, action="add", type="from")
         self.cce_into_dict[allocated_bitmask] = cce_into_list
+        self.host_cc.bitmask_users_dict[allocated_bitmask].append(self.lnk.uuid)
 
     def remove_from_cdmask(self, allocated_bitmask):
         """
@@ -89,9 +103,9 @@ class CCElement(object):
         date: 20231117
         """
         mph.change_cdmask(self.tfd_cdprim, allocated_bitmask, action="remove", type="from")
-        cce_into_list = self.cdpair_dict[allocated_bitmask]
-        for cce_into in cce_into_list:
-            cce_into.remove_into_cdmask(allocated_bitmask)
+        self.host_cc.bitmask_users_dict[allocated_bitmask].remove(self.lnk.uuid)
+        if len(self.host_cc.bitmask_users_dict[allocated_bitmask]) == 0:
+            self._close_bitmask(allocated_bitmask)
 
     def add_into_cdmask(self, allocated_bitmask):
         mph.change_cdmask(self.tfd_cdprim, allocated_bitmask, action="add", type="into")
@@ -114,10 +128,14 @@ class CollisionChecker(object):
         self.cd_handler = CollisionHandlerQueue()
         self.cd_pdndp = NodePath(name)  # path of the traverse tree
         self.bitmask_pool = [BitMask32(2 ** n) for n in range(31)]
+        self.bitmask_users_dict = {}
+        for bitmask in self.bitmask_pool:
+            self.bitmask_users_dict[bitmask] = []
         self.bitmask_ext = BitMask32(2 ** 31)  # 31 is prepared for cd with external non-active objects
         self.cce_dict = {}  # a dict of CCElement
         # temporary parameter for toggling on/off show_cdprimit
         self._cdprim_list = []
+        self.dynamic_into_list = [] # for oiee?
 
     def add_cce(self, lnk, toggle_collider=True):
         """

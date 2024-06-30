@@ -71,7 +71,8 @@ class CollisionModel(mgm.GeometricModel):
             self._rotmat = initor.rotmat
             self._is_pdndp_pose_delayed = True
             self.pdndp.setColor(initor.pdndp.getColor())
-            self.pdndp_core.setShaderAuto()
+            # self.pdndp_core.setMaterialOff()
+            # self.pdndp_core.setShaderAuto()
             # collision model
             self.uuid = uuid.uuid4()
             self._ex_radius = initor._ex_radius

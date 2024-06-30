@@ -38,7 +38,8 @@ class Nova2WG3(rsi.SglArmRobotInterface):
         from_list = [elb, el0, el1, ml3, ml4, ml5]
         into_list = [mlb, ml0, ml1]
         self.cc.set_cdpair_by_ids(from_list, into_list)
-        # TODO oiee?
+        self.cc.dynamic_into_list = [mlb, ml0, ml1, ml2, ml3, ml4]
+        return
 
     def fix_to(self, pos, rotmat):
         self.pos = pos
@@ -55,22 +56,31 @@ class Nova2WG3(rsi.SglArmRobotInterface):
 
 if __name__ == '__main__':
     import numpy as np
+    import basis.robot_math as rm
     import visualization.panda.world as wd
     import modeling.geometric_model as mgm
     import modeling.collision_model as mcm
 
-    base = wd.World(cam_pos=[2, 0, 1.5], lookat_pos=[0, 0, .5])
+    base = wd.World(cam_pos=[3, 0, 2], lookat_pos=[0, 0, .5])
     mgm.gen_frame().attach_to(base)
-    xarm = Nova2WG3(enable_cc=True)
-    xarm_model = xarm.gen_meshmodel()
-    xarm_model.attach_to(base)
-    # trm_model=xarm_model.acquire_cm_trm()
-    print("Is self collided?", xarm.is_collided())
+    robot = Nova2WG3(enable_cc=True)
 
     box = mcm.gen_box(xyz_lengths=[.1, .1, .1])
-    box.pose = (np.array([.5, .5, .5]), np.eye(3))
+    box.pose = (np.array([.1, .1, .9]), np.eye(3))
     box.attach_to(base)
 
-    xarm.hold(obj_cmodel=box)
-    xarm.show_cdprim()
+    robot.hold(obj_cmodel=box)
+    robot.show_cdprim()
+    robot_model = robot.gen_meshmodel()
+    robot_model.attach_to(base)
+    print("Is self collided?", robot.is_collided())
+
+    robot.goto_given_conf(jnt_values=robot.rand_conf())
+    robot.gen_meshmodel(rgb=rm.bc.red).attach_to(base)
+
+    robot.goto_given_conf(jnt_values=robot.rand_conf())
+    robot.gen_meshmodel(rgb=rm.bc.green).attach_to(base)
+
+    robot.goto_given_conf(jnt_values=robot.rand_conf())
+    robot.gen_meshmodel(rgb=rm.bc.blue).attach_to(base)
     base.run()

@@ -72,8 +72,14 @@ class SglArmRobotInterface(ri.RobotInterface):
 
     def restore_state(self):
         self._manipulator.restore_state()
-        self._end_effector.restore_state()
+        for oiee in self.oiee_list:
+            self.release(oiee.cmodel)
         self.update_end_effector()
+        self._end_effector.restore_state()
+        if self.cc is not None:
+            for obj_lnk in self.oiee_list:
+                ol = self.cc.add_cce(obj_lnk)
+                self.cc.set_cdpair_by_ids([ol], self.cc.dynamic_into_list)
 
     def get_ee_values(self):
         return self.end_effector.get_ee_values()
@@ -82,10 +88,16 @@ class SglArmRobotInterface(ri.RobotInterface):
         self.end_effector.change_ee_values(ee_values=ee_values)
 
     def hold(self, obj_cmodel, **kwargs):
-        self.end_effector.hold(obj_cmodel, **kwargs)
+        obj_lnk = self.end_effector.hold(obj_cmodel, **kwargs)
+        if self.cc is not None:
+            ol = self.cc.add_cce(obj_lnk)
+            self.cc.set_cdpair_by_ids([ol], self.cc.dynamic_into_list)
+
 
     def release(self, obj_cmodel, **kwargs):
-        self.end_effector.release(obj_cmodel, **kwargs)
+        obj_lnk = self.end_effector.release(obj_cmodel, **kwargs)
+        if obj_lnk is not None and self.cc is not None:
+            self.cc.remove_cce(obj_lnk)
 
     def goto_given_conf(self, jnt_values, ee_values=None):
         result = self._manipulator.goto_given_conf(jnt_values=jnt_values)

@@ -94,7 +94,7 @@ class WRSGripper3(gpi.GripperInterface):
         else:
             raise ValueError("The angle parameter is out of range!")
 
-    def gen_stickmodel(self, toggle_tcp_frame=False, toggle_jnt_frames=False, name='lite6_wrs_gripper_v2_stickmodel'):
+    def gen_stickmodel(self, toggle_tcp_frame=False, toggle_jnt_frames=False, name='wg3_stickmodel'):
         m_col = mmc.ModelCollection(name=name)
         self.coupling.gen_stickmodel(toggle_root_frame=False, toggle_flange_frame=False).attach_to(m_col)
         self.jlc.gen_stickmodel(toggle_jnt_frames=toggle_jnt_frames, toggle_flange_frame=False).attach_to(m_col)
@@ -103,7 +103,7 @@ class WRSGripper3(gpi.GripperInterface):
         return m_col
 
     def gen_meshmodel(self, rgb=None, alpha=None, toggle_tcp_frame=False, toggle_jnt_frames=False,
-                      toggle_cdprim=False, toggle_cdmesh=False, name='lite6_wrs_gripper_v2_meshmodel'):
+                      toggle_cdprim=False, toggle_cdmesh=False, name='wg3_meshmodel'):
         m_col = mmc.ModelCollection(name=name)
         self.coupling.gen_meshmodel(rgb=rgb,
                                     alpha=alpha,
@@ -120,7 +120,7 @@ class WRSGripper3(gpi.GripperInterface):
         if toggle_tcp_frame:
             self._toggle_tcp_frame(m_col)
         # oiee
-        self._gen_oiee_meshmodel(m_col, rgb=rgb, alpha=alpha, toggle_cdprim=toggle_cdprim,
+        self._gen_oiee_meshmodel(m_col=m_col, rgb=rgb, alpha=alpha, toggle_cdprim=toggle_cdprim,
                                  toggle_cdmesh=toggle_cdmesh)
         return m_col
 
