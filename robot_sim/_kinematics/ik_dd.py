@@ -16,7 +16,6 @@ import robot_sim._kinematics.ik_num as rkn
 import robot_sim._kinematics.ik_opt as rko
 import robot_sim._kinematics.ik_trac as rkt
 import random
-import time
 # for debugging purpose
 import modeling.geometric_model as mgm
 import robot_sim._kinematics.model_generator as rkmg
@@ -24,7 +23,7 @@ import basis.constant as bc10
 
 
 class DDIKSolver(object):
-    def __init__(self, jlc, path=None, identifier_str='test', backbone_solver='n', rebuild=False):
+    def __init__(self, jlc, path=None, identifier_str='test', backbone_solver='d', rebuild=False):
         """
         :param jlc:
         :param path:
@@ -285,32 +284,6 @@ class DDIKSolver(object):
                     return result
             # failed to find a solution, use optimization methods to solve and update the database?
         return None
-
-    def test_success_rate(self, n_times=100):
-        success = 0
-        time_list = []
-        tgt_list = []
-        for i in tqdm(range(n_times), desc="ik"):
-            random_jnts = self.jlc.rand_conf()
-            flange_pos, flange_rotmat = self.jlc.fk(jnt_values=random_jnts, update=False, toggle_jacobian=False)
-            tic = time.time()
-            solved_jnt_values = self.jlc.ik(tgt_pos=flange_pos,
-                                            tgt_rotmat=flange_rotmat,
-                                            # seed_jnt_values=seed_jnt_values,
-                                            toggle_dbg=False)
-            toc = time.time()
-            time_list.append(toc - tic)
-            if solved_jnt_values is not None:
-                success += 1
-            else:
-                tgt_list.append((flange_pos, flange_rotmat))
-        print("------------------testing results------------------")
-        print(f"The current success rate is: {success / n_times * 100}%")
-        print('average time cost', np.mean(time_list))
-        print('max', np.max(time_list))
-        print('min', np.min(time_list))
-        print('std', np.std(time_list))
-        return success / n_times
 
 
 if __name__ == '__main__':

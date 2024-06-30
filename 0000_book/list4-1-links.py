@@ -83,7 +83,7 @@ if option == 'b':
     jlc.goto_given_conf(jnt_values=np.array([np.pi/12, -np.pi / 3, np.pi * 2 / 3, np.pi/12, np.pi / 3, 0]))
     # visualize
     base = wd.World(cam_pos=np.array([1.7, 1.7, 1.7]), lookat_pos=np.array([0, 0, .5]))
-    jlc.gen_stickmodel(toggle_jnt_frames=True, toggle_actuation=True, alpha=.7).attach_to(base)
+    jlc.gen_stickmodel(toggle_jnt_frames=True, toggle_actuation=True, jnt_alpha=1, lnk_alpha=.7).attach_to(base)
 if option == 'c':
     jnt = rkjl.Joint()
     jnt.loc_pos = np.array([0, 0, 0])

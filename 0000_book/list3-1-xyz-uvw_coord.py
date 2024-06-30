@@ -6,26 +6,26 @@ import visualization.panda.world as wd
 def draw_coord(pnt, toggle_pnt=False, toggle_coord=False):
     rgba = np.array([0, 0, 0, 1])
     if toggle_pnt:
-        mgm.gen_sphere(pos=pnt, radius=.005, rgba=rgba).attach_to(base)
+        mgm.gen_sphere(pos=pnt, radius=.005, rgb=rgba[:3], alpha=rgba[3]).attach_to(base)
     px, py, pz = pnt[0], pnt[1], pnt[2]
     if toggle_coord:
-        mgm.gen_sphere(pos=np.array([px, 0, 0]), radius=.005, rgba=rgba).attach_to(base)
-        mgm.gen_sphere(pos=np.array([0, py, 0]), radius=.005, rgba=rgba).attach_to(base)
-        mgm.gen_sphere(pos=np.array([0, 0, pz]), radius=.005, rgba=rgba).attach_to(base)
-    mgm.gen_stick(spos=pnt, epos=np.array([px, py, 0]), radius=0.001, rgba=rgba).attach_to(base)
-    mgm.gen_dashed_stick(spos=np.array([px, py, 0]), epos=np.array([px, 0, 0]), radius=0.001, rgba=rgba, len_solid=.007,
+        mgm.gen_sphere(pos=np.array([px, 0, 0]), radius=.005, rgb=rgba[:3], alpha=rgba[3]).attach_to(base)
+        mgm.gen_sphere(pos=np.array([0, py, 0]), radius=.005, rgb=rgba[:3], alpha=rgba[3]).attach_to(base)
+        mgm.gen_sphere(pos=np.array([0, 0, pz]), radius=.005, rgb=rgba[:3], alpha=rgba[3]).attach_to(base)
+    mgm.gen_stick(spos=pnt, epos=np.array([px, py, 0]), radius=0.001, rgb=rgba[:3], alpha=rgba[3]).attach_to(base)
+    mgm.gen_dashed_stick(spos=np.array([px, py, 0]), epos=np.array([px, 0, 0]), radius=0.001, rgb=rgba[:3], alpha=rgba[3], len_solid=.007,
                          len_interval=.005).attach_to(base)
-    mgm.gen_dashed_stick(spos=np.array([px, py, 0]), epos=np.array([0, py, 0]), radius=0.001, rgba=rgba, len_solid=.007,
+    mgm.gen_dashed_stick(spos=np.array([px, py, 0]), epos=np.array([0, py, 0]), radius=0.001, rgb=rgba[:3], alpha=rgba[3], len_solid=.007,
                          len_interval=.005).attach_to(base)
-    mgm.gen_stick(spos=pnt, epos=np.array([px, 0, pz]), radius=0.001, rgba=rgba).attach_to(base)
-    mgm.gen_dashed_stick(spos=np.array([px, 0, pz]), epos=np.array([px, 0, 0]), radius=0.001, rgba=rgba, len_solid=.007,
+    mgm.gen_stick(spos=pnt, epos=np.array([px, 0, pz]), radius=0.001, rgb=rgba[:3], alpha=rgba[3]).attach_to(base)
+    mgm.gen_dashed_stick(spos=np.array([px, 0, pz]), epos=np.array([px, 0, 0]), radius=0.001, rgb=rgba[:3], alpha=rgba[3], len_solid=.007,
                          len_interval=.005).attach_to(base)
-    mgm.gen_dashed_stick(spos=np.array([px, 0, pz]), epos=np.array([0, 0, pz]), radius=0.001, rgba=rgba, len_solid=.007,
+    mgm.gen_dashed_stick(spos=np.array([px, 0, pz]), epos=np.array([0, 0, pz]), radius=0.001, rgb=rgba[:3], alpha=rgba[3], len_solid=.007,
                          len_interval=.005).attach_to(base)
-    mgm.gen_stick(spos=pnt, epos=np.array([0, py, pz]), radius=0.001, rgba=rgba).attach_to(base)
-    mgm.gen_dashed_stick(spos=np.array([0, py, pz]), epos=np.array([0, py, 0]), radius=0.001, rgba=rgba, len_solid=.007,
+    mgm.gen_stick(spos=pnt, epos=np.array([0, py, pz]), radius=0.001, rgb=rgba[:3], alpha=rgba[3]).attach_to(base)
+    mgm.gen_dashed_stick(spos=np.array([0, py, pz]), epos=np.array([0, py, 0]), radius=0.001, rgb=rgba[:3], alpha=rgba[3], len_solid=.007,
                          len_interval=.005).attach_to(base)
-    mgm.gen_dashed_stick(spos=np.array([0, py, pz]), epos=np.array([0, 0, pz]), radius=0.001, rgba=rgba, len_solid=.007,
+    mgm.gen_dashed_stick(spos=np.array([0, py, pz]), epos=np.array([0, 0, pz]), radius=0.001, rgb=rgba[:3], alpha=rgba[3], len_solid=.007,
                          len_interval=.005).attach_to(base)
 
 

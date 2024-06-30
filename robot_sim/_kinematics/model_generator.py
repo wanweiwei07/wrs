@@ -36,7 +36,7 @@ def gen_indicated_frame(spos,
                          epos=gl_pos,
                          radius=indicator_ax_radius,
                          rgb=indicator_rgba[:3],
-                         alpha=indicator_rgba[3],
+                         alpha=frame_alpha,
                          type="round").attach_to(m_col)
     mgm.gen_frame(pos=gl_pos,
                   rotmat=gl_rotmat,
@@ -203,7 +203,8 @@ def gen_jlc_stick(jlc,
                   name='jlc_stick_model',
                   jnt_radius=rkc.JNT_RADIUS,
                   lnk_radius=rkc.LNK_STICK_RADIUS,
-                  alpha=1):
+                  jnt_alpha=1,
+                  lnk_alpha=1):
     """
     :param jlc:
     :param jnt_radius: basic radius for extrusion
@@ -228,7 +229,7 @@ def gen_jlc_stick(jlc,
                              radius=lnk_radius,
                              type="rect",
                              rgb=stick_rgba[:3],
-                             alpha=alpha).attach_to(m_col)
+                             alpha=lnk_alpha).attach_to(m_col)
         for i in range(jlc.n_dof):
             if i < jlc.n_dof - 1:
                 mgm.gen_stick(spos=jlc.jnts[i].gl_pos_q,
@@ -236,16 +237,17 @@ def gen_jlc_stick(jlc,
                               radius=lnk_radius,
                               type="rect",
                               rgb=stick_rgba[:3],
-                              alpha=alpha).attach_to(m_col)
+                              alpha=lnk_alpha).attach_to(m_col)
             gen_jnt(jlc.jnts[i],
                     radius=jnt_radius,
                     toggle_frame_0=toggle_jnt_frames,
                     toggle_frame_q=toggle_jnt_frames,
-                    toggle_actuation=toggle_actuation).attach_to(m_col)
+                    toggle_actuation=toggle_actuation,
+                    alpha=jnt_alpha).attach_to(m_col)
     if toggle_flange_frame:
         spos = jlc.jnts[jlc.flange_jnt_id].gl_pos_q
         gen_indicated_frame(spos=spos, gl_pos=jlc.gl_flange_pos, gl_rotmat=jlc.gl_flange_rotmat,
-                            indicator_rgba=rm.bc.spring_green, frame_alpha=.3).attach_to(m_col)
+                            indicator_rgba=rm.bc.spring_green, frame_alpha=jnt_alpha).attach_to(m_col)
     return m_col
 
 

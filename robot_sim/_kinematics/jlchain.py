@@ -7,6 +7,8 @@ import robot_sim._kinematics.ik_opt as rko
 import robot_sim._kinematics.ik_trac as rkt
 import robot_sim._kinematics.ik_dd as rkd
 import robot_sim._kinematics.model_generator as rkmg
+import time
+from tqdm import tqdm
 
 
 # TODO delay finalize
@@ -417,7 +419,8 @@ class JLChain(object):
                        name='jlc_stick_model',
                        jnt_radius=rkc.JNT_RADIUS,
                        lnk_radius=rkc.LNK_STICK_RADIUS,
-                       alpha=1):
+                       jnt_alpha=1,
+                       lnk_alpha=1):
         return rkmg.gen_jlc_stick(jlc=self,
                                   stick_rgba=stick_rgba,
                                   toggle_jnt_frames=toggle_jnt_frames,
@@ -426,7 +429,8 @@ class JLChain(object):
                                   name=name,
                                   jnt_radius=jnt_radius,
                                   lnk_radius=lnk_radius,
-                                  alpha=alpha)
+                                  jnt_alpha=jnt_alpha,
+                                  lnk_alpha=lnk_alpha)
 
     def gen_meshmodel(self,
                       rgb=None,
@@ -444,6 +448,32 @@ class JLChain(object):
                                  toggle_cdprim=toggle_cdprim,
                                  toggle_cdmesh=toggle_cdmesh,
                                  name=name)
+
+    def test_ik_success_rate(self, n_times=100):
+        success = 0
+        time_list = []
+        tgt_list = []
+        for i in tqdm(range(n_times), desc="ik"):
+            random_jnts = self.rand_conf()
+            flange_pos, flange_rotmat = self.fk(jnt_values=random_jnts, update=False, toggle_jacobian=False)
+            tic = time.time()
+            solved_jnt_values = self.ik(tgt_pos=flange_pos,
+                                        tgt_rotmat=flange_rotmat,
+                                        # seed_jnt_values=seed_jnt_values,
+                                        toggle_dbg=False)
+            toc = time.time()
+            time_list.append(toc - tic)
+            if solved_jnt_values is not None:
+                success += 1
+            else:
+                tgt_list.append((flange_pos, flange_rotmat))
+        print("------------------testing results------------------")
+        print(f"The current success rate is: {success / n_times * 100}%")
+        print('average time cost', np.mean(time_list))
+        print('max', np.max(time_list))
+        print('min', np.min(time_list))
+        print('std', np.std(time_list))
+        return success / n_times
 
 
 if __name__ == "__main__":
