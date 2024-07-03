@@ -42,14 +42,14 @@ class Nova2(mi.ManipulatorInterface):
         # fourth joint and link
         self.jlc.jnts[3].loc_pos = np.array([-0.22501, .0, 0.1175])
         self.jlc.jnts[3].loc_rotmat = rm.rotmat_from_euler(0, 0, -1.5708)
-        self.jlc.jnts[3].loc_motion_ax = np.array([0, 0, -1])
+        self.jlc.jnts[3].loc_motion_ax = np.array([0, 0, 1])
         self.jlc.jnts[3].motion_range = np.array([-2 * np.pi, 2 * np.pi])
         self.jlc.jnts[3].lnk.cmodel = mcm.CollisionModel(os.path.join(current_file_dir, "meshes", "j4.stl"))
         self.jlc.jnts[3].lnk.cmodel.rgba = np.array([.7, .7, .7, 1.0])
         # fifth joint and link
         self.jlc.jnts[4].loc_pos = np.array([.0, -0.12, .0])
         self.jlc.jnts[4].loc_rotmat = rm.rotmat_from_euler(1.5708, .0, .0)
-        self.jlc.jnts[4].loc_motion_ax = np.array([0, 0, -1])
+        self.jlc.jnts[4].loc_motion_ax = np.array([0, 0, 1])
         self.jlc.jnts[4].motion_range = np.array([-2 * np.pi, 2 * np.pi])
         self.jlc.jnts[4].lnk.cmodel = mcm.CollisionModel(os.path.join(current_file_dir, "meshes", "j5.stl"))
         self.jlc.jnts[4].lnk.cmodel.rgba = np.array([.7, .7, .7, 1.0])
