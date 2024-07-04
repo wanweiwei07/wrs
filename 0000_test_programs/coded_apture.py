@@ -1,62 +1,46 @@
 import numpy as np
 import matplotlib.pyplot as plt
-from scipy.signal import convolve2d
+from mpl_toolkits.mplot3d import Axes3D
 
-def generate_mura_mask(N):
-    """Generate a MURA mask of size NxN."""
-    p = (N+1) // 2
-    mask = np.ones((N, N), dtype=int)
-    for x in range(N):
-        for y in range(N):
-            mask[x, y] = ((x * y) % p) % 2
-    return mask
+# 生成一个简单的MURA掩模示例
+def mura_mask(size):
+    p = np.zeros((size, size), dtype=int)
+    for y in range(size):
+        for x in range(size):
+            p[y, x] = 1 if (x*y) % size < size // 2 else 0
+    return p
 
-def encode_image(image, mask):
-    """Encode the image using the MURA mask."""
-    encoded = convolve2d(image, mask, mode='same', boundary='wrap')
-    return encoded
+# 生成一个5x5的MURA掩模
+size = 5
+mura = mura_mask(size)
 
-def decode_image(encoded_image, mask):
-    """Decode the encoded image using the MURA mask."""
-    decoded = convolve2d(encoded_image, mask[::-1, ::-1], mode='same', boundary='wrap')
-    return decoded
+# 计算自相关函数
+def auto_correlation(mask):
+    size = mask.shape[0]
+    correlation = np.zeros((2*size-1, 2*size-1))
+    for y in range(size):
+        for x in range(size):
+            for j in range(size):
+                for i in range(size):
+                    correlation[y+j, x+i] += mask[y, x] * mask[j, i]
+    return correlation
 
-def main():
-    # Image size and MURA mask size
-    image_size = 320
-    mask_size = 31  # Set the mask size to the image size
+correlation = auto_correlation(mura)
 
-    # Generate a synthetic image
-    image = np.zeros((image_size, image_size))
-    image[80:240, 80:240] = 1  # A simple square as an example
+# 创建网格
+x = np.arange(-size+1, size)
+y = np.arange(-size+1, size)
+x, y = np.meshgrid(x, y)
+z = correlation
 
+# 绘制三维图
+fig = plt.figure(figsize=(10, 8))
+ax = fig.add_subplot(111, projection='3d')
+ax.plot_surface(x, y, z, cmap='viridis')
 
-    # Generate the MURA mask
-    mask = generate_mura_mask(mask_size)
+ax.set_title('3D Auto-correlation of MURA Mask')
+ax.set_xlabel('X')
+ax.set_ylabel('Y')
+ax.set_zlabel('Correlation')
 
-    # Encode the image
-    encoded_image = encode_image(image, mask)
-
-    # Decode the image
-    decoded_image = decode_image(encoded_image, mask)
-
-    # Normalize the decoded image
-    decoded_image /= np.max(decoded_image)
-
-    # Plot the results
-    fig, axes = plt.subplots(1, 4, figsize=(15, 5))
-    axes[0].imshow(image, cmap='gray')
-    axes[0].set_title('Original Image')
-    axes[1].imshow(mask, cmap='gray')
-    axes[1].set_title('MURA Mask')
-    axes[2].imshow(encoded_image, cmap='gray')
-    axes[2].set_title('Encoded Image')
-    axes[3].imshow(decoded_image, cmap='gray')
-    axes[3].set_title('Decoded Image')
-    for ax in axes:
-        ax.axis('off')
-    plt.tight_layout()
-    plt.show()
-
-if __name__ == "__main__":
-    main()
+plt.show()
