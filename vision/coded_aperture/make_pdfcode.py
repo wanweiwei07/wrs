@@ -133,5 +133,64 @@ def make_mura_at_given_pos(rank=5,
         raise ValueError("option must be 'pdf' or 'return'!")
 
 
+def make_multi_code(rank=5,
+                    code_size=5,
+                    frame_size=(25, 25),
+                    name='test',
+                    paper_width=210,
+                    paper_height=297,
+                    dpi=1200,
+                    option='pdf'):
+    """
+    make multiples on a single page
+    :param rank:
+    :param code_size:
+    :param frame_size:
+    :param name:
+    :param paper_width:
+    :param paper_height:
+    :param dpi:
+    :param option:
+    :return:
+    author: weiwei
+    date: 20240707
+    """
+    # paper array
+    paper_n_row = int(paper_height * _MM_TO_INCH * dpi)
+    paper_n_column = int(paper_width * _MM_TO_INCH * dpi)
+    paper_array = np.ones((paper_n_row, paper_n_column), dtype='uint8') * 255
+    # content
+    row = frame_size[0] / 2 + 7.5
+    column = frame_size[1] / 2 + 7.5
+    row_span = frame_size[0] * 2
+    column_span = frame_size[1] * 2
+    while True:
+        if row > paper_height:
+            break
+        while True:
+            if column > paper_width:
+                break
+            temp_array = make_mura_at_given_pos(rank=rank,
+                                                code_size=code_size,
+                                                frame_size=frame_size,
+                                                position=(row, column),
+                                                name=name,
+                                                paper_width=paper_width,
+                                                paper_height=paper_height,
+                                                dpi=dpi,
+                                                option='return')
+            paper_array = np.where(temp_array < 255, temp_array, paper_array)
+            column += column_span
+        row += row_span
+        column = frame_size[1] / 2 + 7.5
+    if option == 'pdf':
+        im = Image.fromarray(paper_array).convert("L")
+        im.save(name + ".pdf", "PDF", resolution=dpi)
+    elif option == 'return':
+        return paper_array
+    else:
+        raise ValueError("option must be 'pdf' or 'return'!")
+
+
 if __name__ == '__main__':
-    make_mura_at_given_pos()
+    make_multi_code(rank=5)
