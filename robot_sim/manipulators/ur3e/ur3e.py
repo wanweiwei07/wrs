@@ -161,23 +161,36 @@ class UR3e(mi.ManipulatorInterface):
                    np.cos(q[index][5]) * (o[0] * np.cos(q[index][0]) + o[1] * np.sin(q[index][0]))
             c234 = o[2] * np.cos(q[index][5]) + n[2] * np.sin(q[index][5])
             q[index][3] = np.arctan2(s234, c234) - q[index][1] - q[index][2]
+        # for index_i in range(8):
+        #     for index_j in range(6):
+        #         if q[index_i][index_j] < -np.pi:
+        #             q[index_i][index_j] += 2 * np.pi
+        #         elif q[index_i][index_j] >= np.pi:
+        #             q[index_i][index_j] -= 2 * np.pi
         for index_i in range(8):
             for index_j in range(6):
-                if q[index_i][index_j] < -np.pi:
+                if q[index_i][index_j] < self.jnt_ranges[index_j][0]:
                     q[index_i][index_j] += 2 * np.pi
-                elif q[index_i][index_j] >= np.pi:
+                elif q[index_i][index_j] >= self.jnt_ranges[index_j][1]:
                     q[index_i][index_j] -= 2 * np.pi
         result = q[~np.isnan(q).any(axis=1)]
         if len(result) == 0:
             print("No valid solutions found")
             return None
         else:
+            print(result)
+            print(self.jnt_ranges)
+            mask = np.all((result >= self.jnt_ranges[:, 0]) & (result <= self.jnt_ranges[:, 1]), axis=1)
+            filtered_result = result[mask]
+            if len(filtered_result) == 0:
+                print("No valid solutions found")
+                return None
             if seed_jnt_values is None:
                 seed_jnt_values = self.home_conf
             if option=="single":
-                return result[np.argmin(np.linalg.norm(result - seed_jnt_values, axis=1))]
+                return filtered_result[np.argmin(np.linalg.norm(filtered_result - seed_jnt_values, axis=1))]
             elif option=="multiple":
-                return result[np.argsort(np.linalg.norm(result - seed_jnt_values, axis=1))]
+                return filtered_result[np.argsort(np.linalg.norm(filtered_result - seed_jnt_values, axis=1))]
 
 
 
@@ -189,10 +202,11 @@ if __name__ == '__main__':
     base = wd.World(cam_pos=[2, 0, 1], lookat_pos=[0, 0, 0])
     mgm.gen_frame().attach_to(base)
     arm = UR3e(enable_cc=True)
-    arm_mesh = arm.gen_meshmodel()
+    arm_mesh = arm.gen_meshmodel(alpha=.3)
     arm_mesh.attach_to(base)
-    tmp_arm_stick = arm.gen_stickmodel(toggle_flange_frame=True)
+    tmp_arm_stick = arm.gen_stickmodel(toggle_flange_frame=True, toggle_jnt_frames=True)
     tmp_arm_stick.attach_to(base)
+    base.run()
 
     tgt_pos = np.array([.25, .1, .1])
     tgt_rotmat = rm.rotmat_from_euler(0, np.pi, 0)

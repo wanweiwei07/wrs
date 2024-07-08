@@ -38,7 +38,7 @@ class UR3e_Dual(ri.RobotInterface):
         self.lft_arm.manipulator.jnts[3].motion_range = np.array([np.pi / 6, np.pi * 7 / 6])
         self.lft_arm.manipulator.jnts[4].motion_range = np.array([-np.pi, np.pi])
         self.lft_arm.manipulator.jnts[5].motion_range = np.array([-np.pi, np.pi])
-        self.lft_arm.manipulator.jlc.finalize(ik_solver='d', identifier_str=self.lft_arm.name + "_dual_lft")
+        self.lft_arm.manipulator.jlc.finalize(identifier_str=self.lft_arm.name + "_dual_lft")
         # rigth side
         self.rgt_arm = u3ehe.UR3e_RtqHE(pos=self.body.gl_flange_pose_list[1][0],
                                         rotmat=self.body.gl_flange_pose_list[1][1],
@@ -50,7 +50,7 @@ class UR3e_Dual(ri.RobotInterface):
         self.rgt_arm.manipulator.jnts[3].motion_range = np.array([-np.pi * 5 / 6, np.pi / 6])
         self.rgt_arm.manipulator.jnts[4].motion_range = np.array([-np.pi, np.pi])
         self.rgt_arm.manipulator.jnts[5].motion_range = np.array([-np.pi, np.pi])
-        self.rgt_arm.manipulator.jlc.finalize(ik_solver='d', identifier_str=self.rgt_arm.name + "_dual_rgt")
+        self.rgt_arm.manipulator.jlc.finalize(identifier_str=self.rgt_arm.name + "_dual_rgt")
         if self.cc is not None:
             self.setup_cc()
         # go home
