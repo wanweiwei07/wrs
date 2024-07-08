@@ -30,13 +30,15 @@ start_conf = robot.get_jnt_values()
 tgt_pos = np.array([.8, .1, 1])
 tgt_rotmat = rm.rotmat_from_euler(np.pi, 0, 0)
 mgm.gen_frame(pos=tgt_pos, rotmat=tgt_rotmat).attach_to(base)
-jnt_values = robot.delegator.ik(tgt_pos, tgt_rotmat)
+jnt_values = robot.ik(tgt_pos, tgt_rotmat, obstacle_list=[obstacle], toggle_dbg=False)
+robot.gen_meshmodel(toggle_tcp_frame=True).attach_to(base)
 if jnt_values is None:
     print("No IK solution found!")
-    robot.gen_meshmodel(toggle_tcp_frame=True).attach_to(base)
-    robot.goto_given_conf(jnt_values=robot.jnt_ranges[:, 1])
-    robot.gen_meshmodel(toggle_tcp_frame=True).attach_to(base)
     base.run()
+# else:
+#     robot.goto_given_conf(jnt_values=jnt_values)
+#     robot.gen_meshmodel(toggle_tcp_frame=True).attach_to(base)
+#     base.run()
 goal_conf = jnt_values
 robot.goto_given_conf(jnt_values=start_conf)
 

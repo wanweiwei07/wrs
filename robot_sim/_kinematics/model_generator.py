@@ -87,6 +87,7 @@ def gen_anchor(anchor,
                      top_xy_lengths=np.ones(2) * radius * 2,
                      height=radius * 2,
                      pos=anchor.pos,
+                     rotmat=anchor.rotmat,
                      rgb=rm.bc.jnt_parent_rgba[:3],
                      alpha=rm.bc.jnt_parent_rgba[3]).attach_to(m_col)
     for gl_flange_pos, gl_flange_rotmat in anchor.gl_flange_pose_list:
@@ -96,6 +97,7 @@ def gen_anchor(anchor,
         #                alpha=rm.bc.jnt_parent_rgba[3]).attach_to(m_col)
         mgm.gen_box(xyz_lengths=np.ones(3) * radius * .5,
                     pos=anchor.pos,
+                    rotmat=anchor.rotmat,
                     rgb=rm.bc.jnt_parent_rgba[:3],
                     alpha=rm.bc.jnt_parent_rgba[3]).attach_to(m_col)
         mgm.gen_dashed_stick(spos=anchor.pos,

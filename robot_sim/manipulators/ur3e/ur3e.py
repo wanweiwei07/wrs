@@ -7,7 +7,7 @@ import robot_sim.manipulators.manipulator_interface as mi
 
 class UR3e(mi.ManipulatorInterface):
 
-    def __init__(self, pos=np.zeros(3), rotmat=np.eye(3), ik_solver='d', name='ur3e', enable_cc=False):
+    def __init__(self, pos=np.zeros(3), rotmat=np.eye(3), ik_solver='a', name='ur3e', enable_cc=False):
         super().__init__(pos=pos, rotmat=rotmat, home_conf=np.zeros(6), name=name, enable_cc=enable_cc)
         current_file_dir = os.path.dirname(__file__)
         # anchor
@@ -84,6 +84,102 @@ class UR3e(mi.ManipulatorInterface):
         into_list = [lb, l0]
         self.cc.set_cdpair_by_ids(from_list, into_list)
 
+    def ik(self,
+           tgt_pos: np.ndarray,
+           tgt_rotmat: np.ndarray,
+           seed_jnt_values=None,
+           option="single",
+           toggle_dbg=False):
+        """
+        :param tgt_pos:
+        :param tgt_rotmat:
+        :param seed_jnt_values:
+        :param option: "single", "multiple"
+        :param toggle_dbg:
+        :return:
+        author: weiwei, liang qin
+        date: 20240708
+        """
+        # relative to base
+        rel_pos, rel_rotmat = rm.rel_pose(self.jlc.pos, self.jlc.rotmat, tgt_pos, tgt_rotmat)
+        # target
+        tgt_rotmat = rel_rotmat @ self.loc_tcp_rotmat.T
+        tgt_pos = rel_pos - rel_rotmat @ self.loc_tcp_pos
+        # DH parameters of ur3e
+        a2 = -0.24355
+        a3 = -0.2132
+        d1 = 0.15185
+        d4 = 0.13105
+        d5 = 0.08535
+        d6 = 0.0921
+        n = tgt_rotmat[:, 0]
+        o = tgt_rotmat[:, 1]
+        a = tgt_rotmat[:, 2]
+        p = tgt_pos
+        # initialize all 8 possibilities
+        q = np.zeros((8, 6))
+        m1 = d6 * a[1] - p[1]
+        n1 = d6 * a[0] - p[0]
+        k = m1 ** 2 + n1 ** 2 - d4 ** 2
+        if -1e-8 < k < 0:
+            k = 0
+        for index in range(4):
+            q[index][0] = np.arctan2(m1, n1) - np.arctan2(d4, np.sqrt(k))
+            q[index + 4][0] = np.arctan2(m1, n1) - np.arctan2(d4, -np.sqrt(k))
+        for index in range(4):
+            q5 = np.arccos(a[0] * np.sin(q[2 * index + 1][0]) - a[1] * np.cos(q[2 * index + 1][0]))
+            if index % 2 == 0:
+                q[2 * index][4] = q5
+                q[2 * index + 1][4] = q5
+            else:
+                q[2 * index][4] = -q5
+                q[2 * index + 1][4] = -q5
+        for index in range(8):
+            m6 = n[0] * np.sin(q[index][0]) - n[1] * np.cos(q[index][0])
+            n6 = o[0] * np.sin(q[index][0]) - o[1] * np.cos(q[index][0])
+            q[index][5] = np.arctan2(m6, n6) - np.arctan2(np.sin(q[index][4]), 0)
+            m3 = d5 * (np.sin(q[index][5]) * (n[0] * np.cos(q[index][0]) + n[1] * np.sin(q[index][0]))
+                       + np.cos(q[index][5]) * (o[0] * np.cos(q[index][0]) + o[1] * np.sin(q[index][0]))) \
+                 + p[0] * np.cos(q[index][0]) + p[1] * np.sin(q[index][0]) - d6 * (
+                         a[0] * np.cos(q[index][0]) + a[1] * np.sin(q[index][0]))
+            n3 = p[2] - d1 - a[2] * d6 + d5 * (o[2] * np.cos(q[index][5]) + n[2] * np.sin(q[index][5]))
+            k3 = (m3 ** 2 + n3 ** 2 - a2 ** 2 - a3 ** 2) / (2 * a2 * a3)
+            if k3 - 1 > 1e-6 or k3 + 1 < -1e-6:
+                q3 = np.nan
+            elif 0 <= k3 - 1 <= 1e-6:
+                q3 = 0
+            elif 0 <= k3 + 1 < 1e-6:
+                q3 = np.pi
+            else:
+                q3 = np.arccos(k3)
+            q[index][2] = q3 if index % 2 == 0 else -q3
+            s2 = ((a3 * np.cos(q[index][2]) + a2) * n3 - a3 * np.sin(q[index][2]) * m3) / \
+                 (a2 ** 2 + a3 ** 2 + 2 * a2 * a3 * np.cos(q[index][2]))
+            c2 = (m3 + a3 * np.sin(q[index][2]) * s2) / (a3 * np.cos(q[index][2]) + a2)
+            q[index][1] = np.arctan2(s2, c2)
+            s234 = -np.sin(q[index][5]) * (n[0] * np.cos(q[index][0]) + n[1] * np.sin(q[index][0])) - \
+                   np.cos(q[index][5]) * (o[0] * np.cos(q[index][0]) + o[1] * np.sin(q[index][0]))
+            c234 = o[2] * np.cos(q[index][5]) + n[2] * np.sin(q[index][5])
+            q[index][3] = np.arctan2(s234, c234) - q[index][1] - q[index][2]
+        for index_i in range(8):
+            for index_j in range(6):
+                if q[index_i][index_j] < -np.pi:
+                    q[index_i][index_j] += 2 * np.pi
+                elif q[index_i][index_j] >= np.pi:
+                    q[index_i][index_j] -= 2 * np.pi
+        result = q[~np.isnan(q).any(axis=1)]
+        if len(result) == 0:
+            print("No valid solutions found")
+            return None
+        else:
+            if seed_jnt_values is None:
+                seed_jnt_values = self.home_conf
+            if option=="single":
+                return result[np.argmin(np.linalg.norm(result - seed_jnt_values, axis=1))]
+            elif option=="multiple":
+                return result[np.argsort(np.linalg.norm(result - seed_jnt_values, axis=1))]
+
+
 
 if __name__ == '__main__':
     import visualization.panda.world as wd
@@ -103,13 +199,12 @@ if __name__ == '__main__':
     mgm.gen_dashed_frame(pos=tgt_pos, rotmat=tgt_rotmat).attach_to(base)
     tic = time.time()
     jnt_values = arm.ik(tgt_pos=tgt_pos, tgt_rotmat=tgt_rotmat)
-    print(jnt_values)
     toc = time.time()
     print(toc - tic)
     if jnt_values is not None:
         arm.goto_given_conf(jnt_values=jnt_values)
-    arm_mesh = arm.gen_meshmodel(alpha=.3)
-    arm_mesh.attach_to(base)
+        arm_mesh = arm.gen_meshmodel(alpha=.3)
+        arm_mesh.attach_to(base)
     tmp_arm_stick = arm.gen_stickmodel(toggle_flange_frame=True)
     tmp_arm_stick.attach_to(base)
     base.run()

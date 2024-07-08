@@ -168,6 +168,7 @@ class ManipulatorInterface(object):
            tgt_pos: np.ndarray,
            tgt_rotmat: np.ndarray,
            seed_jnt_values=None,
+           option="empty",
            toggle_dbg=False):
         """
         by default the function calls the numerical implementation of jlc

@@ -176,6 +176,24 @@ class UR3e_Dual(ri.RobotInterface):
         else:
             return self.delegator.fk(jnt_values=jnt_values, toggle_jacobian=toggle_jacobian)
 
+    def ik(self, tgt_pos, tgt_rotmat, seed_jnt_values=None, obstacle_list=None, toggle_dbg=False):
+        if self.delegator is None:
+            raise AttributeError("IK is not available in multi-arm mode.")
+        else:
+            candidates = self.delegator.ik(tgt_pos=tgt_pos, tgt_rotmat=tgt_rotmat, seed_jnt_values=seed_jnt_values,
+                                           option="multiple", toggle_dbg=toggle_dbg)
+            result = None
+            self.delegator.backup_state()
+            for jnt_values in candidates:
+                self.delegator.goto_given_conf(jnt_values=jnt_values)
+                if self.is_collided(obstacle_list=obstacle_list, toggle_contacts=False):
+                    continue
+                else:
+                    result = jnt_values
+                    break
+            self.delegator.restore_state()
+            return result
+
     def goto_given_conf(self, jnt_values, ee_values=None):
         """
         :param jnt_values: nparray 1x14, 0:7lft, 7:14rgt
@@ -314,21 +332,21 @@ if __name__ == '__main__':
     # ik test
     for i in tqdm(range(100)):
         rand_conf = robot.rand_conf()
-        print(rand_conf, robot.delegator.manipulator.jnt_ranges)
+        # print(rand_conf, robot.delegator.manipulator.jnt_ranges)
         tgt_pos, tgt_rotmat = robot.fk(jnt_values=rand_conf)
         # tgt_pos = np.array([.8, -.1, .9])
         # tgt_rotmat = rm.rotmat_from_axangle([0, 1, 0], np.pi)
         gm.gen_frame(pos=tgt_pos, rotmat=tgt_rotmat, ax_length=.3).attach_to(base)
 
         tic = time.time()
-        jnt_values = robot.rgt_arm.ik(tgt_pos, tgt_rotmat,toggle_dbg=False)
+        jnt_values = robot.ik(tgt_pos, tgt_rotmat, toggle_dbg=False)
         print(jnt_values)
         toc = time.time()
         if jnt_values is not None:
             count += 1
-            robot.rgt_arm.goto_given_conf(jnt_values=jnt_values)
+            robot.goto_given_conf(jnt_values=jnt_values)
             robot.gen_meshmodel().attach_to(base)
-            base.run()
+            # base.run()
         # tic = time.time()
         # result = robot.is_collided()
         # toc = time.time()

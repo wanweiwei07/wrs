@@ -266,6 +266,8 @@ class JLChain(object):
             self._ik_solver = rkn.NumIKSolver(self)
         elif ik_solver == 'o':
             self._ik_solver = rko.OptIKSolver(self)
+        elif ik_solver == 'a': # analytical ik, user defined
+            self._ik_solver = None
 
     def set_flange(self, loc_flange_pos=None, loc_flange_rotmat=None):
         if loc_flange_pos is not None:
