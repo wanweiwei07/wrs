@@ -112,9 +112,9 @@ class UR3e(mi.ManipulatorInterface):
         d4 = 0.13105
         d5 = 0.08535
         d6 = 0.0921
-        n = tgt_rotmat[:, 0]
-        o = tgt_rotmat[:, 1]
-        a = tgt_rotmat[:, 2]
+        n = tgt_rotmat[:, 0] # normal (x)
+        o = tgt_rotmat[:, 1] # orientation (y)
+        a = tgt_rotmat[:, 2] # approach (z)
         p = tgt_pos
         # initialize all 8 possibilities
         q = np.zeros((8, 6))
