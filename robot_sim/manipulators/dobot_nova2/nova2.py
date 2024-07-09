@@ -112,8 +112,8 @@ class Nova2(mi.ManipulatorInterface):
         # relative to base
         rel_pos, rel_rotmat = rm.rel_pose(self.jlc.pos, self.jlc.rotmat, tgt_pos, tgt_rotmat)
         # target
-        tgt_rotmat = tgt_rotmat @ self.loc_tcp_rotmat.T
-        tgt_pos = tgt_pos - tgt_rotmat @ self.loc_tcp_pos
+        tgt_rotmat = rel_rotmat @ self.loc_tcp_rotmat.T
+        tgt_pos = rel_pos - rel_rotmat @ self.loc_tcp_pos
         # DH parameters of nova2
         a2 = -0.280
         a3 = -0.22501
@@ -121,11 +121,10 @@ class Nova2(mi.ManipulatorInterface):
         d4 = 0.1175
         d5 = 0.120
         d6 = 0.088004
-        n = tgt_rotmat[:, 0] # normal (x)
-        o = tgt_rotmat[:, 1] # orientation (y)
-        a = tgt_rotmat[:, 2] # approach (z)
+        n = tgt_rotmat[:, 0]
+        o = tgt_rotmat[:, 1]
+        a = tgt_rotmat[:, 2]
         p = tgt_pos
-        # initialize all 8 possibilities
         q = np.zeros((8, 6))
         m1 = d6 * a[1] - p[1]
         n1 = d6 * a[0] - p[0]

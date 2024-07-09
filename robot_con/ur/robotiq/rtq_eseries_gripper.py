@@ -35,22 +35,23 @@ class RobotiqETwoFinger(object):
         else:
             raise NotImplementedError
 
-    def return_program_to_run(self, speedpercentage=90, forcepercentage=90, fingerdistance=0.0):
+    def return_program_to_run(self, speed_percentage=90, force_percentage=90, finger_distance=0.0):
         """
         return a program that changes the ee_values of the gripper with
         given speed percentage, force percentage, and fingerdistance
-        :param speedpercentange: 0~100 percent
-        :param forcepercentage: 0~100 percent
-        :Param fingerdistance: 0.0~self.open_limit
+        :param speed_percentage: 0~100 percent
+        :param force_percentage: 0~100 percent
+        :Param finger_distance: 0.0~self.open_limit
         :return:
         author: weiwei
         date: 20181110, 20210401
         """
-        fingerdistance = np.clip(fingerdistance, 0, self.open_limit)
+        finger_distance = np.clip(finger_distance, 0, self.open_limit)
         complete_program = copy.deepcopy(self.original_program)
         complete_program = complete_program.replace("program_replace_speed",
-                                                    "rq_set_force_norm(" + str(forcepercentage) + ")")
+                                                    "rq_set_force_norm(" + str(force_percentage) + ")")
         complete_program = complete_program.replace("program_replace_force",
-                                                    "rq_set_speed_norm(" + str(speedpercentage) + ")")
-        complete_program = complete_program.replace("program_replace_command", f'rq_move_mm({fingerdistance})')
+                                                    "rq_set_speed_norm(" + str(speed_percentage) + ")")
+        complete_program = complete_program.replace("program_replace_command", f'rq_move_mm({finger_distance})')
+        print(complete_program)
         return complete_program

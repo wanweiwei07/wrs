@@ -1,44 +1,59 @@
 """
-Python library to control an UR robot_s through its TCP/IP interface
+Python library to control an UR robot through its TCP/IP interface
 Documentation from universal robots:
 http://support.universal-robots.com/URRobot/RemoteAccess
 """
 
 import logging
 import numbers
-import collections
 
-from drivers.urx import ur_realtime_monitor
-from drivers.urx import ur_secondary_monitor
+try:
+    from collections.abc import Sequence
+except ImportError:
+    from collections import Sequence
+
+import drivers.urx.ur_realtime_monitor as urrtmon
+import drivers.urx.ur_secondary_monitor as ursecmon
+
+__author__ = "Olivier Roulet-Dubonnet"
+__copyright__ = "Copyright 2011-2015, Sintef Raufoss Manufacturing"
+__license__ = "LGPLv3"
+
 
 class RobotException(Exception):
     pass
 
 
 class URRobot(object):
+
     """
-    Python interface to socket interface of UR robot_s.
-    programs are send to port 30002
+    Python interface to socket interface of UR robot.
+    programs are send to port 3002
     data is read from secondary interface(10Hz?) and real-time interface(125Hz) (called Matlab interface in documentation)
     Since parsing the RT interface uses som CPU, and does not support all robots versions, it is disabled by default
     The RT interfaces is only used for the get_force related methods
-    Rmq: A program sent to the robot_s i executed immendiatly and any running program is stopped
+    Rmq: A program sent to the robot i executed immendiatly and any running program is stopped
     """
-    def __init__(self, host, use_rt=False):
+
+    def __init__(self, host, use_rt=False, urFirm=None):
         self.logger = logging.getLogger("urx")
         self.host = host
+        self.urFirm = urFirm
         self.csys = None
+
         self.logger.debug("Opening secondary monitor socket")
-        self.secmon = ur_secondary_monitor.SecondaryMonitor(self.host)  # data from robot_s at 10Hz
+        self.secmon = ursecmon.SecondaryMonitor(self.host)  # data from robot at 10Hz
+
         self.rtmon = None
         if use_rt:
             self.rtmon = self.get_realtime_monitor()
         # precision of joint movem used to wait for move completion
         # the value must be conservative! otherwise we may wait forever
         self.joinEpsilon = 0.01
-        # It seems URScript is  limited in the character axis_length of floats it accepts
-        self.max_float_length = 6  # FIXME: check max axis_length!!!
-        self.secmon.wait()  # make sure we get data from robot_s before letting clients access our methods
+        # It seems URScript is  limited in the character length of floats it accepts
+        self.max_float_length = 6  # FIXME: check max length!!!
+
+        self.secmon.wait()  # make sure we get data from robot before letting clients access our methods
 
     def __repr__(self):
         return "Robot Object (IP=%s, state=%s)" % (self.host, self.secmon.get_all_data()["RobotModeData"])
@@ -54,7 +69,7 @@ class URRobot(object):
 
     def is_running(self):
         """
-        Return True if robot_s is running (not
+        Return True if robot is running (not
         necessary running a program, it might be idle)
         """
         return self.secmon.running
@@ -63,13 +78,13 @@ class URRobot(object):
         """
         check if program is running.
         Warning!!!!!:  After sending a program it might take several 10th of
-        a second before the robot_s enters the running state
+        a second before the robot enters the running state
         """
         return self.secmon.is_program_running()
 
     def send_program(self, prog):
         """
-        send a complete program using urscript to the robot_s
+        send a complete program using urscript to the robot
         the program is executed immediatly and any runnning
         program is interrupted
         """
@@ -85,7 +100,7 @@ class URRobot(object):
 
     def get_force(self, wait=True):
         """
-        axis_length of force vector returned by get_tcp_force
+        length of force vector returned by get_tcp_force
         if wait==True, waits for next packet before returning
         """
         tcpf = self.get_tcp_force(wait)
@@ -94,9 +109,59 @@ class URRobot(object):
             force += i**2
         return force**0.5
 
+    def get_joint_temperature(self, wait=True):
+        """
+        return measured joint temperature
+        if wait==True, waits for next packet before returning
+        """
+        return self.rtmon.getJOINTTemperature(wait)
+
+    def get_joint_voltage(self, wait=True):
+        """
+        return measured joint voltage
+        if wait==True, waits for next packet before returning
+        """
+        return self.rtmon.getJOINTVoltage(wait)
+
+    def get_joint_current(self, wait=True):
+        """
+        return measured joint current
+        if wait==True, waits for next packet before returning
+        """
+        return self.rtmon.getJOINTCurrent(wait)
+
+    def get_main_voltage(self, wait=True):
+        """
+        return measured Safety Control Board: Main voltage
+        if wait==True, waits for next packet before returning
+        """
+        return self.rtmon.getMAINVoltage(wait)
+
+    def get_robot_voltage(self, wait=True):
+        """
+        return measured Safety Control Board: Robot voltage (48V)
+        if wait==True, waits for next packet before returning
+        """
+        return self.rtmon.getROBOTVoltage(wait)
+
+    def get_robot_current(self, wait=True):
+        """
+        return measured Safety Control Board: Robot current
+        if wait==True, waits for next packet before returning
+        """
+        return self.rtmon.getROBOTCurrent(wait)
+
+    def get_all_rt_data(self, wait=True):
+        """
+        return all data parsed from robot real-time interace as a dict
+        if wait==True, waits for next packet before returning
+        """
+        return self.rtmon.getALLData(wait)
+
+
     def set_tcp(self, tcp):
         """
-        set robot_s flange to tool tip transformation
+        set robot flange to tool tip transformation
         """
         prog = "set_tcp(p[{}, {}, {}, {}, {}, {}])".format(*tcp)
         self.send_program(prog)
@@ -117,21 +182,21 @@ class URRobot(object):
 
     def set_gravity(self, vector):
         """
-        set motion_vec of gravity
+        set direction of gravity
         """
         prog = "set_gravity(%s)" % list(vector)
         self.send_program(prog)
 
     def send_message(self, msg):
         """
-        send message to the GUI log tab on the robot_s controller
+        send message to the GUI log tab on the robot controller
         """
         prog = "textmsg(%s)" % msg
         self.send_program(prog)
 
     def set_digital_out(self, output, val):
         """
-        set digital output. value is a bool
+        set digital output. val is a bool
         """
         if val in (True, 1):
             val = "True"
@@ -177,14 +242,14 @@ class URRobot(object):
 
     def set_analog_out(self, output, val):
         """
-        set analog output, value is a float
+        set analog output, val is a float
         """
         prog = "set_analog_out(%s, %s)" % (output, val)
         self.send_program(prog)
 
     def set_tool_voltage(self, val):
         """
-        set voltage to be delivered to the tool, value is 0, 12 or 24
+        set voltage to be delivered to the tool, val is 0, 12 or 24
         """
         prog = "set_tool_voltage(%s)" % (val)
         self.send_program(prog)
@@ -192,7 +257,7 @@ class URRobot(object):
     def _wait_for_move(self, target, threshold=None, timeout=5, joints=False):
         """
         wait for a move to complete. Unfortunately there is no good way to know when a move has finished
-        so for every received data from robot_s we compute a dist equivalent and when it is lower than
+        so for every received data from robot we compute a dist equivalent and when it is lower than
         'threshold' we return.
         if threshold is not reached within timeout, an exception is raised
         """
@@ -208,7 +273,7 @@ class URRobot(object):
             if not self.is_running():
                 raise RobotException("Robot stopped")
             dist = self._get_dist(target, joints)
-            self.logger.debug("linear_distance to target is: %s, target dist is %s", dist, threshold)
+            self.logger.debug("distance to target is: %s, target dist is %s", dist, threshold)
             if not self.secmon.is_program_running():
                 if dist < threshold:
                     self.logger.debug("we are threshold(%s) close to target, move has ended", threshold)
@@ -226,13 +291,13 @@ class URRobot(object):
             return self._get_lin_dist(target)
 
     def _get_lin_dist(self, target):
-        # FIXME: we have an issue here, it seems sometimes the axis angle received from robot_s
+        # FIXME: we have an issue here, it seems sometimes the axis angle received from robot
         pose = URRobot.getl(self, wait=True)
         dist = 0
         for i in range(3):
             dist += (target[i] - pose[i]) ** 2
         for i in range(3, 6):
-            dist += ((target[i] - pose[i]) / 5) ** 2  # arbitraty axis_length like
+            dist += ((target[i] - pose[i]) / 5) ** 2  # arbitraty length like
         return dist ** 0.5
 
     def _get_joints_dist(self, target):
@@ -253,7 +318,7 @@ class URRobot(object):
         vels = [round(i, self.max_float_length) for i in velocities]
         vels.append(acc)
         vels.append(min_time)
-        prog = "{}([{},{},{},{},{},{}], a={}, t_min={})".format(command, *vels)
+        prog = "{}([{},{},{},{},{},{}], {}, {})".format(command, *vels)
         self.send_program(prog)
 
     def movej(self, joints, acc=0.1, vel=0.05, wait=True, relative=False, threshold=None):
@@ -271,21 +336,43 @@ class URRobot(object):
 
     def movel(self, tpose, acc=0.01, vel=0.01, wait=True, relative=False, threshold=None):
         """
-        Send a movel command to the robot_s. See URScript documentation.
+        Send a movel command to the robot. See URScript documentation.
         """
         return self.movex("movel", tpose, acc=acc, vel=vel, wait=wait, relative=relative, threshold=threshold)
 
     def movep(self, tpose, acc=0.01, vel=0.01, wait=True, relative=False, threshold=None):
         """
-        Send a movep command to the robot_s. See URScript documentation.
+        Send a movep command to the robot. See URScript documentation.
         """
         return self.movex("movep", tpose, acc=acc, vel=vel, wait=wait, relative=relative, threshold=threshold)
 
     def servoc(self, tpose, acc=0.01, vel=0.01, wait=True, relative=False, threshold=None):
         """
-        Send a servoc command to the robot_s. See URScript documentation.
+        Send a servoc command to the robot. See URScript documentation.
         """
         return self.movex("servoc", tpose, acc=acc, vel=vel, wait=wait, relative=relative, threshold=threshold)
+
+    def servoj(self, tjoints, acc=0.01, vel=0.01, t=0.1, lookahead_time=0.2, gain=100, wait=True, relative=False, threshold=None):
+        """
+        Send a servoj command to the robot. See URScript documentation.
+        """
+        if relative:
+            l = self.getj()
+            tjoints = [v + l[i] for i, v in enumerate(tjoints)]
+        prog = self._format_servo("servoj", tjoints, acc=acc, vel=vel, t=t, lookahead_time=lookahead_time, gain=gain)
+        self.send_program(prog)
+        if wait:
+            self._wait_for_move(tjoints[:6], threshold=threshold, joints=True)
+            return self.getj()
+
+    def _format_servo(self, command, tjoints, acc=0.01, vel=0.01, t=0.1, lookahead_time=0.2, gain=100, prefix=""):
+        tjoints = [round(i, self.max_float_length) for i in tjoints]
+        tjoints.append(acc)
+        tjoints.append(vel)
+        tjoints.append(t)
+        tjoints.append(lookahead_time)
+        tjoints.append(gain)
+        return "{}({}[{},{},{},{},{},{}], a={}, v={}, t={}, lookahead_time={}, gain={})".format(command, prefix, *tjoints)
 
     def _format_move(self, command, tpose, acc, vel, radius=0, prefix=""):
         tpose = [round(i, self.max_float_length) for i in tpose]
@@ -296,7 +383,7 @@ class URRobot(object):
 
     def movex(self, command, tpose, acc=0.01, vel=0.01, wait=True, relative=False, threshold=None):
         """
-        Send a move command to the robot_s. since UR robotene have several methods this one
+        Send a move command to the robot. since UR robotene have several methods this one
         sends whatever is defined in 'command' string
         """
         if relative:
@@ -316,7 +403,7 @@ class URRobot(object):
         if pose:
             pose = [pose["X"], pose["Y"], pose["Z"], pose["Rx"], pose["Ry"], pose["Rz"]]
         if _log:
-            self.logger.debug("Received pose from robot_s: %s", pose)
+            self.logger.debug("Received pose from robot: %s", pose)
         return pose
 
     def movec(self, pose_via, pose_to, acc=0.01, vel=0.01, wait=True, threshold=None):
@@ -335,10 +422,10 @@ class URRobot(object):
     def movejs(self, joint_positions_list, acc=0.01, vel=0.01, radius=0.01,
                wait=True, threshold=None):
         """
-        Concatenate several movej commands and applies a blending major_radius
+        Concatenate several movej commands and applies a blending radius
         joint_positions_list is a list of joint_positions.
         This method is usefull since any new command from python
-        to robot_s make the robot_s stop
+        to robot make the robot stop
         """
         return URRobot.movexs(self, "movej", joint_positions_list, acc, vel, radius,
                            wait, threshold=threshold)
@@ -346,10 +433,10 @@ class URRobot(object):
     def movels(self, pose_list, acc=0.01, vel=0.01, radius=0.01,
                wait=True, threshold=None):
         """
-        Concatenate several movel commands and applies a blending major_radius
+        Concatenate several movel commands and applies a blending radius
         pose_list is a list of pose.
         This method is usefull since any new command from python
-        to robot_s make the robot_s stop
+        to robot make the robot stop
         """
         return self.movexs("movel", pose_list, acc, vel, radius,
                            wait, threshold=threshold)
@@ -357,40 +444,40 @@ class URRobot(object):
     def movexs(self, command, pose_list, acc=0.01, vel=0.01, radius=0.01,
                wait=True, threshold=None):
         """
-        Concatenate several movex commands and applies a blending major_radius
+        Concatenate several movex commands and applies a blending radius
         pose_list is a list of pose.
         This method is usefull since any new command from python
-        to robot_s make the robot_s stop
+        to robot make the robot stop
         """
         header = "def myProg():\n"
-        end = "end_type\n"
+        end = "end\n"
         prog = header
         # Check if 'vel' is a single number or a sequence.
         if isinstance(vel, numbers.Number):
             # Make 'vel' a sequence
             vel = len(pose_list) * [vel]
-        elif not isinstance(vel, collections.Sequence):
+        elif not isinstance(vel, Sequence):
             raise RobotException(
                 'movexs: "vel" must be a single number or a sequence!')
         # Check for adequate number of speeds
         if len(vel) != len(pose_list):
             raise RobotException(
                 'movexs: "vel" must be a number or a list '
-                + 'of numbers the same axis_length as "pose_list"!')
-        # Check if 'major_radius' is a single number.
+                + 'of numbers the same length as "pose_list"!')
+        # Check if 'radius' is a single number.
         if isinstance(radius, numbers.Number):
-            # Make 'major_radius' a sequence
+            # Make 'radius' a sequence
             radius = len(pose_list) * [radius]
-        elif not isinstance(radius, collections.Sequence):
+        elif not isinstance(radius, Sequence):
             raise RobotException(
-                'movexs: "major_radius" must be a single number or a sequence!')
+                'movexs: "radius" must be a single number or a sequence!')
         # Ensure that last pose a stopping pose.
         radius[-1] = 0.0
         # Require adequate number of radii.
         if len(radius) != len(pose_list):
             raise RobotException(
-                'movexs: "major_radius" must be a number or a list '
-                + 'of numbers the same axis_length as "pose_list"!')
+                'movexs: "radius" must be a number or a list '
+                + 'of numbers the same length as "pose_list"!')
         prefix = ''
         if command in ['movel', 'movec']:
             prefix = 'p'
@@ -404,7 +491,7 @@ class URRobot(object):
             if command == 'movel':
                 self._wait_for_move(target=pose_list[-1], threshold=threshold, joints=False)
             elif command == 'movej':
-                self._wait_for_move(target=pose_list[-1], threshold=threshold, joints=True)                
+                self._wait_for_move(target=pose_list[-1], threshold=threshold, joints=True)
             return self.getl()
 
     def stopl(self, acc=0.5):
@@ -418,25 +505,25 @@ class URRobot(object):
 
     def close(self):
         """
-        close connection to robot_s and stop internal thread
+        close connection to robot and stop internal thread
         """
-        self.logger.info("Closing sockets to robot_s")
+        self.logger.info("Closing sockets to robot")
         self.secmon.close()
         if self.rtmon:
             self.rtmon.stop()
 
     def set_freedrive(self, val, timeout=60):
         """
-        set robot_s in freedrive/backdrive mode where an operator can jog
-        the robot_s to wished pose.
+        set robot in freedrive/backdrive mode where an operator can jog
+        the robot to wished pose.
 
         Freedrive will timeout at 60 seconds.
         """
         if val:
-            self.send_program("def myProg():\n\tfreedrive_mode()\n\tsleep({})\nend_type".format(timeout))
+            self.send_program("def myProg():\n\tfreedrive_mode()\n\tsleep({})\nend".format(timeout))
         else:
             # This is a non-existant program, but running it will stop freedrive
-            self.send_program("def myProg():\n\tend_freedrive_mode()\nend_type")
+            self.send_program("def myProg():\n\tend_freedrive_mode()\nend")
 
     def set_simulation(self, val):
         if val:
@@ -447,11 +534,11 @@ class URRobot(object):
     def get_realtime_monitor(self):
         """
         return a pointer to the realtime monitor object
-        usefull to track robot_s position for example
+        usefull to track robot position for example
         """
         if not self.rtmon:
             self.logger.info("Opening real-time monitor socket")
-            self.rtmon = ur_realtime_monitor.URRTMonitor(self.host)  # som information is only available on rt interface
+            self.rtmon = urrtmon.URRTMonitor(self.host, self.urFirm)  # som information is only available on rt interface
             self.rtmon.start()
         self.rtmon.set_csys(self.csys)
         return self.rtmon

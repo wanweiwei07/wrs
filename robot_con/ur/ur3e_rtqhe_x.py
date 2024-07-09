@@ -12,7 +12,7 @@ import os
 import motion.trajectory.piecewisepoly_toppra as pwp
 
 
-class UR3ERtqHE():
+class UR3ERtqHEX():
     """
     author: weiwei
     date: 20180131, 20210401osaka
@@ -79,7 +79,7 @@ class UR3ERtqHE():
         """
         self._arm.send_program(self._hand.return_program_to_run(speedpercentange, forcepercentage, fingerdistance))
 
-    def close_gripper(self, speedpercentange=80, forcepercentage=50):
+    def close_gripper(self, speed_percentange=80, force_percentage=100):
         """
         close the rtq85 hand on the arm specified by arm_name
         :param arm_name:
@@ -87,7 +87,7 @@ class UR3ERtqHE():
         author: weiwei
         date: 20180220
         """
-        self._arm.send_program(self._hand.return_program_to_run(speedpercentange, forcepercentage, 0))
+        self._arm.send_program(self._hand.return_program_to_run(speed_percentange, force_percentage, 0))
 
     def start_recvft(self):
         """
@@ -195,6 +195,6 @@ if __name__ == '__main__':
     import visualization.panda.world as wd
 
     base = wd.World(cam_pos=[3, 1, 2], lookat_pos=[0, 0, 0])
-    u3erhe_x = UR3ERtqHE(robot_ip='10.0.2.2', pc_ip='10.0.2.11')
-    u3erhe_x.open_gripper()
+    u3erhe_x = UR3ERtqHEX(robot_ip='10.0.2.2', pc_ip='10.0.2.17')
+    u3erhe_x.close_gripper()
     base.run()
