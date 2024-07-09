@@ -391,7 +391,7 @@ def EGripper():
     end
 
     def open_gripper_socket(gripper_socket):
-        is_open = socket_open("127.0.0.1",63352, gripper_socket)
+        is_open = socket_open("127.0.0.1", 63352, gripper_socket)
         set_gripper_socket_open(gripper_socket, is_open)
     end
 
@@ -1520,6 +1520,21 @@ def EGripper():
 
     def limit(value, range):
         return scale(value, range, range)
+    end
+
+    def wrs_get_first_connected_gripper():
+        if(gripper_1_connected):
+            return 1
+        end
+        if (gripper_2_connected):
+            return 2
+        end
+        if (gripper_3_connected):
+            return 3
+        end
+        if (gripper_4_connected):
+            return 4
+        end
     end
 
     rq_obj_detect = 0

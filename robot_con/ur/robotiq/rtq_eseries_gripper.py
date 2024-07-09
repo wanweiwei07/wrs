@@ -52,6 +52,6 @@ class RobotiqETwoFinger(object):
                                                     "rq_set_force_norm(" + str(force_percentage) + ")")
         complete_program = complete_program.replace("program_replace_force",
                                                     "rq_set_speed_norm(" + str(speed_percentage) + ")")
-        complete_program = complete_program.replace("program_replace_command", f'rq_move_mm({finger_distance})')
-        print(complete_program)
+        complete_program = complete_program.replace("program_replace_command", f'rq_move_mm({finger_distance}, '
+                                                                               f'wrs_get_first_connected_gripper())')
         return complete_program

@@ -172,6 +172,7 @@ class Nova2(mi.ManipulatorInterface):
         # ur5 -> nova2
         q[:, 1] = q[:, 1] + np.ones(8) * np.pi / 2
         q[:, 3] = q[:, 3] + np.ones(8) * np.pi / 2
+        q[:, 0] = -q[:, 0]
         # for index_i in range(8):
         #     for index_j in range(6):
         #         if q[index_i][index_j] < -np.pi:
@@ -198,9 +199,9 @@ class Nova2(mi.ManipulatorInterface):
                 return None
             if seed_jnt_values is None:
                 seed_jnt_values = self.home_conf
-            if option=="single":
+            if option == "single":
                 return filtered_result[np.argmin(np.linalg.norm(filtered_result - seed_jnt_values, axis=1))]
-            elif option=="multiple":
+            elif option == "multiple":
                 return filtered_result[np.argsort(np.linalg.norm(filtered_result - seed_jnt_values, axis=1))]
         # if self.pipette:
         #     # - - + - + -

@@ -156,8 +156,8 @@ class UR3ERtqHEX():
         author: weiwei
         date: 20210331
         """
-        max_jnt_vels = np.array([np.pi, np.pi, np.pi, np.pi * 2, np.pi * 2, np.pi * 2])
-        max_jnt_accs = np.array([np.pi, np.pi, np.pi, np.pi * 2, np.pi * 2, np.pi * 2])
+        max_jnt_vels = np.array([np.pi*.75, np.pi*.75, np.pi*.75, np.pi * 1.5, np.pi * 1.5, np.pi * 1.5])
+        max_jnt_accs = np.array([np.pi*.75, np.pi*.75, np.pi*.75, np.pi * 1.5, np.pi * 1.5, np.pi * 1.5])
         interpolated_confs = self.tpply.interpolate_by_max_spdacc(path=path,
                                                                   control_frequency=control_frequency,
                                                                   max_vels=max_jnt_vels,
