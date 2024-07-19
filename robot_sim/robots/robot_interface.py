@@ -12,8 +12,8 @@ class RobotInterface(object):
 
     def __init__(self, pos=np.zeros(3), rotmat=np.eye(3), name='robot_interface', enable_cc=False):
         self.name = name
-        self.pos = pos
-        self.rotmat = rotmat
+        self._pos = pos
+        self._rotmat = rotmat
         # for dynamic callback in case of multiple arms
         self.userdef_is_collided_fn = None  # deprecated 20240309 (originally designed for reusing cc, inflexible)
         if enable_cc:
@@ -22,6 +22,14 @@ class RobotInterface(object):
             self.cc = None
         # delegator
         self.delegator = None  # use self.xxx in case of None
+
+    @property
+    def pos(self):
+        return self._pos
+
+    @property
+    def rotmat(self):
+        return self._rotmat
 
     @property
     def jnt_ranges(self):

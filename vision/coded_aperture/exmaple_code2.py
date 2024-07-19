@@ -1,85 +1,71 @@
+import torch
+import torch.nn.functional as F
 from vision.coded_aperture.code_aperture import mura
 from PIL import Image
 import numpy as np
-from scipy.ndimage import convolve, zoom
+from scipy.signal import convolve2d
 import matplotlib.pyplot as plt
-from scipy.signal import convolve2d, wiener
-from skimage import restoration
 
+# 生成MURA编码
 code = mura(rank=5)
 aperture = code.aperture.T
 
-image = Image.open('test.jpg')
+# 加载图像并转换为numpy数组
+image = Image.open('test.jpg').convert('RGB')
 image_array = np.array(image)
 
-def convolve_and_normalize(channel, aperture):
-    convolved = convolve2d(channel, aperture, mode='same', boundary='fill', fillvalue=0)
-    normalized = 255 * (convolved - np.min(convolved)) / (np.max(convolved) - np.min(convolved))
-    return normalized.astype(np.uint8)
+# 将图像转换为张量
+image_tensor = torch.tensor(image_array, dtype=torch.float32).permute(2, 0, 1).unsqueeze(0) / 255.0
 
-convolved_r = convolve_and_normalize(image_array[:, :, 0], aperture)
-convolved_g = convolve_and_normalize(image_array[:, :, 1], aperture)
-convolved_b = convolve_and_normalize(image_array[:, :, 2], aperture)
+# 定义卷积函数
+def convolve_tensor(image_tensor, aperture_tensor):
+    convolved_tensor = F.conv2d(image_tensor, aperture_tensor, padding=aperture.shape[0] // 2, groups=3)
+    return convolved_tensor
 
-convolved_image = np.stack((convolved_r, convolved_g, convolved_b), axis=2)
+# 对每个颜色通道进行卷积
+aperture_tensor = torch.tensor(aperture, dtype=torch.float32).unsqueeze(0).unsqueeze(0)
+aperture_tensor = aperture_tensor.repeat(3, 1, 1, 1)  # Repeat for each RGB channel
+convolved_image_tensor = F.conv2d(image_tensor, aperture_tensor, padding=aperture.shape[0] // 2, groups=3)
 
-# # reverse
-# def deconvolve(image, decoder):
-#     kernel_ft = np.fft.fft2(decoder, s=image.shape)
-#     image_ft = np.fft.fft2(image)
-#     # Avoid division by zero
-#     kernel_ft = np.where(kernel_ft == 0, 1e-10, kernel_ft)
-#     deconvolved_ft = image_ft / kernel_ft
-#     deconvolved = np.fft.ifft2(deconvolved_ft)
-#     return np.abs(deconvolved).astype(np.uint8)
-#     return deconvolve
+# 定义损失函数（均方误差）
+def loss_function(reconstructed_image, original_convolved_image):
+    return F.mse_loss(convolve_tensor(reconstructed_image, aperture_tensor), original_convolved_image)
 
-def wiener_deconvolve(channel, aperture, noise_variance=0.01):
-    # Apply Wiener filter
-    deconvolved = wiener(channel, mysize=aperture.shape, noise=noise_variance)
-    # Normalize the deconvolved image
-    deconvolved = 255 * (deconvolved - np.min(deconvolved)) / (np.max(deconvolved) - np.min(deconvolved))
-    return deconvolved.astype(np.uint8)
+# 初始化重建图像（可以使用全零图像）
+reconstructed_image = torch.zeros_like(image_tensor, requires_grad=True)
 
-# Deconvolution using Richardson-Lucy algorithm
-def richardson_lucy_deconvolve(channel, aperture, iterations=30):
-    # Apply Richardson-Lucy deconvolution
-    deconvolved = restoration.richardson_lucy(channel, aperture, num_iter=iterations)
-    # Normalize the deconvolved image
-    deconvolved = 255 * (deconvolved - np.min(deconvolved)) / (np.max(deconvolved) - np.min(deconvolved))
-    return deconvolved.astype(np.uint8)
+# 使用梯度下降法优化
+optimizer = torch.optim.Adam([reconstructed_image], lr=0.2)
+num_iterations = 100
 
-code.gen_decoder(method='matched')
-decoder = code.decoder.T
+for i in range(num_iterations):
+    optimizer.zero_grad()
+    loss = loss_function(reconstructed_image, convolved_image_tensor)
+    loss.backward()
+    optimizer.step()
 
-convolved_r = richardson_lucy_deconvolve(convolved_image[:, :, 0], decoder)
-convolved_g = richardson_lucy_deconvolve(convolved_image[:, :, 1], decoder)
-convolved_b = richardson_lucy_deconvolve(convolved_image[:, :, 2], decoder)
+    if (i + 1) % 10 == 0:
+        print(f"Iteration {i+1}/{num_iterations}, Loss: {loss.item()}")
 
-decode_convolved_image = np.stack((convolved_r, convolved_g, convolved_b), axis=2)
+# 将重建图像转换为numpy数组
+reconstructed_image_np = reconstructed_image.detach().squeeze(0).permute(1, 2, 0).numpy() * 255.0
+reconstructed_image_np = np.clip(reconstructed_image_np, 0, 255).astype(np.uint8)
 
-plt.figure()
-
-plt.subplot(1, 4, 1)
+# 显示原始图像、卷积图像和重建图像
+plt.figure(figsize=(18, 6))
+plt.subplot(1, 3, 1)
 plt.title('Original Image')
 plt.imshow(image_array)
 plt.axis('off')
 
-zoom_factor = 100
-zoomed_aperture = zoom(aperture, zoom_factor, order=0)
-plt.subplot(1, 4, 3)
-plt.title('Aperture')
-plt.imshow(zoomed_aperture)
-plt.axis('off')
-
-plt.subplot(1, 4, 3)
+plt.subplot(1, 3, 2)
 plt.title('Convolved Image')
-plt.imshow(convolved_image, interpolation='none')
+plt.imshow(convolved_image_tensor.squeeze(0).permute(1, 2, 0).detach().numpy())
 plt.axis('off')
 
-plt.subplot(1, 4, 4)
-plt.title('Decoded Image')
-plt.imshow(decode_convolved_image)
+plt.subplot(1, 3, 3)
+plt.title('Reconstructed Image')
+plt.imshow(reconstructed_image_np)
 plt.axis('off')
 
 plt.show()

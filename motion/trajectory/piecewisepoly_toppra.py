@@ -22,14 +22,14 @@ class PiecewisePolyTOPPRA(object):
 
     def interpolate_by_max_spdacc(self,
                                   path,
-                                  control_frequency=.005,
+                                  ctrl_freq=.005,
                                   max_vels=None,
                                   max_accs=None,
                                   toggle_debug=True):
         """
         TODO: prismatic motor speed is not considered
         :param path:
-        :param control_frequency:
+        :param ctrl_freq:
         :param max_vels: max joint speed between two adjacent poses in the path, math.pi if None
         :param max_accs: max joint speed between two adjacent poses in the path, math.pi if None
         :return:
@@ -66,7 +66,7 @@ class PiecewisePolyTOPPRA(object):
         jnt_traj = instance.compute_trajectory()
         duration = jnt_traj.duration
         print("Found optimal trajectory with duration {:f} sec".format(duration))
-        ts = np.linspace(0, duration, math.ceil(duration/control_frequency))
+        ts = np.linspace(0, duration, math.ceil(duration/ctrl_freq))
         interpolated_confs = jnt_traj.eval(ts)
         interpolated_spds = jnt_traj.evald(ts)
         interpolated_accs = jnt_traj.evaldd(ts)

@@ -13,7 +13,7 @@ class Nova2WG3(rsi.SglArmRobotInterface):
 
     def __init__(self, pos=np.zeros(3), rotmat=np.eye(3), name='nova2_wg3', enable_cc=True):
         super().__init__(pos=pos, rotmat=rotmat, name=name, enable_cc=enable_cc)
-        self.manipulator = nv2.Nova2(pos=pos, rotmat=rotmat, name="nv2wg3_arm", enable_cc=False)
+        self.manipulator = nv2.Nova2(pos=self._pos, rotmat=self._rotmat, name="nv2wg3_arm", enable_cc=False)
         self.end_effector = wg3.WRSGripper3(pos=self.manipulator.gl_flange_pos,
                                             rotmat=self.manipulator.gl_flange_rotmat, name="nv2wg3_hand")
         # tool center point
@@ -41,10 +41,12 @@ class Nova2WG3(rsi.SglArmRobotInterface):
         self.cc.dynamic_into_list = [mlb, ml0, ml1, ml2, ml3, ml4]
         return
 
-    def fix_to(self, pos, rotmat):
-        self.pos = pos
-        self.rotmat = rotmat
-        self.manipulator.fix_to(pos=pos, rotmat=rotmat)
+    def fix_to(self, pos=None, rotmat=None):
+        if pos is not None:
+            self._pos = pos
+        if rotmat is not None:
+            self._rotmat = rotmat
+        self.manipulator.fix_to(pos=self._pos, rotmat=self._rotmat)
         self.update_end_effector()
 
     def change_jaw_width(self, jaw_width):
@@ -64,6 +66,8 @@ if __name__ == '__main__':
     base = wd.World(cam_pos=[3, 0, 2], lookat_pos=[0, 0, .5])
     mgm.gen_frame().attach_to(base)
     robot = Nova2WG3(enable_cc=True)
+    robot.gen_meshmodel().attach_to(base)
+    base.run()
 
     box = mcm.gen_box(xyz_lengths=[.1, .1, .1])
     box.pose = (np.array([.1, .1, .9]), np.eye(3))

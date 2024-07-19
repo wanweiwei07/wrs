@@ -112,7 +112,7 @@ class SglArmRobotInterface(ri.RobotInterface):
            tgt_pos: np.ndarray,
            tgt_rotmat: np.ndarray,
            seed_jnt_values=None,
-           option="empty",
+           option=None,
            toggle_dbg=False):
         return self._manipulator.ik(tgt_pos=tgt_pos,
                                     tgt_rotmat=tgt_rotmat,

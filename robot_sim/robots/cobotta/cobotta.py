@@ -12,8 +12,8 @@ class Cobotta(rsi.SglArmRobotInterface):
         home_conf[1] = -math.pi / 6
         home_conf[2] = math.pi / 2
         home_conf[4] = math.pi / 6
-        self.manipulator = cbta.CobottaArm(pos=self.pos, rotmat=self.rotmat, home_conf=home_conf, name="cobotta_arm",
-                                           enable_cc=False)
+        self.manipulator = cbta.CobottaArm(pos=self.pos, rotmat=self.rotmat, name="cobotta_arm", enable_cc=False)
+        self.manipulator.home_conf = home_conf
         self.end_effector = cbtg.CobottaGripper(pos=self.manipulator.gl_flange_pos,
                                                 rotmat=self.manipulator.gl_flange_rotmat, name="cobotta_hnd")
         # tool center point
@@ -38,7 +38,7 @@ class Cobotta(rsi.SglArmRobotInterface):
         from_list = [elb, el0, el1, ml3, ml4, ml5]
         into_list = [mlb, ml0]
         self.cc.set_cdpair_by_ids(from_list, into_list)
-        # TODO oiee?
+        self.cc.dynamic_into_list = [mlb, ml0, ml1, ml2, ml3]
 
     def fix_to(self, pos, rotmat):
         self.pos = pos

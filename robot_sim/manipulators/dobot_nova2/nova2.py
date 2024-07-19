@@ -24,7 +24,7 @@ class Nova2(mi.ManipulatorInterface):
         # first joint and link
         self.jlc.jnts[0].loc_pos = np.array([.0, .0, .2234])
         self.jlc.jnts[0].loc_motion_ax = np.array([0, 0, -1])
-        self.jlc.jnts[0].motion_range = np.array([-2 * np.pi, 2 * np.pi])
+        self.jlc.jnts[0].motion_range = np.array([-np.pi, np.pi])
         self.jlc.jnts[0].lnk.cmodel = mcm.CollisionModel(os.path.join(current_file_dir, "meshes", "j1.stl"))
         self.jlc.jnts[0].lnk.cmodel.rgba = np.array([.7, .7, .7, 1.0])
         # second joint and link
@@ -103,12 +103,14 @@ class Nova2(mi.ManipulatorInterface):
         :param tgt_pos:
         :param tgt_rotmat:
         :param seed_jnt_values:
-        :param option: "single", "multiple"
+        :param option: "single", "multiple", None -> "single"
         :param toggle_dbg:
         :return:
         author: weiwei, liang qin
         date: 20240708
         """
+        # default parameters
+        option = "single" if option is None else option
         # relative to base
         rel_pos, rel_rotmat = rm.rel_pose(self.jlc.pos, self.jlc.rotmat, tgt_pos, tgt_rotmat)
         # target
@@ -173,12 +175,6 @@ class Nova2(mi.ManipulatorInterface):
         q[:, 1] = q[:, 1] + np.ones(8) * np.pi / 2
         q[:, 3] = q[:, 3] + np.ones(8) * np.pi / 2
         q[:, 0] = -q[:, 0]
-        # for index_i in range(8):
-        #     for index_j in range(6):
-        #         if q[index_i][index_j] < -np.pi:
-        #             q[index_i][index_j] += 2 * np.pi
-        #         elif q[index_i][index_j] >= np.pi:
-        #             q[index_i][index_j] -= 2 * np.pi
         for index_i in range(8):
             for index_j in range(6):
                 if q[index_i][index_j] < self.jnt_ranges[index_j][0]:
@@ -190,8 +186,6 @@ class Nova2(mi.ManipulatorInterface):
             print("No valid solutions found")
             return None
         else:
-            print(result)
-            print(self.jnt_ranges)
             mask = np.all((result >= self.jnt_ranges[:, 0]) & (result <= self.jnt_ranges[:, 1]), axis=1)
             filtered_result = result[mask]
             if len(filtered_result) == 0:
@@ -203,34 +197,6 @@ class Nova2(mi.ManipulatorInterface):
                 return filtered_result[np.argmin(np.linalg.norm(filtered_result - seed_jnt_values, axis=1))]
             elif option == "multiple":
                 return filtered_result[np.argsort(np.linalg.norm(filtered_result - seed_jnt_values, axis=1))]
-        # if self.pipette:
-        #     # - - + - + -
-        #     for index_i in range(8):
-        #         for index_j in range(5):
-        #             if np.abs(q[index_i][index_j] - seed_jnt_values[index_j]) > np.pi:
-        #                 if index_j == 0 or index_j == 1 or index_j == 3:
-        #                     q[index_i][index_j] -= 2 * np.pi
-        #                 else:
-        #                     q[index_i][index_j] += 2 * np.pi
-        #     q[:, 5] = q[:, 5] - np.pi
-        # Q_result = np.zeros((8, 6))
-        # for temp_row in range(8):
-        #     for temp_col in range(6):
-        #         Q_result[temp_row, temp_col] = q[temp_row, temp_col]
-        #
-        # Result = []
-        # for i in range(8):
-        #     if not np.isnan(Q_result[i, 2]):
-        #         Result.append(Q_result[i, :])
-        # Result = np.array(Result)
-        #
-        # if Result.shape[0] == 0:
-        #     print("No valid solutions found")
-        #     return None
-        # else:
-        #     if seed_jnt_values is not None:
-        #         return Result[np.argmin(np.linalg.norm(Result - seed_jnt_values, axis=1))]
-        #     return Result
 
 
 if __name__ == '__main__':

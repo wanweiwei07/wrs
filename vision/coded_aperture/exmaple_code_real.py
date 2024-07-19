@@ -12,27 +12,10 @@ code = mura(rank=5)
 aperture = code.aperture.T
 
 # 加载图像并转换为 numpy 数组
-image = Image.open('test.jpg').convert('RGB')
-image_array = np.array(image)
-
-# 定义卷积函数
-def convolve_channel(channel, aperture):
-    return convolve2d(channel, aperture, mode='same', boundary='wrap')
-
-# 对每个颜色通道进行卷积并规范化
-def convolve_and_normalize(channel, aperture):
-    convolved = convolve_channel(channel, aperture)
-    # normalized = 255 * (convolved - np.min(convolved)) / (np.max(convolved) - np.min(convolved))
-    # return normalized.astype(np.uint8)
-    return convolved
-
-# 对每个颜色通道进行卷积
-convolved_r = convolve_and_normalize(image_array[:, :, 0], aperture)
-convolved_g = convolve_and_normalize(image_array[:, :, 1], aperture)
-convolved_b = convolve_and_normalize(image_array[:, :, 2], aperture)
-
-# 合并卷积后的通道
-convolved_image = np.stack((convolved_r, convolved_g, convolved_b), axis=2)
+convolved_image = np.array(Image.open('test2.jpg').convert('RGB'))
+convolved_r = convolved_image[:, :, 0]
+convolved_g = convolved_image[:, :, 1]
+convolved_b = convolved_image[:, :, 2]
 
 # 定义反卷积函数（使用 Richardson-Lucy 算法）
 def richardson_lucy_deconvolve(channel, psf, iterations=30):
@@ -103,10 +86,10 @@ deconvolved_image_fft = np.stack((deconvolved_r_fft, deconvolved_g_fft, deconvol
 # 显示结果
 plt.figure(figsize=(24, 6))
 
-plt.subplot(2, 5, 1)
-plt.title('Original Image')
-plt.imshow(image_array)
-plt.axis('off')
+# plt.subplot(2, 5, 1)
+# plt.title('Original Image')
+# plt.imshow(image_array)
+# plt.axis('off')
 
 plt.subplot(2, 5, 2)
 plt.title('Aperture')

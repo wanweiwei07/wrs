@@ -70,6 +70,7 @@ class ManipulatorInterface(object):
     @home_conf.setter
     def home_conf(self, conf):
         self.jlc.home = conf
+        self.goto_home_conf()
 
     @property
     def loc_tcp_pos(self):
@@ -110,11 +111,6 @@ class ManipulatorInterface(object):
     @property
     def jnt_ranges(self):
         return self.jlc.jnt_ranges
-
-    @home_conf.setter
-    def home_conf(self, home_conf):
-        self.jlc.home = home_conf
-
     def backup_state(self):
         self.jnt_values_bk.append(self.jlc.get_jnt_values())
 
