@@ -461,8 +461,9 @@ def gen_box(xyz_lengths=rm.np.array([.1, .1, .1]),
     author: weiwei
     date: 20201202, 20240303
     """
-    box_sgm = mgm.gen_box(xyz_lengths=xyz_lengths, pos=pos, rotmat=rotmat, rgb=rgb, alpha=alpha)
+    box_sgm = mgm.gen_box(xyz_lengths=xyz_lengths, rgb=rgb, alpha=alpha)
     box_cm = CollisionModel(box_sgm)
+    box_cm.pose = [pos, rotmat]
     return box_cm
 
 
@@ -484,7 +485,7 @@ def gen_sphere(pos=rm.np.array([0, 0, 0]), radius=0.01, rgb=rm.bc.tab20_list[10]
 def gen_stick(spos=rm.np.array([.0, .0, .0]),
               epos=rm.np.array([.0, .0, .1]),
               radius=.0025,
-              type="round",
+              type="rect",
               rgb=rm.bc.tab20_list[10],
               alpha=1,
               n_sec=8):
@@ -498,8 +499,12 @@ def gen_stick(spos=rm.np.array([.0, .0, .0]),
     :param n_sec:
     :return: 20210328
     """
-    stick_sgm = mgm.gen_stick(spos=spos, epos=epos, radius=radius, type=type, rgb=rgb, alpha=alpha, n_sec=n_sec)
-    stick_cm = CollisionModel(stick_sgm)
+    center_rotmat = rm.rotmat_between_vectors(v1=np.array([0, 0, 1]), v2=epos - spos)
+    length = np.linalg.norm(epos - spos)
+    stick_sgm = mgm.gen_stick(spos=np.array([.0, .0, .0]), epos=np.array([.0, .0, 1.0]) * length,
+                              radius=radius, type=type, rgb=rgb, alpha=alpha, n_sec=n_sec)
+    stick_cm = CollisionModel(stick_sgm, cdprim_type=mc.CDPType.CYLINDER)
+    stick_cm.pose = [spos, center_rotmat]
     return stick_cm
 
 
@@ -514,6 +519,11 @@ if __name__ == "__main__":
 
     base = wd.World(cam_pos=[.3, .3, .3], lookat_pos=[0, 0, 0], toggle_debug=True)
     mgm.gen_frame().attach_to(base)
+
+    box = gen_stick(spos=np.array([0,0,-1]), epos=np.array([1,0,0]), radius=.1)
+    box.attach_to(base)
+    box.show_cdprim()
+    base.run()
 
     objpath = os.path.join(basis.__path__[0], "objects", "bunnysim.stl")
     bunnycm = CollisionModel(objpath, cdprim_type=mc.CDPType.CAPSULE)
