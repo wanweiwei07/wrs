@@ -273,8 +273,9 @@ class Robotiq85(gi.GripperInterface):
         self.rgt_inner_jlc.goto_given_conf(jnt_values=np.array([angle]))
 
     def get_jaw_width(self):
-        angle = self.lft_inner_jlc.get_jnt_values()[0]
-        return math.sin(.85 - angle) * 0.055 * 2.0
+        angle = self.lft_inner_jlc.jnts[0].motion_value
+        return (math.sin(
+            math.asin((self.jaw_range[1] / 2.0 + .0064 - .0306011) / 0.055) - angle) * 0.055 - 0.0064 + 0.0306011) * 2.0
 
     def gen_stickmodel(self,
                        toggle_tcp_frame=False,
@@ -354,7 +355,7 @@ if __name__ == '__main__':
     base = wd.World(cam_pos=[1, 1, 1], lookat_pos=[0, 0, 0])
     mgm.gen_frame().attach_to(base)
     gripper = Robotiq85()
-    gripper.change_jaw_width(.0)
+    gripper.change_jaw_width(.025)
     model = gripper.gen_meshmodel(toggle_cdprim=True)
     model.attach_to(base)
     base.run()
