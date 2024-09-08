@@ -477,7 +477,7 @@ def gen_linesegs(linesegs,
     ls_pdndp = NodePath(ls.create())
     ls_pdndp.setTransparency(TransparencyAttrib.MDual)
     ls_pdndp.setLightOff()
-    ls_sgm = StaticGeometricModel(initor=ls_pdndp)
+    ls_sgm = StaticGeometricModel(initor=ls_pdndp, rgb=None)
     return ls_sgm
 
 
@@ -495,8 +495,7 @@ def gen_sphere(pos=np.array([0, 0, 0]),
     date: 20161212tsukuba, 20191228osaka
     """
     sphere_trm = trm_factory.gen_sphere(pos=pos, radius=radius, ico_level=ico_level)
-    sphere_sgm = StaticGeometricModel(initor=sphere_trm)
-    sphere_sgm.rgba = np.asarray([rgb[0], rgb[1], rgb[2], alpha])
+    sphere_sgm = StaticGeometricModel(initor=sphere_trm, rgb=rgb, alpha=alpha)
     return sphere_sgm
 
 
@@ -514,8 +513,7 @@ def gen_ellipsoid(pos=np.array([0, 0, 0]),
     date: 20200701osaka
     """
     ellipsoid_trm = trm_factory.gen_ellipsoid(pos=pos, axmat=axes_mat)
-    ellipsoid_sgm = StaticGeometricModel(initor=ellipsoid_trm)
-    ellipsoid_sgm.rgba = np.asarray([rgb[0], rgb[1], rgb[2], alpha])
+    ellipsoid_sgm = StaticGeometricModel(initor=ellipsoid_trm, rgb=rgb, alpha=alpha)
     return ellipsoid_sgm
 
 
@@ -538,8 +536,7 @@ def gen_stick(spos=np.array([0, 0, 0]),
     date: 20191229osaka
     """
     stick_trm = trm_factory.gen_stick(spos=spos, epos=epos, radius=radius, type=type, n_sec=n_sec)
-    stick_sgm = StaticGeometricModel(initor=stick_trm)
-    stick_sgm.rgba = np.asarray([rgb[0], rgb[1], rgb[2], alpha])
+    stick_sgm = StaticGeometricModel(initor=stick_trm, rgb=rgb, alpha=alpha)
     return stick_sgm
 
 
@@ -570,8 +567,7 @@ def gen_dashed_stick(spos=np.array([0, 0, 0]),
                                               radius=radius,
                                               type=type,
                                               n_sec=n_sec)
-    dashstick_sgm = StaticGeometricModel(initor=dashstick_trm)
-    dashstick_sgm.rgba = np.asarray([rgb[0], rgb[1], rgb[2], alpha])
+    dashstick_sgm = StaticGeometricModel(initor=dashstick_trm, rgb=rgb, alpha=alpha)
     return dashstick_sgm
 
 
@@ -591,8 +587,7 @@ def gen_box(xyz_lengths=np.array([1, 1, 1]),
     date: 20191229osaka, 20230830, 20240616osaka
     """
     box_trm = trm_factory.gen_box(xyz_lengths=xyz_lengths, pos=pos, rotmat=rotmat)
-    box_sgm = StaticGeometricModel(initor=box_trm)
-    box_sgm.rgba = np.asarray([rgb[0], rgb[1], rgb[2], alpha])
+    box_sgm = StaticGeometricModel(initor=box_trm, rgb=rgb, alpha=alpha)
     return box_sgm
 
 
@@ -641,8 +636,7 @@ def gen_dumbbell(spos=np.array([0, 0, 0]),
                                             n_sec=n_sec,
                                             sphere_radius=sphere_radius,
                                             sphere_ico_level=sphere_ico_level)
-    dumbbell_sgm = StaticGeometricModel(dumbbell_trm)
-    dumbbell_sgm.rgba = np.asarray([rgb[0], rgb[1], rgb[2], alpha])
+    dumbbell_sgm = StaticGeometricModel(dumbbell_trm, rgb=rgb, alpha=alpha)
     return dumbbell_sgm
 
 
@@ -662,8 +656,7 @@ def gen_cone(spos=np.array([0, 0, 0]),
     date: 20210625
     """
     cone_trm = trm_factory.gen_cone(spos=spos, epos=epos, bottom_radius=bottom_radius, n_sec=n_sec)
-    cone_sgm = GeometricModel(cone_trm)
-    cone_sgm.rgba = np.asarray([rgb[0], rgb[1], rgb[2], alpha])
+    cone_sgm = GeometricModel(cone_trm, rgb=rgb, alpha=alpha)
     return cone_sgm
 
 
@@ -684,8 +677,7 @@ def gen_arrow(spos=np.array([0, 0, 0]),
     date: 20200115osaka
     """
     arrow_trm = trm_factory.gen_arrow(spos=spos, epos=epos, stick_radius=stick_radius, stick_type=stick_type)
-    arrow_sgm = StaticGeometricModel(arrow_trm)
-    arrow_sgm.rgba = np.asarray([rgb[0], rgb[1], rgb[2], alpha])
+    arrow_sgm = StaticGeometricModel(arrow_trm, rgb=rgb, alpha=alpha)
     return arrow_sgm
 
 
@@ -715,8 +707,7 @@ def gen_dashed_arrow(spos=np.array([0, 0, 0]),
                                                  len_interval=len_interval,
                                                  stick_radius=stick_radius,
                                                  stick_type=type)
-    dasharrow_sgm = StaticGeometricModel(dasharrow_trm)
-    dasharrow_sgm.rgba = np.asarray([rgb[0], rgb[1], rgb[2], alpha])
+    dasharrow_sgm = StaticGeometricModel(dasharrow_trm, rgb=rgb, alpha=alpha)
     return dasharrow_sgm
 
 
@@ -761,7 +752,7 @@ def gen_frame(pos=np.array([0, 0, 0]),
     arrowx_nodepath.reparentTo(frame_nodepath)
     arrowy_nodepath.reparentTo(frame_nodepath)
     arrowz_nodepath.reparentTo(frame_nodepath)
-    frame_sgm = StaticGeometricModel(frame_nodepath)
+    frame_sgm = StaticGeometricModel(frame_nodepath, rgb=None)
     return frame_sgm
 
 
@@ -809,7 +800,7 @@ def gen_2d_frame(pos=np.array([0, 0, 0]),
     arrowy_nodepath.setColor(rgby[0], rgby[1], rgby[2], alphay)
     arrowx_nodepath.reparentTo(frame_nodepath)
     arrowy_nodepath.reparentTo(frame_nodepath)
-    frame_sgm = StaticGeometricModel(frame_nodepath)
+    frame_sgm = StaticGeometricModel(frame_nodepath, rgb=None)
     return frame_sgm
 
 
@@ -840,7 +831,7 @@ def gen_wireframe(vertices,
     ls_pdndp = NodePath(ls.create())
     ls_pdndp.setTransparency(TransparencyAttrib.MDual)
     ls_pdndp.setLightOff()
-    ls_sgm = StaticGeometricModel(initor=ls_pdndp)
+    ls_sgm = StaticGeometricModel(initor=ls_pdndp, rgb=None)
     return ls_sgm
 
 
@@ -955,7 +946,7 @@ def gen_dashed_frame(pos=np.array([0, 0, 0]),
     arrowx_nodepath.reparentTo(frame_nodepath)
     arrowy_nodepath.reparentTo(frame_nodepath)
     arrowz_nodepath.reparentTo(frame_nodepath)
-    frame_sgm = StaticGeometricModel(frame_nodepath)
+    frame_sgm = StaticGeometricModel(frame_nodepath, rgb=None)
     return frame_sgm
 
 
@@ -1010,7 +1001,7 @@ def gen_2d_dashed_frame(pos=np.array([0, 0, 0]),
     arrowy_nodepath.setColor(rgby[0], rgby[1], rgby[2], alphay)
     arrowx_nodepath.reparentTo(frame_nodepath)
     arrowy_nodepath.reparentTo(frame_nodepath)
-    frame_sgm = StaticGeometricModel(frame_nodepath)
+    frame_sgm = StaticGeometricModel(frame_nodepath, rgb=None)
     return frame_sgm
 
 
@@ -1040,8 +1031,7 @@ def gen_torus(axis=np.array([1, 0, 0]),
                                       minor_radius=minor_radius,
                                       n_sec_major=n_sec_major,
                                       n_sec_minor=n_sec_minor)
-    torus_sgm = StaticGeometricModel(torus_trm)
-    torus_sgm.rgba = np.asarray([rgb[0], rgb[1], rgb[2], alpha])
+    torus_sgm = StaticGeometricModel(torus_trm, rgb=rgb, alpha=alpha)
     return torus_sgm
 
 
@@ -1073,8 +1063,7 @@ def gen_dashed_torus(axis=np.array([1, 0, 0]),
                                           len_interval=len_interval,
                                           n_sec_major=n_sec_major,
                                           n_sec_minor=n_sec_minor)
-    torus_sgm = StaticGeometricModel(torus_trm)
-    torus_sgm.rgba = np.asarray([rgb[0], rgb[1], rgb[2], alpha])
+    torus_sgm = StaticGeometricModel(torus_trm, rgb=rgb, alpha=alpha)
     return torus_sgm
 
 
@@ -1107,8 +1096,7 @@ def gen_circarrow(axis=np.array([1, 0, 0]),
                                               n_sec_major=n_sec_major,
                                               n_sec_minor=n_sec_minor,
                                               end_type=end_type)
-    circarrow_sgm = StaticGeometricModel(circarrow_trm)
-    circarrow_sgm.rgba = np.asarray([rgb[0], rgb[1], rgb[2], alpha])
+    circarrow_sgm = StaticGeometricModel(circarrow_trm, rgb=rgb, alpha=alpha)
     return circarrow_sgm
 
 
@@ -1150,8 +1138,7 @@ def gen_submesh(vertices, faces, rgb=np.array([1, 0, 0]), alpha=1):
     for i in range(0, len(vertex_normals)):
         vertex_normals[i, :] = vertex_normals[i, :] / np.linalg.norm(vertex_normals[i, :])
     trm_mesh = trm_factory.trm_from_vvnf(vertices, vertex_normals, faces)
-    submesh_sgm = StaticGeometricModel(trm_mesh)
-    submesh_sgm.rgba = np.asarray([rgb[0], rgb[1], rgb[2], alpha])
+    submesh_sgm = StaticGeometricModel(trm_mesh, rgb=rgb, alpha=alpha)
     return submesh_sgm
 
 
@@ -1172,7 +1159,7 @@ def gen_polygon(verts, thickness=0.002, rgb=np.array([0, 0, 0]), alpha=.7):
     polygon_nodepath = NodePath('polygons')
     polygon_nodepath.attachNewNode(segs.create())
     polygon_nodepath.setTransparency(TransparencyAttrib.MDual)
-    polygon_sgm = StaticGeometricModel(polygon_nodepath)
+    polygon_sgm = StaticGeometricModel(polygon_nodepath, rgb=None)
     return polygon_sgm
 
 
@@ -1225,7 +1212,7 @@ def gen_frame_box(xyz_lengths=np.array([.02, .02, .02]),
     lsnp = NodePath(ls.create())
     lsnp.setTransparency(TransparencyAttrib.MDual)
     lsnp.setLightOff()
-    ls_sgm = StaticGeometricModel(lsnp)
+    ls_sgm = StaticGeometricModel(lsnp, rgb=None)
     return ls_sgm
 
 
@@ -1277,7 +1264,7 @@ def gen_frame_cylinder(radius=0.02, height=0.01, num_sides=8, pos=np.zeros(3), r
     lsnp = NodePath(ls.create())
     lsnp.setTransparency(TransparencyAttrib.MDual)
     lsnp.setLightOff()
-    ls_sgm = StaticGeometricModel(lsnp)
+    ls_sgm = StaticGeometricModel(lsnp, rgb=None)
     return ls_sgm
 
 
@@ -1330,7 +1317,7 @@ def gen_frame_frustum(bottom_xy_lengths=np.array([0.02, 0.02]), top_xy_lengths=n
     lsnp = NodePath(ls.create())
     lsnp.setTransparency(TransparencyAttrib.MDual)
     lsnp.setLightOff()
-    ls_sgm = StaticGeometricModel(lsnp)
+    ls_sgm = StaticGeometricModel(lsnp, rgb=None)
     return ls_sgm
 
 
