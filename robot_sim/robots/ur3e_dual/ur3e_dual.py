@@ -32,24 +32,24 @@ class UR3e_Dual(ri.RobotInterface):
                                         rotmat=self.body.gl_flange_pose_list[0][1],
                                         ik_solver=None)
         self.lft_arm.home_conf = np.array([-np.pi * 2 / 3, -np.pi * 2 / 3, np.pi * 2 / 3, np.pi, -np.pi / 2, 0])
-        # self.lft_arm.manipulator.jnts[0].motion_range = np.array([-np.pi * 5 / 3, -np.pi / 3])
-        # self.lft_arm.manipulator.jnts[1].motion_range = np.array([-np.pi, 0])
-        # self.lft_arm.manipulator.jnts[2].motion_range = np.array([0, np.pi])
-        # self.lft_arm.manipulator.jnts[3].motion_range = np.array([np.pi / 6, np.pi * 7 / 6])
-        # self.lft_arm.manipulator.jnts[4].motion_range = np.array([-np.pi, np.pi])
-        # self.lft_arm.manipulator.jnts[5].motion_range = np.array([-np.pi, np.pi])
+        self.lft_arm.manipulator.jnts[0].motion_range = np.array([-np.pi * 5 / 3, -np.pi / 3])
+        self.lft_arm.manipulator.jnts[1].motion_range = np.array([-np.pi, 0])
+        self.lft_arm.manipulator.jnts[2].motion_range = np.array([0, np.pi])
+        self.lft_arm.manipulator.jnts[3].motion_range = np.array([np.pi / 6, np.pi * 7 / 6])
+        self.lft_arm.manipulator.jnts[4].motion_range = np.array([-np.pi, np.pi])
+        self.lft_arm.manipulator.jnts[5].motion_range = np.array([-np.pi, np.pi])
         self.lft_arm.manipulator.jlc.finalize(identifier_str=self.lft_arm.name + "_dual_lft")
         # rigth side
         self.rgt_arm = u3ehe.UR3e_RtqHE(pos=self.body.gl_flange_pose_list[1][0],
                                         rotmat=self.body.gl_flange_pose_list[1][1],
                                         ik_solver=None)
         self.rgt_arm.home_conf = np.array([np.pi * 2 / 3, -np.pi / 3, -np.pi * 2 / 3, 0, np.pi / 2, 0])
-        # self.rgt_arm.manipulator.jnts[0].motion_range = np.array([np.pi / 3, np.pi * 5 / 3])
-        # self.rgt_arm.manipulator.jnts[1].motion_range = np.array([-np.pi, 0])
-        # self.rgt_arm.manipulator.jnts[2].motion_range = np.array([-np.pi, 0])
-        # self.rgt_arm.manipulator.jnts[3].motion_range = np.array([-np.pi * 5 / 6, np.pi / 6])
-        # self.rgt_arm.manipulator.jnts[4].motion_range = np.array([-np.pi, np.pi])
-        # self.rgt_arm.manipulator.jnts[5].motion_range = np.array([-np.pi, np.pi])
+        self.rgt_arm.manipulator.jnts[0].motion_range = np.array([np.pi / 3, np.pi * 5 / 3])
+        self.rgt_arm.manipulator.jnts[1].motion_range = np.array([-np.pi, 0])
+        self.rgt_arm.manipulator.jnts[2].motion_range = np.array([-np.pi, 0])
+        self.rgt_arm.manipulator.jnts[3].motion_range = np.array([-np.pi * 5 / 6, np.pi / 6])
+        self.rgt_arm.manipulator.jnts[4].motion_range = np.array([-np.pi, np.pi])
+        self.rgt_arm.manipulator.jnts[5].motion_range = np.array([-np.pi, np.pi])
         self.rgt_arm.manipulator.jlc.finalize(identifier_str=self.rgt_arm.name + "_dual_rgt")
         if self.cc is not None:
             self.setup_cc()
@@ -326,7 +326,7 @@ if __name__ == '__main__':
     robot.gen_stickmodel().attach_to(base)
     robot.use_rgt()
     # robot.delegator.manipulator.jlc._ik_solver.test_success_rate()
-    # base.run()
+    base.run()
 
     count = 0
     # ik test

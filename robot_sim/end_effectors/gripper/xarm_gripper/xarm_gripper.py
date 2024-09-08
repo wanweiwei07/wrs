@@ -207,10 +207,10 @@ if __name__ == '__main__':
     import modeling.geometric_model as gm
 
     base = wd.World(cam_pos=[2, 0, 1], lookat_pos=[0, 0, 0])
-    gm.gen_frame().attach_to(base)
-    xag = XArmGripper()
-    xag.change_jaw_width(0.05)
-    print(xag.get_jaw_width())
-    model = xag.gen_meshmodel(toggle_cdprim=True)
+    mgm.gen_frame().attach_to(base)
+    gripper = XArmGripper()
+    gripper.change_jaw_width(0.05)
+    print(gripper.get_jaw_width())
+    model = gripper.gen_meshmodel(toggle_cdprim=True)
     model.attach_to(base)
     base.run()

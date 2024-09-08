@@ -499,9 +499,9 @@ def gen_stick(spos=rm.np.array([.0, .0, .0]),
     :param n_sec:
     :return: 20210328
     """
-    center_rotmat = rm.rotmat_between_vectors(v1=np.array([0, 0, 1]), v2=epos - spos)
-    length = np.linalg.norm(epos - spos)
-    stick_sgm = mgm.gen_stick(spos=np.array([.0, .0, .0]), epos=np.array([.0, .0, 1.0]) * length,
+    center_rotmat = rm.rotmat_between_vectors(v1=rm.np.array([0, 0, 1]), v2=epos-spos)
+    length = rm.np.linalg.norm(epos - spos)
+    stick_sgm = mgm.gen_stick(spos=rm.np.array([.0, .0, .0]), epos=rm.np.array([.0, .0, 1.0]) * length,
                               radius=radius, type=type, rgb=rgb, alpha=alpha, n_sec=n_sec)
     stick_cm = CollisionModel(stick_sgm, cdprim_type=mc.CDPType.CYLINDER)
     stick_cm.pose = [spos, center_rotmat]

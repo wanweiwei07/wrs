@@ -254,7 +254,7 @@ def rotmat_average(rotmatlist, bandwidth=10):
         return False
     quaternion_list = []
     for rotmat in rotmatlist:
-        quaternion_list.append(quaternion_from_matrix(rotmat))
+        quaternion_list.append(quaternion_from_rotmat(rotmat))
     quat_avg = quaternion_average(quaternion_list, bandwidth=bandwidth)
     rotmat_avg = rotmat_from_quaternion(quat_avg)
     return rotmat_avg

@@ -49,5 +49,8 @@ class RobotiqCBTwoFinger(object):
                                                     "rq_set_force_norm(" + str(forcepercentage) + ")")
         complete_program = complete_program.replace("program_replace_force",
                                                     "rq_set_speed_norm(" + str(speedpercentage) + ")")
-        complete_program = complete_program.replace("program_replace_command", f'rq_move_mm({fingerdistance})')
+        if fingerdistance < 0.01:
+            complete_program = complete_program.replace("program_replace_command", f'rq_close()')
+        else:
+            complete_program = complete_program.replace("program_replace_command", f'rq_open()')
         return complete_program

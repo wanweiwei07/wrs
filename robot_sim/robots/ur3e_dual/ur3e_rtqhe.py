@@ -12,7 +12,8 @@ class UR3e_RtqHE(ri.SglArmRobotInterface):
         self.manipulator = ur3e.UR3e(pos=self.pos, rotmat=self.rotmat,
                                      ik_solver=ik_solver, name=name + "_manipulator", enable_cc=False)
         self.end_effector = rtqhe.RobotiqHE(pos=self.manipulator.gl_flange_pos,
-                                            rotmat=self.manipulator.gl_flange_rotmat, name=name + "_eef")
+                                            rotmat=self.manipulator.gl_flange_rotmat,
+                                            name=name + "_eef")
         # tool center point
         self.manipulator.loc_tcp_pos = self.end_effector.loc_acting_center_pos
         self.manipulator.loc_tcp_rotmat = self.end_effector.loc_acting_center_rotmat

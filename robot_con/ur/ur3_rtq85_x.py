@@ -9,7 +9,7 @@ import threading
 import socket
 import struct
 import os
-import motion.trajectory.piecewisepoly_scl as pwp
+import motion.trajectory.topp_ra as pwp
 
 
 class UR3Rtq85X(object):
@@ -53,7 +53,7 @@ class UR3Rtq85X(object):
                                                                             str(self._jnts_scaler))
         self._ftsensor_thread = None
         self._ftsensor_values = []
-        self.trajt = pwp.PiecewisePoly(method='quintic')
+        self.trajt = pwp
 
     @property
     def arm(self):
@@ -214,5 +214,6 @@ if __name__ == '__main__':
     base = wd.World(cam_pos=[3, 1, 2], lookat_pos=[0, 0, 0])
     u3r85_x = UR3Rtq85X(robot_ip='10.2.0.51', pc_ip='10.2.0.100')
     u3r85_x.close_gripper()
+    time.sleep(3)
     u3r85_x.open_gripper()
     base.run()

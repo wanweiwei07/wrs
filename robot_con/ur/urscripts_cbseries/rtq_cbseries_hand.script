@@ -29,6 +29,10 @@ def CBGripper():
             open_gripper_socket(gripper_socket)
         end
         is_gripper_connected = rq_is_gripper_connected(gripper_sid, gripper_socket)
+        sid_list = rq_get_sid(gripper_socket)
+        textmsg(sid_list)
+        textmsg(is_gripper_connected)
+        textmsg(gripper_sid)
         if(is_gripper_connected):
             rq_set_gripper_connected(gripper_socket)
         end
@@ -36,7 +40,7 @@ def CBGripper():
     end
 
     def open_gripper_socket(gripper_socket):
-        is_open = socket_open("127.0.0.1",63352, gripper_socket)
+        is_open = socket_open("127.0.0.1", 63352, gripper_socket)
         set_gripper_socket_open(gripper_socket, is_open)
     end
 
@@ -90,7 +94,7 @@ def CBGripper():
 
     def rq_wait_for_gripper_connected():
         gripper_socket = "gripper_conn_socket"
-        socket_open("127.0.0.1",63352, gripper_socket)
+        socket_open("127.0.0.1", 63352, gripper_socket)
         retryCtr = 1
         sid_list = rq_get_sid(gripper_socket)
         gripper_is_connected = rq_is_any_gripper_connected(sid_list)
@@ -938,7 +942,7 @@ def CBGripper():
 
     #########################################
     rq_wait_for_gripper_connected()
-    rq_init_comm_if_connected(1, "1")
+    rq_init_comm_if_connected(9, "1")
     rq_init_comm_if_connected(2, "2")
     rq_init_comm_if_connected(3, "3")
     rq_init_comm_if_connected(4, "4")
