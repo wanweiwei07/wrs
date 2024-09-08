@@ -13,7 +13,7 @@ class EEInterface(object):
         self.name = name
         self.pos = pos
         self.rotmat = rotmat
-        self.cdmesh_type = cdmesh_type  # aabb, convexhull, or triangles
+        self.cdmesh_type = cdmesh_type
         # joints
         # -- coupling --
         # no coupling by default, change the pos if the coupling existed

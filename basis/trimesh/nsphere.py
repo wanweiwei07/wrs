@@ -39,7 +39,7 @@ def minimum_nsphere(obj):
     # this used to pass qhull_options 'QbB' to Voronoi
     # however this had a bug somewhere to avoid this we scale to a unit cube ourselves inside this function
     points_origin = points.min(axis=0)
-    points_scale = points.ptp(axis=0).min()
+    points_scale = np.ptp(points, axis=0).min()
     points = (points - points_origin) / points_scale
     # if all of the points are on an n-sphere already the voronoi method will fail so we check a least squares fit
     # before bothering to compute the voronoi diagram
@@ -107,7 +107,7 @@ def fit_nsphere(points, prior=None):
         raise ValueError('Least square fit failed!')
     radii = util.row_norm(points - center_result)
     radius = radii.mean()
-    error = radii.ptp()
+    error = np.ptp(radii)
     return center_result, radius, error
 
 

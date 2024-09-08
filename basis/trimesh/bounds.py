@@ -285,7 +285,7 @@ def oriented_bounds(obj,
         y = np.dot(perp_vectors, edge_vert[:, 0, :2].T)
         area = ((x.max(axis=1) - x.min(axis=1)) * (y.max(axis=1) - y.min(axis=1))).min()
         # the volume is 2D area plus the projected height
-        volume = area * projected[:, 2].ptp()
+        volume = area * np.ptp(projected[:, 2])
         # store this transform if it's better than one we've seen
         if volume < min_volume:
             min_volume = volume
@@ -294,7 +294,7 @@ def oriented_bounds(obj,
     # find the box
     vert_ones = np.column_stack((vertices, np.ones(len(vertices)))).T
     projected = np.dot(min_2d, vert_ones).T[:, :3]
-    height = projected[:, 2].ptp()
+    height = np.ptp(projected[:, 2])
     rotation_2d, box = oriented_bounds_2d(projected[:, :2])
     min_extents = np.append(box, height)
     rotation_2d[:2, 2] = 0.0
@@ -303,7 +303,7 @@ def oriented_bounds(obj,
     to_origin = np.dot(rotation_z, min_2d)
     # transform points using our matrix to find the translation
     transformed = transformations.transform_points(vertices, to_origin)
-    box_center = (transformed.min(axis=0) + transformed.ptp(axis=0) * .5)
+    box_center = (transformed.min(axis=0) + np.ptp(transformed, axis=0) * .5)
     to_origin[:3, 3] = -box_center
     # return ordered 3D extents
     if ordered:
@@ -352,7 +352,7 @@ def minimum_cylinder(obj, sample_count=6, angle_tol=.001):
         """
         to_2d = transformations.spherical_matrix(*spherical, axes='rxyz')
         projected = transformations.transform_points(hull, matrix=to_2d)
-        height = projected[:, 2].ptp()
+        height = np.ptp(projected[:, 2])
         try:
             center_2d, radius = nsphere.minimum_nsphere(projected[:, :2])
         except BaseException:

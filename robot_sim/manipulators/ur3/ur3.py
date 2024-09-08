@@ -15,48 +15,61 @@ class UR3(mi.ManipulatorInterface):
         self.jlc.anchor.lnk_list[0].cmodel = mcm.CollisionModel(
             os.path.join(current_file_dir, "meshes", "base.stl"))
         self.jlc.anchor.lnk_list[0].cmodel.rgba = np.array([.5, .5, .5, 1.0])
+        self.jlc.anchor.lnk_list[0].loc_rotmat = rm.rotmat_from_euler(.0, .0, math.pi)
         # first joint and link
         self.jlc.jnts[0].loc_pos = np.array([.0, .0, .1519])
         self.jlc.jnts[0].loc_motion_ax = np.array([0, 0, 1])
         self.jlc.jnts[0].motion_range = np.array([-math.pi * 2, math.pi * 2])
         self.jlc.jnts[0].lnk.cmodel = mcm.CollisionModel(os.path.join(current_file_dir, "meshes", "shoulder.stl"))
+        self.jlc.jnts[0].lnk.loc_rotmat = rm.rotmat_from_euler(.0, .0, math.pi)
         self.jlc.jnts[0].lnk.cmodel.rgba = np.array([.1, .3, .5, 1.0])
         # second joint and link
-        self.jlc.jnts[1].loc_pos = np.array([.0, .1198, .0])
-        self.jlc.jnts[1].loc_rotmat = rm.rotmat_from_euler(.0, math.pi / 2.0, .0)
-        self.jlc.jnts[1].loc_motion_ax = np.array([0, 1, 0])
+        self.jlc.jnts[1].loc_pos = np.array([.0, .0, .0])
+        self.jlc.jnts[1].loc_rotmat = rm.rotmat_from_euler(math.pi / 2.0, .0, .0)
+        self.jlc.jnts[1].loc_motion_ax = np.array([0, 0, 1])
         self.jlc.jnts[1].motion_range = np.array([-math.pi * 2, math.pi * 2])
         self.jlc.jnts[1].lnk.cmodel = mcm.CollisionModel(os.path.join(current_file_dir, "meshes", "upperarm.stl"))
+        self.jlc.jnts[1].lnk.loc_pos = np.array([.0, .0, .1198])
+        self.jlc.jnts[1].lnk.loc_rotmat = rm.rotmat_from_euler(math.pi/2, .0, -math.pi/2)
         self.jlc.jnts[1].lnk.cmodel.rgba = np.array([.7, .7, .7, 1.0])
         # third joint and link
-        self.jlc.jnts[2].loc_pos = np.array([.0, -.0925, .24365])
-        self.jlc.jnts[2].loc_motion_ax = np.array([0, 1, 0])
+        self.jlc.jnts[2].loc_pos = np.array([-.24365, .0, .0])
+        self.jlc.jnts[2].loc_motion_ax = np.array([0, 0, 1])
         self.jlc.jnts[2].motion_range = np.array([-math.pi, math.pi])
         self.jlc.jnts[2].lnk.cmodel = mcm.CollisionModel(os.path.join(current_file_dir, "meshes", "forearm.stl"))
+        self.jlc.jnts[2].lnk.loc_pos = np.array([.0, .0, .0275])
+        self.jlc.jnts[2].lnk.loc_rotmat = rm.rotmat_from_euler(math.pi/2, .0, -math.pi/2)
         self.jlc.jnts[2].lnk.cmodel.rgba = np.array([.35, .35, .35, 1.0])
         # fourth joint and link
-        self.jlc.jnts[3].loc_pos = np.array([.0, .0, 0.21325])
-        self.jlc.jnts[3].loc_rotmat = rm.rotmat_from_euler(.0, math.pi / 2.0, .0)
-        self.jlc.jnts[3].loc_motion_ax = np.array([0, 1, 0])
+        self.jlc.jnts[3].loc_pos = np.array([-.21325, .0, .11235])
+        self.jlc.jnts[3].loc_rotmat = rm.rotmat_from_euler(.0, .0, .0)
+        self.jlc.jnts[3].loc_motion_ax = np.array([0, 0, 1])
         self.jlc.jnts[3].motion_range = np.array([-math.pi * 2, math.pi * 2])
         self.jlc.jnts[3].lnk.cmodel = mcm.CollisionModel(os.path.join(current_file_dir, "meshes", "wrist1.stl"))
+        self.jlc.jnts[3].lnk.loc_pos = np.array([.0, .0, -.085])
+        self.jlc.jnts[3].lnk.loc_rotmat = rm.rotmat_from_euler(math.pi/2, .0, .0)
         self.jlc.jnts[3].lnk.cmodel.rgba = np.array([.7, .7, .7, 1.0])
         # fifth joint and link
-        self.jlc.jnts[4].loc_pos = np.array([.0, 0.08505, .0])
+        self.jlc.jnts[4].loc_pos = np.array([.0, -.08505, .0])
+        self.jlc.jnts[4].loc_rotmat = rm.rotmat_from_euler(math.pi / 2.0, .0, .0)
         self.jlc.jnts[4].loc_motion_ax = np.array([0, 0, 1])
         self.jlc.jnts[4].motion_range = np.array([-math.pi * 2, math.pi * 2])
         self.jlc.jnts[4].lnk.cmodel = mcm.CollisionModel(os.path.join(current_file_dir, "meshes", "wrist2.stl"))
+        self.jlc.jnts[4].lnk.loc_pos = np.array([.0, .0, -.085])
         self.jlc.jnts[4].lnk.cmodel.rgba = np.array([.1, .3, .5, 1.0])
         # sixth joint and link
-        self.jlc.jnts[5].loc_pos = np.array([.0, .0, .08535])
-        self.jlc.jnts[5].loc_motion_ax = np.array([0, 1, 0])
+        self.jlc.jnts[5].loc_pos = np.array([.0, .0819, .0])
+        self.jlc.jnts[5].loc_rotmat = rm.rotmat_from_euler(math.pi / 2.0, math.pi, math.pi)
+        self.jlc.jnts[5].loc_motion_ax = np.array([0, 0, 1])
         self.jlc.jnts[5].motion_range = np.array([-math.pi * 2, math.pi * 2])
         self.jlc.jnts[5].lnk.cmodel = mcm.CollisionModel(os.path.join(current_file_dir, "meshes", "wrist3.stl"))
+        self.jlc.jnts[5].lnk.loc_pos = np.array([.0, .0, -.082])
+        self.jlc.jnts[5].lnk.loc_rotmat = rm.rotmat_from_euler(math.pi/2, .0, .0)
         self.jlc.jnts[5].lnk.cmodel.rgba = np.array([.5, .5, .5, 1.0])
         self.jlc.finalize(ik_solver=ik_solver, identifier_str=name)
         # tcp
-        self.loc_tcp_pos = np.array([0, .0819, 0])
-        self.loc_tcp_rotmat = rm.rotmat_from_euler(-math.pi / 2.0, math.pi / 2.0, 0)
+        self.loc_tcp_pos = np.array([0, 0, 0])
+        self.loc_tcp_rotmat = np.eye(3)
         # set up cc
         if self.cc is not None:
             self.setup_cc()
@@ -101,9 +114,9 @@ class UR3(mi.ManipulatorInterface):
         d4 = 0.11235
         d5 = 0.08535
         d6 = 0.08190
-        n = tgt_rotmat[:, 0] # normal (x)
-        o = tgt_rotmat[:, 1] # orientation (y)
-        a = tgt_rotmat[:, 2] # approach (z)
+        n = tgt_rotmat[:, 0]  # normal (x)
+        o = tgt_rotmat[:, 1]  # orientation (y)
+        a = tgt_rotmat[:, 2]  # approach (z)
         p = tgt_pos
         # initialize all 8 possibilities
         q = np.zeros((8, 6))
@@ -176,10 +189,11 @@ class UR3(mi.ManipulatorInterface):
                 return None
             if seed_jnt_values is None:
                 seed_jnt_values = self.home_conf
-            if option=="single":
+            if option == "single":
                 return filtered_result[np.argmin(np.linalg.norm(filtered_result - seed_jnt_values, axis=1))]
-            elif option=="multiple":
+            elif option == "multiple":
                 return filtered_result[np.argsort(np.linalg.norm(filtered_result - seed_jnt_values, axis=1))]
+
 
 if __name__ == '__main__':
     import visualization.panda.world as wd
