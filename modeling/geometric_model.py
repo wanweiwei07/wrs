@@ -113,7 +113,8 @@ class StaticGeometricModel(object):
                 self._pdndp.setTransparency(TransparencyAttrib.MDual)
             if toggle_twosided:
                 self._pdndp.getChild(0).setTwoSided(True)
-            self._pdndp.setColor(rgb[0], rgb[1], rgb[2], alpha)
+            if rgb is not None:
+                self._pdndp.setColor(rgb[0], rgb[1], rgb[2], alpha)
             self._pdndp.setMaterialOff()
             self._pdndp.setShaderAuto()
             self._local_frame = None
@@ -1122,7 +1123,7 @@ def gen_pointcloud(points, rgba=np.array([0, 0, 0, .7]), point_size=.001):
     """
     pcd_pdndp = da.pdgeomndp_from_v(points, rgba)
     pcd_pdndp.setRenderModeThickness(point_size * da.M_TO_PIXEL)
-    pointcloud_sgm = StaticGeometricModel(pcd_pdndp)
+    pointcloud_sgm = StaticGeometricModel(pcd_pdndp, rgb=None)
     return pointcloud_sgm
 
 
