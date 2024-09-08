@@ -86,7 +86,7 @@ _flip.flags.writeable = False
 #                                             plane_normal=normal,
 #                                             return_planar=False,
 #                                             return_transform=True)
-#         height = projected[:, 2].ptp()
+#         height = np.ptp(projected[:, 2])
 #         rotation_2D, box = oriented_bounds_2D(projected[:, 0:2])
 #         volume = np.product(box) * height
 #         if volume < min_volume:
@@ -97,7 +97,7 @@ _flip.flags.writeable = False
 #             extents = np.append(box, height)
 #     to_origin = np.dot(rotation_Z, to_2D)
 #     transformed = transform_points(hull.vertices, to_origin)
-#     box_center = (transformed.min(axis=0) + transformed.ptp(axis=0) * .5)
+#     box_center = (transformed.min(axis=0) + np.ptp(transformed, axis=0) * .5)
 #     to_origin[0:3, 3] = -box_center
 #     log.debug('oriented_bounds checked %d vectors in %0.4fs',
 #               len(vectors),
@@ -373,7 +373,7 @@ def minimum_cylinder(obj, sample_count=6, angle_tol=.001):
         # transform vertices to plane to check
         on_plane = transformations.transform_points(obj.vertices, to_2d)
         # cylinder height is overall Z span
-        height = on_plane[:, 2].ptp()
+        height = np.ptp(on_plane[:, 2])
         # center mass is correct on plane, but position along symmetry axis may be wrong so slide it
         slide = transformations.translation_matrix([0, 0, (height / 2.0) - on_plane[:, 2].max()])
         to_2d = np.dot(slide, to_2d)

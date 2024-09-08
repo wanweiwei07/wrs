@@ -39,7 +39,7 @@ class UR3e_Dual(ri.RobotInterface):
         self.lft_arm.manipulator.jnts[4].motion_range = np.array([-np.pi, np.pi])
         self.lft_arm.manipulator.jnts[5].motion_range = np.array([-np.pi, np.pi])
         self.lft_arm.manipulator.jlc.finalize(identifier_str=self.lft_arm.name + "_dual_lft")
-        # rigth side
+        # right side
         self.rgt_arm = u3ehe.UR3e_RtqHE(pos=self.body.gl_flange_pose_list[1][0],
                                         rotmat=self.body.gl_flange_pose_list[1][1],
                                         ik_solver=None)
