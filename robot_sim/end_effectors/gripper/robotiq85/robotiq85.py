@@ -54,7 +54,7 @@ class Robotiq85(gi.GripperInterface):
         self.lft_outer_jlc.jnts[1].loc_pos = np.array([0, .0315, -.0041])
         self.lft_outer_jlc.jnts[1].loc_motion_ax = np.array([1, 0, 0])
         self.lft_outer_jlc.jnts[1].lnk.cmodel = mcm.CollisionModel(
-            os.path.join(current_file_dir, "meshes", "robotiq_arg2f_85_outer_knuckle.stl"),
+            os.path.join(current_file_dir, "meshes", "robotiq_arg2f_85_outer_finger_cvt.stl"),
             cdmesh_type=self.cdmesh_type)
         self.lft_outer_jlc.jnts[1].lnk.cmodel.rgba = rm.bc.tab20_list[14]
         # left finger outer (joint 2 / inner_finger)
@@ -96,7 +96,7 @@ class Robotiq85(gi.GripperInterface):
         self.rgt_outer_jlc.jnts[1].loc_pos = np.array([0, .0315, -.0041])
         self.rgt_outer_jlc.jnts[1].loc_motion_ax = np.array([1, 0, 0])
         self.rgt_outer_jlc.jnts[1].lnk.cmodel = mcm.CollisionModel(
-            os.path.join(current_file_dir, "meshes", "robotiq_arg2f_85_outer_knuckle.stl"),
+            os.path.join(current_file_dir, "meshes", "robotiq_arg2f_85_outer_finger_cvt.stl"),
             cdmesh_type=self.cdmesh_type)
         self.rgt_outer_jlc.jnts[1].lnk.cmodel.rgba = rm.bc.tab20_list[14]
         # right finger outer (joint 2 / inner_finger)
@@ -263,12 +263,13 @@ class Robotiq85(gi.GripperInterface):
     def change_jaw_width(self, jaw_width):
         if jaw_width > 0.085:
             raise ValueError("ee_values must be 0mm~85mm!")
-        angle = .85 - math.asin(jaw_width / 2.0 / 0.055)
+        angle = math.asin((self.jaw_range[1] / 2.0 + .0064 - .0306011) / 0.055) - math.asin(
+            (jaw_width / 2.0 + .0064 - .0306011) / 0.055)
         if angle < 0:
             angle = 0
-        self.lft_outer_jlc.goto_given_conf(jnt_values=np.array([angle, angle]))
+        self.lft_outer_jlc.goto_given_conf(jnt_values=np.array([angle, 0.0, -angle, 0.0]))
         self.lft_inner_jlc.goto_given_conf(jnt_values=np.array([angle]))
-        self.rgt_outer_jlc.goto_given_conf(jnt_values=np.array([angle, angle]))
+        self.rgt_outer_jlc.goto_given_conf(jnt_values=np.array([angle, 0.0, -angle, 0.0]))
         self.rgt_inner_jlc.goto_given_conf(jnt_values=np.array([angle]))
 
     def get_jaw_width(self):
@@ -316,29 +317,29 @@ class Robotiq85(gi.GripperInterface):
                                 toggle_cdmesh=toggle_cdmesh,
                                 toggle_cdprim=toggle_cdprim).attach_to(m_col)
         self.lft_outer_jlc.gen_meshmodel(rgb=rgb,
-                                        alpha=alpha,
-                                        toggle_jnt_frames=toggle_jnt_frames,
-                                        toggle_flange_frame=False,
-                                        toggle_cdmesh=toggle_cdmesh,
-                                        toggle_cdprim=toggle_cdprim).attach_to(m_col)
+                                         alpha=alpha,
+                                         toggle_jnt_frames=toggle_jnt_frames,
+                                         toggle_flange_frame=False,
+                                         toggle_cdmesh=toggle_cdmesh,
+                                         toggle_cdprim=toggle_cdprim).attach_to(m_col)
         self.lft_inner_jlc.gen_meshmodel(rgb=rgb,
                                          alpha=alpha,
-                                        toggle_jnt_frames=toggle_jnt_frames,
-                                        toggle_flange_frame=False,
-                                        toggle_cdmesh=toggle_cdmesh,
-                                        toggle_cdprim=toggle_cdprim).attach_to(m_col)
+                                         toggle_jnt_frames=toggle_jnt_frames,
+                                         toggle_flange_frame=False,
+                                         toggle_cdmesh=toggle_cdmesh,
+                                         toggle_cdprim=toggle_cdprim).attach_to(m_col)
         self.rgt_outer_jlc.gen_meshmodel(rgb=rgb,
-                                        alpha=alpha,
-                                        toggle_jnt_frames=toggle_jnt_frames,
-                                        toggle_flange_frame=False,
-                                        toggle_cdmesh=toggle_cdmesh,
-                                        toggle_cdprim=toggle_cdprim).attach_to(m_col)
+                                         alpha=alpha,
+                                         toggle_jnt_frames=toggle_jnt_frames,
+                                         toggle_flange_frame=False,
+                                         toggle_cdmesh=toggle_cdmesh,
+                                         toggle_cdprim=toggle_cdprim).attach_to(m_col)
         self.rgt_inner_jlc.gen_meshmodel(rgb=rgb,
                                          alpha=alpha,
-                                        toggle_jnt_frames=toggle_jnt_frames,
-                                        toggle_flange_frame=False,
-                                        toggle_cdmesh=toggle_cdmesh,
-                                        toggle_cdprim=toggle_cdprim).attach_to(m_col)
+                                         toggle_jnt_frames=toggle_jnt_frames,
+                                         toggle_flange_frame=False,
+                                         toggle_cdmesh=toggle_cdmesh,
+                                         toggle_cdprim=toggle_cdprim).attach_to(m_col)
         if toggle_tcp_frame:
             self._toggle_tcp_frame(m_col)
         self._gen_oiee_meshmodel(m_col=m_col, rgb=rgb, alpha=alpha, toggle_cdprim=toggle_cdprim,
