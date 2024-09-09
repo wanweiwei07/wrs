@@ -48,7 +48,8 @@ class UR3Rtq85X(object):
         self._modern_driver_urscript = self._modern_driver_urscript.replace("parameter_ip",
                                                                             self._pc_server_socket_addr[0])
         self._modern_driver_urscript = self._modern_driver_urscript.replace("parameter_port",
-                                                                            str(self._pc_server_socket.getsockname()[1]))
+                                                                            str(self._pc_server_socket.getsockname()[
+                                                                                    1]))
         self._modern_driver_urscript = self._modern_driver_urscript.replace("parameter_jointscaler",
                                                                             str(self._jnts_scaler))
         self._ftsensor_thread = None
@@ -90,7 +91,7 @@ class UR3Rtq85X(object):
     def jnts_scaler(self):
         return self._jnts_scaler
 
-    def open_gripper(self, speedpercentange=70, forcepercentage=50, fingerdistance=85):
+    def open_gripper(self, speed_percentage=70, force_percentage=50, finger_distance=85):
         """
         open the rtq85 hand on the arm specified by arm_name
         :param arm_name:
@@ -99,9 +100,12 @@ class UR3Rtq85X(object):
         date: 20180220
         """
         self._arm.send_program(
-            self._hnd.get_program_to_run(speedpercentange, forcepercentage, fingerdistance=fingerdistance))
+            self._hnd.get_actuation_program(speed_percentage, force_percentage, finger_distance=finger_distance))
+        time.sleep(.2)
+        while self._arm.is_program_running():
+            time.sleep(.01)
 
-    def close_gripper(self, speedpercentange=80, forcepercentage=50):
+    def close_gripper(self, speed_percentage=80, force_percentage=50):
         """
         close the rtq85 hand on the arm specified by arm_name
         :param arm_name:
@@ -109,7 +113,10 @@ class UR3Rtq85X(object):
         author: weiwei
         date: 20180220
         """
-        self._arm.send_program(self._hnd.get_program_to_run(speedpercentange, forcepercentage, fingerdistance=0))
+        self._arm.send_program(self._hnd.get_actuation_program(speed_percentage, force_percentage, finger_distance=0))
+        time.sleep(.2)
+        while self._arm.is_program_running():
+            time.sleep(.01)
 
     def start_recvft(self):
         """
@@ -118,6 +125,7 @@ class UR3Rtq85X(object):
         transformation is to be done by higher-level code
         :return: [fx, fy, fz, tx, ty, tz] in N and Nm
         """
+
         def recvft():
             self._arm.send_program(self._ftsensor_urscript)
             ftsocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -165,37 +173,37 @@ class UR3Rtq85X(object):
         regulated_jnt_values = rm.regulate_angle(-math.pi, math.pi, jnt_values)
         self.move_jnts(regulated_jnt_values)
 
-    def move_jntspace_path(self, path, control_frequency=.008, interval_time=1.0, interpolation_method=None):
+    def move_jspace_path(self, path, ctrl_freq=.008, max_vels=None, max_accs=None):
         """
         move robot_s arm following a given jointspace path
         :param path: a list of 1x6 arrays
-        :param control_frequency: the program will sample time_intervals/control_frequency confs, see motion.trajectory
-        :param interval_time: equals to expandis/speed, speed = degree/second
-                              by default, the value is 1.0 and the speed is expandis/second
-        :param interpolation_method
+        :param ctrl_freq:
+        :param max_vels
+        :param max_accs
         :return:
         author: weiwei
         date: 20210331
         """
-        if interpolation_method:
-            self.trajt.change_method(interpolation_method)
-        interpolated_confs, _, _, _ = self.trajt.interpolate_by_time_interval(path, control_frequency, interval_time)
+        _, interp_confs, _, _ = self.trajt.generate_time_optimal_trajectory(path,
+                                                                            max_vels=max_vels,
+                                                                            max_accs=max_accs,
+                                                                            ctrl_freq=ctrl_freq)
         # upload a urscript to connect to the pc server started by this class
         self._arm.send_program(self._modern_driver_urscript)
         # accept arm socket
-        pc_server_socket, pc_server_socket_addr = self._pc_server_socket.accept()
-        print("PC server onnected by ", pc_server_socket_addr)
+        rbt_socket, rbt_socket_addr = self._pc_server_socket.accept()
+        print("PC server onnected by ", rbt_socket_addr)
         # send trajectory
         keepalive = 1
         buf = bytes()
-        for id, conf in enumerate(interpolated_confs):
-            if id == len(interpolated_confs) - 1:
+        for id, conf in enumerate(interp_confs):
+            if id == len(interp_confs) - 1:
                 keepalive = 0
             jointsradint = [int(jnt_value * self._jnts_scaler) for jnt_value in conf]
             buf += struct.pack('!iiiiiii', jointsradint[0], jointsradint[1], jointsradint[2],
                                jointsradint[3], jointsradint[4], jointsradint[5], keepalive)
-        pc_server_socket.send(buf)
-        pc_server_socket.close()
+        rbt_socket.send(buf)
+        rbt_socket.close()
 
     def get_jnt_values(self):
         """
@@ -207,13 +215,21 @@ class UR3Rtq85X(object):
         """
         return self._arm.getj()
 
+    def get_jaw_width(self):
+        self._arm.send_program(self._hnd.get_jaw_width_program(self.pc_server_socket))
+        rbt_socket, rbt_socket_addr = self.pc_server_socket.accept()
+        value = rbt_socket.recv(1024).decode(encoding='ascii')
+        rbt_socket.close()
+        return float(value)*.001
+
 
 if __name__ == '__main__':
     import visualization.panda.world as wd
 
     base = wd.World(cam_pos=[3, 1, 2], lookat_pos=[0, 0, 0])
-    u3r85_x = UR3Rtq85X(robot_ip='10.2.0.51', pc_ip='10.2.0.100')
-    u3r85_x.close_gripper()
-    time.sleep(3)
-    u3r85_x.open_gripper()
+    u3r85_x = UR3Rtq85X(robot_ip='10.2.0.50', pc_ip='10.2.0.100')
+    u3r85_x.open_gripper(finger_distance=30)
+    print(u3r85_x.get_jaw_width())
+    print(u3r85_x.get_jaw_width())
+    print(u3r85_x.get_jnt_values())
     base.run()

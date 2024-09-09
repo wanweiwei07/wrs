@@ -127,12 +127,12 @@ class UR3Dual(ri.RobotInterface):
         rgt_elb = self.cc.add_cce(self.rgt_arm.end_effector.palm.lnk_list[0])
         rgt_ell0 = self.cc.add_cce(self.rgt_arm.end_effector.lft_outer_jlc.jnts[0].lnk)
         rgt_ell1 = self.cc.add_cce(self.rgt_arm.end_effector.lft_outer_jlc.jnts[1].lnk)
-        rgt_ell2 = self.cc.add_cce(self.rgt_arm.end_effector.lft_outer_jlc.jnts[0].lnk)
-        rgt_ell3 = self.cc.add_cce(self.rgt_arm.end_effector.lft_outer_jlc.jnts[1].lnk)
+        rgt_ell2 = self.cc.add_cce(self.rgt_arm.end_effector.lft_outer_jlc.jnts[2].lnk)
+        rgt_ell3 = self.cc.add_cce(self.rgt_arm.end_effector.lft_outer_jlc.jnts[3].lnk)
         rgt_elr0 = self.cc.add_cce(self.rgt_arm.end_effector.rgt_outer_jlc.jnts[0].lnk)
         rgt_elr1 = self.cc.add_cce(self.rgt_arm.end_effector.rgt_outer_jlc.jnts[1].lnk)
-        rgt_elr2 = self.cc.add_cce(self.rgt_arm.end_effector.rgt_outer_jlc.jnts[0].lnk)
-        rgt_elr3 = self.cc.add_cce(self.rgt_arm.end_effector.rgt_outer_jlc.jnts[1].lnk)
+        rgt_elr2 = self.cc.add_cce(self.rgt_arm.end_effector.rgt_outer_jlc.jnts[2].lnk)
+        rgt_elr3 = self.cc.add_cce(self.rgt_arm.end_effector.rgt_outer_jlc.jnts[3].lnk)
         # right manipulator
         rgt_ml0 = self.cc.add_cce(self.rgt_arm.manipulator.jlc.jnts[0].lnk)
         rgt_ml1 = self.cc.add_cce(self.rgt_arm.manipulator.jlc.jnts[1].lnk)
@@ -141,8 +141,8 @@ class UR3Dual(ri.RobotInterface):
         rgt_ml4 = self.cc.add_cce(self.rgt_arm.manipulator.jlc.jnts[4].lnk)
         rgt_ml5 = self.cc.add_cce(self.rgt_arm.manipulator.jlc.jnts[5].lnk)
         # first pairs
-        from_list = [lft_ml4, lft_elb, lft_ell0, lft_ell1, lft_ell2, lft_ell3, lft_elr0, lft_elr1, lft_elr2, lft_elr3,
-                     rgt_ml4, rgt_elb, rgt_ell0, rgt_ell1, rgt_ell2, rgt_ell3, rgt_elr0, rgt_elr1, rgt_elr2, rgt_elr3]
+        from_list = [lft_elb, lft_ell0, lft_ell1, lft_ell2, lft_ell3, lft_elr0, lft_elr1, lft_elr2, lft_elr3,
+                     rgt_elb, rgt_ell0, rgt_ell1, rgt_ell2, rgt_ell3, rgt_elr0, rgt_elr1, rgt_elr2, rgt_elr3]
         into_list = [bd, lft_ml0, lft_ml1, lft_ml2, rgt_ml0, rgt_ml1, rgt_ml2]
         self.cc.set_cdpair_by_ids(from_list, into_list)
         # second pairs

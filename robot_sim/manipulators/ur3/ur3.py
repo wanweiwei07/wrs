@@ -29,7 +29,7 @@ class UR3(mi.ManipulatorInterface):
         self.jlc.jnts[1].motion_range = np.array([-np.pi * 2, np.pi * 2])
         self.jlc.jnts[1].lnk.cmodel = mcm.CollisionModel(os.path.join(current_file_dir, "meshes", "upperarm.stl"))
         self.jlc.jnts[1].lnk.loc_pos = np.array([.0, .0, .1198])
-        self.jlc.jnts[1].lnk.loc_rotmat = rm.rotmat_from_euler(np.pi/2, .0, -np.pi/2)
+        self.jlc.jnts[1].lnk.loc_rotmat = rm.rotmat_from_euler(np.pi / 2, .0, -np.pi / 2)
         self.jlc.jnts[1].lnk.cmodel.rgba = np.array([.7, .7, .7, 1.0])
         # third joint and link
         self.jlc.jnts[2].loc_pos = np.array([-.24365, .0, .0])
@@ -37,7 +37,7 @@ class UR3(mi.ManipulatorInterface):
         self.jlc.jnts[2].motion_range = np.array([-np.pi, np.pi])
         self.jlc.jnts[2].lnk.cmodel = mcm.CollisionModel(os.path.join(current_file_dir, "meshes", "forearm.stl"))
         self.jlc.jnts[2].lnk.loc_pos = np.array([.0, .0, .0275])
-        self.jlc.jnts[2].lnk.loc_rotmat = rm.rotmat_from_euler(np.pi/2, .0, -np.pi/2)
+        self.jlc.jnts[2].lnk.loc_rotmat = rm.rotmat_from_euler(np.pi / 2, .0, -np.pi / 2)
         self.jlc.jnts[2].lnk.cmodel.rgba = np.array([.35, .35, .35, 1.0])
         # fourth joint and link
         self.jlc.jnts[3].loc_pos = np.array([-.21325, .0, .11235])
@@ -46,7 +46,7 @@ class UR3(mi.ManipulatorInterface):
         self.jlc.jnts[3].motion_range = np.array([-np.pi * 2, np.pi * 2])
         self.jlc.jnts[3].lnk.cmodel = mcm.CollisionModel(os.path.join(current_file_dir, "meshes", "wrist1.stl"))
         self.jlc.jnts[3].lnk.loc_pos = np.array([.0, .0, -.085])
-        self.jlc.jnts[3].lnk.loc_rotmat = rm.rotmat_from_euler(np.pi/2, .0, .0)
+        self.jlc.jnts[3].lnk.loc_rotmat = rm.rotmat_from_euler(np.pi / 2, .0, .0)
         self.jlc.jnts[3].lnk.cmodel.rgba = np.array([.7, .7, .7, 1.0])
         # fifth joint and link
         self.jlc.jnts[4].loc_pos = np.array([.0, -.08505, .0])
@@ -63,7 +63,7 @@ class UR3(mi.ManipulatorInterface):
         self.jlc.jnts[5].motion_range = np.array([-np.pi * 2, np.pi * 2])
         self.jlc.jnts[5].lnk.cmodel = mcm.CollisionModel(os.path.join(current_file_dir, "meshes", "wrist3.stl"))
         self.jlc.jnts[5].lnk.loc_pos = np.array([.0, .0, -.082])
-        self.jlc.jnts[5].lnk.loc_rotmat = rm.rotmat_from_euler(np.pi/2, .0, .0)
+        self.jlc.jnts[5].lnk.loc_rotmat = rm.rotmat_from_euler(np.pi / 2, .0, .0)
         self.jlc.jnts[5].lnk.cmodel.rgba = np.array([.5, .5, .5, 1.0])
         self.jlc.finalize(ik_solver=ik_solver, identifier_str=name)
         # tcp

@@ -30,9 +30,6 @@ def CBGripper():
         end
         is_gripper_connected = rq_is_gripper_connected(gripper_sid, gripper_socket)
         sid_list = rq_get_sid(gripper_socket)
-        textmsg(sid_list)
-        textmsg(is_gripper_connected)
-        textmsg(gripper_sid)
         if(is_gripper_connected):
             rq_set_gripper_connected(gripper_socket)
         end
@@ -281,7 +278,7 @@ def CBGripper():
         rq_go_to(gripper_socket)
     end
 
-    def rq_move_and_wait(pos, gripper_socket="1"):
+        def rq_move_and_wait(pos, gripper_socket="1"):
         rq_move(pos, gripper_socket)
         while (not rq_is_motion_complete(gripper_socket)):
             # wait for motion completed
@@ -689,16 +686,16 @@ def CBGripper():
 
     def rq_get_var(var_name, nbr_bytes, gripper_socket="1"):
         if (var_name == FLT):
-            socket_send_string("GET FLT",gripper_socket)
+            socket_send_string("GET FLT", gripper_socket)
             sync()
         elif (var_name == OBJ):
-            socket_send_string("GET OBJ",gripper_socket)
+            socket_send_string("GET OBJ", gripper_socket)
             sync()
         elif (var_name == STA):
-            socket_send_string("GET STA",gripper_socket)
+            socket_send_string("GET STA", gripper_socket)
             sync()
         elif (var_name == PRE):
-            socket_send_string("GET PRE",gripper_socket)
+            socket_send_string("GET PRE", gripper_socket)
             sync()
         else:
         end
@@ -943,36 +940,16 @@ def CBGripper():
     #########################################
     rq_wait_for_gripper_connected()
     rq_init_comm_if_connected(9, "1")
-    rq_init_comm_if_connected(2, "2")
-    rq_init_comm_if_connected(3, "3")
-    rq_init_comm_if_connected(4, "4")
     rq_print_connected_grippers()
 
     set_closed_norm(100.0, 1)
     set_open_norm(0.0, 1)
     set_closed_mm(0.0, 1)
     set_open_mm(program_replace_open_limit, 1)
-    set_closed_norm(100.0, 2)
-    set_open_norm(0.0, 2)
-    set_closed_mm(0.0, 2)
-    set_open_mm(program_replace_open_limit, 2)
-    set_closed_norm(100.0, 3)
-    set_open_norm(0.0, 3)
-    set_closed_mm(0.0, 3)
-    set_open_mm(program_replace_open_limit, 3)
-    set_closed_norm(100.0, 4)
-    set_open_norm(0.0, 4)
-    set_closed_mm(0.0, 4)
-    set_open_mm(program_replace_open_limit, 4)
 
     rq_activate_all_grippers(False)
 
     clear_socket_buffer("1")
-    clear_socket_buffer("2")
-    clear_socket_buffer("3")
-    clear_socket_buffer("4")
 
-    program_replace_speed
-    program_replace_force
-    program_replace_command
+    program_replace
 end#
