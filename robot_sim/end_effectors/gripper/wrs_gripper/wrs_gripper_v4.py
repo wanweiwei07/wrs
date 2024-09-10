@@ -33,59 +33,49 @@ class WRSGripper4(gpi.GripperInterface):
         self._rack_length = 0.0224
         # the 1st joint (left finger, +y direction)
         self.jlc.jnts[0].change_type(rkjlc.rkc.JntType.PRISMATIC, motion_range=np.array([0, self.jaw_range[1] / 3]))
-        self.jlc.jnts[0].loc_pos = np.array([.0, -self._rack_length, .0])
         self.jlc.jnts[0].loc_motion_ax = rm.bc.y_ax
         self.jlc.jnts[0].lnk.cmodel = mcm.CollisionModel(os.path.join(current_file_dir, "meshes", "v4_r21.stl"),
                                                          cdmesh_type=self.cdmesh_type,
                                                          cdprim_type=mcm.mc.CDPType.USER_DEFINED,
-                                                         userdef_cdprim_fn=self._finger_cdprim, ex_radius=.005)
-        self.jlc.jnts[0].lnk.cmodel.rgba = rm.bc.silver_gray
+                                                         userdef_cdprim_fn=self._mid_cdprim, ex_radius=.002)
+        self.jlc.jnts[0].lnk.cmodel.rgba = rm.bc.tab20_list[5]
         # the 2nd joint (left finger, +y direction)
         self.jlc.jnts[1].change_type(rkjlc.rkc.JntType.PRISMATIC, motion_range=np.array([0.0, self.jaw_range[1]]))
-        self.jlc.jnts[1].loc_pos = np.array([.0, -self._rack_length, .0])
         self.jlc.jnts[1].loc_motion_ax = rm.bc.y_ax
         self.jlc.jnts[1].lnk.cmodel = mcm.CollisionModel(os.path.join(current_file_dir, "meshes", "v4_r12.stl"),
-                                                         cdmesh_type=self.cdmesh_type,
-                                                         cdprim_type=mcm.mc.CDPType.USER_DEFINED,
-                                                         userdef_cdprim_fn=self._finger_cdprim, ex_radius=.005)
-        self.jlc.jnts[1].lnk.cmodel.rgba = rm.bc.silver_gray
+                                                         cdmesh_type=self.cdmesh_type, ex_radius=.002)
+        self.jlc.jnts[1].lnk.cmodel.rgba = rm.bc.tab20_list[1]
         # the 3nd joint (left finger, +y direction)
         self.jlc.jnts[2].change_type(rkjlc.rkc.JntType.PRISMATIC, motion_range=np.array([0.0, self.jaw_range[1]]))
-        self.jlc.jnts[2].loc_pos = np.array([.0, -self._rack_length, .0])
         self.jlc.jnts[2].loc_motion_ax = rm.bc.y_ax
         self.jlc.jnts[2].lnk.cmodel = mcm.CollisionModel(os.path.join(current_file_dir, "meshes", "v4_r22.stl"),
                                                          cdmesh_type=self.cdmesh_type,
                                                          cdprim_type=mcm.mc.CDPType.USER_DEFINED,
-                                                         userdef_cdprim_fn=self._finger_cdprim, ex_radius=.005)
-        self.jlc.jnts[2].lnk.cmodel.rgba = rm.bc.silver_gray
+                                                         userdef_cdprim_fn=self._fgr_cdprim, ex_radius=.002)
+        self.jlc.jnts[2].lnk.cmodel.rgba = rm.bc.tab20_list[3]
         # the 1st joint (rgt finger, -y direction)
         self.jlc.jnts[3].change_type(rkjlc.rkc.JntType.PRISMATIC, motion_range=np.array([0, self.jaw_range[1] / 3]))
-        self.jlc.jnts[3].loc_pos = np.array([.0, 4 * self._rack_length, .0])
         self.jlc.jnts[3].loc_rotmat = rm.rotmat_from_euler(.0, .0, np.pi)
         self.jlc.jnts[3].loc_motion_ax = rm.bc.y_ax
         self.jlc.jnts[3].lnk.cmodel = mcm.CollisionModel(os.path.join(current_file_dir, "meshes", "v4_r21.stl"),
                                                          cdmesh_type=self.cdmesh_type,
                                                          cdprim_type=mcm.mc.CDPType.USER_DEFINED,
-                                                         userdef_cdprim_fn=self._finger_cdprim, ex_radius=.005)
-        self.jlc.jnts[3].lnk.cmodel.rgba = rm.bc.silver_gray
+                                                         userdef_cdprim_fn=self._mid_cdprim, ex_radius=.002)
+        self.jlc.jnts[3].lnk.cmodel.rgba = rm.bc.tab20_list[5]
         # the 2nd joint (rgt finger, -y direction)
         self.jlc.jnts[4].change_type(rkjlc.rkc.JntType.PRISMATIC, motion_range=np.array([0.0, self.jaw_range[1]]))
-        self.jlc.jnts[4].loc_pos = np.array([.0, -self._rack_length, .0])
         self.jlc.jnts[4].loc_motion_ax = rm.bc.y_ax
         self.jlc.jnts[4].lnk.cmodel = mcm.CollisionModel(os.path.join(current_file_dir, "meshes", "v4_r12.stl"),
-                                                         cdmesh_type=self.cdmesh_type,
-                                                         cdprim_type=mcm.mc.CDPType.USER_DEFINED,
-                                                         userdef_cdprim_fn=self._finger_cdprim, ex_radius=.005)
-        self.jlc.jnts[4].lnk.cmodel.rgba = rm.bc.silver_gray
+                                                         cdmesh_type=self.cdmesh_type, ex_radius=.002)
+        self.jlc.jnts[4].lnk.cmodel.rgba = rm.bc.tab20_list[1]
         # the 3nd joint (rgt finger, -y direction)
         self.jlc.jnts[5].change_type(rkjlc.rkc.JntType.PRISMATIC, motion_range=np.array([0.0, self.jaw_range[1]]))
-        self.jlc.jnts[5].loc_pos = np.array([.0, -self._rack_length, .0])
         self.jlc.jnts[5].loc_motion_ax = rm.bc.y_ax
         self.jlc.jnts[5].lnk.cmodel = mcm.CollisionModel(os.path.join(current_file_dir, "meshes", "v4_r22.stl"),
                                                          cdmesh_type=self.cdmesh_type,
                                                          cdprim_type=mcm.mc.CDPType.USER_DEFINED,
-                                                         userdef_cdprim_fn=self._finger_cdprim, ex_radius=.005)
-        self.jlc.jnts[5].lnk.cmodel.rgba = rm.bc.silver_gray
+                                                         userdef_cdprim_fn=self._fgr_cdprim, ex_radius=.002)
+        self.jlc.jnts[5].lnk.cmodel.rgba = rm.bc.tab20_list[3]
         self.jlc.finalize()
         # acting center
         self.loc_acting_center_pos = np.array([0, 0, .15])
@@ -96,14 +86,27 @@ class WRSGripper4(gpi.GripperInterface):
                                 self.jlc.jnts[5].lnk)
 
     @staticmethod
-    def _finger_cdprim(ex_radius):
+    def _fgr_cdprim(ex_radius):
         pdcnd = CollisionNode("finger")
-        collision_primitive_c0 = CollisionBox(Point3(.005, -.0085, .12),
-                                              x=.015 + ex_radius, y=0.0 + ex_radius, z=.06 + ex_radius)
+        collision_primitive_c0 = CollisionBox(Point3(.0, 0.0224*3+0.002, .102),
+                                              x=.0075 + ex_radius, y=0.001 + ex_radius, z=.06 + ex_radius)
         pdcnd.addSolid(collision_primitive_c0)
-        # collision_primitive_c1 = CollisionBox(Point3(.008, .0, .008),
-        #                                       x=.018 + ex_radius, y=0.011 + ex_radius, z=.011 + ex_radius)
-        # pdcnd.addSolid(collision_primitive_c1)
+        collision_primitive_c1 = CollisionBox(Point3(-.013, 0.0224*3+0.002, .069),
+                                              x=.002 + ex_radius, y=0.001 + ex_radius, z=.005 + ex_radius)
+        pdcnd.addSolid(collision_primitive_c1)
+        collision_primitive_c2 = CollisionBox(Point3(-.02, 0.0224*3-0.015, .052),
+                                              x=.015 + ex_radius, y=0.014 + ex_radius, z=.012 + ex_radius)
+        pdcnd.addSolid(collision_primitive_c2)
+        cdprim = NodePath("user_defined")
+        cdprim.attachNewNode(pdcnd)
+        return cdprim
+
+    @staticmethod
+    def _mid_cdprim(ex_radius):
+        pdcnd = CollisionNode("mid_plate")
+        collision_primitive_c0 = CollisionBox(Point3(-.011 - .02 / 2, .025 - 0.03 / 2, .003 + .06 / 2),
+                                              x=.02 / 2 + ex_radius, y=0.03 / 2 + ex_radius, z=.06 / 2 + ex_radius)
+        pdcnd.addSolid(collision_primitive_c0)
         cdprim = NodePath("user_defined")
         cdprim.attachNewNode(pdcnd)
         return cdprim
@@ -125,9 +128,9 @@ class WRSGripper4(gpi.GripperInterface):
     def change_jaw_width(self, jaw_width):
         side_jawwidth = jaw_width / 2.0
         if self.jaw_range[0] / 2 <= side_jawwidth <= self.jaw_range[1] / 2:
-            motion_rack_length = -self._rack_length + side_jawwidth / 3.0
+            motion_rack_length = self._rack_length - side_jawwidth / 3.0
             self.jlc.goto_given_conf(jnt_values=[-motion_rack_length, -motion_rack_length, -motion_rack_length,
-                                                 4*motion_rack_length, -motion_rack_length, -motion_rack_length])
+                                                 -4*motion_rack_length, -motion_rack_length, -motion_rack_length])
         else:
             raise ValueError("The angle parameter is out of range!")
 
@@ -166,10 +169,11 @@ if __name__ == '__main__':
     import visualization.panda.world as wd
     import modeling.geometric_model as mgm
 
-    base = wd.World(cam_pos=[.5, .5, .5], lookat_pos=[0, 0, 0], auto_cam_rotate=False)
+    base = wd.World(cam_pos=[-.5, .0, .08], lookat_pos=[0, 0, 0.08], auto_cam_rotate=False)
     mgm.gen_frame().attach_to(base)
     gripper = WRSGripper4()
-    gripper.change_jaw_width(.104)
+    gripper.change_jaw_width(.1344)
+    # gripper.change_jaw_width(0)
     gripper.gen_meshmodel(toggle_tcp_frame=True, toggle_cdprim=False).attach_to(base)
-    # gripper.show_cdprimit()
+
     base.run()
