@@ -76,15 +76,15 @@ def plan_gripper_grasps(gripper,
         for i, cp in enumerate(contact_pairs):
             contact_p0, contact_n0 = cp[0]
             contact_p1, contact_n1 = cp[1]
-            mgm.gen_sphere(pos=contact_p0, rgba=np.array([1, 0, 0, 1])).attach_to(base)
+            mgm.gen_sphere(pos=contact_p0, rgb=np.array([1, 0, 0])).attach_to(base)
             mgm.gen_arrow(spos=contact_p0, epos=contact_p0 + contact_n0 * .01, stick_radius=.00057,
-                          rgba=np.array([1, 0, 0, 1])).attach_to(base)
-            mgm.gen_sphere(pos=contact_p1, rgba=np.array([0, 0, 1, 1])).attach_to(base)
+                          rgb=np.array([1, 0, 0])).attach_to(base)
+            mgm.gen_sphere(pos=contact_p1, rgb=np.array([0, 0, 1])).attach_to(base)
             mgm.gen_arrow(spos=contact_p1, epos=contact_p1 + contact_n1 * .01, stick_radius=.00057,
-                          rgba=np.array([0, 0, 1, 1])).attach_to(base)
+                          rgb=np.array([0, 0, 1])).attach_to(base)
     grasp_collection = gg.GraspCollection(end_effector=gripper)
     for i, cp in enumerate(contact_pairs):
-        print(f"{i} of {len(contact_pairs)} done!")
+        # print(f"{i} of {len(contact_pairs)} done!")
         contact_p0, contact_n0 = cp[0]
         contact_p1, contact_n1 = cp[1]
         contact_center = (contact_p0 + contact_p1) / 2
