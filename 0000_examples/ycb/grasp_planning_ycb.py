@@ -8,11 +8,8 @@ import math
 import bench_mark.ycb as ycb
 
 base = wd.World(cam_pos=np.array([.5, .5, .5]), lookat_pos=np.array([0, 0, 0]))
-obj_cmodel = mcm.CollisionModel(ycb.washer_10mm_file)
-obj_cmodel.attach_to(base)
-base.run()
 # mgm.gen_frame().attach_to(base)
-for file in ycb.all_files:
+for file in ycb.all_files.values():
     obj_cmodel = mcm.CollisionModel(file)
     obj_cmodel.attach_to(base)
 

@@ -56,9 +56,15 @@ class KHI_BLQC(ai.SglArmRobotInterface):
         into_list = [mlb, ml0]
         self.cc.set_cdpair_by_ids(from_list, into_list)
 
+    def goto_given_conf(self, jnt_values, ee_values=None):
+        result = self._manipulator.goto_given_conf(jnt_values=jnt_values)
+        self.tool_changer.fix_to(pos=self._manipulator.gl_flange_pos, rotmat=self._manipulator.gl_flange_rotmat)
+        self.update_end_effector(ee_values=ee_values)
+        return result
+
     def fix_to(self, pos, rotmat):
-        self.pos = pos
-        self.rotmat = rotmat
+        self._pos = pos
+        self._rotmat = rotmat
         self.manipulator.fix_to(pos=pos, rotmat=rotmat)
         self.tool_changer.fix_to(pos=self._manipulator.gl_flange_pos, rotmat=self._manipulator.gl_flange_rotmat)
 
@@ -116,6 +122,7 @@ if __name__ == '__main__':
     base = wd.World(cam_pos=[1.7, 1.7, 1.7], lookat_pos=[0, 0, .3])
     gm.gen_frame().attach_to(base)
     robot = KHI_BLQC(enable_cc=True)
+
     rrtc_planner = rrtc.RRTConnect(robot)
 
     ee_g_pos = np.array([-.4, .4, .19])
