@@ -87,7 +87,7 @@ class Robotiq140(gi.GripperInterface):
             cdmesh_type=self.cdmesh_type)
         self.lft_outer_jlc.jnts[2].lnk.cmodel.rgba = rm.bc.dim_gray
         # left finger outer (joint 3 / inner_finger_pad)
-        self.lft_outer_jlc.jnts[3].loc_pos = np.array([0, 0.0420203446692936, -.03242])
+        self.lft_outer_jlc.jnts[3].loc_pos = np.array([0, 0.0420203446692936, -.028])
         self.lft_outer_jlc.jnts[3].lnk.cmodel = mcm.CollisionModel(
             os.path.join(current_file_dir, "meshes", "robotiq_arg2f_140_pad.stl"), cdmesh_type=self.cdmesh_type)
         self.lft_outer_jlc.jnts[3].lnk.cmodel.rgba = rm.bc.hug_gray
@@ -116,7 +116,7 @@ class Robotiq140(gi.GripperInterface):
             cdmesh_type=self.cdmesh_type)
         self.rgt_outer_jlc.jnts[0].lnk.cmodel.rgba = rm.bc.hug_gray
         # right finger outer (joint 1 / outer_finger)
-        self.rgt_outer_jlc.jnts[1].loc_pos = np.array([0, 0.01821998610742, 0.0260018192872234])
+        self.rgt_outer_jlc.jnts[1].loc_pos = np.array([0, .01821998610742, .0260018192872234])
         self.rgt_outer_jlc.jnts[1].loc_motion_ax = np.array([1, 0, 0])
         self.rgt_outer_jlc.jnts[1].lnk.cmodel = mcm.CollisionModel(
             os.path.join(current_file_dir, "meshes", "robotiq_arg2f_140_outer_finger.stl"),
@@ -131,7 +131,7 @@ class Robotiq140(gi.GripperInterface):
             cdmesh_type=self.cdmesh_type)
         self.rgt_outer_jlc.jnts[2].lnk.cmodel.rgba = rm.bc.dim_gray
         # right finger outer (joint 3 / inner_finger_pad)
-        self.rgt_outer_jlc.jnts[3].loc_pos = np.array([0, 0.0420203446692936, -.03242])
+        self.rgt_outer_jlc.jnts[3].loc_pos = np.array([0, 0.0420203446692936, -.028])
         self.rgt_outer_jlc.jnts[3].lnk.cmodel = mcm.CollisionModel(
             os.path.join(current_file_dir, "meshes", "robotiq_arg2f_140_pad.stl"), cdmesh_type=self.cdmesh_type)
         self.rgt_outer_jlc.jnts[3].lnk.cmodel.rgba = rm.bc.hug_gray
@@ -182,6 +182,11 @@ class Robotiq140(gi.GripperInterface):
         self.update_oiee()
 
     def change_jaw_width(self, jaw_width):
+        """
+        :param jaw_width:
+        :return:
+        author: dyanamic changes made by junbo 20240912
+        """
         if jaw_width > 0.140:
             raise ValueError("ee_values must be 0mm~140mm!")
         angle = np.clip(self.lft_outer_jlc.jnts[0].motion_range[1] - rm.math.asin(
@@ -192,11 +197,16 @@ class Robotiq140(gi.GripperInterface):
             self.lft_inner_jlc.goto_given_conf(jnt_values=np.array([-angle]))
             self.rgt_outer_jlc.goto_given_conf(jnt_values=np.array([-angle, 0.0, angle, 0.0]))
             self.rgt_inner_jlc.goto_given_conf(jnt_values=np.array([-angle]))
+        # dynamic adjustment
+        homo_flange_gl = rm.homomat_from_posrot(self.pos, self.rotmat)
+        homo_pad_gl = self.rgt_outer_jlc.jnts[3].gl_homomat_0
+        homo_pad_flange = np.linalg.inv(homo_flange_gl) @ homo_pad_gl
+        self.loc_acting_center_pos[2] = homo_pad_flange[2,3]
 
     def get_jaw_width(self):
-        angle = self.lft_inner_jlc.jnts[0].motion_value
-        return (math.sin(
-            math.asin((self.jaw_range[1] / 2.0 + .0064 - .0306011) / 0.055) - angle) * 0.055 - 0.0064 + 0.0306011) * 2.0
+        angle = -self.lft_inner_jlc.jnts[0].motion_value
+        return self.jaw_range[1] * np.sin(self.lft_outer_jlc.jnts[0].motion_range[1] - angle) / np.sin(
+            self.lft_outer_jlc.jnts[0].motion_range[1])
 
     def gen_stickmodel(self,
                        toggle_tcp_frame=False,
@@ -273,10 +283,12 @@ if __name__ == '__main__':
     import visualization.panda.world as wd
     import modeling.geometric_model as gm
 
-    base = wd.World(cam_pos=[1, 1, 1], lookat_pos=[0, 0, 0])
+    base = wd.World(cam_pos=[2, 0, 0], lookat_pos=[0, 0, 0])
     mgm.gen_frame().attach_to(base)
     gripper = Robotiq140()
-    gripper.change_jaw_width(.14)
-    model = gripper.gen_meshmodel(toggle_tcp_frame=True, toggle_cdprim=True)
+    gripper.change_jaw_width(0.0)
+    print(gripper.loc_acting_center_pos)
+    gripper.gen_stickmodel(toggle_tcp_frame=True, toggle_jnt_frames=True).attach_to(base)
+    model = gripper.gen_meshmodel(alpha=.3)
     model.attach_to(base)
     base.run()

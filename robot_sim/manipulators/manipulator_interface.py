@@ -14,11 +14,11 @@ class ManipulatorInterface(object):
         self.jlc = rkjlc.JLChain(pos=pos, rotmat=rotmat, n_dof=len(home_conf), name=name)
         self.jlc.home = home_conf
         # tcp is defined locally in flange
-        self._loc_tcp_pos = np.zeros(3)
-        self._loc_tcp_rotmat = np.eye(3)
+        self._loc_tcp_pos = np.zeros(3, dtype=float)
+        self._loc_tcp_rotmat = np.eye(3, dtype=float)
         self._is_gl_tcp_delayed = True
-        self._gl_tcp_pos = np.zeros(3)
-        self._gl_tcp_rotmat = np.eye(3)
+        self._gl_tcp_pos = np.zeros(3, dtype=float)
+        self._gl_tcp_rotmat = np.eye(3, dtype=float)
         # TODO self.ooflange = []
         # collision detection
         if enable_cc:

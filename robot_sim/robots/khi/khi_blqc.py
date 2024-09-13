@@ -106,6 +106,7 @@ class KHI_BLQC(ai.SglArmRobotInterface):
                                       toggle_cdmesh=toggle_cdmesh,
                                       name=name)
         if self.tool_changer is not None:
+            print(self.tool_changer.pos)
             self.tool_changer.gen_meshmodel(rgb=rgb, alpha=alpha, toggle_cdprim=toggle_cdprim,
                                             toggle_cdmesh=toggle_cdmesh).attach_to(m_col)
         return m_col
@@ -122,6 +123,8 @@ if __name__ == '__main__':
     base = wd.World(cam_pos=[1.7, 1.7, 1.7], lookat_pos=[0, 0, .3])
     gm.gen_frame().attach_to(base)
     robot = KHI_BLQC(enable_cc=True)
+    robot.gen_meshmodel().attach_to(base)
+    base.run()
 
     rrtc_planner = rrtc.RRTConnect(robot)
 
