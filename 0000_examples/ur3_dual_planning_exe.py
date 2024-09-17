@@ -24,8 +24,11 @@ object.show_cdprim()
 # rbt
 rbt = ur3d.UR3Dual()
 # goal
-goal_lft_arm_jnt_values = np.array([0, -math.pi / 2, -math.pi / 3, -math.pi / 2, math.pi / 6, math.pi / 6])
-goal_rgt_arm_jnt_values = np.array([0, -math.pi / 4, 0, math.pi / 2, math.pi / 2, math.pi / 6])
+# goal_lft_arm_jnt_values = np.array([0, -math.pi / 2, -math.pi / 3, -math.pi / 2, math.pi / 6, math.pi / 6])
+# goal_rgt_arm_jnt_values = np.array([0, -math.pi / 4, 0, math.pi / 2, math.pi / 2, math.pi / 6])
+goal_lft_arm_jnt_values = rbt.lft_arm.home_conf
+goal_rgt_arm_jnt_values = rbt.rgt_arm.home_conf
+
 goal_jnt_values = np.hstack((goal_lft_arm_jnt_values, goal_rgt_arm_jnt_values))
 # rbt x
 rbt_x = ur3dx.UR3DualX()
@@ -34,6 +37,8 @@ init_lft_arm_jnt_values = rbt_x.lft_arm.get_jnt_values()
 init_rgt_arm_jnt_values = rbt_x.rgt_arm.get_jnt_values()
 init_jnt_values_x = np.hstack((init_lft_arm_jnt_values, init_rgt_arm_jnt_values))
 rbt.goto_given_conf(jnt_values=init_jnt_values_x)
+rbt.gen_meshmodel(toggle_cdprim=True).attach_to(base)
+# base.run()
 print(rbt.is_collided())
 init_lft_jaw_width = rbt_x.lft_arm.get_jaw_width()
 rbt.lft_arm.change_jaw_width(init_lft_jaw_width)
@@ -44,7 +49,7 @@ rbt.gen_meshmodel(toggle_cdprim=True).attach_to(base)
 rrtc_planner = rrtc.RRTConnect(rbt)
 mot_data = rrtc_planner.plan(start_conf=init_jnt_values_x,
                              goal_conf=goal_jnt_values,
-                             obstacle_list=[object],
+                             obstacle_list=[],
                              ext_dist=.2,
                              max_time=30,
                              smoothing_n_iter=100)
