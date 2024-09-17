@@ -12,10 +12,10 @@ class Cobotta(rsi.SglArmRobotInterface):
         home_conf[1] = -math.pi / 6
         home_conf[2] = math.pi / 2
         home_conf[4] = math.pi / 6
-        self.manipulator = cbta.CobottaArm(pos=self.pos, rotmat=self.rotmat, name="cobotta_arm", enable_cc=False)
+        self.manipulator = cbta.CobottaArm(pos=self.pos, rotmat=self.rotmat, name=name+"_arm", enable_cc=False)
         self.manipulator.home_conf = home_conf
         self.end_effector = cbtg.CobottaGripper(pos=self.manipulator.gl_flange_pos,
-                                                rotmat=self.manipulator.gl_flange_rotmat, name="cobotta_hnd")
+                                                rotmat=self.manipulator.gl_flange_rotmat, name=name+"_hnd")
         # tool center point
         self.manipulator.loc_tcp_pos = self.end_effector.loc_acting_center_pos
         self.manipulator.loc_tcp_rotmat = self.end_effector.loc_acting_center_rotmat
@@ -64,20 +64,21 @@ if __name__ == '__main__':
     mgm.gen_frame().attach_to(base)
     robot = Cobotta(enable_cc=True)
     # robot.jaw_to(.02)
-    robot.gen_meshmodel(alpha=.5, toggle_tcp_frame=False, toggle_jnt_frames=False).attach_to(base)
-    robot.gen_stickmodel(toggle_tcp_frame=True, toggle_jnt_frames=True).attach_to(base)
-    base.run()
+    # robot.gen_meshmodel(alpha=.5, toggle_tcp_frame=False, toggle_jnt_frames=False).attach_to(base)
+    # robot.gen_stickmodel(toggle_tcp_frame=True, toggle_jnt_frames=True).attach_to(base)
     tgt_pos = np.array([.3, .1, .3])
     tgt_rotmat = rm.rotmat_from_axangle([0, 1, 0], math.pi * 2 / 3)
     mgm.gen_frame(pos=tgt_pos, rotmat=tgt_rotmat).attach_to(base)
+    # base.run()
     jnt_values = robot.ik(tgt_pos=tgt_pos, tgt_rotmat=tgt_rotmat, toggle_dbg=False)
     print(jnt_values)
     if jnt_values is not None:
         robot.goto_given_conf(jnt_values=jnt_values)
-        robot.gen_meshmodel(alpha=.3, toggle_tcp_frame=True).attach_to(base)
-    robot.show_cdprim()
-    robot.unshow_cdprim()
-    # base.run()
+        robot.gen_meshmodel(alpha=.5, toggle_tcp_frame=False, toggle_jnt_frames=False).attach_to(base)
+        robot.gen_stickmodel(toggle_tcp_frame=True, toggle_jnt_frames=True).attach_to(base)
+    # robot.show_cdprim()
+    # robot.unshow_cdprim()
+    base.run()
 
     robot.goto_given_conf(jnt_values=np.array([0, np.pi / 2, np.pi*11/20, 0, np.pi / 2, 0]))
     robot.show_cdprim()

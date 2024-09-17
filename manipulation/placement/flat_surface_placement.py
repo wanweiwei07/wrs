@@ -14,11 +14,12 @@ class ReferenceFSPPoses(object):
     def __init__(self, obj_cmodel=None, fsp_poses=None):
         self.obj_cmodel = obj_cmodel
         if obj_cmodel is not None and fsp_poses is None:
-            self._fsp_poses, self._fsp_support_surfaces = self.comptue_reference_fsp_poses(obj_cmodel,
-                                                                                           toggle_support_facets=True)
+            self._fsp_poses, self._fsp_support_surfaces, self._fsp_stability_values = self.comptue_reference_fsp_poses(
+                obj_cmodel, toggle_support_facets=True)
         else:
             self._fsp_poses = fsp_poses
             self._fsp_support_surfaces = None
+            self._fsp_stability_values = None
 
     @staticmethod
     def load_from_disk(file_name="reference_fsp_poses.pickle"):
@@ -46,6 +47,7 @@ class ReferenceFSPPoses(object):
         seg_nested_face_id_list, seg_nested_edge_list, seg_seed_face_id_list, seg_normal_list, _ = seg_result
         fsp_pose_list = []
         support_facet_list = []
+        stability_value_list = []
         for id, seg_face_id in enumerate(seg_seed_face_id_list):
             seed_face_normal = convex_trm.face_normals[seg_face_id]
             seed_face_z = -seed_face_normal
@@ -67,21 +69,26 @@ class ReferenceFSPPoses(object):
                 mgm.gen_stick(spos=edge[0], epos=edge[1], type="round").attach_to(facet)
             com = obj_cmodel.trm_mesh.center_mass
             result = moh.rayhit_closet(spos=com, epos=com + seed_face_normal,
-                                                              target_cmodel=facet)
+                                       target_cmodel=facet)
             if result is not None:
                 contact_point, contact_normal = result
                 min_contact_distance = np.linalg.norm(contact_point - com)
                 min_edge_distance, min_edge_projection = rm.min_distance_point_edge_list(contact_point,
                                                                                          seg_nested_edge_list[id])
-                if min_edge_distance / min_contact_distance < stability_threshhold:
+                stability_value = min_edge_distance / min_contact_distance
+                if stability_value < stability_threshhold:
                     continue
                 # show contact point to edge projection
                 mgm.gen_stick(spos=contact_point, epos=min_edge_projection, type="round").attach_to(facet)
                 fsp_pose_list.append((placement_pos, placement_rotmat))
                 mgm.gen_arrow(spos=com, epos=contact_point).attach_to(facet)
                 support_facet_list.append(facet)
+                stability_value_list.append(stability_value)
         if toggle_support_facets:
-            return fsp_pose_list, support_facet_list
+            combined_lists = list(zip(fsp_pose_list, support_facet_list, stability_value_list))
+            sorted_combined_lists = sorted(combined_lists, key=lambda x: x[2], reverse=True)
+            fsp_pose_list_sorted, support_facet_list_sorted, stability_value_list_sorted = zip(*sorted_combined_lists)
+            return fsp_pose_list_sorted, support_facet_list_sorted, stability_value_list_sorted
         return fsp_pose_list
 
     @property
@@ -155,6 +162,7 @@ if __name__ == '__main__':
     bunny = mcm.CollisionModel(obj_path)
 
     reference_fsp_poses = ReferenceFSPPoses(obj_cmodel=bunny)
+
 
     class AnimeData(object):
         def __init__(self, reference_fsp_poses):

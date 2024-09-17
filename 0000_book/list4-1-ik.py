@@ -45,7 +45,7 @@ jlc.jnts[5].motion_range = np.array([-np.pi * 5 / 6, np.pi * 5 / 6])
 jlc._loc_flange_pos = np.array([0, 0, .03])
 jlc.finalize()
 # visualize
-base = wd.World(cam_pos=np.array([1,1,1]), lookat_pos=np.array([0, 0, .3]))
+base = wd.World(cam_pos=np.array([1, 1, 1]), lookat_pos=np.array([0, 0, .3]))
 if option == 'a':
     jlc.goto_given_conf(jnt_values=np.array([np.pi / 12, -np.pi / 3, np.pi * 2 / 3, np.pi / 12, np.pi / 3, 0]))
     jlc.gen_stickmodel(toggle_jnt_frames=False, toggle_actuation=False, lnk_alpha=.2, jnt_alpha=.2).attach_to(base)
@@ -93,12 +93,16 @@ if option == 'c':
                          stick_radius=rkc.FRAME_STICK_RADIUS, alpha=.2).attach_to(base)
     mgm.gen_dashed_stick(spos=jlc.jnts[0].gl_pos_0, epos=jlc.gl_flange_pos, rgb=rm.bc.black, radius=.0015,
                          len_solid=.015, len_interval=.012, alpha=.2).attach_to(base)
+    resulted_sum_pos = jlc.gl_flange_pos
     jlc.goto_given_conf(jnt_values=np.array(
         [np.pi / 12, -np.pi / 3, np.pi * 2 / 3 - np.pi / 18, np.pi / 12, np.pi / 3, 0]))
     mgm.gen_dashed_arrow(spos=prev_pos, epos=jlc.gl_flange_pos, rgb=rm.bc.black,
                          stick_radius=rkc.FRAME_STICK_RADIUS, alpha=.2).attach_to(base)
     mgm.gen_dashed_stick(spos=jlc.jnts[2].gl_pos_0, epos=jlc.gl_flange_pos, rgb=rm.bc.black, radius=.0015,
                          len_solid=.015, len_interval=.012, alpha=.2).attach_to(base)
+    resulted_sum_pos += jlc.gl_flange_pos
+    mgm.gen_dashed_arrow(spos=prev_pos, epos=resulted_sum_pos - prev_pos, rgb=rm.bc.black,
+                         stick_radius=rkc.FRAME_STICK_RADIUS).attach_to(base)
     # third
     jlc.goto_given_conf(jnt_values=np.array(
         [np.pi / 12 - np.pi / 18, -np.pi / 3, np.pi * 2 / 3 - np.pi / 18, np.pi / 12 - np.pi / 18, np.pi / 3, 0]))
@@ -107,6 +111,6 @@ if option == 'c':
         base)
     rkmg.gen_jnt(jlc.jnts[2], toggle_frame_0=False, toggle_frame_q=False, toggle_actuation=True, alpha=1).attach_to(
         base)
-    mgm.gen_dashed_arrow(spos=prev_pos, epos=jlc.gl_flange_pos, rgb=rm.bc.black,
-                  stick_radius=rkc.FRAME_STICK_RADIUS).attach_to(base)
+    mgm.gen_arrow(spos=prev_pos, epos=jlc.gl_flange_pos, rgb=rm.bc.black,
+                         stick_radius=rkc.FRAME_STICK_RADIUS).attach_to(base)
 base.run()
