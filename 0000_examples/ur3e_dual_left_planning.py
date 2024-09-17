@@ -6,13 +6,6 @@ import robot_sim.robots.ur3e_dual.ur3e_dual as u3ed
 import motion.probabilistic.rrt_connect as rrtc
 import basis.robot_math as rm
 
-
-class Data(object):
-    def __init__(self, mot_data):
-        self.counter = 0
-        self.mot_data = mot_data
-
-
 base = wd.World(cam_pos=[3, 2, 3], lookat_pos=[0.5, 0, 1.1])
 mgm.gen_frame().attach_to(base)
 # robot
@@ -35,13 +28,8 @@ robot.gen_meshmodel(toggle_tcp_frame=True).attach_to(base)
 if jnt_values is None:
     print("No IK solution found!")
     base.run()
-# else:
-#     robot.goto_given_conf(jnt_values=jnt_values)
-#     robot.gen_meshmodel(toggle_tcp_frame=True).attach_to(base)
-#     base.run()
 goal_conf = jnt_values
 robot.goto_given_conf(jnt_values=start_conf)
-
 print(start_conf)
 print(jnt_values)
 mot_data = rrtc_planner.plan(start_conf=start_conf,
@@ -50,6 +38,14 @@ mot_data = rrtc_planner.plan(start_conf=start_conf,
                              ext_dist=.1,
                              max_time=30,
                              smoothing_n_iter=100)
+
+
+class Data(object):
+    def __init__(self, mot_data):
+        self.counter = 0
+        self.mot_data = mot_data
+
+
 anime_data = Data(mot_data)
 
 
