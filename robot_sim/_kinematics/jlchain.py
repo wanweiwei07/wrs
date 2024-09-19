@@ -49,8 +49,8 @@ class JLChain(object):
         # default flange for cascade connection
         self._loc_flange_pos = np.zeros(3)
         self._loc_flange_rotmat = np.eye(3)
-        self._gl_flange_pos = self._loc_flange_pos
-        self._gl_flange_rotmat = self._loc_flange_rotmat
+        self._gl_flange_pos = np.zeros(3)
+        self._gl_flange_rotmat = np.zeros(3)
         # finalizing tag
         self._is_finalized = False
         # iksolver

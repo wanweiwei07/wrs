@@ -277,11 +277,11 @@ class CollisionModel(mgm.GeometricModel):
             mph.toggle_show_collision_node(self._cache_for_show["cdmesh"], toggle_show_on=True)
 
     @delay_cdprim_decorator
-    def change_cdprim_type(self, cdprim_type, expand_radius=None, userdef_cdprim_fn=None):
-        if expand_radius is not None:
-            self._ex_radius = expand_radius
+    def change_cdprim_type(self, cdprim_type, ex_radius=None, userdef_cdprim_fn=None):
+        if ex_radius is not None:
+            self._ex_radius = ex_radius
         self._cdprim = self._acquire_cdprim(cdprim_type=cdprim_type,
-                                            thickness=expand_radius,
+                                            thickness=ex_radius,
                                             userdef_cdprim_fn=userdef_cdprim_fn)
         self._cdprim_type = cdprim_type
         # update if show_primitive is toggled on
@@ -433,7 +433,7 @@ class CollisionModel(mgm.GeometricModel):
         cmodel.pos = self.pos
         cmodel.rotmat = self.rotmat
         cmodel.change_cdmesh_type(cdmesh_type=self.cdmesh_type)
-        cmodel.change_cdprim_type(cdprim_type=self.cdprim_type, expand_radius=self._ex_radius)  # TODO user_defined_fn
+        cmodel.change_cdprim_type(cdprim_type=self.cdprim_type, ex_radius=self._ex_radius)  # TODO user_defined_fn
         return cmodel
 
 

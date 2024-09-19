@@ -574,7 +574,7 @@ def gen_dashed_stick(spos=np.array([0, 0, 0]),
 def gen_box(xyz_lengths=np.array([1, 1, 1]),
             pos=np.zeros(3),
             rotmat=np.eye(3),
-            rgb=np.array([1, 0, 0]),
+            rgb=rm.bc.steel_gray,
             alpha=1):
     """
     :param xyz_lengths:

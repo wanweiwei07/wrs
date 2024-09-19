@@ -1,4 +1,3 @@
-import copy
 import numpy as np
 import basis.robot_math as rm
 import modeling.geometric_model as mgm
