@@ -58,10 +58,11 @@ class GripperInterface(ei.EEInterface):
         return super().hold(obj_cmodel=obj_cmodel)
 
     def release(self, obj_cmodel, jaw_width=None):
-        super().release(obj_cmodel=obj_cmodel)
+        obj_lnk = super().release(obj_cmodel=obj_cmodel)
         if jaw_width is None:
             jaw_width = self.jaw_range[1]
         self.change_jaw_width(jaw_width=jaw_width)
+        return obj_lnk
 
     def grip_at_by_twovecs(self,
                            jaw_center_pos,

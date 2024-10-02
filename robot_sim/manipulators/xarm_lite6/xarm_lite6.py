@@ -69,7 +69,7 @@ class XArmLite6(mi.ManipulatorInterface):
         self.jlc.jnts[5].motion_range = np.array([-2 * math.pi, 2 * math.pi])
         self.jlc.jnts[5].lnk.cmodel = mcm.CollisionModel(os.path.join(current_file_dir, "meshes", "link6.stl"))
         self.jlc.jnts[5].lnk.cmodel.rgba = rm.bc.tab20_list[15]
-        self.jlc.finalize(ik_solver='d', identifier_str=name)
+        self.jlc.finalize(ik_solver='a', identifier_str=name)
         self.jlc.finalize()
         # tcp
         self.loc_tcp_pos = np.array([0, 0, 0])
@@ -133,14 +133,160 @@ class XArmLite6(mi.ManipulatorInterface):
         into_list = [lb, l0, l1]
         self.cc.set_cdpair_by_ids(from_list, into_list)
 
+    def ik(self,
+           tgt_pos: np.ndarray,
+           tgt_rotmat: np.ndarray,
+           seed_jnt_values=None,
+           option="single",
+           toggle_dbg=False):
+        """
+        :param tgt_pos:
+        :param tgt_rotmat:
+        :param seed_jnt_values:
+        :return:
+        Modified D-H from base to tcp
+        T01 = sympy.Matrix([[c1, -s1, 0, 0],
+                            [s1, c1, 0, 0],
+                            [0, 0, 1, d1],
+                            [0, 0, 0, 1]])
+        T12 = sympy.Matrix([[s2, c2, 0, 0],
+                            [0, 0, 1, 0],
+                            [c2, -s2, 0, 0],
+                            [0, 0, 0, 1]])
+        T23 = sympy.Matrix([[s3, c3, 0, a3],
+                            [c3, -s3, 0, 0],
+                            [0, 0, -1, 0],
+                            [0, 0, 0, 1]])
+        T34 = sympy.Matrix([[c4, -s4, 0, a4],
+                            [0, 0, -1, -d4],
+                            [s4, c4, 0, 0],
+                            [0, 0, 0, 1]])
+        T45 = sympy.Matrix([[c5, -s5, 0, 0],
+                            [0, 0, -1, 0],
+                            [s5, c5, 0, 0],
+                            [0, 0, 0, 1]])
+        T56 = sympy.Matrix([[c6, -s6, 0, 0],
+                            [0, 0, 1, 0],
+                            [-s6, -c6, 0, 0],
+                            [0, 0, 0, 1]])
+        T6t = sympy.Matrix([[1, 0, 0, 0],
+                            [0, 1, 0, 0],
+                            [0, 0, 1, d_hnd + d6],
+                            [0, 0, 0, 1]])
+        T0t=T01*T12*T23*T34*T45*T56*T6t
+        """
+        # relative to base
+        rel_pos, rel_rotmat = rm.rel_pose(self.jlc.pos, self.jlc.rotmat, tgt_pos, tgt_rotmat)
+        # target
+        tgt_rotmat = rel_rotmat @ self.loc_tcp_rotmat.T
+        tgt_pos = rel_pos - rel_rotmat @ self.loc_tcp_pos
+        # lengths of link
+        d1, d4, d6 = .2433, .2276, .0615
+        a3, a4 = .2, .087
+        # global position of joint 1
+        pos_1 = np.array([0, 0, d1])
+        # Joint 1
+        pos_w = tgt_pos - d6 * tgt_rotmat[:, 2]
+        theta1 = np.arctan2(pos_w[1], pos_w[0])
+        # Joint 3
+        d1w = np.sum((pos_w - pos_1) ** 2)
+        num3_1 = 2 * a3 * a4
+        num3_2 = abs(- a3 ** 4 + 2 * a3 ** 2 * a4 ** 2 + 2 * a3 ** 2 * d1w + 2 * a3 ** 2 * d4 ** 2 - a4 ** 4 +
+                     2 * a4 ** 2 * d1w - 2 * a4 ** 2 * d4 ** 2 - d1w ** 2 + 2 * d1w * d4 ** 2 - d4 ** 4)
+        den3 = a3 ** 2 + 2 * a3 * d4 + a4 ** 2 - d1w + d4 ** 2
+        theta3_list = [-2 * np.arctan2((num3_1 - np.sqrt(num3_2)), den3),
+                       -2 * np.arctan2((num3_1 + np.sqrt(num3_2)), den3)]
+        theta2_4_5_6_list = []
+        for theta3 in theta3_list:
+            # Joint 2
+            dxy = np.sqrt(pos_w[0] ** 2 + pos_w[1] ** 2)
+            z_w = pos_w[2]
+            num_c2 = -a3 * d1 + a3 * z_w - a4 * d1 * np.sin(theta3) + a4 * dxy * np.cos(theta3) + a4 * z_w * np.sin(
+                theta3) + \
+                     d1 * d4 * np.cos(theta3) + d4 * dxy * np.sin(theta3) - d4 * z_w * np.cos(theta3)
+            num_s2 = a3 * dxy + a4 * d1 * np.cos(theta3) + a4 * dxy * np.sin(theta3) - a4 * z_w * np.cos(theta3) + \
+                     d1 * d4 * np.sin(theta3) - d4 * dxy * np.cos(theta3) - d4 * z_w * np.sin(theta3)
+            den_cs2 = a3 ** 2 + 2 * a3 * a4 * np.sin(theta3) - 2 * a3 * d4 * np.cos(theta3) + a4 ** 2 * np.sin(
+                theta3) ** 2 + \
+                      a4 ** 2 * np.cos(theta3) ** 2 + d4 ** 2 * np.sin(theta3) ** 2 + d4 ** 2 * np.cos(theta3) ** 2
+            if den_cs2 < 0:
+                num_s2 = -num_s2
+                num_c2 = -num_c2
+            theta2 = np.arctan2(num_s2, num_c2)
+            # Joint 4,5,6
+            U06 = rm.homomat_from_posrot(pos=pos_w, rotmat=tgt_rotmat)
+            s1, c1, s2, c2, s3, c3 = np.sin(theta1), np.cos(theta1), np.sin(theta2), np.cos(theta2), np.sin(
+                theta3), np.cos(theta3)
+            T03 = np.array([[s2 * s3 * c1 + c1 * c2 * c3, s2 * c1 * c3 - s3 * c1 * c2, s1, a3 * s2 * c1],
+                            [s1 * s2 * s3 + s1 * c2 * c3, s1 * s2 * c3 - s1 * s3 * c2, -c1, a3 * s1 * s2],
+                            [-s2 * c3 + s3 * c2, s2 * s3 + c2 * c3, 0, a3 * c2 + d1],
+                            [0, 0, 0, 1]])
+            """
+            U36 = 
+            [[-sin(θ4)*sin(θ6) + cos(θ4)*cos(θ5)*cos(θ6), -sin(θ4)*cos(θ6) - sin(θ6)*cos(θ4)*cos(θ5), -sin(θ5)*cos(θ4), a4], 
+             [-sin(θ5)*cos(θ6), sin(θ5)*sin(θ6), -cos(θ5), -d4], 
+             [sin(θ4)*cos(θ5)*cos(θ6) + sin(θ6)*cos(θ4), -sin(θ4)*sin(θ6)*cos(θ5) + cos(θ4)*cos(θ6), -sin(θ4)*sin(θ5), 0], 
+             [0, 0, 0, 1]]
+            """
+            U36 = (np.linalg.inv(T03)).dot(U06)
+            theta6 = -np.arctan2(U36[1, 1], U36[1, 0])
+            theta4 = np.arctan2(U36[2, 2], U36[0, 2])
+            c5 = -U36[1, 2]
+            if abs(U36[1, 0] / np.cos(theta6)) < abs(U36[1, 1] / np.sin(theta6)):
+                s5 = -U36[1, 0] / np.cos(theta6)
+            else:
+                s5 = U36[1, 1] / np.sin(theta6)
+            theta5 = np.arctan2(s5, c5)
+            theta2_4_5_6_list.append((theta2, theta4, theta5, theta6))
+        # Adapt to joint range
+        if theta3_list[0] < .0:
+            theta3_list[0] = 2. * np.pi + theta3_list[0]
+        if theta3_list[1] < .0:
+            theta3_list[1] = 2. * np.pi + theta3_list[1]
+        candidate_jnt_values_list = [np.array([theta1, j2, j3, j4, j5, j6]) for j3, (j2, j4, j5, j6) in
+                                     zip(theta3_list, theta2_4_5_6_list)]
+        jnt_values_list = []
+        for jnt_values in candidate_jnt_values_list:
+            if ((self.jlc.jnt_ranges[:, 0] <= jnt_values) & (jnt_values <= self.jlc.jnt_ranges[:, 1])).all():
+                jnt_values_list.append(jnt_values)
+        # if not ((self.jlc.jnts[1].motion_range[0] <= jnt_values_list[1][1] <= self.jlc.jnts[1].motion_range[1]) and
+        #         (self.jlc.jnts[2].motion_range[0] <= jnt_values_list[1][2] <= self.jlc.jnts[2].motion_range[1]) and
+        #         (self.jlc.jnts[4].motion_range[0] <= jnt_values_list[1][4] <= self.jlc.jnts[4].motion_range[1])):
+        #     jnt_values_list.pop(1)
+        # if not ((self.jlc.jnts[1].motion_range[0] <= jnt_values_list[0][1] <= self.jlc.jnts[1].motion_range[1]) and
+        #         (self.jlc.jnts[2].motion_range[0] <= jnt_values_list[0][2] <= self.jlc.jnts[2].motion_range[1]) and
+        #         (self.jlc.jnts[4].motion_range[0] <= jnt_values_list[0][4] <= self.jlc.jnts[4].motion_range[1])):
+        #     jnt_values_list.pop(0)
+        if len(jnt_values_list) == 0:
+            return None
+        if option == "single" or option is None:
+            if len(jnt_values_list) == 1:
+                return jnt_values_list[0]
+            else:
+                # return joint values close to seed_jnt_values
+                seed_jnt_values = np.zeros(6) if seed_jnt_values is None else seed_jnt_values
+                if np.linalg.norm(jnt_values_list[0] - seed_jnt_values) < np.linalg.norm(
+                        jnt_values_list[1] - seed_jnt_values):
+                    return jnt_values_list[0]
+                else:
+                    return jnt_values_list[1]
+        if option == "multiple":
+            return jnt_values_list
+
 
 if __name__ == '__main__':
-    import time
     import visualization.panda.world as wd
-    import modeling.geometric_model as gm
+    import modeling.geometric_model as mgm
 
     base = wd.World(cam_pos=[2, 0, 1], lookat_pos=[0, 0, 0])
-    gm.gen_frame().attach_to(base)
+    mgm.gen_frame().attach_to(base)
     robot = XArmLite6(enable_cc=True)
     robot.gen_meshmodel(toggle_cdprim=True).attach_to(base)
+
+    tgt_pos = np.array([.3, .3, .3])
+    tgt_rotmat = rm.rotmat_from_euler(0, 0, 0)
+    mgm.gen_frame(pos=tgt_pos, rotmat=tgt_rotmat).attach_to(base)
+    jnt_values = robot.ik(tgt_pos, tgt_rotmat, option="single")
+    robot.goto_given_conf(jnt_values=jnt_values)
+    robot.gen_meshmodel().attach_to(base)
     base.run()

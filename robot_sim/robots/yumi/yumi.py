@@ -199,8 +199,8 @@ class Yumi(ri.RobotInterface):
             self.delegator.restore_state()
 
     def fix_to(self, pos, rotmat):
-        self.pos = pos
-        self.rotmat = rotmat
+        self._pos = pos
+        self._rotmat = rotmat
         self.body.pos = self.pos
         self.body.rotmat = self.rotmat
         self.lft_arm.fix_to(pos=self.body.gl_flange_pose_list[0][0],
@@ -341,16 +341,20 @@ if __name__ == '__main__':
     base = wd.World(cam_pos=[3, 1, 1], lookat_pos=[0, 0, 0.5])
     gm.gen_frame().attach_to(base)
     robot = Yumi(enable_cc=True)
-    # robot.gen_meshmodel().attach_to(base)
-    robot.gen_stickmodel().attach_to(base)
-    robot.show_cdprim()
+    robot.gen_meshmodel(toggle_cdprim=True).attach_to(base)
+    # robot.gen_stickmodel().attach_to(base)
+    # robot.show_cdprim()
     base.run()
 
     # ik test
-    tgt_pos = np.array([.4, -.4, .3])
+    tgt_pos = np.array([.6, .0, .3])
     tgt_rotmat = rm.rotmat_from_axangle([0, 1, 0], math.pi / 2)
     gm.gen_frame(pos=tgt_pos, rotmat=tgt_rotmat).attach_to(base)
-    # base.run()
+    robot.use_rgt()
+    jnt_values = robot.ik(tgt_pos, tgt_rotmat)
+    robot.goto_given_conf(jnt_values=jnt_values)
+    robot.gen_meshmodel().attach_to(base)
+    base.run()
 
     tic = time.time()
     jnt_values = robot.rgt_arm.ik(tgt_pos, tgt_rotmat)

@@ -1,8 +1,8 @@
-import math
 import numpy as np
 import basis.robot_math as rm
 import motion.motion_data as motu
 import robot_sim.robots.single_arm_robot_interface as sari
+import modeling.geometric_model as mgm
 
 
 class InterplatedMotion(object):
@@ -89,7 +89,7 @@ class InterplatedMotion(object):
                 if result:
                     if toggle_dbg:
                         for pnt in contacts:
-                            gm.gen_sphere(pnt, radius=.005).attach_to(base)
+                            mgm.gen_sphere(pnt, radius=.005).attach_to(base)
                         print(jnt_values)
                         self.robot.goto_given_conf(jnt_values=jnt_values)
                         if ee_values is not None:

@@ -38,10 +38,10 @@ class PickPlacePlanner(adp.ADPlanner):
         for goal_id, goal_pose in enumerate(goal_pose_list):
             goal_pos = goal_pose[0]
             goal_rotmat = goal_pose[1]
-            grasp_with_gid = zip(previous_available_gids,  # need .copy()?
+            grasp_and_gid = zip(previous_available_gids,  # need .copy()?
                                [grasp_collection[i] for i in previous_available_gids])
             previous_available_gids = []
-            for gid, grasp in grasp_with_gid:
+            for gid, grasp in grasp_and_gid:
                 goal_jaw_center_pos = goal_pos + goal_rotmat.dot(grasp.ac_pos)
                 goal_jaw_center_rotmat = goal_rotmat.dot(grasp.ac_rotmat)
                 jnt_values = self.robot.ik(tgt_pos=goal_jaw_center_pos, tgt_rotmat=goal_jaw_center_rotmat)

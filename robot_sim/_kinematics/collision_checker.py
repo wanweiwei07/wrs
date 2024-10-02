@@ -68,14 +68,14 @@ class CCElement(object):
         """
         # remove from collision traverser
         for child_pdndp in self.tfd_cdprim.getChildren():
-            self.host_cc.cd_trav.removeCollider(collider=child_pdndp)
+            self.host_cc.cd_trav.removeCollider(child_pdndp)
         # remove from pdcndp tree
         self.tfd_cdprim.removeNode()
         # set self.tfd_cdprim to None for delayed feletion from other cce's into list (see 63)
         self.tfd_cdprim = None
         # remove the into bitmask of all cces in the cce_into_dict
         bitmask_list_to_return = []
-        for allocated_bitmask, cce_into_list in self.cce_into_dict:
+        for allocated_bitmask in self.cce_into_dict.keys():
             self.host_cc.bitmask_users_dict[allocated_bitmask].remove(self.lnk.uuid)
             if len(self.host_cc.bitmask_users_dict[allocated_bitmask]) == 0:
                 self._close_bitmask(allocated_bitmask)
@@ -134,7 +134,7 @@ class CollisionChecker(object):
         self.bitmask_ext = BitMask32(2 ** 31)  # 31 is prepared for cd with external non-active objects
         self.cce_dict = {}  # a dict of CCElement
         # temporary parameter for toggling on/off show_cdprimit
-        self._cdprim_list = []
+        self._toggled_cdprim_list = []
         self.dynamic_into_list = [] # for oiee?
 
     def add_cce(self, lnk, toggle_collider=True):
@@ -298,9 +298,10 @@ class CollisionChecker(object):
                                                        homomat=cce.lnk.gl_homomat,
                                                        clear_mask=True)
             mph.toggle_show_collision_node(tmp_tfd_cdprim, toggle_show_on=True)
-            self._cdprim_list.append(tmp_tfd_cdprim)
+            self._toggled_cdprim_list.append(tmp_tfd_cdprim)
 
     def unshow_cdprim(self):
-        for cdprim in self._cdprim_list:
+        for cdprim in self._toggled_cdprim_list:
             mph.toggle_show_collision_node(cdprim, toggle_show_on=False)
             cdprim.removeNode()
+        self._toggled_cdprim_list = []

@@ -41,8 +41,8 @@ class Cobotta(rsi.SglArmRobotInterface):
         self.cc.dynamic_into_list = [mlb, ml0, ml1, ml2, ml3]
 
     def fix_to(self, pos, rotmat):
-        self.pos = pos
-        self.rotmat = rotmat
+        self._pos = pos
+        self._rotmat = rotmat
         self.manipulator.fix_to(pos=pos, rotmat=rotmat)
         self.update_end_effector()
 

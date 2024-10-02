@@ -42,8 +42,8 @@ class XArmLite6WG2(rsi.SglArmRobotInterface):
         # TODO oiee?
 
     def fix_to(self, pos, rotmat):
-        self.pos = pos
-        self.rotmat = rotmat
+        self._pos = pos
+        self._rotmat = rotmat
         self.manipulator.fix_to(pos=pos, rotmat=rotmat)
         self.update_end_effector()
 
@@ -57,17 +57,27 @@ class XArmLite6WG2(rsi.SglArmRobotInterface):
 if __name__ == '__main__':
     import time
     import visualization.panda.world as wd
-    import modeling.geometric_model as gm
+    import modeling.geometric_model as mgm
 
     base = wd.World(cam_pos=[2, 0, 1.5], lookat_pos=[0, 0, .2])
-    gm.gen_frame().attach_to(base)
+    mgm.gen_frame().attach_to(base)
     xarm = XArmLite6WG2(enable_cc=True)
     xarm_model = xarm.gen_meshmodel()
     xarm_model.attach_to(base)
-    tic = time.time()
-    trm_model=xarm_model.acquire_cm_trm()
-    toc = time.time()
-    print(toc-tic)
-    print(trm_model.vertices)
-    print("Is self collided?", xarm.is_collided())
+    # tic = time.time()
+    # trm_model=xarm_model.acquire_cm_trm()
+    # toc = time.time()
+    # print(toc-tic)
+    # print(trm_model.vertices)
+    # print("Is self collided?", xarm.is_collided())
+
+    tgt_pos = np.array([0.2995316, -0.04995615, 0.1882039])
+    tgt_rotmat = np.array([[0.03785788, 0.05806798, 0.99759455],
+                           [0.01741114, 0.99812033, -0.05875933],
+                           [-0.99913144, 0.01959376, 0.03677569]])
+    mgm.gen_frame(pos=tgt_pos, rotmat=tgt_rotmat).attach_to(base)
+    jnt_values = xarm.ik(tgt_pos, tgt_rotmat)
+    print(jnt_values)
+    xarm.goto_given_conf(jnt_values)
+    xarm.gen_meshmodel().attach_to(base)
     base.run()

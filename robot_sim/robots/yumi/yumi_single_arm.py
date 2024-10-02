@@ -1,4 +1,3 @@
-import math
 import numpy as np
 import robot_sim.manipulators.irb14050.irb14050 as irb14050
 import robot_sim.end_effectors.gripper.yumi_gripper.yumi_gripper as yg
@@ -9,7 +8,7 @@ class YumiSglArm(ri.SglArmRobotInterface):
 
     def __init__(self, pos=np.zeros(3), rotmat=np.eye(3), name="sglarm_yumi", enable_cc=True):
         super().__init__(pos=pos, rotmat=rotmat, name=name, enable_cc=enable_cc)
-        self.manipulator = irb14050.IRB14050(pos=self.pos, rotmat=self.rotmat, home_conf=np.zeros(7),
+        self.manipulator = irb14050.IRB14050(pos=self.pos, rotmat=self.rotmat,
                                              name="irb14050_" + name, enable_cc=False)
         self.end_effector = yg.YumiGripper(pos=self.manipulator.gl_flange_pos,
                                            rotmat=self.manipulator.gl_flange_rotmat, name="yg_" + name)
@@ -20,7 +19,6 @@ class YumiSglArm(ri.SglArmRobotInterface):
             self.setup_cc()
 
     def setup_cc(self):
-        # TODO when pose is changed, oih info goes wrong
         # ee
         elb = self.cc.add_cce(self.end_effector.jlc.anchor.lnk_list[0])
         el0 = self.cc.add_cce(self.end_effector.jlc.jnts[0].lnk)
@@ -35,12 +33,11 @@ class YumiSglArm(ri.SglArmRobotInterface):
         from_list = [elb, el0, el1, ml4, ml5]
         into_list = [ml0, ml1]
         self.cc.set_cdpair_by_ids(from_list, into_list)
-        oiee_into_list = []
-        # TODO oiee?
+        self.cc.dynamic_into_list = [ml0, ml1, ml2, ml3]
 
     def fix_to(self, pos, rotmat):
-        self.pos = pos
-        self.rotmat = rotmat
+        self._pos = pos
+        self._rotmat = rotmat
         self.manipulator.fix_to(pos=pos, rotmat=rotmat)
         self.update_end_effector()
 
@@ -58,19 +55,27 @@ if __name__ == '__main__':
     import modeling.geometric_model as mgm
     import modeling.collision_model as mcm
 
-    base = wd.World(cam_pos=[1.7, 1.7, 1.7], lookat_pos=[0, 0, .3])
+    base = wd.World(cam_pos=[1.7, 1, .5], lookat_pos=[0, 0, .3])
     mgm.gen_frame().attach_to(base)
     robot = YumiSglArm(enable_cc=True)
     robot.change_jaw_width(.05)
     # robot.cc.show_cdprim()
-    robot.goto_given_conf(jnt_values=np.radians(np.array([20, -90, 120, 30, 0, 40, 0])))
-    robot.cc.show_cdprim()
-    base.run()
-    robot.gen_meshmodel(alpha=1, toggle_tcp_frame=False, toggle_jnt_frames=False).attach_to(base)
-    robot.gen_stickmodel(toggle_tcp_frame=True, toggle_jnt_frames=True).attach_to(base)
+    # print(np.radians(np.array([20, -90, 120, 30, 0, 40, 0])))
+    # robot.goto_given_conf(jnt_values=np.radians(np.array([20, -90, 120, 30, 0, 40, 0])))
 
     tgt_pos = np.array([.3, .1, .3])
-    tgt_rotmat = rm.rotmat_from_axangle([0, 1, 0], math.pi * 2 / 3)
+    tgt_rotmat = rm.rotmat_from_axangle([0, 1, 0], np.pi * 2 / 3)
+    mgm.gen_frame(pos=tgt_pos, rotmat=tgt_rotmat).attach_to(base)
+    jnt_values = robot.ik(tgt_pos=tgt_pos, tgt_rotmat=tgt_rotmat, toggle_dbg=False)
+    print(jnt_values)
+    robot.goto_given_conf(jnt_values=jnt_values)
+    # robot.gen_stickmodel(toggle_tcp_frame=True, toggle_jnt_frames=True).attach_to(base)
+    # robot.gen_meshmodel(alpha=.5, toggle_tcp_frame=False, toggle_jnt_frames=False).attach_to(base)
+    robot.gen_meshmodel(toggle_cdprim=True).attach_to(base)
+    base.run()
+
+    tgt_pos = np.array([.3, .1, .3])
+    tgt_rotmat = rm.rotmat_from_axangle([0, 1, 0], np.pi * 2 / 3)
     mgm.gen_frame(pos=tgt_pos, rotmat=tgt_rotmat).attach_to(base)
     jnt_values = robot.ik(tgt_pos=tgt_pos, tgt_rotmat=tgt_rotmat, toggle_dbg=False)
     print(jnt_values)
@@ -84,7 +89,7 @@ if __name__ == '__main__':
     robot.goto_given_conf(jnt_values=np.array([0, np.pi / 2, np.pi * 11 / 20, 0, np.pi / 2, 0]))
     robot.show_cdprim()
 
-    box = mcm.gen_box(xyz_lengths=np.array([0.1, .1, .1]), pos=tgt_pos, rgba=np.array([1, 1, 0, .3]))
+    box = mcm.gen_box(xyz_lengths=np.array([0.1, .1, .1]), pos=tgt_pos, rgb=np.array([1, 1, 0]), alpha=.3)
     box.attach_to(base)
     tic = time.time()
     result, contacts = robot.is_collided(obstacle_list=[box], toggle_contacts=True)

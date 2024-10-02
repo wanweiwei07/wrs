@@ -73,7 +73,8 @@ class SglArmRobotInterface(ri.RobotInterface):
     def restore_state(self):
         self._manipulator.restore_state()
         for oiee in self.oiee_list:
-            self.release(oiee.cmodel)
+            if self.cc is not None:
+                self.cc.remove_cce(oiee)
         self.update_end_effector()
         self._end_effector.restore_state()
         if self.cc is not None:

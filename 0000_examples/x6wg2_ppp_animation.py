@@ -14,7 +14,8 @@ mgm.gen_frame().attach_to(base)
 # ground
 ground = mcm.gen_box(xyz_lengths=[5, 5, 0.1],
                      pos=np.array([0, 0, -0.1]),
-                     rgba=[.7, .7, .7, .7])
+                     rgb=np.array([.7, .7, .7]),
+                     alpha=.7)
 ground.pos = np.array([0, 0, -.51])
 ground.attach_to(base)
 # object
@@ -42,12 +43,12 @@ t2_copy.alpha = .3
 t2_copy.attach_to(base)
 
 robot = x6g2.XArmLite6WG2()
-# robot.gen_meshmodel().attach_to(base)
+robot.gen_meshmodel().attach_to(base)
 
 rrtc = rrtc.RRTConnect(robot)
 ppp = ppp.PickPlacePlanner(robot)
 
-grasp_collection = grasping.grasp.GraspCollection.from_file(file_name='wrs_gripper2_grasps.pickle')
+grasp_collection = grasping.grasp.GraspCollection.load_from_disk(file_name='wrs_gripper2_grasps.pickle')
 start_conf = robot.get_jnt_values()
 print(grasp_collection)
 mot_data = ppp.gen_pick_and_place(obj_cmodel=tube1,
