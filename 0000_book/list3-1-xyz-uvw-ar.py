@@ -1,5 +1,5 @@
 import numpy as np
-import wrs.visualization.panda.world as wd
+import wrs.modeling.geometric_model as mgm
 
 
 def draw_coord(pnt, rotmat=np.eye(3), toggle_pnt=False, toggle_coord=False):
@@ -37,12 +37,14 @@ def draw_coord(pnt, rotmat=np.eye(3), toggle_pnt=False, toggle_coord=False):
 
 
 if __name__ == '__main__':
+    import wrs.visualization.panda.world as wd
+    import wrs.basis.robot_math as rm
+
     base = wd.World(cam_pos=np.array([1, 1, 1]), lookat_pos=np.zeros(3))
     mgm.gen_frame(ax_length=.2).attach_to(base)
     o_r_a = np.array([[0.4330127, -0.64951905, 0.625],
                       [0.75, -0.125, -0.64951905],
                       [0.5, 0.75, 0.4330127]])
-    from wrs import basis as rm, modeling as mgm
 
     print(np.degrees(rm.rotmat_to_euler(o_r_a, order='sxyz')))
     print(np.degrees(rm.rotmat_to_euler(o_r_a, order='rzxz')))
