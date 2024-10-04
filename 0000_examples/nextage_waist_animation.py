@@ -1,11 +1,7 @@
 import math
 import numpy as np
-import basis.robot_math as rm
-import visualization.panda.world as wd
-import modeling.geometric_model as gm
-import modeling.collision_model as cm
-import robot_sim.robots.nextage.nextage_old as nxt
-import motion.probabilistic.rrt_connect as rrtc
+from wrs import basis as rm, robot_sim as nxt, motion as rrtc, modeling as gm, modeling as cm
+import wrs.visualization.panda.world as wd
 
 base = wd.World(cam_pos=[4, -1, 2], lookat_pos=[0, 0, 0])
 gm.gen_frame().attach_to(base)

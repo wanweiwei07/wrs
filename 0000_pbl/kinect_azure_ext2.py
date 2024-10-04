@@ -1,13 +1,7 @@
-import cv2
-import drivers.devices.kinect_azure.pykinectazure as pk
-import drivers.devices.kinect_azure.helper as pkhlpr
-import visualization.panda.world as wd
-import modeling.geometric_model as gm
+import wrs.visualization.panda.world as wd
 import pickle
-import vision.rgb_camera.util_functions as rgbu
-import cv2.aruco as aruco
 import numpy as np
-import basis.robot_math as rm
+from wrs import basis as rm, drivers as pk, modeling as gm
 
 origin, origin_rotmat = pickle.load(open("origin.pkl", "rb"))
 origin_homomat = np.eye(4)

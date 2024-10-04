@@ -1,7 +1,7 @@
-import visualization.panda.world as wd
-import grasping.planning.antipodal as gpa
-import robot_sim.end_effectors.gripper.wrs_gripper.wrs_gripper_v2 as wg2
-import modeling.collision_model as mcm
+import wrs.visualization.panda.world as wd
+import wrs.grasping.planning.antipodal as gpa
+import wrs.modeling.collision_model as mcm
+import wrs.robot_sim.end_effectors.grippers.wrs_gripper.wrs_gripper_v2 as wg2
 import numpy as np
 import math
 
@@ -11,7 +11,7 @@ obj_cmodel = mcm.CollisionModel("objects/bunnysim.stl")
 obj_cmodel.attach_to(base)
 
 gripper = wg2.WRSGripper2()
-# gripper.gen_meshmodel().attach_to(base)
+# grippers.gen_meshmodel().attach_to(base)
 # base.run()
 grasp_collection = gpa.plan_gripper_grasps(gripper,
                                            obj_cmodel,

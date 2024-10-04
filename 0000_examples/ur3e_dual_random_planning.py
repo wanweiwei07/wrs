@@ -1,10 +1,8 @@
 import random
 import numpy as np
-import visualization.panda.world as wd
-import modeling.geometric_model as gm
-import modeling.collision_model as cm
-import robot_sim.robots.ur3e_dual.ur3e_dual as u3ed
-import motion.probabilistic.rrt_connect as rrtc
+import wrs.visualization.panda.world as wd
+import wrs.robot_sim.robots.ur3e_dual.ur3e_dual as u3ed
+from wrs import motion as rrtc, modeling as gm, modeling as cm
 
 
 class Data(object):

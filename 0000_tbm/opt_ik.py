@@ -1,10 +1,8 @@
-import copy
 import math
 import time
-import random
 import numpy as np
 from scipy.optimize import minimize
-import basis.robot_math as rm
+from wrs import basis as rm, robot_sim as ym, modeling as gm
 
 
 class OptIK(object):
@@ -166,7 +164,7 @@ class OptIK(object):
 
     def _debug_plot(self):
         if "plt" not in dir():
-            import visualization.matplot.helper as plth
+            import wrs.visualization.matplot.helper as plth
         plth.plt.figure(1, figsize=(6.4 * 3, 4.8 * 2))
         plth.plt.subplot(231)
         plth.plt.plot(*plth.list_to_plt_xy(self.x_err))
@@ -185,9 +183,7 @@ class OptIK(object):
         plth.plt.show()
 
 if __name__ == '__main__':
-    import visualization.panda.world as wd
-    import robot_sim.robots.yumi.yumi as ym
-    import modeling.geometric_model as gm
+    import wrs.visualization.panda.world as wd
 
     base = wd.World(cam_pos=[1.5, 0, 3], lookat_pos=[0, 0, .5])
     component_name= 'rgt_arm'

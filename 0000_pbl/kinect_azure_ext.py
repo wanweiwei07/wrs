@@ -1,13 +1,8 @@
 import cv2
-import drivers.devices.kinect_azure.pykinectazure as pk
-import drivers.devices.kinect_azure.helper as pkhlpr
-import visualization.panda.world as wd
-import modeling.geometric_model as gm
-import pickle
-import vision.rgb_camera.util_functions as rgbu
+import wrs.visualization.panda.world as wd
 import cv2.aruco as aruco
 import numpy as np
-import basis.robot_math as rm
+from wrs import basis as rm, drivers as pk, modeling as gm
 
 base = wd.World(cam_pos=[0, 0, -10], lookat_pos=[0, 0, 10])
 gm.gen_frame().attach_to(base)

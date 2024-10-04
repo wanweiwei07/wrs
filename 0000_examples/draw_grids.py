@@ -1,6 +1,6 @@
 import numpy as np
-import modeling.geometric_model as gm
-import visualization.panda.world as wd
+from wrs import modeling as gm
+import wrs.visualization.panda.world as wd
 
 base = wd.World(cam_pos=[1, .7, .3], lookat_pos=[0, 0, 0])
 for x in [-.03, 0, .03]:

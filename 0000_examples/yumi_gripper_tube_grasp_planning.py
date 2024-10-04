@@ -1,8 +1,6 @@
-import visualization.panda.world as wd
-import grasping.planning.antipodal as gpa
-import robot_sim.end_effectors.gripper.yumi_gripper.yumi_gripper as yg
-import modeling.collision_model as mcm
-import modeling.geometric_model as mgm
+import wrs.visualization.panda.world as wd
+import wrs.grasping.planning.antipodal as gpa
+from wrs import robot_sim as yg, modeling as mcm
 import numpy as np
 import math
 
@@ -12,7 +10,7 @@ obj_cmodel = mcm.CollisionModel("objects/tubebig.stl")
 obj_cmodel.attach_to(base)
 
 gripper = yg.YumiGripper()
-# gripper.gen_meshmodel().attach_to(base)
+# grippers.gen_meshmodel().attach_to(base)
 # base.run()
 grasp_info_list = gpa.plan_gripper_grasps(gripper,
                                           obj_cmodel,

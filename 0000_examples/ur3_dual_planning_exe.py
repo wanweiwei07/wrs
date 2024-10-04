@@ -1,11 +1,7 @@
-import math
 import numpy as np
-import visualization.panda.world as wd
-import modeling.geometric_model as mgm
-import modeling.collision_model as mcm
-import robot_sim.robots.ur3_dual.ur3_dual as ur3d
-import motion.probabilistic.rrt_connect as rrtc
-import robot_con.ur.ur3_dual_x as ur3dx
+import wrs.visualization.panda.world as wd
+from wrs import robot_sim as ur3d, motion as rrtc, modeling as mgm, modeling as mcm
+import wrs.robot_con.ur.ur3_dual_x as ur3dx
 
 
 class Data(object):

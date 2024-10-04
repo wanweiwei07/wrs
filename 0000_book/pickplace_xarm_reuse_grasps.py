@@ -1,10 +1,7 @@
-import visualization.panda.world as wd
-import modeling.geometric_model as gm
-import modeling.collision_model as cm
-import grasping.planning.antipodal as gpa
+import wrs.visualization.panda.world as wd
+import wrs.grasping.planning.antipodal as gpa
 import numpy as np
-import robot_sim.robots.xarm7_xg_shuidi.xarm7_xg_shuidi as xsm
-import robot_sim.end_effectors.gripper.xarm_gripper.xarm_gripper as xag
+from wrs import robot_sim as xsm, robot_sim as xag, modeling as gm, modeling as cm
 
 base = wd.World(cam_pos=[3, 3, 0.5], lookat_pos=[0, 0, 0.4])
 gm.gen_frame().attach_to(base)

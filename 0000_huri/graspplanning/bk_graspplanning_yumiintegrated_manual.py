@@ -1,13 +1,9 @@
 from pandaplotutils import pandactrl as pandactrl
-import manipulation.grip.yumiintegrated.yumiintegrated as yi
+from wrs import manipulation as yi, manipulation as freegrip
 import utiltools.robotmath as rm
 import numpy as np
 import database.dbaccess as db
 import environment.collisionmodel as cm
-import manipulation.grip.freegrip as freegrip
-import bunrisettingfree as bsf
-import motion.collisioncheckerball as cdball
-import environment.bulletcdhelper as bch
 
 if __name__=="__main__":
 

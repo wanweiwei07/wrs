@@ -1,8 +1,7 @@
-import visualization.panda.world as wd
-import modeling.geometric_model as gm
-import modeling.collision_model as cm
-import grasping.planning.antipodal as gpa
-import robot_sim.end_effectors.gripper.robotiq85_gelsight.robotiq85_gelsight as rtq85
+import wrs.visualization.panda.world as wd
+from wrs import modeling as gm, modeling as cm
+import wrs.grasping.planning.antipodal as gpa
+import wrs.robot_sim.end_effectors.grippers.robotiq85_gelsight.robotiq85_gelsight as rtq85
 import math
 
 base = wd.World(cam_pos=[1, 1, 1], lookat_pos=[0, 0, 0])
@@ -11,7 +10,7 @@ gm.gen_frame().attach_to(base)
 obj = cm.CollisionModel("tubebig.stl")
 obj.set_rgba([.9, .75, .35, .3])
 obj.attach_to(base)
-# gripper
+# grippers
 gripper_s = rtq85.Robotiq85Gelsight()
 grasp_info_list = gpa.plan_gripper_grasps(gripper_s, obj,
                                           angle_between_contact_normals=math.radians(170), openning_direction='loc_y',

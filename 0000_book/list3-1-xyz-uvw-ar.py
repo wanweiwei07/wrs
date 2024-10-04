@@ -1,6 +1,5 @@
 import numpy as np
-import modeling.geometric_model as mgm
-import visualization.panda.world as wd
+import wrs.visualization.panda.world as wd
 
 
 def draw_coord(pnt, rotmat=np.eye(3), toggle_pnt=False, toggle_coord=False):
@@ -43,7 +42,8 @@ if __name__ == '__main__':
     o_r_a = np.array([[0.4330127, -0.64951905, 0.625],
                       [0.75, -0.125, -0.64951905],
                       [0.5, 0.75, 0.4330127]])
-    import basis.robot_math as rm
+    from wrs import basis as rm, modeling as mgm
+
     print(np.degrees(rm.rotmat_to_euler(o_r_a, order='sxyz')))
     print(np.degrees(rm.rotmat_to_euler(o_r_a, order='rzxz')))
     mgm.gen_dashed_frame(rotmat=o_r_a, ax_length=.2).attach_to(base)

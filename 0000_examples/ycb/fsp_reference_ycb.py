@@ -1,12 +1,10 @@
 import os
 import time
-import basis.robot_math as rm
+from wrs import basis as rm, bench_mark as ycb, modeling as mcm
 import numpy as np
-import visualization.panda.world as wd
-import modeling.collision_model as mcm
-import manipulation.placement.flat_surface_placement as mpfsp
-import bench_mark.ycb as ycb
-import manipulation.regrasp as reg
+import wrs.visualization.panda.world as wd
+import wrs.manipulation.placement.flat_surface_placement as mpfsp
+import wrs.manipulation.regrasp as reg
 
 
 class AnimeData(object):

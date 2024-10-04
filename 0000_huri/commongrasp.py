@@ -1,14 +1,12 @@
 import os
 import database.dbaccess as db
 import pandaplotutils.pandactrl as pandactrl
-import manipulation.grip.yumiintegrated.yumiintegrated as yi
-import manipulation.grip.freegrip as freegrip
+from wrs import manipulation as yi, manipulation as freegrip, motion as cdball
 import environment.collisionmodel as cm
 import environment.suitayuminotop as yumisetting
-from robot_sim.robots.dualarm.yumi import yumi
-from robot_sim.robots.dualarm.yumi import yumimesh, yumiball
+from wrs.robot_sim import yumi
+from wrs.robot_sim import yumimesh, yumiball
 import copy
-import motion.collisioncheckerball as cdball
 import environment.bulletcdhelper as bch
 
 if __name__=='__main__':

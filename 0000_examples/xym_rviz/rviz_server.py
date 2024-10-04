@@ -1,8 +1,8 @@
 import grpc
 from concurrent import futures
-import visualization.panda.world as wd
-import visualization.panda.rpc.rviz_server as rs
-import visualization.panda.rpc.rviz_pb2_grpc as rv_rpc
+import wrs.visualization.panda.world as wd
+import wrs.visualization.panda.rpc.rviz_server as rs
+import wrs.visualization.panda.rpc.rviz_pb2_grpc as rv_rpc
 
 
 def serve(host="localhost:18300"):

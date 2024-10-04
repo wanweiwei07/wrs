@@ -1,11 +1,7 @@
-import os
-import math
 import numpy as np
-import basis.robot_math as rm
-import robot_sim.robots.xarm7_xg_shuidi.xarm7_xg_shuidi as xa
-import robot_sim.robots.ur5e_conveyorbelt.ur5e_conveyorbet as ur5e
-import visualization.panda.world as wd
-import modeling.geometric_model as gm
+from wrs import basis as rm, robot_sim as ur5e, modeling as gm
+import wrs.visualization.panda.world as wd
+
 
 def genSphere(pos, radius=0.02, rgba=None):
     if rgba is None:

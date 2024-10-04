@@ -9,7 +9,6 @@ import numpy as np
 # from geomdl import fitting
 # from geomdl.visualization import VisMPL as vis
 from matplotlib import cm
-from scipy.interpolate import RBFInterpolator
 from sklearn.neighbors import KDTree
 
 import config
@@ -24,8 +23,7 @@ import math_utils as mu
 import phoxi as phoxi
 import phoxi_locator as pl
 import run_utils as ru
-import basis.robot_math as rm
-import modeling.geometric_model as gm
+from wrs import basis as rm, modeling as gm
 
 
 def find_img_interior_rec(img, gray_threshold=1, toggledebug=False):
@@ -1475,7 +1473,7 @@ if __name__ == '__main__':
     """
     import pickle
     import os
-    import visualization.panda.world as wd
+    import wrs.visualization.panda.world as wd
 
     SNAP_QI = False
     SNAP_SFC_G = False

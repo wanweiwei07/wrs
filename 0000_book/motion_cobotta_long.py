@@ -1,14 +1,9 @@
 if __name__ == '__main__':
     import math
     import numpy as np
-    import basis.robot_math as rm
-    import robot_sim.robots.cobotta.cobotta as cbt
-    import motion.probabilistic.rrt_connect as rrtc
-    import visualization.panda.world as wd
-    import modeling.geometric_model as gm
-    import motion.trajectory.piecewisepoly_scl as trajp
-    import motion.trajectory.piecewisepoly_opt as trajpopt
-    import motion.trajectory.piecewisepoly_toppra as trajptop
+    from wrs import basis as rm, robot_sim as cbt, motion as rrtc, modeling as gm
+    import wrs.visualization.panda.world as wd
+    import wrs.motion.trajectory.piecewisepoly_scl as trajp
 
     base = wd.World(cam_pos=[1, 1, .5], lookat_pos=[0, 0, .2])
     gm.gen_frame().attach_to(base)

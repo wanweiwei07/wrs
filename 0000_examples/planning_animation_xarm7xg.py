@@ -1,12 +1,9 @@
 if __name__ == '__main__':
     import time
     import numpy as np
-    import basis.robot_math as rm
-    import robot_sim.robots.xarm7_xg_shuidi.xarm7_xg as x7g
-    import motion.probabilistic.rrt_connect as rrtc
-    import visualization.panda.world as wd
-    import modeling.geometric_model as mgm
-    import basis.constant as bc
+    from wrs import basis as rm, motion as rrtc, modeling as mgm
+    import wrs.robot_sim.robots.xarm7_xg_shuidi.xarm7_xg as x7g
+    import wrs.visualization.panda.world as wd
 
     base = wd.World(cam_pos=[1.5, 1.5, .75], lookat_pos=[0, 0, .2])
     mgm.gen_frame().attach_to(base)

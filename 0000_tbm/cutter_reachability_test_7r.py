@@ -1,12 +1,8 @@
-import robot_sim.robots.tbm_changer.tbm_changer_7r as rbt
-import robot_sim.others.tbm.tbm_machine as mcn
-import modeling.geometric_model as gm
-import visualization.panda.world as wd
+import wrs.visualization.panda.world as wd
 import numpy as np
-import basis.robot_math as rm
+from wrs import basis as rm, robot_sim as rbt, robot_sim as mcn, modeling as gm
 import math
 import pickle
-import opt_ik
 
 base = wd.World(cam_pos=[-15, 2.624-0.275, 15], lookat_pos=[-1.726-0.35, 2.624-0.275, 5.323], auto_cam_rotate=False)
 mcn_s = mcn.TBM()

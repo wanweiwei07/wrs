@@ -1,13 +1,7 @@
-import visualization.panda.world as wd
-import modeling.geometric_model as gm
-import modeling.collision_model as cm
-import grasping.planning.antipodal as gpa
+import wrs.visualization.panda.world as wd
 import math
 import numpy as np
-import basis.robot_math as rm
-import robot_sim.robots.cobotta.cobotta as cbt
-import manipulation.pick_place_planner as ppp
-import motion.probabilistic.rrt_connect as rrtc
+from wrs import basis as rm, robot_sim as cbt, modeling as gm, modeling as cm
 
 base = wd.World(cam_pos=[1.2, .7, 1], lookat_pos=[.0, 0, .15])
 gm.gen_frame().attach_to(base)

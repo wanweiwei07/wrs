@@ -8,12 +8,11 @@ import numpy as np
 import sklearn.cluster as skc
 
 import config
-import modeling.collision_model as cm
 # import trimesh.sample as ts
 import pcd_utils as pcdu
 import phoxi as phoxi
 import vision_utils as vu
-import basis.robot_math as rm
+from wrs import basis as rm, modeling as cm
 # import utiltools.thirdparty.o3dhelper as o3dh
 import envloader as el
 

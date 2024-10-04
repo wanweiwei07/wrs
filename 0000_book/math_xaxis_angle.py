@@ -1,6 +1,6 @@
 import math
 import numpy as np
-import basis.robot_math as rm
+from wrs import basis as rm
 
 if __name__ == '__main__':
     x_axis = np.array([1,0,0])

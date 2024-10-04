@@ -1,8 +1,5 @@
-from typing import Literal
-
 import numpy as np
-from drivers.devices.realsense.realsense_d400s import RealSenseD405
-import cv2
+from wrs.drivers.devices.realsense.realsense_d400s import RealSenseD405
 
 
 def letterbox(im, new_shape=(640, 640), color=(114, 114, 114), auto=True, scaleFill=False, scaleup=True, stride=32):

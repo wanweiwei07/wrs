@@ -1,8 +1,7 @@
 import time
 import numpy as np
-import modeling.collision_model as cm
-import modeling.geometric_model as gm
-import visualization.panda.world as wd
+from wrs import modeling as cm, modeling as gm
+import wrs.visualization.panda.world as wd
 
 if __name__ == '__main__':
     base = wd.World(cam_pos=np.array([.7, .05, .3]), lookat_pos=np.zeros(3))

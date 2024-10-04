@@ -1,7 +1,6 @@
 import numpy as np
-import modeling.geometric_model as gm
-import visualization.panda.world as wd
-import basis.constant as cnst
+import wrs.visualization.panda.world as wd
+from wrs import basis as cnst, modeling as gm
 
 if __name__ == '__main__':
     base = wd.World(cam_pos=np.array([.15, .1, 1]), lookat_pos=np.array([.15, .1, 0]),

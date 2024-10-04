@@ -1,10 +1,8 @@
 import os
 import database.dbaccess as db
 import pandaplotutils.pandactrl as pandactrl
-import manipulation.grip.yumiintegrated.yumiintegrated as yi
-import manipulation.grip.freegrip as freegrip
+from wrs import manipulation as yi, manipulation as freegrip
 import environment.collisionmodel as cm
-import environment.suitayuminotop as yumisetting
 
 if __name__=='__main__':
 

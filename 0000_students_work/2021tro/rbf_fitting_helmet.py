@@ -1,15 +1,9 @@
 import numpy as np
-import modeling.geometric_model as gm
-import visualization.panda.world as wd
-import basis.robot_math as rm
-import math
+import wrs.visualization.panda.world as wd
 import pickle
-import modeling.collision_model as cm
 # import vision.depth_camera.surface.gaussian_surface as gs
 # import vision.depth_camera.surface.quadrantic_surface as qs
-import vision.depth_camera.surface.bibspline_surface as bs
-import vision.depth_camera.surface.plane_surface as ps
-import vision.depth_camera.surface.rbf_surface as rbfs
+from wrs import vision as bs, modeling as cm
 
 base = wd.World(cam_pos=np.array([.5,.1,.3]), lookat_pos=np.array([0,0,0.02]))
 model_pcd = pickle.load(open("helmet_gaussian.pkl", "rb"))['objpcd'] * 1e-3

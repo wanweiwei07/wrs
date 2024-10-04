@@ -1,9 +1,6 @@
-import visualization.panda.world as wd # 三次元の仮想環境や表示画面の定義用
-import modeling.geometric_model as mgm # 各種幾何形状（例えば矢印や座標系など）の定義用
-import modeling.collision_model as mcm # 衝突検出可能な各種幾何形状の定義用
-import robot_sim.robots.ur3_dual.ur3_dual as ur3d # ロボットシミュレーションの定義用
+import wrs.visualization.panda.world as wd # 三次元の仮想環境や表示画面の定義用
 import numpy as np # 行列計算用
-import basis.robot_math as rm # 座標計算用
+from wrs import basis as rm, robot_sim as ur3d, modeling as mgm, modeling as mcm
 
 if __name__ == '__main__':
     base = wd.World(cam_pos=[4, 7, 4], lookat_pos=[.4, 0, 1])

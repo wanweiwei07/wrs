@@ -1,7 +1,7 @@
 import numpy as np
-import modeling.geometric_model as mgm
-import visualization.panda.world as wd
-import visualization.panda.panda3d_utils as pdu
+from wrs import modeling as mgm
+import wrs.visualization.panda.world as wd
+import wrs.visualization.panda.panda3d_utils as pdu
 
 if __name__ == '__main__':
     # cam

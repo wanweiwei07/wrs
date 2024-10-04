@@ -1,5 +1,4 @@
 import pickle
-import copy
 import utiltools.thirdparty.o3dhelper as o3dh
 import utiltools.robotmath as rm
 import numpy as np
@@ -74,9 +73,7 @@ if __name__ == '__main__':
     import robothelper
     import utiltools.misc.p3dhtils as p3dh
     import environment.collisionmodel as cm
-    import manipulation.suction.freesuc as fs
-    import manipulation.suction.sandmmbs.sdmbs as sds
-    import manipulation.suction.hlabbig.hlabbig as hlb
+    from wrs import manipulation as fs, manipulation as hlb
 
     rhx = robothelper.RobotHelperX(usereal=True, startworld=True)
     # rhx.movetox(rhx.robot_s.initrgtjnts, arm_name="rgt")

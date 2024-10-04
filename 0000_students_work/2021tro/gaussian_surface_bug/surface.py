@@ -3,8 +3,7 @@ from scipy.interpolate import RBFInterpolator
 from scipy.linalg import lstsq
 from scipy.optimize import curve_fit
 
-import modeling.collision_model as cm
-import basis.trimesh as trm
+from wrs import basis as trm, modeling as cm
 
 
 class Surface(object):

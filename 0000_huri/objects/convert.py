@@ -1,7 +1,4 @@
-import math
-import numpy as np
-import basis.robot_math as rm
-import modeling.mesh_tools as mt
+from wrs import modeling as mt
 
 if __name__ == '__main__':
     '''

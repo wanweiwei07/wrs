@@ -1,11 +1,8 @@
-import copy
 import os
 
 import numpy as np
-import open3d as o3d
 
 import config
-import modeling.collision_model as cm
 # import localenv.item as item
 import item
 # import manipulation.grip.robotiqhe.robotiqhe as rtqhe
@@ -15,7 +12,9 @@ import item
 # import robotsim.robots.dualarm.ur3edual.ur3edualball as robotball
 # import robotsim.robots.dualarm.ur3edual.ur3edualmesh as robotmesh
 # import trimesh.sample as ts
-import basis.robot_math as rm
+from wrs import basis as rm, modeling as cm
+
+
 # import utiltools.thirdparty.o3dhelper as o3d_helper
 # from trimesh.primitives import Box
 

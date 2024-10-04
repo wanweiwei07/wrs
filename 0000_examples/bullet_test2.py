@@ -1,11 +1,9 @@
 import os
 import numpy as np
-import basis
+from wrs import basis, basis as rm, modeling as gm
 import math
-import basis.robot_math as rm
-import visualization.panda.world as wd
-import modeling.geometric_model as gm
-import modeling.dynamics.bullet.bdmodel as bdm
+import wrs.visualization.panda.world as wd
+import wrs.modeling.dynamics.bullet.bdmodel as bdm
 
 # base = wd.World(cam_pos=[1000, 300, 1000], lookat_pos=[0, 0, 0], toggle_dbg=True)
 base = wd.World(cam_pos=[.3, .3, 1], lookat_pos=[0, 0, 0], toggle_debug=False)

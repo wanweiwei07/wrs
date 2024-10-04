@@ -1,6 +1,5 @@
-import visualization.panda.world as wd
-import modeling.geometric_model as gm
-import basis.robot_math as rm
+import wrs.visualization.panda.world as wd
+from wrs import basis as rm, modeling as gm
 import math
 import numpy as np
 

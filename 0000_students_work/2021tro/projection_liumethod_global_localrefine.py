@@ -1,11 +1,8 @@
 import numpy as np
-import modeling.geometric_model as gm
-import modeling.collision_model as cm
-import visualization.panda.world as wd
-import basis.robot_math as rm
+import wrs.visualization.panda.world as wd
+from wrs import basis as rm, vision as rbfs, modeling as cm
 import math
 from scipy.spatial import cKDTree
-import vision.depth_camera.surface.rbf_surface as rbfs
 
 base = wd.World(cam_pos=np.array([-.3,-.7,.42]), lookat_pos=np.array([0,0,0]))
 # mgm.gen_frame().attach_to(base)

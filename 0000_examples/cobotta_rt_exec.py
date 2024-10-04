@@ -2,13 +2,10 @@ if __name__ == '__main__':
     import math
     import numpy as np
     import random
-    import basis.robot_math as rm
-    import robot_sim.robots.cobotta.cobotta as cbt
-    import robot_con.cobotta.cobotta_x as cbtx
-    import motion.probabilistic.rrt_connect as rrtc
-    import visualization.panda.world as wd
-    import modeling.geometric_model as gm
-    import _misc.promote_rt as pr
+    from wrs import basis as rm, robot_sim as cbt, motion as rrtc, modeling as gm
+    import wrs.robot_con.cobotta.cobotta_x as cbtx
+    import wrs.visualization.panda.world as wd
+    import wrs._misc.promote_rt as pr
 
     base = wd.World(cam_pos=[1, 1, .5], lookat_pos=[0, 0, .2])
     gm.gen_frame().attach_to(base)

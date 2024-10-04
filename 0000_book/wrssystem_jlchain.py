@@ -1,10 +1,8 @@
 import time
 import math
 import numpy as np
-import basis.robot_math as rm
-import visualization.panda.world as wd
-import robot_sim._kinematics.jlchain as jlc
-import modeling.geometric_model as gm
+from wrs import basis as rm, robot_sim as jlc, modeling as gm
+import wrs.visualization.panda.world as wd
 
 if __name__ == "__main__":
     base = wd.World(cam_pos=[2, 0, 2], lookat_pos=[0, 0, 0])

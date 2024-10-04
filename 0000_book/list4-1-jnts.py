@@ -1,11 +1,7 @@
 import numpy as np
-import robot_sim._kinematics.jl as rkjl
-import robot_sim._kinematics.model_generator as rkmg
-import robot_sim._kinematics.jlchain as rkjlc
-import basis.robot_math as rm
-import visualization.panda.world as wd
-import modeling.geometric_model as mgm
-import robot_sim._kinematics.constant as rkc
+import wrs.robot_sim._kinematics.jl as rkjl
+from wrs import basis as rm, robot_sim as rkmg, robot_sim as rkc, modeling as mgm
+import wrs.visualization.panda.world as wd
 
 option = 'c'
 if option == 'a':

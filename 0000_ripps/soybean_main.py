@@ -2,13 +2,8 @@ import copy
 import math
 import numpy as np
 import random
-import basis.robot_math as rm
-import visualization.panda.world as wd
-import modeling.geometric_model as gm
-import modeling.collision_model as cm
-import modeling.model_collection as mc
-import robot_sim._kinematics.jlchain as jlc
-import robot_sim.manipulators.xarm7.xarm7 as rbt
+from wrs import basis as rm, robot_sim as jlc, robot_sim as rbt, modeling as gm, modeling as cm
+import wrs.visualization.panda.world as wd
 
 leaf_rgba = [45 / 255, 90 / 255, 39 / 255, 1]
 stem_rgba = [97 / 255, 138 / 255, 61 / 255, 1]

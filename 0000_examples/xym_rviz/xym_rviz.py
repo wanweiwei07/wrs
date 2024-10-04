@@ -1,17 +1,11 @@
 import os
 import time
 import math
-import basis
+from wrs import basis, robot_sim as xav, motion as rrtc, modeling as gm, modeling as cm
 import numpy as np
-import modeling.geometric_model as gm
-import modeling.collision_model as cm
-import robot_sim.robots.xarm7_xg_shuidi.xarm7_xg_shuidi as xav
-
 
 if __name__ == '__main__':
-    import copy
-    import motion.probabilistic.rrt_connect as rrtc
-    import visualization.panda.rpc.rviz_client as rv_client
+    import wrs.visualization.panda.rpc.rviz_client as rv_client
 
     # # local code
     global_frame = gm.gen_frame()

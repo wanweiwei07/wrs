@@ -2,10 +2,9 @@ import math
 import time
 import keyboard
 import numpy as np
-import basis.robot_math as rm
-import visualization.panda.world as wd
-import robot_sim.robots.xarm7_xg_shuidi.xarm7_xg_shuidi as rbs
-import robot_con.xarm_shuidi.xarm_shuidi_x as rbx
+from wrs import basis as rm, robot_sim as rbs
+import wrs.visualization.panda.world as wd
+import wrs.robot_con.xarm_shuidi.xarm_shuidi_x as rbx
 
 base = wd.World(cam_pos=[3, 1, 1.5], lookat_pos=[0, 0, 0.7])
 rbt_s = rbs.XArmShuidi()
@@ -36,8 +35,8 @@ while True:
                     'j': keyboard.is_pressed('j'),  # p- global
                     'n': keyboard.is_pressed('n'),  # yaw+ global
                     'm': keyboard.is_pressed('m'),  # yaw- global
-                    'o': keyboard.is_pressed('o'),  # gripper open
-                    'p': keyboard.is_pressed('p')}  # gripper close
+                    'o': keyboard.is_pressed('o'),  # grippers open
+                    'p': keyboard.is_pressed('p')}  # grippers close
     values_list = list(pressed_keys.values())
     if pressed_keys["w"] and pressed_keys["a"]:
         rbt_x.agv_move(linear_speed=agv_linear_speed, angular_speed=agv_angular_speed, time_interval=.5)

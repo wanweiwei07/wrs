@@ -1,5 +1,4 @@
 import pickle
-import copy
 import utiltools.thirdparty.o3dhelper as o3dh
 import utiltools.robotmath as rm
 import numpy as np
@@ -95,8 +94,7 @@ if __name__ == '__main__':
     import robothelper
     import utiltools.misc.p3dhtils as p3dh
     import environment.collisionmodel as cm
-    import manipulation.grip.freegrip as fg
-    import manipulation.grip.yumiintegrated.yumiintegrated as yi
+    from wrs import manipulation as fg, manipulation as yi
     import trimesh
 
     pg = PcdGrab()

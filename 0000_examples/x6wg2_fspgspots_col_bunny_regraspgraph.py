@@ -1,15 +1,11 @@
 import os
-import time
-import basis.robot_math as rm
+from wrs import basis as rm, modeling as mcm, grasping as g
 import networkx as nx
 import numpy as np
-import visualization.panda.world as wd
-import modeling.collision_model as mcm
-import manipulation.placement.flat_surface_placement as mpfsp
-import grasping.grasp as g
-import manipulation.regrasp as reg
-import manipulation.regrasp as rg
-import robot_sim.robots.xarmlite6_wg.x6wg2 as x6wg2
+import wrs.visualization.panda.world as wd
+import wrs.manipulation.placement.flat_surface_placement as mpfsp
+import wrs.manipulation.regrasp as reg
+import wrs.robot_sim.robots.xarmlite6_wg.x6wg2 as x6wg2
 
 if __name__ == '__main__':
     base = wd.World(cam_pos=[1, 1, 1], lookat_pos=[0, 0, 0])

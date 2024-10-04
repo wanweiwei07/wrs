@@ -1,14 +1,14 @@
 import numpy as np
 import utiltools.robotmath as rm
-from robot_sim.robots.dualarm.yumi import yumi
-from robot_sim.robots.dualarm.yumi import yumimesh, yumiball
+from wrs.robot_sim import yumi
+from wrs.robot_sim import yumimesh, yumiball
 import environment.suitayuminotop as yumisetting
-import manipulation.grip.yumiintegrated.yumiintegrated as yi
+from wrs import manipulation as yi
 from pandaplotutils import pandactrl
-from motion import checker as ctcb
-from motion import collisioncheckerball as cdck
-from motion.rrt import rrtconnect as rrtc
-from motion import smoother as sm
+from wrs.motion import checker as ctcb
+from wrs.motion import collisioncheckerball as cdck
+from wrs.motion import rrtconnect as rrtc
+from wrs.motion import smoother as sm
 import utiltools.thirdparty.p3dhelper as p3dh
 import environment.collisionmodel as cm
 import environment.bulletcdhelper as bch
@@ -377,7 +377,7 @@ class RobotHelperX(RobotHelper):
         self.base.run()
 
 if __name__ == "__main__":
-    import motion.trajectory as traj
+    import wrs.motion.trajectory as traj
     
     rhx = RobotHelperX(usereal=True)
     rhx.gethcimg("lft")

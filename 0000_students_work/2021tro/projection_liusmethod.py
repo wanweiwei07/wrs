@@ -1,8 +1,6 @@
 import numpy as np
-import modeling.geometric_model as gm
-import modeling.collision_model as cm
-import visualization.panda.world as wd
-import basis.robot_math as rm
+import wrs.visualization.panda.world as wd
+from wrs import basis as rm, modeling as cm
 import math
 from scipy.spatial import cKDTree
 

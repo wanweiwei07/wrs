@@ -1,10 +1,7 @@
-import visualization.panda.world as wd
-import modeling.geometric_model as gm
-import modeling.collision_model as cm
-import robot_sim.robots.ur3_dual.ur3_dual as ur3d
+import wrs.visualization.panda.world as wd
 import math
 import numpy as np
-import basis.robot_math as rm
+from wrs import basis as rm, robot_sim as ur3d, modeling as gm, modeling as cm
 
 if __name__ == '__main__':
     base = wd.World(cam_pos=[9, 4, 4], lookat_pos=[0, 0, .7])

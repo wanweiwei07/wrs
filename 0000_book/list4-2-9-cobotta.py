@@ -1,8 +1,6 @@
 import time
-import robot_sim.robots.cobotta.cobotta as cbt
-import basis.robot_math as rm
-import visualization.panda.world as wd
-import modeling.geometric_model as mgm
+from wrs import basis as rm, robot_sim as cbt, modeling as mgm
+import wrs.visualization.panda.world as wd
 
 base = wd.World(cam_pos=[1.7, 1.7, 1.7], lookat_pos=[0, 0, .3])
 mgm.gen_frame().attach_to(base)

@@ -1,5 +1,5 @@
 import matplotlib.pyplot as plt
-import basis.robot_math as rm
+from wrs import basis as rm
 
 xy_array = rm.gen_2d_equilateral_verts(5, edge_length=.9)
 fig = plt.figure()

@@ -1,10 +1,8 @@
 import numpy as np
 import math
-import basis.robot_math as rm
-import visualization.panda.world as wd
-import robot_sim.robots.yumi.yumi as ym
-import modeling.geometric_model as gm
-import motion.optimization_based.incremental_nik as inik
+from wrs import basis as rm, robot_sim as ym, modeling as gm
+import wrs.visualization.panda.world as wd
+import wrs.motion.optimization_based.incremental_nik as inik
 
 if __name__ == "__main__":
     base = wd.World(cam_pos=[3, -1, 1], lookat_pos=[0, 0, 0.5])

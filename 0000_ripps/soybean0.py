@@ -1,7 +1,6 @@
 import numpy as np
-import basis.robot_math as rm
-import visualization.panda.world as wd
-import modeling.geometric_model as gm
+from wrs import basis as rm, modeling as gm
+import wrs.visualization.panda.world as wd
 
 leaf_rgba = [45/255, 90/255, 39/255, 1]
 stem_rgba = [97/255, 138/255, 61/255, 1]

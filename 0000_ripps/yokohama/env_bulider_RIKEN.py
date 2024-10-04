@@ -1,12 +1,8 @@
 import copy
 
 import numpy as np
-import math
-import modeling.geometric_model as gm
-import modeling.collision_model as cm
-import basis.robot_math as rm
-import visualization.panda.world as wd
-import robot_sim.robots.cobotta.cobotta_ripps as cbtr
+from wrs import basis as rm, robot_sim as cbtr, modeling as gm, modeling as cm
+import wrs.visualization.panda.world as wd
 import utils
 
 

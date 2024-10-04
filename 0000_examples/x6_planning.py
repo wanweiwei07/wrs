@@ -1,11 +1,9 @@
 import numpy as np
 
 if __name__ == "__main__":
-    import modeling.geometric_model as gm
-    import visualization.panda.world as wd
-    from robot_sim.robots.xarmlite6_wg import XArmLite6WRSGripper
-    import motion.probabilistic.rrt_connect as rrtc
-    import math
+    import wrs.visualization.panda.world as wd
+    from wrs.robot_sim.robots import XArmLite6WRSGripper
+    from wrs import motion as rrtc, modeling as gm
 
     base = wd.World(cam_pos=[2, 0, 1], lookat_pos=[0, 0, 0.5])
     gm.gen_frame().attach_to(base)
@@ -49,7 +47,7 @@ if __name__ == "__main__":
 
         real_robot = True
         if real_robot:
-            from robot_con.xarm_lite6 import XArmLite6X
+            from wrs.robot_con import XArmLite6X
 
             xarm_con = XArmLite6X()
             # move to first joint of the path

@@ -1,13 +1,11 @@
 import math
 import numpy as np
-import basis.robot_math as rm
-import grasping.annotation.gripping as gutil
+from wrs import basis as rm, robot_sim as yg, modeling as cm
+import wrs.grasping.annotation.gripping as gutil
 
 if __name__ == '__main__':
 
-    import robot_sim.end_effectors.gripper.yumi_gripper.yumi_gripper as yg
-    import modeling.collision_model as cm
-    import visualization.panda.world as wd
+    import wrs.visualization.panda.world as wd
 
     base = wd.World(cam_pos=[.5, .5, .3], lookat_pos=[0, 0, 0])
     gripper_instance = yg.YumiGripper(enable_cc=True, cdmesh_type='aabb')

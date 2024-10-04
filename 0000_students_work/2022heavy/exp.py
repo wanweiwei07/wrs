@@ -1,10 +1,7 @@
-import robot_sim.end_effectors.single_contact.suction.mvfln40.mvfln40 as suction
-import robot_sim.robots.ur3_dual.ur3_dual as ur3d
-import modeling.geometric_model as gm
-import modeling.collision_model as cm
+import wrs.robot_sim.end_effectors.single_contact.suction.mvfln40.mvfln40 as suction
 import numpy as np
-import visualization.panda.world as wd
-import basis.robot_math as rm
+import wrs.visualization.panda.world as wd
+from wrs import basis as rm, robot_sim as ur3d, modeling as gm, modeling as cm
 import math
 
 base = wd.World(cam_pos=[3.5, 1, 2.5], lookat_pos=[.5,0,1.2])

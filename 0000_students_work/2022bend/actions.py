@@ -1,8 +1,6 @@
 import numpy as np
-import basis.robot_math as rm
-import visualization.panda.world as wd
-import robot_sim.end_effectors.gripper.robotiq85.robotiq85 as rtq85
-import robot_sim.end_effectors.gripper.robotiqhe.robotiqhe as rtqhe
+from wrs import basis as rm, robot_sim as rtqhe
+import wrs.visualization.panda.world as wd
 
 base = wd.World(cam_pos=np.array([1,1,1]))
 pos0 = np.array([0,0.07,.3])

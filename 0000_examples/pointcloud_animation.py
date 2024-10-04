@@ -1,6 +1,6 @@
-import visualization.panda.world as wd
+import wrs.visualization.panda.world as wd
 import pickle
-import modeling.collision_model as cm
+from wrs import modeling as cm
 
 base = wd.World(cam_pos=[0, -2, -5], lookat_pos=[0, -1, 5])
 pcd_list = pickle.load(open("pcdlist.pkl", "rb"))

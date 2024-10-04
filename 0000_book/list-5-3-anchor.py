@@ -1,9 +1,7 @@
 import numpy as np
-import basis.robot_math as rm
-import visualization.panda.world as wd
-import robot_sim._kinematics.jl as rkjl
-import robot_sim._kinematics.jlchain as rkjlc
-import modeling.geometric_model as mgm
+from wrs import basis as rm, modeling as mgm
+import wrs.visualization.panda.world as wd
+import wrs.robot_sim._kinematics.jl as rkjl
 
 if __name__ == "__main__":
     base = wd.World(cam_pos=[1, .5, .5], lookat_pos=[0, 0, .1])

@@ -1,6 +1,5 @@
 import cv2.aruco as aruco
-import drivers.rpc.hndcam.hndcam_client as hc
-import vision.rgb_camera.util_functions as rgb_uf
+from wrs import drivers as hc, vision as rgb_uf
 
 if __name__ == "__main__":
     # the path of the yaml file that saves the calibration parameters for camera rc0

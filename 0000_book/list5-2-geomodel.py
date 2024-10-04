@@ -1,7 +1,6 @@
 import numpy as np
-import basis.trimesh_factory as trf
-import modeling.geometric_model as mgm
-import visualization.panda.world as wd
+from wrs import basis as trf, modeling as mgm
+import wrs.visualization.panda.world as wd
 
 if __name__ == '__main__':
     base = wd.World(cam_pos=np.array([.3, .3, .3]), lookat_pos=np.zeros(3))

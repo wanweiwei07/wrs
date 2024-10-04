@@ -1,9 +1,7 @@
 import math
 import numpy as np
-import visualization.panda.world as wd
-import modeling.geometric_model as gm
-import modeling.collision_model as cm
-import basis.robot_math as rm
+import wrs.visualization.panda.world as wd
+from wrs import basis as rm, modeling as gm, modeling as cm
 
 if __name__ == '__main__':
     base = wd.World(cam_pos=np.array([-.8, .3, .4]),lookat_pos=np.array([0, 0, .1]))

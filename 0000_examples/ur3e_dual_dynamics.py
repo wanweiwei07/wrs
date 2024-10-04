@@ -1,11 +1,8 @@
-import robot_sim.robots.ur3e_dual.ur3e_dual as ur3ed
-import modeling.dynamics.bullet.bdmodel as bdm
-import visualization.panda.world as wd
-import modeling.geometric_model as gm
-import modeling.collision_model as cm
-import basis.robot_math as rm
+import wrs.robot_sim.robots.ur3e_dual.ur3e_dual as ur3ed
+import wrs.modeling.dynamics.bullet.bdmodel as bdm
+import wrs.visualization.panda.world as wd
+from wrs import basis as rm, modeling as gm, modeling as cm
 import numpy as np
-import math
 
 
 def get_lnk_bdmodel(robot_s, component_name, lnk_id):
@@ -32,7 +29,6 @@ def get_robot_bdmoel(robot_s):
 
 
 if __name__ == '__main__':
-    import os
 
     base = wd.World(cam_pos=[10, 0, 5], lookat_pos=[0, 0, 1])
     base.setFrameRateMeter(True)

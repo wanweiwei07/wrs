@@ -1,7 +1,6 @@
 import numpy as np
-import basis.robot_math as rm
-import modeling.geometric_model as mgm
-import visualization.panda.world as wd
+from wrs import basis as rm, modeling as mgm
+import wrs.visualization.panda.world as wd
 
 base = wd.World(cam_pos=np.array([2, .0,.5]), lookat_pos=np.zeros(3))
 bunny = mgm.GeometricModel(initor="objects/bunnysim.stl")

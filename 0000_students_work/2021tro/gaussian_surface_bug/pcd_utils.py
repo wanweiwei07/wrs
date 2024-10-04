@@ -8,12 +8,9 @@ import open3d as o3d
 from matplotlib import pyplot as plt
 from sklearn import linear_model
 
-import modeling.collision_model as cm
-import modeling.geometric_model as gm
-import basis.trimesh as trimesh
+from wrs import basis as trimesh, basis as rm, modeling as cm, modeling as gm
 # import trimesh.sample as ts
 import math_utils as mu
-import basis.robot_math as rm
 import o3dhelper as o3d_helper
 import envloader as el
 

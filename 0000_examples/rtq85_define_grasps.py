@@ -1,10 +1,9 @@
-import grasping.annotation.gripping as gau
+import wrs.grasping.annotation.gripping as gau
 
 if __name__ == '__main__':
     import numpy as np
-    import robot_sim.end_effectors.gripper.robotiq85.robotiq85 as rtq85
-    import modeling.collision_model as cm
-    import visualization.panda.world as wd
+    from wrs import robot_sim as rtq85, modeling as cm
+    import wrs.visualization.panda.world as wd
 
     base = wd.World(cam_pos=[.5, .5, .3], lookat_pos=[0, 0, 0])
     gripper_s = rtq85.Robotiq85(enable_cc=True)

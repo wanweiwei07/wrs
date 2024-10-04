@@ -1,22 +1,21 @@
-import visualization.panda.world as wd
-import grasping.planning.antipodal as gpa
-import robot_sim.end_effectors.gripper.wrs_gripper.wrs_gripper_v2 as wg2
-import modeling.collision_model as mcm
 import numpy as np
-import math
+import wrs.visualization.panda.world as wd
+import wrs.grasping.planning.antipodal as gpa
+import wrs.modeling.collision_model as mcm
+import wrs.robot_sim.end_effectors.grippers.wrs_gripper.wrs_gripper_v2 as end_effector
 
 base = wd.World(cam_pos=np.array([.5, .5, .5]), lookat_pos=np.array([0, 0, 0]))
 # mgm.gen_frame().attach_to(base)
 obj_cmodel = mcm.CollisionModel("objects/tubebig.stl")
 obj_cmodel.attach_to(base)
 
-gripper = wg2.WRSGripper2()
-# gripper.gen_meshmodel().attach_to(base)
+gripper = end_effector.WRSGripper2()
+# grippers.gen_meshmodel().attach_to(base)
 # base.run()
 grasp_collection = gpa.plan_gripper_grasps(gripper,
                                            obj_cmodel,
-                                           angle_between_contact_normals=math.radians(175),
-                                           rotation_interval=math.radians(15),
+                                           angle_between_contact_normals=np.radians(175),
+                                           rotation_interval=np.radians(15),
                                            max_samples=5,
                                            min_dist_between_sampled_contact_points=.001,
                                            contact_offset=.001,

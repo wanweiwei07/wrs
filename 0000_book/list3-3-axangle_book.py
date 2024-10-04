@@ -1,6 +1,5 @@
-import visualization.panda.world as wd
-import modeling.geometric_model as mgm
-import basis.robot_math as rm
+import wrs.visualization.panda.world as wd
+from wrs import basis as rm, modeling as mgm
 import numpy as np
 base = wd.World(cam_pos=[1, 1, 1], lookat_pos=[0, 0, 0], toggle_debug=True)
 # 座標系O

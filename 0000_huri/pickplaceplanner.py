@@ -482,7 +482,7 @@ class PickPlacePlanner(object):
         :param objgoalhomomat:
         :param armname:
         :param rbtinitarmjnts, rbtgoalarmjnts: [lftarmjnts, rgtarmjnts], initial robot_s arm will be used if not set
-        :param finalstate: use to orchestrate the motion, could be: "io"->backtoaninitialpose, gripper open, "uo"->backtoup, gripperopen, "gc"->stopatgoal, gripperclose
+        :param finalstate: use to orchestrate the motion, could be: "io"->backtoaninitialpose, grippers open, "uo"->backtoup, gripperopen, "gc"->stopatgoal, gripperclose
         :param primitivedirection_init_forward: the vector to move to the object init pose
         :param primitivedirection_init_backward: the vector to move back from the object init pose
         :param primitivedistance_init_forward
@@ -792,7 +792,7 @@ class PickPlacePlanner(object):
         :param objgoalhomomat:
         :param armname:
         :param rbtinitarmjnts, rbtgoalarmjnts: [rgtsarmjnts, lftarmjnts], initial robot_s arm will be used if not set
-        :param finalstate: use to orchestrate the motion, could be: "io"->backtoaninitialpose, gripper open, "uo"->backtoup, gripperopen, "gc"->stopatgoal, gripperclose
+        :param finalstate: use to orchestrate the motion, could be: "io"->backtoaninitialpose, grippers open, "uo"->backtoup, gripperopen, "gc"->stopatgoal, gripperclose
         :param primitivedirection_init_forward: the vector to move to the object init pose
         :param primitivedirection_init_backward: the vector to move back from the object init pose
         :param primitivedistance_init_forward
@@ -1429,7 +1429,7 @@ class PickPlacePlanner(object):
         :param objgoalhomomat:
         :param armname:
         :param rbtinitarmjnts, rbtgoalarmjnts: [rgtsarmjnts, lftarmjnts], initial robot_s arm will be used if not set
-        :param finalstate: use to orchestrate the motion, could be: "io"->backtoaninitialpose, gripper open, "uo"->backtoup, gripperopen, "gc"->stopatgoal, gripperclose
+        :param finalstate: use to orchestrate the motion, could be: "io"->backtoaninitialpose, grippers open, "uo"->backtoup, gripperopen, "gc"->stopatgoal, gripperclose
         :param primitivedirection_init_forward: the vector to move to the object init pose
         :param primitivedirection_init_backward: the vector to move back from the object init pose
         :param primitivedistance_init_forward

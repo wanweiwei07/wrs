@@ -1,10 +1,8 @@
 import numpy as np
 
-import drivers.devices.kinect_azure.pykinectazure as pk
-import visualization.panda.world as wd
-import modeling.geometric_model as gm
-from vision.depth_camera.calibrator import load_calibration_data
-import basis.robot_math as rm
+import wrs.visualization.panda.world as wd
+from wrs.vision import load_calibration_data
+from wrs import basis as rm, drivers as pk, modeling as gm
 
 affine_matrix, _, _ = load_calibration_data()
 

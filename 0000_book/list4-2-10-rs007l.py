@@ -1,8 +1,6 @@
 import time
-import robot_sim.manipulators.rs007l.rs007l as rs007l
-import basis.robot_math as rm
-import visualization.panda.world as wd
-import modeling.geometric_model as mgm
+from wrs import basis as rm, robot_sim as rs007l, modeling as mgm
+import wrs.visualization.panda.world as wd
 
 base = wd.World(cam_pos=[5, 0, 3], lookat_pos=[0, 0, .7])
 mgm.gen_frame().attach_to(base)

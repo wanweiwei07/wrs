@@ -1,11 +1,8 @@
 import numpy as np
-import visualization.panda.world as wd
-import modeling.geometric_model as mgm
-import modeling.collision_model as mcm
-import robot_sim.robots.ur3e_dual.ur3e_dual as u3ed
-import motion.probabilistic.rrt_connect as rrtc
-import basis.robot_math as rm
-import robot_con.ur.ur3e_rtqhe_x as u3erhex
+import wrs.visualization.panda.world as wd
+import wrs.robot_sim.robots.ur3e_dual.ur3e_dual as u3ed
+from wrs import basis as rm, motion as rrtc, modeling as mgm, modeling as mcm
+import wrs.robot_con.ur.ur3e_rtqhe_x as u3erhex
 
 class Data(object):
     def __init__(self, mot_data):

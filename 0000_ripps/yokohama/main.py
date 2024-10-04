@@ -7,15 +7,12 @@ import cv2
 import numpy as np
 import torch
 
-import basis.robot_math as rm
+from wrs import basis as rm, robot_sim as cbtr, motion as rrtc, modeling as gm
 import cobotta_x as cbtx
 import env_bulider_RIKEN as eb
-from realsensecrop import RealSenseD405Crop, letterbox
+from realsensecrop import RealSenseD405Crop
 import model_loader as model
-import modeling.geometric_model as gm
-import motion.probabilistic.rrt_connect as rrtc
-import robot_sim.robots.cobotta.cobotta_ripps as cbtr
-import visualization.panda.world as wd
+import wrs.visualization.panda.world as wd
 import serial
 
 ZERO_ERROR = 0.035 - 0.0048

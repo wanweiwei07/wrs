@@ -1,11 +1,8 @@
 import math
 import numpy as np
-import basis.robot_math as rm
-import visualization.panda.world as wd
-import modeling.geometric_model as gm
-import modeling.collision_model as cm
-import robot_sim.end_effectors.gripper.robotiq85.robotiq85 as rtq85
-import grasping.annotation.gripping as gu
+from wrs import basis as rm, robot_sim as rtq85, modeling as gm, modeling as cm
+import wrs.visualization.panda.world as wd
+import wrs.grasping.annotation.gripping as gu
 import pickle
 
 base = wd.World(cam_pos=[.3, .3, .3], lookat_pos=[0, 0, 0])
@@ -14,7 +11,7 @@ gm.gen_frame(axis_length=.05, axis_radius=.0021).attach_to(base)
 object_bunny = cm.CollisionModel("objects/bunnysim.stl")
 object_bunny.set_rgba([.9, .75, .35, .3])
 object_bunny.attach_to(base)
-# gripper
+# grippers
 # contact_pairs, contact_points = gpa.plan_contact_pairs(object_bunny,
 #                                                        max_samples=10000,
 #                                                        min_dist_between_sampled_contact_points=.014,

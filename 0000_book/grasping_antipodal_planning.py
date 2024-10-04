@@ -1,8 +1,6 @@
-import visualization.panda.world as wd
-import modeling.geometric_model as gm
-import modeling.collision_model as cm
-import grasping.planning.antipodal as gpa
-import robot_sim.end_effectors.gripper.robotiq85.robotiq85 as rtq85
+import wrs.visualization.panda.world as wd
+import wrs.grasping.planning.antipodal as gpa
+from wrs import robot_sim as rtq85, modeling as gm, modeling as cm
 
 base = wd.World(cam_pos=[1, 1, 1], lookat_pos=[0, 0, 0])
 gm.gen_frame().attach_to(base)
@@ -13,7 +11,7 @@ gm.gen_frame().attach_to(base)
 object_bunny = cm.CollisionModel("objects/bunnysim.stl")
 object_bunny.set_rgba([.9, .75, .35, .3])
 object_bunny.attach_to(base)
-# gripper
+# grippers
 gripper_s = rtq85.Robotiq85()
 gripper_s.gen_meshmodel(toggle_jnt_frames=True, toggle_tcp_frame=True).attach_to(base)
 base.run()

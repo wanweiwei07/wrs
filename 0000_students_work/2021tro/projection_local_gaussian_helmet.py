@@ -1,13 +1,8 @@
 import numpy as np
-import modeling.geometric_model as gm
-import modeling.collision_model as cm
-import visualization.panda.world as wd
-import basis.robot_math as rm
-import math
+import wrs.visualization.panda.world as wd
+from wrs import basis as rm, vision as gs, modeling as gm, modeling as cm
 import pickle
 from scipy.spatial import cKDTree
-import vision.depth_camera.surface.gaussian_surface as gs
-import vision.depth_camera.surface.rbf_surface as rbfs
 
 base = wd.World(cam_pos=np.array([-.3, -.9, .3]), lookat_pos=np.array([0, 0, 0]))
 # mgm.gen_frame().attach_to(base)
@@ -22,7 +17,6 @@ bowl_model.attach_to(base)
 bowl_model.attach_to(base)
 # base.run()
 
-import random
 for point_id in range(3000,10000,100):
     tree = cKDTree(bowl_samples)
     # point_id = random.randint(3000, 10000)

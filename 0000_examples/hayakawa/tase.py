@@ -1,11 +1,6 @@
-import visualization.panda.world as wd
-import robot_sim.end_effectors.gripper.robotiq85.robotiq85 as rtq85
-import robot_sim.robots.ur3_dual.ur3_dual as ur3ds
-import basis.robot_math as rm
+import wrs.visualization.panda.world as wd
+from wrs import basis as rm, robot_sim as rtq85, robot_sim as ur3ds, motion as rrtc, modeling as cm, modeling as gm
 import numpy as np
-import modeling.collision_model as cm
-import modeling.geometric_model as gm
-import motion.probabilistic.rrt_connect as rrtc
 import copy
 import open3d as o3d
 import random
@@ -13,12 +8,12 @@ from skimage.measure import LineModelND, ransac
 import research_posemake_many as pose
 import math
 import socket
-import robot_con.ur.program_builder as pb
+import wrs.robot_con.ur.program_builder as pb
 import pickle
 import time
 import sympy as sp
 from scipy.optimize import basinhopping
-import motion.optimization_based.incremental_nik as inik
+import wrs.motion.optimization_based.incremental_nik as inik
 
 rotatedegree = 5
 endthreshold = 3

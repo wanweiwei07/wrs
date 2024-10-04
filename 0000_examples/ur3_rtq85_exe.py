@@ -1,6 +1,6 @@
 import math
 import numpy as np
-import robot_con.ur.ur3_rtq85_x as u3r85x
+import wrs.robot_con.ur.ur3_rtq85_x as u3r85x
 
 rbtx = u3r85x.UR3Rtq85X(robot_ip='10.2.0.51')
 current_jnt_values = rbtx.get_jnt_values()

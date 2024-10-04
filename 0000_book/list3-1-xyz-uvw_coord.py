@@ -1,6 +1,6 @@
 import numpy as np
-import modeling.geometric_model as mgm
-import visualization.panda.world as wd
+from wrs import modeling as mgm
+import wrs.visualization.panda.world as wd
 
 
 def draw_coord(pnt, toggle_pnt=False, toggle_coord=False):

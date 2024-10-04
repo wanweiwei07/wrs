@@ -1,11 +1,7 @@
-import time
 import numpy as np
-import modeling.collision_model as cm
-import modeling.geometric_model as mgm
-import visualization.panda.world as wd
-import basis.constant as cnst
-import basis.robot_math as rm
-from scipy.misc import derivative
+import wrs.visualization.panda.world as wd
+from wrs import basis as cnst, basis as rm, modeling as mgm
+
 
 def nonlinear_function(x):
     return 0.05*np.sin(40*x)+0.05*np.cos(20*x)+0.5*x**2+0.1*x+.08

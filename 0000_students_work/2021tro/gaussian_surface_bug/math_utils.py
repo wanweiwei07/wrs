@@ -13,7 +13,7 @@ from scipy.interpolate import griddata
 from scipy.optimize import curve_fit
 # from sympy import symbols, diff, solve, exp
 
-import basis.robot_math as rm
+from wrs import basis as rm
 import math
 
 # import quadpy

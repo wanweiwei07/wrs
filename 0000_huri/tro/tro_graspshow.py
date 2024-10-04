@@ -1,25 +1,8 @@
-from motion import smoother as sm
-from motion import checker as ctcb
-from motion import collisioncheckerball as cdck
-from motion.rrt import rrtconnect as rrtc
-import tro.tro_robothelper as robothelper
 from pandaplotutils import pandactrl as pc
-import numpy as np
-import utiltools.robotmath as rm
-import tro.tro_animationgenerator as anime
-import os
-import copy
-import tubepuzzlefaster as tp
-import tubepuzzle_newstand as tp_nst
-import tro.tro_locator as loc
-import locatorfixed_newstand as locfixed_nst
-import cv2
 import environment.collisionmodel as cm
-import utiltools.thirdparty.p3dhelper as p3dh
-import utiltools.thirdparty.o3dhelper as o3dh
 import pickle
-import tro.tro_pickplaceplanner as ppp
-import manipulation.grip.yumiintegrated.yumiintegrated as yi
+from wrs import manipulation as yi, manipulation as fg
+
 
 def load_pickle_file_grip(model_name, root=None):
     """
@@ -74,7 +57,6 @@ def load_pickle_file_suction(model_name, root=None):
         raise ValueError("File or data not found!")
 
 if __name__ == '__main__':
-    import manipulation.grip.freegrip as fg
     import environment.bulletcdhelper as bcd
 
     base = pc.World(camp=[2000, -2000, 1500], lookatpos=[0, 0, 100], up=[0,-1,1], autocamrotate=False)

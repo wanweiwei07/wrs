@@ -1,8 +1,6 @@
-import robot_sim.robots.tbm_changer.tbm_changer as rbt
-import modeling.geometric_model as gm
-import visualization.panda.world as wd
+from wrs import robot_sim as rbt
+import wrs.visualization.panda.world as wd
 import numpy as np
-import basis.robot_math as rm
 import math
 import pickle
 

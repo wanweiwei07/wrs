@@ -1,10 +1,7 @@
-import robot_sim._kinematics.jlchain as lib_jlc
-import visualization.panda.world as wd
-import robot_sim._kinematics.model_generator as lib_jlm
-import modeling.geometric_model as gm
+import wrs.visualization.panda.world as wd
 import numpy as np
-import basis.constant as cst
-import modeling.model_collection as lib_mc
+from wrs import basis as cst, robot_sim as lib_jlc, robot_sim as lib_jlm, modeling as gm
+import wrs.modeling.model_collection as lib_mc
 
 
 def gen_stand():

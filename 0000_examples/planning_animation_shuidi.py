@@ -1,9 +1,6 @@
 import time
-import basis.robot_math as rm
-import visualization.panda.world as wd
-import modeling.geometric_model as mgm
-import motion.probabilistic.rrt_connect as rrtc
-import robot_sim.robots.shuidi.shuidi as shuidi
+from wrs import basis as rm, robot_sim as shuidi, motion as rrtc, modeling as mgm
+import wrs.visualization.panda.world as wd
 
 if __name__ == "__main__":
 

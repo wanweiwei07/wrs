@@ -1,11 +1,9 @@
 import time
 import math
 import numpy as np
-from basis import robot_math as rm
-import visualization.panda.world as wd
-import modeling.geometric_model as gm
-import modeling.collision_model as cm
-import robot_sim.robots.xarm7_xg_shuidi.xarm7_xg_shuidi as xss
+from wrs.basis import robot_math as rm
+import wrs.visualization.panda.world as wd
+from wrs import robot_sim as xss, modeling as gm, modeling as cm
 
 base = wd.World(cam_pos=[3, 1, 2], lookat_pos=[0, 0, 0])
 gm.gen_frame().attach_to(base)

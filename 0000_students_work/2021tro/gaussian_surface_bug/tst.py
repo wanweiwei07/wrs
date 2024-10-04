@@ -1,12 +1,9 @@
 import numpy as np
-import visualization.panda.world as wd
-import basis.robot_math as rm
-import math
+from wrs import basis as rm
 import pickle
 from scipy.spatial import cKDTree
 # import vision.depth_camera.surface.gaussian_surface as gs
 # import vision.depth_camera.surface.rbf_surface as rbfs
-import surface as gs
 import pandaplotutils.pandactrl as pc
 import pcd_utils as pcdu
 

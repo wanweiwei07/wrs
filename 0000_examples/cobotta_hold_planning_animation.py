@@ -1,13 +1,7 @@
 if __name__ == '__main__':
     import numpy as np
-    import basis.robot_math as rm
-    import robot_sim.robots.cobotta.cobotta as cbt
-    import motion.probabilistic.rrt_connect as rrtc
-    import motion.probabilistic.rrt_star_connect as rrtsc
-    import visualization.panda.world as wd
-    import modeling.geometric_model as mgm
-    import modeling.collision_model as mcm
-    import basis.constant as bc
+    from wrs import basis as rm, robot_sim as cbt, motion as rrtc, modeling as mgm, modeling as mcm
+    import wrs.visualization.panda.world as wd
 
     base = wd.World(cam_pos=[2, 2, .5], lookat_pos=[0, 0, .2])
     mgm.gen_frame().attach_to(base)

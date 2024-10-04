@@ -1,14 +1,9 @@
-import visualization.panda.world as wd
-import modeling.geometric_model as gm
-import robot_sim.robots.xarm7_xg_shuidi.xarm7_xg_shuidi as xsm
-import robot_con.xarm_shuidi_grpc.xarm_shuidi_client as xsc
-import drivers.devices.kinect_azure.pykinectazure as pk
+import wrs.visualization.panda.world as wd
+import wrs.robot_con.xarm_shuidi_grpc.xarm_shuidi_client as xsc
 import cv2
 import cv2.aruco as aruco
 import numpy as np
-from vision.depth_camera.calibrator import DepthCaliberator
-import motion.probabilistic.rrt_connect as rrtc
-import basis.robot_math as rm
+from wrs import basis as rm, drivers as pk, robot_sim as xsm, modeling as gm
 import time
 
 
@@ -110,7 +105,7 @@ sensor_handler = SensorHandler(pkx)
 # base.run()
 
 # validate mph
-from vision.depth_camera.calibrator import load_calibration_data
+from wrs.vision import load_calibration_data
 
 affine_matrix, _, _ = load_calibration_data()
 gm.GeometricModel(initor=rm.transform_points_by_homomat(

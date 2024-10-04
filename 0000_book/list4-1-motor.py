@@ -1,11 +1,7 @@
 import numpy as np
-import robot_sim._kinematics.jl as rkjl
-import robot_sim._kinematics.model_generator as rkmg
-import robot_sim._kinematics.jlchain as rkjlc
-import basis.robot_math as rm
-import visualization.panda.world as wd
-import modeling.geometric_model as mgm
-import modeling.model_collection as mmc
+from wrs import basis as rm, modeling as mgm
+import wrs.visualization.panda.world as wd
+import wrs.modeling.model_collection as mmc
 
 
 class Motor(object):

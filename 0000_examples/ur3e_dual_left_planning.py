@@ -1,10 +1,7 @@
 import numpy as np
-import visualization.panda.world as wd
-import modeling.geometric_model as mgm
-import modeling.collision_model as mcm
-import robot_sim.robots.ur3e_dual.ur3e_dual as u3ed
-import motion.probabilistic.rrt_connect as rrtc
-import basis.robot_math as rm
+import wrs.visualization.panda.world as wd
+import wrs.robot_sim.robots.ur3e_dual.ur3e_dual as u3ed
+from wrs import basis as rm, motion as rrtc, modeling as mgm, modeling as mcm
 
 base = wd.World(cam_pos=[3, 2, 3], lookat_pos=[0.5, 0, 1.1])
 mgm.gen_frame().attach_to(base)

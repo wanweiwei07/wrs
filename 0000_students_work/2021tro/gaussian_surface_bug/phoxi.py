@@ -5,7 +5,7 @@ import numpy as np
 
 import config
 # import robotcon.rpc.phoxi.phoxi_client as phoxiclient
-import drivers.rpc.phoxi.phoxi_client as phoxiclient
+from wrs import drivers as phoxiclient
 
 
 class Phoxi(object):

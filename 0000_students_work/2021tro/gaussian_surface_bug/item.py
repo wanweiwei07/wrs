@@ -2,7 +2,7 @@ import math
 
 import numpy as np
 import pcd_utils as pcdu
-import modeling.geometric_model as gm
+from wrs import modeling as gm
 
 TOGGLEDEBUG = False
 

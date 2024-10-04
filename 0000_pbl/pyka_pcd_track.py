@@ -1,12 +1,9 @@
 import numpy as np
 import math
-import drivers.devices.kinect_azure.pykinectazure as pk
-import visualization.panda.world as wd
-import modeling.geometric_model as gm
-from vision.depth_camera.calibrator import load_calibration_data
-import basis.robot_math as rm
-import robot_sim.robots.xarm7_xg_shuidi.xarm7_xg_shuidi as xsm
-import robot_con.xarm_shuidi_grpc.xarm_shuidi_client as xsc
+import wrs.visualization.panda.world as wd
+from wrs.vision import load_calibration_data
+from wrs import basis as rm, drivers as pk, robot_sim as xsm, modeling as gm
+import wrs.robot_con.xarm_shuidi_grpc.xarm_shuidi_client as xsc
 
 affine_matrix, _, _ = load_calibration_data()
 base = wd.World(cam_pos=[10, 2, 7], lookat_pos=[0, 0, 0])

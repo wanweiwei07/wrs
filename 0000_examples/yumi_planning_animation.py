@@ -1,10 +1,7 @@
 import random
-import robot_sim.robots.yumi.yumi as ybt
-import motion.probabilistic.rrt_connect as rrtc
-import motion.probabilistic.rrt_star_connect as rrtsc
-import visualization.panda.world as wd
-import modeling.geometric_model as mgm
-import basis.constant as bc
+import wrs.motion.probabilistic.rrt_star_connect as rrtsc
+import wrs.visualization.panda.world as wd
+from wrs import basis as bc, robot_sim as ybt, motion as rrtc, modeling as mgm
 
 base = wd.World(cam_pos=[3, 3, 1.5], lookat_pos=[0, 0, .35])
 mgm.gen_frame().attach_to(base)

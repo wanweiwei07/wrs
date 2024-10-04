@@ -1,11 +1,9 @@
-import robot_sim.end_effectors.gripper.robotiq85.robotiq85 as rtq
-import robot_sim.end_effectors.gripper.robotiq85_gelsight.robotiq85_gelsight_pusher as rtqgp
-import modeling.collision_model as cm
+from wrs import robot_sim as rtq, modeling as cm, grasping as gpp
+import wrs.robot_sim.end_effectors.grippers.robotiq85_gelsight.robotiq85_gelsight_pusher as rtqgp
 import numpy as np
-import visualization.panda.world as wd
+import wrs.visualization.panda.world as wd
 import math
-import grasping.planning.antipodal as gpa
-import grasping.planning.pushing as gpp
+import wrs.grasping.planning.antipodal as gpa
 
 base = wd.World(cam_pos=[1.5, 1, 1], lookat_pos=[0, 0, 0])
 

@@ -1,13 +1,9 @@
 import cv2
-import drivers.devices.kinect_azure.pykinectazure as pk
-import visualization.panda.world as wd
-import modeling.geometric_model as gm
+from wrs import drivers as pk, modeling as gm
+import wrs.visualization.panda.world as wd
 import os
 import glob
 import pickle
-import vision.rgb_camera.util_functions as rgbu
-import cv2.aruco as aruco
-import basis.robot_math as rm
 
 imgid = 0
 foldername = "./camimgs" + str(imgid) + "/"

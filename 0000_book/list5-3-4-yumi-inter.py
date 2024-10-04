@@ -1,7 +1,5 @@
-import basis.robot_math as rm
-import robot_sim.robots.yumi.yumi as ym
-import visualization.panda.world as wd
-import motion.primitives.interplated as mip
+from wrs import basis as rm, robot_sim as ym, motion as mip
+import wrs.visualization.panda.world as wd
 
 if __name__ == '__main__':
     base = wd.World(cam_pos=[3, 1, 1], lookat_pos=[0, 0, 0.5])

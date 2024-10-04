@@ -1,9 +1,7 @@
 import copy
 import time
-import math
-import numpy as np
-import motion.trajectory.piecewisepoly_toppra as trajp
-import drivers.orin_bcap.bcapclient as bcapclient
+import wrs.motion.trajectory.piecewisepoly_toppra as trajp
+from wrs import drivers as bcapclient
 import numpy.typing as npt
 from typing import List
 
@@ -221,11 +219,6 @@ class CobottaX(object):
 if __name__ == '__main__':
     import math
     import numpy as np
-    import basis.robot_math as rm
-    import robot_sim.robots.cobotta.cobotta_ripps as cbt
-    import motion.probabilistic.rrt_connect as rrtc
-    import visualization.panda.world as wd
-    import modeling.geometric_model as gm
 
     # base = wd.World(cam_pos=[1, 1, .5], lookat_pos=[0, 0, .2])
     # mgm.gen_frame().attach_to(base)

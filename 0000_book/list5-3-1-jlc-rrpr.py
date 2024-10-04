@@ -1,7 +1,6 @@
-import robot_sim._kinematics.jlchain as rkjlc
-import robot_sim._kinematics.jl as rkjl
-import visualization.panda.world as wd
-import modeling.collision_model as mcm
+from wrs import robot_sim as rkjlc, modeling as mcm
+import wrs.robot_sim._kinematics.jl as rkjl
+import wrs.visualization.panda.world as wd
 import numpy as np
 
 

@@ -2,11 +2,8 @@ import math
 import time
 import keyboard
 import numpy as np
-import threading
-import basis.robot_math as rm
-import visualization.panda.world as wd
-import modeling.geometric_model as gm
-import robot_sim.robots.xarm7_xg_shuidi.xarm7_xg_shuidi as rbs
+from wrs import basis as rm, robot_sim as rbs, modeling as gm
+import wrs.visualization.panda.world as wd
 # import robot_con.xarm_shuidi_grpc.xarm_shuidi_client as rbx
 
 from direct.task.TaskManagerGlobal import taskMgr
@@ -66,8 +63,8 @@ def agv_move(task):
                     'j': keyboard.is_pressed('j'),  # p- global
                     'n': keyboard.is_pressed('n'),  # yaw+ global
                     'm': keyboard.is_pressed('m'),  # yaw- global
-                    'o': keyboard.is_pressed('o'),  # gripper open
-                    'p': keyboard.is_pressed('p')}  # gripper close
+                    'o': keyboard.is_pressed('o'),  # grippers open
+                    'p': keyboard.is_pressed('p')}  # grippers close
     values_list = list(pressed_keys.values())
     if pressed_keys["w"] and pressed_keys["a"]:
         print("Invalid Operation!!")

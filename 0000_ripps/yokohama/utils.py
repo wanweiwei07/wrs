@@ -1,9 +1,5 @@
-import os
-
 import numpy as np
-import basis.robot_math as rm
-import modeling.collision_model as cm
-import modeling.geometric_model as gm
+from wrs import basis as rm, modeling as cm
 
 
 class Base(cm.CollisionModel):

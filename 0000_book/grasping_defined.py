@@ -1,11 +1,8 @@
 import math
 import numpy as np
-import visualization.panda.world as wd
-import modeling.geometric_model as gm
-import modeling.collision_model as cm
-import grasping.annotation.gripping as gu
-import robot_sim.end_effectors.gripper.robotiq85.robotiq85 as rtq85
-import basis.robot_math as rm
+import wrs.visualization.panda.world as wd
+import wrs.grasping.annotation.gripping as gu
+from wrs import robot_sim as rtq85, modeling as gm, modeling as cm
 
 base = wd.World(cam_pos=[1, 1, 1], lookat_pos=[0, 0, 0])
 gm.gen_frame().attach_to(base)
@@ -13,7 +10,7 @@ gm.gen_frame().attach_to(base)
 object_box = cm.gen_box(xyz_lengths=[.02, .06, .1])
 object_box.set_rgba([.7, .5, .3, .7])
 object_box.attach_to(base)
-# gripper
+# grippers
 rtq85_s = rtq85.Robotiq85()
 # rtq85_s.gen_meshmodel().attach_to(base)
 # base.run()

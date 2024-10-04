@@ -1,14 +1,6 @@
-import copy
-import math
 import numpy as np
-import random
-import basis.robot_math as rm
-import visualization.panda.world as wd
-import modeling.geometric_model as gm
-import modeling.collision_model as cm
-import modeling.model_collection as mc
-import robot_sim._kinematics.jlchain as jlc
-import robot_sim.manipulators.xarm7.xarm7 as rbt
+import wrs.visualization.panda.world as wd
+from wrs import robot_sim as rbt, modeling as cm
 
 aluminium_rgba = [132 / 255, 135 / 255, 137 / 255, 1]
 matt_red = [93 / 255, 53 / 255, 53 / 255, 1]

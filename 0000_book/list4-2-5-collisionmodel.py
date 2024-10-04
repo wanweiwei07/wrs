@@ -1,6 +1,6 @@
 import numpy as np
-import modeling.collision_model as cm
-import visualization.panda.world as wd
+from wrs import modeling as cm
+import wrs.visualization.panda.world as wd
 
 if __name__ == '__main__':
     base = wd.World(cam_pos=np.array([.7,.05,.3]), lookat_pos=np.zeros(3))

@@ -1,15 +1,10 @@
-import visualization.panda.world as wd
-import modeling.geometric_model as gm
-import modeling.collision_model as cm
-import grasping.planning.antipodal as gpa
+import wrs.visualization.panda.world as wd
+import wrs.grasping.planning.antipodal as gpa
 import numpy as np
-import basis.robot_math as rm
-import robot_sim.robots.nextage.nextage_old as nxt
-import robot_sim.robots.xarm7_xg_shuidi.xarm7_xg_shuidi as xsm
-import motion.probabilistic.rrt_connect as rrtc
+from wrs import basis as rm, robot_sim as nxt, robot_sim as xsm, manipulation as ppp, motion as rrtc, modeling as gm, \
+    modeling as cm
 import math
-import manipulation.pick_place_planner as ppp
-import motion.probabilistic.rrt_differential_wheel_connect as rrtdwc
+import wrs.motion.probabilistic.rrt_differential_wheel_connect as rrtdwc
 
 base = wd.World(cam_pos=[2, -2, 2], lookat_pos=[.0, 0, .3])
 gm.gen_frame().attach_to(base)

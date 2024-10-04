@@ -1,15 +1,13 @@
-import visualization.panda.world as wd
-import modeling.geometric_model as gm
-import modeling.collision_model as cm
-import grasping.planning.antipodal as gpa
-import robot_sim.end_effectors.gripper.xarm_gripper.xarm_gripper as xag
+import wrs.visualization.panda.world as wd
+import wrs.grasping.planning.antipodal as gpa
+from wrs import robot_sim as xag, modeling as gm, modeling as cm
 
 base = wd.World(cam_pos=[1, 1, 1], lookat_pos=[0, 0, 0])
 gm.gen_frame().attach_to(base)
 object_box = cm.gen_box(xyz_lengths=[.02, .06, .7])
 object_box.set_rgba([.7, .5, .3, .7])
 object_box.attach_to(base)
-# gripper
+# grippers
 gripper_s = xag.XArmGripper()
 grasp_info_list = gpa.plan_gripper_grasps(gripper_s, object_box, openning_direction='loc_y', max_samples=7, min_dist_between_sampled_contact_points=.03)
 gpa.write_pickle_file('box', grasp_info_list, './', 'xarm_long_box.pickle')

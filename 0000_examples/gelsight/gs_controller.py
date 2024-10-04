@@ -1,8 +1,7 @@
-import modeling.geometric_model as gm
-import visualization.panda.world as wd
+from wrs import modeling as gm
+import wrs.visualization.panda.world as wd
 import cv2
 import img_to_depth as itd
-import time
 
 base = wd.World(cam_pos=[.03, .03, .07], lookat_pos=[0.015, 0.015, 0])
 itd_cvter = itd.ImageToDepth()

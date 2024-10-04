@@ -1,6 +1,5 @@
-import visualization.panda.world as wd
-import modeling.geometric_model as mgm
-import robot_sim.manipulators.irb14050.irb14050 as irb
+import wrs.visualization.panda.world as wd
+from wrs import robot_sim as irb, modeling as mgm
 
 base = wd.World(cam_pos=[1.5, 1, 0.7], lookat_pos=[0, 0, .2])
 mgm.gen_frame().attach_to(base)
