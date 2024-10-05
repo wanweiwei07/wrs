@@ -5,13 +5,17 @@ import warnings
 import functools
 import numpy as np
 import numpy.typing as npt
-from sklearn import cluster
 import matplotlib.pyplot as plt
+import wrs.basis.constant as const
+import wrs.basis.trimesh.creation as trm_creation
+from sklearn import cluster
 from scipy.spatial.transform import Slerp
 from scipy.spatial.transform import Rotation as R
 from scipy.spatial.transform import Rotation
-import wrs.basis.trimesh.creation as trm_creation
-import wrs.basis.constant as const
+from numpy import radians, degrees, sign, zeros, eye, pi, sqrt
+from numpy.linalg import norm
+from numpy import sin, cos, tan
+from numpy import arctan2 as atan2, arcsin as asin, arccos as acos
 
 # epsilon for testing whether a number is close to zero
 _EPS = np.finfo(np.float32).eps
@@ -31,46 +35,9 @@ _TUPLE2AXES = dict((v, k) for k, v in _AXES2TUPLE.items())
 
 # helpers
 
-pi = np.pi
 
-
-def vector(*args):
+def vec_from_args(*args):
     return np.array(args)
-
-
-def zeros(n):
-    return np.zeros(n)
-
-
-def matrix(element_list, n_rows=None):
-    if n_rows is None:
-        return np.array(element_list)
-    return np.array(element_list).reshape(n_rows, -1)
-
-def eye(n):
-    return np.eye(n)
-
-
-def radians(*args):
-    if len(args) > 1:
-        return np.radians(args)
-    return np.radians(args[0])
-
-
-def degrees(*args):
-    if len(args) > 1:
-        return np.degrees(args)
-    return np.degrees(args[0])
-
-def sign(val):
-    return np.sign(val)
-
-if __name__ == '__main__':
-    print(radians(90))
-
-
-def norm(vector):
-    return np.linalg.norm(vector)
 
 
 ## rotmat

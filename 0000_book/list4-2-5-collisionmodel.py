@@ -1,32 +1,30 @@
-import numpy as np
-from wrs import modeling as cm
-import wrs.visualization.panda.world as wd
+from wrs import wd, rm, mcm
 
 if __name__ == '__main__':
-    base = wd.World(cam_pos=np.array([.7,.05,.3]), lookat_pos=np.zeros(3))
+    base = wd.World(cam_pos=rm.np.array([.7, .05, .3]), lookat_pos=rm.np.zeros(3))
     # ウサギのモデルのファイルを用いてCollisionModelを初期化します
     # ウサギ1~5はこのCollisionModelのコピーとして定義します
-    object_ref = cm.CollisionModel(initor="./objects/bunnysim.stl",
-                                   cdprim_type="box",
-                                   cdmesh_type="default")
-    object_ref.set_rgba([.9, .75, .35, 1])
+    object_ref = mcm.CollisionModel(initor="./objects/bunnysim.stl",
+                                    cdmesh_type=mcm.const.CDMType.DEFAULT,
+                                    cdprim_type=mcm.const.CDPType.AABB)
+    object_ref.rgba = rm.np.array([.9, .75, .35, 1])
     # ウサギ1
     object1 = object_ref.copy()
-    object1.set_pos(np.array([0, -.19, 0]))
+    object1.pos = rm.np.array([0, -.19, 0])
     # ウサギ2
     object2 = object_ref.copy()
-    object2.set_pos(np.array([0, -.095, 0]))
+    object2.pos = rm.np.array([0, -.095, 0])
     # ウサギ3　衝突検出用のprimitiveを表面にサンプリングした球形状のsurface_ballsへ変更します
     object3 = object_ref.copy()
-    object3.change_cdprim_type(cdprim_type="surface_balls")
-    object3.set_pos(np.array([0, .01, 0]))
+    object3.change_cdprim_type(cdprim_type=mcm.const.CDPType.SURFACE_BALLS)
+    object3.pos = rm.np.array([0, .01, 0])
     # ウサギ4
     object4 = object_ref.copy()
-    object4.set_pos(np.array([0, .095, 0]))
+    object4.pos = rm.np.array([0, .095, 0])
     # ウサギ5　衝突検出用のmeshを凸包convex_hullへ変更します
     object5 = object_ref.copy()
-    object5.change_cdmesh_type(cdmesh_type="convex_hull")
-    object5.set_pos(np.array([0, .17, 0]))
+    object5.change_cdmesh_type(cdmesh_type=mcm.const.CDMType.CONVEX_HULL)
+    object5.pos = rm.np.array([0, .17, 0])
     # ウサギ1の画面表示．元のモデルのみ書き出します
     object1.attach_to(base)
     # ウサギ2の画面表示．元のモデル上に，デフォルトのprimitive(box)も表示します
