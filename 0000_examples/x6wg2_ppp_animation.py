@@ -1,13 +1,6 @@
 import math
 import numpy as np
-import wrs.visualization.panda.world as wd
-import wrs.basis.robot_math as rm
-import wrs.manipulation.pick_place_planner as ppp
-import wrs.motion.probabilistic.rrt_connect as rrtc
-import wrs.modeling.geometric_model as mgm
-import wrs.modeling.collision_model as mcm
-import wrs.robot_sim.robots.xarmlite6_wg.x6wg2 as x6g2
-import wrs.grasping.grasp as gg
+from wrs import wd, rm, rrtc, mcm, mgm, gg, x6g2, ppp
 
 base = wd.World(cam_pos=[1.2, .7, 1], lookat_pos=[.0, 0, .15])
 mgm.gen_frame().attach_to(base)
