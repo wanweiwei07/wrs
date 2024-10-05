@@ -1,9 +1,9 @@
-import wrs.robot_con.ur.ur3_rtq85_x as u3r85x
-import wrs.robot_con.ur.program_builder as pb
 import struct
 import os
 import numpy as np
-import wrs.motion.trajectory.topp_ra as pwp
+import wrs.motion.trajectory.topp_ra as trajp
+import wrs.robot_con.ur.ur3_rtq85_x as u3r85x
+import wrs.robot_con.ur.program_builder as pb
 
 
 class UR3DualX(object):
@@ -43,7 +43,6 @@ class UR3DualX(object):
         self._slave_modern_driver_urscript = self._slave_modern_driver_urscript.replace("parameter_jnts_scaler",
                                                                                         str(self._lft_arm.jnts_scaler))
         # print(self._slave_modern_driver_urscript)
-        self.trajt = pwp
 
     @property
     def lft_arm(self):
@@ -84,10 +83,10 @@ class UR3DualX(object):
         pc_server_socket, pc_server_socket_addr = self._lft_arm.pc_server_socket.accept()
         print("PC server connected by ", pc_server_socket_addr)
         # send trajectory
-        _, interp_confs, _, _ = self.trajt.generate_time_optimal_trajectory(path,
-                                                                            max_vels=max_vels,
-                                                                            max_accs=max_accs,
-                                                                            ctrl_freq=ctrl_freq)
+        _, interp_confs, _, _ = trajp.generate_time_optimal_trajectory(path,
+                                                                       max_vels=max_vels,
+                                                                       max_accs=max_accs,
+                                                                       ctrl_freq=ctrl_freq)
         keepalive = 1
         buf = bytes()
         for id, conf in enumerate(interp_confs):

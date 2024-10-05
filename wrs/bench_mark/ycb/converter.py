@@ -1,5 +1,5 @@
-from wrs import modeling as mt
 import os
+import wrs.modeling.mesh_tools as mt
 
 if __name__ == '__main__':
     current_folder = os.getcwd()  # Get current working directory

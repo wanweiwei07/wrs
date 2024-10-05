@@ -5,6 +5,12 @@ Author: Jeff Mahler
 import IPython
 import logging
 import numpy as np
+from robotconn.yumirapid.autolab_core import RigidTransform
+from robotconn.yumirapid.yumi_state import YuMiState
+from robotconn.yumirapid.yumi_trajectory import YuMiTrajectory
+from robotconn.yumirapid.yumi_constants import YuMiConstants as ymc
+
+
 try:
     import geometry_msgs
     import moveit_commander
@@ -12,11 +18,6 @@ try:
     import rospy
 except ImportError:
     logging.error("Unable to load ROS! Will not be able to use client-side motion planner!")
-
-from robotconn.yumirapid.autolab_core import RigidTransform
-from robotconn.yumirapid.yumi_state import YuMiState
-from robotconn.yumirapid.yumi_trajectory import YuMiTrajectory
-from robotconn.yumirapid.yumi_constants import YuMiConstants as ymc
 
 class YuMiMotionPlanner:
     """ Client-side motion planner for the ABB YuMi, based on MoveIt!

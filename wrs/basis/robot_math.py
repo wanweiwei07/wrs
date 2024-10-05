@@ -317,37 +317,37 @@ def homomat_inverse(homomat):
     """
     rotmat = homomat[:3, :3]
     pos = homomat[:3, 3]
-    invhomomat = np.eye(4)
-    invhomomat[:3, :3] = np.transpose(rotmat)
-    invhomomat[:3, 3] = -np.dot(np.transpose(rotmat), pos)
-    return invhomomat
+    inv_homomat = np.eye(4)
+    inv_homomat[:3, :3] = np.transpose(rotmat)
+    inv_homomat[:3, 3] = -np.dot(np.transpose(rotmat), pos)
+    return inv_homomat
 
 
-def homomat_average(homomatlist, bandwidth=10):
+def homomat_average(homomat_list, bandwidth=10):
     """
     average a list of pos (4x4)
-    :param homomatlist:
+    :param homomat_list:
     :param bandwidth:
     :param denoise:
     :return:
     author: weiwei
     date: 20200109
     """
-    homomatarray = np.asarray(homomatlist)
-    posavg = pos_average(homomatarray[:, :3, 3], bandwidth)
-    rotmatavg = rotmat_average(homomatarray[:, :3, :3], bandwidth)
-    return homomat_from_posrot(posavg, rotmatavg)
+    homomat_array = np.asarray(homomat_list)
+    pos_avg = pos_average(homomat_array[:, :3, 3], bandwidth)
+    rotmat_avg = rotmat_average(homomat_array[:, :3, :3], bandwidth)
+    return homomat_from_posrot(pos_avg, rotmat_avg)
 
 
 def homomat_from_quaternion(quaternion):
     """
-    convert a quaterion to rotmat
+    convert a quaterion to homomat
     """
     q = np.array(quaternion, dtype=np.float64, copy=True)
     n = np.dot(q, q)
     if n < _EPS:
         return np.identity(4)
-    q *= math.sqrt(2.0 / n)
+    q *= np.sqrt(2.0 / n)
     q = np.outer(q, q)
     return np.array([
         [1.0 - q[2, 2] - q[3, 3], q[1, 2] - q[3, 0], q[1, 3] + q[2, 0], 0.0],
@@ -1370,6 +1370,87 @@ def projection_homomat(point, normal, perspective=None, pseudo=False):
         homomat[:3, :3] -= np.outer(normal, normal)
         homomat[:3, 3] = np.dot(point, normal) * normal
     return homomat
+
+def affine_matrix_from_points(v0, v1, shear=True, scale=True, use_svd=True):
+    """
+    Return affine transform matrix to register two point sets.
+    v0 and v1 are shape (n_dims, ) arrays of at least n_dims non-homogeneous
+    coordinates, where n_dims is the dimensionality of the coordinate space.
+    If shear is False, a similarity transformation matrix is returned.
+    If also scale is False, a rigid/Euclidean transformation matrix is returned.
+    By default the algorithm by Hartley and Zissermann [15] is used.
+    If use_svd is True, similarity and Euclidean transformation matrices
+    are calculated by minimizing the weighted sum of squared deviations
+    (RMSD) according to the algorithm by Kabsch [8].
+    Otherwise, and if n_dims is 3, the quaternion based algorithm by Horn [9]
+    is used, which is slower when using this Python implementation.
+    The returned matrix performs rotation, translation and uniform scaling(if specified).
+    v1 = return_value @ v0
+    """
+    v0 = np.array(v0, dtype=np.float64, copy=True)
+    v1 = np.array(v1, dtype=np.float64, copy=True)
+    n_dims = v0.shape[0]
+    if n_dims < 2 or v0.shape[1] < n_dims or v0.shape != v1.shape:
+        raise ValueError("input arrays are of wrong shape or type")
+    # move centroids to origin
+    t0 = -np.mean(v0, axis=1)
+    M0 = np.identity(n_dims + 1)
+    M0[:n_dims, n_dims] = t0
+    v0 += t0.reshape(n_dims, 1)
+    t1 = -np.mean(v1, axis=1)
+    M1 = np.identity(n_dims + 1)
+    M1[:n_dims, n_dims] = t1
+    v1 += t1.reshape(n_dims, 1)
+    if shear:
+        # Affine transformation
+        A = np.concatenate((v0, v1), axis=0)
+        u, s, vh = np.linalg.svd(A.T)
+        vh = vh[:n_dims].T
+        B = vh[:n_dims]
+        C = vh[n_dims:2 * n_dims]
+        t = np.dot(C, np.linalg.pinv(B))
+        t = np.concatenate((t, np.zeros((n_dims, 1))), axis=1)
+        M = np.vstack((t, ((0.0,) * n_dims) + (1.0,)))
+    elif use_svd or n_dims != 3:
+        # Rigid transformation via SVD of covariance matrix
+        u, s, vh = np.linalg.svd(np.dot(v1, v0.T))
+        # rotation matrix from SVD orthonormal bases
+        R = np.dot(u, vh)
+        if np.linalg.det(R) < 0.0:
+            # R does not constitute right handed system
+            R -= np.outer(u[:, n_dims - 1], vh[n_dims - 1, :] * 2.0)
+            s[-1] *= -1.0
+        # homogeneous transformation matrix
+        M = np.identity(n_dims + 1)
+        M[:n_dims, :n_dims] = R
+    else:
+        # Rigid transformation matrix via quaternion
+        # compute symmetric matrix N
+        xx, yy, zz = np.sum(v0 * v1, axis=1)
+        xy, yz, zx = np.sum(v0 * np.roll(v1, -1, axis=0), axis=1)
+        xz, yx, zy = np.sum(v0 * np.roll(v1, -2, axis=0), axis=1)
+        N = [[xx + yy + zz, 0.0, 0.0, 0.0],
+             [yz - zy, xx - yy - zz, 0.0, 0.0],
+             [zx - xz, xy + yx, yy - xx - zz, 0.0],
+             [xy - yx, zx + xz, yz + zy, zz - xx - yy]]
+        # quaternion: eigenvector corresponding to most positive eigenvalue
+        w, V = np.linalg.eigh(N)
+        q = V[:, np.argmax(w)]
+        q /= np.linalg.norm(q)  # unit quaternion
+        # homogeneous transformation matrix
+        M = homomat_from_quaternion(q)
+
+    if scale and not shear:
+        # Affine transformation; scale is ratio of RMS deviations from centroid
+        v0 *= v0
+        v1 *= v1
+        M[:n_dims, :n_dims] *= math.sqrt(np.sum(v1) / np.sum(v0))
+
+    # move centroids back
+    M = np.dot(np.linalg.inv(M1), np.dot(M, M0))
+    M /= M[n_dims, n_dims]
+    return M
+
 
 # def _unit_vector(data, axis=None, out=None):
 #     """Return ndarray normalized by axis_length, i.e. Euclidean norm, along axis.

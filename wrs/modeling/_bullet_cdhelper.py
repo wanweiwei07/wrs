@@ -1,8 +1,11 @@
+import numpy as np
+from panda3d.core import TransformState
 from panda3d.bullet import BulletWorld, BulletRigidBodyNode, BulletPlaneShape
 from panda3d.bullet import BulletTriangleMeshShape, BulletTriangleMesh
-import numpy as np
-from wrs import basis as da, basis, basis as rm, modeling as gm, modeling as cm
-from panda3d.core import TransformState
+import wrs.basis.robot_math as rm
+import wrs.basis.data_adapter as da
+import wrs.modeling.collision_model as mcm
+import wrs.modeling.geometric_model as mgm
 
 physicsworld = BulletWorld()
 
@@ -150,8 +153,8 @@ if __name__ == '__main__':
     # base.run()
 
     wd.World(cam_pos=[.3, -.3, .3], lookat_pos=[0, 0, 0])
-    objpath = os.path.join(basis.__path__[0], 'objects', 'bunnysim.stl')
-    objcm1 = cm.CollisionModel(objpath)
+    objpath = os.path.join(os.path.dirname(rm.__file__), 'objects', 'bunnysim.stl')
+    objcm1 = mcm.CollisionModel(objpath)
     homomat = np.eye(4)
     homomat[:3, :3] = rm.rotmat_from_axangle([0, 0, 1], math.pi / 2)
     homomat[:3, 3] = np.array([0.02, 0.02, 0])
@@ -171,7 +174,7 @@ if __name__ == '__main__':
     print(iscollided)
     for ctpt in contact_points:
         print("draw points")
-        gm.gen_sphere(ctpt, radius=.01).attach_to(base)
+        mgm.gen_sphere(ctpt, radius=.01).attach_to(base)
     # spos = np.array([0, 0, 0]) + np.array([1.0, 1.0, 1.0])
     # epos = np.array([0, 0, 0]) + np.array([-1.0, -1.0, -0.9])
     # rayhit_closet(spos=spos, epos=epos, obj_cmodel=objcm2)

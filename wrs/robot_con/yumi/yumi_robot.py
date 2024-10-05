@@ -2,9 +2,9 @@
 Abstraction for the YuMi Robot
 Authors: Jacky Liang
 '''
+from time import sleep
 from wrs.robot_con.yumi.yumi_arm import YuMiArm, YuMiArmFactory
 from wrs.robot_con.yumi.yumi_constants import YuMiConstants as YMC
-from time import sleep
 
 class YuMiRobot:
     """ Interface to both arms of an ABB YuMi robot_s.

@@ -1,8 +1,8 @@
 import os
 import time
-from wrs import basis as rm, bench_mark as ycb, modeling as mcm
 import numpy as np
-import wrs.visualization.panda.world as wd
+from wrs import wd, rm, mcm
+import wrs.bench_mark.ycb as ycb
 import wrs.manipulation.placement.flat_surface_placement as mpfsp
 import wrs.manipulation.regrasp as reg
 

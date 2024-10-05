@@ -1,10 +1,7 @@
-import wrs.visualization.panda.world as wd
-import wrs.grasping.planning.antipodal as gpa
-from wrs import robot_sim as rtq85, bench_mark as ycb, modeling as mcm
-import numpy as np
-import math
+from wrs import wd, rm, gpa, rtq85, mcm
+import wrs.bench_mark.ycb as ycb
 
-base = wd.World(cam_pos=np.array([.5, .5, .5]), lookat_pos=np.array([0, 0, 0]))
+base = wd.World(cam_pos=rm.np.array([.5, .5, .5]), lookat_pos=rm.np.array([0, 0, 0]))
 # mgm.gen_frame().attach_to(base)
 for file in ycb.all_files.values():
     obj_cmodel = mcm.CollisionModel(file)
@@ -16,8 +13,8 @@ for file in ycb.all_files.values():
     # base.run()
     grasp_collection = gpa.plan_gripper_grasps(gripper,
                                                obj_cmodel,
-                                               angle_between_contact_normals=math.radians(175),
-                                               rotation_interval=math.radians(30),
+                                               angle_between_contact_normals=rm.radians(175),
+                                               rotation_interval=rm.radians(30),
                                                max_samples=100,
                                                min_dist_between_sampled_contact_points=.005,
                                                contact_offset=.001,

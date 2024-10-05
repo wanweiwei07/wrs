@@ -1,7 +1,7 @@
 import cv2
 import numpy as np
-from wrs.drivers.devices.kinect_azure.pykinectazure import PyKinectAzure
-from wrs.drivers.devices.kinect_azure import _k4a
+from .pykinectazure import PyKinectAzure
+from . import _k4a
 
 mtx = np.array([[610.16101074, 0, 638.35681152], [0, 610.19384766, 367.82455444], [0, 0, 1]])
 

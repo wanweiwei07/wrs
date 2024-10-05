@@ -2,7 +2,7 @@ import math
 import time
 import numpy as np
 from scipy.optimize import minimize
-from wrs import basis as rm, robot_sim as ym, modeling as gm
+import wrs.basis.robot_math as rm
 
 
 class FKOptBasedIK(object):
@@ -174,12 +174,14 @@ class FKOptBasedIK(object):
 
 if __name__ == '__main__':
     import wrs.visualization.panda.world as wd
+    import wrs.modeling.geometric_model as mgm
+    import wrs.robot_sim.robots.yumi.yumi as ym
 
     base = wd.World(cam_pos=[1.5, 0, 3], lookat_pos=[0, 0, .5])
     component_name= 'rgt_arm'
     tgt_pos = np.array([.5, -.3, .3])
     tgt_rotmat = rm.rotmat_from_axangle([0,1,0], math.pi/2)
-    gm.gen_frame(pos=tgt_pos, rotmat=tgt_rotmat).attach_to(base)
+    mgm.gen_frame(pos=tgt_pos, rotmat=tgt_rotmat).attach_to(base)
     yumi_instance = ym.Yumi(enable_cc=True)
     oik = FKOptBasedIK(yumi_instance, component_name=component_name, toggle_debug=False)
     # jnt_values, _ = oik.solve(tgt_pos, tgt_rotmat, np.zeros(7), method='SLSQP')
@@ -193,8 +195,8 @@ if __name__ == '__main__':
     goal_pos = np.array([.6, .1, .5])
     goal_rotmat = rm.rotmat_from_axangle([0, 1, 0], math.pi / 2)
     goal_info = [goal_pos, goal_rotmat]
-    gm.gen_frame(pos=start_pos, rotmat=start_rotmat).attach_to(base)
-    gm.gen_frame(pos=goal_pos, rotmat=goal_rotmat).attach_to(base)
+    mgm.gen_frame(pos=start_pos, rotmat=start_rotmat).attach_to(base)
+    mgm.gen_frame(pos=goal_pos, rotmat=goal_rotmat).attach_to(base)
     tic = time.time()
     jnt_values_list = oik.gen_linear_motion(start_info, goal_info)
     toc = time.time()

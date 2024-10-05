@@ -1,11 +1,10 @@
-from wrs import drivers as _k4a, drivers as _k4a_types, drivers as record
-from wrs.drivers.devices.kinect_azure.body_tracker import KinectBodyTracker
-from wrs.drivers.devices.kinect_azure import _k4abt
-import numpy as np
 import cv2
 import ctypes
-from wrs.drivers.devices.kinect_azure.config import Config
 import platform
+import numpy as np
+from . import _k4a, _k4a_types, _k4a_record, _k4abt
+from .body_tracker import KinectBodyTracker
+from .config import Config
 
 
 class IMUResult(object):
@@ -398,7 +397,7 @@ class PyKinectAzure(object):
         image_width = self.image_get_width_pixels(point_cloud)
         image_height = self.image_get_height_pixels(point_cloud)
         buffer_array = np.ctypeslib.as_array(buffer_pointer, shape=(image_size,))
-        return np.frombuffer(buffer_array, dtype=np.int16).reshape(image_height*image_width,3)/1000
+        return np.frombuffer(buffer_array, dtype=np.int16).reshape(image_height * image_width, 3) / 1000
 
     def transformation_depth_image_to_color_camera(self, transformation_handle, input_depth_image_handle,
                                                    transformed_depth_image_handle):
@@ -547,8 +546,7 @@ class PyKinectAzure(object):
                                               valid),
             "Transformation from color to depth failed!")
         xyz = target_point3d_mm.xyz
-        return np.array([xyz.x, xyz.y, xyz.z])*1e-3
-
+        return np.array([xyz.x, xyz.y, xyz.z]) * 1e-3
 
     def get_calibration(self):
         calibration = _k4a.k4a_calibration_t()
@@ -563,10 +561,10 @@ class PyKinectAzure(object):
         """
         calibration = self.get_calibration()
         mtx = np.eye(3)
-        mtx[0,0]=calibration.depth_camera_calibration.intrinsics.parameters.param.fx
-        mtx[1,1]=calibration.depth_camera_calibration.intrinsics.parameters.param.fy
-        mtx[0,2]=calibration.depth_camera_calibration.intrinsics.parameters.param.cx
-        mtx[1,2]=calibration.depth_camera_calibration.intrinsics.parameters.param.cy
+        mtx[0, 0] = calibration.depth_camera_calibration.intrinsics.parameters.param.fx
+        mtx[1, 1] = calibration.depth_camera_calibration.intrinsics.parameters.param.fy
+        mtx[0, 2] = calibration.depth_camera_calibration.intrinsics.parameters.param.cx
+        mtx[1, 2] = calibration.depth_camera_calibration.intrinsics.parameters.param.cy
         dist = np.array([calibration.depth_camera_calibration.intrinsics.parameters.param.k1,
                          calibration.depth_camera_calibration.intrinsics.parameters.param.k2,
                          calibration.depth_camera_calibration.intrinsics.parameters.param.p1,
@@ -582,10 +580,10 @@ class PyKinectAzure(object):
         """
         calibration = self.get_calibration()
         mtx = np.eye(3)
-        mtx[0,0]=calibration.color_camera_calibration.intrinsics.parameters.param.fx
-        mtx[1,1]=calibration.color_camera_calibration.intrinsics.parameters.param.fy
-        mtx[0,2]=calibration.color_camera_calibration.intrinsics.parameters.param.cx
-        mtx[1,2]=calibration.color_camera_calibration.intrinsics.parameters.param.cy
+        mtx[0, 0] = calibration.color_camera_calibration.intrinsics.parameters.param.fx
+        mtx[1, 1] = calibration.color_camera_calibration.intrinsics.parameters.param.fy
+        mtx[0, 2] = calibration.color_camera_calibration.intrinsics.parameters.param.cx
+        mtx[1, 2] = calibration.color_camera_calibration.intrinsics.parameters.param.cy
         dist = np.array([calibration.color_camera_calibration.intrinsics.parameters.param.k1,
                          calibration.color_camera_calibration.intrinsics.parameters.param.k2,
                          calibration.color_camera_calibration.intrinsics.parameters.param.p1,

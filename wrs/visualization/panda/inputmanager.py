@@ -2,7 +2,6 @@ from direct.showbase.DirectObject import DirectObject
 from panda3d.core import Vec3, Mat3, Mat4, CollisionNode, CollisionRay, BitMask32, CollisionSphere, Plane, \
     CollisionPlane, CollisionBox, Point3, CollisionTraverser, CollisionHandlerQueue, GeomNode
 import numpy as np
-import math
 
 
 class InputManager(DirectObject):

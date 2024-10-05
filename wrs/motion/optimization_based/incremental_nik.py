@@ -1,6 +1,7 @@
 import math
 import numpy as np
-from wrs import basis as rm, robot_sim as ym, modeling as gm
+import wrs.basis.robot_math as rm
+import wrs.modeling.geometric_model as mgm
 
 
 class IncrementalNIK(object):
@@ -52,7 +53,7 @@ class IncrementalNIK(object):
                 if cd_result:
                     if toggle_debug:
                         for ct_pnt in ct_points:
-                            gm.gen_sphere(ct_pnt).attach_to(base)
+                            mgm.gen_sphere(ct_pnt).attach_to(base)
                     print("Intermediate pose collided in gen_linear_motion!")
                     self.robot_s.fk(component_name, jnt_values_bk)
                     return None
@@ -227,7 +228,7 @@ class IncrementalNIK(object):
                 if cd_result:
                     if toggle_debug:
                         for ct_pnt in ct_points:
-                            gm.gen_sphere(ct_pnt).attach_to(base)
+                            mgm.gen_sphere(ct_pnt).attach_to(base)
                     print("Intermediate pose collided in gen_linear_motion!")
                     self.robot_s.fk(component_name, jnt_values_bk)
                     return []
@@ -243,17 +244,18 @@ class IncrementalNIK(object):
 if __name__ == '__main__':
     import time
     import wrs.visualization.panda.world as wd
+    import wrs.robot_sim.robots.yumi.yumi as ym
 
     base = wd.World(cam_pos=[1.5, 0, 3], lookat_pos=[0, 0, .5])
-    gm.gen_frame().attach_to(base)
+    mgm.gen_frame().attach_to(base)
     yumi_instance = ym.Yumi(enable_cc=True)
     component_name = 'rgt_arm'
     start_pos = np.array([.5, -.3, .3])
     start_rotmat = rm.rotmat_from_axangle([0, 1, 0], math.pi / 2)
     goal_pos = np.array([.55, .3, .5])
     goal_rotmat = rm.rotmat_from_axangle([0, 1, 0], math.pi / 2)
-    gm.gen_frame(pos=start_pos, rotmat=start_rotmat).attach_to(base)
-    gm.gen_frame(pos=goal_pos, rotmat=goal_rotmat).attach_to(base)
+    mgm.gen_frame(pos=start_pos, rotmat=start_rotmat).attach_to(base)
+    mgm.gen_frame(pos=goal_pos, rotmat=goal_rotmat).attach_to(base)
     inik = IncrementalNIK(yumi_instance)
     tic = time.time()
     jnt_values_list = inik.gen_linear_motion(component_name, start_tcp_pos=start_pos, start_tcp_rotmat=start_rotmat,

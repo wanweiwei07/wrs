@@ -1,7 +1,10 @@
 import numpy as np
-from wrs import basis as rm, basis as graph, basis as geometry, basis as grouping, basis, basis as tg, modeling as mcm, \
-    modeling as cm, modeling as gm
 from scipy.spatial import cKDTree
+import wrs.basis.robot_math as rm
+import wrs.basis.trimesh_factory as trf
+import wrs.modeling.geometric_model as mgm
+import wrs.modeling.collision_model as mcm
+from wrs.basis.trimesh import graph, geometry, grouping
 
 
 def extract_boundary(vertices, facet):
@@ -157,42 +160,41 @@ if __name__ == '__main__':
     pr = profile.Profile()
     pr.disable()
     base = wd.World(cam_pos=[.3, .3, .3], lookat_pos=[0, 0, 0], toggle_debug=True)
-    obj_path = os.path.join(basis.__path__[0], 'objects', 'bunnysim.stl')
-    bunnycm = cm.CollisionModel(obj_path)
+    obj_path = os.path.join(os.path.dirname(rm.__file__), 'objects', 'bunnysim.stl')
+    bunny_cm = mcm.CollisionModel(obj_path)
     pr.enable()
     facet_nested_face_id_list, seg_nested_edge_list, facet_seed_list, facet_normal_list, facet_curvature_list, face_id_pair_list_for_curvature = overlapped_segmentation(
-        bunnycm, max_normal_bias_angle=math.pi / 6, toggle_face_id_pair_for_curvature=True)
+        bunny_cm, max_normal_bias_angle=math.pi / 6, toggle_face_id_pair_for_curvature=True)
     pr.disable()
     pstats.Stats(pr).sort_stats(pstats.SortKey.CUMULATIVE).print_stats(10)
     # TODO Extract Facet
     for i in range(len(facet_nested_face_id_list)):
         offset_pos = facet_normal_list[i] * np.random.rand() * .0
         # segment
-        tmp_trm = tg.facet_as_trm(bunnycm.trm_mesh, facet_nested_face_id_list[i], offset_pos)  # TODO submesh
-        tmp_gm = gm.StaticGeometricModel(tmp_trm, toggle_twosided=True)
+        tmp_trm = trf.facet_as_trm(bunny_cm.trm_mesh, facet_nested_face_id_list[i], offset_pos)  # TODO submesh
+        tmp_gm = mgm.StaticGeometricModel(tmp_trm, toggle_twosided=True)
         tmp_gm.attach_to(base)
         tmp_gm.rgba = (rm.random_rgba())
         # edge
         edge_list = (np.array(seg_nested_edge_list[i]) + offset_pos).tolist()
-        gm.gen_linesegs(edge_list, thickness=.001, rgba=[1, 0, 0, 1]).attach_to(base)
+        mgm.gen_linesegs(edge_list, thickness=.001, rgb=rm.const.red).attach_to(base)
         # seed segment
-        tmp_trm = tg.facet_as_trm(bunnycm.trm_mesh, facet_seed_list[i], facet_normal_list[i] * .001)
-        tmp_gm = gm.StaticGeometricModel(tmp_trm, toggle_twosided=True)
+        tmp_trm = trf.facet_as_trm(bunny_cm.trm_mesh, facet_seed_list[i], facet_normal_list[i] * .001)
+        tmp_gm = mgm.StaticGeometricModel(tmp_trm, toggle_twosided=True)
         tmp_gm.attach_to(base)
         tmp_gm.rgba = np.array([1, 0, 0, 1])
         # face center and normal
         seed_center = np.mean(tmp_trm.vertices, axis=0)
-        gm.gen_sphere(pos=seed_center, radius=.0003).attach_to(base)
-        gm.gen_arrow(spos=seed_center, epos=seed_center + tmp_trm.face_normals[0] * .01, stick_radius=.0002).attach_to(
+        mgm.gen_sphere(pos=seed_center, radius=.0003).attach_to(base)
+        mgm.gen_arrow(spos=seed_center, epos=seed_center + tmp_trm.face_normals[0] * .01, stick_radius=.0002).attach_to(
             base)
         for face_id_for_curvature in face_id_pair_list_for_curvature[i]:
-            rgba = [1, 1, 1, 1]
-            tmp_trm = tg.facet_as_trm(bunnycm.trm_mesh, face_id_for_curvature, offset_pos)
-            tmp_gm = gm.StaticGeometricModel(tmp_trm, toggle_twosided=True)
+            tmp_trm = trf.facet_as_trm(bunny_cm.trm_mesh, face_id_for_curvature, offset_pos)
+            tmp_gm = mgm.StaticGeometricModel(tmp_trm, toggle_twosided=True)
             tmp_gm.attach_to(base)
-            tmp_gm.rgba = rgba
+            tmp_gm.rgba = np.array([1, 1, 1, 1])
             seed_center = np.mean(tmp_trm.vertices, axis=0)
-            gm.gen_sphere(pos=seed_center, radius=.0003, rgba=rgba).attach_to(base)
-            gm.gen_arrow(spos=seed_center, epos=seed_center + tmp_trm.face_normals[0] * .01, stick_radius=.0002,
-                         rgba=rgba).attach_to(base)
+            mgm.gen_sphere(pos=seed_center, radius=.0003, rgb=rm.const.white, alpha=1).attach_to(base)
+            mgm.gen_arrow(spos=seed_center, epos=seed_center + tmp_trm.face_normals[0] * .01, stick_radius=.0002,
+                          rgb=rm.const.white, alpha=1).attach_to(base)
     base.run()

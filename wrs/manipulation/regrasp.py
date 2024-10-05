@@ -2,12 +2,15 @@ import uuid
 import itertools
 import numpy as np
 import networkx as nx
+import matplotlib.pyplot as plt
+import pickle
+import wrs.basis.robot_math as rm
+import wrs.modeling.collision_model as mcm
+import wrs.grasping.reasoner as gr
+import wrs.manipulation.pick_place_planner as ppp
 import wrs.manipulation.placement.flat_surface_placement as mpfsp
 import wrs.manipulation.placement.general_placement as mpgp
 import wrs.modeling.model_collection as mmc
-from wrs import basis as rm, manipulation as ppp, modeling as mcm, grasping as gr
-import matplotlib.pyplot as plt
-import pickle
 
 
 class RegraspSpotCollection(object):

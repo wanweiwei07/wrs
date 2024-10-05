@@ -6,7 +6,7 @@ Update Note <Version:0.0.1,20230113>: Create a basic API for the WRS system
 import time
 from typing import Optional, Literal
 import numpy as np
-from wrs import basis as rm
+import wrs.basis.robot_math as rm
 from wrs.drivers.dobot_tcp import Dobot
 from wrs.robot_con.dobot_nova.nova2_gripper_x import Nova2GripperX
 

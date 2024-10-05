@@ -9,7 +9,6 @@ import socket
 import datetime
 from tkinter import Text, END
 
-
 class DobotApi:
     def __init__(self, ip, port, *args):
         self.ip = ip

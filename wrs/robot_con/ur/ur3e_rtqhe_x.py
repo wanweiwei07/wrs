@@ -1,14 +1,14 @@
 import math
-from wrs.robot_con.ur.robotiq import rtq_eseries_gripper as r2f
-from wrs.basis import robot_math as rm
-from wrs import drivers as urrobot
-import wrs.robot_con.ur.program_builder as pb
 import numpy as np
 import threading
 import socket
 import struct
 import os
+import wrs.basis.robot_math as rm
+import wrs.drivers.urx.ur_robot as urrobot
 import wrs.motion.trajectory.piecewisepoly_toppra as pwp
+import wrs.robot_con.ur.program_builder as pb
+from wrs.robot_con.ur.robotiq import rtq_eseries_gripper as r2f
 
 
 class UR3ERtqHEX():

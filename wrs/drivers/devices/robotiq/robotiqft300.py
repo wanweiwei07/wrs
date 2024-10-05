@@ -1,26 +1,27 @@
 import logging
 
+
 class RobotiqFT300Sensor(object):
     complete_program = ""
     header = "def myProg():" + "\n"
-    end =  "\n" + "end_type"
+    end = "\n" + "end_type"
     logger = False
 
     def __init__(self):
         self.logger = logging.getLogger("urx")
         self.reset()
 
-    def add_line_to_program(self,new_line):
-        if(self.complete_program != ""):
+    def add_line_to_program(self, new_line):
+        if (self.complete_program != ""):
             self.complete_program += "\n"
         self.complete_program += new_line
 
     def reset(self):
         self.complete_program = ""
         self.add_line_to_program("socket_close(\"ftsensor_socket\")")
-        #self.add_line_to_program("sleep(1)") #in Robotiq's example they do a wait here... I haven't found it neccessary
+        # self.add_line_to_program("sleep(1)") #in Robotiq's example they do a wait here... I haven't found it neccessary
         self.add_line_to_program("socket_open(\"127.0.0.1\",63351,\"ftsensor_socket\")")
-        #self.add_line_to_program("sleep(1)")
+        # self.add_line_to_program("sleep(1)")
         self.add_line_to_program("write_port_register(410, 0x200)")
         self.add_line_to_program("sync()")
 
@@ -32,7 +33,7 @@ class RobotiqFT300Sensor(object):
     #         print s.recv(1024)
 
     def ret_program_to_run(self):
-        if(self.complete_program == ""):
+        if (self.complete_program == ""):
             self.logger.debug("ftsensor's program is empty")
             return ""
 
@@ -40,6 +41,7 @@ class RobotiqFT300Sensor(object):
         prog += self.complete_program
         prog += self.end
         return prog
+
 
 # if __name__=="__main__":
 #
@@ -72,9 +74,9 @@ if __name__ == '__main__':
     # start = [50.0,0.0,-143.0,0.0,0.0,0.0]
     # goal = [-15.0,0.0,-143.0,0.0,0.0,0.0]
     # plot init and goal
-    robot.movearmfk(armjnts = start, armid = 'rgt')
+    robot.movearmfk(armjnts=start, armid='rgt')
     robotmesh.genmnp(robot).reparentTo(base.render)
-    robot.movearmfk(armjnts = goal, armid = 'rgt')
+    robot.movearmfk(armjnts=goal, armid='rgt')
     robotmesh.genmnp(robot).reparentTo(base.render)
 
     jointlimits = [[robot.rgtarm[1]['rngmin'], robot.rgtarm[1]['rngmax']],
@@ -102,20 +104,21 @@ if __name__ == '__main__':
     #                   jointlimits = jointlimits, goalsamplerate=30, expanddis = 5, robot_s = robot_s,
     #                   cdchecker = cdchecker)
     #
-    planner = ddrrtc.DDRRTConnect(start=start, goal=goal, iscollidedfunc = iscollidedfunc,
-                              jointlimits = jointlimits, starttreesamplerate=30, expanddis = 5, robot = robot,
-                              cdchecker = cdchecker)
+    planner = ddrrtc.DDRRTConnect(start=start, goal=goal, iscollidedfunc=iscollidedfunc,
+                                  jointlimits=jointlimits, starttreesamplerate=30, expanddis=5, robot=robot,
+                                  cdchecker=cdchecker)
 
     import time
+
     tic = time.time()
-    [path, sampledpoints] = planner.planning(obstaclelist = [])
+    [path, sampledpoints] = planner.planning(obstaclelist=[])
     toc = time.time()
-    print(toc-tic)
+    print(toc - tic)
     #
     for pose in path:
-        ur3u.movejntssgl_cont(pose, armid = 'rgt')
-        robot.movearmfk(pose, armid = 'rgt')
-        robotstick = robotmesh.gensnp(robot = robot)
+        ur3u.movejntssgl_cont(pose, armid='rgt')
+        robot.movearmfk(pose, armid='rgt')
+        robotstick = robotmesh.gensnp(robot=robot)
         robotstick.reparentTo(base.render)
     ur3u.move_jnts(path[-1], armid='rgt')
 
@@ -133,6 +136,7 @@ if __name__ == '__main__':
                                   cdchecker=cdchecker)
 
     import time
+
     tic = time.time()
     [path, sampledpoints] = planner.planning(obstaclelist=[])
     toc = time.time()
@@ -145,17 +149,20 @@ if __name__ == '__main__':
         robotstick.reparentTo(base.render)
     ur3u.move_jnts(path[-1], armid='lft')
 
-    ur3u.close_gripper(armid ='lft')
-    ur3u.close_gripper(armid ='rgt')
+    ur3u.close_gripper(armid='lft')
+    ur3u.close_gripper(armid='rgt')
 
     while True:
-        print(ur3u.recvft(armid = 'rgt')[0])
+        print(ur3u.recvft(armid='rgt')[0])
         # print ur3u.recvft(armid = 'lft')
+
 
     def getftthread(ur3u, armid='rgt'):
         print(ur3u.recvft(armid=armid))
 
+
     import threading
+
     thread = threading.Thread(target=getftthread, args=([ur3u, 'rgt']), name="threadft")
     thread.start()
 

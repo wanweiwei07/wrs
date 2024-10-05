@@ -1,4 +1,3 @@
-from wrs.vision.coded_aperture.code_aperture import mura
 from PIL import Image
 import numpy as np
 import matplotlib.pyplot as plt
@@ -6,6 +5,7 @@ from scipy.signal import wiener
 from skimage.restoration import richardson_lucy
 from numpy.fft import fft2, ifft2
 from scipy.ndimage import zoom
+from wrs.vision.coded_aperture.code_aperture import mura
 
 # 生成 MURA 编码
 code = mura(rank=5)

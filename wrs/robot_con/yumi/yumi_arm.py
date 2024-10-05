@@ -11,14 +11,14 @@ import sys
 from time import sleep
 from collections import namedtuple
 import numpy as np
+import pickle
+import struct
 from wrs.robot_con.yumi.autolab_core import RigidTransform
 from wrs.robot_con.yumi.yumi_constants import YuMiConstants as YMC
 from wrs.robot_con.yumi.yumi_state import YuMiState
 from wrs.robot_con.yumi.yumi_motion_logger import YuMiMotionLogger
 from wrs.robot_con.yumi.yumi_util import message_to_state, message_to_pose
 from wrs.robot_con.yumi.yumi_exceptions import YuMiCommException, YuMiControlException
-import pickle
-import struct
 
 _RAW_RES = namedtuple('_RAW_RES', 'mirror_code res_code message')
 _RES = namedtuple('_RES', 'raw_res data')

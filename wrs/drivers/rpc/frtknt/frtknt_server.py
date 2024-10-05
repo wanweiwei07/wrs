@@ -1,8 +1,8 @@
 import grpc
 import time
 import numpy as np
-import robotconn.rpc.frtknt.kntv2 as kntv2
 from concurrent import futures
+import robotconn.rpc.frtknt.kntv2 as kntv2
 import robotconn.rpc.frtknt.frtknt_pb2 as fkmsg
 import robotconn.rpc.frtknt.frtknt_pb2_grpc as fkrpc
 from wrs.drivers import PyKinectV2

@@ -1,6 +1,6 @@
-from wrs.drivers.devices.kinect_azure._k4a_types import k4a_float3_t, k4a_float2_t
 import ctypes
 import numpy as np
+from ._k4a_types import k4a_float3_t as k4a_float3_t, k4a_float2_t as k4a_float2_t
 
 # K4A_DECLARE_HANDLE(k4abt_tracker_t);
 class _handle_k4abt_tracker_t(ctypes.Structure):

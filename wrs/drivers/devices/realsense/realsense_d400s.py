@@ -11,7 +11,6 @@ Update Notes: '0.0.1'/20220719: Implement the functions to capture the point clo
 import time
 from typing import Literal
 import multiprocessing as mp
-
 import numpy as np
 import pyrealsense2 as rs
 

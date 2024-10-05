@@ -1,7 +1,7 @@
 import time
-import wrs.motion.trajectory.piecewisepoly_toppra as trajp
 import numpy.typing as npt
 from typing import List
+import wrs.motion.trajectory.topp_ra as trajp
 
 
 class CobottaX(object):
@@ -28,7 +28,6 @@ class CobottaX(object):
         self.bcc.robot_execute(self.hrbt, "Motor", [1, 0])
         # set ExtSpeed = [speed, acc, dec]
         self.bcc.robot_execute(self.hrbt, "ExtSpeed", [100, 100, 100])
-        self.traj_gen = trajp.PiecewisePolyTOPPRA()
 
     def __del__(self):
         self.clear_error()
@@ -57,10 +56,9 @@ class CobottaX(object):
         path = new_path
         max_vels = [math.pi * .6, math.pi * .4, math.pi, math.pi, math.pi, math.pi * 1.5]
         interpolated_confs = \
-            self.traj_gen.interpolate_by_max_spdacc(path,
-                                                    control_frequency=.008,
-                                                    max_vels=max_vels,
-                                                    toggle_debug=toggle_debug)
+            trajp.generate_time_optimal_trajectory(path,
+                                                   max_vels=max_vels,
+                                                   ctrl_freq=.008)
         # Slave move: Change mode
         self.bcc.robot_execute(self.hrbt, "slvChangeMode", 0x202)
         time.sleep(.02)

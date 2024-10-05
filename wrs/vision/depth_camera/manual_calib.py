@@ -8,10 +8,9 @@ import os
 from pathlib import Path
 import json
 from abc import ABC, abstractmethod
-
-import numpy as np
-
-from wrs.robot_sim.system.system_interface import RobotInterface
+import wrs.basis.robot_math as rm
+import wrs.modeling.geometric_model as mgm
+import wrs.robot_sim.robots.robot_interface as ri
 
 
 def py2json_data_formatter(data):
@@ -43,8 +42,8 @@ def dump_json(data, path="", reminder=True):
 
 
 class ManualCalibrationBase(ABC):
-    def __init__(self, rbt_s: RobotInterface, rbt_x, sensor_hdl, init_calib_mat: np.ndarray = None,
-                 component_name="arm", move_resolution=.001, rotation_resolution=np.radians(5)):
+    def __init__(self, rbt_s: ri.RobotInterface, rbt_x, sensor_hdl, init_calib_mat: rm.np.ndarray = None,
+                 component_name="arm", move_resolution=.001, rotation_resolution=rm.np.radians(5)):
         """
         Class to manually calibrate the point cloud data
         :param rbt_s: The simulation robot
@@ -201,8 +200,8 @@ class ManualCalibrationBase(ABC):
             else:
                 pcd_color_rgba = np.array([1, 1, 1, 1])
             pcd_r = self.align_pcd(pcd)
-            self._plot_node_pcd = gm.gen_pointcloud(pcd_r, rgbas=pcd_color_rgba)
-            gm.gen_frame(self._init_calib_mat[:3, 3], self._init_calib_mat[:3, :3]).attach_to(self._plot_node_pcd)
+            self._plot_node_pcd = mgm.gen_pointcloud(pcd_r, rgbas=pcd_color_rgba)
+            mgm.gen_frame(self._init_calib_mat[:3, 3], self._init_calib_mat[:3, :3]).attach_to(self._plot_node_pcd)
             self._plot_node_pcd.attach_to(base)
         if task is not None:
             return task.again

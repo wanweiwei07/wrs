@@ -1,6 +1,6 @@
-from wrs import drivers as _k4a, drivers as _k4abt
 import cv2
 from ctypes import cdll
+from . import _k4a, _k4abt
 
 
 class KinectBodyTracker:

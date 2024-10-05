@@ -1,4 +1,5 @@
-from wrs import basis as rm, grasping as g
+import wrs.basis.robot_math as rm
+import wrs.grasping.grasp as gg
 
 
 class GraspReasoner(object):
@@ -34,7 +35,7 @@ class GraspReasoner(object):
         :param grasp:
         :return:
         """
-        return g.Grasp(ee_values=grasp.ee_values,
+        return gg.Grasp(ee_values=grasp.ee_values,
                        ac_pos=goal_pos + goal_rotmat.dot(grasp.ac_pos),
                        ac_rotmat=goal_rotmat.dot(grasp.ac_rotmat))
 

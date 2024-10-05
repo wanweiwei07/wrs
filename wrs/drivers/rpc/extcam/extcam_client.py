@@ -1,6 +1,6 @@
 import grpc
-import robotconn.rpc.extcam.extcam_pb2 as ecmsg
-import robotconn.rpc.extcam.extcam_pb2_grpc as ecrpc
+from . import extcam_pb2 as ecmsg
+from . import extcam_pb2_grpc as ecrpc
 import numpy as np
 import cv2
 

@@ -1,5 +1,4 @@
-from wrs import grasping as gr
-
+import wrs.grasping.reasoner as gr
 
 class PG(object):
     """

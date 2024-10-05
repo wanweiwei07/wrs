@@ -467,7 +467,7 @@ def gen_linesegs(linesegs,
     # Create a set of line segments
     ls = LineSegs()
     ls.setThickness(thickness * da.M_TO_PIXEL)
-    ls.setColor(*rgb, alpha)
+    ls.setColor(rgb[0], rgb[1], rgb[2], alpha)
     for p0_p1_tuple in linesegs:
         ls.moveTo(*p0_p1_tuple[0])
         ls.drawTo(*p0_p1_tuple[1])

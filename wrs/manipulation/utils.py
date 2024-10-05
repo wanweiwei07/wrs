@@ -1,12 +1,13 @@
-from wrs import robot_sim as ri, motion as motu
+import wrs.robot_sim.robots.robot_interface as ri
+import wrs.motion.motion_data as motd
 
 
-class ManipulationData(motu.MotionData):
+class ManipulationData(motd.MotionData):
     def __init__(self, initor):
         if isinstance(initor, ri.RobotInterface):
             super().__init__(robot=initor)
             self._jaw_width_list = []
-        elif isinstance(initor, motu.MotionData):
+        elif isinstance(initor, motd.MotionData):
             super().__init__(robot=initor.robot)
             self._jaw_width_list = []
             self.__add__(initor)
@@ -40,7 +41,7 @@ class ManipulationData(motu.MotionData):
 
     def __add__(self, other):
         super().__add__(other=other)
-        if isinstance(other, motu.MotionData):
+        if isinstance(other, motd.MotionData):
             self._jaw_width_list += [None] * len(other.conf_list)
         else:
             self._jaw_width_list += other.jaw_width_list

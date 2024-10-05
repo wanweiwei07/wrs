@@ -1,8 +1,8 @@
 import numpy as np
-from wrs import robot_sim as ur3ds, manipulation as ppp, motion as rrtc
 import wrs.robot_con.ur.ur3_dual_x as ur3dx
 import wrs.motion.optimization_based.incremental_nik as inik
 import wrs.visualization.panda.world as wd
+from wrs import robot_sim as ur3ds, manipulation as ppp, motion as rrtc
 
 class UR3DualHelper(object):
 

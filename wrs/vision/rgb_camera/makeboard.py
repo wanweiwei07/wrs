@@ -2,149 +2,139 @@ import numpy as np
 from PIL import Image
 from cv2 import aruco
 
-def makearucoboard(nrow, ncolumn, markerdict=aruco.DICT_6X6_250, startid = 0, markersize=25, savepath='./', name='test',
-                   paperwidth=210, paperheight=297, dpi = 600, framesize = None):
+
+def make_arucoboard(n_row, n_column, marker_dict=aruco.DICT_6X6_250, start_id=0, marker_size=25, save_path='./',
+                    name='test', paper_width=210, paper_height=297, dpi=600, frame_size=None):
     """
     create aruco board
-    the paper is in portrait orientation, nrow means the number of markers in the vertical motion_vec
-
-    :param nrow:
-    :param ncolumn:
-    :param startid: the starting id of the marker
-    :param markerdict:
-    :param markersize:
-    :param savepath:
+    the paper is in portrait orientation, n_row means the number of markers in the vertical motion_vec
+    :param n_row:
+    :param n_column:
+    :param start_id: the starting id of the marker
+    :param marker_dict:
+    :param marker_size:
+    :param save_path:
     :param name: the name of the saved pdf file
-    :param paperwidth: mm
-    :param paperheight: mm
+    :param paper_width: mm
+    :param paper_height: mm
     :param dpi:
-    :param framesize: (width, height) the 1pt frame for easy cut, nothing is drawn by default
+    :param frame_size: (width, height) the 1pt frame for easy cut, nothing is drawn by default
     :return:
-
     author: weiwei
     date: 20190420
     """
-
-    aruco_dict = aruco.Dictionary_get(markerdict)
+    aruco_dict = aruco.Dictionary_get(marker_dict)
     # 1mm = 0.0393701inch
-    a4npxrow = int(paperheight*0.0393701*dpi)
-    a4npxcolumn = int(paperwidth*0.0393701*dpi)
-    bgimg = np.ones((a4npxrow, a4npxcolumn), dtype='uint8')*255
-    markersizepx = int(markersize*0.0393701*dpi)
-    markerdist = int(markersizepx/4)
-
-    if framesize is not None:
-        framesize[0] = int(framesize[0]*0.0393701*dpi)
-        framesize[1] = int(framesize[1]*0.0393701*dpi)
-        if a4npxcolumn<framesize[0]+2:
+    a4_n_pxrow = int(paper_height * 0.0393701 * dpi)
+    a4_n_pxcolumn = int(paper_width * 0.0393701 * dpi)
+    bg_img = np.ones((a4_n_pxrow, a4_n_pxcolumn), dtype='uint8') * 255
+    marker_size_in_px = int(marker_size * 0.0393701 * dpi)
+    marker_dist_in_px = int(marker_size_in_px / 4)
+    if frame_size is not None:
+        frame_size[0] = int(frame_size[0] * 0.0393701 * dpi)
+        frame_size[1] = int(frame_size[1] * 0.0393701 * dpi)
+        if a4_n_pxcolumn < frame_size[0] + 2:
             print("Frame width must be smaller than the #pt in each row.")
-        if a4npxrow<framesize[1]+2:
+        if a4_n_pxrow < frame_size[1] + 2:
             print("Frame height must be smaller than the #pt in each column.")
-        framelft = int((a4npxcolumn-framesize[0])/2-1)
-        framergt = int(framelft+1+framesize[0])
-        frametop = int((a4npxrow-framesize[1])/2-1)
-        framedown = int(frametop+1+framesize[1])
-        bgimg[frametop:framedown+1, framelft:framelft+1]=0
-        bgimg[frametop:framedown+1, framergt:framergt+1]=0
-        bgimg[frametop:frametop+1, framelft:framergt+1]=0
-        bgimg[framedown:framedown+1, framelft:framergt+1]=0
-
-    markerareanpxrow = (nrow-1)*(markerdist)+nrow*markersizepx
-    uppermargin = int((a4npxrow-markerareanpxrow)/2)
-    markerareanpxcolumn = (ncolumn-1)*(markerdist)+ncolumn*markersizepx
-    leftmargin = int((a4npxcolumn-markerareanpxcolumn)/2)
-
-    if (uppermargin <= 10) or (leftmargin <= 10):
-        print("Too many markers! Reduce nrow and ncolumn.")
+        frame_lft = int((a4_n_pxcolumn - frame_size[0]) / 2 - 1)
+        frame_rgt = int(frame_lft + 1 + frame_size[0])
+        frame_top = int((a4_n_pxrow - frame_size[1]) / 2 - 1)
+        frame_down = int(frame_top + 1 + frame_size[1])
+        bg_img[frame_top:frame_down + 1, frame_lft:frame_lft + 1] = 0
+        bg_img[frame_top:frame_down + 1, frame_rgt:frame_rgt + 1] = 0
+        bg_img[frame_top:frame_top + 1, frame_lft:frame_rgt + 1] = 0
+        bg_img[frame_down:frame_down + 1, frame_lft:frame_rgt + 1] = 0
+    marker_area_n_pxrow = (n_row - 1) * (marker_dist_in_px) + n_row * marker_size_in_px
+    upper_margin = int((a4_n_pxrow - marker_area_n_pxrow) / 2)
+    marker_area_n_pxcolumn = (n_column - 1) * (marker_dist_in_px) + n_column * marker_size_in_px
+    left_margin = int((a4_n_pxcolumn - marker_area_n_pxcolumn) / 2)
+    if (upper_margin <= 10) or (left_margin <= 10):
+        print("Too many markers! Reduce n_row and n_column.")
         return
+    for id_row in range(n_row):
+        for id_column in range(n_column):
+            start_row = upper_margin + id_row * (marker_size_in_px + marker_dist_in_px)
+            end_row = start_row + marker_size_in_px
+            start_column = left_margin + id_column * (marker_size_in_px + marker_dist_in_px)
+            end_column = marker_size_in_px + start_column
+            i = start_id + id_row * n_column + id_column
+            img = aruco.drawMarker(aruco_dict, i, marker_size_in_px)
+            bg_img[start_row:end_row, start_column:end_column] = img
+    im = Image.fromarray(bg_img).convert("L")
+    im.save(save_path + name + ".pdf", "PDF", resolution=dpi)
 
-    for idnr in range(nrow):
-        for idnc in range(ncolumn):
-            startrow = uppermargin+idnr*(markersizepx+markerdist)
-            endrow = startrow+markersizepx
-            startcolumn = leftmargin+idnc*(markersizepx+markerdist)
-            endcolumn = markersizepx+startcolumn
-            i = startid+idnr*ncolumn+idnc
-            img = aruco.drawMarker(aruco_dict,i,markersizepx)
-            bgimg[startrow:endrow, startcolumn:endcolumn] = img
-    im = Image.fromarray(bgimg).convert("L")
-    im.save(savepath+name+".pdf", "PDF", resolution=dpi)
 
-def makecharucoboard(nrow, ncolumn, markerdict=aruco.DICT_4X4_250, squaresize=25, savepath='./',
-                   paperwidth=210, paperheight=297, dpi = 600, framesize = None):
+def make_charucoboard(n_row, n_column, marker_dict=aruco.DICT_4X4_250, square_size=25, save_path='./',
+                      paper_width=210, paper_height=297, dpi=600, frame_size=None):
     """
     create charuco board
-    the paper is in portrait orientation, nrow means the number of markers in the vertical motion_vec
-
-    :param nrow:
-    :param ncolumn:
-    :param markerdict:
-    :param savepath:
-    :param paperwidth: mm
-    :param paperheight: mm
+    the paper is in portrait orientation, n_row means the number of markers in the vertical motion_vec
+    :param n_row:
+    :param n_column:
+    :param marker_dict:
+    :param save_path:
+    :param paper_width: mm
+    :param paper_height: mm
     :param dpi:
-    :param framesize: (width, height) the 1pt frame for easy cut, nothing is drawn by default
+    :param frame_size: (width, height) the 1pt frame for easy cut, nothing is drawn by default
     :return:
-
     author: weiwei
     date: 20190420
     """
-
-    aruco_dict = aruco.Dictionary_get(markerdict)
+    aruco_dict = aruco.Dictionary_get(marker_dict)
     # 1mm = 0.0393701inch
-    a4npxrow = int(paperheight*0.0393701*dpi)
-    a4npxcolumn = int(paperwidth*0.0393701*dpi)
-    bgimg = np.ones((a4npxrow, a4npxcolumn), dtype='uint8')*255
-
-    if framesize is not None:
-        framesize[0] = int(framesize[0]*0.0393701*dpi)
-        framesize[1] = int(framesize[1]*0.0393701*dpi)
-        if a4npxcolumn<framesize[0]+2:
+    a4_n_pxrow = int(paper_height * 0.0393701 * dpi)
+    a4_n_pxcolumn = int(paper_width * 0.0393701 * dpi)
+    bg_img = np.ones((a4_n_pxrow, a4_n_pxcolumn), dtype='uint8') * 255
+    if frame_size is not None:
+        frame_size[0] = int(frame_size[0] * 0.0393701 * dpi)
+        frame_size[1] = int(frame_size[1] * 0.0393701 * dpi)
+        if a4_n_pxcolumn < frame_size[0] + 2:
             print("Frame width must be smaller than the #pt in each row.")
-        if a4npxrow<framesize[1]+2:
+        if a4_n_pxrow < frame_size[1] + 2:
             print("Frame height must be smaller than the #pt in each column.")
-        framelft = int((a4npxcolumn-framesize[0])/2-1)
-        framergt = int(framelft+1+framesize[0])
-        frametop = int((a4npxrow-framesize[1])/2-1)
-        framedown = int(frametop+1+framesize[1])
-        bgimg[frametop:framedown+1, framelft:framelft+1]=0
-        bgimg[frametop:framedown+1, framergt:framergt+1]=0
-        bgimg[frametop:frametop+1, framelft:framergt+1]=0
-        bgimg[framedown:framedown+1, framelft:framergt+1]=0
-
-    squaresizepx = int(squaresize*0.0393701*dpi)
-    squareareanpxrow = squaresizepx*nrow
-    uppermargin = int((a4npxrow-squareareanpxrow)/2)
-    squareareanpxcolumn = squaresizepx*ncolumn
-    leftmargin = int((a4npxcolumn-squareareanpxcolumn)/2)
-
-    if (uppermargin <= 10) or (leftmargin <= 10):
-        print("Too many markers! Reduce nrow and ncolumn.")
+        frame_lft = int((a4_n_pxcolumn - frame_size[0]) / 2 - 1)
+        frame_rgt = int(frame_lft + 1 + frame_size[0])
+        frame_top = int((a4_n_pxrow - frame_size[1]) / 2 - 1)
+        frame_down = int(frame_top + 1 + frame_size[1])
+        bg_img[frame_top:frame_down + 1, frame_lft:frame_lft + 1] = 0
+        bg_img[frame_top:frame_down + 1, frame_rgt:frame_rgt + 1] = 0
+        bg_img[frame_top:frame_top + 1, frame_lft:frame_rgt + 1] = 0
+        bg_img[frame_down:frame_down + 1, frame_lft:frame_rgt + 1] = 0
+    square_size_in_px = int(square_size * 0.0393701 * dpi)
+    square_area_n_pxrow = square_size_in_px * n_row
+    upper_margin = int((a4_n_pxrow - square_area_n_pxrow) / 2)
+    square_area_n_pxcolumn = square_size_in_px * n_column
+    left_margin = int((a4_n_pxcolumn - square_area_n_pxcolumn) / 2)
+    if (upper_margin <= 10) or (left_margin <= 10):
+        print("Too many markers! Reduce n_row and n_column.")
         return
-
-    board = aruco.CharucoBoard_create(ncolumn, nrow, squaresize, .57*squaresize, aruco_dict)
-    imboard = board.draw((squareareanpxcolumn, squareareanpxrow))
+    board = aruco.CharucoBoard_create(n_column, n_row, square_size, .57 * square_size, aruco_dict)
+    imboard = board.draw((square_area_n_pxcolumn, square_area_n_pxrow))
     print(imboard.shape)
-    startrow = uppermargin
-    endrow = uppermargin+squareareanpxrow
-    startcolumn = leftmargin
-    endcolumn = leftmargin+squareareanpxcolumn
-    bgimg[startrow:endrow, startcolumn:endcolumn] = imboard
-    im = Image.fromarray(bgimg).convert("L")
-    im.save(savepath+"test.pdf", "PDF", resolution=dpi)
+    start_row = upper_margin
+    end_row = upper_margin + square_area_n_pxrow
+    start_column = left_margin
+    end_column = left_margin + square_area_n_pxcolumn
+    bg_img[start_row:end_row, start_column:end_column] = imboard
+    im = Image.fromarray(bg_img).convert("L")
+    im.save(save_path + "test.pdf", "PDF", resolution=dpi)
 
-def makechessboard(nrow, ncolumn, squaresize=25, savepath='./', paperwidth=210, paperheight=297, dpi = 600, framesize = None):
+
+def make_chessboard(n_row, n_column, square_size=25, save_path='./', paper_width=210, paper_height=297, dpi=600,
+                    frame_size=None):
     """
     create checss board
-    the paper is in portrait orientation, nrow means the number of markers in the vertical motion_vec
+    the paper is in portrait orientation, n_row means the number of markers in the vertical motion_vec
 
-    :param nrow:
-    :param ncolumn:
-    :param savepath:
-    :param paperwidth: mm
-    :param paperheight: mm
+    :param n_row:
+    :param n_column:
+    :param save_path:
+    :param paper_width: mm
+    :param paper_height: mm
     :param dpi:
-    :param framesize: [width, height] the 1pt frame for easy cut, nothing is drawn by default
+    :param frame_size: [width, height] the 1pt frame for easy cut, nothing is drawn by default
     :return:
 
     author: weiwei
@@ -152,149 +142,153 @@ def makechessboard(nrow, ncolumn, squaresize=25, savepath='./', paperwidth=210, 
     """
 
     # 1mm = 0.0393701inch
-    a4npxrow = int(paperheight*0.0393701*dpi)
-    a4npxcolumn = int(paperwidth*0.0393701*dpi)
-    bgimg = np.ones((a4npxrow, a4npxcolumn), dtype='uint8')*255
+    a4_n_pxrow = int(paper_height * 0.0393701 * dpi)
+    a4_n_pxcolumn = int(paper_width * 0.0393701 * dpi)
+    bg_img = np.ones((a4_n_pxrow, a4_n_pxcolumn), dtype='uint8') * 255
 
-    if framesize is not None:
-        framesize[0] = int(framesize[0]*0.0393701*dpi)
-        framesize[1] = int(framesize[1]*0.0393701*dpi)
-        if a4npxcolumn<framesize[0]+2:
+    if frame_size is not None:
+        frame_size[0] = int(frame_size[0] * 0.0393701 * dpi)
+        frame_size[1] = int(frame_size[1] * 0.0393701 * dpi)
+        if a4_n_pxcolumn < frame_size[0] + 2:
             print("Frame width must be smaller than the #pt in each row.")
-        if a4npxrow<framesize[1]+2:
+        if a4_n_pxrow < frame_size[1] + 2:
             print("Frame height must be smaller than the #pt in each column.")
-        framelft = int((a4npxcolumn-framesize[0])/2-1)
-        framergt = int(framelft+1+framesize[0])
-        frametop = int((a4npxrow-framesize[1])/2-1)
-        framedown = int(frametop+1+framesize[1])
-        bgimg[frametop:framedown+1, framelft:framelft+1]=0
-        bgimg[frametop:framedown+1, framergt:framergt+1]=0
-        bgimg[frametop:frametop+1, framelft:framergt+1]=0
-        bgimg[framedown:framedown+1, framelft:framergt+1]=0
+        frame_lft = int((a4_n_pxcolumn - frame_size[0]) / 2 - 1)
+        frame_rgt = int(frame_lft + 1 + frame_size[0])
+        frame_top = int((a4_n_pxrow - frame_size[1]) / 2 - 1)
+        frame_down = int(frame_top + 1 + frame_size[1])
+        bg_img[frame_top:frame_down + 1, frame_lft:frame_lft + 1] = 0
+        bg_img[frame_top:frame_down + 1, frame_rgt:frame_rgt + 1] = 0
+        bg_img[frame_top:frame_top + 1, frame_lft:frame_rgt + 1] = 0
+        bg_img[frame_down:frame_down + 1, frame_lft:frame_rgt + 1] = 0
 
-    squaresizepx = int(squaresize*0.0393701*dpi)
+    square_size_in_px = int(square_size * 0.0393701 * dpi)
 
-    squareareanpxrow = squaresizepx*nrow
-    uppermargin = int((a4npxrow-squareareanpxrow)/2)
-    squareareanpxcolumn = squaresizepx*ncolumn
-    leftmargin = int((a4npxcolumn-squareareanpxcolumn)/2)
+    square_area_n_pxrow = square_size_in_px * n_row
+    upper_margin = int((a4_n_pxrow - square_area_n_pxrow) / 2)
+    square_area_n_pxcolumn = square_size_in_px * n_column
+    left_margin = int((a4_n_pxcolumn - square_area_n_pxcolumn) / 2)
 
-    if (uppermargin <= 10) or (leftmargin <= 10):
-        print("Too many markers! Reduce nrow and ncolumn.")
+    if (upper_margin <= 10) or (left_margin <= 10):
+        print("Too many markers! Reduce n_row and n_column.")
         return
 
-    for idnr in range(nrow):
-        for idnc in range(ncolumn):
-            startrow = uppermargin+idnr*squaresizepx
-            endrow = startrow+squaresizepx
-            startcolumn = leftmargin+idnc*squaresizepx
-            endcolumn = squaresizepx+startcolumn
-            if idnr%2 != 0 and idnc%2 != 0:
-                bgimg[startrow:endrow, startcolumn:endcolumn] = 0
-            if idnr%2 == 0 and idnc%2 == 0:
-                bgimg[startrow:endrow, startcolumn:endcolumn] = 0
-    im = Image.fromarray(bgimg).convert("L")
-    im.save(savepath+"test.pdf", "PDF", resolution=dpi)
+    for id_row in range(n_row):
+        for id_column in range(n_column):
+            start_row = upper_margin + id_row * square_size_in_px
+            end_row = start_row + square_size_in_px
+            start_column = left_margin + id_column * square_size_in_px
+            end_column = square_size_in_px + start_column
+            if id_row % 2 != 0 and id_column % 2 != 0:
+                bg_img[start_row:end_row, start_column:end_column] = 0
+            if id_row % 2 == 0 and id_column % 2 == 0:
+                bg_img[start_row:end_row, start_column:end_column] = 0
+    im = Image.fromarray(bg_img).convert("L")
+    im.save(save_path + "test.pdf", "PDF", resolution=dpi)
 
-    worldpoints = np.zeros((nrow*ncolumn, 3), np.float32)
-    worldpoints[:, :2] = np.mgrid[:nrow, :ncolumn].T.reshape(-1, 2)*squaresize
-    return worldpoints
+    world_points = np.zeros((n_row * n_column, 3), np.float32)
+    world_points[:, :2] = np.mgrid[:n_row, :n_column].T.reshape(-1, 2) * square_size
+    return world_points
 
-def makechessandcharucoboard(nrowchess=3, ncolumnchess=5, squaresize=25,
-                              nrowcharuco=3, ncolumncharuco=5, markerdict=aruco.DICT_6X6_250, squaresizearuco=25,
-                              savepath='./', paperwidth=210, paperheight=297, dpi = 600, framesize = None):
+
+def make_chess_and_charucoboard(n_row_chess=3, n_column_chess=5, square_size=25,
+                                n_row_charuco=3, n_column_charuco=5, marker_dict=aruco.DICT_6X6_250,
+                                square_size_aruco=25, save_path='./', paper_width=210, paper_height=297, dpi=600,
+                                frame_size=None):
     """
     create half-chess and half-charuco board
-    the paper is in portrait orientation, nrow means the number of markers in the vertical motion_vec
+    the paper is in portrait orientation, n_row means the number of markers in the vertical motion_vec
 
-    :param nrow:
-    :param ncolumn:
-    :param squaresize: mm
-    :param markerdict:
-    :param savepath:
-    :param paperwidth: mm
-    :param paperheight: mm
+    :param n_row:
+    :param n_column:
+    :param square_size: mm
+    :param marker_dict:
+    :param save_path:
+    :param paper_width: mm
+    :param paper_height: mm
     :param dpi:
-    :param framesize: (width, height) the 1pt frame for easy cut, nothing is drawn by default
+    :param frame_size: (width, height) the 1pt frame for easy cut, nothing is drawn by default
     :return:
 
     author: weiwei
     date: 20190420
     """
 
-    aruco_dict = aruco.Dictionary_get(markerdict)
+    aruco_dict = aruco.Dictionary_get(marker_dict)
     # 1mm = 0.0393701inch
-    a4npxrow = int(paperheight*0.0393701*dpi)
-    a4npxcolumn = int(paperwidth*0.0393701*dpi)
-    bgimg = np.ones((a4npxrow, a4npxcolumn), dtype='uint8')*255
+    a4_n_pxrow = int(paper_height * 0.0393701 * dpi)
+    a4_n_pxcolumn = int(paper_width * 0.0393701 * dpi)
+    bg_img = np.ones((a4_n_pxrow, a4_n_pxcolumn), dtype='uint8') * 255
 
-    if framesize is not None:
-        framesize[0] = int(framesize[0]*0.0393701*dpi)
-        framesize[1] = int(framesize[1]*0.0393701*dpi)
-        if a4npxcolumn<framesize[0]+2:
+    if frame_size is not None:
+        frame_size[0] = int(frame_size[0] * 0.0393701 * dpi)
+        frame_size[1] = int(frame_size[1] * 0.0393701 * dpi)
+        if a4_n_pxcolumn < frame_size[0] + 2:
             print("Frame width must be smaller than the #pt in each row.")
-        if a4npxrow<framesize[1]+2:
+        if a4_n_pxrow < frame_size[1] + 2:
             print("Frame height must be smaller than the #pt in each column.")
-        framelft = int((a4npxcolumn-framesize[0])/2-1)
-        framergt = int(framelft+1+framesize[0])
-        frametop = int((a4npxrow-framesize[1])/2-1)
-        framedown = int(frametop+1+framesize[1])
-        bgimg[frametop:framedown+1, framelft:framelft+1]=0
-        bgimg[frametop:framedown+1, framergt:framergt+1]=0
-        bgimg[frametop:frametop+1, framelft:framergt+1]=0
-        bgimg[framedown:framedown+1, framelft:framergt+1]=0
+        frame_lft = int((a4_n_pxcolumn - frame_size[0]) / 2 - 1)
+        frame_rgt = int(frame_lft + 1 + frame_size[0])
+        frame_top = int((a4_n_pxrow - frame_size[1]) / 2 - 1)
+        frame_down = int(frame_top + 1 + frame_size[1])
+        bg_img[frame_top:frame_down + 1, frame_lft:frame_lft + 1] = 0
+        bg_img[frame_top:frame_down + 1, frame_rgt:frame_rgt + 1] = 0
+        bg_img[frame_top:frame_top + 1, frame_lft:frame_rgt + 1] = 0
+        bg_img[frame_down:frame_down + 1, frame_lft:frame_rgt + 1] = 0
 
     # upper half, charuco
-    squaresizepx = int(squaresizearuco*0.0393701*dpi)
-    squareareanpxrow = squaresizepx*nrowchess
-    uppermargin = int((a4npxrow/2-squareareanpxrow)/2)
-    squareareanpxcolumn = squaresizepx*ncolumnchess
-    leftmargin = int((a4npxcolumn-squareareanpxcolumn)/2)
+    square_size_in_px = int(square_size_aruco * 0.0393701 * dpi)
+    square_area_n_pxrow = square_size_in_px * n_row_chess
+    upper_margin = int((a4_n_pxrow / 2 - square_area_n_pxrow) / 2)
+    square_area_n_pxcolumn = square_size_in_px * n_column_chess
+    left_margin = int((a4_n_pxcolumn - square_area_n_pxcolumn) / 2)
 
-    if (uppermargin <= 10) or (leftmargin <= 10):
-        print("Too many markers! Reduce nrow and ncolumn.")
+    if (upper_margin <= 10) or (left_margin <= 10):
+        print("Too many markers! Reduce n_row and n_column.")
         return
 
-    board = aruco.CharucoBoard_create(ncolumnchess, nrowchess, squaresizearuco, .57*squaresizearuco, aruco_dict)
-    imboard = board.draw((squareareanpxcolumn, squareareanpxrow))
+    board = aruco.CharucoBoard_create(n_column_chess, n_row_chess, square_size_aruco, .57 * square_size_aruco,
+                                      aruco_dict)
+    imboard = board.draw((square_area_n_pxcolumn, square_area_n_pxrow))
     print(imboard.shape)
-    startrow = uppermargin
-    endrow = uppermargin+squareareanpxrow
-    startcolumn = leftmargin
-    endcolumn = leftmargin+squareareanpxcolumn
-    bgimg[startrow:endrow, startcolumn:endcolumn] = imboard
+    start_row = upper_margin
+    end_row = upper_margin + square_area_n_pxrow
+    start_column = left_margin
+    end_column = left_margin + square_area_n_pxcolumn
+    bg_img[start_row:end_row, start_column:end_column] = imboard
 
     # lower half, chess
-    squaresizepx = int(squaresize*0.0393701*dpi)
+    square_size_in_px = int(square_size * 0.0393701 * dpi)
 
-    squareareanpxrow = squaresizepx*nrowcharuco
-    uppermargin = int((a4npxrow/2-squareareanpxrow)/2)
-    squareareanpxcolumn = squaresizepx*ncolumncharuco
-    leftmargin = int((a4npxcolumn-squareareanpxcolumn)/2)
+    square_area_n_pxrow = square_size_in_px * n_row_charuco
+    upper_margin = int((a4_n_pxrow / 2 - square_area_n_pxrow) / 2)
+    square_area_n_pxcolumn = square_size_in_px * n_column_charuco
+    left_margin = int((a4_n_pxcolumn - square_area_n_pxcolumn) / 2)
 
-    if (uppermargin <= 10) or (leftmargin <= 10):
-        print("Too many markers! Reduce nrow and ncolumn.")
+    if (upper_margin <= 10) or (left_margin <= 10):
+        print("Too many markers! Reduce n_row and n_column.")
         return
 
-    for idnr in range(nrowcharuco):
-        for idnc in range(ncolumncharuco):
-            startrow = int(a4npxrow/2)+uppermargin+idnr*squaresizepx
-            endrow = startrow+squaresizepx
-            startcolumn = leftmargin+idnc*squaresizepx
-            endcolumn = squaresizepx+startcolumn
-            if idnr%2 != 0 and idnc%2 != 0:
-                bgimg[startrow:endrow, startcolumn:endcolumn] = 0
-            if idnr%2 == 0 and idnc%2 == 0:
-                bgimg[startrow:endrow, startcolumn:endcolumn] = 0
+    for id_row in range(n_row_charuco):
+        for id_column in range(n_column_charuco):
+            start_row = int(a4_n_pxrow / 2) + upper_margin + id_row * square_size_in_px
+            end_row = start_row + square_size_in_px
+            start_column = left_margin + id_column * square_size_in_px
+            end_column = square_size_in_px + start_column
+            if id_row % 2 != 0 and id_column % 2 != 0:
+                bg_img[start_row:end_row, start_column:end_column] = 0
+            if id_row % 2 == 0 and id_column % 2 == 0:
+                bg_img[start_row:end_row, start_column:end_column] = 0
 
-    im = Image.fromarray(bgimg).convert("L")
-    im.save(savepath+"test.pdf", "PDF", resolution=dpi)
+    im = Image.fromarray(bg_img).convert("L")
+    im.save(save_path + "test.pdf", "PDF", resolution=dpi)
+
 
 if __name__ == '__main__':
-    # makechessandcharucoboard(4,6,32,5,7)
-    # makecharucoboard(7,5, square_size=40)
-    # makechessboard(7,5, square_size=40)
-    # makearucoboard(2,2, marker_size=80)
-    # makearucoboard(1,1,marker_dict=aruco.DICT_4X4_250, start_id=1, marker_size=45, frame_size=[60,60])
+    # make_chess_and_charucoboard(4,6,32,5,7)
+    # make_charucoboard(7,5, square_size=40)
+    # make_chessboard(7,5, square_size=40)
+    # make_arucoboard(2,2, marker_size=80)
+    # make_arucoboard(1,1,marker_dict=aruco.DICT_4X4_250, start_id=1, marker_size=45, frame_size=[60,60])
 
-    makechessboard(1, 1, squaresize=35, framesize = [100,150])
+    make_chessboard(1, 1, square_size=35, frame_size=[100, 150])

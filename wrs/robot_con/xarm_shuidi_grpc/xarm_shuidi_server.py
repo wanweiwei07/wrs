@@ -1,7 +1,7 @@
 import grpc
 import time
 from concurrent import futures
-from wrs import drivers as arm
+import wrs.drivers.xarm.wrapper.xarm_api as arm
 import wrs.robot_con.xarm_shuidi_grpc.shuidi.shuidi_robot as agv
 import wrs.robot_con.xarm_shuidi_grpc.xarm_shuidi_pb2 as aa_msg  # aa = arm_agv
 import wrs.robot_con.xarm_shuidi_grpc.xarm_shuidi_pb2_grpc as aa_rpc

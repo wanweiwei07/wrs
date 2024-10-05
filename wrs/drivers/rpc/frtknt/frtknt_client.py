@@ -1,7 +1,7 @@
 import grpc
 import numpy as np
-from wrs import drivers as fkmsg, drivers as fkrpc
 import copy
+from wrs import drivers as fkmsg, drivers as fkrpc
 
 class FrtKnt(object):
 

@@ -12,9 +12,8 @@ import struct
 import time
 import threading
 from copy import deepcopy
-
 import numpy as np
-from wrs import basis as rm
+import wrs.basis.robot_math as rm
 
 __author__ = "Morten Lind, Olivier Roulet-Dubonnet"
 __copyright__ = "Copyright 2011, NTNU/SINTEF Raufoss Manufacturing AS"

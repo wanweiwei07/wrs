@@ -1,13 +1,11 @@
 import cv2
-import math
 import yaml
-import numpy as np
 from cv2 import aruco
-from sklearn import cluster
-import utiltools.robotmath as rm
-from pandaplotutils import pandactrl
+import wrs.basis.robot_math as rm
 
-def trackobject_multicamfusion(camcaps, cammtxs, camdists, camrelhomos, aruco_dict, arucomarkersize = 100, nframe = 5, denoise = True, bandwidth=10):
+
+def trackobject_multicamfusion(camcaps, cammtxs, camdists, camrelhomos, aruco_dict, arucomarkersize=100, nframe=5,
+                               denoise=True, bandwidth=10):
     """
 
     :param camcaps: a list of cv2.VideoCaptures
@@ -30,15 +28,17 @@ def trackobject_multicamfusion(camcaps, cammtxs, camdists, camrelhomos, aruco_di
     for i in range(nframe):
         for capid, cap in enumerate(camcaps):
             ret, frame = cap.read()
-            corners, ids, rejectedImgPoints = aruco.detectMarkers(frame, aruco_dict, parameters=parameters, ids=np.array([[1,2,3,4]]))
+            corners, ids, rejectedImgPoints = aruco.detectMarkers(frame, aruco_dict, parameters=parameters,
+                                                                  ids=rm.np.array([[1, 2, 3, 4]]))
             ids = ids.get()
             if ids is not None:
-                rvecs, tvecs, _objPoints = aruco.estimatePoseSingleMarkers(corners, arucomarkersize, cammtxs[capid], camdists[capid])
+                rvecs, tvecs, _objPoints = aruco.estimatePoseSingleMarkers(corners, arucomarkersize, cammtxs[capid],
+                                                                           camdists[capid])
                 for i in range(ids.size):
                     rot = cv2.Rodrigues(rvecs[i])[0]
                     pos = tvecs[i][0].ravel()
                     if capid > 0:
-                        matinb = np.dot(rm.homoinverse(camrelhomos[capid-1]), rm.homobuild(pos, rot))
+                        matinb = rm.homomat_inverse(camrelhomos[capid - 1]).dot(rm.homomat_from_posrot(pos, rot))
                         rot = matinb[:3, :3]
                         pos = matinb[:3, 3]
                     idslist = ids.ravel().tolist()
@@ -60,7 +60,8 @@ def trackobject_multicamfusion(camcaps, cammtxs, camdists, camrelhomos, aruco_di
     return frameavglist
 
 
-if __name__=='__main__':
+if __name__ == '__main__':
+    from wrs import wd
 
     # square_markersize = 40
     #
@@ -71,7 +72,7 @@ if __name__=='__main__':
     # find_rhomo(base_cam_calibyaml = 'cam0_calib.yaml', rel_cam_calibyaml = 'cam2_calib.yaml', save_name = 'homo_rb20.yaml')
     # find_rhomo(base_cam_calibyaml = 'cam0_calib.yaml', rel_cam_calibyaml = 'cam4_calib.yaml', save_name = 'homo_rb40.yaml')
 
-    base = pandactrl.World(camp=[2700, 300, 2700], lookatpos=[0, 0, 0])
+    base = wd.World(cam_pos=rm.np.array([2.7, 0.3, 2.7]), lookat_pos=rm.np.zeros(3))
     # framenp = base.pggen.genAxis()
     # framenp.reparentTo(base.render)
     # base.run()
@@ -83,10 +84,10 @@ if __name__=='__main__':
 
     # draw in 3d to validate
     pandamat4homo_r2 = base.pg.np4ToMat4(rm.homoinverse(homo_rb20))
-    base.pggen.plotAxis(base.render, spos = pandamat4homo_r2.getRow3(3), pandamat3 = pandamat4homo_r2.getUpper3())
+    base.pggen.plotAxis(base.render, spos=pandamat4homo_r2.getRow3(3), pandamat3=pandamat4homo_r2.getUpper3())
 
     pandamat4homo_r4 = base.pg.np4ToMat4(rm.homoinverse(homo_rb40))
-    base.pggen.plotAxis(base.render, spos = pandamat4homo_r4.getRow3(3), pandamat3 = pandamat4homo_r4.getUpper3())
+    base.pggen.plotAxis(base.render, spos=pandamat4homo_r4.getRow3(3), pandamat3=pandamat4homo_r4.getUpper3())
 
     # show in videos
     mtx0, dist0, rvecs0, tvecs0, candfiles0 = yaml.load(open('cam0_calib.yaml', 'r'), Loader=yaml.UnsafeLoader)
@@ -94,6 +95,7 @@ if __name__=='__main__':
     mtx4, dist4, rvecs4, tvecs4, candfiles4 = yaml.load(open('cam4_calib.yaml', 'r'), Loader=yaml.UnsafeLoader)
 
     import time
+
     # marker_size = int(40*.57)
     # aruco_dict = aruco.Dictionary_get(aruco.DICT_6X6_250)
 
@@ -111,14 +113,17 @@ if __name__=='__main__':
     denoise = True
 
     framenplist = [[]]
+
+
     def updateview(framenplist, task):
         if len(framenplist[0]) > 0:
             for axisnp in framenplist[0]:
                 axisnp.removeNode()
         framenplist[0] = []
         tic = time.time()
-        frameavglist = trackobject_multicamfusion(camcaps, cammtxs, camdists, camrelhomos, aruco_dict, arucomarkersize, nframe, denoise, bandwidth=arucomarkersize*.05)
-        print(time.time()-tic)
+        frameavglist = trackobject_multicamfusion(camcaps, cammtxs, camdists, camrelhomos, aruco_dict, arucomarkersize,
+                                                  nframe, denoise, bandwidth=arucomarkersize * .05)
+        print(time.time() - tic)
         for id in frameavglist:
             posvecavg = frameavglist[id][0]
             rotmatavg = frameavglist[id][1]
@@ -126,6 +131,7 @@ if __name__=='__main__':
             framenp.reparentTo(base.render)
             framenplist[0].append(framenp)
         return task.again
+
 
     taskMgr.doMethodLater(0.01, updateview, "updateview", extraArgs=[framenplist], appendTask=True)
     base.run()

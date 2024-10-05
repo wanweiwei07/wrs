@@ -1,10 +1,10 @@
 import grpc
 import time
-import robotconn.rpc.extcam.cameras as cameras
-from concurrent import futures
-import robotconn.rpc.extcam.extcam_pb2 as ecmsg
-import robotconn.rpc.extcam.extcam_pb2_grpc as ecrpc
 import numpy as np
+from concurrent import futures
+from . import cameras
+from . import extcam_pb2 as ecmsg
+from . import extcam_pb2_grpc as ecrpc
 
 class ExtCamServer(ecrpc.CamServicer):
 

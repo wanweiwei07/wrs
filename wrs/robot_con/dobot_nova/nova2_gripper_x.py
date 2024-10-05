@@ -12,9 +12,7 @@ import os
 import json
 import time
 from typing import Literal
-
 import numpy as np
-
 from wrs.drivers.devices.dynamixel_sdk.sdk_wrapper import DynamixelMotor
 
 # get the path of the current file

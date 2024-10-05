@@ -6,11 +6,10 @@ Reference: XArm Developer Manual (http://download.ufactory.cc/xarm/en/xArm%20Dev
 """
 import time
 from typing import Optional
-
 import numpy as np
-
-from wrs import basis as rm, drivers as arm
 from xarm_lite6_dxl_x import XArmLite6DXLCon
+import wrs.basis.robot_math as rm
+import wrs.drivers.xarm.wrapper.xarm_api as arm
 
 try:
     import wrs.motion.trajectory.piecewisepoly_toppra as pwp

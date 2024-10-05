@@ -1,5 +1,5 @@
 import numpy as np
-from wrs import modeling as mt
+import wrs.modeling.mesh_tools as mt
 
 if __name__ == '__main__':
     '''

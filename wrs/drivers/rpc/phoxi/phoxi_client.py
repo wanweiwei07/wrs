@@ -1,7 +1,7 @@
 import grpc
 import numpy as np
-from wrs import drivers as pxmsg, drivers as pxrpc
 import copy
+from wrs import drivers as pxmsg, drivers as pxrpc
 
 
 class PhxClient(object):

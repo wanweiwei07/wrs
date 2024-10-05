@@ -1,7 +1,11 @@
 import numpy as np
 import pickle
-from wrs import basis as rm, basis as trm, basis, modeling as mgm, modeling as mcm, grasping as seg
+import wrs.basis.robot_math as rm
+import wrs.basis.trimesh as trm
+import wrs.modeling.geometric_model as mgm
+import wrs.modeling.collision_model as mcm
 import wrs.modeling._ode_cdhelper as moh
+import wrs.grasping.planning.segmentation as seg
 import wrs.manipulation.placement.general_placement as mpgp
 
 
@@ -59,7 +63,7 @@ class ReferenceFSPPoses(object):
             faces = convex_trm.faces[seg_nested_face_id_list[id]]
             facet = mcm.CollisionModel(
                 initor=trm.Trimesh(vertices=convex_trm.vertices, faces=faces, face_normals=normals),
-                toggle_twosided=True, rgb=rm.bc.tab20_list[0], alpha=.5)
+                toggle_twosided=True, rgb=rm.const.tab20_list[0], alpha=.5)
             # show edge
             for edge in seg_nested_edge_list[id]:
                 mgm.gen_stick(spos=edge[0], epos=edge[1], type="round").attach_to(facet)
@@ -151,7 +155,7 @@ if __name__ == '__main__':
     import wrs.visualization.panda.world as wd
 
     base = wd.World(cam_pos=[1, 1, 1], lookat_pos=[0, 0, 0])
-    obj_path = os.path.join(basis.__path__[0], 'objects', 'bunnysim.stl')
+    obj_path = os.path.join(os.path.dirname(rm.__file__), 'objects', 'bunnysim.stl')
     ground = mcm.gen_box(xyz_lengths=[.5, .5, .01], pos=np.array([0, 0, -0.01]))
     ground.attach_to(base)
     bunny = mcm.CollisionModel(obj_path)
@@ -180,7 +184,7 @@ if __name__ == '__main__':
             anime_data.model.detach()
             print(anime_data.reference_fsp_poses[anime_data.counter])
             anime_data.model.pose = anime_data.reference_fsp_poses[anime_data.counter]
-            anime_data.model.rgb = rm.bc.tab20_list[1]
+            anime_data.model.rgb = rm.const.tab20_list[1]
             anime_data.model.alpha = .3
             anime_data.model.attach_to(base)
             if (anime_data.support_facets is not None):

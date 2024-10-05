@@ -1,6 +1,6 @@
 import math
 from wrs import basis, modeling as cm
-import wrs.grasping.annotation.gripping as gu
+import wrs.grasping.annotation.gripping as gag
 
 
 def plan_pushing(hnd_s,
@@ -30,7 +30,7 @@ def plan_pushing(hnd_s,
     push_info_list = []
     for i, cpn in enumerate(zip(contact_points, contact_normals)):
         print(f"{i} of {len(contact_points)} done!")
-        push_info_list += gu.define_pushing(hnd_s,
+        push_info_list += gag.define_pushing(hnd_s,
                                             objcm,
                                             gl_surface_pos=cpn[0] + cpn[1] * contact_offset,
                                             gl_surface_normal=cpn[1],
@@ -44,13 +44,13 @@ def plan_pushing(hnd_s,
 def write_pickle_file(objcm_name, push_info_list, root=None, file_name='preannotated_push.pickle', append=False):
     if root is None:
         root = './'
-    gu.write_pickle_file(objcm_name, push_info_list, root=root, file_name=file_name, append=append)
+    gag.write_pickle_file(objcm_name, push_info_list, root=root, file_name=file_name, append=append)
 
 
 def load_pickle_file(objcm_name, root=None, file_name='preannotated_push.pickle'):
     if root is None:
         root = './'
-    return gu.load_pickle_file(objcm_name, path=root, file_name=file_name)
+    return gag.load_pickle_file(objcm_name, path=root, file_name=file_name)
 
 
 if __name__ == '__main__':

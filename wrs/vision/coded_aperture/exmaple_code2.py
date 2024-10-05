@@ -1,9 +1,9 @@
 import torch
 import torch.nn.functional as F
-from wrs.vision.coded_aperture.code_aperture import mura
 from PIL import Image
 import numpy as np
 import matplotlib.pyplot as plt
+from wrs.vision.coded_aperture.code_aperture import mura
 
 # 生成MURA编码
 code = mura(rank=5)

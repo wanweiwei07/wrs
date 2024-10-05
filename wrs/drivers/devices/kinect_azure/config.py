@@ -1,4 +1,4 @@
-from wrs import drivers as _k4a
+from . import _k4a
 
 
 class Config(object):

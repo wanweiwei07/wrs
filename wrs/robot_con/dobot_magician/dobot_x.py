@@ -1,4 +1,4 @@
-from wrs import drivers as dd
+import wrs.drivers.dobot_magician.DobotDllType as dd
 
 CON_STR = {
     dd.DobotConnect.DobotConnect_NoError: "DobotConnect_NoError",

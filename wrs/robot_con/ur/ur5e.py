@@ -1,9 +1,6 @@
-# !/usr/bin/env python
-
 import logging
 import math
 import time
-
 from robotconn.robotiq.rtqgripper import Robotiq_Two_Finger_Gripper
 from utiltools import robotmath as rm
 import urx.urrobot as urrobot

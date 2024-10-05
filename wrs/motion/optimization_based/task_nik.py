@@ -1,7 +1,8 @@
 import math
 import numpy as np
-from wrs import basis as rm, robot_sim as ym, modeling as gm
 import warnings as wns
+import wrs.basis.robot_math as rm
+import wrs.modeling.geometric_model as mgm
 
 
 class NIK(object):
@@ -429,14 +430,15 @@ class NIK(object):
 if __name__ == '__main__':
     import time
     import wrs.visualization.panda.world as wd
+    import wrs.robot_sim.robots.yumi.yumi as ym
 
     base = wd.World(cam_pos=[1.5, 0, 3], lookat_pos=[0, 0, .5])
-    gm.gen_frame().attach_to(base)
+    mgm.gen_frame().attach_to(base)
     yumi_instance = ym.Yumi(enable_cc=True)
     component_name= 'rgt_arm'
     tgt_pos = np.array([.5, -.3, .3])
     tgt_rotmat = rm.rotmat_from_axangle([0,1,0], math.pi/2)
-    gm.gen_frame(pos=tgt_pos, rotmat=tgt_rotmat).attach_to(base)
+    mgm.gen_frame(pos=tgt_pos, rotmat=tgt_rotmat).attach_to(base)
     niksolver = NIK(yumi_instance, component_name='rgt_arm')
     tic = time.time()
     jnt_values = niksolver.num_ik(tgt_pos, tgt_rotmat, toggle_debug=True)

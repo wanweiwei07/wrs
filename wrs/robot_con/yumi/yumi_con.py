@@ -6,9 +6,9 @@ Date: 20220123, 20230831
 from typing import List
 import time
 import numpy as np
-from wrs.robot_con.yumi.autolab_core import RigidTransform
 import wrs.robot_con.yumi.yumi_robot as yr
 import wrs.robot_con.yumi.yumi_state as ys
+from wrs.robot_con.yumi.autolab_core import RigidTransform
 
 
 class YumiController:

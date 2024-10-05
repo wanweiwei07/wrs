@@ -13,7 +13,6 @@ import time
 import socket
 from typing import Literal
 from collections import namedtuple
-
 from wrs.drivers.devices.dynamixel_sdk.protocol2_packet_handler import (Protocol2PacketHandler,
                                                                         COMM_SUCCESS)
 

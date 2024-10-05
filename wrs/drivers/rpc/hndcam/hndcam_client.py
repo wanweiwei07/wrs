@@ -1,8 +1,8 @@
 import grpc
 import yaml
-from wrs import drivers as hcmsg, drivers as hcrpc
 import numpy as np
 import cv2
+from wrs import drivers as hcmsg, drivers as hcrpc
 
 class HndCam(object):
 
