@@ -1,7 +1,4 @@
-import numpy as np
-import wrs.visualization.panda.world as wd
-import wrs.robot_sim.robots.ur3e_dual.ur3e_dual as u3ed
-from wrs import basis as rm, motion as rrtc, modeling as mgm, modeling as mcm
+from wrs import wd, rm, ur3ed, mcm, mgm, rrtc
 
 
 class Data(object):
@@ -13,21 +10,21 @@ class Data(object):
 base = wd.World(cam_pos=[3, 2, 3], lookat_pos=[0.5, 0, 1.1])
 mgm.gen_frame().attach_to(base)
 # robot
-robot = u3ed.UR3e_Dual()
+robot = ur3ed.UR3e_Dual()
 robot.use_lft()
 # obstacle
 obstacle = mcm.gen_box(xyz_lengths=[.2, .05, .4])
-obstacle.pos = np.array([.8, .2, .98])
-obstacle.rgba = np.array([.7, .7, .3, 1])
+obstacle.pos = rm.vector(.8, .2, .98)
+obstacle.rgba = rm.vector(.7, .7, .3, 1)
 obstacle.attach_to(base)
 # planner
-rrtc_planner = rrtc.RRTConnect(robot)
+planner = rrtc.RRTConnect(robot)
 # plan
 start_conf = robot.get_jnt_values()
-tgt_pos = np.array([.8, .1, 1])
-tgt_rotmat = rm.rotmat_from_euler(np.pi, 0, 0)
+tgt_pos = rm.vector(.8, .4, 1)
+tgt_rotmat = rm.rotmat_from_euler(rm.pi, 0, 0)
 mgm.gen_frame(pos=tgt_pos, rotmat=tgt_rotmat).attach_to(base)
-jnt_values = robot.delegator.ik(tgt_pos, tgt_rotmat)
+jnt_values = robot.ik(tgt_pos, tgt_rotmat)
 if jnt_values is None:
     print("No IK solution found!")
     robot.gen_meshmodel(toggle_tcp_frame=True).attach_to(base)
@@ -39,22 +36,23 @@ robot.goto_given_conf(jnt_values=start_conf)
 
 print(start_conf)
 print(jnt_values)
-mot_data = rrtc_planner.plan(start_conf=start_conf,
-                             goal_conf=goal_conf,
-                             obstacle_list=[obstacle],
-                             ext_dist=.1,
-                             max_time=30,
-                             smoothing_n_iter=100)
+mot_data = planner.plan(start_conf=start_conf,
+                        goal_conf=goal_conf,
+                        obstacle_list=[obstacle],
+                        ext_dist=.1,
+                        max_time=30,
+                        smoothing_n_iter=100)
 anime_data = Data(mot_data)
 
 # draw traj
-for i in range(len(mot_data)-1):
+for i in range(len(mot_data) - 1):
     pos, rotmat = mot_data.tcp_list[i]
-    pos_nxt, rotmat_nxt = mot_data.tcp_list[i+1]
+    pos_nxt, rotmat_nxt = mot_data.tcp_list[i + 1]
     mgm.gen_frame(pos=pos, rotmat=rotmat, ax_length=.03).attach_to(base)
     mgm.gen_stick(pos, pos_nxt, rgb=rm.bc.gray).attach_to(base)
-    if i == len(mot_data)-2:
+    if i == len(mot_data) - 2:
         mgm.gen_frame(pos=pos_nxt, rotmat=rotmat_nxt, ax_length=.03).attach_to(base)
+
 
 def update(anime_data, task):
     if anime_data.counter > 0:

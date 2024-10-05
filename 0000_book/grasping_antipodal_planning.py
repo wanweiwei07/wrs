@@ -1,24 +1,21 @@
-import wrs.visualization.panda.world as wd
-import wrs.grasping.planning.antipodal as gpa
-from wrs import robot_sim as rtq85, modeling as gm, modeling as cm
+from wrs import wd, rm, gpa, rtq85, mcm, mgm
 
-base = wd.World(cam_pos=[1, 1, 1], lookat_pos=[0, 0, 0])
-gm.gen_frame().attach_to(base)
+base = wd.World(cam_pos=rm.vector(1, 1, 1), lookat_pos=rm.vector(0, 0, 0))
+mgm.gen_frame().attach_to(base)
 # object
 # object_box = mcm.gen_box(xyz_lengths=[.02, .06, 1])
 # object_box.set_rgba([.7, .5, .3, .7])
 # object_box.attach_to(base)
-object_bunny = cm.CollisionModel("objects/bunnysim.stl")
-object_bunny.set_rgba([.9, .75, .35, .3])
+object_bunny = mcm.CollisionModel("objects/bunnysim.stl")
+object_bunny.rgba = rm.vector(.9, .75, .35, 1)
 object_bunny.attach_to(base)
 # grippers
-gripper_s = rtq85.Robotiq85()
-gripper_s.gen_meshmodel(toggle_jnt_frames=True, toggle_tcp_frame=True).attach_to(base)
-base.run()
-grasp_info_list = gpa.plan_gripper_grasps(gripper_s, object_bunny, openning_direction ='loc_y', max_samples=100, min_dist_between_sampled_contact_points=.01)
-for grasp_info in grasp_info_list:
-    aw_width, gl_jaw_center, gl_jaw_rotmat, hnd_pos, hnd_rotmat = grasp_info
-    gripper_s.fix_to(hnd_pos, hnd_rotmat)
-    gripper_s.change_jaw_width(aw_width)
-    gripper_s.gen_meshmodel().attach_to(base)
+gripper = rtq85.Robotiq85()
+# gripper.gen_meshmodel(toggle_jnt_frames=True, toggle_tcp_frame=True).attach_to(base)
+# base.run()
+
+grasp_collection = gpa.plan_gripper_grasps(gripper, object_bunny, min_dist_between_sampled_contact_points=.01)
+for grasp in grasp_collection:
+    gripper.grip_at_by_pose(jaw_center_pos=grasp.ac_pos, jaw_center_rotmat=grasp.ac_rotmat, jaw_width=grasp.ee_values)
+    gripper.gen_meshmodel(alpha=.3).attach_to(base)
 base.run()

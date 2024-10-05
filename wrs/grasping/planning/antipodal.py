@@ -3,8 +3,7 @@ import numpy as np
 from scipy.spatial import cKDTree
 import wrs.basis.robot_math as rm
 import wrs.modeling.geometric_model as mgm
-import wrs.grasping.annotation.gripping as gau
-import wrs.grasping.grasp as gg
+import wrs.grasping.annotation.gripping as gag
 
 
 def plan_contact_pairs(obj_cmodel,
@@ -81,7 +80,7 @@ def plan_gripper_grasps(gripper,
             mgm.gen_sphere(pos=contact_p1, rgb=np.array([0, 0, 1])).attach_to(base)
             mgm.gen_arrow(spos=contact_p1, epos=contact_p1 + contact_n1 * .01, stick_radius=.00057,
                           rgb=np.array([0, 0, 1])).attach_to(base)
-    grasp_collection = gg.GraspCollection(end_effector=gripper)
+    grasp_collection = gag.GraspCollection(end_effector=gripper)
     for i, cp in enumerate(contact_pairs):
         # print(f"{i} of {len(contact_pairs)} done!")
         contact_p0, contact_n0 = cp[0]
@@ -91,7 +90,7 @@ def plan_gripper_grasps(gripper,
         if jaw_width > gripper.jaw_range[1]:
             continue
         approaching_direction = rm.orthogonal_vector(contact_n0)
-        grasp_collection += gau.define_gripper_grasps_with_rotation(gripper, obj_cmodel,
+        grasp_collection += gag.define_gripper_grasps_with_rotation(gripper, obj_cmodel,
                                                                     jaw_center_pos=contact_center,
                                                                     approaching_direction=approaching_direction,
                                                                     thumb_opening_direction=contact_n0,
@@ -110,8 +109,8 @@ if __name__ == '__main__':
 
     base = wd.World(cam_pos=[.5, .5, .3], lookat_pos=[0, 0, 0])
     gripper = end_effector.XArmGripper()
-    objpath = os.path.join(os.path.dirname(rm.__file__), 'objects', 'block.stl')
-    obj_cmodel = mcm.CollisionModel(objpath)
+    obj_path = os.path.join(os.path.dirname(rm.__file__), 'objects', 'block.stl')
+    obj_cmodel = mcm.CollisionModel(obj_path)
     obj_cmodel.attach_to(base)
     obj_cmodel.show_local_frame()
     grasp_collection = plan_gripper_grasps(gripper, obj_cmodel, min_dist_between_sampled_contact_points=.02)

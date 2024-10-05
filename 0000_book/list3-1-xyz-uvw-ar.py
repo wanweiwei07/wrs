@@ -1,8 +1,8 @@
 import numpy as np
-import wrs.modeling.geometric_model as mgm
+from wrs import rm, mgm
 
 
-def draw_coord(pnt, rotmat=np.eye(3), toggle_pnt=False, toggle_coord=False):
+def draw_coord(pnt, rotmat=rm.eye(3), toggle_pnt=False, toggle_coord=False):
     rgb = np.array([0, 0, 0])
     alpha = 1
     px, py, pz = pnt[0], pnt[1], pnt[2]

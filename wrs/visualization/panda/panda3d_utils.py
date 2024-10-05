@@ -6,7 +6,6 @@ import functools
 
 import numpy as np
 import cv2
-from wrs import basis as rm, basis as da, modeling as mgm, modeling as gm
 from panda3d.core import (Texture,
                           NodePath,
                           WindowProperties,
@@ -18,11 +17,13 @@ from panda3d.core import (Texture,
                           CardMaker)
 from direct.gui.OnscreenImage import OnscreenImage
 
+import wrs.basis.robot_math as rm
+import wrs.basis.data_adapter as da
 import wrs.visualization.panda.filter as flt
 import wrs.visualization.panda.inputmanager as im
 import wrs.visualization.panda.world as wd
+import wrs.modeling.geometric_model as mgm
 import wrs.modeling.model_collection as mmc
-
 
 class VirtualCamera(object):
 
@@ -49,7 +50,7 @@ class VirtualCamera(object):
 
     @property
     def cam_pos(self):
-        return np.array([*self._pdnp.getPos()], copy=False)
+        return np.array([*self._pdnp.getPos()])
 
     @property
     def cam_rotmat(self):

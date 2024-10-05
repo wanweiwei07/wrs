@@ -1,37 +1,23 @@
-import math
-import numpy as np
-import wrs.visualization.panda.world as wd
-import wrs.grasping.annotation.gripping as gu
-from wrs import robot_sim as rtq85, modeling as gm, modeling as cm
+from wrs import rm, rtq85, mcm, mgm, wd, gag
 
-base = wd.World(cam_pos=[1, 1, 1], lookat_pos=[0, 0, 0])
-gm.gen_frame().attach_to(base)
+base = wd.World(cam_pos=rm.vector(1, 1, 1), lookat_pos=rm.vector(0, 0, 0))
+mgm.gen_frame().attach_to(base)
 # object
-object_box = cm.gen_box(xyz_lengths=[.02, .06, .1])
-object_box.set_rgba([.7, .5, .3, .7])
+object_box = mcm.gen_box(xyz_lengths=rm.vector(.02, .06, .1))
+object_box.rgb = rm.vector(.7, .5, .3)
 object_box.attach_to(base)
 # grippers
-rtq85_s = rtq85.Robotiq85()
-# rtq85_s.gen_meshmodel().attach_to(base)
-# base.run()
-# approaching_direction = rm.rotmat_from_axangle(np.array([0,1,0]), -math.pi/6).dot(np.array([-1,0,0]))
-# grasp_info_list = gau.define_grasp(rtq85_s, object_box,
-#                                   jaw_center_pos=np.array([0,0,0]),
-#                                   approaching_direction=approaching_direction,
-#                                   gl_fgr1_opening_direction=np.array([0,1,0]),
-#                                   ee_values=.065,
-#                                   toggle_flip=True,
-#                                   toggle_dbg=True)
-grasp_info_list = gu.define_gripper_grasps_with_rotation(rtq85_s, object_box, jaw_center_pos=np.array([0, 0, 0]),
-                                                         approaching_direction=np.array([-1, 0, 0]),
-                                                         thumb_opening_direction=np.array([0, 1, 0]), jaw_width=.065,
-                                                         rotation_interval=math.radians(30),
-                                                         rotation_range=(math.radians(-180), math.radians(180)),
-                                                         toggle_flip=False, toggle_debug=True)
-# for grasp_info in grasp_info_list:
-#     aw_width, jaw_center_pos, jaw_center_rotmat, gripper_root_pos, gripper_root_rotmat = grasp_info
-#     rtq85_s.fix_to(gripper_root_pos, gripper_root_rotmat)
-#     rtq85_s.jaw_to(aw_width)
-#     rtq85_s.gen_meshmodel().attach_to(base)
-# mgm.gen_frame(pos=gripper_root_pos, rotmat=gripper_root_rotmat).attach_to(base)
+gripper = rtq85.Robotiq85()
+grasp_collection = gag.define_gripper_grasps_with_rotation(gripper, object_box,
+                                                           jaw_center_pos=rm.vector(0, 0, 0),
+                                                           approaching_direction=rm.vector(-1, 0, 0),
+                                                           thumb_opening_direction=rm.vector(0, 1, 0),
+                                                           jaw_width=.065,
+                                                           rotation_interval=rm.radians(30),
+                                                           rotation_range=(rm.radians(-180), rm.radians(180)),
+                                                           toggle_flip=False)
+for grasp in grasp_collection:
+    gripper.grip_at_by_pose(jaw_center_pos=grasp.ac_pos, jaw_center_rotmat=grasp.ac_rotmat, jaw_width=grasp.ee_values)
+    gripper.gen_meshmodel(alpha=.7).attach_to(base)
+    mgm.gen_frame(pos=gripper.pos, rotmat=gripper.rotmat).attach_to(base)
 base.run()

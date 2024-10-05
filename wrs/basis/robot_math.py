@@ -29,10 +29,48 @@ _AXES2TUPLE = {
     'rzxz': (2, 0, 1, 1), 'rxyz': (2, 1, 0, 1), 'rzyz': (2, 1, 1, 1)}
 _TUPLE2AXES = dict((v, k) for k, v in _AXES2TUPLE.items())
 
+# helpers
 
-# helper
-def radians(degree_val):
-    return np.radians(degree_val)
+pi = np.pi
+
+
+def vector(*args):
+    return np.array(args)
+
+
+def zeros(n):
+    return np.zeros(n)
+
+
+def matrix(element_list, n_rows=None):
+    if n_rows is None:
+        return np.array(element_list)
+    return np.array(element_list).reshape(n_rows, -1)
+
+def eye(n):
+    return np.eye(n)
+
+
+def radians(*args):
+    if len(args) > 1:
+        return np.radians(args)
+    return np.radians(args[0])
+
+
+def degrees(*args):
+    if len(args) > 1:
+        return np.degrees(args)
+    return np.degrees(args[0])
+
+def sign(val):
+    return np.sign(val)
+
+if __name__ == '__main__':
+    print(radians(90))
+
+
+def norm(vector):
+    return np.linalg.norm(vector)
 
 
 ## rotmat
@@ -1280,20 +1318,6 @@ def random_rgba(toggle_alpha_random=False):
         return np.random.random_sample(4).tolist()
 
 
-def get_rgba_from_cmap(id, cm_name='tab20', step=20):
-    """
-    get rgba from matplotlib cmap "tab20"
-    :param id:
-    :param cm_name: see matplotlib tutorials
-    :param step:
-    :return:
-    author: weiwei
-    date: 20210505, 20220404
-    """
-    cm = plt.get_cmap(cm_name)
-    return list(cm(id % step))
-
-
 def consecutive(nparray1d, stepsize=1):
     """
     find consecutive sequences from an array
@@ -1381,7 +1405,6 @@ def projection_homomat(point, normal, perspective=None, pseudo=False):
         homomat[:3, :3] -= np.outer(normal, normal)
         homomat[:3, 3] = np.dot(point, normal) * normal
     return homomat
-
 
 # def _unit_vector(data, axis=None, out=None):
 #     """Return ndarray normalized by axis_length, i.e. Euclidean norm, along axis.
@@ -1581,10 +1604,10 @@ def projection_homomat(point, normal, perspective=None, pseudo=False):
 #     return nearest
 
 
-if __name__ == '__main__':
-    start_pos = np.array([1, 0, 0])
-    start_rotmat = np.eye(3)
-    goal_pos = np.array([2, 0, 0])
-    goal_rotmat = np.eye(3)
-    pos_list, rotmat_list = interplate_pos_rotmat(start_pos, start_rotmat, goal_pos, goal_rotmat, granularity=3)
-    print(pos_list, rotmat_list)
+# if __name__ == '__main__':
+#     start_pos = np.array([1, 0, 0])
+#     start_rotmat = np.eye(3)
+#     goal_pos = np.array([2, 0, 0])
+#     goal_rotmat = np.eye(3)
+#     pos_list, rotmat_list = interplate_pos_rotmat(start_pos, start_rotmat, goal_pos, goal_rotmat, granularity=3)
+#     print(pos_list, rotmat_list)

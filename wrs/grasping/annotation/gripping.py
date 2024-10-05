@@ -1,7 +1,7 @@
 import math
 import numpy as np
 import wrs.basis.robot_math as rm
-import wrs.grasping.grasp as gg
+from wrs.grasping.grasp import GraspCollection
 
 
 def define_gripper_grasps(gripper,
@@ -25,8 +25,8 @@ def define_gripper_grasps(gripper,
     author: haochen, weiwei
     date: 20200104, 2040319
     """
-    grasp_collection = gg.GraspCollection(end_effector=gripper)
-    collided_grasp_collection = gg.GraspCollection(end_effector=gripper)
+    grasp_collection = GraspCollection(end_effector=gripper)
+    collided_grasp_collection = GraspCollection(end_effector=gripper)
     grasp = gripper.grip_at_by_twovecs(jaw_center_pos=jaw_center_pos,
                                        approaching_direction=approaching_direction,
                                        thumb_opening_direction=thumb_opening_direction,
@@ -83,8 +83,8 @@ def define_gripper_grasps_with_rotation(gripper,
     author: haochen, weiwei
     date: 20200104, 20240319
     """
-    grasp_collection = gg.GraspCollection(end_effector=gripper)
-    collided_grasp_collection = gg.GraspCollection(end_effector=gripper)
+    grasp_collection = GraspCollection(end_effector=gripper)
+    collided_grasp_collection = GraspCollection(end_effector=gripper)
     for rotate_angle in np.arange(rotation_range[0], rotation_range[1], rotation_interval):
         rotated_rotmat = rm.rotmat_from_axangle(thumb_opening_direction, rotate_angle)
         rotated_approaching_direction = np.dot(rotated_rotmat, approaching_direction)

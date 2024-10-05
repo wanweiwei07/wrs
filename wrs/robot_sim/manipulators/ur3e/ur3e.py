@@ -105,6 +105,7 @@ class UR3e(mi.ManipulatorInterface):
         # target
         tgt_rotmat = rel_rotmat @ self.loc_tcp_rotmat.T
         tgt_pos = rel_pos - rel_rotmat @ self.loc_tcp_pos
+        mgm.gen_dashed_frame(tgt_pos, tgt_rotmat).attach_to(base)
         # DH parameters of ur3e
         a2 = -0.24355
         a3 = -0.2132
@@ -205,11 +206,11 @@ if __name__ == '__main__':
     arm_mesh.attach_to(base)
     tmp_arm_stick = arm.gen_stickmodel(toggle_flange_frame=True, toggle_jnt_frames=True)
     tmp_arm_stick.attach_to(base)
-    base.run()
+    # base.run()
 
     tgt_pos = np.array([.25, .1, .1])
     tgt_rotmat = rm.rotmat_from_euler(0, np.pi, 0)
-    mgm.gen_dashed_frame(pos=tgt_pos, rotmat=tgt_rotmat).attach_to(base)
+    mgm.gen_frame(pos=tgt_pos, rotmat=tgt_rotmat).attach_to(base)
     tic = time.time()
     jnt_values = arm.ik(tgt_pos=tgt_pos, tgt_rotmat=tgt_rotmat)
     toc = time.time()

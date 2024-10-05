@@ -181,6 +181,8 @@ class UR3e_Dual(ri.RobotInterface):
         else:
             candidates = self.delegator.ik(tgt_pos=tgt_pos, tgt_rotmat=tgt_rotmat, seed_jnt_values=seed_jnt_values,
                                            option="multiple", toggle_dbg=toggle_dbg)
+            if candidates is None:
+                return None
             result = None
             self.delegator.backup_state()
             for jnt_values in candidates:
