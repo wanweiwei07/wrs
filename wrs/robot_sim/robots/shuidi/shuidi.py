@@ -34,7 +34,7 @@ class Shuidi(ri.RobotInterface):
         self.jlc.jnts[2].loc_pos = np.zeros(3)
         self.jlc.jnts[2].motion_range = [-math.pi, math.pi]
         self.jlc.jnts[2].lnk.cmodel = mcm.CollisionModel(
-            initor=os.path.join(current_file_dir, "meshes", "shuidi_agv.stl"), cdprim_type=mcm.const.CDPType.CYLINDER)
+            initor=os.path.join(current_file_dir, "meshes", "shuidi_agv.stl"), cdprim_type=mcm.const.CDPrimType.CYLINDER)
         self.jlc.jnts[2].lnk.cmodel.rgba = rm.const.tab20_list[14]
         self.jlc.finalize()
         # anchor

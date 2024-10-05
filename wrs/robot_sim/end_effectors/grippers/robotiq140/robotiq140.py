@@ -13,7 +13,7 @@ class Robotiq140(gi.GripperInterface):
                  rotmat=np.eye(3),
                  coupling_offset_pos=np.zeros(3),
                  coupling_offset_rotmat=np.eye(3),
-                 cdmesh_type=mcm.mc.CDMType.DEFAULT,
+                 cdmesh_type=mcm.mc.CDMeshType.DEFAULT,
                  name='robotiq140'):
         super().__init__(pos=pos, rotmat=rotmat, cdmesh_type=cdmesh_type, name=name)
         current_file_dir = os.path.dirname(__file__)

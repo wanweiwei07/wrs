@@ -23,7 +23,7 @@ class UR3e_Dual(ri.RobotInterface):
         self.body.lnk_list[0].name = "ur3e_dual_base_link"
         self.body.lnk_list[0].cmodel = mcm.CollisionModel(
             initor=os.path.join(current_file_dir, "meshes", "ur3e_dual_base.stl"),
-            cdprim_type=mcm.const.CDPType.USER_DEFINED,
+            cdprim_type=mcm.const.CDPrimType.USER_DEFINED,
             userdef_cdprim_fn=self._base_cdprim)
         self.body.lnk_list[0].cmodel.rgba = rm.const.hug_gray
         # left arm

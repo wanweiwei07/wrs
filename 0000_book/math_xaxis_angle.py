@@ -1,8 +1,6 @@
-import math
-import numpy as np
-from wrs import basis as rm
+from wrs import rm
 
 if __name__ == '__main__':
-    x_axis = np.array([1,0,0])
-    x_30_rotmat = rm.rotmat_from_axangle(x_axis, math.radians(30))
-    print(x_30_rotmat)
+    x_ax = rm.np.array([1,0,0])
+    x30_rotmat = rm.rotmat_from_axangle(x_ax, rm.radians(30))
+    print(x30_rotmat)

@@ -13,7 +13,7 @@ class XArmGripper(gpi.GripperInterface):
     def __init__(self,
                  pos=np.zeros(3),
                  rotmat=np.eye(3),
-                 cdmesh_type=mcm.const.CDMType.DEFAULT,
+                 cdmesh_type=mcm.const.CDMeshType.DEFAULT,
                  name="xarm_gripper"):
         super().__init__(pos=pos, rotmat=rotmat, cdmesh_type=cdmesh_type, name=name)
         current_file_dir = os.path.dirname(__file__)

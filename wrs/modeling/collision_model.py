@@ -34,8 +34,8 @@ class CollisionModel(mgm.GeometricModel):
     def __init__(self,
                  initor=None,
                  name="collision_model",
-                 cdprim_type=const.CDPType.AABB,
-                 cdmesh_type=const.CDMType.DEFAULT,
+                 cdprim_type=const.CDPrimType.AABB,
+                 cdmesh_type=const.CDMeshType.DEFAULT,
                  ex_radius=None,
                  userdef_cdprim_fn=None,
                  toggle_transparency=True,
@@ -165,15 +165,15 @@ class CollisionModel(mgm.GeometricModel):
             return None
         if cdmesh_type is None:
             cdmesh_type = self.cdmesh_type
-        if cdmesh_type == const.CDMType.AABB:
+        if cdmesh_type == const.CDMeshType.AABB:
             trm_mesh = self._trm_mesh.aabb_bound
-        elif cdmesh_type == const.CDMType.OBB:
+        elif cdmesh_type == const.CDMeshType.OBB:
             trm_mesh = self._trm_mesh.obb_bound
-        elif cdmesh_type == const.CDMType.CONVEX_HULL:
+        elif cdmesh_type == const.CDMeshType.CONVEX_HULL:
             trm_mesh = self._trm_mesh.convex_hull
-        elif cdmesh_type == const.CDMType.CYLINDER:
+        elif cdmesh_type == const.CDMeshType.CYLINDER:
             trm_mesh = self._trm_mesh.cyl_bound
-        elif cdmesh_type == const.CDMType.DEFAULT:
+        elif cdmesh_type == const.CDMeshType.DEFAULT:
             trm_mesh = self._trm_mesh
         else:
             raise ValueError("Wrong mesh collision model end_type name!")
@@ -190,19 +190,19 @@ class CollisionModel(mgm.GeometricModel):
             cdprim_type = self.cdprim_type
         if thickness is None:
             thickness = 0.002
-        if cdprim_type == const.CDPType.AABB:
+        if cdprim_type == const.CDPrimType.AABB:
             pdcndp = mph.gen_aabb_box_pdcndp(self._trm_mesh, ex_radius=thickness)
-        elif cdprim_type == const.CDPType.OBB:
+        elif cdprim_type == const.CDPrimType.OBB:
             pdcndp = mph.gen_obb_box_pdcndp(self._trm_mesh, ex_radius=thickness)
-        elif cdprim_type == const.CDPType.CAPSULE:
+        elif cdprim_type == const.CDPrimType.CAPSULE:
             pdcndp = mph.gen_capsule_pdcndp(self._trm_mesh, ex_radius=thickness)
-        elif cdprim_type == const.CDPType.CYLINDER:
+        elif cdprim_type == const.CDPrimType.CYLINDER:
             pdcndp = mph.gen_cylinder_pdcndp(self._trm_mesh, ex_radius=thickness)
-        elif cdprim_type == const.CDPType.SURFACE_BALLS:
+        elif cdprim_type == const.CDPrimType.SURFACE_BALLS:
             pdcndp = mph.gen_surfaceballs_pdcnd(self._trm_mesh, radius=thickness)
-        elif cdprim_type == const.CDPType.POINT_CLOUD:
+        elif cdprim_type == const.CDPrimType.POINT_CLOUD:
             pdcndp = mph.gen_pointcloud_pdcndp(self._trm_mesh, radius=thickness)
-        elif cdprim_type == const.CDPType.USER_DEFINED:
+        elif cdprim_type == const.CDPrimType.USER_DEFINED:
             if userdef_cdprim_fn is None:
                 raise ValueError("User defined functions must provided for user_defined cdprim!")
             pdcndp = userdef_cdprim_fn(ex_radius=thickness)
@@ -503,7 +503,7 @@ def gen_stick(spos=rm.np.array([.0, .0, .0]),
     length = rm.np.linalg.norm(epos - spos)
     stick_sgm = mgm.gen_stick(spos=rm.np.array([.0, .0, .0]), epos=rm.np.array([.0, .0, 1.0]) * length,
                               radius=radius, type=type, rgb=rgb, alpha=alpha, n_sec=n_sec)
-    stick_cm = CollisionModel(stick_sgm, cdprim_type=const.CDPType.CYLINDER)
+    stick_cm = CollisionModel(stick_sgm, cdprim_type=const.CDPrimType.CYLINDER)
     stick_cm.pose = [spos, center_rotmat]
     return stick_cm
 
@@ -522,13 +522,13 @@ if __name__ == "__main__":
     box.attach_to(base)
     box.show_cdprim()
     objpath = os.path.join(os.path.dirname(rm.__file__), "objects", "bunnysim.stl")
-    bunnycm = CollisionModel(objpath, cdprim_type=const.CDPType.CAPSULE)
+    bunnycm = CollisionModel(objpath, cdprim_type=const.CDPrimType.CAPSULE)
     bunnycm.rgba = rm.np.array([0.7, 0.7, 0.0, .2])
     bunnycm.show_local_frame()
     bunnycm.attach_to(base)
-    bunnycm.change_cdmesh_type(cdmesh_type=const.CDMType.CYLINDER)
+    bunnycm.change_cdmesh_type(cdmesh_type=const.CDMeshType.CYLINDER)
     bunnycm.show_cdprim()
-    bunnycm1 = CollisionModel(objpath, cdprim_type=const.CDPType.CYLINDER)
+    bunnycm1 = CollisionModel(objpath, cdprim_type=const.CDPrimType.CYLINDER)
     bunnycm1.rgba = rm.np.array([0.7, 0, 0.7, 1.0])
     rotmat = rm.rotmat_from_euler(0, 0, math.radians(15))
     bunnycm1.pos = rm.np.array([0, .01, 0])

@@ -15,7 +15,7 @@ class OR2FG7(gpi.GripperInterface):
                  rotmat=np.eye(3),
                  coupling_offset_pos=np.zeros(3),
                  coupling_offset_rotmat=np.eye(3),
-                 cdmesh_type=mcm.const.CDMType.DEFAULT,
+                 cdmesh_type=mcm.const.CDMeshType.DEFAULT,
                  name='or2fg7'):
         super().__init__(pos=pos, rotmat=rotmat, cdmesh_type=cdmesh_type, name=name)
         current_file_dir = os.path.dirname(__file__)
@@ -46,7 +46,7 @@ class OR2FG7(gpi.GripperInterface):
         self.jlc.jnts[0].lnk.cmodel = mcm.CollisionModel(
             initor=os.path.join(current_file_dir, "meshes", "inward_left_finger_link.stl"),
             cdmesh_type=self.cdmesh_type,
-            cdprim_type=mcm.const.CDPType.USER_DEFINED,
+            cdprim_type=mcm.const.CDPrimType.USER_DEFINED,
             userdef_cdprim_fn=self._finger_cdprim, ex_radius=.005)
         self.jlc.jnts[0].lnk.loc_rotmat = rm.rotmat_from_euler(0, 0, np.pi / 2)
         self.jlc.jnts[0].lnk.cmodel.rgba = np.array([.5, .5, 1, 1])
@@ -57,7 +57,7 @@ class OR2FG7(gpi.GripperInterface):
         self.jlc.jnts[1].lnk.cmodel = mcm.CollisionModel(
             initor=os.path.join(current_file_dir, "meshes", "inward_right_finger_link.stl"),
             cdmesh_type=self.cdmesh_type,
-            cdprim_type=mcm.const.CDPType.USER_DEFINED,
+            cdprim_type=mcm.const.CDPrimType.USER_DEFINED,
             userdef_cdprim_fn=self._finger_cdprim, ex_radius=.005)
         self.jlc.jnts[1].lnk.loc_rotmat = rm.rotmat_from_euler(0, 0, np.pi / 2)
         self.jlc.jnts[1].lnk.cmodel.rgba = np.array([1, .5, .5, 1])

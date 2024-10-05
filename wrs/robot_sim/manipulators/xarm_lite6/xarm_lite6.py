@@ -22,7 +22,7 @@ class XArmLite6(mi.ManipulatorInterface):
         current_file_dir = os.path.dirname(__file__)
         # anchor
         self.jlc.anchor.lnk_list[0].cmodel = mcm.CollisionModel(os.path.join(current_file_dir, "meshes", "base.stl"),
-                                                                cdprim_type=mcm.const.CDPType.USER_DEFINED,
+                                                                cdprim_type=mcm.const.CDPrimType.USER_DEFINED,
                                                                 ex_radius=.005,
                                                                 userdef_cdprim_fn=self._base_cdprim)
         self.jlc.anchor.lnk_list[0].cmodel.rgba = rm.const.tab20_list[15]
@@ -38,7 +38,7 @@ class XArmLite6(mi.ManipulatorInterface):
         self.jlc.jnts[1].loc_motion_ax = np.array([0, 0, 1])
         self.jlc.jnts[1].motion_range = np.array([-2.61799, 2.61799])
         self.jlc.jnts[1].lnk.cmodel = mcm.CollisionModel(os.path.join(current_file_dir, "meshes", "link2.stl"),
-                                                         cdprim_type=mcm.const.CDPType.USER_DEFINED, ex_radius=.005,
+                                                         cdprim_type=mcm.const.CDPrimType.USER_DEFINED, ex_radius=.005,
                                                          userdef_cdprim_fn=self._link2_cdprim)
         self.jlc.jnts[1].lnk.cmodel.rgba = rm.const.tab20_list[15]
         # third joint and link
@@ -54,7 +54,7 @@ class XArmLite6(mi.ManipulatorInterface):
         self.jlc.jnts[3].loc_motion_ax = np.array([0, 0, 1])
         self.jlc.jnts[3].motion_range = np.array([-2 * math.pi, 2 * math.pi])
         self.jlc.jnts[3].lnk.cmodel = mcm.CollisionModel(os.path.join(current_file_dir, "meshes", "link4.stl"),
-                                                         cdprim_type=mcm.const.CDPType.USER_DEFINED, ex_radius=.005,
+                                                         cdprim_type=mcm.const.CDPrimType.USER_DEFINED, ex_radius=.005,
                                                          userdef_cdprim_fn=self._link4_cdprim)
         self.jlc.jnts[3].lnk.cmodel.rgba = rm.const.tab20_list[15]
         # fifth joint and link

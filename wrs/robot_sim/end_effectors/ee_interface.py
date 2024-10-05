@@ -9,7 +9,7 @@ import wrs.robot_sim._kinematics.model_generator as rkmg
 
 class EEInterface(object):
 
-    def __init__(self, pos=np.zeros(3), rotmat=np.eye(3), cdmesh_type=mcm.const.CDMType.AABB, name="end_effector"):
+    def __init__(self, pos=np.zeros(3), rotmat=np.eye(3), cdmesh_type=mcm.const.CDMeshType.AABB, name="end_effector"):
         self.name = name
         self.pos = pos
         self.rotmat = rotmat

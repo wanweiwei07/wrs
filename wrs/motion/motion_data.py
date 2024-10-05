@@ -78,7 +78,7 @@ class MotionData(object):
         return out_str
 
     def __iter__(self):
-        for item in self._ev_list:
+        for item in self._jv_list:
             yield item
 
 

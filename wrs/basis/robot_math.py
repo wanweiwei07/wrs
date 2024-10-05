@@ -34,8 +34,6 @@ _AXES2TUPLE = {
 _TUPLE2AXES = dict((v, k) for k, v in _AXES2TUPLE.items())
 
 # helpers
-
-
 def vec_from_args(*args):
     return np.array(args)
 

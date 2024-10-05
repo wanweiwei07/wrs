@@ -1,14 +1,12 @@
-import wrs.visualization.panda.world as wd # 三次元の仮想環境や表示画面の定義用
-import numpy as np # 行列計算用
-from wrs import basis as rm, robot_sim as ur3d, modeling as mgm, modeling as mcm
+from wrs import wd, rm, ur3d, mgm, mcm
 
 if __name__ == '__main__':
     base = wd.World(cam_pos=[4, 7, 4], lookat_pos=[.4, 0, 1])
     mgm.gen_frame(ax_length=.35).attach_to(base) # グローバル座標系
     obstacle = mcm.CollisionModel("./objects/milkcarton.stl") # 衝突検出用モデルの定義
-    obstacle.pos = np.array([.55, -.3, 1.3]) # 位置の設定
-    obstacle.rotmat = rm.rotmat_from_euler(-np.pi/3, np.pi/6, np.pi/9) # 回転の設定
-    obstacle.rgba = np.array([.5, .7, .3, .5]) # 色の設定
+    obstacle.pos = rm.np.array([.55, -.3, 1.3]) # 位置の設定
+    obstacle.rotmat = rm.rotmat_from_euler(-rm.pi/3, rm.pi/6, rm.pi/9) # 回転の設定
+    obstacle.rgba = rm.np.array([.5, .7, .3, .5]) # 色の設定
     obstacle.attach_to(base) # 画面への表示
     mgm.gen_frame(ax_length=.15).attach_to(obstacle) # 障害物のローカル座標系
     # ロボットシミュレーション関連

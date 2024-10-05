@@ -5,8 +5,8 @@ if __name__ == '__main__':
     # ウサギのモデルのファイルを用いてCollisionModelを初期化します
     # ウサギ1~5はこのCollisionModelのコピーとして定義します
     object_ref = mcm.CollisionModel(initor="./objects/bunnysim.stl",
-                                    cdmesh_type=mcm.const.CDMType.DEFAULT,
-                                    cdprim_type=mcm.const.CDPType.AABB)
+                                    cdmesh_type=mcm.const.CDMeshType.DEFAULT,
+                                    cdprim_type=mcm.const.CDPrimType.AABB)
     object_ref.rgba = rm.np.array([.9, .75, .35, 1])
     # ウサギ1
     object1 = object_ref.copy()
@@ -16,14 +16,14 @@ if __name__ == '__main__':
     object2.pos = rm.np.array([0, -.095, 0])
     # ウサギ3　衝突検出用のprimitiveを表面にサンプリングした球形状のsurface_ballsへ変更します
     object3 = object_ref.copy()
-    object3.change_cdprim_type(cdprim_type=mcm.const.CDPType.SURFACE_BALLS)
+    object3.change_cdprim_type(cdprim_type=mcm.const.CDPrimType.SURFACE_BALLS)
     object3.pos = rm.np.array([0, .01, 0])
     # ウサギ4
     object4 = object_ref.copy()
     object4.pos = rm.np.array([0, .095, 0])
     # ウサギ5　衝突検出用のmeshを凸包convex_hullへ変更します
     object5 = object_ref.copy()
-    object5.change_cdmesh_type(cdmesh_type=mcm.const.CDMType.CONVEX_HULL)
+    object5.change_cdmesh_type(cdmesh_type=mcm.const.CDMeshType.CONVEX_HULL)
     object5.pos = rm.np.array([0, .17, 0])
     # ウサギ1の画面表示．元のモデルのみ書き出します
     object1.attach_to(base)

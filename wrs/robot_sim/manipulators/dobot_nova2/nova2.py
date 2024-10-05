@@ -18,7 +18,7 @@ class Nova2(mi.ManipulatorInterface):
         # anchor
         self.jlc.anchor.lnk_list[0].cmodel = mcm.CollisionModel(
             os.path.join(current_file_dir, "meshes", "base_link0.stl"),
-            cdprim_type=mcm.const.CDPType.USER_DEFINED,
+            cdprim_type=mcm.const.CDPrimType.USER_DEFINED,
             userdef_cdprim_fn=self._base_cdprim)
         self.jlc.anchor.lnk_list[0].cmodel.rgba = np.array([.7, .7, .7, 1.0])
         # first joint and link

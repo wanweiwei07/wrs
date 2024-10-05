@@ -1,6 +1,5 @@
 import time
-from wrs import basis as rm, robot_sim as cbt, modeling as mgm
-import wrs.visualization.panda.world as wd
+from wrs import wd, rm, mgm, cbt
 
 base = wd.World(cam_pos=[1.7, 1.7, 1.7], lookat_pos=[0, 0, .3])
 mgm.gen_frame().attach_to(base)
@@ -8,7 +7,7 @@ robot = cbt.Cobotta(name="wrs_cobotta", enable_cc=True)
 robot.gen_meshmodel(alpha=.5, toggle_tcp_frame=False, toggle_jnt_frames=False).attach_to(base)
 robot.gen_stickmodel(toggle_tcp_frame=True, toggle_jnt_frames=True).attach_to(base)
 tgt_pos = rm.np.array([.3, .1, .3])
-tgt_rotmat = rm.rotmat_from_axangle([0, 1, 0], rm.np.pi * 2 / 3)
+tgt_rotmat = rm.rotmat_from_axangle([0, 1, 0], rm.pi * 2 / 3)
 mgm.gen_frame(pos=tgt_pos, rotmat=tgt_rotmat).attach_to(base)
 tic = time.time()
 jnt_values = robot.ik(tgt_pos=tgt_pos, tgt_rotmat=tgt_rotmat, toggle_dbg=False)

@@ -469,7 +469,7 @@ if __name__ == '__main__':
 
     base = wd.World(cam_pos=[.7, .7, .7], lookat_pos=[0, 0, 0])
     file_path = os.path.join(basis.__path__[0], 'objects', 'bunnysim.stl')
-    cmodel = mcm.CollisionModel(file_path, cdprim_type=mc.CDPType.CYLINDER)
+    cmodel = mcm.CollisionModel(file_path, cdprim_type=mc.CDPrimType.CYLINDER)
     cmodel.rgba = np.array([.2, .5, 0, 1])
     cmodel.pos = np.array([.1, .01, .01])
     cmodel.attach_to(base)
@@ -479,7 +479,7 @@ if __name__ == '__main__':
     for i in range(100):
         cmodel_list.append(
             mcm.CollisionModel(os.path.join(basis.__path__[0], 'objects', 'housing.stl'),
-                               cdprim_type=mc.CDPType.AABB))
+                               cdprim_type=mc.CDPrimType.AABB))
         cmodel_list[-1].pos = np.random.random_sample((3,))
         cmodel_list[-1].rgba = np.array([1, .5, 0, 1])
         cmodel_list[-1].attach_to(base)

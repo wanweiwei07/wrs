@@ -16,7 +16,7 @@ class WRSGripper4(gpi.GripperInterface):
     """
 
     def __init__(self, pos=np.zeros(3), rotmat=np.eye(3),
-                 cdmesh_type=mcm.const.CDMType.DEFAULT, name="wrs_gripper4"):
+                 cdmesh_type=mcm.const.CDMeshType.DEFAULT, name="wrs_gripper4"):
         super().__init__(pos=pos, rotmat=rotmat, cdmesh_type=cdmesh_type, name=name)
         current_file_dir = os.path.dirname(__file__)
         # jaw range
@@ -35,7 +35,7 @@ class WRSGripper4(gpi.GripperInterface):
         self.jlc.jnts[0].loc_motion_ax = rm.const.y_ax
         self.jlc.jnts[0].lnk.cmodel = mcm.CollisionModel(os.path.join(current_file_dir, "meshes", "v4_r21.stl"),
                                                          cdmesh_type=self.cdmesh_type,
-                                                         cdprim_type=mcm.const.CDPType.USER_DEFINED,
+                                                         cdprim_type=mcm.const.CDPrimType.USER_DEFINED,
                                                          userdef_cdprim_fn=self._mid_cdprim, ex_radius=.002)
         self.jlc.jnts[0].lnk.cmodel.rgba = rm.const.tab20_list[5]
         # the 2nd joint (left finger, +y direction)
@@ -49,7 +49,7 @@ class WRSGripper4(gpi.GripperInterface):
         self.jlc.jnts[2].loc_motion_ax = rm.const.y_ax
         self.jlc.jnts[2].lnk.cmodel = mcm.CollisionModel(os.path.join(current_file_dir, "meshes", "v4_r22.stl"),
                                                          cdmesh_type=self.cdmesh_type,
-                                                         cdprim_type=mcm.const.CDPType.USER_DEFINED,
+                                                         cdprim_type=mcm.const.CDPrimType.USER_DEFINED,
                                                          userdef_cdprim_fn=self._fgr_cdprim, ex_radius=.002)
         self.jlc.jnts[2].lnk.cmodel.rgba = rm.const.tab20_list[3]
         # the 1st joint (rgt finger, -y direction)
@@ -58,7 +58,7 @@ class WRSGripper4(gpi.GripperInterface):
         self.jlc.jnts[3].loc_motion_ax = rm.const.y_ax
         self.jlc.jnts[3].lnk.cmodel = mcm.CollisionModel(os.path.join(current_file_dir, "meshes", "v4_r21.stl"),
                                                          cdmesh_type=self.cdmesh_type,
-                                                         cdprim_type=mcm.const.CDPType.USER_DEFINED,
+                                                         cdprim_type=mcm.const.CDPrimType.USER_DEFINED,
                                                          userdef_cdprim_fn=self._mid_cdprim, ex_radius=.002)
         self.jlc.jnts[3].lnk.cmodel.rgba = rm.const.tab20_list[5]
         # the 2nd joint (rgt finger, -y direction)
@@ -72,7 +72,7 @@ class WRSGripper4(gpi.GripperInterface):
         self.jlc.jnts[5].loc_motion_ax = rm.const.y_ax
         self.jlc.jnts[5].lnk.cmodel = mcm.CollisionModel(os.path.join(current_file_dir, "meshes", "v4_r22.stl"),
                                                          cdmesh_type=self.cdmesh_type,
-                                                         cdprim_type=mcm.const.CDPType.USER_DEFINED,
+                                                         cdprim_type=mcm.const.CDPrimType.USER_DEFINED,
                                                          userdef_cdprim_fn=self._fgr_cdprim, ex_radius=.002)
         self.jlc.jnts[5].lnk.cmodel.rgba = rm.const.tab20_list[3]
         self.jlc.finalize()

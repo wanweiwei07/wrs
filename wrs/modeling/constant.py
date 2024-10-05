@@ -2,7 +2,7 @@ from enum import Enum
 from panda3d.core import BitMask32
 
 
-class CDMType(Enum):
+class CDMeshType(Enum):
     AABB = 1
     OBB = 2
     CONVEX_HULL = 3
@@ -10,7 +10,7 @@ class CDMType(Enum):
     DEFAULT = 5  # triangle mesh
 
 
-class CDPType(Enum):
+class CDPrimType(Enum):
     AABB = 1
     OBB = 2
     CAPSULE = 3

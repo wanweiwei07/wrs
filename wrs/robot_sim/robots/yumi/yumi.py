@@ -25,7 +25,7 @@ class Yumi(ri.RobotInterface):
                                               rm.rotmat_from_euler(0.0, 0.0, -np.pi))]
         self.body.lnk_list[0].name = "yumi_body_main"
         self.body.lnk_list[0].cmodel = mcm.CollisionModel(initor=os.path.join(current_file_dir, "meshes", "body.stl"),
-                                                          cdprim_type=mcm.const.CDPType.USER_DEFINED,
+                                                          cdprim_type=mcm.const.CDPrimType.USER_DEFINED,
                                                           userdef_cdprim_fn=self._base_cdprim)
         self.body.lnk_list[0].cmodel.rgba = rm.const.hug_gray
         # table

@@ -24,13 +24,13 @@ class UR3Dual(ri.RobotInterface):
         self.body.lnk_list[0].name = "ur3_dual_base_link"
         self.body.lnk_list[0].cmodel = mcm.CollisionModel(
             initor=os.path.join(current_file_dir, "meshes", "ur3_dual_base.stl"),
-            cdprim_type=mcm.const.CDPType.USER_DEFINED,
+            cdprim_type=mcm.const.CDPrimType.USER_DEFINED,
             userdef_cdprim_fn=self._base_cdprim)
         self.body.lnk_list[0].cmodel.rgba = rm.const.dim_gray
         self.body.lnk_list[1].name = "ur3_dual_frame_link"
         self.body.lnk_list[1].cmodel = mcm.CollisionModel(
             initor=os.path.join(current_file_dir, "meshes", "ur3_dual_frame.stl"),
-            cdprim_type=mcm.const.CDPType.USER_DEFINED,
+            cdprim_type=mcm.const.CDPrimType.USER_DEFINED,
             userdef_cdprim_fn=self._base_cdprim)
         self.body.lnk_list[1].cmodel.rgba = rm.const.tab20_list[14]
         self.body.lnk_list[2].name = "ur3_dual_table_link"

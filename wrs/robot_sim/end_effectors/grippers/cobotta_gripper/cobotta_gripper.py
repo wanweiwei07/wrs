@@ -12,7 +12,7 @@ class CobottaGripper(gpi.GripperInterface):
     def __init__(self,
                  pos=np.zeros(3),
                  rotmat=np.eye(3),
-                 cdmesh_type=mcm.const.CDMType.DEFAULT,
+                 cdmesh_type=mcm.const.CDMeshType.DEFAULT,
                  name="cobotta_gripper"):
         super().__init__(pos=pos, rotmat=rotmat, cdmesh_type=cdmesh_type, name=name)
         current_file_dir = os.path.dirname(__file__)
@@ -114,7 +114,7 @@ if __name__ == '__main__':
     base = wd.World(cam_pos=[.5, .5, .5], lookat_pos=[0, 0, 0])
     mcm.mgm.gen_frame().attach_to(base)
     # base.run()
-    grpr = CobottaGripper(cdmesh_type=mcm.const.CDMType.OBB)
+    grpr = CobottaGripper(cdmesh_type=mcm.const.CDMeshType.OBB)
     grpr.fix_to(pos=np.array([0, .1, .1]), rotmat=rm.rotmat_from_axangle([1, 0, 0], .7))
     print(grpr.grip_at_by_twovecs(jaw_center_pos=np.array([0, .1, .1]), approaching_direction=np.array([0, -1, 0]),
                                   thumb_opening_direction=np.array([1, 0, 0]), jaw_width=.01))

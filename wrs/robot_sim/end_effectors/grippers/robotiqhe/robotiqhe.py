@@ -15,7 +15,7 @@ class RobotiqHE(gpi.GripperInterface):
                  rotmat=np.eye(3),
                  coupling_offset_pos=np.zeros(3),
                  coupling_offset_rotmat=np.eye(3),
-                 cdmesh_type=mcm.const.CDMType.DEFAULT,
+                 cdmesh_type=mcm.const.CDMeshType.DEFAULT,
                  name='rtq_he'):
         super().__init__(pos=pos, rotmat=rotmat, cdmesh_type=cdmesh_type, name=name)
         current_file_dir = os.path.dirname(__file__)
@@ -38,7 +38,7 @@ class RobotiqHE(gpi.GripperInterface):
         self.jlc.anchor.lnk_list[0].cmodel = mcm.CollisionModel(
             os.path.join(current_file_dir, "meshes", "base.stl"),
             cdmesh_type=self.cdmesh_type,
-            cdprim_type=mcm.const.CDPType.USER_DEFINED,
+            cdprim_type=mcm.const.CDPrimType.USER_DEFINED,
             userdef_cdprim_fn=self._base_cdprim)
         self.jlc.anchor.lnk_list[0].cmodel.rgba = np.array([.2, .2, .2, 1])
         # the 1st joint (left finger, +y direction)
@@ -49,7 +49,7 @@ class RobotiqHE(gpi.GripperInterface):
         self.jlc.jnts[0].lnk.cmodel = mcm.CollisionModel(
             initor=os.path.join(current_file_dir, "meshes", "finger1.stl"),
             cdmesh_type=self.cdmesh_type,
-            cdprim_type=mcm.const.CDPType.AABB,
+            cdprim_type=mcm.const.CDPrimType.AABB,
             ex_radius=.005)
         self.jlc.jnts[0].lnk.loc_rotmat = rm.rotmat_from_euler(0, 0, -np.pi / 2)
         self.jlc.jnts[0].lnk.cmodel.rgba = np.array([.5, .5, 1, 1])
@@ -60,7 +60,7 @@ class RobotiqHE(gpi.GripperInterface):
         self.jlc.jnts[1].lnk.cmodel = mcm.CollisionModel(
             initor=os.path.join(current_file_dir, "meshes", "finger2.stl"),
             cdmesh_type=self.cdmesh_type,
-            cdprim_type=mcm.const.CDPType.AABB,
+            cdprim_type=mcm.const.CDPrimType.AABB,
             ex_radius=.005)
         self.jlc.jnts[1].lnk.loc_rotmat = rm.rotmat_from_euler(0, 0, -np.pi / 2)
         self.jlc.jnts[1].lnk.cmodel.rgba = np.array([1, .5, .5, 1])
