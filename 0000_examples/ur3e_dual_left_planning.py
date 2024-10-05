@@ -1,12 +1,10 @@
 import numpy as np
-import wrs.visualization.panda.world as wd
-import wrs.robot_sim.robots.ur3e_dual.ur3e_dual as u3ed
-from wrs import basis as rm, motion as rrtc, modeling as mgm, modeling as mcm
+from wrs import wd, rm, ur3ed, rrtc, mgm, mcm
 
 base = wd.World(cam_pos=[3, 2, 3], lookat_pos=[0.5, 0, 1.1])
 mgm.gen_frame().attach_to(base)
 # robot
-robot = u3ed.UR3e_Dual()
+robot = ur3ed.UR3e_Dual()
 robot.use_lft()
 # obstacle
 obstacle = mcm.gen_box(xyz_lengths=[.2, .05, .4])
