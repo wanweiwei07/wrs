@@ -1180,7 +1180,7 @@ def gen_frame_box(xyz_lengths=np.array([.02, .02, .02]),
     # Create a set of line segments
     ls = LineSegs()
     ls.setThickness(thickness * da.M_TO_PIXEL)
-    ls.setColor(*rgb, alpha)
+    ls.setColor(rgb[0], rgb[1], rgb[2], alpha)
     center_pos = pos
     x_axis = rotmat[:, 0]
     y_axis = rotmat[:, 1]

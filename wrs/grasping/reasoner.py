@@ -75,22 +75,22 @@ class GraspReasoner(object):
     #                         if not self.robot.end_effector.is_mesh_collided(cmodel_list=obstacle_list):
     #                             previous_available_gids.append(gid)
     #                             if toggle_dbg:
-    #                                 self.robot.end_effector.gen_meshmodel(rgb=rm.bc.green, alpha=1).attach_to(base)
+    #                                 self.robot.end_effector.gen_meshmodel(rgb=rm.const.green, alpha=1).attach_to(base)
     #                         else:  # ee collided
     #                             eef_collided_grasps_num += 1
     #                             if toggle_dbg:
-    #                                 self.robot.end_effector.gen_meshmodel(rgb=rm.bc.yellow, alpha=1).attach_to(base)
+    #                                 self.robot.end_effector.gen_meshmodel(rgb=rm.const.yellow, alpha=1).attach_to(base)
     #                     else:  # robot collided
     #                         rbt_collided_grasps_num += 1
     #                         if toggle_dbg:
-    #                             self.robot.gen_meshmodel(rgb=rm.bc.orange, toggle_cdprim=True, alpha=1).attach_to(base)
+    #                             self.robot.gen_meshmodel(rgb=rm.const.orange, toggle_cdprim=True, alpha=1).attach_to(base)
     #                 else:  # ik failure
     #                     ik_failed_grasps_num += 1
     #                     if toggle_dbg:
     #                         self.robot.end_effector.grip_at_by_pose(jaw_center_pos=goal_jaw_center_pos,
     #                                                                 jaw_center_rotmat=goal_jaw_center_rotmat,
     #                                                                 jaw_width=grasp.ee_values)
-    #                         self.robot.end_effector.gen_meshmodel(rgb=rm.bc.magenta, alpha=1).attach_to(base)
+    #                         self.robot.end_effector.gen_meshmodel(rgb=rm.const.magenta, alpha=1).attach_to(base)
     #             else:
     #                 ik_failed_grasps_num = '-'
     #                 rbt_collided_grasps_num = '-'
@@ -100,11 +100,11 @@ class GraspReasoner(object):
     #                 if not self.robot.end_effector.is_mesh_collided(cmodel_list=obstacle_list):
     #                     previous_available_gids.append(gid)
     #                     if toggle_dbg:
-    #                         self.robot.end_effector.gen_meshmodel(rgb=rm.bc.green, alpha=1).attach_to(base)
+    #                         self.robot.end_effector.gen_meshmodel(rgb=rm.const.green, alpha=1).attach_to(base)
     #                 else:
     #                     eef_collided_grasps_num += 1
     #                     if toggle_dbg:
-    #                         self.robot.end_effector.gen_meshmodel(rgb=rm.bc.yellow, alpha=1).attach_to(base)
+    #                         self.robot.end_effector.gen_meshmodel(rgb=rm.const.yellow, alpha=1).attach_to(base)
     #         intermediate_available_gids.append(previous_available_gids.copy())
     #         if toggle_dbg:
     #             for obstacle in obstacle_list:
@@ -156,7 +156,7 @@ class GraspReasoner(object):
                     # ee collided
                     eef_collided_grasps_num += 1
                     if toggle_dbg:
-                        self.robot.end_effector.gen_meshmodel(rgb=rm.bc.white, alpha=1).attach_to(base)
+                        self.robot.end_effector.gen_meshmodel(rgb=rm.const.white, alpha=1).attach_to(base)
                 else:
                     if consider_robot:
                         jnt_values = self.robot.ik(tgt_pos=goal_grasp.ac_pos, tgt_rotmat=goal_grasp.ac_rotmat)
@@ -167,7 +167,7 @@ class GraspReasoner(object):
                                 self.robot.end_effector.grip_at_by_pose(jaw_center_pos=goal_grasp.ac_pos,
                                                                         jaw_center_rotmat=goal_grasp.ac_rotmat,
                                                                         jaw_width=goal_grasp.ee_values)
-                                self.robot.end_effector.gen_meshmodel(rgb=rm.bc.magenta, alpha=1).attach_to(base)
+                                self.robot.end_effector.gen_meshmodel(rgb=rm.const.magenta, alpha=1).attach_to(base)
                         else:
                             self.robot.goto_given_conf(jnt_values=jnt_values)
                             if not self.robot.is_collided(obstacle_list=obstacle_list):
@@ -175,18 +175,18 @@ class GraspReasoner(object):
                                 previous_availalbe_grasps.append(goal_grasp)
                                 previous_available_jv_list.append(jnt_values)
                                 if toggle_dbg:
-                                    self.robot.end_effector.gen_meshmodel(rgb=rm.bc.green, alpha=1).attach_to(base)
+                                    self.robot.end_effector.gen_meshmodel(rgb=rm.const.green, alpha=1).attach_to(base)
                             else:  # robot collided
                                 rbt_collided_grasps_num += 1
                                 if toggle_dbg:
-                                    self.robot.gen_meshmodel(rgb=rm.bc.orange, toggle_cdprim=True).attach_to(base)
+                                    self.robot.gen_meshmodel(rgb=rm.const.orange, toggle_cdprim=True).attach_to(base)
                     else:
                         ik_failed_grasps_num = '-'
                         rbt_collided_grasps_num = '-'
                         previous_available_gids.append(gid)
                         previous_availalbe_grasps.append(goal_grasp)
                         if toggle_dbg:
-                            self.robot.end_effector.gen_meshmodel(rgb=rm.bc.green, alpha=1).attach_to(base)
+                            self.robot.end_effector.gen_meshmodel(rgb=rm.const.green, alpha=1).attach_to(base)
             intermediate_available_gids.append(previous_available_gids.copy())
             intermediate_available_grasps.append(previous_availalbe_grasps.copy())
             intermediate_available_jv_list.append(previous_available_jv_list.copy())

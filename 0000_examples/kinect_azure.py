@@ -1,15 +1,15 @@
 import cv2
-from wrs import drivers as pk, modeling as gm
-import wrs.visualization.panda.world as wd
-import cv2.aruco as aruco
-import numpy as np
+# import cv2.aruco as aruco
+from wrs import wd, rm, mgm
+import wrs.drivers.devices.kinect_azure.pykinectazure as pka
 
-base = wd.World(cam_pos=[0, 0, -10], lookat_pos=[0, 0, 10])
-gm.gen_frame().attach_to(base)
+base = wd.World(cam_pos=rm.vec(0, 0, -10), lookat_pos=rm.vec(0, 0, 10))
+mgm.gen_frame().attach_to(base)
 # base.run()
-pk_obj = pk.PyKinectAzure()
+pk_obj = pka.PyKinectAzure()
 pk_obj.device_open()
 pk_obj.device_start_cameras()
+base.run()
 
 pcd_list = []
 marker_center_list = []

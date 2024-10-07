@@ -1,4 +1,4 @@
-from wrs import wd, rm, rrtc, mcm, mgm, gg, x6g2, ppp
+from wrs import wd, rm, rrtc, mcm, mgm, gg, x6wg2, ppp
 
 base = wd.World(cam_pos=[1.2, .7, 1], lookat_pos=[.0, 0, .15])
 mgm.gen_frame().attach_to(base)

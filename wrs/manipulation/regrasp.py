@@ -25,35 +25,35 @@ class RegraspSpotCollection(object):
         self.grasp_reasoner = gr.GraspReasoner(robot)
         self.reference_fsp_poses = reference_fsp_poses
         self.reference_grasp_collection = reference_grasp_collection
-        self._regspot_list = []  # list of SpotFSPGs
+        self._spot_fspgs_list = []  # list of SpotFSPGs
 
-    def load_from_disk(self, file_name="regspot_col.pickle"):
+    def load_from_disk(self, file_name="spot_fspgs_collection.pickle"):
         with open(file_name, 'rb') as file:
-            self._regspot_list = pickle.load(file)
+            self._spot_fspgs_list = pickle.load(file)
 
-    def save_to_disk(self, file_name='regspot_col.pickle'):
+    def save_to_disk(self, file_name='spot_fspgs_collection.pickle'):
         """
         :param file_name
         :return:
         """
         with open(file_name, 'wb') as file:
-            pickle.dump(self._regspot_list, file)
+            pickle.dump(self._spot_fspgs_list, file)
 
     def __getitem__(self, index):
-        return self._regspot_list[index]
+        return self._spot_fspgs_list[index]
 
     def __len__(self):
-        return len(self._regspot_list)
+        return len(self._spot_fspgs_list)
 
     def __iter__(self):
-        return iter(self._regspot_list)
+        return iter(self._spot_fspgs_list)
 
     def __add__(self, other):
-        self._regspot_list += other._regspot_list
+        self._spot_fspgs_list += other._regspot_list
         return self
 
-    def add_new_fs_regspot(self, spot_pos, spot_rotz, barrier_z_offset=-.01, consider_robot=True, toggle_dbg=False):
-        fs_regspot = mpfsp.SpotFSPGs(spot_pos, spot_rotz)
+    def add_new_spot(self, spot_pos, spot_rotz, barrier_z_offset=-.01, consider_robot=True, toggle_dbg=False):
+        spot_fspgs = mpfsp.SpotFSPGs(spot_pos, spot_rotz)
         barrier_obstacle = mcm.gen_surface_barrier(spot_pos[2] + barrier_z_offset)
         for fsp_pose_id, reference_fsp_pose in enumerate(self.reference_fsp_poses):
             pos = reference_fsp_pose[0] + spot_pos
@@ -64,9 +64,9 @@ class RegraspSpotCollection(object):
                 goal_pose=(pos, rotmat),
                 consider_robot=consider_robot,
                 toggle_keep=True,
-                toggle_dbg=False)
+                toggle_dbg=True)
             if feasible_gids is not None:
-                fs_regspot.add_fspg(mpfsp.FSPG(fsp_pose_id=fsp_pose_id,
+                spot_fspgs.add_fspg(mpfsp.FSPG(fsp_pose_id=fsp_pose_id,
                                                obj_pose=(pos, rotmat),
                                                feasible_gids=feasible_gids,
                                                feasible_grasps=feasible_grasps,
@@ -76,10 +76,10 @@ class RegraspSpotCollection(object):
                     self.robot.goto_given_conf(jnt_values=jnt_values, ee_values=grasp.ee_values)
                     self.robot.gen_meshmodel().attach_to(base)
                 base.run()
-        self._regspot_list.append(fs_regspot)
+        self._spot_fspgs_list.append(spot_fspgs)
 
     # TODO keep robot state
-    def gen_meshmodels(self):
+    def gen_meshmodel(self):
         """
         TODO do not use explicit obj_cmodel
         :param robot:
@@ -87,9 +87,9 @@ class RegraspSpotCollection(object):
         :return:
         """
         meshmodel_list = []
-        print(len(self._regspot_list))
-        for fsregspot in self._regspot_list:
-            for fspg in fsregspot.fspgs:
+        print(len(self._spot_fspgs_list))
+        for spot_fspgs in self._spot_fspgs_list:
+            for fspg in spot_fspgs.fspg_list:
                 m_col = mmc.ModelCollection()
                 obj_pose = fspg.obj_pose
                 feasible_grasps = fspg.feasible_grasps
@@ -107,11 +107,11 @@ class RegraspSpotCollection(object):
 class FSRegraspPlanner(object):
 
     def __init__(self, robot, obj_cmodel, reference_fsp_poses, reference_grasp_collection):
-        self.fsreg_graph = nx.Graph()
-        self.regspot_col = RegraspSpotCollection(robot=robot,
-                                                 obj_cmodel=obj_cmodel,
-                                                 reference_fsp_poses=reference_fsp_poses,
-                                                 reference_grasp_collection=reference_grasp_collection)
+        self._graph = nx.Graph()
+        self._spot_collection = RegraspSpotCollection(robot=robot,
+                                                      obj_cmodel=obj_cmodel,
+                                                      reference_fsp_poses=reference_fsp_poses,
+                                                      reference_grasp_collection=reference_grasp_collection)
         self.pp_planner = ppp.PickPlacePlanner(robot)
         self._global_nodes_by_gid = [[] for _ in range(len(reference_grasp_collection))]
         self._plot_g_radius = .01
@@ -121,30 +121,30 @@ class FSRegraspPlanner(object):
         self._p_angle_interval = np.pi * 2 / self._n_reference_poses
         self._g_angle_interval = np.pi * 2 / self._n_reference_grasps
 
-    def add_regspot_col_from_disk(self, file_name):
-        regspot_col = RegraspSpotCollection(robot=self.robot,
-                                            obj_cmodel=self.obj_cmodel,
-                                            reference_fsp_poses=self.reference_fsp_poses,
-                                            reference_grasp_collection=self.reference_grasp_collection)
-        regspot_col.load_from_disk(file_name)
-        self.regspot_col += regspot_col
-        self._add_regspot_col_to_fsreg_graph(regspot_col)
+    def add_spot_collection_from_disk(self, file_name):
+        spot_collection = RegraspSpotCollection(robot=self.robot,
+                                                obj_cmodel=self.obj_cmodel,
+                                                reference_fsp_poses=self.reference_fsp_poses,
+                                                reference_grasp_collection=self.reference_grasp_collection)
+        spot_collection.load_from_disk(file_name)
+        self._spot_collection += spot_collection
+        self._add_spot_collection_to_graph(spot_collection)
 
     @property
     def robot(self):
-        return self.regspot_col.robot
+        return self._spot_collection.robot
 
     @property
     def obj_cmodel(self):
-        return self.regspot_col.obj_cmodel
+        return self._spot_collection.obj_cmodel
 
     @property
     def reference_fsp_poses(self):
-        return self.regspot_col.reference_fsp_poses
+        return self._spot_collection.reference_fsp_poses
 
     @property
     def reference_grasp_collection(self):
-        return self.regspot_col.reference_grasp_collection
+        return self._spot_collection.reference_grasp_collection
 
     # def load_spotfspgs_col_from_disk(self, file_name):
     #     self.regspot_col.load_from_disk(file_name)
@@ -158,9 +158,9 @@ class FSRegraspPlanner(object):
     def load_from_disk(self, file_name):
         pass
 
-    def create_add_regspot(self, spot_pos, spot_rotz, barrier_z_offset=-.01, consider_robot=True, toggle_dbg=False):
-        self.regspot_col.add_new_fs_regspot(spot_pos, spot_rotz, barrier_z_offset, consider_robot, toggle_dbg)
-        self._add_regspot_to_fsreg_graph(self.regspot_col[-1])
+    def create_add_spot(self, spot_pos, spot_rotz, barrier_z_offset=-.01, consider_robot=True, toggle_dbg=False):
+        self._spot_collection.add_new_spot(spot_pos, spot_rotz, barrier_z_offset, consider_robot, toggle_dbg)
+        self._add_spot_to_graph(self._spot_collection[-1])
 
     def add_start_pose(self, obj_pose, plot_pose_xy=None):
         start_pg = mpgp.PG.create_from_arbitrary_pose(self.robot,
@@ -180,7 +180,7 @@ class FSRegraspPlanner(object):
             plot_pose_xy = obj_pose[0][:2]
         return self._add_fspg_to_fsreg_graph(start_pg, plot_pose_xy=plot_pose_xy, prefix='goal')
 
-    def _add_regspot_col_to_fsreg_graph(self, regspot_col):
+    def _add_spot_collection_to_graph(self, regspot_col):
         """
         add regspot collection to the regrasp graph
         :param regspot_col: an instance of RegraspSpotCollection or a list of SpotFSPGs
@@ -199,34 +199,34 @@ class FSRegraspPlanner(object):
                     local_nodes.append(uuid.uuid4())
                     plot_grasp_x = plot_pose_x + self._plot_g_radius * np.sin(gid * self._g_angle_interval)
                     plot_grasp_y = plot_pose_y + self._plot_g_radius * np.cos(gid * self._g_angle_interval)
-                    self.fsreg_graph.add_node(local_nodes[-1],
-                                              obj_pose=obj_pose,
-                                              grasp=grasp,
-                                              jnt_values=jnt_values,
-                                              plot_xy=(plot_grasp_x, plot_grasp_y))
+                    self._graph.add_node(local_nodes[-1],
+                                         obj_pose=obj_pose,
+                                         grasp=grasp,
+                                         jnt_values=jnt_values,
+                                         plot_xy=(plot_grasp_x, plot_grasp_y))
                     new_global_nodes_by_gid[gid].append(local_nodes[-1])
                     self._global_nodes_by_gid[gid].append(local_nodes[-1])
                 for node_pair in itertools.combinations(local_nodes, 2):
-                    self.fsreg_graph.add_edge(node_pair[0], node_pair[1], type='transit')
+                    self._graph.add_edge(node_pair[0], node_pair[1], type='transit')
         for i in range(len(self.reference_grasp_collection)):
             new_global_nodes = new_global_nodes_by_gid[i]
             original_global_nodes = self._global_nodes_by_gid[i]
             for node_pair in itertools.product(new_global_nodes, original_global_nodes):
-                self.fsreg_graph.add_edge(node_pair[0], node_pair[1], type='transfer')
+                self._graph.add_edge(node_pair[0], node_pair[1], type='transfer')
         # for global_nodes in tqdm(self._global_nodes_by_gid):
         #     for global_node_pair in itertools.combinations(global_nodes, 2):
         #         self.fsreg_graph.add_edge(global_node_pair[0], global_node_pair[1], type='transfer')
 
-    def _add_regspot_to_fsreg_graph(self, regspot):
+    def _add_spot_to_graph(self, spot):
         """
         add a spotfspgs to the regrasp graph
-        :param regspot:
+        :param spot:
         :return:
         """
         new_global_nodes_by_gid = [[] for _ in range(len(self.reference_grasp_collection))]
-        spot_x = regspot.spot_pos[0]
-        spot_y = regspot.spot_pos[1]
-        for fspg in regspot.fspgs:
+        spot_x = spot.spot_pos[0]
+        spot_y = spot.spot_pos[1]
+        for fspg in spot.fspgs:
             plot_pose_x = spot_x + self._plot_p_radius * np.sin(fspg.fsp_pose_id * self._p_angle_interval)
             plot_pose_y = spot_y + self._plot_p_radius * np.cos(fspg.fsp_pose_id * self._p_angle_interval)
             local_nodes = []
@@ -235,20 +235,20 @@ class FSRegraspPlanner(object):
                 local_nodes.append(uuid.uuid4())
                 plot_grasp_x = plot_pose_x + self._plot_g_radius * np.sin(gid * self._g_angle_interval)
                 plot_grasp_y = plot_pose_y + self._plot_g_radius * np.cos(gid * self._g_angle_interval)
-                self.fsreg_graph.add_node(local_nodes[-1],
-                                          obj_pose=obj_pose,
-                                          grasp=grasp,
-                                          jnt_values=jnt_values,
-                                          plot_xy=(plot_grasp_x, plot_grasp_y))
+                self._graph.add_node(local_nodes[-1],
+                                     obj_pose=obj_pose,
+                                     grasp=grasp,
+                                     jnt_values=jnt_values,
+                                     plot_xy=(plot_grasp_x, plot_grasp_y))
                 new_global_nodes_by_gid[gid].append(local_nodes[-1])
                 self._global_nodes_by_gid[gid].append(local_nodes[-1])
             for node_pair in itertools.combinations(local_nodes, 2):
-                self.fsreg_graph.add_edge(node_pair[0], node_pair[1], type='transit')
+                self._graph.add_edge(node_pair[0], node_pair[1], type='transit')
         for i in range(len(self.reference_grasp_collection)):
             new_global_nodes = new_global_nodes_by_gid[i]
             original_global_nodes = self._global_nodes_by_gid[i]
             for node_pair in itertools.product(new_global_nodes, original_global_nodes):
-                self.fsreg_graph.add_edge(node_pair[0], node_pair[1], type='transfer')
+                self._graph.add_edge(node_pair[0], node_pair[1], type='transfer')
 
     def _add_fspg_to_fsreg_graph(self, fspg, plot_pose_xy, prefix=''):
         """
@@ -264,20 +264,20 @@ class FSRegraspPlanner(object):
             local_nodes.append(uuid.uuid4())
             plot_grasp_x = plot_pose_xy[0] + self._plot_g_radius * np.sin(gid * self._g_angle_interval)
             plot_grasp_y = plot_pose_xy[1] + self._plot_g_radius * np.cos(gid * self._g_angle_interval)
-            self.fsreg_graph.add_node(local_nodes[-1],
-                                      obj_pose=obj_pose,
-                                      grasp=grasp,
-                                      jnt_values=jnt_values,
-                                      plot_xy=(plot_grasp_x, plot_grasp_y))
+            self._graph.add_node(local_nodes[-1],
+                                 obj_pose=obj_pose,
+                                 grasp=grasp,
+                                 jnt_values=jnt_values,
+                                 plot_xy=(plot_grasp_x, plot_grasp_y))
             new_global_nodes_by_gid[gid].append(local_nodes[-1])
             self._global_nodes_by_gid[gid].append(local_nodes[-1])
         for node_pair in itertools.combinations(local_nodes, 2):
-            self.fsreg_graph.add_edge(node_pair[0], node_pair[1], type=prefix + '_transit')
+            self._graph.add_edge(node_pair[0], node_pair[1], type=prefix + '_transit')
         for i in range(len(self.reference_grasp_collection)):
             new_global_nodes = new_global_nodes_by_gid[i]
             original_global_nodes = self._global_nodes_by_gid[i]
             for node_pair in itertools.product(new_global_nodes, original_global_nodes):
-                self.fsreg_graph.add_edge(node_pair[0], node_pair[1], type=prefix + '_transfer')
+                self._graph.add_edge(node_pair[0], node_pair[1], type=prefix + '_transfer')
         return local_nodes
 
     def draw_fsreg_graph(self):
@@ -285,28 +285,28 @@ class FSRegraspPlanner(object):
         #     spot_x = regspot.spot_pos[0]
         #     spot_y = regspot.spot_pos[1]
         #     plt.plot(spot_x, spot_y, 'ko')
-        for node_tuple in self.fsreg_graph.edges:
-            node1_plot_xy = self.fsreg_graph.nodes[node_tuple[0]]['plot_xy']
-            node2_plot_xy = self.fsreg_graph.nodes[node_tuple[1]]['plot_xy']
-            if self.fsreg_graph.edges[node_tuple]['type'] == 'transit':
+        for node_tuple in self._graph.edges:
+            node1_plot_xy = self._graph.nodes[node_tuple[0]]['plot_xy']
+            node2_plot_xy = self._graph.nodes[node_tuple[1]]['plot_xy']
+            if self._graph.edges[node_tuple]['type'] == 'transit':
                 plt.plot([node1_plot_xy[0], node2_plot_xy[0]], [node1_plot_xy[1], node2_plot_xy[1]], 'c-')
-            elif self.fsreg_graph.edges[node_tuple]['type'] == 'transfer':
+            elif self._graph.edges[node_tuple]['type'] == 'transfer':
                 plt.plot([node1_plot_xy[0], node2_plot_xy[0]], [node1_plot_xy[1], node2_plot_xy[1]], 'k-')
-            elif self.fsreg_graph.edges[node_tuple]['type'] == 'start_transit':
+            elif self._graph.edges[node_tuple]['type'] == 'start_transit':
                 plt.plot([node1_plot_xy[0], node2_plot_xy[0]], [node1_plot_xy[1], node2_plot_xy[1]], 'm-')
-            elif self.fsreg_graph.edges[node_tuple]['type'] == 'start_transfer':
+            elif self._graph.edges[node_tuple]['type'] == 'start_transfer':
                 plt.plot([node1_plot_xy[0], node2_plot_xy[0]], [node1_plot_xy[1], node2_plot_xy[1]], 'g-')
-            elif self.fsreg_graph.edges[node_tuple]['type'] == 'goal_transit':
+            elif self._graph.edges[node_tuple]['type'] == 'goal_transit':
                 plt.plot([node1_plot_xy[0], node2_plot_xy[0]], [node1_plot_xy[1], node2_plot_xy[1]], 'y-')
-            elif self.fsreg_graph.edges[node_tuple]['type'] == 'goal_transfer':
+            elif self._graph.edges[node_tuple]['type'] == 'goal_transfer':
                 plt.plot([node1_plot_xy[0], node2_plot_xy[0]], [node1_plot_xy[1], node2_plot_xy[1]], 'b-')
         plt.gca().set_aspect('equal', adjustable='box')
 
     def draw_path(self, path):
         n_nodes_on_path = len(path)
         for i in range(1, n_nodes_on_path):
-            node1_plot_xy = self.fsreg_graph.nodes[path[i]]['plot_xy']
-            node2_plot_xy = self.fsreg_graph.nodes[path[i - 1]]['plot_xy']
+            node1_plot_xy = self._graph.nodes[path[i]]['plot_xy']
+            node2_plot_xy = self._graph.nodes[path[i - 1]]['plot_xy']
             plt.plot([node1_plot_xy[0], node2_plot_xy[0]], [node1_plot_xy[1], node2_plot_xy[1]], 'r-', linewidth=2)
 
     def show_graph(self):
@@ -332,9 +332,9 @@ class FSRegraspPlanner(object):
         """
         mesh_list = []
         for i, node in enumerate(path):
-            obj_pose = self.fsreg_graph.nodes[node]['obj_pose']
-            grasp = self.fsreg_graph.nodes[node]['grasp']
-            jnt_values = self.fsreg_graph.nodes[node]['jnt_values']
+            obj_pose = self._graph.nodes[node]['obj_pose']
+            grasp = self._graph.nodes[node]['grasp']
+            jnt_values = self._graph.nodes[node]['jnt_values']
             m_col = mmc.ModelCollection()
             obj_cmodel_copy = self.obj_cmodel.copy()
             obj_cmodel_copy.pose = obj_pose
@@ -343,14 +343,14 @@ class FSRegraspPlanner(object):
             self.robot.gen_meshmodel().attach_to(m_col)
             if i >= 1:
                 prev_node = path[i - 1]
-                prev_obj_pose = self.fsreg_graph.nodes[prev_node]['obj_pose']
-                prev_grasp = self.fsreg_graph.nodes[prev_node]['grasp']
-                prev_jnt_values = self.fsreg_graph.nodes[prev_node]['jnt_values']
-                if self.fsreg_graph.edges[(prev_node, node)]['type'].endswith('transfer'):
+                prev_obj_pose = self._graph.nodes[prev_node]['obj_pose']
+                prev_grasp = self._graph.nodes[prev_node]['grasp']
+                prev_jnt_values = self._graph.nodes[prev_node]['jnt_values']
+                if self._graph.edges[(prev_node, node)]['type'].endswith('transfer'):
                     self.robot.hold(obj_cmodel=obj_cmodel_copy, jaw_width=prev_grasp.ee_values)
                     prev2current = self.pp_planner.rrtc_planner.plan(start_conf=prev_jnt_values,
-                                                                    goal_conf=jnt_values,
-                                                                    obstacle_list=[])
+                                                                     goal_conf=jnt_values,
+                                                                     obstacle_list=[])
                     # prev2current = self.pp_planner.im_planner.gen_interplated_between_given_conf(
                     #     start_jnt_values=prev_jnt_values,
                     #     end_jnt_values=jnt_values,

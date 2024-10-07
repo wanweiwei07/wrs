@@ -136,17 +136,13 @@ class FSPG(mpgp.PG):
 
 
 class SpotFSPGs(object):
-    def __init__(self, spot_pos=None, spot_rotz=None):
-        self.spot_pos = spot_pos
-        self.spot_rotz = spot_rotz
-        self._fspgs = []
-
-    @property
-    def fspgs(self):
-        return self._fspgs
+    def __init__(self, pos=None, rotz=None):
+        self.pos = pos
+        self.rotz = rotz
+        self.fspg_list = []
 
     def add_fspg(self, fspg):
-        self._fspgs.append(fspg)
+        self.fspg_list.append(fspg)
 
 
 if __name__ == '__main__':
