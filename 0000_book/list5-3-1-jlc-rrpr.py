@@ -3,7 +3,7 @@ import wrs.robot_sim._kinematics.jlchain as rkjlc
 
 
 if __name__ == '__main__':
-    base = wd.World(cam_pos=rm.vec_from_args(1.5, .2, .9), lookat_pos=rm.vec_from_args(0, 0, 0.3))
+    base = wd.World(cam_pos=rm.vec(1.5, .2, .9), lookat_pos=rm.vec(0, 0, 0.3))
     mcm.mgm.gen_frame().attach_to(base)
 
     jlc = rkjlc.JLChain(n_dof=4)

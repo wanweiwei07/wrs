@@ -1,13 +1,13 @@
 from wrs import wd, rm, gpa, rtq85, mcm, mgm
 
-base = wd.World(cam_pos=rm.vec_from_args(1, 1, 1), lookat_pos=rm.vec_from_args(0, 0, 0))
+base = wd.World(cam_pos=rm.vec(1, 1, 1), lookat_pos=rm.vec(0, 0, 0))
 mgm.gen_frame().attach_to(base)
 # object
 # object_box = mcm.gen_box(xyz_lengths=[.02, .06, 1])
 # object_box.set_rgba([.7, .5, .3, .7])
 # object_box.attach_to(base)
 object_bunny = mcm.CollisionModel("objects/bunnysim.stl")
-object_bunny.rgba = rm.vec_from_args(.9, .75, .35, 1)
+object_bunny.rgba = rm.vec(.9, .75, .35, 1)
 object_bunny.attach_to(base)
 # grippers
 gripper = rtq85.Robotiq85()

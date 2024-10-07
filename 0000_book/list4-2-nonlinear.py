@@ -5,7 +5,7 @@ def nonlinear_function(x):
     return 0.05 * rm.sin(40 * x) + 0.05 * rm.cos(20 * x) + 0.5 * x ** 2 + 0.1 * x + .08
 
 
-base = wd.World(cam_pos=rm.vec_from_args(.15, .1, 1), lookat_pos=rm.vec_from_args(.15, .1, 0),
+base = wd.World(cam_pos=rm.vec(.15, .1, 1), lookat_pos=rm.vec(.15, .1, 0),
                 lens_type=wd.LensType.PERSPECTIVE)
 mgm.gen_arrow(spos=rm.np.zeros(3), epos=rm.np.array([.3, 0, 0]), rgb=rm.const.black, alpha=1,
               stick_type="round").attach_to(base)

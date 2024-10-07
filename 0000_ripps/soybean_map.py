@@ -33,11 +33,11 @@ class Stem(object):
         self.jlc.fk(joint_values=jnt_values)
 
     def gen_meshmodel(self,
-                      toggle_tcpcs=False,
-                      toggle_jntscs=False,
+                      toggle_tcp_frame=False,
+                      toggle_jnt_frame=False,
                       rgba=stem_rgba,
                       name='stem_meshmodel'):
-        return self.jlc.gen_mesh_model(toggle_tcpcs=toggle_tcpcs, toggle_jntscs=toggle_jntscs, name=name, rgba=rgba)
+        return self.jlc.gen_mesh_model(toggle_tcp_frame=toggle_tcp_frame, toggle_jnt_frame=toggle_jnt_frame, name=name, rgba=rgba)
 
     def gen_stickmodel(self):
         return self.jlc.gen_stickmodel()

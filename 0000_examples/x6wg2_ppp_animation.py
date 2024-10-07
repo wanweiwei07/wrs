@@ -1,21 +1,19 @@
-import math
-import numpy as np
 from wrs import wd, rm, rrtc, mcm, mgm, gg, x6g2, ppp
 
 base = wd.World(cam_pos=[1.2, .7, 1], lookat_pos=[.0, 0, .15])
 mgm.gen_frame().attach_to(base)
 # ground
 ground = mcm.gen_box(xyz_lengths=[5, 5, 0.1],
-                     pos=np.array([0, 0, -0.1]),
-                     rgb=np.array([.7, .7, .7]),
+                     pos=rm.np.array([0, 0, -0.1]),
+                     rgb=rm.np.array([.7, .7, .7]),
                      alpha=.7)
-ground.pos = np.array([0, 0, -.51])
+ground.pos = rm.np.array([0, 0, -.51])
 ground.attach_to(base)
 # object
 tube1 = mcm.CollisionModel("objects/tubebig.stl")
-tube1.rgba = np.array([.5, .5, .5, 1])
-gl_pos1 = np.array([.3, -.05, .0])
-gl_rotmat1 = rm.rotmat_from_euler(0, 0, math.pi / 2)
+tube1.rgba = rm.np.array([.5, .5, .5, 1])
+gl_pos1 = rm.np.array([.3, -.05, .0])
+gl_rotmat1 = rm.rotmat_from_euler(0, 0, rm.pi / 2)
 tube1.pos = gl_pos1
 tube1.rotmat = gl_rotmat1
 
@@ -25,8 +23,8 @@ t1_copy.attach_to(base)
 
 # object holder goal
 tube2 = mcm.CollisionModel("objects/tubebig.stl")
-gl_pos2 = np.array([.3, .05, .0])
-gl_rotmat2 = rm.rotmat_from_euler(0, 0, 2 * math.pi / 3)
+gl_pos2 = rm.np.array([.3, .05, .0])
+gl_rotmat2 = rm.rotmat_from_euler(0, 0, 2 * rm.pi / 3)
 tube2.pos = gl_pos2
 tube2.rotmat = gl_rotmat2
 

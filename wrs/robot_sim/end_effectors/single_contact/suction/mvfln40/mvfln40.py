@@ -48,16 +48,16 @@ class MVFLN40(si.SCInterface):
         self.jlc.fix_to(cpl_end_pos, cpl_end_rotmat)
 
     def gen_stickmodel(self,
-                       toggle_tcpcs=False,
-                       toggle_jntscs=False,
+                       toggle_tcp_frame=False,
+                       toggle_jnt_frame=False,
                        toggle_connjnt=False,
                        name='suction_stickmodel'):
         mm_collection = mc.ModelCollection(name=name)
-        self.coupling.gen_stickmodel(toggle_tcp_frame=False, toggle_jnt_frames=toggle_jntscs).attach_to(mm_collection)
-        self.jlc.gen_stickmodel(toggle_tcpcs=False,
-                                toggle_jntscs=toggle_jntscs,
+        self.coupling.gen_stickmodel(toggle_tcp_frame=False, toggle_jnt_frames=toggle_jnt_frame).attach_to(mm_collection)
+        self.jlc.gen_stickmodel(toggle_tcp_frame=False,
+                                toggle_jnt_frame=toggle_jnt_frame,
                                 toggle_connjnt=toggle_connjnt).attach_to(mm_collection)
-        if toggle_tcpcs:
+        if toggle_tcp_frame:
             suction_center_gl_pos = self.rotmat.dot(self.suction_center_pos) + self.pos
             suction_center_gl_rotmat = self.rotmat.dot(self.contact_center_rotmat)
             gm.gen_dashed_stick(spos=self.pos,
@@ -69,18 +69,18 @@ class MVFLN40(si.SCInterface):
         return mm_collection
 
     def gen_meshmodel(self,
-                      toggle_tcpcs=False,
-                      toggle_jntscs=False,
+                      toggle_tcp_frame=False,
+                      toggle_jnt_frame=False,
                       rgba=None,
                       name='xarm_gripper_meshmodel'):
         mm_collection = mc.ModelCollection(name=name)
-        self.coupling.gen_mesh_model(toggle_tcpcs=False,
-                                     toggle_jntscs=toggle_jntscs,
+        self.coupling.gen_mesh_model(toggle_tcp_frame=False,
+                                     toggle_jnt_frame=toggle_jnt_frame,
                                      rgba=rgba).attach_to(mm_collection)
-        self.jlc.gen_mesh_model(toggle_tcpcs=False,
-                                toggle_jntscs=toggle_jntscs,
+        self.jlc.gen_mesh_model(toggle_tcp_frame=False,
+                                toggle_jnt_frame=toggle_jnt_frame,
                                 rgba=rgba).attach_to(mm_collection)
-        if toggle_tcpcs:
+        if toggle_tcp_frame:
             suction_center_gl_pos = self.rotmat.dot(self.suction_center_pos) + self.pos
             suction_center_gl_rotmat = self.rotmat.dot(self.contact_center_rotmat)
             gm.gen_dashed_stick(spos=self.pos,
@@ -102,7 +102,7 @@ if __name__ == '__main__':
     #     grpr.fk(angle)
     #     grpr.gen_meshmodel().attach_to(base)
     grpr = MVFLN40(enable_cc=True)
-    grpr.gen_meshmodel(toggle_tcpcs=True).attach_to(base)
+    grpr.gen_meshmodel(toggle_tcp_frame=True).attach_to(base)
     # grpr.gen_stickmodel(toggle_jnt_frames=False).attach_to(base)
     grpr.fix_to(pos=np.array([0, .3, .2]), rotmat=rm.rotmat_from_axangle([1, 0, 0], .05))
     grpr.gen_meshmodel().attach_to(base)

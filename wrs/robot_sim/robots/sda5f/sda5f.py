@@ -201,58 +201,58 @@ class SDA5F(ri.RobotInterface):
                        tcp_jnt_id=None,
                        tcp_loc_pos=None,
                        tcp_loc_rotmat=None,
-                       toggle_tcpcs=False,
-                       toggle_jntscs=False,
+                       toggle_tcp_frame=False,
+                       toggle_jnt_frame=False,
                        toggle_connjnt=False,
                        name='sda5f_stickmodel'):
         stickmodel = mc.ModelCollection(name=name)
         self.lft_body.gen_stickmodel(tcp_loc_pos=None,
                                      tcp_loc_rotmat=None,
-                                     toggle_tcpcs=False,
-                                     toggle_jntscs=toggle_jntscs).attach_to(stickmodel)
+                                     toggle_tcp_frame=False,
+                                     toggle_jnt_frame=toggle_jnt_frame).attach_to(stickmodel)
         self.lft_arm.gen_stickmodel(tcp_jnt_id=tcp_jnt_id,
                                     tcp_loc_pos=tcp_loc_pos,
                                     tcp_loc_rotmat=tcp_loc_rotmat,
-                                    toggle_tcpcs=toggle_tcpcs,
-                                    toggle_jntscs=toggle_jntscs,
+                                    toggle_tcp_frame=toggle_tcp_frame,
+                                    toggle_jnt_frame=toggle_jnt_frame,
                                     toggle_connjnt=toggle_connjnt).attach_to(stickmodel)
-        self.lft_hnd.gen_stickmodel(toggle_tcp_frame=False, toggle_jnt_frames=toggle_jntscs).attach_to(stickmodel)
+        self.lft_hnd.gen_stickmodel(toggle_tcp_frame=False, toggle_jnt_frames=toggle_jnt_frame).attach_to(stickmodel)
         self.rgt_body.gen_stickmodel(tcp_loc_pos=None,
                                      tcp_loc_rotmat=None,
-                                     toggle_tcpcs=False,
-                                     toggle_jntscs=toggle_jntscs).attach_to(stickmodel)
+                                     toggle_tcp_frame=False,
+                                     toggle_jnt_frame=toggle_jnt_frame).attach_to(stickmodel)
         self.rgt_arm.gen_stickmodel(tcp_jnt_id=tcp_jnt_id,
                                     tcp_loc_pos=tcp_loc_pos,
                                     tcp_loc_rotmat=tcp_loc_rotmat,
-                                    toggle_tcpcs=toggle_tcpcs,
-                                    toggle_jntscs=toggle_jntscs,
+                                    toggle_tcp_frame=toggle_tcp_frame,
+                                    toggle_jnt_frame=toggle_jnt_frame,
                                     toggle_connjnt=toggle_connjnt).attach_to(stickmodel)
-        self.rgt_hnd.gen_stickmodel(toggle_tcp_frame=False, toggle_jnt_frames=toggle_jntscs).attach_to(stickmodel)
+        self.rgt_hnd.gen_stickmodel(toggle_tcp_frame=False, toggle_jnt_frames=toggle_jnt_frame).attach_to(stickmodel)
         return stickmodel
 
     def gen_meshmodel(self,
                       tcp_jnt_id=None,
                       tcp_loc_pos=None,
                       tcp_loc_rotmat=None,
-                      toggle_tcpcs=False,
-                      toggle_jntscs=False,
+                      toggle_tcp_frame=False,
+                      toggle_jnt_frame=False,
                       rgba=None,
                       name='sda5f_meshmodel'):
         meshmodel = mc.ModelCollection(name=name)
         self.lft_body.gen_mesh_model(tcp_loc_pos=None,
                                      tcp_loc_rotmat=None,
-                                     toggle_tcpcs=False,
-                                     toggle_jntscs=toggle_jntscs,
+                                     toggle_tcp_frame=False,
+                                     toggle_jnt_frame=toggle_jnt_frame,
                                      rgba=rgba).attach_to(meshmodel)
-        self.lft_arm.gen_meshmodel(toggle_tcp_frame=toggle_tcpcs, toggle_jnt_frames=toggle_jntscs,
+        self.lft_arm.gen_meshmodel(toggle_tcp_frame=toggle_tcp_frame, toggle_jnt_frames=toggle_jnt_frame,
                                    rgba=rgba).attach_to(meshmodel)
         self.lft_hnd.gen_meshmodel(toggle_tcp_frame=False,
-                                   toggle_jnt_frames=toggle_jntscs,
+                                   toggle_jnt_frames=toggle_jnt_frame,
                                    rgba=rgba).attach_to(meshmodel)
-        self.rgt_arm.gen_meshmodel(toggle_tcp_frame=toggle_tcpcs, toggle_jnt_frames=toggle_jntscs,
+        self.rgt_arm.gen_meshmodel(toggle_tcp_frame=toggle_tcp_frame, toggle_jnt_frames=toggle_jnt_frame,
                                    rgba=rgba).attach_to(meshmodel)
         self.rgt_hnd.gen_meshmodel(toggle_tcp_frame=False,
-                                   toggle_jnt_frames=toggle_jntscs,
+                                   toggle_jnt_frames=toggle_jnt_frame,
                                    rgba=rgba).attach_to(meshmodel)
         for obj_info in self.lft_oih_infos:
             objcm = obj_info['collision_model']

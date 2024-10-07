@@ -1,7 +1,7 @@
 from wrs import wd, rm, ym, mip
 
 if __name__ == '__main__':
-    base = wd.World(cam_pos=rm.vec_from_args(3, 1, 1), lookat_pos=rm.vec_from_args(0, 0, 0.5))
+    base = wd.World(cam_pos=rm.vec(3, 1, 1), lookat_pos=rm.vec(0, 0, 0.5))
     robot = ym.Yumi(enable_cc=True)
     robot.use_rgt()
     interp_planner = mip.InterplatedMotion(robot=robot)

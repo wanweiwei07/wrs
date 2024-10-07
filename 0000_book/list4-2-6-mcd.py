@@ -8,7 +8,7 @@ if __name__ == '__main__':
     objcm_ref = mcm.CollisionModel(initor="./objects/bunnysim.stl",
                                    cdprim_type=mcm.const.CDPrimType.AABB,
                                    cdmesh_type=mcm.const.CDMeshType.DEFAULT)
-    objcm_ref.rgba = rm.vec_from_args(.9, .75, .35, 1)
+    objcm_ref.rgba = rm.vec(.9, .75, .35, 1)
     objcm1 = objcm_ref.copy()
     objcm1.pos = rm.np.array([0, -.01, 0])
     objcm1.attach_to(base)

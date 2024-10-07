@@ -344,40 +344,40 @@ class TBM(object):
                        tcp_jntid=None,
                        tcp_loc_pos=None,
                        tcp_loc_rotmat=None,
-                       toggle_tcpcs=False,
-                       toggle_jntscs=False,
+                       toggle_tcp_frame=False,
+                       toggle_jnt_frame=False,
                        toggle_connjnt=False,
                        name='tbm'):
         stickmodel = mc.ModelCollection(name=name)
         self.head.gen_stickmodel(tcp_loc_pos=None,
                                  tcp_loc_rotmat=None,
-                                 toggle_tcpcs=False,
-                                 toggle_jntscs=toggle_jntscs).attach_to(stickmodel)
+                                 toggle_tcp_frame=False,
+                                 toggle_jnt_frame=toggle_jnt_frame).attach_to(stickmodel)
         for k in self.cutters.keys():
             for cutter in self.cutters[k]:
-                cutter.gen_stickmodel(toggle_tcp_frame=False, toggle_jnt_frames=toggle_jntscs).attach_to(stickmodel)
+                cutter.gen_stickmodel(toggle_tcp_frame=False, toggle_jnt_frames=toggle_jnt_frame).attach_to(stickmodel)
         return stickmodel
 
     def gen_meshmodel(self,
                       tcp_jntid=None,
                       tcp_loc_pos=None,
                       tcp_loc_rotmat=None,
-                      toggle_tcpcs=False,
-                      toggle_jntscs=False,
+                      toggle_tcp_frame=False,
+                      toggle_jnt_frame=False,
                       rgba=None,
                       name='tbm'):
         meshmodel = mc.ModelCollection(name=name)
         self.head.gen_mesh_model(tcp_loc_pos=None,
                                  tcp_loc_rotmat=None,
-                                 toggle_tcpcs=False,
-                                 toggle_jntscs=toggle_jntscs,
+                                 toggle_tcp_frame=False,
+                                 toggle_jnt_frame=toggle_jnt_frame,
                                  rgba=rgba).attach_to(meshmodel)
         for k in self.cutters.keys():
             for cutter in self.cutters[k]:
                 cutter.gen_mesh_model(tcp_loc_pos=None,
                                       tcp_loc_rotmat=None,
-                                      toggle_tcpcs=False,
-                                      toggle_jntscs=toggle_jntscs,
+                                      toggle_tcp_frame=False,
+                                      toggle_jnt_frame=toggle_jnt_frame,
                                       rgba=rgba).attach_to(meshmodel)
         return meshmodel
 

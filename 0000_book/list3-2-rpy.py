@@ -5,7 +5,7 @@ def draw_rot_arrows(rotmat, axis, column_id, rgb, portion):
     mgm.gen_circarrow(axis=axis,
                       starting_vector=rotmat[:, column_id],
                       portion=portion,
-                      center=rm.vec_from_args(0, 0, 0),
+                      center=rm.vec(0, 0, 0),
                       major_radius=.2,
                       minor_radius=.0015,
                       rgb=rgb,
@@ -29,52 +29,52 @@ if option == 'x':
     mgm.gen_frame(ax_length=.2).attach_to(base)
     rotmat_oa = rm.rotmat_from_euler(rm.pi / 3, 0, 0)
     mgm.gen_dashed_frame(ax_length=.2, rotmat=rotmat_oa, len_solid=.06, len_interval=.01).attach_to(base)
-    mgm.gen_circarrow(axis=rm.vec_from_args(1, 0, 0),
+    mgm.gen_circarrow(axis=rm.vec(1, 0, 0),
                       portion=.9,
-                      center=rm.vec_from_args(.1, 0, 0),
+                      center=rm.vec(.1, 0, 0),
                       major_radius=.03,
                       minor_radius=.0015,
-                      rgb=rm.vec_from_args(.3, .3, .3),
+                      rgb=rm.vec(.3, .3, .3),
                       alpha=1).attach_to(base)
-    draw_rot_arrows(rotmat=rm.np.eye(3), axis=rm.vec_from_args(1, 0, 0), column_id=1, rgb=rm.const.green, portion=1 / 6)
-    draw_rot_arrows(rotmat=rm.np.eye(3), axis=rm.vec_from_args(1, 0, 0), column_id=2, rgb=rm.const.blue, portion=1 / 6)
+    draw_rot_arrows(rotmat=rm.np.eye(3), axis=rm.vec(1, 0, 0), column_id=1, rgb=rm.const.green, portion=1 / 6)
+    draw_rot_arrows(rotmat=rm.np.eye(3), axis=rm.vec(1, 0, 0), column_id=2, rgb=rm.const.blue, portion=1 / 6)
     base.run()
 if option == 'xy':
-    mgm.gen_frame(ax_length=.2, alpha=rm.vec_from_args(.1, .1, .1)).attach_to(base)
+    mgm.gen_frame(ax_length=.2, alpha=rm.vec(.1, .1, .1)).attach_to(base)
     rotmat_oa = rm.rotmat_from_euler(rm.pi / 3, 0, 0)
     mgm.gen_dashed_frame(ax_length=.2, rotmat=rotmat_oa, len_solid=.06, len_interval=.01).attach_to(base)
     rotmat_ab = rm.rotmat_from_euler(rm.pi / 3, -rm.pi / 6, 0)
     mgm.gen_dashed_frame(ax_length=.2, rotmat=rotmat_ab, len_solid=.025, len_interval=.01).attach_to(base)
-    mgm.gen_circarrow(axis=rm.vec_from_args(0, -1, 0),
+    mgm.gen_circarrow(axis=rm.vec(0, -1, 0),
                       portion=.9,
-                      center=rm.vec_from_args(0, .1, 0),
+                      center=rm.vec(0, .1, 0),
                       major_radius=.03,
                       minor_radius=.0015,
-                      rgb=rm.vec_from_args(.3, .3, .3),
+                      rgb=rm.vec(.3, .3, .3),
                       alpha=1).attach_to(base)
-    draw_rot_arrows(rotmat=rotmat_oa, axis=rm.vec_from_args(0, -1, 0), column_id=0, rgb=rm.const.red, portion=1 / 12)
-    draw_rot_arrows(rotmat=rotmat_oa, axis=rm.vec_from_args(0, -1, 0), column_id=1, rgb=rm.const.green, portion=1 / 12)
-    draw_rot_arrows(rotmat=rotmat_oa, axis=rm.vec_from_args(0, -1, 0), column_id=2, rgb=rm.const.blue, portion=1 / 12)
+    draw_rot_arrows(rotmat=rotmat_oa, axis=rm.vec(0, -1, 0), column_id=0, rgb=rm.const.red, portion=1 / 12)
+    draw_rot_arrows(rotmat=rotmat_oa, axis=rm.vec(0, -1, 0), column_id=1, rgb=rm.const.green, portion=1 / 12)
+    draw_rot_arrows(rotmat=rotmat_oa, axis=rm.vec(0, -1, 0), column_id=2, rgb=rm.const.blue, portion=1 / 12)
     base.run()
 if option == 'xyz':
-    mgm.gen_frame(ax_length=.2, alpha=rm.vec_from_args(.1, .1, .1)).attach_to(base)
+    mgm.gen_frame(ax_length=.2, alpha=rm.vec(.1, .1, .1)).attach_to(base)
     rotmat_ab = rm.rotmat_from_euler(rm.pi / 3, -rm.pi / 6, 0)
     mgm.gen_dashed_frame(ax_length=.2, rotmat=rotmat_ab, len_solid=.025, len_interval=.01).attach_to(base)
     rotmat_bc = rm.rotmat_from_euler(rm.pi / 3, -rm.pi / 6, rm.pi / 3)
     mgm.gen_dashed_frame(ax_length=.2, rotmat=rotmat_bc).attach_to(base)
-    mgm.gen_circarrow(axis=rm.vec_from_args(0, 0, 1),
+    mgm.gen_circarrow(axis=rm.vec(0, 0, 1),
                       portion=.9,
-                      center=rm.vec_from_args(0, 0, .1),
+                      center=rm.vec(0, 0, .1),
                       major_radius=.03,
                       minor_radius=.0015,
-                      rgb=rm.vec_from_args(.3, .3, .3),
+                      rgb=rm.vec(.3, .3, .3),
                       alpha=1).attach_to(base)
-    draw_rot_arrows(rotmat=rotmat_ab, axis=rm.vec_from_args(0, 0, 1), column_id=0, rgb=rm.const.red, portion=1 / 6)
-    draw_rot_arrows(rotmat=rotmat_ab, axis=rm.vec_from_args(0, 0, 1), column_id=1, rgb=rm.const.green, portion=1 / 6)
-    draw_rot_arrows(rotmat=rotmat_ab, axis=rm.vec_from_args(0, 0, 1), column_id=2, rgb=rm.const.blue, portion=1 / 6)
+    draw_rot_arrows(rotmat=rotmat_ab, axis=rm.vec(0, 0, 1), column_id=0, rgb=rm.const.red, portion=1 / 6)
+    draw_rot_arrows(rotmat=rotmat_ab, axis=rm.vec(0, 0, 1), column_id=1, rgb=rm.const.green, portion=1 / 6)
+    draw_rot_arrows(rotmat=rotmat_ab, axis=rm.vec(0, 0, 1), column_id=2, rgb=rm.const.blue, portion=1 / 6)
     base.run()
 if option == 'final':
-    frame_o = mgm.gen_frame(ax_length=.2, alpha=rm.vec_from_args(1, 1, 1))
+    frame_o = mgm.gen_frame(ax_length=.2, alpha=rm.vec(1, 1, 1))
     frame_o.attach_to(base)
     rotmat = rm.rotmat_from_euler(rm.pi / 3, 0, 0)
     frame_a = mgm.gen_dashed_frame(ax_length=.2, rotmat=rotmat, len_solid=.06, len_interval=.01, alpha=.1)

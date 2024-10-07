@@ -1,11 +1,11 @@
 from wrs import rm, rtq85, mcm, mgm, wd, gpa, gag
 import pickle
 
-base = wd.World(cam_pos=rm.vec_from_args(.3, .3, .3), lookat_pos=rm.vec_from_args(0, 0, 0))
+base = wd.World(cam_pos=rm.vec(.3, .3, .3), lookat_pos=rm.vec(0, 0, 0))
 mgm.gen_frame(ax_length=.05, ax_radius=.0021).attach_to(base)
 # object
 object_bunny = mcm.CollisionModel("objects/bunnysim.stl")
-object_bunny.rgb = rm.vec_from_args(.9, .75, .35)
+object_bunny.rgb = rm.vec(.9, .75, .35)
 object_bunny.attach_to(base)
 # # contact pairs
 # contact_pairs, contact_points = gpa.plan_contact_pairs(object_bunny,

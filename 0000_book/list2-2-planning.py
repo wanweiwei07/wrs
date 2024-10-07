@@ -14,14 +14,14 @@ robot = ur3ed.UR3e_Dual()
 robot.use_lft()
 # obstacle
 obstacle = mcm.gen_box(xyz_lengths=[.2, .05, .4])
-obstacle.pos = rm.vec_from_args(.8, .2, .98)
-obstacle.rgba = rm.vec_from_args(.7, .7, .3, 1)
+obstacle.pos = rm.vec(.8, .2, .98)
+obstacle.rgba = rm.vec(.7, .7, .3, 1)
 obstacle.attach_to(base)
 # planner
 planner = rrtc.RRTConnect(robot)
 # plan
 start_conf = robot.get_jnt_values()
-tgt_pos = rm.vec_from_args(.8, .4, 1)
+tgt_pos = rm.vec(.8, .4, 1)
 tgt_rotmat = rm.rotmat_from_euler(rm.pi, 0, 0)
 mgm.gen_frame(pos=tgt_pos, rotmat=tgt_rotmat).attach_to(base)
 jnt_values = robot.ik(tgt_pos, tgt_rotmat)

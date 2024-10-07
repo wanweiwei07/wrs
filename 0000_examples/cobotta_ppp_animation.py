@@ -1,53 +1,58 @@
-import wrs.visualization.panda.world as wd
-import wrs.grasping.planning.antipodal as gpa
-import math
-import numpy as np
-from wrs import basis as rm, robot_sim as cbt, manipulation as ppp, motion as rrtc, modeling as mgm, modeling as mcm
+from wrs import wd, rm, mgm, mcm, cbt, gg, ppp, rrtc
 
 base = wd.World(cam_pos=[1.2, .7, 1], lookat_pos=[.0, 0, .15])
 mgm.gen_frame().attach_to(base)
 # ground
-ground = mcm.gen_box(xyz_lengths=np.array([5, 5, 1]), rgb=np.array([.7, .7, .7]), alpha=1)
-ground.pos = np.array([0, 0, -.51])
+ground = mcm.gen_box(xyz_lengths=rm.vec(5, 5, 1), rgb=rm.vec(.7, .7, .7), alpha=1)
+ground.pos = rm.np.array([0, 0, -.51])
 ground.attach_to(base)
-# object holder
+ground.show_cdprim()
+## object holder
 holder_1 = mcm.CollisionModel("objects/holder.stl")
-holder_1.rgba = np.array([.5, .5, .5, 1])
-h1_gl_pos = np.array([-.15, -.3, .0])
-h1_gl_rotmat = rm.rotmat_from_euler(0, 0, math.pi / 2)
+holder_1.rgba = rm.np.array([.5, .5, .5, 1])
+h1_gl_pos = rm.np.array([-.15, -.2, .0])
+h1_gl_rotmat = rm.rotmat_from_euler(0, 0, rm.pi)
 holder_1.pos = h1_gl_pos
 holder_1.rotmat = h1_gl_rotmat
-
 mgm.gen_frame().attach_to(holder_1)
+# visualize a copy
 h1_copy = holder_1.copy()
 h1_copy.attach_to(base)
-
-# object holder goal
+h1_copy.show_cdprim()
+## object holder goal
 holder_2 = mcm.CollisionModel("objects/holder.stl")
-h2_gl_pos = np.array([.3, -.15, .05])
-h2_gl_rotmat = rm.rotmat_from_euler(0, 0, 2*math.pi / 3)
+h2_gl_pos = rm.np.array([.2, -.12, .02])
+h2_gl_rotmat = rm.rotmat_from_euler(0, 0, rm.pi / 3)
 holder_2.pos = h2_gl_pos
 holder_2.rotmat = h2_gl_rotmat
-
+# visualize a copy
 h2_copy = holder_2.copy()
-h2_copy.rgb = rm.bc.tab20_list[0]
+h2_copy.rgb = rm.const.tab20_list[0]
 h2_copy.alpha = .3
 h2_copy.attach_to(base)
-
+h2_copy.show_cdprim()
+## cobotta
 robot = cbt.Cobotta()
 robot.gen_meshmodel().attach_to(base)
+robot.cc.show_cdprim()
+# base.run()
 
 rrtc = rrtc.RRTConnect(robot)
 ppp = ppp.PickPlacePlanner(robot)
 
-original_grasp_info_list = gpa.load_pickle_file(obj_name='holder', path='./', file_name='cobg_holder_grasps.pickle')
+grasp_collection = gg.GraspCollection.load_from_disk(file_name='cobotta_gripper_grasps.pickle')
 start_conf = robot.get_jnt_values()
-print(original_grasp_info_list)
 
+goal_pose_list = [(h2_gl_pos, h2_gl_rotmat)]
 mot_data = ppp.gen_pick_and_place(obj_cmodel=holder_1,
-                                  grasp_info_list=original_grasp_info_list,
                                   end_jnt_values=start_conf,
-                                  goal_pose_list=[(h2_gl_pos, h2_gl_rotmat)])
+                                  grasp_collection=grasp_collection,
+                                  goal_pose_list=goal_pose_list,
+                                  approach_distance_list=[.03] * len(goal_pose_list),
+                                  depart_distance_list=[.03] * len(goal_pose_list),
+                                  pick_approach_distance=.03,
+                                  pick_depart_distance=.03,
+                                  use_rrt=True)
 
 
 class Data(object):
@@ -68,6 +73,7 @@ def update(anime_data, task):
         anime_data.counter = 0
     mesh_model = anime_data.mot_data.mesh_list[anime_data.counter]
     mesh_model.attach_to(base)
+    mesh_model.show_cdprim()
     if base.inputmgr.keymap['space']:
         anime_data.counter += 1
     return task.again

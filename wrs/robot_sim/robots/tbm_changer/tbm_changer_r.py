@@ -167,44 +167,44 @@ class TBMChangerR(ri.RobotInterface):
                        tcp_jnt_id=None,
                        tcp_loc_pos=None,
                        tcp_loc_rotmat=None,
-                       toggle_tcpcs=False,
-                       toggle_jntscs=False,
+                       toggle_tcp_frame=False,
+                       toggle_jnt_frame=False,
                        toggle_connjnt=False,
                        name='xarm7_shuidi_mobile_stickmodel'):
         stickmodel = mc.ModelCollection(name=name)
         self.base_plate.gen_stickmodel(tcp_jnt_id=tcp_jnt_id,
                                        tcp_loc_pos=tcp_loc_pos,
                                        tcp_loc_rotmat=tcp_loc_rotmat,
-                                       toggle_tcpcs=False,
-                                       toggle_jntscs=toggle_jntscs,
+                                       toggle_tcp_frame=False,
+                                       toggle_jnt_frame=toggle_jnt_frame,
                                        toggle_connjnt=toggle_connjnt).attach_to(stickmodel)
         self.arm.gen_stickmodel(tcp_jnt_id=tcp_jnt_id,
                                 tcp_loc_pos=tcp_loc_pos,
                                 tcp_loc_rotmat=tcp_loc_rotmat,
-                                toggle_tcpcs=toggle_tcpcs,
-                                toggle_jntscs=toggle_jntscs,
+                                toggle_tcp_frame=toggle_tcp_frame,
+                                toggle_jnt_frame=toggle_jnt_frame,
                                 toggle_connjnt=toggle_connjnt).attach_to(stickmodel)
-        self.hnd.gen_stickmodel(toggle_tcp_frame=False, toggle_jnt_frames=toggle_jntscs).attach_to(stickmodel)
+        self.hnd.gen_stickmodel(toggle_tcp_frame=False, toggle_jnt_frames=toggle_jnt_frame).attach_to(stickmodel)
         return stickmodel
 
     def gen_meshmodel(self,
                       tcp_jnt_id=None,
                       tcp_loc_pos=None,
                       tcp_loc_rotmat=None,
-                      toggle_tcpcs=False,
-                      toggle_jntscs=False,
+                      toggle_tcp_frame=False,
+                      toggle_jnt_frame=False,
                       rgba=None,
                       name='xarm_shuidi_mobile_meshmodel'):
         meshmodel = mc.ModelCollection(name=name)
         self.base_plate.gen_mesh_model(tcp_jnt_id=tcp_jnt_id,
                                        tcp_loc_pos=tcp_loc_pos,
                                        tcp_loc_rotmat=tcp_loc_rotmat,
-                                       toggle_tcpcs=False,
-                                       toggle_jntscs=toggle_jntscs).attach_to(meshmodel)
-        self.arm.gen_meshmodel(toggle_tcp_frame=toggle_tcpcs, toggle_jnt_frames=toggle_jntscs,
+                                       toggle_tcp_frame=False,
+                                       toggle_jnt_frame=toggle_jnt_frame).attach_to(meshmodel)
+        self.arm.gen_meshmodel(toggle_tcp_frame=toggle_tcp_frame, toggle_jnt_frames=toggle_jnt_frame,
                                rgba=rgba).attach_to(meshmodel)
-        self.hnd.gen_mesh_model(toggle_tcpcs=False,
-                                toggle_jntscs=toggle_jntscs,
+        self.hnd.gen_mesh_model(toggle_tcp_frame=False,
+                                toggle_jnt_frame=toggle_jnt_frame,
                                 rgba=rgba).attach_to(meshmodel)
         for obj_info in self.oih_infos:
             objcm = obj_info['collision_model']
@@ -224,7 +224,7 @@ if __name__ == '__main__':
     gm.gen_frame().attach_to(base)
     robot_s = TBMChangerR(enable_cc=True)
     # robot_s.jaw_to(.02)
-    robot_s.gen_meshmodel(toggle_tcpcs=True).attach_to(base)
+    robot_s.gen_meshmodel(toggle_tcp_frame=True).attach_to(base)
     gm.gen_frame().attach_to(base)
     base.run()
     tgt_pos = np.array([2.5, .2, .15])
@@ -234,7 +234,7 @@ if __name__ == '__main__':
     component_name = 'arm'
     jnt_values = robot_s.ik(component_name, tgt_pos, tgt_rotmat)
     robot_s.fk(component_name, jnt_values=jnt_values)
-    robot_s_meshmodel = robot_s.gen_meshmodel(toggle_tcpcs=True)
+    robot_s_meshmodel = robot_s.gen_meshmodel(toggle_tcp_frame=True)
     robot_s_meshmodel.attach_to(base)
     # robot_s.show_cdprimit()
     robot_s.gen_stickmodel().attach_to(base)

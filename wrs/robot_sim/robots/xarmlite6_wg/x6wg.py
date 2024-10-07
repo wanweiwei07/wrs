@@ -154,42 +154,42 @@ class XArmLite6WRSGripper(sari.SglArmRobotInterface):
                        tcp_jnt_id=None,
                        tcp_loc_pos=None,
                        tcp_loc_rotmat=None,
-                       toggle_tcpcs=False,
-                       toggle_jntscs=False,
+                       toggle_tcp_frame=False,
+                       toggle_jnt_frame=False,
                        toggle_connjnt=False,
                        name='xarm_lite6_stickmodel'):
         stickmodel = mc.ModelCollection(name=name)
         self.body.gen_stickmodel(tcp_loc_pos=None,
                                  tcp_loc_rotmat=None,
-                                 toggle_tcpcs=False,
-                                 toggle_jntscs=toggle_jntscs).attach_to(stickmodel)
+                                 toggle_tcp_frame=False,
+                                 toggle_jnt_frame=toggle_jnt_frame).attach_to(stickmodel)
         self.arm.gen_stickmodel(tcp_jnt_id=tcp_jnt_id,
                                 tcp_loc_pos=tcp_loc_pos,
                                 tcp_loc_rotmat=tcp_loc_rotmat,
-                                toggle_tcpcs=toggle_tcpcs,
-                                toggle_jntscs=toggle_jntscs,
+                                toggle_tcp_frame=toggle_tcp_frame,
+                                toggle_jnt_frame=toggle_jnt_frame,
                                 toggle_connjnt=toggle_connjnt).attach_to(stickmodel)
-        self.hnd.gen_stickmodel(toggle_tcp_frame=False, toggle_jnt_frames=toggle_jntscs).attach_to(stickmodel)
+        self.hnd.gen_stickmodel(toggle_tcp_frame=False, toggle_jnt_frames=toggle_jnt_frame).attach_to(stickmodel)
         return stickmodel
 
     def gen_meshmodel(self,
                       tcp_jnt_id=None,
                       tcp_loc_pos=None,
                       tcp_loc_rotmat=None,
-                      toggle_tcpcs=False,
-                      toggle_jntscs=False,
+                      toggle_tcp_frame=False,
+                      toggle_jnt_frame=False,
                       rgba=None,
                       name='xarm_lite6_meshmodel'):
         mm_collection = mc.ModelCollection(name=name)
         self.body.gen_mesh_model(tcp_loc_pos=None,
                                  tcp_loc_rotmat=None,
-                                 toggle_tcpcs=False,
-                                 toggle_jntscs=toggle_jntscs,
+                                 toggle_tcp_frame=False,
+                                 toggle_jnt_frame=toggle_jnt_frame,
                                  rgba=rgba).attach_to(mm_collection)
-        self.arm.gen_meshmodel(toggle_tcp_frame=toggle_tcpcs, toggle_jnt_frames=toggle_jntscs,
+        self.arm.gen_meshmodel(toggle_tcp_frame=toggle_tcp_frame, toggle_jnt_frames=toggle_jnt_frame,
                                rgba=rgba).attach_to(mm_collection)
         self.hnd.gen_meshmodel(toggle_tcp_frame=False,
-                               toggle_jnt_frames=toggle_jntscs,
+                               toggle_jnt_frames=toggle_jnt_frame,
                                rgba=rgba).attach_to(mm_collection)
         for obj_info in self.oih_infos:
             objcm = obj_info['collision_model']
@@ -207,7 +207,7 @@ if __name__ == '__main__':
     xarm = XArmLite6WRSGripper(enable_cc=True)
     rand_conf = xarm.rand_conf(component_name='arm')
     xarm.fk('arm', rand_conf)
-    xarm_meshmodel = xarm.gen_meshmodel(toggle_tcpcs=False)
+    xarm_meshmodel = xarm.gen_meshmodel(toggle_tcp_frame=False)
     xarm_meshmodel.attach_to(base)
     # xarm_meshmodel.show_cdprimit()
     # xarm.gen_stickmodel().attach_to(base)

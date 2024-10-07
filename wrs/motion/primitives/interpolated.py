@@ -89,7 +89,7 @@ class InterplatedMotion(object):
                 if result:
                     if toggle_dbg:
                         for pnt in contacts:
-                            mmgm.gen_sphere(pnt, radius=.005).attach_to(base)
+                            mgm.gen_sphere(pnt, radius=.005).attach_to(base)
                         print(jnt_values)
                         self.robot.goto_given_conf(jnt_values=jnt_values)
                         if ee_values is not None:

@@ -34,10 +34,10 @@ if option == 'x':
     mgm.gen_dashed_frame(ax_length=.2, rotmat=rotmat_oa, len_solid=.06, len_interval=.01).attach_to(base)
     mgm.gen_circarrow(axis=-rm.const.x_ax,
                       portion=.9,
-                      center=rm.vec_from_args(.1, 0, 0),
+                      center=rm.vec(.1, 0, 0),
                       major_radius=.03,
                       minor_radius=.0015,
-                      rgb=rm.vec_from_args(.3, .3, .3),
+                      rgb=rm.vec(.3, .3, .3),
                       alpha=1).attach_to(base)
     draw_rot_arrows(rotmat=rm.np.eye(3), axis=rm.const.x_ax * rm.sign(alpha), column_id=1, rgb=rm.const.green,
                     portion=abs(alpha / (2 * rm.pi)))
@@ -45,13 +45,13 @@ if option == 'x':
                     portion=abs(alpha / (2 * rm.pi)))
     base.run()
 if option == 'xy':
-    mgm.gen_frame(ax_length=.2, alpha=rm.vec_from_args(.1, .1, .1)).attach_to(base)
+    mgm.gen_frame(ax_length=.2, alpha=rm.vec(.1, .1, .1)).attach_to(base)
     mgm.gen_circarrow(axis=rm.const.y_ax,
                       portion=.9,
                       center=[0, .1, 0],
                       major_radius=.03,
                       minor_radius=.0015,
-                      rgb=rm.vec_from_args(.3, .3, .3),
+                      rgb=rm.vec(.3, .3, .3),
                       alpha=1).attach_to(base)
     rotmat_oa = rm.rotmat_from_euler(alpha, 0, 0, 'sxyx')
     mgm.gen_dashed_frame(ax_length=.2, rotmat=rotmat_oa, len_solid=.06, len_interval=.01).attach_to(base)
@@ -65,13 +65,13 @@ if option == 'xy':
                     portion=abs(beta / (2 * rm.pi)))
     base.run()
 if option == 'xyx':
-    mgm.gen_frame(ax_length=.2, alpha=rm.vec_from_args(.1, .1, .1)).attach_to(base)
+    mgm.gen_frame(ax_length=.2, alpha=rm.vec(.1, .1, .1)).attach_to(base)
     mgm.gen_circarrow(axis=rm.const.x_ax,
                       portion=.9,
                       center=[.1, 0, 0],
                       major_radius=.03,
                       minor_radius=.0015,
-                      rgb=rm.vec_from_args(.3, .3, .3),
+                      rgb=rm.vec(.3, .3, .3),
                       alpha=1).attach_to(base)
     rotmat_ab = rm.rotmat_from_euler(alpha, beta, 0, 'sxyx')
     mgm.gen_dashed_frame(ax_length=.2, rotmat=rotmat_ab, len_solid=.025, len_interval=.01).attach_to(base)

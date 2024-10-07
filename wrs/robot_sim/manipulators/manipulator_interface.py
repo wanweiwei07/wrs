@@ -201,11 +201,11 @@ class ManipulatorInterface(object):
         if jnt_values is None:
             j_mat = np.zeros((6, self.jlc.n_dof))
             for i in range(self.jlc.flange_jnt_id + 1):
-                if self.jlc.jnts[i].type == rkc.JntType.REVOLUTE:
+                if self.jlc.jnts[i].type == rkjlc.const.JntType.REVOLUTE:
                     j2t_vec = self.gl_tcp_pos - self.jlc.jnts[i].gl_pos_q
                     j_mat[:3, i] = np.cross(self.jlc.jnts[i].gl_motion_ax, j2t_vec)
                     j_mat[3:6, i] = self.jlc.jnts[i].gl_motion_ax
-                if self.jlc.jnts[i].type == rkc.JntType.PRISMATIC:
+                if self.jlc.jnts[i].type == rkjlc.const.JntType.PRISMATIC:
                     j_mat[:3, i] = self.jlc.jnts[i].gl_motion_ax
             return j_mat
         else:
@@ -222,11 +222,11 @@ class ManipulatorInterface(object):
             gl_tcp_pos = gl_flange_pos + gl_flange_rotmat @ self.loc_tcp_pos
             j_mat = np.zeros((6, self.jlc.n_dof))
             for i in range(self.jlc.flange_jnt_id + 1):
-                if self.jlc.jnts[i].type == rkc.JntType.REVOLUTE:
+                if self.jlc.jnts[i].type == rkjlc.const.JntType.REVOLUTE:
                     j2t_vec = gl_tcp_pos - jnt_pos[i, :]
                     j_mat[:3, i] = np.cross(jnt_motion_ax[i, :], j2t_vec)
                     j_mat[3:6, i] = jnt_motion_ax[i, :]
-                if self.jlc.jnts[i].type == rkc.JntType.PRISMATIC:
+                if self.jlc.jnts[i].type == rkjlc.const.JntType.PRISMATIC:
                     j_mat[:3, i] = jnt_motion_ax[i, :]
             return j_mat
 

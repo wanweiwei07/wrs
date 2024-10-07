@@ -81,6 +81,9 @@ class MotionData(object):
         for item in self._jv_list:
             yield item
 
+    def __getitem__(self, index):
+        return self._jv_list[index], self._ev_list[index], self._mesh_list[index]
+
 
 def keep_states_decorator(method):
     """

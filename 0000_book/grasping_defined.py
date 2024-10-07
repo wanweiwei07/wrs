@@ -1,17 +1,17 @@
 from wrs import rm, rtq85, mcm, mgm, wd, gag
 
-base = wd.World(cam_pos=rm.vec_from_args(1, 1, 1), lookat_pos=rm.vec_from_args(0, 0, 0))
+base = wd.World(cam_pos=rm.vec(1, 1, 1), lookat_pos=rm.vec(0, 0, 0))
 mgm.gen_frame().attach_to(base)
 # object
-object_box = mcm.gen_box(xyz_lengths=rm.vec_from_args(.02, .06, .1))
-object_box.rgb = rm.vec_from_args(.7, .5, .3)
+object_box = mcm.gen_box(xyz_lengths=rm.vec(.02, .06, .1))
+object_box.rgb = rm.vec(.7, .5, .3)
 object_box.attach_to(base)
 # grippers
 gripper = rtq85.Robotiq85()
 grasp_collection = gag.define_gripper_grasps_with_rotation(gripper, object_box,
-                                                           jaw_center_pos=rm.vec_from_args(0, 0, 0),
-                                                           approaching_direction=rm.vec_from_args(-1, 0, 0),
-                                                           thumb_opening_direction=rm.vec_from_args(0, 1, 0),
+                                                           jaw_center_pos=rm.vec(0, 0, 0),
+                                                           approaching_direction=rm.vec(-1, 0, 0),
+                                                           thumb_opening_direction=rm.vec(0, 1, 0),
                                                            jaw_width=.065,
                                                            rotation_interval=rm.radians(30),
                                                            rotation_range=(rm.radians(-180), rm.radians(180)),

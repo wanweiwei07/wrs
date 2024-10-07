@@ -51,8 +51,6 @@ class PickPlacePlanner(adp.ADPlanner):
                     if not self.robot.is_collided(obstacle_list=obstacle_list):
                         if not self.robot.end_effector.is_mesh_collided(cmodel_list=obstacle_list):
                             previous_available_gids.append(gid)
-                            print("goal ", goal_jaw_center_pos, goal_jaw_center_rotmat)
-                            print("actl ", self.robot.end_effector.gl_acting_center_pose)
                             if toggle_dbg:
                                 self.robot.end_effector.gen_meshmodel(rgb=rm.const.green, alpha=1).attach_to(base)
                                 self.robot.gen_meshmodel(rgb=rm.const.green, alpha=.3).attach_to(base)
@@ -81,7 +79,8 @@ class PickPlacePlanner(adp.ADPlanner):
                 print("Number of failed IK at goal-{str(goal_id)}: ", ik_failed_grasps_num)
                 print("Number of collided robots at goal-{str(goal_id)}: ", rbt_collided_grasps_num)
                 print("------end_type------")
-                base.run()
+        if toggle_dbg:
+            base.run()
         return previous_available_gids
 
     @adp.mpi.InterplatedMotion.keep_states_decorator
@@ -146,8 +145,8 @@ class PickPlacePlanner(adp.ADPlanner):
             # print("before back up")
             pick_motion.extend([pick_motion.jv_list[-1]], [grasp.ee_values], [self.robot.gen_meshmodel()])
             pick_depart = self.gen_linear_depart_from_given_conf(start_jnt_values=pick_motion.jv_list[-1],
-                                                                 direction=pick_depart_direction,
-                                                                 distance=pick_depart_distance,
+                                                                 direction=depart_direction_list[0],
+                                                                 distance=depart_distance_list[0],
                                                                  ee_values=None,
                                                                  granularity=linear_granularity,
                                                                  obstacle_list=obstacle_list)
@@ -195,10 +194,10 @@ class PickPlacePlanner(adp.ADPlanner):
                            depart_distance_list=None,
                            depart_jaw_width=None,
                            pick_jaw_width=None,
-                           pick_approach_direction=None,
-                           pick_approach_distance=.07,
-                           pick_depart_direction=None,
-                           pick_depart_distance=.07,
+                           pick_approach_direction=None, # handz
+                           pick_approach_distance=None,
+                           pick_depart_direction=None, # handz
+                           pick_depart_distance=None,
                            linear_granularity=.02,
                            use_rrt=True,
                            obstacle_list=None,
@@ -222,16 +221,22 @@ class PickPlacePlanner(adp.ADPlanner):
         author: weiwei
         date: 20191122, 20200105, 20240317
         """
+        ## picking parameters
         if pick_jaw_width is None:
             pick_jaw_width = self.robot.end_effector.jaw_range[1]
+        if pick_approach_distance is None:
+            pick_approach_distance = .07
+        if pick_depart_distance is None:
+            pick_depart_distance = .07
+        ## approach depart parameters
         if depart_jaw_width is None:
             depart_jaw_width = self.robot.end_effector.jaw_range[1]
         if approach_direction_list is None:
-            approach_direction_list = [rm.np.array([0, 0, -1])] * len(goal_pose_list)
+            approach_direction_list = [-rm.const.z_ax] * len(goal_pose_list)
         if approach_distance_list is None:
             approach_distance_list = [.07] * len(goal_pose_list)
         if depart_direction_list is None:
-            depart_direction_list = [rm.np.array([0, 0, 1])] * len(goal_pose_list)
+            depart_direction_list = [rm.const.z_ax] * len(goal_pose_list)
         if depart_distance_list is None:
             depart_distance_list = [.07] * len(goal_pose_list)
             if len(goal_pose_list) > 0:
