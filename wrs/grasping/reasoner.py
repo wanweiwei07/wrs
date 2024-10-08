@@ -180,11 +180,11 @@ class GraspReasoner(object):
                                 rbt_collided_grasps_num += 1
                                 if toggle_dbg:
                                     self.robot.gen_meshmodel(rgb=rm.const.orange, toggle_cdprim=False, alpha=.3).attach_to(base)
-                                    _, points = self.robot.is_collided(obstacle_list=obstacle_list, toggle_contacts=True)
-                                    from wrs import mgm
-                                    for point in points:
-                                        mgm.gen_sphere(pos=point, radius=.001).attach_to(base)
-                                    base.run()
+                                    # _, points = self.robot.is_collided(obstacle_list=obstacle_list, toggle_contacts=True)
+                                    # from wrs import mgm
+                                    # for point in points:
+                                    #     mgm.gen_sphere(pos=point, radius=.001).attach_to(base)
+                                    # base.run()
                     else:
                         ik_failed_grasps_num = '-'
                         rbt_collided_grasps_num = '-'

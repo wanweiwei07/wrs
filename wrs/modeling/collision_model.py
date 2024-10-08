@@ -143,10 +143,10 @@ class CollisionModel(mgm.GeometricModel):
     @staticmethod
     def update_cdmesh_decorator(method):
         def wrapper(self, *args, **kwargs):
-            if self._is_cdprim_delayed:
+            if self._is_cdmesh_delayed:
                 self._cdmesh.setPosition(da.npvec3_to_pdvec3(self.pos))
                 self._cdmesh.setQuaternion(da.npmat3_to_pdquat(self.rotmat))
-                self._is_cdprim_delayed = False
+                self._is_cdmesh_delayed = False
             return method(self, *args, **kwargs)
 
         return wrapper

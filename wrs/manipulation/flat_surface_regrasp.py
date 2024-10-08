@@ -63,7 +63,7 @@ class FSRegSpotCollection(object):
                 goal_pose=(pos, rotmat),
                 consider_robot=consider_robot,
                 toggle_keep=True,
-                toggle_dbg=True)
+                toggle_dbg=False)
             if feasible_gids is not None:
                 fs_regspot.add_fspg(mpfsp.FSPG(fs_pose_id=pose_id,
                                                obj_pose=(pos, rotmat),
@@ -86,7 +86,6 @@ class FSRegSpotCollection(object):
         :return:
         """
         meshmodel_list = []
-        print(len(self._fsregspot_list))
         for fsreg_spot in self._fsregspot_list:
             for fspg in fsreg_spot:
                 m_col = mmc.ModelCollection()
