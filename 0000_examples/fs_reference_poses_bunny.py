@@ -8,39 +8,38 @@ ground = mcm.gen_box(xyz_lengths=rm.vec(.5, .5, .01), pos=rm.vec(0, 0, -0.01))
 ground.attach_to(base)
 bunny = mcm.CollisionModel(obj_path)
 
-reference_fsp_poses = fsp.ReferenceFSPPoses(obj_cmodel=bunny)
-reference_fsp_poses.save_to_disk("reference_fsp_poses_bunny.pickle")
+fs_reference_poses = fsp.FSReferencePoses(obj_cmodel=bunny)
+fs_reference_poses.save_to_disk("fs_reference_poses_bunny.pickle")
 
 
 class AnimeData(object):
-    def __init__(self, reference_fsp_poses):
+    def __init__(self, poses):
         self.counter = 0
-        self.model = reference_fsp_poses.obj_cmodel
-        self.reference_fsp_poses = reference_fsp_poses
-        self.support_facets = reference_fsp_poses.support_surfaces
+        self.model = poses.obj_cmodel
+        self.poses = poses
+        self.support_facets = poses.support_surfaces
 
 
-anime_data = AnimeData(reference_fsp_poses=reference_fsp_poses)
+anime_data = AnimeData(poses=fs_reference_poses)
 
 
 def update(anime_data, task):
-    if anime_data.counter >= len(anime_data.reference_fsp_poses):
+    if anime_data.counter >= len(anime_data.poses):
         anime_data.model.detach()
         anime_data.support_facets[anime_data.counter - 1].detach()
         anime_data.counter = 0
     if base.inputmgr.keymap["space"] is True:
         time.sleep(.1)
         anime_data.model.detach()
-        print(anime_data.reference_fsp_poses[anime_data.counter])
-        anime_data.model.pose = anime_data.reference_fsp_poses[anime_data.counter]
+        print(anime_data.poses[anime_data.counter])
+        anime_data.model.pose = anime_data.poses[anime_data.counter]
         anime_data.model.rgb = rm.const.tab20_list[1]
         anime_data.model.alpha = .3
         anime_data.model.attach_to(base)
         if (anime_data.support_facets is not None):
             if anime_data.counter > 0:
                 anime_data.support_facets[anime_data.counter - 1].detach()
-            anime_data.support_facets[anime_data.counter].pose = anime_data.reference_fsp_poses[
-                anime_data.counter]
+            anime_data.support_facets[anime_data.counter].pose = anime_data.poses[anime_data.counter]
             anime_data.support_facets[anime_data.counter].attach_to(base)
         anime_data.counter += 1
     return task.cont

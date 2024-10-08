@@ -29,7 +29,7 @@ from .motion.trajectory import topp_ra as toppra
 
 # manipulation
 from .manipulation.placement import flat_surface_placement as fsp
-from .manipulation import regrasp as reg
+from .manipulation import flat_surface_regrasp as fsreg
 
 __all__ = ['rm', 'mcm', 'mgm', 'wd',
            'cbt', 'x6wg2', 'ur3d', 'ur3ed', 'ko2fg', 'ym',

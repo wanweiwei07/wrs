@@ -9,30 +9,30 @@ import wrs.grasping.planning.segmentation as seg
 import wrs.manipulation.placement.general_placement as mpgp
 
 
-class ReferenceFSPPoses(object):
+class FSReferencePoses(object):
 
-    def __init__(self, obj_cmodel=None, fsp_poses=None):
+    def __init__(self, obj_cmodel=None, poses=None):
         self.obj_cmodel = obj_cmodel
-        if obj_cmodel is not None and fsp_poses is None:
-            self._fsp_poses, self._fsp_support_surfaces, self._fsp_stability_values = self.comptue_reference_fsp_poses(
+        if obj_cmodel is not None and poses is None:
+            self._poses, self._support_surfaces, self._stability_values = self.comptue_reference_poses(
                 obj_cmodel, toggle_support_facets=True)
         else:
-            self._fsp_poses = fsp_poses
-            self._fsp_support_surfaces = None
-            self._fsp_stability_values = None
+            self._poses = poses
+            self._support_surfaces = None
+            self._stability_values = None
 
     @staticmethod
-    def load_from_disk(file_name="reference_fsp_poses.pickle"):
+    def load_from_disk(file_name="fs_reference_poses.pickle"):
         with open(file_name, 'rb') as file:
-            fsp_poses = pickle.load(file)
-            return ReferenceFSPPoses(fsp_poses=fsp_poses)
+            poses = pickle.load(file)
+            return FSReferencePoses(poses=poses)
 
-    def save_to_disk(self, file_name="reference_fsp_poses.pickle"):
+    def save_to_disk(self, file_name="fs_reference_poses.pickle"):
         with open(file_name, 'wb') as file:
-            pickle.dump(self._fsp_poses, file)
+            pickle.dump(self._poses, file)
 
     @staticmethod
-    def comptue_reference_fsp_poses(obj_cmodel, stability_threshhold=.1, toggle_support_facets=False):
+    def comptue_reference_poses(obj_cmodel, stability_threshhold=.1, toggle_support_facets=False):
         """
         find all placements on a flat surface (z axis is the surface normal; no consideration on symmetry)
         the result is called a reference flat surface placement (reference fsp)
@@ -45,7 +45,7 @@ class ReferenceFSPPoses(object):
         convex_trm = obj_cmodel.trm_mesh.convex_hull
         seg_result = seg.overlapped_segmentation(model=convex_trm, max_normal_bias_angle=np.pi / 64)
         seg_nested_face_id_list, seg_nested_edge_list, seg_seed_face_id_list, seg_normal_list, _ = seg_result
-        fsp_pose_list = []
+        pose_list = []
         support_facet_list = []
         stability_value_list = []
         for id, seg_face_id in enumerate(seg_seed_face_id_list):
@@ -80,34 +80,34 @@ class ReferenceFSPPoses(object):
                     continue
                 # show contact point to edge projection
                 mgm.gen_stick(spos=contact_point, epos=min_edge_projection, type="round").attach_to(facet)
-                fsp_pose_list.append((placement_pos, placement_rotmat))
+                pose_list.append((placement_pos, placement_rotmat))
                 mgm.gen_arrow(spos=com, epos=contact_point).attach_to(facet)
                 support_facet_list.append(facet)
                 stability_value_list.append(stability_value)
         if toggle_support_facets:
-            combined_lists = list(zip(fsp_pose_list, support_facet_list, stability_value_list))
+            combined_lists = list(zip(pose_list, support_facet_list, stability_value_list))
             sorted_combined_lists = sorted(combined_lists, key=lambda x: x[2], reverse=True)
-            fsp_pose_list_sorted, support_facet_list_sorted, stability_value_list_sorted = zip(*sorted_combined_lists)
-            return fsp_pose_list_sorted, support_facet_list_sorted, stability_value_list_sorted
-        return fsp_pose_list
+            pose_list_sorted, support_facet_list_sorted, stability_value_list_sorted = zip(*sorted_combined_lists)
+            return pose_list_sorted, support_facet_list_sorted, stability_value_list_sorted
+        return pose_list
 
     @property
     def support_surfaces(self):
-        return self._fsp_support_surfaces
+        return self._support_surfaces
 
     def __getitem__(self, index):
         if isinstance(index, int):
-            return self._fsp_poses[index]
+            return self._poses[index]
         elif isinstance(index, list):
-            return [self._fsp_poses[i] for i in index]
+            return [self._poses[i] for i in index]
         else:
             raise Exception("Index type not supported.")
 
     def __len__(self):
-        return len(self._fsp_poses)
+        return len(self._poses)
 
     def __iter__(self):
-        return iter(self._fsp_poses)
+        return iter(self._poses)
 
 
 class FSPG(mpgp.PG):
@@ -116,7 +116,7 @@ class FSPG(mpgp.PG):
     """
 
     def __init__(self,
-                 fsp_pose_id=None,
+                 fs_pose_id=None,
                  obj_pose=None,
                  feasible_gids=None,
                  feasible_grasps=None,
@@ -125,17 +125,17 @@ class FSPG(mpgp.PG):
                          feasible_gids=feasible_gids,
                          feasible_grasps=feasible_grasps,
                          feasible_jv_list=feasible_jv_list)
-        self._fsp_pose_id = fsp_pose_id
+        self._fs_pose_id = fs_pose_id
 
     @property
-    def fsp_pose_id(self):
-        return self._fsp_pose_id
+    def fs_pose_id(self):
+        return self._fs_pose_id
 
     def __str__(self):
-        return f"pose id = {repr(self._fsp_pose_id)}, with gids= {repr(self._feasible_gids)}"
+        return f"pose id = {repr(self._fs_pose_id)}, with gids= {repr(self._feasible_gids)}"
 
 
-class SpotFSPGs(object):
+class FSRegSpot(object):
     def __init__(self, pos=None, rotz=None):
         self.pos = pos
         self.rotz = rotz
@@ -143,6 +143,9 @@ class SpotFSPGs(object):
 
     def add_fspg(self, fspg):
         self.fspg_list.append(fspg)
+
+    def __iter__(self):
+        return iter(self.fspg_list)
 
 
 if __name__ == '__main__':
@@ -156,38 +159,37 @@ if __name__ == '__main__':
     ground.attach_to(base)
     bunny = mcm.CollisionModel(obj_path)
 
-    reference_fsp_poses = ReferenceFSPPoses(obj_cmodel=bunny)
+    fs_reference_poses = FSReferencePoses(obj_cmodel=bunny)
 
 
     class AnimeData(object):
-        def __init__(self, reference_fsp_poses):
+        def __init__(self, poses):
             self.counter = 0
-            self.model = reference_fsp_poses.obj_cmodel
-            self.reference_fsp_poses = reference_fsp_poses
-            self.support_facets = reference_fsp_poses.support_surfaces
+            self.model = fs_reference_poses.obj_cmodel
+            self.poses = fs_reference_poses
+            self.support_facets = fs_reference_poses.support_surfaces
 
 
-    anime_data = AnimeData(reference_fsp_poses=reference_fsp_poses)
+    anime_data = AnimeData(poses=fs_reference_poses)
 
 
     def update(anime_data, task):
-        if anime_data.counter >= len(anime_data.reference_fsp_poses):
+        if anime_data.counter >= len(anime_data.poses):
             anime_data.model.detach()
             anime_data.support_facets[anime_data.counter - 1].detach()
             anime_data.counter = 0
         if base.inputmgr.keymap["space"] is True:
             time.sleep(.1)
             anime_data.model.detach()
-            print(anime_data.reference_fsp_poses[anime_data.counter])
-            anime_data.model.pose = anime_data.reference_fsp_poses[anime_data.counter]
+            print(anime_data.poses[anime_data.counter])
+            anime_data.model.pose = anime_data.poses[anime_data.counter]
             anime_data.model.rgb = rm.const.tab20_list[1]
             anime_data.model.alpha = .3
             anime_data.model.attach_to(base)
             if (anime_data.support_facets is not None):
                 if anime_data.counter > 0:
                     anime_data.support_facets[anime_data.counter - 1].detach()
-                anime_data.support_facets[anime_data.counter].pose = anime_data.reference_fsp_poses[
-                    anime_data.counter]
+                anime_data.support_facets[anime_data.counter].pose = anime_data.poses[anime_data.counter]
                 anime_data.support_facets[anime_data.counter].attach_to(base)
             anime_data.counter += 1
         return task.cont
