@@ -52,6 +52,7 @@ mot_data = ppp.gen_pick_and_place(obj_cmodel=holder_1,
                                   depart_distance_list=[.03] * len(goal_pose_list),
                                   pick_approach_distance=.03,
                                   pick_depart_distance=.03,
+                                  pick_depart_direction=rm.const.z_ax,
                                   use_rrt=True)
 
 

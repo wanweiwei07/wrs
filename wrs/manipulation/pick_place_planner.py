@@ -145,8 +145,8 @@ class PickPlacePlanner(adp.ADPlanner):
             # print("before back up")
             pick_motion.extend([pick_motion.jv_list[-1]], [grasp.ee_values], [self.robot.gen_meshmodel()])
             pick_depart = self.gen_linear_depart_from_given_conf(start_jnt_values=pick_motion.jv_list[-1],
-                                                                 direction=depart_direction_list[0],
-                                                                 distance=depart_distance_list[0],
+                                                                 direction=pick_depart_direction,
+                                                                 distance=pick_depart_distance,
                                                                  ee_values=None,
                                                                  granularity=linear_granularity,
                                                                  obstacle_list=obstacle_list)
@@ -162,6 +162,7 @@ class PickPlacePlanner(adp.ADPlanner):
                 for i, goal_pose in enumerate(goal_pose_list):
                     goal_tcp_pos = goal_pose[1].dot(grasp.ac_pos) + goal_pose[0]
                     goal_tcp_rotmat = goal_pose[1].dot(grasp.ac_rotmat)
+                    print(depart_distance_list[i])
                     moveto_ap = self.gen_approach_depart(goal_tcp_pos=goal_tcp_pos,
                                                          goal_tcp_rotmat=goal_tcp_rotmat,
                                                          start_jnt_values=moveto_start_jnt_values,
@@ -239,8 +240,9 @@ class PickPlacePlanner(adp.ADPlanner):
             depart_direction_list = [rm.const.z_ax] * len(goal_pose_list)
         if depart_distance_list is None:
             depart_distance_list = [.07] * len(goal_pose_list)
-            if len(goal_pose_list) > 0:
-                depart_distance_list[-1]=.0 # avoid departing at the last goal pose
+        # avoid departing at the last goal pose
+        if len(goal_pose_list) > 0:
+            depart_distance_list[-1]=.0
         if reason_grasps:
             common_gid_list = self.reason_common_gids(grasp_collection=grasp_collection,
                                                       goal_pose_list=[obj_cmodel.pose]+goal_pose_list,
