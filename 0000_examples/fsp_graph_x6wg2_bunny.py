@@ -1,6 +1,6 @@
 import os
 import networkx as nx
-from wrs import wd, rm, mcm, x6wg2, fsp, reg, gg
+from wrs import wd, rm, mcm, x6wg2, fsp, fsreg, gg
 
 base = wd.World(cam_pos=rm.vec(1, 1, 1), lookat_pos=rm.vec(0, 0, 0))
 obj_path = os.path.join("objects", "bunnysim.stl")
@@ -9,17 +9,17 @@ ground.attach_to(base)
 bunny = mcm.CollisionModel(obj_path)
 robot = x6wg2.XArmLite6WG2()
 
-reference_fsp_poses = fsp.ReferenceFSPPoses.load_from_disk(file_name="reference_fsp_poses_bunny.pickle")
+fs_reference_poses = fsp.FSReferencePoses.load_from_disk(file_name="fs_reference_poses_bunny.pickle")
 reference_grasps = gg.GraspCollection.load_from_disk(file_name="reference_grasps_wg2_bunny.pickle")
-fsreg_planner = reg.FSRegraspPlanner(robot=robot,
-                                     obj_cmodel=bunny,
-                                     reference_fsp_poses=reference_fsp_poses,
-                                     reference_grasp_collection=reference_grasps)
-fsreg_planner.add_spot_collection_from_disk("regspot_col_x6wg2_bunny.pickle")
+fsreg_planner = fsreg.FSRegraspPlanner(robot=robot,
+                                       obj_cmodel=bunny,
+                                       fs_reference_poses=fs_reference_poses,
+                                       reference_grasp_collection=reference_grasps)
+fsreg_planner.add_spot_collection_from_disk("regspot_collection_x6wg2_bunny.pickle")
 
-start_node_list = fsreg_planner.add_start_pose(obj_pose=(np.array([.4, .2, 0]), np.eye(3)))
+start_node_list = fsreg_planner.add_start_pose(obj_pose=(rm.np.array([.4, .2, 0]), rm.np.eye(3)))
 goal_node_list = fsreg_planner.add_goal_pose(
-    obj_pose=(np.array([.4, -.2, 0]), rm.rotmat_from_euler(np.pi / 3, np.pi / 6, 0)))
+    obj_pose=(rm.np.array([.4, -.2, 0]), rm.rotmat_from_euler(rm.pi / 3, rm.pi / 6, 0)))
 
 min_path = None
 for start in start_node_list:

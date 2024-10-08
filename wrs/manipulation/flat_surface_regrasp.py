@@ -188,9 +188,9 @@ class FSRegraspPlanner(object):
         for fsregspot in fsregspot_collection:
             spot_x = fsregspot.pos[0]
             spot_y = fsregspot.pos[1]
-            for fspg in fsregspot.fspgs:
-                plot_pose_x = spot_x + self._plot_p_radius * rm.sin(fspg.fsp_pose_id * self._p_angle_interval)
-                plot_pose_y = spot_y + self._plot_p_radius * rm.cos(fspg.fsp_pose_id * self._p_angle_interval)
+            for fspg in fsregspot.fspg_list:
+                plot_pose_x = spot_x + self._plot_p_radius * rm.sin(fspg.fs_pose_id * self._p_angle_interval)
+                plot_pose_y = spot_y + self._plot_p_radius * rm.cos(fspg.fs_pose_id * self._p_angle_interval)
                 local_nodes = []
                 obj_pose = fspg.obj_pose
                 for gid, grasp, jnt_values in zip(fspg.feasible_gids, fspg.feasible_grasps, fspg.feasible_jv_list):
