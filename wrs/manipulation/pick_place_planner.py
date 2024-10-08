@@ -40,7 +40,7 @@ class PickPlacePlanner(adp.ADPlanner):
             goal_pos = goal_pose[0]
             goal_rotmat = goal_pose[1]
             grasp_and_gid = zip(previous_available_gids,  # need .copy()?
-                               [grasp_collection[i] for i in previous_available_gids])
+                                [grasp_collection[i] for i in previous_available_gids])
             previous_available_gids = []
             for gid, grasp in grasp_and_gid:
                 goal_jaw_center_pos = goal_pos + goal_rotmat.dot(grasp.ac_pos)
@@ -162,7 +162,6 @@ class PickPlacePlanner(adp.ADPlanner):
                 for i, goal_pose in enumerate(goal_pose_list):
                     goal_tcp_pos = goal_pose[1].dot(grasp.ac_pos) + goal_pose[0]
                     goal_tcp_rotmat = goal_pose[1].dot(grasp.ac_rotmat)
-                    print(depart_distance_list[i])
                     moveto_ap = self.gen_approach_depart(goal_tcp_pos=goal_tcp_pos,
                                                          goal_tcp_rotmat=goal_tcp_rotmat,
                                                          start_jnt_values=moveto_start_jnt_values,
@@ -195,9 +194,9 @@ class PickPlacePlanner(adp.ADPlanner):
                            depart_distance_list=None,
                            depart_jaw_width=None,
                            pick_jaw_width=None,
-                           pick_approach_direction=None, # handz
+                           pick_approach_direction=None,  # handz
                            pick_approach_distance=None,
-                           pick_depart_direction=None, # handz
+                           pick_depart_direction=None,  # handz
                            pick_depart_distance=None,
                            linear_granularity=.02,
                            use_rrt=True,
@@ -240,12 +239,9 @@ class PickPlacePlanner(adp.ADPlanner):
             depart_direction_list = [rm.const.z_ax] * len(goal_pose_list)
         if depart_distance_list is None:
             depart_distance_list = [.07] * len(goal_pose_list)
-        # avoid departing at the last goal pose
-        if len(goal_pose_list) > 0:
-            depart_distance_list[-1]=.0
         if reason_grasps:
             common_gid_list = self.reason_common_gids(grasp_collection=grasp_collection,
-                                                      goal_pose_list=[obj_cmodel.pose]+goal_pose_list,
+                                                      goal_pose_list=[obj_cmodel.pose] + goal_pose_list,
                                                       obstacle_list=obstacle_list,
                                                       toggle_dbg=False)
         else:
@@ -261,7 +257,7 @@ class PickPlacePlanner(adp.ADPlanner):
                                               approach_direction_list=approach_direction_list,
                                               approach_distance_list=approach_distance_list,
                                               depart_direction_list=depart_direction_list,
-                                              depart_distance_list=depart_distance_list,
+                                              depart_distance_list=depart_distance_list[:-1] + [0],
                                               pick_jaw_width=pick_jaw_width,
                                               pick_approach_direction=pick_approach_direction,
                                               pick_approach_distance=pick_approach_distance,

@@ -33,7 +33,7 @@ t2_copy.rgb = rm.const.tab20_list[0]
 t2_copy.alpha = .3
 t2_copy.attach_to(base)
 
-robot = x6g2.XArmLite6WG2()
+robot = x6wg2.XArmLite6WG2()
 robot.gen_meshmodel().attach_to(base)
 
 rrtc = rrtc.RRTConnect(robot)
