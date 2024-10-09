@@ -59,6 +59,8 @@ class WRSGripper2(gpi.GripperInterface):
         self.cdmesh_elements = (self.jlc.anchor.lnk_list[0],
                                 self.jlc.jnts[0].lnk,
                                 self.jlc.jnts[1].lnk)
+        # update jaw width
+        self.change_jaw_width(jaw_width=self.jaw_width)
 
     @staticmethod
     def _finger_cdprim(ex_radius):
@@ -110,6 +112,7 @@ class WRSGripper2(gpi.GripperInterface):
         side_jawwidth = jaw_width / 2.0
         if self.jaw_range[0] / 2 <= side_jawwidth <= self.jaw_range[1] / 2:
             self.jlc.goto_given_conf(jnt_values=[side_jawwidth, jaw_width])
+            self.jaw_width = jaw_width
         else:
             raise ValueError("The angle parameter is out of range!")
 

@@ -47,13 +47,13 @@ class PickPlacePlanner(adp.ADPlanner):
                 goal_jaw_center_rotmat = goal_rotmat.dot(grasp.ac_rotmat)
                 jnt_values = self.robot.ik(tgt_pos=goal_jaw_center_pos, tgt_rotmat=goal_jaw_center_rotmat)
                 if jnt_values is not None:
-                    self.robot.goto_given_conf(jnt_values=jnt_values)
+                    self.robot.goto_given_conf(jnt_values=jnt_values, ee_values=grasp.ee_values)
                     if not self.robot.is_collided(obstacle_list=obstacle_list):
                         if not self.robot.end_effector.is_mesh_collided(cmodel_list=obstacle_list):
                             previous_available_gids.append(gid)
                             if toggle_dbg:
                                 self.robot.end_effector.gen_meshmodel(rgb=rm.const.green, alpha=1).attach_to(base)
-                                self.robot.gen_meshmodel(rgb=rm.const.green, alpha=.3).attach_to(base)
+                                # self.robot.gen_meshmodel(rgb=rm.const.green, alpha=.3).attach_to(base)
                         else:  # ee collided
                             eef_collided_grasps_num += 1
                             if toggle_dbg:
@@ -243,7 +243,7 @@ class PickPlacePlanner(adp.ADPlanner):
             common_gid_list = self.reason_common_gids(grasp_collection=grasp_collection,
                                                       goal_pose_list=[obj_cmodel.pose] + goal_pose_list,
                                                       obstacle_list=obstacle_list,
-                                                      toggle_dbg=False)
+                                                      toggle_dbg=True)
         else:
             common_gid_list = range(len(grasp_collection))
         if len(common_gid_list) == 0:

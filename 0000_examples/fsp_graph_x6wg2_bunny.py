@@ -33,7 +33,7 @@ for start in start_node_list:
 print(min_path)
 fsreg_planner.show_graph_with_path(min_path)
 
-mesh_model_list = fsreg_planner.gen_regrasp_motion(path=min_path)
+mesh_model_list = fsreg_planner.gen_regrasp_motion(path=min_path, obstacle_list=[ground])
 
 
 class Data(object):

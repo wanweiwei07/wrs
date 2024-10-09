@@ -35,6 +35,7 @@ t2_copy.attach_to(base)
 
 robot = x6wg2.XArmLite6WG2()
 robot.gen_meshmodel().attach_to(base)
+print(robot.end_effector.jaw_width)
 
 rrtc = rrtc.RRTConnect(robot)
 ppp = ppp.PickPlacePlanner(robot)

@@ -21,7 +21,7 @@ h1_copy.attach_to(base)
 h1_copy.show_cdprim()
 ## object holder goal
 holder_2 = mcm.CollisionModel("objects/holder.stl")
-h2_gl_pos = rm.np.array([.2, -.12, .02])
+h2_gl_pos = rm.np.array([.2, -.12, .0])
 h2_gl_rotmat = rm.rotmat_from_euler(0, 0, rm.pi / 3)
 holder_2.pos = h2_gl_pos
 holder_2.rotmat = h2_gl_rotmat

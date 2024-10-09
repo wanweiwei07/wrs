@@ -10,6 +10,7 @@ class GripperInterface(ei.EEInterface):
         super().__init__(pos=pos, rotmat=rotmat, cdmesh_type=cdmesh_type, name=name)
         # jaw width
         self.jaw_range = np.array([0.0, 0.05])  # 0~0.05m by default
+        self.jaw_width = self.jaw_range[0]
         # fgr0 opening vec
         self.loc_fgr0_opening_vec = np.array([0, 1, 0])  # y as opening vec by default
         # backup

@@ -49,6 +49,7 @@ class InterplatedMotion(object):
                           goal_tcp_rotmat,
                           obstacle_list=None,
                           granularity=0.03,
+                          cd_type="all",
                           ee_values=None,
                           toggle_dbg=False):
         """
@@ -58,6 +59,7 @@ class InterplatedMotion(object):
         :param goal_tcp_rotmat:
         :param obstacle_list:
         :param granularity: resolution of steps in workspace
+        :param cd_type: "all", "sink" (only check the first one), "source" (only check the last one)
         :param ee_values: end_effector values
         :param toggle_dbg
         :return:
@@ -73,7 +75,8 @@ class InterplatedMotion(object):
         ev_list = []
         mesh_list = []
         seed_jnt_values = None
-        for pos, rotmat in pose_list:
+        for i, pose in enumerate(pose_list):
+            pos, rotmat = pose
             jnt_values = self.robot.ik(pos, rotmat, seed_jnt_values=seed_jnt_values)
             if jnt_values is None:
                 if toggle_dbg:
@@ -84,20 +87,51 @@ class InterplatedMotion(object):
                 print("IK not solvable in gen_linear_motion!")
                 return None
             else:
-                self.robot.goto_given_conf(jnt_values=jnt_values, ee_values=ee_values)
-                result, contacts = self.robot.is_collided(obstacle_list=obstacle_list, toggle_contacts=True)
-                if result:
-                    if toggle_dbg:
-                        for pnt in contacts:
-                            mgm.gen_sphere(pnt, radius=.005).attach_to(base)
-                        print(jnt_values)
-                        self.robot.goto_given_conf(jnt_values=jnt_values)
-                        if ee_values is not None:
-                            self.robot.change_jaw_width(jaw_width=ee_values)
-                        self.robot.gen_meshmodel(alpha=.3).attach_to(base)
-                        base.run()
-                    print("Intermediated pose collided in gen_linear_motion!")
-                    return None
+                if cd_type == "all":
+                    self.robot.goto_given_conf(jnt_values=jnt_values, ee_values=ee_values)
+                    result, contacts = self.robot.is_collided(obstacle_list=obstacle_list, toggle_contacts=True)
+                    if result:
+                        if toggle_dbg:
+                            for pnt in contacts:
+                                mgm.gen_sphere(pnt, radius=.005).attach_to(base)
+                            print(jnt_values)
+                            self.robot.goto_given_conf(jnt_values=jnt_values)
+                            if ee_values is not None:
+                                self.robot.change_jaw_width(jaw_width=ee_values)
+                            self.robot.gen_meshmodel(alpha=.3).attach_to(base)
+                            base.run()
+                        print("Intermediated pose collided in gen_linear_motion!")
+                        return None
+                elif cd_type == "sink" and i == len(pose_list) - 1:
+                    self.robot.goto_given_conf(jnt_values=jnt_values, ee_values=ee_values)
+                    result, contacts = self.robot.is_collided(obstacle_list=obstacle_list, toggle_contacts=True)
+                    if result:
+                        if toggle_dbg:
+                            for pnt in contacts:
+                                mgm.gen_sphere(pnt, radius=.005).attach_to(base)
+                            print(jnt_values)
+                            self.robot.goto_given_conf(jnt_values=jnt_values)
+                            if ee_values is not None:
+                                self.robot.change_jaw_width(jaw_width=ee_values)
+                            self.robot.gen_meshmodel(alpha=.3).attach_to(base)
+                            base.run()
+                        print("Last pose collided in gen_linear_motion!")
+                        return None
+                elif cd_type == "source" and i == 0:
+                    self.robot.goto_given_conf(jnt_values=jnt_values, ee_values=ee_values)
+                    result, contacts = self.robot.is_collided(obstacle_list=obstacle_list, toggle_contacts=True)
+                    if result:
+                        if toggle_dbg:
+                            for pnt in contacts:
+                                mgm.gen_sphere(pnt, radius=.005).attach_to(base)
+                            print(jnt_values)
+                            self.robot.goto_given_conf(jnt_values=jnt_values)
+                            if ee_values is not None:
+                                self.robot.change_jaw_width(jaw_width=ee_values)
+                            self.robot.gen_meshmodel(alpha=.3).attach_to(base)
+                            base.run()
+                        print("First pose collided in gen_linear_motion!")
+                        return None
             jv_list.append(jnt_values)
             ev_list.append(self.robot.get_ee_values())
             if getattr(base, "toggle_mesh", True):

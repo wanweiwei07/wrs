@@ -164,7 +164,7 @@ class FSRegraspPlanner(object):
         start_pg = mpgp.PG.create_from_pose(self.robot,
                                             self.reference_grasp_collection,
                                             obj_pose,
-                                            obstacle_list = obstacle_list,
+                                            obstacle_list=obstacle_list,
                                             consider_robot=True)
         if start_pg is None:
             print("No feasible grasps found at the start pose")
@@ -175,10 +175,10 @@ class FSRegraspPlanner(object):
 
     def add_goal_pose(self, obj_pose, obstacle_list=None, plot_pose_xy=None):
         goal_pg = mpgp.PG.create_from_pose(self.robot,
-                                            self.reference_grasp_collection,
-                                            obj_pose,
-                                            obstacle_list = obstacle_list,
-                                            consider_robot=True)
+                                           self.reference_grasp_collection,
+                                           obj_pose,
+                                           obstacle_list=obstacle_list,
+                                           consider_robot=True)
         if goal_pg is None:
             print("No feasible grasps found at the goal pose")
             return None
@@ -333,7 +333,7 @@ class FSRegraspPlanner(object):
         """
         pass
 
-    def gen_regrasp_motion(self, path):
+    def gen_regrasp_motion(self, path, obstacle_list):
         """
         """
         mesh_list = []
@@ -354,9 +354,15 @@ class FSRegraspPlanner(object):
                 prev_jnt_values = self._graph.nodes[prev_node]['jnt_values']
                 if self._graph.edges[(prev_node, node)]['type'].endswith('transfer'):
                     self.robot.hold(obj_cmodel=obj_cmodel_copy, jaw_width=prev_grasp.ee_values)
-                    prev2current = self.pp_planner.rrtc_planner.plan(start_conf=prev_jnt_values,
-                                                                     goal_conf=jnt_values,
-                                                                     obstacle_list=[])
+                    prev2current = self.pp_planner.gen_depart_approach_with_given_conf(start_jnt_values=prev_jnt_values,
+                                                                                       end_jnt_values=jnt_values,
+                                                                                       depart_direction=rm.const.z_ax,
+                                                                                       depart_distance=.03,
+                                                                                       approach_direction=-rm.const.z_ax,
+                                                                                       approach_distance=.03,
+                                                                                       granularity=.03,
+                                                                                       obstacle_list=obstacle_list,
+                                                                                       use_rrt=True)
                     # prev2current = self.pp_planner.im_planner.gen_interplated_between_given_conf(
                     #     start_jnt_values=prev_jnt_values,
                     #     end_jnt_values=jnt_values,
