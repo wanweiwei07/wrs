@@ -19,6 +19,7 @@ class InterplatedMotion(object):
         self.robot = robot
         # define data type
         self.toggle_keep = True
+        self.toggle_off_eecd = True
 
     @staticmethod
     def keep_states_decorator(method):
@@ -72,8 +73,6 @@ class InterplatedMotion(object):
                           obstacle_list=None,
                           granularity=0.03,
                           ee_values=None,
-                          keep_state=True,  # for decorator
-                          toggle_off_eecd=True,  # for decorator
                           toggle_dbg=False):
         """
         :param start_tcp_pos:
@@ -228,8 +227,6 @@ class InterplatedMotion(object):
                                               granularity=0.02,
                                               type="sink",
                                               ee_values=None,
-                                              keep_state=True,  # for decorator
-                                              toggle_off_eecd=True,  # for decorator
                                               toggle_dbg=False):
         """
         :param goal_jnt_values:
