@@ -36,8 +36,8 @@ class GraspReasoner(object):
         :return:
         """
         return gg.Grasp(ee_values=grasp.ee_values,
-                       ac_pos=goal_pos + goal_rotmat.dot(grasp.ac_pos),
-                       ac_rotmat=goal_rotmat.dot(grasp.ac_rotmat))
+                        ac_pos=goal_pos + goal_rotmat.dot(grasp.ac_pos),
+                        ac_rotmat=goal_rotmat.dot(grasp.ac_rotmat))
 
     ## The following code examines robot IK first. In contrast, the code blow this one examines EE collisions first.
     ## The code below this more is slight more efficient and is thus adopted.
@@ -179,7 +179,8 @@ class GraspReasoner(object):
                             else:  # robot collided
                                 rbt_collided_grasps_num += 1
                                 if toggle_dbg:
-                                    self.robot.gen_meshmodel(rgb=rm.const.orange, toggle_cdprim=False, alpha=.3).attach_to(base)
+                                    self.robot.end_effector.gen_meshmodel(rgb=rm.const.orange, alpha=.3).attach_to(base)
+                                    self.robot.gen_meshmodel(rgb=rm.const.orange, alpha=.3).attach_to(base)
                                     # _, points = self.robot.is_collided(obstacle_list=obstacle_list, toggle_contacts=True)
                                     # from wrs import mgm
                                     # for point in points:

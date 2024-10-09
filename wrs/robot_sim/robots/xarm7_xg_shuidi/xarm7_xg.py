@@ -26,7 +26,7 @@ class XArm7XG(ri.SglArmRobotInterface):
         er0 = self.cc.add_cce(self.end_effector.rgt_outer_jlc.jnts[0].lnk)
         er1 = self.cc.add_cce(self.end_effector.rgt_outer_jlc.jnts[1].lnk)
         # manipulator
-        mlb = self.cc.add_cce(self.manipulator.jlc.anchor.lnk_list[0])
+        mlb = self.cc.add_cce(self.manipulator.jlc.anchor.lnk_list[0], toggle_ext_collider=False)
         ml0 = self.cc.add_cce(self.manipulator.jlc.jnts[0].lnk)
         ml1 = self.cc.add_cce(self.manipulator.jlc.jnts[1].lnk)
         ml2 = self.cc.add_cce(self.manipulator.jlc.jnts[2].lnk)

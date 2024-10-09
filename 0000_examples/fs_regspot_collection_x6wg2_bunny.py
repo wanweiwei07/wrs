@@ -15,10 +15,10 @@ fsregspot_collection = fsreg.FSRegSpotCollection(robot=robot,
                                                  obj_cmodel=bunny,
                                                  fs_reference_poses=fs_reference_poses,
                                                  reference_grasp_collection=reference_grasps)
-# fsregspot_collection.add_new_spot(spot_pos=rm.np.array([.4, 0, 0]), spot_rotz=0)
-# fsregspot_collection.add_new_spot(spot_pos=rm.np.array([.4, .2, 0]), spot_rotz=0)
-# fsregspot_collection.add_new_spot(spot_pos=rm.np.array([.4, -.2, 0]), spot_rotz=0)
-# fsregspot_collection.save_to_disk("regspot_collection_x6wg2_bunny.pickle")
+fsregspot_collection.add_new_spot(spot_pos=rm.np.array([.4, 0, 0]), spot_rotz=0)
+fsregspot_collection.add_new_spot(spot_pos=rm.np.array([.4, .2, 0]), spot_rotz=0)
+fsregspot_collection.add_new_spot(spot_pos=rm.np.array([.4, -.2, 0]), spot_rotz=0)
+fsregspot_collection.save_to_disk("regspot_collection_x6wg2_bunny.pickle")
 fsregspot_collection.load_from_disk("regspot_collection_x6wg2_bunny.pickle")
 mesh_model_list = fsregspot_collection.gen_meshmodel()
 for fsregspot in fsregspot_collection:

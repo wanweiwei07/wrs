@@ -12,8 +12,7 @@ class CCElement(object):
     date: 20231116
     """
 
-    def __init__(self, lnk, host_cc, toggle_collider=True):
-        self._toggle_collider = toggle_collider
+    def __init__(self, lnk, host_cc, toggle_ext_collider=True):
         self.host_cc = host_cc
         self.lnk = lnk
         # a transformed and attached copy of the reference cdprim (essentially pdcndp), tfd=transformed
@@ -21,11 +20,11 @@ class CCElement(object):
                                                     self.host_cc.cd_pdndp,
                                                     clear_mask=True)
         # print(self.tfd_cdprim.node().is_collision_node())
-        if self._toggle_collider:
-            for child_pdndp in self.tfd_cdprim.getChildren():
-                self.host_cc.cd_trav.addCollider(collider=child_pdndp, handler=self.host_cc.cd_handler)
-            # a dict with from_mask as keys and into_list (a lsit of cce) as values
-            self.cce_into_dict = {}
+        for child_pdndp in self.tfd_cdprim.getChildren():
+            self.host_cc.cd_trav.addCollider(collider=child_pdndp, handler=self.host_cc.cd_handler)
+        # a dict with from_mask as keys and into_list (a lsit of cce) as values
+        self.cce_into_dict = {}
+        if toggle_ext_collider:
             # toggle on collision detection with external obstacles by default
             self.enable_cd_ext(type="from")
 
@@ -41,7 +40,6 @@ class CCElement(object):
         for cce_into in cce_into_list:
             cce_into.remove_into_cdmask(allocated_bitmask)
         self.host_cc.bitmask_pool.append(allocated_bitmask)
-
 
     def enable_cd_ext(self, type="from"):
         """
@@ -81,6 +79,16 @@ class CCElement(object):
                 bitmask_list_to_return.append(allocated_bitmask)
         return bitmask_list_to_return
 
+    def get_cdmask(self, type="from"):
+        """
+        get the cdmask of the cce
+        :param type:
+        :return:
+        author: weiwei
+        dater: 20241009
+        """
+        return mph.get_cdmask(self.tfd_cdprim, type=type)
+
     def add_from_cdmask(self, allocated_bitmask, cce_into_list):
         """
         Note: the bitmask of cce_into_list should be updated externally in advance
@@ -88,7 +96,6 @@ class CCElement(object):
         :param cce_into_list:
         :return:
         """
-        assert self._toggle_collider, "Collider is not toggled on!"
         mph.change_cdmask(self.tfd_cdprim, allocated_bitmask, action="add", type="from")
         self.cce_into_dict[allocated_bitmask] = cce_into_list
         self.host_cc.bitmask_users_dict[allocated_bitmask].append(self.lnk.uuid)
@@ -136,7 +143,7 @@ class CollisionChecker(object):
         self._toggled_cdprim_list = []
         self.dynamic_into_list = [] # for oiee?
 
-    def add_cce(self, lnk, toggle_collider=True):
+    def add_cce(self, lnk, toggle_ext_collider=True):
         """
         add a Link as a ccelement
         :param lnk: instance of rkjlc.Link
@@ -144,7 +151,7 @@ class CollisionChecker(object):
         author: weiwei
         date: 20231116
         """
-        self.cce_dict[lnk.uuid] = CCElement(lnk, self, toggle_collider=toggle_collider)
+        self.cce_dict[lnk.uuid] = CCElement(lnk, self, toggle_ext_collider=toggle_ext_collider)
         return lnk.uuid
 
     def remove_cce(self, lnk):
@@ -242,9 +249,12 @@ class CollisionChecker(object):
         # print(len(obstacle_list))
         # base.run()
         # obstacle_cdprim_list = []
+        # print("obstacles")
         if obstacle_list is not None:
             for obstacle_cmodel in obstacle_list:
                 obstacle_cmodel.attach_cdprim_to(self.cd_pdndp)
+                # print(mph.get_cdmask(obstacle_cmodel.cdprim, type="from"))
+                # print(mph.get_cdmask(obstacle_cmodel.cdprim, type="into"))
             # obstacle_cdprim_list.append(mph.copy_cdprim_attach_to(obstacle_cmodel,
             #                                                       self.cd_pdndp,
             #                                                       homomat=obstacle_cmodel.homomat,

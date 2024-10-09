@@ -51,7 +51,7 @@ class FSRegSpotCollection(object):
         self._fsregspot_list += other._fsregspot_list
         return self
 
-    def add_new_spot(self, spot_pos, spot_rotz, barrier_z_offset=-.01, consider_robot=True, toggle_dbg=False):
+    def add_new_spot(self, spot_pos, spot_rotz, barrier_z_offset=.0, consider_robot=True, toggle_dbg=False):
         fs_regspot = mpfsp.FSRegSpot(spot_pos, spot_rotz)
         barrier_obstacle = mcm.gen_surface_barrier(spot_pos[2] + barrier_z_offset)
         for pose_id, pose in enumerate(self.fs_reference_poses):
@@ -119,7 +119,7 @@ class FSRegraspPlanner(object):
         self._p_angle_interval = rm.pi * 2 / self._n_fs_reference_poses
         self._g_angle_interval = rm.pi * 2 / self._n_reference_grasps
 
-    def add_spot_collection_from_disk(self, file_name):
+    def add_fsregspot_collection_from_disk(self, file_name):
         fsregspot_collection = FSRegSpotCollection(robot=self.robot,
                                                    obj_cmodel=self.obj_cmodel,
                                                    fs_reference_poses=self.fs_reference_poses,
@@ -160,23 +160,31 @@ class FSRegraspPlanner(object):
         self._fsregspot_collection.add_new_spot(spot_pos, spot_rotz, barrier_z_offset, consider_robot, toggle_dbg)
         self._add_fsregspot_to_graph(self._fsregspot_collection[-1])
 
-    def add_start_pose(self, obj_pose, plot_pose_xy=None):
-        start_pg = mpgp.PG.create_from_arbitrary_pose(self.robot,
-                                                      self.reference_grasp_collection,
-                                                      obj_pose,
-                                                      consider_robot=True)
+    def add_start_pose(self, obj_pose, obstacle_list=None, plot_pose_xy=None):
+        start_pg = mpgp.PG.create_from_pose(self.robot,
+                                            self.reference_grasp_collection,
+                                            obj_pose,
+                                            obstacle_list = obstacle_list,
+                                            consider_robot=True)
+        if start_pg is None:
+            print("No feasible grasps found at the start pose")
+            return None
         if plot_pose_xy is None:
             plot_pose_xy = obj_pose[0][:2]
         return self._add_fspg_to_graph(start_pg, plot_pose_xy=plot_pose_xy, prefix='start')
 
-    def add_goal_pose(self, obj_pose, plot_pose_xy=None):
-        start_pg = mpgp.PG.create_from_arbitrary_pose(self.robot,
-                                                      self.reference_grasp_collection,
-                                                      obj_pose,
-                                                      consider_robot=True)
+    def add_goal_pose(self, obj_pose, obstacle_list=None, plot_pose_xy=None):
+        goal_pg = mpgp.PG.create_from_pose(self.robot,
+                                            self.reference_grasp_collection,
+                                            obj_pose,
+                                            obstacle_list = obstacle_list,
+                                            consider_robot=True)
+        if goal_pg is None:
+            print("No feasible grasps found at the goal pose")
+            return None
         if plot_pose_xy is None:
             plot_pose_xy = obj_pose[0][:2]
-        return self._add_fspg_to_graph(start_pg, plot_pose_xy=plot_pose_xy, prefix='goal')
+        return self._add_fspg_to_graph(goal_pg, plot_pose_xy=plot_pose_xy, prefix='goal')
 
     def _add_fsregspot_collection_to_graph(self, fsregspot_collection):
         """

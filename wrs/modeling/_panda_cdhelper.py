@@ -36,6 +36,15 @@ def copy_cdprim_attach_to(cmodel,
 def detach_cdprim(cdprim):
     cdprim.removeNode()
 
+def get_cdmask(cdprim, type = "from"):
+    if type == "from":
+        get_method_name = "getFromCollideMask"
+    elif type == "into":
+        get_method_name = "getIntoCollideMask"
+    for child_pdndp in cdprim.getChildren():
+        get_method_to_call = getattr(child_pdndp.node(), get_method_name)
+    return get_method_to_call()
+
 
 def change_cdmask(cdprim, collision_mask: BitMask32, action="new", type="both"):
     """

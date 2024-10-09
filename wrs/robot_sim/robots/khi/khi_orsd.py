@@ -28,7 +28,7 @@ class KHI_ORSD(sari.SglArmRobotInterface):
         # ee
         elb = self.cc.add_cce(self.end_effector.jlc.anchor.lnk_list[0])
         # manipulator
-        mlb = self.cc.add_cce(self.manipulator.jlc.anchor.lnk_list[0])
+        mlb = self.cc.add_cce(self.manipulator.jlc.anchor.lnk_list[0], toggle_ext_collider=False)
         ml0 = self.cc.add_cce(self.manipulator.jlc.jnts[0].lnk)
         ml1 = self.cc.add_cce(self.manipulator.jlc.jnts[1].lnk)
         ml2 = self.cc.add_cce(self.manipulator.jlc.jnts[2].lnk)

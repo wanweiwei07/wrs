@@ -128,21 +128,21 @@ class Yumi(ri.RobotInterface):
         """
         # dual arm
         # body
-        bd = self.cc.add_cce(self.body.lnk_list[0])
-        wb = self.cc.add_cce(self.body.lnk_list[1])
-        lc = self.cc.add_cce(self.body.lnk_list[2])
-        rc = self.cc.add_cce(self.body.lnk_list[3])
-        tbc = self.cc.add_cce(self.body.lnk_list[4])
-        tlc = self.cc.add_cce(self.body.lnk_list[5])
-        trc = self.cc.add_cce(self.body.lnk_list[6])
-        tfc = self.cc.add_cce(self.body.lnk_list[7])
-        phx = self.cc.add_cce(self.body.lnk_list[8])
+        bd = self.cc.add_cce(self.body.lnk_list[0], toggle_ext_collider=False)
+        wb = self.cc.add_cce(self.body.lnk_list[1], toggle_ext_collider=False)
+        lc = self.cc.add_cce(self.body.lnk_list[2], toggle_ext_collider=False)
+        rc = self.cc.add_cce(self.body.lnk_list[3], toggle_ext_collider=False)
+        tbc = self.cc.add_cce(self.body.lnk_list[4], toggle_ext_collider=False)
+        tlc = self.cc.add_cce(self.body.lnk_list[5], toggle_ext_collider=False)
+        trc = self.cc.add_cce(self.body.lnk_list[6], toggle_ext_collider=False)
+        tfc = self.cc.add_cce(self.body.lnk_list[7], toggle_ext_collider=False)
+        phx = self.cc.add_cce(self.body.lnk_list[8], toggle_ext_collider=False)
         # left ee
         lft_elb = self.cc.add_cce(self.lft_arm.end_effector.jlc.anchor.lnk_list[0])
         lft_el0 = self.cc.add_cce(self.lft_arm.end_effector.jlc.jnts[0].lnk)
         lft_el1 = self.cc.add_cce(self.lft_arm.end_effector.jlc.jnts[1].lnk)
         # left manipulator
-        lft_ml0 = self.cc.add_cce(self.lft_arm.manipulator.jlc.jnts[0].lnk)
+        lft_ml0 = self.cc.add_cce(self.lft_arm.manipulator.jlc.jnts[0].lnk, toggle_ext_collider=False)
         lft_ml1 = self.cc.add_cce(self.lft_arm.manipulator.jlc.jnts[1].lnk)
         lft_ml2 = self.cc.add_cce(self.lft_arm.manipulator.jlc.jnts[2].lnk)
         lft_ml3 = self.cc.add_cce(self.lft_arm.manipulator.jlc.jnts[3].lnk)
@@ -153,7 +153,7 @@ class Yumi(ri.RobotInterface):
         rgt_el0 = self.cc.add_cce(self.rgt_arm.end_effector.jlc.jnts[0].lnk)
         rgt_el1 = self.cc.add_cce(self.rgt_arm.end_effector.jlc.jnts[1].lnk)
         # right manipulator
-        rgt_ml0 = self.cc.add_cce(self.rgt_arm.manipulator.jlc.jnts[0].lnk)
+        rgt_ml0 = self.cc.add_cce(self.rgt_arm.manipulator.jlc.jnts[0].lnk, toggle_ext_collider=False)
         rgt_ml1 = self.cc.add_cce(self.rgt_arm.manipulator.jlc.jnts[1].lnk)
         rgt_ml2 = self.cc.add_cce(self.rgt_arm.manipulator.jlc.jnts[2].lnk)
         rgt_ml3 = self.cc.add_cce(self.rgt_arm.manipulator.jlc.jnts[3].lnk)
@@ -334,8 +334,7 @@ class Yumi(ri.RobotInterface):
 
 if __name__ == '__main__':
     import time
-    import wrs.visualization.panda.world as wd
-    import wrs.modeling.geometric_model as mgm
+    from wrs import wd, mgm
 
     base = wd.World(cam_pos=[3, 1, 1], lookat_pos=[0, 0, 0.5])
     mgm.gen_frame().attach_to(base)

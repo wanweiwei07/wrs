@@ -23,7 +23,7 @@ class YumiSglArm(sari.SglArmRobotInterface):
         el0 = self.cc.add_cce(self.end_effector.jlc.jnts[0].lnk)
         el1 = self.cc.add_cce(self.end_effector.jlc.jnts[1].lnk)
         # manipulator
-        ml0 = self.cc.add_cce(self.manipulator.jlc.jnts[0].lnk)
+        ml0 = self.cc.add_cce(self.manipulator.jlc.jnts[0].lnk, toggle_ext_collider=False)
         ml1 = self.cc.add_cce(self.manipulator.jlc.jnts[1].lnk)
         ml2 = self.cc.add_cce(self.manipulator.jlc.jnts[2].lnk)
         ml3 = self.cc.add_cce(self.manipulator.jlc.jnts[3].lnk)
@@ -49,8 +49,7 @@ class YumiSglArm(sari.SglArmRobotInterface):
 
 if __name__ == '__main__':
     import time
-    from wrs import basis as rm, robot_sim as irb14050, robot_sim as yg, modeling as mgm, modeling as mcm
-    import wrs.visualization.panda.world as wd
+    from wrs import wd, rm, mgm, mcm
 
     base = wd.World(cam_pos=[1.7, 1, .5], lookat_pos=[0, 0, .3])
     mgm.gen_frame().attach_to(base)

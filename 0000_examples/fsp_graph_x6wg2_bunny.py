@@ -1,10 +1,12 @@
 import os
+import time
 import networkx as nx
 from wrs import wd, rm, mcm, x6wg2, fsp, fsreg, gg
 
 base = wd.World(cam_pos=rm.vec(1, 1, 1), lookat_pos=rm.vec(0, 0, 0))
 obj_path = os.path.join("objects", "bunnysim.stl")
-ground = mcm.gen_box(xyz_lengths=rm.vec(5, 5, .01), pos=rm.vec(0, 0, -0.005))
+ground = mcm.gen_box(xyz_lengths=rm.vec(5, 5, 1), pos=rm.vec(0, 0, -0.5))
+ground.show_cdprim()
 ground.attach_to(base)
 bunny = mcm.CollisionModel(obj_path)
 robot = x6wg2.XArmLite6WG2()
@@ -15,11 +17,12 @@ fsreg_planner = fsreg.FSRegraspPlanner(robot=robot,
                                        obj_cmodel=bunny,
                                        fs_reference_poses=fs_reference_poses,
                                        reference_grasp_collection=reference_grasps)
-fsreg_planner.add_spot_collection_from_disk("regspot_collection_x6wg2_bunny.pickle")
+fsreg_planner.add_fsregspot_collection_from_disk("regspot_collection_x6wg2_bunny.pickle")
 
-start_node_list = fsreg_planner.add_start_pose(obj_pose=(rm.np.array([.4, .2, 0]), rm.np.eye(3)))
+start_node_list = fsreg_planner.add_start_pose(obj_pose=(rm.np.array([.2, .2, 0]), rm.np.eye(3)),
+                                               obstacle_list=[ground])
 goal_node_list = fsreg_planner.add_goal_pose(
-    obj_pose=(rm.np.array([.4, -.2, 0]), rm.rotmat_from_euler(rm.pi / 3, rm.pi / 6, 0)))
+    obj_pose=(rm.np.array([.2, -.2, 0]), rm.rotmat_from_euler(rm.pi / 3, rm.pi / 6, 0)), obstacle_list=[ground])
 
 min_path = None
 for start in start_node_list:
@@ -50,9 +53,9 @@ def update(anime_data, task):
         #     mesh_model.detach()
         anime_data.counter = 0
     anime_data.mesh_model_list[anime_data.counter].attach_to(base)
-    # if base.inputmgr.keymap['space']:
-    #     print(anime_data.counter)
-    anime_data.counter += 1
+    anime_data.mesh_model_list[anime_data.counter].show_cdprim()
+    if base.inputmgr.keymap['space']:
+        anime_data.counter += 1
     # time.sleep(.5)
     return task.again
 
