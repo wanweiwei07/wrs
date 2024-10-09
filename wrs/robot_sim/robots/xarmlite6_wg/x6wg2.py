@@ -41,6 +41,7 @@ class XArmLite6WG2(sari.SglArmRobotInterface):
         into_list = [elb, el0, el1, ml3, ml4, ml5]
         self.cc.set_cdpair_by_ids(from_list, into_list)
         self.cc.dynamic_into_list = [mlb, ml0, ml1, ml2, ml3]
+        self.cc.dynamic_ext_list = [el0, el1]
 
     def fix_to(self, pos, rotmat):
         self._pos = pos

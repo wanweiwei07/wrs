@@ -141,7 +141,9 @@ class CollisionChecker(object):
         self.cce_dict = {}  # a dict of CCElement
         # temporary parameter for toggling on/off show_cdprimit
         self._toggled_cdprim_list = []
-        self.dynamic_into_list = [] # for oiee?
+        # togglable lists
+        self.dynamic_into_list = [] # for oiee
+        self.dynamic_ext_list = [] # for ignoring the external collision of certain components
 
     def add_cce(self, lnk, toggle_ext_collider=True):
         """
@@ -165,6 +167,11 @@ class CollisionChecker(object):
         cce = self.cce_dict.pop(lnk.uuid)
         bitmask_list_to_return = cce.isolate()
         self.bitmask_pool += bitmask_list_to_return
+        try:
+            self.dynamic_into_list.remove(lnk.uuid)
+            self.dynamic_ext_list.remove(lnk.uuid)
+        except ValueError:
+            pass
 
     def remove_cce_by_id(self, uuid):
         """

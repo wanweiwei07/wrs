@@ -357,9 +357,9 @@ class FSRegraspPlanner(object):
                     prev2current = self.pp_planner.gen_depart_approach_with_given_conf(start_jnt_values=prev_jnt_values,
                                                                                        end_jnt_values=jnt_values,
                                                                                        depart_direction=rm.const.z_ax,
-                                                                                       depart_distance=.03,
+                                                                                       depart_distance=.05,
                                                                                        approach_direction=-rm.const.z_ax,
-                                                                                       approach_distance=.03,
+                                                                                       approach_distance=.05,
                                                                                        granularity=.03,
                                                                                        obstacle_list=obstacle_list,
                                                                                        use_rrt=True)

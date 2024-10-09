@@ -80,6 +80,7 @@ class SglArmRobotInterface(ri.RobotInterface):
             for obj_lnk in self.oiee_list:
                 ol = self.cc.add_cce(obj_lnk)
                 self.cc.set_cdpair_by_ids([ol], self.cc.dynamic_into_list)
+                self.cc.dynamic_ext_list.append(ol)
 
     def get_ee_values(self):
         return self.end_effector.get_ee_values()
@@ -92,12 +93,21 @@ class SglArmRobotInterface(ri.RobotInterface):
         if self.cc is not None:
             ol = self.cc.add_cce(obj_lnk)
             self.cc.set_cdpair_by_ids([ol], self.cc.dynamic_into_list)
+            self.cc.dynamic_ext_list.append(ol)
 
 
     def release(self, obj_cmodel, **kwargs):
         obj_lnk = self.end_effector.release(obj_cmodel, **kwargs)
         if obj_lnk is not None and self.cc is not None:
             self.cc.remove_cce(obj_lnk)
+
+    def toggle_off_eecd(self):
+        for uuid in self.cc.dynamic_ext_list:
+            self.cc.cce_dict[uuid].disable_cd_ext(type="from")
+
+    def toggle_on_eecd(self):
+        for uuid in self.cc.dynamic_ext_list:
+            self.cc.cce_dict[uuid].enable_cd_ext(type="from")
 
     def goto_given_conf(self, jnt_values, ee_values=None):
         result = self._manipulator.goto_given_conf(jnt_values=jnt_values)

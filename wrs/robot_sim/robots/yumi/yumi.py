@@ -1,5 +1,6 @@
 import os
 import math
+import copy
 import numpy as np
 from panda3d.core import CollisionNode, CollisionBox, Point3, NodePath
 import wrs.basis.robot_math as rm
@@ -171,6 +172,7 @@ class Yumi(ri.RobotInterface):
         from_list = [lft_ml1, lft_ml2, lft_ml3, lft_ml4, lft_ml5, lft_elb, lft_el0, lft_el1]
         into_list = [rgt_ml1, rgt_ml2, rgt_ml3, rgt_ml4, rgt_ml5, rgt_elb, rgt_el0, rgt_el1]
         self.cc.set_cdpair_by_ids(from_list, into_list)
+        self.cc.dynamic_into_list = [bd, wb, lc, rc, tbc, tlc, trc, tfc, phx] # TODO
         # point low-level cc to the high-level one
         self.lft_arm.cc = self.cc
         self.rgt_arm.cc = self.cc
@@ -225,7 +227,7 @@ class Yumi(ri.RobotInterface):
             if len(jnt_values) != self.lft_arm.manipulator.n_dof + self.rgt_arm.manipulator.n_dof:
                 raise ValueError("The given joint values do not match total n_dof")
             self.lft_arm.goto_given_conf(jnt_values=jnt_values[:self.lft_arm.manipulator.n_dof])
-            self.rgt_arm.goto_given_conf(jnt_values=jnt_values[self.rgt_arm.manipulator.n_dof:]) # TODO
+            self.rgt_arm.goto_given_conf(jnt_values=jnt_values[self.rgt_arm.manipulator.n_dof:])  # TODO
         else:
             self.delegator.goto_given_conf(jnt_values=jnt_values, ee_values=ee_values)
 

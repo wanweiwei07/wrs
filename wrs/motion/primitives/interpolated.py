@@ -41,7 +41,29 @@ class InterplatedMotion(object):
 
         return wrapper
 
+    @staticmethod
+    def keep_eecd_decorator(method):
+        """
+        decorator function for save and restore robot states
+        :return:
+        author: weiwei
+        date: 20220404
+        """
+
+        def wrapper(self, *args, **kwargs):
+            if getattr(self, "toggle_off_eecd", True):
+                self.robot.toggle_off_eecd()
+                result = method(self, *args, **kwargs)
+                self.robot.toggle_on_eecd()
+                return result
+            else:
+                result = method(self, *args, **kwargs)
+                return result
+
+        return wrapper
+
     @keep_states_decorator
+    @keep_eecd_decorator
     def gen_linear_motion(self,
                           start_tcp_pos,
                           start_tcp_rotmat,
@@ -49,8 +71,9 @@ class InterplatedMotion(object):
                           goal_tcp_rotmat,
                           obstacle_list=None,
                           granularity=0.03,
-                          cd_type="all",
                           ee_values=None,
+                          keep_state=True,  # for decorator
+                          toggle_off_eecd=True,  # for decorator
                           toggle_dbg=False):
         """
         :param start_tcp_pos:
@@ -59,7 +82,6 @@ class InterplatedMotion(object):
         :param goal_tcp_rotmat:
         :param obstacle_list:
         :param granularity: resolution of steps in workspace
-        :param cd_type: "all", "sink" (only check the first one), "source" (only check the last one)
         :param ee_values: end_effector values
         :param toggle_dbg
         :return:
@@ -87,51 +109,20 @@ class InterplatedMotion(object):
                 print("IK not solvable in gen_linear_motion!")
                 return None
             else:
-                if cd_type == "all":
-                    self.robot.goto_given_conf(jnt_values=jnt_values, ee_values=ee_values)
-                    result, contacts = self.robot.is_collided(obstacle_list=obstacle_list, toggle_contacts=True)
-                    if result:
-                        if toggle_dbg:
-                            for pnt in contacts:
-                                mgm.gen_sphere(pnt, radius=.005).attach_to(base)
-                            print(jnt_values)
-                            self.robot.goto_given_conf(jnt_values=jnt_values)
-                            if ee_values is not None:
-                                self.robot.change_jaw_width(jaw_width=ee_values)
-                            self.robot.gen_meshmodel(alpha=.3).attach_to(base)
-                            base.run()
-                        print("Intermediated pose collided in gen_linear_motion!")
-                        return None
-                elif cd_type == "sink" and i == len(pose_list) - 1:
-                    self.robot.goto_given_conf(jnt_values=jnt_values, ee_values=ee_values)
-                    result, contacts = self.robot.is_collided(obstacle_list=obstacle_list, toggle_contacts=True)
-                    if result:
-                        if toggle_dbg:
-                            for pnt in contacts:
-                                mgm.gen_sphere(pnt, radius=.005).attach_to(base)
-                            print(jnt_values)
-                            self.robot.goto_given_conf(jnt_values=jnt_values)
-                            if ee_values is not None:
-                                self.robot.change_jaw_width(jaw_width=ee_values)
-                            self.robot.gen_meshmodel(alpha=.3).attach_to(base)
-                            base.run()
-                        print("Last pose collided in gen_linear_motion!")
-                        return None
-                elif cd_type == "source" and i == 0:
-                    self.robot.goto_given_conf(jnt_values=jnt_values, ee_values=ee_values)
-                    result, contacts = self.robot.is_collided(obstacle_list=obstacle_list, toggle_contacts=True)
-                    if result:
-                        if toggle_dbg:
-                            for pnt in contacts:
-                                mgm.gen_sphere(pnt, radius=.005).attach_to(base)
-                            print(jnt_values)
-                            self.robot.goto_given_conf(jnt_values=jnt_values)
-                            if ee_values is not None:
-                                self.robot.change_jaw_width(jaw_width=ee_values)
-                            self.robot.gen_meshmodel(alpha=.3).attach_to(base)
-                            base.run()
-                        print("First pose collided in gen_linear_motion!")
-                        return None
+                self.robot.goto_given_conf(jnt_values=jnt_values, ee_values=ee_values)
+                result, contacts = self.robot.is_collided(obstacle_list=obstacle_list, toggle_contacts=True)
+                if result:
+                    if toggle_dbg:
+                        for pnt in contacts:
+                            mgm.gen_sphere(pnt, radius=.005).attach_to(base)
+                        print(jnt_values)
+                        self.robot.goto_given_conf(jnt_values=jnt_values)
+                        if ee_values is not None:
+                            self.robot.change_jaw_width(jaw_width=ee_values)
+                        self.robot.gen_meshmodel(alpha=.3).attach_to(base)
+                        base.run()
+                    print("Intermediated pose collided in gen_linear_motion!")
+                    return None
             jv_list.append(jnt_values)
             ev_list.append(self.robot.get_ee_values())
             if getattr(base, "toggle_mesh", True):
@@ -147,6 +138,7 @@ class InterplatedMotion(object):
                                            end_jnt_values,
                                            obstacle_list=None,
                                            granularity=0.03,
+                                           keep_state=True,  # for decorator
                                            ee_values=None):
         interpolated_jnt_values = rm.interpolate_vectors(start_vector=start_jnt_values,
                                                          end_vector=end_jnt_values,
@@ -227,6 +219,7 @@ class InterplatedMotion(object):
             raise ValueError("Type must be sink or source!")
 
     @keep_states_decorator
+    @keep_eecd_decorator
     def gen_rel_linear_motion_with_given_conf(self,
                                               goal_jnt_values,
                                               direction=None,
@@ -235,6 +228,8 @@ class InterplatedMotion(object):
                                               granularity=0.02,
                                               type="sink",
                                               ee_values=None,
+                                              keep_state=True,  # for decorator
+                                              toggle_off_eecd=True,  # for decorator
                                               toggle_dbg=False):
         """
         :param goal_jnt_values:

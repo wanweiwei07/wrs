@@ -69,6 +69,12 @@ class RRTConnect(rrt.RRT):
             return None
         if self._is_collided(goal_conf, obstacle_list, other_robot_list):
             print("RRT: The goal robot configuration is in collision!")
+            _, points = self._is_collided(goal_conf, obstacle_list, other_robot_list, toggle_contacts=True)
+            from wrs import mgm
+            for point in points:
+                mgm.gen_sphere(pos=point, radius=.01).attach_to(base)
+            self.robot.gen_meshmodel(alpha=.3).attach_to(base)
+            base.run()
             return None
         if self._is_goal_reached(conf=start_conf, goal_conf=goal_conf, threshold=ext_dist):
             mot_data = rrt.motu.MotionData(self.robot)
