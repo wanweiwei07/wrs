@@ -22,6 +22,7 @@ from .grasping.planning import antipodal as gpa  # planning
 from .grasping.annotation import gripping as gag  # annotation
 
 # motion
+from .motion import motion_data as mmd
 from .motion.probabilistic import rrt_connect as rrtc
 from .motion.primitives import interpolated as mip
 from .manipulation import pick_place_planner as ppp
