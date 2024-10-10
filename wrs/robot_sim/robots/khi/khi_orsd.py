@@ -38,7 +38,8 @@ class KHI_ORSD(sari.SglArmRobotInterface):
         from_list = [elb, ml3, ml4, ml5]
         into_list = [mlb, ml0]
         self.cc.set_cdpair_by_ids(from_list, into_list)
-        # TODO oiee?
+        self.cc.dynamic_into_list = [mlb, ml0, ml1, ml2, ml3]
+        self.cc.dynamic_ext_list = []
 
     def fix_to(self, pos, rotmat):
         self._pos = pos

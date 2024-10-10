@@ -1,4 +1,9 @@
-from wrs import wd, rm, mgm, mcm, cbt, gg, ppp, rrtc
+import os
+from wrs import wd, rm, rrtc, mcm, mgm, gg, ko2fg, ppp
+
+mesh_name = "bracketR1"
+mesh_path = os.path.join(os.getcwd(), "meshes", mesh_name+".stl")
+grasp_path = os.path.join(os.getcwd(), "pickles", mesh_name+".pickle")
 
 base = wd.World(cam_pos=[1.2, .7, 1], lookat_pos=[.0, 0, .15])
 mgm.gen_frame().attach_to(base)
@@ -6,33 +11,31 @@ mgm.gen_frame().attach_to(base)
 ground = mcm.gen_box(xyz_lengths=rm.vec(5, 5, 1), rgb=rm.vec(.7, .7, .7), alpha=1)
 ground.pos = rm.np.array([0, 0, -.5])
 ground.attach_to(base)
-ground.show_cdprim()
-## object holder
-holder_1 = mcm.CollisionModel("objects/holder.stl")
-holder_1.rgba = rm.np.array([.5, .5, .5, 1])
-h1_gl_pos = rm.np.array([-.15, -.2, .0])
-h1_gl_rotmat = rm.rotmat_from_euler(0, 0, rm.pi)
-holder_1.pos = h1_gl_pos
-holder_1.rotmat = h1_gl_rotmat
-mgm.gen_frame().attach_to(holder_1)
+# ground.show_cdprim()
+## object start
+obj = mcm.CollisionModel(mesh_path)
+obj.rgba = rm.np.array([.5, .5, .5, 1])
+obj_gl_pos = rm.np.array([-.3, -.5, .04])
+obj_gl_rotmat = rm.rotmat_from_euler(0, 0, rm.pi)
+obj.pos = obj_gl_pos
+obj.rotmat = obj_gl_rotmat
+mgm.gen_frame().attach_to(obj)
 # visualize a copy
-h1_copy = holder_1.copy()
-h1_copy.attach_to(base)
-h1_copy.show_cdprim()
-## object holder goal
-holder_2 = mcm.CollisionModel("objects/holder.stl")
-h2_gl_pos = rm.np.array([.2, -.12, .0])
-h2_gl_rotmat = rm.rotmat_from_euler(0, 0, rm.pi / 3)
-holder_2.pos = h2_gl_pos
-holder_2.rotmat = h2_gl_rotmat
-# visualize a copy
-h2_copy = holder_2.copy()
-h2_copy.rgb = rm.const.tab20_list[0]
-h2_copy.alpha = .3
-h2_copy.attach_to(base)
-h2_copy.show_cdprim()
-## cobotta
-robot = cbt.Cobotta()
+obj_start = obj.copy()
+obj_start.attach_to(base)
+obj_start.show_cdprim()
+## object goal
+obj_goal = obj.copy()
+obj_goal_gl_pos = rm.np.array([.5, -.3, .04])
+obj_goal_gl_rotmat = rm.rotmat_from_euler(0, 0, rm.pi / 3)
+obj_goal.pos = obj_goal_gl_pos
+obj_goal.rotmat = obj_goal_gl_rotmat
+obj_goal.rgb = rm.const.tab20_list[0]
+obj_goal.alpha = .3
+obj_goal.attach_to(base)
+obj_goal.show_cdprim()
+## robot
+robot = ko2fg.KHI_OR2FG7()
 robot.gen_meshmodel().attach_to(base)
 robot.cc.show_cdprim()
 # base.run()
@@ -40,11 +43,11 @@ robot.cc.show_cdprim()
 rrtc = rrtc.RRTConnect(robot)
 ppp = ppp.PickPlacePlanner(robot)
 
-grasp_collection = gg.GraspCollection.load_from_disk(file_name='cobotta_gripper_grasps.pickle')
+grasp_collection = gg.GraspCollection.load_from_disk(grasp_path)
 start_conf = robot.get_jnt_values()
 
-goal_pose_list = [(h2_gl_pos, h2_gl_rotmat)]
-mot_data = ppp.gen_pick_and_place(obj_cmodel=holder_1,
+goal_pose_list = [(obj_goal_gl_pos, obj_gl_rotmat)]
+mot_data = ppp.gen_pick_and_place(obj_cmodel=obj,
                                   end_jnt_values=start_conf,
                                   grasp_collection=grasp_collection,
                                   goal_pose_list=goal_pose_list,

@@ -333,7 +333,9 @@ class FSRegraspPlanner(object):
         """
         pass
 
-    def gen_regrasp_motion(self, path, obstacle_list):
+    def gen_regrasp_motion(self, path, obstacle_list,
+                           linear_distance=.05,
+                           granularity=.03):
         """
         """
         mesh_list = []
@@ -357,10 +359,10 @@ class FSRegraspPlanner(object):
                     prev2current = self.pp_planner.gen_depart_approach_with_given_conf(start_jnt_values=prev_jnt_values,
                                                                                        end_jnt_values=jnt_values,
                                                                                        depart_direction=rm.const.z_ax,
-                                                                                       depart_distance=.05,
+                                                                                       depart_distance=linear_distance,
                                                                                        approach_direction=-rm.const.z_ax,
-                                                                                       approach_distance=.05,
-                                                                                       granularity=.03,
+                                                                                       approach_distance=linear_distance,
+                                                                                       granularity=granularity,
                                                                                        obstacle_list=obstacle_list,
                                                                                        use_rrt=True)
                     # prev2current = self.pp_planner.im_planner.gen_interplated_between_given_conf(

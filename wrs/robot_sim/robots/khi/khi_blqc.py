@@ -52,6 +52,8 @@ class KHI_BLQC(sari.SglArmRobotInterface):
         from_list = [tc0, ml3, ml4, ml5]
         into_list = [mlb, ml0]
         self.cc.set_cdpair_by_ids(from_list, into_list)
+        self.cc.dynamic_into_list = [mlb, ml0, ml1, ml2, ml3]
+        self.cc.dynamic_ext_list = []
 
     def goto_given_conf(self, jnt_values, ee_values=None):
         result = self._manipulator.goto_given_conf(jnt_values=jnt_values)

@@ -243,7 +243,7 @@ class PickPlacePlanner(adp.ADPlanner):
             common_gid_list = self.reason_common_gids(grasp_collection=grasp_collection,
                                                       goal_pose_list=[obj_cmodel.pose] + goal_pose_list,
                                                       obstacle_list=obstacle_list,
-                                                      toggle_dbg=True)
+                                                      toggle_dbg=False)
         else:
             common_gid_list = range(len(grasp_collection))
         if len(common_gid_list) == 0:
