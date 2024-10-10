@@ -12,7 +12,7 @@ class CCElement(object):
     date: 20231116
     """
 
-    def __init__(self, lnk, host_cc, toggle_ext_collider=True):
+    def __init__(self, lnk, host_cc, toggle_extcd=True):
         self.host_cc = host_cc
         self.lnk = lnk
         # a transformed and attached copy of the reference cdprim (essentially pdcndp), tfd=transformed
@@ -24,9 +24,9 @@ class CCElement(object):
             self.host_cc.cd_trav.addCollider(collider=child_pdndp, handler=self.host_cc.cd_handler)
         # a dict with from_mask as keys and into_list (a lsit of cce) as values
         self.cce_into_dict = {}
-        if toggle_ext_collider:
+        if toggle_extcd:
             # toggle on collision detection with external obstacles by default
-            self.enable_cd_ext(type="from")
+            self.enable_extcd(type="from")
 
     def _close_bitmask(self, allocated_bitmask):
         """
@@ -41,14 +41,14 @@ class CCElement(object):
             cce_into.remove_into_cdmask(allocated_bitmask)
         self.host_cc.bitmask_pool.append(allocated_bitmask)
 
-    def enable_cd_ext(self, type="from"):
+    def enable_extcd(self, type="from"):
         """
         enable collision detection with external collision models
         :return:
         """
         mph.change_cdmask(self.tfd_cdprim, mph.BITMASK_EXT, action="add", type=type)
 
-    def disable_cd_ext(self, type="from"):
+    def disable_extcd(self, type="from"):
         """
         disable collision detection with external collision models
         :return:
@@ -153,7 +153,7 @@ class CollisionChecker(object):
         author: weiwei
         date: 20231116
         """
-        self.cce_dict[lnk.uuid] = CCElement(lnk, self, toggle_ext_collider=toggle_ext_collider)
+        self.cce_dict[lnk.uuid] = CCElement(lnk, self, toggle_extcd=toggle_ext_collider)
         return lnk.uuid
 
     def remove_cce(self, lnk):
@@ -168,7 +168,6 @@ class CollisionChecker(object):
         bitmask_list_to_return = cce.isolate()
         self.bitmask_pool += bitmask_list_to_return
         try:
-            self.dynamic_into_list.remove(lnk.uuid)
             self.dynamic_ext_list.remove(lnk.uuid)
         except ValueError:
             pass
@@ -274,7 +273,7 @@ class CollisionChecker(object):
         if other_robot_list is not None:
             for robot in other_robot_list:
                 for cce in robot.cc.cce_dict.values():  # TODO: wrong, save and restore mask
-                    cce.enable_cd_ext(type="into")
+                    cce.enable_extcd(type="into")
                 robot.cc.cd_pdndp.reparentTo(self.cd_pdndp)
         # collision check
         self.cd_trav.traverse(self.cd_pdndp)
@@ -288,7 +287,7 @@ class CollisionChecker(object):
         if other_robot_list is not None:
             for robot in other_robot_list:
                 for cce in robot.cc.cce_dict.values():
-                    cce.disable_cd_ext(type="into")
+                    cce.disable_extcd(type="into")
                 robot.cc.cd_pdndp.detachNode()
         if self.cd_handler.getNumEntries() > 0:
             collision_result = True
