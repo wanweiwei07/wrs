@@ -74,20 +74,18 @@ class RRT(object):
             #         return True
             collision_info = self.robot.is_collided(obstacle_list=obstacle_list, other_robot_list=other_robot_list,
                                                     toggle_contacts=toggle_contacts)
-            if toggle_contacts:
-                if collision_info[0]:
-                    for pnt in collision_info[1]:
-                        print(pnt)
-                        mgm.gen_sphere(pos=pnt, radius=.01).attach_to(base)
-                    self.robot.gen_meshmodel(toggle_cdprim=True).attach_to(base)
-                    for obs in obstacle_list:
-                        obs.rgb=np.array([1,1,1])
-                        obs.show_cdprim()
-                        obs.attach_to(base)
-                    base.run()
-                return collision_info[0]
-            else:
-                return collision_info
+            # if toggle_contacts:
+            #     if collision_info[0]:
+            #         for pnt in collision_info[1]:
+            #             print(pnt)
+            #             mgm.gen_sphere(pos=pnt, radius=.01).attach_to(base)
+            #         self.robot.gen_meshmodel(toggle_cdprim=True).attach_to(base)
+            #         for obs in obstacle_list:
+            #             obs.rgb=np.array([1,1,1])
+            #             obs.show_cdprim()
+            #             obs.attach_to(base)
+            #         base.run()
+            return collision_info
         else:
             print("The given joint angles are out of joint limits.")
             return True

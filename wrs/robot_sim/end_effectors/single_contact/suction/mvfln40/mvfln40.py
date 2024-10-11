@@ -40,9 +40,9 @@ class MVFLN40(si.SCInterface):
             self.cdmesh_collection.add_cm(cdmesh)
 
     def fix_to(self, pos, rotmat):
-        self.pos = pos
-        self.rotmat = rotmat
-        self.coupling.fix_to(self.pos, self.rotmat)
+        self._pos = pos
+        self._rotmat = rotmat
+        self.coupling.fix_to(self._pos, self._rotmat)
         cpl_end_pos = self.coupling.jnts[-1]['gl_posq']
         cpl_end_rotmat = self.coupling.jnts[-1]['gl_rotmatq']
         self.jlc.fix_to(cpl_end_pos, cpl_end_rotmat)
@@ -58,9 +58,9 @@ class MVFLN40(si.SCInterface):
                                 toggle_jnt_frame=toggle_jnt_frame,
                                 toggle_connjnt=toggle_connjnt).attach_to(mm_collection)
         if toggle_tcp_frame:
-            suction_center_gl_pos = self.rotmat.dot(self.suction_center_pos) + self.pos
-            suction_center_gl_rotmat = self.rotmat.dot(self.contact_center_rotmat)
-            gm.gen_dashed_stick(spos=self.pos,
+            suction_center_gl_pos = self._rotmat.dot(self.suction_center_pos) + self._pos
+            suction_center_gl_rotmat = self._rotmat.dot(self.contact_center_rotmat)
+            gm.gen_dashed_stick(spos=self._pos,
                                 epos=suction_center_gl_pos,
                                 radius=.0062,
                                 rgba=[.5, 0, 1, 1],
@@ -81,9 +81,9 @@ class MVFLN40(si.SCInterface):
                                 toggle_jnt_frame=toggle_jnt_frame,
                                 rgba=rgba).attach_to(mm_collection)
         if toggle_tcp_frame:
-            suction_center_gl_pos = self.rotmat.dot(self.suction_center_pos) + self.pos
-            suction_center_gl_rotmat = self.rotmat.dot(self.contact_center_rotmat)
-            gm.gen_dashed_stick(spos=self.pos,
+            suction_center_gl_pos = self._rotmat.dot(self.suction_center_pos) + self._pos
+            suction_center_gl_rotmat = self._rotmat.dot(self.contact_center_rotmat)
+            gm.gen_dashed_stick(spos=self._pos,
                                 epos=suction_center_gl_pos,
                                 radius=.0062,
                                 rgba=[.5, 0, 1, 1],

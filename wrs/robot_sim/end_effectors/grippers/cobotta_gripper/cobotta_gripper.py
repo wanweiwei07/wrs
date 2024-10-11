@@ -51,12 +51,12 @@ class CobottaGripper(gpi.GripperInterface):
                                 self.jlc.jnts[1].lnk)
 
     def fix_to(self, pos, rotmat, jaw_width=None):
-        self.pos = pos
-        self.rotmat = rotmat
+        self._pos = pos
+        self._rotmat = rotmat
         if jaw_width is not None:
             self.change_jaw_width(jaw_width=jaw_width)
-        self.coupling.pos = self.pos
-        self.coupling.rotmat = self.rotmat
+        self.coupling.pos = self._pos
+        self.coupling.rotmat = self._rotmat
         self.jlc.fix_to(self.coupling.gl_flange_pose_list[0][0], self.coupling.gl_flange_pose_list[0][1])
         self.update_oiee()
 

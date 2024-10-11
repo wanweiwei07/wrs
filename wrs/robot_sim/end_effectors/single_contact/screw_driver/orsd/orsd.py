@@ -51,10 +51,10 @@ class ORSD(si.SCTInterface):
         self.cdmesh_elements = (self.jlc.anchor.lnk_list[0])
 
     def fix_to(self, pos, rotmat):
-        self.pos = pos
-        self.rotmat = rotmat
-        self.coupling.pos = self.pos
-        self.coupling.rotmat = self.rotmat
+        self._pos = pos
+        self._rotmat = rotmat
+        self.coupling.pos = self._pos
+        self.coupling.rotmat = self._rotmat
         self.jlc.fix_to(self.coupling.gl_flange_pose_list[0][0], self.coupling.gl_flange_pose_list[0][1])
         self.update_oiee()
 

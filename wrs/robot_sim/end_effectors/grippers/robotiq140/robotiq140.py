@@ -153,11 +153,11 @@ class Robotiq140(gi.GripperInterface):
                                 self.rgt_inner_jlc.jnts[0].lnk)
 
     def fix_to(self, pos, rotmat, jaw_width=None):
-        self.pos = pos
+        self._pos = pos
         self.rotmat = rotmat
         if jaw_width is not None:
             self.change_jaw_width(jaw_width=jaw_width)
-        self.coupling.pos = self.pos
+        self.coupling.pos = self._pos
         self.coupling.rotmat = self.rotmat
         self.palm.pos = self.coupling.gl_flange_pose_list[0][0]
         self.palm.rotmat = self.coupling.gl_flange_pose_list[0][1]
@@ -184,7 +184,7 @@ class Robotiq140(gi.GripperInterface):
             self.rgt_outer_jlc.goto_given_conf(jnt_values=np.array([-angle, 0.0, angle, 0.0]))
             self.rgt_inner_jlc.goto_given_conf(jnt_values=np.array([-angle]))
         # dynamic adjustment
-        homo_flange_gl = rm.homomat_from_posrot(self.pos, self.rotmat)
+        homo_flange_gl = rm.homomat_from_posrot(self._pos, self.rotmat)
         homo_pad_gl = self.rgt_outer_jlc.jnts[3].gl_homomat_0
         homo_pad_flange = np.linalg.inv(homo_flange_gl) @ homo_pad_gl
         self.loc_acting_center_pos[2] = homo_pad_flange[2,3]

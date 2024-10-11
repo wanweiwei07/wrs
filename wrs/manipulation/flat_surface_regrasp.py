@@ -348,33 +348,55 @@ class FSRegraspPlanner(object):
             # make a copy to keep original movement
             obj_cmodel_copy = self.obj_cmodel.copy()
             obj_cmodel_copy.pose = obj_pose
-            obj_cmodel_copy.attach_to(m_col)
-            self.robot.goto_given_conf(jnt_values=jnt_values, ee_values=grasp.ee_values)
+            # self.robot.goto_given_conf(jnt_values=jnt_values, ee_values=grasp.ee_values)
             if toggle_dbg:
                 self.robot.gen_meshmodel().attach_to(base)
+            if i == 0:
+                jnt_values = self._graph.nodes[path[i]]['jnt_values']
+                start_jnt_values = self.robot.get_jnt_values()
+                goal_jnt_values = jnt_values
+                pick = self.pp_planner.gen_approach_to_given_conf(goal_jnt_values=goal_jnt_values,
+                                                                  start_jnt_values=start_jnt_values,
+                                                                  linear_distance=.1,
+                                                                  ee_values = self.robot.end_effector.jaw_range[1],
+                                                                  obstacle_list=obstacle_list,
+                                                                  object_list=[obj_cmodel_copy],
+                                                                  use_rrt=True)
+                mesh_list += pick.mesh_list
             if i >= 1:
                 prev_node = path[i - 1]
                 prev_obj_pose = self._graph.nodes[prev_node]['obj_pose']
                 prev_grasp = self._graph.nodes[prev_node]['grasp']
                 prev_jnt_values = self._graph.nodes[prev_node]['jnt_values']
                 if self._graph.edges[(prev_node, node)]['type'].endswith('transit'):
-                    obj_cmodel_copy.attach_to(base)
-                    obj_cmodel_copy.show_cdprim()
+                    if toggle_dbg:
+                        # show transit poses
+                        tmp_obj = obj_cmodel_copy.copy()
+                        tmp_obj.rgb = rm.const.pink
+                        tmp_obj.alpha = .3
+                        tmp_obj.attach_to(base)
+                        tmp_obj.show_cdprim()
                     prev2current = self.pp_planner.gen_depart_approach_with_given_conf(start_jnt_values=prev_jnt_values,
                                                                                        end_jnt_values=jnt_values,
                                                                                        depart_direction=None,
                                                                                        depart_distance=.05,
-                                                                                       depart_ee_values = self.robot.end_effector.jaw_range[1],
+                                                                                       depart_ee_values=
+                                                                                       self.robot.end_effector.jaw_range[
+                                                                                           1],
                                                                                        approach_direction=None,
                                                                                        approach_distance=.05,
-                                                                                       approach_ee_values = self.robot.end_effector.jaw_range[1],
+                                                                                       approach_ee_values=
+                                                                                       self.robot.end_effector.jaw_range[
+                                                                                           1],
                                                                                        granularity=granularity,
-                                                                                       obstacle_list=obstacle_list+[obj_cmodel_copy],
+                                                                                       obstacle_list=obstacle_list,
+                                                                                       object_list=[obj_cmodel_copy],
                                                                                        use_rrt=True)
-                    # if prev2current is None:
-                    #     pass
+                    if prev2current is None:
+                        pass
+                    for robot_mesh in prev2current.mesh_list:
+                        obj_cmodel_copy.attach_to(robot_mesh)
                     mesh_list += prev2current.mesh_list
-                    mesh_list.append(m_col)
                 if self._graph.edges[(prev_node, node)]['type'].endswith('transfer'):
                     self.robot.hold(obj_cmodel=obj_cmodel_copy, jaw_width=prev_grasp.ee_values)
                     prev2current = self.pp_planner.gen_depart_approach_with_given_conf(start_jnt_values=prev_jnt_values,
@@ -390,7 +412,8 @@ class FSRegraspPlanner(object):
                     #     start_jnt_values=prev_jnt_values,
                     #     end_jnt_values=jnt_values,
                     #     obstacle_list=[])
+                    if toggle_dbg:
+                        self.robot.gen_meshmodel(rgb=rm.const.red).attach_to(base)
                     self.robot.release(obj_cmodel=obj_cmodel_copy, jaw_width=self.robot.end_effector.jaw_range[1])
                     mesh_list += prev2current.mesh_list
-            mesh_list.append(m_col)
         return mesh_list

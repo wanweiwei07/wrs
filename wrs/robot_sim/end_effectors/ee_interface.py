@@ -11,14 +11,14 @@ class EEInterface(object):
 
     def __init__(self, pos=np.zeros(3), rotmat=np.eye(3), cdmesh_type=mcm.const.CDMeshType.AABB, name="end_effector"):
         self.name = name
-        self.pos = pos
-        self.rotmat = rotmat
+        self._pos = pos
+        self._rotmat = rotmat
         self.cdmesh_type = cdmesh_type
         # joints
         # -- coupling --
         # no coupling by default, change the pos if the coupling existed
         # use loc flange create non-straight couplings
-        self.coupling = rkjl.Anchor(name=name + "_coupling", pos=self.pos, rotmat=self.rotmat, n_flange=1)
+        self.coupling = rkjl.Anchor(name=name + "_coupling", pos=self._pos, rotmat=self._rotmat, n_flange=1)
         # acting center of the tool
         self.loc_acting_center_pos = np.zeros(3)
         self.loc_acting_center_rotmat = np.eye(3)
@@ -38,9 +38,17 @@ class EEInterface(object):
         return wrapper
 
     @property
+    def pos(self):
+        return self._pos
+
+    @property
+    def rotmat(self):
+        return self._rotmat
+
+    @property
     def gl_acting_center_pose(self):
-        gl_acting_center_pos = self.rotmat @ self.loc_acting_center_pos + self.pos
-        gl_acting_center_rotmat = self.rotmat @ self.loc_acting_center_rotmat
+        gl_acting_center_pos = self._rotmat @ self.loc_acting_center_pos + self._pos
+        gl_acting_center_rotmat = self._rotmat @ self.loc_acting_center_rotmat
         return (gl_acting_center_pos, gl_acting_center_rotmat)
 
     def update_oiee(self):
@@ -50,8 +58,8 @@ class EEInterface(object):
         date: 20230807
         """
         for oiee in self.oiee_list:
-            # oiee.install_onto(pos=self.pos, rotmat=self.rotmat)
-            oiee.root_pose = (self.pos, self.rotmat)
+            # oiee.install_onto(pos=self._pos, rotmat=self._rotmat)
+            oiee.root_pose = (self._pos, self._rotmat)
 
     @assert_oiee_decorator
     def hold(self, obj_cmodel, **kwargs):
@@ -63,7 +71,7 @@ class EEInterface(object):
         author: weiwei
         date: 20230811
         """
-        loc_pos, loc_rotmat = rm.rel_pose(self.pos, self.rotmat, obj_cmodel.pos, obj_cmodel.rotmat)
+        loc_pos, loc_rotmat = rm.rel_pose(self._pos, self._rotmat, obj_cmodel.pos, obj_cmodel.rotmat)
         obj_lnk = rkjl.Link(loc_pos=loc_pos, loc_rotmat=loc_rotmat, cmodel=obj_cmodel)
         self.oiee_list.append(obj_lnk)
         self.update_oiee()
@@ -194,9 +202,9 @@ class EEInterface(object):
                               toggle_cdmesh=toggle_cdmesh).attach_to(m_col)
 
     def _toggle_tcp_frame(self, m_col):
-        gl_acting_center_pos = self.rotmat @ self.loc_acting_center_pos + self.pos
-        gl_acting_center_rotmat = self.rotmat @ self.loc_acting_center_rotmat
+        gl_acting_center_pos = self._rotmat @ self.loc_acting_center_pos + self._pos
+        gl_acting_center_rotmat = self._rotmat @ self.loc_acting_center_rotmat
         print(gl_acting_center_rotmat)
-        rkmg.gen_indicated_frame(spos=self.pos,
+        rkmg.gen_indicated_frame(spos=self._pos,
                                  gl_pos=gl_acting_center_pos,
                                  gl_rotmat=gl_acting_center_rotmat).attach_to(m_col)

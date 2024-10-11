@@ -65,24 +65,24 @@ class RRTConnect(rrt.RRT):
         self.start_conf = start_conf
         self.goal_conf = goal_conf
         # check start and goal
-        if self._is_collided(start_conf, obstacle_list, other_robot_list):
+        start_cdresult = self._is_collided(start_conf, obstacle_list, other_robot_list, toggle_contacts=True)
+        if start_cdresult[0]:
             print("RRT: The start robot configuration is in collision!")
             if toggle_dbg:
-                _, points = self._is_collided(goal_conf, obstacle_list, other_robot_list, toggle_contacts=True)
                 from wrs import mgm
-                for point in points:
-                    mgm.gen_sphere(pos=point, radius=.01).attach_to(base)
-                self.robot.gen_meshmodel(alpha=.3).attach_to(base)
+                for point in start_cdresult[1]:
+                    mgm.gen_sphere(pos=point, radius=.005).attach_to(base)
+                self.robot.gen_meshmodel(toggle_cdprim=True, alpha=.3).attach_to(base)
                 base.run()
             return None
-        if self._is_collided(goal_conf, obstacle_list, other_robot_list):
+        goal_cdresult = self._is_collided(goal_conf, obstacle_list, other_robot_list, toggle_contacts=True)
+        if goal_cdresult[0]:
             print("RRT: The goal robot configuration is in collision!")
             if toggle_dbg:
-                _, points = self._is_collided(goal_conf, obstacle_list, other_robot_list, toggle_contacts=True)
                 from wrs import mgm
-                for point in points:
-                    mgm.gen_sphere(pos=point, radius=.01).attach_to(base)
-                self.robot.gen_meshmodel(alpha=.3).attach_to(base)
+                for point in goal_cdresult[1]:
+                    mgm.gen_sphere(pos=point, radius=.005).attach_to(base)
+                self.robot.gen_meshmodel(toggle_cdprim=True, alpha=.3).attach_to(base)
                 base.run()
             return None
         if self._is_goal_reached(conf=start_conf, goal_conf=goal_conf, threshold=ext_dist):

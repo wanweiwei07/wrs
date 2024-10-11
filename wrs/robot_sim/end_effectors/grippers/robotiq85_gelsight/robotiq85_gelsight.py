@@ -154,8 +154,8 @@ class Robotiq85Gelsight(gp.GripperInterface):
             self.cdmesh_collection.add_cm(cdmesh)
 
     def fix_to(self, pos, rotmat, angle=None):
-        self.pos = pos
-        self.rotmat = rotmat
+        self._pos = pos
+        self._rotmat = rotmat
         if angle is not None:
             self.lft_outer.jnts[1]['motion_value'] = angle
             self.lft_outer.jnts[3]['motion_value'] = -self.lft_outer.jnts[1]['motion_value']
@@ -163,7 +163,7 @@ class Robotiq85Gelsight(gp.GripperInterface):
             self.rgt_outer.jnts[1]['motion_value'] = self.lft_outer.jnts[1]['motion_value']
             self.rgt_outer.jnts[3]['motion_value'] = -self.lft_outer.jnts[1]['motion_value']
             self.rgt_inner.jnts[1]['motion_value'] = self.lft_outer.jnts[1]['motion_value']
-        self.coupling.fix_to(self.pos, self.rotmat)
+        self.coupling.fix_to(self._pos, self._rotmat)
         cpl_end_pos = self.coupling.jnts[-1]['gl_posq']
         cpl_end_rotmat = self.coupling.jnts[-1]['gl_rotmatq']
         self.lft_outer.fix_to(cpl_end_pos, cpl_end_rotmat)
@@ -221,9 +221,9 @@ class Robotiq85Gelsight(gp.GripperInterface):
                                       toggle_jntscs=toggle_jnt_frames,
                                       toggle_connjnt=toggle_connjnt).attach_to(sm_collection)
         if toggle_tcp_frame:
-            jaw_center_gl_pos = self.rotmat.dot(grpr.jaw_center_pos) + self.pos
-            jaw_center_gl_rotmat = self.rotmat.dot(grpr.loc_acting_center_rotmat)
-            gm.gen_dashed_stick(spos=self.pos,
+            jaw_center_gl_pos = self._rotmat.dot(grpr.jaw_center_pos) + self._pos
+            jaw_center_gl_rotmat = self._rotmat.dot(grpr.loc_acting_center_rotmat)
+            gm.gen_dashed_stick(spos=self._pos,
                                 epos=jaw_center_gl_pos,
                                 radius=.0062,
                                 rgba=[.5, 0, 1, 1],
@@ -253,9 +253,9 @@ class Robotiq85Gelsight(gp.GripperInterface):
                                       toggle_jntscs=toggle_jnt_frames,
                                       rgba=rgba).attach_to(mm_collection)
         if toggle_tcp_frame:
-            jaw_center_gl_pos = self.rotmat.dot(self.jaw_center_pos) + self.pos
-            jaw_center_gl_rotmat = self.rotmat.dot(self.loc_acting_center_rotmat)
-            gm.gen_dashed_stick(spos=self.pos,
+            jaw_center_gl_pos = self._rotmat.dot(self.jaw_center_pos) + self._pos
+            jaw_center_gl_rotmat = self._rotmat.dot(self.loc_acting_center_rotmat)
+            gm.gen_dashed_stick(spos=self._pos,
                                 epos=jaw_center_gl_pos,
                                 radius=.0062,
                                 rgba=[.5, 0, 1, 1],

@@ -116,9 +116,9 @@ class Lite6WRSGripper(gpi.GripperInterface):
             self.cdmesh_collection.add_cm(cdmesh)
 
     def fix_to(self, pos, rotmat):
-        self.pos = pos
-        self.rotmat = rotmat
-        self.coupling.fix_to(self.pos, self.rotmat)
+        self._pos = pos
+        self._rotmat = rotmat
+        self.coupling.fix_to(self._pos, self._rotmat)
         cpl_end_pos = self.coupling.jnts[-1]['gl_posq']
         cpl_end_rotmat = self.coupling.jnts[-1]['gl_rotmatq']
         self.lft.fix_to(cpl_end_pos, cpl_end_rotmat)
@@ -160,9 +160,9 @@ class Lite6WRSGripper(gpi.GripperInterface):
                                 toggle_jntscs=toggle_jnt_frames,
                                 toggle_connjnt=toggle_connjnt).attach_to(stickmodel)
         if toggle_tcp_frame:
-            jaw_center_gl_pos = self.rotmat.dot(self.jaw_center_pos) + self.pos
-            jaw_center_gl_rotmat = self.rotmat.dot(self.loc_acting_center_rotmat)
-            gm.gen_dashed_stick(spos=self.pos,
+            jaw_center_gl_pos = self._rotmat.dot(self.jaw_center_pos) + self._pos
+            jaw_center_gl_rotmat = self._rotmat.dot(self.loc_acting_center_rotmat)
+            gm.gen_dashed_stick(spos=self._pos,
                                 epos=jaw_center_gl_pos,
                                 radius=.0062,
                                 rgba=[.5, 0, 1, 1],
@@ -197,9 +197,9 @@ class Lite6WRSGripper(gpi.GripperInterface):
                                 toggle_jntscs=toggle_jnt_frames,
                                 rgba=rgba).attach_to(meshmodel)
         if toggle_tcp_frame:
-            jaw_center_gl_pos = self.rotmat.dot(self.jaw_center_pos) + self.pos
-            jaw_center_gl_rotmat = self.rotmat.dot(self.loc_acting_center_rotmat)
-            gm.gen_dashed_stick(spos=self.pos,
+            jaw_center_gl_pos = self._rotmat.dot(self.jaw_center_pos) + self._pos
+            jaw_center_gl_rotmat = self._rotmat.dot(self.loc_acting_center_rotmat)
+            gm.gen_dashed_stick(spos=self._pos,
                                 epos=jaw_center_gl_pos,
                                 radius=.0062,
                                 rgba=[.5, 0, 1, 1],
