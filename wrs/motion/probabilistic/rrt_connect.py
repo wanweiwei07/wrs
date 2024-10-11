@@ -57,7 +57,8 @@ class RRTConnect(rrt.RRT):
              max_n_iter=10000,
              max_time=15.0,
              smoothing_n_iter=500,
-             animation=False):
+             animation=False,
+             toggle_dbg=True):
         self.roadmap.clear()
         self.roadmap_start.clear()
         self.roadmap_goal.clear()
@@ -66,15 +67,23 @@ class RRTConnect(rrt.RRT):
         # check start and goal
         if self._is_collided(start_conf, obstacle_list, other_robot_list):
             print("RRT: The start robot configuration is in collision!")
+            if toggle_dbg:
+                _, points = self._is_collided(goal_conf, obstacle_list, other_robot_list, toggle_contacts=True)
+                from wrs import mgm
+                for point in points:
+                    mgm.gen_sphere(pos=point, radius=.01).attach_to(base)
+                self.robot.gen_meshmodel(alpha=.3).attach_to(base)
+                base.run()
             return None
         if self._is_collided(goal_conf, obstacle_list, other_robot_list):
             print("RRT: The goal robot configuration is in collision!")
-            _, points = self._is_collided(goal_conf, obstacle_list, other_robot_list, toggle_contacts=True)
-            from wrs import mgm
-            for point in points:
-                mgm.gen_sphere(pos=point, radius=.01).attach_to(base)
-            self.robot.gen_meshmodel(alpha=.3).attach_to(base)
-            base.run()
+            if toggle_dbg:
+                _, points = self._is_collided(goal_conf, obstacle_list, other_robot_list, toggle_contacts=True)
+                from wrs import mgm
+                for point in points:
+                    mgm.gen_sphere(pos=point, radius=.01).attach_to(base)
+                self.robot.gen_meshmodel(alpha=.3).attach_to(base)
+                base.run()
             return None
         if self._is_goal_reached(conf=start_conf, goal_conf=goal_conf, threshold=ext_dist):
             mot_data = rrt.motu.MotionData(self.robot)

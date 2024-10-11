@@ -227,7 +227,7 @@ class InterplatedMotion(object):
                                               granularity=0.02,
                                               type="sink",
                                               ee_values=None,
-                                              toggle_dbg=False):
+                                              toggle_dbg=True):
         """
         :param goal_jnt_values:
         :param direction:
@@ -286,7 +286,7 @@ class InterplatedMotion(object):
                         self.robot.goto_given_conf(jnt_values)
                         if ee_values is not None:
                             self.robot.change_jaw_width(jaw_width=ee_values)
-                        self.robot.gen_meshmodel(alpha=.3).attach_to(base)
+                        self.robot.gen_meshmodel(toggle_cdprim=True, alpha=.3).attach_to(base)
                         base.run()
                     print("Intermediated pose collided in gen_linear_motion!")
                     return None

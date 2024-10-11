@@ -35,7 +35,7 @@ class UR3_Rtq85(sari.SglArmRobotInterface):
         elr2 = self.cc.add_cce(self.end_effector.lft_outer_jlc.jnts[2].lnk)
         elr3 = self.cc.add_cce(self.end_effector.lft_outer_jlc.jnts[3].lnk)
         # manipulator
-        ml0 = self.cc.add_cce(self.manipulator.jlc.jnts[0].lnk, toggle_ext_collider=False)
+        ml0 = self.cc.add_cce(self.manipulator.jlc.jnts[0].lnk, toggle_extcd=False)
         ml1 = self.cc.add_cce(self.manipulator.jlc.jnts[1].lnk)
         ml2 = self.cc.add_cce(self.manipulator.jlc.jnts[2].lnk)
         ml3 = self.cc.add_cce(self.manipulator.jlc.jnts[3].lnk)

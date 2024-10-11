@@ -46,8 +46,7 @@ class OR2FG7(gpi.GripperInterface):
         self.jlc.jnts[0].lnk.cmodel = mcm.CollisionModel(
             initor=os.path.join(current_file_dir, "meshes", "inward_left_finger_link.stl"),
             cdmesh_type=self.cdmesh_type,
-            cdprim_type=mcm.const.CDPrimType.USER_DEFINED,
-            userdef_cdprim_fn=self._finger_cdprim, ex_radius=.005)
+            cdprim_type=mcm.const.CDPrimType.AABB)
         self.jlc.jnts[0].lnk.loc_rotmat = rm.rotmat_from_euler(0, 0, np.pi / 2)
         self.jlc.jnts[0].lnk.cmodel.rgba = np.array([.5, .5, 1, 1])
         # the 2nd joint (right finger, -y direction)
@@ -57,8 +56,7 @@ class OR2FG7(gpi.GripperInterface):
         self.jlc.jnts[1].lnk.cmodel = mcm.CollisionModel(
             initor=os.path.join(current_file_dir, "meshes", "inward_right_finger_link.stl"),
             cdmesh_type=self.cdmesh_type,
-            cdprim_type=mcm.const.CDPrimType.USER_DEFINED,
-            userdef_cdprim_fn=self._finger_cdprim, ex_radius=.005)
+            cdprim_type=mcm.const.CDPrimType.AABB)
         self.jlc.jnts[1].lnk.loc_rotmat = rm.rotmat_from_euler(0, 0, np.pi / 2)
         self.jlc.jnts[1].lnk.cmodel.rgba = np.array([1, .5, .5, 1])
         # reinitialize
@@ -70,19 +68,6 @@ class OR2FG7(gpi.GripperInterface):
         self.cdmesh_elements = (self.jlc.anchor.lnk_list[0],
                                 self.jlc.jnts[0].lnk,
                                 self.jlc.jnts[1].lnk)
-
-    @staticmethod
-    def _finger_cdprim(ex_radius):
-        pdcnd = CollisionNode("finger")
-        collision_primitive_c0 = CollisionBox(Point3(.015, .012, .08),
-                                              x=.0035 + ex_radius, y=0.0032 + ex_radius, z=.05 + ex_radius)
-        pdcnd.addSolid(collision_primitive_c0)
-        collision_primitive_c1 = CollisionBox(Point3(.008, .0, .008),
-                                              x=.018 + ex_radius, y=0.011 + ex_radius, z=.011 + ex_radius)
-        pdcnd.addSolid(collision_primitive_c1)
-        cdprim = NodePath("user_defined")
-        cdprim.attachNewNode(pdcnd)
-        return cdprim
 
     def fix_to(self, pos, rotmat, jaw_width=None):
         self.pos = pos
@@ -99,11 +84,11 @@ class OR2FG7(gpi.GripperInterface):
 
     @gpi.ei.EEInterface.assert_oiee_decorator
     def change_jaw_width(self, jaw_width):
-        side_jawwidth = jaw_width / 2.0
+        side_jawwidth = abs(jaw_width / 2.0)
         if self.jaw_range[0] / 2 <= side_jawwidth <= self.jaw_range[1] / 2:
             self.jlc.goto_given_conf(jnt_values=[side_jawwidth, -jaw_width])
         else:
-            raise ValueError("The angle parameter is out of range!")
+            raise ValueError(f"The angle parameter is out of range! {side_jawwidth} vs. {self.jaw_range}")
 
     def gen_stickmodel(self, toggle_tcp_frame=False, toggle_jnt_frames=False, name='or2fg7_stickmodel'):
         m_col = mmc.ModelCollection(name=name)

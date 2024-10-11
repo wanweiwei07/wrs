@@ -30,7 +30,7 @@ class XArmLite6WG2(sari.SglArmRobotInterface):
         el0 = self.cc.add_cce(self.end_effector.jlc.jnts[0].lnk)
         el1 = self.cc.add_cce(self.end_effector.jlc.jnts[1].lnk)
         # manipulator
-        mlb = self.cc.add_cce(self.manipulator.jlc.anchor.lnk_list[0], toggle_ext_collider=False)
+        mlb = self.cc.add_cce(self.manipulator.jlc.anchor.lnk_list[0], toggle_extcd=False)
         ml0 = self.cc.add_cce(self.manipulator.jlc.jnts[0].lnk)
         ml1 = self.cc.add_cce(self.manipulator.jlc.jnts[1].lnk)
         ml2 = self.cc.add_cce(self.manipulator.jlc.jnts[2].lnk)

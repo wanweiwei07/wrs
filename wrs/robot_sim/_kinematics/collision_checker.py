@@ -145,7 +145,7 @@ class CollisionChecker(object):
         self.dynamic_into_list = [] # for oiee
         self.dynamic_ext_list = [] # for ignoring the external collision of certain components
 
-    def add_cce(self, lnk, toggle_ext_collider=True):
+    def add_cce(self, lnk, toggle_extcd=True):
         """
         add a Link as a ccelement
         :param lnk: instance of rkjlc.Link
@@ -153,7 +153,7 @@ class CollisionChecker(object):
         author: weiwei
         date: 20231116
         """
-        self.cce_dict[lnk.uuid] = CCElement(lnk, self, toggle_extcd=toggle_ext_collider)
+        self.cce_dict[lnk.uuid] = CCElement(lnk, self, toggle_extcd=toggle_extcd)
         return lnk.uuid
 
     def remove_cce(self, lnk):
