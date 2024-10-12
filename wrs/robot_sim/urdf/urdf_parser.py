@@ -6,7 +6,9 @@ from lxml import etree as ET
 import networkx as nx
 import numpy as np
 import PIL
-from wrs import basis as trm, basis as rm, basis as btf
+import wrs.basis.robot_math as rm
+import wrs.basis.trimesh as trm
+import wrs.basis.trimesh_factory as btf
 
 
 def parse_origin(node):
@@ -317,7 +319,7 @@ class Box(URDFType):
         that represent this object.
         """
         if len(self._meshes) == 0:
-            self._meshes = [wrs.basis.trimesh.creation.box(extents=self.size)]
+            self._meshes = [btf.gen_box(xyz_lengths=self.size)]
         return self._meshes
 
     def copy(self, prefix='', scale=None):

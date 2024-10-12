@@ -2,16 +2,19 @@ import wrs.robot_sim._kinematics.jl as rkjl
 import numpy as np
 import networkx as nx
 import wrs.modeling.model_collection as mmc
+import wrs.modeling.geometric_model as mgm
+import wrs.modeling.collision_model as mcm
+import wrs.basis.robot_math as rm
+import wrs.robot_sim._kinematics.jlchain as rkjlc
 from wrs.robot_sim.urdf.urdf_parser import URDF
-from wrs import basis as rm, robot_sim as rkjlc, modeling as mcm, modeling as mgm
 from collections import OrderedDict
 
 
 class CVRB0609(object):
 
-    def __init__(self, urdf_string="cvrb0609.urdf"):
-        self._urdf_string = urdf_string
-        self._urdf = URDF.load(urdf_string)
+    def __init__(self, urdf_file="cvrb0609.urdf"):
+        self.urdf_file = urdf_file
+        self._urdf = URDF.load(urdf_file)
         self._jlg_segments = self._urdf.segment(toggle_debug=True)
         self.components = {}
         self.anchors = {}
@@ -36,12 +39,12 @@ class CVRB0609(object):
                 for i, jnt in enumerate(jlc.jnts):
                     urdf_jnt = jlg[sorted_edges[i + 1][0]][sorted_edges[i + 1][1]]['joint']
                     if urdf_jnt.joint_type == 'prismatic':
-                        jnt.change_type(rkjlc.rkc.JntType.PRISMATIC)
+                        jnt.change_type(rkjlc.const.JntType.PRISMATIC)
                     jnt.loc_pos = urdf_jnt.origin[:3, 3]
                     jnt.loc_motion_ax = urdf_jnt.axis
                     jnt.motion_range = np.asarray([urdf_jnt.limit.lower, urdf_jnt.limit.upper])
                     jnt.lnk.cmodel = mcm.CollisionModel(sorted_edges[i + 1][1].collision_mesh)
-                    jnt.lnk.cmodel.rgba = rm.bc.cool_map(i / jlc.n_dof)
+                    jnt.lnk.cmodel.rgba = rm.const.cool_map(i / jlc.n_dof)
                 jlc.set_flange(loc_flange_pos=end_fixed.origin[:3, 3], loc_flange_rotmat=end_fixed.origin[:3, :3])
                 jlc.finalize(iksolver=None)
                 values = self.components.setdefault(jlg.graph['name'], [])

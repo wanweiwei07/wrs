@@ -488,7 +488,7 @@ def gen_stick(spos=rm.np.array([.0, .0, .0]),
               type="rect",
               rgb=rm.const.tab20_list[10],
               alpha=1,
-              n_sec=8):
+              n_sec=16):
     """
     :param spos:
     :param epos:
