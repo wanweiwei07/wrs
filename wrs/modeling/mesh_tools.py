@@ -1,5 +1,6 @@
 import numpy as np
-from wrs import basis as trm, basis as rm
+import wrs.basis.trimesh as trm
+import wrs.basis.robot_math as rm
 
 
 def scale(obj, scale_ratio):
@@ -20,6 +21,8 @@ def scale(obj, scale_ratio):
         tmp_mesh = original_mesh.copy()
         tmp_mesh.apply_scale(scale_ratio_array)
         return tmp_mesh
+
+
 #
 #
 # def scale_and_save(obj, scale_ratio, save_name):
@@ -65,6 +68,7 @@ def convert_to_stl(obj, save_name, pos=np.zeros(3), rotmat=np.eye(3), scale_rati
     trm_model.apply_transform(homomat)
     trm_model = scale(trm_model, scale_ratio=scale_ratio)
     trm_model.export(save_name)
+
 
 if __name__ == '__main__':
     # The following contents are commented out to avoid mis-exec.

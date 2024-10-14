@@ -5,14 +5,14 @@ import itertools
 
 from collections import deque
 from tempfile import NamedTemporaryFile
-from distutils.spawn import find_executable
+from shutil import which
 from subprocess import check_call
 from xml.etree import cElementTree
 
 from ..constants import res, log
 
 _METERS_TO_INCHES = 1.0 / .0254
-_STEP_FACETER = find_executable('export_product_asm')
+_STEP_FACETER = which('export_product_asm')
 
 
 def load_step(file_obj, file_type=None):

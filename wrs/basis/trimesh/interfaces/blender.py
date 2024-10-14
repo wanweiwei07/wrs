@@ -1,8 +1,8 @@
 from .generic import MeshScript
 from ..templates import get_template
-from distutils.spawn import find_executable
+from shutil import which
 
-_blender_executable = find_executable('blender')
+_blender_executable = which('blender')
 _blender_template = get_template('blender.py.template')
 exists = _blender_executable is not None
 

@@ -15,6 +15,7 @@ class CobottaPro900Spine(sari.SglArmRobotInterface):
         current_file_dir = os.path.dirname(__file__)
         self.body = rkjl.Anchor(name=name + "_workbench", pos=self.pos, rotmat=self.rotmat)
         self.body.lnk_list[0].cmodel = mcm.CollisionModel(os.path.join(current_file_dir, "meshes", "workbench.stl"))
+        self.body.rgb = rm.const.dim_gray
         home_conf = np.zeros(6)
         home_conf[1] = -math.pi / 6
         home_conf[2] = math.pi / 2
@@ -130,7 +131,7 @@ if __name__ == '__main__':
     print(jnt_values)
     if jnt_values is not None:
         robot.goto_given_conf(jnt_values=jnt_values)
-        robot.gen_meshmodel(alpha=.5, toggle_tcp_frame=False, toggle_jnt_frames=False).attach_to(base)
+        robot.gen_meshmodel(alpha=1, toggle_tcp_frame=False, toggle_jnt_frames=False).attach_to(base)
         robot.gen_stickmodel(toggle_tcp_frame=True, toggle_jnt_frames=True).attach_to(base)
     # robot.show_cdprim()
     # robot.unshow_cdprim()

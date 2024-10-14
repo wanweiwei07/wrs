@@ -22,17 +22,18 @@ class SpineMiller(si.SCTInterface):
         self.anchor.lnk_list[0].cmodel.rgba = rm.const.orange_red
         # flange 1 (motor housing)
         self.anchor.lnk_list[1].cmodel = mcm.gen_stick(spos=rm.vec(0, 0, 0),
-                                                       epos=rm.vec(0, 0, 0.2),
-                                                       radius=.025)
+                                                       epos=rm.vec(0, 0, 0.175),
+                                                       type="round",
+                                                       radius=.02)
         self.anchor.lnk_list[1].cmodel.rgba = rm.const.silver
         # flange 2 (tool tip)
         self.anchor.lnk_list[2].cmodel = mcm.gen_stick(spos=rm.vec(0, 0, 0),
-                                                       epos=rm.vec(0, 0, 0.25),
+                                                       epos=rm.vec(0, 0, 0.22),
                                                        type="round",
                                                        radius=.005)
         self.anchor.lnk_list[2].cmodel.rgba = rm.const.antique_gold
         # action center
-        self.loc_acting_center_pos = rm.np.array([0, 0, .25])
+        self.loc_acting_center_pos = rm.np.array([0, 0, .22])
         # collision detection
         self.all_cdelements = [self.anchor.lnk_list[0],
                                self.anchor.lnk_list[1],
@@ -47,9 +48,10 @@ class SpineMiller(si.SCTInterface):
         self.anchor.fix_to(cpl_end_pos, cpl_end_rotmat)
 
     def gen_stickmodel(self, toggle_tcp_frame=False, toggle_jnt_frames=False,
-                                       toggle_flange_frame=False,name='_stickmodel'):
+                       toggle_flange_frame=False, name='_stickmodel'):
         m_col = mmc.ModelCollection(name=self.name + name)
-        self.coupling.gen_stickmodel(toggle_flange_frame=toggle_flange_frame, toggle_root_frame=toggle_jnt_frames).attach_to(m_col)
+        self.coupling.gen_stickmodel(toggle_flange_frame=toggle_flange_frame,
+                                     toggle_root_frame=toggle_jnt_frames).attach_to(m_col)
         self.anchor.gen_stickmodel(toggle_flange_frame=toggle_tcp_frame).attach_to(m_col)
         if toggle_tcp_frame:
             self._toggle_tcp_frame(m_col)

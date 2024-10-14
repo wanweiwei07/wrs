@@ -1,7 +1,7 @@
 from .generic import MeshScript
-from distutils.spawn import find_executable
+from shutil import which
 
-_scad_executable = find_executable('openscad')
+_scad_executable = which('openscad')
 exists = _scad_executable is not None
 
 def interface_scad(meshes, script):
