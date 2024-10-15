@@ -15,7 +15,7 @@ class CobottaPro900Spine(sari.SglArmRobotInterface):
         current_file_dir = os.path.dirname(__file__)
         self.body = rkjl.Anchor(name=name + "_workbench", pos=self.pos, rotmat=self.rotmat)
         self.body.lnk_list[0].cmodel = mcm.CollisionModel(os.path.join(current_file_dir, "meshes", "workbench.stl"))
-        self.body.rgb = rm.const.dim_gray
+        self.body.lnk_list[0].cmodel.rgb = rm.const.steel_gray
         home_conf = np.zeros(6)
         home_conf[1] = -math.pi / 6
         home_conf[2] = math.pi / 2
@@ -119,7 +119,19 @@ if __name__ == '__main__':
 
     base = wd.World(cam_pos=[1.7, 1.7, 1.7], lookat_pos=[0, 0, .3])
     mcm.mgm.gen_frame().attach_to(base)
+    # object
+    obj = mcm.CollisionModel(initor="./meshes/bone_v2_simplified.stl")
+    obj.rgb = rm.const.ivory
+    obj.pos = rm.vec(0.5, 0, -0.03)
+    obj.attach_to(base)
+    for i in range(4):
+        obj_tmp = obj.copy()
+        obj_tmp.pos=obj.pos+rm.vec(0,.035*(i+1),0)
+        obj_tmp.attach_to(base)
+    # robot
     robot = CobottaPro900Spine(enable_cc=True)
+    # sample a pont
+    # print(obj.sample_surface(n_samples=1))
     # robot.jaw_to(.02)
     # robot.gen_meshmodel(alpha=.5, toggle_tcp_frame=False, toggle_jnt_frames=False).attach_to(base)
     # robot.gen_stickmodel(toggle_tcp_frame=True, toggle_jnt_frames=True).attach_to(base)

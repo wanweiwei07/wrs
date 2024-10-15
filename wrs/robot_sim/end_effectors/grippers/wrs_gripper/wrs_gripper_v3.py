@@ -78,8 +78,7 @@ class WRSGripper3(gpi.GripperInterface):
         self._rotmat = rotmat
         if jaw_width is not None:
             self.change_jaw_width(jaw_width=jaw_width)
-        self.coupling.pos = self._pos
-        self.coupling.rotmat = self._rotmat
+        self.coupling.fix_to(pos=self._pos, rotmat=self._rotmat)
         self.jlc.fix_to(self.coupling.gl_flange_pose_list[0][0], self.coupling.gl_flange_pose_list[0][1])
         self.update_oiee()
 

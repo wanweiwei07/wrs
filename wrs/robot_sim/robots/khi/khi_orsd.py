@@ -10,17 +10,15 @@ class KHI_ORSD(sari.SglArmRobotInterface):
     def __init__(self, pos=np.zeros(3), rotmat=np.eye(3), name="khi_g", enable_cc=True):
         super().__init__(pos=pos, rotmat=rotmat, name=name, enable_cc=enable_cc)
         # arm
-        self.manipulator = manipulator.RS007L(pos=pos,
-                                              rotmat=rotmat,
+        self.manipulator = manipulator.RS007L(pos=self._pos, rotmat=self._rotmat,
                                               name='rs007l', enable_cc=False)
         # grippers
         self.end_effector = end_effector.ORSD(pos=self.manipulator.gl_flange_pos,
                                               rotmat=self.manipulator.gl_flange_rotmat,
-                                              coupling_offset_pos=np.array([0, 0, 0.0639]),
-                                              name='orsd')
+                                              coupling_offset_pos=np.array([0, 0, 0.0639]), name='orsd')
         # tool center point
-        self.manipulator.jlc._loc_flange_pos = self.end_effector.loc_acting_center_pos
-        self.manipulator.jlc._loc_flange_rotmat = self.end_effector.loc_acting_center_rotmat
+        self.manipulator.loc_tcp_pos = self.end_effector.loc_acting_center_pos
+        self.manipulator.loc_tcp_rotmat = self.end_effector.loc_acting_center_rotmat
         if self.cc is not None:
             self.setup_cc()
 
@@ -53,28 +51,29 @@ if __name__ == '__main__':
     import wrs.basis.robot_math as rm
     import wrs.modeling.geometric_model as mgm
 
-    base = wd.World(cam_pos=[1.7, 1.7, 1.7], lookat_pos=[0, 0, .3])
+    base = wd.World(cam_pos=[3, 3, 2], lookat_pos=[0, 0, 1])
 
     mgm.gen_frame().attach_to(base)
-    robot_s = KHI_ORSD(enable_cc=True)
-    # robot_s.jaw_to(.02)
-    robot_s.gen_meshmodel(toggle_tcp_frame=True, toggle_jnt_frames=True).attach_to(base)
-    # robot_s.gen_meshmodel(toggle_flange_frame=False, toggle_jnt_frames=False).attach_to(base)
-    robot_s.gen_stickmodel(toggle_tcp_frame=True, toggle_jnt_frames=True).attach_to(base)
+    robot = KHI_ORSD(enable_cc=True)
+    robot.goto_given_conf(jnt_values=robot.rand_conf())
+    # robot.jaw_to(.02)
+    robot.gen_meshmodel(toggle_tcp_frame=True, toggle_jnt_frames=True, alpha=.3).attach_to(base)
+    # robot.gen_meshmodel(toggle_flange_frame=False, toggle_jnt_frames=False).attach_to(base)
+    robot.gen_stickmodel(toggle_tcp_frame=True, toggle_jnt_frames=True).attach_to(base)
     base.run()
     tgt_pos = np.array([.25, .2, .15])
     tgt_rotmat = rm.rotmat_from_axangle([0, 1, 0], math.pi * 2 / 3)
     mgm.gen_frame(pos=tgt_pos, rotmat=tgt_rotmat).attach_to(base)
     # base.run()
     component_name = 'arm'
-    jnt_values = robot_s.ik(tgt_pos, tgt_rotmat)
-    robot_s.fk(jnt_values=jnt_values)
-    robot_s_meshmodel = robot_s.gen_meshmodel(toggle_tcp_frame=True)
-    robot_s_meshmodel.attach_to(base)
-    # robot_s.show_cdprimit()
-    robot_s.gen_stickmodel().attach_to(base)
+    jnt_values = robot.ik(tgt_pos, tgt_rotmat)
+    robot.fk(jnt_values=jnt_values)
+    robot_meshmodel = robot.gen_meshmodel(toggle_tcp_frame=True)
+    robot_meshmodel.attach_to(base)
+    # robot.show_cdprimit()
+    robot.gen_stickmodel().attach_to(base)
     # tic = time.time()
-    # result = robot_s.is_collided()
+    # result = robot.is_collided()
     # toc = time.time()
     # print(result, toc - tic)
     base.run()

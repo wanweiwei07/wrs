@@ -19,13 +19,13 @@ class SpineMiller(si.SCTInterface):
         self.anchor.lnk_list[0].cmodel = mcm.gen_stick(spos=rm.vec(0, 0, 0),
                                                        epos=rm.vec(0, 0, 0.05),
                                                        radius=.05)
-        self.anchor.lnk_list[0].cmodel.rgba = rm.const.orange_red
+        self.anchor.lnk_list[0].cmodel.rgba = rm.const.carrot_orange
         # flange 1 (motor housing)
         self.anchor.lnk_list[1].cmodel = mcm.gen_stick(spos=rm.vec(0, 0, 0),
                                                        epos=rm.vec(0, 0, 0.175),
-                                                       type="round",
+                                                       type="rect",
                                                        radius=.02)
-        self.anchor.lnk_list[1].cmodel.rgba = rm.const.silver
+        self.anchor.lnk_list[1].cmodel.rgba = rm.const.gray
         # flange 2 (tool tip)
         self.anchor.lnk_list[2].cmodel = mcm.gen_stick(spos=rm.vec(0, 0, 0),
                                                        epos=rm.vec(0, 0, 0.22),

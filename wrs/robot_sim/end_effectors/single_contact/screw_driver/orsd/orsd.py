@@ -33,12 +33,10 @@ class ORSD(si.SCTInterface):
                                                          n_sec=24)
         # jlc (essentially an anchor since there is no joint)
         self.jlc = rkjlc.JLChain(pos=self.coupling.gl_flange_pose_list[0][0],
-                                 rotmat=self.coupling.gl_flange_pose_list[0][1],
-                                 n_dof=0, name='orsd_jlc')
+                                 rotmat=self.coupling.gl_flange_pose_list[0][1], n_dof=0, name='orsd_jlc')
         self.jlc.anchor.loc_flange_pose_list[0][0] = np.array([0.16855000, 0, 0.09509044])
         self.jlc.anchor.lnk_list[0].cmodel = mcm.CollisionModel(
-            initor=os.path.join(current_file_dir, "meshes", "or_screwdriver.stl"),
-            cdmesh_type=self.cdmesh_type)
+            initor=os.path.join(current_file_dir, "meshes", "or_screwdriver.stl"), cdmesh_type=self.cdmesh_type)
         self.jlc.anchor.lnk_list[0].cmodel.rgba = np.array([.55, .55, .55, 1])
         # reinitialize
         self.jlc.finalize()
@@ -53,8 +51,7 @@ class ORSD(si.SCTInterface):
     def fix_to(self, pos, rotmat):
         self._pos = pos
         self._rotmat = rotmat
-        self.coupling.pos = self._pos
-        self.coupling.rotmat = self._rotmat
+        self.coupling.fix_to(pos=self._pos, rotmat=self._rotmat)
         self.jlc.fix_to(self.coupling.gl_flange_pose_list[0][0], self.coupling.gl_flange_pose_list[0][1])
         self.update_oiee()
 
@@ -90,10 +87,10 @@ class ORSD(si.SCTInterface):
 
 
 if __name__ == '__main__':
-    import wrs.visualization.panda.world as wd
+    from wrs import wd, mgm
 
     base = wd.World(cam_pos=[.5, .5, .5], lookat_pos=[0, 0, 0])
-    gm.gen_frame().attach_to(base)
+    mgm.gen_frame().attach_to(base)
     # for angle in np.linspace(0, .85, 8):
     #     grpr = Robotiq85()
     #     grpr.fk(angle)

@@ -5,9 +5,9 @@ import wrs.basis.robot_math as rm
 import wrs.modeling.collision_model as mcm
 import wrs.robot_sim.robots.robot_interface as ri
 import wrs.modeling.model_collection as mmc
-import wrs.robot_sim._kinematics.jlchain as rkjlc
 import wrs.robot_sim.robots.khi.khi_or2fg7 as kg
 import wrs.robot_sim.robots.khi.khi_orsd as ksd
+import wrs.robot_sim._kinematics.jlchain as rkjlc
 
 
 class KHI_DUAL(ri.RobotInterface):
@@ -33,8 +33,7 @@ class KHI_DUAL(ri.RobotInterface):
         self.lft_arm.fk(jnt_values=lft_arm_homeconf)
         # rgt
         self.rgt_arm = ksd.KHI_ORSD(pos=self.body.gl_flange_pose_list[1][0],
-                                    rotmat=self.body.gl_flange_pose_list[1][1],
-                                    enable_cc=False)
+                                    rotmat=self.body.gl_flange_pose_list[1][1], enable_cc=False)
         self.rgt_arm.fk(jnt_values=rgt_arm_homeconf)
         # collision detection
         if self.cc is not None:

@@ -40,7 +40,7 @@ class CollisionModel(mgm.GeometricModel):
                  userdef_cdprim_fn=None,
                  toggle_transparency=True,
                  toggle_twosided=False,
-                 rgb=rm.const.tab20_list[0],
+                 rgb=rm.const.steel_gray,
                  alpha=1):
         """
         :param initor:
