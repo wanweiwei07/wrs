@@ -59,8 +59,8 @@ class XYBot(ri.RobotInterface):
             for (pos, diameter) in obstacle_list:
                 dist = np.linalg.norm(np.asarray(pos) - self.get_jnt_values())
                 if dist <= diameter / 2.0:
-                    return True  # collision
-            return False  # safe
+                    return (True, []) if toggle_contacts else True  # collision
+            return (False, []) if toggle_contacts else False  # safe
         else:
             return super().is_collided(obstacle_list=obstacle_list, other_robot_list=other_robot_list,
                                        toggle_contacts=toggle_contacts)

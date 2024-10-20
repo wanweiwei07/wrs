@@ -88,7 +88,7 @@ class RRT(object):
             return collision_info
         else:
             print("The given joint angles are out of joint limits.")
-            return True
+            return (True, []) if toggle_contacts else True
 
     def _sample_conf(self, rand_rate, default_conf):
         if random.randint(0, 99) < rand_rate:
