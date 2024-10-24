@@ -15,8 +15,6 @@ class GripperInterface(ei.EEInterface):
         self.loc_fgr0_opening_vec = np.array([0, 1, 0])  # y as opening vec by default
         # backup
         self.jaw_width_bk = []
-        self.oiee_list_bk = []
-        self.oiee_pose_list_bk = []
 
     def backup_state(self):
         self.oiee_list_bk.append(self.oiee_list.copy())

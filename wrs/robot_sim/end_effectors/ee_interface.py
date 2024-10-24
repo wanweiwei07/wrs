@@ -26,6 +26,8 @@ class EEInterface(object):
         self.cdmesh_elements = []
         # object grasped/held/attached to end-effector; oiee = object in end-effector
         self.oiee_list = []
+        self.oiee_list_bk = []
+        self.oiee_pose_list_bk = []
 
     @staticmethod
     def assert_oiee_decorator(method):
@@ -104,6 +106,18 @@ class EEInterface(object):
         date: 20240314
         """
         self.oiee_list = []
+
+
+    def backup_state(self):
+        self.oiee_list_bk.append(self.oiee_list.copy())
+        self.oiee_pose_list_bk.append([oiee.loc_pose for oiee in self.oiee_list])
+
+    def restore_state(self):
+        self.oiee_list = self.oiee_list_bk.pop()
+        oiee_pose_list = self.oiee_pose_list_bk.pop()
+        for i, oiee in enumerate(self.oiee_list):
+            oiee.loc_pose = oiee_pose_list[i]
+        self.update_oiee()
 
     def change_ee_values(self, ee_values):
         raise NotImplementedError
