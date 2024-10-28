@@ -423,7 +423,7 @@ class ADPlanner(object):
             else:
                 return app_mot_data + dep_mot_data
 
-    def gen_depart_approach_with_given_conf(self,
+    def  gen_depart_approach_with_given_conf(self,
                                             start_jnt_values=None,
                                             end_jnt_values=None,
                                             depart_direction=None,

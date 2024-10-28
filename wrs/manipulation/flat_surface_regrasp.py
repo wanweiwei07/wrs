@@ -362,10 +362,12 @@ class FSRegraspPlanner(object):
                                                                   obstacle_list=obstacle_list,
                                                                   object_list=[obj_cmodel_copy],
                                                                   use_rrt=True)
+                for robot_mesh in pick.mesh_list:
+                    obj_cmodel_copy.attach_to(robot_mesh)
                 mesh_list += pick.mesh_list
+            print(i)
             if i >= 1:
                 prev_node = path[i - 1]
-                prev_obj_pose = self._graph.nodes[prev_node]['obj_pose']
                 prev_grasp = self._graph.nodes[prev_node]['grasp']
                 prev_jnt_values = self._graph.nodes[prev_node]['jnt_values']
                 if self._graph.edges[(prev_node, node)]['type'].endswith('transit'):
@@ -379,12 +381,12 @@ class FSRegraspPlanner(object):
                     prev2current = self.pp_planner.gen_depart_approach_with_given_conf(start_jnt_values=prev_jnt_values,
                                                                                        end_jnt_values=jnt_values,
                                                                                        depart_direction=None,
-                                                                                       depart_distance=.05,
+                                                                                       depart_distance=.07,
                                                                                        depart_ee_values=
                                                                                        self.robot.end_effector.jaw_range[
                                                                                            1],
                                                                                        approach_direction=None,
-                                                                                       approach_distance=.05,
+                                                                                       approach_distance=.07,
                                                                                        approach_ee_values=
                                                                                        self.robot.end_effector.jaw_range[
                                                                                            1],
@@ -398,6 +400,8 @@ class FSRegraspPlanner(object):
                         obj_cmodel_copy.attach_to(robot_mesh)
                     mesh_list += prev2current.mesh_list
                 if self._graph.edges[(prev_node, node)]['type'].endswith('transfer'):
+                    self.robot.goto_given_conf(prev_jnt_values)
+                    obj_cmodel_copy.pose = self._graph.nodes[prev_node]['obj_pose']
                     self.robot.hold(obj_cmodel=obj_cmodel_copy, jaw_width=prev_grasp.ee_values)
                     prev2current = self.pp_planner.gen_depart_approach_with_given_conf(start_jnt_values=prev_jnt_values,
                                                                                        end_jnt_values=jnt_values,

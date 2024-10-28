@@ -15,8 +15,7 @@ class XArmLite6(mi.ManipulatorInterface):
     Date: 20220909osaka, 20240318
     """
 
-    def __init__(self, pos=np.zeros(3), rotmat=np.eye(3),
-                 name='xarm_lite6', enable_cc=False):
+    def __init__(self, pos=np.zeros(3), rotmat=np.eye(3), name='xarm_lite6', enable_cc=False):
         home_conf = np.array([0., 0.173311, 0.555015, 0., 0.381703, 0.])
         super().__init__(pos=pos, rotmat=rotmat, home_conf=home_conf, name=name, enable_cc=enable_cc)
         current_file_dir = os.path.dirname(__file__)
@@ -29,7 +28,7 @@ class XArmLite6(mi.ManipulatorInterface):
         # first joint and link
         self.jlc.jnts[0].loc_pos = np.array([.0, .0, .2433])
         self.jlc.jnts[0].loc_motion_ax = np.array([0, 0, 1])
-        self.jlc.jnts[0].motion_range = np.array([-2 * math.pi, 2 * math.pi])
+        self.jlc.jnts[0].motion_range = np.array([-math.pi,  math.pi])
         self.jlc.jnts[0].lnk.cmodel = mcm.CollisionModel(os.path.join(current_file_dir, "meshes", "link1.stl"))
         self.jlc.jnts[0].lnk.cmodel.rgba = rm.const.tab20_list[15]
         # second joint and link
@@ -52,7 +51,7 @@ class XArmLite6(mi.ManipulatorInterface):
         self.jlc.jnts[3].loc_pos = np.array([.087, -.2276, .0])
         self.jlc.jnts[3].loc_rotmat = rm.rotmat_from_euler(1.5708, 0., 0.)
         self.jlc.jnts[3].loc_motion_ax = np.array([0, 0, 1])
-        self.jlc.jnts[3].motion_range = np.array([-2 * math.pi, 2 * math.pi])
+        self.jlc.jnts[3].motion_range = np.array([-math.pi, math.pi])
         self.jlc.jnts[3].lnk.cmodel = mcm.CollisionModel(os.path.join(current_file_dir, "meshes", "link4.stl"),
                                                          cdprim_type=mcm.const.CDPrimType.USER_DEFINED, ex_radius=.005,
                                                          userdef_cdprim_fn=self._link4_cdprim)
@@ -68,7 +67,7 @@ class XArmLite6(mi.ManipulatorInterface):
         self.jlc.jnts[5].loc_pos = np.array([.0, .0615, .0])
         self.jlc.jnts[5].loc_rotmat = rm.rotmat_from_euler(-1.5708, 0., 0.)
         self.jlc.jnts[5].loc_motion_ax = np.array([0, 0, 1])
-        self.jlc.jnts[5].motion_range = np.array([-2 * math.pi, 2 * math.pi])
+        self.jlc.jnts[5].motion_range = np.array([-math.pi, math.pi])
         self.jlc.jnts[5].lnk.cmodel = mcm.CollisionModel(os.path.join(current_file_dir, "meshes", "link6.stl"))
         self.jlc.jnts[5].lnk.cmodel.rgba = rm.const.tab20_list[15]
         self.jlc.finalize(ik_solver='a', identifier_str=name)
@@ -161,7 +160,7 @@ class XArmLite6(mi.ManipulatorInterface):
         b = np.linalg.norm(self.jlc.jnts[3].loc_pos)
         tmp_acos_target = (a ** 2 + b ** 2 - c ** 2) / (2 * a * b)
         if tmp_acos_target > 1 or tmp_acos_target < -1:
-            print("The triangle formed by the robot arm is violated!")
+            print("Analytical IK Failure: The triangle formed by the robot arm is violated!")
             return None
         j2_value = math.acos(tmp_acos_target)
         j2_initial_offset = math.atan(abs(self.jlc.jnts[3].loc_pos[0] / self.jlc.jnts[3].loc_pos[1]))
@@ -173,7 +172,7 @@ class XArmLite6(mi.ManipulatorInterface):
             return None
         tmp_acos_target = (a ** 2 + c ** 2 - b ** 2) / (2 * a * c)
         if tmp_acos_target > 1 or tmp_acos_target < -1:
-            print("The triangle formed by the robot arm is violated!")
+            print("Analytical IK Failure: The triangle formed by the robot arm is violated!")
             return None
         j1_value_upper = math.acos(tmp_acos_target)
         # assume d, c, e are the edges of the lower triangle formed with the ground
@@ -181,7 +180,7 @@ class XArmLite6(mi.ManipulatorInterface):
         e = math.sqrt(rrr_x ** 2 + rrr_y ** 2 + rrr_z ** 2)
         tmp_acos_target = (d ** 2 + c ** 2 - e ** 2) / (2 * d * c)
         if tmp_acos_target > 1 or tmp_acos_target < -1:
-            print("The triangle formed with the ground is violated!")
+            print("Analytical IK Failure: The triangle formed with the ground is violated!")
             return None
         j1_value_lower = math.acos(tmp_acos_target)
         j1_value = math.pi - (j1_value_lower + j1_value_upper)

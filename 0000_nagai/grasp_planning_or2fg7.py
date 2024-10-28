@@ -10,7 +10,7 @@ grasp_path = os.path.join(os.getcwd(), "pickles", mesh_name+"_grasp.pickle")
 base = wd.World(cam_pos=rm.np.array([.5, .5, .5]), lookat_pos=rm.np.array([0, 0, 0]))
 # mgm.gen_frame().attach_to(base)
 
-obj_cmodel = mcm.CollisionModel(os.path.join(mesh_path, mesh_name))
+obj_cmodel = mcm.CollisionModel(mesh_path)
 obj_cmodel.attach_to(base)
 
 gripper = end_effector.OR2FG7()

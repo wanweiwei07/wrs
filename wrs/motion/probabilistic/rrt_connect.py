@@ -73,6 +73,9 @@ class RRTConnect(rrt.RRT):
                 for point in start_cdresult[1]:
                     mgm.gen_sphere(pos=point, radius=.005).attach_to(base)
                 self.robot.gen_meshmodel(toggle_cdprim=True, alpha=.3).attach_to(base)
+                for obstacle in obstacle_list:
+                    obstacle.attach_to(base)
+                    obstacle.show_cdprim()
                 base.run()
             return None
         goal_cdresult = self._is_collided(goal_conf, obstacle_list, other_robot_list, toggle_contacts=True)
@@ -83,6 +86,9 @@ class RRTConnect(rrt.RRT):
                 for point in goal_cdresult[1]:
                     mgm.gen_sphere(pos=point, radius=.005).attach_to(base)
                 self.robot.gen_meshmodel(toggle_cdprim=True, alpha=.3).attach_to(base)
+                for obstacle in obstacle_list:
+                    obstacle.attach_to(base)
+                    obstacle.show_cdprim()
                 base.run()
             return None
         if self._is_goal_reached(conf=start_conf, goal_conf=goal_conf, threshold=ext_dist):

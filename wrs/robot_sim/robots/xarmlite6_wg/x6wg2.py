@@ -38,7 +38,7 @@ class XArmLite6WG2(sari.SglArmRobotInterface):
         ml4 = self.cc.add_cce(self.manipulator.jlc.jnts[4].lnk)
         ml5 = self.cc.add_cce(self.manipulator.jlc.jnts[5].lnk)
         from_list = [mlb, ml0, ml1]
-        into_list = ee_cces + [ml3, ml4, ml5]
+        into_list = ee_cces + [ml4, ml5]
         self.cc.set_cdpair_by_ids(from_list, into_list)
         self.cc.dynamic_into_list = [mlb, ml0, ml1, ml2, ml3]
         self.cc.dynamic_ext_list = ee_cces[1:]
