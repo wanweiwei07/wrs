@@ -89,7 +89,7 @@ class RobotiqHE(gpi.GripperInterface):
 
     def fix_to(self, pos, rotmat, jaw_width=None):
         self._pos = pos
-        self.rotmat = rotmat
+        self._rotmat = rotmat
         if jaw_width is not None:
             self.change_jaw_width(jaw_width=jaw_width)
         self.coupling.pos = self._pos
