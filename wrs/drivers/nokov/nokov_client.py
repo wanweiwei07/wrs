@@ -302,18 +302,20 @@ class NokovClient(object):
         rigidbody_relations = {}
         skeleton_relations = {}
         for i in range(data_description.nDataDescriptions):
-            print(data_description.arrDataDescriptions[i].dump_dict()['end_type'])
+            print(data_description.arrDataDescriptions[i].dump_dict()['type'])
             data = data_description.arrDataDescriptions[i].dump_dict()['Data']
-            rigidbody_description = data.RigidBodyDescription.contents.dump_dict()
-            skeleton_description = data.SkeletonDescription.contents.dump_dict()
-            rigidbody_relations[rigidbody_description['szName']] = {'ID': rigidbody_description['ID'],
-                                                                    'parentID': rigidbody_description['parentID'],
-                                                                    'offsetx': rigidbody_description['offsetx'],
-                                                                    'offsety': rigidbody_description['offsety'],
-                                                                    'offsetz': rigidbody_description['offsetz']}
-            skeleton_relations[skeleton_description['szName']] = {'RigidBodies': skeleton_description['RigidBodies'],
-                                                                  'nRigidBodies': skeleton_description['nRigidBodies'],
-                                                                  'skeletonID': skeleton_description['skeletonID']}
+            if data.RigidBodyDescription:
+                rigidbody_description = data.RigidBodyDescription.contents.dump_dict()
+                rigidbody_relations[rigidbody_description['szName']] = {'ID': rigidbody_description['ID'],
+                                                                        'parentID': rigidbody_description['parentID'],
+                                                                        'offsetx': rigidbody_description['offsetx'],
+                                                                        'offsety': rigidbody_description['offsety'],
+                                                                        'offsetz': rigidbody_description['offsetz']}
+            if data.SkeletonDescription:
+                skeleton_description = data.SkeletonDescription.contents.dump_dict()
+                skeleton_relations[skeleton_description['szName']] = {'RigidBodies': skeleton_description['RigidBodies'],
+                                                                      'nRigidBodies': skeleton_description['nRigidBodies'],
+                                                                      'skeletonID': skeleton_description['skeletonID']}
         return rigidbody_relations, skeleton_relations
 
 
@@ -321,6 +323,9 @@ if __name__ == "__main__":
     # 160,
     server = NokovClient()
     while True:
-        data = server.get_rigidbody_set_frame()
+        # data = server.get_rigidbody_set_frame()
+        data = server.get_marker_set_frame()
+        # print(data.rigidbody_set_dict[0])
+        # data = server.get_marker_set_frame()
         if data is not None:
             print(data)
