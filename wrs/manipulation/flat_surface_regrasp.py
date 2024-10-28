@@ -53,17 +53,20 @@ class FSRegSpotCollection(object):
 
     def add_new_spot(self, spot_pos, spot_rotz, barrier_z_offset=.0, consider_robot=True, toggle_dbg=False):
         fs_regspot = mpfsp.FSRegSpot(spot_pos, spot_rotz)
-        barrier_obstacle = mcm.gen_surface_barrier(spot_pos[2] + barrier_z_offset)
+        if barrier_z_offset is not None:
+            obstacle_list = [mcm.gen_surface_barrier(spot_pos[2] + barrier_z_offset)]
+        else:
+            obstacle_list = []
         for pose_id, pose in enumerate(self.fs_reference_poses):
             pos = pose[0] + spot_pos
             rotmat = rm.rotmat_from_euler(0, 0, spot_rotz) @ pose[1]
             feasible_gids, feasible_grasps, feasible_jv_list = self.grasp_reasoner.find_feasible_gids(
                 reference_grasp_collection=self.reference_grasp_collection,
-                obstacle_list=[barrier_obstacle],
+                obstacle_list=obstacle_list,
                 goal_pose=(pos, rotmat),
                 consider_robot=consider_robot,
                 toggle_keep=True,
-                toggle_dbg=False)
+                toggle_dbg=True)
             if feasible_gids is not None:
                 fs_regspot.add_fspg(mpfsp.FSPG(fs_pose_id=pose_id,
                                                obj_pose=(pos, rotmat),

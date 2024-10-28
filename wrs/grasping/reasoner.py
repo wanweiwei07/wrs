@@ -138,6 +138,7 @@ class GraspReasoner(object):
         if toggle_dbg:
             for obstacle in obstacle_list:
                 obstacle.attach_to(base)
+                obstacle.alpha = .3
                 obstacle.show_cdprim()
         for goal_id, goal_pose in enumerate(goal_pose_list):
             goal_pos = goal_pose[0]
@@ -181,11 +182,11 @@ class GraspReasoner(object):
                                 if toggle_dbg:
                                     self.robot.end_effector.gen_meshmodel(rgb=rm.const.orange, alpha=.3).attach_to(base)
                                     self.robot.gen_meshmodel(rgb=rm.const.orange, alpha=.3).attach_to(base)
-                                    # _, points = self.robot.is_collided(obstacle_list=obstacle_list, toggle_contacts=True)
-                                    # from wrs import mgm
-                                    # for point in points:
-                                    #     mgm.gen_sphere(pos=point, radius=.001).attach_to(base)
-                                    # base.run()
+                                    _, points = self.robot.is_collided(obstacle_list=obstacle_list, toggle_contacts=True)
+                                    from wrs import mgm
+                                    for point in points:
+                                        mgm.gen_sphere(pos=point, radius=.01).attach_to(base)
+                                    base.run()
                     else:
                         ik_failed_grasps_num = '-'
                         rbt_collided_grasps_num = '-'
