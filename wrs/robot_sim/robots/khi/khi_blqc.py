@@ -74,6 +74,7 @@ class KHI_BLQC(sari.SglArmRobotInterface):
         self.manipulator.loc_tcp_rotmat = rel_rotmat
 
     def detach_tool(self):
+        tool = self.end_effector
         self.end_effector = None
         if self.cc is not None:  # udpate cc
             self.reset_cc()
@@ -81,6 +82,7 @@ class KHI_BLQC(sari.SglArmRobotInterface):
         self.update_end_effector()
         self.manipulator.loc_tcp_pos = self.tool_changer.loc_flange_pose_list[0][0]
         self.manipulator.loc_tcp_rotmat = self.tool_changer.loc_flange_pose_list[0][1]
+        return tool
 
     def update_end_effector(self, ee_values=None):
         self.tool_changer.fix_to(pos=self._manipulator.gl_flange_pos, rotmat=self._manipulator.gl_flange_rotmat)
@@ -152,28 +154,23 @@ if __name__ == '__main__':
     import wrs.visualization.panda.world as wd
     import wrs.robot_sim.end_effectors.grippers.or2fg7.or2fg7 as org
     import wrs.robot_sim.end_effectors.single_contact.screw_driver.orsd.orsd as ors
-    import wrs.motion.probabilistic.rrt_connect as rrtc
+    from wrs import adp
 
     base = wd.World(cam_pos=[1.7, 1.7, 1.7], lookat_pos=[0, 0, .3])
     mgm.gen_frame().attach_to(base)
-    robot = KHI_BLQC(enable_cc=True)
-    robot.gen_meshmodel().attach_to(base)
-    base.run()
-
-    rrtc_planner = rrtc.RRTConnect(robot)
-
+    # robot
+    rbt = KHI_BLQC(enable_cc=True)
+    rbt.gen_meshmodel().attach_to(base)
+    # tool gripper
     ee_g_pos = np.array([-.4, .4, .19])
     ee_g_rotmat = rm.rotmat_from_euler(0, np.radians(180), 0)
+    mgm.gen_frame(pos=ee_g_pos, rotmat=ee_g_rotmat).attach_to(base)
     ee_g = org.OR2FG7(pos=ee_g_pos,
                       rotmat=ee_g_rotmat,
                       coupling_offset_pos=np.array([0, 0, 0.0314]))
     ee_g_meshmodel = ee_g.gen_meshmodel(toggle_jnt_frames=True, toggle_tcp_frame=True)
     ee_g_meshmodel.attach_to(base)
-    jv_attach_eeg = robot.ik(ee_g_pos, ee_g_rotmat)
-    robot.goto_given_conf(jv_attach_eeg)
-    robot.gen_meshmodel().attach_to(base)
-    print(jv_attach_eeg)
-
+    # tool screw driver
     ee_sd_pos = np.array([-.4, .6, .19])
     ee_sd_rotmat = rm.rotmat_from_euler(0, np.radians(180), np.radians(180))
     ee_sd = ors.ORSD(pos=ee_sd_pos,
@@ -181,109 +178,76 @@ if __name__ == '__main__':
                      coupling_offset_pos=np.array([0, 0, 0.0314]))
     ee_sd_meshmodel = ee_sd.gen_meshmodel(toggle_jnt_frames=True, toggle_tcp_frame=True)
     ee_sd_meshmodel.attach_to(base)
-    jv_attach_eesd = robot.ik(ee_sd_pos, ee_sd_rotmat)
-    robot.goto_given_conf(jv_attach_eesd)
-    robot.gen_meshmodel().attach_to(base)
-    print(jv_attach_eesd)
+    # start conf
+    start_conf = rbt.get_jnt_values()
+    # ad planner
+    ad_planner = adp.ADPlanner(robot=rbt)
+    # attach eeg
+    mot_attach_eeg = ad_planner.gen_approach(goal_tcp_pos=ee_g_pos,
+                                             goal_tcp_rotmat=ee_g_rotmat,
+                                             start_jnt_values=start_conf,
+                                             linear_direction=-rm.const.z_ax)
+    rbt.goto_given_conf(mot_attach_eeg.jv_list[-1])
+    rbt.attach_tool(ee_g)
+    # eeg action
+    ee_g_act_pos = np.array([.4, -.4, .19])
+    ee_g_act_rotmat = ee_g_rotmat
+    mot_eeg = ad_planner.gen_depart_approach_with_given_conf(
+        start_jnt_values=mot_attach_eeg.jv_list[-1],
+        end_jnt_values=mot_attach_eeg.jv_list[-1],
+        depart_direction=-rm.const.x_ax,
+        depart_distance=.3,
+        approach_direction=rm.const.x_ax,
+        approach_distance=.3)
+    tool = rbt.detach_tool()
+    # attach eesd
+    end_jnt_values = rbt.ik(ee_sd_pos, ee_sd_rotmat)
+    mot_attach_eesd = ad_planner.gen_depart_approach_with_given_conf(
+        start_jnt_values=mot_attach_eeg.jv_list[-1],
+        end_jnt_values=end_jnt_values,
+        depart_direction=rm.const.z_ax,
+        approach_direction=-rm.const.z_ax)
+    rbt.goto_given_conf(mot_attach_eesd.jv_list[-1])
+    rbt.attach_tool(ee_sd)
+    # eesd action
+    ee_sd_act_pos = np.array([.4, -.4, .19])
+    ee_sd_act_rotmat = ee_sd_rotmat
+    mot_eesd = ad_planner.gen_depart_approach_with_given_conf(
+        start_jnt_values=mot_attach_eesd.jv_list[-1],
+        end_jnt_values=mot_attach_eesd.jv_list[-1],
+        depart_direction=rm.const.x_ax,
+        depart_distance=.3,
+        approach_direction=-rm.const.x_ax,
+        approach_distance=.3)
+    tool = rbt.detach_tool()
 
-    goal_pos = np.array([.3, -.5, .19])
-    goal_rotmat = rm.rotmat_from_euler(0, np.radians(90), 0)
-    jv_goal = robot.ik(tgt_pos=goal_pos, tgt_rotmat=goal_rotmat)
-    robot.goto_given_conf(jv_goal)
-    robot.gen_meshmodel().attach_to(base)
-    print(jv_goal)
 
-    base.run()
-
-    robot_path_attach_ee_g = rrtc_planner.plan(start_conf=robot_s.get_jnt_values(),
-                                               goal_conf=jv_attach_eeg,
-                                               obstacle_list=[],
-                                               ext_dist=.1,
-                                               max_time=300)
-    print(len(robot_path_attach_ee_g))
-
-    # for jnt_values in robot_path:
-    #     robot_s.fk(jnt_values)
-    #     robot_s.gen_meshmodel().attach_to(base)
-    # base.run()
-
-    robot_path = robot_path_attach_ee_g
-
-    counter = [0]
-    robot_attached_list = []
-    object_attached_list = []
+    class Data(object):
+        def __init__(self, mot_data):
+            self.counter = 0
+            self.mot_data = mot_data
 
 
-    def update(robot_s, ee_g, ee_sd, robot_path, counter, robot_attached_list, object_attached_list, task):
-        if counter[0] >= len(robot_path):
-            counter[0] = 0
-        if len(robot_attached_list) != 0:
-            for robot_attached in robot_attached_list:
-                robot_attached.detach()
-            for object_attached in object_attached_list:
-                object_attached.detach()
-            robot_attached_list.clear()
-            object_attached_list.clear()
-        jnt_values = robot_path[counter[0]]
-        robot_s.fk(jnt_values)
-        robot_meshmodel = robot_s.gen_mesh_model()
-        robot_meshmodel.attach_to(base)
-        robot_attached_list.append(robot_meshmodel)
-        counter[0] += 1
-        print(counter[0])
+    anime_data = Data(mot_attach_eeg + mot_eeg + mot_attach_eesd + mot_eesd)
+
+
+    def update(anime_data, task):
+        if anime_data.counter > 0:
+            anime_data.mot_data.mesh_list[anime_data.counter - 1].detach()
+        if anime_data.counter >= len(anime_data.mot_data):
+            # for mesh_model in anime_data.mot_data.mesh_list:
+            #     mesh_model.detach()
+            anime_data.counter = 0
+        mesh_model = anime_data.mot_data.mesh_list[anime_data.counter]
+        mesh_model.attach_to(base)
+        mesh_model.show_cdprim()
+        if base.inputmgr.keymap['space']:
+            anime_data.counter += 1
         return task.again
 
 
-    taskMgr.doMethodLater(0.01, update, 'udpate',
-                          extraArgs=[robot_s, ee_g, ee_sd, robot_path, counter, robot_attached_list,
-                                     object_attached_list],
+    taskMgr.doMethodLater(0.01, update, "update",
+                          extraArgs=[anime_data],
                           appendTask=True)
-    base.run()
 
-    robot_s = KHI_BLQC(enable_cc=True)
-    robot_s.gen_meshmodel(toggle_tcp_frame=True, toggle_jnt_frames=True).attach_to(base)
-
-    ee_g_pos = np.array([0, .8, .19])
-    ee_g_rotmat = rm.rotmat_from_euler(0, np.radians(180), 0)
-    ee_g = org.OR2FG7(pos=ee_g_pos,
-                      rotmat=ee_g_rotmat,
-                      coupling_offset_pos=np.array([0, 0, 0.0314]), enable_cc=True)
-    ee_g.gen_meshmodel().attach_to(base)
-
-    ee_sd_pos = np.array([.15, .8, .19])
-    ee_sd_rotmat = rm.rotmat_from_euler(0, np.radians(180), np.radians(-90))
-    ee_sd = ors.ORSD(pos=ee_sd_pos,
-                     rotmat=ee_sd_rotmat,
-                     coupling_offset_pos=np.array([0, 0, 0.0314]))
-    ee_sd.gen_meshmodel().attach_to(base)
-
-    jnt_values = robot_s.ik(ee_g_pos, ee_g_rotmat)
-    robot_s.fk(jnt_values=jnt_values)
-    robot_s_meshmodel = robot_s.gen_meshmodel(toggle_tcp_frame=True)
-    robot_s_meshmodel.attach_to(base)
-
-    robot_s.attach_tool(ee_g)
-    goal_pos = np.array([.3, -.8, .19])
-    goal_rotmat = rm.rotmat_from_euler(0, np.radians(90), 0)
-    jnt_values = robot_s.ik(tgt_pos=goal_pos, tgt_rotmat=goal_rotmat)
-    robot_s.fk(jnt_values=jnt_values)
-    robot_s_meshmodel = robot_s.gen_meshmodel(toggle_tcp_frame=True)
-    robot_s_meshmodel.attach_to(base)
-    base.run()
-
-    tgt_pos = np.array([.45, .2, .35])
-    tgt_rotmat = rm.rotmat_from_axangle([0, 1, 0], math.pi * 2 / 3)
-    gm.gen_frame(pos=tgt_pos, rotmat=tgt_rotmat).attach_to(base)
-    # base.run()
-    component_name = 'arm'
-    jnt_values = robot_s.ik(component_name, tgt_pos, tgt_rotmat)
-    robot_s.fk(component_name, jnt_values=jnt_values)
-    robot_s_meshmodel = robot_s.gen_meshmodel(toggle_tcp_frame=True)
-    robot_s_meshmodel.attach_to(base)
-    # robot_s.show_cdprimit()
-    robot_s.gen_stickmodel().attach_to(base)
-    # tic = time.time()
-    # result = robot_s.is_collided()
-    # toc = time.time()
-    # print(result, toc - tic)
     base.run()

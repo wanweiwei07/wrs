@@ -86,7 +86,7 @@ class RRTConnect(rrt.RRT):
                 base.run()
             return None
         if self._is_goal_reached(conf=start_conf, goal_conf=goal_conf, threshold=ext_dist):
-            mot_data = rrt.motu.MotionData(self.robot)
+            mot_data = rrt.motd.MotionData(self.robot)
             mot_data.extend(jv_list=[start_conf, goal_conf])
             return mot_data
         self.roadmap_start.add_node("start", conf=start_conf)
