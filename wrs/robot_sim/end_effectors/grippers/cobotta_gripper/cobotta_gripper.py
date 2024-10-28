@@ -46,7 +46,7 @@ class CobottaGripper(gpi.GripperInterface):
         # acting center
         self.loc_acting_center_pos = np.array([0, 0, 0.05])
         # collisions
-        self.cdmesh_elements = (self.jlc.anchor.lnk_list[0],
+        self.cdelements = (self.jlc.anchor.lnk_list[0],
                                 self.jlc.jnts[0].lnk,
                                 self.jlc.jnts[1].lnk)
 

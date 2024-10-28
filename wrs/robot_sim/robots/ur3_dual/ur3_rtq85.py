@@ -14,7 +14,7 @@ class UR3_Rtq85(sari.SglArmRobotInterface):
         self.end_effector = rtq85.Robotiq85(pos=self.manipulator.gl_flange_pos,
                                             rotmat=self.manipulator.gl_flange_rotmat,
                                             coupling_offset_pos=np.array([.0, .0, .0484]),
-                                            coupling_offset_rotmat=rm.rotmat_from_euler(.0, .0, np.pi/2),
+                                            coupling_offset_rotmat=rm.rotmat_from_euler(.0, .0, np.pi / 2),
                                             name=name + "_eef")
         # tool center point
         self.manipulator.loc_tcp_pos = self.end_effector.loc_acting_center_pos
@@ -23,17 +23,11 @@ class UR3_Rtq85(sari.SglArmRobotInterface):
             self.setup_cc()
 
     def setup_cc(self):
-        # TODO when pose is changed, oih info goes wrong
-        # ee
-        elb = self.cc.add_cce(self.end_effector.palm.lnk_list[0])
-        ell0 = self.cc.add_cce(self.end_effector.lft_outer_jlc.jnts[0].lnk)
-        ell1 = self.cc.add_cce(self.end_effector.lft_outer_jlc.jnts[1].lnk)
-        ell2 = self.cc.add_cce(self.end_effector.lft_outer_jlc.jnts[2].lnk)
-        ell3 = self.cc.add_cce(self.end_effector.lft_outer_jlc.jnts[3].lnk)
-        elr0 = self.cc.add_cce(self.end_effector.lft_outer_jlc.jnts[0].lnk)
-        elr1 = self.cc.add_cce(self.end_effector.lft_outer_jlc.jnts[1].lnk)
-        elr2 = self.cc.add_cce(self.end_effector.lft_outer_jlc.jnts[2].lnk)
-        elr3 = self.cc.add_cce(self.end_effector.lft_outer_jlc.jnts[3].lnk)
+        # end_effector
+        ee_cces = []
+        for id, cdlnk in enumerate(self.end_effector.cdelements):
+            if id != 5 and id!= 10:
+                ee_cces.append(self.cc.add_cce(cdlnk))
         # manipulator
         ml0 = self.cc.add_cce(self.manipulator.jlc.jnts[0].lnk, toggle_extcd=False)
         ml1 = self.cc.add_cce(self.manipulator.jlc.jnts[1].lnk)
@@ -41,11 +35,11 @@ class UR3_Rtq85(sari.SglArmRobotInterface):
         ml3 = self.cc.add_cce(self.manipulator.jlc.jnts[3].lnk)
         ml4 = self.cc.add_cce(self.manipulator.jlc.jnts[4].lnk)
         ml5 = self.cc.add_cce(self.manipulator.jlc.jnts[5].lnk)
-        from_list = [elb, ell0, ell1, ell2, ell3, elr0, elr1, elr2, elr3, ml4, ml5]
+        from_list = ee_cces + [ml4, ml5]
         into_list = [ml0, ml1]
         self.cc.set_cdpair_by_ids(from_list, into_list)
-        oiee_into_list = []
-        # TODO oiee?
+        self.cc.dynamic_into_list = [ml0, ml1, ml2, ml3]
+        self.cc.dynamic_ext_list = ee_cces[1:]
 
     def fix_to(self, pos, rotmat):
         self._pos = pos
@@ -61,8 +55,7 @@ class UR3_Rtq85(sari.SglArmRobotInterface):
 
 
 if __name__ == '__main__':
-    import wrs.basis.robot_math as rm
-    import wrs.visualization.panda.world as wd
+    from wrs import wd, rm, mgm
 
     base = wd.World(cam_pos=[1.7, 1.7, 1.7], lookat_pos=[0, 0, .3])
     mgm.gen_frame().attach_to(base)

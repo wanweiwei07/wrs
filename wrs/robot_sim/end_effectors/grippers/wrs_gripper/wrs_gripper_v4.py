@@ -80,20 +80,20 @@ class WRSGripper4(gpi.GripperInterface):
         self.loc_acting_center_pos = np.array([0, 0, .15])
         # collision detection
         # collisions
-        self.cdmesh_elements = (self.jlc.anchor.lnk_list[0],
-                                self.jlc.jnts[3].lnk,
-                                self.jlc.jnts[5].lnk)
+        self.cdelements = (self.jlc.anchor.lnk_list[0],
+                           self.jlc.jnts[3].lnk,
+                           self.jlc.jnts[5].lnk)
 
     @staticmethod
     def _fgr_cdprim(ex_radius):
         pdcnd = CollisionNode("finger")
-        collision_primitive_c0 = CollisionBox(Point3(.0, 0.0224*3+0.002, .102),
+        collision_primitive_c0 = CollisionBox(Point3(.0, 0.0224 * 3 + 0.002, .102),
                                               x=.0075 + ex_radius, y=0.001 + ex_radius, z=.06 + ex_radius)
         pdcnd.addSolid(collision_primitive_c0)
-        collision_primitive_c1 = CollisionBox(Point3(-.013, 0.0224*3+0.002, .069),
+        collision_primitive_c1 = CollisionBox(Point3(-.013, 0.0224 * 3 + 0.002, .069),
                                               x=.002 + ex_radius, y=0.001 + ex_radius, z=.005 + ex_radius)
         pdcnd.addSolid(collision_primitive_c1)
-        collision_primitive_c2 = CollisionBox(Point3(-.02, 0.0224*3-0.015, .052),
+        collision_primitive_c2 = CollisionBox(Point3(-.02, 0.0224 * 3 - 0.015, .052),
                                               x=.015 + ex_radius, y=0.014 + ex_radius, z=.012 + ex_radius)
         pdcnd.addSolid(collision_primitive_c2)
         cdprim = NodePath("user_defined")
@@ -129,7 +129,7 @@ class WRSGripper4(gpi.GripperInterface):
         if self.jaw_range[0] / 2 <= side_jawwidth <= self.jaw_range[1] / 2:
             motion_rack_length = self._rack_length - side_jawwidth / 3.0
             self.jlc.goto_given_conf(jnt_values=[-motion_rack_length, -motion_rack_length, -motion_rack_length,
-                                                 -4*motion_rack_length, -motion_rack_length, -motion_rack_length])
+                                                 -4 * motion_rack_length, -motion_rack_length, -motion_rack_length])
         else:
             raise ValueError("The angle parameter is out of range!")
 

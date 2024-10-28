@@ -106,15 +106,9 @@ class UR3Dual(ri.RobotInterface):
         # body
         bd = self.cc.add_cce(self.body.lnk_list[0], toggle_extcd=False)
         # left ee
-        lft_elb = self.cc.add_cce(self.lft_arm.end_effector.palm.lnk_list[0])
-        lft_ell0 = self.cc.add_cce(self.lft_arm.end_effector.lft_outer_jlc.jnts[0].lnk)
-        lft_ell1 = self.cc.add_cce(self.lft_arm.end_effector.lft_outer_jlc.jnts[1].lnk)
-        lft_ell2 = self.cc.add_cce(self.lft_arm.end_effector.lft_outer_jlc.jnts[2].lnk)
-        lft_ell3 = self.cc.add_cce(self.lft_arm.end_effector.lft_outer_jlc.jnts[3].lnk)
-        lft_elr0 = self.cc.add_cce(self.lft_arm.end_effector.rgt_outer_jlc.jnts[0].lnk)
-        lft_elr1 = self.cc.add_cce(self.lft_arm.end_effector.rgt_outer_jlc.jnts[1].lnk)
-        lft_elr2 = self.cc.add_cce(self.lft_arm.end_effector.rgt_outer_jlc.jnts[2].lnk)
-        lft_elr3 = self.cc.add_cce(self.lft_arm.end_effector.rgt_outer_jlc.jnts[3].lnk)
+        lft_ee_cces = []
+        for id, cdlnk in enumerate(self.lft_arm.end_effector.cdelements):
+            lft_ee_cces.append(self.cc.add_cce(cdlnk))
         # left manipulator
         lft_ml0 = self.cc.add_cce(self.lft_arm.manipulator.jlc.jnts[0].lnk, toggle_extcd=False)
         lft_ml1 = self.cc.add_cce(self.lft_arm.manipulator.jlc.jnts[1].lnk)
@@ -123,15 +117,9 @@ class UR3Dual(ri.RobotInterface):
         lft_ml4 = self.cc.add_cce(self.lft_arm.manipulator.jlc.jnts[4].lnk)
         lft_ml5 = self.cc.add_cce(self.lft_arm.manipulator.jlc.jnts[5].lnk)
         # right ee
-        rgt_elb = self.cc.add_cce(self.rgt_arm.end_effector.palm.lnk_list[0])
-        rgt_ell0 = self.cc.add_cce(self.rgt_arm.end_effector.lft_outer_jlc.jnts[0].lnk)
-        rgt_ell1 = self.cc.add_cce(self.rgt_arm.end_effector.lft_outer_jlc.jnts[1].lnk)
-        rgt_ell2 = self.cc.add_cce(self.rgt_arm.end_effector.lft_outer_jlc.jnts[2].lnk)
-        rgt_ell3 = self.cc.add_cce(self.rgt_arm.end_effector.lft_outer_jlc.jnts[3].lnk)
-        rgt_elr0 = self.cc.add_cce(self.rgt_arm.end_effector.rgt_outer_jlc.jnts[0].lnk)
-        rgt_elr1 = self.cc.add_cce(self.rgt_arm.end_effector.rgt_outer_jlc.jnts[1].lnk)
-        rgt_elr2 = self.cc.add_cce(self.rgt_arm.end_effector.rgt_outer_jlc.jnts[2].lnk)
-        rgt_elr3 = self.cc.add_cce(self.rgt_arm.end_effector.rgt_outer_jlc.jnts[3].lnk)
+        rgt_ee_cces = []
+        for id, cdlnk in enumerate(self.rgt_arm.end_effector.cdelements):
+            rgt_ee_cces.append(self.cc.add_cce(cdlnk))
         # right manipulator
         rgt_ml0 = self.cc.add_cce(self.rgt_arm.manipulator.jlc.jnts[0].lnk, toggle_extcd=False)
         rgt_ml1 = self.cc.add_cce(self.rgt_arm.manipulator.jlc.jnts[1].lnk)
@@ -140,8 +128,7 @@ class UR3Dual(ri.RobotInterface):
         rgt_ml4 = self.cc.add_cce(self.rgt_arm.manipulator.jlc.jnts[4].lnk)
         rgt_ml5 = self.cc.add_cce(self.rgt_arm.manipulator.jlc.jnts[5].lnk)
         # first pairs
-        from_list = [lft_elb, lft_ell0, lft_ell1, lft_ell2, lft_ell3, lft_elr0, lft_elr1, lft_elr2, lft_elr3,
-                     rgt_elb, rgt_ell0, rgt_ell1, rgt_ell2, rgt_ell3, rgt_elr0, rgt_elr1, rgt_elr2, rgt_elr3]
+        from_list = lft_ee_cces + rgt_ee_cces
         into_list = [bd, lft_ml0, lft_ml1, lft_ml2, rgt_ml0, rgt_ml1, rgt_ml2]
         self.cc.set_cdpair_by_ids(from_list, into_list)
         # second pairs
@@ -149,10 +136,8 @@ class UR3Dual(ri.RobotInterface):
         into_list = [bd, lft_ml0, rgt_ml0]
         self.cc.set_cdpair_by_ids(from_list, into_list)
         # third pairs
-        from_list = [lft_ml2, lft_ml3, lft_ml4, lft_ml5, lft_elb, lft_ell0, lft_ell1, lft_ell2, lft_ell3, lft_elr0,
-                     lft_elr1, lft_elr2, lft_elr3]
-        into_list = [rgt_ml2, rgt_ml3, rgt_ml4, rgt_ml5, rgt_elb, rgt_ell0, rgt_ell1, rgt_ell2, rgt_ell3, rgt_elr0,
-                     rgt_elr1, rgt_elr2, rgt_elr3]
+        from_list = [lft_ml2, lft_ml3, lft_ml4, lft_ml5] + lft_ee_cces
+        into_list = [rgt_ml2, rgt_ml3, rgt_ml4, rgt_ml5] + rgt_ee_cces
         self.cc.set_cdpair_by_ids(from_list, into_list)
         # point low-level cc to the high-level one
         self.lft_arm.cc = self.cc
@@ -182,8 +167,8 @@ class UR3Dual(ri.RobotInterface):
             self.delegator.restore_state()
 
     def fix_to(self, pos, rotmat):
-        self.pos = pos
-        self.rotmat = rotmat
+        self._pos = pos
+        self._rotmat = rotmat
         self.body.pos = self.pos
         self.body.rotmat = self.rotmat
         self.lft_arm.fix_to(pos=self.body.gl_flange_pose_list[0][0],

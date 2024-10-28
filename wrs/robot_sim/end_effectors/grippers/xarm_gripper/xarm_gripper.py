@@ -37,8 +37,8 @@ class XArmGripper(gpi.GripperInterface):
         self.palm.lnk_list[0].cmodel.rgba = rm.const.tab20_list[15]
         # left finger outer
         self.lft_outer_jlc = rkjlc.JLChain(pos=self.palm.gl_flange_pose_list[0][0],
-                                            rotmat=self.palm.gl_flange_pose_list[0][1],
-                                            n_dof=2, name=name + "_left_outer")
+                                           rotmat=self.palm.gl_flange_pose_list[0][1],
+                                           n_dof=2, name=name + "_left_outer")
         # left finger outer (joint 0 / knuckle)
         self.lft_outer_jlc.jnts[0].loc_pos = np.zeros(3)
         self.lft_outer_jlc.jnts[0].loc_motion_ax = np.array([1, 0, 0])
@@ -94,11 +94,11 @@ class XArmGripper(gpi.GripperInterface):
         # acting center
         self.loc_acting_center_pos = np.array([0, 0, .15])
         # collisions
-        self.cdmesh_elements = (self.palm.lnk_list[0],
-                                self.lft_outer_jlc.jnts[0].lnk,
-                                self.lft_outer_jlc.jnts[1].lnk,
-                                self.rgt_outer_jlc.jnts[0].lnk,
-                                self.rgt_outer_jlc.jnts[1].lnk)
+        self.cdelements = (self.palm.lnk_list[0],
+                           self.lft_outer_jlc.jnts[0].lnk,
+                           self.lft_outer_jlc.jnts[1].lnk,
+                           self.rgt_outer_jlc.jnts[0].lnk,
+                           self.rgt_outer_jlc.jnts[1].lnk)
 
     def fix_to(self, pos, rotmat, jaw_width=None):
         self._pos = pos
@@ -171,29 +171,29 @@ class XArmGripper(gpi.GripperInterface):
                                 toggle_cdmesh=toggle_cdmesh,
                                 toggle_cdprim=toggle_cdprim).attach_to(m_col)
         self.lft_outer_jlc.gen_meshmodel(rgb=rgb,
-                                        alpha=alpha,
-                                        toggle_jnt_frames=toggle_jnt_frames,
-                                        toggle_flange_frame=False,
-                                        toggle_cdmesh=toggle_cdmesh,
-                                        toggle_cdprim=toggle_cdprim).attach_to(m_col)
+                                         alpha=alpha,
+                                         toggle_jnt_frames=toggle_jnt_frames,
+                                         toggle_flange_frame=False,
+                                         toggle_cdmesh=toggle_cdmesh,
+                                         toggle_cdprim=toggle_cdprim).attach_to(m_col)
         self.lft_inner_jlc.gen_meshmodel(rgb=rgb,
                                          alpha=alpha,
-                                        toggle_jnt_frames=toggle_jnt_frames,
-                                        toggle_flange_frame=False,
-                                        toggle_cdmesh=toggle_cdmesh,
-                                        toggle_cdprim=toggle_cdprim).attach_to(m_col)
+                                         toggle_jnt_frames=toggle_jnt_frames,
+                                         toggle_flange_frame=False,
+                                         toggle_cdmesh=toggle_cdmesh,
+                                         toggle_cdprim=toggle_cdprim).attach_to(m_col)
         self.rgt_outer_jlc.gen_meshmodel(rgb=rgb,
-                                        alpha=alpha,
-                                        toggle_jnt_frames=toggle_jnt_frames,
-                                        toggle_flange_frame=False,
-                                        toggle_cdmesh=toggle_cdmesh,
-                                        toggle_cdprim=toggle_cdprim).attach_to(m_col)
+                                         alpha=alpha,
+                                         toggle_jnt_frames=toggle_jnt_frames,
+                                         toggle_flange_frame=False,
+                                         toggle_cdmesh=toggle_cdmesh,
+                                         toggle_cdprim=toggle_cdprim).attach_to(m_col)
         self.rgt_inner_jlc.gen_meshmodel(rgb=rgb,
                                          alpha=alpha,
-                                        toggle_jnt_frames=toggle_jnt_frames,
-                                        toggle_flange_frame=False,
-                                        toggle_cdmesh=toggle_cdmesh,
-                                        toggle_cdprim=toggle_cdprim).attach_to(m_col)
+                                         toggle_jnt_frames=toggle_jnt_frames,
+                                         toggle_flange_frame=False,
+                                         toggle_cdmesh=toggle_cdmesh,
+                                         toggle_cdprim=toggle_cdprim).attach_to(m_col)
         if toggle_tcp_frame:
             self._toggle_tcp_frame(m_col)
         self._gen_oiee_meshmodel(m_col=m_col, rgb=rgb, alpha=alpha, toggle_cdprim=toggle_cdprim,

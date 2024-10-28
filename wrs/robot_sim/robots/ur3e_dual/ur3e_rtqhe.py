@@ -22,11 +22,11 @@ class UR3e_RtqHE(sari.SglArmRobotInterface):
             self.setup_cc()
 
     def setup_cc(self):
-        # TODO when pose is changed, oih info goes wrong
-        # ee
-        elb = self.cc.add_cce(self.end_effector.jlc.anchor.lnk_list[0])
-        el0 = self.cc.add_cce(self.end_effector.jlc.jnts[0].lnk)
-        el1 = self.cc.add_cce(self.end_effector.jlc.jnts[1].lnk)
+        # end_effector
+        ee_cces = []
+        for id, cdlnk in enumerate(self.end_effector.cdelements):
+            if id != 5 and id!= 10:
+                ee_cces.append(self.cc.add_cce(cdlnk))
         # manipulator
         ml0 = self.cc.add_cce(self.manipulator.jlc.jnts[0].lnk, toggle_extcd=False)
         ml1 = self.cc.add_cce(self.manipulator.jlc.jnts[1].lnk)
@@ -34,11 +34,11 @@ class UR3e_RtqHE(sari.SglArmRobotInterface):
         ml3 = self.cc.add_cce(self.manipulator.jlc.jnts[3].lnk)
         ml4 = self.cc.add_cce(self.manipulator.jlc.jnts[4].lnk)
         ml5 = self.cc.add_cce(self.manipulator.jlc.jnts[5].lnk)
-        from_list = [elb, el0, el1, ml4, ml5]
+        from_list = ee_cces + [ml4, ml5]
         into_list = [ml0, ml1]
         self.cc.set_cdpair_by_ids(from_list, into_list)
-        oiee_into_list = []
-        # TODO oiee?
+        self.cc.dynamic_into_list = [ml0, ml1, ml2, ml3]
+        self.cc.dynamic_ext_list = ee_cces[1:]
 
     def fix_to(self, pos, rotmat):
         self._pos = pos

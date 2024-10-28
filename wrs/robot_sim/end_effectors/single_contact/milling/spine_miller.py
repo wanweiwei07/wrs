@@ -35,9 +35,9 @@ class SpineMiller(si.SCTInterface):
         # action center
         self.loc_acting_center_pos = rm.np.array([0, 0, .22])
         # collision detection
-        self.all_cdelements = [self.anchor.lnk_list[0],
-                               self.anchor.lnk_list[1],
-                               self.anchor.lnk_list[2]]
+        self.cdelements = (self.anchor.lnk_list[0],
+                           self.anchor.lnk_list[1],
+                           self.anchor.lnk_list[2])
 
     def fix_to(self, pos, rotmat):
         self._pos = pos

@@ -41,6 +41,11 @@ class KHI_BLQC(sari.SglArmRobotInterface):
     def setup_cc(self):
         # tc
         tc0 = self.cc.add_cce(self.tool_changer.lnk_list[0])
+        # end_effector
+        ee_cces = []
+        if self.end_effector is not None:
+            for id, cdlnk in enumerate(self.end_effector.cdelements):
+                ee_cces.append(self.cc.add_cce(cdlnk))
         # manipulator
         mlb = self.cc.add_cce(self.manipulator.jlc.anchor.lnk_list[0], toggle_extcd=False)
         ml0 = self.cc.add_cce(self.manipulator.jlc.jnts[0].lnk)
@@ -49,11 +54,41 @@ class KHI_BLQC(sari.SglArmRobotInterface):
         ml3 = self.cc.add_cce(self.manipulator.jlc.jnts[3].lnk)
         ml4 = self.cc.add_cce(self.manipulator.jlc.jnts[4].lnk)
         ml5 = self.cc.add_cce(self.manipulator.jlc.jnts[5].lnk)
-        from_list = [tc0, ml3, ml4, ml5]
+        from_list = ee_cces + [tc0, ml3, ml4, ml5]
         into_list = [mlb, ml0]
         self.cc.set_cdpair_by_ids(from_list, into_list)
         self.cc.dynamic_into_list = [mlb, ml0, ml1, ml2, ml3]
-        self.cc.dynamic_ext_list = []
+        self.cc.dynamic_ext_list = ee_cces
+
+    def attach_tool(self, tool):
+        self.end_effector = tool
+        if self.cc is not None:  # udpate cc
+            self.reset_cc()
+            self.setup_cc()
+        self.update_end_effector()
+        rel_pos, rel_rotmat = rm.rel_pose(self.end_effector.loc_acting_center_pos,
+                                          self.end_effector.loc_acting_center_rotmat,
+                                          self.tool_changer.loc_flange_pose_list[0][0],
+                                          self.tool_changer.loc_flange_pose_list[0][1])
+        self.manipulator.loc_tcp_pos = rel_pos
+        self.manipulator.loc_tcp_rotmat = rel_rotmat
+
+    def detach_tool(self):
+        self.end_effector = None
+        if self.cc is not None:  # udpate cc
+            self.reset_cc()
+            self.setup_cc()
+        self.update_end_effector()
+        self.manipulator.loc_tcp_pos = self.tool_changer.loc_flange_pose_list[0][0]
+        self.manipulator.loc_tcp_rotmat = self.tool_changer.loc_flange_pose_list[0][1]
+
+    def update_end_effector(self, ee_values=None):
+        self.tool_changer.fix_to(pos=self._manipulator.gl_flange_pos, rotmat=self._manipulator.gl_flange_rotmat)
+        if self.end_effector is not None:
+            if ee_values is not None:
+                self.end_effector.change_ee_values(ee_values=ee_values)
+            self.end_effector.fix_to(pos=self.tool_changer.gl_flange_pose_list[0][0],
+                                     rotmat=self.tool_changer.gl_flange_pose_list[0][1])
 
     def goto_given_conf(self, jnt_values, ee_values=None):
         result = self._manipulator.goto_given_conf(jnt_values=jnt_values)
@@ -65,7 +100,7 @@ class KHI_BLQC(sari.SglArmRobotInterface):
         self._pos = pos
         self._rotmat = rotmat
         self.manipulator.fix_to(pos=pos, rotmat=rotmat)
-        self.tool_changer.fix_to(pos=self._manipulator.gl_flange_pos, rotmat=self._manipulator.gl_flange_rotmat)
+        self.update_end_effector()
 
     def change_jaw_width(self, jaw_width):
         return self.change_ee_values(ee_values=jaw_width)

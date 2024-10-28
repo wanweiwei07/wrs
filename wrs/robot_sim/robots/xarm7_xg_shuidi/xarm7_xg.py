@@ -1,9 +1,12 @@
 import math
 import numpy as np
-from wrs import robot_sim as xg, robot_sim as x7, robot_sim as ri, modeling as mgm
+import wrs.robot_sim.robots.single_arm_robot_interface as sari
+import wrs.robot_sim.manipulators.xarm7.xarm7 as x7
+import wrs.robot_sim.end_effectors.grippers.xarm_gripper.xarm_gripper as xg
+import wrs.modeling.geometric_model as mgm
 
 
-class XArm7XG(ri.SglArmRobotInterface):
+class XArm7XG(sari.SglArmRobotInterface):
     def __init__(self, pos=np.zeros(3), rotmat=np.eye(3), name='xarm7_xg', enable_cc=True):
         super().__init__(pos=pos, rotmat=rotmat, name=name, enable_cc=enable_cc)
         home_conf = np.zeros(7)
@@ -19,12 +22,10 @@ class XArm7XG(ri.SglArmRobotInterface):
             self.setup_cc()
 
     def setup_cc(self):
-        # ee
-        eb = self.cc.add_cce(self.end_effector.palm.lnk_list[0])
-        el0 = self.cc.add_cce(self.end_effector.lft_outer_jlc.jnts[0].lnk)
-        el1 = self.cc.add_cce(self.end_effector.lft_outer_jlc.jnts[1].lnk)
-        er0 = self.cc.add_cce(self.end_effector.rgt_outer_jlc.jnts[0].lnk)
-        er1 = self.cc.add_cce(self.end_effector.rgt_outer_jlc.jnts[1].lnk)
+        # end effector
+        ee_cces = []
+        for id, cdlnk in enumerate(self.end_effector.cdelements):
+            ee_cces.append(self.cc.add_cce(cdlnk))
         # manipulator
         mlb = self.cc.add_cce(self.manipulator.jlc.anchor.lnk_list[0], toggle_extcd=False)
         ml0 = self.cc.add_cce(self.manipulator.jlc.jnts[0].lnk)
@@ -34,13 +35,15 @@ class XArm7XG(ri.SglArmRobotInterface):
         ml4 = self.cc.add_cce(self.manipulator.jlc.jnts[4].lnk)
         ml5 = self.cc.add_cce(self.manipulator.jlc.jnts[5].lnk)
         ml6 = self.cc.add_cce(self.manipulator.jlc.jnts[6].lnk)
-        from_list = [ml4, ml5, ml6, eb, el0, el1, er0, er1]
+        from_list = ee_cces + [ml4, ml5, ml6]
         into_list = [mlb, ml0, ml1]
         self.cc.set_cdpair_by_ids(from_list, into_list)
+        self.cc.dynamic_into_list = [mlb, ml0, ml1, ml2, ml3]
+        self.cc.dynamic_ext_list = ee_cces[1:]
 
     def fix_to(self, pos, rotmat, jnt_values=None):
-        self.pos = pos
-        self.rotmat = rotmat
+        self._pos = pos
+        self._rotmat = rotmat
         self.manipulator.fix_to(pos=pos, rotmat=rotmat, jnt_values=jnt_values)
         self.update_end_effector()
 

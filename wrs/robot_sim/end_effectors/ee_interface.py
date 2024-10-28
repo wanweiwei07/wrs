@@ -23,7 +23,7 @@ class EEInterface(object):
         self.loc_acting_center_pos = np.zeros(3)
         self.loc_acting_center_rotmat = np.eye(3)
         # cd mesh collection for precise collision checking
-        self.cdmesh_elements = []
+        self.cdelements = []
         # object grasped/held/attached to end-effector; oiee = object in end-effector
         self.oiee_list = []
 
@@ -122,12 +122,12 @@ class EEInterface(object):
             return False
         if isinstance(cmodel_list, mcm.CollisionModel):
             cmodel_list = [cmodel_list]
-        for i, cdme in enumerate(self.cdmesh_elements):
-            if cdme.cmodel is not None:
-                is_collided, collision_points = cdme.cmodel.is_mcdwith(cmodel_list, True)
+        for i, cdlnk in enumerate(self.cdelements):
+            if cdlnk.cmodel is not None:
+                is_collided, collision_points = cdlnk.cmodel.is_mcdwith(cmodel_list, True)
                 if is_collided:
                     if toggle_dbg:
-                        mgm.GeometricModel(cdme.cmodel).attach_to(base)
+                        mgm.GeometricModel(cdlnk.cmodel).attach_to(base)
                         print(collision_points)
                         for point in collision_points:
                             mgm.gen_sphere(point, radius=.01).attach_to(base)

@@ -138,17 +138,17 @@ class Robotiq85(gpi.GripperInterface):
         # acting center
         self.loc_acting_center_pos = np.array([0, 0, .15])
         # collisions
-        self.cdmesh_elements = (self.palm.lnk_list[0],
-                                self.lft_outer_jlc.jnts[0].lnk,
-                                self.lft_outer_jlc.jnts[1].lnk,
-                                self.lft_outer_jlc.jnts[2].lnk,
-                                self.lft_outer_jlc.jnts[3].lnk,
-                                self.lft_inner_jlc.jnts[0].lnk,
-                                self.rgt_outer_jlc.jnts[0].lnk,
-                                self.rgt_outer_jlc.jnts[1].lnk,
-                                self.rgt_outer_jlc.jnts[2].lnk,
-                                self.rgt_outer_jlc.jnts[3].lnk,
-                                self.rgt_inner_jlc.jnts[0].lnk)
+        self.cdelements = (self.palm.lnk_list[0],
+                           self.lft_outer_jlc.jnts[0].lnk,
+                           self.lft_outer_jlc.jnts[1].lnk,
+                           self.lft_outer_jlc.jnts[2].lnk,
+                           self.lft_outer_jlc.jnts[3].lnk,
+                           self.lft_inner_jlc.jnts[0].lnk,
+                           self.rgt_outer_jlc.jnts[0].lnk,
+                           self.rgt_outer_jlc.jnts[1].lnk,
+                           self.rgt_outer_jlc.jnts[2].lnk,
+                           self.rgt_outer_jlc.jnts[3].lnk,
+                           self.rgt_inner_jlc.jnts[0].lnk)
 
     def fix_to(self, pos, rotmat, jaw_width=None):
         self._pos = pos

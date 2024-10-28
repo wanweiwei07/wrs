@@ -140,17 +140,17 @@ class Robotiq140(gi.GripperInterface):
         # acting center
         self.loc_acting_center_pos = np.array([0, 0, .2])
         # collisions
-        self.cdmesh_elements = (self.palm.lnk_list[0],
-                                self.lft_outer_jlc.jnts[0].lnk,
-                                self.lft_outer_jlc.jnts[1].lnk,
-                                self.lft_outer_jlc.jnts[2].lnk,
-                                self.lft_outer_jlc.jnts[3].lnk,
-                                self.lft_inner_jlc.jnts[0].lnk,
-                                self.rgt_outer_jlc.jnts[0].lnk,
-                                self.rgt_outer_jlc.jnts[1].lnk,
-                                self.rgt_outer_jlc.jnts[2].lnk,
-                                self.rgt_outer_jlc.jnts[3].lnk,
-                                self.rgt_inner_jlc.jnts[0].lnk)
+        self.cdelements = (self.palm.lnk_list[0],
+                           self.lft_outer_jlc.jnts[0].lnk,
+                           self.lft_outer_jlc.jnts[1].lnk,
+                           self.lft_outer_jlc.jnts[2].lnk,
+                           self.lft_outer_jlc.jnts[3].lnk,
+                           self.lft_inner_jlc.jnts[0].lnk,
+                           self.rgt_outer_jlc.jnts[0].lnk,
+                           self.rgt_outer_jlc.jnts[1].lnk,
+                           self.rgt_outer_jlc.jnts[2].lnk,
+                           self.rgt_outer_jlc.jnts[3].lnk,
+                           self.rgt_inner_jlc.jnts[0].lnk)
 
     def fix_to(self, pos, rotmat, jaw_width=None):
         self._pos = pos
@@ -187,7 +187,7 @@ class Robotiq140(gi.GripperInterface):
         homo_flange_gl = rm.homomat_from_posrot(self._pos, self.rotmat)
         homo_pad_gl = self.rgt_outer_jlc.jnts[3].gl_homomat_0
         homo_pad_flange = np.linalg.inv(homo_flange_gl) @ homo_pad_gl
-        self.loc_acting_center_pos[2] = homo_pad_flange[2,3]
+        self.loc_acting_center_pos[2] = homo_pad_flange[2, 3]
 
     def get_jaw_width(self):
         angle = -self.lft_inner_jlc.jnts[0].motion_value

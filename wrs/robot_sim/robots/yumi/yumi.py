@@ -139,9 +139,9 @@ class Yumi(ri.RobotInterface):
         tfc = self.cc.add_cce(self.body.lnk_list[7], toggle_extcd=False)
         phx = self.cc.add_cce(self.body.lnk_list[8], toggle_extcd=False)
         # left ee
-        lft_elb = self.cc.add_cce(self.lft_arm.end_effector.jlc.anchor.lnk_list[0])
-        lft_el0 = self.cc.add_cce(self.lft_arm.end_effector.jlc.jnts[0].lnk)
-        lft_el1 = self.cc.add_cce(self.lft_arm.end_effector.jlc.jnts[1].lnk)
+        lft_ee_cces = []
+        for id, cdlnk in enumerate(self.lft_arm.end_effector.cdelements):
+            lft_ee_cces.append(self.cc.add_cce(cdlnk))
         # left manipulator
         lft_ml0 = self.cc.add_cce(self.lft_arm.manipulator.jlc.jnts[0].lnk, toggle_extcd=False)
         lft_ml1 = self.cc.add_cce(self.lft_arm.manipulator.jlc.jnts[1].lnk)
@@ -150,9 +150,9 @@ class Yumi(ri.RobotInterface):
         lft_ml4 = self.cc.add_cce(self.lft_arm.manipulator.jlc.jnts[4].lnk)
         lft_ml5 = self.cc.add_cce(self.lft_arm.manipulator.jlc.jnts[5].lnk)
         # right ee
-        rgt_elb = self.cc.add_cce(self.rgt_arm.end_effector.jlc.anchor.lnk_list[0])
-        rgt_el0 = self.cc.add_cce(self.rgt_arm.end_effector.jlc.jnts[0].lnk)
-        rgt_el1 = self.cc.add_cce(self.rgt_arm.end_effector.jlc.jnts[1].lnk)
+        rgt_ee_cces = []
+        for id, cdlnk in enumerate(self.rgt_arm.end_effector.cdelements):
+            rgt_ee_cces.append(self.cc.add_cce(cdlnk))
         # right manipulator
         rgt_ml0 = self.cc.add_cce(self.rgt_arm.manipulator.jlc.jnts[0].lnk, toggle_extcd=False)
         rgt_ml1 = self.cc.add_cce(self.rgt_arm.manipulator.jlc.jnts[1].lnk)
@@ -161,18 +161,18 @@ class Yumi(ri.RobotInterface):
         rgt_ml4 = self.cc.add_cce(self.rgt_arm.manipulator.jlc.jnts[4].lnk)
         rgt_ml5 = self.cc.add_cce(self.rgt_arm.manipulator.jlc.jnts[5].lnk)
         # first pairs
-        from_list = [lft_ml4, lft_ml5, lft_elb, lft_el0, lft_el1, rgt_ml4, rgt_ml5, rgt_elb, rgt_el0, rgt_el1]
+        from_list = [lft_ml4, lft_ml5] + lft_ee_cces + [rgt_ml4, rgt_ml5] + rgt_ee_cces
         into_list = [bd, wb, lc, rc, tbc, tlc, trc, tfc, phx, lft_ml0, rgt_ml0]
         self.cc.set_cdpair_by_ids(from_list, into_list)
         # second pairs
-        from_list = [lft_ml0, lft_ml1, rgt_ml0, rgt_ml1]
-        into_list = [lft_elb, lft_el0, lft_el1, rgt_elb, rgt_el0, rgt_el1]
+        from_list = lft_ee_cces + rgt_ee_cces
+        into_list = [lft_ml0, lft_ml1, rgt_ml0, rgt_ml1]
         self.cc.set_cdpair_by_ids(from_list, into_list)
         # third pairs
-        from_list = [lft_ml1, lft_ml2, lft_ml3, lft_ml4, lft_ml5, lft_elb, lft_el0, lft_el1]
-        into_list = [rgt_ml1, rgt_ml2, rgt_ml3, rgt_ml4, rgt_ml5, rgt_elb, rgt_el0, rgt_el1]
+        from_list = [lft_ml1, lft_ml2, lft_ml3, lft_ml4, lft_ml5] + lft_ee_cces
+        into_list = [rgt_ml1, rgt_ml2, rgt_ml3, rgt_ml4, rgt_ml5] + rgt_ee_cces
         self.cc.set_cdpair_by_ids(from_list, into_list)
-        self.cc.dynamic_into_list = [bd, wb, lc, rc, tbc, tlc, trc, tfc, phx] # TODO
+        self.cc.dynamic_into_list = [bd, wb, lc, rc, tbc, tlc, trc, tfc, phx]  # TODO
         # point low-level cc to the high-level one
         self.lft_arm.cc = self.cc
         self.rgt_arm.cc = self.cc

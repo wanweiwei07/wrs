@@ -65,9 +65,9 @@ class OR2FG7(gpi.GripperInterface):
         self.loc_acting_center_pos = np.array([0, 0, .15]) + coupling_offset_pos
         # collision detection
         # collisions
-        self.cdmesh_elements = (self.jlc.anchor.lnk_list[0],
-                                self.jlc.jnts[0].lnk,
-                                self.jlc.jnts[1].lnk)
+        self.cdelements = (self.jlc.anchor.lnk_list[0],
+                           self.jlc.jnts[0].lnk,
+                           self.jlc.jnts[1].lnk)
 
     def fix_to(self, pos, rotmat, jaw_width=None):
         self._pos = pos

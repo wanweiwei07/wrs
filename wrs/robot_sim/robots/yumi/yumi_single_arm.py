@@ -3,6 +3,7 @@ import wrs.robot_sim.robots.single_arm_robot_interface as sari
 import wrs.robot_sim.manipulators.irb14050.irb14050 as irb14050
 import wrs.robot_sim.end_effectors.grippers.yumi_gripper.yumi_gripper as yg
 
+
 class YumiSglArm(sari.SglArmRobotInterface):
 
     def __init__(self, pos=np.zeros(3), rotmat=np.eye(3), name="sglarm_yumi", enable_cc=True):
@@ -18,10 +19,10 @@ class YumiSglArm(sari.SglArmRobotInterface):
             self.setup_cc()
 
     def setup_cc(self):
-        # ee
-        elb = self.cc.add_cce(self.end_effector.jlc.anchor.lnk_list[0])
-        el0 = self.cc.add_cce(self.end_effector.jlc.jnts[0].lnk)
-        el1 = self.cc.add_cce(self.end_effector.jlc.jnts[1].lnk)
+        # end effector
+        ee_cces = []
+        for id, cdlnk in enumerate(self.end_effector.cdelements):
+            ee_cces.append(self.cc.add_cce(cdlnk))
         # manipulator
         ml0 = self.cc.add_cce(self.manipulator.jlc.jnts[0].lnk, toggle_extcd=False)
         ml1 = self.cc.add_cce(self.manipulator.jlc.jnts[1].lnk)
@@ -29,10 +30,11 @@ class YumiSglArm(sari.SglArmRobotInterface):
         ml3 = self.cc.add_cce(self.manipulator.jlc.jnts[3].lnk)
         ml4 = self.cc.add_cce(self.manipulator.jlc.jnts[4].lnk)
         ml5 = self.cc.add_cce(self.manipulator.jlc.jnts[5].lnk)
-        from_list = [elb, el0, el1, ml4, ml5]
+        from_list = ee_cces + [ml4, ml5]
         into_list = [ml0, ml1]
         self.cc.set_cdpair_by_ids(from_list, into_list)
         self.cc.dynamic_into_list = [ml0, ml1, ml2, ml3]
+        self.cc.dynamic_ext_list = ee_cces[1:]
 
     def fix_to(self, pos, rotmat):
         self._pos = pos

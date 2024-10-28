@@ -46,7 +46,7 @@ class ORSD(si.SCTInterface):
         self.loc_acting_center_rotmat = rm.rotmat_from_axangle(self.coupling.loc_flange_pose_list[0][1][:3, 1],
                                                                np.pi / 2) @ self.coupling.loc_flange_pose_list[0][1]
         # collision detection
-        self.cdmesh_elements = (self.jlc.anchor.lnk_list[0])
+        self.cdelements = (self.jlc.anchor.lnk_list[0])
 
     def fix_to(self, pos, rotmat):
         self._pos = pos

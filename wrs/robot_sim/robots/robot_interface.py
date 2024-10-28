@@ -79,7 +79,7 @@ class RobotInterface(object):
     def restore_state(self):
         raise NotImplementedError
 
-    def clear_cc(self):
+    def reset_cc(self):
         if self.cc is None:
             print("The cc is currently unavailable. Nothing to clear.")
         else:

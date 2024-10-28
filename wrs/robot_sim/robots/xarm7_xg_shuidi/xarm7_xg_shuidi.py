@@ -2,7 +2,8 @@ import math
 import numpy as np
 import wrs.modeling.model_collection as mmc
 import wrs.robot_sim.robots.xarm7_xg_shuidi.xarm7_xg as x7g
-from wrs import robot_sim as sd, robot_sim as ri, modeling as gm
+import wrs.robot_sim.robots.shuidi.shuidi as sd
+import wrs.robot_sim.robots.robot_interface as ri
 
 
 class XArm7XGShuidi(ri.RobotInterface):
@@ -26,12 +27,10 @@ class XArm7XGShuidi(ri.RobotInterface):
         # agv
         ab = self.cc.add_cce(self.agv.jlc.jnts[2].lnk)
         af = self.cc.add_cce(self.agv.anchor.lnk_list[1])
-        # ee
-        eb = self.cc.add_cce(self.arm.end_effector.palm.lnk_list[0])
-        el0 = self.cc.add_cce(self.arm.end_effector.lft_outer_jlc.jnts[0].lnk)
-        el1 = self.cc.add_cce(self.arm.end_effector.lft_outer_jlc.jnts[1].lnk)
-        er0 = self.cc.add_cce(self.arm.end_effector.rgt_outer_jlc.jnts[0].lnk)
-        er1 = self.cc.add_cce(self.arm.end_effector.rgt_outer_jlc.jnts[1].lnk)
+        # end effector
+        ee_cces = []
+        for id, cdlnk in enumerate(self.end_effector.cdelements):
+            ee_cces.append(self.cc.add_cce(cdlnk))
         # manipulator
         mlb = self.cc.add_cce(self.arm.manipulator.jlc.anchor.lnk_list[0])
         ml0 = self.cc.add_cce(self.arm.manipulator.jlc.jnts[0].lnk)
@@ -41,10 +40,11 @@ class XArm7XGShuidi(ri.RobotInterface):
         ml4 = self.cc.add_cce(self.arm.manipulator.jlc.jnts[4].lnk)
         ml5 = self.cc.add_cce(self.arm.manipulator.jlc.jnts[5].lnk)
         ml6 = self.cc.add_cce(self.arm.manipulator.jlc.jnts[6].lnk)
-        from_list = [ml4, ml5, ml6, eb, el0, el1, er0, er1]
+        from_list = [ml4, ml5, ml6] + ee_cces
         into_list = [ab, af, mlb, ml0, ml1]
         self.cc.set_cdpair_by_ids(from_list, into_list)
-        # TODO oiee?
+        self.cc.dynamic_into_list = [ab, af, mlb, ml0, ml1, ml2, ml3]
+        self.cc.dynamic_ext_list = ee_cces[1:]
 
     def use_agv(self):
         self.delegator = self.agv
@@ -185,6 +185,6 @@ if __name__ == '__main__':
     robot = XArm7XGShuidi(enable_cc=True)
     robot.change_jaw_width(jaw_width=.08)
     robot.gen_meshmodel(toggle_cdprim=False).attach_to(base)
-    robot.goto_given_conf(jnt_values=np.array([1, 1, 0, 0, -math.pi/6, 0, math.pi/6, 0, 0, 0]))
+    robot.goto_given_conf(jnt_values=np.array([1, 1, 0, 0, -math.pi / 6, 0, math.pi / 6, 0, 0, 0]))
     robot.gen_meshmodel(toggle_cdprim=True).attach_to(base)
     base.run()

@@ -34,7 +34,7 @@ class XYBot(ri.RobotInterface):
         self.jnt_values_bk = []
 
     def setup_cc(self):
-        body = self.cc.add_cce(self.jlc.jnts[1].lnk)
+        self.cc.add_cce(self.jlc.jnts[1].lnk)
 
     def backup_state(self):
         self.jnt_values_bk.append(self.jlc.get_jnt_values())

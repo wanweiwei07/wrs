@@ -70,9 +70,9 @@ class RobotiqHE(gpi.GripperInterface):
         self.loc_acting_center_pos = np.array([0, 0, .14]) + coupling_offset_pos
         # collision detection
         # collisions
-        self.cdmesh_elements = (self.jlc.anchor.lnk_list[0],
-                                self.jlc.jnts[0].lnk,
-                                self.jlc.jnts[1].lnk)
+        self.cdelements = (self.jlc.anchor.lnk_list[0],
+                           self.jlc.jnts[0].lnk,
+                           self.jlc.jnts[1].lnk)
 
     @staticmethod
     def _base_cdprim(ex_radius=None):

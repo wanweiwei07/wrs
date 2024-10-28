@@ -33,7 +33,7 @@ class WRSGripper2(gpi.GripperInterface):
         self.jlc.anchor.lnk_list[0].cmodel.rgba = rm.const.tab20_list[14]
         # the 1st joint (left finger, +y direction)
         self.jlc.jnts[0].change_type(rkjlc.const.JntType.PRISMATIC, motion_range=np.array([0, self.jaw_range[1] / 2]))
-        self.jlc.jnts[0].loc_pos = np.array([-0.01492498,- 0.005, .05])
+        self.jlc.jnts[0].loc_pos = np.array([-0.01492498, - 0.005, .05])
         self.jlc.jnts[0].loc_motion_ax = rm.const.y_ax
         self.jlc.jnts[0].lnk.cmodel = mcm.CollisionModel(os.path.join(current_file_dir, "meshes", "finger_v2.stl"),
                                                          cdmesh_type=self.cdmesh_type,
@@ -56,16 +56,16 @@ class WRSGripper2(gpi.GripperInterface):
         self.loc_acting_center_pos = np.array([0, 0, .175])
         # collision detection
         # collisions
-        self.cdmesh_elements = (self.jlc.anchor.lnk_list[0],
-                                self.jlc.jnts[0].lnk,
-                                self.jlc.jnts[1].lnk)
+        self.cdelements = (self.jlc.anchor.lnk_list[0],
+                           self.jlc.jnts[0].lnk,
+                           self.jlc.jnts[1].lnk)
         # update jaw width
         self.change_jaw_width(jaw_width=self.jaw_width)
 
     @staticmethod
     def _finger_cdprim(ex_radius):
         pdcnd = CollisionNode("finger")
-        collision_primitive_c0 = CollisionBox(Point3(.015,.012,.08),
+        collision_primitive_c0 = CollisionBox(Point3(.015, .012, .08),
                                               x=.0035 + ex_radius, y=0.0032 + ex_radius, z=.05 + ex_radius)
         pdcnd.addSolid(collision_primitive_c0)
         collision_primitive_c1 = CollisionBox(Point3(.008, .0, .008),

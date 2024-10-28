@@ -25,10 +25,10 @@ class XArmLite6WG2(sari.SglArmRobotInterface):
             self.setup_cc()
 
     def setup_cc(self):
-        # ee
-        elb = self.cc.add_cce(self.end_effector.jlc.anchor.lnk_list[0])
-        el0 = self.cc.add_cce(self.end_effector.jlc.jnts[0].lnk)
-        el1 = self.cc.add_cce(self.end_effector.jlc.jnts[1].lnk)
+        # end effector
+        ee_cces = []
+        for id, cdlnk in enumerate(self.end_effector.cdelements):
+            ee_cces.append(self.cc.add_cce(cdlnk))
         # manipulator
         mlb = self.cc.add_cce(self.manipulator.jlc.anchor.lnk_list[0], toggle_extcd=False)
         ml0 = self.cc.add_cce(self.manipulator.jlc.jnts[0].lnk)
@@ -38,10 +38,10 @@ class XArmLite6WG2(sari.SglArmRobotInterface):
         ml4 = self.cc.add_cce(self.manipulator.jlc.jnts[4].lnk)
         ml5 = self.cc.add_cce(self.manipulator.jlc.jnts[5].lnk)
         from_list = [mlb, ml0, ml1]
-        into_list = [elb, el0, el1, ml3, ml4, ml5]
+        into_list = ee_cces + [ml3, ml4, ml5]
         self.cc.set_cdpair_by_ids(from_list, into_list)
         self.cc.dynamic_into_list = [mlb, ml0, ml1, ml2, ml3]
-        self.cc.dynamic_ext_list = [el0, el1]
+        self.cc.dynamic_ext_list = ee_cces[1:]
 
     def fix_to(self, pos, rotmat):
         self._pos = pos
@@ -61,7 +61,7 @@ if __name__ == '__main__':
 
     base = wd.World(cam_pos=[2, 0, 1.5], lookat_pos=[0, 0, .2])
     mgm.gen_frame().attach_to(base)
-    robot = XArmLite6WG2(pos=np.array([0,0,0]), enable_cc=True)
+    robot = XArmLite6WG2(pos=np.array([0, 0, 0]), enable_cc=True)
     robot.gen_meshmodel(alpha=.3).attach_to(base)
     robot.gen_stickmodel(toggle_jnt_frames=True, toggle_tcp_frame=True).attach_to(base)
     # tic = time.time()
