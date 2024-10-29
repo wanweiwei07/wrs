@@ -35,20 +35,10 @@ obj_goal = obj.copy()
 obj_goal.rgb = rm.const.green
 obj_goal.pose = goal_pose
 obj_goal.attach_to(base)
-start_node_list = fsreg_planner.add_start_pose(obj_pose=start_pose, obstacle_list=[ground])
-goal_node_list = fsreg_planner.add_goal_pose(obj_pose=goal_pose, obstacle_list=[ground])
-
-min_path = None
-for start in start_node_list:
-    for goal in goal_node_list:
-        path = nx.shortest_path(fsreg_planner._graph, source=start, target=goal)
-        min_path = path if min_path is None else path if len(path) < len(min_path) else min_path
-
-print(min_path)
-# fsreg_planner.show_graph_with_path(min_path)
-
-mesh_model_list = fsreg_planner.gen_regrasp_motion(path=min_path, obstacle_list=[ground],
-                                                   linear_distance=.15)
+result = fsreg_planner.plan_by_obj_poses(start_pose=start_pose, goal_pose=goal_pose, obstacle_list=[ground], toggle_dbg=False)
+if result is None:
+    print("No solution found.")
+    exit()
 
 
 class Data(object):
@@ -57,7 +47,7 @@ class Data(object):
         self.mesh_model_list = mesh_model_list
 
 
-anime_data = Data(mesh_model_list=mesh_model_list)
+anime_data = Data(mesh_model_list=result.mesh_list)
 
 
 def update(anime_data, task):

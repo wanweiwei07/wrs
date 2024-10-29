@@ -32,7 +32,7 @@ obj_goal = obj.copy()
 obj_goal.rgb = rm.const.green
 obj_goal.pose = goal_pose
 obj_goal.attach_to(base)
-result = fsreg_planner.plan_by_obj_poses(start_pose=start_pose, goal_pose=goal_pose, toggle_dbg=False)
+result = fsreg_planner.plan_by_obj_poses(start_pose=start_pose, goal_pose=goal_pose, obstacle_list=[], toggle_dbg=False)
 if result is None:
     print("No solution found.")
     exit()
