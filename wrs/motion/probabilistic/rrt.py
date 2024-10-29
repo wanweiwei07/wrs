@@ -52,7 +52,8 @@ class RRT(object):
                      conf,
                      obstacle_list=[],
                      other_robot_list=[],
-                     toggle_contacts=False):
+                     toggle_contacts=False,
+                     toggle_dbg=False):
         """
         The function first examines if joint values of the given conf are in ranges.
         It will promptly return False if any joint value is out of range.
@@ -61,6 +62,7 @@ class RRT(object):
         :param obstacle_list:
         :param other_robot_list:
         :param toggle_contacts: for debugging collisions at start/goal
+        :param toggle_dbg: for debugging
         :return:
         author: weiwei
         date: 20220326, 20240314
@@ -73,7 +75,8 @@ class RRT(object):
             #     if angle > np.radians(10):
             #         return True
             collision_info = self.robot.is_collided(obstacle_list=obstacle_list, other_robot_list=other_robot_list,
-                                                    toggle_contacts=toggle_contacts)
+                                                    toggle_contacts=toggle_contacts,
+                                                    toggle_dbg=toggle_dbg)
             # if toggle_contacts:
             #     if collision_info[0]:
             #         for pnt in collision_info[1]:
@@ -237,7 +240,8 @@ class RRT(object):
              max_n_iter=1000,
              max_time=15.0,
              smoothing_n_iter=50,
-             animation=False):
+             animation=False,
+             toggle_dbg=True):
         """
         :return: [path, all_sampled_confs]
         author: weiwei
@@ -247,10 +251,14 @@ class RRT(object):
         self.start_conf = start_conf
         self.goal_conf = goal_conf
         # check start_conf and end_conf
-        if self._is_collided(start_conf, obstacle_list, other_robot_list):
+        if toggle_dbg:
+            print("RRT: Checking start robot configuration...")
+        if self._is_collided(start_conf, obstacle_list, other_robot_list, toggle_dbg=toggle_dbg):
             print("The start robot configuration is in collision!")
             return None
-        if self._is_collided(goal_conf, obstacle_list, other_robot_list):
+        if toggle_dbg:
+            print("RRT: Checking goal robot configuration...")
+        if self._is_collided(goal_conf, obstacle_list, other_robot_list, toggle_dbg=toggle_dbg):
             print("The goal robot configuration is in collision!")
             return None
         if self._is_goal_reached(conf=start_conf, goal_conf=goal_conf, threshold=ext_dist):

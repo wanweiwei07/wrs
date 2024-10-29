@@ -7,6 +7,7 @@ import wrs.robot_sim._kinematics.jlchain as rkjlc
 import wrs.robot_sim.robots.robot_interface as ri
 import wrs.modeling.model_collection as mmc
 import wrs.robot_sim.robots.ur3_dual.ur3_rtq85 as u3rtq85
+import wrs.robot_sim._kinematics.collision_checker as cc
 
 
 class UR3Dual(ri.RobotInterface):
@@ -24,12 +25,14 @@ class UR3Dual(ri.RobotInterface):
         self.body.lnk_list[0].name = "ur3_dual_base_link"
         self.body.lnk_list[0].cmodel = mcm.CollisionModel(
             initor=os.path.join(current_file_dir, "meshes", "ur3_dual_base.stl"),
+            name="ur3_dual_base",
             cdprim_type=mcm.const.CDPrimType.USER_DEFINED,
             userdef_cdprim_fn=self._base_cdprim)
         self.body.lnk_list[0].cmodel.rgba = rm.const.dim_gray
         self.body.lnk_list[1].name = "ur3_dual_frame_link"
         self.body.lnk_list[1].cmodel = mcm.CollisionModel(
             initor=os.path.join(current_file_dir, "meshes", "ur3_dual_frame.stl"),
+            name="ur3_dual_frame",
             cdprim_type=mcm.const.CDPrimType.USER_DEFINED,
             userdef_cdprim_fn=self._base_cdprim)
         self.body.lnk_list[1].cmodel.rgba = rm.const.tab20_list[14]
@@ -38,7 +41,8 @@ class UR3Dual(ri.RobotInterface):
         self.body.lnk_list[2].loc_pos = np.array([.45, .0, 1.082])
         # left arm
         self.lft_arm = u3rtq85.UR3_Rtq85(pos=self.body.gl_flange_pose_list[0][0],
-                                         rotmat=self.body.gl_flange_pose_list[0][1])
+                                         rotmat=self.body.gl_flange_pose_list[0][1],
+                                         enable_cc=False)
         self.lft_arm.home_conf = np.array(
             [np.pi / 12.0, -np.pi * 1.0 / 3.0, -np.pi * 2.0 / 3.0, -np.pi, -np.pi * 2.0 / 3.0, 0])
         # self.lft_arm.manipulator.jnts[0].motion_range = np.array([-np.pi * 5 / 3, -np.pi / 3])
@@ -50,7 +54,8 @@ class UR3Dual(ri.RobotInterface):
         self.lft_arm.manipulator.jlc.finalize(identifier_str=self.lft_arm.name + "_dual_lft")
         # right side
         self.rgt_arm = u3rtq85.UR3_Rtq85(pos=self.body.gl_flange_pose_list[1][0],
-                                         rotmat=self.body.gl_flange_pose_list[1][1])
+                                         rotmat=self.body.gl_flange_pose_list[1][1],
+                                         enable_cc=False)
         self.rgt_arm.home_conf = np.array(
             [-np.pi / 12, -np.pi * 2.0 / 3.0, np.pi * 2.0 / 3.0, 0, np.pi * 2.0 / 3.0, np.pi])
         # self.rgt_arm.manipulator.jnts[0].motion_range = np.array([np.pi / 3, np.pi * 5 / 3])
@@ -66,8 +71,8 @@ class UR3Dual(ri.RobotInterface):
         self.goto_home_conf()
 
     @staticmethod
-    def _base_cdprim(ex_radius=None):
-        pdcnd = CollisionNode("ur3_dual_base")
+    def _base_cdprim(name="ur3_dual_base", ex_radius=None):
+        pdcnd = CollisionNode(name+"_cnode")
         collision_primitive_c0 = CollisionBox(Point3(0.18, 0.0, 0.105),
                                               x=.61 + ex_radius, y=.41 + ex_radius, z=.105 + ex_radius)
         pdcnd.addSolid(collision_primitive_c0)
@@ -86,7 +91,7 @@ class UR3Dual(ri.RobotInterface):
         collision_primitive_r0 = CollisionBox(Point3(0.0, -0.300, 1.669),
                                               x=.1 + ex_radius, y=.029 + ex_radius, z=.021 + ex_radius)
         pdcnd.addSolid(collision_primitive_r0)
-        cdprim = NodePath("user_defined")
+        cdprim = NodePath(name+"_cdprim")
         cdprim.attachNewNode(pdcnd)
         return cdprim
 
@@ -97,7 +102,8 @@ class UR3Dual(ri.RobotInterface):
         else:
             return self.delegator.n_dof
 
-    def _setup_lft_cc(self):
+    def _enable_lft_cc(self):
+        self.lft_arm.cc = cc.CollisionChecker("lft_arm_collision_checker")
         # body
         bd = self.lft_arm.cc.add_cce(self.body.lnk_list[0], toggle_extcd=False)
         # left ee
@@ -139,7 +145,8 @@ class UR3Dual(ri.RobotInterface):
                                              rgt_ml4, rgt_ml5] + rgt_ee_cces
         self.lft_arm.cc.dynamic_ext_list = lft_ee_cces[1:]
 
-    def _setup_rgt_cc(self):
+    def _enable_rgt_cc(self):
+        self.rgt_arm.cc = cc.CollisionChecker("rgt_arm_collision_checker")
         # body
         bd = self.rgt_arm.cc.add_cce(self.body.lnk_list[0], toggle_extcd=False)
         # left ee
@@ -187,8 +194,8 @@ class UR3Dual(ri.RobotInterface):
         date: 20240309
         """
         # dual arm
-        self._setup_lft_cc()
-        self._setup_rgt_cc()
+        self._enable_lft_cc()
+        self._enable_rgt_cc()
         if self.delegator is not None:
             self.cc = self.delegator.cc
         else:

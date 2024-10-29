@@ -99,7 +99,8 @@ class PickPlacePlanner(adp.ADPlanner):
                             pick_depart_distance=.07,
                             linear_granularity=.02,
                             obstacle_list=None,
-                            use_rrt=True):
+                            use_rrt=True,
+                            toggle_dbg=False):
         """
         pick and move an object to multiple poses
         :param obj_cmodel:
@@ -132,7 +133,8 @@ class PickPlacePlanner(adp.ADPlanner):
                                         granularity=linear_granularity,
                                         obstacle_list=obstacle_list,
                                         object_list=[obj_cmodel],
-                                        use_rrt=use_rrt)
+                                        use_rrt=use_rrt,
+                                        toggle_dbg=toggle_dbg)
         if pick_motion is None:
             print("PPPlanner: Error encountered when generating pick approach motion!")
             return None
@@ -149,7 +151,8 @@ class PickPlacePlanner(adp.ADPlanner):
                                                                  distance=pick_depart_distance,
                                                                  ee_values=None,
                                                                  granularity=linear_granularity,
-                                                                 obstacle_list=obstacle_list)
+                                                                 obstacle_list=obstacle_list,
+                                                                 toggle_dbg=toggle_dbg)
             # self.robot.gen_meshmodel().attach_to(base)
             # base.run()
             if pick_depart is None:
@@ -173,7 +176,8 @@ class PickPlacePlanner(adp.ADPlanner):
                                                          depart_ee_values=None,  # do not change jaw width
                                                          granularity=linear_granularity,
                                                          obstacle_list=obstacle_list,
-                                                         use_rrt=use_rrt)
+                                                         use_rrt=use_rrt,
+                                                         toggle_dbg=toggle_dbg)
                     if moveto_ap is None:
                         print(f"Error encountered when generating motion to the {i}th goal!")
                         return None
@@ -201,7 +205,8 @@ class PickPlacePlanner(adp.ADPlanner):
                            linear_granularity=.02,
                            use_rrt=True,
                            obstacle_list=None,
-                           reason_grasps=True):
+                           reason_grasps=True,
+                           toggle_dbg=False):
         """
         :param obj_cmodel:
         :param end_jnt_values:
@@ -265,7 +270,8 @@ class PickPlacePlanner(adp.ADPlanner):
                                               pick_depart_distance=pick_depart_distance,
                                               linear_granularity=linear_granularity,
                                               obstacle_list=obstacle_list,
-                                              use_rrt=use_rrt)
+                                              use_rrt=use_rrt,
+                                              toggle_dbg=toggle_dbg)
             if pm_mot is None:
                 print("Cannot generate the pick and moveto motion!")
                 continue
@@ -281,7 +287,8 @@ class PickPlacePlanner(adp.ADPlanner):
                                                       granularity=linear_granularity,
                                                       obstacle_list=obstacle_list,
                                                       object_list=[obj_cmodel_copy],
-                                                      use_rrt=use_rrt)
+                                                      use_rrt=use_rrt,
+                                                      toggle_dbg=toggle_dbg)
             if dep_mot is None:
                 print("Cannot generate the release motion!")
                 continue

@@ -6,9 +6,10 @@ import matplotlib.pyplot as plt
 import wrs.basis.robot_math as rm
 import wrs.modeling.collision_model as mcm
 import wrs.grasping.reasoner as gr
-import wrs.manipulation.pick_place_planner as ppp
+import wrs.manipulation.pick_place as ppp
 import wrs.manipulation.placement.flat_surface_placement as mpfsp
 import wrs.manipulation.placement.general_placement as mpgp
+import wrs.motion.motion_data as motd
 import wrs.modeling.model_collection as mmc
 
 
@@ -66,7 +67,7 @@ class FSRegSpotCollection(object):
                 goal_pose=(pos, rotmat),
                 consider_robot=consider_robot,
                 toggle_keep=True,
-                toggle_dbg=True)
+                toggle_dbg=False)
             if feasible_gids is not None:
                 fs_regspot.add_fspg(mpfsp.FSPG(fs_pose_id=pose_id,
                                                obj_pose=(pos, rotmat),
@@ -163,12 +164,12 @@ class FSRegraspPlanner(object):
         self._fsregspot_collection.add_new_spot(spot_pos, spot_rotz, barrier_z_offset, consider_robot, toggle_dbg)
         self._add_fsregspot_to_graph(self._fsregspot_collection[-1])
 
-    def add_start_pose(self, obj_pose, obstacle_list=None, plot_pose_xy=None):
+    def add_start_pose(self, obj_pose, obstacle_list=None, plot_pose_xy=None, toggle_dbg=False):
         start_pg = mpgp.PG.create_from_pose(self.robot,
                                             self.reference_grasp_collection,
                                             obj_pose,
                                             obstacle_list=obstacle_list,
-                                            consider_robot=True)
+                                            consider_robot=True, toggle_dbg=toggle_dbg)
         if start_pg is None:
             print("No feasible grasps found at the start pose")
             return None
@@ -176,12 +177,12 @@ class FSRegraspPlanner(object):
             plot_pose_xy = obj_pose[0][:2]
         return self._add_fspg_to_graph(start_pg, plot_pose_xy=plot_pose_xy, prefix='start')
 
-    def add_goal_pose(self, obj_pose, obstacle_list=None, plot_pose_xy=None):
+    def add_goal_pose(self, obj_pose, obstacle_list=None, plot_pose_xy=None, toggle_dbg=False):
         goal_pg = mpgp.PG.create_from_pose(self.robot,
                                            self.reference_grasp_collection,
                                            obj_pose,
                                            obstacle_list=obstacle_list,
-                                           consider_robot=True)
+                                           consider_robot=True, toggle_dbg=toggle_dbg)
         if goal_pg is None:
             print("No feasible grasps found at the goal pose")
             return None
@@ -327,27 +328,50 @@ class FSRegraspPlanner(object):
         self.draw_path(path)
         plt.show()
 
-    def plan(self, start_fsp_pose_id, goal_fsp_pos_id):
+    def plan_by_obj_poses(self, start_pose, goal_pose, obstacle_list=[], toggle_dbg=False):
         """
-
-        :param start_fsp_pose_id:
-        :param goal_fsp_pos_id:
+        :param start_pose: (pos, rotmat)
+        :param goal_pose: (pos, rotmat)
         :return:
         """
-        pass
+        start_node_list = self.add_start_pose(obj_pose=start_pose, obstacle_list=obstacle_list)
+        goal_node_list = self.add_goal_pose(obj_pose=goal_pose, obstacle_list=obstacle_list)
+        while True:
+            min_path = None
+            for start in start_node_list:
+                for goal in goal_node_list:
+                    path = nx.shortest_path(self._graph, source=start, target=goal)
+                    min_path = path if min_path is None else path if len(path) < len(min_path) else min_path
+            result = self.gen_regrasp_motion(path=min_path, obstacle_list=obstacle_list, toggle_dbg=toggle_dbg)
+            print(result)
+            if result[0][0] == 's':  # success
+                return result[1]
+            if result[0][0] == 'n':  # node failure
+                print("Node failure at node: ", result[1])
+                self._graph.remove_node(result[1])
+                if result[1] in start_node_list:
+                    start_node_list.remove(result[1])
+            elif result[0][0] == 'e':  # edge failure
+                print("Edge failure at edge: ", result[1])
+                self._graph.remove_edge(*result[1])
+                self._graph.remove_node(result[1][0])
+                self._graph.remove_node(result[1][1])
+                if result[1][0] in start_node_list:
+                    start_node_list.remove(result[1][0])
+                if result[1][1] in goal_node_list:
+                    goal_node_list.remove(result[1][1])
+            print("####################### Update Graph #######################")
+            # self.show_graph()
 
+    @ppp.adp.mpi.InterplatedMotion.keep_states_decorator
     def gen_regrasp_motion(self, path, obstacle_list,
                            linear_distance=.05,
                            granularity=.03,
                            toggle_dbg=False):
-        """
-        """
-        mesh_list = []
+        regraps_motion = motd.MotionData(robot=self.robot)
         for i, node in enumerate(path):
             obj_pose = self._graph.nodes[node]['obj_pose']
-            grasp = self._graph.nodes[node]['grasp']
             jnt_values = self._graph.nodes[node]['jnt_values']
-            m_col = mmc.ModelCollection()
             # make a copy to keep original movement
             obj_cmodel_copy = self.obj_cmodel.copy()
             obj_cmodel_copy.pose = obj_pose
@@ -360,15 +384,17 @@ class FSRegraspPlanner(object):
                 goal_jnt_values = jnt_values
                 pick = self.pp_planner.gen_approach_to_given_conf(goal_jnt_values=goal_jnt_values,
                                                                   start_jnt_values=start_jnt_values,
-                                                                  linear_distance=.1,
-                                                                  ee_values = self.robot.end_effector.jaw_range[1],
+                                                                  linear_distance=.05,
+                                                                  ee_values=self.robot.end_effector.jaw_range[1],
                                                                   obstacle_list=obstacle_list,
                                                                   object_list=[obj_cmodel_copy],
-                                                                  use_rrt=True)
+                                                                  use_rrt=True,
+                                                                  toggle_dbg=toggle_dbg)
+                if pick is None:
+                    return (f"node failure at {i}", path[i])
                 for robot_mesh in pick.mesh_list:
                     obj_cmodel_copy.attach_to(robot_mesh)
-                mesh_list += pick.mesh_list
-            print(i)
+                regraps_motion += pick
             if i >= 1:
                 prev_node = path[i - 1]
                 prev_grasp = self._graph.nodes[prev_node]['grasp']
@@ -384,28 +410,32 @@ class FSRegraspPlanner(object):
                     prev2current = self.pp_planner.gen_depart_approach_with_given_conf(start_jnt_values=prev_jnt_values,
                                                                                        end_jnt_values=jnt_values,
                                                                                        depart_direction=None,
-                                                                                       depart_distance=.07,
+                                                                                       depart_distance=.05,
                                                                                        depart_ee_values=
                                                                                        self.robot.end_effector.jaw_range[
                                                                                            1],
                                                                                        approach_direction=None,
-                                                                                       approach_distance=.07,
+                                                                                       approach_distance=.05,
                                                                                        approach_ee_values=
                                                                                        self.robot.end_effector.jaw_range[
                                                                                            1],
                                                                                        granularity=granularity,
                                                                                        obstacle_list=obstacle_list,
                                                                                        object_list=[obj_cmodel_copy],
-                                                                                       use_rrt=True)
+                                                                                       use_rrt=True,
+                                                                                       toggle_dbg=False)
                     if prev2current is None:
-                        pass
+                        return (f"edge failure at transit {i - 1}-{i}", (path[i - 1], path[i]))
                     for robot_mesh in prev2current.mesh_list:
                         obj_cmodel_copy.attach_to(robot_mesh)
-                    mesh_list += prev2current.mesh_list
+                    regraps_motion += prev2current
                 if self._graph.edges[(prev_node, node)]['type'].endswith('transfer'):
                     self.robot.goto_given_conf(prev_jnt_values)
                     obj_cmodel_copy.pose = self._graph.nodes[prev_node]['obj_pose']
                     self.robot.hold(obj_cmodel=obj_cmodel_copy, jaw_width=prev_grasp.ee_values)
+                    regraps_motion.extend(jv_list=[prev_jnt_values],
+                                          ev_list=[prev_grasp.ee_values],
+                                          mesh_list=[self.robot.gen_meshmodel()])
                     prev2current = self.pp_planner.gen_depart_approach_with_given_conf(start_jnt_values=prev_jnt_values,
                                                                                        end_jnt_values=jnt_values,
                                                                                        depart_direction=rm.const.z_ax,
@@ -414,13 +444,22 @@ class FSRegraspPlanner(object):
                                                                                        approach_distance=linear_distance,
                                                                                        granularity=granularity,
                                                                                        obstacle_list=obstacle_list,
-                                                                                       use_rrt=True)
+                                                                                       use_rrt=True,
+                                                                                       toggle_dbg=False)
                     # prev2current = self.pp_planner.im_planner.gen_interplated_between_given_conf(
                     #     start_jnt_values=prev_jnt_values,
                     #     end_jnt_values=jnt_values,
                     #     obstacle_list=[])
+                    if prev2current is None:
+                        return (f"edge failure at transfer {i - 1}-{i}", (path[i - 1], path[i]))
+                    regraps_motion += prev2current
+                    self.robot.goto_given_conf(prev2current.jv_list[-1])
                     if toggle_dbg:
                         self.robot.gen_meshmodel(rgb=rm.const.red).attach_to(base)
                     self.robot.release(obj_cmodel=obj_cmodel_copy, jaw_width=self.robot.end_effector.jaw_range[1])
-                    mesh_list += prev2current.mesh_list
-        return mesh_list
+                    mesh = self.robot.gen_meshmodel()
+                    obj_cmodel_copy.attach_to(mesh)
+                    regraps_motion.extend(jv_list=[prev2current.jv_list[-1]],
+                                          ev_list=[self.robot.end_effector.jaw_range[1]],
+                                          mesh_list=[mesh])
+        return ("success", regraps_motion)

@@ -51,7 +51,6 @@ class RobotInterface(object):
         else:
             return self.delegator.end_effector
 
-
     @property
     def gl_tcp_pos(self):
         if self.delegator is None:
@@ -177,7 +176,7 @@ class RobotInterface(object):
                       name='single_arm_robot_interface_meshmodel'):
         raise NotImplementedError
 
-    def is_collided(self, obstacle_list=None, other_robot_list=None, toggle_contacts=False):
+    def is_collided(self, obstacle_list=None, other_robot_list=None, toggle_contacts=False, toggle_dbg=False):
         """
         Interface for "is cdprimit collided", must be implemented in child class
         :param obstacle_list:
@@ -191,11 +190,13 @@ class RobotInterface(object):
         if self.userdef_is_collided_fn is None:
             return self.cc.is_collided(obstacle_list=obstacle_list,
                                        other_robot_list=other_robot_list,
-                                       toggle_contacts=toggle_contacts)
+                                       toggle_contacts=toggle_contacts,
+                                       toggle_dbg=toggle_dbg)
         else:
             return self.userdef_is_collided_fn(self.cc, obstacle_list=obstacle_list,
                                                other_robot_list=other_robot_list,
-                                               toggle_contacts=toggle_contacts)
+                                               toggle_contacts=toggle_contacts,
+                                               toggle_dbg=toggle_dbg)
 
     def show_cdprim(self):
         """

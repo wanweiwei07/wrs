@@ -2,6 +2,7 @@ from panda3d.core import NodePath, CollisionTraverser, CollisionHandlerQueue, Bi
 import wrs.modeling._panda_cdhelper as mph
 import wrs.basis.data_adapter as da
 
+
 class CCElement(object):
     """
     A collision detection element
@@ -142,8 +143,8 @@ class CollisionChecker(object):
         # temporary parameter for toggling on/off show_cdprimit
         self._toggled_cdprim_list = []
         # togglable lists
-        self.dynamic_into_list = [] # for oiee
-        self.dynamic_ext_list = [] # for ignoring the external collision of certain components
+        self.dynamic_into_list = []  # for oiee
+        self.dynamic_ext_list = []  # for ignoring the external collision of certain components
 
     def add_cce(self, lnk, toggle_extcd=True):
         """
@@ -234,7 +235,7 @@ class CollisionChecker(object):
             else:
                 raise KeyError("From lnks do not exist in the cce_dict.")
 
-    def is_collided(self, obstacle_list=None, other_robot_list=None, toggle_contacts=False):
+    def is_collided(self, obstacle_list=None, other_robot_list=None, toggle_contacts=False, toggle_dbg=False):
         """
         :param obstacle_list: staticgeometricmodel
         :param other_robot_list:
@@ -293,6 +294,20 @@ class CollisionChecker(object):
             collision_result = True
         else:
             collision_result = False
+        if collision_result and toggle_dbg:
+            print("Collision detected! Showing debug info")
+            from wrs import rm, mgm
+            self.show_cdprim()
+            for obstacle_cmodel in obstacle_list:
+                obstacle_cmodel.attach_to(base)
+                obstacle_cmodel.show_cdprim()
+            for cd_entry in self.cd_handler.getEntries():
+                from_node_path = cd_entry.getFromNodePath()
+                into_node_path = cd_entry.getIntoNodePath()
+                print("from ", from_node_path.name, " into ", into_node_path.name)
+                contact_point = da.pdvec3_to_npvec3(cd_entry.getSurfacePoint(base.render))
+                mgm.gen_sphere(pos=contact_point, radius=.01, rgb=rm.const.orange).attach_to(base)
+            base.run()
         if toggle_contacts:
             contact_points = [da.pdvec3_to_npvec3(cd_entry.getSurfacePoint(base.render)) for cd_entry in
                               self.cd_handler.getEntries()]

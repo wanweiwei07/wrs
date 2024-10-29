@@ -36,7 +36,7 @@ class RobotiqHE(gpi.GripperInterface):
         # anchor
         self.jlc.anchor.lnk_list[0].loc_rotmat = rm.rotmat_from_euler(0, 0, np.pi / 2)
         self.jlc.anchor.lnk_list[0].cmodel = mcm.CollisionModel(
-            os.path.join(current_file_dir, "meshes", "base.stl"),
+            initor=os.path.join(current_file_dir, "meshes", "base.stl"), name="rtq_he_base",
             cdmesh_type=self.cdmesh_type,
             cdprim_type=mcm.const.CDPrimType.USER_DEFINED,
             userdef_cdprim_fn=self._base_cdprim)
@@ -48,6 +48,7 @@ class RobotiqHE(gpi.GripperInterface):
         self.jlc.jnts[0].loc_motion_ax = rm.const.y_ax
         self.jlc.jnts[0].lnk.cmodel = mcm.CollisionModel(
             initor=os.path.join(current_file_dir, "meshes", "finger1.stl"),
+            name="rtq_he_finger1",
             cdmesh_type=self.cdmesh_type,
             cdprim_type=mcm.const.CDPrimType.AABB,
             ex_radius=.005)
@@ -59,6 +60,7 @@ class RobotiqHE(gpi.GripperInterface):
         self.jlc.jnts[1].loc_motion_ax = rm.const.y_ax
         self.jlc.jnts[1].lnk.cmodel = mcm.CollisionModel(
             initor=os.path.join(current_file_dir, "meshes", "finger2.stl"),
+            name="rtq_he_finger2",
             cdmesh_type=self.cdmesh_type,
             cdprim_type=mcm.const.CDPrimType.AABB,
             ex_radius=.005)
@@ -75,15 +77,15 @@ class RobotiqHE(gpi.GripperInterface):
                            self.jlc.jnts[1].lnk)
 
     @staticmethod
-    def _base_cdprim(ex_radius=None):
-        pdcnd = CollisionNode("rtq_he_base")
+    def _base_cdprim(name="rtq_he_base", ex_radius=None):
+        pdcnd = CollisionNode(name + "_cnode")
         collision_primitive_c0 = CollisionBox(Point3(0.0, 0.0, 0.1),
                                               x=.032 + ex_radius, y=.029 + ex_radius, z=.01 + ex_radius)
         pdcnd.addSolid(collision_primitive_c0)
         collision_primitive_c1 = CollisionBox(Point3(0.0, 0.0, 0.05),
                                               x=.02 + ex_radius, y=.02 + ex_radius, z=.03 + ex_radius)
         pdcnd.addSolid(collision_primitive_c1)
-        cdprim = NodePath("user_defined")
+        cdprim = NodePath(name + "_cdprim")
         cdprim.attachNewNode(pdcnd)
         return cdprim
 
@@ -98,7 +100,7 @@ class RobotiqHE(gpi.GripperInterface):
         self.update_oiee()
 
     def get_jaw_width(self):
-        return self.jlc.jnts[1].motion_value
+        return -self.jlc.jnts[1].motion_value
 
     @gpi.ei.EEInterface.assert_oiee_decorator
     def change_jaw_width(self, jaw_width):
@@ -106,7 +108,7 @@ class RobotiqHE(gpi.GripperInterface):
         if self.jaw_range[0] / 2 <= side_jawwidth <= self.jaw_range[1] / 2:
             self.jlc.goto_given_conf(jnt_values=[side_jawwidth, -jaw_width])
         else:
-            raise ValueError("The angle parameter is out of range!")
+            raise ValueError(f"The angle parameter is out of range! {side_jawwidth} vs. {self.jaw_range}")
 
     def gen_stickmodel(self, toggle_tcp_frame=False, toggle_jnt_frames=False, name='or2fg7_stickmodel'):
         m_col = mmc.ModelCollection(name=name)

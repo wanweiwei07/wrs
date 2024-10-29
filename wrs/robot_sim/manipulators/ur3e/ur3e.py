@@ -5,6 +5,7 @@ import wrs.robot_sim.manipulators.manipulator_interface as mi
 import wrs.modeling.geometric_model as mgm
 import wrs.modeling.collision_model as mcm
 
+
 class UR3e(mi.ManipulatorInterface):
 
     def __init__(self, pos=np.zeros(3), rotmat=np.eye(3), ik_solver='a', name='ur3e', enable_cc=False):
@@ -12,14 +13,15 @@ class UR3e(mi.ManipulatorInterface):
         current_file_dir = os.path.dirname(__file__)
         # anchor
         self.jlc.anchor.lnk_list[0].cmodel = mcm.CollisionModel(
-            os.path.join(current_file_dir, "meshes", "base.stl"))
+            initor=os.path.join(current_file_dir, "meshes", "base.stl"), name="base")
         self.jlc.anchor.lnk_list[0].loc_rotmat = rm.rotmat_from_euler(0, 0, np.pi)
         self.jlc.anchor.lnk_list[0].cmodel.rgba = np.array([.5, .5, .5, 1.0])
         # first joint and link
         self.jlc.jnts[0].loc_pos = np.array([.0, .0, .15185])
         self.jlc.jnts[0].loc_motion_ax = np.array([0, 0, 1])
         self.jlc.jnts[0].motion_range = np.array([-np.pi * 2, np.pi * 2])
-        self.jlc.jnts[0].lnk.cmodel = mcm.CollisionModel(os.path.join(current_file_dir, "meshes", "shoulder.stl"))
+        self.jlc.jnts[0].lnk.cmodel = mcm.CollisionModel(
+            initor=os.path.join(current_file_dir, "meshes", "shoulder.stl"), name="shoulder")
         self.jlc.jnts[0].lnk.loc_rotmat = rm.rotmat_from_euler(0, 0, np.pi)
         self.jlc.jnts[0].lnk.cmodel.rgba = np.array([.1, .3, .5, 1.0])
         # second joint and link
@@ -27,7 +29,8 @@ class UR3e(mi.ManipulatorInterface):
         self.jlc.jnts[1].loc_rotmat = rm.rotmat_from_euler(1.570796327, 0, 0)
         self.jlc.jnts[1].loc_motion_ax = np.array([0, 0, 1])
         self.jlc.jnts[1].motion_range = np.array([-np.pi * 2, np.pi * 2])
-        self.jlc.jnts[1].lnk.cmodel = mcm.CollisionModel(os.path.join(current_file_dir, "meshes", "upperarm.stl"))
+        self.jlc.jnts[1].lnk.cmodel = mcm.CollisionModel(
+            initor=os.path.join(current_file_dir, "meshes", "upperarm.stl"), name="upperarm")
         self.jlc.jnts[1].lnk.loc_pos = np.array([.0, .0, 0.12])
         self.jlc.jnts[1].lnk.loc_rotmat = rm.rotmat_from_euler(np.pi / 2, 0, -np.pi / 2)
         self.jlc.jnts[1].lnk.cmodel.rgba = np.array([.7, .7, .7, 1.0])
@@ -35,7 +38,8 @@ class UR3e(mi.ManipulatorInterface):
         self.jlc.jnts[2].loc_pos = np.array([-0.24355, .0, .0])
         self.jlc.jnts[2].loc_motion_ax = np.array([0, 0, 1])
         self.jlc.jnts[2].motion_range = np.array([-np.pi, np.pi])
-        self.jlc.jnts[2].lnk.cmodel = mcm.CollisionModel(os.path.join(current_file_dir, "meshes", "forearm.stl"))
+        self.jlc.jnts[2].lnk.cmodel = mcm.CollisionModel(
+            initor=os.path.join(current_file_dir, "meshes", "forearm.stl"), name="forearm")
         self.jlc.jnts[2].lnk.loc_pos = np.array([.0, .0, 0.027])
         self.jlc.jnts[2].lnk.loc_rotmat = rm.rotmat_from_euler(np.pi / 2, 0, -np.pi / 2)
         self.jlc.jnts[2].lnk.cmodel.rgba = np.array([.35, .35, .35, 1.0])
@@ -43,7 +47,8 @@ class UR3e(mi.ManipulatorInterface):
         self.jlc.jnts[3].loc_pos = np.array([-0.2132, .0, .13105])
         self.jlc.jnts[3].loc_motion_ax = np.array([0, 0, 1])
         self.jlc.jnts[3].motion_range = np.array([-np.pi * 2, np.pi * 2])
-        self.jlc.jnts[3].lnk.cmodel = mcm.CollisionModel(os.path.join(current_file_dir, "meshes", "wrist1.stl"))
+        self.jlc.jnts[3].lnk.cmodel = mcm.CollisionModel(
+            initor=os.path.join(current_file_dir, "meshes", "wrist1.stl"), name="wrist1")
         self.jlc.jnts[3].lnk.loc_pos = np.array([.0, .0, -0.104])
         self.jlc.jnts[3].lnk.loc_rotmat = rm.rotmat_from_euler(np.pi / 2, .0, .0)
         self.jlc.jnts[3].lnk.cmodel.rgba = np.array([.7, .7, .7, 1.0])
@@ -52,7 +57,8 @@ class UR3e(mi.ManipulatorInterface):
         self.jlc.jnts[4].loc_rotmat = rm.rotmat_from_euler(1.570796327, 0, 0)
         self.jlc.jnts[4].loc_motion_ax = np.array([0, 0, 1])
         self.jlc.jnts[4].motion_range = np.array([-np.pi * 2, np.pi * 2])
-        self.jlc.jnts[4].lnk.cmodel = mcm.CollisionModel(os.path.join(current_file_dir, "meshes", "wrist2.stl"))
+        self.jlc.jnts[4].lnk.cmodel = mcm.CollisionModel(
+            initor=os.path.join(current_file_dir, "meshes", "wrist2.stl"), name="wrist2")
         self.jlc.jnts[4].lnk.loc_pos = np.array([.0, .0, -0.08535])
         self.jlc.jnts[4].lnk.cmodel.rgba = np.array([.1, .3, .5, 1.0])
         # sixth joint and link
@@ -60,7 +66,8 @@ class UR3e(mi.ManipulatorInterface):
         self.jlc.jnts[5].loc_rotmat = rm.rotmat_from_euler(1.570796327, 3.141592653589793, 3.141592653589793)
         self.jlc.jnts[5].loc_motion_ax = np.array([0, 0, 1])
         self.jlc.jnts[5].motion_range = np.array([-np.pi * 2, np.pi * 2])
-        self.jlc.jnts[5].lnk.cmodel = mcm.CollisionModel(os.path.join(current_file_dir, "meshes", "wrist3.stl"))
+        self.jlc.jnts[5].lnk.cmodel = mcm.CollisionModel(
+            initor=os.path.join(current_file_dir, "meshes", "wrist3.stl"), name="wrist3")
         self.jlc.jnts[5].lnk.loc_pos = np.array([.0, .0, -0.0921])
         self.jlc.jnts[5].lnk.loc_rotmat = rm.rotmat_from_euler(np.pi / 2, .0, .0)
         self.jlc.jnts[5].lnk.cmodel.rgba = np.array([.5, .5, .5, 1.0])
@@ -105,7 +112,8 @@ class UR3e(mi.ManipulatorInterface):
         # target
         tgt_rotmat = rel_rotmat @ self.loc_tcp_rotmat.T
         tgt_pos = rel_pos - rel_rotmat @ self.loc_tcp_pos
-        mgm.gen_dashed_frame(tgt_pos, tgt_rotmat).attach_to(base)
+        if toggle_dbg:
+            mgm.gen_dashed_frame(tgt_pos, tgt_rotmat).attach_to(base)
         # DH parameters of ur3e
         a2 = -0.24355
         a3 = -0.2132
@@ -113,9 +121,9 @@ class UR3e(mi.ManipulatorInterface):
         d4 = 0.13105
         d5 = 0.08535
         d6 = 0.0921
-        n = tgt_rotmat[:, 0] # normal (x)
-        o = tgt_rotmat[:, 1] # orientation (y)
-        a = tgt_rotmat[:, 2] # approach (z)
+        n = tgt_rotmat[:, 0]  # normal (x)
+        o = tgt_rotmat[:, 1]  # orientation (y)
+        a = tgt_rotmat[:, 2]  # approach (z)
         p = tgt_pos
         # initialize all 8 possibilities
         q = np.zeros((8, 6))
@@ -188,11 +196,10 @@ class UR3e(mi.ManipulatorInterface):
                 return None
             if seed_jnt_values is None:
                 seed_jnt_values = self.home_conf
-            if option=="single":
+            if option == "single":
                 return filtered_result[np.argmin(np.linalg.norm(filtered_result - seed_jnt_values, axis=1))]
-            elif option=="multiple":
+            elif option == "multiple":
                 return filtered_result[np.argsort(np.linalg.norm(filtered_result - seed_jnt_values, axis=1))]
-
 
 
 if __name__ == '__main__':

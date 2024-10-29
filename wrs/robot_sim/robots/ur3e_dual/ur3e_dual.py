@@ -7,6 +7,7 @@ import wrs.robot_sim._kinematics.jlchain as rkjlc
 import wrs.robot_sim.robots.robot_interface as ri
 import wrs.modeling.model_collection as mmc
 import wrs.robot_sim.robots.ur3e_dual.ur3e_rtqhe as u3ehe
+import wrs.robot_sim._kinematics.collision_checker as cc
 
 
 class UR3e_Dual(ri.RobotInterface):
@@ -22,14 +23,14 @@ class UR3e_Dual(ri.RobotInterface):
                                              rm.rotmat_from_euler(-np.pi / 2.0, 0, -np.pi / 2.0)]
         self.body.lnk_list[0].name = "ur3e_dual_base_link"
         self.body.lnk_list[0].cmodel = mcm.CollisionModel(
-            initor=os.path.join(current_file_dir, "meshes", "ur3e_dual_base.stl"),
+            initor=os.path.join(current_file_dir, "meshes", "ur3e_dual_base.stl"), name="ur3e_dual_base",
             cdprim_type=mcm.const.CDPrimType.USER_DEFINED,
             userdef_cdprim_fn=self._base_cdprim)
         self.body.lnk_list[0].cmodel.rgba = rm.const.hug_gray
         # left arm
         self.lft_arm = u3ehe.UR3e_RtqHE(pos=self.body.gl_flange_pose_list[0][0],
                                         rotmat=self.body.gl_flange_pose_list[0][1],
-                                        ik_solver=None)
+                                        ik_solver=None, enable_cc=False)
         self.lft_arm.home_conf = np.array([-np.pi * 2 / 3, -np.pi * 2 / 3, np.pi * 2 / 3, np.pi, -np.pi / 2, 0])
         self.lft_arm.manipulator.jnts[0].motion_range = np.array([-np.pi * 5 / 3, -np.pi / 3])
         self.lft_arm.manipulator.jnts[1].motion_range = np.array([-np.pi, 0])
@@ -41,7 +42,7 @@ class UR3e_Dual(ri.RobotInterface):
         # right side
         self.rgt_arm = u3ehe.UR3e_RtqHE(pos=self.body.gl_flange_pose_list[1][0],
                                         rotmat=self.body.gl_flange_pose_list[1][1],
-                                        ik_solver=None)
+                                        ik_solver=None, enable_cc=False)
         self.rgt_arm.home_conf = np.array([np.pi * 2 / 3, -np.pi / 3, -np.pi * 2 / 3, 0, np.pi / 2, 0])
         self.rgt_arm.manipulator.jnts[0].motion_range = np.array([np.pi / 3, np.pi * 5 / 3])
         self.rgt_arm.manipulator.jnts[1].motion_range = np.array([-np.pi, 0])
@@ -56,8 +57,8 @@ class UR3e_Dual(ri.RobotInterface):
         self.goto_home_conf()
 
     @staticmethod
-    def _base_cdprim(ex_radius=None):
-        pdcnd = CollisionNode("ur3e_dual_base")
+    def _base_cdprim(name="ur3e_dual_base", ex_radius=None):
+        pdcnd = CollisionNode(name + "_cnode")
         collision_primitive_c0 = CollisionBox(Point3(0.54, 0.0, 0.39),
                                               x=.54 + ex_radius, y=.6 + ex_radius, z=.39 + ex_radius)
         pdcnd.addSolid(collision_primitive_c0)
@@ -79,7 +80,7 @@ class UR3e_Dual(ri.RobotInterface):
         collision_primitive_r1 = CollisionBox(Point3(0.21, -0.405, 1.07),
                                               x=.03 + ex_radius, y=.06 + ex_radius, z=.29 + ex_radius)
         pdcnd.addSolid(collision_primitive_r1)
-        cdprim = NodePath("user_defined")
+        cdprim = NodePath(name + "_cdprim")
         cdprim.attachNewNode(pdcnd)
         return cdprim
 
@@ -90,7 +91,8 @@ class UR3e_Dual(ri.RobotInterface):
         else:
             return self.delegator.n_dof
 
-    def _setup_lft_cc(self):
+    def _enable_lft_cc(self):
+        self.lft_arm.cc = cc.CollisionChecker("lft_arm_collision_checker")
         # body
         bd = self.lft_arm.cc.add_cce(self.body.lnk_list[0], toggle_extcd=False)
         # left ee
@@ -132,7 +134,8 @@ class UR3e_Dual(ri.RobotInterface):
                                              rgt_ml4, rgt_ml5] + rgt_ee_cces
         self.lft_arm.cc.dynamic_ext_list = lft_ee_cces[1:]
 
-    def _setup_rgt_cc(self):
+    def _enable_rgt_cc(self):
+        self.rgt_arm.cc = cc.CollisionChecker("rgt_arm_collision_checker")
         # body
         bd = self.rgt_arm.cc.add_cce(self.body.lnk_list[0], toggle_extcd=False)
         # left ee
@@ -180,12 +183,12 @@ class UR3e_Dual(ri.RobotInterface):
         date: 20240309
         """
         # dual arm
-        self._setup_lft_cc()
-        self._setup_rgt_cc()
+        self._enable_lft_cc()
+        self._enable_rgt_cc()
         if self.delegator is not None:
             self.cc = self.delegator.cc
         else:
-            self.cc = self.lft_arm.cc # set left to default
+            self.cc = self.lft_arm.cc  # set left to default
 
     def use_both(self):
         self.delegator = None

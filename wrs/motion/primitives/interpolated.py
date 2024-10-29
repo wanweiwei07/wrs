@@ -227,7 +227,7 @@ class InterplatedMotion(object):
                                               granularity=0.02,
                                               type="sink",
                                               ee_values=None,
-                                              toggle_dbg=True):
+                                              toggle_dbg=False):
         """
         :param goal_jnt_values:
         :param direction:
@@ -267,7 +267,7 @@ class InterplatedMotion(object):
         seed_jnt_values = goal_jnt_values
         for pos, rotmat in pose_list:
             jnt_values = self.robot.ik(pos, rotmat, seed_jnt_values=seed_jnt_values)
-            if jnt_values is None:
+            if jnt_values is None or np.max(np.abs(jnt_values - seed_jnt_values)) > np.radians(45): # ensure linearality
                 if toggle_dbg:
                     for jnt_values in jv_list:
                         self.robot.goto_given_conf(jnt_values, ee_values=ee_values)

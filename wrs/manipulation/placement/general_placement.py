@@ -33,7 +33,8 @@ class PG(object):
         return self._feasible_jv_list
 
     @staticmethod
-    def create_from_pose(robot, reference_grasp_collection, obj_pose, obstacle_list=None, consider_robot=True):
+    def create_from_pose(robot, reference_grasp_collection, obj_pose, obstacle_list=None, consider_robot=True,
+                         toggle_dbg=False):
         pos = obj_pose[0]
         rotmat = obj_pose[1]
         grasp_reasoner = gr.GraspReasoner(robot)
@@ -43,7 +44,7 @@ class PG(object):
             goal_pose=(pos, rotmat),
             consider_robot=consider_robot,
             toggle_keep=True,
-            toggle_dbg=False)
+            toggle_dbg=toggle_dbg)
         if feasible_gids is None:
             print("No feasible grasps found.")
             return None

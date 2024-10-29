@@ -171,7 +171,7 @@ class GraspReasoner(object):
                                 self.robot.end_effector.gen_meshmodel(rgb=rm.const.magenta, alpha=.3).attach_to(base)
                         else:
                             self.robot.goto_given_conf(jnt_values=jnt_values)
-                            if not self.robot.is_collided(obstacle_list=obstacle_list):
+                            if not self.robot.is_collided(obstacle_list=obstacle_list, toggle_dbg=toggle_dbg):
                                 previous_available_gids.append(gid)
                                 previous_availalbe_grasps.append(goal_grasp)
                                 previous_available_jv_list.append(jnt_values)
@@ -182,11 +182,6 @@ class GraspReasoner(object):
                                 if toggle_dbg:
                                     self.robot.end_effector.gen_meshmodel(rgb=rm.const.orange, alpha=.3).attach_to(base)
                                     self.robot.gen_meshmodel(rgb=rm.const.orange, alpha=.3).attach_to(base)
-                                    _, points = self.robot.is_collided(obstacle_list=obstacle_list, toggle_contacts=True)
-                                    from wrs import mgm
-                                    for point in points:
-                                        mgm.gen_sphere(pos=point, radius=.01).attach_to(base)
-                                    base.run()
                     else:
                         ik_failed_grasps_num = '-'
                         rbt_collided_grasps_num = '-'

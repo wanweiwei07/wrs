@@ -26,7 +26,7 @@ from .motion import motion_data as mmd
 from .motion.probabilistic import rrt_connect as rrtc
 from .motion.primitives import interpolated as mip
 from .motion.primitives import approach_depart_planner as adp
-from .manipulation import pick_place_planner as ppp
+from .manipulation import pick_place as ppp
 from .motion.trajectory import topp_ra as toppra
 
 # manipulation

@@ -58,38 +58,22 @@ class RRTConnect(rrt.RRT):
              max_time=15.0,
              smoothing_n_iter=500,
              animation=False,
-             toggle_dbg=True):
+             toggle_dbg=False):
         self.roadmap.clear()
         self.roadmap_start.clear()
         self.roadmap_goal.clear()
         self.start_conf = start_conf
         self.goal_conf = goal_conf
         # check start and goal
-        start_cdresult = self._is_collided(start_conf, obstacle_list, other_robot_list, toggle_contacts=True)
-        if start_cdresult[0]:
+        if toggle_dbg:
+            print("RRT: Checking start robot configuration...")
+        if self._is_collided(start_conf, obstacle_list, other_robot_list, toggle_dbg=toggle_dbg):
             print("RRT: The start robot configuration is in collision!")
-            if toggle_dbg:
-                from wrs import mgm
-                for point in start_cdresult[1]:
-                    mgm.gen_sphere(pos=point, radius=.005).attach_to(base)
-                self.robot.gen_meshmodel(toggle_cdprim=True, alpha=.3).attach_to(base)
-                for obstacle in obstacle_list:
-                    obstacle.attach_to(base)
-                    obstacle.show_cdprim()
-                base.run()
             return None
-        goal_cdresult = self._is_collided(goal_conf, obstacle_list, other_robot_list, toggle_contacts=True)
-        if goal_cdresult[0]:
+        if toggle_dbg:
+            print("RRT: Checking goal robot configuration...")
+        if self._is_collided(goal_conf, obstacle_list, other_robot_list, toggle_dbg=toggle_dbg):
             print("RRT: The goal robot configuration is in collision!")
-            if toggle_dbg:
-                from wrs import mgm
-                for point in goal_cdresult[1]:
-                    mgm.gen_sphere(pos=point, radius=.005).attach_to(base)
-                self.robot.gen_meshmodel(toggle_cdprim=True, alpha=.3).attach_to(base)
-                for obstacle in obstacle_list:
-                    obstacle.attach_to(base)
-                    obstacle.show_cdprim()
-                base.run()
             return None
         if self._is_goal_reached(conf=start_conf, goal_conf=goal_conf, threshold=ext_dist):
             mot_data = rrt.motd.MotionData(self.robot)

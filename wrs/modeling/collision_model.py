@@ -55,7 +55,6 @@ class CollisionModel(mgm.GeometricModel):
                                            may have multiple CollisionSolid
         date: 20190312, 20201212, 20230814, 20231124
         """
-
         if isinstance(initor, CollisionModel):
             if initor.trm_mesh is not None:
                 super().__init__(initor=initor.trm_mesh,
@@ -191,21 +190,21 @@ class CollisionModel(mgm.GeometricModel):
         if thickness is None:
             thickness = 0.002
         if cdprim_type == const.CDPrimType.AABB:
-            pdcndp = mph.gen_aabb_box_pdcndp(self._trm_mesh, ex_radius=thickness)
+            pdcndp = mph.gen_aabb_box_pdcndp(self._trm_mesh, name=self.name, ex_radius=thickness)
         elif cdprim_type == const.CDPrimType.OBB:
-            pdcndp = mph.gen_obb_box_pdcndp(self._trm_mesh, ex_radius=thickness)
+            pdcndp = mph.gen_obb_box_pdcndp(self._trm_mesh, name=self.name, ex_radius=thickness)
         elif cdprim_type == const.CDPrimType.CAPSULE:
-            pdcndp = mph.gen_capsule_pdcndp(self._trm_mesh, ex_radius=thickness)
+            pdcndp = mph.gen_capsule_pdcndp(self._trm_mesh, name=self.name, ex_radius=thickness)
         elif cdprim_type == const.CDPrimType.CYLINDER:
-            pdcndp = mph.gen_cylinder_pdcndp(self._trm_mesh, ex_radius=thickness)
+            pdcndp = mph.gen_cylinder_pdcndp(self._trm_mesh, name=self.name, ex_radius=thickness)
         elif cdprim_type == const.CDPrimType.SURFACE_BALLS:
-            pdcndp = mph.gen_surfaceballs_pdcnd(self._trm_mesh, radius=thickness)
+            pdcndp = mph.gen_surfaceballs_pdcnd(self._trm_mesh, name=self.name, radius=thickness)
         elif cdprim_type == const.CDPrimType.POINT_CLOUD:
-            pdcndp = mph.gen_pointcloud_pdcndp(self._trm_mesh, radius=thickness)
+            pdcndp = mph.gen_pointcloud_pdcndp(self._trm_mesh, name=self.name, radius=thickness)
         elif cdprim_type == const.CDPrimType.USER_DEFINED:
             if userdef_cdprim_fn is None:
                 raise ValueError("User defined functions must provided for user_defined cdprim!")
-            pdcndp = userdef_cdprim_fn(ex_radius=thickness)
+            pdcndp = userdef_cdprim_fn(name=self.name, ex_radius=thickness)
         else:
             print(cdprim_type)
             raise ValueError("Wrong primitive collision model cdprim_type name!")
@@ -499,7 +498,7 @@ def gen_stick(spos=rm.np.array([.0, .0, .0]),
     :param n_sec:
     :return: 20210328
     """
-    center_rotmat = rm.rotmat_between_vectors(v1=rm.np.array([0, 0, 1]), v2=epos-spos)
+    center_rotmat = rm.rotmat_between_vectors(v1=rm.np.array([0, 0, 1]), v2=epos - spos)
     length = rm.np.linalg.norm(epos - spos)
     stick_sgm = mgm.gen_stick(spos=rm.np.array([.0, .0, .0]), epos=rm.np.array([.0, .0, 1.0]) * length,
                               radius=radius, type=type, rgb=rgb, alpha=alpha, n_sec=n_sec)
@@ -518,7 +517,7 @@ if __name__ == "__main__":
 
     base = wd.World(cam_pos=[.3, .3, .3], lookat_pos=[0, 0, 0], toggle_debug=True)
     mgm.gen_frame().attach_to(base)
-    box = gen_stick(spos=np.array([0,0,-1]), epos=np.array([1,0,0]), radius=.1)
+    box = gen_stick(spos=np.array([0, 0, -1]), epos=np.array([1, 0, 0]), radius=.1)
     box.attach_to(base)
     box.show_cdprim()
     objpath = os.path.join(os.path.dirname(rm.__file__), "objects", "bunnysim.stl")
