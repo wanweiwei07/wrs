@@ -22,8 +22,8 @@ fsreg_planner = fsreg.FSRegraspPlanner(robot=robot.lft_arm,
                                        reference_grasp_collection=reference_grasps)
 fsreg_planner.add_fsregspot_collection_from_disk(regspot_path)
 
-start_pose = (rm.np.array([.8, .45, .9]), rm.np.eye(3))
-goal_pose = (rm.np.array([.8, .35, .9]), rm.rotmat_from_euler(0, rm.pi, 0))
+start_pose = (rm.np.array([.8, .3, .82]), rm.np.eye(3))
+goal_pose = (rm.np.array([.8, .35, .82]), rm.rotmat_from_euler(0, rm.pi, 0))
 obj_start = obj.copy()
 obj_start.rgb = rm.const.red
 obj_start.pose = start_pose

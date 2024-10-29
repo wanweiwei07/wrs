@@ -336,6 +336,7 @@ class FSRegraspPlanner(object):
         """
         start_node_list = self.add_start_pose(obj_pose=start_pose, obstacle_list=obstacle_list)
         goal_node_list = self.add_goal_pose(obj_pose=goal_pose, obstacle_list=obstacle_list)
+        self.show_graph()
         while True:
             min_path = None
             for start in start_node_list:

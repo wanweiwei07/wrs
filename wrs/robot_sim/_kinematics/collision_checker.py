@@ -304,7 +304,7 @@ class CollisionChecker(object):
             for cd_entry in self.cd_handler.getEntries():
                 from_node_path = cd_entry.getFromNodePath()
                 into_node_path = cd_entry.getIntoNodePath()
-                print("from ", from_node_path.name, " into ", into_node_path.name)
+                print(f"from {from_node_path.name} {from_node_path.node().getFromCollideMask()} into {into_node_path.name} {into_node_path.node().getIntoCollideMask()}")
                 contact_point = da.pdvec3_to_npvec3(cd_entry.getSurfacePoint(base.render))
                 mgm.gen_sphere(pos=contact_point, radius=.01, rgb=rm.const.orange).attach_to(base)
             base.run()

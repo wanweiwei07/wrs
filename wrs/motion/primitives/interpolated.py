@@ -277,17 +277,19 @@ class InterplatedMotion(object):
                 return None
             else:
                 self.robot.goto_given_conf(jnt_values, ee_values=ee_values)
-                result, contacts = self.robot.is_collided(obstacle_list=obstacle_list, toggle_contacts=True)
+                if toggle_dbg:
+                    print("Gen_rel_linear_motion: Checking collision...")
+                result = self.robot.is_collided(obstacle_list=obstacle_list, toggle_dbg=True)
                 if result:
-                    if toggle_dbg:
-                        for pnt in contacts:
-                            mgm.gen_sphere(pnt, radius=.005).attach_to(base)
-                        print(jnt_values)
-                        self.robot.goto_given_conf(jnt_values)
-                        if ee_values is not None:
-                            self.robot.change_jaw_width(jaw_width=ee_values)
-                        self.robot.gen_meshmodel(toggle_cdprim=True, alpha=.3).attach_to(base)
-                        base.run()
+                    # if toggle_dbg:
+                    #     for pnt in contacts:
+                    #         mgm.gen_sphere(pnt, radius=.005).attach_to(base)
+                    #     print(jnt_values)
+                    #     self.robot.goto_given_conf(jnt_values)
+                    #     if ee_values is not None:
+                    #         self.robot.change_jaw_width(jaw_width=ee_values)
+                    #     self.robot.gen_meshmodel(toggle_cdprim=True, alpha=.3).attach_to(base)
+                    #     base.run()
                     print("Intermediated pose collided in gen_linear_motion!")
                     return None
             jv_list.append(jnt_values)

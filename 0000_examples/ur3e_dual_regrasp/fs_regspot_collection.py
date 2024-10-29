@@ -1,5 +1,8 @@
 import os
 import time
+
+import numpy as np
+
 from wrs import wd, rm, mcm, mgm, fsreg, ur3ed, gg, fsp
 
 mesh_name = "bracketR1"
@@ -22,14 +25,16 @@ fsregspot_collection = fsreg.FSRegSpotCollection(robot=robot.lft_arm,
                                                  obj_cmodel=bunny,
                                                  fs_reference_poses=fs_reference_poses,
                                                  reference_grasp_collection=reference_grasps)
-spot_pos0 = rm.np.array([.8, .35, .9])
-spot_pos1 = rm.np.array([.8, .45, .9])
-spot_pos2 = rm.np.array([.8, .5, .9])
+spot_pos0 = rm.np.array([.8, .35, .78])
+spot_pos1 = rm.np.array([.8, .45, .78])
+spot_pos2 = rm.np.array([.8, .5, 1])
 # mgm.gen_sphere(pos=spot_pos0).attach_to(base)
 # mgm.gen_sphere(pos=spot_pos1).attach_to(base)
 # mgm.gen_sphere(pos=spot_pos2).attach_to(base)
 # base.run()
-fsregspot_collection.add_new_spot(spot_pos=spot_pos2, barrier_z_offset=None, spot_rotz=0)
+fsregspot_collection.add_new_spot(spot_pos=spot_pos0, barrier_z_offset=None, spot_rotz=np.radians(90))
+fsregspot_collection.add_new_spot(spot_pos=spot_pos1, barrier_z_offset=None, spot_rotz=np.radians(90))
+fsregspot_collection.add_new_spot(spot_pos=spot_pos2, barrier_z_offset=None, spot_rotz=np.radians(90))
 fsregspot_collection.save_to_disk(regspot_path)
 fsregspot_collection.load_from_disk(regspot_path)
 mesh_model_list = fsregspot_collection.gen_meshmodel()
