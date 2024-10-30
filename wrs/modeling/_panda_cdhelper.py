@@ -11,7 +11,9 @@ import wrs.basis.data_adapter as da
 import wrs.modeling.collision_model as mcm
 import wrs.modeling.geometric_model as mgm
 
-BITMASK_EXT = BitMask32(2 ** 31)
+bitmask_ext = BitMask32.bit(31)
+bitmask_inner = BitMask32.bit(0)
+bitmask_pool = [BitMask32.bit(n) for n in range(1, 31)]
 
 
 def copy_cdprim(cmodel):
@@ -29,7 +31,7 @@ def copy_cdprim_attach_to(cmodel,
     # if scale is not None
     # return_pdcndp.setScale(da.npvec3_to_pdvec3(scale)) # 20231117 scale is not supported
     if clear_mask:
-        change_cdmask(return_pdcndp, BitMask32(0x00), action="new", type="both")
+        change_cdmask(return_pdcndp, BitMask32(), action="new", type="both")
     return return_pdcndp
 
 
@@ -303,7 +305,7 @@ def gen_pdndp_wireframe(trm_model,
 #     cprim_list0=[]
 #     for cmodel in cmodel_list0:
 #         cprim_list0.append(copy_cdprim_attach_to(cmodel, tgt_pdndp, homomat=cmodel.homomat, clear_mask=True))
-#         change_cdmask(cprim_list0[-1], BITMASK_EXT, action="remove", type="into")
+#         change_cdmask(cprim_list0[-1], bitmask_ext, action="remove", type="into")
 #         for child_pdcnd in cprim_list0[-1].getChildren():
 #             cd_trav.addCollider(collider=child_pdcnd, handler=cd_handler)
 #     cprim_list1=[]
@@ -349,7 +351,7 @@ def is_collided(cmodel_list0, cmodel_list1, toggle_contacts=False):
     # attach to collision tree, change bitmasks, and add colliders
     for cmodel in cmodel_list0:
         cdprim = cmodel.attach_cdprim_to(tgt_pdndp)
-        change_cdmask(cdprim, BITMASK_EXT, action="remove", type="into")
+        change_cdmask(cdprim, bitmask_ext, action="remove", type="into")
         for child_pdcnd in cdprim.getChildren():
             cd_trav.addCollider(collider=child_pdcnd, handler=cd_handler)
     for cmodel in cmodel_list1:
@@ -359,7 +361,7 @@ def is_collided(cmodel_list0, cmodel_list1, toggle_contacts=False):
     # detach from collision tree, change bitmasks, and remove colliders
     for cmodel in cmodel_list0:
         cmodel.detach_cdprim()
-        change_cdmask(cmodel.cdprim, BITMASK_EXT, action="add", type="into")
+        change_cdmask(cmodel.cdprim, bitmask_ext, action="add", type="into")
         for child_pdcnd in cmodel.cdprim.getChildren():
             cd_trav.removeCollider(child_pdcnd)
     for cmodel in cmodel_list1:

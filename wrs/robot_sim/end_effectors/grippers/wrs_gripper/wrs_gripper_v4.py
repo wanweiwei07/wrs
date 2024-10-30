@@ -26,6 +26,7 @@ class WRSGripper4(gpi.GripperInterface):
                                  rotmat=self.coupling.gl_flange_pose_list[0][1], n_dof=6, name=name)
         # anchor
         self.jlc.anchor.lnk_list[0].cmodel = mcm.CollisionModel(os.path.join(current_file_dir, "meshes", "v4_r11.stl"),
+                                                                name="wg_v4_r11",
                                                                 cdmesh_type=self.cdmesh_type)
         self.jlc.anchor.lnk_list[0].cmodel.rgba = rm.const.dim_gray
         # rack length
@@ -34,6 +35,7 @@ class WRSGripper4(gpi.GripperInterface):
         self.jlc.jnts[0].change_type(rkjlc.const.JntType.PRISMATIC, motion_range=np.array([0, self.jaw_range[1] / 3]))
         self.jlc.jnts[0].loc_motion_ax = rm.const.y_ax
         self.jlc.jnts[0].lnk.cmodel = mcm.CollisionModel(os.path.join(current_file_dir, "meshes", "v4_r21.stl"),
+                                                         name="wg_v4_r21",
                                                          cdmesh_type=self.cdmesh_type,
                                                          cdprim_type=mcm.const.CDPrimType.USER_DEFINED,
                                                          userdef_cdprim_fn=self._mid_cdprim, ex_radius=.002)
@@ -42,12 +44,14 @@ class WRSGripper4(gpi.GripperInterface):
         self.jlc.jnts[1].change_type(rkjlc.const.JntType.PRISMATIC, motion_range=np.array([0.0, self.jaw_range[1]]))
         self.jlc.jnts[1].loc_motion_ax = rm.const.y_ax
         self.jlc.jnts[1].lnk.cmodel = mcm.CollisionModel(os.path.join(current_file_dir, "meshes", "v4_r12.stl"),
+                                                         name="wg_v4_r12",
                                                          cdmesh_type=self.cdmesh_type, ex_radius=.002)
         self.jlc.jnts[1].lnk.cmodel.rgba = rm.const.tab20_list[1]
         # the 3nd joint (left finger, +y direction)
         self.jlc.jnts[2].change_type(rkjlc.const.JntType.PRISMATIC, motion_range=np.array([0.0, self.jaw_range[1]]))
         self.jlc.jnts[2].loc_motion_ax = rm.const.y_ax
         self.jlc.jnts[2].lnk.cmodel = mcm.CollisionModel(os.path.join(current_file_dir, "meshes", "v4_r22.stl"),
+                                                         name="wg_v4_r22",
                                                          cdmesh_type=self.cdmesh_type,
                                                          cdprim_type=mcm.const.CDPrimType.USER_DEFINED,
                                                          userdef_cdprim_fn=self._fgr_cdprim, ex_radius=.002)
@@ -57,6 +61,7 @@ class WRSGripper4(gpi.GripperInterface):
         self.jlc.jnts[3].loc_rotmat = rm.rotmat_from_euler(.0, .0, np.pi)
         self.jlc.jnts[3].loc_motion_ax = rm.const.y_ax
         self.jlc.jnts[3].lnk.cmodel = mcm.CollisionModel(os.path.join(current_file_dir, "meshes", "v4_r21.stl"),
+                                                         name="wg_v4_r21",
                                                          cdmesh_type=self.cdmesh_type,
                                                          cdprim_type=mcm.const.CDPrimType.USER_DEFINED,
                                                          userdef_cdprim_fn=self._mid_cdprim, ex_radius=.002)
@@ -65,12 +70,14 @@ class WRSGripper4(gpi.GripperInterface):
         self.jlc.jnts[4].change_type(rkjlc.const.JntType.PRISMATIC, motion_range=np.array([0.0, self.jaw_range[1]]))
         self.jlc.jnts[4].loc_motion_ax = rm.const.y_ax
         self.jlc.jnts[4].lnk.cmodel = mcm.CollisionModel(os.path.join(current_file_dir, "meshes", "v4_r12.stl"),
+                                                         name="wg_v4_r12",
                                                          cdmesh_type=self.cdmesh_type, ex_radius=.002)
         self.jlc.jnts[4].lnk.cmodel.rgba = rm.const.tab20_list[1]
         # the 3nd joint (rgt finger, -y direction)
         self.jlc.jnts[5].change_type(rkjlc.const.JntType.PRISMATIC, motion_range=np.array([0.0, self.jaw_range[1]]))
         self.jlc.jnts[5].loc_motion_ax = rm.const.y_ax
         self.jlc.jnts[5].lnk.cmodel = mcm.CollisionModel(os.path.join(current_file_dir, "meshes", "v4_r22.stl"),
+                                                         name="wg_v4_r22",
                                                          cdmesh_type=self.cdmesh_type,
                                                          cdprim_type=mcm.const.CDPrimType.USER_DEFINED,
                                                          userdef_cdprim_fn=self._fgr_cdprim, ex_radius=.002)
@@ -85,8 +92,8 @@ class WRSGripper4(gpi.GripperInterface):
                            self.jlc.jnts[5].lnk)
 
     @staticmethod
-    def _fgr_cdprim(ex_radius):
-        pdcnd = CollisionNode("finger")
+    def _fgr_cdprim(name="wg_v4_fgr", ex_radius=None):
+        pdcnd = CollisionNode(name + "_cnode")
         collision_primitive_c0 = CollisionBox(Point3(.0, 0.0224 * 3 + 0.002, .102),
                                               x=.0075 + ex_radius, y=0.001 + ex_radius, z=.06 + ex_radius)
         pdcnd.addSolid(collision_primitive_c0)
@@ -96,17 +103,17 @@ class WRSGripper4(gpi.GripperInterface):
         collision_primitive_c2 = CollisionBox(Point3(-.02, 0.0224 * 3 - 0.015, .052),
                                               x=.015 + ex_radius, y=0.014 + ex_radius, z=.012 + ex_radius)
         pdcnd.addSolid(collision_primitive_c2)
-        cdprim = NodePath("user_defined")
+        cdprim = NodePath(name + "_cdprim")
         cdprim.attachNewNode(pdcnd)
         return cdprim
 
     @staticmethod
-    def _mid_cdprim(ex_radius):
-        pdcnd = CollisionNode("mid_plate")
+    def _mid_cdprim(name="wg_v4_mid", ex_radius=None):
+        pdcnd = CollisionNode(name + "_cnode")
         collision_primitive_c0 = CollisionBox(Point3(-.011 - .02 / 2, .025 - 0.03 / 2, .003 + .06 / 2),
                                               x=.02 / 2 + ex_radius, y=0.03 / 2 + ex_radius, z=.06 / 2 + ex_radius)
         pdcnd.addSolid(collision_primitive_c0)
-        cdprim = NodePath("user_defined")
+        cdprim = NodePath(name + "_cprim")
         cdprim.attachNewNode(pdcnd)
         return cdprim
 

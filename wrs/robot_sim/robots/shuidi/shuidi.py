@@ -7,6 +7,7 @@ import wrs.robot_sim._kinematics.jlchain as rkjlc
 import wrs.modeling.collision_model as mcm
 import wrs.modeling.model_collection as mmc
 
+
 class Shuidi(ri.RobotInterface):
 
     def __init__(self, pos=np.zeros(3), rotmat=np.eye(3), name="XYInterface", enable_cc=False):
@@ -34,7 +35,8 @@ class Shuidi(ri.RobotInterface):
         self.jlc.jnts[2].loc_pos = np.zeros(3)
         self.jlc.jnts[2].motion_range = [-math.pi, math.pi]
         self.jlc.jnts[2].lnk.cmodel = mcm.CollisionModel(
-            initor=os.path.join(current_file_dir, "meshes", "shuidi_agv.stl"), cdprim_type=mcm.const.CDPrimType.CYLINDER)
+            initor=os.path.join(current_file_dir, "meshes", "shuidi_agv.stl"), name="shuidi_agv",
+            cdprim_type=mcm.const.CDPrimType.CYLINDER)
         self.jlc.jnts[2].lnk.cmodel.rgba = rm.const.tab20_list[14]
         self.jlc.finalize()
         # anchor
@@ -46,13 +48,13 @@ class Shuidi(ri.RobotInterface):
         self.anchor.lnk_list[0].name = name + "_battery"
         self.anchor.lnk_list[0].loc_pos = np.array([.0, .0, .277])
         self.anchor.lnk_list[0].cmodel = mcm.CollisionModel(
-            initor=os.path.join(current_file_dir, "meshes", "battery.stl"))
+            initor=os.path.join(current_file_dir, "meshes", "battery.stl"), name="shuidi_battery")
         self.anchor.lnk_list[0].cmodel.rgba = rm.const.tab20_list[14]
         # anchor battery fixture
         self.anchor.lnk_list[1].name = name + "_battery_fixture"
         self.anchor.lnk_list[1].loc_pos = np.array([.0, .0, .277])
         self.anchor.lnk_list[1].cmodel = mcm.CollisionModel(
-            initor=os.path.join(current_file_dir, "meshes", "battery_fixture.stl"))
+            initor=os.path.join(current_file_dir, "meshes", "battery_fixture.stl"), name="shuidi_battery_fixture")
         self.anchor.lnk_list[1].cmodel.rgba = rm.const.tab20_list[15]
         if enable_cc:
             self.setup_cc()
@@ -68,9 +70,10 @@ class Shuidi(ri.RobotInterface):
         return self.anchor.gl_flange_pose_list
 
     def setup_cc(self):
-        self.cc.add_cce(self.jlc.jnts[2].lnk)
-        self.cc.add_cce(self.anchor.lnk_list[0])
-        self.cc.add_cce(self.anchor.lnk_list[1])
+        agv = self.cc.add_cce(self.jlc.jnts[2].lnk)
+        batt = self.cc.add_cce(self.anchor.lnk_list[0])
+        batt_fx = self.cc.add_cce(self.anchor.lnk_list[1])
+        self.cc.enable_extcd_by_id_list(id_list=[agv, batt, batt_fx], type="from")
 
     def backup_state(self):
         self.jnt_values_bk.append(self.jlc.get_jnt_values())

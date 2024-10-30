@@ -185,8 +185,8 @@ class UR3(mi.ManipulatorInterface):
             print("No valid solutions found")
             return None
         else:
-            print(result)
-            print(self.jnt_ranges)
+            # print(result)
+            # print(self.jnt_ranges)
             mask = np.all((result >= self.jnt_ranges[:, 0]) & (result <= self.jnt_ranges[:, 1]), axis=1)
             filtered_result = result[mask]
             if len(filtered_result) == 0:

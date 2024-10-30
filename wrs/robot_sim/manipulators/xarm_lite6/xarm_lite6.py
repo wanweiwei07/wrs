@@ -20,55 +20,58 @@ class XArmLite6(mi.ManipulatorInterface):
         super().__init__(pos=pos, rotmat=rotmat, home_conf=home_conf, name=name, enable_cc=enable_cc)
         current_file_dir = os.path.dirname(__file__)
         # anchor
-        self.jlc.anchor.lnk_list[0].cmodel = mcm.CollisionModel(os.path.join(current_file_dir, "meshes", "base.stl"),
-                                                                cdprim_type=mcm.const.CDPrimType.USER_DEFINED,
-                                                                ex_radius=.005,
-                                                                userdef_cdprim_fn=self._base_cdprim)
+        self.jlc.anchor.lnk_list[0].cmodel = mcm.CollisionModel(
+            initor=os.path.join(current_file_dir, "meshes", "base.stl"), name="xarm_lite6_base",
+            cdprim_type=mcm.const.CDPrimType.USER_DEFINED, ex_radius=.005, userdef_cdprim_fn=self._base_cdprim)
         self.jlc.anchor.lnk_list[0].cmodel.rgba = rm.const.tab20_list[15]
         # first joint and link
         self.jlc.jnts[0].loc_pos = np.array([.0, .0, .2433])
         self.jlc.jnts[0].loc_motion_ax = np.array([0, 0, 1])
-        self.jlc.jnts[0].motion_range = np.array([-math.pi,  math.pi])
-        self.jlc.jnts[0].lnk.cmodel = mcm.CollisionModel(os.path.join(current_file_dir, "meshes", "link1.stl"))
+        self.jlc.jnts[0].motion_range = np.array([-math.pi, math.pi])
+        self.jlc.jnts[0].lnk.cmodel = mcm.CollisionModel(
+            initor=os.path.join(current_file_dir, "meshes", "link1.stl"), name="xarm_lite6_link1")
         self.jlc.jnts[0].lnk.cmodel.rgba = rm.const.tab20_list[15]
         # second joint and link
         self.jlc.jnts[1].loc_pos = np.array([.0, .0, .0])
         self.jlc.jnts[1].loc_rotmat = rm.rotmat_from_euler(1.5708, -1.5708, 3.1416)
         self.jlc.jnts[1].loc_motion_ax = np.array([0, 0, 1])
         self.jlc.jnts[1].motion_range = np.array([-2.61799, 2.61799])
-        self.jlc.jnts[1].lnk.cmodel = mcm.CollisionModel(os.path.join(current_file_dir, "meshes", "link2.stl"),
-                                                         cdprim_type=mcm.const.CDPrimType.USER_DEFINED, ex_radius=.005,
-                                                         userdef_cdprim_fn=self._link2_cdprim)
+        self.jlc.jnts[1].lnk.cmodel = mcm.CollisionModel(
+            initor=os.path.join(current_file_dir, "meshes", "link2.stl"), name="xarm_lite6_link2",
+            cdprim_type=mcm.const.CDPrimType.USER_DEFINED, ex_radius=.005, userdef_cdprim_fn=self._link2_cdprim)
         self.jlc.jnts[1].lnk.cmodel.rgba = rm.const.tab20_list[15]
         # third joint and link
         self.jlc.jnts[2].loc_pos = np.array([.2, .0, .0])
         self.jlc.jnts[2].loc_rotmat = rm.rotmat_from_euler(-3.1416, 0., 1.5708)
         self.jlc.jnts[2].loc_motion_ax = np.array([0, 0, 1])
         self.jlc.jnts[2].motion_range = np.array([-0.061087, 5.235988])
-        self.jlc.jnts[2].lnk.cmodel = mcm.CollisionModel(os.path.join(current_file_dir, "meshes", "link3.stl"))
+        self.jlc.jnts[2].lnk.cmodel = mcm.CollisionModel(
+            initor=os.path.join(current_file_dir, "meshes", "link3.stl"), name="xarm_lite6_link3")
         self.jlc.jnts[2].lnk.cmodel.rgba = rm.const.tab20_list[15]
         # fourth joint and link
         self.jlc.jnts[3].loc_pos = np.array([.087, -.2276, .0])
         self.jlc.jnts[3].loc_rotmat = rm.rotmat_from_euler(1.5708, 0., 0.)
         self.jlc.jnts[3].loc_motion_ax = np.array([0, 0, 1])
         self.jlc.jnts[3].motion_range = np.array([-math.pi, math.pi])
-        self.jlc.jnts[3].lnk.cmodel = mcm.CollisionModel(os.path.join(current_file_dir, "meshes", "link4.stl"),
-                                                         cdprim_type=mcm.const.CDPrimType.USER_DEFINED, ex_radius=.005,
-                                                         userdef_cdprim_fn=self._link4_cdprim)
+        self.jlc.jnts[3].lnk.cmodel = mcm.CollisionModel(
+            initor=os.path.join(current_file_dir, "meshes", "link4.stl"), name="xarm_lite6_link4",
+            cdprim_type=mcm.const.CDPrimType.USER_DEFINED, ex_radius=.005, userdef_cdprim_fn=self._link4_cdprim)
         self.jlc.jnts[3].lnk.cmodel.rgba = rm.const.tab20_list[15]
         # fifth joint and link
         self.jlc.jnts[4].loc_pos = np.array([.0, .0, .0])
         self.jlc.jnts[4].loc_rotmat = rm.rotmat_from_euler(1.5708, 0., 0.)
         self.jlc.jnts[4].loc_motion_ax = np.array([0, 0, 1])
         self.jlc.jnts[4].motion_range = np.array([-2.1642, 2.1642])
-        self.jlc.jnts[4].lnk.cmodel = mcm.CollisionModel(os.path.join(current_file_dir, "meshes", "link5.stl"))
+        self.jlc.jnts[4].lnk.cmodel = mcm.CollisionModel(
+            initor=os.path.join(current_file_dir, "meshes", "link5.stl"), name="xarm_lite6_link5")
         self.jlc.jnts[4].lnk.cmodel.rgba = rm.const.tab20_list[15]
         # sixth joint and link
         self.jlc.jnts[5].loc_pos = np.array([.0, .0615, .0])
         self.jlc.jnts[5].loc_rotmat = rm.rotmat_from_euler(-1.5708, 0., 0.)
         self.jlc.jnts[5].loc_motion_ax = np.array([0, 0, 1])
         self.jlc.jnts[5].motion_range = np.array([-math.pi, math.pi])
-        self.jlc.jnts[5].lnk.cmodel = mcm.CollisionModel(os.path.join(current_file_dir, "meshes", "link6.stl"))
+        self.jlc.jnts[5].lnk.cmodel = mcm.CollisionModel(
+            initor=os.path.join(current_file_dir, "meshes", "link6.stl"), name="xarm_lite6_link6")
         self.jlc.jnts[5].lnk.cmodel.rgba = rm.const.tab20_list[15]
         self.jlc.finalize(ik_solver='a', identifier_str=name)
         # tcp
@@ -80,21 +83,21 @@ class XArmLite6(mi.ManipulatorInterface):
 
     # self-defined collison model for the base link
     @staticmethod
-    def _base_cdprim(ex_radius):
-        pdcnd = CollisionNode("base")
+    def _base_cdprim(name="auto", ex_radius=None):
+        pdcnd = CollisionNode(name+"_cnode")
         collision_primitive_c0 = CollisionBox(Point3(-0.008, 0, 0.0375),
                                               x=.07 + ex_radius, y=.065 + ex_radius, z=0.0375 + ex_radius)
         pdcnd.addSolid(collision_primitive_c0)
         collision_primitive_c1 = CollisionBox(Point3(0, 0, .124),
                                               x=.043 + ex_radius, y=.043 + ex_radius, z=.049 + ex_radius)
         pdcnd.addSolid(collision_primitive_c1)
-        cdprim = NodePath("user_defined_base")
+        cdprim = NodePath(name+"_cdprim")
         cdprim.attachNewNode(pdcnd)
         return cdprim
 
     @staticmethod
-    def _link2_cdprim(ex_radius):
-        pdcnd = CollisionNode("link2")
+    def _link2_cdprim(name="auto", ex_radius=None):
+        pdcnd = CollisionNode(name+"_cnode")
         collision_primitive_c0 = CollisionBox(Point3(0, 0, 0.1065),
                                               x=.041 + ex_radius, y=.042 + ex_radius, z=0.0315 + ex_radius)
         pdcnd.addSolid(collision_primitive_c0)
@@ -104,20 +107,20 @@ class XArmLite6(mi.ManipulatorInterface):
         collision_primitive_c2 = CollisionBox(Point3(.2, 0, 0.0915),
                                               x=.041 + ex_radius, y=.042 + ex_radius, z=0.0465 + ex_radius)
         pdcnd.addSolid(collision_primitive_c2)
-        cdprim = NodePath("user_defined_link2")
+        cdprim = NodePath(name+"_cdprim")
         cdprim.attachNewNode(pdcnd)
         return cdprim
 
     @staticmethod
-    def _link4_cdprim(ex_radius):
-        pdcnd = CollisionNode("link4")
+    def _link4_cdprim(name="auto", ex_radius=None):
+        pdcnd = CollisionNode(name+"_cnode")
         collision_primitive_c0 = CollisionBox(Point3(0, 0, -0.124009),
                                               x=.041 + ex_radius, y=.042 + ex_radius, z=0.0682075 + ex_radius)
         pdcnd.addSolid(collision_primitive_c0)
         collision_primitive_c1 = CollisionBox(Point3(0, -0.063315, -0.0503),
                                               x=.041 + ex_radius, y=.021315 + ex_radius, z=.087825 + ex_radius)
         pdcnd.addSolid(collision_primitive_c1)
-        cdprim = NodePath("user_defined_link4")
+        cdprim = NodePath(name+"_cdprim")
         cdprim.attachNewNode(pdcnd)
         return cdprim
 
@@ -151,7 +154,7 @@ class XArmLite6(mi.ManipulatorInterface):
         tgt_flange_pos = tgt_pos - tgt_flange_rotmat @ tcp_loc_pos
         rrr_pos = tgt_flange_pos - tgt_flange_rotmat[:, 2] * np.linalg.norm(self.jlc.jnts[5].loc_pos)
         rrr_x, rrr_y, rrr_z = ((rrr_pos - self.pos) @ self.rotmat).tolist()  # in base coordinate system
-        j0_value = np.pi/2-math.atan2(rrr_x, rrr_y)
+        j0_value = np.pi / 2 - math.atan2(rrr_x, rrr_y)
         if not self._is_jnt_in_range(jnt_id=0, jnt_value=j0_value):
             return None
         # assume a, b, c are the axis_length of shoulders and bottom of the big triangle formed by the robot arm

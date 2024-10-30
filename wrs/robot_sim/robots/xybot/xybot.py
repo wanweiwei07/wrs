@@ -115,7 +115,7 @@ class XYWBot(ri.RobotInterface):
     def are_jnts_in_ranges(self, jnt_values):
         return self.jlc.are_jnts_in_ranges(jnt_values)
 
-    def is_collided(self, obstacle_list=[], other_robot_list=[], toggle_contacts=False):
+    def is_collided(self, obstacle_list=[], other_robot_list=[], toggle_contacts=False, toggle_dbg=False):
         if self.cc is None:
             for (pos, diameter) in obstacle_list:
                 dist = np.linalg.norm(np.asarray(pos) - self.get_jnt_values())

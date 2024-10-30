@@ -9,7 +9,7 @@ import wrs.robot_sim.end_effectors.single_contact.single_contact_interface as si
 class SpineMiller(si.SCTInterface):
 
     def __init__(self, pos=rm.np.zeros(3), rotmat=rm.np.eye(3),
-                 cdmesh_type=mcm.const.CDMeshType.DEFAULT, name='spine_miller', enable_cc=True):
+                 cdmesh_type=mcm.const.CDMeshType.DEFAULT, name='spine_miller'):
         super().__init__(pos=pos, rotmat=rotmat, cdmesh_type=cdmesh_type, name=name)
         this_dir, this_filename = os.path.split(__file__)
         cpl_end_pos = self.coupling.gl_flange_pose_list[0][0]

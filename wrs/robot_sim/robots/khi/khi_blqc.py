@@ -47,7 +47,7 @@ class KHI_BLQC(sari.SglArmRobotInterface):
             for id, cdlnk in enumerate(self.end_effector.cdelements):
                 ee_cces.append(self.cc.add_cce(cdlnk))
         # manipulator
-        mlb = self.cc.add_cce(self.manipulator.jlc.anchor.lnk_list[0], toggle_extcd=False)
+        mlb = self.cc.add_cce(self.manipulator.jlc.anchor.lnk_list[0])
         ml0 = self.cc.add_cce(self.manipulator.jlc.jnts[0].lnk)
         ml1 = self.cc.add_cce(self.manipulator.jlc.jnts[1].lnk)
         ml2 = self.cc.add_cce(self.manipulator.jlc.jnts[2].lnk)
@@ -57,7 +57,9 @@ class KHI_BLQC(sari.SglArmRobotInterface):
         from_list = ee_cces + [tc0, ml3, ml4, ml5]
         into_list = [mlb, ml0]
         self.cc.set_cdpair_by_ids(from_list, into_list)
-        self.cc.dynamic_into_list = [mlb, ml0, ml1, ml2, ml3]
+        # ext and inner
+        self.cc.enable_extcd_by_id_list(id_list=[ml0, ml1, ml2, ml3, ml4, ml5] + ee_cces, type="from")
+        self.cc.enable_innercd_by_id_list(id_list=[mlb, ml0, ml1, ml2, ml3], type="into")
         self.cc.dynamic_ext_list = ee_cces
 
     def attach_tool(self, tool):
@@ -162,7 +164,7 @@ if __name__ == '__main__':
     rbt = KHI_BLQC(enable_cc=True)
     rbt.gen_meshmodel().attach_to(base)
     # tool gripper
-    ee_g_pos = np.array([-.4, .4, .19])
+    ee_g_pos = np.array([-.2, .4, .19])
     ee_g_rotmat = rm.rotmat_from_euler(0, np.radians(180), 0)
     mgm.gen_frame(pos=ee_g_pos, rotmat=ee_g_rotmat).attach_to(base)
     ee_g = org.OR2FG7(pos=ee_g_pos,
@@ -227,6 +229,8 @@ if __name__ == '__main__':
             self.counter = 0
             self.mot_data = mot_data
 
+
+    print(mot_attach_eeg.robot, mot_eeg.robot, mot_attach_eesd.robot, mot_eesd.robot)
 
     anime_data = Data(mot_attach_eeg + mot_eeg + mot_attach_eesd + mot_eesd)
 

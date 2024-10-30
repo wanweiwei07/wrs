@@ -23,7 +23,8 @@ class FrankaHand(gpi.GripperInterface):
                                  rotmat=self.coupling.gl_flange_pose_list[0][1], n_dof=2, name=name)
         # anchor
         self.jlc.anchor.lnk_list[0].cmodel = mcm.CollisionModel(
-            os.path.join(current_file_dir, "meshes", "hand.dae"),
+            initor=os.path.join(current_file_dir, "meshes", "hand.dae"),
+            name="franka_hand_base",
             cdmesh_type=self.cdmesh_type
         )
         self.jlc.anchor.lnk_list[0].cmodel.rgba = np.array([0.35, 0.35, 0.35, 1])
@@ -31,8 +32,10 @@ class FrankaHand(gpi.GripperInterface):
         self.jlc.jnts[0].change_type(rkjlc.const.JntType.PRISMATIC, motion_range=np.array([0, self.jaw_range[1] / 2]))
         self.jlc.jnts[0].loc_pos = np.array([0, 0, 0.0584])
         self.jlc.jnts[0].loc_motion_ax = rm.const.y_ax
-        self.jlc.jnts[0].lnk.cmodel = mcm.CollisionModel(os.path.join(current_file_dir, "meshes", "finger.dae"),
-                                                         cdmesh_type=self.cdmesh_type)
+        self.jlc.jnts[0].lnk.cmodel = mcm.CollisionModel(
+            initor=os.path.join(current_file_dir, "meshes", "finger.dae"),
+            name="franka_hand_finger1",
+            cdmesh_type=self.cdmesh_type)
         self.jlc.jnts[0].lnk.cmodel.rgba = np.array([0.5, 0.5, 1, 1])
         # the 2nd joint (right finger, -y direction)
         self.jlc.jnts[1].change_type(rkjlc.const.JntType.PRISMATIC, motion_range=np.array([0, self.jaw_range[1] / 2]))
@@ -40,8 +43,10 @@ class FrankaHand(gpi.GripperInterface):
         self.jlc.jnts[1].loc_rotmat = rm.rotmat_from_euler(0, 0, np.pi)
         self.jlc.jnts[1].loc_motion_ax = rm.const.y_ax
         self.jlc.jnts[1].motion_range = np.array([0.0, 0.015])
-        self.jlc.jnts[1].lnk.cmodel = mcm.CollisionModel(os.path.join(current_file_dir, "meshes", "finger.dae"),
-                                                         cdmesh_type=self.cdmesh_type)
+        self.jlc.jnts[1].lnk.cmodel = mcm.CollisionModel(
+            initor=os.path.join(current_file_dir, "meshes", "finger.dae"),
+            name="franka_hand_finger2",
+            cdmesh_type=self.cdmesh_type)
         self.jlc.jnts[1].lnk.cmodel.rgba = np.array([1, 0.5, 0.5, 1])
         # finalize
         self.jlc.finalize()
@@ -49,8 +54,8 @@ class FrankaHand(gpi.GripperInterface):
         self.loc_acting_center_pos = np.array([0, 0, 0.1034])
         # collisions
         self.cdelements = (self.jlc.anchor.lnk_list[0],
-                                self.jlc.jnts[0].lnk,
-                                self.jlc.jnts[1].lnk)
+                           self.jlc.jnts[0].lnk,
+                           self.jlc.jnts[1].lnk)
 
     def fix_to(self, pos, rotmat, jaw_width=None):
         self._pos = pos

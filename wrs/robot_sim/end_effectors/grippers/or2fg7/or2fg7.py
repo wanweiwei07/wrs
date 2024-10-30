@@ -37,6 +37,7 @@ class OR2FG7(gpi.GripperInterface):
         self.jlc.anchor.lnk_list[0].loc_rotmat = rm.rotmat_from_euler(0, 0, np.pi / 2)
         self.jlc.anchor.lnk_list[0].cmodel = mcm.CollisionModel(
             os.path.join(current_file_dir, "meshes", "base_link.stl"),
+            name="or2fg7_base",
             cdmesh_type=self.cdmesh_type)
         self.jlc.anchor.lnk_list[0].cmodel.rgba = rm.const.tab20_list[14]
         # the 1st joint (left finger, +y direction)
@@ -45,6 +46,7 @@ class OR2FG7(gpi.GripperInterface):
         self.jlc.jnts[0].loc_motion_ax = rm.const.y_ax
         self.jlc.jnts[0].lnk.cmodel = mcm.CollisionModel(
             initor=os.path.join(current_file_dir, "meshes", "inward_left_finger_link.stl"),
+            name="or2fg7_inward_left_finger",
             cdmesh_type=self.cdmesh_type,
             cdprim_type=mcm.const.CDPrimType.AABB)
         self.jlc.jnts[0].lnk.loc_rotmat = rm.rotmat_from_euler(0, 0, np.pi / 2)
@@ -55,6 +57,7 @@ class OR2FG7(gpi.GripperInterface):
         self.jlc.jnts[1].loc_motion_ax = rm.const.y_ax
         self.jlc.jnts[1].lnk.cmodel = mcm.CollisionModel(
             initor=os.path.join(current_file_dir, "meshes", "inward_right_finger_link.stl"),
+            name="or2fg7_inward_right_finger",
             cdmesh_type=self.cdmesh_type,
             cdprim_type=mcm.const.CDPrimType.AABB)
         self.jlc.jnts[1].lnk.loc_rotmat = rm.rotmat_from_euler(0, 0, np.pi / 2)

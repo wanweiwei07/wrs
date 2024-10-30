@@ -86,7 +86,8 @@ class SglArmRobotInterface(ri.RobotInterface):
             for oiee in self.oiee_list:
                 uuid_list.append(self.cc.add_cce(oiee))
             if len(uuid_list) > 0:
-                self.cc.set_cdpair_by_ids(uuid_list, self.cc.dynamic_into_list)
+                self.cc.enable_extcd_by_id_list(id_list=uuid_list, type="from")
+                self.cc.enable_innercd_by_id_list(id_list=uuid_list, type="from")
                 self.cc.dynamic_ext_list.extend(uuid_list)
 
     def get_ee_values(self):
@@ -110,7 +111,8 @@ class SglArmRobotInterface(ri.RobotInterface):
         oiee = self.end_effector.hold(obj_cmodel, **kwargs)
         if self.cc is not None:
             uuid = self.cc.add_cce(oiee)
-            self.cc.set_cdpair_by_ids([uuid], self.cc.dynamic_into_list)
+            self.cc.enable_extcd_by_id_list(id_list=[uuid], type="from")
+            self.cc.enable_innercd_by_id_list(id_list=[uuid], type="from")
             self.cc.dynamic_ext_list.append(uuid)
 
     def release(self, obj_cmodel, **kwargs):
@@ -123,17 +125,13 @@ class SglArmRobotInterface(ri.RobotInterface):
 
     def toggle_off_eecd(self):
         if self.cc is not None:
-            for uuid in self.cc.dynamic_ext_list:
-                self.cc.cce_dict[uuid].disable_extcd(type="from")
-            for oiee in self.oiee_list:
-                self.cc.cce_dict[oiee.uuid].disable_extcd(type="from")
+            self.cc.disable_extcd_by_id_list(id_list=self.cc.dynamic_ext_list, type="from")
+            self.cc.disable_innercd_by_id_list(id_list=self.cc.dynamic_into_list, type="into")
 
     def toggle_on_eecd(self):
         if self.cc is not None:
-            for uuid in self.cc.dynamic_ext_list:
-                self.cc.cce_dict[uuid].enable_extcd(type="from")
-            for oiee in self.oiee_list:
-                self.cc.cce_dict[oiee.uuid].enable_extcd(type="from")
+            self.cc.enable_extcd_by_id_list(id_list=self.cc.dynamic_ext_list, type="from")
+            self.cc.enable_innercd_by_id_list(id_list=self.cc.dynamic_into_list, type="into")
 
     def goto_given_conf(self, jnt_values, ee_values=None):
         result = self._manipulator.goto_given_conf(jnt_values=jnt_values)

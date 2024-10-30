@@ -218,7 +218,6 @@ class EEInterface(object):
     def _toggle_tcp_frame(self, m_col):
         gl_acting_center_pos = self._rotmat @ self.loc_acting_center_pos + self._pos
         gl_acting_center_rotmat = self._rotmat @ self.loc_acting_center_rotmat
-        print(gl_acting_center_rotmat)
         rkmg.gen_indicated_frame(spos=self._pos,
                                  gl_pos=gl_acting_center_pos,
                                  gl_rotmat=gl_acting_center_rotmat).attach_to(m_col)

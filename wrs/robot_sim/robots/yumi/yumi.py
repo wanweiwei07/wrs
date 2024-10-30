@@ -9,6 +9,7 @@ import wrs.robot_sim._kinematics.jlchain as rkjlc
 import wrs.robot_sim.robots.robot_interface as ri
 import wrs.modeling.model_collection as mmc
 import wrs.robot_sim.robots.yumi.yumi_single_arm as ysa
+import wrs.robot_sim._kinematics.collision_checker as cc
 
 
 class Yumi(ri.RobotInterface):
@@ -32,51 +33,51 @@ class Yumi(ri.RobotInterface):
         # table
         self.body.lnk_list[1].name = "yumi_body_table_top"
         self.body.lnk_list[1].cmodel = mcm.CollisionModel(
-            initor=os.path.join(current_file_dir, "meshes", "yumi_tablenotop.stl"))
+            initor=os.path.join(current_file_dir, "meshes", "yumi_tablenotop.stl"), name="yumi_body_table_top")
         self.body.lnk_list[1].cmodel.rgba = rm.const.steel_gray
         # lft column
         self.body.lnk_list[2].name = "yumi_body_lft_column"
         self.body.lnk_list[2].loc_pos = np.array([-.327, -.24, -1.015])
         self.body.lnk_list[2].cmodel = mcm.CollisionModel(
-            initor=os.path.join(current_file_dir, "meshes", "yumi_column60602100.stl"))
+            initor=os.path.join(current_file_dir, "meshes", "yumi_column60602100.stl"), name="yumi_body_lft_column")
         self.body.lnk_list[2].cmodel.rgba = rm.const.steel_gray
         # rgt column
         self.body.lnk_list[3].name = "yumi_body_rgt_column"
         self.body.lnk_list[3].loc_pos = np.array([-.327, .24, -1.015])
         self.body.lnk_list[3].cmodel = mcm.CollisionModel(
-            initor=os.path.join(current_file_dir, "meshes", "yumi_column60602100.stl"))
+            initor=os.path.join(current_file_dir, "meshes", "yumi_column60602100.stl"), name="yumi_body_rgt_column")
         self.body.lnk_list[3].cmodel.rgba = rm.const.steel_gray
         # top back column
         self.body.lnk_list[4].name = "yumi_body_top_back_column"
         self.body.lnk_list[4].loc_pos = np.array([-.327, 0, 1.085])
         self.body.lnk_list[4].cmodel = mcm.CollisionModel(
-            initor=os.path.join(current_file_dir, "meshes", "yumi_column6060540.stl"))
+            initor=os.path.join(current_file_dir, "meshes", "yumi_column6060540.stl"), name="yumi_body_top_back_column")
         self.body.lnk_list[4].cmodel.rgba = rm.const.steel_gray
         # top lft column
         self.body.lnk_list[5].name = "yumi_body_top_lft_column"
         self.body.lnk_list[5].loc_pos = np.array([-.027, -.24, 1.085])
         self.body.lnk_list[5].loc_rotmat = rm.rotmat_from_axangle([0, 0, 1], -math.pi / 2)
         self.body.lnk_list[5].cmodel = mcm.CollisionModel(
-            initor=os.path.join(current_file_dir, "meshes", "yumi_column6060540.stl"))
+            initor=os.path.join(current_file_dir, "meshes", "yumi_column6060540.stl"), name="yumi_body_top_lft_column")
         self.body.lnk_list[5].cmodel.rgba = rm.const.steel_gray
         # top rgt column
-        self.body.lnk_list[6].name = "yumi_body_top_lft_column"
+        self.body.lnk_list[6].name = "yumi_body_top_rgt_column"
         self.body.lnk_list[6].loc_pos = np.array([-.027, .24, 1.085])
         self.body.lnk_list[6].loc_rotmat = rm.rotmat_from_axangle([0, 0, 1], -math.pi / 2)
         self.body.lnk_list[6].cmodel = mcm.CollisionModel(
-            initor=os.path.join(current_file_dir, "meshes", "yumi_column6060540.stl"))
+            initor=os.path.join(current_file_dir, "meshes", "yumi_column6060540.stl"), name="yumi_body_top_rgt_column")
         self.body.lnk_list[6].cmodel.rgba = rm.const.steel_gray
         # top front column
-        self.body.lnk_list[7].name = "yumi_body_top_lft_column"
+        self.body.lnk_list[7].name = "yumi_body_top_front_column"
         self.body.lnk_list[7].loc_pos = np.array([.273, 0, 1.085])
         self.body.lnk_list[7].cmodel = mcm.CollisionModel(
-            initor=os.path.join(current_file_dir, "meshes", "yumi_column6060540.stl"))
+            initor=os.path.join(current_file_dir, "meshes", "yumi_column6060540.stl"), name="yumi_body_top_front_column")
         self.body.lnk_list[7].cmodel.rgba = rm.const.steel_gray
         # phoxi
         self.body.lnk_list[8].name = "phoxi"
         self.body.lnk_list[8].loc_pos = np.array([.273, 0, 1.085])
         self.body.lnk_list[8].cmodel = mcm.CollisionModel(
-            initor=os.path.join(current_file_dir, "meshes", "phoxi_m.stl"))
+            initor=os.path.join(current_file_dir, "meshes", "phoxi_m.stl"), name="yumi_phoxi")
         self.body.lnk_list[8].cmodel.rgba = rm.const.black
         # left arm
         self.lft_arm = ysa.YumiSglArm(pos=self.body.gl_flange_pose_list[0][0],
@@ -94,8 +95,8 @@ class Yumi(ri.RobotInterface):
         self.goto_home_conf()
 
     @staticmethod
-    def _base_cdprim(ex_radius=None):
-        pdcnd = CollisionNode("yumi_body")
+    def _base_cdprim(name="auto", ex_radius=None):
+        pdcnd = CollisionNode(name+"_cnode")
         collision_primitive_c0 = CollisionBox(Point3(-.2, 0, 0.04),
                                               x=.16 + ex_radius, y=.2 + ex_radius, z=.04 + ex_radius)
         pdcnd.addSolid(collision_primitive_c0)
@@ -111,7 +112,7 @@ class Yumi(ri.RobotInterface):
         collision_primitive_r0 = CollisionBox(Point3(0, -0.145, 0.03),
                                               x=.135 + ex_radius, y=.055 + ex_radius, z=.03 + ex_radius)
         pdcnd.addSolid(collision_primitive_r0)
-        cdprim = NodePath("user_defined")
+        cdprim = NodePath(name+"_cdprim")
         cdprim.attachNewNode(pdcnd)
         return cdprim
 
@@ -122,69 +123,142 @@ class Yumi(ri.RobotInterface):
         else:
             return self.delegator.n_dof
 
-    def setup_cc(self):
-        """
-        author: weiwei
-        date: 20240309
-        """
-        # dual arm
+    def _enable_lft_cc(self):
+        self.lft_arm.cc = cc.CollisionChecker("lft_arm_collision_checker")
         # body
-        bd = self.cc.add_cce(self.body.lnk_list[0], toggle_extcd=False)
-        wb = self.cc.add_cce(self.body.lnk_list[1], toggle_extcd=False)
-        lc = self.cc.add_cce(self.body.lnk_list[2], toggle_extcd=False)
-        rc = self.cc.add_cce(self.body.lnk_list[3], toggle_extcd=False)
-        tbc = self.cc.add_cce(self.body.lnk_list[4], toggle_extcd=False)
-        tlc = self.cc.add_cce(self.body.lnk_list[5], toggle_extcd=False)
-        trc = self.cc.add_cce(self.body.lnk_list[6], toggle_extcd=False)
-        tfc = self.cc.add_cce(self.body.lnk_list[7], toggle_extcd=False)
-        phx = self.cc.add_cce(self.body.lnk_list[8], toggle_extcd=False)
+        bd = self.lft_arm.cc.add_cce(self.body.lnk_list[0])
+        tbl = self.lft_arm.cc.add_cce(self.body.lnk_list[1])
+        lc = self.lft_arm.cc.add_cce(self.body.lnk_list[2])
+        rc = self.lft_arm.cc.add_cce(self.body.lnk_list[3])
+        tbc = self.lft_arm.cc.add_cce(self.body.lnk_list[4])
+        tlc = self.lft_arm.cc.add_cce(self.body.lnk_list[5])
+        trc = self.lft_arm.cc.add_cce(self.body.lnk_list[6])
+        tfc = self.lft_arm.cc.add_cce(self.body.lnk_list[7])
+        phx = self.lft_arm.cc.add_cce(self.body.lnk_list[8])
         # left ee
         lft_ee_cces = []
         for id, cdlnk in enumerate(self.lft_arm.end_effector.cdelements):
-            lft_ee_cces.append(self.cc.add_cce(cdlnk))
+            lft_ee_cces.append(self.lft_arm.cc.add_cce(cdlnk))
         # left manipulator
-        lft_ml0 = self.cc.add_cce(self.lft_arm.manipulator.jlc.jnts[0].lnk, toggle_extcd=False)
-        lft_ml1 = self.cc.add_cce(self.lft_arm.manipulator.jlc.jnts[1].lnk)
-        lft_ml2 = self.cc.add_cce(self.lft_arm.manipulator.jlc.jnts[2].lnk)
-        lft_ml3 = self.cc.add_cce(self.lft_arm.manipulator.jlc.jnts[3].lnk)
-        lft_ml4 = self.cc.add_cce(self.lft_arm.manipulator.jlc.jnts[4].lnk)
-        lft_ml5 = self.cc.add_cce(self.lft_arm.manipulator.jlc.jnts[5].lnk)
+        lft_ml0 = self.lft_arm.cc.add_cce(self.lft_arm.manipulator.jlc.jnts[0].lnk)
+        lft_ml1 = self.lft_arm.cc.add_cce(self.lft_arm.manipulator.jlc.jnts[1].lnk)
+        lft_ml2 = self.lft_arm.cc.add_cce(self.lft_arm.manipulator.jlc.jnts[2].lnk)
+        lft_ml3 = self.lft_arm.cc.add_cce(self.lft_arm.manipulator.jlc.jnts[3].lnk)
+        lft_ml4 = self.lft_arm.cc.add_cce(self.lft_arm.manipulator.jlc.jnts[4].lnk)
+        lft_ml5 = self.lft_arm.cc.add_cce(self.lft_arm.manipulator.jlc.jnts[5].lnk)
         # right ee
         rgt_ee_cces = []
         for id, cdlnk in enumerate(self.rgt_arm.end_effector.cdelements):
-            rgt_ee_cces.append(self.cc.add_cce(cdlnk))
+            rgt_ee_cces.append(self.lft_arm.cc.add_cce(cdlnk))
         # right manipulator
-        rgt_ml0 = self.cc.add_cce(self.rgt_arm.manipulator.jlc.jnts[0].lnk, toggle_extcd=False)
-        rgt_ml1 = self.cc.add_cce(self.rgt_arm.manipulator.jlc.jnts[1].lnk)
-        rgt_ml2 = self.cc.add_cce(self.rgt_arm.manipulator.jlc.jnts[2].lnk)
-        rgt_ml3 = self.cc.add_cce(self.rgt_arm.manipulator.jlc.jnts[3].lnk)
-        rgt_ml4 = self.cc.add_cce(self.rgt_arm.manipulator.jlc.jnts[4].lnk)
-        rgt_ml5 = self.cc.add_cce(self.rgt_arm.manipulator.jlc.jnts[5].lnk)
+        rgt_ml0 = self.lft_arm.cc.add_cce(self.rgt_arm.manipulator.jlc.jnts[0].lnk)
+        rgt_ml1 = self.lft_arm.cc.add_cce(self.rgt_arm.manipulator.jlc.jnts[1].lnk)
+        rgt_ml2 = self.lft_arm.cc.add_cce(self.rgt_arm.manipulator.jlc.jnts[2].lnk)
+        rgt_ml3 = self.lft_arm.cc.add_cce(self.rgt_arm.manipulator.jlc.jnts[3].lnk)
+        rgt_ml4 = self.lft_arm.cc.add_cce(self.rgt_arm.manipulator.jlc.jnts[4].lnk)
+        rgt_ml5 = self.lft_arm.cc.add_cce(self.rgt_arm.manipulator.jlc.jnts[5].lnk)
         # first pairs
         from_list = [lft_ml4, lft_ml5] + lft_ee_cces + [rgt_ml4, rgt_ml5] + rgt_ee_cces
-        into_list = [bd, wb, lc, rc, tbc, tlc, trc, tfc, phx, lft_ml0, rgt_ml0]
-        self.cc.set_cdpair_by_ids(from_list, into_list)
+        into_list = [bd, tbl, lc, rc, tbc, tlc, trc, tfc, phx, lft_ml0, rgt_ml0]
+        self.lft_arm.cc.set_cdpair_by_ids(from_list, into_list)
         # second pairs
         from_list = lft_ee_cces + rgt_ee_cces
         into_list = [lft_ml0, lft_ml1, rgt_ml0, rgt_ml1]
-        self.cc.set_cdpair_by_ids(from_list, into_list)
+        self.lft_arm.cc.set_cdpair_by_ids(from_list, into_list)
         # third pairs
         from_list = [lft_ml1, lft_ml2, lft_ml3, lft_ml4, lft_ml5] + lft_ee_cces
         into_list = [rgt_ml1, rgt_ml2, rgt_ml3, rgt_ml4, rgt_ml5] + rgt_ee_cces
-        self.cc.set_cdpair_by_ids(from_list, into_list)
-        self.cc.dynamic_into_list = [bd, wb, lc, rc, tbc, tlc, trc, tfc, phx]  # TODO
-        # point low-level cc to the high-level one
-        self.lft_arm.cc = self.cc
-        self.rgt_arm.cc = self.cc
+        self.lft_arm.cc.set_cdpair_by_ids(from_list, into_list)
+        # ext and inner
+        self.lft_arm.cc.enable_extcd_by_id_list(
+            id_list=[lft_ml1, lft_ml2, lft_ml3, lft_ml4, lft_ml5, rgt_ml1, rgt_ml2, rgt_ml3, rgt_ml4,
+                     rgt_ml5] + lft_ee_cces + rgt_ee_cces, type="from")
+        self.lft_arm.cc.enable_innercd_by_id_list(
+            id_list=[bd, tbl, lc, rc, tbc, tlc, trc, tfc, phx, lft_ml1, lft_ml2, lft_ml3, rgt_ml1, rgt_ml2, rgt_ml3,
+                     rgt_ml4] + rgt_ee_cces, type="into")
+        self.lft_arm.cc.dynamic_into_list = [tbl]
+        self.lft_arm.cc.dynamic_ext_list = lft_ee_cces[1:]
+
+    def _enable_rgt_cc(self):
+        self.rgt_arm.cc = cc.CollisionChecker("rgt_arm_collision_checker")
+        # body
+        bd = self.rgt_arm.cc.add_cce(self.body.lnk_list[0])
+        tbl = self.rgt_arm.cc.add_cce(self.body.lnk_list[1])
+        lc = self.rgt_arm.cc.add_cce(self.body.lnk_list[2])
+        rc = self.rgt_arm.cc.add_cce(self.body.lnk_list[3])
+        tbc = self.rgt_arm.cc.add_cce(self.body.lnk_list[4])
+        tlc = self.rgt_arm.cc.add_cce(self.body.lnk_list[5])
+        trc = self.rgt_arm.cc.add_cce(self.body.lnk_list[6])
+        tfc = self.rgt_arm.cc.add_cce(self.body.lnk_list[7])
+        phx = self.rgt_arm.cc.add_cce(self.body.lnk_list[8])
+        # left ee
+        lft_ee_cces = []
+        for id, cdlnk in enumerate(self.lft_arm.end_effector.cdelements):
+            lft_ee_cces.append(self.rgt_arm.cc.add_cce(cdlnk))
+        # left manipulator
+        lft_ml0 = self.rgt_arm.cc.add_cce(self.lft_arm.manipulator.jlc.jnts[0].lnk)
+        lft_ml1 = self.rgt_arm.cc.add_cce(self.lft_arm.manipulator.jlc.jnts[1].lnk)
+        lft_ml2 = self.rgt_arm.cc.add_cce(self.lft_arm.manipulator.jlc.jnts[2].lnk)
+        lft_ml3 = self.rgt_arm.cc.add_cce(self.lft_arm.manipulator.jlc.jnts[3].lnk)
+        lft_ml4 = self.rgt_arm.cc.add_cce(self.lft_arm.manipulator.jlc.jnts[4].lnk)
+        lft_ml5 = self.rgt_arm.cc.add_cce(self.lft_arm.manipulator.jlc.jnts[5].lnk)
+        # right ee
+        rgt_ee_cces = []
+        for id, cdlnk in enumerate(self.rgt_arm.end_effector.cdelements):
+            rgt_ee_cces.append(self.rgt_arm.cc.add_cce(cdlnk))
+        # right manipulator
+        rgt_ml0 = self.rgt_arm.cc.add_cce(self.rgt_arm.manipulator.jlc.jnts[0].lnk)
+        rgt_ml1 = self.rgt_arm.cc.add_cce(self.rgt_arm.manipulator.jlc.jnts[1].lnk)
+        rgt_ml2 = self.rgt_arm.cc.add_cce(self.rgt_arm.manipulator.jlc.jnts[2].lnk)
+        rgt_ml3 = self.rgt_arm.cc.add_cce(self.rgt_arm.manipulator.jlc.jnts[3].lnk)
+        rgt_ml4 = self.rgt_arm.cc.add_cce(self.rgt_arm.manipulator.jlc.jnts[4].lnk)
+        rgt_ml5 = self.rgt_arm.cc.add_cce(self.rgt_arm.manipulator.jlc.jnts[5].lnk)
+        # first pairs
+        from_list = [lft_ml4, lft_ml5] + lft_ee_cces + [rgt_ml4, rgt_ml5] + rgt_ee_cces
+        into_list = [bd, tbl, lc, rc, tbc, tlc, trc, tfc, phx, lft_ml0, rgt_ml0]
+        self.rgt_arm.cc.set_cdpair_by_ids(from_list, into_list)
+        # second pairs
+        from_list = lft_ee_cces + rgt_ee_cces
+        into_list = [lft_ml0, lft_ml1, rgt_ml0, rgt_ml1]
+        self.rgt_arm.cc.set_cdpair_by_ids(from_list, into_list)
+        # third pairs
+        from_list = [lft_ml1, lft_ml2, lft_ml3, lft_ml4, lft_ml5] + lft_ee_cces
+        into_list = [rgt_ml1, rgt_ml2, rgt_ml3, rgt_ml4, rgt_ml5] + rgt_ee_cces
+        self.rgt_arm.cc.set_cdpair_by_ids(from_list, into_list)
+        # ext and inner
+        self.rgt_arm.cc.enable_extcd_by_id_list(
+            id_list=[lft_ml1, lft_ml2, lft_ml3, lft_ml4, lft_ml5, rgt_ml1, rgt_ml2, rgt_ml3, rgt_ml4,
+                     rgt_ml5] + lft_ee_cces + rgt_ee_cces, type="from")
+        self.rgt_arm.cc.enable_innercd_by_id_list(
+            id_list=[bd, tbl, lc, rc, tbc, tlc, trc, tfc, phx, rgt_ml1, rgt_ml2, rgt_ml3, lft_ml1, lft_ml2, lft_ml3,
+                     lft_ml4] + lft_ee_cces, type="into")
+        self.rgt_arm.cc.dynamic_into_list = [tbl]
+        self.rgt_arm.cc.dynamic_ext_list = rgt_ee_cces[1:]
+
+    def setup_cc(self):
+        """
+        author: weiwei
+        date: 20241030
+        """
+        # dual arm
+        self._enable_lft_cc()
+        self._enable_rgt_cc()
+        if self.delegator is not None:
+            self.cc = self.delegator.cc
+        else:
+            self.cc = self.lft_arm.cc  # set left to default
 
     def use_both(self):
         self.delegator = None
+        self.cc = self.lft_arm.cc
 
     def use_lft(self):
         self.delegator = self.lft_arm
+        self.cc = self.delegator.cc
 
     def use_rgt(self):
         self.delegator = self.rgt_arm
+        self.cc = self.delegator.cc
 
     def backup_state(self):
         if self.delegator is None:
@@ -269,19 +343,21 @@ class Yumi(ri.RobotInterface):
     def change_jaw_width(self, jaw_width):
         self.change_ee_values(ee_values=jaw_width)
 
-    def is_collided(self, obstacle_list=None, other_robot_list=None, toggle_contacts=False):
+    def is_collided(self, obstacle_list=None, other_robot_list=None, toggle_contacts=False, toggle_dbg=False):
         """
         Interface for "is cdprimit collided", must be implemented in child class
         :param obstacle_list:
         :param other_robot_list:
         :param toggle_contacts: debug
+        :param toggle_dbg: debug
         :return: see CollisionChecker is_collided for details
         author: weiwei
         date: 20240307
         """
         collision_info = self.cc.is_collided(obstacle_list=obstacle_list,
                                              other_robot_list=other_robot_list,
-                                             toggle_contacts=toggle_contacts)
+                                             toggle_contacts=toggle_contacts,
+                                             toggle_dbg=toggle_dbg)
         return collision_info
 
     def gen_stickmodel(self,

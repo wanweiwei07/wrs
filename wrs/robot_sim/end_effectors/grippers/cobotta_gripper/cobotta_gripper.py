@@ -23,7 +23,8 @@ class CobottaGripper(gpi.GripperInterface):
                                  rotmat=self.coupling.gl_flange_pose_list[0][1], n_dof=2, name=name)
         # anchor
         self.jlc.anchor.lnk_list[0].cmodel = mcm.CollisionModel(
-            os.path.join(current_file_dir, "meshes", "gripper_base.dae"),
+            initor=os.path.join(current_file_dir, "meshes", "gripper_base.dae"),
+            name="cobotta_gripper_base",
             cdmesh_type=self.cdmesh_type)
         self.jlc.anchor.lnk_list[0].cmodel.rgba = np.array([.35, .35, .35, 1])
         # the 1st joint (left finger, +y direction)
@@ -31,15 +32,19 @@ class CobottaGripper(gpi.GripperInterface):
         self.jlc.jnts[0].loc_pos = np.array([0, .0, .0])
         self.jlc.jnts[0].loc_motion_ax = rm.const.y_ax
         self.jlc.jnts[0].motion_range = np.array([0.0, 0.015])
-        self.jlc.jnts[0].lnk.cmodel = mcm.CollisionModel(os.path.join(current_file_dir, "meshes", "left_finger.dae"),
-                                                         cdmesh_type=self.cdmesh_type)
+        self.jlc.jnts[0].lnk.cmodel = mcm.CollisionModel(
+            initor=os.path.join(current_file_dir, "meshes", "left_finger.dae"),
+            name="cobotta_gripper_left_finger",
+            cdmesh_type=self.cdmesh_type)
         self.jlc.jnts[0].lnk.cmodel.rgba = np.array([.5, .5, 1, 1])
         # the 2nd joint (right finger, -y direction)
         self.jlc.jnts[1].change_type(rkjlc.const.JntType.PRISMATIC, motion_range=np.array([0.0, self.jaw_range[1]]))
         self.jlc.jnts[1].loc_pos = np.array([0, .0, .0])
         self.jlc.jnts[1].loc_motion_ax = -rm.const.y_ax
-        self.jlc.jnts[1].lnk.cmodel = mcm.CollisionModel(os.path.join(current_file_dir, "meshes", "right_finger.dae"),
-                                                         cdmesh_type=self.cdmesh_type)
+        self.jlc.jnts[1].lnk.cmodel = mcm.CollisionModel(
+            initor=os.path.join(current_file_dir, "meshes", "right_finger.dae"),
+            name="cobotta_gripper_right_finger",
+            cdmesh_type=self.cdmesh_type)
         self.jlc.jnts[1].lnk.cmodel.rgba = np.array([1, .5, .5, 1])
         # reinitialize
         self.jlc.finalize()
@@ -47,8 +52,8 @@ class CobottaGripper(gpi.GripperInterface):
         self.loc_acting_center_pos = np.array([0, 0, 0.05])
         # collisions
         self.cdelements = (self.jlc.anchor.lnk_list[0],
-                                self.jlc.jnts[0].lnk,
-                                self.jlc.jnts[1].lnk)
+                           self.jlc.jnts[0].lnk,
+                           self.jlc.jnts[1].lnk)
 
     def fix_to(self, pos, rotmat, jaw_width=None):
         self._pos = pos

@@ -22,51 +22,58 @@ class IRB14050(mi.ManipulatorInterface):
         self.jlc.jnts[0].loc_rotmat = rm.rotmat_from_euler(0.0, 0.0, np.pi)
         self.jlc.jnts[0].loc_motion_ax = np.array([0, 0, 1])
         self.jlc.jnts[0].motion_range = np.array([-2.94087978961, 2.94087978961])
-        self.jlc.jnts[0].lnk.cmodel = mcm.CollisionModel(os.path.join(current_file_dir, "meshes", "link_1.stl"))
+        self.jlc.jnts[0].lnk.cmodel = mcm.CollisionModel(
+            initor=os.path.join(current_file_dir, "meshes", "link_1.stl"), name="irb14050_link_1")
         self.jlc.jnts[0].lnk.cmodel.rgba = rm.const.hug_gray
         # second joint and link
         self.jlc.jnts[1].loc_pos = np.array([0.03, .0, .1])
         self.jlc.jnts[1].loc_rotmat = rm.rotmat_from_euler(np.pi / 2, 0.0, 0.0)
         self.jlc.jnts[1].loc_motion_ax = np.array([0, 0, 1])
         self.jlc.jnts[1].motion_range = np.array([-2.50454747661, 0.759218224618])
-        self.jlc.jnts[1].lnk.cmodel = mcm.CollisionModel(os.path.join(current_file_dir, "meshes", "link_2.stl"))
+        self.jlc.jnts[1].lnk.cmodel = mcm.CollisionModel(
+            initor=os.path.join(current_file_dir, "meshes", "link_2.stl"), name="irb14050_link_2")
         self.jlc.jnts[1].lnk.cmodel.rgba = rm.const.hug_blue
         # third joint and link
         self.jlc.jnts[2].loc_pos = np.array([-0.03, 0.17283, 0.0])
         self.jlc.jnts[2].loc_rotmat = rm.rotmat_from_euler(-np.pi / 2, 0.0, 0.0)
         self.jlc.jnts[2].loc_motion_ax = np.array([0, 0, 1])
         self.jlc.jnts[2].motion_range = np.array([-2.94087978961, 2.94087978961])
-        self.jlc.jnts[2].lnk.cmodel = mcm.CollisionModel(os.path.join(current_file_dir, "meshes", "link_3.stl"))
+        self.jlc.jnts[2].lnk.cmodel = mcm.CollisionModel(
+            initor=os.path.join(current_file_dir, "meshes", "link_3.stl"), name="irb14050_link_3")
         self.jlc.jnts[2].lnk.cmodel.rgba = rm.const.hug_gray
         # fourth joint and link
         self.jlc.jnts[3].loc_pos = np.array([-0.04188, 0.0, 0.07873])
         self.jlc.jnts[3].loc_rotmat = rm.rotmat_from_euler(np.pi / 2, -np.pi / 2, 0.0)
         self.jlc.jnts[3].loc_motion_ax = np.array([0, 0, 1])
         self.jlc.jnts[3].motion_range = np.array([-2.15548162621, 1.3962634016])
-        self.jlc.jnts[3].lnk.cmodel = mcm.CollisionModel(os.path.join(current_file_dir, "meshes", "link_4.stl"))
+        self.jlc.jnts[3].lnk.cmodel = mcm.CollisionModel(
+            initor=os.path.join(current_file_dir, "meshes", "link_4.stl"), name="irb14050_link_4")
         self.jlc.jnts[3].lnk.cmodel.rgba = rm.const.hug_blue
         # fifth joint and link
         self.jlc.jnts[4].loc_pos = np.array([0.0405, 0.16461, 0.0])
         self.jlc.jnts[4].loc_rotmat = rm.rotmat_from_euler(-np.pi / 2, 0.0, 0.0)
         self.jlc.jnts[4].loc_motion_ax = np.array([0, 0, 1])
         self.jlc.jnts[4].motion_range = np.array([-5.06145483078, 5.06145483078])
-        self.jlc.jnts[4].lnk.cmodel = mcm.CollisionModel(os.path.join(current_file_dir, "meshes", "link_5.stl"))
+        self.jlc.jnts[4].lnk.cmodel = mcm.CollisionModel(
+            initor=os.path.join(current_file_dir, "meshes", "link_5.stl"), name="irb14050_link_5")
         self.jlc.jnts[4].lnk.cmodel.rgba = rm.const.hug_gray
         # sixth joint and link
         self.jlc.jnts[5].loc_pos = np.array([-0.027, 0, 0.10039])
         self.jlc.jnts[5].loc_rotmat = rm.rotmat_from_euler(np.pi / 2, 0.0, 0.0)
         self.jlc.jnts[5].loc_motion_ax = np.array([0, 0, 1])
         self.jlc.jnts[5].motion_range = np.array([-1.53588974176, 2.40855436775])
-        self.jlc.jnts[5].lnk.cmodel = mcm.CollisionModel(os.path.join(current_file_dir, "meshes", "link_6.stl"))
+        self.jlc.jnts[5].lnk.cmodel = mcm.CollisionModel(
+            initor=os.path.join(current_file_dir, "meshes", "link_6.stl"), name="irb14050_link_6")
         self.jlc.jnts[5].lnk.cmodel.rgba = rm.const.hug_gray
         # seventh joint and link
         self.jlc.jnts[6].loc_pos = np.array([0.027, 0.029, 0.0])
         self.jlc.jnts[6].loc_rotmat = rm.rotmat_from_euler(-np.pi / 2, 0.0, 0.0)
         self.jlc.jnts[6].loc_motion_ax = np.array([0, 0, 1])
         self.jlc.jnts[6].motion_range = np.array([-3.99680398707, 3.99680398707])
-        self.jlc.jnts[6].lnk.cmodel = mcm.CollisionModel(os.path.join(current_file_dir, "meshes", "link_7.stl"))
+        self.jlc.jnts[6].lnk.cmodel = mcm.CollisionModel(
+            initor=os.path.join(current_file_dir, "meshes", "link_7.stl"), name="irb14050_link_7")
         self.jlc.jnts[6].lnk.cmodel.rgba = rm.const.hug_gray
-        self.jlc._loc_flange_rotmat = rm.rotmat_from_euler(0,0,np.pi/2)
+        self.jlc._loc_flange_rotmat = rm.rotmat_from_euler(0, 0, np.pi / 2)
         self.jlc.finalize(ik_solver='d', identifier_str=name)
         # tcp
         self.loc_tcp_pos = np.array([0, 0, .007])

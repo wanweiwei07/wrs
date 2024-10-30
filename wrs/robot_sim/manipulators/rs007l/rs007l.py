@@ -17,27 +17,30 @@ class RS007L(mi.ManipulatorInterface):
         current_file_dir = os.path.dirname(__file__)
         # anchor
         self.jlc.anchor.lnk_list[0].cmodel = mcm.CollisionModel(
-            os.path.join(current_file_dir, "meshes", "joint0.stl"))
+            initor=os.path.join(current_file_dir, "meshes", "joint0.stl"), name="rs007l_base_link")
         self.jlc.anchor.lnk_list[0].cmodel.rgba = np.array([.7, .7, .7, 1.0])
         # first joint and link
         self.jlc.jnts[0].loc_pos = np.array([0.0, 0.0, 0.36])
         self.jlc.jnts[0].loc_motion_ax = np.array([0, 0, -1])
         self.jlc.jnts[0].motion_range = np.array([-3.14159265359, 3.14159265359])  # -180, 180
-        self.jlc.jnts[0].lnk.cmodel = mcm.CollisionModel(os.path.join(current_file_dir, "meshes", "joint1.stl"))
+        self.jlc.jnts[0].lnk.cmodel = mcm.CollisionModel(
+            initor=os.path.join(current_file_dir, "meshes", "joint1.stl"), name="rs007l_joint1")
         self.jlc.jnts[0].lnk.cmodel.rgba = np.array([.7, .7, .7, 1.0])
         # second joint and link
         self.jlc.jnts[1].loc_pos = np.array([0.0, 0.0, 0.0])
         self.jlc.jnts[1].loc_motion_ax = np.array([0, 0, 1])
         self.jlc.jnts[1].loc_rotmat = rm.rotmat_from_euler(0, np.radians(-90), 0)
         self.jlc.jnts[1].motion_range = np.array([-2.35619449019, 2.35619449019])  # -135, 135
-        self.jlc.jnts[1].lnk.cmodel = mcm.CollisionModel(os.path.join(current_file_dir, "meshes", "joint2.stl"))
+        self.jlc.jnts[1].lnk.cmodel = mcm.CollisionModel(
+            initor=os.path.join(current_file_dir, "meshes", "joint2.stl"), name="rs007l_joint2")
         self.jlc.jnts[1].lnk.cmodel.rgba = np.array([.7, .7, .7, 1.0])
         self.jlc.jnts[1].lnk.loc_rotmat = rm.rotmat_from_euler(0, np.radians(90), 0)
         # third joint and link
         self.jlc.jnts[2].loc_pos = np.array([0.455, 0.0, 0.0])
         self.jlc.jnts[2].loc_motion_ax = np.array([0, 0, -1])
         self.jlc.jnts[2].motion_range = np.array([-2.74016692563, 2.74016692563])  # -157, 157
-        self.jlc.jnts[2].lnk.cmodel = mcm.CollisionModel(os.path.join(current_file_dir, "meshes", "joint3.stl"))
+        self.jlc.jnts[2].lnk.cmodel = mcm.CollisionModel(
+            initor=os.path.join(current_file_dir, "meshes", "joint3.stl"), name="rs007l_joint3")
         self.jlc.jnts[2].lnk.cmodel.rgba = np.array([.7, .7, .7, 1.0])
         self.jlc.jnts[2].lnk.loc_rotmat = rm.rotmat_from_euler(0, np.radians(90), 0)
         # fourth joint and link
@@ -45,7 +48,8 @@ class RS007L(mi.ManipulatorInterface):
         self.jlc.jnts[3].loc_motion_ax = np.array([0, 0, 1])
         self.jlc.jnts[3].loc_rotmat = rm.rotmat_from_euler(0, np.radians(90), 0)
         self.jlc.jnts[3].motion_range = np.array([-3.49065850399, 3.49065850399])  # -200, 200
-        self.jlc.jnts[3].lnk.cmodel = mcm.CollisionModel(os.path.join(current_file_dir, "meshes", "joint4.stl"))
+        self.jlc.jnts[3].lnk.cmodel = mcm.CollisionModel(
+            initor=os.path.join(current_file_dir, "meshes", "joint4.stl"), name="rs007l_joint4")
         self.jlc.jnts[3].lnk.cmodel.rgba = np.array([.7, .7, .7, 1.0])
         self.jlc.jnts[3].lnk.loc_pos = np.array([0.0, 0.0, 0.3852])
         # fifth joint and link
@@ -53,7 +57,8 @@ class RS007L(mi.ManipulatorInterface):
         self.jlc.jnts[4].loc_motion_ax = np.array([0, 0, -1])
         self.jlc.jnts[4].loc_rotmat = rm.rotmat_from_euler(0, np.radians(-90), 0)
         self.jlc.jnts[4].motion_range = np.array([-2.18166156499, 2.18166156499])  # -125, 125
-        self.jlc.jnts[4].lnk.cmodel = mcm.CollisionModel(os.path.join(current_file_dir, "meshes", "joint5.stl"))
+        self.jlc.jnts[4].lnk.cmodel = mcm.CollisionModel(
+            initor=os.path.join(current_file_dir, "meshes", "joint5.stl"), name="rs007l_joint5")
         self.jlc.jnts[4].lnk.cmodel.rgba = np.array([.7, .7, .7, 1.0])
         self.jlc.jnts[4].lnk.loc_rotmat = rm.rotmat_from_euler(0, np.radians(90), 0)
         # sixth joint and link
@@ -61,7 +66,8 @@ class RS007L(mi.ManipulatorInterface):
         self.jlc.jnts[5].loc_motion_ax = np.array([0, 0, 1])
         self.jlc.jnts[5].loc_rotmat = rm.rotmat_from_euler(0, np.radians(90), 0)
         self.jlc.jnts[5].motion_range = np.array([-6.28318530718, 6.28318530718])  # -360, 360
-        self.jlc.jnts[5].lnk.cmodel = mcm.CollisionModel(os.path.join(current_file_dir, "meshes", "joint6.stl"))
+        self.jlc.jnts[5].lnk.cmodel = mcm.CollisionModel(
+            initor=os.path.join(current_file_dir, "meshes", "joint6.stl"), name="rs007l_joint6")
         self.jlc.jnts[5].lnk.cmodel.rgba = np.array([.7, .7, .7, 1.0])
         self.jlc.finalize(ik_solver=None, identifier_str=name)
         # tcp

@@ -208,7 +208,7 @@ class CollisionModel(mgm.GeometricModel):
         else:
             print(cdprim_type)
             raise ValueError("Wrong primitive collision model cdprim_type name!")
-        mph.change_cdmask(pdcndp, mph.BITMASK_EXT, action="new", type="both")
+        mph.change_cdmask(pdcndp, mph.bitmask_ext, action="new", type="both")
         return pdcndp
 
     @mgm.GeometricModel.pos.setter

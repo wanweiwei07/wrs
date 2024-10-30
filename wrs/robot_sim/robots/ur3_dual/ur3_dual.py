@@ -45,12 +45,12 @@ class UR3Dual(ri.RobotInterface):
                                          enable_cc=False)
         self.lft_arm.home_conf = np.array(
             [np.pi / 12.0, -np.pi * 1.0 / 3.0, -np.pi * 2.0 / 3.0, -np.pi, -np.pi * 2.0 / 3.0, 0])
-        # self.lft_arm.manipulator.jnts[0].motion_range = np.array([-np.pi * 5 / 3, -np.pi / 3])
-        # self.lft_arm.manipulator.jnts[1].motion_range = np.array([-np.pi, 0])
-        # self.lft_arm.manipulator.jnts[2].motion_range = np.array([0, np.pi])
-        # self.lft_arm.manipulator.jnts[3].motion_range = np.array([np.pi / 6, np.pi * 7 / 6])
-        # self.lft_arm.manipulator.jnts[4].motion_range = np.array([-np.pi, np.pi])
-        # self.lft_arm.manipulator.jnts[5].motion_range = np.array([-np.pi, np.pi])
+        self.lft_arm.manipulator.jnts[0].motion_range = np.array([-np.pi * 5 / 3, -np.pi / 3])
+        self.lft_arm.manipulator.jnts[1].motion_range = np.array([-np.pi, 0])
+        self.lft_arm.manipulator.jnts[2].motion_range = np.array([0, np.pi])
+        self.lft_arm.manipulator.jnts[3].motion_range = np.array([np.pi / 6, np.pi * 7 / 6])
+        self.lft_arm.manipulator.jnts[4].motion_range = np.array([-np.pi, np.pi])
+        self.lft_arm.manipulator.jnts[5].motion_range = np.array([-np.pi, np.pi])
         self.lft_arm.manipulator.jlc.finalize(identifier_str=self.lft_arm.name + "_dual_lft")
         # right side
         self.rgt_arm = u3rtq85.UR3_Rtq85(pos=self.body.gl_flange_pose_list[1][0],
@@ -58,12 +58,12 @@ class UR3Dual(ri.RobotInterface):
                                          enable_cc=False)
         self.rgt_arm.home_conf = np.array(
             [-np.pi / 12, -np.pi * 2.0 / 3.0, np.pi * 2.0 / 3.0, 0, np.pi * 2.0 / 3.0, np.pi])
-        # self.rgt_arm.manipulator.jnts[0].motion_range = np.array([np.pi / 3, np.pi * 5 / 3])
-        # self.rgt_arm.manipulator.jnts[1].motion_range = np.array([-np.pi, 0])
-        # self.rgt_arm.manipulator.jnts[2].motion_range = np.array([-np.pi, 0])
-        # self.rgt_arm.manipulator.jnts[3].motion_range = np.array([-np.pi * 5 / 6, np.pi / 6])
-        # self.rgt_arm.manipulator.jnts[4].motion_range = np.array([-np.pi, np.pi])
-        # self.rgt_arm.manipulator.jnts[5].motion_range = np.array([-np.pi, np.pi])
+        self.rgt_arm.manipulator.jnts[0].motion_range = np.array([np.pi / 3, np.pi * 5 / 3])
+        self.rgt_arm.manipulator.jnts[1].motion_range = np.array([-np.pi, 0])
+        self.rgt_arm.manipulator.jnts[2].motion_range = np.array([-np.pi, 0])
+        self.rgt_arm.manipulator.jnts[3].motion_range = np.array([-np.pi * 5 / 6, np.pi / 6])
+        self.rgt_arm.manipulator.jnts[4].motion_range = np.array([-np.pi, np.pi])
+        self.rgt_arm.manipulator.jnts[5].motion_range = np.array([-np.pi, np.pi])
         self.rgt_arm.manipulator.jlc.finalize(identifier_str=self.rgt_arm.name + "_dual_rgt")
         if self.cc is not None:
             self.setup_cc()
@@ -71,8 +71,8 @@ class UR3Dual(ri.RobotInterface):
         self.goto_home_conf()
 
     @staticmethod
-    def _base_cdprim(name="ur3_dual_base", ex_radius=None):
-        pdcnd = CollisionNode(name+"_cnode")
+    def _base_cdprim(name="auto", ex_radius=None):
+        pdcnd = CollisionNode(name + "_cnode")
         collision_primitive_c0 = CollisionBox(Point3(0.18, 0.0, 0.105),
                                               x=.61 + ex_radius, y=.41 + ex_radius, z=.105 + ex_radius)
         pdcnd.addSolid(collision_primitive_c0)
@@ -91,7 +91,7 @@ class UR3Dual(ri.RobotInterface):
         collision_primitive_r0 = CollisionBox(Point3(0.0, -0.300, 1.669),
                                               x=.1 + ex_radius, y=.029 + ex_radius, z=.021 + ex_radius)
         pdcnd.addSolid(collision_primitive_r0)
-        cdprim = NodePath(name+"_cdprim")
+        cdprim = NodePath(name + "_cdprim")
         cdprim.attachNewNode(pdcnd)
         return cdprim
 
@@ -105,13 +105,14 @@ class UR3Dual(ri.RobotInterface):
     def _enable_lft_cc(self):
         self.lft_arm.cc = cc.CollisionChecker("lft_arm_collision_checker")
         # body
-        bd = self.lft_arm.cc.add_cce(self.body.lnk_list[0], toggle_extcd=False)
+        bd = self.lft_arm.cc.add_cce(self.body.lnk_list[0])
+        tbl = self.lft_arm.cc.add_cce(self.body.lnk_list[2])
         # left ee
         lft_ee_cces = []
         for id, cdlnk in enumerate(self.lft_arm.end_effector.cdelements):
             lft_ee_cces.append(self.lft_arm.cc.add_cce(cdlnk))
         # left manipulator
-        lft_ml0 = self.lft_arm.cc.add_cce(self.lft_arm.manipulator.jlc.jnts[0].lnk, toggle_extcd=False)
+        lft_ml0 = self.lft_arm.cc.add_cce(self.lft_arm.manipulator.jlc.jnts[0].lnk)
         lft_ml1 = self.lft_arm.cc.add_cce(self.lft_arm.manipulator.jlc.jnts[1].lnk)
         lft_ml2 = self.lft_arm.cc.add_cce(self.lft_arm.manipulator.jlc.jnts[2].lnk)
         lft_ml3 = self.lft_arm.cc.add_cce(self.lft_arm.manipulator.jlc.jnts[3].lnk)
@@ -122,7 +123,7 @@ class UR3Dual(ri.RobotInterface):
         for id, cdlnk in enumerate(self.rgt_arm.end_effector.cdelements):
             rgt_ee_cces.append(self.lft_arm.cc.add_cce(cdlnk))
         # right manipulator
-        rgt_ml0 = self.lft_arm.cc.add_cce(self.rgt_arm.manipulator.jlc.jnts[0].lnk, toggle_extcd=False)
+        rgt_ml0 = self.lft_arm.cc.add_cce(self.rgt_arm.manipulator.jlc.jnts[0].lnk)
         rgt_ml1 = self.lft_arm.cc.add_cce(self.rgt_arm.manipulator.jlc.jnts[1].lnk)
         rgt_ml2 = self.lft_arm.cc.add_cce(self.rgt_arm.manipulator.jlc.jnts[2].lnk)
         rgt_ml3 = self.lft_arm.cc.add_cce(self.rgt_arm.manipulator.jlc.jnts[3].lnk)
@@ -130,31 +131,37 @@ class UR3Dual(ri.RobotInterface):
         rgt_ml5 = self.lft_arm.cc.add_cce(self.rgt_arm.manipulator.jlc.jnts[5].lnk)
         # first pairs
         from_list = lft_ee_cces + rgt_ee_cces
-        into_list = [bd, lft_ml0, lft_ml1, lft_ml2, rgt_ml0, rgt_ml1, rgt_ml2]
+        into_list = [tbl, bd, lft_ml0, lft_ml1, lft_ml2, rgt_ml0, rgt_ml1, rgt_ml2]
         self.lft_arm.cc.set_cdpair_by_ids(from_list, into_list)
         # second pairs
         from_list = [lft_ml2, rgt_ml2]
-        into_list = [bd, lft_ml0, rgt_ml0]
+        into_list = [tbl, bd, lft_ml0, rgt_ml0]
         self.lft_arm.cc.set_cdpair_by_ids(from_list, into_list)
         # third pairs
         from_list = [lft_ml2, lft_ml3, lft_ml4, lft_ml5] + lft_ee_cces
         into_list = [rgt_ml2, rgt_ml3, rgt_ml4, rgt_ml5] + rgt_ee_cces
         self.lft_arm.cc.set_cdpair_by_ids(from_list, into_list)
-        # dynamic into and dynamic toggleing
-        self.lft_arm.cc.dynamic_into_list = [bd, lft_ml0, lft_ml1, lft_ml2, lft_ml3, rgt_ml0, rgt_ml1, rgt_ml2, rgt_ml3,
-                                             rgt_ml4, rgt_ml5] + rgt_ee_cces
+        # ext and inner
+        self.lft_arm.cc.enable_extcd_by_id_list(
+            id_list=[lft_ml1, lft_ml2, lft_ml3, lft_ml4, lft_ml5, rgt_ml1, rgt_ml2, rgt_ml3, rgt_ml4,
+                     rgt_ml5] + lft_ee_cces + rgt_ee_cces, type="from")
+        self.lft_arm.cc.enable_innercd_by_id_list(
+            id_list=[tbl, bd, lft_ml0, lft_ml1, lft_ml2, lft_ml3, rgt_ml0, rgt_ml1, rgt_ml2, rgt_ml3,
+                     rgt_ml4, rgt_ml5] + rgt_ee_cces, type="into")
+        self.lft_arm.cc.dynamic_into_list = [tbl]
         self.lft_arm.cc.dynamic_ext_list = lft_ee_cces[1:]
 
     def _enable_rgt_cc(self):
         self.rgt_arm.cc = cc.CollisionChecker("rgt_arm_collision_checker")
         # body
-        bd = self.rgt_arm.cc.add_cce(self.body.lnk_list[0], toggle_extcd=False)
+        bd = self.rgt_arm.cc.add_cce(self.body.lnk_list[0])
+        tbl = self.rgt_arm.cc.add_cce(self.body.lnk_list[2])
         # left ee
         lft_ee_cces = []
         for id, cdlnk in enumerate(self.lft_arm.end_effector.cdelements):
             lft_ee_cces.append(self.rgt_arm.cc.add_cce(cdlnk))
         # left manipulator
-        lft_ml0 = self.rgt_arm.cc.add_cce(self.lft_arm.manipulator.jlc.jnts[0].lnk, toggle_extcd=False)
+        lft_ml0 = self.rgt_arm.cc.add_cce(self.lft_arm.manipulator.jlc.jnts[0].lnk)
         lft_ml1 = self.rgt_arm.cc.add_cce(self.lft_arm.manipulator.jlc.jnts[1].lnk)
         lft_ml2 = self.rgt_arm.cc.add_cce(self.lft_arm.manipulator.jlc.jnts[2].lnk)
         lft_ml3 = self.rgt_arm.cc.add_cce(self.lft_arm.manipulator.jlc.jnts[3].lnk)
@@ -165,7 +172,7 @@ class UR3Dual(ri.RobotInterface):
         for id, cdlnk in enumerate(self.rgt_arm.end_effector.cdelements):
             rgt_ee_cces.append(self.rgt_arm.cc.add_cce(cdlnk))
         # right manipulator
-        rgt_ml0 = self.rgt_arm.cc.add_cce(self.rgt_arm.manipulator.jlc.jnts[0].lnk, toggle_extcd=False)
+        rgt_ml0 = self.rgt_arm.cc.add_cce(self.rgt_arm.manipulator.jlc.jnts[0].lnk)
         rgt_ml1 = self.rgt_arm.cc.add_cce(self.rgt_arm.manipulator.jlc.jnts[1].lnk)
         rgt_ml2 = self.rgt_arm.cc.add_cce(self.rgt_arm.manipulator.jlc.jnts[2].lnk)
         rgt_ml3 = self.rgt_arm.cc.add_cce(self.rgt_arm.manipulator.jlc.jnts[3].lnk)
@@ -173,25 +180,30 @@ class UR3Dual(ri.RobotInterface):
         rgt_ml5 = self.rgt_arm.cc.add_cce(self.rgt_arm.manipulator.jlc.jnts[5].lnk)
         # first pairs
         from_list = lft_ee_cces + rgt_ee_cces
-        into_list = [bd, lft_ml0, lft_ml1, lft_ml2, rgt_ml0, rgt_ml1, rgt_ml2]
+        into_list = [tbl, bd, lft_ml0, lft_ml1, lft_ml2, rgt_ml0, rgt_ml1, rgt_ml2]
         self.rgt_arm.cc.set_cdpair_by_ids(from_list, into_list)
         # second pairs
         from_list = [lft_ml2, rgt_ml2]
-        into_list = [bd, lft_ml0, rgt_ml0]
+        into_list = [tbl, bd, lft_ml0, rgt_ml0]
         self.rgt_arm.cc.set_cdpair_by_ids(from_list, into_list)
         # third pairs
         from_list = [lft_ml2, lft_ml3, lft_ml4, lft_ml5] + lft_ee_cces
         into_list = [rgt_ml2, rgt_ml3, rgt_ml4, rgt_ml5] + rgt_ee_cces
         self.rgt_arm.cc.set_cdpair_by_ids(from_list, into_list)
-        # dynamic into and dynamic toggleing
-        self.rgt_arm.cc.dynamic_into_list = [bd, rgt_ml0, rgt_ml1, rgt_ml2, rgt_ml3, lft_ml0, lft_ml1, lft_ml2, lft_ml3,
-                                             lft_ml4, lft_ml5] + lft_ee_cces
+        # ext and inner
+        self.rgt_arm.cc.enable_extcd_by_id_list(
+            id_list=[lft_ml1, lft_ml2, lft_ml3, lft_ml4, lft_ml5, rgt_ml1, rgt_ml2, rgt_ml3, rgt_ml4,
+                     rgt_ml5] + lft_ee_cces + rgt_ee_cces, type="from")
+        self.rgt_arm.cc.enable_innercd_by_id_list(
+            id_list=[tbl, bd, rgt_ml0, rgt_ml1, rgt_ml2, rgt_ml3, lft_ml0, lft_ml1, lft_ml2, lft_ml3, lft_ml4,
+                     lft_ml5] + lft_ee_cces, type="into")
+        self.rgt_arm.cc.dynamic_into_list = [tbl]
         self.rgt_arm.cc.dynamic_ext_list = rgt_ee_cces[1:]
 
     def setup_cc(self):
         """
         author: weiwei
-        date: 20240309
+        date: 20241030
         """
         # dual arm
         self._enable_lft_cc()
@@ -199,7 +211,7 @@ class UR3Dual(ri.RobotInterface):
         if self.delegator is not None:
             self.cc = self.delegator.cc
         else:
-            self.cc = self.lft_arm.cc # set left to default
+            self.cc = self.lft_arm.cc  # set left to default
 
     def use_both(self):
         self.delegator = None
@@ -314,19 +326,21 @@ class UR3Dual(ri.RobotInterface):
     def change_jaw_width(self, jaw_width):
         self.change_ee_values(ee_values=jaw_width)
 
-    def is_collided(self, obstacle_list=None, other_robot_list=None, toggle_contacts=False):
+    def is_collided(self, obstacle_list=None, other_robot_list=None, toggle_contacts=False, toggle_dbg=False):
         """
         Interface for "is cdprimit collided", must be implemented in child class
         :param obstacle_list:
         :param other_robot_list:
         :param toggle_contacts: debug
+        :param toggle_dbg: debug
         :return: see CollisionChecker is_collided for details
         author: weiwei
         date: 20240307
         """
         collision_info = self.cc.is_collided(obstacle_list=obstacle_list,
                                              other_robot_list=other_robot_list,
-                                             toggle_contacts=toggle_contacts)
+                                             toggle_contacts=toggle_contacts,
+                                             toggle_dbg=toggle_dbg)
         return collision_info
 
     def gen_stickmodel(self,

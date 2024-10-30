@@ -1,8 +1,11 @@
 import os
 import math
 import numpy as np
+import wrs.basis.robot_math as rm
+import wrs.modeling.collision_model as mcm
 import wrs.modeling.model_collection as mmc
-from wrs import basis as rm, robot_sim as rkjlc, robot_sim as gpi, modeling as mcm, modeling as gm
+import wrs.robot_sim._kinematics.jlchain as rkjlc
+import wrs.robot_sim.end_effectors.grippers.gripper_interface as gpi
 
 
 class SchunkRH918(gpi.GripperInterface):
@@ -12,7 +15,7 @@ class SchunkRH918(gpi.GripperInterface):
                  rotmat=np.eye(3),
                  coupling_offset_pos=np.zeros(3),
                  coupling_offset_rotmat=np.eye(3),
-                 cdmesh_type=mcm.mc.CDMeshType.DEFAULT,
+                 cdmesh_type=mcm.const.CDMeshType.DEFAULT,
                  name='schunkrh918'):
         super().__init__(pos=pos, rotmat=rotmat, cdmesh_type=cdmesh_type, name=name)
         current_file_dir = os.path.dirname(__file__)
@@ -33,13 +36,13 @@ class SchunkRH918(gpi.GripperInterface):
         # anchor
         self.jlc.anchor.lnk_list[0].loc_rotmat = rm.rotmat_from_euler(0, 0, np.pi / 2)
         self.jlc.anchor.lnk_list[0].cmodel = mcm.CollisionModel(
-            os.path.join(current_file_dir, "meshes", "base.stl"),
+            initor=os.path.join(current_file_dir, "meshes", "base.stl"),
             cdmesh_type=self.cdmesh_type)
-        self.jlc.anchor.lnk_list[0].cmodel.rgba = rm.bc.tab20_list[14]
+        self.jlc.anchor.lnk_list[0].cmodel.rgba = rm.const.tab20_list[14]
         # the 1st joint (left finger, +y direction)
-        self.jlc.jnts[0].change_type(rkjlc.rkc.JntType.PRISMATIC, motion_range=np.array([0, self.jaw_range[1] / 2]))
+        self.jlc.jnts[0].change_type(rkjlc.const.JntType.PRISMATIC, motion_range=np.array([0, self.jaw_range[1] / 2]))
         self.jlc.jnts[0].loc_pos = np.array([-.01, .04, .073])
-        self.jlc.jnts[0].loc_motion_ax = rm.bc.y_ax
+        self.jlc.jnts[0].loc_motion_ax = rm.const.y_ax
         self.jlc.jnts[0].lnk.cmodel = mcm.CollisionModel(
             initor=os.path.join(current_file_dir, "meshes", "slider.stl"),
             cdmesh_type=self.cdmesh_type, ex_radius=.005)
@@ -47,7 +50,7 @@ class SchunkRH918(gpi.GripperInterface):
         self.jlc.jnts[0].lnk.cmodel.rgba = np.array([.5, .5, 1, 1])
         # the 2nd joint (right finger, -y direction)
         self.jlc.jnts[1].loc_pos = np.array([.02, .008, 0])
-        self.jlc.jnts[1].loc_motion_ax = rm.bc.y_ax
+        self.jlc.jnts[1].loc_motion_ax = rm.const.y_ax
         self.jlc.jnts[1].lnk.cmodel = mcm.CollisionModel(
             initor=os.path.join(current_file_dir, "meshes", "finger.stl"),
             cdmesh_type=self.cdmesh_type, ex_radius=.005)
@@ -116,12 +119,12 @@ class SchunkRH918(gpi.GripperInterface):
 
 
 if __name__ == '__main__':
-    import wrs.visualization.panda.world as wd
+    from wrs import wd, mgm
 
     base = wd.World(cam_pos=[.5, .5, .5], lookat_pos=[0, 0, 0])
-    gm.gen_frame().attach_to(base)
-    grpr = SchunkRH918()
-    # grpr.change_jaw_width(.03)
-    # print("ee_values = ", grpr.get_jaw_width())
-    grpr.gen_meshmodel().attach_to(base)
+    mgm.gen_frame().attach_to(base)
+    gripper = SchunkRH918()
+    # gripper.change_jaw_width(.03)
+    # print("ee_values = ", gripper.get_jaw_width())
+    gripper.gen_meshmodel().attach_to(base)
     base.run()

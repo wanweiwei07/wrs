@@ -15,6 +15,7 @@ from .robot_sim.robots.yumi import yumi as ym
 # grippers
 from .robot_sim.end_effectors.grippers.robotiq85 import robotiq85 as rtq85
 from .robot_sim.end_effectors.grippers.robotiqhe import robotiqhe as rtqhe
+from .robot_sim.end_effectors.grippers.yumi_gripper import yumi_gripper as yg
 
 # grasp
 from .grasping import grasp as gg
@@ -35,7 +36,7 @@ from .manipulation import flat_surface_regrasp as fsreg
 
 __all__ = ['rm', 'mcm', 'mgm', 'wd',
            'cbt', 'x6wg2', 'ur3d', 'ur3ed', 'ko2fg', 'ym',
-           'rtq85',
+           'rtq85', 'rtqhe', 'yg',
            'gg', 'gpa', 'gag',
            'rrtc', 'mip', 'ppp', 'toppra',
-           'fsp', 'reg']
+           'fsp', 'fsreg']

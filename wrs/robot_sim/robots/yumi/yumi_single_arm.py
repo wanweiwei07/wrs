@@ -24,7 +24,7 @@ class YumiSglArm(sari.SglArmRobotInterface):
         for id, cdlnk in enumerate(self.end_effector.cdelements):
             ee_cces.append(self.cc.add_cce(cdlnk))
         # manipulator
-        ml0 = self.cc.add_cce(self.manipulator.jlc.jnts[0].lnk, toggle_extcd=False)
+        ml0 = self.cc.add_cce(self.manipulator.jlc.jnts[0].lnk)
         ml1 = self.cc.add_cce(self.manipulator.jlc.jnts[1].lnk)
         ml2 = self.cc.add_cce(self.manipulator.jlc.jnts[2].lnk)
         ml3 = self.cc.add_cce(self.manipulator.jlc.jnts[3].lnk)
@@ -33,7 +33,9 @@ class YumiSglArm(sari.SglArmRobotInterface):
         from_list = ee_cces + [ml4, ml5]
         into_list = [ml0, ml1]
         self.cc.set_cdpair_by_ids(from_list, into_list)
-        self.cc.dynamic_into_list = [ml0, ml1, ml2, ml3]
+        # ext and inner
+        self.cc.enable_extcd_by_id_list(id_list=[ml1, ml2, ml3, ml4, ml5], type="from")
+        self.cc.enable_innercd_by_id_list(id_list=[ml0, ml1, ml2, ml3], type="into")
         self.cc.dynamic_ext_list = ee_cces[1:]
 
     def fix_to(self, pos, rotmat):

@@ -13,7 +13,7 @@ class CCElement(object):
     date: 20231116
     """
 
-    def __init__(self, lnk, host_cc, toggle_extcd=True):
+    def __init__(self, lnk, host_cc):
         self.host_cc = host_cc
         self.lnk = lnk
         # a transformed and attached copy of the reference cdprim (essentially pdcndp), tfd=transformed
@@ -25,9 +25,6 @@ class CCElement(object):
             self.host_cc.cd_trav.addCollider(collider=child_pdndp, handler=self.host_cc.cd_handler)
         # a dict with from_mask as keys and into_list (a lsit of cce) as values
         self.cce_into_dict = {}
-        if toggle_extcd:
-            # toggle on collision detection with external obstacles by default
-            self.enable_extcd(type="from")
 
     def _close_bitmask(self, allocated_bitmask):
         """
@@ -42,19 +39,11 @@ class CCElement(object):
             cce_into.remove_into_cdmask(allocated_bitmask)
         self.host_cc.bitmask_pool.append(allocated_bitmask)
 
-    def enable_extcd(self, type="from"):
-        """
-        enable collision detection with external collision models
-        :return:
-        """
-        mph.change_cdmask(self.tfd_cdprim, mph.BITMASK_EXT, action="add", type=type)
+    def enable_cdmask(self, bitmask=mph.bitmask_ext, type="from"):
+        mph.change_cdmask(self.tfd_cdprim, bitmask, action="add", type=type)
 
-    def disable_extcd(self, type="from"):
-        """
-        disable collision detection with external collision models
-        :return:
-        """
-        mph.change_cdmask(self.tfd_cdprim, mph.BITMASK_EXT, action="remove", type=type)
+    def disable_cdmask(self, bitmask=mph.bitmask_ext, type="from"):
+        mph.change_cdmask(self.tfd_cdprim, bitmask, action="remove", type=type)
 
     def isolate(self):
         """
@@ -72,6 +61,7 @@ class CCElement(object):
         # set self.tfd_cdprim to None for delayed feletion from other cce's into list (see 63)
         self.tfd_cdprim = None
         # remove the into bitmask of all cces in the cce_into_dict
+        # only applicable to cd pairs. extcd and innercd are irrelavent
         bitmask_list_to_return = []
         for allocated_bitmask in self.cce_into_dict.keys():
             self.host_cc.bitmask_users_dict[allocated_bitmask].remove(self.lnk.uuid)
@@ -134,11 +124,10 @@ class CollisionChecker(object):
         self.cd_trav = CollisionTraverser()
         self.cd_handler = CollisionHandlerQueue()
         self.cd_pdndp = NodePath(name)  # path of the traverse tree
-        self.bitmask_pool = [BitMask32(2 ** n) for n in range(31)]
+        self.bitmask_pool = mph.bitmask_pool
         self.bitmask_users_dict = {}
         for bitmask in self.bitmask_pool:
             self.bitmask_users_dict[bitmask] = []
-        self.bitmask_ext = BitMask32(2 ** 31)  # 31 is prepared for cd with external non-active objects
         self.cce_dict = {}  # a dict of CCElement
         # temporary parameter for toggling on/off show_cdprimit
         self._toggled_cdprim_list = []
@@ -146,7 +135,7 @@ class CollisionChecker(object):
         self.dynamic_into_list = []  # for oiee
         self.dynamic_ext_list = []  # for ignoring the external collision of certain components
 
-    def add_cce(self, lnk, toggle_extcd=True):
+    def add_cce(self, lnk):
         """
         add a Link as a ccelement
         :param lnk: instance of rkjlc.Link
@@ -154,7 +143,7 @@ class CollisionChecker(object):
         author: weiwei
         date: 20231116
         """
-        self.cce_dict[lnk.uuid] = CCElement(lnk, self, toggle_extcd=toggle_extcd)
+        self.cce_dict[lnk.uuid] = CCElement(lnk, self)
         return lnk.uuid
 
     def remove_cce(self, lnk):
@@ -184,6 +173,22 @@ class CollisionChecker(object):
         cce = self.cce_dict.pop(uuid)
         bitmask_list_to_return = cce.isolate()
         self.bitmask_pool += bitmask_list_to_return
+
+    def enable_extcd_by_id_list(self, id_list, type="from"):
+        for uuid in id_list:
+            self.cce_dict[uuid].enable_cdmask(bitmask=mph.bitmask_ext, type=type)
+
+    def disable_extcd_by_id_list(self, id_list, type="from"):
+        for uuid in id_list:
+            self.cce_dict[uuid].disable_cdmask(bitmask=mph.bitmask_ext, type=type)
+
+    def enable_innercd_by_id_list(self, id_list, type="from"):
+        for uuid in id_list:
+            self.cce_dict[uuid].enable_cdmask(bitmask=mph.bitmask_inner, type=type)
+
+    def disable_innercd_by_id_list(self, id_list, type="from"):
+        for uuid in id_list:
+            self.cce_dict[uuid].disable_cdmask(bitmask=mph.bitmask_inner, type=type)
 
     def set_cdpair(self, lnk_from_list, lnk_into_list):
         """
@@ -273,8 +278,9 @@ class CollisionChecker(object):
         # attach other robots
         if other_robot_list is not None:
             for robot in other_robot_list:
-                for cce in robot.cc.cce_dict.values():  # TODO: wrong, save and restore mask
-                    cce.enable_extcd(type="into")
+                robot.cc.enable_extcd_by_id_list(id_list=robot.cc.cce_dict.keys(), type="into")
+                # for cce in robot.cc.cce_dict.values():  # TODO: wrong, save and restore mask
+                #     cce.enable_cdmask(bitmask=mph.bitmask_ext, type="into")
                 robot.cc.cd_pdndp.reparentTo(self.cd_pdndp)
         # collision check
         self.cd_trav.traverse(self.cd_pdndp)
@@ -287,8 +293,9 @@ class CollisionChecker(object):
         # clear other robots
         if other_robot_list is not None:
             for robot in other_robot_list:
-                for cce in robot.cc.cce_dict.values():
-                    cce.disable_extcd(type="into")
+                robot.cc.disable_extcd_by_id_list(id_list=robot.cc.cce_dict.keys(), type="into")
+                # for cce in robot.cc.cce_dict.values():
+                #     cce.disable_extcd(type="into")
                 robot.cc.cd_pdndp.detachNode()
         if self.cd_handler.getNumEntries() > 0:
             collision_result = True
@@ -296,6 +303,10 @@ class CollisionChecker(object):
             collision_result = False
         if collision_result and toggle_dbg:
             print("Collision detected! Showing debug info")
+            for child in self.cd_pdndp.getChildren():
+                print(child.name)
+                print("from ", mph.get_cdmask(child, type="from"))
+                print("into ", mph.get_cdmask(child, type="into"))
             from wrs import rm, mgm
             self.show_cdprim()
             for obstacle_cmodel in obstacle_list:
@@ -304,7 +315,8 @@ class CollisionChecker(object):
             for cd_entry in self.cd_handler.getEntries():
                 from_node_path = cd_entry.getFromNodePath()
                 into_node_path = cd_entry.getIntoNodePath()
-                print(f"from {from_node_path.name} {from_node_path.node().getFromCollideMask()} into {into_node_path.name} {into_node_path.node().getIntoCollideMask()}")
+                print(
+                    f"from {from_node_path.name} {from_node_path.node().getFromCollideMask()} into {into_node_path.name} {into_node_path.node().getIntoCollideMask()}")
                 contact_point = da.pdvec3_to_npvec3(cd_entry.getSurfacePoint(base.render))
                 mgm.gen_sphere(pos=contact_point, radius=.01, rgb=rm.const.orange).attach_to(base)
             base.run()

@@ -1,19 +1,20 @@
-from wrs import basis as rm, robot_sim as rkjlc, robot_sim as gi, modeling as mcm, modeling as mgm
-
 import os
 import numpy as np
-import wrs.modeling.model_collection as mmc
 import wrs.basis.robot_math as rm
+import wrs.modeling.collision_model as mcm
+import wrs.modeling.model_collection as mmc
+import wrs.robot_sim._kinematics.jlchain as rkjlc
+import wrs.robot_sim.end_effectors.grippers.gripper_interface as gpi
 
 
-class Robotiq140(gi.GripperInterface):
+class Robotiq140(gpi.GripperInterface):
 
     def __init__(self,
                  pos=np.zeros(3),
                  rotmat=np.eye(3),
                  coupling_offset_pos=np.zeros(3),
                  coupling_offset_rotmat=np.eye(3),
-                 cdmesh_type=mcm.mc.CDMeshType.DEFAULT,
+                 cdmesh_type=mcm.const.CDMeshType.DEFAULT,
                  name='robotiq140'):
         super().__init__(pos=pos, rotmat=rotmat, cdmesh_type=cdmesh_type, name=name)
         current_file_dir = os.path.dirname(__file__)
@@ -41,8 +42,9 @@ class Robotiq140(gi.GripperInterface):
         self.palm.lnk_list[0].name = name + "_palm_lnk"
         self.palm.lnk_list[0].cmodel = mcm.CollisionModel(
             initor=os.path.join(current_file_dir, "meshes", "robotiq_arg2f_base_link.stl"),
+            name="rtq140_base",
             cdmesh_type=self.cdmesh_type)
-        self.palm.lnk_list[0].cmodel.rgba = rm.bc.dim_gray
+        self.palm.lnk_list[0].cmodel.rgba = rm.const.dim_gray
         # ======= left finger ======== #
         # left finger outer
         self.lft_outer_jlc = rkjlc.JLChain(pos=self.palm.gl_flange_pose_list[0][0],
@@ -51,32 +53,37 @@ class Robotiq140(gi.GripperInterface):
         # left finger outer (joint 0 / outer_knuckle)
         self.lft_outer_jlc.jnts[0].loc_pos = np.zeros(3)
         self.lft_outer_jlc.jnts[0].loc_rotmat = rm.rotmat_from_euler(np.pi / 2 + .725, 0, np.pi)
-        self.lft_outer_jlc.jnts[0].loc_motion_ax = rm.bc.x_ax
+        self.lft_outer_jlc.jnts[0].loc_motion_ax = rm.const.x_ax
         self.lft_outer_jlc.jnts[0].motion_range = [.0, .7]
         self.lft_outer_jlc.jnts[0].lnk.cmodel = mcm.CollisionModel(
-            os.path.join(current_file_dir, "meshes", "robotiq_arg2f_140_outer_knuckle.stl"),
+            initor=os.path.join(current_file_dir, "meshes", "robotiq_arg2f_140_outer_knuckle.stl"),
+            name="rtq140_lft_outer_knuckle",
             cdmesh_type=self.cdmesh_type)
-        self.lft_outer_jlc.jnts[0].lnk.cmodel.rgba = rm.bc.hug_gray
+        self.lft_outer_jlc.jnts[0].lnk.cmodel.rgba = rm.const.hug_gray
         # left finger outer (joint 1 / outer_finger)
         self.lft_outer_jlc.jnts[1].loc_pos = np.array([0, .01821998610742, .0260018192872234])
         self.lft_outer_jlc.jnts[1].loc_motion_ax = np.array([1, 0, 0])
         self.lft_outer_jlc.jnts[1].lnk.cmodel = mcm.CollisionModel(
-            os.path.join(current_file_dir, "meshes", "robotiq_arg2f_140_outer_finger.stl"),
+            initor=os.path.join(current_file_dir, "meshes", "robotiq_arg2f_140_outer_finger.stl"),
+            name="rtq140_lft_outer_finger",
             cdmesh_type=self.cdmesh_type)
-        self.lft_outer_jlc.jnts[1].lnk.cmodel.rgba = rm.bc.dim_gray
+        self.lft_outer_jlc.jnts[1].lnk.cmodel.rgba = rm.const.dim_gray
         # left finger outer (joint 2 / inner_finger)
         self.lft_outer_jlc.jnts[2].loc_pos = np.array([0, .0817554015893473, -.0282203446692936])
         self.lft_outer_jlc.jnts[2].loc_rotmat = rm.rotmat_from_euler(-.725, 0, 0)
         self.lft_outer_jlc.jnts[2].loc_motion_ax = np.array([1, 0, 0])
         self.lft_outer_jlc.jnts[2].lnk.cmodel = mcm.CollisionModel(
-            os.path.join(current_file_dir, "meshes", "robotiq_arg2f_140_inner_finger.stl"),
+            initor=os.path.join(current_file_dir, "meshes", "robotiq_arg2f_140_inner_finger.stl"),
+            name="rtq140_lft_inner_finger",
             cdmesh_type=self.cdmesh_type)
-        self.lft_outer_jlc.jnts[2].lnk.cmodel.rgba = rm.bc.dim_gray
+        self.lft_outer_jlc.jnts[2].lnk.cmodel.rgba = rm.const.dim_gray
         # left finger outer (joint 3 / inner_finger_pad)
         self.lft_outer_jlc.jnts[3].loc_pos = np.array([0, 0.0420203446692936, -.028])
         self.lft_outer_jlc.jnts[3].lnk.cmodel = mcm.CollisionModel(
-            os.path.join(current_file_dir, "meshes", "robotiq_arg2f_140_pad.stl"), cdmesh_type=self.cdmesh_type)
-        self.lft_outer_jlc.jnts[3].lnk.cmodel.rgba = rm.bc.hug_gray
+            initor=os.path.join(current_file_dir, "meshes", "robotiq_arg2f_140_pad.stl"),
+            name="rtq140_lft_pad",
+            cdmesh_type=self.cdmesh_type)
+        self.lft_outer_jlc.jnts[3].lnk.cmodel.rgba = rm.const.hug_gray
         # left finger inner
         self.lft_inner_jlc = rkjlc.JLChain(pos=self.palm.gl_flange_pose_list[1][0],
                                            rotmat=self.palm.gl_flange_pose_list[1][1],
@@ -85,9 +92,10 @@ class Robotiq140(gi.GripperInterface):
         self.lft_inner_jlc.jnts[0].loc_rotmat = rm.rotmat_from_euler(np.pi / 2 + .725, 0, np.pi)
         self.lft_inner_jlc.jnts[0].loc_motion_ax = np.array([1, 0, 0])
         self.lft_inner_jlc.jnts[0].lnk.cmodel = mcm.CollisionModel(
-            os.path.join(current_file_dir, "meshes", "robotiq_arg2f_140_inner_knuckle.stl"),
+            initor=os.path.join(current_file_dir, "meshes", "robotiq_arg2f_140_inner_knuckle.stl"),
+            name="rtq140_lft_inner_knuckle",
             cdmesh_type=self.cdmesh_type)
-        self.lft_inner_jlc.jnts[0].lnk.cmodel.rgba = rm.bc.dim_gray
+        self.lft_inner_jlc.jnts[0].lnk.cmodel.rgba = rm.const.dim_gray
         # ======= right finger ======== #
         # rgt finger outer
         self.rgt_outer_jlc = rkjlc.JLChain(pos=self.palm.gl_flange_pose_list[2][0],
@@ -98,29 +106,34 @@ class Robotiq140(gi.GripperInterface):
         self.rgt_outer_jlc.jnts[0].loc_rotmat = rm.rotmat_from_euler(np.pi / 2 + 0.725, 0, 0)
         self.rgt_outer_jlc.jnts[0].loc_motion_ax = np.array([1, 0, 0])
         self.rgt_outer_jlc.jnts[0].lnk.cmodel = mcm.CollisionModel(
-            os.path.join(current_file_dir, "meshes", "robotiq_arg2f_140_outer_knuckle.stl"),
+            initor=os.path.join(current_file_dir, "meshes", "robotiq_arg2f_140_outer_knuckle.stl"),
+            name="rtq140_rgt_outer_knuckle",
             cdmesh_type=self.cdmesh_type)
-        self.rgt_outer_jlc.jnts[0].lnk.cmodel.rgba = rm.bc.hug_gray
+        self.rgt_outer_jlc.jnts[0].lnk.cmodel.rgba = rm.const.hug_gray
         # right finger outer (joint 1 / outer_finger)
         self.rgt_outer_jlc.jnts[1].loc_pos = np.array([0, .01821998610742, .0260018192872234])
         self.rgt_outer_jlc.jnts[1].loc_motion_ax = np.array([1, 0, 0])
         self.rgt_outer_jlc.jnts[1].lnk.cmodel = mcm.CollisionModel(
-            os.path.join(current_file_dir, "meshes", "robotiq_arg2f_140_outer_finger.stl"),
+            initor=os.path.join(current_file_dir, "meshes", "robotiq_arg2f_140_outer_finger.stl"),
+            name="rtq140_rgt_outer_finger",
             cdmesh_type=self.cdmesh_type)
-        self.rgt_outer_jlc.jnts[1].lnk.cmodel.rgba = rm.bc.dim_gray
+        self.rgt_outer_jlc.jnts[1].lnk.cmodel.rgba = rm.const.dim_gray
         # right finger outer (joint 2 / inner_finger)
         self.rgt_outer_jlc.jnts[2].loc_pos = np.array([0, 0.0817554015893473, -0.0282203446692936])
         self.rgt_outer_jlc.jnts[2].loc_rotmat = rm.rotmat_from_euler(-.725, 0, 0)
         self.rgt_outer_jlc.jnts[2].loc_motion_ax = np.array([1, 0, 0])
         self.rgt_outer_jlc.jnts[2].lnk.cmodel = mcm.CollisionModel(
-            os.path.join(current_file_dir, "meshes", "robotiq_arg2f_140_inner_finger.stl"),
+            initor=os.path.join(current_file_dir, "meshes", "robotiq_arg2f_140_inner_finger.stl"),
+            name="rtq140_rgt_inner_finger",
             cdmesh_type=self.cdmesh_type)
-        self.rgt_outer_jlc.jnts[2].lnk.cmodel.rgba = rm.bc.dim_gray
+        self.rgt_outer_jlc.jnts[2].lnk.cmodel.rgba = rm.const.dim_gray
         # right finger outer (joint 3 / inner_finger_pad)
         self.rgt_outer_jlc.jnts[3].loc_pos = np.array([0, 0.0420203446692936, -.028])
         self.rgt_outer_jlc.jnts[3].lnk.cmodel = mcm.CollisionModel(
-            os.path.join(current_file_dir, "meshes", "robotiq_arg2f_140_pad.stl"), cdmesh_type=self.cdmesh_type)
-        self.rgt_outer_jlc.jnts[3].lnk.cmodel.rgba = rm.bc.hug_gray
+            initor=os.path.join(current_file_dir, "meshes", "robotiq_arg2f_140_pad.stl"),
+            name="rtq140_rgt_pad",
+            cdmesh_type=self.cdmesh_type)
+        self.rgt_outer_jlc.jnts[3].lnk.cmodel.rgba = rm.const.hug_gray
         # right finger inner
         self.rgt_inner_jlc = rkjlc.JLChain(pos=self.palm.gl_flange_pose_list[3][0],
                                            rotmat=self.palm.gl_flange_pose_list[3][1],
@@ -129,9 +142,10 @@ class Robotiq140(gi.GripperInterface):
         self.rgt_inner_jlc.jnts[0].loc_rotmat = rm.rotmat_from_euler(np.pi / 2 + .725, 0, 0)
         self.rgt_inner_jlc.jnts[0].loc_motion_ax = np.array([1, 0, 0])
         self.rgt_inner_jlc.jnts[0].lnk.cmodel = mcm.CollisionModel(
-            os.path.join(current_file_dir, "meshes", "robotiq_arg2f_140_inner_knuckle.stl"),
+            initor=os.path.join(current_file_dir, "meshes", "robotiq_arg2f_140_inner_knuckle.stl"),
+            name="rtq140_rgt_inner_knuckle",
             cdmesh_type=self.cdmesh_type)
-        self.rgt_inner_jlc.jnts[0].lnk.cmodel.rgba = rm.bc.dim_gray
+        self.rgt_inner_jlc.jnts[0].lnk.cmodel.rgba = rm.const.dim_gray
         # finalize
         self.lft_outer_jlc.finalize()
         self.lft_inner_jlc.finalize()
@@ -154,7 +168,7 @@ class Robotiq140(gi.GripperInterface):
 
     def fix_to(self, pos, rotmat, jaw_width=None):
         self._pos = pos
-        self.rotmat = rotmat
+        self._rotmat = rotmat
         if jaw_width is not None:
             self.change_jaw_width(jaw_width=jaw_width)
         self.coupling.pos = self._pos
@@ -266,7 +280,7 @@ class Robotiq140(gi.GripperInterface):
 
 
 if __name__ == '__main__':
-    import wrs.visualization.panda.world as wd
+    from wrs import wd, mgm
 
     base = wd.World(cam_pos=[2, 0, 0], lookat_pos=[0, 0, 0])
     mgm.gen_frame().attach_to(base)

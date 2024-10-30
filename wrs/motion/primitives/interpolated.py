@@ -268,18 +268,20 @@ class InterplatedMotion(object):
         for pos, rotmat in pose_list:
             jnt_values = self.robot.ik(pos, rotmat, seed_jnt_values=seed_jnt_values)
             if jnt_values is None or np.max(np.abs(jnt_values - seed_jnt_values)) > np.radians(45): # ensure linearality
+                print("Gen_rel_linear_motion: IK not solvable...")
                 if toggle_dbg:
+                    self.robot.gen_stickmodel().attach_to(base)
+                    mgm.gen_frame(pos=pos, rotmat=rotmat, rgb_mat=rm.const.dyo_mat).attach_to(base)
                     for jnt_values in jv_list:
                         self.robot.goto_given_conf(jnt_values, ee_values=ee_values)
                         self.robot.gen_meshmodel(alpha=.3).attach_to(base)
                     base.run()
-                print("IK not solvable in gen_linear_motion!")
                 return None
             else:
                 self.robot.goto_given_conf(jnt_values, ee_values=ee_values)
                 if toggle_dbg:
                     print("Gen_rel_linear_motion: Checking collision...")
-                result = self.robot.is_collided(obstacle_list=obstacle_list, toggle_dbg=True)
+                result = self.robot.is_collided(obstacle_list=obstacle_list, toggle_dbg=toggle_dbg)
                 if result:
                     # if toggle_dbg:
                     #     for pnt in contacts:

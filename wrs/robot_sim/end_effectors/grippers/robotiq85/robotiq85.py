@@ -16,7 +16,7 @@ class Robotiq85(gpi.GripperInterface):
                  coupling_offset_pos=np.zeros(3),
                  coupling_offset_rotmat=np.eye(3),
                  cdmesh_type=mcm.const.CDMeshType.DEFAULT,
-                 name='robotiq85'):
+                 name='rtq85'):
         super().__init__(pos=pos, rotmat=rotmat, cdmesh_type=cdmesh_type, name=name)
         current_file_dir = os.path.dirname(__file__)
         # flange
