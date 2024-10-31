@@ -6,12 +6,7 @@ import wrs.robot_sim._kinematics.jlchain as rkjlc
 import wrs.robot_sim.end_effectors.single_contact.single_contact_interface as si
 
 
-class ORSD(si.SCTInterface):
-    """
-     # orsd = OnRobot ScrewDriver
-    author: weiwei
-    date: 20230803
-    """
+class Board(si.SCTInterface):
 
     def __init__(self,
                  pos=rm.np.zeros(3),
@@ -19,33 +14,23 @@ class ORSD(si.SCTInterface):
                  coupling_offset_pos=rm.np.zeros(3),
                  coupling_offset_rotmat=rm.np.eye(3),
                  cdmesh_type=mcm.const.CDMeshType.DEFAULT,
-                 name='onrobot_screwdriver'):
+                 name='sztu_sd'):
         super().__init__(pos=pos, rotmat=rotmat, cdmesh_type=cdmesh_type, name=name)
         current_file_dir = os.path.dirname(__file__)
-        self.coupling.loc_flange_pose_list[0] = (coupling_offset_pos, coupling_offset_rotmat)
-        self.coupling.lnk_list[0].cmodel = mcm.gen_stick(spos=rm.np.zeros(3),
-                                                         epos=self.coupling.loc_flange_pose_list[0][0],
-                                                         type="rect",
-                                                         radius=0.035,
-                                                         rgb=rm.np.array([.35, .35, .35]),
-                                                         alpha=1,
-                                                         n_sec=24)
         # jlc (essentially an anchor since there is no joint)
         self.jlc = rkjlc.JLChain(pos=self.coupling.gl_flange_pose_list[0][0],
-                                 rotmat=self.coupling.gl_flange_pose_list[0][1], n_dof=0, name='orsd_jlc')
-        self.jlc.anchor.loc_flange_pose_list[0][0] = rm.np.array([0.16855000, 0, 0.09509044])
+                                 rotmat=self.coupling.gl_flange_pose_list[0][1], n_dof=0, name='calib_board_jlc')
+        self.jlc.anchor.lnk_list[0].name="calib_board"
+        self.jlc.anchor.lnk_list[0].loc_rotmat=rm.rotmat_from_euler(rm.pi, 0,0)
         self.jlc.anchor.lnk_list[0].cmodel = mcm.CollisionModel(
-            initor=os.path.join(current_file_dir, "meshes", "or_screwdriver.stl"),
-            name="orsd_screwdriver",
+            initor=os.path.join(current_file_dir, "meshes", "board.stl"), name="calib_board",
             cdmesh_type=self.cdmesh_type)
-        self.jlc.anchor.lnk_list[0].cmodel.rgba = rm.np.array([.55, .55, .55, 1])
+        self.jlc.anchor.lnk_list[0].cmodel.rgba = rm.np.array([.9, .77, .52, 1.0])
         # reinitialize
         self.jlc.finalize()
         #  action center
-        self.loc_acting_center_pos = self.coupling.loc_flange_pose_list[0][1] @ rm.np.array(
-            [0.16855000, 0, 0.09509044]) + self.coupling.loc_flange_pose_list[0][0]
-        self.loc_acting_center_rotmat = rm.rotmat_from_axangle(self.coupling.loc_flange_pose_list[0][1][:3, 1],
-                                                               rm.np.pi / 2) @ self.coupling.loc_flange_pose_list[0][1]
+        self.loc_acting_center_pos = self.coupling.loc_flange_pose_list[0][1] @ rm.np.array([0, -.2075, 0.009]) + self.coupling.loc_flange_pose_list[0][0]
+        self.loc_acting_center_rotmat = self.coupling.loc_flange_pose_list[0][1]
         # collision detection
         self.cdelements = [self.jlc.anchor.lnk_list[0]]
 
@@ -87,20 +72,16 @@ class ORSD(si.SCTInterface):
         return m_col
 
 
+
 if __name__ == '__main__':
     from wrs import wd, mgm
 
-    base = wd.World(cam_pos=[.5, .5, .5], lookat_pos=[0, 0, 0])
+    base = wd.World(cam_pos=[1, 1, 1], lookat_pos=[0, 0, 0])
     mgm.gen_frame().attach_to(base)
-    # for angle in rm.np.linspace(0, .85, 8):
-    #     grpr = Robotiq85()
-    #     grpr.fk(angle)
-    #     grpr.gen_meshmodel().attach_to(base)
-    grpr = ORSD(pos=rm.np.array([-.3, .3, .19]), rotmat=rm.rotmat_from_euler(0, 0, rm.np.pi / 2),
-                coupling_offset_pos=rm.np.array([0, 0, 0.0145]))
-    # grpr.act_to_by_pose(acting_center_pos=rm.np.zeros(3), acting_center_rotmat=rm.np.eye(3))
-    grpr.gen_meshmodel(toggle_tcp_frame=True).attach_to(base)
-    grpr.gen_stickmodel(toggle_jnt_frames=True).attach_to(base)
-    grpr.fix_to(pos=rm.np.array([0, .3, .2]), rotmat=rm.rotmat_from_axangle([1, 0, 0], .05))
-    grpr.gen_meshmodel().attach_to(base)
+    screwdriver = Board()
+    screwdriver.gen_meshmodel(toggle_tcp_frame=True).attach_to(base)
+
+    # screwdriver.show_cdmesh()
     base.run()
+
+

@@ -184,7 +184,7 @@ class EEInterface(object):
         self.fix_to(ee_root_pos, ee_root_rotmat)
         return [acting_center_pos, acting_center_rotmat, ee_root_pos, ee_root_rotmat]
 
-    def gen_stickmodel(self, toggle_tcp_frame=False, toggle_jnt_frames=False, name='ee_stickmodel'):
+    def gen_stickmodel(self, toggle_tcp_frame=False, toggle_jnt_frames=False):
         raise NotImplementedError
 
     def gen_meshmodel(self,
@@ -193,8 +193,7 @@ class EEInterface(object):
                       toggle_tcp_frame=False,
                       toggle_jnt_frames=False,
                       toggle_cdprim=False,
-                      toggle_cdmesh=False,
-                      name='ee_meshmodel'):
+                      toggle_cdmesh=False):
         raise NotImplementedError
 
     def _gen_oiee_meshmodel(self,

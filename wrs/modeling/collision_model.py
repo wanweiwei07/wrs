@@ -1,7 +1,7 @@
 import copy
 import uuid
-from panda3d.core import NodePath
 from direct.showbase.ShowBase import ShowBase
+from panda3d.core import NodePath, CollisionNode, CollisionBox, Point3
 import wrs.modeling.model_collection as mmc
 import wrs.modeling._panda_cdhelper as mph
 import wrs.modeling._ode_cdhelper as moh

@@ -40,7 +40,7 @@ def vec(*args):
 
 
 ## rotmat
-def rotmat_from_axangle(axis, angle):
+def rotmat_from_axangle(ax, angle):
     """
     Compute the rodrigues matrix using the given axis and angle
 
@@ -50,11 +50,11 @@ def rotmat_from_axangle(axis, angle):
     author: weiwei
     date: 20161220
     """
-    axis = unit_vector(axis)
-    if np.allclose(axis, np.zeros(3)):
+    ax = unit_vector(ax)
+    if np.allclose(ax, np.zeros(3)):
         return np.eye(3)
     a = math.cos(angle / 2.0)
-    b, c, d = -axis * math.sin(angle / 2.0)
+    b, c, d = -ax * math.sin(angle / 2.0)
     aa, bb, cc, dd = a * a, b * b, c * c, d * d
     bc, ad, ac, ab, bd, cd = b * c, a * d, a * c, a * b, b * d, c * d
     return np.array([[aa + bb - cc - dd, 2.0 * (bc + ad), 2.0 * (bd - ac)],

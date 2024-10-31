@@ -149,8 +149,7 @@ class RobotInterface(object):
     def gen_stickmodel(self,
                        toggle_tcp_frame=False,
                        toggle_jnt_frames=False,
-                       toggle_flange_frame=False,
-                       name='single_arm_robot_interface_stickmodel'):
+                       toggle_flange_frame=False):
         raise NotImplementedError
 
     def cvt_gl_pose_to_tcp(self, gl_pos, gl_rotmat):
@@ -172,8 +171,7 @@ class RobotInterface(object):
                       toggle_jnt_frames=False,
                       toggle_flange_frame=False,
                       toggle_cdprim=False,
-                      toggle_cdmesh=False,
-                      name='single_arm_robot_interface_meshmodel'):
+                      toggle_cdmesh=False):
         raise NotImplementedError
 
     def is_collided(self, obstacle_list=None, other_robot_list=None, toggle_contacts=False, toggle_dbg=False):
