@@ -18,8 +18,8 @@ class Diana7(mi.ManipulatorInterface):
             initor=os.path.join(current_file_dir, "meshes", "base_link.stl"), name="diana7_base")
         self.jlc.anchor.lnk_list[0].cmodel.rgba = rm.const.silver_gray
         # first joint and link
-        self.jlc.jnts[0].loc_pos = rm.np.array([0.002096, -0.0020642, 0.287])
-        self.jlc.jnts[0].loc_rotmat = rm.rotmat_from_euler(-3.1334, 0.0081704, 0.0076673)
+        self.jlc.jnts[0].loc_pos = rm.np.array([0, 0, 0.2856])
+        self.jlc.jnts[0].loc_rotmat = rm.rotmat_from_euler(-3.14159265358,  0.0000000, 0.00000)
         self.jlc.jnts[0].loc_motion_ax = rm.const.z_ax
         self.jlc.jnts[0].motion_range = rm.np.radians([-179, 179])
         self.jlc.jnts[0].lnk.cmodel = mcm.CollisionModel(
@@ -34,15 +34,15 @@ class Diana7(mi.ManipulatorInterface):
             initor=os.path.join(current_file_dir, "meshes", "link2.stl"), name="diana7_link2")
         self.jlc.jnts[1].lnk.cmodel.rgba = rm.const.silver_gray
         # third joint and link
-        self.jlc.jnts[2].loc_pos = rm.np.array([0, -0.45969, 0])
-        self.jlc.jnts[2].loc_rotmat = rm.rotmat_from_euler(-1.5708, 0.00016202, 0)
+        self.jlc.jnts[2].loc_pos = rm.np.array([0, -0.4586, 0])
+        self.jlc.jnts[2].loc_rotmat = rm.rotmat_from_euler(-1.5708, 0, 0)
         self.jlc.jnts[2].loc_motion_ax = rm.const.z_ax
         self.jlc.jnts[2].motion_range = rm.np.radians([-179, 179])
         self.jlc.jnts[2].lnk.cmodel = mcm.CollisionModel(
             initor=os.path.join(current_file_dir, "meshes", "link3.stl"), name="diana7_link3")
         self.jlc.jnts[2].lnk.cmodel.rgba = rm.const.dim_gray
         # fourth joint and link
-        self.jlc.jnts[3].loc_pos = rm.np.array([0.058969, -1.025E-05, 0])
+        self.jlc.jnts[3].loc_pos = rm.np.array([0.065, 0, 0])
         self.jlc.jnts[3].loc_rotmat = rm.rotmat_from_euler(1.5708, 0, 0)
         self.jlc.jnts[3].loc_motion_ax = rm.const.z_ax
         self.jlc.jnts[3].motion_range = rm.np.radians([0, 175])
@@ -50,15 +50,15 @@ class Diana7(mi.ManipulatorInterface):
             initor=os.path.join(current_file_dir, "meshes", "link4.stl"), name="diana7_link4")
         self.jlc.jnts[3].lnk.cmodel.rgba = rm.const.silver_gray
         # fifth joint and link
-        self.jlc.jnts[4].loc_pos = rm.np.array([-0.056037, -0.45497, 0])
-        self.jlc.jnts[4].loc_rotmat = rm.rotmat_from_euler(-1.5708, 0.0073566, 0)
+        self.jlc.jnts[4].loc_pos = rm.np.array([-0.0528, -0.4554, 0])
+        self.jlc.jnts[4].loc_rotmat = rm.rotmat_from_euler(-1.5708, 0, 0)
         self.jlc.jnts[4].loc_motion_ax = rm.const.z_ax
         self.jlc.jnts[4].motion_range = rm.np.array([-179, 179])
         self.jlc.jnts[4].lnk.cmodel = mcm.CollisionModel(
             initor=os.path.join(current_file_dir, "meshes", "link5.stl"), name="diana7_link5")
         self.jlc.jnts[4].lnk.cmodel.rgba = rm.const.dim_gray
         # sixth joint and link
-        self.jlc.jnts[5].loc_pos = rm.np.array([-0.012173, 0, 0.00010022])
+        self.jlc.jnts[5].loc_pos = rm.np.array([-0.0122, 0, 0])
         self.jlc.jnts[5].loc_rotmat = rm.rotmat_from_euler(1.5708, 0, -3.1416)
         self.jlc.jnts[5].loc_motion_ax = rm.const.z_ax
         self.jlc.jnts[5].motion_range = rm.np.array([-179, 179])
@@ -67,7 +67,7 @@ class Diana7(mi.ManipulatorInterface):
         self.jlc.jnts[5].lnk.cmodel.rgba = rm.const.silver_gray
         # seventh joint and link
         self.jlc.jnts[6].loc_pos = rm.np.array([0.087389, -0.1103, 0])
-        self.jlc.jnts[6].loc_rotmat = rm.rotmat_from_euler(-1.5626, 8.1563E-05, 0.0082326)
+        self.jlc.jnts[6].loc_rotmat = rm.rotmat_from_euler(-1.5708, 0, 0)
         self.jlc.jnts[6].loc_motion_ax = rm.const.z_ax
         self.jlc.jnts[6].motion_range = rm.np.array([-179, 179])
         self.jlc.jnts[6].lnk.cmodel = mcm.CollisionModel(
