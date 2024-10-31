@@ -684,7 +684,7 @@ def gen_surface(surface_callback, range, granularity=.01):
 if __name__ == "__main__":
     import wrs.visualization.panda.world as wd
 
-    base = wd.World(cam_pos=[.5, .2, .3], lookat_pos=[0, 0, 0], auto_cam_rotate=False)
+    base = wd.World(cam_pos=[.5, .2, .3], lookat_pos=[0, 0, 0], auto_rotate=False)
     # obj_cmodel = mgm.WireFrameModel(gen_torus())
     # obj_cmodel.set_rgba([1, 0, 0, 1])
     # obj_cmodel.attach_to(base)

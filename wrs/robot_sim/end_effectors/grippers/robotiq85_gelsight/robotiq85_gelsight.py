@@ -204,8 +204,8 @@ class Robotiq85Gelsight(gp.GripperInterface):
         self.jaw_center_pos = np.array([0.0, 0.0, 0.06142]) + np.array([0.0, 0.0, math.cos(rot) * 0.05715]) + np.array(
             [0.0, 0.0, 0.06325144]) + self.coupling.jnts[-1]['loc_pos']
 
-    def gen_stickmodel(self, toggle_tcp_frame=False, toggle_jnt_frames=False, name='ee_stickmodel'):
-        sm_collection = mc.ModelCollection(name=name)
+    def gen_stickmodel(self, toggle_tcp_frame=False, toggle_jnt_frames=False):
+        sm_collection = mc.ModelCollection(name=self.name + '_stickmodel')
         self.coupling.gen_stickmodel(toggle_tcp_frame=False,
                                      toggle_jnt_frames=toggle_jnt_frames).attach_to(sm_collection)
         self.lft_outer.gen_stickmodel(toggle_tcpcs=toggle_tcp_frame,
@@ -234,9 +234,8 @@ class Robotiq85Gelsight(gp.GripperInterface):
     def gen_meshmodel(self,
                       toggle_tcp_frame=False,
                       toggle_jnt_frames=False,
-                      rgba=None,
-                      name='robotiq85_meshmodel'):
-        mm_collection = mc.ModelCollection(name=name)
+                      rgba=None):
+        mm_collection = mc.ModelCollection(name=self.name + '_meshmodel')
         self.coupling.gen_mesh_model(toggle_tcpcs=False,
                                      toggle_jntscs=toggle_jnt_frames,
                                      rgba=rgba).attach_to(mm_collection)

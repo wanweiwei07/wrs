@@ -146,12 +146,6 @@ class RobotInterface(object):
     def fix_to(self, pos, rotmat):
         raise NotImplementedError
 
-    def gen_stickmodel(self,
-                       toggle_tcp_frame=False,
-                       toggle_jnt_frames=False,
-                       toggle_flange_frame=False):
-        raise NotImplementedError
-
     def cvt_gl_pose_to_tcp(self, gl_pos, gl_rotmat):
         if self.delegator is None:
             raise AttributeError("Convert global pose to tcp is not available.")
@@ -163,16 +157,6 @@ class RobotInterface(object):
             raise AttributeError("Convert pose in tcp to global is not available.")
         else:
             return self.delegator.cvt_pose_in_tcp_to_gl(loc_pos=loc_pos, loc_rotmat=loc_rotmat)
-
-    def gen_meshmodel(self,
-                      rgb=None,
-                      alpha=None,
-                      toggle_tcp_frame=False,
-                      toggle_jnt_frames=False,
-                      toggle_flange_frame=False,
-                      toggle_cdprim=False,
-                      toggle_cdmesh=False):
-        raise NotImplementedError
 
     def is_collided(self, obstacle_list=None, other_robot_list=None, toggle_contacts=False, toggle_dbg=False):
         """
@@ -207,3 +191,19 @@ class RobotInterface(object):
     def unshow_cdprim(self):
         # TODO cc assertion decorator
         self.cc.unshow_cdprim()
+
+    def gen_stickmodel(self,
+                       toggle_tcp_frame=False,
+                       toggle_jnt_frames=False,
+                       toggle_flange_frame=False):
+        raise NotImplementedError
+
+    def gen_meshmodel(self,
+                      rgb=None,
+                      alpha=None,
+                      toggle_tcp_frame=False,
+                      toggle_jnt_frames=False,
+                      toggle_flange_frame=False,
+                      toggle_cdprim=False,
+                      toggle_cdmesh=False):
+        raise NotImplementedError

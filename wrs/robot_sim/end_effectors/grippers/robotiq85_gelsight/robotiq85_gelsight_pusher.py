@@ -224,8 +224,8 @@ class Robotiq85GelsightPusher(gp.GripperInterface):
             self.grip_at_by_pose(gl_push_pos, gl_push_rotmat, jaw_width=self.jaw_range[1])
         return [gl_tip_pos, gl_tip_rotmat, eef_root_pos, eef_root_rotmat]
 
-    def gen_stickmodel(self, toggle_tcp_frame=False, toggle_jnt_frames=False, name='ee_stickmodel'):
-        sm_collection = mc.ModelCollection(name=name)
+    def gen_stickmodel(self, toggle_tcp_frame=False, toggle_jnt_frames=False):
+        sm_collection = mc.ModelCollection(name=self.name + '_stickmodel')
         self.coupling.gen_stickmodel(toggle_tcp_frame=False,
                                      toggle_jnt_frames=toggle_jnt_frames).attach_to(sm_collection)
         self.lft_outer.gen_stickmodel(toggle_tcpcs=toggle_tcp_frame,
@@ -257,9 +257,8 @@ class Robotiq85GelsightPusher(gp.GripperInterface):
     def gen_meshmodel(self,
                       toggle_tcp_frame=False,
                       toggle_jnt_frames=False,
-                      rgba=None,
-                      name='robotiq85_meshmodel'):
-        mm_collection = mc.ModelCollection(name=name)
+                      rgba=None):
+        mm_collection = mc.ModelCollection(name=self.name + '_meshmodel')
         self.coupling.gen_mesh_model(toggle_tcpcs=False,
                                      toggle_jntscs=toggle_jnt_frames,
                                      rgba=rgba).attach_to(mm_collection)

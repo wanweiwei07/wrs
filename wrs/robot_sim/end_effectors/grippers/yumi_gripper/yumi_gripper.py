@@ -78,8 +78,8 @@ class YumiGripper(gpi.GripperInterface):
         else:
             raise ValueError("The angle parameter is out of range!")
 
-    def gen_stickmodel(self, toggle_tcp_frame=False, toggle_jnt_frames=False, name='yumi_gripper_stickmodel'):
-        m_col = mmc.ModelCollection(name=name)
+    def gen_stickmodel(self, toggle_tcp_frame=False, toggle_jnt_frames=False):
+        m_col = mmc.ModelCollection(name=self.name+'_stickmodel')
         self.coupling.gen_stickmodel(toggle_root_frame=False, toggle_flange_frame=False).attach_to(m_col)
         self.jlc.gen_stickmodel(toggle_jnt_frames=toggle_jnt_frames, toggle_flange_frame=False).attach_to(m_col)
         if toggle_tcp_frame:
@@ -92,9 +92,8 @@ class YumiGripper(gpi.GripperInterface):
                       toggle_tcp_frame=False,
                       toggle_jnt_frames=False,
                       toggle_cdprim=False,
-                      toggle_cdmesh=False,
-                      name='yumi_gripper_meshmodel'):
-        m_col = mmc.ModelCollection(name=name)
+                      toggle_cdmesh=False):
+        m_col = mmc.ModelCollection(name=self.name+'_meshmodel')
         self.coupling.gen_meshmodel(rgb=rgb,
                                     alpha=alpha,
                                     toggle_root_frame=False,

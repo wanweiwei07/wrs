@@ -329,18 +329,16 @@ class Diana7_Dual(ri.RobotInterface):
                        toggle_tcp_frame=False,
                        toggle_jnt_frames=False,
                        toggle_flange_frame=False):
-        name = self.name + "_stickmodel"
-        m_col = mmc.ModelCollection(name=name)
-        self.body.gen_stickmodel(toggle_root_frame=toggle_jnt_frames,
+        m_col = mmc.ModelCollection(name=self.name + "_stickmodel")
+        self.body.gen_stickmodel(name=self.name + "_body_stickmodel",
+                                 toggle_root_frame=toggle_jnt_frames,
                                  toggle_flange_frame=toggle_flange_frame).attach_to(m_col)
         self.lft_arm.gen_stickmodel(toggle_tcp_frame=toggle_tcp_frame,
                                     toggle_jnt_frames=toggle_jnt_frames,
-                                    toggle_flange_frame=toggle_flange_frame,
-                                    name=name + "_lft_arm").attach_to(m_col)
+                                    toggle_flange_frame=toggle_flange_frame).attach_to(m_col)
         self.rgt_arm.gen_stickmodel(toggle_tcp_frame=toggle_tcp_frame,
                                     toggle_jnt_frames=toggle_jnt_frames,
-                                    toggle_flange_frame=toggle_flange_frame,
-                                    name=name + "_rgt_arm").attach_to(m_col)
+                                    toggle_flange_frame=toggle_flange_frame).attach_to(m_col)
         return m_col
 
     def gen_meshmodel(self,
@@ -351,36 +349,31 @@ class Diana7_Dual(ri.RobotInterface):
                       toggle_flange_frame=False,
                       toggle_cdprim=False,
                       toggle_cdmesh=False):
-        name = self.name + "_meshmodel"
-        m_col = mmc.ModelCollection(name=name)
+        m_col = mmc.ModelCollection(name=self.name + "_meshmodel")
         self.body.gen_meshmodel(rgb=rgb, alpha=alpha, toggle_flange_frame=toggle_flange_frame,
                                 toggle_root_frame=toggle_jnt_frames, toggle_cdprim=toggle_cdprim,
-                                toggle_cdmesh=toggle_cdmesh, name=name + "_body").attach_to(m_col)
+                                toggle_cdmesh=toggle_cdmesh, name=self.name + "_body_meshmodel").attach_to(m_col)
         self.lft_arm.gen_meshmodel(rgb=rgb,
                                    alpha=alpha,
                                    toggle_tcp_frame=toggle_tcp_frame,
                                    toggle_jnt_frames=toggle_jnt_frames,
                                    toggle_flange_frame=toggle_flange_frame,
                                    toggle_cdprim=toggle_cdprim,
-                                   toggle_cdmesh=toggle_cdmesh,
-                                   name=name + "_lft_arm").attach_to(m_col)
+                                   toggle_cdmesh=toggle_cdmesh).attach_to(m_col)
         self.rgt_arm.gen_meshmodel(rgb=rgb,
                                    alpha=alpha,
                                    toggle_tcp_frame=toggle_tcp_frame,
                                    toggle_jnt_frames=toggle_jnt_frames,
                                    toggle_flange_frame=toggle_flange_frame,
                                    toggle_cdprim=toggle_cdprim,
-                                   toggle_cdmesh=toggle_cdmesh,
-                                   name=name + "_rgt_arm").attach_to(m_col)
+                                   toggle_cdmesh=toggle_cdmesh).attach_to(m_col)
         return m_col
 
 
 if __name__ == '__main__':
     from wrs import wd, mgm
 
-    this_dir, this_filename = os.path.split(__file__)
-
-    base = wd.World(cam_pos=[5, 0, 3], lookat_pos=[0, 0, 1])
+    base = wd.World(cam_pos=[5, 0, 3], lookat_pos=[0, 0, 1], auto_rotate=True)
     mgm.gen_frame().attach_to(base)
     dia_dual = Diana7_Dual()
     dia_dual.gen_meshmodel(toggle_cdprim=True).attach_to(base)

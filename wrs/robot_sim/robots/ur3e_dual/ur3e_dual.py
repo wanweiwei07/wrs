@@ -59,25 +59,25 @@ class UR3e_Dual(ri.RobotInterface):
     def _base_cdprim(name="ur3e_dual_base", ex_radius=None):
         pdcnd = mcm.CollisionNode(name + "_cnode")
         collision_primitive_c0 = mcm.CollisionBox(mcm.Point3(0.54, 0.0, 0.39),
-                                              x=.54 + ex_radius, y=.6 + ex_radius, z=.39 + ex_radius)
+                                                  x=.54 + ex_radius, y=.6 + ex_radius, z=.39 + ex_radius)
         pdcnd.addSolid(collision_primitive_c0)
         collision_primitive_c1 = mcm.CollisionBox(mcm.Point3(0.06, 0.0, 0.9),
-                                              x=.06 + ex_radius, y=.375 + ex_radius, z=.9 + ex_radius)
+                                                  x=.06 + ex_radius, y=.375 + ex_radius, z=.9 + ex_radius)
         pdcnd.addSolid(collision_primitive_c1)
         collision_primitive_c2 = mcm.CollisionBox(mcm.Point3(0.18, 0.0, 1.77),
-                                              x=.18 + ex_radius, y=.21 + ex_radius, z=.03 + ex_radius)
+                                                  x=.18 + ex_radius, y=.21 + ex_radius, z=.03 + ex_radius)
         pdcnd.addSolid(collision_primitive_c2)
         collision_primitive_l0 = mcm.CollisionBox(mcm.Point3(0.2425, 0.345, 1.33),
-                                              x=.1225 + ex_radius, y=.06 + ex_radius, z=.06 + ex_radius)
+                                                  x=.1225 + ex_radius, y=.06 + ex_radius, z=.06 + ex_radius)
         pdcnd.addSolid(collision_primitive_l0)
         collision_primitive_r0 = mcm.CollisionBox(mcm.Point3(0.2425, -0.345, 1.33),
-                                              x=.1225 + ex_radius, y=.06 + ex_radius, z=.06 + ex_radius)
+                                                  x=.1225 + ex_radius, y=.06 + ex_radius, z=.06 + ex_radius)
         pdcnd.addSolid(collision_primitive_r0)
         collision_primitive_l1 = mcm.CollisionBox(mcm.Point3(0.21, 0.405, 1.07),
-                                              x=.03 + ex_radius, y=.06 + ex_radius, z=.29 + ex_radius)
+                                                  x=.03 + ex_radius, y=.06 + ex_radius, z=.29 + ex_radius)
         pdcnd.addSolid(collision_primitive_l1)
         collision_primitive_r1 = mcm.CollisionBox(mcm.Point3(0.21, -0.405, 1.07),
-                                              x=.03 + ex_radius, y=.06 + ex_radius, z=.29 + ex_radius)
+                                                  x=.03 + ex_radius, y=.06 + ex_radius, z=.29 + ex_radius)
         pdcnd.addSolid(collision_primitive_r1)
         cdprim = mcm.NodePath(name + "_cdprim")
         cdprim.attachNewNode(pdcnd)
@@ -332,19 +332,17 @@ class UR3e_Dual(ri.RobotInterface):
     def gen_stickmodel(self,
                        toggle_tcp_frame=False,
                        toggle_jnt_frames=False,
-                       toggle_flange_frame=False,
-                       name='yumi_stickmodel'):
-        m_col = mmc.ModelCollection(name=name)
-        self.body.gen_stickmodel(toggle_root_frame=toggle_jnt_frames,
+                       toggle_flange_frame=False):
+        m_col = mmc.ModelCollection(name=self.name + "_stickmodel")
+        self.body.gen_stickmodel(name=self.name + "_body_stickmodel",
+                                 toggle_root_frame=toggle_jnt_frames,
                                  toggle_flange_frame=toggle_flange_frame).attach_to(m_col)
         self.lft_arm.gen_stickmodel(toggle_tcp_frame=toggle_tcp_frame,
                                     toggle_jnt_frames=toggle_jnt_frames,
-                                    toggle_flange_frame=toggle_flange_frame,
-                                    name=name + "_lft_arm").attach_to(m_col)
+                                    toggle_flange_frame=toggle_flange_frame).attach_to(m_col)
         self.rgt_arm.gen_stickmodel(toggle_tcp_frame=toggle_tcp_frame,
                                     toggle_jnt_frames=toggle_jnt_frames,
-                                    toggle_flange_frame=toggle_flange_frame,
-                                    name=name + "_rgt_arm").attach_to(m_col)
+                                    toggle_flange_frame=toggle_flange_frame).attach_to(m_col)
         return m_col
 
     def gen_meshmodel(self,
@@ -354,28 +352,25 @@ class UR3e_Dual(ri.RobotInterface):
                       toggle_jnt_frames=False,
                       toggle_flange_frame=False,
                       toggle_cdprim=False,
-                      toggle_cdmesh=False,
-                      name='yumi_meshmodel'):
-        m_col = mmc.ModelCollection(name=name)
+                      toggle_cdmesh=False):
+        m_col = mmc.ModelCollection(name=self.name + "_meshmodel")
         self.body.gen_meshmodel(rgb=rgb, alpha=alpha, toggle_flange_frame=toggle_flange_frame,
                                 toggle_root_frame=toggle_jnt_frames, toggle_cdprim=toggle_cdprim,
-                                toggle_cdmesh=toggle_cdmesh, name=name + "_body").attach_to(m_col)
+                                toggle_cdmesh=toggle_cdmesh, name=self.name + "_body_meshmodel").attach_to(m_col)
         self.lft_arm.gen_meshmodel(rgb=rgb,
                                    alpha=alpha,
                                    toggle_tcp_frame=toggle_tcp_frame,
                                    toggle_jnt_frames=toggle_jnt_frames,
                                    toggle_flange_frame=toggle_flange_frame,
                                    toggle_cdprim=toggle_cdprim,
-                                   toggle_cdmesh=toggle_cdmesh,
-                                   name=name + "_lft_arm").attach_to(m_col)
+                                   toggle_cdmesh=toggle_cdmesh).attach_to(m_col)
         self.rgt_arm.gen_meshmodel(rgb=rgb,
                                    alpha=alpha,
                                    toggle_tcp_frame=toggle_tcp_frame,
                                    toggle_jnt_frames=toggle_jnt_frames,
                                    toggle_flange_frame=toggle_flange_frame,
                                    toggle_cdprim=toggle_cdprim,
-                                   toggle_cdmesh=toggle_cdmesh,
-                                   name=name + "_rgt_arm").attach_to(m_col)
+                                   toggle_cdmesh=toggle_cdmesh).attach_to(m_col)
         return m_col
 
 

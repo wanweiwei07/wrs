@@ -129,7 +129,7 @@ map_list = [leaf_rgba]
 
 main_stem_ndof = 5
 
-base = wd.World(cam_pos=[1, 1, 1], auto_cam_rotate=False)
+base = wd.World(cam_pos=[1, 1, 1], auto_rotate=False)
 
 # cup=Cup()
 # cup.attach_to(base)

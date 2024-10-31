@@ -39,7 +39,7 @@ class Cup(object):
         return copy.deepcopy(self)
 
 
-base = wd.World(cam_pos=[4.2, 4.2, 2.5], lookat_pos=[0, 0, .7], auto_cam_rotate=True)
+base = wd.World(cam_pos=[4.2, 4.2, 2.5], lookat_pos=[0, 0, .7], auto_rotate=True)
 frame = gm.GeometricModel(initor="meshes/frame.stl")
 frame.set_rgba(rgba=aluminium_rgba)
 frame.attach_to(base)

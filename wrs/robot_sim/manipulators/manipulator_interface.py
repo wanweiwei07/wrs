@@ -260,40 +260,6 @@ class ManipulatorInterface(object):
     def cvt_gl_pose_to_tcp(self, gl_pos, gl_rotmat):
         return rm.rel_pose(self.gl_tcp_pos, self.gl_tcp_rotmat, gl_pos, gl_rotmat)
 
-    def gen_meshmodel(self,
-                      rgb=None,
-                      alpha=None,
-                      toggle_tcp_frame=True,
-                      toggle_jnt_frames=False,
-                      toggle_flange_frame=False,
-                      toggle_cdprim=False,
-                      toggle_cdmesh=False,
-                      name="manipulator_mesh"):
-        m_col = self.jlc.gen_meshmodel(rgb=rgb,
-                                       alpha=alpha,
-                                       toggle_jnt_frames=toggle_jnt_frames,
-                                       toggle_flange_frame=toggle_flange_frame,
-                                       toggle_cdprim=toggle_cdprim,
-                                       toggle_cdmesh=toggle_cdmesh,
-                                       name=name)
-        if toggle_tcp_frame:
-            rkjlc.rkmg.gen_indicated_frame(spos=self.jlc.gl_flange_pos, gl_pos=self.gl_tcp_pos,
-                                           gl_rotmat=self.gl_tcp_rotmat).attach_to(m_col)
-        return m_col
-
-    def gen_stickmodel(self,
-                       toggle_tcp_frame=False,
-                       toggle_jnt_frames=False,
-                       toggle_flange_frame=False,
-                       name="manipulator_stickmodel"):
-        m_col = self.jlc.gen_stickmodel(toggle_jnt_frames=toggle_jnt_frames,
-                                        toggle_flange_frame=toggle_flange_frame,
-                                        name=name)
-        if toggle_tcp_frame:
-            rkjlc.rkmg.gen_indicated_frame(spos=self.jlc.gl_flange_pos, gl_pos=self.gl_tcp_pos,
-                                           gl_rotmat=self.gl_tcp_rotmat).attach_to(m_col)
-        return m_col
-
     def gen_endsphere(self):
         return mgm.gen_sphere(pos=self.gl_tcp_pos)
 
@@ -327,3 +293,35 @@ class ManipulatorInterface(object):
         if self.cc is None:
             raise ValueError("Collision checker is not enabled!")
         self.cc.unshow_cdprim()
+
+    def gen_stickmodel(self,
+                       toggle_tcp_frame=False,
+                       toggle_jnt_frames=False,
+                       toggle_flange_frame=False):
+        m_col = self.jlc.gen_stickmodel(toggle_jnt_frames=toggle_jnt_frames,
+                                        toggle_flange_frame=toggle_flange_frame,
+                                        name=self.name+'_stickmodel')
+        if toggle_tcp_frame:
+            rkjlc.rkmg.gen_indicated_frame(spos=self.jlc.gl_flange_pos, gl_pos=self.gl_tcp_pos,
+                                           gl_rotmat=self.gl_tcp_rotmat).attach_to(m_col)
+        return m_col
+
+    def gen_meshmodel(self,
+                      rgb=None,
+                      alpha=None,
+                      toggle_tcp_frame=True,
+                      toggle_jnt_frames=False,
+                      toggle_flange_frame=False,
+                      toggle_cdprim=False,
+                      toggle_cdmesh=False):
+        m_col = self.jlc.gen_meshmodel(rgb=rgb,
+                                       alpha=alpha,
+                                       toggle_jnt_frames=toggle_jnt_frames,
+                                       toggle_flange_frame=toggle_flange_frame,
+                                       toggle_cdprim=toggle_cdprim,
+                                       toggle_cdmesh=toggle_cdmesh,
+                                       name=self.name+'_meshmodel')
+        if toggle_tcp_frame:
+            rkjlc.rkmg.gen_indicated_frame(spos=self.jlc.gl_flange_pos, gl_pos=self.gl_tcp_pos,
+                                           gl_rotmat=self.gl_tcp_rotmat).attach_to(m_col)
+        return m_col

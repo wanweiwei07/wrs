@@ -198,14 +198,10 @@ class SDA5F(ri.RobotInterface):
             raise NotImplementedError
 
     def gen_stickmodel(self,
-                       tcp_jnt_id=None,
-                       tcp_loc_pos=None,
-                       tcp_loc_rotmat=None,
                        toggle_tcp_frame=False,
-                       toggle_jnt_frame=False,
-                       toggle_connjnt=False,
-                       name='sda5f_stickmodel'):
-        stickmodel = mc.ModelCollection(name=name)
+                       toggle_jnt_frames=False,
+                       toggle_flange_frame=False):
+        stickmodel = mc.ModelCollection(name=sel.fname+'_stickmodel')
         self.lft_body.gen_stickmodel(tcp_loc_pos=None,
                                      tcp_loc_rotmat=None,
                                      toggle_tcp_frame=False,
@@ -231,14 +227,14 @@ class SDA5F(ri.RobotInterface):
         return stickmodel
 
     def gen_meshmodel(self,
-                      tcp_jnt_id=None,
-                      tcp_loc_pos=None,
-                      tcp_loc_rotmat=None,
+                      rgb=None,
+                      alpha=None,
                       toggle_tcp_frame=False,
-                      toggle_jnt_frame=False,
-                      rgba=None,
-                      name='sda5f_meshmodel'):
-        meshmodel = mc.ModelCollection(name=name)
+                      toggle_jnt_frames=False,
+                      toggle_flange_frame=False,
+                      toggle_cdprim=False,
+                      toggle_cdmesh=False):
+        meshmodel = mc.ModelCollection(name=self.name+"_meshmodel")
         self.lft_body.gen_mesh_model(tcp_loc_pos=None,
                                      tcp_loc_rotmat=None,
                                      toggle_tcp_frame=False,

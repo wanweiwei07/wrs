@@ -48,8 +48,8 @@ class SpineMiller(si.SCTInterface):
         self.anchor.fix_to(cpl_end_pos, cpl_end_rotmat)
 
     def gen_stickmodel(self, toggle_tcp_frame=False, toggle_jnt_frames=False,
-                       toggle_flange_frame=False, name='_stickmodel'):
-        m_col = mmc.ModelCollection(name=self.name + name)
+                       toggle_flange_frame=False):
+        m_col = mmc.ModelCollection(name=self.name + "_stickmodel")
         self.coupling.gen_stickmodel(toggle_flange_frame=toggle_flange_frame,
                                      toggle_root_frame=toggle_jnt_frames).attach_to(m_col)
         self.anchor.gen_stickmodel(toggle_flange_frame=toggle_tcp_frame).attach_to(m_col)
@@ -64,9 +64,8 @@ class SpineMiller(si.SCTInterface):
                       toggle_jnt_frames=False,
                       toggle_flange_frame=False,
                       toggle_cdprim=False,
-                      toggle_cdmesh=False,
-                      name='_meshmodel'):
-        m_col = mmc.ModelCollection(name=self.name + name)
+                      toggle_cdmesh=False):
+        m_col = mmc.ModelCollection(name=self.name + "_meshmodel")
         self.coupling.gen_meshmodel(rgb=rgb,
                                     alpha=alpha,
                                     toggle_flange_frame=toggle_flange_frame,

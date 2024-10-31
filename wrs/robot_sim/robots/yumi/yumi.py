@@ -71,7 +71,8 @@ class Yumi(ri.RobotInterface):
         self.body.lnk_list[7].name = "yumi_body_top_front_column"
         self.body.lnk_list[7].loc_pos = np.array([.273, 0, 1.085])
         self.body.lnk_list[7].cmodel = mcm.CollisionModel(
-            initor=os.path.join(current_file_dir, "meshes", "yumi_column6060540.stl"), name="yumi_body_top_front_column")
+            initor=os.path.join(current_file_dir, "meshes", "yumi_column6060540.stl"),
+            name="yumi_body_top_front_column")
         self.body.lnk_list[7].cmodel.rgba = rm.const.steel_gray
         # phoxi
         self.body.lnk_list[8].name = "phoxi"
@@ -96,7 +97,7 @@ class Yumi(ri.RobotInterface):
 
     @staticmethod
     def _base_cdprim(name="auto", ex_radius=None):
-        pdcnd = CollisionNode(name+"_cnode")
+        pdcnd = CollisionNode(name + "_cnode")
         collision_primitive_c0 = CollisionBox(Point3(-.2, 0, 0.04),
                                               x=.16 + ex_radius, y=.2 + ex_radius, z=.04 + ex_radius)
         pdcnd.addSolid(collision_primitive_c0)
@@ -112,7 +113,7 @@ class Yumi(ri.RobotInterface):
         collision_primitive_r0 = CollisionBox(Point3(0, -0.145, 0.03),
                                               x=.135 + ex_radius, y=.055 + ex_radius, z=.03 + ex_radius)
         pdcnd.addSolid(collision_primitive_r0)
-        cdprim = NodePath(name+"_cdprim")
+        cdprim = NodePath(name + "_cdprim")
         cdprim.attachNewNode(pdcnd)
         return cdprim
 
@@ -363,19 +364,17 @@ class Yumi(ri.RobotInterface):
     def gen_stickmodel(self,
                        toggle_tcp_frame=False,
                        toggle_jnt_frames=False,
-                       toggle_flange_frame=False,
-                       name='yumi_stickmodel'):
-        m_col = mmc.ModelCollection(name=name)
-        self.body.gen_stickmodel(toggle_root_frame=toggle_jnt_frames,
+                       toggle_flange_frame=False):
+        m_col = mmc.ModelCollection(name=self.name + "_stickmodel")
+        self.body.gen_stickmodel(name=self.name + "_body_stickmodel",
+                                 toggle_root_frame=toggle_jnt_frames,
                                  toggle_flange_frame=toggle_flange_frame).attach_to(m_col)
         self.lft_arm.gen_stickmodel(toggle_tcp_frame=toggle_tcp_frame,
                                     toggle_jnt_frames=toggle_jnt_frames,
-                                    toggle_flange_frame=toggle_flange_frame,
-                                    name=name + "_lft_arm").attach_to(m_col)
+                                    toggle_flange_frame=toggle_flange_frame).attach_to(m_col)
         self.rgt_arm.gen_stickmodel(toggle_tcp_frame=toggle_tcp_frame,
                                     toggle_jnt_frames=toggle_jnt_frames,
-                                    toggle_flange_frame=toggle_flange_frame,
-                                    name=name + "_rgt_arm").attach_to(m_col)
+                                    toggle_flange_frame=toggle_flange_frame).attach_to(m_col)
         return m_col
 
     def gen_meshmodel(self,
@@ -385,28 +384,25 @@ class Yumi(ri.RobotInterface):
                       toggle_jnt_frames=False,
                       toggle_flange_frame=False,
                       toggle_cdprim=False,
-                      toggle_cdmesh=False,
-                      name='yumi_meshmodel'):
-        m_col = mmc.ModelCollection(name=name)
+                      toggle_cdmesh=False):
+        m_col = mmc.ModelCollection(name=self.name + "_meshmodel")
         self.body.gen_meshmodel(rgb=rgb, alpha=alpha, toggle_flange_frame=toggle_flange_frame,
                                 toggle_root_frame=toggle_jnt_frames, toggle_cdprim=toggle_cdprim,
-                                toggle_cdmesh=toggle_cdmesh, name=name + "_body").attach_to(m_col)
+                                toggle_cdmesh=toggle_cdmesh, name=self.name + "_body_meshmodel").attach_to(m_col)
         self.lft_arm.gen_meshmodel(rgb=rgb,
                                    alpha=alpha,
                                    toggle_tcp_frame=toggle_tcp_frame,
                                    toggle_jnt_frames=toggle_jnt_frames,
                                    toggle_flange_frame=toggle_flange_frame,
                                    toggle_cdprim=toggle_cdprim,
-                                   toggle_cdmesh=toggle_cdmesh,
-                                   name=name + "_lft_arm").attach_to(m_col)
+                                   toggle_cdmesh=toggle_cdmesh).attach_to(m_col)
         self.rgt_arm.gen_meshmodel(rgb=rgb,
                                    alpha=alpha,
                                    toggle_tcp_frame=toggle_tcp_frame,
                                    toggle_jnt_frames=toggle_jnt_frames,
                                    toggle_flange_frame=toggle_flange_frame,
                                    toggle_cdprim=toggle_cdprim,
-                                   toggle_cdmesh=toggle_cdmesh,
-                                   name=name + "_rgt_arm").attach_to(m_col)
+                                   toggle_cdmesh=toggle_cdmesh).attach_to(m_col)
         return m_col
 
 

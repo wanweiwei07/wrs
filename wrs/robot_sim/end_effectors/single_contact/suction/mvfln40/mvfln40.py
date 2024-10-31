@@ -50,9 +50,8 @@ class MVFLN40(si.SCInterface):
     def gen_stickmodel(self,
                        toggle_tcp_frame=False,
                        toggle_jnt_frame=False,
-                       toggle_connjnt=False,
-                       name='suction_stickmodel'):
-        mm_collection = mc.ModelCollection(name=name)
+                       toggle_connjnt=False):
+        mm_collection = mc.ModelCollection(name=self.name+'_stickmodel')
         self.coupling.gen_stickmodel(toggle_tcp_frame=False, toggle_jnt_frames=toggle_jnt_frame).attach_to(mm_collection)
         self.jlc.gen_stickmodel(toggle_tcp_frame=False,
                                 toggle_jnt_frame=toggle_jnt_frame,
@@ -71,9 +70,8 @@ class MVFLN40(si.SCInterface):
     def gen_meshmodel(self,
                       toggle_tcp_frame=False,
                       toggle_jnt_frame=False,
-                      rgba=None,
-                      name='xarm_gripper_meshmodel'):
-        mm_collection = mc.ModelCollection(name=name)
+                      rgba=None):
+        mm_collection = mc.ModelCollection(name=self.name+'_meshmodel')
         self.coupling.gen_mesh_model(toggle_tcp_frame=False,
                                      toggle_jnt_frame=toggle_jnt_frame,
                                      rgba=rgba).attach_to(mm_collection)

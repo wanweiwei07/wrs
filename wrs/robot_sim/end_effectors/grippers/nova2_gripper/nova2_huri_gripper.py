@@ -174,8 +174,8 @@ class Nova2HuriGripper(gp.GripperInterface):
     def get_jawwidth(self):
         return -self.lft.jnts[1]['motion_value'] * 2
 
-    def gen_stickmodel(self, toggle_tcp_frame=False, toggle_jnt_frames=False, name='ee_stickmodel'):
-        stickmodel = mc.ModelCollection(name=name)
+    def gen_stickmodel(self, toggle_tcp_frame=False, toggle_jnt_frames=False):
+        stickmodel = mc.ModelCollection(name=self.name + '_stickmodel')
         self.coupling.gen_stickmodel(toggle_tcp_frame=False, toggle_jnt_frames=toggle_jnt_frames).attach_to(stickmodel)
         self.body.gen_stickmodel(tcp_jnt_id=tcp_jnt_id,
                                  tcp_loc_pos=tcp_loc_pos,
@@ -212,9 +212,8 @@ class Nova2HuriGripper(gp.GripperInterface):
                       tcp_loc_rotmat=None,
                       toggle_tcp_frame=False,
                       toggle_jnt_frames=False,
-                      rgba=None,
-                      name='nova2huri_gripper_meshmodel'):
-        meshmodel = mc.ModelCollection(name=name)
+                      rgba=None):
+        meshmodel = mc.ModelCollection(name=self.name + '_meshmodel')
         self.coupling.gen_meshmodel(rgba=rgba).attach_to(meshmodel)
         self.body.gen_meshmodel(tcp_jnt_id=tcp_jnt_id,
                                 tcp_loc_pos=tcp_loc_pos,
@@ -248,7 +247,7 @@ class Nova2HuriGripper(gp.GripperInterface):
 if __name__ == '__main__':
     import wrs.visualization.panda.world as wd
 
-    base = wd.World(cam_pos=[.5, .5, .5], lookat_pos=[0, 0, 0], auto_cam_rotate=False)
+    base = wd.World(cam_pos=[.5, .5, .5], lookat_pos=[0, 0, 0], auto_rotate=False)
     gm.gen_frame().attach_to(base)
     # mcm.CollisionModel("meshes/dual_realsense.stl", ex_radius=.001).attach_to(base)
     grpr = Nova2HuriGripper(enable_cc=True)

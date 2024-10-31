@@ -140,8 +140,8 @@ class WRSGripper4(gpi.GripperInterface):
         else:
             raise ValueError("The angle parameter is out of range!")
 
-    def gen_stickmodel(self, toggle_tcp_frame=False, toggle_jnt_frames=False, name='wg3_stickmodel'):
-        m_col = mmc.ModelCollection(name=name)
+    def gen_stickmodel(self, toggle_tcp_frame=False, toggle_jnt_frames=False):
+        m_col = mmc.ModelCollection(name=self.name + '_stickmodel')
         self.coupling.gen_stickmodel(toggle_root_frame=False, toggle_flange_frame=False).attach_to(m_col)
         self.jlc.gen_stickmodel(toggle_jnt_frames=toggle_jnt_frames, toggle_flange_frame=False).attach_to(m_col)
         if toggle_tcp_frame:
@@ -149,8 +149,8 @@ class WRSGripper4(gpi.GripperInterface):
         return m_col
 
     def gen_meshmodel(self, rgb=None, alpha=None, toggle_tcp_frame=False, toggle_jnt_frames=False,
-                      toggle_cdprim=False, toggle_cdmesh=False, name='wg3_meshmodel'):
-        m_col = mmc.ModelCollection(name=name)
+                      toggle_cdprim=False, toggle_cdmesh=False):
+        m_col = mmc.ModelCollection(name=self.name + '_meshmodel')
         self.coupling.gen_meshmodel(rgb=rgb,
                                     alpha=alpha,
                                     toggle_flange_frame=False,
@@ -174,7 +174,7 @@ class WRSGripper4(gpi.GripperInterface):
 if __name__ == '__main__':
     import wrs.visualization.panda.world as wd
 
-    base = wd.World(cam_pos=[-.5, .0, .08], lookat_pos=[0, 0, 0.08], auto_cam_rotate=False)
+    base = wd.World(cam_pos=[-.5, .0, .08], lookat_pos=[0, 0, 0.08], auto_rotate=False)
     mcm.mgm.gen_frame().attach_to(base)
     gripper = WRSGripper4()
     gripper.change_jaw_width(.1344)

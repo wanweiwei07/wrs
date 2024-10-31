@@ -132,8 +132,8 @@ class CobottaPipette(gp.GripperInterface):
     def get_jaw_width(self):
         return -self.jlc.jnts[2]['motion_value']
 
-    def gen_stickmodel(self, toggle_tcp_frame=False, toggle_jnt_frames=False, name='ee_stickmodel'):
-        stickmodel = mc.ModelCollection(name=name)
+    def gen_stickmodel(self, toggle_tcp_frame=False, toggle_jnt_frames=False):
+        stickmodel = mc.ModelCollection(name=self.name + '_stickmodel')
         self.coupling.gen_stickmodel(toggle_tcp_frame=False, toggle_jnt_frames=toggle_jnt_frames).attach_to(stickmodel)
         self.jlc.gen_stickmodel(toggle_tcpcs=False,
                                 toggle_jntscs=toggle_jnt_frames,
@@ -152,9 +152,8 @@ class CobottaPipette(gp.GripperInterface):
     def gen_meshmodel(self,
                       toggle_tcp_frame=False,
                       toggle_jnt_frames=False,
-                      rgba=None,
-                      name='cbtp_meshmodel'):
-        meshmodel = mc.ModelCollection(name=name)
+                      rgba=None):
+        meshmodel = mc.ModelCollection(name=self.name + '_meshmodel')
         self.coupling.gen_mesh_model(toggle_tcpcs=False,
                                      toggle_jntscs=toggle_jnt_frames,
                                      rgba=rgba).attach_to(meshmodel)

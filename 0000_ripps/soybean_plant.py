@@ -60,7 +60,7 @@ def gen_rotmat_list(nsample=None):
 
 main_stem_ndof = 5
 
-base = wd.World(cam_pos=[1, 1, 1], auto_cam_rotate=True)
+base = wd.World(cam_pos=[1, 1, 1], auto_rotate=True)
 main_stem = Stem(ndof=main_stem_ndof)
 main_stem.fk(jnt_values=[math.pi / 36, math.pi / 36, 0, -math.pi / 36, -math.pi / 36, 0])
 main_stem.gen_meshmodel().attach_to(base)

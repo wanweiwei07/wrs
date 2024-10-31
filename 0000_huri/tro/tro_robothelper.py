@@ -267,8 +267,8 @@ class RobotHelper(object):
 
         # 1700, -1000, -1000, 300
         self.base = pandactrl.World(camp=[3700, -2300, 1700], lookatpos=[380, -190, 0], autocamrotate=autorotate)
-        # self.base = pandactrl.World(camp=[1200, -700, 700], lookat_pos=[380, -190, 0], auto_cam_rotate=autorotate)
-        # self.base = pandactrl.World(camp=[1200, -190, 1000], lookat_pos=[380, -190, 0], auto_cam_rotate=autorotate)
+        # self.base = pandactrl.World(camp=[1200, -700, 700], lookat_pos=[380, -190, 0], auto_rotate=autorotate)
+        # self.base = pandactrl.World(camp=[1200, -190, 1000], lookat_pos=[380, -190, 0], auto_rotate=autorotate)
         self.env.reparentTo(self.base.render)
         # rbtnp = self.rbtmesh.genmnp(self.robot_s)
         # rbtnp.reparentTo(base.render)

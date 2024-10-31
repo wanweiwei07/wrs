@@ -2,7 +2,7 @@ import wrs.visualization.panda.world as wd
 import wrs.grasping.planning.antipodal as gpa
 from wrs import robot_sim as rtq85, modeling as gm, modeling as cm
 
-base = wd.World(cam_pos=[1, 1, 1], lookat_pos=[0, 0, 0], auto_cam_rotate=True)
+base = wd.World(cam_pos=[1, 1, 1], lookat_pos=[0, 0, 0], auto_rotate=True)
 gm.gen_frame().attach_to(base)
 object_bunny = cm.CollisionModel("objects/pblcm_cropped_8_2_20000_cvt.stl")
 object_bunny.set_rgba([.9, .75, .35, .3])

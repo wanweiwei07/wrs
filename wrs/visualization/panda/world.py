@@ -31,8 +31,7 @@ class World(ShowBase, object):
                  w=1920,
                  h=1080,
                  lens_type=LensType.PERSPECTIVE,
-                 toggle_debug=False,
-                 auto_cam_rotate=False):
+                 auto_rotate=False):
         """
         :param cam_pos:
         :param lookat_pos:
@@ -95,7 +94,7 @@ class World(ShowBase, object):
         self.inputmgr = im.InputManager(self, self.lookat_pos)
         taskMgr.add(self._interaction_update, "interaction", appendTask=True)
         # set up rotational cam
-        if auto_cam_rotate:
+        if auto_rotate:
             taskMgr.doMethodLater(.1, self._rotatecam_update, "rotate cam")
         # set window size
         props = WindowProperties()

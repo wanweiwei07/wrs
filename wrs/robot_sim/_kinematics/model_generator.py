@@ -72,8 +72,9 @@ def gen_anchor(anchor,
                toggle_lnk_mesh=True,
                radius=rkc.JNT_RADIUS,
                frame_stick_radius=rkc.FRAME_STICK_RADIUS,
-               frame_stick_length=rkc.FRAME_STICK_LENGTH_MEDIUM):
-    m_col = mmc.ModelCollection()
+               frame_stick_length=rkc.FRAME_STICK_LENGTH_MEDIUM,
+               name="anchor"):
+    m_col = mmc.ModelCollection(name=name)
     # mgm.gen_sphere(pos=anchor.pos,
     #                radius=radius,
     #                rgb=rm.const.jnt_parent_rgba[:3],

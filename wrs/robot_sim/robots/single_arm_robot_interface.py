@@ -191,9 +191,8 @@ class SglArmRobotInterface(ri.RobotInterface):
     def gen_stickmodel(self,
                        toggle_tcp_frame=False,
                        toggle_jnt_frames=False,
-                       toggle_flange_frame=False,
-                       name='single_arm_robot_interface_stickmodel'):
-        m_col = mmc.ModelCollection(name=name)
+                       toggle_flange_frame=False):
+        m_col = mmc.ModelCollection(name=self.name+'_stickmodel')
         if self._manipulator is not None:
             self._manipulator.gen_stickmodel(toggle_tcp_frame=toggle_tcp_frame,
                                              toggle_jnt_frames=toggle_jnt_frames,
@@ -210,9 +209,8 @@ class SglArmRobotInterface(ri.RobotInterface):
                       toggle_jnt_frames=False,
                       toggle_flange_frame=False,
                       toggle_cdprim=False,
-                      toggle_cdmesh=False,
-                      name='single_arm_robot_interface_meshmodel'):
-        m_col = mmc.ModelCollection(name=name)
+                      toggle_cdmesh=False):
+        m_col = mmc.ModelCollection(name=self.name+'_meshmodel')
         if self._manipulator is not None:
             self._manipulator.gen_meshmodel(rgb=rgb,
                                             alpha=alpha,

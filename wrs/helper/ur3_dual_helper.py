@@ -28,7 +28,7 @@ class UR3DualHelper(object):
         if create_sim_world:
             self.sim_world = wd.World(cam_pos=cam_pos,
                                       lookat_pos=lookat_pos,
-                                      auto_cam_rotate=auto_cam_rotate)
+                                      auto_rotate=auto_cam_rotate)
 
     def plan_motion(self,
                     component_name,

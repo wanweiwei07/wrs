@@ -70,14 +70,14 @@ class WRSGripper2(gpi.GripperInterface):
 
     @staticmethod
     def _finger_cdprim(name="auto", ex_radius=None):
-        pdcnd = CollisionNode(name+"_cnode")
+        pdcnd = CollisionNode(name + "_cnode")
         collision_primitive_c0 = CollisionBox(Point3(.015, .012, .08),
                                               x=.0035 + ex_radius, y=0.0032 + ex_radius, z=.05 + ex_radius)
         pdcnd.addSolid(collision_primitive_c0)
         collision_primitive_c1 = CollisionBox(Point3(.008, .0, .008),
                                               x=.018 + ex_radius, y=0.011 + ex_radius, z=.011 + ex_radius)
         pdcnd.addSolid(collision_primitive_c1)
-        cdprim = NodePath(name+"_cdprim")
+        cdprim = NodePath(name + "_cdprim")
         cdprim.attachNewNode(pdcnd)
         return cdprim
 
@@ -122,8 +122,8 @@ class WRSGripper2(gpi.GripperInterface):
         else:
             raise ValueError("The angle parameter is out of range!")
 
-    def gen_stickmodel(self, toggle_tcp_frame=False, toggle_jnt_frames=False, name='lite6_wrs_gripper_v2_stickmodel'):
-        m_col = mmc.ModelCollection(name=name)
+    def gen_stickmodel(self, toggle_tcp_frame=False, toggle_jnt_frames=False):
+        m_col = mmc.ModelCollection(name=self.name + '_stickmodel')
         self.coupling.gen_stickmodel(toggle_root_frame=False, toggle_flange_frame=False).attach_to(m_col)
         self.jlc.gen_stickmodel(toggle_jnt_frames=toggle_jnt_frames, toggle_flange_frame=False).attach_to(m_col)
         if toggle_tcp_frame:
@@ -131,8 +131,8 @@ class WRSGripper2(gpi.GripperInterface):
         return m_col
 
     def gen_meshmodel(self, rgb=None, alpha=None, toggle_tcp_frame=False, toggle_jnt_frames=False,
-                      toggle_cdprim=False, toggle_cdmesh=False, name='lite6_wrs_gripper_v2_meshmodel'):
-        m_col = mmc.ModelCollection(name=name)
+                      toggle_cdprim=False, toggle_cdmesh=False):
+        m_col = mmc.ModelCollection(name=self.name + '_meshmodel')
         self.coupling.gen_meshmodel(rgb=rgb,
                                     alpha=alpha,
                                     toggle_flange_frame=False,
@@ -156,7 +156,7 @@ class WRSGripper2(gpi.GripperInterface):
 if __name__ == '__main__':
     import wrs.visualization.panda.world as wd
 
-    base = wd.World(cam_pos=[.5, .5, .5], lookat_pos=[0, 0, 0], auto_cam_rotate=False)
+    base = wd.World(cam_pos=[.5, .5, .5], lookat_pos=[0, 0, 0], auto_rotate=False)
     mgm.gen_frame().attach_to(base)
     gripper = WRSGripper2()
     gripper.change_jaw_width(.04)

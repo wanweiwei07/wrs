@@ -8,7 +8,7 @@ matt_blue = [30 / 255, 80 / 255, 162 / 255, 1]
 matt_black = [44 / 255, 44 / 255, 44 / 255, 1]
 reflective_black = [74 / 255, 74 / 255, 74 / 255, 1]
 
-base = wd.World(cam_pos=[1.5, 1.5, .75], auto_cam_rotate=False)
+base = wd.World(cam_pos=[1.5, 1.5, .75], auto_rotate=False)
 
 rbt_s = rbt.XArm7()
 rbt_s.fk(jnt_values=[0, -np.pi/2, 0, np.pi/12, 0, np.pi/6, 0])

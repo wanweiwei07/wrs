@@ -4,7 +4,7 @@ import numpy as np
 import math
 import pickle
 
-base = wd.World(cam_pos=[-7, 0, 7], lookat_pos=[2.5, 0, 0], auto_cam_rotate=True)
+base = wd.World(cam_pos=[-7, 0, 7], lookat_pos=[2.5, 0, 0], auto_rotate=True)
 rbt_s = rbt.TBMChanger()
 rbt_s.gen_meshmodel(toggle_tcpcs=True).attach_to(base)
 seed0 = np.zeros(6)

@@ -2,7 +2,7 @@ from wrs import robot_sim as rbt, modeling as gm
 import wrs.visualization.panda.world as wd
 import numpy as np
 
-base = wd.World(cam_pos=[-7, 0, 7], lookat_pos=[2.5, 0, 0], auto_cam_rotate=False)
+base = wd.World(cam_pos=[-7, 0, 7], lookat_pos=[2.5, 0, 0], auto_rotate=False)
 rbt_s = rbt.TBMChanger()
 rbt_s.fk("arm", np.array([0.1, .1, .1, .1, .1, .1]))
 rbt_s.gen_meshmodel(toggle_tcpcs=True).attach_to(base)

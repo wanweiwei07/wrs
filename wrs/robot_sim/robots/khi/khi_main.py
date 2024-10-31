@@ -136,7 +136,7 @@ class KHI_DUAL(ri.RobotInterface):
             if len(jnt_values) != self.lft_arm.manipulator.n_dof + self.rgt_arm.manipulator.n_dof:
                 raise ValueError("The given joint values do not match total n_dof")
             self.lft_arm.goto_given_conf(jnt_values=jnt_values[:self.lft_arm.manipulator.n_dof])
-            self.rgt_arm.goto_given_conf(jnt_values=jnt_values[self.rgt_arm.manipulator.n_dof:]) # TODO
+            self.rgt_arm.goto_given_conf(jnt_values=jnt_values[self.rgt_arm.manipulator.n_dof:])  # TODO
         else:
             self.delegator.goto_given_conf(jnt_values=jnt_values, ee_values=ee_values)
 
@@ -178,37 +178,37 @@ class KHI_DUAL(ri.RobotInterface):
     def change_jaw_width(self, jaw_width):
         self.change_ee_values(ee_values=jaw_width)
 
-    def is_collided(self, obstacle_list=None, other_robot_list=None, toggle_contacts=False):
+    def is_collided(self, obstacle_list=None, other_robot_list=None, toggle_contacts=False, toggle_dbg=False):
         """
         Interface for "is cdprimit collided", must be implemented in child class
         :param obstacle_list:
         :param other_robot_list:
         :param toggle_contacts: debug
+        :param toggle_dbg: debug
         :return: see CollisionChecker is_collided for details
         author: weiwei
         date: 20240307
         """
         collision_info = self.cc.is_collided(obstacle_list=obstacle_list,
                                              other_robot_list=other_robot_list,
-                                             toggle_contacts=toggle_contacts)
+                                             toggle_contacts=toggle_contacts,
+                                             toggle_dbg=toggle_dbg)
         return collision_info
 
     def gen_stickmodel(self,
                        toggle_tcp_frame=False,
                        toggle_jnt_frames=False,
-                       toggle_flange_frame=False,
-                       name='yumi_stickmodel'):
-        m_col = mmc.ModelCollection(name=name)
-        self.body.gen_stickmodel(toggle_root_frame=toggle_jnt_frames,
+                       toggle_flange_frame=False):
+        m_col = mmc.ModelCollection(name=self.name + "_stickmodel")
+        self.body.gen_stickmodel(name=self.name + "_body_stickmodel",
+                                 toggle_root_frame=toggle_jnt_frames,
                                  toggle_flange_frame=toggle_flange_frame).attach_to(m_col)
         self.lft_arm.gen_stickmodel(toggle_tcp_frame=toggle_tcp_frame,
                                     toggle_jnt_frames=toggle_jnt_frames,
-                                    toggle_flange_frame=toggle_flange_frame,
-                                    name=name + "_lft_arm").attach_to(m_col)
+                                    toggle_flange_frame=toggle_flange_frame).attach_to(m_col)
         self.rgt_arm.gen_stickmodel(toggle_tcp_frame=toggle_tcp_frame,
                                     toggle_jnt_frames=toggle_jnt_frames,
-                                    toggle_flange_frame=toggle_flange_frame,
-                                    name=name + "_rgt_arm").attach_to(m_col)
+                                    toggle_flange_frame=toggle_flange_frame).attach_to(m_col)
         return m_col
 
     def gen_meshmodel(self,
@@ -218,28 +218,25 @@ class KHI_DUAL(ri.RobotInterface):
                       toggle_jnt_frames=False,
                       toggle_flange_frame=False,
                       toggle_cdprim=False,
-                      toggle_cdmesh=False,
-                      name='yumi_meshmodel'):
-        m_col = mmc.ModelCollection(name=name)
+                      toggle_cdmesh=False):
+        m_col = mmc.ModelCollection(name=self.name + "_meshmodel")
         self.body.gen_meshmodel(rgb=rgb, alpha=alpha, toggle_flange_frame=toggle_flange_frame,
                                 toggle_root_frame=toggle_jnt_frames, toggle_cdprim=toggle_cdprim,
-                                toggle_cdmesh=toggle_cdmesh, name=name + "_body").attach_to(m_col)
+                                toggle_cdmesh=toggle_cdmesh, name=self.name + "_body_meshmodel").attach_to(m_col)
         self.lft_arm.gen_meshmodel(rgb=rgb,
                                    alpha=alpha,
                                    toggle_tcp_frame=toggle_tcp_frame,
                                    toggle_jnt_frames=toggle_jnt_frames,
                                    toggle_flange_frame=toggle_flange_frame,
                                    toggle_cdprim=toggle_cdprim,
-                                   toggle_cdmesh=toggle_cdmesh,
-                                   name=name + "_lft_arm").attach_to(m_col)
+                                   toggle_cdmesh=toggle_cdmesh).attach_to(m_col)
         self.rgt_arm.gen_meshmodel(rgb=rgb,
                                    alpha=alpha,
                                    toggle_tcp_frame=toggle_tcp_frame,
                                    toggle_jnt_frames=toggle_jnt_frames,
                                    toggle_flange_frame=toggle_flange_frame,
                                    toggle_cdprim=toggle_cdprim,
-                                   toggle_cdmesh=toggle_cdmesh,
-                                   name=name + "_rgt_arm").attach_to(m_col)
+                                   toggle_cdmesh=toggle_cdmesh).attach_to(m_col)
         return m_col
 
 
