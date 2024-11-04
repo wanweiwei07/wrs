@@ -12,43 +12,49 @@ class CobottaArm(mi.ManipulatorInterface):
         current_file_dir = os.path.dirname(__file__)
         # anchor
         self.jlc.anchor.lnk_list[0].cmodel = mcm.CollisionModel(
-            os.path.join(current_file_dir, "meshes", "base_link.dae"))
+            initor=os.path.join(current_file_dir, "meshes", "base_link.dae"), name=self.name+"_base")
         self.jlc.anchor.lnk_list[0].cmodel.rgba = np.array([.7, .7, .7, 1.0])
         # first joint and link
         self.jlc.jnts[0].loc_pos = np.array([0, 0, 0])
         self.jlc.jnts[0].loc_motion_ax = np.array([0, 0, 1])
         self.jlc.jnts[0].motion_range = np.array([-2.617994, 2.617994])
-        self.jlc.jnts[0].lnk.cmodel = mcm.CollisionModel(os.path.join(current_file_dir, "meshes", "j1.dae"))
+        self.jlc.jnts[0].lnk.cmodel = mcm.CollisionModel(initor=os.path.join(current_file_dir, "meshes", "j1.dae"),
+                                                         name=self.name+"_link1")
         self.jlc.jnts[0].lnk.cmodel.rgba = np.array([.7, .7, .7, 1.0])
         # second joint and link
         self.jlc.jnts[1].loc_pos = np.array([0, 0, 0.18])
         self.jlc.jnts[1].loc_motion_ax = np.array([0, 1, 0])
         self.jlc.jnts[1].motion_range = np.array([-1.047198, 1.745329])
-        self.jlc.jnts[1].lnk.cmodel = mcm.CollisionModel(os.path.join(current_file_dir, "meshes", "j2.dae"))
+        self.jlc.jnts[1].lnk.cmodel = mcm.CollisionModel(initor=os.path.join(current_file_dir, "meshes", "j2.dae"),
+                                                         name=self.name+"_link2")
         self.jlc.jnts[1].lnk.cmodel.rgba = np.array([.7, .7, .7, 1.0])
         # third joint and link
         self.jlc.jnts[2].loc_pos = np.array([0, 0, 0.165])
         self.jlc.jnts[2].loc_motion_ax = np.array([0, 1, 0])
         self.jlc.jnts[2].motion_range = np.array([0.3141593, 2.443461])
-        self.jlc.jnts[2].lnk.cmodel = mcm.CollisionModel(os.path.join(current_file_dir, "meshes", "j3.dae"))
+        self.jlc.jnts[2].lnk.cmodel = mcm.CollisionModel(initor=os.path.join(current_file_dir, "meshes", "j3.dae"),
+                                                         name=self.name+"_link3")
         self.jlc.jnts[2].lnk.cmodel.rgba = np.array([.7, .7, .7, 1.0])
         # fourth joint and link
         self.jlc.jnts[3].loc_pos = np.array([-0.012, 0.02, 0.088])
         self.jlc.jnts[3].loc_motion_ax = np.array([0, 0, 1])
         self.jlc.jnts[3].motion_range = np.array([-2.96706, 2.96706])
-        self.jlc.jnts[3].lnk.cmodel = mcm.CollisionModel(os.path.join(current_file_dir, "meshes", "j4.dae"))
+        self.jlc.jnts[3].lnk.cmodel = mcm.CollisionModel(initor=os.path.join(current_file_dir, "meshes", "j4.dae"),
+                                                         name=self.name+"_link4")
         self.jlc.jnts[3].lnk.cmodel.rgba = np.array([.7, .7, .7, 1.0])
         # fifth joint and link
         self.jlc.jnts[4].loc_pos = np.array([0, -.02, .0895])
         self.jlc.jnts[4].loc_motion_ax = np.array([0, 1, 0])
         self.jlc.jnts[4].motion_range = np.array([-1.658063, 2.356194])
-        self.jlc.jnts[4].lnk.cmodel = mcm.CollisionModel(os.path.join(current_file_dir, "meshes", "j5.dae"))
+        self.jlc.jnts[4].lnk.cmodel = mcm.CollisionModel(initor=os.path.join(current_file_dir, "meshes", "j5.dae"),
+                                                         name=self.name+"_link5")
         self.jlc.jnts[4].lnk.cmodel.rgba = np.array([.7, .7, .7, 1.0])
         # sixth joint and link
         self.jlc.jnts[5].loc_pos = np.array([0, -.0445, 0.042])
         self.jlc.jnts[5].loc_motion_ax = np.array([0, 0, 1])
         self.jlc.jnts[5].motion_range = np.array([-2.96706, 2.96706])
-        self.jlc.jnts[5].lnk.cmodel = mcm.CollisionModel(os.path.join(current_file_dir, "meshes", "j6.dae"))
+        self.jlc.jnts[5].lnk.cmodel = mcm.CollisionModel(initor=os.path.join(current_file_dir, "meshes", "j6.dae"),
+                                                         name=self.name+"_link6")
         self.jlc.jnts[5].lnk.cmodel.rgba = np.array([.7, .7, .7, 1.0])
         self.jlc.finalize(ik_solver=ik_solver, identifier_str=name)
         # tcp

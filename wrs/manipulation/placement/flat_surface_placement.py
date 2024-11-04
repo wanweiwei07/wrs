@@ -14,7 +14,7 @@ class FSReferencePoses(object):
     def __init__(self, obj_cmodel=None, poses=None):
         self.obj_cmodel = obj_cmodel
         if obj_cmodel is not None and poses is None:
-            self._poses, self._support_surfaces, self._stability_values = self.comptue_reference_poses(
+            self._poses, self._support_surfaces, self._stability_values = self.compute_reference_poses(
                 obj_cmodel, toggle_support_facets=True)
         else:
             self._poses = poses
@@ -32,7 +32,7 @@ class FSReferencePoses(object):
             pickle.dump(self._poses, file)
 
     @staticmethod
-    def comptue_reference_poses(obj_cmodel, stability_threshhold=.1, toggle_support_facets=False):
+    def compute_reference_poses(obj_cmodel, stability_threshhold=.1, toggle_support_facets=False):
         """
         find all placements on a flat surface (z axis is the surface normal; no consideration on symmetry)
         the result is called a reference flat surface placement (reference fsp)

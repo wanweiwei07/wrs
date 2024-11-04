@@ -24,7 +24,7 @@ class CobottaGripper(gpi.GripperInterface):
         # anchor
         self.jlc.anchor.lnk_list[0].cmodel = mcm.CollisionModel(
             initor=os.path.join(current_file_dir, "meshes", "gripper_base.dae"),
-            name="cobotta_gripper_base",
+            name=self.name + "_base",
             cdmesh_type=self.cdmesh_type)
         self.jlc.anchor.lnk_list[0].cmodel.rgba = np.array([.35, .35, .35, 1])
         # the 1st joint (left finger, +y direction)
@@ -34,7 +34,7 @@ class CobottaGripper(gpi.GripperInterface):
         self.jlc.jnts[0].motion_range = np.array([0.0, 0.015])
         self.jlc.jnts[0].lnk.cmodel = mcm.CollisionModel(
             initor=os.path.join(current_file_dir, "meshes", "left_finger.dae"),
-            name="cobotta_gripper_left_finger",
+            name=self.name + "_left_finger",
             cdmesh_type=self.cdmesh_type)
         self.jlc.jnts[0].lnk.cmodel.rgba = np.array([.5, .5, 1, 1])
         # the 2nd joint (right finger, -y direction)
@@ -43,7 +43,7 @@ class CobottaGripper(gpi.GripperInterface):
         self.jlc.jnts[1].loc_motion_ax = -rm.const.y_ax
         self.jlc.jnts[1].lnk.cmodel = mcm.CollisionModel(
             initor=os.path.join(current_file_dir, "meshes", "right_finger.dae"),
-            name="cobotta_gripper_right_finger",
+            name=self.name + "_right_finger",
             cdmesh_type=self.cdmesh_type)
         self.jlc.jnts[1].lnk.cmodel.rgba = np.array([1, .5, .5, 1])
         # reinitialize
@@ -77,7 +77,7 @@ class CobottaGripper(gpi.GripperInterface):
             raise ValueError("The angle parameter is out of range!")
 
     def gen_stickmodel(self, toggle_tcp_frame=False, toggle_jnt_frames=False):
-        m_col = mmc.ModelCollection(name=self.name+'_stickmodel')
+        m_col = mmc.ModelCollection(name=self.name + '_stickmodel')
         self.coupling.gen_stickmodel(toggle_root_frame=False, toggle_flange_frame=False).attach_to(m_col)
         self.jlc.gen_stickmodel(toggle_jnt_frames=toggle_jnt_frames, toggle_flange_frame=False).attach_to(m_col)
         if toggle_tcp_frame:
@@ -91,7 +91,7 @@ class CobottaGripper(gpi.GripperInterface):
                       toggle_jnt_frames=False,
                       toggle_cdprim=False,
                       toggle_cdmesh=False):
-        m_col = mmc.ModelCollection(name=self.name+'_meshmodel')
+        m_col = mmc.ModelCollection(name=self.name + '_meshmodel')
         self.coupling.gen_meshmodel(rgb=rgb,
                                     alpha=alpha,
                                     toggle_flange_frame=False,

@@ -1,4 +1,4 @@
-from panda3d.core import NodePath, CollisionTraverser, CollisionHandlerQueue, BitMask32
+from panda3d.core import NodePath, CollisionTraverser, CollisionHandlerQueue, BitMask32, CollisionNode
 import wrs.modeling._panda_cdhelper as mph
 import wrs.basis.data_adapter as da
 
@@ -278,12 +278,55 @@ class CollisionChecker(object):
         # attach other robots
         if other_robot_list is not None:
             for robot in other_robot_list:
-                robot.cc.enable_extcd_by_id_list(id_list=robot.cc.cce_dict.keys(), type="into")
+                for cce in robot.cc.cce_dict.values():
+                    cce.tfd_cdprim.setPosQuat(da.npvec3_to_pdvec3(cce.lnk.gl_pos),
+                                              da.npmat3_to_pdquat(cce.lnk.gl_rotmat))
+                    cce.enable_cdmask(bitmask=mph.bitmask_ext, type="into")
+                # robot.cc.enable_extcd_by_id_list(id_list=robot.cc.cce_dict.keys(), type="into")
                 # for cce in robot.cc.cce_dict.values():  # TODO: wrong, save and restore mask
                 #     cce.enable_cdmask(bitmask=mph.bitmask_ext, type="into")
+                # for child in robot.cc.cd_pdndp.getChildren():
+                #     child.reparentTo(self.cd_pdndp)
                 robot.cc.cd_pdndp.reparentTo(self.cd_pdndp)
         # collision check
         self.cd_trav.traverse(self.cd_pdndp)
+        # handling collisions
+        if self.cd_handler.getNumEntries() > 0:
+            collision_result = True
+        else:
+            collision_result = False
+        if collision_result and toggle_dbg:
+            print("Collision detected! Showing debug info")
+            for child in self.cd_pdndp.getChildren():
+                if child.getNumChildren() == 1:
+                    print(child.name)
+                    print("from ", mph.get_cdmask(child, type="from"))
+                    print("into ", mph.get_cdmask(child, type="into"))
+                else: # other robots
+                    for grandchild in child.getChildren():
+                        print(grandchild.name)
+                        print("from ", mph.get_cdmask(grandchild, type="from"))
+                        print("into ", mph.get_cdmask(grandchild, type="into"))
+            from wrs import rm, mgm
+            self.show_cdprim()
+            if obstacle_list is not None:
+                if len(obstacle_list) > 0:
+                    for obstacle_cmodel in obstacle_list:
+                        obstacle_cmodel.attach_to(base)
+                        obstacle_cmodel.show_cdprim()
+            if other_robot_list is not None:
+                if len(other_robot_list) > 0:
+                    for other_robot in other_robot_list:
+                        other_robot.cc.show_cdprim()
+            for cd_entry in self.cd_handler.getEntries():
+                from_node_path = cd_entry.getFromNodePath()
+                into_node_path = cd_entry.getIntoNodePath()
+                print(
+                    f"from {from_node_path.name} {from_node_path.node().getFromCollideMask()} into {into_node_path.name} {into_node_path.node().getIntoCollideMask()}")
+                contact_point = da.pdvec3_to_npvec3(cd_entry.getSurfacePoint(base.render))
+                mgm.gen_sphere(pos=contact_point, radius=.01, rgb=rm.const.orange).attach_to(base)
+            base.run()
+        # post processing
         # clear obstacles
         if obstacle_list is not None:
             for obstacle_cmodel in obstacle_list:
@@ -297,29 +340,7 @@ class CollisionChecker(object):
                 # for cce in robot.cc.cce_dict.values():
                 #     cce.disable_extcd(type="into")
                 robot.cc.cd_pdndp.detachNode()
-        if self.cd_handler.getNumEntries() > 0:
-            collision_result = True
-        else:
-            collision_result = False
-        if collision_result and toggle_dbg:
-            print("Collision detected! Showing debug info")
-            for child in self.cd_pdndp.getChildren():
-                print(child.name)
-                print("from ", mph.get_cdmask(child, type="from"))
-                print("into ", mph.get_cdmask(child, type="into"))
-            from wrs import rm, mgm
-            self.show_cdprim()
-            for obstacle_cmodel in obstacle_list:
-                obstacle_cmodel.attach_to(base)
-                obstacle_cmodel.show_cdprim()
-            for cd_entry in self.cd_handler.getEntries():
-                from_node_path = cd_entry.getFromNodePath()
-                into_node_path = cd_entry.getIntoNodePath()
-                print(
-                    f"from {from_node_path.name} {from_node_path.node().getFromCollideMask()} into {into_node_path.name} {into_node_path.node().getIntoCollideMask()}")
-                contact_point = da.pdvec3_to_npvec3(cd_entry.getSurfacePoint(base.render))
-                mgm.gen_sphere(pos=contact_point, radius=.01, rgb=rm.const.orange).attach_to(base)
-            base.run()
+        # return
         if toggle_contacts:
             contact_points = [da.pdvec3_to_npvec3(cd_entry.getSurfacePoint(base.render)) for cd_entry in
                               self.cd_handler.getEntries()]
