@@ -44,8 +44,8 @@ class HOPG(mp_pg.GPG):
 
 
 class HOPGCollection(object):
-    def __init__(self, obj_cmodel, sender_robot, receiver_robot,
-                 sender_reference_grasp_collection, receiver_reference_grasp_collection):
+    def __init__(self, obj_cmodel=None, sender_robot=None, receiver_robot=None,
+                 sender_reference_grasp_collection=None, receiver_reference_grasp_collection=None):
         """
         :param robot:
         :param reference_fsp_poses: an instance of ReferenceFSPPoses
@@ -61,6 +61,7 @@ class HOPGCollection(object):
     def load_from_disk(self, file_name="hopg_collection.pickle"):
         with open(file_name, 'rb') as file:
             self._hopg_list = pickle.load(file)
+        return self
 
     def save_to_disk(self, file_name='hopg_collection.pickle'):
         with open(file_name, 'wb') as file:
@@ -94,33 +95,45 @@ class HOPGCollection(object):
         sid2rid_dict = {}
         for sid, sender_gid in enumerate(sender_gids):
             sid2rid_dict[sid] = []
-            sender_ee = self.sender_robot.end_effector.grip_at_by_pose(jaw_center_pos=sender_grasps[sid].ac_pos,
-                                                                       jaw_center_rotmat=sender_grasps[sid].ac_rotmat,
-                                                                       jaw_width=sender_grasps[sid].ee_values)
-            for rid, receiver_gids in enumerate(receiver_gids):
-                receiver_ee = self.receiver_robot.end_effector.grip_at_by_pose(
+            self.sender_robot.end_effector.grip_at_by_pose(jaw_center_pos=sender_grasps[sid].ac_pos,
+                                                           jaw_center_rotmat=sender_grasps[sid].ac_rotmat,
+                                                           jaw_width=sender_grasps[sid].ee_values)
+            for rid, receiver_gid in enumerate(receiver_gids):
+                self.receiver_robot.end_effector.grip_at_by_pose(
                     jaw_center_pos=receiver_grasps[rid].ac_pos,
                     jaw_center_rotmat=receiver_grasps[rid].ac_rotmat,
                     jaw_width=receiver_grasps[rid].ee_values)
-                if sender_ee.is_mesh_collided(obstacle_list=receiver_ee.cdmesh_list):
+                if self.sender_robot.end_effector.is_mesh_collided(
+                        cmodel_list=self.receiver_robot.end_effector.cdmesh_list):
                     continue
                 else:
                     sid2rid_dict[sid].append(rid)
         # robot prim collisions
         self.sender_robot.toggle_off_eecd()
-        feasible_receiver_gids = []
-        feasible_receiver_grasps = []
-        feasible_receiver_confs = []
         for sid, rid_list in sid2rid_dict.items():
+            feasible_receiver_gids = []
+            feasible_receiver_grasps = []
+            feasible_receiver_confs = []
             if consider_robot:
                 self.sender_robot.goto_given_conf(jnt_values=sender_confs[sid], ee_values=sender_grasps[sid].ee_values)
                 for rid in rid_list:
+                    # print(sid, rid, rid_list)
                     self.receiver_robot.goto_given_conf(jnt_values=receiver_confs[rid],
                                                         ee_values=receiver_grasps[rid].ee_values)
-                    if self.sender_robot.is_collided(obstacle_list=None, otherrobot_list=[self.receiver_robot],
-                                                     toggle_dbg=toggle_dbg):
+                    if self.sender_robot.is_collided(obstacle_list=None, other_robot_list=[self.receiver_robot],
+                                                     toggle_dbg=False):
+                        # self.obj_cmodel.pose=(pos, rotmat)
+                        # self.obj_cmodel.attach_to(base)
+                        # self.sender_robot.gen_meshmodel(rgb=rm.const.yellow, alpha=.7).attach_to(base)
+                        # self.receiver_robot.gen_meshmodel(rgb=rm.const.green, alpha=.7).attach_to(base)
+                        # base.run()
                         continue
                     else:
+                        # print(rid)
+                        # self.obj_cmodel.pose=(pos, rotmat)
+                        # self.obj_cmodel.attach_to(base)
+                        # self.sender_robot.gen_meshmodel(rgb=rm.const.yellow, alpha=.7).attach_to(base)
+                        # self.receiver_robot.gen_meshmodel(rgb=rm.const.green, alpha=.7).attach_to(base)
                         feasible_receiver_gids.append(receiver_gids[rid])
                         feasible_receiver_grasps.append(receiver_grasps[rid])
                         feasible_receiver_confs.append(receiver_confs[rid])
@@ -137,6 +150,7 @@ class HOPGCollection(object):
                                             feasible_gids=feasible_receiver_gids,
                                             feasible_grasps=feasible_receiver_grasps,
                                             feasible_confs=feasible_receiver_confs))
+        # base.run()
         self.sender_robot.toggle_on_eecd()
 
     def gen_meshmodel(self):
@@ -153,7 +167,7 @@ class HOPGCollection(object):
             receiver_grasps = hopg.feasible_grasps
             receiver_confs = hopg.feasible_confs
             for grasp, conf in zip(receiver_grasps, receiver_confs):
-                self.robot.goto_given_conf(jnt_values=conf, ee_values=grasp.ee_values)
-                self.robot.gen_meshmodel(rgb=rm.const.blue, alpha=.7).attach_to(m_col)
+                self.receiver_robot.goto_given_conf(jnt_values=conf, ee_values=grasp.ee_values)
+                self.receiver_robot.gen_meshmodel(rgb=rm.const.blue, alpha=.7).attach_to(m_col)
             meshmodel_list.append(m_col)
         return meshmodel_list
