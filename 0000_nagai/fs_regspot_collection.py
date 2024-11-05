@@ -1,6 +1,6 @@
 import os
 import time
-from wrs import wd, rm, mcm, mgm, fsreg, ko2fg, gg, fsp
+from wrs import wd, rm, mcm, mgm, ko2fg, gg, fsp
 
 mesh_name = "bracketR1"
 mesh_path = os.path.join(os.getcwd(), "meshes", mesh_name+".stl")
@@ -16,7 +16,7 @@ robot = ko2fg.KHI_OR2FG7()
 
 fs_reference_poses = fsp.FSReferencePoses.load_from_disk(file_name=fsref_pose_path)
 reference_grasps = gg.GraspCollection.load_from_disk(file_name=grasp_path)
-fsregspot_collection = fsreg.FSRegSpotCollection(robot=robot,
+fsregspot_collection = fsp.FSRegSpotCollection(robot=robot,
                                                  obj_cmodel=bunny,
                                                  fs_reference_poses=fs_reference_poses,
                                                  reference_grasp_collection=reference_grasps)

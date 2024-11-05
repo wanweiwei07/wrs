@@ -310,14 +310,12 @@ class CollisionChecker(object):
             from wrs import rm, mgm
             self.show_cdprim()
             if obstacle_list is not None:
-                if len(obstacle_list) > 0:
-                    for obstacle_cmodel in obstacle_list:
-                        obstacle_cmodel.attach_to(base)
-                        obstacle_cmodel.show_cdprim()
+                for obstacle_cmodel in obstacle_list:
+                    obstacle_cmodel.attach_to(base)
+                    obstacle_cmodel.show_cdprim()
             if other_robot_list is not None:
-                if len(other_robot_list) > 0:
-                    for other_robot in other_robot_list:
-                        other_robot.cc.show_cdprim()
+                for other_robot in other_robot_list:
+                    other_robot.cc.show_cdprim()
             for cd_entry in self.cd_handler.getEntries():
                 from_node_path = cd_entry.getFromNodePath()
                 into_node_path = cd_entry.getIntoNodePath()
@@ -338,7 +336,7 @@ class CollisionChecker(object):
             for robot in other_robot_list:
                 robot.cc.disable_extcd_by_id_list(id_list=robot.cc.cce_dict.keys(), type="into")
                 # for cce in robot.cc.cce_dict.values():
-                #     cce.disable_extcd(type="into")
+                #     cce.disable_cdmask(bitmask=mph.bitmask_ext, type="into")
                 robot.cc.cd_pdndp.detachNode()
         # return
         if toggle_contacts:

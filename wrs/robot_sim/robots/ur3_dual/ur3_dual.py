@@ -143,8 +143,7 @@ class UR3Dual(ri.RobotInterface):
         self.lft_arm.cc.set_cdpair_by_ids(from_list, into_list)
         # ext and inner
         self.lft_arm.cc.enable_extcd_by_id_list(
-            id_list=[lft_ml1, lft_ml2, lft_ml3, lft_ml4, lft_ml5, rgt_ml1, rgt_ml2, rgt_ml3, rgt_ml4,
-                     rgt_ml5] + lft_ee_cces + rgt_ee_cces, type="from")
+            id_list=[lft_ml1, lft_ml2, lft_ml3, lft_ml4, lft_ml5] + lft_ee_cces, type="from")
         self.lft_arm.cc.enable_innercd_by_id_list(
             id_list=[tbl, bd, lft_ml0, lft_ml1, lft_ml2, lft_ml3, rgt_ml0, rgt_ml1, rgt_ml2, rgt_ml3,
                      rgt_ml4, rgt_ml5] + rgt_ee_cces, type="into")
@@ -192,8 +191,7 @@ class UR3Dual(ri.RobotInterface):
         self.rgt_arm.cc.set_cdpair_by_ids(from_list, into_list)
         # ext and inner
         self.rgt_arm.cc.enable_extcd_by_id_list(
-            id_list=[lft_ml1, lft_ml2, lft_ml3, lft_ml4, lft_ml5, rgt_ml1, rgt_ml2, rgt_ml3, rgt_ml4,
-                     rgt_ml5] + lft_ee_cces + rgt_ee_cces, type="from")
+            id_list=[rgt_ml1, rgt_ml2, rgt_ml3, rgt_ml4, rgt_ml5] + rgt_ee_cces, type="from")
         self.rgt_arm.cc.enable_innercd_by_id_list(
             id_list=[tbl, bd, rgt_ml0, rgt_ml1, rgt_ml2, rgt_ml3, lft_ml0, lft_ml1, lft_ml2, lft_ml3, lft_ml4,
                      lft_ml5] + lft_ee_cces, type="into")

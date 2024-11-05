@@ -4,9 +4,11 @@ import wrs.basis.robot_math as rm
 import wrs.basis.trimesh as trm
 import wrs.modeling.geometric_model as mgm
 import wrs.modeling.collision_model as mcm
+import wrs.modeling.model_collection as mmc
 import wrs.modeling._ode_cdhelper as moh
+import wrs.manipulation.placement.general_placement as mp_pg
 import wrs.grasping.planning.segmentation as seg
-import wrs.manipulation.placement.general_placement as mpgp
+import wrs.grasping.reasoner as gr
 
 
 class FSReferencePoses(object):
@@ -110,7 +112,7 @@ class FSReferencePoses(object):
         return iter(self._poses)
 
 
-class FSPG(mpgp.PG):
+class FSPG(mp_pg.GPG):
     """
     A container class that holds the placement pose id, and associated feasible grasps id
     """
@@ -120,11 +122,11 @@ class FSPG(mpgp.PG):
                  obj_pose=None,
                  feasible_gids=None,
                  feasible_grasps=None,
-                 feasible_jv_list=None):
+                 feasible_confs=None):
         super().__init__(obj_pose=obj_pose,
                          feasible_gids=feasible_gids,
                          feasible_grasps=feasible_grasps,
-                         feasible_jv_list=feasible_jv_list)
+                         feasible_confs=feasible_confs)
         self._fs_pose_id = fs_pose_id
 
     @property
@@ -141,11 +143,99 @@ class FSRegSpot(object):
         self.rotz = rotz
         self.fspg_list = []
 
-    def add_fspg(self, fspg):
-        self.fspg_list.append(fspg)
-
     def __iter__(self):
         return iter(self.fspg_list)
+
+
+class FSRegSpotCollection(object):
+    def __init__(self, robot, obj_cmodel, fs_reference_poses, reference_grasp_collection):
+        """
+        :param robot:
+        :param reference_fsp_poses: an instance of ReferenceFSPPoses
+        :param reference_grasp_collection: an instance of GraspCollection
+        """
+        self.robot = robot
+        self.obj_cmodel = obj_cmodel
+        self.fs_reference_poses = fs_reference_poses
+        self.reference_grasp_collection = reference_grasp_collection
+        self._fsregspot_list = []  # list of FSRegSpot
+        self.grasp_reasoner = gr.GraspReasoner(robot=robot, reference_grasp_collection=reference_grasp_collection)
+
+    def load_from_disk(self, file_name="fsregspot_collection.pickle"):
+        with open(file_name, 'rb') as file:
+            self._fsregspot_list = pickle.load(file)
+
+    def save_to_disk(self, file_name='fsregspot_collection.pickle'):
+        """
+        :param file_name
+        :return:
+        """
+        with open(file_name, 'wb') as file:
+            pickle.dump(self._fsregspot_list, file)
+
+    def __getitem__(self, index):
+        return self._fsregspot_list[index]
+
+    def __len__(self):
+        return len(self._fsregspot_list)
+
+    def __iter__(self):
+        return iter(self._fsregspot_list)
+
+    def __add__(self, other):
+        self._fsregspot_list += other._fsregspot_list
+        return self
+
+    def add_new_spot(self, spot_pos, spot_rotz, barrier_z_offset=.0, consider_robot=True, toggle_dbg=False):
+        fs_regspot = FSRegSpot(spot_pos, spot_rotz)
+        if barrier_z_offset is not None:
+            obstacle_list = [mcm.gen_surface_barrier(spot_pos[2] + barrier_z_offset)]
+        else:
+            obstacle_list = []
+        for pose_id, pose in enumerate(self.fs_reference_poses):
+            pos = pose[0] + spot_pos
+            rotmat = rm.rotmat_from_euler(0, 0, spot_rotz) @ pose[1]
+            feasible_gids, feasible_grasps, feasible_confs = self.grasp_reasoner.find_feasible_gids(
+                goal_pose=(pos, rotmat),
+                obstacle_list=obstacle_list,
+                consider_robot=consider_robot,
+                toggle_dbg=False)
+            if feasible_gids is not None:
+                fs_regspot.fspg_list.append(FSPG(fs_pose_id=pose_id,
+                                                 obj_pose=(pos, rotmat),
+                                                 feasible_gids=feasible_gids,
+                                                 feasible_grasps=feasible_grasps,
+                                                 feasible_confs=feasible_confs))
+            if toggle_dbg:
+                for grasp, jnt_values in zip(feasible_grasps, feasible_confs):
+                    self.robot.goto_given_conf(jnt_values=jnt_values, ee_values=grasp.ee_values)
+                    self.robot.gen_meshmodel().attach_to(base)
+                base.run()
+        self._fsregspot_list.append(fs_regspot)
+
+    # TODO keep robot state
+    def gen_meshmodel(self):
+        """
+        TODO do not use explicit obj_cmodel
+        :param robot:
+        :param fspg_col:
+        :return:
+        """
+        meshmodel_list = []
+        for fsreg_spot in self._fsregspot_list:
+            for fspg in fsreg_spot:
+                m_col = mmc.ModelCollection()
+                obj_pose = fspg.obj_pose
+                feasible_grasps = fspg.feasible_grasps
+                feasible_confs = fspg.feasible_confs
+                obj_cmodel_copy = self.obj_cmodel.copy()
+                obj_cmodel_copy.pose = obj_pose
+                obj_cmodel_copy.attach_to(m_col)
+                for grasp, conf in zip(feasible_grasps, feasible_confs):
+                    self.robot.goto_given_conf(jnt_values=conf, ee_values=grasp.ee_values)
+                    self.robot.gen_meshmodel().attach_to(m_col)
+                meshmodel_list.append(m_col)
+        return meshmodel_list
 
 
 if __name__ == '__main__':

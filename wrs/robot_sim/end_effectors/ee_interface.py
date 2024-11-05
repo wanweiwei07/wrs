@@ -53,6 +53,10 @@ class EEInterface(object):
         gl_acting_center_rotmat = self._rotmat @ self.loc_acting_center_rotmat
         return (gl_acting_center_pos, gl_acting_center_rotmat)
 
+    @property
+    def cdmesh_list(self):
+        return [cdlnk.cmodel for cdlnk in self.cdelements]
+
     def update_oiee(self):
         """
         :return:

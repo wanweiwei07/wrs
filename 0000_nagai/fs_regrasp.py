@@ -10,8 +10,8 @@ grasp_path = os.path.join(os.getcwd(), "pickles", mesh_name + "_grasp.pickle")
 regspot_path = os.path.join(os.getcwd(), "pickles", mesh_name + "_regspot.pickle")
 
 base = wd.World(cam_pos=rm.vec(2, 2, 2), lookat_pos=rm.vec(0, 0, 0))
-ground = mcm.gen_box(xyz_lengths=rm.vec(5, 5, 1), pos=rm.vec(0, 0, -0.5))
-ground.alpha = .3
+ground = mcm.gen_box(xyz_lengths=rm.vec(5, 5, 1), pos=rm.vec(0, 0, -.5))
+# ground.alpha = .3
 ground.show_cdprim()
 ground.attach_to(base)
 obj = mcm.CollisionModel(mesh_path)

@@ -130,6 +130,7 @@ class Link(object):
         self._cmodel = cmodel
         self._cmodel.pose = (self._gl_pos, self._gl_rotmat)
 
+
     def install_onto(self, pos=np.zeros(3), rotmat=np.eye(3)):
         """
         update the global parameters with given reference pos, reference rotmat

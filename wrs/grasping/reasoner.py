@@ -3,8 +3,9 @@ import wrs.grasping.grasp as gg
 
 
 class GraspReasoner(object):
-    def __init__(self, robot):
+    def __init__(self, robot, reference_grasp_collection):
         self.robot = robot
+        self.reference_grasp_collection = reference_grasp_collection
 
     @staticmethod
     def keep_states_decorator(method):
@@ -39,94 +40,12 @@ class GraspReasoner(object):
                         ac_pos=goal_pos + goal_rotmat.dot(grasp.ac_pos),
                         ac_rotmat=goal_rotmat.dot(grasp.ac_rotmat))
 
-    ## The following code examines robot IK first. In contrast, the code blow this one examines EE collisions first.
-    ## The code below this more is slight more efficient and is thus adopted.
-    ## This following code is commented out for future reference.
-    ## author: weiwei
-    ## date 20240322
-    # @keep_states_decorator
-    # def reason_incremental_common_gids(self,
-    #                                    previous_available_gids,
-    #                                    reference_grasp_collection,
-    #                                    goal_pose_list,
-    #                                    obstacle_list=None,
-    #                                    consider_robot=True,
-    #                                    toggle_keep=True,
-    #                                    toggle_dbg=False):
-    #     # start reasoning
-    #     intermediate_available_gids = []
-    #     eef_collided_grasps_num = 0
-    #     ik_failed_grasps_num = 0
-    #     rbt_collided_grasps_num = 0
-    #     for goal_id, goal_pose in enumerate(goal_pose_list):
-    #         goal_pos = goal_pose[0]
-    #         goal_rotmat = goal_pose[1]
-    #         grasp_with_gid = zip(previous_available_gids,  # need .copy()?
-    #                              [reference_grasp_collection[i] for i in previous_available_gids])
-    #         previous_available_gids = []
-    #         for gid, grasp in grasp_with_gid:
-    #             goal_jaw_center_pos = goal_pos + goal_rotmat.dot(grasp.ac_pos)
-    #             goal_jaw_center_rotmat = goal_rotmat.dot(grasp.ac_rotmat)
-    #             if consider_robot:
-    #                 jnt_values = self.robot.ik(tgt_pos=goal_jaw_center_pos, tgt_rotmat=goal_jaw_center_rotmat)
-    #                 if jnt_values is not None:
-    #                     self.robot.goto_given_conf(jnt_values=jnt_values)
-    #                     if not self.robot.is_collided(obstacle_list=obstacle_list):
-    #                         if not self.robot.end_effector.is_mesh_collided(cmodel_list=obstacle_list):
-    #                             previous_available_gids.append(gid)
-    #                             if toggle_dbg:
-    #                                 self.robot.end_effector.gen_meshmodel(rgb=rm.const.green, alpha=1).attach_to(base)
-    #                         else:  # ee collided
-    #                             eef_collided_grasps_num += 1
-    #                             if toggle_dbg:
-    #                                 self.robot.end_effector.gen_meshmodel(rgb=rm.const.yellow, alpha=1).attach_to(base)
-    #                     else:  # robot collided
-    #                         rbt_collided_grasps_num += 1
-    #                         if toggle_dbg:
-    #                             self.robot.gen_meshmodel(rgb=rm.const.orange, toggle_cdprim=True, alpha=1).attach_to(base)
-    #                 else:  # ik failure
-    #                     ik_failed_grasps_num += 1
-    #                     if toggle_dbg:
-    #                         self.robot.end_effector.grip_at_by_pose(jaw_center_pos=goal_jaw_center_pos,
-    #                                                                 jaw_center_rotmat=goal_jaw_center_rotmat,
-    #                                                                 jaw_width=grasp.ee_values)
-    #                         self.robot.end_effector.gen_meshmodel(rgb=rm.const.magenta, alpha=1).attach_to(base)
-    #             else:
-    #                 ik_failed_grasps_num = '-'
-    #                 rbt_collided_grasps_num = '-'
-    #                 self.robot.end_effector.grip_at_by_pose(jaw_center_pos=goal_jaw_center_pos,
-    #                                                         jaw_center_rotmat=goal_jaw_center_rotmat,
-    #                                                         jaw_width=grasp.ee_values)
-    #                 if not self.robot.end_effector.is_mesh_collided(cmodel_list=obstacle_list):
-    #                     previous_available_gids.append(gid)
-    #                     if toggle_dbg:
-    #                         self.robot.end_effector.gen_meshmodel(rgb=rm.const.green, alpha=1).attach_to(base)
-    #                 else:
-    #                     eef_collided_grasps_num += 1
-    #                     if toggle_dbg:
-    #                         self.robot.end_effector.gen_meshmodel(rgb=rm.const.yellow, alpha=1).attach_to(base)
-    #         intermediate_available_gids.append(previous_available_gids.copy())
-    #         if toggle_dbg:
-    #             for obstacle in obstacle_list:
-    #                 obstacle.attach_to(base)
-    #                 obstacle.show_cdprim()
-    #             print('-----start-----')
-    #             print(f"Number of available grasps at goal-{str(goal_id)}: {len(previous_available_gids)}")
-    #             print(f"Number of collided grasps at goal-{str(goal_id)}: {eef_collided_grasps_num}")
-    #             print(f"Number of failed IK at goal-{str(goal_id)}: {ik_failed_grasps_num}")
-    #             print(f"Number of collided robots at goal-{str(goal_id)}: {rbt_collided_grasps_num}")
-    #             print("------end_type------")
-    #             base.run()
-    #     return previous_available_gids
-
     @keep_states_decorator
     def reason_incremental_common_gids(self,
                                        previous_available_gids,
-                                       reference_grasp_collection,
                                        goal_pose_list,
                                        obstacle_list=None,
                                        consider_robot=True,
-                                       toggle_keep=True,
                                        toggle_dbg=False):
         # start reasoning
         intermediate_available_gids = []
@@ -144,7 +63,7 @@ class GraspReasoner(object):
             goal_pos = goal_pose[0]
             goal_rotmat = goal_pose[1]
             grasp_with_gid = zip(previous_available_gids,  # need .copy()?
-                                 [reference_grasp_collection[i] for i in previous_available_gids])
+                                 [self.reference_grasp_collection[i] for i in previous_available_gids])
             previous_available_gids = []
             previous_availalbe_grasps = []
             previous_available_jv_list = []
@@ -153,7 +72,7 @@ class GraspReasoner(object):
                 self.robot.end_effector.grip_at_by_pose(jaw_center_pos=goal_grasp.ac_pos,
                                                         jaw_center_rotmat=goal_grasp.ac_rotmat,
                                                         jaw_width=goal_grasp.ee_values)
-                if self.robot.end_effector.is_mesh_collided(cmodel_list=obstacle_list):
+                if self.robot.end_effector.is_mesh_collided(cmodel_list=obstacle_list): # examining eecd first is faster
                     # ee collided
                     eef_collided_grasps_num += 1
                     if toggle_dbg:
@@ -214,56 +133,52 @@ class GraspReasoner(object):
 
     # @keep_states_decorator
     def reason_common_gids(self,
-                           reference_grasp_collection,
                            goal_pose_list,
                            obstacle_list=None,
                            consider_robot=True,
-                           toggle_keep=True,
                            toggle_dbg=False):
         """
         find the common collision free and IK feasible gids
-        :param reference_grasp_collection grasping.grasp.GraspCollection
         :param goal_pose_list[[pos0, rotmat0]], [pos1, rotmat1], ...]
         :param obstacle_list
         :param consider_robot whether to consider robot ik and collision
-        :param toggle_keep: keep robot states or not
         :param toggle_dbg
         :return: common grasp poses
         author: weiwei
         date: 20210113, 20210125
         """
         # start reasoning
-        previous_available_gids = range(len(reference_grasp_collection))
+        previous_available_gids = range(len(self.reference_grasp_collection))
         return self.reason_incremental_common_gids(previous_available_gids=previous_available_gids,
-                                                   reference_grasp_collection=reference_grasp_collection,
                                                    goal_pose_list=goal_pose_list,
                                                    obstacle_list=obstacle_list,
                                                    consider_robot=consider_robot,
-                                                   toggle_keep=toggle_keep,
                                                    toggle_dbg=toggle_dbg)
 
     def find_feasible_gids(self,
-                           reference_grasp_collection,
                            goal_pose,
                            obstacle_list=None,
                            consider_robot=True,
-                           toggle_keep=True,
                            toggle_dbg=False):
         """
-        :param reference_grasp_collection:
         :param goal_pose:
         :param obstacle_list:
         :param consider_robot:
-        :param toggle_keep:
         :param toggle_dbg:
         :return:
         """
-        return self.reason_common_gids(reference_grasp_collection=reference_grasp_collection,
-                                       goal_pose_list=[goal_pose],
+        return self.reason_common_gids(goal_pose_list=[goal_pose],
                                        obstacle_list=obstacle_list,
                                        consider_robot=consider_robot,
-                                       toggle_keep=toggle_keep,
                                        toggle_dbg=toggle_dbg)
+
+class HandoverGraspReasonser(object):
+
+    def __init__(self, sender_robot, receiver_robot):
+        self.sender_robot = sender_robot
+        self.receiver_robot = receiver_robot
+        self.sender_grasp_reasoner = GraspReasoner(sender_robot)
+        self.receiver_grasp_reasoner = GraspReasoner(receiver_robot)
 
 
 # TODO incremental

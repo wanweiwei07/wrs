@@ -4,116 +4,20 @@ import itertools
 import networkx as nx
 import matplotlib.pyplot as plt
 import wrs.basis.robot_math as rm
-import wrs.modeling.collision_model as mcm
-import wrs.grasping.reasoner as gr
 import wrs.manipulation.pick_place as ppp
-import wrs.manipulation.placement.flat_surface_placement as mpfsp
-import wrs.manipulation.placement.general_placement as mpgp
+import wrs.manipulation.placement.general_placement as mp_gp
 import wrs.motion.motion_data as motd
-import wrs.modeling.model_collection as mmc
-
-
-class FSRegSpotCollection(object):
-    def __init__(self, robot, obj_cmodel, fs_reference_poses, reference_grasp_collection):
-        """
-        :param robot:
-        :param reference_fsp_poses: an instance of ReferenceFSPPoses
-        :param reference_grasp_collection: an instance of GraspCollection
-        """
-        self.robot = robot
-        self.obj_cmodel = obj_cmodel
-        self.grasp_reasoner = gr.GraspReasoner(robot)
-        self.fs_reference_poses = fs_reference_poses
-        self.reference_grasp_collection = reference_grasp_collection
-        self._fsregspot_list = []  # list of FSRegSpot
-
-    def load_from_disk(self, file_name="fsregspot_collection.pickle"):
-        with open(file_name, 'rb') as file:
-            self._fsregspot_list = pickle.load(file)
-
-    def save_to_disk(self, file_name='fsregspot_collection.pickle'):
-        """
-        :param file_name
-        :return:
-        """
-        with open(file_name, 'wb') as file:
-            pickle.dump(self._fsregspot_list, file)
-
-    def __getitem__(self, index):
-        return self._fsregspot_list[index]
-
-    def __len__(self):
-        return len(self._fsregspot_list)
-
-    def __iter__(self):
-        return iter(self._fsregspot_list)
-
-    def __add__(self, other):
-        self._fsregspot_list += other._fsregspot_list
-        return self
-
-    def add_new_spot(self, spot_pos, spot_rotz, barrier_z_offset=.0, consider_robot=True, toggle_dbg=False):
-        fs_regspot = mpfsp.FSRegSpot(spot_pos, spot_rotz)
-        if barrier_z_offset is not None:
-            obstacle_list = [mcm.gen_surface_barrier(spot_pos[2] + barrier_z_offset)]
-        else:
-            obstacle_list = []
-        for pose_id, pose in enumerate(self.fs_reference_poses):
-            pos = pose[0] + spot_pos
-            rotmat = rm.rotmat_from_euler(0, 0, spot_rotz) @ pose[1]
-            feasible_gids, feasible_grasps, feasible_jv_list = self.grasp_reasoner.find_feasible_gids(
-                reference_grasp_collection=self.reference_grasp_collection,
-                obstacle_list=obstacle_list,
-                goal_pose=(pos, rotmat),
-                consider_robot=consider_robot,
-                toggle_keep=True,
-                toggle_dbg=False)
-            if feasible_gids is not None:
-                fs_regspot.add_fspg(mpfsp.FSPG(fs_pose_id=pose_id,
-                                               obj_pose=(pos, rotmat),
-                                               feasible_gids=feasible_gids,
-                                               feasible_grasps=feasible_grasps,
-                                               feasible_jv_list=feasible_jv_list))
-            if toggle_dbg:
-                for grasp, jnt_values in zip(feasible_grasps, feasible_jv_list):
-                    self.robot.goto_given_conf(jnt_values=jnt_values, ee_values=grasp.ee_values)
-                    self.robot.gen_meshmodel().attach_to(base)
-                base.run()
-        self._fsregspot_list.append(fs_regspot)
-
-    # TODO keep robot state
-    def gen_meshmodel(self):
-        """
-        TODO do not use explicit obj_cmodel
-        :param robot:
-        :param fspg_col:
-        :return:
-        """
-        meshmodel_list = []
-        for fsreg_spot in self._fsregspot_list:
-            for fspg in fsreg_spot:
-                m_col = mmc.ModelCollection()
-                obj_pose = fspg.obj_pose
-                feasible_grasps = fspg.feasible_grasps
-                feasible_jv_list = fspg.feasible_jv_list
-                obj_cmodel_copy = self.obj_cmodel.copy()
-                obj_cmodel_copy.pose = obj_pose
-                obj_cmodel_copy.attach_to(m_col)
-                for grasp, jnt_values in zip(feasible_grasps, feasible_jv_list):
-                    self.robot.goto_given_conf(jnt_values=jnt_values, ee_values=grasp.ee_values)
-                    self.robot.gen_meshmodel().attach_to(m_col)
-                meshmodel_list.append(m_col)
-        return meshmodel_list
+import wrs.manipulation.placement.flatsurface_placement as mp_fsp
 
 
 class FSRegraspPlanner(object):
 
     def __init__(self, robot, obj_cmodel, fs_reference_poses, reference_grasp_collection):
         self._graph = nx.Graph()
-        self._fsregspot_collection = FSRegSpotCollection(robot=robot,
-                                                         obj_cmodel=obj_cmodel,
-                                                         fs_reference_poses=fs_reference_poses,
-                                                         reference_grasp_collection=reference_grasp_collection)
+        self._fsregspot_collection = mp_fsp.FSRegSpotCollection(robot=robot,
+                                                                obj_cmodel=obj_cmodel,
+                                                                fs_reference_poses=fs_reference_poses,
+                                                                reference_grasp_collection=reference_grasp_collection)
         self.pp_planner = ppp.PickPlacePlanner(robot)
         self._global_nodes_by_gid = [[] for _ in range(len(reference_grasp_collection))]
         self._plot_g_radius = .01
@@ -124,10 +28,10 @@ class FSRegraspPlanner(object):
         self._g_angle_interval = rm.pi * 2 / self._n_reference_grasps
 
     def add_fsregspot_collection_from_disk(self, file_name):
-        fsregspot_collection = FSRegSpotCollection(robot=self.robot,
-                                                   obj_cmodel=self.obj_cmodel,
-                                                   fs_reference_poses=self.fs_reference_poses,
-                                                   reference_grasp_collection=self.reference_grasp_collection)
+        fsregspot_collection = mp_fsp.FSRegSpotCollection(robot=self.robot,
+                                                          obj_cmodel=self.obj_cmodel,
+                                                          fs_reference_poses=self.fs_reference_poses,
+                                                          reference_grasp_collection=self.reference_grasp_collection)
         fsregspot_collection.load_from_disk(file_name)
         self._fsregspot_collection += fsregspot_collection
         self._add_fsregspot_collection_to_graph(fsregspot_collection)
@@ -165,11 +69,11 @@ class FSRegraspPlanner(object):
         self._add_fsregspot_to_graph(self._fsregspot_collection[-1])
 
     def add_start_pose(self, obj_pose, obstacle_list=None, plot_pose_xy=None, toggle_dbg=False):
-        start_pg = mpgp.PG.create_from_pose(self.robot,
-                                            self.reference_grasp_collection,
-                                            obj_pose,
-                                            obstacle_list=obstacle_list,
-                                            consider_robot=True, toggle_dbg=toggle_dbg)
+        start_pg = mp_gp.GPG.create_from_pose(self.robot,
+                                              self.reference_grasp_collection,
+                                              obj_pose,
+                                              obstacle_list=obstacle_list,
+                                              consider_robot=True, toggle_dbg=toggle_dbg)
         if start_pg is None:
             print("No feasible grasps found at the start pose")
             return None
@@ -178,11 +82,11 @@ class FSRegraspPlanner(object):
         return self._add_fspg_to_graph(start_pg, plot_pose_xy=plot_pose_xy, prefix='start')
 
     def add_goal_pose(self, obj_pose, obstacle_list=None, plot_pose_xy=None, toggle_dbg=False):
-        goal_pg = mpgp.PG.create_from_pose(self.robot,
-                                           self.reference_grasp_collection,
-                                           obj_pose,
-                                           obstacle_list=obstacle_list,
-                                           consider_robot=True, toggle_dbg=toggle_dbg)
+        goal_pg = mp_gp.GPG.create_from_pose(self.robot,
+                                             self.reference_grasp_collection,
+                                             obj_pose,
+                                             obstacle_list=obstacle_list,
+                                             consider_robot=True, toggle_dbg=toggle_dbg)
         if goal_pg is None:
             print("No feasible grasps found at the goal pose")
             return None
@@ -205,7 +109,7 @@ class FSRegraspPlanner(object):
                 plot_pose_y = spot_y + self._plot_p_radius * rm.cos(fspg.fs_pose_id * self._p_angle_interval)
                 local_nodes = []
                 obj_pose = fspg.obj_pose
-                for gid, grasp, jnt_values in zip(fspg.feasible_gids, fspg.feasible_grasps, fspg.feasible_jv_list):
+                for gid, grasp, jnt_values in zip(fspg.feasible_gids, fspg.feasible_grasps, fspg.feasible_confs):
                     local_nodes.append(uuid.uuid4())
                     plot_grasp_x = plot_pose_x + self._plot_g_radius * rm.sin(gid * self._g_angle_interval)
                     plot_grasp_y = plot_pose_y + self._plot_g_radius * rm.cos(gid * self._g_angle_interval)
@@ -236,12 +140,12 @@ class FSRegraspPlanner(object):
         new_global_nodes_by_gid = [[] for _ in range(len(self.reference_grasp_collection))]
         spot_x = fsregspot.pos[0]
         spot_y = fsregspot.pos[1]
-        for fspg in fsregspot.fspgs:
+        for fspg in fsregspot.fspg_list:
             plot_pose_x = spot_x + self._plot_p_radius * rm.sin(fspg.fsp_pose_id * self._p_angle_interval)
             plot_pose_y = spot_y + self._plot_p_radius * rm.cos(fspg.fsp_pose_id * self._p_angle_interval)
             local_nodes = []
             obj_pose = fspg.obj_pose
-            for gid, grasp, jnt_values in zip(fspg.feasible_gids, fspg.feasible_grasps, fspg.feasible_jv_list):
+            for gid, grasp, jnt_values in zip(fspg.feasible_gids, fspg.feasible_grasps, fspg.feasible_confs):
                 local_nodes.append(uuid.uuid4())
                 plot_grasp_x = plot_pose_x + self._plot_g_radius * rm.sin(gid * self._g_angle_interval)
                 plot_grasp_y = plot_pose_y + self._plot_g_radius * rm.cos(gid * self._g_angle_interval)
@@ -270,7 +174,7 @@ class FSRegraspPlanner(object):
         new_global_nodes_by_gid = [[] for _ in range(len(self.reference_grasp_collection))]
         local_nodes = []
         obj_pose = fspg.obj_pose
-        for gid, grasp, jnt_values in zip(fspg.feasible_gids, fspg.feasible_grasps, fspg.feasible_jv_list):
+        for gid, grasp, jnt_values in zip(fspg.feasible_gids, fspg.feasible_grasps, fspg.feasible_confs):
             local_nodes.append(uuid.uuid4())
             plot_grasp_x = plot_pose_xy[0] + self._plot_g_radius * rm.sin(gid * self._g_angle_interval)
             plot_grasp_y = plot_pose_xy[1] + self._plot_g_radius * rm.cos(gid * self._g_angle_interval)
@@ -328,7 +232,7 @@ class FSRegraspPlanner(object):
         self.draw_path(path)
         plt.show()
 
-    def plan_by_obj_poses(self, start_pose, goal_pose, obstacle_list=[], toggle_dbg=False):
+    def plan_by_obj_poses(self, start_pose, goal_pose, obstacle_list=None, toggle_dbg=False):
         """
         :param start_pose: (pos, rotmat)
         :param goal_pose: (pos, rotmat)

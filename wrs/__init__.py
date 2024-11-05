@@ -15,7 +15,8 @@ from .robot_sim.robots.yumi import yumi as ym
 # grippers
 from .robot_sim.end_effectors.grippers.robotiq85 import robotiq85 as rtq85
 from .robot_sim.end_effectors.grippers.robotiqhe import robotiqhe as rtqhe
-from .robot_sim.end_effectors.grippers.yumi_gripper import yumi_gripper as yg
+from .robot_sim.end_effectors.grippers.yumi_gripper import yumi_gripper as yumi_g
+from .robot_sim.end_effectors.grippers.cobotta_gripper import cobotta_gripper as cbt_g
 
 # grasp
 from .grasping import grasp as gg
@@ -31,8 +32,9 @@ from .manipulation import pick_place as ppp
 from .motion.trajectory import topp_ra as toppra
 
 # manipulation
-from .manipulation.placement import flat_surface_placement as fsp
-from .manipulation import flat_surface_regrasp as fsreg
+from .manipulation.placement import flatsurface_placement as fsp
+from .manipulation.placement import handover_placement as hop
+from .manipulation import flatsurface_regrasp as fsreg
 
 __all__ = ['rm', 'mcm', 'mgm', 'wd',
            'cbt', 'x6wg2', 'ur3d', 'ur3ed', 'ko2fg', 'ym',
