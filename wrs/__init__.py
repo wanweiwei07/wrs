@@ -32,8 +32,8 @@ from .manipulation import pick_place as ppp
 from .motion.trajectory import topp_ra as toppra
 
 # manipulation
-from .manipulation.placement import flatsurface_placement as fsp
-from .manipulation.placement import handover_placement as hop
+from .manipulation.placement import flatsurface as fsp
+from .manipulation.placement import handover as hop
 from .manipulation import flatsurface_regrasp as fsreg
 
 __all__ = ['rm', 'mcm', 'mgm', 'wd',

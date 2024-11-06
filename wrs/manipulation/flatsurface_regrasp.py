@@ -1,40 +1,30 @@
-import uuid
-import pickle
-import itertools
-import networkx as nx
+import uuid, itertools, networkx
 import matplotlib.pyplot as plt
 import wrs.basis.robot_math as rm
 import wrs.manipulation.pick_place as ppp
-import wrs.manipulation.placement.general_placement as mp_gp
+import wrs.manipulation.placement.common as mp_gp
 import wrs.motion.motion_data as motd
-import wrs.manipulation.placement.flatsurface_placement as mp_fsp
+import wrs.manipulation.placement.flatsurface as mp_fsp
 
 
 class FSRegraspPlanner(object):
 
     def __init__(self, robot, obj_cmodel, fs_reference_poses, reference_grasp_collection):
-        self._graph = nx.Graph()
+        self._graph = networkx.Graph()
         self._fsregspot_collection = mp_fsp.FSRegSpotCollection(robot=robot,
                                                                 obj_cmodel=obj_cmodel,
                                                                 fs_reference_poses=fs_reference_poses,
                                                                 reference_grasp_collection=reference_grasp_collection)
         self.pp_planner = ppp.PickPlacePlanner(robot)
-        self._global_nodes_by_gid = [[] for _ in range(len(reference_grasp_collection))]
+        self._global_nodes_by_gid = {}
+        for id in range(len(reference_grasp_collection)):
+            self._global_nodes_by_gid[id] = []
         self._plot_g_radius = .01
         self._plot_p_radius = 0.05
         self._n_fs_reference_poses = len(fs_reference_poses)
         self._n_reference_grasps = len(reference_grasp_collection)
         self._p_angle_interval = rm.pi * 2 / self._n_fs_reference_poses
         self._g_angle_interval = rm.pi * 2 / self._n_reference_grasps
-
-    def add_fsregspot_collection_from_disk(self, file_name):
-        fsregspot_collection = mp_fsp.FSRegSpotCollection(robot=self.robot,
-                                                          obj_cmodel=self.obj_cmodel,
-                                                          fs_reference_poses=self.fs_reference_poses,
-                                                          reference_grasp_collection=self.reference_grasp_collection)
-        fsregspot_collection.load_from_disk(file_name)
-        self._fsregspot_collection += fsregspot_collection
-        self._add_fsregspot_collection_to_graph(fsregspot_collection)
 
     @property
     def robot(self):
@@ -52,11 +42,14 @@ class FSRegraspPlanner(object):
     def reference_grasp_collection(self):
         return self._fsregspot_collection.reference_grasp_collection
 
-    # def load_spotfspgs_col_from_disk(self, file_name):
-    #     self.regspot_col.load_from_disk(file_name)
-    #
-    # def save_spotfspgs_col_to_disk(self, file_name):
-    #     self.regspot_col.save_to_disk(file_name)
+    def add_fsregspot_collection_from_disk(self, file_name):
+        fsregspot_collection = mp_fsp.FSRegSpotCollection(robot=self.robot,
+                                                          obj_cmodel=self.obj_cmodel,
+                                                          fs_reference_poses=self.fs_reference_poses,
+                                                          reference_grasp_collection=self.reference_grasp_collection)
+        fsregspot_collection.load_from_disk(file_name)
+        self._fsregspot_collection += fsregspot_collection
+        self._add_fsregspot_collection_to_graph(fsregspot_collection)
 
     def save_to_disk(self, file_name):
         pass
@@ -100,7 +93,9 @@ class FSRegraspPlanner(object):
         :param fsregspot_collection: an instance of FSRegSpotCollection or a list of FSRegSpot
         :return:
         """
-        new_global_nodes_by_gid = [[] for _ in range(len(self.reference_grasp_collection))]
+        new_global_nodes_by_gid = {}
+        for id in range(len(self.reference_grasp_collection)):
+            new_global_nodes_by_gid[id] = []
         for fsregspot in fsregspot_collection:
             spot_x = fsregspot.pos[0]
             spot_y = fsregspot.pos[1]

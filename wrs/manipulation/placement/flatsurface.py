@@ -6,7 +6,7 @@ import wrs.modeling.geometric_model as mgm
 import wrs.modeling.collision_model as mcm
 import wrs.modeling.model_collection as mmc
 import wrs.modeling._ode_cdhelper as moh
-import wrs.manipulation.placement.general_placement as mp_pg
+import wrs.manipulation.placement.common as mp_pg
 import wrs.grasping.planning.segmentation as seg
 import wrs.grasping.reasoner as gr
 

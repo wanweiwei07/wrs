@@ -3,7 +3,7 @@ import time
 import numpy as np
 from wrs import wd, rm, mcm
 import wrs.bench_mark.ycb as ycb
-import wrs.manipulation.placement.flatsurface_placement as mpfsp
+import wrs.manipulation.placement.flatsurface as mpfsp
 import wrs.manipulation.regrasp as reg
 
 

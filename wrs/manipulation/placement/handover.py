@@ -1,7 +1,7 @@
 import pickle
 import wrs.basis.robot_math as rm
 import wrs.modeling.model_collection as mmc
-import wrs.manipulation.placement.general_placement as mp_pg
+import wrs.manipulation.placement.common as mp_pg
 import wrs.grasping.reasoner as gr
 
 
@@ -57,6 +57,14 @@ class HOPGCollection(object):
         self.sender_reasoner = gr.GraspReasoner(sender_robot, sender_reference_grasp_collection)
         self.receiver_reasoner = gr.GraspReasoner(receiver_robot, receiver_reference_grasp_collection)
         self._hopg_list = []
+
+    @property
+    def sender_reference_grasp_collection(self):
+        return self.sender_reasoner.reference_grasp_collection
+
+    @property
+    def receiver_reference_grasp_collection(self):
+        return self.receiver_reasoner.reference_grasp_collection
 
     def load_from_disk(self, file_name="hopg_collection.pickle"):
         with open(file_name, 'rb') as file:
@@ -152,6 +160,13 @@ class HOPGCollection(object):
                                             feasible_confs=feasible_receiver_confs))
         # base.run()
         self.sender_robot.toggle_on_eecd()
+
+    def copy(self):
+        return HOPGCollection(obj_cmodel=self.obj_cmodel,
+                              sender_robot=self.sender_robot,
+                              receiver_robot=self.receiver_robot,
+                              sender_reference_grasp_collection=self.sender_reference_grasp_collection,
+                              receiver_reference_grasp_collection=self.receiver_reference_grasp_collection)
 
     def gen_meshmodel(self):
         meshmodel_list = []
