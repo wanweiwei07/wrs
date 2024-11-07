@@ -1,6 +1,4 @@
 import os
-import time
-import networkx as nx
 from wrs import wd, rm, mcm, ko2fg, fsp, fsreg, gg
 
 mesh_name = "bracketR1"

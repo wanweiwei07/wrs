@@ -35,6 +35,7 @@ from .motion.trajectory import topp_ra as toppra
 from .manipulation.placement import flatsurface as fsp
 from .manipulation.placement import handover as hop
 from .manipulation import flatsurface_regrasp as fsreg
+from .manipulation import handover_regrasp as horeg
 
 __all__ = ['rm', 'mcm', 'mgm', 'wd',
            'cbt', 'x6wg2', 'ur3d', 'ur3ed', 'ko2fg', 'ym',

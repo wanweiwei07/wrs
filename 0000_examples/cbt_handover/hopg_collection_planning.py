@@ -22,8 +22,8 @@ sender_reference_grasps = gg.GraspCollection.load_from_disk(file_name=grasp_path
 receiver_reference_grasps = copy.deepcopy(sender_reference_grasps)
 
 hopg_collection = hop.HOPGCollection(obj_cmodel=obj_cmodel, sender_robot=cbt1, receiver_robot=cbt2,
-                                     sender_reference_grasp_collection=sender_reference_grasps,
-                                     receiver_reference_grasp_collection=receiver_reference_grasps)
+                                     sender_reference_grasps=sender_reference_grasps,
+                                     receiver_reference_grasps=receiver_reference_grasps)
 hopg_collection.add_new_hop(pos=rm.vec(0, 0, .4), rotmat=rm.rotmat_from_euler(rm.pi/2,0,0))
 hopg_collection.save_to_disk(file_name=hopgcollection_path)
 

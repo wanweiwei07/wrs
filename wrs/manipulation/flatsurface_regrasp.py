@@ -121,7 +121,8 @@ class FSRegraspPlanner(object):
             new_global_nodes = new_global_nodes_by_gid[i]
             original_global_nodes = self._global_nodes_by_gid[i]
             for node_pair in itertools.product(new_global_nodes, original_global_nodes):
-                self._graph.add_edge(node_pair[0], node_pair[1], type='transfer')
+                if node_pair[0] != node_pair[1]:
+                    self._graph.add_edge(node_pair[0], node_pair[1], type='transfer')
         # for global_nodes in tqdm(self._global_nodes_by_gid):
         #     for global_node_pair in itertools.combinations(global_nodes, 2):
         #         self.fsreg_graph.add_edge(global_node_pair[0], global_node_pair[1], type='transfer')
@@ -157,7 +158,8 @@ class FSRegraspPlanner(object):
             new_global_nodes = new_global_nodes_by_gid[i]
             original_global_nodes = self._global_nodes_by_gid[i]
             for node_pair in itertools.product(new_global_nodes, original_global_nodes):
-                self._graph.add_edge(node_pair[0], node_pair[1], type='transfer')
+                if node_pair[0] != node_pair[1]:
+                    self._graph.add_edge(node_pair[0], node_pair[1], type='transfer')
 
     def _add_fspg_to_graph(self, fspg, plot_pose_xy, prefix=''):
         """
@@ -179,7 +181,7 @@ class FSRegraspPlanner(object):
                                  jnt_values=jnt_values,
                                  plot_xy=(plot_grasp_x, plot_grasp_y))
             new_global_nodes_by_gid[gid].append(local_nodes[-1])
-            self._global_nodes_by_gid[gid].append(local_nodes[-1])
+            # self._global_nodes_by_gid[gid].append(local_nodes[-1])
         for node_pair in itertools.combinations(local_nodes, 2):
             self._graph.add_edge(node_pair[0], node_pair[1], type=prefix + '_transit')
         for i in range(len(self.reference_grasp_collection)):
@@ -187,6 +189,7 @@ class FSRegraspPlanner(object):
             original_global_nodes = self._global_nodes_by_gid[i]
             for node_pair in itertools.product(new_global_nodes, original_global_nodes):
                 self._graph.add_edge(node_pair[0], node_pair[1], type=prefix + '_transfer')
+            original_global_nodes.extend(new_global_nodes)
         return local_nodes
 
     def draw_graph(self):
@@ -240,7 +243,7 @@ class FSRegraspPlanner(object):
             min_path = None
             for start in start_node_list:
                 for goal in goal_node_list:
-                    path = nx.shortest_path(self._graph, source=start, target=goal)
+                    path = networkx.shortest_path(self._graph, source=start, target=goal)
                     min_path = path if min_path is None else path if len(path) < len(min_path) else min_path
             result = self.gen_regrasp_motion(path=min_path, obstacle_list=obstacle_list, toggle_dbg=toggle_dbg)
             print(result)

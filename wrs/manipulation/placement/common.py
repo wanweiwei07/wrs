@@ -34,7 +34,7 @@ class GPG(object):
 
     @staticmethod
     def create_from_pose(robot, reference_grasp_collection, obj_pose, obstacle_list=None,
-                         other_robot_list=None, consider_robot=True, toggle_dbg=False):
+                         consider_robot=True, toggle_dbg=False):
         pos = obj_pose[0]
         rotmat = obj_pose[1]
         grasp_reasoner = gr.GraspReasoner(robot, reference_grasp_collection)

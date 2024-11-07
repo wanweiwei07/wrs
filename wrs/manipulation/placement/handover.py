@@ -1,27 +1,30 @@
 import pickle
 import wrs.basis.robot_math as rm
 import wrs.modeling.model_collection as mmc
-import wrs.manipulation.placement.common as mp_pg
 import wrs.grasping.reasoner as gr
 
 
-class HOPG(mp_pg.GPG):
+class HOPG(object):
 
     def __init__(self,
+                 obj_pose,
                  sender_gid,
                  sender_grasp,
                  sender_conf,
-                 obj_pose,
-                 feasible_gids=None,
-                 feasible_grasps=None,
-                 feasible_confs=None):
-        super().__init__(obj_pose=obj_pose,
-                         feasible_gids=feasible_gids,
-                         feasible_grasps=feasible_grasps,
-                         feasible_confs=feasible_confs)
+                 receiver_gids,
+                 receiver_grasps,
+                 receiver_confs):
+        self._obj_pose = obj_pose
         self._sender_gid = sender_gid
         self._sender_grasp = sender_grasp
         self._sender_conf = sender_conf
+        self._receiver_gids = receiver_gids
+        self._receiver_grasps = receiver_grasps
+        self._receiver_confs = receiver_confs
+
+    @property
+    def obj_pose(self):
+        return self._obj_pose
 
     @property
     def sender_gid(self):
@@ -35,17 +38,30 @@ class HOPG(mp_pg.GPG):
     def sender_conf(self):
         return self._sender_conf
 
+    @property
+    def receiver_gids(self):
+        return self._receiver_gids
+
+    @property
+    def receiver_grasps(self):
+        return self._receiver_grasps
+
+    @property
+    def receiver_confs(self):
+        return self._receiver_confs
+
     def __str(self):
         return (f"sender_gid= {repr(self._sender_gid)}, "
                 f"sender_conf= {repr(self._sender_conf)}, "
                 f"pose= {repr(self._obj_pose)}, "
-                f"feasible receiver gids= {repr(self._feasible_gids)}, "
-                f"feasible receiver confs= {repr(self._feasible_confs)}")
+                f"receiver gids= {repr(self._receiver_gids)}, "
+                f"receiver grasps= {repr(self._receiver_grasps)}, "
+                f"receiver confs= {repr(self._receiver_confs)}")
 
 
 class HOPGCollection(object):
     def __init__(self, obj_cmodel=None, sender_robot=None, receiver_robot=None,
-                 sender_reference_grasp_collection=None, receiver_reference_grasp_collection=None):
+                 sender_reference_grasps=None, receiver_reference_grasps=None):
         """
         :param robot:
         :param reference_fsp_poses: an instance of ReferenceFSPPoses
@@ -54,8 +70,8 @@ class HOPGCollection(object):
         self.obj_cmodel = obj_cmodel
         self.sender_robot = sender_robot
         self.receiver_robot = receiver_robot
-        self.sender_reasoner = gr.GraspReasoner(sender_robot, sender_reference_grasp_collection)
-        self.receiver_reasoner = gr.GraspReasoner(receiver_robot, receiver_reference_grasp_collection)
+        self.sender_reasoner = gr.GraspReasoner(sender_robot, sender_reference_grasps)
+        self.receiver_reasoner = gr.GraspReasoner(receiver_robot, receiver_reference_grasps)
         self._hopg_list = []
 
     @property
@@ -155,9 +171,9 @@ class HOPGCollection(object):
                                             sender_grasp=sender_grasps[sid],
                                             sender_conf=sender_confs[sid],
                                             obj_pose=(pos, rotmat),
-                                            feasible_gids=feasible_receiver_gids,
-                                            feasible_grasps=feasible_receiver_grasps,
-                                            feasible_confs=feasible_receiver_confs))
+                                            receiver_gids=feasible_receiver_gids,
+                                            receiver_grasps=feasible_receiver_grasps,
+                                            receiver_confs=feasible_receiver_confs))
         # base.run()
         self.sender_robot.toggle_on_eecd()
 
@@ -165,8 +181,8 @@ class HOPGCollection(object):
         return HOPGCollection(obj_cmodel=self.obj_cmodel,
                               sender_robot=self.sender_robot,
                               receiver_robot=self.receiver_robot,
-                              sender_reference_grasp_collection=self.sender_reference_grasp_collection,
-                              receiver_reference_grasp_collection=self.receiver_reference_grasp_collection)
+                              sender_reference_grasps=self.sender_reference_grasp_collection,
+                              receiver_reference_grasps=self.receiver_reference_grasp_collection)
 
     def gen_meshmodel(self):
         meshmodel_list = []
@@ -179,9 +195,7 @@ class HOPGCollection(object):
             sender_conf = hopg.sender_conf
             self.sender_robot.goto_given_conf(jnt_values=sender_conf, ee_values=sender_grasp.ee_values)
             self.sender_robot.gen_meshmodel(rgb=rm.const.red, alpha=.7).attach_to(m_col)
-            receiver_grasps = hopg.feasible_grasps
-            receiver_confs = hopg.feasible_confs
-            for grasp, conf in zip(receiver_grasps, receiver_confs):
+            for grasp, conf in zip(hopg.receiver_grasps, hopg.receiver_confs):
                 self.receiver_robot.goto_given_conf(jnt_values=conf, ee_values=grasp.ee_values)
                 self.receiver_robot.gen_meshmodel(rgb=rm.const.blue, alpha=.7).attach_to(m_col)
             meshmodel_list.append(m_col)
