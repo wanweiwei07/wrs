@@ -64,9 +64,7 @@ def rotmat_from_axangle(ax, angle):
 
 def rotmat_from_quaternion(quaternion):
     """
-    convert a quaterion to rotmat
-    """
-    return Rotation.from_quat(quaternion).as_matrix()
+    Previous implementation is as below, abandoned on 20241108
     # q = np.array(quaternion, dtype=np.float64, copy=True)
     # n = np.dot(q, q)
     # if n < _EPS:
@@ -77,6 +75,8 @@ def rotmat_from_quaternion(quaternion):
     #     [1.0 - q[2, 2] - q[3, 3], q[1, 2] - q[3, 0], q[1, 3] + q[2, 0]],
     #     [q[1, 2] + q[3, 0], 1.0 - q[1, 1] - q[3, 3], q[2, 3] - q[1, 0]],
     #     [q[1, 3] - q[2, 0], q[2, 3] + q[1, 0], 1.0 - q[1, 1] - q[2, 2]]])
+    """
+    return Rotation.from_quat(quaternion).as_matrix()
 
 
 def rotmat_to_quaternion(rotmat):
@@ -558,7 +558,8 @@ def quaternion_about_axis(angle, axis):
 
 
 def quaternion_to_rotmat(quaternion):
-    return Rotation.from_quat(quaternion).as_matrix()
+    """
+    Previous implementation is as below, abandoned on 20241108
     # q = np.array(quaternion, dtype=np.float64, copy=True)
     # n = np.dot(q, q)
     # if n < _EPS:
@@ -569,13 +570,13 @@ def quaternion_to_rotmat(quaternion):
     #     [1.0 - q[2, 2] - q[3, 3], q[1, 2] - q[3, 0], q[1, 3] + q[2, 0]],
     #     [q[1, 2] + q[3, 0], 1.0 - q[1, 1] - q[3, 3], q[2, 3] - q[1, 0]],
     #     [q[1, 3] - q[2, 0], q[2, 3] + q[1, 0], 1.0 - q[1, 1] - q[2, 2]]])
+    """
+    return Rotation.from_quat(quaternion).as_matrix()
 
 
 def quaternion_from_rotmat(rotmat):
     """
-    return quaternion from rotation matrix
-    """
-    return Rotation.from_matrix(rotmat).as_quat()
+    Previous implementation is as below, abandoned on 20241108
     # q = np.empty((4,))
     # t = np.trace(rotmat)
     # q[0] = t
@@ -585,6 +586,8 @@ def quaternion_from_rotmat(rotmat):
     # if q[0] < 0.0:
     #     np.negative(q, q)
     # return q
+    """
+    return Rotation.from_matrix(rotmat).as_quat()
 
 
 def quaternion_multiply(quaternion1, quaternion0):
