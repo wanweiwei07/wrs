@@ -97,36 +97,36 @@ def rotmat_to_wvec(rotmat):
     return Rotation.from_matrix(rotmat).as_rotvec()
 
 
-def rotmat_from_normal(surfacenormal):
+def rotmat_from_normal(surface_normal):
     '''
     Compute the rotation matrix of a 3D mesh using a surface normal
-    :param surfacenormal: 1x3 nparray
+    :param surface_normal: 1x3 nparray
     :return: 3x3 rotmat
     date: 20160624
     author: weiwei
     '''
     rotmat = np.eye(3, 3)
-    rotmat[:, 2] = unit_vector(surfacenormal)
+    rotmat[:, 2] = unit_vector(surface_normal)
     rotmat[:, 0] = orthogonal_vector(rotmat[:, 2], toggle_unit=True)
     rotmat[:, 1] = np.cross(rotmat[:, 2], rotmat[:, 0])
     return rotmat
 
 
-def rotmat_from_normalandpoints(facetnormal, facetfirstpoint, facetsecondpoint):
+def rotmat_from_normalandpoints(facet_normal, facet_first_pnt, facet_second_pnt):
     '''
     Compute the rotation matrix of a 3D facet using
     facet_normal and the first two points on the facet
     The function uses the concepts defined by Trimesh
-    :param facetnormal: 1x3 nparray
-    :param facetfirstpoint: 1x3 nparray
-    :param facetsecondpoint: 1x3 nparray
+    :param facet_normal: 1x3 nparray
+    :param facet_first_pnt: 1x3 nparray
+    :param facet_second_pnt: 1x3 nparray
     :return: 3x3 rotmat
     date: 20160624
     author: weiwei
     '''
     rotmat = np.eye(3, 3)
-    rotmat[:, 2] = unit_vector(facetnormal)
-    rotmat[:, 0] = unit_vector(facetsecondpoint - facetfirstpoint)
+    rotmat[:, 2] = unit_vector(facet_normal)
+    rotmat[:, 0] = unit_vector(facet_second_pnt - facet_first_pnt)
     if np.allclose(rotmat[:, 0], 0):
         warnings.warn("The provided facetpoints are the same! An autocomputed vector is used instead...")
         rotmat[:, 0] = orthogonal_vector(rotmat[:, 2], toggle_unit=True)
@@ -245,19 +245,19 @@ def rotmat_between_vectors(v1, v2):
     return rotmat_from_axangle(axis, theta)
 
 
-def rotmat_average(rotmatlist, bandwidth=10):
+def rotmat_average(rotmat_list, bandwidth=10):
     """
     average a list of rotmat (3x3)
-    :param rotmatlist:
+    :param rotmat_list:
     :param denoise: meanshift denoising is applied if True
     :return:
     author: weiwei
     date: 20190422
     """
-    if len(rotmatlist) == 0:
+    if len(rotmat_list) == 0:
         return False
     quaternion_list = []
-    for rotmat in rotmatlist:
+    for rotmat in rotmat_list:
         quaternion_list.append(quaternion_from_rotmat(rotmat))
     quat_avg = quaternion_average(quaternion_list, bandwidth=bandwidth)
     rotmat_avg = rotmat_from_quaternion(quat_avg)
