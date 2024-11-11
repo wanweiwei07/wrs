@@ -16,7 +16,7 @@ reference_grasps = gg.GraspCollection.load_from_disk(file_name="reference_grasps
 fsreg_planner = fsreg.FSRegraspPlanner(robot=robot,
                                        obj_cmodel=bunny,
                                        fs_reference_poses=fs_reference_poses,
-                                       reference_grasp_collection=reference_grasps)
+                                       reference_gc=reference_grasps)
 fsreg_planner.add_fsregspot_collection_from_disk("regspot_collection_x6wg2_bunny.pickle")
 
 start_node_list = fsreg_planner.add_start_pose(obj_pose=(rm.np.array([.2, .2, 0]), rm.np.eye(3)),

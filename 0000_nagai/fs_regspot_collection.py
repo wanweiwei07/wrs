@@ -17,9 +17,9 @@ robot = ko2fg.KHI_OR2FG7()
 fs_reference_poses = fsp.FSReferencePoses.load_from_disk(file_name=fsref_pose_path)
 reference_grasps = gg.GraspCollection.load_from_disk(file_name=grasp_path)
 fsregspot_collection = fsp.FSRegSpotCollection(robot=robot,
-                                                 obj_cmodel=bunny,
-                                                 fs_reference_poses=fs_reference_poses,
-                                                 reference_grasp_collection=reference_grasps)
+                                               obj_cmodel=bunny,
+                                               fs_reference_poses=fs_reference_poses,
+                                               reference_gc=reference_grasps)
 fsregspot_collection.add_new_spot(spot_pos=rm.np.array([.5, 0, 0]), spot_rotz=0)
 fsregspot_collection.add_new_spot(spot_pos=rm.np.array([.5, .3, 0]), spot_rotz=0)
 fsregspot_collection.add_new_spot(spot_pos=rm.np.array([.5, -.3, 0]), spot_rotz=0)

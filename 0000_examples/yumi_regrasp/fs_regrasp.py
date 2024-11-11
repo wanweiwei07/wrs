@@ -17,7 +17,7 @@ reference_grasps = gg.GraspCollection.load_from_disk(file_name=grasp_path)
 fsreg_planner = fsreg.FSRegraspPlanner(robot=robot.lft_arm,
                                        obj_cmodel=obj,
                                        fs_reference_poses=fs_reference_poses,
-                                       reference_grasp_collection=reference_grasps)
+                                       reference_gc=reference_grasps)
 fsreg_planner.add_fsregspot_collection_from_disk(regspot_path)
 
 start_pose = (rm.np.array([.4, .3, .0]), rm.np.eye(3))

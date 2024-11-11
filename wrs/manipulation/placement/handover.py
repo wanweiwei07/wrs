@@ -61,26 +61,26 @@ class HOPG(object):
 
 class HOPGCollection(object):
     def __init__(self, obj_cmodel=None, sender_robot=None, receiver_robot=None,
-                 sender_reference_grasps=None, receiver_reference_grasps=None):
+                 sender_reference_gc=None, receiver_reference_gc=None):
         """
         :param robot:
         :param reference_fsp_poses: an instance of ReferenceFSPPoses
-        :param reference_grasp_collection: an instance of GraspCollection
+        :param reference_gc: an instance of GraspCollection
         """
         self.obj_cmodel = obj_cmodel
         self.sender_robot = sender_robot
         self.receiver_robot = receiver_robot
-        self.sender_reasoner = gr.GraspReasoner(sender_robot, sender_reference_grasps)
-        self.receiver_reasoner = gr.GraspReasoner(receiver_robot, receiver_reference_grasps)
+        self.sender_reasoner = gr.GraspReasoner(sender_robot, sender_reference_gc)
+        self.receiver_reasoner = gr.GraspReasoner(receiver_robot, receiver_reference_gc)
         self._hopg_list = []
 
     @property
-    def sender_reference_grasp_collection(self):
-        return self.sender_reasoner.reference_grasp_collection
+    def sender_reference_gc(self):
+        return self.sender_reasoner.reference_gc
 
     @property
-    def receiver_reference_grasp_collection(self):
-        return self.receiver_reasoner.reference_grasp_collection
+    def receiver_reference_gc(self):
+        return self.receiver_reasoner.reference_gc
 
     def load_from_disk(self, file_name="hopg_collection.pickle"):
         with open(file_name, 'rb') as file:
@@ -181,8 +181,8 @@ class HOPGCollection(object):
         return HOPGCollection(obj_cmodel=self.obj_cmodel,
                               sender_robot=self.sender_robot,
                               receiver_robot=self.receiver_robot,
-                              sender_reference_grasps=self.sender_reference_grasp_collection,
-                              receiver_reference_grasps=self.receiver_reference_grasp_collection)
+                              sender_reference_gc=self.sender_reference_gc,
+                              receiver_reference_gc=self.receiver_reference_gc)
 
     def gen_meshmodel(self):
         meshmodel_list = []

@@ -33,11 +33,11 @@ class GPG(object):
         return self._feasible_confs
 
     @staticmethod
-    def create_from_pose(robot, reference_grasp_collection, obj_pose, obstacle_list=None,
+    def create_from_pose(robot, reference_gc, obj_pose, obstacle_list=None,
                          consider_robot=True, toggle_dbg=False):
         pos = obj_pose[0]
         rotmat = obj_pose[1]
-        grasp_reasoner = gr.GraspReasoner(robot, reference_grasp_collection)
+        grasp_reasoner = gr.GraspReasoner(robot, reference_gc)
         feasible_gids, feasible_grasps, feasible_confs = grasp_reasoner.find_feasible_gids(
             obstacle_list=obstacle_list,
             goal_pose=(pos, rotmat),

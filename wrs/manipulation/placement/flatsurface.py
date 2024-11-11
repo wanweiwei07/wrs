@@ -148,18 +148,21 @@ class FSRegSpot(object):
 
 
 class FSRegSpotCollection(object):
-    def __init__(self, robot, obj_cmodel, fs_reference_poses, reference_grasp_collection):
+    def __init__(self, robot, obj_cmodel, fs_reference_poses, reference_gc):
         """
         :param robot:
         :param reference_fsp_poses: an instance of ReferenceFSPPoses
-        :param reference_grasp_collection: an instance of GraspCollection
+        :param reference_gc: an instance of GraspCollection
         """
         self.robot = robot
         self.obj_cmodel = obj_cmodel
         self.fs_reference_poses = fs_reference_poses
-        self.reference_grasp_collection = reference_grasp_collection
         self._fsregspot_list = []  # list of FSRegSpot
-        self.grasp_reasoner = gr.GraspReasoner(robot=robot, reference_grasp_collection=reference_grasp_collection)
+        self.grasp_reasoner = gr.GraspReasoner(robot=robot, reference_gc=reference_gc)
+
+    @property
+    def reference_gc(self):
+        return self.grasp_reasoner.reference_gc
 
     def load_from_disk(self, file_name="fsregspot_collection.pickle"):
         with open(file_name, 'rb') as file:

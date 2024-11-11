@@ -1,4 +1,4 @@
-import pickle
+import pickle, uuid
 
 
 class Grasp(object):
@@ -14,6 +14,7 @@ class Grasp(object):
 
 class GraspCollection(object):
     def __init__(self, end_effector=None, grasp_list=None):
+        self._uuid = uuid.uuid4()
         self.end_effector = end_effector
         if grasp_list is None:
             self._grasp_list = []
@@ -21,12 +22,16 @@ class GraspCollection(object):
             self._grasp_list = grasp_list
 
     @classmethod
-    def load_from_disk(cls, file_name="reference_grasp_collection.pickle"):
+    def load_from_disk(cls, file_name="reference_gc.pickle"):
         with open(file_name, 'rb') as file:
             obj = pickle.load(file)
             if not isinstance(obj, cls):
                 raise TypeError(f"Object in {file_name} is not an instance of {cls.__name__}")
             return obj
+
+    @property
+    def uuid(self):
+        return self._uuid
 
     def append(self, grasp):
         self._grasp_list.append(grasp)
@@ -69,9 +74,9 @@ class GraspCollection(object):
             out_str += "  " + str(grasp) + "\n"
         return out_str
 
-    def save_to_disk(self, file_name='reference_grasp_collection.pickle'):
+    def save_to_disk(self, file_name='reference_gc.pickle'):
         """
-        :param reference_grasp_collection:
+        :param reference_gc:
         :param file_name:
         :return:
         author: haochen, weiwei
