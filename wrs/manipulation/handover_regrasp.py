@@ -1,38 +1,40 @@
 import uuid, networkx, itertools
 import matplotlib.pyplot as plt
+import wrs.basis.robot_math as rm
 import wrs.manipulation.pick_place as ppp
 import wrs.manipulation.placement.handover as mp_hop
 
 
 class HandoverPlanner(object):
-    def __init__(self, obj_cmodel, sender_robot, receiver_robot,
-                 sender_reference_grasps, receiver_reference_grasps):
+    def __init__(self, obj_cmodel, sender_robot, receiver_robot, sender_reference_gc, receiver_reference_gc):
         self.obj_cmodel = obj_cmodel
         self.sender_robot = sender_robot
         self.receiver_robot = receiver_robot
         self._graph = networkx.Graph()
         self._plot_x_offset = .05
         self._plot_y_offset = .001
+        self._plot_g_radius = .01
+        self._plot_p_radius = 0.05
         self._hopg_collection = mp_hop.HOPGCollection(obj_cmodel=obj_cmodel,
                                                       sender_robot=sender_robot, receiver_robot=receiver_robot,
-                                                      sender_reference_gc=sender_reference_grasps,
-                                                      receiver_reference_gc=receiver_reference_grasps)
+                                                      sender_reference_gc=sender_reference_gc,
+                                                      receiver_reference_gc=receiver_reference_gc)
         self.sender_ppp = ppp.PickPlacePlanner(sender_robot)
         # dictionary for backtracking sender global connection
         self._sender_gl_nodes_by_gid = {}
-        for id in range(len(sender_reference_grasps)):
+        for id in range(len(sender_reference_gc)):
             self._sender_gl_nodes_by_gid[id] = []
         # dictionary for backtracking sender global connection
         self._receiver_gl_nodes_by_gid = {}
-        for id in range(len(receiver_reference_grasps)):
+        for id in range(len(receiver_reference_gc)):
             self._receiver_gl_nodes_by_gid[id] = []
 
     @property
-    def sender_reference_grasp_collection(self):
+    def sender_reference_gc(self):
         return self._hopg_collection.sender_reference_gc
 
     @property
-    def receiver_reference_grasp_collection(self):
+    def receiver_reference_gc(self):
         return self._hopg_collection.receiver_reference_gc
 
     def add_hopg_collection_from_disk(self, file_name):
@@ -43,10 +45,10 @@ class HandoverPlanner(object):
 
     def _add_hopg_collection_to_graph(self, hopg_collection):
         new_sender_gl_nodes_by_gid = {}
-        for id in range(len(self.sender_reference_grasp_collection)):
+        for id in range(len(self.sender_reference_gc)):
             new_sender_gl_nodes_by_gid[id] = []
         new_receiver_gl_nodes_by_gid = {}
-        for id in range(len(self.receiver_reference_grasp_collection)):
+        for id in range(len(self.receiver_reference_gc)):
             new_receiver_gl_nodes_by_gid[id] = []
         for hopg in hopg_collection:
             # each hopg includes several sid-rid_list pairs, the rid_lists may have repeatitions
@@ -78,49 +80,53 @@ class HandoverPlanner(object):
                     new_receiver_gl_nodes_by_gid[receiver_gid].append(receiver_gid2node[receiver_gid])
                     self._receiver_gl_nodes_by_gid[receiver_gid].append(receiver_gid2node[receiver_gid])
                 self._graph.add_edge(sender_node, receiver_gid2node[receiver_gid], type='handover')
-        for i in range(len(self.sender_reference_grasp_collection)):
+        for i in range(len(self.sender_reference_gc)):
             new_sender_gl_nodes = new_sender_gl_nodes_by_gid[i]
             original_sender_gl_nodes = self._sender_gl_nodes_by_gid[i]
             for node_pair in itertools.product(new_sender_gl_nodes, original_sender_gl_nodes):
                 if node_pair[0] != node_pair[1]:
                     self._graph.add_edge(node_pair[0], node_pair[1], type='transit')
-        for i in range(len(self.receiver_reference_grasp_collection)):
+        for i in range(len(self.receiver_reference_gc)):
             new_receiver_gl_nodes = new_receiver_gl_nodes_by_gid[i]
             original_receiver_gl_nodes = self._receiver_gl_nodes_by_gid[i]
             for node_pair in itertools.product(new_receiver_gl_nodes, original_receiver_gl_nodes):
                 if node_pair[0] != node_pair[1]:
                     self._graph.add_edge(node_pair[0], node_pair[1], type='transit')
 
-    # def _add_fspg_to_graph(self, fspg, plot_pose_xy, prefix=''):
-    #     """
-    #     add a fspg to the regrasp graph
-    #     :param fspg:
-    #     :param plot_pose_xy: specify where to plot the fspg
-    #     :return:
-    #     """
-    #     new_global_nodes_by_gid = [[] for _ in range(len(self.reference_gc))]
-    #     local_nodes = []
-    #     obj_pose = fspg.obj_pose
-    #     for gid, grasp, jnt_values in zip(fspg.feasible_gids, fspg.feasible_grasps, fspg.feasible_confs):
-    #         local_nodes.append(uuid.uuid4())
-    #         plot_grasp_x = plot_pose_xy[0] + self._plot_g_radius * rm.sin(gid * self._g_angle_interval)
-    #         plot_grasp_y = plot_pose_xy[1] + self._plot_g_radius * rm.cos(gid * self._g_angle_interval)
-    #         self._graph.add_node(local_nodes[-1],
-    #                              obj_pose=obj_pose,
-    #                              grasp=grasp,
-    #                              jnt_values=jnt_values,
-    #                              plot_xy=(plot_grasp_x, plot_grasp_y))
-    #         new_global_nodes_by_gid[gid].append(local_nodes[-1])
-    #         # self._global_nodes_by_gid[gid].append(local_nodes[-1])
-    #     for node_pair in itertools.combinations(local_nodes, 2):
-    #         self._graph.add_edge(node_pair[0], node_pair[1], type=prefix + '_transit')
-    #     for i in range(len(self.reference_gc)):
-    #         new_global_nodes = new_global_nodes_by_gid[i]
-    #         original_global_nodes = self._global_nodes_by_gid[i]
-    #         for node_pair in itertools.product(new_global_nodes, original_global_nodes):
-    #             self._graph.add_edge(node_pair[0], node_pair[1], type=prefix + '_transfer')
-    #         original_global_nodes.extend(new_global_nodes)
-    #     return local_nodes
+    def _add_fspg_to_graph(self, fspg, plot_pose_xy, prefix='', type="sender"):
+        """
+        add a fspg to the regrasp graph
+        :param fspg:
+        :param plot_pose_xy: specify where to plot the fspg
+        :param type="sender" or "receiver"
+        :return:
+        """
+        reference_gc = self.sender_reference_gc if type == "sender" else self.receiver_reference_gc
+        gl_nodes_by_gid = self._sender_gl_nodes_by_gid if type == "sender" else self._receiver_gl_nodes_by_gid
+        new_gl_nodes_by_gid = {}
+        for id in range(len(reference_gc)):
+            new_gl_nodes_by_gid[id] = []
+        g_angle_interval = 2 * rm.pi / len(reference_gc)
+        local_nodes = []
+        obj_pose = fspg.obj_pose
+        for gid, grasp, jnt_values in zip(fspg.feasible_gids, fspg.feasible_grasps, fspg.feasible_confs):
+            local_nodes.append(uuid.uuid4())
+            plot_grasp_x = plot_pose_xy[0] + self._plot_g_radius * rm.sin(gid * g_angle_interval)
+            plot_grasp_y = plot_pose_xy[1] + self._plot_g_radius * rm.cos(gid * g_angle_interval)
+            self._graph.add_node(local_nodes[-1],
+                                 obj_pose=obj_pose,
+                                 grasp=grasp,
+                                 jnt_values=jnt_values,
+                                 plot_xy=(plot_grasp_x, plot_grasp_y))
+            new_gl_nodes_by_gid[gid].append(local_nodes[-1])
+            # self._gl_nodes_by_gid[gid].append(local_nodes[-1])
+        # for node_pair in itertools.combinations(local_nodes, 2):
+        #     self._graph.add_edge(node_pair[0], node_pair[1], type=prefix + '_transit')
+        for i in range(len(self.reference_gc)):
+            for node_pair in itertools.product(new_gl_nodes_by_gid[i], gl_nodes_by_gid[i]):
+                self._graph.add_edge(node_pair[0], node_pair[1], type=prefix + '_transfer')
+            gl_nodes_by_gid[i].extend(new_gl_nodes_by_gid[i])
+        return local_nodes
 
     def draw_graph(self):
         # for regspot in self.regspot_col:

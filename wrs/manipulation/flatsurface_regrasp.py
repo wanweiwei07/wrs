@@ -16,9 +16,9 @@ class FSRegraspPlanner(object):
                                                                 fs_reference_poses=fs_reference_poses,
                                                                 reference_gc=reference_gc)
         self.pp_planner = ppp.PickPlacePlanner(robot)
-        self._global_nodes_by_gid = {}
+        self._gl_nodes_by_gid = {}
         for id in range(len(reference_gc)):
-            self._global_nodes_by_gid[id] = []
+            self._gl_nodes_by_gid[id] = []
         self._plot_g_radius = .01
         self._plot_p_radius = 0.05
         self._n_fs_reference_poses = len(fs_reference_poses)
@@ -93,9 +93,9 @@ class FSRegraspPlanner(object):
         :param fsregspot_collection: an instance of FSRegSpotCollection or a list of FSRegSpot
         :return:
         """
-        new_global_nodes_by_gid = {}
+        new_gl_nodes_by_gid = {}
         for id in range(len(self.reference_gc)):
-            new_global_nodes_by_gid[id] = []
+            new_gl_nodes_by_gid[id] = []
         for fsregspot in fsregspot_collection:
             spot_x = fsregspot.pos[0]
             spot_y = fsregspot.pos[1]
@@ -113,17 +113,15 @@ class FSRegraspPlanner(object):
                                          grasp=grasp,
                                          jnt_values=jnt_values,
                                          plot_xy=(plot_grasp_x, plot_grasp_y))
-                    new_global_nodes_by_gid[gid].append(local_nodes[-1])
-                    self._global_nodes_by_gid[gid].append(local_nodes[-1])
+                    new_gl_nodes_by_gid[gid].append(local_nodes[-1])
+                    self._gl_nodes_by_gid[gid].append(local_nodes[-1])
                 for node_pair in itertools.combinations(local_nodes, 2):
                     self._graph.add_edge(node_pair[0], node_pair[1], type='transit')
         for i in range(len(self.reference_gc)):
-            new_global_nodes = new_global_nodes_by_gid[i]
-            original_global_nodes = self._global_nodes_by_gid[i]
-            for node_pair in itertools.product(new_global_nodes, original_global_nodes):
+            for node_pair in itertools.product(new_gl_nodes_by_gid[i], self._gl_nodes_by_gid[i]):
                 if node_pair[0] != node_pair[1]:
                     self._graph.add_edge(node_pair[0], node_pair[1], type='transfer')
-        # for global_nodes in tqdm(self._global_nodes_by_gid):
+        # for global_nodes in tqdm(self._gl_nodes_by_gid):
         #     for global_node_pair in itertools.combinations(global_nodes, 2):
         #         self.fsreg_graph.add_edge(global_node_pair[0], global_node_pair[1], type='transfer')
 
@@ -133,7 +131,9 @@ class FSRegraspPlanner(object):
         :param fsregspot:
         :return:
         """
-        new_global_nodes_by_gid = [[] for _ in range(len(self.reference_gc))]
+        new_gl_nodes_by_gid = {}
+        for id in range(len(self.reference_gc)):
+            new_gl_nodes_by_gid[id] = []
         spot_x = fsregspot.pos[0]
         spot_y = fsregspot.pos[1]
         for fspg in fsregspot.fspg_list:
@@ -150,14 +150,12 @@ class FSRegraspPlanner(object):
                                      grasp=grasp,
                                      jnt_values=jnt_values,
                                      plot_xy=(plot_grasp_x, plot_grasp_y))
-                new_global_nodes_by_gid[gid].append(local_nodes[-1])
-                self._global_nodes_by_gid[gid].append(local_nodes[-1])
+                new_gl_nodes_by_gid[gid].append(local_nodes[-1])
+                self._gl_nodes_by_gid[gid].append(local_nodes[-1])
             for node_pair in itertools.combinations(local_nodes, 2):
                 self._graph.add_edge(node_pair[0], node_pair[1], type='transit')
         for i in range(len(self.reference_gc)):
-            new_global_nodes = new_global_nodes_by_gid[i]
-            original_global_nodes = self._global_nodes_by_gid[i]
-            for node_pair in itertools.product(new_global_nodes, original_global_nodes):
+            for node_pair in itertools.product(new_gl_nodes_by_gid[i], self._gl_nodes_by_gid[i]):
                 if node_pair[0] != node_pair[1]:
                     self._graph.add_edge(node_pair[0], node_pair[1], type='transfer')
 
@@ -168,7 +166,9 @@ class FSRegraspPlanner(object):
         :param plot_pose_xy: specify where to plot the fspg
         :return:
         """
-        new_global_nodes_by_gid = [[] for _ in range(len(self.reference_gc))]
+        new_gl_nodes_by_gid = {}
+        for id in range(len(self.reference_gc)):
+            new_gl_nodes_by_gid[id] = []
         local_nodes = []
         obj_pose = fspg.obj_pose
         for gid, grasp, jnt_values in zip(fspg.feasible_gids, fspg.feasible_grasps, fspg.feasible_confs):
@@ -180,16 +180,14 @@ class FSRegraspPlanner(object):
                                  grasp=grasp,
                                  jnt_values=jnt_values,
                                  plot_xy=(plot_grasp_x, plot_grasp_y))
-            new_global_nodes_by_gid[gid].append(local_nodes[-1])
-            # self._global_nodes_by_gid[gid].append(local_nodes[-1])
+            new_gl_nodes_by_gid[gid].append(local_nodes[-1])
+            # self._gl_nodes_by_gid[gid].append(local_nodes[-1])
         for node_pair in itertools.combinations(local_nodes, 2):
             self._graph.add_edge(node_pair[0], node_pair[1], type=prefix + '_transit')
         for i in range(len(fspg._reference_grasps)):
-            new_global_nodes = new_global_nodes_by_gid[i]
-            original_global_nodes = self._global_nodes_by_gid[i]
-            for node_pair in itertools.product(new_global_nodes, original_global_nodes):
+            for node_pair in itertools.product(new_gl_nodes_by_gid[i], self._gl_nodes_by_gid[i]):
                 self._graph.add_edge(node_pair[0], node_pair[1], type=prefix + '_transfer')
-            original_global_nodes.extend(new_global_nodes)
+            self._gl_nodes_by_gid[i].extend(new_gl_nodes_by_gid[i])
         return local_nodes
 
     def draw_graph(self):

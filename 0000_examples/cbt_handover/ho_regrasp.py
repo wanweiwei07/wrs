@@ -21,7 +21,7 @@ obj_cmodel = mcm.CollisionModel(mesh_path)
 sender_reference_grasps = gg.GraspCollection.load_from_disk(file_name=grasp_path)
 receiver_reference_grasps = copy.deepcopy(sender_reference_grasps)
 regrasp_planner = horeg.HandoverPlanner(obj_cmodel=obj_cmodel, sender_robot=cbt1, receiver_robot=cbt2,
-                                        sender_reference_grasps=sender_reference_grasps,
-                                        receiver_reference_grasps=receiver_reference_grasps)
+                                        sender_reference_gc=sender_reference_grasps,
+                                        receiver_reference_gc=receiver_reference_grasps)
 regrasp_planner.add_hopg_collection_from_disk(hopgcollection_path)
 regrasp_planner.show_graph()
