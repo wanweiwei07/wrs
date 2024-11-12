@@ -54,44 +54,38 @@ class HandoverPlanner(object):
         :return:
         """
         # connect start and goal to sender and receiver graphs respectively
-        self.sender_fsreg_planner.add_start_pose(obj_pose=start_pose)
-        self.sender_fsreg_planner.add_goal_pose(obj_pose=goal_pose)
-        self.receiver_fsreg_planner.add_start_pose(obj_pose=start_pose)
-        self.receiver_fsreg_planner.add_goal_pose(obj_pose=goal_pose)
+        start_node_list = self.sender_fsreg_planner.add_start_pose(obj_pose=start_pose)
+        goal_node_list = self.sender_fsreg_planner.add_goal_pose(obj_pose=goal_pose)
+        start_node_list += self.receiver_fsreg_planner.add_start_pose(obj_pose=start_pose)
+        goal_node_list += self.receiver_fsreg_planner.add_goal_pose(obj_pose=goal_pose)
         # merge graphs
+        # add labels to subgraphs
         nx.set_node_attributes(self._graph, name="graph_id", values="handover")
         nx.set_node_attributes(self.sender_fsreg_planner.graph, name="graph_id", values="sender")
         nx.set_node_attributes(self.receiver_fsreg_planner.graph, name="graph_id", values="receiver")
-        # for node in self._graph.nodes():
-        #     self._graph[node]['graph_id'] = "handover"
-        # for node in self.sender_fsreg_planner.graph.nodes():
-        #     self.sender_fsreg_planner.graph[node]['graph_id']="sender"
-        # for node in self.receiver_fsreg_planner.graph.nodes():
-        #     self.receiver_fsreg_planner.graph[node]['graph_id']="receiver"
+        # add nodes and edges to self._graph
         self._graph.add_nodes_from(self.sender_fsreg_planner.graph.nodes(data=True))
         self._graph.add_edges_from(self.sender_fsreg_planner.graph.edges(data=True))
         self._graph.add_nodes_from(self.receiver_fsreg_planner.graph.nodes(data=True))
         self._graph.add_edges_from(self.receiver_fsreg_planner.graph.edges(data=True))
+        # connect subgraphs by adding new edges
         for i in range(len(self.sender_reference_gc)):
-            for node_pair in itertools.product(self._sender_gl_nodes_by_gid[i], self.sender_fsreg_planner.gl_nodes_by_gid[i]):
+            for node_pair in itertools.product(self._sender_gl_nodes_by_gid[i],
+                                               self.sender_fsreg_planner.gl_nodes_by_gid[i]):
                 self._graph.add_edge(node_pair[0], node_pair[1], type='transfer')
         for i in range(len(self.receiver_reference_gc)):
             for node_pair in itertools.product(self._receiver_gl_nodes_by_gid[i],
                                                self.receiver_fsreg_planner.gl_nodes_by_gid[i]):
                 self._graph.add_edge(node_pair[0], node_pair[1], type='transfer')
-
-        self.show_graph()
-
-
-        start_node_list = self.add_start_pose(obj_pose=start_pose, obstacle_list=obstacle_list)
-        goal_node_list = self.add_goal_pose(obj_pose=goal_pose, obstacle_list=obstacle_list)
-        self.show_graph()
+        # search paths
         while True:
             min_path = None
             for start in start_node_list:
                 for goal in goal_node_list:
                     path = networkx.shortest_path(self._graph, source=start, target=goal)
                     min_path = path if min_path is None else path if len(path) < len(min_path) else min_path
+            # segment the path
+
             result = self.gen_regrasp_motion(path=min_path, obstacle_list=obstacle_list, toggle_dbg=toggle_dbg)
             print(result)
             if result[0][0] == 's':  # success
