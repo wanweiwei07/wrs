@@ -21,7 +21,7 @@ class FSRegraspPlanner(object):
             self._gl_nodes_by_gid[id] = []
         self._plot_g_radius = .01
         self._plot_p_radius = 0.05
-        self._n_fs_reference_poses = len(fs_reference_poses)
+        self._n_fs_reference_poses = len(fs_reference_poses) if fs_reference_poses is not None else 1
         self._n_reference_grasps = len(reference_gc)
         self._p_angle_interval = rm.pi * 2 / self._n_fs_reference_poses
         self._g_angle_interval = rm.pi * 2 / self._n_reference_grasps
@@ -35,12 +35,20 @@ class FSRegraspPlanner(object):
         return self._fsregspot_collection.obj_cmodel
 
     @property
+    def graph(self):
+        return self._graph
+
+    @property
     def fs_reference_poses(self):
         return self._fsregspot_collection.fs_reference_poses
 
     @property
     def reference_gc(self):
         return self._fsregspot_collection.reference_gc
+
+    @property
+    def gl_nodes_by_gid(self):
+        return self._gl_nodes_by_gid
 
     def add_fsregspot_collection_from_disk(self, file_name):
         fsregspot_collection = mp_fsp.FSRegSpotCollection(robot=self.robot,
@@ -184,7 +192,7 @@ class FSRegraspPlanner(object):
             # self._gl_nodes_by_gid[gid].append(local_nodes[-1])
         for node_pair in itertools.combinations(local_nodes, 2):
             self._graph.add_edge(node_pair[0], node_pair[1], type=prefix + '_transit')
-        for i in range(len(fspg._reference_grasps)):
+        for i in range(len(self.reference_gc)):
             for node_pair in itertools.product(new_gl_nodes_by_gid[i], self._gl_nodes_by_gid[i]):
                 self._graph.add_edge(node_pair[0], node_pair[1], type=prefix + '_transfer')
             self._gl_nodes_by_gid[i].extend(new_gl_nodes_by_gid[i])

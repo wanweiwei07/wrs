@@ -24,4 +24,23 @@ regrasp_planner = horeg.HandoverPlanner(obj_cmodel=obj_cmodel, sender_robot=cbt1
                                         sender_reference_gc=sender_reference_grasps,
                                         receiver_reference_gc=receiver_reference_grasps)
 regrasp_planner.add_hopg_collection_from_disk(hopgcollection_path)
-regrasp_planner.show_graph()
+
+start_pose = (rm.np.array([.15, .15, .04]), rm.np.eye(3))
+goal_pose = (rm.np.array([-.15, -.15, .04]), rm.rotmat_from_euler(0, rm.pi, 0))
+obj_start = obj_cmodel.copy()
+obj_start.rgb = rm.const.red
+obj_start.pose = start_pose
+obj_start.attach_to(base)
+obj_goal = obj_cmodel.copy()
+obj_goal.rgb = rm.const.green
+obj_goal.pose = goal_pose
+obj_goal.attach_to(base)
+
+regrasp_planner.plan_by_obj_poses(start_pose=start_pose, goal_pose=goal_pose)
+# # base.run()
+# regrasp_planner.sender_fsreg_planner.add_start_pose(obj_pose=start_pose)
+# regrasp_planner.receiver_fsreg_planner.add_start_pose(obj_pose=start_pose)
+# regrasp_planner.sender_fsreg_planner.add_goal_pose(obj_pose=goal_pose)
+# regrasp_planner.receiver_fsreg_planner.add_goal_pose(obj_pose=goal_pose)
+#
+# regrasp_planner.show_graph()
