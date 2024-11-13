@@ -60,9 +60,8 @@ class HandoverPlanner(object):
         goal_node_list += self.receiver_fsreg_planner.add_goal_pose(obj_pose=goal_pose)
         # merge graphs
         # add labels to subgraphs
-        nx.set_node_attributes(self._graph, name="graph_id", values="handover")
-        nx.set_node_attributes(self.sender_fsreg_planner.graph, name="graph_id", values="sender")
-        nx.set_node_attributes(self.receiver_fsreg_planner.graph, name="graph_id", values="receiver")
+        nx.set_node_attributes(self.sender_fsreg_planner.graph, name="robot_name", values=self.sender_robot.name)
+        nx.set_node_attributes(self.receiver_fsreg_planner.graph, name="robot_name", values=self.receiver_robot.name)
         # add nodes and edges to self._graph
         self._graph.add_nodes_from(self.sender_fsreg_planner.graph.nodes(data=True))
         self._graph.add_edges_from(self.sender_fsreg_planner.graph.edges(data=True))
@@ -85,6 +84,11 @@ class HandoverPlanner(object):
                     path = networkx.shortest_path(self._graph, source=start, target=goal)
                     min_path = path if min_path is None else path if len(path) < len(min_path) else min_path
             # segment the path
+            path_section_dict = {self.sender_robot.name: [], self.receiver_robot.name: [], "handover": []}
+            for i in range(len(min_path) - 1):
+                u, v = min_path[i], min_path[i + 1]
+                if u["robot_name"] == v["robot_name"]:
+                    path_section_dict[u["robot_name"]].append(u)
 
             result = self.gen_regrasp_motion(path=min_path, obstacle_list=obstacle_list, toggle_dbg=toggle_dbg)
             print(result)
@@ -232,7 +236,8 @@ class HandoverPlanner(object):
                                  obj_pose=hopg.obj_pose,
                                  grasp=hopg.sender_grasp,
                                  jnt_values=hopg.sender_conf,
-                                 plot_xy=(plot_pos_x, plot_pos_y))
+                                 plot_xy=(plot_pos_x, plot_pos_y),
+                                 robot_name=self.sender_robot.name)
             self._sender_gl_nodes_by_gid[hopg.sender_gid].append(sender_node)
             # receiver
             receiver_gid2node = {}
@@ -245,7 +250,8 @@ class HandoverPlanner(object):
                                          obj_pose=hopg.obj_pose,
                                          grasp=hopg.receiver_grasps[rid],
                                          jnt_values=hopg.receiver_confs[rid],
-                                         plot_xy=(plot_pos_x, plot_pos_y))
+                                         plot_xy=(plot_pos_x, plot_pos_y),
+                                         robot_name=self.receiver_robot.name)
                     self._receiver_gl_nodes_by_gid[receiver_gid].append(receiver_gid2node[receiver_gid])
                 self._graph.add_edge(sender_node, receiver_gid2node[receiver_gid], type='handover')
         # for i in range(len(self.sender_reference_gc)):
