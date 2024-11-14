@@ -17,8 +17,8 @@ grasp_collection = gpa.plan_gripper_grasps(gripper,
                                            obj_cmodel,
                                            angle_between_contact_normals=rm.np.radians(180),
                                            rotation_interval=rm.np.radians(30),
-                                           max_samples=200,
-                                           min_dist_between_sampled_contact_points=.03,
+                                           max_samples=300,
+                                           min_dist_between_sampled_contact_points=.01,
                                            contact_offset=.001,
                                            toggle_dbg=False)
 print(grasp_collection)

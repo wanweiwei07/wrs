@@ -16,7 +16,7 @@ from numpy import radians, degrees, sign, zeros, eye, pi, sqrt
 from numpy.linalg import norm
 from numpy import sin, cos, tan
 from numpy import arctan2 as atan2, arcsin as asin, arccos as acos
-from numpy import floor, ceil, round
+from numpy import sign, floor, ceil, round
 
 # epsilon for testing whether a number is close to zero
 _EPS = np.finfo(np.float32).eps

@@ -1,9 +1,10 @@
 import uuid, itertools, networkx
 import matplotlib.pyplot as plt
 import wrs.basis.robot_math as rm
+import wrs.motion.motion_data as motd
+import wrs.manipulation.utils as mp_utils
 import wrs.manipulation.pick_place as ppp
 import wrs.manipulation.placement.common as mp_gp
-import wrs.motion.motion_data as motd
 import wrs.manipulation.placement.flatsurface as mp_fsp
 
 
@@ -79,7 +80,7 @@ class FSRegraspPlanner(object):
             print("No feasible grasps found at the start pose")
             return None
         if plot_pose_xy is None:
-            plot_pose_xy = obj_pose[0][:2]
+            plot_pose_xy = [obj_pose[0][1], -obj_pose[0][0]]
         return self._add_fspg_to_graph(start_pg, plot_pose_xy=plot_pose_xy, prefix='start')
 
     def add_goal_pose(self, obj_pose, obstacle_list=None, plot_pose_xy=None, toggle_dbg=False):
@@ -92,7 +93,7 @@ class FSRegraspPlanner(object):
             print("No feasible grasps found at the goal pose")
             return None
         if plot_pose_xy is None:
-            plot_pose_xy = obj_pose[0][:2]
+            plot_pose_xy = [obj_pose[0][1], -obj_pose[0][0]]
         return self._add_fspg_to_graph(goal_pg, plot_pose_xy=plot_pose_xy, prefix='goal')
 
     def _add_fsregspot_collection_to_graph(self, fsregspot_collection):
@@ -105,8 +106,8 @@ class FSRegraspPlanner(object):
         for id in range(len(self.reference_gc)):
             new_gl_nodes_by_gid[id] = []
         for fsregspot in fsregspot_collection:
-            spot_x = fsregspot.pos[0]
-            spot_y = fsregspot.pos[1]
+            spot_x = fsregspot.pos[1]
+            spot_y = -fsregspot.pos[0]
             for fspg in fsregspot.fspg_list:
                 plot_pose_x = spot_x + self._plot_p_radius * rm.sin(fspg.fs_pose_id * self._p_angle_interval)
                 plot_pose_y = spot_y + self._plot_p_radius * rm.cos(fspg.fs_pose_id * self._p_angle_interval)
@@ -142,8 +143,8 @@ class FSRegraspPlanner(object):
         new_gl_nodes_by_gid = {}
         for id in range(len(self.reference_gc)):
             new_gl_nodes_by_gid[id] = []
-        spot_x = fsregspot.pos[0]
-        spot_y = fsregspot.pos[1]
+        spot_x = fsregspot.pos[1]
+        spot_y = -fsregspot.pos[0]
         for fspg in fsregspot.fspg_list:
             plot_pose_x = spot_x + self._plot_p_radius * rm.sin(fspg.fsp_pose_id * self._p_angle_interval)
             plot_pose_y = spot_y + self._plot_p_radius * rm.cos(fspg.fsp_pose_id * self._p_angle_interval)
@@ -182,7 +183,7 @@ class FSRegraspPlanner(object):
         for gid, grasp, jnt_values in zip(fspg.feasible_gids, fspg.feasible_grasps, fspg.feasible_confs):
             local_nodes.append(uuid.uuid4())
             plot_grasp_x = plot_pose_xy[0] + self._plot_g_radius * rm.sin(gid * self._g_angle_interval)
-            plot_grasp_y = plot_pose_xy[1] + self._plot_g_radius * rm.cos(gid * self._g_angle_interval)
+            plot_grasp_y = -plot_pose_xy[1] + self._plot_g_radius * rm.cos(gid * self._g_angle_interval)
             self._graph.add_node(local_nodes[-1],
                                  obj_pose=obj_pose,
                                  grasp=grasp,
@@ -190,51 +191,13 @@ class FSRegraspPlanner(object):
                                  plot_xy=(plot_grasp_x, plot_grasp_y))
             new_gl_nodes_by_gid[gid].append(local_nodes[-1])
             # self._gl_nodes_by_gid[gid].append(local_nodes[-1])
-        for node_pair in itertools.combinations(local_nodes, 2):
-            self._graph.add_edge(node_pair[0], node_pair[1], type=prefix + '_transit')
+        # for node_pair in itertools.combinations(local_nodes, 2):
+        #     self._graph.add_edge(node_pair[0], node_pair[1], type=prefix + '_transit')
         for i in range(len(self.reference_gc)):
             for node_pair in itertools.product(new_gl_nodes_by_gid[i], self._gl_nodes_by_gid[i]):
                 self._graph.add_edge(node_pair[0], node_pair[1], type=prefix + '_transfer')
-            self._gl_nodes_by_gid[i].extend(new_gl_nodes_by_gid[i])
+            self._gl_nodes_by_gid[i] += new_gl_nodes_by_gid[i]
         return local_nodes
-
-    def draw_graph(self):
-        # for regspot in self.regspot_col:
-        #     spot_x = regspot.spot_pos[0]
-        #     spot_y = regspot.spot_pos[1]
-        #     plt.plot(spot_x, spot_y, 'ko')
-        for node_tuple in self._graph.edges:
-            node1_plot_xy = self._graph.nodes[node_tuple[0]]['plot_xy']
-            node2_plot_xy = self._graph.nodes[node_tuple[1]]['plot_xy']
-            if self._graph.edges[node_tuple]['type'] == 'transit':
-                plt.plot([node1_plot_xy[0], node2_plot_xy[0]], [node1_plot_xy[1], node2_plot_xy[1]], 'c-')
-            elif self._graph.edges[node_tuple]['type'] == 'transfer':
-                plt.plot([node1_plot_xy[0], node2_plot_xy[0]], [node1_plot_xy[1], node2_plot_xy[1]], 'k-')
-            elif self._graph.edges[node_tuple]['type'] == 'start_transit':
-                plt.plot([node1_plot_xy[0], node2_plot_xy[0]], [node1_plot_xy[1], node2_plot_xy[1]], 'c-')
-            elif self._graph.edges[node_tuple]['type'] == 'start_transfer':
-                plt.plot([node1_plot_xy[0], node2_plot_xy[0]], [node1_plot_xy[1], node2_plot_xy[1]], 'r-')
-            elif self._graph.edges[node_tuple]['type'] == 'goal_transit':
-                plt.plot([node1_plot_xy[0], node2_plot_xy[0]], [node1_plot_xy[1], node2_plot_xy[1]], 'c-')
-            elif self._graph.edges[node_tuple]['type'] == 'goal_transfer':
-                plt.plot([node1_plot_xy[0], node2_plot_xy[0]], [node1_plot_xy[1], node2_plot_xy[1]], 'b-')
-        plt.gca().set_aspect('equal', adjustable='box')
-
-    def draw_path(self, path):
-        n_nodes_on_path = len(path)
-        for i in range(1, n_nodes_on_path):
-            node1_plot_xy = self._graph.nodes[path[i]]['plot_xy']
-            node2_plot_xy = self._graph.nodes[path[i - 1]]['plot_xy']
-            plt.plot([node1_plot_xy[0], node2_plot_xy[0]], [node1_plot_xy[1], node2_plot_xy[1]], 'r-', linewidth=2)
-
-    def show_graph(self):
-        self.draw_graph()
-        plt.show()
-
-    def show_graph_with_path(self, path):
-        self.draw_graph()
-        self.draw_path(path)
-        plt.show()
 
     def plan_by_obj_poses(self, start_pose, goal_pose, obstacle_list=None, toggle_dbg=False):
         """
@@ -249,8 +212,12 @@ class FSRegraspPlanner(object):
             min_path = None
             for start in start_node_list:
                 for goal in goal_node_list:
-                    path = networkx.shortest_path(self._graph, source=start, target=goal)
-                    min_path = path if min_path is None else path if len(path) < len(min_path) else min_path
+                    try:
+                        path = networkx.shortest_path(self._graph, source=start, target=goal)
+                        min_path = path if min_path is None else path if len(path) < len(min_path) else min_path
+                    except networkx.NetworkXNoPath:
+                        print(f"No path exists between {start} and {goal}")
+                        continue
             result = self.gen_regrasp_motion(path=min_path, obstacle_list=obstacle_list, toggle_dbg=toggle_dbg)
             print(result)
             if result[0][0] == 's':  # success
@@ -274,7 +241,7 @@ class FSRegraspPlanner(object):
 
     @ppp.adp.mpi.InterplatedMotion.keep_states_decorator
     def gen_regrasp_motion(self, path, obstacle_list,
-                           linear_distance=.05,
+                           linear_distance=.03,
                            granularity=.03,
                            toggle_dbg=False):
         regraps_motion = motd.MotionData(robot=self.robot)
@@ -293,7 +260,7 @@ class FSRegraspPlanner(object):
                 goal_jnt_values = jnt_values
                 pick = self.pp_planner.gen_approach_to_given_conf(goal_jnt_values=goal_jnt_values,
                                                                   start_jnt_values=start_jnt_values,
-                                                                  linear_distance=.05,
+                                                                  linear_distance=linear_distance,
                                                                   ee_values=self.robot.end_effector.jaw_range[1],
                                                                   obstacle_list=obstacle_list,
                                                                   object_list=[obj_cmodel_copy],
@@ -319,12 +286,12 @@ class FSRegraspPlanner(object):
                     prev2current = self.pp_planner.gen_depart_approach_with_given_conf(start_jnt_values=prev_jnt_values,
                                                                                        end_jnt_values=jnt_values,
                                                                                        depart_direction=None,
-                                                                                       depart_distance=.05,
+                                                                                       depart_distance=linear_distance,
                                                                                        depart_ee_values=
                                                                                        self.robot.end_effector.jaw_range[
                                                                                            1],
                                                                                        approach_direction=None,
-                                                                                       approach_distance=.05,
+                                                                                       approach_distance=linear_distance,
                                                                                        approach_ee_values=
                                                                                        self.robot.end_effector.jaw_range[
                                                                                            1],
@@ -372,3 +339,9 @@ class FSRegraspPlanner(object):
                                           ev_list=[self.robot.end_effector.jaw_range[1]],
                                           mesh_list=[mesh])
         return ("success", regraps_motion)
+
+    def show_graph(self):
+        mp_utils.show_graph(self._graph)
+
+    def show_graph_with_path(self, path):
+        mp_utils.show_graph_with_path(self._graph, path)

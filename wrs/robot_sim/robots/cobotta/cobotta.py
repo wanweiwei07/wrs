@@ -10,7 +10,7 @@ class Cobotta(sari.SglArmRobotInterface):
     def __init__(self, pos=np.zeros(3), rotmat=np.eye(3), name="cobotta", enable_cc=True):
         super().__init__(pos=pos, rotmat=rotmat, name=name, enable_cc=enable_cc)
         home_conf = np.zeros(6)
-        home_conf[1] = -math.pi / 6
+        home_conf[1] = -math.pi / 3
         home_conf[2] = math.pi / 2
         home_conf[4] = math.pi / 6
         self.manipulator = cbta.CobottaArm(pos=self.pos, rotmat=self.rotmat, name=name + "_arm", enable_cc=False)
