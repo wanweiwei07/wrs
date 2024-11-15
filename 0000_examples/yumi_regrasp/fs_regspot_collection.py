@@ -20,11 +20,11 @@ robot.lft_arm.gen_meshmodel().attach_to(base)
 robot.lft_arm.cc.show_cdprim()
 
 fs_reference_poses = fsp.FSReferencePoses.load_from_disk(file_name=fsref_pose_path)
-reference_grasps = gg.GraspCollection.load_from_disk(file_name=grasp_path)
-fsregspot_collection = fsreg.FSRegSpotCollection(robot=robot.lft_arm,
-                                                 obj_cmodel=bunny,
-                                                 fs_reference_poses=fs_reference_poses,
-                                                 reference_grasp_collection=reference_grasps)
+reference_gc = gg.GraspCollection.load_from_disk(file_name=grasp_path)
+fsregspot_collection = fsp.FSRegSpotCollection(robot=robot.lft_arm,
+                                               obj_cmodel=bunny,
+                                               fs_reference_poses=fs_reference_poses,
+                                               reference_gc=reference_gc)
 spot_pos0 = rm.np.array([.3, .1, .0])
 spot_pos1 = rm.np.array([.375, .2, .0])
 spot_pos2 = rm.np.array([.45, .3, .0])

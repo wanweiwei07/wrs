@@ -7,7 +7,6 @@ import wrs.manipulation.pick_place as ppp
 import wrs.manipulation.placement.common as mp_gp
 import wrs.manipulation.placement.flatsurface as mp_fsp
 
-
 class FSRegraspPlanner(object):
 
     def __init__(self, robot, obj_cmodel, fs_reference_poses, reference_gc):
@@ -218,7 +217,8 @@ class FSRegraspPlanner(object):
                     except networkx.NetworkXNoPath:
                         print(f"No path exists between {start} and {goal}")
                         continue
-            result = self.gen_regrasp_motion(path=min_path, obstacle_list=obstacle_list, toggle_dbg=toggle_dbg)
+            result = self.gen_regrasp_motion(path=min_path, obstacle_list=obstacle_list, linear_distance=.07,
+                                             toggle_dbg=toggle_dbg)
             print(result)
             if result[0][0] == 's':  # success
                 return result[1]

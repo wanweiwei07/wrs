@@ -141,6 +141,8 @@ class HandoverPlanner(object):
                         goal_node_list.remove(result[1][1])
                     break
             else:
+                # correct handover details
+
                 return motion_list
             print("####################### Update Graph #######################")
 
