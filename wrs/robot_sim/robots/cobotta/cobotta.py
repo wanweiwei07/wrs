@@ -59,18 +59,18 @@ class Cobotta(sari.SglArmRobotInterface):
 
 if __name__ == '__main__':
     import time
-    import wrs.basis.robot_math as rm
-    import wrs.modeling.collision_model as mcm
-    import wrs.visualization.panda.world as wd
+    from wrs import rm, mcm, wd
 
     base = wd.World(cam_pos=[1.7, 1.7, 1.7], lookat_pos=[0, 0, .3])
     mcm.mgm.gen_frame().attach_to(base)
-    robot = Cobotta(enable_cc=True)
+    robot = Cobotta(pos=rm.vec(0.168, .3, 0), rotmat=rm.rotmat_from_euler(0, 0, rm.pi / 2), enable_cc=True)
     # robot.jaw_to(.02)
-    # robot.gen_meshmodel(alpha=.5, toggle_tcp_frame=False, toggle_jnt_frames=False).attach_to(base)
+    robot.gen_meshmodel(alpha=.5, toggle_tcp_frame=False, toggle_jnt_frames=False).attach_to(base)
     # robot.gen_stickmodel(toggle_tcp_frame=True, toggle_jnt_frames=True).attach_to(base)
-    tgt_pos = np.array([.3, .1, .3])
-    tgt_rotmat = rm.rotmat_from_axangle([0, 1, 0], math.pi * 2 / 3)
+    tgt_pos = np.array([-0.12, .23, .058])
+    # tgt_rotmat = rm.rotmat_from_axangle([0, 1, 0], math.pi * 2 / 3)
+    # tgt_rotmat = rm.rotmat_from_quaternion([0.707, -0.707, 0, 0])
+    tgt_rotmat = rm.rotmat_from_quaternion([0.156, 0.988, 0, 0])
     mcm.mgm.gen_frame(pos=tgt_pos, rotmat=tgt_rotmat).attach_to(base)
     # base.run()
     jnt_values = robot.ik(tgt_pos=tgt_pos, tgt_rotmat=tgt_rotmat, toggle_dbg=False)

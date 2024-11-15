@@ -265,11 +265,10 @@ class DDIKSolver(object):
                     # mgm.gen_frame(pos=tgt_pos, rotmat=tgt_rotmat).attach_to(base)
                     # rkmg.gen_jlc_stick_by_jnt_values(self.jlc,
                     #                                  jnt_values=seed_jnt_values,
-                    #                                  stick_rgba=rm.bc.red).attach_to(base)
+                    #                                  stick_rgba=rm.const.red).attach_to(base)
                     # print(result)
                     # if id == self._k_max-1:
                     #     base.run()
-                    # continue
                     if toggle_evolve:
                         continue
                     else:
