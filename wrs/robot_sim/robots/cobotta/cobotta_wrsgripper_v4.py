@@ -2,7 +2,7 @@ import os
 import math
 import numpy as np
 import wrs.basis.robot_math as rm
-import wrs.robot_sim._kinematics.jlchain as rkjlc
+import wrs.robot_sim._kinematics.jl as rkjl
 import wrs.modeling.collision_model as mcm
 import wrs.modeling.model_collection as mmc
 import wrs.robot_sim.robots.single_arm_robot_interface as sari
@@ -16,24 +16,17 @@ class CobottaLarge(sari.SglArmRobotInterface):
         super().__init__(pos=pos, rotmat=rotmat, name=name, enable_cc=enable_cc)
         this_dir, this_filename = os.path.split(__file__)
         # base plate
-        self.base_plate = rkjlc.JLChain(pos=pos,
-                                        rotmat=rotmat,
-                                        n_dof=1,
-                                        name='base_plate_ripps')
-        self.base_plate.jnts[0].lnk.cmodel = mcm.CollisionModel(os.path.join(this_dir, "meshes", "base_plate.stl"))
-        self.base_plate.jnts[0].lnk.loc_pos = np.array([0, 0, -0.035])
-        self.base_plate.jnts[0].lnk.cmodel.rgba = np.array([.55, .55, .55, 1])
-        # self.base_plate.jnts[0].lnk.cmodel = mcm.CollisionModel(os.path.join(this_dir, "meshes", "base_plate_I301.stl"))
-        # self.base_plate.jnts[0].lnk.loc_pos = np.array([0, 0, -0.01])
-        # self.base_plate.jnts[0].lnk.cmodel.rgba = np.array([.55, .55, .55, 1])
-        self.base_plate.finalize()
+        self.base_plate = rkjl.Anchor(name=name+"_base_plate", pos=self.pos, rotmat=self.rotmat, n_flange=1)
+        self.base_plate.loc_flange_pose_list[0] = [np.array([0, 0, -0.035]), np.eye(3)]
+        self.base_plate.lnk_list[0].cmodel = mcm.CollisionModel(os.path.join(this_dir, "meshes", "base_plate.stl"))
+        self.base_plate.lnk_list[0].cmodel.rgb = rm.const.steel_gray
         # arm
-        self.manipulator = cbta.CobottaArm(pos=self.base_plate.gl_flange_pos,
-                                           rotmat=self.base_plate.gl_flange_rotmat,
+        self.manipulator = cbta.CobottaArm(pos=self.base_plate.gl_flange_pose[0],
+                                           rotmat=self.base_plate.gl_flange_pose[1],
                                            name='CobottaLarge_arm', enable_cc=False)
         # grippers
         self.end_effector = wg4.WRSGripper4(pos=self.manipulator.gl_flange_pos,
-                                            rotmat=self.manipulator.gl_tcp_rotmat,
+                                            rotmat=self.manipulator.gl_flange_rotmat,
                                             name='CobottaLarge_hnd')
         # tool center point
         self.manipulator.jlc.loc_tcp_pos = self.end_effector.loc_acting_center_pos
@@ -118,7 +111,7 @@ class CobottaLarge(sari.SglArmRobotInterface):
         m_col = mmc.ModelCollection(name=name)
         self.base_plate.gen_meshmodel(rgb=rgb,
                                       alpha=alpha,
-                                      toggle_jnt_frames=toggle_jnt_frames,
+                                      toggle_root_frame=toggle_jnt_frames,
                                       toggle_flange_frame=toggle_flange_frame,
                                       toggle_cdprim=toggle_cdprim,
                                       toggle_cdmesh=toggle_cdmesh).attach_to(m_col)

@@ -3,7 +3,8 @@ import math
 import numpy as np
 import wrs.modeling.model_collection as mmc
 import wrs.robot_sim.robots.robot_interface as ri
-import wrs.robot_sim._kinematics.jlchain as rkjlc
+import wrs.robot_sim._kinematics.jl as rkjl
+import wrs.modeling.collision_model as mcm
 
 
 class CobottaRIPPS(ri.RobotInterface):
@@ -12,21 +13,17 @@ class CobottaRIPPS(ri.RobotInterface):
         super().__init__(pos=pos, rotmat=rotmat, name=name)
         this_dir, this_filename = os.path.split(__file__)
         # base plate
-        self.base_plate = jl.JLChain(pos=pos,
-                                     rotmat=rotmat,
-                                     home_conf=np.zeros(0),
-                                     name='base_plate_ripps')
-        self.base_plate.jnts[1]['loc_pos'] = np.array([0, 0, 0.01])
-        self.base_plate.lnks[0]['mesh_file'] = os.path.join(this_dir, "meshes", "base_plate_ripps.stl")
-        self.base_plate.lnks[0]['rgba'] = [.55, .55, .55, 1]
-        self.base_plate.finalize()
+        self.base_plate = rkjl.Anchor(name=name+"_base_plate", pos=self.pos, rotmat=self.rotmat, n_flange=1)
+        self.body.loc_flange_pose_list[0] = [np.array([0, 0, 0.01]), np.eye(3)]
+        self.body.lnk_list[0].cmodel = mcm.CollisionModel(os.path.join(this_dir, "meshes", "base_plate_ripps.stl"))
+        self.body.lnk_list[0].cmodel.rgb = rm.const.steel_gray
         # arm
         arm_homeconf = np.zeros(6)
         arm_homeconf[1] = -math.pi / 6
         arm_homeconf[2] = math.pi / 2
         arm_homeconf[4] = math.pi / 6
-        self.arm = cbta.CobottaArm(pos=self.base_plate.jnts[-1]['gl_posq'],
-                                   rotmat=self.base_plate.jnts[-1]['gl_rotmatq'],
+        self.arm = cbta.CobottaArm(pos=self.base_plate.gl_flange_pose[0],
+                                   rotmat=self.base_plate.gl_flange_pose[1],
                                    home_conf=arm_homeconf,
                                    name='arm', enable_cc=False)
         # grippers
