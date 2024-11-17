@@ -47,7 +47,7 @@ class CobottaX(object):
         author: weiwei
         date: 20210507
         """
-        self.hhnd = self.bcc.robot_execute(self.hrbt, "TakeArm", [0, 0])  # 20220319 robot_move changed speed limits?
+        self.hhnd = self.bcc.robot_execute(self.hrbt, "     TakeArm", [0, 0])  # 20220319 robot_move changed speed limits?
         new_path = []
         for i, pose in enumerate(path):
             if i < len(path) - 1 and not np.allclose(pose, path[i + 1]):
