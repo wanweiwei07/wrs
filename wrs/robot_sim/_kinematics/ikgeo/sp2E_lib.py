@@ -60,8 +60,8 @@ def sp2E_run(p0, p1, p2, k1, k2):
     # reshape vector to matrix w/ opposite dimensions
     M_inv = np.eye(3) + (k1 * np.reshape(k1, (3, 1))) * (alpha / (1.0 - alpha))
 
-    AAT_inv = 1.0 / (radius_1_sq + radius_2_sq) * (M_inv + M_inv @ np.array([k2]).T * k2 @ \
-                                                   M_inv * beta / (1.0 - k2 @ M_inv @ np.array([k2]).T * beta))
+    AAT_inv = 1.0 / (radius_1_sq + radius_2_sq) * (
+                M_inv + M_inv @ np.array([k2]).T * k2 @ M_inv * beta / (1.0 - k2 @ M_inv @ np.array([k2]).T * beta))
 
     x_ls = np.dot(A @ AAT_inv, p)
 
