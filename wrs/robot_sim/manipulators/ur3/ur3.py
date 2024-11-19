@@ -214,13 +214,14 @@ if __name__ == '__main__':
     tgt_rotmat = rm.rotmat_from_euler(0, np.pi, 0)
     mcm.mgm.gen_dashed_frame(pos=tgt_pos, rotmat=tgt_rotmat).attach_to(base)
     tic = time.time()
-    jnt_values = arm.ik(tgt_pos=tgt_pos, tgt_rotmat=tgt_rotmat)
+    jnt_values_list = arm.ik(tgt_pos=tgt_pos, tgt_rotmat=tgt_rotmat, option="multiple")
     toc = time.time()
     print(toc - tic)
-    if jnt_values is not None:
-        arm.goto_given_conf(jnt_values=jnt_values)
-        arm_mesh = arm.gen_meshmodel(alpha=.3)
-        arm_mesh.attach_to(base)
+    if jnt_values_list is not None:
+        for jnt_values in jnt_values_list:
+            arm.goto_given_conf(jnt_values=jnt_values)
+            arm_mesh = arm.gen_meshmodel(alpha=.3)
+            arm_mesh.attach_to(base)
     tmp_arm_stick = arm.gen_stickmodel(toggle_flange_frame=True)
     tmp_arm_stick.attach_to(base)
     base.run()

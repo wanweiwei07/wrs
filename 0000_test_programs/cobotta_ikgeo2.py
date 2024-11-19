@@ -10,7 +10,7 @@ arm = cbta.CobottaArm()
 
 # tgt_pos = rm.vec(.2, .2, .1)
 # tgt_rotmat = rm.rotmat_from_euler(0, rm.pi/4, 0)
-tgt_pos = rm.vec(.2, .1, .2)
+tgt_pos = rm.vec(.25, .1, .1)
 tgt_rotmat = rm.rotmat_from_euler(0, rm.pi, 0)
 mcm.mgm.gen_frame(pos=tgt_pos, rotmat=tgt_rotmat).attach_to(base)
 
@@ -83,23 +83,25 @@ class Data(object):
         self.rbt = rbt
         self.counter = 0
         self.candidate_jnt_values = candidate_jnt_values
-        self.mesh_onscreen = None
+        self.mesh_onscreen = []
 
 
 anime_data = Data(rbt=arm, candidate_jnt_values=candidate_jnt_values)
 
 
 def update(anime_data, task):
-    if anime_data.counter > 0:
-        anime_data.mesh_onscreen.detach()
+    for item in anime_data.mesh_onscreen:
+        item.detach()
     if anime_data.counter >= len(anime_data.candidate_jnt_values):
         # for mesh_model in anime_data.mot_data.mesh_list:
         #     mesh_model.detach()
         anime_data.counter = 0
     print(anime_data.counter)
     anime_data.rbt.goto_given_conf(jnt_values=anime_data.candidate_jnt_values[anime_data.counter])
-    anime_data.mesh_onscreen = anime_data.rbt.gen_meshmodel()
-    anime_data.mesh_onscreen.attach_to(base)
+    anime_data.mesh_onscreen.append(anime_data.rbt.gen_meshmodel(alpha=.3))
+    anime_data.mesh_onscreen[-1].attach_to(base)
+    anime_data.mesh_onscreen.append(anime_data.rbt.gen_stickmodel())
+    anime_data.mesh_onscreen[-1].attach_to(base)
     if base.inputmgr.keymap['space']:
         anime_data.counter += 100
     # time.sleep(.5)
