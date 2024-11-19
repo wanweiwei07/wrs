@@ -44,7 +44,6 @@ class UR3(mi.ManipulatorInterface):
         self.jlc.jnts[2].lnk.cmodel.rgba = np.array([.35, .35, .35, 1.0])
         # fourth joint and link
         self.jlc.jnts[3].loc_pos = np.array([-.21325, .0, .11235])
-        self.jlc.jnts[3].loc_rotmat = rm.rotmat_from_euler(.0, .0, .0)
         self.jlc.jnts[3].loc_motion_ax = np.array([0, 0, 1])
         self.jlc.jnts[3].motion_range = np.array([-np.pi * 2, np.pi * 2])
         self.jlc.jnts[3].lnk.cmodel = mcm.CollisionModel(
@@ -209,7 +208,7 @@ if __name__ == '__main__':
     arm = UR3(enable_cc=True)
     arm.gen_meshmodel(alpha=.3).attach_to(base)
     arm.gen_stickmodel(toggle_tcp_frame=True, toggle_jnt_frames=True).attach_to(base)
-    base.run()
+    # base.run()
 
     tgt_pos = np.array([.25, .1, .1])
     tgt_rotmat = rm.rotmat_from_euler(0, np.pi, 0)

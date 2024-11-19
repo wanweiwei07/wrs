@@ -53,14 +53,11 @@ def cone_polynomials(p0_i, k_i, p_i, p_i_s, k2):
    kiXk2 = np.cross(k_i, k2)
    kiXkiXk2 = np.cross(k_i, kiXk2)
    norm_kiXk2_sq = np.dot(kiXk2, kiXk2)
-
    kiXpi = np.cross(k_i, p_i)
    norm_kiXpi_sq = np.dot(kiXpi, kiXpi)
-
    delta = np.dot(k2 ,p_i_s)
    alpha = kiXkiXk2 @ np.reshape(p0_i, (3, 1)) / norm_kiXk2_sq
    beta =  kiXk2 @ np.reshape(p0_i, (3, 1)) / norm_kiXk2_sq
-
    P_const = norm_kiXpi_sq + np.dot(p_i_s, p_i_s) + 2 * alpha * delta
    #P = np.array([-2*alpha, P_const])
    R = np.array([-1, 2*delta, -pow(delta, 2)]) #-(H-delta_i)^2

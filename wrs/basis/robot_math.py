@@ -682,17 +682,17 @@ def rand_rotmat():
     return quaternion_to_rotmat(rand_quaternion())
 
 
-def skew_symmetric(posvec):
+def skew_symmetric(pos_vec):
     """
     compute the skew symmetric maxtix that corresponds to a cross
-    :param posvec: 1x3 nparray
+    :param pos_vec: 1x3 nparray
     :return: 3x3 skew symmetric matrix
     author: weiwei
     date: 20170421
     """
-    return np.array([[0, -posvec[2], posvec[1]],
-                     [posvec[2], 0, -posvec[0]],
-                     [-posvec[1], posvec[0], 0]])
+    return np.array([[0, -pos_vec[2], pos_vec[1]],
+                     [pos_vec[2], 0, -pos_vec[0]],
+                     [-pos_vec[1], pos_vec[0], 0]])
 
 
 def orthogonal_vector(npvec3, toggle_unit=True):
@@ -936,7 +936,7 @@ def quaternion_to_axangle(quaternion):
 
 def pos_average(pos_list, bandwidth=10):
     """
-    average a list of posvec (1x3)
+    average a list of pos_vec (1x3)
     :param pos_list:
     :param denoise: meanshift denoising is applied if True
     :return:

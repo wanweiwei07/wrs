@@ -6,15 +6,17 @@ import wrs.robot_sim._kinematics.ikgeo.sp1_lib as sp1_lib
 
 base = wd.World(cam_pos=[2, 0, 1], lookat_pos=[0, 0, .3])
 mcm.mgm.gen_frame().attach_to(base)
-arm = cbta.CobottaArm(enable_cc=True)
+arm = cbta.CobottaArm()
 
-tgt_pos = rm.vec(.2, .2, .1)
-tgt_rotmat = rm.rotmat_from_euler(0, rm.pi/4, 0)
+# tgt_pos = rm.vec(.2, .2, .1)
+# tgt_rotmat = rm.rotmat_from_euler(0, rm.pi/4, 0)
+tgt_pos = rm.vec(.2, .1, .2)
+tgt_rotmat = rm.rotmat_from_euler(0, rm.pi, 0)
 mcm.mgm.gen_frame(pos=tgt_pos, rotmat=tgt_rotmat).attach_to(base)
 
 eq_err = []
 candidate_jnt_values = []
-for q4 in rm.np.linspace(arm.jlc.jnts[3].motion_range[0], arm.jlc.jnts[3].motion_range[1], 72):
+for q4 in rm.np.linspace(arm.jlc.jnts[3].motion_range[0], arm.jlc.jnts[3].motion_range[1], 720):
     _p12 = arm.jlc.jnts[1].loc_pos
     R06 = tgt_rotmat
     p06 = tgt_pos - _p12 - R06 @ rm.np.array([0, 0, arm.jlc.jnts[5].loc_pos[2]])
@@ -72,6 +74,43 @@ for q4 in rm.np.linspace(arm.jlc.jnts[3].motion_range[0], arm.jlc.jnts[3].motion
                                         if arm.jlc.jnts[2].motion_range[0] < q3 < arm.jlc.jnts[2].motion_range[1]:
                                             R23 = rm.rotmat_from_axangle(arm.jlc.jnts[2].loc_motion_ax, q3)
                                             candidate_jnt_values.append([q1, q2, q3, q4, q5, q6])
+
+print(len(candidate_jnt_values))
+
+
+class Data(object):
+    def __init__(self, rbt, candidate_jnt_values):
+        self.rbt = rbt
+        self.counter = 0
+        self.candidate_jnt_values = candidate_jnt_values
+        self.mesh_onscreen = None
+
+
+anime_data = Data(rbt=arm, candidate_jnt_values=candidate_jnt_values)
+
+
+def update(anime_data, task):
+    if anime_data.counter > 0:
+        anime_data.mesh_onscreen.detach()
+    if anime_data.counter >= len(anime_data.candidate_jnt_values):
+        # for mesh_model in anime_data.mot_data.mesh_list:
+        #     mesh_model.detach()
+        anime_data.counter = 0
+    print(anime_data.counter)
+    anime_data.rbt.goto_given_conf(jnt_values=anime_data.candidate_jnt_values[anime_data.counter])
+    anime_data.mesh_onscreen = anime_data.rbt.gen_meshmodel()
+    anime_data.mesh_onscreen.attach_to(base)
+    if base.inputmgr.keymap['space']:
+        anime_data.counter += 100
+    # time.sleep(.5)
+    return task.again
+
+
+taskMgr.doMethodLater(0.1, update, "update",
+                      extraArgs=[anime_data],
+                      appendTask=True)
+
+base.run()
 
 print(len(candidate_jnt_values))
 for jnt_values in candidate_jnt_values:
