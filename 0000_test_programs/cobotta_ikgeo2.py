@@ -77,7 +77,6 @@ for q4 in rm.np.linspace(arm.jlc.jnts[3].motion_range[0], arm.jlc.jnts[3].motion
 
 print(len(candidate_jnt_values))
 
-
 class Data(object):
     def __init__(self, rbt, candidate_jnt_values):
         self.rbt = rbt

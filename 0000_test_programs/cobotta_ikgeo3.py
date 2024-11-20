@@ -15,13 +15,14 @@ tgt_pos = rm.vec(.25, .1, .1)
 tgt_rotmat = rm.rotmat_from_euler(0, rm.pi, 0)
 mcm.mgm.gen_frame(pos=tgt_pos, rotmat=tgt_rotmat).attach_to(base)
 
+_p12 = arm.jlc.jnts[1].loc_pos
+R06 = tgt_rotmat
+p06 = tgt_pos - _p12 - R06 @ rm.np.array([0, 0, arm.jlc.jnts[5].loc_pos[2]])
+mcm.mgm.gen_myc_frame(pos=p06, rotmat=R06).attach_to(base)
+
 eq_err = []
 candidate_jnt_values = []
-for q4 in rm.np.linspace(arm.jlc.jnts[3].motion_range[0], arm.jlc.jnts[3].motion_range[1], 720):
-    _p12 = arm.jlc.jnts[1].loc_pos
-    R06 = tgt_rotmat
-    p06 = tgt_pos - _p12 - R06 @ rm.np.array([0, 0, arm.jlc.jnts[5].loc_pos[2]])
-    # mcm.mgm.gen_frame(pos=p06, rotmat=R06).attach_to(base)
+for q4 in rm.np.linspace(arm.jlc.jnts[3].motion_range[0], arm.jlc.jnts[3].motion_range[1], 36):
     R34 = rm.rotmat_from_axangle(arm.jlc.jnts[3].loc_motion_ax, q4)
     h2 = arm.jlc.jnts[1].loc_motion_ax
     p45 = arm.jlc.jnts[4].loc_pos + rm.np.array([0, arm.jlc.jnts[5].loc_pos[1], 0])
@@ -41,18 +42,24 @@ for q4 in rm.np.linspace(arm.jlc.jnts[3].motion_range[0], arm.jlc.jnts[3].motion
                 h6 = arm.jlc.jnts[5].loc_motion_ax
                 R01 = rm.rotmat_from_axangle(arm.jlc.jnts[0].loc_motion_ax, q1)
                 h = (h2.T @ R34).T
+                print("h ", h)
                 p = h6
-                d = h2.T @ R01.T @ R06 @ h6
+                print("p ", p)
+                R10R06 = R01.T @ R06
+                print("R10R06h6 ", R10R06 @ h6)
+                d = h2.T @ R10R06 @ h6
+                print("d ", d)
                 k = arm.jlc.jnts[4].loc_motion_ax
                 q5_candidates, is_ls = sp4_lib.sp4_run(p, k, h, d)
                 if not is_ls:
                     for q in q5_candidates:
                         if arm.jlc.jnts[4].motion_range[0] < q < arm.jlc.jnts[4].motion_range[1]:
                             q5 = q
+                            print("q5 ", q5)
                             # subproblem 1 for q6
                             R45 = rm.rotmat_from_axangle(arm.jlc.jnts[4].loc_motion_ax, q5)
                             p1 = R45.T @ R34.T @ h2
-                            p2 = R06.T @ R01 @ h2
+                            p2 = R10R06.T @ h2
                             k = -arm.jlc.jnts[5].loc_motion_ax
                             q6, is_ls = sp1_lib.sp1_run(p1, p2, k)
                             if not is_ls:
@@ -62,7 +69,7 @@ for q4 in rm.np.linspace(arm.jlc.jnts[3].motion_range[0], arm.jlc.jnts[3].motion
                                     # sub-problem 3 for q3
                                     p1 = p34
                                     p2 = -p23
-                                    d_ = R01.T @ p06 - R01.T @ R06 @ R56.T @ R45.T @ p45
+                                    d_ = R01.T @ p06 - R10R06 @ R56.T @ R45.T @ p45
                                     d = rm.np.linalg.norm(d_)
                                     k = arm.jlc.jnts[2].loc_motion_ax
                                     q3_candidates, is_ls = sp3_lib.sp3_run(p1, p2, k, d)
@@ -78,6 +85,7 @@ for q4 in rm.np.linspace(arm.jlc.jnts[3].motion_range[0], arm.jlc.jnts[3].motion
                                                 p2 = d_
                                                 k = arm.jlc.jnts[1].loc_motion_ax
                                                 q2, is_ls = sp1_lib.sp1_run(p1, p2, k)
+                                                print(is_ls)
                                                 if arm.jlc.jnts[1].motion_range[0] < q2 < arm.jlc.jnts[1].motion_range[
                                                     1]:
                                                     # # update q4 using subproblem 1
@@ -116,7 +124,7 @@ def update(anime_data, task):
     anime_data.mesh_onscreen.append(anime_data.rbt.gen_stickmodel())
     anime_data.mesh_onscreen[-1].attach_to(base)
     if base.inputmgr.keymap['space']:
-        anime_data.counter += 100
+        anime_data.counter += 1
     # time.sleep(.5)
     return task.again
 

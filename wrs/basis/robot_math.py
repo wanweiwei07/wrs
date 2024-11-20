@@ -12,11 +12,11 @@ from sklearn import cluster
 from scipy.spatial.transform import Slerp
 from scipy.spatial.transform import Rotation as R
 from scipy.spatial.transform import Rotation
-from numpy import radians, degrees, sign, zeros, eye, pi, sqrt, linspace
+from numpy import radians, degrees, sign, zeros, eye, pi, sqrt, linspace, inf, nan
 from numpy.linalg import norm
 from numpy import sin, cos, tan
 from numpy import arctan2 as atan2, arcsin as asin, arccos as acos
-from numpy import floor, ceil, round
+from numpy import floor, ceil, round, isnan, isinf
 
 # epsilon for testing whether a number is close to zero
 _EPS = np.finfo(np.float32).eps
