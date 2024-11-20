@@ -97,7 +97,7 @@ for i, q4 in enumerate(rm.np.linspace(arm.jlc.jnts[3].motion_range[0], arm.jlc.j
 
 import matplotlib.pyplot as plt
 for key, values in e_q4_dict.items():
-    plt.plot([key] * len(values), values, linestyle='-', marker='o', label=f'x = {key}')
+    plt.plot([key] * len(values), values, linestyle='None', marker='o', label=f'x = {key}')
 
 plt.show()
 

@@ -32,7 +32,7 @@ for i in range(n_value):
     candidate_jnt_values = []
     prev_error = rm.nan
     tic =time.time()
-    for q4 in rm.np.linspace(arm.jlc.jnts[3].motion_range[0], arm.jlc.jnts[3].motion_range[1], 24):
+    for q4 in rm.np.linspace(arm.jlc.jnts[3].motion_range[0], arm.jlc.jnts[3].motion_range[1], 6):
         R34 = rm.rotmat_from_axangle(arm.jlc.jnts[3].loc_motion_ax, q4)
         h2 = arm.jlc.jnts[1].loc_motion_ax
         p45 = arm.jlc.jnts[4].loc_pos + rm.np.array([0, arm.jlc.jnts[5].loc_pos[1], 0])
@@ -118,10 +118,10 @@ print("avg DDIK time: ", sum(ddik_time)/len(ddik_time))
 print("avg 1D search time: ", sum(geoik_time)/len(geoik_time))
 
 import matplotlib.pyplot as plt
-plt.plot(range(n_value), ddik_time, 'r')
-plt.plot(range(n_value), geoik_time, 'g')
-# plt.plot(range(n_value), geo_all, 'm--')
-# plt.plot(range(n_value), geo_seed, 'b-.')
+# plt.plot(range(n_value), ddik_time, 'r')
+# plt.plot(range(n_value), geoik_time, 'g')
+plt.plot(range(n_value), geo_all, 'm--')
+plt.plot(range(n_value), geo_seed, 'b-.')
 plt.show()
 
 class Data(object):
