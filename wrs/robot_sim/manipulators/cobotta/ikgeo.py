@@ -119,12 +119,13 @@ def ik(jlc, tgt_pos, tgt_rotmat, seed_jnt_values=None):
     if seed_jnt_values is not None:
         result = _backbone_solver(tgt_pos, tgt_rotmat, seed_jnt_values)
         return result
-    _p12 = jlc.jnts[1].loc_pos
+    _p12 = jlc.jnts[0].loc_pos+jlc.jnts[1].loc_pos
     # relative to base (ikgeo assumes jlc.pos = 0 and jlc.rotmat = I), thus we need to convert tgt_pos and tgt_rotmat
     rel_pos, rel_rotmat = rm.rel_pose(jlc.pos, jlc.rotmat, tgt_pos, tgt_rotmat)
     R06 = rel_rotmat
     p06 = rel_pos - _p12 - R06 @ rm.np.array([0, 0, jlc.jnts[5].loc_pos[2]])
     zero_crossings = search1d(jlc, jlc.jnts[3].motion_range[0], jlc.jnts[3].motion_range[1], 8, p06, R06)
+    # print(zero_crossings)
     candidate_jnt_values = []
     for q1, q2, q3, q4 in zero_crossings:
         q5, q6 = solve_q56(jlc, R06, q1, q2, q3, q4)

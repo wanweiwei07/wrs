@@ -106,7 +106,7 @@ if __name__ == '__main__':
 
     # tgt_pos = np.array([.45, .1, .1])
     # tgt_rotmat = rm.rotmat_from_euler(0, np.pi, 0)
-    tgt_pos = np.array([.5, .1, .3])
+    tgt_pos = np.array([.3, .1, .3])
     tgt_rotmat = rm.rotmat_from_axangle([0, 1, 0], np.pi * 2 / 3)
     mcm.mgm.gen_dashed_frame(pos=tgt_pos, rotmat=tgt_rotmat).attach_to(base)
     tic = time.time()

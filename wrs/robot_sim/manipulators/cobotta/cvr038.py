@@ -8,7 +8,7 @@ import wrs.robot_sim.manipulators.cobotta.ikgeo as ikgeo
 
 class CVR038(mi.ManipulatorInterface):
 
-    def __init__(self, pos=np.zeros(3), rotmat=np.eye(3), name="cvr038", enable_cc=False):
+    def __init__(self, pos=np.zeros(3), rotmat=np.eye(3), ik_solver='a', name="cvr038", enable_cc=False):
         super().__init__(pos=pos, rotmat=rotmat, home_conf=np.zeros(6), name=name, enable_cc=enable_cc)
         current_file_dir = os.path.dirname(__file__)
         # anchor
@@ -57,7 +57,7 @@ class CVR038(mi.ManipulatorInterface):
         self.jlc.jnts[5].lnk.cmodel = mcm.CollisionModel(
             initor=os.path.join(current_file_dir, "meshes", "cvr038_j6.dae"), name=self.name + "_link6")
         self.jlc.jnts[5].lnk.cmodel.rgba = np.array([.7, .7, .7, 1.0])
-        self.jlc.finalize()
+        self.jlc.finalize(ik_solver=ik_solver, identifier_str=name)
         # tcp
         self.loc_tcp_pos = np.array([0, 0, 0])
         self.loc_tcp_rotmat = np.eye(3)
