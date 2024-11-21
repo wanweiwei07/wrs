@@ -71,27 +71,25 @@ class CVRB0609(mi.ManipulatorInterface):
         into_list = [lb, l0]
         self.cc.set_cdpair_by_ids(from_list, into_list)
 
-    def ik(self,
-           tgt_pos,
-           tgt_rotmat,
-           seed_jnt_values=None,
-           option="single",
-           toggle_dbg=False):
-        # relative to base
-        rel_pos, rel_rotmat = rm.rel_pose(self.jlc.pos, self.jlc.rotmat, tgt_pos, tgt_rotmat)
-        # target
-        tgt_rotmat = rel_rotmat @ self.loc_tcp_rotmat.T
-        tgt_pos = rel_pos - rel_rotmat @ self.loc_tcp_pos
-        result = ikgeo.ik(jlc=self.jlc, tgt_pos=tgt_pos, tgt_rotmat=tgt_rotmat, seed_jnt_values=None)
-        if result is None:
-            print("No valid solutions found")
-            return None
-        if seed_jnt_values is None:
-            seed_jnt_values = self.home_conf
-        if option == "single":
-            return result[np.argmin(np.linalg.norm(result - seed_jnt_values, axis=1))]
-        elif option == "multiple":
-            return result[np.argsort(np.linalg.norm(result - seed_jnt_values, axis=1))]
+    # def ik(self,
+    #        tgt_pos,
+    #        tgt_rotmat,
+    #        seed_jnt_values=None,
+    #        option="single",
+    #        toggle_dbg=False):
+    #     # target, no need to compute relative pose with respect to jlc, see cvr038
+    #     tgt_rotmat = tgt_rotmat @ self.loc_tcp_rotmat.T
+    #     tgt_pos = tgt_pos - tgt_rotmat @ self.loc_tcp_pos
+    #     result = ikgeo.ik(jlc=self.jlc, tgt_pos=tgt_pos, tgt_rotmat=tgt_rotmat, seed_jnt_values=None)
+    #     if result is None:
+    #         print("No valid solutions found")
+    #         return None
+    #     if seed_jnt_values is None:
+    #         seed_jnt_values = self.home_conf
+    #     if option == "single":
+    #         return result[np.argmin(np.linalg.norm(result - seed_jnt_values, axis=1))]
+    #     elif option == "multiple":
+    #         return result[np.argsort(np.linalg.norm(result - seed_jnt_values, axis=1))]
 
 if __name__ == '__main__':
     import time
@@ -106,8 +104,10 @@ if __name__ == '__main__':
     tmp_arm_stick = arm.gen_stickmodel(toggle_flange_frame=True)
     tmp_arm_stick.attach_to(base)
 
-    tgt_pos = np.array([.45, .1, .1])
-    tgt_rotmat = rm.rotmat_from_euler(0, np.pi, 0)
+    # tgt_pos = np.array([.45, .1, .1])
+    # tgt_rotmat = rm.rotmat_from_euler(0, np.pi, 0)
+    tgt_pos = np.array([.5, .1, .3])
+    tgt_rotmat = rm.rotmat_from_axangle([0, 1, 0], np.pi * 2 / 3)
     mcm.mgm.gen_dashed_frame(pos=tgt_pos, rotmat=tgt_rotmat).attach_to(base)
     tic = time.time()
     jnt_values = arm.ik(tgt_pos=tgt_pos, tgt_rotmat=tgt_rotmat)

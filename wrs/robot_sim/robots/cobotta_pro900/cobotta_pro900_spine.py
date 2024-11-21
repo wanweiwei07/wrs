@@ -2,7 +2,7 @@ import os
 import math
 import numpy as np
 import wrs.robot_sim.robots.single_arm_robot_interface as sari
-import wrs.robot_sim.manipulators.cobotta_cvr038.cvrb0609 as arm
+import wrs.robot_sim.manipulators.cobotta.cvrb0609 as arm
 import wrs.robot_sim._kinematics.jl as rkjl
 import wrs.modeling.model_collection as mmc
 import wrs.robot_sim.end_effectors.single_contact.milling.spine_miller as ee
