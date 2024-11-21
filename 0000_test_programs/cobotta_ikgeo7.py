@@ -146,7 +146,7 @@ if __name__ == '__main__':
         R06 = tgt_rotmat
         p06 = tgt_pos - _p12 - R06 @ rm.np.array([0, 0, arm.jlc.jnts[5].loc_pos[2]])
         tic = time.time()
-        zero_crossings = search1d(arm.jlc, arm.jlc.jnts[3].motion_range[0], arm.jlc.jnts[3].motion_range[1], 8, p06,
+        zero_crossings = search1d(arm.jlc, arm.jlc.jnts[3].motion_range[0], arm.jlc.jnts[3].motion_range[1], 360, p06,
                                   R06)
         # for _, _, _, q4_cross in zero_crossings:
         #     current_errs, _ = err_given_q4(q4_cross, arm.jlc, p06, R06)
