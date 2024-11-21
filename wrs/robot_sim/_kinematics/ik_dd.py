@@ -250,6 +250,8 @@ class DDIKSolver(object):
             rel_rotvec = self._rotmat_to_vec(rel_rotmat)
             query_point = np.concatenate((rel_pos, rel_rotvec))
             dist_value_array, nn_indx_array = self.query_tree.query(query_point, k=self._k_max, workers=-1)
+            if type(nn_indx_array) is int:
+                nn_indx_array = [nn_indx_array]
             for id, nn_indx in enumerate(nn_indx_array):
                 seed_jnt_values = self.jnt_data[nn_indx]
                 if toggle_dbg:

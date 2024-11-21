@@ -116,7 +116,7 @@ def solve_q56(jlc, R06, q1, q2, q3, q4):
     return None, None
 
 
-def ik(jlc, tgt_pos, tgt_rotmat, n_div = 12, seed_jnt_values=None):
+def ik(jlc, tgt_pos, tgt_rotmat, n_div = 36, seed_jnt_values=None):
     _backbone_solver = ikn.NumIKSolver(jlc)
     if seed_jnt_values is not None:
         result = _backbone_solver(tgt_pos, tgt_rotmat, seed_jnt_values)
@@ -135,7 +135,7 @@ def ik(jlc, tgt_pos, tgt_rotmat, n_div = 12, seed_jnt_values=None):
             # backbone_solver uses jlc properties and takes into account jlc.pos and jlc.rotmat
             # there is not need to convert tgt_pos and tgt_rotmat
             result = _backbone_solver(tgt_pos=tgt_pos, tgt_rotmat=tgt_rotmat, seed_jnt_values=[q1, q2, q3, q4, q5, q6],
-                                      max_n_iter=10)
+                                      max_n_iter=7)
             if result is not None:
                 candidate_jnt_values.append(result)
     if len(candidate_jnt_values) > 0:

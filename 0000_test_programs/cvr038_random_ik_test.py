@@ -6,7 +6,7 @@ import matplotlib.pyplot as plt
 base = wd.World(cam_pos=[1.7, 1.7, 1.7], lookat_pos=[0, 0, .3])
 mcm.mgm.gen_frame().attach_to(base)
 
-robot = cbt.Cobotta(enable_cc=True)
+robot = cbt.Cobotta(pos=rm.vec(0.1,.3,.5), enable_cc=True)
 
 success_rate = 0
 time_list = []
