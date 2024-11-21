@@ -20,6 +20,7 @@ def err_given_q4(q4, jlc, p06, R06):
     q1_candidates, is_ls = sp4_lib.sp4_run(p, k, h, d)
     if is_ls:
         return None, None
+        # q1_candidates = rm.np.asarray([q1_candidates])
     # q1_candidates is always an np.array when is_ls is False
     # filter valid q1 solutions
     q1_min, q1_max = jlc.jnts[0].motion_range
@@ -33,6 +34,7 @@ def err_given_q4(q4, jlc, p06, R06):
     # print("q3 ", q3_candidates, jlc.jnts[2].motion_range, is_ls)
     if is_ls:
         return None, None
+        # q3_candidates = rm.np.asarray([q3_candidates])
     # q3_candidates is always an np.array when is_ls is False
     # filter valid q3 solutions
     q3_min, q3_max = jlc.jnts[2].motion_range
@@ -114,7 +116,7 @@ def solve_q56(jlc, R06, q1, q2, q3, q4):
     return None, None
 
 
-def ik(jlc, tgt_pos, tgt_rotmat, seed_jnt_values=None):
+def ik(jlc, tgt_pos, tgt_rotmat, n_div = 12, seed_jnt_values=None):
     _backbone_solver = ikn.NumIKSolver(jlc)
     if seed_jnt_values is not None:
         result = _backbone_solver(tgt_pos, tgt_rotmat, seed_jnt_values)
@@ -124,7 +126,7 @@ def ik(jlc, tgt_pos, tgt_rotmat, seed_jnt_values=None):
     rel_pos, rel_rotmat = rm.rel_pose(jlc.pos, jlc.rotmat, tgt_pos, tgt_rotmat)
     R06 = rel_rotmat
     p06 = rel_pos - _p12 - R06 @ rm.np.array([0, 0, jlc.jnts[5].loc_pos[2]])
-    zero_crossings = search1d(jlc, jlc.jnts[3].motion_range[0], jlc.jnts[3].motion_range[1], 8, p06, R06)
+    zero_crossings = search1d(jlc, jlc.jnts[3].motion_range[0], jlc.jnts[3].motion_range[1], n_div, p06, R06)
     # print(zero_crossings)
     candidate_jnt_values = []
     for q1, q2, q3, q4 in zero_crossings:

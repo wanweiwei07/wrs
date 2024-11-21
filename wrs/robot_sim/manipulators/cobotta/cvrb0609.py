@@ -82,7 +82,7 @@ class CVRB0609(mi.ManipulatorInterface):
     #     tgt_pos = tgt_pos - tgt_rotmat @ self.loc_tcp_pos
     #     result = ikgeo.ik(jlc=self.jlc, tgt_pos=tgt_pos, tgt_rotmat=tgt_rotmat, seed_jnt_values=None)
     #     if result is None:
-    #         print("No valid solutions found")
+    #         # print("No valid solutions found")
     #         return None
     #     if seed_jnt_values is None:
     #         seed_jnt_values = self.home_conf
