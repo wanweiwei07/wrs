@@ -77,37 +77,37 @@ class CVR038(mi.ManipulatorInterface):
         into_list = [lb, l0]
         self.cc.set_cdpair_by_ids(from_list, into_list)
 
-    def ik(self,
-           tgt_pos,
-           tgt_rotmat,
-           seed_jnt_values=None,
-           option="single",
-           toggle_dbg=False):
-        """
-        This ik solver uses ikgeo to find an initial solution and then uses numik(pinv) as a backbone for precise
-        computation. IKGeo assumes the jlc root is at pos=0 and rotmat=I. Numik uses jlc fk and does not have this
-        assumption. IKGeo will shift jlc root to zero. There is no need to do them on the upper level. (20241121)
-        :param tgt_pos:
-        :param tgt_rotmat:
-        :param seed_jnt_values:
-        :param option:
-        :param toggle_dbg:
-        :return:
-        """
-        # mcm.mgm.gen_frame(pos=tgt_pos, rotmat=tgt_rotmat).attach_to(base)
-        tgt_rotmat = tgt_rotmat @ self.loc_tcp_rotmat.T
-        tgt_pos = tgt_pos - tgt_rotmat @ self.loc_tcp_pos
-        # mcm.mgm.gen_myc_frame(pos=tgt_pos, rotmat=tgt_rotmat).attach_to(base)
-        result = ikgeo.ik(jlc=self.jlc, tgt_pos=tgt_pos, tgt_rotmat=tgt_rotmat, seed_jnt_values=None)
-        if result is None:
-            # print("No valid solutions found")
-            return None
-        if seed_jnt_values is None:
-            seed_jnt_values = self.home_conf
-        if option == "single":
-            return result[np.argmin(np.linalg.norm(result - seed_jnt_values, axis=1))]
-        elif option == "multiple":
-            return result[np.argsort(np.linalg.norm(result - seed_jnt_values, axis=1))]
+    # def ik(self,
+    #        tgt_pos,
+    #        tgt_rotmat,
+    #        seed_jnt_values=None,
+    #        option="single",
+    #        toggle_dbg=False):
+    #     """
+    #     This ik solver uses ikgeo to find an initial solution and then uses numik(pinv) as a backbone for precise
+    #     computation. IKGeo assumes the jlc root is at pos=0 and rotmat=I. Numik uses jlc fk and does not have this
+    #     assumption. IKGeo will shift jlc root to zero. There is no need to do them on the upper level. (20241121)
+    #     :param tgt_pos:
+    #     :param tgt_rotmat:
+    #     :param seed_jnt_values:
+    #     :param option:
+    #     :param toggle_dbg:
+    #     :return:
+    #     """
+    #     # mcm.mgm.gen_frame(pos=tgt_pos, rotmat=tgt_rotmat).attach_to(base)
+    #     tgt_rotmat = tgt_rotmat @ self.loc_tcp_rotmat.T
+    #     tgt_pos = tgt_pos - tgt_rotmat @ self.loc_tcp_pos
+    #     # mcm.mgm.gen_myc_frame(pos=tgt_pos, rotmat=tgt_rotmat).attach_to(base)
+    #     result = ikgeo.ik(jlc=self.jlc, tgt_pos=tgt_pos, tgt_rotmat=tgt_rotmat, seed_jnt_values=None)
+    #     if result is None:
+    #         # print("No valid solutions found")
+    #         return None
+    #     if seed_jnt_values is None:
+    #         seed_jnt_values = self.home_conf
+    #     if option == "single":
+    #         return result[np.argmin(np.linalg.norm(result - seed_jnt_values, axis=1))]
+    #     elif option == "multiple":
+    #         return result[np.argsort(np.linalg.norm(result - seed_jnt_values, axis=1))]
 
 
 if __name__ == '__main__':
