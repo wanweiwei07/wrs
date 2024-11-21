@@ -118,7 +118,6 @@ def solve_q56(jlc, R06, q1, q2, q3, q4):
     return None, None
 
 
-
 if __name__ == '__main__':
 
     base = wd.World(cam_pos=[2, 0, 1], lookat_pos=[0, 0, .3])
@@ -137,6 +136,7 @@ if __name__ == '__main__':
     geo_all = []
     geo_seed = []
 
+    success_rate = 0
     n_value = 100
     for i in range(n_value):
         rand_conf = arm.rand_conf()
@@ -146,7 +146,8 @@ if __name__ == '__main__':
         R06 = tgt_rotmat
         p06 = tgt_pos - _p12 - R06 @ rm.np.array([0, 0, arm.jlc.jnts[5].loc_pos[2]])
         tic = time.time()
-        zero_crossings = search1d(arm.jlc, arm.jlc.jnts[3].motion_range[0], arm.jlc.jnts[3].motion_range[1], 8, p06, R06)
+        zero_crossings = search1d(arm.jlc, arm.jlc.jnts[3].motion_range[0], arm.jlc.jnts[3].motion_range[1], 8, p06,
+                                  R06)
         # for _, _, _, q4_cross in zero_crossings:
         #     current_errs, _ = err_given_q4(q4_cross, arm.jlc, p06, R06)
         #     plt.plot(q4_cross, min(current_errs), 'go', linestyle=None)
@@ -168,14 +169,20 @@ if __name__ == '__main__':
         tic = time.time()
         result = arm.jlc.ik(tgt_pos=tgt_pos, tgt_rotmat=tgt_rotmat)
         toc = time.time()
-        ddik_time.append(toc-tic)
+        ddik_time.append(toc - tic)
+        if len(candidate_jnt_values) != 0:
+            success_rate += 1
 
     import matplotlib.pyplot as plt
+
     plt.plot(range(n_value), ddik_time, 'r')
     plt.plot(range(n_value), geoik_time, 'g')
     # plt.plot(range(n_value), geo_all, 'm--')
     # plt.plot(range(n_value), geo_seed, 'b-.')
+    print(success_rate)
     plt.show()
+
+
     class Data(object):
         def __init__(self, rbt, candidate_jnt_values):
             self.rbt = rbt

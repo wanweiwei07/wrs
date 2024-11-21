@@ -8,7 +8,7 @@ import wrs.robot_sim.manipulators.cobotta.ikgeo as ikgeo
 
 class CVR038(mi.ManipulatorInterface):
 
-    def __init__(self, pos=np.zeros(3), rotmat=np.eye(3), ik_solver='a', name="cvr038", enable_cc=False):
+    def __init__(self, pos=np.zeros(3), rotmat=np.eye(3), ik_solver='n', name="cvr038", enable_cc=False):
         super().__init__(pos=pos, rotmat=rotmat, home_conf=np.zeros(6), name=name, enable_cc=enable_cc)
         current_file_dir = os.path.dirname(__file__)
         # anchor
@@ -100,7 +100,7 @@ class CVR038(mi.ManipulatorInterface):
         # mcm.mgm.gen_myc_frame(pos=tgt_pos, rotmat=tgt_rotmat).attach_to(base)
         result = ikgeo.ik(jlc=self.jlc, tgt_pos=tgt_pos, tgt_rotmat=tgt_rotmat, seed_jnt_values=None)
         if result is None:
-            print("No valid solutions found")
+            # print("No valid solutions found")
             return None
         if seed_jnt_values is None:
             seed_jnt_values = self.home_conf
