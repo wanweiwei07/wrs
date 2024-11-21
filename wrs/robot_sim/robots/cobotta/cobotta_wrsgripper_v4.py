@@ -21,9 +21,9 @@ class CobottaLarge(sari.SglArmRobotInterface):
         self.base_plate.lnk_list[0].cmodel = mcm.CollisionModel(os.path.join(this_dir, "meshes", "base_plate.stl"))
         self.base_plate.lnk_list[0].cmodel.rgb = rm.const.steel_gray
         # arm
-        self.manipulator = cbta.CobottaArm(pos=self.base_plate.gl_flange_pose[0],
-                                           rotmat=self.base_plate.gl_flange_pose[1],
-                                           name='CobottaLarge_arm', enable_cc=False)
+        self.manipulator = cbta.CVR038(pos=self.base_plate.gl_flange_pose[0],
+                                       rotmat=self.base_plate.gl_flange_pose[1],
+                                       name='CobottaLarge_arm', enable_cc=False)
         # grippers
         self.end_effector = wg4.WRSGripper4(pos=self.manipulator.gl_flange_pos,
                                             rotmat=self.manipulator.gl_flange_rotmat,

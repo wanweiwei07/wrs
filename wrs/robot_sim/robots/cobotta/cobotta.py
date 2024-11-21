@@ -1,7 +1,7 @@
 import math
 import numpy as np
 import wrs.robot_sim.robots.single_arm_robot_interface as sari
-import wrs.robot_sim.manipulators.cobotta_arm.cobotta_arm as cbta
+import wrs.robot_sim.manipulators.cobotta.cvr038 as cbta
 import wrs.robot_sim.end_effectors.grippers.cobotta_gripper.cobotta_gripper as cbtg
 
 
@@ -13,7 +13,7 @@ class Cobotta(sari.SglArmRobotInterface):
         home_conf[1] = -math.pi / 3
         home_conf[2] = math.pi / 2
         home_conf[4] = math.pi / 6
-        self.manipulator = cbta.CobottaArm(pos=self.pos, rotmat=self.rotmat, name=name + "_arm", enable_cc=False)
+        self.manipulator = cbta.CVR038(pos=self.pos, rotmat=self.rotmat, name=name + "_arm", enable_cc=False)
         self.manipulator.home_conf = home_conf
         self.end_effector = cbtg.CobottaGripper(pos=self.manipulator.gl_flange_pos,
                                                 rotmat=self.manipulator.gl_flange_rotmat, name=name + "_hnd")

@@ -3,6 +3,7 @@ import numpy as np
 import wrs.basis.robot_math as rm
 import wrs.modeling.collision_model as mcm
 import wrs.robot_sim.manipulators.manipulator_interface as mi
+import wrs.robot_sim.manipulators.cobotta.ikgeo as ikgeo
 
 
 class CVRB0609(mi.ManipulatorInterface):
@@ -12,43 +13,43 @@ class CVRB0609(mi.ManipulatorInterface):
         current_file_dir = os.path.dirname(__file__)
         # anchor
         self.jlc.anchor.lnk_list[0].cmodel = mcm.CollisionModel(
-            os.path.join(current_file_dir, "meshes", "base_link.dae"))
+            os.path.join(current_file_dir, "meshes", "cvrb0609_base.dae"))
         self.jlc.anchor.lnk_list[0].cmodel.rgba = np.array([.7, .7, .7, 1.0])
         # first joint and link
         self.jlc.jnts[0].loc_pos = np.array([0, 0, 0.101])
         self.jlc.jnts[0].loc_motion_ax = np.array([0, 0, 1])
         self.jlc.jnts[0].motion_range = np.array([-2.617994, 2.617994])
-        self.jlc.jnts[0].lnk.cmodel = mcm.CollisionModel(os.path.join(current_file_dir, "meshes", "j1.dae"))
+        self.jlc.jnts[0].lnk.cmodel = mcm.CollisionModel(os.path.join(current_file_dir, "meshes", "cvrb0609_j1.dae"))
         self.jlc.jnts[0].lnk.cmodel.rgba = np.array([.7, .7, .7, 1.0])
         # second joint and link
         self.jlc.jnts[1].loc_pos = np.array([0, 0, 0.109])
         self.jlc.jnts[1].loc_motion_ax = np.array([0, 1, 0])
         self.jlc.jnts[1].motion_range = np.array([-1.047198, 1.745329])
-        self.jlc.jnts[1].lnk.cmodel = mcm.CollisionModel(os.path.join(current_file_dir, "meshes", "j2.dae"))
+        self.jlc.jnts[1].lnk.cmodel = mcm.CollisionModel(os.path.join(current_file_dir, "meshes", "cvrb0609_j2.dae"))
         self.jlc.jnts[1].lnk.cmodel.rgba = np.array([.7, .7, .7, 1.0])
         # third joint and link
         self.jlc.jnts[2].loc_pos = np.array([0, 0, 0.51])
         self.jlc.jnts[2].loc_motion_ax = np.array([0, 1, 0])
         self.jlc.jnts[2].motion_range = np.array([0.3141593, 2.443461])
-        self.jlc.jnts[2].lnk.cmodel = mcm.CollisionModel(os.path.join(current_file_dir, "meshes", "j3.dae"))
+        self.jlc.jnts[2].lnk.cmodel = mcm.CollisionModel(os.path.join(current_file_dir, "meshes", "cvrb0609_j3.dae"))
         self.jlc.jnts[2].lnk.cmodel.rgba = np.array([.7, .7, .7, 1.0])
         # fourth joint and link
         self.jlc.jnts[3].loc_pos = np.array([0.0, -0.030000, 0.302000])
         self.jlc.jnts[3].loc_motion_ax = np.array([0, 0, 1])
         self.jlc.jnts[3].motion_range = np.array([-2.96706, 2.96706])
-        self.jlc.jnts[3].lnk.cmodel = mcm.CollisionModel(os.path.join(current_file_dir, "meshes", "j4.dae"))
+        self.jlc.jnts[3].lnk.cmodel = mcm.CollisionModel(os.path.join(current_file_dir, "meshes", "cvrb0609_j4.dae"))
         self.jlc.jnts[3].lnk.cmodel.rgba = np.array([.7, .7, .7, 1.0])
         # fifth joint and link
         self.jlc.jnts[4].loc_pos = np.array([0, 0.03, 0.088])
         self.jlc.jnts[4].loc_motion_ax = np.array([0, 1, 0])
         self.jlc.jnts[4].motion_range = np.array([-1.658063, 2.356194])
-        self.jlc.jnts[4].lnk.cmodel = mcm.CollisionModel(os.path.join(current_file_dir, "meshes", "j5.dae"))
+        self.jlc.jnts[4].lnk.cmodel = mcm.CollisionModel(os.path.join(current_file_dir, "meshes", "cvrb0609_j5.dae"))
         self.jlc.jnts[4].lnk.cmodel.rgba = np.array([.7, .7, .7, 1.0])
         # sixth joint and link
         self.jlc.jnts[5].loc_pos = np.array([0, 0.12, 0.16])
         self.jlc.jnts[5].loc_motion_ax = np.array([0, 0, 1])
         self.jlc.jnts[5].motion_range = np.array([-2.96706, 2.96706])
-        self.jlc.jnts[5].lnk.cmodel = mcm.CollisionModel(os.path.join(current_file_dir, "meshes", "j6.dae"))
+        self.jlc.jnts[5].lnk.cmodel = mcm.CollisionModel(os.path.join(current_file_dir, "meshes", "cvrb0609_j6.dae"))
         self.jlc.jnts[5].lnk.cmodel.rgba = rm.const.dim_gray
         self.jlc.finalize(ik_solver=ik_solver, identifier_str=name)
         # tcp
@@ -70,6 +71,27 @@ class CVRB0609(mi.ManipulatorInterface):
         into_list = [lb, l0]
         self.cc.set_cdpair_by_ids(from_list, into_list)
 
+    def ik(self,
+           tgt_pos,
+           tgt_rotmat,
+           seed_jnt_values=None,
+           option="single",
+           toggle_dbg=False):
+        # relative to base
+        rel_pos, rel_rotmat = rm.rel_pose(self.jlc.pos, self.jlc.rotmat, tgt_pos, tgt_rotmat)
+        # target
+        tgt_rotmat = rel_rotmat @ self.loc_tcp_rotmat.T
+        tgt_pos = rel_pos - rel_rotmat @ self.loc_tcp_pos
+        result = ikgeo.ik(jlc=self.jlc, tgt_pos=tgt_pos, tgt_rotmat=tgt_rotmat, seed_jnt_values=None)
+        if result is None:
+            print("No valid solutions found")
+            return None
+        if seed_jnt_values is None:
+            seed_jnt_values = self.home_conf
+        if option == "single":
+            return result[np.argmin(np.linalg.norm(result - seed_jnt_values, axis=1))]
+        elif option == "multiple":
+            return result[np.argsort(np.linalg.norm(result - seed_jnt_values, axis=1))]
 
 if __name__ == '__main__':
     import time
@@ -79,13 +101,12 @@ if __name__ == '__main__':
     mcm.mgm.gen_frame().attach_to(base)
     arm = CVRB0609(enable_cc=True)
     # arm.jlc._ik_solver.test_success_rate()
-    arm_mesh = arm.gen_meshmodel(alpha=1)
+    arm_mesh = arm.gen_meshmodel(alpha=.3)
     arm_mesh.attach_to(base)
     tmp_arm_stick = arm.gen_stickmodel(toggle_flange_frame=True)
     tmp_arm_stick.attach_to(base)
-    base.run()
 
-    tgt_pos = np.array([.25, .1, .1])
+    tgt_pos = np.array([.45, .1, .1])
     tgt_rotmat = rm.rotmat_from_euler(0, np.pi, 0)
     mcm.mgm.gen_dashed_frame(pos=tgt_pos, rotmat=tgt_rotmat).attach_to(base)
     tic = time.time()
@@ -94,11 +115,11 @@ if __name__ == '__main__':
     print(toc - tic)
     if jnt_values is not None:
         arm.goto_given_conf(jnt_values=jnt_values)
-    # arm_mesh = arm.gen_meshmodel(alpha=.3)
-    # arm_mesh.attach_to(base)
-    # tmp_arm_stick = arm.gen_stickmodel(toggle_flange_frame=True)
-    # tmp_arm_stick.attach_to(base)
-    # base.run()
+        arm_mesh = arm.gen_meshmodel(alpha=.3)
+        arm_mesh.attach_to(base)
+        tmp_arm_stick = arm.gen_stickmodel(toggle_flange_frame=True)
+        tmp_arm_stick.attach_to(base)
+    base.run()
 
     arm.goto_given_conf(jnt_values=np.array([0, np.pi / 2, np.pi * 3 / 4, 0, np.pi / 2, 0]))
     arm.show_cdprim()

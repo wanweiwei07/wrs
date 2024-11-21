@@ -111,7 +111,7 @@ class UR3e(mi.ManipulatorInterface):
         rel_pos, rel_rotmat = rm.rel_pose(self.jlc.pos, self.jlc.rotmat, tgt_pos, tgt_rotmat)
         # target
         tgt_rotmat = rel_rotmat @ self.loc_tcp_rotmat.T
-        tgt_pos = rel_pos - rel_rotmat @ self.loc_tcp_pos
+        tgt_pos = rel_pos - tgt_rotmat @ self.loc_tcp_pos
         if toggle_dbg:
             mgm.gen_dashed_frame(tgt_pos, tgt_rotmat).attach_to(base)
         # DH parameters of ur3e
@@ -208,15 +208,15 @@ if __name__ == '__main__':
 
     base = wd.World(cam_pos=[2, 0, 1], lookat_pos=[0, 0, 0])
     mgm.gen_frame().attach_to(base)
-    arm = UR3e(enable_cc=True)
+    arm = UR3e(pos=rm.vec(0.1,0.1,0.0), rotmat=rm.rotmat_from_axangle(rm.const.z_ax, rm.pi/6), enable_cc=True)
     arm_mesh = arm.gen_meshmodel(alpha=.3)
     arm_mesh.attach_to(base)
     tmp_arm_stick = arm.gen_stickmodel(toggle_flange_frame=True, toggle_jnt_frames=True)
     tmp_arm_stick.attach_to(base)
     # base.run()
 
-    tgt_pos = np.array([.25, .1, .1])
-    tgt_rotmat = rm.rotmat_from_euler(0, np.pi, 0)
+    tgt_pos = np.array([.55, .1, .1])
+    tgt_rotmat = rm.rotmat_from_euler(0, np.pi/3, 0)
     mgm.gen_frame(pos=tgt_pos, rotmat=tgt_rotmat).attach_to(base)
     tic = time.time()
     jnt_values = arm.ik(tgt_pos=tgt_pos, tgt_rotmat=tgt_rotmat)

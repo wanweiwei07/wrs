@@ -120,7 +120,7 @@ class Nova2(mi.ManipulatorInterface):
         rel_pos, rel_rotmat = rm.rel_pose(self.jlc.pos, self.jlc.rotmat, tgt_pos, tgt_rotmat)
         # target
         tgt_rotmat = rel_rotmat @ self.loc_tcp_rotmat.T
-        tgt_pos = rel_pos - rel_rotmat @ self.loc_tcp_pos
+        tgt_pos = rel_pos - tgt_rotmat @ self.loc_tcp_pos
         # DH parameters of nova2
         a2 = -0.280
         a3 = -0.22501
@@ -218,6 +218,7 @@ if __name__ == '__main__':
 
     random_conf = arm.rand_conf()
     tgt_pos, tgt_rotmat = arm.fk(random_conf)
+    mcm.mgm.gen_frame(pos=tgt_pos, rotmat=tgt_rotmat, ax_length=0.1).attach_to(base)
     tic = time.time()
     jv_list = arm.ik(tgt_pos=tgt_pos, tgt_rotmat=tgt_rotmat, option="multiple")
     toc = time.time()

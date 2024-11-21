@@ -114,7 +114,7 @@ class NumIKSolver(object):
                                                                           tgt_pos=tgt_pos,
                                                                           tgt_rotmat=tgt_rotmat)
             if f2t_pos_err < 1e-4 and f2t_rot_err < 1e-3:
-                return iter_jnt_values
+                return np.asarray(iter_jnt_values)
             clamped_err_vec = self._clamp_tgt_err(f2t_pos_err, f2t_rot_err, f2t_err_vec)
             delta_jnt_values = np.linalg.pinv(j_mat, rcond=1e-4) @ clamped_err_vec
             if toggle_dbg:

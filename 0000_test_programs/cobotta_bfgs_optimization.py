@@ -8,7 +8,7 @@ from scipy.optimize import minimize
 
 base = wd.World(cam_pos=[2, 0, 1], lookat_pos=[0, 0, .3])
 mcm.mgm.gen_frame().attach_to(base)
-arm = cbta.CobottaArm(enable_cc=True)
+arm = cbta.CVR038(enable_cc=True)
 
 def finalize(q4, p06, R06):
     R34 = rm.rotmat_from_axangle(arm.jlc.jnts[3].loc_motion_ax, q4)

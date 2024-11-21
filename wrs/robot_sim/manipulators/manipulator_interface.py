@@ -190,8 +190,11 @@ class ManipulatorInterface(object):
         :param toggle_dbg:
         :return:
         """
-        tgt_rotmat = tgt_rotmat @ self.loc_tcp_rotmat.T
-        tgt_pos = tgt_pos - tgt_rotmat @ self.loc_tcp_pos
+        # relative to base
+        rel_pos, rel_rotmat = rm.rel_pose(self.jlc.pos, self.jlc.rotmat, tgt_pos, tgt_rotmat)
+        # target
+        tgt_rotmat = rel_rotmat @ self.loc_tcp_rotmat.T
+        tgt_pos = rel_pos - rel_rotmat @ self.loc_tcp_pos
         return self.jlc.ik(tgt_pos=tgt_pos,
                            tgt_rotmat=tgt_rotmat,
                            seed_jnt_values=seed_jnt_values,

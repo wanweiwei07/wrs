@@ -22,15 +22,12 @@ def sp4_setup(p, k, h):
     p *= 0
     k *= 0
     h *= 0
-
     # Then pass in new values
     p += rand.rand_vec()
     k += rand.rand_normal_vec()
     h += rand.rand_normal_vec()
-
     theta = rand.rand_angle()
     # print("theta=", theta, "\r\n") #If seeing theta is desired, uncomment this.
-
     # Return d
     return h @ rand.rot(k, theta) @ p
 
@@ -40,12 +37,10 @@ def sp4_setup_LS(p, k, h):
     p *= 0
     k *= 0
     h *= 0
-
     # Then pass in new values
     p += rand.rand_vec()
     k += rand.rand_normal_vec()
     h += rand.rand_normal_vec()
-
     # Return d
     return rand.r.random()  # rand 0-1
 
@@ -92,15 +87,12 @@ if __name__ == "__main__":
     p = np.array([1., 2., 3.])
     k = np.array([1., 2., 3.])
     h = np.array([1., 2., 3.])
-
     # Setup problem
     print("After setup: \r\n")
     d = sp4_setup_LS(p, k, h)
     np.set_printoptions(precision=20)
     print("p = {}\r\nk = {}\r\nh  = {}\r\nd  = {}\r\n".format(p, k, h, d))
-
     theta, is_LS = sp4_run(p, k, h, d)  # Save values
-
     # Printing out results
     print("Results:\r\ntheta: {}\r\nis_LS: {}\r".format(theta, is_LS))
     print("Error:", sp4_error(p, k, h, d, theta), "\r\n")

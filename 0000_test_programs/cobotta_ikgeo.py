@@ -6,7 +6,7 @@ import wrs.robot_sim._kinematics.ikgeo.sp1_lib as sp1_lib
 
 base = wd.World(cam_pos=[2, 0, 1], lookat_pos=[0, 0, .3])
 mcm.mgm.gen_frame().attach_to(base)
-arm = cbta.CobottaArm(enable_cc=True)
+arm = cbta.CVR038(enable_cc=True)
 
 tgt_pos = rm.vec(.25, .1, .1)
 tgt_rotmat = rm.rotmat_from_euler(0, rm.pi, 0)
