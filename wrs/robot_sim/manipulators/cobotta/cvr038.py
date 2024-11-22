@@ -94,12 +94,12 @@ class CVR038(mi.ManipulatorInterface):
         :param toggle_dbg:
         :return:
         """
-        self.jlc._ik_solver._k_max = 1
-        # relative to base
-        # target
+        # directly use specified ik
+        self.jlc._ik_solver._k_max = 100
         rel_rotmat = tgt_rotmat @ self.loc_tcp_rotmat.T
         rel_pos = tgt_pos - tgt_rotmat @ self.loc_tcp_pos
         result = self.jlc.ik(tgt_pos=rel_pos, tgt_rotmat=rel_rotmat, seed_jnt_values=seed_jnt_values)
+        return result
         # mcm.mgm.gen_frame(pos=tgt_pos, rotmat=tgt_rotmat).attach_to(base)
         if result is None:
             tgt_rotmat = tgt_rotmat @ self.loc_tcp_rotmat.T
