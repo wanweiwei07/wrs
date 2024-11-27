@@ -43,7 +43,7 @@ def dump_json(data, path="", reminder=True):
 
 class ManualCalibrationBase(ABC):
     def __init__(self, rbt_s: ri.RobotInterface, rbt_x, sensor_hdl, init_calib_mat: rm.np.ndarray = None,
-                 component_name="arm", move_resolution=.001, rotation_resolution=rm.np.radians(5)):
+                 move_resolution=.001, rotation_resolution=rm.np.radians(5)):
         """
         Class to manually calibrate the point cloud data
         :param rbt_s: The simulation robot
@@ -57,8 +57,7 @@ class ManualCalibrationBase(ABC):
         self._rbt_s = rbt_s
         self._rbt_x = rbt_x
         self._sensor_hdl = sensor_hdl
-        self._init_calib_mat = np.eye(4) if init_calib_mat is None else init_calib_mat
-        self._component_name = component_name
+        self._init_calib_mat = rm.eye(4) if init_calib_mat is None else init_calib_mat
 
         # variable stores robot plot and the point cloud plot
         self._plot_node_rbt = None
@@ -77,7 +76,7 @@ class ManualCalibrationBase(ABC):
         taskMgr.doMethodLater(.5, self.sync_pcd, "sync mph", )
 
     @abstractmethod
-    def get_pcd(self) -> np.ndarray:
+    def get_pcd(self):
         """
         An abstract method to get the point cloud
         :return: An Nx3 ndarray represents the point cloud
@@ -85,7 +84,7 @@ class ManualCalibrationBase(ABC):
         pass
 
     @abstractmethod
-    def get_rbt_jnt_val(self) -> np.ndarray:
+    def get_rbtx_jnt_values(self):
         """
         An abstract method to get the robot joint angles
         :return: 1xn ndarray, n is degree of freedom of the robot
@@ -93,7 +92,7 @@ class ManualCalibrationBase(ABC):
         pass
 
     @abstractmethod
-    def align_pcd(self, pcd) -> np.ndarray:
+    def align_pcd(self, pcd):
         """
         Abstract method to align the mph according to the calibration matrix
         implement the Eye-in-hand or eye-to-hand transformation here
@@ -118,8 +117,8 @@ class ManualCalibrationBase(ABC):
         :param dir_global: The global motion_vec
         :return:
         """
-        self._init_calib_mat[:3, :3] = np.dot(rm.rotmat_from_axangle(dir_global, np.radians(self.rotation_resolution)),
-                                              self._init_calib_mat[:3, :3])
+        self._init_calib_mat[:3, :3] = rm.rotmat_from_axangle(dir_global, rm.radians(
+            self.rotation_resolution)) @ self._init_calib_mat[:3, :3]
 
     def map_key(self, x='w', x_='s', y='a', y_='d', z='q', z_='e', x_cw='z', x_ccw='x', y_cw='c', y_ccw='v', z_cw='b',
                 z_ccw='n'):
@@ -167,8 +166,7 @@ class ManualCalibrationBase(ABC):
         return task.again
 
     def sync_rbt(self, task):
-        rbt_jnt_val = self.get_rbt_jnt_val()
-        self._rbt_s.fk(self._component_name, rbt_jnt_val)
+        self._rbt_s.goto_given_conf(self.get_rbtx_jnt_values())
         self.plot()
         return task.again
 
@@ -190,17 +188,17 @@ class ManualCalibrationBase(ABC):
             self._plot_node_rbt.detach()
         if self._plot_node_pcd is not None:
             self._plot_node_pcd.detach()
-        self._plot_node_rbt = self._rbt_s.gen_mesh_model()
+        self._plot_node_rbt = self._rbt_s.gen_meshmodel()
         self._plot_node_rbt.attach_to(base)
         pcd = self._pcd
         if pcd is not None:
             if pcd.shape[1] == 6:
                 pcd, pcd_color = pcd[:, :3], pcd[:, 3:6]
-                pcd_color_rgba = np.append(pcd_color, np.ones((len(pcd_color), 1)), axis=1)
+                pcd_color_rgba = rm.np.append(pcd_color, rm.np.ones((len(pcd_color), 1)), axis=1)
             else:
-                pcd_color_rgba = np.array([1, 1, 1, 1])
+                pcd_color_rgba = rm.np.array([1, 1, 1, 1])
             pcd_r = self.align_pcd(pcd)
-            self._plot_node_pcd = mgm.gen_pointcloud(pcd_r, rgbas=pcd_color_rgba)
+            self._plot_node_pcd = mgm.gen_pointcloud(points=pcd_r, rgba=pcd_color_rgba)
             mgm.gen_frame(self._init_calib_mat[:3, 3], self._init_calib_mat[:3, :3]).attach_to(self._plot_node_pcd)
             self._plot_node_pcd.attach_to(base)
         if task is not None:
@@ -238,41 +236,38 @@ class ManualCalibrationBase(ABC):
         return task.again
 
 
-class XArmLite6ManualCalib(ManualCalibrationBase):
-    """
-    Eye in hand example
-    """
-
-    def get_pcd(self):
-        pcd, pcd_color, _, _ = self._sensor_hdl.get_pcd_texture_depth()
-        return np.hstack((pcd, pcd_color))
-
-    def get_rbt_jnt_val(self):
-        return self._rbt_x.get_jnt_values()
-
-    def align_pcd(self, pcd):
-        r2cam_mat = self._init_calib_mat
-        rbt_pose = self._rbt_x.get_pose()
-        w2r_mat = rm.homomat_from_posrot(*rbt_pose)
-        w2c_mat = w2r_mat.dot(r2cam_mat)
-        return rm.transform_points_by_homomat(w2c_mat, points=pcd)
-
-
 if __name__ == "__main__":
-    import numpy as np
-    import wrs.visualization.panda.world as wd
-    from wrs.drivers.devices.realsense.realsense_d400s import RealSenseD405
-    from wrs import basis as rm, modeling as gm
-    from wrs.robot_con.xarm_lite6.xarm_lite6_x import XArmLite6X
-    from wrs.robot_sim.robots.xarmlite6_wg.x6wg import XArmLite6WRSGripper
 
-    base = wd.World(cam_pos=[2, 0, 1.5], lookat_pos=[0, 0, 0])
-    rs_pipe = RealSenseD405()
+    class XArmLite6ManualCalib(ManualCalibrationBase):
+        """
+        Eye in hand example
+        """
+
+        def get_pcd(self):
+            pcd, pcd_color, _, _ = self._sensor_hdl.get_pcd_texture_depth()
+            return rm.np.hstack((pcd, pcd_color))
+
+        def get_rbtx_jnt_values(self):
+            return self._rbt_x.get_jnt_values()
+
+        def align_pcd(self, pcd):
+            r2cam_mat = self._init_calib_mat
+            rbt_pose = self._rbt_x.get_pose()
+            w2r_mat = rm.homomat_from_posrot(*rbt_pose)
+            w2c_mat = w2r_mat.dot(r2cam_mat)
+            return rm.transform_points_by_homomat(w2c_mat, points=pcd)
+
+    import wrs.visualization.panda.world as wd
+    from wrs.drivers.devices.realsense.realsense_d400s import RealSenseD400
+    from wrs.robot_sim.robots.xarmlite6_wg import x6wg2
+
+    base = wd.World(cam_pos=rm.vec(2, 0, 1.5), lookat_pos=rm.vec(0, 0, 0))
+    rs_pipe = RealSenseD400()
     # the first frame contains no data information
     rs_pipe.get_pcd_texture_depth()
     rs_pipe.get_pcd_texture_depth()
-    rbtx = XArmLite6X(ip='192.168.1.190', has_gripper=False)
-    rbt = XArmLite6WRSGripper()
+    # rbtx = XArmLite6X(ip='192.168.1.190', has_gripper=False)
+    rbt = x6wg2.XArmLite6WG2()
 
-    xarm_mc = XArmLite6ManualCalib(rbt_s=rbt, rbt_x=rbtx, sensor_hdl=rs_pipe)
+    xarm_mc = XArmLite6ManualCalib(rbt_s=rbt, rbt_x=None, sensor_hdl=rs_pipe)
     base.run()

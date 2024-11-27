@@ -17,43 +17,43 @@ class CVRB1213(mi.ManipulatorInterface):
         current_file_dir = os.path.dirname(__file__)
         # anchor
         self.jlc.anchor.lnk_list[0].cmodel = mcm.CollisionModel(
-            os.path.join(current_file_dir, "meshes", "cvrb1213_base.stl"))
+            os.path.join(current_file_dir, "meshes", self.name + "_base.stl"))
         self.jlc.anchor.lnk_list[0].cmodel.rgba = rm.vec(.7, .7, .7, 1.0)
         # first joint and link
         self.jlc.jnts[0].loc_pos = rm.vec(0, 0, 0.21)
         self.jlc.jnts[0].loc_motion_ax = rm.vec(0, 0, 1)
         self.jlc.jnts[0].motion_range = rm.vec(-4.71238898038469, 4.71238898038469)
-        self.jlc.jnts[0].lnk.cmodel = mcm.CollisionModel(os.path.join(current_file_dir, "meshes", "cvrb1213_j1.stl"))
+        self.jlc.jnts[0].lnk.cmodel = mcm.CollisionModel(os.path.join(current_file_dir, "meshes", self.name + "_j1.stl"))
         self.jlc.jnts[0].lnk.cmodel.rgba = rm.vec(.7, .7, .7, 1.0)
         # second joint and link
         self.jlc.jnts[1].loc_pos = rm.vec(0.2, 0, 0)
         self.jlc.jnts[1].loc_motion_ax = rm.vec(1, 0, 0)
         self.jlc.jnts[1].motion_range = rm.vec(-2.6179938779914944, 2.6179938779914944)
-        self.jlc.jnts[1].lnk.cmodel = mcm.CollisionModel(os.path.join(current_file_dir, "meshes", "cvrb1213_j2.stl"))
+        self.jlc.jnts[1].lnk.cmodel = mcm.CollisionModel(os.path.join(current_file_dir, "meshes", self.name + "_j2.stl"))
         self.jlc.jnts[1].lnk.cmodel.rgba = rm.vec(.7, .7, .7, 1.0)
         # third joint and link
         self.jlc.jnts[2].loc_pos = rm.vec(0, 0, 0.71)
         self.jlc.jnts[2].loc_motion_ax = rm.vec(1, 0, 0)
         self.jlc.jnts[2].motion_range = rm.vec(-2.6179938779914944, 2.6179938779914944)
-        self.jlc.jnts[2].lnk.cmodel = mcm.CollisionModel(os.path.join(current_file_dir, "meshes", "cvrb1213_j3.stl"))
+        self.jlc.jnts[2].lnk.cmodel = mcm.CollisionModel(os.path.join(current_file_dir, "meshes", self.name + "_j3.stl"))
         self.jlc.jnts[2].lnk.cmodel.rgba = rm.vec(.7, .7, .7, 1.0)
         # fourth joint and link
         self.jlc.jnts[3].loc_pos = rm.vec(-0.25, -0.59, 0)
         self.jlc.jnts[3].loc_motion_ax = rm.vec(0, 1, 0)
         self.jlc.jnts[3].motion_range = rm.vec(-4.71238898038469, 4.71238898038469)
-        self.jlc.jnts[3].lnk.cmodel = mcm.CollisionModel(os.path.join(current_file_dir, "meshes", "cvrb1213_j4.stl"))
+        self.jlc.jnts[3].lnk.cmodel = mcm.CollisionModel(os.path.join(current_file_dir, "meshes", self.name + "_j4.stl"))
         self.jlc.jnts[3].lnk.cmodel.rgba = rm.vec(.7, .7, .7, 1.0)
         # fifth joint and link
         self.jlc.jnts[4].loc_pos = rm.vec(0.15, 0, 0)
         self.jlc.jnts[4].loc_motion_ax = rm.vec(1, 0, 0)
         self.jlc.jnts[4].motion_range = rm.vec(-2.6179938779914944, 2.6179938779914944)
-        self.jlc.jnts[4].lnk.cmodel = mcm.CollisionModel(os.path.join(current_file_dir, "meshes", "cvrb1213_j5.stl"))
+        self.jlc.jnts[4].lnk.cmodel = mcm.CollisionModel(os.path.join(current_file_dir, "meshes", self.name + "_j5.stl"))
         self.jlc.jnts[4].lnk.cmodel.rgba = rm.vec(.7, .7, .7, 1.0)
         # sixth joint and link
         self.jlc.jnts[5].loc_pos = rm.vec(0, -0.16, 0)
         self.jlc.jnts[5].loc_motion_ax = rm.vec(0, 1, 0)
         self.jlc.jnts[5].motion_range = rm.vec(-6.283185307179586, 6.283185307179586)
-        self.jlc.jnts[5].lnk.cmodel = mcm.CollisionModel(os.path.join(current_file_dir, "meshes", "cvrb1213_j6.stl"))
+        self.jlc.jnts[5].lnk.cmodel = mcm.CollisionModel(os.path.join(current_file_dir, "meshes", self.name + "_j6.stl"))
         self.jlc.jnts[5].lnk.cmodel.rgba = rm.vec(.7, .7, .7, 1.0)
         # flange
         self.jlc.set_flange(loc_flange_pos=rm.vec(0, 0, 0),
@@ -97,7 +97,7 @@ if __name__ == '__main__':
 
     base = wd.World(cam_pos=[2, 0, 0], lookat_pos=[0, 0, .3])
     mgm.gen_frame().attach_to(base)
-    arm = CobottaPro1300Arm(enable_cc=True)
+    arm = CVRB1213(enable_cc=True)
     arm.gen_meshmodel(alpha=.3).attach_to(base)
     arm.gen_stickmodel(toggle_tcp_frame=True, toggle_jnt_frames=False, toggle_flange_frame=False).attach_to(base)
     base.run()

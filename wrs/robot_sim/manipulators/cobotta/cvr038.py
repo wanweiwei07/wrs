@@ -99,24 +99,26 @@ class CVR038(mi.ManipulatorInterface):
         rel_rotmat = tgt_rotmat @ self.loc_tcp_rotmat.T
         rel_pos = tgt_pos - tgt_rotmat @ self.loc_tcp_pos
         result = self.jlc.ik(tgt_pos=rel_pos, tgt_rotmat=rel_rotmat, seed_jnt_values=seed_jnt_values)
-        return result
-        # mcm.mgm.gen_frame(pos=tgt_pos, rotmat=tgt_rotmat).attach_to(base)
-        if result is None:
-            tgt_rotmat = tgt_rotmat @ self.loc_tcp_rotmat.T
-            tgt_pos = tgt_pos - tgt_rotmat @ self.loc_tcp_pos
-            # mcm.mgm.gen_myc_frame(pos=tgt_pos, rotmat=tgt_rotmat).attach_to(base)
-            result = ikgeo.ik(jlc=self.jlc, tgt_pos=tgt_pos, tgt_rotmat=tgt_rotmat, seed_jnt_values=None)
-            if result is None:
-                # print("No valid solutions found")
-                return None
-            if seed_jnt_values is None:
-                seed_jnt_values = self.home_conf
-            if option == "single":
-                return result[np.argmin(np.linalg.norm(result - seed_jnt_values, axis=1))]
-            elif option == "multiple":
-                return result[np.argsort(np.linalg.norm(result - seed_jnt_values, axis=1))]
-        else:
+        if self._ik_solver != 'd':
             return result
+        else:
+            # mcm.mgm.gen_frame(pos=tgt_pos, rotmat=tgt_rotmat).attach_to(base)
+            if result is None:
+                tgt_rotmat = tgt_rotmat @ self.loc_tcp_rotmat.T
+                tgt_pos = tgt_pos - tgt_rotmat @ self.loc_tcp_pos
+                # mcm.mgm.gen_myc_frame(pos=tgt_pos, rotmat=tgt_rotmat).attach_to(base)
+                result = ikgeo.ik(jlc=self.jlc, tgt_pos=tgt_pos, tgt_rotmat=tgt_rotmat, seed_jnt_values=None)
+                if result is None:
+                    # print("No valid solutions found")
+                    return None
+                if seed_jnt_values is None:
+                    seed_jnt_values = self.home_conf
+                if option == "single":
+                    return result[np.argmin(np.linalg.norm(result - seed_jnt_values, axis=1))]
+                elif option == "multiple":
+                    return result[np.argsort(np.linalg.norm(result - seed_jnt_values, axis=1))]
+            else:
+                return result
 
 
 if __name__ == '__main__':

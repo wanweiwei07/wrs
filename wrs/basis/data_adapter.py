@@ -331,21 +331,23 @@ def pdgeom_from_v(vertices: np.ndarray,
         raise ValueError('rgba must be an nparray!')
     if rgba.ndim == 1:
         vertex_rgbas = np.tile((rgba * 255).astype(np.uint8), (len(vertices), 1))
-        n_color_bit = len(rgba)
     elif rgba.shape[0] == len(vertices):
         vertex_rgbas = (rgba * 255).astype(np.uint8)
-        n_color_bit = rgba.shape[1]
+        if vertex_rgbas.shape[1] == 3:
+            vertex_rgbas = np.hstack([vertex_rgbas, np.ones((vertex_rgbas.shape[0], 1), dtype=np.uint8)*255])
+    # define vertex format
     vertex_format = GeomVertexFormat()
     array_format = GeomVertexArrayFormat()
     array_format.addColumn(InternalName.getVertex(), 3, GeomEnums.NTFloat32, GeomEnums.CPoint)
     vertex_format.addArray(array_format)
     array_format = GeomVertexArrayFormat()
-    array_format.addColumn(InternalName.getColor(), n_color_bit, GeomEnums.NTUint8, GeomEnums.CColor)
+    array_format.addColumn(InternalName.getColor(), 4, GeomEnums.NTUint8, GeomEnums.CColor)
     vertex_format.addArray(array_format)
     vertex_format = GeomVertexFormat.registerFormat(vertex_format)
+    # pack vertex data
     vertex_data = GeomVertexData(name, vertex_format, Geom.UHStatic)
     vertex_data.modifyArrayHandle(0).copyDataFrom(np.ascontiguousarray(vertices, dtype=np.float32))
-    vertex_data.modifyArrayHandle(1).copyDataFrom(vertex_rgbas)
+    vertex_data.modifyArrayHandle(1).copyDataFrom(np.ascontiguousarray(vertex_rgbas, dtype=np.uint8))
     primitive = GeomPoints(Geom.UHStatic)
     primitive.setIndexType(GeomEnums.NTUint32)
     primitive.modifyVertices(-1).modifyHandle().copyDataFrom(np.arange(len(vertices), dtype=np.uint32))

@@ -1,5 +1,5 @@
 import numpy as np
-from wrs.drivers.devices.realsense.realsense_d400s import RealSenseD405
+from wrs.drivers.devices.realsense.realsense_d400s import RealSenseD400
 
 
 def letterbox(im, new_shape=(640, 640), color=(114, 114, 114), auto=True, scaleFill=False, scaleup=True, stride=32):
@@ -43,7 +43,7 @@ def crop_img(img):
 
 class RealSenseD405Crop(object):
     def __init__(self):
-        self._rs1 = RealSenseD405()
+        self._rs1 = RealSenseD400()
         crop_data = fs.load_json('resources/crop_data.json')
         self.crop_lt1 = crop_data['lt1']
         self.crop_img_sz_1 = crop_data['img_sz1']
@@ -54,11 +54,11 @@ class RealSenseD405Crop(object):
         self.crop_img_sz_p = crop_plant['img_sz']
 
     def get_color_img(self, ):
-        rs: RealSenseD405 = self._rs1
+        rs: RealSenseD400 = self._rs1
         return rs.get_color_img()
 
     def get_pcd_texture_depth(self, ):
-        rs: RealSenseD405 = self._rs1
+        rs: RealSenseD400 = self._rs1
         return rs.get_pcd_texture_depth()
 
     def crop_img(self, img, lt_p, img_size):

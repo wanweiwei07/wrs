@@ -1,5 +1,5 @@
 """
-Interface for Realsense D400 Series.
+Interface for Realsense D400 Serials.
 Realsense API Python example: https://dev.intelrealsense.com/docs/python2
 Realsense D405 Datasheet: https://dev.intelrealsense.com/docs/intel-realsense-d400-series-product-family-datasheet
 Author: Chen Hao (chen960216@gmail.com), osaka
@@ -11,6 +11,7 @@ Update Notes: '0.0.1'/20220719: Implement the functions to capture the point clo
 import time
 from typing import Literal
 import multiprocessing as mp
+
 import numpy as np
 import pyrealsense2 as rs
 
@@ -142,18 +143,18 @@ class _DataPipeline(mp.Process):
         pipeline.stop()
 
 
-class RealSenseD405(object):
-    def __init__(self, resoultion: Literal['mid', 'high'] = 'high', device: str = None):
+class RealSenseD400(object):
+    def __init__(self, resolution: Literal['mid', 'high'] = 'mid', device: str = None):
         """
         :param toggle_new_process: Open a new process to stream data
         """
-        assert resoultion in ['mid', 'high']
+        assert resolution in ['mid', 'high']
         self._pipeline = rs.pipeline()
         self._config = rs.config()
         if device is not None:
             self._config.enable_device(device)
         # Setup config
-        if resoultion == 'high':
+        if resolution == 'high':
             depth_resolution = DEPTH_RESOLUTION_HIGH
             color_resolution = COLOR_RESOLUTION_HIGH
         else:
@@ -165,7 +166,7 @@ class RealSenseD405(object):
         self._config.enable_stream(rs.stream.color, color_resolution[0], color_resolution[1], rs.format.bgr8,
                                    COLOR_FPS)
         # Start streaming with chosen configuration
-        self._pipeline.start(self._config)
+        self._profile = self._pipeline.start(self._config)
         # Declare pointcloud object, for calculating pointclouds and texture mappings
         self._pc = rs.pointcloud()
 
@@ -185,7 +186,7 @@ class RealSenseD405(object):
 
     def get_pcd(self, return_color=False):
         """
-        Get point cloud data. If return_color is True, additionally return mph color
+        Get point cloud data. If return_color is True, additionally return pcd color
         :return: nx3 np.array
         """
         pcd, pcd_color, depth_img, color_img = self.req_data()
@@ -211,7 +212,7 @@ class RealSenseD405(object):
 
     def get_pcd_texture_depth(self):
         """
-        Return mph, pcd_color, depth image and color image
+        Return pcd, pcd_color, depth image and color image
         :return: List[np.array, np.array, np.array, np.array]
         """
         return self.req_data()
@@ -250,8 +251,8 @@ class RealSenseD405(object):
                 homomat[:3, :3] = rot
                 homomat[:3, 3] = pos
                 poselist.append(homomat)
-                if toggle_show:
-                    aruco.drawAxis()
+                # if toggle_show:
+                #     aruco.drawAxis()
         if ids is None:
             idslist = []
         else:
@@ -264,22 +265,39 @@ class RealSenseD405(object):
     def __del__(self):
         self.stop()
 
+    def reset(self):
+        device = self._profile.get_device()
+        device.hardware_reset()
+        del self
+
 
 if __name__ == "__main__":
     import cv2
 
+    # import huri.vision.yolov6.detect as yyd
+    # from huri.core.common_import import fs
+
     serials, ctx = find_devices()
+    print(serials)
     rs_pipelines = []
     for ser in serials:
-        rs_pipelines.append(RealSenseD405(device=ser))
-
+        rs_pipelines.append(RealSenseD400(device=ser))
+        rs_pipelines[-1].reset()
+        time.sleep(5)
+        rs_pipelines[-1] = RealSenseD400(device=ser)
+        print("?")
     while True:
         for ind, pipeline in enumerate(rs_pipelines):
             pcd, pcd_color, depth_img, color_img = pipeline.get_pcd_texture_depth()
             cv2.imshow(f"color image {ind}", color_img)
+
         k = cv2.waitKey(1)
         if k == 27:
             break
-
+    # print(color_img.shape)
+    # print(pcd.shape)
+    # yolo_img, yolo_results = yyd.detect(source=color_img,
+    #                                     weights="best.pt")
+    # print("test")
     for pipeline in rs_pipelines:
         pipeline.stop()
