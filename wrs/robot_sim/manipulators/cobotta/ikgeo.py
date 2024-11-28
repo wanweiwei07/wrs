@@ -116,11 +116,11 @@ def solve_q56(jlc, R06, q1, q2, q3, q4):
     return None, None
 
 
-def ik(jlc, tgt_pos, tgt_rotmat, n_div = 36, seed_jnt_values=None):
+def ik(jlc, tgt_pos, tgt_rotmat, n_div = 36, seed_jnt_values=None, option='single'):
     _backbone_solver = ikn.NumIKSolver(jlc)
-    if seed_jnt_values is not None:
-        result = _backbone_solver(tgt_pos, tgt_rotmat, seed_jnt_values)
-        return result
+    # if seed_jnt_values is not None:
+    #     result = _backbone_solver(tgt_pos, tgt_rotmat, seed_jnt_values)
+    #     return result
     _p12 = jlc.jnts[0].loc_pos+jlc.jnts[1].loc_pos
     # relative to base (ikgeo assumes jlc.pos = 0 and jlc.rotmat = I), thus we need to convert tgt_pos and tgt_rotmat
     rel_pos, rel_rotmat = rm.rel_pose(jlc.pos, jlc.rotmat, tgt_pos, tgt_rotmat)
@@ -139,7 +139,13 @@ def ik(jlc, tgt_pos, tgt_rotmat, n_div = 36, seed_jnt_values=None):
             if result is not None:
                 candidate_jnt_values.append(result)
     if len(candidate_jnt_values) > 0:
-        return rm.np.asarray(candidate_jnt_values)
+        filtered_result = rm.np.array(candidate_jnt_values)
+        if seed_jnt_values is None:
+            seed_jnt_values = jlc.home
+            if option == "single":
+                return filtered_result[rm.np.argmin(rm.np.linalg.norm(filtered_result - seed_jnt_values, axis=1))]
+            elif option == "multiple":
+                return filtered_result[rm.np.argsort(rm.np.linalg.norm(filtered_result - seed_jnt_values, axis=1))]
     else:
         return None
 

@@ -7,50 +7,56 @@ import wrs.robot_sim.manipulators.cobotta.ikgeo as ikgeo
 
 class CVRB0609(mi.ManipulatorInterface):
 
-    def __init__(self, pos=rm.zeros(3), rotmat=rm.np.eye(3), ik_solver='d', name="cvrb0609", enable_cc=False):
+    def __init__(self, pos=rm.zeros(3), rotmat=rm.np.eye(3), name="cvrb0609", enable_cc=False):
         super().__init__(pos=pos, rotmat=rotmat, home_conf=rm.zeros(6), name=name, enable_cc=enable_cc)
         current_file_dir = os.path.dirname(__file__)
         # anchor
         self.jlc.anchor.lnk_list[0].cmodel = mcm.CollisionModel(
-            os.path.join(current_file_dir, "meshes", self.name + "_base.dae"))
+            os.path.join(current_file_dir, "meshes", "cvrb0609_base.dae"), name=self.name + "_base")
         self.jlc.anchor.lnk_list[0].cmodel.rgba = rm.vec(.7, .7, .7, 1.0)
         # first joint and link
         self.jlc.jnts[0].loc_pos = rm.vec(0, 0, 0.101)
         self.jlc.jnts[0].loc_motion_ax = rm.vec(0, 0, 1)
         self.jlc.jnts[0].motion_range = rm.vec(-2.617994, 2.617994)
-        self.jlc.jnts[0].lnk.cmodel = mcm.CollisionModel(os.path.join(current_file_dir, "meshes", self.name + "_j1.dae"))
+        self.jlc.jnts[0].lnk.cmodel = mcm.CollisionModel(os.path.join(current_file_dir, "meshes", "cvrb0609_j1.dae"),
+                                                         name=self.name + "_link1")
         self.jlc.jnts[0].lnk.cmodel.rgba = rm.vec(.7, .7, .7, 1.0)
         # second joint and link
         self.jlc.jnts[1].loc_pos = rm.vec(0, 0, 0.109)
         self.jlc.jnts[1].loc_motion_ax = rm.vec(0, 1, 0)
         self.jlc.jnts[1].motion_range = rm.vec(-1.047198, 1.745329)
-        self.jlc.jnts[1].lnk.cmodel = mcm.CollisionModel(os.path.join(current_file_dir, "meshes", self.name + "_j2.dae"))
+        self.jlc.jnts[1].lnk.cmodel = mcm.CollisionModel(os.path.join(current_file_dir, "meshes", "cvrb0609_j2.dae"),
+                                                         name=self.name + "_link2")
         self.jlc.jnts[1].lnk.cmodel.rgba = rm.vec(.7, .7, .7, 1.0)
         # third joint and link
         self.jlc.jnts[2].loc_pos = rm.vec(0, 0, 0.51)
         self.jlc.jnts[2].loc_motion_ax = rm.vec(0, 1, 0)
         self.jlc.jnts[2].motion_range = rm.vec(0.3141593, 2.443461)
-        self.jlc.jnts[2].lnk.cmodel = mcm.CollisionModel(os.path.join(current_file_dir, "meshes", self.name + "_j3.dae"))
+        self.jlc.jnts[2].lnk.cmodel = mcm.CollisionModel(os.path.join(current_file_dir, "meshes", "cvrb0609_j3.dae"),
+                                                         name=self.name + "_link3")
         self.jlc.jnts[2].lnk.cmodel.rgba = rm.vec(.7, .7, .7, 1.0)
         # fourth joint and link
         self.jlc.jnts[3].loc_pos = rm.vec(0.0, -0.030000, 0.302000)
         self.jlc.jnts[3].loc_motion_ax = rm.vec(0, 0, 1)
         self.jlc.jnts[3].motion_range = rm.vec(-2.96706, 2.96706)
-        self.jlc.jnts[3].lnk.cmodel = mcm.CollisionModel(os.path.join(current_file_dir, "meshes", self.name + "_j4.dae"))
+        self.jlc.jnts[3].lnk.cmodel = mcm.CollisionModel(os.path.join(current_file_dir, "meshes", "cvrb0609_j4.dae"),
+                                                         name=self.name + "_link4")
         self.jlc.jnts[3].lnk.cmodel.rgba = rm.vec(.7, .7, .7, 1.0)
         # fifth joint and link
         self.jlc.jnts[4].loc_pos = rm.vec(0, 0.03, 0.088)
         self.jlc.jnts[4].loc_motion_ax = rm.vec(0, 1, 0)
         self.jlc.jnts[4].motion_range = rm.vec(-1.658063, 2.356194)
-        self.jlc.jnts[4].lnk.cmodel = mcm.CollisionModel(os.path.join(current_file_dir, "meshes", self.name + "_j5.dae"))
+        self.jlc.jnts[4].lnk.cmodel = mcm.CollisionModel(os.path.join(current_file_dir, "meshes", "cvrb0609_j5.dae"),
+                                                         name=self.name + "_link5")
         self.jlc.jnts[4].lnk.cmodel.rgba = rm.vec(.7, .7, .7, 1.0)
         # sixth joint and link
         self.jlc.jnts[5].loc_pos = rm.vec(0, 0.12, 0.16)
         self.jlc.jnts[5].loc_motion_ax = rm.vec(0, 0, 1)
         self.jlc.jnts[5].motion_range = rm.vec(-2.96706, 2.96706)
-        self.jlc.jnts[5].lnk.cmodel = mcm.CollisionModel(os.path.join(current_file_dir, "meshes", self.name + "_j6.dae"))
+        self.jlc.jnts[5].lnk.cmodel = mcm.CollisionModel(os.path.join(current_file_dir, "meshes", "cvrb0609_j6.dae"),
+                                                         name=self.name + "_link6")
         self.jlc.jnts[5].lnk.cmodel.rgba = rm.const.dim_gray
-        self.jlc.finalize(ik_solver=ik_solver, identifier_str=name)
+        self.jlc.finalize(ik_solver='d', identifier_str=name)
         # tcp
         self.loc_tcp_pos = rm.vec(0, 0, 0)
         self.loc_tcp_rotmat = rm.np.eye(3)
@@ -76,29 +82,33 @@ class CVRB0609(mi.ManipulatorInterface):
            seed_jnt_values=None,
            option="single",
            toggle_dbg=False):
+        toggle_update = False
         # directly use specified ik
-        self.jlc._ik_solver._k_max = 1
+        self.jlc._ik_solver._k_max = 5
         rel_rotmat = tgt_rotmat @ self.loc_tcp_rotmat.T
         rel_pos = tgt_pos - tgt_rotmat @ self.loc_tcp_pos
         result = self.jlc.ik(tgt_pos=rel_pos, tgt_rotmat=rel_rotmat, seed_jnt_values=seed_jnt_values)
-        if self._ik_solver != 'd':
-            return result
-        else:
-            # if no ddik solution found, use ikgeo
+        if result is None:
+            # mcm.mgm.gen_myc_frame(pos=tgt_pos, rotmat=tgt_rotmat).attach_to(base)
+            result = ikgeo.ik(jlc=self.jlc, tgt_pos=rel_pos, tgt_rotmat=rel_rotmat, seed_jnt_values=None)
             if result is None:
-                tgt_rotmat = tgt_rotmat @ self.loc_tcp_rotmat.T
-                tgt_pos = tgt_pos - tgt_rotmat @ self.loc_tcp_pos
-                result = ikgeo.ik(jlc=self.jlc, tgt_pos=tgt_pos, tgt_rotmat=tgt_rotmat, seed_jnt_values=None)
-                if result is None:
-                    return None
-                if seed_jnt_values is None:
-                    seed_jnt_values = self.home_conf
-                if option == "single":
-                    return result[np.argmin(np.linalg.norm(result - seed_jnt_values, axis=1))]
-                elif option == "multiple":
-                    return result[np.argsort(np.linalg.norm(result - seed_jnt_values, axis=1))]
+                print("No valid solutions found")
+                return None
             else:
+                if toggle_update:
+                    rel_pos, rel_rotmat = rm.rel_pose(self.jlc.pos, self.jlc.rotmat, rel_pos, rel_rotmat)
+                    rel_rotvec = self.jlc._ik_solver._rotmat_to_vec(rel_rotmat)
+                    query_point = np.concatenate((rel_pos, rel_rotvec))
+                    # update dd driven file
+                    tree_data = np.vstack((self.jlc._ik_solver.query_tree.data, query_point))
+                    self.jlc._ik_solver.jnt_data.append(result)
+                    self.jlc._ik_solver.query_tree = scipy.spatial.cKDTree(tree_data)
+                    print(f"Updating query tree, {id} explored...")
+                    self.jlc._ik_solver.persist_data()
                 return result
+        else:
+            return result
+
 
 if __name__ == '__main__':
     import time

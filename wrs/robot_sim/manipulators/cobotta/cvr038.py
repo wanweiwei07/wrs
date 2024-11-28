@@ -1,5 +1,6 @@
 import os
 import numpy as np
+import scipy
 import wrs.basis.robot_math as rm
 import wrs.modeling.collision_model as mcm
 import wrs.robot_sim.manipulators.manipulator_interface as mi
@@ -8,7 +9,7 @@ import wrs.robot_sim.manipulators.cobotta.ikgeo as ikgeo
 
 class CVR038(mi.ManipulatorInterface):
 
-    def __init__(self, pos=np.zeros(3), rotmat=np.eye(3), ik_solver='d', name="cvr038", enable_cc=False):
+    def __init__(self, pos=np.zeros(3), rotmat=np.eye(3), name="cvr038", enable_cc=False):
         super().__init__(pos=pos, rotmat=rotmat, home_conf=np.zeros(6), name=name, enable_cc=enable_cc)
         current_file_dir = os.path.dirname(__file__)
         # anchor
@@ -57,7 +58,7 @@ class CVR038(mi.ManipulatorInterface):
         self.jlc.jnts[5].lnk.cmodel = mcm.CollisionModel(
             initor=os.path.join(current_file_dir, "meshes", "cvr038_j6.dae"), name=self.name + "_link6")
         self.jlc.jnts[5].lnk.cmodel.rgba = np.array([.7, .7, .7, 1.0])
-        self.jlc.finalize(ik_solver=ik_solver, identifier_str=name)
+        self.jlc.finalize(ik_solver='d', identifier_str=name)
         # tcp
         self.loc_tcp_pos = np.array([0, 0, 0])
         self.loc_tcp_rotmat = np.eye(3)
@@ -94,31 +95,32 @@ class CVR038(mi.ManipulatorInterface):
         :param toggle_dbg:
         :return:
         """
+        toggle_update = False
         # directly use specified ik
-        self.jlc._ik_solver._k_max = 100
+        self.jlc._ik_solver._k_max = 5
         rel_rotmat = tgt_rotmat @ self.loc_tcp_rotmat.T
         rel_pos = tgt_pos - tgt_rotmat @ self.loc_tcp_pos
         result = self.jlc.ik(tgt_pos=rel_pos, tgt_rotmat=rel_rotmat, seed_jnt_values=seed_jnt_values)
-        if self._ik_solver != 'd':
-            return result
-        else:
-            # mcm.mgm.gen_frame(pos=tgt_pos, rotmat=tgt_rotmat).attach_to(base)
+        if result is None:
+            # mcm.mgm.gen_myc_frame(pos=tgt_pos, rotmat=tgt_rotmat).attach_to(base)
+            result = ikgeo.ik(jlc=self.jlc, tgt_pos=rel_pos, tgt_rotmat=rel_rotmat, seed_jnt_values=None)
             if result is None:
-                tgt_rotmat = tgt_rotmat @ self.loc_tcp_rotmat.T
-                tgt_pos = tgt_pos - tgt_rotmat @ self.loc_tcp_pos
-                # mcm.mgm.gen_myc_frame(pos=tgt_pos, rotmat=tgt_rotmat).attach_to(base)
-                result = ikgeo.ik(jlc=self.jlc, tgt_pos=tgt_pos, tgt_rotmat=tgt_rotmat, seed_jnt_values=None)
-                if result is None:
-                    # print("No valid solutions found")
-                    return None
-                if seed_jnt_values is None:
-                    seed_jnt_values = self.home_conf
-                if option == "single":
-                    return result[np.argmin(np.linalg.norm(result - seed_jnt_values, axis=1))]
-                elif option == "multiple":
-                    return result[np.argsort(np.linalg.norm(result - seed_jnt_values, axis=1))]
+                print("No valid solutions found")
+                return None
             else:
+                if toggle_update:
+                    rel_pos, rel_rotmat = rm.rel_pose(self.jlc.pos, self.jlc.rotmat, rel_pos, rel_rotmat)
+                    rel_rotvec = self.jlc._ik_solver._rotmat_to_vec(rel_rotmat)
+                    query_point = np.concatenate((rel_pos, rel_rotvec))
+                    # update dd driven file
+                    tree_data = np.vstack((self.jlc._ik_solver.query_tree.data, query_point))
+                    self.jlc._ik_solver.jnt_data.append(result)
+                    self.jlc._ik_solver.query_tree = scipy.spatial.cKDTree(tree_data)
+                    print(f"Updating query tree, {id} explored...")
+                    self.jlc._ik_solver.persist_data()
                 return result
+        else:
+            return result
 
 
 if __name__ == '__main__':
