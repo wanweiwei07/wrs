@@ -20,7 +20,7 @@ class RobotInterface(object):
         else:
             self.cc = None
         # delegator
-        self.delegator = None  # use self.xxx in case of None
+        self._delegator = None  # use self.xxx in case of None
 
     @property
     def pos(self):
@@ -32,45 +32,45 @@ class RobotInterface(object):
 
     @property
     def jnt_ranges(self):
-        if self.delegator is None:
+        if self._delegator is None:
             raise AttributeError("Jnt ranges is not avialable.")
         else:
-            return self.delegator.jnt_ranges
+            return self._delegator.jnt_ranges
 
     @property
     def home_conf(self):
-        if self.delegator is None:
+        if self._delegator is None:
             raise AttributeError("Home conf is not avialable.")
         else:
-            return self.delegator.home_conf
+            return self._delegator.home_conf
 
     @property
     def end_effector(self):
-        if self.delegator is None:
+        if self._delegator is None:
             raise AttributeError("End effector is not avialable.")
         else:
-            return self.delegator.end_effector
+            return self._delegator.end_effector
 
     @property
     def gl_tcp_pos(self):
-        if self.delegator is None:
+        if self._delegator is None:
             raise AttributeError("Global TCP pos is not avialable.")
         else:
-            return self.delegator.gl_tcp_pos
+            return self._delegator.gl_tcp_pos
 
     @property
     def gl_tcp_rotmat(self):
-        if self.delegator is None:
+        if self._delegator is None:
             raise AttributeError("Global TCP rotmat is not avialable.")
         else:
-            return self.delegator.gl_tcp_rotmat
+            return self._delegator.gl_tcp_rotmat
 
     @property
     def oiee_list(self):
-        if self.delegator is None:
+        if self._delegator is None:
             raise AttributeError("Oiee list is not avialable.")
         else:
-            return self.delegator.oiee_list
+            return self._delegator.oiee_list
 
     def backup_state(self):
         raise NotImplementedError
@@ -89,16 +89,16 @@ class RobotInterface(object):
         self.name = name
 
     def hold(self, obj_cmodel, **kwargs):
-        if self.delegator is None:
+        if self._delegator is None:
             raise AttributeError("Hold is not available.")
         else:
-            self.delegator.hold(obj_cmodel, **kwargs)
+            self._delegator.hold(obj_cmodel, **kwargs)
 
     def release(self, obj_cmodel, **kwargs):
-        if self.delegator is None:
+        if self._delegator is None:
             raise AttributeError("Release is not available.")
         else:
-            self.delegator.release(obj_cmodel, **kwargs)
+            self._delegator.release(obj_cmodel, **kwargs)
 
     def goto_given_conf(self, jnt_values):
         raise NotImplementedError
@@ -107,56 +107,56 @@ class RobotInterface(object):
         raise NotImplementedError
 
     def ik(self, tgt_pos, tgt_rotmat, seed_jnt_values=None, toggle_dbg=False):
-        if self.delegator is None:
+        if self._delegator is None:
             raise AttributeError("IK is not available.")
         else:
-            return self.delegator.ik(tgt_pos=tgt_pos, tgt_rotmat=tgt_rotmat, seed_jnt_values=seed_jnt_values,
+            return self._delegator.ik(tgt_pos=tgt_pos, tgt_rotmat=tgt_rotmat, seed_jnt_values=seed_jnt_values,
                                      toggle_dbg=toggle_dbg)
 
     def manipulability_val(self):
-        if self.delegator is None:
+        if self._delegator is None:
             raise AttributeError("Manipulability value is not available.")
         else:
-            return self.delegator.manipulability_val()
+            return self._delegator.manipulability_val()
 
     def manipulability_mat(self):
-        if self.delegator is None:
+        if self._delegator is None:
             raise AttributeError("Manipulability matrix is not available.")
         else:
-            return self.delegator.manipulability_mat()
+            return self._delegator.manipulability_mat()
 
     def jacobian(self, jnt_values=None):
-        if self.delegator is None:
+        if self._delegator is None:
             raise AttributeError("Jacobian is not available.")
         else:
-            return self.delegator.jacobian(jnt_values=jnt_values)
+            return self._delegator.jacobian(jnt_values=jnt_values)
 
     def get_ee_values(self):
-        if self.delegator is None:
+        if self._delegator is None:
             raise AttributeError("Get ee values is not available.")
         else:
-            return self.delegator.get_ee_values()
+            return self._delegator.get_ee_values()
 
     def change_ee_values(self, ee_values):
-        if self.delegator is None:
+        if self._delegator is None:
             raise AttributeError("Change jaw width is not available.")
         else:
-            self.delegator.change_ee_values(ee_values=ee_values)
+            self._delegator.change_ee_values(ee_values=ee_values)
 
     def fix_to(self, pos, rotmat):
         raise NotImplementedError
 
     def cvt_gl_pose_to_tcp(self, gl_pos, gl_rotmat):
-        if self.delegator is None:
+        if self._delegator is None:
             raise AttributeError("Convert global pose to tcp is not available.")
         else:
-            return self.delegator.cvt_gl_pose_to_tcp(gl_pos=gl_pos, gl_rotmat=gl_rotmat)
+            return self._delegator.cvt_gl_pose_to_tcp(gl_pos=gl_pos, gl_rotmat=gl_rotmat)
 
     def cvt_pose_in_tcp_to_gl(self, loc_pos=np.zeros(3), loc_rotmat=np.eye(3)):
-        if self.delegator is None:
+        if self._delegator is None:
             raise AttributeError("Convert pose in tcp to global is not available.")
         else:
-            return self.delegator.cvt_pose_in_tcp_to_gl(loc_pos=loc_pos, loc_rotmat=loc_rotmat)
+            return self._delegator.cvt_pose_in_tcp_to_gl(loc_pos=loc_pos, loc_rotmat=loc_rotmat)
 
     def is_collided(self, obstacle_list=None, other_robot_list=None, toggle_contacts=False, toggle_dbg=False):
         """
