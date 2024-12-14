@@ -76,7 +76,7 @@ class CobottaPipette(gp.GripperInterface):
         # reinitialize
         self.jlc.finalize()
         # collision detection
-        self.all_cdelements = []
+        self.cdelements = []
         self.enable_cc(toggle_cdprimit=enable_cc)
 
     def enable_cc(self, toggle_cdprimit):
@@ -91,9 +91,9 @@ class CobottaPipette(gp.GripperInterface):
                            self.jlc.lnks[5],
                            self.jlc.lnks[7]]
             self.cc.set_active_cdlnks(active_list)
-            self.all_cdelements = self.cc.cce_dict
+            self.cdelements = self.cc.cce_dict
         # cdmesh
-        for cdelement in self.all_cdelements:
+        for cdelement in self.cdelements:
             cdmesh = cdelement['collision_model'].copy()
             self.cdmesh_collection.add_cm(cdmesh)
 

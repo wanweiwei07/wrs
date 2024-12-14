@@ -59,20 +59,20 @@ class WRSGripper3(gpi.GripperInterface):
         self.loc_acting_center_pos = np.array([0, 0, .16])
         # collision detection
         # collisions
-        self.cdmesh_elements = (self.jlc.anchor.lnk_list[0],
-                                self.jlc.jnts[0].lnk,
-                                self.jlc.jnts[1].lnk)
+        self.cdelements = (self.jlc.anchor.lnk_list[0],
+                           self.jlc.jnts[0].lnk,
+                           self.jlc.jnts[1].lnk)
 
     @staticmethod
     def _finger_cdprim(name="auto", ex_radius=None):
-        pdcnd = CollisionNode(name+"_cnode")
+        pdcnd = CollisionNode(name + "_cnode")
         collision_primitive_c0 = CollisionBox(Point3(.005, -.0085, .12),
                                               x=.015 + ex_radius, y=0.0 + ex_radius, z=.06 + ex_radius)
         pdcnd.addSolid(collision_primitive_c0)
         # collision_primitive_c1 = CollisionBox(Point3(.008, .0, .008),
         #                                       x=.018 + ex_radius, y=0.011 + ex_radius, z=.011 + ex_radius)
         # pdcnd.addSolid(collision_primitive_c1)
-        cdprim = NodePath(name+"_cdprim")
+        cdprim = NodePath(name + "_cdprim")
         cdprim.attachNewNode(pdcnd)
         return cdprim
 
@@ -97,7 +97,7 @@ class WRSGripper3(gpi.GripperInterface):
             raise ValueError("The angle parameter is out of range!")
 
     def gen_stickmodel(self, toggle_tcp_frame=False, toggle_jnt_frames=False):
-        m_col = mmc.ModelCollection(name=self.name+'_stickmodel')
+        m_col = mmc.ModelCollection(name=self.name + '_stickmodel')
         self.coupling.gen_stickmodel(toggle_root_frame=False, toggle_flange_frame=False).attach_to(m_col)
         self.jlc.gen_stickmodel(toggle_jnt_frames=toggle_jnt_frames, toggle_flange_frame=False).attach_to(m_col)
         if toggle_tcp_frame:
@@ -106,7 +106,7 @@ class WRSGripper3(gpi.GripperInterface):
 
     def gen_meshmodel(self, rgb=None, alpha=None, toggle_tcp_frame=False, toggle_jnt_frames=False,
                       toggle_cdprim=False, toggle_cdmesh=False):
-        m_col = mmc.ModelCollection(name=self.name+'_meshmodel')
+        m_col = mmc.ModelCollection(name=self.name + '_meshmodel')
         self.coupling.gen_meshmodel(rgb=rgb,
                                     alpha=alpha,
                                     toggle_flange_frame=False,
