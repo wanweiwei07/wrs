@@ -2,7 +2,6 @@ import os
 import numpy as np
 import wrs.basis.robot_math as rm
 import wrs.modeling.collision_model as mcm
-import wrs.modeling.model_collection as mmc
 import wrs.robot_sim._kinematics.jlchain as rkjlc
 import wrs.robot_sim._kinematics.collision_checker as cc
 import wrs.robot_sim.robots.dual_arm_robot_interface as dari

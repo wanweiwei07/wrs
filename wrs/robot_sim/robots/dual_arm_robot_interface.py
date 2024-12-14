@@ -12,6 +12,10 @@ class DualArmRobotInterface(ri.RobotInterface):
         self._rgt_arm = None
 
     @property
+    def delegator(self):
+        return self._delegator
+
+    @property
     def lft_arm(self):
         return self._lft_arm
 
