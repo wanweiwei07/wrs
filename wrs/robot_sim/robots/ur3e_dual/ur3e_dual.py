@@ -14,21 +14,22 @@ class UR3e_Dual(dari.DualArmRobotInterface):
         super().__init__(pos=pos, rotmat=rotmat, name=name, enable_cc=enable_cc)
         current_file_dir = os.path.dirname(__file__)
         # the body anchor
-        self._body = rkjlc.rkjl.Anchor(name="ur3e_dual_base", pos=self.pos, rotmat=self.rotmat, n_flange=2, n_lnk=9)
+        self._body = rkjlc.rkjl.Anchor(name=self.name + "_anchor", pos=self.pos, rotmat=self.rotmat, n_flange=2,
+                                       n_lnk=9)
         self._body.loc_flange_pose_list[0] = [np.array([.365, .345, 1.33]),
-                                             rm.rotmat_from_euler(-np.pi / 2.0, 0, -np.pi / 2.0)]
+                                              rm.rotmat_from_euler(-np.pi / 2.0, 0, -np.pi / 2.0)]
         self._body.loc_flange_pose_list[1] = [np.array([.365, -.345, 1.33]),
-                                             rm.rotmat_from_euler(-np.pi / 2.0, 0, -np.pi / 2.0)]
+                                              rm.rotmat_from_euler(-np.pi / 2.0, 0, -np.pi / 2.0)]
         self._body.lnk_list[0].name = "ur3e_dual_base_link"
         self._body.lnk_list[0].cmodel = mcm.CollisionModel(
-            initor=os.path.join(current_file_dir, "meshes", "ur3e_dual_base.stl"), name="ur3e_dual_base",
+            initor=os.path.join(current_file_dir, "meshes", "ur3e_dual_base.stl"), name=self.name + "_body",
             cdprim_type=mcm.const.CDPrimType.USER_DEFINED,
             userdef_cdprim_fn=self._base_cdprim)
         self._body.lnk_list[0].cmodel.rgba = rm.const.hug_gray
         # left arm
         self._lft_arm = u3ehe.UR3e_RtqHE(pos=self._body.gl_flange_pose_list[0][0],
-                                        rotmat=self._body.gl_flange_pose_list[0][1],
-                                        ik_solver=None, enable_cc=False)
+                                         rotmat=self._body.gl_flange_pose_list[0][1],
+                                         ik_solver=None, enable_cc=False)
         self._lft_arm.home_conf = np.array([-np.pi * 2 / 3, -np.pi * 2 / 3, np.pi * 2 / 3, np.pi, -np.pi / 2, 0])
         self._lft_arm.manipulator.jnts[0].motion_range = np.array([-np.pi * 5 / 3, -np.pi / 3])
         self._lft_arm.manipulator.jnts[1].motion_range = np.array([-np.pi, 0])
@@ -39,8 +40,8 @@ class UR3e_Dual(dari.DualArmRobotInterface):
         self._lft_arm.manipulator.jlc.finalize(identifier_str=self._lft_arm.name + "_dual_lft")
         # right side
         self._rgt_arm = u3ehe.UR3e_RtqHE(pos=self._body.gl_flange_pose_list[1][0],
-                                        rotmat=self._body.gl_flange_pose_list[1][1],
-                                        ik_solver=None, enable_cc=False)
+                                         rotmat=self._body.gl_flange_pose_list[1][1],
+                                         ik_solver=None, enable_cc=False)
         self._rgt_arm.home_conf = np.array([np.pi * 2 / 3, -np.pi / 3, -np.pi * 2 / 3, 0, np.pi / 2, 0])
         self._rgt_arm.manipulator.jnts[0].motion_range = np.array([np.pi / 3, np.pi * 5 / 3])
         self._rgt_arm.manipulator.jnts[1].motion_range = np.array([-np.pi, 0])
