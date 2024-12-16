@@ -6,10 +6,10 @@ import numpy as np
 from wrs import wd, rm, mcm, mgm, fsreg, ur3ed, gg, fsp
 
 mesh_name = "bracketR1"
-mesh_path = os.path.join(os.getcwd(), "meshes", mesh_name+".stl")
-fsref_pose_path = os.path.join(os.getcwd(), "pickles", mesh_name+"_fsref_pose.pickle")
-grasp_path = os.path.join(os.getcwd(), "pickles", mesh_name+"_grasp.pickle")
-regspot_path = os.path.join(os.getcwd(), "pickles", mesh_name+"_regspot.pickle")
+mesh_path = os.path.join(os.getcwd(), "meshes", mesh_name + ".stl")
+fsref_pose_path = os.path.join(os.getcwd(), "pickles", mesh_name + "_fsref_pose.pickle")
+grasp_path = os.path.join(os.getcwd(), "pickles", mesh_name + "_grasp.pickle")
+regspot_path = os.path.join(os.getcwd(), "pickles", mesh_name + "_regspot.pickle")
 
 base = wd.World(cam_pos=[2, 1, 2], lookat_pos=[0, 0, 1])
 # ground = mcm.gen_box(xyz_lengths=rm.vec(5, 5, .01), pos=rm.vec(0, 0, -0.005))
@@ -21,10 +21,10 @@ robot.lft_arm.cc.show_cdprim()
 
 fs_reference_poses = fsp.FSReferencePoses.load_from_disk(file_name=fsref_pose_path)
 reference_grasps = gg.GraspCollection.load_from_disk(file_name=grasp_path)
-fsregspot_collection = fsreg.FSRegSpotCollection(robot=robot.lft_arm,
-                                                 obj_cmodel=bunny,
-                                                 fs_reference_poses=fs_reference_poses,
-                                                 reference_grasp_collection=reference_grasps)
+fsregspot_collection = fsp.FSRegSpotCollection(robot=robot.lft_arm,
+                                               obj_cmodel=bunny,
+                                               fs_reference_poses=fs_reference_poses,
+                                               reference_gc=reference_grasps)
 spot_pos0 = rm.np.array([.8, .35, .78])
 spot_pos1 = rm.np.array([.8, .45, .78])
 spot_pos2 = rm.np.array([.8, .5, 1])
@@ -41,6 +41,7 @@ mesh_model_list = fsregspot_collection.gen_meshmodel()
 for fsregspot in fsregspot_collection:
     mcm.mgm.gen_frame(pos=fsregspot.pos,
                       rotmat=rm.rotmat_from_euler(0, 0, fsregspot.rotz)).attach_to(base)
+
 
 class Data(object):
     def __init__(self, mesh_model_list):

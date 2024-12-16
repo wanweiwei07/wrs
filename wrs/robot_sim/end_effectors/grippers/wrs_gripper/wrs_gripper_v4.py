@@ -88,6 +88,8 @@ class WRSGripper4(gpi.GripperInterface):
         # collision detection
         # collisions
         self.cdelements = (self.jlc.anchor.lnk_list[0],
+                           self.jlc.jnts[0].lnk,
+                           self.jlc.jnts[2].lnk,
                            self.jlc.jnts[3].lnk,
                            self.jlc.jnts[5].lnk)
 

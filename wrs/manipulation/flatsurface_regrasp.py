@@ -7,6 +7,7 @@ import wrs.manipulation.pick_place as ppp
 import wrs.manipulation.placement.common as mp_gp
 import wrs.manipulation.placement.flatsurface as mp_fsp
 
+
 class FSRegraspPlanner(object):
 
     def __init__(self, robot, obj_cmodel, fs_reference_poses, reference_gc):
@@ -240,10 +241,11 @@ class FSRegraspPlanner(object):
             # self.show_graph()
 
     @ppp.adp.mpi.InterplatedMotion.keep_states_decorator
-    def gen_regrasp_motion(self, path, obstacle_list,
+    def gen_regrasp_motion(self, path, obstacle_list, init_jnt_values=None,
                            linear_distance=.03,
                            granularity=.03,
                            toggle_dbg=False):
+        init_jnt_values = self.robot.get_jnt_values() if init_jnt_values is None else init_jnt_values
         regraps_motion = motd.MotionData(robot=self.robot)
         for i, node in enumerate(path):
             obj_pose = self._graph.nodes[node]['obj_pose']
@@ -255,22 +257,21 @@ class FSRegraspPlanner(object):
             if toggle_dbg:
                 self.robot.gen_meshmodel().attach_to(base)
             if i == 0:
-                jnt_values = self._graph.nodes[path[i]]['jnt_values']
-                start_jnt_values = self.robot.get_jnt_values()
-                goal_jnt_values = jnt_values
-                pick = self.pp_planner.gen_approach_to_given_conf(goal_jnt_values=goal_jnt_values,
-                                                                  start_jnt_values=start_jnt_values,
-                                                                  linear_distance=linear_distance,
-                                                                  ee_values=self.robot.end_effector.jaw_range[1],
-                                                                  obstacle_list=obstacle_list,
-                                                                  object_list=[obj_cmodel_copy],
-                                                                  use_rrt=True,
-                                                                  toggle_dbg=toggle_dbg)
-                if pick is None:
+                goal_jnt_values = self._graph.nodes[path[i]]['jnt_values']
+                start_jnt_values = init_jnt_values
+                approach = self.pp_planner.gen_approach_to_given_conf(goal_jnt_values=goal_jnt_values,
+                                                                      start_jnt_values=start_jnt_values,
+                                                                      linear_distance=linear_distance,
+                                                                      ee_values=self.robot.end_effector.jaw_range[1],
+                                                                      obstacle_list=obstacle_list,
+                                                                      object_list=[obj_cmodel_copy],
+                                                                      use_rrt=True,
+                                                                      toggle_dbg=toggle_dbg)
+                if approach is None:
                     return (f"node failure at {i}", path[i])
-                for robot_mesh in pick.mesh_list:
+                for robot_mesh in approach.mesh_list:
                     obj_cmodel_copy.attach_to(robot_mesh)
-                regraps_motion += pick
+                regraps_motion += approach
             if i >= 1:
                 prev_node = path[i - 1]
                 prev_grasp = self._graph.nodes[prev_node]['grasp']
@@ -322,10 +323,6 @@ class FSRegraspPlanner(object):
                                                                                        obstacle_list=obstacle_list,
                                                                                        use_rrt=True,
                                                                                        toggle_dbg=False)
-                    # prev2current = self.pp_planner.im_planner.gen_interplated_between_given_conf(
-                    #     start_jnt_values=prev_jnt_values,
-                    #     end_jnt_values=jnt_values,
-                    #     obstacle_list=[])
                     if prev2current is None:
                         return (f"edge failure at transfer {i - 1}-{i}", (path[i - 1], path[i]))
                     regraps_motion += prev2current
@@ -338,6 +335,26 @@ class FSRegraspPlanner(object):
                     regraps_motion.extend(jv_list=[prev2current.jv_list[-1]],
                                           ev_list=[self.robot.end_effector.jaw_range[1]],
                                           mesh_list=[mesh])
+            if i == len(path) - 1:
+                obj_pose = self._graph.nodes[path[i]]['obj_pose']
+                start_jnt_values = self._graph.nodes[path[i]]['jnt_values']
+                # make a copy to keep original movement
+                obj_cmodel_copy = self.obj_cmodel.copy()
+                obj_cmodel_copy.pose = obj_pose
+                retract = self.pp_planner.gen_depart_from_given_conf(start_jnt_values=start_jnt_values,
+                                                                     end_jnt_values=init_jnt_values,
+                                                                     linear_distance=linear_distance,
+                                                                     ee_values=self.robot.end_effector.jaw_range[
+                                                                         1],
+                                                                     obstacle_list=obstacle_list,
+                                                                     object_list=[obj_cmodel_copy],
+                                                                     use_rrt=True,
+                                                                     toggle_dbg=True)
+                if retract is None:
+                    return (f"node failure at {i}", path[i])
+                for robot_mesh in retract.mesh_list:
+                    obj_cmodel_copy.attach_to(robot_mesh)
+                regraps_motion += retract
         return ("success", regraps_motion)
 
     def show_graph(self):

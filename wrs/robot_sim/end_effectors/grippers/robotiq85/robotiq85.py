@@ -189,6 +189,11 @@ class Robotiq85(gpi.GripperInterface):
         self.lft_inner_jlc.goto_given_conf(jnt_values=np.array([angle]))
         self.rgt_outer_jlc.goto_given_conf(jnt_values=np.array([angle, 0.0, -angle, 0.0]))
         self.rgt_inner_jlc.goto_given_conf(jnt_values=np.array([angle]))
+        # dynamic adjustment
+        homo_flange_gl = rm.homomat_from_posrot(self._pos, self.rotmat)
+        homo_pad_gl = self.rgt_outer_jlc.jnts[3].gl_homomat_0
+        homo_pad_flange = np.linalg.inv(homo_flange_gl) @ homo_pad_gl
+        self.loc_acting_center_pos[2] = homo_pad_flange[2, 3] + 0.032
 
     def get_jaw_width(self):
         angle = self.lft_inner_jlc.jnts[0].motion_value

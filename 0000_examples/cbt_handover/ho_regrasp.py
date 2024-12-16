@@ -6,8 +6,8 @@ base = wd.World(cam_pos=[1.7, 1.7, 1.7], lookat_pos=[0, 0, .3])
 sender_cbt = cbt.Cobotta(pos=rm.vec(0, -.15, 0), rotmat=rm.rotmat_from_axangle(rm.const.z_ax, rm.radians(90)), name="cbt1")
 receiver_cbt = cbt.Cobotta(pos=rm.vec(0, .15, 0), rotmat=rm.rotmat_from_axangle(rm.const.z_ax, rm.radians(-90)), name="cbt2")
 
-sender_cbt.gen_meshmodel().attach_to(base)
-receiver_cbt.gen_meshmodel().attach_to(base)
+# sender_cbt.gen_meshmodel().attach_to(base)
+# receiver_cbt.gen_meshmodel().attach_to(base)
 
 gripper = cbt_g.CobottaGripper()
 

@@ -142,7 +142,6 @@ class HandoverPlanner(object):
                     break
             else:
                 # correct handover details
-
                 return motion_list
             print("####################### Update Graph #######################")
 

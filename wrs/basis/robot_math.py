@@ -392,8 +392,8 @@ def interplate_pos_rotmat(start_pos,
     """
     len, vec = unit_vector(start_pos - goal_pos, toggle_length=True)
     n_steps = math.ceil(len / granularity)
-    if n_steps == 0:
-        n_steps = 1
+    if n_steps < 2:
+        n_steps = 2
     pos_list = np.linspace(start_pos, goal_pos, n_steps)
     rotmat_list = rotmat_slerp(start_rotmat, goal_rotmat, n_steps)
     return zip(pos_list, rotmat_list)
@@ -415,6 +415,8 @@ def interplate_pos_rotmat_around_circle(circle_center_pos,
     vec = orthogonal_vector(circle_normal_ax)
     angular_step_length = granularity / radius
     n_angular_steps = math.ceil(np.pi * 2 / angular_step_length)
+    if n_angular_steps < 2:
+        n_angular_steps = 2
     rotmat_list = rotmat_slerp(start_rotmat, end_rotmat, n_angular_steps)
     pos_list = []
     for angle in np.linspace(0, np.pi * 2, n_angular_steps).tolist():
@@ -432,8 +434,9 @@ def interpolate_vectors(start_vector, end_vector, granularity):
     """
     max_diff = np.max(np.abs(end_vector - start_vector))
     num_intervals = np.ceil(max_diff / granularity).astype(int)
-    num_points = num_intervals + 1
-    interpolated_vectors = np.linspace(start_vector, end_vector, num_points)
+    if num_intervals < 2:
+        num_intervals = 2
+    interpolated_vectors = np.linspace(start_vector, end_vector, num_intervals)
     return interpolated_vectors
 
 
