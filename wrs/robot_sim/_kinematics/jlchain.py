@@ -396,6 +396,7 @@ class JLChain(object):
            tgt_pos,
            tgt_rotmat,
            seed_jnt_values=None,
+           option="single",
            toggle_dbg=False):
         """
         :param tgt_pos: 1x3 nparray
@@ -409,6 +410,10 @@ class JLChain(object):
                                      tgt_rotmat=tgt_rotmat,
                                      seed_jnt_values=seed_jnt_values,
                                      toggle_dbg=toggle_dbg)
+        if jnt_values is None:
+            return None
+        if option[0] == 'm':
+            return [jnt_values]
         return jnt_values
 
     def gen_stickmodel(self,

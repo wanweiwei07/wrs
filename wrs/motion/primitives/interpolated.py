@@ -369,9 +369,9 @@ if __name__ == '__main__':
     robot = ym.Yumi(enable_cc=True)
     robot.use_rgt()
     start_pos = np.array([.55, -.1, .4])
-    start_rotmat = rm.rotmat_from_axangle([0, 1, 0], math.pi / 2)
+    start_rotmat = rm.rotmat_from_axangle([0, 1, 0], rm.pi / 2)
     goal_pos = np.array([.55, -.1, .3])
-    goal_rotmat = rm.rotmat_from_axangle([0, 1, 0], math.pi / 2)
+    goal_rotmat = rm.rotmat_from_axangle([0, 1, 0], rm.pi / 2)
     mgm.gen_frame(pos=start_pos, rotmat=start_rotmat).attach_to(base)
     mgm.gen_frame(pos=goal_pos, rotmat=goal_rotmat).attach_to(base)
     interplator = InterplatedMotion(robot)
@@ -400,7 +400,7 @@ if __name__ == '__main__':
     print(toc - tic)
     for i, jnt_values in enumerate(mot_data):
         mesh_model = mot_data.mesh_list[i]
-        mesh_model.rgb = rm.bc.cool_map(i / len(mot_data))
+        mesh_model.rgb = rm.const.cool_map(i / len(mot_data))
         mesh_model.alpha = .3
         mesh_model.attach_to(base)
     base.run()

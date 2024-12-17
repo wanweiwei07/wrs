@@ -92,7 +92,7 @@ class PickPlacePlanner(adp.ADPlanner):
                             approach_distance_list,
                             depart_direction_list,
                             depart_distance_list,
-                            pick_jaw_width=None,
+                            pick_approach_jaw_width=None,
                             pick_approach_direction=None,
                             pick_approach_distance=.07,
                             pick_depart_direction=None,
@@ -122,15 +122,15 @@ class PickPlacePlanner(adp.ADPlanner):
         # pick up object
         pick_tcp_pos = obj_cmodel.rotmat.dot(grasp.ac_pos) + obj_cmodel.pos
         pick_tcp_rotmat = obj_cmodel.rotmat.dot(grasp.ac_rotmat)
-        if pick_jaw_width is None:
-            pick_jaw_width = self.robot.end_effector.jaw_range[1]
+        if pick_approach_jaw_width is None:
+            pick_approach_jaw_width = self.robot.end_effector.jaw_range[1]
         pick_motion = self.gen_approach(goal_tcp_pos=pick_tcp_pos,
                                         goal_tcp_rotmat=pick_tcp_rotmat,
                                         start_jnt_values=self.robot.get_jnt_values(),
                                         linear_direction=pick_approach_direction,
                                         linear_distance=pick_approach_distance,
-                                        ee_values=pick_jaw_width,
-                                        granularity=linear_granularity,
+                                        ee_values=pick_approach_jaw_width,
+                                        linear_granularity=linear_granularity,
                                         obstacle_list=obstacle_list,
                                         object_list=[obj_cmodel],
                                         use_rrt=use_rrt,
@@ -174,7 +174,7 @@ class PickPlacePlanner(adp.ADPlanner):
                                                          depart_direction=depart_direction_list[i],
                                                          depart_distance=depart_distance_list[i],
                                                          depart_ee_values=None,  # do not change jaw width
-                                                         granularity=linear_granularity,
+                                                         linear_granularity=linear_granularity,
                                                          obstacle_list=obstacle_list,
                                                          use_rrt=use_rrt,
                                                          toggle_dbg=toggle_dbg)
@@ -187,6 +187,81 @@ class PickPlacePlanner(adp.ADPlanner):
                 return pick_motion + pick_depart + moveto_motion
 
     @adp.mpi.InterplatedMotion.keep_states_decorator
+    def gen_pick_and_moveto_given_conf(self,
+                                       obj_cmodel,
+                                       start_jnt_values,
+                                       end_jnt_values,
+                                       approach_direction=None,
+                                       approach_distance=.07,
+                                       grasp_jaw_width=.0,
+                                       pick_approach_jaw_width=None,
+                                       pick_approach_direction=None,
+                                       pick_approach_distance=.07,
+                                       pick_depart_direction=None,
+                                       pick_depart_distance=.07,
+                                       linear_granularity=.02,
+                                       obstacle_list=None,
+                                       use_rrt=True,
+                                       toggle_dbg=False):
+        """
+        pick and move an object to multiple poses
+        :param obj_cmodel:
+        :param start_jnt_values:
+        :param end_jnt_values:
+        :param approach_direction
+        :param approach_distance
+        :param pick_approach_direction
+        :param pick_approach_distance
+        :param pick_depart_direction
+        :param pick_depart_distance
+        :param linear_granularity:
+        :param obstacle_list:
+        :param seed_jnt_values:
+        :return:
+        """
+        # pick up object
+        pick_motion = self.gen_approach_to_given_conf(goal_jnt_values=start_jnt_values,
+                                                      start_jnt_values=self.robot.get_jnt_values(),
+                                                      linear_direction=pick_approach_direction,
+                                                      linear_distance=pick_approach_distance,
+                                                      ee_values=pick_approach_jaw_width,
+                                                      granularity=linear_granularity,
+                                                      obstacle_list=obstacle_list,
+                                                      object_list=[obj_cmodel],
+                                                      use_rrt=use_rrt,
+                                                      toggle_dbg=toggle_dbg)
+        if pick_motion is None:
+            print("PPPlanner: Error encountered when generating pick approach motion!")
+            return None
+        else:
+            obj_cmodel_copy = obj_cmodel.copy()
+            self.robot.goto_given_conf(pick_motion.jv_list[-1])
+            # self.robot.gen_meshmodel().attach_to(base)
+            self.robot.hold(obj_cmodel=obj_cmodel_copy, jaw_width=grasp_jaw_width)
+            # self.robot.gen_meshmodel().attach_to(base)
+            # print("before back up")
+            pick_motion.extend([pick_motion.jv_list[-1]], [grasp_jaw_width], [self.robot.gen_meshmodel()])
+            moveto = self.gen_depart_approach_with_given_conf(start_jnt_values=pick_motion.jv_list[-1],
+                                                              end_jnt_values=end_jnt_values,
+                                                              depart_direction=pick_depart_direction,
+                                                              depart_distance=pick_depart_distance,
+                                                              depart_ee_values=None,
+                                                              approach_direction=approach_direction,
+                                                              approach_distance=approach_distance,
+                                                              approach_ee_values=None,
+                                                              linear_granularity=linear_granularity,
+                                                              obstacle_list=obstacle_list,
+                                                              use_rrt=use_rrt,
+                                                              toggle_dbg=toggle_dbg)
+            # self.robot.gen_meshmodel().attach_to(base)
+            # base.run()
+            if moveto is None:
+                print("PPPlanner: Error encountered when generating depart approach motion with given conf!")
+                return None
+            else:
+                return pick_motion + moveto
+
+    @adp.mpi.InterplatedMotion.keep_states_decorator
     def gen_pick_and_place(self,
                            obj_cmodel,
                            end_jnt_values,
@@ -197,7 +272,7 @@ class PickPlacePlanner(adp.ADPlanner):
                            depart_direction_list=None,
                            depart_distance_list=None,
                            depart_jaw_width=None,
-                           pick_jaw_width=None,
+                           pick_approach_jaw_width=None,
                            pick_approach_direction=None,  # handz
                            pick_approach_distance=None,
                            pick_depart_direction=None,  # handz
@@ -227,8 +302,8 @@ class PickPlacePlanner(adp.ADPlanner):
         date: 20191122, 20200105, 20240317
         """
         ## picking parameters
-        if pick_jaw_width is None:
-            pick_jaw_width = self.robot.end_effector.jaw_range[1]
+        if pick_approach_jaw_width is None:
+            pick_approach_jaw_width = self.robot.end_effector.jaw_range[1]
         if pick_approach_distance is None:
             pick_approach_distance = .07
         if pick_depart_distance is None:
@@ -263,7 +338,7 @@ class PickPlacePlanner(adp.ADPlanner):
                                               approach_distance_list=approach_distance_list,
                                               depart_direction_list=depart_direction_list,
                                               depart_distance_list=depart_distance_list[:-1] + [0],
-                                              pick_jaw_width=pick_jaw_width,
+                                              pick_approach_jaw_width=pick_approach_jaw_width,
                                               pick_approach_direction=pick_approach_direction,
                                               pick_approach_distance=pick_approach_distance,
                                               pick_depart_direction=pick_depart_direction,
@@ -284,7 +359,7 @@ class PickPlacePlanner(adp.ADPlanner):
                                                       linear_direction=depart_direction_list[-1],
                                                       linear_distance=depart_distance_list[-1],
                                                       ee_values=depart_jaw_width,
-                                                      granularity=linear_granularity,
+                                                      linear_granularity=linear_granularity,
                                                       obstacle_list=obstacle_list,
                                                       object_list=[obj_cmodel_copy],
                                                       use_rrt=use_rrt,

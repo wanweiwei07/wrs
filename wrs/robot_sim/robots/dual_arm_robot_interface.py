@@ -181,6 +181,20 @@ class DualArmRobotInterface(ri.RobotInterface):
                                              toggle_dbg=toggle_dbg)
         return collision_info
 
+    def toggle_off_eecd(self):
+        if self._delegator is None:
+            self._lft_arm.toggle_off_eecd()
+            self._rgt_arm.toggle_off_eecd()
+        else:
+            self._delegator.toggle_off_eecd()
+
+    def toggle_on_eecd(self):
+        if self._delegator is None:
+            self._lft_arm.toggle_on_eecd()
+            self._rgt_arm.toggle_on_eecd()
+        else:
+            self._delegator.toggle_on_eecd()
+
     def gen_stickmodel(self,
                        toggle_tcp_frame=False,
                        toggle_jnt_frames=False,

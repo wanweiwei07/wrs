@@ -38,7 +38,7 @@ def gen_data(rbt_s,
     for jnt_id in range(1, n_jnts + 1):
         r0, r1 = rbt_s.manipulator_dict[component_name].jnts[jnt_id]['motion_range']
         all_ranges.append(np.arange(r0, r1, granularity[jnt_id - 1]))
-        # print(granularity, all_ranges[-1])
+        # print(linear_granularity, all_ranges[-1])
     all_data = itertools.product(*all_ranges)
     n_data = 1
     for rngs in all_ranges:
@@ -74,4 +74,4 @@ if __name__ == '__main__':
     gen_data(rbt_s, granularity=granularity1, save_name='cobotta_ik')
     # granularity2 = [np.radians(13), np.radians(13), np.radians(19), np.radians(25), np.radians(25), np.radians(37)]
     # granularity2 = [np.radians(21), np.radians(21), np.radians(31), np.radians(46), np.radians(46), np.radians(61)]
-    # gen_data(rbt_s, granularity=granularity2, save_name='cobotta_ik_test')
+    # gen_data(rbt_s, linear_granularity=granularity2, save_name='cobotta_ik_test')

@@ -39,7 +39,7 @@ class ADPlanner(object):
         :param direction: use the loc_z of goal_tcp_rotmat if None
         :param distance:
         :param ee_values: values for end-effector
-        :param granularity:
+        :param linear_granularity:
         :param obstacle_list:
         :param seed_jnt_values
         :return:
@@ -76,7 +76,7 @@ class ADPlanner(object):
         :param direction:
         :param distance:
         :param ee_values:
-        :param granularity:
+        :param linear_granularity:
         :param seed_jnt_values:
         :return:
         author: weiwei
@@ -119,7 +119,7 @@ class ADPlanner(object):
         :param depart_direction:
         :param depart_distance:
         :param depart_ee_values:
-        :param granularity:
+        :param linear_granularity:
         :param obstacle_list:
         :return:
         author: weiwei, hao
@@ -217,7 +217,7 @@ class ADPlanner(object):
         :param depart_direction:
         :param depart_distance:
         :param depart_ee_values:
-        :param granularity:
+        :param linear_granularity:
         :param obstacle_list:
         :param toggle_dbg:
         :return:
@@ -254,8 +254,8 @@ class ADPlanner(object):
                      start_jnt_values=None,
                      linear_direction=None,
                      linear_distance=.07,
+                     linear_granularity=.02,
                      ee_values=None,
-                     granularity=.02,
                      obstacle_list=None,  #
                      object_list=None,  #
                      use_rrt=True,
@@ -266,8 +266,8 @@ class ADPlanner(object):
         :param start_jnt_values:
         :param linear_direction:
         :param linear_distance:
+        :param linear_granularity:
         :param ee_values:
-        :param granularity:
         :param obstacle_list: obstacles, will be checked by both rrt and linear
         :param object_list: target objects, will be checked by rrt, but not by linear
         :param use_rrt:
@@ -282,7 +282,7 @@ class ADPlanner(object):
                                               direction=linear_direction,
                                               distance=linear_distance,
                                               ee_values=ee_values,  # do not change jaw width
-                                              granularity=granularity,
+                                              granularity=linear_granularity,
                                               obstacle_list=obstacle_list,
                                               toggle_dbg=toggle_dbg)
         if linear_app is None:
@@ -323,8 +323,8 @@ class ADPlanner(object):
                    end_jnt_values=None,
                    linear_direction=None,
                    linear_distance=.07,
+                   linear_granularity=.02,
                    ee_values=None,
-                   granularity=.02,
                    obstacle_list=None,  #
                    object_list=None,
                    use_rrt=True,
@@ -336,7 +336,7 @@ class ADPlanner(object):
         :param linear_direction:
         :param linear_distance:
         :param ee_values:
-        :param granularity:
+        :param linear_granularity:
         :param obstacle_list: obstacles, will be checked by both rrt and linear
         :param object_list: target objects, will be checked by rrt, but not by linear
         :param use_rrt:
@@ -351,7 +351,7 @@ class ADPlanner(object):
                                             direction=linear_direction,
                                             distance=linear_distance,
                                             ee_values=ee_values,
-                                            granularity=granularity,
+                                            granularity=linear_granularity,
                                             obstacle_list=obstacle_list,
                                             toggle_dbg=toggle_dbg)
         if linear_dep is None:
@@ -394,7 +394,7 @@ class ADPlanner(object):
                             depart_direction=None,
                             depart_distance=.1,
                             depart_ee_values=None,
-                            granularity=.03,
+                            linear_granularity=.03,
                             obstacle_list=None,
                             object_list=None,
                             use_rrt=True,
@@ -410,7 +410,7 @@ class ADPlanner(object):
         :param depart_direction:
         :param depart_distance:
         :param depart_ee_values:
-        :param granularity: obstacles, will be checked by both rrt and linear
+        :param linear_granularity: obstacles, will be checked by both rrt and linear
         :param obstacle_list: target objects, will be checked by rrt, but not by linear
         :param object_list:
         :param use_rrt
@@ -424,7 +424,7 @@ class ADPlanner(object):
                                          linear_direction=approach_direction,
                                          linear_distance=approach_distance,
                                          ee_values=approach_ee_values,
-                                         granularity=granularity,
+                                         linear_granularity=linear_granularity,
                                          obstacle_list=obstacle_list,
                                          object_list=object_list,
                                          use_rrt=use_rrt,
@@ -438,7 +438,7 @@ class ADPlanner(object):
                                                            linear_direction=depart_direction,
                                                            linear_distance=depart_distance,
                                                            ee_values=depart_ee_values,
-                                                           granularity=granularity,
+                                                           linear_granularity=linear_granularity,
                                                            obstacle_list=obstacle_list,
                                                            object_list=object_list,
                                                            use_rrt=use_rrt,
@@ -458,7 +458,7 @@ class ADPlanner(object):
                                             approach_direction=None,
                                             approach_distance=.07,
                                             approach_ee_values=None,
-                                            granularity=.03,
+                                            linear_granularity=.03,
                                             obstacle_list=None,
                                             object_list=None,
                                             use_rrt=True,
@@ -474,7 +474,7 @@ class ADPlanner(object):
         :param depart_direction:
         :param depart_distance:
         :param depart_ee_values:
-        :param granularity:
+        :param linear_granularity:
         :param obstacle_list: obstacles, will be checked by both rrt and linear
         :param object_list: target objects, will be checked by rrt, but not by linear
         :param use_rrt
@@ -486,7 +486,7 @@ class ADPlanner(object):
                                                                      direction=depart_direction,
                                                                      distance=depart_distance,
                                                                      ee_values=depart_ee_values,
-                                                                     granularity=granularity,
+                                                                     granularity=linear_granularity,
                                                                      obstacle_list=obstacle_list,
                                                                      toggle_dbg=toggle_dbg)
         if linear_dep_mot_data is None:
@@ -498,7 +498,7 @@ class ADPlanner(object):
                                                            linear_direction=approach_direction,
                                                            linear_distance=approach_distance,
                                                            ee_values=approach_ee_values,
-                                                           granularity=granularity,
+                                                           linear_granularity=linear_granularity,
                                                            obstacle_list=obstacle_list,
                                                            object_list=object_list,
                                                            use_rrt=use_rrt,
@@ -514,8 +514,8 @@ class ADPlanner(object):
                                    start_jnt_values=None,
                                    linear_direction=None,
                                    linear_distance=.07,
+                                   linear_granularity=.03,
                                    ee_values=None,
-                                   granularity=.03,
                                    obstacle_list=None,
                                    object_list=None,
                                    use_rrt=True,
@@ -525,8 +525,8 @@ class ADPlanner(object):
         :param start_jnt_values:
         :param linear_direction:
         :param linear_distance:
+        :param linear_granularity:
         :param ee_values:
-        :param granularity:
         :param obstacle_list: obstacles, will be checked by both rrt and linear
         :param object_list: target objects, will be checked by rrt, but not by linear
         :param use_rrt
@@ -540,7 +540,7 @@ class ADPlanner(object):
                                                             direction=linear_direction,
                                                             distance=linear_distance,
                                                             ee_values=ee_values,
-                                                            granularity=granularity,
+                                                            granularity=linear_granularity,
                                                             obstacle_list=obstacle_list,
                                                             toggle_dbg=toggle_dbg)
         if linear_app is None:
@@ -577,8 +577,8 @@ class ADPlanner(object):
                                    end_jnt_values=None,
                                    linear_direction=None,
                                    linear_distance=.1,
+                                   linear_granularity=.03,
                                    ee_values=None,
-                                   granularity=.03,
                                    obstacle_list=None,
                                    object_list=None,
                                    use_rrt=True,
@@ -588,8 +588,8 @@ class ADPlanner(object):
         :param end_jnt_values:
         :param linear_direction:
         :param linear_distance:
+        :param linear_granularity:
         :param ee_values:
-        :param granularity:
         :param obstacle_list: obstacles, will be checked by both rrt and linear
         :param object_list: target objects, will be checked by rrt, but not by linear
         :param use_rrt
@@ -603,7 +603,7 @@ class ADPlanner(object):
                                                             direction=linear_direction,
                                                             distance=linear_distance,
                                                             ee_values=ee_values,
-                                                            granularity=granularity,
+                                                            granularity=linear_granularity,
                                                             obstacle_list=obstacle_list,
                                                             toggle_dbg=toggle_dbg)
         if linear_dep is None:
@@ -648,7 +648,7 @@ class ADPlanner(object):
                                             depart_direction=None,  # np.array([0, 0, 1])
                                             depart_distance=.1,
                                             depart_ee_values=None,
-                                            granularity=.03,
+                                            linear_granularity=.03,
                                             obstacle_list=None,  #
                                             object_list=None,
                                             use_rrt=True,
@@ -663,7 +663,7 @@ class ADPlanner(object):
         :param depart_direction:
         :param depart_distance:
         :param depart_ee_values:
-        :param granularity:
+        :param linear_granularity:
         :param obstacle_list: obstacles, will be checked by both rrt and linear
         :param object_list: target objects, will be checked by rrt, but not by linear
         :return:
@@ -675,7 +675,7 @@ class ADPlanner(object):
                                                        linear_direction=approach_direction,
                                                        linear_distance=approach_distance,
                                                        ee_values=approach_ee_values,
-                                                       granularity=granularity,
+                                                       linear_granularity=linear_granularity,
                                                        obstacle_list=obstacle_list,
                                                        object_list=object_list,
                                                        use_rrt=use_rrt,
@@ -689,7 +689,7 @@ class ADPlanner(object):
                                                            linear_direction=depart_direction,
                                                            linear_distance=depart_distance,
                                                            ee_values=depart_ee_values,
-                                                           granularity=granularity,
+                                                           linear_granularity=linear_granularity,
                                                            obstacle_list=obstacle_list,
                                                            object_list=object_list,
                                                            use_rrt=use_rrt,
@@ -703,21 +703,20 @@ class ADPlanner(object):
 
 if __name__ == '__main__':
     import time
-    from wrs import basis as rm, robot_sim as sari, robot_sim as ym, motion as mpi, motion as rrtc, modeling as gm
-    import wrs.visualization.panda.world as wd
+    from wrs import wd, rm, ym, rrtc, mgm
 
     base = wd.World(cam_pos=[2, 0, 1.5], lookat_pos=[0, 0, .2])
-    gm.gen_frame().attach_to(base)
+    mgm.gen_frame().attach_to(base)
     robot = ym.Yumi(enable_cc=True)
     robot.use_rgt()
     goal_pos = np.array([.4, -.3, .2])
     goal_rotmat = np.eye(3)
     goal_rotmat = rm.rotmat_from_axangle([0, 1, 0], math.pi / 2)
-    gm.gen_frame(pos=goal_pos, rotmat=goal_rotmat).attach_to(base)
+    mgm.gen_frame(pos=goal_pos, rotmat=goal_rotmat).attach_to(base)
     jnt_values = robot.ik(tgt_pos=goal_pos, tgt_rotmat=goal_rotmat)
     goal_pos2 = np.array([.4, -.1, .2])
     goal_rotmat2 = rm.rotmat_from_axangle([0, 1, 0], math.pi / 2)
-    gm.gen_frame(pos=goal_pos2, rotmat=goal_rotmat2).attach_to(base)
+    mgm.gen_frame(pos=goal_pos2, rotmat=goal_rotmat2).attach_to(base)
     jnt_values2 = robot.ik(tgt_pos=goal_pos2, tgt_rotmat=goal_rotmat2)
     # robot.rgt_arm.goto_given_conf(jnt_values=jnt_values)
     # robot.gen_meshmodel().attach_to(base)

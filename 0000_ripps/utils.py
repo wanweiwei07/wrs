@@ -157,7 +157,7 @@ def search_reachable_configuration(rbt_s,
     :param tgt_pos:
     :param cone_axis:
     :param cone_angle:
-    :param granularity:
+    :param linear_granularity:
     :param obstacle_list
     :return:
     author: weiwei

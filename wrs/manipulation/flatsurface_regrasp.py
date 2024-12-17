@@ -296,7 +296,7 @@ class FSRegraspPlanner(object):
                                                                                        approach_ee_values=
                                                                                        self.robot.end_effector.jaw_range[
                                                                                            1],
-                                                                                       granularity=granularity,
+                                                                                       linear_granularity=granularity,
                                                                                        obstacle_list=obstacle_list,
                                                                                        object_list=[obj_cmodel_copy],
                                                                                        use_rrt=True,
@@ -319,7 +319,7 @@ class FSRegraspPlanner(object):
                                                                                        depart_distance=linear_distance,
                                                                                        approach_direction=-rm.const.z_ax,
                                                                                        approach_distance=linear_distance,
-                                                                                       granularity=granularity,
+                                                                                       linear_granularity=granularity,
                                                                                        obstacle_list=obstacle_list,
                                                                                        use_rrt=True,
                                                                                        toggle_dbg=False)

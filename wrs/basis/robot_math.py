@@ -1665,5 +1665,5 @@ def affine_matrix_from_points(v0, v1, shear=True, scale=True, use_svd=True):
 #     start_rotmat = np.eye(3)
 #     goal_pos = np.array([2, 0, 0])
 #     goal_rotmat = np.eye(3)
-#     pos_list, rotmat_list = interplate_pos_rotmat(start_pos, start_rotmat, goal_pos, goal_rotmat, granularity=3)
+#     pos_list, rotmat_list = interplate_pos_rotmat(start_pos, start_rotmat, goal_pos, goal_rotmat, linear_granularity=3)
 #     print(pos_list, rotmat_list)

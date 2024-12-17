@@ -229,7 +229,7 @@ for dict_goal_pos in dist_pos:
     #     linear_conf_list = inik_s.gen_linear_motion(component_name="arm", start_tcp_pos=start_tcp_pos,
     #                                                 start_tcp_rotmat=start_tcp_rotmat,
     #                                                 goal_tcp_pos=goal_tcp_pos, goal_tcp_rotmat=goal_tcp_rotmat,
-    #                                                 granularity=0.01, seed_jnt_values=conf_list2[-1])
+    #                                                 linear_granularity=0.01, seed_jnt_values=conf_list2[-1])
     #     ## if fail to plan sliding with arm ? then use agv
     #     if linear_conf_list is None:
     #         print("--- 1 ----")
