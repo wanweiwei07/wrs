@@ -433,7 +433,9 @@ class GeometricModel(StaticGeometricModel):
         elif toggle_option == 'face_ids':
             return np.array(points), np.array(face_ids)
         elif toggle_option == 'normals':
-            return np.array(points), rm.transform_points_by_homomat(self.homomat,
+            homomat = np.eye(4)
+            homomat[:3, :3] = self.rotmat
+            return np.array(points), rm.transform_points_by_homomat(homomat,
                                                                     self.trm_mesh.face_normals[face_ids])
         else:
             print("The toggle_option parameter must be \"None\", \"point_face_ids\", or \"point_nromals\"!")

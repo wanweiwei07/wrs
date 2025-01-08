@@ -585,7 +585,7 @@ class ADPlanner(object):
                                    toggle_dbg=False):
         """
         :param start_jnt_values:
-        :param end_jnt_values:
+        :param end_jnt_values: None means only generating the linear part
         :param linear_direction:
         :param linear_distance:
         :param linear_granularity:
@@ -726,11 +726,11 @@ if __name__ == '__main__':
     tic = time.time()
     # mot_data = adp.gen_approach(goal_pos, goal_rotmat, start_jnt_values=robot.get_jnt_values(),
     #                             linear_direction=np.array([0, 0, -1]), linear_distance=.5, use_rrt=False)
-    # mot_data = adp.gen_depart(goal_pos, goal_rotmat, end_jnt_values=robot.get_jnt_values(),
+    # mot_data = adp.gen_depart(goal_pos, goal_rotmat, moveto_jnt_values=robot.get_jnt_values(),
     #                           linear_direction=np.array([0, 0, -1]), linear_distance=.1, ee_values=.05)
     # mot_data = adp.gen_approach_depart(goal_tcp_pos=goal_pos, goal_tcp_rotmat=goal_rotmat,
     #                                       start_jnt_values=robot.get_jnt_values(),
-    #                                       end_jnt_values=robot.get_jnt_values(),
+    #                                       moveto_jnt_values=robot.get_jnt_values(),
     #                                       approach_ee_values=.05, depart_ee_values=.01)
     mot_data = adp.gen_depart_approach_with_given_conf(start_jnt_values=jnt_values, end_jnt_values=jnt_values2,
                                                        depart_ee_values=.03, approach_ee_values=.01, use_rrt=False)

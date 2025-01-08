@@ -120,7 +120,10 @@ class HandoverPlanner(object):
                     reg_planner = self.sender_fsreg_planner
                 else:
                     reg_planner = self.receiver_fsreg_planner
-                result = reg_planner.gen_regrasp_motion(path=path, obstacle_list=obstacle_list, toggle_dbg=toggle_dbg)
+                result = reg_planner.gen_regrasp_motion(path=path, obstacle_list=obstacle_list,
+                                                        toggle_start_approach=False,
+                                                        toggle_end_depart=False,
+                                                        toggle_dbg=toggle_dbg)
                 print(result)
                 if result[0][0] == 's':  # success
                     motion_list.append(result[1])
