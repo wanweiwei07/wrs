@@ -213,7 +213,7 @@ class DualArmRobotInterface(ri.RobotInterface):
 
     def gen_meshmodel(self,
                       rgb=None,
-                      alpha=None,
+                      alpha=1,
                       toggle_tcp_frame=False,
                       toggle_jnt_frames=False,
                       toggle_flange_frame=False,

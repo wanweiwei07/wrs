@@ -152,6 +152,8 @@ class RS007L(mi.ManipulatorInterface):
         rrr_g_rotmat = (j2_gl_rotmatq @ self.jlc.jnts[3].loc_rotmat @
                         self.jlc.jnts[4].loc_rotmat @ self.jlc.jnts[5].loc_rotmat)
         j3_value, j4_value, j5_value = rm.rotmat_to_euler(rrr_g_rotmat.T @ tgt_flange_rotmat, order='rzxz').tolist()
+        j3_value = j3_value - math.pi
+        j4_value = -j4_value
         if not (self._is_jnt_in_range(jnt_id=3, jnt_value=j3_value) and
                 self._is_jnt_in_range(jnt_id=4, jnt_value=j4_value) and
                 self._is_jnt_in_range(jnt_id=5, jnt_value=j5_value)):

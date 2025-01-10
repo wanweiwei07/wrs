@@ -18,6 +18,8 @@ from numpy import sin, cos, tan
 from numpy import arctan2 as atan2, arcsin as asin, arccos as acos
 from numpy import floor, ceil, round, isnan, isinf
 
+np.set_printoptions(suppress=True) # avoid scientific notation
+
 # epsilon for testing whether a number is close to zero
 _EPS = np.finfo(np.float32).eps
 # axis sequences for Euler angles

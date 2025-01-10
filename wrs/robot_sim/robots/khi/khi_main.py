@@ -31,10 +31,24 @@ class KHI_DUAL(dari.DualArmRobotInterface):
         self._lft_arm = kg.KHI_OR2FG7(pos=self._body.gl_flange_pose_list[0][0],
                                       rotmat=self._body.gl_flange_pose_list[0][1], enable_cc=False)
         self._lft_arm.fk(jnt_values=lft_arm_homeconf)
+        # self._lft_arm.manipulator.jnts[0].motion_range = rm.degrees(rm.vec(-180, 110))
+        # self._lft_arm.manipulator.jnts[1].motion_range = rm.degrees(rm.vec(-40, 90))
+        # self._lft_arm.manipulator.jnts[2].motion_range = rm.degrees(rm.vec(-157, -20))
+        # self._lft_arm.manipulator.jnts[3].motion_range = rm.degrees(rm.vec(-100, 100))
+        # self._lft_arm.manipulator.jnts[4].motion_range = rm.degrees(rm.vec(-125, 0))
+        # self._lft_arm.manipulator.jnts[5].motion_range = rm.degrees(rm.vec(-150, 130))
+        self._lft_arm.manipulator.jlc.finalize(identifier_str=self._lft_arm.name + "_dual_lft")
         # rgt
         self._rgt_arm = ksd.KHI_ORSD(pos=self._body.gl_flange_pose_list[1][0],
                                      rotmat=self._body.gl_flange_pose_list[1][1], enable_cc=False)
         self._rgt_arm.fk(jnt_values=rgt_arm_homeconf)
+        self._rgt_arm.manipulator.jnts[0].motion_range = rm.degrees(rm.vec(-110, 180))
+        self._rgt_arm.manipulator.jnts[1].motion_range = rm.degrees(rm.vec(-40, 90))
+        self._rgt_arm.manipulator.jnts[2].motion_range = rm.degrees(rm.vec(-157, -20))
+        self._rgt_arm.manipulator.jnts[3].motion_range = rm.degrees(rm.vec(-40, 150))
+        self._rgt_arm.manipulator.jnts[4].motion_range = rm.degrees(rm.vec(-125, 0))
+        self._rgt_arm.manipulator.jnts[5].motion_range = rm.degrees(rm.vec(-240, 240))
+        self._rgt_arm.manipulator.jlc.finalize(identifier_str=self._lft_arm.name + "_dual_rgt")
         # collision detection
         if self.cc is not None:
             self.setup_cc()
@@ -139,55 +153,38 @@ class KHI_DUAL(dari.DualArmRobotInterface):
 
 
 if __name__ == '__main__':
-    import time
-    import wrs.visualization.panda.world as wd
+    from wrs import wd, mgm
 
     base = wd.World(cam_pos=[5, 3, 4], lookat_pos=[0, 0, 1])
     mcm.mgm.gen_frame().attach_to(base)
     khibt = KHI_DUAL(enable_cc=True)
-    khibt = khibt.gen_meshmodel()
-    khibt.attach_to(base)
-    base.run()
-
-    # tgt_pos = np.array([.4, 0, .2])
-    # tgt_rotmat = rm.rotmat_from_euler(0, math.pi * 2 / 3, -math.pi / 4)
-    # ik test
-    component_name = 'lft_arm_waist'
-    tgt_pos = np.array([-.3, .45, .55])
-    tgt_rotmat = rm.rotmat_from_axangle([0, 0, 1], -math.pi / 2)
-    # tgt_rotmat = np.eye(3)
-    mcm.mgm.gen_frame(pos=tgt_pos, rotmat=tgt_rotmat).attach_to(base)
-    tic = time.time()
-    jnt_values = nxt_instance.ik(component_name, tgt_pos, tgt_rotmat, toggle_dbg=True)
-    toc = time.time()
-    print(toc - tic)
-    nxt_instance.fk(component_name, jnt_values)
-    nxt_meshmodel = nxt_instance.gen_mesh_model()
-    nxt_meshmodel.attach_to(base)
-    nxt_instance.gen_stickmodel().attach_to(base)
-    # tic = time.time()
-    # result = nxt_instance.is_collided()
-    # toc = time.time()
-    # print(result, toc - tic)
-    base.run()
-
-    # hold test
-    component_name = 'lft_arm'
-    obj_pos = np.array([-.1, .3, .3])
-    obj_rotmat = rm.rotmat_from_axangle([0, 1, 0], math.pi / 2)
-    objfile = os.path.join(basis.__path__[0], 'objects', 'tubebig.stl')
-    objcm = mcm.CollisionModel(objfile, cdprim_type='cylinder')
-    objcm.set_pos(obj_pos)
-    objcm.set_rotmat(obj_rotmat)
-    objcm.attach_to(base)
-    objcm_copy = objcm.copy()
-    nxt_instance.hold(objcm=objcm_copy, jaw_width=0.03, hnd_name='lft_hnd')
-    tgt_pos = np.array([.4, .5, .4])
-    tgt_rotmat = rm.rotmat_from_axangle([0, 1, 0], math.pi / 3)
-    jnt_values = nxt_instance.ik(component_name, tgt_pos, tgt_rotmat)
-    nxt_instance.fk(component_name, jnt_values)
-    # nxt_instance.show_cdprimit()
-    nxt_meshmodel = nxt_instance.gen_mesh_model()
-    nxt_meshmodel.attach_to(base)
+    # khibt.lft_arm.goto_given_conf(np.radians([90, 90, 90, 90, 90, 90]))
+    # khibt.gen_meshmodel(toggle_tcp_frame=True).attach_to(base)
+    # base.run()
+    tgt_pos = np.array([.4, 0, 1])
+    tgt_rotmat = rm.rotmat_from_euler(0, rm.pi * 2 / 3, -rm.pi *3 / 4)
+    # tgt_rotmat = rm.rotmat_from_euler(0, rm.pi * 2 / 3, -rm.pi / 4)
+    mgm.gen_frame(pos=tgt_pos, rotmat=tgt_rotmat).attach_to(base)
+    jnt_values = khibt.lft_arm.ik(tgt_pos, tgt_rotmat)
+    if jnt_values is not None:
+        print(jnt_values, khibt.jnt_ranges)
+        print("without limits ", rm.degrees(jnt_values))
+        khibt.goto_given_conf(jnt_values)
+        model = khibt.gen_meshmodel(rgb=rm.const.red)
+        model.attach_to(base)
+    khibt.lft_arm.manipulator.jnts[0].motion_range = rm.radians(rm.vec(-180, 110))
+    khibt.lft_arm.manipulator.jnts[1].motion_range = rm.radians(rm.vec(-40, 90))
+    khibt.lft_arm.manipulator.jnts[2].motion_range = rm.radians(rm.vec(-157, -20))
+    khibt.lft_arm.manipulator.jnts[3].motion_range = rm.radians(rm.vec(-100, 100))
+    khibt.lft_arm.manipulator.jnts[4].motion_range = rm.radians(rm.vec(-125, 0))
+    khibt.lft_arm.manipulator.jnts[5].motion_range = rm.radians(rm.vec(-150, 130))
+    khibt.lft_arm.manipulator.jlc.finalize(identifier_str=khibt._lft_arm.name + "_dual_lft")
+    jnt_values = khibt.lft_arm.ik(tgt_pos, tgt_rotmat)
+    print(jnt_values, khibt.jnt_ranges)
+    if jnt_values is not None:
+        print("with limits ", rm.degrees(jnt_values))
+        khibt.goto_given_conf(jnt_values)
+        model = khibt.gen_meshmodel(rgb=rm.const.blue)
+        model.attach_to(base)
 
     base.run()
