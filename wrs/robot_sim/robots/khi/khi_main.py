@@ -171,6 +171,7 @@ if __name__ == '__main__':
         for jnt_values in jnt_values_mult:
             print(jnt_values)
             khibt.goto_given_conf(jnt_values)
+            model = khibt.gen_meshmodel()
             model.attach_to(base)
     base.run()
     khibt.lft_arm.manipulator.jnts[0].motion_range = rm.radians(rm.vec(-180, 110))
