@@ -165,13 +165,14 @@ if __name__ == '__main__':
     tgt_rotmat = rm.rotmat_from_euler(0, rm.pi * 2 / 3, -rm.pi *3 / 4)
     # tgt_rotmat = rm.rotmat_from_euler(0, rm.pi * 2 / 3, -rm.pi / 4)
     mgm.gen_frame(pos=tgt_pos, rotmat=tgt_rotmat).attach_to(base)
-    jnt_values = khibt.lft_arm.ik(tgt_pos, tgt_rotmat)
-    if jnt_values is not None:
-        print(jnt_values, khibt.jnt_ranges)
-        print("without limits ", rm.degrees(jnt_values))
-        khibt.goto_given_conf(jnt_values)
-        model = khibt.gen_meshmodel(rgb=rm.const.red)
-        model.attach_to(base)
+    jnt_values_mult = khibt.lft_arm.ik(tgt_pos, tgt_rotmat, option="multiple")
+    if jnt_values_mult is not None:
+        print(jnt_values_mult)
+        for jnt_values in jnt_values_mult:
+            print(jnt_values)
+            khibt.goto_given_conf(jnt_values)
+            model.attach_to(base)
+    base.run()
     khibt.lft_arm.manipulator.jnts[0].motion_range = rm.radians(rm.vec(-180, 110))
     khibt.lft_arm.manipulator.jnts[1].motion_range = rm.radians(rm.vec(-40, 90))
     khibt.lft_arm.manipulator.jnts[2].motion_range = rm.radians(rm.vec(-157, -20))

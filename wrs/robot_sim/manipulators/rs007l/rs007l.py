@@ -89,77 +89,173 @@ class RS007L(mi.ManipulatorInterface):
         into_list = [lb, l0]
         self.cc.set_cdpair_by_ids(from_list, into_list)
 
+    # def ik(self,
+    #        tgt_pos: np.ndarray,
+    #        tgt_rotmat: np.ndarray,
+    #        seed_jnt_values=None,
+    #        option="single",
+    #        toggle_dbg=False):
+    #     """
+    #     analytical ik sovler, slover than ddik
+    #     the parameters in kwargs will be ignored
+    #     :param tgt_pos:
+    #     :param tgt_rotmat:
+    #     :param seed_jnt_values:
+    #     :param option:
+    #     :param toggle_dbg:
+    #     :return:
+    #     author: weiwei
+    #     date: 20230728
+    #     """
+    #     tcp_loc_pos = self.loc_tcp_pos
+    #     tcp_loc_rotmat = self.loc_tcp_rotmat
+    #     tgt_flange_rotmat = tgt_rotmat @ tcp_loc_rotmat.T
+    #     tgt_flange_pos = tgt_pos - tgt_flange_rotmat @ tcp_loc_pos
+    #     rrr_pos = tgt_flange_pos - tgt_flange_rotmat[:, 2] * np.linalg.norm(self.jlc.jnts[5].loc_pos)
+    #     rrr_x, rrr_y, rrr_z = ((rrr_pos - self.pos) @ self.rotmat).tolist()  # in base coordinate system
+    #     j0_value = math.atan2(rrr_x, rrr_y) - math.pi
+    #     if not self._is_jnt_in_range(jnt_id=0, jnt_value=j0_value):
+    #         return None
+    #     # assume a, b, c are the axis_length of shoulders and bottom of the big triangle formed by the robot arm
+    #     c = math.sqrt(rrr_x ** 2 + rrr_y ** 2 + (rrr_z - self.jlc.jnts[0].loc_pos[2]) ** 2)
+    #     a = self.jlc.jnts[2].loc_pos[0]
+    #     b = self.jlc.jnts[3].loc_pos[0] + self.jlc.jnts[4].loc_pos[2]
+    #     tmp_acos_target = (a ** 2 + b ** 2 - c ** 2) / (2 * a * b)
+    #     if tmp_acos_target > 1 or tmp_acos_target < -1:
+    #         print("The triangle formed by the robot arm is violated!")
+    #         return None
+    #     j2_value = math.pi-math.acos(tmp_acos_target)
+    #     if not self._is_jnt_in_range(jnt_id=2, jnt_value=j2_value):
+    #         # ignore reversed elbow
+    #         # j2_value = math.acos(tmp_acos_target)
+    #         # if not self._is_jnt_in_range(jnt_id=2, jnt_value=j2_value):
+    #         return None
+    #     tmp_acos_target = (a ** 2 + c ** 2 - b ** 2) / (2 * a * c)
+    #     if tmp_acos_target > 1 or tmp_acos_target < -1:
+    #         print("The triangle formed by the robot arm is violated!")
+    #         return None
+    #     j1_value_upper = math.acos(tmp_acos_target)
+    #     # assume d, c, e are the edges of the lower triangle formed with the ground
+    #     d = self.jlc.jnts[0].loc_pos[2]
+    #     e = math.sqrt(rrr_x ** 2 + rrr_y ** 2 + rrr_z ** 2)
+    #     tmp_acos_target = (d ** 2 + c ** 2 - e ** 2) / (2 * d * c)
+    #     if tmp_acos_target > 1 or tmp_acos_target < -1:
+    #         print("The triangle formed with the ground is violated!")
+    #         return None
+    #     j1_value_lower = math.acos(tmp_acos_target)
+    #     j1_value = (j1_value_lower + j1_value_upper)-math.pi
+    #     if not self._is_jnt_in_range(jnt_id=1, jnt_value=j1_value):
+    #         return None
+    #     # RRR
+    #     anchor_gl_rotmatq = self.rotmat
+    #     j0_gl_rotmat0 = anchor_gl_rotmatq @ self.jlc.jnts[0].loc_rotmat
+    #     j0_gl_rotmatq = j0_gl_rotmat0 @ rm.rotmat_from_axangle(self.jlc.jnts[0].loc_motion_ax, j0_value)
+    #     j1_gl_rotmat0 = j0_gl_rotmatq @ self.jlc.jnts[1].loc_rotmat
+    #     j1_gl_rotmatq = j1_gl_rotmat0 @ rm.rotmat_from_axangle(self.jlc.jnts[1].loc_motion_ax, j1_value)
+    #     j2_gl_rotmat0 = j1_gl_rotmatq @ self.jlc.jnts[2].loc_rotmat
+    #     j2_gl_rotmatq = j2_gl_rotmat0 @ rm.rotmat_from_axangle(self.jlc.jnts[2].loc_motion_ax, j2_value)
+    #     rrr_g_rotmat = (j2_gl_rotmatq @ self.jlc.jnts[3].loc_rotmat @
+    #                     self.jlc.jnts[4].loc_rotmat @ self.jlc.jnts[5].loc_rotmat)
+    #     j3_value, j4_value, j5_value = rm.rotmat_to_euler(rrr_g_rotmat.T @ tgt_flange_rotmat, order='rzxz').tolist()
+    #     if not (self._is_jnt_in_range(jnt_id=3, jnt_value=j3_value) and
+    #             self._is_jnt_in_range(jnt_id=4, jnt_value=j4_value) and
+    #             self._is_jnt_in_range(jnt_id=5, jnt_value=j5_value)):
+    #         return None
+    #     return np.array([j0_value, j1_value, j2_value, j3_value, j4_value, j5_value])
+
     def ik(self,
            tgt_pos: np.ndarray,
            tgt_rotmat: np.ndarray,
-           **kwargs):
+           seed_jnt_values=None,
+           option="single",
+           toggle_dbg=False):
         """
         analytical ik sovler, slover than ddik
         the parameters in kwargs will be ignored
         :param tgt_pos:
         :param tgt_rotmat:
+        :param seed_jnt_values:
+        :param option:
+        :param toggle_dbg:
         :return:
         author: weiwei
         date: 20230728
         """
+        solution_list = []
         tcp_loc_pos = self.loc_tcp_pos
         tcp_loc_rotmat = self.loc_tcp_rotmat
         tgt_flange_rotmat = tgt_rotmat @ tcp_loc_rotmat.T
         tgt_flange_pos = tgt_pos - tgt_flange_rotmat @ tcp_loc_pos
         rrr_pos = tgt_flange_pos - tgt_flange_rotmat[:, 2] * np.linalg.norm(self.jlc.jnts[5].loc_pos)
         rrr_x, rrr_y, rrr_z = ((rrr_pos - self.pos) @ self.rotmat).tolist()  # in base coordinate system
-        j0_value = math.atan2(rrr_x, rrr_y)
-        if not self._is_jnt_in_range(jnt_id=0, jnt_value=j0_value):
+        opertaion_map = np.array([[0, 1, 1], [-math.pi, -1, -1]])
+        for i in range(2):
+            j0_value = math.atan2(rrr_x, rrr_y) + opertaion_map[i, 0]
+            if not self._is_jnt_in_range(jnt_id=0, jnt_value=j0_value):
+                continue
+            # assume a, b, c are the axis_length of shoulders and bottom of the big triangle formed by the robot arm
+            c = math.sqrt(rrr_x ** 2 + rrr_y ** 2 + (rrr_z - self.jlc.jnts[0].loc_pos[2]) ** 2)
+            a = self.jlc.jnts[2].loc_pos[0]
+            b = self.jlc.jnts[3].loc_pos[0] + self.jlc.jnts[4].loc_pos[2]
+            tmp_acos_target = (a ** 2 + b ** 2 - c ** 2) / (2 * a * b)
+            if tmp_acos_target > 1 or tmp_acos_target < -1:
+                print("The triangle formed by the robot arm is violated!")
+                continue
+            j2_value = (math.acos(tmp_acos_target) - math.pi) * opertaion_map[i, 1]
+            if not self._is_jnt_in_range(jnt_id=2, jnt_value=j2_value):
+                # ignore reversed elbow
+                # j2_value = math.acos(tmp_acos_target)
+                # if not self._is_jnt_in_range(jnt_id=2, jnt_value=j2_value):
+                continue
+            tmp_acos_target = (a ** 2 + c ** 2 - b ** 2) / (2 * a * c)
+            if tmp_acos_target > 1 or tmp_acos_target < -1:
+                print("The triangle formed by the robot arm is violated!")
+                continue
+            j1_value_upper = math.acos(tmp_acos_target)
+            # assume d, c, e are the edges of the lower triangle formed with the ground
+            d = self.jlc.jnts[0].loc_pos[2]
+            e = math.sqrt(rrr_x ** 2 + rrr_y ** 2 + rrr_z ** 2)
+            tmp_acos_target = (d ** 2 + c ** 2 - e ** 2) / (2 * d * c)
+            if tmp_acos_target > 1 or tmp_acos_target < -1:
+                print("The triangle formed with the ground is violated!")
+                continue
+            j1_value_lower = math.acos(tmp_acos_target)
+            j1_value = (math.pi - (j1_value_lower + j1_value_upper)) * opertaion_map[i, 2]
+            if not self._is_jnt_in_range(jnt_id=1, jnt_value=j1_value):
+                continue
+            # RRR
+            anchor_gl_rotmatq = self.rotmat
+            j0_gl_rotmat0 = anchor_gl_rotmatq @ self.jlc.jnts[0].loc_rotmat
+            j0_gl_rotmatq = j0_gl_rotmat0 @ rm.rotmat_from_axangle(self.jlc.jnts[0].loc_motion_ax, j0_value)
+            j1_gl_rotmat0 = j0_gl_rotmatq @ self.jlc.jnts[1].loc_rotmat
+            j1_gl_rotmatq = j1_gl_rotmat0 @ rm.rotmat_from_axangle(self.jlc.jnts[1].loc_motion_ax, j1_value)
+            j2_gl_rotmat0 = j1_gl_rotmatq @ self.jlc.jnts[2].loc_rotmat
+            j2_gl_rotmatq = j2_gl_rotmat0 @ rm.rotmat_from_axangle(self.jlc.jnts[2].loc_motion_ax, j2_value)
+            rrr_g_rotmat = (j2_gl_rotmatq @ self.jlc.jnts[3].loc_rotmat @
+                            self.jlc.jnts[4].loc_rotmat @ self.jlc.jnts[5].loc_rotmat)
+            j3_value, j4_value, j5_value = rm.rotmat_to_euler(rrr_g_rotmat.T @ tgt_flange_rotmat, order='rzxz').tolist()
+            j3_value_alt = j3_value - math.pi
+            j4_value_alt = -j4_value
+            j5_value_alt = j5_value - math.pi
+            if (self._is_jnt_in_range(jnt_id=3, jnt_value=j3_value) and
+                    self._is_jnt_in_range(jnt_id=4, jnt_value=j4_value) and
+                    self._is_jnt_in_range(jnt_id=5, jnt_value=j5_value)):
+                solution_list.append(np.array([j0_value, j1_value, j2_value, j3_value, j4_value, j5_value]))
+            if (self._is_jnt_in_range(jnt_id=3, jnt_value=j3_value_alt) and
+                    self._is_jnt_in_range(jnt_id=4, jnt_value=j4_value_alt) and
+                    self._is_jnt_in_range(jnt_id=5, jnt_value=j5_value_alt)):
+                solution_list.append(np.array([j0_value, j1_value, j2_value, j3_value_alt, j4_value_alt, j5_value_alt]))
+        if len(solution_list) == 0:
+            print("No valid solutions found")
             return None
-        # assume a, b, c are the axis_length of shoulders and bottom of the big triangle formed by the robot arm
-        c = math.sqrt(rrr_x ** 2 + rrr_y ** 2 + (rrr_z - self.jlc.jnts[0].loc_pos[2]) ** 2)
-        a = self.jlc.jnts[2].loc_pos[0]
-        b = self.jlc.jnts[3].loc_pos[0] + self.jlc.jnts[4].loc_pos[2]
-        tmp_acos_target = (a ** 2 + b ** 2 - c ** 2) / (2 * a * b)
-        if tmp_acos_target > 1 or tmp_acos_target < -1:
-            print("The triangle formed by the robot arm is violated!")
-            return None
-        j2_value = math.acos(tmp_acos_target) - math.pi
-        if not self._is_jnt_in_range(jnt_id=2, jnt_value=j2_value):
-            # ignore reversed elbow
-            # j2_value = math.acos(tmp_acos_target)
-            # if not self._is_jnt_in_range(jnt_id=2, jnt_value=j2_value):
-            return None
-        tmp_acos_target = (a ** 2 + c ** 2 - b ** 2) / (2 * a * c)
-        if tmp_acos_target > 1 or tmp_acos_target < -1:
-            print("The triangle formed by the robot arm is violated!")
-            return None
-        j1_value_upper = math.acos(tmp_acos_target)
-        # assume d, c, e are the edges of the lower triangle formed with the ground
-        d = self.jlc.jnts[0].loc_pos[2]
-        e = math.sqrt(rrr_x ** 2 + rrr_y ** 2 + rrr_z ** 2)
-        tmp_acos_target = (d ** 2 + c ** 2 - e ** 2) / (2 * d * c)
-        if tmp_acos_target > 1 or tmp_acos_target < -1:
-            print("The triangle formed with the ground is violated!")
-            return None
-        j1_value_lower = math.acos(tmp_acos_target)
-        j1_value = math.pi - (j1_value_lower + j1_value_upper)
-        if not self._is_jnt_in_range(jnt_id=1, jnt_value=j1_value):
-            return None
-        # RRR
-        anchor_gl_rotmatq = self.rotmat
-        j0_gl_rotmat0 = anchor_gl_rotmatq @ self.jlc.jnts[0].loc_rotmat
-        j0_gl_rotmatq = j0_gl_rotmat0 @ rm.rotmat_from_axangle(self.jlc.jnts[0].loc_motion_ax, j0_value)
-        j1_gl_rotmat0 = j0_gl_rotmatq @ self.jlc.jnts[1].loc_rotmat
-        j1_gl_rotmatq = j1_gl_rotmat0 @ rm.rotmat_from_axangle(self.jlc.jnts[1].loc_motion_ax, j1_value)
-        j2_gl_rotmat0 = j1_gl_rotmatq @ self.jlc.jnts[2].loc_rotmat
-        j2_gl_rotmatq = j2_gl_rotmat0 @ rm.rotmat_from_axangle(self.jlc.jnts[2].loc_motion_ax, j2_value)
-        rrr_g_rotmat = (j2_gl_rotmatq @ self.jlc.jnts[3].loc_rotmat @
-                        self.jlc.jnts[4].loc_rotmat @ self.jlc.jnts[5].loc_rotmat)
-        j3_value, j4_value, j5_value = rm.rotmat_to_euler(rrr_g_rotmat.T @ tgt_flange_rotmat, order='rzxz').tolist()
-        j3_value = j3_value - math.pi
-        j4_value = -j4_value
-        j5_value = j5_value - math.pi
-        if not (self._is_jnt_in_range(jnt_id=3, jnt_value=j3_value) and
-                self._is_jnt_in_range(jnt_id=4, jnt_value=j4_value) and
-                self._is_jnt_in_range(jnt_id=5, jnt_value=j5_value)):
-            return None
-        return np.array([j0_value, j1_value, j2_value, j3_value, j4_value, j5_value])
+        else:
+            result = np.array(solution_list)
+            if seed_jnt_values is None:
+                seed_jnt_values = self.home_conf
+            if option == "single":
+                return result[np.argmin(np.linalg.norm(result - seed_jnt_values, axis=1))]
+            elif option == "multiple":
+                return result[np.argsort(np.linalg.norm(result - seed_jnt_values, axis=1))]
 
 
 if __name__ == '__main__':

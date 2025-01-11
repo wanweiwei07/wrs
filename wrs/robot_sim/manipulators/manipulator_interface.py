@@ -111,7 +111,7 @@ class ManipulatorInterface(object):
     def jnt_ranges(self):
         return self.jlc.jnt_ranges
 
-    def _is_jnt_in_range(self, jnt_id, jnt_value):
+    def _is_jnt_in_range(self, jnt_id, jnt_value, toggle_warning=False):
         """
 
         :param jnt_id:
@@ -121,7 +121,8 @@ class ManipulatorInterface(object):
         date: 20230801
         """
         if jnt_value < self.jlc.jnts[jnt_id].motion_range[0] or jnt_value > self.jlc.jnts[jnt_id].motion_range[1]:
-            print(f"Error: Joint {jnt_id} is out of range!")
+            if toggle_warning:
+                print(f"Error: Joint {jnt_id} is out of range!")
             return False
         else:
             return True
