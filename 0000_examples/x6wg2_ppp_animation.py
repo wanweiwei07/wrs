@@ -8,11 +8,17 @@ ground = mcm.gen_box(xyz_lengths=[5, 5, 0.1],
                      rgb=rm.np.array([.7, .7, .7]),
                      alpha=.7)
 ground.pos = rm.np.array([0, 0, -.51])
-ground.attach_to(base)
+# ground.attach_to(base)
+# obstacle
+obstacle = mcm.gen_box(xyz_lengths=[.4, .04, .2],
+                       pos=rm.np.array([.3, 0, 0.1]),
+                       rgb=rm.np.array([212 / 255, 6 / 255, 6 / 255]),
+                       alpha=1)
+obstacle.attach_to(base)
 # object
 tube1 = mcm.CollisionModel("objects/tubebig.stl")
 tube1.rgba = rm.np.array([.5, .5, .5, 1])
-gl_pos1 = rm.np.array([.3, -.05, .0])
+gl_pos1 = rm.np.array([.3, -.2, .0])
 gl_rotmat1 = rm.rotmat_from_euler(0, 0, rm.pi / 2)
 tube1.pos = gl_pos1
 tube1.rotmat = gl_rotmat1
@@ -23,7 +29,7 @@ t1_copy.attach_to(base)
 
 # object holder goal
 tube2 = mcm.CollisionModel("objects/tubebig.stl")
-gl_pos2 = rm.np.array([.3, .05, .0])
+gl_pos2 = rm.np.array([.3, .2, .0])
 gl_rotmat2 = rm.rotmat_from_euler(0, 0, 2 * rm.pi / 3)
 tube2.pos = gl_pos2
 tube2.rotmat = gl_rotmat2
@@ -34,8 +40,18 @@ t2_copy.alpha = .3
 t2_copy.attach_to(base)
 
 robot = x6wg2.XArmLite6WG2()
-robot.gen_meshmodel().attach_to(base)
+# robot.gen_meshmodel().attach_to(base)
 print(robot.end_effector.jaw_width)
+
+
+def _is_collided(robot):
+    if len(robot.oiee_list) != 0:
+        if rm.angle_between_vectors(robot.oiee_list[-1].gl_rotmat[:, 2], rm.const.z_ax) > rm.radians(10):
+            return True
+    return False
+
+
+robot.userdef_collision_fn = {"name": _is_collided, "args": robot}
 
 rrtc = rrtc.RRTConnect(robot)
 ppp = ppp.PickPlacePlanner(robot)
@@ -45,9 +61,9 @@ start_conf = robot.get_jnt_values()
 print(grasp_collection)
 mot_data = ppp.gen_pick_and_place(obj_cmodel=tube1,
                                   grasp_collection=grasp_collection,
-                                  end_jnt_values=start_conf,
+                                  # end_jnt_values=start_conf,
                                   goal_pose_list=[(gl_pos2, gl_rotmat2)],
-                                  obstacle_list=[ground])
+                                  obstacle_list=[ground, obstacle])
 
 
 class Data(object):
@@ -57,6 +73,13 @@ class Data(object):
 
 
 anime_data = Data(mot_data)
+
+anime_data.mot_data.mesh_list[0].attach_to(base)
+anime_data.mot_data.mesh_list[-1].attach_to(base)
+# for mesh_model in anime_data.mot_data.mesh_list[1:-2:2]:
+#     mesh_model.alpha=.7
+#     mesh_model.attach_to(base)
+base.run()
 
 
 def update(anime_data, task):

@@ -1,5 +1,6 @@
 from wrs import wd, rm, rrtc, mgm, x6g2
 
+
 base = wd.World(cam_pos=rm.vec(2, 0, 1), lookat_pos=rm.vec(0, 0, 0.5))
 mgm.gen_frame().attach_to(base)
 # initialize

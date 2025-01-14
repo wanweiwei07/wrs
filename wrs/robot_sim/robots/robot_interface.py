@@ -13,8 +13,7 @@ class RobotInterface(object):
         self.name = name
         self._pos = pos
         self._rotmat = rotmat
-        # for dynamic callback in case of multiple arms
-        self.userdef_is_collided_fn = None  # deprecated 20240309 (originally designed for reusing cc, inflexible)
+        self.userdef_collision_fn = None
         if enable_cc:
             self.cc = cc.CollisionChecker("collision_checker")
         else:
@@ -169,16 +168,26 @@ class RobotInterface(object):
         date: 20201223
         """
         # TODO cc assertion decorator
-        if self.userdef_is_collided_fn is None:
+        if self.userdef_collision_fn is None:
             return self.cc.is_collided(obstacle_list=obstacle_list,
                                        other_robot_list=other_robot_list,
                                        toggle_contacts=toggle_contacts,
                                        toggle_dbg=toggle_dbg)
         else:
-            return self.userdef_is_collided_fn(self.cc, obstacle_list=obstacle_list,
-                                               other_robot_list=other_robot_list,
-                                               toggle_contacts=toggle_contacts,
-                                               toggle_dbg=toggle_dbg)
+            result = self.cc.is_collided(obstacle_list=obstacle_list,
+                                       other_robot_list=other_robot_list,
+                                       toggle_contacts=toggle_contacts,
+                                       toggle_dbg=toggle_dbg)
+            if toggle_contacts:
+                is_collided = result[0] or self.userdef_collision_fn["name"](self.userdef_collision_fn["args"])
+                contacts = result[1]
+                return is_collided, contacts
+            else:
+                return result or self.userdef_collision_fn["name"](self.userdef_collision_fn["args"])
+            # return self.userdef_is_collided_fn(self.cc, obstacle_list=obstacle_list,
+            #                                    other_robot_list=other_robot_list,
+            #                                    toggle_contacts=toggle_contacts,
+            #                                    toggle_dbg=toggle_dbg)
 
     def show_cdprim(self):
         """

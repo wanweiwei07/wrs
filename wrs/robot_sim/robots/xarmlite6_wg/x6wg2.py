@@ -58,13 +58,15 @@ class XArmLite6WG2(sari.SglArmRobotInterface):
 
 
 if __name__ == '__main__':
-    from wrs import wd, mgm
+    from wrs import wd, mgm, rm
 
     base = wd.World(cam_pos=[2, 0, 1.5], lookat_pos=[0, 0, .2])
     mgm.gen_frame().attach_to(base)
     robot = XArmLite6WG2(pos=np.array([0, 0, 0]), enable_cc=True)
-    robot.gen_meshmodel(alpha=.3).attach_to(base)
+    robot.goto_given_conf(jnt_values=[0, rm.pi/10, rm.pi*.4, 0, rm.pi/4, 0])
+    # robot.gen_meshmodel(alpha=.3).attach_to(base)
     robot.gen_stickmodel(toggle_jnt_frames=True, toggle_tcp_frame=True).attach_to(base)
+    base.run()
     # tic = time.time()
     # trm_model=xarm_model.acquire_cm_trm()
     # toc = time.time()
