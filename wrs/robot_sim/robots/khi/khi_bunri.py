@@ -192,7 +192,7 @@ class KHI_DUAL(dari.DualArmRobotInterface):
 if __name__ == '__main__':
     from wrs import wd, mgm
 
-    base = wd.World(cam_pos=[5, 3, 4], lookat_pos=[0, 0, 1])
+    base = wd.World(cam_pos=[5, 0, 1.2], lookat_pos=[0, 0, .5])
     mcm.mgm.gen_frame().attach_to(base)
     khibt = KHI_DUAL(enable_cc=True)
     # khibt.lft_arm.goto_given_conf(np.radians([90, 90, 90, 90, 90, 90]))
