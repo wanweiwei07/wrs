@@ -61,7 +61,7 @@ class FrankaResearch3(rsi.SglArmRobotInterface):
         into_list = [mlb, ml0, ml1, ml2]
         self.cc.set_cdpair_by_ids(from_list, into_list)
         # ext and inner
-        self.cc.enable_extcd_by_id_list(id_list=[ml0, ml1, ml2, ml3, ml4, ml5], type="from")
+        self.cc.enable_extcd_by_id_list(id_list=[ml0, ml1, ml2, ml3, ml4, ml5]+ee_cces, type="from")
         self.cc.enable_innercd_by_id_list(id_list=[mlb, ml0, ml1, ml2, ml3], type="into")
         self.cc.dynamic_ext_list = ee_cces[1:]
 
