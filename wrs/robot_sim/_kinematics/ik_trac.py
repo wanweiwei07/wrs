@@ -13,8 +13,9 @@ date: 20231107
 
 import numpy as np
 import multiprocessing as mp
-from wrs import basis as rm, robot_sim as rkc
 import scipy.optimize as sopt
+import wrs.basis.robot_math as rm
+import wrs.robot_sim._kinematics.constant as rkc
 
 
 class NumIKSolverProc(mp.Process):
