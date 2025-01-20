@@ -109,6 +109,22 @@ if __name__ == '__main__':
     base = wd.World(cam_pos=rm.np.array([3, -1, 1]), lookat_pos=rm.np.array([0, 0, 0.5]))
     mgm.gen_frame().attach_to(base)
     robot = dnw.Nova2WG3()
+
+    interp_confs = np.array([[-0.363, 0.415, -0.155, -3.209, -1.148, -4.327],
+                             [-0.335, 0.5, -0.28, -3.142, -1.351, -4.378],
+                             [-0.335, 0.504, -0.265, -3.142, -1.332, -4.378],
+                             [-0.335, 0.509, -0.251, -3.142, -1.313, -4.378],
+                             [-0.335, 0.514, -0.236, -3.142, -1.294, -4.378],
+                             [-0.335, 0.519, -0.223, -3.142, -1.275, -4.378]])
+    interp_time, interp_confs1, interp_spds, interp_accs = generate_time_optimal_trajectory(interp_confs,
+                                                                                            ctrl_freq=.002)
+    fig, (ax1, ax2, ax3, ax4) = plt.subplots(4, 1, figsize=(10, 15))
+    ax2.plot(interp_time, interp_confs1, '-o')
+    ax3.plot(interp_time, interp_spds, '-o')
+    ax4.plot(interp_time, interp_accs, '-o')
+    plt.show()
+    base.run()
+
     interplated_planner = mip.InterplatedMotion(robot)
     mot_data = interplated_planner.gen_circular_motion(circle_center_pos=rm.np.array([.6, 0, .4]),
                                                        circle_normal_ax=rm.np.array([1, 0, 0]),
