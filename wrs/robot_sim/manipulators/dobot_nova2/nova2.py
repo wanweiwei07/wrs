@@ -12,7 +12,7 @@ class Nova2(mi.ManipulatorInterface):
     author: chen hao <chen960216@gmail.com>, 20230214osaka; weiwei20240611
     """
 
-    def __init__(self, pos=np.zeros(3), rotmat=np.eye(3), ik_solver='d', name='nova2', enable_cc=True):
+    def __init__(self, pos=np.zeros(3), rotmat=np.eye(3), ik_solver='a', name='nova2', enable_cc=True):
         super().__init__(pos=pos, rotmat=rotmat, home_conf=np.zeros(6), name=name, enable_cc=enable_cc)
         current_file_dir = os.path.dirname(__file__)
         # anchor

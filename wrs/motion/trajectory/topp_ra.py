@@ -17,7 +17,7 @@ def split_path_1d(path_1d):
             else:
                 print(i)
                 i = j + 1
-        elif rm.np.sign(distances[i]) != rm.np.sign(distances[i + 1]) and rm.np.abs(distances[i + 1]) > 1e-12:
+        elif rm.np.sign(distances[i]) != rm.cnp.sign(distances[i + 1]) and rm.np.abs(distances[i + 1]) > 1e-12:
             zero_crossings.append(i + 2)
     if len(zero_crossings) == 0:
         return [path_1d]
@@ -122,7 +122,7 @@ if __name__ == '__main__':
     ax2.plot(interp_time, interp_confs1, '-o')
     ax3.plot(interp_time, interp_spds, '-o')
     ax4.plot(interp_time, interp_accs, '-o')
-    plt.show()
+    plt.savefig(fname="test.jpg")
     base.run()
 
     interplated_planner = mip.InterplatedMotion(robot)

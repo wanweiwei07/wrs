@@ -1,6 +1,7 @@
 from panda3d.core import PerspectiveLens, OrthographicLens, AmbientLight, PointLight, Vec4, Vec3, Point3, \
     WindowProperties, Filename, NodePath, Shader
 from direct.showbase.ShowBase import ShowBase
+from direct.gui.OnscreenText import OnscreenText
 import wrs.visualization.panda.inputmanager as im
 import wrs.visualization.panda.filter as flt
 import os
@@ -282,6 +283,9 @@ class World(ShowBase, object):
         # for geom_dict in mj_model.body_geom_dict.values():
         #     for geom in geom_dict.values():
         #         geom.detach()
+
+    def show_text(self, text, pos=(0, 0), scale=0.05, color=(0, 0, 0, 1)):
+        return OnscreenText(text=text, pos=(pos[0], pos[1]), scale=scale, fg=color)
 
     def attach_external_update_obj(self, objinfo):
         """

@@ -42,7 +42,7 @@ class XArmLite6WG2(sari.SglArmRobotInterface):
         # ext and inner
         self.cc.enable_extcd_by_id_list(id_list=[ml0, ml1, ml2, ml3, ml4, ml5], type="from")
         self.cc.enable_innercd_by_id_list(id_list=[mlb, ml0, ml1, ml2, ml3], type="into")
-        self.cc.dynamic_ext_list = ee_cces[1:]
+        self.cc.dynamic_ext_list = ee_cces
 
     def fix_to(self, pos, rotmat):
         self._pos = pos
