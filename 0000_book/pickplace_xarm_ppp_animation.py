@@ -53,6 +53,7 @@ class Data(object):
 
 
 anime_data = Data(mot_data)
+print(mot_data.oiee_gl_pose_list)
 
 anime_data.mot_data.mesh_list[0].attach_to(base)
 anime_data.mot_data.mesh_list[-1].attach_to(base)

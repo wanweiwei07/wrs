@@ -93,8 +93,6 @@ class InterplatedMotion(object):
                                              goal_tcp_rotmat,
                                              granularity=granularity)
         jv_list = []
-        ev_list = []
-        mesh_list = []
         seed_jnt_values = None
         for i, pose in enumerate(pose_list):
             pos, rotmat = pose
@@ -123,12 +121,9 @@ class InterplatedMotion(object):
                     print("Intermediated pose collided in gen_linear_motion!")
                     return None
             jv_list.append(jnt_values)
-            ev_list.append(self.robot.get_ee_values())
-            if getattr(base, "toggle_mesh", True):
-                mesh_list.append(self.robot.gen_meshmodel())
             seed_jnt_values = jnt_values
         mot_data = motd.MotionData(robot=self.robot)
-        mot_data.extend(jv_list=jv_list, ev_list=ev_list, mesh_list=mesh_list)
+        mot_data.extend(jv_list=jv_list)
         return mot_data
 
     @keep_states_decorator
@@ -145,8 +140,6 @@ class InterplatedMotion(object):
         clipped_interplation = np.clip(interpolated_jnt_values, self.robot.jnt_ranges[:, 0],
                                        self.robot.jnt_ranges[:, 1])
         jv_list = []
-        ev_list = []
-        mesh_list = []
         for jnt_values in clipped_interplation:
             self.robot.goto_given_conf(jnt_values=jnt_values, ee_values=ee_values)
             result, contacts = self.robot.is_collided(obstacle_list=obstacle_list, toggle_contacts=True)
@@ -154,11 +147,8 @@ class InterplatedMotion(object):
                 print("Intermediated conf collided in gen_interpolated_motion!")
                 return None
             jv_list.append(jnt_values)
-            ev_list.append(self.robot.get_ee_values())
-            if getattr(base, "toggle_mesh", True):
-                mesh_list.append(self.robot.gen_meshmodel())
         mot_data = motd.MotionData(robot=self.robot)
-        mot_data.extend(jv_list=jv_list, ev_list=ev_list, mesh_list=mesh_list)
+        mot_data.extend(jv_list=jv_list)
         return mot_data
 
     def gen_rel_linear_motion(self,
@@ -262,12 +252,11 @@ class InterplatedMotion(object):
                                              goal_rotmat=goal_tcp_rotmat,
                                              granularity=granularity)
         jv_list = []
-        ev_list = []
-        mesh_list = []
         seed_jnt_values = goal_jnt_values
         for pos, rotmat in pose_list:
             jnt_values = self.robot.ik(pos, rotmat, seed_jnt_values=seed_jnt_values)
-            if jnt_values is None or np.max(np.abs(jnt_values - seed_jnt_values)) > np.radians(45): # ensure linearality
+            if jnt_values is None or np.max(np.abs(jnt_values - seed_jnt_values)) > np.radians(
+                    45):  # ensure linearality
                 print("Gen_rel_linear_motion: IK not solvable...")
                 if toggle_dbg:
                     self.robot.gen_stickmodel().attach_to(base)
@@ -295,12 +284,9 @@ class InterplatedMotion(object):
                     print("Intermediated pose collided in gen_linear_motion!")
                     return None
             jv_list.append(jnt_values)
-            ev_list.append(self.robot.get_ee_values())
-            if getattr(base, "toggle_mesh", True):
-                mesh_list.append(self.robot.gen_meshmodel())
             seed_jnt_values = jnt_values
         mot_data = motd.MotionData(robot=self.robot)
-        mot_data.extend(jv_list=jv_list, ev_list=ev_list, mesh_list=mesh_list)
+        mot_data.extend(jv_list=jv_list)
         return mot_data
 
     @keep_states_decorator
@@ -351,11 +337,9 @@ class InterplatedMotion(object):
                     return None
             jv_list.append(jnt_values)
             ev_list.append(self.robot.get_ee_values())
-            if getattr(base, "toggle_mesh", True):
-                mesh_list.append(self.robot.gen_meshmodel())
             seed_jnt_values = jnt_values
         mot_data = motd.MotionData(robot=self.robot)
-        mot_data.extend(jv_list=jv_list, ev_list=ee_values, mesh_list=mesh_list)
+        mot_data.extend(jv_list=jv_list)
         return mot_data
 
 

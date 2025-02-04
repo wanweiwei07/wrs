@@ -1,6 +1,7 @@
 import wrs.basis.robot_math as rm
 import wrs.motion.primitives.approach_depart_planner as adp
 import wrs.robot_sim.robots.yumi.yumi as ym
+import wrs.motion.motion_data as motd
 
 
 class PickPlacePlanner(adp.ADPlanner):
@@ -126,38 +127,38 @@ class PickPlacePlanner(adp.ADPlanner):
         pick_tcp_rotmat = obj_cmodel.rotmat.dot(grasp.ac_rotmat)
         if pick_approach_jaw_width is None:
             pick_approach_jaw_width = self.robot.end_effector.jaw_range[1]
-        pick_motion = self.gen_approach(goal_tcp_pos=pick_tcp_pos,
-                                        goal_tcp_rotmat=pick_tcp_rotmat,
-                                        start_jnt_values=start_jnt_values,
-                                        linear_direction=pick_approach_direction,
-                                        linear_distance=pick_approach_distance,
-                                        ee_values=pick_approach_jaw_width,
-                                        linear_granularity=linear_granularity,
-                                        obstacle_list=obstacle_list,
-                                        object_list=[obj_cmodel],
-                                        use_rrt=use_rrt,
-                                        toggle_dbg=toggle_dbg)
-        if pick_motion is None:
+        pick = self.gen_approach(goal_tcp_pos=pick_tcp_pos,
+                                     goal_tcp_rotmat=pick_tcp_rotmat,
+                                     start_jnt_values=start_jnt_values,
+                                     linear_direction=pick_approach_direction,
+                                     linear_distance=pick_approach_distance,
+                                     ee_values=pick_approach_jaw_width,
+                                     linear_granularity=linear_granularity,
+                                     obstacle_list=obstacle_list,
+                                     object_list=[obj_cmodel],
+                                     use_rrt=use_rrt,
+                                     toggle_dbg=toggle_dbg)
+        if pick is None:
             print("PPPlanner: Error encountered when generating pick approach motion!")
             return None
         obj_cmodel_copy = obj_cmodel.copy()
-        for robot_mesh in pick_motion.mesh_list:
+        for robot_mesh in pick.mesh_list:
             obj_cmodel_copy.attach_to(robot_mesh)
-        self.robot.goto_given_conf(pick_motion.jv_list[-1])
+        self.robot.goto_given_conf(pick.jv_list[-1])
         self.robot.hold(obj_cmodel=obj_cmodel_copy, jaw_width=grasp.ee_values)
-        pick_motion.extend([pick_motion.jv_list[-1]], [grasp.ee_values], [self.robot.gen_meshmodel()])
-        pick_depart = self.gen_linear_depart_from_given_conf(start_jnt_values=pick_motion.jv_list[-1],
-                                                             direction=pick_depart_direction,
-                                                             distance=pick_depart_distance,
-                                                             ee_values=None,
-                                                             granularity=linear_granularity,
-                                                             obstacle_list=obstacle_list,
-                                                             toggle_dbg=toggle_dbg)
+        pick.extend(jv_list=[pick.jv_list[-1]])
+        pick_depart = self.gen_linear_depart_from_given_conf(start_jnt_values=pick.jv_list[-1],
+                                                                 direction=pick_depart_direction,
+                                                                 distance=pick_depart_distance,
+                                                                 ee_values=None,
+                                                                 granularity=linear_granularity,
+                                                                 obstacle_list=obstacle_list,
+                                                                 toggle_dbg=toggle_dbg)
         if pick_depart is None:
             print("PPPlanner: Error encountered when generating pick depart motion!")
             return None
         else:
-            moveto_motion = adp.mpi.motd.MotionData(robot=self.robot)
+            moveto = adp.mpi.motd.MotionData(robot=self.robot)
             # move to goals
             moveto_start_jnt_values = pick_depart.jv_list[-1]
             for i, goal_pose in enumerate(moveto_pose_list):
@@ -180,9 +181,11 @@ class PickPlacePlanner(adp.ADPlanner):
                     print(f"Error encountered when generating motion to the {i}th goal!")
                     return None
                 else:
-                    moveto_motion += moveto_ap
-                    moveto_start_jnt_values = moveto_motion.jv_list[-1]
-            return pick_motion + pick_depart + moveto_motion
+                    moveto_ap.obj_cmodel = obj_cmodel.copy()
+                    moveto_ap.obj_pose_list = [obj_cmodel.pose] * len(moveto_ap.jv_list)
+                    moveto += moveto_ap
+                    moveto_start_jnt_values = moveto.jv_list[-1]
+            return pick + pick_depart + moveto
 
     @adp.mpi.InterplatedMotion.keep_states_decorator
     def gen_pick_and_place(self,
@@ -260,46 +263,47 @@ class PickPlacePlanner(adp.ADPlanner):
             return None
         for gid in common_gid_list:
             obj_cmodel_copy = obj_cmodel.copy()
-            pm_mot = self.gen_pick_and_moveto(obj_cmodel=obj_cmodel_copy,
-                                              grasp=grasp_collection[gid],
-                                              moveto_pose_list=goal_pose_list,
-                                              moveto_approach_direction_list=place_approach_direction_list,
-                                              moveto_approach_distance_list=place_approach_distance_list,
-                                              moveto_depart_direction_list=place_depart_direction_list,
-                                              moveto_depart_distance_list=place_depart_distance_list[:-1] + [0],
-                                              start_jnt_values=start_jnt_values,
-                                              pick_approach_jaw_width=pick_approach_jaw_width,
-                                              pick_approach_direction=pick_approach_direction,
-                                              pick_approach_distance=pick_approach_distance,
-                                              pick_depart_direction=pick_depart_direction,
-                                              pick_depart_distance=pick_depart_distance,
-                                              linear_granularity=linear_granularity,
-                                              obstacle_list=obstacle_list,
-                                              use_rrt=use_rrt,
-                                              toggle_dbg=toggle_dbg)
-            if pm_mot is None:
+            pick_and_moveto = self.gen_pick_and_moveto(obj_cmodel=obj_cmodel_copy,
+                                                       grasp=grasp_collection[gid],
+                                                       moveto_pose_list=goal_pose_list,
+                                                       moveto_approach_direction_list=place_approach_direction_list,
+                                                       moveto_approach_distance_list=place_approach_distance_list,
+                                                       moveto_depart_direction_list=place_depart_direction_list,
+                                                       moveto_depart_distance_list=place_depart_distance_list[:-1] + [
+                                                           0],
+                                                       start_jnt_values=start_jnt_values,
+                                                       pick_approach_jaw_width=pick_approach_jaw_width,
+                                                       pick_approach_direction=pick_approach_direction,
+                                                       pick_approach_distance=pick_approach_distance,
+                                                       pick_depart_direction=pick_depart_direction,
+                                                       pick_depart_distance=pick_depart_distance,
+                                                       linear_granularity=linear_granularity,
+                                                       obstacle_list=obstacle_list,
+                                                       use_rrt=use_rrt,
+                                                       toggle_dbg=toggle_dbg)
+            if pick_and_moveto is None:
                 print("Cannot generate the pick and moveto motion!")
                 continue
             # place
             last_goal_pos = goal_pose_list[-1][0]
             last_goal_rotmat = goal_pose_list[-1][1]
             obj_cmodel_copy.pose = (last_goal_pos, last_goal_rotmat)
-            dep_mot = self.gen_depart_from_given_conf(start_jnt_values=pm_mot.jv_list[-1],
-                                                      end_jnt_values=end_jnt_values,
-                                                      linear_direction=place_depart_direction_list[-1],
-                                                      linear_distance=place_depart_distance_list[-1],
-                                                      ee_values=place_depart_jaw_width,
-                                                      linear_granularity=linear_granularity,
-                                                      obstacle_list=obstacle_list,
-                                                      object_list=[obj_cmodel_copy],
-                                                      use_rrt=use_rrt,
-                                                      toggle_dbg=toggle_dbg)
-            if dep_mot is None:
+            depart = self.gen_depart_from_given_conf(start_jnt_values=pick_and_moveto.jv_list[-1],
+                                                     end_jnt_values=end_jnt_values,
+                                                     linear_direction=place_depart_direction_list[-1],
+                                                     linear_distance=place_depart_distance_list[-1],
+                                                     ee_values=place_depart_jaw_width,
+                                                     linear_granularity=linear_granularity,
+                                                     obstacle_list=obstacle_list,
+                                                     object_list=[obj_cmodel_copy],
+                                                     use_rrt=use_rrt,
+                                                     toggle_dbg=toggle_dbg)
+            if depart is None:
                 print("Cannot generate the release motion!")
                 continue
-            for robot_mesh in dep_mot.mesh_list:
+            for robot_mesh in depart.mesh_list:
                 obj_cmodel_copy.attach_to(robot_mesh)
-            return pm_mot + dep_mot
+            return pick_and_moveto + depart
         print("None of the reasoned common grasps are valid.")
         return None
 
@@ -339,7 +343,7 @@ class PickPlacePlanner(adp.ADPlanner):
         :return:
         """
         # pick up object
-        pick_motion = self.gen_approach_to_given_conf(goal_jnt_values=pick_jnt_values,
+        pick = self.gen_approach_to_given_conf(goal_jnt_values=pick_jnt_values,
                                                       start_jnt_values=start_jnt_values,
                                                       linear_direction=pick_approach_direction,
                                                       linear_distance=pick_approach_distance,
@@ -349,16 +353,16 @@ class PickPlacePlanner(adp.ADPlanner):
                                                       object_list=[obj_cmodel],
                                                       use_rrt=use_rrt,
                                                       toggle_dbg=toggle_dbg)
-        if pick_motion is None:
+        if pick is None:
             print("PPPlanner: Error encountered when generating pick approach motion!")
             return None
         obj_cmodel_copy = obj_cmodel.copy()
-        for robot_mesh in pick_motion.mesh_list:
+        for robot_mesh in pick.mesh_list:
             obj_cmodel_copy.attach_to(robot_mesh)
-        self.robot.goto_given_conf(pick_motion.jv_list[-1])
+        self.robot.goto_given_conf(pick.jv_list[-1])
         self.robot.hold(obj_cmodel=obj_cmodel_copy, jaw_width=grasp_jaw_width)
-        pick_motion.extend([pick_motion.jv_list[-1]], [grasp_jaw_width], [self.robot.gen_meshmodel()])
-        moveto = self.gen_depart_approach_with_given_conf(start_jnt_values=pick_motion.jv_list[-1],
+        pick.extend(jv_list = [pick.jv_list[-1]], ev_list = [grasp_jaw_width])
+        moveto = self.gen_depart_approach_with_given_conf(start_jnt_values=pick.jv_list[-1],
                                                           end_jnt_values=moveto_jnt_values,
                                                           depart_direction=pick_depart_direction,
                                                           depart_distance=pick_depart_distance,
@@ -374,7 +378,7 @@ class PickPlacePlanner(adp.ADPlanner):
             print("PPPlanner: Error encountered when generating depart approach motion with given conf!")
             return None
         else:
-            return pick_motion + moveto
+            return pick + moveto
 
 
 if __name__ == '__main__':
