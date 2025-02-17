@@ -194,11 +194,20 @@ class UR3Dual(dari.DualArmRobotInterface):
 
 
 if __name__ == '__main__':
-    import wrs.visualization.panda.world as wd
+    from wrs import wd, mgm
 
     base = wd.World(cam_pos=[3, 1, 3], lookat_pos=[0, 0, 1])
     mcm.mgm.gen_frame().attach_to(base)
     u3d = UR3Dual()
-    u3d_meshmodel = u3d.gen_meshmodel(toggle_tcp_frame=True, toggle_cdprim=True)
-    u3d_meshmodel.attach_to(base)
+    # u3d.gen_meshmodel().attach_to(base)
+    u3d.use_rgt()
+    u3d.change_ee_values(ee_values=u3d.end_effector.jaw_range[1])
+    tgt_pos = rm.vec(.4, -.3, 1.15)
+    tgt_rotmat =rm.rotmat_from_euler(rm.pi,0,0)
+    # mgm.gen_frame(pos=tgt_pos, rotmat=tgt_rotmat).attach_to(base)
+    jnt_values = u3d.ik(tgt_pos=tgt_pos, tgt_rotmat=tgt_rotmat)
+    if jnt_values is not None:
+        u3d.goto_given_conf(jnt_values=jnt_values)
+        u3d_meshmodel = u3d.gen_meshmodel()
+        u3d_meshmodel.attach_to(base)
     base.run()

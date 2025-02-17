@@ -1,4 +1,5 @@
-import numpy as np
+import os
+import wrs.basis.robot_math as rm
 import wrs.robot_sim.end_effectors.ee_interface as ei
 import wrs.modeling.constant as mc
 import wrs.grasping.grasp as gg
@@ -6,13 +7,14 @@ import wrs.grasping.grasp as gg
 
 class GripperInterface(ei.EEInterface):
 
-    def __init__(self, pos=np.zeros(3), rotmat=np.eye(3), cdmesh_type=mc.CDMeshType.AABB, name='grippers'):
+    def __init__(self, pos=rm.zeros(3), rotmat=rm.eye(3), cdmesh_type=mc.CDMeshType.AABB, name='grippers'):
         super().__init__(pos=pos, rotmat=rotmat, cdmesh_type=cdmesh_type, name=name)
+        current_file_dir = os.path.dirname(__file__)
         # jaw width
-        self.jaw_range = np.array([0.0, 0.05])  # 0~0.05m by default
+        self.jaw_range = rm.vec(0.0, 0.05)  # 0~0.05m by default
         self.jaw_width = self.jaw_range[0]
         # fgr0 opening vec
-        self.loc_fgr0_opening_vec = np.array([0, 1, 0])  # y as opening vec by default
+        self.loc_fgr0_opening_vec = rm.const.y_ax  # y as opening vec by default
         # backup
         self.jaw_width_bk = []
 

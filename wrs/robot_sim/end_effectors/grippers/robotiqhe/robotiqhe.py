@@ -150,7 +150,7 @@ if __name__ == '__main__':
     # grippers = RobotiqHE(coupling_offset_pos=np.array([0, 0, 0.0331]),
     #                  coupling_offset_rotmat=rm.rotmat_from_axangle([1, 0, 0], math.pi / 6))
     gripper.change_jaw_width(.05)
-    gripper.gen_meshmodel().attach_to(base)
+    gripper.gen_meshmodel(toggle_tcp_frame=True).attach_to(base)
     gripper.gen_stickmodel(toggle_jnt_frames=True).attach_to(base)
     gripper.fix_to(pos=np.array([0, .3, .2]), rotmat=rm.rotmat_from_axangle([1, 0, 0], .05))
     gripper.change_jaw_width(.0)
