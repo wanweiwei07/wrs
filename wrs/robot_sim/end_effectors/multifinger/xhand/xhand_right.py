@@ -185,6 +185,26 @@ class XHandRight(ei.EEInterface):
         jlc.set_flange(loc_flange_pos=rm.vec(0, 0, 0.0425))
         return jlc
 
+    @property
+    def thumb(self):
+        return self.thumb_jlc
+
+    @property
+    def index(self):
+        return self.index_jlc
+
+    @property
+    def middle(self):
+        return self.middle_jlc
+
+    @property
+    def ring(self):
+        return self.ring_jlc
+
+    @property
+    def pinky(self):
+        return self.pinky_jlc
+
     def rand_conf(self):
         thumb_conf = self.thumb_jlc.rand_conf()
         index_conf = self.index_jlc.rand_conf()

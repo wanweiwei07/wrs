@@ -35,6 +35,16 @@ def compute_angle(v1, v2):
     cos_theta = np.clip(dot_product / (norm_v1 * norm_v2), -1.0, 1.0)
     return np.arccos(cos_theta)
 
+def map_angle(x, src_min, src_max, dst_min, dst_max, reverse=True):
+    if x > src_max:
+        x = src_max
+    if x < src_min:
+        x = src_min
+    if reverse:
+        return (x - src_min) / (src_max - src_min) * (dst_min - dst_max) + dst_max
+    else:
+        return (x - src_min) / (src_max - src_min) * (dst_max - dst_min) + dst_min
+
 def compute_selected_angles(keypoints):
     """
     Compute angles for selected joints in the hand skeleton.
@@ -60,15 +70,35 @@ def compute_selected_angles(keypoints):
         v1 = np.array(keypoints[p1]) - np.array(keypoints[p2])  # Vector 1
         v2 = np.array(keypoints[p3]) - np.array(keypoints[p2])  # Vector 2
         angles[joint_name] = compute_angle(v1, v2)
+        if joint_name=="thumb0":
+            angles[joint_name] = map_angle(angles[joint_name], 2.4, 2.9, 0, 1.57)
+        if joint_name=="thumb1":
+            angles[joint_name] = map_angle(angles[joint_name], 2.5, 3.0, 0, 1.0)
+        if joint_name=="thumb2":
+            angles[joint_name] = map_angle(angles[joint_name], 2.3, 2.9, 0, 1.57)
         if joint_name=="index0":
-            angles[joint_name] = np.pi/6-angles[joint_name]
-        else:
-            angles[joint_name] = np.pi-angles[joint_name]
+            angles[joint_name] = map_angle(angles[joint_name], 0.5, 1.0,  -0.087, 0.297, reverse = False)
+        if joint_name=="index1":
+            angles[joint_name] = map_angle(angles[joint_name], 2.0, 2.9, 0, 1.5)
+        if joint_name=="index2":
+            angles[joint_name] = map_angle(angles[joint_name], 1.6, 3, 0, 1.92)
+        if joint_name=="middle0":
+            angles[joint_name] = map_angle(angles[joint_name], 2.0, 2.9, 0, 1.5)
+        if joint_name=="middle1":
+            angles[joint_name] = map_angle(angles[joint_name], 1.6, 2.9, 0, 1.92)
+        if joint_name=="ring0":
+            angles[joint_name] = map_angle(angles[joint_name], 2.0, 2.9, 0, 1.5)
+        if joint_name=="ring1":
+            angles[joint_name] = map_angle(angles[joint_name], 1.6, 2.8, 0, 1.92)
+        if joint_name=="pinky0":
+            angles[joint_name] = map_angle(angles[joint_name], 2.0, 2.9, 0, 1.5)
+        if joint_name=="pinky1":
+            angles[joint_name] = map_angle(angles[joint_name], 1.6, 2.9, 0, 1.92)
     return angles
 
-base = wd.World(cam_pos=rm.vec(1, 1, 1), lookat_pos=rm.vec(0, 0, .3))
+base = wd.World(cam_pos=rm.vec(0.5, 0.5, 0.7), lookat_pos=rm.vec(0, 0, .0))
 xhand = xhr.XHandRight(pos=rm.vec(0, 0, 0), rotmat=rm.rotmat_from_euler(0, 0, 0))
-xhexe = xhx.XHandX("COM5")
+xhexe = xhx.XHandX("COM3")
 
 # **Capture Video from Webcam**
 cap = cv2.VideoCapture(0)
