@@ -179,7 +179,6 @@ class DDIKSolver(object):
             adjust_array = np.einsum('ijk,ik->ij', seed_jinv_array, seed_posrot_diff_array)
             square_sums = np.sum((adjust_array) ** 2, axis=1)
             sorted_indices = np.argsort(square_sums)
-            # sorted_indices = range(self._k_max)
             for id, nn_indx in enumerate(sorted_indices[:1]):
                 seed_jnt_values = seed_jnt_array[nn_indx]
                 if toggle_dbg:
