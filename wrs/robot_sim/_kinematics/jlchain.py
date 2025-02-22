@@ -3,10 +3,12 @@ import wrs.basis.robot_math as rm
 import wrs.modeling.geometric_model as mgm
 import wrs.robot_sim._kinematics.jl as rkjl
 import wrs.robot_sim._kinematics.model_generator as rkmg
-import wrs.robot_sim._kinematics.ik_dd_new as ikdd
+import wrs.robot_sim._kinematics.ik_dd as ikdd
+import wrs.robot_sim._kinematics.ik_dd_new as ikddr
 import wrs.robot_sim._kinematics.ik_num as ikn
 import wrs.robot_sim._kinematics.ik_opt as iko
 import wrs.robot_sim._kinematics.constant as const
+from tqdm import tqdm
 
 
 # TODO delay finalize
@@ -260,6 +262,8 @@ class JLChain(object):
         self._is_finalized = True
         if ik_solver == 'd':
             self._ik_solver = ikdd.DDIKSolver(self, identifier_str=identifier_str)
+        if ik_solver == 'dr':
+            self._ik_solver = ikddr.DDIKSolver(self, identifier_str=identifier_str)
         elif ik_solver == 'n':
             self._ik_solver = ikn.NumIKSolver(self)
         elif ik_solver == 'o':
@@ -454,7 +458,9 @@ class JLChain(object):
                                  toggle_cdmesh=toggle_cdmesh,
                                  name=name)
 
-    def test_ik_success_rate(self, n_times=100):
+    def test_ik_success_rate(self, n_times=1000):
+        import time
+        from matplotlib import pyplot as plt
         success = 0
         time_list = []
         tgt_list = []
@@ -478,6 +484,8 @@ class JLChain(object):
         print('max', np.max(time_list))
         print('min', np.min(time_list))
         print('std', np.std(time_list))
+        plt.plot(range(n_times), time_list)
+        plt.show()
         return success / n_times
 
 

@@ -58,7 +58,8 @@ class CVR038(mi.ManipulatorInterface):
         self.jlc.jnts[5].lnk.cmodel = mcm.CollisionModel(
             initor=os.path.join(current_file_dir, "meshes", "cvr038_j6.dae"), name=self.name + "_link6")
         self.jlc.jnts[5].lnk.cmodel.rgba = np.array([.7, .7, .7, 1.0])
-        self.jlc.finalize(ik_solver='d', identifier_str=name)
+        self.jlc.finalize(ik_solver='dr', identifier_str=name+"_r")
+        # self.jlc.finalize(ik_solver='d', identifier_str=name)
         # tcp
         self.loc_tcp_pos = np.array([0, 0, 0])
         self.loc_tcp_rotmat = np.eye(3)
@@ -130,6 +131,8 @@ if __name__ == '__main__':
     base = wd.World(cam_pos=[2, 0, 1], lookat_pos=[0, 0, .3])
     mcm.mgm.gen_frame().attach_to(base)
     arm = CVR038(pos =rm.vec(0.168, .3, 0), rotmat = rm.rotmat_from_euler(0, 0, rm.pi / 2), enable_cc=True)
+    arm.jlc.test_ik_success_rate()
+    base.run()
 
     # arm.jlc._ik_solver.test_success_rate()
     arm_mesh = arm.gen_meshmodel(alpha=.3)
