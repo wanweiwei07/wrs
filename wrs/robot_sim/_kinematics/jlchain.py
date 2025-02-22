@@ -3,7 +3,7 @@ import wrs.basis.robot_math as rm
 import wrs.modeling.geometric_model as mgm
 import wrs.robot_sim._kinematics.jl as rkjl
 import wrs.robot_sim._kinematics.model_generator as rkmg
-import wrs.robot_sim._kinematics.ik_dd as ikdd
+import wrs.robot_sim._kinematics.ik_dd_new as ikdd
 import wrs.robot_sim._kinematics.ik_num as ikn
 import wrs.robot_sim._kinematics.ik_opt as iko
 import wrs.robot_sim._kinematics.constant as const
