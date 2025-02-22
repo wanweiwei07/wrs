@@ -330,7 +330,7 @@ class JLChain(object):
         tmp_loc_rotmat = self._loc_flange_rotmat @ rotmat_in_flange
         return (tmp_loc_pos, tmp_loc_rotmat)
 
-    def are_jnts_in_ranges(self, jnt_values):
+    def are_jnts_in_ranges(self, jnt_values, toggle_info=False):
         """
         check if the given jnt_values are in range
         :param jnt_values:
@@ -342,7 +342,8 @@ class JLChain(object):
             raise ValueError(f"The given joint values do not match n_dof: {len(jnt_values)} vs. {self.n_dof}")
         jnt_values = np.asarray(jnt_values)
         if np.any(jnt_values < self.jnt_ranges[:, 0]) or np.any(jnt_values > self.jnt_ranges[:, 1]):
-            print("Joints are out of ranges!")
+            if toggle_info:
+                print("Joints are out of ranges!")
             return False
         else:
             return True

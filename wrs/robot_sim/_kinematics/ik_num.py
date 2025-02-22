@@ -39,7 +39,7 @@ class NumIKSolver(object):
                  seed_jnt_values=None,
                  max_n_iter=100,
                  toggle_dbg=False):
-        return self.cwln(tgt_pos=tgt_pos,
+        return self.pinv(tgt_pos=tgt_pos,
                          tgt_rotmat=tgt_rotmat,
                          seed_jnt_values=seed_jnt_values,
                          max_n_iter=max_n_iter,
@@ -105,6 +105,8 @@ class NumIKSolver(object):
         if seed_jnt_values is None:
             iter_jnt_values = self.jlc.get_jnt_values()
         counter = 0
+        last_pos_err = 1e6
+        last_rot_err = 1e6
         while True:
             flange_pos, flange_rotmat, j_mat = self.jlc.fk(jnt_values=iter_jnt_values,
                                                            toggle_jacobian=True,
@@ -113,7 +115,11 @@ class NumIKSolver(object):
                                                                           src_rotmat=flange_rotmat,
                                                                           tgt_pos=tgt_pos,
                                                                           tgt_rotmat=tgt_rotmat)
-            if f2t_pos_err < 1e-4 and f2t_rot_err < 1e-3:
+            if f2t_pos_err > last_pos_err and f2t_rot_err > last_rot_err:
+                return None
+            last_pos_err = f2t_pos_err
+            last_rot_err = f2t_rot_err
+            if f2t_pos_err < 1e-4 and f2t_rot_err < 1e-3 and self.jlc.are_jnts_in_ranges(iter_jnt_values):
                 return np.asarray(iter_jnt_values)
             clamped_err_vec = self._clamp_tgt_err(f2t_pos_err, f2t_rot_err, f2t_err_vec)
             delta_jnt_values = np.linalg.pinv(j_mat, rcond=1e-4) @ clamped_err_vec
@@ -121,10 +127,10 @@ class NumIKSolver(object):
                 print("f2t_pos_err ", f2t_pos_err, " f2t_rot_err ", f2t_rot_err)
                 print("clamped_tgt_err ", clamped_err_vec)
                 print("coutner/max_n_iter ", counter, max_n_iter)
-            if abs(np.sum(delta_jnt_values)) < 1e-6:
+            if abs(np.sum(delta_jnt_values)) < 1e-6: # local minima
                 return None
             iter_jnt_values = iter_jnt_values + delta_jnt_values
-            if not self.are_jnts_in_range(iter_jnt_values) or counter > max_n_iter:
+            if counter > max_n_iter:
                 return None
             counter += 1
 

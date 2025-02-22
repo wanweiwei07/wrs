@@ -40,7 +40,7 @@ class DDIKSolver(object):
             path = os.path.join(os.path.dirname(current_file_dir), "_data_files")
         self._fname_tree = os.path.join(path, f"{identifier_str}_ikdd_tree.pkl")
         self._fname_jnt = os.path.join(path, f"{identifier_str}_jnt_data.pkl")
-        self._k_max = 100  # maximum nearest neighbours examined by the backbone solver
+        self._k_max = 1000  # maximum nearest neighbours examined by the backbone solver
         self._max_n_iter = 7  # max_n_iter of the backbone solver
         if backbone_solver == 'n':
             self._backbone_solver = ikn.NumIKSolver(self.jlc)
@@ -179,7 +179,7 @@ class DDIKSolver(object):
             adjust_array = np.einsum('ijk,ik->ij', seed_jinv_array, seed_posrot_diff_array)
             square_sums = np.sum((adjust_array) ** 2, axis=1)
             sorted_indices = np.argsort(square_sums)
-            for id, nn_indx in enumerate(sorted_indices[:1]):
+            for id, nn_indx in enumerate(sorted_indices[:20]):
                 seed_jnt_values = seed_jnt_array[nn_indx]
                 if toggle_dbg:
                     rkmg.gen_jlc_stick_by_jnt_values(self.jlc,
