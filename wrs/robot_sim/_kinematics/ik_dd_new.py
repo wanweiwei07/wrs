@@ -179,12 +179,13 @@ class DDIKSolver(object):
             adjust_array = np.einsum('ijk,ik->ij', seed_jinv_array, seed_posrot_diff_array)
             square_sums = np.sum((adjust_array) ** 2, axis=1)
             sorted_indices = np.argsort(square_sums)
-            for id, nn_indx in enumerate(sorted_indices[:20]):
+            # sorted_indices = range(self._k_max)
+            for id, nn_indx in enumerate(sorted_indices[:1]):
                 seed_jnt_values = seed_jnt_array[nn_indx]
                 if toggle_dbg:
                     rkmg.gen_jlc_stick_by_jnt_values(self.jlc,
                                                      jnt_values=seed_jnt_values,
-                                                     stick_rgba=rm.bc.red).attach_to(base)
+                                                     stick_rgba=rm.const.red).attach_to(base)
                 result = self._backbone_solver(tgt_pos=tgt_pos,
                                                tgt_rotmat=tgt_rotmat,
                                                seed_jnt_values=seed_jnt_values,
