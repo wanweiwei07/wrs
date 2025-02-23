@@ -179,8 +179,14 @@ class DDIKSolver(object):
             adjust_array = np.einsum('ijk,ik->ij', seed_jinv_array, seed_posrot_diff_array)
             square_sums = np.sum((adjust_array) ** 2, axis=1)
             sorted_indices = np.argsort(square_sums)
-            for id, nn_indx in enumerate(sorted_indices[:1]):
-                seed_jnt_values = seed_jnt_array[nn_indx]
+            # sorted_indices = range(self._k_max)
+            seed_jnt_array_cad = seed_jnt_array[sorted_indices[:20]]
+            # distances = np.linalg.norm(seed_jnt_array_cad[1:] - seed_jnt_array_cad[0], axis=1)
+            # sorted_cad_indices = np.argsort(-distances)
+            # seed_jnt_array_cad[1:] = seed_jnt_array_cad[1:][sorted_cad_indices]
+            for id, seed_jnt_values in enumerate(seed_jnt_array_cad):
+                if id > 3:
+                    return None
                 if toggle_dbg:
                     rkmg.gen_jlc_stick_by_jnt_values(self.jlc,
                                                      jnt_values=seed_jnt_values,
@@ -191,6 +197,10 @@ class DDIKSolver(object):
                                                max_n_iter=max_n_iter,
                                                toggle_dbg=toggle_dbg)
                 if result is None:
+                    nid = id+1
+                    distances = np.linalg.norm(nid*seed_jnt_array_cad[nid:] - np.sum(seed_jnt_array_cad[:nid], axis=0), axis=1)
+                    sorted_cad_indices = np.argsort(-distances)
+                    seed_jnt_array_cad[id+1:] = seed_jnt_array_cad[id+1:][sorted_cad_indices]
                     continue
                 else:
                     return result
