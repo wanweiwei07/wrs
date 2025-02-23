@@ -197,7 +197,7 @@ class DDIKSolver(object):
                     nid = id+1
                     distances = np.linalg.norm(nid*seed_jnt_array_cad[nid:] - np.sum(seed_jnt_array_cad[:nid], axis=0), axis=1)
                     sorted_cad_indices = np.argsort(-distances)
-                    seed_jnt_array_cad[id+1:] = seed_jnt_array_cad[id+1:][sorted_cad_indices]
+                    seed_jnt_array_cad[nid:] = seed_jnt_array_cad[nid:][sorted_cad_indices]
                     continue
                 else:
                     return result
