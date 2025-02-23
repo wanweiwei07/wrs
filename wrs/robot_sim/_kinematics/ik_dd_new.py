@@ -181,9 +181,6 @@ class DDIKSolver(object):
             sorted_indices = np.argsort(square_sums)
             # sorted_indices = range(self._k_max)
             seed_jnt_array_cad = seed_jnt_array[sorted_indices[:20]]
-            # distances = np.linalg.norm(seed_jnt_array_cad[1:] - seed_jnt_array_cad[0], axis=1)
-            # sorted_cad_indices = np.argsort(-distances)
-            # seed_jnt_array_cad[1:] = seed_jnt_array_cad[1:][sorted_cad_indices]
             for id, seed_jnt_values in enumerate(seed_jnt_array_cad):
                 if id > 3:
                     return None
