@@ -13,11 +13,14 @@ import wrs.grasping.reasoner as gr
 
 class FSReferencePoses(object):
 
-    def __init__(self, obj_cmodel=None, poses=None):
+    def __init__(self, obj_cmodel=None, poses=None, stability_threshhold=.1, boundary_radius=.0025,
+                 gravity_arrow_radius=.0025):
         self.obj_cmodel = obj_cmodel
         if obj_cmodel is not None and poses is None:
             self._poses, self._support_surfaces, self._stability_values = self.compute_reference_poses(
-                obj_cmodel, toggle_support_facets=True)
+                obj_cmodel, stability_threshhold=stability_threshhold, boundary_radius=boundary_radius,
+                gravity_arrow_radius=gravity_arrow_radius,
+                toggle_support_facets=True)
         else:
             self._poses = poses
             self._support_surfaces = None
@@ -34,7 +37,8 @@ class FSReferencePoses(object):
             pickle.dump(self._poses, file)
 
     @staticmethod
-    def compute_reference_poses(obj_cmodel, stability_threshhold=.1, toggle_support_facets=False):
+    def compute_reference_poses(obj_cmodel, stability_threshhold=.1, boundary_radius=.0025, gravity_arrow_radius=.0025,
+                                toggle_support_facets=False):
         """
         find all placements on a flat surface (z axis is the surface normal; no consideration on symmetry)
         the result is called a reference flat surface placement (reference fsp)
@@ -68,7 +72,7 @@ class FSReferencePoses(object):
                 toggle_twosided=True, rgb=rm.const.tab20_list[0], alpha=.5)
             # show edge
             for edge in seg_nested_edge_list[id]:
-                mgm.gen_stick(spos=edge[0], epos=edge[1], type="round").attach_to(facet)
+                mgm.gen_stick(spos=edge[0], epos=edge[1], type="round", radius=boundary_radius).attach_to(facet)
             com = obj_cmodel.trm_mesh.center_mass
             result = moh.rayhit_closet(spos=com, epos=com + seed_face_normal,
                                        target_cmodel=facet)
@@ -81,9 +85,10 @@ class FSReferencePoses(object):
                 if stability_value < stability_threshhold:
                     continue
                 # show contact point to edge projection
-                mgm.gen_stick(spos=contact_point, epos=min_edge_projection, type="round").attach_to(facet)
+                mgm.gen_stick(spos=contact_point, epos=min_edge_projection, radius=boundary_radius,
+                              type="round").attach_to(facet)
                 pose_list.append((placement_pos, placement_rotmat))
-                mgm.gen_arrow(spos=com, epos=contact_point).attach_to(facet)
+                mgm.gen_arrow(spos=com, epos=contact_point, stick_radius=gravity_arrow_radius).attach_to(facet)
                 support_facet_list.append(facet)
                 stability_value_list.append(stability_value)
         if toggle_support_facets:
@@ -198,11 +203,12 @@ class FSRegSpotCollection(object):
         for pose_id, pose in enumerate(self.fs_reference_poses):
             pos = pose[0] + spot_pos
             rotmat = rm.rotmat_from_euler(0, 0, spot_rotz) @ pose[1]
+            mgm.gen_frame(pos=pos, rotmat=rotmat).attach_to(base)
             feasible_gids, feasible_grasps, feasible_confs = self.grasp_reasoner.find_feasible_gids(
                 goal_pose=(pos, rotmat),
                 obstacle_list=obstacle_list,
                 consider_robot=consider_robot,
-                toggle_dbg=False)
+                toggle_dbg=True)
             if feasible_gids is not None:
                 fs_regspot.fspg_list.append(FSPG(fs_pose_id=pose_id,
                                                  obj_pose=(pos, rotmat),

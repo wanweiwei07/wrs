@@ -10,7 +10,9 @@ def plan_contact_pairs(obj_cmodel,
                        angle_between_contact_normals=math.radians(160),
                        max_samples=100,
                        min_dist_between_sampled_contact_points=.005,
-                       toggle_sampled_points=False):
+                       min_thickness=.002,
+                       toggle_sampled_points=False,
+                       toggle_debug=False):
     """
     find the contact pairs using rayshooting
     the finally returned number of contact pairs may be smaller than the given max_samples due to the min_dist constraint
@@ -23,6 +25,14 @@ def plan_contact_pairs(obj_cmodel,
     contact_points, contact_normals = obj_cmodel.sample_surface(n_samples=max_samples,
                                                                 radius=min_dist_between_sampled_contact_points / 2,
                                                                 toggle_option='normals')
+    if toggle_debug:
+        for i, cp in enumerate(contact_points):
+            mgm.gen_sphere(pos=cp, rgb=np.array([1, 0, 0]),
+                           radius=min_dist_between_sampled_contact_points / 5).attach_to(base)
+            mgm.gen_arrow(spos=cp, epos=cp + contact_normals[i] * .01,
+                          stick_radius=min_dist_between_sampled_contact_points / 7,
+                          rgb=np.array([1, 0, 0])).attach_to(base)
+        base.run()
     contact_pairs = []
     tree = cKDTree(contact_points)
     near_history = np.array([0] * len(contact_points), dtype=bool)
@@ -31,7 +41,7 @@ def plan_contact_pairs(obj_cmodel,
         if near_history[i]:  # if the point was previous near to some points, ignore
             continue
         contact_n0 = contact_normals[i]
-        result = obj_cmodel.ray_hit(contact_p0 - contact_n0 * .001, contact_p0 - contact_n0 * 100)
+        result = obj_cmodel.ray_hit(contact_p0 - contact_n0 * min_thickness, contact_p0 - contact_n0 * 100)
         if result is not None:
             hit_points, hit_normals = result
             for contact_p1, contact_n1 in zip(hit_points, hit_normals):
@@ -54,6 +64,7 @@ def plan_gripper_grasps(gripper,
                         max_samples=100,
                         min_dist_between_sampled_contact_points=.005,
                         contact_offset=.002,
+                        min_thickness=.0001,
                         toggle_dbg=False):
     """
     :param gripper:
@@ -63,22 +74,28 @@ def plan_gripper_grasps(gripper,
     :param max_samples:
     :param min_dist_between_sampled_contact_points:
     :param contact_offset: offset at the cotnact to avoid being closely in touch with object surfaces
+    :param min_thickness: thickness smaller than it will be ignored when performing ray shooting (numerical purpose)
     :return: grasping.grasp.GraspCollection
     """
     contact_pairs = plan_contact_pairs(obj_cmodel,
                                        max_samples=max_samples,
                                        min_dist_between_sampled_contact_points=min_dist_between_sampled_contact_points,
+                                       min_thickness=min_thickness,
                                        angle_between_contact_normals=angle_between_contact_normals)
     if toggle_dbg:
         print(len(contact_pairs))
         for i, cp in enumerate(contact_pairs):
             contact_p0, contact_n0 = cp[0]
             contact_p1, contact_n1 = cp[1]
-            mgm.gen_sphere(pos=contact_p0, rgb=np.array([1, 0, 0])).attach_to(base)
-            mgm.gen_arrow(spos=contact_p0, epos=contact_p0 + contact_n0 * .01, stick_radius=.00057,
+            mgm.gen_sphere(pos=contact_p0, rgb=np.array([1, 0, 0]),
+                           radius=min_dist_between_sampled_contact_points / 5).attach_to(base)
+            mgm.gen_arrow(spos=contact_p0, epos=contact_p0 + contact_n0 * .01,
+                          stick_radius=min_dist_between_sampled_contact_points / 7,
                           rgb=np.array([1, 0, 0])).attach_to(base)
-            mgm.gen_sphere(pos=contact_p1, rgb=np.array([0, 0, 1])).attach_to(base)
-            mgm.gen_arrow(spos=contact_p1, epos=contact_p1 + contact_n1 * .01, stick_radius=.00057,
+            mgm.gen_sphere(pos=contact_p1, rgb=np.array([0, 0, 1]),
+                           radius=min_dist_between_sampled_contact_points / 5).attach_to(base)
+            mgm.gen_arrow(spos=contact_p1, epos=contact_p1 + contact_n1 * .01,
+                          stick_radius=min_dist_between_sampled_contact_points / 7,
                           rgb=np.array([0, 0, 1])).attach_to(base)
     grasp_collection = gag.GraspCollection(end_effector=gripper)
     for i, cp in enumerate(contact_pairs):

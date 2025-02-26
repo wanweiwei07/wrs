@@ -120,12 +120,12 @@ def define_gripper_grasps_with_rotation(gripper,
             gripper.grip_at_by_pose(jaw_center_pos=grasp.ac_pos,
                                     jaw_center_rotmat=grasp.ac_rotmat,
                                     jaw_width=grasp.ee_values)
-            gripper.gen_meshmodel(rgba=[1, 0, 0, .3]).attach_to(base)
+            gripper.gen_meshmodel(rgb=rm.const.red, alpha=.3).attach_to(base)
         for grasp in grasp_collection:
             gripper.grip_at_by_pose(jaw_center_pos=grasp.ac_pos,
                                     jaw_center_rotmat=grasp.ac_rotmat,
                                     jaw_width=grasp.ee_values)
-            gripper.gen_meshmodel(rgba=[0, 1, 0, .3]).attach_to(base)
+            gripper.gen_meshmodel(rgb=rm.const.green, alpha=.3).attach_to(base)
     return grasp_collection
 
 

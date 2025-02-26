@@ -84,8 +84,7 @@ class GraspReasoner(object):
                 self._robot.end_effector.grip_at_by_pose(jaw_center_pos=goal_grasp.ac_pos,
                                                          jaw_center_rotmat=goal_grasp.ac_rotmat,
                                                          jaw_width=goal_grasp.ee_values)
-                if self._robot.end_effector.is_mesh_collided(
-                        cmodel_list=obstacle_list):  # examining eecd first is faster
+                if self._robot.end_effector.is_mesh_collided(cmodel_list=obstacle_list):  # examine eecd first is faster
                     # ee collided
                     eef_collided_grasps_num += 1
                     if toggle_dbg:
@@ -103,12 +102,13 @@ class GraspReasoner(object):
                                 self._robot.end_effector.gen_meshmodel(rgb=rm.const.magenta, alpha=.3).attach_to(base)
                         else:
                             self._robot.goto_given_conf(jnt_values=jnt_values)
-                            if not self._robot.is_collided(obstacle_list=obstacle_list, toggle_dbg=toggle_dbg):
+                            if not self._robot.is_collided(obstacle_list=obstacle_list, toggle_dbg=False):
                                 previous_available_gids.append(gid)
                                 previous_availalbe_grasps.append(goal_grasp)
                                 previous_available_jv_list.append(jnt_values)
                                 if toggle_dbg:
                                     self._robot.end_effector.gen_meshmodel(rgb=rm.const.green, alpha=1).attach_to(base)
+                                    base.run()
                             else:  # robot collided
                                 rbt_collided_grasps_num += 1
                                 if toggle_dbg:
