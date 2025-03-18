@@ -1,7 +1,15 @@
+# time optimal trrajectory generation
+# jerk is not considered
+
 import wrs.basis.robot_math as rm
 
 
 def split_path_1d(path_1d):
+    """
+    find zero crossing way points
+    :param path_1d:
+    :return:
+    """
     zero_crossings = []
     distances = rm.np.diff(path_1d)
     for i in range(len(distances) - 1):
@@ -17,7 +25,7 @@ def split_path_1d(path_1d):
             else:
                 print(i)
                 i = j + 1
-        elif rm.np.sign(distances[i]) != rm.cnp.sign(distances[i + 1]) and rm.np.abs(distances[i + 1]) > 1e-12:
+        elif rm.np.sign(distances[i]) != rm.np.sign(distances[i + 1]) and rm.np.abs(distances[i + 1]) > 1e-12:
             zero_crossings.append(i + 2)
     if len(zero_crossings) == 0:
         return [path_1d]
@@ -57,7 +65,7 @@ def proc_segs(path_1d_segs, max_vel, max_acc):
     return velocities
 
 
-def generate_time_optimal_trajectory(path, max_vels=None, max_accs=None, ctrl_freq=.005):
+def time_optimal_trajectory_generation(path, max_vels=None, max_accs=None, ctrl_freq=.005):
     path = rm.np.asarray(path)
     n_waypoints, n_jnts = path.shape
     if max_vels is None:
@@ -99,10 +107,148 @@ def generate_time_optimal_trajectory(path, max_vels=None, max_accs=None, ctrl_fr
     return interp_time, interp_confs, interp_spds, interp_accs
 
 
+# ===================================================================================================
+# jerk is considered
+# ===================================================================================================
+
+def forward_1d_jerk(path_1d, max_vel, max_acc, max_jerk):
+    # hyper parameters for numerical control
+    dt_min = 0
+    dt_max = 1.0
+    n_waypoints = len(path_1d)
+    velocities = np.zeros(n_waypoints)
+    accelerations = np.zeros(n_waypoints)
+    distances = np.abs(np.diff(path_1d))
+    # initialize the first waypoint
+    velocities[0] = 0.0
+    accelerations[0] = 0.0
+    for i in range(1, n_waypoints):
+        dist = distances[i - 1]
+        if velocities[i - 1] < 1e-4:
+            dt_est = (6.0 * dist / max_jerk) ** (1 / 3)  # assume does not reach max_acc in a single step
+        else:
+            dt_est = dist / velocities[i - 1]
+        dt = max(dt_min, min(dt_est, dt_max))
+        # update acceleration
+        a_candidate = accelerations[i - 1] + max_jerk * dt
+        if a_candidate > max_acc:
+            a_candidate = max_acc
+        accelerations[i] = a_candidate
+        # update speed
+        a_avg = 0.5 * (accelerations[i - 1] + accelerations[i])
+        v_candidate = np.sqrt(velocities[i - 1] ** 2 + 2.0 * a_avg * dist)
+        velocities[i] = min(v_candidate, max_vel)
+    return velocities, accelerations
+
+
+def backward_1d_jerk(path_1d, velocities, accelerations, max_vel, max_acc, max_jerk):
+    # hyper parameters for numerical control
+    dt_min = 0
+    dt_max = 1.0
+    n_waypoints = len(path_1d)
+    distances = np.abs(np.diff(path_1d))
+    # initialize the last waypoint
+    velocities[-1] = 0.0
+    accelerations[-1] = 0.0
+    for i in range(n_waypoints - 2, -1, -1):
+        dist = distances[i]
+        if velocities[i + 1] < 1e-4:
+            dt_est = (6.0 * dist / max_jerk) ** (1 / 3)  # assume does not reach max_acc in a single step
+        else:
+            dt_est = dist / velocities[i + 1]
+        dt = max(dt_min, min(dt_est, dt_max))
+        # update acceleration
+        a_candidate = max(0, accelerations[i + 1] - max_jerk * dt)
+        if a_candidate < -max_acc:
+            a_candidate = -max_acc
+        accelerations[i] = a_candidate
+        # update speed
+        a_avg = 0.5 * (accelerations[i] + accelerations[i + 1])
+        v_candidate = np.sqrt(velocities[i + 1] ** 2 + 2.0 * a_avg * dist)
+        velocities[i] = min(v_candidate, velocities[i])
+    print("vel ", velocities)
+    print("acc ", accelerations)
+    return velocities, accelerations
+
+# def proc_segs_jerk(path_1d_segs, max_vel, max_acc):
+#     velocities = []
+#     for id, path_1d in enumerate(path_1d_segs):
+#         if id > 0:
+#             path_1d = rm.np.insert(path_1d, 0, path_1d_segs[id - 1][-1])
+#         v_fwd = forward_1d(path_1d, max_vel, max_acc)
+#         v_bwd = backward_1d(path_1d, v_fwd, max_acc)
+#         if rm.np.diff(path_1d)[0] < 0:
+#             v_bwd = v_bwd * -1
+#         velocities.append(v_bwd)
+#     return velocities
+
+def proc_segs_jerk(path_1d_segs, max_vel, max_acc, max_jerk):
+    velocities_segs = []
+    for i, path_1d in enumerate(path_1d_segs):
+        if i > 0:
+            path_1d = np.insert(path_1d, 0, path_1d_segs[i - 1][-1])
+        v_fwd, a_fwd = forward_1d_jerk(path_1d, max_vel, max_acc, max_jerk)
+        v_bwd, a_bwd = backward_1d_jerk(path_1d, v_fwd, a_fwd,
+                                        max_vel, max_acc, max_jerk)
+        if np.diff(path_1d)[0] < 0:
+            v_bwd = -v_bwd
+        velocities_segs.append(v_bwd)
+    print(velocities_segs)
+    return velocities_segs
+
+
+def totg_with_jerk(path, max_vels=None, max_accs=None, max_jerks=None, ctrl_freq=.005):
+    path = rm.np.asarray(path)
+    n_waypoints, n_jnts = path.shape
+    # 1) 默认上限值设定
+    if max_vels is None:
+        max_vels = rm.np.asarray([rm.pi * 2 / 3] * n_jnts)
+    if max_accs is None:
+        max_accs = rm.np.asarray([rm.pi] * n_jnts)
+    if max_jerks is None:
+        max_jerks = np.asarray([rm.pi * 2] * n_jnts)
+    # 2) 分段后做 jerk-limited 的速度规划
+    velocities = np.zeros((n_waypoints, n_jnts))
+    for j in range(n_jnts):
+        path_1d = path[:, j]
+        path_1d_segs = split_path_1d(path_1d)
+        vel_1d_segs = proc_segs_jerk(path_1d_segs, max_vels[j], max_accs[j], max_jerks[j])
+        if len(vel_1d_segs) > 1:
+            vel_1d_merged = np.concatenate([seg[:-1] for seg in vel_1d_segs[:-1]] + [vel_1d_segs[-1]])
+        else:
+            vel_1d_merged = vel_1d_segs[0]
+        velocities[:, j] = vel_1d_merged
+    # 3) 基于平均速度计算相邻路点时间
+    distances = np.abs(np.diff(path, axis=0))
+    avg_velocities = np.abs((velocities[:-1] + velocities[1:]) / 2)
+    avg_velocities = np.where(avg_velocities == 0, 1.0e6, avg_velocities)
+    time_intervals = np.max(distances / avg_velocities, axis=1)
+    # 4) 累加得到每个路点时间戳
+    time = np.zeros(n_waypoints)
+    time[1:] = np.cumsum(time_intervals)
+    # 5) 生成插值时间轴
+    total_time = time[-1]
+    n_interp_conf = int(total_time / ctrl_freq) + 1
+    interp_time = np.linspace(0, total_time, n_interp_conf)
+    # 6) 在时间轴上对位置、速度插值
+    interp_confs = np.zeros((n_interp_conf, n_jnts))
+    interp_spds = np.zeros((n_interp_conf, n_jnts))
+    for j in range(n_jnts):
+        interp_confs[:, j] = np.interp(interp_time, time, path[:, j])
+        interp_spds[:, j] = np.interp(interp_time, time, velocities[:, j])
+    # 7) 用速度差分 -> 加速度
+    tmp_spds = np.vstack([interp_spds, np.zeros((1, n_jnts))])
+    interp_accs = np.diff(tmp_spds, axis=0) / ctrl_freq
+    # 8) 再用加速度差分 -> jerk
+    tmp_accs = np.vstack([interp_accs, np.zeros((1, n_jnts))])
+    interp_jerks = np.diff(tmp_accs, axis=0) / ctrl_freq
+    return interp_time, interp_confs, interp_spds, interp_accs, interp_jerks
+
+
 if __name__ == '__main__':
     import numpy as np
     import matplotlib.pyplot as plt
-    from wrs import wd, rm, mgm, mip, toppra
+    from wrs import wd, rm, mgm, mip
     import wrs.robot_sim.robots.nova2_wg.nova2wg3 as dnw
     from wrs.motion.trajectory.quintic import QuinticSpline
 
@@ -116,14 +262,64 @@ if __name__ == '__main__':
                              [-0.335, 0.509, -0.251, -3.142, -1.313, -4.378],
                              [-0.335, 0.514, -0.236, -3.142, -1.294, -4.378],
                              [-0.335, 0.519, -0.223, -3.142, -1.275, -4.378]])
-    interp_time, interp_confs1, interp_spds, interp_accs = generate_time_optimal_trajectory(interp_confs,
-                                                                                            ctrl_freq=.002)
+    interp_time, interp_confs1, interp_spds, interp_accs = time_optimal_trajectory_generation(interp_confs,
+                                                                                              ctrl_freq=.002)
     fig, (ax1, ax2, ax3, ax4) = plt.subplots(4, 1, figsize=(10, 15))
+    ax1.axis('off')
+    ax1.set_title("WRS TOTG plots")  # 或者你也可以注释掉这行
+    ax1.plot(interp_confs, '-o')
+    # position
     ax2.plot(interp_time, interp_confs1, '-o')
+    ax2.set_title("Position vs Time")
+    ax2.set_xlabel("Time [s]")
+    ax2.set_ylabel("Position [rad]")
+    # velocity
     ax3.plot(interp_time, interp_spds, '-o')
+    ax3.set_title("Velocity vs Time")
+    ax3.set_xlabel("Time [s]")
+    ax3.set_ylabel("Velocity [rad/s]")
+    # acceleration
     ax4.plot(interp_time, interp_accs, '-o')
+    ax4.set_title("Acceleration vs Time")
+    ax4.set_xlabel("Time [s]")
+    ax4.set_ylabel("Acceleration [rad/s^2]")
+    plt.tight_layout()  # 自动调整布局避免标题、标签重叠
     plt.savefig(fname="test.jpg")
-    base.run()
+    plt.show()
+
+    #
+    # interp_time, interp_confs1, interp_spds, interp_accs, interp_jerks = totg_with_jerk(interp_confs, ctrl_freq=.002)
+    # fig, (ax1, ax2, ax3, ax4, ax5) = plt.subplots(5, 1, figsize=(10, 18))
+    # # ax1: 仅用来放置大标题或空白等
+    # ax1.axis('off')
+    # ax1.set_title("WRS TOTG plots with Jerk")
+    # ax1.plot(interp_confs, '-o')
+    # # ax2: 位置
+    # ax2.plot(interp_time, interp_confs1, '-o')
+    # ax2.set_title("Position vs Time")
+    # ax2.set_xlabel("Time [s]")
+    # ax2.set_ylabel("Position [rad]")
+    # # ax3: 速度
+    # ax3.plot(interp_time, interp_spds, '-o')
+    # ax3.set_title("Velocity vs Time")
+    # ax3.set_xlabel("Time [s]")
+    # ax3.set_ylabel("Velocity [rad/s]")
+    # # ax4: 加速度
+    # ax4.plot(interp_time, interp_accs, '-o')
+    # ax4.set_title("Acceleration vs Time")
+    # ax4.set_xlabel("Time [s]")
+    # ax4.set_ylabel("Acceleration [rad/s^2]")
+    # # ax5: 加加速度（jerk）
+    # ax5.plot(interp_time, interp_jerks, '-o')
+    # ax5.set_title("Jerk vs Time")
+    # ax5.set_xlabel("Time [s]")
+    # ax5.set_ylabel("Jerk [rad/s^3]")
+    # # 自动调整子图布局
+    # plt.tight_layout()
+    # # 保存并显示
+    # plt.savefig("test_with_jerk.jpg")
+    # plt.show()
+    # base.run()
 
     interplated_planner = mip.InterplatedMotion(robot)
     mot_data = interplated_planner.gen_circular_motion(circle_center_pos=rm.np.array([.6, 0, .4]),

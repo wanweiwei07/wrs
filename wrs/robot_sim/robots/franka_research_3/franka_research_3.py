@@ -58,7 +58,7 @@ class FrankaResearch3(rsi.SglArmRobotInterface):
         ml5 = self.cc.add_cce(self.manipulator.jlc.jnts[5].lnk)
         ml6 = self.cc.add_cce(self.manipulator.jlc.jnts[6].lnk)
         from_list = ee_cces + [ml5, ml6]
-        into_list = [mlb, ml0, ml1, ml2]
+        into_list = [mlb, ml0, ml1, ml2, ml3]
         self.cc.set_cdpair_by_ids(from_list, into_list)
         # ext and inner
         self.cc.enable_extcd_by_id_list(id_list=[ml0, ml1, ml2, ml3, ml4, ml5]+ee_cces, type="from")

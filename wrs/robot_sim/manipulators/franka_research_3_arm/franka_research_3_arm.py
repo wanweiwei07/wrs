@@ -17,66 +17,66 @@ class FrankaResearch3Arm(mi.ManipulatorInterface):
         # anchor
         self.jlc.anchor.lnk_list[0].cmodel = mcm.CollisionModel(
             initor=os.path.join(current_file_dir, "meshes", "link0.dae"), name="franka_research_3_arm_base")
-        self.jlc.anchor.lnk_list[0].cmodel.rgba = rm.np.array([.7, .7, .7, 1.0])
+        self.jlc.anchor.lnk_list[0].cmodel.rgba = rm.vec(.7, .7, .7, 1.0)
         # first joint and link
-        self.jlc.jnts[0].loc_pos = rm.np.array([0, 0, 0.333])
+        self.jlc.jnts[0].loc_pos = rm.vec(0, 0, 0.333)
         self.jlc.jnts[0].loc_motion_ax = rm.const.z_ax
-        self.jlc.jnts[0].motion_range = rm.np.array([-2.8973, 2.8973])
+        self.jlc.jnts[0].motion_range = rm.vec(-2.8973, 2.8973)
         self.jlc.jnts[0].lnk.cmodel = mcm.CollisionModel(
             initor=os.path.join(current_file_dir, "meshes", "link1.dae"), name="franka_research_3_arm_link1")
-        self.jlc.jnts[0].lnk.cmodel.rgba = rm.np.array([.7, .7, .7, 1.0])
+        self.jlc.jnts[0].lnk.cmodel.rgba = rm.vec(.7, .7, .7, 1.0)
         # second joint and link
-        self.jlc.jnts[1].loc_pos = rm.np.array([0, 0, 0])
+        self.jlc.jnts[1].loc_pos = rm.vec(0, 0, 0)
         self.jlc.jnts[1].loc_rotmat = rm.rotmat_from_euler(-1.57079632679, 0, 0)
         self.jlc.jnts[1].loc_motion_ax = rm.const.z_ax
-        self.jlc.jnts[1].motion_range = rm.np.array([-1.8326, 1.8326])
+        self.jlc.jnts[1].motion_range = rm.vec(-1.8326, 1.8326)
         self.jlc.jnts[1].lnk.cmodel = mcm.CollisionModel(
             initor=os.path.join(current_file_dir, "meshes", "link2.dae"), name="franka_research_3_arm_link2")
-        self.jlc.jnts[1].lnk.cmodel.rgba = rm.np.array([.7, .7, .7, 1.0])
+        self.jlc.jnts[1].lnk.cmodel.rgba = rm.vec(.7, .7, .7, 1.0)
         # third joint and link
-        self.jlc.jnts[2].loc_pos = rm.np.array([0, -0.316, 0])
+        self.jlc.jnts[2].loc_pos = rm.vec(0, -0.316, 0)
         self.jlc.jnts[2].loc_rotmat = rm.rotmat_from_euler(1.57079632679, 0, 0)
         self.jlc.jnts[2].loc_motion_ax = rm.const.z_ax
-        self.jlc.jnts[2].motion_range = rm.np.array([-2.8972, 2.8972])
+        self.jlc.jnts[2].motion_range = rm.vec(-2.8972, 2.8972)
         self.jlc.jnts[2].lnk.cmodel = mcm.CollisionModel(
             initor=os.path.join(current_file_dir, "meshes", "link3.dae"), name="franka_research_3_arm_link3")
-        self.jlc.jnts[2].lnk.cmodel.rgba = rm.np.array([.7, .7, .7, 1.0])
+        self.jlc.jnts[2].lnk.cmodel.rgba = rm.vec(.7, .7, .7, 1.0)
         # fourth joint and link
-        self.jlc.jnts[3].loc_pos = rm.np.array([0.0825, 0, 0])
+        self.jlc.jnts[3].loc_pos = rm.vec(0.0825, 0, 0)
         self.jlc.jnts[3].loc_rotmat = rm.rotmat_from_euler(1.57079632679, 0, 0)
         self.jlc.jnts[3].loc_motion_ax = rm.const.z_ax
-        self.jlc.jnts[3].motion_range = rm.np.array([-3.0718, -0.1222])
+        self.jlc.jnts[3].motion_range = rm.vec(-3.0718, -0.1222)
         self.jlc.jnts[3].lnk.cmodel = mcm.CollisionModel(
             initor=os.path.join(current_file_dir, "meshes", "link4.dae"), name="franka_research_3_arm_link4")
-        self.jlc.jnts[3].lnk.cmodel.rgba = rm.np.array([.7, .7, .7, 1.0])
+        self.jlc.jnts[3].lnk.cmodel.rgba = rm.vec(.7, .7, .7, 1.0)
         # fifth joint and link
-        self.jlc.jnts[4].loc_pos = rm.np.array([-0.0825, 0.384, 0])
+        self.jlc.jnts[4].loc_pos = rm.vec(-0.0825, 0.384, 0)
         self.jlc.jnts[4].loc_rotmat = rm.rotmat_from_euler(-1.57079632679, 0, 0)
         self.jlc.jnts[4].loc_motion_ax = rm.const.z_ax
-        self.jlc.jnts[4].motion_range = rm.np.array([-2.8798, 2.8798])
+        self.jlc.jnts[4].motion_range = rm.vec(-2.8798, 2.8798)
         self.jlc.jnts[4].lnk.cmodel = mcm.CollisionModel(
             initor=os.path.join(current_file_dir, "meshes", "link5.dae"), name="franka_research_3_arm_link5")
-        self.jlc.jnts[4].lnk.cmodel.rgba = rm.np.array([.7, .7, .7, 1.0])
+        self.jlc.jnts[4].lnk.cmodel.rgba = rm.vec(.7, .7, .7, 1.0)
         # sixth joint and link
-        self.jlc.jnts[5].loc_pos = rm.np.array([0, 0, 0])
+        self.jlc.jnts[5].loc_pos = rm.vec(0, 0, 0)
         self.jlc.jnts[5].loc_rotmat = rm.rotmat_from_euler(1.57079632679, 0, 0)
         self.jlc.jnts[5].loc_motion_ax = rm.const.z_ax
-        self.jlc.jnts[5].motion_range = rm.np.array([0.4364, 4.6251])
+        self.jlc.jnts[5].motion_range = rm.vec(0.4364, 4.6251)
         self.jlc.jnts[5].lnk.cmodel = mcm.CollisionModel(
             initor=os.path.join(current_file_dir, "meshes", "link6.dae"), name="franka_research_3_arm_link6")
-        self.jlc.jnts[5].lnk.cmodel.rgba = rm.np.array([.7, .7, .7, 1.0])
+        self.jlc.jnts[5].lnk.cmodel.rgba = rm.vec(.7, .7, .7, 1.0)
         # seventh joint and link
-        self.jlc.jnts[6].loc_pos = rm.np.array([0.088, 0, 0])
+        self.jlc.jnts[6].loc_pos = rm.vec(0.088, 0, 0)
         self.jlc.jnts[6].loc_rotmat = rm.rotmat_from_euler(1.57079632679, 0, 0)
         self.jlc.jnts[6].loc_motion_ax = rm.const.z_ax
-        self.jlc.jnts[6].motion_range = rm.np.array([-3.0543, 3.0543])
+        self.jlc.jnts[6].motion_range = rm.vec(-3.0543, 3.0543)
         self.jlc.jnts[6].lnk.cmodel = mcm.CollisionModel(
             initor=os.path.join(current_file_dir, "meshes", "link7.dae"), name="franka_research_3_arm_link7")
-        self.jlc.jnts[6].lnk.cmodel.rgba = rm.np.array([.7, .7, .7, 1.0])
+        self.jlc.jnts[6].lnk.cmodel.rgba = rm.vec(.7, .7, .7, 1.0)
         # flange
-        self.jlc.set_flange(loc_flange_pos=rm.np.array([0, 0, 0.107]), loc_flange_rotmat=rm.np.eye(3))
+        self.jlc.set_flange(loc_flange_pos=rm.vec(0, 0, 0.107), loc_flange_rotmat=rm.np.eye(3))
         # tcp
-        self.loc_tcp_pos = rm.np.array([0, 0, 0])
+        self.loc_tcp_pos = rm.vec(0, 0, 0)
         self.loc_tcp_rotmat = rm.np.eye(3)
         self.jlc.finalize(ik_solver=ik_solver, identifier_str=name)
         # setup cc

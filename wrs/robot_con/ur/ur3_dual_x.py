@@ -1,7 +1,7 @@
 import struct
 import os
 import numpy as np
-import wrs.motion.trajectory.topp_ra as trajp
+import wrs.motion.trajectory.totg as trajp
 import wrs.robot_con.ur.ur3_rtq85_x as u3r85x
 import wrs.robot_con.ur.program_builder as pb
 

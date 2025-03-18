@@ -14,6 +14,7 @@ from .robot_sim.robots.ur3_dual import ur3_dual as ur3d
 from .robot_sim.robots.ur3e_dual import ur3e_dual as ur3ed
 from .robot_sim.robots.khi import khi_or2fg7 as ko2fg
 from .robot_sim.robots.yumi import yumi as ym
+from .robot_sim.robots.franka_research_3 import franka_research_3 as fr3
 
 # grippers
 from .robot_sim.end_effectors.grippers.robotiq85 import robotiq85 as rtq85
@@ -32,7 +33,7 @@ from .motion.probabilistic import rrt_connect as rrtc
 from .motion.primitives import interpolated as mip
 from .motion.primitives import approach_depart_planner as adp
 from .manipulation import pick_place as ppp
-from .motion.trajectory import topp_ra as toppra
+from .motion.trajectory import totg as toppra
 
 # manipulation
 from .manipulation.placement import flatsurface as fsp
@@ -41,8 +42,8 @@ from .manipulation import flatsurface_regrasp as fsreg
 from .manipulation import handover_regrasp as horeg
 
 __all__ = ['mt', 'rm', 'mcm', 'mgm', 'wd',
-           'cbt', 'x6wg2', 'ur3d', 'ur3ed', 'ko2fg', 'ym',
-           'rtq85', 'rtqhe', 'yg',
+           'cbt', 'x6wg2', 'ur3d', 'ur3ed', 'ko2fg', 'ym', 'fr3',
+           'rtq85', 'rtqhe', 'yumi_g',
            'gg', 'gpa', 'gag',
            'rrtc', 'mip', 'ppp', 'toppra',
            'fsp', 'fsreg']

@@ -1,7 +1,7 @@
 import time
 import numpy.typing as npt
 from typing import List
-import wrs.motion.trajectory.topp_ra as trajp
+import wrs.motion.trajectory.totg as trajp
 
 
 class CobottaX(object):

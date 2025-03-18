@@ -6,7 +6,7 @@ import struct
 import os
 import wrs.basis.robot_math as rm
 import wrs.drivers.urx.ur_robot as urrobot
-import wrs.motion.trajectory.topp_ra as pwp
+import wrs.motion.trajectory.totg as pwp
 import wrs.robot_con.ur.program_builder as pb
 from wrs.robot_con.ur.robotiq import rtq_cbseries_gripper as r2f
 from wrs.robot_con.ur.robotiq import rtq_ft300 as rft
