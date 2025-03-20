@@ -123,8 +123,8 @@ def ik(jlc, tgt_pos, tgt_rotmat, n_div = 36, seed_jnt_values=None, option='singl
     _p01 = jlc.jnts[0].loc_pos
     # relative to base (ikgeo assumes jlc.pos = 0 and jlc.rotmat = I), thus we need to convert tgt_pos and tgt_rotmat
     rel_pos, rel_rotmat = rm.rel_pose(jlc.pos, jlc.rotmat, tgt_pos, tgt_rotmat)
-    R06 = rel_rotmat
-    p06 = rel_pos - _p01 + R06 @ rm.np.array([0, 0, jlc.jnts[5].loc_pos[1]])
+    R06 = rel_rotmat @ jlc.loc_flange_rotmat
+    p06 = rel_pos - _p01 + rel_rotmat @ rm.np.array([0, 0, jlc.jnts[5].loc_pos[1]])
     zero_crossings = search1d(jlc, jlc.jnts[3].motion_range[0], jlc.jnts[3].motion_range[1], n_div, p06, R06)
     # print(zero_crossings)
     candidate_jnt_values = []
