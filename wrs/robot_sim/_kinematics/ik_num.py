@@ -536,7 +536,6 @@ class NumIKSolver(object):
              toggle_dbg=False):
         # original method from the following paper:
         # paper: Huang, clamping weighted least-norm method for themanipulator kinematic control with constraints
-        # does not work on redundant jlcs
         iter_jnt_values = seed_jnt_values
         if iter_jnt_values is None:
             iter_jnt_values = self.jlc.get_jnt_values()
@@ -564,7 +563,7 @@ class NumIKSolver(object):
             lam = 1e-9
             # cwln
             delta_jnt_values = clamping + wln @ j_mat.T @ np.linalg.inv(
-                j_mat @ wln @ j_mat.T + lam * np.eye(j_mat.shape[1])) @ (clamped_err_vec - j_mat @ clamping)
+                j_mat @ wln @ j_mat.T + lam * np.eye(j_mat.shape[0])) @ (clamped_err_vec - j_mat @ clamping)
             iter_jnt_values = iter_jnt_values + delta_jnt_values
             iter_jnt_values = np.mod(iter_jnt_values, 2 * np.pi)
             iter_jnt_values = np.where(iter_jnt_values > np.pi, iter_jnt_values - 2 * np.pi, iter_jnt_values)
