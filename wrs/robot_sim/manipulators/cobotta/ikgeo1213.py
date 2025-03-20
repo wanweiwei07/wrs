@@ -183,7 +183,7 @@ if __name__ == '__main__':
     for i in tqdm(range(100)):
         jnt_vals = arm.rand_conf()
         tgt_pos, tgt_rotmat = arm.fk(jnt_values=jnt_vals)
-        candidate_jnt_values = ik(arm.jlc, tgt_pos, tgt_rotmat, 12)
+        candidate_jnt_values = ik(arm.jlc, tgt_pos, tgt_rotmat, 36)
         if candidate_jnt_values is not None:
             count += 1
     print(count/100)
