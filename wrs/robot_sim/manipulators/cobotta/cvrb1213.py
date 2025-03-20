@@ -106,9 +106,9 @@ class CVRB1213(mi.ManipulatorInterface):
                 if toggle_update:
                     rel_pos, rel_rotmat = rm.rel_pose(self.jlc.pos, self.jlc.rotmat, rel_pos, rel_rotmat)
                     rel_rotvec = self.jlc._ik_solver._rotmat_to_vec(rel_rotmat)
-                    query_point = np.concatenate((rel_pos, rel_rotvec))
+                    query_point = rm.np.concatenate((rel_pos, rel_rotvec))
                     # update dd driven file
-                    tree_data = np.vstack((self.jlc._ik_solver.query_tree.data, query_point))
+                    tree_data = rm.np.vstack((self.jlc._ik_solver.query_tree.data, query_point))
                     self.jlc._ik_solver.jnt_data.append(result)
                     self.jlc._ik_solver.query_tree = scipy.spatial.cKDTree(tree_data)
                     print(f"Updating query tree, {id} explored...")

@@ -130,6 +130,11 @@ if __name__ == '__main__':
 
     base = wd.World(cam_pos=[2, 0, 1], lookat_pos=[0, 0, .3])
     mcm.mgm.gen_frame().attach_to(base)
+    arm = CVR038()
+    arm.gen_meshmodel(alpha=.3).attach_to(base)
+    arm.gen_stickmodel().attach_to(base)
+    base.run()
+
     arm = CVR038(pos =rm.vec(0.168, .3, 0), rotmat = rm.rotmat_from_euler(0, 0, rm.pi / 2), enable_cc=True)
     arm.jlc.test_ik_success_rate()
     base.run()
