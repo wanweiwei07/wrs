@@ -151,6 +151,7 @@ def ik(jlc, tgt_pos, tgt_rotmat, n_div = 36, seed_jnt_values=None, option='singl
 
 
 if __name__ == '__main__':
+    from tqdm import tqdm
     from wrs import wd, mcm, rm
     import wrs.robot_sim.manipulators.cobotta.cvr038 as cbtm
 
@@ -159,20 +160,29 @@ if __name__ == '__main__':
     arm = cbtm.CVR038()
     arm.gen_meshmodel(alpha=.3).attach_to(base)
 
-    tgt_pos = rm.np.array([0.23, 0.118, 0.058])
-    tgt_rotmat = rm.np.array([[0.30810811, 0.95135135, 0.],
-                              [0.95135135, -0.30810811, 0.],
-                              [0., 0., -1.]])
-    # tgt_pos = rm.vec(.1, -.3, .3)
-    # tgt_rotmat = rm.rotmat_from_euler(0, rm.pi / 3, 0)
-    mcm.mgm.gen_frame(pos=tgt_pos, rotmat=tgt_rotmat).attach_to(base)
-    candidate_jnt_values = ik(arm.jlc, tgt_pos, tgt_rotmat)
-    if candidate_jnt_values is not None:
-        print(candidate_jnt_values)
-        for jnt_values in candidate_jnt_values:
-            arm.goto_given_conf(jnt_values=jnt_values)
-            arm_mesh = arm.gen_meshmodel(alpha=.3)
-            arm_mesh.attach_to(base)
-            tmp_arm_stick = arm.gen_stickmodel(toggle_flange_frame=True)
-            tmp_arm_stick.attach_to(base)
-    base.run()
+    # tgt_pos = rm.np.array([0.23, 0.118, 0.058])
+    # tgt_rotmat = rm.np.array([[0.30810811, 0.95135135, 0.],
+    #                           [0.95135135, -0.30810811, 0.],
+    #                           [0., 0., -1.]])
+    # # tgt_pos = rm.vec(.1, -.3, .3)
+    # # tgt_rotmat = rm.rotmat_from_euler(0, rm.pi / 3, 0)
+    # mcm.mgm.gen_frame(pos=tgt_pos, rotmat=tgt_rotmat).attach_to(base)
+    # candidate_jnt_values = ik(arm.jlc, tgt_pos, tgt_rotmat)
+    # if candidate_jnt_values is not None:
+    #     print(candidate_jnt_values)
+    #     for jnt_values in candidate_jnt_values:
+    #         arm.goto_given_conf(jnt_values=jnt_values)
+    #         arm_mesh = arm.gen_meshmodel(alpha=.3)
+    #         arm_mesh.attach_to(base)
+    #         tmp_arm_stick = arm.gen_stickmodel(toggle_flange_frame=True)
+    #         tmp_arm_stick.attach_to(base)
+    # base.run()
+
+    count = 0
+    for i in tqdm(range(100)):
+        jnt_vals = arm.rand_conf()
+        tgt_pos, tgt_rotmat = arm.fk(jnt_values=jnt_vals)
+        candidate_jnt_values = ik(jlc=arm.jlc, n_div=360, tgt_pos=tgt_pos, tgt_rotmat=tgt_rotmat)
+        if candidate_jnt_values is not None:
+            count += 1
+    print(count/100)

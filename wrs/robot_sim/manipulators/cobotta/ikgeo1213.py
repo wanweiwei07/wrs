@@ -8,22 +8,9 @@ import wrs.robot_sim._kinematics.ikgeo.sp1_lib as sp1_lib
 def err_given_q4(q4, jlc, p06, R06):
     R34 = rm.rotmat_from_axangle(jlc.jnts[3].loc_motion_ax, q4)
     h2 = jlc.jnts[1].loc_motion_ax
-    p45 = rm.vec(0.1, -.59, 0)
-    p23 = jlc.jnts[2].loc_pos
+    p45 = rm.vec(0.15, -.59, 0)
+    p23 = rm.vec(-0.05,0,0.71)
     R34p45 = R34 @ p45
-    # subproblem 4 for q1
-    h = h2
-    p = p06
-    d = h2.T @ R34p45
-    k = -jlc.jnts[0].loc_motion_ax
-    q1_candidates, is_ls = sp4_lib.sp4_run(p, k, h, d)
-    if is_ls:
-        return None, None
-        # q1_candidates = rm.np.asarray([q1_candidates])
-    # q1_candidates is always an np.array when is_ls is False
-    # filter valid q1 solutions
-    q1_min, q1_max = jlc.jnts[0].motion_range
-    q1_valid = rm.np.array([q1 for q1 in q1_candidates if q1_min <= q1 <= q1_max])
     # subproblem 3 for q3
     p1 = R34p45
     p2 = -p23
@@ -38,6 +25,20 @@ def err_given_q4(q4, jlc, p06, R06):
     # filter valid q3 solutions
     q3_min, q3_max = jlc.jnts[2].motion_range
     q3_valid = rm.np.array([q3 for q3 in q3_candidates if q3_min <= q3 <= q3_max])
+    # subproblem 4 for q1
+    h = h2
+    p = p06
+    d = h2.T @ (p23+R34p45)
+    k = -jlc.jnts[0].loc_motion_ax
+    q1_candidates, is_ls = sp4_lib.sp4_run(p, k, h, d)
+    # print("q1 ", q1_candidates, jlc.jnts[0].motion_range, is_ls)
+    if is_ls:
+        return None, None
+        # q1_candidates = rm.np.asarray([q1_candidates])
+    # q1_candidates is always an np.array when is_ls is False
+    # filter valid q1 solutions
+    q1_min, q1_max = jlc.jnts[0].motion_range
+    q1_valid = rm.np.array([q1 for q1 in q1_candidates if q1_min <= q1 <= q1_max])
     # Compute errors for all combinations of q1 and q3
     # Preallocate memory for errors
     max_combinations = len(q1_valid) * len(q3_valid)
@@ -54,7 +55,6 @@ def err_given_q4(q4, jlc, p06, R06):
             p2 = p23 + R23 @ R34p45
             k = -jlc.jnts[1].loc_motion_ax
             q2, is_ls = sp1_lib.sp1_run(p1, p2, k)
-            # print("q2 ", q2, jlc.jnts[1].motion_range, is_ls)
             if not is_ls:
                 q2_min, q2_max = jlc.jnts[1].motion_range
                 if q2_min <= q2 <= q2_max:
@@ -69,7 +69,6 @@ def err_given_q4(q4, jlc, p06, R06):
         return current_errs[:error_count], q_values[:error_count]
     else:
         return None, None
-
 
 def search1d(jlc, start, end, n_div, p06, R06):
     q4_candidates = rm.np.linspace(start, end, n_div)
@@ -123,8 +122,8 @@ def ik(jlc, tgt_pos, tgt_rotmat, n_div = 36, seed_jnt_values=None, option='singl
     _p01 = jlc.jnts[0].loc_pos
     # relative to base (ikgeo assumes jlc.pos = 0 and jlc.rotmat = I), thus we need to convert tgt_pos and tgt_rotmat
     rel_pos, rel_rotmat = rm.rel_pose(jlc.pos, jlc.rotmat, tgt_pos, tgt_rotmat)
-    R06 = rel_rotmat @ jlc.loc_flange_rotmat
-    p06 = rel_pos - _p01 + rel_rotmat @ rm.np.array([0, 0, jlc.jnts[5].loc_pos[1]])
+    R06 = rel_rotmat @ jlc.loc_flange_rotmat.T
+    p06 = rel_pos - R06 @ rm.np.array([0, jlc.jnts[5].loc_pos[1], 0]) - _p01
     zero_crossings = search1d(jlc, jlc.jnts[3].motion_range[0], jlc.jnts[3].motion_range[1], n_div, p06, R06)
     # print(zero_crossings)
     candidate_jnt_values = []
@@ -150,6 +149,7 @@ def ik(jlc, tgt_pos, tgt_rotmat, n_div = 36, seed_jnt_values=None, option='singl
 
 
 if __name__ == '__main__':
+    from tqdm import tqdm
     from wrs import wd, mcm, rm
     import wrs.robot_sim.manipulators.cobotta.cvrb1213 as cbtm
 
@@ -157,24 +157,33 @@ if __name__ == '__main__':
     mcm.mgm.gen_frame().attach_to(base)
     arm = cbtm.CVRB1213()
 
-    jnt_vals = arm.rand_conf()
-    tgt_pos, tgt_rotmat = arm.goto_given_conf(jnt_values=jnt_vals)
-    arm.gen_meshmodel(rgb=rm.const.green, alpha=.3).attach_to(base)
-    arm.rand_conf()
-    # tgt_pos = rm.np.array([0.73, 0.518, 0.58])
-    # tgt_rotmat = rm.np.array([[0.30810811, 0.95135135, 0.],
-    #                           [0.95135135, -0.30810811, 0.],
-    #                           [0., 0., -1.]])
-    # tgt_pos = rm.vec(.1, -.3, .3)
-    # tgt_rotmat = rm.rotmat_from_euler(0, rm.pi / 3, 0)
-    mcm.mgm.gen_frame(pos=tgt_pos, rotmat=tgt_rotmat).attach_to(base)
-    candidate_jnt_values = ik(arm.jlc, tgt_pos, tgt_rotmat, option="multiple")
-    if candidate_jnt_values is not None:
-        print(candidate_jnt_values)
-        for jnt_values in candidate_jnt_values:
-            arm.goto_given_conf(jnt_values=jnt_values)
-            arm_mesh = arm.gen_meshmodel(alpha=.3)
-            arm_mesh.attach_to(base)
-            tmp_arm_stick = arm.gen_stickmodel(toggle_flange_frame=True)
-            tmp_arm_stick.attach_to(base)
-    base.run()
+    # jnt_vals = arm.rand_conf()
+    # tgt_pos, tgt_rotmat = arm.goto_given_conf(jnt_values=jnt_vals)
+    # arm.gen_meshmodel(rgb=rm.const.green, alpha=.3).attach_to(base)
+    # arm.rand_conf()
+    # # tgt_pos = rm.np.array([0.73, 0.518, 0.58])
+    # # tgt_rotmat = rm.np.array([[0.30810811, 0.95135135, 0.],
+    # #                           [0.95135135, -0.30810811, 0.],
+    # #                           [0., 0., -1.]])
+    # # tgt_pos = rm.vec(.1, -.3, .3)
+    # # tgt_rotmat = rm.rotmat_from_euler(0, rm.pi / 3, 0)
+    # mcm.mgm.gen_frame(pos=tgt_pos, rotmat=tgt_rotmat).attach_to(base)
+    # candidate_jnt_values = ik(arm.jlc, tgt_pos, tgt_rotmat, option="multiple")
+    # if candidate_jnt_values is not None:
+    #     print(candidate_jnt_values)
+    #     for jnt_values in candidate_jnt_values:
+    #         arm.goto_given_conf(jnt_values=jnt_values)
+    #         arm_mesh = arm.gen_meshmodel(alpha=.3)
+    #         arm_mesh.attach_to(base)
+    #         tmp_arm_stick = arm.gen_stickmodel(toggle_flange_frame=True)
+    #         tmp_arm_stick.attach_to(base)
+    # base.run()
+
+    count = 0
+    for i in tqdm(range(100)):
+        jnt_vals = arm.rand_conf()
+        tgt_pos, tgt_rotmat = arm.fk(jnt_values=jnt_vals)
+        candidate_jnt_values = ik(arm.jlc, tgt_pos, tgt_rotmat, 12)
+        if candidate_jnt_values is not None:
+            count += 1
+    print(count/100)
