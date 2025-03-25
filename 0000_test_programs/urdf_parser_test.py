@@ -1,7 +1,7 @@
 import numpy as np
-import trimesh
 import matplotlib.pyplot as plt
-from wrs.robot_sim import URDF
+from wrs.robot_sim.urdf.urdf_parser import URDF, Joint, Link, Transmission, Material
+from wrs.basis.trimesh import base as trimesh
 
 # from urdfpy import URDF, Link, Joint, Transmission, Material
 

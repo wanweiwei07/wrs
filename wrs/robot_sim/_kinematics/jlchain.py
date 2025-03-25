@@ -3,8 +3,8 @@ import wrs.basis.robot_math as rm
 import wrs.modeling.geometric_model as mgm
 import wrs.robot_sim._kinematics.jl as rkjl
 import wrs.robot_sim._kinematics.model_generator as rkmg
-import wrs.robot_sim._kinematics.ik_dd as ikdd
-import wrs.robot_sim._kinematics.ik_dd_new as ikddr
+import wrs.robot_sim._kinematics.ik_dd as ikd
+import wrs.robot_sim._kinematics.ik_sel as iks
 import wrs.robot_sim._kinematics.ik_num as ikn
 import wrs.robot_sim._kinematics.ik_opt as iko
 import wrs.robot_sim._kinematics.constant as const
@@ -261,9 +261,9 @@ class JLChain(object):
         self.go_home()
         self._is_finalized = True
         if ik_solver == 'd':
-            self._ik_solver = ikdd.DDIKSolver(self, identifier_str=identifier_str)
-        if ik_solver == 'dr':
-            self._ik_solver = ikddr.DDIKSolver(self, identifier_str=identifier_str)
+            self._ik_solver = ikd.DDIKSolver(self, identifier_str=identifier_str)
+        if ik_solver == 's':
+            self._ik_solver = iks.SELIKSolver(self, identifier_str=identifier_str)
         elif ik_solver == 'n':
             self._ik_solver = ikn.NumIKSolver(self)
         elif ik_solver == 'o':

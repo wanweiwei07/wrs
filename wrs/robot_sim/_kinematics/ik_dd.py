@@ -38,7 +38,7 @@ class DDIKSolver(object):
         if path is None:
             path = os.path.join(os.path.dirname(current_file_dir), "_data_files")
         self._fname_tree = os.path.join(path, f"{identifier_str}_ikdd_tree.pkl")
-        self._fname_jnt = os.path.join(path, f"{identifier_str}_jnt_data.pkl")
+        self._fname_jnt = os.path.join(path, f"{identifier_str}_ikdd_jnt_data.pkl")
         self._k_bbs = 100  # number of nearest neighbours examined by the backbone solver
         self._k_max = 100  # maximum nearest neighbours explored by the evolver
         self._max_n_iter = 7  # max_n_iter of the backbone solver

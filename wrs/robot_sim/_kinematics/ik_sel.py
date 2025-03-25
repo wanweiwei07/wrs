@@ -1,14 +1,7 @@
-"""
-Data driven ik solver
-author: weiwei
-date: 20231107
-"""
-
 import os
 import pickle
 import numpy as np
 import scipy.spatial
-from direct.showbase.Job import addTestJob
 from tqdm import tqdm
 from scipy.spatial.transform import Rotation
 import wrs.basis.robot_math as rm
@@ -20,11 +13,7 @@ import wrs.robot_sim._kinematics.model_generator as rkmg
 import wrs.modeling.geometric_model as mgm
 import wrs.basis.utils as bu
 
-
-# for debugging purpose
-
-
-class DDIKSolver(object):
+class SELIKSolver(object):
     def __init__(self, jlc, path=None, identifier_str='test', backbone_solver='n', rebuild=False):
         """
         :param jlc:
@@ -38,9 +27,9 @@ class DDIKSolver(object):
         current_file_dir = os.path.dirname(__file__)
         if path is None:
             path = os.path.join(os.path.dirname(current_file_dir), "_data_files")
-        self._fname_tree = os.path.join(path, f"{identifier_str}_ikdd_tree.pkl")
-        self._fname_jnt = os.path.join(path, f"{identifier_str}_jnt_data.pkl")
-        self._k_max = 1000  # maximum nearest neighbours examined by the backbone solver
+        self._fname_tree = os.path.join(path, f"{identifier_str}_iksel_tree.pkl")
+        self._fname_jnt = os.path.join(path, f"{identifier_str}_iksel_jnt_data.pkl")
+        self._k_max = 200  # maximum nearest neighbours examined by the backbone solver
         self._max_n_iter = 7  # max_n_iter of the backbone solver
         if backbone_solver == 'n':
             self._backbone_solver = ikn.NumIKSolver(self.jlc)
@@ -110,7 +99,7 @@ class DDIKSolver(object):
         # gen sampled qs
         sampled_jnts = []
         n_intervals = np.linspace(8, 4, self.jlc.n_dof, endpoint=False)
-        print(f"Buidling Data for DDIK using the following joint granularity: {n_intervals.astype(int)}...")
+        print(f"Buidling Data for SELIK using the following joint granularity: {n_intervals.astype(int)}...")
         for i in range(self.jlc.n_dof):
             sampled_jnts.append(
                 np.linspace(self.jlc.jnt_ranges[i][0], self.jlc.jnt_ranges[i][1], int(n_intervals[i] + 2))[1:-1])
@@ -140,7 +129,7 @@ class DDIKSolver(object):
             pickle.dump(self.query_tree, f_tree)
         with open(self._fname_jnt, 'wb') as f_jnt:
             pickle.dump([self.jnt_data, self.tcp_data, self.jinv_data], f_jnt)
-        print("ddik data file saved.")
+        print("selik data file saved.")
 
     def ik(self,
            tgt_pos,
@@ -179,7 +168,6 @@ class DDIKSolver(object):
             adjust_array = np.einsum('ijk,ik->ij', seed_jinv_array, seed_posrot_diff_array)
             square_sums = np.sum((adjust_array) ** 2, axis=1)
             sorted_indices = np.argsort(square_sums)
-            # sorted_indices = range(self._k_max)
             seed_jnt_array_cad = seed_jnt_array[sorted_indices[:20]]
             for id, seed_jnt_values in enumerate(seed_jnt_array_cad):
                 if id > 3:
@@ -205,7 +193,6 @@ class DDIKSolver(object):
 
 
 if __name__ == '__main__':
-    import time
     import math
     import wrs.visualization.panda.world as wd
 
@@ -245,7 +232,7 @@ if __name__ == '__main__':
     jlc.jnts[6].loc_motion_ax = np.array([0, 0, 1])
     jlc.jnts[6].motion_range = np.array([-3.99680398707 + _jnt_safemargin, 3.99680398707 - _jnt_safemargin])
     jlc._loc_flange_pos = np.array([0, 0, .007])
-    jlc.finalize(ik_solver='dr', identifier_str="test_new")
+    jlc.finalize(ik_solver='s', identifier_str="test_new")
     jlc.test_ik_success_rate()
 
     # goal_jnt_values = jlc.rand_conf()
