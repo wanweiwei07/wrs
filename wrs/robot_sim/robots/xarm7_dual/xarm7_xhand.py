@@ -8,13 +8,15 @@ import wrs.robot_sim.end_effectors.multifinger.xhand.xhand_right as end_effector
 
 class XArm7XHR(sari.SglArmRobotInterface):
 
-    def __init__(self, pos=np.zeros(3), rotmat=np.eye(3), ik_solver='a', name="xarm7", enable_cc=True):
+    def __init__(self, pos=np.zeros(3), rotmat=np.eye(3), name="xarm7", enable_cc=True):
         super().__init__(pos=pos, rotmat=rotmat, name=name, enable_cc=enable_cc)
-        self.manipulator = manipulator.XArm7(pos=self.pos, rotmat=self.rotmat,
-                                            ik_solver=ik_solver, name=name + "_manipulator", enable_cc=False)
-        self.end_effector = end_effector.RobotiqHE(pos=self.manipulator.gl_flange_pos,
-                                                   rotmat=self.manipulator.gl_flange_rotmat,
-                                                   name=name + "_eef")
+        self.manipulator = manipulator.XArm7(pos=self.pos, rotmat=self.rotmat, name=name + "_manipulator",
+                                             enable_cc=False)
+        self.end_effector = end_effector.XHandRight(pos=self.manipulator.gl_flange_pos,
+                                                    rotmat=self.manipulator.gl_flange_rotmat,
+                                                    coupling_offset_pos=rm.zeros(3),
+                                                    coupling_offset_rotmat=rm.eye(3),
+                                                    name=name + "_eef")
         # tool center point
         self.manipulator.loc_tcp_pos = self.end_effector.loc_acting_center_pos
         self.manipulator.loc_tcp_rotmat = self.end_effector.loc_acting_center_rotmat
@@ -25,7 +27,7 @@ class XArm7XHR(sari.SglArmRobotInterface):
         # end_effector
         ee_cces = []
         for id, cdlnk in enumerate(self.end_effector.cdelements):
-            if id != 5 and id!= 10:
+            if id != 5 and id != 10:
                 ee_cces.append(self.cc.add_cce(cdlnk))
         # manipulator
         ml0 = self.cc.add_cce(self.manipulator.jlc.jnts[0].lnk)
@@ -60,15 +62,15 @@ if __name__ == '__main__':
 
     base = wd.World(cam_pos=[1.7, 1.7, 1.7], lookat_pos=[0, 0, .3])
     mgm.gen_frame().attach_to(base)
-    robot = UR3e_RtqHE(enable_cc=True)
-    robot.change_jaw_width(.05)
+    robot = XArm7XHR(enable_cc=True)
+    # robot.change_jaw_width(.05)
     # robot.cc.show_cdprim()
     robot.goto_given_conf(jnt_values=np.radians(np.array([20, -90, 120, 30, 0, 40, 0])))
     robot.cc.show_cdprim()
     robot.gen_meshmodel(alpha=.5, toggle_tcp_frame=True, toggle_jnt_frames=False).attach_to(base)
     robot.gen_stickmodel(toggle_tcp_frame=True, toggle_jnt_frames=True).attach_to(base)
 
-    tgt_pos = np.array([.3, .1, .3])
+    tgt_pos = np.array([.3, .3, .3])
     tgt_rotmat = rm.rotmat_from_axangle([0, 1, 0], math.pi * 2 / 3)
     mgm.gen_frame(pos=tgt_pos, rotmat=tgt_rotmat).attach_to(base)
     jnt_values = robot.ik(tgt_pos=tgt_pos, tgt_rotmat=tgt_rotmat, toggle_dbg=False)

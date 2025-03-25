@@ -132,7 +132,6 @@ class CollisionChecker(object):
         # temporary parameter for toggling on/off show_cdprimit
         self._toggled_cdprim_list = []
         # togglable lists
-        self.dynamic_into_list = []  # for oiee
         self.dynamic_ext_list = []  # for ignoring the external collision of certain components
 
     def add_cce(self, lnk):

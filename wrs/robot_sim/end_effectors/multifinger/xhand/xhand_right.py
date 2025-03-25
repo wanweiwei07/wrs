@@ -45,6 +45,23 @@ class XHandRight(ei.EEInterface):
         self.pinky_jlc.finalize()
         # backup
         self.jaw_width_bk = []
+        # acting center
+        self.loc_acting_center_pos = rm.vec(0,-0.075,.075)
+        self.loc_acting_center_rotmat = rm.rotmat_from_euler(rm.pi/2,rm.pi/2,0)
+        # collision detection
+        # collisions
+        self.cdelements = (self.palm.lnk_list[0],
+                           self.thumb_jlc.jnts[0].lnk,
+                           self.thumb_jlc.jnts[1].lnk,
+                           self.thumb_jlc.jnts[2].lnk,
+                           self.index_jlc.jnts[0].lnk,
+                           self.index_jlc.jnts[1].lnk,
+                           self.middle_jlc.jnts[0].lnk,
+                           self.middle_jlc.jnts[1].lnk,
+                           self.ring_jlc.jnts[0].lnk,
+                           self.ring_jlc.jnts[1].lnk,
+                           self.pinky_jlc.jnts[0].lnk,
+                           self.pinky_jlc.jnts[1].lnk)
 
     def __define_thumb(self, palm, name, file_dir):
         jlc = rkjlc.JLChain(pos=palm.gl_flange_pose_list[0][0],
@@ -235,6 +252,19 @@ class XHandRight(ei.EEInterface):
         if jaw_width != self.get_jaw_width():
             self.change_jaw_width(jaw_width=jaw_width)
 
+    def fix_to(self, pos, rotmat):
+        self._pos = pos
+        self._rotmat = rotmat
+        self.coupling.pos = self._pos
+        self.coupling.rotmat = self.rotmat
+        self.palm.fix_to(self.coupling.gl_flange_pose_list[0][0], self.coupling.gl_flange_pose_list[0][1])
+        self.thumb_jlc.fix_to(self.palm.gl_flange_pose_list[0][0], self.palm.gl_flange_pose_list[0][1])
+        self.index_jlc.fix_to(self.palm.gl_flange_pose_list[1][0], self.palm.gl_flange_pose_list[1][1])
+        self.middle_jlc.fix_to(self.palm.gl_flange_pose_list[2][0], self.palm.gl_flange_pose_list[2][1])
+        self.ring_jlc.fix_to(self.palm.gl_flange_pose_list[3][0], self.palm.gl_flange_pose_list[3][1])
+        self.pinky_jlc.fix_to(self.palm.gl_flange_pose_list[4][0], self.palm.gl_flange_pose_list[4][1])
+        self.update_oiee()
+
     def get_jaw_width(self):
         raise NotImplementedError
 
@@ -386,6 +416,6 @@ if __name__ == '__main__':
     xhand = XHandRight()
     # xhand.goto_given_conf(xhand.rand_conf())
     # xhand.gen_stickmodel(toggle_tcp_frame=True).attach_to(base)
-    xhand.gen_meshmodel(toggle_jnt_frames=True, toggle_tcp_frame=True, alpha=.3).attach_to(base)
+    xhand.gen_meshmodel(toggle_jnt_frames=True, toggle_cdprim=True, toggle_tcp_frame=True, alpha=.3).attach_to(base)
     # xhand.gen_meshmodel(toggle_cdprim=True).attach_to(base)
     base.run()
