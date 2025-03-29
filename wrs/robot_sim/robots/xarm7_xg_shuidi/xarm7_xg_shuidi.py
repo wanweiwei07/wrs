@@ -2,7 +2,7 @@ import math
 import numpy as np
 import wrs.modeling.model_collection as mmc
 import wrs.robot_sim.robots.xarm7_xg_shuidi.xarm7_xg as x7g
-import wrs.robot_sim.robots.shuidi.shuidi as sd
+import wrs.robot_sim.agv.shuidi.shuidi as sd
 import wrs.robot_sim.robots.robot_interface as ri
 
 
