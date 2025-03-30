@@ -270,7 +270,7 @@ class XHandRight(ei.EEInterface):
 
     @ei.EEInterface.assert_oiee_decorator
     def change_jaw_width(self, jaw_width):
-        raise NotImplementedError
+        pass
 
     def get_ee_values(self):
         return self.get_jaw_width()

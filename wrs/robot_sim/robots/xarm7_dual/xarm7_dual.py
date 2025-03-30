@@ -1,86 +1,60 @@
 import os
-import numpy as np
 import wrs.basis.robot_math as rm
 import wrs.modeling.collision_model as mcm
 import wrs.robot_sim._kinematics.jlchain as rkjlc
 import wrs.robot_sim._kinematics.collision_checker as cc
 import wrs.robot_sim.robots.dual_arm_robot_interface as dari
-import wrs.robot_sim.robots.ur3e_dual.ur3e_rtqhe as u3ehe
+import wrs.robot_sim.robots.xarm7_dual.xarm7_xhand as xa7xh
+from wrs.robot_sim.robots.xarm7_dual.xarm7_xhand import XArm7XHR
 
 
-class UR3e_Dual(dari.DualArmRobotInterface):
+class XArm7Dual(dari.DualArmRobotInterface):
 
-    def __init__(self, pos=np.zeros(3), rotmat=np.eye(3), name='ur3e_dual', enable_cc=True):
+    def __init__(self, pos=rm.zeros(3), rotmat=rm.eye(3), name='xarm7_dual', enable_cc=True):
         super().__init__(pos=pos, rotmat=rotmat, name=name, enable_cc=enable_cc)
         current_file_dir = os.path.dirname(__file__)
         # the body anchor
         self._body = rkjlc.rkjl.Anchor(name=self.name + "_anchor", pos=self.pos, rotmat=self.rotmat, n_flange=2,
                                        n_lnk=9)
-        self._body.loc_flange_pose_list[0] = [rm.vec(.365, .345, 1.33),
-                                              rm.rotmat_from_euler(-rm.pi / 2.0, 0, -rm.pi / 2.0)]
-        self._body.loc_flange_pose_list[1] = [rm.vec(.365, -.345, 1.33),
-                                              rm.rotmat_from_euler(-rm.pi / 2.0, 0, -rm.pi / 2.0)]
-        self._body.lnk_list[0].name = "ur3e_dual_base_link"
+        self._body.loc_flange_pose_list[0] = [rm.vec(0.0850953, 0.55139765, 0.0075),
+                                              rm.eye(3)]
+        self._body.loc_flange_pose_list[1] = [rm.vec(0.0850953, -0.55139765, 0.0075),
+                                              rm.eye(3)]
+        self._body.lnk_list[0].name = name + "_table"
         self._body.lnk_list[0].cmodel = mcm.CollisionModel(
-            initor=os.path.join(current_file_dir, "meshes", "ur3e_dual_base.stl"), name=self.name + "_body",
+            initor=os.path.join(current_file_dir, "meshes", "table.stl"), name=self.name + "_body",
             cdprim_type=mcm.const.CDPrimType.USER_DEFINED,
             userdef_cdprim_fn=self._base_cdprim)
         self._body.lnk_list[0].cmodel.rgba = rm.const.hug_gray
         # left arm
-        self._lft_arm = u3ehe.UR3e_RtqHE(pos=self._body.gl_flange_pose_list[0][0],
-                                         rotmat=self._body.gl_flange_pose_list[0][1],
-                                         ik_solver=None, enable_cc=False)
-        self._lft_arm.home_conf = rm.vec(-rm.pi * 2 / 3, -rm.pi * 2 / 3, rm.pi * 2 / 3, rm.pi, -rm.pi / 2, 0)
-        self._lft_arm.manipulator.jnts[0].motion_range = rm.vec(-rm.pi * 5 / 3, -rm.pi / 3)
-        self._lft_arm.manipulator.jnts[1].motion_range = rm.vec(-rm.pi, 0)
-        self._lft_arm.manipulator.jnts[2].motion_range = rm.vec(0, rm.pi)
-        self._lft_arm.manipulator.jnts[3].motion_range = rm.vec(rm.pi / 6, rm.pi * 7 / 6)
-        self._lft_arm.manipulator.jnts[4].motion_range = rm.vec(-rm.pi, rm.pi)
-        self._lft_arm.manipulator.jnts[5].motion_range = rm.vec(-rm.pi, rm.pi)
+        self._lft_arm = xa7xh.XArm7XHR(pos=self._body.gl_flange_pose_list[0][0],
+                                       rotmat=self._body.gl_flange_pose_list[0][1], enable_cc=False)
+        # self._lft_arm.home_conf = rm.vec(-rm.pi * 2 / 3, -rm.pi * 2 / 3, rm.pi * 2 / 3, rm.pi, -rm.pi / 2, 0, 0)
         self._lft_arm.manipulator.jlc.finalize(identifier_str=self._lft_arm.name + "_dual_lft")
         # right side
-        self._rgt_arm = u3ehe.UR3e_RtqHE(pos=self._body.gl_flange_pose_list[1][0],
-                                         rotmat=self._body.gl_flange_pose_list[1][1],
-                                         ik_solver=None, enable_cc=False)
-        self._rgt_arm.home_conf = rm.vec(rm.pi * 2 / 3, -rm.pi / 3, -rm.pi * 2 / 3, 0, rm.pi / 2, 0)
-        self._rgt_arm.manipulator.jnts[0].motion_range = rm.vec(rm.pi / 3, rm.pi * 5 / 3)
-        self._rgt_arm.manipulator.jnts[1].motion_range = rm.vec(-rm.pi, 0)
-        self._rgt_arm.manipulator.jnts[2].motion_range = rm.vec(-rm.pi, 0)
-        self._rgt_arm.manipulator.jnts[3].motion_range = rm.vec(-rm.pi * 5 / 6, rm.pi / 6)
-        self._rgt_arm.manipulator.jnts[4].motion_range = rm.vec(-rm.pi, rm.pi)
-        self._rgt_arm.manipulator.jnts[5].motion_range = rm.vec(-rm.pi, rm.pi)
+        self._rgt_arm = xa7xh.XArm7XHR(pos=self._body.gl_flange_pose_list[1][0],
+                                       rotmat=self._body.gl_flange_pose_list[1][1], enable_cc=False)
+        # self._rgt_arm.home_conf = rm.vec(rm.pi * 2 / 3, -rm.pi / 3, -rm.pi * 2 / 3, 0, rm.pi / 2, 0, 0)
         self._rgt_arm.manipulator.jlc.finalize(identifier_str=self._rgt_arm.name + "_dual_rgt")
         if self.cc is not None:
             self.setup_cc()
         # go home
         self.goto_home_conf()
-        # set default delegator to left
-        self.use_lft()
+        # set default delegator to right
+        self.use_rgt()
 
     @staticmethod
-    def _base_cdprim(name="ur3e_dual_base", ex_radius=None):
+    def _base_cdprim(name="table", ex_radius=None):
         pdcnd = mcm.CollisionNode(name + "_cnode")
-        collision_primitive_c0 = mcm.CollisionBox(mcm.Point3(0.54, 0.0, 0.39),
-                                                  x=.54 + ex_radius, y=.6 + ex_radius, z=.39 + ex_radius)
-        pdcnd.addSolid(collision_primitive_c0)
-        collision_primitive_c1 = mcm.CollisionBox(mcm.Point3(0.06, 0.0, 0.9),
-                                                  x=.06 + ex_radius, y=.375 + ex_radius, z=.9 + ex_radius)
-        pdcnd.addSolid(collision_primitive_c1)
-        collision_primitive_c2 = mcm.CollisionBox(mcm.Point3(0.18, 0.0, 1.77),
-                                                  x=.18 + ex_radius, y=.21 + ex_radius, z=.03 + ex_radius)
-        pdcnd.addSolid(collision_primitive_c2)
-        collision_primitive_l0 = mcm.CollisionBox(mcm.Point3(0.2425, 0.345, 1.33),
-                                                  x=.1225 + ex_radius, y=.06 + ex_radius, z=.06 + ex_radius)
-        pdcnd.addSolid(collision_primitive_l0)
-        collision_primitive_r0 = mcm.CollisionBox(mcm.Point3(0.2425, -0.345, 1.33),
-                                                  x=.1225 + ex_radius, y=.06 + ex_radius, z=.06 + ex_radius)
-        pdcnd.addSolid(collision_primitive_r0)
-        collision_primitive_l1 = mcm.CollisionBox(mcm.Point3(0.21, 0.405, 1.07),
-                                                  x=.03 + ex_radius, y=.06 + ex_radius, z=.29 + ex_radius)
-        pdcnd.addSolid(collision_primitive_l1)
-        collision_primitive_r1 = mcm.CollisionBox(mcm.Point3(0.21, -0.405, 1.07),
-                                                  x=.03 + ex_radius, y=.06 + ex_radius, z=.29 + ex_radius)
-        pdcnd.addSolid(collision_primitive_r1)
+        collision_primitive0 = mcm.CollisionBox(mcm.Point3(0.53, 0.0, -0.355),
+                                                  x=.53 + ex_radius, y=.65 + ex_radius, z=.355 + ex_radius)
+        pdcnd.addSolid(collision_primitive0)
+        collision_primitive1 = mcm.CollisionBox(mcm.Point3(1.03, 0.62, 0.145),
+                                                  x=.03 + ex_radius, y=.03 + ex_radius, z=.145 + ex_radius)
+        pdcnd.addSolid(collision_primitive1)
+        collision_primitive2 = mcm.CollisionBox(mcm.Point3(1.03, -0.62, 0.145),
+                                                  x=.03 + ex_radius, y=.03 + ex_radius, z=.145 + ex_radius)
+        pdcnd.addSolid(collision_primitive2)
         cdprim = mcm.NodePath(name + "_cdprim")
         cdprim.attachNewNode(pdcnd)
         return cdprim
@@ -185,12 +159,11 @@ if __name__ == '__main__':
     import wrs.visualization.panda.world as wd
     from tqdm import tqdm
 
-    base = wd.World(cam_pos=[3, 3, 3], lookat_pos=[0, 0, 1])
+    base = wd.World(cam_pos=[2,1,1], lookat_pos=[0, 0, 0])
     mcm.mgm.gen_frame().attach_to(base)
-    robot = UR3e_Dual(enable_cc=True)
-    robot.gen_meshmodel(alpha=.5).attach_to(base)
-    robot.gen_stickmodel().attach_to(base)
-    robot.use_rgt()
+    robot = XArm7Dual(enable_cc=True)
+    robot.gen_meshmodel(alpha=1, toggle_cdprim=True).attach_to(base)
+    # robot.gen_stickmodel().attach_to(base)
     # robot.delegator.manipulator.jlc._ik_solver.test_success_rate()
     base.run()
 

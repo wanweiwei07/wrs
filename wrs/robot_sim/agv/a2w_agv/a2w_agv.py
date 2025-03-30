@@ -23,7 +23,7 @@ class A2WAGV(ai.AGVInterface):
         self.anchor = rkjlc.rkjl.Anchor(name=name + "_anchor", pos=self.movement_jlc.gl_flange_pos,
                                         rotmat=self.movement_jlc.gl_flange_rotmat, n_flange=1, n_lnk=9)
         # anchor flangz
-        self.anchor.loc_flange_pose_list[0] = [np.array([.0, .0, .445862]), np.eye(3)]
+        self.anchor.loc_flange_pose_list[0] = [np.array([.0, .0, .0]), np.eye(3)]
         # anchor body
         self.anchor.lnk_list[0].name = name + "_body"
         self.anchor.lnk_list[0].loc_pos = np.array([.0, .0, .0])
