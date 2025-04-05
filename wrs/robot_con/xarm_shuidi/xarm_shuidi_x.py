@@ -52,7 +52,7 @@ class XArmShuidiX(object):
                              max_jntvel=None,
                              max_jntacc=None,
                              start_frame_id=1,
-                             toggle_debug=False):
+                             ctrl_freq=.005):
         """
         :param path: [jnt_values0, jnt_values1, ...], results of motion planning
         :param max_jntvel:
@@ -62,8 +62,10 @@ class XArmShuidiX(object):
         """
         if not path or path is None:
             raise ValueError("The given is incorrect!")
-        control_frequency = .005
-        interp_time, interp_confs, interp_spds, interp_accs = pwp.time_optimal_trajectory_generation(path=path, max_vels=max_jntvel, max_accs=max_jntacc)
+        interp_time, interp_confs, interp_spds, interp_accs = pwp.time_optimal_trajectory_generation(path=path,
+                                                                                                     max_vels=max_jntvel,
+                                                                                                     max_accs=max_jntacc,
+                                                                                                     ctrl_freq=ctrl_freq)
         interpolated_path = interp_confs[start_frame_id:]
         for jnt_values in interpolated_path:
             self._arm_x.set_servo_angle_j(jnt_values, is_radian=True)
@@ -94,6 +96,7 @@ class XArmShuidiX(object):
             time_interval = time_interval - .5
             time.sleep(.3)
         return
+
 
 if __name__ == "__main__":
     import keyboard
@@ -200,7 +203,7 @@ if __name__ == "__main__":
             if new_jnt_values is not None:
                 print(new_jnt_values)
                 print(last_jnt_values)
-                max_change = np.max(new_jnt_values-last_jnt_values)
+                max_change = np.max(new_jnt_values - last_jnt_values)
                 print(max_change)
                 # rbt_s.fk(jnt_values=new_jnt_values)
                 # rbt_s.jaw_to(ee_values=ee_values)
