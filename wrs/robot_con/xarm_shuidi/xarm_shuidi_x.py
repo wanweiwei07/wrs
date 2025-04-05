@@ -2,7 +2,7 @@ import math
 import time
 import numpy as np
 import shuidi_x as agv
-import wrs.motion.trajectory.piecewisepoly_toppra as pwp
+import wrs.motion.trajectory.totg as pwp
 
 
 class XArmShuidiX(object):
@@ -63,13 +63,8 @@ class XArmShuidiX(object):
         if not path or path is None:
             raise ValueError("The given is incorrect!")
         control_frequency = .005
-        tpply = pwp.PiecewisePolyTOPPRA()
-        interpolated_path = tpply.interpolate_by_max_spdacc(path=path,
-                                                            control_frequency=control_frequency,
-                                                            max_vels=max_jntvel,
-                                                            max_accs=max_jntacc,
-                                                            toggle_debug=toggle_debug)
-        interpolated_path = interpolated_path[start_frame_id:]
+        interp_time, interp_confs, interp_spds, interp_accs = pwp.time_optimal_trajectory_generation(path=path, max_vels=max_jntvel, max_accs=max_jntacc)
+        interpolated_path = interp_confs[start_frame_id:]
         for jnt_values in interpolated_path:
             self._arm_x.set_servo_angle_j(jnt_values, is_radian=True)
         return
