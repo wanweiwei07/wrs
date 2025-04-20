@@ -1,25 +1,31 @@
 import os
 import time
-from wrs import wd, rm, mcm, mgm, fsreg, x6wg2, gg, fsp
+from wrs import wd, rm, mcm, x6wg2, gg, fsp
+
+mesh_name = "bunnysim"
+mesh_path = os.path.join(os.getcwd(), "meshes", mesh_name + ".stl")
+fsref_pose_path = os.path.join(os.getcwd(), "pickles", mesh_name + "_fsref_pose.pickle")
+grasp_path = os.path.join(os.getcwd(), "pickles", mesh_name + "_grasp.pickle")
+regspot_path = os.path.join(os.getcwd(), "pickles", mesh_name + "_regspot.pickle")
 
 base = wd.World(cam_pos=[1, 1, 1], lookat_pos=[0, 0, 0])
-obj_path = os.path.join("objects", "bunnysim.stl")
 ground = mcm.gen_box(xyz_lengths=rm.vec(5, 5, .01), pos=rm.vec(0, 0, -0.005))
 ground.attach_to(base)
-bunny = mcm.CollisionModel(obj_path)
+bunny = mcm.CollisionModel(mesh_path)
 robot = x6wg2.XArmLite6WG2()
+robot.gen_meshmodel().attach_to(base)
 
-fs_reference_poses = fsp.FSReferencePoses.load_from_disk(file_name="fs_reference_poses_bunny.pickle")
-reference_grasps = gg.GraspCollection.load_from_disk(file_name="reference_grasps_wg2_bunny.pickle")
-fsregspot_collection = fsreg.FSRegSpotCollection(robot=robot,
+fs_reference_poses = fsp.FSReferencePoses.load_from_disk(file_name=fsref_pose_path)
+reference_grasps = gg.GraspCollection.load_from_disk(file_name=grasp_path)
+fsregspot_collection = fsp.FSRegSpotCollection(robot=robot,
                                                  obj_cmodel=bunny,
                                                  fs_reference_poses=fs_reference_poses,
-                                                 reference_grasp_collection=reference_grasps)
+                                                 reference_gc=reference_grasps)
 fsregspot_collection.add_new_spot(spot_pos=rm.np.array([.4, 0, 0]), spot_rotz=0)
 fsregspot_collection.add_new_spot(spot_pos=rm.np.array([.4, .2, 0]), spot_rotz=0)
 fsregspot_collection.add_new_spot(spot_pos=rm.np.array([.4, -.2, 0]), spot_rotz=0)
-fsregspot_collection.save_to_disk("regspot_collection_x6wg2_bunny.pickle")
-fsregspot_collection.load_from_disk("regspot_collection_x6wg2_bunny.pickle")
+fsregspot_collection.save_to_disk(regspot_path)
+fsregspot_collection.load_from_disk(regspot_path)
 mesh_model_list = fsregspot_collection.gen_meshmodel()
 for fsregspot in fsregspot_collection:
     mcm.mgm.gen_frame(pos=fsregspot.pos,

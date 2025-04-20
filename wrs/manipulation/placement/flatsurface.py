@@ -208,7 +208,7 @@ class FSRegSpotCollection(object):
                 goal_pose=(pos, rotmat),
                 obstacle_list=obstacle_list,
                 consider_robot=consider_robot,
-                toggle_dbg=True)
+                toggle_dbg=False)
             if feasible_gids is not None:
                 fs_regspot.fspg_list.append(FSPG(fs_pose_id=pose_id,
                                                  obj_pose=(pos, rotmat),

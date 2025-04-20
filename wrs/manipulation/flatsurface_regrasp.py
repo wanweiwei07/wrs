@@ -199,7 +199,7 @@ class FSRegraspPlanner(object):
             self._gl_nodes_by_gid[i] += new_gl_nodes_by_gid[i]
         return local_nodes
 
-    def plan_by_obj_poses(self, start_pose, goal_pose, obstacle_list=None, toggle_dbg=False):
+    def plan_by_obj_poses(self, start_pose, goal_pose, obstacle_list=None, linear_distance=.07, toggle_dbg=False):
         """
         :param start_pose: (pos, rotmat)
         :param goal_pose: (pos, rotmat)
@@ -219,7 +219,8 @@ class FSRegraspPlanner(object):
                         print(f"No path exists between {start} and {goal}")
                         continue
             result = self.gen_regrasp_motion(path=min_path, obstacle_list=obstacle_list,
-                                             start_jnt_values=self.robot.get_jnt_values(), linear_distance=.07,
+                                             start_jnt_values=self.robot.get_jnt_values(),
+                                             linear_distance=linear_distance,
                                              toggle_dbg=toggle_dbg)
             print(result)
             if result[0][0] == 's':  # success
@@ -351,7 +352,7 @@ class FSRegraspPlanner(object):
                                                                      obstacle_list=obstacle_list,
                                                                      object_list=[obj_cmodel_copy],
                                                                      use_rrt=True,
-                                                                     toggle_dbg=True)
+                                                                     toggle_dbg=False)
                 if retract is None:
                     return (f"node failure at {i}", path[i])
                 for robot_mesh in retract.mesh_list:

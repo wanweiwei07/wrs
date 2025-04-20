@@ -133,6 +133,7 @@ class CollisionChecker(object):
         self._toggled_cdprim_list = []
         # togglable lists
         self.dynamic_ext_list = []  # for ignoring the external collision of certain components
+        self.dynamic_into_list = [] # for ignoring the internal collision of certain components
 
     def add_cce(self, lnk):
         """

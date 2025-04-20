@@ -2,14 +2,17 @@ import os
 import time
 from wrs import wd, rm, mcm, fsp
 
+mesh_name = "bunnysim"
+mesh_path = os.path.join(os.getcwd(), "meshes", mesh_name+".stl")
+fsref_pose_path = os.path.join(os.getcwd(), "pickles", mesh_name+"_fsref_pose.pickle")
+
 base = wd.World(cam_pos=[1, 1, 1], lookat_pos=[0, 0, 0])
-obj_path = os.path.join("objects", "bunnysim.stl")
 ground = mcm.gen_box(xyz_lengths=rm.vec(.5, .5, .01), pos=rm.vec(0, 0, -0.01))
 ground.attach_to(base)
-bunny = mcm.CollisionModel(obj_path)
+bunny = mcm.CollisionModel(mesh_path)
 
 fs_reference_poses = fsp.FSReferencePoses(obj_cmodel=bunny)
-fs_reference_poses.save_to_disk("fs_reference_poses_bunny.pickle")
+fs_reference_poses.save_to_disk(fsref_pose_path)
 
 
 class AnimeData(object):
