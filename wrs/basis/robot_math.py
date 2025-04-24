@@ -17,6 +17,8 @@ from numpy.linalg import norm
 from numpy import sin, cos, tan
 from numpy import arctan2 as atan2, arcsin as asin, arccos as acos
 from numpy import floor, ceil, round, isnan, isinf
+from numpy import array
+from numpy import linalg
 
 np.set_printoptions(suppress=True) # avoid scientific notation
 
