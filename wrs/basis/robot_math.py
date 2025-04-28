@@ -959,6 +959,18 @@ def pos_average(pos_list, bandwidth=10):
     else:
         return np.array(pos_list).mean(axis=0)
 
+def intersect_planes(p1, n1, p2, n2, tol=1e-6):
+    # normalize normals
+    n1 = n1 / np.linalg.norm(n1)
+    n2 = n2 / np.linalg.norm(n2)
+    d = np.cross(n1, n2)
+    if np.linalg.norm(d) < tol:
+        raise ValueError("Planes are parallel or coincident.")
+    A = np.array([n1, n2, d])
+    b = np.array([np.dot(n1, p1), np.dot(n2, p2), 0.0])
+    x0 = np.linalg.solve(A, b)
+    return x0, d  # x0 is a point on the line of intersection, d is the direction vector
+
 
 def gen_icorotmats(icolevel=1,
                    rotation_interval=math.radians(45),

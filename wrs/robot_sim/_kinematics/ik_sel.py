@@ -109,7 +109,7 @@ class SELIKSolver(object):
         query_data = []
         jnt_data = []
         jinv_data = []
-        for id in tqdm(range(len(sampled_qs))):
+        for id in tqdm(range(len(samled_qs))):
             jnt_values = sampled_qs[id]
             # pinv of jacobian
             flange_pos, flange_rotmat, j_mat = self.jlc.fk(jnt_values=jnt_values, toggle_jacobian=True)
