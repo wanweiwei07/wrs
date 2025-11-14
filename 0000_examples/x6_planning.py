@@ -1,10 +1,10 @@
-from wrs import wd, rm, rrtc, mgm, x6g2
+from wrs import wd, rm, rrtc, mgm, x6wg2
 
 
 base = wd.World(cam_pos=rm.vec(2, 0, 1), lookat_pos=rm.vec(0, 0, 0.5))
 mgm.gen_frame().attach_to(base)
 # initialize
-robot = x6g2.XArmLite6WG2(enable_cc=True)
+robot = x6wg2.XArmLite6WG2(enable_cc=True)
 
 start_conf = rm.np.array([-1.447399, -0.139943, 0.376222, -1.302925, 1.107183, 0.524813])
 goal_conf = rm.np.array([0.796652, -0.139604, 0.914931, 1.328044, 0.434468, 0.989801])

@@ -12,6 +12,7 @@ import wrs.robot_sim._kinematics.jlchain as rkjlc
 import wrs.robot_sim._kinematics.model_generator as rkmg
 import wrs.modeling.geometric_model as mgm
 import wrs.basis.utils as bu
+import samply
 
 class SELIKSolver(object):
     def __init__(self, jlc, path=None, identifier_str='test', backbone_solver='n', rebuild=False):
@@ -96,20 +97,17 @@ class SELIKSolver(object):
             return np.array([0])
 
     def _build_data(self):
-        # gen sampled qs
-        sampled_jnts = []
-        n_intervals = np.linspace(8, 4, self.jlc.n_dof, endpoint=False)
-        print(f"Buidling Data for SELIK using the following joint granularity: {n_intervals.astype(int)}...")
-        for i in range(self.jlc.n_dof):
-            sampled_jnts.append(
-                np.linspace(self.jlc.jnt_ranges[i][0], self.jlc.jnt_ranges[i][1], int(n_intervals[i] + 2))[1:-1])
-        grid = np.meshgrid(*sampled_jnts)
-        sampled_qs = np.vstack([x.ravel() for x in grid]).T
-        # gen sampled qs and their correspondent flange poses
+        # gen normalized qs first and then linearly scale to sampled qs
+        sample_number = 40320 if self.jlc.n_dof == 6 else 201600
+        print("Generating normalized uniform samples using CVT...")
+        normalized_qs = samply.hypercube.cvt(sample_number, self.jlc.n_dof)
+        print(f"Building Data for SELIK using CVT for {sample_number} uniform samples...")
+        sampled_qs = self.jlc.jnt_ranges[:, 0] + normalized_qs * (self.jlc.jnt_ranges[:, 1] - self.jlc.jnt_ranges[:, 0])
+
         query_data = []
         jnt_data = []
         jinv_data = []
-        for id in tqdm(range(len(samled_qs))):
+        for id in tqdm(range(len(sampled_qs))):
             jnt_values = sampled_qs[id]
             # pinv of jacobian
             flange_pos, flange_rotmat, j_mat = self.jlc.fk(jnt_values=jnt_values, toggle_jacobian=True)
@@ -125,6 +123,7 @@ class SELIKSolver(object):
         return query_tree, np.asarray(jnt_data), np.asarray(query_data), np.asarray(jinv_data)
 
     def persist_data(self):
+        os.makedirs(os.path.dirname(self._fname_tree), exist_ok=True)
         with open(self._fname_tree, 'wb') as f_tree:
             pickle.dump(self.query_tree, f_tree)
         with open(self._fname_jnt, 'wb') as f_jnt:

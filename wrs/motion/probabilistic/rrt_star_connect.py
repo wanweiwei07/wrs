@@ -1,5 +1,7 @@
 import time
 import networkx as nx
+
+import wrs
 import wrs.motion.probabilistic.rrt_star as rrtst
 from operator import itemgetter
 import uuid
