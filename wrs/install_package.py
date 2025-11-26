@@ -6,4 +6,15 @@ def install(package):
 
 
 if __name__ == '__main__':
-    install("git+https://github.com/warmshao/WiLoR-mini")
+    install("panda3d")
+    install("numpy")
+    install("scipy")
+    install("tqdm")
+    install("opencv-python")
+    install("opencv-contrib-python")
+    install("rtree")
+    install("open3d")
+    install("shapely")
+    install("networkx")
+    install("pyserial")
+    install("matplotlib")
