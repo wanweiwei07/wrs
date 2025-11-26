@@ -5,9 +5,9 @@ date: 20201210
 """
 
 from direct.filter.CommonFilters import *
-import wrs.visualization.panda.filtermanager as fm
+import direct.filter.FilterManager as fm
 
-CARTOON_BODY_1 = """
+CARTOON_BODY = """
 float4 cartoondelta_n = k_cartoonseparation * texpix_txaux.xwyw;
 float4 cartoon_n_ref = tex2D(k_txcolor, %(texcoord)s);
 float4 cartoon_n0 = tex2D(k_txaux, %(texcoord)s + cartoondelta_n.xy);
@@ -16,43 +16,13 @@ float4 cartoon_n2 = tex2D(k_txaux, %(texcoord)s + cartoondelta_n.wz);
 float4 cartoon_n3 = tex2D(k_txaux, %(texcoord)s - cartoondelta_n.wz);
 float4 cartoon_n_mx = max(cartoon_n0, max(cartoon_n1, max(cartoon_n2, cartoon_n3)));
 float4 cartoon_n_mn = min(cartoon_n0, min(cartoon_n1, min(cartoon_n2, cartoon_n3)));
-//float4 cartoon_n4 = tex2D(k_txaux, %(texcoord)s + cartoondelta_n.xz);
-//float4 cartoon_n5 = tex2D(k_txaux, %(texcoord)s - cartoondelta_n.xz);
-//float4 cartoon_n6 = tex2D(k_txaux, %(texcoord)s + float2(cartoondelta_n.x, -cartoondelta_n.z));
-//float4 cartoon_n7 = tex2D(k_txaux, %(texcoord)s - float2(cartoondelta_n.x, -cartoondelta_n.z));
-//float4 cartoon_n_mx = max(cartoon_n0, max(cartoon_n1, max(cartoon_n2, max(cartoon_n3, max(cartoon_n4, max(cartoon_n5, 
-//max(cartoon_n6, cartoon_n7)))))));
-//float4 cartoon_n_mn = min(cartoon_n0, min(cartoon_n1, min(cartoon_n2, min(cartoon_n3, min(cartoon_n4, min(cartoon_n5, 
-//min(cartoon_n6, cartoon_n7)))))));
-float cartoon_n_thresh = saturate(dot(cartoon_n_mx - cartoon_n_mn, float4(3,3,0,0)) - 0.5);
-"""
-CARTOON_BODY_2 = """
-float4 cartoondelta_c = k_cartoonseparation * texpix_txcolor.xwyw;
-float4 cartoon_c_ref = tex2D(k_txcolor, %(texcoord)s);
-float4 cartoon_c0 = tex2D(k_txcolor, %(texcoord)s + cartoondelta_c.xy);
-float4 cartoon_c1 = tex2D(k_txcolor, %(texcoord)s - cartoondelta_c.xy);
-float4 cartoon_c2 = tex2D(k_txcolor, %(texcoord)s + cartoondelta_c.wz);
-float4 cartoon_c3 = tex2D(k_txcolor, %(texcoord)s - cartoondelta_c.wz);
-float4 cartoon_c_mx = max(cartoon_c0, max(cartoon_c1, max(cartoon_c2, cartoon_c3)));
-float4 cartoon_c_mn = min(cartoon_c0, min(cartoon_c1, min(cartoon_c2, cartoon_c3)));
-//float4 cartoon_c4 = tex2D(k_txcolor, %(texcoord)s + cartoondelta_c.xz);
-//float4 cartoon_c5 = tex2D(k_txcolor, %(texcoord)s - cartoondelta_c.xz);
-//float4 cartoon_c6 = tex2D(k_txcolor, %(texcoord)s + float2(cartoondelta_c.x, -cartoondelta_c.z));
-//float4 cartoon_c7 = tex2D(k_txcolor, %(texcoord)s - float2(cartoondelta_c.x, -cartoondelta_c.z));
-//float4 cartoon_c_mx = max(cartoon_c0, max(cartoon_c1, max(cartoon_c2, max(cartoon_c3, max(cartoon_c4, max(cartoon_c5, 
-//max(cartoon_c6, cartoon_c7)))))));
-//float4 cartoon_c_mn = min(cartoon_c0, min(cartoon_c1, min(cartoon_c2, min(cartoon_c3, min(cartoon_c4, min(cartoon_c5, 
-//min(cartoon_c6, cartoon_c7)))))));
-float cartoon_c_thresh = saturate(dot(cartoon_c_mx - cartoon_c_mn, float4(3,3,0,0)) - 0.5);
-float cartoon_thresh = saturate(cartoon_n_thresh + cartoon_c_thresh);
-o_color = lerp(o_color, k_cartooncolor, cartoon_thresh);
+float cartoon_n_thresh = saturate(dot(cartoon_n_mx - cartoon_n_mn, float4(3,3,0,3)) - .75);
+o_color = lerp(o_color, k_cartooncolor, cartoon_n_thresh);
 """
 
 # Some GPUs do not support variable-axis_length loops.
-#
 # We fill in the actual value of numsamples in the loop limit
 # when the shader is configured.
-#
 SSAO_BODY = """//Cg
 
 void vshader(float4 vtx_position : POSITION,
@@ -100,7 +70,6 @@ void fshader(out float4 o_color : COLOR,
   o_color.a = 1.0;
 }
 """
-
 
 class Filter(CommonFilters):
 
@@ -285,8 +254,7 @@ class Filter(CommonFilters):
             text += "{\n"
             text += "  o_color = tex2D(k_txcolor, %s);\n" % (texcoords["color"])
             if ("CartoonInk" in configuration):
-                text += CARTOON_BODY_1 % {"texcoord": texcoords["aux"]}
-                text += CARTOON_BODY_2 % {"texcoord": texcoords["color"]}
+                text += CARTOON_BODY % {"texcoord": texcoords["aux"]}
             if ("AmbientOcclusion" in configuration):
                 text += "  o_color *= tex2D(k_txssao2, %s).r;\n" % (texcoords["ssao2"])
             if ("BlurSharpen" in configuration):

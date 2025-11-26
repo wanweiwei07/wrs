@@ -1,15 +1,10 @@
-from panda3d.core import PerspectiveLens, OrthographicLens, AmbientLight, PointLight, Vec4, Vec3, Point3, \
-    WindowProperties, Filename, NodePath, Shader
+from panda3d.core import PerspectiveLens, OrthographicLens, AmbientLight, PointLight, Vec4, Vec3, Point3, WindowProperties
 from direct.showbase.ShowBase import ShowBase
 from direct.gui.OnscreenText import OnscreenText
 import wrs.visualization.panda.inputmanager as im
 import wrs.visualization.panda.filter as flt
-import os
-import math
-from wrs.basis import data_adapter as p3dh
-# from vision.pointcloud import o3dhelper as o3dh
-from wrs import basis as rm
-import numpy as np
+import wrs.basis.robot_math as rm
+import wrs.basis.data_adapter as da
 from enum import Enum
 try:
     import mujoco
@@ -25,9 +20,9 @@ class LensType(Enum):
 class World(ShowBase, object):
 
     def __init__(self,
-                 cam_pos=np.array([2.0, 0.5, 2.0]),
-                 lookat_pos=np.array([0, 0, 0.25]),
-                 up=np.array([0, 0, 1]),
+                 cam_pos=rm.np.array([2.0, 0.5, 2.0]),
+                 lookat_pos=rm.np.array([0, 0, 0.25]),
+                 up=rm.np.array([0, 0, 1]),
                  fov=40,
                  w=1920,
                  h=1080,
@@ -86,13 +81,9 @@ class World(ShowBase, object):
         self._ptlightnode2 = self.cam.attachNewNode(ptlight2)
         self._ptlightnode2.setPos(-self.cam.getPos().length(), 0, self.cam.getPos().length())
         self.render.setLight(self._ptlightnode2)
-        # helpers
-        self.p3dh = p3dh
-        # self.o3dh = o3dh
-        self.rbtmath = rm
         # set up inputmanager
         self.lookat_pos = lookat_pos
-        self.inputmgr = im.InputManager(self, self.lookat_pos)
+        self.inputmgr = im.InputManager(self, self.lookat_pos, toggle_rotcenter=True)
         taskMgr.add(self._interaction_update, "interaction", appendTask=True)
         # set up rotational cam
         if auto_rotate:
@@ -101,13 +92,10 @@ class World(ShowBase, object):
         props = WindowProperties()
         props.setSize(w, h)
         self.win.requestProperties(props)
-        # # outline edge shader
-        # self.set_outlineshader()
-        # set up cartoon effect
+        # set up cartoon filter
         self._separation = 1
         self.filter = flt.Filter(self.win, self.cam)
         self.filter.setCartoonInk(separation=self._separation)
-        # self.filter.setViewGlow()
         # # set up physics world
         # self.physics_scale=1e3
         # self.physicsworld = BulletWorld()
@@ -129,7 +117,6 @@ class World(ShowBase, object):
         # self._internal_update_obj_list = []  # the pdndp, collision model, or bullet dynamics model to be drawn
         # self._internal_update_robot_list = []
         # taskMgr.add(self._internal_update, "internal_update", appendTask=True)
-
         # for remote visualization
         self._external_update_objinfo_list = []  # see anime_info.py
         self._external_update_robotinfo_list = []
@@ -184,17 +171,17 @@ class World(ShowBase, object):
 
     def _rotatecam_update(self, task):
         campos = self.cam.getPos()
-        camangle = math.atan2(campos[1] - self.lookat_pos[1], campos[0] - self.lookat_pos[0])
+        camangle = rm.atan2(campos[1] - self.lookat_pos[1], campos[0] - self.lookat_pos[0])
         # print camangle
         if camangle < 0:
-            camangle += math.pi * 2
-        if camangle >= math.pi * 2:
+            camangle += rm.pi * 2
+        if camangle >= rm.pi * 2:
             camangle = 0
         else:
-            camangle += math.pi / 360
-        camradius = math.sqrt((campos[0] - self.lookat_pos[0]) ** 2 + (campos[1] - self.lookat_pos[1]) ** 2)
-        camx = camradius * math.cos(camangle)
-        camy = camradius * math.sin(camangle)
+            camangle += rm.pi / 360
+        camradius = rm.sqrt((campos[0] - self.lookat_pos[0]) ** 2 + (campos[1] - self.lookat_pos[1]) ** 2)
+        camx = camradius * rm.cos(camangle)
+        camy = camradius * rm.sin(camangle)
         self.cam.setPos(self.lookat_pos[0] + camx, self.lookat_pos[1] + camy, campos[2])
         self.cam.lookAt(self.lookat_pos[0], self.lookat_pos[1], self.lookat_pos[2])
         return task.cont
@@ -352,125 +339,3 @@ class World(ShowBase, object):
         self.cam.lookAt(lookat_pos[0], lookat_pos[1], lookat_pos[2])
         self.lookat_pos = lookat_pos
         self.inputmgr = im.InputManager(self, self.lookat_pos)
-
-    def set_cartoonshader(self, switchtoon=False):
-        """
-        set cartoon shader, the following program is a reference
-        https://github.com/panda3d/panda3d/blob/master/samples/cartoon-shader/advanced.py
-        :return:
-        author: weiwei
-        date: 20180601
-        """
-        this_dir, this_filename = os.path.split(__file__)
-        if switchtoon:
-            lightinggen = Filename.fromOsSpecific(os.path.join(this_dir, "shaders", "lighting_gen.sha"))
-            tempnode = NodePath("temp")
-            tempnode.setShader(loader.loadShader(lightinggen))
-            self.cam.node().setInitialState(tempnode.getState())
-            # self.render.setShaderInput("light", self.cam)
-            self.render.setShaderInput("light", self._ablightnode)
-        normalsBuffer = self.win.makeTextureBuffer("normalsBuffer", 0, 0)
-        normalsBuffer.setClearColor(Vec4(0.5, 0.5, 0.5, 1))
-        normalsCamera = self.makeCamera(normalsBuffer, lens=self.cam.node().getLens(), scene=self.render)
-        normalsCamera.reparentTo(self.cam)
-        normalgen = Filename.fromOsSpecific(os.path.join(this_dir, "shaders", "normal_gen.sha"))
-        tempnode = NodePath("temp")
-        tempnode.setShader(loader.loadShader(normalgen))
-        normalsCamera.node().setInitialState(tempnode.getState())
-        drawnScene = normalsBuffer.getTextureCard()
-        drawnScene.setTransparency(1)
-        drawnScene.setColor(1, 1, 1, 0)
-        drawnScene.reparentTo(render2d)
-        self.drawnScene = drawnScene
-        self.separation = 0.001
-        self.cutoff = 0.05
-        inkGen = Filename.fromOsSpecific(os.path.join(this_dir, "shaders", "ink_gen.sha"))
-        drawnScene.setShader(loader.loadShader(inkGen))
-        drawnScene.setShaderInput("separation", Vec4(0, 0, self.separation, 0))
-        drawnScene.setShaderInput("cutoff", Vec4(self.cutoff))
-
-    def set_outlineshader(self):
-        """
-        document 1: https://qiita.com/nmxi/items/bfd10a3b3f519878e74e
-        document 2: https://docs.panda3d.org/1.10/python/programming/shaders/list-of-cg-inputs
-        :return:
-        author: weiwei
-        date: 20180601, 20201210osaka
-        """
-        depth_sha = """
-        void vshader(float4 vtx_position : POSITION,
-                     float4 vtx_normal : NORMAL,
-                     uniform float4x4 mat_modelproj,
-                     uniform float4x4 mat_modelview,
-                     out float4 l_position : POSITION,
-                     out float4 l_color0: COLOR0) {
-            l_position = mul(mat_modelproj, vtx_position);
-            float depth = l_position.a*.1;
-            //l_color0 = vtx_position + float4(depth, depth, depth, 1);
-            l_color0 = float4(depth, depth, depth, 1);
-        }
-        void fshader(float4 l_color0: COLOR0,
-                     uniform sampler2D tex_0 : TEXUNIT0,
-                     out float4 o_color : COLOR) {
-            o_color = l_color0;
-        }"""
-        outline_sha = """
-        void vshader(float4 vtx_position : POSITION,
-             float2 vtx_texcoord0 : TEXCOORD0,
-             uniform float4x4 mat_modelproj,
-             out float4 l_position : POSITION,
-             out float2 l_texcoord0 : TEXCOORD0)
-        {
-          l_position = mul(mat_modelproj, vtx_position);
-          l_texcoord0 = vtx_texcoord0;
-        }
-        void fshader(float2 l_texcoord0 : TEXCOORD0,
-                     uniform sampler2D tex_0 : TEXUNIT0,
-                     uniform float2 sys_windowsize,
-                     out float4 o_color : COLOR)
-        {
-          float sepx = 1/sys_windowsize.x;
-          float sepy = 1/sys_windowsize.y;
-          float4 color0 = tex2D(tex_0, l_texcoord0);
-          float2 texcoord1 = l_texcoord0+float2(sepx, 0);
-          float4 color1 = tex2D(tex_0, texcoord1);
-          float2 texcoord2 = l_texcoord0+float2(0, sepy);
-          float4 color2 = tex2D(tex_0, texcoord2);
-          float2 texcoord3 = l_texcoord0+float2(-sepx, 0);
-          float4 color3 = tex2D(tex_0, texcoord3);
-          float2 texcoord4 = l_texcoord0+float2(0, -sepy);
-          float4 color4 = tex2D(tex_0, texcoord4);
-          float2 texcoord5 = l_texcoord0+float2(sepx, sepy);
-          float4 color5 = tex2D(tex_0, texcoord5);
-          float2 texcoord6 = l_texcoord0+float2(-sepx, -sepy);
-          float4 color6 = tex2D(tex_0, texcoord6);
-          float2 texcoord7 = l_texcoord0+float2(-sepx, sepy);
-          float4 color7 = tex2D(tex_0, texcoord7);
-          float2 texcoord8 = l_texcoord0+float2(sepx, -sepy);
-          float4 color8 = tex2D(tex_0, texcoord8);
-          float2 texcoord9 = l_texcoord0+float2(2*sepx, 0);
-          float4 color9 = tex2D(tex_0, texcoord9);
-          float2 texcoord10 = l_texcoord0+float2(-2*sepx, 0);
-          float4 color10 = tex2D(tex_0, texcoord10);
-          float2 texcoord11 = l_texcoord0+float2(0, 2*sepy);
-          float4 color11 = tex2D(tex_0, texcoord11);
-          float2 texcoord12 = l_texcoord0+float2(0, -2*sepy);
-          float4 color12 = tex2D(tex_0, texcoord12);
-          o_color = (color0-color1).x > .005 || (color0-color2).x > .005 || (color0-color3).x > .005 ||
-                    (color0-color4).x > .005 || (color0-color5).x > .005 || (color0-color6).x > .005 ||
-                    (color0-color7).x > .005 || (color0-color8).x > .005 || (color0-color9).x > .005 ||
-                    (color0-color10).x > .005 || (color0-color11).x > .005 || (color0-color12).x > .005 ?
-                    float4(0, 0, 0, 1) : float4(0, 0, 0, 0);
-        }"""
-        depthBuffer = self.win.makeTextureBuffer("depthBuffer", 0, 0)
-        depthBuffer.setClearColor(Vec4(1, 1, 1, 1))
-        depthCamera = self.makeCamera(depthBuffer, lens=self.cam.node().getLens(), scene=self.render)
-        depthCamera.reparentTo(self.cam)
-        tempnode = NodePath("depth")
-        tempnode.setShader(Shader.make(depth_sha, Shader.SL_Cg))
-        depthCamera.node().setInitialState(tempnode.getState())
-        drawnScene = depthBuffer.getTextureCard()
-        drawnScene.reparentTo(render2d)
-        drawnScene.setTransparency(1)
-        drawnScene.setColor(1, 1, 1, 0)
-        drawnScene.setShader(Shader.make(outline_sha, Shader.SL_Cg))

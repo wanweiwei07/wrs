@@ -1,25 +1,27 @@
 from direct.showbase.DirectObject import DirectObject
 from panda3d.core import Vec3, Mat3, Mat4, CollisionNode, CollisionRay, BitMask32, CollisionSphere, Plane, \
-    CollisionPlane, CollisionBox, Point3, CollisionTraverser, CollisionHandlerQueue, GeomNode
-import numpy as np
+    CollisionPlane, Point3, CollisionTraverser, CollisionHandlerQueue
+import wrs.basis.robot_math as rm
+import wrs.basis.data_adapter as da
+import wrs.modeling.geometric_model as gm
 
 
 class InputManager(DirectObject):
 
-    def __init__(self, base, lookat_pos, togglerotcenter=False):
+    def __init__(self, base, lookat_pos, toggle_rotcenter=False):
         self.base = base
-        self.originallookatpos = lookat_pos  # for backup
+        self.original_lookat_pos = lookat_pos  # for backup
+        self.current_lookat_pos = self.original_lookat_pos
         self.lookatpos_pdv3 = Vec3(lookat_pos[0], lookat_pos[1], lookat_pos[2])
         self.cam2lookatpos_dist = (self.base.cam.getPos() - self.lookatpos_pdv3).length()
         self.initviewdist = (self.base.cam.getPos() - self.lookatpos_pdv3).length()
         self.last_m1_pos = None
         self.last_m2_pos = None
         # toggle on the following part to explicitly show the rotation center
-        self.togglerotcenter = togglerotcenter
-        if self.togglerotcenter:
-            self.rotatecenternp = self.base.p3dh.gensphere(pos=self.originallookatpos, radius=5,
-                                                           rgba=np.array([1, 1, 0, 1]))
-            self.rotatecenternp.reparentTo(self.base.render)
+        self.toggle_rotcenter = toggle_rotcenter
+        if self.toggle_rotcenter:
+            self.rot_center = gm.gen_sphere(pos=self.original_lookat_pos, radius=5, rgb=rm.np.array([1, 1, 0]))
+            self.rot_center.attach_to(self.base)
         # for resetting
         self.original_cam_pdmat4 = Mat4(self.base.cam.getMat())
         self.keymap = {"mouse1": False,
@@ -83,7 +85,8 @@ class InputManager(DirectObject):
         # its bitmask is set to 8, and it will be the only collidable object at bit 8
         self.trackball_cn = CollisionNode("trackball")
         self.trackball_cn.addSolid(
-            CollisionSphere(self.lookatpos_pdv3[0], self.lookatpos_pdv3[1], self.lookatpos_pdv3[2], self.cam2lookatpos_dist))
+            CollisionSphere(self.lookatpos_pdv3[0], self.lookatpos_pdv3[1], self.lookatpos_pdv3[2],
+                            self.cam2lookatpos_dist))
         self.trackball_cn.setFromCollideMask(BitMask32.allOff())
         self.trackball_cn.setIntoCollideMask(BitMask32.bit(8))
         self.trackball_np = self.base.render.attachNewNode(self.trackball_cn)
@@ -113,7 +116,7 @@ class InputManager(DirectObject):
         self.picker_np = self.base.cam.attachNewNode(self.picker_cn)
         self.ctrav.addCollider(self.picker_np, self.chandler)
 
-    def update_trackballsphere(self, center=np.array([0, 0, 0])):
+    def update_trackballsphere(self, center=rm.np.array([0, 0, 0])):
         self.cam2lookatpos_dist = (self.base.cam.getPos() - self.lookatpos_pdv3).length()
         self.trackball_cn.setSolid(0, CollisionSphere(center[0], center[1], center[2], self.cam2lookatpos_dist))
 
@@ -211,11 +214,11 @@ class InputManager(DirectObject):
         if rel_m2_vec.length() > 0.001:
             self.base.cam.setPos(self.base.cam.getPos() - rel_m2_vec)
             self.lookatpos_pdv3 = Vec3(self.lookatpos_pdv3 - rel_m2_vec)
-            newlookatpos = self.base.p3dh.pdvec3_to_npvec3(self.lookatpos_pdv3)
-            if self.togglerotcenter:
-                self.rotatecenternp.detachNode()
-                self.rotatecenternp = self.base.p3dh.gensphere(pos=newlookatpos, radius=0.005, rgba=np.array([1, 1, 0, 1]))
-                self.rotatecenternp.reparentTo(self.base.render)
+            newlookatpos = da.pdvec3_to_npvec3(self.lookatpos_pdv3)
+            if self.toggle_rotcenter:
+                self.rot_center.detach()
+                self.rot_center = gm.gen_sphere(pos=newlookatpos, radius=0.005, rgb=rm.np.array([1, 1, 0, 1]))
+                self.rot_center.attach_to(self.base)
             self.update_trackballsphere(self.lookatpos_pdv3)
             self.last2mpos = current_m2_pos
 
@@ -285,12 +288,12 @@ class InputManager(DirectObject):
         if self.keymap["r"] is True:
             self.keymap["r"] = False
             self.base.cam.setMat(self.original_cam_pdmat4)
-            self.lookatpos_pdv3 = self.base.p3dh.npvec3_to_pdvec3(self.originallookatpos)
+            self.lookatpos_pdv3 = da.npvec3_to_pdvec3(self.original_lookat_pos)
             self.update_trackplane()
             self.update_trackballsphere(self.lookatpos_pdv3)
             # toggle on the following part to explicitly show the rotation center
-            if self.togglerotcenter:
-                self.rotatecenternp.detachNode()
-                self.rotatecenternp = self.base.p3dh.gensphere(pos=self.originallookatpos, radius=0.005,
-                                                               rgba=np.array([1, 1, 0, 1]))
-                self.rotatecenternp.reparentTo(self.base.render)
+            if self.toggle_rotcenter:
+                self.rot_center.detach()
+                self.rot_center = gm.gen_sphere(pos=self.original_lookat_pos, radius=0.005,
+                                                rgb=rm.np.array([1, 1, 0]))
+                self.rot_center.attach_to(self.base)

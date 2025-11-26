@@ -60,12 +60,16 @@ class CollisionModel(mgm.GeometricModel):
                 super().__init__(initor=initor.trm_mesh,
                                  name=name,
                                  toggle_transparency=initor.pdndp.getTransparency(),
-                                 toggle_twosided=initor.pdndp.getTwoSided())
+                                 toggle_twosided=initor.pdndp.getTwoSided(),
+                                 rgb=initor.rgb,
+                                 alpha=initor.alpha)
             else:
                 super().__init__(initor=initor.pdndp,
                                  name=name,
                                  toggle_transparency=initor.pdndp.getTransparency(),
-                                 toggle_twosided=initor.pdndp.getTwoSided())
+                                 toggle_twosided=initor.pdndp.getTwoSided(),
+                                 rgb=initor.rgb,
+                                 alpha=initor.alpha)
             self._pos = initor.pos
             self._rotmat = initor.rotmat
             self._is_pdndp_pose_delayed = True

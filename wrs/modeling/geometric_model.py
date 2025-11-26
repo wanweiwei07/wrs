@@ -114,7 +114,6 @@ class StaticGeometricModel(object):
             if rgb is not None:
                 self._pdndp.setColor(rgb[0], rgb[1], rgb[2], alpha)
             self._pdndp.setMaterialOff()
-            self._pdndp.setShaderAuto()
             self._local_frame = None
 
     @property
@@ -280,17 +279,19 @@ class GeometricModel(StaticGeometricModel):
                 super().__init__(initor=initor.trm_mesh,
                                  name=name,
                                  toggle_transparency=initor.pdndp.getTransparency(),
-                                 toggle_twosided=initor.pdndp.getTwoSided())
+                                 toggle_twosided=initor.pdndp.getTwoSided(),
+                                 rgb=initor.rgb,
+                                 alpha=initor.alpha)
             else:
                 super().__init__(initor=initor.pdndp,
                                  name=name,
                                  toggle_transparency=initor.pdndp.getTransparency(),
-                                 toggle_twosided=initor.pdndp.getTwoSided())
+                                 toggle_twosided=initor.pdndp.getTwoSided(),
+                                 rgb=initor.rgb,
+                                 alpha=initor.alpha)
             self._pos = initor.pos
             self._rotmat = initor.rotmat
             self._is_pdndp_pose_delayed = True
-            self.pdndp.setColor(initor.pdndp.getColor())
-            # self.pdndp_core.setShaderAuto()
         else:
             super().__init__(initor=initor,
                              name=name,
@@ -301,7 +302,6 @@ class GeometricModel(StaticGeometricModel):
             self._pos = np.zeros(3)
             self._rotmat = np.eye(3)
             self._is_pdndp_pose_delayed = True
-            # self.pdndp_core.setShaderAuto()
 
     @staticmethod
     def delay_pdndp_pose_decorator(method):
@@ -1335,7 +1335,7 @@ if __name__ == "__main__":
     import wrs.visualization.panda.world as wd
 
     base = wd.World(cam_pos=[1, 1, 1], lookat_pos=[0, 0, 0])
-    objpath = os.path.join(basis.__path__[0], 'objects', 'bunnysim.stl')
+    objpath = os.path.join(base.__path__[0], 'objects', 'bunnysim.stl')
     bunnygm = GeometricModel(objpath)
     bunnygm.rgba = np.array([0.7, 0.7, 0.0, 1.0])
     bunnygm.attach_to(base)

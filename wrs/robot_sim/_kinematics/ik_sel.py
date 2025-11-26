@@ -12,7 +12,6 @@ import wrs.robot_sim._kinematics.jlchain as rkjlc
 import wrs.robot_sim._kinematics.model_generator as rkmg
 import wrs.modeling.geometric_model as mgm
 import wrs.basis.utils as bu
-import samply
 
 class SELIKSolver(object):
     def __init__(self, jlc, path=None, identifier_str='test', backbone_solver='n', rebuild=False):

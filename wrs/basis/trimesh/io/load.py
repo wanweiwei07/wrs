@@ -1,13 +1,13 @@
 import numpy as np
-from ..base import Trimesh
-from ..constants import _log_time, log
-from ..util import is_file, is_string, make_sequence, is_instance_named, concatenate
-from .assimp import _assimp_loaders
-from .stl import _stl_loaders
-from .misc import _misc_loaders
-from .step import _step_loaders
-from .ply import _ply_loaders
-from .dae import _collada_loaders
+from wrs.basis.trimesh.base import Trimesh
+from wrs.basis.trimesh.constants import _log_time, log
+from wrs.basis.trimesh.util import is_file, is_string, make_sequence, is_instance_named, concatenate
+from wrs.basis.trimesh.io.assimp import _assimp_loaders
+from wrs.basis.trimesh.io.stl import _stl_loaders
+from wrs.basis.trimesh.io.misc import _misc_loaders
+from wrs.basis.trimesh.io.step import _step_loaders
+from wrs.basis.trimesh.io.ply import _ply_loaders
+# from .dae import _collada_loaders
 
 try:
     from ..path.io.load import load_path, path_formats
@@ -95,4 +95,4 @@ _mesh_loaders.update(_stl_loaders)
 _mesh_loaders.update(_misc_loaders)
 _mesh_loaders.update(_step_loaders)
 _mesh_loaders.update(_ply_loaders)
-_mesh_loaders.update(_collada_loaders)
+# _mesh_loaders.update(_collada_loaders)
