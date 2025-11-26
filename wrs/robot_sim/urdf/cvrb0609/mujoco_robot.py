@@ -1,5 +1,6 @@
 import mujoco
 import wrs.modeling.dynamics.mj_xml as mjx
+import wrs.modeling.geometric_model as mgm
 import networkx as nx
 import matplotlib.pyplot as plt
 
@@ -10,7 +11,7 @@ if __name__ == '__main__':
     from wrs import modeling as gm
 
     base = wd.World(cam_pos=[3, 3, 3], lookat_pos=[0, 0, .7])
-    gm.gen_frame().attach_to(base)
+    mgm.gen_frame().attach_to(base)
 
     mj_model = mjx.MJModel("cvrb0609.urdf")
     # print(mj_model.chains)
@@ -22,10 +23,10 @@ if __name__ == '__main__':
     #         rotmat = mj_model.data.geom_xmat[key].reshape(3, 3)
     #         geom.pose = [pos, rotmat]
     #         geom.attach_to(base)plt.figure(figsize=(12, 8))
-    joint_link_graph = mj_model.jlg
-    pos = nx.spring_layout(joint_link_graph)
-    nx.draw(joint_link_graph, pos, with_labels=True, node_size=3000, node_color="lightblue", font_size=10, font_weight="bold")
-    plt.title("Joint-Link Tree")
-    plt.show()
+    # joint_link_graph = mj_model.jlg
+    # pos = nx.spring_layout(joint_link_graph)
+    # nx.draw(joint_link_graph, pos, with_labels=True, node_size=3000, node_color="lightblue", font_size=10, font_weight="bold")
+    # plt.title("Joint-Link Tree")
+    # plt.show()
 
     base.run()

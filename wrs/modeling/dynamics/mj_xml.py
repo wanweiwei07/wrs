@@ -1,5 +1,6 @@
 import mujoco
-from wrs import basis as trm, modeling as mcm, modeling as gm
+import wrs.basis.trimesh as trm
+from wrs import rm, mcm
 import numpy as np
 
 
@@ -24,7 +25,7 @@ def cvt_geom(model, geom_id):
         # face_normals = model.mesh_facenormal[face_start:(face_start + face_count)]
         if len(faces) == 0:
             return mcm.gen_box()
-        if vert_count-1 != max(faces.flatten()):
+        if vert_count - 1 != max(faces.flatten()):
             print("Warning: the vertices and faces are not consistent!")
             return mcm.gen_box()
         name_start = model.name_meshadr[mesh_id]
@@ -110,6 +111,7 @@ class MJModel(object):
             self.model = self._load_from_file(input_string)
         self.data = mujoco.MjData(self.model)
         self.body_geom_dict = cvt_bodies(self.model)
+        self.control_callback = None
 
     def _load_from_file(self, file_name):
         """
@@ -139,7 +141,7 @@ if __name__ == '__main__':
     import wrs.visualization.panda.world as wd
 
     base = wd.World(cam_pos=[3, 3, 3], lookat_pos=[0, 0, .7])
-    gm.gen_frame().attach_to(base)
+    mgm.gen_frame().attach_to(base)
 
     mj_model = MJModel("humanoid.xml")
     # print(mj_model.chains)

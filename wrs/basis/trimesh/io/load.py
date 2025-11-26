@@ -7,7 +7,7 @@ from wrs.basis.trimesh.io.stl import _stl_loaders
 from wrs.basis.trimesh.io.misc import _misc_loaders
 from wrs.basis.trimesh.io.step import _step_loaders
 from wrs.basis.trimesh.io.ply import _ply_loaders
-# from .dae import _collada_loaders
+from wrs.basis.trimesh.io.dae import _collada_loaders
 
 try:
     from ..path.io.load import load_path, path_formats
@@ -95,4 +95,4 @@ _mesh_loaders.update(_stl_loaders)
 _mesh_loaders.update(_misc_loaders)
 _mesh_loaders.update(_step_loaders)
 _mesh_loaders.update(_ply_loaders)
-# _mesh_loaders.update(_collada_loaders)
+_mesh_loaders.update(_collada_loaders)

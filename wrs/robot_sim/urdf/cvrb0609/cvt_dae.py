@@ -1,4 +1,4 @@
-from wrs import basis as trm
+import wrs.basis.trimesh as trm
 
 trm.load("base_link.dae").export("base_link.stl")
 trm.load("J1.dae").export("J1.stl")
