@@ -216,7 +216,11 @@ class DynamixelMotor(object):
         :return: True if the goal position is set, False otherwise
         """
         assert isinstance(tgt_pos, int)
-        assert self._control_table.DXL_MIN_POSITION_VAL <= tgt_pos <= self._control_table.DXL_MAX_POSITION_VAL
+        # examine tgt_pos range in position mode
+        mode = self.get_dxl_op_mode()
+        if  mode == 3 or mode == 5:
+            assert (self._control_table.DXL_MIN_POSITION_VAL <= tgt_pos
+                    <= self._control_table.DXL_MAX_POSITION_VAL), "tgt_pos out of range under position mode"
         dxl_comm_result, dxl_error = self._packet_handler.write4ByteTxRx(port=self._port_handler,
                                                                          dxl_id=dxl_id,
                                                                          address=self._control_table.ADDR_GOAL_POSITION,
@@ -240,7 +244,10 @@ class DynamixelMotor(object):
             dxl_id_list), "The length of the target position list and the motor id list should be the same."
         for tgt_pos in tgt_pos_list:
             assert isinstance(tgt_pos, int), "The target position should be an integer."
-            assert self._control_table.DXL_MIN_POSITION_VAL <= tgt_pos <= self._control_table.DXL_MAX_POSITION_VAL, "The target position is out of range."
+            mode = self.get_dxl_op_mode()
+            # examine tgt_pos range in position mode
+            if mode == 3 or mode == 5:
+                assert self._control_table.DXL_MIN_POSITION_VAL <= tgt_pos <= self._control_table.DXL_MAX_POSITION_VAL, "The target position is out of range."
         for i, dxl_id in enumerate(dxl_id_list):
             assert isinstance(dxl_id, int), "The motor id should be an integer."
             param_goal_position = [DXL_LOBYTE(DXL_LOWORD(tgt_pos_list[i])),
