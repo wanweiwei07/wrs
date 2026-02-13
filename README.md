@@ -1,4 +1,4 @@
-# The WRS Robot Planning & Control System （Archived)
+# The WRS Robot Planning & Control System (Archived)
 
 > **📦Museum Project** 
 > This repository has been archived as a museum project and is no longer actively maintained. It is preserved for historical reference. Thank you for your support over the years.
