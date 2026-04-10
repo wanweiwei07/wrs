@@ -1,4 +1,7 @@
-# The WRS Robot Planning & Control System
+# The WRS Robot Planning & Control System (Archived)
+
+> **📦Museum Project** 
+> This repository has been archived as a museum project and is no longer actively maintained. It is preserved for historical reference. Thank you for your support over the years.
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
