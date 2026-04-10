@@ -8,6 +8,8 @@ if __name__ == '__main__':
                                     cdmesh_type=mcm.const.CDMeshType.DEFAULT,
                                     cdprim_type=mcm.const.CDPrimType.AABB)
     object_ref.rgba = rm.np.array([.9, .75, .35, 1])
+    # object_ref.attach_to(base)
+    # base.run()
     # ウサギ1
     object1 = object_ref.copy()
     object1.pos = rm.np.array([0, -.19, 0])

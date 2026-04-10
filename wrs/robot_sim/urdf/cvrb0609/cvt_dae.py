@@ -7,4 +7,3 @@ trm.load("J3.dae").export("J3.stl")
 trm.load("J4.dae").export("J4.stl")
 trm.load("J5.dae").export("J5.stl")
 trm.load("J6.dae").export("J6.stl")
-

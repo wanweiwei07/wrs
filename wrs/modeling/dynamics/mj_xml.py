@@ -138,7 +138,7 @@ class MJModel(object):
 
 
 if __name__ == '__main__':
-    import wrs.visualization.panda.world as wd
+    from wrs import wd, mgm
 
     base = wd.World(cam_pos=[3, 3, 3], lookat_pos=[0, 0, .7])
     mgm.gen_frame().attach_to(base)
