@@ -1,103 +1,97 @@
 import os
 import math
 import numpy as np
-from wrs import basis as rm, robot_sim as jl, robot_sim as mi, modeling as gm
+import wrs.basis.robot_math as rm
+import wrs.modeling.geometric_model as mgm
+import wrs.modeling.collision_model as mcm
+import wrs.robot_sim.manipulators.manipulator_interface as mi
 
 
 class UR5E(mi.ManipulatorInterface):
+    """
+    UR5e manipulator using the modern WRS JLChain API.
 
-    def __init__(self, pos=np.zeros(3), rotmat=np.eye(3), homeconf=np.zeros(6), name='ur5e', enable_cc=True):
-        super().__init__(pos=pos, rotmat=rotmat, name=name)
-        this_dir, this_filename = os.path.split(__file__)
-        self.jlc = jl.JLChain(pos=pos, rotmat=rotmat, home_conf=homeconf, name=name)
-        # six joints, n_jnts = 6+2 (tgt ranges from 1-6), nlinks = 6+1
-        self.jlc.jnts[1]['loc_pos'] = np.array([0, 0, 0.163])
-        self.jlc.jnts[2]['loc_pos'] = np.array([0, 0.138, 0])
-        self.jlc.jnts[2]['gl_rotmat'] = rm.rotmat_from_euler(.0, math.pi / 2.0, .0)
-        self.jlc.jnts[2]['loc_motionax'] = np.array([0, 1, 0])
-        self.jlc.jnts[3]['loc_pos'] = np.array([0, -.131, .425])
-        self.jlc.jnts[3]['loc_motionax'] = np.array([0, 1, 0])
-        self.jlc.jnts[4]['loc_pos'] = np.array([.0, .0, 0.392])
-        self.jlc.jnts[4]['gl_rotmat'] = rm.rotmat_from_euler(.0, math.pi / 2.0, 0)
-        self.jlc.jnts[4]['loc_motionax'] = np.array([0, 1, 0])
-        self.jlc.jnts[5]['loc_pos'] = np.array([0, .127, 0])
-        self.jlc.jnts[5]['loc_motionax'] = np.array([0, 0, 1])
-        self.jlc.jnts[6]['loc_pos'] = np.array([0, 0, .100])
-        self.jlc.jnts[6]['loc_motionax'] = np.array([0, 1, 0])
-        self.jlc.jnts[7]['loc_pos'] = np.array([0, .100, 0])
-        self.jlc.jnts[7]['gl_rotmat'] = rm.rotmat_from_euler(-math.pi / 2.0, 0, 0)
-        # links
-        self.jlc.lnks[0]['name'] = "base"
-        self.jlc.lnks[0]['loc_pos'] = np.zeros(3)
-        self.jlc.lnks[0]['mass'] = 2.0
-        self.jlc.lnks[0]['mesh_file'] = os.path.join(this_dir, "meshes", "base.dae")
-        self.jlc.lnks[0]['rgba'] = [.5,.5,.5, 1.0]
-        self.jlc.lnks[1]['name'] = "shoulder"
-        self.jlc.lnks[1]['loc_pos'] = np.zeros(3)
-        self.jlc.lnks[1]['com'] = np.array([.0, -.02, .0])
-        self.jlc.lnks[1]['mass'] = 1.95
-        self.jlc.lnks[1]['mesh_file'] = os.path.join(this_dir, "meshes", "shoulder.dae")
-        self.jlc.lnks[1]['rgba'] = [.1,.3,.5, 1.0]
-        self.jlc.lnks[2]['name'] = "upperarm"
-        self.jlc.lnks[2]['loc_pos'] = np.array([.0, .0, .0])
-        self.jlc.lnks[2]['com'] = np.array([.13, 0, .1157])
-        self.jlc.lnks[2]['mass'] = 3.42
-        self.jlc.lnks[2]['mesh_file'] = os.path.join(this_dir, "meshes", "upperarm.dae")
-        self.jlc.lnks[2]['rgba'] = [.7,.7,.7, 1.0]
-        self.jlc.lnks[3]['name'] = "forearm"
-        self.jlc.lnks[3]['loc_pos'] = np.array([.0, .0, .0])
-        self.jlc.lnks[3]['com'] = np.array([.05, .0, .0238])
-        self.jlc.lnks[3]['mass'] = 1.437
-        self.jlc.lnks[3]['mesh_file'] = os.path.join(this_dir, "meshes", "forearm.dae")
-        self.jlc.lnks[3]['rgba'] = [.35,.35,.35, 1.0]
-        self.jlc.lnks[4]['name'] = "wrist1"
-        self.jlc.lnks[4]['loc_pos'] = np.array([.0, .0, .0])
-        self.jlc.lnks[4]['com'] = np.array([.0, .0, 0.01])
-        self.jlc.lnks[4]['mass'] = 0.871
-        self.jlc.lnks[4]['mesh_file'] = os.path.join(this_dir, "meshes", "wrist1.dae")
-        self.jlc.lnks[4]['rgba'] = [.7,.7,.7, 1.0]
-        self.jlc.lnks[5]['name'] = "wrist2"
-        self.jlc.lnks[5]['loc_pos'] = np.array([.0, .0, .0])
-        self.jlc.lnks[5]['com'] = np.array([.0, .0, 0.01])
-        self.jlc.lnks[5]['mass'] = 0.8
-        self.jlc.lnks[5]['mesh_file'] = os.path.join(this_dir, "meshes", "wrist2.dae")
-        self.jlc.lnks[5]['rgba'] = [.1,.3,.5, 1.0]
-        self.jlc.lnks[6]['name'] = "wrist3"
-        self.jlc.lnks[6]['loc_pos'] = np.array([.0, .0, .0])
-        self.jlc.lnks[6]['com'] = np.array([.0, .0, -0.02])
-        self.jlc.lnks[6]['mass'] = 0.8
-        self.jlc.lnks[6]['mesh_file'] = os.path.join(this_dir, "meshes", "wrist3.dae")
-        self.jlc.lnks[6]['rgba'] = [.5,.5,.5, 1.0]
-        self.jlc.finalize()
-        # collision checker
-        if enable_cc:
-            super().enable_cc()
+    DH parameters from Universal Robots UR5e datasheet.
+    Mesh files: .dae format in the meshes/ directory.
+    """
 
-    def enable_cc(self):
-        super().enable_cc()
-        self.cc.add_cdlnks(self.jlc, [0, 1, 2, 3, 4, 5, 6])
-        activelist = [self.jlc.lnks[0],
-                      self.jlc.lnks[1],
-                      self.jlc.lnks[2],
-                      self.jlc.lnks[3],
-                      self.jlc.lnks[4],
-                      self.jlc.lnks[5],
-                      self.jlc.lnks[6]]
-        self.cc.set_active_cdlnks(activelist)
-        fromlist = [self.jlc.lnks[0],
-                    self.jlc.lnks[1]]
-        intolist = [self.jlc.lnks[3],
-                    self.jlc.lnks[5],
-                    self.jlc.lnks[6]]
-        self.cc.set_cdpair(fromlist, intolist)
-        fromlist = [self.jlc.lnks[2]]
-        intolist = [self.jlc.lnks[4],
-                    self.jlc.lnks[5],
-                    self.jlc.lnks[6]]
-        self.cc.set_cdpair(fromlist, intolist)
-        fromlist = [self.jlc.lnks[3]]
-        intolist = [self.jlc.lnks[6]]
-        self.cc.set_cdpair(fromlist, intolist)
+    def __init__(self, pos=np.zeros(3), rotmat=np.eye(3), home_conf=np.zeros(6),
+                 name='ur5e', enable_cc=False):
+        super().__init__(pos=pos, rotmat=rotmat, home_conf=home_conf, name=name, enable_cc=enable_cc)
+        current_file_dir = os.path.dirname(__file__)
+        # anchor (base link)
+        self.jlc.anchor.lnk_list[0].cmodel = mcm.CollisionModel(
+            initor=os.path.join(current_file_dir, "meshes", "base.dae"), name="ur5e_base")
+        self.jlc.anchor.lnk_list[0].cmodel.rgba = np.array([.5, .5, .5, 1.0])
+        # Joint 0 (base rotation) and link
+        self.jlc.jnts[0].loc_pos = np.array([0, 0, 0.163])
+        self.jlc.jnts[0].loc_motion_ax = np.array([0, 0, 1])
+        self.jlc.jnts[0].motion_range = np.array([-2 * math.pi, 2 * math.pi])
+        self.jlc.jnts[0].lnk.cmodel = mcm.CollisionModel(
+            initor=os.path.join(current_file_dir, "meshes", "shoulder.dae"), name="ur5e_shoulder")
+        self.jlc.jnts[0].lnk.cmodel.rgba = np.array([.1, .3, .5, 1.0])
+        # Joint 1 (shoulder) and link
+        self.jlc.jnts[1].loc_pos = np.array([0, 0.138, 0])
+        self.jlc.jnts[1].loc_rotmat = rm.rotmat_from_euler(0, math.pi / 2.0, 0)
+        self.jlc.jnts[1].loc_motion_ax = np.array([0, 1, 0])
+        self.jlc.jnts[1].motion_range = np.array([-2 * math.pi, 2 * math.pi])
+        self.jlc.jnts[1].lnk.cmodel = mcm.CollisionModel(
+            initor=os.path.join(current_file_dir, "meshes", "upperarm.dae"), name="ur5e_upperarm")
+        self.jlc.jnts[1].lnk.cmodel.rgba = np.array([.7, .7, .7, 1.0])
+        # Joint 2 (elbow) and link
+        self.jlc.jnts[2].loc_pos = np.array([0, -0.131, 0.425])
+        self.jlc.jnts[2].loc_motion_ax = np.array([0, 1, 0])
+        self.jlc.jnts[2].motion_range = np.array([-2 * math.pi, 2 * math.pi])
+        self.jlc.jnts[2].lnk.cmodel = mcm.CollisionModel(
+            initor=os.path.join(current_file_dir, "meshes", "forearm.dae"), name="ur5e_forearm")
+        self.jlc.jnts[2].lnk.cmodel.rgba = np.array([.35, .35, .35, 1.0])
+        # Joint 3 (wrist 1) and link
+        self.jlc.jnts[3].loc_pos = np.array([0, 0, 0.392])
+        self.jlc.jnts[3].loc_rotmat = rm.rotmat_from_euler(0, math.pi / 2.0, 0)
+        self.jlc.jnts[3].loc_motion_ax = np.array([0, 1, 0])
+        self.jlc.jnts[3].motion_range = np.array([-2 * math.pi, 2 * math.pi])
+        self.jlc.jnts[3].lnk.cmodel = mcm.CollisionModel(
+            initor=os.path.join(current_file_dir, "meshes", "wrist1.dae"), name="ur5e_wrist1")
+        self.jlc.jnts[3].lnk.cmodel.rgba = np.array([.7, .7, .7, 1.0])
+        # Joint 4 (wrist 2) and link
+        self.jlc.jnts[4].loc_pos = np.array([0, 0.127, 0])
+        self.jlc.jnts[4].loc_motion_ax = np.array([0, 0, 1])
+        self.jlc.jnts[4].motion_range = np.array([-2 * math.pi, 2 * math.pi])
+        self.jlc.jnts[4].lnk.cmodel = mcm.CollisionModel(
+            initor=os.path.join(current_file_dir, "meshes", "wrist2.dae"), name="ur5e_wrist2")
+        self.jlc.jnts[4].lnk.cmodel.rgba = np.array([.1, .3, .5, 1.0])
+        # Joint 5 (wrist 3) and link
+        self.jlc.jnts[5].loc_pos = np.array([0, 0, 0.100])
+        self.jlc.jnts[5].loc_motion_ax = np.array([0, 1, 0])
+        self.jlc.jnts[5].motion_range = np.array([-2 * math.pi, 2 * math.pi])
+        self.jlc.jnts[5].lnk.cmodel = mcm.CollisionModel(
+            initor=os.path.join(current_file_dir, "meshes", "wrist3.dae"), name="ur5e_wrist3")
+        self.jlc.jnts[5].lnk.cmodel.rgba = np.array([.5, .5, .5, 1.0])
+        # flange (TCP frame offset)
+        self.jlc._loc_flange_pos = np.array([0, 0.100, 0])
+        self.jlc._loc_flange_rotmat = rm.rotmat_from_euler(-math.pi / 2.0, 0, 0)
+        # finalize with numeric IK solver
+        self.jlc.finalize(ik_solver='n', identifier_str=name)
+        # tcp
+        self.loc_tcp_pos = np.array([0, 0, 0])
+        self.loc_tcp_rotmat = np.eye(3)
+        # set up collision checking
+        if self.cc is not None:
+            self.setup_cc()
+
+    def setup_cc(self):
+        """Set up collision checking pairs (following ur3e pattern)."""
+        lb = self.cc.add_cce(self.jlc.anchor.lnk_list[0])
+        l0 = self.cc.add_cce(self.jlc.jnts[0].lnk)
+        l1 = self.cc.add_cce(self.jlc.jnts[1].lnk)
+        l2 = self.cc.add_cce(self.jlc.jnts[2].lnk)
+        l3 = self.cc.add_cce(self.jlc.jnts[3].lnk)
+        l4 = self.cc.add_cce(self.jlc.jnts[4].lnk)
+        l5 = self.cc.add_cce(self.jlc.jnts[5].lnk)
+        # Distal links vs proximal links (skip adjacent)
+        from_list = [l3, l4, l5]
+        into_list = [lb, l0]
+        self.cc.set_cdpair_by_ids(from_list, into_list)
 
 
 if __name__ == '__main__':
@@ -105,18 +99,11 @@ if __name__ == '__main__':
     import wrs.visualization.panda.world as wd
 
     base = wd.World(cam_pos=[2, 0, 1], lookat_pos=[0, 0, 0])
-    gm.gen_frame().attach_to(base)
+    mgm.gen_frame().attach_to(base)
     manipulator_instance = UR5E(enable_cc=True)
-    manipulator_meshmodel = manipulator_instance.gen_meshmodel()
-    manipulator_meshmodel.attach_to(base)
-    manipulator_meshmodel.show_cdprim()
-    manipulator_instance.gen_stickmodel(toggle_jntscs=True).attach_to(base)
-    tic = time.time()
-    print(manipulator_instance.is_collided())
-    toc = time.time()
-    print(toc - tic)
-
-    # base = wd.World(cam_pos=[1, 1, 1], lookat_pos=[0,0,0])
-    # mgm.GeometricModel("./meshes/base.dae").attach_to(base)
-    # mgm.gen_frame().attach_to(base)
+    manipulator_instance.gen_meshmodel(alpha=.3).attach_to(base)
+    manipulator_instance.gen_stickmodel(toggle_jnt_frames=True).attach_to(base)
+    print(f"n_dof: {manipulator_instance.n_dof}")
+    print(f"jnt_ranges: {manipulator_instance.jnt_ranges}")
+    print(f"is_collided: {manipulator_instance.is_collided()}")
     base.run()
