@@ -92,10 +92,12 @@ class NxtServer(nxt_rpc.NxtServicer):
         date: 20190419
         """
         try:
-            if self._oldyaml:
-                angles, tm = yaml.load(request.data)
-            else:
-                angles, tm = yaml.load(request.data, Loader = yaml.UnsafeLoader)
+            # safe_load refuses to construct arbitrary Python objects from the
+            # payload; UnsafeLoader (and the pre-5.1 default Loader) let a crafted
+            # request run arbitrary code, and this server has no auth and binds to
+            # all interfaces. The client only ever sends a plain list of numbers,
+            # which safe_load handles the same way.
+            angles, tm = yaml.safe_load(request.data)
             if tm is None:
                 tm = 10.0
             self._robot.playPattern([self._deg2rad(angles), [tm]])
@@ -106,10 +108,12 @@ class NxtServer(nxt_rpc.NxtServicer):
 
     def playPattern(self, request, context):
         try:
-            if self._oldyaml:
-                angleslist, tmlist = yaml.load(request.data)
-            else:
-                angleslist, tmlist = yaml.load(request.data, Loader = yaml.UnsafeLoader)
+            # safe_load refuses to construct arbitrary Python objects from the
+            # payload; UnsafeLoader (and the pre-5.1 default Loader) let a crafted
+            # request run arbitrary code, and this server has no auth and binds to
+            # all interfaces. The client only ever sends a plain list of numbers,
+            # which safe_load handles the same way.
+            angleslist, tmlist = yaml.safe_load(request.data)
             self._robot.playPattern(angleslist, [], [], tmlist)
             return nxt_msg.Status(value = nxt_msg.Status.DONE)
         except Exception as e:
